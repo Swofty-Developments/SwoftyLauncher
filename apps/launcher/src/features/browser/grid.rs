@@ -13,12 +13,12 @@ use swofty_i18n::{tr, trf, trn};
 
 use super::tiles::landing_rows;
 use super::*;
-use crate::library::Type;
-use crate::pages::{GUTTER, tile};
-use crate::scale::{Hit, px};
+use crate::services::library::Type;
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::shell::pages::{GUTTER, tile};
 use crate::ui::facet::FILTERS_W;
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::Palette;
 
 pub(super) type GridKey = (String, Sort, Tab, BTreeSet<Facet>, bool, u64);
 
@@ -161,8 +161,8 @@ impl Shell {
             trn(shown.len(), "{count} addon", "{count} addons")
         };
         let width = self.content_width - FILTERS_W - 20.;
-        let ad = (!self.ad_header_room(crate::ads::Unit::Discover))
-            .then(|| self.ad_banner(crate::ads::Unit::Discover, width - GUTTER, p))
+        let ad = (!self.ad_header_room(crate::features::ads::Unit::Discover))
+            .then(|| self.ad_banner(crate::features::ads::Unit::Discover, width - GUTTER, p))
             .flatten();
         let landing = !self.browser.addons.is_empty() && self.browser.on_landing(!query.is_empty());
         if landing {

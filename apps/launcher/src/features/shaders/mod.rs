@@ -9,7 +9,7 @@ mod triggers;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
@@ -21,9 +21,9 @@ use swofty_core::store::Store;
 use swofty_i18n::{tr, trf};
 use swofty_shaders::Catalog;
 
-use crate::pages::GUTTER;
-use crate::theme::{Palette, palette};
+use crate::shell::pages::GUTTER;
 use crate::ui::PageHeader;
+use crate::ui::theme::{Palette, palette};
 
 pub(crate) const KEYS: [&str; 10] = [
     "B",

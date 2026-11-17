@@ -1,8 +1,8 @@
 use super::feed::{CACHE_DIR, FEED_FILE, Post, STALE, Trouble, embedded, fetch, merge, parse};
 use super::markdown::{Block, safe_url};
 use super::view::parsed_body;
-use crate::scale::px;
 use crate::shell::Shell;
+use crate::ui::scale::px;
 use gpui_kit::*;
 use std::collections::HashMap;
 use std::path::Path;
@@ -61,7 +61,7 @@ pub(crate) struct NewsScroll {
     pub(super) short: bool,
     pub(super) stacked_layout: bool,
     pub(super) show_banner: bool,
-    pub(super) motion: [crate::scroll::SmoothScroll; 3],
+    pub(super) motion: [crate::ui::scroll::SmoothScroll; 3],
 }
 
 impl Default for NewsScroll {

@@ -1,14 +1,14 @@
 use std::cell::Cell;
 use std::rc::Rc;
 
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::component::input::{Input, InputEvent, InputState};
 use gpui_kit::component::{h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::view::{colour_hex, parse_colour};
 
-use crate::theme::palette;
+use crate::ui::theme::palette;
 
 const SQUARE_W: f32 = 236.;
 const SQUARE_H: f32 = 156.;

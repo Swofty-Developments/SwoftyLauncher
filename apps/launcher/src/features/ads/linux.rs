@@ -32,7 +32,7 @@ impl Backend {
             RawWindowHandle::Xcb(h) => u64::from(h.window.get()),
             RawWindowHandle::Xlib(h) => h.window,
             _ => {
-                crate::app_log::note("no ad slots: the window isn't on X11");
+                crate::app::app_log::note("no ad slots: the window isn't on X11");
                 return None;
             }
         };
@@ -50,7 +50,7 @@ impl Backend {
             .stderr(log.unwrap_or_else(|_| Stdio::null()))
             .spawn()
             .inspect_err(|e| {
-                crate::app_log::note(&format!("no ad slots: {} didn't start: {e}", helper.display()))
+                crate::app::app_log::note(&format!("no ad slots: {} didn't start: {e}", helper.display()))
             })
             .ok()?;
         let stdin = child.stdin.take();
@@ -101,7 +101,7 @@ impl Backend {
             .is_err()
         {
             self.stdin = None;
-            crate::app_log::note("the ad helper stopped");
+            crate::app::app_log::note("the ad helper stopped");
         }
     }
 }
@@ -122,7 +122,7 @@ fn helper() -> Option<PathBuf> {
     if path.is_file() {
         Some(path)
     } else {
-        crate::app_log::note(&format!("no ad slots: {} is missing", path.display()));
+        crate::app::app_log::note(&format!("no ad slots: {} is missing", path.display()));
         None
     }
 }

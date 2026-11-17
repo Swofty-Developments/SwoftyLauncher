@@ -9,10 +9,10 @@ use swofty_core::catalog::{self, Trouble};
 use swofty_i18n::{tr, trf, trn};
 
 use super::*;
-use crate::pages::GUTTER;
-use crate::scale::{Hit, px};
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::shell::pages::GUTTER;
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::Palette;
 
 fn activity_row(i: usize, e: &Activity, p: Palette) -> AnyElement {
     let color = if e.ok { p.text_muted } else { p.error };

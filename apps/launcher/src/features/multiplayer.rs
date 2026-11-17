@@ -3,8 +3,8 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use crate::notices::{Notification, Notify};
-use crate::scale::{Hit, px};
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::{Input, InputEvent, InputState};
@@ -24,9 +24,9 @@ use swofty_core::multiplayer::types::{
 use swofty_core::store::Store;
 use swofty_i18n::{fill, tr, trf, trn};
 
-use crate::pages::{GUTTER, badge, label, monogram, tag};
+use crate::shell::pages::{GUTTER, badge, label, monogram, tag};
 use crate::shell::{Page, Shell};
-use crate::theme::{Palette, ScrollArea};
+use crate::ui::theme::{Palette, ScrollArea};
 
 const TICK: Duration = Duration::from_millis(500);
 const GAME_EVERY: Duration = Duration::from_secs(2);
@@ -611,7 +611,7 @@ impl Shell {
         swofty_core::session::request_stop(&self.store.root);
         for pid in &pids {
             if let Err(e) = swofty_core::process::stop_process(*pid) {
-                crate::app_log::action("stop f1 25").failed(&e);
+                crate::app::app_log::action("stop f1 25").failed(&e);
                 window.notify(Notification::error(e.to_string()), cx);
                 return false;
             }
@@ -724,7 +724,7 @@ impl Shell {
                 .spawn(async move {
                     wanted
                         .into_iter()
-                        .filter_map(|url| crate::news::image(&dir, &url).map(|i| (url, i)))
+                        .filter_map(|url| crate::features::news::image(&dir, &url).map(|i| (url, i)))
                         .collect()
                 })
                 .await;

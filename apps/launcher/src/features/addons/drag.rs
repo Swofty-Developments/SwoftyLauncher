@@ -1,9 +1,9 @@
 use super::model::{AddonListItem, PINNED};
-use crate::library::{AddonItem, Source};
-use crate::notices::{Notification, Notify};
-use crate::scale::px;
+use crate::services::library::{AddonItem, Source};
 use crate::shell::Shell;
-use crate::theme::{Palette, palette};
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::px;
+use crate::ui::theme::{Palette, palette};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::{Icon, h_flex};
 use gpui_kit::*;
@@ -241,7 +241,7 @@ impl Shell {
             f.set_place(&id, place.as_ref(), default.as_ref());
             if f != self.library.folders {
                 if let Err(e) = self.store.save_folders(&f) {
-                    crate::app_log::action("save folders").failed(&e);
+                    crate::app::app_log::action("save folders").failed(&e);
                     window.notify(Notification::error(e.to_string()), cx);
                     return;
                 }

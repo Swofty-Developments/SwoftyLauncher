@@ -132,10 +132,10 @@ pub fn init(cx: &mut App) {
         t.danger = p.error;
         t.overlay = hsla(0., 0., 0., 0.55);
         t.notification.placement = Anchor::BottomRight;
-        t.notification.margins.bottom = px(crate::play_bar::HEIGHT + 16.);
+        t.notification.margins.bottom = px(crate::shell::play_bar::HEIGHT + 16.);
     });
     cx.set_global(p);
-    cx.set_global(crate::notices::Notices::default());
+    cx.set_global(crate::shell::notices::Notices::default());
 }
 
 /// Room a column keeps clear of the scrollbar thumb at its right edge.

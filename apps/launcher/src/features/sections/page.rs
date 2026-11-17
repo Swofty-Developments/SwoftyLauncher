@@ -1,4 +1,4 @@
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::menu::{ContextMenuExt, DropdownMenu, PopupMenuItem};
@@ -11,11 +11,11 @@ use swofty_i18n::tr;
 
 use super::*;
 use crate::blocks::{At, caps, eyebrow, search_id};
-use crate::library::{AddonIcon, SectionItem};
-use crate::pages::{GUTTER, badge, chevron, fact, names, stat, tag, tile};
-use crate::scroll::SmoothScroll;
+use crate::services::library::{AddonIcon, SectionItem};
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::shell::pages::{GUTTER, badge, chevron, fact, names, stat, tag, tile};
+use crate::ui::scroll::SmoothScroll;
+use crate::ui::theme::Palette;
 
 #[derive(Clone, Copy)]
 pub(super) struct RowAt<'a> {
@@ -60,7 +60,7 @@ impl Shell {
             .map(|b| self.button(&addon, &id, b, false, cx))
             .collect();
         // Tracks is in the Addons group, whose pages all have Install addon.
-        if id == crate::library::TRACKS_SECTION {
+        if id == crate::services::library::TRACKS_SECTION {
             actions.push(self.install_addon_button(cx).into_any_element());
         }
         let notices: Vec<AnyElement> = view

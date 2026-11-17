@@ -1,4 +1,4 @@
-use crate::scale::px;
+use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::dialog::DialogFooter;
@@ -8,10 +8,10 @@ use gpui_kit::*;
 use swofty_core::ea_app::Moved;
 use swofty_core::install::EA_APP_SEEN;
 
-use crate::discord::{BLURPLE, BLURPLE_HOVER, INVITE, LOGO};
-use crate::pages::{game_art, logo};
 use crate::shell::Shell;
-use crate::theme::{Palette, palette};
+use crate::shell::pages::{game_art, logo};
+use crate::ui::discord::{BLURPLE, BLURPLE_HOVER, INVITE, LOGO};
+use crate::ui::theme::{Palette, palette};
 use swofty_i18n::{tr, trf};
 
 const HEIGHT: f32 = 470.;

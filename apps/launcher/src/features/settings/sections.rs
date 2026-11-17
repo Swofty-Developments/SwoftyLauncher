@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::slider::Slider;
@@ -15,10 +15,10 @@ use swofty_core::update;
 use swofty_core::updater;
 use swofty_i18n::{tr, trf};
 
-use crate::format::size_coarse as size;
 use crate::shell::Shell;
-use crate::theme::Palette;
 use crate::ui::form::{Choice, Notice, SettingRow, SettingsSection, ValuePill, segmented, select, usage_bar};
+use crate::ui::format::size_coarse as size;
+use crate::ui::theme::Palette;
 
 const DOCS: &str = "https://f1.swofty.net";
 
@@ -169,7 +169,7 @@ impl Shell {
             .tap_sm()
             .icon(IconName::FolderOpen)
             .label(tr("Open"))
-            .on_click(move |_, _, cx| cx.open_with_system(&crate::reveal::real_path(&root)));
+            .on_click(move |_, _, cx| cx.open_with_system(&crate::services::reveal::real_path(&root)));
         let moving = Button::new("settings-move-data")
             .outline()
             .tap_sm()
@@ -372,8 +372,8 @@ impl Shell {
                     )
                     .row(
                         SettingRow::new(tr("Discord server"))
-                            .description(crate::discord::INVITE)
-                            .control(link_button("settings-discord", crate::discord::INVITE)),
+                            .description(crate::ui::discord::INVITE)
+                            .control(link_button("settings-discord", crate::ui::discord::INVITE)),
                     ),
             )
             .into_any_element()

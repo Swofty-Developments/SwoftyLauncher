@@ -6,9 +6,9 @@ use gpui_kit::*;
 use swofty_i18n::tr;
 
 use super::authors::View;
-use crate::scale::{Hit, px};
 use crate::shell::{Page, Shell};
-use crate::theme::Palette;
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::Palette;
 
 impl Shell {
     pub(crate) fn browser_page(&mut self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
@@ -52,7 +52,7 @@ impl Shell {
             View::Creators => (self.creators_page(p, cx), None),
             _ => (
                 self.browser_grid(p, cx),
-                self.ad_header(crate::ads::Unit::Discover, p),
+                self.ad_header(crate::features::ads::Unit::Discover, p),
             ),
         };
         v_flex()

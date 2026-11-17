@@ -2,8 +2,8 @@ use std::collections::HashSet;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
-use crate::notices::{Notification, Notify};
-use crate::scale::px;
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::*;
 use swofty_core::baseline::Identity;
@@ -15,11 +15,11 @@ use swofty_core::store::Store;
 use swofty_core::view::{self, Art, Effect, Event, Tone, View};
 use swofty_i18n::trf;
 
-use crate::game::Install;
-use crate::library::SectionItem;
-use crate::pages::{badge, monogram};
+use crate::services::game::Install;
+use crate::services::library::SectionItem;
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::shell::pages::{badge, monogram};
+use crate::ui::theme::Palette;
 
 mod intake;
 mod page;
@@ -344,8 +344,8 @@ impl Shell {
         let profile = self.library.profile.clone();
         let install = self.panel_install();
         let (addon, section) = (addon.to_owned(), section.to_owned());
-        let feed = crate::tasks::Feed::default();
-        let sink = crate::tasks::Sink(feed.clone());
+        let feed = crate::dialogs::tasks::Feed::default();
+        let sink = crate::dialogs::tasks::Sink(feed.clone());
         self.busy.insert(control.clone());
         self.follow_tasks(control.clone(), feed.clone(), cx);
         cx.notify();
@@ -400,7 +400,9 @@ impl Shell {
                 self.show_addon(shown.id(), cx);
             }
             Err(e) => {
-                crate::app_log::action("addon action").addon(addon).failed(&e);
+                crate::app::app_log::action("addon action")
+                    .addon(addon)
+                    .failed(&e);
                 window.notify(Notification::error(e), cx);
                 cx.notify();
             }

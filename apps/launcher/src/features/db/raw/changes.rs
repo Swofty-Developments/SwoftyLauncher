@@ -1,7 +1,7 @@
 use std::ops::Range;
 use std::sync::Arc;
 
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
@@ -11,10 +11,10 @@ use swofty_core::dbedit::{Edit, NodeKind, Origin, RowCopy};
 use swofty_i18n::{tr, trf, trn};
 
 use super::hex;
-use crate::pages::label;
 use crate::shell::Shell;
-use crate::theme::{Palette, palette};
+use crate::shell::pages::label;
 use crate::ui::SectionHead;
+use crate::ui::theme::{Palette, palette};
 
 use super::*;
 

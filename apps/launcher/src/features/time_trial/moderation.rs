@@ -9,10 +9,10 @@ use swofty_core::timetrial::boards::{Run, check_number, format_time};
 use swofty_i18n::tr;
 
 use super::state::{Load, Verdict, View};
-use crate::pages::GUTTER;
-use crate::scale::px;
 use crate::shell::Shell;
-use crate::theme::{Palette, ScrollArea};
+use crate::shell::pages::GUTTER;
+use crate::ui::scale::px;
+use crate::ui::theme::{Palette, ScrollArea};
 use crate::ui::{EmptyState, selectable_row};
 
 pub(super) fn flag(p: Palette) -> Div {

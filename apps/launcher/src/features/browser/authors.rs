@@ -18,11 +18,11 @@ use swofty_core::catalog::search::Query;
 use swofty_i18n::{tr, trf, trn};
 
 use super::*;
-use crate::format;
-use crate::pages::{GUTTER, label, tag};
-use crate::scale::{Hit, px};
+use crate::shell::pages::{GUTTER, label, tag};
 use crate::shell::{Page, Shell};
-use crate::theme::Palette;
+use crate::ui::format;
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::Palette;
 
 const MORE_SHOWN: usize = 4;
 const MORE_INSTALLED: usize = 3;

@@ -44,7 +44,9 @@ pub(super) struct Opener {
 impl Opener {
     pub(super) fn open(self) -> Option<View> {
         View::open(self.owner, &self.data, &self.url, self.area)
-            .inspect_err(|e| crate::app_log::note(&format!("the {} ad slot didn't open: {e}", self.slot)))
+            .inspect_err(|e| {
+                crate::app::app_log::note(&format!("the {} ad slot didn't open: {e}", self.slot))
+            })
             .ok()
     }
 }
@@ -64,7 +66,7 @@ impl Backend {
             return None;
         };
         if let Err(e) = wry::webview_version() {
-            crate::app_log::note(&format!("no ad slots: WebView2 isn't available: {e}"));
+            crate::app::app_log::note(&format!("no ad slots: WebView2 isn't available: {e}"));
             return None;
         }
         Some(Self {
@@ -160,7 +162,7 @@ impl View {
             .with_url("about:blank")
             .build_as_child(&Popup(popup.0 as isize))?;
         if let Err(e) = view::allow_trackers(&webview) {
-            crate::app_log::note(&format!("an ad slot kept tracking prevention on: {e}"));
+            crate::app::app_log::note(&format!("an ad slot kept tracking prevention on: {e}"));
         }
         webview.load_url(url)?;
         let mut view = Self {

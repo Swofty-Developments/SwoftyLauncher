@@ -6,9 +6,9 @@ use swofty_i18n::{tr, trf};
 
 use super::labels::list;
 use super::state::Version;
-use crate::scale::{Hit, px};
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::Palette;
 
 impl Shell {
     pub(super) fn restore_panel(

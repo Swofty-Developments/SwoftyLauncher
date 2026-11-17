@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
@@ -10,9 +10,9 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_i18n::{tr, trf};
 
-use crate::shaders::ShadersView;
-use crate::theme::Palette;
+use crate::features::shaders::ShadersView;
 use crate::ui::ProgressBar;
+use crate::ui::theme::Palette;
 
 use super::control::clock;
 use super::{Effects, Status};

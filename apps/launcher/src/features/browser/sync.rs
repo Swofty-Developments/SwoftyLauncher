@@ -12,7 +12,7 @@ use swofty_i18n::{tr, trf, trn};
 
 use super::authors::View;
 use super::*;
-use crate::library::Source;
+use crate::services::library::Source;
 use crate::shell::Shell;
 
 pub(super) struct Fetched {
@@ -36,7 +36,7 @@ pub(super) fn images<'a>(
     wanted.dedup();
     wanted
         .into_iter()
-        .filter_map(|url| crate::news::image(dir, url).map(|i| (url.clone(), i)))
+        .filter_map(|url| crate::features::news::image(dir, url).map(|i| (url.clone(), i)))
         .collect()
 }
 

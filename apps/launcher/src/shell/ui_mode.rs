@@ -1,20 +1,20 @@
-use crate::notices::{Notification, Notify};
+use crate::shell::notices::{Notification, Notify};
 use gpui_kit::*;
 use swofty_core::session::UiMode;
 
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::ui::theme::Palette;
 use swofty_i18n::tr;
 
 impl Shell {
     pub(crate) fn start_ui_mode(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let mode = self.ui_mode.unwrap_or_default();
-        crate::scale::apply(mode, self.ui_scale, window, cx);
+        crate::ui::scale::apply(mode, self.ui_scale, window, cx);
         if !self.store.config().needs_onboarding() {
             window.focus(&self.root_focus, cx);
             return;
         }
-        let wizard = crate::onboarding::Onboarding::new(mode, cx);
+        let wizard = crate::features::onboarding::Onboarding::new(mode, cx);
         window.focus(&wizard.focus, cx);
         self.onboarding = Some(wizard);
     }
@@ -24,7 +24,7 @@ impl Shell {
         config.ui_mode = Some(mode);
         self.save_config_toast(&config, window, cx);
         self.ui_mode = config.ui_mode;
-        crate::scale::apply(mode, self.ui_scale, window, cx);
+        crate::ui::scale::apply(mode, self.ui_scale, window, cx);
         cx.notify();
     }
 
@@ -37,7 +37,7 @@ impl Shell {
         let at = f32::from(self.ui_scale.unwrap_or(100));
         self.ui_scale_slider
             .update(cx, |s, cx| s.set_value(at, window, cx));
-        crate::scale::apply(config.ui_mode_or_default(), self.ui_scale, window, cx);
+        crate::ui::scale::apply(config.ui_mode_or_default(), self.ui_scale, window, cx);
         cx.notify();
     }
 
@@ -48,7 +48,7 @@ impl Shell {
         cx: &mut Context<Self>,
     ) {
         if let Err(e) = self.store.save_config(config) {
-            crate::app_log::action("save settings").failed(&e);
+            crate::app::app_log::action("save settings").failed(&e);
             window.notify(Notification::error(e.to_string()), cx);
         }
     }
@@ -56,8 +56,8 @@ impl Shell {
 
 impl Shell {
     pub(crate) fn scale_rescue(&self, p: Palette, cx: &mut Context<Self>) -> Option<Stateful<Div>> {
-        (self.ui_scale.is_some() && crate::scale::current() < 0.6).then(|| {
-            let f = crate::scale::fixed;
+        (self.ui_scale.is_some() && crate::ui::scale::current() < 0.6).then(|| {
+            let f = crate::ui::scale::fixed;
             div()
                 .id("ui-scale-rescue")
                 .absolute()

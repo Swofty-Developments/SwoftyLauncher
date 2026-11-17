@@ -5,16 +5,16 @@
 use std::path::PathBuf;
 use std::process::Command;
 
-use crate::notices::{Notification, Notify};
-use crate::scale::{Hit, px};
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
-use crate::pages::label;
+use crate::shell::pages::label;
 use crate::shell::{PlayState, Shell};
-use crate::theme::Palette;
+use crate::ui::theme::Palette;
 use swofty_i18n::tr;
 
 #[derive(Default)]
@@ -54,7 +54,7 @@ impl Shell {
         let mut config = self.store.config();
         config.developer = on;
         if let Err(e) = self.store.save_config(&config) {
-            crate::app_log::action("save settings").failed(&e);
+            crate::app::app_log::action("save settings").failed(&e);
             window.notify(Notification::error(e.to_string()), cx);
         }
         self.developer_mode = config.developer;
@@ -86,7 +86,7 @@ impl Shell {
         let Some(folder) = self.developer.folder.clone() else {
             return;
         };
-        let Some(cli) = crate::game::cli_path(&self.store) else {
+        let Some(cli) = crate::services::game::cli_path(&self.store) else {
             window.notify(Notification::error(tr("The swofty command isn't installed")), cx);
             return;
         };
@@ -211,7 +211,7 @@ impl Shell {
 #[cfg(test)]
 mod tests {
     use super::{ACTIONS, dev_args, run_blocked};
-    use crate::game::Owner;
+    use crate::services::game::Owner;
     use crate::shell::PlayState;
 
     #[test]

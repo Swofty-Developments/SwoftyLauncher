@@ -8,12 +8,12 @@ use swofty_core::catalog::{self, Addon, Stage};
 use swofty_i18n::{tr, trf};
 
 use super::*;
-use crate::format;
+use crate::ui::format;
 
 /// An addon, the version to install and the profile to add it to.
 pub(super) type Request = (Addon, catalog::Version, String);
 
-pub(super) type QueuedJob = crate::download_queue::Job<Request>;
+pub(super) type QueuedJob = crate::services::download_queue::Job<Request>;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub(super) enum Progress {

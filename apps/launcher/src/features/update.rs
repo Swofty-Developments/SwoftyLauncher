@@ -2,8 +2,8 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use crate::notices::{Notification, Notify};
-use crate::scale::px;
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::spinner::Spinner;
 use gpui_kit::component::tooltip::Tooltip;
@@ -16,10 +16,10 @@ use swofty_core::managed;
 use swofty_core::update::{self, Install, Release};
 use swofty_core::updater::{self, Catalog, Gate, Part, Phase, Plan, Ran, Track};
 
-use crate::play_bar::link;
-use crate::sections::{Reporter, Shared};
+use crate::features::sections::{Reporter, Shared};
+use crate::shell::play_bar::link;
 use crate::shell::{PlayState, Shell};
-use crate::theme::Palette;
+use crate::ui::theme::Palette;
 use swofty_i18n::{tr, trf};
 
 const TICK: Duration = Duration::from_secs(5);
@@ -313,7 +313,7 @@ impl Shell {
             let ran = task.await;
             this.update_in(cx, |s, window, cx| {
                 if let Some(e) = s.finish_updates(ran, cx) {
-                    crate::app_log::action("update").failed(&e);
+                    crate::app::app_log::action("update").failed(&e);
                     window.notify(Notification::error(e).title(tr("Update failed")), cx);
                 }
             })
@@ -554,7 +554,7 @@ impl Shell {
             Gate::Installing => (
                 IconName::LoaderCircle,
                 match progress {
-                    Some(done) => trf!("Updating {percent}", percent = crate::format::percent(done)),
+                    Some(done) => trf!("Updating {percent}", percent = crate::ui::format::percent(done)),
                     None => tr("Updating…").into(),
                 },
                 detail,

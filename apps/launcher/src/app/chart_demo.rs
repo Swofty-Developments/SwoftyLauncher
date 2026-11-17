@@ -1,10 +1,8 @@
 //! Standalone gallery using the same renderer as addon Chart blocks. No game,
 //! profile, helper, or application store is opened in this mode.
-use crate::{
-    blocks::chart,
-    scale::px,
-    theme::{self, ScrollArea},
-};
+use crate::blocks::chart;
+use crate::ui::scale::px;
+use crate::ui::theme::{self, ScrollArea};
 use gpui_kit::component::{TitleBar, h_flex, v_flex};
 use gpui_kit::*;
 use swofty_core::view::*;

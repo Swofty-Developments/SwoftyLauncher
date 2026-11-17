@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::scale::px;
+use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Icon, h_flex, v_flex};
@@ -9,11 +9,11 @@ use gpui_kit::*;
 use swofty_core::known_problems::Diagnosis;
 use swofty_i18n::{tr, trf};
 
-use crate::discord::{BLURPLE, BLURPLE_HOVER, INVITE, LOGO};
-use crate::send_logs;
+use crate::dialogs::send_logs;
 use crate::shell::Shell;
-use crate::theme::Palette;
 use crate::ui::Overlay;
+use crate::ui::discord::{BLURPLE, BLURPLE_HOVER, INVITE, LOGO};
+use crate::ui::theme::Palette;
 
 /// A crash newer than this opens the modal by itself; an older one only shows
 /// in the play bar.

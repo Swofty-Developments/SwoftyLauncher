@@ -8,8 +8,8 @@ use std::sync::{Arc, LazyLock};
 use std::time::Duration;
 use swofty_i18n::{tr, trf};
 
-use crate::notices::{Notification, Notify};
-use crate::scale::px;
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
@@ -18,10 +18,10 @@ use gpui_kit::*;
 use serde::Deserialize;
 use swofty_core::app_control::Block;
 
-use crate::pages::GUTTER;
+use crate::shell::pages::GUTTER;
 use crate::shell::{Page, Shell};
-use crate::theme::{Palette, scrollbar_x};
 use crate::ui::Card;
+use crate::ui::theme::{Palette, scrollbar_x};
 
 mod art {
     include!(concat!(env!("OUT_DIR"), "/tools_art.rs"));
@@ -216,7 +216,7 @@ impl Shell {
                                 cx,
                             ),
                             Err(e) => {
-                                crate::app_log::action("start a tool").file(&path).failed(&e);
+                                crate::app::app_log::action("start a tool").file(&path).failed(&e);
                                 window.notify(
                                     match Block::of(&path, &e) {
                                         Some(b) => Notification::error(b.text()).autohide(false),

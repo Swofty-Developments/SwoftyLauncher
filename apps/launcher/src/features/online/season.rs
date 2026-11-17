@@ -1,9 +1,9 @@
 use super::model::*;
 use super::widgets::*;
 use super::{Load, Target};
-use crate::scale::px;
 use crate::shell::Shell;
-use crate::theme::{Palette, ScrollArea};
+use crate::ui::scale::px;
+use crate::ui::theme::{Palette, ScrollArea};
 use gpui_kit::component::input::Input;
 use gpui_kit::component::{h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
@@ -61,7 +61,7 @@ impl Shell {
         let rail = self.season_rail(id, p, cx);
         let main_width =
             self.content_width - 56. - 20. - RAIL_W - if wide { 20. + super::landing::RIGHT_W } else { 0. };
-        let ad = self.ad_banner(crate::ads::Unit::Online, main_width, p);
+        let ad = self.ad_banner(crate::features::ads::Unit::Online, main_width, p);
         let empty = rows.is_empty() && custom_rows.is_empty();
         let (narrow_ranking, side_ranking) = if wide {
             (None, Some(ranking))
@@ -301,7 +301,7 @@ impl Shell {
                     ))
                     .children(weathers.into_iter().map(|w| {
                         let on = f.weather.as_deref() == Some(w.as_str());
-                        let label = crate::format::title_case(&w);
+                        let label = crate::ui::format::title_case(&w);
                         self.filter_chip(format!("weather-{w}"), label, on, p, cx, move |t| {
                             t.weather = if on { None } else { Some(w.clone()) }
                         })

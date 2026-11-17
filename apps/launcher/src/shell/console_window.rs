@@ -1,4 +1,4 @@
-use crate::notices::{Notification, Notify};
+use crate::shell::notices::{Notification, Notify};
 use gpui_kit::*;
 
 use super::Shell;
@@ -6,7 +6,7 @@ use super::Shell;
 impl Shell {
     pub(crate) fn restore_console(&mut self, cx: &mut Context<Self>) {
         if self.store.config().console {
-            self.console = crate::console::open(self.store.clone(), cx.weak_entity(), cx);
+            self.console = crate::features::console::open(self.store.clone(), cx.weak_entity(), cx);
             cx.notify();
         }
     }
@@ -18,14 +18,14 @@ impl Shell {
             }),
             Some(handle) => self.console = Some(handle),
             None if on => {
-                self.console = crate::console::open(self.store.clone(), cx.weak_entity(), cx);
+                self.console = crate::features::console::open(self.store.clone(), cx.weak_entity(), cx);
             }
             None => {}
         }
         let mut config = self.store.config();
         config.console = self.console.is_some();
         if let Err(e) = self.store.save_config(&config) {
-            crate::app_log::action("save settings").failed(&e);
+            crate::app::app_log::action("save settings").failed(&e);
             window.notify(Notification::error(e.to_string()), cx);
         }
         cx.notify();

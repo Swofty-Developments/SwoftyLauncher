@@ -6,9 +6,9 @@ use gpui_kit::*;
 use swofty_i18n::tr;
 
 use super::Step;
-use crate::pages::logo;
-use crate::scale::px;
-use crate::theme::Palette;
+use crate::shell::pages::logo;
+use crate::ui::scale::px;
+use crate::ui::theme::Palette;
 
 const INTRO: Duration = Duration::from_millis(1500);
 /// The product name, which stays the same in every language.

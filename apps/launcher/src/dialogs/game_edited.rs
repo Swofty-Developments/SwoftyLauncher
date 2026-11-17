@@ -1,5 +1,5 @@
-use crate::notices::{Notification, Notify};
-use crate::scale::px;
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::dialog::DialogFooter;
@@ -11,10 +11,10 @@ use swofty_core::install::Source;
 use swofty_core::recovery::Blocked;
 use swofty_core::stock;
 
-use crate::discord::{BLURPLE, INVITE, LOGO};
-use crate::pages::{game_art, label};
+use crate::shell::pages::{game_art, label};
 use crate::shell::{Page, Shell};
-use crate::theme::{Palette, palette};
+use crate::ui::discord::{BLURPLE, INVITE, LOGO};
+use crate::ui::theme::{Palette, palette};
 use swofty_i18n::{tr, trf};
 
 const TITLE: &str = "Your game files have been edited";

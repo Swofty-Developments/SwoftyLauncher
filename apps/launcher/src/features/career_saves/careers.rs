@@ -7,11 +7,11 @@ use swofty_i18n::{tr, trf};
 
 use super::labels::listed_later;
 use super::state::{Entry, Imported, SavesView};
-use crate::format::ago_since as ago;
-use crate::pages::label;
-use crate::scale::px;
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::shell::pages::label;
+use crate::ui::format::ago_since as ago;
+use crate::ui::scale::px;
+use crate::ui::theme::Palette;
 
 use super::list::{list_box, placeholder};
 use crate::ui::Pill;

@@ -1,6 +1,6 @@
 use std::sync::{Arc, LazyLock};
 
-use crate::scale::px;
+use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{Icon, h_flex, v_flex};

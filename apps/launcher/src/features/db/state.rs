@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
 
-use crate::notices::Notification;
+use crate::shell::notices::Notification;
 use gpui_kit::component::input::InputState;
 use gpui_kit::*;
 use swofty_core::dbedit::draft::DraftFile;
@@ -61,7 +61,7 @@ pub(crate) struct Debounced {
 
 pub(super) type GameId = (PathBuf, Option<u64>, Option<String>);
 
-pub(super) fn game_id(install: &crate::game::Install) -> GameId {
+pub(super) fn game_id(install: &crate::services::game::Install) -> GameId {
     (install.dir.clone(), install.build_id, install.exe_version.clone())
 }
 
@@ -120,9 +120,9 @@ pub(crate) struct Db {
     pub slots: Slots,
     pub focus: Option<FocusHandle>,
     pub rows_scroll: UniformListScrollHandle,
-    pub rows_motion: crate::scroll::SmoothScroll,
+    pub rows_motion: crate::ui::scroll::SmoothScroll,
     pub list_scroll: UniformListScrollHandle,
-    pub list_motion: crate::scroll::SmoothScroll,
+    pub list_motion: crate::ui::scroll::SmoothScroll,
     pub grid_scroll: ScrollHandle,
     pub(super) pending_tab: Option<(String, String, String)>,
     pub(super) pending_link: Option<LinkSpec>,

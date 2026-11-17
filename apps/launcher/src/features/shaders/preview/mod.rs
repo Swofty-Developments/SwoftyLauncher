@@ -11,9 +11,9 @@ use gpui_kit::component::slider::SliderState;
 use gpui_kit::*;
 use swofty_preview::{ActiveInstance, ClipInfo};
 
-use crate::shaders::ShadersView;
-use crate::shaders::clips::ClipItem;
-use crate::shaders::triggers::Triggers;
+use crate::features::shaders::ShadersView;
+use crate::features::shaders::clips::ClipItem;
+use crate::features::shaders::triggers::Triggers;
 use worker::Worker;
 
 pub(super) const POLL: Duration = Duration::from_millis(30);

@@ -1,7 +1,7 @@
 use std::collections::BTreeSet;
 use std::time::{Duration, Instant};
 
-use crate::notices::Notification;
+use crate::shell::notices::Notification;
 use gpui_kit::*;
 use swofty_core::catalog::{self, Addon};
 use swofty_core::manifest::AddonManifest;
@@ -9,8 +9,8 @@ use swofty_core::update::current_version;
 use swofty_i18n::{tr, trf};
 
 use super::*;
-use crate::format;
 use crate::shell::Shell;
+use crate::ui::format;
 
 pub(super) fn install_failure_toast(name: &str, verb: Verb, refused: bool, error: String) -> Notification {
     Notification::error(error).title(verb.failure_title(name, refused))
@@ -72,14 +72,15 @@ impl Shell {
         if self.build.as_ref().is_some_and(|b| b.holds(id)) {
             self.browser
                 .toasts
-                .push(Notification::warning(crate::update::BUILDING));
+                .push(Notification::warning(crate::features::update::BUILDING));
             return false;
         }
         if let Some(existing) = self.browser.queue.jobs().iter().find(|job| {
             job.id == id
                 && matches!(
                     job.state,
-                    crate::download_queue::State::Queued | crate::download_queue::State::Active
+                    crate::services::download_queue::State::Queued
+                        | crate::services::download_queue::State::Active
                 )
         }) {
             return existing.request.1 == version;
@@ -104,7 +105,7 @@ impl Shell {
             .queue
             .jobs()
             .iter()
-            .filter(|job| job.state == crate::download_queue::State::Queued)
+            .filter(|job| job.state == crate::services::download_queue::State::Queued)
             .map(|job| (job.id.clone(), job.request.0.clone()))
             .collect();
         for (id, addon) in queued {
@@ -120,7 +121,7 @@ impl Shell {
                 .queue
                 .jobs()
                 .iter()
-                .find(|job| job.id == id && job.state == crate::download_queue::State::Active)
+                .find(|job| job.id == id && job.state == crate::services::download_queue::State::Active)
                 .expect("the scheduler just activated this job")
                 .request
                 .clone();
@@ -291,7 +292,7 @@ impl Shell {
     fn install_failed(&mut self, f: &Finished<'_>, e: swofty_core::Error, cx: &mut Context<Self>) {
         let refused = matches!(e, swofty_core::Error::Requires(_));
         let error = e.to_string();
-        crate::app_log::action(f.verb.action())
+        crate::app::app_log::action(f.verb.action())
             .addon(&f.addon.id)
             .failed(&error);
         self.record(

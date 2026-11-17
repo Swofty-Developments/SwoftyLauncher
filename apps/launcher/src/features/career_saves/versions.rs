@@ -11,11 +11,11 @@ use swofty_i18n::{tr, trf};
 use super::labels::{careers_held, short_block, steam_save_missing_text, version_label};
 use super::list::{list_box, placeholder};
 use super::state::{SavesView, Version};
-use crate::format::{ago_since as ago, size};
-use crate::pages::{GUTTER, label};
-use crate::scale::{Hit, px};
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::shell::pages::{GUTTER, label};
+use crate::ui::format::{ago_since as ago, size};
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::Palette;
 
 pub(super) const WHEN_W: f32 = 104.;
 pub(super) const SIZE_W: f32 = 64.;
@@ -210,7 +210,7 @@ impl Shell {
                     .ghost()
                     .tap_sm()
                     .label(tr("Open folder"))
-                    .on_click(cx.listener(move |_, _, _, cx| crate::reveal::show(&dir, cx))),
+                    .on_click(cx.listener(move |_, _, _, cx| crate::services::reveal::show(&dir, cx))),
             )
     }
 }

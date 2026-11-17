@@ -1,7 +1,7 @@
 pub(crate) mod save_area;
 pub(crate) mod unsupported_build;
 
-use crate::scale::px;
+use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
@@ -12,12 +12,12 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_i18n::{tr, trf, trn};
 
-use crate::format::{ago, duration};
-use crate::game::{self, Owner};
+use crate::services::game::{self, Owner};
+use crate::ui::format::{ago, duration};
 
 pub(crate) const HEIGHT: f32 = 72.;
 use crate::shell::{Page, PlayState, Shell};
-use crate::theme::Palette;
+use crate::ui::theme::Palette;
 use swofty_core::install::Source;
 use swofty_core::session::LaunchMode;
 use swofty_core::updater::Gate;
@@ -442,11 +442,9 @@ impl Shell {
             PlayState::Checking => row.text_color(p.text_muted).child(tr("Checking conflicts…")),
             PlayState::Preparing => row.child(dot(p.warning)).child(tr("Checking addons…")),
             PlayState::Ready => {
-                if let Some(n) = self
-                    .install
-                    .as_ref()
-                    .and_then(|i| crate::unsupported_build::notice(&i.dir.join(swofty_core::GAME_EXE)))
-                {
+                if let Some(n) = self.install.as_ref().and_then(|i| {
+                    crate::shell::play_bar::unsupported_build::notice(&i.dir.join(swofty_core::GAME_EXE))
+                }) {
                     return row
                         .items_start()
                         .child(div().mt(px(6.)).child(dot(p.warning)))
@@ -529,7 +527,7 @@ impl Shell {
                         div()
                             .min_w_0()
                             .truncate()
-                            .child(crate::career_saves::empty_save_short()),
+                            .child(crate::features::career_saves::empty_save_short()),
                     );
                 }
                 row
@@ -546,7 +544,7 @@ impl Shell {
         }
         let install = self.install.as_ref()?;
         let blocked = swofty_core::build_support::blocked(&install.dir.join(swofty_core::GAME_EXE));
-        let line = crate::save_area::line(
+        let line = crate::shell::play_bar::save_area::line(
             &self.library.profile,
             install.source,
             blocked.as_deref(),
@@ -874,7 +872,7 @@ impl Shell {
     }
 
     fn footer_links(&self, p: Palette, cx: &mut Context<Self>) -> impl IntoElement {
-        let tip = crate::send_logs::label();
+        let tip = crate::dialogs::send_logs::label();
         h_flex()
             .flex_shrink_0()
             .items_center()
@@ -889,8 +887,8 @@ impl Shell {
                     .text_color(p.text_muted)
                     .hover(move |s| s.text_color(p.text))
                     .tooltip(move |window, cx| Tooltip::new(tip).build(window, cx))
-                    .child(Icon::new(crate::send_logs::icon()).size(px(13.)))
-                    .child(crate::send_logs::short_label())
+                    .child(Icon::new(crate::dialogs::send_logs::icon()).size(px(13.)))
+                    .child(crate::dialogs::send_logs::short_label())
                     .on_click(cx.listener(|this, _, window, cx| this.send_logs(window, cx))),
             )
             .child(
@@ -913,7 +911,7 @@ impl Shell {
             .bg(p.chrome)
             .border_t_1()
             .border_color(p.border_variant)
-            .child(crate::pages::game_art(56., 56.).m(px(8.)))
+            .child(crate::shell::pages::game_art(56., 56.).m(px(8.)))
             .child(
                 h_flex()
                     .flex_1()

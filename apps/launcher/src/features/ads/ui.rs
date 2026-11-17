@@ -5,10 +5,10 @@
 //! pressing Play, even while [`VIDEO_LIVE`] is off.
 
 use super::Unit;
-use crate::scale::{Hit, px};
+use crate::features::time_trial::Load;
 use crate::shell::{PlayState, Shell};
-use crate::theme::Palette;
-use crate::time_trial::Load;
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::Palette;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Disableable, WindowExt, h_flex, v_flex};
@@ -71,7 +71,7 @@ impl Shell {
     }
 
     fn ad_fits(unit: Unit, width: f32) -> bool {
-        width * crate::scale::current() >= f32::from(unit.size().width)
+        width * crate::ui::scale::current() >= f32::from(unit.size().width)
     }
 
     fn ad_box(&self, unit: Unit, background: Hsla, p: Palette) -> Option<Div> {
@@ -92,7 +92,7 @@ impl Shell {
     /// The width, in layout units, the news page's side column needs for its ad.
     pub(crate) fn ad_rail_width(&self) -> Option<f32> {
         self.ads_allowed()
-            .then(|| f32::from(Unit::Home.size().width) / crate::scale::current() + 2.)
+            .then(|| f32::from(Unit::Home.size().width) / crate::ui::scale::current() + 2.)
     }
 
     /// Steps aside while the video is up, which floats over the page.
@@ -105,7 +105,7 @@ impl Shell {
 
     /// Whether `unit` fits in the page header, centred between the title and the buttons.
     pub(crate) fn ad_header_room(&self, unit: Unit) -> bool {
-        self.content_width * crate::scale::current() >= f32::from(unit.size().width) + 2. * HEADER_SIDE
+        self.content_width * crate::ui::scale::current() >= f32::from(unit.size().width) + 2. * HEADER_SIDE
     }
 
     /// `unit` for the middle of the page header, when it fits there.
@@ -181,7 +181,7 @@ impl Shell {
             v_flex()
                 .absolute()
                 .right(px(16.))
-                .bottom(px(crate::play_bar::HEIGHT + 16.))
+                .bottom(px(crate::shell::play_bar::HEIGHT + 16.))
                 .p(px(8.))
                 .gap(px(6.))
                 .rounded(px(10.))

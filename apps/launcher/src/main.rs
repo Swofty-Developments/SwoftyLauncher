@@ -8,26 +8,9 @@ mod services;
 mod shell;
 mod ui;
 
-#[allow(unused_imports)]
-use app::{app_log, chart_demo, dialog_keys, fonts as fallback_fonts};
-#[allow(unused_imports)]
-use dialogs::{
-    admin_needed, ban, crash as crash_modal, data_move, ea_app, found_data, game_edited, profiles, send_logs,
-    setup, tasks,
-};
-#[allow(unused_imports)]
-use features::{
-    addons, ads, browser, career_saves, console, db, developer, importer, multiplayer, news, onboarding,
-    online, sections, settings, shaders, support, time_trial, tools, update,
-};
-#[allow(unused_imports)]
-use services::{avatar, download_queue, game, library, play_checks, reveal};
-#[allow(unused_imports)]
-use shell::play_bar::{save_area, unsupported_build};
-#[allow(unused_imports)]
-use shell::{download_dock, notices, pages, play_bar, profile_panel, ui_mode};
-#[allow(unused_imports)]
-use ui::{colour_picker as colour, discord, format, scale, scroll, theme};
+use app::{app_log, chart_demo, dialog_keys, fonts};
+use shell::pages;
+use ui::theme;
 
 use gpui_kit::component::{TitleBar, v_flex};
 use gpui_kit::*;
@@ -45,7 +28,7 @@ fn main() {
     app_log::step("app runtime ready, entering the event loop");
     app.run(move |cx| {
         app_log::step("event loop running");
-        fallback_fonts::install(cx);
+        fonts::install(cx);
         gpui_kit::init(cx);
         app_log::step("ui kit ready");
         theme::init(cx);

@@ -32,13 +32,13 @@ pub(super) fn card_careers(root: &Path, store: &Store, game: Option<&Game>, prof
 
 pub(super) fn build_saves(
     store: &Store,
-    install: Option<&crate::game::Install>,
+    install: Option<&crate::services::game::Install>,
     name: &str,
     game_running: bool,
 ) -> Built {
     let started = std::time::Instant::now();
     let built = build_saves_untimed(store, install, name, game_running);
-    crate::app_log::note(&format!(
+    crate::app::app_log::note(&format!(
         "saves: page loaded in {} ms ({} snapshots)",
         started.elapsed().as_millis(),
         built.view.versions.len()
@@ -48,7 +48,7 @@ pub(super) fn build_saves(
 
 pub(super) fn build_saves_untimed(
     store: &Store,
-    install: Option<&crate::game::Install>,
+    install: Option<&crate::services::game::Install>,
     name: &str,
     game_running: bool,
 ) -> Built {
@@ -63,7 +63,7 @@ pub(super) fn build_saves_untimed(
         .as_ref()
         .is_some_and(|l| matches!(l.layout, vault::Layout::Launcher | vault::Layout::LauncherEa));
     let vault = loc.as_ref().and_then(|l| Vault::of(&root, l).ok());
-    let game = crate::sections::game(store, install);
+    let game = crate::features::sections::game(store, install);
     let entries = card_careers(&root, store, game.as_ref(), &name);
     let snaps = vault.as_ref().and_then(|v| v.list().ok()).unwrap_or_default();
     let has_save = loc.as_ref().is_some_and(launcher_saves::has_files);

@@ -8,11 +8,11 @@ use swofty_core::update::current_version;
 use swofty_i18n::{tr, trf, trn};
 
 use super::{day, since};
-use crate::format;
-use crate::pages::{label, stat};
-use crate::scale::{Hit, px};
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::shell::pages::{label, stat};
+use crate::ui::format;
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::Palette;
 use crate::ui::{Callout, ProgressBar};
 
 pub(super) fn detail_about(a: &Addon, mono: &SharedString, p: Palette) -> Div {
@@ -28,7 +28,7 @@ pub(super) fn detail_about(a: &Addon, mono: &SharedString, p: Palette) -> Div {
                 .into_any_element(),
         ]
     } else {
-        crate::news::render_markdown(&format!("browser-{}", a.id), &a.description, p, mono)
+        crate::features::news::render_markdown(&format!("browser-{}", a.id), &a.description, p, mono)
     };
     v_flex()
         .p(px(24.))

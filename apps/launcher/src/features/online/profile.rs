@@ -1,10 +1,10 @@
 use super::model::*;
 use super::widgets::*;
 use super::{Load, Target};
-use crate::format::{iso_date, lap_time};
-use crate::scale::px;
 use crate::shell::Shell;
-use crate::theme::{Palette, ScrollArea};
+use crate::ui::format::{iso_date, lap_time};
+use crate::ui::scale::px;
+use crate::ui::theme::{Palette, ScrollArea};
 use gpui_kit::component::{h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;

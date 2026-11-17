@@ -4,7 +4,7 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::{Instant, SystemTime};
 
-use crate::notices::Notification;
+use crate::shell::notices::Notification;
 use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::*;
 use swofty_core::catalog::publishers::{self, Creator, Profile};
@@ -14,8 +14,8 @@ use swofty_i18n::{tr, trf, trn};
 
 use super::authors::View;
 use super::*;
-use crate::scale::px;
 use crate::shell::Shell;
+use crate::ui::scale::px;
 
 pub(crate) struct Browser {
     pub(crate) addons: Vec<Addon>,
@@ -39,13 +39,13 @@ pub(crate) struct Browser {
     pub(super) facet_counts: RefCell<HashMap<Facet, usize>>,
     pub(super) needs_cache: RefCell<HashMap<String, AddonNeeds>>,
     pub(super) grid_layout: (Arc<[usize]>, usize, bool, u32),
-    pub(crate) smooth: crate::scroll::SmoothScroll,
+    pub(crate) smooth: crate::ui::scroll::SmoothScroll,
     pub(super) details: HashMap<String, Addon>,
     pub(super) loading: BTreeSet<String>,
     pub(super) asked: HashSet<String>,
     pub(super) history: HashSet<String>,
     pub(super) working: HashMap<String, Job>,
-    pub(super) queue: crate::download_queue::Queue<Request>,
+    pub(super) queue: crate::services::download_queue::Queue<Request>,
     pub(super) failed: HashMap<String, String>,
     pub(super) refused: BTreeSet<String>,
     pub(super) batch: Option<Batch>,
@@ -112,7 +112,7 @@ impl Browser {
             history: HashSet::new(),
             working: HashMap::new(),
             queue: {
-                let mut queue = crate::download_queue::Queue::default();
+                let mut queue = crate::services::download_queue::Queue::default();
                 queue.set_limit(swofty_core::store::Store::new(root).config().download_jobs());
                 queue
             },

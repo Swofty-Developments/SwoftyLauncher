@@ -8,12 +8,12 @@ use std::time::Duration;
 use swofty_core::support::{BIO_MAX, Goal, Kind, Supporter, format_date, tier_name};
 use swofty_i18n::{tr, trf};
 
-use crate::pages::GUTTER;
-use crate::scale::px;
+use crate::features::time_trial::Load;
 use crate::shell::Shell;
-use crate::theme::{Palette, ScrollArea};
-use crate::time_trial::Load;
+use crate::shell::pages::GUTTER;
 use crate::ui::Overlay;
+use crate::ui::scale::px;
+use crate::ui::theme::{Palette, ScrollArea};
 
 const LIST_WIDTH: f32 = 470.;
 const YELLOW: u32 = 0xffc933;

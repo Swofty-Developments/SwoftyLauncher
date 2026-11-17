@@ -1,10 +1,10 @@
 use super::drag::{Dragged, Dragging, NESTED};
-use crate::library::{AddonItem, Source, Type};
-use crate::pages::{addon_icon, badge, logo, track_badge};
-use crate::scale::{Hit, px};
+use crate::services::library::{AddonItem, Source, Type};
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::shell::pages::{addon_icon, badge, logo, track_badge};
 use crate::ui::facet::checkbox;
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::Palette;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::tooltip::Tooltip;
@@ -203,7 +203,7 @@ impl Shell {
             h_flex()
                 .gap(px(10.))
                 .items_center()
-                .child(crate::pages::tag(tr("Shader config"), p))
+                .child(crate::shell::pages::tag(tr("Shader config"), p))
                 .child(
                     Button::new(SharedString::from(format!("open-shaders-{id}")))
                         .ghost()

@@ -1,9 +1,9 @@
 use gpui_kit::component::v_flex;
 use gpui_kit::*;
 
-use crate::scale::px;
-use crate::theme::Palette;
 use crate::ui::row;
+use crate::ui::scale::px;
+use crate::ui::theme::Palette;
 
 pub(super) fn list_box(rows: Vec<AnyElement>, p: Palette) -> Div {
     v_flex()

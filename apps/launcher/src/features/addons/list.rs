@@ -1,10 +1,10 @@
 use super::drag::{Dragged, drop_mark};
 use super::model::{AddonListItem, anchor};
-use crate::library::AddonItem;
-use crate::pages::{badge, label};
-use crate::scale::{Hit, px};
+use crate::services::library::AddonItem;
 use crate::shell::Shell;
-use crate::theme::{Palette, palette};
+use crate::shell::pages::{badge, label};
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::{Palette, palette};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Icon, h_flex, v_flex};
@@ -64,7 +64,7 @@ impl Shell {
         let (id, name) = (u.id.clone(), u.name.clone());
         let reason = format!(
             "{}.",
-            crate::update::sentence(&trf!("it {reason}", reason = u.reason))
+            crate::features::update::sentence(&trf!("it {reason}", reason = u.reason))
         );
         h_flex()
             .id(SharedString::from(format!("broken-{id}")))

@@ -4,8 +4,8 @@ use std::io::{Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-use crate::notices::{Notification, Notify};
-use crate::scale::{Hit, px};
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::scroll::Scrollbar;
@@ -16,10 +16,10 @@ use swofty_core::session::{LOADER_LOG, SessionRecord};
 use swofty_core::store::Store;
 use swofty_i18n::{tr, trn};
 
-use crate::pages::badge;
-use crate::play_bar::link;
 use crate::shell::Shell;
-use crate::theme::{Palette, palette};
+use crate::shell::pages::badge;
+use crate::shell::play_bar::link;
+use crate::ui::theme::{Palette, palette};
 
 const MAX_LINES: usize = 20_000;
 const BACKLOG: u64 = 4 << 20;

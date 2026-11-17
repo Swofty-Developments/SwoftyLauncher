@@ -117,7 +117,7 @@ impl SavesPage {
         self.notice_done = true;
         let due = launcher_saves::notice_due(root);
         if due && let Err(e) = launcher_saves::mark_seen(root) {
-            crate::app_log::action("record the saves notice").failed(&e);
+            crate::app::app_log::action("record the saves notice").failed(&e);
         }
         due
     }

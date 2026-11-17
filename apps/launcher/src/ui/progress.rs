@@ -1,8 +1,8 @@
 use gpui_kit::*;
 
 use super::tokens::Tone;
-use crate::scale::px;
-use crate::theme::palette;
+use crate::ui::scale::px;
+use crate::ui::theme::palette;
 
 /// A thin bar filled to `fraction` (0 to 1).
 #[derive(IntoElement)]

@@ -8,8 +8,8 @@ use super::host;
 use super::jobs::{RetryAction, requested_version_available, retry_action};
 use super::model::{Job, Progress, Verb};
 use super::updates::{due_updates, held_failure, takes_updates};
-use crate::format;
-use crate::library::{AddonItem, Source};
+use crate::services::library::{AddonItem, Source};
+use crate::ui::format;
 
 fn versions(list: &[&str]) -> Vec<Version> {
     list.iter()
@@ -62,7 +62,7 @@ fn step(id: &str, size: u64) -> Step {
 
 #[test]
 fn queued_install_reports_partial_failure_and_retries_without_duplication() {
-    use crate::download_queue::{Queue, State};
+    use crate::services::download_queue::{Queue, State};
     use std::collections::BTreeSet;
     let mut queue = Queue::default();
     assert!(queue.enqueue("root".into(), "1.0.0", BTreeSet::new()));

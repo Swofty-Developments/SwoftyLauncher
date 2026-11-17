@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use crate::scale::px;
+use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::component::v_flex;
@@ -163,7 +163,7 @@ impl Shell {
                 .background_executor()
                 .spawn(async move {
                     let catalog = guarded(|| {
-                        let game = crate::sections::game(&store, Some(&install))
+                        let game = crate::features::sections::game(&store, Some(&install))
                             .ok_or(tr("The game folder could not be read."))?;
                         Catalog::open(&store, &game)
                             .map_err(|e| trf!("The game database could not be read: {e}", e = e))
@@ -551,14 +551,14 @@ impl Shell {
         }
     }
 
-    pub(crate) fn db_loading(&self, text: &str, p: crate::theme::Palette) -> AnyElement {
+    pub(crate) fn db_loading(&self, text: &str, p: crate::ui::theme::Palette) -> AnyElement {
         v_flex()
             .flex_1()
             .items_center()
             .justify_center()
             .gap(px(10.))
             .pb(px(48.))
-            .child(crate::pages::badge(IconName::Database, 44., p))
+            .child(crate::shell::pages::badge(IconName::Database, 44., p))
             .child(
                 div()
                     .pt(px(8.))

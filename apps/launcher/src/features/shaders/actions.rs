@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::scale::px;
+use crate::ui::scale::px;
 use gpui_kit::component::WindowExt;
 use gpui_kit::component::button::ButtonVariant;
 use gpui_kit::component::input::{InputEvent, InputState};

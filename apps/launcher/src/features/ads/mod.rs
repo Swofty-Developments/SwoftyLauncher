@@ -214,7 +214,7 @@ impl Ads {
         let Some(backend) = Backend::start(window, data) else {
             return Self::default();
         };
-        crate::app_log::step("ad slots ready");
+        crate::app::app_log::step("ad slots ready");
         let host = Rc::new(RefCell::new(Host {
             base,
             backend,

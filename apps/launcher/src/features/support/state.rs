@@ -4,8 +4,8 @@ use swofty_core::support::{BIO_MAX, Claimed, Goal, Kind, Me, Supporter, dollars_
 use swofty_core::timetrial::api::Api;
 use swofty_i18n::tr;
 
+use crate::features::time_trial::Load;
 use crate::shell::Shell;
-use crate::time_trial::Load;
 
 pub(super) struct Inputs {
     pub bio: Entity<InputState>,

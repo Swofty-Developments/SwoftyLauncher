@@ -29,8 +29,8 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use swofty_core::catalog;
 use swofty_i18n::trf;
 
-use crate::format;
-use crate::news::format_date;
+use crate::features::news::format_date;
+use crate::ui::format;
 
 use filters::*;
 use grid::*;

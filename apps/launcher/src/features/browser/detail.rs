@@ -7,11 +7,11 @@ use swofty_i18n::{tr, trf, trn};
 
 use super::detail_cards::detail_about;
 use super::*;
-use crate::format;
-use crate::pages::{GUTTER, label, tag};
-use crate::scale::px;
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::shell::pages::{GUTTER, label, tag};
+use crate::ui::format;
+use crate::ui::scale::px;
+use crate::ui::theme::Palette;
 
 /// How many of `versions`, newest first, the Addons page shows before its older-versions toggle.
 pub(super) fn shown_versions(versions: &[&catalog::Version], installed: &semver::Version) -> usize {
@@ -103,7 +103,7 @@ impl Shell {
                         d.child(div().text_color(p.text_placeholder).child(tr("No changelog")))
                     })
                     .when(!v.changelog.trim().is_empty(), |d| {
-                        d.children(crate::news::render_markdown(
+                        d.children(crate::features::news::render_markdown(
                             &format!("{key}-{}", v.version),
                             &v.changelog,
                             p,
@@ -182,7 +182,7 @@ impl Shell {
                 .text_size(px(12.))
                 .text_color(p.text_placeholder)
                 .hover(move |s| s.text_color(p.text_muted))
-                .child(crate::pages::chevron(open, p))
+                .child(crate::shell::pages::chevron(open, p))
                 .child(if open {
                     tr("Hide older versions").to_owned()
                 } else {

@@ -3,15 +3,15 @@ mod browse;
 mod changes;
 mod unnamed;
 
-use crate::scale::px;
+use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::Icon;
 use gpui_kit::*;
 use swofty_core::dbedit::{Catalog, Edit, NodeId, NodeKind, RowCopy};
 
 use super::{ADDABLE, Nav, hex, type_name};
-use crate::format::title_case;
-use crate::theme::Palette;
+use crate::ui::format::title_case;
+use crate::ui::theme::Palette;
 
 pub(super) const LIST_H: f32 = 44.;
 pub(super) const GRID_COL: f32 = 150.;

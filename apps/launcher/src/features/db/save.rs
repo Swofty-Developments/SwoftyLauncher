@@ -2,8 +2,8 @@ use std::cell::Cell;
 use std::path::PathBuf;
 use std::rc::Rc;
 
-use crate::notices::{Notification, Notify};
-use crate::scale::{Hit, px};
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariant, ButtonVariants};
 use gpui_kit::component::dialog::DialogFooter;
@@ -20,7 +20,7 @@ use swofty_i18n::{tr, trf, trn};
 
 use super::{Then, guarded, text};
 use crate::shell::Shell;
-use crate::theme::{Palette, palette};
+use crate::ui::theme::{Palette, palette};
 use crate::ui::{Callout, Field};
 
 /// The author last typed, else one from an installed DB Editor addon; never
@@ -223,7 +223,7 @@ impl Shell {
         let pkg = match guarded(|| draft.save_as_addon(&store, &catalog, details).map_err(text)) {
             Ok(p) => p,
             Err(e) => {
-                crate::app_log::action("db editor: save the addon").failed(&e);
+                crate::app::app_log::action("db editor: save the addon").failed(&e);
                 window.notify(Notification::error(e).title(tr("Could not save the addon")), cx);
                 return false;
             }
@@ -252,7 +252,7 @@ impl Shell {
             return false;
         };
         if let Some(e) = self.db.addon_error.clone() {
-            crate::app_log::action("db editor: save").failed(&e);
+            crate::app::app_log::action("db editor: save").failed(&e);
             window.notify(Notification::error(e).title(tr("Could not save")), cx);
             return false;
         }
@@ -266,7 +266,7 @@ impl Shell {
                 true
             }
             Err(e) => {
-                crate::app_log::action("db editor: save").failed(&e);
+                crate::app::app_log::action("db editor: save").failed(&e);
                 window.notify(
                     Notification::error(e).title(trf!("Could not save {name}", name = name)),
                     cx,
@@ -400,7 +400,7 @@ impl Shell {
         let pkg = match guarded(|| Package::open(&self.store, &id).map_err(text)) {
             Ok(p) => p,
             Err(e) => {
-                crate::app_log::action("db editor: read the addon").failed(&e);
+                crate::app::app_log::action("db editor: read the addon").failed(&e);
                 window.notify(Notification::error(e).title(tr("Could not read the addon")), cx);
                 return;
             }
@@ -477,7 +477,7 @@ impl Shell {
                             true
                         }
                         Err(e) => {
-                            crate::app_log::action("db editor: save the details").failed(&e);
+                            crate::app::app_log::action("db editor: save the details").failed(&e);
                             window.notify(Notification::error(e).title(tr("Could not save the details")), cx);
                             false
                         }
@@ -553,7 +553,7 @@ impl Shell {
                             );
                         }
                         Err(e) => {
-                            crate::app_log::action("db editor: export").failed(&e);
+                            crate::app::app_log::action("db editor: export").failed(&e);
                             window.notify(Notification::error(e).title(tr("Export failed")), cx)
                         }
                     })
@@ -737,7 +737,7 @@ impl Shell {
 
     fn db_game_export_to(&mut self, pick: Pick, file: String, window: &mut Window, cx: &mut Context<Self>) {
         let store = self.store.clone();
-        let Some(game) = crate::sections::game(&store, self.install.as_ref()) else {
+        let Some(game) = crate::features::sections::game(&store, self.install.as_ref()) else {
             window.notify(
                 Notification::error(tr("F1 25 was not found.")).title(tr("Export failed")),
                 cx,
@@ -766,7 +766,7 @@ impl Shell {
                         let mut body = trf!(
                             "{changes} · {size} · saved to {path}",
                             changes = trn(done.changes, "{count} change", "{count} changes"),
-                            size = crate::format::size(done.bytes),
+                            size = crate::ui::format::size(done.bytes),
                             path = out.display()
                         );
                         if !done.skipped.is_empty() {
@@ -785,7 +785,7 @@ impl Shell {
                         window.notify(note.title(tr("Exported game files")), cx);
                     }
                     Err(e) => {
-                        crate::app_log::action("db editor: export").failed(&e);
+                        crate::app::app_log::action("db editor: export").failed(&e);
                         window.notify(Notification::error(e).title(tr("Export failed")), cx)
                     }
                 })

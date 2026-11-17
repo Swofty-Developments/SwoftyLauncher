@@ -190,7 +190,7 @@ fn track_card(server: &str, content: &str, t: TrackDto, custom: bool) -> TrackCa
 pub fn track_title(code: &str) -> String {
     let code = code.rsplit(':').next().unwrap_or(code);
     code.split(['_', '-'])
-        .map(crate::format::title_case)
+        .map(crate::ui::format::title_case)
         .collect::<Vec<_>>()
         .join(" ")
 }

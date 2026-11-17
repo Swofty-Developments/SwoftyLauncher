@@ -1,6 +1,6 @@
-use crate::scale::{Hit, px};
 use crate::shell::{Shell, SliderSlot};
-use crate::theme::Palette;
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::Palette;
 use crate::ui::{Toggle, label};
 use gpui_kit::component::button::Button;
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};

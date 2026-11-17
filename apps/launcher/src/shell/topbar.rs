@@ -1,6 +1,6 @@
-use crate::pages::{avatar, logo, wordmark};
-use crate::scale::{Hit, fixed, px};
-use crate::theme::Palette;
+use crate::shell::pages::{avatar, logo, wordmark};
+use crate::ui::scale::{Hit, fixed, px};
+use crate::ui::theme::Palette;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
@@ -173,7 +173,7 @@ impl Shell {
     fn open_popover(&mut self, which: Popover, cx: &mut Context<Self>) {
         self.popover = (self.popover != Some(which)).then_some(which);
         if self.popover == Some(Popover::Notices) {
-            cx.update_global(|n: &mut crate::notices::Notices, _| {
+            cx.update_global(|n: &mut crate::shell::notices::Notices, _| {
                 n.mark_read();
                 n.dismiss_popups();
             });
@@ -301,7 +301,7 @@ impl Shell {
                 .into_any_element()
         };
         let action_focus = |a: usize| focus == Some(Tab::ALL.len() + a);
-        let notices = self.notices().len() + cx.global::<crate::notices::Notices>().unread();
+        let notices = self.notices().len() + cx.global::<crate::shell::notices::Notices>().unread();
         crate::ui::title_bar(p)
             .h(fixed(BAR_HEIGHT))
             .pl(fixed(0.))
@@ -494,8 +494,8 @@ impl Shell {
                     .text_size(fixed(13.))
                     .font_weight(FontWeight::SEMIBOLD)
                     .text_color(rgb(0xffffff))
-                    .bg(rgb(crate::discord::BLURPLE))
-                    .hover(|s| s.bg(rgb(crate::discord::BLURPLE_HOVER)))
+                    .bg(rgb(crate::ui::discord::BLURPLE))
+                    .hover(|s| s.bg(rgb(crate::ui::discord::BLURPLE_HOVER)))
                     .when(self.mp_busy || self.game_busy(), |d| d.opacity(0.5))
                     .when(self.game_busy(), |d| {
                         d.tooltip(|window, cx| {
@@ -505,7 +505,7 @@ impl Shell {
             )
             .child(
                 svg()
-                    .data(crate::discord::LOGO)
+                    .data(crate::ui::discord::LOGO)
                     .size(fixed(18.))
                     .text_color(rgb(0xffffff)),
             )
@@ -821,7 +821,8 @@ impl Shell {
 
     fn notices_panel(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let status = self.notices();
-        let history: Vec<crate::notices::Entry> = cx.global::<crate::notices::Notices>().entries().to_vec();
+        let history: Vec<crate::shell::notices::Entry> =
+            cx.global::<crate::shell::notices::Notices>().entries().to_vec();
         let empty = status.is_empty() && history.is_empty();
         let mut rows: Vec<AnyElement> = Vec::new();
         for (i, n) in status.into_iter().enumerate() {
@@ -909,7 +910,7 @@ impl Shell {
                                 .tap_sm()
                                 .label(tr("Clear all"))
                                 .on_click(cx.listener(|this, _, _, cx| {
-                                    cx.update_global(|n: &mut crate::notices::Notices, _| n.clear());
+                                    cx.update_global(|n: &mut crate::shell::notices::Notices, _| n.clear());
                                     this.popover = None;
                                     cx.notify();
                                 })),
@@ -920,8 +921,8 @@ impl Shell {
             .into_any_element()
     }
 
-    fn history_row(&self, e: &crate::notices::Entry, p: Palette) -> AnyElement {
-        use crate::notices::Kind;
+    fn history_row(&self, e: &crate::shell::notices::Entry, p: Palette) -> AnyElement {
+        use crate::shell::notices::Kind;
         let (icon, tone) = match e.note.kind {
             Kind::Info => (IconName::Info, p.accent),
             Kind::Success => (IconName::CircleCheck, p.success),
@@ -933,7 +934,7 @@ impl Shell {
             .text_size(px(11.))
             .text_color(p.text_placeholder)
             .flex_shrink_0()
-            .child(crate::format::ago(e.at.elapsed().as_secs_f64()));
+            .child(crate::ui::format::ago(e.at.elapsed().as_secs_f64()));
         let (head, body) = match e.note.title.clone() {
             Some(title) => (title, Some(e.note.message.clone())),
             None => (e.note.message.clone(), None),
@@ -1000,8 +1001,8 @@ impl Shell {
             return None;
         }
         let now = std::time::Instant::now();
-        let popups: Vec<crate::notices::Entry> = cx
-            .global::<crate::notices::Notices>()
+        let popups: Vec<crate::shell::notices::Entry> = cx
+            .global::<crate::shell::notices::Notices>()
             .popups(now)
             .into_iter()
             .cloned()
@@ -1031,7 +1032,7 @@ impl Shell {
                     BAR_HEIGHT
                         + 6.
                         + if self.notch_beside {
-                            crate::download_dock::NOTCH_HEIGHT + 6.
+                            crate::shell::download_dock::NOTCH_HEIGHT + 6.
                         } else {
                             0.
                         },
@@ -1052,7 +1053,7 @@ impl Shell {
                         .occlude()
                         .child(self.history_row(e, p))
                         .on_click(cx.listener(move |_, _, _, cx| {
-                            cx.update_global(|n: &mut crate::notices::Notices, _| n.dismiss_popup(id));
+                            cx.update_global(|n: &mut crate::shell::notices::Notices, _| n.dismiss_popup(id));
                             cx.notify();
                         }))
                 }))

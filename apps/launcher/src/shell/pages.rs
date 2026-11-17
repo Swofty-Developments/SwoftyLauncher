@@ -1,6 +1,6 @@
-use crate::scale::px;
 use crate::shell::{Page, Shell};
-use crate::theme::{Palette, ScrollArea};
+use crate::ui::scale::px;
+use crate::ui::theme::{Palette, ScrollArea};
 use crate::ui::{EmptyState, PageHeader, Toggle, row, row_head};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;

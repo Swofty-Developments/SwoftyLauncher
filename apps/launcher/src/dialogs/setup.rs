@@ -4,8 +4,8 @@
 
 use std::time::Duration;
 
-use crate::notices::{Notification, Notify};
-use crate::scale::px;
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::dialog::DialogFooter;
@@ -18,12 +18,12 @@ use swofty_core::setup;
 use swofty_core::stock;
 use swofty_core::store::Store;
 
-use crate::game::Install;
-use crate::game_edited::discord_link;
-use crate::pages::{game_art, label};
+use crate::dialogs::game_edited::discord_link;
+use crate::services::game::Install;
 use crate::shell::Shell;
-use crate::theme::{Palette, palette};
+use crate::shell::pages::{game_art, label};
 use crate::ui::Callout;
+use crate::ui::theme::{Palette, palette};
 use swofty_i18n::{tr, trf};
 
 pub(crate) const RISK: &str = "Because of how Swofty Launcher hooks the game's engine, which lets addons run \
@@ -132,7 +132,7 @@ impl SetupWizard {
                         w.step = Step::Verify;
                     }
                     Err(e) => {
-                        crate::app_log::action("first play setup: put the game folder back").failed(&e);
+                        crate::app::app_log::action("first play setup: put the game folder back").failed(&e);
                         w.error = Some(trf!("Swofty couldn't put the game folder back: {e}", e = e))
                     }
                 }
@@ -181,7 +181,7 @@ impl SetupWizard {
             return;
         }
         if let Err(e) = setup::finish(&self.store.root) {
-            crate::app_log::action("first play setup: finish").failed(&e);
+            crate::app::app_log::action("first play setup: finish").failed(&e);
             self.error = Some(e.to_string());
             cx.notify();
             return;
@@ -215,7 +215,7 @@ impl SetupWizard {
             }
             source => format!(
                 "{} replaces them with the game's own files. Keep their downloads to add them back as addons.",
-                crate::game_edited::repair(source).restores
+                crate::dialogs::game_edited::repair(source).restores
             ),
         };
         v_flex()
@@ -266,7 +266,7 @@ impl SetupWizard {
     }
 
     fn verify(&self, p: Palette) -> Div {
-        let repair = crate::game_edited::repair(self.install.source);
+        let repair = crate::dialogs::game_edited::repair(self.install.source);
         let intro = match (self.install.source, self.other_mods) {
             (Source::Unknown, _) => {
                 "Swofty put back the files it changed and records the game's original files \
@@ -716,7 +716,7 @@ impl Shell {
                 .show_cancel(true)
                 .on_ok(move |_, window, cx| {
                     if let Err(e) = setup::record_notice(&store.root) {
-                        crate::app_log::action("first play setup: notice").failed(&e);
+                        crate::app::app_log::action("first play setup: notice").failed(&e);
                         window.notify(Notification::error(e.to_string()), cx);
                         return false;
                     }

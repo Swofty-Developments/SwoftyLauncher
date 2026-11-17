@@ -1,8 +1,8 @@
-use crate::library::ProfileItem;
-use crate::pages::avatar;
-use crate::scale::{Hit, px};
+use crate::services::library::ProfileItem;
+use crate::shell::pages::avatar;
 use crate::shell::{Page, PlayState, Shell};
-use crate::theme::{Palette, ScrollArea};
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::{Palette, ScrollArea};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
@@ -28,7 +28,7 @@ impl Shell {
     }
 
     pub(crate) fn profiles_shown(&self) -> bool {
-        self.profiles_open && self.layout_width / crate::scale::current() >= SIDEBAR_MIN_LAYOUT
+        self.profiles_open && self.layout_width / crate::ui::scale::current() >= SIDEBAR_MIN_LAYOUT
     }
 
     pub(crate) fn profiles_width(&self) -> f32 {

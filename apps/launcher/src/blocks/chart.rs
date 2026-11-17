@@ -7,7 +7,8 @@ use gpui_kit::*;
 use swofty_core::view::*;
 use swofty_i18n::{tr, trf};
 
-use crate::{scale::px, theme::Palette};
+use crate::ui::scale::px;
+use crate::ui::theme::Palette;
 
 const COLORS: [u32; 10] = [
     0x57b7ff, 0xffa52f, 0x28cbb2, 0xf26787, 0xb99aff, 0xffdc72, 0x77c65e, 0xee9be0, 0x99aaba, 0xe18d60,

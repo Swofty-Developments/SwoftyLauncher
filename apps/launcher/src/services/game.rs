@@ -88,7 +88,7 @@ pub struct Probe {
     pub launch_failed: Option<launch::Failure>,
     pub busy: Option<Busy>,
     pub(crate) banner_profile: String,
-    pub(crate) banner: Option<Option<crate::career_saves::Banner>>,
+    pub(crate) banner: Option<Option<crate::features::career_saves::Banner>>,
     pub(crate) saves_marker: bool,
     pub(crate) saves_print: Option<u64>,
 }
@@ -108,7 +108,7 @@ fn watch_vault(store: &Store, processes: &[GameProcess]) {
     if !lines.is_empty() {
         BANNER_STALE.store(true, Ordering::Relaxed);
     }
-    lines.iter().for_each(|l| crate::app_log::note(l));
+    lines.iter().for_each(|l| crate::app::app_log::note(l));
 }
 
 static BANNER_STALE: AtomicBool = AtomicBool::new(false);
@@ -123,7 +123,7 @@ pub(crate) fn banner_stale() -> bool {
 pub fn vault_at_start(store: &Store) {
     if !game_processes().is_empty() {
         if swofty_core::launcher_saves::marker(&store.root).is_none() {
-            crate::app_log::note(
+            crate::app::app_log::note(
                 "saves: F1 25 is running; the import of the Steam save into the launcher saves waits for the next launcher start",
             );
         }
@@ -133,13 +133,13 @@ pub fn vault_at_start(store: &Store) {
         return;
     };
     for l in vault::watch::at_launcher_start(&store.root) {
-        crate::app_log::note(&l);
+        crate::app::app_log::note(&l);
     }
     let game = vault::Location::active(&store.root);
     for l in
         swofty_core::save_stall::sweep(store, game.as_ref(), vault::restore::Running::now(), vault::now())
     {
-        crate::app_log::note(&l);
+        crate::app::app_log::note(&l);
     }
     import_first_start(store);
     BANNER_STALE.store(true, Ordering::Relaxed);
@@ -167,7 +167,7 @@ fn log_import(store: &Store, profiles: &[String], running: vault::restore::Runni
         vault::now(),
         log_miss,
     ) {
-        crate::app_log::note(&l);
+        crate::app::app_log::note(&l);
     }
 }
 
@@ -245,8 +245,8 @@ pub fn probe(
     watch_vault(store, &processes);
     retry_import(store, &processes);
     let (requests, merged) = merge_requests(store, processes.is_empty(), seen);
-    let saves_print =
-        saves_open.then(|| crate::career_saves::saves_print(&store.root, profile, !processes.is_empty()));
+    let saves_print = saves_open
+        .then(|| crate::features::career_saves::saves_print(&store.root, profile, !processes.is_empty()));
     Probe {
         install: rediscover.then(|| discover_all(store)),
         processes,
@@ -261,7 +261,8 @@ pub fn probe(
         launch_failed: launch::Failure::read(&store.root),
         busy: build_state(store),
         banner_profile: profile.to_owned(),
-        banner: banner_due.then(|| crate::career_saves::SavesPage::banner_for(&store.root, profile)),
+        banner: banner_due
+            .then(|| crate::features::career_saves::SavesPage::banner_for(&store.root, profile)),
         saves_marker: swofty_core::launcher_saves::marker(&store.root).is_some(),
         saves_print,
         launch_stage: std::fs::read_to_string(store.root.join(steam_client::STAGE_FILE))

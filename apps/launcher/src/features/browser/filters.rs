@@ -5,7 +5,7 @@ use swofty_core::manifest::{Category, Platform};
 use swofty_core::update::current_version;
 use swofty_i18n::tr;
 
-use crate::library::Type;
+use crate::services::library::Type;
 use crate::shell::Shell;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

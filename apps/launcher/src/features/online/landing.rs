@@ -1,11 +1,11 @@
 use super::model::*;
 use super::widgets::*;
 use super::{Load, Target};
-use crate::format::lap_time;
-use crate::scale::Hit;
-use crate::scale::px;
 use crate::shell::Shell;
-use crate::theme::{Palette, ScrollArea};
+use crate::ui::format::lap_time;
+use crate::ui::scale::Hit;
+use crate::ui::scale::px;
+use crate::ui::theme::{Palette, ScrollArea};
 use gpui_kit::SharedString;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::{Icon, h_flex, v_flex};
@@ -65,7 +65,7 @@ impl Shell {
         let ranking = self.rank_column("all", tr("GLOBAL RANKING"), &mut items, p, cx);
         self.online.items = items;
         let left_width = self.content_width - 56. - if wide { 20. + RIGHT_W } else { 0. };
-        let ad = self.ad_banner(crate::ads::Unit::Online, left_width, p);
+        let ad = self.ad_banner(crate::features::ads::Unit::Online, left_width, p);
         let left = v_flex()
             .gap(px(10.))
             .child(h_flex().h(px(34.)).items_center().child(self.tt_category_bar(

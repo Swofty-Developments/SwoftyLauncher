@@ -8,8 +8,8 @@ use swofty_i18n::{tr, trf};
 use swofty_preview::ActiveInstance;
 use swofty_shaders::Rule;
 
-use crate::shaders::clips::{self, ClipItem};
-use crate::shaders::{Mode, ShadersView};
+use crate::features::shaders::clips::{self, ClipItem};
+use crate::features::shaders::{Mode, ShadersView};
 
 use super::worker::{Done, Job, Worker, compile_effects, previewable, work};
 use super::{Effects, POLL, Status};

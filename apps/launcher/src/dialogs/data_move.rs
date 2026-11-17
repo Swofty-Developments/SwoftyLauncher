@@ -7,8 +7,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use crate::notices::{Notification, Notify};
-use crate::scale::{Hit, px};
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::component::button::Button;
 use gpui_kit::component::{WindowExt, h_flex, v_flex};
 use gpui_kit::*;
@@ -17,10 +17,10 @@ use swofty_core::data_move::{self, Location, Moved, Ops, Plan};
 use swofty_core::launcher::Progress;
 use swofty_i18n::{tr, trf};
 
-use crate::format::size_coarse as size;
 use crate::shell::{PlayState, Shell};
-use crate::theme::Palette;
 use crate::ui::LockPanel;
+use crate::ui::format::size_coarse as size;
+use crate::ui::theme::Palette;
 
 const POLL: Duration = Duration::from_millis(120);
 
@@ -151,7 +151,7 @@ impl Shell {
     }
 
     pub(crate) fn data_move_failed(&mut self, why: &str, window: &mut Window, cx: &mut Context<Self>) {
-        crate::app_log::note(&format!("data move: {why}"));
+        crate::app::app_log::note(&format!("data move: {why}"));
         let why = why.to_owned();
         window.open_alert_dialog(cx, move |alert, _, _| {
             alert
@@ -164,7 +164,7 @@ impl Shell {
 
     fn confirm_data_move(&mut self, plan: Plan, window: &mut Window, cx: &mut Context<Self>) {
         let shell = cx.entity().downgrade();
-        let p = crate::theme::palette(cx);
+        let p = crate::ui::theme::palette(cx);
         window.open_alert_dialog(cx, move |alert, _, _| {
             let shell = shell.clone();
             let plan = plan.clone();
@@ -214,7 +214,7 @@ impl Shell {
         }
         let feed: Feed = Arc::default();
         let cancel = Arc::new(AtomicBool::new(false));
-        crate::app_log::note(&format!(
+        crate::app::app_log::note(&format!(
             "data move: {} to {} ({})",
             plan.from.display(),
             plan.to.display(),
@@ -261,7 +261,7 @@ impl Shell {
     ) {
         match result {
             Ok(moved) => {
-                crate::app_log::note(&format!("data move: copied, restarting ({:?})", moved.method));
+                crate::app::app_log::note(&format!("data move: copied, restarting ({:?})", moved.method));
                 if let Some(m) = &mut self.moving {
                     m.stage = Stage::Restarting;
                 }
@@ -338,7 +338,7 @@ impl Shell {
         };
         match result {
             Ok(done) => {
-                crate::app_log::note(&format!("data move: now in {}", done.to.display()));
+                crate::app::app_log::note(&format!("data move: now in {}", done.to.display()));
                 let text = match &done.leftover {
                     None if done.adopted => {
                         trf!(
@@ -361,7 +361,7 @@ impl Shell {
                 window.notify(note, cx);
             }
             Err(e) => {
-                crate::app_log::note(&format!("data move: not finished: {e}"));
+                crate::app::app_log::note(&format!("data move: not finished: {e}"));
                 window.notify(
                     Notification::error(trf!(
                         "Your addons and saves were not moved. They are where they were. {error}",

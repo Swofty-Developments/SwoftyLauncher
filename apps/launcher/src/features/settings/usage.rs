@@ -3,16 +3,16 @@
 
 use std::time::SystemTime;
 
-use crate::notices::{Notification, Notify};
-use crate::scale::px;
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::px;
 use gpui_kit::component::WindowExt;
 use gpui_kit::component::button::ButtonVariant;
 use gpui_kit::*;
 use swofty_core::data_usage::{self, KEEP_FOR, KEEP_SESSIONS};
 use swofty_i18n::{tr, trf};
 
-use crate::format::size_coarse as size;
 use crate::shell::Shell;
+use crate::ui::format::size_coarse as size;
 
 /// The link cache Play keeps in the game folder when the data folder is on
 /// another drive.
@@ -28,7 +28,7 @@ pub struct GameCopy {
 pub fn clear_logs_at_start(root: &std::path::Path) {
     let done = data_usage::prune_sessions(&root.join("sessions"), KEEP_SESSIONS, KEEP_FOR, SystemTime::now());
     if done.sessions > 0 {
-        crate::app_log::note(&format!(
+        crate::app::app_log::note(&format!(
             "start: cleared {} old session logs ({})",
             done.sessions,
             size(done.bytes)
@@ -73,7 +73,7 @@ impl Shell {
         let mut config = self.store.config();
         config.language = (code != swofty_i18n::ENGLISH).then(|| code.to_owned());
         if let Err(e) = self.store.save_config(&config) {
-            crate::app_log::action("save settings").failed(&e);
+            crate::app::app_log::action("save settings").failed(&e);
             window.notify(Notification::error(e.to_string()), cx);
         }
         swofty_i18n::set_language(Some(code));
@@ -173,7 +173,7 @@ impl Shell {
                 .await;
             this.update_in(cx, |s, window, cx| {
                 s.settings.clearing = false;
-                crate::app_log::note(&format!(
+                crate::app::app_log::note(&format!(
                     "settings: cleared the game drive copy ({})",
                     size(freed)
                 ));
@@ -211,7 +211,7 @@ impl Shell {
                 .await;
             this.update_in(cx, |s, window, cx| {
                 s.settings.clearing = false;
-                crate::app_log::note(&format!(
+                crate::app::app_log::note(&format!(
                     "settings: cleared {} old session logs ({})",
                     done.sessions,
                     size(done.bytes)

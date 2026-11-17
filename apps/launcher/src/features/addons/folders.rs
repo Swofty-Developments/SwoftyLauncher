@@ -1,8 +1,8 @@
 use super::drag::{Dragged, Dragging};
-use crate::notices::{Notification, Notify};
-use crate::scale::{Hit, px};
+use crate::shell::notices::{Notification, Notify};
 use crate::shell::{Prompt, Shell};
-use crate::theme::Palette;
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::Palette;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Icon, h_flex};
@@ -18,7 +18,7 @@ impl Shell {
         match self.store.save_folders(&f) {
             Ok(()) => self.library.folders = f,
             Err(e) => {
-                crate::app_log::action("save folders").failed(&e);
+                crate::app::app_log::action("save folders").failed(&e);
                 window.notify(Notification::error(e.to_string()), cx)
             }
         }
@@ -77,7 +77,7 @@ impl Shell {
         let mut f = self.library.folders.clone();
         f.remove(id);
         if let Err(e) = self.store.save_folders(&f) {
-            crate::app_log::action("save folders").failed(&e);
+            crate::app::app_log::action("save folders").failed(&e);
             window.notify(Notification::error(e.to_string()), cx);
             return;
         }

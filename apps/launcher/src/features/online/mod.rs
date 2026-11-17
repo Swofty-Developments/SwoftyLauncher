@@ -520,7 +520,7 @@ impl Shell {
                         swofty_i18n::tr("Added. Open Theatre in the game to watch it.").to_owned(),
                     ),
                     Err(e) => {
-                        crate::app_log::action("add a lap's replay to the game").failed(&e);
+                        crate::app::app_log::action("add a lap's replay to the game").failed(&e);
                         (
                             false,
                             if e == swofty_core::timetrial::game_replay::NO_REPLAY {
@@ -590,11 +590,11 @@ impl Shell {
 impl Shell {
     pub(crate) fn online_page(
         &mut self,
-        p: crate::theme::Palette,
+        p: crate::ui::theme::Palette,
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        use crate::scale::px;
+        use crate::ui::scale::px;
         use gpui_kit::component::v_flex;
         self.online_enter(cx);
         if self.online.search.is_none() {

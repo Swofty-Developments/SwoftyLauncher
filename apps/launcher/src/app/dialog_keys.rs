@@ -56,7 +56,7 @@ fn bind_arrows(cx: &mut App) {
                 KeyBinding::load(key, a, Some(context.clone()), false, None, cx).map_err(|e| e.to_string())
             }) {
             Ok(binding) => bindings.push(binding),
-            Err(e) => crate::app_log::note(&format!("ui: no {key} key in dialogs: {e}")),
+            Err(e) => crate::app::app_log::note(&format!("ui: no {key} key in dialogs: {e}")),
         }
     }
     cx.bind_keys(bindings);

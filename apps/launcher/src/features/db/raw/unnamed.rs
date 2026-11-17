@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::input::Input;
 use gpui_kit::component::{Icon, h_flex, v_flex};
@@ -8,8 +8,8 @@ use gpui_kit::*;
 use swofty_i18n::{tr, trn};
 
 use crate::shell::Shell;
-use crate::theme::{Palette, palette};
 use crate::ui::SectionHead;
+use crate::ui::theme::{Palette, palette};
 
 impl Shell {
     pub(crate) fn db_unnamed_view(&mut self, p: Palette, cx: &mut Context<Self>) -> AnyElement {

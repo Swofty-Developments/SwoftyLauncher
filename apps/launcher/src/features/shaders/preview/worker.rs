@@ -225,7 +225,7 @@ impl Session {
     fn set_effects(&mut self, effects: Vec<CompiledEffect>, rules: usize) -> Done {
         match gpu(&mut self.preview, &mut self.gpu_error) {
             Ok(p) => {
-                crate::app_log::note(&describe(&effects, rules));
+                crate::app::app_log::note(&describe(&effects, rules));
                 p.set_effects(effects);
                 Done::Ack
             }
@@ -266,7 +266,7 @@ pub(super) fn work(jobs: Receiver<Job>, done: Sender<Done>) {
             if let Done::Failed { message, .. } = &reply
                 && logged_failure.as_ref() != Some(message)
             {
-                crate::app_log::note(&format!("[shaders] preview: {message}"));
+                crate::app::app_log::note(&format!("[shaders] preview: {message}"));
                 logged_failure = Some(message.clone());
             }
             if done.send(reply).is_err() {
@@ -313,11 +313,11 @@ pub(super) fn gpu<'a>(
     if preview.is_none() {
         match Preview::new() {
             Ok(p) => {
-                crate::app_log::note(&format!("[shaders] preview runs on {}", p.adapter_name()));
+                crate::app::app_log::note(&format!("[shaders] preview runs on {}", p.adapter_name()));
                 *preview = Some(p);
             }
             Err(e) => {
-                crate::app_log::note(&format!("[shaders] preview has no GPU: {e}"));
+                crate::app::app_log::note(&format!("[shaders] preview has no GPU: {e}"));
                 *error = Some(e.clone());
                 return Err(e);
             }
@@ -389,7 +389,7 @@ pub(super) fn compile_effects(
 ) -> Result<(Vec<CompiledEffect>, Vec<String>), String> {
     let (effects, warnings) = swofty_core::shaders::compile_all(store, Target::Spirv);
     for warning in &warnings {
-        crate::app_log::note(&format!("[shaders] preview: {warning}"));
+        crate::app::app_log::note(&format!("[shaders] preview: {warning}"));
     }
     if effects.is_empty() {
         return Err(warnings
@@ -399,7 +399,7 @@ pub(super) fn compile_effects(
     }
     let unavailable = unavailable_effects(catalog.effects.iter().map(|e| e.id.as_str()), &effects);
     if !unavailable.is_empty() {
-        crate::app_log::note(&format!(
+        crate::app::app_log::note(&format!(
             "[shaders] preview: not available in the preview: {}",
             unavailable.join(", ")
         ));

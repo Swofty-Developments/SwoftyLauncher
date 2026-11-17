@@ -1,4 +1,4 @@
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
@@ -7,10 +7,10 @@ use gpui_kit::*;
 use swofty_core::dbedit::{LinkSpec, Module};
 use swofty_i18n::{tr, trf};
 
-use crate::db::{LinkState, Nav, icon_named};
-use crate::pages::label;
+use crate::features::db::{LinkState, Nav, icon_named};
 use crate::shell::Shell;
-use crate::theme::{Palette, SCROLLBAR_GAP, ScrollArea};
+use crate::shell::pages::label;
+use crate::ui::theme::{Palette, SCROLLBAR_GAP, ScrollArea};
 
 pub(crate) fn nav_row(
     id: impl Into<SharedString>,

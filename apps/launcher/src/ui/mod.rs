@@ -1,9 +1,6 @@
 //! Shared UI components. Pages build on these instead of keeping their own copies
 //! of the header, empty state, callout, progress bar, overlay, card and pill.
-//! Sizes go through [`crate::scale::px`], colours come from [`crate::theme::Palette`].
-
-// Pages adopt these one at a time, so part of the set has no caller yet.
-#![allow(dead_code, unused_imports)]
+//! Sizes go through [`crate::ui::scale::px`], colours come from [`crate::ui::theme::Palette`].
 
 mod atoms;
 mod callout;
@@ -18,7 +15,9 @@ pub(crate) mod format;
 mod header;
 mod lock;
 mod overlay;
+#[allow(dead_code)]
 mod pill;
+#[allow(dead_code)]
 mod progress;
 mod row;
 pub(crate) mod scale;
@@ -26,6 +25,7 @@ pub(crate) mod scroll;
 mod section;
 mod segmented;
 pub(crate) mod theme;
+#[allow(dead_code)]
 pub mod tokens;
 
 pub(crate) use atoms::*;

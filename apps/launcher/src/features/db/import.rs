@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use crate::notices::{Notification, Notify};
+use crate::shell::notices::{Notification, Notify};
 use gpui_kit::*;
 use swofty_core::dbedit::ImportReport;
 use swofty_core::dbedit::package::{self, Incoming};
@@ -102,7 +102,7 @@ impl Shell {
                 self.db_leave(then, window, cx);
             }
             Err(e) => {
-                crate::app_log::action("db editor: import")
+                crate::app::app_log::action("db editor: import")
                     .file(std::path::Path::new(&file))
                     .failed(&e);
                 window.notify(

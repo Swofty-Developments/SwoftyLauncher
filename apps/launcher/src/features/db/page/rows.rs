@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::{Input, InputState};
@@ -13,10 +13,10 @@ use swofty_core::dbedit::{Cell, FieldSpec, Kind, Module, ModuleRow};
 use swofty_i18n::{tr, trf, trn};
 
 use super::{MOVE_W, NAME_W, ROW_H};
-use crate::db::fields::{curve_rating, detail_shell, hex_rgb, is_on, list_items, swatch};
-use crate::db::{Nav, ViewSlot, bool_text, clean, kind_of, swap_field};
+use crate::features::db::fields::{curve_rating, detail_shell, hex_rgb, is_on, list_items, swatch};
+use crate::features::db::{Nav, ViewSlot, bool_text, clean, kind_of, swap_field};
 use crate::shell::Shell;
-use crate::theme::{Palette, ScrollArea, palette};
+use crate::ui::theme::{Palette, ScrollArea, palette};
 
 impl Shell {
     pub(super) fn db_rows(

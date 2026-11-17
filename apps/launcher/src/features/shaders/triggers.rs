@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::time::Duration;
 
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
@@ -14,8 +14,8 @@ use swofty_shaders::rules::{Op, Rule, Signals};
 use swofty_shaders::signals::{Signal, SignalKind, signal};
 
 use super::ShadersView;
-use crate::theme::Palette;
 use crate::ui::Chip;
+use crate::ui::theme::Palette;
 
 const FADE_TICK: Duration = Duration::from_millis(33);
 const SLIDER_WIDTH: f32 = 120.;

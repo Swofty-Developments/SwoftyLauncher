@@ -86,7 +86,7 @@ pub fn apply(mode: UiMode, percent: Option<u16>, window: &mut Window, cx: &mut A
     window.set_rem_size(gpui_kit::px(BASE_REM * scale));
     Theme::update(cx, |t| {
         t.font_size = gpui_kit::px(BASE_FONT * scale);
-        t.notification.margins.bottom = gpui_kit::px((crate::play_bar::HEIGHT + 16.) * scale);
+        t.notification.margins.bottom = gpui_kit::px((crate::shell::play_bar::HEIGHT + 16.) * scale);
     });
     Theme::sync_base(cx);
     if mode.is_tv() {

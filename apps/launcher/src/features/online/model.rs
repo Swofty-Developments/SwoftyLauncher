@@ -608,7 +608,7 @@ pub fn gap_text(ms: u64, leader: u64) -> String {
     if ms <= leader {
         return String::new();
     }
-    format!("+{}", crate::format::sector_time(ms - leader))
+    format!("+{}", crate::ui::format::sector_time(ms - leader))
 }
 
 pub fn score_text(points: f32) -> String {

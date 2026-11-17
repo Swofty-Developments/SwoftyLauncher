@@ -1,7 +1,7 @@
 //! The Documentation tab: every effect a config can use, from the core library and installed addons,
 //! with its options, ranges and defaults.
 
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{ActiveTheme, h_flex, v_flex};
@@ -11,8 +11,8 @@ use swofty_i18n::{tr, trf, trn};
 use swofty_shaders::{Effect, Origin, Param, ParamKind, Value};
 
 use super::ShadersView;
-use crate::pages::{label, tag};
-use crate::theme::{Palette, ScrollArea};
+use crate::shell::pages::{label, tag};
+use crate::ui::theme::{Palette, ScrollArea};
 
 /// The effect library's page in the launcher docs.
 pub(super) const DOCS_URL: &str = "https://f1.swofty.net/reference/addons/shader-effects";

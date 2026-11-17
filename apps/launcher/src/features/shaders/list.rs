@@ -1,4 +1,4 @@
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::{Input, InputState};
@@ -10,9 +10,9 @@ use swofty_core::shaders::{ConfigEntry, ConfigRef};
 use swofty_i18n::tr;
 
 use super::{ShadersView, list_width};
-use crate::pages::{label, tag};
-use crate::theme::{Palette, ScrollArea};
+use crate::shell::pages::{label, tag};
 use crate::ui::selectable_row;
+use crate::ui::theme::{Palette, ScrollArea};
 
 #[derive(Default)]
 pub(super) struct ListState {

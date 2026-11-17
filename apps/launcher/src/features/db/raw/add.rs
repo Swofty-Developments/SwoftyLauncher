@@ -1,7 +1,7 @@
-use crate::notices::Notify;
+use crate::shell::notices::Notify;
 use std::cell::Cell;
 
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::component::button::Button;
 use gpui_kit::component::input::{Input, InputState};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
@@ -12,8 +12,8 @@ use swofty_i18n::{tr, trf};
 
 use super::{ADDABLE, type_name};
 use crate::shell::Shell;
-use crate::theme::palette;
 use crate::ui::Field;
+use crate::ui::theme::palette;
 
 impl Shell {
     pub(crate) fn db_add_dialog(&mut self, at: NodeId, window: &mut Window, cx: &mut Context<Self>) {
@@ -89,15 +89,15 @@ impl Shell {
                     match result {
                         Ok(()) => {
                             window.notify(
-                                crate::notices::Notification::success(trf!("Added {p}", p = p)),
+                                crate::shell::notices::Notification::success(trf!("Added {p}", p = p)),
                                 cx,
                             );
                             true
                         }
                         Err(e) => {
-                            crate::app_log::action("db editor: add a key").failed(&e);
+                            crate::app::app_log::action("db editor: add a key").failed(&e);
                             window.notify(
-                                crate::notices::Notification::error(e).title(tr("Could not add the key")),
+                                crate::shell::notices::Notification::error(e).title(tr("Could not add the key")),
                                 cx,
                             );
                             false

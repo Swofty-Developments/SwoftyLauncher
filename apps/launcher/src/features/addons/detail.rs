@@ -1,11 +1,11 @@
 use super::DETAIL_W;
 use super::needs::{Need, NeedKind};
 use super::row::{experimental_labels, fallback_icon};
-use crate::library::{AddonItem, Changes, Source, Type};
-use crate::pages::{addon_icon, chevron, fact, label, logo, tag};
-use crate::scale::{Hit, px};
+use crate::services::library::{AddonItem, Changes, Source, Type};
 use crate::shell::Shell;
-use crate::theme::{Palette, ScrollArea};
+use crate::shell::pages::{addon_icon, chevron, fact, label, logo, tag};
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::{Palette, ScrollArea};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::tooltip::Tooltip;

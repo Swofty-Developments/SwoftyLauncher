@@ -4,10 +4,10 @@ use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::*;
 use swofty_i18n::{tr, trf};
 
-use crate::scale::px;
 use crate::shell::Shell;
-use crate::theme::Palette;
 use crate::ui::Overlay;
+use crate::ui::scale::px;
+use crate::ui::theme::Palette;
 
 impl Shell {
     pub(crate) fn ban_overlay(&self, p: Palette, cx: &mut Context<Self>) -> Option<impl IntoElement> {

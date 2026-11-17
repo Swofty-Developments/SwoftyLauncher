@@ -1,9 +1,9 @@
 use super::SPLIT_AT;
-use crate::notices::{Notification, Notify};
-use crate::pages::{GUTTER, label};
-use crate::scale::{Hit, px};
+use crate::shell::notices::{Notification, Notify};
+use crate::shell::pages::{GUTTER, label};
 use crate::shell::{Page, Shell};
-use crate::theme::Palette;
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::Palette;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
@@ -67,7 +67,7 @@ impl Shell {
                             store.install_addons(path).into_iter().map(move |r| match r {
                                 Ok(m) => Ok((swofty_core::tracks::left_out_lines(store, &m), m)),
                                 Err(e) => {
-                                    crate::app_log::action("install addon").file(path).failed(&e);
+                                    crate::app::app_log::action("install addon").file(path).failed(&e);
                                     Err(format!("{name}: {e}"))
                                 }
                             })

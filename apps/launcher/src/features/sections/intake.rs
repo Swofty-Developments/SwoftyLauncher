@@ -3,8 +3,8 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 
-use crate::notices::{Notification, Notify};
-use crate::scale::px;
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariant, ButtonVariants};
 use gpui_kit::component::{Icon, WindowExt, h_flex, v_flex};
@@ -17,10 +17,10 @@ use swofty_core::store::Store;
 use swofty_i18n::{tr, trf, trn};
 
 use super::*;
-use crate::game::Install;
-use crate::pages::badge;
+use crate::services::game::Install;
+use crate::shell::pages::badge;
 use crate::shell::{Page, Shell};
-use crate::theme::Palette;
+use crate::ui::theme::Palette;
 
 // When each installed addon's folder last changed, by addon id.
 pub(super) fn installed(store: &Store) -> BTreeMap<String, SystemTime> {
@@ -126,7 +126,9 @@ pub(super) fn import_all(
                                 version = m.version
                             )),
                             Err(e) => {
-                                crate::app_log::action("install addon").file(&path).failed(&e);
+                                crate::app::app_log::action("install addon")
+                                    .file(&path)
+                                    .failed(&e);
                                 failed.push(format!("{}: {e}", file_name(&path)))
                             }
                         }
@@ -146,7 +148,7 @@ pub(super) fn import_all(
                 match result {
                     Ok(lines) => done.extend(lines),
                     Err(e) => {
-                        crate::app_log::action("import")
+                        crate::app::app_log::action("import")
                             .addon(&id)
                             .files(&paths)
                             .failed(&e);
@@ -244,7 +246,7 @@ impl Shell {
         let more = paths.len().saturating_sub(SHOWN);
         let shell = cx.entity().downgrade();
         window.open_alert_dialog(cx, move |alert, _, cx| {
-            let p = crate::theme::palette(cx);
+            let p = crate::ui::theme::palette(cx);
             let shell = shell.clone();
             let files = v_flex()
                 .gap(px(8.))
@@ -316,7 +318,7 @@ impl Shell {
                             IconName::BookOpen,
                             tr("Making a Swofty addon?"),
                             tr("An addon is a folder with a swofty.json."),
-                            crate::tools::web_link(
+                            crate::features::tools::web_link(
                                 "not-addon-docs",
                                 tr("Read the addon docs"),
                                 ADDON_DOCS,

@@ -6,11 +6,11 @@ use swofty_core::vault::{Notice, Vault};
 use swofty_i18n::tr;
 
 use super::banner_data::Kind;
-use crate::pages::GUTTER;
-use crate::scale::{Hit, px};
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::shell::pages::GUTTER;
 use crate::ui::Callout;
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::Palette;
 
 impl Shell {
     pub(crate) fn saves_banner(&self, on_page: bool, _: Palette, cx: &mut Context<Self>) -> Option<Div> {

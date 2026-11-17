@@ -1,9 +1,9 @@
 use super::images::Art;
 use super::model::*;
 use super::{Load, Online, Target};
-use crate::scale::{Hit, px};
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::Palette;
 use crate::ui::{Callout, EmptyState, Segmented};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
@@ -108,7 +108,7 @@ impl Shell {
             .find(|a| a.manifest.id == addon)
             .and_then(|a| a.icon.as_ref())
         {
-            return crate::pages::addon_icon(icon, size, p);
+            return crate::shell::pages::addon_icon(icon, size, p);
         }
         if let Some(d) = self.catalog_icon_of(addon, size, p) {
             return d;
@@ -120,7 +120,7 @@ impl Shell {
                 .rounded(px(size * 0.22))
                 .overflow_hidden()
                 .child(img(image.clone()).size_full().object_fit(ObjectFit::Cover)),
-            _ => crate::pages::badge(IconName::Trophy, size, p),
+            _ => crate::shell::pages::badge(IconName::Trophy, size, p),
         }
     }
 

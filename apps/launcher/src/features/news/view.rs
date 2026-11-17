@@ -1,10 +1,10 @@
 use super::feed::{Post, format_date};
 use super::markdown::{Block, SITE, Span, safe_url};
 use super::state::{NewsPane, NewsRow, STACK_BELOW, StackedRow};
-use crate::pages::GUTTER;
-use crate::scale::{Hit, px};
+use crate::shell::pages::GUTTER;
 use crate::shell::{Page, Shell};
-use crate::theme::{Palette, ScrollArea};
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::{Palette, ScrollArea};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{ActiveTheme, Disableable, h_flex, v_flex};
@@ -320,7 +320,7 @@ impl Shell {
         let stacked = self.content_width < STACK_BELOW;
         let side = (self.content_width * 0.32).clamp(260., 380.);
         let side = self.ad_rail_width().map_or(side, |w| side.max(w));
-        let show_banner = !self.is_card_dismissed(crate::discord::BANNER_CARD_ID);
+        let show_banner = !self.is_card_dismissed(crate::ui::discord::BANNER_CARD_ID);
         self.news_scroll.sync(&self.news, short, stacked, show_banner);
         if stacked {
             return v_flex()
@@ -354,10 +354,10 @@ impl Shell {
             .pb(px(20.))
             .gap(px(16.))
             .when(show_banner, |d| {
-                d.child(crate::discord::banner(
+                d.child(crate::ui::discord::banner(
                     short,
                     cx.listener(|this, _, _, cx| {
-                        this.dismiss_card(crate::discord::BANNER_CARD_ID, cx);
+                        this.dismiss_card(crate::ui::discord::BANNER_CARD_ID, cx);
                     }),
                 ))
             })
@@ -402,7 +402,7 @@ impl Shell {
                 list(
                     scroll.clone(),
                     cx.processor(|this, i, _, cx| {
-                        let p = crate::theme::palette(cx);
+                        let p = crate::ui::theme::palette(cx);
                         let mono = cx.theme().mono_font_family.clone();
                         div()
                             .w_full()
@@ -539,7 +539,7 @@ impl Shell {
                         list(
                             scroll.clone(),
                             cx.processor(|this, i, _, cx| {
-                                let p = crate::theme::palette(cx);
+                                let p = crate::ui::theme::palette(cx);
                                 let row = this
                                     .news_scroll
                                     .release_indices
@@ -568,7 +568,7 @@ impl Shell {
                 list(
                     scroll.clone(),
                     cx.processor(move |this, i, _, cx| {
-                        let p = crate::theme::palette(cx);
+                        let p = crate::ui::theme::palette(cx);
                         let mono = cx.theme().mono_font_family.clone();
                         let news = this.news_scroll.rows.len();
                         let releases = this.news_scroll.release_indices.len();
@@ -576,10 +576,10 @@ impl Shell {
                         let row = match this.news_scroll.stacked_rows[i] {
                             StackedRow::Banner => div()
                                 .pb(px(16.))
-                                .child(crate::discord::banner(
+                                .child(crate::ui::discord::banner(
                                     short,
                                     cx.listener(|this, _, _, cx| {
-                                        this.dismiss_card(crate::discord::BANNER_CARD_ID, cx);
+                                        this.dismiss_card(crate::ui::discord::BANNER_CARD_ID, cx);
                                     }),
                                 ))
                                 .into_any_element(),

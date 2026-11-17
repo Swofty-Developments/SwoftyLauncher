@@ -1,7 +1,7 @@
 use std::ops::Range;
 use std::sync::Arc;
 
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::input::Input;
@@ -13,7 +13,7 @@ use swofty_i18n::{tr, trf, trn};
 
 use super::{Nav, hex, type_name};
 use crate::shell::Shell;
-use crate::theme::{Palette, palette, scrollbar_x};
+use crate::ui::theme::{Palette, palette, scrollbar_x};
 
 use super::*;
 

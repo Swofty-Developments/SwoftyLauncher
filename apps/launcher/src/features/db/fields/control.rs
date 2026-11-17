@@ -1,4 +1,4 @@
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::color_picker::ColorPicker;
@@ -16,7 +16,7 @@ use super::bool_text;
 use super::detail::{plain, swatch};
 use super::value::{hex_rgb, is_on, list_items};
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::ui::theme::Palette;
 
 #[derive(Clone, Copy)]
 struct ListEdit<'a> {

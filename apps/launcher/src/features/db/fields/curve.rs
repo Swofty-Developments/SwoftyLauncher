@@ -1,4 +1,4 @@
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::Input;
@@ -10,7 +10,7 @@ use super::FieldModel;
 use super::detail::plain;
 use super::value::{num, parse_curve};
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::ui::theme::Palette;
 
 #[derive(Clone, Copy)]
 struct CurveEdit<'a> {

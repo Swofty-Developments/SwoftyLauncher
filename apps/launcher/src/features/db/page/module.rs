@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::input::Input;
@@ -12,9 +12,9 @@ use swofty_core::dbedit::{Module, Scope};
 use swofty_i18n::{tr, trf, trn};
 
 use super::{MOVE_W, NAME_W, notice};
-use crate::db::{ViewSlot, icon_named, swap_field};
+use crate::features::db::{ViewSlot, icon_named, swap_field};
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::ui::theme::Palette;
 use crate::ui::{SectionHead, chevron};
 
 impl Shell {

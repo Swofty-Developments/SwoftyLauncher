@@ -3,7 +3,7 @@ mod nav;
 mod rows;
 mod search;
 
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
@@ -12,9 +12,9 @@ use gpui_kit::*;
 use swofty_i18n::{tr, trf};
 
 use super::{LinkState, Load, Nav};
-use crate::pages::GUTTER;
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::shell::pages::GUTTER;
+use crate::ui::theme::Palette;
 
 pub(super) const ROW_H: f32 = 40.;
 pub(super) const NAME_W: f32 = 220.;

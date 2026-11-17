@@ -1,9 +1,9 @@
 use super::select::{Bulk, Pick, Plan, plan};
-use crate::library::Source;
-use crate::notices::{Notification, Notify};
-use crate::scale::{Hit, px};
+use crate::services::library::Source;
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::Palette;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::WindowExt;
 use gpui_kit::component::button::{Button, ButtonVariant, ButtonVariants};
@@ -208,7 +208,7 @@ impl Shell {
                                     match r {
                                         Ok(()) => removed += 1,
                                         Err(e) => {
-                                            crate::app_log::action("remove addon").addon(&id).failed(&e);
+                                            crate::app::app_log::action("remove addon").addon(&id).failed(&e);
                                             window.notify(Notification::error(e.to_string()), cx);
                                         }
                                     }

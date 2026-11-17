@@ -1,12 +1,12 @@
 use super::ITEMS_SHOWN;
 use super::row::stock_removals_text;
-use crate::format::{ago_since, title_case};
-use crate::library::AddonItem;
-use crate::notices::{Notification, Notify};
-use crate::pages::{chevron, label};
-use crate::scale::{Hit, px};
+use crate::services::library::AddonItem;
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::shell::notices::{Notification, Notify};
+use crate::shell::pages::{chevron, label};
+use crate::ui::format::{ago_since, title_case};
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::Palette;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
@@ -139,9 +139,10 @@ impl Shell {
             let result = cx
                 .background_executor()
                 .spawn(async move {
-                    let game = crate::sections::game(&store, install.as_ref()).ok_or_else(|| {
-                        tr("Locate F1 25 first. Checking conflicts reads its files.").to_owned()
-                    })?;
+                    let game =
+                        crate::features::sections::game(&store, install.as_ref()).ok_or_else(|| {
+                            tr("Locate F1 25 first. Checking conflicts reads its files.").to_owned()
+                        })?;
                     conflicts::check(&store, &profile, &game).map_err(|e| e.to_string())
                 })
                 .await;
@@ -159,7 +160,7 @@ impl Shell {
                         }
                     }
                     Err(e) => {
-                        crate::app_log::action("check conflicts").failed(&e);
+                        crate::app::app_log::action("check conflicts").failed(&e);
                         window.notify(Notification::error(e).title(tr("Could not check conflicts")), cx)
                     }
                 }

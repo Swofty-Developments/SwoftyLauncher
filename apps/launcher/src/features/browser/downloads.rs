@@ -4,25 +4,25 @@ use gpui_kit::*;
 use swofty_i18n::{tr, trf};
 
 use super::*;
-use crate::download_queue::State;
-use crate::scale::px;
+use crate::services::download_queue::State;
 use crate::shell::{Page, Shell};
-use crate::theme::{Palette, ScrollArea};
+use crate::ui::scale::px;
+use crate::ui::theme::{Palette, ScrollArea};
 
 impl Shell {
     pub(crate) fn download_pending(&self) -> usize {
         self.browser.queue.pending()
     }
 
-    pub(crate) fn dock_input(&self) -> crate::download_dock::Input {
-        crate::download_dock::Input {
+    pub(crate) fn dock_input(&self) -> crate::shell::download_dock::Input {
+        crate::shell::download_dock::Input {
             pending: self.browser.queue.pending(),
             failed: self
                 .browser
                 .queue
                 .jobs()
                 .iter()
-                .filter(|job| matches!(job.state, crate::download_queue::State::Failed(_)))
+                .filter(|job| matches!(job.state, crate::services::download_queue::State::Failed(_)))
                 .count(),
             on_downloads: self.page == Page::Downloads,
         }
@@ -37,7 +37,7 @@ impl Shell {
             .count()
     }
 
-    pub(crate) fn dock_line(&self) -> Option<crate::download_dock::Line> {
+    pub(crate) fn dock_line(&self) -> Option<crate::shell::download_dock::Line> {
         let jobs = self.browser.queue.jobs();
         let pending = self.browser.queue.pending();
         if pending > 0 {
@@ -46,7 +46,7 @@ impl Shell {
                 .find(|job| job.state == State::Active)
                 .or_else(|| jobs.iter().find(|job| job.state == State::Queued))?;
             let working = self.browser.working.get(&job.id);
-            return Some(crate::download_dock::Line {
+            return Some(crate::shell::download_dock::Line {
                 name: job.request.0.name.clone(),
                 fraction: working.map(|w| w.progress().fraction()),
                 failed: false,
@@ -58,7 +58,7 @@ impl Shell {
             .find(|job| matches!(job.state, State::Failed(_)));
         let (Some(job), true) = (failed, self.dock.failure_shown(self.dock_input().failed)) else {
             let job = jobs.iter().rev().find(|job| job.state == State::Completed)?;
-            return Some(crate::download_dock::Line {
+            return Some(crate::shell::download_dock::Line {
                 name: job.request.0.name.clone(),
                 fraction: Some(1.),
                 failed: false,
@@ -67,7 +67,7 @@ impl Shell {
         let State::Failed(_) = &job.state else {
             return None;
         };
-        Some(crate::download_dock::Line {
+        Some(crate::shell::download_dock::Line {
             name: job.request.0.name.clone(),
             fraction: None,
             failed: true,
@@ -250,10 +250,9 @@ impl Shell {
     }
 
     pub(super) fn retry_download(&mut self, id: &str, cx: &mut Context<Self>) {
-        let index =
-            self.browser.queue.jobs().iter().rposition(|job| {
-                job.id == id && matches!(job.state, crate::download_queue::State::Failed(_))
-            });
+        let index = self.browser.queue.jobs().iter().rposition(|job| {
+            job.id == id && matches!(job.state, crate::services::download_queue::State::Failed(_))
+        });
         if let Some(index) = index {
             let action = retry_action(self.browser.find(id), &self.browser.queue.jobs()[index].request.1);
             if action == RetryAction::RequestCurrent {
@@ -272,7 +271,7 @@ impl Shell {
         let mut config = self.store.config();
         config.set_download_jobs(limit);
         if let Err(error) = self.store.save_config(&config) {
-            crate::app_log::action("save download limit").failed(&error);
+            crate::app::app_log::action("save download limit").failed(&error);
             return;
         }
         self.browser.queue.set_limit(config.download_jobs());

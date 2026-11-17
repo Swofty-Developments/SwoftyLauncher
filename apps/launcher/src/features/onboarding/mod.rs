@@ -9,9 +9,9 @@ use gpui_kit::*;
 use swofty_core::session::{ONBOARDING_VERSION, UiMode};
 use swofty_i18n::tr;
 
-use crate::scale::px;
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::ui::scale::px;
+use crate::ui::theme::Palette;
 
 const BUTTON_HEIGHT: f32 = 48.;
 

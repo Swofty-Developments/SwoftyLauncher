@@ -1,4 +1,4 @@
-use crate::library::AddonItem;
+use crate::services::library::AddonItem;
 use crate::shell::Shell;
 use std::collections::HashMap;
 

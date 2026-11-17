@@ -9,10 +9,10 @@ use swofty_i18n::{tr, trf};
 
 use super::labels::{close_game_first, empty_save, steam_save_missing_text};
 use super::state::SavesView;
-use crate::pages::GUTTER;
-use crate::scale::{Hit, px};
 use crate::shell::Shell;
-use crate::theme::{Palette, ScrollArea};
+use crate::shell::pages::GUTTER;
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::{Palette, ScrollArea};
 use crate::ui::{Callout, EmptyState};
 
 fn notice(callout: Callout) -> Div {

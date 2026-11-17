@@ -1,4 +1,4 @@
-use crate::notices::Notification;
+use crate::shell::notices::Notification;
 use gpui_kit::component::WindowExt;
 use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::*;
@@ -53,7 +53,7 @@ impl Shell {
         match guarded(|| edits.copy_row(&catalog, &table, &field, from.as_deref(), &to)) {
             Ok(()) => self.db_changed(None, true, cx),
             Err(e) => {
-                crate::app_log::action("db editor: copy a row").failed(&e);
+                crate::app::app_log::action("db editor: copy a row").failed(&e);
                 self.db.toasts.push(Notification::error(e));
                 cx.notify();
             }
@@ -203,7 +203,7 @@ impl Shell {
                 self.db_changed(None, true, cx);
             }
             Err(e) => {
-                crate::app_log::action("db editor: change rows").failed(&e);
+                crate::app::app_log::action("db editor: change rows").failed(&e);
                 self.db.toasts.push(Notification::error(e));
                 cx.notify();
             }

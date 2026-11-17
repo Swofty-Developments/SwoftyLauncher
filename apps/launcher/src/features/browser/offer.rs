@@ -1,4 +1,4 @@
-use crate::scale::Hit;
+use crate::ui::scale::Hit;
 use std::collections::BTreeSet;
 
 use gpui_kit::assets::IconName;
@@ -11,7 +11,7 @@ use swofty_core::update::current_version;
 use swofty_i18n::{tr, trf};
 
 use super::*;
-use crate::library::Source;
+use crate::services::library::Source;
 use crate::shell::{Page, Shell};
 
 impl Shell {
@@ -24,7 +24,7 @@ impl Shell {
             .queue
             .jobs()
             .iter()
-            .any(|job| job.id == a.id && job.state == crate::download_queue::State::Queued)
+            .any(|job| job.id == a.id && job.state == crate::services::download_queue::State::Queued)
         {
             return Offer::Queued;
         }

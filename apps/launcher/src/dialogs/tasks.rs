@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use crate::scale::px;
+use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::scroll::Scrollbar;
@@ -14,7 +14,7 @@ use swofty_core::view::{Effect, Shown};
 use swofty_i18n::trf;
 
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::ui::theme::Palette;
 use crate::ui::{Overlay, ProgressBar};
 
 pub(crate) type Feed = Arc<Mutex<Option<TaskList>>>;
@@ -315,8 +315,8 @@ impl Shell {
             .when(failed && !running, |f| {
                 f.child(
                     Button::new("tasks-send-logs")
-                        .icon(crate::send_logs::icon())
-                        .label(crate::send_logs::label())
+                        .icon(crate::dialogs::send_logs::icon())
+                        .label(crate::dialogs::send_logs::label())
                         .on_click(cx.listener(|s, _, window, cx| s.send_logs(window, cx))),
                 )
             })

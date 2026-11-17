@@ -3,7 +3,7 @@ use std::sync::{Arc, LazyLock};
 use gpui_kit::*;
 use swofty_core::session::UiMode;
 
-use crate::scale::px;
+use crate::ui::scale::px;
 
 pub(super) const WIDTH: f32 = 300.;
 pub(super) const HEIGHT: f32 = 188.;

@@ -1,8 +1,8 @@
-use crate::notices::{Notification, Notify};
-use crate::pages::GUTTER;
-use crate::scale::{Hit, px};
+use crate::shell::notices::{Notification, Notify};
+use crate::shell::pages::GUTTER;
 use crate::shell::{Page, Shell};
-use crate::theme::Palette;
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::Palette;
 use crate::ui::tokens::Tone;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
@@ -95,7 +95,10 @@ impl Shell {
 
     fn default_place(&self, id: &str) -> Option<swofty_core::folders::Key> {
         let a = self.library.addons.iter().find(|a| a.manifest.id == id)?;
-        swofty_core::folders::default_place(a.source == crate::library::Source::Builtin, a.category())
+        swofty_core::folders::default_place(
+            a.source == crate::services::library::Source::Builtin,
+            a.category(),
+        )
     }
 
     pub(super) fn fix_load_order(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -107,7 +110,7 @@ impl Shell {
             .store
             .apply_fix(&profile, &plan, &|id| self.default_place(id))
         {
-            crate::app_log::action("fix load order").failed(&e);
+            crate::app::app_log::action("fix load order").failed(&e);
             window.notify(
                 Notification::error(e.to_string()).title(tr("Could not fix the load order")),
                 cx,
@@ -132,7 +135,7 @@ impl Shell {
                 "The load order still has problems for {names}",
                 names = left.join(", ")
             );
-            crate::app_log::action("fix load order").failed(&text);
+            crate::app::app_log::action("fix load order").failed(&text);
             window.notify(Notification::error(text), cx);
             return;
         }

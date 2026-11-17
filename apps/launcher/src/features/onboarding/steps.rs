@@ -8,9 +8,9 @@ use swofty_core::session::UiMode;
 use swofty_i18n::tr;
 
 use super::{Step, art};
-use crate::scale::px;
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::ui::scale::px;
+use crate::ui::theme::Palette;
 
 const ENTER: Duration = Duration::from_millis(420);
 

@@ -1,4 +1,4 @@
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{h_flex, v_flex};
@@ -10,9 +10,9 @@ use swofty_i18n::tr;
 use super::FieldModel;
 use super::value::{hex_rgb, swatch_color};
 use super::{hex, type_name};
-use crate::pages::fact;
 use crate::shell::Shell;
-use crate::theme::{Palette, ScrollArea};
+use crate::shell::pages::fact;
+use crate::ui::theme::{Palette, ScrollArea};
 
 impl Shell {
     pub(crate) fn db_key_detail(&self, node: NodeId, p: Palette, cx: &mut Context<Self>) -> AnyElement {

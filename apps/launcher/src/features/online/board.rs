@@ -1,10 +1,10 @@
 use super::model::*;
 use super::widgets::*;
 use super::{Load, Target};
-use crate::format::{iso_date, lap_time, sector_time};
-use crate::scale::{Hit, px};
 use crate::shell::Shell;
-use crate::theme::{Palette, ScrollArea};
+use crate::ui::format::{iso_date, lap_time, sector_time};
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::{Palette, ScrollArea};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Disableable, h_flex, v_flex};
@@ -79,7 +79,7 @@ impl Shell {
         });
         let header = self.board_header(&page, p, cx);
         let filters = self.filter_chips(p, cx);
-        let ad = self.ad_banner(crate::ads::Unit::Online, self.content_width - 56., p);
+        let ad = self.ad_banner(crate::features::ads::Unit::Online, self.content_width - 56., p);
         let pinned = page
             .mine
             .clone()
@@ -562,7 +562,7 @@ impl Shell {
                                     div()
                                         .text_size(px(13.))
                                         .font_weight(FontWeight::SEMIBOLD)
-                                        .child(crate::format::title_case(&c)),
+                                        .child(crate::ui::format::title_case(&c)),
                                 )
                         }))
                         .children(lines)

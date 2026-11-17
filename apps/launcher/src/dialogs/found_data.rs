@@ -4,8 +4,8 @@
 use std::path::PathBuf;
 use std::time::SystemTime;
 
-use crate::notices::{Notification, Notify};
-use crate::scale::px;
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::spinner::Spinner;
@@ -19,11 +19,11 @@ use swofty_core::managed;
 use swofty_core::session::Config;
 use swofty_i18n::{tr, trf, trn};
 
-use crate::data_move::install_folder;
-use crate::format::{ago_since, size};
+use crate::dialogs::data_move::install_folder;
 use crate::shell::Shell;
-use crate::theme::Palette;
 use crate::ui::Overlay;
+use crate::ui::format::{ago_since, size};
+use crate::ui::theme::Palette;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Stage {
@@ -109,7 +109,7 @@ impl Shell {
                 .spawn(async move { find::candidates(&location, &installs, &bundled) })
                 .await;
             this.update_in(cx, |s, window, cx| {
-                crate::app_log::note(&format!("find addons: {} candidate(s)", found.len()));
+                crate::app::app_log::note(&format!("find addons: {} candidate(s)", found.len()));
                 if found.is_empty() {
                     if announce {
                         window.notify(Notification::info(tr("Nothing found")), cx);
@@ -160,13 +160,13 @@ impl Shell {
                 .await;
             this.update_in(cx, |s, window, cx| match adopted {
                 Ok(done) => {
-                    crate::app_log::note(&format!("find addons: using {}", done.found.display()));
+                    crate::app::app_log::note(&format!("find addons: using {}", done.found.display()));
                     s.relaunch_for_move(window, cx);
                 }
                 Err(e) => {
                     s.found_data = None;
                     cx.notify();
-                    crate::app_log::note(&format!("find addons: {e}"));
+                    crate::app::app_log::note(&format!("find addons: {e}"));
                     s.data_move_failed(&e.to_string(), window, cx);
                 }
             })

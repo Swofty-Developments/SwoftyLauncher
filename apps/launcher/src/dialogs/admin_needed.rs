@@ -1,16 +1,16 @@
 use std::path::Path;
 use std::time::Duration;
 
-use crate::notices::{Notification, Notify};
-use crate::scale::px;
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::px;
 use gpui_kit::component::WindowExt;
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::install::Source;
 use swofty_core::{compat, copies};
 
-use crate::app_log;
-use crate::game::Install;
+use crate::app::app_log;
+use crate::services::game::Install;
 use crate::shell::Shell;
 use swofty_i18n::{tr, trf};
 
@@ -130,7 +130,7 @@ fn elevated_started(started: Result<compat::Elevated, String>, window: &mut Wind
                         trf!(
                             "The administrator copy of Swofty Launcher closed as it started (exit code {code}). This one keeps running without administrator rights. Press {button} so the developers can see why.",
                             code = format!("{code:#x}"),
-                            button = crate::send_logs::label()
+                            button = crate::dialogs::send_logs::label()
                         ),
                         window,
                         cx,

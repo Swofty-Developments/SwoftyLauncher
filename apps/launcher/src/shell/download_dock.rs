@@ -10,7 +10,7 @@ use gpui_kit::{
 };
 
 use crate::shell::{Page, Shell};
-use crate::theme::Palette;
+use crate::ui::theme::Palette;
 use swofty_i18n::{tr, trf};
 
 pub(crate) const LINGER: Duration = Duration::from_secs(4);
@@ -214,19 +214,19 @@ impl Shell {
         let row = h_flex()
             .id("download-notch")
             .relative()
-            .w(crate::scale::fixed(WIDTH))
-            .h(crate::scale::fixed(NOTCH_HEIGHT))
-            .px(crate::scale::fixed(16.))
-            .gap(crate::scale::fixed(10.))
+            .w(crate::ui::scale::fixed(WIDTH))
+            .h(crate::ui::scale::fixed(NOTCH_HEIGHT))
+            .px(crate::ui::scale::fixed(16.))
+            .gap(crate::ui::scale::fixed(10.))
             .items_center()
             .overflow_hidden()
-            .rounded_b(crate::scale::fixed(16.))
+            .rounded_b(crate::ui::scale::fixed(16.))
             .bg(p.chrome)
             .cursor_pointer()
             .on_click(cx.listener(|this, _, _, cx| this.open_page(Page::Downloads, cx)))
             .child(
                 Icon::new(IconName::Download)
-                    .size(crate::scale::fixed(18.))
+                    .size(crate::ui::scale::fixed(18.))
                     .text_color(p.accent),
             )
             .child(
@@ -235,14 +235,14 @@ impl Shell {
                     .min_w_0()
                     .child(
                         div()
-                            .text_size(crate::scale::fixed(13.))
+                            .text_size(crate::ui::scale::fixed(13.))
                             .font_weight(FontWeight::SEMIBOLD)
                             .child(title),
                     )
                     .child(
                         div()
                             .truncate()
-                            .text_size(crate::scale::fixed(12.))
+                            .text_size(crate::ui::scale::fixed(12.))
                             .text_color(p.text_muted)
                             .child(name),
                     ),
@@ -252,7 +252,7 @@ impl Shell {
                     .absolute()
                     .left_0()
                     .bottom_0()
-                    .h(crate::scale::fixed(3.))
+                    .h(crate::ui::scale::fixed(3.))
                     .w(relative(f))
                     .bg(p.accent)
                     .into_any_element(),
@@ -260,7 +260,7 @@ impl Shell {
                     .absolute()
                     .left_0()
                     .bottom_0()
-                    .h(crate::scale::fixed(3.))
+                    .h(crate::ui::scale::fixed(3.))
                     .w_full()
                     .child(div().h_full().w(relative(0.3)).bg(p.accent).with_animation(
                         "download-indeterminate",
@@ -272,13 +272,13 @@ impl Shell {
         let placed = if beside {
             div()
                 .absolute()
-                .top(crate::scale::fixed(top))
-                .right(crate::scale::fixed(24.))
+                .top(crate::ui::scale::fixed(top))
+                .right(crate::ui::scale::fixed(24.))
                 .child(row)
         } else {
             div()
                 .absolute()
-                .top(crate::scale::fixed(top))
+                .top(crate::ui::scale::fixed(top))
                 .left_0()
                 .right_0()
                 .flex()

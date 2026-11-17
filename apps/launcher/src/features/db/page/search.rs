@@ -1,4 +1,4 @@
-use crate::scale::px;
+use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::input::Input;
 use gpui_kit::component::{Icon, h_flex, v_flex};
@@ -7,9 +7,9 @@ use gpui_kit::*;
 use swofty_core::dbedit::{Hit, HitKind};
 use swofty_i18n::{tr, trf};
 
-use crate::pages::{GUTTER, label};
 use crate::shell::Shell;
-use crate::theme::{Palette, ScrollArea};
+use crate::shell::pages::{GUTTER, label};
+use crate::ui::theme::{Palette, ScrollArea};
 
 fn hit_group(kind: HitKind) -> &'static str {
     match kind {

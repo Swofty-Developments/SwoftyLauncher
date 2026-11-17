@@ -9,12 +9,12 @@ use swofty_core::update::current_version;
 use swofty_i18n::{tr, trf, trn};
 
 use super::*;
-use crate::format;
-use crate::pages::{badge, tag};
-use crate::scale::px;
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::shell::pages::{badge, tag};
 use crate::ui::ProgressBar;
+use crate::ui::format;
+use crate::ui::scale::px;
+use crate::ui::theme::Palette;
 
 pub(super) fn card_border(failed: bool, updating: bool, p: Palette) -> Hsla {
     if failed {

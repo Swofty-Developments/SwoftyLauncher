@@ -1,5 +1,5 @@
 use super::FADE;
-use crate::library::{AddonItem, Changes};
+use crate::services::library::{AddonItem, Changes};
 use crate::shell::Shell;
 use gpui_kit::*;
 use std::collections::{HashMap, HashSet};

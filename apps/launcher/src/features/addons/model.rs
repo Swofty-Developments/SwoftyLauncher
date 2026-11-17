@@ -1,7 +1,7 @@
 use super::drag::DropAt;
-use crate::library::{Changes, Source, Type};
-use crate::scale::px;
+use crate::services::library::{Changes, Source, Type};
 use crate::shell::Shell;
+use crate::ui::scale::px;
 use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::*;
 use std::collections::{BTreeSet, HashMap, HashSet};
@@ -124,7 +124,7 @@ pub(crate) struct AddonsPage {
     pub(super) window: AnyWindowHandle,
     pub(super) facets: BTreeSet<Facet>,
     pub(super) scroll: ListState,
-    pub(super) smooth: crate::scroll::SmoothScroll,
+    pub(super) smooth: crate::ui::scroll::SmoothScroll,
     pub(super) list_items: Vec<AddonListItem>,
     pub(super) seen: Option<Instant>,
     pub(super) scroll_pending: bool,

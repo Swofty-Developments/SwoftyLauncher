@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use crate::scale::px;
+use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::dialog::DialogFooter;
@@ -14,10 +14,10 @@ use gpui_kit::*;
 use swofty_core::send_logs::{self, Bundle, GameInfo, MESSAGE_MAX, Report, Stage};
 use swofty_core::store::Store;
 
-use crate::reveal;
+use crate::services::reveal;
 use crate::shell::Shell;
-use crate::theme::{Palette, palette};
 use crate::ui::Callout;
+use crate::ui::theme::{Palette, palette};
 use swofty_i18n::{tr, trf, trn};
 
 pub const LABEL: &str = "Send Logs to Developers";

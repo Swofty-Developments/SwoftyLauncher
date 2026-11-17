@@ -7,9 +7,9 @@ use swofty_core::catalog::Addon;
 use swofty_i18n::{tr, trn};
 
 use super::*;
-use crate::scale::px;
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::ui::scale::px;
+use crate::ui::theme::Palette;
 
 const TILE_MIN: f32 = 220.;
 const TILE_ART: f32 = 96.;

@@ -1,4 +1,4 @@
-use crate::notices::{Notification, Notify};
+use crate::shell::notices::{Notification, Notify};
 use gpui_kit::component::WindowExt;
 use gpui_kit::*;
 use swofty_core::launcher_saves;
@@ -9,9 +9,9 @@ use swofty_i18n::{tr, trf};
 
 use super::labels::{notice_body, notice_title};
 use super::steam::steam_save_in;
-use crate::format::ago_since as ago;
-use crate::scale::px;
 use crate::shell::{Prompt, Shell};
+use crate::ui::format::ago_since as ago;
+use crate::ui::scale::px;
 
 impl Shell {
     pub(crate) fn show_saves_notice(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -83,7 +83,7 @@ impl Shell {
         let done = launcher_saves::copy_to(&root, from, to, Running::now(), vault::now());
         let note = match done {
             Ok((files, bytes, _)) => {
-                crate::app_log::note(&format!(
+                crate::app::app_log::note(&format!(
                     "saves: copied {files} file(s), {bytes} bytes, from {from_name} into the launcher saves of profile {to}"
                 ));
                 Notification::success(trf!(
@@ -93,7 +93,7 @@ impl Shell {
                 ))
             }
             Err(e) => {
-                crate::app_log::action("copy a save").failed(&e);
+                crate::app::app_log::action("copy a save").failed(&e);
                 Notification::warning(trf!("The save was not copied: {error}", error = e))
             }
         };
@@ -133,14 +133,14 @@ impl Shell {
         };
         let note = match done {
             Ok(r) => {
-                crate::app_log::note(&r.log_line());
+                crate::app::app_log::note(&r.log_line());
                 Notification::success(trf!(
                     "Exported the save of {profile} to Steam.",
                     profile = profile
                 ))
             }
             Err(e) => {
-                crate::app_log::action("export a save").failed(&e);
+                crate::app::app_log::action("export a save").failed(&e);
                 Notification::warning(trf!("The save was not exported: {error}", error = e))
             }
         };
@@ -174,7 +174,7 @@ impl Shell {
         });
         let note = match restored {
             Ok(r) => {
-                crate::app_log::note(&r.log_line());
+                crate::app::app_log::note(&r.log_line());
                 self.saves.confirm = None;
                 Notification::success(match (when, &r.before) {
                     (Some(at), Some(_)) => trf!(
@@ -186,7 +186,7 @@ impl Shell {
                 })
             }
             Err(e) => {
-                crate::app_log::action("restore a save").failed(&e);
+                crate::app::app_log::action("restore a save").failed(&e);
                 Notification::warning(trf!("The save was not restored: {error}", error = e))
             }
         };
@@ -202,7 +202,7 @@ impl Shell {
             false => v.pin(id, "pinned", vault::now()),
         });
         if let Err(e) = done {
-            crate::app_log::action("pin a version").failed(&e);
+            crate::app::app_log::action("pin a version").failed(&e);
         }
         self.refresh_saves_in_background(cx);
         cx.notify();
@@ -240,7 +240,7 @@ impl Shell {
         );
     }
     pub(super) fn retry_steam_import(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        crate::game::import_now(&self.store);
+        crate::services::game::import_now(&self.store);
         self.refresh_saves_in_background(cx);
         let found = !self.saves.view.as_ref().is_some_and(|v| v.steam_missing);
         window.notify(
@@ -270,7 +270,7 @@ impl Shell {
             this.update_in(cx, |s, window, cx| match steam_save_in(&folder) {
                 Some(from) => s.ask_copy(from, VANILLA.to_owned(), profile, window, cx),
                 None => {
-                    crate::app_log::note(&format!(
+                    crate::app::app_log::note(&format!(
                         "saves: {} is not a Steam save folder (userdata/<id>/{}/remote)",
                         folder.display(),
                         swofty_core::STEAM_APP_ID

@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, HashSet};
 
-use crate::notices::{Notification, Notify};
+use crate::shell::notices::{Notification, Notify};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::spinner::Spinner;
 use gpui_kit::component::tooltip::Tooltip;
@@ -11,11 +11,11 @@ use swofty_core::catalog::{self, Addon, Update};
 use swofty_i18n::{fill, tr, trf, trn};
 
 use super::*;
-use crate::library::AddonItem;
-use crate::play_bar::link;
-use crate::scale::px;
+use crate::services::library::AddonItem;
+use crate::shell::play_bar::link;
 use crate::shell::{PlayState, Shell};
-use crate::theme::Palette;
+use crate::ui::scale::px;
+use crate::ui::theme::Palette;
 
 /// The updates for addons in `on` that haven't failed at the version offered in `held`.
 pub(super) fn due_updates<'a>(
@@ -108,7 +108,7 @@ impl Shell {
             .cloned()
             .partition(|u| building.as_ref().is_some_and(|b| b.holds(&u.id)));
         if !held.is_empty() {
-            window.notify(Notification::warning(crate::update::BUILDING), cx);
+            window.notify(Notification::warning(crate::features::update::BUILDING), cx);
         }
         if updates.is_empty() || self.updating_addons() {
             return;
@@ -216,7 +216,7 @@ impl Shell {
             .relative()
             .overflow_hidden()
             .h(px(52.))
-            .w(px(crate::update::BUTTON_WIDTH))
+            .w(px(crate::features::update::BUTTON_WIDTH))
             .flex_shrink_0()
             .rounded(px(9.))
             .bg(if running { p.elevated } else { p.accent })

@@ -4,8 +4,8 @@
 use std::time::{Duration, Instant};
 use swofty_i18n::{tr, trf};
 
-use crate::notices::{Notification, Notify};
-use crate::scale::px;
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Disableable, v_flex};
@@ -13,9 +13,9 @@ use gpui_kit::*;
 use swofty_core::managed;
 use swofty_core::profile::VANILLA;
 
-use crate::sections::{Reporter, Shared};
+use crate::features::sections::{Reporter, Shared};
 use crate::shell::{Page, Shell};
-use crate::theme::Palette;
+use crate::ui::theme::Palette;
 
 const FETCH_TIMEOUT: Duration = Duration::from_secs(20);
 
@@ -168,7 +168,7 @@ impl Shell {
                         );
                     }
                     Err(e) => {
-                        crate::app_log::action("install addon")
+                        crate::app::app_log::action("install addon")
                             .addon(managed::ID)
                             .failed(&e);
                         window.notify(
