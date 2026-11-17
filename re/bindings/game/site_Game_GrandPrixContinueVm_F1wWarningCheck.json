@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/gp_continue_guard.cpp"
+   "native/src/core/guards/frontend/gp_continue_guard.cpp"
   ]
  },
  "verify": [
@@ -57,7 +57,7 @@
    "claimed": "L2",
    "verdict": "agree",
    "evidence": "decomp:own capstone disasm 0x141bce150-0x141bceffd;xref:0x141bceaa4,0x141bceac3,0x141bceaca,0x141bceb6e,0x141bceb8b,0x141bcebaa,0x141bcebd2,0x141bceccf,0x141bcee4d,0x141bcee57,0x141bcee60,0x141bcee65,0x141bcee67,0x141bcee7c,0x141bceebe,0x141bceee4,0x141bceefd,0x141bcef28,0x141bce788,0x141bc92d5;sig:game.grand_prix_continue_vm_f1w_warning_check",
-   "notes": "V9258 Re-check of the corrected row after V9257: the null test now cites test rax,rax at 0x141bcee57 and je 0x141bcee9f at 0x141bcee60, which matches the disassembly; all other claims re-derived as in V9257 and still hold. Guard code native/src/core/gp_continue_guard.cpp warning_check reads component=rax, mode=r14, setup=rcx, entity=[c->rsp+0x48] (SwoftyContext.rsp is the site rsp, trampoline_rsp is separate), calls the entity's vt+0x1d0 with only rcx as at 0x141bceaa4, walks +8..+0x10 as 8-byte pointers, takes [mode] as the category. check() zeroes rcx only on decide()==skip, i.e. setup!=0, [rax+0x580]==setup and an f1_world category that is found and differs; a failed component read or a missing f1_world mode leaves rcx unchanged. Not verified: that vt+0x1d0 has no side effects (the game calls it with no other args and reads +8/+0x10 straight away)."
+   "notes": "V9258 Re-check of the corrected row after V9257: the null test now cites test rax,rax at 0x141bcee57 and je 0x141bcee9f at 0x141bcee60, which matches the disassembly; all other claims re-derived as in V9257 and still hold. Guard code native/src/core/guards/frontend/gp_continue_guard.cpp warning_check reads component=rax, mode=r14, setup=rcx, entity=[c->rsp+0x48] (SwoftyContext.rsp is the site rsp, trampoline_rsp is separate), calls the entity's vt+0x1d0 with only rcx as at 0x141bceaa4, walks +8..+0x10 as 8-byte pointers, takes [mode] as the category. check() zeroes rcx only on decide()==skip, i.e. setup!=0, [rax+0x580]==setup and an f1_world category that is found and differs; a failed component read or a missing f1_world mode leaves rcx unchanged. Not verified: that vt+0x1d0 has no side effects (the game calls it with no other args and reads +8/+0x10 straight away)."
   }
  ],
  "proofs": []

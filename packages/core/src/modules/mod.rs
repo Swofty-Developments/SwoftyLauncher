@@ -16,7 +16,7 @@ use std::time::Duration;
 use ring::signature::{ED25519, UnparsedPublicKey};
 use serde::{Deserialize, Serialize};
 
-use crate::baseline::sha256_bytes;
+use crate::game_folder::baseline::sha256_bytes;
 use crate::timetrial::api::{Api, ApiError};
 use crate::timetrial::integrity::{PUBLIC_KEY, decode, valid_version};
 

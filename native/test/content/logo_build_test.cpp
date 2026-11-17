@@ -1,6 +1,6 @@
 #define ZSTD_STATIC_LINKING_ONLY
-#include "../../src/core/apply/content/logo_build.hpp"
-#include "../../src/core/apply/content/png_straight.hpp"
+#include "core/apply/content/logo_build.hpp"
+#include "core/apply/content/png_straight.hpp"
 
 #include <algorithm>
 #include <cstdio>

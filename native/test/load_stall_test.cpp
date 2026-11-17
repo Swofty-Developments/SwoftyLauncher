@@ -1,11 +1,11 @@
-// Host-native unit test for the core's load-stall watchdog trigger (native/src/core/load_stall_logic.hpp): when a
+// Host-native unit test for the core's load-stall watchdog trigger (native/src/core/diagnostics/load_stall_logic.hpp): when a
 // load that has stopped moving gets its reports, replayed from the flow and screen sequences of the 1.9.9 Suzuka
 // Time Trial stall (session 20261112-013117), of the 1.9.x first-session hangs the game ends itself with its
 // deadlock WARN (cptovius, session 20261112-044919), of the 1.9.15 boot an addon held on splash_transition (ArS3nic,
 // session 20261112-121623) and of working loads. Built and run by
-// native/test/run_load_stall_test.sh.
+// native/test/run_tests.sh load_stall.
 
-#include "load_stall_logic.hpp"
+#include "core/diagnostics/load_stall_logic.hpp"
 
 #include <cstdio>
 #include <cstring>

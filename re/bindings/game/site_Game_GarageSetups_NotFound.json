@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/garage_setup.cpp"
+   "native/src/core/guards/garage/garage_setup.cpp"
   ]
  },
  "verify": [

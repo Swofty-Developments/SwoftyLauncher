@@ -2,7 +2,7 @@
 // record, scope (session types, ai_only and player_only, car indices, identity-needing selectors), priority order,
 // extra live field paths, re-evaluation dropping the old layers, and the record parsing.
 // run_car_live_test.sh builds and runs it.
-#include "../../src/core/hooks/car_profile.hpp"
+#include "core/hooks/car_profile.hpp"
 
 #include <cmath>
 #include <cstdio>

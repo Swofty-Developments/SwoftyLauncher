@@ -3,7 +3,6 @@
 //! See `swofty_core::offline` for the model: consent, digest-pinned extension
 //! artifacts, and journaled staging that returns the game folder to vanilla.
 
-use std::io::{IsTerminal, Write};
 use std::path::PathBuf;
 
 use anyhow::{Context, Result, bail};
@@ -159,14 +158,10 @@ pub fn prompt_accept(store: &Store) -> Result<()> {
     if !offline::is_accepted(&store.root) {
         println!("{}", offline::DISCLOSURE);
     }
-    if !std::io::stdin().is_terminal() {
+    if !crate::prompt::interactive() {
         bail!("stdin is not a terminal: run `swofty offline accept` interactively");
     }
-    print!("\nType 'accept' to continue: ");
-    std::io::stdout().flush().ok();
-    let mut line = String::new();
-    std::io::stdin().read_line(&mut line)?;
-    if line.trim() != "accept" {
+    if crate::prompt::ask("\nType 'accept' to continue: ")? != "accept" {
         bail!("declined: nothing was changed");
     }
     offline::record_accept(&store.root)?;

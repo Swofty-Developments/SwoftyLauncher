@@ -1,8 +1,8 @@
 #pragma once
 
-#include "erp_file.hpp"
-#include "logo_cache.hpp"
-#include "overlay_copies.hpp"
+#include "core/apply/content/erp_file.hpp"
+#include "core/apply/content/logo_cache.hpp"
+#include "core/apply/content/overlay_copies.hpp"
 
 #include <functional>
 #include <map>

@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/ai_line_set_guard.cpp"
+   "native/src/core/guards/ai/ai_line_set_guard.cpp"
   ]
  },
  "verify": [

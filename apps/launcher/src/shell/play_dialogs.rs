@@ -1,7 +1,7 @@
-use crate::game::{self};
-use crate::notices::{Notification, Notify};
-use crate::scale::px;
-use crate::theme::palette;
+use crate::services::game::{self};
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::px;
+use crate::ui::theme::palette;
 use gpui_kit::component::WindowExt;
 use gpui_kit::component::button::ButtonVariant;
 use gpui_kit::*;
@@ -52,7 +52,7 @@ impl Shell {
                 .show_cancel(true)
                 .on_ok(move |_, window, cx| {
                     if let Err(e) = swofty_core::offline::record_accept(&store.root) {
-                        crate::app_log::action("accept offline play").failed(&e);
+                        crate::app::app_log::action("accept offline play").failed(&e);
                         window.notify(Notification::error(e.to_string()), cx);
                         return false;
                     }
@@ -84,7 +84,7 @@ impl Shell {
                         window.notify(Notification::success(text).title(tr("Game folder restored")), cx)
                     }
                     Err(e) => {
-                        crate::app_log::action("restore the game folder").failed(&e);
+                        crate::app::app_log::action("restore the game folder").failed(&e);
                         window.notify(Notification::error(e).title(tr("Restore failed")), cx)
                     }
                 }
@@ -120,7 +120,7 @@ impl Shell {
                             .ok();
                         }
                         Err(e) => {
-                            crate::app_log::action("cancel the build").failed(&e);
+                            crate::app::app_log::action("cancel the build").failed(&e);
                             window.notify(Notification::error(e.to_string()), cx)
                         }
                     }
@@ -144,7 +144,7 @@ impl Shell {
                 .on_ok(move |_, window, cx| {
                     swofty_core::session::request_stop(&data);
                     if let Err(e) = stop_game_in(&dir) {
-                        crate::app_log::action("stop f1 25").failed(&e);
+                        crate::app::app_log::action("stop f1 25").failed(&e);
                         window.notify(Notification::error(e.to_string()), cx);
                     }
                     true

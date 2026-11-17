@@ -1,7 +1,7 @@
-// Host-native unit test for the core's pit box and chassis registry guards (native/src/core/pit_box_logic.hpp).
-// Built and run by native/test/run_pit_box_test.sh.
+// Host-native unit test for the core's pit box and chassis registry guards (native/src/core/guards/garage/pit_box_logic.hpp).
+// Built and run by native/test/run_tests.sh pit_box.
 
-#include "pit_box_logic.hpp"
+#include "core/guards/garage/pit_box_logic.hpp"
 
 #include <cstdio>
 

@@ -34,7 +34,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/garage_crew.cpp"
+   "native/src/core/guards/garage/garage_crew.cpp"
   ],
   "expect": "4D 89 E8 49",
   "func_start": "0x140388cf0"

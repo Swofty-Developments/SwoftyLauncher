@@ -2,9 +2,7 @@
 set -euo pipefail
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
-if ! command -v zig >/dev/null; then
-    exec nix shell nixpkgs#zig -c "$SELF" "$@"
-fi
+. "$(dirname "$SELF")/lib/env.sh"
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
 OUT=${1:-$PWD/../build/json-test}
 PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)

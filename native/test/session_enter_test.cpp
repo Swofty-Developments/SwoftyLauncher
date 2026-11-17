@@ -1,7 +1,7 @@
-// Host-native unit test for the core's session enter guard (native/src/core/session_enter_logic.hpp).
-// Built and run by native/test/run_session_enter_test.sh.
+// Host-native unit test for the core's session enter guard (native/src/core/guards/session/session_enter_logic.hpp).
+// Built and run by native/test/run_tests.sh session_enter.
 
-#include "session_enter_logic.hpp"
+#include "core/guards/session/session_enter_logic.hpp"
 
 #include <cstdio>
 #include <cstring>

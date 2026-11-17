@@ -1,8 +1,8 @@
 #pragma once
 #include <swofty_api.h>
 
-#include "live_layout.hpp"
-#include "live_mem.hpp"
+#include "core/live/live_layout.hpp"
+#include "core/live/live_mem.hpp"
 
 #include <algorithm>
 #include <cmath>

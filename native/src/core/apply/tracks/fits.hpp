@@ -1,7 +1,7 @@
 #pragma once
 
-#include "base.hpp"
-#include "facts_file.hpp"
+#include "core/apply/tracks/base.hpp"
+#include "core/apply/tracks/facts_file.hpp"
 
 #include <swofty/json.hpp>
 

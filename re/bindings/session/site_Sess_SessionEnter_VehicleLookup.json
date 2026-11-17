@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/myteam_vehicle_heal.cpp"
+   "native/src/core/guards/career/myteam_vehicle_heal.cpp"
   ]
  },
  "verify": [

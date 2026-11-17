@@ -1,8 +1,8 @@
 // Host unit test for the career content logic (career_content_logic.hpp): the descriptor check, the
 // save-slot data group walk over a fake career (championship list, CareerSetupComponent, entrant
 // list names), the car group pick and the database requirements against a fake database shaped
-// like the 1990 content's. run_events_test.sh builds and runs it.
-#include "../src/core/career_content_logic.hpp"
+// like the 1990 content's. native/test/run_tests.sh career_content builds and runs it.
+#include "core/career/career_content_logic.hpp"
 
 #include <cstdio>
 #include <map>

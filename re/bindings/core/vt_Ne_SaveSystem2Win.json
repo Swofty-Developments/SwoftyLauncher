@@ -36,7 +36,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/save_sandbox.cpp"
+   "native/src/core/testing/save_sandbox.cpp"
   ]
  },
  "verify": [

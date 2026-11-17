@@ -1,5 +1,5 @@
-#include "../../src/core/apply/content/lower.hpp"
-#include "../../src/core/apply/files.hpp"
+#include "core/apply/content/lower.hpp"
+#include "core/apply/files.hpp"
 
 #include <cstdio>
 #include <map>

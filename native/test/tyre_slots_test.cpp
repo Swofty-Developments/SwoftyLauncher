@@ -1,8 +1,8 @@
-// Host-native unit test for the core's tyre slot guard (native/src/core/tyre_slots_logic.hpp): which slot the
+// Host-native unit test for the core's tyre slot guard (native/src/core/guards/cars/tyre_slots_logic.hpp): which slot the
 // game would pick for a fitted set's option, and what the guard does when that pick is missing or unusable.
-// Built and run by native/test/run_tyre_slots_test.sh.
+// Built and run by native/test/run_tests.sh tyre_slots.
 
-#include "tyre_slots_logic.hpp"
+#include "core/guards/cars/tyre_slots_logic.hpp"
 
 #include <cstdio>
 #include <vector>

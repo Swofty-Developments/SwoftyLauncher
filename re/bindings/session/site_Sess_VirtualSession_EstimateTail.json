@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/estimate_laptime_guard.cpp"
+   "native/src/core/guards/session/estimate_laptime_guard.cpp"
   ]
  },
  "verify": [

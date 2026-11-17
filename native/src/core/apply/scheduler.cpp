@@ -1,7 +1,7 @@
-#include "scheduler.hpp"
+#include "core/apply/scheduler.hpp"
 
-#include "../registry/table.hpp"
-#include "facts.hpp"
+#include "core/registry/table.hpp"
+#include "core/apply/facts.hpp"
 
 #include <algorithm>
 #include <cstdio>

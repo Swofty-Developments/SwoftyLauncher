@@ -1,5 +1,5 @@
-#include "../../src/core/apply/content/boot.hpp"
-#include "../../src/core/apply/ids.hpp"
+#include "core/apply/content/boot.hpp"
+#include "core/apply/ids.hpp"
 
 #include <cstdio>
 #include <set>

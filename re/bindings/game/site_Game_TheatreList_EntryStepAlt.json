@@ -34,7 +34,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/theatre_list.cpp"
+   "native/src/core/guards/frontend/theatre_list.cpp"
   ],
   "expect": "4A 8D 14 C2 4D 8B 41 38"
  },

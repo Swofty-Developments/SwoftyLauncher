@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/myteam_vehicle_keep.cpp"
+   "native/src/core/guards/career/myteam_vehicle_keep.cpp"
   ]
  },
  "verify": [

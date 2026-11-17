@@ -34,7 +34,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/track_acclim.cpp"
+   "native/src/core/guards/tracks/track_acclim.cpp"
   ],
   "expect": "C3",
   "func_start": "0x1429a0620"

@@ -4,7 +4,7 @@ use swofty_core::recovery::Notice;
 use swofty_core::stock;
 use swofty_core::store::Store;
 
-use crate::game;
+use crate::services::game;
 
 /// The timestamp of the newest report of each kind the launcher has already shown, so a
 /// report is announced once and an old one from before the launcher started is not.

@@ -55,14 +55,10 @@ all = { level = "warn", priority = -1 }
 lto = "thin"
 strip = true
 
-# keep native UI optimized on dev profile
-[profile.dev.package.gpui-pre]
-opt-level = 2
-
-[profile.dev.package.gpui-base]
-opt-level = 2
-
-[profile.dev.package.gpui-component]
+# Dependencies are optimized in dev and test builds too: the native UI stays responsive, and tests that
+# compress, hash or decode real-sized data run several times faster (the swofty-formats tests take half as
+# long). They are built once and cached; the workspace crates stay unoptimized for quick rebuilds.
+[profile.dev.package."*"]
 opt-level = 2
 
 [profile.dev.package.taffy]

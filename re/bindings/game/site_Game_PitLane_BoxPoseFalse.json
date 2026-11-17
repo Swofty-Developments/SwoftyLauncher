@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/pit_box.cpp"
+   "native/src/core/guards/garage/pit_box.cpp"
   ],
   "func_start": "0x1434c3520"
  },

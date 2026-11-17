@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/gp_continue_guard.cpp"
+   "native/src/core/guards/frontend/gp_continue_guard.cpp"
   ]
  },
  "verify": [

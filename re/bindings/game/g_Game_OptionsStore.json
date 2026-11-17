@@ -36,8 +36,8 @@
    }
   ],
   "used_by": [
-   "native/src/core/car_category.cpp",
-   "native/src/core/box_options.cpp"
+   "native/src/core/boxes/car_category.cpp",
+   "native/src/core/boxes/box_options.cpp"
   ]
  },
  "verify": [

@@ -7,8 +7,11 @@ inputs:
   cache:
     description: The cache's shared key; jobs that build the same profile and packages share one
     required: true
+  # A cache restored under its exact key is never saved again, so a pull request that changes no dependency
+  # uses main's cache and saves nothing. One that changes them, or runs before main has a cache under the
+  # current key, saves its own, which only that pull request's later runs can read.
   save:
-    description: Whether this job saves the cache; only main does, so pull requests restore main's caches
+    description: Save the cache at the end of the job when the restore was not an exact match
     default: 'false'
   system-libraries:
     description: Install the GPUI, GTK and WebKitGTK development packages on Linux

@@ -1,99 +1,62 @@
 pub use swofty_addon::{GAME_ID, asset, builder, launcher, manifest, ops, view};
 
 pub mod activation;
-pub mod addon_storage;
-pub mod app_control;
-pub mod baseline;
+pub mod addons;
 pub mod build;
 pub mod build_support;
-pub mod builtin;
-pub mod busy;
 pub mod cache;
 pub mod catalog;
-pub mod compat;
-pub mod conflicts;
-pub mod copies;
-pub mod crash;
-pub mod crash_report;
-pub mod data_move;
-pub mod data_usage;
+pub mod content;
+pub mod data;
 pub mod dbedit;
-pub mod disk;
-pub mod ea_app;
-pub mod ea_diag;
-pub mod entitlement;
-pub mod entrant_lists;
+pub mod diagnostics;
 pub mod erpbuild;
-pub mod exe_version;
-pub mod fast_fail;
-pub mod folders;
-pub mod heads;
-pub mod helper;
-pub mod home_menu;
-pub mod http;
+pub mod game_db;
+pub mod game_folder;
 pub mod hud;
-pub mod import;
 pub mod install;
-pub mod journal;
-pub mod known_problems;
-pub mod launch;
-pub mod launcher_saves;
-pub mod link_cache;
-pub mod livery_kits;
 pub mod loader_check;
-pub mod managed;
-pub mod map;
 pub mod modules;
-pub mod mpauth;
 pub mod multiplayer;
 pub mod offline;
-pub mod order;
-pub mod overlay_guard;
-pub mod owned;
-pub mod package;
-pub mod paths;
-pub mod pkgedit;
-pub mod placed;
 pub mod planner;
-pub mod postfx;
-pub mod process;
+pub mod platform;
 pub mod profile;
-pub mod quarantine;
-pub mod recovery;
-pub mod registry;
-pub mod resolver;
-pub mod rnd_budget;
 pub mod row_ids;
-pub mod rowkeys;
-pub mod runtime;
-pub mod save_backup;
-pub mod save_stall;
 pub mod saves;
-pub mod send_logs;
+pub mod server;
 pub mod session;
-pub mod settings;
-pub mod setup;
-pub mod shaders;
 pub mod stdlib;
-pub mod steam;
-pub mod steam_client;
-pub mod stock;
 pub mod store;
-pub mod support;
 pub mod testsuite;
-pub mod texcheck;
 pub mod timetrial;
 pub mod tracks;
-pub mod transfer;
-pub mod udp_ids;
 pub mod ui;
-pub mod update;
-pub mod updater;
-pub mod usage;
-pub mod vault;
-pub mod vdf;
-pub mod version;
-pub mod virtual_lists;
+pub mod updates;
+
+pub use addons::{builtin, helper, import, package, registry, settings, storage as addon_storage, version};
+pub use cache::link as link_cache;
+pub use content::{
+    pkg_edit as pkgedit, postfx, runtime_assets as runtime, shaders, texture_check as texcheck,
+    track_package as map,
+};
+pub use data::{paths, relocate as data_move, space as data_usage};
+pub use diagnostics::{
+    crash, crash_report, ea_launch as ea_diag, fast_fail, known_problems, launch, overlay_guard, quarantine,
+    send_logs,
+};
+pub use game_db::{
+    entrant_lists, heads, livery_kits, owned, rnd_budget, row_keys as rowkeys, udp_ids, virtual_lists,
+};
+pub use game_folder::{
+    baseline, busy, copies, entitlement, exe_version, journal, placed, recovery, setup, stock,
+};
+pub use platform::{app_control, disk, ea_app, process, run_as_admin as compat, steam, steam_client, vdf};
+pub use profile::{conflicts, folders, order, resolver};
+pub use saves::{backup as save_backup, launcher as launcher_saves, stall as save_stall, vault};
+pub use server::{http, sign_in as mpauth, support, usage};
+pub use ui::home_menu;
+pub use updates::{managed, release as update, transfer, updater};
 
 pub const STEAM_APP_ID: u32 = 3_059_520;
 pub const GAME_EXE: &str = "F1_25.exe";

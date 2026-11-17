@@ -4,19 +4,17 @@
 set -euo pipefail
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
-if ! command -v zig >/dev/null; then
-    exec nix shell nixpkgs#zig -c "$SELF" "$@"
-fi
+. "$(dirname "$SELF")/lib/env.sh"
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
 OUT=${1:-$PWD/../build/track-lists-test}
 PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 mkdir -p "$OUT"
 FLAGS=(-std=c++23 -O1 -Wall -Wextra -Wno-nullability-completeness -I../../packages/sdk/include)
 for t in fits list per_package; do
-    "${PIN[@]}" zig c++ -target x86_64-linux-musl "${FLAGS[@]}" -o "$OUT/${t}_test" "tracks/${t}_test.cpp"
+    "${PIN[@]}" zig c++ -target x86_64-linux-musl -I../src "${FLAGS[@]}" -o "$OUT/${t}_test" "tracks/${t}_test.cpp"
 done
 for f in list per_package data_session; do
-    "${PIN[@]}" zig c++ -target x86_64-windows-gnu "${FLAGS[@]}" -I../src/core -I../include \
+    "${PIN[@]}" zig c++ -target x86_64-windows-gnu "${FLAGS[@]}" -I../src -I../include \
         -c "../src/core/apply/tracks/$f.cpp" -o "$OUT/$f.windows.o"
 done
 for t in fits list per_package; do

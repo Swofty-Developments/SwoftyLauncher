@@ -9,7 +9,7 @@
 #include <vector>
 #include <swofty/game.hpp>
 #include <swofty/mixin.hpp>
-#include "../core/json.hpp"
+#include "core/runtime/json.hpp"
 
 extern "C" _invalid_parameter_handler __cdecl _set_thread_local_invalid_parameter_handler(_invalid_parameter_handler);
 

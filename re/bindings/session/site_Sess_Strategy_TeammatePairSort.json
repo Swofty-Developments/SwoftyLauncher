@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/teammate_pairs_guard.cpp"
+   "native/src/core/guards/session/teammate_pairs_guard.cpp"
   ]
  },
  "verify": [],

@@ -1,4 +1,4 @@
-#include "ai_curves_logic.hpp"
+#include "core/guards/ai/ai_curves_logic.hpp"
 
 #include <cstdio>
 

@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/thrustmaster_lcd.cpp"
+   "native/src/core/guards/session/thrustmaster_lcd.cpp"
   ]
  },
  "verify": [

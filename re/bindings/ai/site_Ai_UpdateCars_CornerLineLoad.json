@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/ai_corner_guard.cpp"
+   "native/src/core/guards/ai/ai_corner_guard.cpp"
   ]
  },
  "verify": [

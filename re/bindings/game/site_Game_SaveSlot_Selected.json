@@ -9,7 +9,7 @@
   "level": "L2",
   "subsystem": "game",
   "evidence": "decomp:re/decomp/1429d0b90.c;xref:0x1429d0c40,0x1429d0c58,0x1429d0c6a",
-  "notes": "In Game_SaveSlotManager_SelectSlot right after mov [rsi+0x280], rbx: rbx = the SaveSlotInfo being loaded (slot_id [rbx], slot_guid [rbx+8]), rsi = the slot manager. A read here sees the career id before its blob deserialises (0x1429d1270 at 0x1429d0c5b); a later failure restores the old slot at 0x1429d0c6a. Signature game.save_slot_selected (save-re); the core's career id reads it (native/src/core/save_splice.cpp, snapshots/runtime.cpp)."
+  "notes": "In Game_SaveSlotManager_SelectSlot right after mov [rsi+0x280], rbx: rbx = the SaveSlotInfo being loaded (slot_id [rbx], slot_guid [rbx+8]), rsi = the slot manager. A read here sees the career id before its blob deserialises (0x1429d1270 at 0x1429d0c5b); a later failure restores the old slot at 0x1429d0c6a. Signature game.save_slot_selected (save-re); the core's career id reads it (native/src/core/career/save_splice.cpp, snapshots/runtime.cpp)."
  },
  "signature": {
   "id": "game.save_slot_selected",
@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/save_splice.cpp"
+   "native/src/core/career/save_splice.cpp"
   ]
  },
  "verify": [

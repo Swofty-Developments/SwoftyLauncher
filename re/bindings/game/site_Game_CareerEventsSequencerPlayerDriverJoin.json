@@ -34,7 +34,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/sequencer_records_guard.cpp"
+   "native/src/core/guards/career/sequencer_records_guard.cpp"
   ],
   "expect": "C6 83 E4 05"
  },

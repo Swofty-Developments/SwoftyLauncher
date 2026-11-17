@@ -1,6 +1,6 @@
 // Host unit test for the pause edge detection (pause_edge.hpp) that decides when the core fires
 // game.pause and game.resume from the game's pause reason mask.
-#include "../src/core/pause_edge.hpp"
+#include "core/frontend/pause_edge.hpp"
 
 #include <cstdio>
 #include <string>

@@ -1,5 +1,5 @@
-use crate::notices::{Notification, Notify};
-use crate::scale::px;
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::input::{Input, InputState};
@@ -134,7 +134,7 @@ impl Shell {
                             true
                         }
                         Err(e) => {
-                            crate::app_log::action(title)
+                            crate::app::app_log::action(title)
                                 .file(std::path::Path::new(&value))
                                 .failed(&e);
                             window.notify(Notification::error(e), cx);

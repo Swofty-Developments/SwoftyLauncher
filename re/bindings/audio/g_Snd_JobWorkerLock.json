@@ -36,7 +36,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/audio_queue.cpp"
+   "native/src/core/guards/engine/audio_queue.cpp"
   ]
  },
  "verify": [

@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/team_slots.cpp"
+   "native/src/core/guards/session/team_slots.cpp"
   ]
  },
  "verify": [

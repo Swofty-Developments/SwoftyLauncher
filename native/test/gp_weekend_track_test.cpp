@@ -1,10 +1,10 @@
-// Host-native unit test for the Grand Prix weekend track guard (native/src/core/gp_weekend_track_logic.hpp): a weekend
+// Host-native unit test for the Grand Prix weekend track guard (native/src/core/guards/tracks/gp_weekend_track_logic.hpp): a weekend
 // track the TrackDataSystem holds is left alone; a Grand Prix weekend track past the item vector or on a null item is
 // moved to melbourne, or to the first record when melbourne has none; other modes are only reported; and the two
 // layouts of the 2026-11-12 EA bundles (43 slots without Le Mans, 84 with it at 83) replay to a repair of track 47.
-// Built and run by native/test/run_gp_weekend_track_test.sh.
+// Built and run by native/test/run_tests.sh gp_weekend_track.
 
-#include "gp_weekend_track_logic.hpp"
+#include "core/guards/tracks/gp_weekend_track_logic.hpp"
 
 #include <cstdio>
 #include <initializer_list>

@@ -2,7 +2,7 @@
 // file in the C2 shape and a Classic Seasons 2016-like box.
 #pragma once
 
-#include "../../src/core/apply/tracks/list.hpp"
+#include "core/apply/tracks/list.hpp"
 
 #include <cstdio>
 #include <string>

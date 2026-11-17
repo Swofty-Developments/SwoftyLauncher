@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/track_list_guard.cpp"
+   "native/src/core/guards/tracks/track_list_guard.cpp"
   ]
  },
  "verify": [

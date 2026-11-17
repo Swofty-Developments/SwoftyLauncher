@@ -1,10 +1,10 @@
 #pragma once
 
-#include "box_options.hpp"
-#include "race_fuel.hpp"
+#include "core/apply/content/box_options.hpp"
+#include "core/apply/content/race_fuel.hpp"
 
 #include <cstdint>
-#include "../../box_grid_logic.hpp"
+#include "core/boxes/box_grid_logic.hpp"
 
 #include <cstdint>
 #include <optional>

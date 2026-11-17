@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "../src/core/dbread_logic.hpp"
+#include "core/assets/dbread_logic.hpp"
 
 static int failures;
 

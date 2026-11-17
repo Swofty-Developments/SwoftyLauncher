@@ -344,9 +344,9 @@ swofty::log("[my-addon] R&D tab shown: %s", hub::name(r)); // ok, late, unavaila
 
 ## Add a home tile
 
-The game builds the home screen's tiles in `FeTile_Build_List`. swofty_core adds ADDON SETTINGS there: a [site mixin](/reference/addons/hooking#run-code-at-an-instruction) runs right after the game adds the Career tile, adds a copy of it, and gives the copy its own text and route. This is the code, from `native/src/core/swofty_core.cpp`:
+The game builds the home screen's tiles in `FeTile_Build_List`. swofty_core adds ADDON SETTINGS there: a [site mixin](/reference/addons/hooking#run-code-at-an-instruction) runs right after the game adds the Career tile, adds a copy of it, and gives the copy its own text and route. This is the code, from `native/src/core/frontend/home_tiles.cpp`:
 
-```cpp [native/src/core/swofty_core.cpp]
+```cpp [native/src/core/frontend/home_tiles.cpp]
 #include <swofty/game.hpp>
 #include <swofty/mixin.hpp>
 

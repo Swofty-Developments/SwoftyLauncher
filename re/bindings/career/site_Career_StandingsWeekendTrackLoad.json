@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/standings_guard.cpp"
+   "native/src/core/guards/career/standings_guard.cpp"
   ]
  },
  "verify": [

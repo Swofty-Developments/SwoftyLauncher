@@ -1,6 +1,6 @@
-use crate::game::{self, Launch, Owner};
-use crate::notices::{Notification, Notify};
-use crate::play_checks;
+use crate::services::game::{self, Launch, Owner};
+use crate::services::play_checks;
+use crate::shell::notices::{Notification, Notify};
 use gpui_kit::*;
 use std::path::PathBuf;
 use swofty_core::install::Source;
@@ -68,7 +68,7 @@ impl Shell {
     /// and the launch follows when they pass.
     pub(crate) fn play_for(
         &mut self,
-        room: Option<crate::multiplayer::RoomLaunch>,
+        room: Option<crate::features::multiplayer::RoomLaunch>,
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> bool {
@@ -131,16 +131,16 @@ impl Shell {
     pub(super) fn play_checked(
         &mut self,
         checked: play_checks::Checked,
-        room: Option<crate::multiplayer::RoomLaunch>,
+        room: Option<crate::features::multiplayer::RoomLaunch>,
         steam_saves_once: bool,
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> bool {
-        crate::app_log::note(&checked.timings.line());
+        crate::app::app_log::note(&checked.timings.line());
         let stale = self.library.profile.name != checked.profile
             || self.install.as_ref().map(|i| &i.dir) != Some(&checked.game);
         let Some(install) = self.install.clone().filter(|_| !stale) else {
-            crate::app_log::note("[play] dropped: the profile or game copy changed during the checks");
+            crate::app::app_log::note("[play] dropped: the profile or game copy changed during the checks");
             return false;
         };
         let gate = checked.gate;
@@ -183,12 +183,12 @@ impl Shell {
         if let Some(d) = swofty_core::known_problems::outdated_exe(install.version().as_deref()) {
             window.notify(Notification::warning(d.text()).title(d.title).autohide(false), cx);
         }
-        if let Some(short) = crate::settings::low_space_warning(checked.room) {
+        if let Some(short) = crate::features::settings::low_space_warning(checked.room) {
             let text = trf!(
                 "{short} Settings shows what takes the room and clears old logs.",
                 short = short
             );
-            crate::app_log::note(&format!("play: {text}"));
+            crate::app::app_log::note(&format!("play: {text}"));
             window.notify(
                 Notification::warning(text)
                     .title(tr("Low on disk space"))
@@ -255,13 +255,13 @@ impl Shell {
         let mut config = self.store.config();
         swofty_core::copies::set_active(&mut config, &dir);
         if let Err(e) = self.store.save_config(&config) {
-            crate::app_log::action("save settings").failed(&e);
+            crate::app::app_log::action("save settings").failed(&e);
             window.notify(Notification::error(e.to_string()), cx);
             return;
         }
         if let Some(copy) = self.copies.iter().find(|c| c.dir == dir) {
             self.install = Some(copy.clone());
-            crate::app_log::set_game(Some(&copy.dir));
+            crate::app::app_log::set_game(Some(&copy.dir));
         }
         self.attribute();
         self.notice = None;

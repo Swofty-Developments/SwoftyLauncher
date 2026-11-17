@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gvdb.hpp"
+#include "core/apply/content/gvdb.hpp"
 
 #include <swofty/json.hpp>
 
@@ -43,7 +43,7 @@ struct Write {
     bool fresh = false;
 };
 
-#include "row_keys.inc"
+#include "core/apply/content/row_keys.inc"
 
 class Keys {
 public:

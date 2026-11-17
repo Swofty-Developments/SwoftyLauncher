@@ -19,7 +19,7 @@
 #include <swofty/hooks.hpp>
 #include <swofty/services.hpp>
 
-#include "../../src/core/hooks/guard.hpp"
+#include "core/hooks/guard.hpp"
 
 using namespace swofty_core::hooks::guard;
 

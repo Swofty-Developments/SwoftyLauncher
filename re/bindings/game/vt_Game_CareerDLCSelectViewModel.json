@@ -36,7 +36,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/career_content.cpp"
+   "native/src/core/career/career_content.cpp"
   ]
  },
  "verify": [

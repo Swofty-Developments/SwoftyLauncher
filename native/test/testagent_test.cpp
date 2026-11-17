@@ -1,6 +1,6 @@
-// Host test of the test agent's protocol and runner (src/core/testagent/agent_logic.hpp) and of the
+// Host test of the test agent's protocol and runner (src/core/testing/agent/agent_logic.hpp) and of the
 // SWOFTY_TEST coroutine runner (packages/sdk/include/swofty/test.hpp).
-#include "../src/core/testagent/agent_logic.hpp"
+#include "core/testing/agent/agent_logic.hpp"
 
 #include <swofty/test.hpp>
 

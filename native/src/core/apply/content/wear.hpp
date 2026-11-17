@@ -1,8 +1,8 @@
 #pragma once
 
-#include "liveries.hpp"
-#include "lower.hpp"
-#include "rows.hpp"
+#include "core/apply/content/liveries.hpp"
+#include "core/apply/content/lower.hpp"
+#include "core/apply/content/rows.hpp"
 
 #include <set>
 

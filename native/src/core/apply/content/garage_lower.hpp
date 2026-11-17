@@ -1,7 +1,7 @@
 #pragma once
 
-#include "liveries.hpp"
-#include "lower.hpp"
+#include "core/apply/content/liveries.hpp"
+#include "core/apply/content/lower.hpp"
 
 // Lowers a team.garage record: the box is a content.package, and the art goes to the asset groups of the cars the
 // package gives the team, so a session of any other box never loads it. A car's group is the one its vehicle package

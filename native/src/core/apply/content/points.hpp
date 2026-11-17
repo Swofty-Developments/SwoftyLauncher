@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gvdb.hpp"
-#include "lower.hpp"
+#include "core/apply/content/gvdb.hpp"
+#include "core/apply/content/lower.hpp"
 
 #include <cstdint>
 #include <cstdio>

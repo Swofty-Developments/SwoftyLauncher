@@ -34,7 +34,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/ers_newlap.cpp"
+   "native/src/core/guards/cars/ers_newlap.cpp"
   ],
   "expect": "48 83 C0 08 4C 39 C0",
   "func_start": "0x1425180d0"

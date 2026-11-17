@@ -61,7 +61,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/swofty_core.cpp"
+    "native/src/core/frontend/swofty_core.cpp"
    ]
   },
   {
@@ -93,7 +93,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/swofty_core.cpp"
+    "native/src/core/frontend/swofty_core.cpp"
    ]
   },
   {
@@ -125,7 +125,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/swofty_core.cpp"
+    "native/src/core/frontend/swofty_core.cpp"
    ]
   },
   {
@@ -158,7 +158,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/swofty_core.cpp"
+    "native/src/core/frontend/swofty_core.cpp"
    ]
   },
   {
@@ -191,7 +191,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/swofty_core.cpp"
+    "native/src/core/frontend/swofty_core.cpp"
    ]
   },
   {
@@ -223,7 +223,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/swofty_core.cpp"
+    "native/src/core/frontend/swofty_core.cpp"
    ]
   },
   {
@@ -445,7 +445,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/items.cpp"
+    "native/src/core/assets/items.cpp"
    ]
   },
   {
@@ -471,7 +471,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/events.cpp"
+    "native/src/core/events/events.cpp"
    ]
   },
   {
@@ -497,7 +497,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/events.cpp"
+    "native/src/core/events/events.cpp"
    ]
   },
   {
@@ -523,7 +523,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/events.cpp"
+    "native/src/core/events/events.cpp"
    ]
   },
   {
@@ -1644,7 +1644,7 @@
    ],
    "used_by": [
     "addons/career-editor/native/src/economy.cpp",
-    "native/src/core/career.cpp"
+    "native/src/core/career/career.cpp"
    ]
   },
   {
@@ -2137,7 +2137,7 @@
    ],
    "used_by": [
     "addons/f1-1990/native/src/grid_best_of.cpp",
-    "native/src/core/box_grid.cpp"
+    "native/src/core/boxes/box_grid.cpp"
    ]
   },
   {
@@ -2164,7 +2164,7 @@
    ],
    "used_by": [
     "addons/f1-1990/native/src/grid_best_of.cpp",
-    "native/src/core/box_grid.cpp"
+    "native/src/core/boxes/box_grid.cpp"
    ]
   },
   {
@@ -2191,7 +2191,7 @@
    ],
    "used_by": [
     "addons/f1-1990/native/src/grid_best_of.cpp",
-    "native/src/core/box_grid.cpp"
+    "native/src/core/boxes/box_grid.cpp"
    ]
   },
   {
@@ -2677,7 +2677,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/lang_override.cpp"
+    "native/src/core/assets/lang_override.cpp"
    ]
   },
   {
@@ -2703,7 +2703,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/lang_override.cpp"
+    "native/src/core/assets/lang_override.cpp"
    ]
   },
   {
@@ -2808,7 +2808,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/career_content.cpp",
+    "native/src/core/career/career_content.cpp",
     "addons/f1-1990/native/src/career_menu_ui.cpp"
    ]
   },
@@ -2835,7 +2835,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/career_content.cpp",
+    "native/src/core/career/career_content.cpp",
     "addons/f1-1990/native/src/career_menu_ui.cpp"
    ]
   },
@@ -2862,7 +2862,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/career_content.cpp",
+    "native/src/core/career/career_content.cpp",
     "addons/f1-1990/native/src/career_menu_ui.cpp"
    ]
   },
@@ -2889,7 +2889,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/career_content.cpp",
+    "native/src/core/career/career_content.cpp",
     "addons/f1-1990/native/src/career_menu_ui.cpp"
    ]
   },
@@ -2917,7 +2917,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/career_content.cpp",
+    "native/src/core/career/career_content.cpp",
     "addons/f1-1990/native/src/career_menu_ui.cpp"
    ]
   },
@@ -30791,7 +30791,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/era_picker.cpp"
+    "native/src/core/boxes/era_picker.cpp"
    ]
   },
   {
@@ -30817,7 +30817,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/era_picker.cpp"
+    "native/src/core/boxes/era_picker.cpp"
    ]
   },
   {
@@ -30844,7 +30844,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/era_picker.cpp"
+    "native/src/core/boxes/era_picker.cpp"
    ]
   },
   {
@@ -30871,7 +30871,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/era_picker.cpp"
+    "native/src/core/boxes/era_picker.cpp"
    ]
   },
   {
@@ -33135,7 +33135,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/myteam_vehicle_heal.cpp"
+    "native/src/core/guards/career/myteam_vehicle_heal.cpp"
    ]
   },
   {
@@ -65961,7 +65961,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_splice.cpp"
+    "native/src/core/career/save_splice.cpp"
    ]
   },
   {
@@ -65987,7 +65987,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_splice.cpp"
+    "native/src/core/career/save_splice.cpp"
    ]
   },
   {
@@ -66037,7 +66037,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/car_category.cpp"
+    "native/src/core/boxes/car_category.cpp"
    ]
   },
   {
@@ -66064,7 +66064,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/car_category.cpp"
+    "native/src/core/boxes/car_category.cpp"
    ]
   },
   {
@@ -66091,7 +66091,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/car_category.cpp"
+    "native/src/core/boxes/car_category.cpp"
    ]
   },
   {
@@ -66117,7 +66117,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/car_category.cpp"
+    "native/src/core/boxes/car_category.cpp"
    ]
   },
   {
@@ -66144,7 +66144,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/car_category.cpp"
+    "native/src/core/boxes/car_category.cpp"
    ]
   },
   {
@@ -66171,8 +66171,8 @@
     }
    ],
    "used_by": [
-    "native/src/core/car_category.cpp",
-    "native/src/core/box_options.cpp"
+    "native/src/core/boxes/car_category.cpp",
+    "native/src/core/boxes/box_options.cpp"
    ]
   },
   {
@@ -66294,7 +66294,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/track_acclim.cpp"
+    "native/src/core/guards/tracks/track_acclim.cpp"
    ]
   },
   {
@@ -66514,7 +66514,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_sandbox.cpp"
+    "native/src/core/testing/save_sandbox.cpp"
    ]
   },
   {
@@ -66540,7 +66540,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_sandbox.cpp"
+    "native/src/core/testing/save_sandbox.cpp"
    ]
   },
   {
@@ -66566,7 +66566,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_sandbox.cpp"
+    "native/src/core/testing/save_sandbox.cpp"
    ]
   },
   {
@@ -66616,7 +66616,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_sandbox.cpp"
+    "native/src/core/testing/save_sandbox.cpp"
    ]
   },
   {
@@ -66669,7 +66669,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/car_category.cpp"
+    "native/src/core/boxes/car_category.cpp"
    ]
   },
   {
@@ -66695,7 +66695,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -66745,7 +66745,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -66771,7 +66771,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -66797,7 +66797,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -66823,7 +66823,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -66849,7 +66849,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -67235,7 +67235,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/era_picker.cpp"
+    "native/src/core/boxes/era_picker.cpp"
    ]
   },
   {
@@ -67285,7 +67285,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/track_select.cpp"
+    "native/src/core/guards/tracks/track_select.cpp"
    ]
   },
   {
@@ -67311,7 +67311,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/track_select.cpp"
+    "native/src/core/guards/tracks/track_select.cpp"
    ]
   },
   {
@@ -67337,7 +67337,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/track_select.cpp"
+    "native/src/core/guards/tracks/track_select.cpp"
    ]
   },
   {
@@ -71069,7 +71069,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/audio_queue.cpp"
+    "native/src/core/guards/engine/audio_queue.cpp"
    ]
   },
   {
@@ -99495,7 +99495,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/view_state.cpp"
+    "native/src/core/frontend/view_state.cpp"
    ]
   },
   {
@@ -112038,7 +112038,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/rnd_suppliers_guard.cpp"
+    "native/src/core/guards/career/rnd_suppliers_guard.cpp"
    ]
   },
   {
@@ -116619,7 +116619,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/rnd_suppliers_guard.cpp"
+    "native/src/core/guards/career/rnd_suppliers_guard.cpp"
    ]
   },
   {
@@ -121810,7 +121810,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_splice.cpp"
+    "native/src/core/career/save_splice.cpp"
    ]
   },
   {
@@ -121836,7 +121836,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/era_picker.cpp"
+    "native/src/core/boxes/era_picker.cpp"
    ]
   },
   {
@@ -146867,7 +146867,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/fe_tile_guard.cpp"
+    "native/src/core/guards/frontend/fe_tile_guard.cpp"
    ]
   },
   {
@@ -146893,7 +146893,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/fe_tile_guard.cpp"
+    "native/src/core/guards/frontend/fe_tile_guard.cpp"
    ]
   },
   {
@@ -146919,7 +146919,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/crash.cpp"
+    "native/src/core/diagnostics/crash/crash.cpp"
    ]
   },
   {
@@ -146945,7 +146945,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/standings_drop.cpp"
+    "native/src/core/guards/career/standings_drop.cpp"
    ]
   },
   {
@@ -146971,7 +146971,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/standings_drop.cpp"
+    "native/src/core/guards/career/standings_drop.cpp"
    ]
   },
   {
@@ -148113,7 +148113,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/era_picker.cpp"
+    "native/src/core/boxes/era_picker.cpp"
    ]
   },
   {
@@ -148139,7 +148139,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/session_job_probe.cpp"
+    "native/src/core/diagnostics/session_job_probe.cpp"
    ]
   },
   {
@@ -170389,7 +170389,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/red_flag_recompute_guard.cpp"
+    "native/src/core/guards/session/red_flag_recompute_guard.cpp"
    ]
   },
   {
@@ -170415,7 +170415,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/tile_list_select_guard.cpp"
+    "native/src/core/guards/frontend/tile_list_select_guard.cpp"
    ]
   },
   {

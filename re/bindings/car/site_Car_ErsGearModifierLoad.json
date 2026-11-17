@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/ers_mode.cpp"
+   "native/src/core/guards/cars/ers_mode.cpp"
   ]
  },
  "verify": [

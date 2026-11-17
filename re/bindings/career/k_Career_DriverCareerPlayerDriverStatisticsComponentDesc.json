@@ -37,7 +37,7 @@
   ],
   "used_by": [
    "addons/career-editor/native/src/components.cpp",
-   "native/src/core/career.cpp"
+   "native/src/core/career/career.cpp"
   ]
  },
  "verify": [

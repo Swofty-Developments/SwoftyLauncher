@@ -2,7 +2,7 @@
 // made before the Steam remote storage interface is replaced, and the folder that stands in for Steam
 // remote storage. The profile save's two files are random bytes here, as opaque to the sandbox as the
 // game's encrypted data file and its security index. run_save_sandbox_test.sh builds and runs it.
-#include "../src/core/save_sandbox_logic.hpp"
+#include "core/testing/save_sandbox_logic.hpp"
 
 #include <cstdio>
 #include <filesystem>

@@ -1,9 +1,9 @@
-#include "../../src/core/apply/database.hpp"
-#include "../../src/core/apply/facts.hpp"
-#include "../../src/core/apply/ids.hpp"
-#include "../../src/core/apply/room.hpp"
-#include "../../src/core/apply/scheduler.hpp"
-#include "../../src/core/registry/table.hpp"
+#include "core/apply/database.hpp"
+#include "core/apply/facts.hpp"
+#include "core/apply/ids.hpp"
+#include "core/apply/room.hpp"
+#include "core/apply/scheduler.hpp"
+#include "core/registry/table.hpp"
 
 #include <cstdio>
 #include <fstream>

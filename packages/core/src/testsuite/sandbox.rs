@@ -5,7 +5,7 @@
 //! [`TOKEN_ENV`] (the token). With both and a matching `run.json` the core
 //! arms the test agent, whose mailbox is `agent/`; when `run.json` names
 //! `saves`, the core also replaces the save device's Steam remote storage
-//! with `saves/remote/` (native/src/core/save_sandbox.cpp), or quits the
+//! with `saves/remote/` (native/src/core/testing/save_sandbox.cpp), or quits the
 //! game before the title screen when it can't, and writes [`STATUS_FILE`].
 //! After the run the token is removed from `run.json`, so the folder alone
 //! never switches test mode on again.

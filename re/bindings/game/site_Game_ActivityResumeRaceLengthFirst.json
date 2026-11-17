@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/activity_resume_guard.cpp"
+   "native/src/core/guards/career/activity_resume_guard.cpp"
   ],
   "func_start": "0x151948840",
   "data1_reason": "the race length text body is a .data1 body (thunk 0x14386b1d0, called from Game_ActivitiesUIDeeplinkManager_ReportCareerActivityResume at 0x1438682e5); no .xtls site sees the ui variable group before it is read"

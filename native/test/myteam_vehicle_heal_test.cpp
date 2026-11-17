@@ -1,9 +1,9 @@
-// Host-native unit test for the core's My Team vehicle heal (native/src/core/myteam_vehicle_heal_logic.hpp) and the
-// game manager's entrants system displacement it reads the cars through (native/src/core/game_manager_layout.hpp).
-// Built and run by native/test/run_myteam_vehicle_heal_test.sh.
+// Host-native unit test for the core's My Team vehicle heal (native/src/core/guards/career/myteam_vehicle_heal_logic.hpp) and the
+// game manager's entrants system displacement it reads the cars through (native/src/core/runtime/game_manager_layout.hpp).
+// Built and run by native/test/run_tests.sh myteam_vehicle_heal.
 
-#include "game_manager_layout.hpp"
-#include "myteam_vehicle_heal_logic.hpp"
+#include "core/runtime/game_manager_layout.hpp"
+#include "core/guards/career/myteam_vehicle_heal_logic.hpp"
 
 #include <cstdio>
 #include <map>

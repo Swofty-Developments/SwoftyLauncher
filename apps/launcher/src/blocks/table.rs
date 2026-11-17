@@ -1,4 +1,4 @@
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Icon, h_flex, v_flex};
@@ -12,7 +12,7 @@ use super::state::*;
 use super::widgets::*;
 use super::*;
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::ui::theme::Palette;
 
 pub(super) fn column_drag_width(start_width: f32, start_x: f32, current_x: f32) -> f32 {
     (start_width + (current_x - start_x)).max(COLUMN_MIN_W)

@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/gp_weekend_track_guard.cpp"
+   "native/src/core/guards/tracks/gp_weekend_track_guard.cpp"
   ]
  },
  "verify": [],

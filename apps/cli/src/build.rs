@@ -324,7 +324,7 @@ fn heartbeat(done: &AtomicBool, data: &Path, mut busy: Option<Busy>, copied: &Co
         }
         std::thread::sleep(Duration::from_millis(250));
         if let Some(line) = beat.line(swofty_core::work(), swofty_core::doing(), Instant::now()) {
-            crate::run::say("info", &line);
+            crate::output::say("info", &line);
         }
     }
 }

@@ -1,0 +1,464 @@
+use crate::ui::scale::{Hit, px};
+use gpui_kit::assets::IconName;
+use gpui_kit::component::button::{Button, ButtonVariants};
+use gpui_kit::component::spinner::Spinner;
+use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
+use gpui_kit::prelude::FluentBuilder;
+use gpui_kit::*;
+use swofty_core::multiplayer::types::{MemberState, Phase, RoomContent, RoomSummary, SessionState};
+use swofty_i18n::{fill, tr, trf, trn};
+
+use super::model::*;
+use crate::shell::Shell;
+use crate::shell::pages::{GUTTER, tag};
+use crate::ui::theme::{Palette, ScrollArea};
+
+impl Shell {
+    pub(super) fn mp_room_view(
+        &mut self,
+        room: &RoomSummary,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        let on = self.mp_enabled_addons();
+        let listed = room.addons.as_ref().filter(|a| !a.list.is_empty());
+        let checks = listed.map(|a| addon_checks(&a.list, &on)).unwrap_or_default();
+        let lacking = missing(&checks);
+        let subtitle = room_meta(room);
+        let actions = h_flex().gap(px(8.)).items_center().child(
+            Button::new("mp-view-back")
+                .outline()
+                .icon(IconName::ArrowLeft)
+                .label(tr("Back to rooms"))
+                .on_click(cx.listener(|this, _, _, cx| this.mp_close_view(cx))),
+        );
+        let summary = if checks.is_empty() {
+            tr("The host's launcher hasn't listed its addons.").to_owned()
+        } else if lacking == 0 {
+            tr("You have every addon the host has on.").to_owned()
+        } else {
+            fill(
+                &trn(
+                    checks.len(),
+                    "You are missing or have off {lacking} of {count} addon.",
+                    "You are missing or have off {lacking} of {count} addons.",
+                ),
+                &[("lacking", lacking.to_string())],
+            )
+        };
+        let rows: Vec<AnyElement> = checks
+            .iter()
+            .enumerate()
+            .map(|(i, c)| {
+                h_flex()
+                    .px(px(16.))
+                    .py(px(10.))
+                    .gap(px(12.))
+                    .items_center()
+                    .when(i > 0, |d| d.border_t_1().border_color(p.border_variant))
+                    .child(
+                        Icon::new(if c.have { IconName::Check } else { IconName::X })
+                            .size(px(16.))
+                            .text_color(if c.have { p.success } else { p.error }),
+                    )
+                    .child(
+                        div()
+                            .flex_1()
+                            .min_w_0()
+                            .truncate()
+                            .text_size(px(14.))
+                            .child(c.name.clone()),
+                    )
+                    .child(
+                        div()
+                            .text_size(px(13.))
+                            .text_color(p.text_muted)
+                            .child(if c.have {
+                                tr("You have it")
+                            } else {
+                                tr("You don't have it on")
+                            }),
+                    )
+                    .into_any_element()
+            })
+            .collect();
+        v_flex()
+            .size_full()
+            .child(self.header(room.name.clone(), subtitle, actions, p))
+            .child(
+                v_flex()
+                    .flex_1()
+                    .min_h_0()
+                    .scroll_y("mp-room-view")
+                    .px(px(GUTTER))
+                    .pt(px(4.))
+                    .pb(px(24.))
+                    .gap(px(16.))
+                    .child(div().text_size(px(13.)).text_color(p.text_muted).child(summary))
+                    .child(div().text_size(px(13.)).text_color(p.text_muted).child(trf!(
+                        "Press Play {host}'s Lobby in the bar below to start F1 25 in this room.",
+                        host = room.host.name
+                    )))
+                    .when(!rows.is_empty(), |d| {
+                        d.child(
+                            v_flex()
+                                .rounded(px(6.))
+                                .border_1()
+                                .border_color(p.border)
+                                .overflow_hidden()
+                                .children(rows),
+                        )
+                    }),
+            )
+            .into_any_element()
+    }
+
+    pub(super) fn status_card(
+        &self,
+        st: &Status,
+        state: &SessionState,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> Div {
+        let m = &self.mp_page;
+        let (icon, color) = match st.tone {
+            Tone::Working => (IconName::LoaderCircle, p.accent),
+            Tone::Blocked => (IconName::CircleAlert, p.warning),
+            Tone::Good => (IconName::CircleCheck, p.success),
+            Tone::Over => (IconName::Info, p.text_placeholder),
+        };
+        let over = state.phase.is_over();
+        let current = step_number(st.progress.step);
+        let steps = h_flex()
+            .gap(px(14.))
+            .flex_wrap()
+            .children(STEPS.iter().enumerate().map(|(i, (_, name))| {
+                div()
+                    .text_size(px(12.))
+                    .text_color(if i == current && !over {
+                        p.text
+                    } else if i < current && !over {
+                        p.text_muted
+                    } else {
+                        p.text_placeholder
+                    })
+                    .when(i == current && !over, |d| d.font_weight(FontWeight::SEMIBOLD))
+                    .child(*name)
+            }));
+        let fraction = f32::from(st.progress.percent) / 100.0;
+        let bar = div()
+            .h(px(6.))
+            .w_full()
+            .rounded_full()
+            .bg(p.border_variant)
+            .child(
+                div()
+                    .h_full()
+                    .w(relative(fraction))
+                    .rounded_full()
+                    .bg(if st.tone == Tone::Blocked {
+                        p.warning
+                    } else {
+                        p.accent
+                    }),
+            );
+        let headline = match &st.problem {
+            Some(problem) => problem.text.clone(),
+            None => st.progress.label.clone(),
+        };
+        let action = st
+            .problem
+            .as_ref()
+            .filter(|_| !m.leaving && !over)
+            .map(|problem| {
+                if problem.retry {
+                    Button::new("mp-retry")
+                        .primary()
+                        .tap_sm()
+                        .icon(IconName::RefreshCw)
+                        .label("Retry")
+                        .on_click(cx.listener(|this, _, _, cx| this.mp_retry(cx)))
+                } else {
+                    Button::new("mp-problem-leave")
+                        .primary()
+                        .tap_sm()
+                        .icon(IconName::LogOut)
+                        .label("Leave")
+                        .on_click(cx.listener(|this, _, _, cx| this.mp_leave(cx)))
+                }
+            });
+        let running = !self.processes.is_empty();
+        let reopen = (st.problem.is_some()
+            && state.launch.is_some()
+            && running
+            && m.closing.is_none()
+            && !over
+            && !m.leaving)
+            .then(|| {
+                Button::new("mp-restart-game")
+                    .primary()
+                    .tap_sm()
+                    .label(tr("Restart F1 25"))
+                    .on_click(cx.listener(|this, _, window, cx| {
+                        this.mp_close_game(window, cx);
+                        cx.notify();
+                    }))
+            });
+        let race =
+            (state.host && !over && !m.leaving && matches!(state.phase, Phase::InLobby | Phase::Racing))
+                .then(|| {
+                    let started = state.room.as_ref().is_some_and(|r| r.started);
+                    Button::new("mp-race")
+                        .outline()
+                        .tap_sm()
+                        .icon(IconName::Flag)
+                        .label(if started {
+                            tr("Race over")
+                        } else {
+                            tr("Race started")
+                        })
+                        .tooltip(if started {
+                            tr("Show the room in the list again")
+                        } else {
+                            tr("Hide the room from the list while you race")
+                        })
+                        .on_click(cx.listener(move |this, _, _, cx| {
+                            if let Some(s) = &this.mp_page.session {
+                                s.mark_race(!started);
+                            }
+                            cx.notify();
+                        }))
+                });
+        self.mp_card(p)
+            .gap(px(14.))
+            .child(
+                h_flex()
+                    .gap(px(12.))
+                    .items_center()
+                    .map(|d| match icon {
+                        IconName::LoaderCircle => {
+                            d.child(Spinner::new().icon(icon).with_size(px(22.)).color(color))
+                        }
+                        _ => d.child(Icon::new(icon).size(px(22.)).text_color(color)),
+                    })
+                    .child(
+                        v_flex()
+                            .flex_1()
+                            .min_w_0()
+                            .gap(px(3.))
+                            .child(div().text_size(px(17.)).font_weight(FontWeight::SEMIBOLD).child(
+                                if m.leaving && !over {
+                                    "Leaving the room\u{2026}".to_owned()
+                                } else {
+                                    headline
+                                },
+                            ))
+                            .children(
+                                st.hint
+                                    .filter(|_| !m.leaving)
+                                    .map(|h| div().text_size(px(13.)).text_color(p.text_muted).child(h)),
+                            )
+                            .children(reopen.is_some().then(|| {
+                                div()
+                                    .text_size(px(13.))
+                                    .text_color(p.text_muted)
+                                    .child(tr("F1 25 is open. It restarts for this session."))
+                            })),
+                    )
+                    .children(race)
+                    .children(reopen)
+                    .children(action),
+            )
+            .when(!over, |d| d.child(bar).child(steps))
+    }
+
+    pub(super) fn mp_room(&mut self, state: &SessionState, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+        let m = &self.mp_page;
+        let over = state.phase.is_over();
+        let room = state.room.clone();
+        let title = room
+            .as_ref()
+            .map_or_else(|| "Multiplayer".to_owned(), |r| r.name.clone());
+        let subtitle = room.as_ref().map_or_else(
+            || tr("Setting up the room\u{2026}").to_owned(),
+            |r| {
+                let mut parts = vec![
+                    trf!("{count} in the lobby", count = joined(state)),
+                    trf!(
+                        "{joined}/{max} players",
+                        joined = state.members.len(),
+                        max = r.max_members
+                    ),
+                    if r.public { tr("Listed") } else { tr("Private") }.to_owned(),
+                ];
+                if state.host {
+                    parts.push(tr("You're the host").into());
+                }
+                parts.join(" \u{00b7} ")
+            },
+        );
+        let code = room.as_ref().map(|r| r.code.clone());
+        let actions = h_flex()
+            .gap(px(8.))
+            .items_center()
+            .when_some(code, |d, code| {
+                let copy = code.clone();
+                d.child(
+                    Button::new("mp-copy-code")
+                        .outline()
+                        .icon(if m.copied.is_some() {
+                            IconName::Check
+                        } else {
+                            IconName::Copy
+                        })
+                        .label(if m.copied.is_some() {
+                            "Copied".to_owned()
+                        } else {
+                            code
+                        })
+                        .tooltip(tr("Copy the invite code"))
+                        .on_click(cx.listener(move |this, _, _, cx| this.mp_copy_code(copy.clone(), cx))),
+                )
+            })
+            .child(
+                Button::new("mp-leave")
+                    .outline()
+                    .icon(IconName::LogOut)
+                    .label(if m.leaving {
+                        "Leaving\u{2026}"
+                    } else if over {
+                        "Back to rooms"
+                    } else {
+                        "Leave"
+                    })
+                    .disabled(m.leaving)
+                    .on_click(cx.listener(|this, _, _, cx| this.mp_leave(cx))),
+            );
+        let st = room_status(state);
+        let status = self.status_card(&st, state, p, cx);
+        let players: Vec<AnyElement> = state
+            .members
+            .iter()
+            .enumerate()
+            .map(|(i, member)| self.member_row(member, &state.content, i == 0, p))
+            .collect();
+        let cars = content_check(state).map(|(owns, text)| {
+            v_flex()
+                .gap(px(8.))
+                .child(self.section_head("CARS".to_owned(), p))
+                .child(
+                    h_flex()
+                        .px(px(16.))
+                        .py(px(10.))
+                        .gap(px(12.))
+                        .items_center()
+                        .rounded(px(6.))
+                        .border_1()
+                        .border_color(p.border)
+                        .child(
+                            Icon::new(match owns {
+                                Some(true) => IconName::Check,
+                                Some(false) => IconName::X,
+                                None => IconName::Info,
+                            })
+                            .size(px(16.))
+                            .text_color(match owns {
+                                Some(true) => p.success,
+                                Some(false) => p.error,
+                                None => p.text_muted,
+                            }),
+                        )
+                        .child(
+                            div()
+                                .flex_1()
+                                .min_w_0()
+                                .truncate()
+                                .text_size(px(14.))
+                                .child(tr("F1 2026 cars")),
+                        )
+                        .child(div().text_size(px(13.)).text_color(p.text_muted).child(text)),
+                )
+        });
+        v_flex()
+            .size_full()
+            .child(self.header(title, subtitle, actions, p))
+            .child(
+                v_flex()
+                    .flex_1()
+                    .min_h_0()
+                    .scroll_y("mp-room")
+                    .px(px(GUTTER))
+                    .pt(px(4.))
+                    .pb(px(24.))
+                    .gap(px(24.))
+                    .child(status)
+                    .children(cars)
+                    .child(
+                        v_flex()
+                            .gap(px(8.))
+                            .child(self.section_head(
+                                trf!("PLAYERS \u{00b7} {count}", count = state.members.len()),
+                                p,
+                            ))
+                            .child(if players.is_empty() {
+                                div()
+                                    .text_size(px(13.))
+                                    .text_color(p.text_muted)
+                                    .child(tr("Nobody is here yet."))
+                                    .into_any_element()
+                            } else {
+                                v_flex()
+                                    .rounded(px(6.))
+                                    .border_1()
+                                    .border_color(p.border)
+                                    .overflow_hidden()
+                                    .children(players)
+                                    .into_any_element()
+                            }),
+                    ),
+            )
+            .into_any_element()
+    }
+
+    pub(super) fn member_row(
+        &self,
+        m: &MemberState,
+        content: &RoomContent,
+        first: bool,
+        p: Palette,
+    ) -> AnyElement {
+        let (word, tone) = content_word(content, m).unwrap_or_else(|| member_word(m));
+        h_flex()
+            .px(px(16.))
+            .py(px(12.))
+            .gap(px(12.))
+            .when(!first, |d| d.border_t_1().border_color(p.border_variant))
+            .child(self.face(&m.name, m.avatar.as_deref(), 32., p))
+            .child(
+                h_flex()
+                    .flex_1()
+                    .min_w_0()
+                    .gap(px(8.))
+                    .child(
+                        div()
+                            .text_size(px(14.))
+                            .font_weight(FontWeight::MEDIUM)
+                            .truncate()
+                            .child(m.name.clone()),
+                    )
+                    .when(m.host, |d| d.child(tag("Host", p)))
+                    .when(m.me, |d| d.child(tag("You", p))),
+            )
+            .child(
+                div()
+                    .text_size(px(13.))
+                    .text_color(match tone {
+                        Tone::Good => p.success,
+                        Tone::Blocked => p.warning,
+                        _ => p.text_muted,
+                    })
+                    .child(word),
+            )
+            .into_any_element()
+    }
+}

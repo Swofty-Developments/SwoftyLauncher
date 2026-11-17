@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/session_enter.cpp"
+   "native/src/core/guards/session/session_enter.cpp"
   ]
  },
  "verify": [

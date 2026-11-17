@@ -1,5 +1,5 @@
 // Host unit test for the fast-fail crash report logic (fast_fail_logic.hpp). run_fast_fail_test.sh builds and runs it.
-#include "../src/core/fast_fail_logic.hpp"
+#include "core/diagnostics/crash/fast_fail_logic.hpp"
 
 #include <cstdio>
 #include <string>

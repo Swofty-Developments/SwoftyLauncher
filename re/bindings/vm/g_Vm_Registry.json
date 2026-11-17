@@ -42,7 +42,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/swofty_core.cpp"
+   "native/src/core/frontend/swofty_core.cpp"
   ]
  },
  "verify": [],

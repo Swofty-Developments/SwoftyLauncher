@@ -34,7 +34,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/leaderboard_guard.cpp"
+   "native/src/core/guards/frontend/leaderboard_guard.cpp"
   ],
   "expect": "48 8D 35"
  },

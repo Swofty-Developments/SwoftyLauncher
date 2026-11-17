@@ -3,6 +3,7 @@ pub mod career_select;
 pub mod catalog;
 pub mod check;
 pub mod era;
+pub mod home_menu;
 pub mod home_rows;
 pub mod hub;
 pub mod icons;
@@ -20,9 +21,9 @@ use std::path::{Path, PathBuf};
 use swofty_formats::erp::{Entry, ErpFile, Resource};
 use swofty_formats::pkg::Node;
 
-use crate::builtin::CORE_ID;
+use crate::addons::builtin::CORE_ID;
+use crate::addons::settings::{SessionScreen, SessionSettings, UI_DIR, screen_file};
 use crate::manifest::CAREER_SETUP_BACK;
-use crate::settings::{SessionScreen, SessionSettings, UI_DIR, screen_file};
 use crate::{Error, Result, io_err};
 use node::{boolv, err, s, uidb_var};
 use pages::{ADJUST_TOOLTIP, Sources, TILES};
@@ -223,7 +224,7 @@ fn core_version(settings: &SessionSettings) -> String {
         .iter()
         .find(|m| m.id == CORE_ID)
         .map(|m| m.version.clone())
-        .unwrap_or_else(|| crate::builtin::core_manifest().version.to_string())
+        .unwrap_or_else(|| crate::addons::builtin::core_manifest().version.to_string())
 }
 
 pub struct MfdRow {
@@ -1530,7 +1531,7 @@ mod tests {
 
     #[test]
     fn swoftymod_declares_the_season_picker_toggle_on() {
-        let core = crate::builtin::core_manifest();
+        let core = crate::addons::builtin::core_manifest();
         let o = core
             .options
             .iter()
@@ -1575,8 +1576,9 @@ mod tests {
             .map(|e| e.path().join("baseline.json"))
             .find(|p| p.is_file())
             .unwrap();
-        let b: crate::baseline::Baseline = serde_json::from_slice(&std::fs::read(baseline).unwrap()).unwrap();
-        let objects = crate::baseline::Objects {
+        let b: crate::game_folder::baseline::Baseline =
+            serde_json::from_slice(&std::fs::read(baseline).unwrap()).unwrap();
+        let objects = crate::game_folder::baseline::Objects {
             root: data.join("baseline/objects"),
         };
         let game = std::env::var_os("SWOFTY_STOCK_GAME").map(PathBuf::from);

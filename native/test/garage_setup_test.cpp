@@ -1,7 +1,7 @@
-// Host-native unit test for the core's garage setup guard (native/src/core/garage_setup_logic.hpp).
-// Built and run by native/test/run_garage_setup_test.sh.
+// Host-native unit test for the core's garage setup guard (native/src/core/guards/garage/garage_setup_logic.hpp).
+// Built and run by native/test/run_tests.sh garage_setup.
 
-#include "garage_setup_logic.hpp"
+#include "core/guards/garage/garage_setup_logic.hpp"
 
 #include <cstdio>
 #include <cstring>

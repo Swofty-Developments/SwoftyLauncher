@@ -1,4 +1,4 @@
-#include "../runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>
@@ -7,8 +7,8 @@
 #include <cstring>
 #include <string>
 
-#include "game_points.hpp"
-#include "hooks.hpp"
+#include "core/hooks/game_points.hpp"
+#include "core/hooks/hooks.hpp"
 
 // The core's four game hook points on the live game: the Probe reads what each payload carries beyond
 // the function's arguments, through KB structs (L2), every pointer checked before it is read. A build

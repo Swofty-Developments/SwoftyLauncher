@@ -1,6 +1,6 @@
 // Host unit test for career saves: the index model (career_saves_logic.hpp) and the SDK's career::saves calls
-// over the in-memory fake table (fake_saves.hpp). run_events_test.sh builds and runs it.
-#include "../src/core/career_saves_logic.hpp"
+// over the in-memory fake table (fake_saves.hpp). native/test/run_tests.sh career_saves builds and runs it.
+#include "core/career/career_saves_logic.hpp"
 
 #include <swofty/fake_saves.hpp>
 

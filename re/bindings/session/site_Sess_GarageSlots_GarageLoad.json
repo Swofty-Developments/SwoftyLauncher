@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/garage_slots.cpp"
+   "native/src/core/guards/garage/garage_slots.cpp"
   ],
   "func_start": "0x1424a8080"
  },

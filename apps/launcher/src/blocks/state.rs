@@ -9,8 +9,8 @@ use serde_json::Value;
 use swofty_core::view::Field;
 
 use super::select::*;
-use crate::colour::ColourPicker;
-use crate::scroll::SmoothScroll;
+use crate::ui::colour_picker::ColourPicker;
+use crate::ui::scroll::SmoothScroll;
 
 pub(crate) enum Reset {
     No,

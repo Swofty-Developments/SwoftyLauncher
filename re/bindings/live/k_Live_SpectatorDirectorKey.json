@@ -36,7 +36,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/live_state.cpp"
+   "native/src/core/live/live_state.cpp"
   ]
  },
  "verify": [

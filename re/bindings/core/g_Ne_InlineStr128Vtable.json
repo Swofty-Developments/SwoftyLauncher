@@ -36,7 +36,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/race_retirement_guard.cpp"
+   "native/src/core/guards/session/race_retirement_guard.cpp"
   ]
  },
  "verify": [

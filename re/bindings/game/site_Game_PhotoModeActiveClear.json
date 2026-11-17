@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/view_state.cpp"
+   "native/src/core/frontend/view_state.cpp"
   ]
  },
  "verify": [],

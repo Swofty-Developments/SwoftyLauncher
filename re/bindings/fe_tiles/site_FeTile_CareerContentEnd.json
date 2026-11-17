@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/career_content.cpp",
+   "native/src/core/career/career_content.cpp",
    "addons/f1-1990/native/src/career_menu_ui.cpp"
   ]
  },

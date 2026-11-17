@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-#include "garage_crew_pose.hpp"
+#include "core/garage/garage_crew_pose.hpp"
 
 #include <cassert>
 #include <cstdio>

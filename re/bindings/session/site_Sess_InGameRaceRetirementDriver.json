@@ -34,7 +34,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/race_retirement_guard.cpp"
+   "native/src/core/guards/session/race_retirement_guard.cpp"
   ],
   "expect": "48 83 C1 18 48 8D 54 24 50"
  },

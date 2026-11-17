@@ -35,7 +35,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/pit_slots.cpp"
+   "native/src/core/guards/garage/pit_slots.cpp"
   ]
  },
  "verify": [

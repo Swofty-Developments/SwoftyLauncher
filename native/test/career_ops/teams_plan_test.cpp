@@ -1,11 +1,11 @@
-// career::apply_teams' planner (native/src/core/career_ops/teams_plan.hpp) on the host.
+// career::apply_teams' planner (native/src/core/career/ops/teams_plan.hpp) on the host.
 
 #include <cstdio>
 #include <string>
 #include <vector>
 
-#include "../../src/core/career_ops/start_teams.hpp"
-#include "../../src/core/career_ops/teams_plan.hpp"
+#include "core/career/ops/start_teams.hpp"
+#include "core/career/ops/teams_plan.hpp"
 
 using namespace career_ops::teams;
 

@@ -3,8 +3,8 @@ use gpui_kit::component::{Icon, h_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
-use crate::scale::{ctl, px};
-use crate::theme::Palette;
+use crate::ui::scale::{ctl, px};
+use crate::ui::theme::Palette;
 
 pub(crate) const FILTERS_W: f32 = 226.;
 

@@ -74,7 +74,7 @@ The CLI writes the request to `<run folder>/direct_start.json` and starts the ga
 
 The game runs on a copy of the `--profile` profile (the active one without the flag), with the same addons in the same order and the same settings, so addon boxes and their database content are there. `swofty test shell --profile <p>` takes the same copy; `swofty test shell` without `--profile` keeps the minimal profile (core and `--addon` only).
 
-What the core does (`native/src/core/direct_start.cpp`), in order:
+What the core does (`native/src/core/testing/direct_start.cpp`), in order:
 
 1. The cover arms in `room_cover::setup()` for a `session` request and draws from the present hook's first frame.
 2. The title passes with the shared virtual pad (`title_skip.cpp`); the profile loads; `StateFTUE`'s finished link is held.
@@ -175,9 +175,9 @@ The sandbox is a core feature at the save device's start (`Ne_SaveSystem2Win_Sta
 ## What ships in 1.6.0
 
 - **The CLI:** `swofty test plan`, `run`, `shell` and `fixture capture|list|check`. Environments `none`, `boot` and `benchmark` run in game. `route` and `career` (`team_hq`, `weekend_hub`) are experimental and not working in 1.6.0; `grand_prix` and `time_trial` parse and are listed as needing session setup. The test file schema is in [Testing your addon](/std/testing#the-test-file).
-- **The test agent** (`native/src/core/testagent`): the mailbox, `ai_drives_player`, `read`, `set`, `sample`, `pad`, `capture` and `skip` work. `route`, `career load`, `advance`, `save now` and `title` are experimental and not working in 1.6.0. Test DLLs written with `swofty/test.hpp` load only in a test run.
+- **The test agent** (`native/src/core/testing/agent`): the mailbox, `ai_drives_player`, `read`, `set`, `sample`, `pad`, `capture` and `skip` work. `route`, `career load`, `advance`, `save now` and `title` are experimental and not working in 1.6.0. Test DLLs written with `swofty/test.hpp` load only in a test run.
 - **Title screen:** the CLI waits 15 seconds for the agent to pass it, then presses the virtual pad.
-- **The save sandbox** (`native/src/core/save_sandbox.cpp`): runs in game. The Steam remote-storage proxy is fail-closed on any doubt. A profile load and three saves ran with the player's saves unchanged. Measured: the 0-entry snapshot case of the property-bag pool; the 64 KB and 256 KB cases are not measured. The fixture store is host-tested.
+- **The save sandbox** (`native/src/core/testing/save_sandbox.cpp`): runs in game. The Steam remote-storage proxy is fail-closed on any doubt. A profile load and three saves ran with the player's saves unchanged. Measured: the 0-entry snapshot case of the property-bag pool; the 64 KB and 256 KB cases are not measured. The fixture store is host-tested.
 - **Snapshots:** the registry save default is dry in 1.6.0.
 - **Checked only in the host tests** (no game run): the CLI's flow against a fake game and a fake agent, the run folder and token contract, the sandbox decision logic and the fixture check.
 

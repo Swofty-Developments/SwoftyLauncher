@@ -1,11 +1,11 @@
-#include "box.hpp"
+#include "core/apply/tracks/box.hpp"
 
-#include "../../era_logic.hpp"
-#include "../content/gvdb.hpp"
-#include "../../registry/store.hpp"
-#include "../../registry/table.hpp"
-#include "../../runtime.hpp"
-#include "../scheduler.hpp"
+#include "core/boxes/era_logic.hpp"
+#include "core/apply/content/gvdb.hpp"
+#include "core/registry/store.hpp"
+#include "core/registry/table.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/apply/scheduler.hpp"
 
 #include <swofty/mixin.hpp>
 

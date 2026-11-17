@@ -9,7 +9,7 @@
 #include <swofty/json.hpp>
 #include <swofty/systems/cars.hpp>
 
-#include "car_live.hpp"
+#include "core/hooks/car_live.hpp"
 
 // car.profile records applied as core-owned layers (standard library 1.6, experimental). A profile names a
 // scope (the selectors in `within`, the session types in `when`, the cars in `cars`, ai_only and player_only)

@@ -1,7 +1,7 @@
-// Host-native unit test for the core's estimate lap time guard (native/src/core/estimate_laptime_logic.hpp).
-// Built and run by native/test/run_estimate_laptime_test.sh.
+// Host-native unit test for the core's estimate lap time guard (native/src/core/guards/session/estimate_laptime_logic.hpp).
+// Built and run by native/test/run_tests.sh estimate_laptime.
 
-#include "estimate_laptime_logic.hpp"
+#include "core/guards/session/estimate_laptime_logic.hpp"
 
 #include <cstdio>
 

@@ -669,7 +669,7 @@ impl Ending {
 /// An exit code a crash leaves: an error NTSTATUS (0xC0000000 and up) other
 /// than -1, or an unhandled breakpoint.
 /// The exit code the core closes F1 25 with when it stops a Grand Prix or Driver Career load that would crash
-/// (native/src/core/era_logic.hpp `CONTINUE_STOP_EXIT`).
+/// (native/src/core/boxes/era_logic.hpp `CONTINUE_STOP_EXIT`).
 pub const CORE_STOPPED_LOAD: i32 = 92;
 
 pub fn crash_code(code: u32) -> bool {

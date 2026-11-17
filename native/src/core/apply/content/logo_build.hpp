@@ -1,15 +1,19 @@
 #pragma once
 
-#include "erp_file.hpp"
-#include "logo_array.hpp"
-#include "uidb.hpp"
+#include "core/apply/content/erp_file.hpp"
+#include "core/apply/content/logo_array.hpp"
+#include "core/apply/content/uidb.hpp"
 
+#include <algorithm>
+#include <atomic>
+#include <exception>
 #include <functional>
 #include <map>
 #include <memory>
 #include <optional>
 #include <set>
 #include <string>
+#include <thread>
 #include <vector>
 
 // The archives a set of team logos changes. Each logo is a slice for one stock texture array (an encoded image, or a
@@ -36,6 +40,60 @@ struct Want {
     uint32_t width = 0, height = 0;
     bool fallback = false;
 };
+
+/* One slice of a 700x640 array takes hundreds of milliseconds to encode and a boot can ask for hundreds of slices,
+   while the game's main thread waits in the database load. Each encode reads only its own image, so they run on
+   worker threads; a failure or exception is kept for the caller, which uses the results in its own order. */
+struct Encoded {
+    bool ok = false, scaled = false;
+    std::string bytes, why;
+};
+
+inline void run_parallel(size_t n, const std::function<void(size_t)> &fn)
+{
+    unsigned cores = std::thread::hardware_concurrency();
+    size_t workers = std::min<size_t>(n, std::clamp<unsigned>(cores > 1 ? cores - 1 : 1, 1, 8));
+    std::atomic<size_t> next{0};
+    std::vector<std::exception_ptr> failed(n);
+    auto drain = [&] {
+        for (size_t i; (i = next.fetch_add(1)) < n;) {
+            try {
+                fn(i);
+            } catch (...) {
+                failed[i] = std::current_exception();
+            }
+        }
+    };
+    std::vector<std::thread> pool;
+    for (size_t k = 1; k < workers; k++) {
+        try {
+            pool.emplace_back(drain);
+        } catch (...) {
+            break;
+        }
+    }
+    drain();
+    for (auto &t : pool)
+        t.join();
+    for (auto &e : failed)
+        if (e)
+            std::rethrow_exception(e);
+}
+
+inline std::vector<std::vector<Encoded>> encode_slices(const std::vector<const Want *> &wants,
+                                                       const std::vector<logo_array::Shape> &shapes)
+{
+    std::vector<std::vector<Encoded>> out(wants.size(), std::vector<Encoded>(shapes.size()));
+    run_parallel(wants.size() * shapes.size(), [&](size_t job) {
+        const Want *w = wants[job / shapes.size()];
+        if (!w->donor.empty())
+            return;
+        Encoded &e = out[job / shapes.size()][job % shapes.size()];
+        e.ok = logo_array::slice_from_rgba(shapes[job % shapes.size()], reinterpret_cast<const uint8_t *>(w->rgba.data()),
+                                           w->width, w->height, e.bytes, e.why, &e.scaled);
+    });
+    return out;
+}
 
 struct Env {
     std::function<std::vector<std::string>()> list;
@@ -359,9 +417,23 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
         for (auto &c : copies)
             if (c.outside)
                 fill(c);
+        std::vector<logo_array::Shape> shapes;
+        for (auto &c : copies)
+            if (std::none_of(shapes.begin(), shapes.end(), [&](const logo_array::Shape &s) {
+                    return s.width == c.shape.width && s.height == c.shape.height;
+                }))
+                shapes.push_back(c.shape);
+        std::vector<std::vector<Encoded>> encodes = encode_slices(list, shapes);
+        auto encode_of = [&](size_t want, const logo_array::Shape &shape) -> Encoded & {
+            size_t at = 0;
+            while (shapes[at].width != shape.width || shapes[at].height != shape.height)
+                at++;
+            return encodes[want][at];
+        };
         std::set<std::string> seen(names.begin(), names.end());
         std::vector<const Want *> used;
-        for (auto *w : list) {
+        for (size_t wi = 0; wi < list.size(); wi++) {
+            const Want *w = list[wi];
             if (!seen.insert(w->key).second) {
                 out.lines.push_back("team.logo: " + array + " lists " + w->key + " already; its slice is kept");
                 continue;
@@ -388,9 +460,15 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
                     const logo_array::Shape &shape = copies[i].shape;
                     auto [e, fresh] = encoded.try_emplace({shape.width, shape.height});
                     bool scaled = false;
-                    if (fresh && !(ok = logo_array::slice_from_rgba(shape, reinterpret_cast<const uint8_t *>(w->rgba.data()), w->width,
-                                                                    w->height, e->second, why, &scaled)))
-                        break;
+                    if (fresh) {
+                        Encoded &done = encode_of(wi, shape);
+                        if (!(ok = done.ok)) {
+                            why = done.why;
+                            break;
+                        }
+                        e->second = std::move(done.bytes);
+                        scaled = done.scaled;
+                    }
                     if (scaled)
                         out.lines.push_back("team.logo: " + w->key + " scaled " + std::to_string(w->width) + "x" + std::to_string(w->height) +
                                             " -> " + std::to_string(shape.width) + "x" + std::to_string(shape.height) + " for " + array);
