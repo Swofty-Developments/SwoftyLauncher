@@ -52,5 +52,43 @@ Static only (Steam d873a1c8), round A of the track RE rounds. Nothing here is ru
 - a 25-name legacy track table (`melbourne` ... `paul_ric`, 0x145805ec8) and a ghost/time trial file table (`madrid_dry.ghost`, `silverstone_reverse_wet.ghost`, ... around 0x145bd27ad) have no code reference found (rip-relative and abs64 scans), so they look like dead data;
 - leads not read: `monaco` 0x1456115ff (4 refs, 0x14020a460, 0x140345f60, 0x140356a20, 0x15091ee40) and `_reverse` 0x145624725 (0x140363850, 0x140ac15d0).
 
+<a id="track-names"></a>
+## Hard-coded track names, FOLDER and limits for new track codes (round A2)
+Static only (Steam d873a1c8), engine-re 2026-11-17. Method: every string in the exe that contains a stock track code (all `tracks.Track` file names plus `_reverse`), cross-referenced with rip-relative refs confirmed by decoding the instruction, abs64 refs, and a scan for the codes as immediates (movabs/dword compares) and as djb2 / FNV-1a hashes. Only the functions below test a track name in code; every other stock code (abu_dhabi ... zandvoort) has no code reference (its strings are lng keys, scenario_dynamic_bahrain_* weather scenario names, a sorted ghost file name pool and a shader path).
+
+**Track name -> function -> effect**
+
+| name | function | effect |
+|---|---|---|
+| monaco | `Game_CameraHelicopter_Reset` 0x14020a460 | helicopter camera height offset +100 |
+| monaco | `Game_GridCutSceneScript_SetupDriverTalkToPress` 0x140345f60 | four extra prop cameras in the grid talk-to-press scene |
+| monaco | `Game_Podium2019CutSceneScript_ChooseCutScenesToPlay` 0x140356a20, `..._SetMonacoBarrierVisibility` 0x140361f70 | podium hides world object `Env- Barriers$mon_armco_parcferme_a`; flag goes to SpawnTVScreens |
+| monza | 0x140356a20 | podium flag +0x8f9 (SpawnTVScreens variant, one podium branch) |
+| monaco | `Sess_ScCond_DynamicObstruction_Init_Body` 0x15091ee40 | safety car: areas 6 and 7 use obstruction_threshold_seconds_high_congestion_areas (street-track SC rule, Monaco only) |
+| monaco (location) | `Game_TrackExtraMonacoBoat_Initialise` 0x14026a3c0 | boat vignette at locator `monacoboat` (data, not a name test) |
+| las_vegas | `Game_Podium2019CutSceneScript_Starting` 0x1403622c0, `Game_PodiumTunnelScript_OnScriptEvent` 0x140368990, `Game_StoryPressInterview_Initialise` 0x141056fb0 | at night (time-of-day value > 1.658) render-state bool 0x23 stays 0 in the podium / press scenes |
+| _reverse | `Game_Pod2019FirstScript_Initialise` 0x140363850 | podium scene `crowd_wide_cam_<name>`; a `_reverse` suffix is cut, so reverse layouts reuse the forward scene |
+| any name | 0x140356a20 | the podium track name taken from the record is cut at its first digit (bahrain24 -> bahrain), so `monaco2` would get the Monaco podium rules (an overrideTrackName is not cut) |
+| baseTrack set | `Game_TalkingPoints_BuildTrack` 0x140ac15d0 | key `talking_points.patterns.<fileName><session>` plus `_reverse` when baseTrack is non-empty; missing key -> `talking_points.patterns.generic` with the same suffixes (_practice/_qualifying/_race, _outro) |
+| madrid | options factory 0x142ae7da0 | skipped in the 64-bit track option mask (tracks.md Inbox 2026-11-13) |
+| montreal | `Game_TrackDataRecord_Ctor` 0x142e49f50 | default record name when no name is passed |
+| bahrain / random | `Game_UiTrackPicker_SelectByName` 0x1416ed7e0 | UI picker default with no list / an empty list |
+| hungaroring | `g_Sess_BenchmarkDefaultTrackName` 0x145f96d60 | -benchmark default track |
+
+Not found: no name test for night races (DB `allow_night_start`, `timeofday`), for reverse layouts other than the two `_reverse` users above (`is_reverse_track` and `reverse_track_trophy_name` are DB fields), or for street tracks other than the Monaco SC areas. `use_monaco_tyre_rule_layout` is a results-table VM bool written false, with no name test.
+
+**FOLDER token (static part of T202).** `record+0x180` is the data pointer of the record's 0x80-char FOLDER string (+0x170). `Game_Load_TrackDatabaseFull` initialises it empty and never writes it, so `[FOLDER]` expands to an empty string for every `tracks.Track` row; stock `track_resource` templates use only `[FILENAME]`. The only writer is `Game_TrackDataSystem_AddTrackFromPath` 0x142e60850 (dev sessions: `DevSessionDataContract.Track.worldAssetGroup`, path outside `/tracks/`).
+
+**Queue order (static).** `tracks.track_resource` row: +0x08 worldAssetGroup, +0x10 worldEri, +0x18 crowdEri, +0x20 aoBake, +0x28 radianceBake, +0x30 lightList, +0x38 ddgi, +0x40 iblAssetGroupsRoot, +0x48 iblRoot, +0x50 iblKey, +0x58 iblSuffix, +0x60 trackMapAssetGroup, +0x70 iblProbes (`Sess_Load_TrackDatabase` 0x142e58f20). `Sess_Loader_BuildTrackRegionList` queues: trackMapAssetGroup (prio 10), the record+0xaf8 entries (10), the record+0xac0 regions (10), the world request from worldAssetGroup (10; worldEri and crowdEri become resource ids), region_on_track, then extra entries (prio 4). Bake and probe groups are expanded elsewhere. Runtime order: T205.
+
+**Limits for a new track code (static).**
+- statId is a u8; records sit at items[statId] (holes allowed).
+- The options track mask is a std::bitset<64> over the tracks with TrackData (madrid skipped); more entries throw at boot.
+- `Game_TrackData_GetTrack` asserts on a mode or season id >= 32.
+- Career calendar: track_event_id is a byte and the save bag capacity is u16 (career.md Inbox 2026-11-12).
+- Per-code files the code expects by name: `environment_package/tracks/<fileName>/wep/<fileName>-drs.layer` / `-sm.layer` and `%s_podium_lights.layer`; the Time Trial ghost `ghostlaps/<x>/<fileName>_<dry|wet>.ghost` (`Game_TimeTrial_LoadGhostLap` 0x142940120, missing file -> failure branch, T204); the podium scene `crowd_wide_cam_<name>` (T203).
+- Monaco, Monza and Las Vegas special cases (table above) do not apply to a new code.
+- Other track-related bitset users checked (all callers of `Ne_Std_ThrowInvalidBitsetPosition`): only the madrid option mask is indexed by track. No other fixed-size array indexed by track statId was found; UI track lists are built from DB/VM nodes (tracks.md#list). The invitational 8-track limit stays open (session.md#tracks-open).
+
 ## Inbox
 - 2026-10-25 14:24 cs-heads: ERP fragment compression byte (decomp:re/decomp/143a6c700.c, decomp:re/decomp/143a6d4b0.c): the loader reads it as a signed byte and stores a negative one (0x90, 0x91) as 0, a plain copy; the decompressor thread treats codes 3 to 0x3f as zstd (0x20 to 0x2f with dictionary code - 0x20). Its zstd loop (0x143a6d4b0) calls ZSTD_decompressStream (0x1447b0a60) in 0x20000-byte chunks until the input position reaches the packed size and never checks the result. A fragment under a zstd code that holds no zstd frame returns 'Unknown frame descriptor' without consuming input (libzstd 1.5.7 run with the same loop), so the job spins on its NeErpRsDecompressor thread, the resource is never created and its ERP never finishes loading: the first rebuilt Classic Seasons heads of PR #323 stored 20 materials uncompressed under More Driver Models' code 0x10 and a Grand Prix load stayed on PLEASE WAIT. tools/erpw.py and packages/formats compress only code 0x11 on write.
