@@ -126,7 +126,7 @@ namespace swofty_core::hooks {
 void race_fuel_rules(const swofty_core::apply::content::FuelRules &rules);
 }
 
-namespace {
+namespace era_picker {
 
 namespace mem = swofty::mem;
 namespace logic = runtime::era;
@@ -1706,6 +1706,8 @@ void grand_prix_load(uintptr_t ctx)
 
 }
 
+using namespace era_picker;
+
 extern "C" __declspec(dllexport) const SwoftyEra *SwoftyCoreEra(void)
 {
     return &table;
@@ -1749,7 +1751,9 @@ void era_press(const char *entrant_list)
                 !ours ? "no box named" : host ? "the Time Trial mode is narrowed to it" : "the current mode is not Time Trial; nothing narrowed");
 }
 
-namespace {
+}
+
+namespace era_picker {
 
 // What a session load saw of a Time Trial: the list the session loads once the 24-car guard has chosen.
 struct LoadSeen {
@@ -1876,6 +1880,8 @@ void session_load_held(LoadSeen &seen)
 
 }
 
+namespace runtime {
+
 void era_session_load()
 {
     LoadSeen seen;
@@ -1892,6 +1898,10 @@ bool era_session_unlisted(std::string &list)
     list = unlisted.list;
     return !list.empty();
 }
+
+}
+
+namespace era_picker {
 
 constexpr const char *AVAILABILITY_MIXIN = "swofty_core.dll (setup mode guard)";
 constexpr const char *AVAILABILITY_FN = "Sess_Apply_ContentAvailability";
@@ -1973,6 +1983,10 @@ void *setup_list_entry(void *out, void *allocator)
     }
     return setup_list_guard.orig(out, allocator);
 }
+
+}
+
+namespace runtime {
 
 std::vector<CoreMixins> tt_guard_mixins()
 {
