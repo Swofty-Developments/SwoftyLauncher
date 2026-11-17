@@ -2,19 +2,12 @@
 
 #include "core/runtime/runtime.hpp"
 
-#include <optional>
-
 #include "core/apply/moments.hpp"
 #include "core/apply/scheduler.hpp"
+#include "core/boxes/box_grid.hpp"
 #include "core/boxes/box_grid_logic.hpp"
+#include "core/boxes/box_options.hpp"
 #include "core/boxes/tt_loaded_logic.hpp"
-
-namespace runtime {
-std::string box_option_apply(size_t rule, const std::string &setting);
-int box_option_put_back(size_t rule);
-void box_options_forget();
-void box_grid_set(const std::optional<box_grid::Rule> &rule, const std::string &box);
-}
 
 namespace era_picker {
 

@@ -2,16 +2,9 @@
 
 #include "core/runtime/runtime.hpp"
 
-#include <optional>
-
 #include "core/apply/content/appliers.hpp"
-
-namespace runtime {
-std::string box_option_apply(size_t rule, const std::string &setting);
-int box_option_put_back(size_t rule);
-void box_options_forget();
-void box_grid_set(const std::optional<box_grid::Rule> &rule, const std::string &box);
-}
+#include "core/boxes/box_grid.hpp"
+#include "core/boxes/box_options.hpp"
 
 namespace swofty_core::hooks {
 void race_fuel_rules(const swofty_core::apply::content::FuelRules &rules);

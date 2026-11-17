@@ -1,3 +1,5 @@
+#include "core/boxes/box_options.hpp"
+
 #include "core/runtime/runtime.hpp"
 
 #include <algorithm>
@@ -109,7 +111,6 @@ std::string joined(const std::vector<std::string> &names)
 }
 namespace runtime {
 
-// Sets the option of rule `rule` (an index into BOX_OPTION_RULES) to the box's setting. Returns the line to log.
 std::string box_option_apply(size_t rule, const std::string &setting)
 {
     if (rule >= content::BOX_OPTION_COUNT)
@@ -146,7 +147,6 @@ std::string box_option_apply(size_t rule, const std::string &setting)
            names[size_t(index)] + (stock ? ", stock value order" : "") + ")" + (now == index ? "" : "; the option did not take the index");
 }
 
-// Puts the player's index back where the option of rule `rule` still holds the box's. Returns 1 when it did.
 int box_option_put_back(size_t rule)
 {
     if (rule >= content::BOX_OPTION_COUNT)
@@ -165,7 +165,6 @@ int box_option_put_back(size_t rule)
     return forced[rule].put_back(option, get_index, set_index);
 }
 
-// Drops every remembered index without touching the options.
 void box_options_forget()
 {
     std::lock_guard<std::mutex> g(lock);
