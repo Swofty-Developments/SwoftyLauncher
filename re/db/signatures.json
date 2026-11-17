@@ -77124,7 +77124,9 @@
    },
    "target": "0x14473fd80",
    "kind": "func_start",
-   "names": [],
+   "names": [
+    "Car_Physics_AdvanceCar"
+   ],
    "verified": [
     {
      "build": "d873a1c8d2044cef",
@@ -120862,7 +120864,7 @@
    "target": "0x1409e3fb0",
    "kind": "func_start",
    "names": [
-    "Car_Parse_UpgradeEffectDefinitions"
+    "Car_Aggregate_UpgradeStats"
    ],
    "verified": [
     {
@@ -122798,7 +122800,7 @@
    "target": "0x141a22240",
    "kind": "func_start",
    "names": [
-    "Vm_Bind_TitleDescriptionEntry"
+    "Vm_Unk_141a22240"
    ],
    "verified": [
     {
@@ -122966,7 +122968,7 @@
    "target": "0x141b012b0",
    "kind": "func_start",
    "names": [
-    "Vm_Build_EventListEntries"
+    "Vm_Unk_141b012b0"
    ],
    "verified": [
     {
@@ -123878,7 +123880,7 @@
    "target": "0x1424fc250",
    "kind": "func_start",
    "names": [
-    "Ent_Pack_VehicleCustomisationStatId"
+    "Ent_Pack_VehicleCustomisation"
    ],
    "verified": [
     {
@@ -123926,7 +123928,7 @@
    "target": "0x1425069b0",
    "kind": "func_start",
    "names": [
-    "Ent_Pack_VehicleStatId"
+    "Ent_Pack_VehicleRef"
    ],
    "verified": [
     {
@@ -124118,7 +124120,7 @@
    "target": "0x14292a560",
    "kind": "func_start",
    "names": [
-    "Game_PitDriveThrough_NotifyLocalPlayerVehicle"
+    "Game_FrontendSceneComponentCar_Despawn"
    ],
    "verified": [
     {
@@ -125386,7 +125388,7 @@
    "target": "0x142f4eed0",
    "kind": "func_start",
    "names": [
-    "Game_VehicleAntiStallSystem_OnRollingStartBegin"
+    "Game_VehicleAntiStallSystem_OnRollingStart"
    ],
    "verified": [
     {
@@ -128491,7 +128493,7 @@
    "target": "0x143885700",
    "kind": "func_start",
    "names": [
-    "FePopup_UIConnectionManager_Update"
+    "FePopup_Broadcast_Notifications"
    ],
    "verified": [
     {
@@ -128539,7 +128541,7 @@
    "target": "0x1438a9950",
    "kind": "func_start",
    "names": [
-    "Game_Component_SampleCurveLut"
+    "Game_DriverStatisticsComponent_ProcessPatch"
    ],
    "verified": [
     {
@@ -128611,7 +128613,7 @@
    "target": "0x144179360",
    "kind": "func_start",
    "names": [
-    "Vm_Read_NodeStringValue"
+    "Vm_Link_RegistryNode"
    ],
    "verified": [
     {
