@@ -481,7 +481,7 @@ jobs:
         with:
           path: |
             native/build/zig-cache
-          key: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-${{ hashFiles('native/**', 'addons/*/native/**', 'packages/sdk/include/**') }}
+          key: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-${{ hashFiles('native/**', 'addons/*/native/**', 'templates/**/native/**', 'packages/sdk/include/**') }}
           restore-keys: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-
 
       # native/build.sh runs its compile graph with ninja.
@@ -493,17 +493,17 @@ jobs:
           chmod +x "$RUNNER_TEMP/ninja/ninja"
           echo "$RUNNER_TEMP/ninja" >> "$GITHUB_PATH"
 
-      # Each template's native/build.sh keeps a Zig cache of its own, with its own libc++ and MinGW builds,
-      # which the templates test rebuilds from nothing without this (seven minutes on a hosted runner). It is a
-      # cache entry of its own so that the main one keeps its key and contents.
-      - name: Restore the template Zig caches
-        id: template-zig-cache
-        uses: actions/cache/restore@v6
-        with:
-          path: |
-            templates/**/native/build/zig-cache
-          key: zig-templates-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-${{ hashFiles('templates/**/native/**', 'packages/sdk/include/**') }}
-          restore-keys: zig-templates-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-
+      # Each template's native/build.sh keeps its Zig cache in its own build/zig-cache and builds libc++ and the
+      # MinGW runtime into it again (the templates test took 6 to 12 minutes on a hosted runner). Those folders
+      # link to the native cache instead, so the templates build them once and the native cache keeps them.
+      - name: Share the Zig cache with the templates
+        run: |
+          mkdir -p native/build/zig-cache
+          for dir in templates/*/native templates/std/*/native; do
+            mkdir -p "$dir/build"
+            rm -rf "$dir/build/zig-cache"
+            ln -s "$GITHUB_WORKSPACE/native/build/zig-cache" "$dir/build/zig-cache"
+          done
 
       - name: Build version.dll and swofty_core.dll
         run: native/build.sh
@@ -534,30 +534,18 @@ jobs:
             native/build/zig-cache
           key: ${{ steps.zig-cache.outputs.cache-primary-key }}
 
-      - name: Save the template Zig caches
-        id: template-zig-save
-        if: github.ref == 'refs/heads/main' && steps.template-zig-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v6
-        with:
-          path: |
-            templates/**/native/build/zig-cache
-          key: ${{ steps.template-zig-cache.outputs.cache-primary-key }}
-
-      # Each saved Zig cache is about 3 GB and holds everything the one before it did, so only the newest of each
-      # kind is kept; several of them push the Rust caches out of the repository's cache space.
+      # Each saved Zig cache is about 3 GB and holds everything the one before it did, so only the newest is kept;
+      # several of them push the Rust caches out of the repository's cache space.
       - name: Remove the older Zig caches
-        if: steps.zig-save.outcome == 'success' || steps.template-zig-save.outcome == 'success'
+        if: steps.zig-save.outcome == 'success'
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
-          MAIN: ${{ steps.zig-cache.outputs.cache-primary-key }}
-          TEMPLATES: ${{ steps.template-zig-cache.outputs.cache-primary-key }}
+          KEEP: ${{ steps.zig-cache.outputs.cache-primary-key }}
         run: |
-          for kind in "zig-$RUNNER_OS-:$MAIN" "zig-templates-$RUNNER_OS-:$TEMPLATES"; do
-            KEEP=${kind#*:} gh cache list --repo "$GITHUB_REPOSITORY" --ref refs/heads/main --key "${kind%%:*}" --limit 100 \
-              --json id,key --jq '.[] | select(.key != env.KEEP) | .id' | while read -r id; do
-              gh cache delete "$id" --repo "$GITHUB_REPOSITORY" && echo "removed cache $id"
-            done
+          gh cache list --repo "$GITHUB_REPOSITORY" --ref refs/heads/main --key "zig-$RUNNER_OS-" --limit 100 \
+            --json id,key --jq '.[] | select(.key != env.KEEP) | .id' | while read -r id; do
+            gh cache delete "$id" --repo "$GITHUB_REPOSITORY" && echo "removed cache $id"
           done
 
   # Every push to main also builds the release binaries: the run keeps the release cache warm, and a tag on
