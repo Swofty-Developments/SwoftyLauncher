@@ -1,5 +1,6 @@
 #include "core/hud/overlay/overlay.hpp"
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -7,8 +8,6 @@
 #include <cstddef>
 #include <cstring>
 #include <mutex>
-
-std::string settings_addon(const void *from, std::string &dll);
 
 namespace hud::overlay {
 
