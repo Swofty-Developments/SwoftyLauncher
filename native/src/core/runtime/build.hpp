@@ -32,8 +32,6 @@ bool proven(const build_proof::Gate &gate);
 bool holds(const build_proof::Gate &gate);
 // The KB build: running_build() == Build::kb.
 bool same_build();
-// The running exe's PE timestamp, which names its build.
-uint32_t pe_timestamp();
 // Whether build_proof::proofs::VERIFIED_LAYOUT holds: the KB build, its EA App link and Steam 1.0.145. Code that finds every
 // address by signature gates on this instead of same_build().
 bool verified_build();

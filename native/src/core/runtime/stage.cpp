@@ -213,8 +213,6 @@ build_proof::Exe running_exe()
 
 build_proof::Build running_build() { return build_proof::identify(running_exe()); }
 
-uint32_t pe_timestamp() { return running_exe().pe_timestamp; }
-
 namespace {
 
 build_proof::Verdict verdict_of(const build_proof::Gate &gate)
