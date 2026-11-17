@@ -4,9 +4,11 @@
 Every C++ file under src/core is a translation unit of swofty_core.dll unless CORE_EXCLUDE names it, so a new
 source file needs no build change. Each translation unit compiles to its own object under <builddir>/obj with a
 depfile, so ninja rebuilds exactly what an edit touches and reruns a compile whose command line changed.
-swofty_core.dll links its objects in source path order. Every core compile also reports its objects with a dynamic
-initializer (tools/cxx_init.sh), and tools/init_check.py fails the build on one that tools/init_allow.txt does not
-list, so no initializer depends on that order.
+swofty_core.dll links its objects in the order tools/core_link_order.txt gives, which is also the order their static
+initializers, SDK registrations and on-load entries run in and the reverse of the order their static destructors run
+in. Every core compile also reports its objects with a dynamic initializer (tools/cxx_init.sh), and
+tools/init_check.py fails the build on one that tools/init_allow.txt does not list, so no initializer reads another
+unit's object.
 """
 
 import argparse
@@ -41,6 +43,15 @@ def sources(root, exts):
             if name.endswith(exts):
                 found.append(os.path.relpath(os.path.join(dirpath, name), NATIVE))
     return found
+
+
+def link_order(objects):
+    listed = [line.strip() for line in open(os.path.join(NATIVE, 'tools/core_link_order.txt'))
+              if line.strip() and not line.startswith('#')]
+    gone = [src for src in listed if src not in objects]
+    if gone:
+        sys.exit(f'build_graph.py: tools/core_link_order.txt names sources that are not built: {gone}')
+    return [objects[src] for src in listed] + [objects[src] for src in sorted(set(objects) - set(listed))]
 
 
 def q(args):
@@ -136,7 +147,7 @@ def main():
     missing = (CORE_EXCLUDE | set(SEH_SOURCES)) - set(core_sources)
     if missing:
         sys.exit(f'build_graph.py: listed sources that no longer exist: {sorted(missing)}')
-    g.build([f'{a.builddir}/swofty_core.dll'], 'link_cxx', [objects[src] for src in sorted(objects)], warn)
+    g.build([f'{a.builddir}/swofty_core.dll'], 'link_cxx', link_order(objects), warn)
     g.build([f'{a.builddir}/static-init.txt'], 'init_check', reports + ['| tools/init_check.py tools/init_allow.txt'])
 
     gamelog = [g.compile('cxx', 'src/gamelog/gamelog.cpp', warn + ['-fms-extensions', '-Isrc', '-I$sdk', '-Iinclude', '$strip'])]
