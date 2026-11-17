@@ -138,7 +138,7 @@ def rs_type(ctype, ret=False):
 
 def load():
     gate = Gate()
-    sigdoc = json.load(open(os.path.join(kb.DB, 'signatures.json')))
+    sigdoc = kb.load_signatures()
     build = sigdoc['build']
     sigs = {s['id']: s for s in sigdoc['signatures']}
     apath = os.path.join(kb.DB, 'anchors.json')
@@ -582,7 +582,7 @@ def run_sigcheck(build, bindings, exe):
         return bindings, f'sigcheck skipped ({e})'
     if sigcheck.sha256_file(exe) != build['sha256']:
         raise SystemExit(f'bindgen: {exe} is not the KB build')
-    sigs = {s['id']: s for s in json.load(open(os.path.join(kb.DB, 'signatures.json')))['signatures']}
+    sigs = {s['id']: s for s in kb.load_signatures()['signatures']}
     names = sigcheck.load_kb_names()
     ok = []
     for b in bindings:

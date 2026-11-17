@@ -190,17 +190,11 @@ def resolve(img, match, sig):
 
 
 def load_kb_names():
+    import kb
     names = {}
-    for t in ('functions.tsv', 'globals.tsv'):
-        p = os.path.join(DB, t)
-        if not os.path.exists(p):
-            continue
-        for ln, line in enumerate(open(p), 1):
-            if ln == 1:
-                continue
-            c = line.rstrip('\n').split('\t')
-            if len(c) > 2:
-                names[c[1]] = (int(c[0], 16), c[2] if t == 'functions.tsv' else c[5])
+    for t in ('functions', 'globals'):
+        for r in kb.read_table(t)[0]:
+            names[r['name']] = (int(r['addr'], 16), r['sig'])
     return names
 
 
@@ -350,7 +344,8 @@ def main():
     ap.add_argument('--json', action='store_true')
     ap.add_argument('--sigs', default=None, help='check this signatures file instead of re/db/signatures.json')
     a = ap.parse_args()
-    doc = json.load(open(a.sigs or os.path.join(DB, 'signatures.json')))
+    import kb
+    doc = json.load(open(a.sigs)) if a.sigs else kb.load_signatures()
     kb_build = doc['build']['sha256']
     exe = a.exe or DEFAULT_EXE
     img = Image(exe)
