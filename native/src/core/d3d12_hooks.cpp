@@ -1675,6 +1675,9 @@ bool arm_rtas_guard()
     char trace[16] = {};
     if (GetEnvironmentVariableA("SWOFTY_RTAS_TRACE", trace, sizeof trace))
         rtas_trace = strtoull(trace, nullptr, 10);
+    std::wstring settings = runtime::hardware_settings_file();
+    std::string rt = settings.empty() ? std::string() : rg::rt_options(runtime::read_file(settings, 1 << 20));
+    swofty::log("[gfx] the game's hardware settings have ray tracing options: %s", rt.empty() ? "none found" : rt.c_str());
     if (rtas_mode == rg::Mode::off) {
         swofty::log("[gfx] rtas guard is off (SWOFTY_RTAS_GUARD=0)");
         return false;

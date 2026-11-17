@@ -304,7 +304,7 @@ private:
     uint64_t pushed_ = 0;
 };
 
-template <typename KeptList> std::string recent_section(const KeptList &lists, uint64_t pushed)
+template <typename KeptList> std::string recent_section(const KeptList &lists, uint64_t pushed, size_t max_lists = 12)
 {
     if (lists.empty())
         return {};
@@ -316,7 +316,13 @@ template <typename KeptList> std::string recent_section(const KeptList &lists, u
                   lists.size(), (unsigned long long)pushed);
     s += b;
     s += "  each list shows its newest builds, oldest first; #n is the build's place on its list in that frame\n";
+    size_t shown_lists = 0;
     for (const auto &k : lists) {
+        if (shown_lists++ == max_lists) {
+            std::snprintf(b, sizeof b, "    %zu more command list(s) not shown\n", lists.size() - max_lists);
+            s += b;
+            break;
+        }
         std::snprintf(b, sizeof b, "    list 0x%llx: the newest %zu of %llu build(s)\n", (unsigned long long)k.list,
                       k.builds.size(), (unsigned long long)k.total);
         s += b;
@@ -336,6 +342,27 @@ template <typename KeptList> std::string recent_section(const KeptList &lists, u
         }
     }
     return s;
+}
+
+// The ray tracing options in the game's hardware_settings_config.xml: each <rt_NAME enabled="..."/> as "NAME on"
+// or "NAME off", in file order.
+inline std::string rt_options(const std::string &xml)
+{
+    std::string out;
+    for (size_t at = xml.find("<rt_"); at != std::string::npos; at = xml.find("<rt_", at + 4)) {
+        size_t close = xml.find('>', at), name_end = xml.find_first_of(" \t\r\n/>", at + 4);
+        if (close == std::string::npos || name_end == std::string::npos || name_end > close)
+            break;
+        std::string tag = xml.substr(at, close - at);
+        size_t en = tag.find("enabled=\"");
+        size_t end = en == std::string::npos ? std::string::npos : tag.find('"', en + 9);
+        if (end == std::string::npos)
+            continue;
+        std::string value = tag.substr(en + 9, end - en - 9);
+        out += (out.empty() ? "" : ", ") + xml.substr(at + 4, name_end - at - 4) +
+               (value == "true" ? " on" : value == "false" ? " off" : " " + value);
+    }
+    return out;
 }
 
 struct Call {

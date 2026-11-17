@@ -181,6 +181,9 @@ int main()
     expect(section.find("build 8 frame 2 #1+ bottom-level") != std::string::npos && section.find("build 10 frame 2 #3+ bottom-level") != std::string::npos,
            "a place in a list's oldest kept frame may miss builds it no longer keeps");
 
+    expect(rg::recent_section(lists.newest_lists_first(), lists.pushed(), 1).find("1 more command list(s) not shown") !=
+               std::string::npos,
+           "lists past the shown cap are counted");
     rg::Entry top;
     top.top = true;
     top.count = 40;
@@ -190,6 +193,13 @@ int main()
     std::string top_line = rg::recent_section(tops.newest_lists_first(), tops.pushed());
     expect(top_line.find("top-level update into 0x0 (flags 0x20), 40 instances:\n") != std::string::npos,
            "a top-level build shows its instance count and no geometries");
+
+    expect(rg::rt_options("<a/>\n\t<rt_pathtrace enabled=\"false\" />\n\t<rt_shadows enabled=\"true\" />\n"
+                          "\t<rt_version version=\"0\" />\n\t<rt_ao enabled=\"maybe\"/>") ==
+               "pathtrace off, shadows on, ao maybe",
+           "the hardware settings' ray tracing options are read by name");
+    expect(rg::rt_options("<graphics/>").empty() && rg::rt_options("<rt_x enabled=\"true\"").empty(),
+           "no options, or a cut tag, give nothing");
 
     expect(rg::mode(nullptr) == rg::Mode::on && rg::mode("1") == rg::Mode::on && rg::mode("ON") == rg::Mode::on,
            "the guard is on by default");

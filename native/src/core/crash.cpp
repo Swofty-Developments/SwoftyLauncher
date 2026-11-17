@@ -1837,6 +1837,9 @@ void step_dred(Request &r)
         size_t end = builds.find('\n', at);
         end = end == std::string::npos ? builds.size() : end + 1;
         out.put("%.*s", int(end - at), builds.data() + at);
+        size_t from = builds.find_first_not_of(' ', at), to = builds[end - 1] == '\n' ? end - 1 : end;
+        if (from < to)
+            api->log("[gfx] rtas recent: %.*s", int(to - from), builds.data() + from);
         at = end;
     }
 }
