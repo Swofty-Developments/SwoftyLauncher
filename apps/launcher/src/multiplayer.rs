@@ -343,6 +343,7 @@ pub(crate) struct Multiplayer {
     copied: Option<Instant>,
     launch_seen: u32,
     room_launching: bool,
+    held: Option<RoomLaunch>,
     faces: HashMap<String, Arc<Image>>,
     faces_asked: HashSet<String>,
     _inputs: [Subscription; 2],
@@ -390,6 +391,7 @@ impl Multiplayer {
             copied: None,
             launch_seen: 0,
             room_launching: false,
+            held: None,
             faces: HashMap::new(),
             faces_asked: HashSet::new(),
             _inputs: inputs,
@@ -404,6 +406,7 @@ impl Multiplayer {
         self.session = None;
         self.launch_seen = 0;
         self.room_launching = false;
+        self.held = None;
         self.state = None;
         self.leaving = false;
         self.closing = None;
@@ -438,6 +441,7 @@ impl Shell {
 
     fn mp_tick(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.mp_room_launch(window, cx);
+        self.mp_held_dropped(window, cx);
         self.mp_watch_game(cx);
         let m = &mut self.mp_page;
         if m.leaving && m.session.as_ref().is_none_or(Session::is_finished) {
@@ -539,6 +543,27 @@ impl Shell {
         );
         if !started {
             self.mp_room_launch_result(false);
+        }
+        cx.notify();
+    }
+
+    /// A prompt Play opened holds the room launch: its Play goes on with it through [`Shell::play`].
+    pub(crate) fn mp_hold_room(&mut self, room: RoomLaunch) {
+        self.mp_page.held = Some(room);
+    }
+
+    pub(crate) fn mp_take_held(&mut self) -> Option<RoomLaunch> {
+        self.mp_page.held.take()
+    }
+
+    fn mp_held_dropped(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.mp_page.held.is_none() || window.has_active_dialog(cx) {
+            return;
+        }
+        self.mp_page.held = None;
+        self.mp_page.room_launching = false;
+        if let Some(session) = &self.mp_page.session {
+            session.launch_failed("Play was cancelled");
         }
         cx.notify();
     }
@@ -1585,6 +1610,13 @@ impl Shell {
                                     .filter(|_| !m.leaving)
                                     .map(|h| div().text_size(px(13.)).text_color(p.text_muted).child(h)),
                             )
+                            .children(
+                                st.problem
+                                    .as_ref()
+                                    .and_then(|problem| problem.detail.clone())
+                                    .filter(|_| !m.leaving)
+                                    .map(|d| div().text_size(px(13.)).text_color(p.text_muted).child(d)),
+                            )
                             .children(reopen.is_some().then(|| {
                                 div()
                                     .text_size(px(13.))
@@ -1789,8 +1821,8 @@ mod tests {
     use std::collections::HashSet;
 
     use swofty_core::multiplayer::types::{
-        GameStatus, MemberStage, MemberState, Phase, PrintMatch, RelayStatus, Role, RoomAddon, RoomAddons,
-        RoomSummary, Screen, SessionState, User,
+        GameStatus, MemberStage, MemberState, Phase, PrintMatch, Problem, RelayStatus, Role, RoomAddon,
+        RoomAddons, RoomSummary, Screen, SessionState, User,
     };
 
     use super::{
@@ -1798,6 +1830,24 @@ mod tests {
         content_word, exit_leaves, exit_notice, joined, member_word, missing, refusal, refusal_text,
         restart_ok_text, room_meta,
     };
+
+    #[test]
+    fn a_problem_reads_with_or_without_its_detail() {
+        let read = |json: &str| serde_json::from_str::<Problem>(json).unwrap();
+        assert_eq!(
+            read(r#"{"text":"Simplified doesn't match the host's.","retry":false}"#).detail,
+            None
+        );
+        let said = read(
+            r#"{"text":"Simplified doesn't match the host's.","retry":false,"detail":"Its build step made more."}"#,
+        );
+        assert_eq!(said.detail.as_deref(), Some("Its build step made more."));
+        assert!(
+            !serde_json::to_string(&read(r#"{"text":"x","retry":true}"#))
+                .unwrap()
+                .contains("detail")
+        );
+    }
 
     fn status(screen: Screen) -> GameStatus {
         GameStatus {
