@@ -1,11 +1,32 @@
 #pragma once
 #include "core/hud/hud_guard.hpp"
 
+#include <cstdint>
 #include <string>
 
 namespace hardware_settings {
 
 std::wstring path();
 hud::guard::FgSetting frame_gen(const std::wstring &path);
+
+// The game's hardware settings file, looked at again at most every two seconds. Its path is found on the first look
+// that finds one.
+class Poll {
+public:
+    bool due(uint64_t now)
+    {
+        if (checked && now - checked < 2000)
+            return false;
+        checked = now;
+        if (file.empty())
+            file = path();
+        return true;
+    }
+    const std::wstring &file_path() const { return file; }
+
+private:
+    std::wstring file;
+    uint64_t checked = 0;
+};
 
 }

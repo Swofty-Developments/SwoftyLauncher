@@ -131,7 +131,7 @@ LRESULT CALLBACK Input::proc(HWND w, UINT msg, WPARAM wp, LPARAM lp)
 
 void Input::hook_window(HWND wnd)
 {
-    if (!wnd || game_wnd.load() || killed("input"))
+    if (!wnd || game_wnd.load() || settings().killed("input"))
         return;
     WNDPROC prev = reinterpret_cast<WNDPROC>(GetWindowLongPtrW(wnd, GWLP_WNDPROC));
     if (!prev)
@@ -156,7 +156,7 @@ void Input::frame(const std::vector<hud::Paintsub> &subs, float fb_w, float fb_h
         sy = fb_h / ch;
     }
     std::string expired;
-    bool pads_wanted = now - read_ms.load(std::memory_order_relaxed) < 2000 && !killed("pad");
+    bool pads_wanted = now - read_ms.load(std::memory_order_relaxed) < 2000 && !settings().killed("pad");
     if (pads_wanted)
         poll_pads(now);
     {
