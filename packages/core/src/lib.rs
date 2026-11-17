@@ -10,7 +10,7 @@ pub mod content;
 pub mod data;
 pub mod dbedit;
 pub mod diagnostics;
-pub mod erpbuild;
+pub mod erp;
 pub mod game_db;
 pub mod game_folder;
 pub mod hud;
@@ -34,6 +34,7 @@ pub mod tracks;
 pub mod ui;
 pub mod updates;
 
+pub use self::erp as erpbuild;
 pub use addons::{builtin, helper, import, package, registry, settings, storage as addon_storage, version};
 pub use cache::link as link_cache;
 pub use content::{
