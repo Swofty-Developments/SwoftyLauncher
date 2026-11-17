@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Condition_CopyParams_Ctor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140e3ec40",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Condition_CopyParams_Ctor(void *self, void *owner, void *ctx, void *params_vec)",
+  "evidence": "decomp:re/decomp/140e3ec40.c;xref:0x140e3ead0;xref:0x140e3f355",
+  "notes": "myteam-g2: Base constructor for condition objects: sets vtable 0x1456a6190, stores owner/context and copy-constructs the 0x28-byte named parameter vector (Ne_String_Reserve). Used by the facility upgrade conditions."
+ },
+ "signature": {
+  "id": "career.condition_copy_params_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 89 CB 4C 89 C7 48 89 CE 4C 89 41 08",
+  "match": "0x140e3ec40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140e3ec40",
+  "kind": "func_start",
+  "names": [
+   "Career_Condition_CopyParams_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140e3ec40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140e3ec40.c;xref:0x140e3ead0",
+   "notes": "V9570 Sets vtable 1456a6190, stores owner/ctx, copy-constructs 0x28-byte named entries (vtable 145612ec0 strings) from the param vector."
+  }
+ ],
+ "proofs": []
+}

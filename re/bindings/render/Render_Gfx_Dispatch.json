@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_Dispatch",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a03310",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a03310.c;xref:0x143a0157d,0x143d5d13a",
+  "notes": "Dirty-state flush then context vcall +0x140(x,y,z): compute dispatch. Hypothesis."
+ },
+ "signature": {
+  "id": "render.gfx_dispatch",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 44 89 CD 44 89 C7 89 D3",
+  "match": "0x143a03310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a03310",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_Dispatch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143a03310",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a03310.c;xref:0x143a0157d",
+   "notes": "V8521 dirty-state flush then vcall +0x140 compute dispatch"
+  }
+ ],
+ "proofs": []
+}

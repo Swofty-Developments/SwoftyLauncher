@@ -52,6 +52,7 @@ constexpr const char *NEXT = "site_Game_TileListSelect_ChildNext";
 constexpr const char *PUSH_MIXIN = "swofty_core.dll (tile list push guard)";
 constexpr const char *PUSH = "Game_TileList_PushChildSelection_Thunk";
 
+namespace guards = swofty_core::guards;
 namespace ts = runtime::tile_list_select;
 
 using Push = void(void *widget, void *child);
@@ -59,8 +60,8 @@ using Push = void(void *widget, void *child);
 uintptr_t next_child = 0;
 Push *orig_push = nullptr;
 bool push_offered = false;
-std::atomic<int> skipped{0};
-std::atomic<int> push_skipped{0};
+guards::LogFirst<ts::LOG_FIRST> skipped{"skips"};
+guards::LogFirst<ts::LOG_FIRST> push_skipped{"skips"};
 
 bool read_memory(uint64_t address, void *out, size_t n, void *)
 {
@@ -85,16 +86,14 @@ void child_step(SwoftyContext *c)
             at = ts::position(c->r15, c->r12, begin);
     }
     c->rip = next_child;
-    int n = ++skipped;
-    if (n > ts::LOG_FIRST)
+    auto line = skipped.note();
+    if (!line)
         return;
     if (at.known)
         swofty::log("[tile-list] tile %llu of %llu %s, so the list's selection skips it%s", (unsigned long long)at.index,
-                    (unsigned long long)at.count, ts::why(child),
-                    n == ts::LOG_FIRST ? " (further skips are not logged)" : "");
+                    (unsigned long long)at.count, ts::why(child), line.tail);
     else
-        swofty::log("[tile-list] a tile %s, so the list's selection skips it%s", ts::why(child),
-                    n == ts::LOG_FIRST ? " (further skips are not logged)" : "");
+        swofty::log("[tile-list] a tile %s, so the list's selection skips it%s", ts::why(child), line.tail);
 }
 
 void push_child_selection(void *widget, void *child)
@@ -121,10 +120,10 @@ void push_child_selection(void *widget, void *child)
         orig_push(widget, child);
         return;
     }
-    int n = ++push_skipped;
-    if (n > ts::LOG_FIRST)
+    auto line = push_skipped.note();
+    if (!line)
         return;
-    const char *last = n == ts::LOG_FIRST ? " (further skips are not logged)" : "";
+    const char *last = line.tail;
     if (list != ts::Child::Usable)
         swofty::log("[tile-list] the list %s, so it does not write its focused tile to its selection%s", ts::why(list), last);
     else if (at.known)
@@ -141,15 +140,12 @@ void push_child_selection(void *widget, void *child)
 bool guard_off()
 {
     char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_TILE_LIST_SELECT_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+    if (guards::env_off("SWOFTY_TILE_LIST_SELECT_GUARD", v)) {
         swofty::log("[tile-list] select guard off (SWOFTY_TILE_LIST_SELECT_GUARD=%s)", v);
         return true;
     }
     return false;
 }
-
-namespace guards = swofty_core::guards;
 
 class TileListSelectGuard final : public guards::Guard {
 public:

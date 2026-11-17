@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Particles_SetVehicleEffectIdentity",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1444721b0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1444721b0.c;xref:0x144640d08",
+  "notes": "Hypothesis: when flag 4 of +0x30 set, builds identity-like transform (0x3f800000 constants) for a vehicle effect; from Render_Particles_UpdateVehicleEffects. Named callers: Render_Particles_UpdateVehicleEffects."
+ },
+ "signature": {
+  "id": "render.particles_set_vehicle_effect_identity",
+  "section": ".xtls",
+  "pattern": "56 48 81 EC 00 01 00 00 F6 41 30 04 0F 84",
+  "match": "0x1444721b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1444721b0",
+  "kind": "func_start",
+  "names": [
+   "Render_Particles_SetVehicleEffectIdentity"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1444721b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1444721b0.c;xref:0x144640d08",
+   "notes": "V7680 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

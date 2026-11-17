@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Set_EventParamFromNodeValue",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1417eaa50",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint64_t Set(void **params, void *key, void *node, void **out)",
+  "evidence": "decomp:re/decomp/1417eaa50.c;xref:0x1417e9cec;xref:0x14184d38a;xref:0x141883eeb",
+  "notes": "myteam-g2: Writes a value into Game_EventParams (Game_EventParams_SetValue) with an interned key; helper that packs facility/cost-cap event parameters for UI events."
+ },
+ "signature": {
+  "id": "career.set_event_param_from_node_value",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 10 01 00 00 4C 89 CF",
+  "match": "0x1417eaa50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417eaa50",
+  "kind": "func_start",
+  "names": [
+   "Career_Set_EventParamFromNodeValue"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1417eaa50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1417eaa50.c;xref:0x1417e9cec;xref:0x14184d38a",
+   "notes": "V9789 Builds event params from two 0x20-byte node pairs (FUN_14192eb80) and sends via callback/FUN_1416673e0; facility/cost-cap specifics not provable."
+  }
+ ],
+ "proofs": []
+}

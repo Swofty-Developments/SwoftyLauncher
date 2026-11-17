@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Ghostlaps_EvaluateRivalFriendLaptime",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f89c70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name evaluateRivalFriendLaptime (class from the log channel); log channel GHOSTLAPS: '%s(%s) : evaluated rival lap time(%s).'"
+ },
+ "signature": {
+  "id": "game.ghostlaps_evaluate_rival_friend_laptime",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 40 89 D6",
+  "match": "0x142f89c70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f89c70",
+  "kind": "func_start",
+  "names": [
+   "Game_Ghostlaps_EvaluateRivalFriendLaptime"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f89c70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f89c70.c;xref:0x142f86d14",
+   "notes": "V5687 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

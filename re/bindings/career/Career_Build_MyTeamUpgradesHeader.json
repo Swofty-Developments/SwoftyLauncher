@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Build_MyTeamUpgradesHeader",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423dc750",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Build_MyTeamUpgradesHeader(void * self)",
+  "evidence": "decomp:re/decomp/1423dc750.c;xref:0x145786aa8",
+  "notes": "myteam-g1: Builds team_hq_my_team_upgrades_header."
+ },
+ "signature": {
+  "id": "career.build_my_team_upgrades_header",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 F8 29 B4 24 A0 00 00 00 48 89 CE 48 8B B9 78 02 00 00",
+  "match": "0x1423dc750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423dc750",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_MyTeamUpgradesHeader"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423dc750",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423dc750.c",
+   "notes": "V10185 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

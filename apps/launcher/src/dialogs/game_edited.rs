@@ -8,13 +8,14 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::install::Source;
 
-use swofty_core::recovery::Blocked;
-use swofty_core::stock;
+use swofty_core::game_folder::recovery::Blocked;
+use swofty_core::game_folder::stock;
 
-use crate::shell::pages::{game_art, label};
 use crate::shell::{Page, Shell};
 use crate::ui::discord::{BLURPLE, INVITE, LOGO};
+use crate::ui::numbered_step;
 use crate::ui::theme::{Palette, palette};
+use crate::ui::{game_art, label};
 use swofty_i18n::{tr, trf};
 
 const TITLE: &str = "Your game files have been edited";
@@ -63,7 +64,7 @@ impl Edited {
                 let puts = match (r.fix(), r.version.as_deref()) {
                     (stock::Fix::Update, Some(v)) => format!(
                         "Your F1 25 is {v}, older than {}. Updating F1 25 puts {them} back",
-                        swofty_core::known_problems::LATEST_GAME_VERSION
+                        swofty_core::diagnostics::known_problems::LATEST_GAME_VERSION
                     ),
                     (stock::Fix::Verify, _) => format!("{} puts {them} back", repair.restores),
                     _ => {
@@ -291,56 +292,16 @@ fn files_box(edited: &Edited, p: Palette) -> impl IntoElement {
         )
 }
 
-fn step(n: u32, title: &'static str, body: &'static str, p: Palette) -> impl IntoElement {
-    h_flex()
-        .gap(px(12.))
-        .items_start()
-        .child(
-            div()
-                .size(px(20.))
-                .flex_shrink_0()
-                .flex()
-                .items_center()
-                .justify_center()
-                .rounded_full()
-                .bg(p.selected)
-                .text_size(px(12.))
-                .font_weight(FontWeight::SEMIBOLD)
-                .text_color(p.accent)
-                .child(n.to_string()),
-        )
-        .child(
-            v_flex()
-                .flex_1()
-                .min_w_0()
-                .gap(px(1.))
-                .child(
-                    div()
-                        .text_size(px(13.))
-                        .font_weight(FontWeight::MEDIUM)
-                        .text_color(p.text)
-                        .child(title),
-                )
-                .child(
-                    div()
-                        .text_size(px(12.))
-                        .line_height(px(18.))
-                        .text_color(p.text_muted)
-                        .child(body),
-                ),
-        )
-}
-
 fn steps(edited: &Edited, repair: &Repair, p: Palette) -> AnyElement {
     if let Some(fix) = edited.missing() {
-        let update = step(
+        let update = numbered_step(
             1,
             "Update F1 25",
             "In Steam or the EA app, install the latest F1 25 update, then press Play again.",
             p,
         );
         let verify = |n| {
-            step(
+            numbered_step(
                 n,
                 repair.title,
                 edited.open(repair).map_or(repair.how, |o| o.how),
@@ -361,7 +322,7 @@ fn steps(edited: &Edited, repair: &Repair, p: Palette) -> AnyElement {
         return v_flex()
             .gap(px(9.))
             .child(label(tr("WHAT TO DO"), p))
-            .child(step(
+            .child(numbered_step(
                 1,
                 "Restore the game folder",
                 tr("Restore game folder below moves the files aside and puts the game's own files back."),
@@ -375,27 +336,27 @@ fn steps(edited: &Edited, repair: &Repair, p: Palette) -> AnyElement {
         .gap(px(9.))
         .child(label(tr("WHAT TO DO"), p))
         .when(leftovers, |d| {
-            d.child(step(
+            d.child(numbered_step(
                 1,
                 "A mod was copied into the game folder",
                 "If you put mod files in the F1 25 folder by hand, take them back out.",
                 p,
             ))
         })
-        .child(step(
+        .child(numbered_step(
             first,
             repair.title,
             edited.open(repair).map_or(repair.how, |o| o.how),
             p,
         ))
-        .child(step(
+        .child(numbered_step(
             first + 1,
             "Add mods the safe way",
             "Use the Simplified Importer below to add a mod as an addon Swofty installs and removes cleanly.",
             p,
         ))
         .when(leftovers, |d| {
-            d.child(step(
+            d.child(numbered_step(
                 4,
                 "Or restore the game folder",
                 tr("Restore game folder below moves the files aside and puts the game's own files back."),
@@ -508,12 +469,12 @@ impl Shell {
     /// offers Verify game files in Steam, the Leftovers case Restore game
     /// folder. The play bar reopens it from [`Shell::game_edited`].
     pub(crate) fn show_game_edited(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(edited) = self.game_edited.clone() else {
+        let Some(edited) = self.launching.game_edited.clone() else {
             return;
         };
         let shell = cx.entity().downgrade();
         let p = palette(cx);
-        let repair = repair(self.install.as_ref().map_or(Source::Steam, |i| i.source));
+        let repair = repair(self.game.install.as_ref().map_or(Source::Steam, |i| i.source));
         window.open_alert_dialog(cx, move |alert, window, _| {
             let (shell, edited) = (shell.clone(), edited.clone());
             let vh = f32::from(window.viewport_size().height);
@@ -544,9 +505,9 @@ impl Shell {
 #[cfg(test)]
 mod tests {
     use super::{Edited, OURS_TITLE, TITLE, notice, repair};
+    use swofty_core::game_folder::recovery::Blocked;
+    use swofty_core::game_folder::stock;
     use swofty_core::install::Source;
-    use swofty_core::recovery::Blocked;
-    use swofty_core::stock;
 
     fn not_stock(n: usize) -> Edited {
         let files = (0..n).map(|i| format!("2025_asset_groups/f{i}.erp")).collect();
@@ -668,7 +629,7 @@ mod tests {
 
     #[test]
     fn files_left_in_swoftys_own_folder_are_not_called_edited_game_files() {
-        let file = |path: &str, replaced| swofty_core::recovery::BlockedFile {
+        let file = |path: &str, replaced| swofty_core::game_folder::recovery::BlockedFile {
             path: path.into(),
             sha256: None,
             replaced,

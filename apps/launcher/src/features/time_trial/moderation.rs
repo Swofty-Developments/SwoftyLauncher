@@ -5,14 +5,14 @@ use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
 use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::timetrial::boards::{Run, check_number, format_time};
+use swofty_core::online::timetrial::boards::{Run, check_number, format_time};
 use swofty_i18n::tr;
 
 use super::state::{Load, Verdict, View};
 use crate::shell::Shell;
-use crate::shell::pages::GUTTER;
 use crate::ui::scale::px;
 use crate::ui::theme::{Palette, ScrollArea};
+use crate::ui::tokens::space::GUTTER;
 use crate::ui::{EmptyState, selectable_row};
 
 pub(super) fn flag(p: Palette) -> Div {
@@ -431,7 +431,7 @@ impl Shell {
                 reasons.join(", ")
             )));
         }
-        let url = format!("{}/lap/{}", swofty_core::timetrial::boards_url(), lap);
+        let url = format!("{}/lap/{}", swofty_core::online::timetrial::boards_url(), lap);
         let buttons = if self.tt.banning {
             let (ban, back) = (id.clone(), reason.clone());
             h_flex()

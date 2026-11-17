@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PostraceReactionsD03Success_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14033ed10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14033ed10.c;xref:0x145601680",
+  "notes": "Post-race objective PASSED variant 3 initialise (vt slot 0x145601680): RaceSuccess, postrace_reactions_d_03 (+_camera1), vehicle1/2, Driver1/2. INIT pattern: setLocation(loc,0x140241330) -> spawnScene(0x14023f920/0x14023ef30) -> script+0x53c start offset=0 -> advanceStartTimeOffset(0x1402405c0) per scene -> bind actors(+0x58..+0x60) to scenes(+0x78..+0x80) under crit sec +0x118, anim scene mgr +0x50 -> post 0x140236880. Params flags: +0x190 params name, +0x1de useHQChars, +0x1df castNightShadows, +0x1e0 skipFrustumCulling, +0x1e1 preWarmTextures, +0x1e8 mirrored. Addon: hook slot to skip/replace this cutscene (or patch scene names), set +0x53c to shift timing, clear +0x1de/+0x1e1 to save memory. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3150)"
+ },
+ "signature": {
+  "id": "game.postrace_reactions_d03_success_initialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 04 00 00 48",
+  "match": "0x14033ed10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14033ed10",
+  "kind": "func_start",
+  "names": [
+   "Game_PostraceReactionsD03Success_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d13-verify",
+   "kind": "func",
+   "item": "Game_PostraceReactionsD03Success_Initialise",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14033ed10.c;xref:0x145601680",
+   "notes": "V3150 role/offsets/strings confirmed in decomp (INIT pattern calls thunks 140240410/140240700 -> alt copy 147562600 of advanceStartTimeOffset)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_WorldInstance_ReleaseWarmedTextures",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144478fc0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/144478fc0.c;xref:0x140c7addb,0x140c7d152",
+  "notes": "logged method name releaseWarmedTextures (class from the log channel); log channel NeWorldInstance: 'releaseWarmedTextures %p %s %s %s %s'"
+ },
+ "signature": {
+  "id": "core.world_instance_release_warmed_textures",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 80 3D ?? ?? ?? ?? 01 75 69 B8 D2",
+  "match": "0x140c7addb",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x144478fc0",
+  "kind": "func_start",
+  "names": [
+   "Ne_WorldInstance_ReleaseWarmedTextures"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cs-verify",
+   "kind": "func",
+   "item": "Ne_WorldInstance_ReleaseWarmedTextures",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144478fc0.c;xref:0x140c7addb",
+   "notes": "V2275 same as PreWarm but vfunc+0x88(1)"
+  }
+ ],
+ "proofs": []
+}

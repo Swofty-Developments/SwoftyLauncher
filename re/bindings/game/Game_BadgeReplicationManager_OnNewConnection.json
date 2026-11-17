@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_BadgeReplicationManager_OnNewConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431bdef0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=BadgeReplicationManager::onNewConnection; log channel NETWORK-ENTRANTS: 'void network::BadgeReplicationManager::onNewConnection(neon::NeNetConnectionID) | %s : Could not find human for connection id %d'"
+ },
+ "signature": {
+  "id": "game.badge_replication_manager_on_new_connection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 02 00 00 48 8B 71 08",
+  "match": "0x1431bdef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431bdef0",
+  "kind": "func_start",
+  "names": [
+   "Game_BadgeReplicationManager_OnNewConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x1431bdef0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431bdef0.c;xref:0x1431b066b",
+   "notes": "V5924 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

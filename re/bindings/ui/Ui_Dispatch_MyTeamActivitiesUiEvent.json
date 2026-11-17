@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Dispatch_MyTeamActivitiesUiEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14231ee00",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t Dispatch(void *ctx, void **node, char enable)",
+  "evidence": "decomp:re/decomp/14231ee00.c;xref:0x142316aa3;xref:0x14231a920;xref:0x14231a949",
+  "notes": "myteam-g2: Sets a bool VM node then dispatches a UI event by name (Ne_UiEvent_DispatchByName). Used by activities menu main/refresh."
+ },
+ "signature": {
+  "id": "ui.dispatch_my_team_activities_ui_event",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 40 44 89 C3 48 89 D6",
+  "match": "0x14231ee00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14231ee00",
+  "kind": "func_start",
+  "names": [
+   "Ui_Dispatch_MyTeamActivitiesUiEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x14231ee00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14231ee00.c;xref:0x142316aa3",
+   "notes": "V10125 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

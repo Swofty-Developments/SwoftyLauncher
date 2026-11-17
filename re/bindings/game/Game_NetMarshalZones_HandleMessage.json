@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetMarshalZones_HandleMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143194490",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143194490.c;xref:0x143180805",
+  "notes": "Receives a MarshalZone message (RECV conn, zones): stores timestamp +0x90/+0x98, sets +0x60, merges zone entries (16 bytes: flag s8 +8, vehicle bitmask u32 +0xc) into the per-connection hash map. Addon: online yellow/marshal zone flag sync. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2753)"
+ },
+ "signature": {
+  "id": "game.net_marshal_zones_handle_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 D3 48 89 CF",
+  "match": "0x143194490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143194490",
+  "kind": "func_start",
+  "names": [
+   "Game_NetMarshalZones_HandleMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_NetMarshalZones_HandleMessage",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143194490.c;xref:0x143194490",
+   "notes": "V2753 msg+0x10 conn key, sets +0x60, QPC to +0x90/+0x98, merge into hash map [+0x58] confirmed"
+  }
+ ],
+ "proofs": []
+}

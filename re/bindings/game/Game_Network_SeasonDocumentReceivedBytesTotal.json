@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_SeasonDocumentReceivedBytesTotal",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143097a80",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): 'SeasonDocument: received %d bytes, total of %d bytes'"
+ },
+ "signature": {
+  "id": "game.network_season_document_received_bytes_total",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 80 B9 6B 07 00 00 00",
+  "match": "0x143097a80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143097a80",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_SeasonDocumentReceivedBytesTotal"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x143097a80",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143097a80.c;xref:0x143095dd8",
+   "notes": "V5302 better name Game_Network_HandleSessionDocumentMessageData: handles both receive and discard (not receiving documents) branches"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x143097a80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143097a80.c;xref:0x143095dd8",
+   "notes": "V6965 48 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

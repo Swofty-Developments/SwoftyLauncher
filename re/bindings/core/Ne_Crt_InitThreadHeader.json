@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InitThreadHeader",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1449e05fc",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1449e05fc.c;xref:0x140184cb0,0x14018bdb0",
+  "notes": "MSVC _Init_thread_header for thread-safe function statics: (int *guard). Under SRW lock 0x145fb84a0: guard 0 -> set -1 (caller initialises); -1 -> SleepConditionVariableSRW (cv 0x145fb8498) until done; else stores epoch 0x145f70698 into TLS. Paired with 0x1449e06b0 (_Init_thread_footer). Inlined in hundreds of functions (cameras, cutscenes, actor manager)."
+ },
+ "signature": {
+  "id": "core.crt_init_thread_header",
+  "section": ".xtls",
+  "pattern": "40 53 48 83 EC 20 48 8B D9 48 8D 0D ?? ?? ?? ?? FF 15 ?? ?? ?? ?? 83 3B",
+  "match": "0x1449e05fc",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1449e05fc",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_InitThreadHeader"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1449e05fc",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1449e05fc.c;xref:0x140003ed5",
+   "notes": "V3742 SRW lock 0x145fb84a0, cv 0x145fb8498, epoch 0x145f70698 as claimed"
+  }
+ ],
+ "proofs": []
+}

@@ -10,10 +10,10 @@ use swofty_i18n::tr;
 
 use super::*;
 use crate::shell::Shell;
-use crate::shell::pages::{TRACK, label};
 use crate::ui::facet::{FILTERS_W, facet_row};
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::{Palette, SCROLLBAR_GAP, ScrollArea};
+use crate::ui::{TRACK, label};
 
 pub(super) fn shelf_tint(tab: Tab, p: Palette) -> Hsla {
     let hue = match tab {

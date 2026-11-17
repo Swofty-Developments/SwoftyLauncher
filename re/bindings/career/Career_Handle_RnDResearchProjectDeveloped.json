@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Handle_RnDResearchProjectDeveloped",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c55060",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_Handle_RnDResearchProjectDeveloped(void * self,uint32_t a2)",
+  "evidence": "decomp:re/decomp/141c55060.c;xref:0x141c543ed;xref:0x141c54409",
+  "notes": "myteam-g1: Handles my_team_research_project_developed after an upgrade finished developing; error_department fallback for unknown department."
+ },
+ "signature": {
+  "id": "career.handle_rn_dresearch_project_developed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC A0 00 00 00 4C 8B 81 00 03 00 00",
+  "match": "0x141c55060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c55060",
+  "kind": "func_start",
+  "names": [
+   "Career_Handle_RnDResearchProjectDeveloped"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c55060",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141c55060.c;xref:0x141c543ed;xref:0x141c54409",
+   "notes": "V9971 Handler for my_team_research_project_developed that resolves a department (error_department fallback) and navigates to overview/back; not only a handler of a finished upgrade."
+  }
+ ],
+ "proofs": []
+}

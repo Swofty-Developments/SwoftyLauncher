@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_SpectatorHud_Show",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c247a0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(HudSpectatorScreen*)",
+  "evidence": "decomp:re/decomp/141c247a0.c;xref:0x141c2457e,0x141c26c24",
+  "notes": "Removes HUD hide reason 6 for both players and posts MessageSpectatorHudVisibility with byte +0x10 = 1, and sets the bool on the view-model nodes [vm+0x948] and [vm+0x968]."
+ },
+ "signature": {
+  "id": "session.spectator_hud_show",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE 8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 48 8B 14 25 58 00 00 00 48 8B 0C CA 3B 81 04 00 00 00 0F 8F ?? ?? ?? ?? 8B 05 ?? ?? ?? ?? A8 40 0F 84 ?? ?? ?? ?? 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B9 D4 00 00 00 48 8D 15 ?? ?? ?? ?? 66 2E 0F 1F 84 00 00 00 00 00",
+  "match": "0x141c247a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c247a0",
+  "kind": "func_start",
+  "names": [
+   "Sess_SpectatorHud_Show"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "re-ai",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d7-verify",
+   "kind": "func",
+   "item": "Sess_SpectatorHud_Show",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c247a0.c;xref:0x141c247a0",
+   "notes": "V2673 fade/hide bit ids, offsets, states and curves checked against decomp; role as claimed"
+  }
+ ],
+ "proofs": []
+}

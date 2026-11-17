@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_OnSessionInPressInterview",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142df9fd0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onSessionInPressInterview (class from the log channel); log channel NETWORK: '%s, matching context: %s'"
+ },
+ "signature": {
+  "id": "game.network_on_session_in_press_interview",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 81 A0 0C 00 00 48 8B 80 88 00 00 00 48 85 C0 74 5F",
+  "match": "0x142df9fd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142df9fd0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_OnSessionInPressInterview"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142df9fd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142df9fd0.c;xref:0x1425457c9",
+   "notes": "V5462 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

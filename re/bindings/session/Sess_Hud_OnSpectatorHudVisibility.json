@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Sess_Hud_OnSpectatorHudVisibility",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a36940",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint64_t(Hud*, Msg*)",
+  "evidence": "decomp:re/decomp/141a36940.c;xref:0x141a36361,0x141a36b63",
+  "notes": "Subscriber of MessageSpectatorHudVisibility (registered in 0x141a34d90 by bus name): calls Sess_Hud_SetVisibilityBit(hud, 4, msg byte +0x10)."
+ },
+ "signature": {
+  "id": "session.hud_on_spectator_hud_visibility",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 44 0F B6 42 10 BA 04 00 00 00",
+  "match": "0x141a36940",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a36940",
+  "kind": "func_start",
+  "names": [
+   "Sess_Hud_OnSpectatorHudVisibility"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "re-ai",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

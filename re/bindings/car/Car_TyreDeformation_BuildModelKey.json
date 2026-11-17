@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_TyreDeformation_BuildModelKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14465e480",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14465e480.c;xref:0x14465cc0b,0x14465e2bf,0x14465e35d",
+  "notes": "Builds 'x0_tyre_' + name (table 0x145c056b0, idx < 4) + '%d_splits_' style key for the tyre deformation model lookup. Callers: Car_TyreDeformation_SetTyre/CreateTyreBody. (3 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "car.tyre_deformation_build_model_key",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 70 01 00 00 44 89 C7 48 89 CE",
+  "match": "0x14465e480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14465e480",
+  "kind": "func_start",
+  "names": [
+   "Car_TyreDeformation_BuildModelKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x14465e480",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14465e480.c;xref:0x14465cc0b",
+   "notes": "V6801 Builds x0_tyre_ + fl/fr/bl/br + %d_splits_ key confirmed."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Tyre_CurveMap_FindBracketA",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e7c1c0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e7c1c0.c;xref:0x142e7c077",
+  "notes": "std::map-style upper_bound walk on a curve key tree (container at this+8, size this+0x10, key float at node+0x20): writes [lower,upper] node pair to param_3. Callers Car_Tyre_SampleCurveSet2KeyLerp and Car_Tyre_SampleWearCurve2DAlt."
+ },
+ "signature": {
+  "id": "car.tyre_curve_map_find_bracket_a",
+  "section": ".xtls",
+  "pattern": "56 48 8B 41 08 4C 8B 08 4D 89 08 48 8B 41 08 48",
+  "match": "0x142e7c1c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e7c1c0",
+  "kind": "func_start",
+  "names": [
+   "Car_Tyre_CurveMap_FindBracketA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x142e7c1c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e7c1c0.c;xref:0x142e7c077",
+   "notes": "V8466 same walk with container +8/size +0x10; callers SampleCurveSet2KeyLerp, SampleWearCurve2DAlt"
+  }
+ ],
+ "proofs": []
+}

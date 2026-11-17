@@ -23,8 +23,8 @@ impl Shell {
             Some(Load::Ready(page)) => page.clone(),
         };
         let mut items: Vec<Target> = Vec::new();
-        let me = self.account_name();
-        let wide = self.content_width >= 1000.;
+        let me = self.account.display_name();
+        let wide = self.layout.content_width >= 1000.;
         let mine_keys: std::collections::HashSet<BoardKey> = self.online.my_times.keys().cloned().collect();
         let mut filter = self.online.filter_tracks.clone();
         if let Some(search) = &self.online.search {
@@ -59,8 +59,11 @@ impl Shell {
         let header = self.season_header(&page.season, p);
         let bar = self.track_filter_bar(&page.tracks, &filter, me.is_some(), p, cx);
         let rail = self.season_rail(id, p, cx);
-        let main_width =
-            self.content_width - 56. - 20. - RAIL_W - if wide { 20. + super::landing::RIGHT_W } else { 0. };
+        let main_width = self.layout.content_width
+            - 56.
+            - 20.
+            - RAIL_W
+            - if wide { 20. + super::landing::RIGHT_W } else { 0. };
         let ad = self.ad_banner(crate::features::ads::Unit::Online, main_width, p);
         let empty = rows.is_empty() && custom_rows.is_empty();
         let (narrow_ranking, side_ranking) = if wide {

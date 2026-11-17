@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Skidmarks_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144711290",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "pat:log-channel-SKIDMARKS",
+  "notes": "trackinfo parser for skid marks and the wetness section: SKIDMARKS, SKIDMARKS_BLEED, TYRE_RESIDUE, SKIDMARKS_CONFIG, WETNESS (wet_range, duration_no_rain, duration_full_rain, puddle_range), CAR_MARKS_ENABLE. The car marks are what dries the racing line in the wetness map."
+ },
+ "signature": {
+  "id": "render.skidmarks_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 0D 00 00 C5 78 29 8C 24 70 0D 00 00",
+  "match": "0x144711290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144711290",
+  "kind": "func_start",
+  "names": [
+   "Render_Skidmarks_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x144711290",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144711290.c;xref:0x144711124",
+   "notes": "V6872 Skidmark/wetness section strings confirmed."
+  }
+ ],
+ "proofs": []
+}

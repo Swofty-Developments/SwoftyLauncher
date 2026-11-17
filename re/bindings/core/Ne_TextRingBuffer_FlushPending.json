@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_TextRingBuffer_FlushPending",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144412800",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144412800.c;xref:0x145a8bd88",
+  "notes": "Flushes two locked text ring buffers (cs this+0x68 and +0xb8; pos/size +0x98..+0xb0 and +0xe8..+0x100): traces the pending text ('%.*s') and consumes it (0x1447bc790). Likely a console/log output sink. Reference only."
+ },
+ "signature": {
+  "id": "core.text_ring_buffer_flush_pending",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8B 49 68",
+  "match": "0x144412800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144412800",
+  "kind": "func_start",
+  "names": [
+   "Ne_TextRingBuffer_FlushPending"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Ne_TextRingBuffer_FlushPending",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144412800.c;xref:0x144412800",
+   "notes": "V2912 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

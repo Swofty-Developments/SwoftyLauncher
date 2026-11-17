@@ -8,6 +8,13 @@ use std::time::Instant;
 
 use super::{Page, PlayState, Shell};
 
+/// The window and content sizes the last frame was laid out at.
+pub(crate) struct Layout {
+    pub(crate) window_width: f32,
+    pub(crate) content_width: f32,
+    pub(crate) short: bool,
+}
+
 impl Render for Shell {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let started = Instant::now();
@@ -40,21 +47,21 @@ impl Render for Shell {
         let ad_video = self.ad_video(&state, p, cx);
         let wide = window.viewport_size().width > px(1500.);
         let short = window.viewport_size().height < px(760.);
-        self.short = short;
+        self.layout.short = short;
         let layout_width = f32::from(window.viewport_size().width);
-        self.content_width = crate::ui::scale::content_width(
+        self.layout.content_width = crate::ui::scale::content_width(
             f32::from(window.viewport_size().width),
             crate::ui::scale::current(),
         );
-        self.layout_width = layout_width;
+        self.layout.window_width = layout_width;
         let side = self.profiles_sidebar(p, cx);
         if side.is_some() {
-            self.content_width = (self.content_width - self.profiles_width()).max(320.);
+            self.layout.content_width = (self.layout.content_width - self.profiles_width()).max(320.);
         }
         self.sync_sliders(window, cx);
         self.sync_blocks(window, cx);
         self.db_pending_tab(window, cx);
-        if self.page == Page::Database {
+        if self.navigation.page == Page::Database {
             self.sync_db(window, cx);
         }
         for note in std::mem::take(&mut self.db.toasts) {
@@ -63,17 +70,22 @@ impl Render for Shell {
         for note in std::mem::take(&mut self.browser.toasts) {
             window.notify(note, cx);
         }
-        for note in std::mem::take(&mut self.mp_toasts) {
+        for note in std::mem::take(&mut self.account.toasts) {
             window.notify(note, cx);
         }
-        let content = match self.page {
+        let content = match self.navigation.page {
             Page::News => self.news_page(p, short, cx),
             Page::Importer => self.importer_page(p, cx),
             Page::Tools => match self.developer_section(p, cx) {
                 Some(dev) => v_flex()
                     .size_full()
                     .child(div().flex_1().min_h_0().child(self.tools_page(p, window, cx)))
-                    .child(div().px(px(crate::shell::pages::GUTTER)).pb(px(16.)).child(dev))
+                    .child(
+                        div()
+                            .px(px(crate::ui::tokens::space::GUTTER))
+                            .pb(px(16.))
+                            .child(dev),
+                    )
                     .into_any_element(),
                 None => self.tools_page(p, window, cx),
             },
@@ -90,8 +102,8 @@ impl Render for Shell {
             Page::Settings => self.settings_page(p, cx),
             Page::Section(i) => self.section_page(i, p, cx),
         };
-        if self.dropping && !cx.has_active_drag() {
-            self.dropping = false;
+        if self.overlays.dropping && !cx.has_active_drag() {
+            self.overlays.dropping = false;
         }
         let has_sub = self.sub_nav(layout_width).is_some();
         let page = self.page_name();
@@ -102,8 +114,8 @@ impl Render for Shell {
             .on_key_down(cx.listener(|this, ev: &KeyDownEvent, window, cx| this.nav_key(ev, window, cx)))
             .size_full()
             .on_drag_move::<ExternalPaths>(cx.listener(|this, _, _, cx| {
-                if !this.dropping {
-                    this.dropping = true;
+                if !this.overlays.dropping {
+                    this.overlays.dropping = true;
                     cx.notify();
                 }
             }))
@@ -150,7 +162,7 @@ impl Render for Shell {
             .children(self.ban_overlay(p, cx))
             .children(self.data_move_overlay(p, cx))
             .children(self.found_data_overlay(p, cx))
-            .when(self.dropping, |d| d.child(self.drop_overlay(p)))
+            .when(self.overlays.dropping, |d| d.child(self.drop_overlay(p)))
             .children(self.ads.sweep());
         self.note_slow("render", page, started);
         tree

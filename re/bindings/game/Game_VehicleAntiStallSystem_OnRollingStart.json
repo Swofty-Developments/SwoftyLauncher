@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleAntiStallSystem_OnRollingStart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f4eed0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "uint64_t(VehicleAntiStallSystem*, Message*)",
+  "evidence": "decomp:ghidra-headless-2026-10-25",
+  "notes": "RollingStartMessage subscriber (emulated): same per-car reset as OnVehicleLeftGarage."
+ },
+ "signature": {
+  "id": "game.vehicle_anti_stall_system_on_rolling_start",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? FF 67 FE E9 ?? ?? ?? ?? 0F 80",
+  "match": "0x142f4eed0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f4eed0",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleAntiStallSystem_OnRollingStart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f4eed0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f4eed0.c;xref:0x142f4bf76",
+   "notes": "V5642 Not same as LeftGarage: handles ONE vehicle id (msg+0x10), sets +0x18 to obfuscated non-zero value, +0x30=1, warns on out-of-range id (onRollingStartBegin); better Game_VehicleAntiStallSystem_OnRollingStartBegin"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142f4eed0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f4eed0.c;xref:0x142f4bf76",
+   "notes": "V6917 68 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Facilities_ReadSaveData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f84f20",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "ulonglong f(void *facilities, void *save_in, ulonglong ctx)",
+  "evidence": "decomp:re/decomp/140f84f20.c;xref:0x1456aeec8",
+  "notes": "myteam-g1: Save loader for career.my_team_facilities: restores workforce_cap, automatic_workforce, day_workforce_last_changed, team_facility_data (+0x290..+0x318). Best place to patch the workforce cap and facility levels of a loaded career. CORRECTION(V8977): Role right (save loader for team_facility_data/facilities/nodes with workforce_cap_set/workforce_cap/day_workforce_last_changed/automatic_workforce). But +0x290..+0x318 is not a field range: +0x290 is the team-data vector and +0x2e8..+0x318 are config values passed into the per-facility builder 140f7cfe0; the workforce_cap lands in each facility object (+0x50 with set flag +0x54), not in the component."
+ },
+ "signature": {
+  "id": "career.facilities_read_save_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 07 00 00 C5 F8 29 B4 24 F0 06 00 00 4C 89 44 24 40",
+  "match": "0x140f84f20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f84f20",
+  "kind": "func_start",
+  "names": [
+   "Career_Facilities_ReadSaveData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-a",
+   "kind": "func",
+   "item": "0x140f84f20",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140f84f20.c;xref:0x1456aeec8;str:\"team_facility_data\";str:\"workforce_cap\";str:\"automatic_workforce\"",
+   "notes": "V8977 Role right (save loader for team_facility_data/facilities/nodes with workforce_cap_set/workforce_cap/day_workforce_last_changed/automatic_workforce). But +0x290..+0x318 is not a field range: +0x290 is the team-data vector and +0x2e8..+0x318 are config values passed into the per-facility builder 140f7cfe0; the workforce_cap lands in each facility object (+0x50 with set flag +0x54), not in the component."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f84f20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f84f20.c;xref:0x1456aeec8;str:\"workforce_cap\"",
+   "notes": "V9594 Verified: builder 140f7cfe0 receives +0x2e8..+0x318 values, workforce_cap stored per facility at +0x50 with flag +0x54; +0x290 is team data vector."
+  }
+ ],
+ "proofs": []
+}

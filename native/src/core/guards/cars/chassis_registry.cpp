@@ -26,6 +26,7 @@
 
 namespace {
 
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 namespace pb = runtime::pit_box;
 
@@ -34,7 +35,7 @@ constexpr const char *SITE = "site_Car_ChassisRegistryCount";
 constexpr uintptr_t COUNT = 0x5d8;
 constexpr int LOG_FIRST = 8;
 
-std::atomic<int> skipped{0};
+guards::LogFirst<LOG_FIRST> skipped{"skips"};
 
 void registry_count(SwoftyContext *c)
 {
@@ -42,13 +43,9 @@ void registry_count(SwoftyContext *c)
     if (!c->rbx || !mem::read(c->rbx + COUNT, count) || !pb::registry_full(count))
         return;
     c->rbx = 0;
-    int n = ++skipped;
-    if (n <= LOG_FIRST)
-        swofty::log("[car] chassis registry holds %u bodies; registration #%d is skipped%s", unsigned(count), n,
-                    n == LOG_FIRST ? " (further skips are not logged)" : "");
+    if (auto line = skipped.note())
+        swofty::log("[car] chassis registry holds %u bodies; registration #%d is skipped%s", unsigned(count), line.n, line.tail);
 }
-
-namespace guards = swofty_core::guards;
 
 guards::SiteGuard guard{guards::CoreSetId::chassis_registry,
                         {

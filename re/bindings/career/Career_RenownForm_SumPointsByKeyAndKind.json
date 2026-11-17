@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_RenownForm_SumPointsByKeyAndKind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fc8460",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int (void *rf, uint8_t kind, uint32_t stat_key, uint32_t unused)",
+  "evidence": "decomp:re/decomp/140fc8460.c;xref:0x140db28a5;xref:0x1420c95c5;xref:0x1420c96bd",
+  "notes": "myteam-g2: Two-level hash lookup (stat key swapped to ushort at rf+0x2b0, then kind byte at obj+0x30) and sums the int values (+4) of the matching bucket records (0x60-byte entries); returns 0 if either key is absent. Used by renown/form refresh to total renown points of one event kind."
+ },
+ "signature": {
+  "id": "career.renown_form_sum_points_by_key_and_kind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 89 C8 44 89 C1 C1 E9 10 41 C1 E0 0E 41 09 C8 41 0F B7 C8 48 0F AF 88 B0 02 00 00",
+  "match": "0x140fc8460",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fc8460",
+  "kind": "func_start",
+  "names": [
+   "Career_RenownForm_SumPointsByKeyAndKind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140fc8460",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fc8460.c;xref:0x140db28a5",
+   "notes": "V9621 Two-level hash lookup (16-bit stat key then kind byte), sums int at +4 over 0x60-byte records of the bucket; returns 0 if either missing."
+  }
+ ],
+ "proofs": []
+}

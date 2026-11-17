@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Format_RnDDaysRemaining",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c4cc60",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t * Career_Format_RnDDaysRemaining(int64_t *self,uint64_t *a2,int a3)",
+  "evidence": "decomp:re/decomp/141c4cc60.c;xref:0x141c4a0da;xref:0x141c4d6cc",
+  "notes": "myteam-g1: Returns the localised \"lng_rnd_day_remain\"/\"lng_rnd_days_remain\" string for a day count (singular when < 2) via the loc service at +0x2b0."
+ },
+ "signature": {
+  "id": "career.format_rn_ddays_remaining",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC F8 00 00 00 44 89 C7 48 89 D6 48 8D 5C 24 38",
+  "match": "0x141c4cc60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c4cc60",
+  "kind": "func_start",
+  "names": [
+   "Career_Format_RnDDaysRemaining"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c4cc60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c4cc60.c;xref:0x141c4a0da;xref:0x141c4d6cc",
+   "notes": "V9967 Returns lng_rnd_day_remain / lng_rnd_days_remain; singular vs plural."
+  }
+ ],
+ "proofs": []
+}

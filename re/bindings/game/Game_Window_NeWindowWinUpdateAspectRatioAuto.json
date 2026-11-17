@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Window_NeWindowWinUpdateAspectRatioAuto",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439f14f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-WINDOW",
+  "notes": "named from its log messages (channel WINDOW): 'NeWindowWin::updateAspectRatio: auto=%d'"
+ },
+ "signature": {
+  "id": "game.window_ne_window_win_update_aspect_ratio_auto",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1439f14f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439f14f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Window_NeWindowWinUpdateAspectRatioAuto"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1439f14f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1439f14f0.c;xref:0x142c93e37",
+   "notes": "V6405 updateAspectRatio handles auto, custom and window modes; auto is one branch. Better Game_Window_NeWindowWinUpdateAspectRatio"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1439f14f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439f14f0.c;xref:0x142c93e37",
+   "notes": "V7041 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

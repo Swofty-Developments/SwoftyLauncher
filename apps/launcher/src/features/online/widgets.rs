@@ -108,7 +108,7 @@ impl Shell {
             .find(|a| a.manifest.id == addon)
             .and_then(|a| a.icon.as_ref())
         {
-            return crate::shell::pages::addon_icon(icon, size, p);
+            return crate::ui::addon_icon(icon, size, p);
         }
         if let Some(d) = self.catalog_icon_of(addon, size, p) {
             return d;
@@ -120,7 +120,7 @@ impl Shell {
                 .rounded(px(size * 0.22))
                 .overflow_hidden()
                 .child(img(image.clone()).size_full().object_fit(ObjectFit::Cover)),
-            _ => crate::shell::pages::badge(IconName::Trophy, size, p),
+            _ => crate::ui::badge(IconName::Trophy, size, p),
         }
     }
 
@@ -455,7 +455,8 @@ impl Shell {
     }
 
     pub(super) fn sign_in_banner(&self, p: Palette, cx: &mut Context<Self>) -> Option<AnyElement> {
-        self.account_name()
+        self.account
+            .display_name()
             .is_none()
             .then(|| {
                 div()
@@ -476,9 +477,9 @@ impl Shell {
                                         } else {
                                             tr("Log in with Discord")
                                         })
-                                        .on_click(
-                                            cx.listener(|this, _, window, cx| this.mp_sign_in(window, cx)),
-                                        ),
+                                        .on_click(cx.listener(|this, _, _, cx| {
+                                            crate::shell::account::Account::sign_in(this, cx)
+                                        })),
                                 ),
                             ),
                     )

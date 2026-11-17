@@ -1,6 +1,6 @@
 // Host test for fits.hpp and facts_file.hpp: the frozen fit rules (garages, grid clamped to the install's grid size,
 // AI folders and difficulties, Time Trial), the world choice by setup mode and season, missing facts, the guard's
-// popup text and a box made from a content.package record. run_track_lists_test.sh builds and runs it.
+// popup text and a box made from a content.package record. native/test/run_tests.sh track_lists builds and runs it.
 #include "fixture.hpp"
 
 #include <map>

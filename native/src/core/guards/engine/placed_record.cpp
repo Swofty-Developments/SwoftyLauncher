@@ -1,4 +1,6 @@
 #include "core/guards/engine/placed_record_logic.hpp"
+#include "core/guards/guard.hpp"
+#include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -27,11 +29,9 @@
 //
 // SWOFTY_PLACED_RECORD_GUARD=0 turns the guard off; the high-water marks stay on.
 
-namespace runtime {
-std::string hook_error(const safetyhook::MidHook::Error &e);
-}
-
 namespace {
+
+namespace guards = swofty_core::guards;
 
 const runtime::Sig S_RECORD{"Render_Gfx2Heap_BumpAllocPlacedResource record index",
                             "F0 44 0F C1 8F 88 00 00 00 4D 63 C9 4F 8D 0C 89 4E 8D 14 CF 4A 89 94 CF 90 00 00 00", 0x39b9c79,
@@ -96,29 +96,39 @@ void on_record(safetyhook::Context &c)
     c.rip = c.rip + EPILOGUE;
 }
 
+class RecordGuard final : public guards::OnDemandGuard {
+protected:
+    bool install() override
+    {
+        char v[16];
+        bool off = guards::env_off("SWOFTY_PLACED_RECORD_GUARD", v);
+        runtime::placed::stats().guard = !off;
+        uintptr_t at = runtime::find(S_RECORD, "gfx", "gfx");
+        if (!at) {
+            swofty::log("[gfx] placed record counter: signature not found; high-water marks and guard off");
+            return false;
+        }
+        auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), on_record);
+        if (!h) {
+            swofty::log("[gfx] placed record counter: hook failed: %s", runtime::hook_error(h.error()).c_str());
+            return false;
+        }
+        hook = std::move(*h);
+        swofty::log("[gfx] placed record counter on (high-water marks per upload heap); guard %s",
+                    off ? "off (SWOFTY_PLACED_RECORD_GUARD=0)" : "armed: records past 127 are skipped");
+        return true;
+    }
+};
+
+constinit RecordGuard guard;
+
 }
 
 namespace runtime {
 
 void placed_record_setup()
 {
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_PLACED_RECORD_GUARD", v, sizeof v);
-    bool off = n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"));
-    placed::stats().guard = !off;
-    uintptr_t at = find(S_RECORD, "gfx", "gfx");
-    if (!at) {
-        swofty::log("[gfx] placed record counter: signature not found; high-water marks and guard off");
-        return;
-    }
-    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), on_record);
-    if (!h) {
-        swofty::log("[gfx] placed record counter: hook failed: %s", hook_error(h.error()).c_str());
-        return;
-    }
-    hook = std::move(*h);
-    swofty::log("[gfx] placed record counter on (high-water marks per upload heap); guard %s",
-                off ? "off (SWOFTY_PLACED_RECORD_GUARD=0)" : "armed: records past 127 are skipped");
+    guard.arm();
 }
 
 void placed_record_crash_text(char *out, size_t cap)

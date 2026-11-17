@@ -10,9 +10,9 @@ use swofty_i18n::{tr, trf};
 use super::labels::{close_game_first, empty_save, steam_save_missing_text};
 use super::state::SavesView;
 use crate::shell::Shell;
-use crate::shell::pages::GUTTER;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::{Palette, ScrollArea};
+use crate::ui::tokens::space::GUTTER;
 use crate::ui::{Callout, EmptyState};
 
 fn notice(callout: Callout) -> Div {
@@ -41,12 +41,12 @@ impl Shell {
                 .child(empty)
                 .into_any_element();
         };
-        let title = match (view.vanilla(), self.use_profiles) {
+        let title = match (view.vanilla(), self.prefs.use_profiles) {
             (true, _) => tr("Vanilla saves").to_owned(),
             (false, true) => trf!("{profile} saves", profile = view.profile),
             (false, false) => tr("Saves").to_owned(),
         };
-        let subtitle = match (view.vanilla(), self.use_profiles) {
+        let subtitle = match (view.vanilla(), self.prefs.use_profiles) {
             (true, _) => tr("Plays on your Steam save").to_owned(),
             (false, true) => tr("This profile's own save").to_owned(),
             (false, false) => tr("Launcher saves").to_owned(),
@@ -124,7 +124,7 @@ impl Shell {
                     })),
             )
         });
-        let callout = Callout::warning(swofty_core::vault::guard::STEAM_SAVE_WARNING);
+        let callout = Callout::warning(swofty_core::saves::vault::guard::STEAM_SAVE_WARNING);
         Some(notice(match turn_on {
             true => callout.actions(actions),
             false => callout,
@@ -255,7 +255,7 @@ impl Shell {
         h_flex()
             .gap(px(8.))
             .flex_shrink_0()
-            .when(self.use_profiles, |row| row.child(copy))
+            .when(self.prefs.use_profiles, |row| row.child(copy))
             .child(import)
             .child(export)
     }

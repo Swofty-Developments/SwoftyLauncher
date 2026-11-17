@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Save_ReserveNodeBuffer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143935a40",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_Save_ReserveNodeBuffer(void *node, uint64_t size)",
+  "evidence": "decomp:re/decomp/143935a40.c;xref:0x140afb624;xref:0x140afb930;xref:0x140afb93b",
+  "notes": "myteam-g2: Save-tree helper that allocates/copies a size-byte buffer with Ne_Crt_Memcpy for a node write. Shared by driver contracts, MyTeam stages and relationship config."
+ },
+ "signature": {
+  "id": "core.save_reserve_node_buffer",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 0F B7 41 12",
+  "match": "0x143935a40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143935a40",
+  "kind": "func_start",
+  "names": [
+   "Ne_Save_ReserveNodeBuffer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143935a40",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143935a40.c;xref:0x140afb624",
+   "notes": "V10335 It is a capacity reserve for the pointer array (param is element count, *8 bytes; cap ushort at +0x12), returns 0xc on alloc failure; not a size-byte buffer."
+  }
+ ],
+ "proofs": []
+}

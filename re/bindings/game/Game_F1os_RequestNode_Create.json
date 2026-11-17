@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_RequestNode_Create",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14082abc0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14082abc0.c;xref:0x140829493",
+  "notes": "Allocates a 0x48-byte request node (vtable 0x14565fda0) through allocator vtable +0x18, wires an inner functor from param_4+0x38 into node+0x40. 1 caller Game_F1os_RequestRing_Push (0x140829493)."
+ },
+ "signature": {
+  "id": "game.f1os_request_node_create",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 F0 48 83 C4 30 5B 5F 5E 41 5E 41 5F C3 CC CC CC CC CC CC CC CC CC 41 57 41",
+  "match": "0x140829493",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14082abc0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_RequestNode_Create"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x14082abc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14082abc0.c;xref:0x140829493",
+   "notes": "V8210 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

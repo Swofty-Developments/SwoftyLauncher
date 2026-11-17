@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_UiMenuDataConfig_4",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d9dfe0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: ui_menu_data.photo_mode_available, ui_menu_data.photo_mode_enabled, ui_menu_data.start_photo_mode'"
+ },
+ "signature": {
+  "id": "game.read_ui_menu_data_config_4",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 BC 24 B0 00 00 00 C5 F8 29 B4 24 A0 00 00 00 48 89 D6",
+  "match": "0x142d9dfe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d9dfe0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_UiMenuDataConfig_4"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d9dfe0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142d9dfe0.c",
+   "notes": "V5441 photo mode/replay state handler (SetMode, Replay SetState, fade reasons cleared, StopAndNotify), not a config reader; better Game_SessionStatePhotoMode_OnStateEnter"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142d9dfe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d9dfe0.c",
+   "notes": "V6895 398 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

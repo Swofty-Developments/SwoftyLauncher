@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_TextureDecompression_CreateMaterial",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143df22c0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143df22c0.c;xref:0x14010a112",
+  "notes": "Creates the GPU texture-decompression material: 'texture_decompression_new.material' from eaid://shader_package/texture_decompression/..., name 'HBCN', 'Construct generator %p'; BindLayout_Create + FillMeTextureSlots + resource notify. 1985 bytes, 1 caller in the Render_Gfx config build."
+ },
+ "signature": {
+  "id": "render.texture_decompression_create_material",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 60 C5 F8 29 74 24 50 4C 89 C7 48 89 CE 4D",
+  "match": "0x143df22c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143df22c0",
+  "kind": "func_start",
+  "names": [
+   "Render_TextureDecompression_CreateMaterial"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143df22c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143df22c0.c;xref:0x14010a112",
+   "notes": "V8352 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

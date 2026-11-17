@@ -1,8 +1,9 @@
 //! Where the shell shows its ad slots: under the news page's release notes, a
 //! banner over the Discover cards and under the Online filters, the side column
 //! of an addon's page, and a floating video while the game builds and starts.
-//! Signed-in supporters see none. `SWOFTY_ADS_VIDEO=1` shows the video without
-//! pressing Play, even while [`VIDEO_LIVE`] is off.
+//! Signed-in supporters, admins, Swofty Launcher Support and addon creators,
+//! as the server's support status says, see none. `SWOFTY_ADS_VIDEO=1` shows
+//! the video without pressing Play, even while [`VIDEO_LIVE`] is off.
 
 use super::Unit;
 use crate::features::time_trial::Load;
@@ -44,30 +45,22 @@ impl Shell {
     /// Whether an overlay could be over a slot: slots draw over everything in
     /// the window, so they hide while one is open.
     pub(crate) fn ads_covered(&self, window: &mut Window, cx: &mut App) -> bool {
-        self.popover.is_some()
-            || self.tasks.is_some()
-            || (self.crash_open && self.crash_view.is_some())
-            || self.ban.is_some()
-            || self.moving.is_some()
-            || self.found_data.is_some()
-            || self.dropping
+        self.navigation.popover.is_some()
+            || self.overlays.tasks.is_some()
+            || self.crashes.shown().is_some()
+            || self.account.ban.is_some()
+            || self.overlays.moving.is_some()
+            || self.overlays.found_data.is_some()
+            || self.overlays.dropping
             || window.has_active_dialog(cx)
             || window.has_active_sheet(cx)
     }
 
-    /// Signed-in supporters see no ads, and nobody signed in does until their
-    /// support is known.
+    /// Nobody signed in sees ads until their support status is known.
     pub(crate) fn ads_allowed(&self) -> bool {
-        self.ads.on() && (self.mp.is_none() || matches!(&self.support.me, Load::Ready(me) if !me.active))
-    }
-
-    /// Fetches the signed-in user's support once per sign-in, which decides their ads.
-    pub(crate) fn sync_support(&mut self, cx: &mut Context<Self>) {
-        if self.mp.is_none() {
-            self.support.me = Load::Idle;
-        } else if matches!(self.support.me, Load::Idle | Load::Failed(_)) {
-            self.support_fetch_me(cx);
-        }
+        self.ads.on()
+            && (self.account.session.is_none()
+                || matches!(&self.support.me, Load::Ready(me) if me.sees_ads()))
     }
 
     fn ad_fits(unit: Unit, width: f32) -> bool {
@@ -97,7 +90,7 @@ impl Shell {
 
     /// Steps aside while the video is up, which floats over the page.
     pub(crate) fn ad_rail(&self, p: Palette) -> Option<AnyElement> {
-        if self.ad_video.as_ref().is_some_and(|v| !v.closed) {
+        if self.ads.video.as_ref().is_some_and(|v| !v.closed) {
             return None;
         }
         Some(self.ad_box(Unit::Home, p.background, p)?.into_any_element())
@@ -105,7 +98,8 @@ impl Shell {
 
     /// Whether `unit` fits in the page header, centred between the title and the buttons.
     pub(crate) fn ad_header_room(&self, unit: Unit) -> bool {
-        self.content_width * crate::ui::scale::current() >= f32::from(unit.size().width) + 2. * HEADER_SIDE
+        self.layout.content_width * crate::ui::scale::current()
+            >= f32::from(unit.size().width) + 2. * HEADER_SIDE
     }
 
     /// `unit` for the middle of the page header, when it fits there.
@@ -147,10 +141,10 @@ impl Shell {
             );
         let starting = starting || std::env::var_os("SWOFTY_ADS_VIDEO").is_some_and(|v| v == "1");
         if !self.ads_allowed() || !starting {
-            self.ad_video = None;
+            self.ads.video = None;
             return None;
         }
-        let video = self.ad_video.get_or_insert_with(|| {
+        let video = self.ads.video.get_or_insert_with(|| {
             cx.spawn(async move |this, cx| {
                 cx.background_executor().timer(VIDEO_SKIP).await;
                 this.update(cx, |_, cx| cx.notify()).ok();
@@ -172,7 +166,7 @@ impl Shell {
             .icon(IconName::X)
             .disabled(!closable)
             .on_click(cx.listener(|this, _, _, cx| {
-                if let Some(video) = &mut this.ad_video {
+                if let Some(video) = &mut this.ads.video {
                     video.closed = true;
                 }
                 cx.notify();

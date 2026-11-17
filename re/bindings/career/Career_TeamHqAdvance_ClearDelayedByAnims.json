@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqAdvance_ClearDelayedByAnims",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422bbbf0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1422bbbf0.c;xref:0x14232ec5e,0x14232fc32",
+  "notes": "team_hq_advance::AdvanceData::setDelayedByAnims(false): logs '%s(%d)', AdvanceData+0x36 = 0. Called by Career_TeamHqMyTeamVM_OnCommandRaised. Addon: clear to stop UI animations holding back the day advance. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3081)"
+ },
+ "signature": {
+  "id": "career.team_hq_advance_clear_delayed_by_anims",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6B B8 AA 00",
+  "match": "0x1422bbbf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422bbbf0",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqAdvance_ClearDelayedByAnims"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Career_TeamHqAdvance_ClearDelayedByAnims",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422bbbf0.c;xref:14232e580",
+   "notes": "V3081 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

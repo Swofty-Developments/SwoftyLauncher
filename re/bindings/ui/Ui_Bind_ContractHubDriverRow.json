@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Bind_ContractHubDriverRow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416e17b0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Bind(void *row, ... )",
+  "evidence": "decomp:re/decomp/1416e17b0.c;xref:0x141878d5f;xref:0x141c884df;xref:0x1420bbb6c",
+  "notes": "myteam-g2: Large driver/contract row binder (22 KB): driver overall rating (Career_Get_DriverOverallRating), RP text, many Vm_NodeSet_* nodes (offsets 0x118..0x2e..), Vm_Link_RegistryNode, Ne_Format_String. UI only."
+ },
+ "signature": {
+  "id": "ui.bind_contract_hub_driver_row",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 02 00 00 C5 78 29 8C 24 C0 02 00 00 C5 78 29 84 24 B0 02 00 00 C5 F8 29 BC 24 A0 02 00 00 C5 F8 29 B4 24 90 02 00 00 C5 F8 28 F3",
+  "match": "0x1416e17b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416e17b0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Bind_ContractHubDriverRow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1416e17b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1416e17b0.c;xref:0x141878d5f;xref:0x141c884df",
+   "notes": "V9767 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

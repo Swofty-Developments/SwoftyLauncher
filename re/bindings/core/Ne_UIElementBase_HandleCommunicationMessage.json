@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_UIElementBase_HandleCommunicationMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442fc290",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/1442fc290.c;xref:0x1442fbe11,0x14430904c,0x144309e5f,0x14430aec5",
+  "notes": "cxx=NeUIElementBase::NeUICommunicationMessageType; log channel UIRef: '***** Frame:%I64u NeUIElementBase::NeUICommunicationMessageType::ScreenSetup Element:%u' cb4-verify-b: 1996-line switch over message types; ScreenSetup is one case"
+ },
+ "signature": {
+  "id": "core.ui_element_base_ne_ui_communication_message_type",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 03 00 00 C5 F8 29 BC 24 10 03 00 00 C5 F8 29 B4 24 00 03 00 00 8B 42 10",
+  "match": "0x1442fc290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442fc290",
+  "kind": "func_start",
+  "names": [
+   "Ne_UIElementBase_HandleCommunicationMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x1442fc290",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1442fc290.c",
+   "notes": "V4121 ScreenSetup string, 1996-line switch (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

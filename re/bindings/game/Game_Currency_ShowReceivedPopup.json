@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Currency_ShowReceivedPopup",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142b9d370",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "bool Game_Currency_ShowReceivedPopup(void *self, int32_t newBalance)",
+  "evidence": "str:s_cfg_TestingEnableSmokeTest;decomp:re/decomp/142b9d370.c;xref:0x142b9d3b3,0x142b9d3b4,0x142ba05fd,0x1433753bf",
+  "notes": "Compares newBalance with the stored balance at [self+0x278]+0x7918 and the last shown value self+0x2c4; if it is larger than both, reads Testing.EnableSmokeTest (Ne_Get_SettingBool 0x143a43b90, node [[self+0x298]+0x18], default 0) and when the smoke test is ON skips the popup. Otherwise: if feature flag bit 3 is set and 'f1_life_video' is found in the set [self+0x290]+0x228, defers (self+0x2b9 = 1, self+0x2bc = delta); else shows message 'pp_currency_received_outside_confirmation' via Game_UiMessage_DisplayMessage 0x1442d9bf0 (UI service [self+0x240]+0x10 vcall +0x58, close callback 0x142b9d300), stores the listener handle at self+0xe8 (Ne_ListenerHandle_Assign 0x1442aa6c0 / Ne_ListenerHandle_Unregister 0x1442aa980), formats the delta (0x14107adb0) and sets it as a message parameter (0x1409b2cb0). Returns true when the balance rose. Direct callers 0x142b9efe0 (call at 0x142ba05fd) and 0x143375300 (call at 0x1433753bf); ripref 0x143375018 is a false hit. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.currency_show_received_popup",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 00 01 00 00 48 8B 81 78 02 00 00",
+  "match": "0x142b9d370",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142b9d370",
+  "kind": "func_start",
+  "names": [
+   "Game_Currency_ShowReceivedPopup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-2",
+   "kind": "func",
+   "item": "0x142b9d370",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142b9d370.c;xref:0x142ba05fd,0x143375017,0x1433753bf;str:0x1456120b9,0x14570c392",
+   "notes": "V9345 If the new balance (int arg) exceeds both the stored balance and last-shown value, unless 'Testing.EnableSmokeTest' (bool, default false) is on, either defers (sets pending flag +0x2b9 and amount +0x2bc when a 'f1_life_video' entry is active) or opens popup 'pp_currency_received_outside_confirmation' with 'price' = delta; returns whether the balance increased. Name and proto fit."
+  }
+ ],
+ "proofs": []
+}

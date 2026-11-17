@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_ActivitiesUIDeeplinkManager_StartProLeaguesActivity",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143864fc0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_ActivitiesUIDeeplinkManager_StartProLeaguesActivity;xref:0x1438651ec",
+  "notes": "cxx=game::ActivitiesUIDeeplinkManager::startProLeaguesActivity; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.activities_u_i_deeplink_manager_start_pro_leagues_activity",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 31 F6 80 3D ?? ?? ?? ?? 01 75",
+  "match": "0x143862f08",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143864fc0",
+  "kind": "func_start",
+  "names": [
+   "Game_ActivitiesUIDeeplinkManager_StartProLeaguesActivity"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x143864fc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143864fc0.c;xref:0x143862f08",
+   "notes": "V7408 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

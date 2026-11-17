@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_Is_MyTeamGameMode_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140778420",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "bool(void *game_mode)",
+  "evidence": "decomp:re/decomp/140778420.c;xref:0x1436ffb68,0x1401adacd,0x14025865d,0x140259ef9;doc:addons/career-editor/protocol/bridge.md#state-detection",
+  "notes": "thunk to .data1 body 0x1484f1570, 381 callers: true for a My Team career game mode (component probes 0x146060a08, then Career 0x14605b128 without CareerRecognition 0x146060948, the Driver Career influence component). StateTeamHQ uses it to pick enter_my_team_career"
+ },
+ "signature": {
+  "id": "career.is_my_team_game_mode_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 43 14 E3 E9 ?? ?? ?? ?? 5B 5E 30 88 F7 E9 95 99",
+  "match": "0x140778420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140778420",
+  "kind": "func_start",
+  "names": [
+   "Career_Is_MyTeamGameMode_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-bridge",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/state.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140778420",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140778420.c",
+   "notes": "V9038 Thunk resolved: probes 0x146060a08, then 0x14605b128 with the 0x146060948 negation, as claimed; boolean game-mode predicate."
+  }
+ ],
+ "proofs": []
+}

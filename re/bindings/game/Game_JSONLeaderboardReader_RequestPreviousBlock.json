@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_JSONLeaderboardReader_RequestPreviousBlock",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fbb670",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=JSONLeaderboardReader::requestPreviousBlock; log channel LEADERBOARD: 'game::JSONLeaderboardReader::requestPreviousBlock() on %s(ver=%d), was at %llu, +%llu'"
+ },
+ "signature": {
+  "id": "game.json_leaderboard_reader_request_previous_block",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 38 00 00 00 48 8D 0D ?? ?? ?? ?? 66 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 8B 14 81 81 FA 64 AE 4C A2 74 32 85 D2 74 67 83 C0 0F 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 83 F8 38 75 C5 EB 39 4C 8B 86 C0 00 00 00 48 8B 86 08 01 00 00 48 8B 8E F8 00 00 00 44 8B 8E E8 00 00 00 48 89 44 24 28 48 89 4C 24 20 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 86 08 01 00 00 48 85 C0 74 40 48 8B 8E F8 00 00 00",
+  "match": "0x142fbb670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fbb670",
+  "kind": "func_start",
+  "names": [
+   "Game_JSONLeaderboardReader_RequestPreviousBlock"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142fbb670",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fbb670.c",
+   "notes": "V5710 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

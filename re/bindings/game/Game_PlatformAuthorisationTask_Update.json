@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PlatformAuthorisationTask_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14334e760",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14334e760.c;xref:0x14583b558",
+  "notes": "PlatformAuthorisationTask slot 15 update: polls the auth object state (0x1430fffb0 on +0x120); state 3 -> logs 'PlatformAuthorisationTask : Authorisation denied' on F1OS/ERROR, fails every waiting child (+0xb0..+0xb8, 0x1432c0280 code 3 + Game_OnlineSubsystemTaskBase_StopTask 0x1432c03c0) and itself (vfunc +0x98); state 2 -> fetches result (0x143100060), finishes OK and records 'Platform Authorisation OK' in OS_METRICS. Addon: hook to know when online auth succeeded or was denied. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3313)"
+ },
+ "signature": {
+  "id": "game.platform_authorisation_task_update",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 89 20 01 00 00",
+  "match": "0x14334e760",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14334e760",
+  "kind": "func_start",
+  "names": [
+   "Game_PlatformAuthorisationTask_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_PlatformAuthorisationTask_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14334e760.c;xref:0x14334e760",
+   "notes": "V3313 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

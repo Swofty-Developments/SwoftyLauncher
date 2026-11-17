@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SkinnedActorAnimationData_HandleResourceEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401f1c60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=SkinnedActorAnimationData::handleResourceEvent; log channel ACTOR_RESOURCE_EVENT: 'SkinnedActorAnimationData::handleResourceEvent %p eAdded %s'"
+ },
+ "signature": {
+  "id": "game.skinned_actor_animation_data_handle_resource_event",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 44 89 CB 48 89 D7 48 89 CE",
+  "match": "0x1401f1c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401f1c60",
+  "kind": "func_start",
+  "names": [
+   "Game_SkinnedActorAnimationData_HandleResourceEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401f1c60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401f1c60.c",
+   "notes": "V4388 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_ResourceHandle_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144252760",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144252760.c;xref:0x1407eaa86,0x140c723ac",
+  "notes": "(handle) Zeroes a 0xb0 handle, then if resource manager g 0x146ca0e90 exists allocates a 0x60 node (vcall +0x18) and takes a ref (atomic +0x24). 130 callers (career sequencer, MFD config, misconduct ctor). Hypothesis."
+ },
+ "signature": {
+  "id": "core.resource_handle_init",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE C5 F8 57 C0 C5 F8 11 41 10 C5 F8 11",
+  "match": "0x144252760",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144252760",
+  "kind": "func_start",
+  "names": [
+   "Ne_ResourceHandle_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x144252760",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144252760.c;xref:0x1407eaa86",
+   "notes": "V3655 0xb0 zero-init + node alloc/ref take matches; callers match"
+  }
+ ],
+ "proofs": []
+}

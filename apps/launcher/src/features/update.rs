@@ -11,10 +11,10 @@ use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use semver::Version;
-use swofty_core::app_control::Block;
-use swofty_core::managed;
-use swofty_core::update::{self, Install, Release};
-use swofty_core::updater::{self, Catalog, Gate, Part, Phase, Plan, Ran, Track};
+use swofty_core::platform::app_control::Block;
+use swofty_core::updates::managed;
+use swofty_core::updates::release::{self as update, Install, Release};
+use swofty_core::updates::updater::{self, Catalog, Gate, Part, Phase, Plan, Ran, Track};
 
 use crate::features::sections::{Reporter, Shared};
 use crate::shell::play_bar::link;
@@ -186,10 +186,10 @@ impl Shell {
                     let installed = managed::installed(&store);
                     let current = update::current_version();
                     if launcher_due {
-                        updater::check(Part::Launcher, &mut launcher, Some(&current), can_install, now);
+                        launcher.check(Part::Launcher, Some(&current), can_install, now);
                     }
                     if addon_due {
-                        updater::check_importer(&store, &mut addon, installed.as_ref(), &current, now);
+                        addon.check(&store, installed.as_ref(), &current, now);
                     }
                     (addon, launcher, installed)
                 })
@@ -637,7 +637,7 @@ impl Shell {
     }
 
     pub(crate) fn launcher_notices(&self) -> Vec<String> {
-        if !self.update_check || !self.updates.runs_from_release() {
+        if !self.prefs.update_check || !self.updates.runs_from_release() {
             return Vec::new();
         }
         match self.updates.blocked_notice() {
@@ -647,7 +647,7 @@ impl Shell {
     }
 
     pub(crate) fn update_bar(&self, p: Palette) -> Option<impl IntoElement> {
-        if !self.update_check || !self.updates.runs_from_release() {
+        if !self.prefs.update_check || !self.updates.runs_from_release() {
             return None;
         }
         let bar = h_flex()

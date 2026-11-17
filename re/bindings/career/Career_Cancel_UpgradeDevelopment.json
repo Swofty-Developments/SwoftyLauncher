@@ -1,0 +1,73 @@
+{
+ "schema": 1,
+ "name": "Career_Cancel_UpgradeDevelopment",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143532390",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Cancel_UpgradeDevelopment(void *upgrades, uint32_t owner, void *inst, uint32_t day)",
+  "evidence": "decomp:re/decomp/143532390.c;xref:0x1412419d0;doc:addons/career-editor/protocol/rnd.md#rnd-complete",
+  "notes": "U-level development cancel (Upgrades, owner, instance, day): 0x143523e60 acts when the latest state is InProgress or InDevelopment or the latest entry's fitted byte (+9) is 3, and only an InProgress entry with a real owner must match owner (InDevelopment is not owner-checked); it sets +0x98/+0x9a to 0xffff and clears +0x9c..+0xab, pushes the most recent earlier state that is neither InProgress nor InDevelopment (Invalid if none) with the passed owner and clears fitted; in upgrades+8==2 mode it mirrors onto the same-id instances of the other owners whose latest state is InDevelopment only when the cancelled entry's dual flag (state entry +0xb) was 1; then availability refresh (modes 1,2; mode 0 sets +0x1aa8) and the upgrades-changed message. No RP; single caller 0x1412419d0 (wording: ce-verify-3 V0310)"
+ },
+ "signature": {
+  "id": "career.cancel_upgrade_development",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 0C 00 00 89 D5",
+  "match": "0x143532390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143532390",
+  "kind": "func_start",
+  "names": [
+   "Career_Cancel_UpgradeDevelopment"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-rnd",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/rnd.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-1",
+   "kind": "func",
+   "item": "Career_Cancel_UpgradeDevelopment",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143532390.c;decomp:re/decomp/143523e60.c;decomp:re/decomp/1412419d0.c;xref:0x141241b17",
+   "notes": "V0242 proto ok, single caller 0x1412419d0 (which posts a BankTransactionMessage first); wrong: the sibling mirror is not unconditional in mode 2. Corrected: U-level development cancel (Upgrades, owner, instance, day): 0x143523e60 (only when the latest state is InProgress/InDevelopment and the owner matches) clears +0x98..+0xa8, pushes the most recent earlier state that is neither InProgress nor InDevelopment (Invalid if none) and clears fitted; in upgrades+8==2 mode it mirrors onto the same-id instances of the other owners only when the cancelled entry's dual flag (state entry +0xb) was 1; then availability refresh (modes 1,2; mode 0 sets +0x1aa8) and the upgrades-changed message. No RP"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-3",
+   "kind": "func",
+   "item": "Career_Cancel_UpgradeDevelopment",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143532390.c;decomp:re/decomp/143523e60.c;xref:0x141241b17",
+   "notes": "V0310 Proto (rcx,edx,r8,r9w day used as u16), dual flag +0xb read before the cancel, mode-2 mirror only when it was 1 (onto other owners' same-id instances whose latest state is InDevelopment), refresh modes 1,2 / mode 0 +0x1aa8, bus msg, single caller 0x1412419d0 check. Wrong: 0x143523e60 is not limited to InProgress/InDevelopment and does not owner-check InDevelopment (0x143523e9d: the owner compare runs only when the latest state is 2 and its owner is not 0x1460fc2b0; 0x143523ecb: also acts when the latest entry's fitted byte +9 == 3). Corrected: U-level development cancel (Upgrades, owner, instance, day): 0x143523e60 acts when the latest state is InProgress or InDevelopment or the latest entry's fitted byte (+9) is 3, and only an InProgress entry with a real owner must match owner (InDevelopment is not owner-checked); it sets +0x98/+0x9a to 0xffff and clears +0x9c..+0xab, pushes the most recent earlier state that is neither InProgress nor InDevelopment (Invalid if none) with the passed owner and clears fitted; in upgrades+8==2 mode it mirrors onto the same-id instances of the other owners whose latest state is InDevelopment only when the cancelled entry's dual flag (state entry +0xb) was 1; then availability refresh (modes 1,2; mode 0 sets +0x1aa8) and the upgrades-changed message. No RP; single caller 0x1412419d0"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-8",
+   "kind": "func",
+   "item": "Career_Cancel_UpgradeDevelopment",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143532390.c;decomp:re/decomp/143523e60.c;decomp:re/decomp/1412419d0.c;xref:0x141241b17,0x1435323c4,0x14353256f;sig:career.cancel_upgrade_development",
+   "notes": "V0874 sigcheck OK; proto (rcx upgrades, edx owner, r8 inst, r9 day used as u16) right; single caller 0x141241b17. 0x143523e60: acts on latest state 2 or 7 or fitted byte (end-7) == 3; owner compare only when the latest state is 2 and its owner is not 0x1460fc2b0; pushes the last earlier state that is neither 2 nor 7 (5 Invalid if none) with the passed owner, then Career_Set_UpgradeFitted(..,0,..). Dual flag = latest entry +0xb read before the cancel; mode-2 mirror over the two instance lists (+0x110/+0xd10, +0xd50/+0x1950) by id +0x58 onto other owners when that instance's latest state is 7; refresh in modes 1,2, mode 0 writes +0x1aa8 = 0x3fff0000. Quibbles: the rollback writes qword +0x98 = 0xffffffff, byte +0xa0 and qword +0xa4, so +0xa1..+0xa3 are untouched (clears +0x9c..+0xa0 and +0xa4..+0xab); the posted message (vt 0x14584e360) is named recommended_upgrade_message"
+  }
+ ],
+ "proofs": []
+}

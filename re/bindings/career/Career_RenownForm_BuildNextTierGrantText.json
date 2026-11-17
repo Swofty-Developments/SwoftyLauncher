@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_RenownForm_BuildNextTierGrantText",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141986240",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *out, void *data",
+  "evidence": "decomp:re/decomp/141986240.c;xref:0x1423d342d",
+  "notes": "myteam-g1: Builds next_renown_tier_grant_text (what the next renown tier grants)."
+ },
+ "signature": {
+  "id": "career.renown_form_build_next_tier_grant_text",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 50 C5 F8 29 74 24 40 48 89 D7 48 89 CE 48 8B 42 08",
+  "match": "0x141986240",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141986240",
+  "kind": "func_start",
+  "names": [
+   "Career_RenownForm_BuildNextTierGrantText"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141986240",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141986240.c;xref:0x1423d342d",
+   "notes": "V9871 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

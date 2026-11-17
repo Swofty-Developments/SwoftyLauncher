@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "FeTile_ItemGeneric_Populate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14173da20",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "proto": "-",
+  "evidence": "decomp:work/exe/decomp/14173da20_item_a_populate.c;xref:0x145706800;pat:vt_FeHome_DevItem-slot4;decomp:re/decomp/14173da20.c",
+  "notes": "slot 4 of vt_FeHome_DevItem (0x1457067e0); not described yet"
+ },
+ "signature": {
+  "id": "fe_tiles.item_generic_populate",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE E8 ?? ?? ?? ?? 48 83 C6 58 48 8D 15 ?? ?? ?? ?? 48 89 F1 48 83 C4 20 5E E9 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC CC 56 57 53 48 83 EC 20 48",
+  "match": "0x14173da20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14173da20",
+  "kind": "func_start",
+  "names": [
+   "FeTile_ItemGeneric_Populate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "m1-verify",
+   "kind": "func",
+   "item": "FeTile_ItemGeneric_Populate",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14173da20.c;xref:0x145706800",
+   "notes": "V2262 referenced at 0x145706800 = vt 0x1457067e0+0x20 slot 4 ok; creates a refcounted string handle, if linked object (+0x60) type matches calls 140828440 to fill it, releases handle: text/label populate"
+  }
+ ],
+ "proofs": []
+}

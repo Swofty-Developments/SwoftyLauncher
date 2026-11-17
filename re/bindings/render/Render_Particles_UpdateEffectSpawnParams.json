@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_Particles_UpdateEffectSpawnParams",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b0ed50",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b0ed50.c;xref:0x143b0baaa",
+  "notes": "Large per-effect update (dt = param_3): reads slot data at manager+0xa5de30 (stride 0x30, or inline +0x68 when sign bit of +0x64 set), calls 0x143af3e80 and applies globals 0x146294000.. to compute spawn rate/age/size parameters. Caller Game_Particles_UpdateManager. Hypothesis."
+ },
+ "signature": {
+  "id": "render.particles_update_effect_spawn_params",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C5 D0 57 ED 49 FF C5 4C 3B AC 24",
+  "match": "0x143b0baaa",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143b0ed50",
+  "kind": "func_start",
+  "names": [
+   "Render_Particles_UpdateEffectSpawnParams"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143b0ed50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b0ed50.c;xref:0x143b0baaa",
+   "notes": "V8130 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

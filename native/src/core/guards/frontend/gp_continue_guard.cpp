@@ -51,12 +51,13 @@ constexpr uintptr_t HOLDER_TEXT = 0x10;
 constexpr uintptr_t MAX_SETUP_MODES = 256;
 
 namespace gc = runtime::gp_continue;
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 
 bool car_bound = false, warning_bound = false;
 std::mutex log_lock;
 gc::Press last_press;
-int lines = 0;
+guards::LogFirst<gc::LOG_CAP> lines{"presses"};
 
 std::string label_of(uintptr_t mode)
 {
@@ -95,11 +96,10 @@ void say(gc::Check check, gc::Verdict verdict, const std::string &mode, uint64_t
         return;
     }
     last_press = {frame, now, verdict, mode, true};
-    if (lines >= gc::LOG_CAP)
+    auto line = lines.note();
+    if (!line)
         return;
-    ++lines;
-    swofty::log("[gp] %s%s", gc::line(check, verdict, mode).c_str(),
-                lines == gc::LOG_CAP ? " (further presses are not logged)" : "");
+    swofty::log("[gp] %s%s", gc::line(check, verdict, mode).c_str(), line.tail);
 }
 
 void check(SwoftyContext *c, gc::Check which, uintptr_t component, uintptr_t mode, uintptr_t entity)
@@ -129,8 +129,6 @@ void warning_check(SwoftyContext *c)
     check(c, gc::Check::offline_warning, c->rax, c->r14, entity);
 }
 
-namespace guards = swofty_core::guards;
-
 class ContinueGuard final : public guards::Guard {
 public:
     ContinueGuard() : Guard(guards::CoreSetId::gp_continue) {}
@@ -139,8 +137,7 @@ private:
     void build(std::vector<runtime::CoreMixins> &out) override
     {
         char v[16] = {};
-        DWORD n = GetEnvironmentVariableA("SWOFTY_GP_F1W_CHECK_GUARD", v, sizeof v);
-        if (n && n < sizeof v && gc::switch_off(v)) {
+        if (guards::env_off("SWOFTY_GP_F1W_CHECK_GUARD", v, gc::switch_off)) {
             swofty::log("[gp] continue F1 World car guard off (SWOFTY_GP_F1W_CHECK_GUARD=%s)", v);
             return;
         }

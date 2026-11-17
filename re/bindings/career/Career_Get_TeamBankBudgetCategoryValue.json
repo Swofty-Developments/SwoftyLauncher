@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Get_TeamBankBudgetCategoryValue",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bf4e00",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Get(void *comp, struct{int val;char ok;} *out, uint32_t team_key, char category)",
+  "evidence": "decomp:re/decomp/140bf4e00.c;xref:0x140bf24bd;xref:0x140c57f36;xref:0x140d6b802",
+  "notes": "myteam-g2: Finds the team record (vector comp+0x298..0x2a0, stride 0x30, key +0x28), walks its bank entries (stride 0x1b0) and looks up byte category in the bank budget map (bank+0x60, same map written by Career_Bank_ApplyTransactionToBalance: key byte, int sum at +4). Returns optional<int>: the team's budget for that category (read-only; used by AutoContracts ranking and facility ticks)."
+ },
+ "signature": {
+  "id": "career.get_team_bank_budget_category_value",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 C5 F8 29 B4 24 70 01 00 00 48 89 D6 48 8B 81 98 02 00 00",
+  "match": "0x140bf4e00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bf4e00",
+  "kind": "func_start",
+  "names": [
+   "Career_Get_TeamBankBudgetCategoryValue"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140bf4e00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140bf4e00.c",
+   "notes": "V9491 Finds team record (+0x298..+0x2a0, 0x30 stride, key +0x28), uses bank entry map at +0x60 (swiss table, 0x14-byte slots: byte key, int at +4), returns optional int for the category byte."
+  }
+ ],
+ "proofs": []
+}

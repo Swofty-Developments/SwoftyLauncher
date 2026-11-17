@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionBandwidthManager_CalculateConnectionQualityForId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143040470",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameSessionBandwidthManager::calculateConnectionQualityForId; log channel NETWORK-BANDWIDTH: 'GameSessionBandwidthManager::Quality::Type network::GameSessionBandwidthManager::calculateConnectionQualityForId(const neon::NeNetConnectionID) | %s: connectivity result: %s, connection number: %d, be'"
+ },
+ "signature": {
+  "id": "game.game_session_bandwidth_manager_calculate_connection_quality_for_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 40 48 89 CF 88 54 24 3D",
+  "match": "0x143040470",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143040470",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionBandwidthManager_CalculateConnectionQualityForId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143040470",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143040470.c;xref:0x1421f2aac",
+   "notes": "V5459 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

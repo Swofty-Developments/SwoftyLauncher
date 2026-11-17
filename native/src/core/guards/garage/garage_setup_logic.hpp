@@ -33,23 +33,4 @@ inline bool entry_usable(uint64_t entry, Read read, void *user)
     return read(info + ID_AT, &id, sizeof id, user);
 }
 
-struct Skips {
-    int count = 0;
-
-    int note()
-    {
-        return ++count;
-    }
-
-    bool logged(int n) const
-    {
-        return n <= LOG_FIRST;
-    }
-
-    bool last(int n) const
-    {
-        return n == LOG_FIRST;
-    }
-};
-
 }

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_ScenePassBlock_Build",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b8be50",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b8be50.c;xref:0x143bc5858,0x143b8be36",
+  "notes": "Very large (13.8 KB, 2242 decompiled lines) builder filling a 0x1700-byte per-pass scene record: calls through the device (vcall +0x70 on [+0x80][+0x18]), memsets/memcpys view/shadow/light parameter blocks, powf terms (exposure/gamma, 0x14535a510) and helper builders (0x143c29fb0, 0x143bc5380, 0x143c42180). Called from 0x143b8bcc0 and 0x143cf38a0; the allocation counterpart is Render_FrameArena_AllocScenePassBlock. Hypothesis: constant-buffer content for a scene pass."
+ },
+ "signature": {
+  "id": "render.scene_pass_block_build",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 90 48 81 C4 90 00 00 00 5B 5F 5E 41 5C 41 5D 41 5E 41 5F C3 CC 41 57",
+  "match": "0x143b8be36",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143b8be50",
+  "kind": "func_start",
+  "names": [
+   "Render_ScenePassBlock_Build"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143b8be50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b8be50.c;xref:0x143b8be36",
+   "notes": "V8276 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

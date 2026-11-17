@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Load_SponsorDecalIncomeTiers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1411012a0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *sponsors, void *bxml)",
+  "evidence": "decomp:re/decomp/1411012a0.c;xref:0x1456be510",
+  "notes": "myteam-g1: Loads sponsor data groups (data_group, identifier, attribute) and the num_decals -> income table (sponsors+0x688 vector of tiers). Defines how much weekly income each decal count pays."
+ },
+ "signature": {
+  "id": "career.load_sponsor_decal_income_tiers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 08 00 00 C5 F8 29 BC 24 70 08 00 00 C5 F8 29 B4 24 60 08 00 00 48 89 D0",
+  "match": "0x1411012a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1411012a0",
+  "kind": "func_start",
+  "names": [
+   "Career_Load_SponsorDecalIncomeTiers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x1411012a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1411012a0.c;xref:0x1456be510;str:\"num_decals\"",
+   "notes": "V9655 Reads data_group/identifier/attribute and num_decals/income tiers into vector at +0x688."
+  }
+ ],
+ "proofs": []
+}

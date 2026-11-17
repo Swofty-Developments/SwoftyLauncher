@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Sess_ResolveEntityHandle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14243fd10",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "xref:0x14022de4a,0x14022e4a7,0x140231629,0x1402316ba,0x140231bb3,0x1402340fc,0x14023ac38,0x14023ae98+187;doc:research/grid24-cap.md#2;decomp:re/decomp/14243fd10.c",
+  "notes": "called with (ctx, e+0x5c) cs-verify: resolves a handle (kind u8 < 3, index u16) through table ctx+0x328+kind*0x10 (16-byte entries, pointer at +8); in caller 0x14379dd00 the handle is at +0x58; vehicle only plausible"
+ },
+ "signature": {
+  "id": "session.find_vehicle",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 85 C0 0F 84 ?? ?? ?? ?? 80 3D ?? ?? ?? ?? 01 75 6E B9",
+  "match": "0x14022de49",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14243fd10",
+  "kind": "func_start",
+  "names": [
+   "Sess_ResolveEntityHandle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x14243fd10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14243fd10.c;xref:0x14379def9,0x14022de49",
+   "notes": "V4034 Handle kind byte<3, u16 index at +2, table param_1+0x328+kind*0x10, entry vector begin +8 stride 16 returning entry+8; miss logs ENTRANTS_SYSTEM 'Vehicle with stat id %s not found'; handle copied from [rdi+0x5c] at 0x14022de32; caller 0x14379dd00 call site seen"
+  }
+ ],
+ "proofs": []
+}

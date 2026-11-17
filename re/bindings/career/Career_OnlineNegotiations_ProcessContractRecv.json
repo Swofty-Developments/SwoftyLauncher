@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiations_ProcessContractRecv",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ff5180",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140ff5180.c;xref:0x140ff3482",
+  "notes": "'Process contract message received': signs the peer driver via Career_Sign_DriverToTeam or forces to lowest team (Career_ContractRenewal_ForceToLowestTeam). | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3038)"
+ },
+ "signature": {
+  "id": "career.online_negotiations_process_contract_recv",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 48 89 D3 48 89 CE 80 3D",
+  "match": "0x140ff5180",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ff5180",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiations_ProcessContractRecv"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Career_OnlineNegotiations_ProcessContractRecv",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ff5180.c;xref:0x140ff5180",
+   "notes": "V3038 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

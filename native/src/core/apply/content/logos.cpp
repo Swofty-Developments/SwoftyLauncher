@@ -6,10 +6,16 @@
 #include "core/apply/content/logo_cache.hpp"
 #include "core/apply/content/logo_deliver.hpp"
 #include "core/apply/content/png_straight.hpp"
+#include "core/diagnostics/steps.hpp"
+#include "core/runtime/cache_dir.hpp"
+#include "core/runtime/files.hpp"
 
 #include <swofty/mixin.hpp>
 
+#include <zstd.h>
+
 #include <algorithm>
+#include <atomic>
 #include <map>
 #include <memory>
 #include <set>
@@ -20,6 +26,215 @@ namespace {
 
 constexpr const char *CACHE_ADDON = "swofty.logos";
 constexpr const char *ROUTE_ID = "logos";
+constexpr const wchar_t *SLICES = L"logo-slices\\";
+constexpr const wchar_t *PLAN = L"plan.tsv";
+constexpr ULONGLONG SLICE_KEEP_100NS = 14ull * 24 * 3600 * 10000000;
+
+/* The slice cache's files are zstd frames of the sealed entries, written to a temporary name and moved into place,
+   so a reader never sees half a file; one that does not decompress or unseal is a miss. */
+logo_build::SliceCache disk_slices(const std::wstring &dir)
+{
+    if (dir.empty())
+        return {};
+    CreateDirectoryW(dir.c_str(), nullptr);
+    logo_build::SliceCache c;
+    c.get = [dir](const std::string &name, std::string &bytes) {
+        std::string z = runtime::read_file(dir + runtime::wide(name), size_t(64) << 20);
+        unsigned long long n = z.empty() ? 0 : ZSTD_getFrameContentSize(z.data(), z.size());
+        if (!n || n == ZSTD_CONTENTSIZE_UNKNOWN || n == ZSTD_CONTENTSIZE_ERROR || n > (size_t(64) << 20))
+            return false;
+        bytes.resize(size_t(n));
+        size_t got = ZSTD_decompress(bytes.data(), bytes.size(), z.data(), z.size());
+        return !ZSTD_isError(got) && got == n;
+    };
+    c.put = [dir](const std::string &name, const std::string &bytes) {
+        std::string z(ZSTD_compressBound(bytes.size()), '\0');
+        size_t n = ZSTD_compress(z.data(), z.size(), bytes.data(), bytes.size(), 3);
+        if (ZSTD_isError(n))
+            return;
+        z.resize(n);
+        std::wstring path = dir + runtime::wide(name), tmp = path + L"." + std::to_wstring(GetCurrentThreadId()) + L".tmp";
+        if (!runtime::write_file(tmp, z) || !MoveFileExW(tmp.c_str(), path.c_str(), MOVEFILE_REPLACE_EXISTING))
+            DeleteFileW(tmp.c_str());
+    };
+    return c;
+}
+
+bool ahead_wanted()
+{
+    char v[8] = {};
+    DWORD n = GetEnvironmentVariableA("SWOFTY_LOGO_AHEAD", v, sizeof v);
+    return !(n && n < sizeof v && v[0] == '0');
+}
+
+struct Ahead {
+    HANDLE thread = nullptr;
+    std::wstring dir;
+    std::atomic<bool> hurry{false};
+} ahead;
+
+void set_priority()
+{
+    SetThreadPriority(GetCurrentThread(), ahead.hurry.load() ? THREAD_PRIORITY_NORMAL : THREAD_PRIORITY_BELOW_NORMAL);
+}
+
+/* Encodes, at the slice sizes of the last build, the logos whose PNG bytes the slice cache does not hold yet, while the
+   game boots. It reads the addons' PNGs and writes only the slice cache, which deliver_logos reads after waiting for it,
+   and slice_from_rgba gives the same bytes whichever thread runs it. */
+DWORD WINAPI encode_ahead(LPVOID) try {
+    set_priority();
+    perf::Stopwatch took;
+    logo_build::SliceCache cache = disk_slices(ahead.dir);
+    std::string plan = runtime::read_file(ahead.dir + PLAN, size_t(4) << 20);
+    struct Job {
+        std::string png, source;
+        std::vector<std::pair<uint32_t, uint32_t>> sizes;
+    };
+    std::vector<Job> jobs;
+    size_t lines = 0, cached = 0;
+    for (size_t at = 0; at < plan.size();) {
+        size_t end = plan.find('\n', at);
+        if (end == std::string::npos)
+            end = plan.size();
+        std::string line = plan.substr(at, end - at);
+        at = end + 1;
+        size_t tab = line.find('\t');
+        if (tab == std::string::npos)
+            continue;
+        lines++;
+        Job j;
+        j.png = runtime::read_file(runtime::under_swofty(line.substr(0, tab)), size_t(64) << 20);
+        if (j.png.empty())
+            continue;
+        j.source = logo_build::source_of(j.png);
+        for (size_t p = tab + 1; p < line.size();) {
+            size_t sp = line.find(' ', p);
+            if (sp == std::string::npos)
+                sp = line.size();
+            unsigned w = 0, h = 0;
+            std::string stored, bytes;
+            if (std::sscanf(line.substr(p, sp - p).c_str(), "%ux%u", &w, &h) == 2 && w && h) {
+                if (cache.get(logo_build::slice_name(j.source, w, h), stored) && logo_build::unseal(stored, bytes))
+                    cached++;
+                else
+                    j.sizes.push_back({w, h});
+            }
+            p = sp + 1;
+        }
+        if (!j.sizes.empty())
+            jobs.push_back(std::move(j));
+    }
+    if (!lines)
+        return 0;
+    std::atomic<size_t> encoded{0};
+    unsigned cores = std::thread::hardware_concurrency();
+    size_t workers = std::clamp<unsigned>(cores / 2, 1, 4);
+    std::atomic<size_t> next{0};
+    auto drain = [&] {
+        for (size_t i; (i = next.fetch_add(1)) < jobs.size();) try {
+            set_priority();
+            Job &j = jobs[i];
+            std::string rgba;
+            logo_build::PngInfo info = logo_build::look_at_png(cache, j.png, j.source, rgba);
+            if (!info.ok)
+                continue;
+            if (rgba.empty() && !png::decode(j.png, rgba, info.width, info.height, info.why))
+                continue;
+            for (auto [w, h] : j.sizes) {
+                logo_array::Shape shape;
+                shape.width = w, shape.height = h;
+                std::string bytes, why;
+                if (logo_array::slice_from_rgba(shape, reinterpret_cast<const uint8_t *>(rgba.data()), info.width, info.height, bytes, why)) {
+                    cache.put(logo_build::slice_name(j.source, w, h), logo_build::sealed(bytes));
+                    encoded++;
+                }
+            }
+        } catch (...) {
+        }
+    };
+    std::vector<std::thread> pool;
+    for (size_t k = 1; k < workers && k < jobs.size(); k++) {
+        try {
+            pool.emplace_back(drain);
+        } catch (...) {
+            break;
+        }
+    }
+    drain();
+    for (auto &t : pool)
+        t.join();
+    swofty::log("[apply] team.logo: encoded %zu slice(s) of %zu logo(s) ahead of the database load in %.0f ms; %zu of the last "
+                "build's slice(s) were cached already",
+                encoded.load(), jobs.size(), took.total_ms(), cached);
+    return 0;
+} catch (...) {
+    return 0;
+}
+
+void wait_for_ahead()
+{
+    if (!ahead.thread)
+        return;
+    ahead.hurry.store(true);
+    perf::Stopwatch waited;
+    WaitForSingleObject(ahead.thread, INFINITE);
+    CloseHandle(ahead.thread);
+    ahead.thread = nullptr;
+    swofty::log(perf::STEP_LINE, waited.total_ms(), "logo wait for the slices encoded ahead");
+}
+
+void write_plan(const std::wstring &dir, const logo_build::Result &res, const std::map<std::string, std::string> &path_of)
+{
+    if (dir.empty())
+        return;
+    std::map<std::string, std::string> lines;
+    for (auto &[want, planned] : res.planned) {
+        auto it = path_of.find(planned.source);
+        if (it == path_of.end() || planned.sizes.empty())
+            continue;
+        std::string sizes;
+        for (auto [w, h] : planned.sizes)
+            sizes += (sizes.empty() ? "" : " ") + std::to_string(w) + "x" + std::to_string(h);
+        lines[it->second] = sizes;
+    }
+    std::string text;
+    for (auto &[path, sizes] : lines)
+        text += path + "\t" + sizes + "\n";
+    if (runtime::read_file(dir + PLAN, size_t(4) << 20) != text)
+        runtime::write_file(dir + PLAN, text);
+}
+
+/* Keeps the slices this build used and any written in the last two weeks, so going back to an earlier set of addons
+   soon after is still cheap. */
+void prune_slices(const std::wstring &dir, const logo_build::Result &res)
+{
+    if (dir.empty())
+        return;
+    std::set<std::string> used;
+    for (auto &[want, planned] : res.planned) {
+        used.insert(logo_build::info_name(planned.source));
+        for (auto [w, h] : planned.sizes)
+            used.insert(logo_build::slice_name(planned.source, w, h));
+    }
+    FILETIME now_ft;
+    GetSystemTimeAsFileTime(&now_ft);
+    ULONGLONG now = (ULONGLONG(now_ft.dwHighDateTime) << 32) | now_ft.dwLowDateTime;
+    WIN32_FIND_DATAW fd;
+    HANDLE h = FindFirstFileW((dir + L"*").c_str(), &fd);
+    if (h == INVALID_HANDLE_VALUE)
+        return;
+    do {
+        if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+            continue;
+        std::string n = runtime::narrow(fd.cFileName);
+        if (n == runtime::narrow(PLAN) || used.count(n))
+            continue;
+        ULONGLONG written = (ULONGLONG(fd.ftLastWriteTime.dwHighDateTime) << 32) | fd.ftLastWriteTime.dwLowDateTime;
+        if (now > written && now - written > SLICE_KEEP_100NS)
+            DeleteFileW((dir + fd.cFileName).c_str());
+    } while (FindNextFileW(h, &fd));
+    FindClose(h);
+}
 
 struct FileSource {
     HANDLE h = INVALID_HANDLE_VALUE;
@@ -59,8 +274,6 @@ void list_erps(const std::wstring &dir, const std::string &rel, std::vector<std:
     FindClose(h);
     std::sort(out.begin(), out.end());
 }
-
-using logo_cache::stamp;
 
 bool stat_file(const std::string &rel, uint64_t &size, uint64_t &time)
 {
@@ -135,27 +348,52 @@ std::map<std::string, std::vector<std::string>> overlay_archives(const std::stri
 
 }
 
+void encode_logos_ahead()
+{
+    if (!ahead_wanted() || runtime::cache_dir().empty())
+        return;
+    ahead.dir = runtime::cache_dir() + SLICES;
+    ahead.thread = CreateThread(nullptr, 0, encode_ahead, nullptr, 0, nullptr);
+}
+
 void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
 {
+    wait_for_ahead();
+    std::wstring slices_dir = runtime::cache_dir().empty() ? std::wstring() : runtime::cache_dir() + SLICES;
+    logo_build::SliceCache slices = disk_slices(slices_dir);
+    std::map<std::string, std::string> path_of;
     std::vector<logo_build::Want> wants;
     std::set<std::string> seen;
     logo_build::Refusals refusals;
-    uint64_t key = stamp(0xcbf29ce484222325ull, logo_cache::CACHE_FORMAT);
+    perf::Stopwatch steps;
+    auto step = [&](double ms, const std::string &name) { swofty::log(perf::STEP_LINE, ms, ("logo " + name).c_str()); };
+    uint64_t key = runtime::fnv64_field(runtime::FNV64_BASIS, logo_cache::CACHE_FORMAT);
     for (auto &l : logos) {
         if (!seen.insert(l.array + "|" + l.key).second)
             continue;
         logo_build::Want w;
         w.array = l.array;
         w.key = l.key;
-        key = stamp(key, l.array + "|" + l.key + "|" + l.stock + (l.fallback ? "|f" : ""));
+        key = runtime::fnv64_field(key, l.array + "|" + l.key + "|" + l.stock + (l.fallback ? "|f" : ""));
         if (l.stock.empty()) {
-            std::string bytes = runtime::read_file(runtime::under_swofty("addons/" + l.addon + "/" + l.file), size_t(64) << 20), why;
-            if (bytes.empty() || !png::decode(bytes, w.rgba, w.width, w.height, why)) {
+            std::string rel = "addons/" + l.addon + "/" + l.file;
+            std::string bytes = runtime::read_file(runtime::under_swofty(rel), size_t(64) << 20), why;
+            logo_build::PngInfo info;
+            if (!bytes.empty()) {
+                w.source = logo_build::source_of(bytes);
+                info = logo_build::look_at_png(slices, bytes, w.source, w.rgba);
+                why = info.why;
+            }
+            if (bytes.empty() || !info.ok) {
                 refusals.add(l.context + " image does not decode: " + (why.empty() ? "it is empty" : why), l.id + " " + l.file);
                 report.refused++;
                 continue;
             }
-            key = stamp(key, bytes);
+            w.width = info.width, w.height = info.height;
+            key = runtime::fnv64_field(key, bytes);
+            path_of.emplace(w.source, rel);
+            if (w.rgba.empty())
+                w.png = std::move(bytes);
         } else {
             w.donor = l.stock;
             w.fallback = l.fallback;
@@ -163,6 +401,7 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         wants.push_back(std::move(w));
     }
     refusals.flush(report.lines);
+    step(steps.lap_ms(), "decode (" + std::to_string(wants.size()) + " logo(s))");
     if (wants.empty())
         return;
     std::vector<std::string> files;
@@ -173,6 +412,7 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     for (auto &[target, list] : overlays)
         overlay_rels.insert(list.begin(), list.end());
     logo_build::Env env;
+    env.slices = slices;
     env.list = [&] { return files; };
     env.overlays = [&](const std::string &rel) {
         auto it = overlays.find(runtime::lower(rel));
@@ -228,6 +468,8 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     inputs.insert(logo_build::DATABASES);
     logo_cache::Keyed keyed = key_inputs(inputs, before);
     std::string id = runtime::hex16(keyed.key).substr(2);
+    step(steps.lap_ms(), "list and hash (" + std::to_string(keyed_files.size()) + " archive(s), " + std::to_string(keyed.hashed) +
+                             " hashed)");
     std::string manifest_name = "logos_" + id + ".manifest";
     std::string manifest = runtime::read_file(runtime::under_swofty(dir + manifest_name), size_t(1) << 20);
     logo_cache::Routes routes;
@@ -255,7 +497,14 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
             else
                 kept.push_back(w);
         logo_build::Result res;
+        perf::Stopwatch build_steps;
         logo_build::build(env, kept, res);
+        double built_ms = build_steps.lap_ms();
+        step(res.encode_ms, "encode (" + std::to_string(res.encodes) + " slice(s): " + std::to_string(res.slices.cached) + " cached, " +
+                                std::to_string(res.slices.encoded) + " encoded, " + std::to_string(res.slices.decoded) + " image(s) decoded)");
+        write_plan(slices_dir, res, path_of);
+        prune_slices(slices_dir, res);
+        step(built_ms - res.encode_ms, "read and plan (" + std::to_string(res.read.size()) + " archive(s) read)");
         made.lines = res.lines;
         made.refused += res.refused;
         made.built = res.built;
@@ -301,6 +550,7 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
             layered = layered || overlay_rels.count(rel);
             a.routes.emplace_back(rel, file);
         }
+        step(build_steps.lap_ms(), "archive rewrite (" + std::to_string(res.changes.size()) + " archive(s))");
         return a;
     };
     logo_deliver::Sink sink;
@@ -337,7 +587,9 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
             layered = layered || overlay_rels.count(r.first);
     } else
         first = make({});
+    steps.lap_ms();
     logo_deliver::Outcome done = logo_deliver::deliver(std::move(first), make, sink);
+    step(steps.lap_ms(), done.last.cached ? "deliver (cached archives)" : "build and deliver");
     routes = done.last.routes;
     if (done.last.cached) {
         report.built = cached_built;
@@ -378,6 +630,7 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         } while (FindNextFileW(h, &fd));
         FindClose(h);
     }
+    step(steps.total_ms(), "total");
 }
 
 }

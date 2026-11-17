@@ -9,6 +9,7 @@
 #include "core/apply/facts.hpp"
 #include "core/apply/files_api.hpp"
 #include "core/apply/gp_track_logic.hpp"
+#include "core/apply/report_queue_logic.hpp"
 #include "core/apply/scheduler.hpp"
 #include "core/apply/tracks/base.hpp"
 #include "core/apply/tracks/seed.hpp"
@@ -712,6 +713,27 @@ void mode_watch_main()
 
 }
 
+namespace {
+
+/* The reports a session load writes are for the launcher's last-session view and nothing in the game reads them, so
+   they are written on a thread of their own instead of the flow thread entering StateLoadSession, which they held up
+   for 79 ms at the median and 144 ms at the 90th percentile. reports_mu keeps that writer and the crash writer from
+   writing the files at once. */
+std::mutex reports_mu;
+ReportQueue report_queue;
+std::once_flag report_writer_once;
+
+void report_writer_main()
+{
+    perf::background();
+    for (;;) {
+        std::string when = report_queue.take();
+        write_reports(when.c_str());
+    }
+}
+
+}
+
 void session_load(const char *source)
 {
     attach();
@@ -724,7 +746,8 @@ void session_load(const char *source)
     if (facts::ModeKind k = facts::mode_kind(true, true, f.mode); k != facts::ModeKind::unknown)
         note_mode(k, "the session load");
     scheduler().session_load(f);
-    write_reports(from.c_str());
+    std::call_once(report_writer_once, [] { std::thread(report_writer_main).detach(); });
+    report_queue.want(from);
 }
 
 facts::ModeKind mode_kind()
@@ -773,6 +796,7 @@ void window()
 
 int write_reports(const char *when)
 {
+    std::lock_guard g(reports_mu);
     save_ids();
     make_registry_dir();
     int r = reg::write_reports(registry_dir(), extend);

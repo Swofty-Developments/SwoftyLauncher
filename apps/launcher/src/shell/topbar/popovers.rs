@@ -1,4 +1,4 @@
-use crate::shell::pages::avatar;
+use crate::ui::avatar;
 use crate::ui::scale::{Hit, fixed, px};
 use crate::ui::theme::Palette;
 use gpui_kit::assets::IconName;
@@ -13,7 +13,7 @@ use crate::shell::Shell;
 
 impl Shell {
     pub(in crate::shell) fn popover_layer(&self, p: Palette, cx: &mut Context<Self>) -> Option<AnyElement> {
-        let which = self.popover?;
+        let which = self.navigation.popover?;
         let panel = match which {
             Popover::Notices => self.notices_panel(p, cx),
             Popover::Account => self.account_panel(p, cx),
@@ -25,7 +25,7 @@ impl Shell {
                 .inset_0()
                 .occlude()
                 .on_click(cx.listener(|this, _, _, cx| {
-                    this.popover = None;
+                    this.navigation.popover = None;
                     cx.notify();
                 }))
                 .child(div().absolute().top(fixed(BAR_HEIGHT)).right(px(8.)).child(panel))
@@ -46,7 +46,7 @@ impl Shell {
     }
 
     pub(super) fn account_panel(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        let name = self.account_name().unwrap_or_default();
+        let name = self.account.display_name().unwrap_or_default();
         self.panel(p)
             .w(px(220.))
             .child(
@@ -62,11 +62,11 @@ impl Shell {
                     .ghost()
                     .icon(IconName::LogOut)
                     .label(tr("Log out"))
-                    .disabled(self.mp_busy || self.game_busy())
+                    .disabled(self.account.busy || self.game_busy())
                     .tooltip(tr("Close the game to sign in or out"))
-                    .on_click(cx.listener(|this, _, window, cx| {
-                        this.popover = None;
-                        this.mp_sign_out(window, cx);
+                    .on_click(cx.listener(|this, _, _window, cx| {
+                        this.navigation.popover = None;
+                        crate::shell::account::Account::sign_out(this, cx);
                     })),
             )
             .into_any_element()
@@ -106,7 +106,7 @@ impl Shell {
                             .child(n.text),
                     )
                     .on_click(cx.listener(move |this, _, _, cx| {
-                        this.popover = None;
+                        this.navigation.popover = None;
                         if let Some(page) = page {
                             this.open_page(page, cx);
                         }
@@ -164,7 +164,7 @@ impl Shell {
                                 .label(tr("Clear all"))
                                 .on_click(cx.listener(|this, _, _, cx| {
                                     cx.update_global(|n: &mut crate::shell::notices::Notices, _| n.clear());
-                                    this.popover = None;
+                                    this.navigation.popover = None;
                                     cx.notify();
                                 })),
                         )
@@ -250,7 +250,7 @@ impl Shell {
     }
 
     pub(in crate::shell) fn popup_layer(&mut self, p: Palette, cx: &mut Context<Self>) -> Option<AnyElement> {
-        if self.popover == Some(Popover::Notices) {
+        if self.navigation.popover == Some(Popover::Notices) {
             return None;
         }
         let now = std::time::Instant::now();
@@ -284,7 +284,7 @@ impl Shell {
                 .top(fixed(
                     BAR_HEIGHT
                         + 6.
-                        + if self.notch_beside {
+                        + if self.dock.notch_beside {
                             crate::shell::download_dock::NOTCH_HEIGHT + 6.
                         } else {
                             0.

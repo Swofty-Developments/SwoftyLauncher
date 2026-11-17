@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbortStub_140e0fd20",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140e0fd20",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbortStub_140e0fd20(void)",
+  "evidence": "decomp:re/decomp/140e0fd20.c;xref:0x140da82b0;xref:0x140dae1fa;xref:0x140daf1d3",
+  "notes": "myteam-g2: Cold path stub calling Ne_Crt_InvalidParameterAbort."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_stub_140e0fd20",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 4D A9 91 E9 38 70",
+  "match": "0x140e0fd20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140e0fd20",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_InvalidParameterAbortStub_140e0fd20"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140e0fd20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140e0fd20.c",
+   "notes": "V9568 Only calls FUN_145351784 then breakpoint (cold abort stub)."
+  }
+ ],
+ "proofs": []
+}

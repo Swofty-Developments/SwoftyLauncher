@@ -1,4 +1,5 @@
 #include "core/boxes/box_grid_logic.hpp"
+#include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -414,5 +415,7 @@ void box_grid_commit()
                 core_mixins_active(MIXIN) ? "armed: a box's rules.grid re-ranks the weekend's qualifying classification"
                                           : "did not install (see the [core] lines); every box keeps the game's grid");
 }
+
+static loader::FunctionSet box_grid_core_set{loader::CoreSetId::box_grid, box_grid_mixins, box_grid_commit};
 
 }

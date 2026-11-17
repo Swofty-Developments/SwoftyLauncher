@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FanzonesOnboardingVM_FadeIn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141b191e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141b191e0.c;xref:0x145730220",
+  "notes": "F1 World Fanzones onboarding VM slot 20: enable_input, stops the busy spinner and releases fade reason FanzonesOnboarding (bit 30) -> fade in. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2669)"
+ },
+ "signature": {
+  "id": "game.fanzones_onboarding_v_m_fade_in",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 60 C5 F8 29 74 24 50 48 89 CE 48",
+  "match": "0x141b191e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141b191e0",
+  "kind": "func_start",
+  "names": [
+   "Game_FanzonesOnboardingVM_FadeIn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d7-verify",
+   "kind": "func",
+   "item": "Game_FanzonesOnboardingVM_FadeIn",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141b191e0.c;xref:0x141b191e0",
+   "notes": "V2669 fade/hide bit ids, offsets, states and curves checked against decomp; role as claimed"
+  }
+ ],
+ "proofs": []
+}

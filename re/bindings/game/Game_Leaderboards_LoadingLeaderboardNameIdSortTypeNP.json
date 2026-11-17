@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Leaderboards_LoadingLeaderboardNameIdSortTypeNP",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144024e20",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-LEADERBOARDS",
+  "notes": "named from its log messages (channel LEADERBOARDS): 'Loading leaderboard: name=%s, id=%d, sort type=%d, NP service label=%d'"
+ },
+ "signature": {
+  "id": "game.leaderboards_loading_leaderboard_name_id_sort_type_np",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 C5 F8 29 B4 24 90 01 00 00 48 89 D7 48 89 8C 24 98 00 00 00",
+  "match": "0x144024e20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144024e20",
+  "kind": "func_start",
+  "names": [
+   "Game_Leaderboards_LoadingLeaderboardNameIdSortTypeNP"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144024e20",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144024e20.c;xref:0x1430db013",
+   "notes": "V6379 partial: better name Game_Leaderboards_LoadDefinitions; 7 KB xml leaderboard definition parser (version, name, sort, np label, name_pc)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144024e20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144024e20.c;xref:0x1430db013",
+   "notes": "V7079 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

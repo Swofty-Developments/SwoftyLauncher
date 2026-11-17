@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_UICrashDumpInfo_OnScreenEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442bd7d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/1442bd7d0.c;xref:0x144182a77,0x1441838b8,0x1442b6785",
+  "notes": "logged method name onScreenEvent (class from the log channel); log channel NeUICrashDumpInfo: 'onScreenEvent eventType=%s screenName=\"%s\"'"
+ },
+ "signature": {
+  "id": "core.ui_crash_dump_info_on_screen_event",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 78 48 89 D6",
+  "match": "0x1442bd7d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442bd7d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_UICrashDumpInfo_OnScreenEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-b",
+   "kind": "func",
+   "item": "Ne_UICrashDumpInfo_OnScreenEvent",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1442bd7d0.c;xref:0x1442bd7d0",
+   "notes": "V2204 event 0 pushes screen name into 16-entry x0x58 table, event 1 removes it under critical section"
+  }
+ ],
+ "proofs": []
+}

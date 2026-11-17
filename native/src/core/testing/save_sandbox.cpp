@@ -1,3 +1,4 @@
+#include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -682,5 +683,7 @@ void save_sandbox_commit()
     swofty::log("[saves] %s hooked: %s are wrapped; the sandbox arms when the game starts its save device",
                 launcher_on ? "launcher saves" : "test sandbox", wraps.c_str());
 }
+
+static loader::FunctionSet save_sandbox_core_set{loader::CoreSetId::save_sandbox, save_sandbox_mixins, save_sandbox_commit};
 
 }

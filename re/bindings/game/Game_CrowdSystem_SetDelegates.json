@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CrowdSystem_SetDelegates",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1413ee4f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name setDelegates (class from the log channel); log channel CrowdSystem: 'setDelegates'"
+ },
+ "signature": {
+  "id": "game.crowd_system_set_delegates",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 4C 89 C6 48 89 D7 48 89 CB 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1413ee4f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1413ee4f0",
+  "kind": "func_start",
+  "names": [
+   "Game_CrowdSystem_SetDelegates"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1413ee4f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1413ee4f0.c",
+   "notes": "V4778 name and quoted log strings/pretty-function present in body; no direct caller (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

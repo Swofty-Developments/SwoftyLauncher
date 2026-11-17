@@ -1,5 +1,6 @@
 #include "core/guards/session/replay_grid_logic.hpp"
 #include "core/guards/guard.hpp"
+#include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -12,10 +13,6 @@
 #include <cstring>
 #include <string>
 #include <vector>
-
-namespace runtime {
-std::string hook_error(const safetyhook::MidHook::Error &e);
-}
 
 // Replay recorder holder guard (re/db/globals.tsv site_Ne_ReplayAfterRecord).
 //
@@ -50,6 +47,8 @@ std::string hook_error(const safetyhook::MidHook::Error &e);
 // SWOFTY_REPLAY_GRID_GUARD=0 turns it off.
 
 namespace {
+
+namespace guards = swofty_core::guards;
 
 constexpr const char *MIXIN = "swofty_core.dll (replay recorder grid guard)";
 constexpr const char *SITE = "site_Ne_ReplayAfterRecord";
@@ -288,8 +287,7 @@ bool arm_read(safetyhook::MidHook &slot_hook, const runtime::Sig &s, uintptr_t a
 void setup_read()
 {
     char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_REPLAY_GRID_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off")))
+    if (guards::env_off("SWOFTY_REPLAY_GRID_GUARD", v))
         return;
     full_at = runtime::find(S_FULL, "replay", "replay");
     delta_at = runtime::find(S_DELTA, "replay", "replay");
@@ -300,8 +298,6 @@ void setup_read()
     if (arm_read(h_full, S_FULL, full_at, read_full) && arm_read(h_delta, S_DELTA, delta_at, read_delta))
         swofty::log("[replay] read guard armed: a recordable with no stored state keeps its current state when a replay is read");
 }
-
-namespace guards = swofty_core::guards;
 
 guards::SiteGuard guard{guards::CoreSetId::replay_grid_guard,
                         {

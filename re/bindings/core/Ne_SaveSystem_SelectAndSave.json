@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveSystem_SelectAndSave",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14413f690",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-channel-SAVE;decomp:re/decomp/14413f690.c;xref:0x1441408cc,0x144140d54,0x144140dbe,0x153115ea2",
+  "notes": "named from its log messages (channel SAVE): 'Select and save requested | Select and save result: 0x%x'"
+ },
+ "signature": {
+  "id": "core.save_system_select_and_save",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 02 00 00 4D 89 CE",
+  "match": "0x14413f690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14413f690",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveSystem_SelectAndSave"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-a",
+   "kind": "func",
+   "item": "Ne_SaveSystem_SelectAndSave",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14413f690.c;xref:0x144140800",
+   "notes": "V2237 Builds list, selection callback, calls 144152070 writer; logs match."
+  }
+ ],
+ "proofs": []
+}

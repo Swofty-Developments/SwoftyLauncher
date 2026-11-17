@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Compare_NodeHandles",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442b18b0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "bool Equal(void *ctx, void **a, void **b)",
+  "evidence": "decomp:re/decomp/1442b18b0.c;xref:0x141523530;xref:0x14176343b;xref:0x141af2425",
+  "notes": "myteam-g2: Compares two refcounted node handles; used by Build_RnDDriverUpgradesView and Confirm_FacilityUpgradePurchase."
+ },
+ "signature": {
+  "id": "ui.compare_node_handles",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 8B 0A 48 85 C9",
+  "match": "0x1442b18b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442b18b0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Compare_NodeHandles"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x1442b18b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1442b18b0.c;xref:0x141523530",
+   "notes": "V10353 Handle equality: identical pointer or same type and compare via vtable +0x18."
+  }
+ ],
+ "proofs": []
+}

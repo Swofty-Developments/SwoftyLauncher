@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RacingCamera_ProcessCameraInput",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144540050",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144540050.c;xref:0x14080e237,0x144540040",
+  "notes": "Per-frame racing camera input: checks look-left/right/back/cycle actions (0x1441162f0 on action ids 0x146cc1d00/1d10/1d20/1df0), cycles cameras (0x144541150/0x1445412a0/0x1445413f0), asks Game_RacingCameraArbitrator_RequiresCrossfade, resets FreeLookCameraModifier state (log resetStateData), posts a bus message (Ne_Post_BusMessage). Addon: intercept camera switching / look-back input. d4-verify-b correction: no Ne_Post_BusMessage call; last call 0x144534390 (RequiresCrossfade) with (arbitrator, cam info, vehicle, player idx, 2, 0, 2) acts as a camera-change request"
+ },
+ "signature": {
+  "id": "game.racing_camera_process_camera_input",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 48 8B 41 38 80 78 50",
+  "match": "0x144540050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144540050",
+  "kind": "func_start",
+  "names": [
+   "Game_RacingCamera_ProcessCameraInput"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Game_RacingCamera_ProcessCameraInput",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144540050.c;xref:0x144540050",
+   "notes": "V2516 action ids 0x146cc1d00/1d10/1d20/1df0 via 1441162f0, cycle helpers 144541150/1445412a0/1445413f0, resetStateData log confirmed; but no Ne_Post_BusMessage call: final call is 144534390 (named RequiresCrossfade) used as camera-change request (arbitrator, cam info, vehicle, player idx, 2,0,2)"
+  }
+ ],
+ "proofs": []
+}

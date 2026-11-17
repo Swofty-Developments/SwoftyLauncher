@@ -1,7 +1,7 @@
 // Host unit test for the core's per-car AI racecraft fields (ai_racecraft.hpp and car_live.hpp, ai.blocking.*) on a
 // fake AI system laid out as the KB's: the record vector at S+0xa8..0xb0, stride 0x508, the vehicle index at R+0 and
 // the driver config slots at R+0x238+off, each slot a pointer to a cell holding a pointer to the record whose float
-// is at +8 (a curve key: the baked curve record). run_car_live_test.sh builds and runs it.
+// is at +8 (a curve key: the baked curve record). native/test/run_tests.sh car_live builds and runs it.
 #include "core/hooks/car_live.hpp"
 
 #include <cmath>

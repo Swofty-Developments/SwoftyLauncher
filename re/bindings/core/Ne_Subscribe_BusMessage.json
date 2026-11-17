@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ne_Subscribe_BusMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143987810",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Subscribe_BusMessage(void *bus, const char *message_name, const void *delegate)",
+  "evidence": "decomp:re/decomp/143987810.c;xref:0x140c68310;doc:re/db/subsystems/core.md",
+  "notes": "fb-verify C4 (bus pointer CORRECTED): subscribe (bus, message name, delegate* {fn, ctx}); bus = *(*(0x14618b3b8)+8) (mov rax,[0x14618b3b8]; mov rcx,[rax+8]) - one more dereference than *(0x14618b3b8+8). Takes the bus critical section +0xc8, defers into the pending vector +0x100 while dispatching (+0x6b), hashes the name (FNV-1a) into the map +0x80 and appends the delegate. Unsubscribe 0x143988350 (agent, not re-verified)"
+ },
+ "signature": {
+  "id": "core.subscribe_bus_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 BC 24 90 00 00 00 C5 F8 29 B4 24 80 00 00 00 4C 89 C3 48 89 D7 49 89 CC",
+  "match": "0x143987810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143987810",
+  "kind": "func_start",
+  "names": [
+   "Ne_Subscribe_BusMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-29",
+    "by": "fb-verify",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-29",
+   "verifier": "fb-verify",
+   "kind": "func",
+   "item": "Ne_Subscribe_BusMessage",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "xref:0x142da2a3a",
+   "notes": "V1803 C4 subscribe agree; bus = *(*(0x14618b3b8)+8)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-vd",
+   "kind": "func",
+   "item": "0x143987810",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143987810.c;xref:0x142dd4b71,0x142dd61f1,0x142cf66f1",
+   "notes": "V8892 own disx+decomp: args rcx=bus (+0xc8 critical section entered at entry, left at 0x143988260; +0x6b dispatching flag; +0x100/+0x108 pending vector stride 0x18; +0x80 map; +0x78 allocator), rdx=name char* (FNV-1a 0xcbf29ce484222325/0x100000001b3 over the C string), r8=delegate*; the delegate POINTER itself is stored in the per-name listener vector (mov [rdi],rbx at 0x143987a62), so the bus owns it and the core must allocate it from the bus allocator ([[bus+0x78]]+0x18, size 0x10 align 8) exactly as the two thunks do; layout {+0 fn, +8 state}; duplicate (fn,state) pair check against the pending vector. Handler ABI from the two real handlers 0x142cf6990/0x142cf6f00: fn(rcx=state, rdx=msg*) with msg+0x10.. fields. Returns void (no rax use at epilogue 0x143988297). bus = [[0x14618b3b8]+8] at the call site 0x142cf66f1 (lea 0x142cf66f8+0x3494cc0=0x14618b3b8). Dispatcher-side invoke of the delegate not re-derived"
+  }
+ ],
+ "proofs": []
+}

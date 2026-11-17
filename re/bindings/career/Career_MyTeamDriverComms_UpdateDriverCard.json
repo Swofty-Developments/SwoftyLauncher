@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamDriverComms_UpdateDriverCard",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142342ad0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_MyTeamDriverComms_UpdateDriverCard(void *screen, void *driver_slot, void *item)",
+  "evidence": "decomp:re/decomp/142342ad0.c;xref:0x14233f6d3;xref:0x14233fe9f",
+  "notes": "myteam-g1: Fills the driver card in comms: sets overrides #overrides.team_hq.driver_contracts_status_icons.contracted_driver_icon / secret_driver_icon visibility and my_team_driver_communications_forename / surname texts from the driver record (screen+0x8a8..0x910)."
+ },
+ "signature": {
+  "id": "career.my_team_driver_comms_update_driver_card",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC B0 05 00 00",
+  "match": "0x142342ad0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142342ad0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamDriverComms_UpdateDriverCard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142342ad0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142342ad0.c",
+   "notes": "V10151 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

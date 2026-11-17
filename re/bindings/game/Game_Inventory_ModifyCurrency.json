@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Inventory_ModifyCurrency",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1425ae100",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-INVENTORY",
+  "notes": "named from its log messages (channel INVENTORY): 'Accessing wallet [%s] | --Modifying amount of currency %s by %d | ----New amount: %d'"
+ },
+ "signature": {
+  "id": "game.inventory_modify_currency",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 18 01 00 00 44 89 CE",
+  "match": "0x1425ae100",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1425ae100",
+  "kind": "func_start",
+  "names": [
+   "Game_Inventory_ModifyCurrency"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1425ae100",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1425ae100.c;xref:0x14255e060",
+   "notes": "V5102 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

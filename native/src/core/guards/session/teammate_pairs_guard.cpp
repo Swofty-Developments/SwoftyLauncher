@@ -1,4 +1,5 @@
 #include "core/guards/guard.hpp"
+#include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/guards/session/teammate_pairs_logic.hpp"
 
@@ -12,10 +13,6 @@
 #include <cstring>
 #include <mutex>
 #include <string>
-
-namespace runtime {
-std::string hook_error(const safetyhook::MidHook::Error &e);
-}
 
 // Teammate pairs guard (re/db/globals.tsv site_Sess_Strategy_TeammatePairSort).
 //
@@ -39,6 +36,7 @@ std::string hook_error(const safetyhook::MidHook::Error &e);
 
 namespace {
 
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 namespace tp = runtime::teammate_pairs;
 
@@ -79,8 +77,7 @@ void sort_site(safetyhook::Context &c)
 void setup()
 {
     char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_TEAMMATE_PAIRS_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+    if (guards::env_off("SWOFTY_TEAMMATE_PAIRS_GUARD", v)) {
         swofty::log("[strategy] teammate pairs guard off (SWOFTY_TEAMMATE_PAIRS_GUARD=%s)", v);
         return;
     }

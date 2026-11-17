@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ThumbnailSystem_AddingPendingDriverThumbnail",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e2d880",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-THUMBNAIL_SYSTEM",
+  "notes": "named from its log messages (channel THUMBNAIL_SYSTEM): 'Adding pending driver thumbnail generation for set ID %d'"
+ },
+ "signature": {
+  "id": "game.thumbnail_system_adding_pending_driver_thumbnail",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 48 89 D6 48 8B 9C 24 10 01 00 00",
+  "match": "0x142e2d880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e2d880",
+  "kind": "func_start",
+  "names": [
+   "Game_ThumbnailSystem_AddingPendingDriverThumbnail"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e2d880",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e2d880.c;xref:0x140361d6f",
+   "notes": "V5466 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_TyresPitstopComplete_ForCarPair",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403b9e70",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403b9e70.c;xref:0x1456233d8",
+  "notes": "Vtable slot (0x1456233d8) job completion: sets this+8=0, takes owner *param_2 (car byte +0xc0, second car +0xc1, both remapped via pair table [owner+0x3c0]+0x60), runs tyre pitstopComplete (0x142e94780) on each car's tyre component, clears entity component flag +0xf70 and calls 0x1403b3260/0x1403b33c0. Optional pit slot from param_2[0x2c] (<0x1b, type 2 at [owner+0x3c0]+0x98+0x68+idx*0x10). Addon: hook to observe pit tyre job completion for both cars of a box. | #587: L2 by lead-authorised promotion for lane owner car-re (independent agree V2859)"
+ },
+ "signature": {
+  "id": "car.tyres_pitstop_complete_for_car_pair",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D7 C7 41 08 00 00 00",
+  "match": "0x1403b9e70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403b9e70",
+  "kind": "func_start",
+  "names": [
+   "Car_TyresPitstopComplete_ForCarPair"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Car_TyresPitstopComplete_ForCarPair",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403b9e70.c;xref:0x1403b9e70",
+   "notes": "V2859 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

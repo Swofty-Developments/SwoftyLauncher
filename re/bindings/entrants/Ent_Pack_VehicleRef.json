@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ent_Pack_VehicleRef",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1425069b0",
+  "level": "L1",
+  "subsystem": "entrants",
+  "proto": "void Ent_Pack_VehicleRef(uint32_t *out)",
+  "evidence": "decomp:re/decomp/142452e60.c;pat:called-at-0x142452fef",
+  "notes": "packs the entrant 'vehicle' label into EntrantRecord.vehicle_ref (+0x5c); vehicle stat id in high word, 0x3fff0000 when empty. Also called by Sess_Load_VehicleAiConfig path."
+ },
+ "signature": {
+  "id": "entrants.pack_vehicle_ref",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? C2 BC 4D 57 E3 4A 26 0F 85",
+  "match": "0x1425069b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1425069b0",
+  "kind": "func_start",
+  "names": [
+   "Ent_Pack_VehicleRef"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1425069b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1425069b0.c;xref:0x140bab8fb",
+   "notes": "V5089 Same helper shape as Ent_Pack_VehicleCustomisation: label->stat_id packed in high word, 0 if missing; no 0x3fff0000 / +0x5c inside (caller side), 39 callers. Better: Ent_Pack_VehicleStatId"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1425069b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1425069b0.c;xref:0x140bab8fb",
+   "notes": "V7296 name fits; finding facts hold; 39 direct calls"
+  }
+ ],
+ "proofs": []
+}

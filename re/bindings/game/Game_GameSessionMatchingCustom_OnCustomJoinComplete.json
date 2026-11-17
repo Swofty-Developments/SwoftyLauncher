@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingCustom_OnCustomJoinComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14307b1f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameSessionMatchingCustom::onCustomJoinComplete; log channel NETWORK-SESSION: 'GameSessionMatchingCustom::onCustomJoinComplete(%s, %d)'"
+ },
+ "signature": {
+  "id": "game.game_session_matching_custom_on_custom_join_complete",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 44 89 C7 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 57 B8 F8 00 00 00 48 8D 0D ?? ?? ?? ?? 66 2E 0F 1F 84 00 00 00 00 00 8B 14 81 85 D2 74 3A 81 FA 88 72 74 16 0F 84 ?? ?? ?? ?? 83 C0 18 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D F8 00 00 00 75 BF 48 83 7E 68 00 75 27 48 8D 4C 24 20 FF 15 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 03 44 24 20 31 C9 48 83 F8 01 48 19 C9 48 09 C1 48 89 4E 68 48 8D 4C 24 20 FF 15 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 03 44 24 20 48 89 46 60 48 83 7E 68 00 74 04 48 89 46 68 C6 86 BA 00 00 00 00",
+  "match": "0x14307b1f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14307b1f0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingCustom_OnCustomJoinComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14307b1f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14307b1f0.c;xref:0x143076dd7",
+   "notes": "V5592 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

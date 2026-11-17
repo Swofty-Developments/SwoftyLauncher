@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSessionF1OS_SetSessionName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14408a1c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetSessionF1OS_SetSessionName;xref:0x14408a3c7;decomp:re/decomp/14408a1c0.c",
+  "notes": "cxx=neon::NeNetSessionF1OS::setSessionName; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_session_f1_o_s_set_session_name",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D6 48 89 CF 48 8D 81",
+  "match": "0x14408a1c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14408a1c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSessionF1OS_SetSessionName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-b",
+   "kind": "func",
+   "item": "Ne_NetSessionF1OS_SetSessionName",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14408a1c0.c;xref:0x14408a1c0",
+   "notes": "V2106 Copies LocalizableText into +0x7a8, rehash table, djb2 hash lookup; pretty string logged"
+  }
+ ],
+ "proofs": []
+}

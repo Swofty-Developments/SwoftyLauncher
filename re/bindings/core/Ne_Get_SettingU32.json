@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Ne_Get_SettingU32",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a43240",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_Get_SettingU32(void *node, const char *name, uint32_t *out, uint32_t def)",
+  "evidence": "decomp:re/decomp/143a43240.c;xref:0x14014d448,0x14014d490,0x1401552c2,0x1401553d1",
+  "notes": "generic engine setting getter, unsigned 32-bit integers: same lock and lookup body as Ne_Get_SettingBool, converts with 0x143919770 (strtoul, 0x hex, K/M/G suffixes) and stores 4 bytes. 97 direct call sites, all integer settings; float settings use the sibling getter 0x143a43ea0. Reads Renderer.Gfx.groundCoverMaxInstances at 0x14014d448 (def 0x124f8) and Renderer.maxPVSRenderInstances at 0x1401553d1. Same entry as xanpavle F1-25-RE-Optimization RVA 0x03a43240"
+ },
+ "signature": {
+  "id": "core.setting_get_u32",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 44 89 CF 4C 89 C3 49 89 CE 48 89 54 24 30 48 8D 71 10 48 89 F1 E8 ?? ?? ?? ?? 4D 8B 76 08 4D 85 F6",
+  "match": "0x143a43240",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a43240",
+  "kind": "func_start",
+  "names": [
+   "Ne_Get_SettingU32"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "reopt-port",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "reopt-verify",
+   "kind": "func",
+   "item": "0x143a43240",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143a43240.c;decomp:re/decomp/143919770.c;xref:0x14014d448,0x14014d490,0x1401553d1,0x1443cc4d6;sig:core.setting_get_u32",
+   "notes": "V0022 Agree: same lock/lookup body as Ne_Get_SettingBool, 4 args, def stored with mov dword [rbx],edi, 97 direct callers (own E8 scan), 0x14014d448 reads Renderer.Gfx.groundCoverMaxInstances def 0x124f8, sigcheck unique with target 0x143a43240. Not supported: (ints and float bits). The converter 0x143919770 is unsigned-integer only (strtoul, 0x hex, K/M/G suffix scaling) and every one of the 97 call sites reads an integer setting. Floating-point settings use the sibling getter 0x143a43ea0 (float parse 0x145343ff4, def in xmm3, stores a double with vmovsd). Drop the float-bits wording."
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "reopt-verify",
+   "kind": "func",
+   "item": "0x143a43240",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a43240.c;decomp:re/decomp/143919770.c;xref:0x14014d448,0x14014d490,0x1401553d1,0x1443cc4d6;sig:core.setting_get_u32",
+   "notes": "V0031 Re-check of corrected row (after V0022). Re-decompiled with KB b27979117a3c. Same lock and lookup body as Ne_Get_SettingBool, converter 0x143919770 (strtoul, 0x hex, K/M/G scaling), 4-byte stores (mov dword [rbx],edi). Own E8 scan: 97 direct callers, all integer settings. Sibling 0x143a43ea0 parses floats (0x145343ff4) and stores a double. Proto has 4 args. sigcheck core.setting_get_u32 unique, target 0x143a43240."
+  }
+ ],
+ "proofs": []
+}

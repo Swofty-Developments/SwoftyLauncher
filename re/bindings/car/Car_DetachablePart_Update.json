@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_DetachablePart_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446686d0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "bool Car_DetachablePart_Update(void *part, float dt)",
+  "evidence": "decomp:re/decomp/1446686d0.c;xref:0x145bf94e8;kb:subsystems/car.md#parts",
+  "notes": "part vtable slot 3: calls fn(ctx, part+0x30) every frame (fn/ctx at part+0x18/+0x20); true or hit count +0x130 >= 100 detaches (slot 0xa0, +0x38 = 1). | car-re 2026-10-28 L2: slot 3 (+0x18, pointer at 0x145bf94e8) of the part vtable 0x145bf94d0, second arg dt. +0x130 byte >= 100 skips the predicate and detaches at once (who raises +0x130 is not read). An already detached part (+0x38 set and slot +0x30 false) accumulates dt at +0x1f0 and past 1.5 s calls 0x144668830(part, 1). Otherwise, when fn or ctx is set, calls fn(ctx, k = part+0x30); true sets +0x38 = 1 and calls slot +0xa0(part, 1); returns that result."
+ },
+ "signature": {
+  "id": "car.detachable_part_update",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 C5 F8 29 74 24 20 48 89 CE 80 B9 30 01 00 00 64",
+  "match": "0x1446686d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446686d0",
+  "kind": "func_start",
+  "names": [
+   "Car_DetachablePart_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v3",
+   "kind": "func",
+   "item": "0x1446686d0",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446686d0.c;decomp:re/decomp/144642760.c;xref:0x145bf94e8,0x14464287a",
+   "notes": "V1454 Role, proto bool(void *part, float dt in xmm1) and slot 3 of 0x145bf94d0 (pointer 0x145bf94e8) agree; caller found: Car_Physics_AdvanceStage walks CarLive+0x2e0..+0x2e8 calling vt+0x18 with dt (0x14464287a) and ORs the result into CarLive+0x2f8. +0x130 >= 100 (signed byte, 0x1446686df) or fn(ctx, [+0x30]) true (0x144668814) -> +0x38 = 1, vt+0xa0(part, 1), returns 1. Differs: the 1.5 s timer of a detached part is not unconditional. With +0x38 set and vt+0x30 false: part+0x40 null -> adds dt to +0x1f0; else with b = [part+0x40]+0x18 it adds dt only when (+0x1f4 != 0 and b+0x444 == -1) or (b+0x444 != -1 and the root of b's +0x30 chain has +0x40 == 1 and +0x44 == 0); otherwise it writes +0x1f0 = 0 (0x1446687f5) and falls through to the predicate. Past 1.5 (0x145487644) it calls 0x144668830(part, 1) (part vt +0x78) and returns 1. sigcheck passes car.detachable_part_update."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1446686d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446686d0.c",
+   "notes": "V6736 vtable 0x145bf94d0 slot 3; hit count +0x130>=0x64 detaches via vcall +0xa0; fn/ctx +0x18/+0x20 called (also a +0x1f0 timer path not mentioned) (vtable/indirect; no direct call site)"
+  }
+ ],
+ "proofs": []
+}

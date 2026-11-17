@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqFacilities_ReadCameraCycleSettings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140df2400",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(struct CameraCycleSettings *out)",
+  "evidence": "decomp:re/decomp/140df2400.c;xref:0x1436ffe5b",
+  "notes": "myteam-g1: Loads facilities.facilities.camera_cycle_settings (CameraCycleSettings): a bool plus several ints incl. time_in_facility into out+0..+0x10. Hook to change how long the camera dwells in each facility."
+ },
+ "signature": {
+  "id": "career.team_hq_facilities_read_camera_cycle_settings",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 40 04 00 00 C5 F8 29 B4 24 30 04 00 00 48 89 CE",
+  "match": "0x140df2400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140df2400",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqFacilities_ReadCameraCycleSettings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140df2400",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140df2400.c;str:\"time_in_facility\"",
+   "notes": "V9562 Reads enabled, time_in_overview, time_in_facility, fade_in/out_duration into out+0..+0x10."
+  }
+ ],
+ "proofs": []
+}

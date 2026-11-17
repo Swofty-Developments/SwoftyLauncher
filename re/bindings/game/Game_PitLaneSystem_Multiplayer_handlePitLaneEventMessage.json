@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_PitLaneSystem_Multiplayer_handlePitLaneEventMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434d1bc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434d1bc0.c;xref:0x143252164",
+  "notes": "cxx=PitLaneSystem::multiplayer_handlePitLaneEventMessage; log channel PITLANE: 'PitLaneSystem::multiplayer_handlePitLaneEventMessage - Session not entered. ignoring message (referring to vehicle %d).' L2 2026-11-14 (engine-re round 2): decomp read; 1 reference(s) (0x143252164); the body itself references 'INVALID' / 'PITLANE' / '%s(%s(%d, %d, %d), %d).' / 'multiplayer_handlePitLaneEventMessage'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pit_lane_system_multiplayer_handle_pit_lane_event_message",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 48 48 8B 81 70 02 00 00",
+  "match": "0x1434d1bc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434d1bc0",
+  "kind": "func_start",
+  "names": [
+   "Game_PitLaneSystem_Multiplayer_handlePitLaneEventMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1434d1bc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434d1bc0.c;xref:0x143252165",
+   "notes": "V6041 name and description match body; log string/pretty name present"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1434d1bc0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434d1bc0-0x1434d1f0a;xref:0x143252164",
+   "notes": "V10516 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only jmp 0x143252164. multiplayer_handlePitLaneEventMessage, Session not entered log; tail jmps to 0x1434cfc30 / 0x1434d0340 / 0x1434d07b0. 3 args."
+  }
+ ],
+ "proofs": []
+}

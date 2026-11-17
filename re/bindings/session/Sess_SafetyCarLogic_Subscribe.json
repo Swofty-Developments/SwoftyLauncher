@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_SafetyCarLogic_Subscribe",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436156c0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436156c0.c;xref:0x1436720db,0x143672192,0x143672262",
+  "notes": "SC logic message subscriptions: safety_car_deployment, MessageRaceStarted, MessageTriggerSimulateSession (mid-session simulation, allowed per game mode by allowMidSessionSimulation, off in every stock mode), PhotoModeEnabled/Disabled."
+ },
+ "signature": {
+  "id": "session.safety_car_logic_subscribe",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8D 05 ?? ?? ?? ?? 48 89 41 20",
+  "match": "0x1436156c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436156c0",
+  "kind": "func_start",
+  "names": [
+   "Sess_SafetyCarLogic_Subscribe"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb4-verify",
+   "kind": "func",
+   "item": "Sess_SafetyCarLogic_Subscribe",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436156c0.c;xref:0x1436720db",
+   "notes": "V1946 5 subscriptions match"
+  }
+ ],
+ "proofs": []
+}

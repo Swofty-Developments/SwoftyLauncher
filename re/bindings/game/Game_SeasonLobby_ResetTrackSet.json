@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SeasonLobby_ResetTrackSet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430ad220",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430ad220.c;xref:0x1430ab577,0x1430df9c4",
+  "notes": "resetTrackSet(1,null): if the document is open (role<2 and +0x765) Career_Add_TrackSetToSeason(doc,1,0), else logs document is not open; then sends a lobby message via 0x14402e500(doc+0x38,1,..). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2745)"
+ },
+ "signature": {
+  "id": "game.season_lobby_reset_track_set",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC E0 00 00 00 48 89 CE 48 8B 41 08 48 8B B8",
+  "match": "0x1430ad220",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430ad220",
+  "kind": "func_start",
+  "names": [
+   "Game_SeasonLobby_ResetTrackSet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_SeasonLobby_ResetTrackSet",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430ad220.c;xref:0x1430dda70",
+   "notes": "V2745 FUN_143099650(doc,1,0) if open and role<2, then lobby msg {7,0x58} via [..+0x428]+0x38 rel 1 confirmed"
+  }
+ ],
+ "proofs": []
+}

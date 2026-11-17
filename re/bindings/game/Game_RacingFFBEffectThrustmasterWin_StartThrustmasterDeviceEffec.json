@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RacingFFBEffectThrustmasterWin_StartThrustmasterDeviceEffec",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f47d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=RacingFFBEffectThrustmasterWin::startThrustmasterDeviceEffects; log channel TM_FFB: 'RacingFFBEffectThrustmasterWin::startThrustmasterDeviceEffects, m_device = %p, handle = %d'"
+ },
+ "signature": {
+  "id": "game.racing_ffb_effect_thrustmaster_win_start_thrustmaster_device_effec",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6E B8 0D 01 00 00 48 8D 0D ?? ?? ?? ?? 66 90 8B 14 81 81 FA 21 6D 06 9D 74 34 85 D2 74 51 83 C0 13 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 0D 01 00 00 75 C3 EB 21 4C 8B 86 E0 01 00 00 45 8B 88 00 0A 00 00 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 86 E0 01 00 00",
+  "match": "0x1446f47d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f47d0",
+  "kind": "func_start",
+  "names": [
+   "Game_RacingFFBEffectThrustmasterWin_StartThrustmasterDeviceEffec"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f47d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f47d0.c;xref:0x1446f4744",
+   "notes": "V6847 Start strings for constant/spring/friction confirmed."
+  }
+ ],
+ "proofs": []
+}

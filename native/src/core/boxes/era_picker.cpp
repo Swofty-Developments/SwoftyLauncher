@@ -1,4 +1,5 @@
 #include "core/testing/direct_start_tt.hpp"
+#include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/guards/session/replay_grid_logic.hpp"
 
@@ -657,7 +658,7 @@ void parse_list_entry(int *ordinal, const void *row_key, void *list, void *regis
 }
 
 // The row of entrants.entrant_lists labelled `label` that the game did not load: the build's virtual-list step puts
-// those rows at VIRTUAL_BASE and up (packages/core/src/virtual_lists.rs, BASE).
+// those rows at VIRTUAL_BASE and up (packages/core/src/game_db/virtual_lists.rs, BASE).
 constexpr int64_t VIRTUAL_BASE = 10000;
 std::string virtual_row(const char *label)
 {
@@ -1750,7 +1751,7 @@ std::vector<era::Box> era_boxes()
 
 void era_press(const char *entrant_list)
 {
-    void *mode = nullptr, *entity = nullptr;
+    void *entity = nullptr;
     uintptr_t slot = swofty::api ? swofty::api->resolve("g_Game_Manager") : 0, mgr = 0, ctx = 0;
     if (slot && mem::read(slot, mgr) && mgr)
         mem::read(mgr + offsetof(swofty::game::GameManager, mode_context), ctx);
@@ -2056,6 +2057,8 @@ void career_alias_commit()
                         : "did not install (see the [core] lines)");
 }
 
+static loader::FunctionSet career_alias_core_set{loader::CoreSetId::career_alias, career_alias_mixins, career_alias_commit};
+
 void tt_guard_commit()
 {
     if (!vehicles_offered || vehicles_settled)
@@ -2082,6 +2085,8 @@ void tt_guard_commit()
                                                             "is read into swofty_virtual_list when it is pressed"
                                                           : "did not install (see the [core] lines)");
 }
+
+static loader::FunctionSet tt_guard_core_set{loader::CoreSetId::tt_guard, tt_guard_mixins, tt_guard_commit};
 
 void era_session_trace(const char *state, int to)
 {
@@ -2146,5 +2151,7 @@ void era_commit()
     off = true;
     swofty::log("[era] addon row off: %s", off_why.c_str());
 }
+
+static loader::FunctionSet era_core_set{loader::CoreSetId::era, era_mixins, era_commit};
 
 }

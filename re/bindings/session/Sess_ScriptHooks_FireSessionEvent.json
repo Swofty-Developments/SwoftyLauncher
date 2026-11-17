@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_ScriptHooks_FireSessionEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14244ef30",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14244ef30.c;xref:0x142d4c6a0,0x142d8a440",
+  "notes": "(hooks, uint event): calls pre-listeners (+0xf0..+0xf8 vtable +8), then fires script hook event name table 0x14578d280 [0 onStartPractice, 1 onStartQualifying, 2 onStartRace, 3 onResultsFinalised] on the hook object at hooks+0x28+event*0x10 (0x1424497b0), then post-listeners (vtable +0x10). Callers: Sess_Loader_PlayGridPlayerShotCutscene, Sess_RetirementSequence_Update, Sess_WinnerSequence_Enter. Addon: session-start/results events."
+ },
+ "signature": {
+  "id": "session.script_hooks_fire_session_event",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 58 89 D3 48 89 CE 48 8B B9 F0 00 00",
+  "match": "0x14244ef30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14244ef30",
+  "kind": "func_start",
+  "names": [
+   "Sess_ScriptHooks_FireSessionEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x14244ef30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14244ef30.c;xref:0x142d4c78b,0x142d8ae94,0x142daa97b",
+   "notes": "V3383 pre-listeners +0xf0..+0xf8 vtbl+8, hook obj hooks+0x28+event*0x10 via 0x1424497b0, name table 0x14578d280 = onStartPractice/onStartQualifying/onStartRace/onResultsFinalised, post-listeners vtbl+0x10; 3 named callers ok"
+  }
+ ],
+ "proofs": []
+}

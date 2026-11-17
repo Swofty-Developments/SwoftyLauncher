@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_OnWeatherQualityChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14015aa00",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "pat:log-channel-WEATHER",
+  "notes": "Log channel WEATHER: 'GameRendererModule::onWeatherQualityChanged' | 'GameRendererModule::onWeatherQualityChanged: rainBeadsEnable %d' | 'GameRendererModule::onWeatherQualityChanged: rainSplashesEnable %d' | 'GameRendererModule::onWeatherQualityChanged: rainHighEnable %d' | 'GameRendererModule::onWeatherQualityChanged: heatHazeE"
+ },
+ "signature": {
+  "id": "render.on_weather_quality_changed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x14015aa00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14015aa00",
+  "kind": "func_start",
+  "names": [
+   "Render_OnWeatherQualityChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x14015aa00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14015aa00.c",
+   "notes": "V4310 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

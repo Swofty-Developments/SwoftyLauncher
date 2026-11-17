@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetTransportCommon_SetMyConnectionId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144069620",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144069620.c;xref:0x1440636d8,0x14406463b",
+  "notes": "setMyConnectionId(id<0x40): this+0x300 own id; marks self in the 64x64 connectivity matrix (row = id*0xc, 3 dwords; excluded mask +0x304), dirty +0x301."
+ },
+ "signature": {
+  "id": "core.net_transport_common_set_my_connection_id",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 80 FA 3F 0F 87 ?? ?? ?? ?? 48 89",
+  "match": "0x144069620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144069620",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetTransportCommon_SetMyConnectionId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Ne_NetTransportCommon_SetMyConnectionId",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144069620.c;xref:0x144069620",
+   "notes": "V2637 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

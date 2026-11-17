@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Libpng_CheckIhdr",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439106b0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439106b0.c;xref:0x142bd46a4",
+  "notes": "png_check_IHDR: width/height zero and limit messages ('Image width is zero in IHDR', 'Image width exceeds user limit in IHDR', 'Invalid image height/width in IHDR'). Callers Ne_Libpng_SetIhdr (0x1439121f9), 0x142bd46a4."
+ },
+ "signature": {
+  "id": "core.libpng_check_ihdr",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 44 89 CF 44 89 C3 89 D5",
+  "match": "0x1439106b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439106b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Libpng_CheckIhdr"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x1439106b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439106b0.c;xref:0x142bd46a4",
+   "notes": "V8477 png_check_IHDR messages all present; callers SetIhdr + others"
+  }
+ ],
+ "proofs": []
+}

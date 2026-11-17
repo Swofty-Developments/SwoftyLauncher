@@ -65,14 +65,14 @@ impl Onboarding {
 
 impl Shell {
     fn onboarding_go(&mut self, step: Step, cx: &mut Context<Self>) {
-        if let Some(wizard) = &mut self.onboarding {
+        if let Some(wizard) = &mut self.overlays.onboarding {
             wizard.step = step;
         }
         cx.notify();
     }
 
     fn onboarding_forward(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(step) = self.onboarding.as_ref().map(|w| w.step) else {
+        let Some(step) = self.overlays.onboarding.as_ref().map(|w| w.step) else {
             return;
         };
         match step.next() {
@@ -82,14 +82,14 @@ impl Shell {
     }
 
     fn onboarding_back(&mut self, cx: &mut Context<Self>) {
-        let previous = self.onboarding.as_ref().and_then(|w| w.step.previous());
+        let previous = self.overlays.onboarding.as_ref().and_then(|w| w.step.previous());
         if let Some(previous) = previous {
             self.onboarding_go(previous, cx);
         }
     }
 
     fn onboarding_pick_mode(&mut self, mode: UiMode, window: &mut Window, cx: &mut Context<Self>) {
-        if let Some(wizard) = &mut self.onboarding {
+        if let Some(wizard) = &mut self.overlays.onboarding {
             wizard.mode = mode;
         }
         self.set_ui_mode(mode, window, cx);
@@ -106,19 +106,20 @@ impl Shell {
     }
 
     pub(crate) fn onboarding_finish(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(wizard) = self.onboarding.take() else {
+        let Some(wizard) = self.overlays.onboarding.take() else {
             return;
         };
         let mut config = self.store.config();
         config.onboarding = Some(ONBOARDING_VERSION);
         config.ui_mode = Some(wizard.mode);
         self.save_config_toast(&config, window, cx);
-        self.ui_mode = config.ui_mode;
+        self.scaling.mode = config.ui_mode;
         cx.notify();
     }
 
     fn onboarding_key(&mut self, key: &str, window: &mut Window, cx: &mut Context<Self>) {
         let Some((step, root_focused)) = self
+            .overlays
             .onboarding
             .as_ref()
             .map(|w| (w.step, w.focus.is_focused(window)))
@@ -139,7 +140,7 @@ impl Shell {
     }
 
     pub(crate) fn onboarding_view(&self, p: Palette, cx: &mut Context<Self>) -> Option<Stateful<Div>> {
-        let wizard = self.onboarding.as_ref()?;
+        let wizard = self.overlays.onboarding.as_ref()?;
         let step = wizard.step;
         let body = match step {
             Step::Welcome => welcome::view(p),

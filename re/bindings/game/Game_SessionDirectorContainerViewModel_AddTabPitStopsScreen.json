@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "Game_SessionDirectorContainerViewModel_AddTabPitStopsScreen",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422a0cb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1422a0cb0.c;xref:0x14229fa68;str:s_SessionDirectorContainerViewModel_AddTabPitStopsScreen",
+  "notes": "cxx=game::SessionDirectorContainerViewModel::addTabPitStopsScreen; named in bulk from a pretty-function or log string that may belong to an inlined callee L2 2026-11-14 (engine-re round 2): decomp read; 1 reference(s) (0x14229fa68); the body itself references '%s: %s' / 'void game::SessionDirectorContainerViewModel::addTabPitStopsScreen(const SessionDirectorPitStops' / 'lng_pit_stops_race_director' / 'session_director_pit_stops'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.session_director_container_view_model_add_tab_pit_stops_screen",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 8B B6 88 02 00 00 4C 8B BE 90 02 00 00 4D 39 FE 0F 84 ?? ?? ?? ?? 48 8D BE F0",
+  "match": "0x14229fa68",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1422a0cb0",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionDirectorContainerViewModel_AddTabPitStopsScreen"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x1422a0cb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422a0cb0.c;xref:0x14229fa68",
+   "notes": "V7339 name matches log/pretty-function string and body; sibling-consistent"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1422a0cb0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1422a0cb0-0x1422a0fca;xref:0x14229fa68",
+   "notes": "V10495 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only call 0x14229fa68. addTabPitStopsScreen pretty function, lng_pit_stops_race_director, session_director_pit_stops. 2 args."
+  }
+ ],
+ "proofs": []
+}

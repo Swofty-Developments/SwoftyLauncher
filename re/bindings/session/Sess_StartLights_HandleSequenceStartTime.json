@@ -1,0 +1,39 @@
+{
+ "schema": 1,
+ "name": "Sess_StartLights_HandleSequenceStartTime",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143237c40",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_StartLights_HandleSequenceStartTime(void *repl, void *msg)",
+  "evidence": "decomp:re/decomp/143237c40.c;xref:0x143237e91;str:s_StartLightsReplication_HandleSequenceStartTime;imm:0x3a052d5d",
+  "notes": "cxx=StartLightsReplication::handleSequenceStartTime. Remote-authority path (repl+8==2): stores the lights sequence start time (u64 msg+0x10) at repl+0xa8 and sets ready flag repl+0xa1=1. Log chan NETWORK-READY (0x3a052d5d): setSequenceStartTime/calculateSequenceStartTime. This is when the 5 start lights begin."
+ },
+ "signature": {
+  "id": "session.start_sequence_time",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 83 79 08 02",
+  "match": "0x143237c40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143237c40",
+  "kind": "func_start",
+  "names": [
+   "Sess_StartLights_HandleSequenceStartTime"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "session-re"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

@@ -71,3 +71,33 @@ pub(crate) fn stop_requested_at(dir: &Path) -> Option<f64> {
 pub(crate) fn session_stop(dir: &Path) -> StopPhase {
     stop_phase(stop_requested_at(dir), now_secs(), ending())
 }
+
+#[cfg(all(test, unix))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_stop_request_closes_the_game_then_gives_up_waiting_for_it() {
+        assert_eq!(stop_phase(None, 100.0, false), StopPhase::Running);
+        assert_eq!(stop_phase(None, 100.0, true), StopPhase::Closing);
+        assert_eq!(stop_phase(Some(90.0), 100.0, false), StopPhase::Closing);
+        assert_eq!(stop_phase(Some(80.0), 100.0, false), StopPhase::Closing);
+        assert_eq!(stop_phase(Some(79.0), 100.0, false), StopPhase::GiveUp);
+        assert_eq!(stop_phase(Some(79.0), 100.0, true), StopPhase::GiveUp);
+    }
+
+    #[test]
+    fn reads_when_the_launcher_asked_the_session_to_stop() {
+        let dir = std::env::temp_dir().join(format!("swofty-stop-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(&dir).unwrap();
+        assert_eq!(stop_requested_at(&dir), None);
+        assert_eq!(session_stop(&dir), StopPhase::Running);
+        std::fs::write(dir.join(STOP_FILE), "12.5\n").unwrap();
+        assert_eq!(stop_requested_at(&dir), Some(12.5));
+        assert_eq!(session_stop(&dir), StopPhase::GiveUp);
+        std::fs::write(dir.join(STOP_FILE), "garbage").unwrap();
+        assert_eq!(session_stop(&dir), StopPhase::Closing);
+        std::fs::remove_dir_all(&dir).ok();
+    }
+}

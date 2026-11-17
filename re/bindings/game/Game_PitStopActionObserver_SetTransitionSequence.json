@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_PitStopActionObserver_SetTransitionSequence",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403bc300",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403bc300.c;xref:0x1403c0cbd",
+  "notes": "cxx=PitStopActionObserver::setTransitionSequence; log channel PITSTOPS: 'PitStopActionObserver::setTransitionSequence Crew %d %d %s' L2 2026-11-14 (engine-re round 2): decomp read; 1 reference(s) (0x1403c0cbd); the body itself references 'JobCompletePFWRToStandardStop10SPUP' / 'StartJobDoStandardStop10SPUP' / 'JobCompletePFWRToFrontWingStop10SP' / 'JobCompleteToStandardStop10SPUP'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pit_stop_action_observer_set_transition_sequence",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 02 00 00 C5 F8 29 BC 24 B0 02 00 00 C5 F8 29 B4 24 A0 02 00 00 89 D3 49 89 CD",
+  "match": "0x1403bc300",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403bc300",
+  "kind": "func_start",
+  "names": [
+   "Game_PitStopActionObserver_SetTransitionSequence"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403bc300",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403bc300.c;xref:0x3bc2a3",
+   "notes": "V4635 string/behaviour in decomp matches name"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1403bc300",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1403bc300-0x1403c02d0;xref:0x1403c0cbd",
+   "notes": "V10463 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only call 0x1403c0cbd (riprel hit 0x1403bc2a3 is not an instruction). Transition-sequence name table (JobComplete*/StartJob* 5SP/10SP). 3 args."
+  }
+ ],
+ "proofs": []
+}

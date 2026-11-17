@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Misconduct_OnCarToCarCollision",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f55040",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-MISCONDUCT;decomp:re/decomp/142f55040.c;xref:0x142f5585f,0x142fe92d5",
+  "notes": "Log channel MISCONDUCT: 'Car To Car Collsision Between %s & %s (@%f)'"
+ },
+ "signature": {
+  "id": "session.misconduct_on_car_to_car_collision",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 7C 24 50 C5 F9 29 74 24 40",
+  "match": "0x142f55040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f55040",
+  "kind": "func_start",
+  "names": [
+   "Sess_Misconduct_OnCarToCarCollision"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-a",
+   "kind": "func",
+   "item": "Sess_Misconduct_OnCarToCarCollision",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f55040.c;xref:0x142f55040",
+   "notes": "V1907 log strings confirmed by disassembly lea refs inside function"
+  }
+ ],
+ "proofs": []
+}

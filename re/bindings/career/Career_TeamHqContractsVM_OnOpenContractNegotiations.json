@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqContractsVM_OnOpenContractNegotiations",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423ebb40",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_TeamHqContractsVM_OnOpenContractNegotiations(void *vm, void **event)",
+  "evidence": "decomp:re/decomp/1423ebb40.c;xref:0x145787190",
+  "notes": "myteam-g1: Event handler for open_contract_negotiations (event id 0xfc8f026c): posts a typed message (kind 5) into the UI message queue under a critical section and signals the event handle. Entry point that starts the negotiations flow from the My Team menu."
+ },
+ "signature": {
+  "id": "career.team_hq_contracts_vm_on_open_contract_negotiations",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 8B 00 3D 6C 02 8F FC",
+  "match": "0x1423ebb40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423ebb40",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqContractsVM_OnOpenContractNegotiations"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423ebb40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423ebb40.c;str:\"open_contract_negotiations\"",
+   "notes": "V10200 Event id 0xfc8f026c, allocates a queue node under critical section and SetEvent; matches."
+  }
+ ],
+ "proofs": []
+}

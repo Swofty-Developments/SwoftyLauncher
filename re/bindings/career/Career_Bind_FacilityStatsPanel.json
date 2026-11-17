@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Bind_FacilityStatsPanel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141975f90",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *panel)",
+  "evidence": "decomp:re/decomp/141975f90.c;xref:0x14197eaa7;xref:0x141980427;xref:0x141980f29",
+  "notes": "myteam-g1: Facility stats panel binding: baseline_workforce_int, current_workforce_int/text, facility_bg_image, facility_emb, facility_stats_current_image."
+ },
+ "signature": {
+  "id": "career.bind_facility_stats_panel",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 89 CE 48 8B 42 08 48 8D 50 08 48 85 C0 4C 8D 3D ?? ?? ?? ?? 49 0F 44 D7 E8",
+  "match": "0x141975f90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141975f90",
+  "kind": "func_start",
+  "names": [
+   "Career_Bind_FacilityStatsPanel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141975f90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141975f90.c;xref:0x14197eaa7",
+   "notes": "V9846 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

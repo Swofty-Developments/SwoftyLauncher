@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_RemoveVehicleCustomisation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424773f0",
+  "level": "L1",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
+  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Vehicle customisation removed with stat id %s | Couldn't find array to remove vehicle customisation with stat id %s | Couldn't find vehicle customisation to remove with stat id %s'"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_remove_vehicle_customisation",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 80 00 00 00 89 D6 C1 EE 10 81 E2 FF 00 00 00 0F 84 ?? ?? ?? ?? 89 D3 48 89 D8 48 C1 E0 04 48 8B 8C 01 88 03 00 00",
+  "match": "0x1424773f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424773f0",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_RemoveVehicleCustomisation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1424773f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1424773f0.c;xref:0x140fe5ecd",
+   "notes": "V5078 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

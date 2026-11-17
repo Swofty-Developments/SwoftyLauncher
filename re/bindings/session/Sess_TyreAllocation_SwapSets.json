@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_TyreAllocation_SwapSets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e8e4c0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e8e4c0.c;xref:0x140bccdee,0x140bcce49",
+  "notes": "Tyre allocation: for set id param_2 swaps entries with candidate ids param_3[0..param_4) across allocation groups (this+0x10.., entry stride 0x6c) honouring session-type rules (g 0x146080688 ranges 1-4 / 5-9 / 10-14 / 16-17, entry flags +9). Callers: Sess_TyreAllocation_OnSessionStart."
+ },
+ "signature": {
+  "id": "session.tyre_allocation_swap_sets",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 4C 89 4C 24 40 4C 89 44",
+  "match": "0x142e8e4c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e8e4c0",
+  "kind": "func_start",
+  "names": [
+   "Sess_TyreAllocation_SwapSets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142e8e4c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e8e4c0.c;xref:0x140bccdee,0x140bcce49",
+   "notes": "V3683 Swaps entries by id across groups using 0x146080688 ranges and masks 0x83e0/0x383e0, flags +9; callers match."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_InGame_UnsubscribeMessages",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d64ea0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d64ea0.c;xref:0x142d5718f,0x142d68456",
+  "notes": "Unsubscribes the same six in-game bus messages as Sess_InGame_SubscribeMessages (0x143988350). Callers Sess_InGame_OnStateExitHideHud, Sess_InGamePQ_Update."
+ },
+ "signature": {
+  "id": "session.in_game_unsubscribe_messages",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 80 B9 10 10 00 00 00 0F 84",
+  "match": "0x142d64ea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d64ea0",
+  "kind": "func_start",
+  "names": [
+   "Sess_InGame_UnsubscribeMessages"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142d64ea0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d64ea0.c;xref:0x142d5718f,0x142d68456",
+   "notes": "V3618 same six message strings, unsubscribe path guarded by +0x1010; callers Sess_InGame_OnStateExitHideHud and Sess_InGamePQ_Update"
+  }
+ ],
+ "proofs": []
+}

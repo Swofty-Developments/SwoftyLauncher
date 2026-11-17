@@ -1,4 +1,5 @@
 #include "core/guards/guard.hpp"
+#include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/guards/career/activity_resume_logic.hpp"
 
@@ -12,10 +13,6 @@
 #include <cstring>
 #include <mutex>
 #include <string>
-
-namespace runtime {
-std::string hook_error(const safetyhook::MidHook::Error &e);
-}
 
 // Career activity resume guard (re/db/globals.tsv site_Game_ActivityResumeRaceLengthFirst, ..Second, ..Return).
 //
@@ -38,6 +35,7 @@ std::string hook_error(const safetyhook::MidHook::Error &e);
 
 namespace {
 
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 
 const runtime::Sig S_FIRST{"site_Game_ActivityResumeRaceLengthFirst", "E8 ?? ?? ?? ?? 44 8B 30 48 89 F9 B2 01", 0x1519488a9,
@@ -82,8 +80,7 @@ bool arm(safetyhook::MidHook &slot, const runtime::Sig &s, uintptr_t at)
 void setup()
 {
     char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_ACTIVITY_RESUME_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+    if (guards::env_off("SWOFTY_ACTIVITY_RESUME_GUARD", v)) {
         swofty::log("[career] activity resume guard off (SWOFTY_ACTIVITY_RESUME_GUARD=%s)", v);
         return;
     }

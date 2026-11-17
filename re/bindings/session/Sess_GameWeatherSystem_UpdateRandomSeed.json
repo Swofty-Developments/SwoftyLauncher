@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Sess_GameWeatherSystem_UpdateRandomSeed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438c80e0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_GameWeatherSystem_UpdateRandomSeed(void *ws, uint32_t seed, uint32_t weekend)",
+  "evidence": "decomp:re/decomp/1438c80e0.c;decomp:re/decomp/140bde3e0.c;xref:0x140bde4e5;doc:addons/career-editor/protocol/weather.md",
+  "notes": "cxx=GameWeatherSystem::updateRandomSeed. ws+0x1f18 = weekend (log offset weekend*10); base seed ws+0x1f10 = seed unless the forced override ws+0x1f14 is non-zero (then base = forced); pushes base+weekend*10 to TOD *(ws+0x1d98) via 0x144619cf0 when TOD is set; writes base to *(0x145f8d6c0)+0x174 and weekend to +0x178 (V0245). Only caller WeatherAndTimeOfDayComponent::setWeatherSystemRandomSeed 0x140bde3e0 (component+0x2c4 rnd_seed, weekend = season current_weekend if valid else 0), which afterwards sets ws+0x1f02/+0x1f04/+0x1f08 itself (a direct call skips those). career-editor no longer calls it directly; it goes through Sess_WeatherComponent_SetSystemRandomSeed."
+ },
+ "signature": {
+  "id": "session.game_weather_system_update_random_seed",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 89 D7 48 89 CE 44 89 81 18 1F 00 00",
+  "match": "0x1438c80e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438c80e0",
+  "kind": "func_start",
+  "names": [
+   "Sess_GameWeatherSystem_UpdateRandomSeed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-weather",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/weather.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-1",
+   "kind": "func",
+   "item": "Sess_GameWeatherSystem_UpdateRandomSeed",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1438c80e0.c;decomp:re/decomp/140bde3e0.c;xref:0x140bde4e4",
+   "notes": "V0245 proto, ws+0x1f18/+0x1f10/+0x1f14 logic, only caller 0x140bde3e0 (no .data1 or pointer refs) check; the global gets the base seed and the weekend separately, not base+weekend*10. Corrected: ws+0x1f18 = weekend (log offset weekend*10); base seed ws+0x1f10 = seed unless the forced override ws+0x1f14 is non-zero (then base = forced); pushes base+weekend*10 to TOD *(ws+0x1d98) via 0x144619cf0 when TOD is set; writes base to *(0x145f8d6c0)+0x174 and weekend to +0x178. Only caller WeatherAndTimeOfDayComponent::setWeatherSystemRandomSeed 0x140bde3e0 (component+0x2c4 rnd_seed, weekend = season current_weekend if valid else 0), which afterwards sets ws+0x1f02/+0x1f04/+0x1f08 itself (a direct call skips those)"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-3",
+   "kind": "func",
+   "item": "Sess_GameWeatherSystem_UpdateRandomSeed",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438c80e0.c;decomp:re/decomp/140bde3e0.c;xref:0x140bde4e4",
+   "notes": "V0305 Independent: rcx ws, edx seed, r8d weekend (stored first to +0x1f18); +0x1f14 non-zero -> +0x1f10 = forced else seed; 0x144619cf0(TOD, base+weekend*10) when *(ws+0x1d98) set; *(0x145f8d6c0)+0x174 = base, +0x178 = weekend; only caller 0x140bde4e4 (no .data1 calls, no pointer refs besides .pdata)."
+  }
+ ],
+ "proofs": []
+}

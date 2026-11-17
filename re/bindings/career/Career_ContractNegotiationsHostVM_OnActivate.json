@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractNegotiationsHostVM_OnActivate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a68080",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_ContractNegotiationsHostVM_OnActivate(void *vm)",
+  "evidence": "decomp:re/decomp/141a68080.c;xref:0x145729e18",
+  "notes": "myteam-g1: Activation of a screen VM hosting contract negotiations: resolves session (vm+0x298 -> +0x88), prepares row array (vm+0x2d0, 0xc48 bytes each, count vm+0xf18) and registers four message handlers (StartContractNegotiationsFlow 1456bd357 -> 141a68e80, 141a690b0, 141a691e0, 141a692a0)."
+ },
+ "signature": {
+  "id": "career.contract_negotiations_host_vm_on_activate",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 38 48 89 CE 48 8B 81 98 02 00 00",
+  "match": "0x141a68080",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a68080",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractNegotiationsHostVM_OnActivate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141a68080",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a68080.c;xref:0x145729e18",
+   "notes": "V9928 Resolves session via vm+0x298->+0x88, row array vm+0x2d0 count vm+0xf18, registers handlers 141a68e80/690b0/691e0/692a0 (StartContractNegotiationsFlow, ProcessSameTeamSelectedMessage, ClearWaitingMessageForTeamSelect)."
+  }
+ ],
+ "proofs": []
+}

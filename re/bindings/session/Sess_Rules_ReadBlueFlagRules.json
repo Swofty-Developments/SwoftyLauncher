@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_Rules_ReadBlueFlagRules",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435b4640",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1435b4640.c;xref:0x14584d0d0",
+  "notes": "rules.flags.ignoring_blue_flag per car class (safety_cars, f1_cars): illegal_overtake_N rows with wait_and_see_duration, additional_wait_and_see_time, places_gained, level. sb-verify-b correction: key is literal illegal_overtake_0.<class>; loops 2 classes (f1_cars, safety_cars), per class reads additional_wait_and_see_time and wait_and_see_duration once plus sub-list 'overtake' with places_gained and level"
+ },
+ "signature": {
+  "id": "session.rules_read_blue_flag_rules",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 BF 65 96 76 51 C2 35 57 00",
+  "match": "0x1435b4640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435b4640",
+  "kind": "func_start",
+  "names": [
+   "Sess_Rules_ReadBlueFlagRules"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-b",
+   "kind": "func",
+   "item": "Sess_Rules_ReadBlueFlagRules",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1435b4640.c;xref:0x1435b4640",
+   "notes": "V1825 role/keys ok; key is literal illegal_overtake_0.<class> (loop over 2 classes), per-class sub-list 'overtake' entries hold places_gained+level; not illegal_overtake_N rows"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-b",
+   "kind": "func",
+   "item": "Sess_Rules_ReadBlueFlagRules",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1435b4640.c;xref:0x1435b4640",
+   "notes": "V3947 role/keys ok; key is literal illegal_overtake_0.<class> (loop over 2 classes), per-class sub-list 'overtake' entries hold places_gained+level; not illegal_overtake_N rows"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x1435b4640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435b4640.c",
+   "notes": "V4190 rules.flags.ignoring_blue_flag, classes f1_cars and safety_cars, literal illegal_overtake_0 via %s.%s.%s printf, additional_wait_and_see_time, wait_and_see_duration, places_gained, level; vtable slot 0x14584d0d0 (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

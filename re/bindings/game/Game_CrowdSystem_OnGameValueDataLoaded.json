@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CrowdSystem_OnGameValueDataLoaded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1413ef4b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onGameValueDataLoaded (class from the log channel); log channel CrowdSystem: 'onGameValueDataLoaded'"
+ },
+ "signature": {
+  "id": "game.crowd_system_on_game_value_data_loaded",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC B8 04 00 00 C5 F8 29 B4 24 A0 04 00 00",
+  "match": "0x1413ef4b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1413ef4b0",
+  "kind": "func_start",
+  "names": [
+   "Game_CrowdSystem_OnGameValueDataLoaded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1413ef4b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1413ef4b0.c",
+   "notes": "V4781 name and quoted log strings/pretty-function present in body; no direct caller (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

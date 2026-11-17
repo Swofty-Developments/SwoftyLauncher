@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_ReplayConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c04a30",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Replay.disable_onboarding_tutorials, Replay.force_advanced_replay_ui, Replay.reset_onboarding_flags'"
+ },
+ "signature": {
+  "id": "game.read_replay_config",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 50 48 89 CE C6 44 24 2E 00",
+  "match": "0x142c04a30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c04a30",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_ReplayConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142c04a30",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142c04a30.c;xref:0x142c04c45",
+   "notes": "V5040 reads 3 bools and acts on them (force advanced UI, reset onboarding flags, disable tutorials); better Game_ReplayUI_ApplyReplayDebugFlags"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142c04a30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c04a30.c;xref:0x142c04c45",
+   "notes": "V6885 31 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

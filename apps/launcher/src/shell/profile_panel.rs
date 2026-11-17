@@ -1,6 +1,6 @@
 use crate::services::library::ProfileItem;
-use crate::shell::pages::avatar;
 use crate::shell::{Page, PlayState, Shell};
+use crate::ui::avatar;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::{Palette, ScrollArea};
 use gpui_kit::assets::IconName;
@@ -17,7 +17,7 @@ const SIDEBAR_MIN_LAYOUT: f32 = 1000.;
 
 impl Shell {
     pub(crate) fn profiles_sidebar(&mut self, p: Palette, cx: &mut Context<Self>) -> Option<AnyElement> {
-        if !self.use_profiles || !matches!(self.page, Page::Addons | Page::Careers) {
+        if !self.prefs.use_profiles || !matches!(self.navigation.page, Page::Addons | Page::Careers) {
             return None;
         }
         Some(if self.profiles_shown() {
@@ -28,14 +28,15 @@ impl Shell {
     }
 
     pub(crate) fn profiles_shown(&self) -> bool {
-        self.profiles_open && self.layout_width / crate::ui::scale::current() >= SIDEBAR_MIN_LAYOUT
+        self.navigation.profiles_open
+            && self.layout.window_width / crate::ui::scale::current() >= SIDEBAR_MIN_LAYOUT
     }
 
     pub(crate) fn profiles_width(&self) -> f32 {
-        if !self.use_profiles {
+        if !self.prefs.use_profiles {
             return 0.;
         }
-        match (self.page, self.profiles_shown()) {
+        match (self.navigation.page, self.profiles_shown()) {
             (Page::Addons | Page::Careers, true) => WIDTH,
             (Page::Addons | Page::Careers, false) => RAIL,
             _ => 0.,
@@ -60,7 +61,7 @@ impl Shell {
                     .icon(IconName::ChevronRight)
                     .tooltip(tr("Show profiles"))
                     .on_click(cx.listener(|this, _, _, cx| {
-                        this.profiles_open = true;
+                        this.navigation.profiles_open = true;
                         cx.notify();
                     })),
             )
@@ -128,7 +129,7 @@ impl Shell {
                             .icon(IconName::ChevronLeft)
                             .tooltip(tr("Hide profiles"))
                             .on_click(cx.listener(|this, _, _, cx| {
-                                this.profiles_open = false;
+                                this.navigation.profiles_open = false;
                                 cx.notify();
                             })),
                     ),

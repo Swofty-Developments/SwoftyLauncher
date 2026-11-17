@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CompoundModelSet_ClearVisibilityMask",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d3dd10",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d3dd10.c;xref:0x142e83572",
+  "notes": "vpandn of a 16-byte mask into model-set visibility word (+0x70); on change queues refresh (state +0x128, flag +0x12c|=0x20). Caller Game_CompoundModelSet_SetTyreVisibility."
+ },
+ "signature": {
+  "id": "game.compound_model_set_clear_visibility_mask",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 C5 F9 6F 02 C5 F9 6F 49 70 C5 F9",
+  "match": "0x143d3dd10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d3dd10",
+  "kind": "func_start",
+  "names": [
+   "Game_CompoundModelSet_ClearVisibilityMask"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143d3dd10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d3dd10.c;xref:0x142e83572",
+   "notes": "V7914 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

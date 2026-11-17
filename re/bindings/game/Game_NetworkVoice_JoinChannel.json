@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkVoice_JoinChannel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144036890",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name joinChannel (class from the log channel); log channel NETWORK-VOICE: '%s: channel #%u created'"
+ },
+ "signature": {
+  "id": "game.network_voice_join_channel",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 80 79 08 00",
+  "match": "0x144036890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144036890",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkVoice_JoinChannel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144036890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144036890.c;xref:0x14305cac1",
+   "notes": "V6409 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

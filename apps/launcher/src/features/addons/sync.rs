@@ -4,9 +4,9 @@ use crate::shell::Shell;
 use gpui_kit::*;
 use std::collections::{HashMap, HashSet};
 use std::time::{Duration, UNIX_EPOCH};
-use swofty_core::conflicts::{self};
-use swofty_core::folders::Entry;
 use swofty_core::manifest::MANIFEST_FILE;
+use swofty_core::profile::conflicts::{self};
+use swofty_core::profile::folders::Entry;
 
 impl Shell {
     pub(super) fn addon_on(&self, m: &AddonItem) -> bool {
@@ -14,7 +14,7 @@ impl Shell {
     }
 
     pub(super) fn update_ready(&self, m: &AddonItem) -> bool {
-        (m.manifest.id == swofty_core::managed::ID && self.updates.plan().addon.is_some())
+        (m.manifest.id == swofty_core::updates::managed::ID && self.updates.plan().addon.is_some())
             || self.catalog_update(&m.manifest.id).is_some()
     }
 
@@ -72,7 +72,7 @@ impl Shell {
         let last = (!self.vanilla())
             .then(|| conflicts::last(&self.store, &profile))
             .flatten();
-        let game = self.panel_install().map(|i| i.dir);
+        let game = self.game.panel_install().map(|i| i.dir);
         let registry = swofty_core::stdlib::reports::Conflicts::read(&self.store.root, game.as_deref());
         let room = swofty_core::stdlib::reports::Room::read(&self.store.root, game.as_deref());
         self.addons.status = swofty_core::stdlib::reports::status_lines(registry.as_ref(), room.as_ref());
@@ -96,10 +96,10 @@ impl Shell {
         query: &mut String,
         cx: &mut Context<Self>,
     ) -> Option<(String, f32)> {
-        let (id, at) = self.highlight.clone()?;
+        let (id, at) = self.navigation.highlight.clone()?;
         let t = at.elapsed();
         if t >= FADE {
-            self.highlight = None;
+            self.navigation.highlight = None;
             return None;
         }
         if self.addons.seen != Some(at) {
@@ -107,7 +107,7 @@ impl Shell {
             if let Some(hidden) = item.map(|m| !self.passes(m, query, None)) {
                 self.addons.seen = Some(at);
                 self.addons.scroll_pending = true;
-                self.open_addon = Some(id.clone());
+                self.navigation.open_addon = Some(id.clone());
                 if let Some(key) = self
                     .library
                     .place(&id)
@@ -142,9 +142,13 @@ impl Shell {
                 cx.background_executor().timer(Duration::from_millis(33)).await;
                 let done = this
                     .update(cx, |s, cx| {
-                        let done = s.highlight.as_ref().is_none_or(|(_, at)| at.elapsed() >= FADE);
+                        let done = s
+                            .navigation
+                            .highlight
+                            .as_ref()
+                            .is_none_or(|(_, at)| at.elapsed() >= FADE);
                         if done {
-                            s.highlight = None;
+                            s.navigation.highlight = None;
                             s.addons.animating = false;
                         }
                         cx.notify();

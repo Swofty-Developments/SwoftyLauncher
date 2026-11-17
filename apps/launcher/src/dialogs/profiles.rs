@@ -136,7 +136,7 @@ impl Shell {
     }
 
     pub(crate) fn game_busy(&self) -> bool {
-        !self.processes.is_empty() || self.launch.is_some()
+        !self.game.processes.is_empty() || self.launching.launch.is_some()
     }
 
     pub(crate) fn confirm_delete_profile(&mut self, name: &str, window: &mut Window, cx: &mut Context<Self>) {

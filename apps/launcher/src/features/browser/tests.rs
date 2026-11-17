@@ -316,7 +316,7 @@ fn a_listed_track_that_is_not_installed_offers_its_download() {
 #[test]
 fn a_byline_names_the_author_and_the_addon_when_that_tells_tracks_apart() {
     use super::tracks::byline_text;
-    use swofty_core::timetrial::boards::Byline;
+    use swofty_core::online::timetrial::boards::Byline;
     let byline = |author: Option<&str>, addon: Option<&str>| Byline {
         author: author.map(str::to_owned),
         addon: addon.map(str::to_owned),

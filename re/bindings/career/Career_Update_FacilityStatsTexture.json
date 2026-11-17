@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Update_FacilityStatsTexture",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419bbfa0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void f(void *view)",
+  "evidence": "decomp:re/decomp/1419bbfa0.c;xref:0x1419a115e;xref:0x1419a1375;xref:0x1419a1585",
+  "notes": "myteam-g1: Updates facility_stats_texture and workforce_cap display values (many packed texture/colour slots)."
+ },
+ "signature": {
+  "id": "career.update_facility_stats_texture",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 89 CE C5 C8 57 F6",
+  "match": "0x1419bbfa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419bbfa0",
+  "kind": "func_start",
+  "names": [
+   "Career_Update_FacilityStatsTexture"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1419bbfa0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1419bbfa0.c;xref:0x1419a115e",
+   "notes": "V9899 broad outcome/reward card binder (header, subtitle, rewards, part_reward, currency_reward, loyalty_reward, workforce_cap, facility_stats_texture); workforce_cap/facility texture only a part"
+  }
+ ],
+ "proofs": []
+}

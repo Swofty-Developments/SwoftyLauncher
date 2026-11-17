@@ -3,18 +3,18 @@ use super::needs::{Need, NeedKind};
 use super::row::{experimental_labels, fallback_icon};
 use crate::services::library::{AddonItem, Changes, Source, Type};
 use crate::shell::Shell;
-use crate::shell::pages::{addon_icon, chevron, fact, label, logo, tag};
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::{Palette, ScrollArea};
+use crate::ui::{addon_icon, chevron, fact, label, logo, tag};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::folders::{self};
 use swofty_core::manifest::{AddonManifest, Category};
 use swofty_core::profile::VANILLA;
+use swofty_core::profile::folders::{self};
 use swofty_i18n::{tr, trf};
 
 /// The value of the Source code row: a link to the addon's source, or a note that it names none.
@@ -63,7 +63,7 @@ impl Shell {
                 .icon(IconName::X)
                 .tooltip(tr("Close"))
                 .on_click(cx.listener(|this, _, _, cx| {
-                    this.open_addon = None;
+                    this.navigation.open_addon = None;
                     cx.notify();
                 }))
         });
@@ -241,7 +241,7 @@ impl Shell {
             .when(!man.experimental_features.is_empty(), |d| {
                 d.child(fact(
                     tr("In game"),
-                    swofty_core::overlay_guard::effects(man).join(", "),
+                    swofty_core::diagnostics::overlay_guard::effects(man).join(", "),
                     p,
                 ))
                 .child(fact(tr("Experimental features"), experimental_labels(m), p))
@@ -432,7 +432,7 @@ impl Shell {
             })
             .collect::<Vec<_>>()
             .join(", ");
-        match self.install.as_ref().and_then(|i| i.build_id) {
+        match self.game.install.as_ref().and_then(|i| i.build_id) {
             _ if man.compat.game_builds.is_empty() => (tr("Works with any game version").to_owned(), p.text),
             Some(b) if man.compat.accepts_build(b) => {
                 (tr("Works with this game version").to_owned(), p.success)

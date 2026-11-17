@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqAdvanceItem_ReleaseNodes_383760",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142383760",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void *vm)",
+  "evidence": "decomp:re/decomp/142383760.c;xref:0x1422bcb84;xref:0x1422c24b0;xref:0x142327e6f",
+  "notes": "myteam-g2: Large composite destructor body (about 0xb9 bytes of node holders; nests 1423aaca0) of the Team HQ department event outcome view. Generic cleanup."
+ },
+ "signature": {
+  "id": "vm.team_hq_advance_item_release_nodes_383760",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 48 89 CE 4C 8B B1 C8 05 00 00",
+  "match": "0x142383760",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142383760",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqAdvanceItem_ReleaseNodes_383760"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142383760",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142383760.c",
+   "notes": "V10172 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

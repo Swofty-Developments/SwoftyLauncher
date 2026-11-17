@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DeptEvent_SimulateOutcomeInsert",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cb3ea0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int64_t Career_DeptEvent_SimulateOutcomeInsert(void *mgr, uint32_t *key, int count)",
+  "evidence": "decomp:re/decomp/140cb3ea0.c;xref:0x140cb3a7e;xref:0x140cb6f5e",
+  "notes": "myteam-g2: Reads outcome data for the event (FUN_140d5f490, FUN_140cfb0f0) and inserts new events with Career_DeptEvent_Insert; called by ChooseOutcome and Simulate. Changes the department event queue."
+ },
+ "signature": {
+  "id": "career.dept_event_simulate_outcome_insert",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 0A 00 00 45 89 C4",
+  "match": "0x140cb3ea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cb3ea0",
+  "kind": "func_start",
+  "names": [
+   "Career_DeptEvent_SimulateOutcomeInsert"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140cb3ea0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cb3ea0.c",
+   "notes": "V9516 Calls FUN_140d5f490, FUN_140cfb0f0 and FUN_140cb1370 (KB: Career_DeptEvent_Insert)."
+  }
+ ],
+ "proofs": []
+}

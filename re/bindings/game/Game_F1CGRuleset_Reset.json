@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1CGRuleset_Reset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d2ab80",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=F1CGRuleset::reset; log channel RaceResults: 'F1CGRuleset::reset'"
+ },
+ "signature": {
+  "id": "game.f1_cg_ruleset_reset",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE B8 30 00 00 00 0F 1F 00 0F B6 4C 06 E0 0F B6 54 06 F8 80 E1 01 88 4C 06 D8 80 64 06 E8 FD 80 E2 01 88 54 06 F0 80 24 06 FD 48 83 C0 30 48 3D A0 02 00 00 75 D3 8B 86 B0 02 00 00 89 86 A8 02 00 00 66 C7 86 E8 02 00 00 00 00 0F B6 86 D0 02 00 00 24 01 88 86 C8 02 00 00 80 3D ?? ?? ?? ?? 01 75 51 B8 04 00 00 00 48 8D 0D ?? ?? ?? ?? 66 2E 0F 1F 84 00 00 00 00 00 8B 14 81 85 D2 74 34 81 FA CA 5A 1D 40 74 5A 83 C0 13 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 83 F8 04 75 C5 83 BE 68 03 00 00 01",
+  "match": "0x142d2ab80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d2ab80",
+  "kind": "func_start",
+  "names": [
+   "Game_F1CGRuleset_Reset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d2ab80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d2ab80.c",
+   "notes": "V5379 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

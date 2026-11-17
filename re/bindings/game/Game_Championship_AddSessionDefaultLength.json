@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Championship_AddSessionDefaultLength",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140af90c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140af90c0.c;xref:0x14093183c,0x140af72a6,0x140af902c",
+  "notes": "Championship emplace_back of a championship::Session (vector +0x220/+0x228/+0x230, allocator +0x218, stride 0xa0) from session def param_2: duration = def+0x10 if def+0x14 else minutes table championship+0x4a0.. by sessionId (1 0x4a0, 2 0x4a4, 3 0x4a8, 4 0x4ac, 5 0x4b0, 6 0x4b4, 7 0x4b8, 8 0x4c0, 9 0x4bc, 10 0x4d0, 11 0x4d4, 12 0x4d8, 13 0x4e0, 14 0x4dc) * 60 s. Session layout: +8 sessionId, +0xc ruleset u8, +0x40 results vec, +0x5c/+0x60 = 28, +0x64 duration s (float), +0x88 = 1, +0x90 u16 0xff, +0x94 fraction of laps completed, +0x98 u8. Addon: per-session-type length table at championship+0x4a0. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2433)"
+ },
+ "signature": {
+  "id": "game.championship_add_session_default_length",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 C5 F8 29 74 24 20 48 89 D6 48 89 CF 48 8B 02 0F",
+  "match": "0x140af90c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140af90c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Championship_AddSessionDefaultLength"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_Championship_AddSessionDefaultLength",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140af90c0.c;xref:0x140af90c0",
+   "notes": "V2433 Role, offsets and calls checked against decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

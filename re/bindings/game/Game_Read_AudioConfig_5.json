@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_AudioConfig_5",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1443f19f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: audio.emitter.%02I64u, audio.event.%02I64u, audio.isMusicEmitter, audio.playOutsideTrack, audio.podium.emitter.%02I64u, audio.stopEvent.%02I64u'"
+ },
+ "signature": {
+  "id": "game.read_audio_config_5",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 48 89 D7 48 89 4C 24 20 48 8B 59 10",
+  "match": "0x1443f19f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443f19f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_AudioConfig_5"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1443f19f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1443f19f0.c",
+   "notes": "V6600 better name Game_Audio_ResolveStopEventEmitterKeys: no Ne_Get_Setting: Wwise id resolution for event/stopEvent/emitter/music flags (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1443f19f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1443f19f0.c",
+   "notes": "V7211 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

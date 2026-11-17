@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Career_Load_RnDTweakables",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14353cea0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Load_RnDTweakables(longlong self, void *team_ctx)",
+  "evidence": "decomp:re/decomp/14353cea0.c;xref:0x140603984,0x141246056,0x1458477f8;kb:subsystems/career.md#tweakables",
+  "notes": "loads the R&D tweakables table into RnDDepartmentConfig [self+0x68]: AI recommended_upgrade pick/adapt percentages, cancelling_*.refund_percentage, development_delay thresholds/days + cash penalty, target/difficulty mass adjustment. Vtable slot 0x1458477f8."
+ },
+ "signature": {
+  "id": "career.load_rnd_tweakables",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 60 05 00 00 C5 F8 29 B4 24 50 05 00 00",
+  "match": "0x14353cea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14353cea0",
+  "kind": "func_start",
+  "names": [
+   "Career_Load_RnDTweakables"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "career-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSessionSearcherF1OS_OnSessionBrowserResults",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14408b390",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetSessionAttribsContainerF1OS_FillFromAdvertisedSessionData;xref:0x14408bb0b;decomp:re/decomp/14408b390.c",
+  "notes": "cxx=neon::NeNetSessionAttribsContainerF1OS::fillFromAdvertisedSessionData; named in bulk from a pretty-function or log string that may belong to an inlined callee cb3-verify-b (disagree with old name): searcher method (this, int*); state +0x58 moves to 3 or 4 (inlined changeState log); fillFromAdvertisedSessionData is only a failure log inside"
+ },
+ "signature": {
+  "id": "core.net_session_attribs_container_f1_o_s_fill_from_advertised_session_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 04 00 00 C5 F8 29 B4 24 60 04 00 00 83 79 58 02",
+  "match": "0x14408b390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14408b390",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSessionSearcherF1OS_OnSessionBrowserResults"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x14408b390",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14408b390.c",
+   "notes": "V4103 searcher callback; state +0x58 set per claim; not re-read in depth (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

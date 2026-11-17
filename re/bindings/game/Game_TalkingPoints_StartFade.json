@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TalkingPoints_StartFade",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140acb490",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-TalkingPoints",
+  "notes": "named from its log messages (channel TalkingPoints): '[FADE][START]: Starting fade to black'"
+ },
+ "signature": {
+  "id": "game.talking_points_start_fade",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 79 7F A4 24 A0 00 00 00",
+  "match": "0x140acb490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140acb490",
+  "kind": "func_start",
+  "names": [
+   "Game_TalkingPoints_StartFade"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140acb490",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140acb490.c",
+   "notes": "V4408 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

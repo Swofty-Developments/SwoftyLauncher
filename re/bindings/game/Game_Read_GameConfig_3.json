@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_GameConfig_3",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141b19e80",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Game.F1World.ForceFanzoneChoices, Game.F1World.SkipFanzoneChoices, Testing.EnableSmokeTest'"
+ },
+ "signature": {
+  "id": "game.read_game_config_3",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 80 B9 CE 16 00 00 00",
+  "match": "0x141b19e80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141b19e80",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_GameConfig_3"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141b19e80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141b19e80.c;xref:0x1498d39ee",
+   "notes": "V4936 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

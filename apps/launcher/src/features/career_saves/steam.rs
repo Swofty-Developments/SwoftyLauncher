@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
-use swofty_core::launcher_saves;
-use swofty_core::vault::Location;
+use swofty_core::saves::launcher as launcher_saves;
+use swofty_core::saves::vault::Location;
 
 pub(crate) fn awaiting_import(vanilla: bool, has_save: bool, steam_has_save: bool) -> bool {
     !vanilla && !has_save && steam_has_save

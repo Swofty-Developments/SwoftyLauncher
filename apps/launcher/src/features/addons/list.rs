@@ -2,17 +2,17 @@ use super::drag::{Dragged, drop_mark};
 use super::model::{AddonListItem, anchor};
 use crate::services::library::AddonItem;
 use crate::shell::Shell;
-use crate::shell::pages::{badge, label};
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::{Palette, palette};
+use crate::ui::{badge, label};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::collections::HashMap;
-use swofty_core::folders::{Entry, Key};
 use swofty_core::profile::VANILLA;
+use swofty_core::profile::folders::{Entry, Key};
 use swofty_i18n::{tr, trf};
 
 impl Shell {
@@ -169,7 +169,7 @@ impl Shell {
                     at,
                     nested,
                 });
-                if !split && self.open_addon.as_deref() == Some(id) {
+                if !split && self.navigation.open_addon.as_deref() == Some(id) {
                     children.push(AddonListItem::Detail(id.to_owned()));
                 }
             };

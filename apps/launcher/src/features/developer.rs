@@ -12,8 +12,8 @@ use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
-use crate::shell::pages::label;
 use crate::shell::{PlayState, Shell};
+use crate::ui::label;
 use crate::ui::theme::Palette;
 use swofty_i18n::tr;
 
@@ -57,7 +57,7 @@ impl Shell {
             crate::app::app_log::action("save settings").failed(&e);
             window.notify(Notification::error(e.to_string()), cx);
         }
-        self.developer_mode = config.developer;
+        self.prefs.developer_mode = config.developer;
         cx.notify();
     }
 
@@ -126,7 +126,7 @@ impl Shell {
     }
 
     pub(crate) fn developer_section(&mut self, p: Palette, cx: &mut Context<Self>) -> Option<AnyElement> {
-        if !self.developer_mode {
+        if !self.prefs.developer_mode {
             return None;
         }
         let running = self.developer.running;

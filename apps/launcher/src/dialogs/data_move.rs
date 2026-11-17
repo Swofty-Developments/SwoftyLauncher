@@ -12,8 +12,8 @@ use crate::ui::scale::{Hit, px};
 use gpui_kit::component::button::Button;
 use gpui_kit::component::{WindowExt, h_flex, v_flex};
 use gpui_kit::*;
-use swofty_core::busy::Busy;
-use swofty_core::data_move::{self, Location, Moved, Ops, Plan};
+use swofty_core::data::relocate::{self as data_move, Location, Moved, Ops, Plan};
+use swofty_core::game_folder::busy::Busy;
 use swofty_core::launcher::Progress;
 use swofty_i18n::{tr, trf};
 
@@ -73,14 +73,14 @@ fn launch_refusal(state: &PlayState) -> Option<&'static str> {
 
 impl Shell {
     pub(crate) fn move_refusal(&self) -> Option<String> {
-        if self.moving.is_some() {
+        if self.overlays.moving.is_some() {
             return Some(tr("Your addons and saves are already moving").to_owned());
         }
         let skip_game = cfg!(debug_assertions) && std::env::var_os("SWOFTY_DEBUG_MOVE_TO").is_some();
-        if !skip_game && (!self.processes.is_empty() || swofty_core::process::game_running()) {
+        if !skip_game && (!self.game.processes.is_empty() || swofty_core::platform::process::game_running()) {
             return Some(tr("Close F1 25 before moving your addons and saves").to_owned());
         }
-        if self.build.is_some() || Busy::live(&self.store.root).is_some() {
+        if self.game.build.is_some() || Busy::live(&self.store.root).is_some() {
             return Some(tr("Wait for the build to finish before moving your addons and saves").to_owned());
         }
         if let Some(why) = launch_refusal(&self.play_state()) {
@@ -95,7 +95,7 @@ impl Shell {
     }
 
     pub(crate) fn data_move_locked(&self) -> bool {
-        self.moving.is_some()
+        self.overlays.moving.is_some()
     }
 
     pub(crate) fn open_data_move(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -130,10 +130,11 @@ impl Shell {
     fn plan_data_move(&mut self, picked: PathBuf, window: &mut Window, cx: &mut Context<Self>) {
         let to = data_move::choose(&picked);
         let games: Vec<PathBuf> = self
+            .game
             .copies
             .iter()
             .map(|c| c.dir.clone())
-            .chain(self.install.as_ref().map(|i| i.dir.clone()))
+            .chain(self.game.install.as_ref().map(|i| i.dir.clone()))
             .collect();
         let location = Location::find(install_folder(), games);
         cx.spawn_in(window, async move |this, cx| {
@@ -220,7 +221,7 @@ impl Shell {
             plan.to.display(),
             size(plan.bytes)
         ));
-        self.moving = Some(Moving {
+        self.overlays.moving = Some(Moving {
             plan: plan.clone(),
             feed: feed.clone(),
             cancel: cancel.clone(),
@@ -241,7 +242,10 @@ impl Shell {
                 let live = this
                     .update(cx, |s, cx| {
                         cx.notify();
-                        s.moving.as_ref().is_some_and(|m| m.stage != Stage::Restarting)
+                        s.overlays
+                            .moving
+                            .as_ref()
+                            .is_some_and(|m| m.stage != Stage::Restarting)
                     })
                     .unwrap_or(false);
                 if !live {
@@ -262,14 +266,14 @@ impl Shell {
         match result {
             Ok(moved) => {
                 crate::app::app_log::note(&format!("data move: copied, restarting ({:?})", moved.method));
-                if let Some(m) = &mut self.moving {
+                if let Some(m) = &mut self.overlays.moving {
                     m.stage = Stage::Restarting;
                 }
                 cx.notify();
                 self.relaunch_for_move(window, cx);
             }
             Err(e) => {
-                self.moving = None;
+                self.overlays.moving = None;
                 cx.notify();
                 self.data_move_failed(&e.to_string(), window, cx);
             }
@@ -281,7 +285,7 @@ impl Shell {
         match started {
             Ok(_) => cx.quit(),
             Err(e) => {
-                self.moving = None;
+                self.overlays.moving = None;
                 cx.notify();
                 self.data_move_failed(
                     &trf!(
@@ -296,7 +300,12 @@ impl Shell {
     }
 
     fn cancel_data_move(&mut self, cx: &mut Context<Self>) {
-        if let Some(m) = self.moving.as_mut().filter(|m| m.stage == Stage::Copying) {
+        if let Some(m) = self
+            .overlays
+            .moving
+            .as_mut()
+            .filter(|m| m.stage == Stage::Copying)
+        {
             m.cancel.store(true, Ordering::Relaxed);
             m.stage = Stage::Cancelling;
             cx.notify();
@@ -304,7 +313,7 @@ impl Shell {
     }
 
     pub(crate) fn data_move_overlay(&self, p: Palette, cx: &mut Context<Self>) -> Option<impl IntoElement> {
-        let m = self.moving.as_ref()?;
+        let m = self.overlays.moving.as_ref()?;
         let (done, file) = m.feed.lock().map(|f| f.clone()).unwrap_or_default();
         let overlay = LockPanel::new(tr("Moving your addons and saves")).detail(trf!(
             "{from} to {to}",

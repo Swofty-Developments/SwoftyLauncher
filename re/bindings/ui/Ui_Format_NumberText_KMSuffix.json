@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Format_NumberText_KMSuffix",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441ec540",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Format_NumberText_KMSuffix(void *fmt, void *out, uint32_t value, char sign_flag, char plus_flag, uint8_t decimals, void *loc)",
+  "evidence": "decomp:re/decomp/1441ec540.c;xref:0x140ba55ae;xref:0x140ba5f72;xref:0x1415804f8",
+  "notes": "myteam-g2: Builds a localised number string with Ne_Format_String / Ne_Crt_Snprintf: thousands separators, k/M suffix for values >= 1000, optional sign prefix. Used for upgrade cost / workforce / renown numbers in My Team UI; display only."
+ },
+ "signature": {
+  "id": "ui.format_number_text_kmsuffix",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 C5 F9 29 BC 24 60 01 00 00 C5 F9 29 B4 24 50 01 00 00 44 89 C3 49 89 D5 49 89 CF",
+  "match": "0x1441ec540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441ec540",
+  "kind": "func_start",
+  "names": [
+   "Ui_Format_NumberText_KMSuffix"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x1441ec540",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441ec540.c;xref:0x140ba55ae",
+   "notes": "V10348 Unsigned variant with <1000 branch and suffix formatting, same helper set."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineContractNegotiationsV_IsOtherPlayersContractEndingThi",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ffca90",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name isOtherPlayersContractEndingThisSeason (class from the log channel); log channel ONLINE_CONTRACT_NEGOTIATIONS/V: 'isOtherPlayersContractEndingThisSeason() - %s'"
+ },
+ "signature": {
+  "id": "game.online_contract_negotiations_v_is_other_players_contract_ending_thi",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 98 00 00 00 48 89 D7 48 89 CE 48 8B 89 70 02 00 00",
+  "match": "0x140ffca90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ffca90",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineContractNegotiationsV_IsOtherPlayersContractEndingThi"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x140ffca90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ffca90.c;xref:0x140ffc9c6",
+   "notes": "V4531 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

@@ -39,9 +39,10 @@ constexpr const char *STEP = "site_Game_GarageSetups_EntryStep";
 constexpr const char *NOT_FOUND = "site_Game_GarageSetups_NotFound";
 
 namespace gs = runtime::garage_setup;
+namespace guards = swofty_core::guards;
 
 uintptr_t not_found = 0;
-std::atomic<int> skipped{0};
+guards::LogFirst<gs::LOG_FIRST> skipped{"skips"};
 
 bool read_memory(uint64_t address, void *out, size_t n, void *)
 {
@@ -61,14 +62,11 @@ void entry_step(SwoftyContext *c)
     if (usable)
         return;
     c->rip = not_found;
-    int n = ++skipped;
-    if (n > gs::LOG_FIRST)
+    auto line = skipped.note();
+    if (!line)
         return;
-    swofty::log("[garage] a setup names an owner that is not in the garage list, so its row has no owner name%s",
-                n == gs::LOG_FIRST ? " (further skips are not logged)" : "");
+    swofty::log("[garage] a setup names an owner that is not in the garage list, so its row has no owner name%s", line.tail);
 }
-
-namespace guards = swofty_core::guards;
 
 guards::SiteGuard guard{guards::CoreSetId::garage_setup,
                         {

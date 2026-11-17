@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Gdb_Get_RowByIndex",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445a28f0",
+  "level": "L1",
+  "subsystem": "gamedb",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1445a28f0.c;xref:0x14022af03,0x14022b2fe,0x14022b855,0x14022bda9,0x14022c822,0x14037c489,0x14037cab1,0x14037cf91+828;doc:research/grid24-cap.md#1",
+  "notes": "entrant_%d row access in the entrant-list parser m1-verify: copies a key struct and appends _<index>; no row access | #563 proposed the name Gdb_MakeIndexedKey | myteam-heal 2026-11-13: the built key (row) gets [row+0x200] = -1 (0x1445a2a80) and [row+0x204] = 1 (0x1445a2a8a) for every index: +0x200 is the row count a later Gdb_Init_TableCursor on that key would cache, not the row index. Gdb_Find_RowByLabel's hit returns this key, so a found row also reads -1 at +0x200; only its miss path writes 'Invalid' at +0 and +0x100 (0x1445a2cc5) with +0x204 = 0 (0x1445a2cb1). Launcher 1.9.21's My Team vehicle base guard tested +0x200 < 0 and so skipped every saved My Team car, found or not (silversquared, Sandycoolboi, Happy & Lovely, Kokoslaw2); 1.9.22 still skipped every myteam_mes_ car (JamesF1's myteam_mes_custom_2 with More Engine Suppliers on). A found/missing test is +0x204 (1 found, 0 miss) or the 'Invalid' path."
+ },
+ "signature": {
+  "id": "gamedb.get_row_by_index",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 40 01 00 00 44 89 C3 48 89 D6",
+  "match": "0x1445a28f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445a28f0",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Get_RowByIndex"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

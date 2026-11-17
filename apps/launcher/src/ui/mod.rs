@@ -24,6 +24,7 @@ pub(crate) mod scale;
 pub(crate) mod scroll;
 mod section;
 mod segmented;
+mod step;
 pub(crate) mod theme;
 #[allow(dead_code)]
 pub mod tokens;
@@ -41,3 +42,4 @@ pub(crate) use progress::ProgressBar;
 pub(crate) use row::{Toggle, row, row_head, selectable_row};
 pub(crate) use section::{Field, SectionHead};
 pub(crate) use segmented::Segmented;
+pub(crate) use step::numbered_step;

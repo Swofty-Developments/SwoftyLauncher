@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_EndCommandContext",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a00140",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a00140.c;xref:0x143b5a7f4,0x143b5a6f2",
+  "notes": "Ends recording on a Gfx2 context: stores the frame stamp into the native list (+0x4c), resets the slot-cache arrays at ctx+0x1724..0x1814 to 0xFF, clears the TLS current-context (TlsSetValue(index, 0)) and updates the TLS error ring on failure. Pair of Render_Gfx_BeginCommandContext."
+ },
+ "signature": {
+  "id": "render.gfx_end_command_context",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8B 05 ?? ?? ?? ?? 8B 80 38",
+  "match": "0x143a00140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a00140",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_EndCommandContext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143a00140",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a00140.c;xref:0x143b5a6f2",
+   "notes": "V8510 frame stamp +0x4c, 0xFF fill ctx+0x1724..0x1814, TlsSetValue(index,0); pair of Begin"
+  }
+ ],
+ "proofs": []
+}

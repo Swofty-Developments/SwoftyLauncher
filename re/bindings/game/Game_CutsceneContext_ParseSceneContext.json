@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutsceneContext_ParseSceneContext",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14023b9a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14023b9a0.c;xref:0x14023aaa9,0x14023ce03",
+  "notes": "Parses a SceneContext block (until EndSceneContext): driverStatId, teamStatId, vehicleStatId, driverCustomisationStatId, vehicleSpecStatId, vehicleCustomisationStatId, badgeStatId, seasonString, editorOnly, ignoreTeamData; logs Driver/Team/Vehicle/Misc context (CUTSCENE_CONTEXT). Called from 0x14023c600. Addon: force driver/team/vehicle ids shown in a cutscene. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3114)"
+ },
+ "signature": {
+  "id": "game.cutscene_context_parse_scene_context",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 03 00 00 4C",
+  "match": "0x14023b9a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14023b9a0",
+  "kind": "func_start",
+  "names": [
+   "Game_CutsceneContext_ParseSceneContext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d13-verify",
+   "kind": "func",
+   "item": "Game_CutsceneContext_ParseSceneContext",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14023b9a0.c;xref:0x14023c600",
+   "notes": "V3114 role/offsets/strings confirmed in decomp (INIT pattern calls thunks 140240410/140240700 -> alt copy 147562600 of advanceStartTimeOffset)"
+  }
+ ],
+ "proofs": []
+}

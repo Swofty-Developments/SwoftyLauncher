@@ -542,10 +542,10 @@ int snapshots_report_season(const std::string &caller, int year, int season_inde
     }
     say(m.lines);
     season_start(m);
-    return r == sn::Report::ok        ? SWOFTY_ASSET_OK
-           : r == sn::Report::late    ? SWOFTY_ASSET_LATE
-           : r == sn::Report::refused ? SWOFTY_REFUSED
-                                      : SWOFTY_ASSET_INVALID;
+    return r == sn::Report::ok        ? int(SWOFTY_ASSET_OK)
+           : r == sn::Report::late    ? int(SWOFTY_ASSET_LATE)
+           : r == sn::Report::refused ? int(SWOFTY_REFUSED)
+                                      : int(SWOFTY_ASSET_INVALID);
 }
 
 }

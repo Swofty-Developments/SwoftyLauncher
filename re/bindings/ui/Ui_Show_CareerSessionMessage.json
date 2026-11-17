@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Show_CareerSessionMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430b00a0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Show_CareerSessionMessage(void *self, void *msg, void *listener)",
+  "evidence": "decomp:re/decomp/1430b00a0.c;xref:0x1430ad6bf;xref:0x1430ae8a2;xref:0x1430aeb3b",
+  "notes": "myteam-g2: Registers a listener handle (Ne_ListenerHandle_Assign / Unregister) and displays a session message (Game_UiMessage_DisplayMessage). UI wrapper used on career session request / join completed."
+ },
+ "signature": {
+  "id": "ui.show_career_session_message",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC D8 00 00 00 4C 89 C7 48 89 D3",
+  "match": "0x1430b00a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430b00a0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Show_CareerSessionMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x1430b00a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430b00a0.c;xref:0x1430ad6bf",
+   "notes": "V10260 Builds 128-byte message buffer, calls DisplayMessage then ListenerHandle_Assign and Unregister on handle at +0x388; no strings to confirm the session-request/join usage."
+  }
+ ],
+ "proofs": []
+}

@@ -1,12 +1,12 @@
 use std::path::Path;
 
 use swofty_core::install::Game;
-use swofty_core::launcher_saves;
 use swofty_core::profile::VANILLA;
+use swofty_core::saves::launcher as launcher_saves;
+use swofty_core::saves::vault::career_names;
+use swofty_core::saves::vault::careers::{self};
+use swofty_core::saves::vault::{self, Location, Vault};
 use swofty_core::store::Store;
-use swofty_core::vault::career_names;
-use swofty_core::vault::careers::{self};
-use swofty_core::vault::{self, Location, Vault};
 use swofty_i18n::tr;
 
 use super::detail::{DETAILS, details, saves_print};
@@ -114,10 +114,11 @@ pub(super) fn build_saves_untimed(
         launcher_saves::import_pending(&root),
     ) && launcher_saves::steam_save_pending(&root, &name);
     let steam_running = steam.as_ref().is_some_and(|_| {
-        swofty_core::steam_client::status().state != swofty_core::steam_client::State::Stopped
+        swofty_core::platform::steam::client::status().state
+            != swofty_core::platform::steam::client::State::Stopped
     });
     let steam_warning = store.profile(&name).is_ok_and(|p| {
-        swofty_core::vault::guard::steam_save_warning(
+        swofty_core::saves::vault::guard::steam_save_warning(
             vanilla,
             p.launcher_saves,
             &careers::addon_careers(

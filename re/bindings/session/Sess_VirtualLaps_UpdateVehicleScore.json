@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_VirtualLaps_UpdateVehicleScore",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143196600",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143196600.c;xref:0x142d446f0,0x142d45070",
+  "notes": "(ruleset, byte carIdx, int points, float time, char ?): authority check (local machine owns car), finds/creates score entry (+0x48 map, +0x60 entries 0x20 bytes) and adds points/time; logs 'Update score vehicle %d score (pointsToAdd=%d, timeToAdd=%.3f, lastUpdate=%s)' / 'Sending local vehicle %d score'. Callers: Sess_VirtualLapsRuleset_FinaliseResults, Sess_VirtualLapsRuleset_ForceFinishAll."
+ },
+ "signature": {
+  "id": "session.virtual_laps_update_vehicle_score",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 C5",
+  "match": "0x143196600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143196600",
+  "kind": "func_start",
+  "names": [
+   "Sess_VirtualLaps_UpdateVehicleScore"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x143196600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143196600.c;xref:0x142d44ba5,0x142d45297",
+   "notes": "V3762 Score update with log strings 'Update score vehicle %d score (pointsToAdd=%d, timeToAdd=%.3f, lastUpdate=%s)...' and 'Sending local vehicle %d score'; callers FinaliseResults/ForceFinishAll verified (also BuildOrderLists, RetireVehicle)."
+  }
+ ],
+ "proofs": []
+}

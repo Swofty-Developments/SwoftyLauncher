@@ -11,7 +11,7 @@ use gpui_kit::component::spinner::Spinner;
 use gpui_kit::component::{Disableable, Icon, Sizable, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::send_logs::{self, Bundle, GameInfo, MESSAGE_MAX, Report, Stage};
+use swofty_core::diagnostics::send_logs::{self, Bundle, GameInfo, MESSAGE_MAX, Report, Stage};
 use swofty_core::store::Store;
 
 use crate::services::reveal;
@@ -148,7 +148,7 @@ impl SendLogs {
             name: name.clone(),
             message,
             game: self.game.clone(),
-            room: swofty_core::multiplayer::client::snapshot(),
+            room: swofty_core::online::multiplayer::client::snapshot(),
         };
         let sending = send_logs::available();
         self._work = Some(cx.spawn_in(window, async move |this, cx| {
@@ -434,9 +434,9 @@ impl Render for SendLogs {
 impl Shell {
     pub(crate) fn send_logs(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let game = GameInfo {
-            dir: self.install.as_ref().map(|i| i.dir.clone()),
-            build_id: self.install.as_ref().and_then(|i| i.build_id),
-            version: self.install.as_ref().and_then(|i| i.exe_version.clone()),
+            dir: self.game.install.as_ref().map(|i| i.dir.clone()),
+            build_id: self.game.install.as_ref().and_then(|i| i.build_id),
+            version: self.game.install.as_ref().and_then(|i| i.exe_version.clone()),
         };
         let store = self.store.clone();
         let form = cx.new(|cx| SendLogs::new(store, game, window, cx));

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_FindVehicleIndex",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144704a40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144704a40.c;xref:0x143b59e85,0x14463ce28",
+  "notes": "Under CS this+0x24768, searches vehicle effect slots this+0xd148[i] (i < this+0x5d8) for the vehicle whose id pair [[slot+8]+0x20] equals param_2[0..1]; returns slot index or 0xff with PARTICLES 'Requested vehicle does not exist in the vehicle array'. Callers 0x143b59380 and 0x14463adc0 (car physics/effects setup). Addon: maps a vehicle id to the particle system per-car slot. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2324)"
+ },
+ "signature": {
+  "id": "game.particles_find_vehicle_index",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D3 48 89 CE 48 8B 89 68 47 02 00",
+  "match": "0x144704a40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144704a40",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_FindVehicleIndex"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-b",
+   "kind": "func",
+   "item": "Game_Particles_FindVehicleIndex",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144704a40.c;xref:0x14463adc0",
+   "notes": "V2324 Verified: CS +0x24768, slots +0xd148[i], count +0x5d8, id pair [[slot+8]+0x20], returns 0xff + log if absent."
+  }
+ ],
+ "proofs": []
+}

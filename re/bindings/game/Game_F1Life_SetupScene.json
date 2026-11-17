@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1Life_SetupScene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142542680",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-F1LifeSystem",
+  "notes": "named from its log messages (channel F1LifeSystem): 'Setting up F1LifeScene with context [%s]'"
+ },
+ "signature": {
+  "id": "game.f1_life_setup_scene",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 48 8B 81 88 00 00 00",
+  "match": "0x142542680",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142542680",
+  "kind": "func_start",
+  "names": [
+   "Game_F1Life_SetupScene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142542680",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142542680.c;xref:0x1416e59d7",
+   "notes": "V5098 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

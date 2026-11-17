@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_CarbonDamage_OnSessionRestart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f1b010",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-CARBON_DAMAGE",
+  "notes": "Log channel CARBON_DAMAGE: 'onSessionRestart active=%d isTimeTrial=%d'"
+ },
+ "signature": {
+  "id": "car.carbon_damage_on_session_restart",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B 41 60 48 8B 80 88 00 00 00",
+  "match": "0x142f1b010",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f1b010",
+  "kind": "func_start",
+  "names": [
+   "Car_CarbonDamage_OnSessionRestart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f1b010",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f1b010.c;xref:0x14b8b8c07",
+   "notes": "V5595 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

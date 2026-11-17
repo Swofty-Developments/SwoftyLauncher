@@ -4,6 +4,7 @@
 // already blew up, a season longer than the default event list, and the race weekends read from the career calendar.
 // Built and run by native/test/run_tests.sh track_list_guard.
 
+#include "core/guards/env.hpp"
 #include "core/guards/tracks/track_list_guard_logic.hpp"
 
 #include <cstdio>
@@ -308,8 +309,8 @@ int main()
            "the unguarded line names the counts");
     expect(tl::save_line(0x1234, 24).find("24 calendar events") != std::string::npos, "the save line names the count");
 
-    expect(tl::switch_off("0") && tl::switch_off("off"), "SWOFTY_TRACK_LIST_GUARD=0 or off turns it off");
-    expect(!tl::switch_off("1") && !tl::switch_off("") && !tl::switch_off(nullptr), "anything else leaves it on");
+    expect(swofty_core::guards::switch_off("0") && swofty_core::guards::switch_off("off"), "SWOFTY_TRACK_LIST_GUARD=0 or off turns it off");
+    expect(!swofty_core::guards::switch_off("1") && !swofty_core::guards::switch_off("") && !swofty_core::guards::switch_off(nullptr), "anything else leaves it on");
 
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;

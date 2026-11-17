@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RankedDivision_UpdateSearchAvailability",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141be0e00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141be0e00.c;xref:0x141be0ad3,0x141be11e3",
+  "notes": "Ranked division screen tick: time left in the window (now vs [this+0xda8]+8) < 1800 s sets +0xd19 (closing soon); else compares the session count ([this+0x660]+0x240 vs limit) and, if allowed, sets entry point 3 (0x146066c74), switches game mode (Game_Game_SetCurrentGameMode) and starts the search (0x1430afe20). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2458)"
+ },
+ "signature": {
+  "id": "game.ranked_division_update_search_availability",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 00 01 00 00 C5 F8 29 B4 24 F0 00 00 00 48 8B 99 A8 0D",
+  "match": "0x141be0e00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141be0e00",
+  "kind": "func_start",
+  "names": [
+   "Game_RankedDivision_UpdateSearchAvailability"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_RankedDivision_UpdateSearchAvailability",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141be0e00.c;xref:0x141be0e00",
+   "notes": "V2458 Role, offsets and calls checked against decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

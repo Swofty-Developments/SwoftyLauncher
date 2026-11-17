@@ -1,0 +1,39 @@
+{
+ "schema": 1,
+ "name": "FeFlow_Recalculate_TransitionState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436d1500",
+  "level": "L2",
+  "subsystem": "fe_flow",
+  "proto": "void(longlong state_frontend,longlong request)",
+  "evidence": "decomp:re/decomp/1436d1500.c;xref:0x1436cdac0,0x1436d1430,0x1436d5320",
+  "notes": "cxx=game::StateFrontend::recalculateFrontEndTransitionState; computes the transition contract (main_menu/hopper_lobby/custom_lobby/event_mode/pro_leagues/hopper_select) and writes #ui_menu_data.frontend_transition_state via Vm_Resolve_RegistryNode"
+ },
+ "signature": {
+  "id": "fe_flow.recalc_transition_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC C8 00 00 00 48 89 D3",
+  "match": "0x1436d1500",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436d1500",
+  "kind": "func_start",
+  "names": [
+   "FeFlow_Recalculate_TransitionState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "ui-re"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

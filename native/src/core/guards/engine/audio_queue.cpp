@@ -34,6 +34,7 @@
 namespace {
 
 namespace aq = runtime::audio_queue;
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 
 constexpr const char *MIXIN = "swofty_core.dll (audio queue fix)";
@@ -50,7 +51,7 @@ Request *orig_request;
 uintptr_t queue_addr = 0, lock_addr = 0;
 aq::Workers<THUNKS> workers;
 std::atomic<int> queue_state{0};
-std::atomic<int> logged{0};
+guards::LogFirst<LOG_FIRST> logged{"moves"};
 std::atomic<uint64_t> moved_total{0};
 std::atomic<bool> first{true};
 
@@ -92,13 +93,12 @@ void sweep(const char *where)
     if (!moved)
         return;
     uint64_t total = moved_total.fetch_add(moved) + moved;
-    int n = logged.fetch_add(1) + 1;
-    if (n > LOG_FIRST)
+    auto line = logged.note();
+    if (!line)
         return;
     swofty::log("[audio] queue fix: moved %zu queued worker request(s) from slots 12-23 to slots 0-11 %s (%llu in "
                 "all%s)%s",
-                moved, where, static_cast<unsigned long long>(total), left ? "; more wait for a free slot" : "",
-                n == LOG_FIRST ? " (further moves are not logged)" : "");
+                moved, where, static_cast<unsigned long long>(total), left ? "; more wait for a free slot" : "", line.tail);
 }
 
 template <size_t I> void thunk(uint32_t job_type, uint32_t usec)
@@ -134,13 +134,11 @@ void request(void *worker, uint32_t job_type, uint32_t count)
         swofty::log("[audio] queue fix: first worker request (worker %p, job type %u, %u worker(s)) runs through "
                     "thunk %zu",
                     worker, job_type, count, i);
-    else if (i == THUNKS && logged.fetch_add(1) < LOG_FIRST)
+    else if (i == THUNKS && logged.note())
         swofty::log("[audio] queue fix: no thunk left for worker %p; its requests pass through", worker);
     orig_request(pass, job_type, count);
     sweep("after a request was queued");
 }
-
-namespace guards = swofty_core::guards;
 
 guards::SiteGuard guard{guards::CoreSetId::audio_queue,
                         {

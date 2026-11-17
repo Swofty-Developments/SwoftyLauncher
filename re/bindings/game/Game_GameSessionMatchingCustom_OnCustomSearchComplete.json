@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingCustom_OnCustomSearchComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143076eb0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameSessionMatchingCustom::onCustomSearchComplete; log channel NETWORK-SESSION: 'GameSessionMatchingCustom::onCustomSearchComplete(%s, %d sessions, isFinal=%d)'"
+ },
+ "signature": {
+  "id": "game.game_session_matching_custom_on_custom_search_complete",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 02 00 00 C5 F8 29 B4 24 50 02 00 00 44 89 CF 4C 89 84 24 90 00 00 00",
+  "match": "0x143076eb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143076eb0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingCustom_OnCustomSearchComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143076eb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143076eb0.c;xref:0x143076dba",
+   "notes": "V5590 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

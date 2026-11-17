@@ -4,15 +4,15 @@ use gpui_kit::component::input::Input;
 use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::timetrial::boards::{Group, Row, format_time};
+use swofty_core::online::timetrial::boards::{Group, Row, format_time};
 use swofty_i18n::{tr, trf};
 
 use super::moderation::flag;
 use super::state::{Load, Pick, View};
 use crate::shell::Shell;
-use crate::shell::pages::GUTTER;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::{Palette, ScrollArea};
+use crate::ui::tokens::space::GUTTER;
 use crate::ui::{EmptyState, selectable_row};
 
 const LIST_WIDTH: f32 = 270.;
@@ -34,7 +34,7 @@ impl Shell {
                 this.tt_reload(cx);
                 this.tt_load_runs(cx);
             }));
-        if self.mp.is_none() {
+        if self.account.session.is_none() {
             let header = self.header(
                 tr("Time Trial"),
                 tr("Leaderboards for every track").to_owned(),

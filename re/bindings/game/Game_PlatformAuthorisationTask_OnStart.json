@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PlatformAuthorisationTask_OnStart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14334e4f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14334e4f0.c;xref:0x14583b550",
+  "notes": "PlatformAuthorisationTask (vtable 0x14583b4e0, type name static init 0x143457e55) slot 14 OnStart: allocates a 0x18-byte state holder at +0x120, creates a 0x10e8-byte platform-auth object (ctor 0x14077d910) and starts it (vfunc +8) when a signed-in user exists (g 0x14604c2c8 +0x140 +0x198 +0x1c0); state 2 (immediate) collects the result via 0x143100060 into +0x128/+0x130 and finishes, recording 'Platform Authorisation OK' through the OS_METRICS 'recordInfo %d: %s' channel. No secrets documented. Addon: hook to detect platform authorisation start. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3312)"
+ },
+ "signature": {
+  "id": "game.platform_authorisation_task_on_start",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CE 48 8B 59 08 48 8B 03 BA",
+  "match": "0x14334e4f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14334e4f0",
+  "kind": "func_start",
+  "names": [
+   "Game_PlatformAuthorisationTask_OnStart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_PlatformAuthorisationTask_OnStart",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14334e4f0.c;xref:0x14334e4f0",
+   "notes": "V3312 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

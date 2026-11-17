@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamActivities_FindGroupByFlatIndex",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141973d30",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void* (void *list, void *out_shared, int flat_index)",
+  "evidence": "decomp:re/decomp/141973d30.c;xref:0x14231bc97",
+  "notes": "myteam-g2: Walks the 16-byte shared_ptr children at list+0x130..0x138, accumulates each child integer property (+0x1f0 node int) and returns the first child whose running sum reaches flat_index. Used to map a flat slot index to its activity group."
+ },
+ "signature": {
+  "id": "career.my_team_activities_find_group_by_flat_index",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D6 48 89 CB 48 8B 81 30 01 00 00",
+  "match": "0x141973d30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141973d30",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamActivities_FindGroupByFlatIndex"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141973d30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141973d30.c;xref:0x14231bc97",
+   "notes": "V9845 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

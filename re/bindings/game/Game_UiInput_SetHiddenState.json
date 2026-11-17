@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_UiInput_SetHiddenState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141bf0f40",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141bf0f40.c;xref:0x141c484d6,0x141dafe63",
+  "notes": "(ctx, char *state) For UI node ctx+8 (not the null node 0x146068ab0, flag +0x26 bit0 clear) of the expected type (0x146129dc0): compares its current state char (vcall +0x38) with *state and applies change (0x1442bc5b0 / 0x1442bc390 / 0x1442bc760). Callers Sess_ViewInstantReplay_Update, ViewTerminalReplay, TeamHqLaptopVM, OptionsUI hidden-ignore. Hypothesis: UI layer visibility toggle."
+ },
+ "signature": {
+  "id": "game.ui_input_set_hidden_state",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 89 64 24 40 48 89 D9 E8",
+  "match": "0x141c484d6",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x141bf0f40",
+  "kind": "func_start",
+  "names": [
+   "Game_UiInput_SetHiddenState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x141bf0f40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141bf0f40.c;xref:0x141dafe63,0x142da2c85",
+   "notes": "V3459 node ctx+8, null node 0x146068ab0, flag +0x26 bit0, type check vs 0x146129dc0, state char vcall +0x38 compared with *state, applies 0x1442bc5b0/0x1442bc390/0x1442bc760; callers incl OptionsUI_UIHiddenIgnoreCommand, Sess_ViewInstantReplay_Update; hidden stays hypothesis"
+  }
+ ],
+ "proofs": []
+}

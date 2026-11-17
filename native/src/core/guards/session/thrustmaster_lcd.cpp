@@ -36,25 +36,22 @@ constexpr const char *MIXIN = "swofty_core.dll (thrustmaster lcd guard)";
 constexpr const char *RECORD = "site_Game_ThrustmasterLcd_EntrantRecord";
 constexpr const char *TAIL = "site_Game_ThrustmasterLcd_SectorTail";
 
+namespace guards = swofty_core::guards;
 namespace tl = runtime::thrustmaster_lcd;
 
 uintptr_t sector_tail = 0;
-std::atomic<int> skipped{0};
-tl::Skips skips;
+guards::LogFirst<tl::LOG_FIRST> skipped{"skips"};
 
 void entrant_record(SwoftyContext *c)
 {
     if (!tl::record_missing(c->rax))
         return;
     c->rip = sector_tail;
-    int n = ++skipped;
-    if (!skips.logged(n))
+    auto line = skipped.note();
+    if (!line)
         return;
-    swofty::log("[tmlcd] a sector entrant has no record, so the wheel LCD keeps its last team name%s",
-                skips.last(n) ? " (further skips are not logged)" : "");
+    swofty::log("[tmlcd] a sector entrant has no record, so the wheel LCD keeps its last team name%s", line.tail);
 }
-
-namespace guards = swofty_core::guards;
 
 guards::SiteGuard guard{guards::CoreSetId::thrustmaster_lcd,
                         {

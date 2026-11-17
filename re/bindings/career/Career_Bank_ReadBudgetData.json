@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Bank_ReadBudgetData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c6f9e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t (void *budget, void *json, uint64_t flags)",
+  "evidence": "decomp:re/decomp/140c6f9e0.c;xref:0x140c6d868",
+  "notes": "myteam-g1: Reads the account budget: budget_pools[] (type, cash_in_budget, cap, enforce_cap, ratio) into a hash map at budget+0x18, has_facility_budget (+0x130) and facility_budget (via Career_Bank_ReadFacilityBudget 140c70a70)."
+ },
+ "signature": {
+  "id": "career.bank_read_budget_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 02 00 00 4C 89 C7",
+  "match": "0x140c6f9e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c6f9e0",
+  "kind": "func_start",
+  "names": [
+   "Career_Bank_ReadBudgetData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140c6f9e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c6f9e0.c;str:\"budget_pools\"",
+   "notes": "V9507 Reads budget_pools into map at +0x18, has_facility_budget, and facility_budget via 140c70a70."
+  }
+ ],
+ "proofs": []
+}

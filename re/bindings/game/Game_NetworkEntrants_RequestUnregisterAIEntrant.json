@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_RequestUnregisterAIEntrant",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143115c50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name requestUnregisterAIEntrant (class from the log channel); log channel NETWORK-ENTRANTS: '%s(%s).'"
+ },
+ "signature": {
+  "id": "game.network_entrants_request_unregister_ai_entrant",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC F8 00 00 00 48 89 D7 48 89 CE",
+  "match": "0x143115c50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143115c50",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_RequestUnregisterAIEntrant"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143115c50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143115c50.c;xref:0x141ddb1b6",
+   "notes": "V5800 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

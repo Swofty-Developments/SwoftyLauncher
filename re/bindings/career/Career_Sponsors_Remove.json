@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Career_Sponsors_Remove",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1410f85c0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-SPONSORS",
+  "notes": "named from its log messages (channel SPONSORS): 'Sponsor %s removed with stat id %d  | Active title sponsor removed from Team %s during cleanup, assigning new active title sponsor...' DISPUTE(V9148): This is the CareerSponsorsComponent save-data reader (about 39 field getters: teamData, teamSponsors, goalProgressData, resultsSponsors, sponsorSeenUnlockData...); the Sponsor removed log is only one branch inside it, so Remove is too narrow."
+ },
+ "signature": {
+  "id": "career.sponsors_remove",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 09 00 00 C5 F8 29 B4 24 60 09 00 00 4C 89 44 24 50",
+  "match": "0x1410f85c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1410f85c0",
+  "kind": "func_start",
+  "names": [
+   "Career_Sponsors_Remove"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1410f85c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1410f85c0.c",
+   "notes": "V4586 120KB sponsor save-data (de)serialise (teamSponsors, loyalty, goal progress keys); remove log is one branch; better Career_Sponsors_SerialiseSaveData"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1410f85c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1410f85c0.c",
+   "notes": "V7183 name fits; finding facts hold; vtable/indirect (no direct call)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x1410f85c0",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/1410f85c0.c",
+   "notes": "V9148 This is the CareerSponsorsComponent save-data reader (about 39 field getters: teamData, teamSponsors, goalProgressData, resultsSponsors, sponsorSeenUnlockData...); the Sponsor removed log is only one branch inside it, so Remove is too narrow."
+  }
+ ],
+ "proofs": []
+}

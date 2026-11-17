@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_TelemetryUdp_FlushFormat",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144738050",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144738050.c",
+  "notes": "Second format switch (index 0/1/2 -> prepare + send for 2024/2025/2026), sets per-packet ready flags +0x17158.. . UDP telemetry, format index [[this+0xe0]+0xc] (0 = 2024, 1 = 2025, 2 = 2026) chosen in Game_TelemetryOutputUDPUpdateable_Update 0x1447311a0 and 0x144738050."
+ },
+ "signature": {
+  "id": "game.telemetry_udp_flush_format",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 60 4C 8B B1 E0 00 00 00",
+  "match": "0x144738050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144738050",
+  "kind": "func_start",
+  "names": [
+   "Game_TelemetryUdp_FlushFormat"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x144738050",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144738050.c;xref:0x144738113",
+   "notes": "V6624 format switch (0/1/2 -> prepare+send) and +0x17158=1 correct, but function is larger: also builds the event-code table (SSTA SEND FTLP RTMT DRSE DRSD ... COLL strings); better name Game_TelemetryUdp_FlushAndRegisterEventCodes; no direct caller (vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144738050",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144738050.c",
+   "notes": "V7278 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

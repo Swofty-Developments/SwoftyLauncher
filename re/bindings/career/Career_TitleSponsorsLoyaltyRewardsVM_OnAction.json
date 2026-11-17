@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TitleSponsorsLoyaltyRewardsVM_OnAction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423f2700",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm, void **cmd",
+  "evidence": "decomp:re/decomp/1423f2700.c;xref:0x145787780",
+  "notes": "myteam-g1: Handles to_title_sponsors_loyalty_rewards navigation and builds the loyalty rewards list."
+ },
+ "signature": {
+  "id": "career.title_sponsors_loyalty_rewards_vm_on_action",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 02 00 00 C5 F8 29 B4 24 10 02 00 00 48 89 CE 48 8B 02",
+  "match": "0x1423f2700",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423f2700",
+  "kind": "func_start",
+  "names": [
+   "Career_TitleSponsorsLoyaltyRewardsVM_OnAction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423f2700",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423f2700.c",
+   "notes": "V10202 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

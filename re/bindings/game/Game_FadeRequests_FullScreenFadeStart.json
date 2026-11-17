@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FadeRequests_FullScreenFadeStart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141e72110",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-FADE_REQUESTS",
+  "notes": "named from its log messages (channel FADE_REQUESTS): 'Full Screen Fade start'"
+ },
+ "signature": {
+  "id": "game.fade_requests_full_screen_fade_start",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 28 01 00 00 48 89 CE 48 C7 84 24 E0 00 00 00 00 00 00 00",
+  "match": "0x141e72110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141e72110",
+  "kind": "func_start",
+  "names": [
+   "Game_FadeRequests_FullScreenFadeStart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141e72110",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141e72110.c",
+   "notes": "V5228 name/cxx or log string and body match; body size consistent with name (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

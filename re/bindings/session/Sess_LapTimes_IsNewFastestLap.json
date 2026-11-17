@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_LapTimes_IsNewFastestLap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f2e520",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f2e520.c;xref:0x142f2d8cc,0x142f2e7a4",
+  "notes": "Lap-time table (this+0x58 per car, 200 laps x 200 bytes, XOR-protected floats): finds the best valid lap of reference car param_3 (sort 0x14098cb70) and returns true when car param_2 current lap (+0x38) is faster or no reference exists; also true when param_2 is the current fastest car (+0xb8). Callers: Sess_LapTimes_OnNewSector, Sess_LapTimes_OnLapReceived, Game_Network_VirtualSessionEntrantEntrant."
+ },
+ "signature": {
+  "id": "session.lap_times_is_new_fastest_lap",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 81 EC 88 06 00 00 C5 F9 7F B4 24",
+  "match": "0x142f2e520",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f2e520",
+  "kind": "func_start",
+  "names": [
+   "Sess_LapTimes_IsNewFastestLap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142f2e520",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f2e520.c;xref:0x142f2d8cc,0x142f2e7a4,0x142f3268c",
+   "notes": "V3722 40000 bytes = 200 laps x 200, XOR-ed floats (+0xe8^+0xf0), sort 14098cb70, +0x38 current lap, +0xb8 fastest car check."
+  }
+ ],
+ "proofs": []
+}

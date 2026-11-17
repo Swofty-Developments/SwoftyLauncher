@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTransport_ConnectionIdNowFree",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14405b7b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-TRANSPORT",
+  "notes": "named from its log messages (channel NETWORK-TRANSPORT): 'connection id [%02d] is now free.'"
+ },
+ "signature": {
+  "id": "game.network_transport_connection_id_now_free",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 80 00 00 00 48 89 D6 48 89 CB",
+  "match": "0x14405b7b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14405b7b0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTransport_ConnectionIdNowFree"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14405b7b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14405b7b0.c;xref:0x14405bc5b",
+   "notes": "V6488 partial: better name Game_NetworkTransport_RemoveConnectionFromStore; removeConnectionFromStore/freeConnectionID, free log is one part"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14405b7b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14405b7b0.c;xref:0x14405bc5b",
+   "notes": "V7132 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

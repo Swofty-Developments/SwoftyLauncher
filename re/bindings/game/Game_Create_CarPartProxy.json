@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Create_CarPartProxy",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144636150",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144636150.c;xref:0x144635411",
+  "notes": "builds <model>&<part>?model and ?render resource names and creates a part proxy; failure logs ERROR CreateCarPartProxy failed for %s and returns 0"
+ },
+ "signature": {
+  "id": "game.create_car_part_proxy",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 4C 89 C7 48 89 D3 48 89 CE",
+  "match": "0x144636150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144636150",
+  "kind": "func_start",
+  "names": [
+   "Game_Create_CarPartProxy"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144636150",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144636150.c;xref:0x144635410",
+   "notes": "V6714 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

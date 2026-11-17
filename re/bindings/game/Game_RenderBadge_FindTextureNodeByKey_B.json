@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_RenderBadge_FindTextureNodeByKey_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140feee70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140feee70.c;xref:0x140feeb4a,0x1416e5703",
+  "notes": "Clone of 0x140feecc0 for another map member. Callers Game_RenderBadgeViewModel_InitJob/SetTexture."
+ },
+ "signature": {
+  "id": "game.render_badge_find_texture_node_by_key_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 40 18 89 84 24 28 01 00 00 48",
+  "match": "0x140feeb4a",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140feee70",
+  "kind": "func_start",
+  "names": [
+   "Game_RenderBadge_FindTextureNodeByKey_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x140feee70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140feee70.c;xref:0x140feeb4a",
+   "notes": "V8071 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

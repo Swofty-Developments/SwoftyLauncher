@@ -98,7 +98,7 @@ impl Shell {
                     if let Some(list) = list {
                         s.show_tasks(&control, list, cx);
                     }
-                    s.busy.contains(&control)
+                    s.addon_views.busy.contains(&control)
                 });
                 if !matches!(running, Ok(true)) {
                     break;
@@ -109,7 +109,7 @@ impl Shell {
     }
 
     fn show_tasks(&mut self, control: &str, list: TaskList, cx: &mut Context<Self>) {
-        let d = match &mut self.tasks {
+        let d = match &mut self.overlays.tasks {
             Some(d) if d.control == control && d.outcome.is_none() => d,
             Some(d) if d.outcome.is_none() => return,
             slot => slot.insert(TaskDialog {
@@ -141,6 +141,7 @@ impl Shell {
             self.show_tasks(control, list, cx);
         }
         let Some(dialog) = self
+            .overlays
             .tasks
             .as_mut()
             .filter(|d| d.control == control && d.outcome.is_none())
@@ -175,7 +176,7 @@ impl Shell {
         window: &Window,
         cx: &mut Context<Self>,
     ) -> Option<AnyElement> {
-        let d = self.tasks.as_ref()?;
+        let d = self.overlays.tasks.as_ref()?;
         let viewport = window.viewport_size();
         let width = (f32::from(viewport.width) - 32.).min(560.);
         let list_max = (f32::from(viewport.height) - 380.).clamp(132., 480.);
@@ -326,7 +327,7 @@ impl Shell {
                     .label("Close")
                     .disabled(running)
                     .on_click(cx.listener(|s, _, _, cx| {
-                        s.tasks = None;
+                        s.overlays.tasks = None;
                         cx.notify();
                     })),
             );

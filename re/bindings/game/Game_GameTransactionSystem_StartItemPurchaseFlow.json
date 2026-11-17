@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameTransactionSystem_StartItemPurchaseFlow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e65060",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_GameTransactionSystem_StartItemPurchaseFlow;xref:0x142e650e0",
+  "notes": "cxx=game::GameTransactionSystem::startItemPurchaseFlow; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.game_transaction_system_start_item_purchase_flow",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC F0 00 00 00 44 89 C6 48 89 D3",
+  "match": "0x142e65060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e65060",
+  "kind": "func_start",
+  "names": [
+   "Game_GameTransactionSystem_StartItemPurchaseFlow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e65060",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e65060.c;xref:0x1419fc4bd",
+   "notes": "V5492 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

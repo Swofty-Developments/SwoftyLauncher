@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_PitLane_VehicleExiting",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434bf980",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434bf980.c;xref:0x142f73540,0x1434bcf85,0x1434cb804,0x1434cb81f,0x1434cb832",
+  "notes": "Log channel PITLANE: 'PitLaneSystem::vehicleExitingPitLane(%d:%s)' L2 2026-11-14 (engine-re round 2): decomp read; 5 reference(s) (0x142f73540, 0x1434bcf85, 0x1434cb804, 0x1434cb81f, 0x1434cb832); the body itself references 'PITLANE' / 'PitLaneSystem::vehicleExitingPitLane(%d:%s)'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pit_lane_vehicle_exiting",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 89 D3 48 89 CE 48 8B 81 70 02 00 00",
+  "match": "0x1434bf980",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434bf980",
+  "kind": "func_start",
+  "names": [
+   "Game_PitLane_VehicleExiting"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1434bf980",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434bf980.c;xref:0x142f73541",
+   "notes": "V6020 name and description match body; log string/pretty name present"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1434bf980",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434bf980-0x1434bfbfe;xref:0x142f73540,0x1434bcf85,0x1434cb804,0x1434cb81f,0x1434cb832",
+   "notes": "V10505 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Refs: call 0x142f73540, call 0x1434bcf85, jcc 0x1434cb804, jmps 0x1434cb81f/0x1434cb832. PitLaneSystem::vehicleExitingPitLane(%d:%s). 2 args."
+  }
+ ],
+ "proofs": []
+}

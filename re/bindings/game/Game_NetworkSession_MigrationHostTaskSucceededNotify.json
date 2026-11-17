@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkSession_MigrationHostTaskSucceededNotify",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144065920",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-SESSION",
+  "notes": "named from its log messages (channel NETWORK-SESSION): '%s: migration host task succeeded, notify peers about the migration result'"
+ },
+ "signature": {
+  "id": "game.network_session_migration_host_task_succeeded_notify",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 C5 F8 29 74 24 20 C5 F8 28 F1 48 89 CE 48 8B 89 68 07 00 00",
+  "match": "0x144065920",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144065920",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkSession_MigrationHostTaskSucceededNotify"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144065920",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144065920.c;xref:0x1430e4f06",
+   "notes": "V6491 partial: better name Game_NetworkSession_UpdateMigrationHostTask; handles both success and failed host-task outcome"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144065920",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144065920.c;xref:0x1430e4f06",
+   "notes": "V7136 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

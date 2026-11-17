@@ -1,3 +1,5 @@
+#include "core/hud/hardware_settings.hpp"
+#include "core/render/com.hpp"
 #include "core/render/d3d12_hooks.hpp"
 #include "core/render/grade_math.hpp"
 #include "core/runtime/runtime.hpp"
@@ -50,28 +52,7 @@ ULONGLONG read_at, next_read;
 bool hdr, failed;
 unsigned copies;
 
-void release(IUnknown *p)
-{
-    if (p)
-        p->Release();
-}
-
-std::wstring documents()
-{
-    using KnownFolderFn = HRESULT(WINAPI *)(REFGUID, DWORD, HANDLE, PWSTR *);
-    using FreeFn = void(WINAPI *)(LPVOID);
-    static const GUID documents_id = {0xFDD39AD0, 0x238F, 0x46AF, {0xAD, 0xB4, 0x6C, 0x85, 0x48, 0x03, 0x69, 0xC7}};
-    HMODULE shell = LoadLibraryA("shell32.dll"), ole = LoadLibraryA("ole32.dll");
-    auto known = shell ? reinterpret_cast<KnownFolderFn>(GetProcAddress(shell, "SHGetKnownFolderPath")) : nullptr;
-    auto free_path = ole ? reinterpret_cast<FreeFn>(GetProcAddress(ole, "CoTaskMemFree")) : nullptr;
-    PWSTR path = nullptr;
-    std::wstring out;
-    if (known && SUCCEEDED(known(documents_id, 0, nullptr, &path)) && path)
-        out = path;
-    if (path && free_path)
-        free_path(path);
-    return out;
-}
+using com::release;
 
 // The game's HDR switch, `<hdr mode="0">` in its hardware settings; off when the file is missing.
 bool hdr_on()
@@ -390,8 +371,7 @@ void grade_setup()
     const json::Value &st = s["strength"];
     strength = st.type == json::Value::Num ? std::clamp(float(st.n), 0.0f, 1.0f) : 1.0f;
     addon = s["addon"].str("an addon");
-    std::wstring docs = documents();
-    settings_path = docs + L"\\My Games\\F1 25\\hardwaresettings\\hardware_settings_config.xml";
+    settings_path = hardware_settings::path();
     d3d12hooks::on_setname(on_setname);
     d3d12hooks::on_barrier(on_barrier);
     bool hooked = d3d12hooks::arm_device();
@@ -400,7 +380,7 @@ void grade_setup()
     if (hooked)
         swofty::log("[shaders] grading the picture with %s's look (%ux%ux%u) at %.0f%%; HDR setting read from %ls",
                     addon.c_str(), look.size, look.size, look.size, double(strength) * 100,
-                    docs.empty() ? L"(no Documents folder)" : settings_path.c_str());
+                    settings_path.empty() ? L"(no Documents folder)" : settings_path.c_str());
 }
 
 }

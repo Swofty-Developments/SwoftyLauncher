@@ -1,11 +1,13 @@
 """Every native test: what it builds, how it runs and the title CI reports it under.
 
-tools/test_graph.py turns this list into ninja targets. A Unit is one test source built into one executable that
-runs from native/test; a Script runs a command, mostly a shell script, on every invocation, after the scripts its
-`after` names. A Script's Programs are built into its folder in the graph first, where Programs of different scripts
-share every object they compile alike, and `{out}` in its command is that folder. Wine tests start a fake F1_25.exe under Wine and run only in CI. The Wine test's cases
-(the CASES line of run_wine_test.sh) are scripts of their own that share one setup and run side by side; the group
-`wine` runs them all.
+tools/test_graph.py turns this list into ninja targets. A Unit is one test source built into one executable, with
+the host C++ compiler or with zig, that runs from native/test. A Script runs a command, mostly a shell script, on
+every invocation, after the scripts its `after` names. A Script's Programs are built into its folder in the graph
+first, where Programs of different scripts share every object they compile alike, and `{out}` in its command is that
+folder. Objects for the target `host` build with the host C++ compiler; a Program `when='sanitizers'` builds only
+when that compiler links -fsanitize=address,undefined. Wine tests start a fake F1_25.exe under Wine and run only in
+CI. The Wine test's cases (the CASES line of run_wine_test.sh) are scripts of their own that share one setup and run
+side by side; the group `wine` runs them all.
 """
 
 import glob
@@ -13,7 +15,7 @@ import os
 import re
 from dataclasses import dataclass, field
 
-LINUX, WINDOWS = 'x86_64-linux-musl', 'x86_64-windows-gnu'
+LINUX, WINDOWS, HOST = 'x86_64-linux-musl', 'x86_64-windows-gnu', 'host'
 
 
 @dataclass
@@ -30,7 +32,7 @@ class Unit:
 
 @dataclass
 class Objects:
-    """Sources, relative to native/, that zig compiles with the same flags for one target."""
+    """Sources, relative to native/, compiled with the same flags for one target: a zig target triple or HOST."""
     sources: list
     flags: list
     target: str = LINUX
@@ -42,6 +44,8 @@ class Program:
     out: str
     objects: list
     kind: str = 'exe'
+    ldflags: list = field(default_factory=list)
+    when: str = ''
 
 
 @dataclass
@@ -56,7 +60,7 @@ class Script:
     cwd: str = '..'
 
 
-# Built with the host C++ compiler.
+# Built with the host C++ compiler, or with zig for x86_64-linux-musl where the compiler is zig.
 UNITS = [
     Unit('activity_resume', 'Activity resume guard unit test'),
     Unit('ai_corner', 'AI brake line guard unit test'),
@@ -95,6 +99,11 @@ UNITS = [
     Unit('placed_record', 'placed record bound unit test'),
     Unit('guard_lines', 'Site guard log lines test', args=['../src/core/guards', 'guard_lines/expected.txt']),
     Unit('guard_registry', 'Core mixin-set registry order test', args=['../src/core']),
+    Unit('guard_skips', 'Guard first-N log cap unit test'),
+    Unit('guard_on_demand', 'On-demand guard arming unit test'),
+    Unit('hashing', 'Shared hash helpers unit test'),
+    Unit('steps', 'Boot step and slow addon init log line unit test'),
+    Unit('report_queue', 'Registry report writer queue unit test'),
     Unit('protection_spans', 'Binding pass protection spans unit test'),
     Unit('game_settings', 'Game setting override table unit test'),
     Unit('player_name', 'Player name sanitising unit test'),
@@ -110,6 +119,10 @@ UNITS = [
     Unit('session_job_probe', 'Session job list scan probe unit test'),
     Unit('setup_vm', 'Setup screen car guard unit test'),
     Unit('srv_clamp', 'Shader resource view clamp unit test'),
+    Unit('rtas_guard', 'Ray tracing build guard unit test'),
+    Unit('d3d12_probe', 'D3D12 probe device sharing unit test'),
+    Unit('font_upload', 'Overlay font atlas upload unit test'),
+    Unit('lang_scope', 'String scope unit test'),
     Unit('stall_order', 'Load-stall report running-threads order unit test'),
     Unit('standings_drop', 'Standings dropped scores unit test'),
     Unit('teamhq_track', 'Team HQ track guard unit test'),
@@ -126,10 +139,6 @@ UNITS = [
     Unit('tyre_slots', 'Tyre slot guard unit test'),
     Unit('ui_registry_walk', 'UI registry walk unit test'),
     Unit('watchdog_grace', 'Boot watchdog grace unit test'),
-]
-
-# Built with zig for x86_64-linux-musl.
-ZIG_UNITS = [
     Unit('events_dispatch', 'Events dispatcher unit test', 'zig'),
     Unit('session_lifecycle', 'Session lifecycle kind unit test', 'zig'),
     Unit('career_state', 'Career and flow-state tracking unit test', 'zig'),
@@ -210,6 +219,75 @@ def hook_test(name):
     return Program(f'{name}_test', [Objects([f'test/hooks/{name}_test.cpp'], HOOK_FLAGS + ['-Ithird_party/safetyhook'])] + SAFETYHOOK)
 
 
+CAREER_OPS_FLAGS = ['-Isrc', '-std=c++23', '-O1', '-Wall', '-Wextra', '-Werror', '-Wno-nullability-completeness']
+SDK_OPS_FLAGS = ['-std=c++23', '-O1', '-Wall', '-Wextra', '-Werror', '-Wno-nullability-completeness',
+                 '-Wno-missing-designated-field-initializers', SDK]
+CAREER_OPS = [Program(t, [Objects([f'test/career_ops/{t}.cpp'], CAREER_OPS_FLAGS)])
+              for t in ('lineup_plan_test', 'teams_plan_test', 'ops_logic_test')] + [
+    Program(f'{t}{ext}', [Objects([f'test/career_ops/{t}.cpp'], SDK_OPS_FLAGS, target)])
+    for t in ('sdk_ops_test', 'sdk_ops_v4_test', 'sdk_ops_v6_test', 'sdk_ops_v7_test')
+    for ext, target in (('', LINUX), ('.exe', WINDOWS))]
+
+SANITIZE = ['-fsanitize=address,undefined', '-fno-sanitize-recover=all']
+SCHEMA_FLAGS = ['-Isrc', '-std=c++23', '-O2', '-Wall', '-Wextra', '-Werror', '-Wno-nullability-completeness', SDK]
+SCHEMA_SAN_FLAGS = ['-Isrc', '-std=c++23', '-O1', '-g', '-Wall', '-Wextra'] + SANITIZE + [SDK]
+SCHEMA = [
+    Program('schema.obj', [Objects(['src/core/registry/schema.cpp'], SCHEMA_FLAGS, WINDOWS)], 'obj'),
+    *[Program(t, [Objects([f'test/schema/{t}.cpp', 'src/core/registry/schema.cpp'], SCHEMA_FLAGS)])
+      for t in ('schema_test', 'schema_agree')],
+    Program('schema_test_san', [Objects(['test/schema/schema_test.cpp', 'src/core/registry/schema.cpp'], SCHEMA_SAN_FLAGS, HOST)],
+            ldflags=SANITIZE, when='sanitizers'),
+]
+
+JSON_FLAGS = ['-std=c++23', '-O2', '-Wall', '-Wextra', '-Werror', '-Wno-nullability-completeness', SDK]
+JSON = [
+    Program('json_test.obj', [Objects(['test/json/json_test.cpp'], JSON_FLAGS, WINDOWS)], 'obj'),
+    Program('json_test', [Objects(['test/json/json_test.cpp'], JSON_FLAGS)]),
+    Program('json_test_san', [Objects(['test/json/json_test.cpp'], ['-std=c++23', '-O1', '-g', '-Wall', '-Wextra'] + SANITIZE + [SDK], HOST)],
+            ldflags=SANITIZE, when='sanitizers'),
+]
+
+TRACK_LISTS_FLAGS = ['-Isrc', '-std=c++23', '-O1', '-Wall', '-Wextra', '-Wno-nullability-completeness', SDK]
+TRACK_LISTS = [Program(f'{t}_test', [Objects([f'test/tracks/{t}_test.cpp'], TRACK_LISTS_FLAGS)])
+               for t in ('fits', 'list', 'per_package')] + [
+    Program(f'{f}.windows.o', [Objects([f'src/core/apply/tracks/{f}.cpp'], TRACK_LISTS_FLAGS + ['-Iinclude'], WINDOWS)], 'obj')
+    for f in ('list', 'per_package', 'data_session')]
+
+APPLY_FLAGS = CONTENT_FLAGS + [SDK]
+APPLY = [
+    Program('apply_test', [Objects(['test/apply/apply_test.cpp', 'src/core/apply/scheduler.cpp'], APPLY_FLAGS), CONTENT_IDS,
+                           CONTENT_ENGINE]),
+    Program('files_test', [Objects(['test/apply/files_test.cpp'], APPLY_FLAGS)]),
+    *[Program(f'{f}.windows.o', [Objects([f'src/core/apply/{f}.cpp'], APPLY_FLAGS, WINDOWS)], 'obj')
+      for f in ('scheduler', 'ids', 'files')],
+]
+
+TRACKS = [
+    Program('lower_test', [Objects(['test/tracks/lower_test.cpp'], APPLY_FLAGS), CONTENT_ENGINE, CONTENT_IDS]),
+    Program('boot.windows.o', [Objects(['src/core/apply/tracks/boot.cpp'], ['-Isrc', '-std=c++23', '-O2', '-Wall', '-Wextra', SDK,
+                                                                           '-Iinclude', '-Wno-nullability-completeness'], WINDOWS)], 'obj'),
+]
+
+SNAPSHOTS_FLAGS = ['-Isrc', '-std=c++23', '-O2', '-Wall', '-Wextra', '-Wno-nullability-completeness', SDK, '-Ithird_party/zstd']
+SNAPSHOTS = [Program('snapshots_test', [
+    Objects(['test/snapshots/snapshots_test.cpp', 'src/core/career/snapshots/snapshots.cpp', 'src/core/registry/store.cpp',
+             'src/core/registry/validate.cpp', 'src/core/registry/schema.cpp'], SNAPSHOTS_FLAGS), ZSTD])]
+
+CAR_LIVE = [Program(t, [Objects([f'test/hooks/{t}.cpp'], ['-Isrc', '-std=c++23', '-O1', '-Wall', '-Wextra', '-Werror',
+                                                          '-Wno-nullability-completeness', SDK])])
+            for t in ('car_live_test', 'car_profile_test', 'ai_racecraft_test')]
+
+FAST_FAIL = [Program('fast_fail_test', [Objects(['test/fast_fail_test.cpp'], ['-Isrc', '-std=c++23', '-O2', '-Wall', '-Wextra',
+                                                                              '-Wno-nullability-completeness'])])]
+
+SCAN = [Program('scan_test', [Objects(['test/scan_test.cpp'], ['-Isrc', '-std=c++23', '-O2', '-Wall', '-Wextra',
+                                                               '-Wno-nullability-completeness'])])]
+
+
+def each(*programs):
+    return ['lib/each.sh'] + [f'{{out}}/{p}' for p in programs]
+
+
 WINE_CASES = re.search(r'^CASES=\((.*)\)$', open(os.path.join(os.path.dirname(__file__), 'run_wine_test.sh')).read(),
                        re.M).group(1).split()
 
@@ -225,23 +303,30 @@ SCRIPTS = [
     Script('sdk_api_c', 'Standard library C API compile test', ['{out}/sdk_api_c_test'], cwd='test', programs=[
         Program('sdk_api_c_test.exe', [Objects(['test/sdk_api_c_test.c'], SDK_C_FLAGS, WINDOWS)]),
         Program('sdk_api_c_test', [Objects(['test/sdk_api_c_test.c'], SDK_C_FLAGS)])]),
-    Script('schema', 'Schema check unit and agreement test', ['bash', 'native/test/run_schema_test.sh']),
+    Script('schema', 'Schema check unit and agreement test', ['bash', 'native/test/run_schema_test.sh', '{out}'], programs=SCHEMA),
     Script('testagent_wine', 'Test agent Wine test', ['bash', 'native/test/run_testagent_test.sh'], wine=True),
     Script('content', 'Content registries (row engine, Classic Seasons lowering, variants, stat-id pools)',
            ['bash', 'native/test/run_content_test.sh', '{out}'], programs=CONTENT),
     Script('bind', 'Binding resolver Wine test', ['bash', 'native/test/run_bind_test.sh'], wine=True),
-    Script('career_ops', 'Career operations planner and SDK calls host test', ['bash', 'native/test/run_career_ops_test.sh']),
-    Script('json', 'swofty::json unit test', ['bash', 'native/test/run_json_test.sh']),
+    Script('career_ops', 'Career operations planner and SDK calls host test', each(
+        'lineup_plan_test', 'teams_plan_test', 'sdk_ops_test', 'ops_logic_test', 'sdk_ops_v4_test', 'sdk_ops_v6_test',
+        'sdk_ops_v7_test'), cwd='test', programs=CAREER_OPS),
+    Script('json', 'swofty::json unit test', ['bash', 'native/test/run_json_test.sh', '{out}'], programs=JSON),
     Script('build_gate', 'Loader build gate unit test', ['bash', 'native/test/run_build_gate_test.sh']),
-    Script('apply', 'Live apply paths (scheduler, put-back, context, budgets, sizing, stat ids, reports)', ['bash', 'native/test/run_apply_test.sh']),
-    Script('tracks', "Track registries (seeds, record lowering, parity with the launcher's track activation)", ['bash', 'native/test/run_tracks_test.sh']),
+    Script('apply', 'Live apply paths (scheduler, put-back, context, budgets, sizing, stat ids, reports)',
+           ['bash', 'native/test/run_apply_test.sh', '{out}'], programs=APPLY),
+    Script('tracks', "Track registries (seeds, record lowering, parity with the launcher's track activation)",
+           ['bash', 'native/test/run_tracks_test.sh', '{out}'], programs=TRACKS),
     Script('save_sandbox', 'Save sandbox host and Wine test', ['bash', 'native/test/run_save_sandbox_test.sh'], wine=True),
     Script('runtime_assets', 'Runtime assets Wine test', ['bash', 'native/test/run_runtime_assets_test.sh'], wine=True),
-    Script('track_lists', 'Box track lists (fit rules, calendar and More tracks, per-box entries, fuel plan, guard decision)', ['bash', 'native/test/run_track_lists_test.sh']),
-    Script('snapshots', 'Career snapshots (swofty_registry entry, freezes, budgets, migration, fixtures)', ['bash', 'native/test/run_snapshots_test.sh']),
+    Script('track_lists', 'Box track lists (fit rules, calendar and More tracks, per-box entries, fuel plan, guard decision)',
+           each('fits_test', 'list_test', 'per_package_test'), cwd='test', programs=TRACK_LISTS),
+    Script('snapshots', 'Career snapshots (swofty_registry entry, freezes, budgets, migration, fixtures)',
+           ['bash', 'native/test/run_snapshots_test.sh', '{out}'], programs=SNAPSHOTS),
     Script('net_trace', 'Socket trace Wine test', ['bash', 'native/test/run_net_trace_test.sh'], wine=True),
     Script('career_ui', 'Career UI Wine test', ['bash', 'native/test/run_career_ui_test.sh'], wine=True),
-    Script('fast_fail', 'Fast-fail crash reports (fast-fail codes, reasons, exit statuses, byte patterns)', ['bash', 'native/test/run_fast_fail_test.sh']),
+    Script('fast_fail', 'Fast-fail crash reports (fast-fail codes, reasons, exit statuses, byte patterns)', ['{out}/fast_fail_test'],
+           cwd='test', programs=FAST_FAIL),
     Script('log_fallback', 'Loader log fallback Wine test', ['bash', 'native/test/run_log_fallback_test.sh'], wine=True),
     Script('lang_override', 'String override Wine test', ['bash', 'native/test/run_lang_override_test.sh'], wine=True),
     Script('toolkit', 'Overlay toolkit Wine test', ['bash', 'native/test/run_toolkit_test.sh'], wine=True),
@@ -255,14 +340,17 @@ SCRIPTS = [
     Script('game_points', 'Game hook points host test', ['{out}/game_points_test'], cwd='test', programs=[hook_test('game_points')]),
     Script('session_points', 'Session control, AI controller and spectator points host test', ['{out}/session_points_test'],
            cwd='test', programs=[hook_test('session_points')]),
-    Script('car_live', 'Live car operations host test', ['bash', 'native/test/run_car_live_test.sh']),
+    Script('car_live', 'Live car operations host test', each('car_live_test', 'car_profile_test', 'ai_racecraft_test'), cwd='test',
+           programs=CAR_LIVE),
     Script('w5_review', 'Hook points review test', ['{out}/w5_review_test'], cwd='test',
            programs=[Program('w5_review_test', [Objects(['test/hooks/w5_review_test.cpp'], HOOK_FLAGS)])]),
     Script('live', 'Live state memory reads, derivations and telemetry fill', ['bash', 'native/test/run_live_test.sh']),
     Script('core_sites_exported', 'Core site names exported (host-only)', ['bash', 'native/test/run_core_sites_exported_test.sh']),
     Script('garage_placement', 'Garage placement and crew poses', ['bash', 'native/test/run_garage_placement_test.sh']),
     Script('garage_crew_sites', 'Garage crew guard sites export test', ['bash', 'native/test/run_garage_crew_sites_test.sh']),
-    Script('scan', 'Pattern scan and scan cache unit test', ['bash', 'native/test/run_scan_test.sh'], wine=True),
+    Script('scan', 'Pattern scan and scan cache unit test', ['bash', 'native/test/run_scan_test.sh', '{out}'], programs=SCAN),
+    Script('pin', 'CPU pin plan (CI, taskset, affinity, job count)', ['bash', 'native/test/pin_test.sh']),
     Script('std_templates', 'Standard library templates', ['python3', 'tools/std/templates.py']),
+    Script('loading_report', 'Loading report on synthetic loader.log runs', ['python3', '-I', 'native/test/loading_report_test.py']),
 ]
 

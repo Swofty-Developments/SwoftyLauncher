@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_SponsorSlots_Bind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141864230",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "int64_t (void *vm, uint64_t a, int64_t b)",
+  "evidence": "decomp:re/decomp/141864230.c;xref:0x14186484f",
+  "notes": "myteam-g1: Binds sponsor slots: sponsor_slots, title_sponsor, secondary_slots, selected_slot, weekly_income, goal_income_recieved."
+ },
+ "signature": {
+  "id": "vm.sponsor_slots_bind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 48 89 D7 48 89 CE 49 8B 40 08",
+  "match": "0x141864230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141864230",
+  "kind": "func_start",
+  "names": [
+   "Vm_SponsorSlots_Bind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141864230",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141864230.c;xref:0x14186484f",
+   "notes": "V9822 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_SteamAPISendPacketUserID",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440968e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK/V",
+  "notes": "named from its log messages (channel NETWORK/V): 'Steam API : Failed to send packet! User ID: %lu -> EP2PSessionError : %d'"
+ },
+ "signature": {
+  "id": "game.network_steam_api_send_packet_user_id",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 D6 48 8D 0D ?? ?? ?? ?? FF 15",
+  "match": "0x1440968e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440968e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_SteamAPISendPacketUserID"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1440968e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440968e0.c;xref:0x144061355",
+   "notes": "V6526 size=159; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

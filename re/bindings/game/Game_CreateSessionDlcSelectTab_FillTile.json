@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "Game_CreateSessionDlcSelectTab_FillTile",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a404c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_CreateSessionDlcSelectTab_FillTile(void *tile, void *node, const char *title, const char *command, const char *image)",
+  "evidence": "decomp:re/decomp/141a404c0.c;decomp:re/decomp/141a40060.c;xref:0x141a402ee,0x141a40322",
+  "notes": "Fills a 0x80-byte DLC-select tile: four VM handles (enabled=1, display_name, command, image) on node, each linked into its node's holder list and holding a reference."
+ },
+ "signature": {
+  "id": "game.create_session_dlc_select_fill_tile",
+  "section": ".xtls",
+  "pattern": "48 8D BE 30 06 00 00 80 BE 70 07 00 00 00 74 0F 48 89 F9 E8 ?? ?? ?? ?? C6 86 70 07 00 00 00 48 8B 46 10 48 8D 50 08 48 85 C0 4C 8D 35 ?? ?? ?? ?? 49 0F 44 D6 4C 8D 05 93 BB CC 03 48 89 F9 E8 ?? ?? ?? ?? 48 8D 9E 50 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? 48 8D 9E D0 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? C6 44 24 30 00",
+  "match": "0x141a4027b",
+  "anchor": "0x74",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x73"
+  },
+  "target": "0x141a404c0",
+  "kind": "call",
+  "names": [
+   "Game_CreateSessionDlcSelectTab_FillTile"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "mp-carcat",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/boxes/car_category.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "verify-mp-carcat",
+   "kind": "func",
+   "item": "Game_CreateSessionDlcSelectTab_FillTile",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a404c0.c;xref:0x141a402ee,0x141a40322;sig:game.create_session_dlc_select_fill_tile",
+   "notes": "V1155 Re-checked: four Vm_Set_* calls on param 2 (enabled, display_name, command, image), each result linked into its node's holder list (+0x28) with a reference (+0x24), wrappers 0x20 bytes apart. Same-session verify pass."
+  }
+ ],
+ "proofs": []
+}

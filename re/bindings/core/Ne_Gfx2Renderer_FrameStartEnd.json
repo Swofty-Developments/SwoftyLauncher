@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Gfx2Renderer_FrameStartEnd",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b5a830",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b5a830.c;xref:0x143b7f68f",
+  "notes": "Frame start/end marker routine (strings 'FrameStart', 'FrameEnd%d'; thread context via Ne_Tls_GetThreadContext); called from RenderFrame. Named callers: Ne_Gfx2Renderer_RenderFrame."
+ },
+ "signature": {
+  "id": "core.gfx2_renderer_frame_start_end",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 41 55 41 54 56 57 53 48 83 EC 68 48 8D 6C 24 60 C5 F8 29 75 F0 48 89 CE 48 83 EC",
+  "match": "0x143b5a830",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b5a830",
+  "kind": "func_start",
+  "names": [
+   "Ne_Gfx2Renderer_FrameStartEnd"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143b5a830",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b5a830.c;xref:0x143b7f68f",
+   "notes": "V7765 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

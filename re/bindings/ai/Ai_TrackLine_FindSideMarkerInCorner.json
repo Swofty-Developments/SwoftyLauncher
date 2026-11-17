@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_TrackLine_FindSideMarkerInCorner",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14066eec0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_TrackLine_FindSideMarkerInCorner(void *result, float car_dist, float query_dist, void *spline_data, int route_idx)",
+  "evidence": "decomp:re/decomp/14066eec0.c;decomp:re/decomp/14067d510.c;xref:0x14066def8",
+  "notes": "was Ai_TrackLine_FindPass3 (renamed 2026-11-16). Only caller Ai_Overtake_EvaluateGap (0x14066def8). Start key = distance of the type-0 marker of the corner start gate ([[[result+0x20]+0x18]+0xc8]+0x18 -> gate distance; no null check, BuildGraph always creates gate+0xc8 on corner start gates). Walks lane+0x490 (type-0 side markers) for the next key after that start -> result+0x28, accepted only if between the corner start (result+0x20) and corner end (result+0x18) gates; result+0x34 = its distance - car distance (wrap-aware), else result+0x28 = 0 and +0x34 = 0 / 1e38. Ai_Overtake_EvaluateGap sets result+0x49 = (+0x40 > +0x34). L2 2026-11-16 (engine-re racing-line round): decomp read, claims checked against the disassembly, refs from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1; blind verifier agreed. raised by engine-re with --force 2026-11-16 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.track_line_find_pass3",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 70 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 C5 F8 28 F1 48 89 CE",
+  "match": "0x14066eec0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14066eec0",
+  "kind": "func_start",
+  "names": [
+   "Ai_TrackLine_FindSideMarkerInCorner"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x14066eec0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14066eec0.c;xref:0x14066def8",
+   "notes": "V4093 walks route+0x490 again, caller Ai_Overtake_EvaluateGap, purpose undecoded as claimed"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "triage-verify",
+   "kind": "func",
+   "item": "0x14066eec0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own re/tools/decomp read on the KB build;xref:0x14066def8",
+   "notes": "V10745 Own read. Reads lane+0x490 (side markers) starting after the corner start gate marker, window-checked against result+0x18/+0x20, writes result+0x28 and +0x34. SideMarkerInCorner agrees."
+  }
+ ],
+ "proofs": []
+}

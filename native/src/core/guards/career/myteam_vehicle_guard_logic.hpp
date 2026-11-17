@@ -3,7 +3,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
-#include <vector>
 
 namespace runtime::myteam_vehicle {
 
@@ -15,13 +14,6 @@ constexpr uint64_t ROW_INDEX = 0x200;
 constexpr uint32_t STAT_ID_MASK = 0x3fff;
 constexpr size_t LABEL_CHARS = 0x100;
 constexpr size_t LOG_LABELS = 32;
-
-inline bool switch_off(const char *value)
-{
-    if (!value)
-        return false;
-    return value[0] == '0' && value[1] == 0 ? true : value[0] == 'o' && value[1] == 'f' && value[2] == 'f' && value[3] == 0;
-}
 
 inline bool row_missing(int32_t index)
 {
@@ -83,25 +75,5 @@ template <class Mem> bool skip_base(Mem &mem, uint64_t rsp, uint64_t row, Skip &
     }
     return true;
 }
-
-struct Labels {
-    std::vector<std::string> seen;
-
-    bool first(const std::string &label)
-    {
-        for (const std::string &s : seen)
-            if (s == label)
-                return false;
-        if (seen.size() >= LOG_LABELS)
-            return false;
-        seen.push_back(label);
-        return true;
-    }
-
-    bool last() const
-    {
-        return seen.size() == LOG_LABELS;
-    }
-};
 
 }

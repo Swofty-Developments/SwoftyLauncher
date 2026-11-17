@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetTransport_MigrateConnections",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14409a3b0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14409a3b0.c;xref:0x145a54db8",
+  "notes": "migrateConnections(msg): new host id msg+0x10 into this+0x70, drops listed ids (count msg+0x11, ids msg+0x12..) from the store. Vtable lies between the LAN and PlayFab ones (transport class unclear)."
+ },
+ "signature": {
+  "id": "core.net_transport_migrate_connections",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 4C 8D 2D",
+  "match": "0x14409a3b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14409a3b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetTransport_MigrateConnections"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Ne_NetTransport_MigrateConnections",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14409a3b0.c;xref:0x14409a3b0",
+   "notes": "V2647 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

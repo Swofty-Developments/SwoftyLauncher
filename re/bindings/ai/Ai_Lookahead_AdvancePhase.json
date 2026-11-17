@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Lookahead_AdvancePhase",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406807b0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Lookahead_AdvancePhase(void *unused, void *ctrl, int step, const float *in4, float *out4)",
+  "evidence": "decomp:re/decomp/1406807b0.c;xref:0x140680717,0x140680731,0x14068074b,0x140680765,0x14068077f,0x140680799",
+  "notes": "State = {dist, speed, time, phase(int)}. The only caller 0x140680610 seeds node 0 with dist = [ctrl+0x28]+0xc, speed = [ctrl+0x38]+0x3c, time 0, phase from the zone record [ctrl+0x40] (+0x5b, +0x48/+0x50/+0x54/+0x98/+0xa4, cfg [ctrl+0x10]+0xc4 within 0.5) and calls this 6 times (step 0..5) chaining 16-byte nodes. Zone boundary = [ctrl+0x40]+0x48 + ((phase0+step)/4)*0x50. Phase 0: d = Ai_Table_CalcSpeedChangeDistance(speed, cfg+200/+0xd0, ...), then two Ai_Table_InterpolateC lookups (getters 0x14063c830 / 0x14063c6a0) clamped by max_test_speed/max_test_distance -> next phase 1. Phase 1: two lookups (InterpolateB if ctrl+0x104 != 0 else InterpolateA, getters 0x14063d5e0 / 0x14063c980, cursor ctrl+0xf8) -> phase 2. Phases 2 and 3: advance to the boundary at constant speed, time += d/speed -> phase 3 and 0. Reads ai.general_ai_settings via the lazy block 0x146046c50 (4 guard sites). (renamed 2026-11-14 from Ai_Unk_1406807b0: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.unk_1406807b0",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 41 8B 41",
+  "match": "0x1406807b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406807b0",
+  "kind": "func_start",
+  "names": [
+   "Ai_Lookahead_AdvancePhase"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1406807b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406807b0.c;xref:0x680717",
+   "notes": "V4727 string/behaviour in decomp matches name"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x1406807b0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1406807b0-0x140681132;xref:0x140680717,0x140680731,0x14068074b,0x140680765,0x14068077f,0x140680799",
+   "notes": "V10621 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 6 calls in 0x140680610 with r8d = step 0..5, rdx ctrl, r9/stack = chained 16-byte nodes. 5 args, rcx unused. Zone records stride 0x50 (+0x48/+0x50), calls 0x1406817f0, 0x140686e50, 0x14068b710/0x14068bb70."
+  }
+ ],
+ "proofs": []
+}

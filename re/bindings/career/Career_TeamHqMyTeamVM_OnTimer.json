@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqMyTeamVM_OnTimer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142332d20",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142332d20.c;xref:0x142330df9,0x142334fe2",
+  "notes": "My Team day-advance state machine on timer elapse (copy of Career_TeamHqAdvance_OnTimer): states stop occurred / not advancing / advancing / showing cards / READY TO ADVANCE / ADVANCING ONE DAY; posts cards_appeared, stop_occurred, popups_shown; signals stop when popups exist. Addon: hook to inject or suppress popups per advanced day. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3096)"
+ },
+ "signature": {
+  "id": "career.team_hq_my_team_v_m_on_timer",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 CE 80 3D ?? ?? ?? ?? 01 75 55 B8 AA 00 00",
+  "match": "0x142332d20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142332d20",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqMyTeamVM_OnTimer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Career_TeamHqMyTeamVM_OnTimer",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142332d20.c;xref:14232e580",
+   "notes": "V3096 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

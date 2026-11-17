@@ -1,8 +1,11 @@
 #include <swofty/game.hpp>
 #include <swofty/mixin.hpp>
 
+#include "core/frontend/hidden_tiles.hpp"
 #include "core/frontend/main_menu.hpp"
 #include "core/frontend/main_menu_logic.hpp"
+#include "core/frontend/tile_list.hpp"
+#include "core/frontend/vm_string.hpp"
 #include "core/diagnostics/perf.hpp"
 #include "core/runtime/runtime.hpp"
 
@@ -37,14 +40,6 @@ constexpr const char *DESCRIPTION = "Configure the addons installed by Swofty La
 unsigned hook_calls, populate_calls, action_calls;
 void **mod_vt;
 
-void set_string(void *reg, void *parent, const char *name, const char *text)
-{
-    NeStr *s = nullptr;
-    Ne_Make_StrFromCStr(&s, text, 0, 0);
-    Vm_Set_String(reg, parent, name, &s, 1);
-    Ne_Make_StrFromCStr(&s, nullptr, 0, 0);
-}
-
 void mod_populate(HomeItem *item, void *node, uint32_t a7)
 {
     unsigned call = ++populate_calls;
@@ -56,9 +51,9 @@ void mod_populate(HomeItem *item, void *node, uint32_t a7)
     }
     void *reg = *g_Vm_Registry, *parent = vm_node + 8;
     uint8_t no = 0;
-    set_string(reg, parent, "title", TITLE);
+    vm::set_string(reg, parent, "title", TITLE);
     Vm_Set_Bool(reg, parent, "title_localised", &no, 1);
-    set_string(reg, parent, "description", DESCRIPTION);
+    vm::set_string(reg, parent, "description", DESCRIPTION);
     Vm_Set_Bool(reg, parent, "description_localised", &no, 1);
     swofty::log("[core] populate #%u item=%p node=%p a7=%u vm=%p: title='%s' description set, localised=false", call,
                 item, node, a7, vm_node, TITLE);
@@ -67,21 +62,9 @@ void mod_populate(HomeItem *item, void *node, uint32_t a7)
 
 Action *mod_get_action(HomeItem *item, Action *out)
 {
-    out->type = 1;
-    out->str = nullptr;
-    Ne_Make_StrFromCStr(&out->str, ROUTE, 0, 0);
+    tile_list::route_action(out, ROUTE);
     swofty::log("[core] getAction #%u item=%p -> {type 1, route '%s'}", ++action_calls, item, ROUTE);
     return out;
-}
-
-HomeItem *last_item(TileList *list, size_t *count)
-{
-    auto begin = reinterpret_cast<uintptr_t>(list->items_begin), end = reinterpret_cast<uintptr_t>(list->items_end);
-    if (!begin || end <= begin || (end - begin) % sizeof(TileEntry))
-        return nullptr;
-    *count = list->items_end - list->items_begin;
-    Tile *tile = list->items_end[-1].tile;
-    return tile ? tile->item : nullptr;
 }
 
 #endif
@@ -126,17 +109,17 @@ SWOFTY_SITE(site_FeHome_AfterCareerCall, swofty::Context &c)
                 (unsigned long long)c.r14, (unsigned long long)c.r12, (unsigned long long)c.r15,
                 (unsigned long long)c.rsi, (unsigned long long)c.rip);
     size_t before = 0, after = 0;
-    HomeItem *career = last_item(list, &before);
+    HomeItem *career = tile_list::last_item(list, &before);
     if (!career) {
         swofty::log("[core] hook #%u: items vector does not end with a tile, nothing added", call);
         return;
     }
     auto career_vt = reinterpret_cast<void **>(career->vtable);
     uint8_t last = runtime::main_menu::add_tiles(list, uint8_t(c.r12), reinterpret_cast<const uint8_t *>(c.rsi));
-    last_item(list, &before);
+    tile_list::last_item(list, &before);
     uint8_t index = uint8_t(last + 1);
     FeHome_Add_CareerTile(list, index);
-    HomeItem *item = last_item(list, &after);
+    HomeItem *item = tile_list::last_item(list, &after);
     c.r12 = index;
     c.r15 = index;
     if (!item || after != before + 1 || reinterpret_cast<void **>(item->vtable) != career_vt) {
@@ -178,79 +161,9 @@ SWOFTY_WRAP(FeHome_Handle_Command, uint64_t, FEHomeViewModel *vm, NeStr **cmd)
     return orig(vm, cmd);
 }
 
-// F1 THE MOVIE home tile. The home case of FeTile_Build_List adds it (FeHome_Add_MovieTile at index
-// r15b+2, then r12 = r15) only while feature flag bit 42 ([rsi+5] & 4) is set; with the flag clear the
-// je skips to the F1 World block, which numbers itself r12+1 from the tile before. The anchor is the
-// movie block's first instruction, the je's fall-through right after the 6 bytes the
-// site_FeHome_AfterCareerCall hook relocates; a short jmp there to the F1 World block builds the
-// flag-clear list, so the button numbering stays contiguous. No branch lands in the 2 replaced bytes.
-namespace {
-
-const runtime::Sig S_MOVIE_TILE{"FeHome_MovieTileBlock",
-                                "41 80 C7 02 4C 89 F1 44 89 FA E8 ?? ?? ?? ?? 45 89 FC 45 8D 7C 24 01 4C 89 F1 44 89 FA E8",
-                                0x1742fdc, runtime::Sig::addr, 0, 0, 0};
-
-void hide_movie_tile()
-{
-    static const uint8_t skip_movie[] = {0xEB, 0x10};
-    auto at = reinterpret_cast<void *>(runtime::find(S_MOVIE_TILE, "home", "core"));
-    DWORD old;
-    bool hidden = at && VirtualProtect(at, sizeof skip_movie, PAGE_EXECUTE_READWRITE, &old);
-    if (hidden) {
-        memcpy(at, skip_movie, sizeof skip_movie);
-        VirtualProtect(at, sizeof skip_movie, old, &old);
-        FlushInstructionCache(GetCurrentProcess(), at, sizeof skip_movie);
-    }
-    swofty::log("[core] F1 THE MOVIE home tile %s", hidden ? "hidden" : "left in place (signature did not resolve)");
-}
-
-// Local Multiplayer list. FeTile_Build_List (base+0x173df80) builds menu_kind 2 as Splitscreen
-// (base+0x1747f90, button_1) and then an inline LAN tile (id "lan", item vtable base+0x5704740,
-// button_2) that the shared tail pushes into the item vector. The anchor is the instruction after the
-// Splitscreen call; a jmp there to the tail the adder-only menus jump to (base+0x1745016, after the
-// temporaries' cleanup, at the item init/populate loop) leaves Splitscreen as the only entry. No
-// branch lands in the 9 replaced bytes.
-const runtime::Sig S_LAN_TILE{"FeTile_LocalMp_LanTile",
-                              "4C 8D 05 ?? ?? ?? ?? 4C 89 F1 B2 01 E8 ?? ?? ?? ?? 48 C7 44 24 38 00 00 00 00",
-                              0x173e7a7, runtime::Sig::addr, 0, 0x11, 0};
-const runtime::Sig S_TILE_TAIL{"FeTile_Build_List_ItemsTail", "4C 89 F1 E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? E8 ?? ?? ?? ?? B2 01",
-                               0x1745016, runtime::Sig::rel32, 8, 9, 5};
-
-void hide_lan_tile()
-{
-    uintptr_t lan = runtime::find(S_LAN_TILE, "core", "core"), tail = runtime::find(S_TILE_TAIL, "core", "core");
-    bool hidden = false;
-    if (lan && tail && tail > lan && tail - lan < 0x10000) {
-        uint8_t skip_lan[9] = {0xE9, 0, 0, 0, 0, 0x90, 0x90, 0x90, 0x90};
-        int32_t rel = int32_t(tail - (lan + 5));
-        memcpy(skip_lan + 1, &rel, sizeof rel);
-        auto at = reinterpret_cast<void *>(lan);
-        DWORD old;
-        hidden = VirtualProtect(at, sizeof skip_lan, PAGE_EXECUTE_READWRITE, &old);
-        if (hidden) {
-            memcpy(at, skip_lan, sizeof skip_lan);
-            VirtualProtect(at, sizeof skip_lan, old, &old);
-            FlushInstructionCache(GetCurrentProcess(), at, sizeof skip_lan);
-        }
-    }
-    swofty::log("[core] LAN Game entry in Local Multiplayer %s",
-                hidden ? "hidden (Splitscreen only)" : "left in place (signature did not resolve)");
-}
-
-}
-
-namespace runtime {
-
-void local_tiles_setup()
-{
-    hide_lan_tile();
-}
-
-}
-
 SWOFTY_ON_LOAD
 {
-    runtime::when_code_ready("core: F1 THE MOVIE home tile", hide_movie_tile);
+    runtime::when_code_ready("core: F1 THE MOVIE home tile", runtime::hide_movie_tile);
 }
 
 SWOFTY_MOD(check)

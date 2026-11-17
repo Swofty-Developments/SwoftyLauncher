@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VoiceCommands_CommandRecognised",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f7f3c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name commandRecognised (class from the log channel); log channel VOICE_COMMANDS: '%s'"
+ },
+ "signature": {
+  "id": "game.voice_commands_command_recognised",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01 75 66 B8 04 01 00 00",
+  "match": "0x142f7f3c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f7f3c0",
+  "kind": "func_start",
+  "names": [
+   "Game_VoiceCommands_CommandRecognised"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f7f3c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f7f3c0.c;xref:0x142f79f5c",
+   "notes": "V5666 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

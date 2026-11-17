@@ -1,5 +1,6 @@
 #include "core/guards/ai/ai_curves_logic.hpp"
 #include "core/guards/guard.hpp"
+#include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -12,10 +13,6 @@
 #include <cstring>
 #include <mutex>
 #include <string>
-
-namespace runtime {
-std::string hook_error(const safetyhook::MidHook::Error &e);
-}
 
 // AI team performance curves guard (re/db/functions.tsv Ai_Build_TeamPerformanceCurves, 0x14065d170).
 //
@@ -35,6 +32,8 @@ std::string hook_error(const safetyhook::MidHook::Error &e);
 // SWOFTY_AI_CURVES_GUARD=0 turns it off.
 
 namespace {
+
+namespace guards = swofty_core::guards;
 
 const runtime::Sig S_READ{"site_Ai_TeamCurves_VehicleTeamRead", "0F B6 80 E8 0C 00 00 48 8B 89 E0 04 00 00 48 C1 E0 04", 0x65d213,
                           runtime::Sig::addr, 0, 0};
@@ -64,8 +63,7 @@ void skip(safetyhook::Context &c)
 void setup()
 {
     char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_AI_CURVES_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+    if (guards::env_off("SWOFTY_AI_CURVES_GUARD", v)) {
         swofty::log("[ai] team curves guard off (SWOFTY_AI_CURVES_GUARD=%s)", v);
         return;
     }

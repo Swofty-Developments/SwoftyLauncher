@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Livery_SetAllowSponsorsAndBadges",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14290e260",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *livery, const char *key",
+  "evidence": "decomp:re/decomp/14290e260.c;xref:0x14290d98c",
+  "notes": "myteam-g1: Copies a key string and applies the allow_sponsors_and_badges livery setting (whether car sponsors/badges render)."
+ },
+ "signature": {
+  "id": "game.livery_set_allow_sponsors_and_badges",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 40 04 00 00 48 89 CE 48 8D 84 24 30 02 00 00",
+  "match": "0x14290e260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14290e260",
+  "kind": "func_start",
+  "names": [
+   "Game_Livery_SetAllowSponsorsAndBadges"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x14290e260",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14290e260.c;str:\"allow_sponsors_and_badges\"",
+   "notes": "V10234 Joins two 256-byte key halves with a dot, looks up a Gdb table row (DriverCustomisationConfiguration-like) and stores a byte at +0x268."
+  }
+ ],
+ "proofs": []
+}

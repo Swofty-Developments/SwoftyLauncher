@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_AiRoute_CompileMarkerChannel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140677ae0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_AiRoute_CompileMarkerChannel(void *route, uint32_t *out_buf)",
+  "evidence": "decomp:re/decomp/140677ae0.c;xref:0x14067f997,0x14067f9a8,0x14067f9ba,0x14067f9d0,0x14067f9e2,0x14067f9f5,0x14067fa08,0x14067fa1e,0x14067fa2a",
+  "notes": "CRASH RULE (code + user dump confirmed, 2026-10-28): 0x140677aec reserves 0x5478 B stack (__chkstk 0x144c897d0). 7 marker channels c=0..6 = node pointers at [node+8]+0x18 -> +0xc8..+0xf8. Per channel fixed stack arrays: 256 floats at rsp+0x70+c*0x400 (node distance +0xb0) and 256 pointers at rsp+0x1c70+c*0x800; per node the count register is incremented with NO bound check (inc r9d at 0x140677d00 (fixed 2026-11-14 after verifier ai-verify); no cmp against 0x100 anywhere in 0x140677ae0-0x1406781bc) -> > 256 entries on one AI route overwrite the next channel / saved registers -> load crash (Nordschleife r63x: 265 channel-6 markers). Output: route+0x490+c*8 = block in out_buf {count, -FLT_MAX, distances[], pointers[]}. Keep <= ~200 per route (agent crash24). The meaning of channel 6 (racing-line lateral class) comes from the crash24 analysis and is not shown in this function. L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) AI line marker channels (engine-re 2026-11-16, static): Game_AiRoute_CompileMarkerChannel copies gate+0xc8+c*8 (c=0..6) into lane+0x490+c*8; channel = marker type (+0x20): 0 = generated side marker (BuildGraph, gate+0xc8), 1 = brake_line (gate+0xd0, 0xc8-byte element), 2 = corner_end_line (gate+0xd8), 3 = corner_start_line (gate+0xe0), 4 = writer not found (gate+0xe8), 5 = retire_line (gate+0xf0), 6 = generated class marker (gate+0xf8). So lane+0x490 = type-0 markers, +0x498 = brake lines, +0x4a0 = corner ends, +0x4a8 = corner starts, +0x4b8 = retire lines. Correction: channel 6 holds the class markers BuildGraph generates at gate+0xf8 (0x14067f63b/0x14067f7b9); the per-node source gate is the link to_gate (from_gate for the seed entry). edited by engine-re with --force 2026-11-16 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ai_route_compile_marker_channel",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 78 54 00",
+  "match": "0x140677ae0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140677ae0",
+  "kind": "func_start",
+  "names": [
+   "Game_AiRoute_CompileMarkerChannel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140677ae0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140677ae0.c;xref:0x67f997",
+   "notes": "V4724 0x5478 stack frame and stride-0x400/0x800 per-channel arrays confirmed, no bound check in loop"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x140677ae0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140677ae0-0x1406781bc;xref:0x14067f997,0x14067f9a8,0x14067f9ba,0x14067f9d0,0x14067f9e2,0x14067f9f5,0x14067fa08,0x14067fa1e,0x14067fa2a",
+   "notes": "V10553 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). __chkstk 0x5478 (0x140677aec), 2 args. Per channel stores float [rsp+r13*4+0x70] and ptr [rsp+r13*8+0x1c70], then inc r9d at 0x140677d00, no cmp against 0x100/0xff anywhere in the body; output route+0x490+c*8 (0x140677ee9). 9 call sites in 0x14067d510. Detail: the inc is at 0x140677d00 (0x140677cf1/0x140677cf8 are the stores)."
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "triage-verify",
+   "kind": "func",
+   "item": "0x140677ae0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own re/tools/decomp read on the KB build;xref:0x140677ee9",
+   "notes": "V10747 Own read of the channel store: per lane, gates gather gate+0xc8+c*8 for c=0..6 into 256-entry arrays and the lane gets +0x490+c*8 = compiled array (0x140677ee9)."
+  }
+ ],
+ "proofs": []
+}

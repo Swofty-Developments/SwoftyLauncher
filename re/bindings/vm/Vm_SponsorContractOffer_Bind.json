@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_SponsorContractOffer_Bind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f03b20",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void *vm)",
+  "evidence": "decomp:re/decomp/141f03b20.c;xref:0x141ee9af7;xref:0x14575b9b8",
+  "notes": "myteam-g1: Binds the sponsor contract offer popup: sponsor_info, offer_is_accepted/rejected, final_week_has_passed, display_timeline, week one/two/three passed and timeline texts."
+ },
+ "signature": {
+  "id": "vm.sponsor_contract_offer_bind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 02 00 00 C5 F8 29 B4 24 F0 01 00 00 48 8B 81 E8 08 00 00",
+  "match": "0x141f03b20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f03b20",
+  "kind": "func_start",
+  "names": [
+   "Vm_SponsorContractOffer_Bind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141f03b20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f03b20.c;xref:0x141ee9af7;xref:0x14575b9b8",
+   "notes": "V10014 Binds sponsor contract offer popup with timeline, accepted/rejected data."
+  }
+ ],
+ "proofs": []
+}

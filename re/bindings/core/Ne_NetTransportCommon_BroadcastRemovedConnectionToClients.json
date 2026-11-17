@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetTransportCommon_BroadcastRemovedConnectionToClients",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14407b240",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14407b240.c;xref:0x145a51fc0",
+  "notes": "broadcastRemovedConnectionMessageToClients(id): host bit-writes message type 5 + id and sends it (0x14406f280) to every other connection (store this+0x48/0x58, skipping own id +0x70)."
+ },
+ "signature": {
+  "id": "core.net_transport_common_broadcast_removed_connection_to_clients",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 05 00 00 89",
+  "match": "0x14407b240",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14407b240",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetTransportCommon_BroadcastRemovedConnectionToClients"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Ne_NetTransportCommon_BroadcastRemovedConnectionToClients",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14407b240.c;xref:0x14407b240",
+   "notes": "V2641 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

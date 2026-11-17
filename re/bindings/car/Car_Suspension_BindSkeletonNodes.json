@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Suspension_BindSkeletonNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144655640",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144655640.c;xref:0x14462b147",
+  "notes": "(susp, out, int *nodeIdx, uint flags): resolves suspension/wheel bones ('suspension_f...') under a node of the car skeleton ([[this+8]+0xe0]+0x38), builds pointer array at this+0x110..+0x120. Called 4x from 0x14462b147 block (car model setup)."
+ },
+ "signature": {
+  "id": "car.suspension_bind_skeleton_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 78 29 8C 24 E0 00 00 00 C5 78 29 84 24 D0 00 00 00 C5 F8 29 BC 24 C0 00 00 00 C5 F8 29 B4 24 B0 00 00 00 41",
+  "match": "0x144655640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144655640",
+  "kind": "func_start",
+  "names": [
+   "Car_Suspension_BindSkeletonNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x144655640",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144655640.c;xref:0x14462b147",
+   "notes": "V3686 body matches (suspension_f, array +0x110..+0x120) but call count is 11 sites (all in Car_Chassis_Build), not 4"
+  }
+ ],
+ "proofs": []
+}

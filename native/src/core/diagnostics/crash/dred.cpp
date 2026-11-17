@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "core/diagnostics/crash/dred_logic.hpp"
+#include "core/runtime/pages.hpp"
 #include "safetyhook.hpp"
 
 namespace runtime::dred {
@@ -33,15 +34,7 @@ HANDLE poll_thread;
 bool readable(const void *p, size_t n)
 {
     auto a = reinterpret_cast<uintptr_t>(p);
-    if (!a)
-        return false;
-    for (uintptr_t q = a & ~0xfffull; q < a + n; q += 0x1000) {
-        MEMORY_BASIC_INFORMATION m;
-        if (!VirtualQuery(reinterpret_cast<void *>(q), &m, sizeof m) || m.State != MEM_COMMIT ||
-            (m.Protect & (PAGE_GUARD | PAGE_NOACCESS)) || !(m.Protect & 0xEE))
-            return false;
-    }
-    return true;
+    return a && runtime::pages::readable_now(a, n);
 }
 
 std::string name_a(const char *p)

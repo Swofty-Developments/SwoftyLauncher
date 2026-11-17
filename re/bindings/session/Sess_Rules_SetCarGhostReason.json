@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Rules_SetCarGhostReason",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435716a0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1435716a0.c;xref:0x14356b120,0x14356bb00",
+  "notes": "(rules, byte carIdx (0xff = all), char set, byte infringementType): authority-checked (local machine owns car via [sess+0xf88]+0x101+idx*2); maps infringement type 0x15,0x14,0x16,0x12,0x11,0x0d,0x2d,0x2e,0x17 -> ghost reason 0..8 and sets/clears the car bit in mask table +0x1d28 (16-byte entries, mask +8, count +0x1d20); then for each vehicle (+0x1c30 +0x88..+0x90) calls Game_VehicleGhostComponent_Ghost/Unghost by the OR of masks. Callers: Sess_Rules_DisqualifyForPenaltyPoints, Sess_Infringement_ProcessQueue. Addon: make a car ghosted/collidable."
+ },
+ "signature": {
+  "id": "session.rules_set_car_ghost_reason",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 20 48 89 CE 48 8B 81 90 1C 00 00",
+  "match": "0x1435716a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435716a0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Rules_SetCarGhostReason"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x1435716a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435716a0.c;xref:0x14356b812,0x14356bdc9",
+   "notes": "V3779 Authority check lobby +0x101+idx*2, switch maps types 0x15->0,0x14->1,0x16->2,0x12->3,0x11->4,0x0d->5,0x2d->6,0x2e->7,0x17->8; mask table +0x1d28 (16 B entries, mask +8, count +0x1d20) as claimed."
+  }
+ ],
+ "proofs": []
+}

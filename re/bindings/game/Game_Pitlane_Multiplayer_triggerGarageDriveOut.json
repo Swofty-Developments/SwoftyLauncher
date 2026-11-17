@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Pitlane_Multiplayer_triggerGarageDriveOut",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434d16a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434d16a0.c;xref:0x143254418",
+  "notes": "logged method name multiplayer_triggerGarageDriveOut (class from the log channel); log channel PITLANE: '%s(%d, %s) : %s -> %s.' L2 2026-11-14 (engine-re round 2): decomp read; 1 reference(s) (0x143254418); the body itself references 'instant' / 'drive_out' / 'PITLANE' / '%s(%d, %s) : %s -> %s.'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pitlane_multiplayer_trigger_garage_drive_out",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 89 D3 80 FA 1A",
+  "match": "0x1434d16a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434d16a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Pitlane_Multiplayer_triggerGarageDriveOut"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1434d16a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434d16a0.c;xref:0x143254419",
+   "notes": "V6036 name and description match body; log string/pretty name present"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1434d16a0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434d16a0-0x1434d17e6;xref:0x143254418",
+   "notes": "V10514 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only call 0x143254418. multiplayer_triggerGarageDriveOut, instant / drive_out; calls 0x1434bff40, 0x1434d1350. 3 args."
+  }
+ ],
+ "proofs": []
+}

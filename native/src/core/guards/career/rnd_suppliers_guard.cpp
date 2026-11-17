@@ -1,5 +1,6 @@
 #include "core/guards/career/rnd_suppliers_logic.hpp"
 #include "core/guards/guard.hpp"
+#include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -40,12 +41,9 @@
 //
 // SWOFTY_RND_SUPPLIER_GUARD=0 turns it off.
 
-namespace runtime {
-std::string hook_error(const safetyhook::InlineHook::Error &e);
-}
-
 namespace {
 
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 namespace rs = runtime::rnd_suppliers;
 
@@ -220,8 +218,7 @@ void load_hook(void *container, void *key, uint8_t engine)
 void setup()
 {
     char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_RND_SUPPLIER_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+    if (guards::env_off("SWOFTY_RND_SUPPLIER_GUARD", v)) {
         swofty::log("[rnd] supplier budget off (SWOFTY_RND_SUPPLIER_GUARD=%s)", v);
         return;
     }

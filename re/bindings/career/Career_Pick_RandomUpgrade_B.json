@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Pick_RandomUpgrade_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435191d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Pick_RandomUpgrade_B(uint64_t *self,int64_t *a2)",
+  "evidence": "decomp:re/decomp/1435191d0.c;xref:0x14351cf1f;xref:0x14351f95f;xref:0x14351fd19",
+  "notes": "myteam-g1: UPGRADES/R pickRandomUpgrade (RNG-weighted choice among enabled upgrades)."
+ },
+ "signature": {
+  "id": "career.pick_random_upgrade_b",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 C8 30 00 00",
+  "match": "0x1435191d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435191d0",
+  "kind": "func_start",
+  "names": [
+   "Career_Pick_RandomUpgrade_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x1435191d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435191d0.c;xref:0x14351cf1f",
+   "notes": "V10277 Strings UPGRADES/R, Random used for %s (randomNum), pickRandomUpgrade; builds per-type weights then random index modulo count."
+  }
+ ],
+ "proofs": []
+}

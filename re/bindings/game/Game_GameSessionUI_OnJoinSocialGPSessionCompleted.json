@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionUI_OnJoinSocialGPSessionCompleted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430b2890",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameSessionUI::onJoinSocialGPSessionCompleted; log channel NETWORK-UI: 'void network::GameSessionUI::onJoinSocialGPSessionCompleted(NEbool, neon::NeNetError, NEbool) | %s: success: %d, error code: %d, retry: %d'"
+ },
+ "signature": {
+  "id": "game.game_session_ui_on_join_social_gp_session_completed",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 78 44 89 CB 44 89 C7",
+  "match": "0x1430b2890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430b2890",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionUI_OnJoinSocialGPSessionCompleted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430b2890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430b2890.c;xref:0x1430aeacf",
+   "notes": "V5351 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

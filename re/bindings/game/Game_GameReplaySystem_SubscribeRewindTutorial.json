@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameReplaySystem_SubscribeRewindTutorial",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c12dd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c12dd0.c;xref:0x1457cf278",
+  "notes": "GameReplaySystem vslot 11 (vt 0x1457cf220, overrides base 0x1445d5980): reset-if-flagged, then subscribes on the message bus (Ne_Subscribe_BusMessage 0x143987810) to MessagePausedRewindTutorialStarted (handler 0x142c13420, ctx=this) and MessageRewindOnboardingTutorialEnded (handler 0x142c13430); ne_hash_map insert inlined. Addon: those two handlers are where the flashback/rewind tutorial pauses the replay system. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2335)"
+ },
+ "signature": {
+  "id": "game.game_replay_system_subscribe_rewind_tutorial",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 80 B9 89 00 00 00",
+  "match": "0x142c12dd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c12dd0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameReplaySystem_SubscribeRewindTutorial"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d2-verify",
+   "kind": "func",
+   "item": "Game_GameReplaySystem_SubscribeRewindTutorial",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c12dd0.c;xref:0x1457cf278",
+   "notes": "V2335 vtable slot 11 of GameReplaySystem confirmed (base 0x1445d5980 at 0x1457d6be8); strings MessagePausedRewindTutorialStarted/MessageRewindOnboardingTutorialEnded, handlers 142c13420/142c13430; second subscribe is inlined hash-map insert not a direct 143987810 call"
+  }
+ ],
+ "proofs": []
+}

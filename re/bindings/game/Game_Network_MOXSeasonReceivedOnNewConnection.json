@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_MOXSeasonReceivedOnNewConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430a5770",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): 'MOX/Season: Received onNewConnection notification from %d'"
+ },
+ "signature": {
+  "id": "game.network_mox_season_received_on_new_connection",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 48 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 4D B8 00 01 00 00",
+  "match": "0x1430a5770",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430a5770",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_MOXSeasonReceivedOnNewConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430a5770",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430a5770.c;xref:0x1430902e7",
+   "notes": "V5319 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

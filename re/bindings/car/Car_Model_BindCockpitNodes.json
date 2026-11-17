@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Model_BindCockpitNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140393eb0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140393eb0.c;xref:0x14039b0d6",
+  "notes": "Binds the car model / model proxy nodes for the cockpit: steer_master, steering_wheel, dashboard needles (d_needle_tach/temp/torque/oil/petrol/water/limiter), wipers, steering button/dial animation nodes (gear up/down, brake bias, DRS/ERS/neutral/pit limiter/radio), hand dummies, dummy_driver_position, tyre IK; WARN 'Failed to find model and/or model proxy for car %s'. Caller 0x14039aa80. Addon/car mods: node names a custom car model must keep for steering/dash animation. | #587: L2 by lead-authorised promotion for lane owner car-re (independent agree V2820)"
+ },
+ "signature": {
+  "id": "car.model_bind_cockpit_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 C5 F8 29 BC 24 80 01 00 00 C5 F8 29 B4 24 70 01 00 00 48 89 CE 48 8B 89 18",
+  "match": "0x140393eb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140393eb0",
+  "kind": "func_start",
+  "names": [
+   "Car_Model_BindCockpitNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Car_Model_BindCockpitNodes",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140393eb0.c;xref:0x140393eb0",
+   "notes": "V2820 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

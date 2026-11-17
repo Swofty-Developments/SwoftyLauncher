@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Update_DepartmentMoraleStateVM",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416d57c0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Update_DepartmentMoraleStateVM(void *vm)",
+  "evidence": "decomp:re/decomp/1416d57c0.c;xref:0x1416d540c",
+  "notes": "myteam-g1: View-model update for the department morale badge: gets the team modifier list for the department (vm+0x20 dept id, team vm+0x28, map +0xc90 via Career_Get_TeamModifiers), sums modifier values (float at +4), picks lng_high_morale (>0), lng_low_morale (<0) or lng_normal_morale, formats morale_percent_str (abs value) and sets is_morale_relevant / morale_state. Morale = sum of team modifiers filtered by department."
+ },
+ "signature": {
+  "id": "career.update_department_morale_state_vm",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 20 01 00 00 C5 F8 29 B4 24 10 01 00 00 48 89 CE 48 8B 49 28",
+  "match": "0x1416d57c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416d57c0",
+  "kind": "func_start",
+  "names": [
+   "Career_Update_DepartmentMoraleStateVM"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-b",
+   "kind": "func",
+   "item": "0x1416d57c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1416d57c0.c;xref:0x1416d540c;str:\"lng_high_morale\";str:\"lng_low_morale\";str:\"lng_normal_morale\";str:\"morale_percent_str\";str:\"is_morale_relevant\"",
+   "notes": "V8995 Modifier list from team+0xc90 via FUN_1434fb4b0, filters entries of kind 0x0d for dept byte vm+0x20, sums float at +4, selects the three loc keys. Matches."
+  }
+ ],
+ "proofs": []
+}

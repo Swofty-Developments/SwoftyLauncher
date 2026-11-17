@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ne_Parse_BoolCString",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14391a0d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14391a0d0.c;xref:0x14023c542,0x140253432",
+  "notes": "(str, out) -> NEerrno: case-insensitive 'true'/'false' (and short forms) into *out; NULL -> EINVAL recorded in the NEerrno trace ring 0x146107830. 44 call sites incl. Ne_Phys_ParseMaterials, Car_Parse_SurfaceMaterial."
+ },
+ "signature": {
+  "id": "core.parse_bool_c_string",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 C6 02 00 48 85 C9 74 3A 48",
+  "match": "0x14391a0d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14391a0d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Parse_BoolCString"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14391a0d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14391a0d0.c;xref:0x14023c542",
+   "notes": "V3596 NULL input records and returns code 1 (not EINVAL 0x16); bad strings return 0x16; rest and callers (Ne_Phys_ParseMaterials, Car_Parse_SurfaceMaterial) match"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14391a0d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14391a0d0.c;xref:0x14023c542",
+   "notes": "V4005 NULL input records and returns code 1 (not EINVAL 0x16); bad strings return 0x16; rest and callers (Ne_Phys_ParseMaterials, Car_Parse_SurfaceMaterial) match"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x14391a0d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14391a0d0.c",
+   "notes": "V4063 EINVAL 0x16 on bad input, NEerrno ring 0x146107830; confirmed (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

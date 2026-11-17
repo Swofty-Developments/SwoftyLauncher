@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Thumbnails_QueueCarRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e33790",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e33790.c;xref:0x142e3319f",
+  "notes": "Large (373 lines, Ne_Crt_Chkstk frame) car-thumbnail queue step: multiplicative hash lookup of u32 id (+0x70/+0x90/+0xa0), constructs/destroys Game_CustomisationSet (Game_CustomisationSet_Dtor), toggles Vm_NodeSet_Bool, Game_ThumbnailSystem_AddingPendingC.. Callers Game_Thumbnails_BuildCarRequests, 0x142e366d8. Hypothesis."
+ },
+ "signature": {
+  "id": "game.thumbnails_queue_car_request",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 E8 1B 01",
+  "match": "0x142e33790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e33790",
+  "kind": "func_start",
+  "names": [
+   "Game_Thumbnails_QueueCarRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142e33790",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e33790.c;xref:0x142e3319f",
+   "notes": "V7556 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

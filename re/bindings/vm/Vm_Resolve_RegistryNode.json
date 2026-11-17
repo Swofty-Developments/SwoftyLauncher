@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Vm_Resolve_RegistryNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442b1b60",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_Resolve_RegistryNode(void *registry, const char *path, const void *base, void *create)",
+  "evidence": "decomp:re/decomp/1442b1b60.c;decomp:re/decomp/1416864d0.c;decomp:re/decomp/1421a9060.c;xref:0x141686513,0x1421abbea,0x1421ac504,0x14083d14b,0x1442a0a5c",
+  "notes": "Resolves a g_Vm_Registry node by a dotted path C string and returns a pointer to its node handle (node+8; callers read *ret and link into (*ret)+0x28; &k_Vm_EmptyNodeHandle on a miss). rcx = the registry (g_Vm_Registry), rdx = the path as a plain NUL-terminated char * ('#overrides.teams.badges_broadcast.forceindia_26', 'overrides.teams.badges_broadcast.<label>', view_model_data.*), r8 = the base handle the path is relative to (&k_Vm_EmptyNodeHandle at most callers), r9 = 0 or a zeroed 0x20-byte create record {NeStr *name +0, node handle +8, links +0x10/+0x18}: with it a missing path creates the middle nodes (Vm_GetOrCreate_ChildNode 0x1442b2bf0) and the record gets the leaf name and parent (9 of 2166 sites; 2157 pass 0). A leading '#', or *base == 0 with a non-empty path, starts at *(registry[1]+8); an empty path with *base == 0 returns the empty handle; a NULL path returns base+8 (root+8 when *base is 0). The path is copied into a 0x200-byte local (at most 511 characters, 0x1442b1c20-0x1442b1c39) and split at '.' and '#' (0x145a6fe88), indices at '[' ']', each segment into a 0x40-byte local (63 characters); rdx is not kept, so the caller's string is only read during the call. Every '#overrides.' image key the UI binds goes through it, among them 0x1416864d0 (0x141686513, the holder bind after the Team Select, Choose Driver badge and details logo formats) and the timing tower / broadcast builder 0x1421a9060 (0x1421abbea badges_broadcast, 0x1421ac504 team_logos), all with r9 = 0. EA: one hit at RVA 0x42a57d0. Independent agree V1152 (vm-resolve-verify); the row waits for the vm lane (claimed by ui-re since the 2026-10-19 seed) to raise it to L2. Raised to L2 with swofty's go (2026-10-27): vm lane claimed by ui-re since the 2026-10-19 seed; independent agree V1152."
+ },
+ "signature": {
+  "id": "vm.resolve_registry_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 03 00 00 C5 F8 29 B4 24 A0 03 00 00 4D 89 CC 48",
+  "match": "0x1442b1b60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442b1b60",
+  "kind": "func_start",
+  "names": [
+   "Vm_Resolve_RegistryNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "vm-resolve-verify",
+   "kind": "func",
+   "item": "Vm_Resolve_RegistryNode",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:work/vrv/1442b1b60.c;decomp:work/vrv/1416864d0.c;decomp:work/vrv/1421a9060.c;xref:0x141686513,0x1421abbea,0x1421ac504,0x14083d14b,0x1442a0a5c;sig:vm.resolve_registry_node",
+   "notes": "V1151 Holds: .pdata 0x1442b1b60-0x1442b276f in .xtls with a full push r15..rbx / sub rsp,0x3b8 prologue, not a thunk. rdx is a plain NUL-terminated char* (movzx [rdx], no length or NeStr header). '#' first byte, or *base==0 with a non-empty path, starts at *(registry[1]+8) (k_Vm_EmptyNodeHandle if registry[1]==0). The path is copied byte by byte at 0x1442b1c20-0x1442b1c39 into rsp+0x1a0 (cap 0x200 stored at rsp+0x190); the loop stops after writing rsp+0x39e and puts the NUL at rsp+0x39f, so at most 511 chars are copied and a longer path is silently truncated to 511 chars (the rest is never read), with no overflow (xmm6 save sits at rsp+0x3a0). rdx is never spilled and is reloaded with the delimiter at 0x1442b1c6e, so the caller string is only read during the copy. Return is [rsp+0x40]: &k_Vm_EmptyNodeHandle (0x146ca0e90) by default and on every miss, node+8 on success (0x1442b272f); callers read *ret and link into (*ret)+0x28. Callers 0x1416864d0 (call 0x141686513) and 0x1421a9060 (calls 0x1421abbea badges_broadcast, 0x1421ac504 team_logos) pass rcx=[g_Vm_Registry 0x146ca54f8], rdx=NeStr+9 or k_Ne_EmptyStrChars, r8=&k_Vm_EmptyNodeHandle, r9=0, and only use the returned node; nothing keeps the path. Discrepancies: (1) arg 4 is not a bare NeStr**: it points at a 0x20-byte record {NeStr *name; node handle at +8 with list links at +0x10/+0x18}. On a miss with r9 set, the function creates missing middle nodes via Vm_GetOrCreate_ChildNode 0x1442b2bf0 and writes the leaf name (Ne_Make_StrFromCStr(r9, local token, ...)) and the parent handle into it. Of 2166 call sites, 2155 pass r9=0, 9 pass a zeroed 0x20-byte stack record (e.g. 0x14083d14b, 0x1442a0a5c), 1 passes r15. (2) strtok 0x14535f420 splits at '.' and '#' (0x145a6fe88), then at '[' and ']' (0x145a6fe8b) for indices. Each segment is copied into a 0x40-byte local, so segments longer than 63 chars are truncated. (3) An empty path with *base==0 returns the empty handle (0x1442b2761), not the root. A NULL path returns base+8 or root+8. (4) The evidence token xref:0x1416864ff is mid-instruction; the call is at 0x141686513. sigcheck: vm.resolve_registry_node OK, 1 hit at 0x1442b1b60, 3039/3039 pass. EA dump F1_25.1789128892.110548.mem: the pattern matches once in .rdata (EA's .xtls) at RVA 0x42a57d0 (VA 0x1442a57d0). That is the start of a .pdata entry 0x42a57d0-0x42a63df, the same 0xc0f size, and all 728 instructions match Steam once rip and branch displacements are ignored. No EA override is needed."
+  },
+  {
+   "date": "2026-10-27",
+   "verifier": "vm-resolve-verify",
+   "kind": "func",
+   "item": "Vm_Resolve_RegistryNode",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:work/vrv/1442b1b60.c;decomp:work/vrv/1416864d0.c;decomp:work/vrv/1421a9060.c;xref:0x141686513,0x1421abbea,0x1421ac504,0x14083d14b,0x1442a0a5c,0x1418e2a82,0x1414b0658,0x142e54be1;sig:vm.resolve_registry_node",
+   "notes": "V1152 Re-check of the corrected row (follows V1151). The proto with void *create matches the code: r9 is copied to r12 and is used only on a miss (0x1442b23ba), where middle nodes are made through Vm_GetOrCreate_ChildNode 0x1442b2bf0 and the leaf name (Ne_Make_StrFromCStr(r9, local token, ...)) and the parent handle are written at +0/+8/+0x10/+0x18; the return stays &k_Vm_EmptyNodeHandle. All 9 non-null sites pass a zeroed 0x20-byte stack record: 8 wrappers (0x14083d14b, 0x14084ce2b, 0x14097126b, 0x140b3bf5b, 0x140d3953b, 0x14160cc6b, 0x14160d0eb, 0x1442a0a5c) zero [rsp+0x20/0x30..+0x20] with vxorps/vmovaps before lea r9, and 0x1418e2a82 passes r15 = rsp+0xa0 after zeroing it with xmm6 (vxorps at 0x1418e2663). The two sites I could not decode before (0x1414b0658, 0x142e54be1) both pass xor r9d,r9d, so 2157 of 2166 pass 0, not 2155; that count is the only correction. The xref tokens 0x141686513, 0x1421abbea and 0x1421ac504 are the rel32 calls with rcx = [0x146ca54f8], r8 = 0x146ca0e90 and r9 = 0. The 511-char copy at 0x1442b1c20-0x1442b1c39, the '.#' split at 0x145a6fe88, the '[]' split at 0x145a6fe8b, the 63-char segment locals, root = *(registry[1]+8), the empty path with *base==0 giving the empty handle (0x1442b2761), node+8 on success, the unkept rdx and the EA hit (.rdata RVA 0x42a57d0, instruction-identical) all hold as recorded in V1151. The notes leave out that a NULL path returns base+8 or root+8; that is an omission, not a wrong claim."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1442b1b60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1442b1b60.c;xref:0x1406a7462",
+   "notes": "V6577 verified # absolute path handling, path split, child walk"
+  }
+ ],
+ "proofs": []
+}

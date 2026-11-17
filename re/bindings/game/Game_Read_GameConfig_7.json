@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_GameConfig_7",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436c5ef0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Game.DriverHQIntro.DriverHQIntro.ForceOn, Game.DriverHQIntro.DriverRatingsMilestone.ForceOn, Game.DriverHQIntro.DriverWonWorldChampionship.ForceOn, Game.DriverHQIntro.NewSeasonEstablishingCutscene.ForceOn'"
+ },
+ "signature": {
+  "id": "game.read_game_config_7",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 F8 29 B4 24 10 01 00 00 48 89 CE 80 B9 A0 0C 00 00 00",
+  "match": "0x1436c5ef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436c5ef0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_GameConfig_7"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436c5ef0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1436c5ef0.c",
+   "notes": "V6122 Keys listed are read, but 5290-byte function also builds/queues the DriverHQ intro message (DriverHQIntroMessage, fade clearing, posts event). Better: Game_DriverHqIntro_UpdateQueue. (no direct call site; vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1436c5ef0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436c5ef0.c",
+   "notes": "V7091 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

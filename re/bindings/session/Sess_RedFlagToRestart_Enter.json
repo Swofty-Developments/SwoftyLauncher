@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_RedFlagToRestart_Enter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142dfef00",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142dfef00.c;xref:0x1457e9510",
+  "notes": "red flag ToRestart state: plays the restart fullscreen video, then the cars are put on the grid (teleport) for the standing restart. sb3-verify-a correction: starts the video and sets the end callback 0x142dff250 on [..]+0x108; no grid teleport in this function (if any, it is in the callback)"
+ },
+ "signature": {
+  "id": "session.red_flag_to_restart_enter",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 68 C5 F9 29 74 24 50",
+  "match": "0x142dfef00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142dfef00",
+  "kind": "func_start",
+  "names": [
+   "Sess_RedFlagToRestart_Enter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-a",
+   "kind": "func",
+   "item": "Sess_RedFlagToRestart_Enter",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142dfef00.c;xref:0x1457e9510",
+   "notes": "V1896 plays video via object at [..]+0x108 with end callback 142dff250; no grid teleport in this function (at most in the callback, not decompiled); also sets clock"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-a",
+   "kind": "func",
+   "item": "Sess_RedFlagToRestart_Enter",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142dfef00.c;xref:0x1457e9510",
+   "notes": "V3955 plays video via object at [..]+0x108 with end callback 142dff250; no grid teleport in this function (at most in the callback, not decompiled); also sets clock"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x142dfef00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142dfef00.c",
+   "notes": "V4160 vtable/indirect. Plays fullscreen video (Ne_UIVideo_SetSource/SetLayer/OpenFile), sets end callback FUN_142dff250 at plVar2[0x1a] on [lVar5+0x108]; no grid teleport code in this function (matches correction)"
+  }
+ ],
+ "proofs": []
+}

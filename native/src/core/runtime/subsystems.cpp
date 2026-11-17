@@ -9,6 +9,10 @@ void crash_attach(SwoftyApi *a, const std::wstring &dir);
 void crash_game_hooks();
 void settings_attach(SwoftyApi *a, const std::wstring &dir);
 
+namespace swofty_core::apply::content {
+void encode_logos_ahead();
+}
+
 namespace runtime {
 
 namespace {
@@ -21,6 +25,7 @@ constexpr Subsystem SUBSYSTEMS[] = {
     {"crash", Start::attach, attach_crash},
     {"settings", Start::attach, attach_settings},
     {"perf", Start::attach, perf::attach},
+    {"team logo slices ahead of the database load", Start::attach, swofty_core::apply::content::encode_logos_ahead},
     {"crash: Ne_ReportMemoryError hook", Start::attach_code, crash_game_hooks},
     {"popup: message system hook", Start::commit_code, popup_setup},
     {"mfd: development switch", Start::commit_code, mfd_setup},
@@ -32,11 +37,12 @@ constexpr Subsystem SUBSYSTEMS[] = {
     {"overlay", Start::ready, overlay_setup},
     {"lang", Start::ready, lang_override_setup},
     {"events", Start::ready, events_setup},
-    {"hud", Start::ready, hud_setup},
+    {"hud", Start::ready, hud_setup, Probe::open},
     {"focus", Start::ready, focus_setup},
     {"postfx", Start::ready, postfx_setup},
     {"grade", Start::ready, grade_setup},
     {"srv clamp", Start::ready, srv_clamp_setup},
+    {"rtas guard", Start::ready, rtas_guard_setup, Probe::close},
     {"live", Start::ready, live_setup},
     {"telemetry", Start::ready, telemetry_setup},
     {"placed record", Start::ready, placed_record_setup},

@@ -12,11 +12,11 @@ use gpui_kit::component::spinner::Spinner;
 use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::builtin::CORE_ID;
-use swofty_core::data_move::find::{self, Found};
-use swofty_core::data_move::{self, Location};
-use swofty_core::managed;
+use swofty_core::addons::builtin::CORE_ID;
+use swofty_core::data::relocate::find::{self, Found};
+use swofty_core::data::relocate::{self as data_move, Location};
 use swofty_core::session::Config;
+use swofty_core::updates::managed;
 use swofty_i18n::{tr, trf, trn};
 
 use crate::dialogs::data_move::install_folder;
@@ -67,7 +67,7 @@ impl Shell {
                 .map(|b| b.addon.manifest().id.clone()),
         );
         if let Some(shipped) = install_folder().map(|root| root.join("addons"))
-            && !swofty_core::process::same_folder(&shipped, &self.store.addons_dir())
+            && !swofty_core::platform::process::same_folder(&shipped, &self.store.addons_dir())
             && let Ok(read) = std::fs::read_dir(shipped)
         {
             ids.extend(
@@ -79,15 +79,16 @@ impl Shell {
     }
 
     pub(crate) fn scan_for_lost_data(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        if self.moving.is_some() || !scan_due(self.user_addon_count(), &self.store.config()) {
+        if self.overlays.moving.is_some() || !scan_due(self.user_addon_count(), &self.store.config()) {
             return;
         }
         self.scan_for_data(false, window, cx);
     }
 
     pub(crate) fn scan_for_data(&mut self, announce: bool, window: &mut Window, cx: &mut Context<Self>) {
-        if self.moving.is_some()
+        if self.overlays.moving.is_some()
             || self
+                .overlays
                 .found_data
                 .as_ref()
                 .is_some_and(|p| p.stage == Stage::Switching)
@@ -95,10 +96,11 @@ impl Shell {
             return;
         }
         let games: Vec<PathBuf> = self
+            .game
             .copies
             .iter()
             .map(|c| c.dir.clone())
-            .chain(self.install.as_ref().map(|i| i.dir.clone()))
+            .chain(self.game.install.as_ref().map(|i| i.dir.clone()))
             .collect();
         let location = Location::find(install_folder(), games);
         let installs: Vec<PathBuf> = install_folder().into_iter().collect();
@@ -116,7 +118,7 @@ impl Shell {
                     }
                     return;
                 }
-                s.found_data = Some(FoundPrompt {
+                s.overlays.found_data = Some(FoundPrompt {
                     found,
                     picked: 0,
                     stage: Stage::Asking,
@@ -129,7 +131,12 @@ impl Shell {
     }
 
     fn use_found_data(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(prompt) = self.found_data.as_mut().filter(|p| p.stage == Stage::Asking) else {
+        let Some(prompt) = self
+            .overlays
+            .found_data
+            .as_mut()
+            .filter(|p| p.stage == Stage::Asking)
+        else {
             return;
         };
         let Some(chosen) = prompt.found.get(prompt.picked).map(|f| f.path.clone()) else {
@@ -139,14 +146,15 @@ impl Shell {
             window.notify(Notification::error(why), cx);
             return;
         }
-        if let Some(prompt) = self.found_data.as_mut() {
+        if let Some(prompt) = self.overlays.found_data.as_mut() {
             prompt.stage = Stage::Switching;
         }
         let games: Vec<PathBuf> = self
+            .game
             .copies
             .iter()
             .map(|c| c.dir.clone())
-            .chain(self.install.as_ref().map(|i| i.dir.clone()))
+            .chain(self.game.install.as_ref().map(|i| i.dir.clone()))
             .collect();
         let location = Location::find(install_folder(), games);
         let installs: Vec<PathBuf> = install_folder().into_iter().collect();
@@ -164,7 +172,7 @@ impl Shell {
                     s.relaunch_for_move(window, cx);
                 }
                 Err(e) => {
-                    s.found_data = None;
+                    s.overlays.found_data = None;
                     cx.notify();
                     crate::app::app_log::note(&format!("find addons: {e}"));
                     s.data_move_failed(&e.to_string(), window, cx);
@@ -176,7 +184,7 @@ impl Shell {
     }
 
     fn dismiss_found_data(&mut self, forever: bool, window: &mut Window, cx: &mut Context<Self>) {
-        self.found_data = None;
+        self.overlays.found_data = None;
         if forever {
             let mut config = self.store.config();
             config.no_find_prompt = true;
@@ -186,7 +194,7 @@ impl Shell {
     }
 
     pub(crate) fn found_data_overlay(&self, p: Palette, cx: &mut Context<Self>) -> Option<impl IntoElement> {
-        let prompt = self.found_data.as_ref()?;
+        let prompt = self.overlays.found_data.as_ref()?;
         let body = match prompt.stage {
             Stage::Switching => v_flex()
                 .items_center()
@@ -243,7 +251,7 @@ impl Shell {
                 .border_color(if picked { p.accent } else { p.border_variant })
                 .when(many, |row| {
                     row.cursor_pointer().on_click(cx.listener(move |this, _, _, cx| {
-                        if let Some(prompt) = this.found_data.as_mut() {
+                        if let Some(prompt) = this.overlays.found_data.as_mut() {
                             prompt.picked = i;
                         }
                         cx.notify();

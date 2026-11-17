@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Sess_GameWeatherSystem_SetupSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438b7350",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_GameWeatherSystem_SetupSession(void *ws, void *settings, void *config)",
+  "evidence": "decomp:re/decomp/1438b7350.c;decomp:re/decomp/142406f50.c;decomp:re/decomp/1413520c0.c;xref:0x142407807,0x14135214b;doc:addons/career-editor/protocol/weather.md",
+  "notes": "cxx=GameWeatherSystem::setupSession. rcx=GameWeatherSystem, rdx=session weather settings (+0xb14 mode 0=custom slots, +0xb18 exact-timing flag, +0xb74+s*0x44 per-dataset block {f32 len,u32 count,f32 hold[6],f32 trans[6],u8 random[6]@+0x38,u8 type[6]@+0x3e}), r8=track weather config; copies config weights to TOD *(ws+0x1d98) and TOD+0xb426=settings+0xb18. Callers (V0244): weekend hub forecast refresh 0x142406f50 (after 0x140bde510), scripted-weather handler 0x1413520c0 (0x141352160 sets +0xb18=1, then tail jmp), and GameWeatherSystem vtable 0x145883440 slot +0x38 = xtls thunk 0x1438b7250 -> .data1 0x151a35840 (sets ws+0x2f77=1, settings = *(*(ws+0x1dd8)+0x1a8)); all three go through the career-editor wrap. Build (V0244): when the mode-type check passes and settings+4 != 0x12 it builds datasets 0..7 (P1..Race3, table 0x14568e461): exact flag set -> all 8 from the settings slots via the thunk; otherwise per dataset mode 0 -> custom slots via the thunk, else realistic stub 0x14479c560 (ws+0x2f3a+s=1), except that for the first weekend of the first season of a career (ws+0x1f02 set, +0x1f04==0, +0x1f08==0) P1-P3 get a one-state build with null hold/trans unless 0x1407c6110 says otherwise; else it builds a single dataset straight through 0x14461bb70 from settings+0xb68. career-editor rebuilds planned datasets after it returns (skipped when settings+4 == 0x12 or settings+0xb18 is set)."
+ },
+ "signature": {
+  "id": "session.game_weather_system_setup_session",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 0B 00 00 C5 78 29 BC 24 70 0B 00 00",
+  "match": "0x1438b7350",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438b7350",
+  "kind": "func_start",
+  "names": [
+   "Sess_GameWeatherSystem_SetupSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-weather",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/weather.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-1",
+   "kind": "func",
+   "item": "Sess_GameWeatherSystem_SetupSession",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1438b7350.c;decomp:re/decomp/151a35840.c;decomp:re/decomp/142406f50.c;decomp:re/decomp/1413520c0.c;xref:0x142407807,0x14135214b,0x151a358c8,0x145883478",
+   "notes": "V0244 3-arg void proto, field offsets (+0xb14/+0xb18/+0xb74+s*0x44 block layout), TOD copies and ws+0x2f3a check; window 0x1438b7350..55 has no real branch target. Wrong: caller list is incomplete and the 8-dataset build is conditional. Corrected callers: weekend hub forecast refresh 0x142406f50 (after 0x140bde510), scripted-weather handler 0x1413520c0 (0x141352160 sets +0xb18=1, then tail jmp), and GameWeatherSystem vtable 0x145883440 slot +0x38 = xtls thunk 0x1438b7250 -> .data1 0x151a35840 (sets ws+0x2f77=1, settings = *(*(ws+0x1dd8)+0x1a8)); all three go through the wrap. Corrected build: when the mode-type check passes and settings+4 != 0x12 it builds datasets 0..7 (P1..Race3, table 0x14568e461): exact flag set -> all 8 from the settings slots via the thunk; otherwise per dataset mode 0 -> custom slots via the thunk, else realistic stub 0x14479c560 (ws+0x2f3a+s=1), except that for the first weekend of the first season of a career (ws+0x1f02 set, +0x1f04==0, +0x1f08==0) P1-P3 get a one-state build with null hold/trans unless 0x1407c6110 says otherwise; else it builds a single dataset straight through 0x14461bb70 from settings+0xb68"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-3",
+   "kind": "func",
+   "item": "Sess_GameWeatherSystem_SetupSession",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438b7350.c;decomp:re/decomp/142406f50.c;decomp:re/decomp/1413520c0.c;xref:0x142407807,0x14135214b,0x151a358c8,0x145883478",
+   "notes": "V0311 Independent: 3 args; config weights copied to TOD +0xb408/+0xb378.. and TOD+0xb426 = settings+0xb18; block layout len +0xb74, count +0xb78, hold +0xb7c, trans +0xb94, random +0xbac, type +0xbb2 (stride 0x44); build gate = is-a 0x146129ca0 (bl, 0x1438b7575) && settings+4 != 0x12 (0x1438b7680), table 0x14568e461 = 0..7; +0xb18 set -> 8 slot builds; else per dataset one-state build for values 0..2 when the first-weekend flag holds and 0x1407c6110 is false, mode 0 slots, else 0x14479c560 + ws+0x2f3a+s=1; else single build via 0x14461bb70 from +0xb68. Callers: 0x142407807 after 0x140bde510, tail jmp 0x14135214b after 0x141352160 (+0xb18=1), .data1 0x151a358c8 (vt 0x145883440+0x38 -> 0x1438b7250). Wording note: the first-weekend flag also needs ws+0x1de0 set, 0x14077c790(mode,1)==0, the mode not is-a 0x146129ca0 and a CareerComponent."
+  }
+ ],
+ "proofs": []
+}

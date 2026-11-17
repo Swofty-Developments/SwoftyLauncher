@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Rules_IssueDisqualification",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143572f90",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143572f90.c;xref:0x14356bced,0x14356bf73",
+  "notes": "(rules, infringement, reason): once per vehicle (bit masks rules+0x1d08 issued / +0x1d0c dsq) calls Sess_Rules_Disqualify, looks up penalty value (Sess_Rules_LookupPenaltyValue +0x1c98), records penalty type 7 via 0x1435668e0 and posts a penalty message (vtbl 0x14584ec18) to the message bus 0x14618b3b8. Callers: Sess_Infringement_ProcessQueue."
+ },
+ "signature": {
+  "id": "session.rules_issue_disqualification",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 78 44 89 C3 48 89 D6 48 89",
+  "match": "0x143572f90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143572f90",
+  "kind": "func_start",
+  "names": [
+   "Sess_Rules_IssueDisqualification"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x143572f90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143572f90.c;xref:0x14356bced,0x14356bf73",
+   "notes": "V3782 Once-per-car masks +0x1d08/+0x1d0c, 143571440 (Disqualify), penalty value 142c6e400 on +0x1c98, 1435668e0 type 7, message vtbl 14584ec18 posted to bus 14618b3b8."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_EadpErrorsDataService_UninstallExceptionHandler",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440034f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/1440034f0.c;xref:0x145a46da8",
+  "notes": "logged method name uninstallExceptionHandler (class from the log channel); log channel NeEadpErrorsDataService: 'uninstallExceptionHandler'"
+ },
+ "signature": {
+  "id": "core.eadp_errors_data_service_uninstall_exception_handler",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 60 B8 32 01 00 00",
+  "match": "0x1440034f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440034f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_EadpErrorsDataService_UninstallExceptionHandler"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-b",
+   "kind": "func",
+   "item": "Ne_EadpErrorsDataService_UninstallExceptionHandler",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440034f0.c;xref:0x1440034f0",
+   "notes": "V2022 log string confirmed; really unregisters ExceptionHandlerClient (param_1-8) from begin/end handler lists of EA::Debug::ExceptionHandler under lock"
+  }
+ ],
+ "proofs": []
+}

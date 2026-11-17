@@ -1,0 +1,72 @@
+{
+ "schema": 1,
+ "name": "Ne_AnimLayer_ApplyChannels",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1443b9930",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1443b9930.c;xref:0x1401f9208,0x1401f9352",
+  "notes": "(layer, weights, clipIdx, additive): applies one animation clip's channels (type 0..3: float/vec/quat/matrix tracks) with per-channel weights onto the target pose; clears dirty bit 2 at +0x40. 11 call sites: Game_AnimLayers_EvaluateBlend/Single/Fallback, Car_Visual_UpdateRenderState."
+ },
+ "signature": {
+  "id": "core.anim_layer_apply_channels",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 83 C4 20 4C 89 EA 83 FA 01 83",
+  "match": "0x1401f9208",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1443b9930",
+  "kind": "func_start",
+  "names": [
+   "Ne_AnimLayer_ApplyChannels"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x1443b9930",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1443b9930.c;xref:0x1401f9208,0x14039e31e",
+   "notes": "V3487 switch on channel type 0..3 with per-channel weights over pose confirmed; callers (11) confirmed; but no dirty bit 2 at +0x40 clear seen, and param_4 triggers post-apply FUN_143d6b0c0 + tail vcall rather than additive; type meanings float/vec/quat/matrix unproven"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x1443b9930",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1443b9930.c;xref:0x1401f9208,0x14039e31e",
+   "notes": "V3995 switch on channel type 0..3 with per-channel weights over pose confirmed; callers (11) confirmed; but no dirty bit 2 at +0x40 clear seen, and param_4 triggers post-apply FUN_143d6b0c0 + tail vcall rather than additive; type meanings float/vec/quat/matrix unproven"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x1443b9930",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1443b9930.c",
+   "notes": "V4122 caller Game_AnimLayers_EvaluateBlend region confirmed (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

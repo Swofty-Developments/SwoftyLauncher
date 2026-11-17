@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EALoginTask_OnStart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143372760",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143372760.c;xref:0x14583cce0",
+  "notes": "EALoginTask (vtable 0x14583cc70, type name static init 0x143458a9f) slot 14 OnStart: clears +0x1ba; when no previous result (+0x1b8 == 0) checks the platform user object (+0x118 +0x230/+0x238, vfunc +0x28) and the signed-in user state (g ctx +0x140 +0x198 +0x1c0 vfunc +0x20 == 2, byte +0x540) to decide whether a privilege check is needed (+0x1b9), starts a QPC timer (+0x148/+0x150) and drives the 'BUSY_SPINNER' UI ('setHidden %d'). Addon: hook for EA account log-in start. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3322)"
+ },
+ "signature": {
+  "id": "game.e_a_login_task_on_start",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC F0 00 00 00 48 89 CE 66 C7 81",
+  "match": "0x143372760",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143372760",
+  "kind": "func_start",
+  "names": [
+   "Game_EALoginTask_OnStart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_EALoginTask_OnStart",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143372760.c;xref:0x143372760",
+   "notes": "V3322 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

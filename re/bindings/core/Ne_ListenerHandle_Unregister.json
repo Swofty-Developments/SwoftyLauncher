@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_ListenerHandle_Unregister",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442aa980",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1442aa980.c;xref:0x1414a3960,0x1414d6c10",
+  "notes": "(Handle *h): removes h from its owner's listener vector (owner h+8, vector owner+0x90..+0x98, memmove compaction) and clears h+8. Callers: session HUD shutdown, inbox tab, online career fade, challenge/goals commands."
+ },
+ "signature": {
+  "id": "core.listener_handle_unregister",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 8B 79 08 48 85 FF 0F 84",
+  "match": "0x1442aa980",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442aa980",
+  "kind": "func_start",
+  "names": [
+   "Ne_ListenerHandle_Unregister"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1442aa980",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1442aa980.c;xref:0x1406a7782",
+   "notes": "V3658 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

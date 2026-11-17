@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TrackSpaceDataResource_Load",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445eacc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1445eacc0.c;xref:0x145bf1488",
+  "notes": "Track Space Data Resource Handler load (vtable): resolves property sources param_2[0x19]/[0x17]/[0x16]+0x60, reads 'spline' (resource link), 'use_tb_planes' (bool type 0x146129dc0; global 0x145faa5f4 = 3 default/false, 5 when true) and 'pit_projection_search_distance' (float type 0x146129be0, default 50.0, clamped >=0, stored at [[0x146ce5498]+0x28]+0x7c). Track modding: TrackSpace ERP properties and their defaults. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2919)"
+ },
+ "signature": {
+  "id": "game.track_space_data_resource_load",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 70 01 00 00 C5 F8 29 B4 24 60 01 00 00 4D 89",
+  "match": "0x1445eacc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445eacc0",
+  "kind": "func_start",
+  "names": [
+   "Game_TrackSpaceDataResource_Load"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Game_TrackSpaceDataResource_Load",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445eacc0.c;xref:0x1445eacc0",
+   "notes": "V2919 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

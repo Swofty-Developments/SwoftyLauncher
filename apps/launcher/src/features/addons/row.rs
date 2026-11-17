@@ -1,10 +1,10 @@
 use super::drag::{Dragged, Dragging, NESTED};
 use crate::services::library::{AddonItem, Source, Type};
 use crate::shell::Shell;
-use crate::shell::pages::{addon_icon, badge, logo, track_badge};
 use crate::ui::facet::checkbox;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;
+use crate::ui::{addon_icon, badge, logo, track_badge};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::tooltip::Tooltip;
@@ -86,7 +86,7 @@ impl Shell {
     ) -> AnyElement {
         let man = &m.manifest;
         let id = man.id.clone();
-        let selected = self.open_addon.as_ref() == Some(&id);
+        let selected = self.navigation.open_addon.as_ref() == Some(&id);
         let draggable = self.movable(m);
         let shader_only = man.is_shader_only();
         let off = !self.vanilla() && !self.addon_on(m) && !shader_only;
@@ -174,7 +174,8 @@ impl Shell {
                         cx.notify();
                         return;
                     }
-                    this.open_addon = (this.open_addon.as_ref() != Some(&id)).then(|| id.clone());
+                    this.navigation.open_addon =
+                        (this.navigation.open_addon.as_ref() != Some(&id)).then(|| id.clone());
                     cx.notify();
                 }
             }));
@@ -203,7 +204,7 @@ impl Shell {
             h_flex()
                 .gap(px(10.))
                 .items_center()
-                .child(crate::shell::pages::tag(tr("Shader config"), p))
+                .child(crate::ui::tag(tr("Shader config"), p))
                 .child(
                     Button::new(SharedString::from(format!("open-shaders-{id}")))
                         .ghost()
@@ -305,7 +306,7 @@ impl Shell {
                     .child(m.source.label()),
             )
             .children(
-                swofty_core::overlay_guard::effects(man)
+                swofty_core::diagnostics::overlay_guard::effects(man)
                     .into_iter()
                     .map(|e| effect_tag(e, p)),
             )

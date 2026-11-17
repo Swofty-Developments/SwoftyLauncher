@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ControllerSet_CreateController",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438971e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-CONTROLLER_SET",
+  "notes": "named from its log messages (channel CONTROLLER_SET): 'ControllerSet(%d / %s) : created HUMAN controller. | ControllerSet(%d / %s) : created AI controller.'"
+ },
+ "signature": {
+  "id": "game.controller_set_create_controller",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 83 FA 01",
+  "match": "0x1438971e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438971e0",
+  "kind": "func_start",
+  "names": [
+   "Game_ControllerSet_CreateController"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1438971e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438971e0.c;xref:0x1411f631e",
+   "notes": "V6372 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

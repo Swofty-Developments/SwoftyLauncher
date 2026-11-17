@@ -20,7 +20,7 @@ use crate::game_folder::baseline::{Baseline, DepotHashes, Objects, Source, sha25
 use crate::game_folder::placed::Placed;
 use crate::install::Game;
 use crate::platform::steam::GameInstall;
-use crate::platform::vdf::Vdf;
+use crate::platform::steam::vdf::Vdf;
 use crate::{Result, io_err, read_json, write_json};
 
 const PAYLOAD: u32 = 0x71F6_17D0;
@@ -126,8 +126,8 @@ impl Depots {
             .join("steamapps")
             .join(format!("appmanifest_{STEAM_APP_ID}.acf"));
         let text = std::fs::read_to_string(&acf).map_err(|e| format!("{}: {e}", acf.display()))?;
-        let doc =
-            crate::platform::vdf::parse(&text).ok_or_else(|| format!("{} does not parse", acf.display()))?;
+        let doc = crate::platform::steam::vdf::parse(&text)
+            .ok_or_else(|| format!("{} does not parse", acf.display()))?;
         let depots = doc
             .path(&["AppState", "InstalledDepots"])
             .ok_or_else(|| format!("{} lists no installed depots", acf.display()))?;

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerSetup_ResetEntrants",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c34960",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_CareerSetup_ResetEntrants(void *setup)",
+  "evidence": "decomp:re/decomp/140c34960.c;xref:0x14568c5c8,0x1456da4b8",
+  "notes": "CareerSetupComponent vtable slot 9 (vtables 0x14568c580 and 0x1456da470): clears the game mode's entrants (setup +0x278 -> +0x2e0..+0x2e8), takes the entrant list whose stat id vt+0x268 returns (setup +0x2b8) from the entrants registry (setup +0x290 -> +0x560), stores it at game mode +0xe18 and copies its 0x88-byte records into +0x2e0, then clears the player key (setup +0x2e4)"
+ },
+ "signature": {
+  "id": "game.career_setup_reset_entrants",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 48 89 CE 48 8B 99 78 02 00 00",
+  "match": "0x140c34960",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c34960",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerSetup_ResetEntrants"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "wizard-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-26",
+   "verifier": "ce-verify-fa",
+   "kind": "func",
+   "item": "Game_CareerSetup_ResetEntrants",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c34960.c;decomp:re/decomp/1424cf160.c;decomp:re/decomp/140c2a870.c;decomp:re/decomp/141125e80.c;xref:0x14568c5c8,0x1456da4b8,0x140c3498a,0x140c349a4,0x140c349b2,0x140c34a0c,0x140c34a21,0x140c34a2d,0x140c34a40",
+   "notes": "V1044 Reached only through vtables 0x14568c5c8/0x1456da4b8. Order: msg vt 0x14578d4e8 (name slot 0x1424cf160 -> EntrantsDocumentOpened) sent via 0x1424e2b90 to *(0x14618b3b8)+8; entity+0x2f8 = 1; entity+0x2e8 = entity+0x2e0 (truncate, no dtors); if a source line-up exists (setup+0x290 -> +0x560 table, index from setup vt+0x268) entity+0xe18 = source and Sess_Assign(entity+0x2d8, source+8); msg vt 0x14578d510 (name slot 0x1424cf220 -> EntrantsDocumentClosed) with payload entity+0x2d8 at msg+0x10 sent via 0x1424e2f00; entity+0x2f8 = 0 after the dispatch. Same bracket in 0x140c2a870 and twice in 0x141125e80."
+  }
+ ],
+ "proofs": []
+}

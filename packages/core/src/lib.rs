@@ -16,20 +16,17 @@ pub mod game_folder;
 pub mod hud;
 pub mod install;
 pub mod loader_check;
-pub mod modules;
-pub mod multiplayer;
 pub mod offline;
+pub mod online;
 pub mod planner;
 pub mod platform;
 pub mod profile;
 pub mod row_ids;
 pub mod saves;
-pub mod server;
 pub mod session;
 pub mod stdlib;
 pub mod store;
 pub mod testsuite;
-pub mod timetrial;
 pub mod tracks;
 pub mod ui;
 pub mod updates;
@@ -43,8 +40,8 @@ pub use content::{
 };
 pub use data::{paths, relocate as data_move, space as data_usage};
 pub use diagnostics::{
-    crash, crash_report, ea_launch as ea_diag, fast_fail, known_problems, launch, overlay_guard, quarantine,
-    send_logs,
+    crash, crash_report, ea_launch as ea_diag, fast_fail, known_problems, launch, overlay_guard, phases,
+    quarantine, send_logs,
 };
 pub use game_db::{
     entrant_lists, heads, livery_kits, owned, rnd_budget, row_keys as rowkeys, udp_ids, virtual_lists,
@@ -52,10 +49,12 @@ pub use game_db::{
 pub use game_folder::{
     baseline, busy, copies, entitlement, exe_version, journal, placed, recovery, setup, stock,
 };
-pub use platform::{app_control, disk, ea_app, process, run_as_admin as compat, steam, steam_client, vdf};
+pub use online::server::{http, sign_in as mpauth, support, usage};
+pub use online::{modules, multiplayer, server, timetrial};
+pub use platform::steam::{client as steam_client, vdf};
+pub use platform::{app_control, disk, ea_app, process, run_as_admin as compat, steam};
 pub use profile::{conflicts, folders, order, resolver};
 pub use saves::{backup as save_backup, launcher as launcher_saves, stall as save_stall, vault};
-pub use server::{http, sign_in as mpauth, support, usage};
 pub use ui::home_menu;
 pub use updates::{managed, release as update, transfer, updater};
 
@@ -170,7 +169,9 @@ pub fn doing() -> String {
 }
 
 pub(crate) fn now_doing(step: impl Into<String>) {
-    *DOING.lock().unwrap_or_else(|e| e.into_inner()) = step.into();
+    let step = step.into();
+    diagnostics::phases::step(&step);
+    *DOING.lock().unwrap_or_else(|e| e.into_inner()) = step;
 }
 
 pub(crate) fn io_err(path: impl Into<std::path::PathBuf>) -> impl FnOnce(std::io::Error) -> Error {

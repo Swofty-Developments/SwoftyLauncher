@@ -1,0 +1,77 @@
+{
+ "schema": 1,
+ "name": "Car_Read_Engine",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144685680",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void (void *data, void *node)",
+  "evidence": "decomp:re/decomp/144685680.c;xref:0x145bfa1c0",
+  "notes": "Re-reads the Engine values by name through Game_Read_VtfFloat (upgrade / tuning overlay of the Engine section). Correction: this is the reader (component data vtable slot 2): it fetches each value by name with Game_Read_VtfFloat and stores it XOR-obfuscated (value ^ key 8 bytes later, e.g. Engine Mass -> +0x2f8 ^ +0x300); it runs for the base section and for every Upgrade block. | car-b: EngineData vtable 0x145bfa1b0 slot 2; param = Engine system+0x18 so field offsets in structs/CarEngine.h are reader offset + 0x18. Full key->offset map in CarEngine.h (RevsPowerSpline power W vs rad/s, ThrottleMap%d vectors, Mass, Inertia, friction/braking splines, idle/limiter rad/s, EngineLayout, temperature model, PU wear rates, KERS, TurboMode Off/LagSpoof/Full, idle fluctuation, RedLineThrottleCutTime). Proto filled per V1219 | #529 verifier carlive-verify (2026-10-29, partial on the PR's L1 notes): C4 TurboMode parser stores Engine-def +0x21f0 (powertrain sees +0x2208 via +0x18 shift)"
+ },
+ "signature": {
+  "id": "car.override_engine",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 03 00 00 C5 F8 29 B4 24 A0 03 00 00 48 89 D7 48 89 CE",
+  "match": "0x144685680",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144685680",
+  "kind": "func_start",
+  "names": [
+   "Car_Read_Engine"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   },
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-29",
+    "by": "carlive-verify",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v2",
+   "kind": "func",
+   "item": "Car_Read_Engine",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144685680.c;xref:0x145bfa1c0",
+   "notes": "V1219 EngineData vt 0x145bfa1b0 slot 2. XOR read-modify-write per key: RevsPowerSpline data+0x10, Mass +0x2f8^+0x300, Inertia +0x308, LimiterRotationRate +0x898 (system +0x8b0, used by the derived +0x2528), TurboMode Off/LagSpoof/Full -> +0x21f0 (system +0x2208), RevsTurboLagSpline +0x21f8, RedLineThrottleCutTime +0x24e0 (system +0x24f8, used by StepInput). Proto column empty: (void *data, void *node)."
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "carlive-verify",
+   "kind": "func",
+   "item": "Car_Read_Engine",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x144686154",
+   "notes": "V3940 C4 TurboMode parser stores Engine-def +0x21f0 (powertrain sees +0x2208 via +0x18 shift)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144685680",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144685680.c",
+   "notes": "V6749 reader at data vtable slot 2 (writer slot 3), XOR key store verified (vtable/indirect; no direct call site)"
+  }
+ ],
+ "proofs": []
+}

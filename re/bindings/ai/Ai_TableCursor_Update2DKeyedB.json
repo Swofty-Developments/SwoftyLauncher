@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "Ai_TableCursor_Update2DKeyedB",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406925d0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_TableCursor_Update2DKeyedB(void *table, const float *query, float *cursor)",
+  "evidence": "decomp:re/decomp/1406925d0.c;xref:0x14063ed38",
+  "notes": "Code-identical clone of Ai_TableCursor_Update2DKeyedA 0x14068fb80 (decomps differ only in labels). query = {x, y, key byte +8}; returns at once if unchanged; re-brackets x in table axis +0x38..+0x40 (cursor +0x10/+0x18, search via [table+0x28] vtbl +0x10, or +8 when table+0x50 set), y in axis +0x68..+0x70 (cursor +0x20/+0x28, [table+0x58], flag +0x80); key index: count table+0xc0 < 2 -> 0, else linear search of byte list table+0x98..+0xa0 -> cursor+0x30 (or -1); copies query to cursor+0..+0xb. Only caller Ai_Job_UpdateCarsParallel 0x14063ed38 with table = AiCarRecord+0x70 (0x14063ed20) and cursor = AiCarRecord+0x190 (0x14063ed29); the A twin runs right before on +0x68 / +0x158. L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.table_cursor_update2_d_keyed_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4A 8B 4C 2F 78 48 85 C9 74 18 4E",
+  "match": "0x14063ed38",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1406925d0",
+  "kind": "func_start",
+  "names": [
+   "Ai_TableCursor_Update2DKeyedB"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x1406925d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406925d0.c;xref:0x14063ed38",
+   "notes": "V3440 byte-identical logic to 0x14068fb80; sole caller Ai_Job_UpdateCarsParallel"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x1406925d0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1406925d0-0x140692759;xref:0x14063ed38",
+   "notes": "V10603 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only caller 0x14063ed38 in Ai_Job_UpdateCarsParallel with rcx = [rec+0x70] (0x14063ed20) and r8 = rec+0x190 (0x14063ed29). 3 args. Normalised body is identical to 0x14068fb80 (same hash after masking absolute targets)."
+  }
+ ],
+ "proofs": []
+}

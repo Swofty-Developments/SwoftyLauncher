@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ai_Init_TestSpeedLimits",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1405fbe00",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void *Ai_Init_TestSpeedLimits(void *entry)",
+  "evidence": "decomp:re/decomp/1405fbe00.c;xref:0x1406447a9,0x140644964,0x140644c33",
+  "notes": "Initialises a 0x28-byte record and returns it: +0 byte 0xff, +4 = 0, +8 = max_test_speed and +0xc = max_test_speed (both from node 0x146046c68, read at 0x1405fbe46/0x1405fbe8a), +0x10 = 0.0, +0x14 = 1.0, +0x18 = 0, +0x1c = FLT_MAX, +0x20 = 0, +0x24 = 5. The 5-key general-settings init (awareness_time, max_test_distance, max_test_radius, max_test_speed, max_test_time) is inlined only as the shared static guard 0x146046c78; only max_test_speed is used. All 3 callers (Ai_Unk_1406427e0) build it on the stack right before sorting arrays of 0x28-byte records (shell-sort gap loop on count/5 of 8-byte units). (corrected 2026-11-14: it does not \"read\" five settings for use; it is a default constructor.) (renamed 2026-11-14 to the name signatures.json already listed; from Ai_Read_GeneralSettings_4: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.read_general_settings_4",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE C6 01 FF C7 41 04 00 00 00 00",
+  "match": "0x1405fbe00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1405fbe00",
+  "kind": "func_start",
+  "names": [
+   "Ai_Init_TestSpeedLimits"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1405fbe00",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1405fbe00.c;xref:0x6447a9",
+   "notes": "V4685 not a reader: lazily inits 5 setting nodes then writes max_test_speed into struct +8/+0xc and defaults +0x10..0x24 (init/ctor of speed-limit struct); better Ai_Init_TestSpeedLimits"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1405fbe00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1405fbe00.c;xref:0x1406447a9",
+   "notes": "V7130 name fits; finding facts hold; 3 direct calls"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x1405fbe00",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1405fbe00-0x1405fbfd0;xref:0x1406447a9,0x140644964,0x140644c33",
+   "notes": "V10542 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 1 arg, returns rcx. Writes +0 byte 0xff, +4 0, +8/+0xc = [max_test_speed node]+8 (0x1405fbe51/0x1405fbe95), +0x10..+0x1c = {0,1,0,FLT_MAX} (const 0x14562f1b0), qword +0x20 = 0x500000000. 3 callers 0x1406447a9/0x140644964/0x140644c33 all in 0x1406427e0. Name fits a default constructor of a test-speed record."
+  }
+ ],
+ "proofs": []
+}

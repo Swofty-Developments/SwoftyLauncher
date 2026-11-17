@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "Sess_Tyres_ClosestAvailableCompound",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14368fb40",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint32_t Sess_Tyres_ClosestAvailableCompound(void *tyre_rules, uint8_t vehicle, const uint32_t *preference, float wear_scale)",
+  "evidence": "decomp:re/decomp/150dc4ad0.c;decomp:re/decomp/143693080.c;decomp:re/decomp/142a3b7a0.c;decomp:re/decomp/142f66cf0.c;xref:0x1436932b6,0x142a3ba4c,0x142f67bcb",
+  "notes": "5-byte jmp thunk into .data1 body 0x150dc4ad0. For the vehicle's tyre component (*(*(tyre_rules+0xd8)+0x28)[vehicle]+0x10, cast to the tyre component type when that type derives from the component base) it takes the weekend allocation at +0x9c68 and tries the five compound slots in preference order (preference[0..4], slot = index into the allocation's five set vectors): a slot passes when it has a set the least-worn picker 0x142e8ab90 accepts (usable now: flags and session tag, see Sess_TyreAllocation_OnSessionStart) whose highest wheel wear is below max(wear_scale, the rules' wear limit); returns that set's slot (+0x04), else logs WARN 'Unable to get Closest Available Compound for vehicle %u.' and returns 0xffffffff. Callers: the human entering the garage (0x142a3b7a0), AI run planning (0x142f66cf0, 0x143693080); a 0xffffffff result fits nothing. Bound through the call at 0x142a3ba4c (rel32). Raised by native-1990 for the 1990 cars without tyres"
+ },
+ "signature": {
+  "id": "session.tyres_closest_available_compound",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 83 F8 04 77 18 C7 44 24 20 FF FF FF FF",
+  "match": "0x142a3ba4c",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x14368fb40",
+  "kind": "call",
+  "names": [
+   "Sess_Tyres_ClosestAvailableCompound"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/fq_tyres.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-b",
+   "kind": "func",
+   "item": "Sess_Tyres_ClosestAvailableCompound",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14368fb40.c;decomp:re/decomp/150dc4ad0.c;decomp:re/decomp/14f3da1d0.c;decomp:re/decomp/142a3b7a0.c;decomp:re/decomp/142f66cf0.c;decomp:re/decomp/143693080.c;xref:0x142a3ba4c,0x142f67bcb,0x1436932b6;sig:session.tyres_closest_available_compound",
+   "notes": "V0968 0x14368fb40 is e9 rel32 to 0x150dc4ad0 (.data1, plaintext on this build). The body entry uses rcx, dl (movzx), r8 and xmm3 (moved to xmm6) and returns eax, so the 4-arg proto holds. For each of preference[0..4]: entity = *(*(*(rules+0xd8)+0x28)[vehicle]+0x10), passed through 0x143f9b3c0 with 0x146080cc8 when the Tyres chain reaches 0x146129ca8 before 0x146c62e78; slot = *(entity+0x9c68)+0x10+pref*0x28, bounded by +0xd8. 0x142e8ab90 (thunk to 0x14f3da1d0: the usable set with the least average wear, 0xff when none) picks a set, which passes when the max of its four wear floats < max(wear_scale, float *(*(*(rules+0x108)+8)+8)); its +0x04 is returned. After 5 misses it logs the WARN text and returns 0xffffffff. Exactly three rel32 callers: 0x142a3ba4c in 0x142a3b7a0 (logs onLocalHumanEnteredGarage), 0x142f67bcb in 0x142f66cf0 and 0x1436932b6 in 0x143693080 (both pass 1.0 and feed the result to 0x14368fde0; the AI-planning label was not re-derived). Callers test < 5 or != -1. sigcheck: 1 hit at 0x142a3ba4c, target 0x14368fb40"
+  }
+ ],
+ "proofs": []
+}

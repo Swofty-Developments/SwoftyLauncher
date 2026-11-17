@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_OverridesOsdConfig_3",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141569430",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: overrides.osd.practice_graph_lap_icons.graph_lap_icon_failed, overrides.osd.practice_graph_lap_icons.graph_lap_icon_not_set, overrides.osd.practice_graph_lap_icons.graph_lap_icon_passed, overrides.osd.practice_graph_lap_icons.graph_lap_icon_perfect, overrides.osd.practic'"
+ },
+ "signature": {
+  "id": "game.read_overrides_osd_config_3",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE 48 8B 89 B0 06 00 00",
+  "match": "0x141569430",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141569430",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_OverridesOsdConfig_3"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141569430",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141569430.c;xref:0x141568f0f",
+   "notes": "V4884 20 KB practice lap icon builder (graph_lap_icon_*, quali_pace_lap_*, lng_hud_laps) not only key reads. Better: Hud_Build_PracticeLapIcons"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141569430",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141569430.c;xref:0x141568f0f",
+   "notes": "V7217 name fits; finding facts hold; 3 direct calls"
+  }
+ ],
+ "proofs": []
+}

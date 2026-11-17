@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Build_RnDTreeView",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c7fc50",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Build_RnDTreeView(void * self,uint64_t *a2)",
+  "evidence": "decomp:re/decomp/141c7fc50.c;xref:0x141c82367;xref:0x1457402a0",
+  "notes": "myteam-g1: Builds team_hq_rnd_tree / team_hq_rnd_tree_two_players, upgrade_purchase entries and the return_department binding."
+ },
+ "signature": {
+  "id": "career.build_rn_dtree_view",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 70 48 89 CE 48 8B 89 D0 06 00 00",
+  "match": "0x141c7fc50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c7fc50",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_RnDTreeView"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c7fc50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c7fc50.c;xref:0x141c82367;xref:0x1457402a0",
+   "notes": "V9994 Tree view with team_hq_rnd_tree(_two_players), upgrade_purchase, return_department."
+  }
+ ],
+ "proofs": []
+}

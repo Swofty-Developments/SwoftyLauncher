@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Tyre_IsCompoundAllowed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e88630",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "bool Car_Tyre_IsCompoundAllowed(const void *set)",
+  "evidence": "decomp:re/decomp/142e88630.c;decomp:re/decomp/142e88730.c;xref:0x140aae6b6,0x14178e930,0x141f8fe48,0x141f92c85,0x141f971dc,0x141faa6e9,0x141fac829,0x141fae55e,0x142d021ef,0x14356d32a,0x14369003a,0x143690365,0x1436977ec,0x143698aea,0x143698bd4,0x14369f66d;sig:car.tyre_is_compound_allowed",
+  "notes": "Sess_TyreSet_IsUsableNow: whether a 0x6c-byte tyre set record (Sess_TyreAllocation_OnSessionStart layout: +0x00 session tag, +0x04 class option 0..4, +0x09 flags) may be used in the current session. rcx = set; returns al (1 usable). g_Sess_TyreRulesActive 0: 1 at once (mov dl,1 at 0x142e88634). Mode g_Sess_TyreRulesMode 0: tail-calls Car_Tyre_CheckCompoundClassRule(set) at 0x142e88652; mode 1: inline tag rules against g_Sess_TyreRulesSessionType (1-4 practice mask 0x1e, 10-14 shootout, 5-9 qualifying, 16/17 mask 0x3e0, 15 mask 0xfc00, flags +9 & 9 refuse); other modes: 1. 16 rel32 callers (UI tyre lists 0x141f8fd20..0x141fae020, race strategy 0x143695ff0 / Sess_RaceStrategy_EvaluateStintTyre, 0x14368fde0, Sess_CornerCutting_Update). Wrapped by swofty_core (qualifying tyres per box) to refuse qualifying-only options in race sessions."
+ },
+ "signature": {
+  "id": "car.tyre_is_compound_allowed",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 B2 01 80 3D ?? ?? ?? ?? 00 74 1A 44",
+  "match": "0x142e88630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e88630",
+  "kind": "func_start",
+  "names": [
+   "Car_Tyre_IsCompoundAllowed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142e88630",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142e88630.c;xref:0x14356d329",
+   "notes": "V3673 Enabled flag/mode/era globals and masks mostly right, but flags +9 & 9 set => returns NOT allowed (not bypass); '13/14 exact' is wrong (set 13/14 accept any 10..14, 10-12 exact); id 0xf is allowed only for the 5-9 set, id 0 always allowed."
+  },
+  {
+   "date": "2026-11-15",
+   "verifier": "verify-quali-b",
+   "kind": "func",
+   "item": "Car_Tyre_IsCompoundAllowed",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e88630.c;xref:0x140aae6b5,0x14178e92f,0x142d021ee,0x14356d329,0x143690039,0x14369f66c;pat:disx 0x142e88630-0x142e88724 re-read;pat:no rel32 call/jmp into 0x142e88631-0x142e8863f",
+   "notes": "V10708 Re-derived from disx: only rcx read ([rcx+9],[rcx]); dl=1 preset, ret al&1. byte 0x1460806c8==0 -> 0x659->0x665 al|1 =1. mode byte 0x146080694: ==1 inline, ==0 call 0x142e88730 (same rcx) then edx=0; any other value -> returns 1 (not in claim, harmless). Inline: flags+9&9 ->0; tag 0 ->1; sess 0x146080688 1..4: tag 1..4; 10..14: tag 10..14 and (sess 13/14 or tag==sess); 5..9: tag 5..9 or 15; 16..17: tag 5..9 or 15..17; 15: tag 10..15. 16 E8 callers in .xtls. Entry: sub rsp,28(4) mov dl,1(2) cmp byte[rip+..](7) je rel8(2) = exactly 16 bytes on an insn boundary; no branch targets inside 0x631-0x63f; bytes 6-15 hold a RIP-relative cmp and a rel8 je, so a 14-byte abs jmp needs a relocating trampoline (MinHook-style handles it); a 5-byte rel32 jmp covers only sub+mov (clean, 6 bytes)."
+  }
+ ],
+ "proofs": []
+}

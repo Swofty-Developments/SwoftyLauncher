@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_EmplaceNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1444e9850",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1444e9850.c;xref:0x140ac10f1,0x1443beda4,0x1443bedc8",
+  "notes": "Allocates a node from free list +8 (grow 0x1444e9f20), stores key + 16-byte value, inserts via 0x1444e9940; on duplicate returns node to free list. 55 callers. Hypothesis. (55 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "core.hash_map_emplace_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 4D 89 CF 4D 89 C4 48 89 D6 48 89 CF 4C 8D 71 08 48 8B 59 08 48 85 DB 75 0B 4C 89 F1 E8 ?? ?? ?? ?? 48 89 C3 48 8B 03 48 89 47 08 41 8B 04 24 89 03 C5 F8",
+  "match": "0x1444e9850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1444e9850",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_EmplaceNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1444e9850",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1444e9850.c;xref:0x140ac10f1",
+   "notes": "V6793 Free-list node, 4-byte key + 16-byte value, insert 0x1444e9940, duplicate returns node confirmed."
+  }
+ ],
+ "proofs": []
+}

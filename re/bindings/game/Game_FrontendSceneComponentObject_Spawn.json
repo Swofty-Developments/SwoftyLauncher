@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneComponentObject_Spawn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428f2e20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428f2e20.c;xref:0x1457b67b0",
+  "notes": "Object component spawn (vtable slot 0x1457b67b0): allocates handle id (g 0x146075b30, skips 0xffff), copies object data from scene [this+0x98]+0xb50..+0xbb8 and calls spawnObject. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3022)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_component_object_spawn",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 07 00 00 48 89 CE 48 8B",
+  "match": "0x1428f2e20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428f2e20",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneComponentObject_Spawn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_FrontendSceneComponentObject_Spawn",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428f2e20.c;xref:0x1457b67b0",
+   "notes": "V3022 Decomp strings, offsets and callees match the claim; name fits."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_FrontendSceneComponentObject_Spawn",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428f2e20.c;xref:0x1457b67b0",
+   "notes": "V3973 Decomp strings, offsets and callees match the claim; name fits."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x1428f2e20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428f2e20.c",
+   "notes": "V4039 vtable slot 0x1457b67b0 (vtable/indirect); handle counter 0x146075b30 incremented skipping 0xffff, copies scene [this+0x98]+0xb50..+0xbb8, strings FRONTEND_SCENE_CUSTOM_OBJECT spawnObject(), calls Game_FrontendSceneCustomObject_IsObjectSpawned/ChangeObject"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_EventBus_Unsubscribe",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14417bfb0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14417bfb0.c;xref:0x1414a3ae1,0x1414a3b26",
+  "notes": "(bus, eventKey, delegate16): finds event slot (0x1443488f0 hash, +0x30 table), removes the (obj,fn) pair from its listener vector (+0x58 list, shrinks allocation); FNV-1a 0xcbf29ce484222325 path for named lookups. 38 call sites: Game_SessionHud_Shutdown, Game_GameSessionUI_Shutdown, Sess_PreRace_OnStateExit, Game_Assists_SetTyreTempFreeze."
+ },
+ "signature": {
+  "id": "core.event_bus_unsubscribe",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4D 89 C7 49 89 D6 48 89 CF 48 83 C1",
+  "match": "0x14417bfb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14417bfb0",
+  "kind": "func_start",
+  "names": [
+   "Ne_EventBus_Unsubscribe"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14417bfb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14417bfb0.c;xref:0x1414a3ae1",
+   "notes": "V3651 remove (obj,fn) pair from listener vector confirmed; callers match"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineRole_OnConnectionVerified",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140996b60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140996b60.c;xref:0x143063d84",
+  "notes": "OnlineRoleManager: connection verified -> if in VERIFYING state switch to GAMESTATUSSYNC and send game mode data (Game_NetworkData_SendGameModeData); logs state mismatch / not in role array; also 'assigned IDs, changing to VERIFYING'. Role array this+0x70..0x78. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2429)"
+ },
+ "signature": {
+  "id": "game.online_role_on_connection_verified",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 8B 79 70 48 8B 41 78 48 39",
+  "match": "0x140996b60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140996b60",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineRole_OnConnectionVerified"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_OnlineRole_OnConnectionVerified",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140996b60.c;xref:0x140996b60",
+   "notes": "V2429 Role, offsets and calls checked against decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

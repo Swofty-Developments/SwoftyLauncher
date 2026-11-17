@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Http_CallbackStatusId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14404d610",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-HTTP/V",
+  "notes": "named from its log messages (channel HTTP/V): '[%u] Callback Status for id %d: %d'"
+ },
+ "signature": {
+  "id": "game.http_callback_status_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 4C 89 CE 44 89 C3",
+  "match": "0x14404d610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14404d610",
+  "kind": "func_start",
+  "names": [
+   "Game_Http_CallbackStatusId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14404d610",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14404d610.c;xref:0x14404ce23",
+   "notes": "V6477 partial: better name Game_Http_StatusCallback; 3 KB WinHTTP status callback (data available, certs, closing)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14404d610",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14404d610.c;xref:0x14404ce23",
+   "notes": "V7119 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

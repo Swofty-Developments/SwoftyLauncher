@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_Tls_GetSlotB5f0Value",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439ad910",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439ad910.c;xref:0x1402333b5,0x140ad518d",
+  "notes": "Returns TlsGetValue(slot g 0x14618b5f0) when allocated; otherwise records a debug trace (stack capture ring) and returns 0. 186 callers (render, Car_Contact_ModifyVehicle, cutscene params). Hypothesis: per-thread context getter."
+ },
+ "signature": {
+  "id": "core.tls_get_slot_b5f0_value",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 8E 18 01 00 00 48 83 C4 20",
+  "match": "0x1402333b5",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1439ad910",
+  "kind": "func_start",
+  "names": [
+   "Ne_Tls_GetSlotB5f0Value"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x1439ad910",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439ad910.c;xref:0x142f0458d,0x143c792eb",
+   "notes": "V3477 TlsGetValue(slot 0x14618b5f0) if != -1 else trace errno 1 return 0; ~186 refs incl Car_Contact_ModifyVehicle, Render_DDGISystem_Render; role stays hypothesis"
+  }
+ ],
+ "proofs": []
+}
