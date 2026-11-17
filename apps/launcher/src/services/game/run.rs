@@ -7,7 +7,7 @@ use std::time::Instant;
 use swofty_core::diagnostics::launch;
 use swofty_core::platform::app_control::{self, Block};
 use swofty_core::platform::process::flag;
-use swofty_core::platform::steam::client as steam_client;
+use swofty_core::platform::steam;
 use swofty_core::session::LaunchMode;
 use swofty_core::store::Store;
 use swofty_i18n::{tr, trf};
@@ -46,7 +46,7 @@ impl Launch {
             .and_then(|_| File::create(&log))
             .map_err(|e| format!("{}: {e}", log.display()))?;
         let err = out.try_clone().map_err(|e| e.to_string())?;
-        std::fs::remove_file(store.root.join(steam_client::STAGE_FILE)).ok();
+        std::fs::remove_file(store.root.join(steam::client::STAGE_FILE)).ok();
         let mut c = Command::new(&cli);
         c.args(run_args(
             &store.root,
