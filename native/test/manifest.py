@@ -352,6 +352,8 @@ SCRIPTS = [
     Script('garage_crew_sites', 'Garage crew guard sites export test', ['bash', 'native/test/run_garage_crew_sites_test.sh']),
     Script('scan', 'Pattern scan and scan cache unit test', ['bash', 'native/test/run_scan_test.sh', '{out}'], programs=SCAN),
     Script('pin', 'CPU pin plan (CI, taskset, affinity, job count)', ['bash', 'native/test/pin_test.sh']),
+    Script('wineserver', 'Wine test wineserver lookup (beside wine, lib folders, versions)',
+           ['bash', 'native/test/wineserver_test.sh']),
     Script('std_templates', 'Standard library templates', ['python3', 'tools/std/templates.py']),
     Script('loading_report', 'Loading report on synthetic loader.log runs', ['python3', '-I', 'native/test/loading_report_test.py']),
 ]
