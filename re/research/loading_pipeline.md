@@ -519,8 +519,12 @@ game start (`fresh`) with no addons beyond the core:
 
 A Grand Prix race (intro video, talking points, grid rundown) needs a direct start, `swofty test session grand_prix`, which
 works only on the KB build: `direct_start.cpp` looks up its hooks only when `runtime::same_build()` holds, and on another build
-the core logs `[direct] … start failed: …; the menu opens as usual`. On the installed build `46009bd3` the race arm cannot run
-until the core's direct start supports that build (core lane), so M3 waits for it.
+the core logs `[direct] off: the title can't pass by itself (…)` and the menu opens as usual. On the installed build `46009bd3`
+the race arm cannot run until the core's direct start and title helper support that build (§7), so M3 waits for it.
+
+**Run file.** `/mnt/work/F1/scratch/v110/load-game/run_measurements.sh` runs everything below top to bottom. It reads the
+installed exe's PE timestamp, runs the arms of the installed build, and runs the race arms only on the KB build; on any
+other build it says they were skipped.
 
 **Setup (once, from the checkout to measure).**
 
@@ -631,3 +635,55 @@ passes (from 3 s in on the KB build, at once on `46009bd3`), so the press time i
 
 Pass rule for shipping any flag as a player option: every run of both arms completes, the report shows no regression, and the
 on arm is faster by at least one second on the median of its target field.
+
+## 7. Two builds: what the core does on `46009bd3`
+
+Read from the tree at the merge of v1.10.0 into this lane (c5d42a015); no code was changed for this section.
+
+**Already in place for the installed build** (F1 25 1.0.145, Steam build 26566308, PE timestamp 1794312636, 391,613,312
+bytes):
+
+- The launcher lists it as supported: `BUILD_1_0_145` in `packages/core/src/build_support.rs:13`, in the supported list at
+  line 18.
+- The loader's build gate loads it (`native/test/build_gate_test.c:22`, "the 1.0.145 Steam build loads").
+- `runtime::verified_build()` is true on it (`native/src/core/runtime/stage.cpp:213-219`: the stamp and SizeOfImage
+  0x18434000), so code that finds every address by signature runs.
+- It has its own binding set, `native/dist/swofty/addons/core/bindings.steam-26566308.json` (3698 bindings, sha256
+  `46009bd3…`). Session `20261117-083906` logs it selected by PE timestamp, "3662 binding(s) for build 46009bd31f49d93a,
+  this exe (rva checked)", with `.xtls` scans sent to `.tls$` and `.data1` scans to `.trace`. The four getters of §3 are in
+  it, so the game setting overrides and `loading_log_settings` run on this build.
+- The live API has a per-build proof for it (`native/src/core/live/live_rows.hpp:191`).
+- A known problem matches the crash of the skip-cutscenes addon up to 1.9.4 on it
+  (`packages/core/src/diagnostics/known_problems/broken_addons.rs:106`).
+
+**KB build only.** `runtime::same_build()` (`stage.cpp:206`) is true only for the KB exe's PE timestamp, so everything gated
+on it is off on `46009bd3`:
+
+| what | gate | on `46009bd3` |
+|---|---|---|
+| the title helper | `native/src/core/testing/title_skip.cpp:214` | `title::why()` names StateIntro's KB layout (+0xcd0, +0xef3, +0xef4). The test agent passes the title with the virtual pad instead. The helper's `vm.sync_point_is_complete` signature also matches 0 times there (session `20261117-083906`) |
+| direct start, as a whole | `native/src/core/testing/direct_start.cpp:1195-1198` | needs the title helper: logs `[direct] off: the title can't pass by itself (…)` and returns, so `swofty test session` opens the menu |
+| direct start's race laps, StateFTUE exit, flow link | `direct_start.cpp:1183`, `:1201`, `:1216` | not looked up |
+| agent car reads (`car`, `ai_drives_player`) | `native/src/core/testing/agent/agent.cpp:395`, used at `:458` and `:724` | unavailable |
+| agent `career_tile`, resume a career, Team HQ advance, `save_now`, `tile_select` | `agent.cpp:967`, `:1051`, `:1154`, `:1265`, `:1352` | unavailable |
+| game database edits after the database was built | `native/src/core/assets/gamedb.cpp:438` | no edit applied (logged) |
+| Time Trial player name bridge | `native/src/core/frontend/player_name.cpp:204` | off |
+| live car operations, car points, car levers | `native/src/core/hooks/car_live.cpp:508`, `:637`, `:691` | off |
+| live car wetness, surface, orientation, angular velocity, wheels | `native/src/core/live/live_car.cpp:46`, `live_car_logic.hpp:22-27` | off; the table and DRS stay (verified build) |
+| crash symbol names | `native/src/core/diagnostics/crash/crash.cpp:136` (`KB_STAMP`, `constants.hpp:31`) | crash reports carry no KB symbols |
+
+Not losses:
+
+- `assets/dbread.cpp:83` and `:105` take the probe path instead of the KB vtables.
+- `assets/overlay.cpp:654` and `assets/gamedb.cpp:267` gate log text only.
+- `live/live_state.cpp:398` picks the per-build proof.
+- `services/lap_host.cpp:116` reports both bits.
+- `same_build_` in `runtime/loader/bindings.cpp` means "the set's own exe" (RVA checks instead of scans), and it is true for
+  the Steam set on `46009bd3`.
+
+**For this lane's measurements** that means:
+
+- On `46009bd3`, the Time Trial, benchmark, M0 and boot sting arms run (route, virtual pad, getters).
+- The Grand Prix race arm needs the KB build. It is the only arm with talking points and the grid rundown, so M3 and a
+  talking points flag can only be measured there.
+- Porting direct start and the title helper to a new build belongs to the core and bindings lanes, not this one.
