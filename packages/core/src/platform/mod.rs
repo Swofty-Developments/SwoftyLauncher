@@ -7,8 +7,6 @@ pub mod ea_app;
 pub mod process;
 pub mod run_as_admin;
 pub mod steam;
-pub mod steam_client;
-pub mod vdf;
 
 use std::path::{Path, PathBuf};
 

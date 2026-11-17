@@ -18,8 +18,8 @@ use std::path::{Path, PathBuf};
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
+use super::vdf::{self, Vdf};
 use crate::platform::run_as_admin::{parse_reg_query, reg_dword};
-use crate::platform::vdf::{self, Vdf};
 
 pub const FLATPAK_APP: &str = "com.valvesoftware.Steam";
 pub const ACTIVE_PROCESS_KEY: &str = r"HKCU\Software\Valve\Steam\ActiveProcess";
@@ -419,7 +419,7 @@ pub fn status() -> Status {
         &RegExe,
         &pids,
         &crate::platform::process::started,
-        &crate::platform::steam::steam_roots(),
+        &super::steam_roots(),
     )
 }
 
@@ -544,7 +544,7 @@ pub fn windows_starter(reg: &dyn Registry, roots: &[PathBuf]) -> Starter {
 
 #[cfg(windows)]
 pub fn starter(_install: &[&Path]) -> Option<Starter> {
-    Some(windows_starter(&RegExe, &crate::platform::steam::steam_roots()))
+    Some(windows_starter(&RegExe, &super::steam_roots()))
 }
 
 #[cfg(not(windows))]

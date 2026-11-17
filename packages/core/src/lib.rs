@@ -51,7 +51,8 @@ pub use game_db::{
 pub use game_folder::{
     baseline, busy, copies, entitlement, exe_version, journal, placed, recovery, setup, stock,
 };
-pub use platform::{app_control, disk, ea_app, process, run_as_admin as compat, steam, steam_client, vdf};
+pub use platform::steam::{client as steam_client, vdf};
+pub use platform::{app_control, disk, ea_app, process, run_as_admin as compat, steam};
 pub use profile::{conflicts, folders, order, resolver};
 pub use saves::{backup as save_backup, launcher as launcher_saves, stall as save_stall, vault};
 pub use server::{http, sign_in as mpauth, support, usage};
