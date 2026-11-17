@@ -1,6 +1,6 @@
 //! The one-time setup the first Play opens: a welcome, the question about mods
 //! Swofty didn't add, then verifying the game files so the originals Swofty
-//! records are the store's own. See `swofty_core::setup`.
+//! records are the store's own. See `swofty_core::game_folder::setup`.
 
 use std::time::Duration;
 
@@ -13,17 +13,18 @@ use gpui_kit::component::spinner::Spinner;
 use gpui_kit::component::{Disableable, Icon, Sizable, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
+use swofty_core::game_folder::setup;
+use swofty_core::game_folder::stock;
 use swofty_core::install::{Game, Source};
-use swofty_core::setup;
-use swofty_core::stock;
 use swofty_core::store::Store;
 
 use crate::dialogs::game_edited::discord_link;
 use crate::services::game::Install;
 use crate::shell::Shell;
-use crate::shell::pages::{game_art, label};
 use crate::ui::Callout;
+use crate::ui::numbered_step;
 use crate::ui::theme::{Palette, palette};
+use crate::ui::{game_art, label};
 use swofty_i18n::{tr, trf};
 
 pub(crate) const RISK: &str = "Because of how Swofty Launcher hooks the game's engine, which lets addons run \
@@ -317,16 +318,16 @@ impl SetupWizard {
                 v_flex()
                     .gap(px(9.))
                     .child(label(tr("WHAT TO DO"), p))
-                    .child(step(1, first.0, first.1, p))
+                    .child(numbered_step(1, first.0, first.1, p))
                     .when(self.install.source != Source::Unknown, |d| {
-                        d.child(step(
+                        d.child(numbered_step(
                             2,
                             "Wait for it to finish",
                             "It checks every game file and downloads only the ones that changed.",
                             p,
                         ))
                     })
-                    .child(step(
+                    .child(numbered_step(
                         if self.install.source == Source::Unknown {
                             2
                         } else {
@@ -502,9 +503,9 @@ impl SetupWizard {
 }
 
 fn steam_busy(dir: &std::path::Path) -> Option<&'static str> {
-    swofty_core::steam::find_game()
-        .filter(|i| swofty_core::copies::same_dir(&i.dir, dir))
-        .and_then(|i| swofty_core::steam::busy(&i))
+    swofty_core::platform::steam::find_game()
+        .filter(|i| swofty_core::game_folder::copies::same_dir(&i.dir, dir))
+        .and_then(|i| swofty_core::platform::steam::busy(&i))
 }
 
 impl Render for SetupWizard {
@@ -528,20 +529,20 @@ fn welcome(p: Palette) -> Div {
             v_flex()
                 .gap(px(9.))
                 .child(label(tr("ONE-TIME SETUP"), p))
-                .child(step(
+                .child(numbered_step(
                     1,
                     "Tell us about your game folder",
                     "Whether it already holds mods Swofty didn't add.",
                     p,
                 ))
-                .child(step(
+                .child(numbered_step(
                     2,
                     "Check your game files",
                     "Steam's file list checks them, or you verify or repair them once, so Swofty starts \
                      from a clean copy of F1 25.",
                     p,
                 ))
-                .child(step(
+                .child(numbered_step(
                     3,
                     "Play",
                     "Swofty builds your addons and starts the game.",
@@ -596,46 +597,6 @@ fn heading(title: &'static str, body: impl Into<SharedString>, p: Palette) -> im
                 .line_height(px(19.))
                 .text_color(p.text_muted)
                 .child(body.into()),
-        )
-}
-
-fn step(n: u32, title: &'static str, body: &'static str, p: Palette) -> impl IntoElement {
-    h_flex()
-        .gap(px(12.))
-        .items_start()
-        .child(
-            div()
-                .size(px(20.))
-                .flex_shrink_0()
-                .flex()
-                .items_center()
-                .justify_center()
-                .rounded_full()
-                .bg(p.selected)
-                .text_size(px(12.))
-                .font_weight(FontWeight::SEMIBOLD)
-                .text_color(p.accent)
-                .child(n.to_string()),
-        )
-        .child(
-            v_flex()
-                .flex_1()
-                .min_w_0()
-                .gap(px(1.))
-                .child(
-                    div()
-                        .text_size(px(13.))
-                        .font_weight(FontWeight::MEDIUM)
-                        .text_color(p.text)
-                        .child(title),
-                )
-                .child(
-                    div()
-                        .text_size(px(12.))
-                        .line_height(px(18.))
-                        .text_color(p.text_muted)
-                        .child(body),
-                ),
         )
 }
 
@@ -730,7 +691,7 @@ impl Shell {
     /// The one-time setup, opened by Play until it is done. Finishing it
     /// presses Play again.
     pub(crate) fn open_setup(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(install) = self.install.clone() else {
+        let Some(install) = self.game.install.clone() else {
             return;
         };
         let shell = cx.entity().downgrade();

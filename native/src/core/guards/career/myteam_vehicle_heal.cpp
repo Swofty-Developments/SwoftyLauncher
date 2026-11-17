@@ -1,4 +1,5 @@
 #include "core/guards/career/myteam_vehicle_heal_logic.hpp"
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -57,7 +58,7 @@ constexpr const char *REPLACE = "Ent_EntrantsSystem_ReplaceVehicle";
 using Replace_t = int (*)(void *entrants, uint32_t handle, const void *vehicle);
 
 uintptr_t replace_at = 0;
-bool offered = false, settled = false;
+bool offered = false;
 const char *setup = nullptr;
 std::mutex heal_lock;
 mh::Ids healed;
@@ -153,37 +154,54 @@ void session_vehicle(SwoftyContext *c)
         c->rax = v;
 }
 
+namespace guards = swofty_core::guards;
+
+class HealGuard final : public guards::Guard {
+public:
+    HealGuard() : Guard(guards::CoreSetId::myteam_vehicle_heal) {}
+
+private:
+    void build(std::vector<runtime::CoreMixins> &out) override
+    {
+        offered = true;
+        char v[16] = {};
+        DWORD n = GetEnvironmentVariableA("SWOFTY_MYTEAM_VEHICLE_HEAL", v, sizeof v);
+        if (n && n < sizeof v && mh::switch_off(v)) {
+            setup = "off (SWOFTY_MYTEAM_VEHICLE_HEAL)";
+            swofty::log("[myteam] vehicle heal off (SWOFTY_MYTEAM_VEHICLE_HEAL=%s)", v);
+            return;
+        }
+        replace_at = swofty::api->resolve(REPLACE);
+        if (!replace_at) {
+            setup = "off (Ent_EntrantsSystem_ReplaceVehicle is not resolved)";
+            swofty::log("[myteam] vehicle heal off: needs %s, which this build does not resolve", REPLACE);
+            return;
+        }
+        if (!swofty::api->resolve(SITE)) {
+            swofty::log("[myteam] vehicle heal: %s is not resolved on this build, so only the career load rebuilds a missing car",
+                        SITE);
+            return;
+        }
+        out.push_back({MIXIN, {{SITE, SWOFTY_MIXIN_SITE, 100, (void *)&session_vehicle, nullptr}}});
+    }
+
+    void settle() override
+    {
+        if (!replace_at)
+            return;
+        swofty::log("[myteam] vehicle heal %s",
+                    runtime::core_mixins_active(MIXIN) ? "armed: a My Team car missing from the save is rebuilt from a stock My Team car "
+                                                "when its career loads or its session starts"
+                                              : "armed for the career load only: the session lookup did not install (see the "
+                                                "[core] lines)");
+    }
+};
+
+HealGuard guard;
+
 }
 
 namespace runtime {
-
-std::vector<CoreMixins> myteam_vehicle_heal_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_MYTEAM_VEHICLE_HEAL", v, sizeof v);
-    if (n && n < sizeof v && mh::switch_off(v)) {
-        setup = "off (SWOFTY_MYTEAM_VEHICLE_HEAL)";
-        swofty::log("[myteam] vehicle heal off (SWOFTY_MYTEAM_VEHICLE_HEAL=%s)", v);
-        return out;
-    }
-    replace_at = swofty::api->resolve(REPLACE);
-    if (!replace_at) {
-        setup = "off (Ent_EntrantsSystem_ReplaceVehicle is not resolved)";
-        swofty::log("[myteam] vehicle heal off: needs %s, which this build does not resolve", REPLACE);
-        return out;
-    }
-    if (!swofty::api->resolve(SITE)) {
-        swofty::log("[myteam] vehicle heal: %s is not resolved on this build, so only the career load rebuilds a missing car",
-                    SITE);
-        return out;
-    }
-    out.push_back({MIXIN, {{SITE, SWOFTY_MIXIN_SITE, 100, (void *)&session_vehicle, nullptr}}});
-    return out;
-}
 
 void myteam_vehicle_heal_entrants(const myteam_heal::Load &load)
 {
@@ -250,18 +268,6 @@ void myteam_vehicle_heal_entrants(const myteam_heal::Load &load)
     swofty::log("[myteam] heal: the career's %zu entrants include %zu on My Team cars (custom vehicle %s) as it loaded: %zu "
                 "missing and rebuilt, %zu given a base car, the rest present",
                 census.entrants, census.on_my_team, ids.c_str(), rebuilt, based);
-}
-
-void myteam_vehicle_heal_commit()
-{
-    if (!offered || settled || !replace_at)
-        return;
-    settled = true;
-    swofty::log("[myteam] vehicle heal %s",
-                core_mixins_active(MIXIN) ? "armed: a My Team car missing from the save is rebuilt from a stock My Team car "
-                                            "when its career loads or its session starts"
-                                          : "armed for the career load only: the session lookup did not install (see the "
-                                            "[core] lines)");
 }
 
 }

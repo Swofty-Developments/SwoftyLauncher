@@ -113,7 +113,7 @@ impl Shell {
         config.onboarding = Some(ONBOARDING_VERSION);
         config.ui_mode = Some(wizard.mode);
         self.save_config_toast(&config, window, cx);
-        self.ui_mode = config.ui_mode;
+        self.scaling.mode = config.ui_mode;
         cx.notify();
     }
 

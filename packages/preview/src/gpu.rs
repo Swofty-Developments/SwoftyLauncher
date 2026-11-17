@@ -696,16 +696,7 @@ impl Preview {
             .filter(|&l| frame.index > l && frame.index - l <= STEP)
             .map(|l| frame.index - l);
         let consecutive = step.is_some();
-
-        let total_passes: usize = self
-            .instances
-            .iter()
-            .map(|i| self.effects[&i.effect].passes.len())
-            .sum();
-        if total_passes as u64 > self.uniform_slots {
-            self.uniform_slots = (total_passes as u64).next_power_of_two();
-            self.uniforms = Self::uniform_buffer(&self.device, self.uniform_slots);
-        }
+        self.grow_uniforms();
 
         let targets = self.targets.as_ref().ok_or("no render targets")?;
         let (width, height) = (targets.width, targets.height);
@@ -714,56 +705,12 @@ impl Preview {
             .create_command_encoder(&wgpu::CommandEncoderDescriptor {
                 label: Some("preview"),
             });
-
-        self.queue.write_texture(
-            targets.upload.texture.as_image_copy(),
-            &frame.rgba,
-            wgpu::TexelCopyBufferLayout {
-                offset: 0,
-                bytes_per_row: Some(width * 4),
-                rows_per_image: Some(height),
-            },
-            wgpu::Extent3d {
-                width,
-                height,
-                depth_or_array_layers: 1,
-            },
-        );
-
+        self.upload(targets, frame);
         if !consecutive {
-            clear(&mut encoder, &targets.previous);
-            for inst in &self.instances {
-                for slot in &inst.slots {
-                    if slot.persistent {
-                        clear(&mut encoder, &slot.tex);
-                        if let Some(shadow) = &slot.shadow {
-                            clear(&mut encoder, shadow);
-                        }
-                    }
-                }
-            }
+            self.clear_history(&mut encoder, targets);
         }
 
-        let group = |pipeline: &wgpu::ComputePipeline, entries: &[wgpu::BindGroupEntry]| {
-            self.device.create_bind_group(&wgpu::BindGroupDescriptor {
-                label: None,
-                layout: &pipeline.get_bind_group_layout(0),
-                entries,
-            })
-        };
-        let dispatch = |encoder: &mut wgpu::CommandEncoder,
-                        pipeline: &wgpu::ComputePipeline,
-                        bind: &wgpu::BindGroup,
-                        w: u32,
-                        h: u32,
-                        threads: (u32, u32)| {
-            let mut pass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor::default());
-            pass.set_pipeline(pipeline);
-            pass.set_bind_group(0, bind, &[]);
-            pass.dispatch_workgroups(w.div_ceil(threads.0), h.div_ceil(threads.1), 1);
-        };
-
-        let up = group(
+        let up = self.bind_group(
             &self.up,
             &[
                 wgpu::BindGroupEntry {
@@ -778,38 +725,145 @@ impl Preview {
         );
         dispatch(&mut encoder, &self.up, &up, width, height, (8, 8));
 
-        let picture_tex = |p: Picture| match p {
-            Picture::Original => &targets.original,
-            Picture::A => &targets.pictures[0],
-            Picture::B => &targets.pictures[1],
+        let clock = Clock {
+            index: frame.index,
+            time: frame.index as f32 / self.fps,
+            frametime: step.unwrap_or(1) as f32 / self.fps,
+            random: (frame.index as u32)
+                .wrapping_mul(2_654_435_761)
+                .wrapping_add(0x9e37_79b9),
+            view: self.view,
+            consecutive,
         };
+        let plan = self.plan(targets, &clock)?;
+        for (offset, words) in &plan.uniform_writes {
+            let bytes: Vec<u8> = words.iter().flat_map(|w| w.to_le_bytes()).collect();
+            self.queue.write_buffer(&self.uniforms, *offset, &bytes);
+        }
+        self.encode(&mut encoder, &plan)?;
 
-        let mut current = Picture::Original;
+        let final_picture = targets.picture(plan.current);
+        let down = self.bind_group(
+            &self.down,
+            &[
+                wgpu::BindGroupEntry {
+                    binding: 2,
+                    resource: wgpu::BindingResource::TextureView(&final_picture.view),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 3,
+                    resource: wgpu::BindingResource::TextureView(&targets.out.view),
+                },
+            ],
+        );
+        dispatch(&mut encoder, &self.down, &down, width, height, (8, 8));
+        final_picture.copy_to(&mut encoder, &targets.previous);
+        encoder.copy_texture_to_buffer(
+            targets.out.texture.as_image_copy(),
+            wgpu::TexelCopyBufferInfo {
+                buffer: &targets.readback,
+                layout: wgpu::TexelCopyBufferLayout {
+                    offset: 0,
+                    bytes_per_row: Some(targets.row_bytes),
+                    rows_per_image: Some(height),
+                },
+            },
+            wgpu::Extent3d {
+                width,
+                height,
+                depth_or_array_layers: 1,
+            },
+        );
+        self.queue.submit([encoder.finish()]);
+
+        let rgba = self.read_back(targets)?;
+        self.take_errors()?;
+        self.last_frame = Some(frame.index);
+        Ok(Frame {
+            index: frame.index,
+            width,
+            height,
+            rgba,
+        })
+    }
+
+    /// Room in the uniform buffer for every pass of every instance.
+    fn grow_uniforms(&mut self) {
+        let total_passes: usize = self
+            .instances
+            .iter()
+            .map(|i| self.effects[&i.effect].passes.len())
+            .sum();
+        if total_passes as u64 > self.uniform_slots {
+            self.uniform_slots = (total_passes as u64).next_power_of_two();
+            self.uniforms = Self::uniform_buffer(&self.device, self.uniform_slots);
+        }
+    }
+
+    fn upload(&self, targets: &Targets, frame: &Frame) {
+        let (width, height) = (targets.width, targets.height);
+        self.queue.write_texture(
+            targets.upload.texture.as_image_copy(),
+            &frame.rgba,
+            wgpu::TexelCopyBufferLayout {
+                offset: 0,
+                bytes_per_row: Some(width * 4),
+                rows_per_image: Some(height),
+            },
+            wgpu::Extent3d {
+                width,
+                height,
+                depth_or_array_layers: 1,
+            },
+        );
+    }
+
+    /// A frame that does not follow the last one starts with no previous
+    /// picture and empty persistent textures.
+    fn clear_history(&self, encoder: &mut wgpu::CommandEncoder, targets: &Targets) {
+        clear(encoder, &targets.previous);
+        for inst in &self.instances {
+            for slot in &inst.slots {
+                if slot.persistent {
+                    clear(encoder, &slot.tex);
+                    if let Some(shadow) = &slot.shadow {
+                        clear(encoder, shadow);
+                    }
+                }
+            }
+        }
+    }
+
+    fn bind_group(
+        &self,
+        pipeline: &wgpu::ComputePipeline,
+        entries: &[wgpu::BindGroupEntry],
+    ) -> wgpu::BindGroup {
+        self.device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: None,
+            layout: &pipeline.get_bind_group_layout(0),
+            entries,
+        })
+    }
+
+    /// Every pass of every instance in order: its uniforms, its bind group, and
+    /// the copies, narrowing and mip chains around it.
+    fn plan(&self, targets: &Targets, clock: &Clock) -> Result<Plan, String> {
+        let (width, height) = (targets.width, targets.height);
+        let mut plan = Plan {
+            current: Picture::Original,
+            uniform_writes: Vec::new(),
+            bind_groups: Vec::new(),
+            steps: Vec::new(),
+        };
         let mut global_pass = 0u32;
-        let mut uniform_writes: Vec<(u64, [u32; UNIFORM_DWORDS])> = Vec::new();
-        let mut bind_groups: Vec<(usize, usize, wgpu::BindGroup, u32, u32)> = Vec::new();
-        let mut steps: Vec<Step> = Vec::new();
-
-        let time = frame.index as f32 / self.fps;
-        let frametime = step.unwrap_or(1) as f32 / self.fps;
-        let random = (frame.index as u32)
-            .wrapping_mul(2_654_435_761)
-            .wrapping_add(0x9e37_79b9);
-
         for (ii, inst) in self.instances.iter().enumerate() {
             let fx = &self.effects[&inst.effect];
             for (pi, (decl, pipe)) in fx.effect.passes.iter().zip(&fx.passes).enumerate() {
                 let slot_of = |name: &str| inst.slots.iter().find(|s| s.name == name);
                 let writes_picture = decl.output.is_none();
                 let output = match &decl.output {
-                    None => {
-                        let target = if current == Picture::A {
-                            Picture::B
-                        } else {
-                            Picture::A
-                        };
-                        &picture_tex(target).view
-                    }
+                    None => &targets.picture(plan.current.other()).view,
                     Some(name) => {
                         &slot_of(name)
                             .ok_or_else(|| format!("effect {}: no texture {name}", inst.effect))?
@@ -834,7 +888,7 @@ impl Preview {
                                 if decl.output.as_deref() == Some(other) {
                                     match &s.shadow {
                                         Some(shadow) => {
-                                            steps.push(Step::Shadow(ii, other.to_string()));
+                                            plan.steps.push(Step::Shadow(ii, other.to_string()));
                                             &shadow.view
                                         }
                                         None => &s.tex.view,
@@ -861,36 +915,18 @@ impl Preview {
                     ));
                 }
 
-                let scene = picture_tex(current);
-                let mut u = [0u32; UNIFORM_DWORDS];
-                u[0] = out_w;
-                u[1] = out_h;
-                u[2] = (1.0 / out_w as f32).to_bits();
-                u[3] = (1.0 / out_h as f32).to_bits();
-                u[4] = time.to_bits();
-                u[5] = frame.index as u32;
-                u[6] = 0;
-                u[7] = global_pass;
-                for (i, v) in inst.params.iter().take(32).enumerate() {
-                    if i < 16 {
-                        u[8 + i] = v.to_bits();
-                    } else {
-                        u[36 + (i - 16)] = v.to_bits();
-                    }
-                }
-                u[24] = 1;
-                u[25] = 1;
-                u[26] = 0;
-                u[27] = frametime.to_bits();
-                u[28] = scene.width;
-                u[29] = scene.height;
-                u[30] = random;
-                u[31] = self.view;
-                u[32] = 0;
-                u[33] = u32::from(self.view != 0);
-                u[34] = u32::from(consecutive);
+                let scene = targets.picture(plan.current);
                 let offset = u64::from(global_pass) * UNIFORM_STRIDE;
-                uniform_writes.push((offset, u));
+                plan.uniform_writes.push((
+                    offset,
+                    pass_uniforms(
+                        clock,
+                        (out_w, out_h),
+                        (scene.width, scene.height),
+                        global_pass,
+                        &inst.params,
+                    ),
+                ));
 
                 let mut entries = vec![
                     wgpu::BindGroupEntry {
@@ -933,59 +969,54 @@ impl Preview {
                     layout: &pipe.layout,
                     entries: &entries,
                 });
-                bind_groups.push((ii, pi, bind, out_w, out_h));
-                steps.push(Step::Pass(bind_groups.len() - 1));
+                plan.bind_groups.push((ii, pi, bind, out_w, out_h));
+                plan.steps.push(Step::Pass(plan.bind_groups.len() - 1));
                 if let Some(name) = &decl.output
                     && slot_of(name).is_some_and(|s| s.narrow.is_some())
                 {
-                    steps.push(Step::Narrow(ii, name.clone()));
+                    plan.steps.push(Step::Narrow(ii, name.clone()));
                 }
                 if let Some(name) = &decl.output
                     && slot_of(name).is_some_and(|s| s.tex.mips > 1)
                 {
-                    steps.push(Step::Mips(ii, name.clone()));
+                    plan.steps.push(Step::Mips(ii, name.clone()));
                 }
                 if writes_picture {
-                    current = if current == Picture::A {
-                        Picture::B
-                    } else {
-                        Picture::A
-                    };
+                    plan.current = plan.current.other();
                 }
                 global_pass += 1;
             }
         }
+        Ok(plan)
+    }
 
-        for (offset, words) in &uniform_writes {
-            let bytes: Vec<u8> = words.iter().flat_map(|w| w.to_le_bytes()).collect();
-            self.queue.write_buffer(&self.uniforms, *offset, &bytes);
-        }
-        for step in &steps {
+    fn slot(&self, ii: usize, name: &str) -> Result<&Slot, String> {
+        self.instances[ii]
+            .slots
+            .iter()
+            .find(|s| s.name == name)
+            .ok_or_else(|| "missing texture".to_owned())
+    }
+
+    fn encode(&self, encoder: &mut wgpu::CommandEncoder, plan: &Plan) -> Result<(), String> {
+        for step in &plan.steps {
             match step {
                 Step::Shadow(ii, name) => {
-                    let slot = self.instances[*ii]
-                        .slots
-                        .iter()
-                        .find(|s| &s.name == name)
-                        .ok_or("missing texture")?;
+                    let slot = self.slot(*ii, name)?;
                     if let Some(shadow) = &slot.shadow {
-                        slot.tex.copy_to(&mut encoder, shadow);
+                        slot.tex.copy_to(encoder, shadow);
                     }
                 }
                 Step::Pass(bi) => {
-                    let (ii, pi, bind, w, h) = &bind_groups[*bi];
+                    let (ii, pi, bind, w, h) = &plan.bind_groups[*bi];
                     let fx = &self.effects[&self.instances[*ii].effect];
                     let pipe = &fx.passes[*pi];
-                    dispatch(&mut encoder, &pipe.pipeline, bind, *w, *h, pipe.threads);
+                    dispatch(encoder, &pipe.pipeline, bind, *w, *h, pipe.threads);
                 }
                 Step::Mips(ii, name) => {
-                    let slot = self.instances[*ii]
-                        .slots
-                        .iter()
-                        .find(|s| &s.name == name)
-                        .ok_or("missing texture")?;
+                    let slot = self.slot(*ii, name)?;
                     for level in 1..slot.tex.mips as usize {
-                        let bind = group(
+                        let bind = self.bind_group(
                             &self.mip,
                             &[
                                 wgpu::BindGroupEntry {
@@ -999,7 +1030,7 @@ impl Preview {
                             ],
                         );
                         dispatch(
-                            &mut encoder,
+                            encoder,
                             &self.mip,
                             &bind,
                             (slot.tex.width >> level).max(1),
@@ -1009,15 +1040,11 @@ impl Preview {
                     }
                 }
                 Step::Narrow(ii, name) => {
-                    let slot = self.instances[*ii]
-                        .slots
-                        .iter()
-                        .find(|s| &s.name == name)
-                        .ok_or("missing texture")?;
+                    let slot = self.slot(*ii, name)?;
                     if let Some((entry, scratch)) = &slot.narrow {
-                        slot.tex.copy_to(&mut encoder, scratch);
+                        slot.tex.copy_to(encoder, scratch);
                         let pipe = &self.narrow[entry];
-                        let bind = group(
+                        let bind = self.bind_group(
                             pipe,
                             &[
                                 wgpu::BindGroupEntry {
@@ -1030,46 +1057,17 @@ impl Preview {
                                 },
                             ],
                         );
-                        dispatch(&mut encoder, pipe, &bind, slot.tex.width, slot.tex.height, (8, 8));
+                        dispatch(encoder, pipe, &bind, slot.tex.width, slot.tex.height, (8, 8));
                     }
                 }
             }
         }
+        Ok(())
+    }
 
-        let final_picture = picture_tex(current);
-        let down = group(
-            &self.down,
-            &[
-                wgpu::BindGroupEntry {
-                    binding: 2,
-                    resource: wgpu::BindingResource::TextureView(&final_picture.view),
-                },
-                wgpu::BindGroupEntry {
-                    binding: 3,
-                    resource: wgpu::BindingResource::TextureView(&targets.out.view),
-                },
-            ],
-        );
-        dispatch(&mut encoder, &self.down, &down, width, height, (8, 8));
-        final_picture.copy_to(&mut encoder, &targets.previous);
-        encoder.copy_texture_to_buffer(
-            targets.out.texture.as_image_copy(),
-            wgpu::TexelCopyBufferInfo {
-                buffer: &targets.readback,
-                layout: wgpu::TexelCopyBufferLayout {
-                    offset: 0,
-                    bytes_per_row: Some(targets.row_bytes),
-                    rows_per_image: Some(height),
-                },
-            },
-            wgpu::Extent3d {
-                width,
-                height,
-                depth_or_array_layers: 1,
-            },
-        );
-        self.queue.submit([encoder.finish()]);
-
+    /// The rendered frame, read back from the GPU without the row padding.
+    fn read_back(&self, targets: &Targets) -> Result<Vec<u8>, String> {
+        let (width, height) = (targets.width, targets.height);
         let slice = targets.readback.slice(..);
         let (tx, rx) = std::sync::mpsc::channel();
         slice.map_async(wgpu::MapMode::Read, move |r| {
@@ -1088,14 +1086,98 @@ impl Preview {
             }
         }
         targets.readback.unmap();
-        self.take_errors()?;
-        self.last_frame = Some(frame.index);
-        Ok(Frame {
-            index: frame.index,
-            width,
-            height,
-            rgba,
-        })
+        Ok(rgba)
+    }
+}
+
+fn dispatch(
+    encoder: &mut wgpu::CommandEncoder,
+    pipeline: &wgpu::ComputePipeline,
+    bind: &wgpu::BindGroup,
+    w: u32,
+    h: u32,
+    threads: (u32, u32),
+) {
+    let mut pass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor::default());
+    pass.set_pipeline(pipeline);
+    pass.set_bind_group(0, bind, &[]);
+    pass.dispatch_workgroups(w.div_ceil(threads.0), h.div_ceil(threads.1), 1);
+}
+
+/// The frame's clock and view, the same for every pass of the frame.
+struct Clock {
+    index: usize,
+    time: f32,
+    frametime: f32,
+    random: u32,
+    view: u32,
+    consecutive: bool,
+}
+
+/// One pass's uniform block, in the layout of the shaders' constant buffer.
+fn pass_uniforms(
+    clock: &Clock,
+    (out_w, out_h): (u32, u32),
+    (scene_w, scene_h): (u32, u32),
+    global_pass: u32,
+    params: &[f32],
+) -> [u32; UNIFORM_DWORDS] {
+    let mut u = [0u32; UNIFORM_DWORDS];
+    u[0] = out_w;
+    u[1] = out_h;
+    u[2] = (1.0 / out_w as f32).to_bits();
+    u[3] = (1.0 / out_h as f32).to_bits();
+    u[4] = clock.time.to_bits();
+    u[5] = clock.index as u32;
+    u[6] = 0;
+    u[7] = global_pass;
+    for (i, v) in params.iter().take(32).enumerate() {
+        if i < 16 {
+            u[8 + i] = v.to_bits();
+        } else {
+            u[36 + (i - 16)] = v.to_bits();
+        }
+    }
+    u[24] = 1;
+    u[25] = 1;
+    u[26] = 0;
+    u[27] = clock.frametime.to_bits();
+    u[28] = scene_w;
+    u[29] = scene_h;
+    u[30] = clock.random;
+    u[31] = clock.view;
+    u[32] = 0;
+    u[33] = u32::from(clock.view != 0);
+    u[34] = u32::from(clock.consecutive);
+    u
+}
+
+/// A frame's passes, planned before any of them is encoded.
+struct Plan {
+    current: Picture,
+    uniform_writes: Vec<(u64, [u32; UNIFORM_DWORDS])>,
+    bind_groups: Vec<(usize, usize, wgpu::BindGroup, u32, u32)>,
+    steps: Vec<Step>,
+}
+
+impl Picture {
+    /// The ping-pong picture a pass that writes the picture writes into.
+    fn other(self) -> Picture {
+        if self == Picture::A {
+            Picture::B
+        } else {
+            Picture::A
+        }
+    }
+}
+
+impl Targets {
+    fn picture(&self, p: Picture) -> &Tex {
+        match p {
+            Picture::Original => &self.original,
+            Picture::A => &self.pictures[0],
+            Picture::B => &self.pictures[1],
+        }
     }
 }
 

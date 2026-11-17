@@ -1,0 +1,44 @@
+{
+ "schema": 1,
+ "name": "vt_Game_MessageSetAdvanceDestination",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1457548b8",
+  "type": "vtable[8]",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "xref:0x141c65069,0x14240ec82,0x1424100ab",
+  "notes": "ts-v1: not verified, only signed: the Simulate Session popup message the test agent posts as {vt, 0, destination u32, session u32}"
+ },
+ "signature": {
+  "id": "game.message_set_advance_destination",
+  "section": ".xtls",
+  "pattern": "48 8D 0D ?? ?? ?? ?? 48 89 4C 24 50 48 C7 44 24 60 02 00 00 00",
+  "match": "0x141c65066",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1457548b8",
+  "kind": "data",
+  "names": [
+   "vt_Game_MessageSetAdvanceDestination"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "ts-v1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/testing/agent/agent.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

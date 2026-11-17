@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_UpgradeSetLockedDeptGate",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143523740",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "pat:cmp-byte-rcx+0x72-3-ja;kb:subsystems/rnd_ui.md;decomp:re/decomp/143523730.c;xref:0x143523740;doc:addons/rnd-tyres-thermal/native/HOOKS.md#the-fix-flag-instantiate_tyres_upgrades-default-on-install-time",
+  "notes": "Career_Set_UpgradeFacilityLocked dept > 3 early return (ja @0x143523744). cmp byte [rcx+0x72],3 ; ja ret: rcx = instance"
+ },
+ "signature": {
+  "id": "career.upgrade_set_locked_dept_gate",
+  "section": ".xtls",
+  "pattern": "80 79 72 03 0F 87 ?? ?? ?? ?? 44 89 C6 89 D3 48 89 CF 48 8B 81 C0 00 00 00 4C 8B A1 C8 00 00 00 4C 39 E0 0F 84 ?? ?? ?? ?? 41 38 5C 24 FD",
+  "match": "0x143523740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143523740",
+  "kind": "mid",
+  "expect": "80 79 72 03 0F 87 E6 01 00 00",
+  "names": [
+   "site_Career_UpgradeSetLockedDeptGate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "site_Career_UpgradeSetLockedDeptGate",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143523730.c;xref:0x143523740,0x143523744,0x143523930,0x143523769",
+   "notes": "V0179 cmp byte [rcx+0x72],3; ja 0x143523930 (epilogue+ret); rcx = instance; body compares edx with last entry +0xd (locked); 10-byte window clean; sig separates it from the Enabled clone by the FD disp"
+  }
+ ],
+ "proofs": []
+}

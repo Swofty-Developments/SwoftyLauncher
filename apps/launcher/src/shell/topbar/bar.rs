@@ -1,6 +1,6 @@
-use crate::shell::pages::{logo, wordmark};
 use crate::ui::scale::{Hit, fixed};
 use crate::ui::theme::Palette;
+use crate::ui::{logo, wordmark};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
@@ -27,7 +27,7 @@ impl Shell {
         let step = barfit::choose(
             layout_width,
             &labels,
-            self.account_name().map(|n| n.chars().count()),
+            self.account.display_name().map(|n| n.chars().count()),
             BAR_HEIGHT,
         );
         let collapsed = step.collapsed();
@@ -179,9 +179,9 @@ impl Shell {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let ring = move |d: Stateful<Div>| d.when(focused, |d| d.border_2().border_color(p.accent));
-        match self.account_name() {
+        match self.account.display_name() {
             Some(name) => {
-                let face = match &self.avatar {
+                let face = match &self.account.avatar {
                     Some(image) => div()
                         .size(fixed(BAR_HEIGHT))
                         .flex_shrink_0()
@@ -253,7 +253,7 @@ impl Shell {
                     .text_color(rgb(0xffffff))
                     .bg(rgb(crate::ui::discord::BLURPLE))
                     .hover(|s| s.bg(rgb(crate::ui::discord::BLURPLE_HOVER)))
-                    .when(self.mp_busy || self.game_busy(), |d| d.opacity(0.5))
+                    .when(self.account.busy || self.game_busy(), |d| d.opacity(0.5))
                     .when(self.game_busy(), |d| {
                         d.tooltip(|window, cx| {
                             Tooltip::new(tr("Close the game to sign in or out")).build(window, cx)
@@ -267,7 +267,7 @@ impl Shell {
                     .text_color(rgb(0xffffff)),
             )
             .children((account != Account::IconOnly).then(|| {
-                if self.mp_busy {
+                if self.account.busy {
                     tr("Signing in…")
                 } else if account == Account::Small {
                     tr("Log in")

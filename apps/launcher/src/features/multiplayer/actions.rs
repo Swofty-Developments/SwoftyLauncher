@@ -13,15 +13,11 @@ use swofty_i18n::{tr, trf};
 
 use super::model::*;
 use super::state::*;
-use crate::shell::pages::monogram;
 use crate::shell::{Page, Shell};
+use crate::ui::monogram;
 use crate::ui::theme::Palette;
 
 impl Shell {
-    pub(crate) fn mp_allowed(&self) -> bool {
-        self.mp.as_ref().is_some_and(|m| m.allowed)
-    }
-
     pub(crate) fn watch_multiplayer(window: &mut Window, cx: &mut Context<Self>) {
         cx.spawn_in(window, async move |this, cx| {
             loop {
@@ -42,7 +38,7 @@ impl Shell {
             m.finish_leaving();
             cx.notify();
         }
-        if self.page != Page::Multiplayer || !self.mp_allowed() {
+        if self.page != Page::Multiplayer || !self.account.allowed() {
             self.mp_page.visible = false;
             return;
         }
@@ -98,14 +94,15 @@ impl Shell {
         let Some(ask) = session.state().launch else {
             return;
         };
-        if self.mp_page.launch_seen == ask.seq || self.launch.is_some() || self.build.is_some() {
+        if self.mp_page.launch_seen == ask.seq || self.launching.launch.is_some() || self.game.build.is_some()
+        {
             return;
         }
-        if !self.processes.is_empty() || self.restoring {
+        if !self.game.processes.is_empty() || self.launching.restoring {
             return;
         }
         self.mp_page.closing = None;
-        if let Some(dir) = self.install.as_ref().map(|i| i.dir.clone()) {
+        if let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) {
             diag::forget_status(&dir);
         }
         let row_ids = match &ask.row_ids {
@@ -169,19 +166,19 @@ impl Shell {
     }
 
     pub(super) fn mp_watch_game(&mut self, cx: &mut Context<Self>) {
-        let busy = self.launch.is_some() || self.build.is_some() || self.restoring;
+        let busy = self.launching.launch.is_some() || self.game.build.is_some() || self.launching.restoring;
         let m = &mut self.mp_page;
         if m.session.is_none() {
             return;
         }
-        if !self.processes.is_empty() && m.launch_seen != 0 && m.closing.is_none() {
+        if !self.game.processes.is_empty() && m.launch_seen != 0 && m.closing.is_none() {
             m.game_seen = true;
         }
-        if m.closing.is_some() && self.processes.is_empty() {
+        if m.closing.is_some() && self.game.processes.is_empty() {
             m.closing = None;
         }
         let over = m.state.as_ref().is_some_and(|s| s.phase.is_over());
-        if over || m.leaving || !exit_leaves(m.game_seen, !self.processes.is_empty(), busy) {
+        if over || m.leaving || !exit_leaves(m.game_seen, !self.game.processes.is_empty(), busy) {
             return;
         }
         let host = m.state.as_ref().is_some_and(|s| s.host);
@@ -194,10 +191,11 @@ impl Shell {
     }
 
     pub(super) fn mp_close_game(&mut self, window: &mut Window, cx: &mut Context<Self>) -> bool {
-        let Some(dir) = self.install.as_ref().map(|i| i.dir.clone()) else {
+        let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
             return true;
         };
         let pids: Vec<u32> = self
+            .game
             .processes
             .iter()
             .filter(|g| g.is_in(&dir))
@@ -208,7 +206,7 @@ impl Shell {
         }
         swofty_core::session::request_stop(&self.store.root);
         for pid in &pids {
-            if let Err(e) = swofty_core::process::stop_process(*pid) {
+            if let Err(e) = swofty_core::platform::process::stop_process(*pid) {
                 crate::app::app_log::action("stop f1 25").failed(&e);
                 window.notify(Notification::error(e.to_string()), cx);
                 return false;
@@ -227,10 +225,10 @@ impl Shell {
     }
 
     pub(super) fn mp_play(&mut self, start: Start, window: &mut Window, cx: &mut Context<Self>) {
-        let dir = self.install.as_ref().map(|i| i.dir.clone());
+        let dir = self.game.install.as_ref().map(|i| i.dir.clone());
         let running = dir
             .as_ref()
-            .is_some_and(|d| self.processes.iter().any(|g| g.is_in(d)));
+            .is_some_and(|d| self.game.processes.iter().any(|g| g.is_in(d)));
         if !running {
             self.mp_begin(start, window, cx);
             return;
@@ -286,7 +284,7 @@ impl Shell {
 
     pub(crate) fn mp_can_play_room(&self) -> bool {
         self.page == Page::Multiplayer
-            && self.mp_allowed()
+            && self.account.allowed()
             && !self.mp_page.busy()
             && self.mp_viewed_room().is_some()
     }
@@ -348,12 +346,12 @@ impl Shell {
     }
 
     pub(super) fn mp_poll_game(&mut self, cx: &mut Context<Self>) {
-        let Some(dir) = self.install.as_ref().map(|i| i.dir.clone()) else {
+        let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
             self.mp_page.game = None;
             self.mp_page.game_at = Some(Instant::now());
             return;
         };
-        let running = !self.processes.is_empty();
+        let running = !self.game.processes.is_empty();
         self.mp_page.game_polling = true;
         cx.spawn(async move |this, cx| {
             let status = cx
@@ -375,7 +373,7 @@ impl Shell {
     }
 
     pub(super) fn mp_poll_rooms(&mut self, cx: &mut Context<Self>) {
-        let Some(token) = self.mp.as_ref().map(|m| m.token.clone()) else {
+        let Some(token) = self.account.session.as_ref().map(|m| m.token.clone()) else {
             return;
         };
         self.mp_page.rooms_polling = true;
@@ -408,7 +406,7 @@ impl Shell {
     }
 
     pub(super) fn mp_read_digest(&mut self, cx: &mut Context<Self>) {
-        let Some(dir) = self.install.as_ref().map(|i| i.dir.clone()) else {
+        let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
             return;
         };
         let (store, profile) = (self.store.clone(), self.library.profile.name.clone());
@@ -436,17 +434,17 @@ impl Shell {
             Some(state) if self.mp_page.session.is_some() => state.game.as_ref(),
             _ => self.mp_page.game.as_ref(),
         };
-        GameState::of(!self.processes.is_empty(), status)
+        GameState::of(!self.game.processes.is_empty(), status)
     }
 
     pub(super) fn mp_start(&mut self, start: Start, cx: &mut Context<Self>) {
         if self.mp_page.busy() {
             return;
         }
-        let Some(token) = self.mp.as_ref().map(|m| m.token.clone()) else {
+        let Some(token) = self.account.session.as_ref().map(|m| m.token.clone()) else {
             return;
         };
-        let Some(dir) = self.install.as_ref().map(|i| i.dir.clone()) else {
+        let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
             self.mp_page.error = Some("F1 25 was not found. Locate it from the play bar first.".into());
             cx.notify();
             return;
@@ -517,7 +515,7 @@ impl Shell {
     }
 
     pub(super) fn mp_default_name(&self) -> String {
-        let you = self.mp.as_ref().map_or("Your", |m| m.name.as_str());
+        let you = self.account.session.as_ref().map_or("Your", |m| m.name.as_str());
         format!("{you}'s room")
     }
 

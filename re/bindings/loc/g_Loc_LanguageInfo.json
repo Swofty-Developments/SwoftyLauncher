@@ -1,0 +1,44 @@
+{
+ "schema": 1,
+ "name": "g_Loc_LanguageInfo",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1462925e8",
+  "type": "uint8_t[4864]",
+  "level": "L2",
+  "subsystem": "loc",
+  "evidence": "decomp:re/decomp/144436130.c;xref:0x144436147",
+  "notes": "19 x 0x100 language descriptors; +0x60 char * language code (eng, fre, ...) that Loc_Build_LanguagePath puts in language_<code>.lng. Registered by native-1990 for the core runtime string overrides (feat/lang-override); map in f1-modding re/db/subsystems/loc.md."
+ },
+ "signature": {
+  "id": "loc.language_info",
+  "section": ".xtls",
+  "pattern": "48 8D 0D ?? ?? ?? ?? 48 8B 5C 08 60",
+  "match": "0x144436147",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1462925e8",
+  "kind": "data",
+  "names": [
+   "g_Loc_LanguageInfo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/assets/lang_override.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

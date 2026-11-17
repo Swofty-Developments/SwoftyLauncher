@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPiePopulateNextCode",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f48200",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f48200;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v071--the-pie-crash-at-career-load-slot-4-was-never-constructed",
+  "notes": "lea rax,[k_Career_UpgradeDeptCodeTable+6]: the populate loop's next-code path (join target)"
+ },
+ "signature": {
+  "id": "career.rn_d_pie_populate_next_code",
+  "section": ".xtls",
+  "pattern": "EB 1B 0F 1F 84 00 00 00 00 00 48 8D 05",
+  "match": "0x141f481f6",
+  "anchor": "0xa",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f48200",
+  "kind": "mid",
+  "expect": "48 8D 05 5F DB 7E 03",
+  "names": [
+   "site_Career_RnDPiePopulateNextCode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "site_Career_RnDPiePopulateNextCode",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f481f6,0x141f48200,0x141f499aa,0x141f499c2,0x141f499d2,0x141f499e0,0x141f499ec",
+   "notes": "V0159 lea rax,[0x145735d66] = k_Career_UpgradeDeptCodeTable+6 (end ptr) then inc rbp/cmp/je exit; entered only by the 5 loop-tail branches 0x141f499aa..0x141f499ec (jmp at 0x141f481f6 skips it); 7-byte window, no branch inside, jump tables 0x14576fc14/0x14576fc24 do not target it"
+  }
+ ],
+ "proofs": []
+}

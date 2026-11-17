@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "site_Ne_ReplayAfterRecord",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445d1712",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/1445d0e70.c;xref:0x1445d170f,0x1445d1741",
+  "notes": "In Ne_Replay_WriteFrames, right after the recordable serialized into the scratch stream (call [rax+0x20] at 0x1445d170f) and before the holder copies: [rsp+0x118] = state holder, [rsp+0x98]-[rsp+0xa0] = state size, [rsp+0xc0]/[rsp+0xe8] = holder cur/prev buffers, [rsp+0xc8]/[rsp+0x108] = holder capacity, [rsp+0xb8,0xd0,0xd8,0xe0,0xf0,0xf8,0x100] = holder header fields, [rsp+0x198]+[rsp+0x190]+0x20 = registry slot of the holder (allocator at -8). r13 = recordable name. Used by f1_1990.dll to swap in a larger holder class when the state outgrows the holder.  Used by native/src/core/guards/session/replay_grid_guard.cpp: a state larger than the holder capacity [rsp+0x108] is cut to size 0 by writing [rsp+0x98] = [rsp+0xa0], so the memcpy at 0x1445d2570 copies nothing and the holder block is not overrun."
+ },
+ "signature": {
+  "id": "core.replay_after_record",
+  "section": ".xtls",
+  "pattern": "FF 50 20 49 89 F4 48 8B 06 48 89 F1",
+  "match": "0x1445d170f",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445d1712",
+  "kind": "mid",
+  "expect": "49 89 F4 48 8B 06",
+  "names": [
+   "site_Ne_ReplayAfterRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "heap-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/replay_holders.cpp",
+   "native/src/core/guards/session/replay_grid_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-d",
+   "kind": "global",
+   "item": "site_Ne_ReplayAfterRecord",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445d0e70.c;decomp:re/decomp/1445cce80.c;xref:0x1445d170f,0x1445d1712,0x1445d16e8,0x1445d1565,0x1445d156d,0x1445d1561,0x1445d1741,0x1445d178b,0x140646050;sig:core.replay_after_record",
+   "notes": "V0982 Frame 0x2248 fixed (no alloca). Loop over recorder+0x18 entries (stride 0x688): rbx = base, rdi = idx*0x688 saved to [rsp+0x198]/[rsp+0x190]; r12 = [rbx+rdi+0x20] holder; r13 = [entry+8] (the Recordable %s log arg) and is not rewritten before the site. [rsp+0x90] stream (vt 0x145bef950, cur [rsp+0x98] and begin [rsp+0xa0] both 0x146cc4ec0); [rsp+0xb8,0xd0,0xd8,0xe0,0xf0,0xf8,0x100] = holder+0x1c,+0x20,+0x48,+0x28,+0x30,+0x38,+0x40; [rsp+0xc8] and [rsp+0x108] = holder vt+0x10 (the 0x3980 holder class 0x140646050 returns 0x1c00); [rsp+0xc0] = vt+0x18 (this+0x80), [rsp+0xe8] = vt+0x20 (this+0x1d00); [rsp+0x118] = r12 at 0x1445d16e8. 0x1445d170f calls [entry+0x10]->vt+0x20(&stream); the site 0x1445d1712 (mov r12,rsi 3 bytes + mov rax,[rsi] 3 bytes, no branch into the window) precedes memcpy([rsp+0xe8],[rsp+0xc0],[holder+0x20]) at 0x1445d1741 and size = [rsp+0x98]-[rsp+0xa0] at 0x1445d178b. Register 0x1445cce80 stores the holder object at entry+0x20 and its allocator at entry+0x18 (slot-8), freeing the old one through allocator vt+0x38. sigcheck: 1 hit at 0x1445d170f, target 0x1445d1712"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "k_Career_DriverCareerContractsManagerComponentDesc",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14605c0d8",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/140e22370.c;decomp:re/decomp/140261150.c;xref:0x140e229dd,0x140261367;doc:addons/career-editor/protocol/economy.md#components-helper",
+  "notes": "static ECS type descriptor of DriverCareerContractsManagerComponent: the registration at 0x140e229dd writes the class-name pointer at +8; the game passes &desc as the key to the entity component registry get (entity+0x1030 vtable slot +0x10), as at 0x140261367"
+ },
+ "signature": {
+  "id": "career.driver_career_contracts_manager_component_desc",
+  "section": ".xtls",
+  "pattern": "48 85 FF 0F 84 ?? ?? ?? ?? 48 8B 03 48 8D 15",
+  "match": "0x14026135b",
+  "anchor": "0xf",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0xc",
+   "len": 7
+  },
+  "target": "0x14605c0d8",
+  "kind": "data",
+  "names": [
+   "k_Career_DriverCareerContractsManagerComponentDesc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-econ",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/components.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-2",
+   "kind": "global",
+   "item": "k_Career_DriverCareerContractsManagerComponentDesc",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140e22370.c;decomp:re/decomp/140261150.c;xref:0x140e229dd,0x140261367",
+   "notes": "V0253 desc is a 0x20-byte static object {+0 vtbl 0x145890940, +8 class-name ptr, +0x10 u32 name hash, +0x18 parent desc+8} filled at static init; registration writes the name at +8; class name unique among the 26; the address is the key passed in rdx with r8d=1 to registry vtbl+0x10 (entity+0x1030 at most sites), result cached/null-checked; GetType vfuncs return &desc. \"void *\" names only the first field"
+  }
+ ],
+ "proofs": []
+}

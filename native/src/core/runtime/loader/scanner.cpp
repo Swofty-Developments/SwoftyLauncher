@@ -8,6 +8,9 @@
 #include <mutex>
 #include <vector>
 
+#include "core/diagnostics/steps.hpp"
+#include "core/runtime/cache_dir.hpp"
+#include "core/runtime/lifecycle.hpp"
 #include "core/runtime/loader/code_encryption.hpp"
 #include "core/runtime/loader/host_api.hpp"
 #include "core/runtime/loader/mixins.hpp"
@@ -15,6 +18,12 @@
 #include "loader/data_folder.h"
 
 namespace runtime::loader {
+
+namespace {
+
+constexpr size_t PRESCAN_MIN = 16;
+
+}
 
 Scanner &scanner()
 {
@@ -84,12 +93,87 @@ std::string Scanner::exe_sha256(const std::wstring &exe, const std::wstring &cac
     return hex;
 }
 
+int Scanner::scan_now(const char *section, const char *pattern, uintptr_t *out)
+{
+    if (section && pattern) {
+        std::string key = std::string(section) + '|' + pattern;
+        AcquireSRWLockExclusive(&lock_);
+        auto it = prescanned_.find(key);
+        bool have = it != prescanned_.end();
+        Prescanned p = have ? it->second : Prescanned{};
+        if (have)
+            prescanned_.erase(it);
+        ReleaseSRWLockExclusive(&lock_);
+        if (have) {
+            if (p.hits == 1)
+                api->log("scan %s [%s] -> 1 hit at 0x%llx (base+0x%llx)", section, pattern, (unsigned long long)p.first,
+                         (unsigned long long)(p.first - image().base()));
+            else if (p.hits)
+                api->log("scan %s [%s] -> %d hits (first at 0x%llx), rejected: need exactly 1", section, pattern, p.hits,
+                         (unsigned long long)p.first);
+            else
+                api->log("scan %s [%s] -> 0 hits, rejected: need exactly 1", section, pattern);
+            if (out)
+                *out = p.hits == 1 ? p.first : 0;
+            return p.hits;
+        }
+    }
+    return loader_scan_(section, pattern, out);
+}
+
+/* A cache miss after a game update would scan the whole section once per binding (thousands of passes); the
+   loader's SwoftyLoaderScanMany gives every pattern's hits and first hit from one pass, the same answers its scan
+   gives, and nothing writes the game code while a binding pass runs. */
+void Scanner::prescan(const std::string &section, const std::vector<std::string> &patterns)
+{
+    if (!loader_scan_many_)
+        return;
+    std::vector<const char *> todo;
+    {
+        std::unordered_map<std::string, bool> seen;
+        AcquireSRWLockShared(&lock_);
+        for (auto &p : patterns) {
+            uint64_t known = 0;
+            if ((cache_on_ && cache_.find(section, p, known)) || prescanned_.count(section + '|' + p) || !seen.emplace(p, true).second)
+                continue;
+            todo.push_back(p.c_str());
+        }
+        ReleaseSRWLockShared(&lock_);
+    }
+    if (todo.size() < PRESCAN_MIN)
+        return;
+    perf::Stopwatch took;
+    std::vector<int> hits(todo.size());
+    std::vector<uintptr_t> first(todo.size());
+    if (!loader_scan_many_(section.c_str(), todo.data(), int(todo.size()), hits.data(), first.data())) {
+        api->log("[core] scan: one pass over %s for %zu pattern(s) was not possible; each is scanned on its own", section.c_str(),
+                 todo.size());
+        return;
+    }
+    size_t kept = 0;
+    AcquireSRWLockExclusive(&lock_);
+    for (size_t i = 0; i < todo.size(); i++)
+        if (hits[i] >= 0)
+            prescanned_[section + '|' + todo[i]] = {hits[i], first[i]}, kept++;
+    ReleaseSRWLockExclusive(&lock_);
+    double ms = took.total_ms();
+    api->log("[core] scan: one pass over %s answered %zu pattern(s) the scan cache does not know in %.1f ms", section.c_str(), kept, ms);
+    api->log(perf::STEP_LINE, ms, ("scan one pass " + section).c_str());
+}
+
+void Scanner::end_prescan()
+{
+    AcquireSRWLockExclusive(&lock_);
+    prescanned_.clear();
+    ReleaseSRWLockExclusive(&lock_);
+}
+
 int Scanner::scan(const char *section, const char *pattern, uintptr_t *out)
 {
     if (out)
         *out = 0;
     if (!cache_on_ || !section || !pattern)
-        return loader_scan_(section, pattern, out);
+        return scan_now(section, pattern, out);
     uint64_t known = 0;
     AcquireSRWLockShared(&lock_);
     bool have = cache_.find(section, pattern, known);
@@ -107,7 +191,7 @@ int Scanner::scan(const char *section, const char *pattern, uintptr_t *out)
         }
     }
     uintptr_t at = 0;
-    int hits = loader_scan_(section, pattern, &at);
+    int hits = scan_now(section, pattern, &at);
     AcquireSRWLockExclusive(&lock_);
     cache_.found(section, pattern, hits, hits == 1 ? image().rva(at) : 0);
     ReleaseSRWLockExclusive(&lock_);
@@ -217,9 +301,28 @@ const std::wstring &Scanner::caches(const std::wstring &dir)
     return cache_dir_;
 }
 
+}
+
+namespace runtime {
+
+const std::wstring &cache_dir()
+{
+    return loader::scanner().caches(Runtime::instance().dir());
+}
+
+}
+
+namespace runtime::loader {
+
 bool Scanner::open(SwoftyApi *a, const std::wstring &dir, long long exe_bytes)
 {
     loader_scan_ = a->scan;
+    HMODULE loader = nullptr;
+    GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                       reinterpret_cast<LPCWSTR>(reinterpret_cast<void *>(a->scan)), &loader);
+    loader_scan_many_ = loader ? reinterpret_cast<int (*)(const char *, const char *const *, int, int *, uintptr_t *)>(
+                                     reinterpret_cast<void *>(GetProcAddress(loader, "SwoftyLoaderScanMany")))
+                               : nullptr;
     a->scan = [](const char *section, const char *pattern, uintptr_t *out) { return scanner().addon_scan(section, pattern, out); };
     char v[16] = {0};
     if (GetEnvironmentVariableA("SWOFTY_RESOLVE", v, sizeof v) && !_stricmp(v, "scan")) {

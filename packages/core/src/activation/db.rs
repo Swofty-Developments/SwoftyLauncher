@@ -4,7 +4,7 @@ use serde::Deserialize;
 use swofty_formats::gvdb::Gvdb;
 
 use super::dbx::{Db, at, field, key, row, sub_count, sub_table};
-use crate::map::{Override, TrackPackage};
+use crate::content::track_package::{Override, TrackPackage};
 use crate::ops::first_segment;
 use crate::{Error, Result};
 

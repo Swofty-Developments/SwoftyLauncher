@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "k_Career_DriverAcademiesComponentDesc",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14605c0b8",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:own capstone disasm 0x140e226f0-0x140e22741;xref:0x140e22731,0x140dffdb3,0x141a71ac6,0x14105ffc4,0x141892f44",
+  "notes": "static ECS type descriptor of DriverAcademiesComponent: the static initialiser at 0x140e226f0 stores the class-name pointer (string \"DriverAcademiesComponent\" at 0x14568fd74, xref 0x140e2270b) at +8 (0x140e2270f), and vtable slot 5 (+0x28) of the component (0x14568fd90 + 0x28 = 0x14568fdb8 -> 0x140dffdb0, a lea/ret) returns it; the game passes &desc as the key to the entity component registry get (entity+0x1030 vtable slot +0x10), as at 0x141a71ac6"
+ },
+ "signature": {
+  "id": "career.driver_academies_component_desc",
+  "section": ".xtls",
+  "pattern": "49 89 BC 24 90 02 00 00 48 8B 87 30 10 00 00 48 81 C7 30 10 00 00 48 8D 15",
+  "match": "0x141a71aad",
+  "anchor": "0x19",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x16",
+   "len": 7
+  },
+  "target": "0x14605c0b8",
+  "kind": "data",
+  "names": [
+   "k_Career_DriverAcademiesComponentDesc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-17",
+    "by": "bind552",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-17",
+   "verifier": "bind552-verifier",
+   "kind": "global",
+   "item": "k_Career_DriverAcademiesComponentDesc",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140e226f0-0x140e22741 and 0x140dffdb0;xref:0x140e2270f,0x140dffdb3,0x141a71ac3,0x14568fdb8",
+   "notes": "V10710 Independent second pass by a fresh agent from the bytes: lea rax,[0x14568fd74] (string DriverAcademiesComponent) stored at desc+8 (0x14605c0c0); vtable 0x14568fd90 slot 5 (+0x28 = 0x14568fdb8) is 0x140dffdb0 = lea rax,[0x14605c0b8]; ret; 0x141a71ab5-0x141a71ad3 passes it as rdx to the entity registry get call [rax+0x10] with r8d = 1"
+  }
+ ],
+ "proofs": []
+}

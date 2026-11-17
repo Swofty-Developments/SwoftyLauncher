@@ -1,7 +1,7 @@
 use swofty_core::install::Source;
-use swofty_core::launcher_saves::{self, Area, Choice, Why};
 use swofty_core::profile::Profile;
-use swofty_core::vault::Layout;
+use swofty_core::saves::launcher::{self as launcher_saves, Area, Choice, Why};
+use swofty_core::saves::vault::Layout;
 use swofty_i18n::{tr, trf};
 
 pub(crate) struct Line {

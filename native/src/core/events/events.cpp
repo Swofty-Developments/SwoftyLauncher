@@ -10,10 +10,12 @@
 #include "core/apply/moments.hpp"
 #include "core/events/events_dispatch.hpp"
 #include "core/diagnostics/perf.hpp"
+#include "core/diagnostics/steps.hpp"
 #include "core/events/session_lifecycle_logic.hpp"
 
 #include <cstring>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -43,6 +45,7 @@ const runtime::Sig S_RACE_STARTED{"Game_ChampionshipFormationLapComponent_OnRace
 runtime::ev::Dispatcher<perf::Scope> disp;
 runtime::session_life::Lifecycle lifecycle;
 std::mutex lifecycle_lock;
+std::optional<perf::Stopwatch> session_loading;
 safetyhook::MidHook h_flow, h_session_enter, h_race_started;
 std::mutex queued_lock;
 std::vector<std::pair<uint32_t, std::string>> queued_by;
@@ -433,8 +436,21 @@ void session_flow(const char *known, int to)
 {
     if (!known || (to != 1 && to != 3))
         return;
-    if (to == 1 && !std::strcmp(known, "StateLoadSession"))
+    if (to == 1 && !std::strcmp(known, "StateLoadSession")) {
         note_kind();
+        std::lock_guard<std::mutex> g(lifecycle_lock);
+        session_loading.emplace();
+    }
+    if (to == 1 && !std::strcmp(known, "StateSession")) {
+        std::optional<perf::Stopwatch> loaded;
+        {
+            std::lock_guard<std::mutex> g(lifecycle_lock);
+            loaded.swap(session_loading);
+        }
+        if (loaded)
+            swofty::log(perf::STEP_LINE, loaded->total_ms(),
+                        ("session ready (StateLoadSession to StateSession, kind " + std::to_string(session_kind()) + ")").c_str());
+    }
     session_life::Emit e;
     bool exiting = to == 3 && !std::strcmp(known, "StateSession");
     bool unloading = to == 1 && !std::strcmp(known, "StateUnloadSession");

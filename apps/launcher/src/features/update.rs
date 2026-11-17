@@ -11,10 +11,10 @@ use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use semver::Version;
-use swofty_core::app_control::Block;
-use swofty_core::managed;
-use swofty_core::update::{self, Install, Release};
-use swofty_core::updater::{self, Catalog, Gate, Part, Phase, Plan, Ran, Track};
+use swofty_core::platform::app_control::Block;
+use swofty_core::updates::managed;
+use swofty_core::updates::release::{self as update, Install, Release};
+use swofty_core::updates::updater::{self, Catalog, Gate, Part, Phase, Plan, Ran, Track};
 
 use crate::features::sections::{Reporter, Shared};
 use crate::shell::play_bar::link;
@@ -637,7 +637,7 @@ impl Shell {
     }
 
     pub(crate) fn launcher_notices(&self) -> Vec<String> {
-        if !self.update_check || !self.updates.runs_from_release() {
+        if !self.prefs.update_check || !self.updates.runs_from_release() {
             return Vec::new();
         }
         match self.updates.blocked_notice() {
@@ -647,7 +647,7 @@ impl Shell {
     }
 
     pub(crate) fn update_bar(&self, p: Palette) -> Option<impl IntoElement> {
-        if !self.update_check || !self.updates.runs_from_release() {
+        if !self.prefs.update_check || !self.updates.runs_from_release() {
             return None;
         }
         let bar = h_flex()

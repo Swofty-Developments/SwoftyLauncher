@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "site_Ne_HwInt_TexStreamSizeInMiB",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1471f8556",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/1471f84c0.c;xref:0x1471f8556",
+  "notes": "call Ne_Parse_Long(attr+0x50 value, NULL, 0) for the hardware-settings attribute 'sizeInMiB' (name matched case-insensitively against the string loaded at 0x1471f8515) in reader 0x1471f84c0, a settings listener callback; its return address keys xanpavle.re-optimization's integer enforcement"
+ },
+ "signature": {
+  "id": "core.hw_int_tex_stream_size_in_mi_b",
+  "section": ".data1",
+  "pattern": "E8 ?? ?? ?? ?? EB 02 31 C0 48 8B B6 98 00 00 00",
+  "match": "0x1471f8556",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1471f8556",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Ne_HwInt_TexStreamSizeInMiB"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "reopt-025",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ],
+  "data1_reason": "return-address key only, never patched: xanpavle.re-optimization wraps Ne_Parse_Long in .xtls and compares its return address with this call; the attribute is read only inside this .data1 body"
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "reopt-025-verify",
+   "kind": "global",
+   "item": "site_Ne_HwInt_TexStreamSizeInMiB",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1471f84c0.c;xref:0x1471f8556,0x1471f8515,0x1471f8543,0x1471f855f;sig:core.hw_int_tex_stream_size_in_mi_b",
+   "notes": "V0939 Loop over the element attribute vector (+0x50..+0x58): 0x14534da24(attr+0x18 name, rbx = 'sizeInMiB' from lea 0x1471f8515, r8d 0x1f) at 0x1471f8543; on 0 it sets rcx = [attr+0x50], edx = 0, r8d = 0 and the E8 at 0x1471f8556 calls 0x14534dcd8 (.data1, .pdata 0x1471f84c0-0x1471f86b8 covers the body; data1_reason present; reached through the .xtls jmp thunk 0x14015be90). Result (0 when absent) clamped to 0..0x1000, shifted left 20 and stored to [this+0x98]+0x2b60 and +0x2b68. sigcheck: one hit, target 0x1471f8556"
+  }
+ ],
+ "proofs": []
+}

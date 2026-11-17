@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/guards/career/teamhq_track_logic.hpp"
 
@@ -200,7 +201,4 @@ void setup()
 
 }
 
-SWOFTY_ON_LOAD
-{
-    runtime::when_code_ready("teamhq track guard", setup);
-}
+SWOFTY_HOOK_GUARD(teamhq_track, "teamhq track guard", setup)

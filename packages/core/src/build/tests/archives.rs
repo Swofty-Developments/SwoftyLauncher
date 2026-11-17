@@ -134,7 +134,10 @@ fn the_core_ships_the_startup_intro_and_a_later_addon_replaces_it() {
     let staged = store.addon_cache_dir(CORE_ID).join(video);
 
     let built = build(&store, "default", &game).unwrap();
-    assert_eq!(std::fs::read(&staged).unwrap(), crate::builtin::CORE_INTRO_VIDEO);
+    assert_eq!(
+        std::fs::read(&staged).unwrap(),
+        crate::addons::builtin::CORE_INTRO_VIDEO
+    );
     let put = |b: &Built| b.plan.data.get(video).or(b.plan.added.get(video)).cloned();
     assert_eq!(put(&built), Some(staged));
     assert!(built.conflicts.is_empty());
@@ -168,7 +171,7 @@ fn the_core_ships_the_startup_intro_and_a_later_addon_replaces_it() {
     store
         .update_profile("default", |p| {
             p.set_option(
-                &crate::builtin::core_manifest(),
+                &crate::addons::builtin::core_manifest(),
                 "startup_intro",
                 serde_json::json!(false),
             )
@@ -593,7 +596,7 @@ fn records_and_reports_the_conflicts_between_addons() {
     let (tx, rx) = std::sync::mpsc::channel();
     std::thread::scope(|s| {
         s.spawn(|| {
-            tx.send(crate::conflicts::check(&store, "default", &game))
+            tx.send(crate::profile::conflicts::check(&store, "default", &game))
                 .unwrap()
         });
         let waited = rx.recv_timeout(std::time::Duration::from_millis(300));
@@ -622,7 +625,7 @@ fn records_and_reports_the_conflicts_between_addons() {
         "{:?}",
         built.warnings
     );
-    let report = crate::conflicts::last(&store, "default").unwrap();
+    let report = crate::profile::conflicts::last(&store, "default").unwrap();
     assert!(report.is_current(&store.profile("default").unwrap()));
     assert_eq!(report.pairs, checked.pairs);
     assert_eq!(report.pairs, built.report.pairs);
@@ -645,7 +648,7 @@ fn records_and_reports_the_conflicts_between_addons() {
             "entrants.teams.team[_metadata_=mclaren_26].stat_id".to_owned()
         ]
     );
-    std::fs::remove_file(crate::conflicts::path(&store, "default")).unwrap();
+    std::fs::remove_file(crate::profile::conflicts::path(&store, "default")).unwrap();
     let again = build(&store, "default", &game).unwrap();
     assert!(
         again
@@ -654,12 +657,12 @@ fn records_and_reports_the_conflicts_between_addons() {
             .any(|l| l.starts_with("build: nothing changed"))
     );
     assert_eq!(
-        crate::conflicts::last(&store, "default").unwrap().pairs,
+        crate::profile::conflicts::last(&store, "default").unwrap().pairs,
         report.pairs
     );
-    assert!(crate::conflicts::last(&store, "vanilla").is_none());
+    assert!(crate::profile::conflicts::last(&store, "vanilla").is_none());
     assert!(
-        crate::conflicts::check(&store, "vanilla", &game)
+        crate::profile::conflicts::check(&store, "vanilla", &game)
             .unwrap()
             .pairs
             .is_empty()
@@ -736,7 +739,7 @@ fn build_put_and_edit(name: &str, edit_first: bool) -> (Built, PathBuf, PathBuf)
 fn a_resource_edit_that_leaves_stale_tsmd_stats_gets_them_rebuilt() {
     use swofty_formats::bxml::{Document, Element, Kind};
     use swofty_formats::erp::{Erp, Fragment, HEADER_LEN, MAGIC, Resource, STORED};
-    let _pin = crate::builtin::LoaderPin::none();
+    let _pin = crate::addons::builtin::LoaderPin::none();
     let root = std::env::temp_dir().join(format!("swofty-build-tsmd-{}", std::process::id()));
     std::fs::remove_dir_all(&root).ok();
     let dir = root.join("game");

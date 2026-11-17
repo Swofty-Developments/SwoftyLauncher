@@ -1,7 +1,10 @@
 #pragma once
 #include <emmintrin.h>
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 static const uint8_t BYTE_RANK[256] = {
     255, 248, 243, 229, 239, 244, 182, 183, 230, 159, 121, 107, 198, 221, 112, 249,
@@ -70,4 +73,164 @@ static inline int scan_range(const uint8_t *lo, const uint8_t *hi, const int *pa
         if (pattern_hit(lo + i, pat, n) && hits++ == 0)
             *first = (uintptr_t)(lo + i);
     return hits;
+}
+
+static inline int parse_pattern(const char *p, int *out, int max)
+{
+    int n = 0;
+    while (*p) {
+        while (*p == ' ')
+            p++;
+        if (!*p)
+            break;
+        if (n == max)
+            return -1;
+        if (*p == '?') {
+            out[n++] = -1;
+            while (*p == '?')
+                p++;
+        } else {
+            char *end;
+            long v = strtol(p, &end, 16);
+            if (end == p || end - p > 2 || v < 0 || v > 255)
+                return -1;
+            out[n++] = (int)v;
+            p = end;
+        }
+    }
+    return n;
+}
+
+/* Many patterns over the same memory in one pass. Each pattern is keyed on its rarest run of four fixed
+   bytes; every position's four bytes go through a bit filter and a hash table of those keys, and a key hit
+   checks the whole pattern where it would start. A hit is counted exactly when scan_range would count it,
+   in the same address order, so hits[i] and first[i] are what scan_range gives pattern i on each range. A
+   pattern without four fixed bytes in a row is scanned on its own with scan_range. */
+typedef struct {
+    const int *pat;
+    int n, a1, a2, key_off;
+    uint32_t key;
+} ScanPattern;
+
+typedef struct {
+    ScanPattern *pats;
+    int count, solos;
+    unsigned table_bits;
+    uint32_t *filter;
+    int *heads, *next, *solo;
+} MultiScan;
+
+#define MULTI_FILTER_BITS 21
+
+static inline uint32_t multi_hash(uint32_t k)
+{
+    return k * 2654435761u;
+}
+
+static inline void multi_free(MultiScan *ms)
+{
+    free(ms->filter);
+    free(ms->heads);
+    free(ms->next);
+    free(ms->solo);
+    ms->filter = NULL, ms->heads = ms->next = ms->solo = NULL;
+}
+
+static inline int multi_key_offset(const int *pat, int n)
+{
+    int best = -1, best_cost = INT_MAX;
+    for (int o = 0; o + 4 <= n; o++) {
+        if (pat[o] < 0 || pat[o + 1] < 0 || pat[o + 2] < 0 || pat[o + 3] < 0)
+            continue;
+        int cost = BYTE_RANK[pat[o]] + BYTE_RANK[pat[o + 1]] + BYTE_RANK[pat[o + 2]] + BYTE_RANK[pat[o + 3]];
+        if (cost < best_cost)
+            best = o, best_cost = cost;
+    }
+    return best;
+}
+
+static inline int multi_prepare(MultiScan *ms, ScanPattern *pats, int count)
+{
+    memset(ms, 0, sizeof *ms);
+    ms->pats = pats;
+    ms->count = count;
+    unsigned bits = 4;
+    while ((1u << bits) < 2u * (unsigned)count)
+        bits++;
+    ms->table_bits = bits;
+    ms->filter = (uint32_t *)calloc((size_t)1 << (MULTI_FILTER_BITS - 5), sizeof(uint32_t));
+    ms->heads = (int *)malloc(sizeof(int) << bits);
+    ms->next = (int *)malloc(sizeof(int) * (size_t)(count ? count : 1));
+    ms->solo = (int *)malloc(sizeof(int) * (size_t)(count ? count : 1));
+    if (!ms->filter || !ms->heads || !ms->next || !ms->solo) {
+        multi_free(ms);
+        return 0;
+    }
+    for (size_t i = 0; i < ((size_t)1 << bits); i++)
+        ms->heads[i] = -1;
+    for (int j = count - 1; j >= 0; j--) {
+        ScanPattern *p = &pats[j];
+        p->key_off = multi_key_offset(p->pat, p->n);
+        if (p->key_off < 0) {
+            ms->solo[ms->solos++] = j;
+            continue;
+        }
+        const int *k = p->pat + p->key_off;
+        p->key = (uint32_t)k[0] | (uint32_t)k[1] << 8 | (uint32_t)k[2] << 16 | (uint32_t)k[3] << 24;
+        uint32_t h = multi_hash(p->key), f = h >> (32 - MULTI_FILTER_BITS);
+        ms->filter[f >> 5] |= 1u << (f & 31);
+        unsigned slot = h >> (32 - bits);
+        ms->next[j] = ms->heads[slot];
+        ms->heads[slot] = j;
+    }
+    return 1;
+}
+
+/* Keyed patterns that start in [lo, hi) and end by hi, for key positions q in [qlo, qhi): a range split
+   into pieces gives the same hits piece by piece, in order. */
+static inline void multi_scan_keys(const MultiScan *ms, const uint8_t *lo, const uint8_t *hi, const uint8_t *qlo,
+                                   const uint8_t *qhi, int *hits, uintptr_t *first)
+{
+    if (hi - lo < 4)
+        return;
+    const uint8_t *last = hi - 4;
+    if (qhi > last + 1)
+        qhi = last + 1;
+    const unsigned shift = 32 - ms->table_bits;
+    for (const uint8_t *q = qlo; q < qhi; q++) {
+        uint32_t k;
+        memcpy(&k, q, 4);
+        uint32_t h = multi_hash(k), f = h >> (32 - MULTI_FILTER_BITS);
+        if (!(ms->filter[f >> 5] & (1u << (f & 31))))
+            continue;
+        for (int j = ms->heads[h >> shift]; j >= 0; j = ms->next[j]) {
+            const ScanPattern *p = &ms->pats[j];
+            if (p->key != k || q - lo < p->key_off)
+                continue;
+            const uint8_t *c = q - p->key_off;
+            if (hi - c < p->n || !pattern_hit(c, p->pat, p->n))
+                continue;
+            if (hits[j]++ == 0)
+                first[j] = (uintptr_t)c;
+        }
+    }
+}
+
+static inline void multi_scan_solos(const MultiScan *ms, const uint8_t *lo, const uint8_t *hi, int *hits, uintptr_t *first)
+{
+    for (int s = 0; s < ms->solos; s++) {
+        int j = ms->solo[s];
+        const ScanPattern *p = &ms->pats[j];
+        uintptr_t f = 0;
+        int h = scan_range(lo, hi, p->pat, p->n, p->a1, p->a2, &f);
+        if (h && !hits[j])
+            first[j] = f;
+        hits[j] += h;
+    }
+}
+
+static inline void multi_scan_range(const MultiScan *ms, const uint8_t *lo, const uint8_t *hi, int *hits, uintptr_t *first)
+{
+    multi_scan_keys(ms, lo, hi, lo, hi, hits, first);
+    multi_scan_solos(ms, lo, hi, hits, first);
 }

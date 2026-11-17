@@ -12,11 +12,11 @@ use gpui_kit::component::spinner::Spinner;
 use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::builtin::CORE_ID;
-use swofty_core::data_move::find::{self, Found};
-use swofty_core::data_move::{self, Location};
-use swofty_core::managed;
+use swofty_core::addons::builtin::CORE_ID;
+use swofty_core::data::relocate::find::{self, Found};
+use swofty_core::data::relocate::{self as data_move, Location};
 use swofty_core::session::Config;
+use swofty_core::updates::managed;
 use swofty_i18n::{tr, trf, trn};
 
 use crate::dialogs::data_move::install_folder;
@@ -67,7 +67,7 @@ impl Shell {
                 .map(|b| b.addon.manifest().id.clone()),
         );
         if let Some(shipped) = install_folder().map(|root| root.join("addons"))
-            && !swofty_core::process::same_folder(&shipped, &self.store.addons_dir())
+            && !swofty_core::platform::process::same_folder(&shipped, &self.store.addons_dir())
             && let Ok(read) = std::fs::read_dir(shipped)
         {
             ids.extend(
@@ -95,10 +95,11 @@ impl Shell {
             return;
         }
         let games: Vec<PathBuf> = self
+            .game
             .copies
             .iter()
             .map(|c| c.dir.clone())
-            .chain(self.install.as_ref().map(|i| i.dir.clone()))
+            .chain(self.game.install.as_ref().map(|i| i.dir.clone()))
             .collect();
         let location = Location::find(install_folder(), games);
         let installs: Vec<PathBuf> = install_folder().into_iter().collect();
@@ -143,10 +144,11 @@ impl Shell {
             prompt.stage = Stage::Switching;
         }
         let games: Vec<PathBuf> = self
+            .game
             .copies
             .iter()
             .map(|c| c.dir.clone())
-            .chain(self.install.as_ref().map(|i| i.dir.clone()))
+            .chain(self.game.install.as_ref().map(|i| i.dir.clone()))
             .collect();
         let location = Location::find(install_folder(), games);
         let installs: Vec<PathBuf> = install_folder().into_iter().collect();

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_UpgradeRowTypeJoin",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14353a408",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/143539bc0.c;xref:0x14353a408,0x14353a3fa;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "mov [rsp+0xc8],r15b: join of the 19-name upgrade_type compare loop (0x14353a3d0..0x14353a405; r14 = index, r15 = id or 0 when r14 == 0x13, r13 = decoded upgrade_type string). rnd-tyres sets r15 = 19..22 when r14 == 0x13 and r13 names a Tyres type"
+ },
+ "signature": {
+  "id": "career.upgrade_row_type_join",
+  "section": ".xtls",
+  "pattern": "75 CB 45 31 FF 44 88 BC 24 C8 00 00 00",
+  "match": "0x14353a403",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14353a408",
+  "kind": "mid",
+  "expect": "44 88 BC 24 C8 00 00 00",
+  "names": [
+   "site_Career_UpgradeRowTypeJoin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_UpgradeRowTypeJoin",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143539bc0.c;xref:0x14353a3c0,0x14353a3d0,0x14353a3df,0x14353a3f3,0x14353a3fa,0x14353a405,0x14353a408",
+   "notes": "V0078 loop r14=0..18, r15=movsx order[r14], strcmp(name table 0x14584f6b8[r15], r13='upgrade_type' string or ''); je join with r15=id, else xor r15d,r15d at r14==0x13; join stores r15b to [rsp+0xc8]; only je 0x14353a3fa branches to it"
+  }
+ ],
+ "proofs": []
+}

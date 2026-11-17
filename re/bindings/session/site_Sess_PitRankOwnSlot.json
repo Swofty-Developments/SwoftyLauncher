@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_PitRankOwnSlot",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143691d48",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/143691b40.c;xref:0x143691d3d,0x143691d44,0x143691d4e",
+  "notes": "In the rank-count sibling 0x143691b40: rax = [[rbx+0x148]][own vehicle] loaded at 0x143691d44, read at +0x48/+0x50 by 0x143691d48. Runs before the critical section is entered (0x143691d55). A null slot returns false through site_Sess_PitRankEpilogue."
+ },
+ "signature": {
+  "id": "session.pit_rank_own_slot",
+  "section": ".xtls",
+  "pattern": "48 8B 04 C1 8B 70 48 33 70 50 48 8B 0D",
+  "match": "0x143691d44",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143691d48",
+  "kind": "mid",
+  "expect": "8B 70 48 33 70 50",
+  "names": [
+   "site_Sess_PitRankOwnSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "pitguard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/garage/pit_slots.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "kbverify-pit1",
+   "kind": "global",
+   "item": "0x143691d48",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143691b40.c;xref:0x143691d44,0x143691d4e,0x143691dcc",
+   "notes": "V3859 rax holds the own slot ptr (loaded d44), fault at d48. CS Enter is at d55, after the hook, so jumping to dcc skips Enter and Leave in balance; no other Enter in the function. rax=0 gives al=0 (false); precedent c09->dcc xor eax,eax"
+  }
+ ],
+ "proofs": []
+}

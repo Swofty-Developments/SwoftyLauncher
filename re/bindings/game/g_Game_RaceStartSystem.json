@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "g_Game_RaceStartSystem",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146095a68",
+  "type": "void*",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/142f4a070.c;xref:0x142f49425,0x142f4a2d8,0x142f4a379,0x142f4a58e,0x142f4a6dd,0x142f4a720;decomp:re/decomp/142f491f0.c",
+  "notes": "Race-start (anti-stall / launch) system singleton. Components register into its vector +0x48..+0x50 (cap +0x58, allocator +0x40) in 0x142f491f0. Per-car update 0x142f4a070 reads +0x100 (system armed) and +0x108 (start released): while not armed it sets the car's start-lock bit 1 (car+0x1fc |= 2), clears +0x21c, flags the input record (+0x1c |= 0x20) and, for controller type 11, writes launch mode 1 (or 2 once count +0x104 >= limit +0xb8) to [car+0x538]+0x680; when armed it clears bit 1 again. +0xc4 copied to each car entry +0x20. Siblings at 0x146095a80 (session clock) / 0x146095a88 (pit lane). (used by vmknolle race-start: release the start lock after grid restarts)"
+ },
+ "signature": {
+  "id": "game.race_start_system",
+  "section": ".xtls",
+  "pattern": "48 8B 01 FF 50 18 48 89 43 58 48 8B 05 ?? ?? ?? ?? 44 0F B6 A8 00 01 00 00 0F B6 88 08 01 00 00",
+  "match": "0x142f4a2ce",
+  "anchor": "0xd",
+  "resolve": {
+   "kind": "riprel",
+   "insn": 10,
+   "len": 7
+  },
+  "target": "0x146095a68",
+  "kind": "data",
+  "names": [
+   "g_Game_RaceStartSystem"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-c",
+   "kind": "global",
+   "item": "0x146095a68",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_c/decomp/142f4a070.c;decomp:work/verify_c/decomp/142f491f0.c;decomp:work/verify_c/decomp/142f4e940.c;xref:0x142f49425,0x142f4a2d8,0x142f4a379,0x142f4e986",
+   "notes": "V1055 singleton (written only from .data1 0x14f8c0ee5) read by the anti-stall code next to MessageRaceStarted/StartLightOn/RollingStart handlers: +0x100 race-started flag, +0x104 light counter vs thresholds +0xb8/+0xbc, +0x108 start-mode flag, +0x48 vector components register into; race-start state object, void*"
+  }
+ ],
+ "proofs": []
+}

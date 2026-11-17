@@ -8,17 +8,18 @@ use gpui_kit::*;
 use swofty_core::catalog::Addon;
 use swofty_core::catalog::publishers::{self};
 use swofty_core::catalog::search::Query;
-use swofty_core::update::current_version;
+use swofty_core::updates::release::current_version;
 use swofty_i18n::{tr, trf, trn};
 
 use super::tiles::landing_rows;
 use super::*;
 use crate::services::library::Type;
 use crate::shell::Shell;
-use crate::shell::pages::{GUTTER, tile};
 use crate::ui::facet::FILTERS_W;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;
+use crate::ui::tile;
+use crate::ui::tokens::space::GUTTER;
 
 pub(super) type GridKey = (String, Sort, Tab, BTreeSet<Facet>, bool, u64);
 
@@ -160,7 +161,7 @@ impl Shell {
         } else {
             trn(shown.len(), "{count} addon", "{count} addons")
         };
-        let width = self.content_width - FILTERS_W - 20.;
+        let width = self.layout.content_width - FILTERS_W - 20.;
         let ad = (!self.ad_header_room(crate::features::ads::Unit::Discover))
             .then(|| self.ad_banner(crate::features::ads::Unit::Discover, width - GUTTER, p))
             .flatten();

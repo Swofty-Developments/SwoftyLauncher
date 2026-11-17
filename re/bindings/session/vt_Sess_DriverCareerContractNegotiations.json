@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_DriverCareerContractNegotiations",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14585a310",
+  "type": "vtable[11]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "pat:flow-state-type-record;xref:0x146101b98;decomp:re/decomp/1408438c0.c",
+  "notes": "cxx=StateDriverCareerContractNegotiations; neon flow state (slot 2 = NeFlowState base 0x1436aef00, slot 0 returns type record 0x146101b98 whose +8 names the class); onStateEnter 0x1436c1760, onStateUpdate 0x1436c1e00, onStateExit 0x1436c1fc0 (slots 8/9/10). (vmknolle session-flow map)"
+ },
+ "signature": {
+  "id": "session.driver_career_contract_negotiations",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 06 48 C7 86 80 0C 00 00 00 00 00 00 C6 86 88",
+  "match": "0x14084394c",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14585a310",
+  "kind": "data",
+  "names": [
+   "vt_Sess_DriverCareerContractNegotiations"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x14585a310",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x14084394f",
+   "notes": "V7465 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

@@ -1,9 +1,10 @@
 use super::SPLIT_AT;
 use crate::shell::notices::{Notification, Notify};
-use crate::shell::pages::{GUTTER, label};
 use crate::shell::{Page, Shell};
+use crate::ui::label;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;
+use crate::ui::tokens::space::GUTTER;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
@@ -11,7 +12,7 @@ use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::path::PathBuf;
-use swofty_core::import::{self, Route};
+use swofty_core::addons::import::{self, Route};
 use swofty_core::profile::VANILLA;
 use swofty_i18n::{fill, tr, trf, trn};
 
@@ -184,7 +185,7 @@ impl Shell {
         let pending = self.pending_note(p);
         let saves = self.saves_banner(false, p, cx);
         let tracks = self.tracks_note(p, cx);
-        let split = self.content_width >= SPLIT_AT;
+        let split = self.layout.content_width >= SPLIT_AT;
         let selected = self.open_addon.clone().filter(|id| {
             self.library
                 .listed()
@@ -254,7 +255,7 @@ impl Shell {
     pub(super) fn list_heading(&self, p: Palette) -> AnyElement {
         let title = match self.vanilla() {
             true => tr("INSTALLED").to_owned(),
-            false if !self.use_profiles => tr("LOAD ORDER").to_owned(),
+            false if !self.prefs.use_profiles => tr("LOAD ORDER").to_owned(),
             false => trf!(
                 "LOAD ORDER IN {name}",
                 name = self.library.profile.name.to_uppercase()
@@ -284,7 +285,7 @@ impl Shell {
             )
         } else {
             let on = self.library.listed().filter(|m| self.addon_on(m)).count();
-            let line = match self.use_profiles {
+            let line = match self.prefs.use_profiles {
                 true => trf!(
                     "{installed} · {on} on in {name}",
                     installed = installed,

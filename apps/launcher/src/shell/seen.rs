@@ -1,7 +1,7 @@
-use swofty_core::launch;
-use swofty_core::quarantine;
-use swofty_core::recovery::Notice;
-use swofty_core::stock;
+use swofty_core::diagnostics::launch;
+use swofty_core::diagnostics::quarantine;
+use swofty_core::game_folder::recovery::Notice;
+use swofty_core::game_folder::stock;
 use swofty_core::store::Store;
 
 use crate::services::game;

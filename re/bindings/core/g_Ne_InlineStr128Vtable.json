@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "g_Ne_InlineStr128Vtable",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145613670",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/142d61d70.c;decomp:re/decomp/14cb8a5d0.c;xref:0x142d62415,0x14cb8a675,0x14cb8a698",
+  "notes": "Vtable of the 0x80-character inline string: +0 this vtable, +8 capacity 0x80, +0x10 pointer to the characters, +0x18 the 0x80 characters (0x98 bytes). Sess_InGameRace_Update builds the retirement message key in one at rsp+0x50 (0x142d623f6..0x142d6241c: [+8]=0x80, [+0x10]=r14, the chars from +0x18, lea of this vtable at 0x142d62415), and the driver name fill 0x14cb8a5d0 (thunk 0x14249ac60) writes it into its result on both paths: the copy of the driver's composed name (lea at 0x14cb8a675) and the empty-name fallback (0x14cb8a684..0x14cb8a69f: [+8]=0x80, [+0x10]=result+0x18, byte [+0x18]=0, lea at 0x14cb8a698). 2216 rip-relative refs in .xtls. EA: 0x145725ad0 (the same two leas in the EA name fill). Not the capacity 0x20 string of g_Ne_InlineStrVtable."
+ },
+ "signature": {
+  "id": "core.ne_inline_str128_vtable",
+  "section": ".xtls",
+  "pattern": "66 C7 44 24 70 6E 74 C6 44 24 72 00 48 8D 05",
+  "match": "0x142d62409",
+  "anchor": "0xf",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0xc",
+   "len": 7
+  },
+  "target": "0x145613670",
+  "kind": "data",
+  "names": [
+   "g_Ne_InlineStr128Vtable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "retiredriver",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/session/race_retirement_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "retiredriver-verify",
+   "kind": "global",
+   "item": "0x145613670",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142d61d70-0x142d6308b,0x14cb8a5d0-0x14cb8a7d5,0x1402ba9b0,0x1402baa60;decomp:own capstone disasm EA 0x142d56100-0x142d56250,0x14bb27010-0x14bb2722e;xref:0x142d62415,0x142d6241c,0x142d623f6,0x14cb8a675,0x14cb8a698;xref:EA 0x142d56155,0x14bb270b5,0x14bb270e1;sig:core.ne_inline_str128_vtable",
+   "notes": "V9287 Static: 0x142d62415 48 8d 05 54 12 8b 02 lea rax -> 0x142d6241c+0x28b1254 = 0x145613670, stored by 0x142d6241c 48 89 44 24 50 at [rsp+0x50] with 0x142d623f6 48 c7 44 24 58 80 00 00 00 ([+8]=0x80), [+0x10]=r14 (= rsp+0x68 from lea r14,[rsp+0x68] at 0x142d61e0a) and characters [rsp+0x68]=r13 ('retireme', movabs at 0x142d61e37) + 'nt' + NUL, i.e. the key 'retirement' passed as r8 to 0x142a4bdb0. The name fill 0x14cb8a5d0 writes the same vtable on both paths: 0x14cb8a675 48 8d 05 f4 8f a8 f8 (0x14cb8a67c-0x757700c) on the copy path (0x80 chars from driver+0x1e0..0x25f into +0x18..+0x97) and 0x14cb8a698 48 8d 05 d1 8f a8 f8 (0x14cb8a69f-0x757702f) on the empty-name fallback, each with mov qword [rsi+8],0x80 and [rsi+0x10]=rsi+0x18. The vtable in .xtext: [-8] 'Default', two slots 0x1402ba9b0 and 0x1402baa60 (.xtls, flag-tested deleting-dtor shape), then 0x3fff0000; distinct from g_Ne_InlineStrVtable 0x145612ea8 (slots 0x14030eb40, 0x14030ebf0). 2216 rip-relative refs in .xtls, all lea, with 0x80 the dominant capacity immediate stored near them. sigcheck OK hits=1 match=0x142d62409 target=0x145613670. EA: pattern once in EA .rdata at 0x2d56149 (the hint), none elsewhere; lea 0x142d56155 -> 0x145725ad0; EA name fill 0x14bb27010 (thunk 0x142493fe0) writes 0x145725ad0 from 0x14bb270b5 (copy path, literal 0x80) and 0x14bb270e1 (fallback, capacity from mov r14d,0xd2894d52; sub r14d,[0x147d32566] with dump value 0xd2894cd2 = 0x80, stored as a qword at 0x14bb270d5); EA vtable slots 0x1402bb0f0, 0x1402bb1a0, then 0x3fff0000, same shape."
+  }
+ ],
+ "proofs": []
+}

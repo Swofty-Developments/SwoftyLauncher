@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "g_Snd_JobWorkerOverflow",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146c63e10",
+  "type": "uint8_t[1152]",
+  "level": "L2",
+  "subsystem": "audio",
+  "evidence": "decomp:re/decomp/143fbdd00.c;decomp:re/decomp/143fc6500.c;xref:0x143fbddd0,0x143fc6569",
+  "notes": "Overflow queue of the audio job worker requests: 24 slots of 0x30 bytes, +0x08 worker fn, +0x24 job type, +0x28 flag (1 = queued), right after the 12 worker mailboxes at 0x146c63bd0. Snd_Request_JobWorker writes the first free slot of all 24 (base lea at 0x143fbddcd, bound 0x4a8 at 0x143fbdde4). Snd_Run_JobWorkerThread reads only slots 0-11 (flag compares 0x143fc65ea..0x143fc66e7, fn and type through the base at 0x143fc6569) and clears a slot's flag under g_Snd_JobWorkerLock when it takes it. No code reads the flags of slots 12-23."
+ },
+ "signature": {
+  "id": "audio.job_worker_overflow",
+  "section": ".xtls",
+  "pattern": "B8 28 00 00 00 8B 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? EB 16",
+  "match": "0x143fbddc2",
+  "anchor": "0xe",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0xb",
+   "len": 7
+  },
+  "target": "0x146c63e10",
+  "kind": "data",
+  "names": [
+   "g_Snd_JobWorkerOverflow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "crash2",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/engine/audio_queue.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-audio",
+   "kind": "global",
+   "item": "0x146c63e10",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fbdd00.c;decomp:re/decomp/143fc6500.c;decomp:re/decomp/143fcbc30.c;decomp:re/decomp/143fbdb40.c;xref:0x143fbddd0,0x143fc6569,0x143fc655b,0x143fc6562;imm:0x4a8",
+   "notes": "V2184 Blind re-derivation at 177ebc0d. Address, type, layout, sig and the 24-versus-12 claim hold; one label is loose. 24 x 0x30 = 0x480 = 1152 bytes, 0x146c63e10..0x146c64290, right after the 12 mailboxes at 0x146c63bd0 (the worker count at 0x146c64290 and pending at 0x146c64294 follow). Producer Snd_Request_JobWorker: lea rdx 0x146c63e10 at 0x143fbddcd, flag at [rdx+rax] with rax = 0x28 + 0x30*i, i = 0..23 (exit cmp rax,0x4a8 at 0x143fbdde4), writes +0x08 fn, +0x24 type, +0x28 = 1. Consumer Snd_Run_JobWorkerThread: compares exactly 12 flags, 0x146c63e38..0x146c64048 (cmp byte at 0x143fc65ea..0x143fc66e7; lea r13 0x143fc6558 and rbp 0x143fc655f give slots 0 and 1), reads fn and type through lea rdi 0x146c63e10 (0x143fc6566) at index <= 11, clears the flag (0x143fc6711) under the lock. The flags of slots 12-23 (0x146c64078 + 0x30*k) are referenced only by the static init 0x143fcbc30 (byte stores of 0 at 0x143fcc6ef..0x143fcc94c) and by the producer's free-slot scan; the exit dtor 0x143fbdb40 only touches +0x18 of all 24 slots. Loose label: 'No code reads the flags of slots 12-23' should say no consumer reads them, since the producer's free-slot scan (cmp byte [rax+rdx],0 at 0x143fbddec) does. Like the mailboxes, every slot also carries the +0x10 event object (init and dtor), which neither the producer nor the consumer uses for overflow slots."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-audio",
+   "kind": "sig",
+   "item": "audio.job_worker_overflow",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "pat:sigcheck-hits-1;decomp:re/decomp/143fbdd00.c;xref:0x143fbddd0",
+   "notes": "V2185 sigcheck --exe --only on d873a1c8: OK hits=1, match 0x143fbddc2, target 0x146c63e10, kind data, riprel insn 0xb len 7 anchor 0xe. An independent byte scan finds 1 hit in .xtls and 0 in .data1. Bytes at the match: mov eax,0x28; mov ecx,[rip] (pending); lea rdx,[rip+0x2ca603c] at 0x143fbddcd (disp at 0x143fbddd0, next 0x143fbddd4 + 0x2ca603c = 0x146c63e10); jmp short. 20 bytes, fixed first and last bytes, both disp32 wildcarded. The target is the claimed global and the instruction is the base of the producer's 24-slot loop."
+  }
+ ],
+ "proofs": []
+}

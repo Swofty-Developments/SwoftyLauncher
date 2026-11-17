@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPieMoveAssignSlotDtor",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142116cca",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/142116c80.c;xref:0x142116cca;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v071--the-pie-crash-at-career-load-slot-4-was-never-constructed",
+  "notes": "call Career_Destroy_RnDPieSlot(rcx = old object + 0x6e0): first slot destroy of the replaced pie object"
+ },
+ "signature": {
+  "id": "career.rn_d_pie_move_assign_slot_dtor",
+  "section": ".xtls",
+  "pattern": "4C 8B 36 4D 85 F6 0F 84 ?? ?? ?? ?? 4C 8D BB 80 00 00 00 48 8D 8B E0 06 00 00 E8 ?? ?? ?? ?? 48 8D 8B C0 04 00 00",
+  "match": "0x142116cb0",
+  "anchor": "0x1a",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142116cca",
+  "kind": "mid",
+  "expect": "E8 81 E9 E2 FF",
+  "names": [
+   "site_Career_RnDPieMoveAssignSlotDtor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "site_Career_RnDPieMoveAssignSlotDtor",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142116c80.c;xref:0x142116c9f,0x142116ca3,0x142116cc3,0x142116cca,0x141f41e7d,0x141f46fb8",
+   "notes": "V0167 rbx = [rcx+8] old dst object (replaced at 0x142116ca3); E8 call 0x141f45650 with rcx = rbx+0x6e0, first of the 4 slot destroys; 5-byte window, rel8 candidates 0x142116cc6/0x142116ccd are mid-instruction; sig hits this copy only"
+  }
+ ],
+ "proofs": []
+}

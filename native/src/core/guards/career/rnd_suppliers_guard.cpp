@@ -1,4 +1,5 @@
 #include "core/guards/career/rnd_suppliers_logic.hpp"
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -249,7 +250,4 @@ void setup()
 
 }
 
-SWOFTY_ON_LOAD
-{
-    runtime::when_code_ready("rnd supplier budget", setup);
-}
+SWOFTY_HOOK_GUARD(rnd_suppliers, "rnd supplier budget", setup)

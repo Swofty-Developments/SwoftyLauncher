@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPerfDeptLoopEnd",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1418945b6",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1418914f0.c;xref:0x1418945b6;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v070--the-five-sector-development-potential-pie-folded-in",
+  "notes": "team performance publisher, department_performance loop: lea rbx,[rsp+rax] ; add rbx,0xa0 (loop end); rax = department count ([rsp+0xa8]), list bytes at [rsp+0xa0]"
+ },
+ "signature": {
+  "id": "career.rnd_perf_dept_loop_end",
+  "section": ".xtls",
+  "pattern": "0F 84 ?? ?? ?? ?? 48 8D 1C 04 48 81 C3 A0 00 00 00",
+  "match": "0x1418945b0",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418945b6",
+  "kind": "mid",
+  "expect": "48 8D 1C 04 48 81 C3 A0 00 00 00",
+  "names": [
+   "site_Career_RnDPerfDeptLoopEnd"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-c",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_fifth_pie.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-2",
+   "kind": "global",
+   "item": "site_Career_RnDPerfDeptLoopEnd",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1418914f0.c;xref:0x14189187e,0x141891886,0x14189188d,0x1418945a5,0x1418945b0,0x1418945b6,0x1418945ba,0x1418945c1,0x1418945f0",
+   "notes": "V0092 lea rbx,[rsp+rax]; add rbx,0xa0 (11B) = loop end, rax = [rsp+0xa8] (non-zero, je @0x1418945b0 skips), code bytes at [rsp+0xa0] filled by 0x143518cc0 (codes 0-5 with non-zero potential), loop rbp=[rsp+0xa0].. after department_performance node; fallthrough only, no branch into window"
+  }
+ ],
+ "proofs": []
+}

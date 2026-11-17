@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_VirtualSession_EstimateTyreQuery",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f6ca96",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/142f6c8e0.dis;pat:disasm-0x142f6c8e0-0x142f6cbd3;xref:0x142f6ca50,0x142f6ca92,0x142f6ca96,0x142f6ca9b,0x142e80ce0;sig:session.virtual_session_estimate_tyre_query",
+  "notes": "In Sess_VirtualSession_EstimateLapTime (0x142f6c8e0): lea rdx,[rsp+0x2c] right before call 0x142e80ce0 (tyre compound query, ctx=rcx, query=rdx). rcx = [[[rsi+0xa0]+0x28]+vehicle*8] (vehicle = bl of edx), loaded at 0x142f6ca49 and untouched by the compound table fill 0x142f6ca52..0x142f6ca92 (both the ja 0x142f6ca96 and fallthrough paths land here). A vehicle whose slot is null gives rcx=0 and 0x142e80ce0 faults reading 0x10 at F1_25.exe+0x2e80ce0 (rax=4 compound, rbx=vehicle). Core's estimate lap time guard hooks it; hook point is before the instruction. Needs L2 promotion by the session owner."
+ },
+ "signature": {
+  "id": "session.virtual_session_estimate_tyre_query",
+  "section": ".xtls",
+  "pattern": "48 8D 54 24 2C E8 ?? ?? ?? ?? 48 89 C7 C5 7A 11 4C 24 2C",
+  "match": "0x142f6ca96",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f6ca96",
+  "kind": "mid",
+  "expect": "48 8D 54 24 2C",
+  "names": [
+   "site_Sess_VirtualSession_EstimateTyreQuery"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-10",
+    "by": "elt-guard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/session/estimate_laptime_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-10",
+   "verifier": "elt-verify",
+   "kind": "global",
+   "item": "site_Sess_VirtualSession_EstimateTyreQuery",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f6c8e0.dis;xref:0x142f6ca49,0x142f6ca50,0x142f6ca96;sig:session.virtual_session_estimate_tyre_query",
+   "notes": "V8733 own disasm of 142f6c8e0..142f6cbd3 (disx.py): 142f6ca49 mov rcx,[rax+rbx*8] with rax=[[rsi+0xa0]+0x28] (rbx=movzx bl at 142f6c969); 142f6ca4d..ca92 write only rax,rdx,r8,r9,r10 and [rsp+0x2c..0x3c], rcx untouched; ca96 is reached only by ja at ca50 and the fallthrough (no other jcc/jmp in the function targets it or ca97..ca9a). lea rdx,[rsp+0x2c] = 48 8d 54 24 2c, 5 bytes, rsp-relative (position independent) so the safetyhook relocation is trivial; patch window is exactly ca96..ca9a, the call at ca9b is untouched. sigcheck: 1 hit at 0x142f6ca96. Caveat: only rcx==0 is caught; the vector at [[session+0xa0]+0x28] has no bounds check here (cad3 bounds-checks the +0xa8 vector only), so an out-of-range vehicle index would read past the vector."
+  }
+ ],
+ "proofs": []
+}

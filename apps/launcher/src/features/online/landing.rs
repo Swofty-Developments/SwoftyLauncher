@@ -52,7 +52,7 @@ impl Shell {
         };
         let o = o.clone();
         let mut items: Vec<Target> = Vec::new();
-        let wide = self.content_width >= 860.;
+        let wide = self.layout.content_width >= 860.;
         let seasons: Vec<AnyElement> = o
             .seasons
             .iter()
@@ -64,7 +64,7 @@ impl Shell {
         self.online_rank_ensure("all", cx);
         let ranking = self.rank_column("all", tr("GLOBAL RANKING"), &mut items, p, cx);
         self.online.items = items;
-        let left_width = self.content_width - 56. - if wide { 20. + RIGHT_W } else { 0. };
+        let left_width = self.layout.content_width - 56. - if wide { 20. + RIGHT_W } else { 0. };
         let ad = self.ad_banner(crate::features::ads::Unit::Online, left_width, p);
         let left = v_flex()
             .gap(px(10.))
@@ -172,7 +172,8 @@ impl Shell {
     ) -> AnyElement {
         let feed = self.online.feeds.get(scope).cloned().unwrap_or_default();
         let me = self
-            .account_name()
+            .account
+            .display_name()
             .and_then(|_| self.online.me.clone())
             .and_then(|m| m.entry);
         for r in feed.rows.iter().take(3) {

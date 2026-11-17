@@ -8,7 +8,7 @@ use swofty_formats::pkg::{Node, Pkg};
 
 use super::ailine::{self, Spacing};
 use super::grid;
-use crate::map::TrackPackage;
+use crate::content::track_package::TrackPackage;
 use crate::{Error, Result, io_err};
 
 pub const ASSET_ROOT: &str = "2025_asset_groups";
@@ -303,7 +303,7 @@ fn set_data(res: &mut Resource, index: usize, data: &[u8]) -> Result<()> {
 }
 
 pub fn shipped_name(path: &str) -> String {
-    let hex = crate::baseline::hex(&Md5::digest(path.as_bytes()));
+    let hex = crate::game_folder::baseline::hex(&Md5::digest(path.as_bytes()));
     let base = path.rsplit('/').next().unwrap_or(path);
     format!("{}_{base}", &hex[..12])
 }
@@ -365,7 +365,7 @@ fn stamp(input: &PlaceInput) -> Result<String> {
         .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
         .map_or(0, |d| d.as_nanos());
     let slot = match input.slot {
-        Some((name, original)) => format!("{name}|{}", crate::baseline::sha256_file(original)?),
+        Some((name, original)) => format!("{name}|{}", crate::game_folder::baseline::sha256_file(original)?),
         None => "natural".into(),
     };
     let manifest = serde_json::to_vec(input.pkg).expect("serialisable");
@@ -383,7 +383,7 @@ fn stamp(input: &PlaceInput) -> Result<String> {
     for w in input.worlds {
         sha2::Digest::update(&mut h, format!("|{}|{}", w.group, w.eri));
     }
-    Ok(crate::baseline::hex(&sha2::Digest::finalize(h))[..16].to_owned())
+    Ok(crate::game_folder::baseline::hex(&sha2::Digest::finalize(h))[..16].to_owned())
 }
 
 pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
@@ -718,7 +718,7 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("swofty-place-tsmd-{}", std::process::id()));
         std::fs::remove_dir_all(&dir).ok();
         std::fs::create_dir_all(&dir).unwrap();
-        let pkg = TrackPackage::parse(crate::map::tests::OKAYAMA_LIKE.as_bytes()).unwrap();
+        let pkg = TrackPackage::parse(crate::content::track_package::tests::OKAYAMA_LIKE.as_bytes()).unwrap();
         let line = |gate: &str| Document {
             root: Element {
                 kind: Kind::Element,
@@ -805,7 +805,7 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("swofty-place-space-{}", std::process::id()));
         std::fs::remove_dir_all(&dir).ok();
         std::fs::create_dir_all(&dir).unwrap();
-        let pkg = TrackPackage::parse(crate::map::tests::OKAYAMA_LIKE.as_bytes()).unwrap();
+        let pkg = TrackPackage::parse(crate::content::track_package::tests::OKAYAMA_LIKE.as_bytes()).unwrap();
         let fragment = |raw: Vec<u8>| Fragment {
             name: *b"temp",
             offset: 0,
@@ -969,7 +969,7 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("swofty-place-{name}-{}", std::process::id()));
         std::fs::remove_dir_all(&dir).ok();
         std::fs::create_dir_all(&dir).unwrap();
-        let pkg = TrackPackage::parse(crate::map::tests::OKAYAMA_LIKE.as_bytes()).unwrap();
+        let pkg = TrackPackage::parse(crate::content::track_package::tests::OKAYAMA_LIKE.as_bytes()).unwrap();
         world_archive(&dir, &pkg, extra);
         let worlds = [LayerWorld::new(MOD_GROUP, MOD_ERI).unwrap()];
         let input = PlaceInput {

@@ -1,56 +1,69 @@
+use crate::dialogs::game_edited::Edited;
 use crate::services::game::{self, Launch, Owner};
 use crate::services::play_checks;
 use crate::shell::notices::{Notification, Notify};
 use gpui_kit::*;
 use std::path::PathBuf;
+use swofty_core::game_folder::recovery::Blocked;
 use swofty_core::install::Source;
-use swofty_core::recovery::Blocked;
 use swofty_core::session::{LaunchMode, SessionRecord};
 
-use super::dialogs::note_notification;
+use super::launch_alerts::note_notification;
 use super::{PlayState, Shell};
 use swofty_i18n::{tr, trf};
+
+#[derive(Default)]
+pub(crate) struct Launching {
+    pub(crate) launch: Option<Launch>,
+    pub(crate) notice: Option<String>,
+    pub(crate) play_anyway: bool,
+    pub(crate) play_pending: play_checks::Pending,
+    pub(crate) restoring: bool,
+    pub(crate) cancelling: bool,
+    pub(crate) game_edited: Option<Edited>,
+    pub(crate) steam_saves_once: bool,
+}
 
 /// How long Play waits for a session module load that is already running.
 const SESSION_MODULE_WAIT: std::time::Duration = std::time::Duration::from_millis(1500);
 
 impl Shell {
     pub(crate) fn play_state(&self) -> PlayState {
-        if self.owners.contains(&Owner::Active) {
+        if self.game.owners.contains(&Owner::Active) {
             return PlayState::Running;
         }
-        if self.build.is_some() {
+        if self.game.build.is_some() {
             return PlayState::Building;
         }
-        if self.play_pending.is_active() {
+        if self.launching.play_pending.is_active() {
             return PlayState::Preparing;
         }
-        if let Some(launch) = &self.launch {
+        if let Some(launch) = &self.launching.launch {
             return if launch.saw_game {
                 PlayState::Restoring
             } else {
                 PlayState::Launching
             };
         }
-        if self.restoring {
+        if self.launching.restoring {
             return PlayState::Restoring;
         }
-        if !self.detected {
+        if !self.game.detected {
             return PlayState::Detecting;
         }
-        if let Some(owner) = self.owners.first() {
+        if let Some(owner) = self.game.owners.first() {
             return PlayState::Elsewhere(owner.clone());
         }
-        if self.install.is_none() {
+        if self.game.install.is_none() {
             return PlayState::NotInstalled;
         }
         if self.addons.checking {
             return PlayState::Checking;
         }
-        match &self.session {
+        match &self.game.session {
             Some(s)
                 if s.crashed()
-                    && self.dismissed.as_ref() != Some(&s.dir)
+                    && self.crashes.dismissed.as_ref() != Some(&s.dir)
                     && s.ended.is_some_and(|e| game::now_secs() - e < 1800.0) =>
             {
                 PlayState::Crashed(s.clone())
@@ -72,10 +85,10 @@ impl Shell {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> bool {
-        if self.data_move_locked() || self.play_pending.is_active() {
+        if self.data_move_locked() || self.launching.play_pending.is_active() {
             return false;
         }
-        let Some(install) = self.install.clone() else {
+        let Some(install) = self.game.install.clone() else {
             return false;
         };
         if install.source == Source::EaApp && self.ea_app_warn_pending() {
@@ -93,7 +106,7 @@ impl Shell {
             self.show_ea_moved(moved, window, cx);
             return false;
         }
-        let Some(generation) = self.play_pending.begin() else {
+        let Some(generation) = self.launching.play_pending.begin() else {
             return false;
         };
         let inputs = play_checks::Inputs {
@@ -101,10 +114,10 @@ impl Shell {
             profile: self.library.profile.name.clone(),
             game: install.dir.clone(),
             build_id: install.build_id,
-            anyway: std::mem::take(&mut self.play_anyway),
+            anyway: std::mem::take(&mut self.launching.play_anyway),
         };
         // This press's ask only: a dialog, a cancel or a stale result must not hand it to the next Play.
-        let steam_saves_once = std::mem::take(&mut self.steam_saves_once);
+        let steam_saves_once = std::mem::take(&mut self.launching.steam_saves_once);
         cx.notify();
         let is_room = room.is_some();
         cx.spawn_in(window, async move |this, cx| {
@@ -113,7 +126,7 @@ impl Shell {
                 .spawn(async move { play_checks::run(inputs) })
                 .await;
             this.update_in(cx, |s, window, cx| {
-                if !s.play_pending.finish(generation) {
+                if !s.launching.play_pending.finish(generation) {
                     return;
                 }
                 let started = s.play_checked(checked, room, steam_saves_once, window, cx);
@@ -138,8 +151,8 @@ impl Shell {
     ) -> bool {
         crate::app::app_log::note(&checked.timings.line());
         let stale = self.library.profile.name != checked.profile
-            || self.install.as_ref().map(|i| &i.dir) != Some(&checked.game);
-        let Some(install) = self.install.clone().filter(|_| !stale) else {
+            || self.game.install.as_ref().map(|i| &i.dir) != Some(&checked.game);
+        let Some(install) = self.game.install.clone().filter(|_| !stale) else {
             crate::app::app_log::note("[play] dropped: the profile or game copy changed during the checks");
             return false;
         };
@@ -160,19 +173,19 @@ impl Shell {
             self.first_launch_notice(window, cx);
             return false;
         }
-        self.notice = None;
-        self.blocked = None;
-        self.game_edited = None;
+        self.launching.notice = None;
+        self.game.blocked = None;
+        self.launching.game_edited = None;
         Blocked::clear(&self.store.root).ok();
         self.seen.blocked = game::blocked_at(&self.store.root).unwrap_or(0.0);
-        self.dismissed = self.session.as_ref().map(|s| s.dir.clone());
+        self.crashes.dismissed = self.game.session.as_ref().map(|s| s.dir.clone());
         for note in &checked.notes {
             window.notify(note_notification(note), cx);
         }
         match checked.verdict {
             play_checks::Verdict::Go => {}
             play_checks::Verdict::Stop(stop) => {
-                self.notice = Some(stop);
+                self.launching.notice = Some(stop);
                 return false;
             }
             play_checks::Verdict::Confirm(text) => {
@@ -180,7 +193,8 @@ impl Shell {
                 return false;
             }
         }
-        if let Some(d) = swofty_core::known_problems::outdated_exe(install.version().as_deref()) {
+        if let Some(d) = swofty_core::diagnostics::known_problems::outdated_exe(install.version().as_deref())
+        {
             window.notify(Notification::warning(d.text()).title(d.title).autohide(false), cx);
         }
         if let Some(short) = crate::features::settings::low_space_warning(checked.room) {
@@ -196,7 +210,7 @@ impl Shell {
                 cx,
             );
         }
-        let armed = (room.is_some() || self.mp_allowed()).then(|| {
+        let armed = (room.is_some() || self.account.allowed()).then(|| {
             swofty_core::multiplayer::client::launch_env_value(&self.store.root, SESSION_MODULE_WAIT)
         });
         match Launch::start(
@@ -210,7 +224,7 @@ impl Shell {
             steam_saves_once,
         ) {
             Ok(l) => {
-                self.launch = Some(l);
+                self.launching.launch = Some(l);
                 true
             }
             Err(e) => {
@@ -227,22 +241,22 @@ impl Shell {
     }
 
     pub(crate) fn saves_refused(&self) -> Option<&SessionRecord> {
-        self.session.as_ref().filter(|s| {
-            s.exit_code == Some(swofty_core::launcher_saves::EXIT)
-                && self.dismissed.as_ref() != Some(&s.dir)
+        self.game.session.as_ref().filter(|s| {
+            s.exit_code == Some(swofty_core::saves::launcher::EXIT)
+                && self.crashes.dismissed.as_ref() != Some(&s.dir)
                 && s.ended.is_some_and(|e| game::now_secs() - e < 1800.0)
         })
     }
 
     pub(crate) fn play_with_steam_saves(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        self.steam_saves_once = true;
+        self.launching.steam_saves_once = true;
         if !self.play_for(None, window, cx) {
-            self.steam_saves_once = false;
+            self.launching.steam_saves_once = false;
         }
     }
 
     pub(crate) fn launch_mode(&self) -> LaunchMode {
-        if self.vr_profiles.contains(&self.library.profile.name) {
+        if self.prefs.vr_profiles.contains(&self.library.profile.name) {
             LaunchMode::Vr
         } else {
             LaunchMode::Normal
@@ -251,21 +265,21 @@ impl Shell {
 
     /// The game switcher: play another copy of F1 25.
     pub(crate) fn use_copy(&mut self, dir: PathBuf, window: &mut Window, cx: &mut Context<Self>) {
-        self.play_pending.cancel();
+        self.launching.play_pending.cancel();
         let mut config = self.store.config();
-        swofty_core::copies::set_active(&mut config, &dir);
+        swofty_core::game_folder::copies::set_active(&mut config, &dir);
         if let Err(e) = self.store.save_config(&config) {
             crate::app::app_log::action("save settings").failed(&e);
             window.notify(Notification::error(e.to_string()), cx);
             return;
         }
-        if let Some(copy) = self.copies.iter().find(|c| c.dir == dir) {
-            self.install = Some(copy.clone());
+        if let Some(copy) = self.game.copies.iter().find(|c| c.dir == dir) {
+            self.game.install = Some(copy.clone());
             crate::app::app_log::set_game(Some(&copy.dir));
         }
-        self.attribute();
-        self.notice = None;
-        self.rediscover = true;
+        self.game.attribute();
+        self.launching.notice = None;
+        self.game.rediscover = true;
         self.reload(cx);
     }
 }

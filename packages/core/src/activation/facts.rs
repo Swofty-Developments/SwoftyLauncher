@@ -449,7 +449,7 @@ fn job_key(code: &str, files: &[PathBuf], worlds: &BTreeMap<String, String>) -> 
     for f in files {
         stamp(&mut h, f);
     }
-    crate::baseline::hex(&h.finalize())[..16].to_owned()
+    crate::game_folder::baseline::hex(&h.finalize())[..16].to_owned()
 }
 
 fn scan_worlds(job: &Job, worlds: &BTreeMap<String, String>) -> BTreeMap<String, World> {
@@ -608,7 +608,7 @@ pub fn facts(scan: &Scan, previous: Option<&Facts>, cache: &mut WorldsCache) -> 
             stand_ins: stand_ins(&a.code, &a.shipped),
         });
     }
-    let inputs = crate::baseline::hex(&hasher.finalize())[..16].to_owned();
+    let inputs = crate::game_folder::baseline::hex(&hasher.finalize())[..16].to_owned();
     if previous.is_some_and(|p| p.version == VERSION && p.profile == scan.profile && p.inputs == inputs) {
         return Ok(None);
     }

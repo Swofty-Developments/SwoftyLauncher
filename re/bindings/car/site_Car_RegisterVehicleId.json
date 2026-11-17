@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "site_Car_RegisterVehicleId",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14462963e",
+  "type": "code",
+  "level": "L3",
+  "subsystem": "car",
+  "evidence": "decomp:re/decomp/144628190.c;decomp:re/decomp/144628190.c;trace:T121/2026-10-28-gp:18;trace:T121/2026-10-28-gp:78",
+  "notes": "mov [rdi+0xe8], al: al = new vehicle id (= g_Sess_VehicleCount before increment), rdi = CarLive about to be stored in g_Sess_VehicleTable[id] Runtime 2026-10-28 (T121): al = 0..20 in create order (21 cars, id 20 the safety car), each right before its t119.car_built line."
+ },
+ "signature": {
+  "id": "car.register_vehicle_id",
+  "section": ".xtls",
+  "pattern": "0F B6 05 ?? ?? ?? ?? 88 87 E8 00 00 00",
+  "match": "0x144629637",
+  "anchor": "0x7",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14462963e",
+  "kind": "mid",
+  "expect": "88 87 E8 00 00 00",
+  "names": [
+   "site_Car_RegisterVehicleId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "car-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v1",
+   "kind": "global",
+   "item": "site_Car_RegisterVehicleId",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144628190.c;xref:0x144629637,0x144629654;sig:car.register_vehicle_id",
+   "notes": "V1330 Under EnterCriticalSection(0x146ce86a8): movzx eax,[0x146ce86dc]; 0x14462963e mov [rdi+0xe8],al; count = al+1; table[rax] = rdi at 0x144629654. sigcheck OK."
+  }
+ ],
+ "proofs": []
+}

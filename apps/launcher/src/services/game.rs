@@ -6,24 +6,24 @@ use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::atomic::{AtomicBool, AtomicI64, Ordering};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
-use swofty_core::app_control::{self, Block};
-use swofty_core::busy::Busy;
-use swofty_core::copies::{self, Found, GameCopy};
-use swofty_core::crash::{LogScan, StartFailure, Symbols, fatal_name};
-use swofty_core::ea_app;
+use swofty_core::diagnostics::crash::{LogScan, StartFailure, Symbols, fatal_name};
+use swofty_core::diagnostics::launch;
+use swofty_core::diagnostics::quarantine;
+use swofty_core::game_folder::busy::Busy;
+use swofty_core::game_folder::copies::{self, Found, GameCopy};
+use swofty_core::game_folder::recovery::{self, Blocked, Notice, Scope, SessionLock};
+use swofty_core::game_folder::stock;
 use swofty_core::install::{Game, Source};
-use swofty_core::launch;
-use swofty_core::process::{GameProcess, flag, game_processes};
-use swofty_core::quarantine;
-use swofty_core::recovery::{self, Blocked, Notice, Scope, SessionLock};
+use swofty_core::platform::app_control::{self, Block};
+use swofty_core::platform::ea_app;
+use swofty_core::platform::process::{GameProcess, flag, game_processes};
+use swofty_core::saves::vault;
 use swofty_core::session::{LaunchMode, SessionRecord};
-use swofty_core::stock;
 use swofty_core::store::Store;
-use swofty_core::vault;
-use swofty_core::{GAME_EXE, steam, steam_client};
+use swofty_core::{GAME_EXE, platform::steam, platform::steam_client};
 use swofty_i18n::{fill, tr, trf, trn};
 
-const KB: &str = include_str!("../../../../re/db/functions.tsv");
+const KB: &str = include_str!("../../../../re/db/function_names.tsv");
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Install {
@@ -122,7 +122,7 @@ pub(crate) fn banner_stale() -> bool {
 /// runs (the probe's watch takes that one) or a session holds the lock.
 pub fn vault_at_start(store: &Store) {
     if !game_processes().is_empty() {
-        if swofty_core::launcher_saves::marker(&store.root).is_none() {
+        if swofty_core::saves::launcher::marker(&store.root).is_none() {
             crate::app::app_log::note(
                 "saves: F1 25 is running; the import of the Steam save into the launcher saves waits for the next launcher start",
             );
@@ -137,7 +137,7 @@ pub fn vault_at_start(store: &Store) {
     }
     let game = vault::Location::active(&store.root);
     for l in
-        swofty_core::save_stall::sweep(store, game.as_ref(), vault::restore::Running::now(), vault::now())
+        swofty_core::saves::stall::sweep(store, game.as_ref(), vault::restore::Running::now(), vault::now())
     {
         crate::app::app_log::note(&l);
     }
@@ -160,7 +160,7 @@ pub(crate) fn import_now(store: &Store) {
 }
 
 fn log_import(store: &Store, profiles: &[String], running: vault::restore::Running, log_miss: bool) {
-    for l in swofty_core::launcher_saves::first_start_import(
+    for l in swofty_core::saves::launcher::first_start_import(
         &store.root,
         profiles,
         running,
@@ -204,7 +204,7 @@ fn launch_in_progress(store: &Store) -> bool {
 /// While the first-start import has found no Steam save, try again once Steam is signed in.
 fn retry_import(store: &Store, processes: &[GameProcess]) {
     if !processes.is_empty()
-        || !swofty_core::launcher_saves::import_pending(&store.root)
+        || !swofty_core::saves::launcher::import_pending(&store.root)
         || launch_in_progress(store)
     {
         return;
@@ -218,7 +218,7 @@ fn retry_import(store: &Store, processes: &[GameProcess]) {
         game_running: false,
         pending: true,
         launch_in_progress: false,
-        steam_usable: swofty_core::steam_client::status().state.usable(),
+        steam_usable: swofty_core::platform::steam_client::status().state.usable(),
         ea_copy: copies::find_active(&store.config()).is_some_and(|c| c.source == Source::EaApp),
         now,
         last,
@@ -263,7 +263,7 @@ pub fn probe(
         banner_profile: profile.to_owned(),
         banner: banner_due
             .then(|| crate::features::career_saves::SavesPage::banner_for(&store.root, profile)),
-        saves_marker: swofty_core::launcher_saves::marker(&store.root).is_some(),
+        saves_marker: swofty_core::saves::launcher::marker(&store.root).is_some(),
         saves_print,
         launch_stage: std::fs::read_to_string(store.root.join(steam_client::STAGE_FILE))
             .ok()
@@ -646,7 +646,7 @@ pub fn crash_summary(session: &SessionRecord, game: Option<&Path>) -> Result<Str
         return Err(failure);
     }
     let code = session.exit_code.unwrap_or_default();
-    let fast_fail = swofty_core::fast_fail::session_lines(&session.dir);
+    let fast_fail = swofty_core::diagnostics::fast_fail::session_lines(&session.dir);
     if !fast_fail.is_empty() {
         return Ok(fast_fail.join("\n"));
     }
@@ -672,8 +672,8 @@ pub fn now_secs() -> f64 {
 mod tests {
     use std::path::Path;
 
-    use swofty_core::app_control::Block;
-    use swofty_core::launch;
+    use swofty_core::diagnostics::launch;
+    use swofty_core::platform::app_control::Block;
     use swofty_core::store::Store;
 
     use super::{

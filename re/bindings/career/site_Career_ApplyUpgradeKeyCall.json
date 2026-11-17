@@ -1,0 +1,56 @@
+{
+ "schema": 1,
+ "name": "site_Career_ApplyUpgradeKeyCall",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14fa4e023",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/14fa4deb0.c;xref:0x14fa4e021,0x14fa4e023;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "mov rcx,rsi ; call 0x142f64860 (thunk to 0x14fa63050(component, type)): the apply call of the second key filter; rnd-tyres jumps here for keys 19..22"
+ },
+ "signature": {
+  "id": "career.apply_upgrade_key_call",
+  "section": ".data1",
+  "pattern": "0F B6 53 20 8D 42 F5 3C 06 77 08 48 89 F1 E8",
+  "match": "0x14fa4e018",
+  "anchor": "0xb",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14fa4e023",
+  "kind": "mid",
+  "expect": "48 89 F1 E8 35 68 51 F3",
+  "names": [
+   "site_Career_ApplyUpgradeKeyCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ],
+  "func_start": "0x14fa4deb0",
+  "data1_reason": "join of the inline key filter in the .data1 apply body 0x14fa4deb0"
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_ApplyUpgradeKeyCall",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14fa4deb0.c;xref:0x14fa4e021,0x14fa4e023,0x14fa4e026,0x142f64860",
+   "notes": "V0083 mov rcx,rsi ; call 0x142f64860 (thunk jmp 0x14fa63050) with edx=key from 0x14fa4e018; ja skips to 0x14fa4e02b past the window; filter only exists in .data1"
+  }
+ ],
+ "proofs": []
+}

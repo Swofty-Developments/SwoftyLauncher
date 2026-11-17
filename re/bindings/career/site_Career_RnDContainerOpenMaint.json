@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDContainerOpenMaint",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c873c2",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141c86fc0.c;xref:0x141c873c2;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v061--the-develop-upgrade-screen-for-the-tyres-upgrades",
+  "notes": "cmp eax,0x5c31ec68 (maintenance) in the open case of Career_Dispatch_RnDContainerCommand: the case first splits on signed hash > 0x10230e09, and this is the last name compare of the upper half (tyres 0x107666dc and error_department 0x7e5c1342 reach it). eax = djb2 of the tab name, rsi = container."
+ },
+ "signature": {
+  "id": "career.rn_d_container_open_maint",
+  "section": ".xtls",
+  "pattern": "0F 84 ?? ?? ?? ?? 3D 68 EC 31 5C 0F 85",
+  "match": "0x141c873bc",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c873c2",
+  "kind": "mid",
+  "expect": "3D 68 EC 31 5C",
+  "names": [
+   "site_Career_RnDContainerOpenMaint"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-3",
+   "kind": "global",
+   "item": "site_Career_RnDContainerOpenMaint",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141c86fc0.c;xref:0x141c87032,0x141c8704a,0x141c8704c,0x141c87051,0x141c87072,0x141c873ac,0x141c873b7,0x141c873c2,0x141c873c7",
+   "notes": "V0145 instruction, eax (djb2 dword of the open arg name) and rsi (dispatch this) are right, but the open case is a 2-way split on signed hash > 0x10230e09: this is only the last compare of the upper half; names with hash <= 0x10230e09 (signed) leave at jne 0x141c87072 and never reach the site ('tyres' 0x107666dc does reach it); 5B window clean"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-5",
+   "kind": "global",
+   "item": "site_Career_RnDContainerOpenMaint",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c86fc0.c;xref:0x141c86fdd,0x141c87032,0x141c8703d,0x141c8704c,0x141c87051,0x141c873ac,0x141c873b7,0x141c873c2,0x141c873c7,0x141c873d7",
+   "notes": "V0200 sigcheck OK; 5-byte cmp eax,imm32 window clean, no jump table; open case = djb2(open) 0x7c9bd777; eax = [[r8+0x10]] tab hash, jg 0x10230e09 splits; upper half compares perks 0x10230e0a, aero 0x7c93fd0c, then maintenance 0x5c31ec68 last; tyres 0x107666dc and error_department 0x7e5c1342 reach it and fall to the ret; rsi = rcx = container"
+  }
+ ],
+ "proofs": []
+}

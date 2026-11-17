@@ -278,14 +278,14 @@ pub fn missing(c: &Career, order: &[String], installed: &BTreeMap<String, AddonM
 /// same save (its own launcher save, or the shared Steam save), and the ones with no profile yet.
 pub fn in_save_of<'a>(list: &'a [Career], data: &Path, profile: &str) -> Vec<&'a Career> {
     let mut sources: BTreeMap<&str, Option<String>> = BTreeMap::new();
-    let mine = crate::vault::Location::source_of_profile(data, profile);
+    let mine = crate::saves::vault::Location::source_of_profile(data, profile);
     list.iter()
         .filter(|c| match c.profile.as_deref() {
             None => true,
             Some(p) => {
                 *sources
                     .entry(p)
-                    .or_insert_with(|| crate::vault::Location::source_of_profile(data, p))
+                    .or_insert_with(|| crate::saves::vault::Location::source_of_profile(data, p))
                     == mine
             }
         })
@@ -389,7 +389,7 @@ pub fn record_session(
     let on = store
         .profile(profile)
         .ok()
-        .and_then(|p| crate::resolver::resolve(&p, &installed).ok())
+        .and_then(|p| crate::profile::resolver::resolve(&p, &installed).ok())
         .map(|plan| plan.order);
     let mut changed = settle_rows(
         &mut list,
@@ -1064,11 +1064,19 @@ mod tests {
         assert_eq!(stop_line(&scoped, &[], &installed), None);
         if !cfg!(windows) {
             for (p, source, layout) in [
-                ("hi", "launcher-ea.hi", crate::vault::Layout::LauncherEa),
-                ("default", "launcher-ea.default", crate::vault::Layout::LauncherEa),
-                (crate::profile::VANILLA, "ea-steamuser", crate::vault::Layout::Ea),
+                ("hi", "launcher-ea.hi", crate::saves::vault::Layout::LauncherEa),
+                (
+                    "default",
+                    "launcher-ea.default",
+                    crate::saves::vault::Layout::LauncherEa,
+                ),
+                (
+                    crate::profile::VANILLA,
+                    "ea-steamuser",
+                    crate::saves::vault::Layout::Ea,
+                ),
             ] {
-                let at = crate::vault::Location::of_profile(&root, p).expect("the EA save");
+                let at = crate::saves::vault::Location::of_profile(&root, p).expect("the EA save");
                 assert_eq!((at.source.as_str(), at.layout), (source, layout), "{p}");
             }
         }
@@ -1084,10 +1092,10 @@ mod tests {
         let ids: Vec<&str> = scoped.iter().map(|c| c.career.as_str()).collect();
         assert_eq!(ids, ["dc-hi"]);
         assert_eq!(stop_line(&scoped, &[], &installed), None);
-        let at = crate::vault::Location::of_profile(&root, "hi").expect("the launcher save");
+        let at = crate::saves::vault::Location::of_profile(&root, "hi").expect("the launcher save");
         assert_eq!(
             (at.source.as_str(), at.layout),
-            ("launcher-hi", crate::vault::Layout::Launcher)
+            ("launcher-hi", crate::saves::vault::Layout::Launcher)
         );
         std::fs::remove_dir_all(&root).ok();
     }

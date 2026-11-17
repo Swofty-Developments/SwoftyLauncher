@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "site_Ent_SessionEnterVehClamp",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14080c7fd",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "entrants",
+  "evidence": "decomp:re/decomp/14080c300.c;xref:0x14080c7fd;imm:0x1b;doc:research/grid24-cap.md#ai-vehicle-cap",
+  "notes": "min(g_Sess_VehicleCount,0x1b=27) clamp on the session-enter per-vehicle init loop in Game_GameModule_OnSessionEnter: movzx ecx,[count]; cmp cl,0x1b; mov eax,0x1b; cmovb eax,ecx; loops eax times over g_Sess_VehicleTable (base lea at 0x14080c81e). Caps this loop at 27 cars regardless of count. Identical sibling clamp at 0x140173d80 (func 0x1401717b0). Behaviour-hook to lift the per-vehicle init loop above 27 for >27-car grids; harmless to 24-26 (26<27). Sig entrants.session_enter_veh_clamp."
+ },
+ "signature": {
+  "id": "entrants.session_enter_veh_clamp",
+  "section": ".xtls",
+  "pattern": "48 C7 83 38 0E 00 00 00 00 00 00 0F B6 0D ?? ?? ?? ?? 80 F9 1B B8 1B 00 00 00 0F 42 C1",
+  "match": "0x14080c7f2",
+  "anchor": "0xb",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14080c7fd",
+  "kind": "mid",
+  "expect": "0F B6 0D D8",
+  "names": [
+   "site_Ent_SessionEnterVehClamp"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "entrants-re"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

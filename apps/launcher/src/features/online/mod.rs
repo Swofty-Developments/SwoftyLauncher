@@ -139,7 +139,7 @@ impl Shell {
         self.online.feeds.clear();
         self.online
             .api
-            .set_token(self.mp.as_ref().map(|m| m.token.clone()));
+            .set_token(self.account.session.as_ref().map(|m| m.token.clone()));
         let me_api = self.online.api.clone();
         cx.spawn(async move |this, cx| {
             let me = cx.background_executor().spawn(async move { me_api.me() }).await;
@@ -174,7 +174,7 @@ impl Shell {
                     );
                     s.online_prefetch(urls, cx);
                 }
-                let me = s.account_name();
+                let me = s.account.display_name();
                 if let (Ok(o), Some(me)) = (&overview, me)
                     && let Some(r) = o.global.iter().find(|r| r.driver.name == me)
                 {
@@ -395,7 +395,7 @@ impl Shell {
                     s.online_prefetch(art_urls([&p.driver], p.bests.iter().map(|_| None)), cx);
                 }
                 if let Ok(p) = &page
-                    && s.account_name().as_deref() == Some(p.driver.name.as_str())
+                    && s.account.display_name().as_deref() == Some(p.driver.name.as_str())
                 {
                     s.online.my_times = p.bests.iter().map(|b| (b.key.clone(), b.time_ms)).collect();
                 }
@@ -495,10 +495,11 @@ impl Shell {
     /// Ask the running game to play lap `id` as the ghost in Time Trial.
     pub(crate) fn online_add_to_game(&mut self, id: String, cx: &mut Context<Self>) {
         let (Some(api), Some(_)) = (
-            self.mp
+            self.account
+                .session
                 .as_ref()
                 .map(|s| swofty_core::timetrial::api::Api::new(&s.token)),
-            self.install.as_ref(),
+            self.game.install.as_ref(),
         ) else {
             return;
         };
@@ -510,7 +511,11 @@ impl Shell {
             let done = cx
                 .background_executor()
                 .spawn(async move {
-                    swofty_core::timetrial::game_replay::add(&api, &swofty_core::paths::data_dir(), &lap)
+                    swofty_core::timetrial::game_replay::add(
+                        &api,
+                        &swofty_core::data::paths::data_dir(),
+                        &lap,
+                    )
                 })
                 .await;
             this.update(cx, |s, cx| {

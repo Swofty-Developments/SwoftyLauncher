@@ -80,6 +80,7 @@ private:
     uintptr_t resolve_by_pattern(Binding &b, const char **why, bool *at_kb);
     uintptr_t resolve_by_anchor(Binding &b, const char **why);
     uintptr_t resolve(Binding &b);
+    void prescan(bool deferred);
     void settle(Binding &b, uintptr_t addr);
     void defer(Binding &b, const std::string &why, bool final);
     std::string site_bytes(long long site) const;

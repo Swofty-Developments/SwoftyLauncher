@@ -8,7 +8,7 @@ use gpui_kit::assets::IconName;
 use gpui_kit::component::{Icon, h_flex};
 use gpui_kit::*;
 use std::collections::HashSet;
-use swofty_core::folders::{self, Entry, Key, Spot};
+use swofty_core::profile::folders::{self, Entry, Key, Spot};
 
 #[derive(Clone, PartialEq)]
 pub(super) enum Dragging {

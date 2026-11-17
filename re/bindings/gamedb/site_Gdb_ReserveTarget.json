@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "site_Gdb_ReserveTarget",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445a0a11",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "evidence": "decomp:re/decomp/1445a0350.c;xref:0x1445a09fc,0x1445a0a05,0x1445a0a0d,0x1445a0aa3;kb:subsystems/gamedb.md#value-map",
+  "notes": "Value-map reserve point in Gdb_Load_GameDatabase: after the map is initialised (0x1445a04dd..0x1445a0535) and before the first Gdb_HashMap_Insert. Here rcx = reserve target = max(file record count, map.num_elements); [rsp+0x88] = file record count, the insert loop bound (0x1445a0be7, 0x1445a0c49), separate from rcx; r14 = file buffer (u32 count at [r14]); r12 = db; r15 = &db->map.mask. The game then takes the smallest power of two N>=8 with N*80/100 >= rcx and calls Gdb_HashMap_Rehash(&db->map, N) at 0x1445a0aa3 when N > mask+1. Raising rcx here is reserve(rcx): rcx feeds only the bucket count (clobbered by lea rcx at 0x1445a0a98). Planned core sizing hook (W7-SIZING.md)"
+ },
+ "signature": {
+  "id": "gamedb.reserve_target",
+  "section": ".xtls",
+  "pattern": "48 89 8C 24 88 00 00 00 48 0F 47 C8 B8 08 00 00 00 49 B9 5C 8F C2 F5 28 5C 8F 02",
+  "match": "0x1445a0a05",
+  "anchor": "0xc",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445a0a11",
+  "kind": "mid",
+  "expect": "B8 08 00 00 00",
+  "names": [
+   "site_Gdb_ReserveTarget"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "w7-sizing",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "w7v",
+   "kind": "global",
+   "item": "site_Gdb_ReserveTarget",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445a0350.c;xref:0x1445a04f7,0x1445a0513,0x1445a09db,0x1445a09f5,0x1445a09fc,0x1445a09ff,0x1445a0a05,0x1445a0a0d,0x1445a0a11,0x1445a0a7f,0x1445a0a82,0x1445a0a98,0x1445a0aa3,0x1445a0ae0;sig:gamedb.reserve_target",
+   "notes": "V1343 Re-derived from disassembly. rax=&db->map.num_elements (lea r12+0xd0, 0x1445a09db), ecx=u32 [r14] with r14=[0x146cc4268] the file buffer (0x1445a09f5), [rsp+0x88]=count, cmova -> rcx=max(count,num_elements). num_elements is 0 here: the init zeroes it (0x1445a0513) and nothing between 0x1445a053e and the site reaches Gdb_HashMap_Insert or Gdb_HashMap_Rehash (their only rel32 callers are 0x1445a0c3b,0x1445a0e17 and 0x1445a0aa3,0x1445a1325; no absolute refs), so rcx = file count (installed gamedatabases.2025.bin: 742,857, parsed to EOF). rcx is read only by cmp rdx,rcx (0x1445a0a7f) in the inlined robin_hood reserve loop and is dead after it: lea rcx (0x1445a0a98) on the rehash path, mov ecx,0xab (0x1445a0ae0) on the skip path, no read in between; flags are dead (cmp at 0x1445a0a33 sets them first). Window: mov eax,8 is exactly 5 bytes and not ip-relative, so safetyhook e9_hook relocates only it; the 14-byte ff fallback would take mov eax,8 plus movabs r9 (to 0x1445a0a20), also not ip-relative. The only branch into 0x1445a09f0..0x1445a0a30 is jb 0x1445a0a30. r12=db (0x1445a0366), r15=db+0xd8 (0x1445a04f7) and r14 are not rewritten before the site. Raising rcx changes only the bucket count N"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "w7v",
+   "kind": "sig",
+   "item": "gamedb.reserve_target",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445a0350.c;decomp:re/decomp/1445a12d0.c;decomp:re/decomp/1445a66c0.c",
+   "notes": "V1358 sigcheck OK hits=1 on d873a1c8d2044cef; own wildcard regex over every section: one .xtls hit; match 0x1445a0a05 anchor 0xc -> 0x1445a0a11 mov eax,8 (expect B8 08 00 00 00), 27 bytes, no riprel bytes"
+  }
+ ],
+ "proofs": []
+}

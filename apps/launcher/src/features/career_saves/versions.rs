@@ -4,18 +4,19 @@ use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::vault::restore::Running;
-use swofty_core::vault::{self};
+use swofty_core::saves::vault::restore::Running;
+use swofty_core::saves::vault::{self};
 use swofty_i18n::{tr, trf};
 
 use super::labels::{careers_held, short_block, steam_save_missing_text, version_label};
 use super::list::{list_box, placeholder};
 use super::state::{SavesView, Version};
 use crate::shell::Shell;
-use crate::shell::pages::{GUTTER, label};
 use crate::ui::format::{ago_since as ago, size};
+use crate::ui::label;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;
+use crate::ui::tokens::space::GUTTER;
 
 pub(super) const WHEN_W: f32 = 104.;
 pub(super) const SIZE_W: f32 = 64.;

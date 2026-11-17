@@ -11,7 +11,7 @@ use crate::ui::theme::Palette;
 
 impl Shell {
     pub(crate) fn ban_overlay(&self, p: Palette, cx: &mut Context<Self>) -> Option<impl IntoElement> {
-        let ban = self.ban.as_ref()?;
+        let ban = self.account.ban.as_ref()?;
         let reason = match ban.reason.is_empty() {
             true => tr("No reason was given.").to_owned(),
             false => ban.reason.clone(),
@@ -66,7 +66,7 @@ impl Shell {
                         .px(px(18.))
                         .label(tr("Close"))
                         .on_click(cx.listener(|this, _, _, cx| {
-                            this.ban = None;
+                            this.account.ban = None;
                             cx.notify();
                         })),
                 ),

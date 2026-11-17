@@ -298,7 +298,7 @@ struct Expansion {
     std::vector<std::string> virtual_lists;
 };
 
-// The runtime twin of the build's virtual-list step (packages/core/src/virtual_lists.rs) for content.package lists
+// The runtime twin of the build's virtual-list step (packages/core/src/game_db/virtual_lists.rs) for content.package lists
 // with "virtual_list": true. After every record is lowered: adds the host list swofty_virtual_list (a copy of the
 // first virtual list, offered under swofty_f1) when no row has that label, then moves each virtual list's rows to
 // entrant_list_10000 and up, puts the table's last row in its place and lowers the count. Only rows this engine

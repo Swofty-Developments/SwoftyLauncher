@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <cstring>
 
-// The load-stall report's running-threads section (crash.cpp, runtime::stall_report). A hang where one job thread
+// The load-stall report's running-threads section (stall_report.cpp, runtime::stall_report). A hang where one job thread
 // spins while the main thread waits on it reads as "every thread idle" in a report that lists 200 threads in snapshot
 // order (four 1.9.6-1.9.39 hangs entering a race weekend's next session, all with a job thread inside game function
 // 0x1445acb00 under RtlCaptureStackBackTrace). So the report lists first every thread whose top frames are not in a

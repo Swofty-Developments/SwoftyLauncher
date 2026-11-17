@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_TeleFailedTypeName",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14071e98d",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/14071e810.c;xref:0x14071e98d;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "mov rdx,[rbp+rax*8] (rbp = 0x14564a0d0): unbounded camel-case type name read of the upgrade-failed report (eax = type). rnd-tyres, type >= 19: rdx = its camel name, rip = the next instruction"
+ },
+ "signature": {
+  "id": "career.tele_failed_type_name",
+  "section": ".xtls",
+  "pattern": "0F B6 40 70 48 8B 54 C5 00 48 89 D9",
+  "match": "0x14071e989",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14071e98d",
+  "kind": "mid",
+  "expect": "48 8B 54 C5 00",
+  "names": [
+   "site_Career_TeleFailedTypeName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_TeleFailedTypeName",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14071e810.c;xref:0x14071e84c,0x14071e989,0x14071e98d,0x14071e992,0x1406db874",
+   "notes": "V0036 rbp=lea 0x14564a0d0 at 0x14071e84c and never rewritten; mov rdx,[rbp+rax*8] 5 bytes with eax=[[rsi]]+0x70 unbounded; handler of upgrades_update_failed_rnd_message (log 'Player team parts upgrade has failed'); next insn 0x14071e992 is the join; no branch into window"
+  }
+ ],
+ "proofs": []
+}

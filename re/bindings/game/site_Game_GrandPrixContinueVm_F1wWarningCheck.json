@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "site_Game_GrandPrixContinueVm_F1wWarningCheck",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141bcee6a",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141bce150.c;xref:0x141bceaa4,0x141bceac3,0x141bceb8b,0x141bcee4d,0x141bcee67,0x141bcee7c,0x141bceefd,0x141bcef28",
+  "notes": "In Game_GrandPrixContinueVm_PressEntry (0x141bce150), the continue_solo_gp_f1w_offline_warning check: cmp [rax+0x580],rcx; sete dil; test rcx,rcx; jne 0x141bcee7c; xor edi,edi; xor dil,1. Reached by fall-through from mov rcx,[r14] at 0x141bcee67 only; no branch lands in 0x141bcee6b..0x141bcee70. rax = the F1 World player component ([rsp+0x70] from 0x14032f810 at 0x141bcee4d, non-null: test rax,rax at 0x141bcee57, je 0x141bcee9f at 0x141bcee60); r14 = the save's GameSetupMode, the entry of the mode entity's vt+0x1d0 list (0x141bceaa4) whose +0x80 id equals slot+0xa8 (0x141bceac3); rcx = [r14], its vehicle category; [rsp+0x48] = the mode entity (stored at 0x141bceb8b). dil = 1 (no match) jumps on to 0x141bce788 at 0x141bceefd; dil = 0 offline shows the warning at 0x141bcef28. rcx is written before any read on both ways (0x141bceebe, 0x141bceee4, 0x141bce788). Core's GP continue guard sets rcx to 0 when [rax+0x580] is not the category of the setup mode labelled f1_world: sete gives 0, the null test clears edi and the xor leaves dil 1, the game's own no-match result. EA 0x141bc92da (function 0x141bc85c0, all 875 instructions identical)."
+ },
+ "signature": {
+  "id": "game.grand_prix_continue_vm_f1w_warning_check",
+  "section": ".xtls",
+  "pattern": "74 13 49 8B 0E 48 39 88 80 05 00 00",
+  "match": "0x141bcee65",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141bcee6a",
+  "kind": "mid",
+  "expect": "48 39 88 80 05 00 00",
+  "names": [
+   "site_Game_GrandPrixContinueVm_F1wWarningCheck"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "gpf1w",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/gp_continue_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "gpf1w-verify",
+   "kind": "global",
+   "item": "site_Game_GrandPrixContinueVm_F1wWarningCheck",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x141bce150-0x141bceffd;xref:0x141bceaa4,0x141bceac3,0x141bceaca,0x141bceb6e,0x141bceb8b,0x141bceb99,0x141bcebaa,0x141bcebd2,0x141bceccf,0x141bcee4d,0x141bcee57,0x141bcee60,0x141bcee65,0x141bcee67,0x141bcee7c,0x141bceebe,0x141bceee4,0x141bceefd,0x141bcef0f,0x141bcef22,0x141bcef28,0x141bce788,0x141bc92d5;sig:game.grand_prix_continue_vm_f1w_warning_check",
+   "notes": "V9257 All substantive claims hold; one cited address is wrong: rax's null test is test rax,rax at 0x141bcee57 with je 0x141bcee9f at 0x141bcee60, while 0x141bcee5a is movzx r13d,[rsp+0x3f]. Re-derived: 0xe3a has one pred (je 0xccf), whose loop is entered only from 0xc5c (preds 0xbaa, 0xbd2) after 0xb6e (pred je 0xaca with [r14+0x80]==[rbp+0xa8]); r14's only write in 0xb6e..0xe67 is 0xd9a on the 0xd83 block, which never reaches 0xe3a; r14 null-tested 0xe62, rcx=[r14] 0xe67. [rsp+0x48]=rbx stored 0xb8b, rbx unchanged since the vt+0x1d0 call at 0xaa4, no later stack write overlaps 0x48 (only 0x40, 0x60, outputs at 0x70+). No branch in the function or rel32 in .xtls targets 0xe6b..0xe70; pattern unique in Steam and EA. rcx=0 gives dil=1 whatever [rax+0x580] is (xor edi at 0xe7a then xor dil,1); with decide() skip only when car==setup!=0, sete gives 0 as stated. rcx written before read at 0xebe, 0xee4, 0x788 and also 0xef28 on the dil=0 path. Warning string continue_solo_gp_f1w_offline_warning at 0x145737f00. gp_continue_guard.cpp not in worktree, unverified. EA 0x141bc85c0 identical (875 insns, only rip/call displacements differ); hint 0x1bc92d5+5 = 0x141bc92da."
+  },
+  {
+   "date": "2026-11-13",
+   "verifier": "gpf1w-verify",
+   "kind": "global",
+   "item": "site_Game_GrandPrixContinueVm_F1wWarningCheck",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x141bce150-0x141bceffd;xref:0x141bceaa4,0x141bceac3,0x141bceaca,0x141bceb6e,0x141bceb8b,0x141bcebaa,0x141bcebd2,0x141bceccf,0x141bcee4d,0x141bcee57,0x141bcee60,0x141bcee65,0x141bcee67,0x141bcee7c,0x141bceebe,0x141bceee4,0x141bceefd,0x141bcef28,0x141bce788,0x141bc92d5;sig:game.grand_prix_continue_vm_f1w_warning_check",
+   "notes": "V9258 Re-check of the corrected row after V9257: the null test now cites test rax,rax at 0x141bcee57 and je 0x141bcee9f at 0x141bcee60, which matches the disassembly; all other claims re-derived as in V9257 and still hold. Guard code native/src/core/guards/frontend/gp_continue_guard.cpp warning_check reads component=rax, mode=r14, setup=rcx, entity=[c->rsp+0x48] (SwoftyContext.rsp is the site rsp, trampoline_rsp is separate), calls the entity's vt+0x1d0 with only rcx as at 0x141bceaa4, walks +8..+0x10 as 8-byte pointers, takes [mode] as the category. check() zeroes rcx only on decide()==skip, i.e. setup!=0, [rax+0x580]==setup and an f1_world category that is found and differs; a failed component read or a missing f1_world mode leaves rcx unchanged. Not verified: that vt+0x1d0 has no side effects (the game calls it with no other args and reads +8/+0x10 straight away)."
+  }
+ ],
+ "proofs": []
+}

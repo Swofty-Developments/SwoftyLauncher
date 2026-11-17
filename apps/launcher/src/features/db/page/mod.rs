@@ -13,8 +13,8 @@ use swofty_i18n::{tr, trf};
 
 use super::{LinkState, Load, Nav};
 use crate::shell::Shell;
-use crate::shell::pages::GUTTER;
 use crate::ui::theme::Palette;
+use crate::ui::tokens::space::GUTTER;
 
 pub(super) const ROW_H: f32 = 40.;
 pub(super) const NAME_W: f32 = 220.;
@@ -66,7 +66,7 @@ impl Shell {
             .child(tr("DB Editor"));
         let line = self.db_header_line(p, cx);
         let actions = self.db_header_actions(cx);
-        if self.content_width < NARROW {
+        if self.layout.content_width < NARROW {
             return v_flex()
                 .px(px(GUTTER))
                 .pt(px(22.))
@@ -295,7 +295,7 @@ impl Shell {
                     })),
                 p,
             ),
-            Load::Idle if !self.detected => self.db_loading(tr("Looking for F1 25…"), p),
+            Load::Idle if !self.game.detected => self.db_loading(tr("Looking for F1 25…"), p),
             Load::Idle => self.empty(
                 IconName::Database,
                 tr("F1 25 not found"),

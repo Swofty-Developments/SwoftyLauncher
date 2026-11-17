@@ -264,7 +264,7 @@ pub fn stamp(maps: &[ErsMap], archives: &[String], original: &dyn Fn(&str) -> Pa
         let meta = std::fs::metadata(&p).map_err(io_err(&p))?;
         sha2::Digest::update(&mut h, format!("{rel}|{}|{:?}", meta.len(), meta.modified().ok()));
     }
-    Ok(crate::baseline::hex(&sha2::Digest::finalize(h))[..16].to_owned())
+    Ok(crate::game_folder::baseline::hex(&sha2::Digest::finalize(h))[..16].to_owned())
 }
 
 pub fn build_ers(

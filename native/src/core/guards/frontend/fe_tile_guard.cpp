@@ -1,4 +1,5 @@
 #include "core/guards/frontend/fe_tile_guard_logic.hpp"
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -43,10 +44,14 @@ namespace mem = swofty::mem;
 namespace ft = runtime::fe_tile;
 
 constexpr const char *MIXIN = "swofty_core.dll (front-end tile list guard)";
+constexpr const char *SCAN_START = "site_FeTile_ListScanStart";
+constexpr const char *SCAN_NONE = "site_FeTile_ListScanNone";
+constexpr const char *ROW_ENTRY = "site_FeTile_ListRowEntry";
+constexpr const char *ROW_FIELD_LOAD = "site_FeTile_ListRowFieldLoad";
+constexpr const char *ROW_NONE = "site_FeTile_ListRowNone";
 constexpr uint64_t CONTAINER_SLOTS_END = 0x568;
 
 uintptr_t scan_none = 0, row_none = 0;
-bool offered = false, settled = false;
 std::mutex logged_lock;
 ft::Labels logged;
 thread_local const char *row_label = nullptr;
@@ -106,49 +111,20 @@ void row_field_load(SwoftyContext *c)
     say(label);
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
-
-std::vector<CoreMixins> fe_tile_guard_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_FE_TILE_GUARD", v, sizeof v);
-    if (n && n < sizeof v && ft::switch_off(v)) {
-        swofty::log("[fe] tiles guard off (SWOFTY_FE_TILE_GUARD=%s)", v);
-        return out;
-    }
-    scan_none = swofty::api->resolve("site_FeTile_ListScanNone");
-    row_none = swofty::api->resolve("site_FeTile_ListRowNone");
-    const char *need[] = {"site_FeTile_ListScanStart", "site_FeTile_ListRowEntry", "site_FeTile_ListRowFieldLoad"};
-    bool ok = scan_none && row_none;
-    for (const char *id : need)
-        ok = ok && swofty::api->resolve(id);
-    if (!ok) {
-        scan_none = row_none = 0;
-        swofty::log("[fe] tiles guard off: needs site_FeTile_ListScanStart, site_FeTile_ListScanNone, site_FeTile_ListRowEntry, "
-                    "site_FeTile_ListRowFieldLoad and site_FeTile_ListRowNone, which this build does not resolve");
-        return out;
-    }
-    out.push_back({MIXIN,
-                   {{"site_FeTile_ListScanStart", SWOFTY_MIXIN_SITE, 100, (void *)&scan_start, nullptr},
-                    {"site_FeTile_ListRowEntry", SWOFTY_MIXIN_SITE, 100, (void *)&row_entry, nullptr},
-                    {"site_FeTile_ListRowFieldLoad", SWOFTY_MIXIN_SITE, 100, (void *)&row_field_load, nullptr}}});
-    return out;
-}
-
-void fe_tile_guard_commit()
-{
-    if (!offered || settled || !scan_none)
-        return;
-    settled = true;
-    swofty::log("[fe] tiles guard %s",
-                core_mixins_active(MIXIN) ? "armed: a tile whose entrant list is gone is left without a list instead of faulting"
-                                          : "did not install (see the [core] lines)");
-}
+guards::SiteGuard guard{guards::CoreSetId::fe_tile_guard,
+                        {
+                            .set = MIXIN,
+                            .name = "[fe] tiles guard",
+                            .env = "SWOFTY_FE_TILE_GUARD",
+                            .keeps = {{SCAN_NONE, &scan_none}, {ROW_NONE, &row_none}},
+                            .needs = {SCAN_START, SCAN_NONE, ROW_ENTRY, ROW_FIELD_LOAD, ROW_NONE},
+                            .mixins = {
+                                        {SCAN_START, SWOFTY_MIXIN_SITE, 100, (void *)&scan_start, nullptr},
+                                        {ROW_ENTRY, SWOFTY_MIXIN_SITE, 100, (void *)&row_entry, nullptr},
+                                        {ROW_FIELD_LOAD, SWOFTY_MIXIN_SITE, 100, (void *)&row_field_load, nullptr}},
+                            .armed = "a tile whose entrant list is gone is left without a list instead of faulting",
+                        }};
 
 }

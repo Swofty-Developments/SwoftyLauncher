@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDResearchRowTypeIconJoin",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c77ea1",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141c76b60.c;xref:0x141c77ea1;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "join of the upgrade type switch in the research category row 0x141c76b60 (icon) (r9 = type suffix); target of the default-case redirect"
+ },
+ "signature": {
+  "id": "career.rn_d_research_row_type_icon_join",
+  "section": ".xtls",
+  "pattern": "49 0F BE 87 48 03 00 00 48 83 F8 03",
+  "match": "0x141c77ea1",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c77ea1",
+  "kind": "mid",
+  "expect": "49 0F BE 87 48 03 00 00",
+  "names": [
+   "site_Career_RnDResearchRowTypeIconJoin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_RnDResearchRowTypeIconJoin",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c76b60.c;xref:0x141c77ea1,0x141c77ea9,0x141c77eb6,0x141c77ec3,0x141c77de3",
+   "notes": "V0062 join 0x141c77ea1 reads dept from [r15+0x348] then '%s_%s' with r9 suffix; case 3 enters at join with r9 preloaded at 0x141c77de3; no branch strictly inside"
+  }
+ ],
+ "proofs": []
+}

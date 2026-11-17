@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_DriverSelectHeader_BuildTabs",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a591f2",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141a58ef8.c;decomp:re/decomp/144251f40.c;xref:0x141a591f2",
+  "notes": "call 0x144251f40 (shared tab builder: rcx = header VM +0x270 tab container, rdx allocator, r8 = VM node, r9 = content group) in the driver_career_driver_select_header view model (vtable 0x1457297c0); the group is driver_career_driver_select_header from screen_groups.uicontentgroup (entries +0x08..+0x10, 0x30 bytes each: NeStr display_name +0x00, tab name +0x08, +0x20, int +0x28; the builder reads only those), giving tabs header_f1, header_selected_team_icon, header_f2, header_icon into the tab vector at header +0x2b8 (0x70 each). Raised by native-1990 for the F1 1990 driver select tabs (doc:/mnt/work/.f1-1990/addon/native-requests.md#N10)"
+ },
+ "signature": {
+  "id": "game.driver_select_header_build_tabs",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C6 86 10 03 00 00 01 48 8B 86 C0 02 00 00",
+  "match": "0x141a591f2",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a591f2",
+  "kind": "mid",
+  "expect": "E8 49 8D 7F 02",
+  "names": [
+   "site_Game_DriverSelectHeader_BuildTabs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/driver_select_tabs.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-21",
+   "verifier": "std-ui-verify",
+   "kind": "global",
+   "item": "site_Game_DriverSelectHeader_BuildTabs",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a58ec0.c;decomp:re/decomp/144251f40.c;decomp:re/decomp/144251a30.c;xref:0x141a591f2;sig:game.driver_select_header_build_tabs",
+   "notes": "V0920 0x141a591f2 is a 5-byte call 0x144251f40 on an instruction boundary inside 0x141a58ec0 (.pdata start; the cited 141a58ef8 file is named after an inner address). rcx = r14 = rsi+0x270, rdx = r15 = [rsi+0x268] (the builder stores it at container+0x40 and 0x144251a30 allocates through its vtable +0x18), r8 = rbx = rsi+8 (VM node), r9 = rdi = the group found by name driver_career_driver_select_header (0x1456f6952) in the [rsi+0x320]+8 map, or a default object. 0x144251f40 walks group +0x08..+0x10 in 0x30 steps reading NeStr +0x00, +0x08, +0x20 and int +0x28, and builds 0x70-byte tab items at container+0x48 (= header +0x2b8); +0x08 is the child node name in 0x144251a30. The builder is shared (23 other callers). Tab names header_f1 etc. and vtable 0x1457297c0 not checked. sigcheck: one hit"
+  }
+ ],
+ "proofs": []
+}

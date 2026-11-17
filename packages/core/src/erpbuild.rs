@@ -6,12 +6,12 @@ use swofty_formats::pkg::{Node, Pkg, Value};
 use swofty_formats::texarray::Array;
 
 use crate::activation::wheel_check;
+use crate::addons::builtin::loader_files;
 use crate::asset::Source;
-use crate::builtin::loader_files;
+use crate::content::pkg_edit::{apply_edits, edit_name, sources, supported};
+use crate::content::runtime_assets::{foreign_argument, layout_change};
 use crate::manifest::relative_inside;
 use crate::ops::{ErpOp, PkgTarget};
-use crate::pkgedit::{apply_edits, edit_name, sources, supported};
-use crate::runtime::{foreign_argument, layout_change};
 use crate::ui::node::component_id;
 use crate::{Error, Result};
 
@@ -271,8 +271,8 @@ fn check_scene(uri: &str, data: &[u8]) -> std::result::Result<(), String> {
     }
 }
 
-pub fn texture_findings_in(file: &ErpFile) -> Result<Vec<crate::texcheck::Finding>> {
-    use crate::texcheck::{check_surface, view_name};
+pub fn texture_findings_in(file: &ErpFile) -> Result<Vec<crate::content::texture_check::Finding>> {
+    use crate::content::texture_check::{check_surface, view_name};
     let mut out = Vec::new();
     for r in file.erp.resources.iter().filter(|r| r.kind() == "GfxSurfaceRes") {
         let view = match view_name(&r.name) {
@@ -1636,8 +1636,11 @@ impl<'a> ErpBuild<'a> {
     /// Checks the textures an addon wrote or appended to against what the
     /// game's D3D12 renderer accepts. Each finding names the addon that last
     /// wrote the resource, as `name` gives it, and the archive.
-    pub fn check_textures(&self, name: &dyn Fn(&str) -> String) -> Vec<(crate::texcheck::Severity, String)> {
-        use crate::texcheck::{check_surface, view_name};
+    pub fn check_textures(
+        &self,
+        name: &dyn Fn(&str) -> String,
+    ) -> Vec<(crate::content::texture_check::Severity, String)> {
+        use crate::content::texture_check::{check_surface, view_name};
         let mut out = Vec::new();
         for (rel, a) in &self.erps {
             for s in &a.slots {
@@ -1776,7 +1779,7 @@ impl<'a> ErpBuild<'a> {
 mod tests {
     use super::*;
     use crate::asset::{AssetOp, FileKind, OpFile};
-    use crate::runtime::Runtime;
+    use crate::content::runtime_assets::Runtime;
     use swofty_formats::erp::{Fragment, HEADER_LEN, MAGIC, Resource, STORED, ZSTD, compress};
     use swofty_formats::pkg::{Arr, Obj, Val};
 
@@ -2023,7 +2026,7 @@ mod tests {
         for (count, fits) in [(16, false), (6, true), (0, true)] {
             let path = addon.join(format!("v{count}.erp"));
             std::fs::write(&path, texture_erp(vec![view_res(count)])).unwrap();
-            let got = crate::runtime::overlay_fits(&path, &[UI.into()], &original).unwrap();
+            let got = crate::content::runtime_assets::overlay_fits(&path, &[UI.into()], &original).unwrap();
             assert_eq!(got.is_ok(), fits, "{count}: {got:?}");
         }
         std::fs::remove_dir_all(&root).ok();
@@ -2054,14 +2057,14 @@ mod tests {
         )[0];
         let path = addon.join("mods/ready.erp");
         assert_eq!(
-            crate::runtime::overlay_fits(&path, &["ui/a.erp".into()], &original).unwrap(),
+            crate::content::runtime_assets::overlay_fits(&path, &["ui/a.erp".into()], &original).unwrap(),
             Ok(2)
         );
 
         // Loaded as it is: listed before the earlier origin's overlay, so it wins.
         let mut b = ErpBuild::new(&original);
         b.apply_for(put, "mods (a)", &resolve).unwrap();
-        let prebuilt = [crate::runtime::Prebuilt {
+        let prebuilt = [crate::content::runtime_assets::Prebuilt {
             origin: "mods (c)".into(),
             path: path.clone(),
             erps: vec!["ui/a.erp".into()],

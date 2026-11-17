@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_InGameRaceRetirementDriverJoin",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d624ee",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/142d61d70.c;decomp:re/decomp/14cb8a5d0.c;xref:0x142d624e9,0x142d624ee,0x142d624fc,0x142d62501,0x142d62504,0x142d62507,0x14cb8a7bb",
+  "notes": "mov rdx,[rsp+0x60] in Sess_InGameRace_Update (+0x77e): the return address of the driver name fill call at 0x142d624e9 (0x14249ac60, jmp 0x14cb8a5d0). From here the game reads only the result string: rdx = [rsp+0x60], its character pointer, then mov qword [rsp+0x38],0, lea rcx,[rsp+0x38], xor r8d,r8d, xor r9d,r9d and call 0x1441974e0 (makes the message's driver name value from the characters); rax and the flags are first read after that call, so the name fill's return value (rax = the result address, 0x14cb8a7bb) is never read. Resuming here from site_Sess_InGameRaceRetirementDriver skips add rcx,0x18, lea rdx,[rsp+0x50] and the call: no push, pop or rsp change between the two sites and the callee-saved registers (rdi, rsi, rbx, rbp, r12-r15) keep the values the call preserves. The skipped name fill writes only its result at rsp+0x50..+0x97 (on the fallback path +0..+0x18) and reads the driver; the guard writes the same fallback result before it resumes. No branch lands in 0x142d624e1..0x142d624ed (linear sweep of 0x142d61d70..0x142d6308b); 0x142d624ee is reached only by the call's return. Resume target of the race retirement driver guard; not hooked or patched."
+ },
+ "signature": {
+  "id": "session.in_game_race_retirement_driver_join",
+  "section": ".xtls",
+  "pattern": "48 8D 54 24 50 E8 ?? ?? ?? ?? 48 8B 54 24 60 48 C7 44 24 38 00 00 00 00",
+  "match": "0x142d624e4",
+  "anchor": "0xa",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d624ee",
+  "kind": "mid",
+  "names": [
+   "site_Sess_InGameRaceRetirementDriverJoin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "retiredriver",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/session/race_retirement_guard.cpp"
+  ],
+  "expect": "48 8B 54 24 60"
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "retiredriver-verify",
+   "kind": "global",
+   "item": "0x142d624ee",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142d61d70-0x142d6308b,0x14cb8a5d0-0x14cb8a7d5,0x1441974e0-0x14419764e;decomp:own capstone disasm EA 0x142d55ab0-0x142d56dcb,0x14bb27010-0x14bb2722e;xref:0x142d624e9,0x142d624ee,0x142d624f3,0x142d624fc,0x142d62501,0x142d62504,0x142d62507,0x142d62600,0x142d62610,0x14cb8a7bb,0x1441974ee,0x1441974f1,0x1441974f4,0x144197502;xref:EA 0x142d5622e;sig:session.in_game_race_retirement_driver_join",
+   "notes": "V9286 Static: 0x142d624ee 48 8b 54 24 60 mov rdx,[rsp+0x60] (the result's +0x10 character pointer) is the return address of e8 72 87 73 ff at 0x142d624e9 and an instruction boundary; no branch in the function or in Steam .xtls targets it or 0x142d624e1..ed. Between the sites only add rcx,0x18 / lea rdx,[rsp+0x50] / the call: no push, pop or rsp write, and the call returns with rsp unchanged. After it: 0x142d624f3 48 c7 44 24 38 00 00 00 00, 0x142d624fc 48 8d 4c 24 38 lea rcx, 0x142d62501 45 31 c0, 0x142d62504 45 31 c9, 0x142d62507 call 0x1441974e0: rdx, rcx, r8, r9 written before use, rax/r10/r11/xmm0-5/flags not read before the call, and 0x1441974e0 reads only rcx/rdx/r8/r9 on entry (mov esi,r8d; mov rdi,rcx; [rsp+0x30]=rdx; rbx=r9; strlen(rdx), length 0 -> 0x1441975a1 releases [rdi] only if set, and [rsp+0x38] was just zeroed). The name fill's rax (mov rax,rsi at 0x14cb8a7bb) is never read. The name fill saves and restores rbx, rdi, rsi, r14, r15, touches no rbp/r12/r13/xmm6+ and makes no rsp-relative stores into the caller frame, so skipping it leaves callee-saved state identical; on the fallback it writes only result +0, +8, +0x10, +0x18. A path walk from 0x142d624f3 over all branches finds the next access to rsp+0x50..0x97 or r14 (= rsp+0x68, lea at 0x142d61e0a) is the write at 0x142d62600 (mov qword [rsp+0x58],0, then [rsp+0x50]=rax at 0x142d62610), so the result is read only through [rsp+0x60] and the characters handed to 0x1441974e0. EA twin 0x142d5622e: same bytes after call 0x142493fe0 (jmp 0x14bb27010) then call 0x14418b6d0; the join pattern matches once in EA .rdata at 0x2d56224 (the hint), none elsewhere. sigcheck OK hits=1 match=0x142d624e4 target=0x142d624ee. Note for the guard: setup() does not check join == site+0xe; both patterns share lea rdx,[rsp+0x50], so a one-line equality check would catch a future build where one of them drifts."
+  }
+ ],
+ "proofs": []
+}

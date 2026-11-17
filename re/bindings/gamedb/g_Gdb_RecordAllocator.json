@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "g_Gdb_RecordAllocator",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146cc42c8",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "evidence": "decomp:re/decomp/1445a0350.c;decomp:re/decomp/1445a66c0.c;xref:0x1445a0562,0x1445a6bfa;kb:subsystems/gamedb.md#value-map",
+  "notes": "= &db->record_alloc (db+8, vtable 0x145bee810, GVDB_READ_ONLY_REDIRECT), set by Gdb_Load_GameDatabase at 0x1445a0562. Records are allocated through vt+0x18 (Gdb_HashMap_Insert) and freed through vt+0x38; Gdb_HashMap_Rehash frees every moved record through it (0x1445a6bfa..0x1445a6c1b)"
+ },
+ "signature": {
+  "id": "gamedb.record_allocator",
+  "section": ".xtls",
+  "pattern": "4D 89 F5 4C 8B 35 ?? ?? ?? ?? 48 8B 03",
+  "match": "0x1445a6bf7",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x3",
+   "len": 7
+  },
+  "target": "0x146cc42c8",
+  "kind": "data",
+  "names": [
+   "g_Gdb_RecordAllocator"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "w7-sizing",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "w7v",
+   "kind": "global",
+   "item": "g_Gdb_RecordAllocator",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445a0350.c;decomp:re/decomp/1445a66c0.c;xref:0x1445a03cf,0x1445a0562,0x1445a6bfa,0x1445a6c1b,0x1445a410d,0x1445a581c,0x14ab38bca;sig:gamedb.record_allocator",
+   "notes": "V1353 0x146cc42c8 written once at 0x1445a0562 with rsi = db+8 (lea 0x1445a03cf); 60 .xtls + 1 .data1 loads; used for record alloc vt+0x18 (Insert, .data1 0x14ab38bca) and free vt+0x38 (0x1445a410d, 0x1445a581c, Rehash 0x1445a6c1b)"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "w7v",
+   "kind": "sig",
+   "item": "gamedb.record_allocator",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445a0350.c;decomp:re/decomp/1445a12d0.c;decomp:re/decomp/1445a66c0.c",
+   "notes": "V1364 sigcheck OK hits=1 on d873a1c8d2044cef; own wildcard regex over every section: one .xtls hit; riprel at 0x1445a6bfa -> 0x146cc42c8, 13 bytes"
+  }
+ ],
+ "proofs": []
+}

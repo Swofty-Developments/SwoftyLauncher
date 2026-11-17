@@ -7,15 +7,15 @@ use swofty_formats::gvdb::Gvdb;
 
 use crate::asset::{AssetOp, FileKind, FileOp, GroupOp, LangOp, Op, OpFile, Origin, Source};
 pub use crate::asset::{Features, Kind};
-use crate::conflicts::Changes;
 use crate::dbedit::deps::Copy;
-use crate::entrant_lists::StockLists;
+use crate::game_db::entrant_lists::StockLists;
+use crate::game_db::owned::{self, Added};
+use crate::game_db::row_keys::{Names, RowKeys};
 use crate::ops::{
     DbOps, DbReport, ErpOp, FieldNames, MovedStatId, Rewrite, RowIds, apply_db_ops_lenient,
     explicit_stat_ids, ids_exhausted, no_row, no_row_selectors, stat_id_ceiling,
 };
-use crate::owned::{self, Added};
-use crate::rowkeys::{Names, RowKeys};
+use crate::profile::conflicts::Changes;
 use crate::{Error, Result};
 
 pub const FEATURES_FILE: &str = "swofty/addons/core/features.json";
@@ -2134,7 +2134,7 @@ mod tests {
             planned.record_names.values().collect::<Vec<_>>(),
             ["t.r[_metadata_=a_row].stat_id"]
         );
-        let (pairs, _) = crate::conflicts::summarise("p", &planned.conflicts, &|_| None);
+        let (pairs, _) = crate::profile::conflicts::summarise("p", &planned.conflicts, &|_| None);
         assert_eq!(
             (
                 pairs.pairs[0].winner.as_str(),

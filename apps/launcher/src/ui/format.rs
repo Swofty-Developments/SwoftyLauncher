@@ -21,7 +21,7 @@ pub fn size(bytes: u64) -> String {
 /// `bytes` for disk space: GB from one gigabyte, else MB.
 pub fn size_coarse(bytes: u64) -> String {
     if bytes >= 1 << 30 {
-        format!("{} GB", swofty_core::disk::gb(bytes))
+        format!("{} GB", swofty_core::platform::disk::gb(bytes))
     } else {
         format!("{} MB", bytes.div_ceil(1 << 20))
     }

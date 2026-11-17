@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Game_TyreAllocationComponent_PresetTrackRead",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bcbb1f",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/140bcb9a0.c;xref:0x140bcbb1f,0x140bcbb27,0x140bcbb2e,0x140bcbb47,0x140bcbb59,0x140bcbb88,0x140bcbdb0;kb:subsystems/session.md",
+  "notes": "In Game_TyreAllocationComponent_SetPresetChoice: movzx eax,byte [r9+0x278] (8 bytes, no branch lands in the next 0x20 bytes). r9 = the weekend (Career Weekend, vt_Career_Weekend; from [component+0x270] vt+0x98 at 0x140bcbab0, also stored at [rsp+0x40]), eax = its track stat id (Weekend+0x278); r14 = the TyreAllocationComponent. The next instructions load r15 = [r14+0x278] (CareerEntity), [r15+0xf58] (TrackDataSystem) and its item vector +0x28..+0x30 (16 bytes per stat id, TrackDataRecord at +8), then call Ne_FatalAbort 0x1439182a0 at 0x140bcbdb0 when the stat id is >= the item count (jbe 0x140bcbb47) or the item's record is null (je 0x140bcbb59), and when Game_TrackData_GetTrack returns null (je 0x140bcbb88). EA 0x140bca48f (pattern unique in .rdata at 0xbca48a); EA minidumps of 2026-11-12 (crash-20261112-164529, crash-20261112-172549) show r9 a vt_Career_Weekend with +0x278 = 47, items 43 (rax 0x2f, rdx 0x2b at the abort) and 84 with item 47 null (rax 0x2f0, r12 0)."
+ },
+ "signature": {
+  "id": "game.tyre_allocation_component_preset_track_read",
+  "section": ".xtls",
+  "pattern": "4C 89 4C 24 40 41 0F B6 81 78 02 00 00",
+  "match": "0x140bcbb1a",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bcbb1f",
+  "kind": "mid",
+  "expect": "41 0F B6 81 78 02 00 00",
+  "names": [
+   "site_Game_TyreAllocationComponent_PresetTrackRead"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "ea-gp",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/tracks/gp_weekend_track_guard.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

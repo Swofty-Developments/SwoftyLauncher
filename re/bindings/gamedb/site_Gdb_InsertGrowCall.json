@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "site_Gdb_InsertGrowCall",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445a1325",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "evidence": "decomp:re/decomp/1445a12d0.c;decomp:re/decomp/1445a66c0.c;xref:0x1445a1318,0x1445a1320,0x1445a1325;kb:subsystems/gamedb.md#value-map",
+  "notes": "The only growth call into Gdb_HashMap_Rehash after the load's reserve: Gdb_HashMap_Insert's increase_size, taken for a new key when map.num_elements >= map.max_num_elements_allowed (or an info-byte overflow with info_inc < 3). rcx = &db->map, rdx = new bucket count (2*(mask+1), or mask+1 with a new hash multiplier when the map is under half full). On a map that holds records this frees every record (see Gdb_HashMap_Rehash). Trace target: never hit in a healthy boot"
+ },
+ "signature": {
+  "id": "gamedb.insert_grow_call",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? FF C5 81 FD 00 01 00 00 0F 84 ?? ?? ?? ?? 4C 8B 9F B8 00 00 00",
+  "match": "0x1445a1325",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445a1325",
+  "kind": "mid",
+  "expect": "E8 96 53 00 00",
+  "names": [
+   "site_Gdb_InsertGrowCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "w7-sizing",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "w7v",
+   "kind": "global",
+   "item": "site_Gdb_InsertGrowCall",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445a12d0.c;decomp:re/decomp/1445a66c0.c;xref:0x1445a1318,0x1445a1320,0x1445a1325,0x1445a1566,0x1445a1588;sig:gamedb.insert_grow_call",
+   "notes": "V1347 The call at 0x1445a1325 is Gdb_HashMap_Insert's only call to Gdb_HashMap_Rehash: reached by fallthrough from 0x1445a1318 (rdx=2*(mask+1), rcx=[rsp+0x38]=db+0xa8; from jae 0x1445a1566) and by jmp at 0x1445a1588 (same size after mult += 0xc4ceb9fe1a85ec54). The only other Rehash caller is the reserve 0x1445a0aa3. For a trace hook: the displaced instruction is a call rel32 (ip-relative), relocated by safetyhook e9_hook, refused by its ff fallback"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "w7v",
+   "kind": "sig",
+   "item": "gamedb.insert_grow_call",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445a0350.c;decomp:re/decomp/1445a12d0.c;decomp:re/decomp/1445a66c0.c",
+   "notes": "V1359 sigcheck OK hits=1 on d873a1c8d2044cef; own wildcard regex over every section: one .xtls hit; 0x1445a1325 call rel32 (rel32 wildcarded), 26 bytes"
+  }
+ ],
+ "proofs": []
+}

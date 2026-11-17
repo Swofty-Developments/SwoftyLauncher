@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "site_Gdb_DeptCountStore",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445a28df",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "evidence": "decomp:re/decomp/1445a25c0.c;xref:0x1412326e0,0x1445a28df;decomp:re/decomp/1445a25c0.c;xref:0x1445a28df;doc:addons/rnd-tyres-thermal/native/HOOKS.md#count-mechanism--resolved-rnd-tyres-iteration-re--live-rnd-probe-trace",
+  "notes": "Convergence store mov [rsi+0x200],ecx in Gdb_Init_TableCursor (rsi=cursor,ecx=row_count from <container>._<row>_instancecount_). Behaviour-hook site: rnd-tyres-thermal forces UpgradeDepartmentEntry count 4->5 here (gated on cursor+0x100 row word). sig gamedb.dept_count_store"
+ },
+ "signature": {
+  "id": "gamedb.dept_count_store",
+  "section": ".xtls",
+  "pattern": "89 8E 00 02 00 00 48 81 C4 20 01 00 00",
+  "match": "0x1445a28df",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445a28df",
+  "expect": "89 8E 00 02 00 00",
+  "names": [
+   "site_Gdb_DeptCountStore"
+  ],
+  "kind": "mid",
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "rnd-tyres",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/rnd_departments.cpp (swofty.rnd-tyres-thermal)",
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "site_Gdb_DeptCountStore",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445a25c0.c;xref:0x1445a25c8,0x1445a26b7,0x1445a28c8,0x1445a28d2,0x1445a28da,0x1445a28df",
+   "notes": "V0190 builds '<cursor>._<cursor+0x100>_instancecount_', looks it up (0x1445a22f0), ecx = [*entry+8] or 0; mov [rsi+0x200],ecx at 0x1445a28df joins the fall-through and je 0x1445a28d2/0x1445a28da; rsi = cursor; 6-byte window ends at the jns target 0x1445a28e5 (not inside). The mod's 4->5 forcing is not checked here"
+  }
+ ],
+ "proofs": []
+}

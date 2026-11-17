@@ -1,4 +1,5 @@
 #include "core/guards/career/myteam_vehicle_keep_logic.hpp"
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -50,7 +51,7 @@ constexpr const char *LOAD = "site_Game_MyTeamVehicleBases_AiConfigLoad";
 constexpr const char *NEXT = "site_Game_MyTeamVehicleBases_NextBase";
 constexpr const char *SAVE = "site_Game_MyTeamVehicleBases_SaveRecord";
 
-bool offered = false, settled = false, live = false;
+bool live = false;
 uintptr_t manager_slot = 0;
 std::mutex keep_lock;
 mk::Pending pending;
@@ -163,6 +164,55 @@ void save_record(SwoftyContext *c)
                     s->handle >> 16, s->original.c_str(), s->saved_engine, s->saved_base, s->stock.c_str());
 }
 
+namespace guards = swofty_core::guards;
+
+class KeepGuard final : public guards::Guard {
+public:
+    KeepGuard() : Guard(guards::CoreSetId::myteam_vehicle_keep) {}
+
+private:
+    void build(std::vector<runtime::CoreMixins> &out) override
+    {
+        char v[16] = {};
+        DWORD n = GetEnvironmentVariableA("SWOFTY_MYTEAM_VEHICLE_KEEP", v, sizeof v);
+        if (n && n < sizeof v && mh::switch_off(v)) {
+            swofty::log("[myteam] vehicle keep off (SWOFTY_MYTEAM_VEHICLE_KEEP=%s): a car whose row is gone is skipped", v);
+            return;
+        }
+        n = GetEnvironmentVariableA("SWOFTY_TEST_MYTEAM_KEEP_LABEL", test_label, sizeof test_label);
+        if (!n || n >= sizeof test_label)
+            test_label[0] = 0;
+        char t[160] = {};
+        n = GetEnvironmentVariableA("SWOFTY_TEST_MYTEAM_KEEP_STOCK", t, sizeof t);
+        if (n && n < sizeof t)
+            test_stock_set = mk::parse_stock(t, test_stock);
+        manager_slot = swofty::api->resolve("g_Game_Manager");
+        if ((!manager_slot && !test_stock_set) || !swofty::api->resolve(LOAD) || !swofty::api->resolve(NEXT) || !swofty::api->resolve(SAVE)) {
+            swofty::log("[myteam] vehicle keep off: needs %s, %s, %s and g_Game_Manager, which this build does not all resolve; "
+                        "a car whose row is gone is skipped",
+                        LOAD, NEXT, SAVE);
+            return;
+        }
+        out.push_back({MIXIN,
+                       {{NEXT, SWOFTY_MIXIN_SITE, 100, (void *)&next_base, nullptr},
+                        {SAVE, SWOFTY_MIXIN_SITE, 100, (void *)&save_record, nullptr}}});
+    }
+
+    void settle() override
+    {
+        if (!manager_slot && !test_stock_set)
+            return;
+        live = runtime::core_mixins_active(MIXIN);
+        swofty::log("[myteam] vehicle keep %s%s%s",
+                    live ? "armed: a My Team car whose row is gone loads as a stock placeholder that keeps its id, and saves keep "
+                           "the original car"
+                         : "did not install (see the [core] lines); a car whose row is gone is skipped",
+                    live && test_label[0] ? "; test car " : "", live && test_label[0] ? test_label : "");
+    }
+};
+
+KeepGuard guard;
+
 }
 
 namespace runtime {
@@ -197,51 +247,6 @@ bool myteam_keep_substitute(SwoftyContext *c, uint32_t stat, const std::string &
     pending.original = label;
     pending.stock = stock;
     return true;
-}
-
-std::vector<CoreMixins> myteam_vehicle_keep_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_MYTEAM_VEHICLE_KEEP", v, sizeof v);
-    if (n && n < sizeof v && mh::switch_off(v)) {
-        swofty::log("[myteam] vehicle keep off (SWOFTY_MYTEAM_VEHICLE_KEEP=%s): a car whose row is gone is skipped", v);
-        return out;
-    }
-    n = GetEnvironmentVariableA("SWOFTY_TEST_MYTEAM_KEEP_LABEL", test_label, sizeof test_label);
-    if (!n || n >= sizeof test_label)
-        test_label[0] = 0;
-    char t[160] = {};
-    n = GetEnvironmentVariableA("SWOFTY_TEST_MYTEAM_KEEP_STOCK", t, sizeof t);
-    if (n && n < sizeof t)
-        test_stock_set = mk::parse_stock(t, test_stock);
-    manager_slot = swofty::api->resolve("g_Game_Manager");
-    if ((!manager_slot && !test_stock_set) || !swofty::api->resolve(LOAD) || !swofty::api->resolve(NEXT) || !swofty::api->resolve(SAVE)) {
-        swofty::log("[myteam] vehicle keep off: needs %s, %s, %s and g_Game_Manager, which this build does not all resolve; "
-                    "a car whose row is gone is skipped",
-                    LOAD, NEXT, SAVE);
-        return out;
-    }
-    out.push_back({MIXIN,
-                   {{NEXT, SWOFTY_MIXIN_SITE, 100, (void *)&next_base, nullptr},
-                    {SAVE, SWOFTY_MIXIN_SITE, 100, (void *)&save_record, nullptr}}});
-    return out;
-}
-
-void myteam_vehicle_keep_commit()
-{
-    if (!offered || settled || (!manager_slot && !test_stock_set))
-        return;
-    settled = true;
-    live = core_mixins_active(MIXIN);
-    swofty::log("[myteam] vehicle keep %s%s%s",
-                live ? "armed: a My Team car whose row is gone loads as a stock placeholder that keeps its id, and saves keep "
-                       "the original car"
-                     : "did not install (see the [core] lines); a car whose row is gone is skipped",
-                live && test_label[0] ? "; test car " : "", live && test_label[0] ? test_label : "");
 }
 
 }

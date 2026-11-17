@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "k_Ne_TypeRoot",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146129ca0",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/14368fde0.c;decomp:re/decomp/143f9b3c0.c;xref:0x14368fe3b,0x14368fe67",
+  "notes": "static type descriptor at the root of the engine's type tree (static setup 0x143953543 names it NoOtiInfo; about 4800 references); the component base GameComp (descriptor 0x146c62e38) derives from it. A component type walk that reaches it stops: the type is fetched from the vehicle entity with Ne_Entity_FindComponent, which never returns a component whose own type is this one. cxx=NoOtiInfo. Renamed from k_Ne_ComponentBaseType after V0972"
+ },
+ "signature": {
+  "id": "core.type_root",
+  "section": ".xtls",
+  "pattern": "48 8B 04 C1 48 85 C0 74 78 48 8D 0D",
+  "match": "0x14368fe32",
+  "anchor": "0xc",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x9",
+   "len": 7
+  },
+  "target": "0x146129ca0",
+  "kind": "data",
+  "names": [
+   "k_Ne_TypeRoot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/fq_tyres.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-b",
+   "kind": "global",
+   "item": "k_Ne_TypeRoot",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14368fde0.c;decomp:re/decomp/143f9b3c0.c;xref:0x14368fe3b,0x14368fe67,0x143953543,0x143fae88b;sig:core.type_root",
+   "notes": "V0992 Re-check of the renamed row (was k_Ne_ComponentBaseType, V0972 in feat/f1-1990-port). The identity is now right. The store at 0x143953543 (in init 0x1439532f0) writes the name ptr 0x145890920 = 'NoOtiInfo' to node 0x146129ca8, with hash 0xb7f7651a at node+8; this is the root of the type tree. 'GameComp' (desc 0x146c62e38) gets this node as its parent at 0x143fae88b, and 'Tyres' derives from GameComp. The role holds: 0x14368fe3b and 0x14368fe67 end the walk in 0x14368fde0 and select the 0x143f9b3c0 path, and 0x143f9b3c0 never returns a component whose own type is 0x146129ca0. sigcheck core.type_root: 1 hit, match 0x14368fe32, target 0x146129ca0"
+  }
+ ],
+ "proofs": []
+}

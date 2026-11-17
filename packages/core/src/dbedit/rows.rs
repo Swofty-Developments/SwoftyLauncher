@@ -275,9 +275,9 @@ pub(crate) mod tests {
     use super::*;
     use crate::dbedit::package::{self, Package};
     use crate::dbedit::{Edits, module};
+    use crate::game_db::row_keys::{Names, RowKeys};
     use crate::install::Game;
     use crate::ops::DbReport;
-    use crate::rowkeys::{Names, RowKeys};
     use crate::store::Store;
     use swofty_formats::gvdb::Record;
 
@@ -669,7 +669,7 @@ pub(crate) mod tests {
         Game {
             dir,
             user_reg: None,
-            identity: crate::baseline::Identity {
+            identity: crate::game_folder::baseline::Identity {
                 build_id: "25251167".into(),
                 exe_sha256: "ab".repeat(32),
             },
@@ -701,7 +701,7 @@ pub(crate) mod tests {
         let m = crate::manifest::AddonManifest::load(&dir).unwrap();
         let req = m.compat.launcher.unwrap();
         assert!(!req.matches(&semver::Version::new(1, 3, 0)), "{req}");
-        assert!(req.matches(&crate::update::current_version()), "{req}");
+        assert!(req.matches(&crate::updates::release::current_version()), "{req}");
         let again = Package::open(&s, &p.id).unwrap();
         assert_eq!(again.edits, p.edits);
         assert_eq!(again.info().changes, 2);

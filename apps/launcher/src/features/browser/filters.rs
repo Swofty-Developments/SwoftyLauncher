@@ -2,7 +2,7 @@ use gpui_kit::*;
 use swofty_core::catalog::Addon;
 use swofty_core::catalog::search::Query;
 use swofty_core::manifest::{Category, Platform};
-use swofty_core::update::current_version;
+use swofty_core::updates::release::current_version;
 use swofty_i18n::tr;
 
 use crate::services::library::Type;

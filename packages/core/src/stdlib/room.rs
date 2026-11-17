@@ -15,7 +15,7 @@
 use swofty_formats::gvdb::{Gvdb, Record};
 
 use super::reports::Room;
-use crate::runtime::{RUNTIME_RECORD_MARGIN, runtime_record_room};
+use crate::content::runtime_assets::{RUNTIME_RECORD_MARGIN, runtime_record_room};
 
 /// The records a stock-sized map (2^20 slots) holds before it grows.
 pub const STOCK_GROWS_AT: usize = 838_860;

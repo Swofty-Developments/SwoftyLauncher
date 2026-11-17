@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_PitEvalListSlot",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143692014",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/143691df0.c;xref:0x143692000,0x143692010,0x14369212e,0x143692135",
+  "notes": "Same function, list loop: rax = [[module+0x78]+0x148][listed vehicle rdx] loaded at 0x143692010, read at +0x48/+0x50 by 0x143692014/0x143692017. Loop head 0x143692000 is the only branch target nearby. A null slot skips the entry: rbx = 0, then site_Sess_PitEvalListNext."
+ },
+ "signature": {
+  "id": "session.pit_eval_list_slot",
+  "section": ".xtls",
+  "pattern": "8B 58 48 8B 70 50 48 8B 4C 24 28 E8",
+  "match": "0x143692014",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143692014",
+  "kind": "mid",
+  "expect": "8B 58 48 8B 70 50",
+  "names": [
+   "site_Sess_PitEvalListSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "pitguard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/garage/pit_slots.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "kbverify-pit1",
+   "kind": "global",
+   "item": "0x143692014",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143691df0.c;xref:0x143692010,0x143692014,0x14369212e",
+   "notes": "V3857 rax holds the slot ptr (loaded at 010), fault at 014/017. CS held. loop body writes only rax,rbx,rcx,rdx,rsi,r15 (rdi,r14,r13,r12,ebp,xmm6/7,[rsp+0x20/0x28] read-only), so skipping to 12e is safe"
+  }
+ ],
+ "proofs": []
+}
