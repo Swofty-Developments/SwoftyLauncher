@@ -17,12 +17,28 @@
 #include "core/runtime/loader/resolve_locks.hpp"
 #include "core/runtime/loader/scanner.hpp"
 #include "core/runtime/runtime.hpp"
+#include "core/diagnostics/steps.hpp"
+
+std::string settings_addon(const void *from, std::string &dll);
 
 namespace runtime::loader {
 
 namespace {
 
 constinit MixinManager manager;
+
+int timed_init(SwoftyAddonInitFn init, std::string dll, const char *pass)
+{
+    perf::Stopwatch watch;
+    int r = init(api);
+    double ms = watch.total_ms();
+    api->log(perf::STEP_LINE, ms, ("addon init " + dll + pass).c_str());
+    if (ms > perf::SLOW_ADDON_INIT_MS) {
+        std::string module, id = settings_addon(reinterpret_cast<const void *>(init), module);
+        api->log(perf::SLOW_ADDON_INIT_LINE, ms, (id.empty() ? dll : id).c_str());
+    }
+    return r;
+}
 
 const char *kind_name(uint32_t k)
 {
@@ -403,7 +419,7 @@ void MixinManager::reinit_deferred(bool final)
         addons_[i].hit_deferred = false;
         addons_[i].mixins.clear();
         current_ = &addons_[i];
-        int r = addons_[i].reinit(api);
+        int r = timed_init(addons_[i].reinit, addons_[i].name, " (again, its code decrypted)");
         current_ = nullptr;
         auto &a = addons_[i];
         if (r) {
@@ -550,7 +566,7 @@ int MixinManager::init_addon(const wchar_t *name, SwoftyAddonInitFn init)
     current_ = &addons_.back();
     GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
                        reinterpret_cast<LPCWSTR>(init), &current_->module);
-    int r = init(api);
+    int r = timed_init(init, current_->name, "");
     if (!r) {
         current_->mixins.clear();
         drop_module(current_->module);
