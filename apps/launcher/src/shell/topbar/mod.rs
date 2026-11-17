@@ -194,7 +194,7 @@ impl Shell {
         let Some(mut cursor) = self.nav else {
             let wanted = key == "up"
                 && plain
-                && (self.ui_mode.is_some_and(|m| m.is_tv()) || ev.keystroke.modifiers.alt);
+                && (self.scaling.mode.is_some_and(|m| m.is_tv()) || ev.keystroke.modifiers.alt);
             if wanted && self.root_focus.is_focused(window) {
                 self.nav = Some(Cursor::on_tab(self.page.tab()));
                 cx.stop_propagation();

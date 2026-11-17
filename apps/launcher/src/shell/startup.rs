@@ -1,12 +1,10 @@
 use crate::services::game::{self};
 use crate::services::library::Library;
 use crate::shell::notices::{Notification, Notify};
-use gpui_kit::component::slider::{SliderEvent, SliderState};
 use gpui_kit::*;
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
-use swofty_core::session::{UI_SCALE_MAX, UI_SCALE_MIN, clamp_ui_scale};
 use swofty_core::store::Store;
 
 use super::{Page, Seen, Shell};
@@ -65,29 +63,7 @@ impl Shell {
             seen,
         } = prepared;
         swofty_i18n::set_language(config.language.as_deref());
-        let ui_scale = config.ui_scale_percent();
-        let ui_scale_slider = cx.new(|_| {
-            SliderState::new()
-                .min(f32::from(UI_SCALE_MIN))
-                .max(f32::from(UI_SCALE_MAX))
-                .step(1.)
-                .default_value(f32::from(ui_scale.unwrap_or(100)))
-        });
-        let _ui_scale_changes = cx.subscribe_in(
-            &ui_scale_slider,
-            window,
-            |this, _, ev: &SliderEvent, window, cx| match ev {
-                SliderEvent::Change(v) => {
-                    this.ui_scale_drag = Some(clamp_ui_scale(v.start().round().max(0.) as u16));
-                    cx.notify();
-                }
-                SliderEvent::Release(v) => {
-                    this.ui_scale_drag = None;
-                    this.set_ui_scale(Some(clamp_ui_scale(v.start().round().max(0.) as u16)), window, cx);
-                }
-            },
-        );
-        let ui_mode = config.ui_mode;
+        let scaling = crate::shell::ui_mode::Scaling::new(&config, window, cx);
         let prefs = crate::shell::config::Prefs::from_config(&config);
         Self::guard_close(window, cx);
         Self::recover_in_background(&store, prefs.clear_old_session_logs, cx);
@@ -136,11 +112,6 @@ impl Shell {
             moving: None,
             found_data: None,
             dropping: false,
-            ui_mode,
-            ui_scale,
-            ui_scale_slider,
-            ui_scale_drag: None,
-            _ui_scale_changes,
             onboarding: None,
             reload_generation: 0,
             slow_logged: false,
@@ -197,6 +168,7 @@ impl Shell {
             },
             prefs,
             addon_views: crate::features::sections::AddonViews::default(),
+            scaling,
         };
         shell.refresh_views(cx);
         match std::env::var("SWOFTY_LAUNCHER_OPEN_PAGE").as_deref() {

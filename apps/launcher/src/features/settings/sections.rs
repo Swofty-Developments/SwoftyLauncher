@@ -103,28 +103,28 @@ impl Shell {
 
     pub(super) fn settings_display(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let shell = cx.entity().downgrade();
-        let tv = self.ui_mode.is_some_and(UiMode::is_tv);
+        let tv = self.scaling.mode.is_some_and(UiMode::is_tv);
         let choice = |label: &'static str, mode: UiMode| {
             let shell = shell.clone();
             Choice::new(label, tv == mode.is_tv(), move |window, cx| {
                 shell.update(cx, |s, cx| s.set_ui_mode(mode, window, cx)).ok();
             })
         };
-        let shown = self.ui_scale_drag.or(self.ui_scale);
+        let shown = self.scaling.drag.or(self.scaling.percent);
         let readout = shown.map_or_else(|| tr("Auto").to_owned(), |p| format!("{p}%"));
         let reset = Button::new("settings-ui-scale-reset")
             .outline()
             .tap_sm()
             .label(tr("Reset to automatic"))
-            .disabled(self.ui_scale.is_none() && self.ui_scale_drag.is_none())
+            .disabled(self.scaling.percent.is_none() && self.scaling.drag.is_none())
             .on_click(cx.listener(|this, _, window, cx| {
-                this.ui_scale_drag = None;
+                this.scaling.drag = None;
                 this.set_ui_scale(None, window, cx)
             }));
         let scale = h_flex()
             .gap(px(12.))
             .items_center()
-            .child(div().w(px(220.)).child(Slider::new(&self.ui_scale_slider)))
+            .child(div().w(px(220.)).child(Slider::new(&self.scaling.slider)))
             .child(
                 div()
                     .w(px(56.))

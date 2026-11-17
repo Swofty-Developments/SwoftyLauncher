@@ -6,7 +6,6 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::time::{Instant, SystemTime};
 use swofty_core::crash::StartFailure;
-use swofty_core::session::UiMode;
 use swofty_core::store::Store;
 
 mod account;
@@ -70,11 +69,6 @@ pub struct Shell {
     pub(crate) moving: Option<crate::dialogs::data_move::Moving>,
     pub(crate) found_data: Option<crate::dialogs::found_data::FoundPrompt>,
     pub(crate) dropping: bool,
-    pub(crate) ui_mode: Option<UiMode>,
-    pub(crate) ui_scale: Option<u16>,
-    pub(crate) ui_scale_slider: Entity<SliderState>,
-    pub(crate) ui_scale_drag: Option<u16>,
-    pub(crate) _ui_scale_changes: Subscription,
     pub(crate) onboarding: Option<crate::features::onboarding::Onboarding>,
     reload_generation: u64,
     slow_logged: bool,
@@ -114,6 +108,7 @@ pub struct Shell {
     pub(crate) account: crate::shell::account::Account,
     pub(crate) prefs: crate::shell::config::Prefs,
     pub(crate) addon_views: crate::features::sections::AddonViews,
+    pub(crate) scaling: crate::shell::ui_mode::Scaling,
 }
 
 pub struct SliderSlot {
