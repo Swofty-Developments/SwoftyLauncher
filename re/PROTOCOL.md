@@ -205,7 +205,7 @@ Rules:
 
 ## 11. Binding records
 
-A binding can live in one file instead of the shared tables: `re/bindings/<subsystem>/<Name>.json` holds its `functions.tsv` or `globals.tsv` row, its signature, the verify rows about it and the local proofs contributors ran on their own exe. `kb.py` merges records into every table it reads, so the levels, gates and lint rules above apply unchanged. `kb.py set` and `kb.py verify` on a record's item write into the record.
+A binding can live in one file instead of the shared tables: `re/bindings/<subsystem>/<Name>.json` holds its `functions.tsv` or `globals.tsv` row, its signature, the verify rows about it and the local proofs contributors ran on their own exe. `kb.py` merges records into every table it reads, so the levels, gates and lint rules above apply unchanged. `kb.py set` and `kb.py verify` on a record's item write into the record. Tools that read the tables without `kb.py` (the Ghidra scripts) read `kb.py export <dir>`; never read `re/db/functions.tsv`, `globals.tsv` or `signatures.json` directly.
 
 - `re/tools/binding.py new|verify|agree|check|status` is the contributor command; the page for addon authors is `docs/reference/addons/bindings.md`.
 - A record's `author` and every proof's and verify row's `by`/`verifier` is a GitHub login. The author never verifies their own record (§5).
