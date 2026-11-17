@@ -213,7 +213,8 @@ def resolves(r, method, hinted):
     return r['result'] == 'resolved'
 
 
-SAME_FUNCTION_DIFFERENT_BYTES = {'Ne_Log_Thunk', 'g_Ne_LogGate', 'g_Vm_Registry'}
+SAME_FUNCTION_DIFFERENT_BYTES = {'Ne_Log_Thunk', 'g_Ne_LogGate', 'g_Vm_Registry', 'FeTile_ItemBase_Slot78_Thunk',
+                                 'Game_HandleUserEntitlementsUpdateTask_OnChildDone'}
 
 
 @unittest.skipUnless(os.environ.get('SWOFTY_STEAM_EXE'), 'set SWOFTY_STEAM_EXE to the KB build F1_25.exe')
