@@ -12,7 +12,7 @@ use swofty_core::session::LaunchMode;
 use swofty_core::store::Store;
 use swofty_i18n::{tr, trf};
 
-use super::*;
+use super::{Install, now_secs};
 
 pub const DIRECT_START_FILE: &str = "swofty/direct_start.json";
 

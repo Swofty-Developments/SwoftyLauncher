@@ -6,7 +6,7 @@ use swofty_core::platform::process::game_processes;
 use swofty_core::store::Store;
 use swofty_i18n::{fill, tr, trf, trn};
 
-use super::*;
+use super::discovery::discover;
 
 /// At launcher start: put back what an unfinished `swofty run` session left
 /// in the game folder, unless a session is still live. A `swofty apply`

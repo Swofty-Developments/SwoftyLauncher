@@ -6,7 +6,7 @@ use swofty_core::platform::ea_app;
 use swofty_core::platform::steam;
 use swofty_core::store::Store;
 
-use super::*;
+use super::{Copies, Install};
 
 pub fn discover(store: &Store) -> Option<Install> {
     discover_all(store).active
