@@ -357,4 +357,6 @@ pub(crate) fn say(text: &str) {
 }
 
 #[cfg(test)]
+mod fakes;
+#[cfg(test)]
 mod tests;
