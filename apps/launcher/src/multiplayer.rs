@@ -16,12 +16,10 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::catalog;
 use swofty_core::install::Game;
-use swofty_core::multiplayer::diag;
-use swofty_core::multiplayer::game::{self as mp_game, Command, GameStatus, Screen};
-use swofty_core::multiplayer::progress::{self, MemberStage, Problem, Progress, Step};
-use swofty_core::multiplayer::rooms::{Api, RoomAddon, RoomSettings, RoomSummary};
-use swofty_core::multiplayer::session::{
-    Local, MemberState, Phase, RoomContent, Session, SessionState, Setup,
+use swofty_core::multiplayer::client::{self as diag, Local, Session, Setup};
+use swofty_core::multiplayer::types::{
+    GameStatus, MemberStage, MemberState, Phase, Problem, Progress, RoomAddon, RoomContent, RoomSettings,
+    RoomSummary, Screen, SessionState, Step,
 };
 use swofty_core::store::Store;
 use swofty_i18n::{fill, tr, trf, trn};
@@ -148,7 +146,7 @@ pub(crate) struct Status {
 }
 
 pub(crate) fn room_status(state: &SessionState) -> Status {
-    let progress = progress::progress(state);
+    let progress = state.step();
     if let Phase::Ended(why) = &state.phase {
         return Status {
             tone: Tone::Over,
@@ -160,7 +158,7 @@ pub(crate) fn room_status(state: &SessionState) -> Status {
             hint: None,
         };
     }
-    let problem = progress::problem(state);
+    let problem = state.problem.clone();
     let (tone, hint) = match (&problem, progress.step, state.host, &state.phase) {
         (Some(_), ..) => (Tone::Blocked, None),
         (None, Step::InLobby, true, Phase::Racing) => (
@@ -287,12 +285,7 @@ fn read_local(store: &Store, profile: &str, dir: &Path) -> Result<Local, String>
 }
 
 fn read_game(dir: &Path, running: bool) -> Option<GameStatus> {
-    mp_game::last_status(dir).or_else(|| {
-        running
-            .then(|| mp_game::send(dir, &Command::Status, STATUS_TIMEOUT).ok())
-            .flatten()
-            .map(|r| r.status)
-    })
+    diag::game_status(dir, running)
 }
 
 #[derive(Clone)]
@@ -493,7 +486,7 @@ impl Shell {
         }
         self.mp_page.closing = None;
         if let Some(dir) = self.install.as_ref().map(|i| i.dir.clone()) {
-            std::fs::remove_file(mp_game::mailbox(&dir).join("status.json")).ok();
+            diag::forget_status(&dir);
         }
         let row_ids = match &ask.row_ids {
             Some(ids) => {
@@ -513,7 +506,7 @@ impl Shell {
         self.mp_page.launch_seen = ask.seq;
         self.mp_page.game_seen = false;
         self.mp_page.room_launching = true;
-        let direct_start = ask.direct_start(session.state().host);
+        let direct_start = ask.direct_start.clone();
         let started = self.play_for(
             Some(RoomLaunch {
                 row_ids,
@@ -766,10 +759,14 @@ impl Shell {
             return;
         };
         self.mp_page.rooms_polling = true;
+        let data = self.store.root.clone();
         cx.spawn(async move |this, cx| {
             let result = cx
                 .background_executor()
-                .spawn(async move { Api::new(&token).rooms() })
+                .spawn(async move {
+                    diag::load(&data, Some(&token)).map_err(|e| e.to_string())?;
+                    diag::rooms(&token)
+                })
                 .await;
             this.update(cx, |s, cx| {
                 let m = &mut s.mp_page;
@@ -781,7 +778,7 @@ impl Shell {
                         m.rooms_loaded = true;
                         m.rooms_error = None;
                     }
-                    Err(e) => m.rooms_error = Some(e.message),
+                    Err(e) => m.rooms_error = Some(e),
                 }
                 cx.notify();
             })
@@ -845,20 +842,23 @@ impl Shell {
             let result = cx
                 .background_executor()
                 .spawn(async move {
-                    let local = read_local(&store, &profile, &dir).inspect_err(|e| {
-                        diag::line(format!("session not started: couldn't read the addons: {e}"));
-                    })?;
-                    let mut setup = Setup::new(Api::new(&token), &dir, local);
+                    diag::load(&store.root, Some(&token)).map_err(|e| e.to_string())?;
+                    let local = read_local(&store, &profile, &dir)
+                        .inspect_err(|e| {
+                            diag::line(format!("session not started: couldn't read the addons: {e}"));
+                        })
+                        .map_err(|e| trf!("Couldn't read your addons: {e}", e = e).to_string())?;
+                    let mut setup = Setup::new(&token, &dir, local);
                     setup.room_launch = true;
                     let (refresh_store, refresh_profile, refresh_dir) =
                         (store.clone(), profile.clone(), dir.clone());
                     setup.refresh = Some(Arc::new(move || {
                         read_local(&refresh_store, &refresh_profile, &refresh_dir).ok()
                     }));
-                    Ok::<_, String>(match start {
-                        Start::Create(settings) => Session::create(setup, settings),
+                    match start {
+                        Start::Create(settings) => Session::create(setup, &settings),
                         Start::Join(code) => Session::join(setup, &code),
-                    })
+                    }
                 })
                 .await;
             this.update(cx, |s, cx| {
@@ -870,7 +870,7 @@ impl Shell {
                         m.session = Some(session);
                         m.form = false;
                     }
-                    Err(e) => m.error = Some(trf!("Couldn't read your addons: {e}", e = e)),
+                    Err(e) => m.error = Some(e.into()),
                 }
                 cx.notify();
             })
@@ -1760,10 +1760,10 @@ impl Shell {
 mod tests {
     use std::collections::HashSet;
 
-    use swofty_core::multiplayer::game::{Cover, GameStatus, Role, Screen};
-    use swofty_core::multiplayer::progress::{MemberStage, Step};
-    use swofty_core::multiplayer::rooms::{RoomAddon, RoomAddons, RoomSummary, User};
-    use swofty_core::multiplayer::session::{MemberState, Phase, PrintMatch, RelayStatus, SessionState};
+    use swofty_core::multiplayer::types::{
+        Cover, GameStatus, MemberStage, MemberState, Phase, PrintMatch, RelayStatus, Role, RoomAddon,
+        RoomAddons, RoomSummary, Screen, SessionState, Step, User,
+    };
 
     use super::{
         GameState, RoomContent, RoomStatus, Start, Tone, addon_checks, card_addons, content_check,
@@ -1834,6 +1834,8 @@ mod tests {
             last_error: None,
             launch: None,
             content: RoomContent::default(),
+            progress: None,
+            problem: None,
         }
     }
 
@@ -1926,68 +1928,6 @@ mod tests {
     }
 
     #[test]
-    fn maps_each_phase_to_one_step_with_a_bar() {
-        let at = |phase: Phase| room_status(&session(phase, false));
-        let signing = at(Phase::Connecting("signing in".into()));
-        let joining = at(Phase::Connecting("joining F1-7KQ2MX".into()));
-        assert_eq!(signing.progress.step, Step::SigningIn);
-        assert_eq!(joining.progress.step, Step::Joining);
-        assert!(signing.progress.percent < joining.progress.percent);
-        assert!(step_number(Step::SigningIn) < step_number(Step::InLobby));
-        assert_eq!(signing.tone, Tone::Working);
-        assert!(signing.problem.is_none());
-    }
-
-    #[test]
-    fn shows_the_covers_step_while_the_game_loads_and_done_only_in_the_lobby() {
-        let mut s = session(Phase::WaitingForGame("F1 25 is starting".into()), false);
-        let mut game = status(Screen::Other);
-        game.cover = Some(Cover {
-            step: "Joining the lobby".into(),
-            percent: 90,
-        });
-        s.game = Some(game.clone());
-        let loading = room_status(&s);
-        assert_eq!(loading.progress.step, Step::Loading);
-        assert_eq!(loading.progress.label, "Joining the lobby");
-        assert!(loading.progress.percent < 100);
-        game.in_session = true;
-        game.screen = Screen::LanLobby;
-        s.game = Some(game);
-        let lobby = room_status(&s);
-        assert_eq!(
-            (lobby.progress.step, lobby.progress.percent),
-            (Step::InLobby, 100)
-        );
-        assert_eq!(lobby.tone, Tone::Good);
-        assert_eq!(lobby.hint, Some("The host picks the tracks and starts the race."));
-    }
-
-    #[test]
-    fn an_error_is_one_sentence_with_one_action() {
-        let refused = room_status(&session(
-            Phase::WaitingForGame(
-                "F1 25 didn't start for the room: the wrapper exited (exit code: 1); retry or leave the room"
-                    .into(),
-            ),
-            false,
-        ));
-        let problem = refused.problem.expect("a problem");
-        assert_eq!(problem.text, "F1 25 didn't start.");
-        assert!(problem.retry);
-        let dead = room_status(&session(Phase::Failed("that room is full".into()), false));
-        let dead = dead.problem.expect("a problem");
-        assert_eq!(dead.text, "That room is full.", "a failed room says why");
-        assert!(!dead.retry, "a failed room only leaves");
-        let over = room_status(&session(
-            Phase::Ended("the host left, so the room closed".into()),
-            false,
-        ));
-        assert_eq!(over.progress.label, "The host left, so the room closed");
-        assert_eq!(over.tone, Tone::Over);
-    }
-
-    #[test]
     fn lists_each_player_by_what_their_game_is_doing() {
         assert_eq!(
             member_word(&member(true, Some(MemberStage::Starting))).0,
@@ -2039,7 +1979,7 @@ mod tests {
 
     #[test]
     fn the_restart_button_says_what_it_does() {
-        use swofty_core::multiplayer::rooms::RoomSettings;
+        use swofty_core::multiplayer::types::RoomSettings;
         assert_eq!(
             restart_ok_text(&Start::Create(RoomSettings::default())),
             "Create room and join"

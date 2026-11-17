@@ -527,7 +527,7 @@ fn settled(v: Value, counters: bool) -> Option<Value> {
     Some(sorted(v))
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Mismatch {
     #[serde(flatten)]
     pub kind: MismatchKind,
@@ -541,7 +541,7 @@ pub struct Mismatch {
 }
 
 /// How the local fingerprint differs from the host's; `local` is this player's side.
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum MismatchKind {
     GameBuild {

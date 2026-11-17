@@ -193,18 +193,15 @@ impl Shell {
                 cx,
             );
         }
-        let armed = match &room {
-            Some(_) => Some(swofty_core::multiplayer::bridge::ARMED),
-            None => self
-                .mp_allowed()
-                .then_some(swofty_core::multiplayer::bridge::ARMED),
-        };
+        let armed = (room.is_some() || self.mp_allowed())
+            .then(|| swofty_core::multiplayer::client::launch_env_value(false))
+            .flatten();
         match Launch::start(
             &self.store,
             &self.library.profile.name,
             &install,
             self.launch_mode(),
-            armed,
+            armed.as_deref(),
             room.as_ref().and_then(|r| r.row_ids.as_deref()),
             room.as_ref().map(|r| r.direct_start.as_str()),
             steam_saves_once,

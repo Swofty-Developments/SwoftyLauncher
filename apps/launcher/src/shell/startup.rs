@@ -28,7 +28,6 @@ impl Prepared {
         let store = Store::open_default().with_builtins(swofty_builtins::all());
         let migrated = store.migrate();
         crate::app_log::step("store migrated");
-        swofty_core::multiplayer::diag::open(&store.root);
         swofty_core::usage::launcher_heartbeats(store.root.clone());
         let seen = Seen::read(&store);
         crate::app_log::step("loading the library");
