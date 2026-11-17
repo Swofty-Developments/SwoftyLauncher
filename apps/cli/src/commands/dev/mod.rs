@@ -52,7 +52,7 @@ pub enum DevCommand {
         about = "Build the profile, start the game and stream its log lines (swofty run --apply --direct)"
     )]
     Run {
-        #[arg(long, help = crate::GAME_HELP)]
+        #[arg(long, help = crate::commands::cli::GAME_HELP)]
         game: Option<PathBuf>,
     },
     #[command(about = "Show the addon's lines from loader.log; --follow keeps reading")]

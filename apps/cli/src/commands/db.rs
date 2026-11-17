@@ -13,7 +13,7 @@ use swofty_core::store::Store;
 
 #[derive(Args)]
 pub(crate) struct DbArgs {
-    #[arg(long, help = crate::GAME_HELP)]
+    #[arg(long, help = crate::commands::cli::GAME_HELP)]
     pub(crate) game: Option<PathBuf>,
     #[command(subcommand)]
     pub(crate) cmd: DbCommand,

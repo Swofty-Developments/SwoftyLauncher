@@ -89,7 +89,7 @@ pub struct ShellArgs {
         help = "How long to wait for the game to be free: 0, 90s, 30m, 2h"
     )]
     wait: Duration,
-    #[arg(long, help = crate::GAME_HELP)]
+    #[arg(long, help = crate::commands::cli::GAME_HELP)]
     game: Option<PathBuf>,
     #[arg(
         long,
@@ -242,7 +242,7 @@ pub struct RunArgs {
         help = "How long to wait for the game to be free: 0, 90s, 30m, 2h"
     )]
     wait: Duration,
-    #[arg(long, help = crate::GAME_HELP)]
+    #[arg(long, help = crate::commands::cli::GAME_HELP)]
     game: Option<PathBuf>,
     #[arg(
         long,
