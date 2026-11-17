@@ -1,7 +1,8 @@
 #pragma once
 #include "core/render/d3d12_hooks.hpp"
 #include "core/render/postfx/back_buffer_views.hpp"
-#include "core/render/postfx_logic.hpp"
+#include "core/render/postfx/descriptor_logic.hpp"
+#include "core/render/postfx/frame_logic.hpp"
 
 #include <windows.h>
 

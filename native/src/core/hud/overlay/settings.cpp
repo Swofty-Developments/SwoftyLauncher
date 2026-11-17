@@ -1,5 +1,6 @@
 #include "core/hud/overlay/settings.hpp"
 
+#include "core/hud/hardware_settings.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <swofty/mixin.hpp>
@@ -33,7 +34,7 @@ int game_hdr_mode()
         return mode;
     checked = now;
     if (path.empty())
-        path = hardware_settings_path();
+        path = hardware_settings::path();
     WIN32_FILE_ATTRIBUTE_DATA fa{};
     if (!path.empty() && GetFileAttributesExW(path.c_str(), GetFileExInfoStandard, &fa) &&
         CompareFileTime(&fa.ftLastWriteTime, &at)) {
@@ -113,10 +114,10 @@ bool before_fg_wanted()
 {
     static const bool on = [] {
         int forced = before_fg_forced();
-        std::wstring path = forced < 0 ? hardware_settings_path() : std::wstring();
+        std::wstring path = forced < 0 ? hardware_settings::path() : std::wstring();
         hud::guard::FgSetting game;
         if (!path.empty())
-            game = hud::guard::fg_setting(runtime::read_file(path, 1 << 20));
+            game = hardware_settings::frame_gen(path);
         bool want = hud::guard::before_fg_wanted(forced, game);
         if (forced >= 0)
             swofty::log("[overlay] at start SWOFTY_OVERLAY_FG / \"overlay_fg\" is %d, so the game's frame generation "
@@ -161,19 +162,6 @@ std::vector<std::string> loaded_modules()
     return mods;
 }
 
-std::wstring hardware_settings_path()
-{
-    using GetFolder = HRESULT(WINAPI *)(HWND, int, HANDLE, DWORD, LPWSTR);
-    HMODULE shell = GetModuleHandleW(L"shell32.dll");
-    if (!shell)
-        shell = LoadLibraryW(L"shell32.dll");
-    auto get = shell ? reinterpret_cast<GetFolder>(GetProcAddress(shell, "SHGetFolderPathW")) : nullptr;
-    wchar_t docs[MAX_PATH] = {};
-    if (!get || FAILED(get(nullptr, 0x0005, nullptr, 0, docs)))
-        return {};
-    return std::wstring(docs) + L"\\My Games\\F1 25\\hardwaresettings\\hardware_settings_config.xml";
-}
-
 bool FgWatch::frame_gen_off(ULONGLONG now)
 {
     if (tripped)
@@ -182,13 +170,13 @@ bool FgWatch::frame_gen_off(ULONGLONG now)
         return !setting.on();
     checked = now;
     if (path.empty())
-        path = hardware_settings_path();
+        path = hardware_settings::path();
     WIN32_FILE_ATTRIBUTE_DATA fa{};
     if (path.empty() || !GetFileAttributesExW(path.c_str(), GetFileExInfoStandard, &fa)) {
         setting = {};
     } else if (CompareFileTime(&fa.ftLastWriteTime, &at) || !told) {
         at = fa.ftLastWriteTime;
-        setting = hud::guard::fg_setting(runtime::read_file(path, 1 << 20));
+        setting = hardware_settings::frame_gen(path);
     }
     bool off = !setting.on();
     if (!told) {

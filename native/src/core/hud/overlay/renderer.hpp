@@ -3,6 +3,7 @@
 
 #include "core/hud/hud_drawlist.hpp"
 #include "core/hud/overlay/textures.hpp"
+#include "core/render/com.hpp"
 
 #include <d3d12.h>
 #include <d3dcompiler.h>
@@ -13,13 +14,7 @@
 namespace hud::overlay {
 
 using Vertex = hud::Vertex;
-
-template <class T> void release(T *&p)
-{
-    if (p)
-        p->Release();
-    p = nullptr;
-}
+using com::release;
 
 constexpr UINT MAX_VERTS = hud::MAX_VERTS;
 constexpr UINT SLOTS = 3;
