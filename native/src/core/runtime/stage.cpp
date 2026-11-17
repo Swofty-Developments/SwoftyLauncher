@@ -342,26 +342,6 @@ std::string lower(std::string s)
     return s;
 }
 
-uint64_t fnv64(const char *s, size_t n)
-{
-    uint64_t h = 0xcbf29ce484222325ull;
-    for (size_t i = 0; i < n; i++) {
-        h ^= uint8_t(s[i]);
-        h *= 0x100000001b3ull;
-    }
-    return h;
-}
-
-uint32_t fnv32(const char *s)
-{
-    uint32_t h = 0x811c9dc5u;
-    for (; *s; s++) {
-        h ^= uint8_t(*s);
-        h *= 0x01000193u;
-    }
-    return h;
-}
-
 void md5(const void *data, size_t n, uint8_t out[16])
 {
     uint32_t h[4] = {0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476};

@@ -137,19 +137,19 @@ uint64_t GameImage::exe_key(long long exe_bytes) const
     auto nt = nt_headers();
     auto &fh = nt->FileHeader;
     auto &oh = nt->OptionalHeader;
-    uint64_t k = scancache::fnv64(&fh.Machine, sizeof fh.Machine);
-    k = scancache::fnv64(&fh.NumberOfSections, sizeof fh.NumberOfSections, k);
-    k = scancache::fnv64(&fh.TimeDateStamp, sizeof fh.TimeDateStamp, k);
-    k = scancache::fnv64(&oh.AddressOfEntryPoint, sizeof oh.AddressOfEntryPoint, k);
-    k = scancache::fnv64(&oh.SizeOfImage, sizeof oh.SizeOfImage, k);
-    k = scancache::fnv64(&oh.CheckSum, sizeof oh.CheckSum, k);
-    k = scancache::fnv64(&exe_bytes, sizeof exe_bytes, k);
+    uint64_t k = runtime::fnv64(&fh.Machine, sizeof fh.Machine);
+    k = runtime::fnv64(&fh.NumberOfSections, sizeof fh.NumberOfSections, k);
+    k = runtime::fnv64(&fh.TimeDateStamp, sizeof fh.TimeDateStamp, k);
+    k = runtime::fnv64(&oh.AddressOfEntryPoint, sizeof oh.AddressOfEntryPoint, k);
+    k = runtime::fnv64(&oh.SizeOfImage, sizeof oh.SizeOfImage, k);
+    k = runtime::fnv64(&oh.CheckSum, sizeof oh.CheckSum, k);
+    k = runtime::fnv64(&exe_bytes, sizeof exe_bytes, k);
     auto s = IMAGE_FIRST_SECTION(nt);
     for (int i = 0; i < fh.NumberOfSections; i++, s++) {
-        k = scancache::fnv64(s->Name, sizeof s->Name, k);
-        k = scancache::fnv64(&s->VirtualAddress, sizeof s->VirtualAddress, k);
-        k = scancache::fnv64(&s->SizeOfRawData, sizeof s->SizeOfRawData, k);
-        k = scancache::fnv64(&s->PointerToRawData, sizeof s->PointerToRawData, k);
+        k = runtime::fnv64(s->Name, sizeof s->Name, k);
+        k = runtime::fnv64(&s->VirtualAddress, sizeof s->VirtualAddress, k);
+        k = runtime::fnv64(&s->SizeOfRawData, sizeof s->SizeOfRawData, k);
+        k = runtime::fnv64(&s->PointerToRawData, sizeof s->PointerToRawData, k);
     }
     return k;
 }
