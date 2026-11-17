@@ -1,5 +1,6 @@
 #include "core/boxes/picker/picker.hpp"
 
+#include "core/runtime/resolve.hpp"
 #include "core/runtime/runtime.hpp"
 
 std::string settings_addon(const void *from, std::string &dll);
@@ -117,27 +118,19 @@ constexpr const char *PARSE_LIST_MIXIN = "swofty_core.dll (virtual entrant lists
 constexpr const char *VEHICLE_MIXIN = "swofty_core.dll (session vehicle guard)";
 constexpr const char *VEHICLE_FN = "Sess_Setup_VehicleComponents";
 
-uintptr_t need(const char *id, std::string &missing)
-{
-    uintptr_t a = swofty::api->resolve(id);
-    if (!a)
-        missing += std::string(missing.empty() ? "" : ", ") + id;
-    return a;
-}
-
 bool bind_all(std::string &why)
 {
     std::string missing;
-    b.site = need("site_FeTile_EraTilesBuilt", missing);
-    b.press = need("FeTile_Press_EraTile", missing);
-    b.select = need("Game_F1WorldActivityContainer_SelectEntrantList", missing);
-    b.add = need("FeTile_Add_EraTile", missing);
-    b.available = need("FeTile_Is_EraScenarioAvailable_Thunk", missing);
-    b.list_child = need("Vm_GetOrCreate_ListChild", missing);
-    b.node_ref = need("Vm_Set_NodeRef", missing);
-    b.set_bool = need("Vm_Set_Bool", missing);
-    b.clear = need("FeTile_Clear_EraTileSet_Thunk", missing);
-    b.registry = need("g_Vm_Registry", missing);
+    b.site = runtime::resolve_or_note("site_FeTile_EraTilesBuilt", missing);
+    b.press = runtime::resolve_or_note("FeTile_Press_EraTile", missing);
+    b.select = runtime::resolve_or_note("Game_F1WorldActivityContainer_SelectEntrantList", missing);
+    b.add = runtime::resolve_or_note("FeTile_Add_EraTile", missing);
+    b.available = runtime::resolve_or_note("FeTile_Is_EraScenarioAvailable_Thunk", missing);
+    b.list_child = runtime::resolve_or_note("Vm_GetOrCreate_ListChild", missing);
+    b.node_ref = runtime::resolve_or_note("Vm_Set_NodeRef", missing);
+    b.set_bool = runtime::resolve_or_note("Vm_Set_Bool", missing);
+    b.clear = runtime::resolve_or_note("FeTile_Clear_EraTileSet_Thunk", missing);
+    b.registry = runtime::resolve_or_note("g_Vm_Registry", missing);
     if (missing.empty())
         return true;
     why = "needs " + missing + ", which this build does not resolve";

@@ -1,4 +1,5 @@
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/resolve.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>
@@ -439,29 +440,21 @@ void setup_entry(void *self)
     applying = false;
 }
 
-uintptr_t need(const char *id, std::string &missing)
-{
-    uintptr_t a = swofty::api->resolve(id);
-    if (!a)
-        missing += std::string(missing.empty() ? "" : ", ") + id;
-    return a;
-}
-
 bool bind_all(std::string &why)
 {
     std::string missing;
-    b.build = need("Game_CreateSessionDlcSelectTab_BuildTiles", missing);
-    b.press = need("Game_CreateSessionDlcSelectTab_HandleCommand", missing);
-    b.fill = need("Game_CreateSessionDlcSelectTab_FillTile", missing);
-    b.append = need("Vm_List_AppendChild", missing);
-    b.release = need("Vm_Release_Node", missing);
-    b.setup = need("Game_Network_CategoryOptionUsing", missing);
-    b.find = need("Game_OptionsStore_FindOption", missing);
-    b.store = need("g_Game_OptionsStore", missing);
-    b.key = need("k_Gdb_StringXorKey", missing);
-    b.registry = need("g_Vm_Registry", missing);
-    b.set_scenario = need("Game_Network_SetScenario", missing);
-    b.scenarios = need("g_Game_Scenarios", missing);
+    b.build = runtime::resolve_or_note("Game_CreateSessionDlcSelectTab_BuildTiles", missing);
+    b.press = runtime::resolve_or_note("Game_CreateSessionDlcSelectTab_HandleCommand", missing);
+    b.fill = runtime::resolve_or_note("Game_CreateSessionDlcSelectTab_FillTile", missing);
+    b.append = runtime::resolve_or_note("Vm_List_AppendChild", missing);
+    b.release = runtime::resolve_or_note("Vm_Release_Node", missing);
+    b.setup = runtime::resolve_or_note("Game_Network_CategoryOptionUsing", missing);
+    b.find = runtime::resolve_or_note("Game_OptionsStore_FindOption", missing);
+    b.store = runtime::resolve_or_note("g_Game_OptionsStore", missing);
+    b.key = runtime::resolve_or_note("k_Gdb_StringXorKey", missing);
+    b.registry = runtime::resolve_or_note("g_Vm_Registry", missing);
+    b.set_scenario = runtime::resolve_or_note("Game_Network_SetScenario", missing);
+    b.scenarios = runtime::resolve_or_note("g_Game_Scenarios", missing);
     if (missing.empty())
         return true;
     why = "needs " + missing + ", which this build does not resolve";
