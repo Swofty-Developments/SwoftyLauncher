@@ -196,6 +196,159 @@ Done statically: lightmap placement (formula above), material constant / bindles
 
 Runtime capture still needed: T158 (sun mode and curves in a race), T159 (now only to confirm AO 1 / radiance 0 for missing entries) and T160 (wet road values).
 
+## Round 3: sun record, tonemap and exposure, deferred lighting, bindless, shadows, fog (engine-re 2026-11-17, static)
+
+Static only: Steam d873a1c8 exe plus a read-only disassembly of `shader_package_2025/{tonemap,deferred_render,object_opaque}.nefx2.sm51.erp` with the game's own dxcompiler.dll. Blind verification V11400-V11410 (9 agree, 2 partial, 0 disagree; corrections applied). Runtime items: T240, T241.
+
+### Sun: how the 80-byte SkyLight record is filled
+
+- **Chain (CPU, complete statically):**
+  1. `Render_SkyState_Update` 0x142e13f20 writes into the sun light component (`[obj+0x40]`, vtable `vt_Render_SunLightComponent` 0x145a918b0):
+     - the rotation rows +0xa0/+0xb0/+0xc0 from the solar zenith/azimuth;
+     - intensity +0x34 (sky/sunLightIntensity lerped by weather);
+     - +0x70 = the evaluated sky/ambientLightColour;
+     - the colour through `Render_SunLightComponent_SetColour` 0x14448a5e0.
+  2. The component posts proxy message 2 (0x90 bytes) to its SkyLightProxy. The message holds three transposed rows of the world matrix, then the component bytes +0x30..+0x8f. It is posted by:
+     - `Render_SunLightComponent_AddToWorld` 0x14448aaa0 (creates the proxy, descriptor 0x146543928);
+     - `Render_SunLightComponent_OnTransform` 0x144489ce0;
+     - `Render_SunLightComponent_SetColour` 0x14448a5e0.
+  3. `Render_SkyLightProxy_HandleMessage` 0x143d2e5d0 writes the record. Its pool is created by `Render_LightModule_CreateProxy` 0x143d2f5c0, case 2.
+- **Record = shader `SkyLight` (byte for byte):**
+
+| record | source |
+|---|---|
+| +0x00 direction | msg+0x04/+0x14/+0x24 = element 1 of each transposed row = row +0xb0 of the component rotation |
+| +0x0c diffuseScale | diffuse_scale (+0x80) |
+| +0x10 colour | `pow(byte/255, 2.2)` of the packed colour RGB (+0x30..+0x32) x intensity (+0x34); colour_temperature > 0 converts Kelvin first |
+| +0x1c shadowBias | shadow_bias (+0x3c) |
+| +0x20 ambientColour | +0x70 (sky/ambientLightColour from SkyState_Update) |
+| +0x2c cascades | shadow_cascades (+0x38) |
+| +0x38 billboardShadowLean | billboard_shadow_lean (+0x84) |
+| +0x40 nightSpecularScale | specular_scale (+0x88) |
+| +0x44 tanSunAngularRadius | tan(diameter (+0x8c) / 2 in radians) |
+| side array (0x18) | 0, cascade_1..cascade_4 (+0x44..+0x50), cascade_blend (+0x54) |
+| side array (0xc) | iblColour, iblDiffuseScale, iblSpecularScale (+0x5c..+0x64) |
+
+- **Shadowed vs unshadowed:** a record counts as shadowed when cascades != 0 and +0x34 (shadowsEnabled) != 0. Who sets +0x30 (shadowFilterQuality) and +0x34 on the record was not seen; the GPU upload of the pool to t77 was not traced.
+- **Real sun vs normalised day (static side of T158):** the direction is whatever SkyState_Update writes into the rotation rows. That comes from `Render_SkyState_UpdateSolarSun` mode (a) or (b) (round 2). Which flag a race session sets stays T158.
+- **Component field map:** `Render_SunLightComponent_RegisterProperties` 0x144489df0 (group "sky-light-properties").
+
+### Tonemap and exposure
+
+- **ToD keys** (bound in `Game_TimeOfDaySystem_FinaliseTimeOfDay` 0x1438bc050, offsets in its KB note):
+  - postprocess/tonemap: enable, ev_mode_select, max_lum, min_lum, max_scene_lum, key_value, threshold_a/_b/_garage/_tunnel/_lerp, adaption_speed_dl/_ld, bottom_scale, lock_eye_adaptaion, histogram_max/min, camera_fstop/tmin/tmax
+  - postprocess/lut: enable, tint, colour, contrast, brightness
+  - bloom and god_rays
+  - All defaults are 0, so the weather/ToD preset must supply them.
+  - Debug names `tonemap.*` (0x143b94340 / 0x143ba8110) mirror the cbuffer.
+  - Per-track override: none found besides the SunOverrideComponent (explicit luminance, colour grading LUT) from round 1.
+- **cbuffer `toneMapSettings`** (1032 bytes):
+  - colorXFormLUT 4x4 +0, lutPCurveLerp +80, lutPCurveTODLerp +84
+  - toneMapMaxLum +88, MinLum +92, KeyValue +96, Threshold +100, AdaptationSpeedDL +104, AdaptationSpeedLD +108, LumScale +112, MaxSceneLum +116
+  - toneMapTotalNumOfPixels +128, HistogramLow/HighPercent +132/+136
+  - exposureMode +176, cameraShutterSpeed/FStop/ISO/Tmin/Tmax +180..+196
+  - two filmic spline blocks (+272 HDR, +656 SDR), mainTargetFP16 +1028
+  - The CPU fill is `Render_Tonemap_Execute` / `SetupEyeAdaptation` from a settings block. The exact field-by-field copy was not traced.
+- **Eye adaptation (tonemap.nefx2, shaders `calculate_histogram_scanline` + `eye_adaptation`):**
+  - **Histogram:**
+    - 256 bins; `bin = saturate(log2(max(dot(rgb * E8, (0.2126, 0.7152, 0.0722)), 1)) * 0.06682) * 255`, so bins cover log2 luminance 0..15.
+    - E8 = exposure buffer [8], and it is applied only when mainTargetFP16 = 0.
+  - **Percentile bins:** lowBin and highBin are the bins where the cumulative count crosses `N * HistogramLowPercent` and `N * HistogramHighPercent`. Then `L = 2^(((lowBin + highBin) / 2) * 15/255)`.
+  - **Adaptation:**
+    - `A = A_prev + (L - A_prev) * (1 - exp(-|dt| * speed))`, with speed = AdaptationSpeedDL when the scene got brighter, else LD. dt = g_scene.m_timeInformation +12.
+    - A = 0.3 when a value is not finite.
+    - Then `Ac = clamp(A, MinLum, MaxLum)`.
+  - **Exposure:** `E = (5/6) / (8 * Ac / 2^Threshold)`; toneMapThreshold works as an EV offset, and toneMapKeyValue is not read here.
+  - **Buffer `g_sceneLuminanceAndExposure` (floats):** [0] A, [1] E, [2] 1/E_prev, [3] E, [4] L, [5]/[6] low/high bin, [8] = 1.2 * 8 * Ac / 2^Threshold. A second viewport variant uses [9..11].
+- **Tonemap resolve (`tonemap_and_resolve`, plain variant):**
+  1. `c = rgb * E[1] * (mainTargetFP16 ? 1 : E[2])`.
+  2. `Y = length(c * (0.299, 0.587, 0.114))`, `x = max(Y / MaxSceneLum, 1e-6)`.
+  3. `c *= SCurve1D(x) / (MaxSceneLum * x)` (luminance-preserving 1D curve).
+  4. sRGB encode, then the 3D colour-grade LUT, then colorXFormLUT, then back to linear when `g_scene.hdr.hdr == 0`.
+  - The S-curve texture is the bilinear blend (`blend_lut_cs`) of lutSCurve00/10/01/11 by (lutPCurveLerp, lutPCurveTODLerp).
+- **Deferred output is pre-exposed:** the lit colour is multiplied by `E[3]` and clamped to `m_lighting.maxLightingValue` before fog (unless debug flag 0x200).
+
+### Deferred lighting math (deferred_render `main_per_pixel`, variant with sky shadows, DDGI, SH)
+
+- **GBuffer (written by object_opaque `gbuffer_export_ps`):**
+
+| target | content |
+|---|---|
+| RT0 Albedo | rgb = albedo, wet-darkened `lerp(a, a^2, min(saturate(4*wetness)*(1-metal), 0.6))`; a = material flags byte |
+| RT1 Normal | xyz = normal; w = byte (baked AO x material AO) * 127, +128 flag |
+| RT2 Surface | x = roughness (specular AA, wet: r * (1 - 0.4 * wet)); y = flags; z = metalness; w = byte (reflectance * 32, +64 flag) |
+| RT3 Surface2 (u32) | packed RGB float (f16 bits >> 2/8/17): baked lightmap radiance (max 0.01) + emissive x scale + extra term; bit0 = valid |
+
+- **Material:** `diffuse = albedo * (1 - metal)`, `F0 = lerp(0.0278, albedo, metal)`, `alpha = max(roughness, 0.01415)^2`.
+- **AO:** `ao = min(bakedAO, SSAO)`. Coloured multi-bounce `aoC = ao^(1 - k * diffuse)`, with k from the gbuffer flags. Specular occlusion uses `ao*bakedAO` (times `1 - r^2` when roughness-linked occlusion is on).
+- **Ambient / baked:**
+  - The radiance from RT3 is multiplied by the diffuse albedo and AO.
+  - Dynamic objects use `g_worldSpaceLightMap` (top-down, `scaleAndBias`) x `dynamicObjectIllumination` x `illuminationLevel` instead.
+  - IBL comes from the probe list (per-tile `g_ibLights`, cube arrays `g_ibl_diffuse` / `g_ibl_specular`, `g_ibl_brdf` split-sum `F0 * a + b`), DDGI (`g_ddgi_probe_map`), SH probes (`g_shProbeMap`) and planar/SS reflections.
+- **Sun (sky light 0):**
+  - With alpha = max(roughness, 0.01415)^2 and a = alpha^2: GGX `D = a / (pi * (NH^2 (a - 1) + 1)^2)`.
+  - Height-correlated Smith visibility `1 / ((NV + sqrt(NV^2 (1 - a) + a)) (NL + sqrt(NL^2 (1 - a) + a)))`.
+  - Schlick Fresnel with F90 = 0.9722: `F = F0 + (0.9722 - F0)(1 - VH)^5`.
+  - `Lo = colour * ((diffuse/pi * diffuseScale * (1 - F) + D * Vis * F * specOcc) * NL * shadow + k * diffuse * (shadow * saturate(dot(viewDir, -L))^5 + 0.1 * (1 - NL)))`; the last term is a back-light/translucency term weighted by the gbuffer-coded k.
+  - Shadow: cascades from `g_scene.sky_shadow_consts`: 4 SkyShadowCascade entries of 208 bytes at +2560, 4-tap compare filtering, blend via cascadeBlendScale/Bias, plus the screen-space mask `g_skyShadowMaskTex` and whole-world shadow.
+- **Final:** `out = (direct + ambient) * E[3]`, clamped by maxLightingValue, then fog and rain sheet (below).
+
+### Bindless lookup table
+
+- **Allocation:** every texture/buffer view allocates an id from the device bit allocator (device+0x1cc0, capacity 0x40000). Allocators: `Render_Gfx2Device_AllocViewDescriptor_A/B` 0x143a0e340/0x143a0e5b0 and `Render_Gfx2Buffer_Construct`.
+  - The id is stored at tex+0x160 + view*4.
+  - The view's descriptor-heap index goes into the u32 table device+0x1d28[id], and dirty byte +0x1ca8 is set.
+- **Upload:** the render-graph node "BindlessLookupBuffer" (`Render_Bindless_AddLookupUploadPass` 0x143e815f0, execute `Render_Bindless_UploadLookupTable` 0x143f0c3b0) copies the table up to the highest id into `g_bindlessResourcesLookupTable` (t101) when dirty.
+- **Shader side:** `heap = table[me_*HeapIndex]`.
+- **OPEN:** the CPU code that writes the texture's bindless id into the material buffer constant (material -> tex+0x160).
+
+### Shadow cascades
+
+- **Settings source:** hardware_settings_config.xml `<shadows>`, read by `Render_Shadow_ReadHardwareSettings` 0x143dc39f0: skyShadowMapSize, skyShadowCascadeCount, skyShadowLowLod, worldShadowMapSize, skyShadowMap32Bits, spotShadowMapSize, spotShadowSampling.
+  - A local config example has size 512, 4 cascades, world 1024; the values come from the graphics preset.
+- **Per-sun settings:** shadow_cascades, cascade_1..4 split distances, cascade_blend, shadow_bias, filter quality.
+- **Debug/override UI:** 0x140198750 ("Override Shadow Cascades", Start/Near/Mid/Far/Furthest, FOV scales); per-camera 0x1401e44a0 (cascades, cascade_start_distance, cascade_fov_scale_0/1).
+- **Shader:** at most 4 cascades in g_scene; resolution / recipResolution / kernelRadius / lightWidth / sunArea in sky_shadow_consts.
+
+### Fog / atmosphere
+
+- **Inputs per track/weather:** the weather/atmospherics ToD curves (see the 0x1438bc050 note):
+  - albedo, scatter/absorb coefficient distances, HG g (default 0.775), near plane/fade (100), optical depth scale (0.25), distance exp divisor/power, rain variants;
+  - clear/rainy lerps, plus `volumetric_fog_scale` / `rain_volumetric_fog_scale` and the sky fog colours from round 1.
+- **Shader (deferred_render, end of `main_per_pixel`):**
+  1. `d = max(volume term, saturate((dist * invDistExpDivisor)^distExpPower) * dist)`.
+  2. `od = sunLUT.a < 0 ? -|sunLUT.a| * d * opticalDepthScale : 0`, and `T = (1 + max(od, -4)/4)^4`.
+  3. `fade = saturate(d * recipFullFadeRange + minusNearDivFullFadeRange)`.
+  4. `inscatter = ambientLUT.a * (1 - T) * (fade * sunLUT.rgb + ambientLUT.rgb)`.
+  5. `out = lit * T * volTransmittance + inscatter * (dist > 5000 ? volTransmittance : 1) + volumetricLUT.rgb`.
+  6. Rain sheet: `out = out * rainA + rainSheetColour * rain` beyond the rain-sheet depth.
+  - g_sunLUT / g_ambientLUT are indexed by (dot(sunDir, viewDir), worldY * worldPosYToLUTVMul + Add); they come from `Render_AmbientLut_Generate`.
+- **OPEN:** the CPU fill of g_fogData from the curves (FogProxy / FogVolumeCBuffer 0x143caa850 not read) -> T241.
+
+### Offline preview = game: updated plan
+
+- **Reproducible offline now (static):**
+  - lightmap placement and baked AO/radiance;
+  - the GBuffer packing;
+  - the sun record (direction from the sun rotation, colour = gamma-2.2 colour x intensity, angular radius) and the sun BRDF (GGX + height-correlated Smith + Schlick 0.972 + Lambert);
+  - the multi-bounce AO;
+  - eye adaptation and exposure formulas, the tonemap resolve order (exposure -> 1D S-curve -> sRGB -> 3D LUT -> matrix);
+  - the analytic fog formula, cascade count and sizes from the hardware settings, and the bindless indirection.
+- **Still needed from data or runtime:**
+  - the ToD curve values per weather preset (they live in the weather/ToD data files: decode those offline next);
+  - the S-curve and LUT textures (shipped assets: next);
+  - the g_sunLUT / g_ambientLUT contents (generated at runtime: T241 or re-implement `Render_AmbientLut_Generate`);
+  - g_fogData values (T241);
+  - the exposure and the selected threshold (T240);
+  - IBL probe cubes and SH (shipped bake assets);
+  - the sun mode (T158) and the wet blend (T160).
+- **Next static rounds:**
+  1. Decode the weather/ToD curve files so the preview evaluates the same keys.
+  2. The CPU fill of g_fogData and toneMapSettings (Render_Tonemap_Execute settings block).
+  3. `Render_AmbientLut_Generate` math.
+  4. The material -> bindless id write.
+  5. The IBL probe selection (g_ibLights fill, IBLProxy).
+
 ## Inbox
 - 2026-10-19 14:03 ui-re: new 'hud' lane holds the HUD view-model/logic side (what widgets publish + their setToOpen gates); render still owns the D3D present/draw path. Hud_Open_TyrePerformance (0x14152b5f0) publishes to view_model_data.hud_* registry nodes. HUD VM vtables cluster near 0x1456ed290 if you need draw-time addresses.
 - 2026-10-28 22:57 re-import: (wx rounds 1-3, static, verified by wx-verify): render flags +0x32 live on the per-entity Render component (type 0x146cb7b70, vtable 0x145a90b10, parser 0x1444725e0); the Model component (type 0x146cb7da0, vtable 0x145a908a0) holds +0xb0 Render, +0x80 render instance (current world matrix inst+0x10..+0x3f, previous +0x40..+0x6f, generator mask +0x70), +0xd8 model path. Per-model setter Render_ModelComponent_ApplyRenderProps 0x14446ea70 -> 0x14446b9c0 (KB fix: not LitPlanarReflectionProxy). rainMask (0x20) = screen-space depth from the main camera that clips falling rain only; wetness map (0x40) = top-down ortho 75 x 75 m around the player, 256x256 (0x14478c050 / 0x14478e440); dry/wet meaning lives in material shaders. Quality handler 0x14015aa00 field map in game notes. | findings from PR #471 by vogtmarcel07-cloud
@@ -222,3 +375,4 @@ Runtime capture still needed: T158 (sun mode and curves in a race), T159 (now on
 - 2026-11-14 02:27 engine-re: engine-re 2026-11-14 weather to L2 (static, for the render owner): Game_TrackInformationSystem_Update 0x144795cf0 writes the PREVIOUS frame track wetness ws+0x3f0a38 (ws = *g_Game_WeatherSurfaceState) to [[ws+0xd08]+0x48]+0xa5b7e4 (0x144795f48) before it re-evaluates weather/track/wet_delta, and a temperature-derived value to +0xa5b7ec (0x144796052); rain intensity reaches the rain renderer as [TimeOfDayOwner+0x2c8]+0x75ca4 (0x14479c47e). Data flow and struct layout: kb:subsystems/session.md#wetness / #weather. Render rows (Render_Bind_WetnessSamplers 0x1447192f0, Render_Gfx_CreateTrackConstantsAndPuddleBuffers 0x1447889a0) were not touched.
 - 2026-11-17 04:46 rr-bindings: Binding request (rr-bindings, 2026-11-17; doc:re/research/weather_strategy_bindings.md#functions): please review for L2 and export. (1) Render_SceneView_BuildViewParams 0x143be0360 (L1, sig render.scene_view_build_view_params): rcx (rsi) = view params block it fills, rdx (rdi) = source view; projection at +0x70 (0x143be0902), world-to-view +0xb0.. (0x143be0815/0x143be082d), camera-to-world +0xf0.. (0x143be0855/0x143be086d/0x143be08ad), second pass 0x143be1629..0x143be1684; 27 callers. (2) site_Render_MainViewParamsCall 0x1401583d0 (L1, sig render.main_view_params_call): the main 3D view's call to it, in 0x140157d90-0x140158a63. Realistic Rain draws its puddle pass from this camera (inline hook, return address = site+5); both moved +0x25d0 / +0 on Steam 1.0.145.
 - 2026-11-17 14:16 engine-re: engine-re 2026-11-17 render-pipeline round 1 (static, blind-verified V10803-V10816): new sections Lighting / Lightmaps / Materials / LOD / Wetness / Next rounds above this inbox; 15 new render rows (6 at L2 forced), 3 raised to L2 with corrected notes (0x143c07890 builds the material bind layout, 0x143d41770 sphere screen size, 0x1447192f0 skidmark layer samplers). Lane owner review requested. Runtime questions: T158 (sun curves vs solar position), T159 (lightmap location lookup).
+- 2026-11-17 engine-re: render-pipeline round 3 (static, blind-verified V11400-V11410): section "Round 3" above the inbox (SkyLight record fill chain via SkyLightProxy, tonemap/eye adaptation formulas, deferred BRDF and GBuffer packing, bindless table fill, shadow settings, fog formula). 2 new render rows at L2 (forced), 8 L1 rows, 3 globals. Lane owner review requested. Runtime: T240 (exposure), T241 (fog/SkyLight values).
