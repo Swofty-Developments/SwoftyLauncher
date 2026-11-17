@@ -11,6 +11,7 @@
   kb.py --agent A test-new "<question>"               allocate re/tests/T###.md
   kb.py --agent A import <rows.tsv> <table>           add rows not yet present (ghidra_export output)
   kb.py export <dir>                                  every table with the binding records merged in, plus structs/
+  kb.py function-names                                rewrite re/db/function_names.tsv (crash symbols for the apps)
 Tables: functions globals db_keys strings_anchors subsystems verify
 functions, globals and verify also hold the rows of the binding records under re/bindings (binding_record.py).
 """
@@ -95,6 +96,31 @@ def read_tsv(table):
     return rows, errs
 
 
+FUNCTION_NAMES = os.path.join(DB, 'function_names.tsv')
+
+
+def function_names_text(rows=None):
+    """addr and name of every function, tables and records together, by address: the crash symbols the launcher and
+    the CLI embed. Generated; kb.py rewrites it on every functions write."""
+    rows = read_table('functions')[0] if rows is None else rows
+    return 'addr\tname\n' + ''.join(f'{r["addr"]}\t{r["name"]}\n' for r in sorted(rows, key=lambda r: int(r['addr'], 16)))
+
+
+def write_function_names():
+    text = function_names_text()
+    try:
+        with open(FUNCTION_NAMES) as f:
+            if f.read() == text:
+                return False
+    except OSError:
+        pass
+    tmp = f'{FUNCTION_NAMES}.{os.getpid()}.tmp'
+    with open(tmp, 'w') as f:
+        f.write(text)
+    os.replace(tmp, FUNCTION_NAMES)
+    return True
+
+
 def write_table(table, rows):
     """Base rows go to <table>.tsv; rows that came from a binding record go back into that record."""
     records = [r for r in rows if r.get('_record')]
@@ -120,6 +146,8 @@ def write_table(table, rows):
         for r in rows:
             f.write('\t'.join(r[c] for c in cols) + '\n')
     os.replace(tmp, p)
+    if table == 'functions':
+        write_function_names()
 
 
 def row_key(table, r):
@@ -576,12 +604,14 @@ def main():
     p = sp.add_parser('test-new'); p.add_argument('question')
     p = sp.add_parser('import'); p.add_argument('file'); p.add_argument('table', choices=['functions', 'globals'])
     p = sp.add_parser('export'); p.add_argument('dir')
+    sp.add_parser('function-names')
     a = ap.parse_args()
-    if a.cmd not in ('get', 'find', 'export') and not a.agent:
+    if a.cmd not in ('get', 'find', 'export', 'function-names') and not a.agent:
         raise SystemExit('--agent NAME (or RE_AGENT) is required for writes')
     {'add': cmd_add, 'set': cmd_set, 'get': cmd_get, 'find': cmd_find, 'claim': cmd_claim,
      'release': lambda x: cmd_claim(x, True), 'note': cmd_note, 'verify': cmd_verify, 'test-new': cmd_test_new,
-     'import': cmd_import, 'export': cmd_export}[a.cmd](a)
+     'import': cmd_import, 'export': cmd_export,
+     'function-names': lambda a: print('function_names.tsv ' + ('rewritten' if write_function_names() else 'unchanged'))}[a.cmd](a)
 
 
 if __name__ == '__main__':
