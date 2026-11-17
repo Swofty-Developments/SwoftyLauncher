@@ -1,7 +1,5 @@
 #pragma once
 
-#include "core/guards/skips.hpp"
-
 #include <cstddef>
 #include <cstdint>
 
@@ -34,7 +32,5 @@ inline bool entry_usable(uint64_t entry, Read read, void *user)
     uint32_t id = 0;
     return read(info + ID_AT, &id, sizeof id, user);
 }
-
-using Skips = swofty_core::guards::Skips<LOG_FIRST>;
 
 }

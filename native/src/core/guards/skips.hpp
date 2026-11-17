@@ -17,26 +17,6 @@ constexpr Say say(int n, int first)
     return n == first ? Say::last : Say::line;
 }
 
-template <int First>
-struct Skips {
-    int count = 0;
-
-    int note()
-    {
-        return ++count;
-    }
-
-    bool logged(int n) const
-    {
-        return n <= First;
-    }
-
-    bool last(int n) const
-    {
-        return n == First;
-    }
-};
-
 // One noted occurrence: its number, and what its log line ends with, or null when it is not logged.
 struct Line {
     int n;

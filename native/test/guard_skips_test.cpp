@@ -73,15 +73,6 @@ int main()
     expect(guards::say(4, 4) == guards::Say::last, "the last logged occurrence says the rest are silent");
     expect(guards::say(5, 4) == guards::Say::none, "occurrences past the cap are silent");
 
-    guards::Skips<4> s;
-    int logged = 0, last = 0;
-    for (int i = 0; i < 100; i++) {
-        int n = s.note();
-        logged += s.logged(n);
-        last += s.last(n);
-    }
-    expect(logged == 4 && last == 1 && s.count == 100, "the plain counter caps and marks like the runtime one");
-
     expect(!std::strcmp(rounds.tail(), " (further rounds are not logged)"), "a key cap builds its tail like a count cap");
     auto first = rounds.note(7);
     expect(first && first.n == 1 && !std::strcmp(first.tail, ""), "a key's first note is logged plainly");
