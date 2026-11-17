@@ -36,6 +36,7 @@
 
 namespace {
 
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 namespace tp = runtime::teammate_pairs;
 
@@ -76,8 +77,7 @@ void sort_site(safetyhook::Context &c)
 void setup()
 {
     char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_TEAMMATE_PAIRS_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+    if (guards::env_off("SWOFTY_TEAMMATE_PAIRS_GUARD", v)) {
         swofty::log("[strategy] teammate pairs guard off (SWOFTY_TEAMMATE_PAIRS_GUARD=%s)", v);
         return;
     }

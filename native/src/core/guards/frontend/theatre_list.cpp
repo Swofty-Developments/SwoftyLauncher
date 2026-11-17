@@ -120,8 +120,7 @@ void row_offset(SwoftyContext *c)
 bool guard_off()
 {
     char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_THEATRE_LIST_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+    if (guards::env_off("SWOFTY_THEATRE_LIST_GUARD", v)) {
         swofty::log("[theatre] list guard off (SWOFTY_THEATRE_LIST_GUARD=%s)", v);
         return true;
     }

@@ -117,8 +117,7 @@ void track_read(safetyhook::Context &c)
 void setup()
 {
     char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_GP_WEEKEND_TRACK_GUARD", v, sizeof v);
-    if (n && n < sizeof v && wt::switch_off(v)) {
+    if (guards::env_off("SWOFTY_GP_WEEKEND_TRACK_GUARD", v, [](const char *s) { return wt::switch_off(s); })) {
         swofty::log("[gp] weekend track guard off (SWOFTY_GP_WEEKEND_TRACK_GUARD=%s)", v);
         return;
     }
