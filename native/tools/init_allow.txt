@@ -1,0 +1,14 @@
+# Objects in src/core with a dynamic initializer that tools/init_check.py lets through, each as
+# "<source>: <declaration>", or as "<header>: #define <MACRO>" for every object spelled in that core macro, under the
+# reason its initializer reads no other translation unit's object.
+
+# Constructs a HookGuard, which writes itself into hook_guards(), a function-local static in guards/registry.cpp; the
+# guards arm in HookGuardId order from there, whatever order their units initialize in.
+src/core/guards/guard.hpp: #define SWOFTY_HOOK_GUARD
+
+# Reads the process environment.
+src/core/testing/direct_start.cpp: const bool diag_on = env_flag("SWOFTY_DIRECT_DIAG");
+# Write constinit function pointers in testing/direct_start.cpp, which hold their value before any dynamic
+# initializer runs.
+src/core/testing/direct_start_tt.cpp: const bool screen_registered = (runtime::direct_start_register_time_trial_screen(on_screen), true);
+src/core/testing/direct_start_tt.cpp: const bool registered_at_load = (runtime::direct_start_register_time_trial(registered), true);

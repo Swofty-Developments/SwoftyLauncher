@@ -90,6 +90,7 @@ src/core/career/career.cpp
 src/core/career/career_content.cpp
 src/core/career/career_start.cpp
 src/core/frontend/popup.cpp
+src/core/frontend/popup/hud_data.cpp
 src/core/diagnostics/log_csv.cpp
 src/core/runtime/sdk.cpp
 src/core/diagnostics/perf.cpp

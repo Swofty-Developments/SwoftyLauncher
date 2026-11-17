@@ -19,13 +19,6 @@ namespace rg = runtime::rtas_guard;
 
 constexpr size_t BUILD_RTAS_SLOT = 72;
 constexpr int RTAS_DETAILED = 8;
-safetyhook::InlineHook h_build_rtas;
-rg::Mode rtas_mode = rg::Mode::on;
-std::mutex rtas_lock;
-rg::Book rtas_book;
-std::atomic<size_t> rtas_tracked{0};
-std::atomic<uint64_t> rtas_builds{0}, rtas_faulty{0}, rtas_holes{0}, rtas_bad_posts{0};
-uint64_t rtas_trace;
 
 using RtasDesc = D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC;
 using GeoDesc = D3D12_RAYTRACING_GEOMETRY_DESC;
@@ -60,7 +53,34 @@ const char *level_name(const RtasDesc &desc)
     return desc.Inputs.Type == D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL ? "top-level" : "bottom-level";
 }
 
-void log_hole(uint64_t nth, const RtasDesc &desc, const rg::Call &c, rg::Act a)
+class RtasGuard {
+public:
+    bool arm();
+    void build(ID3D12GraphicsCommandList4 *l, const RtasDesc *desc, UINT posts, const PostDesc *post);
+
+private:
+    void log_hole(uint64_t nth, const RtasDesc &desc, const rg::Call &c, rg::Act a);
+    void log_bad_posts(uint64_t nth, const RtasDesc &desc, UINT posts, size_t kept);
+    void log_faulty(uint64_t nth, const RtasDesc &desc, const std::vector<rg::Geo> &geos, const rg::Plan &plan);
+
+    safetyhook::InlineHook hook;
+    rg::Mode mode = rg::Mode::on;
+    std::mutex lock;
+    rg::Book book;
+    std::atomic<size_t> tracked{0};
+    std::atomic<uint64_t> builds{0}, faulty{0}, holes{0}, bad_posts{0};
+    uint64_t trace_builds = 0;
+    int state = 0;
+};
+
+RtasGuard guard;
+
+void STDMETHODCALLTYPE build_rtas_hook(ID3D12GraphicsCommandList4 *l, const RtasDesc *desc, UINT posts, const PostDesc *post)
+{
+    guard.build(l, desc, posts, post);
+}
+
+void RtasGuard::log_hole(uint64_t nth, const RtasDesc &desc, const rg::Call &c, rg::Act a)
 {
     if (!rg::detailed(nth, RTAS_DETAILED)) {
         if (rg::milestone(nth))
@@ -68,14 +88,14 @@ void log_hole(uint64_t nth, const RtasDesc &desc, const rg::Call &c, rg::Act a)
                         (unsigned long long)nth);
         return;
     }
-    const char *what = rtas_mode == rg::Mode::log ? "sent as is (SWOFTY_RTAS_GUARD=log)" : rg::act_name(a);
+    const char *what = mode == rg::Mode::log ? "sent as is (SWOFTY_RTAS_GUARD=log)" : rg::act_name(a);
     swofty::log("[gfx] rtas guard: %s build%s has %s (dest 0x%llx, scratch 0x%llx, source 0x%llx, %u %s at 0x%llx); %s",
                 level_name(desc), c.update ? " (update)" : "", rg::hole_name(rg::hole(c)), (unsigned long long)c.dest,
                 (unsigned long long)c.scratch, (unsigned long long)c.source, c.count,
                 c.level == rg::kTop ? "instances" : "geometries", (unsigned long long)c.instances, what);
 }
 
-void log_bad_posts(uint64_t nth, const RtasDesc &desc, UINT posts, size_t kept)
+void RtasGuard::log_bad_posts(uint64_t nth, const RtasDesc &desc, UINT posts, size_t kept)
 {
     if (!rg::detailed(nth, RTAS_DETAILED)) {
         if (rg::milestone(nth))
@@ -85,10 +105,10 @@ void log_bad_posts(uint64_t nth, const RtasDesc &desc, UINT posts, size_t kept)
     }
     swofty::log("[gfx] rtas guard: %s build into 0x%llx asks for %u postbuild info(s), %zu into a null buffer; %s",
                 level_name(desc), (unsigned long long)desc.DestAccelerationStructureData, posts, posts - kept,
-                rtas_mode == rg::Mode::log ? "asked as is (SWOFTY_RTAS_GUARD=log)" : "those are dropped");
+                mode == rg::Mode::log ? "asked as is (SWOFTY_RTAS_GUARD=log)" : "those are dropped");
 }
 
-void log_faulty(uint64_t nth, const RtasDesc &desc, const std::vector<rg::Geo> &geos, const rg::Plan &plan)
+void RtasGuard::log_faulty(uint64_t nth, const RtasDesc &desc, const std::vector<rg::Geo> &geos, const rg::Plan &plan)
 {
     if (!rg::detailed(nth, RTAS_DETAILED)) {
         if (rg::milestone(nth))
@@ -103,7 +123,7 @@ void log_faulty(uint64_t nth, const RtasDesc &desc, const std::vector<rg::Geo> &
             break;
         }
     const rg::Geo &g = geos[first];
-    const char *what = rtas_mode == rg::Mode::log
+    const char *what = mode == rg::Mode::log
                            ? "left as is (SWOFTY_RTAS_GUARD=log); on NVIDIA under Windows the GPU reads address 0 and "
                              "the device is removed"
                            : "emptied, so the build reads nothing for them";
@@ -117,11 +137,10 @@ void log_faulty(uint64_t nth, const RtasDesc &desc, const std::vector<rg::Geo> &
                 (unsigned long long)g.indices, what);
 }
 
-void STDMETHODCALLTYPE build_rtas_hook(ID3D12GraphicsCommandList4 *l, const RtasDesc *desc, UINT posts,
-                                       const PostDesc *post)
+void RtasGuard::build(ID3D12GraphicsCommandList4 *l, const RtasDesc *desc, UINT posts, const PostDesc *post)
 {
     if (!desc) {
-        h_build_rtas.call<void>(l, desc, posts, post);
+        hook.call<void>(l, desc, posts, post);
         return;
     }
     bool top = desc->Inputs.Type == D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
@@ -134,8 +153,8 @@ void STDMETHODCALLTYPE build_rtas_hook(ID3D12GraphicsCommandList4 *l, const Rtas
                   (desc->Inputs.Flags & D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE) != 0};
     rg::Act a = rg::act(call);
     if (a != rg::Act::send) {
-        log_hole(rtas_holes.fetch_add(1, std::memory_order_relaxed) + 1, *desc, call, a);
-        if (rtas_mode == rg::Mode::on && a == rg::Act::skip)
+        log_hole(holes.fetch_add(1, std::memory_order_relaxed) + 1, *desc, call, a);
+        if (mode == rg::Mode::on && a == rg::Act::skip)
             return;
     }
     std::vector<PostDesc> kept_post;
@@ -145,8 +164,8 @@ void STDMETHODCALLTYPE build_rtas_hook(ID3D12GraphicsCommandList4 *l, const Rtas
             dests[i] = post[i].DestBuffer;
         std::vector<uint32_t> kept = rg::kept_posts(dests);
         if (kept.size() != posts) {
-            log_bad_posts(rtas_bad_posts.fetch_add(1, std::memory_order_relaxed) + 1, *desc, posts, kept.size());
-            if (rtas_mode == rg::Mode::on) {
+            log_bad_posts(bad_posts.fetch_add(1, std::memory_order_relaxed) + 1, *desc, posts, kept.size());
+            if (mode == rg::Mode::on) {
                 for (uint32_t i : kept)
                     kept_post.push_back(post[i]);
                 posts = UINT(kept_post.size());
@@ -154,22 +173,22 @@ void STDMETHODCALLTYPE build_rtas_hook(ID3D12GraphicsCommandList4 *l, const Rtas
             }
         }
     }
-    if (a == rg::Act::no_instances && rtas_mode == rg::Mode::on) {
+    if (a == rg::Act::no_instances && mode == rg::Mode::on) {
         RtasDesc patched = *desc;
         patched.Inputs.NumDescs = 0;
-        h_build_rtas.call<void>(l, &patched, posts, post);
+        hook.call<void>(l, &patched, posts, post);
         return;
     }
     if (top || !desc->Inputs.NumDescs) {
-        h_build_rtas.call<void>(l, desc, posts, post);
+        hook.call<void>(l, desc, posts, post);
         return;
     }
-    uint64_t nth = rtas_builds.fetch_add(1, std::memory_order_relaxed);
+    uint64_t nth = builds.fetch_add(1, std::memory_order_relaxed);
     if (nth == 0)
         swofty::log("[gfx] rtas guard: the game builds bottom-level ray tracing structures (first: %u geometries)",
                     desc->Inputs.NumDescs);
     const auto &in = desc->Inputs;
-    if (nth < rtas_trace) {
+    if (nth < trace_builds) {
         char line[1024];
         int at = snprintf(line, sizeof line, "[gfx] rtas trace %llu: dest 0x%llx src 0x%llx scratch 0x%llx flags 0x%x, %u geometries:",
                           (unsigned long long)nth, (unsigned long long)desc->DestAccelerationStructureData,
@@ -193,8 +212,8 @@ void STDMETHODCALLTYPE build_rtas_hook(ID3D12GraphicsCommandList4 *l, const Rtas
     bool any = false;
     for (UINT i = 0; i < in.NumDescs && !any; i++)
         any = rg::fault(geo_of(geo_at(in, i))) != rg::Fault::none;
-    if (!any && !rtas_tracked.load(std::memory_order_acquire)) {
-        h_build_rtas.call<void>(l, desc, posts, post);
+    if (!any && !tracked.load(std::memory_order_acquire)) {
+        hook.call<void>(l, desc, posts, post);
         return;
     }
     std::vector<rg::Geo> geos(in.NumDescs);
@@ -203,10 +222,10 @@ void STDMETHODCALLTYPE build_rtas_hook(ID3D12GraphicsCommandList4 *l, const Rtas
     rg::Build b{desc->DestAccelerationStructureData, desc->SourceAccelerationStructureData,
                 (in.Flags & D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE) != 0};
     rg::Plan plan;
-    if (rtas_mode == rg::Mode::on) {
-        std::lock_guard<std::mutex> g(rtas_lock);
-        plan = rtas_book.plan(b, geos);
-        rtas_tracked.store(rtas_book.tracked(), std::memory_order_release);
+    if (mode == rg::Mode::on) {
+        std::lock_guard<std::mutex> g(lock);
+        plan = book.plan(b, geos);
+        tracked.store(book.tracked(), std::memory_order_release);
     } else
         for (uint32_t i = 0; i < geos.size(); i++)
             if (rg::fault(geos[i]) != rg::Fault::none) {
@@ -214,9 +233,9 @@ void STDMETHODCALLTYPE build_rtas_hook(ID3D12GraphicsCommandList4 *l, const Rtas
                 plan.faulty++;
             }
     if (plan.faulty)
-        log_faulty(rtas_faulty.fetch_add(1, std::memory_order_relaxed) + 1, *desc, geos, plan);
-    if (rtas_mode != rg::Mode::on || plan.emptied.empty()) {
-        h_build_rtas.call<void>(l, desc, posts, post);
+        log_faulty(faulty.fetch_add(1, std::memory_order_relaxed) + 1, *desc, geos, plan);
+    if (mode != rg::Mode::on || plan.emptied.empty()) {
+        hook.call<void>(l, desc, posts, post);
         return;
     }
     std::vector<GeoDesc> copy(in.NumDescs);
@@ -232,24 +251,21 @@ void STDMETHODCALLTYPE build_rtas_hook(ID3D12GraphicsCommandList4 *l, const Rtas
     RtasDesc patched = *desc;
     patched.Inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
     patched.Inputs.pGeometryDescs = copy.data();
-    h_build_rtas.call<void>(l, &patched, posts, post);
+    hook.call<void>(l, &patched, posts, post);
 }
 
-}
-
-bool arm_rtas_guard()
+bool RtasGuard::arm()
 {
-    static int state;
     if (state)
         return state > 0;
     state = -1;
     char env[8] = {};
     GetEnvironmentVariableA("SWOFTY_RTAS_GUARD", env, sizeof env);
-    rtas_mode = rg::mode(env[0] ? env : nullptr);
+    mode = rg::mode(env[0] ? env : nullptr);
     char trace[16] = {};
     if (GetEnvironmentVariableA("SWOFTY_RTAS_TRACE", trace, sizeof trace))
-        rtas_trace = strtoull(trace, nullptr, 10);
-    if (rtas_mode == rg::Mode::off) {
+        trace_builds = strtoull(trace, nullptr, 10);
+    if (mode == rg::Mode::off) {
         swofty::log("[gfx] rtas guard is off (SWOFTY_RTAS_GUARD=0)");
         return false;
     }
@@ -262,13 +278,13 @@ bool arm_rtas_guard()
         SUCCEEDED(dev->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, alloc, nullptr, IID_PPV_ARGS(&list))) &&
         SUCCEEDED(list->QueryInterface(IID_PPV_ARGS(&list4)))) {
         void *target = (*reinterpret_cast<void ***>(list4))[BUILD_RTAS_SLOT];
-        ok = install(h_build_rtas, target, reinterpret_cast<void *>(&build_rtas_hook),
+        ok = install(hook, target, reinterpret_cast<void *>(&build_rtas_hook),
                      "ID3D12GraphicsCommandList4::BuildRaytracingAccelerationStructure");
         if (ok)
             swofty::log("[gfx] rtas guard armed%s: BuildRaytracingAccelerationStructure (vt+0x%zx, in %s); builds "
                         "with a null buffer, destination, scratch, source or instance list are %s",
-                        rtas_mode == rg::Mode::log ? " in log mode" : "", BUILD_RTAS_SLOT * 8, module_of(target).c_str(),
-                        rtas_mode == rg::Mode::log ? "logged" : "logged and kept off address 0");
+                        mode == rg::Mode::log ? " in log mode" : "", BUILD_RTAS_SLOT * 8, module_of(target).c_str(),
+                        mode == rg::Mode::log ? "logged" : "logged and kept off address 0");
         list->Close();
     } else
         swofty::log("[gfx] rtas guard: no ID3D12GraphicsCommandList4 to hook; not armed");
@@ -279,6 +295,10 @@ bool arm_rtas_guard()
     state = ok ? 1 : -1;
     return ok;
 }
+
+}
+
+bool arm_rtas_guard() { return guard.arm(); }
 
 }
 

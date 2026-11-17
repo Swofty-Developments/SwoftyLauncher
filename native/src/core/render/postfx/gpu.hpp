@@ -1,4 +1,6 @@
 #pragma once
+#include "core/render/com.hpp"
+
 #include <windows.h>
 
 #include <d3d12.h>
@@ -10,7 +12,7 @@ namespace postfx {
 DXGI_FORMAT view_format(DXGI_FORMAT f);
 DXGI_FORMAT depth_view(DXGI_FORMAT f);
 UINT format_kind(DXGI_FORMAT view);
-void release(IUnknown *p);
+using com::release;
 
 // Barriers the core records into a list, through the game's unhooked ResourceBarrier.
 void transition(ID3D12GraphicsCommandList *list, ID3D12Resource *r, D3D12_RESOURCE_STATES from,

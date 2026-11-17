@@ -75,7 +75,7 @@ bool g_verify;
 lv::Sites g_sites;
 lv::Gates g_gates;
 std::unique_ptr<lv::Live> g_live;
-lv::Snapshot g_snap;
+constinit lv::Snapshot g_snap{};
 std::mutex g_lock;
 std::atomic<bool> g_valid;
 uint64_t g_frame;

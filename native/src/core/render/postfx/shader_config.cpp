@@ -1,5 +1,6 @@
 #include "core/render/postfx/shader_config.hpp"
 
+#include "core/render/postfx/option_logic.hpp"
 #include "core/render/postfx/pipeline.hpp"
 #include "core/runtime/runtime.hpp"
 

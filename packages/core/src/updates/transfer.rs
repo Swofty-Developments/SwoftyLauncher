@@ -274,6 +274,9 @@ const RETRY_DELAYS: [Duration; 3] = [
     Duration::from_secs(8),
 ];
 
+/// How many times shorter the waits between retries are under test, as [`BACKOFF`] is.
+const RETRY_SCALE: u32 = if cfg!(test) { 100 } else { 1 };
+
 /// A server answer worth asking again for: a 5xx or a rate limit.
 pub(crate) fn retryable_status(status: u16) -> bool {
     status == 429 || (500..600).contains(&status)
@@ -290,7 +293,9 @@ pub(crate) fn retryable_error(e: &ureq::Error) -> bool {
 /// How long to wait before the attempt after `attempt` (counted from 1), or
 /// none when the retries are used up.
 pub(crate) fn retry_delay(attempt: u32) -> Option<Duration> {
-    RETRY_DELAYS.get(attempt.checked_sub(1)? as usize).copied()
+    RETRY_DELAYS
+        .get(attempt.checked_sub(1)? as usize)
+        .map(|d| *d / RETRY_SCALE)
 }
 
 fn transient(result: &std::result::Result<ureq::http::Response<ureq::Body>, ureq::Error>) -> bool {
@@ -387,10 +392,18 @@ mod tests {
 
     #[test]
     fn backs_off_then_gives_up() {
+        assert_eq!(
+            RETRY_DELAYS,
+            [
+                Duration::from_secs(1),
+                Duration::from_secs(3),
+                Duration::from_secs(8)
+            ]
+        );
         assert_eq!(retry_delay(0), None);
-        assert_eq!(retry_delay(1), Some(Duration::from_secs(1)));
-        assert_eq!(retry_delay(2), Some(Duration::from_secs(3)));
-        assert_eq!(retry_delay(3), Some(Duration::from_secs(8)));
+        assert_eq!(retry_delay(1), Some(Duration::from_millis(10)));
+        assert_eq!(retry_delay(2), Some(Duration::from_millis(30)));
+        assert_eq!(retry_delay(3), Some(Duration::from_millis(80)));
         assert_eq!(retry_delay(4), None);
     }
 
@@ -407,7 +420,10 @@ mod tests {
             |d| slept.borrow_mut().push(d),
         );
         assert_eq!((result, attempts), (Ok(3), 3));
-        assert_eq!(*slept.borrow(), [Duration::from_secs(1), Duration::from_secs(3)]);
+        assert_eq!(
+            *slept.borrow(),
+            [Duration::from_millis(10), Duration::from_millis(30)]
+        );
 
         let (result, attempts) = retrying(|| Err::<i32, i32>(504), |r| r.is_err(), |_| {});
         assert_eq!((result, attempts), (Err(504), 4));
