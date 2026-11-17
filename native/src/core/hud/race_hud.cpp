@@ -14,11 +14,11 @@
 #include "core/diagnostics/perf.hpp"
 #include "core/frontend/popup/message_system.hpp"
 #include "core/frontend/ui_vm.hpp"
-#include "core/hud/hud_leaves_logic.hpp"
+#include "core/hud/race_hud.hpp"
 
-namespace popup {
+namespace race_hud {
 
-HudData hud_data;
+RaceHud state{popup::messages.queue_lock};
 
 namespace {
 
@@ -27,12 +27,12 @@ constexpr size_t MAX_SETS = 512;
 
 int api_set(const char *path, uint32_t type, const void *value)
 {
-    std::string by = who(__builtin_return_address(0));
+    std::string by = popup::who(__builtin_return_address(0));
     if (!path || !value)
         return SWOFTY_ASSET_INVALID;
     if (type == 0)
-        return hud_data.set_enqueue(path, 0, static_cast<const char *>(value), 0, by);
-    return hud_data.set_enqueue(path, int(type), "", *static_cast<const int32_t *>(value), by);
+        return state.set_enqueue(path, 0, static_cast<const char *>(value), 0, by);
+    return state.set_enqueue(path, int(type), "", *static_cast<const int32_t *>(value), by);
 }
 
 void apply_set(const Set &q)
@@ -47,10 +47,10 @@ void apply_set(const Set &q)
 
 int leaves_register(const SwoftyHudLeaf *leaves, uint32_t n, uint32_t *ids)
 {
-    std::string by = who(__builtin_return_address(0));
+    std::string by = popup::who(__builtin_return_address(0));
     if (!leaves || !ids)
         return SWOFTY_ASSET_INVALID;
-    if (!api_available())
+    if (!popup::api_available())
         return SWOFTY_ASSET_UNAVAILABLE;
     int rc = SWOFTY_ASSET_OK;
     for (uint32_t i = 0; i < n; i++) {
@@ -62,7 +62,7 @@ int leaves_register(const SwoftyHudLeaf *leaves, uint32_t n, uint32_t *ids)
         std::string path = leaves[i].path;
         if (!path.empty() && path[0] == '#')
             path.erase(0, 1);
-        if (hud_data.leaf_table.register_leaf(path, leaves[i].type, leaves[i].text_cap, by, ids[i]) != runtime::hud_leaves::OK) {
+        if (state.leaf_table.register_leaf(path, leaves[i].type, leaves[i].text_cap, by, ids[i]) != runtime::hud_leaves::OK) {
             swofty::log("[hud] leaf registration by %s refused: '%.120s' (type %u) is not a hud_* leaf or is already "
                         "registered with another type",
                         by.c_str(), path.c_str(), leaves[i].type);
@@ -71,7 +71,7 @@ int leaves_register(const SwoftyHudLeaf *leaves, uint32_t n, uint32_t *ids)
     }
     static std::atomic<bool> first{true};
     if (first.exchange(false) || n > 64)
-        swofty::log("[hud] %u leaves registered by %s (%zu in the table)", n, by.c_str(), hud_data.leaf_table.size());
+        swofty::log("[hud] %u leaves registered by %s (%zu in the table)", n, by.c_str(), state.leaf_table.size());
     return rc;
 }
 
@@ -79,46 +79,39 @@ int leaves_set(const uint32_t *ids, const void *const *values, uint32_t n)
 {
     if (!ids || !values)
         return SWOFTY_ASSET_INVALID;
-    return hud_data.leaf_table.set(ids, values, n) == runtime::hud_leaves::OK ? SWOFTY_ASSET_OK : SWOFTY_ASSET_INVALID;
+    return state.leaf_table.set(ids, values, n) == runtime::hud_leaves::OK ? SWOFTY_ASSET_OK : SWOFTY_ASSET_INVALID;
 }
 
 int leaves_begin()
 {
-    hud_data.leaf_table.begin();
+    state.leaf_table.begin();
     return SWOFTY_ASSET_OK;
 }
 
 int leaves_end()
 {
-    hud_data.leaf_table.end();
+    state.leaf_table.end();
     return SWOFTY_ASSET_OK;
 }
 
 uint32_t leaves_generation()
 {
-    return hud_data.leaf_table.generation();
+    return state.leaf_table.generation();
 }
 
 int leaves_stats(SwoftyHudStats *out)
 {
     if (!out || out->size < offsetof(SwoftyHudStats, applied_last_tick) + sizeof(uint32_t))
         return SWOFTY_ASSET_INVALID;
-    auto s = hud_data.leaf_table.stats();
-    SwoftyHudStats full{sizeof(SwoftyHudStats), s.applied_last_tick, s.queued, hud_data.sets_dropped.load(), s.registered,
-                        s.cap_per_tick, s.failed, s.generation, s.resyncs, uint32_t(hud_data.sets_pending.load())};
+    auto s = state.leaf_table.stats();
+    SwoftyHudStats full{sizeof(SwoftyHudStats), s.applied_last_tick, s.queued, state.sets_dropped.load(), s.registered,
+                        s.cap_per_tick, s.failed, s.generation, s.resyncs, uint32_t(state.sets_pending.load())};
     memcpy(out, &full, std::min<size_t>(out->size, sizeof full));
     return SWOFTY_ASSET_OK;
 }
 
-const SwoftyHud hud_table = {SWOFTY_HUD_VERSION, api_available, api_toast, api_set,        leaves_register,
-                             leaves_set,        leaves_begin, leaves_end,   leaves_generation, leaves_stats};
-
-struct EpochWatch {
-    uintptr_t epoch = 0;
-    std::vector<std::string> parents;
-    std::vector<uintptr_t> tokens;
-    size_t next = 0, known = 0;
-};
+const SwoftyHud hud_table = {SWOFTY_HUD_VERSION, popup::api_available, popup::api_toast, api_set,           leaves_register,
+                             leaves_set,         leaves_begin,         leaves_end,       leaves_generation, leaves_stats};
 
 bool apply_leaf(const runtime::hud_leaves::Leaf &l)
 {
@@ -133,7 +126,7 @@ bool apply_leaf(const runtime::hud_leaves::Leaf &l)
 
 }
 
-int HudData::set_enqueue(std::string path, int type, std::string text, int32_t number, const std::string &by)
+int RaceHud::set_enqueue(std::string path, int type, std::string text, int32_t number, const std::string &by)
 {
     if (!path.empty() && path[0] == '#')
         path.erase(0, 1);
@@ -144,7 +137,7 @@ int HudData::set_enqueue(std::string path, int type, std::string text, int32_t n
                     by.c_str(), path.c_str());
         return SWOFTY_ASSET_INVALID;
     }
-    if (!api_available())
+    if (!popup::api_available())
         return SWOFTY_ASSET_UNAVAILABLE;
     int registered = leaf_table.type_of(path);
     if (registered >= 0 && registered != type) {
@@ -152,9 +145,9 @@ int HudData::set_enqueue(std::string path, int type, std::string text, int32_t n
                     registered, type);
         return SWOFTY_ASSET_INVALID;
     }
-    if (text.size() > MAX_TOAST_TEXT)
-        text.resize(MAX_TOAST_TEXT);
-    std::lock_guard<std::mutex> g(messages.queue_lock);
+    if (text.size() > popup::MAX_TOAST_TEXT)
+        text.resize(popup::MAX_TOAST_TEXT);
+    std::lock_guard<std::mutex> g(queue_lock);
     for (auto &q : sets)
         if (q.path == path) {
             q = {path, std::move(text), by, type, number};
@@ -170,13 +163,12 @@ int HudData::set_enqueue(std::string path, int type, std::string text, int32_t n
     return SWOFTY_ASSET_OK;
 }
 
-void HudData::leaves_watch(uint64_t now)
+void RaceHud::leaves_watch(uint64_t now)
 {
-    static EpochWatch w;
-    static uint64_t next_check;
-    if (!leaf_table.size() || now < next_check)
+    EpochWatch &w = epoch_watch;
+    if (!leaf_table.size() || now < epoch_next_check)
         return;
-    next_check = now + 250;
+    epoch_next_check = now + 250;
     if (w.known != leaf_table.size()) {
         w.known = leaf_table.size();
         w.parents = leaf_table.parents();
@@ -207,7 +199,7 @@ void HudData::leaves_watch(uint64_t now)
     }
 }
 
-void HudData::set_test_tick()
+void RaceHud::set_test_tick()
 {
     if (set_test_text.empty())
         return;
@@ -239,7 +231,7 @@ void HudData::set_test_tick()
     set_enqueue("ui_menu_data.hud_top_left_position_visible", 1, "", off, "SWOFTY_HUD_SET_TEST");
 }
 
-void HudData::dev_set_parse(const std::string &spec)
+void RaceHud::dev_set_parse(const std::string &spec)
 {
     size_t at = 0;
     while (at < spec.size()) {
@@ -258,20 +250,19 @@ void HudData::dev_set_parse(const std::string &spec)
     }
 }
 
-void HudData::dev_set_tick()
+void RaceHud::dev_set_tick()
 {
-    static uint64_t next;
     if (dev_sets.empty())
         return;
     uint64_t now = GetTickCount64();
-    if (now < next)
+    if (now < dev_set_next)
         return;
-    next = now + 5000;
+    dev_set_next = now + 5000;
     for (auto &q : dev_sets)
         apply_set(q);
 }
 
-void HudData::read_switches()
+void RaceHud::read_switches()
 {
     char dev[512] = {};
     if (GetEnvironmentVariableA("SWOFTY_HUD_DEV_SET", dev, sizeof dev) && dev[0])
@@ -288,7 +279,7 @@ void HudData::read_switches()
     }
 }
 
-void HudData::tick()
+void RaceHud::tick()
 {
     set_test_tick();
     dev_set_tick();
@@ -302,7 +293,7 @@ void HudData::tick()
     if (sets_pending.load(std::memory_order_relaxed)) {
         std::deque<Set> now_sets;
         {
-            std::lock_guard<std::mutex> g(messages.queue_lock);
+            std::lock_guard<std::mutex> g(queue_lock);
             now_sets.swap(sets);
             sets_pending = 0;
         }
@@ -319,5 +310,5 @@ void HudData::tick()
 
 extern "C" __declspec(dllexport) const SwoftyHud *SwoftyCoreHud(void)
 {
-    return &popup::hud_table;
+    return &race_hud::hud_table;
 }
