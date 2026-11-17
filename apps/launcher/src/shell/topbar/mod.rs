@@ -240,7 +240,7 @@ impl Shell {
                         if self.account.display_name().is_some() {
                             self.open_popover(Popover::Account, cx);
                         } else {
-                            self.mp_sign_in(window, cx);
+                            crate::shell::account::Account::sign_in(self, cx);
                         }
                     }
                 },
