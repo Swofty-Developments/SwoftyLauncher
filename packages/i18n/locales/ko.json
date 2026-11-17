@@ -1,5 +1,6 @@
 {
   "_language": "한국어",
+  "Advertisement": "광고",
   "\nTurned on in {profile}": "\n{profile}에서 켜짐",
   "\n{changes} aren't in it; save, then export again to include them.": "\n{changes}은(는) 포함되지 않았습니다. 저장한 후 다시 내보내면 포함됩니다.",
   "\n{count} skipped:": "\n{count}개 건너뜀:",

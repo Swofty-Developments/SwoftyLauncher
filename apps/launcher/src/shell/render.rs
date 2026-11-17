@@ -14,8 +14,12 @@ impl Render for Shell {
         self.painted = Instant::now();
         let p = palette(cx);
         if let Some(wizard) = self.onboarding_view(p, cx) {
+            self.ads.hide_all();
             return wizard;
         }
+        let covered = self.ads_covered(window, cx);
+        self.ads.begin(covered);
+        let ad_video = self.ad_video(&self.play_state(), p, cx);
         let wide = window.viewport_size().width > px(1500.);
         let short = window.viewport_size().height < px(760.);
         self.short = short;
@@ -120,12 +124,14 @@ impl Render for Shell {
             .children(self.update_bar(p))
             .children(self.scale_rescue(p, cx))
             .child(self.play_bar(p, wide, cx))
+            .children(ad_video)
             .children(self.task_dialog(p, window, cx))
             .children(self.crash_overlay(p, cx))
             .children(self.ban_overlay(p, cx))
             .children(self.data_move_overlay(p, cx))
             .children(self.found_data_overlay(p, cx))
-            .when(self.dropping, |d| d.child(self.drop_overlay(p)));
+            .when(self.dropping, |d| d.child(self.drop_overlay(p)))
+            .children(self.ads.sweep());
         self.note_slow("render", page, started);
         tree
     }

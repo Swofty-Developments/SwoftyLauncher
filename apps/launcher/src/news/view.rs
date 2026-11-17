@@ -319,6 +319,7 @@ impl Shell {
             .on_click(cx.listener(|this, _, _, cx| this.fetch_news(cx)));
         let stacked = self.content_width < STACK_BELOW;
         let side = (self.content_width * 0.32).clamp(260., 380.);
+        let side = self.ad_rail_width().map_or(side, |w| side.max(w));
         let show_banner = !self.is_card_dismissed(crate::discord::BANNER_CARD_ID);
         self.news_scroll.sync(&self.news, short, stacked, show_banner);
         if stacked {
@@ -336,7 +337,15 @@ impl Shell {
             .items_stretch()
             .gap(px(16.))
             .child(posts)
-            .child(v_flex().w(px(side)).flex_shrink_0().min_h_0().child(changelogs));
+            .child(
+                v_flex()
+                    .w(px(side))
+                    .flex_shrink_0()
+                    .min_h_0()
+                    .gap(px(16.))
+                    .child(changelogs)
+                    .children(self.ad_rail(p)),
+            );
         let content = v_flex()
             .flex_1()
             .min_h_0()
