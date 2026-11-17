@@ -1,4 +1,4 @@
-#include "core/loading/setting_overrides_logic.hpp"
+#include "core/loading/game_settings_logic.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <swofty/mixin.hpp>

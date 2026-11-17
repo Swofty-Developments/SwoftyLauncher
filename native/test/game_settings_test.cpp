@@ -1,8 +1,8 @@
-// Host-native unit test for the loading setting overrides (native/src/core/loading/setting_overrides_logic.hpp):
+// Host-native unit test for the loading setting overrides (native/src/core/loading/game_settings_logic.hpp):
 // which getter names an armed feature answers, and that an unarmed feature or another name passes through.
-// Built and run by native/test/run_loading_settings_test.sh.
+// Built and run by native/test/run_game_settings_test.sh.
 
-#include "core/loading/setting_overrides_logic.hpp"
+#include "core/loading/game_settings_logic.hpp"
 
 #include <cstdio>
 #include <cstring>
