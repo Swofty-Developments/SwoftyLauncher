@@ -1,5 +1,5 @@
 // Host-native unit test for the core's red flag recompute guard (native/src/core/guards/session/red_flag_recompute_logic.hpp).
-// Built and run by native/test/run_red_flag_recompute_test.sh.
+// Built and run by native/test/run_tests.sh red_flag_recompute.
 
 #include "core/guards/session/red_flag_recompute_logic.hpp"
 

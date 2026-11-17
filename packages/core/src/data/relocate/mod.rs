@@ -25,9 +25,10 @@ use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
 
+use crate::data::paths;
 use crate::launcher::Progress;
-use crate::process::same_path;
-use crate::{disk, paths};
+use crate::platform::disk;
+use crate::platform::process::same_path;
 
 pub use adopt::{Adoption, adopt};
 pub use copy::{Listing, listing, totals};
@@ -306,7 +307,7 @@ pub fn plan(loc: &Location, to: &Path, ops: &Ops) -> Result<Plan, Error> {
         return Err(Error::IsDefault(loc.default.clone()));
     }
     let from = linked.clone().unwrap_or_else(|| loc.default.clone());
-    if same_path(to, &from) || crate::copies::same_dir(to, &from) {
+    if same_path(to, &from) || crate::game_folder::copies::same_dir(to, &from) {
         return Err(Error::AlreadyThere(from));
     }
     if from.symlink_metadata().is_err() {

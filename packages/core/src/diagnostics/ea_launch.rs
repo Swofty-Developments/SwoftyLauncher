@@ -57,7 +57,7 @@ pub fn exit_text(code: Option<u32>) -> String {
 struct Seen {
     name: String,
     appeared: Instant,
-    probe: Option<crate::process::ExitProbe>,
+    probe: Option<crate::platform::process::ExitProbe>,
 }
 
 pub struct Tracker {
@@ -92,7 +92,7 @@ impl Tracker {
                 Seen {
                     name: name.clone(),
                     appeared: now,
-                    probe: crate::process::ExitProbe::open(*pid),
+                    probe: crate::platform::process::ExitProbe::open(*pid),
                 },
             );
         }
@@ -151,7 +151,7 @@ pub fn running_watched() -> Vec<(String, u32)> {
     WATCHED
         .iter()
         .flat_map(|name| {
-            crate::process::named(name)
+            crate::platform::process::named(name)
                 .into_iter()
                 .map(move |p| ((*name).to_owned(), p.pid))
         })
@@ -159,9 +159,9 @@ pub fn running_watched() -> Vec<(String, u32)> {
 }
 
 pub fn ea_app_elevation() -> Option<Option<bool>> {
-    crate::process::named(crate::ea_app::PROCESS)
+    crate::platform::process::named(crate::platform::ea_app::PROCESS)
         .first()
-        .map(|p| crate::process::elevation(p.pid))
+        .map(|p| crate::platform::process::elevation(p.pid))
 }
 
 pub fn event_query(window_ms: u64) -> String {
@@ -215,7 +215,7 @@ pub fn events_report(text: &str) -> String {
 pub fn application_events() -> Result<String, String> {
     let query = format!("/q:{}", event_query(EVENT_WINDOW_MS));
     let count = format!("/c:{EVENTS_READ}");
-    let raw = crate::compat::windows_tool_within(
+    let raw = crate::platform::run_as_admin::windows_tool_within(
         "wevtutil",
         &["qe", "Application", &query, "/f:text", &count, "/rd:true"],
         Duration::from_secs(20),

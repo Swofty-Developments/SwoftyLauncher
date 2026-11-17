@@ -1,4 +1,4 @@
-// Review checks for the W5 dispatch table (host test, same build as run_hooks_test.sh). Each check
+// Review checks for the W5 dispatch table (host test, same build as the hooks test). Each check
 // states what the spec or the SDK promises; a FAIL is a finding, not a broken test.
 #include "core/hooks/dispatch.hpp"
 

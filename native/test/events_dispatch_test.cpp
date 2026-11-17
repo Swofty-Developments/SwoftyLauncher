@@ -1,6 +1,6 @@
 // Host unit test for the events dispatcher. Compiles and runs natively (no game, no Wine): the
 // clock is injected as a plain seconds value, so dt, the frame counter and the "seconds since
-// attach" time are deterministic. run_events_test.sh builds and runs it.
+// attach" time are deterministic. native/test/run_tests.sh events_dispatch builds and runs it.
 #include "core/events/events_dispatch.hpp"
 
 #include <cstdio>

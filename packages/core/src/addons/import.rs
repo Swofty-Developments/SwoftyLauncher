@@ -2,9 +2,9 @@ use std::path::{Path, PathBuf};
 
 use swofty_addon::launcher::Claim;
 
+use crate::addons::registry::{Entry, Registry};
 use crate::manifest::MANIFEST_FILE;
 use crate::profile::Profile;
-use crate::registry::{Entry, Registry};
 use crate::{Error, Result};
 
 pub const ADDON_EXTENSION: &str = "swoftyaddon";
@@ -173,7 +173,7 @@ pub fn unpack(archive: &Path, dest: &Path) -> Result<()> {
     if is_rar(archive) {
         unrar(archive, dest)
     } else {
-        crate::map::unzip(archive, dest, Error::Other)
+        crate::content::track_package::unzip(archive, dest, Error::Other)
     }
 }
 
@@ -240,8 +240,8 @@ mod tests {
     use swofty_addon::launcher::{Addon, Builtin, Cx, Importer, Progress};
 
     use super::*;
+    use crate::content::track_package::tests::{OKAYAMA_LIKE, write_zip};
     use crate::manifest::AddonManifest;
-    use crate::map::tests::{OKAYAMA_LIKE, write_zip};
     use crate::store::Store;
 
     struct Fake {

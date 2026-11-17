@@ -1,5 +1,5 @@
 // Host unit test for what a Time Trial session really loaded (tt_loaded_logic.hpp): the box of the loaded list, whether
-// the active content follows it, and the lap's team label. run_tt_loaded_test.sh builds and runs it.
+// the active content follows it, and the lap's team label. native/test/run_tests.sh tt_loaded builds and runs it.
 #include "core/boxes/tt_loaded_logic.hpp"
 
 #include <cstdio>

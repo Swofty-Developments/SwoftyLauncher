@@ -1,5 +1,5 @@
 // Host-native unit test for the core's theatre list and rows guards (native/src/core/guards/frontend/theatre_list_logic.hpp).
-// Built and run by native/test/run_theatre_list_test.sh.
+// Built and run by native/test/run_tests.sh theatre_list.
 
 #include "core/guards/frontend/theatre_list_logic.hpp"
 

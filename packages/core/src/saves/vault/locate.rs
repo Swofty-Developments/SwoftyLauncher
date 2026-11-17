@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use crate::copies::GameCopy;
+use crate::game_folder::copies::GameCopy;
 use crate::install::{Game, Source};
 use crate::session::Config;
 use crate::{Result, io_err};
@@ -87,7 +87,7 @@ impl Location {
         Self {
             source: format!("launcher-{}", safe(profile)),
             layout: Layout::Launcher,
-            dir: crate::launcher_saves::remote_dir(data, profile),
+            dir: crate::saves::launcher::remote_dir(data, profile),
         }
     }
 
@@ -97,7 +97,7 @@ impl Location {
         Self {
             source: format!("launcher-ea.{}", safe(profile)),
             layout: Layout::LauncherEa,
-            dir: crate::launcher_saves::ea_dir(data, profile),
+            dir: crate::saves::launcher::ea_dir(data, profile),
         }
     }
 
@@ -186,14 +186,19 @@ impl Location {
 
     /// [`Self::steam_for`] with a line for every folder looked at and why it was rejected.
     pub fn steam_search(game: Option<&Path>) -> (Option<Self>, Vec<String>) {
-        Self::from_search(crate::steam::search_save(game))
+        Self::from_search(crate::platform::steam::search_save(game))
     }
 
     pub fn steam_from(game: &Path, roots: &[PathBuf]) -> (Option<Self>, Vec<String>) {
-        Self::from_search(crate::steam::search_save_in(Some(game), roots, &[], None))
+        Self::from_search(crate::platform::steam::search_save_in(
+            Some(game),
+            roots,
+            &[],
+            None,
+        ))
     }
 
-    fn from_search(found: crate::steam::SaveSearch) -> (Option<Self>, Vec<String>) {
+    fn from_search(found: crate::platform::steam::SaveSearch) -> (Option<Self>, Vec<String>) {
         let mut tried = found.tried;
         let loc = found.dir.and_then(|d| match Self::steam(&d) {
             Some(l) => Some(l),
@@ -216,8 +221,8 @@ impl Location {
         let launcher =
             profile != crate::profile::VANILLA && store.profile(profile).map_or(true, |p| p.launcher_saves);
         let config = store.config();
-        let copies = crate::copies::discover(&config);
-        let copy = crate::copies::active(&copies, &config);
+        let copies = crate::game_folder::copies::discover(&config);
+        let copy = crate::game_folder::copies::active(&copies, &config);
         Self::choose(data, profile, launcher, copy.map(|c| c.source), || {
             Self::of_copy(&config, copy).0
         })
@@ -231,7 +236,7 @@ impl Location {
         active: impl FnOnce() -> Option<Self>,
     ) -> Option<Self> {
         match (launcher, copy) {
-            (true, Some(Source::EaApp)) if crate::launcher_saves::supported(Layout::Ea) => {
+            (true, Some(Source::EaApp)) if crate::saves::launcher::supported(Layout::Ea) => {
                 Some(Self::launcher_ea(data, profile))
             }
             (true, Some(Source::EaApp)) | (false, _) => active(),
@@ -252,8 +257,8 @@ impl Location {
     /// [`Self::active`] with the folders a Steam copy's lookup tried.
     pub fn active_search(data: &Path) -> (Option<Self>, Vec<String>) {
         let config = crate::store::Store::new(data.to_path_buf()).config();
-        let copies = crate::copies::discover(&config);
-        Self::of_copy(&config, crate::copies::active(&copies, &config))
+        let copies = crate::game_folder::copies::discover(&config);
+        Self::of_copy(&config, crate::game_folder::copies::active(&copies, &config))
     }
 
     fn of_copy(config: &Config, copy: Option<&GameCopy>) -> (Option<Self>, Vec<String>) {
@@ -267,7 +272,7 @@ impl Location {
                     .launch
                     .ea_prefix
                     .as_deref()
-                    .and_then(crate::ea_app::prefix_user_reg)
+                    .and_then(crate::platform::ea_app::prefix_user_reg)
                     .as_deref()
                     .and_then(Path::parent)
                     .and_then(Self::ea_in_prefix),

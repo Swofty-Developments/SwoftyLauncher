@@ -1,5 +1,5 @@
 // Host-native unit test for the core's My Team vehicle keep (native/src/core/guards/career/myteam_vehicle_keep_logic.hpp).
-// Built and run by native/test/run_myteam_vehicle_keep_test.sh.
+// Built and run by native/test/run_tests.sh myteam_vehicle_keep.
 
 #include "core/guards/career/myteam_vehicle_keep_logic.hpp"
 

@@ -106,7 +106,7 @@ pub fn platform(source: Source) -> &'static str {
 
 /// The store of the copy Play uses, or unknown when no copy is found.
 pub fn active_platform(data: &Path) -> &'static str {
-    crate::copies::find_active(&crate::store::Store::new(data).config())
+    crate::game_folder::copies::find_active(&crate::store::Store::new(data).config())
         .map_or("unknown", |c| platform(c.source))
 }
 
@@ -134,7 +134,7 @@ impl Event {
         Self {
             kind,
             install: install.to_owned(),
-            version: crate::update::current_version().to_string(),
+            version: crate::updates::release::current_version().to_string(),
             os: os(),
             platform,
             session: None,
@@ -447,7 +447,11 @@ mod tests {
             std::fs::write(dir.join(crate::GAME_EXE), b"MZ").unwrap();
         }
         std::fs::create_dir_all(ea.join("__Installer")).unwrap();
-        std::fs::write(ea.join(crate::ea_app::MARKER), "<contentID>1</contentID>").unwrap();
+        std::fs::write(
+            ea.join(crate::platform::ea_app::MARKER),
+            "<contentID>1</contentID>",
+        )
+        .unwrap();
         assert_eq!(platform(Source::detect(&ea)), "ea");
         assert_eq!(platform(Source::detect(&other)), "unknown");
         assert_eq!(platform(Source::Steam), "steam");
@@ -455,7 +459,7 @@ mod tests {
         let store = crate::store::Store::new(&data);
         for (dir, want) in [(&ea, "ea"), (&other, "unknown")] {
             let mut config = store.config();
-            crate::copies::add(&mut config, dir).unwrap();
+            crate::game_folder::copies::add(&mut config, dir).unwrap();
             store.save_config(&config).unwrap();
             assert_eq!(active_platform(&data), want);
         }

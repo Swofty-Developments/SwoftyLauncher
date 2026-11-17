@@ -1,6 +1,6 @@
 // Host-native unit test for the core's pit slot guard (native/src/core/guards/garage/pit_slots_logic.hpp): which slot pointers
 // count as usable and how the capped, per-vehicle log line is spaced out.
-// Built and run by native/test/run_pit_slots_test.sh.
+// Built and run by native/test/run_tests.sh pit_slots.
 
 #include "core/guards/garage/pit_slots_logic.hpp"
 
