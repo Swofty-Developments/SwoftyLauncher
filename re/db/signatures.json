@@ -77187,30 +77187,6 @@
    "used_by": []
   },
   {
-   "id": "car.susp_damage_on_collision",
-   "section": ".xtls",
-   "pattern": "56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 8B 41 08",
-   "match": "0x144654d10",
-   "anchor": "0x0",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x144654d10",
-   "kind": "func_start",
-   "names": [
-    "Car_SuspDamage_OnCollision"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-29",
-     "by": "carlive-verify",
-     "how": "static"
-    }
-   ],
-   "used_by": []
-  },
-  {
    "id": "session.misconduct_manager_ctor",
    "section": ".xtls",
    "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 C6 41 08",
@@ -119343,30 +119319,6 @@
    ]
   },
   {
-   "id": "game.controller_set_clear_flags",
-   "section": ".xtls",
-   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 48 89 CE C6 81 66 03 00 00 01",
-   "match": "0x14389bc50",
-   "anchor": "0x0",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x14389bc50",
-   "kind": "func_start",
-   "names": [
-    "Game_ControllerSet_ClearFlagsAndActivate"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-22",
-     "by": "vmknolle",
-     "how": "static"
-    }
-   ],
-   "used_by": []
-  },
-  {
    "id": "render.model_component_vtable",
    "section": ".xtls",
    "pattern": "48 8D 15 ?? ?? ?? ?? 48 89 10 48 8D 15 ?? ?? ?? ?? 48 89 50 18 48 8D 15 ?? ?? ?? ?? 48 89 50 20 48 8D 15",
@@ -123677,30 +123629,6 @@
    "used_by": []
   },
   {
-   "id": "game.team_h_q_advance_view_model_on_command_raised",
-   "section": ".xtls",
-   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 03 00 00 4C 8B B1 20 06",
-   "match": "0x1422c3540",
-   "anchor": "0x0",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x1422c3540",
-   "kind": "func_start",
-   "names": [
-    "Game_TeamHQAdvanceViewModel_OnCommandRaised"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-30",
-     "by": "engine-re",
-     "how": "static"
-    }
-   ],
-   "used_by": []
-  },
-  {
    "id": "game.team_h_q_advance_view_model_lock_to_overview_tab",
    "section": ".xtls",
    "pattern": "56 57 53 48 83 EC 50 89 D3 48 89 CE 80 3D",
@@ -126298,30 +126226,6 @@
    "used_by": []
   },
   {
-   "id": "game.pit_lane_put_vehicle_in_garage",
-   "section": ".xtls",
-   "pattern": "41 56 56 57 53 48 83 EC 28 89 D3 48 89 CE 41 BE",
-   "match": "0x1434d1260",
-   "anchor": "0x0",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x1434d1260",
-   "kind": "func_start",
-   "names": [
-    "Game_PitLane_PutVehicleInGarage"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-30",
-     "by": "engine-re",
-     "how": "static"
-    }
-   ],
-   "used_by": []
-  },
-  {
    "id": "game.player_reset_save_data_container",
    "section": ".xtls",
    "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 89 D7 48 89 CE 48 8D 99",
@@ -126744,30 +126648,6 @@
    "kind": "func_start",
    "names": [
     "Game_StateCareerDataSync_OnStateExit"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-30",
-     "by": "engine-re",
-     "how": "static"
-    }
-   ],
-   "used_by": []
-  },
-  {
-   "id": "vm.unk_1436d6f50",
-   "section": ".xtls",
-   "pattern": "41 56 56 57 55 53 48 83 EC 30 48 89 D6 48 89 CF 8B 0D",
-   "match": "0x1436d6f50",
-   "anchor": "0x0",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x1436d6f50",
-   "kind": "func_start",
-   "names": [
-    "Vm_StateFrontendWorld_OnStateUpdate"
    ],
    "verified": [
     {
@@ -129414,56 +129294,6 @@
    "kind": "func_start",
    "names": [
     "Game_Neworldinstance_DeactivateAllWorldObjectsInLayer"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-30",
-     "by": "engine-re",
-     "how": "static"
-    }
-   ],
-   "used_by": []
-  },
-  {
-   "id": "car.engine_apply_fuel_mode",
-   "section": ".xtls",
-   "pattern": "E8 ?? ?? ?? ?? 48 89 F9 E8 ?? ?? ?? ?? C7 83 28 01 00 00 01 00 00 00 48 8B 96 08 02 00 00 0F B6 46 3B 48 8B 4A 30 48 8B 52 38 48 29 CA 48 C1 FA 03 48 39 C2 76 1D 48 8B",
-   "match": "0x142971ac0",
-   "anchor": "0x1",
-   "resolve": {
-    "kind": "rel32",
-    "insn": 0
-   },
-   "target": "0x144689a70",
-   "kind": "func_start",
-   "names": [
-    "Car_Engine_ApplyFuelMode"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-30",
-     "by": "engine-re",
-     "how": "static"
-    }
-   ],
-   "used_by": []
-  },
-  {
-   "id": "car.fuel_ecu_set_mix",
-   "section": ".xtls",
-   "pattern": "E8 ?? ?? ?? ?? 80 3D ?? ?? ?? ?? 01 75 7E B8 8E",
-   "match": "0x14324b7c1",
-   "anchor": "0x1",
-   "resolve": {
-    "kind": "rel32",
-    "insn": 0
-   },
-   "target": "0x14468e6a0",
-   "kind": "func_start",
-   "names": [
-    "Car_FuelEcu_SetMix"
    ],
    "verified": [
     {
