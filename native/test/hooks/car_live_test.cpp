@@ -4,7 +4,8 @@
 // on the obfuscated values. It checks that nothing is answered before the table is bound or without the
 // globals, the car list and the slot/owner/handle checks, decoding and re-encoding (the key is kept, the
 // plain half changes), range refusals (steering lock, differential, fuel over capacity, NaN), writes off
-// the flow thread, a car without a system, and cars::live::cars/get/set/scale/is_ai through the table.
+// the flow thread, a car without a system, cars::live::cars/get/set/scale/is_ai through the table, and the builds
+// the operations run on (car_build_for).
 // run_car_live_test.sh builds and runs it.
 #include "../../src/core/hooks/car_live.hpp"
 #include "../../src/core/hooks/player_facts.hpp"
@@ -821,8 +822,23 @@ static void player_facts_sync()
     count = CARS;
 }
 
+static void car_builds()
+{
+    const cl::CarBuild *kb = cl::car_build_for(1789118616u, 0x193e6000u);
+    expect(kb && kb->mode_avail_rva == 0x606ec28, "the KB build runs with g_Game_EngineModeAvail at 0x606ec28");
+    expect(!cl::car_build_for(1789118616u, 0x5000000u), "the KB stamp on a packed image is off");
+    const cl::CarBuild *steam = cl::car_build_for(1794312636u, 0x18434000u);
+    expect(steam && steam->mode_avail_rva == 0x6070c28, "Steam 26566308 runs with g_Game_EngineModeAvail at 0x6070c28");
+    const cl::CarBuild *ea = cl::car_build_for(1794315435u, 0x1615e000u);
+    expect(ea && ea->mode_avail_rva == 0x61a7968, "EA 1.0.145 runs with g_Game_EngineModeAvail at 0x61a7968");
+    expect(!cl::car_build_for(1794312636u, 0x1615e000u), "a known stamp with another image size is off");
+    expect(!cl::car_build_for(1789128892u, 0x155dc000u), "the unchecked EA KB-version build is off");
+    expect(!cl::car_build_for(0, 0), "an unknown build is off");
+}
+
 int main()
 {
+    car_builds();
     core_ops();
     sdk_side();
     pending_queue();

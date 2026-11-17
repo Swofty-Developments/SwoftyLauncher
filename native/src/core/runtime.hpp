@@ -65,6 +65,11 @@ const std::wstring &state_root();
 const std::wstring &files_root();
 bool enabled(const char *feature, const char *what);
 std::string load_stage();
+// The running exe's PE TimeDateStamp and SizeOfImage.
+struct ImageId {
+    uint32_t stamp, size;
+};
+ImageId image_id();
 bool same_build();
 // The builds whose struct layouts were checked against the signatures' functions (re/tools/sigverify.py): the Steam KB build and
 // the EA App link of the same version. Code that finds every address by signature gates on this instead of same_build().
