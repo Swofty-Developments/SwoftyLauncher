@@ -305,7 +305,7 @@ impl Shell {
                     .child(m.source.label()),
             )
             .children(
-                swofty_core::overlay_guard::effects(man)
+                swofty_core::diagnostics::overlay_guard::effects(man)
                     .into_iter()
                     .map(|e| effect_tag(e, p)),
             )

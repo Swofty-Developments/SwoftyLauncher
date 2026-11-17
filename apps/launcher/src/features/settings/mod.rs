@@ -10,7 +10,7 @@ use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::{h_flex, v_flex};
 use gpui_kit::*;
-use swofty_core::data_usage::Usage;
+use swofty_core::data::space::Usage;
 use swofty_i18n::tr;
 
 use crate::shell::{Page, Shell};
@@ -67,7 +67,7 @@ impl Category {
 pub struct Settings {
     pub category: Category,
     pub usage: Option<Usage>,
-    pub prunable: swofty_core::data_usage::Pruned,
+    pub prunable: swofty_core::data::space::Pruned,
     pub measuring: bool,
     pub clearing: bool,
     pub cache: GameCopy,

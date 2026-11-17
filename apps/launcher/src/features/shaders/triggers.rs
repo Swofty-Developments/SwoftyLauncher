@@ -8,7 +8,7 @@ use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
 use gpui_kit::component::slider::{Slider, SliderEvent, SliderState};
 use gpui_kit::component::{h_flex, v_flex};
 use gpui_kit::*;
-use swofty_core::shaders::ConfigRef;
+use swofty_core::content::shaders::ConfigRef;
 use swofty_i18n::{tr, trf};
 use swofty_shaders::rules::{Op, Rule, Signals};
 use swofty_shaders::signals::{Signal, SignalKind, signal};

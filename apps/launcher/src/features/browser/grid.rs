@@ -8,7 +8,7 @@ use gpui_kit::*;
 use swofty_core::catalog::Addon;
 use swofty_core::catalog::publishers::{self};
 use swofty_core::catalog::search::Query;
-use swofty_core::update::current_version;
+use swofty_core::updates::release::current_version;
 use swofty_i18n::{tr, trf, trn};
 
 use super::tiles::landing_rows;

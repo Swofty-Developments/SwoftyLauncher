@@ -11,8 +11,8 @@ use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::collections::HashMap;
-use swofty_core::folders::{Entry, Key};
 use swofty_core::profile::VANILLA;
+use swofty_core::profile::folders::{Entry, Key};
 use swofty_i18n::{tr, trf};
 
 impl Shell {

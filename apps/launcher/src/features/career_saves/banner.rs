@@ -2,7 +2,7 @@ use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::h_flex;
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::vault::{Notice, Vault};
+use swofty_core::saves::vault::{Notice, Vault};
 use swofty_i18n::tr;
 
 use super::banner_data::Kind;

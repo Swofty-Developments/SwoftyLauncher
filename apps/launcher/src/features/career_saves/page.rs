@@ -124,7 +124,7 @@ impl Shell {
                     })),
             )
         });
-        let callout = Callout::warning(swofty_core::vault::guard::STEAM_SAVE_WARNING);
+        let callout = Callout::warning(swofty_core::saves::vault::guard::STEAM_SAVE_WARNING);
         Some(notice(match turn_on {
             true => callout.actions(actions),
             false => callout,

@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use swofty_core::profile::VANILLA;
-use swofty_core::vault::{self, Notice, Vault};
+use swofty_core::saves::vault::{self, Notice, Vault};
 use swofty_i18n::{fill, tr, trf, trn};
 
 use super::labels::row_name;

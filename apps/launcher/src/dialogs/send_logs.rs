@@ -11,7 +11,7 @@ use gpui_kit::component::spinner::Spinner;
 use gpui_kit::component::{Disableable, Icon, Sizable, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::send_logs::{self, Bundle, GameInfo, MESSAGE_MAX, Report, Stage};
+use swofty_core::diagnostics::send_logs::{self, Bundle, GameInfo, MESSAGE_MAX, Report, Stage};
 use swofty_core::store::Store;
 
 use crate::services::reveal;

@@ -5,10 +5,10 @@ use crate::shell::notices::{Notification, Notify};
 use gpui_kit::*;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
-use swofty_core::busy::Busy;
-use swofty_core::process::GameProcess;
-use swofty_core::quarantine;
-use swofty_core::recovery::{self, Blocked};
+use swofty_core::diagnostics::quarantine;
+use swofty_core::game_folder::busy::Busy;
+use swofty_core::game_folder::recovery::{self, Blocked};
+use swofty_core::platform::process::GameProcess;
 use swofty_core::session::SessionRecord;
 
 use super::launch_alerts::{show_launch_failed, show_mods_blocked};
@@ -244,7 +244,7 @@ impl Shell {
                         ),
                         None => failed.unwrap_or_else(|| launch.failure()),
                     })
-                    .filter(|n| !n.contains(swofty_core::busy::CANCELLED));
+                    .filter(|n| !n.contains(swofty_core::game_folder::busy::CANCELLED));
                     let why = self.launching.notice.clone().unwrap_or_else(|| launch.failure());
                     if self.launching.notice.is_some() {
                         crate::app::app_log::action("start F1 25").failed(&why);
@@ -274,20 +274,26 @@ impl Shell {
                     .background_executor()
                     .spawn(async move {
                         if !crashed {
-                            let stall =
-                                swofty_core::known_problems::stall(&session, game_dir.as_deref(), &store)
-                                    .or_else(|| {
-                                        swofty_core::known_problems::tyres(
-                                            &session,
-                                            game_dir.as_deref(),
-                                            &store,
-                                        )
-                                    });
+                            let stall = swofty_core::diagnostics::known_problems::stall(
+                                &session,
+                                game_dir.as_deref(),
+                                &store,
+                            )
+                            .or_else(|| {
+                                swofty_core::diagnostics::known_problems::tyres(
+                                    &session,
+                                    game_dir.as_deref(),
+                                    &store,
+                                )
+                            });
                             return (Ok(String::new()), stall);
                         }
                         let summary = game::crash_summary(&session, game_dir.as_deref());
-                        let diagnosis =
-                            swofty_core::known_problems::crash(&session, game_dir.as_deref(), &store);
+                        let diagnosis = swofty_core::diagnostics::known_problems::crash(
+                            &session,
+                            game_dir.as_deref(),
+                            &store,
+                        );
                         (summary, diagnosis)
                     })
                     .await;

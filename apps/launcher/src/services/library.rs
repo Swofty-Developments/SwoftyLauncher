@@ -4,13 +4,13 @@ use std::time::Instant;
 use swofty_i18n::{tr, trn};
 
 use gpui_kit::{Image, ImageFormat};
+use swofty_core::addons::registry::Registry;
+use swofty_core::addons::settings::OnAddons;
 use swofty_core::asset::AssetOp;
-use swofty_core::folders::{Entry, Folders, Key};
 use swofty_core::manifest::{AddonManifest, Category, Kind};
 use swofty_core::ops::ErpOp;
+use swofty_core::profile::folders::{Entry, Folders, Key};
 use swofty_core::profile::{Profile, VANILLA};
-use swofty_core::registry::Registry;
-use swofty_core::settings::OnAddons;
 use swofty_core::store::{Store, Unreadable};
 use swofty_core::view::SectionSpec;
 
@@ -107,11 +107,11 @@ impl Source {
 
     fn of(store: &Store, m: &AddonManifest, package: bool) -> Self {
         let tool = m.origin.as_ref().map(|o| o.tool.as_str());
-        if store.is_builtin(&m.id) || m.id == swofty_core::managed::ID {
+        if store.is_builtin(&m.id) || m.id == swofty_core::updates::managed::ID {
             Self::Builtin
         } else if package || tool == Some(swofty_core::dbedit::package::ORIGIN_TOOL) {
             Self::DbEditor
-        } else if tool == Some(swofty_core::managed::ID) {
+        } else if tool == Some(swofty_core::updates::managed::ID) {
             Self::Importer
         } else {
             Self::Installed
@@ -232,17 +232,17 @@ pub struct SectionItem {
 impl SectionItem {
     /// The Simplified Importer's old Tracks page, which the sidebar leaves out.
     pub fn is_importer_tracks(&self) -> bool {
-        self.addon == swofty_core::managed::ID && self.spec.id == TRACKS_SECTION
+        self.addon == swofty_core::updates::managed::ID && self.spec.id == TRACKS_SECTION
     }
 
     /// The Simplified Importer's own page.
     pub fn is_importer(&self) -> bool {
-        self.addon == swofty_core::managed::ID && self.spec.id == IMPORTER_SECTION
+        self.addon == swofty_core::updates::managed::ID && self.spec.id == IMPORTER_SECTION
     }
 
     /// A page of Simplified for Swofty, which the sidebar lists under its own heading.
     pub fn is_simplified(&self) -> bool {
-        self.addon == swofty_core::managed::ID
+        self.addon == swofty_core::updates::managed::ID
     }
 }
 
@@ -376,7 +376,7 @@ impl Library {
                 .cloned()
                 .unwrap_or_else(|| folders.place(id, false, None))
         };
-        let unsaved_order = swofty_core::folders::arrange(&mut profile, place_of);
+        let unsaved_order = swofty_core::profile::folders::arrange(&mut profile, place_of);
         let listed: std::collections::HashSet<&str> = profile.addons.iter().map(|a| a.id.as_str()).collect();
         let order = profile.addons.iter().map(|a| a.id.clone()).chain(
             addons
@@ -384,7 +384,7 @@ impl Library {
                 .filter(|a| !listed.contains(a.manifest.id.as_str()))
                 .map(|a| a.manifest.id.clone()),
         );
-        let mut entries = swofty_core::folders::group(order, place_of);
+        let mut entries = swofty_core::profile::folders::group(order, place_of);
         for f in &folders.folders {
             let key = Key::Own(f.id.clone());
             if !entries.iter().any(|e| e.folder() == Some(&key)) {
@@ -442,7 +442,7 @@ impl Library {
         }
         let place_of = |id: &str| self.place(id);
         match store.update_profile(&self.profile.name, |p| {
-            swofty_core::folders::arrange(p, place_of);
+            swofty_core::profile::folders::arrange(p, place_of);
             Ok(p.clone())
         }) {
             Ok(p) => self.profile = p,
@@ -512,13 +512,13 @@ mod tests {
         let addons = [addon("t.mod", false), addon("t.okayama", true)];
         let ids = |page| -> Vec<&str> { listed(&addons, page).map(|m| m.manifest.id.as_str()).collect() };
         let importer = [
-            section(swofty_core::managed::ID, "mods"),
-            section(swofty_core::managed::ID, "tracks"),
+            section(swofty_core::updates::managed::ID, "mods"),
+            section(swofty_core::updates::managed::ID, "tracks"),
         ];
         assert_eq!(tracks_page(&importer), None);
         assert_eq!(ids(tracks_page(&importer)), ["t.mod", "t.okayama"]);
         let other = [
-            section(swofty_core::managed::ID, "mods"),
+            section(swofty_core::updates::managed::ID, "mods"),
             section("t.tracks", "tracks"),
         ];
         assert_eq!(tracks_page(&other), Some(1));
@@ -581,7 +581,7 @@ mod tests {
         let c = Changes::read(
             &store,
             &profile,
-            &swofty_core::settings::OnAddons::default(),
+            &swofty_core::addons::settings::OnAddons::default(),
             &item,
         );
         assert_eq!(
@@ -595,7 +595,7 @@ mod tests {
             Changes::read(
                 &store,
                 &profile,
-                &swofty_core::settings::OnAddons::default(),
+                &swofty_core::addons::settings::OnAddons::default(),
                 &item
             )
             .database,

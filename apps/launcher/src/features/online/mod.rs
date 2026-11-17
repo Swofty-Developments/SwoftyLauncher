@@ -511,7 +511,11 @@ impl Shell {
             let done = cx
                 .background_executor()
                 .spawn(async move {
-                    swofty_core::timetrial::game_replay::add(&api, &swofty_core::paths::data_dir(), &lap)
+                    swofty_core::timetrial::game_replay::add(
+                        &api,
+                        &swofty_core::data::paths::data_dir(),
+                        &lap,
+                    )
                 })
                 .await;
             this.update(cx, |s, cx| {

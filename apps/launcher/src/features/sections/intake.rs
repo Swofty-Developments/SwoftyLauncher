@@ -10,9 +10,9 @@ use gpui_kit::component::button::{Button, ButtonVariant, ButtonVariants};
 use gpui_kit::component::{Icon, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::import::{self, Route};
+use swofty_core::addons::import::{self, Route};
+use swofty_core::addons::registry::Registry;
 use swofty_core::profile::Profile;
-use swofty_core::registry::Registry;
 use swofty_core::store::Store;
 use swofty_i18n::{tr, trf, trn};
 

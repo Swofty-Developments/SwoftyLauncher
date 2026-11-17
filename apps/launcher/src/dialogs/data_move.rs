@@ -12,8 +12,8 @@ use crate::ui::scale::{Hit, px};
 use gpui_kit::component::button::Button;
 use gpui_kit::component::{WindowExt, h_flex, v_flex};
 use gpui_kit::*;
-use swofty_core::busy::Busy;
-use swofty_core::data_move::{self, Location, Moved, Ops, Plan};
+use swofty_core::data::relocate::{self as data_move, Location, Moved, Ops, Plan};
+use swofty_core::game_folder::busy::Busy;
 use swofty_core::launcher::Progress;
 use swofty_i18n::{tr, trf};
 
@@ -77,7 +77,7 @@ impl Shell {
             return Some(tr("Your addons and saves are already moving").to_owned());
         }
         let skip_game = cfg!(debug_assertions) && std::env::var_os("SWOFTY_DEBUG_MOVE_TO").is_some();
-        if !skip_game && (!self.game.processes.is_empty() || swofty_core::process::game_running()) {
+        if !skip_game && (!self.game.processes.is_empty() || swofty_core::platform::process::game_running()) {
             return Some(tr("Close F1 25 before moving your addons and saves").to_owned());
         }
         if self.game.build.is_some() || Busy::live(&self.store.root).is_some() {

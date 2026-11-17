@@ -12,9 +12,9 @@ use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::folders::{self};
 use swofty_core::manifest::{AddonManifest, Category};
 use swofty_core::profile::VANILLA;
+use swofty_core::profile::folders::{self};
 use swofty_i18n::{tr, trf};
 
 /// The value of the Source code row: a link to the addon's source, or a note that it names none.
@@ -241,7 +241,7 @@ impl Shell {
             .when(!man.experimental_features.is_empty(), |d| {
                 d.child(fact(
                     tr("In game"),
-                    swofty_core::overlay_guard::effects(man).join(", "),
+                    swofty_core::diagnostics::overlay_guard::effects(man).join(", "),
                     p,
                 ))
                 .child(fact(tr("Experimental features"), experimental_labels(m), p))

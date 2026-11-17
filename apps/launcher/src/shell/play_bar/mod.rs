@@ -20,7 +20,7 @@ use crate::shell::{Page, PlayState, Shell};
 use crate::ui::theme::Palette;
 use swofty_core::install::Source;
 use swofty_core::session::LaunchMode;
-use swofty_core::updater::Gate;
+use swofty_core::updates::updater::Gate;
 
 pub(crate) fn store_badge(source: Source, p: Palette) -> Div {
     let (text, color) = match source {
@@ -508,7 +508,7 @@ impl Shell {
                         .child(div().min_w_0().truncate().child(trf!(
                             "Addon careers may have been removed from your Steam save: {names}. Last version: {at}",
                             names = names,
-                            at = swofty_core::vault::human(at)
+                            at = swofty_core::saves::vault::human(at)
                         )))
                         .child(link("career-restore", tr("Restore"), p).on_click(cx.listener(
                             move |this, _, window, cx| this.restore_version(&source, &snapshot, window, cx),

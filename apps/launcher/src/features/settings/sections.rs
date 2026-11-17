@@ -8,11 +8,11 @@ use gpui_kit::component::switch::Switch;
 use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::data_usage::{self, KEEP_FOR, KEEP_SESSIONS};
+use swofty_core::data::space::{self as data_usage, KEEP_FOR, KEEP_SESSIONS};
 use swofty_core::install::Source;
 use swofty_core::session::UiMode;
-use swofty_core::update;
-use swofty_core::updater;
+use swofty_core::updates::release as update;
+use swofty_core::updates::updater;
 use swofty_i18n::{tr, trf};
 
 use crate::shell::Shell;
@@ -186,7 +186,7 @@ impl Shell {
             .row(
                 SettingRow::new(tr("Your addons and saves"))
                     .description(
-                        swofty_core::data_move::link::real_folder(&self.store.root)
+                        swofty_core::data::relocate::link::real_folder(&self.store.root)
                             .display()
                             .to_string(),
                     )

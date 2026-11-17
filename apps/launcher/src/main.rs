@@ -19,7 +19,7 @@ fn main() {
         chart_demo::run();
         return;
     }
-    swofty_core::data_move::recover_at_start();
+    swofty_core::data::relocate::recover_at_start();
     app_log::start();
     app_log::step("starting the app runtime");
     let app = gpui_kit::application().with_assets(gpui_kit::assets::AllAssets);

@@ -1,8 +1,8 @@
 use std::path::Path;
 
-use swofty_core::vault::careers::{Brief, Listed, Row};
-use swofty_core::vault::restore::Running;
-use swofty_core::vault::{self, Reason, Snapshot};
+use swofty_core::saves::vault::careers::{Brief, Listed, Row};
+use swofty_core::saves::vault::restore::Running;
+use swofty_core::saves::vault::{self, Reason, Snapshot};
 use swofty_i18n::{tr, trf, trn};
 
 use super::state::Imported;

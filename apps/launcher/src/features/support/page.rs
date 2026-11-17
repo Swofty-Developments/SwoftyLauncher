@@ -5,7 +5,7 @@ use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::time::Duration;
-use swofty_core::support::{BIO_MAX, Goal, Kind, Supporter, format_date, tier_name};
+use swofty_core::server::support::{BIO_MAX, Goal, Kind, Supporter, format_date, tier_name};
 use swofty_i18n::{tr, trf};
 
 use crate::features::time_trial::Load;

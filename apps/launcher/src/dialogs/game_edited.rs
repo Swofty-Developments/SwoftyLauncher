@@ -8,8 +8,8 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::install::Source;
 
-use swofty_core::recovery::Blocked;
-use swofty_core::stock;
+use swofty_core::game_folder::recovery::Blocked;
+use swofty_core::game_folder::stock;
 
 use crate::shell::{Page, Shell};
 use crate::ui::discord::{BLURPLE, INVITE, LOGO};
@@ -63,7 +63,7 @@ impl Edited {
                 let puts = match (r.fix(), r.version.as_deref()) {
                     (stock::Fix::Update, Some(v)) => format!(
                         "Your F1 25 is {v}, older than {}. Updating F1 25 puts {them} back",
-                        swofty_core::known_problems::LATEST_GAME_VERSION
+                        swofty_core::diagnostics::known_problems::LATEST_GAME_VERSION
                     ),
                     (stock::Fix::Verify, _) => format!("{} puts {them} back", repair.restores),
                     _ => {
@@ -544,9 +544,9 @@ impl Shell {
 #[cfg(test)]
 mod tests {
     use super::{Edited, OURS_TITLE, TITLE, notice, repair};
+    use swofty_core::game_folder::recovery::Blocked;
+    use swofty_core::game_folder::stock;
     use swofty_core::install::Source;
-    use swofty_core::recovery::Blocked;
-    use swofty_core::stock;
 
     fn not_stock(n: usize) -> Edited {
         let files = (0..n).map(|i| format!("2025_asset_groups/f{i}.erp")).collect();
@@ -668,7 +668,7 @@ mod tests {
 
     #[test]
     fn files_left_in_swoftys_own_folder_are_not_called_edited_game_files() {
-        let file = |path: &str, replaced| swofty_core::recovery::BlockedFile {
+        let file = |path: &str, replaced| swofty_core::game_folder::recovery::BlockedFile {
             path: path.into(),
             sha256: None,
             replaced,

@@ -1,6 +1,6 @@
 //! The one-time setup the first Play opens: a welcome, the question about mods
 //! Swofty didn't add, then verifying the game files so the originals Swofty
-//! records are the store's own. See `swofty_core::setup`.
+//! records are the store's own. See `swofty_core::game_folder::setup`.
 
 use std::time::Duration;
 
@@ -13,9 +13,9 @@ use gpui_kit::component::spinner::Spinner;
 use gpui_kit::component::{Disableable, Icon, Sizable, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
+use swofty_core::game_folder::setup;
+use swofty_core::game_folder::stock;
 use swofty_core::install::{Game, Source};
-use swofty_core::setup;
-use swofty_core::stock;
 use swofty_core::store::Store;
 
 use crate::dialogs::game_edited::discord_link;
@@ -502,9 +502,9 @@ impl SetupWizard {
 }
 
 fn steam_busy(dir: &std::path::Path) -> Option<&'static str> {
-    swofty_core::steam::find_game()
-        .filter(|i| swofty_core::copies::same_dir(&i.dir, dir))
-        .and_then(|i| swofty_core::steam::busy(&i))
+    swofty_core::platform::steam::find_game()
+        .filter(|i| swofty_core::game_folder::copies::same_dir(&i.dir, dir))
+        .and_then(|i| swofty_core::platform::steam::busy(&i))
 }
 
 impl Render for SetupWizard {

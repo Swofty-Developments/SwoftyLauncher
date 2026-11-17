@@ -5,7 +5,7 @@ use crate::ui::theme::palette;
 use gpui_kit::component::WindowExt;
 use gpui_kit::component::button::ButtonVariant;
 use gpui_kit::*;
-use swofty_core::process::stop_game_in;
+use swofty_core::platform::process::stop_game_in;
 
 use super::Shell;
 use super::launch_alerts::offline_terms;
@@ -111,7 +111,7 @@ impl Shell {
                 .cancel_text(tr("Keep building"))
                 .show_cancel(true)
                 .on_ok(move |_, window, cx| {
-                    match swofty_core::busy::request_cancel(&data) {
+                    match swofty_core::game_folder::busy::request_cancel(&data) {
                         Ok(()) => {
                             this.update(cx, |s, cx| {
                                 s.launching.cancelling = true;

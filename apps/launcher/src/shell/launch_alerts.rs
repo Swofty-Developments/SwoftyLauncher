@@ -8,8 +8,8 @@ use gpui_kit::component::dialog::{AlertDialog, DialogFooter};
 use gpui_kit::component::{Icon, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::launch;
-use swofty_core::quarantine;
+use swofty_core::diagnostics::launch;
+use swofty_core::diagnostics::quarantine;
 use swofty_core::saves::{self, SavesWarning};
 
 use super::Shell;

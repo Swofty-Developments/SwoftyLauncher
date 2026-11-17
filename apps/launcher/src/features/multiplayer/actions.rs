@@ -206,7 +206,7 @@ impl Shell {
         }
         swofty_core::session::request_stop(&self.store.root);
         for pid in &pids {
-            if let Err(e) = swofty_core::process::stop_process(*pid) {
+            if let Err(e) = swofty_core::platform::process::stop_process(*pid) {
                 crate::app::app_log::action("stop f1 25").failed(&e);
                 window.notify(Notification::error(e.to_string()), cx);
                 return false;

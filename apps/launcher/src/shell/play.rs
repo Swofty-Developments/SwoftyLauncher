@@ -4,8 +4,8 @@ use crate::services::play_checks;
 use crate::shell::notices::{Notification, Notify};
 use gpui_kit::*;
 use std::path::PathBuf;
+use swofty_core::game_folder::recovery::Blocked;
 use swofty_core::install::Source;
-use swofty_core::recovery::Blocked;
 use swofty_core::session::{LaunchMode, SessionRecord};
 
 use super::launch_alerts::note_notification;
@@ -193,7 +193,8 @@ impl Shell {
                 return false;
             }
         }
-        if let Some(d) = swofty_core::known_problems::outdated_exe(install.version().as_deref()) {
+        if let Some(d) = swofty_core::diagnostics::known_problems::outdated_exe(install.version().as_deref())
+        {
             window.notify(Notification::warning(d.text()).title(d.title).autohide(false), cx);
         }
         if let Some(short) = crate::features::settings::low_space_warning(checked.room) {
@@ -241,7 +242,7 @@ impl Shell {
 
     pub(crate) fn saves_refused(&self) -> Option<&SessionRecord> {
         self.game.session.as_ref().filter(|s| {
-            s.exit_code == Some(swofty_core::launcher_saves::EXIT)
+            s.exit_code == Some(swofty_core::saves::launcher::EXIT)
                 && self.crashes.dismissed.as_ref() != Some(&s.dir)
                 && s.ended.is_some_and(|e| game::now_secs() - e < 1800.0)
         })
@@ -266,7 +267,7 @@ impl Shell {
     pub(crate) fn use_copy(&mut self, dir: PathBuf, window: &mut Window, cx: &mut Context<Self>) {
         self.launching.play_pending.cancel();
         let mut config = self.store.config();
-        swofty_core::copies::set_active(&mut config, &dir);
+        swofty_core::game_folder::copies::set_active(&mut config, &dir);
         if let Err(e) = self.store.save_config(&config) {
             crate::app::app_log::action("save settings").failed(&e);
             window.notify(Notification::error(e.to_string()), cx);

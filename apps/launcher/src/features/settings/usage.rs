@@ -8,7 +8,7 @@ use crate::ui::scale::px;
 use gpui_kit::component::WindowExt;
 use gpui_kit::component::button::ButtonVariant;
 use gpui_kit::*;
-use swofty_core::data_usage::{self, KEEP_FOR, KEEP_SESSIONS};
+use swofty_core::data::space::{self as data_usage, KEEP_FOR, KEEP_SESSIONS};
 use swofty_i18n::{tr, trf};
 
 use crate::shell::Shell;
@@ -101,10 +101,10 @@ impl Shell {
                         SystemTime::now(),
                     );
                     let cache = game.map_or_else(GameCopy::default, |g| GameCopy {
-                        bytes: swofty_core::link_cache::size(&g),
-                        apart: swofty_core::link_cache::apart(
-                            swofty_core::disk::volume(&swofty_core::store::overlay_root(&root)),
-                            swofty_core::disk::volume(&g),
+                        bytes: swofty_core::cache::link::size(&g),
+                        apart: swofty_core::cache::link::apart(
+                            swofty_core::platform::disk::volume(&swofty_core::store::overlay_root(&root)),
+                            swofty_core::platform::disk::volume(&g),
                         )
                         .unwrap_or(false),
                     });
@@ -169,7 +169,7 @@ impl Shell {
         cx.spawn_in(window, async move |this, cx| {
             let freed = cx
                 .background_executor()
-                .spawn(async move { swofty_core::link_cache::remove(&game) })
+                .spawn(async move { swofty_core::cache::link::remove(&game) })
                 .await;
             this.update_in(cx, |s, window, cx| {
                 s.settings.clearing = false;
@@ -236,7 +236,7 @@ impl Shell {
 #[cfg(test)]
 mod tests {
     use super::low_space_warning;
-    use swofty_core::data_usage::{GAME_DRIVE, Room};
+    use swofty_core::data::space::{GAME_DRIVE, Room};
 
     const GB: u64 = 1 << 30;
 

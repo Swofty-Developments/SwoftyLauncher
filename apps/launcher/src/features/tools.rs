@@ -16,7 +16,7 @@ use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use serde::Deserialize;
-use swofty_core::app_control::Block;
+use swofty_core::platform::app_control::Block;
 
 use crate::shell::{Page, Shell};
 use crate::ui::Card;

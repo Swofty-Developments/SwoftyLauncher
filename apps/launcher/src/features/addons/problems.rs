@@ -12,7 +12,7 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
-use swofty_core::order;
+use swofty_core::profile::order;
 use swofty_i18n::{tr, trf, trn};
 
 impl Shell {
@@ -93,9 +93,9 @@ impl Shell {
         }
     }
 
-    fn default_place(&self, id: &str) -> Option<swofty_core::folders::Key> {
+    fn default_place(&self, id: &str) -> Option<swofty_core::profile::folders::Key> {
         let a = self.library.addons.iter().find(|a| a.manifest.id == id)?;
-        swofty_core::folders::default_place(
+        swofty_core::profile::folders::default_place(
             a.source == crate::services::library::Source::Builtin,
             a.category(),
         )
@@ -423,7 +423,7 @@ pub(super) fn status_icon_lines(
 #[cfg(test)]
 mod tests {
     use super::status_icon_lines;
-    use swofty_core::order;
+    use swofty_core::profile::order;
 
     fn problem(addon: &str, kind: order::Kind) -> order::Problem {
         order::Problem {

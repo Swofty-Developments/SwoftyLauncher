@@ -70,7 +70,7 @@ impl Shell {
         // that started with shaders off has no effects loaded.
         let running = dir.as_ref().is_some_and(|d| {
             self.game.processes.iter().any(|g| g.is_in(d)) && d.join("swofty/shaders/effects.json").exists()
-        }) && swofty_core::recovery::SessionLock::held_elsewhere(&self.store.root);
+        }) && swofty_core::game_folder::recovery::SessionLock::held_elsewhere(&self.store.root);
         let info = crate::features::shaders::Info {
             profile: self.library.profile.name.clone(),
             game_dir: dir,

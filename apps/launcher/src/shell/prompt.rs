@@ -51,11 +51,11 @@ impl Shell {
                 action: Rc::new(|store, value| {
                     let dir = PathBuf::from(value);
                     let mut config = store.config();
-                    swofty_core::copies::add(&mut config, &dir)?;
+                    swofty_core::game_folder::copies::add(&mut config, &dir)?;
                     store.save_config(&config).map_err(|e| e.to_string())?;
                     Ok(trf!(
                         "Added the {store} copy",
-                        store = swofty_core::copies::store_name(Source::detect(&dir))
+                        store = swofty_core::game_folder::copies::store_name(Source::detect(&dir))
                     ))
                 }),
             },

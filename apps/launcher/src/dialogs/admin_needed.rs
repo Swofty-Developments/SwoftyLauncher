@@ -7,7 +7,7 @@ use gpui_kit::component::WindowExt;
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::install::Source;
-use swofty_core::{compat, copies};
+use swofty_core::{game_folder::copies, platform::run_as_admin as compat};
 
 use crate::app::app_log;
 use crate::services::game::Install;

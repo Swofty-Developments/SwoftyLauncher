@@ -10,8 +10,8 @@ use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Disableable, v_flex};
 use gpui_kit::*;
-use swofty_core::managed;
 use swofty_core::profile::VANILLA;
+use swofty_core::updates::managed;
 
 use crate::features::sections::{Reporter, Shared};
 use crate::shell::{Page, Shell};
@@ -144,7 +144,7 @@ impl Shell {
                         Some(r) => r,
                         None => managed::fetch_latest(FETCH_TIMEOUT).map_err(|e| e.to_string())?,
                     };
-                    let launcher = swofty_core::update::current_version();
+                    let launcher = swofty_core::updates::release::current_version();
                     managed::install_release(&store, &release, &launcher, &Reporter(Shared::default()))
                         .map_err(|e| e.to_string())
                 })

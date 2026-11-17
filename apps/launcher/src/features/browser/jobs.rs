@@ -5,7 +5,7 @@ use crate::shell::notices::Notification;
 use gpui_kit::*;
 use swofty_core::catalog::{self, Addon};
 use swofty_core::manifest::AddonManifest;
-use swofty_core::update::current_version;
+use swofty_core::updates::release::current_version;
 use swofty_i18n::{tr, trf};
 
 use super::*;

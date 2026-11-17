@@ -11,10 +11,10 @@ use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use semver::Version;
-use swofty_core::app_control::Block;
-use swofty_core::managed;
-use swofty_core::update::{self, Install, Release};
-use swofty_core::updater::{self, Catalog, Gate, Part, Phase, Plan, Ran, Track};
+use swofty_core::platform::app_control::Block;
+use swofty_core::updates::managed;
+use swofty_core::updates::release::{self as update, Install, Release};
+use swofty_core::updates::updater::{self, Catalog, Gate, Part, Phase, Plan, Ran, Track};
 
 use crate::features::sections::{Reporter, Shared};
 use crate::shell::play_bar::link;

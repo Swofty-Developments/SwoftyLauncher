@@ -4,9 +4,9 @@ use crate::shell::Shell;
 use gpui_kit::*;
 use std::collections::{HashMap, HashSet};
 use std::time::{Duration, UNIX_EPOCH};
-use swofty_core::conflicts::{self};
-use swofty_core::folders::Entry;
 use swofty_core::manifest::MANIFEST_FILE;
+use swofty_core::profile::conflicts::{self};
+use swofty_core::profile::folders::Entry;
 
 impl Shell {
     pub(super) fn addon_on(&self, m: &AddonItem) -> bool {
@@ -14,7 +14,7 @@ impl Shell {
     }
 
     pub(super) fn update_ready(&self, m: &AddonItem) -> bool {
-        (m.manifest.id == swofty_core::managed::ID && self.updates.plan().addon.is_some())
+        (m.manifest.id == swofty_core::updates::managed::ID && self.updates.plan().addon.is_some())
             || self.catalog_update(&m.manifest.id).is_some()
     }
 

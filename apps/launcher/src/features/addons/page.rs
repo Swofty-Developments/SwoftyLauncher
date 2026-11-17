@@ -12,7 +12,7 @@ use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::path::PathBuf;
-use swofty_core::import::{self, Route};
+use swofty_core::addons::import::{self, Route};
 use swofty_core::profile::VANILLA;
 use swofty_i18n::{fill, tr, trf, trn};
 

@@ -5,8 +5,8 @@ use gpui_kit::component::dialog::DialogFooter;
 use gpui_kit::component::{Icon, WindowExt, h_flex, v_flex};
 use gpui_kit::*;
 
-use swofty_core::ea_app::Moved;
 use swofty_core::install::EA_APP_SEEN;
+use swofty_core::platform::ea_app::Moved;
 
 use crate::shell::Shell;
 use crate::ui::discord::invite_button;

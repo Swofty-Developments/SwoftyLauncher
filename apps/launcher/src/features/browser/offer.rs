@@ -7,7 +7,7 @@ use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::*;
 use swofty_core::catalog::Addon;
 use swofty_core::catalog::requires::{self, Have, Plan};
-use swofty_core::update::current_version;
+use swofty_core::updates::release::current_version;
 use swofty_i18n::{tr, trf};
 
 use super::*;

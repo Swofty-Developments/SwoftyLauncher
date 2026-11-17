@@ -282,7 +282,7 @@ impl Shell {
                     let choices = choices.unwrap_or_else(|| {
                         let tracks = swofty_core::tracks::installed(&store);
                         let drivers = driver_manager::drivers(&store, &catalog);
-                        let heads = swofty_core::heads::installed(&store);
+                        let heads = swofty_core::game_db::heads::installed(&store);
                         let refs = module
                             .fields
                             .iter()

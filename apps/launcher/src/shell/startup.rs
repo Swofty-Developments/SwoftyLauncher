@@ -25,7 +25,7 @@ impl Prepared {
         let store = Store::open_default().with_builtins(swofty_builtins::all());
         let migrated = store.migrate();
         crate::app::app_log::step("store migrated");
-        swofty_core::usage::launcher_heartbeats(store.root.clone());
+        swofty_core::server::usage::launcher_heartbeats(store.root.clone());
         let seen = Seen::read(&store);
         crate::app::app_log::step("loading the library");
         let mut library = Library::load(&store);
@@ -332,15 +332,15 @@ impl Shell {
         })
     }
 
-    fn start_account(store: &Store, cx: &mut Context<Self>) -> Option<swofty_core::mpauth::Session> {
-        let mp = swofty_core::mpauth::load(&store.root);
+    fn start_account(store: &Store, cx: &mut Context<Self>) -> Option<swofty_core::server::sign_in::Session> {
+        let mp = swofty_core::server::sign_in::load(&store.root);
         if let Some(current) = mp.clone() {
             let dir = store.root.clone();
             swofty_core::multiplayer::client::load_in_background(&dir, &current.token);
             cx.spawn(async move |this, cx| {
                 let refreshed = cx
                     .background_executor()
-                    .spawn(async move { swofty_core::mpauth::refresh_checked(&dir, &current) })
+                    .spawn(async move { swofty_core::server::sign_in::refresh_checked(&dir, &current) })
                     .await;
                 this.update(cx, |s, cx| {
                     let allowed = s.account.session.as_ref().is_some_and(|m| m.allowed);
@@ -383,7 +383,7 @@ impl Shell {
                 let was_allowed = session.allowed;
                 let refreshed = cx
                     .background_executor()
-                    .spawn(async move { swofty_core::mpauth::refresh_checked(&dir, &session) })
+                    .spawn(async move { swofty_core::server::sign_in::refresh_checked(&dir, &session) })
                     .await;
                 if this
                     .update(cx, |s, cx| s.mp_apply_check(refreshed, was_allowed, cx))
@@ -402,7 +402,7 @@ impl Shell {
             cx.spawn_in(window, async move |_, cx| {
                 let elevated = cx
                     .background_executor()
-                    .spawn(async { swofty_core::compat::elevated() })
+                    .spawn(async { swofty_core::platform::run_as_admin::elevated() })
                     .await;
                 if elevated {
                     let note = Notification::warning(

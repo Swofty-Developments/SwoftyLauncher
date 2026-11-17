@@ -1,6 +1,6 @@
 use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::*;
-use swofty_core::support::{BIO_MAX, Claimed, Goal, Kind, Me, Supporter, dollars_to_cents};
+use swofty_core::server::support::{BIO_MAX, Claimed, Goal, Kind, Me, Supporter, dollars_to_cents};
 use swofty_core::timetrial::api::Api;
 use swofty_i18n::tr;
 

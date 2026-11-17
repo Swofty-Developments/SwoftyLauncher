@@ -19,7 +19,7 @@ use lsp_types::{
     CodeAction, CodeActionKind, CompletionContext, CompletionItem, CompletionItemKind, CompletionResponse,
     CompletionTextEdit, Documentation, HoverContents, MarkupContent, MarkupKind, TextEdit,
 };
-use swofty_core::shaders::ConfigEntry;
+use swofty_core::content::shaders::ConfigEntry;
 use swofty_i18n::{tr, trf, trn};
 use swofty_shaders::{ActiveInstance, Catalog, CompletionKind, Config, Severity, TokenKind};
 
@@ -69,7 +69,7 @@ impl LintView {
 
 pub(super) struct EditorPane {
     pub state: Entity<EditorState>,
-    pub loaded: Option<swofty_core::shaders::ConfigRef>,
+    pub loaded: Option<swofty_core::content::shaders::ConfigRef>,
     pub loading: bool,
     pub saved: String,
     pub last_text: String,
@@ -514,11 +514,11 @@ impl ShadersView {
             let done = cx
                 .background_executor()
                 .spawn(async move {
-                    swofty_core::shaders::save(&store, &r, &text).map_err(|e| e.to_string())?;
+                    swofty_core::content::shaders::save(&store, &r, &text).map_err(|e| e.to_string())?;
                     if let Some((dir, name)) = live {
                         let profile = store.profile(&name).map_err(|e| e.to_string())?;
-                        let active = swofty_core::shaders::active_file(&store, &profile);
-                        swofty_core::shaders::push_live(&dir, &active).map_err(|e| e.to_string())?;
+                        let active = swofty_core::content::shaders::active_file(&store, &profile);
+                        swofty_core::content::shaders::push_live(&dir, &active).map_err(|e| e.to_string())?;
                     }
                     Ok::<(), String>(())
                 })

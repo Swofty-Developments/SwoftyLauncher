@@ -2,7 +2,7 @@ use gpui_kit::assets::IconName;
 use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::vault::careers::State as CareerState;
+use swofty_core::saves::vault::careers::State as CareerState;
 use swofty_i18n::{tr, trf};
 
 use super::labels::listed_later;
