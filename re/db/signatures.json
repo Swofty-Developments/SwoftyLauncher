@@ -119766,7 +119766,7 @@
    "target": "0x1434c8bf0",
    "kind": "func_start",
    "names": [
-    "Game_PitLane_ReadConfig"
+    "Team_Load_PitTimes"
    ],
    "verified": [
     {
@@ -119862,7 +119862,7 @@
    "target": "0x1438959c0",
    "kind": "func_start",
    "names": [
-    "Game_HumanController_Update"
+    "Sess_HumanController_Update"
    ],
    "verified": [
     {
@@ -129143,7 +129143,7 @@
    "target": "0x144676250",
    "kind": "func_start",
    "names": [
-    "Car_BrakeEcu_DistributeTorque"
+    "Car_BrakeEcu_ApplyBias"
    ],
    "verified": [
     {
@@ -129191,7 +129191,7 @@
    "target": "0x14467ddf0",
    "kind": "func_start",
    "names": [
-    "Car_Read_Differential"
+    "Car_Read_Differential_Thunk"
    ],
    "verified": [
     {
@@ -129215,7 +129215,7 @@
    "target": "0x14467e010",
    "kind": "func_start",
    "names": [
-    "Car_Diff_ApplyTuning"
+    "Car_Differential_Reset_Thunk"
    ],
    "verified": [
     {
@@ -129313,7 +129313,7 @@
    "target": "0x14468e550",
    "kind": "func_start",
    "names": [
-    "Car_Vehicle_ApplySetupSlot3"
+    "Car_FuelEcu_Reset_Thunk"
    ],
    "verified": [
     {
@@ -130687,7 +130687,7 @@
    "target": "0x14468edb0",
    "kind": "func_start",
    "names": [
-    "Car_FuelTank_Step"
+    "Car_FuelTank_StepBurn"
    ],
    "verified": [
     {
@@ -130811,7 +130811,7 @@
    "target": "0x1446b5720",
    "kind": "func_start",
    "names": [
-    "Car_Wheel_Update"
+    "Car_Tyre_Step"
    ],
    "verified": [
     {
@@ -138359,7 +138359,7 @@
    "target": "0x142e93a70",
    "kind": "func_start",
    "names": [
-    "Game_TyreSystem_ComputeSessionTyreMode"
+    "Sess_Init_TyreComponentSet"
    ],
    "verified": [
     {
@@ -138407,7 +138407,7 @@
    "target": "0x142ea2a90",
    "kind": "func_start",
    "names": [
-    "Game_Vehicle_ApplyTyreSetSelection"
+    "Sess_Tyre_ShowFittedSet"
    ],
    "verified": [
     {
@@ -139007,7 +139007,7 @@
    "target": "0x1436ae470",
    "kind": "func_start",
    "names": [
-    "Car_TyreWear_GetTrackWearScale"
+    "Sess_Get_VehicleTrackFactor"
    ],
    "verified": [
     {
@@ -157351,7 +157351,7 @@
    "target": "0x1434c3520",
    "kind": "func_start",
    "names": [
-    "Game_Pitlane_ResolveVehicleState4"
+    "Game_PitLane_ProjectBoxPose"
    ],
    "verified": [
     {
