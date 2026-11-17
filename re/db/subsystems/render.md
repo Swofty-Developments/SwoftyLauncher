@@ -349,6 +349,98 @@ Static only: Steam d873a1c8 exe plus a read-only disassembly of `shader_package_
   4. The material -> bindless id write.
   5. The IBL probe selection (g_ibLights fill, IBLProxy).
 
+## Round 4: ToD curve files, LUTs, IBL, bindless (engine-re 2026-11-17, static)
+
+Static only: Steam d873a1c8 exe plus read-only game data (track ERPs, `common_all_tracks.erp`, and `ego_package` ERPs read out of `game.dat` with the NeFS header of the installed exe). Runtime items: T242, T243.
+
+### Time-of-day curve files
+
+- **Where they live.** Exactly four TOD files exist, shared by every track and every front-end world (13 identical copies, e.g. `environment_package/tracks/common_all_tracks.erp` resources 167-170, plus `sequence_test.todconfig`). No track ships its own TOD data.
+
+| file | category clock | scenarios | what it holds |
+|---|---|---|---|
+| `sequence_data.timeofday.tod` | 0 TimeOfDay | `_master`, `timeofday_debug` | hour curves: sun/ambient/sky colours, fog, tonemap thresholds, `curve_lerp_tod`, `ibl_keyframe` |
+| `sequence_data.weather.tod` | 1 Weather (per dataset) | `_master`, 16 `weather_<From>-<To>_a`, `weather_custom`, `scenario_full_transition` | clouds, `IBLReflectionIntensity`, `threshold_lerp`, `curve_lerp`, wetness/rain |
+| `sequence_data.camera.tod` | 2 Camera | `_master`, 44 `camera_<type>` | bloom, dof, god rays, lens, motion blur, tonemap per camera type |
+| `sequence_data.grading.tod` | 3 Grading | `_master`, 8 `grading_*` | lut tint/colour/contrast/brightness, vignette |
+
+- **File format (TODD v2)**, parsed by `Game_TodData_ParseTodd` 0x14460d750:
+  - `SLST`: u32 count, then per scenario u32 djb2(name), u32 len, name, u8 flag. The last flagged scenario becomes the clock fallback (+0x1dc).
+  - `TWIN`: u32 count, then per window u32 djb2(`scenario/window`), u32 len, name, f32 start, f32 end, f32 rate, u32. Windows are 0..24 (timeofday, grading, camera) or 0..5 (weather).
+  - `PATH`: u32 count, then 16-byte entries {djb2(`scenario/param`), djb2(scenario), djb2(param), u32}, sorted by the first hash.
+  - `DATA`: no count, one 12-byte entry per PATH entry: u32 packed, f32 t_first, f32 t_last. Packed bits 0-5 = type (0 scalar, 2 rgb, 3 rgba, 4 bool), 0x40 = animated, bits 12-21 = key count, bits 22+ = float count.
+  - Fragment 1 (`syst`) holds the key floats in record order: per key t followed by the value (1, 3 or 4 floats). The float counts sum exactly to the fragment size in all four files.
+  - Times are the fraction of the window (timeofday: x 24 h; weather: fraction of the state or transition).
+  - Parameter names are djb2 of the full path (`sky/sunHeightAngle`); about 75 % resolve against exe strings. The rest has no string in the exe, so no code binds them.
+- **Evaluation:**
+  - `Game_TimeOfDaySystem_FinaliseTimeOfDay` 0x1438bc050 binds each key category by category in the order 0 TimeOfDay, 1 Weather (active dataset clock), 2 Camera, 3 Grading; the first category whose CURRENT scenario has the key wins, otherwise the code default.
+  - Binding (`Game_TodCurveBinding_Init` 0x142ff65e0) and re-binding on a version change (`Game_TodCurveBinding_Resolve` 0x14029c3f0, falls back to the clock fallback scenario).
+  - Sampling (`Game_TodCurve_Sample` 0x14029c560): clamp t to [t_first, t_last], piecewise LINEAR between keys, constant when one key; no wrap. Vector keys go through the colour variant 0x14460f1d0.
+  - x = clamp01((t_a + t_b) * rate / length), x 24 for 24 h clocks.
+  - Current scenario per category: weather from the stitch (`weather_<From>-<To>_a`), camera `camera_<type>` from `Game_TimeOfDaySystem_UpdateCameraScenario` 0x144620a40. Every clock starts on `_master` (`Game_TimeOfDaySystem_Construct` 0x144618560). Whether the TimeOfDay category runs `_master` (constants) or `timeofday_debug` (hour curves) in a race is OPEN -> T242.
+- **Offline evaluator recipe:** parse the four files; for a (time, weather state, camera type) take the scenario per category, look up each key in the category order above (scenario first, `_master` as fallback), sample linearly.
+- **Stock values seen:**
+  - `_master`: max_lum 0.2, min_lum 0.1, max_scene_lum 3, key_value 0.18, adaption_speed_dl 0.02, sunHeightAngle 55, sunRotationAngle 319.5.
+  - `timeofday_debug`: threshold_a 6.0 at 10:18 falling to 1.30 at 24:00; `ibl_keyframe` 0 at 09:00 to 5 at 24:00; `curve_lerp_tod` 1 at 10:47 to 0 at 13:02.
+  - weather: `threshold_lerp` / `curve_lerp` 0 clear, 1 overcast.
+
+### LUTs and post splines (ego_package, in game.dat)
+
+- **Colour grading 3D LUTs:** `ego_package/colour_grading/colourgrades.erp` holds apex, broadcast, cinematic, grid_reveal, podium and standard `.cube.tex.image`.
+  - Format: 33^3 R11G11B10_FLOAT (first texels 0, 1/32, ...), stored as a 1089 x 33 strip (surface header format 0x4a), 143748 bytes.
+  - Selection: by name from the camera clip results (`Game_CameraActorSyncJob_ApplyClipResults`, `colour_grading/%s.tex.image`) and the grading scenario; `standard.cube` is the descriptor default.
+- **Track default post-process (`ego_package/postprocess/track_default/`):**
+  - `3d_lut_32x32_n.out.tga` / `neutral_lut.tga`: 32^3 neutral LUT as a 1024 x 32 strip, 1 byte per pixel block-compressed (format 0x45).
+  - `default.psplines` and `neutral.psplines` (PostSplinesRes): u32 count, then per curve u32 name length, name, u32 channels, u32 samples, channels x samples f32.
+  - Curves: Tonemapping (1 x 8192), LUT (4 x 256), Bloom (1 x 512), BloomTint/StreakTint/fe tints, SSAO_FOV_RAD, and DayClearLUT, DayOvercastLUT, NightClearLUT, NightOvercastLUT (4 x 256 each). The last four are the lutSCurve00/10/01/11 inputs blended by lutPCurveLerp (`postprocess/curves/curve_lerp`, weather) and lutPCurveTODLerp (`curve_lerp_tod`, time).
+  - `effects.todpp` (TimeOfDayPP) is a small TODD file for effect_0 / flashback / terminal_damage_stop.
+  - Loaded by `Render_PostProcess_LoadResources` 0x143bc2d30 as `eaid://ego_package/postprocess.psplines`; the id-to-file mapping is in T242.
+  - Per track: no stock track ERP ships LUT or psplines resources. The only per-world hook is the SunOverrideComponent "LUT texture" path `asset_groups/ego_package/postprocess/track_default/<name>` (round 1).
+
+### Ambient: IBL, SH, DDGI per track
+
+- `tracks/<t>/probes/key_<year>.erp`:
+  - 20 keys x {diffuse, specular} BC6H cube arrays of 14 probes (diffuse 16^2 1 mip, specular 64^2 5 mips).
+  - `keys_<year>.diffuse_sh.sh`: 20 x 14 x 9 float4 SH.
+  - `config_diffuse/specular_<year>.ibl`: XML numProbes, numKeys, size, probe name to slot. Parsed by `Render_IBLConfig_Parse` 0x143c01350.
+- `probes_garage_NN.erp`: IBLSH `.shprobes` grids (magic SHPR, GRID).
+- `config.ddgi.erp`: DDGI XML config only (cascades, counts 16x12x16, spacing 6 m, hysteresis 0.97). The DDGI probes are traced at runtime, nothing is baked.
+- **Key selection:** `Game_GameWeatherSystem_UpdateFrame` 0x1438b9ff0 turns `ibl_keyframe` into two neighbouring keys plus a fraction, mirrored after the turn time, plus the same pair offset by +0x1f2c for the other weather set, weighted by the dataset weather curve. `IBLReflectionIntensity` (1 clear, 0.4 storm) is a specular scale. The values per session are in T243.
+
+### Fog and tonemap CPU fill (static side of T240/T241)
+
+- **Fog:** `Game_GameWeatherSystem_EvalFogSettings` 0x1438b17e0 writes the fog settings block from the fog curves.
+  - albedo, scatter distance lerped clear to rain by the dataset rain weight, absorb distance, HG g, near plane/fade, optical depth scale x rain lerp, 1/exp divisor, exp power, override colour.
+  - The copy of that block into the g_fogData cbuffer on the render side is not traced.
+- **Tonemap:** `Render_Tonemap_ComputeCurveParams` 0x143bca600 is the full toneMapSettings fill from a per-view 0x2e8-byte settings record (field map in its KB note).
+  - Threshold = lerp(threshold_a, threshold_b, threshold_lerp).
+  - Adaptation speeds x 100; ISO 100 and shutter 0.01 are fixed.
+  - Who copies the curve values into the record is not traced; the field order matches the key order.
+
+### Bindless material ids
+
+- `Render_Material_ResolveBindlessIds` 0x143c0a100 (callback of `Render_Material_CountResourceSlots`) writes the texture's bindless id `[tex+0x50]+0x160+view*4` (buffers `[res+0x18]+0x160`) into every heap-index parameter record (+0x2c) and marks the material dirty.
+- That record value is what g_materialBuffer carries as `me_*HeapIndex`.
+
+### Offline preview = game: plan after round 4
+
+- **An offline renderer now has:**
+  - all ToD/weather/camera/grading curve data with an exact parser and linear evaluator, plus the layering rule;
+  - post splines (S-curve, 4 LUT curves) and the colour-grade cube LUTs from game.dat;
+  - the toneMapSettings and fog block formulas;
+  - per-track IBL key cubes and SH with the key-selection rule;
+  - the lightmaps, sun, BRDF, AO and fog formulas from rounds 1-3;
+  - material bindless ids.
+- **Still missing:**
+  - the active TimeOfDay scenario in a race and the psplines id mapping (T242);
+  - the IBL key and weight values per session (T243);
+  - the per-probe IBL selection on the GPU (g_ibLights fill, IBLProxy);
+  - the ambient/sun LUT generation math (`Render_AmbientLut_Generate`);
+  - the render-side copy of the fog block into g_fogData and of the curves into the 0x2e8 tonemap record;
+  - DDGI (runtime ray tracing; approximate with IBL + SH offline);
+  - exposure in a real frame (T240);
+  - the sun mode (T158) and the wet blend (T160).
+
 ## Inbox
 - 2026-10-19 14:03 ui-re: new 'hud' lane holds the HUD view-model/logic side (what widgets publish + their setToOpen gates); render still owns the D3D present/draw path. Hud_Open_TyrePerformance (0x14152b5f0) publishes to view_model_data.hud_* registry nodes. HUD VM vtables cluster near 0x1456ed290 if you need draw-time addresses.
 - 2026-10-28 22:57 re-import: (wx rounds 1-3, static, verified by wx-verify): render flags +0x32 live on the per-entity Render component (type 0x146cb7b70, vtable 0x145a90b10, parser 0x1444725e0); the Model component (type 0x146cb7da0, vtable 0x145a908a0) holds +0xb0 Render, +0x80 render instance (current world matrix inst+0x10..+0x3f, previous +0x40..+0x6f, generator mask +0x70), +0xd8 model path. Per-model setter Render_ModelComponent_ApplyRenderProps 0x14446ea70 -> 0x14446b9c0 (KB fix: not LitPlanarReflectionProxy). rainMask (0x20) = screen-space depth from the main camera that clips falling rain only; wetness map (0x40) = top-down ortho 75 x 75 m around the player, 256x256 (0x14478c050 / 0x14478e440); dry/wet meaning lives in material shaders. Quality handler 0x14015aa00 field map in game notes. | findings from PR #471 by vogtmarcel07-cloud
