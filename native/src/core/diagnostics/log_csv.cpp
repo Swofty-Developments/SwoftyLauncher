@@ -1,4 +1,5 @@
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -13,8 +14,6 @@
 
 // The CSV recorder behind swofty/log_csv.hpp: files under swofty/addons/<addon id>/diag/, a ring per file
 // (log_csv_logic.hpp), and one writer thread that formats and writes every ring about ten times a second.
-
-std::string settings_addon(const void *from, std::string &dll);
 
 namespace {
 

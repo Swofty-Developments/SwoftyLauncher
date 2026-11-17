@@ -1,4 +1,5 @@
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
@@ -19,8 +20,6 @@
 // without running the route: nothing has closed or opened yet, so the player stays on the screen
 // they pressed on, and the blocking addon's popup is queued. The route runs before the game builds
 // the career, which happens as fe_career_dlc_select or the career wizard opens.
-
-std::string settings_addon(const void *from, std::string &dll);
 
 namespace {
 

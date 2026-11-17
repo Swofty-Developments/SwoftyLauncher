@@ -1,4 +1,5 @@
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -8,8 +9,6 @@
 
 #include <cstdio>
 #include <unordered_map>
-
-std::string settings_addon(const void *from, std::string &dll);
 
 namespace {
 
