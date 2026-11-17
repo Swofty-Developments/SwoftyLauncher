@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use swofty_formats::erp::Entry;
 
@@ -16,91 +16,116 @@ pub struct Resized {
     pub resources: Vec<(String, String)>,
 }
 
-/// A hash of everything that decides an archive's bytes: the build pipeline,
-/// the source archive (path, size and modified time) and every slot, stock by
-/// index and owned by all of its fields and fragment bytes.
-fn archive_key(rel: &str, a: &Archive) -> Option<String> {
-    use sha2::{Digest, Sha256};
-    let meta = std::fs::metadata(&a.file.path).ok()?;
-    let mut h = Sha256::new();
-    let mut field = |b: &[u8]| {
-        h.update((b.len() as u64).to_le_bytes());
-        h.update(b);
-    };
-    field(env!("SWOFTY_PIPELINE").as_bytes());
-    field(rel.as_bytes());
-    field(a.file.path.to_string_lossy().as_bytes());
-    field(&meta.len().to_le_bytes());
-    field(format!("{:?}", meta.modified().ok()?).as_bytes());
-    field(&a.file.erp.header);
-    field(&a.file.erp.version.to_le_bytes());
-    for slot in &a.slots {
-        match slot {
-            Slot::Stock(i) => {
-                field(b"stock");
-                field(&(*i as u64).to_le_bytes());
-            }
-            Slot::Owned(r) => {
-                field(b"owned");
-                field(r.name.as_bytes());
-                field(&r.kind);
-                field(&r.unk);
-                field(&r.hash);
-                for f in &r.fragments {
-                    field(&f.name);
-                    field(&f.offset.to_le_bytes());
-                    field(&f.size.to_le_bytes());
-                    field(&f.flags.to_le_bytes());
-                    field(&[f.compression]);
-                    field(&f.packed.to_le_bytes());
-                    field(&f.raw);
-                }
-                field(b"end");
-            }
-        }
-    }
-    Some(h.finalize().iter().map(|b| format!("{b:02x}")).collect())
+/// The write of one archive: the archive as the ops left it, the file it goes to and the cache of
+/// archives earlier builds wrote. A write owns all it reads and writes, so the writes of different
+/// archives share nothing.
+struct ArchiveWrite {
+    rel: String,
+    archive: Archive,
+    path: PathBuf,
+    cache: Option<PathBuf>,
 }
 
-/// Write `archive` to `out`, or link it from `cache` when an earlier build
-/// wrote the same bytes; a newly written one is linked into the cache. True
-/// when it came from the cache. Without hard links nothing is cached.
-fn write_archive(out: &Path, rel: &str, archive: Archive, cache: Option<&Path>) -> Result<bool> {
-    let path = out.join(rel);
-    if let Some(dir) = path.parent() {
-        std::fs::create_dir_all(dir).map_err(crate::io_err(dir))?;
-    }
-    let cached = cache.and_then(|dir| {
-        let key = archive_key(rel, &archive)?;
-        Some(dir.join(&key[..2]).join(format!("{key}.erp")))
-    });
-    if let Some(c) = cached.as_ref().filter(|c| c.is_file())
-        && std::fs::hard_link(c, &path).is_ok()
-    {
-        if let Ok(f) = std::fs::File::options().write(true).open(c) {
-            f.set_modified(std::time::SystemTime::now()).ok();
+impl ArchiveWrite {
+    fn new(out: &Path, rel: String, archive: Archive, cache: Option<&Path>) -> Self {
+        Self {
+            path: out.join(&rel),
+            rel,
+            archive,
+            cache: cache.map(Path::to_path_buf),
         }
-        return Ok(true);
     }
-    let Archive { file, slots } = archive;
-    let entries = slots
-        .into_iter()
-        .map(|s| match s {
-            Slot::Stock(i) => Entry::Copy(&file.erp.resources[i]),
-            Slot::Owned(r) => Entry::Owned(r),
-        })
-        .collect();
-    file.write(entries, &path).map_err(|e| match e {
-        swofty_formats::Error::IoAt { .. } => Error::Formats(e),
-        e => fail(format!("{rel}: {e}")),
-    })?;
-    if let Some(c) = cached {
-        if let Some(dir) = c.parent() {
-            std::fs::create_dir_all(dir).ok();
+
+    /// A hash of everything that decides the archive's bytes: the build pipeline,
+    /// the source archive (path, size and modified time) and every slot, stock by
+    /// index and owned by all of its fields and fragment bytes.
+    fn key(&self) -> Option<String> {
+        use sha2::{Digest, Sha256};
+        let a = &self.archive;
+        let meta = std::fs::metadata(&a.file.path).ok()?;
+        let mut h = Sha256::new();
+        let mut field = |b: &[u8]| {
+            h.update((b.len() as u64).to_le_bytes());
+            h.update(b);
+        };
+        field(env!("SWOFTY_PIPELINE").as_bytes());
+        field(self.rel.as_bytes());
+        field(a.file.path.to_string_lossy().as_bytes());
+        field(&meta.len().to_le_bytes());
+        field(format!("{:?}", meta.modified().ok()?).as_bytes());
+        field(&a.file.erp.header);
+        field(&a.file.erp.version.to_le_bytes());
+        for slot in &a.slots {
+            match slot {
+                Slot::Stock(i) => {
+                    field(b"stock");
+                    field(&(*i as u64).to_le_bytes());
+                }
+                Slot::Owned(r) => {
+                    field(b"owned");
+                    field(r.name.as_bytes());
+                    field(&r.kind);
+                    field(&r.unk);
+                    field(&r.hash);
+                    for f in &r.fragments {
+                        field(&f.name);
+                        field(&f.offset.to_le_bytes());
+                        field(&f.size.to_le_bytes());
+                        field(&f.flags.to_le_bytes());
+                        field(&[f.compression]);
+                        field(&f.packed.to_le_bytes());
+                        field(&f.raw);
+                    }
+                    field(b"end");
+                }
+            }
         }
-        std::fs::hard_link(&path, &c).ok();
+        Some(h.finalize().iter().map(|b| format!("{b:02x}")).collect())
     }
-    Ok(false)
+
+    /// Writes the archive, or links it from the cache when an earlier build
+    /// wrote the same bytes; a newly written one is linked into the cache. True
+    /// when it came from the cache. Without hard links nothing is cached.
+    fn run(self) -> Result<bool> {
+        let path = &self.path;
+        if let Some(dir) = path.parent() {
+            std::fs::create_dir_all(dir).map_err(crate::io_err(dir))?;
+        }
+        let cached = self.cache.as_deref().and_then(|dir| {
+            let key = self.key()?;
+            Some(dir.join(&key[..2]).join(format!("{key}.erp")))
+        });
+        if let Some(c) = cached.as_ref().filter(|c| c.is_file())
+            && std::fs::hard_link(c, path).is_ok()
+        {
+            if let Ok(f) = std::fs::File::options().write(true).open(c) {
+                f.set_modified(std::time::SystemTime::now()).ok();
+            }
+            return Ok(true);
+        }
+        let Self {
+            rel, archive, path, ..
+        } = self;
+        let Archive { file, slots } = archive;
+        let entries = slots
+            .into_iter()
+            .map(|s| match s {
+                Slot::Stock(i) => Entry::Copy(&file.erp.resources[i]),
+                Slot::Owned(r) => Entry::Owned(r),
+            })
+            .collect();
+        file.write(entries, &path).map_err(|e| match e {
+            swofty_formats::Error::IoAt { .. } => Error::Formats(e),
+            e => fail(format!("{rel}: {e}")),
+        })?;
+        if let Some(c) = cached {
+            if let Some(dir) = c.parent() {
+                std::fs::create_dir_all(dir).ok();
+            }
+            std::fs::hard_link(&path, &c).ok();
+        }
+        Ok(false)
+    }
 }
 
 impl ErpBuild<'_> {
@@ -112,13 +137,12 @@ impl ErpBuild<'_> {
         for (rel, a) in &self.erps {
             let stock = &a.file.erp;
             let resources: Vec<(String, String)> = a
-                .slots
-                .iter()
-                .filter_map(|s| match s {
-                    Slot::Owned(r) if !foreign_argument(r, stock) => layout_change(r, stock)
+                .written()
+                .filter(|r| !foreign_argument(r, stock))
+                .filter_map(|r| {
+                    layout_change(r, stock)
                         .or_else(|| is_handling(r).then(|| HANDLING_WHY.to_owned()))
-                        .map(|why| (r.name.clone(), why)),
-                    _ => None,
+                        .map(|why| (r.name.clone(), why))
                 })
                 .collect();
             if !resources.is_empty() {
@@ -144,7 +168,7 @@ impl ErpBuild<'_> {
             .collect();
         for rel in &outside {
             let archive = self.erps.remove(rel).expect("listed above");
-            write_archive(out, rel, archive, None)?;
+            ArchiveWrite::new(out, rel.clone(), archive, None).run()?;
         }
         Ok(outside)
     }
@@ -153,7 +177,7 @@ impl ErpBuild<'_> {
         let found = self.resized();
         for r in &found {
             let archive = self.erps.remove(&r.erp).expect("found above");
-            write_archive(out, &r.erp, archive, None)?;
+            ArchiveWrite::new(out, r.erp.clone(), archive, None).run()?;
         }
         Ok(found)
     }
@@ -171,12 +195,19 @@ impl ErpBuild<'_> {
         cache: Option<&Path>,
         cancel: &dyn Fn() -> Result<()>,
     ) -> Result<(Vec<String>, usize)> {
+        let writes: Vec<ArchiveWrite> = self
+            .erps
+            .into_iter()
+            .filter(|(_, a)| !a.untouched())
+            .map(|(rel, archive)| ArchiveWrite::new(out, rel, archive, cache))
+            .collect();
         let mut written = Vec::new();
         let mut reused = 0;
-        for (rel, archive) in self.erps.into_iter().filter(|(_, a)| !a.untouched()) {
+        for write in writes {
             cancel()?;
-            crate::now_doing(format!("writing {rel}"));
-            reused += usize::from(write_archive(out, &rel, archive, cache)?);
+            crate::now_doing(format!("writing {}", write.rel));
+            let rel = write.rel.clone();
+            reused += usize::from(write.run()?);
             written.push(rel);
         }
         Ok((written, reused))

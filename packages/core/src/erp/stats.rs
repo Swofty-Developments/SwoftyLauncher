@@ -1,6 +1,6 @@
 use swofty_formats::erp::{ErpFile, Resource};
 
-use super::{ErpBuild, Slot};
+use super::ErpBuild;
 use crate::Result;
 
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -78,8 +78,7 @@ impl ErpBuild<'_> {
     pub fn repair_stats(&mut self) -> StatsRepair {
         let mut out = StatsRepair::default();
         for (rel, archive) in &mut self.erps {
-            for slot in &mut archive.slots {
-                let Slot::Owned(r) = slot else { continue };
+            for r in archive.written_mut() {
                 let origin = self.writers.get(&(rel.clone(), r.name.clone()));
                 let at = (origin.cloned().unwrap_or_default(), r.name.clone());
                 match r.repair_stats() {

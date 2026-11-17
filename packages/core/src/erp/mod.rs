@@ -12,6 +12,7 @@ mod archive;
 mod checks;
 mod index;
 mod ops;
+pub(crate) mod pack;
 mod place;
 mod slices;
 mod stats;
@@ -133,9 +134,7 @@ impl<'a> ErpBuild<'a> {
     fn erp(&mut self, rel: &str) -> Result<&mut Archive> {
         if !self.erps.contains_key(rel) {
             let path = (self.original)(checked(rel)?);
-            let file = ErpFile::open(&path).map_err(|e| fail(format!("{rel}: {e}")))?;
-            let slots = (0..file.erp.resources.len()).map(Slot::Stock).collect();
-            self.erps.insert(rel.to_owned(), Archive { file, slots });
+            self.erps.insert(rel.to_owned(), Archive::open(rel, &path)?);
         }
         Ok(self.erps.get_mut(rel).expect("inserted above"))
     }

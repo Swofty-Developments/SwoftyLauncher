@@ -4,6 +4,7 @@ use swofty_formats::erp::Erp;
 use swofty_formats::pkg::{Node, Pkg, Value};
 
 use super::ops::{replaces, whole_write};
+use super::pack;
 use super::{ErpBuild, SCENE, checked, fail, mipmap_path, overlay_names, unsupported};
 use crate::Result;
 use crate::addons::builtin::loader_files;
@@ -244,8 +245,7 @@ impl ErpBuild<'_> {
                     swofty_formats::material::set(&mut body, name, &values)
                         .map_err(|err| fail(format!("{erp}: {resource}: {err}")))?;
                 }
-                res.set_fragment(0, &body)
-                    .map_err(|err| fail(format!("{erp}: {err}")))
+                pack::set_fragment(res, 0, &body).map_err(|err| fail(format!("{erp}: {err}")))
             }
             ErpOp::ReplaceResource {
                 erp,
@@ -260,8 +260,7 @@ impl ErpBuild<'_> {
                 if res.kind() == SCENE && *fragment == 0 {
                     check_scene(resource, &data).map_err(|err| fail(format!("{erp}: {resource}: {err}")))?;
                 }
-                res.set_fragment(*fragment, &data)
-                    .map_err(|err| fail(format!("{erp}: {err}")))
+                pack::set_fragment(res, *fragment, &data).map_err(|err| fail(format!("{erp}: {err}")))
             }
             ErpOp::AddResource {
                 erp,

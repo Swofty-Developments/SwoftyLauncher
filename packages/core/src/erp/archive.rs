@@ -1,3 +1,6 @@
+use std::borrow::Cow;
+use std::path::Path;
+
 use swofty_formats::erp::{ErpFile, Resource};
 
 use super::fail;
@@ -14,6 +17,13 @@ pub(super) struct Archive {
 }
 
 impl Archive {
+    /// The archive at `path`, every slot the game's own; `rel` names it in errors.
+    pub(super) fn open(rel: &str, path: &Path) -> Result<Self> {
+        let file = ErpFile::open(path).map_err(|e| fail(format!("{rel}: {e}")))?;
+        let slots = (0..file.erp.resources.len()).map(Slot::Stock).collect();
+        Ok(Self { file, slots })
+    }
+
     pub(super) fn entry<'s>(&'s self, slot: &'s Slot) -> &'s Resource {
         match slot {
             Slot::Stock(i) => &self.file.erp.resources[*i],
@@ -50,6 +60,29 @@ impl Archive {
                 .iter()
                 .enumerate()
                 .all(|(i, s)| matches!(s, Slot::Stock(j) if *j == i))
+    }
+
+    /// The resource in slot `i`, read from the game's archive while it is the stock one.
+    pub(super) fn loaded(&self, i: usize) -> Result<Cow<'_, Resource>> {
+        Ok(match &self.slots[i] {
+            Slot::Owned(r) => Cow::Borrowed(r),
+            Slot::Stock(j) => Cow::Owned(self.file.load(&self.file.erp.resources[*j])?),
+        })
+    }
+
+    /// The resources the ops wrote, in slot order.
+    pub(super) fn written(&self) -> impl Iterator<Item = &Resource> {
+        self.slots.iter().filter_map(|s| match s {
+            Slot::Owned(r) => Some(r),
+            Slot::Stock(_) => None,
+        })
+    }
+
+    pub(super) fn written_mut(&mut self) -> impl Iterator<Item = &mut Resource> {
+        self.slots.iter_mut().filter_map(|s| match s {
+            Slot::Owned(r) => Some(r),
+            Slot::Stock(_) => None,
+        })
     }
 
     pub(super) fn owned(&mut self, i: usize) -> Result<&mut Resource> {

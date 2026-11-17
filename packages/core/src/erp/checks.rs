@@ -33,11 +33,7 @@ impl ErpBuild<'_> {
     pub fn wheel_warnings(&self) -> Vec<String> {
         let mut out = Vec::new();
         for (rel, a) in &self.erps {
-            for slot in &a.slots {
-                let Slot::Owned(r) = slot else { continue };
-                if !is_handling(r) {
-                    continue;
-                }
+            for r in a.written().filter(|r| is_handling(r)) {
                 let Some(stock) = a.file.erp.resources.iter().find(|s| s.name == r.name) else {
                     continue;
                 };
@@ -67,14 +63,8 @@ impl ErpBuild<'_> {
         use crate::content::texture_check::{check_surface, view_name};
         let mut out = Vec::new();
         for (rel, a) in &self.erps {
-            for s in &a.slots {
-                let Slot::Owned(r) = s else { continue };
-                let view = view_name(&r.name).and_then(|v| {
-                    a.slots.iter().find_map(|s| match s {
-                        Slot::Owned(v2) if v2.name == v => Some(v2),
-                        _ => None,
-                    })
-                });
+            for r in a.written() {
+                let view = view_name(&r.name).and_then(|v| a.written().find(|v2| v2.name == v));
                 let key = (rel.clone(), r.name.clone());
                 let by = self
                     .writers
@@ -105,7 +95,7 @@ impl ErpBuild<'_> {
         };
         let (mut edited, mut stock) = (Vec::new(), Vec::new());
         for (rel, a) in &self.erps {
-            if !a.slots.iter().any(|s| matches!(s, Slot::Owned(r) if ui(r))) {
+            if !a.written().any(ui) {
                 continue;
             }
             let mut was = ArchiveUi {

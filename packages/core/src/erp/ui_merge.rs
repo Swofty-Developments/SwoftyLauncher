@@ -1,6 +1,7 @@
 use swofty_formats::erp::Erp;
 use swofty_formats::pkg::Pkg;
 
+use super::pack;
 use super::{ErpBuild, addon_of, checked, fail};
 use crate::Result;
 
@@ -108,10 +109,7 @@ impl ErpBuild<'_> {
                 .map_err(|e| fail(format!("{erp}: {resource}: {e}")))?;
             let target = self.erp(erp)?;
             let i = target.find(erp, resource)?;
-            target
-                .owned(i)?
-                .set_fragment(0, &bytes)
-                .map_err(|e| fail(format!("{erp}: {e}")))?;
+            pack::set_fragment(target.owned(i)?, 0, &bytes).map_err(|e| fail(format!("{erp}: {e}")))?;
             let conflicts = merged
                 .conflicts
                 .iter()

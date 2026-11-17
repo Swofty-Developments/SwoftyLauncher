@@ -3,6 +3,7 @@ use std::path::Path;
 use swofty_formats::erp::{self, Erp, ErpFile, Resource};
 use swofty_formats::pkg::{Node, Pkg};
 
+use super::pack;
 use super::{ASSET_GROUPS, ErpBuild, Slot, fail};
 use crate::Result;
 use crate::manifest::relative_inside;
@@ -40,7 +41,7 @@ impl ErpBuild<'_> {
                     data.len()
                 ))
             })?;
-        let res = Resource::like(name, like, data).map_err(|e| fail(format!("{erp}: {e}")))?;
+        let res = pack::like(name, like, data).map_err(|e| fail(format!("{erp}: {e}")))?;
         match existing {
             Some(i) => target.slots[i] = Slot::Owned(res),
             None => target.slots.push(Slot::Owned(res)),
@@ -128,10 +129,7 @@ impl ErpBuild<'_> {
         else {
             return Ok(None);
         };
-        Ok(Some(match &target.slots[i] {
-            Slot::Owned(r) => r.clone(),
-            Slot::Stock(j) => target.file.load(&target.file.erp.resources[*j])?,
-        }))
+        Ok(Some(target.loaded(i)?.into_owned()))
     }
 
     pub(super) fn patch(
@@ -151,7 +149,7 @@ impl ErpBuild<'_> {
             .data()?;
         let mut pkg = Pkg::parse(&body).map_err(|err| fail(format!("{resource}: {err}")))?;
         edit(&mut pkg.root).map_err(|err| fail(format!("{resource}: {err}")))?;
-        res.set_fragment(fragment, &pkg.to_bytes()?)?;
+        pack::set_fragment(res, fragment, &pkg.to_bytes()?)?;
         Ok(())
     }
 }
