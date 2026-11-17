@@ -43,7 +43,6 @@ pub struct Shell {
     pub(crate) nav: Option<tabs::Cursor>,
     pub(crate) popover: Option<topbar::Popover>,
     pub(crate) popup_timer: bool,
-    pub(crate) notch_beside: bool,
     pub(crate) root_focus: FocusHandle,
     pub(crate) profiles_open: bool,
     pub(crate) online: crate::features::online::Online,
@@ -68,7 +67,6 @@ pub struct Shell {
     pub(crate) ticking: bool,
     painted: Instant,
     pub(crate) dock: crate::shell::download_dock::Dock,
-    pub(crate) dock_wake: bool,
     pub(crate) live_n: u64,
     /// The addon the Addons page highlights, and since when.
     pub(crate) highlight: Option<(String, Instant)>,
@@ -81,17 +79,9 @@ pub struct Shell {
     pub(crate) news_scroll: crate::features::news::NewsScroll,
     pub(crate) browser: crate::features::browser::Browser,
     pub(crate) shaders: Entity<crate::features::shaders::ShadersView>,
-    _shaders_events: Subscription,
     pub(crate) tools: crate::features::tools::Carousel,
     pub(crate) settings: crate::features::settings::Settings,
     pub(crate) ads: crate::features::ads::Ads,
-    pub(crate) ad_video: Option<crate::features::ads::AdVideo>,
-    _window_moved: Subscription,
-    _console_closed: Subscription,
-    _poll: Task<()>,
-    _live: Task<()>,
-    _updates: Task<()>,
-    _catalog: Task<()>,
     pub(crate) game: crate::shell::probe::GameWatch,
     pub(crate) launching: crate::shell::play::Launching,
     pub(crate) account: crate::shell::account::Account,
@@ -100,6 +90,7 @@ pub struct Shell {
     pub(crate) scaling: crate::shell::ui_mode::Scaling,
     pub(crate) crashes: crate::dialogs::crash::Crashes,
     pub(crate) layout: crate::shell::render::Layout,
+    pub(crate) _background: crate::shell::startup::Background,
 }
 
 pub struct SliderSlot {

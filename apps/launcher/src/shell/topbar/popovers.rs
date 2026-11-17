@@ -284,7 +284,7 @@ impl Shell {
                 .top(fixed(
                     BAR_HEIGHT
                         + 6.
-                        + if self.notch_beside {
+                        + if self.dock.notch_beside {
                             crate::shell::download_dock::NOTCH_HEIGHT + 6.
                         } else {
                             0.

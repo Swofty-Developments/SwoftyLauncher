@@ -53,6 +53,17 @@ impl Prepared {
 /// How often the signed-in account is checked, so a role given or taken away shows soon.
 const ACCOUNT_CHECK: Duration = Duration::from_secs(10);
 
+/// The subscriptions and background loops that live as long as the shell.
+pub(crate) struct Background {
+    _shaders_events: Subscription,
+    _window_moved: Subscription,
+    _console_closed: Subscription,
+    _poll: Task<()>,
+    _live: Task<()>,
+    _updates: Task<()>,
+    _catalog: Task<()>,
+}
+
 impl Shell {
     pub fn new(prepared: Prepared, window: &mut Window, cx: &mut Context<Self>) -> Self {
         let Prepared {
@@ -91,7 +102,6 @@ impl Shell {
             nav: None,
             popover: None,
             popup_timer: false,
-            notch_beside: false,
             root_focus: cx.focus_handle(),
             profiles_open: true,
             online: crate::features::online::Online::new(&root),
@@ -115,7 +125,6 @@ impl Shell {
             ticking: false,
             painted: Instant::now(),
             dock: crate::shell::download_dock::Dock::default(),
-            dock_wake: false,
             live_n: 0,
             highlight: None,
             addons: crate::features::addons::AddonsPage::new(window, cx),
@@ -127,17 +136,9 @@ impl Shell {
             news_scroll: Default::default(),
             browser,
             shaders,
-            _shaders_events: shaders_events,
             tools: Default::default(),
             settings: Default::default(),
             ads,
-            ad_video: None,
-            _window_moved: window_moved,
-            _console_closed: console_closed,
-            _poll: poll,
-            _live: live,
-            _updates: updates,
-            _catalog: catalog,
             game: crate::shell::probe::GameWatch {
                 install: None,
                 copies: Vec::new(),
@@ -167,6 +168,15 @@ impl Shell {
                 window_width: 1440.,
                 content_width: 900.,
                 short: false,
+            },
+            _background: crate::shell::startup::Background {
+                _shaders_events: shaders_events,
+                _window_moved: window_moved,
+                _console_closed: console_closed,
+                _poll: poll,
+                _live: live,
+                _updates: updates,
+                _catalog: catalog,
             },
         };
         shell.refresh_views(cx);
