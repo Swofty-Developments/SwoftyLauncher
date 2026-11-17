@@ -2,7 +2,8 @@ name: Release binaries
 
 # The release build of the swofty CLI, the launcher and Swofty UI for Linux and Windows. CI calls it on every
 # push to main: the run saves the release cache, and a tag on that commit takes the binaries from it instead
-# of building again (release.yml). The release workflow calls it itself only when it finds none.
+# of building again (release.yml). The release workflow calls it itself only when it finds none. CI's call
+# also builds the installer people test, so main needs no separate installer build.
 on:
   workflow_call:
     inputs:
@@ -22,6 +23,10 @@ on:
         description: The runner label for the Windows build
         type: string
         default: windows-latest
+      installer:
+        description: Also build the installer and upload it as installer-Linux and installer-Windows
+        type: boolean
+        default: false
 
 env:
   CARGO_TERM_COLOR: always
@@ -76,6 +81,22 @@ jobs:
           if-no-files-found: error
           retention-days: ${{ inputs.retention-days }}
 
+      # The installer as ci.yml's pull request Installer job builds it: without the server addresses, and in a
+      # cargo run of its own, so that its features cannot change the binaries above. It comes after their
+      # upload; rebuilding swofty-core without the addresses leaves the linked binaries as they are.
+      - name: Build the installer
+        if: inputs.installer
+        run: cargo build --release -p swofty-launcher-installer
+
+      - name: Upload the installer
+        if: inputs.installer
+        uses: actions/upload-artifact@v7
+        with:
+          name: installer-${{ runner.os }}
+          path: target/release/swofty-launcher-installer
+          if-no-files-found: error
+          retention-days: 14
+
   windows-build:
     name: Windows build
     runs-on: ${{ inputs.windows-runner }}
@@ -125,3 +146,19 @@ jobs:
             dist/swofty-ui/swofty-ui.exe
           if-no-files-found: error
           retention-days: ${{ inputs.retention-days }}
+
+      # The installer as ci.yml's pull request Installer job builds it: without the server addresses, and in a
+      # cargo run of its own, so that its features cannot change the binaries above. It comes after their
+      # upload; rebuilding swofty-core without the addresses leaves the linked binaries as they are.
+      - name: Build the installer
+        if: inputs.installer
+        run: cargo build --release -p swofty-launcher-installer
+
+      - name: Upload the installer
+        if: inputs.installer
+        uses: actions/upload-artifact@v7
+        with:
+          name: installer-${{ runner.os }}
+          path: target/release/swofty-launcher-installer.exe
+          if-no-files-found: error
+          retention-days: 14

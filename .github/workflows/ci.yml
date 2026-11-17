@@ -313,11 +313,12 @@ jobs:
       - name: Unit tests
         run: python3 -m unittest discover -s tools/compat/tests -t tools/compat
 
-  # Clippy lints the installer on both systems; this job builds the release binary people test.
+  # Clippy lints the installer on both systems; this job builds the release binary people test. On main the
+  # release build makes it instead (release-binaries.yml), from the release cache.
   installer:
     name: Installer (${{ matrix.os }})
     needs: changes
-    if: needs.changes.outputs.installer == 'true'
+    if: github.event_name == 'pull_request' && needs.changes.outputs.installer == 'true'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
@@ -328,10 +329,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # The release cache main's release build saves, which holds the installer's dependencies too.
       - uses: ./.github/actions/setup-rust
         with:
-          cache: installer-release
-          save: ${{ github.ref == 'refs/heads/main' }}
+          cache: release
           system-libraries: false
 
       - name: Build
@@ -534,6 +535,7 @@ jobs:
       retention-days: 7
       linux-runner: ${{ needs.ec2.outputs.release-linux }}
       windows-runner: ${{ needs.ec2.outputs.release-windows }}
+      installer: true
 
   # Cleans up after every run that may have started instances. Release tags need this run to pass, so the
   # cleanup never fails it.
