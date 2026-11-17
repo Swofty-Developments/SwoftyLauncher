@@ -231,7 +231,7 @@ int main(int argc, char **argv)
         std::string text = read(path);
         expect(!text.empty(), path.string() + " is readable");
         for (auto &name : HOOKED) {
-            size_t n = count(text, "SWOFTY_HOOK_GUARD(" + name);
+            size_t n = count(text, "SWOFTY_HOOK_GUARD(" + name) + count(text, "SWOFTY_MID_HOOK_GUARD(" + name);
             if (n)
                 linked.push_back(name);
             expect(n <= 1, name + " registers once in " + path.string());

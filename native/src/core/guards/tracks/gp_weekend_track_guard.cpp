@@ -1,7 +1,6 @@
 #include "core/apply/moments.hpp"
 #include "core/guards/tracks/gp_weekend_track_logic.hpp"
-#include "core/guards/guard.hpp"
-#include "core/runtime/hook_errors.hpp"
+#include "core/guards/mid_hook.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -114,34 +113,31 @@ void track_read(safetyhook::Context &c)
     swofty::log("[gp] %s", wt::line(d, track, items.size(), mode, d.repair ? items[size_t(d.to)].name : "").c_str());
 }
 
-void setup()
+uintptr_t site()
 {
-    char v[16] = {};
-    if (guards::env_off("SWOFTY_GP_WEEKEND_TRACK_GUARD", v, [](const char *s) { return wt::switch_off(s); })) {
-        swofty::log("[gp] weekend track guard off (SWOFTY_GP_WEEKEND_TRACK_GUARD=%s)", v);
-        return;
-    }
     weekend_vtable = swofty::api ? swofty::api->resolve("vt_Career_Weekend") : 0;
     if (!weekend_vtable) {
         swofty::log("[gp] weekend track guard off: vt_Career_Weekend does not resolve on this build");
-        return;
+        return 0;
     }
     uintptr_t at = runtime::find(S_PRESET_TRACK_READ, "gp", "gp");
-    if (!at) {
+    if (!at)
         swofty::log("[gp] weekend track guard off: %s is not found on this build", S_PRESET_TRACK_READ.what);
-        return;
-    }
-    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), track_read);
-    if (!h) {
-        swofty::log("[gp] weekend track guard: %s: the hook failed: %s", S_PRESET_TRACK_READ.what,
-                    runtime::hook_error(h.error()).c_str());
-        return;
-    }
-    h_track = std::move(*h);
-    swofty::log("[gp] weekend track guard armed: a Grand Prix whose remembered track has no track data record starts on "
-                "melbourne instead of aborting in its tyre allocation");
+    return at;
 }
+
+const guards::MidHookSpec spec{
+    .name = "[gp] weekend track guard",
+    .env = "SWOFTY_GP_WEEKEND_TRACK_GUARD",
+    .site = site,
+    .destination = track_read,
+    .hook = h_track,
+    .armed = "a Grand Prix whose remembered track has no track data record starts on melbourne instead of aborting in "
+             "its tyre allocation",
+    .failed_at = S_PRESET_TRACK_READ.what,
+    .off_value = [](const char *s) { return wt::switch_off(s); },
+};
 
 }
 
-SWOFTY_HOOK_GUARD(gp_weekend_track, "grand prix weekend track guard", setup)
+SWOFTY_MID_HOOK_GUARD(gp_weekend_track, "grand prix weekend track guard", spec)

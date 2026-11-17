@@ -1,6 +1,5 @@
 #include "core/guards/session/race_retirement_logic.hpp"
-#include "core/guards/guard.hpp"
-#include "core/runtime/hook_errors.hpp"
+#include "core/guards/mid_hook.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -127,38 +126,36 @@ void retirement_driver(safetyhook::Context &c)
     log_car(c.rdi, uint8_t(c.r15));
 }
 
-void setup()
+uintptr_t site()
 {
-    char v[16] = {};
-    if (guards::env_off("SWOFTY_RACE_RETIREMENT_GUARD", v)) {
-        swofty::log("[race] retirement driver guard off (SWOFTY_RACE_RETIREMENT_GUARD=%s)", v);
-        return;
-    }
     uintptr_t at = swofty::api->resolve(SITE);
     uintptr_t join = swofty::api->resolve(SITE_JOIN);
     uintptr_t vtable = swofty::api->resolve(NAME_VTABLE);
     if (!at || !join || !vtable) {
         swofty::log("[race] retirement driver guard off: needs %s, %s and %s, which this build does not resolve", SITE,
                     SITE_JOIN, NAME_VTABLE);
-        return;
+        return 0;
     }
     if (join != at + JOIN_AFTER) {
         swofty::log("[race] retirement driver guard off: %s resolves 0x%llx past %s, not 0x%llx", SITE_JOIN,
                     (unsigned long long)(join - at), SITE, (unsigned long long)JOIN_AFTER);
-        return;
+        return 0;
     }
     join_at = join;
     name_vtable = vtable;
-    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), retirement_driver);
-    if (!h) {
-        swofty::log("[race] retirement driver guard: the hook failed: %s", runtime::hook_error(h.error()).c_str());
-        return;
-    }
-    h_driver = std::move(*h);
-    swofty::log("[race] retirement driver guard armed: a car that retires with no driver in the entrants system gets "
-                "a retirement message with no driver name instead of faulting");
+    return at;
 }
+
+const guards::MidHookSpec spec{
+    .name = "[race] retirement driver guard",
+    .env = "SWOFTY_RACE_RETIREMENT_GUARD",
+    .site = site,
+    .destination = retirement_driver,
+    .hook = h_driver,
+    .armed = "a car that retires with no driver in the entrants system gets a retirement message with no driver name "
+             "instead of faulting",
+};
 
 }
 
-SWOFTY_HOOK_GUARD(race_retirement, "race retirement driver guard", setup)
+SWOFTY_MID_HOOK_GUARD(race_retirement, "race retirement driver guard", spec)

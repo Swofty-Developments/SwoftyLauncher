@@ -1,5 +1,4 @@
-#include "core/guards/guard.hpp"
-#include "core/runtime/hook_errors.hpp"
+#include "core/guards/mid_hook.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/guards/session/teammate_pairs_logic.hpp"
 
@@ -74,26 +73,17 @@ void sort_site(safetyhook::Context &c)
     c.r13 = tp::PAIR_BYTES;
 }
 
-void setup()
-{
-    char v[16] = {};
-    if (guards::env_off("SWOFTY_TEAMMATE_PAIRS_GUARD", v)) {
-        swofty::log("[strategy] teammate pairs guard off (SWOFTY_TEAMMATE_PAIRS_GUARD=%s)", v);
-        return;
-    }
-    uintptr_t at = runtime::find(S_SORT, "strategy", "strategy");
-    if (!at)
-        return;
-    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), sort_site);
-    if (!h) {
-        swofty::log("[strategy] teammate pairs guard: the hook failed: %s", runtime::hook_error(h.error()).c_str());
-        return;
-    }
-    h_sort = std::move(*h);
-    swofty::log("[strategy] teammate pairs guard armed: a team with more than two cars pairs its first two for strategy "
-                "instead of throwing");
-}
+uintptr_t site() { return runtime::find(S_SORT, "strategy", "strategy"); }
+
+const guards::MidHookSpec spec{
+    .name = "[strategy] teammate pairs guard",
+    .env = "SWOFTY_TEAMMATE_PAIRS_GUARD",
+    .site = site,
+    .destination = sort_site,
+    .hook = h_sort,
+    .armed = "a team with more than two cars pairs its first two for strategy instead of throwing",
+};
 
 }
 
-SWOFTY_HOOK_GUARD(teammate_pairs, "teammate pairs guard", setup)
+SWOFTY_MID_HOOK_GUARD(teammate_pairs, "teammate pairs guard", spec)
