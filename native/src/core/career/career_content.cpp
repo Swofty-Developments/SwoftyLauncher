@@ -1,3 +1,4 @@
+#include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <swofty/game.hpp>
@@ -1071,6 +1072,8 @@ void tile_route_commit()
     swofty::log("[career] career tile route: %s", route_live ? "armed" : "off");
 }
 
+static loader::FunctionSet tile_route_core_set{loader::CoreSetId::tile_route, tile_route_mixins, tile_route_commit};
+
 TileRoute tile_route_state()
 {
     return route_live ? TileRoute::live
@@ -1100,6 +1103,9 @@ void career_content_commit()
         if (slots[i].state != SWOFTY_CAREER_CONTENT_OFF)
             turn_off(slots[i], off_why);
 }
+
+static loader::FunctionSet career_content_core_set{loader::CoreSetId::career_content, career_content_mixins,
+                                                   career_content_commit};
 
 void career_content_tick()
 {
