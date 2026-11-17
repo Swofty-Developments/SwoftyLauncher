@@ -1194,7 +1194,14 @@ mod tests {
 
     #[test]
     fn gives_up_after_the_timeout() {
-        let spawn = || Command::new("sleep").arg("5").spawn();
+        let spawn = || {
+            Command::new("sleep")
+                .arg("5")
+                .stdin(Stdio::null())
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .spawn()
+        };
         let got = ensure(scripted(&[State::Stopped]), spawn, quick(), |_| {});
         assert_eq!(got, Err(StartError::Timeout(0)));
         assert_eq!(
