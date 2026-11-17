@@ -17,6 +17,7 @@
 #include "core/runtime/json.hpp"
 #include "core/diagnostics/perf.hpp"
 #include "safetyhook.hpp"
+#include "core/runtime/protection_spans_logic.hpp"
 #include "core/runtime/scan_cache.hpp"
 #include "core/frontend/view_state.hpp"
 #include "swofty_api.h"
@@ -460,13 +461,44 @@ const IMAGE_NT_HEADERS *nt_headers()
     return reinterpret_cast<const IMAGE_NT_HEADERS *>(base + reinterpret_cast<const IMAGE_DOS_HEADER *>(base)->e_lfanew);
 }
 
+thread_local runtime::ProtectionSpans *pass_spans;
+
+/* Keeps the game image's VirtualQuery answers on this thread for one binding pass that installs nothing. */
+class ImageProtectionPass {
+  public:
+    ImageProtectionPass() : outer(pass_spans)
+    {
+        if (!outer)
+            pass_spans = &spans;
+    }
+    ~ImageProtectionPass()
+    {
+        if (!outer)
+            pass_spans = nullptr;
+    }
+    ImageProtectionPass(const ImageProtectionPass &) = delete;
+    ImageProtectionPass &operator=(const ImageProtectionPass &) = delete;
+
+  private:
+    runtime::ProtectionSpans spans;
+    runtime::ProtectionSpans *outer;
+};
+
 bool page_readable(uintptr_t p, size_t n)
 {
+    if (pass_spans) {
+        auto known = pass_spans->lookup(p, n);
+        if (known != runtime::ProtectionSpans::Answer::unknown)
+            return known == runtime::ProtectionSpans::Answer::readable;
+    }
     MEMORY_BASIC_INFORMATION m{};
-    if (!VirtualQuery(reinterpret_cast<void *>(p), &m, sizeof m) || m.State != MEM_COMMIT ||
-        !(m.Protect & 0xEE) || (m.Protect & (PAGE_GUARD | PAGE_NOACCESS)))
+    if (!VirtualQuery(reinterpret_cast<void *>(p), &m, sizeof m))
         return false;
-    return p + n <= reinterpret_cast<uintptr_t>(m.BaseAddress) + m.RegionSize;
+    bool readable = m.State == MEM_COMMIT && (m.Protect & 0xEE) && !(m.Protect & (PAGE_GUARD | PAGE_NOACCESS));
+    uintptr_t end = reinterpret_cast<uintptr_t>(m.BaseAddress) + m.RegionSize;
+    if (pass_spans && m.Type == MEM_IMAGE && reinterpret_cast<uintptr_t>(m.AllocationBase) == base)
+        pass_spans->remember(reinterpret_cast<uintptr_t>(m.BaseAddress), end, readable);
+    return readable && p + n <= end;
 }
 
 template <class F> void each_committed(uintptr_t lo, uintptr_t hi, F fn)
@@ -978,6 +1010,7 @@ std::string site_bytes(long long site)
 
 void report(const char *pass)
 {
+    ImageProtectionPass image;
     unreported = false;
     size_t done = 0, waiting = 0, failed = 0;
     for (auto &b : bindings) {
@@ -2108,18 +2141,21 @@ void late_pass(const char *pass, bool final)
     section_reads.clear();
     std::vector<std::string> seen;
     std::string sampled;
-    for (auto &b : bindings)
-        if (b.deferred && std::find(seen.begin(), seen.end(), b.section) == seen.end()) {
-            seen.push_back(b.section);
-            double e = section_now(b.section);
-            char one[96];
-            snprintf(one, sizeof one, "%s%s entropy %.2f (%s)", sampled.empty() ? "" : ", ", b.section.c_str(),
-                     e < 0 ? 0 : e, reads(e));
-            sampled += one;
-        }
-    for (auto &b : bindings)
-        if (b.deferred)
-            attempt(b, final);
+    {
+        ImageProtectionPass image;
+        for (auto &b : bindings)
+            if (b.deferred && std::find(seen.begin(), seen.end(), b.section) == seen.end()) {
+                seen.push_back(b.section);
+                double e = section_now(b.section);
+                char one[96];
+                snprintf(one, sizeof one, "%s%s entropy %.2f (%s)", sampled.empty() ? "" : ", ", b.section.c_str(),
+                         e < 0 ? 0 : e, reads(e));
+                sampled += one;
+            }
+        for (auto &b : bindings)
+            if (b.deferred)
+                attempt(b, final);
+    }
     reinit_pass(final);
     offer_core_sets();
     size_t count[7] = {};
@@ -2434,17 +2470,18 @@ extern "C" __declspec(dllexport) int SwoftyCoreAttach(SwoftyApi *a)
     a->version = SWOFTY_API_VERSION;
     add_core_sets(runtime::career_mixins());
     exe_sha = exe_sha256(exe, caches(dir) + L"exe-sha256.tsv");
-    const auto &said = doc["build"]["packed"];
-    auto cs = section_by_name(game_code());
-    double ce = cs ? section_entropy(cs) : -1;
-    packed = said.type == json::Value::Bool ? said.b : ce > ENCRYPTED;
-    char cname[9] = {};
-    if (cs)
-        memcpy(cname, cs->Name, 8);
-    api->log("[core] build %s: %s (%s); code section %s entropy %.2f, reads %s", build_tag.c_str(),
-             packed ? "packed" : "not packed", said.type == json::Value::Bool ? "the set says so" : "measured at init",
-             cname, ce < 0 ? 0 : ce, reads(ce));
     {
+        ImageProtectionPass image;
+        const auto &said = doc["build"]["packed"];
+        auto cs = section_by_name(game_code());
+        double ce = cs ? section_entropy(cs) : -1;
+        packed = said.type == json::Value::Bool ? said.b : ce > ENCRYPTED;
+        char cname[9] = {};
+        if (cs)
+            memcpy(cname, cs->Name, 8);
+        api->log("[core] build %s: %s (%s); code section %s entropy %.2f, reads %s", build_tag.c_str(),
+                 packed ? "packed" : "not packed", said.type == json::Value::Bool ? "the set says so" : "measured at init",
+                 cname, ce < 0 ? 0 : ce, reads(ce));
         std::lock_guard<std::recursive_mutex> g(resolve_lock);
         for (auto &b : bindings)
             if (!b.resolved && !b.deferred)
