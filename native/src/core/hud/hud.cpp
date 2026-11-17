@@ -4,9 +4,11 @@
 #include "core/frontend/main_menu.hpp"
 #include "core/hud/hud_guard.hpp"
 #include "core/diagnostics/perf.hpp"
+#include "core/diagnostics/steps.hpp"
 #include "core/hud/room_cover.hpp"
 #include "core/services/lap_host.hpp"
 #include "core/render/d3d12_hooks.hpp"
+#include "core/runtime/loader/host_api.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -16,6 +18,7 @@
 #include <algorithm>
 #include <atomic>
 #include <mutex>
+#include <optional>
 #include <vector>
 
 namespace hud::overlay {
@@ -337,13 +340,17 @@ bool Overlay::arm_for_unread_queue(IDXGISwapChain3 *sc, void *caller)
 
 bool Overlay::arm()
 {
-    if (!resolve_d3d12())
+    perf::Stopwatch steps;
+    bool resolved = resolve_d3d12();
+    runtime::loader::api->log(perf::STEP_LINE, steps.lap_ms(), "overlay arm resolve d3d12");
+    if (!resolved)
         return false;
     d3d12hooks::on_present(present_hook);
     d3d12hooks::on_presented(presented_hook);
     d3d12hooks::on_unread_queue(unread_queue_hook);
-    d3d12hooks::ProbeScope probe;
+    std::optional<d3d12hooks::ProbeScope> probe(std::in_place);
     bool swapchain = d3d12hooks::arm_swapchain();
+    runtime::loader::api->log(perf::STEP_LINE, steps.lap_ms(), "overlay arm swapchain (probe device made)");
     if (before_fg_wanted()) {
         arm_before_fg("frame generation is on in the game's settings, or SWOFTY_OVERLAY_FG / \"overlay_fg\"");
     } else if (std::vector<std::string> mods = loaded_modules(); hud::guard::device_hooks_wanted_for(mods)) {
@@ -352,6 +359,10 @@ bool Overlay::arm()
                     hud::guard::present_layer_in(mods).c_str());
         arm_before_fg("the NVIDIA app's present layer is in the process");
     }
+    runtime::loader::api->log(perf::STEP_LINE, steps.lap_ms(), "overlay arm device hooks");
+    probe.reset();
+    runtime::loader::api->log(perf::STEP_LINE, steps.lap_ms(), "overlay arm probe device release");
+    runtime::loader::api->log(perf::STEP_LINE, steps.total_ms(), "overlay arm total");
     return swapchain;
 }
 
@@ -428,7 +439,9 @@ void Overlay::setup()
         swofty::log("[overlay] the overlay is off; the present hook arms for SWOFTY_FRAME_CAPTURE only");
     implemented = on;
     if (on || cover || menu || barred) {
+        perf::Stopwatch font;
         renderer.textures.decode_font();
+        runtime::loader::api->log(perf::STEP_LINE, font.total_ms(), "overlay font atlas decode");
     }
     if (arm())
         armed.store(true);
