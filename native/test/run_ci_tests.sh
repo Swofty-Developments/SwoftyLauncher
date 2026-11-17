@@ -115,6 +115,7 @@ t "Session enter guard unit test" native/test/run_session_enter_test.sh
 t "AI line set guard unit test" native/test/run_ai_line_set_test.sh
 t "Audio job queue fix unit test" native/test/run_audio_queue_test.sh
 t "Shader resource view clamp unit test" native/test/run_srv_clamp_test.sh
+t "Ray tracing build guard unit test" native/test/run_rtas_guard_test.sh
 t "Heap size table unit test" native/test/run_heap_sizes_test.sh
 t "Profiler minute summary unit test" native/test/run_perf_logic_test.sh
 t "Save temp heap size unit test" native/test/run_save_heap_test.sh

@@ -354,6 +354,7 @@ void focus_setup();
 void hud_fatal();
 void grade_setup();
 void srv_clamp_setup();
+void rtas_guard_setup();
 void postfx_setup();
 void telemetry_setup();
 void telemetry_tick();
