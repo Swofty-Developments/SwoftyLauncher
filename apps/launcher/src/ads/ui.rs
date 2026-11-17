@@ -61,6 +61,13 @@ impl Shell {
         self.ads.on() && (self.mp.is_none() || matches!(&self.support.me, Load::Ready(me) if me.sees_ads()))
     }
 
+    fn ad_uid(&self) -> Option<&str> {
+        match &self.support.me {
+            Load::Ready(me) => me.ad_uid.as_deref(),
+            _ => None,
+        }
+    }
+
     /// Fetches the signed-in user's support once per sign-in, which decides their ads.
     pub(crate) fn sync_support(&mut self, cx: &mut Context<Self>) {
         if self.mp.is_none() {
@@ -78,7 +85,7 @@ impl Shell {
         if !self.ads_allowed() {
             return None;
         }
-        let slot = self.ads.slot(unit, background)?;
+        let slot = self.ads.slot(unit, background, self.ad_uid())?;
         Some(
             v_flex()
                 .flex_shrink_0()
@@ -165,7 +172,7 @@ impl Shell {
             return None;
         }
         let closable = video.since.elapsed() >= VIDEO_SKIP;
-        let slot = self.ads.slot(Unit::Video, p.surface)?;
+        let slot = self.ads.slot(Unit::Video, p.surface, self.ad_uid())?;
         let close = Button::new("ad-video-close")
             .ghost()
             .tap_sm()

@@ -328,7 +328,8 @@ impl Ads {
 
     /// The reserved rectangle for `unit`, over which its webview shows, with
     /// `background` behind the ad while it loads.
-    pub(crate) fn slot(&self, unit: Unit, background: Hsla) -> Option<Canvas<()>> {
+    /// `uid` is the user's hashed email, which the page hands to RevIQ.
+    pub(crate) fn slot(&self, unit: Unit, background: Hsla, uid: Option<&str>) -> Option<Canvas<()>> {
         let url = swofty_ads::slot_url(
             &self.host.as_ref()?.borrow().base,
             unit.name(),
@@ -336,7 +337,7 @@ impl Ads {
             rgb_of(background),
             dev_placements(),
         );
-        self.canvas(unit, url, unit.size(), background)
+        self.canvas(unit, swofty_ads::with_uid(url, uid), unit.size(), background)
     }
 
     /// RevIQ's consent form at `size`. `reopen` opens it over a stored answer.
