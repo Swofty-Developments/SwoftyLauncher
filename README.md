@@ -43,8 +43,6 @@ See the [development guide](https://f1.swofty.net/reference/development) for bui
 
 Licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE). Copyright Swofty Pty Ltd (ACN 665 787 244).
 
-Noncommercial use, modification and distribution are permitted. Commercial use needs a separate licence from Swofty Pty Ltd. Releases before this change stay under the licence they were released under.
-
 The plugin SDK in `packages/sdk` and the addon template in `templates/addon` use the MIT licence. The docs theme adapts MIT-licensed CSS from the Geode docs, Swofty UI's texture decoder is ported from MIT-licensed bcdec_rs and bcdec; see [THIRD_PARTY.md](THIRD_PARTY.md).
 
 ## Credits
