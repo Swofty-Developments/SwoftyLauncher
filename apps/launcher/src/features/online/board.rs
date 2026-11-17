@@ -26,7 +26,7 @@ impl Shell {
         let sectors = self.content_width >= 900.;
         let best = best_sectors(&page.rows, 3);
         let leader = page.rows.first().map_or(0, |r| r.time_ms);
-        let me = self.account_name();
+        let me = self.account.display_name();
         let mut body: Vec<AnyElement> = Vec::new();
         for r in &page.rows {
             let idx = self.target_item(&mut items, Target::Profile(r.driver.clone()));

@@ -208,7 +208,7 @@ impl Shell {
                 cx,
             );
         }
-        let armed = (room.is_some() || self.mp_allowed()).then(|| {
+        let armed = (room.is_some() || self.account.allowed()).then(|| {
             swofty_core::multiplayer::client::launch_env_value(&self.store.root, SESSION_MODULE_WAIT)
         });
         match Launch::start(

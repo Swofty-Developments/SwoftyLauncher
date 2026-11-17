@@ -1,6 +1,5 @@
 use crate::dialogs::crash::CrashView;
 use crate::services::library::Library;
-use crate::shell::notices::Notification;
 use gpui_kit::component::slider::SliderState;
 use gpui_kit::*;
 use std::collections::{BTreeSet, HashMap, HashSet};
@@ -11,8 +10,8 @@ use swofty_core::crash::StartFailure;
 use swofty_core::session::UiMode;
 use swofty_core::store::Store;
 use swofty_core::view::View;
-use swofty_i18n::{tr, trf};
 
+mod account;
 mod barfit;
 mod config;
 mod console_window;
@@ -51,18 +50,12 @@ pub struct Shell {
     pub(crate) popover: Option<topbar::Popover>,
     pub(crate) popup_timer: bool,
     pub(crate) notch_beside: bool,
-    pub(crate) avatar: Option<Arc<Image>>,
-    pub(crate) avatar_link: Option<String>,
     pub(crate) root_focus: FocusHandle,
     pub(crate) profiles_open: bool,
     pub(crate) layout_width: f32,
     pub(crate) online: crate::features::online::Online,
     pub(crate) library: Library,
     pub(crate) open_addon: Option<String>,
-    pub(crate) mp: Option<swofty_core::mpauth::Session>,
-    pub(crate) mp_busy: bool,
-    pub(crate) ban: Option<swofty_core::mpauth::Ban>,
-    pub(crate) mp_toasts: Vec<Notification>,
     pub(crate) mp_page: crate::features::multiplayer::Multiplayer,
     pub(crate) crash: Option<(PathBuf, Result<String, StartFailure>)>,
     /// The newest crash's diagnosis, and whether its modal is open.
@@ -140,185 +133,11 @@ pub struct Shell {
     _catalog: Task<()>,
     pub(crate) game: crate::shell::probe::GameWatch,
     pub(crate) launching: crate::shell::play::Launching,
+    pub(crate) account: crate::shell::account::Account,
 }
 
 pub struct SliderSlot {
     pub state: Entity<SliderState>,
     pub synced: usize,
     pub _changes: Subscription,
-}
-
-impl Shell {
-    pub(super) fn mp_sign_in(&mut self, _window: &mut Window, cx: &mut Context<Self>) {
-        if self.mp_busy || self.mp.is_some() {
-            return;
-        }
-        if let Err(why) = account_guard(self.game_busy()) {
-            self.mp_toasts.push(Notification::warning(why));
-            cx.notify();
-            return;
-        }
-        let (pending, url) = match swofty_core::mpauth::begin() {
-            Ok(v) => v,
-            Err(e) => {
-                self.mp_toasts
-                    .push(Notification::error(trf!("Sign-in failed: {e}", e = e)));
-                cx.notify();
-                return;
-            }
-        };
-        self.mp_busy = true;
-        cx.open_url(&url);
-        let dir = self.store.root.clone();
-        cx.spawn(async move |this, cx| {
-            let result = cx
-                .background_executor()
-                .spawn(async move { pending.wait(&dir) })
-                .await;
-            this.update(cx, |s, cx| {
-                s.mp_busy = false;
-                match result {
-                    Ok(session) => {
-                        s.mp_toasts.push(Notification::success(trf!(
-                            "Signed in as {name}",
-                            name = session.name
-                        )));
-                        if session.allowed {
-                            s.mp_toasts.push(Notification::success(tr(
-                                "Your account has been granted access to: Multiplayer",
-                            )));
-                        }
-                        swofty_core::multiplayer::client::load_in_background(&s.store.root, &session.token);
-                        s.mp = Some(session);
-                        s.sync_avatar(cx);
-                        s.sync_support(cx);
-                    }
-                    Err(swofty_core::mpauth::SignInError::Banned(ban)) => s.ban = Some(ban),
-                    Err(e) => s
-                        .mp_toasts
-                        .push(Notification::error(trf!("Sign-in failed: {e}", e = e))),
-                }
-                cx.notify();
-            })
-            .ok();
-        })
-        .detach();
-        cx.notify();
-    }
-
-    pub(super) fn mp_sign_out(&mut self, _window: &mut Window, cx: &mut Context<Self>) {
-        if self.mp.is_some()
-            && let Err(why) = account_guard(self.game_busy())
-        {
-            self.mp_toasts.push(Notification::warning(why));
-            cx.notify();
-            return;
-        }
-        let Some(session) = self.mp.take() else {
-            return;
-        };
-        self.sync_support(cx);
-        self.mp_leave(cx);
-        let name = session.name.clone();
-        let dir = self.store.root.clone();
-        cx.background_executor()
-            .spawn(async move { swofty_core::mpauth::sign_out(&dir, &session) })
-            .detach();
-        self.mp_toasts
-            .push(Notification::info(trf!("Signed out {name}", name = name)));
-        cx.notify();
-    }
-
-    pub(super) fn mp_apply_check(
-        &mut self,
-        checked: swofty_core::mpauth::Refreshed,
-        was_allowed: bool,
-        cx: &mut Context<Self>,
-    ) {
-        use swofty_core::mpauth::Refreshed;
-        match checked {
-            Refreshed::Session(session) => self.mp_apply_refresh(Some(session), was_allowed, cx),
-            Refreshed::Gone => self.mp_apply_refresh(None, was_allowed, cx),
-            Refreshed::Banned(ban) => {
-                self.mp_leave(cx);
-                self.mp = None;
-                self.sync_support(cx);
-                self.ban = Some(ban);
-                cx.notify();
-            }
-        }
-    }
-
-    pub(super) fn mp_apply_refresh(
-        &mut self,
-        refreshed: Option<swofty_core::mpauth::Session>,
-        was_allowed: bool,
-        cx: &mut Context<Self>,
-    ) {
-        match refreshed {
-            Some(session) => {
-                let gained = session.allowed && !was_allowed;
-                swofty_core::multiplayer::client::load_in_background(&self.store.root, &session.token);
-                self.mp = Some(session);
-                self.sync_avatar(cx);
-                if gained {
-                    self.mp_toasts.push(Notification::success(tr(
-                        "Your account has been granted access to: Multiplayer",
-                    )));
-                }
-            }
-            None => self.mp = None,
-        }
-        self.sync_support(cx);
-        cx.notify();
-    }
-}
-
-impl Shell {
-    pub(crate) fn sync_avatar(&mut self, cx: &mut Context<Self>) {
-        let Some(link) = self.mp.as_ref().and_then(|s| s.avatar.clone()) else {
-            return;
-        };
-        if self.avatar_link.as_ref() == Some(&link) {
-            return;
-        }
-        self.avatar_link = Some(link.clone());
-        let dir = self.store.root.clone();
-        cx.spawn(async move |this, cx| {
-            let image = cx
-                .background_executor()
-                .spawn(async move {
-                    crate::services::avatar::fetch(&dir, &link)
-                        .then(|| crate::services::avatar::load(&dir))
-                        .flatten()
-                })
-                .await;
-            this.update(cx, |s, cx| {
-                if image.is_some() {
-                    s.avatar = image;
-                    cx.notify();
-                }
-            })
-            .ok();
-        })
-        .detach();
-    }
-}
-
-pub(crate) fn account_guard(game_busy: bool) -> Result<(), &'static str> {
-    match game_busy {
-        true => Err(swofty_i18n::tr("Close the game to sign in or out")),
-        false => Ok(()),
-    }
-}
-
-#[cfg(test)]
-mod account_tests {
-    use super::account_guard;
-
-    #[test]
-    fn the_account_is_locked_only_while_the_game_runs() {
-        assert!(account_guard(false).is_ok());
-        assert_eq!(account_guard(true), Err("Close the game to sign in or out"));
-    }
 }

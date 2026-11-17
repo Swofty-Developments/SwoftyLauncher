@@ -56,15 +56,7 @@ fn filled_icon(icon: IconName, cx: &App) -> Option<Arc<[u8]>> {
 
 impl Shell {
     pub(crate) fn nav_mp(&self) -> bool {
-        self.mp_allowed() || (cfg!(debug_assertions) && std::env::var_os("SWOFTY_FAKE_MP").is_some())
-    }
-
-    pub(crate) fn account_name(&self) -> Option<String> {
-        self.mp.as_ref().map(|s| s.name.clone()).or_else(|| {
-            cfg!(debug_assertions)
-                .then(|| std::env::var("SWOFTY_FAKE_SIGNED_IN").ok())
-                .flatten()
-        })
+        self.account.allowed() || (cfg!(debug_assertions) && std::env::var_os("SWOFTY_FAKE_MP").is_some())
     }
 
     pub(crate) fn sub_nav(&self, layout_width: f32) -> Option<SubNav> {
@@ -245,7 +237,7 @@ impl Shell {
                     Action::Notifications => self.open_popover(Popover::Notices, cx),
                     Action::Settings => self.open_page(Page::Settings, cx),
                     Action::Account => {
-                        if self.account_name().is_some() {
+                        if self.account.display_name().is_some() {
                             self.open_popover(Popover::Account, cx);
                         } else {
                             self.mp_sign_in(window, cx);

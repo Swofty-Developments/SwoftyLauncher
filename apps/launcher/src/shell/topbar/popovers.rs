@@ -46,7 +46,7 @@ impl Shell {
     }
 
     pub(super) fn account_panel(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        let name = self.account_name().unwrap_or_default();
+        let name = self.account.display_name().unwrap_or_default();
         self.panel(p)
             .w(px(220.))
             .child(
@@ -62,7 +62,7 @@ impl Shell {
                     .ghost()
                     .icon(IconName::LogOut)
                     .label(tr("Log out"))
-                    .disabled(self.mp_busy || self.game_busy())
+                    .disabled(self.account.busy || self.game_busy())
                     .tooltip(tr("Close the game to sign in or out"))
                     .on_click(cx.listener(|this, _, window, cx| {
                         this.popover = None;

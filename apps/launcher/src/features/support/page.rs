@@ -215,8 +215,8 @@ impl Shell {
                         Button::new("support-claim")
                             .small()
                             .primary()
-                            .label(if self.mp.is_some() { tr("Claim") } else { tr("Sign in to claim") })
-                            .disabled(busy || self.mp.is_none())
+                            .label(if self.account.session.is_some() { tr("Claim") } else { tr("Sign in to claim") })
+                            .disabled(busy || self.account.session.is_none())
                             .on_click(cx.listener(move |this, _, _, cx| {
                                 let (a, b) = (e.read(cx).value().to_string(), pay.read(cx).value().to_string());
                                 if a.trim().is_empty() || b.trim().is_empty() {
@@ -462,7 +462,7 @@ impl Shell {
         _p: Palette,
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let signed_in = self.mp.is_some();
+        let signed_in = self.account.session.is_some();
         let name = tier_name(if plus { "supporter_plus" } else { "supporter" }).to_uppercase();
         div()
             .id(if plus { "support-plus" } else { "support-basic" })

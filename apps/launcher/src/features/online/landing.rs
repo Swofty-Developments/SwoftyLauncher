@@ -172,7 +172,8 @@ impl Shell {
     ) -> AnyElement {
         let feed = self.online.feeds.get(scope).cloned().unwrap_or_default();
         let me = self
-            .account_name()
+            .account
+            .display_name()
             .and_then(|_| self.online.me.clone())
             .and_then(|m| m.entry);
         for r in feed.rows.iter().take(3) {

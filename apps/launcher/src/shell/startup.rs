@@ -125,17 +125,11 @@ impl Shell {
             popover: None,
             popup_timer: false,
             notch_beside: false,
-            avatar: crate::services::avatar::load(&root),
-            avatar_link: None,
             root_focus: cx.focus_handle(),
             profiles_open: true,
             layout_width: 1440.,
             online: crate::features::online::Online::new(&root),
             open_addon: None,
-            mp,
-            mp_busy: false,
-            ban: None,
-            mp_toasts: Vec::new(),
             mp_page: crate::features::multiplayer::Multiplayer::new(window, cx),
             crash: None,
             crash_view: None,
@@ -225,6 +219,14 @@ impl Shell {
                 cancelling: false,
                 game_edited: None,
                 steam_saves_once: false,
+            },
+            account: crate::shell::account::Account {
+                session: mp,
+                busy: false,
+                ban: None,
+                toasts: Vec::new(),
+                avatar: crate::services::avatar::load(&root),
+                avatar_link: None,
             },
         };
         shell.refresh_views(cx);
@@ -401,7 +403,7 @@ impl Shell {
                     .spawn(async move { swofty_core::mpauth::refresh_checked(&dir, &current) })
                     .await;
                 this.update(cx, |s, cx| {
-                    let allowed = s.mp.as_ref().is_some_and(|m| m.allowed);
+                    let allowed = s.account.session.as_ref().is_some_and(|m| m.allowed);
                     s.mp_apply_check(refreshed, allowed, cx);
                     s.sync_avatar(cx);
                     s.sync_support(cx);
@@ -429,11 +431,12 @@ impl Shell {
         let mp_poll = cx.spawn(async move |this, cx| {
             loop {
                 cx.background_executor().timer(ACCOUNT_CHECK).await;
-                let current =
-                    match this.update(cx, |s, _| s.mp.clone().map(|sess| (s.store.root.clone(), sess))) {
-                        Ok(c) => c,
-                        Err(_) => break,
-                    };
+                let current = match this.update(cx, |s, _| {
+                    s.account.session.clone().map(|sess| (s.store.root.clone(), sess))
+                }) {
+                    Ok(c) => c,
+                    Err(_) => break,
+                };
                 let Some((dir, session)) = current else {
                     continue;
                 };

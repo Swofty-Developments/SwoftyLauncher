@@ -63,7 +63,7 @@ impl Render for Shell {
         for note in std::mem::take(&mut self.browser.toasts) {
             window.notify(note, cx);
         }
-        for note in std::mem::take(&mut self.mp_toasts) {
+        for note in std::mem::take(&mut self.account.toasts) {
             window.notify(note, cx);
         }
         let content = match self.page {

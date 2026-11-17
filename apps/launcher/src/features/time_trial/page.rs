@@ -34,7 +34,7 @@ impl Shell {
                 this.tt_reload(cx);
                 this.tt_load_runs(cx);
             }));
-        if self.mp.is_none() {
+        if self.account.session.is_none() {
             let header = self.header(
                 tr("Time Trial"),
                 tr("Leaderboards for every track").to_owned(),

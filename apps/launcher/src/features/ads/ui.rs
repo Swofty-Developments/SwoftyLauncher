@@ -47,7 +47,7 @@ impl Shell {
         self.popover.is_some()
             || self.tasks.is_some()
             || (self.crash_open && self.crash_view.is_some())
-            || self.ban.is_some()
+            || self.account.ban.is_some()
             || self.moving.is_some()
             || self.found_data.is_some()
             || self.dropping
@@ -58,12 +58,13 @@ impl Shell {
     /// Signed-in supporters see no ads, and nobody signed in does until their
     /// support is known.
     pub(crate) fn ads_allowed(&self) -> bool {
-        self.ads.on() && (self.mp.is_none() || matches!(&self.support.me, Load::Ready(me) if !me.active))
+        self.ads.on()
+            && (self.account.session.is_none() || matches!(&self.support.me, Load::Ready(me) if !me.active))
     }
 
     /// Fetches the signed-in user's support once per sign-in, which decides their ads.
     pub(crate) fn sync_support(&mut self, cx: &mut Context<Self>) {
-        if self.mp.is_none() {
+        if self.account.session.is_none() {
             self.support.me = Load::Idle;
         } else if matches!(self.support.me, Load::Idle | Load::Failed(_)) {
             self.support_fetch_me(cx);

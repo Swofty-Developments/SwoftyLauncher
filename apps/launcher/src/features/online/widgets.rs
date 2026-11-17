@@ -455,7 +455,8 @@ impl Shell {
     }
 
     pub(super) fn sign_in_banner(&self, p: Palette, cx: &mut Context<Self>) -> Option<AnyElement> {
-        self.account_name()
+        self.account
+            .display_name()
             .is_none()
             .then(|| {
                 div()

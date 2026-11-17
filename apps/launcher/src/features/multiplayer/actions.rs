@@ -18,10 +18,6 @@ use crate::shell::{Page, Shell};
 use crate::ui::theme::Palette;
 
 impl Shell {
-    pub(crate) fn mp_allowed(&self) -> bool {
-        self.mp.as_ref().is_some_and(|m| m.allowed)
-    }
-
     pub(crate) fn watch_multiplayer(window: &mut Window, cx: &mut Context<Self>) {
         cx.spawn_in(window, async move |this, cx| {
             loop {
@@ -42,7 +38,7 @@ impl Shell {
             m.finish_leaving();
             cx.notify();
         }
-        if self.page != Page::Multiplayer || !self.mp_allowed() {
+        if self.page != Page::Multiplayer || !self.account.allowed() {
             self.mp_page.visible = false;
             return;
         }
@@ -288,7 +284,7 @@ impl Shell {
 
     pub(crate) fn mp_can_play_room(&self) -> bool {
         self.page == Page::Multiplayer
-            && self.mp_allowed()
+            && self.account.allowed()
             && !self.mp_page.busy()
             && self.mp_viewed_room().is_some()
     }
@@ -377,7 +373,7 @@ impl Shell {
     }
 
     pub(super) fn mp_poll_rooms(&mut self, cx: &mut Context<Self>) {
-        let Some(token) = self.mp.as_ref().map(|m| m.token.clone()) else {
+        let Some(token) = self.account.session.as_ref().map(|m| m.token.clone()) else {
             return;
         };
         self.mp_page.rooms_polling = true;
@@ -445,7 +441,7 @@ impl Shell {
         if self.mp_page.busy() {
             return;
         }
-        let Some(token) = self.mp.as_ref().map(|m| m.token.clone()) else {
+        let Some(token) = self.account.session.as_ref().map(|m| m.token.clone()) else {
             return;
         };
         let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
@@ -519,7 +515,7 @@ impl Shell {
     }
 
     pub(super) fn mp_default_name(&self) -> String {
-        let you = self.mp.as_ref().map_or("Your", |m| m.name.as_str());
+        let you = self.account.session.as_ref().map_or("Your", |m| m.name.as_str());
         format!("{you}'s room")
     }
 

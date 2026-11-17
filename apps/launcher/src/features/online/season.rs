@@ -23,7 +23,7 @@ impl Shell {
             Some(Load::Ready(page)) => page.clone(),
         };
         let mut items: Vec<Target> = Vec::new();
-        let me = self.account_name();
+        let me = self.account.display_name();
         let wide = self.content_width >= 1000.;
         let mine_keys: std::collections::HashSet<BoardKey> = self.online.my_times.keys().cloned().collect();
         let mut filter = self.online.filter_tracks.clone();
