@@ -6,6 +6,8 @@
 #include <mutex>
 #include <set>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -72,6 +74,14 @@ private:
         bool lent = false;
     };
 
+    // The ids of one registry that records hold (each with its first holder in record order) and that careers use,
+    // read once so an allocation asks each id in constant time instead of walking every record per id.
+    struct Taken {
+        std::unordered_map<int64_t, std::string> holder;
+        std::unordered_set<int64_t> careers;
+    };
+
+    Taken taken_index_locked(const std::string &registry) const;
     bool held_locked(const std::string &registry, int64_t id, std::string *holder) const;
     bool db_locked(const std::string &registry, int64_t id, const std::string &label, std::string *row) const;
     bool taken_locked(const std::string &registry, int64_t id, const std::string &record) const;
@@ -81,7 +91,7 @@ private:
     bool career_uses_locked(const std::string &registry, int64_t id, const std::string &except = {}) const;
     bool live_locked(const std::string &registry, const std::string &record) const;
     std::string pool_text_locked(const std::string &registry) const;
-    std::size_t free_count_locked(const std::string &registry) const;
+    std::size_t free_count_locked(const std::string &registry, const Taken &taken, int64_t now_held) const;
 
     mutable std::mutex mu_;
     std::map<std::string, std::map<std::string, Entry>> ids_;
