@@ -35,6 +35,18 @@ namespace {
 namespace pn = runtime::player_name;
 namespace sl = runtime::session_life;
 
+// The UI registry node classes' vtables (ui_registry_walk.hpp), each loaded where the game constructs a node of that class
+// (re/tools/sigport.py: one match on the KB build and on Steam 26566308; the walker's layout functions are the same code).
+const runtime::Sig S_OBJECT_VT{"vt_Vm_ObjectNode", "48 8D 15 ?? ?? ?? ?? 48 89 10 48 89 48 38 C5 F8 11 70 40", 0x5a70080,
+                               runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig S_LIST_VT{"vt_Vm_ListNode",
+                             "48 8D 0D ?? ?? ?? ?? 48 89 08 48 89 78 38 C5 F8 11 40 40 48 C7 40 50 00 00 00 00 48 89 78 58",
+                             0x5a6ff90, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig S_STRING_LEAF_VT{"vt_Vm_StringLeafNode", "48 8D 0D ?? ?? ?? ?? 48 89 0E 48 89 46 38 C5 F8 11 76 50",
+                                    0x565f200, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig S_STRING_BINDING_VT{"vt_Vm_StringBinding", "48 8D 0D ?? ?? ?? ?? 48 89 0F 48 C7 47 08 00 00 00 00",
+                                       0x5660370, runtime::Sig::riprel, 0, 3, 7};
+
 // Reads of game memory. Small reads (node fields) are guarded copies; anything bigger goes through ReadProcessMemory, which reports a
 // short read instead of faulting. A fault inside the big memcpy of the core's runtime cannot be dispatched under Wine (run67: "invalid
 // frame ... unable to dispatch exception"), so no large read may rely on the SEH guard.
@@ -214,13 +226,33 @@ bool registry_read(uint64_t at, void *out, size_t n)
     return swofty_core::hooks::guard::copy_memory(out, reinterpret_cast<const void *>(at), n);
 }
 
+bool registry_layout(runtime::ui_registry::Layout &lay)
+{
+    static runtime::ui_registry::Layout found;
+    static const bool ok = [] {
+        uint64_t base = swofty::api->module_base();
+        if (runtime::same_build()) {
+            found = {base + 0x5a70080, base + 0x5a6ff90, base + 0x565f200, base + 0x5660370};
+            return true;
+        }
+        found = {runtime::find(S_OBJECT_VT, "registry layout", "boards"), runtime::find(S_LIST_VT, "registry layout", "boards"),
+                 runtime::find(S_STRING_LEAF_VT, "registry layout", "boards"),
+                 runtime::find(S_STRING_BINDING_VT, "registry layout", "boards")};
+        return found.object_vt && found.list_vt && found.string_leaf_vt && found.string_binding_vt;
+    }();
+    lay = found;
+    return ok;
+}
+
 void probe_registry(int pass)
 {
     namespace ur = runtime::ui_registry;
     if (!swofty::game::g_Vm_Registry.address())
         return;
     uint64_t base = swofty::api->module_base(), reg = uint64_t(*swofty::game::g_Vm_Registry);
-    ur::Layout lay{base + 0x5a70080, base + 0x5a6ff90, base + 0x565f200, base + 0x5660370};
+    ur::Layout lay;
+    if (!registry_layout(lay))
+        return;
     char stock[96] = "Swooftyy";
     GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME_STOCK", stock, sizeof stock);
     std::vector<ur::Hit> hits;
@@ -364,8 +396,10 @@ int pin_names(const std::string &name, const std::string &stock)
     namespace ur = runtime::ui_registry;
     if (!swofty::game::g_Vm_Registry.address() || !swofty::game::Vm_Set_String.address() || !swofty::game::Ne_Make_StrFromCStr.address())
         return 0;
-    uint64_t base = swofty::api->module_base(), reg = uint64_t(*swofty::game::g_Vm_Registry);
-    ur::Layout lay{base + 0x5a70080, base + 0x5a6ff90, base + 0x565f200, base + 0x5660370};
+    uint64_t reg = uint64_t(*swofty::game::g_Vm_Registry);
+    ur::Layout lay;
+    if (!registry_layout(lay))
+        return 0;
     std::vector<ur::Hit> hits;
     ur::Stats st;
     auto rd = [](uint64_t at, void *out, size_t n) { return registry_read(at, out, n); };

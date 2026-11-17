@@ -1,5 +1,6 @@
 #pragma once
 #include "core/frontend/player_name_logic.hpp"
+#include "core/frontend/ui_registry_walk.hpp"
 
 #include <atomic>
 #include <condition_variable>
@@ -11,6 +12,8 @@
 namespace name_copies {
 
 bool registry_read(uint64_t at, void *out, size_t n);
+// The UI registry layout on the running exe; false when its node classes are not found there.
+bool registry_layout(runtime::ui_registry::Layout &lay);
 void probe_registry(int pass);
 void scan_copies(std::string stock);
 int pin_names(const std::string &name, const std::string &stock);
