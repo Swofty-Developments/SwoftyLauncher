@@ -5,6 +5,8 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::GAME_EXE;
+use crate::install::Source;
+use crate::platform::LaunchPlatform;
 use crate::platform::run_as_admin::parse_reg_query;
 use crate::session::COMPAT_LAYER;
 
@@ -30,6 +32,35 @@ pub const DESKTOP_KEYS: &[&str] = &[
     r"HKLM\SOFTWARE\Electronic Arts\EA Desktop",
     r"HKLM\SOFTWARE\WOW6432Node\Electronic Arts\EA Desktop",
 ];
+
+/// The EA app, as a [`LaunchPlatform`].
+pub struct EaApp;
+
+impl LaunchPlatform for EaApp {
+    fn name(&self) -> &'static str {
+        "EA app"
+    }
+
+    fn source(&self) -> Source {
+        Source::EaApp
+    }
+
+    fn installed(&self, dir: &Path) -> bool {
+        dir.join(MARKER).is_file()
+    }
+
+    fn installs(&self) -> Vec<PathBuf> {
+        installs()
+    }
+
+    fn client_running(&self) -> bool {
+        running()
+    }
+
+    fn move_hint(&self) -> &'static str {
+        " with EA app > F1 25 > Manage > Move, not File Explorer"
+    }
+}
 
 pub fn is_install(dir: &Path) -> bool {
     dir.join(GAME_EXE).is_file() && dir.join(MARKER).is_file()

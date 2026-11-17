@@ -1,7 +1,38 @@
 use std::path::{Path, PathBuf};
 
+use crate::install::Source;
+use crate::platform::LaunchPlatform;
 use crate::platform::vdf::{self, Vdf};
 use crate::{GAME_EXE, STEAM_APP_ID};
+
+/// Steam, as a [`LaunchPlatform`].
+pub struct Steam;
+
+impl LaunchPlatform for Steam {
+    fn name(&self) -> &'static str {
+        "Steam"
+    }
+
+    fn source(&self) -> Source {
+        Source::Steam
+    }
+
+    fn installed(&self, dir: &Path) -> bool {
+        dir.join("EAJavelinInstaller_installscript.vdf").is_file() || in_steam_library(dir)
+    }
+
+    fn installs(&self) -> Vec<PathBuf> {
+        find_game().map(|g| g.dir).into_iter().collect()
+    }
+
+    fn client_running(&self) -> bool {
+        crate::platform::steam_client::status().state != crate::platform::steam_client::State::Stopped
+    }
+
+    fn move_hint(&self) -> &'static str {
+        " in Steam (Properties > Installed Files > Move install folder)"
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct GameInstall {
