@@ -1033,6 +1033,49 @@ pub fn archive(stock: &dyn Stock, resources: Vec<Res>) -> Result<Vec<u8>> {
     Ok(erp.to_bytes())
 }
 
+/// Records that several addons bring alike: the same key, the same `prefix`, an equal record and the
+/// same bytes in every sprite. A family of addons that each must work alone (a season per addon, say)
+/// can then carry one shared screen record without the board growing with every addon: all screen
+/// records share the cap scene and each brings its own host, so a board holds
+/// `(1 + records) x (cap + every record)` walk slots. The first in load order is composed; the
+/// others are left out with a line. Records that share a prefix and differ in anything still stop
+/// the build in [`compose_with`].
+pub fn shared_records(inputs: Vec<Input>) -> Result<(Vec<Input>, Vec<String>)> {
+    let mut kept: Vec<Input> = Vec::new();
+    let mut lines = Vec::new();
+    'next: for input in inputs {
+        if let Some(p) = input.record.prefix.as_deref() {
+            for k in &kept {
+                if k.key == input.key
+                    && k.record.prefix.as_deref() == Some(p)
+                    && k.record == input.record
+                    && same_sprites(k, &input)?
+                {
+                    lines.push(format!(
+                        "{p}: {} brings the same record {} as {}; composed once",
+                        input.addon, input.key, k.addon
+                    ));
+                    continue 'next;
+                }
+            }
+        }
+        kept.push(input);
+    }
+    Ok((kept, lines))
+}
+
+fn same_sprites(a: &Input, b: &Input) -> Result<bool> {
+    for s in a.record.sprites.values() {
+        let pa = a.dir.join(&s.png);
+        let ra = std::fs::read(&pa).map_err(|e| Error::Io { path: pa.clone(), source: e })?;
+        match std::fs::read(b.dir.join(&s.png)) {
+            Ok(rb) if rb == ra => {}
+            _ => return Ok(false),
+        }
+    }
+    Ok(true)
+}
+
 /// Reads the records of an addon's hud file into inputs.
 pub fn inputs_of(addon: &str, dir: &Path, file: &str) -> Result<Vec<Input>> {
     let path = dir.join(file);
@@ -1125,6 +1168,57 @@ mod tests {
                                      "session.current_car.position": "1" }, "team_colour": "#27F4D2" },
             "variants": { "f2": { "dial": "f2", "remove": ["batt"] } }
         })
+    }
+
+    fn shared_input(tag: &str, addon: &str, prefix: Option<&str>) -> Input {
+        let mut v = record();
+        if let Some(p) = prefix {
+            v["prefix"] = serde_json::json!(p);
+        }
+        // same_sprites compares bytes only, so plain files stand in for the sprites
+        let dir = std::env::temp_dir().join(format!("swofty-hud-{tag}-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(dir.join("art")).unwrap();
+        for n in ["base", "lit", "fill", "mask", "solid"] {
+            std::fs::write(dir.join(format!("art/{n}.png")), n.as_bytes()).unwrap();
+        }
+        Input {
+            addon: addon.into(),
+            key: "era".into(),
+            dir,
+            record: HudElement::parse(&v).unwrap(),
+        }
+    }
+
+    #[test]
+    fn identical_records_from_several_addons_compose_once() {
+        let a = shared_input("shared-a", "x.season-1955", Some("vmkzt"));
+        let b = shared_input("shared-b", "x.season-1975", Some("vmkzt"));
+        let c = shared_input("shared-c", "x.season-1995", Some("vmkzt"));
+        let (kept, lines) = shared_records(vec![a, b, c]).unwrap();
+        assert_eq!(kept.len(), 1);
+        assert_eq!(kept[0].addon, "x.season-1955");
+        assert_eq!(lines.len(), 2, "{lines:?}");
+        assert!(lines[0].contains("x.season-1975 brings the same record era as x.season-1955"), "{lines:?}");
+    }
+
+    #[test]
+    fn records_that_differ_stay_apart() {
+        // other sprite bytes
+        let a = shared_input("differ-a", "x.a", Some("vmkzt"));
+        let b = shared_input("differ-b", "x.b", Some("vmkzt"));
+        std::fs::write(b.dir.join("art/base.png"), b"other").unwrap();
+        let (kept, lines) = shared_records(vec![a, b]).unwrap();
+        assert_eq!((kept.len(), lines.len()), (2, 0));
+        // another record under the same prefix
+        let a = shared_input("differ-c", "x.a", Some("vmkzt"));
+        let mut b = shared_input("differ-d", "x.b", Some("vmkzt"));
+        b.record.elements.pop();
+        assert_eq!(shared_records(vec![a, b]).unwrap().0.len(), 2);
+        // no explicit prefix: the prefix comes from the addon, never shared
+        let a = shared_input("differ-e", "x.a", None);
+        let b = shared_input("differ-f", "x.b", None);
+        assert_eq!(shared_records(vec![a, b]).unwrap().0.len(), 2);
     }
 
     #[test]

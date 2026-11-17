@@ -2270,6 +2270,8 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             .push(stray_asset_group_line(&name(&id), &folder, n));
     }
     if !hud_inputs.is_empty() {
+        let (hud_inputs, shared) = crate::hud::shared_records(hud_inputs)?;
+        built.lines.extend(shared.iter().map(|l| format!("hud: {l}")));
         let stock = crate::hud::GameStock::with_baseline(&game.dir, &store.root)
             .unwrap_or_else(|_| crate::hud::GameStock::new(&game.dir));
         let staged = built.plan.data.clone();
