@@ -10,7 +10,6 @@ use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 
 use crate::asset::Kind;
-use crate::updates::release::UpdateConfig;
 
 pub use record::{
     CORE_STOPPED_LOAD, END_FILE, Ending, LogMark, STOP_FILE, SessionEnd, SessionRecord, crash_code,
@@ -153,6 +152,24 @@ fn on() -> bool {
 
 fn is_on(v: &bool) -> bool {
     *v
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct UpdateConfig {
+    #[serde(default = "yes")]
+    pub check: bool,
+}
+
+impl Default for UpdateConfig {
+    fn default() -> Self {
+        Self { check: true }
+    }
+}
+
+impl UpdateConfig {
+    pub fn is_default(&self) -> bool {
+        *self == Self::default()
+    }
 }
 
 impl Default for Config {
