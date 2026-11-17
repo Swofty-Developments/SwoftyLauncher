@@ -15,7 +15,7 @@ Owner: see `subsystems.tsv`. Consumer: `native/src/core/hud.cpp` (the overlay st
 
 ## Render pipeline toward an offline preview (engine-re 2026-11-17, static)
 
-Written by engine-re at user request (lane owner review requested). Static only (Steam d873a1c8 exe); nothing here is runtime-confirmed. Blind verification: V10803-V10816 (10 agree, 3 partial, 0 disagree).
+Written by engine-re at user request (lane owner review requested). Static only (Steam d873a1c8 exe); nothing here is runtime-confirmed. Blind verification: round 1 V10803-V10816 (10 agree, 3 partial, 0 disagree); round 2 V10817-V10828 (12 agree).
 
 ## Lighting
 
@@ -94,9 +94,17 @@ The cloud keys sit at +0x190..+0x640 and +0x9d0..+0xb20 (see the function's deco
   - Value layout (file-format side, F1_TrackLab decoder): u32 atlas slice, f32 size, f32 u, f32 v.
   - The atlases are `baked_maps_ao` (BC4) and `baked_maps_radiance` (BC6H), 4 slices. Slice 0 is the planar terrain map. `Render_Texture_CreateFromResource` special-cases both.
 - **Fallbacks.** `Game_Read_RendererGfxConfig` names `eaid://default_lightmap`, `default_lightmap_array_ao` and `default_lightmap_array_radiance`.
-- **OPEN:**
-  - the shader-side lookup: which constant carries slice/size/u/v, and which UV set (terrain: the UVMacro / 2nd UV)
-  - what an instance with no entry gets. Likely the default arrays; needs a capture (T159).
+- **Round 2: the full chain, CPU to shader** (static exe + shader reflection, see "Shader side" below):
+  1. `Render_ModelComponent_Load` copies the 16-byte instance uniqueid from the load descriptor (+0x98/+0xa0) to model+0xc8.
+  2. `Render_ModelComponent_SendLightMapData` 0x14446e5f0 (called from slot 4 `Render_ModelComponent_OnResourcesReady` 0x14446b640 when a location resource has data) looks the id up in both maps (`Ne_HashMap_Find16` 0x143ed6e50) and posts render message 0x16 = `PROXY_MESSAGE_ID_SET_LIGHT_MAP_DATA` (0x20 bytes).
+  3. `Render_ModelProxy_HandleMessage` 0x143d405b0 (vtable 0x1459b2720) stores it in the model proxy: +0x22 u16 AO slice, +0x24/+0x28/+0x2c AO size/u/v, +0x30 u32 radiance slice, +0x34/+0x38/+0x3c radiance size/u/v.
+  4. The vertex shader reads the block as two float4 rows of `instanceBuffer` (t20, typed float4 buffer): row index = `SV_InstanceID * batchInstanceStride + batchStandardOffset + 8` (AO, `instanceLightData`) and `+ 9` (radiance, `instanceLightData2`), and passes them unchanged (bitcast to uint4, nointerpolation) as `LIGHTDATA_AO` / `LIGHTDATA_RAD`.
+  5. The pixel shader: `uv1 = TEXCOORD0.zw` (the single TEXCOORD0 float4 holds uv0 in .xy and the lightmap uv in .zw, passed as `UV0UV1`); `atlas_uv = uv1 * size + (u, v)`; AO slice = `LIGHTDATA_AO.x >> 16` (the u16 at proxy+0x22), radiance slice = `LIGHTDATA_RAD.x`.
+     - AO: `g_aoMap` (Texture2DArray t28) .x, sampled only when size > 0, else 1. `g_scene.rtFeatureFlags` bits 0x4/0x40 can replace the baked AO by 1 (ray-traced AO path). The result multiplies the material AO.
+     - Radiance: `g_radianceMap` (Texture2DArray t29) .rgb, clamped to at least 0.01 per channel, used only when size > 0, else 0.
+  - **A missing instance entry gives size 0, so AO = 1 and radiance = 0.** No default array is used for it (answers the static half of T159).
+  - A second component type (vtable 0x145a91010, `Render_ModelComponent2_SendLightMapData` 0x1444795c0) does the same with a primary and a fallback uniqueid (comp+0x88, +0x98) and message id 4.
+  - Variants: in object_opaque and track_surface every variant reads `LIGHTDATA_AO`/`_RAD` except `object_opaque_tinted` (world-space light map only); the `lightmap_*` variants bind `g_aoMap` but mostly not `g_radianceMap`.
 
 ## Materials
 
@@ -106,9 +114,12 @@ The cloud keys sit at +0x190..+0x640 and +0x9d0..+0xb20 (see the function's deco
   - Kind 1 (constants) and kind 3 (bindless heap index) get no slot.
   - The slot index is written back to record+0x20.
 - **Resource types.** `Render_StaticInit_ResourceTypeDescriptors` 0x143f13130 maps every render resource type name (GfxModelRes, NeMaterialRes, IBLSHRes, DDGIRes, ...) to its descriptor.
-- **OPEN:**
-  - shader (`.nefx2`) permutation selection from the material's shader path
-  - `Render_Material_ResolvePassSlot` 0x1401406e0 (pass mask from material flags) is the lead
+- **Round 2, shader side** (reflection of `shader_package_2025/*.nefx2.sm51.erp`):
+  - **Permutations are separate resources.** Each `<group>.nefx2.sm51.erp` holds one `GfxNeFxResource` per variant (object_opaque: 30, e.g. `object_opaque`, `object_opaque_forward`, `object_opaque_wsm`, `lightmap_object_opaque`, `radiance_object_opaque_forward`; track_surface: 17). The material's shader path (`eaid://shader_package/<group>/<name>.nefx2`) names the variant directly. Each variant is a `NEFX` v8 container with one entry per pass (`gbuffer_export_ps`, `main_forward_plus_ps`, planar reflection, `wetness_ps`, `mirage_ps`) plus its vertex shaders.
+  - **Material constants are not a cbuffer.** They live in `g_materialBuffer` (ByteAddressBuffer t100) at `PerBatch.materialBufferOffsetBatch + gpu_offset`. The `gpu_offset` of each constant record in the material file (gfx_material.md) is exactly that byte offset.
+  - **Bindless textures.** A kind-3 HeapIndex constant (`me_*HeapIndex`) is a u32 read from the material buffer, mapped through `g_bindlessResourcesLookupTable` (StructuredBuffer<uint> t101) to a descriptor-heap index and opened with `CreateHandleFromHeap`. Samplers come from the sampler heap at `g_scene.anisoLevel + 6` or fixed slots. The exe-side fill of the lookup table is still OPEN.
+  - `PerBatch` (cb0, 32 bytes): batchInstanceStride, batchStandardOffset, batchUserDataOffset, batchUserData2, materialBufferOffsetBatch, 3 pads.
+- `Render_Material_ResolvePassSlot` 0x1401406e0 looks like a texture view/slot resolver (flags 0x40/0x400/0x1000, 0x180-byte entries), not a shader permutation selector. HYPOTHESIS, not changed in the KB.
 
 ## LOD
 
@@ -125,17 +136,65 @@ The cloud keys sit at +0x190..+0x640 and +0x9d0..+0xb20 (see the function's deco
 - The road wetness map is the top-down 75 x 75 m wetness render around the player (`Game_WetMap_*`, flags `render to wetness map` in the Render component).
 - `Render_Bind_WetnessSamplers` 0x1447192f0 belongs to the skidmark/track-mark layer. It binds that layer's own albedo, normal, normalIntensity, surface, depth and wetness textures, so it is not the road material's wetness input.
 - Track-level drive values: `weather/track/wetness`, `puddles` and `absorbtion` (see session.md#wetness), the ConstantsTODBuffer / `g_trackConstants` buffer (`Render_Gfx_CreateTrackConstantsAndPuddleBuffers`) and the puddle index buffer.
-- **OPEN:** the material-side wet response (shader constants), T-request material.
+- **Round 2: `g_trackConstants` (cb2, 96 bytes), from the track_surface reflection:**
+  - dustColour (float4 +0), fp32_absorbtion +16, fp32_wetness +20, fp32_puddles +24, fp32_dryingLine +28, fp32_racingLine +32, fp32_skidsStrength +36, tiledTrackInfoMapScale +40, fp32_rubbering +44, fp32_marbles +48, heat haze (+52..+72), dynamicTrackInfoEnabled +76, and fp16 pairs of the same values at +80..+92.
+  - **`wetness_ps` (track_surface, puddle mask pass):** `p = saturate(height.b - 1 + in.x * 1.97 * puddles * (1 - dryingLine * mask))`, output 1 where `p^32 > 0.5`. The `height` and `mask` textures come from the material's heap indices.
+  - **`gbuffer_export_ps` (wet road, partly decoded):**
+    - With `dynamicTrackInfoEnabled`, wetness becomes `w' = saturate(max(0.45 * saturate(w * 2.222), noise * 2 - 1 + w))`. The noise comes from the world-space dynamic track-info map (t13, scaled by tiledTrackInfoMapScale).
+    - Puddle depth uses `puddles`, `dryingLine` and the material height, with `^8` and `^32` thresholds.
+    - Albedo is darkened by `1 - absorbtion * wetMask`. Roughness is pulled toward about 0.63 or 0.13 in puddles.
+    - Exact blend: OPEN (T160).
 
-## Next rounds (toward offline preview = game), by value
+## Shader side: per-frame light and scene constants (round 2, shader reflection)
 
-1. **Shader-side lightmap lookup:** where slice/size/u/v of an instance reach the draw constants, and which UV set is used. Without it, AO and radiance cannot be placed on objects (terrain slice 0 is already known offline).
-2. **Sun vector and colour at draw time:** the consumer of `sky/sunHeightAngle` / `sunRotationAngle` (owner +0x780 / +0x750) to the light constant buffer, and the curve stretch to sunrise/sunset. Then a preview can use the TOD files directly.
-3. **Material to shader permutation:** `.nefx2` resolution, pass mask (`Render_Material_ResolvePassSlot`), and the bindless `me_*HeapIndex` fill.
-4. **Exposure and tonemap parameters** per time of day (`Render_Tonemap_*`, eye adaptation), and the colour-grading LUT per track/scenario.
-5. **LOD selection compare**, quality scale and draw-distance settings.
-6. **Wet road shading:** the material constants that read `g_trackConstants` and the wetness map.
-7. **IBL / DDGI probe sampling** for ambient on dynamic objects (`IBLSHRes`, DDGI volumes).
+Source: the DXIL reflection in `shader_package_2025/{object_opaque,deferred_render,track_surface}.nefx2.sm51.erp`. The ERP was unpacked and disassembled with the game's own dxcompiler.dll. This is static data from the shipped files; nothing was captured at runtime.
+
+- **`g_scene` (cb4, 5876 bytes, every draw):**
+  - scene_view +0 and scene_view_prev +1264: view/projection matrices, cameraPosition +880, nearAndFarParams +896.
+  - sky_shadow_consts +2528 (TiledLocation + SkyShadowCascade[]) and spot_shadow_consts +3504.
+  - `m_lighting` +4816: light counts and list offsets, cubeMapNumMips, maxLightingValue, iblReflectionIntensity, iblSHGridCam, the planar reflection block, ddgiVolume, denoiser packing.
+  - m_timeInformation +5104 and renderTargetDimensions +5120.
+  - debugSettings +5136 and deferredRenderSwitches +5232 (enable point/spot/quad/sphere/IBL/sky lights, SH probes).
+  - `worldSpaceLightMapData` +5264: scaleAndBias, illuminationLevel, dynamicObjectIllumination, nightLightIntensity, nightLightSpecularScale.
+  - sceneGammaAdjustment +5296, textureGradientAdjustment +5300.
+  - cloudData +5312: cloudTextureBlendFactor, rainfallLevel, blendIndex1/2.
+  - `hdr` +5328: HDR output and paper white.
+  - viewportInfo +5472 / +5632, iblGenerationFlags +5792, rtFeatureFlags +5808, rtaoScale +5864, anisoLevel +5868.
+- **The sun is a sky light, not a cbuffer field.** `g_skyLights` (StructuredBuffer t77) holds an 80-byte SkyLight record:
+  - direction (float3 +0), diffuseScale +12, colour (float3 +16), shadowBias +28, ambientColour (float3 +32)
+  - cascades +44, shadowFilterQuality +48, shadowsEnabled +52, billboardShadowLean +56
+  - nightSpecularScale +64, tanSunAngularRadius +68
+  - These map onto the sun component keys (diameter -> tanSunAngularRadius, billboard_shadow_lean, shadow_cascades) and the ToD curves (sunLightColour x intensity, ambient colours, nightSpecularIntensity).
+  - Count: `m_lighting.numShadowedSkyLights` / `numUnshadowedSkyLights`.
+- **Exposure:** `g_sceneLuminanceAndExposure` is a one-float StructuredBuffer (t39) written on the GPU (eye adaptation). A preview can treat it as one exposure scalar per frame.
+- **Ambient and sun LUTs:** `g_ambientLUT` and `g_sunLUT` (2D) come from `Render_AmbientLut_Generate`. IBL uses g_ibl_diffuse/specular cube arrays plus `g_ibConstants` (iblSHGridTransform, iblSHGridBounds, iblKeyframe, iblMips, iblSHNumKeys). DDGI uses `g_ddgi_probe_map`, and the SH probes `g_shProbeMap`.
+- **Fog: `g_fogData`** (208 bytes):
+  - Mie: albedoMie, scatterCoefficientMie, absorbCoefficientMie, henyeyGreensteinG.
+  - Height fog: startHeight, heightRange, opticalDepthScale, fade range.
+  - Volumetric LUT block: g_volumetricLUT 3D + g_volumetricTransmittance.
+  - Rain-sheet fog.
+- **Night shadow:** `g_nightShadowData` (2 viewports: viewProj + intensity).
+- **Sun direction on the CPU** (exe, static; see Render_SkyState_Update / Render_SkyState_UpdateSolarSun):
+  - The sky/sunHeightAngle and sunRotationAngle curve values are bound but do not drive the sun light. Their bindings only gate the update.
+  - The direction is the solar position:
+    - mode (a): real solar position per minute from latitude, date and clock;
+    - mode (b): a normalised day, zenith = (1 - dayFraction) * pi, with the azimuth blended across the sunrise/noon/sunset key times.
+  - Which mode a race session uses is T158.
+  - Latitude, longitude and year come from `tracks.Track.latitude` / `longitude` / `weekend_year` (db_keys rows). Longitude has no effect.
+
+## Next rounds (toward offline preview = game), by value (updated round 2)
+
+Done statically: lightmap placement (formula above), material constant / bindless layout, the per-frame constant layouts, sun source and lat/lon keys.
+
+1. **Light list fill (exe):** the CPU code that writes the SkyLight record (direction from the sun entity rotation, colour x intensity, ambient) into g_skyLights, to tie the ToD curves to the GPU values. Lead: the consumer of the sun light component (+0x34 intensity, +0xa0 rotation, colour setter 0x14448a5e0).
+2. **Exposure / tonemap:** the tonemap.nefx2 constants and the eye-adaptation pass that writes g_sceneLuminanceAndExposure. Without them a preview cannot match brightness; the runtime value per ToD is a capture item (T158 can log it).
+3. **Deferred lighting math:** the BRDF in deferred_render (sky light + IBL + AO + radiance), so the preview shades like the game. Static from the DXIL; long but deterministic.
+4. **Bindless table fill and texture resolution** (exe): who fills g_bindlessResourcesLookupTable from the material texture records.
+5. **Wet road blend** (T160) and the dynamic track-info maps.
+6. **LOD compare and draw distance.**
+7. **DDGI / SH probe sampling** for dynamic objects.
+
+Runtime capture still needed: T158 (sun mode and curves in a race), T159 (now only to confirm AO 1 / radiance 0 for missing entries) and T160 (wet road values).
 
 ## Inbox
 - 2026-10-19 14:03 ui-re: new 'hud' lane holds the HUD view-model/logic side (what widgets publish + their setToOpen gates); render still owns the D3D present/draw path. Hud_Open_TyrePerformance (0x14152b5f0) publishes to view_model_data.hud_* registry nodes. HUD VM vtables cluster near 0x1456ed290 if you need draw-time addresses.
