@@ -10,8 +10,10 @@ slow-timeout = { period = "60s", terminate-after = 5 }
 fail-fast = false
 # No retries: a flaky test is a bug to fix, not to hide. Name one here with an override only while it is.
 retries = 0
-status-level = "slow"
-final-status-level = "slow"
+# Failing, slow and leaky tests (a leaky test leaves a child process holding its output open) are named in
+# the log; every test's time is in target/nextest/ci/junit.xml, which CI keeps as an artefact.
+status-level = "leak"
+final-status-level = "leak"
 failure-output = "immediate-final"
 slow-timeout = { period = "60s", terminate-after = 5 }
 
