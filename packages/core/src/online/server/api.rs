@@ -435,7 +435,7 @@ fn gzip(bytes: &[u8]) -> std::io::Result<Vec<u8>> {
 }
 
 #[cfg(test)]
-pub(super) mod tests {
+pub(in crate::online) mod tests {
     use super::*;
 
     #[test]
@@ -485,7 +485,7 @@ pub(super) mod tests {
         assert_eq!(out, b"SWLAP lap bytes");
     }
 
-    pub(in crate::online::timetrial) fn serve(
+    pub(in crate::online) fn serve(
         status: &str,
         body: &'static str,
     ) -> (String, std::thread::JoinHandle<Vec<u8>>) {
