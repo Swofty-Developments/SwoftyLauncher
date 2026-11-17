@@ -337,6 +337,7 @@ SCRIPTS = [
     Script('garage_placement', 'Garage placement and crew poses', ['bash', 'native/test/run_garage_placement_test.sh']),
     Script('garage_crew_sites', 'Garage crew guard sites export test', ['bash', 'native/test/run_garage_crew_sites_test.sh']),
     Script('scan', 'Pattern scan and scan cache unit test', ['bash', 'native/test/run_scan_test.sh'], wine=True),
+    Script('pin', 'CPU pin plan (CI, taskset, affinity, job count)', ['bash', 'native/test/pin_test.sh']),
     Script('std_templates', 'Standard library templates', ['python3', 'tools/std/templates.py']),
 ]
 
