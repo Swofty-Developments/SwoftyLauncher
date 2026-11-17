@@ -17,6 +17,24 @@ FIELD_RE = re.compile(r'^\s*/\*\s*0x([0-9a-fA-F]+)\s*\*/\s*([^;]+);\s*//\s*(L[0-
 DECL_RE = re.compile(r'^(?P<type>[A-Za-z_][A-Za-z0-9_]*(?:\s+[A-Za-z_][A-Za-z0-9_]*)*?)\s*(?P<ptr>\**)\s*(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*(?:\[(?P<cnt>[^\]]+)\])?$')
 
 
+TOKEN_START = re.compile(r'^(?:' + '|'.join(kb.TOKEN_KINDS) + r'):\S')
+
+
+def field_evidence(rest):
+    """The evidence tokens at the start of a field comment. Tokens are ;-separated and may contain spaces, like the
+    tables' evidence column; the free text starts at the first space of the last token."""
+    chunks, out = rest.split(';'), []
+    for i, chunk in enumerate(chunks):
+        if not TOKEN_START.match(chunk):
+            break
+        if i + 1 < len(chunks) and TOKEN_START.match(chunks[i + 1]):
+            out.append(chunk.rstrip())
+            continue
+        out.append(chunk.split()[0])
+        break
+    return ';'.join(out)
+
+
 def parse_struct(path):
     s = {'file': path, 'name': None, 'subsystem': None, 'size': None, 'size_level': None, 'size_ev': '', 'fields': [], 'errors': []}
     in_body = False
@@ -59,7 +77,7 @@ def parse_struct(path):
         if not d:
             s['errors'].append(f'{n}: cannot parse declaration {decl.strip()!r}')
             continue
-        ev = rest.split()[0] if rest.split() and ':' in rest.split()[0] and rest.split()[0].split(':')[0] in kb.TOKEN_KINDS else ''
+        ev = field_evidence(rest)
         cnt = d.group('cnt')
         array = cnt is not None
         try:
@@ -257,8 +275,9 @@ class KbLint:
         items |= {('sig', s) for s in self.sigs} | {('struct', s) for s in structs} | {('anchor', x) for x in anchors}
         items |= {('field', f'{s}.{fl["name"]}') for s in structs for fl in structs[s]['fields']}
         for r in t['verify']:
-            if r['kind'] != 'db_key' and (r['kind'], r['item']) not in items:
-                self.E.append(f'verify.tsv:{r["_line"]}: {r["kind"]} {r["item"]} not found')
+            if r['kind'] != 'db_key' and (r['kind'], r['item']) not in items and not r['item'].startswith('retired:'):
+                self.E.append(f'verify.tsv:{r["_line"]}: {r["kind"]} {r["item"]} not found (rename the item to '
+                              f'retired:{r["item"]} if it was renamed, retargeted or never added)')
         last = {}
         for r in t['verify']:
             last[(r['kind'], r['item'])] = r['verdict']

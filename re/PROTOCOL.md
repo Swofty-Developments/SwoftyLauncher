@@ -111,7 +111,7 @@ A **verifier** is any agent other than the one who raised the item to its curren
 - **signatures:** `sigcheck.py` passes, and the target is the claimed function or instruction.
 - **db keys:** recompute `fnv1a64(path)` and find the immediate at a listed site.
 
-The verifier appends one `verify.tsv` row via `kb.py verify`: verdict `agree`, `disagree` or `partial`, with its own evidence tokens. On `disagree` the item is demoted to the highest level both sides accept, and the disagreement is written into the item's `notes` as `DISPUTE(Vnnn)` until the subsystem owner resolves it with new evidence (a new `verify` row). Nobody deletes `verify.tsv` rows.
+The verifier appends one `verify.tsv` row via `kb.py verify`: verdict `agree`, `disagree` or `partial`, with its own evidence tokens. On `disagree` the item is demoted to the highest level both sides accept, and the disagreement is written into the item's `notes` as `DISPUTE(Vnnn)` until the subsystem owner resolves it with new evidence (a new `verify` row). Nobody deletes `verify.tsv` rows. When the item a row is about is renamed to a different claim, retargeted or was never added, its `item` becomes `retired:<item>`, so the old verdict can never back a new item that reuses the name or address.
 
 ## 6. Concurrency
 
