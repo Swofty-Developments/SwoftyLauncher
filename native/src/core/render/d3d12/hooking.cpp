@@ -1,7 +1,7 @@
 #include "core/render/d3d12/hooking.hpp"
 
 #include "core/diagnostics/steps.hpp"
-#include "core/hud/hud_guard.hpp"
+#include "core/hud/arm_policy.hpp"
 #include "core/render/d3d12_hooks.hpp"
 #include "core/render/probe_logic.hpp"
 #include "core/runtime/loader/host_api.hpp"

@@ -2,8 +2,8 @@
 
 #include "core/diagnostics/perf.hpp"
 #include "core/frontend/view_state.hpp"
+#include "core/hud/arm_policy.hpp"
 #include "core/hud/hardware_settings.hpp"
-#include "core/hud/hud_guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <swofty/mixin.hpp>

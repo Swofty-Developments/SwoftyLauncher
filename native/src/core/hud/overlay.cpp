@@ -2,7 +2,7 @@
 
 #include "core/hud/overlay/overlay.hpp"
 #include "core/frontend/main_menu.hpp"
-#include "core/hud/hud_guard.hpp"
+#include "core/hud/arm_policy.hpp"
 #include "core/diagnostics/perf.hpp"
 #include "core/diagnostics/steps.hpp"
 #include "core/hud/room_cover.hpp"

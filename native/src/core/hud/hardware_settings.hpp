@@ -1,5 +1,5 @@
 #pragma once
-#include "core/hud/hud_guard.hpp"
+#include "core/hud/arm_policy/game_settings.hpp"
 
 #include <cstdint>
 #include <string>

@@ -1,8 +1,8 @@
 #pragma once
 #include <windows.h>
 
+#include "core/hud/arm_policy.hpp"
 #include "core/hud/hardware_settings.hpp"
-#include "core/hud/hud_guard.hpp"
 
 #include <dxgi1_6.h>
 
