@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Writes expected.txt: the off, needs and settle lines every SiteGuard logged before the guard registry, taken from
-the guard sources at the commit the registry started from (git show 2a13cf459:<path>), and the off, hook failure and
-armed lines of the single-hook guards before they became MidHookSpecs (git show 157c412bf:<path>).
+the guard sources at the commit the registry started from (git show 2a13cf459:<path>), with the needs and settle lines
+of each further mixin set (a part) the guard offers, and the off, hook failure and armed lines of the single-hook
+guards before they became MidHookSpecs (git show 157c412bf:<path>).
 
 Each guard's lines are the literal format strings of its old functions with every compile-time constant substituted;
 the environment variable's value and the hook error stay %s.
@@ -39,6 +40,13 @@ GUARDS = {
     'session_enter': 'session/session_enter.cpp',
     'team_slots': 'session/team_slots.cpp',
     'thrustmaster_lcd': 'session/thrustmaster_lcd.cpp',
+    'track_acclim': 'tracks/track_acclim.cpp',
+}
+
+# Guards offering further mixin sets: their old offer logged each one's needs line after the guard's own, and their
+# old commit logged each one's settle line after the guard's own.
+PARTS = {
+    'track_acclim': 1,
 }
 
 HOOKS = {
@@ -156,7 +164,13 @@ def main():
         armed = render(commit[0], constants, 'armed')
         not_installed = render(commit[0], constants, 'not_installed')
         assert ' off (' in off and 'does not resolve' in needs, stem
-        out += [f'[{stem}]', f'off {off}', f'unresolved {needs}', f'armed {armed}', f'not_installed {not_installed}', '']
+        out += [f'[{stem}]', f'off {off}', f'unresolved {needs}', f'armed {armed}', f'not_installed {not_installed}']
+        for i in range(PARTS.get(stem, 0)):
+            part_needs = render(offer[2 + i], constants)
+            assert 'does not resolve' in part_needs, stem
+            out += [f'part_unresolved {part_needs}', f'part_armed {render(commit[1 + i], constants, "armed")}',
+                    f'part_not_installed {render(commit[1 + i], constants, "not_installed")}']
+        out.append('')
     for stem, rel in HOOKS.items():
         out += hook_lines(stem, rel)
     (HERE / 'expected.txt').write_text('\n'.join(out))

@@ -124,6 +124,15 @@ unresolved [tmlcd] thrustmaster lcd guard off: needs site_Game_ThrustmasterLcd_E
 armed [tmlcd] thrustmaster lcd guard armed: a sector entrant without a record leaves the LCD team name alone
 not_installed [tmlcd] thrustmaster lcd guard did not install (see the [core] lines)
 
+[track_acclim]
+off [acclim] track acclimatisation guard off (SWOFTY_ACCLIM_GUARD=%s)
+unresolved [acclim] track acclimatisation guard off: needs Game_PracticeTrackAcclimatisation_RefreshState, which this build does not resolve
+armed [acclim] track acclimatisation guard armed: a practice programme refresh with no targets returns instead of faulting
+not_installed [acclim] track acclimatisation guard did not install (see the [core] lines)
+part_unresolved [acclim] track acclimatisation penalty guard off: needs site_Game_AcclimPenalty_Entry and site_Game_AcclimPenalty_Return, which this build does not resolve
+part_armed [acclim] track acclimatisation penalty guard armed: a practice programme penalty flag with no targets returns instead of faulting
+part_not_installed [acclim] track acclimatisation penalty guard did not install (see the [core] lines)
+
 [hook ai_curves]
 off [ai] team curves guard off (SWOFTY_AI_CURVES_GUARD=%s)
 failed [ai] team curves guard: the hook failed: %s

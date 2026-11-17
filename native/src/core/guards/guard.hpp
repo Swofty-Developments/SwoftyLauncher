@@ -52,6 +52,17 @@ struct Keep {
 // fails. On a failure every keep's address is zeroed.
 bool resolve(const std::vector<Keep> &keeps, const std::vector<const char *> &needs);
 
+// A further mixin set a SiteGuard offers in its own set, under the guard's variable: offered when its own bindings
+// resolve, whether or not the guard's set did, and settled with its own armed or did-not-install line.
+struct SitePart {
+    const char *set;
+    const char *name;
+    std::vector<Keep> keeps = {};
+    std::vector<const char *> needs;
+    std::vector<SwoftyMixin> mixins;
+    const char *armed;
+};
+
 struct SiteGuardSpec {
     // The core mixin set's name, as the [core] lines print it.
     const char *set;
@@ -69,10 +80,12 @@ struct SiteGuardSpec {
     const char *armed;
     // Logs the settle line even when the guard turned itself off before offering its mixins.
     bool settles_when_off = false;
+    std::vector<SitePart> parts = {};
 };
 
-// A guard made of site, wrap or patch mixins on game code, in one mixin set: it is off when its variable says so or
-// a binding it needs does not resolve, and logs whether its mixins installed once they settle (lines.hpp).
+// A guard made of site, wrap or patch mixins on game code, in one mixin set and one more per part: it is off when its
+// variable says so, a set is not offered when a binding it needs does not resolve, and the guard logs whether each
+// offered set installed once they settle (lines.hpp).
 class SiteGuard : public Guard {
 public:
     SiteGuard(CoreSetId id, SiteGuardSpec spec);
@@ -93,6 +106,7 @@ private:
 
     SiteGuardSpec spec_;
     bool wanted_ = false;
+    std::vector<bool> parts_offered_;
 };
 
 // A guard that hooks game code through safetyhook itself: its setup runs once the game code is ready

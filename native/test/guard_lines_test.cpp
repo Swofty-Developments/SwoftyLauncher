@@ -16,14 +16,25 @@
 
 namespace lines = swofty_core::guards::lines;
 
+struct ExpectedPart {
+    std::string unresolved, armed, not_installed;
+};
+
 struct Expected {
     std::string off, unresolved, armed, not_installed, failed;
+    std::vector<ExpectedPart> parts;
+};
+
+struct Part {
+    std::string name, armed;
+    std::vector<std::string> needs;
 };
 
 struct Spec {
     std::string file, name, env, armed, failed_at;
     std::vector<std::string> needs;
     bool names_site = false;
+    std::vector<Part> parts;
 };
 
 int failures = 0;
@@ -148,8 +159,7 @@ std::vector<std::string> needs(const std::string &block, const std::map<std::str
 }
 
 // A field holding adjacent string literals or a named constant (a `constexpr const char *` or a Sig's `.what`).
-std::string text_field(const std::string &block, const char *name, const std::map<std::string, std::string> &consts,
-                       bool &ok)
+std::string text_field(const std::string &block, const char *name, const std::map<std::string, std::string> &consts, bool &ok)
 {
     std::string out = field(block, name, ok);
     if (ok)
@@ -209,14 +219,28 @@ void specs_in(const std::filesystem::path &path, std::map<std::string, Spec> &ou
         if (set == std::string::npos || set > end)
             continue;
         std::string block = t.substr(stem_end, end - stem_end);
+        size_t parts_at = block.find(".parts = ");
+        std::string own = block.substr(0, parts_at);
         Spec s;
         s.file = path.string();
         bool a, b, c, d;
-        s.name = field(block, "name", a);
-        s.env = field(block, "env", b);
-        s.armed = field(block, "armed", c);
-        s.needs = needs(block, consts, d);
+        s.name = field(own, "name", a);
+        s.env = field(own, "env", b);
+        s.armed = field(own, "armed", c);
+        s.needs = needs(own, consts, d);
         expect(a && b && c && d, stem + ": its spec in " + s.file + " parses");
+        for (size_t p = block.find(".set = ", parts_at); parts_at != std::string::npos && p != std::string::npos;) {
+            size_t next = block.find(".set = ", p + 1);
+            std::string text = block.substr(p, next == std::string::npos ? std::string::npos : next - p);
+            Part part;
+            bool e, f, g;
+            part.name = field(text, "name", e);
+            part.armed = field(text, "armed", f);
+            part.needs = needs(text, consts, g);
+            expect(e && f && g, stem + ": part " + std::to_string(s.parts.size()) + " of its spec parses");
+            s.parts.push_back(part);
+            p = next;
+        }
         out[stem] = s;
     }
 }
@@ -237,6 +261,15 @@ std::map<std::string, Expected> expected_lines(const std::filesystem::path &path
             continue;
         std::string kind = line.substr(0, space), text = line.substr(space + 1);
         Expected &e = out[hooks ? stem.substr(5) : stem];
+        if (kind == "part_unresolved")
+            e.parts.push_back({text, {}, {}});
+        if (kind.rfind("part_", 0) == 0) {
+            if (!e.parts.empty())
+                (kind == "part_armed"           ? e.parts.back().armed
+                 : kind == "part_not_installed" ? e.parts.back().not_installed
+                                                : e.parts.back().unresolved) = text;
+            continue;
+        }
         (kind == "off"          ? e.off
          : kind == "unresolved" ? e.unresolved
          : kind == "armed"      ? e.armed
@@ -276,6 +309,16 @@ int main(int argc, char **argv)
         check(lines::unresolved(s.name, need), e.unresolved, "unresolved");
         check(lines::armed(s.name, s.armed), e.armed, "armed");
         check(lines::not_installed(s.name), e.not_installed, "not installed");
+        expect(s.parts.size() == e.parts.size(), stem + " offers " + std::to_string(e.parts.size()) + " further sets");
+        for (size_t i = 0; i < s.parts.size() && i < e.parts.size(); i++) {
+            const Part &p = s.parts[i];
+            std::vector<const char *> part_need;
+            for (auto &n : p.needs)
+                part_need.push_back(n.c_str());
+            check(lines::unresolved(p.name, part_need), e.parts[i].unresolved, "part unresolved");
+            check(lines::armed(p.name, p.armed), e.parts[i].armed, "part armed");
+            check(lines::not_installed(p.name), e.parts[i].not_installed, "part not installed");
+        }
     }
     for (auto &[stem, s] : specs)
         expect(expected.count(stem), stem + " (" + s.file + ") has its starting lines in expected.txt");
