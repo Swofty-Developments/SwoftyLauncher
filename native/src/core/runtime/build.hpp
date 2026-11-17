@@ -23,6 +23,9 @@ struct Sig {
 };
 
 bool same_build();
+// Steam build 26566308 (F1 25 1.0.145, sha256 46009bd3...). Code whose struct offsets were checked on it against the KB build
+// (re/tools/sigport.py, sigverify.py --disp) gates on same_build() || steam_1_0_145().
+bool steam_1_0_145();
 // The builds whose struct layouts were checked against the signatures' functions (re/tools/sigverify.py): the Steam KB build and
 // the EA App link of the same version. Code that finds every address by signature gates on this instead of same_build().
 bool verified_build();

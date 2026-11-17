@@ -1,4 +1,5 @@
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
@@ -46,8 +47,6 @@
 // notification (hud_notifications_dynamic, F1HM bound to #ui_messages.hud_main_queue.hud_main) draws.
 // The launcher adds swofty_toast_<seconds> to hud_messages.uimsg: literal (localise false) message and
 // sub_message attributes and a fixed msg_duration per id, so a toast picks the id nearest its duration.
-
-std::string settings_addon(const void *from, std::string &dll);
 
 namespace popup {
 

@@ -9,10 +9,11 @@ mod tests;
 use std::time::Duration;
 
 use semver::Version;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::{Error, Result};
 
+pub use crate::session::UpdateConfig;
 pub use download::{
     check_download, download, download_or, download_release, mirror_url, parse_sums, verifiable,
 };
@@ -33,28 +34,6 @@ pub const SUMS_FILE: &str = "SHA256SUMS";
 pub const PRETEND_ENV: &str = "SWOFTY_UPDATE_PRETEND_VERSION";
 pub const FIXTURE_ENV: &str = "SWOFTY_TEST_GITHUB";
 pub const CHECK_TIMEOUT: Duration = Duration::from_secs(10);
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct UpdateConfig {
-    #[serde(default = "yes")]
-    pub check: bool,
-}
-
-fn yes() -> bool {
-    true
-}
-
-impl Default for UpdateConfig {
-    fn default() -> Self {
-        Self { check: true }
-    }
-}
-
-impl UpdateConfig {
-    pub fn is_default(&self) -> bool {
-        *self == Self::default()
-    }
-}
 
 pub fn now_secs() -> u64 {
     std::time::SystemTime::now()

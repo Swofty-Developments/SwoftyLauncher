@@ -2,6 +2,7 @@
 #include "core/apply/tracks/fuel_plan.hpp"
 
 #include "core/apply/applier.hpp"
+#include "core/runtime/pages.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <swofty/mem.hpp>
@@ -49,22 +50,7 @@ struct GameMem {
 
 bool writable(uintptr_t at, size_t n)
 {
-    if (!swofty::mem::readable(at, n))
-        return false;
-    uintptr_t p = at, end = at + n;
-    while (p < end) {
-        MEMORY_BASIC_INFORMATION mbi{};
-        if (!VirtualQuery(reinterpret_cast<const void *>(p), &mbi, sizeof mbi) || mbi.State != MEM_COMMIT)
-            return false;
-        DWORD prot = mbi.Protect & 0xff;
-        if (mbi.Protect & (PAGE_GUARD | PAGE_NOACCESS) || !(prot == PAGE_READWRITE || prot == PAGE_EXECUTE_READWRITE))
-            return false;
-        uintptr_t next = reinterpret_cast<uintptr_t>(mbi.BaseAddress) + mbi.RegionSize;
-        if (next <= p)
-            return false;
-        p = next;
-    }
-    return true;
+    return runtime::pages::read_write_span(at, n);
 }
 
 bool put(uintptr_t at, const void *src, size_t n)

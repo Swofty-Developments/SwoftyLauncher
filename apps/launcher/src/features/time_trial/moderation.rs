@@ -8,7 +8,7 @@ use gpui_kit::*;
 use swofty_core::online::timetrial::boards::{Run, check_number, format_time};
 use swofty_i18n::tr;
 
-use super::state::{Load, Verdict, View};
+use super::state::{Load, TtPage, Verdict, View};
 use crate::shell::Shell;
 use crate::ui::scale::px;
 use crate::ui::theme::{Palette, ScrollArea};
@@ -83,7 +83,7 @@ impl Shell {
     }
 
     pub(super) fn tt_runs(&mut self, p: Palette, window: &mut Window, cx: &mut Context<Self>) -> AnyElement {
-        let search = self.tt_run_search(window, cx);
+        let search = TtPage::run_search(self, window, cx);
         let chip = |id: String, label: String, on: bool| {
             Button::new(SharedString::from(id))
                 .xsmall()
@@ -174,7 +174,7 @@ impl Shell {
                                             .child(when(&run.date)),
                                     ),
                             )
-                            .on_click(cx.listener(move |this, _, _, cx| this.tt_select_lap(&id, cx)))
+                            .on_click(cx.listener(move |this, _, _, cx| TtPage::select_lap(this, &id, cx)))
                             .into_any_element()
                         })
                         .collect();
@@ -239,7 +239,9 @@ impl Shell {
                 menu =
                     menu.item(PopupMenuItem::new(all).checked(picked.is_empty()).on_click(
                         move |_, _, cx| {
-                            clear.update(cx, |this, cx| this.tt_clear_filter(season, cx)).ok();
+                            clear
+                                .update(cx, |this, cx| TtPage::clear_filter(this, season, cx))
+                                .ok();
                         },
                     ))
                     .separator();
@@ -249,7 +251,7 @@ impl Shell {
                     menu = menu.item(PopupMenuItem::new(label.clone()).checked(on).on_click(
                         move |_, _, cx| {
                             shell
-                                .update(cx, |this, cx| this.tt_toggle_filter(season, &key, cx))
+                                .update(cx, |this, cx| TtPage::toggle_filter(this, season, &key, cx))
                                 .ok();
                         },
                     ));
@@ -420,7 +422,7 @@ impl Shell {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let busy = self.tt.acting;
-        let reason = self.tt_reason(window, cx);
+        let reason = TtPage::reason(self, window, cx);
         let typed = reason.read(cx).value().trim().to_owned();
         let id = lap.to_owned();
         let mut panel = v_flex().gap(px(8.)).px(px(12.)).pb(px(10.)).pt(px(4.));
@@ -447,7 +449,7 @@ impl Shell {
                         .on_click(cx.listener(move |this, _, window, cx| {
                             let text = back.read(cx).value().trim().to_owned();
                             back.update(cx, |s, cx| s.set_value("", window, cx));
-                            this.tt_moderate(ban.clone(), Verdict::Ban, text, cx);
+                            TtPage::moderate(this, ban.clone(), Verdict::Ban, text, cx);
                         })),
                 )
                 .child(
@@ -481,7 +483,7 @@ impl Shell {
                         .label(tr("Accept"))
                         .disabled(busy)
                         .on_click(cx.listener(move |this, _, _, cx| {
-                            this.tt_moderate(accept.clone(), Verdict::Accept, String::new(), cx)
+                            TtPage::moderate(this, accept.clone(), Verdict::Accept, String::new(), cx)
                         })),
                 )
                 .child(
@@ -491,7 +493,7 @@ impl Shell {
                         .label(tr("Deny"))
                         .disabled(busy)
                         .on_click(cx.listener(move |this, _, _, cx| {
-                            this.tt_moderate(deny.clone(), Verdict::Deny, String::new(), cx)
+                            TtPage::moderate(this, deny.clone(), Verdict::Deny, String::new(), cx)
                         })),
                 )
                 .child(

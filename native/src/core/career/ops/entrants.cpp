@@ -1,34 +1,8 @@
 #include "core/career/ops/entrants.hpp"
 
-#include "core/runtime/pages.hpp"
 #include "core/runtime/runtime.hpp"
-#include "core/registry/table.hpp"
-
-#include <swofty/game.hpp>
-#include <swofty/mem.hpp>
-#include <swofty/mixin.hpp>
 
 #include <algorithm>
-#include <atomic>
-#include <cmath>
-#include <cstdio>
-#include <map>
-#include <mutex>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
-#include "core/career/ops/driver_rows.hpp"
-#include "core/career/ops/lineup_plan.hpp"
-#include "core/career/ops/number_plan.hpp"
-#include "core/career/ops/seat_plan.hpp"
-#include "core/career/ops/start_teams.hpp"
-#include "core/career/ops/stats.hpp"
-#include "core/career/ops/teams_plan.hpp"
-#include "core/career/ops/teams_store.hpp"
-#include "core/apply/content/teams.hpp"
-#include "core/registry/table.hpp"
-#include "core/career/ops/track_fuel.hpp"
 
 namespace career_ops::live {
 
@@ -285,7 +259,6 @@ int32_t recommended_target(uintptr_t manager, int32_t base)
     return std::min(base, 100);
 }
 
-
 const char *plan_signing(uintptr_t manager, const std::vector<uintptr_t> &objects, uint32_t driver, uint32_t team, Signing &s)
 {
     constexpr uintptr_t kBuiltRating = 0x18;
@@ -364,7 +337,6 @@ uintptr_t car_numbers(uintptr_t e, uintptr_t manager)
     uintptr_t c = manager ? rdv<uintptr_t>(manager + offsetof(g::DriverCareerContractsManagerComponent, car_numbers)) : 0;
     return c && mem::object_like(c) && rdv<uintptr_t>(c + offsetof(g::CarNumberComponent, entity)) == e ? c : 0;
 }
-
 
 bool finalise(uintptr_t e, const Baseline &baseline, uint64_t &changes)
 {

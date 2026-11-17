@@ -8,10 +8,8 @@ use swofty_preview::{ActiveInstance, Clip, ClipInfo, CompiledEffect, Frame, Prev
 use swofty_shaders::{Effect, Origin, PassDecl, TextureDecl};
 
 fn dxc() -> Option<PathBuf> {
-    let path = std::env::var_os("SWOFTY_DXC")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| "/home/swofty/SwoftyLauncher/dxc/bin/dxc".into());
-    path.exists().then_some(path)
+    swofty_shaders::find_dxc(&[Path::new(env!("CARGO_MANIFEST_DIR")).join("../../dxc")])
+        .filter(|p| p.exists())
 }
 
 fn spirv(dxc: &Path, dir: &Path, name: &str, source: &str) -> Vec<u8> {

@@ -1,5 +1,6 @@
 #include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/resolve.hpp"
 
 #include <windows.h>
 
@@ -560,14 +561,6 @@ void saved_entry(SwoftyContext *c)
     runtime::career_saves_saved();
 }
 
-uintptr_t need(const char *id, std::string &missing)
-{
-    uintptr_t a = swofty::api->resolve(id);
-    if (!a)
-        missing += std::string(missing.empty() ? "" : ", ") + id;
-    return a;
-}
-
 }
 
 namespace runtime {
@@ -591,15 +584,15 @@ std::vector<CoreMixins> save_splice_mixins()
         return out;
     }
     std::string missing;
-    b.root_vt = need("vt_Game_SaveDataRootContainer", missing);
-    b.write_bag = need("Game_SaveData_WriteBag", missing);
-    b.lookup = need("Ne_StringTable_Lookup", missing);
-    b.codec_vt = need("k_Ne_BagCodecVtbl", missing);
-    b.counting_vt = need("k_Ne_CountingStreamVtbl", missing);
-    b.memory_vt = need("k_Ne_MemWriteStreamVtbl", missing);
-    b.table = need("g_Ne_StringTable", missing);
-    b.bag_type = need("k_Ne_PropertyType_Bag", missing);
-    b.done = need("site_Game_SaveData_ContainersDone", missing);
+    b.root_vt = runtime::resolve_or_note("vt_Game_SaveDataRootContainer", missing);
+    b.write_bag = runtime::resolve_or_note("Game_SaveData_WriteBag", missing);
+    b.lookup = runtime::resolve_or_note("Ne_StringTable_Lookup", missing);
+    b.codec_vt = runtime::resolve_or_note("k_Ne_BagCodecVtbl", missing);
+    b.counting_vt = runtime::resolve_or_note("k_Ne_CountingStreamVtbl", missing);
+    b.memory_vt = runtime::resolve_or_note("k_Ne_MemWriteStreamVtbl", missing);
+    b.table = runtime::resolve_or_note("g_Ne_StringTable", missing);
+    b.bag_type = runtime::resolve_or_note("k_Ne_PropertyType_Bag", missing);
+    b.done = runtime::resolve_or_note("site_Game_SaveData_ContainersDone", missing);
     if (!missing.empty()) {
         swofty::log("[saves] save splice off: needs %s, which this build does not resolve", missing.c_str());
         return out;

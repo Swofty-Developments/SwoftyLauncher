@@ -4,18 +4,18 @@
 //! `laps` when it can't write the game folder (an EA app copy under Program Files). [`queue`] moves them into
 //! the outbox and uploads them through [`api`]; [`upload`] is the loop the wrapper and the launcher run for it.
 
-pub mod api;
 pub mod barred;
 pub mod boards;
 pub mod bridge;
 pub mod fingerprint;
 pub mod game_replay;
-pub mod integrity;
 pub mod queue;
 pub mod swlap;
 pub mod toast;
 pub mod upload;
 pub mod watch;
+
+pub use crate::online::server::{api, integrity};
 
 use std::path::{Path, PathBuf};
 

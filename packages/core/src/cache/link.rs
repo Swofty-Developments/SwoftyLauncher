@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 /// folder, which a restore deletes.
 pub const DIR: &str = "swofty-cache";
 const OVERLAY: &str = "overlay";
+const ORIGINALS: &str = "originals";
 const INDEX: &str = "index.json";
 /// Room left on the game's drive after the cache is filled.
 pub const MARGIN: u64 = 2 << 30;
@@ -39,6 +40,13 @@ pub fn root(game: &Path) -> PathBuf {
     dir(game).join(OVERLAY)
 }
 
+/// The folder an install moves the game files it replaces into, each named by
+/// its SHA-256, so the rollback renames them back instead of copying them from
+/// the backup.
+pub fn originals(game: &Path) -> PathBuf {
+    dir(game).join(ORIGINALS)
+}
+
 fn index_path(game: &Path) -> PathBuf {
     dir(game).join(INDEX)
 }
@@ -57,14 +65,21 @@ fn stamp(path: &Path) -> Option<Stamp> {
     })
 }
 
-/// A cached file: the source it was copied from, that source's stamp, and the
-/// copy as written. A copy the game wrote through its link no longer matches.
+/// A cached file: the source it was copied from, that source's stamp, the
+/// copy as written, and the SHA-256 the install named for it. A copy the game
+/// wrote through its link no longer matches.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct Kept {
     from: PathBuf,
     source: Stamp,
     copy: Stamp,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    sha256: Option<String>,
 }
+
+/// A file the cache should hold: its game path, the file that goes there, and that file's SHA-256 when the
+/// caller knows it.
+pub type Wanted<'a> = (&'a str, &'a Path, Option<&'a str>);
 
 fn load(game: &Path) -> BTreeMap<String, Kept> {
     std::fs::read(index_path(game))
@@ -101,20 +116,24 @@ fn prune_empty(dir: &Path) {
     }
 }
 
-/// Brings the cache in `game` up to date with `sources`, each a game path and
-/// the file that goes there: copies the files that are new, come from another
-/// source, or whose size or modified time changed, leaves the rest, and deletes
-/// what the overlay no longer has. Fails
+/// Brings the cache in `game` up to date with `sources`: copies the files that
+/// are new, come from another source, or whose size or modified time changed,
+/// unless the cached copy is untouched since it was written and holds the
+/// SHA-256 the source is named with, as a rebuild that wrote the same bytes
+/// again does. Leaves the rest, and deletes what the overlay no longer has. Fails
 /// with the reason when the game's drive hasn't room for what is left to copy
 /// plus `MARGIN`, or a copy fails; the cache then holds what was copied.
 pub fn sync(
     game: &Path,
-    sources: &[(&str, &Path)],
+    sources: &[Wanted<'_>],
     free_space: fn(&Path) -> Option<u64>,
     progress: &mut dyn FnMut(usize, usize),
 ) -> Result<Synced, String> {
     let cache = root(game);
-    let wanted: BTreeMap<&str, &Path> = sources.iter().copied().collect();
+    let wanted: BTreeMap<&str, (&Path, Option<&str>)> = sources
+        .iter()
+        .map(|(rel, src, sha)| (*rel, (*src, *sha)))
+        .collect();
     let mut out = Synced::default();
     let mut present = Vec::new();
     files(&cache, &mut present);
@@ -130,21 +149,33 @@ pub fn sync(
     let mut index = load(game);
     index.retain(|k, _| wanted.contains_key(k.as_str()));
     let mut todo = Vec::new();
-    for (k, src) in &wanted {
+    for (k, (src, sha)) in &wanted {
         let now = stamp(src).ok_or_else(|| format!("cannot read {}", src.display()))?;
         let at = cache.join(k);
+        let copy = stamp(&at);
         let kept = index
-            .get(*k)
-            .is_some_and(|i| i.from == *src && i.source == now && stamp(&at) == Some(i.copy));
+            .get_mut(*k)
+            .filter(|i| copy == Some(i.copy))
+            .is_some_and(|i| {
+                if i.from == *src && i.source == now {
+                    return true;
+                }
+                let same = sha.is_some() && i.sha256.as_deref() == *sha;
+                if same {
+                    i.from = src.to_path_buf();
+                    i.source = now;
+                }
+                same
+            });
         if kept {
             out.reused += 1;
             out.files.insert((*k).to_owned(), at);
         } else {
             index.remove(*k);
-            todo.push((*k, *src, now));
+            todo.push((*k, *src, *sha, now));
         }
     }
-    let need: u64 = todo.iter().map(|(_, _, s)| s.len).sum();
+    let need: u64 = todo.iter().map(|(_, _, _, s)| s.len).sum();
     if let Some(free) = free_space(game)
         && free < need.saturating_add(MARGIN)
     {
@@ -157,7 +188,7 @@ pub fn sync(
         ));
     }
     let total = todo.len();
-    for (n, (k, src, now)) in todo.into_iter().enumerate() {
+    for (n, (k, src, sha, now)) in todo.into_iter().enumerate() {
         let at = cache.join(k);
         let made = at
             .parent()
@@ -169,12 +200,16 @@ pub fn sync(
             let why = made.err().map_or("it is missing".to_owned(), |e| e.to_string());
             return Err(format!("cannot copy {}: {why}", src.display()));
         };
+        // The digest is the source's as the caller hashed it, so it only names a copy made from the source
+        // as it was then.
+        let sha256 = sha.filter(|_| stamp(src) == Some(now)).map(str::to_owned);
         index.insert(
             k.to_owned(),
             Kept {
                 from: src.to_path_buf(),
                 source: now,
                 copy,
+                sha256,
             },
         );
         out.files.insert(k.to_owned(), at);
@@ -236,10 +271,11 @@ mod tests {
 
     fn run(built: &Path, game: &Path, rels: &[&str]) -> Result<Synced, String> {
         let srcs: Vec<PathBuf> = rels.iter().map(|r| built.join(r)).collect();
-        let refs: Vec<(&str, &Path)> = rels
+        let refs: Vec<Wanted> = rels
             .iter()
             .copied()
             .zip(srcs.iter().map(|p| p.as_path()))
+            .map(|(rel, src)| (rel, src, None))
             .collect();
         sync(game, &refs, roomy, &mut |_, _| {})
     }
@@ -295,8 +331,8 @@ mod tests {
             .unwrap()
             .set_modified(when)
             .unwrap();
-        sync(&game, &[("db.bin", a.as_path())], roomy, &mut |_, _| {}).unwrap();
-        let s = sync(&game, &[("db.bin", b.as_path())], roomy, &mut |_, _| {}).unwrap();
+        sync(&game, &[("db.bin", a.as_path(), None)], roomy, &mut |_, _| {}).unwrap();
+        let s = sync(&game, &[("db.bin", b.as_path(), None)], roomy, &mut |_, _| {}).unwrap();
         assert_eq!((s.copied, s.reused), (1, 0));
         assert_eq!(
             std::fs::read_to_string(root_of(&game).join("db.bin")).unwrap(),
@@ -349,13 +385,117 @@ mod tests {
         std::fs::remove_dir_all(&root).ok();
     }
 
+    fn sha(body: &str) -> String {
+        crate::baseline::sha256_bytes(body.as_bytes())
+    }
+
+    #[test]
+    fn a_rebuild_that_wrote_the_same_bytes_elsewhere_copies_nothing() {
+        let root = tmp("same-bytes");
+        let game = root.join("game");
+        let (a, b) = (root.join("overlay/aaaa"), root.join("overlay/bbbb"));
+        for dir in [&a, &b] {
+            put(&dir.join("db.bin"), "database");
+            put(&dir.join("ui/menu.erp"), "menus");
+        }
+        put(&b.join("new.bin"), "new");
+        let wanted = |dir: &Path, rels: &[(&'static str, &'static str)]| -> Vec<(String, PathBuf, String)> {
+            rels.iter()
+                .map(|(rel, body)| ((*rel).to_owned(), dir.join(rel), sha(body)))
+                .collect()
+        };
+        let call = |w: Vec<(String, PathBuf, String)>| {
+            let v: Vec<Wanted> = w
+                .iter()
+                .map(|(rel, src, sha)| (rel.as_str(), src.as_path(), Some(sha.as_str())))
+                .collect();
+            sync(&game, &v, roomy, &mut |_, _| {}).unwrap()
+        };
+        let first = call(wanted(&a, &[("db.bin", "database"), ("ui/menu.erp", "menus")]));
+        assert_eq!((first.copied, first.reused), (2, 0));
+        let second = call(wanted(
+            &b,
+            &[
+                ("db.bin", "database"),
+                ("ui/menu.erp", "menus"),
+                ("new.bin", "new"),
+            ],
+        ));
+        assert_eq!((second.copied, second.reused), (1, 2));
+        let third = call(wanted(
+            &b,
+            &[
+                ("db.bin", "database"),
+                ("ui/menu.erp", "menus"),
+                ("new.bin", "new"),
+            ],
+        ));
+        assert_eq!((third.copied, third.reused), (0, 3));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_named_digest_never_keeps_a_copy_that_differs_or_was_written_through_its_link() {
+        let root = tmp("digest-guard");
+        let game = root.join("game");
+        let (a, b) = (root.join("a/db.bin"), root.join("b/db.bin"));
+        put(&a, "db-A");
+        put(&b, "db-B");
+        let (sha_a, sha_b) = (sha("db-A"), sha("db-B"));
+        sync(
+            &game,
+            &[("db.bin", a.as_path(), Some(&sha_a))],
+            roomy,
+            &mut |_, _| {},
+        )
+        .unwrap();
+        let s = sync(
+            &game,
+            &[("db.bin", b.as_path(), Some(&sha_b))],
+            roomy,
+            &mut |_, _| {},
+        )
+        .unwrap();
+        assert_eq!((s.copied, s.reused), (1, 0));
+        assert_eq!(
+            std::fs::read_to_string(root_of(&game).join("db.bin")).unwrap(),
+            "db-B"
+        );
+
+        std::thread::sleep(std::time::Duration::from_millis(30));
+        put(&root_of(&game).join("db.bin"), "db-X");
+        let s = sync(
+            &game,
+            &[("db.bin", a.as_path(), Some(&sha_a))],
+            roomy,
+            &mut |_, _| {},
+        )
+        .unwrap();
+        assert_eq!((s.copied, s.reused), (1, 0));
+        std::thread::sleep(std::time::Duration::from_millis(30));
+        put(&root_of(&game).join("db.bin"), "db-Y");
+        let s = sync(
+            &game,
+            &[("db.bin", b.as_path(), Some(&sha_a))],
+            roomy,
+            &mut |_, _| {},
+        )
+        .unwrap();
+        assert_eq!((s.copied, s.reused), (1, 0));
+        assert_eq!(
+            std::fs::read_to_string(root_of(&game).join("db.bin")).unwrap(),
+            "db-B"
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
     #[test]
     fn too_little_room_on_the_game_drive_fails_and_leaves_the_cache_alone() {
         let root = tmp("space");
         let (built, game) = (root.join("built"), root.join("game"));
         put(&built.join("a.bin"), "one");
         let src = built.join("a.bin");
-        let refs = [("a.bin", src.as_path())];
+        let refs = [("a.bin", src.as_path(), None)];
         let err = sync(&game, &refs, |_| Some(MARGIN), &mut |_, _| {}).unwrap_err();
         assert!(err.contains("game drive"), "{err}");
         assert!(!root_of(&game).join("a.bin").exists());

@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 
 mod compile;
 mod config;
+mod dxc;
 mod editor;
 mod effect;
 mod lint;
@@ -20,6 +21,7 @@ mod text;
 mod when;
 
 pub use compile::{CompileError, CompiledEffect, PassEntry, compile, compile_pass};
+pub use dxc::find_dxc;
 pub use editor::{completions, hover, tokens};
 pub use effect::{params_hlsl, parse_effect};
 pub use lint::lint;

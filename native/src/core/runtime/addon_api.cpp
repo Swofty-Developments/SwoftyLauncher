@@ -7,9 +7,7 @@
 #include "core/runtime/loader/host_api.hpp"
 #include "core/runtime/loader/mixins.hpp"
 #include "core/runtime/runtime.hpp"
-
-int settings_get(const char *id, uint32_t type, SwoftySettingValue *out);
-int settings_watch(const char *id, SwoftySettingFn fn, void *user);
+#include "core/runtime/settings.hpp"
 
 namespace swofty_core::hooks {
 const SwoftyHooks *table();

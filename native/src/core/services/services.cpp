@@ -1,11 +1,10 @@
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 
 #include <swofty/mixin.hpp>
 
 #include "core/hooks/guard.hpp"
 #include "core/services/services.hpp"
-
-std::string settings_addon(const void *from, std::string &dll);
 
 namespace swofty_core::hooks {
 std::string describe_fault(unsigned long code, uintptr_t at, const char *what);
