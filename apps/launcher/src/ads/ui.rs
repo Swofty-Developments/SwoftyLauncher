@@ -2,7 +2,7 @@
 //! banner over the Discover cards and under the Online filters, the side column
 //! of an addon's page, and a floating video while the game builds and starts.
 //! Signed-in supporters see none. `SWOFTY_ADS_VIDEO=1` shows the video without
-//! pressing Play.
+//! pressing Play, even while [`VIDEO_LIVE`] is off.
 
 use super::Unit;
 use crate::scale::{Hit, px};
@@ -19,6 +19,10 @@ use swofty_i18n::tr;
 /// The room each side of a banner in a page header keeps for the title and the
 /// buttons, in logical pixels.
 const HEADER_SIDE: f32 = 500.;
+
+/// Off until RevIQ sets up the `video` unit, which would otherwise leave the
+/// card empty.
+const VIDEO_LIVE: bool = false;
 
 /// How long the video plays before it can be closed.
 const VIDEO_SKIP: Duration = Duration::from_secs(5);
@@ -136,10 +140,12 @@ impl Shell {
         p: Palette,
         cx: &mut Context<Self>,
     ) -> Option<AnyElement> {
-        let starting = matches!(
-            state,
-            PlayState::Preparing | PlayState::Building | PlayState::Launching
-        ) || std::env::var_os("SWOFTY_ADS_VIDEO").is_some_and(|v| v == "1");
+        let starting = VIDEO_LIVE
+            && matches!(
+                state,
+                PlayState::Preparing | PlayState::Building | PlayState::Launching
+            );
+        let starting = starting || std::env::var_os("SWOFTY_ADS_VIDEO").is_some_and(|v| v == "1");
         if !self.ads_allowed() || !starting {
             self.ad_video = None;
             return None;
