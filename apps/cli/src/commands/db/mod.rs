@@ -1,15 +1,22 @@
-use std::collections::BTreeMap;
+mod addon;
+mod drivers;
+mod print;
+
 use std::path::PathBuf;
 use std::process::ExitCode;
 use std::sync::Arc;
 
-use crate::commands::{Execute, Invocation};
 use anyhow::{Result, anyhow, bail};
 use clap::{Args, Subcommand};
 use swofty_core::dbedit::package::{self, Package};
-use swofty_core::dbedit::{Catalog, Edits, NodeId, NodeKind, RowCopy, deps, driver_manager, modules};
+use swofty_core::dbedit::{Catalog, Edits, NodeKind, driver_manager, modules};
 use swofty_core::manifest::Category;
 use swofty_core::store::Store;
+
+use self::addon::{edit, open};
+use self::drivers::{driver_notes, driver_row};
+use self::print::{print_deps, row_line, show};
+use crate::commands::{Execute, Invocation};
 
 #[derive(Args)]
 pub(crate) struct DbArgs {
@@ -166,11 +173,6 @@ fn row_field(table: &str, field: Option<String>) -> String {
     })
 }
 
-fn row_line(r: &RowCopy) -> String {
-    let from = r.from.as_deref().unwrap_or("the game default row");
-    format!("{}: a copy of {from}", r.select())
-}
-
 #[derive(Debug, Clone, Copy)]
 pub struct CategoryArg(Option<Category>);
 
@@ -183,82 +185,6 @@ fn category(s: &str) -> std::result::Result<CategoryArg, String> {
         Ok(c) => Ok(CategoryArg(Some(c))),
         Err(_) => Err(format!("{s} is not a category; see --help")),
     }
-}
-
-/// Why `path` isn't in the game database when it names a Driver Manager driver's row.
-fn driver_row(store: &Store, cat: &Catalog, path: &str) -> Option<String> {
-    let label = path
-        .split(['[', ']', '=', '.'])
-        .find(|p| driver_manager::is_label(p))?;
-    Some(
-        match driver_manager::drivers(store, cat)
-            .iter()
-            .find(|d| d.label == label)
-        {
-            Some(d) => format!(
-                "{path}: Driver Manager adds {} ({label}) when the profile builds; edit the driver on the Driver Manager page",
-                d.name
-            ),
-            None => format!(
-                "{path}: {label} is a Driver Manager label, and Driver Manager doesn't add that driver"
-            ),
-        },
-    )
-}
-
-/// Notes on the Driver Manager drivers `value` picks: one Driver Manager doesn't add,
-/// or any while it's off in `profile`.
-fn driver_notes(store: &Store, cat: &Catalog, profile: &str, value: &str) -> Vec<String> {
-    let labels: Vec<&str> = value.split(',').filter(|v| driver_manager::is_label(v)).collect();
-    if labels.is_empty() {
-        return Vec::new();
-    }
-    let drivers = driver_manager::drivers(store, cat);
-    let on = store
-        .profile(profile)
-        .is_ok_and(|p| p.enabled().any(|id| id == driver_manager::ID));
-    labels
-        .into_iter()
-        .filter_map(|l| match drivers.iter().find(|d| d.label == l) {
-            Some(_) if on => None,
-            Some(d) => Some(format!(
-                "{l} is Driver Manager's {}, and Driver Manager is off in {profile}; {}",
-                d.name,
-                driver_manager::MISSING
-            )),
-            None => Some(format!(
-                "Driver Manager doesn't add {l}; {}",
-                driver_manager::MISSING
-            )),
-        })
-        .collect()
-}
-
-fn open(store: &Store, id: &str) -> Result<Package> {
-    if !package::is_package(store, id) {
-        bail!("no DB Editor addon named {id}; swofty db addons lists them");
-    }
-    Ok(Package::open(store, id)?)
-}
-
-/// Opens the addon, applies `change` and saves it; when another writer saved
-/// the addon in between, starts over from its file.
-fn edit<T>(
-    store: &Store,
-    cat: &Catalog,
-    id: &str,
-    mut change: impl FnMut(&mut Package) -> Result<T>,
-) -> Result<T> {
-    for _ in 0..5 {
-        let stamp = package::modified(store, id);
-        let mut p = open(store, id)?;
-        let out = change(&mut p)?;
-        if package::modified(store, id) == stamp {
-            p.save(store, cat)?;
-            return Ok(out);
-        }
-    }
-    bail!("{id} kept changing while saving; try again")
 }
 
 pub fn command(store: &Store, profile: &str, game: Option<PathBuf>, cmd: DbCommand) -> Result<ExitCode> {
@@ -546,178 +472,5 @@ pub fn command(store: &Store, profile: &str, game: Option<PathBuf>, cmd: DbComma
     Ok(ExitCode::SUCCESS)
 }
 
-fn print_deps(cat: &Catalog, row: NodeId) {
-    let d = deps::deps(cat, row);
-    let mut hows: BTreeMap<&str, Vec<String>> = BTreeMap::new();
-    for n in &d.names {
-        hows.entry(n.value.as_str()).or_default().push(n.how());
-    }
-    println!("{}", cat.path(row));
-    println!("names the game can derive from the row:");
-    for (value, how) in &hows {
-        println!("  {value}: {}", how.join(", "));
-    }
-    let tag = |area: Option<&str>| area.map(|a| format!(" [{a}]")).unwrap_or_default();
-    if !d.rules.is_empty() {
-        println!("rows the game is known to look up for the row:");
-    }
-    for (rule, name, found) in &d.rules {
-        let by = match rule.field {
-            None => format!("labelled {name} ({})", rule.how()),
-            Some(field) => format!("whose {field} names {name}"),
-        };
-        let found = match found {
-            Some(row) => cat.path(*row),
-            None => "none".into(),
-        };
-        println!("  {} row {by}: {found}; {}", rule.table, rule.reader);
-    }
-    let mut keyed: BTreeMap<(bool, String, &str), (usize, Option<&str>)> = BTreeMap::new();
-    for k in d.keyed.iter().filter(|k| k.rule.is_none()) {
-        let tables = match k.tables.len() {
-            1 => cat.path(k.tables[0]),
-            _ => k.family.clone(),
-        };
-        let by_label = hows[k.name.value.as_str()]
-            .iter()
-            .any(|h| h.starts_with("the label"));
-        let n = keyed
-            .entry((!by_label, tables, k.name.value.as_str()))
-            .or_insert((0, k.area));
-        n.0 = n.0.max(k.tables.len());
-    }
-    let mut section = None;
-    for ((by_field, tables, value), (n, area)) in &keyed {
-        if section != Some(*by_field) {
-            section = Some(*by_field);
-            match by_field {
-                false => println!("rows of other tables labelled with the label or a name built from it:"),
-                true => println!(
-                    "rows of other tables labelled with a value of the row (a copy that changes it needs its own):"
-                ),
-            }
-        }
-        let tables = match n {
-            1 => tables.clone(),
-            n => format!("{tables} ({n} tables)"),
-        };
-        println!("  {tables}: {value} ({}){}", hows[value].join(", "), tag(*area));
-    }
-    if d.keyed.is_empty() {
-        println!("rows of other tables labelled with these names: none");
-    }
-    println!("values that pick the row:");
-    if d.references.is_empty() {
-        println!("  none");
-    }
-    for r in &d.references {
-        let by = match r.by {
-            deps::By::Label => "label",
-            deps::By::StatId => "stat_id",
-        };
-        println!("  by {by}: {} ({}){}", r.field, r.count, tag(r.area));
-    }
-    if d.unnamed > 0 {
-        println!(
-            "  {} value(s) under keys the catalogue does not name hold the label",
-            d.unnamed
-        );
-    }
-    if d.keyed.iter().any(|k| k.area.is_some()) || d.references.iter().any(|r| r.area.is_some()) {
-        println!(
-            "[area]: a table of a game area an add-row copy does not reach by default; the build lists its findings only with swofty build --side-data"
-        );
-    }
-}
-
-fn show(cat: &Catalog, edits: &Edits, node: NodeId) {
-    let n = cat.node(node);
-    if let Some(r) = n.record.map(|r| cat.record(r)) {
-        let value = edits.value(cat, r.key).unwrap_or("(removed)");
-        println!("{} (0x{:016x}, type {})", cat.path(node), r.key, r.tag);
-        println!("  value: {value}");
-        if edits.get(r.key).is_some() {
-            println!("  stock: {}", r.value);
-        }
-        if let Some(text) = cat.text(value) {
-            println!("  English: {text}");
-        }
-        if let Some(m) = cat.meta(r.key) {
-            for (k, v) in [("meaning", &m.meaning), ("unit", &m.unit), ("range", &m.range)] {
-                if !v.is_empty() {
-                    println!("  {k}: {v}");
-                }
-            }
-        }
-        return;
-    }
-    println!("{}", cat.path(node));
-    if let Some(m) = cat.table_meaning(node) {
-        println!("  {m}");
-    }
-    for &c in cat.children(node) {
-        let child = cat.node(c);
-        let about = match &child.kind {
-            NodeKind::Table { rows, .. } => format!("table, {rows} rows"),
-            NodeKind::Row { .. } => [child.label.as_deref(), child.display.as_deref()]
-                .into_iter()
-                .flatten()
-                .collect::<Vec<_>>()
-                .join(" · "),
-            NodeKind::Key => child
-                .record
-                .map(|r| {
-                    edits
-                        .value(cat, cat.record(r).key)
-                        .unwrap_or("(removed)")
-                        .to_owned()
-                })
-                .unwrap_or_default(),
-            _ => String::new(),
-        };
-        println!("  {}  {about}", child.name);
-    }
-}
-
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use swofty_formats::gvdb::{Gvdb, Record};
-    use swofty_formats::hash::fnv1a64;
-
-    #[test]
-    fn keeps_a_change_another_window_saved_while_editing() {
-        let root = std::env::temp_dir().join(format!("swofty-cli-db-edit-{}", std::process::id()));
-        std::fs::remove_dir_all(&root).ok();
-        let store = Store::new(root.clone());
-        let records = vec![
-            Record::new("entrants.teams._team_instancecount_", 0, "1"),
-            Record::new("entrants.teams.team_0._metadata_", 2, "mclaren_26"),
-            Record::new("entrants.teams.team_0.stat_id", 0, "100"),
-            Record::new("entrants.teams.team_0.prestige", 0, "5"),
-        ];
-        let cat = Catalog::load(&Gvdb { records }.to_bytes()).unwrap();
-        let id = Package::create(&store, "Mine").unwrap().id;
-        let (stat, prestige) = (
-            fnv1a64("entrants.teams.team_0.stat_id"),
-            fnv1a64("entrants.teams.team_0.prestige"),
-        );
-        let mut calls = 0;
-        edit(&store, &cat, &id, |p| {
-            calls += 1;
-            if calls == 1 {
-                std::thread::sleep(std::time::Duration::from_millis(20));
-                let mut other = Package::open(&store, &id)?;
-                other.edits.set(&cat, stat, "7").map_err(|e| anyhow!(e))?;
-                other.save(&store, &cat)?;
-            }
-            p.edits.set(&cat, prestige, "9").map_err(|e| anyhow!(e))
-        })
-        .unwrap();
-        assert_eq!(calls, 2);
-        let saved = Package::open(&store, &id).unwrap().edits;
-        assert_eq!(saved.value(&cat, stat), Some("7"));
-        assert_eq!(saved.value(&cat, prestige), Some("9"));
-        std::fs::remove_dir_all(&root).ok();
-    }
-}
+mod tests;
