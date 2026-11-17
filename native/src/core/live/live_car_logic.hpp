@@ -6,8 +6,8 @@
 // and steering fields are the std live layouts (live/live_layout.hpp), compared against the EA App build's code
 // (docs/reference/std/live.md), and CarLive.suspension, CarSuspension.wheels and CarF1Aero.wing_open_fraction were
 // compared with re/tools/layoutcmp.py against the EA dump (same instruction, same displacement), so they read on every
-// verified build. The per-wheel block (surface, wheel wetness, spin, slip), the chassis basis and angular velocity have
-// no KB xref to compare, and the track wetness singleton is a hard-coded Steam RVA, so they read on the KB build only.
+// verified build. The per-wheel block (surface, wheel wetness, spin, slip), the chassis basis, the angular velocity and
+// the track wetness read on the KB build and on the builds in PORTED below, each with the reads proven there.
 
 namespace live_car {
 
