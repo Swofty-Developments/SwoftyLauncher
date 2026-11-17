@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "vt_Career_MessageDriverMovesFinalisedRecognition",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145696d30",
+  "type": "vtable[2]",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/140d766b0.c;decomp:re/decomp/140db18e0.c;decomp:re/decomp/14123b3f0.c;xref:0x140d7858e;doc:addons/career-editor/protocol/drivers.md#op-driversswap",
+  "notes": "vtable of MessageDriverMovesFinalised_recognition (name getter 0x140e041a0); subscribed by 0x141064140 (0x141064c70 unsubscribes) (V0879). Message layout DriverMovesFinalisedMessage (0x298): +0 vtable, +8 0, +0x10 LineupChange[40], +0x290 u64 count; the Driver Career signing 0x140d766b0 and the season processor 0x140db18e0 post _upgrades, _recognition, then the plain message after their entrant writes, with the payload from Career_Build_LineupChanges"
+ },
+ "signature": {
+  "id": "career.message_driver_moves_finalised_recognition",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 44 24 70 49 8B 4F 08 48 8D 54 24 70 E8 ?? ?? ?? ?? 4C 8B 35",
+  "match": "0x140d7858e",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145696d30",
+  "kind": "data",
+  "names": [
+   "vt_Career_MessageDriverMovesFinalisedRecognition"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-drivers",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/drivers.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-8",
+   "kind": "global",
+   "item": "vt_Career_MessageDriverMovesFinalisedRecognition",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d766b0.c;decomp:re/decomp/140db18e0.c;xref:0x140d7858e,0x140db6052,0x140e041a0,0x141064612,0x141064d0e;sig:career.message_driver_moves_finalised_recognition",
+   "notes": "V0879 sigcheck OK; vtable[2], name getter 0x140e041a0 -> MessageDriverMovesFinalised_recognition, layout and post order right. Wrong subscriber list: 0x141064140 subscribes (0x143987810 after the name lea 0x141064612); 0x141064c70 unsubscribes (0x143988350 after 0x141064d0e); 0x14468edb0 never references it (the 0x14468f0b1 hit is a byte match inside vmovss at 0x14468f0af). Corrected: 'vtable of MessageDriverMovesFinalised_recognition (name getter 0x140e041a0); subscribed by 0x141064140 (0x141064c70 unsubscribes). Message layout ... (unchanged)'"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-8",
+   "kind": "global",
+   "item": "vt_Career_MessageDriverMovesFinalisedRecognition",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d766b0.c;decomp:re/decomp/140db18e0.c;xref:0x140d7858e,0x140db6052,0x140e041a0,0x141064612,0x141064d0e;sig:career.message_driver_moves_finalised_recognition",
+   "notes": "V0901 sigcheck OK. Current text right: name getter 0x140e041a0 -> MessageDriverMovesFinalised_recognition; 0x141064140 subscribes (name lea 0x141064612 then 0x143987810), 0x141064c70 unsubscribes (0x141064d0e then 0x143988350); layout and post order right (0x140d7858e, 0x140db6052)"
+  }
+ ],
+ "proofs": []
+}

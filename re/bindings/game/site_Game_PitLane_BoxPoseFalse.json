@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "site_Game_PitLane_BoxPoseFalse",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434c4202",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/1434c3520.c;xref:0x1434c4202",
+  "notes": "Shared epilogue of Game_PitLane_ProjectBoxPose (LAB_1434c4202): cmp edi,2; setne al; restores xmm6-xmm15 saved in the prologue, add rsp,0x198, pops, ret. The normal failure path (FUN_1434c5c90 returned 2 in edi) jumps here; with edi = 2 the function returns false and has written nothing. Needs L2 promotion by the game owner."
+ },
+ "signature": {
+  "id": "game.pit_lane_box_pose_false",
+  "section": ".xtls",
+  "pattern": "4C 89 66 20 EB 0A C4 C1 78 29 36 48 83 46 18 10 C6 06 00 48 89 F1 E8 ?? ?? ?? ?? 83 FF 02 0F 95 C0",
+  "match": "0x1434c41e7",
+  "anchor": "0x1b",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434c4202",
+  "kind": "mid",
+  "expect": "83 FF 02 0F 95 C0",
+  "names": [
+   "site_Game_PitLane_BoxPoseFalse"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "pitlane",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/pit_box.cpp"
+  ],
+  "func_start": "0x1434c3520"
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "kbverify-pitbox",
+   "kind": "global",
+   "item": "site_Game_PitLane_BoxPoseFalse",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434c3520.c;xref:0x1434c36f2;sig:game.pit_lane_box_pose_false",
+   "notes": "V8551 sigcheck OK unique match 0x1434c41e7 target 0x1434c4202; cmp edi,2 / setne al then xmm6-15 reloads from rsp+0xf0..0x180, add rsp 0x198, pops rbx..r15, ret; the normal failure is je 0x1434c4202 at 0x1434c36f2 after cmp eax,2 with edi=eax. Jump from 0x1434c3653 is safe: rsp identical (no push/sub since prologue), saved regs restored from stack, out untouched, earlier call 0x1434c01a0 only fills a stack POD and is bounded (box<0x20)"
+  }
+ ],
+ "proofs": []
+}

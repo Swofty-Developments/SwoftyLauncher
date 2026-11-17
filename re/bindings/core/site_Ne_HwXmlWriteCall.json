@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Ne_HwXmlWriteCall",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14401f08c",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/14401ebd0.c;xref:0x14401f08c",
+  "notes": "call fwrite(rcx=text, edx=1, r8=len, r9=FILE*) inside Ne_Save_XmlDoc; the caller compares rax with len (0x14401f093) and treats equality as success. The CRT fwrite at 0x14535620c has 34 call sites; only this one writes the hardware settings docs"
+ },
+ "signature": {
+  "id": "core.hw_xml_write_call",
+  "section": ".xtls",
+  "pattern": "BA 01 00 00 00 48 89 F9 4D 89 F0 49 89 C1 E8 ?? ?? ?? ?? 31 ED 4C 39 F0 0F 84",
+  "match": "0x14401f07e",
+  "anchor": "0xe",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14401f08c",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Ne_HwXmlWriteCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "reopt-port",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "reopt-verify",
+   "kind": "global",
+   "item": "0x14401f08c",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14401ebd0.c;xref:0x14401f08c;sig:core.hw_xml_write_call",
+   "notes": "V0030 Disasm: _wfopen(path, L\"wb\") at 0x14401f06d, then mov edx,1; mov rcx,rdi (text); mov r8,r14 (strlen); mov r9,rax (FILE*); call 0x14535620c (.data1 jmp thunk; identified as fwrite by args, return use and the fclose pairing); xor ebp,ebp; cmp rax,r14; je 0x14401f366 (fclose, return 0); mismatch returns 5. sigcheck core.hw_xml_write_call is unique (match 0x14401f07e, anchor 0xe, E8) with target 0x14401f08c."
+  }
+ ],
+ "proofs": []
+}

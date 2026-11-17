@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_DriverSelect_NumberResult",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416a3899",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/1416a3630.c;decomp:re/decomp/142458210.c;xref:0x1416a388c,0x1416a3894,0x1416a3899,0x1416a38d3,0x1416a38d6,0x1416a38e8",
+  "notes": "Choose Driver details fill Game_DriverSelect_FillDriverDetails 0x1416a3630: the movzx r15d, al right after the call to Ent_Get_EntrantCarNumber_Thunk (0x1416a3894; rcx = rbx, the focused setup-list row copy, a 0x88-byte EntrantRecord; rdx = [rsp+0x40] the entrants; r8 = the game mode; 5th arg 1). al is the number the panel shows: r15d formats the number art key (Ne_Format_String at 0x1416a38d6, '#overrides.drivers.driver_numbers[_26].nr_%d') and is compared with 0xff at 0x1416a38e8. rbx still holds the row (callee-saved across the call)."
+ },
+ "signature": {
+  "id": "game.driver_select_number_result",
+  "section": ".xtls",
+  "pattern": "44 0F B6 F8 48 C7 44 24 38 00 00 00 00",
+  "match": "0x1416a3899",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416a3899",
+  "kind": "mid",
+  "expect": "44 0F B6 F8 48 C7 44 24 38 00 00 00 00",
+  "names": [
+   "site_Game_DriverSelect_NumberResult"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "progressive-numbers",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/progressive/native/src/ui/numbers.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "number-sites-verify",
+   "kind": "global",
+   "item": "site_Game_DriverSelect_NumberResult",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142458210.c;decomp:re/decomp/1416a3630.c;xref:0x1416a3649,0x1416a388c,0x1416a3894,0x1416a3899,0x1416a389d,0x1416a38d3,0x1416a38d6,0x1416a38e8,0x1416a39d9,0x141a5db97,0x141a5dc41,0x14cab5d09",
+   "notes": "V1192 Own capstone pass over .pdata 0x1416a3630-0x1416a406d (.xtls, linear decode ends exactly at the end): 0x1416a3899 is a boundary; 5-byte window covers movzx r15d,al (44 0f b6 f8) + first byte of mov qword [rsp+0x38],0 (9 bytes), no RIP-relative operand, no branch; no jmp/jcc/call in the function targets 0x1416a3899..0x1416a389d and no indirect jmp (the only section-wide rel32 hit on the site is the disp32 0x88 of mov rax,[r12+0x88] at 0x1416a3809, not a branch). rbx = rdx (arg2) at 0x1416a3649, first rewrite at 0x1416a3d2d; every jump into 0x1416a3649..0x1416a388c comes from inside that range; callee 0x14cab59d0 (thunk jmp at 0x142458210) pushes/pops rbx and r15. r15d = the u8 result is read only at 0x1416a38d3 (Ne_Format_String r8, format #overrides.drivers.driver_numbers[_26].nr_%d, reached only when r14b or dil is set, the dil path uses the .nr_%d_icon key) and 0x1416a38e8 (cmp 0xff, je -> art flag [rsp+0x60]=0); r15 is rewritten at 0x1416a39d9 with no path around it; al is dead after the movzx. Row layout: callee reads param_1 +0x50 id_lo/+0x52 id_hi (log), +0x83 car_number and matches it with Sess_Match_EntrantIdentity_Thunk; the fill reads rbx dword +0x50 and team +0x58/+0x5a; caller 0x141a5d180 passes a row from the 0x88-stride vector [rsi+0x1478] matched on +0x52/+0x50, caller 0x141a664f0 passes [rsi+0x490] from a pointer list matched the same way. sigcheck: 1 hit. EA dump: 1 hit at RVA 0x169dc69 in .rdata, same bytes, same call setup (EA thunk 0x142451590 -> 0x14ba59e90, Ne_Format_String 0x1441572e0), same function size 0xa3d and site offset +0x269 in pdata 0x14169da00; no override needed."
+  }
+ ],
+ "proofs": []
+}

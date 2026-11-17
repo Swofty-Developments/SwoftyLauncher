@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPieBufAlloc",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f46f6b",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141f46eb0.c",
+  "notes": "mov rbx,[rsi+0x270]; mov rax,[rbx]; mov edx,0x900 - the per-slice buffer alloc in Career_Build_RnDPieOverview (4*0x220+0x80). rnd-tyres-thermal v0.4.0 render_fifth_pie gate scans here, patches the 0x900->0xb20 imm (@0x141f46f76), MidHooks @0x141f47012 to construct a 5th slot via FUN_141f45650(buf+0x900), and relaxes the code<4 guard (cmp r14d,3->4 @0x141f4821b). Wedge geometry deferred (authored art)."
+ },
+ "signature": {
+  "id": "career.rnd_pie_buf_alloc",
+  "section": ".xtls",
+  "pattern": "48 8B 9E 70 02 00 00 48 8B 03 BA 00 09 00 00 41 B8 10 00 00 00 48 89 D9",
+  "match": "0x141f46f6b",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f46f6b",
+  "kind": "mid",
+  "expect": "48 8B 9E 70 02 00 00",
+  "names": [
+   "site_Career_RnDPieBufAlloc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "rnd-tyres",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/rnd_departments.cpp (swofty.rnd-tyres-thermal)"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

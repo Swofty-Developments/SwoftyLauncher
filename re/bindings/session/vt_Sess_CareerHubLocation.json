@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_CareerHubLocation",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1457e4680",
+  "type": "vtable[11]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "pat:flow-state-type-record;xref:0x14607df40;decomp:re/decomp/142db8900.c",
+  "notes": "cxx=SessionStateCareerHubLocation; neon flow state (slot 2 = NeFlowState base 0x1436aef00, slot 0 returns type record 0x14607df40 whose +8 names the class); onStateEnter 0x142dad0c0, onStateUpdate 0x142dad490, onStateExit 0x142dad790 (slots 8/9/10). (vmknolle session-flow map)"
+ },
+ "signature": {
+  "id": "session.career_hub_location",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 99 C8 0D 00",
+  "match": "0x142db890e",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1457e4680",
+  "kind": "data",
+  "names": [
+   "vt_Sess_CareerHubLocation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x1457e4680",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x142db8911",
+   "notes": "V7447 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

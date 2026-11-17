@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDDeptBoxGridInject",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c86567",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141c85f70.c;decomp:re/decomp/141c85f70.c;xref:0x141c86567;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v030--the-live-5th-box-shipped-box-only-pie-deferred",
+  "notes": "mov rcx,[rsi+0x298] starting the purchase-panel alloc in Career_Build_RnDDeptBoxGrid, right after the 4th dept card store and before the two panels. rsi=builder(param_1), rdi=icon-prefix obj lVar8 (non-volatile, set 0x141c8601e, clobbered 0x141c8657f, live here); begin[0..3]=4 dept cards. MidHook site for a 5th dept card: grow the 6-ptr card vector (begin [self+0x280]/end +0x288/cap +0x290 ptr-units/alloc +0x278; alloc vt+0x18(self,bytes,align) free vt+0x38(self,ptr)) to 7, end=begin+0x38, construct a 0x950 card via Career_Construct_RnDDeptCard(card,*(self+0x28),self,*(self+0x298),name,icon,enum) into begin[6]; stock attach loop binds it; resumed stock fills begin[4]/[5] panels. Sig career.rnd_box_grid_inject. Consumer native/src/rnd_departments.cpp (swofty.rnd-tyres-thermal v0.3.0). mov rcx,[rsi+0x298]: rsi = builder, rdi = icon-prefix object (+0x660 prefix cstr); four dept cards stored"
+ },
+ "signature": {
+  "id": "career.rnd_box_grid_inject",
+  "section": ".xtls",
+  "pattern": "48 C7 40 18 00 00 00 00 48 8B 8E 98 02 00 00",
+  "match": "0x141c8655f",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c86567",
+  "kind": "mid",
+  "expect": "48 8B 8E 98",
+  "names": [
+   "site_Career_RnDDeptBoxGridInject"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "rnd-tyres",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/rnd_departments.cpp (swofty.rnd-tyres-thermal)",
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-3",
+   "kind": "global",
+   "item": "site_Career_RnDDeptBoxGridInject",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c85f70.c;xref:0x141c8650d,0x141c86514,0x141c86520,0x141c86556,0x141c8655f,0x141c86567,0x141c8657f,0x141c8601e,0x141c86688,0x141c860a8,0x141c860f9",
+   "notes": "V0139 join of all 4th-card paths (store or null store), first insn of the 0x6f0 panel alloc; rsi=builder (sole write 0x141c85f89), rdi=lookup obj set 0x141c8601e (+0x660 prefix used by the icon formats) clobbered 0x141c8657f; grow/alloc vt+0x18(a,bytes,8)/free vt+0x38(a,ptr) on [+0x278] as claimed; later code rereads +0x280/+0x288; 7B window (sig expect only 4B) clean"
+  }
+ ],
+ "proofs": []
+}

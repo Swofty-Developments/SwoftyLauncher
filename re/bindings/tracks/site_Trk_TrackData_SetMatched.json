@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "site_Trk_TrackData_SetMatched",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e60eb1",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "tracks",
+  "evidence": "decomp:re/decomp/142e60e00.c;xref:0x142e60eaa,0x142e60eb1;kb:subsystems/tracks.md#query",
+  "notes": "In Game_TrackData_GetTrack after a set matched the query (also the jmp target of 0x142e60eaa): r11 = the matched TrackDataSet (masks +0x20/+0x24/+0x28 identify it, the reader keeps no two sets with equal masks), rdx = the TrackDataRecord (statId +1, name char* +0xd0), r10b/bl = query mode/used, r9b/r15b = season/used, cl/r12b = format/used. Trace site for R3 (which set a box's session reads)."
+ },
+ "signature": {
+  "id": "tracks.track_data_set_matched",
+  "section": ".xtls",
+  "pattern": "0F B6 42 01 49 8B 4B 08 4D 8B 43 10",
+  "match": "0x142e60eb1",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e60eb1",
+  "kind": "mid",
+  "expect": "0F B6 42 01 49 8B 4B 08",
+  "names": [
+   "site_Trk_TrackData_SetMatched"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "trk-t5",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "trk-v1",
+   "kind": "global",
+   "item": "site_Trk_TrackData_SetMatched",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e60e00.c;xref:0x142e60eaa,0x142e60eaf,0x142e60eb1;sig:tracks.track_data_set_matched",
+   "notes": "V1633 Disassembly 0x142e60e00..0x142e60f26: 0x142e60eb1 (movzx eax, byte [rdx+1], 4 bytes, then mov rcx,[r11+8]) is an instruction boundary reached by the format-used match (jmp at 0x142e60eaa) and by fallthrough after test r11,r11 at 0x142e60eac; no branch lands in 0x142e60eb2..0x142e60eb5. At the site r11 = matched set (masks +0x20/+0x24/+0x28), rdx = the TrackDataRecord, r10b/bl = query[0]/[1], r9b/r15b = [2]/[3], r12b = [5] and cl = query[4] (movzx ecx at 0x142e60e52; later shl uses cl without changing it). sigcheck: hits=1 match=target=0x142e60eb1. Not re-checked: the claim that the reader keeps no two sets with equal masks."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "trk-v1",
+   "kind": "sig",
+   "item": "tracks.track_data_set_matched",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:tracks.track_data_set_matched;decomp:re/decomp/142e60e00.c",
+   "notes": "V1637 sigcheck.py --exe on build d873a1c8: hits=1 match=target=0x142e60eb1. Independent regex search of the 12-byte pattern 0F B6 42 01 49 8B 4B 08 4D 8B 43 10 over .xtls: 1 hit, 0x142e60eb1, an instruction boundary inside .pdata function 0x142e60e00 (see the site_Trk_TrackData_SetMatched row)."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Ne_HwConfigParseCall",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14401d591",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/14401c700.c;xref:0x14401d591",
+  "notes": "call Ne_Parse_XmlDoc_Thunk(rcx=&doc 0x146044700, rdx=reader at rsp+0x50, r8d=0, r9b=1) inside Ne_Init_HardwareSettings, after fread of the hardware settings config; same reader/MemStream layout as site_Ne_HwXmlParseCall"
+ },
+ "signature": {
+  "id": "core.hw_config_parse_call",
+  "section": ".xtls",
+  "pattern": "48 8D 0D ?? ?? ?? ?? 48 8D 54 24 50 45 31 C0 41 B1 01 E8 ?? ?? ?? ?? 89 C5 4C 89 64 24 50",
+  "match": "0x14401d57f",
+  "anchor": "0x12",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14401d591",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Ne_HwConfigParseCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "reopt-port",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "reopt-verify",
+   "kind": "global",
+   "item": "0x14401d591",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14401c700.c;xref:0x14401d591;sig:core.hw_config_parse_call",
+   "notes": "V0029 Disasm: lea rcx,[rip+0x202717a] = 0x146044700; lea rdx,[rsp+0x50] (reader: vt 0x1458999c0, +8 &MemStream at rsp+0xb8, +0x10 alloc, +0x18 0x300, +0x20 0, +0x28 1); xor r8d,r8d; mov r9b,1; call 0x1440142c0. It runs after _wfopen L\"rb\" + fread of the user copy, and it is the only thunk call in Ne_Init_HardwareSettings. sigcheck core.hw_config_parse_call is unique (match 0x14401d57f, anchor 0x12, E8) with target 0x14401d591."
+  }
+ ],
+ "proofs": []
+}

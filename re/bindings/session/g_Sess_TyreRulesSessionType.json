@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "g_Sess_TyreRulesSessionType",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146080688",
+  "type": "uint32_t",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/142e88630.c;xref:0x142e88676",
+  "notes": "u32: session type the usable check compares set tags with (1..4 practice, 5..9 qualifying, 10..14 sprint shootout, 15..17 races)"
+ },
+ "signature": {
+  "id": "session.tyre_rules_session_type",
+  "section": ".xtls",
+  "pattern": "74 ED 8B 15 ?? ?? ?? ?? 44 8D 42 FF",
+  "match": "0x142e88674",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x2",
+   "len": 6
+  },
+  "target": "0x146080688",
+  "kind": "data",
+  "names": [
+   "g_Sess_TyreRulesSessionType"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/fq_tyres.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-b",
+   "kind": "global",
+   "item": "g_Sess_TyreRulesSessionType",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e88630.c;decomp:re/decomp/142e88730.c;decomp:re/decomp/14f3fcb70.c;xref:0x142e88676,0x142e8875c,0x14f3da2f0,0x14f3fcc41;sig:session.tyre_rules_session_type",
+   "notes": "V0971 0x142e88676 mov edx, dword [0x146080688] (u32), followed by range tests 1..4, 10..14 (13/14 accept any shootout tag), 5..9, 16..17 and 15 against the set tag at +0x00; 0x142e88730 tests 1..4, 5..9 and 15..17. The ranges match the session-type enum (P1-P3/short P, Q1-Q3/short Q/OSQ, SQ1-SQ3/short SQ/OSSQ, R/R2/R3). The only writer is 0x14f3fcb70 at 0x14f3fcc41, storing field 0 of the copied rules block. sigcheck: 1 hit (match 0x142e88674, target 0x146080688)"
+  }
+ ],
+ "proofs": []
+}

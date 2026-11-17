@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_PressInterviewBase",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1457e8a80",
+  "type": "vtable[11]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "pat:flow-state-type-record;xref:0x14607f738;decomp:re/decomp/142df8d40.c",
+  "notes": "cxx=SessionStatePressInterviewBase; neon flow state (slot 2 = NeFlowState base 0x1436aef00, slot 0 returns type record 0x14607f738 whose +8 names the class); onStateEnter 0x1436af570, onStateUpdate 0x1436af580, onStateExit 0x1436af590 (slots 8/9/10). (vmknolle session-flow map)"
+ },
+ "signature": {
+  "id": "session.press_interview_base",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 06 48 C7 86 B0 0D 00 00 00 00 00 00 48 8B 05",
+  "match": "0x142df8e01",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1457e8a80",
+  "kind": "data",
+  "names": [
+   "vt_Sess_PressInterviewBase"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x1457e8a80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x142df8e04",
+   "notes": "V7455 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

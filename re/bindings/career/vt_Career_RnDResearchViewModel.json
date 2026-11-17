@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Career_RnDResearchViewModel",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14575e000",
+  "type": "vtable",
+  "level": "L1",
+  "subsystem": "career",
+  "evidence": "pat:class-A;kb:subsystems/rnd_ui.md#pie",
+  "notes": "Class A: the Team HQ research overview view model. +0x98 Career_Build_RnDPotentialPie 0x141f41d60, +0x50 sector handler 0x141f45d30 (compares only aero/chassis/maintenance/engine)."
+ },
+ "signature": {
+  "id": "career.rn_d_research_view_model",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 01 48 8D 05 ?? ?? ?? ?? 48 89 81 60 02 00 00 48 8D 05 ?? ?? ?? ?? 48 89 81 68 02 00 00 48 81 C1 C8 06 00",
+  "match": "0x142170b1e",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14575e000",
+  "kind": "data",
+  "names": [
+   "vt_Career_RnDResearchViewModel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x14575e000",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x142170b21",
+   "notes": "V7433 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

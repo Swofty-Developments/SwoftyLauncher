@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "k_Live_GameVehicleProgressSystemKey",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146096928",
+  "type": "uint8_t",
+  "level": "L2",
+  "subsystem": "live",
+  "evidence": "decomp:re/decomp/144500dc0.c;decomp:re/decomp/142cf5c00.c;xref:0x143032ad7,0x1408033e6,0x140805a87,0x140811ee1,0x14098dfa3,0x141124600,0x1411653dd,0x141172cfa,0x1411743a0;pat:type-name-GameVehicleProgressSystem;xref:0x14098dfa0",
+  "notes": "registry key (address of the static type record; its +8 holds the name \"GameVehicleProgressSystem\", stored at 0x143032ad7); same class as [g_Game_Manager+0x2d0]; UDP state +0xd1c0"
+ },
+ "signature": {
+  "id": "live.game_vehicle_progress_system_key",
+  "section": ".xtls",
+  "pattern": "48 89 46 08 48 85 C0 74 4B 48 8D 05",
+  "match": "0x14098df97",
+  "anchor": "0xc",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x9",
+   "len": 7
+  },
+  "target": "0x146096928",
+  "kind": "data",
+  "names": [
+   "k_Live_GameVehicleProgressSystemKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "osd-l1",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-va",
+   "kind": "global",
+   "item": "k_Live_GameVehicleProgressSystemKey",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144500dc0.c;decomp:re/decomp/142cf5c00.c;decomp:re/decomp/142cfd6c0.c;xref:0x1407e5acb,0x1407e5ad0",
+   "notes": "V8747 own disx: type record +8 name string = 'GameVehicleProgressSystem' (static init store at 0x143032ada); vtable 0x1457f44d0 slot0 -> key (see consumer); no GetKey function in KB: the object allocated in 0x1407e5420 (size 0x148, ctor chain 0x142f06d80->0x14f6053c0 sets final vtable 0x1457f44d0 at 0x14f605478) has vtable slot 0 = lea 0x146096928 (own disx); it is added via Live_Add_System(registry=this,obj) at 0x1407e5acb and stored at registry+0x2d0 at 0x1407e5ad0, so registry[key] == [g_Game_Manager+0x2d0]; consumers: UDP state+0xd1c0 = FindIndex(key) passed to GetLapProgress in SyncLapData 0x142cfd6c0"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-vd",
+   "kind": "sig",
+   "item": "live.game_vehicle_progress_system_key",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:live.game_vehicle_progress_system_key",
+   "notes": "V8903 sigcheck hits=1, anchor disassembled and resolve re-computed by hand to the claimed target; target is the first field of a static type record whose +8 name pointer (set at the init stores) points at the type-name string, e.g. game_vehicle_progress_system_key; the name strings were read from the exe for all 13 keys and match the k_Live_* names; consumers pass the key address to FindIndex (0x14030ffd0)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPerfGotoName",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141894e03",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1418914f0.c;xref:0x141894df6;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v070--the-five-sector-development-potential-pie-folded-in",
+  "notes": "team performance publisher, department_performance loop: lea r15,[rsp+0x48] before Ne_Format_String(rnd_goto_%s_department); r8 = department name (name table or error_department); rbp = POINTER to the current code byte (code = byte [rbp])"
+ },
+ "signature": {
+  "id": "career.rnd_perf_goto_name",
+  "section": ".xtls",
+  "pattern": "4C 8B 04 C1 4C 8D 7C 24 48 4C 89 F9",
+  "match": "0x141894dff",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141894e03",
+  "kind": "mid",
+  "expect": "4C 8D 7C 24 48",
+  "names": [
+   "site_Career_RnDPerfGotoName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-c",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_fifth_pie.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-2",
+   "kind": "global",
+   "item": "site_Career_RnDPerfGotoName",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1418914f0.c;xref:0x141894de6,0x141894df6,0x141894dff,0x141894e03,0x141894e0b,0x141894e12",
+   "notes": "V0096 lea r15,[rsp+0x48] (5B) before Ne_Format_String(rnd_goto_%s_department), ja @0x141894df6 to window start, r8 = name: right; but rbp is the pointer to the current code byte (movsx rax,byte [rbp]), not the code"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-5",
+   "kind": "global",
+   "item": "site_Career_RnDPerfGotoName",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1418914f0.c;xref:0x141894de6,0x141894deb,0x141894df2,0x141894dff,0x141894e03,0x141894e0b,0x141894e12",
+   "notes": "V0199 sigcheck OK; 5-byte lea r15,[rsp+0x48] window clean (ja 0x141894e03 lands on its start); r8 = 0x14571bcc0[byte [rbp]] or error_department, rdx = rnd_goto_%s_department, call Ne_Format_String 0x1441630f0"
+  }
+ ],
+ "proofs": []
+}

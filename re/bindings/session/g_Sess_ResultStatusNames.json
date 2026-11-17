@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "g_Sess_ResultStatusNames",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14565c1f8",
+  "type": "const char*[8]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:ghidra-headless-2026-10-25;xref:0x14071fa0f",
+  "notes": "SessionResult::Status: 0 eInvalid, 1 eInactive, 2 eActive, 3 eFinished, 4 eDidNotFinish, 5 eDisqualified, 6 eNotClassified, 7 eRetired."
+ },
+ "signature": {
+  "id": "session.result_status_names",
+  "section": ".xtls",
+  "pattern": "48 8D 0D ?? ?? ?? ?? 48 8B 14 C1 4C 89 F9 E8 ?? ?? ?? ?? 8B",
+  "match": "0x14071fa0f",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14565c1f8",
+  "kind": "data",
+  "names": [
+   "g_Sess_ResultStatusNames"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x14565c1f8",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x14071fa12;decomp:re/decomp/141322d00.c",
+   "notes": "V7424 content and refs match"
+  }
+ ],
+ "proofs": []
+}

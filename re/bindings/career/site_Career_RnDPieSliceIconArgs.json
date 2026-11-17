@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPieSliceIconArgs",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f48a64",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f48a64;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v070--the-five-sector-development-potential-pie-folded-in",
+  "notes": "Career_Populate_RnDPieSlices: lea r9,[rnd_wheel_icon] of Ne_Format_String(%s.%s.%s, [[rsp+0x68]+0x660], rnd_wheel_icon, [rsp+0x20]); [rsp+0x20] = rdi stored @0x141f48a55; rdi is the department name only on the normal path: the shutdown path (rdi = shutdown @0x141f48885) and the regulation path (rdi = regulation @0x141f49b87) also jump to 0x141f48a20; r14d = code"
+ },
+ "signature": {
+  "id": "career.rnd_pie_slice_icon_args",
+  "section": ".xtls",
+  "pattern": "4C 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 84 24 60 01 00 00",
+  "match": "0x141f48a64",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f48a64",
+  "kind": "mid",
+  "expect": "4C 8D 0D 35 58 81 03",
+  "names": [
+   "site_Career_RnDPieSliceIconArgs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-c",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_fifth_pie.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-2",
+   "kind": "global",
+   "item": "site_Career_RnDPieSliceIconArgs",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f48a20,0x141f48a49,0x141f48a55,0x141f48a64,0x141f48a6b,0x141f48782,0x141f48885,0x141f4888c,0x141f49b58,0x141f49b87,0x141f49b8e",
+   "notes": "V0113 lea r9,rnd_wheel_icon (7B) before Ne_Format_String(%s.%s.%s,[[rsp+0x68]+0x660],atlas,[rsp+0x20]), [rsp+0x20]=rdi stored @0x141f48a55, r14d = code: right; but rdi is the department name only on the normal path: the shutdown path sets rdi=shutdown (0x141f48885) and the regulation path rdi=regulation (0x141f49b87) before jumping to 0x141f48a20, so the hook must not assume [rsp+0x20] is a department name"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-5",
+   "kind": "global",
+   "item": "site_Career_RnDPieSliceIconArgs",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f4824a,0x141f4825c,0x141f4826e,0x141f48280,0x141f48292,0x141f48885,0x141f4888c,0x141f49b87,0x141f49b8e,0x141f48a20,0x141f48a49,0x141f48a55,0x141f48a5d,0x141f48a64,0x141f48a6b",
+   "notes": "V0204 sigcheck OK; 7-byte lea r9 window clean; r9 = rnd_wheel_icon, rdx = %s.%s.%s, r8 = [[rsp+0x68]+0x660], [rsp+0x20] = rdi; rdi = dept name from the code switch on the normal path, shutdown at 0x141f48885 and regulation at 0x141f49b87 both jmp 0x141f48a20; r14d written only at 0x141f48213 so it is the code on all paths"
+  }
+ ],
+ "proofs": []
+}
