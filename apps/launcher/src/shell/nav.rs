@@ -40,9 +40,10 @@ impl Shell {
     }
 
     pub(super) fn section_loaded(&self, i: usize) -> bool {
-        self.library
-            .sections
-            .get(i)
-            .is_some_and(|s| self.views.contains_key(&format!("{}/{}", s.addon, s.spec.id)))
+        self.library.sections.get(i).is_some_and(|s| {
+            self.addon_views
+                .views
+                .contains_key(&format!("{}/{}", s.addon, s.spec.id))
+        })
     }
 }

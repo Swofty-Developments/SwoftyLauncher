@@ -1,10 +1,10 @@
 use crate::shell::notices::{Notification, Notify};
 use gpui_kit::component::WindowExt;
 use gpui_kit::*;
-use swofty_core::launcher_saves;
 use swofty_core::profile::VANILLA;
-use swofty_core::vault::restore::Running;
-use swofty_core::vault::{self, Location, Vault};
+use swofty_core::saves::launcher as launcher_saves;
+use swofty_core::saves::vault::restore::Running;
+use swofty_core::saves::vault::{self, Location, Vault};
 use swofty_i18n::{tr, trf};
 
 use super::labels::{notice_body, notice_title};

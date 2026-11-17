@@ -4,7 +4,7 @@ use std::sync::mpsc::{Receiver, Sender};
 use std::time::Instant;
 
 use gpui_kit::*;
-use swofty_core::shaders::CompiledEffect;
+use swofty_core::content::shaders::CompiledEffect;
 use swofty_i18n::tr;
 use swofty_preview::{ActiveInstance, Clip, ClipInfo, Frame, Preview};
 use swofty_shaders::rules::{Engine, Signals};
@@ -387,7 +387,7 @@ pub(super) fn compile_effects(
     store: &swofty_core::store::Store,
     catalog: &Catalog,
 ) -> Result<(Vec<CompiledEffect>, Vec<String>), String> {
-    let (effects, warnings) = swofty_core::shaders::compile_all(store, Target::Spirv);
+    let (effects, warnings) = swofty_core::content::shaders::compile_all(store, Target::Spirv);
     for warning in &warnings {
         crate::app::app_log::note(&format!("[shaders] preview: {warning}"));
     }
@@ -428,7 +428,7 @@ pub(super) fn previewable(instances: &[ActiveInstance], unavailable: &[String]) 
 #[cfg(test)]
 mod tests {
     use super::{previewable, unavailable_effects};
-    use swofty_core::shaders::CompiledEffect;
+    use swofty_core::content::shaders::CompiledEffect;
     use swofty_preview::ActiveInstance;
     use swofty_shaders::{Origin, parse_effect};
 

@@ -10,13 +10,13 @@ use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::{h_flex, v_flex};
 use gpui_kit::*;
-use swofty_core::data_usage::Usage;
+use swofty_core::data::space::Usage;
 use swofty_i18n::tr;
 
-use crate::shell::pages::GUTTER;
 use crate::shell::{Page, Shell};
 use crate::ui::form::side_nav_item;
 use crate::ui::theme::Palette;
+use crate::ui::tokens::space::GUTTER;
 
 pub use usage::{GameCopy, clear_logs_at_start, low_space_warning};
 
@@ -67,7 +67,7 @@ impl Category {
 pub struct Settings {
     pub category: Category,
     pub usage: Option<Usage>,
-    pub prunable: swofty_core::data_usage::Pruned,
+    pub prunable: swofty_core::data::space::Pruned,
     pub measuring: bool,
     pub clearing: bool,
     pub cache: GameCopy,

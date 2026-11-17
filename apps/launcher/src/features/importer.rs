@@ -10,8 +10,8 @@ use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Disableable, v_flex};
 use gpui_kit::*;
-use swofty_core::managed;
 use swofty_core::profile::VANILLA;
+use swofty_core::updates::managed;
 
 use crate::features::sections::{Reporter, Shared};
 use crate::shell::{Page, Shell};
@@ -94,7 +94,7 @@ impl Shell {
             .find(|p| !p.vanilla())
             .map(|p| p.name.clone());
         let button = match modded {
-            Some(name) if self.use_profiles => Button::new("importer-use-profile")
+            Some(name) if self.prefs.use_profiles => Button::new("importer-use-profile")
                 .primary()
                 .icon(IconName::Layers)
                 .label(trf!("Use {name}", name = name))
@@ -102,7 +102,7 @@ impl Shell {
             _ => Button::new("importer-profiles")
                 .outline()
                 .icon(IconName::Layers)
-                .label(match self.use_profiles {
+                .label(match self.prefs.use_profiles {
                     true => tr("Profiles"),
                     false => tr("Addons"),
                 })
@@ -144,7 +144,7 @@ impl Shell {
                         Some(r) => r,
                         None => managed::fetch_latest(FETCH_TIMEOUT).map_err(|e| e.to_string())?,
                     };
-                    let launcher = swofty_core::update::current_version();
+                    let launcher = swofty_core::updates::release::current_version();
                     managed::install_release(&store, &release, &launcher, &Reporter(Shared::default()))
                         .map_err(|e| e.to_string())
                 })

@@ -11,7 +11,7 @@ pub(crate) const FILE: &str = "state/launcher-app.log";
 const CAP: u64 = 256 << 10;
 
 fn path() -> PathBuf {
-    swofty_core::paths::data_dir().join(FILE)
+    swofty_core::data::paths::data_dir().join(FILE)
 }
 
 fn line(text: &str) -> String {
@@ -20,7 +20,7 @@ fn line(text: &str) -> String {
         .map_or(0, |d| d.as_secs() as i64);
     format!(
         "{} [{}] {text}\n",
-        swofty_core::send_logs::utc_stamp(secs),
+        swofty_core::diagnostics::send_logs::utc_stamp(secs),
         std::process::id()
     )
 }
@@ -113,7 +113,7 @@ impl Roots {
     fn now() -> Self {
         let home = if cfg!(windows) { "USERPROFILE" } else { "HOME" };
         Self {
-            data: swofty_core::paths::data_dir(),
+            data: swofty_core::data::paths::data_dir(),
             game: GAME.lock().ok().and_then(|g| g.clone()),
             home: std::env::var_os(home).map(PathBuf::from),
         }
@@ -217,7 +217,7 @@ pub(crate) fn start() {
     watch_window();
     let at = path.clone();
     std::thread::spawn(move || {
-        let elevated = if swofty_core::compat::elevated() {
+        let elevated = if swofty_core::platform::run_as_admin::elevated() {
             "yes"
         } else {
             "no"

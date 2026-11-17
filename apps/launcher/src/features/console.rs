@@ -17,8 +17,8 @@ use swofty_core::store::Store;
 use swofty_i18n::{tr, trn};
 
 use crate::shell::Shell;
-use crate::shell::pages::badge;
 use crate::shell::play_bar::link;
+use crate::ui::badge;
 use crate::ui::theme::{Palette, palette};
 
 const MAX_LINES: usize = 20_000;
@@ -273,7 +273,7 @@ impl Console {
                     let game = c
                         .shell
                         .upgrade()
-                        .and_then(|s| s.read(cx).install.as_ref().map(|i| i.dir.clone()));
+                        .and_then(|s| s.read(cx).game.install.as_ref().map(|i| i.dir.clone()));
                     (c.store.clone(), game, c.feeds.each_mut().map(|f| f.tail.take()))
                 }) else {
                     break;

@@ -1,6 +1,7 @@
 use crate::shell::{Page, Shell};
 use crate::ui::scale::px;
 use crate::ui::theme::{Palette, ScrollArea};
+use crate::ui::tokens::space::GUTTER;
 use crate::ui::{EmptyState, PageHeader, Toggle, row, row_head};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
@@ -9,13 +10,6 @@ use gpui_kit::component::scroll::Scrollable;
 use gpui_kit::component::v_flex;
 use gpui_kit::*;
 use swofty_i18n::tr;
-
-pub(crate) use crate::ui::{
-    TRACK, addon_icon, avatar, badge, chevron, fact, game_art, label, logo, monogram, names, stat, tag, tile,
-    track_badge, wordmark,
-};
-
-pub(crate) const GUTTER: f32 = crate::ui::tokens::space::GUTTER;
 
 impl Shell {
     pub(crate) fn header(

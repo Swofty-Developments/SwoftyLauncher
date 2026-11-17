@@ -8,11 +8,11 @@ use gpui_kit::component::switch::Switch;
 use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::data_usage::{self, KEEP_FOR, KEEP_SESSIONS};
+use swofty_core::data::space::{self as data_usage, KEEP_FOR, KEEP_SESSIONS};
 use swofty_core::install::Source;
 use swofty_core::session::UiMode;
-use swofty_core::update;
-use swofty_core::updater;
+use swofty_core::updates::release as update;
+use swofty_core::updates::updater;
 use swofty_i18n::{tr, trf};
 
 use crate::shell::Shell;
@@ -48,24 +48,24 @@ impl Shell {
                 })
             })
             .collect();
-        let start_label = match self.install.as_ref().map(|i| i.source) {
+        let start_label = match self.game.install.as_ref().map(|i| i.source) {
             Some(Source::EaApp) => tr("Start the EA app automatically"),
             _ => tr("Start Steam automatically"),
         };
         let start = Switch::new("settings-start-store")
-            .checked(self.start_store)
+            .checked(self.prefs.start_store)
             .on_click(cx.listener(|this, on: &bool, window, cx| this.set_start_store(*on, window, cx)));
         let time_trial = Switch::new("settings-time-trial-boards")
-            .checked(self.time_trial_boards)
+            .checked(self.prefs.time_trial_boards)
             .on_click(cx.listener(|this, on: &bool, window, cx| this.set_time_trial_boards(*on, window, cx)));
         let time_trial_ingame = Switch::new("settings-time-trial-ingame")
-            .checked(self.time_trial_ingame)
+            .checked(self.prefs.time_trial_ingame)
             .on_click(cx.listener(|this, on: &bool, window, cx| this.set_time_trial_ingame(*on, window, cx)));
         let home_video = Switch::new("settings-home-video")
-            .checked(self.home_video)
+            .checked(self.prefs.home_video)
             .on_click(cx.listener(|this, on: &bool, window, cx| this.set_home_video(*on, window, cx)));
         let use_profiles = Switch::new("settings-use-profiles")
-            .checked(self.use_profiles)
+            .checked(self.prefs.use_profiles)
             .on_click(cx.listener(|this, on: &bool, window, cx| this.set_use_profiles(*on, window, cx)));
         SettingsSection::new(tr("General"))
             .row(
@@ -103,28 +103,28 @@ impl Shell {
 
     pub(super) fn settings_display(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let shell = cx.entity().downgrade();
-        let tv = self.ui_mode.is_some_and(UiMode::is_tv);
+        let tv = self.scaling.mode.is_some_and(UiMode::is_tv);
         let choice = |label: &'static str, mode: UiMode| {
             let shell = shell.clone();
             Choice::new(label, tv == mode.is_tv(), move |window, cx| {
                 shell.update(cx, |s, cx| s.set_ui_mode(mode, window, cx)).ok();
             })
         };
-        let shown = self.ui_scale_drag.or(self.ui_scale);
+        let shown = self.scaling.drag.or(self.scaling.percent);
         let readout = shown.map_or_else(|| tr("Auto").to_owned(), |p| format!("{p}%"));
         let reset = Button::new("settings-ui-scale-reset")
             .outline()
             .tap_sm()
             .label(tr("Reset to automatic"))
-            .disabled(self.ui_scale.is_none() && self.ui_scale_drag.is_none())
+            .disabled(self.scaling.percent.is_none() && self.scaling.drag.is_none())
             .on_click(cx.listener(|this, _, window, cx| {
-                this.ui_scale_drag = None;
+                this.scaling.drag = None;
                 this.set_ui_scale(None, window, cx)
             }));
         let scale = h_flex()
             .gap(px(12.))
             .items_center()
-            .child(div().w(px(220.)).child(Slider::new(&self.ui_scale_slider)))
+            .child(div().w(px(220.)).child(Slider::new(&self.scaling.slider)))
             .child(
                 div()
                     .w(px(56.))
@@ -186,7 +186,7 @@ impl Shell {
             .row(
                 SettingRow::new(tr("Your addons and saves"))
                     .description(
-                        swofty_core::data_move::link::real_folder(&self.store.root)
+                        swofty_core::data::relocate::link::real_folder(&self.store.root)
                             .display()
                             .to_string(),
                     )
@@ -308,10 +308,10 @@ impl Shell {
 
     pub(super) fn settings_advanced(&self, cx: &mut Context<Self>) -> AnyElement {
         let developer = Switch::new("settings-developer")
-            .checked(self.developer_mode)
+            .checked(self.prefs.developer_mode)
             .on_click(cx.listener(|this, on: &bool, window, cx| this.set_developer(*on, window, cx)));
         let auto_clear = Switch::new("settings-auto-clear-logs")
-            .checked(self.clear_old_session_logs)
+            .checked(self.prefs.clear_old_session_logs)
             .on_click(
                 cx.listener(|this, on: &bool, window, cx| this.set_clear_old_session_logs(*on, window, cx)),
             );

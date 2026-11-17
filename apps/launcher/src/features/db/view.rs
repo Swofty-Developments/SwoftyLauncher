@@ -19,7 +19,7 @@ const DEBOUNCE: Duration = Duration::from_millis(120);
 
 impl Shell {
     pub(crate) fn sync_db(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let id = self.install.as_ref().map(game_id);
+        let id = self.game.install.as_ref().map(game_id);
         if self.db.game.is_some() && self.db.game != id {
             self.db_forget_game();
         }
@@ -151,7 +151,7 @@ impl Shell {
     }
 
     fn db_open(&mut self, cx: &mut Context<Self>) {
-        let Some(install) = self.install.clone() else {
+        let Some(install) = self.game.install.clone() else {
             return;
         };
         let id = game_id(&install);
@@ -282,7 +282,7 @@ impl Shell {
                     let choices = choices.unwrap_or_else(|| {
                         let tracks = swofty_core::tracks::installed(&store);
                         let drivers = driver_manager::drivers(&store, &catalog);
-                        let heads = swofty_core::heads::installed(&store);
+                        let heads = swofty_core::game_db::heads::installed(&store);
                         let refs = module
                             .fields
                             .iter()
@@ -558,7 +558,7 @@ impl Shell {
             .justify_center()
             .gap(px(10.))
             .pb(px(48.))
-            .child(crate::shell::pages::badge(IconName::Database, 44., p))
+            .child(crate::ui::badge(IconName::Database, 44., p))
             .child(
                 div()
                     .pt(px(8.))

@@ -8,7 +8,7 @@ use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Icon, h_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::folders::{Entry, Key};
+use swofty_core::profile::folders::{Entry, Key};
 use swofty_i18n::{tr, trf, trn};
 
 impl Shell {

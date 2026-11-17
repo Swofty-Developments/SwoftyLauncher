@@ -5,10 +5,10 @@ use crate::ui::theme::palette;
 use gpui_kit::component::WindowExt;
 use gpui_kit::component::button::ButtonVariant;
 use gpui_kit::*;
-use swofty_core::process::stop_game_in;
+use swofty_core::platform::process::stop_game_in;
 
 use super::Shell;
-use super::dialogs::offline_terms;
+use super::launch_alerts::offline_terms;
 use swofty_i18n::tr;
 
 impl Shell {
@@ -29,7 +29,7 @@ impl Shell {
                     window.close_dialog(cx);
                     shell
                         .update(cx, |s, cx| {
-                            s.play_anyway = true;
+                            s.launching.play_anyway = true;
                             s.play(window, cx);
                         })
                         .ok();
@@ -64,21 +64,21 @@ impl Shell {
     }
 
     pub(crate) fn restore_game_folder(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(install) = self.install.clone() else {
+        let Some(install) = self.game.install.clone() else {
             return;
         };
         let store = self.store.clone();
-        self.notice = None;
-        self.blocked = None;
-        self.game_edited = None;
-        self.restoring = true;
+        self.launching.notice = None;
+        self.game.blocked = None;
+        self.launching.game_edited = None;
+        self.launching.restoring = true;
         cx.spawn_in(window, async move |this, cx| {
             let result = cx
                 .background_executor()
                 .spawn(async move { game::restore(&store, install.dir) })
                 .await;
             this.update_in(cx, |s, window, cx| {
-                s.restoring = false;
+                s.launching.restoring = false;
                 match result {
                     Ok(text) => {
                         window.notify(Notification::success(text).title(tr("Game folder restored")), cx)
@@ -111,10 +111,10 @@ impl Shell {
                 .cancel_text(tr("Keep building"))
                 .show_cancel(true)
                 .on_ok(move |_, window, cx| {
-                    match swofty_core::busy::request_cancel(&data) {
+                    match swofty_core::game_folder::busy::request_cancel(&data) {
                         Ok(()) => {
                             this.update(cx, |s, cx| {
-                                s.cancelling = true;
+                                s.launching.cancelling = true;
                                 cx.notify();
                             })
                             .ok();
@@ -130,7 +130,7 @@ impl Shell {
     }
 
     pub(crate) fn confirm_stop(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(dir) = self.install.as_ref().map(|i| i.dir.clone()) else {
+        let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
             return;
         };
         let data = self.store.root.clone();
