@@ -10,10 +10,15 @@ namespace runtime {
 // first commit queues last (runtime::ready), which also closes the addons' asset registrations.
 enum class Start { attach, attach_code, commit_code, ready };
 
+// The ready subsystems from the one marked open to the one marked close share one D3D12 probe device
+// (d3d12hooks::ProbeScope): the first of them that probes makes it and it is released right after the last.
+enum class Probe { none, open, close };
+
 struct Subsystem {
     const char *name;
     Start start;
     void (*install)();
+    Probe probe = Probe::none;
 };
 
 // Every subsystem the core starts, in start order. The core never unloads (the loader keeps it until the game
