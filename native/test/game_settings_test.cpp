@@ -34,10 +34,11 @@ static constexpr std::array<gs::Override, 5> TYPED{{
 static void shipped_rows()
 {
     const uint32_t minimum = gs::rows_of("loading_skip_minimum_time"), intro = gs::rows_of("loading_skip_session_intro_video"),
-                   rundown = gs::rows_of("loading_skip_grid_rundown");
-    CHECK(__builtin_popcount(minimum) == 1 && __builtin_popcount(intro) == 1 && __builtin_popcount(rundown) == 1);
-    CHECK((minimum | intro | rundown) == gs::rows_all());
-    CHECK(!(minimum & intro) && !(intro & rundown) && !(minimum & rundown));
+                   rundown = gs::rows_of("loading_skip_grid_rundown"), talking = gs::rows_of("loading_skip_talking_points");
+    CHECK(__builtin_popcount(minimum) == 1 && __builtin_popcount(intro) == 1 && __builtin_popcount(rundown) == 1 &&
+          __builtin_popcount(talking) == 1);
+    CHECK((minimum | intro | rundown | talking) == gs::rows_all());
+    CHECK(!(minimum & intro) && !(intro & rundown) && !(minimum & rundown) && !(talking & (minimum | intro | rundown)));
     CHECK(gs::rows_of("postfx") == 0 && gs::rows_of("") == 0 && gs::rows_of("loading_skip") == 0);
     CHECK(gs::rows_of(gs::LOG_FEATURE) == 0);
     CHECK(gs::rows_typed(gs::rows_all(), Type::boolean) == gs::rows_all());
@@ -52,6 +53,11 @@ static void shipped_rows()
     CHECK(row && !std::strcmp(row->feature, "loading_skip_session_intro_video") && row->bits == 1);
     row = gs::match("Game.SkipGridRundown", rundown);
     CHECK(row && !std::strcmp(row->feature, "loading_skip_grid_rundown") && row->bits == 1);
+    row = gs::match("Game.SkipTalkingPoints", talking);
+    CHECK(row && !std::strcmp(row->feature, "loading_skip_talking_points") && row->bits == 1 && row->type == Type::boolean);
+    CHECK(gs::match("Game.SkipTalkingPoints", minimum | intro | rundown) == nullptr);
+    CHECK(gs::match("Game.SkipCamSequence", gs::rows_all()) == nullptr);
+    CHECK(gs::match("Game.SkipWinnerSequence", gs::rows_all()) == nullptr);
 
     CHECK(gs::match("Game.IgnoreMinimumLoadingTimeX", gs::rows_all()) == nullptr);
     CHECK(gs::match("Game.IgnoreMinimumLoading", gs::rows_all()) == nullptr);
@@ -110,6 +116,7 @@ static void lists()
     CHECK(gs::parse_list("loading_skip_minimum_time") == minimum);
     CHECK(gs::parse_list(" loading_skip_minimum_time , loading_skip_session_intro_video ") == (minimum | intro));
     CHECK(gs::parse_list("loading_skip_grid_rundown\t") == rundown);
+    CHECK(gs::parse_list("loading_skip_talking_points") == gs::rows_of("loading_skip_talking_points"));
     CHECK(gs::parse_list("loading_skip_session_intro_video,,postfx") == intro);
     CHECK(gs::parse_list("loading_skip_minimum") == 0);
     CHECK(gs::parse_list("loading_skip_minimum_time_x") == 0);

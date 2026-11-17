@@ -87,7 +87,7 @@ def write_run(root, name, text, env=None, end=None):
     return d
 
 
-ON = 'loading_skip_minimum_time,loading_skip_session_intro_video,loading_skip_grid_rundown'
+ON = 'loading_skip_minimum_time,loading_skip_session_intro_video,loading_skip_grid_rundown,loading_skip_talking_points'
 APPLIED = ''.join(
     line(30.0, f'[loading] {s} read by the game (it had 0, status 0): answered 1 for the {f} feature, so it is skipped')
     for f, s in lr.FEATURE_SETTINGS.items())
