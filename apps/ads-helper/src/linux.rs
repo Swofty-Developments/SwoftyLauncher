@@ -1,4 +1,5 @@
 use gtk::glib;
+use gtk::prelude::*;
 use std::cell::Cell;
 use std::collections::HashMap;
 use std::io::BufRead;
@@ -8,7 +9,21 @@ use std::sync::mpsc;
 use std::time::Duration;
 use swofty_ads::Command;
 use wry::raw_window_handle as rwh;
-use wry::{WebContext, WebView};
+use wry::{Rect, WebContext, WebView, WebViewExtUnix};
+
+/// Sizes a slot exactly. Its GTK window otherwise keeps GTK's default height
+/// of 200 pixels, which leaves a banner too tall and blank.
+fn fit(view: &WebView, bounds: Rect, width: u32, height: u32) {
+    let _ = view.set_bounds(bounds);
+    let webview = view.webview();
+    let Some(window) = webview.toplevel().and_then(|w| w.downcast::<gtk::Window>().ok()) else {
+        return;
+    };
+    let scale = webview.scale_factor().max(1);
+    let (width, height) = (width as i32 / scale, height as i32 / scale);
+    window.set_default_size(width, height);
+    window.resize(width, height);
+}
 
 /// The launcher's X11 window, which every slot is a child of.
 struct Parent(u64);
@@ -50,7 +65,7 @@ impl Host {
                         let _ = s.view.load_url(&url);
                         s.home = url;
                     }
-                    let _ = s.view.set_bounds(bounds);
+                    fit(&s.view, bounds, width, height);
                     let _ = s.view.zoom(scale);
                     let _ = s.view.set_visible(true);
                     return;
@@ -67,6 +82,7 @@ impl Host {
                 .build_as_child(&self.parent);
                 match built {
                     Ok(view) => {
+                        fit(&view, bounds, width, height);
                         let _ = view.zoom(scale);
                         self.slots.insert(
                             slot,
@@ -84,6 +100,9 @@ impl Host {
                 if let Some(s) = self.slots.get(&slot) {
                     let _ = s.view.set_visible(false);
                 }
+            }
+            Command::Close { slot } => {
+                self.slots.remove(&slot);
             }
         }
     }

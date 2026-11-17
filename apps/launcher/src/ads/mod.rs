@@ -30,16 +30,33 @@ mod ui;
 
 pub(crate) use ui::AdVideo;
 
+/// Where a slot sits. Each has its own webview, even two that show the same unit.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(crate) enum Unit {
-    Rail,
+    Home,
+    Discover,
+    Addon,
+    Online,
     Video,
 }
 
 impl Unit {
+    pub(crate) fn key(self) -> &'static str {
+        match self {
+            Self::Home => "home",
+            Self::Discover => "discover",
+            Self::Addon => "addon",
+            Self::Online => "online",
+            Self::Video => "video",
+        }
+    }
+
+    /// The RevIQ unit the slot shows.
     pub(crate) fn name(self) -> &'static str {
         match self {
-            Self::Rail => "right-rail-1",
+            Self::Home => "right-rail-1",
+            Self::Addon => "left-rail-1",
+            Self::Discover | Self::Online => "leaderboard-1",
             Self::Video => "video",
         }
     }
@@ -47,7 +64,8 @@ impl Unit {
     /// In CSS pixels, which match the window's logical pixels whatever the UI scale.
     pub(crate) fn size(self) -> Size<Pixels> {
         match self {
-            Self::Rail => size(px(300.), px(250.)),
+            Self::Home | Self::Addon => size(px(300.), px(250.)),
+            Self::Discover | Self::Online => size(px(728.), px(90.)),
             Self::Video => size(px(400.), px(225.)),
         }
     }
@@ -93,6 +111,7 @@ pub(crate) struct Host {
     slots: HashMap<Unit, Placed>,
     frame: u64,
     covered: bool,
+    paused: bool,
 }
 
 impl Host {
@@ -162,8 +181,16 @@ impl Host {
                 let (url, area, scale) = (slot.url.clone(), slot.area, slot.scale);
                 let _ = self.backend.show(unit, &url, area, scale);
             }
-            _ => self.backend.hide(unit),
+            Some(_) => self.backend.hide(unit),
+            None => self.backend.close(unit),
         }
+    }
+
+    fn release(&mut self) {
+        for unit in self.slots.keys() {
+            self.backend.close(*unit);
+        }
+        self.slots.clear();
     }
 }
 
@@ -188,12 +215,27 @@ impl Ads {
             slots: HashMap::new(),
             frame: 0,
             covered: false,
+            paused: false,
         }));
         Self { host: Some(host) }
     }
 
+    /// Off while paused, so pages lay out as if there were no ads.
     pub(crate) fn on(&self) -> bool {
-        self.host.is_some()
+        self.host.as_ref().is_some_and(|h| !h.borrow().paused)
+    }
+
+    /// While the game runs every slot's webview is closed, freeing its memory,
+    /// and no slot shows. They open again once it has stopped.
+    pub(crate) fn pause(&self, paused: bool) {
+        let Some(host) = &self.host else { return };
+        let Ok(mut host) = host.try_borrow_mut() else {
+            return;
+        };
+        if paused && !host.slots.is_empty() {
+            host.release();
+        }
+        host.paused = paused;
     }
 
     /// At the start of the shell's render: whether an overlay could be over a slot.
@@ -225,6 +267,9 @@ impl Ads {
     /// The reserved rectangle for `unit`, over which its webview shows, with
     /// `background` behind the ad while it loads.
     pub(crate) fn slot(&self, unit: Unit, background: Hsla) -> Option<Canvas<()>> {
+        if !self.on() {
+            return None;
+        }
         let host = Rc::downgrade(self.host.as_ref()?);
         let url = {
             let base = &self.host.as_ref()?.borrow().base;

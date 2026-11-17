@@ -400,6 +400,7 @@ impl Shell {
                     let allowed = s.mp.as_ref().is_some_and(|m| m.allowed);
                     s.mp_apply_check(refreshed, allowed, cx);
                     s.sync_avatar(cx);
+                    s.sync_support(cx);
                 })
                 .ok();
                 let data = this

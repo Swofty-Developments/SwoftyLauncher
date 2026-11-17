@@ -29,6 +29,10 @@ impl Backend {
         match *self {}
     }
 
+    pub(super) fn close(&mut self, _: Unit) {
+        match *self {}
+    }
+
     pub(super) fn adopt(&mut self, _: Unit, _: Option<View>) {
         match *self {}
     }

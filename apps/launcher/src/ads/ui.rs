@@ -1,11 +1,14 @@
-//! Where the shell shows its ad slots: a rail ad under the news page's release
-//! notes, and a floating video while the game builds and starts.
-//! `SWOFTY_ADS_VIDEO=1` shows the video without pressing Play.
+//! Where the shell shows its ad slots: under the news page's release notes, a
+//! banner over the Discover cards and the Online boards, the side column of an
+//! addon's page, and a floating video while the game builds and starts.
+//! Signed-in supporters see none. `SWOFTY_ADS_VIDEO=1` shows the video without
+//! pressing Play.
 
 use super::Unit;
 use crate::scale::{Hit, px};
 use crate::shell::{PlayState, Shell};
 use crate::theme::Palette;
+use crate::time_trial::Load;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Disableable, WindowExt, h_flex, v_flex};
@@ -44,11 +47,44 @@ impl Shell {
             || window.has_active_sheet(cx)
     }
 
-    /// The width, in layout units, the news page's side column needs for the rail ad.
+    /// Signed-in supporters see no ads, and nobody signed in does until their
+    /// support is known.
+    pub(crate) fn ads_allowed(&self) -> bool {
+        self.ads.on() && (self.mp.is_none() || matches!(&self.support.me, Load::Ready(me) if !me.active))
+    }
+
+    /// Fetches the signed-in user's support once per sign-in, which decides their ads.
+    pub(crate) fn sync_support(&mut self, cx: &mut Context<Self>) {
+        if self.mp.is_none() {
+            self.support.me = Load::Idle;
+        } else if matches!(self.support.me, Load::Idle | Load::Failed(_)) {
+            self.support_fetch_me(cx);
+        }
+    }
+
+    fn ad_fits(unit: Unit, width: f32) -> bool {
+        width * crate::scale::current() >= f32::from(unit.size().width)
+    }
+
+    fn ad_box(&self, unit: Unit, background: Hsla, p: Palette) -> Option<Div> {
+        if !self.ads_allowed() {
+            return None;
+        }
+        let slot = self.ads.slot(unit, background)?;
+        Some(
+            v_flex()
+                .flex_shrink_0()
+                .items_center()
+                .gap(px(6.))
+                .child(label(p))
+                .child(slot),
+        )
+    }
+
+    /// The width, in layout units, the news page's side column needs for its ad.
     pub(crate) fn ad_rail_width(&self) -> Option<f32> {
-        self.ads
-            .on()
-            .then(|| f32::from(Unit::Rail.size().width) / crate::scale::current() + 2.)
+        self.ads_allowed()
+            .then(|| f32::from(Unit::Home.size().width) / crate::scale::current() + 2.)
     }
 
     /// Steps aside while the video is up, which floats over the page.
@@ -56,16 +92,24 @@ impl Shell {
         if self.ad_video.as_ref().is_some_and(|v| !v.closed) {
             return None;
         }
-        let slot = self.ads.slot(Unit::Rail, p.surface)?;
-        Some(
-            v_flex()
-                .flex_shrink_0()
-                .items_center()
-                .gap(px(6.))
-                .child(label(p))
-                .child(slot)
-                .into_any_element(),
-        )
+        Some(self.ad_box(Unit::Home, p.background, p)?.into_any_element())
+    }
+
+    /// A banner centred in `width` layout units, when it fits.
+    pub(crate) fn ad_banner(&self, unit: Unit, width: f32, p: Palette) -> Option<AnyElement> {
+        if !Self::ad_fits(unit, width) {
+            return None;
+        }
+        let ad = self.ad_box(unit, p.background, p)?;
+        Some(h_flex().w_full().justify_center().child(ad).into_any_element())
+    }
+
+    /// At the top of an addon page's side column, `width` layout units wide.
+    pub(crate) fn ad_addon(&self, width: f32, p: Palette) -> Option<AnyElement> {
+        if !Self::ad_fits(Unit::Addon, width) {
+            return None;
+        }
+        Some(self.ad_box(Unit::Addon, p.background, p)?.into_any_element())
     }
 
     /// The video from pressing Play until the game is running.
@@ -79,7 +123,7 @@ impl Shell {
             state,
             PlayState::Preparing | PlayState::Building | PlayState::Launching
         ) || std::env::var_os("SWOFTY_ADS_VIDEO").is_some_and(|v| v == "1");
-        if !self.ads.on() || !starting {
+        if !self.ads_allowed() || !starting {
             self.ad_video = None;
             return None;
         }

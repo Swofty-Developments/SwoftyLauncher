@@ -206,6 +206,7 @@ impl Shell {
                         }
                         s.mp = Some(session);
                         s.sync_avatar(cx);
+                        s.sync_support(cx);
                     }
                     Err(swofty_core::mpauth::SignInError::Banned(ban)) => s.ban = Some(ban),
                     Err(e) => s
@@ -231,6 +232,7 @@ impl Shell {
         let Some(session) = self.mp.take() else {
             return;
         };
+        self.sync_support(cx);
         self.mp_leave(cx);
         let name = session.name.clone();
         let dir = self.store.root.clone();
@@ -255,6 +257,7 @@ impl Shell {
             Refreshed::Banned(ban) => {
                 self.mp_leave(cx);
                 self.mp = None;
+                self.sync_support(cx);
                 self.ban = Some(ban);
                 cx.notify();
             }
@@ -280,6 +283,7 @@ impl Shell {
             }
             None => self.mp = None,
         }
+        self.sync_support(cx);
         cx.notify();
     }
 }

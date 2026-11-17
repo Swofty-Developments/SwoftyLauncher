@@ -17,6 +17,10 @@ pub enum Command {
     Hide {
         slot: String,
     },
+    /// Destroys the slot's webview; a later `Show` opens it again.
+    Close {
+        slot: String,
+    },
 }
 
 impl Command {
@@ -47,7 +51,8 @@ mod tests {
             scale: 1.5,
         };
         let hide = Command::Hide { slot: "video".into() };
-        for command in [show, hide] {
+        let close = Command::Close { slot: "video".into() };
+        for command in [show, hide, close] {
             let line = command.line();
             assert!(line.ends_with('\n') && !line[..line.len() - 1].contains('\n'));
             assert_eq!(Command::parse(&line), Some(command));

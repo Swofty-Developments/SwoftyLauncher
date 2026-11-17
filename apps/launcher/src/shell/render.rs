@@ -6,7 +6,7 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::time::Instant;
 
-use super::{Page, Shell};
+use super::{Page, PlayState, Shell};
 
 impl Render for Shell {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
@@ -17,9 +17,12 @@ impl Render for Shell {
             self.ads.hide_all();
             return wizard;
         }
+        let state = self.play_state();
+        self.ads
+            .pause(matches!(state, PlayState::Running | PlayState::Elsewhere(_)));
         let covered = self.ads_covered(window, cx);
         self.ads.begin(covered);
-        let ad_video = self.ad_video(&self.play_state(), p, cx);
+        let ad_video = self.ad_video(&state, p, cx);
         let wide = window.viewport_size().width > px(1500.);
         let short = window.viewport_size().height < px(760.);
         self.short = short;

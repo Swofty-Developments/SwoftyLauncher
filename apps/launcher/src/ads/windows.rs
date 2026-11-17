@@ -16,9 +16,9 @@ use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, POINT, WPARAM};
 use windows::Win32::Graphics::Gdi::ClientToScreen;
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::UI::WindowsAndMessaging::{
-    CreateWindowExW, DefWindowProcW, MA_NOACTIVATE, RegisterClassW, SW_HIDE, SWP_NOACTIVATE, SWP_NOZORDER,
-    SWP_SHOWWINDOW, SetWindowPos, ShowWindow, WM_MOUSEACTIVATE, WNDCLASSW, WS_CLIPCHILDREN, WS_EX_NOACTIVATE,
-    WS_EX_TOOLWINDOW, WS_POPUP,
+    CreateWindowExW, DefWindowProcW, DestroyWindow, MA_NOACTIVATE, RegisterClassW, SW_HIDE, SWP_NOACTIVATE,
+    SWP_NOZORDER, SWP_SHOWWINDOW, SetWindowPos, ShowWindow, WM_MOUSEACTIVATE, WNDCLASSW, WS_CLIPCHILDREN,
+    WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_POPUP,
 };
 use windows::core::{PCWSTR, w};
 
@@ -34,6 +34,7 @@ pub(super) struct Backend {
 /// What a slot needs to open, taken out of the backend so it can run with no
 /// borrow held.
 pub(super) struct Opener {
+    slot: &'static str,
     owner: isize,
     data: PathBuf,
     url: String,
@@ -43,7 +44,7 @@ pub(super) struct Opener {
 impl Opener {
     pub(super) fn open(self) -> Option<View> {
         View::open(self.owner, &self.data, &self.url, self.area)
-            .inspect_err(|e| crate::app_log::note(&format!("an ad slot didn't open: {e}")))
+            .inspect_err(|e| crate::app_log::note(&format!("the {} ad slot didn't open: {e}", self.slot)))
             .ok()
     }
 }
@@ -54,6 +55,7 @@ pub(super) struct View {
     popup: isize,
     url: String,
     size: (u32, u32),
+    visible: bool,
 }
 
 impl Backend {
@@ -86,6 +88,7 @@ impl Backend {
             return None;
         }
         Some(Opener {
+            slot: unit.key(),
             owner: self.owner,
             data: self.data.clone(),
             url: url.to_owned(),
@@ -93,10 +96,23 @@ impl Backend {
         })
     }
 
+    /// A hidden slot also tells WebView2, which then throttles the page.
     pub(super) fn hide(&mut self, unit: Unit) {
-        if let Some(view) = self.views.get(&unit) {
+        if let Some(view) = self.views.get_mut(&unit) {
+            view.visible = false;
+            let _ = view.webview.set_visible(false);
             unsafe {
                 let _ = ShowWindow(hwnd(view.popup), SW_HIDE);
+            }
+        }
+    }
+
+    pub(super) fn close(&mut self, unit: Unit) {
+        if let Some(view) = self.views.remove(&unit) {
+            let popup = view.popup;
+            drop(view);
+            unsafe {
+                let _ = DestroyWindow(hwnd(popup));
             }
         }
     }
@@ -153,6 +169,7 @@ impl View {
             popup: popup.0 as isize,
             url: url.to_owned(),
             size: (area.width, area.height),
+            visible: false,
         };
         view.place(owner, area);
         Ok(view)
@@ -174,6 +191,10 @@ impl View {
         if self.size != (area.width, area.height) {
             self.size = (area.width, area.height);
             let _ = self.webview.set_bounds(view::rect(0, 0, area.width, area.height));
+        }
+        if !self.visible {
+            self.visible = true;
+            let _ = self.webview.set_visible(true);
         }
     }
 }

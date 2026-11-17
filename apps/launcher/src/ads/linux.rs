@@ -59,7 +59,7 @@ impl Backend {
 
     pub(super) fn show(&mut self, unit: Unit, url: &str, area: Area, scale: f32) -> Option<Opener> {
         self.send(&Line::Show {
-            slot: unit.name().into(),
+            slot: unit.key().into(),
             url: url.into(),
             x: area.x,
             y: area.y,
@@ -72,7 +72,13 @@ impl Backend {
 
     pub(super) fn hide(&mut self, unit: Unit) {
         self.send(&Line::Hide {
-            slot: unit.name().into(),
+            slot: unit.key().into(),
+        });
+    }
+
+    pub(super) fn close(&mut self, unit: Unit) {
+        self.send(&Line::Close {
+            slot: unit.key().into(),
         });
     }
 
