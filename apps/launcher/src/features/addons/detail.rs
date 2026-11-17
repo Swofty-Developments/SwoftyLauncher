@@ -63,7 +63,7 @@ impl Shell {
                 .icon(IconName::X)
                 .tooltip(tr("Close"))
                 .on_click(cx.listener(|this, _, _, cx| {
-                    this.open_addon = None;
+                    this.navigation.open_addon = None;
                     cx.notify();
                 }))
         });

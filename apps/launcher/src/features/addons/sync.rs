@@ -96,10 +96,10 @@ impl Shell {
         query: &mut String,
         cx: &mut Context<Self>,
     ) -> Option<(String, f32)> {
-        let (id, at) = self.highlight.clone()?;
+        let (id, at) = self.navigation.highlight.clone()?;
         let t = at.elapsed();
         if t >= FADE {
-            self.highlight = None;
+            self.navigation.highlight = None;
             return None;
         }
         if self.addons.seen != Some(at) {
@@ -107,7 +107,7 @@ impl Shell {
             if let Some(hidden) = item.map(|m| !self.passes(m, query, None)) {
                 self.addons.seen = Some(at);
                 self.addons.scroll_pending = true;
-                self.open_addon = Some(id.clone());
+                self.navigation.open_addon = Some(id.clone());
                 if let Some(key) = self
                     .library
                     .place(&id)
@@ -142,9 +142,13 @@ impl Shell {
                 cx.background_executor().timer(Duration::from_millis(33)).await;
                 let done = this
                     .update(cx, |s, cx| {
-                        let done = s.highlight.as_ref().is_none_or(|(_, at)| at.elapsed() >= FADE);
+                        let done = s
+                            .navigation
+                            .highlight
+                            .as_ref()
+                            .is_none_or(|(_, at)| at.elapsed() >= FADE);
                         if done {
-                            s.highlight = None;
+                            s.navigation.highlight = None;
                             s.addons.animating = false;
                         }
                         cx.notify();

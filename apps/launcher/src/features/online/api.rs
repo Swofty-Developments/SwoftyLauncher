@@ -1,6 +1,6 @@
 use serde::Deserialize;
 use std::time::Duration;
-use swofty_core::timetrial::boards::{content_listed, track_addon};
+use swofty_core::online::timetrial::boards::{content_listed, track_addon};
 use swofty_i18n::trf;
 
 use super::model::*;

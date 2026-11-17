@@ -169,7 +169,7 @@ impl Shell {
                     at,
                     nested,
                 });
-                if !split && self.open_addon.as_deref() == Some(id) {
+                if !split && self.navigation.open_addon.as_deref() == Some(id) {
                     children.push(AddonListItem::Detail(id.to_owned()));
                 }
             };

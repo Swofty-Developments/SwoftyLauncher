@@ -60,7 +60,7 @@ impl Shell {
     }
 
     pub(crate) fn sub_nav(&self, layout_width: f32) -> Option<SubNav> {
-        let tab = self.page.tab();
+        let tab = self.navigation.page.tab();
         let (links, fixed) = match tab {
             Some(Tab::Library) => {
                 let mut links = vec![
@@ -157,8 +157,8 @@ impl Shell {
     }
 
     fn open_popover(&mut self, which: Popover, cx: &mut Context<Self>) {
-        self.popover = (self.popover != Some(which)).then_some(which);
-        if self.popover == Some(Popover::Notices) {
+        self.navigation.popover = (self.navigation.popover != Some(which)).then_some(which);
+        if self.navigation.popover == Some(Popover::Notices) {
             cx.update_global(|n: &mut crate::shell::notices::Notices, _| {
                 n.mark_read();
                 n.dismiss_popups();
@@ -170,18 +170,18 @@ impl Shell {
     pub(crate) fn nav_key(&mut self, ev: &KeyDownEvent, window: &mut Window, cx: &mut Context<Self>) {
         let key = ev.keystroke.key.as_str();
         let plain = !ev.keystroke.modifiers.control && !ev.keystroke.modifiers.platform;
-        if key == "escape" && self.page == Page::Addons && self.addons.clear_selection() {
+        if key == "escape" && self.navigation.page == Page::Addons && self.addons.clear_selection() {
             cx.stop_propagation();
             cx.notify();
             return;
         }
-        if key == "escape" && self.popover.is_some() {
-            self.popover = None;
+        if key == "escape" && self.navigation.popover.is_some() {
+            self.navigation.popover = None;
             cx.notify();
             return;
         }
-        if self.nav.is_none()
-            && self.page == Page::Online
+        if self.navigation.cursor.is_none()
+            && self.navigation.page == Page::Online
             && self.root_focus.is_focused(window)
             && plain
             && (matches!(key, "down" | "right" | "enter" | "escape" | "backspace")
@@ -191,12 +191,12 @@ impl Shell {
             cx.stop_propagation();
             return;
         }
-        let Some(mut cursor) = self.nav else {
+        let Some(mut cursor) = self.navigation.cursor else {
             let wanted = key == "up"
                 && plain
                 && (self.scaling.mode.is_some_and(|m| m.is_tv()) || ev.keystroke.modifiers.alt);
             if wanted && self.root_focus.is_focused(window) {
-                self.nav = Some(Cursor::on_tab(self.page.tab()));
+                self.navigation.cursor = Some(Cursor::on_tab(self.navigation.page.tab()));
                 cx.stop_propagation();
                 cx.notify();
             }
@@ -216,18 +216,18 @@ impl Shell {
         cx.stop_propagation();
         if let Some(k) = moved {
             if cursor.apply(k, Tab::ALL.len() + ACTIONS, links.len()) == Step::IntoPage {
-                self.nav = None;
-                self.popover = None;
+                self.navigation.cursor = None;
+                self.navigation.popover = None;
                 window.focus(&self.root_focus, cx);
             } else {
-                self.nav = Some(cursor);
+                self.navigation.cursor = Some(cursor);
             }
         } else if key == "enter" || key == "space" {
             match cursor.row {
                 Row::Tabs if cursor.col < Tab::ALL.len() => {
                     let tab = Tab::ALL[cursor.col];
-                    let page = if self.page.tab() == Some(tab) {
-                        self.page
+                    let page = if self.navigation.page.tab() == Some(tab) {
+                        self.navigation.page
                     } else {
                         tab.home()
                     };
@@ -251,7 +251,7 @@ impl Shell {
                 }
             }
         } else if key == "escape" {
-            self.nav = None;
+            self.navigation.cursor = None;
             window.focus(&self.root_focus, cx);
         }
         cx.notify();

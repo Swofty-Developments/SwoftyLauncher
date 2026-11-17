@@ -1,7 +1,7 @@
 use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::*;
-use swofty_core::server::support::{BIO_MAX, Claimed, Goal, Kind, Me, Supporter, dollars_to_cents};
-use swofty_core::timetrial::api::Api;
+use swofty_core::online::server::support::{BIO_MAX, Claimed, Goal, Kind, Me, Supporter, dollars_to_cents};
+use swofty_core::online::timetrial::api::Api;
 use swofty_i18n::tr;
 
 use crate::features::time_trial::Load;
@@ -281,7 +281,7 @@ fn got_ok(notice: &Option<(bool, String)>) -> bool {
     notice.as_ref().is_some_and(|(ok, _)| *ok)
 }
 
-fn load<T>(got: Result<T, swofty_core::timetrial::api::ApiError>) -> Load<T> {
+fn load<T>(got: Result<T, swofty_core::online::timetrial::api::ApiError>) -> Load<T> {
     match got {
         Ok(v) => Load::Ready(v),
         Err(e) => Load::Failed(e.message),

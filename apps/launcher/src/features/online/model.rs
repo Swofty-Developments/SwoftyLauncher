@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::fmt;
-use swofty_core::timetrial::boards::{content_listed, track_addon};
+use swofty_core::online::timetrial::boards::{content_listed, track_addon};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OnlineError {

@@ -4,7 +4,7 @@ use gpui_kit::component::input::Input;
 use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::timetrial::boards::{Group, Row, format_time};
+use swofty_core::online::timetrial::boards::{Group, Row, format_time};
 use swofty_i18n::{tr, trf};
 
 use super::moderation::flag;

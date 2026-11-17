@@ -250,7 +250,7 @@ impl Shell {
             b.trail.clear();
             b.smooth.cancel();
             b.scroll.set_offset(Point::default());
-            self.open_addon = Some(id);
+            self.navigation.open_addon = Some(id);
             self.go(Page::Addons, cx);
             return;
         }

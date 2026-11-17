@@ -7,8 +7,8 @@ use crate::ui::scale::px;
 use gpui_kit::component::WindowExt;
 use gpui_kit::*;
 use swofty_core::catalog;
-use swofty_core::multiplayer::client::{self as diag, Session, Setup};
-use swofty_core::multiplayer::types::{RoomSettings, RoomSummary};
+use swofty_core::online::multiplayer::client::{self as diag, Session, Setup};
+use swofty_core::online::multiplayer::types::{RoomSettings, RoomSummary};
 use swofty_i18n::{tr, trf};
 
 use super::model::*;
@@ -38,7 +38,7 @@ impl Shell {
             m.finish_leaving();
             cx.notify();
         }
-        if self.page != Page::Multiplayer || !self.account.allowed() {
+        if self.navigation.page != Page::Multiplayer || !self.account.allowed() {
             self.mp_page.visible = false;
             return;
         }
@@ -283,7 +283,7 @@ impl Shell {
     }
 
     pub(crate) fn mp_can_play_room(&self) -> bool {
-        self.page == Page::Multiplayer
+        self.navigation.page == Page::Multiplayer
             && self.account.allowed()
             && !self.mp_page.busy()
             && self.mp_viewed_room().is_some()

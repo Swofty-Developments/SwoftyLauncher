@@ -173,7 +173,7 @@ fn custom_card(i: usize) -> TrackCard {
     card.name = name.to_owned();
     card.flag = Some(flag.to_owned());
     card.custom = true;
-    card.addon = swofty_core::timetrial::boards::track_addon(track, None).map(str::to_owned);
+    card.addon = swofty_core::online::timetrial::boards::track_addon(track, None).map(str::to_owned);
     card
 }
 
