@@ -649,6 +649,16 @@ void reset_for_replay()
     st.replay = true;
 }
 
+uintptr_t game_root()
+{
+    return game().root;
+}
+
+uintptr_t set_setup_mode()
+{
+    return game().set_setup_mode;
+}
+
 std::string current_track()
 {
     if (!game().ok)

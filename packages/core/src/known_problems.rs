@@ -26,8 +26,8 @@ const NEAR_FRAMES: usize = 8;
 const NAMED_FILES: usize = 6;
 
 /// The newest F1 25 update the launcher knows, as `F1_25.exe`'s file
-/// version: Steam build 25251167, and the EA app's copy of the same update.
-pub const LATEST_GAME_VERSION: &str = "1.0.141.7865";
+/// version: Steam build 26566308, and the EA app's copy of the same update.
+pub const LATEST_GAME_VERSION: &str = "1.0.145.2472";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Diagnosis {
@@ -4580,8 +4580,9 @@ runtime      Windows
     fn game_versions_compare_by_number() {
         assert_eq!(older_game("1.0.138.5601", LATEST_GAME_VERSION), Some(true));
         assert_eq!(older_game("1.0.136.6820", "1.0.141.7865"), Some(true));
-        assert_eq!(older_game("1.0.141.7865", LATEST_GAME_VERSION), Some(false));
-        assert_eq!(older_game("1.0.142.1", LATEST_GAME_VERSION), Some(false));
+        assert_eq!(older_game("1.0.141.7865", LATEST_GAME_VERSION), Some(true));
+        assert_eq!(older_game("1.0.145.2472", LATEST_GAME_VERSION), Some(false));
+        assert_eq!(older_game("1.0.146.1", LATEST_GAME_VERSION), Some(false));
         assert_eq!(older_game("1.0.141.10000", "1.0.141.7865"), Some(false));
         assert_eq!(older_game("1.0.99.9999", "1.0.141.7865"), Some(true));
         assert_eq!(older_game(" 1.0.137.2811 ", LATEST_GAME_VERSION), Some(true));
@@ -4605,14 +4606,14 @@ runtime      Windows
         assert_eq!(d.title, "Classic Seasons needs the latest F1 25");
         assert_eq!(
             d.text(),
-            "Classic Seasons needs F1 25 1.0.141.7865, the latest update. Your F1 25 is 1.0.136.6820. Update F1 \
+            "Classic Seasons needs F1 25 1.0.145.2472, the latest update. Your F1 25 is 1.0.136.6820. Update F1 \
              25 in Steam or the EA app, then press Play again."
         );
         let wrapped = format!("the wrapper exited (exit code: 1) before the game started: {APPLY_FAILED}");
         let d = outdated_game(&wrapped, Some("1.0.138.5601"), &BTreeMap::new()).unwrap();
         assert!(
             d.what
-                .starts_with("swofty.classic-seasons needs F1 25 1.0.141.7865"),
+                .starts_with("swofty.classic-seasons needs F1 25 1.0.145.2472"),
             "{}",
             d.what
         );
@@ -4628,7 +4629,7 @@ runtime      Windows
             outdated_game(APPLY_FAILED, Some(LATEST_GAME_VERSION), &names),
             None
         );
-        assert_eq!(outdated_game(APPLY_FAILED, Some("1.0.142.1"), &names), None);
+        assert_eq!(outdated_game(APPLY_FAILED, Some("1.0.146.1"), &names), None);
         assert_eq!(outdated_game(APPLY_FAILED, None, &names), None);
         assert_eq!(outdated_game(APPLY_FAILED, Some("unknown"), &names), None);
         for other in [
@@ -4656,8 +4657,15 @@ runtime      Windows
             d.text()
         );
         assert!(d.text().contains("steam://validate/3059520"), "{}", d.text());
+        let d = outdated_exe(Some("1.0.141.7865")).unwrap();
+        assert!(
+            d.what
+                .contains("Mods are made for 1.0.145.2472, the latest update"),
+            "{}",
+            d.what
+        );
         assert_eq!(outdated_exe(Some(LATEST_GAME_VERSION)), None);
-        assert_eq!(outdated_exe(Some("1.0.142.1")), None);
+        assert_eq!(outdated_exe(Some("1.0.146.1")), None);
         assert_eq!(outdated_exe(Some("unknown")), None);
         assert_eq!(outdated_exe(None), None);
     }

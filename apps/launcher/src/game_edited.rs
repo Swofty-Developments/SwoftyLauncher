@@ -567,7 +567,7 @@ mod tests {
     #[test]
     fn missing_files_on_the_latest_game_are_verified() {
         let r = repair(Source::Steam);
-        let m = missing(Some("1.0.141.7865"));
+        let m = missing(Some("1.0.145.2472"));
         assert_eq!(m.title(), "Some game files are missing");
         assert_eq!(m.open(&r).unwrap().url, "steam://validate/3059520");
         let why = m.why(&r);
@@ -588,7 +588,7 @@ mod tests {
         assert_eq!(old.open(&r), None);
         let why = old.why(&r);
         assert!(
-            why.contains("Your F1 25 is 1.0.138.5601, older than 1.0.141.7865"),
+            why.contains("Your F1 25 is 1.0.138.5601, older than 1.0.145.2472"),
             "{why}"
         );
         assert!(why.contains("Updating F1 25 puts them back"), "{why}");

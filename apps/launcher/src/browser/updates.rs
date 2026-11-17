@@ -35,6 +35,16 @@ pub(super) fn takes_updates(a: &AddonItem) -> bool {
     a.enabled || a.locked || a.manifest.is_shader_only()
 }
 
+/// The installed addons the play bar updates: the ones that take updates in a modded profile, or every
+/// one when `off_too` is set, as the Update turned-off addons setting does.
+pub(super) fn updated_addons(addons: &[AddonItem], vanilla: bool, off_too: bool) -> HashSet<&str> {
+    addons
+        .iter()
+        .filter(|a| off_too || (!vanilla && takes_updates(a)))
+        .map(|a| a.manifest.id.as_str())
+        .collect()
+}
+
 /// Minimal identity for an update that disappeared from the current catalog.
 pub(super) fn update_identity(update: &Update) -> Addon {
     Addon {
@@ -69,18 +79,10 @@ pub(super) fn held_failure(error: &str) -> bool {
 
 impl Shell {
     /// The addon updates the play bar offers: every outdated registry addon that's on in the active
-    /// profile or shader-only, except the ones that failed at this version.
+    /// profile or shader-only, or every installed one with Update turned-off addons on, except the
+    /// ones that failed at this version.
     pub(crate) fn addon_updates(&self) -> Vec<&Update> {
-        let on: HashSet<&str> = if self.vanilla() {
-            HashSet::new()
-        } else {
-            self.library
-                .addons
-                .iter()
-                .filter(|a| takes_updates(a))
-                .map(|a| a.manifest.id.as_str())
-                .collect()
-        };
+        let on = updated_addons(&self.library.addons, self.vanilla(), self.update_off_addons);
         due_updates(&self.browser.updates, &on, &self.browser.held)
     }
 
