@@ -485,7 +485,7 @@ pub(super) mod tests {
         assert_eq!(out, b"SWLAP lap bytes");
     }
 
-    pub(in crate::timetrial) fn serve(
+    pub(in crate::online::timetrial) fn serve(
         status: &str,
         body: &'static str,
     ) -> (String, std::thread::JoinHandle<Vec<u8>>) {
