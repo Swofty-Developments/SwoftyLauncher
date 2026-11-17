@@ -230,6 +230,8 @@ bool registry_layout(runtime::ui_registry::Layout &lay)
 {
     static runtime::ui_registry::Layout found;
     static const bool ok = [] {
+        if (!runtime::proven(NAME_BRIDGE))
+            return false;
         uint64_t base = swofty::api->module_base();
         if (runtime::same_build()) {
             found = {base + 0x5a70080, base + 0x5a6ff90, base + 0x565f200, base + 0x5660370};

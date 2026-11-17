@@ -235,6 +235,8 @@ void TimeTrialName::setup()
     bool off = GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME", v, sizeof v) && !strcmp(v, "0");
     if (!gate.is_object() || !gate["tt_bridge"].as_bool(false) || off)
         return;
+    if (!runtime::holds(name_copies::NAME_BRIDGE))
+        return;
     uintptr_t at = runtime::find(S_NAME, "boards", "boards");
     if (!at) {
         swofty::log("[boards] player name: off, needs %s (byte signature matched nothing unique)", S_NAME.what);

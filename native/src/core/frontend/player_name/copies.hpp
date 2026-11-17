@@ -1,6 +1,7 @@
 #pragma once
 #include "core/frontend/player_name_logic.hpp"
 #include "core/frontend/ui_registry_walk.hpp"
+#include "core/runtime/build_proof.hpp"
 
 #include <atomic>
 #include <condition_variable>
@@ -10,6 +11,12 @@
 #include <string>
 
 namespace name_copies {
+
+namespace bp = ::runtime::build_proof;
+
+inline constexpr bp::Proof NAME_FUNCTIONS{"the presence name lookup, the name copy functions and the UI registry node classes",
+                                          bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145)};
+inline constexpr bp::Gate NAME_BRIDGE{"the Time Trial player name bridge", &NAME_FUNCTIONS};
 
 bool registry_read(uint64_t at, void *out, size_t n);
 // The UI registry layout on the running exe; false when its node classes are not found there.

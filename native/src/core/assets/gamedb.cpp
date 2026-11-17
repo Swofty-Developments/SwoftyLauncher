@@ -45,6 +45,11 @@ const runtime::Sig S_VT_FLOAT{"vt_Gdb_FloatRecord", "48 8D 0D ?? ?? ?? ?? 48 89 
 const runtime::Sig S_VT_BOOL{"vt_Gdb_BoolRecord", "48 8D 0D ?? ?? ?? ?? 48 89 08 C6 40 08 01 49 89 07 EB 86", 0x56e6518,
                              runtime::Sig::riprel, 0, 3, 7};
 
+namespace bp = runtime::build_proof;
+constexpr bp::Proof RECORD_CLASSES{"the int, float and bool record classes (value at +0x8)",
+                                   bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145)};
+constexpr bp::Gate LATE_EDITS{"late game database edits", &RECORD_CLASSES};
+
 constexpr size_t DB_MAP = 0xa8, DB_LOADED = 0xf0, DB_ALLOC = 0x8;
 constexpr const char *PROBE_PREFIX = "swofty.class_probe.t";
 constexpr size_t PROBE_RECORDS = 32;
@@ -443,6 +448,8 @@ void apply(uint8_t *db, const char *when)
 std::array<uintptr_t, 6> late_classes()
 {
     std::array<uintptr_t, 6> vt{};
+    if (!runtime::holds(LATE_EDITS))
+        return vt;
     if (runtime::same_build()) {
         vt[0] = KB_VT[0], vt[1] = KB_VT[1], vt[5] = KB_VT[5];
         return vt;
