@@ -1,10 +1,9 @@
 #include "core/render/d3d12/hooking.hpp"
 
 #include "core/diagnostics/steps.hpp"
-#include "core/hud/hud_guard.hpp"
+#include "core/hud/arm_policy.hpp"
 #include "core/render/d3d12_hooks.hpp"
 #include "core/render/probe_logic.hpp"
-#include "core/runtime/loader/host_api.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -53,7 +52,7 @@ ID3D12Device *probe_device()
         ID3D12Device *dev = nullptr;
         if (!create || FAILED(create(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&dev))))
             return nullptr;
-        runtime::loader::api->log(perf::STEP_LINE, made.total_ms(), "d3d12 probe device made");
+        swofty::log(perf::STEP_LINE, made.total_ms(), "d3d12 probe device made");
         return dev;
     });
 }
@@ -83,7 +82,7 @@ ProbeScope::~ProbeScope()
     std::lock_guard<std::mutex> g(probe_lock);
     perf::Stopwatch released;
     if (probe.close())
-        runtime::loader::api->log(perf::STEP_LINE, released.total_ms(), "d3d12 probe device release");
+        swofty::log(perf::STEP_LINE, released.total_ms(), "d3d12 probe device release");
 }
 
 }

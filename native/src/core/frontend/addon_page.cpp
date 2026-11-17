@@ -12,8 +12,7 @@
 
 #include "core/frontend/name_hash.hpp"
 #include "core/runtime/json.hpp"
-
-bool settings_command(uint32_t hash);
+#include "core/runtime/settings.hpp"
 
 namespace addon_page {
 

@@ -10,8 +10,7 @@ fi
 OUT=${1:-$PWD/dist}
 mkdir -p "$OUT" "$PWD/../../../native/build/zig-cache"
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../../../native/build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../../../native/build/zig-cache
-PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
-command -v taskset >/dev/null || PIN=()
+. ../../../native/tools/pin.sh
 REG=../../../native/src/core/registry
 ENGINE=("$REG/store.cpp" "$REG/table.cpp" "$REG/validate.cpp" "$REG/schema.cpp" "$REG/engine.cpp")
 "${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -Wall -Wextra -Wno-nullability-completeness -I../include -shared -s \

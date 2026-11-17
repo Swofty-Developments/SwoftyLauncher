@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string>
 
+#include "core/runtime/build_proof.hpp"
 #include "core/runtime/pages.hpp"
 
 namespace runtime {
@@ -22,11 +23,19 @@ struct Sig {
     const char *section = ".xtls";
 };
 
+// The running exe as build_proof.hpp's table knows it.
+build_proof::Exe running_exe();
+build_proof::Build running_build();
+// Whether `gate` holds on the running exe (build_proof.hpp): its proof names this build and its bindings resolve.
+// proven() only answers; holds() also logs one [build] line naming what is missing, once per gate.
+bool proven(const build_proof::Gate &gate);
+bool holds(const build_proof::Gate &gate);
+// The KB build: running_build() == Build::kb.
 bool same_build();
 // The running exe's PE timestamp, which names its build.
 uint32_t pe_timestamp();
-// The builds whose struct layouts were checked against the signatures' functions (re/tools/sigverify.py): the Steam KB build and
-// the EA App link of the same version. Code that finds every address by signature gates on this instead of same_build().
+// Whether build_proof::proofs::VERIFIED_LAYOUT holds: the KB build, its EA App link and Steam 1.0.145. Code that finds every
+// address by signature gates on this instead of same_build().
 bool verified_build();
 // [g_Game_Manager]'s entrants system displacement on the running build (game_manager_layout.hpp): +0x290 on Steam, +0x260 on EA.
 uintptr_t manager_entrants_system();

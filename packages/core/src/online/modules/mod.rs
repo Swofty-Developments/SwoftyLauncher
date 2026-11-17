@@ -3,7 +3,7 @@
 //! `GET /v1/modules` lists, per module name, the newest version that speaks the abi the launcher asks for.
 //! [`ensure`] keeps a verified copy under `<data>/modules/<name>/<platform>/<version>/` and hands out a
 //! [`Module`] only after the file's size, sha256 and Ed25519 signature check out against the key pinned in
-//! [`crate::online::timetrial::integrity`]. Every failure is an [`Unavailable`] with one sentence for the log or the
+//! [`crate::online::server::integrity`]. Every failure is an [`Unavailable`] with one sentence for the log or the
 //! page; the launcher goes on without the module.
 
 pub mod library;
@@ -17,8 +17,8 @@ use ring::signature::{ED25519, UnparsedPublicKey};
 use serde::{Deserialize, Serialize};
 
 use crate::game_folder::baseline::sha256_bytes;
-use crate::online::timetrial::api::{Api, ApiError};
-use crate::online::timetrial::integrity::{PUBLIC_KEY, decode, valid_version};
+use crate::online::server::api::{Api, ApiError};
+use crate::online::server::integrity::{PUBLIC_KEY, decode, valid_version};
 
 const SIGNED_PREFIX: &str = "swofty-module-v1";
 const MAX_SIZE: u64 = 64 * 1024 * 1024;

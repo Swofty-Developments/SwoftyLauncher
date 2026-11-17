@@ -81,7 +81,15 @@ pub fn gather(steam: Option<GameInstall>, ea: Vec<PathBuf>, added: &[PathBuf]) -
     out
 }
 
+#[cfg(test)]
+thread_local! {
+    /// How many times this thread looked for the game's copies, for the tests that prove a step does not.
+    pub(crate) static LOOKS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
 pub fn discover(config: &Config) -> Vec<GameCopy> {
+    #[cfg(test)]
+    LOOKS.with(|n| n.set(n.get() + 1));
     gather(
         crate::platform::steam::find_game(),
         crate::platform::EaApp.installs(),

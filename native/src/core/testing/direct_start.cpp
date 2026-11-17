@@ -608,7 +608,12 @@ constinit void (*time_trial_screen)(const char *name) = nullptr;
 
 // The race's laps: Game_ChampionshipGameMode_BuildSessionSettings (0x1407b7b90, the championship modes' slot) fills
 // the session's SessionSettings (sessionId +4) and stores the laps at +0xdf0 XOR +0xdf8; for a race session the core
-// writes the requested laps over it after the game's own value.
+// writes the requested laps over it after the game's own value. On Steam 26566308 the function is the same 1358
+// instructions with the laps at the same +0xdf0 / +0xdf8 (re/tools/sigport.py --compare, sigverify.py --disp).
+constexpr runtime::build_proof::Proof SESSION_LAPS{"the session settings' laps layout (+0xdf0, +0xdf8)",
+                                                   runtime::build_proof::bit(runtime::build_proof::Build::kb) |
+                                                       runtime::build_proof::bit(runtime::build_proof::Build::steam_1_0_145)};
+constexpr runtime::build_proof::Gate RACE_LAPS{"the direct start's race laps", &SESSION_LAPS};
 safetyhook::InlineHook h_settings;
 
 uint64_t settings_detour(void *mode, uint8_t *settings)
@@ -1180,7 +1185,7 @@ void direct_start_setup()
             h_set_mode = std::move(*h);
     }
     if (target == "session" && request["laps"].num(0) > 0) {
-        uintptr_t at = runtime::same_build() ? runtime::find(SIG_BUILD_SETTINGS, "session settings", "direct") : 0;
+        uintptr_t at = runtime::holds(RACE_LAPS) ? runtime::find(SIG_BUILD_SETTINGS, "session settings", "direct") : 0;
         bool hooked = false;
         if (at) {
             auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(settings_detour));
@@ -1195,6 +1200,11 @@ void direct_start_setup()
     runtime::title::setup();
     if (!runtime::title::why().empty()) {
         swofty::log("[direct] off: the title can't pass by itself (%s)", runtime::title::why().c_str());
+        return;
+    }
+    if (!runtime::same_build()) {
+        swofty::log("[direct] off: the session driver's addresses (RVA_*) and struct offsets are the KB build's and this is not "
+                    "that build");
         return;
     }
     if (ftue_interrupt_on) {

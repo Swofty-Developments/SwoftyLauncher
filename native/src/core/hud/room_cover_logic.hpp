@@ -48,7 +48,7 @@ constexpr float START_FRACTION = 0.03f;
 
 class Progress {
 public:
-    Progress() : label_("Starting F1 25"), target_(START_FRACTION), ceiling_(0.2f) {}
+    constexpr Progress() : label_("Starting F1 25"), target_(START_FRACTION), ceiling_(0.2f) {}
 
     void step(const char *what, float fraction, uint64_t now, float ceiling = -1.0f)
     {

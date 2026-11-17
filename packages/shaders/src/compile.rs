@@ -310,11 +310,9 @@ mod tests {
     use crate::{Origin, parse_effect};
 
     const HEADER: &str = include_str!("../../sdk/include/swofty/postfx.hlsli");
-    const DXC: &str = "/home/swofty/SwoftyLauncher/dxc/bin/dxc";
 
     fn dxc() -> Option<PathBuf> {
-        let p = std::env::var_os("SWOFTY_DXC").map_or_else(|| PathBuf::from(DXC), PathBuf::from);
-        p.is_file().then_some(p)
+        crate::find_dxc(&[Path::new(env!("CARGO_MANIFEST_DIR")).join("../../dxc")]).filter(|p| p.is_file())
     }
 
     fn scratch(name: &str) -> PathBuf {

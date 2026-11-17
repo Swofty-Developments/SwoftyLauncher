@@ -1,11 +1,12 @@
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::{Path, PathBuf};
 
-use swofty_formats::erp::{Entry, Erp, ErpFile, Resource, STORED, ZSTD, compress_at};
+use swofty_formats::erp::{Entry, Erp, ErpFile, Resource};
 use swofty_formats::pkg::{Node, Obj, Pkg, Val, Value};
 
 use super::place::{ASSET_ROOT, SLOT_DIR, slot_asset_group, slot_file};
 use crate::content::track_package::TrackPackage;
+use crate::erp::pack;
 use crate::{Error, Result, io_err};
 
 pub const PICTURE_SLOT: &str = "invitational_image_2";
@@ -117,24 +118,6 @@ fn surface(head: &[u8]) -> Result<Surface> {
         slices: u32_at(head, 28)?,
         extra: u32_at(head, 36)?,
     })
-}
-
-fn set_fragment(res: &mut Resource, index: usize, data: &[u8], level: i32) -> Result<()> {
-    let f = res
-        .fragments
-        .get_mut(index)
-        .ok_or_else(|| Error::Map(format!("{}: no fragment {index}", res.name)))?;
-    let zstd =
-        f.compression == ZSTD || (f.compression != STORED && f.raw.starts_with(&[0x28, 0xb5, 0x2f, 0xfd]));
-    f.raw = if zstd {
-        compress_at(data, level)?
-    } else {
-        data.to_vec()
-    };
-    f.size = data.len() as u64;
-    f.packed = f.raw.len() as u64;
-    res.hash = res.content_hash()?;
-    Ok(())
 }
 
 struct Map<'a> {
@@ -274,7 +257,7 @@ fn put_slice(data: &mut Vec<u8>, slices: &mut u32, index: usize, pixels: &[u8], 
 fn edit_pkg(res: &mut Resource, edit: impl FnOnce(&mut Pkg) -> Result<()>) -> Result<()> {
     let mut pkg = Pkg::parse(&res.fragments[0].data()?)?;
     edit(&mut pkg)?;
-    set_fragment(res, 0, &pkg.to_bytes()?, 19)
+    pack::set_fragment_at(res, 0, &pkg.to_bytes()?, 19)
 }
 
 fn f(v: &serde_json::Value) -> Result<f32> {
@@ -644,11 +627,11 @@ pub fn build_ui(maps: &[MapUi], original: &dyn Fn(&str) -> PathBuf, cache: &Path
                         ));
                     }
                     put_u32(&mut head, 28, slices);
-                    set_fragment(&mut surf, 0, &head, 19)?;
-                    set_fragment(&mut surf, 1, &data, ARRAY_LEVEL)?;
+                    pack::set_fragment_at(&mut surf, 0, &head, 19)?;
+                    pack::set_fragment_at(&mut surf, 1, &data, ARRAY_LEVEL)?;
                     let mut v = view.fragments[0].data()?;
                     put_u32(&mut v, 0x14, slices);
-                    set_fragment(&mut view, 0, &v, 19)?;
+                    pack::set_fragment_at(&mut view, 0, &v, 19)?;
                     arrays.insert(list, (surf, view));
                 }
                 let (surf, view) = &arrays[list];
@@ -710,7 +693,7 @@ pub fn build_ui(maps: &[MapUi], original: &dyn Fn(&str) -> PathBuf, cache: &Path
                                 .to_vec();
                             head.extend_from_slice(s.name.as_bytes());
                             head.push(0);
-                            set_fragment(&mut v, 0, &head, 19)?;
+                            pack::set_fragment_at(&mut v, 0, &head, 19)?;
                             v.name = rid.clone();
                             pictures.push(s);
                             pictures.push(v);

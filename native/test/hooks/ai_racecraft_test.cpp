@@ -294,7 +294,7 @@ int main()
     int h = 0;
     get(1, SWOFTY_CAR_AI_BLOCKING_FRACTION, &h);
     expect(h == SWOFTY_ASSET_UNAVAILABLE, "after the reset nothing is read until the next AI system");
-    World w2;
+    alignas(0x10000) World w2;
     build(w2);
     std::vector<uint8_t> w1_records = w.records;
     Ops::racecraft_pushed(reinterpret_cast<uintptr_t>(w2.system));
@@ -327,7 +327,7 @@ int main()
     before = writes;
     Ops::racecraft_tick();
     Ops::op_unlayer(t9);
-    expect(writes == before, "an unreadable AI system is forgotten and not written to");
+    expect(Ops::racecraft.system() == 0 && writes == before, "an unreadable AI system is forgotten and not written to");
     dead.clear();
 
     Ops::bind(make_env());

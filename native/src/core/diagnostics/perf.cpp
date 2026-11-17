@@ -3,6 +3,7 @@
 #include "core/diagnostics/crash/blackbox.hpp"
 #include "core/diagnostics/perf_logic.hpp"
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
@@ -21,8 +22,6 @@
 #include <new>
 #include <unordered_map>
 #include <vector>
-
-std::string settings_addon(const void *from, std::string &dll);
 
 namespace perf {
 

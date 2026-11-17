@@ -3,7 +3,7 @@
 use serde::Deserialize;
 use serde_json::{Value, json};
 
-use super::api::{Api, ApiError};
+use crate::online::server::api::{Api, ApiError};
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct Driver {
@@ -477,7 +477,7 @@ mod tests {
 
     #[test]
     fn the_catalog_and_the_moderation_filters_leave_out_unlisted_seasons() {
-        let (url, t) = super::super::api::tests::serve(
+        let (url, t) = crate::online::server::api::tests::serve(
             "200 OK",
             r#"[{"content":"game/f1_2025","name":"F1 25 (stock)","tracks":[]},{"content":"swofty.classic-seasons-2020/f1_2020","name":"F1 2020 GP/TT Addon","tracks":[]},{"content":"swofty.swofty-seasons-2021/sw_2021","name":"SWOFTY 2021","tracks":[]}]"#,
         );
@@ -487,7 +487,7 @@ mod tests {
             groups.iter().map(|g| g.content.as_str()).collect::<Vec<_>>(),
             ["game/f1_2025", "swofty.swofty-seasons-2021/sw_2021"]
         );
-        let (url, t) = super::super::api::tests::serve(
+        let (url, t) = crate::online::server::api::tests::serve(
             "200 OK",
             r#"{"boards":[{"content":"bydanix.f1-2012-season/ex_f1_2012","track":"monaco","laps":3},{"content":"game/f1_2025","track":"monaco","laps":2}]}"#,
         );
