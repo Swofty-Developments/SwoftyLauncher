@@ -111,6 +111,17 @@ impl Shell {
         cx.notify();
     }
 
+    pub(crate) fn set_update_off_addons(&mut self, on: bool, window: &mut Window, cx: &mut Context<Self>) {
+        let mut config = self.store.config();
+        config.update_off_addons = on;
+        if let Err(e) = self.store.save_config(&config) {
+            crate::app_log::action("save settings").failed(&e);
+            window.notify(Notification::error(e.to_string()), cx);
+        }
+        self.update_off_addons = config.update_off_addons;
+        cx.notify();
+    }
+
     pub(crate) fn set_launch_mode(&mut self, mode: LaunchMode, window: &mut Window, cx: &mut Context<Self>) {
         let mut config = self.store.config();
         config.set_launch_mode(&self.library.profile.name, mode);

@@ -92,6 +92,9 @@ pub struct Detail {
     /// The stat id the build gave each row it added, by `<table>.<row>/<label>`.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub row_ids: BTreeMap<String, i64>,
+    /// What the addon's build step said it made, as the build log shows it. The digest leaves these out.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub lines: Vec<String>,
 }
 
 /// What the installed copy of an addon is, as a SHA-256 in hex.
@@ -323,6 +326,9 @@ pub struct Output {
     /// The stat id the build gave each row the addon added, by `<table>.<row>/<label>`.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub row_ids: BTreeMap<String, i64>,
+    /// What the addon's build step said it made, as [`Detail::lines`] carries them.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub lines: Vec<String>,
 }
 
 /// A file or folder an [`Output`] reads, as the operation names it.
@@ -341,6 +347,7 @@ impl Output {
             parts: self.parts.iter().map(|(k, v)| (k.clone(), short(v))).collect(),
             read_count: self.reads.len(),
             row_ids: self.row_ids.clone(),
+            lines: self.lines.clone(),
             ..Detail::default()
         };
         h.update(&self.made);
@@ -393,7 +400,12 @@ pub struct OutputBuilder {
     made: Sha256,
     parts: BTreeMap<String, Sha256>,
     reads: BTreeMap<(String, String), OpSource>,
+    lines: Vec<String>,
 }
+
+/// How many build step lines, and how many characters of each, an [`Output`] keeps.
+const LINES: usize = 6;
+const LINE_CHARS: usize = 160;
 
 impl OutputBuilder {
     pub fn made(&mut self, what: &str, value: &impl Serialize) {
@@ -410,6 +422,12 @@ impl OutputBuilder {
         self.reads.insert((addon.to_owned(), key), source.clone());
     }
 
+    pub fn line(&mut self, text: &str) {
+        if self.lines.len() < LINES {
+            self.lines.push(text.chars().take(LINE_CHARS).collect());
+        }
+    }
+
     pub fn finish(self) -> Output {
         Output {
             made: hex(&self.made.finalize()),
@@ -424,6 +442,7 @@ impl OutputBuilder {
                 .map(|(label, h)| (label, hex(&h.finalize())))
                 .collect(),
             row_ids: BTreeMap::new(),
+            lines: self.lines,
         }
     }
 }
@@ -1083,6 +1102,7 @@ mod tests {
             reads: reads.iter().map(|(_, h)| (*h).into()).collect(),
             paths: reads.iter().map(|(p, _)| (*p).into()).collect(),
             row_ids: BTreeMap::new(),
+            lines: Vec::new(),
         });
         a
     }
@@ -1151,6 +1171,28 @@ mod tests {
         let lent = with(vec![built(&store, &mut hashes, rebuilt)]);
         assert_eq!(lent.digest, host.digest);
         assert_eq!(*row_ids(&lent.addons[0]), ids);
+        std::fs::remove_dir_all(&store.root).ok();
+    }
+
+    #[test]
+    fn build_step_lines_ride_in_the_detail_and_leave_the_digest_alone() {
+        let store = store("lines");
+        let mut hashes = Hashes::open(store.root.join(HASHES_FILE));
+        let mut out = OutputBuilder::default();
+        out.made("hook", &"op");
+        for n in 0..LINES + 2 {
+            out.line(&format!("Grid Editor: {n} change(s) {}", "x".repeat(LINE_CHARS)));
+        }
+        let said = out.finish();
+        let silent = Output {
+            lines: Vec::new(),
+            ..said.clone()
+        };
+        let (digest, detail) = said.digest(&store, "t.cars", &mut hashes).unwrap();
+        assert_eq!(silent.digest(&store, "t.cars", &mut hashes).unwrap().0, digest);
+        assert_eq!(detail.lines.len(), LINES);
+        assert!(detail.lines[0].starts_with("Grid Editor: 0 change(s)"));
+        assert_eq!(detail.lines[0].chars().count(), LINE_CHARS);
         std::fs::remove_dir_all(&store.root).ok();
     }
 

@@ -554,20 +554,23 @@ fn check_stock(store: &Store, g: &Game, out: &dyn Fn(&str)) -> Result<Option<Dep
             d.steam
         ));
     }
-    for d in &checked.vr {
+    if !checked.third_party.is_empty() {
+        let dlls: Vec<String> = checked
+            .third_party
+            .iter()
+            .map(|d| {
+                format!(
+                    "{} (size {}, Steam {})",
+                    d.rel,
+                    d.size.map_or("missing".to_owned(), |n| n.to_string()),
+                    d.steam
+                )
+            })
+            .collect();
         out(&format!(
-            "[stock] {} differs from Steam's copy (size {}, Steam {}); a VR runtime replaces it, continuing",
-            d.rel,
-            d.size.map_or("missing".to_owned(), |n| n.to_string()),
-            d.steam
-        ));
-    }
-    for d in &checked.upscaler {
-        out(&format!(
-            "[stock] {} differs from Steam's copy (size {}, Steam {}); an upscaler drop-in replaces it, continuing",
-            d.rel,
-            d.size.map_or("missing".to_owned(), |n| n.to_string()),
-            d.steam
+            "[stock] {} DLL file(s) differ from Steam's copy and are left as third-party files, continuing: {}",
+            dlls.len(),
+            dlls.join(", ")
         ));
     }
     if let Some(n) = checked.swept {
@@ -808,11 +811,11 @@ mod tests {
         assert_eq!(
             format!("{:#}", outdated_with(failed(), Some("1.0.136.6820"), &names)),
             format!(
-                "Classic Seasons needs F1 25 1.0.141.7865, the latest update. Your F1 25 is 1.0.136.6820. \
+                "Classic Seasons needs F1 25 1.0.145.2472, the latest update. Your F1 25 is 1.0.136.6820. \
                  Update F1 25 in Steam or the EA app, then press Play again.\n({APPLY_FAILED})"
             )
         );
-        for version in [Some("1.0.141.7865"), None, Some("")] {
+        for version in [Some("1.0.145.2472"), None, Some("")] {
             assert_eq!(
                 format!("{:#}", outdated_with(failed(), version, &names)),
                 APPLY_FAILED,

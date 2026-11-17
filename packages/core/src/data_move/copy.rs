@@ -6,6 +6,7 @@ use std::fs::File;
 use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::thread::sleep;
 use std::time::{Duration, SystemTime};
 
 use sha2::{Digest, Sha256};
@@ -13,6 +14,10 @@ use sha2::{Digest, Sha256};
 const CHUNK: usize = 1 << 20;
 const HASHED_UP_TO: u64 = 1 << 20;
 const CLOCK_SLACK: Duration = Duration::from_secs(2);
+const LOCKED_TRIES: u32 = 5;
+const LOCKED_PAUSE: Duration = Duration::from_secs(1);
+const SHARING_VIOLATION: i32 = 32;
+const LOCK_VIOLATION: i32 = 33;
 
 #[derive(Debug, PartialEq)]
 pub enum Entry {
@@ -38,6 +43,9 @@ impl From<io::Error> for Stop {
 
 pub fn listing(root: &Path) -> io::Result<Listing> {
     fn walk(path: &Path, rel: PathBuf, out: &mut Listing) -> io::Result<()> {
+        if webview_profile(&rel) {
+            return Ok(());
+        }
         let meta = std::fs::symlink_metadata(path)?;
         let entry = if meta.file_type().is_symlink() {
             Entry::Link(std::fs::read_link(path)?)
@@ -47,6 +55,8 @@ pub fn listing(root: &Path) -> io::Result<Listing> {
                 walk(&child.path(), rel.join(child.file_name()), out)?;
             }
             Entry::Dir
+        } else if lock_file(&rel) {
+            return Ok(());
         } else {
             Entry::File {
                 len: meta.len(),
@@ -128,14 +138,50 @@ pub fn sync(
     Ok(())
 }
 
+pub fn webview_profile(rel: &Path) -> bool {
+    rel.starts_with(Path::new("ads").join("EBWebView"))
+}
+
+pub fn lock_file(rel: &Path) -> bool {
+    let Some(name) = rel.file_name().and_then(|n| n.to_str()) else {
+        return false;
+    };
+    matches!(name, ".lock" | ".migrate.lock" | ".update.lock")
+        || (name.starts_with(".swap-") && name.ends_with(".lock"))
+        || rel == Path::new("state").join("session.lock")
+}
+
+pub fn locked(code: Option<i32>) -> bool {
+    matches!(code, Some(SHARING_VIOLATION | LOCK_VIOLATION))
+}
+
+fn retrying<T>(tries: u32, pause: Duration, mut attempt: impl FnMut() -> io::Result<T>) -> io::Result<T> {
+    let mut left = tries;
+    loop {
+        match attempt() {
+            Err(e) if left > 1 && locked(e.raw_os_error()) => {
+                left -= 1;
+                sleep(pause);
+            }
+            other => return other,
+        }
+    }
+}
+
 fn copy_file(src: &Path, dst: &Path, cancel: &AtomicBool, wrote: &mut dyn FnMut(u64)) -> Result<(), Stop> {
+    let finished = retrying(LOCKED_TRIES, LOCKED_PAUSE, || copy_once(src, dst, cancel, wrote))
+        .map_err(|e| Stop::Io(format!("{}: {e}", src.display())))?;
+    if finished { Ok(()) } else { Err(Stop::Cancelled) }
+}
+
+fn copy_once(src: &Path, dst: &Path, cancel: &AtomicBool, wrote: &mut dyn FnMut(u64)) -> io::Result<bool> {
     let mut input = File::open(src)?;
     let modified = input.metadata()?.modified().ok();
     let mut output = File::create(dst)?;
     let mut buffer = vec![0u8; CHUNK];
     loop {
         if cancel.load(Ordering::Relaxed) {
-            return Err(Stop::Cancelled);
+            return Ok(false);
         }
         let n = input.read(&mut buffer)?;
         if n == 0 {
@@ -148,7 +194,7 @@ fn copy_file(src: &Path, dst: &Path, cancel: &AtomicBool, wrote: &mut dyn FnMut(
     if let Some(modified) = modified {
         output.set_modified(modified)?;
     }
-    Ok(())
+    Ok(true)
 }
 
 #[cfg(not(windows))]
@@ -240,4 +286,130 @@ pub fn empty(dir: &Path) -> io::Result<()> {
         remove(&child?.path())?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use std::cell::Cell;
+
+    use super::*;
+
+    #[test]
+    fn the_launchers_own_lock_files_are_not_copied() {
+        for rel in [
+            "state/session.lock",
+            "vault/.lock",
+            "vault/save-backups/.lock",
+            ".migrate.lock",
+            "vault/.migrate.lock",
+            ".update.lock",
+            "addons/.swap-abc.lock",
+        ] {
+            assert!(lock_file(Path::new(rel)), "{rel}");
+        }
+        for rel in [
+            "state/session.json",
+            "session.lock",
+            "addons/a/.lock.txt",
+            "addons/swap.lock",
+            "logs/x.log",
+        ] {
+            assert!(!lock_file(Path::new(rel)), "{rel}");
+        }
+    }
+
+    #[test]
+    fn listing_leaves_lock_files_out() {
+        let dir = std::env::temp_dir().join(format!("swofty-lock-listing-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(dir.join("state")).unwrap();
+        std::fs::write(dir.join("state/session.lock"), "").unwrap();
+        std::fs::write(dir.join("state/session.json"), "{}").unwrap();
+        let list = listing(&dir).unwrap();
+        std::fs::remove_dir_all(&dir).ok();
+        assert!(list.contains_key(Path::new("state/session.json")));
+        assert!(!list.contains_key(Path::new("state/session.lock")));
+    }
+
+    #[test]
+    fn the_ads_webview_profile_is_not_copied_but_other_ads_files_are() {
+        assert!(webview_profile(Path::new("ads/EBWebView")));
+        assert!(webview_profile(Path::new("ads/EBWebView/Default/Cookies")));
+        assert!(!webview_profile(Path::new("ads/other.json")));
+        assert!(!webview_profile(Path::new("ads/EBWebViewX/a")));
+        assert!(!webview_profile(Path::new("EBWebView/a")));
+        let dir = std::env::temp_dir().join(format!("swofty-webview-listing-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(dir.join("ads/EBWebView/Default")).unwrap();
+        std::fs::write(dir.join("ads/EBWebView/Default/Cookies"), "x").unwrap();
+        std::fs::write(dir.join("ads/other.json"), "{}").unwrap();
+        let list = listing(&dir).unwrap();
+        std::fs::remove_dir_all(&dir).ok();
+        assert!(list.contains_key(Path::new("ads/other.json")));
+        assert!(list.contains_key(Path::new("ads")));
+        assert!(!list.keys().any(|k| k.starts_with("ads/EBWebView")));
+    }
+
+    #[test]
+    fn only_sharing_and_lock_violations_count_as_locked() {
+        assert!(locked(Some(32)));
+        assert!(locked(Some(33)));
+        assert!(!locked(Some(2)));
+        assert!(!locked(None));
+    }
+
+    fn violation(code: i32) -> io::Error {
+        io::Error::from_raw_os_error(code)
+    }
+
+    #[test]
+    fn a_locked_file_is_retried_until_it_opens() {
+        let calls = Cell::new(0);
+        let got = retrying(5, Duration::ZERO, || {
+            calls.set(calls.get() + 1);
+            if calls.get() < 4 {
+                Err(violation(33))
+            } else {
+                Ok(7)
+            }
+        });
+        assert_eq!(got.unwrap(), 7);
+        assert_eq!(calls.get(), 4);
+    }
+
+    #[test]
+    fn a_file_that_stays_locked_fails_after_the_last_try() {
+        let calls = Cell::new(0);
+        let got: io::Result<()> = retrying(5, Duration::ZERO, || {
+            calls.set(calls.get() + 1);
+            Err(violation(32))
+        });
+        assert_eq!(got.unwrap_err().raw_os_error(), Some(32));
+        assert_eq!(calls.get(), 5);
+    }
+
+    #[test]
+    fn other_errors_are_not_retried() {
+        let calls = Cell::new(0);
+        let got: io::Result<()> = retrying(5, Duration::ZERO, || {
+            calls.set(calls.get() + 1);
+            Err(violation(2))
+        });
+        assert!(got.is_err());
+        assert_eq!(calls.get(), 1);
+    }
+
+    #[test]
+    fn a_failed_copy_names_the_file() {
+        let dir = std::env::temp_dir().join(format!("swofty-lock-name-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let missing = dir.join("gone.bin");
+        let cancel = AtomicBool::new(false);
+        let err = copy_file(&missing, &dir.join("out.bin"), &cancel, &mut |_| {}).unwrap_err();
+        std::fs::remove_dir_all(&dir).ok();
+        match err {
+            Stop::Io(text) => assert!(text.contains("gone.bin"), "{text}"),
+            Stop::Cancelled => panic!("cancelled"),
+        }
+    }
 }
