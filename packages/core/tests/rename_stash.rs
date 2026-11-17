@@ -441,7 +441,8 @@ fn benchmark_rollback_of_a_profile_sized_install() {
         };
         let game = f.game();
         let inst = Installer {
-            free_space: if keep { roomy } else { |_| Some(1 << 40 >> 10) },
+            // 2.75 GiB holds the backup and the link cache with its margin, not the originals kept aside too.
+            free_space: if keep { roomy } else { |_| Some(11 << 28) },
             ..f.installer(&game)
         };
         inst.apply(&plan).unwrap();
@@ -449,6 +450,7 @@ fn benchmark_rollback_of_a_profile_sized_install() {
         let start = std::time::Instant::now();
         inst.apply(&plan).unwrap();
         let applied = start.elapsed();
+        assert_eq!(link_cache::originals(&f.game).exists(), keep);
         let start = std::time::Instant::now();
         inst.roll_back(true).unwrap();
         println!(
