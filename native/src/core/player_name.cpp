@@ -4,6 +4,7 @@
 #include "player_name_logic.hpp"
 #include "ui_registry_walk.hpp"
 #include "runtime.hpp"
+#include "services/lap_host.hpp"
 
 #include <windows.h>
 
@@ -119,7 +120,7 @@ bool wanted_name(std::string &clean, const char *&source)
 
 bool session_ours()
 {
-    return swofty_core::apply::moments::session_mode_track().first == "time_trial" && runtime::tt_bridge_ours_session();
+    return swofty_core::apply::moments::session_mode_track().first == "time_trial" && runtime::lap_host::board_session();
 }
 
 std::mutex stock_lock;
@@ -142,8 +143,8 @@ bool arm_rename(uint64_t serial)
     std::string clean;
     const char *source = "";
     runtime::presence_id::Id me;
-    bool ok = bridge_on.load(std::memory_order_relaxed) && sl::time_trial_live(runtime::session_kind()) && runtime::tt_bridge_ours_session() &&
-              runtime::tt_bridge_presence_id(me) && wanted_name(clean, source);
+    bool ok = bridge_on.load(std::memory_order_relaxed) && sl::time_trial_live(runtime::session_kind()) && runtime::lap_host::board_session() &&
+              runtime::lap_host::player_id(me) && wanted_name(clean, source);
     if (!ok) {
         rename_armed.store(false, std::memory_order_release);
         return false;
@@ -695,7 +696,7 @@ void player_name_pin_tick()
     GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME_STOCK", env, sizeof env);
     bool name_ok = wanted_name(clean, source);
     runtime::presence_id::Id me;
-    bool have_me = runtime::tt_bridge_presence_id(me);
+    bool have_me = runtime::lap_host::player_id(me);
     {
         std::lock_guard<std::mutex> g(stock_lock);
         stock = env[0] ? std::string(env) : stock_learned;

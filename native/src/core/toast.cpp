@@ -1,4 +1,5 @@
 #include "runtime.hpp"
+#include "services/lap_host.hpp"
 #include "toast_logic.hpp"
 
 #include <windows.h>
@@ -69,7 +70,7 @@ void tick()
 {
     if (!gate_on())
         return;
-    if (!lap_rec_active()) {
+    if (!lap_host::recording()) {
         machine.clear();
         return;
     }
