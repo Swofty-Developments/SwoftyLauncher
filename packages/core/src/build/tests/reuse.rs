@@ -1,17 +1,72 @@
 use super::*;
 
+fn uncached_stamp(path: &Path) -> String {
+    let meta = std::fs::metadata(path).unwrap();
+    if meta.is_dir() {
+        "dir".to_owned()
+    } else if meta.len() <= 1 << 20 {
+        let data = std::fs::read(path).unwrap();
+        format!(
+            "{}|sha256 {}",
+            data.len(),
+            crate::baseline::hex(&Sha256::digest(&data))
+        )
+    } else {
+        format!("{}|{:?}", meta.len(), meta.modified().ok())
+    }
+}
+
 fn uncached_source_hash(hasher: &mut Sha256, store: &Store, ops: &[AssetOp]) {
     for src in ops.iter().flat_map(AssetOp::sources) {
         let path = src.resolve(&source_dir(store, "test.pack", src.root)).unwrap();
-        let meta = std::fs::metadata(&path).unwrap();
-        hasher.update(format!("{}|{}|{:?}", src.path, meta.len(), meta.modified().ok()));
-        if meta.is_dir() {
+        hasher.update(format!("{}|{}", src.path, uncached_stamp(&path)));
+        if path.is_dir() {
             for (rel, p) in loader_files(&path).unwrap() {
-                let meta = std::fs::metadata(&p).unwrap();
-                hasher.update(format!("{rel}|{}|{:?}", meta.len(), meta.modified().ok()));
+                hasher.update(format!("{rel}|{}", uncached_stamp(&p)));
             }
         }
     }
+}
+
+#[test]
+fn a_source_rewritten_with_the_same_bytes_keeps_the_build_hash_and_a_large_one_keys_on_its_time() {
+    let root = std::env::temp_dir().join(format!("swofty-source-rewrite-{}", std::process::id()));
+    let store = Store::new(&root);
+    let dir = store.addon_cache_dir("test.pack").join("build");
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(dir.join("grid.json"), br#"{"packages":{},"seats":{}}"#).unwrap();
+    std::fs::write(dir.join("big.bin"), vec![7u8; (1 << 20) + 1]).unwrap();
+    let put = |path: &str| {
+        AssetOp::File(FileOp::Put {
+            source: Source {
+                root: Root::Cache,
+                path: path.into(),
+            },
+            target: "out.bin".into(),
+        })
+    };
+    let ops = [put("build/grid.json"), put("build"), put("build/big.bin")];
+    let digest = || {
+        let mut h = BuildHash::new();
+        h.sources(&store, "test.pack", &ops).unwrap();
+        h.finalize()
+    };
+    let at = |secs: u64| std::time::SystemTime::UNIX_EPOCH + std::time::Duration::from_secs(secs);
+    let touch = |name: &str, secs: u64| {
+        let f = std::fs::File::options().write(true).open(dir.join(name)).unwrap();
+        f.set_modified(at(secs)).unwrap();
+    };
+    touch("grid.json", 1_000_000);
+    let before = digest();
+    std::fs::write(dir.join("grid.json"), br#"{"packages":{},"seats":{}}"#).unwrap();
+    touch("grid.json", 2_000_000);
+    assert_eq!(before, digest());
+    std::fs::write(dir.join("grid.json"), br#"{"packages":{},"seats":{"1":2}}"#).unwrap();
+    assert_ne!(before, digest());
+    let before = digest();
+    touch("big.bin", 3_000_000);
+    assert_ne!(before, digest());
+    std::fs::remove_dir_all(root).unwrap();
 }
 
 #[test]
