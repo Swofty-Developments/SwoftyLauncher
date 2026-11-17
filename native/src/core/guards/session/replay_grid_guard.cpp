@@ -317,7 +317,4 @@ guards::SiteGuard guard{guards::CoreSetId::replay_grid_guard,
 }
 
 
-SWOFTY_ON_LOAD
-{
-    runtime::when_code_ready("replay read guard", setup_read);
-}
+SWOFTY_HOOK_GUARD(replay_read, "replay read guard", setup_read)

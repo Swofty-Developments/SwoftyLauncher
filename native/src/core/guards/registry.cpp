@@ -19,6 +19,12 @@ std::array<CoreSet *, CORE_SET_COUNT> &registered()
     return sets;
 }
 
+std::array<const HookGuard *, HOOK_GUARD_COUNT> &hook_guards()
+{
+    static std::array<const HookGuard *, HOOK_GUARD_COUNT> guards{};
+    return guards;
+}
+
 }
 
 CoreSet::CoreSet(CoreSetId id) : id_(id) { registered()[size_t(id)] = this; }
@@ -125,6 +131,23 @@ FunctionSet function_sets[] = {
     {CoreSetId::box_grid, runtime::box_grid_mixins, runtime::box_grid_commit},
 };
 
+}
+
+HookGuard::HookGuard(HookGuardId id, const char *what, void (*setup)()) : id_(id), what_(what), setup_(setup)
+{
+    hook_guards()[size_t(id)] = this;
+}
+
+void HookGuard::arm() const { runtime::when_code_ready(what_, setup_); }
+
+void arm_next_hook_guard()
+{
+    static size_t next = 0;
+    while (next < HOOK_GUARD_COUNT)
+        if (const HookGuard *guard = hook_guards()[next++]) {
+            guard->arm();
+            return;
+        }
 }
 
 void offer_core_sets(void (*add)(std::vector<runtime::CoreMixins>))

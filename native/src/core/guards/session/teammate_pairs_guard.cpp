@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/guards/session/teammate_pairs_logic.hpp"
 
@@ -98,7 +99,4 @@ void setup()
 
 }
 
-SWOFTY_ON_LOAD
-{
-    runtime::when_code_ready("teammate pairs guard", setup);
-}
+SWOFTY_HOOK_GUARD(teammate_pairs, "teammate pairs guard", setup)

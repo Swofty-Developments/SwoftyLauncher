@@ -1,5 +1,6 @@
 #include "core/guards/order.hpp"
 
+#include <algorithm>
 #include <cctype>
 #include <cstdio>
 #include <filesystem>
@@ -116,6 +117,13 @@ const std::vector<std::string> SETTLED = {
     "ai_line_set",
 };
 
+// The guards that armed themselves from their own SWOFTY_ON_LOAD entries before the registry, in the order the
+// SDK listed those entries (the link order of their sources).
+const std::vector<std::string> HOOKED = {
+    "ai_curves", "activity_resume", "rnd_suppliers", "sequencer_records", "teamhq_track",
+    "setup_vm",  "race_retirement", "replay_read",   "teammate_pairs",    "gp_weekend_track",
+};
+
 int failures = 0;
 
 void expect(bool ok, const std::string &what)
@@ -124,6 +132,22 @@ void expect(bool ok, const std::string &what)
         std::printf("FAIL %s\n", what.c_str());
         failures++;
     }
+}
+
+// The core's sources in link order: native/tools/build_graph.py walks each directory's files, sorted, before its
+// subdirectories, sorted.
+void link_order(const std::filesystem::path &dir, std::vector<std::filesystem::path> &out)
+{
+    std::vector<std::filesystem::path> files, dirs;
+    for (auto &entry : std::filesystem::directory_iterator(dir))
+        (entry.is_directory() ? dirs : files).push_back(entry.path());
+    std::sort(files.begin(), files.end());
+    std::sort(dirs.begin(), dirs.end());
+    for (auto &f : files)
+        if (f.extension() == ".cpp")
+            out.push_back(f);
+    for (auto &d : dirs)
+        link_order(d, out);
 }
 
 std::string read(const std::filesystem::path &p)
@@ -176,8 +200,40 @@ int main(int argc, char **argv)
     for (auto &name : OFFERED)
         expect(registrations[name] == 1, name + " registers once (found " + std::to_string(registrations[name]) + ")");
 
+    // Every hook guard registers once, and their sources still link in HookGuardId order, so the SDK's on-load entries
+    // run at the position in the core's on-load order the guards' own entries had.
+    expect(guards::HOOK_GUARD_COUNT == HOOKED.size(), "the registry holds " + std::to_string(HOOKED.size()) + " hook guards");
+    for (size_t i = 0; i < HOOKED.size() && i < guards::HOOK_GUARD_COUNT; i++)
+        expect(guards::hook_guard_name(guards::HookGuardId(i)) == HOOKED[i],
+               "hook guard slot " + std::to_string(i) + " is " + HOOKED[i]);
+    std::vector<std::filesystem::path> sources;
+    link_order(core, sources);
+    std::vector<std::string> linked;
+    size_t first_hook = 0, last_hook = 0, on_load = 0;
+    for (auto &path : sources) {
+        std::string text = read(path);
+        bool hook = false;
+        for (auto &name : HOOKED) {
+            size_t n = count(text, "SWOFTY_HOOK_GUARD(" + name);
+            if (n)
+                linked.push_back(name), hook = true;
+            expect(n <= 1, name + " registers once in " + path.string());
+        }
+        if (text.find("SWOFTY_ON_LOAD\n") != std::string::npos || hook) {
+            on_load++;
+            if (hook && !first_hook)
+                first_hook = on_load;
+            if (hook)
+                last_hook = on_load;
+        }
+    }
+    expect(linked == HOOKED, "the hook guards' sources link in HookGuardId order, each once");
+    expect(last_hook - first_hook + 1 == HOOKED.size(), "no other on-load entry links between the hook guards");
+
     if (failures)
         return 1;
-    std::printf("guard registry: %zu core sets in the starting offer and commit order, each registered once\n", OFFERED.size());
+    std::printf("guard registry: %zu core sets in the starting offer and commit order and %zu hook guards in their arming "
+                "order, each registered once\n",
+                OFFERED.size(), HOOKED.size());
     return 0;
 }

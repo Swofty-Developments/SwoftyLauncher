@@ -129,4 +129,33 @@ private:
     bool wanted_ = false;
 };
 
+// A guard that hooks game code through safetyhook itself: its setup runs once the game code is ready
+// (runtime::when_code_ready, under `what`). Hook guards are armed in HookGuardId order.
+class HookGuard {
+public:
+    HookGuard(HookGuardId id, const char *what, void (*setup)());
+    HookGuard(const HookGuard &) = delete;
+    HookGuard &operator=(const HookGuard &) = delete;
+
+    HookGuardId id() const { return id_; }
+    const char *what() const { return what_; }
+    void arm() const;
+
+private:
+    HookGuardId id_;
+    const char *what_;
+    void (*setup_)();
+};
+
+// Arms the next registered hook guard in HookGuardId order. Each hook guard adds one SDK on-load entry that calls it
+// (SWOFTY_HOOK_GUARD), so the core still registers one on-load mixin per hook guard and the order the guards arm in
+// does not depend on which translation unit's entry the SDK lists first.
+void arm_next_hook_guard();
+
 }
+
+#define SWOFTY_HOOK_GUARD(id, what, setup)                                                                                       \
+    namespace {                                                                                                                  \
+    const ::swofty_core::guards::HookGuard hook_guard{::swofty_core::guards::HookGuardId::id, what, setup};                      \
+    }                                                                                                                            \
+    SWOFTY_ON_LOAD { ::swofty_core::guards::arm_next_hook_guard(); }
