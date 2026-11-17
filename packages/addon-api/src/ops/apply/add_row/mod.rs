@@ -8,7 +8,7 @@ use swofty_formats::hash::fnv1a64;
 use self::stat_id::{Ids, added_holder};
 use crate::ops::apply::walk::{Walk, walk};
 use crate::ops::apply::{AddedRow, Cx};
-use crate::ops::db::{CopyMode, StatIdMode};
+use crate::ops::db_ops::{CopyMode, StatIdMode};
 use crate::ops::field_names::{FieldNames, row_shape};
 use crate::ops::game_db::Db;
 use crate::ops::resolve::{Base, Row, resolve_path, resolve_row};

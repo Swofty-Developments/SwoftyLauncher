@@ -1,6 +1,6 @@
 use swofty_formats::hash::fnv1a64;
 
-use crate::ops::db::IdFrom;
+use crate::ops::db_ops::IdFrom;
 use crate::ops::field_names::{FieldNames, RowIds};
 use crate::ops::game_db::Db;
 use crate::ops::stat_ids::{

@@ -1,7 +1,7 @@
 use swofty_formats::hash::fnv1a64;
 
 use crate::ops::apply::add_row::add_row_name;
-use crate::ops::db::{DbOp, DbOps};
+use crate::ops::db_ops::{DbOp, DbOps};
 use crate::ops::field_names::FieldNames;
 use crate::ops::game_db::Db;
 
