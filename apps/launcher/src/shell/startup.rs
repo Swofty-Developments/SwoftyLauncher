@@ -97,6 +97,7 @@ impl Shell {
         let use_profiles = config.use_profiles;
         let time_trial_ingame = config.time_trial_ingame;
         let home_video = config.home_video;
+        let update_off_addons = config.update_off_addons;
         let update_check = config.updates.check;
         Self::guard_close(window, cx);
         Self::recover_in_background(&store, clear_old_session_logs, cx);
@@ -189,6 +190,7 @@ impl Shell {
             use_profiles,
             time_trial_ingame,
             home_video,
+            update_off_addons,
             reload_generation: 0,
             slow_logged: false,
             update_check,

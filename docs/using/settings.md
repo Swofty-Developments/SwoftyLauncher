@@ -9,7 +9,7 @@ description: Settings holds the launcher's own options in five categories, shows
 
 | Category | What it holds |
 |---|---|
-| **General** | Language and starting your game's store |
+| **General** | Language, starting your game's store, profiles and addon updates |
 | **Display** | PC or TV mode and the interface scale |
 | **Storage** | Where your addons and saves are, finding them again, their size, and cleanup |
 | **Advanced** | Developer mode and clearing old logs automatically |
@@ -22,6 +22,14 @@ description: Settings holds the launcher's own options in five categories, shows
 **Start Steam automatically** (or the EA app) starts your game's store when you press **Play**, as the same item in the **Play** menu does.
 
 **Use profiles** is on by default. Turned off, the launcher hides the profile sidebar, profile names in the **Play** bar, the **Addons** heading and the **Saves** page, and the **Copy careers to** action, and you can no longer switch profiles. It keeps working on the profile that is active when you turn it off, or on `default` (else your first modded profile) if that was `vanilla`. Turning it on again brings the full interface back, and your profiles are never deleted.
+
+**Update turned-off addons** is off by default: **Update addons** in the **Play** bar updates only the addons that are on in your active profile, and updates for the others never take the place of **Play**. Turned on, **Update addons** also updates every installed addon that is off, in every profile including Vanilla, and their updates turn **Play** into **Update addons** too (see [Addon updates](/using/updating#addon-updates)). It covers addons the Addon Browser lists. Simplified for Swofty, the launcher's own updates and the addons that ship with the launcher update as before, and an install or update still installs or updates the requirements it needs, on or off. `config.json` keeps it as:
+
+```json
+{
+  "update_off_addons": true
+}
+```
 
 **Home screen video** shows the latest Swofty video in the bottom right of the F1 25 home screen, with **RB** (**V** on a keyboard) to watch it. It is on by default. Turned off, the home screen has no video card from the next time you press **Play**, and the launcher no longer fetches the latest video.
 
