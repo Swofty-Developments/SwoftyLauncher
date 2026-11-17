@@ -14,6 +14,7 @@
 #include "core/testing/direct_start_tt_logic.hpp"
 #include "core/boxes/era_logic.hpp"
 #include "core/boxes/tt_loaded_logic.hpp"
+#include "core/frontend/ui_vm.hpp"
 
 // The direct start's Time Trial (a `session` request with "mode": "time_trial"): the Time Trial mode made
 // current, then its setup written where the front end's screens leave it, so StateFrontendWorld's 'session'
@@ -34,8 +35,6 @@
 namespace runtime {
 std::vector<era::Box> era_boxes();
 }
-
-bool ui_vm_set_path(const std::string &path, int type, const void *value);
 
 namespace runtime {
 std::string hook_error(const safetyhook::InlineHook::Error &e);
