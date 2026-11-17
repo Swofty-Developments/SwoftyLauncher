@@ -23,6 +23,8 @@ struct Sig {
 };
 
 bool same_build();
+// The running exe's PE timestamp, which names its build.
+uint32_t pe_timestamp();
 // The builds whose struct layouts were checked against the signatures' functions (re/tools/sigverify.py): the Steam KB build and
 // the EA App link of the same version. Code that finds every address by signature gates on this instead of same_build().
 bool verified_build();

@@ -14,6 +14,7 @@
 #include "core/apply/content/race_fuel.hpp"
 #include "core/diagnostics/perf.hpp"
 #include "core/registry/table.hpp"
+#include "core/hooks/car_builds.hpp"
 #include "core/hooks/car_live.hpp"
 #include "core/hooks/car_profile.hpp"
 #include "core/hooks/context.hpp"
@@ -635,8 +636,11 @@ void declare_car_points(Table &t)
 
 void arm_car_points()
 {
-    if (!runtime::same_build())
+    uint32_t stamp = runtime::pe_timestamp();
+    if (!(car_builds::features_of(stamp, runtime::same_build()) & car_builds::POINTS)) {
+        swofty::log("[cars] car points off: build %u has no proven car hook sites", stamp);
         return;
+    }
     g_built->keep(true);
     g_built->install(false, "the core");
     g_reset->keep(true);

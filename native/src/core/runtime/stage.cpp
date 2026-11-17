@@ -210,6 +210,13 @@ bool same_build()
     return nt->FileHeader.TimeDateStamp == 1789118616u && nt->OptionalHeader.SizeOfImage > 0x6000000;
 }
 
+uint32_t pe_timestamp()
+{
+    auto b = reinterpret_cast<const uint8_t *>(swofty::api->module_base());
+    auto nt = reinterpret_cast<const IMAGE_NT_HEADERS *>(b + reinterpret_cast<const IMAGE_DOS_HEADER *>(b)->e_lfanew);
+    return nt->FileHeader.TimeDateStamp;
+}
+
 bool verified_build()
 {
     auto b = reinterpret_cast<const uint8_t *>(swofty::api->module_base());
