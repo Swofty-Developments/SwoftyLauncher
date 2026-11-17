@@ -19,6 +19,7 @@ units
   src/core/frontend/home_tiles.cpp  init
   src/core/frontend/ui.cpp  init exit
   src/core/frontend/ui_vm.cpp  init exit
+  src/core/frontend/addon_page.cpp  init
   src/core/assets/items.cpp  init exit
   src/core/runtime/stage.cpp  exit
   src/core/frontend/main_menu.cpp  exit
@@ -42,7 +43,7 @@ units
   src/core/assets/gamedb.cpp  exit
   src/core/assets/overlay.cpp  exit
   src/core/events/events.cpp  exit
-  src/core/hud/hud.cpp  exit
+  src/core/hud/overlay.cpp  exit
   src/core/render/d3d12/swapchain_hooks.cpp  exit
   src/core/render/d3d12/device_hooks.cpp  exit
   src/core/render/d3d12/list_state.cpp  exit

@@ -2,6 +2,7 @@
 
 #include "core/frontend/main_menu/context.hpp"
 #include "core/frontend/main_menu_logic.hpp"
+#include "core/frontend/ui_vm.hpp"
 #include "core/apply/moments.hpp"
 
 #include <swofty/game.hpp>
@@ -11,8 +12,6 @@
 #include <cstring>
 #include <mutex>
 #include <string>
-
-bool ui_vm_set_path(const std::string &path, int type, const void *value);
 
 namespace runtime::main_menu {
 

@@ -1,4 +1,5 @@
-use std::path::PathBuf;
+use std::convert::Infallible;
+use std::path::{Path, PathBuf};
 
 use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
@@ -7,11 +8,15 @@ use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::diagnostics::crash::StartFailure;
-use swofty_core::diagnostics::known_problems::Diagnosis;
+use swofty_core::diagnostics::known_problems::{self, Diagnosis};
+use swofty_core::session::SessionRecord;
+use swofty_core::store::Store;
 use swofty_i18n::{tr, trf};
 
 use crate::dialogs::send_logs;
+use crate::services::game;
 use crate::shell::Shell;
+use crate::shell::host::{Host, Hosted};
 use crate::ui::Overlay;
 use crate::ui::discord::invite_button;
 use crate::ui::theme::Palette;
@@ -49,9 +54,70 @@ pub(crate) struct Crashes {
     pub(crate) dismissed: Option<PathBuf>,
 }
 
+/// What the crash watch borrows from the shell: the data folder and the copy Play uses.
+pub(crate) struct CrashNeeds<'a> {
+    pub(crate) store: &'a Store,
+    pub(crate) game_dir: Option<&'a Path>,
+}
+
+impl Hosted for Crashes {
+    type Needs<'a> = CrashNeeds<'a>;
+    type Change = Infallible;
+}
+
 impl Crashes {
     pub(crate) fn shown(&self) -> Option<&CrashView> {
         self.view.as_ref().filter(|_| self.open)
+    }
+
+    /// Diagnoses a session that crashed or ended, once per session and off the UI thread, and
+    /// opens the crash modal for a fresh one.
+    pub(crate) fn watch<H: Host<Self>>(host: &mut H, session: Option<&SessionRecord>, cx: &mut Context<H>) {
+        let (crashes, needs) = host.split();
+        if let Some(s) = session.filter(|s| s.crashed() || s.end.is_some())
+            && crashes.latest.as_ref().is_none_or(|(d, _)| *d != s.dir)
+        {
+            let session = s.clone();
+            let crashed = s.crashed();
+            let game_dir = needs.game_dir.map(Path::to_path_buf);
+            let store = needs.store.clone();
+            let fresh = s.ended.is_some_and(|e| game::now_secs() - e < FRESH_SECS);
+            crashes.latest = Some((s.dir.clone(), Ok(String::new())));
+            cx.spawn(async move |this, cx| {
+                let dir = session.dir.clone();
+                let (summary, diagnosis) = cx
+                    .background_executor()
+                    .spawn(async move {
+                        if !crashed {
+                            let stall = known_problems::stall(&session, game_dir.as_deref(), &store)
+                                .or_else(|| known_problems::tyres(&session, game_dir.as_deref(), &store));
+                            return (Ok(String::new()), stall);
+                        }
+                        let summary = game::crash_summary(&session, game_dir.as_deref());
+                        let diagnosis = known_problems::crash(&session, game_dir.as_deref(), &store);
+                        (summary, diagnosis)
+                    })
+                    .await;
+                this.update(cx, |host, cx| {
+                    let (crashes, _) = host.split();
+                    if let Ok(text) = &summary
+                        && (crashed || diagnosis.is_some())
+                    {
+                        crashes.view = Some(CrashView {
+                            dir: dir.clone(),
+                            diagnosis,
+                            crashed,
+                            summary: text.clone(),
+                        });
+                        crashes.open |= fresh;
+                    }
+                    crashes.latest = Some((dir, summary));
+                    cx.notify();
+                })
+                .ok();
+            })
+            .detach();
+        }
     }
 }
 

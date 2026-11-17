@@ -438,11 +438,6 @@ void Overlay::setup()
     if (!on && capture.on)
         swofty::log("[overlay] the overlay is off; the present hook arms for SWOFTY_FRAME_CAPTURE only");
     implemented = on;
-    if (on || cover || menu || barred) {
-        perf::Stopwatch font;
-        renderer.textures.decode_font();
-        runtime::loader::api->log(perf::STEP_LINE, font.total_ms(), "overlay font atlas decode");
-    }
     if (arm())
         armed.store(true);
     else

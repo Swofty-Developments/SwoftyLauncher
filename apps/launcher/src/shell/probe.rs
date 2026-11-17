@@ -1,8 +1,9 @@
-use crate::dialogs::crash::{self, CrashView};
+use crate::dialogs::crash::{CrashNeeds, Crashes};
 use crate::dialogs::game_edited::Edited;
 use crate::services::game::{self, Copies, Install, Owner, Probe};
 use crate::shell::notices::{Notification, Notify};
 use gpui_kit::*;
+use std::convert::Infallible;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 use swofty_core::game_folder::busy::Busy;
@@ -10,6 +11,7 @@ use swofty_core::game_folder::recovery::{self, Blocked};
 use swofty_core::platform::process::GameProcess;
 use swofty_core::session::SessionRecord;
 
+use super::host::Host;
 use super::launch_alerts::{show_launch_failed, show_mods_blocked};
 use super::{Page, Shell};
 use swofty_i18n::{tr, trf};
@@ -157,7 +159,7 @@ impl Shell {
         self.sync_shaders(false, cx);
         self.game.attribute();
         self.finish_launch(&probe);
-        self.watch_session(probe.session.as_ref(), cx);
+        Crashes::watch(self, probe.session.as_ref(), cx);
         self.game.session = probe.session;
         self.db_poll(cx);
         let live = was_live || self.launching.launch.is_some();
@@ -242,64 +244,20 @@ impl Shell {
             self.mp_launch_ended(failed);
         }
     }
+}
 
-    fn watch_session(&mut self, session: Option<&SessionRecord>, cx: &mut Context<Self>) {
-        if let Some(s) = session.filter(|s| s.crashed() || s.end.is_some())
-            && self.crashes.latest.as_ref().is_none_or(|(d, _)| *d != s.dir)
-        {
-            let session = s.clone();
-            let crashed = s.crashed();
-            let game_dir = self.game.install.as_ref().map(|i| i.dir.clone());
-            let store = self.store.clone();
-            let fresh = s.ended.is_some_and(|e| game::now_secs() - e < crash::FRESH_SECS);
-            self.crashes.latest = Some((s.dir.clone(), Ok(String::new())));
-            cx.spawn(async move |this, cx| {
-                let dir = session.dir.clone();
-                let (summary, diagnosis) = cx
-                    .background_executor()
-                    .spawn(async move {
-                        if !crashed {
-                            let stall = swofty_core::diagnostics::known_problems::stall(
-                                &session,
-                                game_dir.as_deref(),
-                                &store,
-                            )
-                            .or_else(|| {
-                                swofty_core::diagnostics::known_problems::tyres(
-                                    &session,
-                                    game_dir.as_deref(),
-                                    &store,
-                                )
-                            });
-                            return (Ok(String::new()), stall);
-                        }
-                        let summary = game::crash_summary(&session, game_dir.as_deref());
-                        let diagnosis = swofty_core::diagnostics::known_problems::crash(
-                            &session,
-                            game_dir.as_deref(),
-                            &store,
-                        );
-                        (summary, diagnosis)
-                    })
-                    .await;
-                this.update(cx, |s, cx| {
-                    if let Ok(text) = &summary
-                        && (crashed || diagnosis.is_some())
-                    {
-                        s.crashes.view = Some(CrashView {
-                            dir: dir.clone(),
-                            diagnosis,
-                            crashed,
-                            summary: text.clone(),
-                        });
-                        s.crashes.open |= fresh;
-                    }
-                    s.crashes.latest = Some((dir, summary));
-                    cx.notify();
-                })
-                .ok();
-            })
-            .detach();
-        }
+impl Host<Crashes> for Shell {
+    fn split(&mut self) -> (&mut Crashes, CrashNeeds<'_>) {
+        (
+            &mut self.crashes,
+            CrashNeeds {
+                store: &self.store,
+                game_dir: self.game.install.as_ref().map(|i| i.dir.as_path()),
+            },
+        )
+    }
+
+    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
+        match change {}
     }
 }
