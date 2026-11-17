@@ -1,3 +1,4 @@
+#include "core/render/com.hpp"
 #include "core/render/d3d12_hooks.hpp"
 #include "core/render/grade_math.hpp"
 #include "core/runtime/runtime.hpp"
@@ -50,11 +51,7 @@ ULONGLONG read_at, next_read;
 bool hdr, failed;
 unsigned copies;
 
-void release(IUnknown *p)
-{
-    if (p)
-        p->Release();
-}
+using com::release;
 
 std::wstring documents()
 {
