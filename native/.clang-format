@@ -1,0 +1,15 @@
+# Measured against the code as it stood: 4-space indent, braces on their own line only for functions,
+# right-aligned pointers, 130 columns. Formatting is not applied yet.
+Language: Cpp
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 130
+BreakBeforeBraces: WebKit
+PointerAlignment: Right
+NamespaceIndentation: None
+FixNamespaceComments: false
+AccessModifierOffset: -4
+AllowShortFunctionsOnASingleLine: All
+SortIncludes: Never
+IncludeBlocks: Preserve
+ReflowComments: false
