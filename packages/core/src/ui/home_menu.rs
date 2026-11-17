@@ -170,11 +170,11 @@ pub fn fetch_avatar(data: &Path) -> bool {
         }
         false
     };
-    let Some(mut session) = crate::mpauth::load(data) else {
+    let Some(mut session) = crate::server::sign_in::load(data) else {
         return why("not signed in");
     };
     if session.avatar.is_none()
-        && let Some(fresh) = crate::mpauth::refresh(data, &session)
+        && let Some(fresh) = crate::server::sign_in::refresh(data, &session)
     {
         session = fresh;
     }
@@ -210,7 +210,7 @@ fn latest_video_from(data: &Path, registry: &str, trusted: &dyn Fn(&str) -> bool
 }
 
 pub fn discord(data: &Path) -> Discord {
-    match crate::mpauth::load(data) {
+    match crate::server::sign_in::load(data) {
         Some(session) => {
             let avatar: PathBuf = data.join(AVATAR);
             Discord {

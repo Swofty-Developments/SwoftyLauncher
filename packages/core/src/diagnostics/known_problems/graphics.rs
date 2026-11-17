@@ -1,4 +1,4 @@
-use crate::overlay_guard::{Removal, SessionOverlay};
+use crate::diagnostics::overlay_guard::{Removal, SessionOverlay};
 
 use super::crash_record::crash_holds;
 use super::evidence::Evidence;
@@ -332,7 +332,7 @@ pub(super) fn out_of_graphics_memory(c: &Crash) -> Option<Diagnosis> {
 
 pub(super) fn graphics_mod_crash(c: &Crash) -> Option<Diagnosis> {
     let mods = &c.mods;
-    let started = crate::launch::LoaderSeen::scan(&c.evidence.loader).window;
+    let started = crate::diagnostics::launch::LoaderSeen::scan(&c.evidence.loader).window;
     if mods.is_empty() || (started && !c.fatal.near().any(graphics)) {
         return None;
     }

@@ -22,7 +22,7 @@ use swofty_addon::launcher::{
 use swofty_addon::manifest::{AddonManifest, Launcher};
 use swofty_addon::view::{Body, Button, Effect, Event, Notice, SectionSpec, Style, Tone, View};
 
-use crate::app_control::Block;
+use crate::platform::app_control::Block;
 
 type Result<T> = swofty_addon::Result<T>;
 
@@ -365,7 +365,7 @@ impl HelperAddon {
     }
 
     fn removed(&self, rel: &str) -> String {
-        let then = match crate::managed::is_managed(&self.manifest.id) {
+        let then = match crate::updates::managed::is_managed(&self.manifest.id) {
             true => "press Play again to download it again".to_owned(),
             false => format!("reinstall {}", self.name()),
         };
@@ -611,7 +611,7 @@ fn host_call(cx: &Cx, call: HostCall) -> std::result::Result<Value, String> {
         HostCall::GameStatus => {
             let status = cx
                 .game
-                .map_or_else(|| crate::process::game_status(None), |g| g.status());
+                .map_or_else(|| crate::platform::process::game_status(None), |g| g.status());
             serde_json::to_value(status).map_err(|e| swofty_addon::Error::Other(e.to_string()))
         }
         HostCall::SteamSaveDir => Ok(path_value(cx.game.and_then(|g| g.steam_save_dir()))),
@@ -859,7 +859,7 @@ mod tests {
     use swofty_addon::launcher::{GameFiles, GameStatus, StateStore};
 
     use super::*;
-    use crate::import::{Route, route};
+    use crate::addons::import::{Route, route};
     use crate::profile::Profile;
     use crate::store::Store;
 
@@ -1531,12 +1531,12 @@ read -r l
     #[test]
     fn the_managed_addon_comes_back_on_play() {
         let root = tmp("managed-missing");
-        let dir = root.join(crate::managed::ID);
+        let dir = root.join(crate::updates::managed::ID);
         addon(&dir, "read -r l");
         std::fs::remove_file(dir.join("bin/helper")).unwrap();
         let manifest = AddonManifest {
-            id: crate::managed::ID.into(),
-            name: crate::managed::NAME.into(),
+            id: crate::updates::managed::ID.into(),
+            name: crate::updates::managed::NAME.into(),
             ..AddonManifest::load(&dir).unwrap()
         };
         let h = HelperAddon::new(manifest, &dir).unwrap();

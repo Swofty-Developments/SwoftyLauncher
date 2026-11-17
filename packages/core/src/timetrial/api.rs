@@ -7,7 +7,7 @@ use std::time::Duration;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::http::{self, Field};
+use crate::server::http::{self, Field};
 
 const CALL_TIMEOUT: Duration = Duration::from_secs(4);
 const GAME_TIMEOUT: Duration = Duration::from_secs(5);

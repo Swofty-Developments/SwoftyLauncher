@@ -12,10 +12,10 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use serde::{Deserialize, Serialize};
 
 use crate::GAME_EXE;
-use crate::baseline::sha256_file;
-use crate::builtin::{CORE_DLL, LOADER_ENV};
+use crate::addons::builtin::{CORE_DLL, LOADER_ENV};
+use crate::game_folder::baseline::sha256_file;
+use crate::game_folder::placed::Placed;
 use crate::install::PROXY;
-use crate::placed::Placed;
 use crate::session::LogMark;
 use crate::{Result, io_err, read_json, write_json};
 
@@ -202,9 +202,12 @@ pub struct Carrier {
 
 impl Carrier {
     fn ea_app(&self) -> bool {
-        [crate::ea_app::PROCESS, crate::ea_app::LAUNCHER_EXE]
-            .iter()
-            .any(|n| n.eq_ignore_ascii_case(&self.name))
+        [
+            crate::platform::ea_app::PROCESS,
+            crate::platform::ea_app::LAUNCHER_EXE,
+        ]
+        .iter()
+        .any(|n| n.eq_ignore_ascii_case(&self.name))
     }
 
     fn launcher(&self) -> bool {
@@ -707,7 +710,7 @@ pub const LOADER_FOLDER: &str = "loader/";
 /// an installed launcher (in a `bin` folder) with no loader folder at all:
 /// the build then finds no loader and the game starts without one.
 pub fn damaged_install() -> Vec<String> {
-    if crate::builtin::loader_dir().is_some() || std::env::var_os(LOADER_ENV).is_some() {
+    if crate::addons::builtin::loader_dir().is_some() || std::env::var_os(LOADER_ENV).is_some() {
         return Vec::new();
     }
     let Some(bin) = launcher_dir() else {

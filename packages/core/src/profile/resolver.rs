@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::builtin::CORE_ID;
+use crate::addons::builtin::CORE_ID;
 use crate::manifest::AddonManifest;
 use crate::profile::Profile;
 use crate::{Error, Result};
@@ -44,12 +44,12 @@ impl Lacking {
     pub(crate) fn headline(&self, who: &str, verb: &str, profile: &str) -> String {
         let off = format!(
             "{}, which {} off in profile {profile}",
-            crate::conflicts::and_list(&self.off),
+            crate::profile::conflicts::and_list(&self.off),
             if self.off.len() == 1 { "is" } else { "are" }
         );
         let missing = format!(
             "{}, which {} installed",
-            crate::conflicts::and_list(&self.missing),
+            crate::profile::conflicts::and_list(&self.missing),
             if self.missing.len() == 1 {
                 "isn't"
             } else {
@@ -106,7 +106,7 @@ pub fn resolve(profile: &Profile, installed: &BTreeMap<String, AddonManifest>) -
             there
         })
         .collect();
-    let launcher = crate::update::current_version();
+    let launcher = crate::updates::release::current_version();
     let mut left_out: BTreeSet<&str> = BTreeSet::new();
     for id in &enabled {
         let m = &installed[*id];
@@ -164,7 +164,7 @@ pub fn resolve(profile: &Profile, installed: &BTreeMap<String, AddonManifest>) -
         }
         for r in &m.requires {
             if let Some(dep) = addons.get(r.id.as_str())
-                && !crate::version::satisfies(&r.version, &dep.version)
+                && !crate::addons::version::satisfies(&r.version, &dep.version)
             {
                 return Err(Error::Resolve(format!(
                     "{} needs {} {}, and {} is installed. Update {} in the Addon Browser, or turn {} off",
@@ -186,9 +186,9 @@ pub fn resolve(profile: &Profile, installed: &BTreeMap<String, AddonManifest>) -
             .get(id)
             .map_or_else(|| id.to_owned(), |m| m.name.clone())
     };
-    for p in crate::order::problems(profile, installed, &crate::order::is_pinned)
+    for p in crate::profile::order::problems(profile, installed, &crate::profile::order::is_pinned)
         .iter()
-        .filter(|p| p.kind == crate::order::Kind::Below)
+        .filter(|p| p.kind == crate::profile::order::Kind::Below)
     {
         warnings.push(format!(
             "{}: {}; the build loads it first anyway. Fix load order on the Addons page puts it there in the list",
@@ -598,7 +598,7 @@ mod tests {
             m("a.uses", r#","requires":[{"id":"j.orders","version":">=0.1.0"}]"#),
             m("a.other", ""),
         ]);
-        let launcher = crate::update::current_version();
+        let launcher = crate::updates::release::current_version();
         assert!(launcher >= semver::Version::new(1, 6, 13));
         let plan = resolve(&profile(&["j.orders", "a.uses", "a.other"]), &installed).unwrap();
         assert!(

@@ -84,8 +84,8 @@ impl GameStock {
     /// Swofty has built may already carry composed HUD archives, and the composer starts from stock.
     pub fn with_baseline(game: impl Into<PathBuf>, data: &Path) -> Result<Self> {
         let game = game.into();
-        let exe = crate::baseline::sha256_file(&game.join(crate::GAME_EXE))?;
-        let mut best: Option<crate::baseline::Baseline> = None;
+        let exe = crate::game_folder::baseline::sha256_file(&game.join(crate::GAME_EXE))?;
+        let mut best: Option<crate::game_folder::baseline::Baseline> = None;
         let dir = data.join("baseline");
         let entries = std::fs::read_dir(&dir).map_err(|e| Error::Io {
             path: dir.clone(),
@@ -95,7 +95,7 @@ impl GameStock {
             let Ok(text) = std::fs::read_to_string(e.path().join("baseline.json")) else {
                 continue;
             };
-            let Ok(b) = serde_json::from_str::<crate::baseline::Baseline>(&text) else {
+            let Ok(b) = serde_json::from_str::<crate::game_folder::baseline::Baseline>(&text) else {
                 continue;
             };
             if b.exe_sha256 == exe && best.as_ref().is_none_or(|o| b.files.len() > o.files.len()) {
@@ -103,7 +103,7 @@ impl GameStock {
             }
         }
         let base = best.ok_or_else(|| err("the launcher has no record of the game's original files"))?;
-        let objects = crate::baseline::Objects {
+        let objects = crate::game_folder::baseline::Objects {
             root: dir.join("objects"),
         };
         let originals = base

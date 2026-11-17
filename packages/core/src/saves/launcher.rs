@@ -14,9 +14,9 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use crate::baseline::sha256_file;
-use crate::vault::restore::Running;
-use crate::vault::{Layout, Location, Meta, Reason, Taken, Vault};
+use crate::game_folder::baseline::sha256_file;
+use crate::saves::vault::restore::Running;
+use crate::saves::vault::{Layout, Location, Meta, Reason, Taken, Vault};
 use crate::{Error, Result, io_err};
 
 pub const DIR: &str = "saves";
@@ -212,7 +212,7 @@ pub fn seed(data: &Path, profile: &str, from: &Location, reason: Reason, now: i6
     if !has_files(from) {
         return Ok(Seeded::NoSource);
     }
-    crate::save_stall::refuse(data, from)?;
+    crate::saves::stall::refuse(data, from)?;
     let (files, bytes) = copy_files(from, &to)?;
     let meta = Meta::new(reason)
         .profile(profile)
@@ -296,7 +296,7 @@ fn deleted_vault_name(vault: &Path) -> PathBuf {
         .unwrap_or_default()
         .to_string_lossy()
         .into_owned();
-    let stamp = crate::vault::now();
+    let stamp = crate::saves::vault::now();
     let mut aside = vault.with_file_name(format!("{name}.deleted.{stamp}"));
     let mut n = 1;
     while aside.symlink_metadata().is_ok() {
@@ -341,7 +341,9 @@ pub fn first_start_import(
     log_miss: bool,
 ) -> Vec<String> {
     let config = crate::store::Store::new(data.to_path_buf()).config();
-    if crate::copies::find_active(&config).is_some_and(|c| c.source == crate::install::Source::EaApp) {
+    if crate::game_folder::copies::find_active(&config)
+        .is_some_and(|c| c.source == crate::install::Source::EaApp)
+    {
         return vec![
             "saves: the import into the launcher saves is only for Steam copies; the active copy is from the EA app, so nothing is imported and it is not retried".into(),
         ];
@@ -357,7 +359,9 @@ pub fn steam_save_pending(data: &Path, profile: &str) -> bool {
         return false;
     }
     let config = crate::store::Store::new(data.to_path_buf()).config();
-    if crate::copies::find_active(&config).is_some_and(|c| c.source == crate::install::Source::EaApp) {
+    if crate::game_folder::copies::find_active(&config)
+        .is_some_and(|c| c.source == crate::install::Source::EaApp)
+    {
         return false;
     }
     !has_files(&Location::launcher(data, profile))
@@ -450,7 +454,7 @@ pub fn import(
     if !supported(from.layout) {
         return Err(Error::Other(EA_NOTE.to_owned()));
     }
-    if let Some(why) = crate::vault::restore::blocker(Layout::Launcher, running) {
+    if let Some(why) = crate::saves::vault::restore::blocker(Layout::Launcher, running) {
         return Err(Error::Other(why));
     }
     let to = store_for(data, profile, from).expect("every layout has a store");
@@ -460,7 +464,7 @@ pub fn import(
             from.dir.display()
         )));
     }
-    crate::save_stall::refuse(data, from)?;
+    crate::saves::stall::refuse(data, from)?;
     let vault = Vault::of(data, &to)?;
     if has_files(&to) {
         vault.snapshot(
@@ -514,7 +518,7 @@ pub fn export(
     steam: &Location,
     running: Running,
     now: i64,
-) -> Result<crate::vault::restore::Restored> {
+) -> Result<crate::saves::vault::restore::Restored> {
     let from = store_for(data, profile, steam).expect("every layout has a store");
     if !supported(steam.layout) {
         return Err(Error::Other(EA_NOTE.to_owned()));
@@ -524,7 +528,7 @@ pub fn export(
             "the launcher saves of profile {profile} are empty; there is nothing to export"
         )));
     }
-    crate::save_stall::refuse(data, &from)?;
+    crate::saves::stall::refuse(data, &from)?;
     let lv = Vault::of(data, &from)?;
     let id = match lv.snapshot(
         &from,
@@ -538,7 +542,7 @@ pub fn export(
         Taken::NoSave => return Err(Error::Other("the launcher saves hold no profile save".into())),
     };
     let sv = Vault::of(data, steam)?;
-    crate::vault::restore::restore_across(&lv, &id, steam, &sv, running, now)
+    crate::saves::vault::restore::restore_across(&lv, &id, steam, &sv, running, now)
 }
 
 #[cfg(test)]

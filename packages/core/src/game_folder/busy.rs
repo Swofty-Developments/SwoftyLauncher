@@ -7,7 +7,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::{Deserialize, Serialize};
 
-use crate::recovery::SessionLock;
+use crate::game_folder::recovery::SessionLock;
 use crate::{Error, Result, io_err};
 
 pub const CANCELLED: &str = "the build was cancelled; the game folder is back as it was";

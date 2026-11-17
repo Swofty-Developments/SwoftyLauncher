@@ -7,7 +7,7 @@ use semver::Version;
 use serde::{Deserialize, Serialize};
 
 use crate::launcher::Progress;
-use crate::transfer;
+use crate::updates::transfer;
 use crate::{Error, Result, io_err};
 
 pub const LATEST_URL: &str =
@@ -24,7 +24,7 @@ pub const STAGING_DIR: &str = ".update";
 /// Beside the staging folder rather than in it, so cleaning that folder never deletes a lock in use.
 const LOCK_FILE: &str = ".update.lock";
 pub const INSTALL_MANIFEST: &str = ".install-manifest";
-const SWEPT_DIRS: [&str; 3] = ["loader", "addons", crate::postfx::DXC_DIR];
+const SWEPT_DIRS: [&str; 3] = ["loader", "addons", crate::content::postfx::DXC_DIR];
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct UpdateConfig {
@@ -603,7 +603,7 @@ pub fn release_root(extracted: &Path) -> Result<PathBuf> {
     let complete = |dir: &Path| {
         dir.join("bin").join(exe("swofty-launcher")).is_file()
             && dir.join("bin").join(exe("swofty")).is_file()
-            && crate::builtin::is_loader(&dir.join("loader"))
+            && crate::addons::builtin::is_loader(&dir.join("loader"))
     };
     if complete(extracted) {
         return Ok(extracted.to_path_buf());
@@ -629,7 +629,7 @@ pub struct Install {
 impl Install {
     pub fn current() -> std::result::Result<Self, String> {
         let exe = std::env::current_exe().map_err(|e| e.to_string())?;
-        Self::locate(&exe)?.apart_from(&crate::paths::data_dir())
+        Self::locate(&exe)?.apart_from(&crate::data::paths::data_dir())
     }
 
     pub fn apart_from(self, data: &Path) -> std::result::Result<Self, String> {
@@ -650,7 +650,7 @@ impl Install {
         if root.starts_with("/nix/store") {
             return Err("this copy is installed with Nix; update it with Nix".into());
         }
-        if !crate::builtin::is_loader(&root.join("loader")) {
+        if !crate::addons::builtin::is_loader(&root.join("loader")) {
             return Err("this copy has no loader folder next to bin".into());
         }
         for dir in [root, bin, &root.join("loader")] {
@@ -697,10 +697,10 @@ impl Install {
         let version = release
             .version()
             .ok_or_else(|| Error::Other(format!("{} is not a version", release.tag_name)))?;
-        if crate::process::game_running() {
+        if crate::platform::process::game_running() {
             return Err(Error::Other("close F1 25 before updating".into()));
         }
-        refuse_data_root(&self.root, &crate::paths::data_dir())?;
+        refuse_data_root(&self.root, &crate::data::paths::data_dir())?;
         let asset = release.platform_asset()?;
         let Some(_lock) = UpdateLock::try_acquire(&self.root) else {
             return Err(Error::Other(
@@ -743,10 +743,10 @@ impl Install {
         let extracted = staging.join("new");
         extract(&archive, &extracted)?;
         let new = release_root(&extracted)?;
-        if crate::process::game_running() {
+        if crate::platform::process::game_running() {
             return Err(Error::Other("close F1 25 before updating".into()));
         }
-        refuse_data_root(&self.root, &crate::paths::data_dir())?;
+        refuse_data_root(&self.root, &crate::data::paths::data_dir())?;
         progress.report(0.95, "Replacing files");
         apply(&new, &self.root, &staging.join("old"))
     }
@@ -817,7 +817,7 @@ const APPLYING: &str = "applying";
 
 fn recover(work: &Path, root: &Path) {
     let backup = work.join("old");
-    if let Ok(files) = crate::builtin::loader_files(&backup) {
+    if let Ok(files) = crate::addons::builtin::loader_files(&backup) {
         for (rel, saved) in files {
             restore(&saved, &root.join(&rel), work);
         }
@@ -922,7 +922,7 @@ fn read_install_manifest(root: &Path) -> Option<Vec<String>> {
 }
 
 pub fn apply(new: &Path, root: &Path, backup: &Path) -> Result<()> {
-    let files = crate::builtin::loader_files(new)?;
+    let files = crate::addons::builtin::loader_files(new)?;
     let previous = read_install_manifest(root);
     let mut stale: Vec<String> = Vec::new();
     match &previous {
@@ -943,18 +943,18 @@ pub fn apply(new: &Path, root: &Path, backup: &Path) -> Result<()> {
                 let dir = root.join("addons").join(id);
                 if dir.is_dir() {
                     stale.extend(
-                        crate::builtin::loader_files(&dir)?
+                        crate::addons::builtin::loader_files(&dir)?
                             .into_keys()
                             .map(|rel| format!("addons/{id}/{rel}"))
                             .filter(|rel| !files.contains_key(rel)),
                     );
                 }
             }
-            for sub in ["loader", crate::postfx::DXC_DIR] {
+            for sub in ["loader", crate::content::postfx::DXC_DIR] {
                 let dir = root.join(sub);
                 if dir.is_dir() {
                     stale.extend(
-                        crate::builtin::loader_files(&dir)?
+                        crate::addons::builtin::loader_files(&dir)?
                             .into_keys()
                             .map(|rel| format!("{sub}/{rel}"))
                             .filter(|rel| !files.contains_key(rel)),
@@ -1043,7 +1043,7 @@ mod tests {
             &format!("proxy {tag}"),
         );
         write(
-            &root.join("loader").join(crate::builtin::CORE_DLL),
+            &root.join("loader").join(crate::addons::builtin::CORE_DLL),
             &format!("core {tag}"),
         );
     }
@@ -1517,7 +1517,7 @@ mod tests {
         let zip_path = dir.join("a.zip");
         {
             let mut z = zip::ZipWriter::new(std::fs::File::create(&zip_path).unwrap());
-            for (rel, path) in crate::builtin::loader_files(&tree).unwrap() {
+            for (rel, path) in crate::addons::builtin::loader_files(&tree).unwrap() {
                 z.start_file(
                     format!("swofty-launcher-v2-x\\{}", rel.replace('/', "\\")),
                     zip::write::SimpleFileOptions::default(),
@@ -1638,7 +1638,7 @@ mod tests {
         assert_eq!(read(&root.join("addons").join("user.swoftyaddon")), "user");
         assert_eq!(read(&root.join("loader").join("user-added.dll")), "user");
         let recorded = read(&root.join(INSTALL_MANIFEST));
-        assert!(recorded.contains(&format!("loader/{}", crate::builtin::CORE_DLL)));
+        assert!(recorded.contains(&format!("loader/{}", crate::addons::builtin::CORE_DLL)));
         std::fs::remove_dir_all(&dir).ok();
     }
 
@@ -1667,7 +1667,7 @@ mod tests {
         );
         assert_eq!(read(&root.join("bin").join(exe("swofty"))), "cli v2");
         assert_eq!(
-            read(&root.join("loader").join(crate::builtin::CORE_DLL)),
+            read(&root.join("loader").join(crate::addons::builtin::CORE_DLL)),
             "core v2"
         );
         assert_eq!(read(&root.join("share/applications/a.desktop")), "desktop v2");
@@ -1701,7 +1701,7 @@ mod tests {
         );
         assert_eq!(read(&root.join("bin").join(exe("swofty"))), "cli v1");
         assert_eq!(
-            read(&root.join("loader").join(crate::builtin::CORE_DLL)),
+            read(&root.join("loader").join(crate::addons::builtin::CORE_DLL)),
             "core v1"
         );
         assert!(!root.join("bin/added").exists());
@@ -1732,7 +1732,7 @@ mod tests {
         assert!(install.cleanup());
         assert_eq!(read(&root.join("bin").join(exe("swofty"))), "cli v1");
         assert_eq!(
-            read(&root.join("loader").join(crate::builtin::CORE_DLL)),
+            read(&root.join("loader").join(crate::addons::builtin::CORE_DLL)),
             "core v1"
         );
         assert!(!root.join(STAGING_DIR).exists());
@@ -1755,7 +1755,7 @@ mod tests {
         );
         assert_eq!(read(&root.join("bin").join(exe("swofty"))), "cli v1");
         assert_eq!(
-            read(&root.join("loader").join(crate::builtin::CORE_DLL)),
+            read(&root.join("loader").join(crate::addons::builtin::CORE_DLL)),
             "core v1"
         );
         assert_eq!(read(&root.join("loader/blocked")), "a file where v2 has a folder");
