@@ -43,6 +43,9 @@ impl From<io::Error> for Stop {
 
 pub fn listing(root: &Path) -> io::Result<Listing> {
     fn walk(path: &Path, rel: PathBuf, out: &mut Listing) -> io::Result<()> {
+        if webview_profile(&rel) {
+            return Ok(());
+        }
         let meta = std::fs::symlink_metadata(path)?;
         let entry = if meta.file_type().is_symlink() {
             Entry::Link(std::fs::read_link(path)?)
@@ -133,6 +136,10 @@ pub fn sync(
         }
     }
     Ok(())
+}
+
+pub fn webview_profile(rel: &Path) -> bool {
+    rel.starts_with(Path::new("ads").join("EBWebView"))
 }
 
 pub fn lock_file(rel: &Path) -> bool {
@@ -322,6 +329,25 @@ mod tests {
         std::fs::remove_dir_all(&dir).ok();
         assert!(list.contains_key(Path::new("state/session.json")));
         assert!(!list.contains_key(Path::new("state/session.lock")));
+    }
+
+    #[test]
+    fn the_ads_webview_profile_is_not_copied_but_other_ads_files_are() {
+        assert!(webview_profile(Path::new("ads/EBWebView")));
+        assert!(webview_profile(Path::new("ads/EBWebView/Default/Cookies")));
+        assert!(!webview_profile(Path::new("ads/other.json")));
+        assert!(!webview_profile(Path::new("ads/EBWebViewX/a")));
+        assert!(!webview_profile(Path::new("EBWebView/a")));
+        let dir = std::env::temp_dir().join(format!("swofty-webview-listing-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(dir.join("ads/EBWebView/Default")).unwrap();
+        std::fs::write(dir.join("ads/EBWebView/Default/Cookies"), "x").unwrap();
+        std::fs::write(dir.join("ads/other.json"), "{}").unwrap();
+        let list = listing(&dir).unwrap();
+        std::fs::remove_dir_all(&dir).ok();
+        assert!(list.contains_key(Path::new("ads/other.json")));
+        assert!(list.contains_key(Path::new("ads")));
+        assert!(!list.keys().any(|k| k.starts_with("ads/EBWebView")));
     }
 
     #[test]
