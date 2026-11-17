@@ -1,4 +1,5 @@
 import contextlib, copy, io, json, os, shutil, subprocess, sys, tempfile, unittest
+from unittest import mock
 
 TOOLS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, TOOLS)
@@ -323,13 +324,17 @@ class UnfoldKeepsBindgenOutput(unittest.TestCase):
         import argparse, binding, kb
         re_dir = os.path.dirname(TOOLS)
         tmp = tempfile.mkdtemp()
+        cache = os.path.join(tmp, 'records-cache.json')
+        if os.path.exists(br.CACHE):
+            shutil.copy(br.CACHE, cache)
         try:
             def gen(root, out):
                 tools = os.path.join(root, 're', 'tools')
                 return subprocess.Popen([sys.executable, os.path.join(tools, 'bindgen.py'), '--no-exe', '--json',
                                          os.path.join(out, 'bindings.json'), '--symbols', os.path.join(out, 'symbols.tsv'),
                                          '--include', os.path.join(out, 'include'), '--rust', os.path.join(out, 'game.rs')],
-                                        stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+                                        stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+                                        env={**os.environ, 'SWOFTY_RECORD_CACHE': cache})
 
             def finish(proc, out):
                 _, err = proc.communicate()
@@ -355,7 +360,7 @@ class UnfoldKeepsBindgenOutput(unittest.TestCase):
                 return root
 
             def unfold(root, names):
-                with contextlib.redirect_stdout(io.StringIO()):
+                with contextlib.redirect_stdout(io.StringIO()), mock.patch.dict(os.environ, {'SWOFTY_RECORD_CACHE': cache}):
                     binding.cmd_unfold(argparse.Namespace(names=names, author='kb-import', skip_unfit=True),
                                        db=os.path.join(root, 're', 'db'), root=os.path.join(root, 're', 'bindings'))
 
