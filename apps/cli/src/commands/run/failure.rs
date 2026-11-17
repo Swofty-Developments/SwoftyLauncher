@@ -45,3 +45,27 @@ pub(crate) fn note_blocked(store: &Store, e: &anyhow::Error) {
         info(&format!("could not record it for the launcher: {e}"));
     }
 }
+
+#[cfg(all(test, unix))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_blocked_start_is_recorded_for_the_launcher() {
+        let root = std::env::temp_dir().join(format!("swofty-run-{}-blocked", std::process::id()));
+        let store = Store::new(&root);
+        let missing = start(&mut Command::new(root.join("no-such-program"))).unwrap_err();
+        assert!(missing.downcast_ref::<std::io::Error>().is_some(), "{missing}");
+        note_blocked(&store, &missing);
+        assert_eq!(launch::Failure::read(&root), None);
+        let block = Block::from_code(&root.join("f1op-probe.exe"), 4551).unwrap();
+        let blocked = anyhow::Error::from(swofty_core::Error::Blocked(block.clone()));
+        assert_eq!(blocked.to_string(), block.text());
+        note_blocked(&store, &blocked.context("staging offline play"));
+        assert_eq!(
+            launch::Failure::read(&root).map(|f| f.cause),
+            Some(launch::Cause::Blocked(block))
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+}

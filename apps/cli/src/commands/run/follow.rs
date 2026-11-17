@@ -237,3 +237,75 @@ pub(crate) fn symbols(game: &Path, exe: Option<&Path>) -> Symbols {
     s.load_pdata(&exe).ok();
     s
 }
+
+#[cfg(all(test, unix))]
+mod tests {
+    use swofty_core::session::LOADER_LOG;
+
+    use crate::commands::run::tests::{STALE, session_dir, temp_log};
+
+    use super::*;
+
+    #[test]
+    fn ignores_a_stale_loader_log_and_follows_its_replacement() {
+        let dir = session_dir("rotate");
+        let log = dir.join("game").join(LOADER_LOG);
+        std::fs::write(&log, STALE).unwrap();
+        let mut follower = Follower::replacing(log.clone(), LogMark::read(&log));
+        assert!(follower.lines().is_empty());
+        assert!(follower.lines().is_empty());
+        std::fs::rename(&log, log.with_file_name("loader.prev.log")).unwrap();
+        std::fs::write(
+            &log,
+            "2026-10-17 22:12:08.004 [  420] swofty loader (version.dll proxy) attached, pid 416\npar",
+        )
+        .unwrap();
+        assert_eq!(
+            follower.lines(),
+            ["2026-10-17 22:12:08.004 [  420] swofty loader (version.dll proxy) attached, pid 416"]
+        );
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn reports_a_game_process_proton_could_not_start() {
+        let dir = session_dir("run-process");
+        let log = dir.join("game").join(LOADER_LOG);
+        std::fs::write(&log, STALE).unwrap();
+        let before = LogMark::read(&log);
+        std::fs::write(
+            dir.join(format!("steam-{STEAM_APP_ID}.log")),
+            include_str!("../../../../../packages/core/tests/fixtures/steam-run-process-731.txt"),
+        )
+        .unwrap();
+        std::fs::write(dir.join("exit_code"), "1\n").unwrap();
+        let mut follow = Follow::new(&dir, Some((log, before)), Symbols::default());
+        follow.poll();
+        assert_eq!(follow.last_loader, None);
+        let err = follow.summary().unwrap_err().to_string();
+        assert!(
+            err.starts_with("Proton could not start the game process (CreateProcess error 731). "),
+            "{err}"
+        );
+        assert!(err.ends_with("Nothing from SwoftyMod ran."), "{err}");
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn relays_the_wrappers_lines_under_their_own_tags() {
+        let log = temp_log("relay");
+        std::fs::create_dir_all(log.parent().unwrap()).unwrap();
+        std::fs::write(&log, "old\n").unwrap();
+        let mut relay = Follower::from_end(log.clone());
+        std::fs::write(
+            &log,
+            "old\n[info] rolled the profile's game files back\nswofty: oops\n",
+        )
+        .unwrap();
+        assert_eq!(
+            relay.lines(),
+            ["[info] rolled the profile's game files back", "swofty: oops"]
+        );
+        std::fs::remove_dir_all(log.ancestors().nth(2).unwrap()).ok();
+    }
+}

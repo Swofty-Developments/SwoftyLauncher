@@ -255,3 +255,230 @@ pub(crate) fn start_wrapper(
 pub(crate) fn which(bin: &str) -> bool {
     std::env::var_os("PATH").is_some_and(|p| std::env::split_paths(&p).any(|d| d.join(bin).is_file()))
 }
+
+#[cfg(all(test, unix))]
+mod tests {
+    use swofty_core::recovery::SessionLock;
+    use swofty_core::session::{game_args, parse_steam_command};
+
+    use crate::commands::run::tests::temp_log;
+
+    use super::*;
+
+    #[test]
+    fn reports_a_wrapper_that_exits_before_the_game_starts() {
+        let log = temp_log("early");
+        let child = spawn_logged(
+                Command::new("sh").args([
+                    "-c",
+                    "echo '[info] installing profile Default'; \
+                     echo 'swofty: version.dll already exists in the game folder; run swofty restore' >&2; exit 3",
+                ]),
+                &log,
+            )
+            .unwrap();
+        let mut w = WrapperProcess {
+            child: Some(child),
+            log: log.clone(),
+            timeout: DIRECT_START_TIMEOUT,
+        };
+        let status = loop {
+            if let Some(s) = w.exited() {
+                break s;
+            }
+            std::thread::sleep(Duration::from_millis(10));
+        };
+        assert_eq!(status.code(), Some(3));
+        assert_eq!(
+            w.failure(status, "before the game started").to_string(),
+            "the wrapper exited (exit status: 3) before the game started: \
+                 version.dll already exists in the game folder; run swofty restore"
+        );
+        std::fs::remove_dir_all(log.ancestors().nth(2).unwrap()).ok();
+    }
+
+    #[test]
+    fn an_error_over_several_lines_leads_with_what_failed() {
+        let log = temp_log("lines");
+        let child = spawn_logged(
+                Command::new("sh").args([
+                    "-c",
+                    "echo 'downloading offline play 0.3.11 from https://x'; \
+                     echo '[info] rolled the profile'\"'\"'s game files back'; \
+                     echo 'swofty: downloading the offline play extension: offline play 0.3.11: the download was \
+                     blocked on this PC or network, typically by antivirus HTTPS or web scanning, a VPN or proxy, a \
+                     network filter or a Wi-Fi login page; turning that off or trying another network fixes it' >&2; \
+                     echo '(could not download https://x/v0.3.11/f1op_hook.dll: io: received corrupt message of type \
+                     InvalidContentType)' >&2; \
+                     exit 1",
+                ]),
+                &log,
+            )
+            .unwrap();
+        let mut w = WrapperProcess {
+            child: Some(child),
+            log: log.clone(),
+            timeout: DIRECT_START_TIMEOUT,
+        };
+        let status = loop {
+            if let Some(s) = w.exited() {
+                break s;
+            }
+            std::thread::sleep(Duration::from_millis(10));
+        };
+        assert_eq!(
+            w.failure(status, "before the game started").to_string(),
+            "the wrapper exited (exit status: 1) before the game started: downloading the offline play extension: \
+                 offline play 0.3.11: the download was blocked on this PC or network, typically by antivirus HTTPS or \
+                 web scanning, a VPN or proxy, a network filter or a Wi-Fi login page; turning that off or trying \
+                 another network fixes it\n\
+                 (could not download https://x/v0.3.11/f1op_hook.dll: io: received corrupt message of type \
+                 InvalidContentType)"
+        );
+        std::fs::remove_dir_all(log.ancestors().nth(2).unwrap()).ok();
+    }
+
+    #[test]
+    fn names_the_log_when_the_wrapper_says_nothing() {
+        let log = temp_log("silent");
+        let child = spawn_logged(Command::new("sh").args(["-c", "exit 1"]), &log).unwrap();
+        let mut w = WrapperProcess {
+            child: Some(child),
+            log: log.clone(),
+            timeout: DIRECT_START_TIMEOUT,
+        };
+        let status = loop {
+            if let Some(s) = w.exited() {
+                break s;
+            }
+            std::thread::sleep(Duration::from_millis(10));
+        };
+        let msg = w.failure(status, "before the game started").to_string();
+        assert!(
+            msg.ends_with(&format!("without output; see {}", log.display())),
+            "{msg}"
+        );
+        std::fs::remove_dir_all(log.ancestors().nth(2).unwrap()).ok();
+    }
+
+    fn strings(args: &[OsString]) -> Vec<String> {
+        args.iter().map(|a| a.to_string_lossy().into_owned()).collect()
+    }
+
+    #[test]
+    fn a_vr_launch_reaches_the_game_on_every_path() {
+        let game = Path::new("/games/F1 25");
+        let proton = Path::new("/steam/compatibilitytools.d/GE");
+        let direct = strings(&wrapper_command(Some(proton), game, LaunchMode::Vr, &[]));
+        assert_eq!(
+            direct,
+            [
+                "--",
+                "/steam/compatibilitytools.d/GE/proton",
+                "waitforexitandrun",
+                "/games/F1 25/F1_25.exe",
+                "-vr"
+            ]
+        );
+        let seen = parse_steam_command(&direct[1..]);
+        assert_eq!(seen.game_args(), ["-vr"]);
+        assert_eq!(LaunchMode::of(seen.game_args()), LaunchMode::Vr);
+        assert_eq!(game_args(seen.game_args(), LaunchMode::Vr), ["-vr"]);
+
+        let flat = strings(&wrapper_command(Some(proton), game, LaunchMode::Normal, &[]));
+        assert!(parse_steam_command(&flat[1..]).game_args().is_empty());
+
+        let native = strings(&wrapper_command(None, game, LaunchMode::Vr, &[]));
+        assert_eq!(native, ["--", "/games/F1 25/F1_25.exe", "-vr"]);
+        assert_eq!(parse_steam_command(&native[1..]).game_args(), ["-vr"]);
+
+        let bench = ["-benchmark".to_owned(), "swofty_test.xml".to_owned()];
+        let passed = strings(&wrapper_command(Some(proton), game, LaunchMode::Normal, &bench));
+        let seen = parse_steam_command(&passed[1..]);
+        assert_eq!(seen.game_args(), bench, "game arguments reach the game");
+        assert_eq!(
+            game_args(seen.game_args(), LaunchMode::of(seen.game_args())),
+            bench
+        );
+
+        assert_eq!(steam_launch_args(LaunchMode::Normal), ["-applaunch", "3059520"]);
+        assert_eq!(
+            steam_launch_args(LaunchMode::Vr),
+            ["-applaunch", "3059520", "-vr"]
+        );
+    }
+
+    #[test]
+    fn the_wait_for_the_wrapper_counts_from_its_last_output() {
+        let log = temp_log("silence");
+        let data = log.ancestors().nth(2).unwrap().to_path_buf();
+        std::fs::create_dir_all(log.parent().unwrap()).unwrap();
+        let mut silence = Silence::new();
+        std::thread::sleep(Duration::from_millis(30));
+        assert!(silence.of(&log, &data) >= Duration::from_millis(30));
+        std::fs::write(&log, "[info] installing: 2000 of 7977 file(s) copied\n").unwrap();
+        assert!(silence.of(&log, &data) < Duration::from_millis(30));
+        std::thread::sleep(Duration::from_millis(30));
+        assert!(silence.of(&log, &data) >= Duration::from_millis(30));
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    fn beat(data: &Path, secs: u64) {
+        std::fs::File::options()
+            .write(true)
+            .open(Busy::path(data))
+            .unwrap()
+            .set_modified(SystemTime::UNIX_EPOCH + Duration::from_secs(secs))
+            .unwrap();
+    }
+
+    #[test]
+    fn a_live_build_that_keeps_its_heartbeat_is_not_silence() {
+        let log = temp_log("building");
+        let data = log.ancestors().nth(2).unwrap().to_path_buf();
+        std::fs::create_dir_all(log.parent().unwrap()).unwrap();
+        std::fs::write(&log, "[info] build: still working after 60 s\n").unwrap();
+        let build = Busy {
+            pid: std::process::id().wrapping_add(1),
+            ..Busy::new("default", vec!["swofty.classic-seasons".into()])
+        };
+        build.write(&data).unwrap();
+        let lock = SessionLock::try_acquire(&data).unwrap().unwrap();
+        let mut silence = Silence::new();
+        silence.of(&log, &data);
+        std::thread::sleep(Duration::from_millis(30));
+        beat(&data, 1_000);
+        assert!(
+            silence.of(&log, &data) < Duration::from_millis(30),
+            "the heartbeat moved"
+        );
+        std::thread::sleep(Duration::from_millis(30));
+        assert!(
+            silence.of(&log, &data) >= Duration::from_millis(30),
+            "a build whose heartbeat stopped is silent"
+        );
+        drop(lock);
+        drop(
+            SessionLock::wait(&data, Duration::from_secs(10))
+                .unwrap()
+                .expect("a forked child still holds the dropped lock"),
+        );
+        beat(&data, 2_000);
+        assert!(
+            silence.of(&log, &data) >= Duration::from_millis(30),
+            "a build file left by a process that ended is silent"
+        );
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn keeps_the_last_lines() {
+        let log = temp_log("tail");
+        std::fs::create_dir_all(log.parent().unwrap()).unwrap();
+        std::fs::write(&log, "a\n\nb\r\nc\n").unwrap();
+        assert_eq!(tail(&log, 2), ["b", "c"]);
+        assert_eq!(tail(&log, 9), ["a", "b", "c"]);
+        assert!(tail(&log.with_extension("missing"), 3).is_empty());
+        std::fs::remove_dir_all(log.ancestors().nth(2).unwrap()).ok();
+    }
+}

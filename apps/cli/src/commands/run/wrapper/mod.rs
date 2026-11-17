@@ -417,3 +417,71 @@ pub(crate) struct Round<'a> {
     profile: &'a str,
     restarted: bool,
 }
+
+#[cfg(all(test, unix))]
+mod tests {
+    use std::path::PathBuf;
+    use std::time::SystemTime;
+
+    use super::*;
+
+    #[test]
+    fn an_unsupported_build_launches_stock_with_nothing_applied() {
+        let request = LaunchRequest {
+            id: "x".into(),
+            apply: true,
+            steam_saves_once: true,
+            row_ids: Some(PathBuf::from("ids.json")),
+            ..LaunchRequest::default()
+        };
+        let (profile, out) = gate_unsupported_build(Some("1.0.145.2472".into()), "grid".into(), request);
+        assert_eq!(profile, swofty_core::profile::VANILLA);
+        assert!(!out.apply && out.row_ids.is_none() && !out.steam_saves_once);
+        assert_eq!(out.id, "x");
+    }
+
+    #[test]
+    fn a_supported_build_keeps_its_profile_and_request() {
+        let request = LaunchRequest {
+            apply: true,
+            ..LaunchRequest::default()
+        };
+        let (profile, out) = gate_unsupported_build(None, "grid".into(), request.clone());
+        assert_eq!(profile, "grid");
+        assert_eq!(out, request);
+    }
+
+    #[test]
+    fn an_old_launch_request_loses_its_arming() {
+        let path = std::env::temp_dir().join(format!("swofty-launch-age-{}", std::process::id()));
+        std::fs::write(&path, "{}").unwrap();
+        assert!(written_within(&path, NETPLAY_REQUEST_LIFE));
+        let file = std::fs::File::options().write(true).open(&path).unwrap();
+        file.set_modified(SystemTime::now() - Duration::from_secs(3600))
+            .unwrap();
+        assert!(!written_within(&path, NETPLAY_REQUEST_LIFE));
+        assert!(!written_within(
+            &path.with_extension("missing"),
+            NETPLAY_REQUEST_LIFE
+        ));
+        std::fs::remove_file(&path).ok();
+    }
+
+    #[test]
+    fn an_old_launch_request_plays_on_launcher_saves_again() {
+        let asked = || LaunchRequest {
+            netplay: Some("armed".into()),
+            row_ids: Some(PathBuf::from("row_ids.json")),
+            steam_saves_once: true,
+            ..LaunchRequest::default()
+        };
+        let mut fresh = asked();
+        age_out(&mut fresh, true);
+        assert_eq!(fresh, asked());
+        let mut old = asked();
+        age_out(&mut old, false);
+        assert!(!old.steam_saves_once);
+        assert_eq!(old.netplay, None);
+        assert_eq!(old.row_ids, None);
+    }
+}
