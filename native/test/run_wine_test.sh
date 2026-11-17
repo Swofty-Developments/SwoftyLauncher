@@ -1370,7 +1370,9 @@ cp -r "$OUT/filled" "$GT"
 rm -f "$GT/swofty/loader.log"
 truncate -s 72M "$GT/F1_25.exe"
 LOG=$GT/swofty/loader.log
-env -u SWOFTY_ALLOW_UNSUPPORTED_BUILD SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$GT/F1_25.exe" || :
+echo "      the loader refuses this exe, so the fake game's own checks fail by design and are not counted:"
+env -u SWOFTY_ALLOW_UNSUPPORTED_BUILD SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$GT/F1_25.exe" 2>&1 |
+    sed 's/^/      refused exe: /' || :
 echo "---- $LOG (gated)"
 grep -v '  section ' "$LOG"
 once "gated: a large exe the table does not list is refused" 'exe: size [0-9]+, PE timestamp [0-9]+ is not a build this launcher supports; the core and the addons are NOT loaded'
