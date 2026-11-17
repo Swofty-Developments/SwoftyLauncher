@@ -1,6 +1,7 @@
 #include "core/career/career_ui.hpp"
 #include "core/registry/older.hpp"
 #include "core/runtime/loader/core_sets.hpp"
+#include "core/runtime/loader/mixin_gate.hpp"
 
 #include <atomic>
 #include <mutex>
@@ -133,7 +134,9 @@ std::atomic<bool> any_swap{false}, any_mute{false};
 std::atomic<uint32_t> builds_logged, stand_ins, missing_logged, muted_lines, shared_logged;
 struct Part {
     const char *name, *label;
-    std::atomic<bool> wanted{false}, offered{false}, settled{false}, live{false}, late_logged{false};
+    std::atomic<bool> wanted{false};
+    runtime::loader::MixinGate gate;
+    std::atomic<bool> live{false}, late_logged{false};
 };
 
 Part ref{REF_MIXIN, "ref"}, voice{VOICE_MIXIN, "voice"};
@@ -389,9 +392,9 @@ int need(Part &p, bool want, const char *what)
         return SWOFTY_ASSET_UNAVAILABLE;
     if (want)
         p.wanted = true;
-    if (p.live || (!p.settled && !runtime::core_mixins_closed()))
+    if (p.live || (!p.gate.settled() && !runtime::core_mixins_closed()))
         return SWOFTY_ASSET_OK;
-    if (want && !p.settled && !p.late_logged.exchange(true))
+    if (want && !p.gate.settled() && !p.late_logged.exchange(true))
         swofty::log("[characters] %s registered after the last mixin commit; the %s hooks are not installed", what,
                     p.label);
     return SWOFTY_ASSET_UNAVAILABLE;
@@ -399,7 +402,7 @@ int need(Part &p, bool want, const char *what)
 
 int api_available()
 {
-    return runtime::enabled("career", nullptr) && (ref.live || voice.live || !(ref.settled || voice.settled));
+    return runtime::enabled("career", nullptr) && (ref.live || voice.live || !(ref.gate.settled() || voice.gate.settled()));
 }
 
 int api_career_group(char *out, size_t cap)
@@ -572,13 +575,13 @@ std::vector<CoreMixins> characters_mixins()
     std::vector<CoreMixins> out;
     if (!enabled("career", nullptr))
         return out;
-    if (ref.wanted && !ref.offered.exchange(true))
+    if (ref.wanted && ref.gate.offer())
         out.push_back(
             {REF_MIXIN,
              {{"Game_EntrantsUi_BuildCharacterRef", SWOFTY_MIXIN_WRAP, 100, (void *)&build_ref, (void **)&orig_build},
               {"Game_EntrantsUi_OnCharacterListLoaded", SWOFTY_MIXIN_WRAP, 100, (void *)&list_loaded,
                (void **)&orig_loaded}}});
-    if (voice.wanted && !voice.offered.exchange(true))
+    if (voice.wanted && voice.gate.offer())
         out.push_back(
             {VOICE_MIXIN, {{"Game_SpeechSystem_PostLine", SWOFTY_MIXIN_WRAP, 100, (void *)&post_line, (void **)&orig_post}}});
     return out;
@@ -588,11 +591,11 @@ void characters_commit()
 {
     bool any = false;
     for (Part *p : {&ref, &voice})
-        if (p->offered && !p->settled) {
+        if (p->gate.offered() && !p->gate.settled()) {
             p->live = core_mixins_active(p->name);
-            p->settled = any = true;
+            any |= p->gate.settle();
         }
-    auto state = [](const Part &p) { return p.live ? "armed" : p.settled ? "off" : "not used"; };
+    auto state = [](const Part &p) { return p.live ? "armed" : p.gate.settled() ? "off" : "not used"; };
     if (any)
         swofty::log("[characters] setup: character refs %s, voices %s", state(ref), state(voice));
 }

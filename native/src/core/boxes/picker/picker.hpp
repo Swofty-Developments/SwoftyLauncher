@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/runtime/loader/mixin_gate.hpp"
 #include "core/runtime/log_changed.hpp"
 
 #include <swofty/game.hpp>
@@ -94,7 +95,8 @@ struct Picker {
     std::mutex lock;
     std::vector<logic::Box> boxes;
     std::vector<std::string> skipped;
-    std::atomic<bool> offered{}, settled{}, live{}, off{};
+    runtime::loader::MixinGate gate;
+    std::atomic<bool> live{}, off{};
     std::string off_why;
     Set set{};
     Built built;
@@ -172,7 +174,8 @@ extern Hold hold;
 using SetupVehicles_t = void(void *module);
 struct VehicleGuard {
     SetupVehicles_t *orig = nullptr;
-    std::atomic<bool> offered{}, settled{}, bound{};
+    runtime::loader::MixinGate gate;
+    std::atomic<bool> bound{};
     uint32_t logged = 0;
 };
 
@@ -189,7 +192,8 @@ extern TimeTrialGuard time_trial_guard;
 
 struct AliasGuard {
     int (*orig)(void *, void *) = nullptr;
-    std::atomic<bool> offered{}, settled{}, bound{};
+    runtime::loader::MixinGate gate;
+    std::atomic<bool> bound{};
 };
 
 extern AliasGuard alias_guard;

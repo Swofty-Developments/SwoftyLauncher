@@ -1,6 +1,7 @@
 #include "core/career/career_ui.hpp"
 #include "core/registry/older.hpp"
 #include "core/runtime/loader/core_sets.hpp"
+#include "core/runtime/loader/mixin_gate.hpp"
 
 #include <swofty/game.hpp>
 
@@ -114,7 +115,9 @@ std::atomic<uint32_t> logged[8];
 
 struct Part {
     const char *name;
-    std::atomic<bool> wanted{false}, offered{false}, settled{false}, live{false}, late_logged{false};
+    std::atomic<bool> wanted{false};
+    runtime::loader::MixinGate gate;
+    std::atomic<bool> live{false}, late_logged{false};
 };
 
 constexpr int ROUTE = 1, TABS = 4;
@@ -322,7 +325,7 @@ bool part_usable(int i)
 {
     if (i == ROUTE)
         return runtime::tile_route_state() != runtime::TileRoute::off;
-    return parts[i].live || (!parts[i].settled && !runtime::core_mixins_closed());
+    return parts[i].live || (!parts[i].gate.settled() && !runtime::core_mixins_closed());
 }
 
 int need(int i, bool want)
@@ -338,7 +341,7 @@ int need(int i, bool want)
     }
     if (part_usable(i) && (i != TABS || part_usable(ROUTE)))
         return SWOFTY_ASSET_OK;
-    if (want && runtime::core_mixins_closed() && !parts[i].offered && !parts[i].late_logged.exchange(true))
+    if (want && runtime::core_mixins_closed() && !parts[i].gate.offered() && !parts[i].late_logged.exchange(true))
         swofty::log("[wizard] %s registered after the last mixin commit; its hook is not installed", part_names[i]);
     return SWOFTY_ASSET_UNAVAILABLE;
 }
@@ -369,7 +372,7 @@ int api_available()
     for (int i = 0; i < 5; i++) {
         if (part_live(i))
             return 1;
-        tried |= i == ROUTE ? runtime::tile_route_state() == runtime::TileRoute::off : parts[i].settled.load();
+        tried |= i == ROUTE ? runtime::tile_route_state() == runtime::TileRoute::off : parts[i].gate.settled();
     }
     return !tried;
 }
@@ -453,7 +456,7 @@ std::vector<CoreMixins> wizard_mixins()
     std::vector<CoreMixins> out;
     if (!enabled("career", nullptr))
         return out;
-    auto offer = [&](int i) { return parts[i].wanted && !parts[i].offered.exchange(true); };
+    auto offer = [&](int i) { return parts[i].wanted && parts[i].gate.offer(); };
     if (offer(0))
         out.push_back(
             {START_MIXIN,
@@ -473,7 +476,7 @@ std::vector<CoreMixins> wizard_mixins()
                         {"Game_DriverSelectHeader_SetTabState", SWOFTY_MIXIN_WRAP, 100, (void *)&tab_state,
                          (void **)&orig_tab_state}}});
     if (parts[ROUTE].wanted)
-        parts[ROUTE].offered = true;
+        parts[ROUTE].gate.offer();
     return out;
 }
 
@@ -482,12 +485,12 @@ void wizard_commit()
     bool any = false;
     for (int i = 0; i < 5; i++) {
         Part &p = parts[i];
-        if (!p.offered || p.settled || (i == ROUTE && tile_route_state() == TileRoute::pending))
+        if (!p.gate.offered() || p.gate.settled() || (i == ROUTE && tile_route_state() == TileRoute::pending))
             continue;
         p.live = i == ROUTE ? tile_route_state() == TileRoute::live : core_mixins_active(p.name);
-        p.settled = any = true;
+        any |= p.gate.settle();
     }
-    auto state = [](int i) { return parts[i].live ? "armed" : parts[i].settled ? "off" : "not used"; };
+    auto state = [](int i) { return parts[i].live ? "armed" : parts[i].gate.settled() ? "off" : "not used"; };
     if (any)
         swofty::log("[wizard] setup: start in F1 %s, tile route %s, steps and options %s, confirm route %s, driver tabs %s",
                     state(0), state(1), state(2), state(3), state(4));

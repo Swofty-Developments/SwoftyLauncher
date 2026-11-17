@@ -1,4 +1,5 @@
 #include "core/runtime/loader/core_sets.hpp"
+#include "core/runtime/loader/mixin_gate.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -51,7 +52,8 @@ constexpr size_t MODEL_DIMENSION_A = 0x278, MODEL_DIMENSION_B = 0x27c;
 constexpr uint64_t MAX_ENTRIES = 11;
 
 void (*start_orig)(void *) = nullptr;
-bool offered = false, wanted = false, settled = false;
+runtime::loader::MixinGate mixin_gate;
+bool wanted = false;
 std::mutex lock;
 uintptr_t component = 0;
 uint32_t session = 0;
@@ -202,9 +204,9 @@ namespace runtime {
 std::vector<CoreMixins> tyre_models_mixins()
 {
     std::vector<CoreMixins> out;
-    if (offered || !code_ready())
+    if (mixin_gate.offered() || !code_ready())
         return out;
-    offered = true;
+    mixin_gate.offer();
     char v[16] = {};
     DWORD n = GetEnvironmentVariableA("SWOFTY_TYRE_MODELS_CHECK", v, sizeof v);
     if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
@@ -222,12 +224,11 @@ std::vector<CoreMixins> tyre_models_mixins()
 
 void tyre_models_commit()
 {
-    if (!wanted || settled)
+    if (!wanted || !mixin_gate.settle())
         return;
-    settled = true;
-    swofty::log("[tyres] model check %s",
-                core_mixins_active(MIXIN) ? "armed: fitted tyre models are read 10 s and 60 s into each session"
-                                          : "did not install (see the [core] lines)");
+    swofty::log(
+        "[tyres] model check %s",
+        loader::install_state(core_mixins_active(MIXIN), "armed: fitted tyre models are read 10 s and 60 s into each session"));
 }
 
 static loader::FunctionSet tyre_models_core_set{loader::CoreSetId::tyre_models, tyre_models_mixins, tyre_models_commit};
