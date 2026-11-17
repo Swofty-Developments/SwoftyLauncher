@@ -134,7 +134,7 @@ impl Shell {
             .child(Icon::new(icon).size(px(13.)))
             .child(text)
             .tooltip(move |window, cx| Tooltip::new(tip.clone()).build(window, cx))
-            .on_click(cx.listener(|this, _, _, cx| this.sync_stars(cx)))
+            .on_click(cx.listener(|this, _, _, cx| Browser::sync_stars(this, cx)))
     }
 
     pub(super) fn trouble_banner(&self, p: Palette, cx: &mut Context<Self>) -> Option<Div> {
@@ -187,7 +187,7 @@ impl Shell {
                         .label(tr("Retry"))
                         .loading(self.browser.feed.fetching)
                         .disabled(self.browser.feed.fetching)
-                        .on_click(cx.listener(|this, _, _, cx| this.fetch_catalog(cx))),
+                        .on_click(cx.listener(|this, _, _, cx| Browser::fetch_catalog(this, cx))),
                 ),
         )
     }

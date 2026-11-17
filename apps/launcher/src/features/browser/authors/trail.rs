@@ -1,14 +1,18 @@
 //! The trail of views the browser walks back along, and loading a publisher's profile.
 
 use std::collections::BTreeSet;
-use std::time::Instant;
+use std::path::Path;
+use std::sync::Arc;
+use std::time::{Duration, Instant};
 
 use gpui_kit::*;
-use swofty_core::catalog::publishers::{self};
+use swofty_core::catalog::Trouble;
+use swofty_core::catalog::publishers::{self, Profile};
 use swofty_i18n::{trf, trn};
 
 use super::View;
 use crate::features::browser::*;
+use crate::shell::host::Host;
 use crate::shell::{Page, Shell};
 
 impl Shell {
@@ -28,7 +32,7 @@ impl Shell {
         b.smooth.cancel();
         b.scroll.set_offset(Point::default());
         b.activity_open = false;
-        self.load_view(&to, cx);
+        Browser::load_view(self, &to, cx);
         cx.notify();
     }
 
@@ -51,7 +55,7 @@ impl Shell {
         b.view = view.clone();
         b.smooth.cancel();
         b.scroll.set_offset(offset);
-        self.load_view(&view, cx);
+        Browser::load_view(self, &view, cx);
         cx.notify();
     }
 
@@ -89,25 +93,36 @@ impl Shell {
         b.smooth.cancel();
         b.scroll.set_offset(Point::default());
         b.activity_open = false;
-        self.load_view(&to, cx);
+        Browser::load_view(self, &to, cx);
         self.go(Page::Browser, cx);
     }
+}
 
-    pub(super) fn load_view(&mut self, view: &View, cx: &mut Context<Self>) {
+impl Browser {
+    pub(in crate::features::browser) fn load_view<H: Host<Self>>(
+        host: &mut H,
+        view: &View,
+        cx: &mut Context<H>,
+    ) {
         match view {
-            View::Addon(id) => self.fetch_details(id, cx),
-            View::Author(id) => self.fetch_profile(id, cx),
+            View::Addon(id) => Self::fetch_details(host, id, cx),
+            View::Author(id) => Self::fetch_profile(host, id, cx),
             _ => {}
         }
     }
 
-    pub(super) fn fetch_profile(&mut self, id: &str, cx: &mut Context<Self>) {
-        if !self.browser.profile_loading.insert(id.to_owned()) {
+    pub(in crate::features::browser) fn fetch_profile<H: Host<Self>>(
+        host: &mut H,
+        id: &str,
+        cx: &mut Context<H>,
+    ) {
+        let (b, needs) = host.split();
+        if !b.profile_loading.insert(id.to_owned()) {
             return;
         }
         let id = id.to_owned();
-        let dir = avatar_dir(&self.store.root);
-        let known: BTreeSet<String> = self.browser.avatars.keys().cloned().collect();
+        let dir = avatar_dir(needs.root);
+        let known: BTreeSet<String> = b.avatars.keys().cloned().collect();
         let started = Instant::now();
         cx.spawn(async move |this, cx| {
             let job = id.clone();
@@ -122,43 +137,56 @@ impl Shell {
                     (result, faces)
                 })
                 .await;
-            this.update(cx, |s, cx| {
-                s.browser.profile_loading.remove(&id);
-                let took = started.elapsed();
-                match result {
-                    Ok(pr) => {
-                        let detail = format!(
-                            "{} · {}",
-                            trn(pr.addons.len(), "{count} addon", "{count} addons"),
-                            trn(pr.links.len(), "{count} link", "{count} links")
-                        );
-                        s.record(
-                            Op::Profile,
-                            true,
-                            trf!("Fetched {name}'s profile", name = pr.name),
-                            detail,
-                            took,
-                        );
-                        s.browser.profile_failed.remove(&id);
-                        s.browser.profiles.insert(id, pr);
-                    }
-                    Err(e) => {
-                        s.record(
-                            Op::Profile,
-                            false,
-                            trf!("Couldn't fetch publisher {id}", id = id),
-                            e.to_string(),
-                            took,
-                        );
-                        s.browser.profile_failed.insert(id, e.to_string());
-                    }
-                }
-                s.browser.avatars.extend(faces);
+            this.update(cx, |host, cx| {
+                let (b, needs) = host.split();
+                b.take_profile(needs.root, id, result, faces, started.elapsed());
                 cx.notify();
             })
             .ok();
         })
         .detach();
         cx.notify();
+    }
+
+    fn take_profile(
+        &mut self,
+        root: &Path,
+        id: String,
+        result: Result<Profile, Trouble>,
+        faces: Vec<(String, Arc<Image>)>,
+        took: Duration,
+    ) {
+        self.profile_loading.remove(&id);
+        match result {
+            Ok(pr) => {
+                let detail = format!(
+                    "{} · {}",
+                    trn(pr.addons.len(), "{count} addon", "{count} addons"),
+                    trn(pr.links.len(), "{count} link", "{count} links")
+                );
+                self.record(
+                    root,
+                    Op::Profile,
+                    true,
+                    trf!("Fetched {name}'s profile", name = pr.name),
+                    detail,
+                    took,
+                );
+                self.profile_failed.remove(&id);
+                self.profiles.insert(id, pr);
+            }
+            Err(e) => {
+                self.record(
+                    root,
+                    Op::Profile,
+                    false,
+                    trf!("Couldn't fetch publisher {id}", id = id),
+                    e.to_string(),
+                    took,
+                );
+                self.profile_failed.insert(id, e.to_string());
+            }
+        }
+        self.avatars.extend(faces);
     }
 }

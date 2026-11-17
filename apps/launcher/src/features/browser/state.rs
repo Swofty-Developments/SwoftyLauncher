@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet, VecDeque};
+use std::convert::Infallible;
 use std::path::Path;
 use std::sync::Arc;
 use std::time::{Instant, SystemTime};
@@ -14,7 +15,9 @@ use swofty_i18n::{tr, trf, trn};
 
 use super::authors::View;
 use super::*;
+use crate::services::library::Library;
 use crate::shell::Shell;
+use crate::shell::host::{Host, Hosted};
 use crate::ui::scale::px;
 
 pub(crate) struct Browser {
@@ -206,4 +209,78 @@ pub(crate) struct Feed {
     pub(super) sync_again: bool,
     pub(super) star_gen: u64,
     pub(super) activity: VecDeque<Activity>,
+}
+
+impl Feed {
+    pub(super) fn begin_fetch(&mut self) -> bool {
+        !std::mem::replace(&mut self.fetching, true)
+    }
+
+    pub(super) fn fetched(&mut self, trouble: Option<Trouble>, listed: bool) {
+        self.fetching = false;
+        self.checked = Some(Instant::now());
+        self.trouble = trouble;
+        if listed {
+            self.live = true;
+            self.saved = true;
+            self.fetched_at = Some(SystemTime::now());
+        }
+    }
+
+    pub(super) fn begin_sync(&mut self) -> bool {
+        if self.syncing {
+            self.sync_again = true;
+            return false;
+        }
+        self.syncing = true;
+        true
+    }
+
+    pub(super) fn synced(&mut self) -> bool {
+        self.syncing = false;
+        std::mem::take(&mut self.sync_again)
+    }
+
+    pub(super) fn next_star(&mut self) -> u64 {
+        self.star_gen += 1;
+        self.star_gen
+    }
+
+    pub(super) fn settled(&self, ticket: u64) -> bool {
+        self.star_gen == ticket
+    }
+
+    pub(super) fn note(&mut self, activity: Activity) {
+        self.activity.push_front(activity);
+        self.activity.truncate(ACTIVITY_KEPT);
+    }
+}
+
+pub(crate) struct BrowserNeeds<'a> {
+    pub(crate) root: &'a Path,
+    pub(crate) library: &'a Library,
+    pub(crate) locked: bool,
+}
+
+impl Hosted for Browser {
+    type Needs<'a> = BrowserNeeds<'a>;
+    type Change = Infallible;
+}
+
+impl Host<Browser> for Shell {
+    fn split(&mut self) -> (&mut Browser, BrowserNeeds<'_>) {
+        let locked = self.data_move_locked();
+        (
+            &mut self.browser,
+            BrowserNeeds {
+                root: &self.store.root,
+                library: &self.library,
+                locked,
+            },
+        )
+    }
+
+    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
+        match change {}
+    }
 }

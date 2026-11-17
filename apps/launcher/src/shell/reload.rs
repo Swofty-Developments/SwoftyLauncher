@@ -59,7 +59,7 @@ impl Shell {
         }
         self.refresh_views(cx);
         self.db_profile_changed(cx);
-        self.sync_catalog_updates();
+        self.browser.sync_updates(&self.library);
         self.sync_shaders(true, cx);
         cx.notify();
     }

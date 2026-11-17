@@ -242,7 +242,7 @@ impl Shell {
                     .icon(IconName::RefreshCw)
                     .label(tr("Retry"))
                     .disabled(self.browser.feed.fetching)
-                    .on_click(cx.listener(|this, _, _, cx| this.fetch_catalog(cx))),
+                    .on_click(cx.listener(|this, _, _, cx| Browser::fetch_catalog(this, cx))),
             )
         } else {
             (
