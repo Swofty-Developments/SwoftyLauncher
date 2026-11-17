@@ -43,7 +43,7 @@ impl Shell {
             self.tt_open(cx);
         }
         if page == Page::Support {
-            self.support_open(cx);
+            crate::features::support::SupportPage::open(self, cx);
         }
         if let Some(i) = self.open_section().filter(|i| !self.section_loaded(*i)) {
             self.fetch_views(Some(i), cx);

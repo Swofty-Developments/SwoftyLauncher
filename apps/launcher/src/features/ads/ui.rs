@@ -63,15 +63,6 @@ impl Shell {
                 || matches!(&self.support.me, Load::Ready(me) if me.sees_ads()))
     }
 
-    /// Fetches the signed-in user's support once per sign-in, which decides their ads.
-    pub(crate) fn sync_support(&mut self, cx: &mut Context<Self>) {
-        if self.account.session.is_none() {
-            self.support.me = Load::Idle;
-        } else if matches!(self.support.me, Load::Idle | Load::Failed(_)) {
-            self.support_fetch_me(cx);
-        }
-    }
-
     fn ad_fits(unit: Unit, width: f32) -> bool {
         width * crate::ui::scale::current() >= f32::from(unit.size().width)
     }
