@@ -492,9 +492,12 @@ fn reuse_follows_each_kind_of_input_change() {
     store
         .update_profile("default", |p| p.set_enabled("t.hook", true))
         .unwrap();
+    // The build without it removed the profile's other build folders, so the same inputs are built again
+    // under the same hash, and reused from then on.
     let back_on = build(&store, "default", &game).unwrap();
-    assert!(reused(&back_on), "{:?}", back_on.lines);
+    assert!(!reused(&back_on), "{:?}", back_on.lines);
     assert_eq!(back_on.buildhash, first.buildhash);
+    assert!(reused(&build(&store, "default", &game).unwrap()));
 
     std::fs::write(game.dir.join(crate::GAME_EXE), "exe, updated").unwrap();
     let updated = Game {
