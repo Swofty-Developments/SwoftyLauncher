@@ -1,10 +1,13 @@
 use crate::shell::notices::Notification;
 use gpui_kit::*;
+use std::path::Path;
 use std::sync::Arc;
+use swofty_core::server::sign_in::{Ban, Session, SignInError};
 use swofty_i18n::{tr, trf};
 
 use super::Shell;
 
+#[derive(Default)]
 pub(crate) struct Account {
     pub(crate) session: Option<swofty_core::server::sign_in::Session>,
     pub(crate) busy: bool,
@@ -26,6 +29,82 @@ impl Account {
                 .flatten()
         })
     }
+
+    /// Turns signing in or out away while the game runs, with a toast saying why.
+    pub(crate) fn locked_while(&mut self, game_busy: bool) -> bool {
+        match account_guard(game_busy) {
+            Ok(()) => false,
+            Err(why) => {
+                self.toasts.push(Notification::warning(why));
+                true
+            }
+        }
+    }
+
+    pub(crate) fn sign_in_failed(&mut self, e: impl std::fmt::Display) {
+        self.toasts
+            .push(Notification::error(trf!("Sign-in failed: {e}", e = e)));
+    }
+
+    /// Takes the result of a browser sign-in. True when a session started.
+    pub(crate) fn finish_sign_in(&mut self, result: Result<Session, SignInError>, data: &Path) -> bool {
+        self.busy = false;
+        match result {
+            Ok(session) => {
+                self.toasts.push(Notification::success(trf!(
+                    "Signed in as {name}",
+                    name = session.name
+                )));
+                if session.allowed {
+                    self.toasts.push(Notification::success(tr(
+                        "Your account has been granted access to: Multiplayer",
+                    )));
+                }
+                swofty_core::multiplayer::client::load_in_background(data, &session.token);
+                self.session = Some(session);
+                true
+            }
+            Err(SignInError::Banned(ban)) => {
+                self.ban = Some(ban);
+                false
+            }
+            Err(e) => {
+                self.sign_in_failed(e);
+                false
+            }
+        }
+    }
+
+    /// Takes a refreshed session, or none when it has gone. True when one is still signed in.
+    pub(crate) fn take_refresh(
+        &mut self,
+        refreshed: Option<Session>,
+        was_allowed: bool,
+        data: &Path,
+    ) -> bool {
+        match refreshed {
+            Some(session) => {
+                let gained = session.allowed && !was_allowed;
+                swofty_core::multiplayer::client::load_in_background(data, &session.token);
+                self.session = Some(session);
+                if gained {
+                    self.toasts.push(Notification::success(tr(
+                        "Your account has been granted access to: Multiplayer",
+                    )));
+                }
+                true
+            }
+            None => {
+                self.session = None;
+                false
+            }
+        }
+    }
+
+    pub(crate) fn take_ban(&mut self, ban: Ban) {
+        self.session = None;
+        self.ban = Some(ban);
+    }
 }
 
 impl Shell {
@@ -33,17 +112,14 @@ impl Shell {
         if self.account.busy || self.account.session.is_some() {
             return;
         }
-        if let Err(why) = account_guard(self.game_busy()) {
-            self.account.toasts.push(Notification::warning(why));
+        if self.account.locked_while(self.game_busy()) {
             cx.notify();
             return;
         }
         let (pending, url) = match swofty_core::server::sign_in::begin() {
             Ok(v) => v,
             Err(e) => {
-                self.account
-                    .toasts
-                    .push(Notification::error(trf!("Sign-in failed: {e}", e = e)));
+                self.account.sign_in_failed(e);
                 cx.notify();
                 return;
             }
@@ -57,28 +133,9 @@ impl Shell {
                 .spawn(async move { pending.wait(&dir) })
                 .await;
             this.update(cx, |s, cx| {
-                s.account.busy = false;
-                match result {
-                    Ok(session) => {
-                        s.account.toasts.push(Notification::success(trf!(
-                            "Signed in as {name}",
-                            name = session.name
-                        )));
-                        if session.allowed {
-                            s.account.toasts.push(Notification::success(tr(
-                                "Your account has been granted access to: Multiplayer",
-                            )));
-                        }
-                        swofty_core::multiplayer::client::load_in_background(&s.store.root, &session.token);
-                        s.account.session = Some(session);
-                        s.sync_avatar(cx);
-                        s.sync_support(cx);
-                    }
-                    Err(swofty_core::server::sign_in::SignInError::Banned(ban)) => s.account.ban = Some(ban),
-                    Err(e) => s
-                        .account
-                        .toasts
-                        .push(Notification::error(trf!("Sign-in failed: {e}", e = e))),
+                if s.account.finish_sign_in(result, &s.store.root) {
+                    s.sync_avatar(cx);
+                    s.sync_support(cx);
                 }
                 cx.notify();
             })
@@ -89,10 +146,7 @@ impl Shell {
     }
 
     pub(crate) fn mp_sign_out(&mut self, _window: &mut Window, cx: &mut Context<Self>) {
-        if self.account.session.is_some()
-            && let Err(why) = account_guard(self.game_busy())
-        {
-            self.account.toasts.push(Notification::warning(why));
+        if self.account.session.is_some() && self.account.locked_while(self.game_busy()) {
             cx.notify();
             return;
         }
@@ -124,9 +178,8 @@ impl Shell {
             Refreshed::Gone => self.mp_apply_refresh(None, was_allowed, cx),
             Refreshed::Banned(ban) => {
                 self.mp_leave(cx);
-                self.account.session = None;
+                self.account.take_ban(ban);
                 self.sync_support(cx);
-                self.account.ban = Some(ban);
                 cx.notify();
             }
         }
@@ -138,19 +191,11 @@ impl Shell {
         was_allowed: bool,
         cx: &mut Context<Self>,
     ) {
-        match refreshed {
-            Some(session) => {
-                let gained = session.allowed && !was_allowed;
-                swofty_core::multiplayer::client::load_in_background(&self.store.root, &session.token);
-                self.account.session = Some(session);
-                self.sync_avatar(cx);
-                if gained {
-                    self.account.toasts.push(Notification::success(tr(
-                        "Your account has been granted access to: Multiplayer",
-                    )));
-                }
-            }
-            None => self.account.session = None,
+        if self
+            .account
+            .take_refresh(refreshed, was_allowed, &self.store.root)
+        {
+            self.sync_avatar(cx);
         }
         self.sync_support(cx);
         cx.notify();
@@ -197,11 +242,28 @@ pub(crate) fn account_guard(game_busy: bool) -> Result<(), &'static str> {
 
 #[cfg(test)]
 mod account_tests {
-    use super::account_guard;
+    use super::{Account, account_guard};
 
     #[test]
     fn the_account_is_locked_only_while_the_game_runs() {
         assert!(account_guard(false).is_ok());
         assert_eq!(account_guard(true), Err("Close the game to sign in or out"));
+    }
+
+    #[test]
+    fn signing_in_or_out_is_refused_with_a_toast_while_the_game_runs() {
+        let mut account = Account::default();
+        assert!(!account.locked_while(false));
+        assert!(account.toasts.is_empty());
+        assert!(account.locked_while(true));
+        assert_eq!(account.toasts.len(), 1);
+    }
+
+    #[test]
+    fn a_gone_session_signs_the_account_out() {
+        let mut account = Account::default();
+        assert!(!account.take_refresh(None, true, std::path::Path::new("unused")));
+        assert!(account.session.is_none());
+        assert!(account.toasts.is_empty());
     }
 }
