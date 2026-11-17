@@ -1,32 +1,10 @@
 mod addon_commands;
-mod addons;
-mod build;
-mod db;
-mod dev;
-mod doctor;
-mod ea;
-mod game;
-mod hud;
-mod laps;
-mod logs;
-mod offline;
-mod output;
-mod postfx;
-mod profile;
-mod prompt;
+mod commands;
+mod console;
 mod recover;
-mod registry;
-mod run;
-mod saves;
-mod send_logs;
-mod settings;
-mod setup;
-mod shaders;
 mod signals;
-mod steam;
-mod testing;
+mod stores;
 mod time;
-mod update;
 
 use std::ffi::OsString;
 use std::path::PathBuf;
@@ -37,6 +15,11 @@ use clap::{FromArgMatches, Parser, Subcommand};
 use swofty_core::store::Store;
 
 use crate::addon_commands::AddonCommands;
+use crate::commands::{
+    addons, build, db, dev, doctor, game, hud, laps, logs, offline, postfx, profile, registry, run, saves,
+    settings, setup, shaders, testing, update,
+};
+use crate::stores::steam;
 
 #[derive(Parser)]
 #[command(
@@ -208,7 +191,7 @@ enum LogsCommand {
     #[command(
         about = "Send the launcher and game logs to the developers on Discord, with your username and what went wrong"
     )]
-    Send(send_logs::SendArgs),
+    Send(logs::send::SendArgs),
 }
 
 fn main() -> ExitCode {
@@ -303,7 +286,7 @@ fn dispatch(store: &Store, cli: Cli) -> Result<ExitCode> {
         Command::Logs {
             action: Some(LogsCommand::Send(args)),
             ..
-        } => send_logs::send(&store, args),
+        } => logs::send::send(&store, args),
         Command::Logs { dir, exe, .. } => logs::summarise(&store, dir, exe),
         Command::Doctor => doctor::doctor(&store),
         Command::Game(cmd) => game::command(&store, cmd).map(|_| ExitCode::SUCCESS),
@@ -337,7 +320,7 @@ mod tests {
 
     use super::*;
     use crate::addon_commands::{absolute_paths, command_at, command_input, forward_mods, namespaced};
-    use crate::addons::AddonsCommand;
+    use crate::commands::addons::AddonsCommand;
 
     #[test]
     fn an_error_says_its_os_message_once() {
@@ -465,12 +448,12 @@ mod tests {
         let store = Store::new(&data);
         let out = root.join("out");
         std::fs::create_dir_all(&out).unwrap();
-        let args = send_logs::SendArgs {
+        let args = logs::send::SendArgs {
             name: None,
             message: Some("  it froze on the grid  ".into()),
             dry_run: Some(Some(out.clone())),
         };
-        assert_eq!(send_logs::send(&store, args).unwrap(), ExitCode::SUCCESS);
+        assert_eq!(logs::send::send(&store, args).unwrap(), ExitCode::SUCCESS);
         let written: Vec<_> = std::fs::read_dir(&out)
             .unwrap()
             .flatten()
@@ -485,27 +468,27 @@ mod tests {
         let zip = zip_names(&out.join(&name));
         assert!(zip.contains(&"state/launcher-run.log".to_owned()), "{zip:?}");
         assert!(zip.contains(&"summary.txt".to_owned()));
-        let bad = send_logs::SendArgs {
+        let bad = logs::send::SendArgs {
             name: Some("x".into()),
             message: None,
             dry_run: Some(None),
         };
-        assert!(send_logs::send(&store, bad).is_err());
-        let unsaid = send_logs::SendArgs {
+        assert!(logs::send::send(&store, bad).is_err());
+        let unsaid = logs::send::SendArgs {
             name: None,
             message: None,
             dry_run: Some(Some(out.join("unsaid.zip"))),
         };
-        assert_eq!(send_logs::send(&store, unsaid).unwrap(), ExitCode::SUCCESS);
+        assert_eq!(logs::send::send(&store, unsaid).unwrap(), ExitCode::SUCCESS);
         assert!(out.join("unsaid.zip").is_file());
-        let sending = |message: Option<&str>| send_logs::SendArgs {
+        let sending = |message: Option<&str>| logs::send::SendArgs {
             name: None,
             message: message.map(Into::into),
             dry_run: None,
         };
-        let err = send_logs::send_to(&store, sending(None), None).unwrap_err();
+        let err = logs::send::send_to(&store, sending(None), None).unwrap_err();
         assert!(err.to_string().contains("pass --message"), "{err}");
-        let err = send_logs::send_to(&store, sending(Some("  it froze ")), None).unwrap_err();
+        let err = logs::send::send_to(&store, sending(Some("  it froze ")), None).unwrap_err();
         assert!(err.to_string().contains("at least 10 characters"), "{err}");
         std::fs::remove_dir_all(&root).ok();
     }
@@ -567,7 +550,7 @@ mod tests {
             zips.sort();
             zips
         };
-        let args = |name: &str| send_logs::SendArgs {
+        let args = |name: &str| logs::send::SendArgs {
             name: Some(name.into()),
             message: Some("it froze on the grid".into()),
             dry_run: None,
@@ -576,7 +559,7 @@ mod tests {
         let (url, server) = stub_log_server(200);
         let hook = swofty_core::send_logs::LogServer::new(Some(&url));
         assert_eq!(
-            send_logs::send_to(&store, args("sender"), hook).unwrap(),
+            logs::send::send_to(&store, args("sender"), hook).unwrap(),
             ExitCode::SUCCESS
         );
         assert!(server.join().unwrap() > 0);
@@ -593,7 +576,7 @@ mod tests {
 
         let (url, server) = stub_log_server(400);
         let hook = swofty_core::send_logs::LogServer::new(Some(&url));
-        let err = send_logs::send_to(&store, args("refused"), hook).unwrap_err();
+        let err = logs::send::send_to(&store, args("refused"), hook).unwrap_err();
         assert!(err.to_string().contains("HTTP 400"), "{err}");
         server.join().unwrap();
         let zips = kept(&store);
@@ -605,7 +588,7 @@ mod tests {
                 .starts_with("swofty-logs-refused-")
         }));
 
-        let err = send_logs::send_to(&store, args("nowhere"), None).unwrap_err();
+        let err = logs::send::send_to(&store, args("nowhere"), None).unwrap_err();
         assert!(err.to_string().contains("--dry-run"), "{err}");
         assert_eq!(kept(&store).len(), 2);
         std::fs::remove_dir_all(&root).ok();
