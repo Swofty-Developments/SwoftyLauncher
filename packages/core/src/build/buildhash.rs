@@ -77,6 +77,10 @@ impl BuildHash {
 
     /// The files `ops` of `addon` read, by size and modified time.
     pub fn sources(&mut self, store: &Store, addon: &str, ops: &[AssetOp]) -> Result<()> {
+        crate::diagnostics::phases::time_part("build.hash_sources", || self.sources_of(store, addon, ops))
+    }
+
+    fn sources_of(&mut self, store: &Store, addon: &str, ops: &[AssetOp]) -> Result<()> {
         // Many resource edits read the same archive or directory. Inspect each source
         // once per batch, but feed every occurrence into the digest in its original order.
         // Keep this local: a helper can change cache/data sources before the next batch.
@@ -106,6 +110,19 @@ impl BuildHash {
     /// What a build depends on without reading it through an op: the game and pipeline versions, the
     /// loader's features, addon plugins and the game archives ERP ops change.
     pub fn unread(
+        &mut self,
+        store: &Store,
+        game: &Game,
+        order: &[&AddonManifest],
+        erp_ops: &[Op],
+        resolve: &dyn Fn(&str) -> PathBuf,
+    ) -> Result<()> {
+        crate::diagnostics::phases::time_part("build.hash_unread", || {
+            self.unread_of(store, game, order, erp_ops, resolve)
+        })
+    }
+
+    fn unread_of(
         &mut self,
         store: &Store,
         game: &Game,

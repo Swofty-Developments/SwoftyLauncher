@@ -10,9 +10,21 @@ pub const TAG: &str = "play";
 
 static LINES: Mutex<Vec<String>> = Mutex::new(Vec::new());
 static STEP: Mutex<Option<(&'static str, Instant)>> = Mutex::new(None);
+static SUMS: Mutex<Vec<(&'static str, Duration)>> = Mutex::new(Vec::new());
+
+/// Lines kept for a process that builds without printing them, such as the launcher's own checks.
+const KEPT: usize = 512;
 
 fn lines() -> std::sync::MutexGuard<'static, Vec<String>> {
     LINES.lock().unwrap_or_else(|e| e.into_inner())
+}
+
+fn push(line: String) {
+    let mut lines = lines();
+    if lines.len() >= KEPT {
+        lines.remove(0);
+    }
+    lines.push(line);
 }
 
 /// The text after the tag for a phase that took `took`.
@@ -21,18 +33,35 @@ pub fn line(name: &str, took: Duration) -> String {
 }
 
 pub fn record(name: &str, took: Duration) {
-    lines().push(line(name, took));
+    push(line(name, took));
 }
 
 /// A finding about the Play path that is not a timing, such as why a saved build was not reused.
 pub fn note(text: impl Into<String>) {
-    lines().push(text.into());
+    push(text.into());
 }
 
-/// The lines recorded since the last call, oldest first; the step still running is closed first.
+/// The lines recorded since the last call, oldest first; the step still running is closed first, and
+/// each phase timed in parts comes last as one line.
 pub fn take() -> Vec<String> {
     end_step();
-    std::mem::take(&mut *lines())
+    let sums = std::mem::take(&mut *SUMS.lock().unwrap_or_else(|e| e.into_inner()));
+    let mut out = std::mem::take(&mut *lines());
+    out.extend(sums.into_iter().map(|(name, took)| line(name, took)));
+    out
+}
+
+/// Times `f` as a part of the phase `name`, which is printed once with the time of all its parts.
+pub fn time_part<T>(name: &'static str, f: impl FnOnce() -> T) -> T {
+    let start = Instant::now();
+    let out = f();
+    let took = start.elapsed();
+    let mut sums = SUMS.lock().unwrap_or_else(|e| e.into_inner());
+    match sums.iter_mut().find(|(n, _)| *n == name) {
+        Some((_, sum)) => *sum += took,
+        None => sums.push((name, took)),
+    }
+    out
 }
 
 /// Times `f` as the phase `name`.
@@ -90,6 +119,25 @@ mod tests {
             line("install.link_cache", Duration::from_micros(12_345_678)),
             "phase install.link_cache 12345"
         );
+    }
+
+    #[test]
+    fn a_phase_timed_in_parts_is_one_line_after_the_rest() {
+        time_part("test.parts", || std::thread::sleep(Duration::from_millis(3)));
+        record("test.whole", Duration::from_millis(9));
+        time_part("test.parts", || std::thread::sleep(Duration::from_millis(3)));
+        let lines: Vec<String> = take()
+            .into_iter()
+            .filter(|l| l.starts_with("phase test."))
+            .collect();
+        assert_eq!(lines.len(), 2, "{lines:?}");
+        assert_eq!(lines[0], "phase test.whole 9");
+        let ms: u64 = lines[1]
+            .strip_prefix("phase test.parts ")
+            .unwrap()
+            .parse()
+            .unwrap();
+        assert!(ms >= 6, "{ms}");
     }
 
     #[test]
