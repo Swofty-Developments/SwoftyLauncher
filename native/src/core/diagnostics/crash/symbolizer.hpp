@@ -5,6 +5,7 @@
 #endif
 #include <windows.h>
 
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -20,14 +21,23 @@ struct Symbol {
     std::string name;
 };
 
-// The KB function names from symbols.tsv, for the frames in the exe.
+// The function names for the frames in the exe: the KB names from symbols.tsv when it has a section for this exe's
+// PE timestamp, otherwise the names of the binding set's resolved functions, which follow every build the set
+// covers. The binding names are adopted once after the bindings resolve and published with release order, so a
+// report written meanwhile sees either none or all of them.
 class SymbolTable {
 public:
     void load(const std::wstring &path, DWORD stamp);
+    void adopt(std::vector<Symbol> named);
     const char *name_at(uint32_t start) const;
+    size_t bound_count() const { return bound_ready.load(std::memory_order_acquire) ? bound.size() : 0; }
 
     std::vector<Symbol> symbols;
     bool matches = false;
+
+private:
+    std::vector<Symbol> bound;
+    std::atomic<bool> bound_ready{false};
 };
 
 struct Mod {

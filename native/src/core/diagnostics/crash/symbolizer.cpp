@@ -99,10 +99,31 @@ PRUNTIME_FUNCTION primary(PRUNTIME_FUNCTION f, DWORD64 base)
     return f;
 }
 
+namespace {
+
+const char *exact(const std::vector<Symbol> &table, uint32_t start)
+{
+    auto it = std::lower_bound(table.begin(), table.end(), start, [](const Symbol &x, uint32_t r) { return x.rva < r; });
+    return it != table.end() && it->rva == start ? it->name.c_str() : nullptr;
+}
+
+}
+
 const char *SymbolTable::name_at(uint32_t start) const
 {
-    auto it = std::lower_bound(symbol_table.symbols.begin(), symbol_table.symbols.end(), start, [](const Symbol &x, uint32_t r) { return x.rva < r; });
-    return it != symbol_table.symbols.end() && it->rva == start ? it->name.c_str() : nullptr;
+    if (const char *name = exact(symbols, start))
+        return name;
+    return bound_ready.load(std::memory_order_acquire) ? exact(bound, start) : nullptr;
+}
+
+void SymbolTable::adopt(std::vector<Symbol> named)
+{
+    if (matches || bound_ready.load(std::memory_order_acquire))
+        return;
+    std::sort(named.begin(), named.end(), [](const Symbol &a, const Symbol &b) { return a.rva < b.rva; });
+    bound = std::move(named);
+    bound_ready.store(true, std::memory_order_release);
+    cl("[crash] %zu function name(s) from the binding set for this exe", bound.size());
 }
 
 std::string where(uintptr_t a)
