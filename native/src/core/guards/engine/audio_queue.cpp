@@ -1,4 +1,5 @@
 #include "core/guards/engine/audio_queue_logic.hpp"
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -47,7 +48,6 @@ using Request = void(void *worker, uint32_t job_type, uint32_t count);
 
 Request *orig_request;
 uintptr_t queue_addr = 0, lock_addr = 0;
-bool offered = false, settled = false, wanted = false;
 aq::Workers<THUNKS> workers;
 std::atomic<int> queue_state{0};
 std::atomic<int> logged{0};
@@ -140,44 +140,17 @@ void request(void *worker, uint32_t job_type, uint32_t count)
     sweep("after a request was queued");
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
-
-std::vector<CoreMixins> audio_queue_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_AUDIO_QUEUE_FIX", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[audio] queue fix off (SWOFTY_AUDIO_QUEUE_FIX=%s)", v);
-        return out;
-    }
-    queue_addr = swofty::api->resolve(QUEUE);
-    lock_addr = swofty::api->resolve(LOCK);
-    if (!queue_addr || !lock_addr || !swofty::api->resolve(TARGET)) {
-        queue_addr = lock_addr = 0;
-        swofty::log("[audio] queue fix off: needs %s, %s and %s, which this build does not resolve", TARGET, QUEUE,
-                    LOCK);
-        return out;
-    }
-    wanted = true;
-    out.push_back({MIXIN, {{TARGET, SWOFTY_MIXIN_WRAP, 100, (void *)&request, (void **)&orig_request}}});
-    return out;
-}
-
-void audio_queue_commit()
-{
-    if (!offered || settled || !wanted)
-        return;
-    settled = true;
-    swofty::log("[audio] queue fix %s",
-                core_mixins_active(MIXIN)
-                    ? "armed: audio worker requests queued in slots 12-23 move to slots 0-11, where the workers take them"
-                    : "did not install (see the [core] lines)");
-}
+guards::SiteGuard guard{guards::CoreSetId::audio_queue,
+                        {
+                            .set = MIXIN,
+                            .name = "[audio] queue fix",
+                            .env = "SWOFTY_AUDIO_QUEUE_FIX",
+                            .keeps = {{QUEUE, &queue_addr}, {LOCK, &lock_addr}},
+                            .needs = {TARGET, QUEUE, LOCK},
+                            .mixins = {{TARGET, SWOFTY_MIXIN_WRAP, 100, (void *)&request, (void **)&orig_request}},
+                            .armed = "audio worker requests queued in slots 12-23 move to slots 0-11, where the workers take them",
+                        }};
 
 }
