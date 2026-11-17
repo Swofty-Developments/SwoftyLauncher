@@ -33,14 +33,14 @@ binding of the set resolves on the port (3,698: 3,689 by hint, 9 by scan, `bindv
 
 | feature | gate before | verdict on the port | change |
 |---|---|---|---|
-| car points (`car.built`, `car.reset`, `car.upgrades.replayed`, `session.pit`/`pit_stop`, `car.setup.applied`) | `car_live.cpp` `arm_car_points` | proven | `hooks/car_builds.hpp` lists the port with `POINTS` |
+| car points (`car.built`, `car.reset`, `car.upgrades.replayed`, `session.pit`/`pit_stop`, `car.setup.applied`) | `car_live.cpp` `arm_car_points` | proven | `hooks/car_proofs.hpp` `HOOK_SITES` names Steam 1.0.145 |
 | car levers (engine torque, AI grip, AI racecraft mixins) | `car_levers_mixins` | proven (sites and AI fields) | kept off: the layers they apply come through the car operations |
-| live car operations | `car_live.cpp` `setup` | **not proven**, 9 fields (below) | off |
-| live car wheel spin and slip (`wheels`) | `live_car_logic.hpp` | proven: `CarSuspension.wheels` +0x70, `CarWheel.spin_rate` +0x188, `slip_angle` +0x3b0, `slip_ratio` +0x3b4 | `live_car_logic.hpp` `PORTED` |
-| live car track wetness (`wetness`) | `live_car_logic.hpp`, `live_car.cpp` (hard-coded RVA) | proven, below | `PORTED`, and the global is found by signature |
+| live car operations | `car_live.cpp` `setup` | **not proven**, 4 fields (below) | off (`car_proofs.hpp` `OPERATION_FIELDS`: KB only) |
+| live car wheel spin and slip (`wheels`) | `live_car_logic.hpp` | proven: `CarSuspension.wheels` +0x70, `CarWheel.spin_rate` +0x188, `slip_angle` +0x3b0, `slip_ratio` +0x3b4 | `live_car_logic.hpp` `WHEEL_FIELDS` |
+| live car track wetness (`wetness`) | `live_car_logic.hpp`, `live_car.cpp` (hard-coded RVA) | proven, below | `TRACK_WETNESS`, and the global is found by signature |
 | live car wheel surface and wetness, orientation, angular velocity | `live_car_logic.hpp` | not proven (no KB function found that reads +0x200, +0x280, +0x190 or +0x210 and ports) | off |
-| game database edits after the database is built | `gamedb.cpp` `late_inplace` | proven | record classes found by signature |
-| Time Trial player name bridge | `player_name.cpp` `setup` | proven | UI registry layout found by signature |
+| game database edits after the database is built | `gamedb.cpp` `late_inplace` | proven | `RECORD_CLASSES` names Steam 1.0.145; record classes found by signature |
+| Time Trial player name bridge | `player_name.cpp` `setup` | proven | `NAME_FUNCTIONS` names Steam 1.0.145; UI registry layout found by signature |
 | crash symbol names | `crash.cpp` `KB_STAMP` | n/a | names from the binding set on any exe that `symbols.tsv` does not cover |
 
 ### Car points
@@ -70,10 +70,26 @@ flag at the same displacement. Four readers of the wetness float `[reg + 0x3f0a3
 its whole `.pdata` extent: 0x14013c8d0 (438/438), 0x140158da0 (84/84), 0x1403612c0 = 0x140361300 (219/219) and
 0x140a832a0 = 0x140a832f0 (96/96). The first reads the global's flags +0x3f0a8b and +0x3f0a8a just before the float.
 
+### Game database map and loaded flag (assets/dbread.cpp, assets/gamedb.cpp)
+
+`DB_MAP` +0xa8 and the Robin map's fields: `Gdb_Lookup_Key` 0x1445a22f0 = port 0x1445a4b60, 86/86 instructions equal.
+It reads the database's +0xb8, +0xc0, +0xc8, +0xd8, +0xe8 and +0xec, which are the map's multiplier, slots, info,
+mask, increment and shift at +0x10..+0x44 from +0xa8, and returns a pointer into a 16-byte slot at +8. `DB_LOADED`
++0xf0: `Gdb_Load_GameDatabase` 0x1445a0350 = port 0x1445a2bc0, 779/779 instructions equal. It clears
+`[db + 0xf0]` on entry and sets it to 1 at the end. The string record layout dbread reads was not checked.
+
 ### Live car operations: what is still missing
 
 `layoutcmp.py` over every field of the car structs: 665 proven. These fields that `car_live::FIELDS` and its helpers use
 are not proven yet:
+
+Locating the protector bodies through their data vtables' slots, instead of a head pattern, proves five of them.
+`CarChassis.sqrt_mass` +0x98, `CarFuelEcu.fuel_burn_scale_lean` +0x28, `temperature_scale_lean` +0xe8 and
+`CarDifferential.diff_on_throttle` +0xf0 / `diff_off_throttle` +0xec each have an instruction with the same base and
+displacement in the aligned port body (alignment ratio 0.96 to 0.97). `portcheck.py` does not do this vtable-slot
+locating yet. Four fields stay unproven: `CarSteering.max_steering_lock`, `CarTurbo.max_boost`,
+`CarChassis.tyre_physics_group` +0x118 and `CarFuelEcu.temperature_scale_max` +0x118. The bodies above do not read
+the last two.
 
 | field | why |
 |---|---|
@@ -87,8 +103,9 @@ are not proven yet:
 
 1. Add the overlay and run `bindverify.py --build <new>`.
 2. Run `portcheck.py --port <exe> --build <new>`.
-3. For every feature it reports proven, add the build to that feature's table: `hooks/car_builds.hpp` `PORTED`,
-   `live/live_rows.hpp` `PROVEN_BUILDS`. The signature-found parts (game database classes, UI registry layout,
+3. Add the build to `runtime/build_proof.hpp` `KNOWN[]`. For every feature it reports proven, set the build's bit in
+   that feature's proof: `hooks/car_proofs.hpp`, `live/live_car_logic.hpp`, `assets/gamedb.cpp` `RECORD_CLASSES`,
+   `frontend/player_name/copies.hpp` `NAME_FUNCTIONS`. The signature-found parts (game database classes, UI registry layout,
    crash names) follow on their own.
 4. A failing dependency names the function to port by hand.
 
