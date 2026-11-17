@@ -1,3 +1,5 @@
+use swofty_core::session::{PERF_LOG, SessionEnd};
+
 use crate::commands::run::tests::{STALE, session_dir};
 
 use super::*;
