@@ -18,7 +18,7 @@ export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../
 PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 rm -rf "$OUT/game"
 mkdir -p "$OUT/game"
-"${PIN[@]}" zig cc -target x86_64-windows-gnu -I../src -O2 -o "$OUT/game/F1_25.exe" fake_testagent.c -lversion -luser32
+"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -o "$OUT/game/F1_25.exe" fake_testagent.c -lversion -luser32
 cp -r "../$DIST/." "$OUT/game/"
 export WINEPREFIX="$OUT/prefix" WINEDLLOVERRIDES="version=n,b;mscoree,mshtml=;winemenubuilder.exe,winedbg.exe=d" WINEDEBUG=-all
 LOG=$OUT/game/swofty/loader.log

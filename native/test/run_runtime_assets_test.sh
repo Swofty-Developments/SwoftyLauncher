@@ -25,7 +25,7 @@ for c in $ZS/common/*.c $ZS/decompress/*.c; do
     [[ $o -nt $c ]] || "${PIN[@]}" zig cc -target x86_64-windows-gnu -I../src -O2 -DZSTD_DISABLE_ASM -DXXH_NAMESPACE=ZSTD_ -DZSTD_LEGACY_SUPPORT=0 -I$ZS -c "$c" -o "$o" &
 done
 wait
-"${PIN[@]}" zig cc -target x86_64-windows-gnu -I../src -O2 -Wno-unused-function -I$ZS -o "$OUT/game/F1_25.exe" fake_runtime.c "${ZOBJ[@]}" -lversion -luser32 -lws2_32
+"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -Wno-unused-function -I$ZS -o "$OUT/game/F1_25.exe" fake_runtime.c "${ZOBJ[@]}" -lversion -luser32 -lws2_32
 cat > "$OUT/slow_mod.c" <<'EOC'
 #include <windows.h>
 __declspec(dllexport) int SwoftyAddonInit(const void *api)
