@@ -58,7 +58,7 @@ pub struct RunArgs {
         help = "Build and install the profile (database, tracks) before the game starts, and roll it back when it exits"
     )]
     apply: bool,
-    #[arg(long, help = crate::GAME_HELP)]
+    #[arg(long, help = crate::commands::cli::GAME_HELP)]
     game: Option<PathBuf>,
     #[arg(
         long = "game-arg",
