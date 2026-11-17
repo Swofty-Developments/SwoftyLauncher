@@ -8,11 +8,13 @@ it reads, so bindgen, kb_lint and sigcheck see one knowledge base.
 Records are read from pull requests, so the parser treats every file as hostile: a size cap, UTF-8 only, strict JSON
 without NaN, Infinity or duplicate keys, exact key sets and bounded strings.
 """
-import copy, hashlib, json, os, re
+import copy, hashlib, json, os, re, stat, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 RE_DIR = os.path.dirname(HERE)
 RECORDS = os.path.join(RE_DIR, 'bindings')
+CACHE = os.path.join(RE_DIR, '.cache', 'records.json')
+CACHE_SCHEMA = 1
 
 SCHEMA = 1
 MAX_BYTES = 64 * 1024
@@ -291,13 +293,82 @@ def table_columns(table):
     return kb.TABLES[table][0]
 
 
+def parser_digest():
+    with open(os.path.abspath(__file__), 'rb') as f:
+        return hashlib.sha256(f.read()).hexdigest()
+
+
+class RecordCache:
+    """Parse results of the records under one root, kept between processes in a gitignored file. An entry is used
+    only while the file's mtime, size, ctime and inode are the ones it was parsed with, and a file changed within
+    RACY_NS of the load is never stored, so a rewrite inside one timestamp tick cannot hide behind an old entry.
+    The parser's own source digest is part of the key: a change to the rules drops every entry."""
+    RACY_NS = 2_000_000_000
+
+    def __init__(self, path, root):
+        self.path, self.root = path, os.path.abspath(root)
+        self.code = parser_digest()
+        self.start = time.time_ns()
+        self.old, self.new, self.dirty = self.read(), {}, False
+
+    def read(self):
+        try:
+            with open(self.path, 'rb') as f:
+                doc = json.loads(f.read())
+        except (OSError, ValueError):
+            return {}
+        if not isinstance(doc, dict) or doc.get('schema') != CACHE_SCHEMA or doc.get('code') != self.code \
+                or doc.get('root') != self.root or not isinstance(doc.get('entries'), dict):
+            return {}
+        return doc['entries']
+
+    @staticmethod
+    def key(st):
+        return [st.st_mtime_ns, st.st_size, st.st_ctime_ns, st.st_ino]
+
+    def lookup(self, rel, st):
+        e = self.old.get(rel)
+        if not (isinstance(e, dict) and e.get('stat') == self.key(st) and isinstance(e.get('errors'), list)
+                and (e['errors'] or isinstance(e.get('doc'), dict))):
+            return None
+        self.new[rel] = e
+        return e
+
+    def keep(self, rel, st, doc, errors):
+        if not stat.S_ISREG(st.st_mode) or max(st.st_mtime_ns, st.st_ctime_ns) >= self.start - self.RACY_NS:
+            return
+        self.new[rel] = {'stat': self.key(st), 'doc': None if errors else doc, 'errors': errors}
+        self.dirty = True
+
+    def save(self):
+        if not self.dirty and self.new.keys() == self.old.keys():
+            return
+        body = json.dumps({'schema': CACHE_SCHEMA, 'code': self.code, 'root': self.root, 'entries': self.new},
+                          separators=(',', ':'))
+        tmp = f'{self.path}.{os.getpid()}'
+        try:
+            os.makedirs(os.path.dirname(self.path), exist_ok=True)
+            with open(tmp, 'w', encoding='utf-8') as f:
+                f.write(body)
+            os.replace(tmp, self.path)
+        except OSError:
+            try:
+                os.unlink(tmp)
+            except OSError:
+                pass
+
+
 class Store:
     """Every record under one root, loaded once per process."""
     _cache = {}
 
-    def __init__(self, root=RECORDS):
+    def __init__(self, root=RECORDS, cache_path=None):
         self.root = root
         self.records, self.errors = [], []
+        if cache_path is None and os.path.abspath(root) == os.path.abspath(RECORDS) \
+                and os.environ.get('SWOFTY_RECORD_CACHE', '1') != '0':
+            cache_path = CACHE
+        cache = RecordCache(cache_path, root) if cache_path else None
         for dirpath, dirnames, filenames in os.walk(root) if os.path.isdir(root) else ():
             dirnames.sort()
             for f in sorted(filenames):
@@ -305,15 +376,31 @@ class Store:
                 rel = os.path.relpath(path, root).replace(os.sep, '/')
                 if f.endswith('.md'):
                     continue
-                try:
-                    rec = Record.load(path, rel)
-                    errs = rec.shape_errors()
-                except (RecordError, OSError) as e:
-                    errs, rec = [str(e)], None
+                rec, errs = self.parse(path, rel, cache)
                 if errs:
                     self.errors += [f'bindings/{rel}: {e}' for e in errs]
                 else:
                     self.records.append(rec)
+        if cache:
+            cache.save()
+
+    @staticmethod
+    def parse(path, rel, cache):
+        try:
+            st = os.lstat(path)
+        except OSError as e:
+            return None, [str(e)]
+        hit = cache.lookup(rel, st) if cache else None
+        if hit:
+            return (None, list(hit['errors'])) if hit['errors'] else (Record(hit['doc'], rel), [])
+        try:
+            rec = Record.load(path, rel)
+            errs = rec.shape_errors()
+        except (RecordError, OSError) as e:
+            errs, rec = [str(e)], None
+        if cache:
+            cache.keep(rel, st, rec.doc if rec else None, errs)
+        return rec, errs
 
     @classmethod
     def get(cls, root=RECORDS):
