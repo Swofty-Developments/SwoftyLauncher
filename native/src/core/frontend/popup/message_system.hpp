@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "core/frontend/game_message_log_logic.hpp"
-#include "core/hud/hud_leaves_logic.hpp"
 
 namespace popup {
 
@@ -43,12 +42,6 @@ struct Request {
 struct Toast {
     std::string text, detail, icon, by;
     unsigned seconds;
-};
-
-struct Set {
-    std::string path, text, by;
-    int type;
-    int32_t number;
 };
 
 constexpr size_t MAX_TOASTS = 8, MAX_TOAST_TEXT = 200;
@@ -89,26 +82,6 @@ struct MessageSystem {
     unsigned toast_test_count = 0;
 };
 
-struct HudData {
-    int set_enqueue(std::string path, int type, std::string text, int32_t number, const std::string &by);
-    void read_switches();
-    void tick();
-
-    void leaves_watch(uint64_t now);
-    void set_test_tick();
-    void dev_set_parse(const std::string &spec);
-    void dev_set_tick();
-
-    std::deque<Set> sets;
-    std::atomic<size_t> sets_pending{0};
-    std::atomic<uint32_t> sets_dropped{0};
-    runtime::hud_leaves::Table leaf_table;
-    std::string set_test_text;
-    uint64_t set_test_next = 0;
-    std::vector<Set> dev_sets;
-};
-
 extern MessageSystem messages;
-extern HudData hud_data;
 
 }

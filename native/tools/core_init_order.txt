@@ -59,7 +59,7 @@ units
   src/core/career/career_content.cpp  exit
   src/core/career/career_start.cpp  exit
   src/core/frontend/popup.cpp  exit
-  src/core/frontend/popup/hud_data.cpp  exit
+  src/core/hud/race_hud.cpp  exit
   src/core/diagnostics/log_csv.cpp  exit
   src/core/runtime/sdk.cpp  exit
   src/core/diagnostics/perf.cpp  exit

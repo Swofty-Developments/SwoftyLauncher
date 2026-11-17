@@ -27,20 +27,37 @@ const runtime::Sig S_OPEN{"Game_Mfd_Open call (damage auto-open)",
 using name_hash::djb2;
 
 constexpr uint32_t OSD_MFD = djb2("osd_mfd"), OSD_MAIN = djb2("osd_main");
-uint32_t test_panel = djb2("swofty_addons_panel");
-std::string test_panel_name = "swofty_addons_panel";
 
 using Open_t = uint64_t(void *system, uint32_t mfd, uint32_t group, uint32_t panel, uint8_t activate);
 
-uintptr_t a_open;
-safetyhook::InlineHook h_update;
-std::atomic<void *> system_seen;
-std::string test_mode;
-unsigned test_every = 6;
-uint64_t next_open, next_step;
-unsigned steps;
+class MfdTest {
+public:
+    void setup();
+    void tick();
+    void update(void *system);
+
+private:
+    uint32_t test_panel = djb2("swofty_addons_panel");
+    std::string test_panel_name = "swofty_addons_panel";
+    uintptr_t a_open = 0;
+    safetyhook::InlineHook h_update;
+    std::atomic<void *> system_seen{nullptr};
+    std::string test_mode;
+    unsigned test_every = 6;
+    uint64_t next_open = 0, next_step = 0;
+    unsigned steps = 0;
+    int told = 0;
+};
+
+// Not constinit: safetyhook's hooks hold a std::recursive_mutex, whose constructor is not constexpr.
+MfdTest mfd_test;
 
 void update_hook(void *system)
+{
+    mfd_test.update(system);
+}
+
+void MfdTest::update(void *system)
 {
     if (system_seen.exchange(system) != system)
         swofty::log("[mfd] MFD system %p", system);
@@ -49,7 +66,6 @@ void update_hook(void *system)
         if (now >= next_open) {
             next_open = now + 1000ull * test_every;
             uint64_t r = reinterpret_cast<Open_t *>(a_open)(system, OSD_MFD, OSD_MAIN, test_panel, 1);
-            static int told;
             if (told++ < 4)
                 swofty::log("[mfd] SWOFTY_MFD_TEST: opened %s in osd_main of osd_mfd (result %llu)",
                             test_panel_name.c_str(), (unsigned long long)r);
@@ -58,11 +74,7 @@ void update_hook(void *system)
     h_update.call<void>(system);
 }
 
-}
-
-namespace runtime {
-
-void mfd_setup()
+void MfdTest::setup()
 {
     char mode[32] = {};
     if (GetEnvironmentVariableA("SWOFTY_MFD_TEST", mode, sizeof mode) && mode[0])
@@ -78,8 +90,8 @@ void mfd_setup()
     if (test_mode.empty())
         return;
     uintptr_t base = swofty::api->module_base();
-    uintptr_t update = find(S_UPDATE, "MFD system", "mfd");
-    a_open = find(S_OPEN, "MFD open", "mfd");
+    uintptr_t update = runtime::find(S_UPDATE, "MFD system", "mfd");
+    a_open = runtime::find(S_OPEN, "MFD open", "mfd");
     if (!update || !a_open || !swofty::mem::in_image(a_open)) {
         swofty::log("[mfd] SWOFTY_MFD_TEST: the MFD system did not resolve (update %s, open %s); test off",
                     update ? "found" : "missing", a_open ? "found" : "missing");
@@ -97,7 +109,7 @@ void mfd_setup()
                 test_mode == "next" ? " and steps its first row" : "");
 }
 
-void mfd_tick()
+void MfdTest::tick()
 {
     if (test_mode != "next" || !system_seen.load(std::memory_order_relaxed) || !settings_mfd_rows())
         return;
@@ -109,6 +121,20 @@ void mfd_tick()
         return;
     bool ok = settings_mfd_step(0, 1);
     swofty::log("[mfd] SWOFTY_MFD_TEST=next: row 0 %s", ok ? "stepped" : "did not step");
+}
+
+}
+
+namespace runtime {
+
+void mfd_setup()
+{
+    mfd_test.setup();
+}
+
+void mfd_tick()
+{
+    mfd_test.tick();
 }
 
 }
