@@ -3,17 +3,15 @@
 
 use std::path::{Path, PathBuf};
 
-use super::addons::addon_lines;
-use super::collect::{files_under, newest_sessions};
+use super::collect::{Sources, files_under};
 use super::crashes::{CrashFound, crash_excerpt};
 use super::files::{file_name, modified, read_ends, read_head};
 use super::system::{hardware, system_lines};
 use super::{
-    Bundle, LAUNCH_LOGS, LOADER_HEAD, OVERLAY_READ, PERF_LINES, PERF_READ, Report, SESSIONS, has_session,
-    perf, readable, size,
+    Bundle, LAUNCH_LOGS, LOADER_HEAD, OVERLAY_READ, PERF_LINES, PERF_READ, Report, has_session, perf,
+    readable, size,
 };
 use crate::session::LOADER_LOG;
-use crate::store::Store;
 
 /// Whether a session's loader.log shows the loader running. One with only the
 /// offline play stub's lines means version.dll never loaded in the game. A
@@ -37,30 +35,34 @@ pub(super) fn loader_line(label: &str, log: &Path) -> Vec<String> {
 }
 
 /// Which addons draw over the game, and what each session's `[overlay]` lines say.
-pub(super) fn overlay_lines(store: &Store, logs: &[(String, PathBuf)]) -> Vec<String> {
-    let mut out = Vec::new();
-    let painters = crate::diagnostics::overlay_guard::painters(store, &store.active_profile());
-    let names: Vec<String> = painters
-        .iter()
-        .map(|(id, name)| format!("{name} ({id})"))
-        .collect();
-    out.push(format!(
-        "  Addons that draw over the game: {}",
-        if names.is_empty() {
-            "none on".to_owned()
-        } else {
-            names.join(", ")
+impl Sources<'_> {
+    pub(super) fn overlay_lines(&self, logs: &[(String, PathBuf)]) -> Vec<String> {
+        let store = self.store;
+        let mut out = Vec::new();
+        let painters = crate::diagnostics::overlay_guard::painters(store, &store.active_profile());
+        let names: Vec<String> = painters
+            .iter()
+            .map(|(id, name)| format!("{name} ({id})"))
+            .collect();
+        out.push(format!(
+            "  Addons that draw over the game: {}",
+            if names.is_empty() {
+                "none on".to_owned()
+            } else {
+                names.join(", ")
+            }
+        ));
+        for (label, log) in logs {
+            let Ok(text) = read_ends(log, OVERLAY_READ, OVERLAY_READ) else {
+                continue;
+            };
+            let state =
+                crate::diagnostics::overlay_guard::SessionOverlay::scan(&String::from_utf8_lossy(&text))
+                    .map_or_else(|| "no [overlay] lines".to_owned(), |o| o.describe());
+            out.push(format!("  {label:40} {state}"));
         }
-    ));
-    for (label, log) in logs {
-        let Ok(text) = read_ends(log, OVERLAY_READ, OVERLAY_READ) else {
-            continue;
-        };
-        let state = crate::diagnostics::overlay_guard::SessionOverlay::scan(&String::from_utf8_lossy(&text))
-            .map_or_else(|| "no [overlay] lines".to_owned(), |o| o.describe());
-        out.push(format!("  {label:40} {state}"));
+        out
     }
-    out
 }
 
 pub(super) const SAVES_LINES: usize = 60;
@@ -118,43 +120,46 @@ pub(super) fn session_label(file: &Path) -> String {
 /// The stock check's last verdict and the EA AntiCheat launcher files in the
 /// game root, so a blocked player's bundle shows which file failed and what EA
 /// rewrote.
-pub(super) fn game_files_section(store: &Store, game: Option<&Path>) -> String {
-    let mut s = String::new();
-    match crate::game_folder::stock::Report::read(&store.root) {
-        Some(r) if !r.detail.is_empty() => {
-            s.push_str(&format!("  last launch stopped: {}\n", r.title()));
-            for f in &r.detail {
-                s.push_str(&format!(
-                    "  {} (measured {}, size {}, Steam {}, modified {})\n",
-                    f.rel,
-                    f.measured,
-                    f.size.map_or("missing".to_owned(), |n| n.to_string()),
-                    f.steam,
-                    f.modified.map_or("unknown".to_owned(), |t| format!("{t:.0}"))
-                ));
+impl Sources<'_> {
+    pub(super) fn game_files_section(&self) -> String {
+        let (store, game) = (self.store, self.game);
+        let mut s = String::new();
+        match crate::game_folder::stock::Report::read(&store.root) {
+            Some(r) if !r.detail.is_empty() => {
+                s.push_str(&format!("  last launch stopped: {}\n", r.title()));
+                for f in &r.detail {
+                    s.push_str(&format!(
+                        "  {} (measured {}, size {}, Steam {}, modified {})\n",
+                        f.rel,
+                        f.measured,
+                        f.size.map_or("missing".to_owned(), |n| n.to_string()),
+                        f.steam,
+                        f.modified.map_or("unknown".to_owned(), |t| format!("{t:.0}"))
+                    ));
+                }
             }
+            Some(r) => s.push_str(&format!(
+                "  last launch stopped: {} ({})\n",
+                r.title(),
+                r.files.join(", ")
+            )),
+            None => s.push_str("  No stock-check failure on record\n"),
         }
-        Some(r) => s.push_str(&format!(
-            "  last launch stopped: {} ({})\n",
-            r.title(),
-            r.files.join(", ")
-        )),
-        None => s.push_str("  No stock-check failure on record\n"),
+        let eac = game.map(eac_files).unwrap_or_default();
+        if eac.is_empty() {
+            s.push_str("  No EAAntiCheat.* files found in the game folder\n");
+        }
+        for line in eac {
+            s.push_str(&format!("  {line}\n"));
+        }
+        if let Some(line) = game
+            .and_then(crate::platform::run_as_admin::virtual_store)
+            .and_then(|v| virtualised(&v))
+        {
+            s.push_str(&format!("  {line}\n"));
+        }
+        s
     }
-    let eac = game.map(eac_files).unwrap_or_default();
-    if eac.is_empty() {
-        s.push_str("  No EAAntiCheat.* files found in the game folder\n");
-    }
-    for line in eac {
-        s.push_str(&format!("  {line}\n"));
-    }
-    if let Some(line) = game
-        .and_then(crate::platform::run_as_admin::virtual_store)
-        .and_then(|v| virtualised(&v))
-    {
-        s.push_str(&format!("  {line}\n"));
-    }
-    s
 }
 
 /// The game files Windows virtualised for this user. A process it redirects
@@ -217,13 +222,14 @@ impl Bundle {
 
     pub(super) fn summary(
         &self,
-        store: &Store,
+        from: &Sources,
         report: &Report,
         stamp: &str,
         perf: Option<(String, PathBuf)>,
         crash: CrashFound,
         loader: &[String],
     ) -> String {
+        let store = from.store;
         let mut s = String::new();
         let mut line = |k: &str, v: &str| s.push_str(&format!("{k:16} {v}\n"));
         line("Discord username", &self.name);
@@ -306,10 +312,10 @@ impl Bundle {
         {
             logs.push(("game/loader.log".to_owned(), game.join(LOADER_LOG)));
         }
-        for dir in newest_sessions(store, SESSIONS) {
-            logs.push((format!("sessions/{}", file_name(&dir)), dir.join("loader.log")));
+        for dir in &from.sessions {
+            logs.push((format!("sessions/{}", file_name(dir)), dir.join("loader.log")));
         }
-        for l in overlay_lines(store, &logs) {
+        for l in from.overlay_lines(&logs) {
             s.push_str(&l);
             s.push('\n');
         }
@@ -350,7 +356,7 @@ impl Bundle {
             s.push('\n');
         }
         s.push_str("\nGame files against Steam\n");
-        s.push_str(&game_files_section(store, report.game.dir.as_deref()));
+        s.push_str(&from.game_files_section());
         if let Some(line) = self.stub_blocked_line(report.game.dir.as_deref()) {
             s.push_str(&format!("  {line}\n"));
         }
@@ -374,7 +380,7 @@ impl Bundle {
             ),
         }
         s.push_str("\nAddons\n");
-        s.push_str(&addon_lines(store));
+        s.push_str(&from.addon_lines());
         s.push_str("\nFiles\n");
         for e in &self.entries {
             s.push_str(&format!("  {:60} {:>9}", e.path, size(e.data.len() as u64)));

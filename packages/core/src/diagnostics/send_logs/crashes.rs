@@ -3,6 +3,7 @@
 
 use std::path::{Path, PathBuf};
 
+use super::collect::Sources;
 use super::files::{file_name, modified, read_head, read_tail};
 use super::{LOADER_DIR, PERF_READ, size};
 use crate::session::LOADER_FALLBACK;
@@ -25,17 +26,25 @@ pub(super) const LOGGED_READ: u64 = 4 << 20;
 
 /// The crash report path the newest session's loader.log (or the fallback log in the data folder) says the
 /// core began writing, for when no such file turned up.
-pub(super) fn logged_report(store: &Store, sessions: &[PathBuf]) -> Option<String> {
-    let mut logs: Vec<PathBuf> = sessions
-        .first()
-        .map(|d| d.join("loader.log"))
-        .into_iter()
-        .collect();
-    logs.push(store.root.join(LOADER_FALLBACK));
-    logs.iter().find_map(|log| {
-        let (tail, _) = read_tail(log, LOGGED_READ).ok()?;
-        crate::diagnostics::crash_report::logged_path(&String::from_utf8_lossy(&tail))
-    })
+impl Sources<'_> {
+    pub(super) fn logged_report(&self) -> Option<String> {
+        let mut logs: Vec<PathBuf> = self
+            .sessions
+            .first()
+            .map(|d| d.join("loader.log"))
+            .into_iter()
+            .collect();
+        logs.push(self.store.root.join(LOADER_FALLBACK));
+        logs.iter().find_map(|log| {
+            let (tail, _) = read_tail(log, LOGGED_READ).ok()?;
+            crate::diagnostics::crash_report::logged_path(&String::from_utf8_lossy(&tail))
+        })
+    }
+
+    /// The `n` newest crash reports for this bundle, as [`recent_crashes`] finds them.
+    pub(super) fn crashes(&self, n: usize) -> Vec<Crash> {
+        recent_crashes(self.store, self.game, &self.sessions, n)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]

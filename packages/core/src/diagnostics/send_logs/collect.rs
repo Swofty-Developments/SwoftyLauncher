@@ -5,8 +5,7 @@ use std::path::{Path, PathBuf};
 
 use serde_json::Value;
 
-use super::addons::addons_summary;
-use super::crashes::{CrashFound, dumps_listing, is_crash_file, logged_report, recent_crashes};
+use super::crashes::{CrashFound, dumps_listing, is_crash_file};
 use super::files::{Cut, file_name, kept_head, read_cut, same_contents};
 use super::redact::{redact_env, redact_json};
 use super::summary::{loader_line, newest_perf};
@@ -18,7 +17,89 @@ use super::{
 use crate::session::{LOADER_FALLBACK, LOADER_LOG, PERF_LOG};
 use crate::store::Store;
 
-pub(super) struct Collector {
+/// What a bundle is read from: the data folder, the game folder the report names, and the newest sessions
+/// the data folder kept.
+pub(super) struct Sources<'a> {
+    pub(super) store: &'a Store,
+    pub(super) game: Option<&'a Path>,
+    pub(super) sessions: Vec<PathBuf>,
+}
+
+impl<'a> Sources<'a> {
+    pub(super) fn new(store: &'a Store, game: Option<&'a Path>) -> Self {
+        Self {
+            store,
+            game,
+            sessions: newest_sessions(store, SESSIONS),
+        }
+    }
+
+    /// The `.log` files in `state/`, the launch logs first.
+    fn state_logs(&self) -> Vec<PathBuf> {
+        let mut out: Vec<PathBuf> = std::fs::read_dir(self.store.root.join("state"))
+            .into_iter()
+            .flatten()
+            .flatten()
+            .map(|e| e.path())
+            .filter(|p| {
+                p.extension().is_some_and(|x| x == "log")
+                    && std::fs::symlink_metadata(p).is_ok_and(|m| m.is_file())
+            })
+            .collect();
+        out.sort_by_key(|p| {
+            let name = file_name(p);
+            (
+                !matches!(name.as_str(), "launcher-run.log" | "wrapper-run.log"),
+                name,
+            )
+        });
+        out
+    }
+
+    fn helper_logs(&self) -> Vec<(String, PathBuf)> {
+        let mut out: Vec<(String, PathBuf)> = std::fs::read_dir(self.store.root.join("cache/addons"))
+            .into_iter()
+            .flatten()
+            .flatten()
+            .map(|e| {
+                (
+                    e.file_name().to_string_lossy().into_owned(),
+                    e.path().join(crate::addons::helper::LOG_FILE),
+                )
+            })
+            .filter(|(_, log)| log.is_file())
+            .collect();
+        out.sort();
+        out
+    }
+
+    /// The newest `.log` files addons keep in `addon-data/<id>/logs/`, such as
+    /// the Simplified Importer's converter logs.
+    fn addon_logs(&self) -> Vec<(String, PathBuf)> {
+        let mut out = Vec::new();
+        for e in std::fs::read_dir(self.store.root.join("addon-data"))
+            .into_iter()
+            .flatten()
+            .flatten()
+        {
+            let id = e.file_name().to_string_lossy().into_owned();
+            let mut logs: Vec<(std::time::SystemTime, PathBuf)> = std::fs::read_dir(e.path().join("logs"))
+                .into_iter()
+                .flatten()
+                .flatten()
+                .map(|f| f.path())
+                .filter(|p| p.extension().is_some_and(|x| x == "log") && p.is_file())
+                .filter_map(|p| Some((std::fs::metadata(&p).ok()?.modified().ok()?, p)))
+                .collect();
+            logs.sort_by_key(|l| std::cmp::Reverse(l.0));
+            out.extend(logs.into_iter().take(ADDON_LOGS).map(|(_, p)| (id.clone(), p)));
+        }
+        out.sort();
+        out
+    }
+}
+
+struct Collector {
     limits: Limits,
     used: u64,
     entries: Vec<Entry>,
@@ -149,27 +230,6 @@ pub(super) fn newest_stalls(dir: &Path, n: usize) -> Vec<PathBuf> {
     found
 }
 
-pub(super) fn state_logs(store: &Store) -> Vec<PathBuf> {
-    let mut out: Vec<PathBuf> = std::fs::read_dir(store.root.join("state"))
-        .into_iter()
-        .flatten()
-        .flatten()
-        .map(|e| e.path())
-        .filter(|p| {
-            p.extension().is_some_and(|x| x == "log")
-                && std::fs::symlink_metadata(p).is_ok_and(|m| m.is_file())
-        })
-        .collect();
-    out.sort_by_key(|p| {
-        let name = file_name(p);
-        (
-            !matches!(name.as_str(), "launcher-run.log" | "wrapper-run.log"),
-            name,
-        )
-    });
-    out
-}
-
 pub fn newest_sessions(store: &Store, n: usize) -> Vec<PathBuf> {
     let mut dirs: Vec<PathBuf> = std::fs::read_dir(store.sessions_dir())
         .into_iter()
@@ -215,48 +275,6 @@ pub(super) fn files_under(dir: &Path, depth: usize) -> Vec<(String, PathBuf)> {
 /// Converter and other addon logs sent per addon, newest first.
 pub(super) const ADDON_LOGS: usize = 5;
 
-pub(super) fn helper_logs(store: &Store) -> Vec<(String, PathBuf)> {
-    let mut out: Vec<(String, PathBuf)> = std::fs::read_dir(store.root.join("cache/addons"))
-        .into_iter()
-        .flatten()
-        .flatten()
-        .map(|e| {
-            (
-                e.file_name().to_string_lossy().into_owned(),
-                e.path().join(crate::addons::helper::LOG_FILE),
-            )
-        })
-        .filter(|(_, log)| log.is_file())
-        .collect();
-    out.sort();
-    out
-}
-
-/// The newest `.log` files addons keep in `addon-data/<id>/logs/`, such as
-/// the Simplified Importer's converter logs.
-pub(super) fn addon_logs(store: &Store) -> Vec<(String, PathBuf)> {
-    let mut out = Vec::new();
-    for e in std::fs::read_dir(store.root.join("addon-data"))
-        .into_iter()
-        .flatten()
-        .flatten()
-    {
-        let id = e.file_name().to_string_lossy().into_owned();
-        let mut logs: Vec<(std::time::SystemTime, PathBuf)> = std::fs::read_dir(e.path().join("logs"))
-            .into_iter()
-            .flatten()
-            .flatten()
-            .map(|f| f.path())
-            .filter(|p| p.extension().is_some_and(|x| x == "log") && p.is_file())
-            .filter_map(|p| Some((std::fs::metadata(&p).ok()?.modified().ok()?, p)))
-            .collect();
-        logs.sort_by_key(|l| std::cmp::Reverse(l.0));
-        out.extend(logs.into_iter().take(ADDON_LOGS).map(|(_, p)| (id.clone(), p)));
-    }
-    out.sort();
-    out
-}
-
 impl Bundle {
     pub fn collect(store: &Store, report: &Report) -> Self {
         Self::collect_with(store, report, Limits::default(), &utc_stamp(now_secs()))
@@ -290,7 +308,8 @@ impl Bundle {
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => c.skipped.push("config.json: none".into()),
             Err(e) => c.skipped.push(format!("config.json: {e}")),
         }
-        let addons = serde_json::to_string_pretty(&addons_summary(store)).unwrap_or_default();
+        let from = Sources::new(store, report.game.dir.as_deref());
+        let addons = serde_json::to_string_pretty(&from.addons_json()).unwrap_or_default();
         c.push("addons.json".into(), addons.into_bytes(), None);
         let conflicts = crate::profile::conflicts::path(store, &store.active_profile());
         if conflicts.is_file() {
@@ -305,7 +324,7 @@ impl Bundle {
                 c.file(format!("db-packages/{id}.json"), &source, None);
             }
         }
-        let sessions = newest_sessions(store, SESSIONS);
+        let sessions = &from.sessions;
         let mut loader = Vec::new();
         let mut live_perf = None;
         if let Some(game) = &report.game.dir {
@@ -379,14 +398,14 @@ impl Bundle {
         {
             loader.extend(loader_line(LOADER_FALLBACK, &fallback));
         }
-        for (id, log) in helper_logs(store) {
+        for (id, log) in from.helper_logs() {
             c.file(
                 format!("addons/{id}/{}", crate::addons::helper::LOG_FILE),
                 &log,
                 None,
             );
         }
-        for (id, log) in addon_logs(store) {
+        for (id, log) in from.addon_logs() {
             c.file(format!("addons/{id}/logs/{}", file_name(&log)), &log, None);
         }
         if let Some(snapshot) = report
@@ -397,7 +416,7 @@ impl Bundle {
         {
             c.file("game/career-editor/snapshot.json".into(), &snapshot, None);
         }
-        for log in state_logs(store) {
+        for log in from.state_logs() {
             let name = file_name(&log);
             let redact = name
                 .starts_with("multiplayer")
@@ -424,7 +443,7 @@ impl Bundle {
         if blocked.is_file() {
             c.file("state/blocked.json".into(), &blocked, None);
         }
-        for dir in &sessions {
+        for dir in sessions {
             let session = file_name(dir);
             loader.extend(loader_line(
                 &format!("sessions/{session}"),
@@ -440,7 +459,7 @@ impl Bundle {
                 c.file(format!("sessions/{session}/{rel}"), &file, redact);
             }
         }
-        let crashes = recent_crashes(store, report.game.dir.as_deref(), &sessions, CRASHES_SENT);
+        let crashes = from.crashes(CRASHES_SENT);
         let crash = crashes.first().cloned();
         let mut crash_report = None;
         for (i, c0) in crashes.iter().enumerate() {
@@ -459,7 +478,7 @@ impl Bundle {
         }
         let found = match (crash_report.as_deref(), crash.is_none()) {
             (Some(text), _) => CrashFound::Report(text),
-            (None, true) => logged_report(store, &sessions).map_or_else(
+            (None, true) => from.logged_report().map_or_else(
                 || {
                     let lines = sessions
                         .first()
@@ -486,8 +505,8 @@ impl Bundle {
             entries: c.entries,
             skipped: c.skipped,
         };
-        let perf = newest_perf(live_perf, &sessions);
-        let summary = bundle.summary(store, report, stamp, perf, found, &loader);
+        let perf = newest_perf(live_perf, sessions);
+        let summary = bundle.summary(&from, report, stamp, perf, found, &loader);
         bundle.entries.insert(
             0,
             Entry {
