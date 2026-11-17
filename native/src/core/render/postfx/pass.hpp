@@ -56,6 +56,10 @@ struct PassTexture {
     UINT w = 0, h = 0;
     std::string pixels;
     bool clear = false, uploaded = false;
+
+    UINT levels() const { return file.empty() ? mip_levels(w, h, mips) : 1; }
+    // Persistent textures and images are shared by every slot; the rest are each slot's own.
+    bool shared() const { return persistent || !file.empty(); }
 };
 
 struct AddonToggle {
