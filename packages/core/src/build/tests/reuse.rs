@@ -648,3 +648,114 @@ fn a_reused_build_keeps_its_screens_assets_and_plugins() {
     assert!(!saved.usable(&store, &game));
     std::fs::remove_dir_all(&root).ok();
 }
+
+/// Temporary: times the parts of a build that run Windows tools or touch the disk durably, to find the
+/// fixed ~10 s each build pays on the hosted Windows runner. It fails on Windows so the times reach the
+/// JUnit file; remove it once the cause is fixed.
+#[test]
+fn temporary_windows_build_timing() {
+    use crate::platform::LaunchPlatform;
+    use std::fmt::Write as _;
+    let mut report = String::new();
+    let time = |report: &mut String, label: &str, f: &mut dyn FnMut() -> String| {
+        let start = std::time::Instant::now();
+        let what = f();
+        let _ = writeln!(
+            report,
+            "{:>9.1} ms  {label}  {what}",
+            start.elapsed().as_secs_f64() * 1e3
+        );
+    };
+    let (root, store, game) = reuse_fixture("windows-timing");
+    for key in crate::platform::ea_app::INSTALL_KEYS
+        .iter()
+        .chain(crate::platform::ea_app::UNINSTALL_KEYS)
+    {
+        time(&mut report, &format!("reg query {key}"), &mut || {
+            format!(
+                "{} bytes",
+                crate::platform::run_as_admin::windows_tool("reg", &["query", key]).map_or(0, |o| o.len())
+            )
+        });
+    }
+    for key in crate::platform::ea_app::UNINSTALL_KEYS {
+        time(&mut report, &format!("reg query {key} /s"), &mut || {
+            format!(
+                "{} bytes",
+                crate::platform::run_as_admin::windows_tool("reg", &["query", key, "/s"])
+                    .map_or(0, |o| o.len())
+            )
+        });
+    }
+    time(&mut report, "steam::find_game", &mut || {
+        format!("{:?}", crate::platform::steam::find_game().map(|g| g.dir))
+    });
+    time(&mut report, "steam::find_game again", &mut || {
+        format!("{:?}", crate::platform::steam::find_game().map(|g| g.dir))
+    });
+    time(&mut report, "EaApp.installs", &mut || {
+        format!("{:?}", crate::platform::EaApp.installs())
+    });
+    time(&mut report, "copies::discover", &mut || {
+        format!("{}", crate::game_folder::copies::discover(&store.config()).len())
+    });
+    time(&mut report, "Location::source_of_profile", &mut || {
+        format!(
+            "{:?}",
+            crate::saves::vault::Location::source_of_profile(&store.root, "default")
+        )
+    });
+    time(&mut report, "careers::in_save_of", &mut || {
+        format!(
+            "{}",
+            crate::stdlib::careers::in_save_of(&[], &store.root, "default").len()
+        )
+    });
+    time(&mut report, "steam::find_save_dir", &mut || {
+        format!("{:?}", crate::platform::steam::find_save_dir())
+    });
+    time(&mut report, "process::game_status", &mut || {
+        format!("{:?}", crate::platform::process::game_status(None).running)
+    });
+    let probe = root.join("probe.json");
+    time(&mut report, "write_json x20", &mut || {
+        for n in 0..20 {
+            crate::write_json(&probe, &n).unwrap();
+        }
+        String::new()
+    });
+    time(&mut report, "sync_file x20", &mut || {
+        for _ in 0..20 {
+            crate::sync_file(&probe).unwrap();
+        }
+        String::new()
+    });
+    time(&mut report, "std::process::Command cmd /c exit", &mut || {
+        format!(
+            "{:?}",
+            std::process::Command::new(if cfg!(windows) { "cmd" } else { "true" })
+                .args(if cfg!(windows) {
+                    &["/c", "exit"][..]
+                } else {
+                    &[][..]
+                })
+                .output()
+                .map(|o| o.status.success())
+        )
+    });
+    crate::diagnostics::phases::take();
+    for n in 1..=2 {
+        time(&mut report, &format!("build #{n}"), &mut || {
+            let built = build(&store, "default", &game).unwrap();
+            format!("reused {}", reused(&built))
+        });
+        for line in crate::diagnostics::phases::take() {
+            let _ = writeln!(report, "             {line}");
+        }
+    }
+    std::fs::remove_dir_all(&root).ok();
+    println!("{report}");
+    if cfg!(windows) {
+        panic!("timings (this test fails on Windows on purpose):\n{report}");
+    }
+}
