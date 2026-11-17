@@ -4,8 +4,8 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
 use super::tokens::{Tone, radius, text};
-use crate::scale::px;
-use crate::theme::palette;
+use crate::ui::scale::px;
+use crate::ui::theme::palette;
 
 /// A small label: outlined and muted, or tinted by a [`Tone`].
 #[derive(IntoElement)]

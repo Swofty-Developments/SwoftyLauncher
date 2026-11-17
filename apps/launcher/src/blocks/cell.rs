@@ -1,5 +1,5 @@
-use crate::notices::{Notification, Notify};
-use crate::scale::{Hit, px};
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::component::input::{Input, InputEvent, InputState};
 use gpui_kit::component::switch::Switch;
 use gpui_kit::component::{Disableable, h_flex};
@@ -12,9 +12,9 @@ use swofty_i18n::trf;
 use super::state::*;
 use super::widgets::*;
 use super::*;
-use crate::sections::tone;
+use crate::features::sections::tone;
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::ui::theme::Palette;
 
 #[derive(Clone, Copy)]
 pub(super) struct CellCtx<'a> {

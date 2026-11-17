@@ -1,4 +1,4 @@
-use crate::scale::px;
+use crate::ui::scale::px;
 use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
@@ -6,9 +6,9 @@ use swofty_core::view::{Fit, Image as ImageBlock, Meter, Tile};
 
 use super::widgets::*;
 use super::*;
-use crate::sections::{icon, tone};
+use crate::features::sections::{icon, tone};
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::ui::theme::Palette;
 
 impl Shell {
     pub(super) fn tiles(&self, at: At, tiles: &[Tile], p: Palette) -> AnyElement {
