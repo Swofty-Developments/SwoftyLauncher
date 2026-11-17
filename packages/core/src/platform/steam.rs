@@ -133,23 +133,16 @@ pub fn registered_roots(reg: &dyn crate::platform::steam_client::Registry) -> Ve
 
 #[cfg(windows)]
 fn registered_roots_cached() -> Vec<PathBuf> {
-    use std::sync::Mutex;
-    use std::time::{Duration, Instant};
-    static CACHE: Mutex<Option<(Instant, Vec<PathBuf>)>> = Mutex::new(None);
-    let mut cache = CACHE.lock().unwrap_or_else(|e| e.into_inner());
-    if let Some((at, roots)) = cache.as_ref()
-        && at.elapsed() < Duration::from_secs(30)
-    {
-        return roots.clone();
-    }
-    let mut roots = registered_roots(&crate::platform::steam_client::RegExe);
-    roots.extend(
-        crate::platform::process::named_paths("steam.exe")
-            .iter()
-            .filter_map(|p| p.parent().map(Path::to_path_buf)),
-    );
-    *cache = Some((Instant::now(), roots.clone()));
-    roots
+    static KEPT: crate::platform::Kept<(), Vec<PathBuf>> = crate::platform::Kept::new();
+    KEPT.get((), crate::platform::KEEP_RECORDS, || {
+        let mut roots = registered_roots(&crate::platform::steam_client::RegExe);
+        roots.extend(
+            crate::platform::process::named_paths("steam.exe")
+                .iter()
+                .filter_map(|p| p.parent().map(Path::to_path_buf)),
+        );
+        roots
+    })
 }
 
 #[cfg(not(windows))]
