@@ -5,7 +5,7 @@
   "dialogs/setup.rs": 6,
   "features/browser/jobs.rs": 1,
   "features/browser/sync.rs": 2,
-  "features/multiplayer.rs": 4,
+  "features/multiplayer/actions.rs": 4,
   "features/shaders/preview/worker.rs": 2,
   "services/game.rs": 3,
   "services/play_checks.rs": 1,
