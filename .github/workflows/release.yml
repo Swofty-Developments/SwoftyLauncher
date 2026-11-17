@@ -3,6 +3,8 @@ name: Release
 on:
   push:
     tags: ['v*']
+  # Run by hand from the tag itself (gh workflow run release.yml --ref <tag> -f tag=<tag>): the jobs use the
+  # composite actions in the tag's checkout, which a tag older than this workflow does not have.
   workflow_dispatch:
     inputs:
       tag:
