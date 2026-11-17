@@ -168,9 +168,27 @@ def tokens(ev):
     return out
 
 
+_subsystems = (None, {})
+
+
 def subsystems():
-    rows, _ = read_table('subsystems')
-    return {r['id']: r for r in rows}
+    """subsystems.tsv by id, parsed again only when the file's bytes differ from the last parse."""
+    global _subsystems
+
+    def raw():
+        try:
+            with open(path('subsystems'), 'rb') as f:
+                return f.read()
+        except OSError:
+            return None
+    data = raw()
+    if data is None or data != _subsystems[0]:
+        rows, _ = read_table('subsystems')
+        parsed = {r['id']: r for r in rows}
+        if data is not None and raw() == data:
+            _subsystems = (data, parsed)
+        return {k: dict(v) for k, v in parsed.items()}
+    return {k: dict(v) for k, v in _subsystems[1].items()}
 
 
 def check_level_evidence(level, ev, kind='function'):
