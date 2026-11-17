@@ -7,6 +7,7 @@ use gpui_kit::*;
 use swofty_core::dbedit::{LinkSpec, Module};
 use swofty_i18n::{tr, trf};
 
+use crate::features::db::Db;
 use crate::features::db::{LinkState, Nav, icon_named};
 use crate::shell::Shell;
 use crate::ui::label;
@@ -70,7 +71,7 @@ impl Shell {
                 (a, b) => a == b,
             };
             nav_row(id, icon, title, count, active, p)
-                .on_click(cx.listener(move |this, _, _, cx| this.db_go(to.clone(), cx)))
+                .on_click(cx.listener(move |this, _, _, cx| Db::go(this, to.clone(), cx)))
                 .into_any_element()
         };
         let mut sections: Vec<AnyElement> = groups

@@ -364,7 +364,9 @@ impl Host<SupportPage> for Shell {
 
     fn changed(&mut self, change: SupportChange, cx: &mut Context<Self>) {
         match change {
-            SupportChange::Faces(faces) => self.load_faces(faces, cx),
+            SupportChange::Faces(faces) => {
+                crate::features::multiplayer::Multiplayer::load_faces(self, faces, cx)
+            }
         }
     }
 }

@@ -12,8 +12,9 @@ use swofty_i18n::{tr, trf, trn};
 
 use super::authors::View;
 use super::*;
-use crate::services::library::Source;
+use crate::services::library::{Library, Source};
 use crate::shell::Shell;
+use crate::shell::host::Host;
 
 pub(super) struct Fetched {
     pub(super) addons: Option<Vec<Addon>>,
@@ -71,19 +72,20 @@ pub(super) fn fetch(root: &Path, shown: Vec<Addon>, known: BTreeSet<String>) -> 
     }
 }
 
-impl Shell {
-    pub(crate) fn watch_catalog(cx: &mut Context<Self>) -> Task<()> {
+impl Browser {
+    pub(crate) fn watch<H: Host<Self>>(cx: &mut Context<H>) -> Task<()> {
         cx.spawn(async move |this, cx| {
             loop {
                 cx.background_executor().timer(TICK).await;
-                let ticked = this.update(cx, |s, cx| {
-                    if s.data_move_locked() {
+                let ticked = this.update(cx, |host, cx| {
+                    let (b, needs) = host.split();
+                    if needs.locked {
                         return;
                     }
-                    if s.browser.stale() {
-                        s.fetch_catalog(cx);
+                    if b.stale() {
+                        Self::fetch_catalog(host, cx);
                     } else {
-                        s.sync_stars(cx);
+                        Self::sync_stars(host, cx);
                     }
                     cx.notify();
                 });
@@ -94,7 +96,15 @@ impl Shell {
         })
     }
 
-    pub(super) fn record(&mut self, op: Op, ok: bool, title: String, detail: String, took: Duration) {
+    pub(super) fn record(
+        &mut self,
+        root: &Path,
+        op: Op,
+        ok: bool,
+        title: String,
+        detail: String,
+        took: Duration,
+    ) {
         let mut line = format!(
             "{} {title} ({})",
             if ok { "ok" } else { "failed" },
@@ -103,9 +113,8 @@ impl Shell {
         if !detail.is_empty() {
             line.push_str(&format!(": {detail}"));
         }
-        catalog::log(&self.store.root, &line);
-        let b = &mut self.browser;
-        b.activity.push_front(Activity {
+        catalog::log(root, &line);
+        self.feed.note(Activity {
             at: SystemTime::now(),
             op,
             ok,
@@ -113,77 +122,27 @@ impl Shell {
             detail,
             took,
         });
-        b.activity.truncate(ACTIVITY_KEPT);
     }
 
-    pub(crate) fn fetch_catalog(&mut self, cx: &mut Context<Self>) {
-        if self.browser.fetching {
+    pub(crate) fn fetch_catalog<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (b, needs) = host.split();
+        if !b.feed.begin_fetch() {
             return;
         }
-        self.browser.fetching = true;
-        let root = self.store.root.clone();
-        let shown = self.browser.addons.clone();
-        let known = self
-            .browser
-            .icons
-            .keys()
-            .chain(self.browser.avatars.keys())
-            .cloned()
-            .collect();
+        let root = needs.root.to_path_buf();
+        let shown = b.addons.clone();
+        let known = b.icons.keys().chain(b.avatars.keys()).cloned().collect();
         let started = Instant::now();
         cx.spawn(async move |this, cx| {
             let fetched = cx
                 .background_executor()
                 .spawn(async move { fetch(&root, shown, known) })
                 .await;
-            this.update(cx, |s, cx| {
-                let took = started.elapsed();
-                let from = host(&catalog::base_url()).to_owned();
-                match (&fetched.error, &fetched.addons) {
-                    (Some(e), _) => s.record(
-                        Op::Catalog,
-                        false,
-                        trf!("Couldn't fetch the catalog from {host}", host = from),
-                        e.to_string(),
-                        took,
-                    ),
-                    (None, Some(addons)) => s.record(
-                        Op::Catalog,
-                        true,
-                        tr("Fetched the catalog").to_owned(),
-                        trf!(
-                            "{addons} from {host}",
-                            addons = trn(addons.len(), "{count} addon", "{count} addons"),
-                            host = from
-                        ),
-                        took,
-                    ),
-                    (None, None) => {}
-                }
-                match &fetched.creators {
-                    Ok(creators) => catalog::log(
-                        &s.store.root,
-                        &format!("ok fetched {} publishers from {from}", creators.len()),
-                    ),
-                    Err(e) => catalog::log(&s.store.root, &format!("failed to fetch the publishers: {e}")),
-                }
-                let b = &mut s.browser;
-                if let Ok(creators) = fetched.creators {
-                    b.creators = creators;
-                }
-                b.avatars.extend(fetched.avatars);
-                b.fetching = false;
-                b.checked = Some(Instant::now());
-                b.trouble = fetched.error;
-                if let Some(addons) = fetched.addons {
-                    b.addons = addons;
-                    b.live = true;
-                    b.saved = true;
-                    b.fetched_at = Some(SystemTime::now());
-                }
-                b.icons.extend(fetched.icons);
-                s.sync_catalog_updates();
-                s.sync_stars(cx);
+            this.update(cx, |host, cx| {
+                let (b, needs) = host.split();
+                b.take_fetched(needs.root, fetched, started.elapsed());
+                b.sync_updates(needs.library);
+                Self::sync_stars(host, cx);
                 cx.notify();
             })
             .ok();
@@ -192,13 +151,54 @@ impl Shell {
         cx.notify();
     }
 
-    pub(crate) fn sync_stars(&mut self, cx: &mut Context<Self>) {
-        let b = &mut self.browser;
-        if b.syncing {
-            b.sync_again = true;
+    fn take_fetched(&mut self, root: &Path, fetched: Fetched, took: Duration) {
+        let from = host(&catalog::base_url()).to_owned();
+        match (&fetched.error, &fetched.addons) {
+            (Some(e), _) => self.record(
+                root,
+                Op::Catalog,
+                false,
+                trf!("Couldn't fetch the catalog from {host}", host = from),
+                e.to_string(),
+                took,
+            ),
+            (None, Some(addons)) => self.record(
+                root,
+                Op::Catalog,
+                true,
+                tr("Fetched the catalog").to_owned(),
+                trf!(
+                    "{addons} from {host}",
+                    addons = trn(addons.len(), "{count} addon", "{count} addons"),
+                    host = from
+                ),
+                took,
+            ),
+            (None, None) => {}
+        }
+        match &fetched.creators {
+            Ok(creators) => catalog::log(
+                root,
+                &format!("ok fetched {} publishers from {from}", creators.len()),
+            ),
+            Err(e) => catalog::log(root, &format!("failed to fetch the publishers: {e}")),
+        }
+        if let Ok(creators) = fetched.creators {
+            self.creators = creators;
+        }
+        self.avatars.extend(fetched.avatars);
+        self.feed.fetched(fetched.error, fetched.addons.is_some());
+        if let Some(addons) = fetched.addons {
+            self.addons = addons;
+        }
+        self.icons.extend(fetched.icons);
+    }
+
+    pub(crate) fn sync_stars<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (b, _) = host.split();
+        if !b.feed.begin_sync() {
             return;
         }
-        b.syncing = true;
         let sent = b.stars.outgoing();
         let client = b.stars.client.clone();
         let started = Instant::now();
@@ -208,45 +208,10 @@ impl Shell {
                 .background_executor()
                 .spawn(async move { stars::sync(&client, &job) })
                 .await;
-            this.update(cx, |s, cx| {
-                let took = started.elapsed();
-                s.browser.syncing = false;
-                match result {
-                    Ok(reply) => {
-                        let applied = reply.applied;
-                        let b = &mut s.browser;
-                        b.stars.synced(&sent, reply, catalog::iso_now());
-                        b.catalog_revision = b.catalog_revision.wrapping_add(1);
-                        let detail = trf!(
-                            "{sent}, {applied} applied · {starred} starred · {user}",
-                            sent = trn(sent.len(), "{count} change sent", "{count} changes sent"),
-                            applied = applied,
-                            starred = b.stars.starred.len(),
-                            user = b.stars.user.as_deref().unwrap_or(tr("no user yet"))
-                        );
-                        s.record(Op::Stars, true, tr("Synced stars").to_owned(), detail, took);
-                    }
-                    Err(e) => {
-                        s.browser.stars.failed(e.to_string());
-                        let waiting = trn(
-                            s.browser.stars.pending.len(),
-                            "{count} change waiting",
-                            "{count} changes waiting",
-                        );
-                        s.record(
-                            Op::Stars,
-                            false,
-                            tr("Couldn't sync stars").to_owned(),
-                            trf!("{error} · {waiting}", error = e, waiting = waiting),
-                            took,
-                        );
-                    }
-                }
-                if let Err(e) = s.browser.stars.save(&s.store.root) {
-                    eprintln!("swofty-launcher: could not save the stars: {e}");
-                }
-                if std::mem::take(&mut s.browser.sync_again) {
-                    s.sync_stars(cx);
+            this.update(cx, |host, cx| {
+                let (b, needs) = host.split();
+                if b.take_synced(needs.root, &sent, result, started.elapsed()) {
+                    Self::sync_stars(host, cx);
                 }
                 cx.notify();
             })
@@ -256,28 +221,59 @@ impl Shell {
         cx.notify();
     }
 
-    pub(super) fn toggle_star(&mut self, id: &str, cx: &mut Context<Self>) {
-        let listed = self.browser.find(id).map_or(0, |a| a.stars);
-        let on = self.browser.stars.toggle(id, listed, catalog::iso_now());
-        if let Err(e) = self.browser.stars.save(&self.store.root) {
+    fn take_synced(
+        &mut self,
+        root: &Path,
+        sent: &[stars::Change],
+        result: std::result::Result<stars::Reply, Trouble>,
+        took: Duration,
+    ) -> bool {
+        match result {
+            Ok(reply) => {
+                let applied = reply.applied;
+                self.stars.synced(sent, reply, catalog::iso_now());
+                self.catalog_revision = self.catalog_revision.wrapping_add(1);
+                let detail = trf!(
+                    "{sent}, {applied} applied · {starred} starred · {user}",
+                    sent = trn(sent.len(), "{count} change sent", "{count} changes sent"),
+                    applied = applied,
+                    starred = self.stars.starred.len(),
+                    user = self.stars.user.as_deref().unwrap_or(tr("no user yet"))
+                );
+                self.record(root, Op::Stars, true, tr("Synced stars").to_owned(), detail, took);
+            }
+            Err(e) => {
+                self.stars.failed(e.to_string());
+                let waiting = trn(
+                    self.stars.pending.len(),
+                    "{count} change waiting",
+                    "{count} changes waiting",
+                );
+                self.record(
+                    root,
+                    Op::Stars,
+                    false,
+                    tr("Couldn't sync stars").to_owned(),
+                    trf!("{error} · {waiting}", error = e, waiting = waiting),
+                    took,
+                );
+            }
+        }
+        if let Err(e) = self.stars.save(root) {
             eprintln!("swofty-launcher: could not save the stars: {e}");
         }
-        catalog::log(
-            &self.store.root,
-            &format!(
-                "{} {id}, {} waiting",
-                if on { "starred" } else { "unstarred" },
-                self.browser.stars.pending.len()
-            ),
-        );
-        self.browser.catalog_revision = self.browser.catalog_revision.wrapping_add(1);
-        self.browser.star_gen += 1;
-        let ticket = self.browser.star_gen;
+        self.feed.synced()
+    }
+
+    pub(super) fn toggle_star<H: Host<Self>>(host: &mut H, id: &str, cx: &mut Context<H>) {
+        let (b, needs) = host.split();
+        let ticket = b.star(needs.root, id);
         cx.spawn(async move |this, cx| {
             cx.background_executor().timer(STAR_DELAY).await;
-            this.update(cx, |s, cx| {
-                if s.browser.star_gen == ticket {
-                    s.sync_stars(cx);
+            this.update(cx, |host, cx| {
+                let settled = host.split().0.feed.settled(ticket);
+                if settled {
+                    Self::sync_stars(host, cx);
                 }
             })
             .ok();
@@ -286,44 +282,51 @@ impl Shell {
         cx.notify();
     }
 
-    pub(crate) fn sync_catalog_updates(&mut self) {
+    fn star(&mut self, root: &Path, id: &str) -> u64 {
+        let listed = self.find(id).map_or(0, |a| a.stars);
+        let on = self.stars.toggle(id, listed, catalog::iso_now());
+        if let Err(e) = self.stars.save(root) {
+            eprintln!("swofty-launcher: could not save the stars: {e}");
+        }
+        catalog::log(
+            root,
+            &format!(
+                "{} {id}, {} waiting",
+                if on { "starred" } else { "unstarred" },
+                self.stars.pending.len()
+            ),
+        );
+        self.catalog_revision = self.catalog_revision.wrapping_add(1);
+        self.feed.next_star()
+    }
+
+    pub(crate) fn sync_updates(&mut self, library: &Library) {
         // Catalog refreshes and library reloads both change cached filters and dependency previews.
-        self.browser.catalog_revision = self.browser.catalog_revision.wrapping_add(1);
-        self.browser.needs_cache.borrow_mut().clear();
-        let installed = self
-            .library
+        self.catalog_revision = self.catalog_revision.wrapping_add(1);
+        self.needs_cache.borrow_mut().clear();
+        let installed = library
             .addons
             .iter()
             .filter(|a| a.source != Source::Builtin)
             .map(|a| &a.manifest);
-        self.browser.updates = catalog::updates(installed, &self.browser.addons, &current_version());
+        self.updates = catalog::updates(installed, &self.addons, &current_version());
     }
 
-    pub(crate) fn catalog_update(&self, id: &str) -> Option<&Update> {
-        self.browser.updates.iter().find(|u| u.id == id)
-    }
-
-    pub(super) fn installed_version(&self, id: &str) -> Option<semver::Version> {
-        self.library
-            .addons
-            .iter()
-            .find(|m| m.manifest.id == id)
-            .map(|m| m.manifest.version.clone())
-    }
-
-    pub(super) fn tick_browser(&mut self, cx: &mut Context<Self>) {
-        if self.browser.ticking {
+    pub(super) fn tick<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (b, _) = host.split();
+        if b.ticking {
             return;
         }
-        self.browser.ticking = true;
+        b.ticking = true;
         cx.spawn(async move |this, cx| {
             loop {
                 cx.background_executor().timer(Duration::from_millis(150)).await;
                 let done = this
-                    .update(cx, |s, cx| {
-                        let done = s.browser.working.is_empty();
+                    .update(cx, |host, cx| {
+                        let b = host.split().0;
+                        let done = b.working.is_empty();
                         if done {
-                            s.browser.ticking = false;
+                            b.ticking = false;
                         }
                         cx.notify();
                         done
@@ -337,12 +340,9 @@ impl Shell {
         .detach();
     }
 
-    pub(super) fn open_details(&mut self, id: &str, cx: &mut Context<Self>) {
-        self.browse(View::Addon(id.to_owned()), cx);
-    }
-
-    pub(super) fn fetch_details(&mut self, id: &str, cx: &mut Context<Self>) {
-        if !self.browser.loading.insert(id.to_owned()) {
+    pub(super) fn fetch_details<H: Host<Self>>(host: &mut H, id: &str, cx: &mut Context<H>) {
+        let (b, _) = host.split();
+        if !b.loading.insert(id.to_owned()) {
             return;
         }
         let id = id.to_owned();
@@ -353,42 +353,72 @@ impl Shell {
                 .background_executor()
                 .spawn(async move { catalog::fetch_one(&job) })
                 .await;
-            this.update(cx, |s, cx| {
-                s.browser.loading.remove(&id);
-                let took = started.elapsed();
-                match result {
-                    Ok(a) => {
-                        let detail = trf!(
-                            "{versions} · {trend}",
-                            versions = trn(a.versions.len(), "{count} version", "{count} versions"),
-                            trend = if a.trend.is_some() {
-                                tr("30-day trend")
-                            } else {
-                                tr("no trend")
-                            }
-                        );
-                        s.record(
-                            Op::Details,
-                            true,
-                            trf!("Fetched {name}", name = a.name),
-                            detail,
-                            took,
-                        );
-                        s.browser.details.insert(id, a);
-                    }
-                    Err(e) => s.record(
-                        Op::Details,
-                        false,
-                        trf!("Couldn't fetch {id}", id = id),
-                        e.to_string(),
-                        took,
-                    ),
-                }
+            this.update(cx, |host, cx| {
+                let (b, needs) = host.split();
+                b.take_details(needs.root, id, result, started.elapsed());
                 cx.notify();
             })
             .ok();
         })
         .detach();
         cx.notify();
+    }
+
+    fn take_details(
+        &mut self,
+        root: &Path,
+        id: String,
+        result: std::result::Result<Addon, Trouble>,
+        took: Duration,
+    ) {
+        self.loading.remove(&id);
+        match result {
+            Ok(a) => {
+                let detail = trf!(
+                    "{versions} · {trend}",
+                    versions = trn(a.versions.len(), "{count} version", "{count} versions"),
+                    trend = if a.trend.is_some() {
+                        tr("30-day trend")
+                    } else {
+                        tr("no trend")
+                    }
+                );
+                self.record(
+                    root,
+                    Op::Details,
+                    true,
+                    trf!("Fetched {name}", name = a.name),
+                    detail,
+                    took,
+                );
+                self.details.insert(id, a);
+            }
+            Err(e) => self.record(
+                root,
+                Op::Details,
+                false,
+                trf!("Couldn't fetch {id}", id = id),
+                e.to_string(),
+                took,
+            ),
+        }
+    }
+}
+
+impl Shell {
+    pub(crate) fn catalog_update(&self, id: &str) -> Option<&Update> {
+        self.browser.updates.iter().find(|u| u.id == id)
+    }
+
+    pub(super) fn installed_version(&self, id: &str) -> Option<semver::Version> {
+        self.library
+            .addons
+            .iter()
+            .find(|m| m.manifest.id == id)
+            .map(|m| m.manifest.version.clone())
+    }
+
+    pub(super) fn open_details(&mut self, id: &str, cx: &mut Context<Self>) {
+        self.browse(View::Addon(id.to_owned()), cx);
     }
 }

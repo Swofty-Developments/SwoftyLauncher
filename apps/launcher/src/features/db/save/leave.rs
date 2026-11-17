@@ -7,6 +7,7 @@ use gpui_kit::component::dialog::DialogFooter;
 use gpui_kit::*;
 use swofty_i18n::{tr, trf, trn};
 
+use crate::features::db::Db;
 use crate::features::db::Then;
 use crate::shell::Shell;
 
@@ -41,7 +42,7 @@ impl Shell {
                             s.db.draft.discard();
                             s.db.errors.clear();
                             s.db.slots = crate::features::db::Slots::default();
-                            s.db_changed(None, true, cx);
+                            Db::changed(s, None, true, cx);
                         })
                         .ok();
                     true

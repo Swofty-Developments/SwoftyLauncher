@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::convert::Infallible;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
@@ -6,14 +7,18 @@ use std::time::SystemTime;
 use crate::shell::notices::Notification;
 use gpui_kit::component::input::InputState;
 use gpui_kit::*;
-use swofty_core::dbedit::draft::DraftFile;
+use swofty_core::dbedit::draft::{DraftFile, Written};
 use swofty_core::dbedit::package::PackageInfo;
 use swofty_core::dbedit::{
     Catalog, Draft, Edit, Edits, Hit, ImportReport, LinkSpec, Module, ModuleView, NodeId,
 };
 
 use super::fields::Slots;
+use crate::services::game::Install;
 use crate::shell::Shell;
+use crate::shell::host::{Host, Hosted};
+use swofty_core::store::Store;
+use swofty_i18n::trf;
 
 pub(crate) enum Load {
     Idle,
@@ -73,12 +78,6 @@ pub(crate) struct Db {
     pub draft: Draft,
     pub(super) draft_read: bool,
     pub(super) file: Arc<Mutex<DraftFile>>,
-    pub(super) persist_gen: u64,
-    /// Changes not yet written to the draft file.
-    pub(super) unwritten: bool,
-    pub(super) writing: bool,
-    /// Another launcher window wrote a newer draft; nothing is written until the player picks one.
-    pub newer: bool,
     pub(super) others_gen: u64,
     pub(super) _quit: Subscription,
     pub(super) index: HashMap<u64, usize>,
@@ -96,7 +95,6 @@ pub(crate) struct Db {
     pub scopes: HashMap<String, String>,
     pub view: Option<ViewSlot>,
     pub view_error: Option<String>,
-    pub save_error: Option<String>,
     pub(super) view_want: Option<(String, Option<String>, u64)>,
     pub(super) stale_choices: bool,
     pub(super) rev: u64,
@@ -127,6 +125,7 @@ pub(crate) struct Db {
     pub(super) pending_tab: Option<(String, String, String)>,
     pub(super) pending_link: Option<LinkSpec>,
     pub importing: bool,
+    pub(super) autosave: Autosave,
 }
 
 pub(crate) struct CellEdit {
@@ -144,10 +143,6 @@ impl Db {
             draft: Draft::default(),
             draft_read: false,
             file: Arc::default(),
-            persist_gen: 0,
-            unwritten: false,
-            writing: false,
-            newer: false,
             others_gen: 0,
             _quit: cx.on_app_quit(|s: &mut Shell, _| {
                 s.db_flush_now();
@@ -164,7 +159,6 @@ impl Db {
             scopes: HashMap::new(),
             view: None,
             view_error: None,
-            save_error: None,
             view_want: None,
             stale_choices: false,
             rev: 0,
@@ -195,6 +189,7 @@ impl Db {
             pending_tab: None,
             pending_link: None,
             importing: false,
+            autosave: Autosave::default(),
         }
     }
 
@@ -247,4 +242,94 @@ pub(crate) enum Then {
         edits: Edits,
         report: ImportReport,
     },
+}
+
+/// Writing the draft to its file in the background, a moment after the last change.
+#[derive(Default)]
+pub(crate) struct Autosave {
+    pub(super) ticket: u64,
+    /// Changes not yet written to the draft file.
+    pub(super) unwritten: bool,
+    pub(super) writing: bool,
+    /// Another launcher window wrote a newer draft; nothing is written until the player picks one.
+    pub(super) newer: bool,
+    pub(super) error: Option<String>,
+}
+
+impl Autosave {
+    pub(super) fn mark(&mut self) -> u64 {
+        self.unwritten = true;
+        self.ticket += 1;
+        self.ticket
+    }
+
+    pub(super) fn due(&self, ticket: u64) -> bool {
+        self.ticket == ticket
+    }
+
+    pub(super) fn begin(&mut self) -> bool {
+        if !self.unwritten || self.writing || self.newer {
+            return false;
+        }
+        self.unwritten = false;
+        self.writing = true;
+        true
+    }
+
+    /// Takes a finished write; true when changes made meanwhile need writing too.
+    pub(super) fn written(&mut self, result: Result<Written, String>) -> bool {
+        self.writing = false;
+        match result {
+            Ok(Written::Saved) => self.error = None,
+            Ok(Written::Newer) => {
+                self.unwritten = true;
+                self.newer = true;
+            }
+            Err(e) => {
+                self.unwritten = true;
+                self.error = Some(trf!("Your changes could not be saved to the draft: {e}", e = e));
+                return false;
+            }
+        }
+        self.unwritten && !self.newer
+    }
+
+    pub(super) fn idle(&self) -> bool {
+        !self.unwritten && !self.writing && !self.newer
+    }
+
+    /// Drops this window's unwritten changes for the draft another window wrote.
+    pub(super) fn give_way(&mut self) {
+        self.newer = false;
+        self.unwritten = false;
+        self.ticket += 1;
+    }
+}
+
+pub(crate) struct DbNeeds<'a> {
+    pub(crate) store: &'a Store,
+    pub(crate) profile: &'a str,
+    pub(crate) install: Option<&'a Install>,
+}
+
+impl Hosted for Db {
+    type Needs<'a> = DbNeeds<'a>;
+    type Change = Infallible;
+}
+
+impl Host<Db> for Shell {
+    fn split(&mut self) -> (&mut Db, DbNeeds<'_>) {
+        (
+            &mut self.db,
+            DbNeeds {
+                store: &self.store,
+                profile: &self.library.profile.name,
+                install: self.game.install.as_ref(),
+            },
+        )
+    }
+
+    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
+        match change {}
+    }
 }

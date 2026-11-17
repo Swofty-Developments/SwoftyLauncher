@@ -16,6 +16,7 @@ use crate::shell::Shell;
 use crate::ui::theme::{Palette, palette, scrollbar_x};
 
 use super::*;
+use crate::features::db::Db;
 
 impl Shell {
     pub(super) fn db_crumbs(&self, node: NodeId, p: Palette, cx: &mut Context<Self>) -> impl IntoElement {
@@ -67,7 +68,7 @@ impl Shell {
                                 }
                             })
                             .child(name)
-                            .on_click(cx.listener(move |this, _, _, cx| this.db_go(Nav::Raw(id), cx))),
+                            .on_click(cx.listener(move |this, _, _, cx| Db::go(this, Nav::Raw(id), cx))),
                     )
             }))
     }
@@ -453,7 +454,7 @@ impl Shell {
                             .font_weight(FontWeight::MEDIUM)
                             .truncate()
                             .child(title)
-                            .on_click(cx.listener(move |this, _, _, cx| this.db_go(Nav::Raw(row), cx))),
+                            .on_click(cx.listener(move |this, _, _, cx| Db::go(this, Nav::Raw(row), cx))),
                     )
                     .children(fields.iter().map(|f| {
                         let cell = catalog.find_in(row, f);
