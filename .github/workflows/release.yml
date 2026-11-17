@@ -32,19 +32,6 @@ jobs:
         with:
           ref: ${{ env.TAG }}
 
-      # The native scripts pin their compilers to the maintainer's healthy cores (taskset -c 2-7,...),
-      # which leaves two of a hosted runner's four. This shim drops the pin and runs the command as is.
-      - name: Use every runner core
-        run: |
-          mkdir -p "$RUNNER_TEMP/bin"
-          cat > "$RUNNER_TEMP/bin/taskset" <<'EOF'
-          #!/bin/sh
-          [ "$1" = -c ] && shift 2
-          exec "$@"
-          EOF
-          chmod +x "$RUNNER_TEMP/bin/taskset"
-          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
-
       # A fixed install path, so the objects in CI's Zig cache match (see ci.yml).
       - uses: mlugg/setup-zig@v2
         with:
