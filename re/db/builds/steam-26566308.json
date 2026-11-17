@@ -707,6 +707,12 @@
   "Ai_Get_GeneralSettings": {
    "match": "0x6662bd"
   },
+  "Ai_Get_SegmentTurnRadius": {
+   "match": "0x60daf0"
+  },
+  "Ai_Get_TurnRadiusAtDistance": {
+   "match": "0x60d870"
+  },
   "Ai_Handle_PitStateChanged_Thunk": {
    "match": "0x6b3150"
   },
@@ -736,6 +742,9 @@
   },
   "Ai_Lookahead_AdvancePhase": {
    "match": "0x6807f0"
+  },
+  "Ai_Overtake_EvaluateGap": {
+   "match": "0x66de90"
   },
   "Ai_Parse_BlockingConfig": {
    "match": "0x65dca8"
@@ -833,11 +842,23 @@
   "Ai_TestGraph_EvalTimeSpeed": {
    "match": "0x5fc2bd"
   },
+  "Ai_TrackLine_FindCornerEndAndStart": {
+   "match": "0x66dfb0"
+  },
+  "Ai_TrackLine_FindNextSideMarker": {
+   "match": "0x66e520"
+  },
+  "Ai_TrackLine_FindSideMarkerInCorner": {
+   "match": "0x66ef00"
+  },
   "Ai_Update_CompoundPaceCurves": {
    "match": "0x5fb400"
   },
   "Ai_Update_DriverTick": {
    "match": "0x5f5e10"
+  },
+  "Ai_Update_VehicleDriver": {
+   "match": "0x614db0"
   },
   "Ai_Write_AdaptiveAiSessionRecord": {
    "match": "0x3e1a50"
@@ -3182,6 +3203,9 @@
   "Game_CutsceneManager_WaitTextureStreaming": {
    "match": "0x212210"
   },
+  "Game_DRLSystem_OnMessagePlayerDroppedIn": {
+   "match": "0x243d5f0"
+  },
   "Game_DRLSystem_ResolveDependencies": {
    "match": "0x243c440"
   },
@@ -3244,6 +3268,9 @@
   },
   "Game_DeptEventViewModel_Update": {
    "match": "0x22ebdf0"
+  },
+  "Game_DifficultySystem_ApplySettingsToUi": {
+   "match": "0x241b150"
   },
   "Game_DriverCareerTeamSelect_OnMessage": {
    "match": "0x1a6b230"
