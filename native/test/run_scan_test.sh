@@ -8,7 +8,6 @@ export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../
 OUT=${1:-$PWD/../build/scan-test}
 EXE=${SWOFTY_TEST_EXE:-$PWD/../../work/exe/F1_25.exe}
 BINDINGS=${SWOFTY_TEST_BINDINGS:-$PWD/../dist/swofty/addons/core/bindings.json}
-PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 mkdir -p "$OUT"
 "${PIN[@]}" zig c++ -target x86_64-linux-musl -I../src -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness \
     -o "$OUT/scan_test" scan_test.cpp

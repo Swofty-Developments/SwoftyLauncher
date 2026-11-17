@@ -25,8 +25,7 @@ DIST=dist${VARIANT:+-$VARIANT}
 OUT=build${VARIANT:+/$VARIANT}
 
 SDK=../packages/sdk/include
-PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
-command -v taskset >/dev/null || PIN=()
+. tools/pin.sh
 mkdir -p build "$OUT"
 rm -rf "$DIST"
 mkdir -p "$DIST/swofty/addons/core"
