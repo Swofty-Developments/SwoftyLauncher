@@ -11,7 +11,7 @@
 
 namespace d3d12hooks {
 
-QueueWatch queue_watch;
+constinit QueueWatch queue_watch;
 
 namespace {
 

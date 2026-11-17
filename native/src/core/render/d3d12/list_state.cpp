@@ -48,7 +48,7 @@ private:
     std::vector<std::pair<ID3D12GraphicsCommandList *, ListState *>> states;
 };
 
-ListStates lists;
+constinit ListStates lists;
 
 ListState *tracked(ID3D12GraphicsCommandList *l)
 {

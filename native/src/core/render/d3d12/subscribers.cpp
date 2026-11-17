@@ -2,7 +2,7 @@
 
 namespace d3d12hooks {
 
-Subscribers subscribers;
+constinit Subscribers subscribers;
 
 void on_present(PresentFn fn)
 {

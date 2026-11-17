@@ -17,7 +17,7 @@ namespace d3d12hooks {
 
 namespace {
 
-Swapchains swapchains;
+constinit Swapchains swapchains;
 
 safetyhook::InlineHook h_present, h_present1, h_resize, h_resize1, h_color_space, h_create, h_create_hwnd, h_create_core,
     h_create_comp;
@@ -97,7 +97,7 @@ private:
     unsigned presents = 0;
 };
 
-PresentLog present_log;
+constinit PresentLog present_log;
 
 void PresentLog::count(IDXGISwapChain3 *sc, void *caller, const char *how)
 {
