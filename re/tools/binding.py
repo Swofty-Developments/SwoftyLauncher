@@ -298,7 +298,8 @@ def cmd_unfold(a, db=None, root=None):
     sigdoc['signatures'] = [s for s in sigdoc['signatures'] if s['id'] not in sig_ids]
     with open(os.path.join(db, 'signatures.json'), 'w') as f:
         f.write(json.dumps(sigdoc, indent=1) + '\n')
-    br.Store.forget()
+    if os.path.abspath(root) == os.path.abspath(br.RECORDS):
+        br.Store.forget()
     print(f'binding.py unfold: {sum(len(m) for m in moved.values())} binding(s) moved into {os.path.relpath(root)}')
     for name, why in kept:
         print(f'kept {name} in the tables: {why}')

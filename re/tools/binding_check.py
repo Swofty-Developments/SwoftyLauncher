@@ -95,7 +95,8 @@ class Knowledge:
         """Only the subsystems and builds: checks a record's own rules, with no knowledge-base conflicts."""
         k = cls.__new__(cls)
         k.subsystems = kb.subsystems()
-        k.build = kb.load_signatures()['build']
+        with open(os.path.join(kb.DB, 'signatures.json')) as f:
+            k.build = json.load(f)['build']
         k.signatures, k.patterns, k.targets, k.names, k.verified = {}, {}, {}, {}, {}
         k.addrs = {'functions': {}, 'globals': {}}
         k.builds = {k.build['sha256']: 'KB build'}
