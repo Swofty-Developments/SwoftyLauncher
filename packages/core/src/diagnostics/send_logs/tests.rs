@@ -1649,10 +1649,10 @@ fn sends_the_room_logs_trace_and_state_without_secrets() {
     const ACCOUNT: &str = "lowercase-account-token-0001";
     let root = tmp("room");
     let (store, game) = fake_data(&root);
-    assert!(!crate::multiplayer::client::is_loaded());
-    crate::multiplayer::client::know_secret(ACCOUNT);
+    assert!(!crate::online::multiplayer::client::is_loaded());
+    crate::online::multiplayer::client::know_secret(ACCOUNT);
     put(
-        &store.root.join(crate::multiplayer::client::LOG_FILE),
+        &store.root.join(crate::online::multiplayer::client::LOG_FILE),
         format!(
             "20261026-101010.000Z room ABCD opened: 1 member(s)\n20261026-101011.000Z leaked {CREDENTIAL} and \
              {ACCOUNT}\n20261026-101012.000Z fingerprint {}\n",
@@ -1660,18 +1660,18 @@ fn sends_the_room_logs_trace_and_state_without_secrets() {
         ),
     );
     put(
-        &store.root.join(crate::multiplayer::client::LOG_PREVIOUS),
+        &store.root.join(crate::online::multiplayer::client::LOG_PREVIOUS),
         format!("20261026-090000.000Z phase: in the lobby, key={CREDENTIAL}\n"),
     );
     put(
-        &game.join(crate::multiplayer::client::GAME_STATUS_FILE),
+        &game.join(crate::online::multiplayer::client::GAME_STATUS_FILE),
         r#"{"pid":42,"self":2,"base":41000,"game_port":21414}"#,
     );
     put(&game.join(NET_TRACE), "# swofty net trace\nbind s=1 port=21414\n");
     put(
         &store
             .root
-            .join(crate::multiplayer::client::PRINTS_DIR)
+            .join(crate::online::multiplayer::client::PRINTS_DIR)
             .join("ABCD-20261026-101010.json"),
         format!(
             r#"{{"room":"ABCD","host":{{"note":"{CREDENTIAL}","credential":"short-one","who":"{ACCOUNT}"}}}}"#
