@@ -10,7 +10,7 @@
 #include "json.hpp"
 #include "perf.hpp"
 #include "main_menu.hpp"
-#include "tt_barred.hpp"
+#include "services/lap_host.hpp"
 
 namespace runtime {
 std::string hook_error(const safetyhook::MidHook::Error &e);
@@ -570,7 +570,7 @@ uint64_t open_hook(void *scene, void *screen, void *a3, void *a4)
     if (readable(screen, 0x70) && readable(*reinterpret_cast<void **>(static_cast<uint8_t *>(screen) + 0x68), 10)) {
         runtime::netplay_screen(chars(*reinterpret_cast<void **>(static_cast<uint8_t *>(screen) + 0x68)));
         runtime::main_menu::screen(chars(*reinterpret_cast<void **>(static_cast<uint8_t *>(screen) + 0x68)));
-        runtime::tt_barred::screen(chars(*reinterpret_cast<void **>(static_cast<uint8_t *>(screen) + 0x68)));
+        runtime::lap_host::screen(chars(*reinterpret_cast<void **>(static_cast<uint8_t *>(screen) + 0x68)));
         runtime::testagent_screen(chars(*reinterpret_cast<void **>(static_cast<uint8_t *>(screen) + 0x68)));
         runtime::direct_start_screen(chars(*reinterpret_cast<void **>(static_cast<uint8_t *>(screen) + 0x68)));
     }

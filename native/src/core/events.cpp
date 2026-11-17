@@ -1,7 +1,7 @@
 #include <atomic>
 #include "runtime.hpp"
 #include "main_menu.hpp"
-#include "tt_barred.hpp"
+#include "services/lap_host.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
@@ -83,11 +83,10 @@ const Step STEPS[] = {
     {"career_tick", [] { runtime::career_tick(); }},
     {"live_tick", [] { runtime::live_tick(now_seconds()); }},
     {"telemetry_tick", [] { runtime::telemetry_tick(); }},
-    {"lap_rec_tick", [] { runtime::lap_rec_tick(); }},
-    {"tt_bridge_tick", [] { runtime::tt_bridge_tick(); }},
+    {"toast::tick", [] { runtime::toast::tick(); }},
+    {"lap_host::tick", [] { runtime::lap_host::tick(); }},
     {"popup_tick", [] { runtime::popup_tick(); }},
     {"main_menu::tick", [] { runtime::main_menu::tick(); }},
-    {"tt_barred::tick", [] { runtime::tt_barred::tick(); }},
     {"mfd_tick", [] { runtime::mfd_tick(); }},
     {"netplay_tick", [] { runtime::netplay_tick(); }},
     {"career_content_tick", [] { runtime::career_content_tick(); }},
@@ -187,7 +186,7 @@ void session_enter_mid(safetyhook::Context &)
     swofty::mem::invalidate();
     swofty_core::apply::moments::session_load("Game_GameModule_OnSessionEnter");
     runtime::telemetry_session_enter();
-    runtime::lap_rec_session_enter();
+    runtime::lap_host::session_enter();
     runtime::main_menu::session_enter();
     runtime::hud_rebuilt();
     bool restart;
@@ -198,7 +197,7 @@ void session_enter_mid(safetyhook::Context &)
     if (restart)
         runtime::session_emit({true, false, runtime::session_life::END_RESTART});
     note_kind();
-    runtime::tt_bridge_track_watch(true);
+    runtime::lap_host::session_watch(true);
     disp.fire(SWOFTY_EVENT_SESSION_START, 0, 0, nullptr, now_seconds());
     swofty_core::hooks::bridge_legacy(SWOFTY_EVENT_SESSION_START, 0, 0, nullptr);
 }
@@ -418,9 +417,7 @@ void session_emit(const session_life::Emit &e)
         tyre_models_drop();
     }
     if (e.end) {
-        lap_rec_session_end();
-        tt_bridge_track_watch(false);
-        tt_bridge_session_exit();
+        lap_host::session_end();
         swofty::log("[events] session.end (%s)", e.reason == session_life::END_RESTART  ? "restart"
                                                  : e.reason == session_life::END_UNLOAD ? "ended as the unload began"
                                                                                        : "StateSession exited");

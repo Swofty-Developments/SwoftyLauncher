@@ -1,6 +1,6 @@
 #include "live_car.hpp"
 
-#include "lap_rec_logic.hpp"
+#include "axes_logic.hpp"
 #include "live_car_logic.hpp"
 #include "postfx_logic.hpp"
 #include "runtime.hpp"
@@ -317,8 +317,8 @@ bool read_dynamics(LiveDynamics &out)
         bool read = fields.orient;
         for (int c = 0; c < 3 && read; c++)
             read = vec3(chassis + CHASSIS_BASIS + BASIS_STRIDE * size_t(c), axes[c]);
-        if (read && runtime::lap_rec::unit_axes(axes)) {
-            runtime::lap_rec::quaternion_of(axes, out.quat);
+        if (read && runtime::axes::unit_axes(axes)) {
+            runtime::axes::quaternion_of(axes, out.quat);
             out.has_orient = true;
         }
     }
