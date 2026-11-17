@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 
-// The load-stall report's unwinder (crash.cpp, runtime::stall_report). It runs while the thread it walks is
+// The load-stall report's unwinder (stall_report.cpp, runtime::stall_report). It runs while the thread it walks is
 // suspended, so it takes no lock and allocates nothing: function entries come from the caller's lookup over a
 // module list read before the suspension, and RtlVirtualUnwind only reads the image's unwind data and the stack.
 // A fault while reading ends the walk instead of the process (SEH; stall_walk.cpp is built with -fms-extensions).

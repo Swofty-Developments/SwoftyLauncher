@@ -35,7 +35,7 @@
 //   and skips an index past the header's tabs (vector at header +0x2b8, 0x70 each), which it has no
 //   bounds check for.
 //
-// Each control is a core mixin set of its own (manager.cpp), offered only once an addon registers an
+// Each control is a core mixin set of its own (runtime/loader/mixin_manager.cpp), offered only once an addon registers an
 // entry for it: at the next mixin commit for a registration from an addon's init, right after the
 // ON_LOAD handlers for one made there. A game where no addon registers runs none of them, so an
 // addon that wraps these functions itself keeps its wraps. A binding that does not resolve drops

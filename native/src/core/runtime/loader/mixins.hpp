@@ -11,10 +11,6 @@
 
 #include "swofty_api.h"
 
-namespace runtime {
-struct CoreMixins;
-}
-
 namespace runtime::loader {
 
 struct Mixin {
@@ -37,26 +33,12 @@ struct Addon {
     HMODULE module = nullptr;
 };
 
-// The mixin manager (runtime/manager.cpp): addon registration, the session.json manifest check, and the install of
-// every addon's and core set's mixins onto the game. Callers hold commit_lock() around the install steps.
+// The addon whose SwoftyAddonInit is running, or null outside one (mixin_manager.cpp).
 Addon *current_addon();
+// The game's own bytes under a hook or patch the mixins put on an address, and where that hook or patch starts.
 const std::vector<uint8_t> *original_bytes_at(uintptr_t a, uintptr_t &start);
+// SwoftyApi::resolve and SwoftyApi::register_mixins for addons.
 uintptr_t resolve_for_addon(const char *id);
 int register_addon_mixins(const SwoftyMixin *m, size_t n);
-void read_mixin_manifest(const std::wstring &dir);
-int init_addon(const wchar_t *name, SwoftyAddonInitFn init);
-
-void add_core_mixin_sets(std::vector<runtime::CoreMixins> sets);
-size_t offer_core_mixin_sets();
-void settle_core_mixin_sets();
-
-size_t settled_addons();
-size_t active_addons_from(size_t from, size_t *total);
-void install_addons(size_t from, size_t *count);
-void run_addons_on_load(size_t from);
-bool addons_wait(bool core_only);
-void reinit_deferred_addons(bool final);
-void install_late_addons(size_t *count);
-void close_mixins(bool done);
 
 }

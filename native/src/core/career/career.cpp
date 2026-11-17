@@ -38,7 +38,7 @@
 // Bus (g_Game_MessageBus, GameMessageBusHolder, NeMessageBus, Ne_Post_BusMessage). post() hands a
 // caller-built message to the game's synchronous publish while the bus is active.
 //
-// The two sites are core mixins of their own (manager.cpp), so a build without them loses only
+// The two sites are core mixins of their own (runtime/loader/mixin_manager.cpp), so a build without them loses only
 // this library; every other binding resolves lazily and each lookup that fails reports
 // unavailable or null for that call alone.
 

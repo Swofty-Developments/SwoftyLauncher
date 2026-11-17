@@ -500,9 +500,49 @@ void BindingSet::attempt(Binding &b, bool final)
     defer(b, why + b.tr.reason, final);
 }
 
+namespace {
+
+struct PrescanPass {
+    PrescanPass() = default;
+    ~PrescanPass() { scanner().end_prescan(); }
+    PrescanPass(const PrescanPass &) = delete;
+    PrescanPass &operator=(const PrescanPass &) = delete;
+};
+
+}
+
+/* The patterns the pass will scan: no address from the set's hint to try first, no scan of them yet, and a
+   section that reads decrypted enough for attempt() to scan it. */
+void BindingSet::prescan(bool deferred)
+{
+    std::unordered_map<std::string, std::vector<std::string>> by_section;
+    std::unordered_map<std::string, bool> scannable;
+    for (auto &b : bindings_) {
+        if (deferred ? !b.deferred : b.resolved || b.deferred)
+            continue;
+        if (b.pattern.empty() || !b.unresolvable.empty() || (kb_first_ && same_build_ && b.match >= 0) ||
+            scans_.count(b.section + '|' + b.pattern) || !image().section_by_name(b.section))
+            continue;
+        if (guarded(b)) {
+            auto it = scannable.find(b.section);
+            if (it == scannable.end()) {
+                double e = code().section_now(b.section);
+                it = scannable.emplace(b.section, e >= 0 && e <= CodeEncryption::ENCRYPTED).first;
+            }
+            if (!it->second)
+                continue;
+        }
+        by_section[b.section].push_back(b.pattern);
+    }
+    for (auto &[section, patterns] : by_section)
+        scanner().prescan(section, patterns);
+}
+
 void BindingSet::attempt_unresolved()
 {
     ImageProtectionPass pass;
+    PrescanPass scans;
+    prescan(false);
     for (auto &b : bindings_)
         if (!b.resolved && !b.deferred)
             attempt(b, false);
@@ -511,6 +551,8 @@ void BindingSet::attempt_unresolved()
 void BindingSet::retry_deferred(bool final)
 {
     ImageProtectionPass pass;
+    PrescanPass scans;
+    prescan(true);
     for (auto &b : bindings_)
         if (b.deferred)
             attempt(b, final);
