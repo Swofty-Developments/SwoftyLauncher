@@ -93,12 +93,12 @@ int settings_get(const char *id, uint32_t type, SwoftySettingValue *out);
 
 namespace era_picker {
 
-Bound b;
+constinit Bound b{};
 constinit Picker picker;
 BoxRules box_rules;
 VirtualLists virtual_lists;
-Filled filled;
-logic::GridLimit continue_grid;
+constinit Filled filled;
+constinit logic::GridLimit continue_grid;
 constinit Hold hold;
 constinit VehicleGuard vehicle_guard;
 constinit TimeTrialGuard time_trial_guard;
