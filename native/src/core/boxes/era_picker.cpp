@@ -1985,7 +1985,7 @@ void *setup_list_entry(void *out, void *allocator)
     return setup_list_orig(out, allocator);
 }
 
-std::vector<CoreMixins> tt_guard_mixins()
+static std::vector<CoreMixins> tt_guard_mixins()
 {
     std::vector<CoreMixins> out;
     if (vehicles_offered || !code_ready())
@@ -2026,7 +2026,7 @@ std::vector<CoreMixins> tt_guard_mixins()
     return out;
 }
 
-std::vector<CoreMixins> career_alias_mixins()
+static std::vector<CoreMixins> career_alias_mixins()
 {
     std::vector<CoreMixins> out;
     if (career_alias_offered || !code_ready())
@@ -2045,7 +2045,7 @@ std::vector<CoreMixins> career_alias_mixins()
     return out;
 }
 
-void career_alias_commit()
+static void career_alias_commit()
 {
     if (!career_alias_offered || career_alias_settled)
         return;
@@ -2059,7 +2059,7 @@ void career_alias_commit()
 
 static loader::FunctionSet career_alias_core_set{loader::CoreSetId::career_alias, career_alias_mixins, career_alias_commit};
 
-void tt_guard_commit()
+static void tt_guard_commit()
 {
     if (!vehicles_offered || vehicles_settled)
         return;
@@ -2110,7 +2110,7 @@ void era_session_unloaded(const char *state, int to)
                     r.put, r.failed ? ("; " + std::to_string(r.failed) + " could not be put back").c_str() : "");
 }
 
-std::vector<CoreMixins> era_mixins()
+static std::vector<CoreMixins> era_mixins()
 {
     std::vector<CoreMixins> out;
     if (offered || split_off() || off || !code_ready())
@@ -2137,7 +2137,7 @@ std::vector<CoreMixins> era_mixins()
     return out;
 }
 
-void era_commit()
+static void era_commit()
 {
     if (!offered || settled || off)
         return;

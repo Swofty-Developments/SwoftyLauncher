@@ -567,7 +567,7 @@ const SwoftyCharacters *characters_table()
     return &table;
 }
 
-std::vector<CoreMixins> characters_mixins()
+static std::vector<CoreMixins> characters_mixins()
 {
     std::vector<CoreMixins> out;
     if (!enabled("career", nullptr))
@@ -584,7 +584,7 @@ std::vector<CoreMixins> characters_mixins()
     return out;
 }
 
-void characters_commit()
+static void characters_commit()
 {
     bool any = false;
     for (Part *p : {&ref, &voice})

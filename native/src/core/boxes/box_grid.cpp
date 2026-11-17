@@ -372,7 +372,7 @@ void box_grid_set(const std::optional<box_grid::Rule> &rule, const std::string &
     last_signature.clear();
 }
 
-std::vector<CoreMixins> box_grid_mixins()
+static std::vector<CoreMixins> box_grid_mixins()
 {
     std::vector<CoreMixins> out;
     if (offered || !code_ready())
@@ -406,7 +406,7 @@ std::vector<CoreMixins> box_grid_mixins()
     return out;
 }
 
-void box_grid_commit()
+static void box_grid_commit()
 {
     if (!offered || settled || !wanted)
         return;

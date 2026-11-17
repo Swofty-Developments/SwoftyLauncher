@@ -1018,7 +1018,7 @@ const SwoftyCareerContent *career_content_table()
     return &table;
 }
 
-std::vector<CoreMixins> career_content_mixins()
+static std::vector<CoreMixins> career_content_mixins()
 {
     std::vector<CoreMixins> out;
     from_records();
@@ -1052,7 +1052,7 @@ void tile_route_want()
     route_wanted = true;
 }
 
-std::vector<CoreMixins> tile_route_mixins()
+static std::vector<CoreMixins> tile_route_mixins()
 {
     std::vector<CoreMixins> out;
     if (!route_wanted || route_offered)
@@ -1063,7 +1063,7 @@ std::vector<CoreMixins> tile_route_mixins()
     return out;
 }
 
-void tile_route_commit()
+static void tile_route_commit()
 {
     if (!route_offered || route_settled)
         return;
@@ -1081,7 +1081,7 @@ TileRoute tile_route_state()
                                                                      : TileRoute::pending;
 }
 
-void career_content_commit()
+static void career_content_commit()
 {
     if (!offered || settled || !route_settled)
         return;

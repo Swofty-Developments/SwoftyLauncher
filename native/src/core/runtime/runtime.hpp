@@ -98,12 +98,6 @@ struct CoreMixins {
 enum class TileRoute { pending, live, off };
 
 std::vector<CoreMixins> career_mixins();
-std::vector<CoreMixins> characters_mixins();
-std::vector<CoreMixins> wizard_mixins();
-std::vector<CoreMixins> tile_route_mixins();
-void characters_commit();
-void wizard_commit();
-void tile_route_commit();
 void tile_route_want();
 TileRoute tile_route_state();
 void wizard_tile_routed(const std::string &group, void *out);
@@ -131,8 +125,6 @@ namespace toast {
 void tick();
 }
 const SwoftyCareerContent *career_content_table();
-std::vector<CoreMixins> career_content_mixins();
-void career_content_commit();
 void career_content_tick();
 void entitlements_tick();
 void entitlements_flow(uint32_t hash, uint32_t to);
@@ -142,8 +134,6 @@ const SwoftyRegistry *registry_table();
 int registry_write_reports();
 swofty_core::registry::Store &older_store();
 std::string older_addon(const void *from);
-std::vector<CoreMixins> era_mixins();
-void era_commit();
 // Makes an entrant list count as the box the player pressed, for a session started without the picker (a replay of that box): the
 // session's car count follows the pressed box.
 void era_press(const char *entrant_list);
@@ -152,14 +142,6 @@ void era_session_load();
 bool era_session_unlisted(std::string &list);
 void era_session_trace(const char *state, int to);
 void era_session_unloaded(const char *state, int to);
-std::vector<CoreMixins> tt_guard_mixins();
-void tt_guard_commit();
-std::vector<CoreMixins> career_alias_mixins();
-void career_alias_commit();
-std::vector<CoreMixins> car_category_mixins();
-void car_category_commit();
-std::vector<CoreMixins> save_splice_mixins();
-void save_splice_commit();
 // Career saves (career_saves.cpp): the career index and per-career addon data.
 namespace career_saves {
 struct SlotRead;
@@ -169,8 +151,6 @@ void career_saves_saving();
 void career_saves_saved();
 void career_saves_listed(const std::vector<career_saves::SlotRead> &slots, bool complete, bool at_load);
 // Save sandbox (save_sandbox.cpp): under `swofty test` with a run token, or with the launcher's saves.
-std::vector<CoreMixins> save_sandbox_mixins();
-void save_sandbox_commit();
 bool save_sandbox_test_mode();
 bool save_sandbox_launcher_mode();
 bool save_sandbox_armed();
@@ -207,8 +187,6 @@ std::string career_content_owner(const std::string &data_group, std::string *sav
 void snapshots_slot_selected(uintptr_t manager, uint64_t slot_id, uint64_t slot_guid);
 std::string snapshots_career_loaded(const char *key, unsigned mode);
 std::string snapshots_career_id(const char *key);
-std::vector<CoreMixins> car_levers_mixins();
-void car_levers_commit();
 void myteam_vehicle_heal_entrants(const myteam_heal::Load &load);
 bool myteam_keep_forced(const std::string &label);
 bool myteam_keep_substitute(SwoftyContext *c, uint32_t stat, const std::string &label);
@@ -219,21 +197,14 @@ void load_stall_screen(const char *name);
 void load_stall_signal(uint32_t trigger, uint64_t detail_ms);
 void load_stall_game_line(const char *line);
 void load_stall_setup();
-std::vector<CoreMixins> tyre_models_mixins();
-void tyre_models_commit();
 void tyre_models_tick();
 void tyre_models_drop();
-std::vector<CoreMixins> garage_placement_mixins();
 void garage_placement_reset();
 bool garage_placement_listening();
-std::vector<CoreMixins> loading_mixins();
-void loading_commit();
 bool save_heap_raised(uint64_t &bytes);
 std::string track_select_time_trial();
 uint8_t *team_record_of(uint16_t stat);
 void team_record_inserted(std::function<void(uint16_t, uint8_t *)> fn);
-std::vector<CoreMixins> box_grid_mixins();
-void box_grid_commit();
 void quali_tyres_box(uint8_t mask, const std::string &line);
 void hud_setup();
 void focus_setup();

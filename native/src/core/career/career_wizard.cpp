@@ -448,7 +448,7 @@ const SwoftyCareerWizard *wizard_table()
     return &table;
 }
 
-std::vector<CoreMixins> wizard_mixins()
+static std::vector<CoreMixins> wizard_mixins()
 {
     std::vector<CoreMixins> out;
     if (!enabled("career", nullptr))
@@ -477,7 +477,7 @@ std::vector<CoreMixins> wizard_mixins()
     return out;
 }
 
-void wizard_commit()
+static void wizard_commit()
 {
     bool any = false;
     for (int i = 0; i < 5; i++) {
