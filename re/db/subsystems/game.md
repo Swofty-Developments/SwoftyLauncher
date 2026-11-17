@@ -48,6 +48,12 @@ re-career-teams, 2026-10-28 (static; tests T133, T134, T135). A team key is a u3
 - **Per-team R&D models come from the save by team key** on load (`Game_UpgradesComponent_Deserialise` 0x14123f930 -> `Career_Add_TeamUpgrades`). The creation path into `Career_Add_TeamUpgrades` was not found (no other direct caller).
 - Design that uses this: work/std16/RE-CAREER-TEAMS.md (core `career::apply_teams`).
 
+## Safety car pit area and show_pitstop_zone
+engine-re track RE round B2 (2026-11-17, static on d873a1c8).
+- safety_car_main (markup type 13) is the SC PIT area: `Sess_ScCond_PitAreaClear_Init_Body` 0x150979070 (slot 1 of the 'Pit Area Clear' SC condition) copies Start/End of the FIRST item into g 0x145f96ab0 / 0x145f96ab4, which `Sess_ScCond_PitAreaClear_Update` tests car positions against. No item gives 0/0 and the WARN 'Failed to find eTypeSafetyCarPitZone property'.
+- show_pitstop_zone (type 33) is read from the pit-lane TrackSpace property (+0x40): `Game_PitstopSystem_FindShowPitstopZone_Body` 0x147de5cd0 keeps the first item at PitstopSystem+0xc0; without it `Game_PitstopSystem_ShowOrHide` returns at once.
+- The dropped stock types (ers_over_*, grid_park_osd, pit_ent, pit_exit_sc_exempt, pit_aud_ext_trgr, spch_vo_forb/qual) have no string and no fnv/djb2/crc constant anywhere else in the exe: no other loader reads them. Types 11, 12, 15, 26, 38 and 42 still have no static reader (T212).
+
 ## Inbox
 - 2026-10-18 22:13 telemetry: telemetry lane: session-live is tracked from two verified unique .xtls signatures. Game_GameModule_OnSessionEnter 0x14080c300 (session start): 41 57 41 56 41 54 56 57 53 48 81 EC 38 02 00 00 48 89 CE 80 3D AA F7 83 05 01 75 6D . Game_SessionStateFinaliseResultsSync_OnResultsFinalised 0x1409d2b20 (session end/results): 56 57 53 48 83 EC 30 4C 89 C7 48 89 D0 48 89 CE 4C 8B 02 48 8D 15 5E C1 67 05 . native/src/core/telemetry.cpp mid-hooks both (telemetry feature, experimental) to flip the telemetry available() gate. Both match exactly once and resolve to the KB addresses.
 - 2026-10-19 13:27 ea-port: EA port: game.session_enter/race_started/unlockable_owned_state and vm.flow_update are in the parallel EA set re/db/signatures.ea.json with section .rdata and pending-dump patterns; EA patterns need a decrypted-memory dump (on-disk EA exe fully packed, see core.md).
