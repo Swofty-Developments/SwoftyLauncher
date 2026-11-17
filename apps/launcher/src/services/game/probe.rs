@@ -11,9 +11,11 @@ use swofty_core::platform::steam::client as steam_client;
 use swofty_core::session::SessionRecord;
 use swofty_core::store::Store;
 
+use super::Copies;
+use super::discovery::discover_all;
 use super::import_retry::retry_import;
+use super::restore::recover_stale;
 use super::vault_watch::watch_vault;
-use super::*;
 
 pub struct Probe {
     pub install: Option<Copies>,
