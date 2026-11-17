@@ -12,6 +12,24 @@ use swofty_core::testsuite::plan;
 use swofty_core::testsuite::report::{Report, Status, exit};
 use swofty_core::testsuite::suite::{self, Selector};
 
+use super::fixture_command::capture_command;
+use super::game_lock::{hh_mm, take_lock};
+use super::harness::{Harness, Times};
+use super::launcher::{Launcher, Running};
+use super::preflight::{addons_installed, batch_fixture, check_sandbox, terms};
+use super::run::Stop;
+use super::shell::career_mode;
+use swofty_core::addon_storage;
+#[cfg(unix)]
+use swofty_core::builtin::CORE_ID;
+use swofty_core::process::stop_process;
+use swofty_core::testsuite::fixture;
+use swofty_core::testsuite::lock::GameLock;
+use swofty_core::testsuite::plan::Batch;
+#[cfg(unix)]
+use swofty_core::testsuite::report::TestReport;
+use swofty_core::testsuite::sandbox::{self, RunDir, RunOptions};
+
 use super::*;
 
 fn temp(name: &str) -> PathBuf {

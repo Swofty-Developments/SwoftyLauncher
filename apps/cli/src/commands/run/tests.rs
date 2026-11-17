@@ -14,7 +14,7 @@ use swofty_core::session::{
     Config, LOADER_FALLBACK, LOADER_LOG, LaunchMode, LaunchRequest, LogMark, PERF_LOG, STOP_FILE, SessionEnd,
     game_args, parse_steam_command,
 };
-use swofty_core::steam_client::{self};
+use swofty_core::steam_client;
 use swofty_core::store::Store;
 use swofty_core::{GAME_EXE, STEAM_APP_ID};
 
