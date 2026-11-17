@@ -189,11 +189,11 @@ fn labelled<'a>(items: impl Iterator<Item = (&'a str, Option<&'a str>)>) -> Vec<
 
 impl Shell {
     pub(super) fn tt_api(&self) -> Option<Api> {
-        self.mp.as_ref().map(|s| Api::new(&s.token))
+        self.account.session.as_ref().map(|s| Api::new(&s.token))
     }
 
     pub(crate) fn tt_admin(&self) -> bool {
-        self.mp.as_ref().is_some_and(|s| s.admin)
+        self.account.session.as_ref().is_some_and(|s| s.admin)
     }
 
     pub(crate) fn tt_open(&mut self, cx: &mut Context<Self>) {

@@ -9,6 +9,10 @@ void crash_attach(SwoftyApi *a, const std::wstring &dir);
 void crash_game_hooks();
 void settings_attach(SwoftyApi *a, const std::wstring &dir);
 
+namespace swofty_core::apply::content {
+void encode_logos_ahead();
+}
+
 namespace runtime {
 
 namespace {
@@ -21,6 +25,7 @@ constexpr Subsystem SUBSYSTEMS[] = {
     {"crash", Start::attach, attach_crash},
     {"settings", Start::attach, attach_settings},
     {"perf", Start::attach, perf::attach},
+    {"team logo slices ahead of the database load", Start::attach, swofty_core::apply::content::encode_logos_ahead},
     {"crash: Ne_ReportMemoryError hook", Start::attach_code, crash_game_hooks},
     {"popup: message system hook", Start::commit_code, popup_setup},
     {"mfd: development switch", Start::commit_code, mfd_setup},

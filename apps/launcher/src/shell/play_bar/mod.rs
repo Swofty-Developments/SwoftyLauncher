@@ -20,7 +20,7 @@ use crate::shell::{Page, PlayState, Shell};
 use crate::ui::theme::Palette;
 use swofty_core::install::Source;
 use swofty_core::session::LaunchMode;
-use swofty_core::updater::Gate;
+use swofty_core::updates::updater::Gate;
 
 pub(crate) fn store_badge(source: Source, p: Palette) -> Div {
     let (text, color) = match source {
@@ -108,8 +108,8 @@ impl Shell {
                 .child(s)
                 .into_any_element()
         };
-        let Some(i) = &self.install else {
-            let (title, line) = if self.detected {
+        let Some(i) = &self.game.install else {
+            let (title, line) = if self.game.detected {
                 (tr("F1 25 not found"), tr("Not in Steam or the EA app"))
             } else {
                 ("F1 25", tr("Looking for the game…"))
@@ -137,8 +137,8 @@ impl Shell {
             .child(muted(mode))
             .into_any_element();
         let shell = cx.entity().downgrade();
-        let copies = self.copies.clone();
-        let missing = self.missing_copies.clone();
+        let copies = self.game.copies.clone();
+        let missing = self.game.missing_copies.clone();
         let active = i.dir.clone();
         Button::new("game-switcher")
             .ghost()
@@ -251,7 +251,7 @@ impl Shell {
     fn status(&self, state: &PlayState, p: Palette, cx: &mut Context<Self>) -> impl IntoElement {
         let dot = |c: Hsla| div().size(px(7.)).rounded_full().bg(c).flex_shrink_0();
         let row = status_row();
-        if self.game_edited.is_some() {
+        if self.launching.game_edited.is_some() {
             return row
                 .text_color(p.warning)
                 .child(Icon::new(IconName::TriangleAlert).size(px(16.)))
@@ -272,7 +272,7 @@ impl Shell {
                     )
                 });
         }
-        if let Some(notice) = &self.notice {
+        if let Some(notice) = &self.launching.notice {
             return launch_failed(row, notice, p).when_some(self.launch_log(), |d, log| {
                 d.child(
                     link("launch-log", tr("View log"), p).on_click(move |_, _, cx| cx.open_with_system(&log)),
@@ -315,10 +315,10 @@ impl Shell {
             }
             PlayState::Restoring => row.child(dot(p.warning)).child(tr("Restoring the game files…")),
             PlayState::Building => {
-                let Some(b) = &self.build else {
+                let Some(b) = &self.game.build else {
                     return row;
                 };
-                let text = match self.cancelling {
+                let text = match self.launching.cancelling {
                     true => tr("Cancelling the build…").to_owned(),
                     false => format!(
                         "{} for {} · {}",
@@ -340,19 +340,20 @@ impl Shell {
                 .child(dot(p.warning))
                 .child(format!(
                     "{} {}",
-                    match self.launch.as_ref().and_then(|l| l.stage.as_deref()) {
+                    match self.launching.launch.as_ref().and_then(|l| l.stage.as_deref()) {
                         Some(stage) => stage.to_owned(),
-                        None if !self.use_profiles && self.launch_mode().is_vr() => {
+                        None if !self.prefs.use_profiles && self.launch_mode().is_vr() => {
                             tr("Starting in VR…").to_owned()
                         }
-                        None if !self.use_profiles => tr("Starting…").to_owned(),
+                        None if !self.prefs.use_profiles => tr("Starting…").to_owned(),
                         None if self.launch_mode().is_vr() => trf!(
                             "Starting with profile {name} in VR…",
                             name = self.library.profile.name
                         ),
                         None => trf!("Starting with profile {name}…", name = self.library.profile.name),
                     },
-                    self.launch
+                    self.launching
+                        .launch
                         .as_ref()
                         .map(|l| duration(l.since.elapsed().as_secs()))
                         .unwrap_or_default()
@@ -365,23 +366,24 @@ impl Shell {
             PlayState::Crashed(session) => {
                 let dir = session.dir.clone();
                 let ending = self
-                    .crash
+                    .crashes
+                    .latest
                     .as_ref()
                     .filter(|(d, _)| *d == session.dir)
                     .map(|(_, e)| e);
                 let open =
                     link("crash-log", tr("Open logs"), p).on_click(move |_, _, cx| cx.open_with_system(&dir));
                 let dismiss = link("dismiss", tr("Dismiss"), p).on_click(cx.listener(|this, _, _, cx| {
-                    this.dismissed = this.session.as_ref().map(|s| s.dir.clone());
+                    this.crashes.dismissed = this.game.session.as_ref().map(|s| s.dir.clone());
                     cx.notify();
                 }));
                 if let Some(Err(failure)) = ending {
                     return launch_failed(row, failure, p).child(open).child(dismiss);
                 }
-                let view = self.crash_view.as_ref().filter(|v| v.dir == session.dir);
+                let view = self.crashes.view.as_ref().filter(|v| v.dir == session.dir);
                 let details = view.map(|_| {
                     link("crash-details", tr("What happened"), p).on_click(cx.listener(|this, _, _, cx| {
-                        this.crash_open = true;
+                        this.crashes.open = true;
                         cx.notify();
                     }))
                 });
@@ -435,7 +437,7 @@ impl Shell {
             PlayState::Checking => row.text_color(p.text_muted).child(tr("Checking conflicts…")),
             PlayState::Preparing => row.child(dot(p.warning)).child(tr("Checking addons…")),
             PlayState::Ready => {
-                if let Some(n) = self.install.as_ref().and_then(|i| {
+                if let Some(n) = self.game.install.as_ref().and_then(|i| {
                     crate::shell::play_bar::unsupported_build::notice(&i.dir.join(swofty_core::GAME_EXE))
                 }) {
                     return row
@@ -461,7 +463,7 @@ impl Shell {
                         "{count} changed setting",
                         "{count} changed settings",
                     );
-                    let text = match self.use_profiles {
+                    let text = match self.prefs.use_profiles {
                         true => trf!(
                             "Ready · rebuilds {profile} for {changes} on launch",
                             profile = self.library.profile.name,
@@ -492,7 +494,7 @@ impl Shell {
                         )
                         .child(link("saves-dismiss", tr("Dismiss"), p).on_click(cx.listener(
                             |this, _, _, cx| {
-                                this.dismissed = this.session.as_ref().map(|s| s.dir.clone());
+                                this.crashes.dismissed = this.game.session.as_ref().map(|s| s.dir.clone());
                                 cx.notify();
                             },
                         )));
@@ -506,7 +508,7 @@ impl Shell {
                         .child(div().min_w_0().truncate().child(trf!(
                             "Addon careers may have been removed from your Steam save: {names}. Last version: {at}",
                             names = names,
-                            at = swofty_core::vault::human(at)
+                            at = swofty_core::saves::vault::human(at)
                         )))
                         .child(link("career-restore", tr("Restore"), p).on_click(cx.listener(
                             move |this, _, window, cx| this.restore_version(&source, &snapshot, window, cx),
@@ -535,13 +537,13 @@ impl Shell {
         ) {
             return None;
         }
-        let install = self.install.as_ref()?;
+        let install = self.game.install.as_ref()?;
         let blocked = swofty_core::build_support::blocked(&install.dir.join(swofty_core::GAME_EXE));
         let line = crate::shell::play_bar::save_area::line(
             &self.library.profile,
             install.source,
             blocked.as_deref(),
-            self.steam_saves_once,
+            self.launching.steam_saves_once,
         );
         let colour = if line.warn { p.warning } else { p.text_muted };
         Some(
@@ -581,8 +583,8 @@ impl Shell {
     fn play_caret(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let shell = cx.entity().downgrade();
         let vr = self.launch_mode().is_vr();
-        let start_store = self.start_store;
-        let start_label = match self.install.as_ref().map(|i| i.source) {
+        let start_store = self.prefs.start_store;
+        let start_label = match self.game.install.as_ref().map(|i| i.source) {
             Some(Source::EaApp) => tr("Start the EA app automatically"),
             _ => tr("Start Steam automatically"),
         };
@@ -728,7 +730,7 @@ impl Shell {
                 p.accent,
                 false,
             ),
-            PlayState::Building if self.cancelling => (
+            PlayState::Building if self.launching.cancelling => (
                 IconName::LoaderCircle,
                 tr("Cancelling…"),
                 p.elevated,
@@ -904,7 +906,7 @@ impl Shell {
             .bg(p.chrome)
             .border_t_1()
             .border_color(p.border_variant)
-            .child(crate::shell::pages::game_art(56., 56.).m(px(8.)))
+            .child(crate::ui::game_art(56., 56.).m(px(8.)))
             .child(
                 h_flex()
                     .flex_1()

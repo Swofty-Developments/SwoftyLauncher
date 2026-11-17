@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
-use swofty_core::data_usage::Room;
+use swofty_core::data::space::Room;
 use swofty_core::store::Store;
 use swofty_i18n::{fill, tr, trf, trn};
 
@@ -99,10 +99,10 @@ pub(crate) fn run(inputs: Inputs) -> Checked {
     } = inputs;
     let mut timings = Timings::default();
     let gate = timings.time("gate", || Gate {
-        write_blocked: swofty_core::compat::write_blocker(&game).is_some(),
-        setup_done: swofty_core::setup::done(&store.root),
+        write_blocked: swofty_core::platform::run_as_admin::write_blocker(&game).is_some(),
+        setup_done: swofty_core::game_folder::setup::done(&store.root),
         offline_accepted: swofty_core::offline::is_accepted(&store.root),
-        first_launch: swofty_core::setup::first_launch(&store.root),
+        first_launch: swofty_core::game_folder::setup::first_launch(&store.root),
     });
     let mut notes = Vec::new();
     let verdict = match (
@@ -144,7 +144,8 @@ fn track_limit_note(
     if profile.is_vanilla() {
         return None;
     }
-    let identity = swofty_core::baseline::Identity::detect_cached(&store.root, game, build_id).ok()?;
+    let identity =
+        swofty_core::game_folder::baseline::Identity::detect_cached(&store.root, game, build_id).ok()?;
     let game = swofty_core::install::Game {
         dir: game.to_path_buf(),
         user_reg: None,
@@ -186,7 +187,7 @@ fn lonely(
     catalog: &[swofty_core::catalog::Addon],
 ) -> Vec<Note> {
     let mut notes = Vec::new();
-    for (base, family) in swofty_core::resolver::lonely_bases(profile, installed, catalog) {
+    for (base, family) in swofty_core::profile::resolver::lonely_bases(profile, installed, catalog) {
         if installed
             .values()
             .any(|m| m.name == base && store.is_builtin(&m.id))
@@ -236,7 +237,9 @@ fn registry(
         notes.extend(vanilla_note(using));
         return Verdict::Go;
     }
-    let Ok(plan) = timings.time("resolve", || swofty_core::resolver::resolve(profile, installed)) else {
+    let Ok(plan) = timings.time("resolve", || {
+        swofty_core::profile::resolver::resolve(profile, installed)
+    }) else {
         return Verdict::Go;
     };
     let all = timings.time("deps", || deps::read_all(store, installed));

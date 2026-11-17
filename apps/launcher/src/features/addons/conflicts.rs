@@ -3,17 +3,17 @@ use super::row::stock_removals_text;
 use crate::services::library::AddonItem;
 use crate::shell::Shell;
 use crate::shell::notices::{Notification, Notify};
-use crate::shell::pages::{chevron, label};
 use crate::ui::format::{ago_since, title_case};
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;
+use crate::ui::{chevron, label};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::conflicts::{self, Pair};
 use swofty_core::profile::VANILLA;
+use swofty_core::profile::conflicts::{self, Pair};
 use swofty_i18n::{tr, trf, trn};
 
 pub(super) fn pair_counts(pair: &Pair) -> String {
@@ -133,7 +133,7 @@ impl Shell {
             return;
         }
         self.addons.checking = true;
-        let (store, install) = (self.store.clone(), self.install.clone());
+        let (store, install) = (self.store.clone(), self.game.install.clone());
         let profile = self.library.profile.name.clone();
         cx.spawn_in(window, async move |this, cx| {
             let result = cx

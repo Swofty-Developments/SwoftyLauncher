@@ -5,13 +5,13 @@ use gpui_kit::component::dialog::DialogFooter;
 use gpui_kit::component::{Icon, WindowExt, h_flex, v_flex};
 use gpui_kit::*;
 
-use swofty_core::ea_app::Moved;
 use swofty_core::install::EA_APP_SEEN;
+use swofty_core::platform::ea_app::Moved;
 
 use crate::shell::Shell;
-use crate::shell::pages::{game_art, logo};
 use crate::ui::discord::invite_button;
 use crate::ui::theme::{Palette, palette};
+use crate::ui::{game_art, logo};
 use swofty_i18n::{tr, trf};
 
 const HEIGHT: f32 = 470.;

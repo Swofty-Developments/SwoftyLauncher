@@ -8,6 +8,13 @@ use std::time::Instant;
 
 use super::{Page, PlayState, Shell};
 
+/// The window and content sizes the last frame was laid out at.
+pub(crate) struct Layout {
+    pub(crate) window_width: f32,
+    pub(crate) content_width: f32,
+    pub(crate) short: bool,
+}
+
 impl Render for Shell {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let started = Instant::now();
@@ -40,16 +47,16 @@ impl Render for Shell {
         let ad_video = self.ad_video(&state, p, cx);
         let wide = window.viewport_size().width > px(1500.);
         let short = window.viewport_size().height < px(760.);
-        self.short = short;
+        self.layout.short = short;
         let layout_width = f32::from(window.viewport_size().width);
-        self.content_width = crate::ui::scale::content_width(
+        self.layout.content_width = crate::ui::scale::content_width(
             f32::from(window.viewport_size().width),
             crate::ui::scale::current(),
         );
-        self.layout_width = layout_width;
+        self.layout.window_width = layout_width;
         let side = self.profiles_sidebar(p, cx);
         if side.is_some() {
-            self.content_width = (self.content_width - self.profiles_width()).max(320.);
+            self.layout.content_width = (self.layout.content_width - self.profiles_width()).max(320.);
         }
         self.sync_sliders(window, cx);
         self.sync_blocks(window, cx);
@@ -63,7 +70,7 @@ impl Render for Shell {
         for note in std::mem::take(&mut self.browser.toasts) {
             window.notify(note, cx);
         }
-        for note in std::mem::take(&mut self.mp_toasts) {
+        for note in std::mem::take(&mut self.account.toasts) {
             window.notify(note, cx);
         }
         let content = match self.page {
@@ -73,7 +80,12 @@ impl Render for Shell {
                 Some(dev) => v_flex()
                     .size_full()
                     .child(div().flex_1().min_h_0().child(self.tools_page(p, window, cx)))
-                    .child(div().px(px(crate::shell::pages::GUTTER)).pb(px(16.)).child(dev))
+                    .child(
+                        div()
+                            .px(px(crate::ui::tokens::space::GUTTER))
+                            .pb(px(16.))
+                            .child(dev),
+                    )
                     .into_any_element(),
                 None => self.tools_page(p, window, cx),
             },

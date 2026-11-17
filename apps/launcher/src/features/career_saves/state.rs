@@ -1,9 +1,9 @@
 use std::path::{Path, PathBuf};
 
-use swofty_core::launcher_saves;
 use swofty_core::profile::VANILLA;
-use swofty_core::vault::careers::{Diff, Listed};
-use swofty_core::vault::{self, Location, Snapshot};
+use swofty_core::saves::launcher as launcher_saves;
+use swofty_core::saves::vault::careers::{Diff, Listed};
+use swofty_core::saves::vault::{self, Location, Snapshot};
 
 use super::banner_data::{Banner, banner_from};
 use super::steam::source_of_profile;

@@ -8,7 +8,7 @@ use crate::ui::scale::px;
 use gpui_kit::component::WindowExt;
 use gpui_kit::component::button::ButtonVariant;
 use gpui_kit::*;
-use swofty_core::data_usage::{self, KEEP_FOR, KEEP_SESSIONS};
+use swofty_core::data::space::{self as data_usage, KEEP_FOR, KEEP_SESSIONS};
 use swofty_i18n::{tr, trf};
 
 use crate::shell::Shell;
@@ -88,7 +88,7 @@ impl Shell {
         }
         self.settings.measuring = true;
         let root = self.store.root.clone();
-        let game = self.install.as_ref().map(|i| i.dir.clone());
+        let game = self.game.install.as_ref().map(|i| i.dir.clone());
         cx.spawn(async move |this, cx| {
             let (usage, prunable, cache) = cx
                 .background_executor()
@@ -101,10 +101,10 @@ impl Shell {
                         SystemTime::now(),
                     );
                     let cache = game.map_or_else(GameCopy::default, |g| GameCopy {
-                        bytes: swofty_core::link_cache::size(&g),
-                        apart: swofty_core::link_cache::apart(
-                            swofty_core::disk::volume(&swofty_core::store::overlay_root(&root)),
-                            swofty_core::disk::volume(&g),
+                        bytes: swofty_core::cache::link::size(&g),
+                        apart: swofty_core::cache::link::apart(
+                            swofty_core::platform::disk::volume(&swofty_core::store::overlay_root(&root)),
+                            swofty_core::platform::disk::volume(&g),
                         )
                         .unwrap_or(false),
                     });
@@ -125,7 +125,7 @@ impl Shell {
     }
 
     pub(crate) fn confirm_clear_logs(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        if !self.processes.is_empty() {
+        if !self.game.processes.is_empty() {
             window.notify(
                 Notification::error(tr("Close F1 25 first: it may still be writing its session log")),
                 cx,
@@ -158,18 +158,18 @@ impl Shell {
     }
 
     pub(crate) fn settings_clear_cache(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        if !self.processes.is_empty() {
+        if !self.game.processes.is_empty() {
             window.notify(Notification::error(tr("Close F1 25 first")), cx);
             return;
         }
-        let Some(game) = self.install.as_ref().map(|i| i.dir.clone()) else {
+        let Some(game) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
             return;
         };
         self.settings.clearing = true;
         cx.spawn_in(window, async move |this, cx| {
             let freed = cx
                 .background_executor()
-                .spawn(async move { swofty_core::link_cache::remove(&game) })
+                .spawn(async move { swofty_core::cache::link::remove(&game) })
                 .await;
             this.update_in(cx, |s, window, cx| {
                 s.settings.clearing = false;
@@ -193,7 +193,7 @@ impl Shell {
     }
 
     fn settings_clear_logs(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        if !self.processes.is_empty() {
+        if !self.game.processes.is_empty() {
             window.notify(
                 Notification::error(tr("Close F1 25 first: it may still be writing its session log")),
                 cx,
@@ -236,7 +236,7 @@ impl Shell {
 #[cfg(test)]
 mod tests {
     use super::low_space_warning;
-    use swofty_core::data_usage::{GAME_DRIVE, Room};
+    use swofty_core::data::space::{GAME_DRIVE, Room};
 
     const GB: u64 = 1 << 30;
 

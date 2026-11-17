@@ -5,16 +5,16 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::catalog::Addon;
 use swofty_core::catalog::search::Query;
-use swofty_core::update::current_version;
+use swofty_core::updates::release::current_version;
 use swofty_i18n::{tr, trf, trn};
 
 use super::*;
 use crate::shell::Shell;
-use crate::shell::pages::{badge, tag};
 use crate::ui::ProgressBar;
 use crate::ui::format;
 use crate::ui::scale::px;
 use crate::ui::theme::Palette;
+use crate::ui::{badge, tag};
 
 pub(super) fn card_border(failed: bool, updating: bool, p: Palette) -> Hsla {
     if failed {
