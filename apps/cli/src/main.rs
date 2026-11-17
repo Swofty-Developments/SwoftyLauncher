@@ -5,7 +5,9 @@ mod doctor;
 mod ea;
 mod hud;
 mod laps;
+mod logs;
 mod offline;
+mod output;
 mod postfx;
 mod recover;
 mod registry;
@@ -14,6 +16,8 @@ mod saves;
 mod send_logs;
 mod setup;
 mod shaders;
+mod signals;
+mod steam;
 mod testing;
 mod time;
 mod update;
@@ -586,12 +590,12 @@ fn dispatch(store: &Store, cli: Cli) -> Result<ExitCode> {
             action: Some(LogsCommand::Send(args)),
             ..
         } => send_logs::send(&store, args),
-        Command::Logs { dir, exe, .. } => run::logs(&store, dir, exe),
+        Command::Logs { dir, exe, .. } => logs::summarise(&store, dir, exe),
         Command::Doctor => doctor::doctor(&store),
         Command::Game(cmd) => game(&store, cmd).map(|_| ExitCode::SUCCESS),
         Command::Saves(cmd) => saves::command(&store, cmd),
         Command::Laps(cmd) => laps::command(&store, &profile, cmd),
-        Command::Steam { start } => run::steam_check(&store, start),
+        Command::Steam { start } => steam::check(&store, start),
         Command::Postfx(cmd) => postfx::command(cmd),
         Command::Shaders(cmd) => shaders::command(&store, &profile, cmd),
         Command::Test(cmd) => testing::command(&store, named.as_deref(), &profile, cmd),
