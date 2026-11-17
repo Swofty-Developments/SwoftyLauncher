@@ -1382,6 +1382,9 @@ rg::Book rtas_book;
 std::atomic<size_t> rtas_tracked{0};
 std::atomic<uint64_t> rtas_builds{0}, rtas_faulty{0}, rtas_holes{0}, rtas_bad_posts{0};
 uint64_t rtas_trace;
+constexpr uint32_t RTAS_NAMED = 800;
+rg::Trace rtas_named{RTAS_NAMED};
+std::atomic<bool> rtas_named_full{false};
 
 using RtasDesc = D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC;
 using GeoDesc = D3D12_RAYTRACING_GEOMETRY_DESC;
@@ -1473,6 +1476,54 @@ void log_faulty(uint64_t nth, const RtasDesc &desc, const std::vector<rg::Geo> &
                 (unsigned long long)g.indices, what);
 }
 
+void name_build(const void *list, uint64_t nth, const RtasDesc &desc)
+{
+    const auto &in = desc.Inputs;
+    rg::Shape shape;
+    for (UINT i = 0; i < in.NumDescs; i++)
+        shape.add(geo_of(geo_at(in, i)));
+    bool want, full;
+    {
+        std::lock_guard<std::mutex> g(rtas_lock);
+        want = rtas_named.want(desc.DestAccelerationStructureData, shape.hash);
+        full = rtas_named.full();
+    }
+    if (full)
+        rtas_named_full.store(true, std::memory_order_relaxed);
+    if (!want)
+        return;
+    char line[1400];
+    int at = snprintf(line, sizeof line, "[gfx] rtas build %llu%s on list 0x%llx into 0x%llx (flags 0x%x), %u geometries:",
+                      (unsigned long long)nth,
+                      (in.Flags & D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE) ? " (update)" : "",
+                      (unsigned long long)list, (unsigned long long)desc.DestAccelerationStructureData, unsigned(in.Flags),
+                      in.NumDescs);
+    UINT shown = 0;
+    const GeoDesc *first = nullptr;
+    for (; shown < in.NumDescs && at > 0 && at < int(sizeof line) - 96; shown++) {
+        const GeoDesc &g = geo_at(in, shown);
+        if (g.Type != D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES) {
+            at += snprintf(line + at, sizeof line - at, " aabb%llu", (unsigned long long)g.AABBs.AABBCount);
+            continue;
+        }
+        const auto &t = g.Triangles;
+        at += snprintf(line + at, sizeof line - at, " v%u/i%u", t.VertexCount, t.IndexCount);
+        if (!first || first->Triangles.VertexFormat != t.VertexFormat ||
+            first->Triangles.VertexBuffer.StrideInBytes != t.VertexBuffer.StrideInBytes ||
+            first->Triangles.IndexFormat != t.IndexFormat || first->Flags != g.Flags || !t.Transform3x4 != !first->Triangles.Transform3x4)
+            at += snprintf(line + at, sizeof line - at, "(vf%d s%llu if%d fl%u%s)", int(t.VertexFormat),
+                           (unsigned long long)t.VertexBuffer.StrideInBytes, int(t.IndexFormat), unsigned(g.Flags),
+                           t.Transform3x4 ? " t" : "");
+        if (!first)
+            first = &g;
+    }
+    if (shown < in.NumDescs && at > 0 && at < int(sizeof line) - 24)
+        snprintf(line + at, sizeof line - at, " +%u more", in.NumDescs - shown);
+    swofty::log("%s", line);
+    if (full)
+        swofty::log("[gfx] rtas build log: %u builds named; later builds are not", RTAS_NAMED);
+}
+
 void STDMETHODCALLTYPE build_rtas_hook(ID3D12GraphicsCommandList4 *l, const RtasDesc *desc, UINT posts,
                                        const PostDesc *post)
 {
@@ -1546,6 +1597,8 @@ void STDMETHODCALLTYPE build_rtas_hook(ID3D12GraphicsCommandList4 *l, const Rtas
         }
         swofty::log("%s", line);
     }
+    if (!rtas_named_full.load(std::memory_order_relaxed))
+        name_build(l, nth, *desc);
     bool any = false;
     for (UINT i = 0; i < in.NumDescs && !any; i++)
         any = rg::fault(geo_of(geo_at(in, i))) != rg::Fault::none;

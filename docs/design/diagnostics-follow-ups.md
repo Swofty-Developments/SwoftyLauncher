@@ -8,7 +8,7 @@ Send Logs now carries the GPU, driver, video memory and RAM facts, the last five
 
 ## Per-car load line on the select screen
 
-One `loader.log` line for each car or mesh load while a season box is open: the `.erp` file name, the slot, the mesh and record count, the triangle count, and whether a raytracing acceleration structure build was requested. DRED shows the hang at the fourth `BUILDRAYTRACINGACCELERATIONSTRUCTURE` of a flush with no way to tie it to a car. Core has no hook on the game's acceleration structure builds or its raytracing validation messages, and the bindings carry no `Render_OnRaytracingValidationMsg`. The work is to locate the build call and the mesh loader in `re/`, add both as bindings, and log from them.
+Core names each bottom-level ray tracing build in `loader.log` the first time it sees that structure with that shape, up to 800 builds: `[gfx] rtas build <n> on list 0x<list> into 0x<dest>` with each geometry's vertex and index counts (`v<vertices>/i<indices>`) and formats. The DRED section of a crash report gives each command list node its address (`command list <name> (0x<list>)`), so the build a hang stops at is the one on that list, and its index counts match the records of the car mesh that holds it. Still missing: the `.erp` file name and slot of each mesh load, which needs the game's mesh loader located in `re/` and added as a binding.
 
 ## Session end classification
 

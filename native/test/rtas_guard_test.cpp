@@ -94,6 +94,19 @@ int main()
     expect(rg::detailed(8, 8) && !rg::detailed(9, 8), "the first builds are logged in detail");
     expect(rg::milestone(16) && !rg::milestone(12) && !rg::milestone(0), "later builds are counted at powers of two");
 
+    rg::Shape one, same_counts, other;
+    one.add(tri(0x1000, 300, 0x2000, 900));
+    same_counts.add(tri(0x5000, 300, 0x6000, 900));
+    other.add(tri(0x1000, 300, 0x2000, 903));
+    expect(one.hash == same_counts.hash, "the shape is the primitive counts, not the buffer addresses");
+    expect(one.hash != other.hash, "another index count is another shape");
+    rg::Trace trace(3);
+    expect(trace.want(0xa000, one.hash), "a structure's first build is named");
+    expect(!trace.want(0xa000, one.hash), "a refit of the same shape is not named again");
+    expect(trace.want(0xa000, other.hash), "a new shape in the same structure is named");
+    expect(trace.want(0xb000, one.hash) && trace.full(), "the build that reaches the cap is named");
+    expect(!trace.want(0xc000, one.hash) && trace.named() == 3, "nothing is named past the cap");
+
     expect(rg::mode(nullptr) == rg::Mode::on && rg::mode("1") == rg::Mode::on && rg::mode("ON") == rg::Mode::on,
            "the guard is on by default");
     expect(rg::mode("0") == rg::Mode::off && rg::mode("Off") == rg::Mode::off, "0 or off turns it off");

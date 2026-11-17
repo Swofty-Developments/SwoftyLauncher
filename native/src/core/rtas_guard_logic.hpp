@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 // A ray tracing build reads every active geometry's vertex and index buffers, the instance list of a
@@ -115,6 +116,43 @@ public:
 
 private:
     std::unordered_map<uint64_t, std::vector<uint32_t>> emptied_;
+};
+
+// The primitive counts of a bottom-level build's geometries, hashed one geometry at a time.
+struct Shape {
+    uint64_t hash = 1469598103934665603ull;
+
+    void mix(uint64_t v) { hash = (hash ^ v) * 1099511628211ull; }
+
+    void add(const Geo &g)
+    {
+        mix(uint64_t(g.type));
+        mix(g.vertex_count);
+        mix(g.index_count);
+        mix(g.aabb_count);
+    }
+};
+
+// The bottom-level builds the build log names: each structure (by destination address) once for each shape, so a
+// structure refitted or rebuilt every frame is named once, and nothing once the cap is reached.
+class Trace {
+public:
+    explicit Trace(uint32_t cap) : cap_(cap) {}
+
+    bool want(uint64_t dest, uint64_t shape)
+    {
+        if (named_ >= cap_ || !seen_.insert(dest * 0x9e3779b97f4a7c15ull ^ shape).second)
+            return false;
+        named_++;
+        return true;
+    }
+
+    bool full() const { return named_ >= cap_; }
+    uint32_t named() const { return named_; }
+
+private:
+    uint32_t cap_, named_ = 0;
+    std::unordered_set<uint64_t> seen_;
 };
 
 struct Call {
