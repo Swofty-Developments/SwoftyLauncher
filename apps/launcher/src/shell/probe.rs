@@ -1,7 +1,7 @@
-use crate::crash_modal::{self, CrashView};
-use crate::game::{self, Copies, Install, Owner, Probe};
-use crate::game_edited::Edited;
-use crate::notices::{Notification, Notify};
+use crate::dialogs::crash::{self, CrashView};
+use crate::dialogs::game_edited::Edited;
+use crate::services::game::{self, Copies, Install, Owner, Probe};
+use crate::shell::notices::{Notification, Notify};
 use gpui_kit::*;
 use std::time::{Duration, Instant};
 use swofty_core::quarantine;
@@ -33,7 +33,7 @@ impl Shell {
         let took = started.elapsed();
         if took > Duration::from_millis(100) && !self.slow_logged {
             self.slow_logged = true;
-            crate::app_log::note(&format!(
+            crate::app::app_log::note(&format!(
                 "ui: {what} took {} ms on the UI thread while on the {page} page",
                 took.as_millis()
             ));
@@ -140,7 +140,7 @@ impl Shell {
         if let Some(found) = found {
             let changed = !self.detected || self.install != found.active || self.copies != found.all;
             self.install = found.active;
-            crate::app_log::set_game(self.install.as_ref().map(|i| i.dir.as_path()));
+            crate::app::app_log::set_game(self.install.as_ref().map(|i| i.dir.as_path()));
             self.copies = found.all;
             self.missing_copies = found.missing;
             self.detected = true;
@@ -169,11 +169,9 @@ impl Shell {
                         .mods_blocked
                         .as_ref()
                         .is_some_and(|r| r.stage == quarantine::Stage::BeforeLaunch && r.at >= launch.at);
-                    let not_stock = probe
-                        .not_stock
-                        .as_ref()
-                        .filter(|r| r.at >= launch.at)
-                        .map(|r| crate::game_edited::notice(r, self.install.as_ref().map(|i| i.source)));
+                    let not_stock = probe.not_stock.as_ref().filter(|r| r.at >= launch.at).map(|r| {
+                        crate::dialogs::game_edited::notice(r, self.install.as_ref().map(|i| i.source))
+                    });
                     let failed = probe
                         .launch_failed
                         .as_ref()
@@ -201,7 +199,7 @@ impl Shell {
                     .filter(|n| !n.contains(swofty_core::busy::CANCELLED));
                     let why = self.notice.clone().unwrap_or_else(|| launch.failure());
                     if self.notice.is_some() {
-                        crate::app_log::action("start F1 25").failed(&why);
+                        crate::app::app_log::action("start F1 25").failed(&why);
                     }
                     self.mp_launch_ended(Some(why));
                 } else {
@@ -220,9 +218,7 @@ impl Shell {
             let crashed = s.crashed();
             let game_dir = self.install.as_ref().map(|i| i.dir.clone());
             let store = self.store.clone();
-            let fresh = s
-                .ended
-                .is_some_and(|e| game::now_secs() - e < crash_modal::FRESH_SECS);
+            let fresh = s.ended.is_some_and(|e| game::now_secs() - e < crash::FRESH_SECS);
             self.crash = Some((s.dir.clone(), Ok(String::new())));
             cx.spawn(async move |this, cx| {
                 let dir = session.dir.clone();

@@ -1,4 +1,4 @@
-use crate::library::Library;
+use crate::services::library::Library;
 use gpui_kit::*;
 use std::time::Instant;
 
@@ -21,7 +21,7 @@ impl Shell {
                 .background_executor()
                 .spawn(async move { Library::read(&store) })
                 .await;
-            crate::app_log::note(&format!(
+            crate::app::app_log::note(&format!(
                 "profile switch: library loaded in {} ms",
                 started.elapsed().as_millis()
             ));
@@ -71,7 +71,7 @@ impl Shell {
         let running = dir.as_ref().is_some_and(|d| {
             self.processes.iter().any(|g| g.is_in(d)) && d.join("swofty/shaders/effects.json").exists()
         }) && swofty_core::recovery::SessionLock::held_elsewhere(&self.store.root);
-        let info = crate::shaders::Info {
+        let info = crate::features::shaders::Info {
             profile: self.library.profile.name.clone(),
             game_dir: dir,
             running,
@@ -81,20 +81,20 @@ impl Shell {
 
     pub(super) fn shaders_event(
         &mut self,
-        _: Entity<crate::shaders::ShadersView>,
-        event: &crate::shaders::Event,
+        _: Entity<crate::features::shaders::ShadersView>,
+        event: &crate::features::shaders::Event,
         cx: &mut Context<Self>,
     ) {
         match event {
-            crate::shaders::Event::Browse => {
+            crate::features::shaders::Event::Browse => {
                 self.open_page(Page::Browser, cx);
                 self.show_shader_addons(cx);
             }
-            crate::shaders::Event::OpenAddon(id) => {
+            crate::features::shaders::Event::OpenAddon(id) => {
                 self.highlight = Some((id.clone(), Instant::now()));
                 self.open_page(Page::Addons, cx);
             }
-            crate::shaders::Event::ActiveChanged => self.reload_in_background(cx),
+            crate::features::shaders::Event::ActiveChanged => self.reload_in_background(cx),
         }
     }
 

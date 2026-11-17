@@ -11,8 +11,8 @@
 
 namespace guards = swofty_core::guards;
 
-// The core mixin sets in the order offer_core_sets and settle_core_sets in runtime/manager.cpp listed them before the
-// registry took them over.
+// The core mixin sets in the order offer_core_sets and settle_core_sets in runtime/manager.cpp listed them on
+// v1.10.0 (9d21d3a9b) before the registry took them over.
 const std::vector<std::string> OFFERED = {
     "save_sandbox",
     "career_content",
@@ -44,6 +44,7 @@ const std::vector<std::string> OFFERED = {
     "tyre_models",
     "track_acclim",
     "audio_queue",
+    "loading",
     "heap_sizes",
     "team_slots",
     "track_select",
@@ -96,6 +97,7 @@ const std::vector<std::string> SETTLED = {
     "chassis_registry",
     "track_acclim",
     "audio_queue",
+    "loading",
     "heap_sizes",
     "team_slots",
     "track_select",

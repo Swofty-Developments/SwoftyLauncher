@@ -1,4 +1,4 @@
-use crate::game::Owner;
+use crate::services::game::Owner;
 use swofty_core::session::SessionRecord;
 use swofty_i18n::tr;
 

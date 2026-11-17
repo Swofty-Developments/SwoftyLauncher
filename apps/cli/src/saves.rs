@@ -12,7 +12,7 @@ use swofty_core::vault::{
     self, Checked, Location, Meta, Notice, Reason, Snapshot, Taken, Vault, migrate, watch,
 };
 
-use crate::run::say;
+use crate::output::say;
 
 #[derive(Subcommand)]
 pub enum SavesCommand {

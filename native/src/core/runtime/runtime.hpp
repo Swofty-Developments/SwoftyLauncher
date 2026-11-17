@@ -14,7 +14,12 @@
 #include <string>
 #include <vector>
 
+#include "core/runtime/build.hpp"
+#include "core/runtime/files.hpp"
+#include "core/runtime/hashing.hpp"
 #include "core/runtime/json.hpp"
+#include "core/runtime/robin_map.hpp"
+#include "core/runtime/stage.hpp"
 #include "swofty_api.h"
 
 namespace swofty_core::registry {
@@ -23,24 +28,12 @@ class Store;
 
 namespace runtime {
 
+// The text of swofty/settings.json as the launcher wrote it (empty when absent).
+const std::string &settings_json_text();
+
 namespace myteam_heal {
 struct Load;
 }
-
-enum Stage { STAGE_WINDOW = 1 };
-
-// How long a reader of the game's heaps trusts a big region's VirtualQuery answer (swofty::mem::Trust). A fresh
-// answer inside one of those multi-GB regions costs milliseconds on Windows. Session start, end and unload drop
-// every cached answer (swofty::mem::invalidate).
-constexpr uint32_t HEAP_TRUST_MS = 4000;
-
-struct Sig {
-    const char *what, *pattern;
-    uintptr_t rva;
-    enum Kind { addr, rel32, riprel } kind = addr;
-    uintptr_t insn = 0, anchor = 0, len = 0;
-    const char *section = ".xtls";
-};
 
 struct OverlayErp {
     std::string path;
@@ -53,43 +46,6 @@ struct Overlay {
     std::vector<OverlayErp> erps;
     size_t replaced = 0, added = 0;
 };
-
-const json::Value &config();
-const std::string &config_source();
-const std::wstring &game_root();
-const std::wstring &swofty_root();
-const std::wstring &state_root();
-// Where the core writes the files the launcher collects (laps, the Time Trial mailbox, replay copies): the launcher's
-// data folder (state_root), or swofty\ when the core can't write there. The game can't create files in swofty\ of an
-// EA app copy under Program Files.
-const std::wstring &files_root();
-bool enabled(const char *feature, const char *what);
-std::string load_stage();
-bool same_build();
-// The builds whose struct layouts were checked against the signatures' functions (re/tools/sigverify.py): the Steam KB build and
-// the EA App link of the same version. Code that finds every address by signature gates on this instead of same_build().
-bool verified_build();
-// [g_Game_Manager]'s entrants system displacement on the running build (game_manager_layout.hpp): +0x290 on Steam, +0x260 on EA.
-uintptr_t manager_entrants_system();
-
-uintptr_t find(const Sig &s, const char *tag, const char *channel = "assets");
-bool readable(const void *p, size_t n);
-std::string read_file(const std::wstring &path, size_t limit = size_t(512) << 20);
-bool write_file(const std::wstring &path, const std::string &data);
-bool file_size(const std::wstring &path, uint64_t *size);
-std::wstring wide(const std::string &s);
-std::string narrow(const std::wstring &w);
-std::wstring under_swofty(const std::string &rel);
-std::string lower(std::string s);
-uint64_t fnv64(const char *s, size_t n);
-inline uint64_t fnv64(const std::string &s) { return fnv64(s.data(), s.size()); }
-uint32_t fnv32(const char *s);
-void md5(const void *data, size_t n, uint8_t out[16]);
-std::string hex16(uint64_t v);
-
-void on_stage(void (*fn)(int stage));
-void when_code_ready(const char *what, void (*fn)());
-bool code_ready();
 
 const Overlay *resource_overlay(DWORD wait_ms);
 void overlay_registered(const std::vector<uint64_t> &erp_hashes, size_t groups);
@@ -207,11 +163,6 @@ std::vector<CoreMixins> car_category_mixins();
 void car_category_commit();
 std::vector<CoreMixins> save_splice_mixins();
 void save_splice_commit();
-// The text of swofty/settings.json as the launcher wrote it (empty when absent), and the running build's
-// distribution as the binding set names it: "steam", "ea" or "unknown".
-const std::string &settings_json_text();
-std::string build_distribution();
-std::string build_exe_sha();
 // Career saves (career_saves.cpp): the career index and per-career addon data.
 namespace career_saves {
 struct SlotRead;
@@ -298,6 +249,8 @@ std::vector<CoreMixins> pit_box_mixins();
 void pit_box_commit();
 std::vector<CoreMixins> track_acclim_mixins();
 void track_acclim_commit();
+std::vector<CoreMixins> loading_mixins();
+void loading_commit();
 std::vector<CoreMixins> heap_sizes_mixins();
 void heap_sizes_commit();
 bool save_heap_raised(uint64_t &bytes);
@@ -353,7 +306,7 @@ void placed_record_crash_text(char *out, size_t cap);
 // nothing while no plugin listens; session_host_message answers true when the plugin took the message, and
 // session_host_cover_signal -1 (failed) when nothing answers for the cover.
 void session_host_ready();
-// The tile list entries the core takes out (swofty_core.cpp).
+// The tile list entries the core takes out (home_tiles.cpp).
 void local_tiles_setup();
 void session_host_flow(uint32_t hash, uint32_t to);
 void session_host_screen(const char *name);
@@ -420,54 +373,5 @@ std::string file_route_prefix();
 bool file_route(const std::string &game_path, const std::string *target, const std::string &source, std::string &why);
 bool file_route_target(const std::string &game_path, std::string &target);
 
-struct Robin {
-    uint8_t *s;
-
-    template <class T> T at(size_t off) const { return *reinterpret_cast<const T *>(s + off); }
-    uint64_t mult() const { return at<uint64_t>(0x10); }
-    uint64_t *slots() const { return at<uint64_t *>(0x18); }
-    uint8_t *info() const { return at<uint8_t *>(0x20); }
-    uint64_t count() const { return at<uint64_t>(0x28); }
-    uint64_t mask() const { return at<uint64_t>(0x30); }
-    uint32_t inc() const { return at<uint32_t>(0x40); }
-    uint32_t shift() const { return at<uint32_t>(0x44); }
-
-    size_t buffer() const
-    {
-        uint64_t n = mask() + 1, a = n < 0x28f5c28f5c28f5dull ? n * 80 / 100 : (n / 100) * 80;
-        return size_t(n + std::min<uint64_t>(a, 0xff));
-    }
-
-    bool sane() const
-    {
-        if (!readable(s, 0x48))
-            return false;
-        uint64_t n = mask() + 1;
-        return n >= 8 && !(n & (n - 1)) && inc() >= 1 && inc() <= 0x20 && slots() && info() &&
-               readable(info(), 1) && readable(info() + buffer(), 1) && readable(slots(), 16) &&
-               readable(reinterpret_cast<uint8_t *>(slots()) + buffer() * 16 - 16, 16);
-    }
-
-    uint64_t *find(uint64_t key) const
-    {
-        uint64_t h = key * mult();
-        h ^= h >> 33;
-        uint32_t inf = inc() + ((uint32_t(h) & 0x1f) >> (shift() & 0x3f));
-        size_t idx = size_t((h >> 5) & mask());
-        const uint8_t *in = info();
-        uint64_t *sl = slots();
-        do {
-            if (inf == in[idx] && sl[idx * 2] == key)
-                return &sl[idx * 2];
-            ++idx;
-            inf += inc();
-            if (inf == in[idx] && sl[idx * 2] == key)
-                return &sl[idx * 2];
-            ++idx;
-            inf += inc();
-        } while (inf <= in[idx]);
-        return nullptr;
-    }
-};
 
 }

@@ -124,6 +124,7 @@ FunctionSet function_sets[] = {
     {CoreSetId::myteam_vehicle_keep, runtime::myteam_vehicle_keep_mixins, runtime::myteam_vehicle_keep_commit},
     {CoreSetId::tyre_models, runtime::tyre_models_mixins, runtime::tyre_models_commit},
     {CoreSetId::track_acclim, runtime::track_acclim_mixins, runtime::track_acclim_commit},
+    {CoreSetId::loading, runtime::loading_mixins, runtime::loading_commit},
     {CoreSetId::heap_sizes, runtime::heap_sizes_mixins, runtime::heap_sizes_commit},
     {CoreSetId::team_slots, runtime::team_slots_mixins, runtime::team_slots_commit},
     {CoreSetId::track_select, runtime::track_select_mixins, runtime::track_select_commit},

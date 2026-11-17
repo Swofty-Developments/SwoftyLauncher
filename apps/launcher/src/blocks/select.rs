@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::path::{Component, Path, PathBuf};
 use std::rc::Rc;
 
-use crate::scale::px;
+use crate::ui::scale::px;
 use gpui_kit::component::select::{SelectDelegate, SelectItem, SelectState};
 use gpui_kit::component::{IndexPath, h_flex};
 use gpui_kit::prelude::FluentBuilder;
@@ -73,7 +73,7 @@ impl SelectItem for Opt {
                 d.child(thumb(
                     self.image.clone(),
                     SELECT_THUMB,
-                    Some(crate::theme::palette(cx).elevated),
+                    Some(crate::ui::theme::palette(cx).elevated),
                 ))
             })
             .child(div().min_w_0().truncate().child(self.label.clone()))
@@ -163,7 +163,7 @@ impl SelectDelegate for Opts {
         if !self.titled {
             return None;
         }
-        let p = crate::theme::palette(cx);
+        let p = crate::ui::theme::palette(cx);
         let title = self
             .matched
             .get(section)

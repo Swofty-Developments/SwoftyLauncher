@@ -1,7 +1,7 @@
-use crate::game::{self};
-use crate::library::Library;
-use crate::notices::{Notification, Notify};
-use crate::play_checks;
+use crate::services::game::{self};
+use crate::services::library::Library;
+use crate::services::play_checks;
+use crate::shell::notices::{Notification, Notify};
 use gpui_kit::component::slider::{SliderEvent, SliderState};
 use gpui_kit::*;
 use std::collections::{HashMap, HashSet};
@@ -16,33 +16,33 @@ use swofty_i18n::tr;
 pub(crate) struct Prepared {
     store: Store,
     library: Library,
-    news: crate::news::News,
+    news: crate::features::news::News,
     config: swofty_core::session::Config,
     seen: Seen,
 }
 
 impl Prepared {
     pub(crate) fn load() -> Self {
-        crate::app_log::step("opening the store");
-        swofty_core::store::set_warning_sink(crate::app_log::note);
+        crate::app::app_log::step("opening the store");
+        swofty_core::store::set_warning_sink(crate::app::app_log::note);
         let store = Store::open_default().with_builtins(swofty_builtins::all());
         let migrated = store.migrate();
-        crate::app_log::step("store migrated");
+        crate::app::app_log::step("store migrated");
         swofty_core::usage::launcher_heartbeats(store.root.clone());
         let seen = Seen::read(&store);
-        crate::app_log::step("loading the library");
+        crate::app::app_log::step("loading the library");
         let mut library = Library::load(&store);
-        crate::app_log::step("library loaded");
+        crate::app::app_log::step("library loaded");
         match migrated {
             Ok(notes) => notes.iter().for_each(|n| {
                 eprintln!("swofty-launcher: {n}");
-                crate::app_log::note(n);
+                crate::app::app_log::note(n);
             }),
             Err(e) => library.error = Some(e.to_string()),
         }
         let config = store.config();
-        let news = crate::news::News::load(&store.root);
-        crate::app_log::step("settings and news read");
+        let news = crate::features::news::News::load(&store.root);
+        crate::app::app_log::step("settings and news read");
         Self {
             store,
             library,
@@ -108,14 +108,14 @@ impl Shell {
         let console_closed = cx.on_window_closed(move |cx, id| {
             shell.update(cx, |s, cx| s.console_closed(id, cx)).ok();
         });
-        let browser = crate::browser::Browser::new(&store.root, window, cx);
-        let shaders = cx.new(|cx| crate::shaders::ShadersView::new(store.clone(), window, cx));
+        let browser = crate::features::browser::Browser::new(&store.root, window, cx);
+        let shaders = cx.new(|cx| crate::features::shaders::ShadersView::new(store.clone(), window, cx));
         let shaders_events = cx.subscribe(&shaders, Self::shaders_event);
         let catalog = Self::watch_catalog(cx);
         let mp = Self::start_account(&store, cx);
         Self::watch_multiplayer(window, cx);
         let root = store.root.clone();
-        let ads = crate::ads::Ads::start(window, &root);
+        let ads = crate::features::ads::Ads::start(window, &root);
         let window_moved = cx.observe_window_bounds(window, |this, _, _| this.ads.moved());
         let mut shell = Self {
             library,
@@ -125,12 +125,12 @@ impl Shell {
             popover: None,
             popup_timer: false,
             notch_beside: false,
-            avatar: crate::avatar::load(&root),
+            avatar: crate::services::avatar::load(&root),
             avatar_link: None,
             root_focus: cx.focus_handle(),
             profiles_open: true,
             layout_width: 1440.,
-            online: crate::online::Online::new(&root),
+            online: crate::features::online::Online::new(&root),
             open_addon: None,
             install: None,
             copies: Vec::new(),
@@ -144,7 +144,7 @@ impl Shell {
             mp_busy: false,
             ban: None,
             mp_toasts: Vec::new(),
-            mp_page: crate::multiplayer::Multiplayer::new(window, cx),
+            mp_page: crate::features::multiplayer::Multiplayer::new(window, cx),
             crash: None,
             crash_view: None,
             crash_open: false,
@@ -192,21 +192,21 @@ impl Shell {
             reload_generation: 0,
             slow_logged: false,
             update_check,
-            updates: crate::update::Updates::new(),
+            updates: crate::features::update::Updates::new(),
             blocks: crate::blocks::Blocks::default(),
             content_width: 900.,
             short: false,
             ticking: false,
             painted: Instant::now(),
-            dock: crate::download_dock::Dock::default(),
+            dock: crate::shell::download_dock::Dock::default(),
             dock_wake: false,
             live_n: 0,
             highlight: None,
-            addons: crate::addons::AddonsPage::new(window, cx),
-            saves: crate::career_saves::SavesPage::default(),
-            tt: crate::time_trial::TtPage::default(),
-            support: crate::support::SupportPage::default(),
-            db: crate::db::Db::new(cx),
+            addons: crate::features::addons::AddonsPage::new(window, cx),
+            saves: crate::features::career_saves::SavesPage::default(),
+            tt: crate::features::time_trial::TtPage::default(),
+            support: crate::features::support::SupportPage::default(),
+            db: crate::features::db::Db::new(cx),
             news,
             news_scroll: Default::default(),
             browser,
@@ -247,7 +247,7 @@ impl Shell {
             _ => {}
         }
         if cfg!(debug_assertions) && std::env::var_os("SWOFTY_FAKE_NOTICES").is_some() {
-            cx.update_global(|n: &mut crate::notices::Notices, _| {
+            cx.update_global(|n: &mut crate::shell::notices::Notices, _| {
                 let now = std::time::Instant::now();
                 n.add(
                     Notification::success(swofty_i18n::tr("Updated Project Halo 0.1.2"))
@@ -320,7 +320,7 @@ impl Shell {
                 }
                 game::vault_at_start(&stale);
                 if clear_old_session_logs {
-                    crate::settings::clear_logs_at_start(&stale.root);
+                    crate::features::settings::clear_logs_at_start(&stale.root);
                 }
             })
             .detach();

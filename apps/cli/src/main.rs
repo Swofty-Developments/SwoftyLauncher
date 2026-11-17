@@ -1,35 +1,42 @@
+mod addon_commands;
+mod addons;
 mod build;
 mod db;
 mod dev;
 mod doctor;
 mod ea;
+mod game;
 mod hud;
 mod laps;
+mod logs;
 mod offline;
+mod output;
 mod postfx;
+mod profile;
+mod prompt;
 mod recover;
 mod registry;
 mod run;
 mod saves;
 mod send_logs;
+mod settings;
 mod setup;
 mod shaders;
+mod signals;
+mod steam;
 mod testing;
 mod time;
 mod update;
 
 use std::ffi::OsString;
-use std::io::{IsTerminal, Write};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::ExitCode;
 
-use anyhow::{Context, Result, bail};
-use clap::{Arg, ArgAction, ArgMatches, CommandFactory, FromArgMatches, Parser, Subcommand};
-use swofty_core::launcher::CommandSpec;
-use swofty_core::manifest::{Binds, MANIFEST_FILE};
-use swofty_core::registry::{Host, Registry};
-use swofty_core::saves::SavesWarning;
+use anyhow::Result;
+use clap::{FromArgMatches, Parser, Subcommand};
 use swofty_core::store::Store;
+
+use crate::addon_commands::AddonCommands;
 
 #[derive(Parser)]
 #[command(
@@ -98,7 +105,7 @@ enum Command {
         alias = "mods",
         about = "List, install, enable and disable addons"
     )]
-    Addons(AddonsCommand),
+    Addons(addons::AddonsCommand),
     #[command(
         subcommand,
         about = "Offline play: consent and the launch extension that runs sessions without EA AntiCheat"
@@ -110,9 +117,9 @@ enum Command {
     )]
     Setup(setup::SetupCommand),
     #[command(subcommand, about = "Show and change addon settings in the profile")]
-    Settings(SettingsCommand),
+    Settings(settings::SettingsCommand),
     #[command(subcommand, about = "List and delete profiles")]
-    Profile(ProfileCommand),
+    Profile(profile::ProfileCommand),
     #[command(about = "Browse the game database and edit DB Editor addons")]
     Db {
         #[arg(long, help = GAME_HELP)]
@@ -136,7 +143,7 @@ enum Command {
         subcommand,
         about = "List the copies of F1 25 (Steam, EA app, added folders) and pick the one to play"
     )]
-    Game(GameCommand),
+    Game(game::GameCommand),
     #[command(
         about = "Show whether Steam is running and signed in; --start starts it and waits, as Play does"
     )]
@@ -204,85 +211,6 @@ enum LogsCommand {
     Send(send_logs::SendArgs),
 }
 
-#[derive(Subcommand)]
-enum GameCommand {
-    #[command(about = "List every copy of F1 25 found: store, version, folder, and the active one")]
-    List,
-    #[command(about = "Play this copy: steam, ea, or a game folder")]
-    Use { copy: String },
-    #[command(about = "Add a game folder (with F1_25.exe) and play it")]
-    Add { path: PathBuf },
-    #[command(
-        about = "Start the EA app copy through the EA app as installed: no profile, no offline play, EA AntiCheat runs"
-    )]
-    Launch {
-        #[arg(long, help = "Start F1 25 in VR (passes -vr)")]
-        vr: bool,
-        #[arg(long, help = "Don't start the EA app when it's closed")]
-        no_start_store: bool,
-        #[arg(long, help = crate::GAME_HELP)]
-        game: Option<PathBuf>,
-    },
-}
-
-#[derive(Subcommand)]
-enum AddonsCommand {
-    List,
-    Install {
-        path: PathBuf,
-    },
-    Enable {
-        id: String,
-    },
-    Disable {
-        id: String,
-        #[arg(long, short, help = "Don't ask, even when the addon has affected your saves")]
-        yes: bool,
-    },
-    #[command(about = "Delete an installed addon and take it out of every profile")]
-    Remove {
-        id: String,
-        #[arg(long, short, help = "Don't ask, even when the addon has affected your saves")]
-        yes: bool,
-    },
-}
-
-#[derive(Subcommand)]
-enum ProfileCommand {
-    #[command(about = "List the profiles and mark the active one")]
-    List,
-    #[command(
-        about = "Delete a profile with its settings, build cache and saves; the active profile switches first"
-    )]
-    Delete {
-        #[arg(help = "The profile to delete")]
-        name: String,
-        #[arg(long, short, help = "Delete without asking")]
-        yes: bool,
-    },
-}
-
-#[derive(Subcommand)]
-enum SettingsCommand {
-    #[command(about = "List every addon's settings with the profile's values")]
-    List { id: Option<String> },
-    #[command(about = "Set an addon setting; the value is JSON (true, 5, \"replica\") or plain text")]
-    Set {
-        id: String,
-        option: String,
-        value: String,
-    },
-    #[command(about = "Put an addon's settings back to their defaults")]
-    Reset { id: String },
-    #[command(about = "Write the session settings file (swofty/settings.json) for the profile")]
-    Export {
-        #[arg(long, help = "File to write (default: stdout)")]
-        out: Option<PathBuf>,
-    },
-    #[command(about = "Merge the changes made in game into the profile")]
-    Merge,
-}
-
 fn main() -> ExitCode {
     let args: Vec<OsString> = std::env::args_os().collect();
     let store = data_dir_arg(&args)
@@ -330,210 +258,13 @@ fn data_dir_arg(args: &[OsString]) -> Option<PathBuf> {
     })
 }
 
-struct AddonCommands {
-    registry: Registry,
-    specs: Vec<(String, CommandSpec)>,
-    namespaced: Vec<Namespaced>,
-    developer: bool,
-}
-
-/// An addon command as `swofty <addon id>:<name>`. Every addon command has one, so a command whose
-/// name a built-in command (or another addon) took stays reachable; only those are listed in help.
-struct Namespaced {
-    id: String,
-    name: String,
-    spec: CommandSpec,
-    listed: bool,
-}
-
-fn namespaced(all: &[(String, Vec<CommandSpec>)], accepted: &[(String, CommandSpec)]) -> Vec<Namespaced> {
-    all.iter()
-        .flat_map(|(id, specs)| specs.iter().map(move |spec| (id, spec)))
-        .map(|(id, spec)| Namespaced {
-            id: id.clone(),
-            name: format!("{id}:{}", spec.name),
-            spec: spec.clone(),
-            listed: !accepted.iter().any(|(a, s)| a == id && s.name == spec.name),
-        })
-        .collect()
-}
-
-impl AddonCommands {
-    fn load(store: &Store) -> Self {
-        let registry = store.registry().unwrap_or_else(|e| {
-            eprintln!("swofty: {e}");
-            Registry::default()
-        });
-        let reserved: Vec<String> = Cli::command()
-            .get_subcommands()
-            .map(|c| c.get_name().to_owned())
-            .chain(["help".to_owned()])
-            .collect();
-        let reserved: Vec<&str> = reserved.iter().map(String::as_str).collect();
-        let (specs, _) = registry.commands(&reserved);
-        let all: Vec<(String, Vec<CommandSpec>)> = registry
-            .iter()
-            .map(|e| (e.id().to_owned(), e.addon.commands()))
-            .collect();
-        let namespaced = namespaced(&all, &specs);
-        for n in namespaced.iter().filter(|n| n.listed) {
-            eprintln!(
-                "swofty: {}: its command {} has the name of a built-in command or another addon's; run it as swofty {}",
-                n.id, n.spec.name, n.name
-            );
-        }
-        Self {
-            registry,
-            specs,
-            namespaced,
-            developer: dev::enabled(store),
-        }
-    }
-
-    /// The addon command `name` names, with the name the addon knows it by.
-    fn find(&self, name: &str) -> Option<(&str, &CommandSpec)> {
-        self.specs
-            .iter()
-            .find(|(_, s)| s.name == name)
-            .map(|(id, s)| (id.as_str(), s))
-            .or_else(|| {
-                self.namespaced
-                    .iter()
-                    .find(|n| n.name == name)
-                    .map(|n| (n.id.as_str(), &n.spec))
-            })
-    }
-
-    fn provides(&self, name: &str) -> bool {
-        self.specs.iter().any(|(_, s)| s.name == name)
-    }
-
-    fn command(&self) -> clap::Command {
-        let mut cmd = Cli::command();
-        if self.provides("mods") {
-            cmd = cmd.mut_subcommand("addons", |c| c.alias(None));
-        }
-        let developer = self.developer;
-        cmd = cmd.mut_subcommand("dev", |c| c.hide(!developer));
-        let cmd = self
-            .specs
-            .iter()
-            .fold(cmd, |cmd, (_, spec)| cmd.subcommand(clap_command(spec)));
-        self.namespaced.iter().fold(cmd, |cmd, n| {
-            let about = match n.listed {
-                true => format!(
-                    "{} ({}'s {} command: swofty {} is a built-in command or another addon's)",
-                    n.spec.about, n.id, n.spec.name, n.spec.name
-                ),
-                false => n.spec.about.clone(),
-            };
-            cmd.subcommand(
-                clap_command(&n.spec)
-                    .name(n.name.clone())
-                    .about(about)
-                    .hide(!n.listed),
-            )
-        })
-    }
-}
-
-fn clap_command(spec: &CommandSpec) -> clap::Command {
-    let mut cmd = clap::Command::new(spec.name.clone()).about(spec.about.clone());
-    for a in &spec.args {
-        let arg = Arg::new(a.name.clone()).help(a.help.clone()).required(a.required);
-        cmd = cmd.arg(if a.many {
-            arg.num_args(1..).action(ArgAction::Append)
-        } else {
-            arg
-        });
-    }
-    if !spec.subcommands.is_empty() && spec.args.is_empty() {
-        cmd = cmd.subcommand_required(true);
-    }
-    spec.subcommands
-        .iter()
-        .fold(cmd, |cmd, s| cmd.subcommand(clap_command(s)))
-}
-
-fn command_input(m: &ArgMatches, spec: &CommandSpec, path: &mut Vec<String>, args: &mut Vec<String>) {
-    for a in &spec.args {
-        if let Some(values) = m.get_many::<String>(&a.name) {
-            args.extend(values.cloned());
-        }
-    }
-    if let Some((name, sub)) = m.subcommand()
-        && let Some(s) = spec.subcommands.iter().find(|s| s.name == name)
-    {
-        path.push(name.to_owned());
-        command_input(sub, s, path, args);
-    }
-}
-
-/// Addon commands run in their own folder, so a value naming an existing
-/// path relative to `cwd` is passed on as an absolute path.
-fn absolute_paths(args: &mut [String], cwd: &Path) {
-    for a in args {
-        let at = cwd.join(a.as_str());
-        if !a.is_empty()
-            && Path::new(a.as_str()).is_relative()
-            && at.exists()
-            && let Some(abs) = std::path::absolute(&at)
-                .ok()
-                .and_then(|p| p.to_str().map(str::to_owned))
-        {
-            *a = abs;
-        }
-    }
-}
-
-fn command_at(args: &[OsString]) -> Option<usize> {
-    let mut skip = false;
-    args.iter().enumerate().skip(1).find_map(|(i, a)| {
-        if std::mem::take(&mut skip) {
-            return None;
-        }
-        let a = a.to_str()?;
-        skip = a == "--data-dir" || a == "--profile";
-        (!a.starts_with('-')).then_some(i)
-    })
-}
-
-fn forward_maps(args: &mut [OsString]) {
-    if let Some(at) = command_at(args).filter(|&at| args[at] == "maps") {
-        args[at] = "mods".into();
-    }
-}
-
-fn forward_mods(store: &Store, args: &[OsString]) -> Option<(Vec<OsString>, String)> {
-    let at = command_at(args)?;
-    if args[at] != "mods" {
-        return None;
-    }
-    let verb = args.get(at + 1)?.to_str()?;
-    let target = args.get(at + 2)?;
-    let addon = match verb {
-        "install" => Path::new(target).join(MANIFEST_FILE).is_file(),
-        "enable" | "disable" => store.addons().ok()?.contains_key(target.to_str()?),
-        _ => false,
-    };
-    if !addon {
-        return None;
-    }
-    let mut forwarded = args.to_vec();
-    forwarded[at] = "addons".into();
-    Some((
-        forwarded,
-        format!("swofty mods {verb} is now swofty addons {verb}"),
-    ))
-}
-
 fn run_cli(store: &Store, mut args: Vec<OsString>) -> Result<ExitCode> {
     let addons = AddonCommands::load(store);
     if addons.provides("mods") {
-        forward_maps(&mut args);
+        addon_commands::forward_maps(&mut args);
     }
     if addons.provides("mods")
-        && let Some((forwarded, note)) = forward_mods(store, &args)
+        && let Some((forwarded, note)) = addon_commands::forward_mods(store, &args)
     {
         eprintln!("swofty: {note}");
         args = forwarded;
@@ -547,20 +278,7 @@ fn run_cli(store: &Store, mut args: Vec<OsString>) -> Result<ExitCode> {
             .get_one::<String>("profile")
             .cloned()
             .unwrap_or_else(|| store.active_profile());
-        let (mut path, mut input) = (vec![spec.name.clone()], Vec::new());
-        command_input(sub, spec, &mut path, &mut input);
-        if let Ok(cwd) = std::env::current_dir() {
-            absolute_paths(&mut input, &cwd);
-        }
-        let entry = addons.registry.get(id).context("addon is gone")?;
-        let p = store.profile(&profile)?;
-        let game = build::game(store, None).ok();
-        let host = Host::new(store, id, &p, game.as_ref())?;
-        let out = entry.addon.command(&host.cx(), &path, &input)?;
-        if !out.is_empty() {
-            println!("{}", out.trim_end());
-        }
-        return Ok(ExitCode::SUCCESS);
+        return addons.run(store, &profile, id, spec, sub);
     }
     dispatch(store, Cli::from_arg_matches(&matches)?)
 }
@@ -576,22 +294,22 @@ fn dispatch(store: &Store, cli: Cli) -> Result<ExitCode> {
         Command::Apply { game } => build::apply(&store, &profile, game),
         Command::Verify { game } => build::verify(&store, game),
         Command::Restore { game } => build::restore(&store, game),
-        Command::Addons(cmd) => addons(&store, &profile, cmd).map(|_| ExitCode::SUCCESS),
+        Command::Addons(cmd) => addons::command(&store, &profile, cmd).map(|_| ExitCode::SUCCESS),
         Command::Offline(cmd) => offline::command(&store, cmd).map(|_| ExitCode::SUCCESS),
         Command::Setup(cmd) => setup::command(&store, cmd).map(|_| ExitCode::SUCCESS),
-        Command::Settings(cmd) => settings(&store, &profile, cmd).map(|_| ExitCode::SUCCESS),
-        Command::Profile(cmd) => profiles(&store, cmd).map(|_| ExitCode::SUCCESS),
+        Command::Settings(cmd) => settings::command(&store, &profile, cmd).map(|_| ExitCode::SUCCESS),
+        Command::Profile(cmd) => profile::command(&store, cmd).map(|_| ExitCode::SUCCESS),
         Command::Db { game, cmd } => db::command(&store, &profile, game, cmd),
         Command::Logs {
             action: Some(LogsCommand::Send(args)),
             ..
         } => send_logs::send(&store, args),
-        Command::Logs { dir, exe, .. } => run::logs(&store, dir, exe),
+        Command::Logs { dir, exe, .. } => logs::summarise(&store, dir, exe),
         Command::Doctor => doctor::doctor(&store),
-        Command::Game(cmd) => game(&store, cmd).map(|_| ExitCode::SUCCESS),
+        Command::Game(cmd) => game::command(&store, cmd).map(|_| ExitCode::SUCCESS),
         Command::Saves(cmd) => saves::command(&store, cmd),
         Command::Laps(cmd) => laps::command(&store, &profile, cmd),
-        Command::Steam { start } => run::steam_check(&store, start),
+        Command::Steam { start } => steam::check(&store, start),
         Command::Postfx(cmd) => postfx::command(cmd),
         Command::Shaders(cmd) => shaders::command(&store, &profile, cmd),
         Command::Test(cmd) => testing::command(&store, named.as_deref(), &profile, cmd),
@@ -603,412 +321,23 @@ fn dispatch(store: &Store, cli: Cli) -> Result<ExitCode> {
     }
 }
 
-fn game(store: &Store, cmd: GameCommand) -> Result<()> {
-    use swofty_core::copies::{self, Choice};
-    let mut config = store.config();
-    match cmd {
-        GameCommand::List => {
-            let found = copies::discover(&config);
-            let active = copies::active(&found, &config).map(|c| c.dir.clone());
-            if found.is_empty() {
-                println!("no copy of F1 25 found; add one with swofty game add <folder>");
-            }
-            for c in &found {
-                let mark = if active.as_ref() == Some(&c.dir) { "*" } else { " " };
-                let version = c.version().unwrap_or_else(|| "unknown".into());
-                println!(
-                    "{mark} {:7} {:14} {}",
-                    copies::store_name(c.source),
-                    version,
-                    c.dir.display()
-                );
-            }
-        }
-        GameCommand::Use { copy } => {
-            let found = copies::discover(&config);
-            let c = Choice::parse(&copy)
-                .pick(&found)
-                .with_context(|| format!("no copy of F1 25 matches {copy}; see swofty game list"))?;
-            let dir = c.dir.clone();
-            copies::set_active(&mut config, &dir);
-            store.save_config(&config)?;
-            println!(
-                "playing the {} copy in {}",
-                copies::store_name(c.source),
-                dir.display()
-            );
-        }
-        GameCommand::Launch {
-            vr,
-            no_start_store,
-            game,
-        } => {
-            let g = crate::build::game(store, game)?;
-            if swofty_core::install::Source::detect(&g.dir) == swofty_core::install::Source::EaApp {
-                crate::ea::check_recorded(&g.dir)?;
-            }
-            crate::ea::launch_installed(store, &g, vr, no_start_store)?;
-        }
-        GameCommand::Add { path } => {
-            let dir = std::path::absolute(&path)?;
-            copies::add(&mut config, &dir).map_err(anyhow::Error::msg)?;
-            store.save_config(&config)?;
-            println!(
-                "added {} ({}); it is now the active copy",
-                dir.display(),
-                copies::store_name(swofty_core::install::Source::detect(&dir))
-            );
-        }
-    }
-    Ok(())
-}
-
-fn addons(store: &Store, profile: &str, cmd: AddonsCommand) -> Result<()> {
-    match cmd {
-        AddonsCommand::List => {
-            let status = registry::status(store);
-            let p = store.profile(profile)?;
-            let enabled: Vec<&str> = p.enabled().collect();
-            for (id, m) in store.addons()? {
-                let state = if m.is_builtin() {
-                    "built in"
-                } else if m.is_shader_only() {
-                    "shaders"
-                } else if enabled.contains(&id.as_str()) {
-                    "enabled"
-                } else {
-                    "disabled"
-                };
-                println!("{id:32} {:10} {state:9} {}", m.version.to_string(), m.name);
-                for line in status.get(&id).into_iter().flatten() {
-                    println!("{:32} {:10} {:9}   last session: {line}", "", "", "");
-                }
-            }
-            for u in store.unreadable_addons() {
-                let version = u.version.as_deref().unwrap_or("?");
-                println!(
-                    "{:32} {version:10} {:9} {}: it {}",
-                    u.id, "unusable", u.name, u.reason
-                );
-            }
-        }
-        AddonsCommand::Install { path } => {
-            for result in store.install_addons(&path) {
-                let m = result.with_context(|| format!("installing {}", path.display()))?;
-                println!("installed {} {}", m.id, m.version);
-                for line in swofty_core::tracks::left_out_lines(store, &m) {
-                    println!("warning: {line}");
-                }
-                for f in installed_check(store, &m) {
-                    let tag = if f.level == swofty_core::stdlib::deps::Level::Hint {
-                        "hint"
-                    } else {
-                        "warning"
-                    };
-                    println!("{tag}: {}", f.block());
-                }
-            }
-        }
-        AddonsCommand::Enable { id } if let Some(u) = unreadable(store, &id) => {
-            bail!("{}", u.line())
-        }
-        AddonsCommand::Disable { id, .. } if unreadable(store, &id).is_some() => {
-            store.update_profile(profile, |p| p.set_enabled(&id, false))?;
-            println!("disabled {id} in profile {profile}");
-        }
-        AddonsCommand::Remove { id, .. } if unreadable(store, &id).is_some() => {
-            store.remove_addon(&id)?;
-            println!("removed {id}");
-        }
-        AddonsCommand::Enable { id }
-        | AddonsCommand::Disable { id, .. }
-        | AddonsCommand::Remove { id, .. }
-            if !store.addons()?.contains_key(&id) =>
-        {
-            bail!("{id} is not installed")
-        }
-        AddonsCommand::Enable { id } => toggle(store, profile, &id, true)?,
-        AddonsCommand::Disable { id, yes } => {
-            let p = store.profile(profile)?;
-            if let Some(w) = store.registry()?.turn_off_warning(&p, &id) {
-                confirm_saves(&w, "turn off", yes)?;
-            }
-            if p.enabled().any(|on| on == id) {
-                confirm_careers(store, &id, yes)?;
-            }
-            toggle(store, profile, &id, false)?
-        }
-        AddonsCommand::Remove { id, yes } => {
-            if let Some(w) = store.addons()?.get(&id).and_then(SavesWarning::of) {
-                confirm_saves(&w, "remove", yes)?;
-            }
-            store.remove_addon(&id)?;
-            println!("removed {id}");
-        }
-    }
-    Ok(())
-}
-
-fn installed_check(
-    store: &Store,
-    m: &swofty_core::manifest::AddonManifest,
-) -> Vec<swofty_core::stdlib::deps::Finding> {
-    use swofty_core::stdlib::deps;
-    let Ok(installed) = store.addons() else {
-        return Vec::new();
-    };
-    let all = deps::read_all(store, &installed);
-    let Some(new) = all.get(&m.id) else {
-        return Vec::new();
-    };
-    let others: Vec<deps::Std> = all.values().cloned().collect();
-    deps::at_install(new, &installed, &others).findings
-}
-
-fn confirm_careers(store: &Store, id: &str, yes: bool) -> Result<()> {
-    let careers = registry::careers_needing(store, id);
-    if careers.is_empty() || yes {
-        return Ok(());
-    }
-    let name = store
-        .addons()?
-        .get(id)
-        .map_or_else(|| id.to_owned(), |m| m.name.clone());
-    let n = careers.len();
-    let mut text = format!("{name} is in {n} career{}\n", if n == 1 { "" } else { "s" });
-    for c in &careers {
-        let label = if c.label.is_empty() {
-            c.career.as_str()
-        } else {
-            c.label.as_str()
-        };
-        let why = c
-            .addons
-            .iter()
-            .find(|a| a.id == id)
-            .and_then(|a| a.why.as_deref())
-            .map(|w| format!(" ({w})"))
-            .unwrap_or_default();
-        text.push_str(&format!("  {label}{why}\n"));
-    }
-    text.push_str(&format!(
-        "  {} won't load until {name} is back on. Your other careers aren't affected.",
-        if n == 1 { "That career" } else { "Those careers" }
-    ));
-    if !std::io::stdin().is_terminal() {
-        bail!("{text}\nstdin is not a terminal: pass --yes to turn off {id} anyway");
-    }
-    println!("{text}");
-    print!("Turn off {id} anyway? [y/N] ");
-    std::io::stdout().flush().ok();
-    let mut line = String::new();
-    std::io::stdin().read_line(&mut line)?;
-    if !matches!(line.trim(), "y" | "Y" | "yes") {
-        bail!("{id} is unchanged");
-    }
-    Ok(())
-}
-
-fn unreadable(store: &Store, id: &str) -> Option<swofty_core::store::Unreadable> {
-    store.unreadable_addons().into_iter().find(|u| u.id == id)
-}
-
-fn confirm_saves(w: &SavesWarning, verb: &str, yes: bool) -> Result<()> {
-    if yes {
-        return Ok(());
-    }
-    let (id, warning) = (&w.id, w.text());
-    if !std::io::stdin().is_terminal() {
-        bail!("{warning}\nstdin is not a terminal: pass --yes to {verb} {id} anyway");
-    }
-    println!("{warning}");
-    let mut ask = verb.to_owned();
-    ask[..1].make_ascii_uppercase();
-    print!("{ask} {id} anyway? [y/N] ");
-    std::io::stdout().flush().ok();
-    let mut line = String::new();
-    std::io::stdin().read_line(&mut line)?;
-    if !matches!(line.trim(), "y" | "Y" | "yes") {
-        bail!("{id} is unchanged");
-    }
-    Ok(())
-}
-
-fn profiles(store: &Store, cmd: ProfileCommand) -> Result<()> {
-    match cmd {
-        ProfileCommand::List => {
-            let active = store.active_profile();
-            for name in store.profile_names()? {
-                let note = if name == active {
-                    "active"
-                } else if name == swofty_core::profile::VANILLA {
-                    "built in"
-                } else {
-                    ""
-                };
-                let line = format!("{name:40} {note}");
-                println!("{}", line.trim_end());
-            }
-        }
-        ProfileCommand::Delete { name, yes } => {
-            let plan = store.plan_profile_deletion(&name)?;
-            if swofty_core::process::game_running() {
-                bail!("close F1 25 before deleting a profile");
-            }
-            if !yes {
-                confirm_delete(&plan)?;
-            }
-            let done = store.delete_profile(&name)?;
-            if let Some(to) = &done.switch_to {
-                println!("{to} is now the active profile");
-            }
-            println!("deleted profile {name}");
-        }
-    }
-    Ok(())
-}
-
-fn confirm_delete(plan: &swofty_core::store::ProfileDeletion) -> Result<()> {
-    let name = &plan.name;
-    if !std::io::stdin().is_terminal() {
-        bail!("stdin is not a terminal: pass --yes to delete {name} without asking");
-    }
-    println!(
-        "Deleting {name} removes its choice of addons and mods, their settings{}.",
-        if plan.saves {
-            ", its build cache and its saves"
-        } else {
-            " and its build cache"
-        }
-    );
-    println!("Installed addons and mods stay in the library, and other profiles don't change.");
-    if let Some(to) = &plan.switch_to {
-        println!("{name} is the active profile, so {to} becomes active first.");
-    }
-    print!("Delete profile {name}? [y/N] ");
-    std::io::stdout().flush().ok();
-    let mut line = String::new();
-    std::io::stdin().read_line(&mut line)?;
-    if !matches!(line.trim(), "y" | "Y" | "yes") {
-        bail!("not deleted: {name} is unchanged");
-    }
-    Ok(())
-}
-
-fn toggle(store: &Store, profile: &str, id: &str, on: bool) -> Result<()> {
-    let mut p = store.profile(profile)?;
-    store.registry()?.set_enabled(&mut p, id, on)?;
-    store.save_profile(&p)?;
-    println!(
-        "{} {id} in profile {profile}",
-        if on { "enabled" } else { "disabled" }
-    );
-    Ok(())
-}
-
-fn settings(store: &Store, profile: &str, cmd: SettingsCommand) -> Result<()> {
-    let addons = store.addons()?;
-    let installed = |id: &str| addons.get(id).with_context(|| format!("{id} is not installed"));
-    match cmd {
-        SettingsCommand::List { id } => {
-            let p = store.profile(profile)?;
-            let pending = p.rebuild_pending(&addons);
-            let on = swofty_core::settings::OnAddons::of(&p, &addons);
-            for m in addons
-                .values()
-                .filter(|m| id.as_deref().is_none_or(|i| i == m.id))
-            {
-                if m.options.is_empty() {
-                    continue;
-                }
-                println!("{} ({})", m.name, m.id);
-                for o in &m.options {
-                    let v = on.value(&p, m, o);
-                    let mark = match on.missing(o) {
-                        Some(n) => format!(", off: needs {n} on"),
-                        None if pending.contains(&format!("{}.{}", m.id, o.id)) => ", rebuild pending".into(),
-                        None => String::new(),
-                    };
-                    let binds = match o.binds {
-                        Binds::Native => "live",
-                        Binds::Db => "rebuild",
-                    };
-                    println!("  {:24} {:16} {binds}{mark}", o.id, o.text(&v));
-                }
-            }
-        }
-        SettingsCommand::Set { id, option, value } => {
-            let m = installed(&id)?;
-            let value = serde_json::from_str(&value).unwrap_or(serde_json::Value::String(value));
-            let mut p = store.profile(profile)?;
-            let changed = p.set_option(m, &option, value)?;
-            store.save_profile(&p)?;
-            let o = m
-                .options
-                .iter()
-                .find(|o| o.id == option)
-                .expect("set_option checked it");
-            println!(
-                "{id}.{option} = {}{}",
-                o.text(&p.option(m, o)),
-                if !changed {
-                    " (unchanged)"
-                } else if o.binds == Binds::Db {
-                    "; rebuild to apply"
-                } else {
-                    ""
-                }
-            );
-        }
-        SettingsCommand::Reset { id } => {
-            let m = installed(&id)?;
-            let mut p = store.profile(profile)?;
-            p.reset_options(m)?;
-            store.save_profile(&p)?;
-            println!("{id}: settings back to their defaults in profile {profile}");
-        }
-        SettingsCommand::Export { out } => {
-            let s = store.session_settings(profile)?;
-            let text = serde_json::to_string_pretty(&s)? + "\n";
-            match out {
-                Some(path) => {
-                    if let Some(dir) = path.parent().filter(|d| !d.as_os_str().is_empty()) {
-                        std::fs::create_dir_all(dir)?;
-                    }
-                    std::fs::write(&path, text)?;
-                    println!("wrote {}", path.display());
-                }
-                None => print!("{text}"),
-            }
-        }
-        SettingsCommand::Merge => match store.merge_requests(profile, true)? {
-            None => println!("no in-game changes for profile {profile}"),
-            Some(m) => report_merge(&m),
-        },
-    }
-    Ok(())
-}
-
-pub(crate) fn report_merge(m: &swofty_core::settings::Merge) {
-    for c in &m.changed {
-        println!("in game: {c}");
-    }
-    for s in &m.skipped {
-        println!("in game, skipped: {s}");
-    }
-    if m.changed.is_empty() && m.skipped.is_empty() {
-        println!("in game: no changes");
-    }
-}
-
 #[cfg(test)]
 mod tests {
+    use std::io::Write;
+    use std::path::Path;
     use std::sync::Arc;
+
+    use clap::CommandFactory;
+    use swofty_core::launcher::CommandSpec;
+    use swofty_core::manifest::MANIFEST_FILE;
+    use swofty_core::registry::Registry;
 
     use swofty_core::launcher::{Addon, ArgSpec, Builtin};
     use swofty_core::manifest::AddonManifest;
 
     use super::*;
+    use crate::addon_commands::{absolute_paths, command_at, command_input, forward_mods, namespaced};
+    use crate::addons::AddonsCommand;
 
     #[test]
     fn an_error_says_its_os_message_once() {

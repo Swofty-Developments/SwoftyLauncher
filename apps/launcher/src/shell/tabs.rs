@@ -35,7 +35,7 @@ impl Tab {
         }
     }
 
-    pub fn tint(self, p: &crate::theme::Palette) -> gpui_kit::Hsla {
+    pub fn tint(self, p: &crate::ui::theme::Palette) -> gpui_kit::Hsla {
         match self {
             Self::Home => p.tab_home,
             Self::Library => p.tab_library,

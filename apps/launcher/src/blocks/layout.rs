@@ -1,4 +1,4 @@
-use crate::scale::px;
+use crate::ui::scale::px;
 use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
@@ -6,9 +6,9 @@ use swofty_core::view::{Block, Card, DropZone, Grid, Hero, Tabs};
 
 use super::widgets::*;
 use super::*;
-use crate::sections::{art, icon};
+use crate::features::sections::{art, icon};
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::ui::theme::Palette;
 
 impl Shell {
     pub(crate) fn rich_block(

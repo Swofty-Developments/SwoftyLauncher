@@ -2,7 +2,7 @@ use gpui_kit::component::v_flex;
 use gpui_kit::*;
 
 use super::tokens::radius;
-use crate::theme::palette;
+use crate::ui::theme::palette;
 
 /// A bordered panel on the surface colour. Style and fill it like a `div`.
 #[derive(IntoElement)]
