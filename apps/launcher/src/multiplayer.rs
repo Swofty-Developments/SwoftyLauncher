@@ -343,6 +343,7 @@ pub(crate) struct Multiplayer {
     copied: Option<Instant>,
     launch_seen: u32,
     room_launching: bool,
+    held: Option<RoomLaunch>,
     faces: HashMap<String, Arc<Image>>,
     faces_asked: HashSet<String>,
     _inputs: [Subscription; 2],
@@ -390,6 +391,7 @@ impl Multiplayer {
             copied: None,
             launch_seen: 0,
             room_launching: false,
+            held: None,
             faces: HashMap::new(),
             faces_asked: HashSet::new(),
             _inputs: inputs,
@@ -404,6 +406,7 @@ impl Multiplayer {
         self.session = None;
         self.launch_seen = 0;
         self.room_launching = false;
+        self.held = None;
         self.state = None;
         self.leaving = false;
         self.closing = None;
@@ -438,6 +441,7 @@ impl Shell {
 
     fn mp_tick(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.mp_room_launch(window, cx);
+        self.mp_held_dropped(window, cx);
         self.mp_watch_game(cx);
         let m = &mut self.mp_page;
         if m.leaving && m.session.as_ref().is_none_or(Session::is_finished) {
@@ -539,6 +543,27 @@ impl Shell {
         );
         if !started {
             self.mp_room_launch_result(false);
+        }
+        cx.notify();
+    }
+
+    /// A prompt Play opened holds the room launch: its Play goes on with it through [`Shell::play`].
+    pub(crate) fn mp_hold_room(&mut self, room: RoomLaunch) {
+        self.mp_page.held = Some(room);
+    }
+
+    pub(crate) fn mp_take_held(&mut self) -> Option<RoomLaunch> {
+        self.mp_page.held.take()
+    }
+
+    fn mp_held_dropped(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.mp_page.held.is_none() || window.has_active_dialog(cx) {
+            return;
+        }
+        self.mp_page.held = None;
+        self.mp_page.room_launching = false;
+        if let Some(session) = &self.mp_page.session {
+            session.launch_failed("Play was cancelled");
         }
         cx.notify();
     }
