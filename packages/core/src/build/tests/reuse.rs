@@ -649,6 +649,35 @@ fn a_reused_build_keeps_its_screens_assets_and_plugins() {
     std::fs::remove_dir_all(&root).ok();
 }
 
+#[test]
+fn a_build_looks_for_the_game_copies_only_for_the_first_start_import() {
+    if loader_dir().is_some() {
+        return;
+    }
+    let (root, store, game) = reuse_fixture("no-looks");
+    let looks = || crate::game_folder::copies::LOOKS.with(std::cell::Cell::get);
+    let before = looks();
+    assert!(!reused(&build(&store, "default", &game).unwrap()));
+    assert_eq!(
+        looks(),
+        before + 1,
+        "only the first-start import's check of an EA app copy"
+    );
+    let marker = crate::saves::launcher::marker_path(&store.root);
+    std::fs::create_dir_all(marker.parent().unwrap()).unwrap();
+    std::fs::write(&marker, r#"{"at":0,"launcher":"1.10.0","profiles":[]}"#).unwrap();
+    let before = looks();
+    assert!(
+        !reused(&build(&store, "default", &game).unwrap()),
+        "the game now uses the launcher save"
+    );
+    assert!(reused(&build(&store, "default", &game).unwrap()));
+    std::fs::write(store.addon_data_dir("t.hook").join("payload"), "changed").unwrap();
+    assert!(!reused(&build(&store, "default", &game).unwrap()));
+    assert_eq!(looks(), before, "past the first start");
+    std::fs::remove_dir_all(&root).ok();
+}
+
 /// Temporary: times the parts of a build that run Windows tools or touch the disk durably, to find the
 /// fixed ~10 s each build pays on the hosted Windows runner. It fails on Windows so the times reach the
 /// JUnit file; remove it once the cause is fixed.
