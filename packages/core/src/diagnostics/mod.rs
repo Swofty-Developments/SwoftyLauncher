@@ -10,3 +10,4 @@ pub mod launch;
 pub mod overlay_guard;
 pub mod quarantine;
 pub mod send_logs;
+pub mod session_end;
