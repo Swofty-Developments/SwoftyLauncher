@@ -6,8 +6,9 @@ use std::process::Command;
 
 use crate::GAME_EXE;
 use crate::install::Source;
-use crate::platform::LaunchPlatform;
+use crate::platform::ensure::EaClient;
 use crate::platform::run_as_admin::parse_reg_query;
+use crate::platform::{ClientNote, ClientReady, ClientStart, LaunchPlatform};
 use crate::session::COMPAT_LAYER;
 
 pub const MARKER: &str = "__Installer/installerdata.xml";
@@ -59,6 +60,17 @@ impl LaunchPlatform for EaApp {
 
     fn move_hint(&self) -> &'static str {
         " with EA app > F1 25 > Manage > Move, not File Explorer"
+    }
+
+    fn ensure_client(
+        &self,
+        start: ClientStart<'_>,
+        note: &mut dyn FnMut(ClientNote),
+    ) -> Result<ClientReady, String> {
+        if !self.installed(start.game) {
+            return Ok(ClientReady::NotNeeded);
+        }
+        EaClient::for_launch(start).ensure(start.allowed, note)
     }
 }
 

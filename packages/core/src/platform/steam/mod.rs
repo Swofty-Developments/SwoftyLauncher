@@ -10,7 +10,8 @@ mod tests;
 use std::path::{Path, PathBuf};
 
 use crate::install::Source;
-use crate::platform::LaunchPlatform;
+use crate::platform::ensure::SteamClient;
+use crate::platform::{ClientNote, ClientReady, ClientStart, LaunchPlatform};
 use crate::{GAME_EXE, STEAM_APP_ID};
 use vdf::Vdf;
 
@@ -49,6 +50,15 @@ impl LaunchPlatform for Steam {
 
     fn move_hint(&self) -> &'static str {
         " in Steam (Properties > Installed Files > Move install folder)"
+    }
+
+    fn ensure_client(
+        &self,
+        start: ClientStart<'_>,
+        note: &mut dyn FnMut(ClientNote),
+    ) -> Result<ClientReady, String> {
+        let mut detect = client::status;
+        SteamClient::for_launch(start, &mut detect).ensure(start.allowed, note)
     }
 }
 
