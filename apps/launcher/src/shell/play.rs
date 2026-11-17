@@ -12,6 +12,7 @@ use super::dialogs::note_notification;
 use super::{PlayState, Shell};
 use swofty_i18n::{tr, trf};
 
+#[derive(Default)]
 pub(crate) struct Launching {
     pub(crate) launch: Option<Launch>,
     pub(crate) notice: Option<String>,

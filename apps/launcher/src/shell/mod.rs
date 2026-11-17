@@ -2,14 +2,12 @@ use crate::dialogs::crash::CrashView;
 use crate::services::library::Library;
 use gpui_kit::component::slider::SliderState;
 use gpui_kit::*;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::Arc;
 use std::time::{Instant, SystemTime};
 use swofty_core::crash::StartFailure;
 use swofty_core::session::UiMode;
 use swofty_core::store::Store;
-use swofty_core::view::View;
 
 mod account;
 mod barfit;
@@ -67,12 +65,6 @@ pub struct Shell {
     pub(crate) requests: Option<SystemTime>,
     pub(crate) console: Option<AnyWindowHandle>,
     pub(crate) developer: crate::features::developer::Developer,
-    pub(crate) views: HashMap<String, Result<Arc<View>, String>>,
-    pub(crate) views_profile: String,
-    pub(crate) view_gen: u64,
-    pub(crate) view_gens: HashMap<String, u64>,
-    pub(crate) busy: HashSet<String>,
-    pub(crate) open_row: Option<String>,
     pub(crate) progress: Option<(f32, String)>,
     pub(crate) tasks: Option<crate::dialogs::tasks::TaskDialog>,
     pub(crate) moving: Option<crate::dialogs::data_move::Moving>,
@@ -121,6 +113,7 @@ pub struct Shell {
     pub(crate) launching: crate::shell::play::Launching,
     pub(crate) account: crate::shell::account::Account,
     pub(crate) prefs: crate::shell::config::Prefs,
+    pub(crate) addon_views: crate::features::sections::AddonViews,
 }
 
 pub struct SliderSlot {

@@ -38,7 +38,7 @@ impl Shell {
             section.spec.title.clone(),
         );
         let section_icon = icon(section.spec.icon);
-        let view = match self.views.get(&format!("{addon}/{id}")) {
+        let view = match self.addon_views.views.get(&format!("{addon}/{id}")) {
             Some(Ok(v)) => v.clone(),
             Some(Err(e)) => {
                 return v_flex()
@@ -258,7 +258,7 @@ impl Shell {
             reorder,
         } = at;
         let key = format!("{addon}/{section}/{}", r.id);
-        let open = self.open_row.as_ref() == Some(&key);
+        let open = self.addon_views.open_row.as_ref() == Some(&key);
         let expandable = !r.detail.is_empty() || reorder;
         let trailing = r.trailing.as_ref().map(|c| self.control(addon, section, c, cx));
         let toggle_key = key.clone();
@@ -295,7 +295,8 @@ impl Shell {
             .children(trailing.map(|t| div().w(px(96.)).flex().justify_end().child(t)))
             .when(expandable, |d| d.child(chevron(open, p)))
             .on_click(cx.listener(move |this, _, _, cx| {
-                this.open_row = (this.open_row.as_ref() != Some(&toggle_key)).then(|| toggle_key.clone());
+                this.addon_views.open_row =
+                    (this.addon_views.open_row.as_ref() != Some(&toggle_key)).then(|| toggle_key.clone());
                 cx.notify();
             }));
         let head = match r.menu.is_empty() {
@@ -340,7 +341,7 @@ impl Shell {
                     .tap_sm()
                     .icon(ic)
                     .label(label)
-                    .disabled(!enabled || self.busy.contains(&control))
+                    .disabled(!enabled || self.addon_views.busy.contains(&control))
                     .on_click(cx.listener(move |this, _, window, cx| {
                         let event = Event::Move { row: row.clone(), to };
                         this.send(&addon, &section, control.clone(), event, window, cx)
@@ -484,7 +485,7 @@ impl Shell {
                 let switch = Switch::new(SharedString::from(format!("switch-{control}")))
                     .checked(*on)
                     .tap_sm()
-                    .disabled(!enabled || self.busy.contains(&control))
+                    .disabled(!enabled || self.addon_views.busy.contains(&control))
                     .on_change(cx.listener(move |this, on: &bool, window, cx| {
                         let event = Event::Toggle {
                             id: id.clone(),
@@ -509,7 +510,7 @@ impl Shell {
                     .min_w(px(140.))
                     .label(options.get(current).cloned().unwrap_or_default())
                     .dropdown_caret(true)
-                    .disabled(self.busy.contains(&control))
+                    .disabled(self.addon_views.busy.contains(&control))
                     .dropdown_menu_with_anchor(Anchor::TopRight, move |mut menu, _, _| {
                         for (i, text) in options.iter().enumerate() {
                             let (shell, addon, section, id, control) = (
@@ -560,8 +561,8 @@ impl Shell {
         let control = format!("{addon}/{section}/{}", b.id);
         let mut button = Button::new(SharedString::from(format!("button-{control}")))
             .label(b.label.clone())
-            .loading(self.busy.contains(&control))
-            .disabled(self.busy.contains(&control));
+            .loading(self.addon_views.busy.contains(&control))
+            .disabled(self.addon_views.busy.contains(&control));
         button = match b.style {
             Style::Primary => button.primary(),
             Style::Outline => button.outline(),

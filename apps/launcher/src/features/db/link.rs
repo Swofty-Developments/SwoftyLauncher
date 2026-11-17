@@ -88,7 +88,7 @@ impl Shell {
             self.db.pending_tab = None;
             return;
         }
-        let view = match self.views.get(&format!("{addon}/{section}")) {
+        let view = match self.addon_views.views.get(&format!("{addon}/{section}")) {
             Some(Ok(v)) => v.clone(),
             Some(Err(_)) => {
                 self.db.pending_tab = None;

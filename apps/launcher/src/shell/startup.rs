@@ -1,10 +1,9 @@
 use crate::services::game::{self};
 use crate::services::library::Library;
-use crate::services::play_checks;
 use crate::shell::notices::{Notification, Notify};
 use gpui_kit::component::slider::{SliderEvent, SliderState};
 use gpui_kit::*;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 use swofty_core::session::{UI_SCALE_MAX, UI_SCALE_MIN, clamp_ui_scale};
@@ -132,12 +131,6 @@ impl Shell {
             requests: None,
             console: None,
             developer: Default::default(),
-            views: HashMap::new(),
-            views_profile: String::new(),
-            view_gen: 0,
-            view_gens: HashMap::new(),
-            busy: HashSet::new(),
-            open_row: None,
             progress: None,
             tasks: None,
             moving: None,
@@ -193,16 +186,7 @@ impl Shell {
                 build: None,
                 blocked: None,
             },
-            launching: crate::shell::play::Launching {
-                launch: None,
-                notice: None,
-                play_anyway: false,
-                play_pending: play_checks::Pending::default(),
-                restoring: false,
-                cancelling: false,
-                game_edited: None,
-                steam_saves_once: false,
-            },
+            launching: crate::shell::play::Launching::default(),
             account: crate::shell::account::Account {
                 session: mp,
                 busy: false,
@@ -212,6 +196,7 @@ impl Shell {
                 avatar_link: None,
             },
             prefs,
+            addon_views: crate::features::sections::AddonViews::default(),
         };
         shell.refresh_views(cx);
         match std::env::var("SWOFTY_LAUNCHER_OPEN_PAGE").as_deref() {

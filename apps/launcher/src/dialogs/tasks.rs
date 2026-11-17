@@ -98,7 +98,7 @@ impl Shell {
                     if let Some(list) = list {
                         s.show_tasks(&control, list, cx);
                     }
-                    s.busy.contains(&control)
+                    s.addon_views.busy.contains(&control)
                 });
                 if !matches!(running, Ok(true)) {
                     break;

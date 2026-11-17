@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
@@ -23,6 +23,16 @@ use crate::ui::theme::Palette;
 
 mod intake;
 mod page;
+
+#[derive(Default)]
+pub(crate) struct AddonViews {
+    pub(crate) views: HashMap<String, Result<Arc<View>, String>>,
+    pub(crate) profile: String,
+    pub(crate) generation: u64,
+    pub(crate) generations: HashMap<String, u64>,
+    pub(crate) busy: HashSet<String>,
+    pub(crate) open_row: Option<String>,
+}
 
 pub(crate) type Shared = Arc<Mutex<Option<(f32, String)>>>;
 
@@ -151,11 +161,11 @@ impl Shell {
         let install = self.game.panel_install();
         let open = self.open_section();
         let keys: HashSet<String> = library.sections.iter().map(section_key).collect();
-        if self.views_profile != profile.name {
-            self.views_profile = profile.name.clone();
-            self.views.clear();
+        if self.addon_views.profile != profile.name {
+            self.addon_views.profile = profile.name.clone();
+            self.addon_views.views.clear();
         }
-        self.views.retain(|k, _| keys.contains(k));
+        self.addon_views.views.retain(|k, _| keys.contains(k));
         let prefetch = self.game.detected;
         let sections: Vec<(String, String, bool)> = library
             .sections
@@ -167,15 +177,15 @@ impl Shell {
             })
             .map(|(_, s)| {
                 let key = section_key(s);
-                let cached = self.views.contains_key(&key);
+                let cached = self.addon_views.views.contains_key(&key);
                 (s.addon.clone(), s.spec.id.clone(), cached)
             })
             .collect();
         if sections.is_empty() {
             return;
         }
-        self.view_gen += 1;
-        let generation = self.view_gen;
+        self.addon_views.generation += 1;
+        let generation = self.addon_views.generation;
         cx.spawn(async move |this, cx| {
             let views: Vec<(String, Result<View, String>)> = cx
                 .background_executor()
@@ -212,11 +222,15 @@ impl Shell {
                 .await;
             this.update(cx, |s, cx| {
                 for (key, view) in views {
-                    if s.view_gens.get(&key).is_some_and(|g| *g > generation) {
+                    if s.addon_views
+                        .generations
+                        .get(&key)
+                        .is_some_and(|g| *g > generation)
+                    {
                         continue;
                     }
-                    s.view_gens.insert(key.clone(), generation);
-                    s.views.insert(key, view.map(Arc::new));
+                    s.addon_views.generations.insert(key.clone(), generation);
+                    s.addon_views.views.insert(key, view.map(Arc::new));
                 }
                 cx.notify();
             })
@@ -251,7 +265,7 @@ impl Shell {
                 continue;
             };
             for (i, t) in self.library.sections.iter().enumerate() {
-                let shown = open == Some(i) || self.views.contains_key(&section_key(t));
+                let shown = open == Some(i) || self.addon_views.views.contains_key(&section_key(t));
                 if t.addon == s.addon && shown && stale.covers(&t.spec.id) {
                     due.push(i);
                 }
@@ -269,7 +283,7 @@ impl Shell {
         let Some(s) = self.library.sections.get(i) else {
             return;
         };
-        let ticks = matches!(self.views.get(&section_key(s)), Some(Ok(v)) if v.tick);
+        let ticks = matches!(self.addon_views.views.get(&section_key(s)), Some(Ok(v)) if v.tick);
         let Some(plugin) = self.library.registry.get(&s.addon).and_then(|e| e.plugin.clone()) else {
             return;
         };
@@ -346,7 +360,7 @@ impl Shell {
         let (addon, section) = (addon.to_owned(), section.to_owned());
         let feed = crate::dialogs::tasks::Feed::default();
         let sink = crate::dialogs::tasks::Sink(feed.clone());
-        self.busy.insert(control.clone());
+        self.addon_views.busy.insert(control.clone());
         self.follow_tasks(control.clone(), feed.clone(), cx);
         cx.notify();
         cx.spawn_in(window, async move |this, cx| {
@@ -363,7 +377,7 @@ impl Shell {
                 })
                 .await;
             this.update_in(cx, |s, window, cx| {
-                s.busy.remove(&control);
+                s.addon_views.busy.remove(&control);
                 s.settled(&control, &effect);
                 let effect = s.finish_tasks(&control, &feed, effect, cx);
                 s.effect(&id, effect, window, cx);
