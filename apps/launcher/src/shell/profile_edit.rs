@@ -159,7 +159,7 @@ impl Shell {
         if !self.use_profiles && name != self.library.profile.name && self.library.profile.name != VANILLA {
             return;
         }
-        self.play_pending.cancel();
+        self.launching.play_pending.cancel();
         if let Err(e) = self.store.set_active_profile(name) {
             crate::app::app_log::action("switch profile").failed(&e);
             window.notify(Notification::error(e.to_string()), cx);

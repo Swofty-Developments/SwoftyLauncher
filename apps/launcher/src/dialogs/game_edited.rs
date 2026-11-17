@@ -508,7 +508,7 @@ impl Shell {
     /// offers Verify game files in Steam, the Leftovers case Restore game
     /// folder. The play bar reopens it from [`Shell::game_edited`].
     pub(crate) fn show_game_edited(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(edited) = self.game_edited.clone() else {
+        let Some(edited) = self.launching.game_edited.clone() else {
             return;
         };
         let shell = cx.entity().downgrade();

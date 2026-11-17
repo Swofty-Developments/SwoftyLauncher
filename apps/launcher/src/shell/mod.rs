@@ -1,8 +1,5 @@
 use crate::dialogs::crash::CrashView;
-use crate::dialogs::game_edited::Edited;
-use crate::services::game::Launch;
 use crate::services::library::Library;
-use crate::services::play_checks;
 use crate::shell::notices::Notification;
 use gpui_kit::component::slider::SliderState;
 use gpui_kit::*;
@@ -72,15 +69,7 @@ pub struct Shell {
     pub(crate) crash_view: Option<CrashView>,
     pub(crate) crash_open: bool,
     pub(crate) dismissed: Option<PathBuf>,
-    pub(crate) steam_saves_once: bool,
-    pub(crate) launch: Option<Launch>,
-    pub(crate) notice: Option<String>,
-    play_anyway: bool,
-    play_pending: play_checks::Pending,
-    pub(crate) game_edited: Option<Edited>,
     pub(crate) seen: Seen,
-    pub(crate) restoring: bool,
-    pub(crate) cancelling: bool,
     pub(crate) sliders: HashMap<String, SliderSlot>,
     pub(crate) requests: Option<SystemTime>,
     pub(crate) console: Option<AnyWindowHandle>,
@@ -150,6 +139,7 @@ pub struct Shell {
     _updates: Task<()>,
     _catalog: Task<()>,
     pub(crate) game: crate::shell::probe::GameWatch,
+    pub(crate) launching: crate::shell::play::Launching,
 }
 
 pub struct SliderSlot {

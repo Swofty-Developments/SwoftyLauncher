@@ -29,7 +29,7 @@ impl Shell {
                     window.close_dialog(cx);
                     shell
                         .update(cx, |s, cx| {
-                            s.play_anyway = true;
+                            s.launching.play_anyway = true;
                             s.play(window, cx);
                         })
                         .ok();
@@ -68,17 +68,17 @@ impl Shell {
             return;
         };
         let store = self.store.clone();
-        self.notice = None;
+        self.launching.notice = None;
         self.game.blocked = None;
-        self.game_edited = None;
-        self.restoring = true;
+        self.launching.game_edited = None;
+        self.launching.restoring = true;
         cx.spawn_in(window, async move |this, cx| {
             let result = cx
                 .background_executor()
                 .spawn(async move { game::restore(&store, install.dir) })
                 .await;
             this.update_in(cx, |s, window, cx| {
-                s.restoring = false;
+                s.launching.restoring = false;
                 match result {
                     Ok(text) => {
                         window.notify(Notification::success(text).title(tr("Game folder restored")), cx)
@@ -114,7 +114,7 @@ impl Shell {
                     match swofty_core::busy::request_cancel(&data) {
                         Ok(()) => {
                             this.update(cx, |s, cx| {
-                                s.cancelling = true;
+                                s.launching.cancelling = true;
                                 cx.notify();
                             })
                             .ok();

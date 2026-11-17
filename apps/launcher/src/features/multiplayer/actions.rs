@@ -98,10 +98,11 @@ impl Shell {
         let Some(ask) = session.state().launch else {
             return;
         };
-        if self.mp_page.launch_seen == ask.seq || self.launch.is_some() || self.game.build.is_some() {
+        if self.mp_page.launch_seen == ask.seq || self.launching.launch.is_some() || self.game.build.is_some()
+        {
             return;
         }
-        if !self.game.processes.is_empty() || self.restoring {
+        if !self.game.processes.is_empty() || self.launching.restoring {
             return;
         }
         self.mp_page.closing = None;
@@ -169,7 +170,7 @@ impl Shell {
     }
 
     pub(super) fn mp_watch_game(&mut self, cx: &mut Context<Self>) {
-        let busy = self.launch.is_some() || self.game.build.is_some() || self.restoring;
+        let busy = self.launching.launch.is_some() || self.game.build.is_some() || self.launching.restoring;
         let m = &mut self.mp_page;
         if m.session.is_none() {
             return;

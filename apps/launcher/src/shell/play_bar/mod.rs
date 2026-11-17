@@ -251,7 +251,7 @@ impl Shell {
     fn status(&self, state: &PlayState, p: Palette, cx: &mut Context<Self>) -> impl IntoElement {
         let dot = |c: Hsla| div().size(px(7.)).rounded_full().bg(c).flex_shrink_0();
         let row = status_row();
-        if self.game_edited.is_some() {
+        if self.launching.game_edited.is_some() {
             return row
                 .text_color(p.warning)
                 .child(Icon::new(IconName::TriangleAlert).size(px(16.)))
@@ -272,7 +272,7 @@ impl Shell {
                     )
                 });
         }
-        if let Some(notice) = &self.notice {
+        if let Some(notice) = &self.launching.notice {
             return launch_failed(row, notice, p).when_some(self.launch_log(), |d, log| {
                 d.child(
                     link("launch-log", tr("View log"), p).on_click(move |_, _, cx| cx.open_with_system(&log)),
@@ -318,7 +318,7 @@ impl Shell {
                 let Some(b) = &self.game.build else {
                     return row;
                 };
-                let text = match self.cancelling {
+                let text = match self.launching.cancelling {
                     true => tr("Cancelling the build…").to_owned(),
                     false => format!(
                         "{} for {} · {}",
@@ -340,7 +340,7 @@ impl Shell {
                 .child(dot(p.warning))
                 .child(format!(
                     "{} {}",
-                    match self.launch.as_ref().and_then(|l| l.stage.as_deref()) {
+                    match self.launching.launch.as_ref().and_then(|l| l.stage.as_deref()) {
                         Some(stage) => stage.to_owned(),
                         None if !self.use_profiles && self.launch_mode().is_vr() => {
                             tr("Starting in VR…").to_owned()
@@ -352,7 +352,8 @@ impl Shell {
                         ),
                         None => trf!("Starting with profile {name}…", name = self.library.profile.name),
                     },
-                    self.launch
+                    self.launching
+                        .launch
                         .as_ref()
                         .map(|l| duration(l.since.elapsed().as_secs()))
                         .unwrap_or_default()
@@ -541,7 +542,7 @@ impl Shell {
             &self.library.profile,
             install.source,
             blocked.as_deref(),
-            self.steam_saves_once,
+            self.launching.steam_saves_once,
         );
         let colour = if line.warn { p.warning } else { p.text_muted };
         Some(
@@ -728,7 +729,7 @@ impl Shell {
                 p.accent,
                 false,
             ),
-            PlayState::Building if self.cancelling => (
+            PlayState::Building if self.launching.cancelling => (
                 IconName::LoaderCircle,
                 tr("Cancelling…"),
                 p.elevated,

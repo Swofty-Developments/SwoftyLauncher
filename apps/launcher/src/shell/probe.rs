@@ -84,7 +84,7 @@ impl Shell {
             self.game.processes.clone(),
             self.game.session.clone(),
         );
-        let was_live = self.launch.is_some();
+        let was_live = self.launching.launch.is_some();
         self.requests = probe.requests;
         let root = self.store.root.clone();
         if let Some(banner) = probe.banner.take()
@@ -105,8 +105,8 @@ impl Shell {
         }
         self.announce_reports(&probe, window, cx);
         self.apply_install(probe.install.take(), probe.merged, cx);
-        if self.cancelling && probe.busy.is_none() && self.game.build.is_some() {
-            self.cancelling = false;
+        if self.launching.cancelling && probe.busy.is_none() && self.game.build.is_some() {
+            self.launching.cancelling = false;
             window.notify(
                 Notification::info(tr(
                     "The game files are back as they were. Press Play to build again.",
@@ -123,7 +123,7 @@ impl Shell {
         self.watch_session(probe.session.as_ref(), cx);
         self.game.session = probe.session;
         self.db_poll(cx);
-        let live = was_live || self.launch.is_some();
+        let live = was_live || self.launching.launch.is_some();
         if live
             || before
                 != (
@@ -159,7 +159,7 @@ impl Shell {
         }
         if let Some(r) = probe.not_stock.as_ref().filter(|r| r.at > self.seen.not_stock) {
             self.seen.not_stock = r.at;
-            self.game_edited = Some(Edited::NotStock(r.clone()));
+            self.launching.game_edited = Some(Edited::NotStock(r.clone()));
             self.show_game_edited(window, cx);
         }
         if let Some(b) = probe
@@ -169,7 +169,7 @@ impl Shell {
         {
             self.seen.blocked = probe.blocked_at.expect("blocked file timestamp");
             self.game.blocked = Some(b.clone());
-            self.game_edited = Some(Edited::Leftovers(b.clone()));
+            self.launching.game_edited = Some(Edited::Leftovers(b.clone()));
             self.show_game_edited(window, cx);
         }
         if let Some(f) = probe
@@ -178,7 +178,7 @@ impl Shell {
             .filter(|f| f.at > self.seen.launch_failed)
         {
             self.seen.launch_failed = f.at;
-            self.notice = Some(f.headline().to_owned());
+            self.launching.notice = Some(f.headline().to_owned());
             show_launch_failed(f, window, cx);
         }
     }
@@ -207,7 +207,7 @@ impl Shell {
     }
 
     fn finish_launch(&mut self, probe: &Probe) {
-        if let Some(launch) = self.launch.as_mut() {
+        if let Some(launch) = self.launching.launch.as_mut() {
             launch.saw_game |= self.game.owners.iter().any(|o| !matches!(o, Owner::Other(_)));
             launch.stage = probe.launch_stage.clone();
             if let Some(ok) = launch.finished() {
@@ -225,7 +225,7 @@ impl Shell {
                         .as_ref()
                         .filter(|f| f.at >= launch.at)
                         .map(|f| f.headline().to_owned());
-                    self.notice = Some(match &self.game.blocked {
+                    self.launching.notice = Some(match &self.game.blocked {
                         _ if refused => {
                             tr("an antivirus removed mod files, so F1 25 was not started").to_owned()
                         }
@@ -245,15 +245,15 @@ impl Shell {
                         None => failed.unwrap_or_else(|| launch.failure()),
                     })
                     .filter(|n| !n.contains(swofty_core::busy::CANCELLED));
-                    let why = self.notice.clone().unwrap_or_else(|| launch.failure());
-                    if self.notice.is_some() {
+                    let why = self.launching.notice.clone().unwrap_or_else(|| launch.failure());
+                    if self.launching.notice.is_some() {
                         crate::app::app_log::action("start F1 25").failed(&why);
                     }
                     self.mp_launch_ended(Some(why));
                 } else {
                     self.mp_launch_ended(None);
                 }
-                self.launch = None;
+                self.launching.launch = None;
             }
         }
     }
