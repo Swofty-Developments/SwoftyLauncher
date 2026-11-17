@@ -96,7 +96,7 @@ UNITS = [
     Unit('guard_lines', 'Site guard log lines test', args=['../src/core/guards', 'guard_lines/expected.txt']),
     Unit('guard_registry', 'Core mixin-set registry order test', args=['../src/core']),
     Unit('protection_spans', 'Binding pass protection spans unit test'),
-    Unit('loading_settings', 'Loading setting overrides unit test'),
+    Unit('game_settings', 'Game setting override table unit test'),
     Unit('player_name', 'Player name sanitising unit test'),
     Unit('postfx', 'Post-process pass logic unit test'),
     Unit('race_retirement', 'Race retirement driver guard unit test'),
