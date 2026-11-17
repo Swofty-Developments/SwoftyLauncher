@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_F1CGTask_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14279fb20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14279fb20.c;xref:0x14579fdf8,0x1427a1da0",
+  "notes": "Per-frame update (virtual, slot ref 0x14579fdf8) of the F1CG online-service task (log channel F1CG-OS), same layout as Game_F1os_F1WorldTask_Update 0x14273a580: request queue 0x14273e430 on +0x98, 'Current -> %s' / 'Change of Status: %s', result 0x1427a1940, busy spinner stop, fatal -> cleanup 0x1427a14f0, posts message obj vtable 0x1457a2a18 via 0x1439876c0, pushes onto the 'InterruptQueue' (0x140799d20, type 0xb), clears +0x71, logs 'void game::OnlineServer::triggerLogout()' on F1OS and calls OnlineServer::triggerLogout 0x1432bb360 with this+0xe8; also logs 'Adding %s with option %s' (eIgnoreAndNoBlock) when queuing via 0x1427a1ae0 / 0x142741b80; continuation functor 0x1427a1da0. Addon: observe F1CG online status and logout. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3274)"
+ },
+ "signature": {
+  "id": "game.f1os_f1_c_g_task_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 03 00 00 C5 F8 29 B4 24 30 03 00 00 48 89 CE 48",
+  "match": "0x14279fb20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14279fb20",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_F1CGTask_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1os_F1CGTask_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14279fb20.c;xref:0x14579fdf8",
+   "notes": "V3274 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

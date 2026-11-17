@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkInvite_CanReceiveNewInvite",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431608c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name canReceiveNewInvite (class from the log channel); log channel NETWORK-INVITE: '%s(%s) : cannot receive new invite right now. Waiting to invite party(%s)...'"
+ },
+ "signature": {
+  "id": "game.network_invite_can_receive_new_invite",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC B0 00 00 00 48 89 D6 48 89 CB 48 89 D1 E8",
+  "match": "0x1431608c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431608c0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkInvite_CanReceiveNewInvite"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x1431608c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431608c0.c;xref:0x1430732d9",
+   "notes": "V5777 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

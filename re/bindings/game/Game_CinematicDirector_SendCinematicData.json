@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CinematicDirector_SendCinematicData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406c1f70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1406c1f70.c;xref:0x14563eeb0",
+  "notes": "Host (role this+0x30 < 2) sends Cinematic Data message {grp 0xa5,id 0xa5} with this+0x48 (u32), this+0x58 (u32 HUD flags), this+0x60 (u16) via net send 0x14402e500(this+0xa8, reliability 2 or 1 with conn, msg, 0, conn); logs a warning when flags==0 (hides the HUD). Vtable slot 0x14563eeb0. Addon: replicated cinematic/HUD visibility flags online. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2727)"
+ },
+ "signature": {
+  "id": "game.cinematic_director_send_cinematic_data",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 60 83 79 30 01 0F 8F ?? ?? ?? ?? 48",
+  "match": "0x1406c1f70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406c1f70",
+  "kind": "func_start",
+  "names": [
+   "Game_CinematicDirector_SendCinematicData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_CinematicDirector_SendCinematicData",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406c1f70.c;xref:0x14563eeb0",
+   "notes": "V2727 role this+0x30<2, msg {0xa5,0xa5}, fields +0x48/+0x58/+0x60, send 14402e500(this+0xa8, 2-(conn==0)) confirmed; warn log when +0x58==0"
+  }
+ ],
+ "proofs": []
+}

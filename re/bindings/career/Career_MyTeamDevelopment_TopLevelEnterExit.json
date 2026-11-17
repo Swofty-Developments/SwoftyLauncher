@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamDevelopment_TopLevelEnterExit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c463c0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void f(void *ctx)",
+  "evidence": "decomp:re/decomp/141c463c0.c;xref:0x14573e5d0",
+  "notes": "myteam-g1: Posts my_team_entering_development_top_level / my_team_exiting_development_top_level events for the development (R&D) top level menu."
+ },
+ "signature": {
+  "id": "career.my_team_development_top_level_enter_exit",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC C8 00 00 00 48 8B 02",
+  "match": "0x141c463c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c463c0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamDevelopment_TopLevelEnterExit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c463c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141c463c0.c;xref:0x14573e5d0",
+   "notes": "V9962 Feeds my_team_entering/exiting_development_top_level into the masked tutorial queue (142e689c0) and a back event, i.e. tutorial triggers rather than plain events."
+  }
+ ],
+ "proofs": []
+}

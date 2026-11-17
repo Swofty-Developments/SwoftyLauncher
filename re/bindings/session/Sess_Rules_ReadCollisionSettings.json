@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Rules_ReadCollisionSettings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143595a10",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143595a10.c;xref:0x143586d83,0x143595923,0x14584b790",
+  "notes": "rules.car_to_car_collision.regular_setting (penalty_level_0.level 3), factors.under_safety_car, time_lost_by_opposing_player; collision contexts default/ghosting/pit_lane/safety_car*/yellow_flag_*."
+ },
+ "signature": {
+  "id": "session.rules_read_collision_settings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 09 00 00 C5 F8 29 BC 24 80 09 00 00",
+  "match": "0x143595a10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143595a10",
+  "kind": "func_start",
+  "names": [
+   "Sess_Rules_ReadCollisionSettings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-a",
+   "kind": "func",
+   "item": "Sess_Rules_ReadCollisionSettings",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143595a10.c;xref:0x143595a4d",
+   "notes": "V1856 regular_setting, penalty_level_0.level, factors.under_safety_car, time_lost_by_opposing_player; contexts default/ghosting/pit_lane/safety_car/_out/_return/yellow_flag_overtaken/overtaking"
+  }
+ ],
+ "proofs": []
+}

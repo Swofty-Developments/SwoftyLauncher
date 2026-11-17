@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_PaddockPass_OnShow_CloseTransactionQueue",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416543a0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void (void *vm)",
+  "evidence": "decomp:re/decomp/1416543a0.c;xref:0x1456faff0",
+  "notes": "myteam-g1: Subscribes paddock_pass_data_vip_state_changed and closes the UI message queue transaction_queue via closeAllMessagesInQueue. Store/paddock pass UI, unrelated to the team bank."
+ },
+ "signature": {
+  "id": "ui.paddock_pass_on_show_close_transaction_queue",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 90 00 00 00 C5 F8 29 B4 24 80 00 00 00 48 89 CE 48 8B 89 A0 02 00 00",
+  "match": "0x1416543a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416543a0",
+  "kind": "func_start",
+  "names": [
+   "Ui_PaddockPass_OnShow_CloseTransactionQueue"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1416543a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1416543a0.c;xref:0x1456faff0",
+   "notes": "V9731 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

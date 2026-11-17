@@ -9,7 +9,6 @@ NEEDS="zig wine xvfb-run"
 . ./game_lock.sh
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
 OUT=$(realpath -m "${1:-$PWD/../build/career-list-test}")
-PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 mkdir -p "$OUT"
 "${PIN[@]}" zig c++ -target x86_64-windows-gnu -I../src -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness \
     -Wno-missing-designated-field-initializers -I../../packages/sdk/include -o "$OUT/career_saves_test.exe" career_saves_test.cpp

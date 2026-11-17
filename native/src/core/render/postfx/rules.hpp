@@ -2,6 +2,7 @@
 #include "core/frontend/view_state.hpp"
 #include "core/live/live_car.hpp"
 #include "core/render/postfx/pass.hpp"
+#include "core/render/postfx/rule_logic.hpp"
 
 #include "swofty_api.h"
 

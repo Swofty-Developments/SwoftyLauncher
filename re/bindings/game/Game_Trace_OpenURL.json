@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Trace_OpenURL",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14385cf70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name openURL (class from the log channel); log channel TRACE: 'openURL: Invalid URL [%s]'"
+ },
+ "signature": {
+  "id": "game.trace_open_url",
+  "section": ".xtls",
+  "pattern": "56 48 81 EC F0 00 00 00 48 89 CE E8",
+  "match": "0x14385cf70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14385cf70",
+  "kind": "func_start",
+  "names": [
+   "Game_Trace_OpenURL"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x14385cf70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14385cf70.c;xref:0x141897aa0",
+   "notes": "V6328 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_EadpGameInviteList_DeleteSessionInvite",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fda6f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeEadpGameInviteList_DeleteSessionInvite;xref:0x143fda79e;decomp:re/decomp/143fda6f0.c",
+  "notes": "cxx=neon::NeEadpGameInviteList::deleteSessionInvite; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.eadp_game_invite_list_delete_session_invite",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 8B 59 18 48 8B 41 20 48",
+  "match": "0x143fda6f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fda6f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_EadpGameInviteList_DeleteSessionInvite"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-b",
+   "kind": "func",
+   "item": "Ne_EadpGameInviteList_DeleteSessionInvite",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fda6f0.c;xref:0x143fda6f0",
+   "notes": "V2020 finds invite by session id at +0x70, logs ignored-removing, calls FUN_143fda8c0 (notify/decline), erases entry"
+  }
+ ],
+ "proofs": []
+}

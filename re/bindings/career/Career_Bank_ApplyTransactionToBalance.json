@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Bank_ApplyTransactionToBalance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c66c30",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Bank_ApplyTransaction(void *bank, struct BankTxn *txn)",
+  "evidence": "decomp:re/decomp/140c66c30.c;xref:0x140c66ac6;xref:0x140c67ae9",
+  "notes": "myteam-g2: CHANGES TEAM MONEY: bank+0x10 (int32 balance) += txn->amount (@+4) saturating at INT_MAX, appends the 0x14-byte txn record to the ledger vector (bank+0x40/0x48/0x50), then updates the per-category budget map (bank+0x60 map, values at bank+0x78 stride 0x14: byte category key, int running sum at +4); positive income is split across categories (Career_Bank_SplitIncome path), negative amounts debit the txn type's category (table 0x14568ee88[txn->type], type<0x1f). Hook value: call/patch this to credit or debit the team balance; txn+0 = type, +4 = amount."
+ },
+ "signature": {
+  "id": "career.bank_apply_transaction_to_balance",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 50 48 89 D7 48 89 CE 48 63 42 04",
+  "match": "0x140c66c30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c66c30",
+  "kind": "func_start",
+  "names": [
+   "Career_Bank_ApplyTransactionToBalance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-c",
+   "kind": "func",
+   "item": "0x140c66c30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c66c30.c;xref:0x140c66ac6;xref:0x140c67ae9",
+   "notes": "V9007 bank+0x10 += txn+4 with upper saturation only (no lower clamp), 0x14-byte record appended to vector at bank+0x40/0x48/0x50, map at bank+0x60 with 0x14-stride values at +0x78 (key byte, int sum at +4); negative amounts use table 0x14568ee88[type<0x1f], positive go through the inlined split loop. Matches the claim."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverProfileTabVM_OnTabDeactivated",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c57850",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141c57850.c;xref:0x14573f010",
+  "notes": "Slot 20 (onTabDeactivated) of vt 0x14573ef70: sends 'disable' and clears ThumbnailSystem reason 0. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3213)"
+ },
+ "signature": {
+  "id": "game.driver_profile_tab_v_m_on_tab_deactivated",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 48 8B 81 50 06 00",
+  "match": "0x141c57850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c57850",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverProfileTabVM_OnTabDeactivated"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Game_DriverProfileTabVM_OnTabDeactivated",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/41c57850.c;xref:None",
+   "notes": "V3213 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

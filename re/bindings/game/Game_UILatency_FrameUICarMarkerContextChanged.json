@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_UILatency_FrameUICarMarkerContextChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437f2110",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-UI_latency",
+  "notes": "named from its log messages (channel UI_latency): '***** Frame:%I64u UI Car Marker Context Changed:%hs'"
+ },
+ "signature": {
+  "id": "game.ui_latency_frame_ui_car_marker_context_changed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 02 00 00 C5 F8 29 B4 24 00 02 00 00 48 89 CF 48 8D 71 B8",
+  "match": "0x1437f2110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437f2110",
+  "kind": "func_start",
+  "names": [
+   "Game_UILatency_FrameUICarMarkerContextChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1437f2110",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1437f2110.c",
+   "notes": "V6258 0x1a6c body computes car marker context (is_human, minimap car_marker_outlines overrides); log is one part. Better Game_UILatency_UpdateCarMarkerContext; vtable/indirect"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1437f2110",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437f2110.c",
+   "notes": "V7113 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

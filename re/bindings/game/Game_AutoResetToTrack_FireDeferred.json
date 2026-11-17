@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_AutoResetToTrack_FireDeferred",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f03a30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f03a30.c;xref:0x142f01e30;doc:re/db/subsystems/game.md",
+  "notes": "gb-verify claim 5: clears timer/flag and posts the same AutoResetToTrack message (vt 0x145800df0); does not teleport itself L2 2026-11-14 (engine-re round 2): decomp read; 1 reference(s) (0x142f01e30). raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.auto_reset_to_track_fire_deferred",
+  "section": ".xtls",
+  "pattern": "48 83 EC 38 0F B6 81 A8 04 00 00 0F B6 D0 48 8D",
+  "match": "0x142f03a30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f03a30",
+  "kind": "func_start",
+  "names": [
+   "Game_AutoResetToTrack_FireDeferred"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x142f03a30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f03a30.c;xref:0x142f01e30",
+   "notes": "V4167 Clears state +0xf4/+0xec of slot byte +0x4a8 (stride 0x18), posts message vt 0x145800df0 via 0x1430236d0, no teleport; function pointer stored by lea at 0x142f01e30 in Game_AutoResetToTrack_StartTimer"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x142f03a30",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142f03a30-0x142f03a9d;xref:0x142f01e30",
+   "notes": "V10524 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only lea ref 0x142f01e30 in 0x142f01210 (0x14aa3ab14 is add rax,imm). If dword [+car*0x18+0xf4]==1: clear it and +0xec, post msg vt 0x145800df0 via 0x1430236d0. No teleport."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Rtt_CreateScreenSpaceDecalsPass",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143db37a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143db37a0.c;xref:0x143d8528a,0x143db7ef9",
+  "notes": "Constructor of screen space decal passes (ScreenSpaceDecals_ANS / _N / _Main .ContextSetup, applyTrackConstants). Addon: track decals are rendered here. Named callers: Game_Rtt_CreateScenes."
+ },
+ "signature": {
+  "id": "game.rtt_create_screen_space_decals_pass",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 4C 89 4C 24 28",
+  "match": "0x143db37a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143db37a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Rtt_CreateScreenSpaceDecalsPass"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143db37a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143db37a0.c;xref:0x143d8528a",
+   "notes": "V7930 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

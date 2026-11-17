@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_DelayOnLoadingScreen_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d586c0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d586c0.c;xref:0x1457de708",
+  "notes": "SessionStateDelayOnLoadingScreen slot 9: session_transition; clears fade reasons except 0x80108001 via 0x1437f07c0; ui_menu_data.loading_complete."
+ },
+ "signature": {
+  "id": "session.delay_on_loading_screen_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 48 89 D6 48 89 CF 0F",
+  "match": "0x142d586c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d586c0",
+  "kind": "func_start",
+  "names": [
+   "Sess_DelayOnLoadingScreen_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d7-verify",
+   "kind": "func",
+   "item": "Sess_DelayOnLoadingScreen_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d586c0.c;xref:0x142d586c0",
+   "notes": "V2704 fade/hide bit ids, offsets, states and curves checked against decomp; role as claimed"
+  }
+ ],
+ "proofs": []
+}

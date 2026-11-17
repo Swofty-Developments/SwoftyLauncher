@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Tyre_CurveMap_FindBracketB",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e7bd50",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e7bd50.c;xref:0x142e7c04a",
+  "notes": "Same tree bracket search as CurveMap_FindBracketA but container at this+0x10 / size this+0x18 (second map). Callers Car_Tyre_SampleCurveSet2KeyLerp, Car_Tyre_SampleWearCurve2DAlt."
+ },
+ "signature": {
+  "id": "car.tyre_curve_map_find_bracket_b",
+  "section": ".xtls",
+  "pattern": "56 48 8B 41 10 4C 8B 08 4D 89 08 48 8B 41 10 48",
+  "match": "0x142e7bd50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e7bd50",
+  "kind": "func_start",
+  "names": [
+   "Car_Tyre_CurveMap_FindBracketB"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x142e7bd50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e7bd50.c;xref:0x142e7c04a",
+   "notes": "V8465 upper_bound-style walk on RB tree at +0x10/size +0x18, key float node+0x20, writes node pair to param_3; callers match"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Thrustmaster_SetWheelRange",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a9d650",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a9d650.c;xref:0x1406cc04c,0x1458a6e18",
+  "notes": "Thrustmaster wheel device (vt next to Game_Thrustmaster_GetInputState): if TM handle this+0xa00 != 0 formats VID/PID '%04X' (+0x286,+0x288) and firmware '%u:%u:%u:%u' (+0x28a..+0x290) into a property set, calls tm_api_set_properties(handle,0x1000000,...), logs 'Wheel Range set to %d', stores range param_2 at this+0x2b0. Addon: change Thrustmaster steering rotation range at runtime. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2513)"
+ },
+ "signature": {
+  "id": "game.thrustmaster_set_wheel_range",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 88 00 00 00 89 D6 48 89 CF 83 B9",
+  "match": "0x143a9d650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a9d650",
+  "kind": "func_start",
+  "names": [
+   "Game_Thrustmaster_SetWheelRange"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Game_Thrustmaster_SetWheelRange",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a9d650.c;xref:0x1458a6e18",
+   "notes": "V2513 vtable slot; VID/PID %04X +0x286/+0x288, fw %u:%u:%u:%u +0x28a..+0x290, tm_api_set_properties(handle +0xa00,0x1000000,..), range at this+0x2b0; log Wheel Range set to %d appears only when tm_api returns 0"
+  }
+ ],
+ "proofs": []
+}

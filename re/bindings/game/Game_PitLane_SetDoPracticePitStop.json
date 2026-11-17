@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_PitLane_SetDoPracticePitStop",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141793ac0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141793ac0.c;xref:0x141540673,0x141793ef1,0x14b0cbacb",
+  "notes": "Log channel PITLANE: 'PitLaneMovementManager::setDoPracticePitStop %d' L2 2026-11-14 (engine-re round 2): decomp read; 3 reference(s) (0x141540673, 0x141793ef1, 0x14b0cbacb); the body itself references 'value' / 'PITLANE' / 'PitLaneMovementManager::setDoPracticePitStop %d'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pit_lane_set_do_practice_pit_stop",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE E8 ?? ?? ?? ?? 84 C0",
+  "match": "0x141793ac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141793ac0",
+  "kind": "func_start",
+  "names": [
+   "Game_PitLane_SetDoPracticePitStop"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141793ac0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141793ac0.c;xref:0x141540675",
+   "notes": "V4897 name/description match decomp: strings and callees consistent"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x141793ac0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x141793ac0-0x141793c88;xref:0x141540673,0x141793ef1,0x14b0cbacb",
+   "notes": "V10493 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Refs are lea of the function (0x141540673, 0x141793ef1, 0x14b0cbacb). PITLANE PitLaneMovementManager::setDoPracticePitStop %d, value. 1 reg arg."
+  }
+ ],
+ "proofs": []
+}

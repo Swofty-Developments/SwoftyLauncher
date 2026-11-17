@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Rnd_BuildGotoDepartmentButtonB",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1417fec70",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/1417fec70.c;xref:0x141c4b7d4;xref:0x141c79636",
+  "notes": "myteam-g1: UI binding code; rnd_goto_%s_department / error_department; calls Career_Query_EnabledUpgrades (variant B). Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.rnd_build_goto_department_button_b",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 D8 18 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 78 29 84 24 C0 18 00 00",
+  "match": "0x1417fec70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417fec70",
+  "kind": "func_start",
+  "names": [
+   "Ui_Rnd_BuildGotoDepartmentButtonB"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1417fec70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1417fec70.c;xref:0x141c4b7d4;xref:0x141c79636",
+   "notes": "V9790 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

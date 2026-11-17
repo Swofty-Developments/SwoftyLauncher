@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkConnection_LocalMachineBecameHost",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144065aa0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-CONNECTION-QUALITY",
+  "notes": "named from its log messages (channel NETWORK-CONNECTION-QUALITY): '%s: Local machine became the host'"
+ },
+ "signature": {
+  "id": "game.network_connection_local_machine_became_host",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 0C 00 00 C5 F8 29 BC 24 20 0C 00 00",
+  "match": "0x144065aa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144065aa0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkConnection_LocalMachineBecameHost"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144065aa0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144065aa0.c;xref:0x14406597b",
+   "notes": "V6492 partial: better name Game_NetworkConnQuality_UpdateArbiter; 13 KB updateArbiter state machine; became-host is one log"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144065aa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144065aa0.c;xref:0x14406597b",
+   "notes": "V7139 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

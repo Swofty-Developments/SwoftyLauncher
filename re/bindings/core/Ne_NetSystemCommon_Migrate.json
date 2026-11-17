@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSystemCommon_Migrate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144070ab0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetSystemCommon_Migrate;xref:0x144070b34;decomp:re/decomp/144070ab0.c",
+  "notes": "cxx=neon::NeNetSystemCommon::migrate; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_system_common_migrate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 89 C3 89",
+  "match": "0x144070ab0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144070ab0",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSystemCommon_Migrate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-a",
+   "kind": "func",
+   "item": "Ne_NetSystemCommon_Migrate",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144070ab0.c;xref:0x14305f083",
+   "notes": "V2086 own pretty string; hostId log, setRole Host, calls transport migrate path"
+  }
+ ],
+ "proofs": []
+}

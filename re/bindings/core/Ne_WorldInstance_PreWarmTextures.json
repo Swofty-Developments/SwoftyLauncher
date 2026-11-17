@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_WorldInstance_PreWarmTextures",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144478ce0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/144478ce0.c;xref:0x140c7ac22",
+  "notes": "logged method name preWarmTextures (class from the log channel); log channel NeWorldInstance: 'preWarmTextures %p %s %s %s %s'"
+ },
+ "signature": {
+  "id": "core.world_instance_pre_warm_textures",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 40 20 48 8B 88 08 02 00 00 48 85 C9 74 12",
+  "match": "0x140c7ac22",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x144478ce0",
+  "kind": "func_start",
+  "names": [
+   "Ne_WorldInstance_PreWarmTextures"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cs-verify",
+   "kind": "func",
+   "item": "Ne_WorldInstance_PreWarmTextures",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144478ce0.c;xref:0x140c7ac22",
+   "notes": "V2274 gathers list via 144478e50, per object component (type 146cb7da0) vfunc+0x80(1); logs same channel"
+  }
+ ],
+ "proofs": []
+}

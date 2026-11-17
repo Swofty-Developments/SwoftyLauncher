@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Gdb_Check_DuplicateShortId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cb8e90",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "proto": "uint64_t (void *list, int16_t *id)",
+  "evidence": "decomp:re/decomp/140cb8e90.c;xref:0x140cb8c1b;xref:0x140dea759;xref:0x140ded839",
+  "notes": "myteam-g2: Returns 0x11 (duplicate) if id already exists in the int16 vector list+8..+0x10, recording the error code in the TLS error chain (Ne_Tls_GetValue) and a stack trace slot. Used while loading the driver statistics config and the sponsor goal definitions table."
+ },
+ "signature": {
+  "id": "gamedb.check_duplicate_short_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 D7 48 89 CE 48 8B 41 08 48 8B 49 10 48 39 C8 74 24 0F B7 17",
+  "match": "0x140cb8e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cb8e90",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Check_DuplicateShortId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140cb8e90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cb8e90.c",
+   "notes": "V9520 Returns 0x11 when the int16 id already exists in vector list+8..+0x10."
+  }
+ ],
+ "proofs": []
+}

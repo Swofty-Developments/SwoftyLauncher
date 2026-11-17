@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamResearchProjectStarted_Event",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c70b00",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *ctx)",
+  "evidence": "decomp:re/decomp/141c70b00.c;xref:0x14573fd30",
+  "notes": "myteam-g1: Posts my_team_research_project_started and my_team_research_started_confirmation; modder hook for R&D project start (state at ctx+0x290..+0x339)."
+ },
+ "signature": {
+  "id": "career.my_team_research_project_started_event",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 68 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D 2B E9 3F 49",
+  "match": "0x141c70b00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c70b00",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamResearchProjectStarted_Event"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-b",
+   "kind": "func",
+   "item": "0x141c70b00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c70b00.c;xref:0x14573fd30;str:\"my_team_research_project_started\";str:\"my_team_research_started_confirmation\"",
+   "notes": "V9004 Checks flags at +0x338/+0x339/+0x33a and +0x310, posts both events via FUN_142e689c0 and FUN_14096b1e0, goes on to open a UI variant (VariantToOpen/back). Matches."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_MyTeamButtonDivider_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141992b50",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *f(void *self)",
+  "evidence": "decomp:re/decomp/141992b50.c;xref:0x14198cadf;xref:0x14198ee56;xref:0x14198f7a5",
+  "notes": "myteam-g1: Widget setup for my_team_button_divider (divider element between My Team HQ menu buttons)."
+ },
+ "signature": {
+  "id": "ui.my_team_button_divider_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 89 D3 48 89 CE 48 C7 44 24 28 00 00 00 00 44 0F B6 C2 48 8D 15 ?? ?? ?? ?? 48 8D 4C 24 28 E8 ?? ?? ?? ?? 48 8B 44 24 28 4C 8D 40 09 48 85 C0 4C 8D 3D ?? ?? ?? ?? 4D 0F 44 C7 48 8B 46 48",
+  "match": "0x141992b50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141992b50",
+  "kind": "func_start",
+  "names": [
+   "Ui_MyTeamButtonDivider_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141992b50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141992b50.c;xref:0x14198cadf",
+   "notes": "V9879 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

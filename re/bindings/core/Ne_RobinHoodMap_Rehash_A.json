@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_Rehash_A",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143681aa0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143681aa0.c;xref:0x14363861c",
+  "notes": "robin_hood map rehash/grow (load factor 80 %, info bytes, max 0xff overflow, allocation tag ne_hash_map path); calls overflow thrower 0x143681a90. Container helper used by Sess_SafetyCar_ReadMaxRedFlags. (1 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "core.robin_hood_map_rehash_a",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? FF C3 81 FB 00 01 00 00 0F 84 ?? ?? ?? ?? 4C 8B 5E 50 4C",
+  "match": "0x14363861c",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143681aa0",
+  "kind": "func_start",
+  "names": [
+   "Ne_RobinHoodMap_Rehash_A"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x143681aa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143681aa0.c;xref:0x14363861c",
+   "notes": "V7366 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

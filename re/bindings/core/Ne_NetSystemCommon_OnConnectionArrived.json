@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSystemCommon_OnConnectionArrived",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144074300",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetSystemCommon_OnConnectionArrived;xref:0x1440744ee;decomp:re/decomp/144074300.c",
+  "notes": "cxx=neon::NeNetSystemCommon::onConnectionArrived; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_system_common_on_connection_arrived",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 08 01 00 00 49 89 D6 48",
+  "match": "0x144074300",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144074300",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSystemCommon_OnConnectionArrived"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-a",
+   "kind": "func",
+   "item": "Ne_NetSystemCommon_OnConnectionArrived",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144074300.c;xref:0x145a4fc90",
+   "notes": "V2091 vtable slot; own pretty string (handleConnectionArrived string is the caller's); parses message, logs, calls transport vtable +0xd0, sets flag +0x481"
+  }
+ ],
+ "proofs": []
+}

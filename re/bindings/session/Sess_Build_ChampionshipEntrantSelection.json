@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Build_ChampionshipEntrantSelection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ba4390",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140ba4390.c;xref:0x140ba3dfa",
+  "notes": "Builds the entrant selection result param_2 for a championship (this = champ component, +0x278 mgr, +0x4c0 entrants system): for series modes compares the series string ('f1'/'f2') and looks up entrant list 'F1CAREER_%s'/'F2CAREER_%s' with '25' in entrants system +0x560 (stride 0x10); otherwise uses the default setup-mode list (0x14245a0d0). Caller Sess_Setup_ChampionshipEntrants (3 sites)."
+ },
+ "signature": {
+  "id": "session.build_championship_entrant_selection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 48 89 D6 48 89 CF 48 8B 81",
+  "match": "0x140ba4390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ba4390",
+  "kind": "func_start",
+  "names": [
+   "Sess_Build_ChampionshipEntrantSelection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140ba4390",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ba4390.c;xref:0x140ba3dfa",
+   "notes": "V3845 strings F1CAREER_%s / F2CAREER_%s, uses +0x278 mgr and +0x4c0 entrants system (+0x560 list), default via FUN_14245a0d0; caller Sess_Setup_ChampionshipEntrants seen"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_DriverConfig_InitDefault",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14249a4f0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "AiDriverConfig *Ai_DriverConfig_InitDefault(AiDriverConfig *cfg)",
+  "evidence": "decomp:re/decomp/14249a4f0.c;xref:0x140602d0c",
+  "notes": "memset(cfg, 0, 0x2a0); finds row 'default_driver' (0x14578c317) in table 'entrants.drivers' (Gdb_Find_RowByLabel 0x1445a2bd0), joins the row path and the found label with '.', builds key {path, field 'ai_driver_config'} and calls 0x14065dc50 (Ai_Parse_DriverConfig, which fills the whole AiDriverConfig: alongside +0x00 via Ai_Read_AlongsideConfig, blocking +0x40, then +0xc0.. divebomb/offset_variation, overtake, space_seeking); returns cfg. Caller Sess_Build_AiSystem 0x140602d0c (default config later memcpy'd 0x2a0 into AiCarRecord+0x238 when a driver has none). L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.driver_config_init_default",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 38 05 00 00 48 89 CE 48 8D 7C 24",
+  "match": "0x14249a4f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14249a4f0",
+  "kind": "func_start",
+  "names": [
+   "Ai_DriverConfig_InitDefault"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x14249a4f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14249a4f0.c;xref:0x140602d0c",
+   "notes": "V3388 memset 0x2a0 (FUN_145378b60), entrants.drivers + default_driver row, ai_driver_config, calls 0x14065dc50=Ai_Parse_CedePositionConfig; sole caller Sess_Build_AiSystem"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14249a4f0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14249a4f0-0x14249a75a;xref:0x140602d0c",
+   "notes": "V10556 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 1 arg, memset 0x2a0 (0x14249a501), Gdb_Find_RowByLabel 0x1445a2bd0 for default_driver in entrants.drivers, field ai_driver_config, then call 0x14065dc50 (0x14249a748), returns cfg. Only caller 0x140602d0c."
+  }
+ ],
+ "proofs": []
+}

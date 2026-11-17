@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_TyreSets_Deserialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e8deb0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-TYRES/V",
+  "notes": "named from its log messages (channel TYRES/V): '- | %s: tyre allocation choice: %d, compoound list size: %d | %s: after reading m_tyreSetToStartRaceOn, ok: %d, read position: %d'"
+ },
+ "signature": {
+  "id": "car.tyre_sets_deserialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 D6 48 89 CF 80 7A 29 00 74 2E",
+  "match": "0x142e8deb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e8deb0",
+  "kind": "func_start",
+  "names": [
+   "Car_TyreSets_Deserialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e8deb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e8deb0.c;xref:0x140bd196d",
+   "notes": "V5525 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

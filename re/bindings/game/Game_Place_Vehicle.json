@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Place_Vehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14473d810",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Place_Vehicle(void *car, const char *tag, int priority, const float *mtx44_a, const float *mtx44_b, float dt, uint32_t flags)",
+  "evidence": "decomp:re/decomp/1434be940.c;decomp:re/decomp/14473d810.c;xref:0x1403c9b60,0x142d5a086,0x142f37987,0x142f72676,0x142f72a10,0x1432752e9,0x1434bb2d3,0x1434bdade,0x1434be297,0x1434bef1c",
+  "notes": "Vehicle placement request (teleport): under the request lock (req[0x13]) stores a new placement when its priority param_3 >= the pending one (req+8): name/tag pointer (req+0), priority, 64-byte world matrix param_4 (req+0x10..+0x4f), 64-byte second matrix param_5 (req+0x50..+0x8f), blend time float (req+0x90), flags (req+0x94); lower priority requests are dropped. Leading loop over 0x14604b4f0 only logs (flags&3, blend > 1/30 s, !(flags&0x40)). The vehicle applies it on its next physics step. 10+ callers incl. 0x142d5a086 (session grid placement), Game_PitLane_MoveDownSpline (prio 3). (used by vmknolle race-start, red-flag-pit, sc-unlapping) | car-re: pit lane placement (mode 3 from moveDownSpline); 4x4 matrix, translation at mtx+0x30; same family as Game_Teleport_Vehicle. (used by the vmknolle addons cooldown-lap, pitlane-start, red-flag-pit, sc-unlapping)"
+ },
+ "signature": {
+  "id": "game.place_vehicle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 7C 24 70",
+  "match": "0x14473d810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14473d810",
+  "kind": "func_start",
+  "names": [
+   "Game_Place_Vehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-b",
+   "kind": "func",
+   "item": "0x14473d810",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:work/verify_b/decomp/14473d810.c;xref:0x1434bef1c,0x1434bdade,0x142d5a086,0x1403c9b60",
+   "notes": "V1034 role ok (Car::teleportRequest: VEHICLE_TELEPORT log, priority param_3 vs stored, critical section) but proto differs: p4 and p5 are BOTH 64-byte 4x4 matrices copied to req[2..9] and req[0xc..] (both positions logged), param_6 is a time interval (compared with 1/30 s for velocity linear approximation; MoveDownSpline forwards its dt) not a speed; param_3 is a priority, not a mode"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-d",
+   "kind": "func",
+   "item": "0x14473d810",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_d/decomp/14473d810.c;decomp:work/verify_d/decomp/1434be940.c;xref:0x1434bef1c,0x1437ac8a9,0x142d5a086",
+   "notes": "V1069 Car::teleportRequest: under CS (+0x98) keeps highest-priority request this frame (logs Updated/Skipped/more than once), stores tag,prio,2x mat44,dt,flags; 7-arg proto matches; arg0 is the same Car ptr the immediate path gets (name teleport_req is just the request holder)"
+  }
+ ],
+ "proofs": []
+}

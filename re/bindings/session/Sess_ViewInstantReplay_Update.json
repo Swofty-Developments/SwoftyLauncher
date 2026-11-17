@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_ViewInstantReplay_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142da2760",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142da2760.c;xref:0x1457e3948;doc:re/db/subsystems/session.md",
+  "notes": "fb-verify C2 (CORRECTED: it is not the snapshot commit; the per-frame record step is not identified): SessionStateViewInstantReplay vtable slot +0xe8 (abs ref 0x1457e3948; siblings OnStateEnter 0x142da21e0 / OnStateExit 0x142da2de0). Returns the next-state hash in *rdx and handles the UI (play_ui_confirm, ui_menu_data.start_photo_mode). On flashback use: [r14+0x3c] += 1 (flashbacks used), posts MessageFlashbackUsed (vt 0x1457d4030, lea @0x142da2a3a) through the queued post Ne_Post_BusMessageQueued 0x142cb7130 on bus *(*(0x14618b3b8)+8), calls vt+0x78(dt) on a list and Ne_Replay_SetState 0x1445d5c40 (ReplaySystem, 2/4)"
+ },
+ "signature": {
+  "id": "session.view_instant_replay_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 90 00 00 00 C5 F8 29 B4 24 80 00 00 00 48 89 D6",
+  "match": "0x142da2760",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142da2760",
+  "kind": "func_start",
+  "names": [
+   "Sess_ViewInstantReplay_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-29",
+    "by": "fb-verify",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-29",
+   "verifier": "fb-verify",
+   "kind": "func",
+   "item": "Sess_ViewInstantReplay_Update",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "xref:0x1457e3948",
+   "notes": "V1800 C2 snapshot-commit claim disagreed; row states the verifier reading"
+  }
+ ],
+ "proofs": []
+}

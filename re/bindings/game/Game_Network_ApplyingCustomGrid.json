@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_ApplyingCustomGrid",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ce82c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ce82c0.c;xref:0x142cebaf5,0x1436ddd3e",
+  "notes": "named from its log messages (channel NETWORK): 'Applying Custom Grid' L2 2026-11-14 (engine-re round 2): decomp read; 2 reference(s) (0x142cebaf5, 0x1436ddd3e); the body itself references 'invalid' / 'NETWORK' / 'Using custom Grid True for %s' / 'Applying Custom Grid'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_applying_custom_grid",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 29 00 00 E8 ?? ?? ?? ?? 48 29 C4 48 89 4C 24 28",
+  "match": "0x142ce82c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ce82c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_ApplyingCustomGrid"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142ce82c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ce82c0.c;xref:0x142cebaf5",
+   "notes": "V5064 name/strings/body match; log-based claim holds for this function size"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x142ce82c0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142ce82c0-0x142ce8d83;xref:0x142cebaf5,0x1436ddd3e",
+   "notes": "V10480 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 2 callers 0x142cebaf5 / 0x1436ddd3e. NETWORK Applying Custom Grid, Using custom Grid True for %s."
+  }
+ ],
+ "proofs": []
+}

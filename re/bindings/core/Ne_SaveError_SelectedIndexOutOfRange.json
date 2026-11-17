@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveError_SelectedIndexOutOfRange",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14414cbb0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14414cbb0.c;xref:0x14413f158,0x144140075",
+  "notes": "SAVE error helper, fixed code 0x22 and fixed message 'The selected index %u is too large for the save list of length %u' (u32 index, u64 count). Called from Ne_SaveSystem_SelectAndLoad, SelectAndSave, SelectAndDelete when the select callback returns an index past the save info list. Addon: a save-slot picker must return index < list length."
+ },
+ "signature": {
+  "id": "core.save_error_selected_index_out_of_range",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 48 08 00 00 48 8D 44 24 48 48 C7 44 24 38 00 08 00 00 48 89 44 24 40 C6 44 24 48 00 48 8D 05 ?? ?? ?? ?? 48 89 44 24 30 4C 8B 0A",
+  "match": "0x14414cbb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14414cbb0",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveError_SelectedIndexOutOfRange"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_SaveError_SelectedIndexOutOfRange",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14414cbb0.c;xref:0x14414014b",
+   "notes": "V2570 fixed code 0x22 and message confirmed"
+  }
+ ],
+ "proofs": []
+}

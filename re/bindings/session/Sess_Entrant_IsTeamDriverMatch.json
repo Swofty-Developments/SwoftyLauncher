@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Entrant_IsTeamDriverMatch",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14078d8d0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14078d8d0.c;xref:0x140ba3eaa,0x140ba410a",
+  "notes": "Checks whether an entrant (lookup 0x14243fd10 by id param_3) belongs to the team/driver maps of param_2 (+0x88/+0xa0 hash map) and compares packed ids at +0xd2. Callers: Sess_Setup_ChampionshipEntrants."
+ },
+ "signature": {
+  "id": "session.entrant_is_team_driver_match",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 44 89 C6 48 89 D7 44 89 44 24",
+  "match": "0x14078d8d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14078d8d0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Entrant_IsTeamDriverMatch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14078d8d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14078d8d0.c;xref:0x140ba3eaa",
+   "notes": "V3591 lookup FUN_14243fd10 by id, checks maps at param_2+0x88/+0xa0, compares packed ids at +0xd2; Sess_Setup_ChampionshipEntrants caller seen"
+  }
+ ],
+ "proofs": []
+}

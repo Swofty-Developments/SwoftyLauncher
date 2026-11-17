@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTransport_MyConnIDTheirConnIDMode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144048650",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-TRANSPORT",
+  "notes": "named from its log messages (channel NETWORK-TRANSPORT): '[RecvNewConnection][%u] My Conn ID: %d, Their Conn ID: %d, Mode: %s'"
+ },
+ "signature": {
+  "id": "game.network_transport_my_conn_id_their_conn_id_mode",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 09 00 00 C5 F8 29 B4 24 90 09 00 00",
+  "match": "0x144048650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144048650",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTransport_MyConnIDTheirConnIDMode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144048650",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144048650.c;xref:0x14404859f",
+   "notes": "V6458 partial: better name Game_NetworkTransport_RecvThreadFunc; recvThreadFunc: receive loop, new-connection log is one branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144048650",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144048650.c;xref:0x14404859f",
+   "notes": "V7100 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqFacilities_CameraCycleStep",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140df2980",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140df2980.c;xref:0x14370335c",
+  "notes": "TeamHQ facility camera cycle step: requests fade OUT reason FacilitiesCameraCycle (bit 18, state 0 = cut) and on completion swaps the facility camera and fades back IN. Addon: facility camera cycling. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V2659)"
+ },
+ "signature": {
+  "id": "career.team_hq_facilities_camera_cycle_step",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC D8 00 00 00 0F",
+  "match": "0x140df2980",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140df2980",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqFacilities_CameraCycleStep"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d7-verify",
+   "kind": "func",
+   "item": "Career_TeamHqFacilities_CameraCycleStep",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140df2980.c;xref:0x140df2980",
+   "notes": "V2659 fade/hide bit ids, offsets, states and curves checked against decomp; role as claimed"
+  }
+ ],
+ "proofs": []
+}

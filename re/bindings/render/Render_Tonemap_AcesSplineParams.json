@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Tonemap_AcesSplineParams",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143e80e90",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143e80e90.c;xref:0x143bc6681",
+  "notes": "Fills ACES RRT segmented-spline constants (-4,-4,-3.157,-0.485,1.8477,1.8477,-0.7185,2.081,3.668,4,4,4; 0.18 mid grey, 4.8, 47185.92 / 10000) and evaluates log/exp. Callers Render_PostProcess_ComputeColorParams. Addon: confirms an ACES-style tonemap curve."
+ },
+ "signature": {
+  "id": "render.tonemap_aces_spline_params",
+  "section": ".xtls",
+  "pattern": "48 81 EC 88 00 00 00 C5 F8 29 74 24 70 C5 F8 10",
+  "match": "0x143e80e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143e80e90",
+  "kind": "func_start",
+  "names": [
+   "Render_Tonemap_AcesSplineParams"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143e80e90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143e80e90.c;xref:0x143bc6681",
+   "notes": "V8354 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

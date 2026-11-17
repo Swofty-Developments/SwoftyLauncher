@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Career_Build_DriverContract",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d79dd0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Build_DriverContract(void *contracts, void *contract, uint32_t driver_key, uint32_t team_key, uint8_t type, int32_t target, int32_t seasons)",
+  "evidence": "decomp:re/decomp/140d79dd0.c;xref:0x1422f2086,0x140d787e5,0x140d7b8c5,0x140d7bde7,0x140d7cc4d;decomp:re/decomp/1422f1d50.c",
+  "notes": "fills a contract buffer (0x2c bytes used): +0x00 team key, +0x0c signing day (u16, career clock minutes [[contracts+0x358]+0x2b0] / 1440), +0x0e type, +0x18 current overall rating (0x14113d120), +0x1c target, +0x20 seasons, +0x24 end season (type 0: seasons + current season [c+0x370]+0x428 - 1), +0x28 flag. Five callers; the negotiation screen's advance handler 0x1422f1d50 calls it before Career_Sign_DriverContract. Raised by native-1990 for the F1 1990 build; corrected after V0958 (+0x0c is a day, not a season)"
+ },
+ "signature": {
+  "id": "career.build_driver_contract",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 44 89 CF 44 89 C3 48 89 D6 49 89 CE 44 0F B6 A4 24 90 00 00 00",
+  "match": "0x140d79dd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d79dd0",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_DriverContract"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/contract_skip.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-a",
+   "kind": "func",
+   "item": "Career_Build_DriverContract",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d79dd0.c;decomp:re/decomp/1422f1d50.c;decomp:re/decomp/140d82cd0.c;decomp:re/decomp/14113d120.c;xref:0x140d787e5,0x140d7b8c5,0x140d7bde7,0x140d7cc4d,0x1422f2086;sig:career.build_driver_contract",
+   "notes": "V0958 Role and arity confirmed: 7 args (rcx contracts, rdx contract, r8d driver, r9d team, byte [rsp+0x90] type, [rsp+0x98] target, [rsp+0x a0] seasons after 7 pushes and sub 0x30); returns contract. Confirmed offsets: +0 team, +0xe type, +0x18 = (int) 0x14113d120(c+0x360 obj, obj+0x2a8, &driver, false) (weighted attribute sum, so overall rating fits), +0x1c target, +0x20 seasons, +0x24 end season (types 1..13: seasons + [[c+0x370]+0x428]; type 0: that - 1; type 0xe copies the existing signed record's +0x24), +0x28 = an offer from team_key exists in the c+0x3a8 list; also +0x4..+0xb = 0, +0x10 = 0xffff, +0x12 = 0xc, +0x14 = 0. Five rel32 callers, not three (adds 0x140d7bde7, 0x140d7cc4d). Wrong detail: +0x0c is not the start season. It is (u16)(([[c+0x358]+0x2b0] >> 5) * 0x5b05b06 >> 32) = minutes / 1440, the day conversion used at 40+ sites (0x140d82cd0 passes the same value next to the season index [c+0x370]+0x428), so +0x0c is the signing day; the season comes from [c+0x370]+0x428 as for +0x24. sigcheck: 1 hit, func_start 0x140d79dd0"
+  },
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-a",
+   "kind": "func",
+   "item": "Career_Build_DriverContract",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d79dd0.c;xref:0x140d787e5,0x140d7b8c5,0x140d7bde7,0x140d7cc4d,0x1422f2086;sig:career.build_driver_contract",
+   "notes": "V0989 Re-check of the corrected row after V0958. Fresh decompile: +0x0c = (short)(([[c+0x358]+0x2b0] >> 5) * 0x5b05b06 >> 32) = minutes / 1440, a u16 signing day as the row now says; +0x24 = seasons + [[c+0x370]+0x428] - 1 for type 0 (types 1..13 omit the -1 and type 0xe copies the existing signed record's +0x24, which the row does not need). xref.py lists exactly the five rel32 callers in the evidence (in 0x140d786b0, 0x140d7b530, 0x1422f1d50). Proto with 7 args and uint32_t keys matches the stack reads [rsp+0x90/0x98/0xa0]. sigcheck --exe (build d873a1c8 MATCH): 1 hit, func_start 0x140d79dd0"
+  }
+ ],
+ "proofs": []
+}

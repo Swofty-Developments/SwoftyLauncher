@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Msg_OnBankAccountFundsMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140df17c0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Msg_OnBankAccountFundsMessage(void *owner, void *msg)",
+  "evidence": "decomp:re/decomp/140df17c0.c;xref:0x140df18a8;xref:0x140df1b6a",
+  "notes": "myteam-g2: Handler for BankAccountFundsMessage: if the message key (msg+0x10, high word 0x10b) is a bank funds key, loops the owner list at owner+0x2d8..+0x2e0 (0x10 stride) calling FUN_140de5b40(owner, key, entry->+0x238 ushort) and re-posts message 14568c160 carrying the key. Used to refresh funds-dependent states (e.g. affordability) after funds change."
+ },
+ "signature": {
+  "id": "career.msg_on_bank_account_funds_message",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 8B 72 10",
+  "match": "0x140df17c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140df17c0",
+  "kind": "func_start",
+  "names": [
+   "Career_Msg_OnBankAccountFundsMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140df17c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140df17c0.c",
+   "notes": "V9561 Checks key high word 0x10b, loops +0x2d8..+0x2e0 (0x10 stride) calling FUN_140de5b40 with ushort +0x238, re-posts message 14568c160."
+  }
+ ],
+ "proofs": []
+}

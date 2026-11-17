@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_PlayerTerminalDamage_Enter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d98430",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d98430.c;xref:0x1457e32a0",
+  "notes": "player terminal damage: setController(player, AI, TERMINAL_DAMAGE 9) and, when the race manager allows, posts vehicle_status_request (vt 0x1456de3d0) {vehicle, 0x07, 0x03} -> result status eRetired."
+ },
+ "signature": {
+  "id": "session.player_terminal_damage_enter",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 38 48 89 CE 48 8B 0D",
+  "match": "0x142d98430",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d98430",
+  "kind": "func_start",
+  "names": [
+   "Sess_PlayerTerminalDamage_Enter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-b",
+   "kind": "func",
+   "item": "Sess_PlayerTerminalDamage_Enter",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d98430.c;xref:0x142d98430",
+   "notes": "V1871 controller call args (veh,1,9); message bytes {veh,07,03} confirmed; eRetired meaning unverified"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Gfx2_BeginTripleBufferedScope",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143e84670",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143e84670.c;xref:0x1401592b4,0x140159775,0x1437a493d",
+  "notes": "Hypothesis: ctor of a scope object that advances the triple-buffer index at +0x70 ((i+1)%3) and snapshots slot +0x10+i*8; 33 callers (Bink, SurfacePack atlas, RenderFrame). Named callers: Game_Bink_SetPaused, Game_SurfacePack_BuildAtlas, Ne_Gfx2Renderer_RenderFrame."
+ },
+ "signature": {
+  "id": "core.gfx2_begin_triple_buffered_scope",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 58 48 89 D7 48 89 CE 48 C7 01 00 00",
+  "match": "0x143e84670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143e84670",
+  "kind": "func_start",
+  "names": [
+   "Ne_Gfx2_BeginTripleBufferedScope"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143e84670",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143e84670.c;xref:0x1401592b4",
+   "notes": "V7936 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

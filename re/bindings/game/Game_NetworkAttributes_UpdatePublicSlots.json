@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkAttributes_UpdatePublicSlots",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143069a80",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name updatePublicSlots (class from the log channel); log channel NETWORK-ATTRIBUTES: '%s() : publicSlots [%d].'"
+ },
+ "signature": {
+  "id": "game.network_attributes_update_public_slots",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 89 D3 48 89 CF",
+  "match": "0x143069a80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143069a80",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkAttributes_UpdatePublicSlots"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143069a80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143069a80.c;xref:0x143069934",
+   "notes": "V5549 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

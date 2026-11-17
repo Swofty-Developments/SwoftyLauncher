@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_DrawIndexedIndirect",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a03140",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a03140.c;xref:0x143a0154a",
+  "notes": "Twin of Render_Gfx_DrawIndirect using the signature stored at [0x14618caa8+0x2588] (indexed-draw indirect). Hypothesis."
+ },
+ "signature": {
+  "id": "render.gfx_draw_indexed_indirect",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 83 C7 48 48 39 DF 72 E8 E9 ?? ?? ?? ?? 85 D2 0F 84 ?? ?? ?? ?? 66 66 2E 0F 1F 84 00 00 00 00 00 44 8B 4F 08 8B 17",
+  "match": "0x143a0154a",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143a03140",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_DrawIndexedIndirect"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143a03140",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a03140.c;xref:0x143a0154a",
+   "notes": "V8246 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

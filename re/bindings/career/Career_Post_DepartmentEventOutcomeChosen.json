@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Post_DepartmentEventOutcomeChosen",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14232d390",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Post_DepartmentEventOutcomeChosen(void * self)",
+  "evidence": "decomp:re/decomp/14232d390.c;xref:0x14577fa28",
+  "notes": "myteam-g1: Posts team_hq_department_event_outcome_chosen_message and stops the Team HQ advance (Career_TeamHqAdvance_Stopped)."
+ },
+ "signature": {
+  "id": "career.post_department_event_outcome_chosen",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 48 89 CE C6 44 24 47 00",
+  "match": "0x14232d390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14232d390",
+  "kind": "func_start",
+  "names": [
+   "Career_Post_DepartmentEventOutcomeChosen"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x14232d390",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14232d390.c;xref:0x14577fa28",
+   "notes": "V10141 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

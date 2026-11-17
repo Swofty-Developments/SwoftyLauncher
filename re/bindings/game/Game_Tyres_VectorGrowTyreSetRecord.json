@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Tyres_VectorGrowTyreSetRecord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e9fe40",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e9fe40.c;xref:0x142e90369",
+  "notes": "std::vector grow-and-append (1.5x) for 0x78-byte tyre set records. Callers Game_Tyres_Deserialise, Game_TyreSystem_HandleTyreSelectionNetMessage."
+ },
+ "signature": {
+  "id": "game.tyres_vector_grow_tyre_set_record",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC E0 00 00 00 48 89 D3 48 89 CE",
+  "match": "0x142e9fe40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e9fe40",
+  "kind": "func_start",
+  "names": [
+   "Game_Tyres_VectorGrowTyreSetRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142e9fe40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e9fe40.c;xref:0x142e90369",
+   "notes": "V7564 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Tyre_SetPunctureState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144656f80",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144656f80.c;xref:0x142bdd346,0x142bdd411,0x142bdd4df",
+  "notes": "Toggles flag bit0 at +0x18 (on: check 0x14464e200 on [[+8]+0xd8]+0x3f70, sets bit1 and pressure factor +0x90 >= 1.0; off: factor 0/1). Hypothesis. Callers: Car_TyreDamage_Update, Game_NetworkMechanical_VehicleRacingVehicleCar. (6 xref site(s), fb.py callers.) lb23-verify partial"
+ },
+ "signature": {
+  "id": "car.tyre_set_puncture_active",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 0F B6 41 18 A8 01 0F 94",
+  "match": "0x144656f80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144656f80",
+  "kind": "func_start",
+  "names": [
+   "Car_Tyre_SetPunctureState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x144656f80",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144656f80.c;xref:0x14324bb11",
+   "notes": "V6800 Is a puncture/burst state machine: bit1 set via Car_Puncture_Add check, bit0 set only when bit1 already set, then recomputes tyre geometry inline (same block as UpdateDeflation); better name Car_Tyre_SetPunctureState."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144656f80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144656f80.c;xref:0x142bdd346",
+   "notes": "V7242 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

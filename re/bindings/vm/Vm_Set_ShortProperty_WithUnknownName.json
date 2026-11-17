@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Set_ShortProperty_WithUnknownName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14161f3d0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint64_t Vm_Set_ShortProperty_WithUnknownName(void *binding, int16_t *value, uint32_t listener_arg, char force)",
+  "evidence": "decomp:re/decomp/14161f3d0.c;xref:0x1417b1e17;xref:0x141860f06;xref:0x141a0cb6b",
+  "notes": "myteam-g2: Sets a 16-bit view-model property: skips when unchanged unless force, builds a debug name (unknown fallback), marks dirty and invokes listeners (Ne_VmBinding_MarkTargetDirty / ClearTargetDirty / InvokeListeners). Generic binding setter used by sponsor cards and contract negotiation stat rows."
+ },
+ "signature": {
+  "id": "vm.set_short_property_with_unknown_name",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 20 03 00 00 F6 41 26 01 0F 85 ?? ?? ?? ?? 44 89 CB 44 89 C7 49 89 D6 48 89 CE 48 8B 49 58 48 8B 01 FF 50 38 84 DB 75 0F",
+  "match": "0x14161f3d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14161f3d0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Set_ShortProperty_WithUnknownName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14161f3d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14161f3d0.c;xref:0x1417b1e17;xref:0x141860f06",
+   "notes": "V9725 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

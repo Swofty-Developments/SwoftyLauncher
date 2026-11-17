@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Apply_SponsorRowData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14167c780",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "void Vm_Apply_SponsorRowData(void *vm, uint64_t *data)",
+  "evidence": "decomp:re/decomp/14167c780.c;xref:0x1419aa4bf;xref:0x141a1406e;xref:0x141a6be3e",
+  "notes": "myteam-g2: Copies the 6-qword sponsor row data into vm+0xe90..0xeb8, refreshes the row bindings (FUN_14167c850) and picks the finance icon (Vm_FinanceTransactionRow_SetIcon) from the bound int. Display only."
+ },
+ "signature": {
+  "id": "vm.apply_sponsor_row_data",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 38 48 89 CE 48 81 C1 20 01 00 00",
+  "match": "0x14167c780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14167c780",
+  "kind": "func_start",
+  "names": [
+   "Vm_Apply_SponsorRowData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14167c780",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14167c780.c;xref:0x1419aa4bf;xref:0x141a1406e",
+   "notes": "V9741 Copies 6 qwords into +0xe90..0xeb8 and calls SetIcon with the NEGATED bound int (cost/outgoing); sponsor attribution unprovable, same card layout as the teammate invoice card."
+  }
+ ],
+ "proofs": []
+}

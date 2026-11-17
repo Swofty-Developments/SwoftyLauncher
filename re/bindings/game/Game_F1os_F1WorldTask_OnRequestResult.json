@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_F1WorldTask_OnRequestResult",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14273faa0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14273faa0.c;xref:0x14273b2ba",
+  "notes": "Continuation functor (queued by F1WorldTask_Update 0x14273a580 at 0x14273b2ba, functor vtable 0x1457a32a0) of the F1 World online-service task: param_2 = result (6 = ok), param_4 = reply; on error takes the error payload (reply+0x70), pops pending status entry 0x20 from the status stack (+0x200..+0x2d0) and hash set (+0x148..+0x17c), classifies IgnorableError/Unrecoverable (table 0x1457a1600), logs on F1W-OS and stops busy spinner type 7 (TOP_LEVEL_UI). Addon: one place to see every F1 World request result and error class. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3273)"
+ },
+ "signature": {
+  "id": "game.f1os_f1_world_task_on_request_result",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 C5 F8 29 B4 24 90 01 00 00 4D 89 CE 44",
+  "match": "0x14273faa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14273faa0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_F1WorldTask_OnRequestResult"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1os_F1WorldTask_OnRequestResult",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14273faa0.c;xref:0x14273faa0",
+   "notes": "V3273 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

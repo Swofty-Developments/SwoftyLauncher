@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiationsB_EndFlow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141001790",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141001790.c;xref:0x140fff5c6,0x14100395f",
+  "notes": "Second event family: 'Negotiations finished' / 'Ending the negotiations flow', posts end-flow bus message and sends network message. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3041)"
+ },
+ "signature": {
+  "id": "career.online_negotiations_b_end_flow",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 58 B8 24 01 00 00 48 8D 0D ?? ?? ?? ?? 66 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 8B 14 81 85 D2 74 36 81 FA 48 A7 DF 44 74 58 83",
+  "match": "0x141001790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141001790",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiationsB_EndFlow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Career_OnlineNegotiationsB_EndFlow",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141001790.c;xref:0x141001790",
+   "notes": "V3041 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_HandleRemotePlayerStats",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14327a420",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name handleRemotePlayerStats (class from the log channel); log channel NETWORK: '%s(%s) : stats updated.'"
+ },
+ "signature": {
+  "id": "game.network_handle_remote_player_stats",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC F0 01 00 00",
+  "match": "0x14327a420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14327a420",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_HandleRemotePlayerStats"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x14327a420",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14327a420.c;xref:0x143279b0d",
+   "notes": "V5843 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

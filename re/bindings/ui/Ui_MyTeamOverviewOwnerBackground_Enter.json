@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_MyTeamOverviewOwnerBackground_Enter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436e3320",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/1436e3320.c;xref:0x14585c798",
+  "notes": "myteam-g1: enter_my_team_overview and enter_my_team_owner_background transitions."
+ },
+ "signature": {
+  "id": "ui.my_team_overview_owner_background_enter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 C5 F8 29 74 24 50 48 89 D6",
+  "match": "0x1436e3320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436e3320",
+  "kind": "func_start",
+  "names": [
+   "Ui_MyTeamOverviewOwnerBackground_Enter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x1436e3320",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436e3320.c;xref:0x14585c798",
+   "notes": "V10308 Strings enter_my_team_overview/owner_background, 15 second force-finish of the outside-intro camera."
+  }
+ ],
+ "proofs": []
+}

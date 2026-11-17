@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_ZoneVolume_SignedDistance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445f3d70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1445f3d70.c;xref:0x1403c64ee,0x1403c6553,0x142437832",
+  "notes": "(zone, point) -> float: signed distance of a point to a zone volume built from plane normals +0x60/+0x70 (d at +0x6c/+0x7c) and segment +0xc0..+0xd0. Hypothesis: pit/zone box distance used by pit-stop show/hide, HUD zone distance remaining and pit release blocking. (10 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "game.zone_volume_signed_distance",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 8B 4D 10 48 8B 81 90 00 00 00 48 3B 81 88 00 00 00 74 0C C5 FA 10 48 F4 C5 F2 58 48 F8 EB 04 C5 F0 57 C9 C5 FA 5E F9 48 8B 86",
+  "match": "0x1403c64ee",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1445f3d70",
+  "kind": "func_start",
+  "names": [
+   "Game_ZoneVolume_SignedDistance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x1445f3d70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445f3d70.c;xref:0x1403c64ee",
+   "notes": "V7415 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

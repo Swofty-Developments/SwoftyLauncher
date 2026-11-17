@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLap_ApplyDatasetTelemetry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f8afc0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-GHOSTLAP",
+  "notes": "named from its log messages (channel GHOSTLAP): '%s(%d, %d bytes) : applied telemetry data. | %s(%d, %d bytes) : failed to read dataset telemetry has incomplete flag on.'"
+ },
+ "signature": {
+  "id": "game.ghost_lap_apply_dataset_telemetry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 20 01 00 00 C5 78 29 8C 24 10 01 00 00",
+  "match": "0x142f8afc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f8afc0",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLap_ApplyDatasetTelemetry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f8afc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f8afc0.c;xref:0x1414b52f6",
+   "notes": "V5691 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

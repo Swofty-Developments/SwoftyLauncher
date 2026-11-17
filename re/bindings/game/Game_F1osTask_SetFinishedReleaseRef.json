@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1osTask_SetFinishedReleaseRef",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432c1dd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432c1dd0.c;xref:0x145644b78,0x145644fd8,0x14565b7a8,0x14565b8c8",
+  "notes": "Common OnlineTask virtual (40 vtable slots): same as Game_F1osTask_SetFinished (log 'setting finished on %s : %s', delegate +0x90, done byte +0xa1), then drops one ref of the shared holder passed in param_2+8 (strong count +8, weak +0xc; vcall 0 destroy, vcall +8 free). Addon: completion hook for tasks finishing with a result object. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3289)"
+ },
+ "signature": {
+  "id": "game.f1os_task_set_finished_release_ref",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 0F 85",
+  "match": "0x1432c1dd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432c1dd0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osTask_SetFinishedReleaseRef"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1osTask_SetFinishedReleaseRef",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432c1dd0.c;xref:0x1432c1dd0",
+   "notes": "V3289 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSessionSearcherLAN_SearchForSessions",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14408f9f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/14408f9f0.c;xref:0x145a54530",
+  "notes": "cxx=NeNetSessionSearcherLAN::searchForSessions; log channel NETWORK-LAN: 'NeNetSessionSearcherLAN::searchForSessions'"
+ },
+ "signature": {
+  "id": "core.net_session_searcher_lan_search_for_sessions",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 0A 00 00 C5 F8 29 B4 24 50 0A 00 00 4C 89 CF 4C 89 C5",
+  "match": "0x14408f9f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14408f9f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSessionSearcherLAN_SearchForSessions"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-b",
+   "kind": "func",
+   "item": "Ne_NetSessionSearcherLAN_SearchForSessions",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14408f9f0.c;xref:0x14408f9f0",
+   "notes": "V2110 Logs start; registers searcher in list; LAN discovery broadcast; 'Starting LAN discovery' string"
+  }
+ ],
+ "proofs": []
+}

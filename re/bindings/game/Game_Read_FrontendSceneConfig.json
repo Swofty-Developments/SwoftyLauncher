@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_FrontendSceneConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428f35b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: frontend_scene.driver.animations.sequences.emote_sequences, frontend_scene.driver.animations.sequences.general_sequences, frontend_scene.driver.animations.sequences.mannequin_sequences, frontend_scene.driver.animations.sequences.pose_sequences.pose_idle_se'"
+ },
+ "signature": {
+  "id": "game.read_frontend_scene_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 06 00 00 44 88 44 24 2F",
+  "match": "0x1428f35b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428f35b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_FrontendSceneConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428f35b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428f35b0.c;xref:0x14289cb2c",
+   "notes": "V5155 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Write_UpgradeHashname",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143519f30",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int Career_Write_UpgradeHashname(int64_t *self,int64_t *a2,uint64_t a3)",
+  "evidence": "decomp:re/decomp/143519f30.c;xref:0x14351d655;xref:0x14351d66c;xref:0x14351d686",
+  "notes": "myteam-g1: Writes an upgrade_hashname key (upgrade id)."
+ },
+ "signature": {
+  "id": "career.write_upgrade_hashname",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 78 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 4C 89 C0",
+  "match": "0x143519f30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143519f30",
+  "kind": "func_start",
+  "names": [
+   "Career_Write_UpgradeHashname"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143519f30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143519f30.c;xref:0x14351d655",
+   "notes": "V10278 Writes upgrade_hashname plus reason_for_no_recommendation, find_mode, owner_driver."
+  }
+ ],
+ "proofs": []
+}

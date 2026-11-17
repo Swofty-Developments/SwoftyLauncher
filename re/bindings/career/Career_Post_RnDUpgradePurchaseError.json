@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Post_RnDUpgradePurchaseError",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14351c790",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Post_RnDUpgradePurchaseError(void * self,void * a2,uint32_t a3,void * a4, void * a5)",
+  "evidence": "decomp:re/decomp/14351c790.c;xref:0x14351b603;xref:0x14351b911;xref:0x14351ee45",
+  "notes": "myteam-g1: Builds rnd_upgrade_purchase_error message with upgrade name, cost (Career_Get_RpWallet team resource points) and limit; sends via bus."
+ },
+ "signature": {
+  "id": "career.post_rn_dupgrade_purchase_error",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 4D 89 CE",
+  "match": "0x14351c790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14351c790",
+  "kind": "func_start",
+  "names": [
+   "Career_Post_RnDUpgradePurchaseError"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14351c790",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14351c790.c;xref:0x14351b603",
+   "notes": "V10283 String rnd_upgrade_purchase_error; uses Career_Get_RpWallet and Get_EffectiveUpgradeCost for cost data."
+  }
+ ],
+ "proofs": []
+}

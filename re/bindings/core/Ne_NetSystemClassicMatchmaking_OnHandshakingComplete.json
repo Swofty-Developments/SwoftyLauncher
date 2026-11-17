@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSystemClassicMatchmaking_OnHandshakingComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144069920",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetSystemClassicMatchmaking_OnHandshakingComplete;xref:0x144069aee;decomp:re/decomp/144069920.c",
+  "notes": "cxx=neon::NeNetSystemClassicMatchmaking::onHandshakingComplete; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_system_classic_matchmaking_on_handshaking_complete",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 88 00 00 00 48 89 D7 48",
+  "match": "0x144069920",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144069920",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSystemClassicMatchmaking_OnHandshakingComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-a",
+   "kind": "func",
+   "item": "Ne_NetSystemClassicMatchmaking_OnHandshakingComplete",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144069920.c;xref:0x145a4fc80",
+   "notes": "V2078 vtable slot; own pretty string; changeState Connected + setLocalConnectivity"
+  }
+ ],
+ "proofs": []
+}

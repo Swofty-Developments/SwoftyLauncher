@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Sign_DriverContractIfNotTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d7d3b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *comp, uint32_t *driver_key, uint32_t new_team_key, uint32_t skip_team_key)",
+  "evidence": "decomp:re/decomp/140d7d3b0.c;xref:0x141001fe2;xref:0x141002e52",
+  "notes": "myteam-g2: Looks up the existing contract of *driver_key (list built by func 1424572b0 from comp+0x278+0x2d8) and, when the contract is valid and its current team differs from skip_team_key, calls Career_Sign_DriverContract(comp, driver_key, new_team_key, old_team_key, 0). Hook: conditional signing wrapper used by negotiations (ProcessContractRecv/Sent)."
+ },
+ "signature": {
+  "id": "career.sign_driver_contract_if_not_team",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 44 89 CD",
+  "match": "0x140d7d3b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d7d3b0",
+  "kind": "func_start",
+  "names": [
+   "Career_Sign_DriverContractIfNotTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140d7d3b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d7d3b0.c",
+   "notes": "V9532 Finds driver contract entry in vector from func_0x1424572b0, calls FUN_140d79ff0 (Career_Sign_DriverContract) with old team when team differs from skip team."
+  }
+ ],
+ "proofs": []
+}

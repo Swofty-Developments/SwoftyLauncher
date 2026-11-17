@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StateFTUE_OnStateExit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436d8390",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=StateFTUE::onStateExit; log channel FLOW/V: 'StateFTUE::onStateExit - Handling eInterruptExit - hasMainSceneUnloaded()... Blocked'"
+ },
+ "signature": {
+  "id": "game.state_ftue_on_state_exit",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 48 8B 81 F8 0B 00 00 48 8B 48 18 48 8D 50 30 48 39 48 20 48 0F 45 D1 83 7A 10 0E 0F 85 ?? ?? ?? ?? 48 8B 8E 88 0C 00 00",
+  "match": "0x1436d8390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436d8390",
+  "kind": "func_start",
+  "names": [
+   "Game_StateFTUE_OnStateExit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436d8390",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436d8390.c",
+   "notes": "V6131 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameAchievementSubsystem_OnApplicationSuspending",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407fd010",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameAchievementSubsystem::onApplicationSuspending; log channel ACHIEVEMENTS: 'GameAchievementSubsystem::onApplicationSuspending() :: m_achievementsManager.removeAllTrackers()'"
+ },
+ "signature": {
+  "id": "game.game_achievement_subsystem_on_application_suspending",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE 80 3D ?? ?? ?? ?? 01 75 67 B8 5F 01 00 00 48 8D 0D ?? ?? ?? ?? 66 90 8B 14 81 85 D2 74 52 81 FA CB 88 7C 7C 74 30 83 C0 19 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 5F 01 00 00 75 C3 EB 1A 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 7E 30 48 8D 05 ?? ?? ?? ?? 48 89 44 24 20",
+  "match": "0x1407fd010",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407fd010",
+  "kind": "func_start",
+  "names": [
+   "Game_GameAchievementSubsystem_OnApplicationSuspending"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1407fd010",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407fd010.c",
+   "notes": "V4316 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

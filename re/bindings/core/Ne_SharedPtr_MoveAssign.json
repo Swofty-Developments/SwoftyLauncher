@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_SharedPtr_MoveAssign",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d4e170",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d4e170.c;xref:0x142d82c30,0x142d82c74",
+  "notes": "(dst{ptr,ctrl}, src16): moves a shared_ptr pair (src zeroed) into dst and releases the old control block (strong count +8, weak +0xc, vtbl[0] destroy, vtbl[1] free). Caller: Sess_PreRaceGridState_OnEnter."
+ },
+ "signature": {
+  "id": "core.shared_ptr_move_assign",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 F9 E8 ?? ?? ?? ?? 48 83 BE D8 0E 00 00",
+  "match": "0x142d82c30",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x142d4e170",
+  "kind": "func_start",
+  "names": [
+   "Ne_SharedPtr_MoveAssign"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x142d4e170",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d4e170.c;xref:0x142d82c30,0x142d82c74",
+   "notes": "V3468 shared_ptr move assign: dst={ptr,ctrl}, src zeroed, old ctrl strong-- (+8), destroy vtbl[0], weak (+0xc) vtbl[1]; caller Sess_PreRaceGridState_OnEnter"
+  }
+ ],
+ "proofs": []
+}

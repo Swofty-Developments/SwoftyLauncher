@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_F1World_SetCardCanBeUpgraded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141af4f90",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/141af4f90.c;xref:0x141ae7780;xref:0x141af05bf",
+  "notes": "myteam-g1: UI binding code; can_be_upgraded, upgrade_anim_on, upgrade_texture_large/visible, upgrade_value(_visible). Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.f1_world_set_card_can_be_upgraded",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 60 C5 F8 29 74 24 50 4C 89 C7 48 89 CE E8",
+  "match": "0x141af4f90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141af4f90",
+  "kind": "func_start",
+  "names": [
+   "Ui_F1World_SetCardCanBeUpgraded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141af4f90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141af4f90.c;xref:0x141ae7780;xref:0x141af05bf",
+   "notes": "V9943 Builds the card item binding set (equipped, equipped_in_current_loadout, new, can_be_upgraded, upgrade_value, textures, rarity splash); not only can_be_upgraded."
+  }
+ ],
+ "proofs": []
+}

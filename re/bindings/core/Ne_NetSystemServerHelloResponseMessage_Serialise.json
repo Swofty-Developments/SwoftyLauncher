@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSystemServerHelloResponseMessage_Serialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440725f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetSystemServerHelloResponseMessage_Serialise;xref:0x144072c1d;decomp:re/decomp/1440725f0.c",
+  "notes": "cxx=neon::NeNetSystemServerHelloResponseMessage::serialise; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_system_server_hello_response_message_serialise",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 40 48 89 D6 48 89 CF 0F B6 59 08",
+  "match": "0x1440725f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440725f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSystemServerHelloResponseMessage_Serialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-a",
+   "kind": "func",
+   "item": "Ne_NetSystemServerHelloResponseMessage_Serialise",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440725f0.c;xref:0x14406d59e",
+   "notes": "V2089 own pretty string; joinedGame/join error/client connection ID fields"
+  }
+ ],
+ "proofs": []
+}

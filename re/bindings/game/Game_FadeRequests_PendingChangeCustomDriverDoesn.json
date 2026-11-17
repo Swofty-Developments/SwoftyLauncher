@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_FadeRequests_PendingChangeCustomDriverDoesn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428c9060",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-FADE_REQUESTS",
+  "notes": "named from its log messages (channel FADE_REQUESTS): 'Pending Change for a Custom Driver that doesn't exisit, removing pending change.'"
+ },
+ "signature": {
+  "id": "game.fade_requests_pending_change_custom_driver_doesn",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 D8 DD 00 00",
+  "match": "0x1428c9060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428c9060",
+  "kind": "func_start",
+  "names": [
+   "Game_FadeRequests_PendingChangeCustomDriverDoesn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428c9060",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/1428c9060.c;xref:0x14b44395b",
+   "notes": "V5132 19.9 KB FrontendSceneManager per-frame update: transition state machine (eIdle/eRequested/ePendingSwitch/eFadeIn), pending driver/car/object changes, camera/cutscene switch; the named log is one branch. Better: Game_FrontendSceneManager_Update"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1428c9060",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428c9060.c",
+   "notes": "V7302 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

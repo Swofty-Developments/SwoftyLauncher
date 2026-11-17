@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_SponsorCard_SetAmountDisplayNegative",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416838c0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint64_t (void *card, int amount)",
+  "evidence": "decomp:re/decomp/1416838c0.c;xref:0x14226306f;xref:0x14226b9ef;xref:0x14226ccb4",
+  "notes": "myteam-g2: Mirror of 141682d00: Vm_FinanceTransactionRow_SetIcon(card+0x20, -amount) (outgoing icon) and writes amount to the VM string node at card+0x248. Display only."
+ },
+ "signature": {
+  "id": "vm.sponsor_card_set_amount_display_negative",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 68 89 D7 48 89 CE F7 DA",
+  "match": "0x1416838c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416838c0",
+  "kind": "func_start",
+  "names": [
+   "Vm_SponsorCard_SetAmountDisplayNegative"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1416838c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1416838c0.c;xref:0x14226306f;xref:0x14226b9ef",
+   "notes": "V9745 Calls SetIcon with -amount and string node at +0x248."
+  }
+ ],
+ "proofs": []
+}

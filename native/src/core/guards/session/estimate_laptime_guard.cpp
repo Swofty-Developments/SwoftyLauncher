@@ -37,24 +37,23 @@ constexpr const char *QUERY = "site_Sess_VirtualSession_EstimateTyreQuery";
 constexpr const char *TAIL = "site_Sess_VirtualSession_EstimateTail";
 
 namespace el = runtime::estimate_laptime;
+namespace guards = swofty_core::guards;
 
 uintptr_t estimate_tail = 0;
-std::atomic<int> skipped{0};
-el::Skips skips;
+guards::LogFirst<el::LOG_FIRST> skipped{"skips"};
 
 void tyre_query(SwoftyContext *c)
 {
     if (!el::tyre_ctx_missing(c->rcx))
         return;
     c->rip = estimate_tail;
-    int n = ++skipped;
-    if (!skips.logged(n))
+    auto line = skipped.note();
+    if (!line)
         return;
-    swofty::log("[session] a virtual session lap estimate has no tyre object for vehicle %u, so it returns the lap time unchanged%s",
-                (unsigned)(c->rbx & 0xff), skips.last(n) ? " (further skips are not logged)" : "");
+    swofty::log(
+        "[session] a virtual session lap estimate has no tyre object for vehicle %u, so it returns the lap time unchanged%s",
+        (unsigned)(c->rbx & 0xff), line.tail);
 }
-
-namespace guards = swofty_core::guards;
 
 guards::SiteGuard guard{guards::CoreSetId::estimate_laptime,
                         {

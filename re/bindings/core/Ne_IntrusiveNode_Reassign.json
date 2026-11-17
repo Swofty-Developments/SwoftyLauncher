@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_IntrusiveNode_Reassign",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442bba60",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1442bba60.c;xref:0x14079da54",
+  "notes": "Unlinks a node (prev +8 / next +0x10 in list head param_1) when *param_2==0 and fixes head +0x28; 1244 callers (UI view model population). Hypothesis: intrusive list handle release. vp4-verify partial/disagree"
+ },
+ "signature": {
+  "id": "core.intrusive_node_unlink",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D7 48 89 CE 48 8B 0A 48 85 C9 0F 84 ?? ?? ?? ?? 48 8B 01 FF 50 28 84",
+  "match": "0x1442bba60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442bba60",
+  "kind": "func_start",
+  "names": [
+   "Ne_IntrusiveNode_Reassign"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1442bba60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1442bba60.c;xref:0x14079da54",
+   "notes": "V7654 BetterName Ne_IntrusiveNode_Reassign: unlinks old node then relinks to *param_2 (assign), not just release"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Breakable_SpawnPieceRenderModel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144590c40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144590c40.c;xref:0x14458975b,0x144589833,0x1445898ff",
+  "notes": "Called 3x from breakable setup 0x144589330: for piece node param_2 (name [param_2+0x10]+0x98, skipped if it starts with '^') builds a 'RenderModel' entity: model '%s.emb?context=default' and material binding '%s.idf-%s?context=render' (base name from [this+0xb8]+0x40/+0x48), Render settings is static = false, render to planar reflections = true, Hi LOD Shadow = true; logs Breakables 'Spawned RenderModel \"%s\"'; finds the render component (Ne_Entity_FindComponent type 0x146cb7da0) and writes {name, entity, component} to param_3 plus the piece transform. Addon: debris pieces are separate .emb models named after the node. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2316)"
+ },
+ "signature": {
+  "id": "game.breakable_spawn_piece_render_model",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 04 00 00 C5 78 29 A4 24",
+  "match": "0x144590c40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144590c40",
+  "kind": "func_start",
+  "names": [
+   "Game_Breakable_SpawnPieceRenderModel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-b",
+   "kind": "func",
+   "item": "Game_Breakable_SpawnPieceRenderModel",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144590c40.c;xref:0x14458975b",
+   "notes": "V2316 Verified: 3 calls from 0x144589330, '^' skip, base name [this+0xb8]+0x40/0x48, component type 0x146cb7da0, output param_3."
+  }
+ ],
+ "proofs": []
+}

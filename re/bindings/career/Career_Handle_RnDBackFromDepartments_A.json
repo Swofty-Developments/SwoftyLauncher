@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Handle_RnDBackFromDepartments_A",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f45190",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Handle_RnDBackFromDepartments_A(void * self)",
+  "evidence": "decomp:re/decomp/141f45190.c;xref:0x141f426fa;xref:0x141f44e07",
+  "notes": "myteam-g1: Handles back_from_rnd_departments (variant A)."
+ },
+ "signature": {
+  "id": "career.handle_rn_dback_from_departments_a",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC B8 02 00 00 48 89 CE 48 8B 81 58 06 00 00",
+  "match": "0x141f45190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f45190",
+  "kind": "func_start",
+  "names": [
+   "Career_Handle_RnDBackFromDepartments_A"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141f45190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f45190.c;xref:0x141f426fa;xref:0x141f44e07",
+   "notes": "V10021 Handles back_from_rnd_departments with vm_refresh."
+  }
+ ],
+ "proofs": []
+}

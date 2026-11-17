@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_VideoManager_PlayIntervalSeconds",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f913a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143f913a0.c;xref:0x143f93929,0x1444b5f3a",
+  "notes": "play interval video '%s' with start/end time in seconds (float param_3/param_4). Callers 0x143f93929, 0x1444b5f3a, 0x15460970a."
+ },
+ "signature": {
+  "id": "core.video_manager_play_interval_seconds",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 68 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 48 89 D7 48 89",
+  "match": "0x143f913a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143f913a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_VideoManager_PlayIntervalSeconds"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_VideoManager_PlayIntervalSeconds",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f913a0.c;xref:0x143f93929",
+   "notes": "V2556 float param_3/param_4"
+  }
+ ],
+ "proofs": []
+}

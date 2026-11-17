@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqTimeline_GetCurrentDayIndex",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422b8c60",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint64_t Vm_TeamHqTimeline_GetCurrentDayIndex(void *vm)",
+  "evidence": "decomp:re/decomp/1422b8c60.c;xref:0x1422b8ba8;xref:0x1422b8c08;xref:0x1422b8e77",
+  "notes": "myteam-g2: Resolves the bound current_timeline_day value (vm+0x128 chain, max 0x62 hops) through the UI data root (0x146ca54f8) into a slot index; returns -1 if not found. Used by the IsCurrentDayBool* helpers."
+ },
+ "signature": {
+  "id": "vm.team_hq_timeline_get_current_day_index",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 48 89 CE 48 8B 81 28 01 00 00",
+  "match": "0x1422b8c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422b8c60",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqTimeline_GetCurrentDayIndex"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422b8c60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422b8c60.c;xref:0x1422b8ba8",
+   "notes": "V10078 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

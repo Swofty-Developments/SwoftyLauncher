@@ -20,7 +20,6 @@ if [[ $NATIVE == 1 ]]; then
     PIN=()
     RUN=()
 else
-    PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
     RUN=(wine)
     export WINEPREFIX=${WINEPREFIX:-$OUT/prefix} WINEDEBUG=-all
 fi

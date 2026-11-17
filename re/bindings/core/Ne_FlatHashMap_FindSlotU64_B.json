@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_FlatHashMap_FindSlotU64_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a1f1d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a1f1d0.c;xref:0x1439da0c1",
+  "notes": "Twin of 0x143a1f070. Callers Render_Gfx2Device_QueueDeferredRelease (0x1439da0c1) and one more."
+ },
+ "signature": {
+  "id": "core.flat_hash_map_find_slot_u64_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 FF 86 88 41 00 00 48 89 D9 E8",
+  "match": "0x1439da0c1",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143a1f1d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_FlatHashMap_FindSlotU64_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143a1f1d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a1f1d0.c;xref:0x1430f08c9",
+   "notes": "V8254 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

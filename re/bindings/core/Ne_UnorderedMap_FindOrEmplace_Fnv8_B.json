@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_UnorderedMap_FindOrEmplace_Fnv8_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a28e60",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a28e60.c;xref:0x1439d7133",
+  "notes": "Twin of Fnv8_A (second map instance); callers Render_Gfx2Device_CreateResourceObject, DeferRelease_A."
+ },
+ "signature": {
+  "id": "core.unordered_map_find_or_emplace_fnv8_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 4C 24 30 48 83 C1 18 48 8D 54 24 30 4C 8D 44 24 28 E8 ?? ?? ?? ?? 48 8B 8E",
+  "match": "0x1439d7133",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143a28e60",
+  "kind": "func_start",
+  "names": [
+   "Ne_UnorderedMap_FindOrEmplace_Fnv8_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143a28e60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a28e60.c;xref:0x1439d7133",
+   "notes": "V8259 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

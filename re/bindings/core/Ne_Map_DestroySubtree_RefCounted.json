@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Map_DestroySubtree_RefCounted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f35490",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Map_DestroySubtree_RefCounted(void *a, void *b, void *node)",
+  "evidence": "decomp:re/decomp/140f35490.c;xref:0x140e2c6a7;xref:0x140e32ae7;xref:0x140e3af6c",
+  "notes": "myteam-g2: Recursive destroy of a tree whose nodes (0x140 bytes) own an atomic-refcounted object at node+0x140 (vtable call 0, then 8 on last ref). Generic map teardown for sponsor-type / facility-type registries."
+ },
+ "signature": {
+  "id": "core.map_destroy_subtree_ref_counted",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 41 80 78 19 00 74 0E 48 83 C4 28 5B 5F 5E 41 5C 41 5E 41 5F C3 4C 89 C3 48 89 D6 48 89 CF 4C 8D 35 ?? ?? ?? ?? EB 17 66 66 66 2E 0F 1F 84 00 00 00 00 00 41 80 7C 24 19 00 4C 89 E3 75 C9 4C 8B 43 10 48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 4C 8B 23 4C 8B BB 40 01 00 00",
+  "match": "0x140f35490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f35490",
+  "kind": "func_start",
+  "names": [
+   "Ne_Map_DestroySubtree_RefCounted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f35490",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f35490.c;xref:0x140e2c6a7",
+   "notes": "V9575 Recursive post-order destroy; per node atomic dec of refcounted object at node+0x140 (vtbl +0 then +8), then pool free."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamSetup_IsSelectionComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142277300",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "bool (void)",
+  "evidence": "decomp:re/decomp/142277300.c;xref:0x14227523a;xref:0x14227685e",
+  "notes": "myteam-g2: Checks the static setup selection record (0x14606d340) after the TLS init guard: returns true when the three team-key style selections (sponsor, supplier, team mate) are no longer the 0x3fff0000 invalid markers and the last flag byte is not -1. Gates the advance button of the corporate setup (role inferred, medium confidence)."
+ },
+ "signature": {
+  "id": "career.my_team_setup_is_selection_complete",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 48 8B 14 25 58 00 00 00 48 8B 0C CA 3B 81 04 00 00 00 0F 8F ?? ?? ?? ?? 0F B7 05",
+  "match": "0x142277300",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142277300",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamSetup_IsSelectionComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142277300",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142277300.c;xref:0x14227523a",
+   "notes": "V10069 Checks 3 invalid-key markers (0x3fff) and last flag in static record 0x14606d340; matches."
+  }
+ ],
+ "proofs": []
+}

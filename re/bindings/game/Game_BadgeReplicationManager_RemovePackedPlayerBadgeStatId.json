@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_BadgeReplicationManager_RemovePackedPlayerBadgeStatId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143129ac0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=BadgeReplicationManager::removePackedPlayerBadgeStatId; log channel NETWORK-ENTRANTS: 'void network::BadgeReplicationManager::removePackedPlayerBadgeStatId(const PlayerDescription &, const game::BadgeStatId::PackedStatId) | %s : Badge removal was unsuccessful!'"
+ },
+ "signature": {
+  "id": "game.badge_replication_manager_remove_packed_player_badge_stat_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 90 00 00 00 44 89 C3",
+  "match": "0x143129ac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143129ac0",
+  "kind": "func_start",
+  "names": [
+   "Game_BadgeReplicationManager_RemovePackedPlayerBadgeStatId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143129ac0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143129ac0.c;xref:0x143129ab9",
+   "notes": "V5866 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

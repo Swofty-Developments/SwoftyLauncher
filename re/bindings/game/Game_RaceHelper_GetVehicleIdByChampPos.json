@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RaceHelper_GetVehicleIdByChampPos",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f49000",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f49000.c;xref:0x145801998",
+  "notes": "Vtable slot 61 of vt 0x1458017b0 (script/query node): reads champ position from [this+0x10], calls Game_RaceHelper_GetVehicleIndexByChampPos, returns the 16-byte vehicle identifier from [[veh]+8]+0x88 (default 0x146129b18) into *param_2; logs getVehicleByPositionInChampionship on failure. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3242)"
+ },
+ "signature": {
+  "id": "game.race_helper_get_vehicle_id_by_champ_pos",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D6 48 8B 41 10 48 85",
+  "match": "0x142f49000",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f49000",
+  "kind": "func_start",
+  "names": [
+   "Game_RaceHelper_GetVehicleIdByChampPos"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Game_RaceHelper_GetVehicleIdByChampPos",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/42f49000.c;xref:None",
+   "notes": "V3242 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

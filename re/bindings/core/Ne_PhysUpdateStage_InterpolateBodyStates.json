@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_PhysUpdateStage_InterpolateBodyStates",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440c7e10",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440c7e10.c;xref:0x14445b405",
+  "notes": "Blends two stored body-state snapshots (world+0x98+idx*8) with alpha (xmm1) and 1-alpha (shufps/blend): render interpolation between previous and current physics state. No calls. Hypothesis. Caller Game_PhysicsUpdateStage_Update."
+ },
+ "signature": {
+  "id": "core.phys_update_stage_interpolate_body_states",
+  "section": ".xtls",
+  "pattern": "48 81 EC D8 00 00 00 C5 78 29 BC 24 C0 00 00 00 C5 78 29 B4 24 B0 00 00 00 C5 78 29 AC 24 A0 00 00 00 C5 78 29 A4 24 90 00 00 00 C5 78 29 9C 24 80 00 00 00 C5 78 29 54 24 70 C5 78 29 4C 24 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 48 63",
+  "match": "0x1440c7e10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440c7e10",
+  "kind": "func_start",
+  "names": [
+   "Ne_PhysUpdateStage_InterpolateBodyStates"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1440c7e10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440c7e10.c;xref:0x14445b405",
+   "notes": "V7611 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

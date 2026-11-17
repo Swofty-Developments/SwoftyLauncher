@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkPresence_AddedUserIDEadpResolveList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144125280",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-PRESENCE",
+  "notes": "named from its log messages (channel NETWORK-PRESENCE): '%s: Added userID '%s' to EADP to-resolve list'"
+ },
+ "signature": {
+  "id": "game.network_presence_added_user_id_eadp_resolve_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 01 00 00 48 89 D7 48 89 CE 8B 42 4C",
+  "match": "0x144125280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144125280",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkPresence_AddedUserIDEadpResolveList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144125280",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144125280.c",
+   "notes": "V6552 better name Game_NetworkPresence_EadpResolveUserNames: NePresenceNameResolverEADP: player card service, active presence and friends cache name resolution, not only the added-to-list log (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144125280",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144125280.c",
+   "notes": "V7176 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

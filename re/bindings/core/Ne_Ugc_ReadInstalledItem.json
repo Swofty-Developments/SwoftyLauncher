@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Ugc_ReadInstalledItem",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14415adc0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/14415adc0.c;xref:0x15313d5e3",
+  "notes": "logged method name readInstalledItem (class from the log channel); log channel NeUgc: 'readInstalledItem - calling SteamUGC()->GetItemInstallInfo()'"
+ },
+ "signature": {
+  "id": "core.ugc_read_installed_item",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC B8 02 00 00 48 89 CE 48 8D 0D",
+  "match": "0x14415adc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14415adc0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ugc_ReadInstalledItem"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-a",
+   "kind": "func",
+   "item": "Ne_Ugc_ReadInstalledItem",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14415adc0.c;xref:0x15313d0f0",
+   "notes": "V2252 GetItemInstallInfo logs, builds path with ugcitemcontent.bin."
+  }
+ ],
+ "proofs": []
+}

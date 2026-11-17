@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_F1WorldEventDataMissingTrack",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431581a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): 'F1 World Event data - missing track. Filling from the season document ...'"
+ },
+ "signature": {
+  "id": "game.network_f1_world_event_data_missing_track",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 8B 81 80 00 00 00",
+  "match": "0x1431581a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431581a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_F1WorldEventDataMissingTrack"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1431581a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431581a0.c",
+   "notes": "V5982 Body matches the logged text/signature; vtable/indirect, no direct call site"
+  }
+ ],
+ "proofs": []
+}

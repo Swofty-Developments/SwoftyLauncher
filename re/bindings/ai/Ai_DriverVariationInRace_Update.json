@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_DriverVariationInRace_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1409af4c0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_DriverVariationInRace_Update(void *self, float progress)",
+  "evidence": "decomp:re/decomp/1409af4c0.c;xref:0x1409af4b4,0x142f7309e",
+  "notes": "GameAIDriverVariationInRaceComponent::update (log strings 0x145664620 / 0x14566466e, channel AI_VARIATION). Curve = *[[*0x14604fb00]+0x50 + self+0x18 * 0x18] (0x1409af4d5..0x1409af4ec); graphValue = clamp(Career_Eval_Curve 0x1445075d0(curve+8, xmm1) * (c+0x28 - c+0x24) + c+0x24, 0, 1); addedLapTime = (1 - graphValue) * self+0x50; written to entry+0x10 and entry+0x14 = 1, entry = [[*0x14604fb20]+0x70][veh], veh = [[self+0x20]+0x58]+0xe8 (0xff if none). xmm1 (progress) comes from the clamp in 0x1409af1e0 (tail jmp 0x1409af4b4) or the caller Game_VirtualSessionEntrant_SetNumPartialLapsAccordingToProgress 0x142f7309e (vehicle match on +0xe8). The DB facts in the old note (84 graph rows, lap_time_variations default 4, game_modes) are DB-side and not re-checked here. L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.driver_variation_in_race_update",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 CE 48 8B 05",
+  "match": "0x1409af4c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1409af4c0",
+  "kind": "func_start",
+  "names": [
+   "Ai_DriverVariationInRace_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1409af4c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1409af4c0.c",
+   "notes": "V4369 name/description match strings and code in decomp (log string verified via data read)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x1409af4c0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1409af4c0-0x1409af67b;xref:0x1409af4b4,0x142f7309e",
+   "notes": "V10605 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Refs: tail jmp 0x1409af4b4 in 0x1409af1e0 and call 0x142f7309e in 0x142f71790. 2 args (rcx, xmm1 passed to 0x1445075d0). AI_VARIATION graphValue / addedLapTime logs, curve from [*0x14604fb00]+0x50, * self+0x50, entry via *0x14604fb20."
+  }
+ ],
+ "proofs": []
+}

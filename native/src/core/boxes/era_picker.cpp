@@ -657,7 +657,7 @@ void parse_list_entry(int *ordinal, const void *row_key, void *list, void *regis
 }
 
 // The row of entrants.entrant_lists labelled `label` that the game did not load: the build's virtual-list step puts
-// those rows at VIRTUAL_BASE and up (packages/core/src/virtual_lists.rs, BASE).
+// those rows at VIRTUAL_BASE and up (packages/core/src/game_db/virtual_lists.rs, BASE).
 constexpr int64_t VIRTUAL_BASE = 10000;
 std::string virtual_row(const char *label)
 {
@@ -1750,7 +1750,7 @@ std::vector<era::Box> era_boxes()
 
 void era_press(const char *entrant_list)
 {
-    void *mode = nullptr, *entity = nullptr;
+    void *entity = nullptr;
     uintptr_t slot = swofty::api ? swofty::api->resolve("g_Game_Manager") : 0, mgr = 0, ctx = 0;
     if (slot && mem::read(slot, mgr) && mgr)
         mem::read(mgr + offsetof(swofty::game::GameManager, mode_context), ctx);

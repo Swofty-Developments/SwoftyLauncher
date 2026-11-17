@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_VideoVerbose_False",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f92920",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name false (class from the log channel); log channel VIDEO_VERBOSE: '%s %p paused=%s canCheckVisible=%s visible=%s'"
+ },
+ "signature": {
+  "id": "game.video_verbose_false",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 89 CE 48 8D 79 28",
+  "match": "0x143f92920",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143f92920",
+  "kind": "func_start",
+  "names": [
+   "Game_VideoVerbose_False"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143f92920",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143f92920.c;xref:0x1444b5f48",
+   "notes": "V6308 partial: better name Game_Video_UpdatePausedState; name false is a printf arg; function logs pauseAll/paused/visible and may call StopVideo"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143f92920",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f92920.c;xref:0x1444b5f48",
+   "notes": "V7060 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

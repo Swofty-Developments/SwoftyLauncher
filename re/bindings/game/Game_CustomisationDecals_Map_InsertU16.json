@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationDecals_Map_InsertU16",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14146c360",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14146c360.c;xref:0x141427d5c,0x141427df2",
+  "notes": "Red-black tree lower_bound/find with ushort key (param_3) returning iterator-like pair. Called from Game_CustomisationDecals_UnloadAssetBatch. vp0-verify partial"
+ },
+ "signature": {
+  "id": "game.customisation_decals_map_find_by_u16",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 4C 89 C3 48 89 D6 48 89 CF 4C 8B 79 08 49 8B 4F 08 31 ED 80 79 19 00 74 0F 49 89 CC 4D 89 FE 41 80 7E 19 00 75 49",
+  "match": "0x14146c360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14146c360",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationDecals_Map_InsertU16"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14146c360",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14146c360.c;xref:0x141427d5c",
+   "notes": "V8045 Game_CustomisationDecals_Map_InsertU16: allocates 0x30 node and inserts unique key returning {iterator,bool}; not a find"
+  }
+ ],
+ "proofs": []
+}

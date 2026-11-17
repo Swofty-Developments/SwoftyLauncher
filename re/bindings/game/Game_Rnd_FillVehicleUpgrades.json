@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_Rnd_FillVehicleUpgrades",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141238cb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Rnd_FillVehicleUpgrades(void *component, uint8_t car, uint8_t a3, uint8_t a4)",
+  "evidence": "decomp:re/decomp/141238cb0.c;xref:0x141238bce,0x1412390cb",
+  "notes": "vehicle upgrade fill, a delegate {fn, component} registered at 0x141238bce (with 0x143028270 on [component+0x300]+0x88) and 0x1412390cb (0x142f45180): finds participant car (participant +0x82) through the session provider (component+0x270, vt +0x1c8), its team key through the career line-up ([component+0x278]+0x2e0, matched on +0x50/+0x52, team +0x58) and the team's R&D model in component+0x298..+0x2a0 (Upgrades, key +0x0c), collects the team's instances (0x1435188d0), then for each of the 19 types at 0x14566fd16 stores {progress = Game_Rnd_CalcUpgradeTypeProgress(instances, type, 3, model+0x1a30), mass, bhp} in the car's vehicle upgrade component ([component+0x300]+0x28[car] +0x10). Provider vt +0x98 = the weekend (sessions at +0x220, 0xa0 each, group +0x98; current index +0x238). Called Career_Fill_VehicleUpgrades in the rnd lane's design; in the open game lane. Raised by native-1990 for N12 (doc:/mnt/work/.f1-1990/addon/native-requests.md#N12)"
+ },
+ "signature": {
+  "id": "game.rnd_fill_vehicle_upgrades",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 0C 00 00 C5 78 29 84 24 80 0C 00 00 C5 F8 29 BC 24 70 0C 00 00 C5 F8 29 B4 24 60 0C 00 00 44 89 CB",
+  "match": "0x141238cb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141238cb0",
+  "kind": "func_start",
+  "names": [
+   "Game_Rnd_FillVehicleUpgrades"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/quali_engine.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-c",
+   "kind": "func",
+   "item": "Game_Rnd_FillVehicleUpgrades",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141238cb0.c;decomp:re/decomp/143526260.c;xref:0x141238bce,0x1412390cb;sig:game.rnd_fill_vehicle_upgrades",
+   "notes": "V0996 V0991 The only references are the two leas. 0x141238bce builds the delegate {0x141238cb0, component} for 0x143028270 with rcx = [component+0x300]+0x88, and 0x1412390cb does the same for 0x142f45180 with rcx = [component+0x300]. The decompile matches. It finds the participant whose +0x82 == car through provider (+0x270) vt+0x1c8 (car 0xff returns), takes the team key +0x58 from the line-up row ([+0x278]+0x2e0..+0x2e8, stride 0x88, keyed +0x50/+0x52) and the R&D model in +0x298..+0x2a0 matched on +0x0c, and collects the instances with 0x1435188d0. For the 19 types at 0x14566fd16..0x14566fd29 it computes progress = 0x143526260(inst, type, 3, model+0x1a30) and takes model per-type +4/+8 (0 when absent). These go into the entity at [[component+0x300]+0x28][car]+0x10 (map +0x28, values +0x20/+0x24/+0x28), and a3/a4 are stored as bytes at entity +0x20/+0x21. The proto is right. The provider vt+0x98 weekend layout in the notes is not used here. I checked it in 0x1411d00e0 (sessions +0x220, stride 0xa0, index +0x238). I did not check the mass/bhp labels. sigcheck: one hit"
+  }
+ ],
+ "proofs": []
+}

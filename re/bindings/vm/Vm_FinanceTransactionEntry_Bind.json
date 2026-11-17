@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_FinanceTransactionEntry_Bind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141efd190",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "int64_t (void *vm)",
+  "evidence": "decomp:re/decomp/141efd190.c;xref:0x141efa0a2;xref:0x141efa6fb;xref:0x141efb014",
+  "notes": "myteam-g1: Binds a transaction row: name, transaction_amount_raw (int), transaction_amount (text), key_colour."
+ },
+ "signature": {
+  "id": "vm.finance_transaction_entry_bind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 89 CE E8 ?? ?? ?? ?? 48 8B 46 08",
+  "match": "0x141efd190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141efd190",
+  "kind": "func_start",
+  "names": [
+   "Vm_FinanceTransactionEntry_Bind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141efd190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141efd190.c;xref:0x141efa0a2;xref:0x141efa6fb",
+   "notes": "V10013 Binds transaction row name, transaction_amount_raw, transaction_amount, key_colour."
+  }
+ ],
+ "proofs": []
+}

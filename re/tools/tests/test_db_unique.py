@@ -51,5 +51,40 @@ class UniqueKeys(unittest.TestCase):
         self.assertEqual(lint.E, [])
 
 
+class SubsystemsMemo(unittest.TestCase):
+    def setUp(self):
+        import shutil, tempfile
+        from unittest import mock
+        self.db = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.db)
+        shutil.copy(kb.path("subsystems"), self.db)
+        patcher = mock.patch.object(kb, "DB", self.db)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def rewrite(self, old, new):
+        with open(kb.path("subsystems")) as f:
+            text = f.read()
+        self.assertIn(old, text)
+        with open(kb.path("subsystems"), "w") as f:
+            f.write(text.replace(old, new, 1))
+
+    def test_a_changed_file_is_read_again(self):
+        first = kb.subsystems()
+        some = sorted(first)[0]
+        owner = first[some]["owner"]
+        self.rewrite(f"\t{owner}", "\t" + ("x" if owner[0] != "x" else "y") + owner[1:])
+        self.assertNotEqual(kb.subsystems()[some]["owner"], owner)
+
+    def test_callers_cannot_change_the_cached_rows(self):
+        first = kb.subsystems()
+        some = sorted(first)[0]
+        first[some]["prefix"] = "Changed"
+        first.pop(sorted(first)[-1])
+        again = kb.subsystems()
+        self.assertNotEqual(again[some]["prefix"], "Changed")
+        self.assertEqual(len(again), len(first) + 1)
+
+
 if __name__ == "__main__":
     unittest.main()

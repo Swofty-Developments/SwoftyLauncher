@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Get_RenownLevelInfo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419895e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int* (void *rf_widget, int *out)",
+  "evidence": "decomp:re/decomp/1419895e0.c;xref:0x14197e388;xref:0x14197e473;xref:0x1420b7c78",
+  "notes": "myteam-g2: Returns renown info for the player team: out[0] = current renown tier (count of tier thresholds <= renown points, thresholds from team renown data +0x18 config), out[1] = progress fraction toward the next tier (float stored in the int slot), out[2] = form value from Career_RenownData_ComputeFormLevel. Reads the data via Career_Get_TeamRenownData (renown points float at +4). Modder hook: renown points float at renown_data+4. CORRECTION(V9028): Tier = count of thresholds (vector at data+0x18 -> +8..+0x10) <= points (float at +4); progress = (pts-thr[i-1])/(thr[i]-thr[i-1]); out[2] = FUN_140f99080 (form level). Roles match, but the decompile stores progress with an (int) cast into out[1], so whether raw float bits are stored is unprovable here; progress is 0 at tier 0."
+ },
+ "signature": {
+  "id": "career.get_renown_level_info",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 C5 F8 29 74 24 30 4C 89 C7 48 89 D6 48 8B 01",
+  "match": "0x1419895e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419895e0",
+  "kind": "func_start",
+  "names": [
+   "Career_Get_RenownLevelInfo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-d",
+   "kind": "func",
+   "item": "0x1419895e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1419895e0.c;xref:0x14197e388",
+   "notes": "V9028 Tier = count of thresholds (vector at data+0x18 -> +8..+0x10) <= points (float at +4); progress = (pts-thr[i-1])/(thr[i]-thr[i-1]); out[2] = FUN_140f99080 (form level). Roles match, but the decompile stores progress with an (int) cast into out[1], so whether raw float bits are stored is unprovable here; progress is 0 at tier 0."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1419895e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419895e0.c;xref:0x14197e388",
+   "notes": "V9876 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

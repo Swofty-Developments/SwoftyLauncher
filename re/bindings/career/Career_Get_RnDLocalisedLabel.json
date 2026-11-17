@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Get_RnDLocalisedLabel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142387230",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Get_RnDLocalisedLabel(int64_t *self,void * a2,void * a3)",
+  "evidence": "decomp:re/decomp/142387230.c;xref:0x1422e9985",
+  "notes": "myteam-g1: Builds lng_rnd_%s key from an enum value, falls back to lng_rnd_unknown."
+ },
+ "signature": {
+  "id": "career.get_rn_dlocalised_label",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 70 C5 F8 29 74 24 60 4C 89 C7 48 89 D3",
+  "match": "0x142387230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142387230",
+  "kind": "func_start",
+  "names": [
+   "Career_Get_RnDLocalisedLabel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142387230",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142387230.c;str:\"lng_rnd_%s\"",
+   "notes": "V10174 Key format and lng_rnd_unknown fallback present, but the function also builds department-event discount labels (lng_deptevent_*_discount), popup reward icons and effective upgrade cost text."
+  }
+ ],
+ "proofs": []
+}

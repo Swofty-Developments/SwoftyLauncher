@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_Get_TeamRenownData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f7a510",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void * Career_Get_TeamRenownData(void *rf, void *out_weak, uint32_t team_key)",
+  "evidence": "decomp:re/decomp/140f7a510.c;decomp:re/decomp/1414c5f80.c;xref:0x1414c6064,0x140f7a37e,0x141103e01;doc:addons/career-editor/protocol/economy.md#renown-my-team",
+  "notes": "MyTeamRFComponent: looks up the team key in the per-team map at rf+0x2b8.. and writes a weak ref {obj, control} to out (control+0xc weak count incremented; caller releases: dec +0xc, at 0 call control vtbl[1]). obj+0 team key, obj+4 f32 renown points, obj+0x18 config (+8..+0x10 u32 tier thresholds). The player card counts thresholds <= points for the renown level"
+ },
+ "signature": {
+  "id": "career.get_team_renown_data",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 89 C8 44 89 C1 C1 E9 10 41 C1 E0 0E 41 09 C8 41 0F B7 C8 48 0F AF 88 B8 02 00 00",
+  "match": "0x140f7a510",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f7a510",
+  "kind": "func_start",
+  "names": [
+   "Career_Get_TeamRenownData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-econ",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/economy.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-2",
+   "kind": "func",
+   "item": "Career_Get_TeamRenownData",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f7a510.c;decomp:re/decomp/140f98cb0.c;decomp:re/decomp/1414c5f80.c;xref:0x1414c6063,0x140f7a37e,0x141103e01",
+   "notes": "V0282 proto (rf,out,key) returns out; map seed rf+0x2b8 (buckets +0x2c0, ctrl +0x2c8, mask +0x2d8); out = {node+8 obj, node+0x10 control} with lock inc control+0xc, zeroed when absent. Player card 0x1414c5f80 gets rf via MyTeamRFComponentDesc, locks (+8), releases (+0xc, vtbl[1]), reads obj+0x18 config +8..+0x10; handler 0x140f98cb0 confirms obj+0/+2 key, +4 f32 points, uint thresholds compared as float"
+  }
+ ],
+ "proofs": []
+}

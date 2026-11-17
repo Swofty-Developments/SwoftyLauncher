@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_ContractIntro_OnEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436c2620",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_ContractIntro_OnEnter(void *state)",
+  "evidence": "decomp:re/decomp/1436c2620.c;xref:0x14585a4b0",
+  "notes": "DriverCareerContractNegotiations Intro onEnter (vtable 0x14585a470 slot +0x40): clears fade reasons and starts the agent intro cutscene (camera picked by Career_Needs_DriverContract); its onExit 0x1436c2e80 only undoes what it subscribed and returns 1. Raised by native-1990 with --force in the career lane (owner career-re), approved by the developer on 2026-10-21 for the private F1 1990 build (doc:/mnt/work/.f1-1990/addon/native-requests.md#N1)."
+ },
+ "signature": {
+  "id": "career.contract_intro_on_enter",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC D0 00 00 00 C5 F8 29 B4 24 C0 00 00 00",
+  "match": "0x1436c2620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436c2620",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractIntro_OnEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/contract_skip.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-a",
+   "kind": "func",
+   "item": "Career_ContractIntro_OnEnter",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436c2620.c;decomp:re/decomp/1436c2e80.c;decomp:re/decomp/1436c2610.c;xref:0x14585a4b0,0x1436c2a9e;sig:career.contract_intro_on_enter",
+   "notes": "V0959 Only reached through vtable 0x14585a470 slot +0x40 (abs ptr 0x14585a4b0, no rel32 callers). The vtable comes from factory 0x140843ac0, registered at 0x140802806 under djb2('StateDriverCareerContractNegotiationsIntro') = 0xbc3314c2. On first entry it subscribes 0x1436c2610 to ContractNegotiationsMessage (stage 1 sets +0xc99), posts a team_hq_set_scene message (type 0x1456982f0) with scene 'ContractNegotiations' (0x14585a3db), or 'AgentIntro' (0x14585a4f0) when Career_Needs_DriverContract (call 0x1436c2a9e; contracts from +0xc88->+0x88->+0x260 registry, desc 0x14605c0d8) is true, logs 'Clearing fade reasons', clears the fade reasons and requests a fade out. Returns 1 once the fade object (+0xc80->+0x790, +0x50 == 2) is reached and a fade in is requested, else 0. So the agent intro is only the Needs case; otherwise the ContractNegotiations scene is set. onExit 0x1436c2e80 unsubscribes 0x1436c2610 (if +0xc9a), clears +0xc98/+0xc99/+0xc9b and returns 1. Proto fits. sigcheck: 1 hit"
+  }
+ ],
+ "proofs": []
+}

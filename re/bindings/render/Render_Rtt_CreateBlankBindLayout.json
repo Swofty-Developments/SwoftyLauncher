@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Rtt_CreateBlankBindLayout",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d834e0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d834e0.c;xref:0x143d834a5,0x140176bd2",
+  "notes": "Creates the default bind layout for an RTT target set: names it '<unknown-because-not-initialised/resource>' / 'default://blank', builds it with Render_Gfx2_BindLayout_Create and an MD5 transform of the desc (Ne_Hash_Md5Transform_Alt); throws bad_function_call if the factory is empty. Caller Render_Rtt_ConstructTargetSet."
+ },
+ "signature": {
+  "id": "render.rtt_create_blank_bind_layout",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC A0 00 00 00 48 89 D7 48 89 CE 48 8B 49 40",
+  "match": "0x143d834e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d834e0",
+  "kind": "func_start",
+  "names": [
+   "Render_Rtt_CreateBlankBindLayout"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143d834e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d834e0.c;xref:0x140176bd2",
+   "notes": "V8346 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

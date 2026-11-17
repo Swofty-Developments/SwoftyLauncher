@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Parse_Chassis",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14462e6d0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14462e6d0.c",
+  "notes": "VTF Chassis / ChassisComposite section (Mass, COM, MOI, visual height offsets)."
+ },
+ "signature": {
+  "id": "car.parse_chassis",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 C5 78 29 BC 24 70 01 00 00 C5 78 29 B4 24 60 01 00 00 C5 78 29 AC 24 50 01 00 00 C5 78 29 A4 24 40 01 00 00 C5 78 29 9C 24 30 01 00 00 C5 78 29 94 24 20 01 00 00 C5 78 29 8C 24 10 01 00 00 C5 78 29 84 24 00 01 00 00 C5 F8 29 BC 24 F0 00 00 00 C5 F8 29 B4 24 E0 00 00 00 48 8B 79 58",
+  "match": "0x14462e6d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14462e6d0",
+  "kind": "func_start",
+  "names": [
+   "Car_Parse_Chassis"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14462e6d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14462e6d0.c;xref:0x143648944",
+   "notes": "V6713 body is chassis runtime setup (Car_Compute_ChassisMatrix, ComputeWheelGeometry, ReadAxleWheelParams, collision callback registration of Car_Collision_CarToCar, TrackGrid_SampleHeight), not a VTF Mass/COM/MOI parser. Better: Car_Chassis_InitialiseRuntime"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14462e6d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14462e6d0.c;xref:0x143648944",
+   "notes": "V7239 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

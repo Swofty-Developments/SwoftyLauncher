@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Visual_UpdateSlotBlend",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403a06b0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403a06b0.c;xref:0x14039ef5a",
+  "notes": "Per-slot (stride 0x50 at +0x5d4) scalar blended by param_4 and clamped between min/max extents queried from the slot's model parts (vcall +0x20 returns min,max); slot index param_3, owner id +0x1ad4 must equal param_2; powf easing. Called 6+ times from Car_Visual_UpdateRenderState. Hypothesis (damage/heat/dirt style render-state ramps)."
+ },
+ "signature": {
+  "id": "car.visual_update_slot_blend",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC B0 00 00 00 C5 78 29 AC 24 A0 00 00 00 C5 78 29 A4 24 90 00 00 00 C5 78 29 9C 24 80 00 00 00 C5 78 29 54 24 70 C5 78 29 4C 24 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 41",
+  "match": "0x1403a06b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403a06b0",
+  "kind": "func_start",
+  "names": [
+   "Car_Visual_UpdateSlotBlend"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x1403a06b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403a06b0.c;xref:0x14039ef5a",
+   "notes": "V7996 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

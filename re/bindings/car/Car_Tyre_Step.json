@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Tyre_Step",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446b5720",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446b79f0.c;decomp:re/decomp/1446b5720.c;kb:subsystems/session.md#wetness;xref:0x1446b4f2e,0x1446b4f3f,0x1446b4f53,0x1446b4f72",
+  "notes": "caller of Car_Tyre_UpdateTemperature (0x1446b5914) and Car_Tyre_UpdateWear (0x1446b5a20); per-tyre update. Not decompiled. | PR #471 named this Car_Tyre_Update: Tyre water level wheel+0x8c moves toward surface wetness wheel+0x280: rise 4.0*dt (0x1453814ac), fall -0.5*dt (0x14547dab4, sign built in) (1446b59bf-a15), only if car+0x133 bit0; calls temperature update 0x1446b7b70 (wx-verify claim 8) | findings from PR #471 by vogtmarcel07-cloud; independent check 2026-10-28 by wx-verify: partial  | engine-re 2026-11-14 (static): tyre water wheel+0x8c moves toward the surface wetness wheel+0x280 (env slot 5 out[0]) at +4.0*dt while wetter and -0.5*dt while drier (0x1446b59bf..0x1446b5a15), dt = arg 3.  raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.wheel_update",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 C5 F8 28 F2 48",
+  "match": "0x1446b5720",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446b5720",
+  "kind": "func_start",
+  "names": [
+   "Car_Tyre_Step"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446b5720",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446b5720.c;xref:0x1446b4f2e",
+   "notes": "V6815 Water rise 4.0 / fall -0.5 constants, +0x133 bit0 gate, temperature call (wheel+8) confirmed; function also does residue, brake temp and wear."
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "wx-verify",
+   "kind": "func",
+   "item": "0x1446b5720",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1446b5720-0x1446b5f57;xref:0x1446b4f2e,0x1446b4f3f,0x1446b4f53,0x1446b4f72",
+   "notes": "V9448 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans). dt = xmm2 (arg 3). Calls 0x1446b7b70 (0x1446b5914) and 0x1446b79f0 (0x1446b5a20). If [wheel+0x10]+0x133 bit0: water wheel+0x8c moves to wheel+0x280: rise min(target, w + 4.0*dt) (0x1453814ac = 4.0), fall max(target, w - 0.5*dt) (0x14547dab4 = -0.5) at 0x1446b59bf-0x1446b5a15. Three calls + one tail jmp from 0x1446b4f10."
+  }
+ ],
+ "proofs": []
+}

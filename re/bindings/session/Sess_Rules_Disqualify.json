@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Sess_Rules_Disqualify",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143571440",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Rules_Disqualify(void *rules, uint32_t vehicle)",
+  "evidence": "decomp:re/decomp/143571440.c;xref:0x143572fc6,0x1435738ec",
+  "notes": "Name kept for signatures.json; per verify-a it is the shared remove-from-race step, used before the penalty helper with code 6 or 7 (both callers 0x143572fc6, 0x1435738ec). For car byte idx (0xff = none): finds the participant (rules+0x1c30 +0xa0[idx] cache, else scan +0x88..+0x90) and, when participant flags +0x32 bit 0x20: sets bit 0x40 in the car's result flags ([[rules+0x1c40]+0x70][idx]+0x17c); if +0x30 bit 0 also: Game_Set_VehicleController(rules+0x1c28, idx, 1, 2) and stores the session-clock time + offset in rules+0x1d10[is_secondary]. (used by vmknolle race-start to prevent false DSQ)"
+ },
+ "signature": {
+  "id": "session.rules_disqualify",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 C5 F9 29 74 24 30 80 FA FF",
+  "match": "0x143571440",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143571440",
+  "kind": "func_start",
+  "names": [
+   "Sess_Rules_Disqualify"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-24",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-a",
+   "kind": "func",
+   "item": "0x143571440",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:work/verify_a/decomp/143571440.c;xref:0x143572fc6,0x1435738ec",
+   "notes": "V1024 for vehicle!=0xff: finds participant entry (cache +0x1c30+0xa0), if entry+0x32&0x20 sets bit 0x40 in result flags (+0x1c40->+0x70[v]+0x17c), and if entry+0x30&1 hands car to controller slot 1 via Set_VehicleController(…,v,1,2) and stores a session-time stamp at +0x1d10[idx]. Both callers set the 0x1d08/0x1d0c masks and then call penalty helper 0x1435668e0 with code 7 (0x143572f90) or 6 (0x1435737xx). Differs: it is the shared remove-from-race step used by two penalty paths, not DSQ-only"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-d",
+   "kind": "func",
+   "item": "0x143571440",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_d/decomp/143571440.c;decomp:work/verify_d/decomp2/143572f90.c;decomp:work/verify_d/decomp2/143573760.c;xref:0x143572fc6,0x1435738ec",
+   "notes": "V1065 both callers guard by per-car mask +0x1d08, then set it, log penalty types 7/6 and play 'Flags_Black'; body sets car state +0x17c|=0x40, hands car to AI via 14389cc90(veh,1,2) and stores a session time at +0x1d10 -> black-flag DSQ; proto (rules,u32 vehicle) matches"
+  }
+ ],
+ "proofs": []
+}

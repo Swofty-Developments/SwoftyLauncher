@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Bank_WriteSaveData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c5ed70",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t (void *bank, void **json, int64_t flags)",
+  "evidence": "decomp:re/decomp/140c5ed70.c;xref:0x145683010",
+  "notes": "myteam-g1: Bank component save writer: bankUniqueAccountId (bank+0x320), bankTeamData and bankDriverData arrays. Entry stride 0x30 (statId at +0x28, account vector at +0x10..+0x18, account size 0x1b0), each account written with Career_Bank_WriteAccount (140c6dcb0). Main place where balances are serialised."
+ },
+ "signature": {
+  "id": "career.bank_write_save_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 04 00 00 C5 78 29 84 24 B0 04 00 00 C5 F8 29 BC 24 A0 04 00 00 C5 F8 29 B4 24 90 04 00 00 4C 89 44 24 50",
+  "match": "0x140c5ed70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c5ed70",
+  "kind": "func_start",
+  "names": [
+   "Career_Bank_WriteSaveData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-a",
+   "kind": "func",
+   "item": "0x140c5ed70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c5ed70.c;str:\"driverAccounts\"",
+   "notes": "V8970 Writer: bank+0x320 for the unique id, vectors +0x298/+0x2b8, entry stride 0x30 with statId at +0x28 and account vector at +0x10..+0x18, accounts written by 140c6dcb0 with stride 0x1b0."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Sess_CornerCutting_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14356bb00",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14356bb00.c;xref:0x14356bcc0,0x14356bf29,0x14356c953,0x14356d886",
+  "notes": "corner-cutting monitor ('Corner_Cutting: Invalidate Current Lap!'): invalidates laps through Sess_Invalidate_Lap_Thunk and warns through Sess_Issue_Warning; time gained is measured in 0x1435a4de0 / 0x14359e5a0 ('Corner Cutting Time Lost …'). | sb3-verify-b (replaces the corner-cutting reading): 1152-line dispatcher over the infringement queue, switch on infringement type record+0x11 (~60 cases); 'Corner_Cutting: Invalidate Current Lap!' is case 0x22 (invalidates through Sess_Invalidate_Lap_Thunk, warns through Sess_Issue_Warning); also post-race penalties, parked-too-long OSD, tyre and drive-thru reminders. Corner-cutting time gained is measured in 0x1435a4de0 / 0x14359e5a0. | #545 proposed the name Sess_Infringement_ProcessQueue"
+ },
+ "signature": {
+  "id": "session.corner_cutting_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 C7 81 E0 1C 00 00 00 00 00 00",
+  "match": "0x14356bb00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14356bb00",
+  "kind": "func_start",
+  "names": [
+   "Sess_CornerCutting_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

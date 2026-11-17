@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_DriverExitAuction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d94f10",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
+  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'Driver exited auction, cannot reapproach until next window: %s - Team : %s  | Driver is no longer available: %s - Team : %s  | Team is no longer available: %s - Team : %s  | Already approached this dr'"
+ },
+ "signature": {
+  "id": "career.contract_renewal_driver_exit_auction",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 45 89 C2",
+  "match": "0x140d94f10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d94f10",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_DriverExitAuction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140d94f10",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d94f10.c;xref:0x140d8dec7,0x140d9815f",
+   "notes": "V4713 better name Career_ContractRenewal_CanApproach: bool predicate (returns bVar6&bVar21...) logging why driver/team cannot be (re)approached; not an exit-auction action"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x140d94f10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d94f10.c;xref:0x140d8dec7",
+   "notes": "V7172 name fits; finding facts hold; 3 direct calls"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140d94f10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d94f10.c",
+   "notes": "V9081 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

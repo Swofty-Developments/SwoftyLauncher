@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ai_Eval_ClampedTestSpeed_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140606e60",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "float Ai_GraphTable_EvalClampSpeed2(void *table, float a, float b, void *key)",
+  "evidence": "decomp:re/decomp/140606e60.c;xref:0x1405f960c,0x140616044,0x140616133,0x14061640b,0x140617713",
+  "notes": "Not a settings reader (corrected 2026-11-14: was 'second reader of the five keys'). Lazily resolves the shared static block 0x146046c50..0x146046c70 (guard 0x146046c78) for the 5 ai.general_ai_settings keys, but only uses max_test_speed (0x146046c68 -> [p+8]). Clamps BOTH float inputs (xmm1, xmm2) to [-max_test_speed, +max_test_speed], then evaluates a multi-axis graph table: key+0xc != 0 -> Ai_Table_InterpolateB 0x14068bb70 else Ai_Table_InterpolateA 0x14068b710 (trilinear over table cells, cell value = callback 0x14063b4b0(cell, a, b), a 2-input graph-cell evaluator). Returns that float. Callers: Ai_Update_DriverTick (1x), Ai_Update_VehicleDriver (4x); the key struct is prepared by the caller (0x14068ab50 before the call). (renamed 2026-11-14 to the name signatures.json already listed; from Ai_Read_GeneralSettings_2: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.read_general_settings_2",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 58 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 4C 89 CF C5 F8 28 FA C5 F8 28 F1 48 89 CE 8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 48 8B 14 25 58 00 00 00 48 8B 0C CA 3B 81 04 00 00 00 0F 8F ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 00 C5 F8 57 C0 C5 F0 57 C9 48 85 C0 74 05 C5 FA 10 48 08 C5 F0 57 1D",
+  "match": "0x140606e60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140606e60",
+  "kind": "func_start",
+  "names": [
+   "Ai_Eval_ClampedTestSpeed_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140606e60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140606e60.c;xref:0x5f5e37",
+   "notes": "V4694 uses only max_test_speed to clamp two inputs then calls FUN_14068bb70/14068b710 (by param_4+0xc); 'second reader' wrong; better Ai_Eval_ClampedTestSpeed_2"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x140606e60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140606e60.c;xref:0x1405f960c",
+   "notes": "V7138 name fits; finding facts hold; 5 direct calls"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x140606e60",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140606e60-0x140606fba;xref:0x1405f960c,0x140616044,0x140616133,0x14061640b,0x140617713",
+   "notes": "V10559 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 4 args. Clamps BOTH xmm1 and xmm2 to +-max_test_speed ([0x146046c68]+8), key+0xc selects 0x14068bb70 / 0x14068b710, getter 0x14063b4b0. Callers 0x1405f960c and 4 in 0x140614d70 (a rip hit 0x1405f5e37 is not an instruction). Rename from Ai_Read_GeneralSettings_2 fits."
+  }
+ ],
+ "proofs": []
+}

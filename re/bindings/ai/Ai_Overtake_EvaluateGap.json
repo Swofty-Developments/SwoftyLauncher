@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ai_Overtake_EvaluateGap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14066de50",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Overtake_EvaluateGap(void *out, void *a2, void *a3, void *a4, int car)",
+  "evidence": "decomp:re/decomp/14066de50.c;xref:0x14063fc6f,0x14063fd92,0x14063fea4,0x142f10a5f",
+  "notes": "out = 0x4c-byte result: +0x00..+0x2f six pointers zeroed, floats +0x30..+0x44 = 1e38 (0x7e967699), dword +0x48 = 0. If Ai_TrackLine_FindCornerEndAndRetire (0x14066df70) fails the result is reset; else runs Ai_TrackLine_FindNextBrakeLine (0x14066e4e0), Ai_TrackLine_FindNextCornerStart (0x14066e830), Ai_TrackLine_FindPass3 (0x14066eec0), then sets +0x4b = 1 (valid), +0x4a = f(+0x40) < f(+0x44), +0x49 = f(+0x34) < f(+0x40), +0x48 = f(+0x38) < f(+0x40). Ai_Job_UpdateCarsParallel calls it three times (current distance, then dist+0.01 variants) and copies the 0x50-byte result into the per-car record at +0x10, +0x60 and +0xb0. 4th caller 0x142f108c0 (unnamed). Nothing compares cars or gaps. (corrected 2026-11-14: was '5x16-byte gap evaluation result'; size is 0x4c, no overtake logic.) Name kept (used in repo docs/code/signatures); a code-true name would be Ai_TrackLine_QueryAtDistance. L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) Role: track-line query at a distance (calls 0x14066df70, 0x14066e4e0, 0x14066e830, 0x14066eec0 and sets result +0x48..+0x4b; callers: 3 sites in 0x14063e370 and 0x142f10a5f; 5 args); a code-true name would be Ai_TrackLine_QueryAtDistance, the old name is kept because native/src/core/guards/ai/ai_corner_guard.cpp and the open tracks PR refer to it (fixed 2026-11-14 after verifier ai-verify). Helpers renamed 2026-11-16 after decoding the lane tables: 0x14066df70 Ai_TrackLine_FindCornerEndAndStart (+0x18 next corner end, +0x20 its corner start), 0x14066e4e0 Ai_TrackLine_FindNextSideMarker (+0x00), 0x14066e830 Ai_TrackLine_FindNextCornerStart which really finds brake lines (+0x08 next, +0x10 previous), 0x14066eec0 Ai_TrackLine_FindSideMarkerInCorner (+0x28). So the 0x50-byte result describes the current corner window and its brake lines. edited by engine-re with --force 2026-11-16 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.overtake_evaluate_gap",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 68 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 4C 89 CF C5 F8",
+  "match": "0x14066de50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14066de50",
+  "kind": "func_start",
+  "names": [
+   "Ai_Overtake_EvaluateGap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14066de50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14066de50.c;xref:0x14063fc6f",
+   "notes": "V3571 zero-inits 5x16-byte result with sentinel 0x7e967699 (~1e38), precondition FUN_14066df70, three passes 0x14066e4e0/e830/eec0, flag bytes [4]+8..+0xb from comparisons; Ai_Job_UpdateCarsParallel caller seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14066de50",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x14066de50-0x14066df64;xref:0x14063fc6f,0x14063fd92,0x14063fea4,0x142f10a5f",
+   "notes": "V10619 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Callers 3 in Ai_Job_UpdateCarsParallel 0x14063e370 + 0x142f10a5f in 0x142f108c0. 5 args (rcx out, xmm1, xmm2, r9, stack int car). Body agrees with the notes: out+0x30.. = 0x7e967699, +0x48 = 0, calls 0x14066df70/0x14066e4e0/0x14066e830/0x14066eec0, +0x4b = 1, +0x48/+0x49/+0x4a compare flags; no gap or opponent logic. Correction: the row name Ai_Overtake_EvaluateGap does not fit the code (kept for repo users per notes); code-true name is the proto name Ai_TrackLine_QueryAtDistance - rename or alias recommended."
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "triage-verify",
+   "kind": "func",
+   "item": "0x14066de50",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own re/tools/decomp read on the KB build;xref:0x14063fc6f,0x14063fd92,0x14063fea4,0x142f10a5f",
+   "notes": "V10746 Own read. Clears a 0x4c-byte result with 1e38 sentinels, calls FindCornerEndAndStart (0x14066deb4), then SideMarker, brake-line and SideMarkerInCorner passes, sets flags +0x48..+0x4b from distance comparisons. Callers by scan: 0x14063e370 (3) and 0x142f108c0."
+  }
+ ],
+ "proofs": []
+}

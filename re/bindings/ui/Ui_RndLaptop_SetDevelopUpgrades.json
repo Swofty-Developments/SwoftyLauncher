@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_RndLaptop_SetDevelopUpgrades",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14165d7d0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/14165d7d0.c;xref:0x14165d53e;xref:0x14165d565",
+  "notes": "myteam-g1: UI binding code; laptop_develop_upgrades: sets the develop-upgrades list param on the laptop UI. Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.rnd_laptop_set_develop_upgrades",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 4D 89 CF 4C 89 C3",
+  "match": "0x14165d7d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14165d7d0",
+  "kind": "func_start",
+  "names": [
+   "Ui_RndLaptop_SetDevelopUpgrades"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14165d7d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14165d7d0.c;xref:0x14165d53e;xref:0x14165d565",
+   "notes": "V9733 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

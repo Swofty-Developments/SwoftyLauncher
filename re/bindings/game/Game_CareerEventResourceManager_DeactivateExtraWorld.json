@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerEventResourceManager_DeactivateExtraWorld",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c7ac60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c7ac60.c;xref:0x140c76f8a,0x140c7cfc2",
+  "notes": "CareerEventResourceManager deactivateExtraWorld %s: notifyInvalidateCrowdData, Ne_WorldInstance_DeactivateAllWorldObjects, releases warmed textures (Ne_WorldInstance_ReleaseWarmedTextures, CUTSCENE_TEXTURE_CONTROL), sets texture manager in-race (Ne_Gfx2TextureManager_SetInRaceOff/On). Called from Game_CareerEventsSequencer_IsWarmingTextures and ShutdownExtraWorlds. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2536)"
+ },
+ "signature": {
+  "id": "game.career_event_resource_manager_deactivate_extra_world",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 80 39 00 0F 84",
+  "match": "0x140c7ac60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c7ac60",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerEventResourceManager_DeactivateExtraWorld"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Game_CareerEventResourceManager_DeactivateExtraWorld",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c7ac60.c;xref:0x140c7a657",
+   "notes": "V2536 strings deactivateExtraWorld/releaseWarmedTextures/CUTSCENE_TEXTURE_CONTROL/setInRace"
+  }
+ ],
+ "proofs": []
+}

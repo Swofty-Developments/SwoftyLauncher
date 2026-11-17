@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamCarCustomisation_Exit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1420939f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/1420939f0.c;xref:0x1457681d0",
+  "notes": "myteam-g1: Event my_team_exiting_car_customisation (applies changes, mat handles at +0x560..)."
+ },
+ "signature": {
+  "id": "game.my_team_car_customisation_exit",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 81 38 2B E9 3F 49",
+  "match": "0x1420939f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1420939f0",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamCarCustomisation_Exit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1420939f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1420939f0.c;xref:0x1457681d0",
+   "notes": "V10043 Exit event confirmed, but code mostly navigates decal menus (to_decal_menu, decals dlc descriptions, driver numbers); mat handles at +0x560 not verified."
+  }
+ ],
+ "proofs": []
+}

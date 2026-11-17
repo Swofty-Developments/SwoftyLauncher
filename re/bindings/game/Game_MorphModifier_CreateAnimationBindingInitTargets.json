@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MorphModifier_CreateAnimationBindingInitTargets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401c5d80",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name createAnimationBindingInitTargets (class from the log channel); log channel MorphModifier: 'createAnimationBindingInitTargets %p m_animData %p m_animData->m_animSet %p'"
+ },
+ "signature": {
+  "id": "game.morph_modifier_create_animation_binding_init_targets",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 4C 8B 89 88 00 00 00",
+  "match": "0x1401c5d80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401c5d80",
+  "kind": "func_start",
+  "names": [
+   "Game_MorphModifier_CreateAnimationBindingInitTargets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401c5d80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401c5d80.c",
+   "notes": "V4352 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

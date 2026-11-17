@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ObfKeyedTable_StaticInit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1409d50b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1409d50b0.c;xref:0x140b6ff38",
+  "notes": "Large static initialiser (static-init block at 0x140b6ff38 next to the AttributesSystem registration): lazily seeds the anti-tamper MT19937 state 0x146108c00 from QPC (x0x5d5e6971) and fills a table of 0x58-byte records (pushed into vectors) whose values are XOR-keyed with MT outputs. Table role is an L1 hypothesis (caller labelled car_type_f1_26)."
+ },
+ "signature": {
+  "id": "game.obf_keyed_table_static_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 05 00 00 C5 F8 29 B4 24 70 05 00 00 8B 1D",
+  "match": "0x1409d50b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1409d50b0",
+  "kind": "func_start",
+  "names": [
+   "Game_ObfKeyedTable_StaticInit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x1409d50b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1409d50b0.c;xref:0x140b6ff38",
+   "notes": "V3830 large static initialiser: lazily seeds state 0x146108c00 from QPC*0x5d5e6971 (|1), fills XOR-keyed records; role flagged L1 hypothesis in claim; caller Sess_Unk_140b6ebb0 block 0x140b6ff38 seen (0x58 record size and caller label not individually verified)"
+  }
+ ],
+ "proofs": []
+}

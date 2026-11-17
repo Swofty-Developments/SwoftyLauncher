@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ChampSession_ResetUnlessMode1",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140af6740",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140af6740.c;xref:0x140ae6eac,0x140aedf18,0x14566eec0",
+  "notes": "championship::Session virtual (vtable 0x14566eea0 slot +0x20): unless param_2 == 1 does the same reset as Game_ChampSession_Reset (+0x58, +0x48 = +0x40, +0x10, +0x8c); returns 0. d4-verify-a correction: returns 0x59 when param_2 == 1 (no reset); returns 0 only after resetting"
+ },
+ "signature": {
+  "id": "game.champ_session_reset_unless_mode1",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 BE 59 00 00 00 83 FA 01 0F 84",
+  "match": "0x140af6740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140af6740",
+  "kind": "func_start",
+  "names": [
+   "Game_ChampSession_ResetUnlessMode1"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_ChampSession_ResetUnlessMode1",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140af6740.c;xref:0x140af6740",
+   "notes": "V2432 Reset fields match, but returns 0x59 (not 0) when param_2 == 1 (returns 0 otherwise)"
+  }
+ ],
+ "proofs": []
+}

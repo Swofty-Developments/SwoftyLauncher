@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_EadpConfig_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1449bbf40",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: eadp.auth.account, eadp.candi.catalog.service, eadp.candi.drm.service, eadp.candi.entitlement.v2.service, eadp.candi.firstpartycheckout, eadp.candi.offer.service, eadp.candi.offer.v2.service, eadp.candi.valuetransfer.service, eadp.candi.valuetransfer.v2.service, eadp.cha'"
+ },
+ "signature": {
+  "id": "game.read_eadp_config_2",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 10 48 89 74 24 18 48 89 7C 24 20 55 41 54 41 55 41 56 41 57 48 8D 6C 24 F0",
+  "match": "0x1449bbf40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1449bbf40",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_EadpConfig_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x1449bbf40",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1449bbf40.c;xref:0x1449bb03d",
+   "notes": "V6650 is DirectorServiceImpl::loadHardcodedConfiguration: sets default EADP service endpoint URLs/ids (instrumentation, director, identity, stats, leaderboards, rtm, chat, friends, candi...), not generic DB key reading; better name Game_Eadp_DirectorLoadHardcodedConfiguration"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1449bbf40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1449bbf40.c;xref:0x1449bb03d",
+   "notes": "V7287 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

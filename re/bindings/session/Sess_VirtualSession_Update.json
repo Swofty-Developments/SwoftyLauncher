@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_VirtualSession_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f6db50",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f6db50.c;xref:0x142d25ee0,0x142d27ee0",
+  "notes": "(vss): when virtualisation is active (0x142f6dc30) steps it (0x142f6dda0) and finalises each car record (+0x120..+0x128, stride 0xba0, flag +0xb2c) via 0x142f67eb0; logs 'VIRTUAL-SESSION: VirtualSessionSystem: Finished virtualising session.' Callers: all ruleset FinaliseResults (elim, F1AMP, F1CG, PQ, pursuit, default). Simulates the rest of a session when it is skipped."
+ },
+ "signature": {
+  "id": "session.virtual_session_update",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CF E8 ?? ?? ?? ?? 89",
+  "match": "0x142f6db50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f6db50",
+  "kind": "func_start",
+  "names": [
+   "Sess_VirtualSession_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142f6db50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f6db50.c;xref:0x142d25fc3,0x142d27f9d,0x142d2b8fb",
+   "notes": "V3754 Gated by 142f6dc30, steps 142f6dda0, finalises entrants (+0x120..+0x128 stride 0xba0, flag +0xb2c) with 142f67eb0, logs VIRTUAL-SESSION 'VirtualSessionSystem: Finished virtualising session.'."
+  }
+ ],
+ "proofs": []
+}

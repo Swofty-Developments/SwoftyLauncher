@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DriverContractEvent_Destroy",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140e04cf0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_DriverContractEvent_Destroy(void **ev)",
+  "evidence": "decomp:re/decomp/140e04cf0.c;xref:0x140da055a;xref:0x140da7169;xref:0x140dac35b",
+  "notes": "myteam-g2: Destructor of a driver contract event object: releases refcounted members at ev[0x150], ev[0x12] etc. and the nested vectors. Called by Load_DriverContractsComponent and Process_PendingDriverMoves; no state change."
+ },
+ "signature": {
+  "id": "career.driver_contract_event_destroy",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 48 8B 89 80 0A 00 00",
+  "match": "0x140e04cf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140e04cf0",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverContractEvent_Destroy"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140e04cf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140e04cf0.c",
+   "notes": "V9565 Releases refcounted members at ev[0x150] and ev[0x12] and nested vectors."
+  }
+ ],
+ "proofs": []
+}

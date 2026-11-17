@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AudioIo_ProcessRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fba2d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-AUDIO_IO",
+  "notes": "named from its log messages (channel AUDIO_IO): '[thread=0x%08I64x] %s: opHandle=%d fullFileName=\"%s\" offset=%I64u size=%I64u callback data=0x%x | [thread=0x%08I64x] processCancelRequest opHandle=%d | [thread=0x%08I64x] processCloseRequest opHandle='"
+ },
+ "signature": {
+  "id": "game.audio_io_process_request",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 41 55 41 54 56 57 53 48 81 EC 08 01 00 00 48 8D AC 24 80 00 00 00 C5 F8 29 75 70",
+  "match": "0x143fba2d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fba2d0",
+  "kind": "func_start",
+  "names": [
+   "Game_AudioIo_ProcessRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143fba2d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fba2d0.c;xref:0x143fba18d",
+   "notes": "V6312 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Map_CloneNode_String255",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f33e80",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Map_CloneNode_String255(void **tree, void *src_node, void *parent)",
+  "evidence": "decomp:re/decomp/140f33e80.c;xref:0x140ebae37;xref:0x140ebbc97;xref:0x140ebd7c7",
+  "notes": "myteam-g2: Red-black tree helper: allocates a 0x140-byte node via the global allocator and copies a 255-char inline string + flag from src_node (Ne_Crt_Memcpy). Part of copy-constructing the event-param name map; core library code."
+ },
+ "signature": {
+  "id": "core.map_clone_node_string255",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 8B 31",
+  "match": "0x140f33e80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f33e80",
+  "kind": "func_start",
+  "names": [
+   "Ne_Map_CloneNode_String255"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f33e80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f33e80.c;xref:0x140ebae37",
+   "notes": "V9572 Recursive RB-tree node clone: 0x140-byte node, inline 255-char string copied, flag at +0x138; allocator vtable +0x10."
+  }
+ ],
+ "proofs": []
+}

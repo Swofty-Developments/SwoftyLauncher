@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Update_RnDEquipToDriverButton_A",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c5c250",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Update_RnDEquipToDriverButton_A(void * self,char a2)",
+  "evidence": "decomp:re/decomp/141c5c250.c;xref:0x141c5a818;xref:0x141c5a822",
+  "notes": "myteam-g1: Updates the lng_rnd_equip_to_driver button (variant A; reads +0x340/+0x3f0)."
+ },
+ "signature": {
+  "id": "career.update_rn_dequip_to_driver_button_a",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 48 89 CE 4C 8D A4 24 D8 00 00 00",
+  "match": "0x141c5c250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c5c250",
+  "kind": "func_start",
+  "names": [
+   "Career_Update_RnDEquipToDriverButton_A"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c5c250",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c5c250.c;xref:0x141c5a818;xref:0x141c5a822",
+   "notes": "V9976 Updates lng_rnd_equip_to_driver / lng_cancel button text."
+  }
+ ],
+ "proofs": []
+}

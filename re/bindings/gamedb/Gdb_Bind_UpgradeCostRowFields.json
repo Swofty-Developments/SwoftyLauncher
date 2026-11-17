@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Gdb_Bind_UpgradeCostRowFields",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1425e5270",
+  "level": "L1",
+  "subsystem": "gamedb",
+  "proto": "void Gdb_Bind_UpgradeCostRowFields(void * self,int64_t *a2)",
+  "evidence": "decomp:re/decomp/1425e5270.c;xref:0x1425e505d;xref:0x142694fdc",
+  "notes": "myteam-g1: Binds columns UpgradeCost, UpgradeCount, UpgradeTechLevel (+0x8,+0xc,+0x10,+0x14,+0x18) of an upgrade cost table row."
+ },
+ "signature": {
+  "id": "gamedb.bind_upgrade_cost_row_fields",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 D7 49 89 CE 49 BF 00 00 00 00 00 00 00 10",
+  "match": "0x1425e5270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1425e5270",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Bind_UpgradeCostRowFields"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1425e5270",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1425e5270.c;str:\"UpgradeCost\"",
+   "notes": "V10225 Binds UpgradeCost/UpgradeCount/UpgradeTechLevel but also VariantStatId, Rarity, SlotType, Slot, TechLevel, Mods, State, UseCount, DismantleResult, CardId, LinkedCardId, ModsActive, LocIndex, IsNew: a full inventory/upgrade-card row."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_WindowWin_SaveWindowPosition",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439f3c70",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/1439f3c70.c;xref:0x1439f1e01,0x1439f362d,0x1439fbf5d",
+  "notes": "cxx=NeWindowWin::saveWindowPosition; log channel WINDOW: 'NeWindowWin::saveWindowPosition: saving hardware settings'"
+ },
+ "signature": {
+  "id": "core.window_win_save_window_position",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 50 C7 44 24 24 2C 00 00 00",
+  "match": "0x1439f3c70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439f3c70",
+  "kind": "func_start",
+  "names": [
+   "Ne_WindowWin_SaveWindowPosition"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_WindowWin_SaveWindowPosition",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439f3c70.c;xref:0x1439f1e01",
+   "notes": "V2006 log strings and role confirmed in decomp"
+  }
+ ],
+ "proofs": []
+}

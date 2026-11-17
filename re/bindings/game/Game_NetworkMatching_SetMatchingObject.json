@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkMatching_SetMatchingObject",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14307bb20",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name setMatchingObject (class from the log channel); log channel NETWORK-MATCHING: '%s: matching matchingContext: %s'"
+ },
+ "signature": {
+  "id": "game.network_matching_set_matching_object",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x14307bb20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14307bb20",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkMatching_SetMatchingObject"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14307bb20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14307bb20.c;xref:0x143065371",
+   "notes": "V5597 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

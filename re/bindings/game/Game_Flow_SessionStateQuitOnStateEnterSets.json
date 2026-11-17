@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Flow_SessionStateQuitOnStateEnterSets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d87a30",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-FLOW",
+  "notes": "named from its log messages (channel FLOW): 'SessionStateQuit::onStateEnter() sets SessionExit to SessionExit::eFRONT_END_DISCONNECT because that's what the state does.'"
+ },
+ "signature": {
+  "id": "game.flow_session_state_quit_on_state_enter_sets",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6B B8 16 00 00 00",
+  "match": "0x142d87a30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d87a30",
+  "kind": "func_start",
+  "names": [
+   "Game_Flow_SessionStateQuitOnStateEnterSets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d87a30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d87a30.c",
+   "notes": "V5416 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

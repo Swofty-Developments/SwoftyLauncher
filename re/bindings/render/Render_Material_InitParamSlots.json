@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Material_InitParamSlots",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c06bf0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c06bf0.c;xref:0x143b1b60f,0x143b72f0e",
+  "notes": "Copies param_4 bytes into a GPU-visible buffer in 16-byte chunks with tail handling (memcpy of rest). Callers Game_Renderer_CreateRenderPasses, Game_UIDrawing_InitBuffers, 0x143b71f00. Hypothesis. vp3-verify partial/disagree"
+ },
+ "signature": {
+  "id": "render.buffer_copy_padded16",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 44 89 CB 4C 89 C6",
+  "match": "0x143c06bf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c06bf0",
+  "kind": "func_start",
+  "names": [
+   "Render_Material_InitParamSlots"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c06bf0",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/143c06bf0.c;xref:0x143b1b60f",
+   "notes": "V7848 Render_Material_InitParamSlots: sums entry sizes (stride 0x20) of param_4 entries, allocates 0x28*N+total, builds N 0x28-byte slot records at +0x78 with data memcpy-ed inline; not a 16-byte GPU buffer copy"
+  }
+ ],
+ "proofs": []
+}

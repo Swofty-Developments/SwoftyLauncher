@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SkinnedActor_PlayAudioStream",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401facd0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=SkinnedActor::playAudioStream; log channel ACTOR_AUDIO: 'SkinnedActor::playAudioStream - actor is not visible, disabled or muted [%p] [%s] [%s] PackName [%s] Trigger [%s] Time [%f] object [%d] | SkinnedActor::playAudioStream ERROR m_artwork.m_proxy == NULL '"
+ },
+ "signature": {
+  "id": "game.skinned_actor_play_audio_stream",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 90 00 00 00 C5 F8 29 B4 24 80 00 00 00 C5 F8 28 F3",
+  "match": "0x1401facd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401facd0",
+  "kind": "func_start",
+  "names": [
+   "Game_SkinnedActor_PlayAudioStream"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401facd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401facd0.c",
+   "notes": "V4392 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SessionStateFinaliseResultsSync_OnStateUpdate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d5c9b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_SessionStateFinaliseResultsSync_OnStateUpdate;xref:0x142d5ccbe,0x142d5cdbb",
+  "notes": "cxx=game::SessionStateFinaliseResultsSync::onStateUpdate; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.session_state_finalise_results_sync_on_state_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 40 48 89 D6 48 89 CF 48 8B 81 B0",
+  "match": "0x142d5c9b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d5c9b0",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionStateFinaliseResultsSync_OnStateUpdate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d5c9b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d5c9b0.c",
+   "notes": "V5397 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

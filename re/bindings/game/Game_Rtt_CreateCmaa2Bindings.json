@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Rtt_CreateCmaa2Bindings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c3f6d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c3f6d0.c;xref:0x143d85188",
+  "notes": "Binds CMAA2 resources by name (edges_color_2x2, inoutColorReadonly, workingControlBuffer, workingEdges, ... colorApply2x2, inoutColorWriteonly). Named callers: Game_Rtt_CreateScenes."
+ },
+ "signature": {
+  "id": "game.rtt_create_cmaa2_bindings",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE 48 8B 51 38 48 8B 81",
+  "match": "0x143c3f6d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c3f6d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Rtt_CreateCmaa2Bindings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c3f6d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c3f6d0.c;xref:0x143d85188",
+   "notes": "V7872 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

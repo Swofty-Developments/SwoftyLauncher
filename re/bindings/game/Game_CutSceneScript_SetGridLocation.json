@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutSceneScript_SetGridLocation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140240d40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140240d40.c;xref:0x14023e2f6,0x140340bc5",
+  "notes": "CutSceneScript::setGridLocation(script, slot, ?, layout): slot must be < 32 (else logs FAILED); reads the grid matrix from track markup (global 0x14601f5c8)+0x98 at [layout*0x100 + 0x38 + slot*8] (+0x20..+0x58) and writes it to the script world transform this+0x470..+0x4af with pitch/roll removed (upright). 24 callers (grid cutscenes). Addon: move grid cutscenes to another grid slot or a custom track grid; the source of grid scene placement. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3116)"
+ },
+ "signature": {
+  "id": "game.cut_scene_script_set_grid_location",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 80 01 00 00 C5 78 29 94 24 70",
+  "match": "0x140240d40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140240d40",
+  "kind": "func_start",
+  "names": [
+   "Game_CutSceneScript_SetGridLocation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d13-verify",
+   "kind": "func",
+   "item": "Game_CutSceneScript_SetGridLocation",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140240d40.c;xref:0x140340780",
+   "notes": "V3116 role/offsets/strings confirmed in decomp (INIT pattern calls thunks 140240410/140240700 -> alt copy 147562600 of advanceStartTimeOffset)"
+  }
+ ],
+ "proofs": []
+}

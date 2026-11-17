@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Result_DecodeVehicleResult",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c7c480",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-SESSION-RESULT;decomp:re/decomp/142c7c480.c;xref:0x142ce43db,0x142cee1db",
+  "notes": "named from its log messages (channel SESSION-RESULT): 'Decoding result for vehicle Id %d |   Progress %+1.2f (status %s reason %s) |   Time %+1.3fs |   Fastest Lap %+1.3fs on lap %d'"
+ },
+ "signature": {
+  "id": "session.result_decode_vehicle_result",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 D7 48 89 CE 0F B6 41 18",
+  "match": "0x142c7c480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c7c480",
+  "kind": "func_start",
+  "names": [
+   "Sess_Result_DecodeVehicleResult"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-a",
+   "kind": "func",
+   "item": "Sess_Result_DecodeVehicleResult",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c7c480.c;xref:0x142ce43db",
+   "notes": "V1887 SESSION-RESULT Decoding result string pieces present"
+  }
+ ],
+ "proofs": []
+}

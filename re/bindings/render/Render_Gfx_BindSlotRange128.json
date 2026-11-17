@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_BindSlotRange128",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a02580",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a02580.c;xref:0x143a01137,0x143bcb86f",
+  "notes": "State-cache binder for up to 128 slots (start+count <= 0x80, two dirty qwords ctx+0x1290/+0x1298, flag 0x40 in +0x128b). Hypothesis: SRV slot binder."
+ },
+ "signature": {
+  "id": "render.gfx_bind_slot_range128",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 45 85 C0 0F",
+  "match": "0x143a02580",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a02580",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_BindSlotRange128"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143a02580",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a02580.c;xref:0x143a01137",
+   "notes": "V8513 128-slot binder, dirty qwords +0x1290/+0x1298, flag 0x40 at +0x128b"
+  }
+ ],
+ "proofs": []
+}

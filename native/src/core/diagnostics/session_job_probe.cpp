@@ -1,4 +1,5 @@
 #include "core/diagnostics/crash/blackbox.hpp"
+#include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/diagnostics/session_job_probe_logic.hpp"
 
@@ -14,10 +15,6 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
-
-namespace runtime {
-std::string hook_error(const safetyhook::MidHook::Error &e);
-}
 
 // Entry probe on Game_Vfx_UpdateWheelTyreInstance (session_job_probe_logic.hpp has the hang it is for). A trace-only
 // MidHook at the function's first instruction reads, with guarded reads only, the path its prologue takes to the

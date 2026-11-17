@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_RealDtPhysDt",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14325f3e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): '[LAGSPIKE] real_dt(%.3f secs) phys_dt(%.3f secs).'"
+ },
+ "signature": {
+  "id": "game.network_real_dt_phys_dt",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 C5 F8 29 74 24 30 80 79 18 00",
+  "match": "0x14325f3e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14325f3e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_RealDtPhysDt"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x14325f3e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14325f3e0.c;xref:0x14325dc15",
+   "notes": "V5798 Better name Game_Network_DetectLagSpike: QueryPerformanceCounter based real_dt vs phys_dt check (>0.1 s) that logs [LAGSPIKE] and sets a flag in a 32-entry ring; name just echoes the format args"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14325f3e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14325f3e0.c",
+   "notes": "V7031 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

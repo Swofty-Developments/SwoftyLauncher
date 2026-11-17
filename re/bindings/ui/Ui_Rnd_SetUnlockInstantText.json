@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Rnd_SetUnlockInstantText",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416b5440",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/1416b5440.c;xref:0x1416b6d40;xref:0x141c80e62",
+  "notes": "myteam-g1: UI binding code; lng_rnd_unlock_instant and related text (instant unlock of an upgrade). Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.rnd_set_unlock_instant_text",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 F8 29 B4 24 D0 00 00 00 45 89 CF 4C 89 C5",
+  "match": "0x1416b5440",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416b5440",
+  "kind": "func_start",
+  "names": [
+   "Ui_Rnd_SetUnlockInstantText"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1416b5440",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1416b5440.c;xref:0x1416b6d40;xref:0x141c80e62",
+   "notes": "V9756 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

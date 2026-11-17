@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PodiumBaseCutSceneScript_IsStateUnloaded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403580f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=PodiumBaseCutSceneScript::isStateUnloaded; log channel CUTSCENE_PODIUM: 'PodiumBaseCutSceneScript::isStateUnloaded'"
+ },
+ "signature": {
+  "id": "game.podium_base_cut_scene_script_is_state_unloaded",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 61 B8 4C 01 00 00 48 8D 0D ?? ?? ?? ?? 0F 1F 00 8B 14 81 85 D2 74 4B 81 FA 8C DE 03 08 74 30 83 C0 17 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 4C 01 00 00 75 C3 EB 13 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 4E 48 48 8D 56 38 E8 ?? ?? ?? ?? 83 7E 40 0A",
+  "match": "0x1403580f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403580f0",
+  "kind": "func_start",
+  "names": [
+   "Game_PodiumBaseCutSceneScript_IsStateUnloaded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1403580f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403580f0.c",
+   "notes": "V4498 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

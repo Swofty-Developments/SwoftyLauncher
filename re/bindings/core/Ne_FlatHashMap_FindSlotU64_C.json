@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_FlatHashMap_FindSlotU64_C",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a1f490",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a1f490.c;xref:0x1439dbee7",
+  "notes": "Twin of 0x143a1f070. Caller Render_Gfx2Device_DestroyAndTrackResource_4ac8 (0x1439dbee7)."
+ },
+ "signature": {
+  "id": "core.flat_hash_map_find_slot_u64_c",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 FF 86 C8 4A 00 00 48 89 D9 E8",
+  "match": "0x1439dbee7",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143a1f490",
+  "kind": "func_start",
+  "names": [
+   "Ne_FlatHashMap_FindSlotU64_C"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143a1f490",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a1f490.c;xref:0x1439dbee7",
+   "notes": "V8255 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

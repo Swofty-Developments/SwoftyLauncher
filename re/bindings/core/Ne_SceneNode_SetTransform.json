@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SceneNode_SetTransform",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fa44d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143fa44d0.c;xref:0x142e84960,0x142e86935,0x143fa44c7",
+  "notes": "Copies a 4x4 matrix into node +0x50..+0x88 and propagates to the parent/child (+0xd8, +0x28). 24 callers (tyres, car parts). Hypothesis. (24 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "core.scene_node_set_transform",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 4C 89 C6",
+  "match": "0x143fa44d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fa44d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_SceneNode_SetTransform"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x143fa44d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fa44d0.c;xref:0x143fa476d",
+   "notes": "V6786 Copies 4x4 matrix to +0x50..+0x88 and propagates; hypothesis."
+  }
+ ],
+ "proofs": []
+}

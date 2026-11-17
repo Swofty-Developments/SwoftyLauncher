@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_Heap_AllocUnknownTag",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14396a260",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14396a260.c;xref:0x140187c02",
+  "notes": "Allocates through the default allocator (vtable +0x10) with tag string \"unknown\", alignment 0x10; lazily initialises the allocator singleton. 4599 callers: the generic untagged new."
+ },
+ "signature": {
+  "id": "core.heap_alloc_unknown_tag",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 8D 70 27 49 83 E6 E0 49 89 46 F8 E9 ?? ?? ?? ?? 48 8D",
+  "match": "0x140187c02",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14396a260",
+  "kind": "func_start",
+  "names": [
+   "Ne_Heap_AllocUnknownTag"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x14396a260",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14396a260.c;xref:0x140187c02",
+   "notes": "V8238 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

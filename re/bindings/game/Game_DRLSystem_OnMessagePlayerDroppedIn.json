@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_DRLSystem_OnMessagePlayerDroppedIn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14243b9f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int Game_DRLSystem_OnMessagePlayerDroppedIn(void *drl_system, void *msg)",
+  "evidence": "decomp:re/decomp/14243b9f0.c;decomp:re/decomp/14243b050.c;xref:0x14243b0a7,0x14243c0e1",
+  "notes": "cxx=DRLSystem::onMessagePlayerDroppedIn. Reads u16 msg+0x10 (low byte vehicle, high byte local); logs channel NETWORK DRLSystem::onMessagePlayerDroppedIn(vehicle=%d, local=%d) when enabled; calls 0x14243eec0(self) when the word >= 0x100 (local != 0); returns 0. Subscribed to player_dropped_in by Game_DRLSystem_Initialise (delegate built at 0x14243b0a7) and unsubscribed by Game_DRLSystem_Shutdown (0x14243c0e1). L2 2026-11-16 (engine-re racing-line round): decomp read, claims checked against the disassembly, refs from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1; blind verifier agreed. raised by engine-re with --force 2026-11-16 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.drl_system_on_message_player_dropped_in",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 0F B7 7A 10",
+  "match": "0x14243b9f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14243b9f0",
+  "kind": "func_start",
+  "names": [
+   "Game_DRLSystem_OnMessagePlayerDroppedIn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x14243b9f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14243b9f0.c;xref:0x14243b0a9",
+   "notes": "V5274 name/cxx or log string and body match; body size consistent with name"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "triage-verify",
+   "kind": "func",
+   "item": "0x14243b9f0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own re/tools/decomp read on the KB build;xref:0x14243b0aa,0x14243c0e4",
+   "notes": "V10756 Own read. Reads u16 at msg+0x10 (vehicle = low byte, local = high byte), logs NETWORK DRLSystem::onMessagePlayerDroppedIn(vehicle=%d, local=%d), calls 0x14243eec0 when the word is >= 0x100, returns 0. Referenced by lea at 0x14243b0a7 in Initialise and 0x14243c0e1 in Shutdown (riprel scan)."
+  }
+ ],
+ "proofs": []
+}

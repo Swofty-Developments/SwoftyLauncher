@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FEHomeViewModel_OnUpdate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141bb48a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_FEHomeViewModel_OnUpdate(FEHomeViewModel *vm, float dt)",
+  "evidence": "str:s_cfg_TestingEnableSmokeTest;decomp:re/decomp/141bb48a0.c;xref:0x141bb4d43,0x141bb4d44",
+  "notes": "Vtable slot 0x60 of vt_FeHome_ViewModel 0x145738a60 (pointer 0x145738ac0); the base implementation of this slot is the empty ret 0x140cd4b30. Takes dt in xmm1 and accumulates it into vm+0x3f8, so this is the per-frame update. Updates bool nodes (Vm_NodeSet_Bool 0x140973e20), selected tile via FeTile_List_GetSelectedItem_Thunk 0x14174c560, inputAllow event, splitscreen handling, copies [vm+0x378]+0x178 into [vm+0x2a0], fills user info (Game_Account_FillUserInfoFromToken 0x143fdf7b0). Setting: Testing.EnableSmokeTest via Ne_Get_SettingBool on [vm+0x2a8]+0x18, default 0, kept on stack; only when vm+0x3a9 is set, a state flag +4 is 0, SmokeTest is 0 and vm+0x3a8 is 0 it calls 0x141bb46a0 and fires route to_news (Vm_Fire_Route 0x1442c0e20). So the smoke-test flag suppresses the automatic jump to the news screen. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.fehome_view_model_on_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 20 01 00 00 C5 F8 29 B4 24 10 01 00 00 C5 F8 28 F1",
+  "match": "0x141bb48a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141bb48a0",
+  "kind": "func_start",
+  "names": [
+   "Game_FEHomeViewModel_OnUpdate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-0",
+   "kind": "func",
+   "item": "0x141bb48a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141bb48a0.c;xref:0x145738ac0",
+   "notes": "V9310 FE home view-model per-frame update: accumulates dt (float 2nd arg) at +0x3f8, refreshes selected tile, inputAllow event, splitscreen / to_news routes, Testing.EnableSmokeTest; vtable slot directly after FeHome_Handle_Command; 2 args match"
+  }
+ ],
+ "proofs": []
+}

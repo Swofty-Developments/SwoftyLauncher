@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_CostCap_LoadConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c9cc60",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *costcap, void *bxml_node)",
+  "evidence": "decomp:re/decomp/140c9cc60.c;xref:0x145686410",
+  "notes": "myteam-g1: Loads the cost cap component config from data: base_cost_cap -> costcap+0x308, attributeModifier name (xor-decoded string) -> +0x310, tier table at +0x320 (stride 0x10: percentage_overspend_range, points_penalty, percentage_modifier_to_next_cap, form_breach_level), percentage_of_first_season_to_message -> +0x338, overspending/underspending_progress_through_season_messaging float lists at +0x348/+0x368. Modder hook: base cost cap value lives at CostCapComponent+0x308."
+ },
+ "signature": {
+  "id": "career.cost_cap_load_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 89 D0",
+  "match": "0x140c9cc60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c9cc60",
+  "kind": "func_start",
+  "names": [
+   "Career_CostCap_LoadConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-a",
+   "kind": "func",
+   "item": "0x140c9cc60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c9cc60.c;str:\"base_cost_cap\";str:\"percentage_overspend_range\"",
+   "notes": "V8971 base_cost_cap to +0x308, attributeModifier string XOR-decoded to +0x310, tier vector at +0x320 (stride 0x10, 4 fields in the claimed order), +0x338 first-season percentage, float lists at +0x348 and +0x368. All offsets verified."
+  }
+ ],
+ "proofs": []
+}

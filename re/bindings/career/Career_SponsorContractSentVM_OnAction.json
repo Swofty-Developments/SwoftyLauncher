@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_SponsorContractSentVM_OnAction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141cc2fc0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm, void **cmd",
+  "evidence": "decomp:re/decomp/141cc2fc0.c;xref:0x145742900",
+  "notes": "myteam-g1: Command handler for my_team_sponsor_contract_sent screen (hash 0x2b0357a = confirm/back); one-shot guard at +0x5f8."
+ },
+ "signature": {
+  "id": "career.sponsor_contract_sent_vm_on_action",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D 7A 35 B0 02",
+  "match": "0x141cc2fc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141cc2fc0",
+  "kind": "func_start",
+  "names": [
+   "Career_SponsorContractSentVM_OnAction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141cc2fc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141cc2fc0.c;xref:0x145742900",
+   "notes": "V10002 Command handler with hash 0x2b0357a and one-shot guard at +0x5f8; my_team_sponsor_contract_sent."
+  }
+ ],
+ "proofs": []
+}

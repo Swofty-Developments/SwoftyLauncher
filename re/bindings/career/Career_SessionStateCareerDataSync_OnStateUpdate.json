@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_SessionStateCareerDataSync_OnStateUpdate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d50590",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=SessionStateCareerDataSync::onStateUpdate; log channel CAREER_DATA_SYNC: 'virtual neon::NeFlowStateBase::LinkRoute game::SessionStateCareerDataSync::onStateUpdate(const NEdouble) | %s Disconnected, returning to lobby'"
+ },
+ "signature": {
+  "id": "career.session_state_career_data_sync_on_state_update",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 89 D6 80 B9 C8 0D 00 00 00",
+  "match": "0x142d50590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d50590",
+  "kind": "func_start",
+  "names": [
+   "Career_SessionStateCareerDataSync_OnStateUpdate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d50590",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d50590.c",
+   "notes": "V5392 body, strings and callees match name/description"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x142d50590",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d50590.c;str:\"%s Disconnected, returning to lobby\"",
+   "notes": "V9217 Carries the onStateUpdate cxx string and the disconnect message on CAREER_DATA_SYNC."
+  }
+ ],
+ "proofs": []
+}

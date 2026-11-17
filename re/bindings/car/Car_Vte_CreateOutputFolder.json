@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Vte_CreateOutputFolder",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14473a400",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14473a400.c",
+  "notes": "Builds '<save path>\\vteoutput\\<yymmdd_hhmmss>' (UTF-16), creates it if missing (log channel VTE-OUTPUT), sets +0x120 = 1."
+ },
+ "signature": {
+  "id": "car.vte_create_output_folder",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC D8 02 00 00",
+  "match": "0x14473a400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14473a400",
+  "kind": "func_start",
+  "names": [
+   "Car_Vte_CreateOutputFolder"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x14473a400",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14473a400.c;xref:0x14473a2bf",
+   "notes": "V6627 folder name is wide vteoutput (claim says teoutput) and timestamp format %02d%02d%02d_%02d%02d%02d is fed full year (tm_year+1900) so yyyymmdd_hhmmss not yymmdd; rest ok (+0x120=1, +0x122 path, VTE-OUTPUT logs). Name ok"
+  }
+ ],
+ "proofs": []
+}

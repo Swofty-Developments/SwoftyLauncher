@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_MoverCollision_BuildQueryContext",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144453090",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144453090.c;xref:0x14444308b",
+  "notes": "Early-out if +0x50 set; if global 0x146ca0108==0 reads resource +0x10->+0x20 and builds an identity 4x4 + flags=1. Called from Ne_MoverCollision_CreateResource. Hypothesis."
+ },
+ "signature": {
+  "id": "core.mover_collision_build_query_context",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC C0 01 00 00 C5 F8",
+  "match": "0x144453090",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144453090",
+  "kind": "func_start",
+  "names": [
+   "Ne_MoverCollision_BuildQueryContext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x144453090",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144453090.c;xref:0x14444308b",
+   "notes": "V7677 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

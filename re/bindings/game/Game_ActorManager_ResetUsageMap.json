@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ActorManager_ResetUsageMap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401ee140",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=ActorManager::resetUsageMap; log channel SceneManagerSpawn_Verbose: 'ActorManager::resetUsageMap %u'"
+ },
+ "signature": {
+  "id": "game.actor_manager_reset_usage_map",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 70",
+  "match": "0x1401ee140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401ee140",
+  "kind": "func_start",
+  "names": [
+   "Game_ActorManager_ResetUsageMap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401ee140",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401ee140.c",
+   "notes": "V4386 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

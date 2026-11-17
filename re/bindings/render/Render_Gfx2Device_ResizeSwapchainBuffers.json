@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_ResizeSwapchainBuffers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439c9640",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439c9640.c;xref:0x1439c3937",
+  "notes": "Swapchain resize: flushes the swapchain object at +0xa50 (vcall +0x50), fills a resize description (flags 0x842, values 0x30,3,1, width/height param_4/5, buffer count [param_1+0xa30]) and recreates back buffers; function-static TLS error list. Callers Render_Gfx2Device_Initialise, Game_Window_NeWindowWinResizeBuffersImpl. Hypothesis."
+ },
+ "signature": {
+  "id": "render.gfx2_device_resize_swapchain_buffers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 44 89 CD 44 89 C3 48 89 D7",
+  "match": "0x1439c9640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439c9640",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_ResizeSwapchainBuffers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439c9640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439c9640.c;xref:0x1439c3937",
+   "notes": "V7755 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

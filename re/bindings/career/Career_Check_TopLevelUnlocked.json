@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Check_TopLevelUnlocked",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141981640",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Check_TopLevelUnlocked(void *scene, uint32_t level_id, void *out)",
+  "evidence": "decomp:re/decomp/141981640.c;xref:0x14197f897;xref:0x14233cd51;xref:0x14234dc21",
+  "notes": "myteam-g2: Checks whether a My Team top-level hub (corporate / engineering / personnel) is available: FUN_14197c550, FUN_140b537a0, FUN_140f89640 on the facility state. Called from the Enter_*TopLevel functions and Trigger_FacilityCeremony. Read only."
+ },
+ "signature": {
+  "id": "career.check_top_level_unlocked",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4C 89 C6 89 D3",
+  "match": "0x141981640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141981640",
+  "kind": "func_start",
+  "names": [
+   "Career_Check_TopLevelUnlocked"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141981640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141981640.c;xref:0x14197f897",
+   "notes": "V9867 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

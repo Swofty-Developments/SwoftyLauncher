@@ -31,6 +31,7 @@
 
 namespace {
 
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 
 constexpr const char *MIXIN = "swofty_core.dll (ers mode guard)";
@@ -47,7 +48,7 @@ constexpr int LOG_FIRST = 8;
 
 using Reset = void(void *, uint32_t);
 
-std::atomic<int> fixed{0};
+guards::LogFirst<LOG_FIRST> fixed{"fixes"};
 
 bool reset_ers(uintptr_t ers)
 {
@@ -71,19 +72,16 @@ void mode_load(SwoftyContext *c)
         std::memcpy(reinterpret_cast<void *>(ers + ERS_MODE), &now, sizeof now);
     c->rax = static_cast<uintptr_t>(now);
     c->rdx = ers + static_cast<uintptr_t>(now) * MODE_STRIDE;
-    int n = ++fixed;
-    if (n > LOG_FIRST)
+    auto line = fixed.note();
+    if (!line)
         return;
     uintptr_t car = 0;
     uint8_t id = 0xff;
     if (mem::read(ers + ERS_CAR, car) && car)
         mem::read(car + CAR_VEHICLE_ID, id);
     swofty::log("[ers] car %u: ERS mode %d out of range; set to %d (Medium)%s%s", unsigned(id), mode, now,
-                reset ? "" : " without the ERS reset, which was not callable",
-                n == LOG_FIRST ? " (further fixes are not logged)" : "");
+                reset ? "" : " without the ERS reset, which was not callable", line.tail);
 }
-
-namespace guards = swofty_core::guards;
 
 guards::SiteGuard guard{guards::CoreSetId::ers_mode,
                         {

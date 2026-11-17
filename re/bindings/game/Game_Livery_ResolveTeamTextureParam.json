@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Livery_ResolveTeamTextureParam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141870d10",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141870d10.c;xref:0x14186f899",
+  "notes": "1302-byte helper using Game_Vm_HolderGetCStrOrEmpty and Ne_Resource_Release. Callers 0x14186f899, 0x1418cbd25 (Game_Livery_ApplyTeamTextureSet area). Hypothesis."
+ },
+ "signature": {
+  "id": "game.livery_resolve_team_texture_param",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 40 48 89 D6 48 89 CF 0F B6 81 E4",
+  "match": "0x141870d10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141870d10",
+  "kind": "func_start",
+  "names": [
+   "Game_Livery_ResolveTeamTextureParam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x141870d10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141870d10.c;xref:0x14186f899",
+   "notes": "V8459 uses Game_Vm_HolderGetCStrOrEmpty (hash 0xaddbd7ed) and Ne_Resource_Release; callers 0x14186f899, ApplyTeamTextureSet"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Collision_AddTriangleEdgeCounts",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14464a660",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14464a660.c;xref:0x144649918",
+  "notes": "Adds the 3 edges of a triangle (indices tri+0x14,+0x18,+0x1c) to a unique-edge table (count at +0, entries {a,b,count} stride 12): matching unordered edge increments count else appends. Used by Car_Collision_ComputeConvexHull to find boundary edges (count 1)."
+ },
+ "signature": {
+  "id": "car.collision_add_triangle_edge_counts",
+  "section": ".xtls",
+  "pattern": "56 57 44 8B 42 14 8B 42 18 44 8B 09 45 85 C9 7E",
+  "match": "0x14464a660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14464a660",
+  "kind": "func_start",
+  "names": [
+   "Car_Collision_AddTriangleEdgeCounts"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x14464a660",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14464a660.c;xref:0x144649918",
+   "notes": "V7690 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

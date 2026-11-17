@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_CreateViewAtOffset1A0",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a0e230",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a0e230.c;xref:0x140146023",
+  "notes": "Releases/queues a view stored at +0x1a0 of the object via 1439d6880. Callers Render_Gfx_RegisterNamedResourceViews. vq0-verify partial/disagree"
+ },
+ "signature": {
+  "id": "render.gfx2_device_release_view_at_offset1_a0",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 60 F6 42 38 08 0F 84 ?? ?? ?? ?? 48",
+  "match": "0x143a0e230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a0e230",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_CreateViewAtOffset1A0"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143a0e230",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/143a0e230.c;xref:0x140146023",
+   "notes": "V8529 creates a view resource (CreateResourceObject 1439d6880) from descriptor fields and stores result at +0x1a0 when flag 8; does not release; better name Render_Gfx2Device_CreateViewAtOffset1A0"
+  }
+ ],
+ "proofs": []
+}

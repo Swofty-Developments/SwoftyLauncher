@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetStartLights_HandleStateMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143273310",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143273310.c;xref:0x14ffe127e",
+  "notes": "Handles the start lights message: state msg+0x10 -> +0x34 (names 0x145836708), type msg+0x11 -> +0x35 (0x1458366c8), numLightsOn msg+0x14 -> +0x38, msg+0x18 -> +0x3c, +0x33=1. Addon: online start light sequence. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2771)"
+ },
+ "signature": {
+  "id": "game.net_start_lights_handle_state_message",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 0F B6 42 10 88 41 34 44 0F B6 42 11",
+  "match": "0x143273310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143273310",
+  "kind": "func_start",
+  "names": [
+   "Game_NetStartLights_HandleStateMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_NetStartLights_HandleStateMessage",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143273310.c;xref:0x143273310",
+   "notes": "V2771 +0x34/+0x35/+0x38/+0x3c from msg+0x10/0x11/0x14/0x18, +0x33=1, name tables 0x145836708/0x1458366c8 confirmed"
+  }
+ ],
+ "proofs": []
+}

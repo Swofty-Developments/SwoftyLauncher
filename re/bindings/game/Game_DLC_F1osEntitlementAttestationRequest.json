@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_DLC_F1osEntitlementAttestationRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140791120",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-DLC",
+  "notes": "named from its log messages (channel DLC): 'F1OS entitlement attestation request finished.'"
+ },
+ "signature": {
+  "id": "game.dlc_f1os_entitlement_attestation_request",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 4D 89 CF",
+  "match": "0x140791120",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140791120",
+  "kind": "func_start",
+  "names": [
+   "Game_DLC_F1osEntitlementAttestationRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x140791120",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140791120.c",
+   "notes": "V4288 this is the completion callback (param int result, token buffer), logs finished/succeeded/pending; better Game_DLC_F1osEntitlementAttestation_OnRequestFinished"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x140791120",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140791120.c;xref:0x140791fe8",
+   "notes": "V7152 name fits; finding facts hold; 1 direct calls"
+  }
+ ],
+ "proofs": []
+}

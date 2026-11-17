@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractOutro_Destruct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437b4060",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void **Career_ContractOutro_Destruct(void **self, int free_flag)",
+  "evidence": "decomp:re/decomp/1437b4060.c;xref:0x14585a538",
+  "notes": "myteam-g1: Scalar-deleting destructor of the contract outro state (vtable 14585a530): unregisters handler 1436c3230 if flag +0xca2 set, optionally frees."
+ },
+ "signature": {
+  "id": "career.contract_outro_destruct",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 80 B9 A2 0C 00 00 00",
+  "match": "0x1437b4060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437b4060",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractOutro_Destruct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x1437b4060",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437b4060.c;xref:0x14585a538",
+   "notes": "V10318 Destructor: sets vtable 14585a530, unregisters handler 1436c3230 if +0xca2, frees when flag set."
+  }
+ ],
+ "proofs": []
+}

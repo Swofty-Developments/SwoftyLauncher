@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "FeTile_Check_EntrantListUsable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142428790",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "proto": "uint64_t FeTile_Check_EntrantListUsable(void *tile_ctx, const char *label)",
+  "evidence": "decomp:re/decomp/142428790.c;xref:0x1417384ce;xref:0x14077b40c",
+  "notes": "Called by the entrant-list tile item populate 0x1417382b0 at 0x1417384c9 with the list label (the populate's name field, NeStr chars at +9). Gdb_Find_RowByLabel on entrants.entrant_lists, stat_id through Gdb_Get_FieldInt, then the list record at slot stat_id of the entrant-list slot array ([[ctx+0x228]+0x560]..+0x568) and a walk of its 0x88-byte entrants; returns 1 when every entrant is available, 0 otherwise or when the list has no slot. A label with no row makes Gdb_Get_FieldInt return its miss pointer, whose first qword 0x08000f000800000e is non-canonical: the load of [rax+8] at 0x14242883a faults (FeTile_Build_List+0x70df).  Second caller: the analytics session-info fill 0x14077a3d0 calls it with g_FeTile_Ctx and the label f1_2026 and stores the byte in the session info at +0xe4, the game's own record of whether the player has the F1 2026 content. Read-only (no popup or selection, unlike the copies 0x1424283d0 and 0x1430643b0 that show online_services_entitlements for an unentitled entrant). Per entrant: Sess_ResolveEntityHandle(ctx+0x228, ctx+0x238, entrant+0x5c); a missing handle is skipped; the entity's vt+0x40 result with the low-bit-cleared value 0 (state 0 or 2) makes the list unusable, as does a child state (entity+0xc8 vt+0x40) other than 1 while ctx+0x32a is 0.  | V8722 correction: the per-entrant resolver is FeTile_Find_UnlockItemForEntrant_Thunk 0x14078d780 (entity via Sess_ResolveEntityHandle, then the item in the unlock manager ctx+0x238); the item's vt+0x40 is Game_Get_VehicleLockState (0x142ec3790) or the DLC base Game_Get_UnlockableOwnedState; state 0 and 2 fail the list, 1 and 3 pass, and no pending state was found so locked and not loaded are not told apart"
+ },
+ "signature": {
+  "id": "fe_tiles.check_entrant_list_usable",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 30 04 00 00 49 89 D0",
+  "match": "0x142428790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142428790",
+  "kind": "func_start",
+  "names": [
+   "FeTile_Check_EntrantListUsable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "fe-tile-guard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/fe_tile_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-02",
+   "verifier": "verify-fe-tile",
+   "kind": "func",
+   "item": "0x142428790",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/vfe/142428790.c;decomp:re/decomp/vfe/1445a2cf0.c;xref:0x1417384c9,0x1417384ce",
+   "notes": "V8624 own decomp+disasm: label arrives in rdx (caller 1417384c9 passes nameNeStr+9), moved to r8 at 14242879e as the Gdb_Find_RowByLabel arg; Gdb_Get_FieldInt (own decomp 1445a2cf0) returns on miss rcx+idx*16+8, a pointer into the table not a null; mov rax,[rax] at 142428832 then test rax,rax passes a garbage value and movzx r14d,[rax+8] at 14242883a faults when it is non-canonical. Return 0 path = 1424288d7 xor edi,edi; mov eax,edi. Caveat: the exact miss qword 0x08000f000800000e is runtime table data I did not re-derive statically; the guard keys on non-canonical, not the constant, and does not catch a canonical-but-unmapped value."
+  },
+  {
+   "date": "2026-11-07",
+   "verifier": "std-ent-verify",
+   "kind": "func",
+   "item": "0x142428790",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142428790.c;decomp:re/decomp/14078d780.c;decomp:re/decomp/142ec3790.c;decomp:re/decomp/142ec37d0.c;xref:0x14077b40c,0x1417384ce;sig:fe_tiles.check_entrant_list_usable",
+   "notes": "V8722 Read-only: Gdb_Find_RowByLabel plus Gdb_Get_FieldInt, a walk of the list slot and per entrant the thunk 0x14078d780 and vt+0x40 calls; the two vt+0x40 implementations decompiled (0x142ec3790, 0x142ec37d0) only read maps and the unlock state array. No popup, selection or write (the popup copy is 0x1424283d0). Returns 1 iff no entrant's item has state 0 or 2 (state 1 and 3=absent pass) and no unresolved entity or item (skipped, so an empty registry reads as owned). CORRECTION to the notes: the resolver is not Sess_ResolveEntityHandle(ctx+0x228,ctx+0x238,..) but thunk 0x14078d780 -> .data1 0x148513e80, which calls Sess_ResolveEntityHandle(entities,&handle) and then looks the item up in the unlock manager ctx+0x238 (null-dereferences it when ctx+0x238 is 0). Safe on the flow thread once ctx+0x228 and ctx+0x238 are non-null; a label with no row faults, f1_2026 has a row."
+  }
+ ],
+ "proofs": []
+}

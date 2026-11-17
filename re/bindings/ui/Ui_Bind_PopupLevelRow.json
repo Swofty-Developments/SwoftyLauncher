@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Bind_PopupLevelRow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422dfd10",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t Bind(void *row, char flag, void *node, uint8_t kind, uint32_t value)",
+  "evidence": "decomp:re/decomp/1422dfd10.c;xref:0x1422e61a2;xref:0x1422e7e5a",
+  "notes": "myteam-g2: Fills a popup row node: type check on row+0x28 (class 0x146129dc0), sets bool/string nodes (Vm_NodeSet_Bool/String, Vm_Holder_SetCStr) and formats a 'LEVE...' (level) string with Ne_Format_String. UI binding only."
+ },
+ "signature": {
+  "id": "ui.bind_popup_level_row",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 18 04 00 00 44 89 CB",
+  "match": "0x1422dfd10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422dfd10",
+  "kind": "func_start",
+  "names": [
+   "Ui_Bind_PopupLevelRow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422dfd10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422dfd10.c;xref:0x1422e61a2",
+   "notes": "V10097 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

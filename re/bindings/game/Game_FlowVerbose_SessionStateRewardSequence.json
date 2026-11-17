@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FlowVerbose_SessionStateRewardSequence",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d8b5f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-FLOW_VERBOSE",
+  "notes": "named from its log messages (channel FLOW_VERBOSE): 'SessionStateRewardSequence::SessionStateRewardSequence isFullyFadedIn'"
+ },
+ "signature": {
+  "id": "game.flow_verbose_session_state_reward_sequence",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 48 89 CE 66 C7 81 B2 0D 00 00 00 00",
+  "match": "0x142d8b5f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d8b5f0",
+  "kind": "func_start",
+  "names": [
+   "Game_FlowVerbose_SessionStateRewardSequence"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d8b5f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d8b5f0.c",
+   "notes": "V5417 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

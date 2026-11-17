@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Misconduct_RecordContact",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435bb400",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1435bb400.c;xref:0x1435bb1b5,0x1435bd45f",
+  "notes": "(mc, carA, carB, kind, flag) Records a contact/incident row (count +0x48++) for the misconduct table (201 lines). Called 4x from Sess_Misconduct_CheckEnvironmentContact. Hypothesis."
+ },
+ "signature": {
+  "id": "session.misconduct_record_contact",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F9 29 74 24 40 44 89",
+  "match": "0x1435bb400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435bb400",
+  "kind": "func_start",
+  "names": [
+   "Sess_Misconduct_RecordContact"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x1435bb400",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1435bb400.c;xref:0x1435bb1b5",
+   "notes": "V3813 Appends a contact row (count +0x48++) as claimed, but only one call site is inside Sess_Misconduct_CheckEnvironmentContact (0x1435bb1b5); the other 3 sites are in other functions (0x1435bd45f, 0x1435be34e, 0x1435bed74)."
+  }
+ ],
+ "proofs": []
+}

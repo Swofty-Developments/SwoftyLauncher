@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationDecals_LoadConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14141efe0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14141efe0.c;xref:0x1456e3b70",
+  "notes": "Decal system load (vtable around 0x1456e3b50 slot +0x20): reads GDB projection-area rows by field name (compatible_vehicle_group, stat_id, rendering_model_part_index, name_loc_tag, max_slots_count, reserved_slots_count, mapping_mode, mirrored side, decal_origin_point, corners, xz/y scales, camera orbit/zoom limits) and creates proxies (Ne_DecalsProjectionAreaProxy_Ctor). Addon: decal areas are data-driven via GDB. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3051)"
+ },
+ "signature": {
+  "id": "game.customisation_decals_load_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 18 10 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 78 29",
+  "match": "0x14141efe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14141efe0",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationDecals_LoadConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Game_CustomisationDecals_LoadConfig",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14141efe0.c;xref:0x1456e3b70",
+   "notes": "V3051 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

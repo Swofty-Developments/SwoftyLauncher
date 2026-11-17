@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/guards/skips.hpp"
+
 #include <cstddef>
 #include <cstdint>
 
@@ -20,7 +22,7 @@ inline bool registry_full(uint32_t count)
     return count >= REGISTRY_SLOTS;
 }
 
-enum class Log : uint8_t { none, line, last };
+using Log = swofty_core::guards::Say;
 
 struct Seen {
     uint32_t keys[KEYS] = {};
@@ -36,7 +38,7 @@ struct Seen {
             keys[count++] = key;
         if (logged >= LOG_FIRST)
             return Log::none;
-        return ++logged == LOG_FIRST ? Log::last : Log::line;
+        return swofty_core::guards::say(++logged, LOG_FIRST);
     }
 };
 

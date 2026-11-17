@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqUpgradesHub_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14197c2f0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (int64_t *vm, int64_t ctx)",
+  "evidence": "decomp:re/decomp/14197c2f0.c;xref:0x14571e280;xref:0x14571e370;xref:0x14571e420",
+  "notes": "myteam-g1: Initialises the Upgrades hub tile: lng_transaction_facility_upgrade, lng_my_team_career_upgrades_description, facility_primary_colour."
+ },
+ "signature": {
+  "id": "vm.team_hq_upgrades_hub_init",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 78 48 89 D7 48 89 CE E8",
+  "match": "0x14197c2f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14197c2f0",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqUpgradesHub_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x14197c2f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14197c2f0.c;xref:0x14571e280",
+   "notes": "V9856 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

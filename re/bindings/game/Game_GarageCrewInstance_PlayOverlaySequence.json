@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GarageCrewInstance_PlayOverlaySequence",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403848a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403848a0.c;xref:0x14038e85f,0x14038eae8",
+  "notes": "GarageCrewInstance::playOverlaySequence: plays a sequence on the BASE or OVERLAY layer of a crew member (log 'PLAY OVERLAY SEQUENCE [%d] %s'), WARN 'Failed to find sequence %s'; calls Game_GarageCrewInstance_PlaySequence. Callers 0x14038e4f0, 0x14038e960. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2819)"
+ },
+ "signature": {
+  "id": "game.garage_crew_instance_play_overlay_sequence",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 30 01 00 00 44 89 CF",
+  "match": "0x1403848a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403848a0",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageCrewInstance_PlayOverlaySequence"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Game_GarageCrewInstance_PlayOverlaySequence",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403848a0.c;xref:0x1403848a0",
+   "notes": "V2819 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

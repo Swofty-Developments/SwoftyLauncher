@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_HairModifier_SetVisible",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401bc730",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name setVisible (class from the log channel); log channel HairModifier: 'setVisible %s'"
+ },
+ "signature": {
+  "id": "game.hair_modifier_set_visible",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 38 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 72",
+  "match": "0x1401bc730",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401bc730",
+  "kind": "func_start",
+  "names": [
+   "Game_HairModifier_SetVisible"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401bc730",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401bc730.c",
+   "notes": "V4344 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Get_VirtualHelpPromptVisible",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419ce710",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "bool (void)",
+  "evidence": "decomp:re/decomp/1419ce710.c;xref:0x141c46942;xref:0x141c5aba2;xref:0x141c61192",
+  "notes": "myteam-g2: Builds the path \"#persistent_flow.persistent.virtual_help_prompt.\" plus a suffix in a 0x200 char buffer, resolves the registry node with Vm_Resolve_RegistryNode and returns its bool value. Used by the TeamHQ My Team VM to know whether a help prompt is shown."
+ },
+ "signature": {
+  "id": "vm.get_virtual_help_prompt_visible",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 38 02 00 00 48 C7 44 24 28 00 02 00 00",
+  "match": "0x1419ce710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419ce710",
+  "kind": "func_start",
+  "names": [
+   "Vm_Get_VirtualHelpPromptVisible"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1419ce710",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419ce710.c;xref:0x141c46942",
+   "notes": "V9909 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

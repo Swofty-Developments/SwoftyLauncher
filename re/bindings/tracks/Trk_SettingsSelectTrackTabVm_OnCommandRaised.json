@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Trk_SettingsSelectTrackTabVm_OnCommandRaised",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141de93b0",
+  "level": "L2",
+  "subsystem": "tracks",
+  "proto": "char *Trk_SettingsSelectTrackTabVm_OnCommandRaised(void *vm, uint32_t **cmd)",
+  "evidence": "decomp:re/decomp/141de93b0.c;xref:0x14574f480,0x141dead57;kb:subsystems/tracks.md#select",
+  "notes": "slot 10 of vt_Trk_SettingsSelectTrackTabVm (0x14574f480) and target of the adjustor thunk 0x141dead50 (add rcx,-0x268; jmp at 0x141dead57) in the +0x268 base vtable. Commands insert_track_above 0x56f9ad5a (round_number from the selected row, 0x141dea540), insert_track_at_end 0x376c04d8, back_pressed 0x493fe92b (when vm+0xb28 and its championship changed: 0x141de8cc0, 0x1430a34b0, Game_ChampionshipStoreManager_OnSaveRequest; route settings_home), 0x7449c46b (close_and_go_back / exit); body strings stat_id, settings_home, close_and_go_back, exit; selected_track_changed 0xdcd54bcb is also compared. tracks_deserialised / track_data.track_list live in the tail-jmp target 0x141de65e0 (jmp 0x141de9da4) and race_style_selected plus the OPTIONS-UI log 'Exiting view or updating filter level, command [%s] is ignored' in the tail-jmp target 0x141da11d0 (per V10385). The in-championship settings track tab. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "tracks.settings_select_track_tab_vm_on_command_raised",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 C5 F8 29 B4 24 30 01 00 00 48 89 D7 48 89 CE 48 8B 02",
+  "match": "0x141de93b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141de93b0",
+  "kind": "func_start",
+  "names": [
+   "Trk_SettingsSelectTrackTabVm_OnCommandRaised"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "trk-t5",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x141de93b0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x141de93b0-0x141dea532;xref:0x14574f480,0x141dead57",
+   "notes": "V10385 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Refs: abs64 0x14574f480 (slot 10 of the vtable at 0x14574f430) and jmp 0x141dead57 from 0x141dead50 (add rcx,-0x268). djb2: insert_track_above 0x56f9ad5a, insert_track_at_end 0x376c04d8, back_pressed 0x493fe92b, selected_track_changed 0xdcd54bcb, 0x7449c46b; vm+0xb28 checks, 0x141de8cc0, 0x1430a34b0, 0x143038620 (Game_ChampionshipStoreManager_OnSaveRequest), settings_home, close_and_go_back, exit, stat_id. tracks_deserialised / track_data.track_list strings live in tail-jmp target 0x141de65e0 (0x141de9da4); race_style_selected and the OPTIONS-UI log in tail-jmp target 0x141da11d0, so they belong to the handler chain, not to this body itself."
+  }
+ ],
+ "proofs": []
+}

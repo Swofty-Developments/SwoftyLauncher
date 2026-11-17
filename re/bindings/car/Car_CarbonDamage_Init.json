@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_CarbonDamage_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f1a700",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-CARBON_DAMAGE",
+  "notes": "Log channel CARBON_DAMAGE: 'Number of drivers = %d' | 'Renderer.Gfx.CarDamage.DamageMask.width = %d' | 'Renderer.Gfx.CarDamage.DamageMask.height = %d' | 'Renderer.Gfx.CarDamage.maxCollisionsPerVehicle = %d'"
+ },
+ "signature": {
+  "id": "car.carbon_damage_init",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 4C 89 C7 48 89 D3 48 89 CE 48 8B 02",
+  "match": "0x142f1a700",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f1a700",
+  "kind": "func_start",
+  "names": [
+   "Car_CarbonDamage_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f1a700",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f1a700.c",
+   "notes": "V5593 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

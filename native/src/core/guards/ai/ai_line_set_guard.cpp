@@ -48,8 +48,9 @@ constexpr const char *MIXIN = "swofty_core.dll (ai line set guard)";
 constexpr const char *PUSHED = "site_Ai_BuildSystem_RecordPushed";
 
 namespace al = runtime::ai_line_set;
+namespace guards = swofty_core::guards;
 
-std::atomic<int> logged{0};
+guards::LogFirst<al::LOG_FIRST> logged{"fixes"};
 
 bool read_memory(uint64_t address, void *out, size_t n, void *)
 {
@@ -72,16 +73,13 @@ void record_pushed(SwoftyContext *c)
     al::Repair r = al::repair(read_memory, write_memory, nullptr, c->rbx);
     if (!r.ran || (r.filled == 0 && r.missing == 0 && r.backfilled == 0))
         return;
-    int n = ++logged;
-    if (n > al::LOG_FIRST)
+    auto line = logged.note();
+    if (!line)
         return;
     swofty::log("[ai] vehicle slot %u has no AI line or tables of its own (its name is in none of the AI maps); %u of its "
                 "pointers borrow another car's, %u have no donor, %u earlier cars backfilled; brake line settings %s%s",
-                r.index, r.filled, r.missing, r.backfilled, r.brake_settings ? "borrowed" : "kept",
-                n == al::LOG_FIRST ? " (further fixes are not logged)" : "");
+                r.index, r.filled, r.missing, r.backfilled, r.brake_settings ? "borrowed" : "kept", line.tail);
 }
-
-namespace guards = swofty_core::guards;
 
 guards::SiteGuard guard{guards::CoreSetId::ai_line_set,
                         {

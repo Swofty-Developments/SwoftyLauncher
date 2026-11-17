@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_ResizeIntrusivePtrs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a35eb0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a35eb0.c;xref:0x143a35dc7",
+  "notes": "vector<intrusive_ptr<T>>::resize(n) with allocator vcalls (+0x18 alloc, +0x38 free): shrink releases (atomic dec of refcount at obj+8, vcall +8 destroy on zero); grow reallocates 1.5x, copies with atomic add-ref, zero-fills the tail. Sole caller Game_MorphModifier_BuildTargets."
+ },
+ "signature": {
+  "id": "core.vector_resize_intrusive_ptrs",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 49 89 D6 48 89 CE 48 8B 41",
+  "match": "0x143a35eb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a35eb0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector_ResizeIntrusivePtrs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143a35eb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a35eb0.c;xref:0x143a35dc7",
+   "notes": "V8541 vector<intrusive_ptr>::resize: shrink atomic dec obj+8 and vcall+8, grow 1.5x; sole caller BuildTargets"
+  }
+ ],
+ "proofs": []
+}

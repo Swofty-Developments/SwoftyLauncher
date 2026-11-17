@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerInvitationalFlow_GameModeSystemGameModeDetailsSet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407d18b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-CAREER_INVITATIONAL_FLOW",
+  "notes": "named from its log messages (channel CAREER_INVITATIONAL_FLOW): 'GameModeSystem: Game Mode details set to: %hs'"
+ },
+ "signature": {
+  "id": "game.career_invitational_flow_game_mode_system_game_mode_details_set",
+  "section": ".xtls",
+  "pattern": "48 81 EC B8 00 00 00 4C 8B 42 20 48 8D 44 24 38",
+  "match": "0x1407d18b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407d18b0",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerInvitationalFlow_GameModeSystemGameModeDetailsSet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1407d18b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407d18b0.c",
+   "notes": "V4307 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Despawn_UpgradeList_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423e1a30",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_Despawn_UpgradeList_B(void * self,void * a2)",
+  "evidence": "decomp:re/decomp/1423e1a30.c;xref:0x145786b58",
+  "notes": "myteam-g1: Despawns despawn_upgrade_list for a given parent (param_2)."
+ },
+ "signature": {
+  "id": "career.despawn_upgrade_list_b",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 58 83 7A 10 50 0F 85 ?? ?? ?? ?? 48 89 D7 48 89 CE 48 8B 42 20 48 85 C0 74 29",
+  "match": "0x1423e1a30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423e1a30",
+  "kind": "func_start",
+  "names": [
+   "Career_Despawn_UpgradeList_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423e1a30",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1423e1a30.c;str:\"despawn_upgrade_list\"",
+   "notes": "V10190 Also rebuilds the list (calls Build_FacilityUpgradeList), starts start_magnet_workaround_timer and signals the stage scene; not only a despawn."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetSafetyCarCinematic_SendStart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14362a600",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14362a600.c;xref:0x145852ac0",
+  "notes": "Sends stored SC start records {0x9a} (vehicle mask & param3) to a connection. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2783)"
+ },
+ "signature": {
+  "id": "game.net_safety_car_cinematic_send_start",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 88 54 24 33",
+  "match": "0x14362a600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14362a600",
+  "kind": "func_start",
+  "names": [
+   "Game_NetSafetyCarCinematic_SendStart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_NetSafetyCarCinematic_SendStart",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14362a600.c;xref:0x14362a600",
+   "notes": "V2783 msg {0x9a} host gated confirmed"
+  }
+ ],
+ "proofs": []
+}

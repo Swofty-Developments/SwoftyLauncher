@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Player_DestroyCustomInputProvider",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144114190",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/144114190.c;xref:0x142a616e9,0x142a617c9,0x142a6dc6a",
+  "notes": "cxx=NePlayer::destroyCustomInputProvider; log channel INPUT: 'NePlayer::destroyCustomInputProvider - id=%d name=\"%s\" pointer=%p'"
+ },
+ "signature": {
+  "id": "core.player_destroy_custom_input_provider",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 85 D2",
+  "match": "0x144114190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144114190",
+  "kind": "func_start",
+  "names": [
+   "Ne_Player_DestroyCustomInputProvider"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-b",
+   "kind": "func",
+   "item": "Ne_Player_DestroyCustomInputProvider",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144114190.c;xref:0x144114190",
+   "notes": "V2117 Logs, DisableCustomControls if enabled, removes from vector +0x1a8"
+  }
+ ],
+ "proofs": []
+}

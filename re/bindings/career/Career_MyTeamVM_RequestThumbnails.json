@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamVM_RequestThumbnails",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142269250",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142269250.c;xref:0x145777078",
+  "notes": "Slot 13 of My Team VM vt 0x145777010 (sibling of MyTeamCorporateSetupVM): only sets ThumbnailSystem reason 0 on [this+0x2ae0]+0x20 (logs rejection if disabled). Minimal example of the request pattern. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3231)"
+ },
+ "signature": {
+  "id": "career.my_team_v_m_request_thumbnails",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 8B 81 E0 2A 00 00 48 8B 70 20",
+  "match": "0x142269250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142269250",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamVM_RequestThumbnails"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Career_MyTeamVM_RequestThumbnails",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/42269250.c;xref:None",
+   "notes": "V3231 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

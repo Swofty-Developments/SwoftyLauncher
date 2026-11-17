@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Write_AwardedUpgradeReward",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1429bb640",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int Career_Write_AwardedUpgradeReward(void * self,int64_t *a2,void * a3)",
+  "evidence": "decomp:re/decomp/1429bb640.c;xref:0x1457b51f0;xref:0x1457b52d0;xref:0x1457b5350",
+  "notes": "myteam-g1: Writes awarded_upgrade and upgrade_type (reward record, writer)."
+ },
+ "signature": {
+  "id": "career.write_awarded_upgrade_reward",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4C 89 C6 48 89 D3 48 89 CF 4C 8B 32",
+  "match": "0x1429bb640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1429bb640",
+  "kind": "func_start",
+  "names": [
+   "Career_Write_AwardedUpgradeReward"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1429bb640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1429bb640.c",
+   "notes": "V10242 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

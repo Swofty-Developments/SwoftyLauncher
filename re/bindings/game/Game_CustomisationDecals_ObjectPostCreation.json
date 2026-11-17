@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationDecals_ObjectPostCreation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f3dc90",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name objectPostCreation (class from the log channel); log channel CUSTOMISATION_DECALS: 'objectPostCreation for vehicle %d, template %s, instance %s'"
+ },
+ "signature": {
+  "id": "game.customisation_decals_object_post_creation",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 4D 85 C0",
+  "match": "0x142f3dc90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f3dc90",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationDecals_ObjectPostCreation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f3dc90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f3dc90.c;xref:0x142f3c1ff",
+   "notes": "V5620 Wrong channel/prefix: logs are VEHICLE_SPAWNING_SYSTEM (CUSTOMISATION_DECALS only one inner log); it is the spawning post-creation callback attaching decal generation service; better Game_VehicleSpawning_ObjectPostCreation"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142f3dc90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f3dc90.c;xref:0x142f3c1ff",
+   "notes": "V6915 241 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

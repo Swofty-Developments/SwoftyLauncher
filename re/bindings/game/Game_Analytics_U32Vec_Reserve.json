@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_U32Vec_Reserve",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1408f0130",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1408f0130.c;xref:0x14074f475,0x14074f52f",
+  "notes": "vector of u32 grow/reserve (max 0x3fff...; allocations over 0x3ff elements get 0x27-byte header alignment); string unknown. Called by PlayerFinishedDecalEditorSession analytics."
+ },
+ "signature": {
+  "id": "game.analytics_u32_vec_reserve",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 48 89 D7 48 89 CE 48 B9 F7",
+  "match": "0x1408f0130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1408f0130",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_U32Vec_Reserve"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x1408f0130",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1408f0130.c;xref:0x14074f475",
+   "notes": "V8014 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

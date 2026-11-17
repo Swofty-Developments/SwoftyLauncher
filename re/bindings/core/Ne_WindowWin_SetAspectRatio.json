@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_WindowWin_SetAspectRatio",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439fc830",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/1439fc830.c;xref:0x1439f978f",
+  "notes": "cxx=NeWindowWin::setAspectRatio; log channel WINDOW: 'NeWindowWin::setAspectRatio: auto=%d width=%d height=%d'"
+ },
+ "signature": {
+  "id": "core.window_win_set_aspect_ratio",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 44 89 CE 44 89 C7 89 D3 49 89 CE",
+  "match": "0x1439fc830",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439fc830",
+  "kind": "func_start",
+  "names": [
+   "Ne_WindowWin_SetAspectRatio"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_WindowWin_SetAspectRatio",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439fc830.c;xref:0x1439f978f",
+   "notes": "V2009 log strings and role confirmed in decomp"
+  }
+ ],
+ "proofs": []
+}

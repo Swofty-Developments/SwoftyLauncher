@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EgoErpLoader_ReadNext",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a69720",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name readNext (class from the log channel); log channel EGO_ERP_LOADER: 'readNext - readNext \"%s\" at offset = %I64u'"
+ },
+ "signature": {
+  "id": "game.ego_erp_loader_read_next",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 78 01 00 00 4C 89 C3 48 89 D6",
+  "match": "0x143a69720",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a69720",
+  "kind": "func_start",
+  "names": [
+   "Game_EgoErpLoader_ReadNext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143a69720",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a69720.c;xref:0x143a67fdd",
+   "notes": "V6429 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

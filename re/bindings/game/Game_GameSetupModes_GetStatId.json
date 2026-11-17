@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSetupModes_GetStatId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a0e4d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a0e4d0.c;xref:0x14020d882,0x1406a7028",
+  "notes": "Gdb lookup in table game_setup.game_setup_modes for row label param_1; returns byte field stat_id. Callers: Career_DriverMarketXml_FindDriverStatId, Sess_Apply_ContentAvailability."
+ },
+ "signature": {
+  "id": "game.game_setup_modes_get_stat_id",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 38 04 00 00 49 89 C8 C7 84 24 28 02 00 00 FF FF FF FF C6 84 24 2C 02 00 00 01 C5 F8 28 05 ?? ?? ?? ?? C5 F8 11 44 24 28 48 B8 73",
+  "match": "0x142a0e4d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a0e4d0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSetupModes_GetStatId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142a0e4d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a0e4d0.c;xref:0x141153a6a,0x1413e679b",
+   "notes": "V3407 inline game_setup.game_setup_modes table, stat_id byte (0 default); callers Career_DriverMarketXml_FindDriverStatId and Sess_Apply_ContentAvailability"
+  }
+ ],
+ "proofs": []
+}

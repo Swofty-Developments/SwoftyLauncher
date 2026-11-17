@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Pass_RecreateOutputBuffers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c20210",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c20210.c;xref:0x14014ffb5",
+  "notes": "Large (322 lines) recreate: allocates a 0x90-byte zeroed descriptor, releases old buffers (QueueDeferredRelease), builds names with the string pool and creates new buffers with Render_Gfx2Buffer_Construct (CS +0x2668, set +0x4078). Callers Game_Read_RendererGfxConfig, Game_Renderer_CreateRenderPasses (many). Hypothesis on resource roles."
+ },
+ "signature": {
+  "id": "render.pass_recreate_output_buffers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 4C 89 C6 48 89 D7 48 89 CB 48 8B 02 BA",
+  "match": "0x143c20210",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c20210",
+  "kind": "func_start",
+  "names": [
+   "Render_Pass_RecreateOutputBuffers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c20210",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c20210.c;xref:0x14014ffb5",
+   "notes": "V7859 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

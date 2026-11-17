@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_SetupDataConfig_CopyConstruct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ce3d50",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void* (void *dst, void *src)",
+  "evidence": "decomp:re/decomp/140ce3d50.c;xref:0x140c30792;xref:0x140c336c8;xref:0x140c336ee",
+  "notes": "myteam-g2: Copy-constructor of the career setup data config object: copies header words, then duplicates the array of 0x28-byte ref-counted string entries (src+0x18..0x20) into dst using the allocator at +0x10. Used when the My Team setup config is read (Career_Read_CareerSetupDataConfig) and cached by the setup VMs."
+ },
+ "signature": {
+  "id": "career.setup_data_config_copy_construct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 D7 48 89 CE 48 8B 02 48 8B 4A 06",
+  "match": "0x140ce3d50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ce3d50",
+  "kind": "func_start",
+  "names": [
+   "Career_SetupDataConfig_CopyConstruct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140ce3d50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ce3d50.c",
+   "notes": "V9530 Copies header, allocates array of 0x28-byte elements from src+0x18..+0x20 with allocator at +0x10, copies string members."
+  }
+ ],
+ "proofs": []
+}

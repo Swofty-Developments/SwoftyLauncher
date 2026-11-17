@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_CareerEmail_BindTemplates",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1418b4190",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void **vm, int64_t a, int64_t b, uint32_t c)",
+  "evidence": "decomp:re/decomp/1418b4190.c;xref:0x1418b38ac",
+  "notes": "myteam-g1: Large laptop e-mail view-model binder: development_comparison, development_update, performance_comparison, weather_forecast, weekend_preview templates plus rewarded_rnd_points/remaining_rnd_points and resource_points_icon. Keyword cost_cap only appears via the shared string pool; not cost cap logic."
+ },
+ "signature": {
+  "id": "vm.career_email_bind_templates",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 04 00 00 C5 F8 29 B4 24 E0 04 00 00 41 83 F9 10",
+  "match": "0x1418b4190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418b4190",
+  "kind": "func_start",
+  "names": [
+   "Vm_CareerEmail_BindTemplates"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1418b4190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1418b4190.c;xref:0x1418b38ac",
+   "notes": "V9835 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

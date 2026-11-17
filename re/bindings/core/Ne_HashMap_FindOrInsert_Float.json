@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_FindOrInsert_Float",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a31d30",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a31d30.c;xref:0x142433e8f",
+  "notes": "unordered_map-style find/insert with float max load factor (param_1) and 'unordered_map/set too long' / 'invalid hash bucket count' checks (Ne_Std_ThrowStdException). Callers 0x142433b80, 0x142a46250, 0x1439e60b0, 0x143a04490."
+ },
+ "signature": {
+  "id": "core.hash_map_find_or_insert_float",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 0D ?? ?? ?? ?? 8B 81 48 01 00 00 4C 89",
+  "match": "0x142433e8f",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143a31d30",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_FindOrInsert_Float"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143a31d30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a31d30.c;xref:0x142433e8f",
+   "notes": "V8128 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

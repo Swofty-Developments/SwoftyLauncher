@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneDriver_UpdatePfx",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142895670",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142895670.c;xref:0x14289930f,0x14289972c",
+  "notes": "Driver particle effect (DRIVER_PFX): reads custom data, state/spawning/heightMaskInModelSpace/intensity. Callers 0x14289930f, 0x14289972c, 0x142899c89. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2965)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_driver_update_pfx",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC C8 00 00 00 C5 78 29 8C",
+  "match": "0x142895670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142895670",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneDriver_UpdatePfx"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_FrontendSceneDriver_UpdatePfx",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142895670.c;xref:0x14289930f",
+   "notes": "V2965 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

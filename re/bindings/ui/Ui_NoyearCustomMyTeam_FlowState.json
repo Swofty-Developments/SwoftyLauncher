@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_NoyearCustomMyTeam_FlowState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141bfd390",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/141bfd390.c;xref:0x14573b650",
+  "notes": "myteam-g1: Large flow state for the noyear-custom-myteam front-end (My Team without a year, custom team setup); offsets +0x660..+0x868."
+ },
+ "signature": {
+  "id": "ui.noyear_custom_my_team_flow_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 38 3B 01 00",
+  "match": "0x141bfd390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141bfd390",
+  "kind": "func_start",
+  "names": [
+   "Ui_NoyearCustomMyTeam_FlowState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141bfd390",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141bfd390.c;xref:0x14573b650",
+   "notes": "V9956 Large flow state for noyear-custom-myteam with GAMESETUPMODE, DriverCareerVehicle, SpawnPosition, locked_buy."
+  }
+ ],
+ "proofs": []
+}

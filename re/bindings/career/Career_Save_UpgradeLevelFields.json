@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Save_UpgradeLevelFields",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14106c4d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int FUN(void *obj, void *field_list)",
+  "evidence": "decomp:re/decomp/14106c4d0.c;xref:0x141067ad5",
+  "notes": "myteam-g1: Adds the level fields (incl. secretUpgradeLevel and simultaneousUpgradeLevel) to a save/config field list; tiny serializer."
+ },
+ "signature": {
+  "id": "career.save_upgrade_level_fields",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 48 89 CF 48 C7 44 24 20 00 00 00 00 4C 8B 35 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 4C 24 20 48 89 F1 4D 89 F0 E8 ?? ?? ?? ?? 85 C0 75 64 4C 8B 06",
+  "match": "0x14106c4d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14106c4d0",
+  "kind": "func_start",
+  "names": [
+   "Career_Save_UpgradeLevelFields"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x14106c4d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14106c4d0.c;xref:0x141067ad5;str:\"secretUpgradeLevel\"",
+   "notes": "V9645 Adds secretUpgradeLevel (+0), simultaneousUpgradeLevel (+4) and rushPerkEnabled (+8) fields."
+  }
+ ],
+ "proofs": []
+}

@@ -2,6 +2,7 @@
 
 #include "core/registry/table.hpp"
 #include "core/apply/facts.hpp"
+#include "core/diagnostics/steps.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -11,6 +12,15 @@ namespace swofty_core::apply {
 namespace {
 
 std::mutex list_mu;
+
+constexpr double STEP_FLOOR_MS = 1.0;
+
+std::string step_line(double ms, const std::string &name)
+{
+    char line[320];
+    std::snprintf(line, sizeof line, perf::STEP_LINE, ms, name.c_str());
+    return line;
+}
 
 std::vector<std::unique_ptr<Applier>> &list()
 {
@@ -195,9 +205,14 @@ Totals Scheduler::run(Moment m, Applies kind, const std::function<void(Applier &
     if (reverse_order)
         std::reverse(todo.begin(), todo.end());
     Totals t;
+    perf::Stopwatch steps;
     for (Applier *a : todo) {
         Report r;
+        steps.lap_ms();
         call(*a, r);
+        double took = steps.lap_ms();
+        if (m == Moment::boot || took >= STEP_FLOOR_MS)
+            log(step_line(took, std::string("applier ") + a->registry() + " " + moment_name(m)));
         t.appliers++;
         t.applied += r.applied;
         t.put_back += r.put_back;
@@ -211,6 +226,8 @@ Totals Scheduler::run(Moment m, Applies kind, const std::function<void(Applier &
         if (ran)
             ran->push_back(a);
     }
+    if (!todo.empty())
+        log(step_line(steps.total_ms(), std::string("appliers ") + moment_name(m) + " (" + std::to_string(todo.size()) + ")"));
     return t;
 }
 

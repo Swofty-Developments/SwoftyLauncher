@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Show_FacilityDetail",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142350d10",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void f(void *flow)",
+  "evidence": "decomp:re/decomp/142350d10.c;xref:0x145781a28",
+  "notes": "myteam-g1: Flow step that opens the detail view for one facility."
+ },
+ "signature": {
+  "id": "career.show_facility_detail",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 89 CE 48 8B 81 88 02 00 00",
+  "match": "0x142350d10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142350d10",
+  "kind": "func_start",
+  "names": [
+   "Career_Show_FacilityDetail"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142350d10",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142350d10.c;str:\"breakdown_items\"",
+   "notes": "V10164 Strings show_advance_tooltip/summary/breakdown/breakdown_items/item_%d/unlock; builds a facility summary/breakdown list view, not a generic open-detail step."
+  }
+ ],
+ "proofs": []
+}

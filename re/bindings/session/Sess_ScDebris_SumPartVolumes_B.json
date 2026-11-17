@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Sess_ScDebris_SumPartVolumes_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f18fa0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f18fa0.c;xref:0x143641043",
+  "notes": "Second variant of Sess_ScDebris_SumPartVolumes for another part-name table (same box-volume sum). Used by Sess_ScDebrisAccumulator_Update. (1 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "session.sc_debris_sum_part_volumes_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 89 C3 48 8B 4E 38 01 FB 48 83 B9",
+  "match": "0x143641043",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x142f18fa0",
+  "kind": "func_start",
+  "names": [
+   "Sess_ScDebris_SumPartVolumes_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x142f18fa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f18fa0.c;xref:0x143641043",
+   "notes": "V7351 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

@@ -9,7 +9,7 @@
 #include <vector>
 
 // Rewrites the team and driver ids of the game's outgoing UDP telemetry packets. The launcher writes
-// swofty/udp_ids.json (packages/core/src/udp_ids.rs): added team id -> stock ancestor id, added driver id ->
+// swofty/udp_ids.json (packages/core/src/game_db/udp_ids.rs): added team id -> stock ancestor id, added driver id ->
 // stock ancestor id or 255, each as a full table (`teams`, `drivers`, read by the 16-bit 2026 format) and
 // as a byte table (`teams_byte`, `drivers_byte`, read by the 2024 and 2025 formats, which carry one byte).
 //
@@ -46,7 +46,7 @@
 // For a track swofty/udp_ids.json or the core's track records name, the Session packet carries the trackId the
 // Swofty list gives it (`track_udp`, byte 64..254, the same on every PC; 128..254 read as -128..-2) or else -1 (the specification's "unknown"), and is
 // followed by a Swofty Track packet: the same 29-byte header with packetId 200 and
-// packetVersion 1, then u32 swoftyTrackId at 29 (packages/core/src/udp_ids.rs, the same on every PC: a listed id,
+// packetVersion 1, then u32 swoftyTrackId at 29 (packages/core/src/game_db/udp_ids.rs, the same on every PC: a listed id,
 // else 0x80000000 | FNV-1a 32 of "<addon>/<code>"), u8 the game's statId at 33 and char[64] "<addon>/<code>"
 // (NUL-terminated) at 34: 98 bytes. The 2026 Session packet's layout is not catalogued, so it is left alone.
 

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ne_Player_DisableCustomControls",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441144a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/1441144a0.c;xref:0x142a6aa92,0x142af231a,0x1434d7a6f,0x14411421d",
+  "notes": "cxx=NePlayer::disableCustomControls; log channel INPUT: 'NePlayer::disableCustomControls - id=%d name=\"%s\"'"
+ },
+ "signature": {
+  "id": "core.player_disable_custom_controls",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 4C 8D 3D",
+  "match": "0x1441144a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441144a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Player_DisableCustomControls"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-b",
+   "kind": "func",
+   "item": "Ne_Player_DisableCustomControls",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441144a0.c;xref:0x1441144a0",
+   "notes": "V2118 Logs; clears override flag +0x50, clears per-device overrides +0x21, sets dirty +0x1cc"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-b",
+   "kind": "func",
+   "item": "Ne_Player_DisableCustomControls",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441144a0.c;xref:0x144114190",
+   "notes": "V2122 dup check"
+  }
+ ],
+ "proofs": []
+}

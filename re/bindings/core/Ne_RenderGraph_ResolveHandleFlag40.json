@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_RenderGraph_ResolveHandleFlag40",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14029caf0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14029caf0.c;xref:0x14013d598,0x14013d638,0x14013d737",
+  "notes": "Hypothesis: handle -> entry stride 0x180, requires flag 0x40 at +0xd8; 51 callers. Named callers: Render_SceneView_SubmitCamera."
+ },
+ "signature": {
+  "id": "core.render_graph_resolve_handle_flag40",
+  "section": ".xtls",
+  "pattern": "56 48 81 EC 90 00 00 00 48 89 D6 C7 02 FF FF FF FF 8B 01 B9 FF FF FF FF 48 39 C8 0F 84 ?? ?? ?? ?? 49 8B 48 30 48 8D 14 40 48 C1 E2 07 F6 84 11 D8 00 00 00 40 0F 84",
+  "match": "0x14029caf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14029caf0",
+  "kind": "func_start",
+  "names": [
+   "Ne_RenderGraph_ResolveHandleFlag40"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14029caf0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14029caf0.c;xref:0x14013d598",
+   "notes": "V7987 Ne_RenderGraph_ResolveHandleFlag40: body supports handle->0x180-stride entry hypothesis but named-caller claim wrong: callers in 0x14013d2c0/0x1401403a0/0x143bab0a0/0x143bafd80/0x143bb5ac0, none SubmitCamera"
+  }
+ ],
+ "proofs": []
+}

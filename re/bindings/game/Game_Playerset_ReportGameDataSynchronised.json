@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Playerset_ReportGameDataSynchronised",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140997110",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name reportGameDataSynchronised (class from the log channel); log channel PLAYERSET: '%s: Connection %d verified and synchronised, changing to INITIALDATA'"
+ },
+ "signature": {
+  "id": "game.playerset_report_game_data_synchronised",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 8B 71 70 48 8B 41 78",
+  "match": "0x140997110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140997110",
+  "kind": "func_start",
+  "names": [
+   "Game_Playerset_ReportGameDataSynchronised"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140997110",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140997110.c",
+   "notes": "V4347 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

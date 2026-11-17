@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveSystem_ListSave",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144140c10",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-channel-SAVE;decomp:re/decomp/144140c10.c;xref:0x145a5c680",
+  "notes": "named from its log messages (channel SAVE): 'List save requested for '%s' | List save result: 0x%x'"
+ },
+ "signature": {
+  "id": "core.save_system_list_save",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 98 00 00 00 48 89 D6",
+  "match": "0x144140c10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144140c10",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveSystem_ListSave"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-a",
+   "kind": "func",
+   "item": "Ne_SaveSystem_ListSave",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144140c10.c;xref:0x145a5c680",
+   "notes": "V2240 Wrapper, calls SelectAndSave 14413f690."
+  }
+ ],
+ "proofs": []
+}

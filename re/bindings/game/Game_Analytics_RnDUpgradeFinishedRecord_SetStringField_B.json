@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_RnDUpgradeFinishedRecord_SetStringField_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14058e930",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14058e930.c;xref:0x14071e6d2",
+  "notes": "Analytics event payload B (twin of ...A) for the part-upgrade analytics events. Telemetry only. vp5-verify partial/disagree"
+ },
+ "signature": {
+  "id": "game.analytics_build_part_upgrade_event_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 47 10 0F B6 40 71 48 8D 0D",
+  "match": "0x14071e6d2",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14058e930",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_RnDUpgradeFinishedRecord_SetStringField_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x14058e930",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14058e930.c;xref:0x14071e6d2",
+   "notes": "V8061 Better name Game_Analytics_RnDUpgradeFinishedRecord_SetStringField_B: assigns a C string to a std::string member of the f1.proto.RnDUpgradeFinishedRecord object (this+0x60), not a payload builder"
+  }
+ ],
+ "proofs": []
+}

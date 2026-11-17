@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StoryHubObjectives_PlayOpenAnim",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141580b00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141580b00.c;xref:0x14157a44f,0x14157b886",
+  "notes": "Logs 'playing Open Anim', sets state primary. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3064)"
+ },
+ "signature": {
+  "id": "game.story_hub_objectives_play_open_anim",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 B9 8B 07 00 00 00 0F",
+  "match": "0x141580b00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141580b00",
+  "kind": "func_start",
+  "names": [
+   "Game_StoryHubObjectives_PlayOpenAnim"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Game_StoryHubObjectives_PlayOpenAnim",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141580b00.c;xref:0x141580b00",
+   "notes": "V3064 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

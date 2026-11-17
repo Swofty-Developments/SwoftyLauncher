@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MorphModifier_BuildBlendBuffer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a356e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a356e0.c;xref:0x143a35e8a",
+  "notes": "Builds the 64-byte aligned per-target blend/weight buffer for a morph modifier (alloca via Ne_Crt_Chkstk, memcpy/memset of float/u32 arrays, index-driven scatter). Sole caller Game_MorphModifier_BuildTargets. Hypothesis on exact buffer meaning."
+ },
+ "signature": {
+  "id": "game.morph_modifier_build_blend_buffer",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 41 55 41 54 56 57 53 48 81 EC 58 01 00 00 48 8D AC 24 80 00 00 00 C5 F8 29 B5 C0",
+  "match": "0x143a356e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a356e0",
+  "kind": "func_start",
+  "names": [
+   "Game_MorphModifier_BuildBlendBuffer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143a356e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a356e0.c;xref:0x143a35e8a",
+   "notes": "V8540 64-byte aligned alloca buffers, memset/index scatter; sole caller BuildTargets"
+  }
+ ],
+ "proofs": []
+}

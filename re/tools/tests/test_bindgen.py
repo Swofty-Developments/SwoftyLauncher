@@ -165,8 +165,33 @@ class BuildSet(unittest.TestCase):
 class RepoData(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.build, cls.bindings, _, _ = bindgen.load()
+        cls.build, cls.bindings, cls.structs, _ = bindgen.load()
         cls.kb_name, cls.overlays = bindgen.load_overlays(cls.build)
+
+    REGENERATE = ('stale; run python3 re/tools/bindgen.py --no-exe --json <scratch>/bindings.json '
+                  '--symbols <scratch>/symbols.tsv and commit native/include')
+
+    def stale(self, outputs, extra=()):
+        def text(p):
+            if not os.path.exists(p):
+                return None
+            with open(p, encoding='utf-8') as f:
+                return f.read()
+        return sorted(os.path.relpath(p, bindgen.ROOT) for p, want in outputs.items() if text(p) != want) + \
+            sorted(os.path.relpath(p, bindgen.ROOT) for p in extra)
+
+    def test_the_tracked_headers_are_what_bindgen_writes(self):
+        outputs = {os.path.normpath(os.path.join(bindgen.OUT_INC, k)): v
+                   for k, v in bindgen.gen_cpp(self.build, self.bindings, self.structs).items()}
+        gdir = os.path.join(bindgen.OUT_INC, 'game')
+        extra = {os.path.normpath(os.path.join(gdir, f)) for f in os.listdir(gdir) if f.endswith('.hpp')} - set(outputs)
+        self.assertEqual(self.stale(outputs, extra), [], self.REGENERATE)
+
+    def test_the_tracked_game_rs_is_what_bindgen_writes(self):
+        rust, formatted = bindgen.rustfmt(bindgen.gen_rust(self.build, self.bindings, self.structs))
+        if not formatted:
+            self.skipTest('rustfmt is not installed; bindgen writes game.rs through it')
+        self.assertEqual(self.stale({bindgen.OUT_RS: rust}), [], self.REGENERATE)
 
     def test_every_set_has_a_pattern_for_every_binding(self):
         for name, ov in self.overlays.items():

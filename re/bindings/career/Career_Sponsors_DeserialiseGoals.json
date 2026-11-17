@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Sponsors_DeserialiseGoals",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141119670",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *ctx, void *goal_list, void *save_node, void *key",
+  "evidence": "decomp:re/decomp/141119670.c;xref:0x1410fd6a8;xref:0x1410fd6da;xref:0x1410fd811",
+  "notes": "myteam-g1: Reads the sponsor goal list from save data: destroys old 0x160-byte goal entries (goal dtor FUN_1410f7230), then rebuilds them including teamSponsorGoalAwardedDriverIds/CompletedDriverIds."
+ },
+ "signature": {
+  "id": "career.sponsors_deserialise_goals",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 01 00 00 C5 F8 29 B4 24 C0 01 00 00 4C 89 CB 4D 89 C6",
+  "match": "0x141119670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141119670",
+  "kind": "func_start",
+  "names": [
+   "Career_Sponsors_DeserialiseGoals"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x141119670",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141119670.c;xref:0x1410fd6a8;str:\"teamSponsorGoalCompletedDriverIds\"",
+   "notes": "V9664 Reads those lists, destroys old 0x160 goal entries with 1410f7230 and rebuilds."
+  }
+ ],
+ "proofs": []
+}

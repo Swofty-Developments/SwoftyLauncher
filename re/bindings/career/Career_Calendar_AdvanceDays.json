@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Calendar_AdvanceDays",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14111cad0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Calendar_AdvanceDays(void *clock_owner, uint16_t days, uint8_t flag_mask, char skip)",
+  "evidence": "decomp:re/decomp/14111cad0.c;xref:0x14111d3fe;xref:0x141267694;xref:0x14126d68d",
+  "notes": "myteam-g2: Advances the My Team career calendar: for each day adds 0x5a0 (1440 minutes) to the clock at owner+0x2b0, computes the new day record (clock>>5 / 0x2d = day number, FUN_141284580), stores it via owner+0x278 vtable +0x200 and posts the day-advanced message (type 0x1456c5718). Loop stops when the session vtable +0x208 reports false. Hook: calling this (or editing owner+0x2b0) moves career time forward; used by Career_TeamHqAdvance_AdvanceOneDay."
+ },
+ "signature": {
+  "id": "career.calendar_advance_days",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE 66 85 D2",
+  "match": "0x14111cad0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14111cad0",
+  "kind": "func_start",
+  "names": [
+   "Career_Calendar_AdvanceDays"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-c",
+   "kind": "func",
+   "item": "0x14111cad0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14111cad0.c;xref:0x14111d3fe;xref:0x141267694",
+   "notes": "V9015 Loop per day: owner+0x2b0 += 0x5a0, day number (clock>>5)/0x2d, FUN_141284580, stored via owner+0x278 vtable +0x200, message 0x1456c5718 posted; loop continues while the vtable +0x208 result is true. Extra detail: advancing only happens when skip==0 and (~state & flag_mask)==0, and a final message 0x1456c5708 with the day number is posted after the loop."
+  }
+ ],
+ "proofs": []
+}

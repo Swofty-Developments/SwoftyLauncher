@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Audio_RandomFaultEvents",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140a1d610",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140a1d610.c",
+  "notes": "Registers the audio events randomfault_brakes, _electrical, _fuel, _cooling, _lubricant, _sensors (radio calls for random car faults)."
+ },
+ "signature": {
+  "id": "game.audio_random_fault_events",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 D7 48 89 CE 0F B6 5A 10",
+  "match": "0x140a1d610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140a1d610",
+  "kind": "func_start",
+  "names": [
+   "Game_Audio_RandomFaultEvents"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140a1d610",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140a1d610.c",
+   "notes": "V4393 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

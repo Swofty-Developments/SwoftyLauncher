@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GarageCrewInstance_Unhide",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403846b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GarageCrewInstance::unhide; log channel GARAGECREWINSTANCE: '%p GarageCrewInstance::unhide'"
+ },
+ "signature": {
+  "id": "game.garage_crew_instance_unhide",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 0F B6 81 32 01 00 00",
+  "match": "0x1403846b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403846b0",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageCrewInstance_Unhide"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403846b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403846b0.c;xref:0x2ff628",
+   "notes": "V4572 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

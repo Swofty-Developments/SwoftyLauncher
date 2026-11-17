@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_Find_141b732f0",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141b732f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141b732f0.c;xref:0x141a8d6c4",
+  "notes": "Hash-bucket find (mask constant 0x2128d3e60bd65f78) walking a bucket list with sentinel 0x146072798. 397 bytes, 16 callers (0x141a8d6c4, 0x141a950fc ...). Hypothesis on key type."
+ },
+ "signature": {
+  "id": "core.hash_map_find_141b732f0",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C5 F8 28 44 24 50 C5 F0 57 C9 C5 F8 29 4C 24 50 48 8B 9E 20 0D 00 00",
+  "match": "0x141a8d6c4",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x141b732f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_Find_141b732f0"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x141b732f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141b732f0.c;xref:0x141a8d6c4",
+   "notes": "V8221 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

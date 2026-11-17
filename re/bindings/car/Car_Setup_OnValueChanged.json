@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Setup_OnValueChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c1e690",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-CAR_SETUP",
+  "notes": "Log channel CAR_SETUP: 'setup value %s changed from %f to %f'"
+ },
+ "signature": {
+  "id": "car.setup_on_value_changed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 08 01 00 00 C5 F8 29 B4 24 F0 00 00 00 83 7A 08 02",
+  "match": "0x140c1e690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c1e690",
+  "kind": "func_start",
+  "names": [
+   "Car_Setup_OnValueChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c1e690",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c1e690.c;xref:0x140c1ba0b",
+   "notes": "V4579 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

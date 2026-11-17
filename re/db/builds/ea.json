@@ -548,6 +548,18 @@
   "Game_TileList_PushChildSelection_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? 0F 85 D5 4D 16 00 D5 0C 41 CF 00 4E C7",
    "note": "the bytes after the 5-byte jmp are not code and differ on EA (thunk 0x1438285d0 to the body 0x14f622850)"
+  },
+  "Car_Differential_Reset_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? B4 B4 E9 00 0D 7B 00 E9",
+   "note": "A protector thunk; the pattern is its earlier EA bytes. It is at the same place relative to its neighbours (-0x9d70, as Car_Write_Differential and Car_Write_FuelTank) and its jmp target starts with the KB build's function body."
+  },
+  "Car_FuelEcu_Reset_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? A2 E9 D6 39 EA 00 68 53",
+   "note": "A protector thunk; the pattern is its earlier EA bytes. It is at the same place relative to its neighbours (-0x9d70, as Car_Write_Differential and Car_Write_FuelTank) and its jmp target starts with the KB build's function body."
+  },
+  "Car_Read_Differential_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? DD E9 0F 85 38 59 C9 03",
+   "note": "A protector thunk; the pattern is its earlier EA bytes. It is at the same place relative to its neighbours (-0x9d70, as Car_Write_Differential and Car_Write_FuelTank) and its jmp target starts with the KB build's function body."
   }
  },
  "hints": {
@@ -1932,6 +1944,15 @@
   },
   "Game_TileList_PushChildSelection_Thunk": {
    "match": "0x38285d0"
+  },
+  "Car_Differential_Reset_Thunk": {
+   "match": "0x46742a0"
+  },
+  "Car_FuelEcu_Reset_Thunk": {
+   "match": "0x46847e0"
+  },
+  "Car_Read_Differential_Thunk": {
+   "match": "0x4674080"
   }
  },
  "unresolvable": {}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DriverContractsMyTeam_SubmitOffer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140dbc230",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *comp, uint32_t driver_key, void *offer)",
+  "evidence": "decomp:re/decomp/140dbc230.c;xref:0x140db0fa6;xref:0x14234589e;xref:0x14234a5fa",
+  "notes": "myteam-g2: Submits the player offer (validated earlier by FUN_140dbb690) to a driver: compares the My Team account balance (func 140bf51c0) with offer+0x38, finds the response row for the offer chance (offer+0x44 float x100 against the 12-byte rows at comp+0x3e8..0x3f0), seeds an RNG, rolls the answer delay, and posts a BankAccountTransactionMessage (vtable 14568d508, category 0x10, amount -offer+0x38) debiting the player team, then calls FUN_140db7e30 (store pending answer, comp+0x2d8) and FUN_140db90d0. Hook: offer+0x38 is the cost debited, offer+0x44 the acceptance chance."
+ },
+ "signature": {
+  "id": "career.driver_contracts_my_team_submit_offer",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 0A 00 00 C5 F8 29 BC 24 B0 0A 00 00",
+  "match": "0x140dbc230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140dbc230",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverContractsMyTeam_SubmitOffer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-d",
+   "kind": "func",
+   "item": "0x140dbc230",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140dbc230.c",
+   "notes": "V9022 Balance (140bf51c0) < offer+0x38 returns early; row scan at comp+0x3e8..0x3f0 stride 12 while chance(offer+0x44)*100 < row[0]; MT19937 seeded, delay = lerp(row[1],row[2]); message vtable 14568d508 with byte 0x10 and amount -offer+0x38; then FUN_140db7e30 and FUN_140db90d0 on comp+0x2d8. All as claimed; a second random roll (when chance < 1.0) decides accept, which the note omits."
+  }
+ ],
+ "proofs": []
+}

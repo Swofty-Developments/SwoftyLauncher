@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoMode_OnInviteReceived",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142da3e60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-PHOTO-MODE",
+  "notes": "named from its log messages (channel PHOTO-MODE): 'Invite received: Close down photo mode'"
+ },
+ "signature": {
+  "id": "game.photo_mode_on_invite_received",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C3 48 89 D6 48 89 CF E8 ?? ?? ?? ?? 8B 43 10 83 F8 08 0F 84",
+  "match": "0x142da3e60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142da3e60",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoMode_OnInviteReceived"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142da3e60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142da3e60.c",
+   "notes": "V5451 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

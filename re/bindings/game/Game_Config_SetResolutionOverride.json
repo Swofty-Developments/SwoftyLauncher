@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Config_SetResolutionOverride",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144012de0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=Config::setResolutionOverride; log channel HARDWARE_SETTINGS: 'Config::setResolutionOverride'"
+ },
+ "signature": {
+  "id": "game.config_set_resolution_override",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 F8 29 B4 24 50 01 00 00 48 89 D7 49 89 CC",
+  "match": "0x144012de0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144012de0",
+  "kind": "func_start",
+  "names": [
+   "Game_Config_SetResolutionOverride"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144012de0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144012de0.c;xref:0x1443c6e68",
+   "notes": "V6371 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

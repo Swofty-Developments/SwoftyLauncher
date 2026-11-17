@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1WorldHub_SelectTab",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141abd5d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141abd5d0.c;xref:0x141abc62f,0x141abc80f,0x141abd0e6",
+  "notes": "F1 World hub tab select (7 callers): hub state +0x86c: 6 -> entry point 0 and route 'activity'/'back'; 5 (tabs ready) -> enables tabs (Vm_Set_TabEnabled) for index param_2 < 6 using ranked state [this+0x338]+200 == 5; other states -> remembers the request (+0x840 = param_2, +0x860/+0x86b = 1). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2452)"
+ },
+ "signature": {
+  "id": "game.f1_world_hub_select_tab",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 48 89 CE 0F B6 81",
+  "match": "0x141abd5d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141abd5d0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1WorldHub_SelectTab"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_F1WorldHub_SelectTab",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141abd5d0.c;xref:0x141abd5d0",
+   "notes": "V2452 Role, offsets and calls checked against decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

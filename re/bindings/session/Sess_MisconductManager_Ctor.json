@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_MisconductManager_Ctor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143589fb0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "xref:0x142f24ab7;decomp:re/decomp/143589fb0.c",
+  "notes": "MisconductManager ctor (vtable 0x1458035f0, 'MisconductManagerBroadcaster' at +0x250); +0x178 = MultipleWarningsPenalty (vtable 0x14584d1f0) subscribed to 'penalty_issued_message'; embedded at +0x410 of game component [game+0x2b8] (ctor 0x142f24900)"
+ },
+ "signature": {
+  "id": "session.misconduct_manager_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 C6 41 08",
+  "match": "0x143589fb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143589fb0",
+  "kind": "func_start",
+  "names": [
+   "Sess_MisconductManager_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sl-verify",
+   "kind": "func",
+   "item": "Sess_MisconductManager_Ctor",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143589fb0.c;xref:0x142f24ab7",
+   "notes": "V1818 vt 0x1458035f0; obj 0xb0 vt 0x14584d1f0 (stored in this+0x160 line 893, subscribe line 984); the +0x178 slot is param_1[0x2f]=puVar6; lea rcx,[reg+0x410] confirmed; string penalty_issued_message at 0x145670fd9"
+  }
+ ],
+ "proofs": []
+}

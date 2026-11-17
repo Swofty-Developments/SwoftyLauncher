@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_UpdateEmitters",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143af9c70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143af9c70.c;xref:0x143b11000",
+  "notes": "Per-frame emission pass over active emitter instances (caller 0x143b10fa0): resolves the owning car (logs '%s bad car index %d in array of %d dead %d'), distance/view-dot culling, computes spawn count from emitter def: spawn rate def+0x598, number def+0x59c, max emission rate def+0x58c, accumulator, boost; condition gates in def+0x510: bit6 = slide-driven (decider def+0x184), bit5/bit4 = wet/dry surface (decider def+0x180, def+0xb9c bit9 combine), def+0xb9c bit24 = flg2. Debug logs 'spawn rate %f number %f maxemrate %f acc %f flg2 %d boost %f', 'slide %d dec %f', 'wet %d dry %d dec %f comb %d', 'actual %f emission scaler > max %f'. Addon: where tyre smoke/spray/dust emission scales with slide and wetness - hook to boost or suppress car effects. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2306)"
+ },
+ "signature": {
+  "id": "game.particles_update_emitters",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 F8 A6 00",
+  "match": "0x143af9c70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143af9c70",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_UpdateEmitters"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-b",
+   "kind": "func",
+   "item": "Game_Particles_UpdateEmitters",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143af9c70.c;xref:0x143b10fa0",
+   "notes": "V2306 Verified offsets def+0x598/0x59c/0x58c, +0x510 bits 4/5/6, +0x180/+0x184, +0xb9c bit9/bit24 and debug log args."
+  }
+ ],
+ "proofs": []
+}

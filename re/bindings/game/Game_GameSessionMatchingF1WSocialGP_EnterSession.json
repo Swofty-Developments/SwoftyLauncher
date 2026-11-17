@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingF1WSocialGP_EnterSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14307c000",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameSessionMatchingF1WSocialGP::enterSession; log channel NETWORK-SESSION: 'NEbool network::GameSessionMatchingF1WSocialGP::enterSession(SessionSelectionDelegate, SearchDelegate, EnterSessionDelegate) | %s'"
+ },
+ "signature": {
+  "id": "game.game_session_matching_f1_w_social_gp_enter_session",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 4C 89 CB 4C 89 C7 49 89 D6",
+  "match": "0x14307c000",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14307c000",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingF1WSocialGP_EnterSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14307c000",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14307c000.c;xref:0x1430aeb17",
+   "notes": "V5600 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

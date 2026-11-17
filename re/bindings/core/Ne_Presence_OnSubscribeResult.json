@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Presence_OnSubscribeResult",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ffff20",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ffff20.c;xref:0x145a468c0",
+  "notes": "Callback of subscribeToPlayerPresenceUpdates (vtable slot 0x145a468c0): on error WARN 'Failed to subscribe to user presence updates, error reason: %s, error code: ...'. Online presence."
+ },
+ "signature": {
+  "id": "core.presence_on_subscribe_result",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 8B 79 08 4C 8B 02 4D 85 C0",
+  "match": "0x143ffff20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ffff20",
+  "kind": "func_start",
+  "names": [
+   "Ne_Presence_OnSubscribeResult"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Ne_Presence_OnSubscribeResult",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ffff20.c;xref:0x143ffff20",
+   "notes": "V2853 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

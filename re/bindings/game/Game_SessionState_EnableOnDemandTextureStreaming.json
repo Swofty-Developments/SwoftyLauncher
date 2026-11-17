@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SessionState_EnableOnDemandTextureStreaming",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d873c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d873c0.c;xref:0x1457e15d0",
+  "notes": "Session state callback (vtable slot 0x1457e15d0) that sets on-demand streaming on the global texture manager (g 0x146c621e8 +0x21c |= 8) and returns 1. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2539)"
+ },
+ "signature": {
+  "id": "game.session_state_enable_on_demand_texture_streaming",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 8B 35 ?? ?? ?? ?? 48 85 F6 74 7F 80 3D",
+  "match": "0x142d873c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d873c0",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionState_EnableOnDemandTextureStreaming"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Game_SessionState_EnableOnDemandTextureStreaming",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d873c0.c;xref:0x1457e15d0",
+   "notes": "V2539 setStreamingOnDemandEnabled true, +0x21c|=8, returns 1"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkJournal_SupportedIfNESmoketestEnabled",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431491f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-JOURNAL",
+  "notes": "named from its log messages (channel NETWORK-JOURNAL): 'Not supported if NE_SMOKETEST_ENABLED is not defined. There are horrible reason. Lewis H'"
+ },
+ "signature": {
+  "id": "game.network_journal_supported_if_ne_smoketest_enabled",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 D3 48 89 CE 48 89 54 24 48",
+  "match": "0x1431491f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431491f0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkJournal_SupportedIfNESmoketestEnabled"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1431491f0",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/1431491f0.c;xref:0x1430ea42b",
+   "notes": "V5967 Not a not-supported stub: builds journal_guid and sends create entry message (called from NetworkSubsystem_Update); the string is a smoketest guard only. Better: Game_NetworkJournal_SendCreateEntryMessage"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1431491f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431491f0.c;xref:0x1430ea42b",
+   "notes": "V6995 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

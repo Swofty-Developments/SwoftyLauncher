@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_Post_UpgradeFittedRatio",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14352fe00",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Post_UpgradeFittedRatio(void *upgrades, void *inst, uint8_t fitted)",
+  "evidence": "decomp:re/decomp/14352fe00.c;xref:0x143516e48,0x143517d05,0x1435309d9,0x1435311a0;doc:addons/career-editor/protocol/rnd.md#rnd-reset",
+  "notes": "Recomputes the fitted ratio (Completed / enabled) per department and overall for one Upgrades model and posts it on the message bus with the instance, team, owner and a fitted flag (r8b). Reads states only. Called after every completion, fit (1) and unfit (0)."
+ },
+ "signature": {
+  "id": "career.post_upgrade_fitted_ratio",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 78 24 00 00 E8 ?? ?? ?? ?? 48 29 C4 44 88 44 24 27",
+  "match": "0x14352fe00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14352fe00",
+  "kind": "func_start",
+  "names": [
+   "Career_Post_UpgradeFittedRatio"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-rnd",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/rnd.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-1",
+   "kind": "func",
+   "item": "Career_Post_UpgradeFittedRatio",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14352fe00.c;xref:0x143516e48,0x143517773,0x143517d05,0x1435309d9,0x1435311a0,0x14353172a",
+   "notes": "V0240 reads only; iterates 1 tree (2 in upgrades+8==2 mode), enabled = latest entry +0xc != 0, depts < 4; message carries the overall ratio plus the max per-department ratio (not every department), upgrades+0xc, owner from the latest entry, inst and the r8b flag; 0x143530980 passes 0 (after PendingFitting), the other five pass 1"
+  }
+ ],
+ "proofs": []
+}

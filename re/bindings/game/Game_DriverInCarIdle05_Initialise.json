@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverInCarIdle05_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140286e90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140286e90.c;xref:0x1455fe580",
+  "notes": "Garage cutscene initialise (vtable slot 0x1455fe580) 'driver_in_car_idle05' (intro19_camera1, ENG_F, advanceStartTimeOffset). Same garage-location pattern as Game_CrewWorkingOnCar_Initialise. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2815)"
+ },
+ "signature": {
+  "id": "game.driver_in_car_idle05_initialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 05 00 00 C5 78 29 94 24 F0 04 00 00 C5 78 29 8C 24 E0 04 00 00 C5 78 29 84 24 D0 04 00 00 C5 F8 29 BC 24 C0 04 00 00 C5 F8 29 B4 24 B0 04 00 00 48 89 CE 48 8D 81 90 01",
+  "match": "0x140286e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140286e90",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverInCarIdle05_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Game_DriverInCarIdle05_Initialise",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140286e90.c;xref:0x140286e90",
+   "notes": "V2815 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

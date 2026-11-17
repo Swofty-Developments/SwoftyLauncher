@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_SSL_FetchKeyMaterial",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143163710",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-SSL;decomp:re/decomp/143163710.c;xref:0x1430e8d99",
+  "notes": "named from its log messages (channel SSL): '%s: failed to fetch key material'  L2-grade, owner raise + independent verify pending. InviteManager join step (param_1 = InviteManager, param_1[1] = NetworkSubsystem). Waits on NetSub+0x10d0 (m_keyMaterialFetchStatus): 0 = idle, queues the key fetch through Game_OsService_SubmitRequest (0x1431639f6), logs 'm_keyMaterialFetchStatus: 0', sets status 1, returns 0x10 (stay in eJoiningStart); 1 = pending, returns 0x10; 3 = failed, logs 'failed to fetch key material', returns 1; 2 = done, proceeds to MP_Mode resolve, then join() / joinSession (eJoiningInProgress). The status only leaves 1 in Game_NetworkSubsystem_UpdateKeyMaterial. The tick (0x1430e0560, 0x1430eb2a0..) re-arms a failed status after 15 s and a good one after 0x3390 s"
+ },
+ "signature": {
+  "id": "game.ssl_fetch_key_material",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 78 48 8B 59 08",
+  "match": "0x143163710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143163710",
+  "kind": "func_start",
+  "names": [
+   "Game_SSL_FetchKeyMaterial"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143163710",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143163710.c;xref:0x1430e8d99",
+   "notes": "V5794 InviteManager_Join: this is InviteManager::join(): key material fetch, MP_Mode resolve, lead-player check, joining; key-material fail is one branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143163710",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143163710.c;xref:0x1430e8d99",
+   "notes": "V7004 facts verified (strings, size, caller)"
+  },
+  {
+   "date": "2026-11-08",
+   "verifier": "netplay-keys-verify",
+   "kind": "func",
+   "item": "0x143163710",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143163710.c;xref:0x1430e8d9a",
+   "notes": "V8726 independent: switch on NetSub+0x10d0 (param_1[1]): 3 logs 'failed to fetch key material' and returns 1; 1 returns 0x10; 0 logs, sets status 1 before the SubmitRequest call at 0x1431639f6 and returns 0x10; 2 falls to the InviteData MP_Mode resolve/change (0x1430ed330) and the join. Extra gate not in the claim: returns 0x10 first when *(NetSub+0xd8 +0x4b0) != 0. Called from the tick 0x1430e8d9a and from 0x143163154 in 0x143162bd0"
+  }
+ ],
+ "proofs": []
+}

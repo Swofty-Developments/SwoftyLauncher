@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingHopper_OnMatchJoinComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14307fbd0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameSessionMatchingHopper::onMatchJoinComplete; log channel NETWORK-SESSION: 'GameSessionMatchingHopper::onMatchJoinComplete(%s, %s)'"
+ },
+ "signature": {
+  "id": "game.game_session_matching_hopper_on_match_join_complete",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 44 89 C7 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 59",
+  "match": "0x14307fbd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14307fbd0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingHopper_OnMatchJoinComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14307fbd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14307fbd0.c;xref:0x143061328",
+   "notes": "V5609 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

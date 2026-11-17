@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PcOptions_PopulateDisplayAdapters",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c8f9d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name populateDisplayAdapters (class from the log channel); log channel PC_OPTIONS: 'populateDisplayAdapters: Display index %d, description = %S, device id = 0x%x, vendor id = 0x%x, system mem = %dMb, video mem = %dMb, revision = %d'"
+ },
+ "signature": {
+  "id": "game.pc_options_populate_display_adapters",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 03 00 00 C5 F8 29 B4 24 70 03 00 00 4C 89 C3 48 89 CE",
+  "match": "0x142c8f9d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c8f9d0",
+  "kind": "func_start",
+  "names": [
+   "Game_PcOptions_PopulateDisplayAdapters"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142c8f9d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c8f9d0.c",
+   "notes": "V5055 name/strings/body match; log-based claim holds for this function size (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

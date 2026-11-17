@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "name": "Game_VehiclePlacementSystem_Connect",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f61640",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint32_t Game_VehiclePlacementSystem_Connect(void *self, void *owner, void *registry)",
+  "evidence": "decomp:re/decomp/142f61640.c;decomp:re/decomp/142f62120.c;xref:0x1457fa5d0",
+  "notes": "was Game_Read_GridOverrideConfig (renamed 2026-11-14 per lb11-verify; old name used only in re/db docs). VehiclePlacementSystem vtable entry 0x1457fa5d0: looks up nine systems by type from the registry (0x14030ffd0) into +0x948, +0x938, +0x950, +0x958, +0x940 (message system), +0x968, +0x970, +0x978, +0x980 (any miss returns 0x16); +0x960 (settings owner) comes from owner vt+0x28 (0x142f61897), not the registry. Reads VTE.enabled -> self+0x9e1 (Ne_Get_SettingBool 0x143a43b90, 0x142f618c5) and always registers the handler pairs 0x142f61e20 / 0x142f61e70 (msg 0x6d, 0x142f61937) and 0x142f61f40 / 0x142f61f80 (msg 0x6e, 0x142f61985) on [self+0x940]+0x3d0. Only when VTE.enabled is set (cmp/je 0x142f6198d / 0x142f61994 -> 0x142f61a51) does it read Grid.Override -> self+0x9e0 (0x142f619ba), run Game_Read_GridConfig 0x142f62120 (0x142f619c2) and register 0x142f62320 / 0x142f62390 (msg 0xc0) and 0x142f624b0 / 0x142f624f0 (msg 0xc1). Returns the owner's low dword on success (corrected per V10392). raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_grid_override_config",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC B0 00 00 00 4C 89 C3 48 89 D6 48 89 CF 48 8D 05",
+  "match": "0x142f61640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f61640",
+  "kind": "func_start",
+  "names": [
+   "Game_VehiclePlacementSystem_Connect"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f61640",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f61640.c",
+   "notes": "V5647 267-line system setup: looks up ~8 systems into +0x938..+0x978, registers handlers, calls grid config readers 0x142f62120 etc; not just a config read; better Game_VehiclePlacementSystem_Connect"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142f61640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f61640.c",
+   "notes": "V6918 267 decomp lines, strings match current name; vtable/indirect"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x142f61640",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142f61640-0x142f61e11;xref:0x1457fa5d0",
+   "notes": "V10392 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only ref abs64 0x1457fa5d0 (vtable after the VehiclePlacementSystem name string; slot 2 of 0x1457fa5c0). 9 registry lookups 0x14030ffd0(r8 registry) -> +0x948,+0x938,+0x950,+0x958,+0x940,+0x968,+0x970,+0x978,+0x980; +0x960 comes from arg2 vt+0x28 (0x142f61897), not the registry; failure returns 0x16, success returns esi (arg2 low dword). Handlers 0x142f61e20/0x142f61e70 and 0x142f61f40/0x142f61f80 on [[self+0x940]+0x3d0] unconditionally. Rename to Connect supported. DIFFERENCE: Grid.Override -> +0x9e0, Game_Read_GridConfig (0x142f619c2) and two more handler pairs 0x142f62320/0x142f62390 (msg 0xc0) and 0x142f624b0/0x142f624f0 (msg 0xc1) run ONLY when VTE.enabled byte +0x9e1 is set (cmp/je 0x142f6198d/0x142f61994 -> 0x142f61a51); the notes read as if unconditional and omit the 0xc0/0xc1 pairs."
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x142f61640",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142f61640-0x142f61e11;xref:0x1457fa5d0",
+   "notes": "V10534 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Re-check of V10392: VTE.enabled read 0x142f618c5 -> +0x9e1; msg 0x6d/0x6e handlers registered unconditionally (0x142f61937/0x142f61985); cmp byte [rdi+0x9e1] 0x142f6198d / je 0x142f61a51 gates Grid.Override (0x142f619ba) and 0x142f62120 (0x142f619c2). Fixed."
+  }
+ ],
+ "proofs": []
+}

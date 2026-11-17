@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_VirtualLapsRuleset_ForceFinishAll",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d45070",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d45070.c;xref:0x1457e72e8",
+  "notes": "Slot +0x198 of vt 0x1457e7150: percentageOfLapsCompleted = 1.0, finishes all active local cars (player first), updates points via 0x143196350/0x143196600."
+ },
+ "signature": {
+  "id": "session.virtual_laps_ruleset_force_finish_all",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 78 29 4C 24 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 44 89 C3 48",
+  "match": "0x142d45070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d45070",
+  "kind": "func_start",
+  "names": [
+   "Sess_VirtualLapsRuleset_ForceFinishAll"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-a",
+   "kind": "func",
+   "item": "Sess_VirtualLapsRuleset_ForceFinishAll",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d45070.c;xref:0x1457e7150",
+   "notes": "V2300 pct laps +0x94=1.0, 143196350(rs+0x358), active local -> eFinished 3/2, player time 1.0 others 2+id, points table rs+0x4c0 via 143196600; confirmed."
+  }
+ ],
+ "proofs": []
+}
