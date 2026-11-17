@@ -18,6 +18,7 @@
 #include "core/runtime/files.hpp"
 #include "core/runtime/hashing.hpp"
 #include "core/runtime/json.hpp"
+#include "core/runtime/loader/introspection.hpp"
 #include "core/runtime/robin_map.hpp"
 #include "core/runtime/stage.hpp"
 #include "swofty_api.h"
@@ -107,8 +108,6 @@ void tile_route_want();
 TileRoute tile_route_state();
 void wizard_tile_routed(const std::string &group, void *out);
 bool wizard_route_running(const std::string &route, void *name);
-bool core_mixins_active(const char *name);
-bool core_mixins_closed();
 void career_setup();
 void career_tick();
 int career_block(const void *from, uint32_t mode, const char *title, const char *body);
