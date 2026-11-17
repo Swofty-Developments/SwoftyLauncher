@@ -135,6 +135,9 @@ class KbLint:
             for r in rows:
                 for e in kb.validate_row(t, r, self.subs):
                     E.append(f'{t}.tsv:{r["_line"]}: {e}')
+                bad = [c for c, v in r.items() if not c.startswith('_') and isinstance(v, str) and not v.isprintable()]
+                if bad:
+                    E.append(f'{t}.tsv:{r["_line"]}: {", ".join(bad)} holds a control character')
             seen = collections.Counter(kb.row_key(t, r) for r in rows if kb.TABLES[t][1])
             for k, c in seen.items():
                 if c > 1:
