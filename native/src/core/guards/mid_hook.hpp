@@ -27,7 +27,7 @@ void install_mid_hook(const MidHookSpec &spec);
 
 }
 
-#define SWOFTY_MID_HOOK_GUARD(id, what, spec)                                                                                   \
+#define SWOFTY_MID_HOOK_GUARD(id, what, spec)                                                                                    \
     namespace {                                                                                                                  \
     void mid_hook_setup() { ::swofty_core::guards::install_mid_hook(spec); }                                                     \
     }                                                                                                                            \
