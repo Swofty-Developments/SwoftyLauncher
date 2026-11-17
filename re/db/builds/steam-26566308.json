@@ -27,10 +27,6 @@
    "pattern": "E9 ?? ?? ?? ?? E9 4A 56 ?? ?? ?? ?? 84",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
   },
-  "Career_GameValue_GetUpgradesFailedDuringTimeAdvance": {
-   "pattern": "48 83 EC 28 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 89 C0 C4 E1 FA 2A C0 48 83 C4 28 C3 CC CC CC CC 48 83 EC 28",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
-  },
   "Career_Get_CareerLengthDays_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? EA 0F 89 46 26 C8 FD 13 E9",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
@@ -131,10 +127,6 @@
    "pattern": "48 89 5C 24 20 55 56 57 41 56 41 57 48 8D 6C 24 C9 48 81 EC C0 00 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 45 27 66 0F 6F 0D ?? ?? A5 00",
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
   },
-  "Ne_Gfx2Renderer_PostEvent_AllocateResource": {
-   "pattern": "E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 4C 8D 05",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
-  },
   "Ne_HashMap_FatalStub_GroundCover": {
    "pattern": "E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 0F",
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
@@ -162,10 +154,6 @@
   "Sess_Flow_ParseXml": {
    "pattern": "E9 ?? ?? ?? ?? E9 FB EE DB 00 C7 B8 26 7C 03 9A",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
-  },
-  "Sess_FormationLapLogic_SubscribeSafetyCarDeployment": {
-   "pattern": "E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 48 8D 05 ?? ?? ?? ?? 48 89 44 24 38 C7 44 24 40 00 00 00 00 4C 8D 44 24 38 48 89 F2 E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 48 8D 05 ?? ?? ?? ?? 48 89 44 24 38 C7 44 24 40 00 00 00 00 4C 8D 44 24 38 48 89 F2 E8",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
   },
   "Sess_GridRundown_Update": {
    "pattern": "E9 ?? ?? ?? ?? 85 D2 E9 ?? ?? ?? ?? F6 E9",
@@ -719,6 +707,12 @@
   "Ai_Get_GeneralSettings": {
    "match": "0x6662bd"
   },
+  "Ai_Get_SegmentTurnRadius": {
+   "match": "0x60daf0"
+  },
+  "Ai_Get_TurnRadiusAtDistance": {
+   "match": "0x60d870"
+  },
   "Ai_Handle_PitStateChanged_Thunk": {
    "match": "0x6b3150"
   },
@@ -748,6 +742,9 @@
   },
   "Ai_Lookahead_AdvancePhase": {
    "match": "0x6807f0"
+  },
+  "Ai_Overtake_EvaluateGap": {
+   "match": "0x66de90"
   },
   "Ai_Parse_BlockingConfig": {
    "match": "0x65dca8"
@@ -845,11 +842,23 @@
   "Ai_TestGraph_EvalTimeSpeed": {
    "match": "0x5fc2bd"
   },
+  "Ai_TrackLine_FindCornerEndAndStart": {
+   "match": "0x66dfb0"
+  },
+  "Ai_TrackLine_FindNextSideMarker": {
+   "match": "0x66e520"
+  },
+  "Ai_TrackLine_FindSideMarkerInCorner": {
+   "match": "0x66ef00"
+  },
   "Ai_Update_CompoundPaceCurves": {
    "match": "0x5fb400"
   },
   "Ai_Update_DriverTick": {
    "match": "0x5f5e10"
+  },
+  "Ai_Update_VehicleDriver": {
+   "match": "0x614db0"
   },
   "Ai_Write_AdaptiveAiSessionRecord": {
    "match": "0x3e1a50"
@@ -3194,6 +3203,9 @@
   "Game_CutsceneManager_WaitTextureStreaming": {
    "match": "0x212210"
   },
+  "Game_DRLSystem_OnMessagePlayerDroppedIn": {
+   "match": "0x243d5f0"
+  },
   "Game_DRLSystem_ResolveDependencies": {
    "match": "0x243c440"
   },
@@ -3256,6 +3268,9 @@
   },
   "Game_DeptEventViewModel_Update": {
    "match": "0x22ebdf0"
+  },
+  "Game_DifficultySystem_ApplySettingsToUi": {
+   "match": "0x241b150"
   },
   "Game_DriverCareerTeamSelect_OnMessage": {
    "match": "0x1a6b230"

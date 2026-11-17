@@ -57,6 +57,16 @@
    "verdict": "partial",
    "evidence": "decomp:re/decomp/142f45960.c;decomp:re/decomp/142f43500.c;decomp:re/decomp/142fe77f0.c;decomp:re/decomp/1405ee110.c;decomp:re/decomp/14063e370.c;xref:0x1457f8350,0x1457f8298,0x1405ee51e,0x14063e5dd,0x14063e889",
    "notes": "V2134 TT27V item 4. Agree on memory ownership: the vehicle system (vtable 0x1457f8290) vector is {allocator +0x20, begin +0x28, end +0x30, cap +0x38} of raw entity pointers; it is freed only by vtable slot 0xc0 = 0x142f43500 (pointer at 0x1457f8350; session exit: unregisters its message handlers, logs 'Removing all vehicle from vehicle system', end=begin, allocator(+0x20)->slot 0x38 free(begin), zeroes begin/end/cap) and by the destructor slot 0x8 = 0x142fe77f0 (same sequence). No per-element destructor runs and the free uses begin, so holding end at 26 or putting it back cannot leak or double-free; if the exit already ran, end is 0 and the guard's end==clamped test skips the write. Disagree that holding the vector at 26 is safe: the AI system's per-frame update 0x1405ee110 fills its per-vehicle cache ai+0x128 (16-byte {vehicle, component 0x146ce8b40}) only for i < the byte count of this vector, then schedules job 0x14063e370 (lea at 0x1405ee51e) over [ai+8] AI vehicles; the job takes i by lock xadd and loads rbx = [[ai+0x128]+i*16+8] (0x14063e5dd), then mov r10,[rbx+0x18] (0x14063e889). With 27 AI vehicles and the vector held at 26, entry 26 stays null: IG10 20261030-061735 faults there 23 ms after the guard line (rsi=0x1a, rdi=0x1a0, rbx=0, reading 0x18). A session with 27 vehicles cannot be made safe by shortening this vector; only keeping the session at 26 vehicles upstream is."
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "re-bindings",
+   "kind": "func",
+   "item": "Sess_Setup_VehicleComponents",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm of the archived 1.0.141 exe (PE 1789118616) 0x142f45960-0x142f46206;xref:0x1457f82e8,0x14080c546",
+   "notes": "V10782 Re-verified; the newest partial V2134 judged the native 26-vehicle clamp in era_picker.cpp (it found the clamp unsafe for the AI job), not this row. Only reference abs 0x1457f82e8 = VehicleSystem vtable 0x1457f8290 +0x58, called by call [rax+0x58] at 0x14080c546; rcx=module only (native hook type void(void*) matches); count = ((end-begin)>>3)&0xff from +0x28/+0x30; +0x180 zeroed then table store mov [rsi+rcx*8+0xb0] at 0x142f45a09 with no bound, so slot 26 is the count; +0x2e9 (0x142f45c49) writes [rdx+0x3e4], +0x305 (0x142f45c65) reads [r10+0xe8]; config lea [rsi+0x190]; component ids 0x146ce8a00/0x146ce8b00; mode context [[+0x88]+0x260]+0x2b0 at 0x142f45d86/0x142f45d91; +0x132, +0x2580, +0x9f2c writes."
   }
  ],
  "proofs": []
