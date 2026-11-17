@@ -154,6 +154,35 @@ private:
 // does not depend on which translation unit's entry the SDK lists first.
 void arm_next_hook_guard();
 
+// A guard that hooks game code through safetyhook itself when its owner first arms it, outside the core mixin sets
+// and the on-load entries. install() runs on the first arm() only; every later arm() returns what that run returned.
+class OnDemandGuard {
+public:
+    OnDemandGuard() = default;
+    OnDemandGuard(const OnDemandGuard &) = delete;
+    OnDemandGuard &operator=(const OnDemandGuard &) = delete;
+
+    bool arm()
+    {
+        if (!tried_) {
+            tried_ = true;
+            armed_ = install();
+        }
+        return armed_;
+    }
+
+    bool armed() const { return armed_; }
+
+protected:
+    ~OnDemandGuard() = default;
+
+    virtual bool install() = 0;
+
+private:
+    bool tried_ = false;
+    bool armed_ = false;
+};
+
 }
 
 #define SWOFTY_HOOK_GUARD(id, what, setup)                                                                                       \
