@@ -11,8 +11,8 @@ use semver::Version;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
-use super::api::ApiError;
 use super::{SESSION_FILE, SESSION_LOCK};
+use crate::online::server::api::ApiError;
 
 pub const MAX_AGE_S: u64 = 300;
 pub const SESSION_KEY: &str = "tt_barred";
@@ -201,7 +201,7 @@ pub fn enabled<'a, 'b>(
     out
 }
 
-/// [`list`], asking the boards server [`super::api::Api::new`] talks to.
+/// [`list`], asking the boards server [`crate::online::server::api::Api::new`] talks to.
 pub fn current(data: &Path, now: u64) -> Option<Vec<Barred>> {
     list(data, now, || fetch(&crate::catalog::base_url()))
 }
@@ -437,7 +437,7 @@ mod tests {
 
     #[test]
     fn fetches_without_a_sign_in() {
-        let (url, t) = super::super::api::tests::serve(
+        let (url, t) = crate::online::server::api::tests::serve(
             "200 OK",
             r#"{"addons":[{"id":"kizikafuka.ai-drive","name":"AI Drive","reason":"the AI can drive your car"}]}"#,
         );
@@ -448,7 +448,7 @@ mod tests {
         assert!(!request.to_ascii_lowercase().contains("authorization"));
         assert_eq!(got[0].title(), "AI Drive");
         assert_eq!(cached(&data).unwrap().fetched, 77);
-        let (url, t) = super::super::api::tests::serve("503 Service Unavailable", "");
+        let (url, t) = crate::online::server::api::tests::serve("503 Service Unavailable", "");
         assert!(fetch(&url).unwrap_err().transient());
         t.join().unwrap();
         std::fs::remove_dir_all(&data).ok();

@@ -12,8 +12,8 @@ use std::time::Duration;
 use ring::signature::{ED25519, UnparsedPublicKey};
 use serde::Deserialize;
 
+use super::api::Api;
 use crate::game_folder::baseline::sha256_bytes;
-use crate::online::timetrial::api::Api;
 
 /// The addon id the module loads under. It is not a user addon: no profile, addon list or fingerprint has it.
 pub const PLUGIN_ID: &str = "swofty.integrity";

@@ -16,7 +16,7 @@ use crate::catalog::{self, Addon};
 use crate::game_folder::baseline::Identity;
 use crate::online::modules::library::{Hooks, Library};
 use crate::online::modules::{self, Unavailable};
-use crate::online::timetrial::api::Api;
+use crate::online::server::api::Api;
 use crate::profile::Profile;
 use crate::store::Store;
 
