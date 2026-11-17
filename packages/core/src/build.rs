@@ -10,8 +10,8 @@ use crate::activation::ers::{self, ErsMap, build_ers};
 use crate::activation::grid::grid_size;
 use crate::activation::handling::{self, HandlingMap};
 use crate::activation::place::{
-    PlaceInput, SLOTS, layer_worlds, missing_worlds, place, room_for, slot_asset_group, slot_asset_root,
-    slot_file, track_group,
+    PlaceInput, SLOTS, ai_teams, layer_worlds, missing_worlds, place, room_for, slot_asset_group,
+    slot_asset_root, slot_file, track_group,
 };
 use crate::activation::ui::{Kept, MapUi, build_ui, plan_lists, stamp as ui_stamp};
 use crate::asset::{
@@ -1909,6 +1909,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         }
         let row_adders = crate::stdlib::room::row_adders(copies.iter().map(|c| c.addon.as_str()), CORE_ID);
         built.row_ids = added_row_ids(&db, &copies);
+        let added_ai = ai_teams(&db, copies.iter().map(|c| (c.from.as_str(), c.row.as_str())));
         for (addon, code, id) in &track_ids {
             built
                 .row_ids
@@ -1997,6 +1998,15 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 planner.last_writer(&[Target::Group(group.to_owned())]).is_some()
             });
             let cars = room_for(&track_worlds, grid);
+            let track_ai: Vec<_> = added_ai
+                .iter()
+                .filter(|t| {
+                    planner
+                        .last_writer(&[Target::Group(t.group(&pkg.track_code))])
+                        .is_none()
+                })
+                .cloned()
+                .collect();
             let placement = place(
                 &PlaceInput {
                     pkg,
@@ -2005,6 +2015,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                     slot: slot.zip(slot_original.as_deref()),
                     cars,
                     worlds: &track_worlds,
+                    ai_teams: &track_ai,
                 },
                 &store.root.join("cache/maps").join(&pkg.track_code),
             )?;
@@ -2052,6 +2063,12 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 built
                     .lines
                     .push(format!("{}: world {alias} stands in with {to}", pkg.track_code));
+            }
+            for (team, to) in &placement.ai_aliases {
+                built.lines.push(format!(
+                    "{}: AI data for {team} stands in with the track's {to}",
+                    pkg.track_code
+                ));
             }
             if !placement.repaired.is_empty() {
                 built.lines.push(format!(
