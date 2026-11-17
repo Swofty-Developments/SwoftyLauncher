@@ -4,8 +4,9 @@
 Every C++ file under src/core is a translation unit of swofty_core.dll unless CORE_EXCLUDE names it, so a new
 source file needs no build change. Each translation unit compiles to its own object under <builddir>/obj with a
 depfile, so ninja rebuilds exactly what an edit touches and reruns a compile whose command line changed.
-swofty_core.dll links its objects in the order tools/core_link_order.txt gives, which is also the order their static
-initializers run in.
+swofty_core.dll links its objects in source path order. Every core compile also reports its objects with a dynamic
+initializer (tools/cxx_init.sh), and tools/init_check.py fails the build on one that tools/init_allow.txt does not
+list, so no initializer depends on that order.
 """
 
 import argparse
@@ -42,15 +43,6 @@ def sources(root, exts):
     return found
 
 
-def link_order(objects):
-    listed = [line.strip() for line in open(os.path.join(NATIVE, 'tools/core_link_order.txt'))
-              if line.strip() and not line.startswith('#')]
-    gone = [src for src in listed if src not in objects]
-    if gone:
-        sys.exit(f'build_graph.py: tools/core_link_order.txt names sources that are not built: {gone}')
-    return [objects[src] for src in listed] + [objects[src] for src in sorted(set(objects) - set(listed))]
-
-
 def q(args):
     return ' '.join(a if a.startswith('$') else shlex.quote(a) for a in args)
 
@@ -81,9 +73,9 @@ class Graph:
     def obj(self, source):
         return f'{self.builddir}/obj/{os.path.splitext(source)[0]}.o'
 
-    def compile(self, rule, source, flags):
+    def compile(self, rule, source, flags, report=False):
         out = self.obj(source)
-        self.build([out], rule, [source], flags)
+        self.build([out] + ([f'| {out}.init'] if report else []), rule, [source], flags)
         return out
 
 
@@ -109,6 +101,9 @@ def main():
     g.lines.append('')
     g.rule('cc', '$cc $flags -MD -MF $out.d -c $in -o $out', 'CC $in', depfile=True)
     g.rule('cxx', '$cxx $flags -MD -MF $out.d -c $in -o $out', 'CXX $in', depfile=True)
+    g.rule('cxx_core', 'sh tools/cxx_init.sh $out.init $cxx $flags -MD -MF $out.d -c $in -o $out', 'CXX $in', depfile=True)
+    g.rule('init_check', 'python3 tools/init_check.py --allow tools/init_allow.txt --out $out $in',
+           'CHECK static initializers')
     g.rule('link_c', '$cc $flags -shared -o $out $in $strip', 'LINK $out')
     g.rule('link_cxx', '$cxx $flags -shared -o $out $in $strip', 'LINK $out')
 
@@ -128,17 +123,20 @@ def main():
         for src in sources(f'{ZSTD}/{sub}', ('.c',)):
             objects[src] = g.compile('cc', src, ZSTD_FLAGS + [f'-I{ZSTD}'])
     core_sources = sources('src/core', ('.cpp',))
+    reports = []
     for src in core_sources:
         if src in CORE_EXCLUDE:
             continue
         if src in SEH_SOURCES:
-            objects[src] = g.compile('cxx', src, warn + ['-fms-extensions', '-Isrc'] + SEH_SOURCES[src])
+            objects[src] = g.compile('cxx_core', src, warn + ['-fms-extensions', '-Isrc'] + SEH_SOURCES[src], True)
         else:
-            objects[src] = g.compile('cxx', src, core_flags)
+            objects[src] = g.compile('cxx_core', src, core_flags, True)
+        reports.append(f'{objects[src]}.init')
     missing = (CORE_EXCLUDE | set(SEH_SOURCES)) - set(core_sources)
     if missing:
         sys.exit(f'build_graph.py: listed sources that no longer exist: {sorted(missing)}')
-    g.build([f'{a.builddir}/swofty_core.dll'], 'link_cxx', link_order(objects), warn)
+    g.build([f'{a.builddir}/swofty_core.dll'], 'link_cxx', [objects[src] for src in sorted(objects)], warn)
+    g.build([f'{a.builddir}/static-init.txt'], 'init_check', reports + ['| tools/init_check.py tools/init_allow.txt'])
 
     gamelog = [g.compile('cxx', 'src/gamelog/gamelog.cpp', warn + ['-fms-extensions', '-Isrc', '-I$sdk', '-Iinclude', '$strip'])]
     g.build([f'{a.builddir}/swofty_gamelog.dll'], 'link_cxx', gamelog, warn)
