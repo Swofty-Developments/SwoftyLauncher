@@ -7778,7 +7778,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-ads"
-version = "1.9.60"
+version = "1.9.61"
 dependencies = [
  "open",
  "serde",
@@ -7790,7 +7790,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-ads-helper"
-version = "1.9.60"
+version = "1.9.61"
 dependencies = [
  "gtk",
  "swofty-ads",
