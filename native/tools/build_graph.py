@@ -75,7 +75,8 @@ class Graph:
 
     def compile(self, rule, source, flags, report=False):
         out = self.obj(source)
-        self.build([out] + ([f'| {out}.init'] if report else []), rule, [source], flags)
+        self.build([out] + ([f'| {out}.init'] if report else []), rule, [source] + (['| tools/cxx_init.sh'] if report else []),
+                   flags)
         return out
 
 
