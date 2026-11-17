@@ -1,5 +1,6 @@
 #include "core/guards/ai/ai_curves_logic.hpp"
 #include "core/guards/guard.hpp"
+#include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -12,10 +13,6 @@
 #include <cstring>
 #include <mutex>
 #include <string>
-
-namespace runtime {
-std::string hook_error(const safetyhook::MidHook::Error &e);
-}
 
 // AI team performance curves guard (re/db/functions.tsv Ai_Build_TeamPerformanceCurves, 0x14065d170).
 //
