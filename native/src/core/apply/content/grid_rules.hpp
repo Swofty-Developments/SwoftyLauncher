@@ -1,7 +1,7 @@
 #pragma once
 
-#include "lower.hpp"
-#include "../../box_grid_logic.hpp"
+#include "core/apply/content/lower.hpp"
+#include "core/boxes/box_grid_logic.hpp"
 
 #include <optional>
 #include <string>

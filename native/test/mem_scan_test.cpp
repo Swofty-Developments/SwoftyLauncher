@@ -1,4 +1,4 @@
-#include "mem_scan_logic.hpp"
+#include "core/frontend/mem_scan_logic.hpp"
 
 #include <cstdio>
 

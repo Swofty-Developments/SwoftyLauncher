@@ -1,18 +1,18 @@
 #pragma once
 
-#include "career_rows.hpp"
-#include "drs.hpp"
-#include "points.hpp"
-#include "garage_lower.hpp"
-#include "liveries.hpp"
-#include "lower.hpp"
-#include "rows.hpp"
-#include "wear.hpp"
-#include "teams.hpp"
+#include "core/apply/content/career_rows.hpp"
+#include "core/apply/content/drs.hpp"
+#include "core/apply/content/points.hpp"
+#include "core/apply/content/garage_lower.hpp"
+#include "core/apply/content/liveries.hpp"
+#include "core/apply/content/lower.hpp"
+#include "core/apply/content/rows.hpp"
+#include "core/apply/content/wear.hpp"
+#include "core/apply/content/teams.hpp"
 
-#include "../ids.hpp"
-#include "../../career_ops/start_teams.hpp"
-#include "../../registry/store.hpp"
+#include "core/apply/ids.hpp"
+#include "core/career/ops/start_teams.hpp"
+#include "core/registry/store.hpp"
 
 #include <map>
 #include <memory>

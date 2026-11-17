@@ -2,7 +2,7 @@
 // the 107 % rule, the position base, drivers without a time, and the row pattern layout (design only).
 // run_events_test.sh builds and runs it.
 #include <cmath>
-#include "../src/core/box_grid_logic.hpp"
+#include "core/boxes/box_grid_logic.hpp"
 
 #include <cstdio>
 #include <string>

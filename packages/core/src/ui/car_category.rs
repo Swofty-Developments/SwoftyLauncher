@@ -11,7 +11,7 @@ pub const UI: &str = "eaid://ui_package/screens/f1_world_container.ui";
 pub const UI_FRAGMENT: usize = 1;
 pub const SCENE: &str = "eaid://ui_package/art/screens/modular_menu/mm_mp_gp_create.idf";
 /// Addon boxes the Car Category screen has room for; core fills at most this many
-/// (`MAX_ADDED` in native/src/core/car_category_logic.hpp).
+/// (`MAX_ADDED` in native/src/core/boxes/car_category_logic.hpp).
 pub const SLOTS: usize = 4;
 
 const TEMPLATE: &str = "session_create_dlc_select_tab";

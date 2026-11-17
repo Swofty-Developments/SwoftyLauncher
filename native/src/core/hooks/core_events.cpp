@@ -8,9 +8,9 @@
 #include <swofty/systems/spectator.hpp>
 #include <swofty/systems/tracks.hpp>
 
-#include "core_events.hpp"
-#include "hooks.hpp"
-#include "payloads.hpp"
+#include "core/hooks/core_events.hpp"
+#include "core/hooks/hooks.hpp"
+#include "core/hooks/payloads.hpp"
 
 namespace swofty_core::hooks::events {
 namespace {

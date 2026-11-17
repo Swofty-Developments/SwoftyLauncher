@@ -12,7 +12,7 @@
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
 
-#include "../src/core/perf.hpp"
+#include "core/diagnostics/perf.hpp"
 #include "../src/loader/alog.h"
 
 std::string settings_addon(const void *, std::string &dll)

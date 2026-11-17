@@ -1,8 +1,8 @@
 #pragma once
 
-#include "lower.hpp"
+#include "core/apply/tracks/lower.hpp"
 
-#include "../ids.hpp"
+#include "core/apply/ids.hpp"
 
 #include <map>
 #include <set>
@@ -21,7 +21,7 @@ struct VenueSeed {
     const char *key, *name, *country, *stock;
 };
 
-#include "venues.inc"
+#include "core/apply/tracks/venues.inc"
 
 inline constexpr const char *DORMANT[] = {"paul_ricard", "portimao",    "sochi",           "hanoi",    "texas_nat",
                                           "suzuka_east", "bahrain_pad", "silverstone_int", "bahrain24"};

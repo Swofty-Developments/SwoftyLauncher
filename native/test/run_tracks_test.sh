@@ -14,9 +14,9 @@ python3 ../src/core/apply/tracks/venues.py --check
 SRC=(../src/core/registry/store.cpp ../src/core/registry/table.cpp ../src/core/registry/validate.cpp ../src/core/registry/schema.cpp
      ../src/core/registry/engine.cpp ../src/core/apply/ids.cpp)
 pids=()
-"${PIN[@]}" zig c++ -target x86_64-linux-musl -std=c++23 -O1 -Wall -Wextra -Wno-nullability-completeness -I../../packages/sdk/include \
+"${PIN[@]}" zig c++ -target x86_64-linux-musl -I../src -std=c++23 -O1 -Wall -Wextra -Wno-nullability-completeness -I../../packages/sdk/include \
     -o "$OUT/lower_test" tracks/lower_test.cpp "${SRC[@]}" & pids+=($!)
-"${PIN[@]}" zig c++ -target x86_64-windows-gnu -std=c++23 -O2 -Wall -Wextra -I../../packages/sdk/include -I../include \
+"${PIN[@]}" zig c++ -target x86_64-windows-gnu -I../src -std=c++23 -O2 -Wall -Wextra -I../../packages/sdk/include -I../include \
     -Wno-nullability-completeness -c ../src/core/apply/tracks/boot.cpp -o "$OUT/boot.windows.o" & pids+=($!)
 for p in "${pids[@]}"; do wait "$p"; done
 GAMEDB="/mnt/gaming/SteamLibrary/steamapps/common/F1 25/game_package/gamedatabases/gamedatabases.2025.bin"

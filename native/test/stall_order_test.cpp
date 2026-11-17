@@ -1,10 +1,10 @@
-// Host-native unit test for the load-stall report's running-threads section (native/src/core/stall_order_logic.hpp):
+// Host-native unit test for the load-stall report's running-threads section (native/src/core/diagnostics/crash/stall_order_logic.hpp):
 // which threads it lists first and in what order, which top frames count as a wait, and the register, unwound-frame
 // and frame-stack text, replayed from the 1.9.39 hang entering Monaco's race (stoykebn__, case
 // 1570788625938124871), where job thread 17860 spun under RtlCaptureStackBackTrace in 0x1445acb00 while the report
 // listed it among 219 threads. Built and run by native/test/run_stall_order_test.sh.
 
-#include "stall_order_logic.hpp"
+#include "core/diagnostics/crash/stall_order_logic.hpp"
 
 #include <cstdio>
 #include <cstring>

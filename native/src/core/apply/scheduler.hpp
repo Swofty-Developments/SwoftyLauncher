@@ -6,8 +6,8 @@
 #include <string>
 #include <vector>
 
-#include "applier.hpp"
-#include "ids.hpp"
+#include "core/apply/applier.hpp"
+#include "core/apply/ids.hpp"
 
 namespace swofty_core::apply {
 

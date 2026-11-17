@@ -2,7 +2,7 @@
 // patch mode, keyed lists and "$delete", x-ref with a fake resolver, the pattern matcher, data files with
 // "$select", "$protect", keys with "/" and "extends" variants, the error cap, hostile schemas and values,
 // and a timed run over a 1 MB record set. run_schema_test.sh builds and runs it.
-#include "../../src/core/registry/schema.hpp"
+#include "core/registry/schema.hpp"
 
 #include <chrono>
 #include <cstdio>

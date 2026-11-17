@@ -21,6 +21,6 @@ cross-references).
 Primary sources this reference is distilled from: the launcher's own UI generator
 (`/mnt/work/VSC/F1ModManager/packages/core/src/ui/{node,pages,patch,check,mod}.rs`), the binary
 format crates (`packages/formats/src/{pkg,erp}.rs`), and the native runtime loader/binder
-(`native/src/core/{ui,ui_vm}.cpp`).
+(`native/src/core/frontend/{ui,ui_vm}.cpp`).
 
 ## Inbox

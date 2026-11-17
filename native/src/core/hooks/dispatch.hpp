@@ -13,8 +13,8 @@
 
 #include "swofty_api.h"
 
-#include "catalogue.hpp"
-#include "context.hpp"
+#include "core/hooks/catalogue.hpp"
+#include "core/hooks/context.hpp"
 
 // Hook points and events (standard library 1.6). A point is a name with a kind (notify: after; modify:
 // before and after; cancel: before, replace and after), a payload version and, for an addon's point,

@@ -1,6 +1,6 @@
 // Host unit test for the LAN Car Category addon boxes (car_category_logic.hpp): the press commands, the
 // option value name decoding, the value match and the handle release. run_events_test.sh builds and runs it.
-#include "../src/core/car_category_logic.hpp"
+#include "core/boxes/car_category_logic.hpp"
 
 #include <cstdio>
 #include <string>

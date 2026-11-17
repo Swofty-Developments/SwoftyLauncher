@@ -12,7 +12,7 @@ EXE=${SWOFTY_TEST_EXE:-$PWD/../../work/exe/F1_25.exe}
 BINDINGS=${SWOFTY_TEST_BINDINGS:-$PWD/../dist/swofty/addons/core/bindings.json}
 PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 mkdir -p "$OUT"
-"${PIN[@]}" zig c++ -target x86_64-linux-musl -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness \
+"${PIN[@]}" zig c++ -target x86_64-linux-musl -I../src -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness \
     -o "$OUT/scan_test" scan_test.cpp
 if [[ -f $EXE && -f $BINDINGS ]]; then
     "${PIN[@]}" "$OUT/scan_test" "$EXE" "$BINDINGS"

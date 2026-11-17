@@ -1,18 +1,18 @@
-// Host-native unit test for the portable overlay draw list (native/src/core/hud_drawlist.hpp). The
+// Host-native unit test for the portable overlay draw list (native/src/core/hud/hud_drawlist.hpp). The
 // D3D12 present hook and GPU renderer can only run in game; this covers everything that does not: the
 // tessellation (golden vertex counts and bounds), batching, the clip/transform/opacity stacks, the font
 // metrics and text layout, image decoding, the paint registry and the image registry. With a second
 // argument it rasterises a probe scene on the CPU to <dir>/hud-scene.png. Built and run by
 // native/test/run_hud_test.sh.
 
-#include "hud_drawlist.hpp"
-#include "hud_font_atlas.hpp"
-#include "hud_guard.hpp"
-#include "hud_image.hpp"
-#include "hud_input.hpp"
-#include "text_entry.hpp"
-#include "hud_png.hpp"
-#include "exec_plan.hpp"
+#include "core/hud/hud_drawlist.hpp"
+#include "core/hud/hud_font_atlas.hpp"
+#include "core/hud/hud_guard.hpp"
+#include "core/hud/hud_image.hpp"
+#include "core/hud/hud_input.hpp"
+#include "core/hud/text_entry.hpp"
+#include "core/hud/hud_png.hpp"
+#include "core/render/exec_plan.hpp"
 
 #include <array>
 #include <cstddef>

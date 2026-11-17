@@ -1,7 +1,7 @@
-// Host-native unit test for the direct start's Time Trial (native/src/core/direct_start_tt_logic.hpp).
+// Host-native unit test for the direct start's Time Trial (native/src/core/testing/direct_start_tt_logic.hpp).
 // Built and run by native/test/run_direct_start_tt_test.sh.
 
-#include "direct_start_tt_logic.hpp"
+#include "core/testing/direct_start_tt_logic.hpp"
 
 #include <cstdio>
 

@@ -1,8 +1,8 @@
-#include "../../src/core/apply/tracks/boot.hpp"
-#include "../../src/core/apply/content/gvdb.hpp"
-#include "../../src/core/registry/declare_all.hpp"
-#include "../../src/core/registry/table.hpp"
-#include "../../src/core/registry/validate.hpp"
+#include "core/apply/tracks/boot.hpp"
+#include "core/apply/content/gvdb.hpp"
+#include "core/registry/declare_all.hpp"
+#include "core/registry/table.hpp"
+#include "core/registry/validate.hpp"
 
 #include <cstdio>
 #include <fstream>

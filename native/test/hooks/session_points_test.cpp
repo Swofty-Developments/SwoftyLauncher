@@ -7,7 +7,7 @@
 // the destroy/build bracket (operations answer late between them, car.controllers.rebuilt fires per car),
 // set_control (flag handling, the pit-lane refusal, queueing during a rebuild and inside a switch), and the
 // spectator calls and hud.spectator.visible. run_session_points_test.sh builds and runs it.
-#include "../../src/core/hooks/session_points.hpp"
+#include "core/hooks/session_points.hpp"
 #include "../sdk_payloads.h"
 
 #include <cmath>

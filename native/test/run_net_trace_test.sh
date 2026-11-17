@@ -13,7 +13,7 @@ PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 rm -rf "$OUT/game"
 mkdir -p "$OUT/game"
 zig dlltool -d fake_net_ws2.def -l "$OUT/libfake_ws2.a" -m i386:x86-64
-"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -o "$OUT/game/F1_25.exe" fake_net.c -lversion -luser32 -lws2_32 \
+"${PIN[@]}" zig cc -target x86_64-windows-gnu -I../src -O2 -o "$OUT/game/F1_25.exe" fake_net.c -lversion -luser32 -lws2_32 \
     "$OUT/libfake_ws2.a"
 # The game imports ws2_32 through two descriptors, WS2_32.dll and ws2_32.dll. lld merges names that differ only
 # in case, so the second one links under a placeholder and is renamed here.

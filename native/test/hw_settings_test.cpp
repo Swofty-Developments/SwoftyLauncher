@@ -2,7 +2,7 @@
 #include <cstdio>
 #include <string>
 
-#include "../src/core/hw_settings_logic.hpp"
+#include "core/diagnostics/crash/hw_settings_logic.hpp"
 
 static int fails;
 

@@ -1,7 +1,7 @@
 // Host unit test for the telemetry feed layout and seqlock. Builds and runs on the CI host
 // (no Wine, no game); the core publishes the live feed with the same telemetry_feed.hpp.
 
-#include "../src/core/telemetry_feed.hpp"
+#include "core/telemetry/telemetry_feed.hpp"
 
 #include <atomic>
 #include <cstdio>

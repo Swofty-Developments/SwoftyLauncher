@@ -1,9 +1,9 @@
-// Host-native unit test for the core's audio job queue fix (native/src/core/audio_queue_logic.hpp): the queue
+// Host-native unit test for the core's audio job queue fix (native/src/core/guards/engine/audio_queue_logic.hpp): the queue
 // layout, moving stranded requests from slots 12-23 into free slots 0-11, a model of the stock workers' drain
 // that strands a request and of the fixed drain that runs every one, and the worker thunk registry.
 // Built and run by native/test/run_audio_queue_test.sh.
 
-#include "audio_queue_logic.hpp"
+#include "core/guards/engine/audio_queue_logic.hpp"
 
 #include <cstdio>
 #include <cstdlib>

@@ -100,7 +100,7 @@ struct Record {
     std::string owner, why;
 };
 
-// Career snapshots (W4, native/src/core/snapshots/). While a career is loaded (Context::career set),
+// Career snapshots (W4, native/src/core/career/snapshots/). While a career is loaded (Context::career set),
 // the store asks the snapshot source for a record's frozen value before it computes it. A found value
 // replaces base and every global and profile layer; the career's own layers still apply on top. A
 // value frozen with another major is converted through the registry's migrate, else its adapter's

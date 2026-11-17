@@ -3,7 +3,7 @@
 // track, a live row is left alone, the stock id may come from a later source, and the three 2026-11-11 crash bundles
 // replay to a swap from every source they had. Built and run by native/test/run_gp_track_test.sh.
 
-#include "apply/gp_track_logic.hpp"
+#include "core/apply/gp_track_logic.hpp"
 
 #include <cstdio>
 

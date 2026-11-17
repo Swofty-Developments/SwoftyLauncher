@@ -1,6 +1,6 @@
 #pragma once
 
-#include "bc7.hpp"
+#include "core/apply/content/bc7.hpp"
 
 #include <algorithm>
 #include <cmath>

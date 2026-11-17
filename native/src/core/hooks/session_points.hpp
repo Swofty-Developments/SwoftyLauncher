@@ -15,10 +15,10 @@
 #include <swofty/systems/sessions.hpp>
 #include <swofty/systems/spectator.hpp>
 
-#include "dispatch.hpp"
-#include "game_point.hpp"
-#include "payloads.hpp"
-#include "vtable_point.hpp"
+#include "core/hooks/dispatch.hpp"
+#include "core/hooks/game_point.hpp"
+#include "core/hooks/payloads.hpp"
+#include "core/hooks/vtable_point.hpp"
 
 // The core's session hook points and session operations (standard library 1.6.0):
 //   ai.controller.update      slot 1 of vt_Sess_AiController (Sess_AiController_Update), direct dispatch; or, when

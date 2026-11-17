@@ -3,7 +3,7 @@
 // writes and put-back order of the fuel plan over a fake data set. run_track_lists_test.sh builds and runs it.
 #include "fixture.hpp"
 
-#include "../../src/core/apply/tracks/fuel_plan.hpp"
+#include "core/apply/tracks/fuel_plan.hpp"
 
 int main()
 {

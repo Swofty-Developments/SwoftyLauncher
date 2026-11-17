@@ -1,7 +1,7 @@
 #pragma once
-#include "../game_manager_layout.hpp"
-#include "live_layout.hpp"
-#include "live_mem.hpp"
+#include "core/runtime/game_manager_layout.hpp"
+#include "core/live/live_layout.hpp"
+#include "core/live/live_mem.hpp"
 
 namespace swofty_core::live {
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds src/core/settings.cpp with the registry store as native/build.sh builds the core and runs settings_get_test.cpp:
+# Builds src/core/runtime/settings.cpp with the registry store as native/build.sh builds the core and runs settings_get_test.cpp:
 # under Wine on Linux, natively on Windows (Git Bash). No game process starts, so it needs no game lock.
 set -uo pipefail
 SELF=$(readlink -f "$0")
@@ -23,8 +23,8 @@ else
     RUN=(wine)
     export WINEPREFIX=${WINEPREFIX:-$OUT/prefix} WINEDEBUG=-all
 fi
-"${PIN[@]}" zig c++ -target x86_64-windows-gnu -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I$SDK -I../include \
-    -o "$OUT/settings_get_test.exe" settings_get_test.cpp ../src/core/settings.cpp ../src/core/registry/store.cpp \
+"${PIN[@]}" zig c++ -target x86_64-windows-gnu -I../src -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I$SDK -I../include \
+    -o "$OUT/settings_get_test.exe" settings_get_test.cpp ../src/core/runtime/settings.cpp ../src/core/registry/store.cpp \
     ../src/core/registry/table.cpp ../src/core/registry/validate.cpp ../src/core/registry/schema.cpp \
     ../src/core/registry/older.cpp || exit 1
 [[ $NATIVE == 1 ]] || timeout 300 wineboot -i >/dev/null 2>&1

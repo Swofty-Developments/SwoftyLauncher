@@ -1,7 +1,7 @@
 // Host unit test for the view tracker's flow table (view_flow_logic.hpp). The hashes are the ones a real run
 // logged: session 20261105-215752 entered Instant Replay as flow node 24941c93 and logged no
 // djb2("SessionStateViewInstantReplay") (203f3b13).
-#include "../src/core/view_flow_logic.hpp"
+#include "core/frontend/view_flow_logic.hpp"
 
 #include <cstdio>
 #include <string>

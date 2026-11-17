@@ -8,5 +8,5 @@ if ! command -v "$CXX" >/dev/null; then
 fi
 OUT=${1:-$PWD/../build/replay-grid-test}
 mkdir -p "$OUT"
-"$CXX" -std=c++23 -O2 -Wall -Wextra -I../src/core -pthread -o "$OUT/replay_grid_test" replay_grid_test.cpp
+"$CXX" -std=c++23 -O2 -Wall -Wextra -I../src -pthread -o "$OUT/replay_grid_test" replay_grid_test.cpp
 "$OUT/replay_grid_test"

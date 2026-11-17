@@ -1,4 +1,4 @@
-#include "../../src/core/apply/content/boot.hpp"
+#include "core/apply/content/boot.hpp"
 
 #include <cstdio>
 #include <map>

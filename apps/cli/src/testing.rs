@@ -2149,7 +2149,7 @@ fn strip(v: &Value) -> Value {
     v.get("value").cloned().unwrap_or_else(|| v.clone())
 }
 
-/// The request the core's direct start reads (native/src/core/direct_start.cpp): the game starts with
+/// The request the core's direct start reads (native/src/core/testing/direct_start.cpp): the game starts with
 /// `SWOFTY_DIRECT_START=@<run folder>/direct_start.json` and goes from boot straight to the session.
 const DIRECT_START_ENV: &str = "SWOFTY_DIRECT_START";
 const DIRECT_START_FILE: &str = "direct_start.json";

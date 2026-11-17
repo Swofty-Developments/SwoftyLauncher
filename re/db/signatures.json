@@ -61,7 +61,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/swofty_core.cpp"
+    "native/src/core/frontend/swofty_core.cpp"
    ]
   },
   {
@@ -94,7 +94,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/swofty_core.cpp"
+    "native/src/core/frontend/swofty_core.cpp"
    ]
   },
   {
@@ -126,7 +126,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/swofty_core.cpp"
+    "native/src/core/frontend/swofty_core.cpp"
    ]
   },
   {
@@ -158,7 +158,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/swofty_core.cpp"
+    "native/src/core/frontend/swofty_core.cpp"
    ]
   },
   {
@@ -192,7 +192,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/swofty_core.cpp"
+    "native/src/core/frontend/swofty_core.cpp"
    ]
   },
   {
@@ -225,7 +225,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/swofty_core.cpp"
+    "native/src/core/frontend/swofty_core.cpp"
    ]
   },
   {
@@ -258,7 +258,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/swofty_core.cpp"
+    "native/src/core/frontend/swofty_core.cpp"
    ]
   },
   {
@@ -290,7 +290,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/swofty_core.cpp"
+    "native/src/core/frontend/swofty_core.cpp"
    ]
   },
   {
@@ -365,7 +365,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/garage_slots.cpp"
+    "native/src/core/guards/garage/garage_slots.cpp"
    ],
    "func_start": "0x1424a8080"
   },
@@ -393,7 +393,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/garage_slots.cpp"
+    "native/src/core/guards/garage/garage_slots.cpp"
    ],
    "func_start": "0x1424a8080"
   },
@@ -675,7 +675,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/items.cpp"
+    "native/src/core/assets/items.cpp"
    ]
   },
   {
@@ -701,7 +701,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/events.cpp"
+    "native/src/core/events/events.cpp"
    ]
   },
   {
@@ -727,7 +727,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/events.cpp"
+    "native/src/core/events/events.cpp"
    ]
   },
   {
@@ -753,7 +753,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/events.cpp"
+    "native/src/core/events/events.cpp"
    ]
   },
   {
@@ -5790,7 +5790,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/career.cpp"
+    "native/src/core/career/career.cpp"
    ]
   },
   {
@@ -5869,7 +5869,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/career.cpp"
+    "native/src/core/career/career.cpp"
    ]
   },
   {
@@ -6294,7 +6294,7 @@
    ],
    "used_by": [
     "addons/career-editor/native/src/components.cpp",
-    "native/src/core/career.cpp"
+    "native/src/core/career/career.cpp"
    ]
   },
   {
@@ -6435,7 +6435,7 @@
    ],
    "used_by": [
     "addons/career-editor/native/src/components.cpp",
-    "native/src/core/career.cpp"
+    "native/src/core/career/career.cpp"
    ]
   },
   {
@@ -6548,7 +6548,7 @@
    ],
    "used_by": [
     "addons/career-editor/native/src/components.cpp",
-    "native/src/core/career.cpp"
+    "native/src/core/career/career.cpp"
    ]
   },
   {
@@ -6829,7 +6829,7 @@
    ],
    "used_by": [
     "addons/career-editor/native/src/components.cpp",
-    "native/src/core/career.cpp"
+    "native/src/core/career/career.cpp"
    ]
   },
   {
@@ -7026,9 +7026,9 @@
    ],
    "used_by": [
     "addons/career-editor/native/src/components.cpp",
-    "native/src/core/career.cpp",
-    "native/src/core/testagent/agent.cpp",
-    "native/src/core/myteam_vehicle_keep.cpp"
+    "native/src/core/career/career.cpp",
+    "native/src/core/testing/agent/agent.cpp",
+    "native/src/core/guards/career/myteam_vehicle_keep.cpp"
    ]
   },
   {
@@ -7057,7 +7057,7 @@
    ],
    "used_by": [
     "addons/career-editor/native/src/economy.cpp",
-    "native/src/core/career.cpp"
+    "native/src/core/career/career.cpp"
    ]
   },
   {
@@ -7112,7 +7112,7 @@
    ],
    "used_by": [
     "addons/career-editor/native/src/economy.cpp",
-    "native/src/core/career.cpp"
+    "native/src/core/career/career.cpp"
    ]
   },
   {
@@ -7723,10 +7723,10 @@
     }
    ],
    "used_by": [
-    "native/src/core/dbread.cpp",
-    "native/src/core/career.cpp",
-    "native/src/core/car_category.cpp",
-    "native/src/core/box_options.cpp"
+    "native/src/core/assets/dbread.cpp",
+    "native/src/core/career/career.cpp",
+    "native/src/core/boxes/car_category.cpp",
+    "native/src/core/boxes/box_options.cpp"
    ]
   },
   {
@@ -7945,7 +7945,7 @@
    ],
    "used_by": [
     "addons/f1-1990/native/src/grid_best_of.cpp",
-    "native/src/core/box_grid.cpp"
+    "native/src/core/boxes/box_grid.cpp"
    ]
   },
   {
@@ -7972,7 +7972,7 @@
    ],
    "used_by": [
     "addons/f1-1990/native/src/grid_best_of.cpp",
-    "native/src/core/box_grid.cpp"
+    "native/src/core/boxes/box_grid.cpp"
    ]
   },
   {
@@ -7999,7 +7999,7 @@
    ],
    "used_by": [
     "addons/f1-1990/native/src/grid_best_of.cpp",
-    "native/src/core/box_grid.cpp"
+    "native/src/core/boxes/box_grid.cpp"
    ]
   },
   {
@@ -8490,7 +8490,7 @@
    ],
    "used_by": [
     "addons/f1-1990/native/src/replay_holders.cpp",
-    "native/src/core/replay_grid_guard.cpp"
+    "native/src/core/guards/session/replay_grid_guard.cpp"
    ]
   },
   {
@@ -8568,7 +8568,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/lang_override.cpp"
+    "native/src/core/assets/lang_override.cpp"
    ]
   },
   {
@@ -8594,7 +8594,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/lang_override.cpp"
+    "native/src/core/assets/lang_override.cpp"
    ]
   },
   {
@@ -8622,7 +8622,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/lang_override.cpp"
+    "native/src/core/assets/lang_override.cpp"
    ]
   },
   {
@@ -8979,7 +8979,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/career_content.cpp",
+    "native/src/core/career/career_content.cpp",
     "addons/f1-1990/native/src/career_menu_ui.cpp"
    ]
   },
@@ -9006,7 +9006,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/career_content.cpp",
+    "native/src/core/career/career_content.cpp",
     "addons/f1-1990/native/src/career_menu_ui.cpp"
    ]
   },
@@ -9034,7 +9034,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/career_content.cpp",
+    "native/src/core/career/career_content.cpp",
     "addons/f1-1990/native/src/career_menu_ui.cpp"
    ]
   },
@@ -9061,7 +9061,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/career_content.cpp",
+    "native/src/core/career/career_content.cpp",
     "addons/f1-1990/native/src/career_menu_ui.cpp"
    ]
   },
@@ -9088,7 +9088,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/career_content.cpp",
+    "native/src/core/career/career_content.cpp",
     "addons/f1-1990/native/src/career_menu_ui.cpp"
    ]
   },
@@ -9117,7 +9117,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/career_content.cpp",
+    "native/src/core/career/career_content.cpp",
     "addons/f1-1990/native/src/career_menu_ui.cpp"
    ]
   },
@@ -9146,7 +9146,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/career_content.cpp",
+    "native/src/core/career/career_content.cpp",
     "addons/f1-1990/native/src/career_menu_ui.cpp"
    ]
   },
@@ -9175,7 +9175,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/career_content.cpp",
+    "native/src/core/career/career_content.cpp",
     "addons/f1-1990/native/src/career_menu_ui.cpp"
    ]
   },
@@ -9203,7 +9203,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/career_content.cpp",
+    "native/src/core/career/career_content.cpp",
     "addons/f1-1990/native/src/career_menu_ui.cpp"
    ]
   },
@@ -38290,7 +38290,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/era_picker.cpp"
+    "native/src/core/boxes/era_picker.cpp"
    ]
   },
   {
@@ -38316,7 +38316,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/era_picker.cpp"
+    "native/src/core/boxes/era_picker.cpp"
    ]
   },
   {
@@ -38343,7 +38343,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/era_picker.cpp"
+    "native/src/core/boxes/era_picker.cpp"
    ]
   },
   {
@@ -38370,7 +38370,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/era_picker.cpp"
+    "native/src/core/boxes/era_picker.cpp"
    ]
   },
   {
@@ -40634,7 +40634,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/myteam_vehicle_heal.cpp"
+    "native/src/core/guards/career/myteam_vehicle_heal.cpp"
    ]
   },
   {
@@ -73282,7 +73282,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/career_content.cpp"
+    "native/src/core/career/career_content.cpp"
    ]
   },
   {
@@ -73675,7 +73675,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_splice.cpp"
+    "native/src/core/career/save_splice.cpp"
    ]
   },
   {
@@ -73702,7 +73702,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_splice.cpp"
+    "native/src/core/career/save_splice.cpp"
    ]
   },
   {
@@ -73729,7 +73729,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_splice.cpp"
+    "native/src/core/career/save_splice.cpp"
    ]
   },
   {
@@ -73756,7 +73756,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_splice.cpp"
+    "native/src/core/career/save_splice.cpp"
    ]
   },
   {
@@ -73782,7 +73782,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_splice.cpp"
+    "native/src/core/career/save_splice.cpp"
    ]
   },
   {
@@ -73808,7 +73808,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_splice.cpp"
+    "native/src/core/career/save_splice.cpp"
    ]
   },
   {
@@ -73836,7 +73836,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_splice.cpp"
+    "native/src/core/career/save_splice.cpp"
    ]
   },
   {
@@ -73864,7 +73864,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_splice.cpp"
+    "native/src/core/career/save_splice.cpp"
    ]
   },
   {
@@ -73892,7 +73892,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_splice.cpp"
+    "native/src/core/career/save_splice.cpp"
    ]
   },
   {
@@ -73920,7 +73920,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_splice.cpp"
+    "native/src/core/career/save_splice.cpp"
    ]
   },
   {
@@ -73948,7 +73948,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_splice.cpp"
+    "native/src/core/career/save_splice.cpp"
    ]
   },
   {
@@ -74052,7 +74052,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/car_category.cpp"
+    "native/src/core/boxes/car_category.cpp"
    ]
   },
   {
@@ -74079,7 +74079,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/car_category.cpp"
+    "native/src/core/boxes/car_category.cpp"
    ]
   },
   {
@@ -74106,7 +74106,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/car_category.cpp"
+    "native/src/core/boxes/car_category.cpp"
    ]
   },
   {
@@ -74132,7 +74132,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/car_category.cpp"
+    "native/src/core/boxes/car_category.cpp"
    ]
   },
   {
@@ -74159,7 +74159,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/car_category.cpp"
+    "native/src/core/boxes/car_category.cpp"
    ]
   },
   {
@@ -74186,8 +74186,8 @@
     }
    ],
    "used_by": [
-    "native/src/core/car_category.cpp",
-    "native/src/core/box_options.cpp"
+    "native/src/core/boxes/car_category.cpp",
+    "native/src/core/boxes/box_options.cpp"
    ]
   },
   {
@@ -74215,8 +74215,8 @@
     }
    ],
    "used_by": [
-    "native/src/core/car_category.cpp",
-    "native/src/core/box_options.cpp"
+    "native/src/core/boxes/car_category.cpp",
+    "native/src/core/boxes/box_options.cpp"
    ]
   },
   {
@@ -74242,7 +74242,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/ers_newlap.cpp"
+    "native/src/core/guards/cars/ers_newlap.cpp"
    ],
    "expect": "4D 8B 49 28 41 38 91 E8 00 00 00",
    "func_start": "0x1425180d0"
@@ -74270,7 +74270,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/garage_crew.cpp"
+    "native/src/core/guards/garage/garage_crew.cpp"
    ],
    "expect": "4D 89 E8 49",
    "func_start": "0x140388cf0"
@@ -74298,7 +74298,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/ers_newlap.cpp"
+    "native/src/core/guards/cars/ers_newlap.cpp"
    ],
    "expect": "48 83 C0 08 4C 39 C0",
    "func_start": "0x1425180d0"
@@ -74628,7 +74628,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/ers_mode.cpp"
+    "native/src/core/guards/cars/ers_mode.cpp"
    ]
   },
   {
@@ -74959,7 +74959,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/track_acclim.cpp"
+    "native/src/core/guards/tracks/track_acclim.cpp"
    ]
   },
   {
@@ -75206,7 +75206,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_splice.cpp"
+    "native/src/core/career/save_splice.cpp"
    ]
   },
   {
@@ -75232,7 +75232,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_sandbox.cpp"
+    "native/src/core/testing/save_sandbox.cpp"
    ]
   },
   {
@@ -75258,7 +75258,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_sandbox.cpp"
+    "native/src/core/testing/save_sandbox.cpp"
    ]
   },
   {
@@ -75286,7 +75286,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_sandbox.cpp"
+    "native/src/core/testing/save_sandbox.cpp"
    ]
   },
   {
@@ -75312,7 +75312,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_sandbox.cpp"
+    "native/src/core/testing/save_sandbox.cpp"
    ]
   },
   {
@@ -75362,7 +75362,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_sandbox.cpp"
+    "native/src/core/testing/save_sandbox.cpp"
    ]
   },
   {
@@ -75469,7 +75469,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/car_category.cpp"
+    "native/src/core/boxes/car_category.cpp"
    ]
   },
   {
@@ -75497,7 +75497,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/car_category.cpp"
+    "native/src/core/boxes/car_category.cpp"
    ]
   },
   {
@@ -75523,7 +75523,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -75573,7 +75573,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -75599,7 +75599,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -75625,7 +75625,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -75651,7 +75651,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -75677,7 +75677,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -75731,7 +75731,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -75785,7 +75785,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -75813,7 +75813,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -75841,7 +75841,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -75869,7 +75869,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -75897,7 +75897,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -75925,7 +75925,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -75954,7 +75954,7 @@
    ],
    "used_by": [
     "native/src/core/hooks/car_live.cpp",
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -75983,7 +75983,7 @@
    ],
    "used_by": [
     "native/src/core/hooks/car_live.cpp",
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -76011,7 +76011,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testing/agent/agent.cpp"
    ]
   },
   {
@@ -76504,7 +76504,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/team_slots.cpp"
+    "native/src/core/guards/session/team_slots.cpp"
    ]
   },
   {
@@ -76531,7 +76531,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/team_slots.cpp"
+    "native/src/core/guards/session/team_slots.cpp"
    ]
   },
   {
@@ -76557,7 +76557,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/era_picker.cpp"
+    "native/src/core/boxes/era_picker.cpp"
    ]
   },
   {
@@ -76607,7 +76607,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/track_select.cpp"
+    "native/src/core/guards/tracks/track_select.cpp"
    ]
   },
   {
@@ -76633,7 +76633,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/track_select.cpp"
+    "native/src/core/guards/tracks/track_select.cpp"
    ]
   },
   {
@@ -76659,7 +76659,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/track_select.cpp"
+    "native/src/core/guards/tracks/track_select.cpp"
    ]
   },
   {
@@ -76758,7 +76758,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/track_acclim.cpp"
+    "native/src/core/guards/tracks/track_acclim.cpp"
    ],
    "expect": "8B 91 28 03 00 00",
    "func_start": "0x1429a0620"
@@ -76786,7 +76786,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/track_acclim.cpp"
+    "native/src/core/guards/tracks/track_acclim.cpp"
    ],
    "expect": "C3",
    "func_start": "0x1429a0620"
@@ -80784,7 +80784,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/audio_queue.cpp"
+    "native/src/core/guards/engine/audio_queue.cpp"
    ]
   },
   {
@@ -80812,7 +80812,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/audio_queue.cpp"
+    "native/src/core/guards/engine/audio_queue.cpp"
    ]
   },
   {
@@ -80840,7 +80840,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/audio_queue.cpp"
+    "native/src/core/guards/engine/audio_queue.cpp"
    ]
   },
   {
@@ -80917,7 +80917,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/standings_guard.cpp"
+    "native/src/core/guards/career/standings_guard.cpp"
    ]
   },
   {
@@ -80944,7 +80944,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/standings_guard.cpp"
+    "native/src/core/guards/career/standings_guard.cpp"
    ]
   },
   {
@@ -109346,7 +109346,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/view_state.cpp"
+    "native/src/core/frontend/view_state.cpp"
    ]
   },
   {
@@ -119256,7 +119256,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/tyre_slots.cpp"
+    "native/src/core/guards/cars/tyre_slots.cpp"
    ]
   },
   {
@@ -119283,7 +119283,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/tyre_slots.cpp"
+    "native/src/core/guards/cars/tyre_slots.cpp"
    ]
   },
   {
@@ -119310,7 +119310,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/tyre_slots.cpp"
+    "native/src/core/guards/cars/tyre_slots.cpp"
    ]
   },
   {
@@ -119337,7 +119337,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/tyre_slots.cpp"
+    "native/src/core/guards/cars/tyre_slots.cpp"
    ]
   },
   {
@@ -122049,7 +122049,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/rnd_suppliers_guard.cpp"
+    "native/src/core/guards/career/rnd_suppliers_guard.cpp"
    ]
   },
   {
@@ -126678,7 +126678,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/rnd_suppliers_guard.cpp"
+    "native/src/core/guards/career/rnd_suppliers_guard.cpp"
    ]
   },
   {
@@ -134284,7 +134284,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/save_splice.cpp"
+    "native/src/core/career/save_splice.cpp"
    ]
   },
   {
@@ -134311,7 +134311,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/pit_slots.cpp"
+    "native/src/core/guards/garage/pit_slots.cpp"
    ]
   },
   {
@@ -134338,7 +134338,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/pit_slots.cpp"
+    "native/src/core/guards/garage/pit_slots.cpp"
    ]
   },
   {
@@ -134365,7 +134365,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/pit_slots.cpp"
+    "native/src/core/guards/garage/pit_slots.cpp"
    ]
   },
   {
@@ -134392,7 +134392,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/pit_slots.cpp"
+    "native/src/core/guards/garage/pit_slots.cpp"
    ]
   },
   {
@@ -134419,7 +134419,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/pit_slots.cpp"
+    "native/src/core/guards/garage/pit_slots.cpp"
    ]
   },
   {
@@ -134446,7 +134446,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/pit_slots.cpp"
+    "native/src/core/guards/garage/pit_slots.cpp"
    ]
   },
   {
@@ -134473,7 +134473,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/pit_slots.cpp"
+    "native/src/core/guards/garage/pit_slots.cpp"
    ]
   },
   {
@@ -134500,7 +134500,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/pit_slots.cpp"
+    "native/src/core/guards/garage/pit_slots.cpp"
    ]
   },
   {
@@ -134526,7 +134526,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/era_picker.cpp"
+    "native/src/core/boxes/era_picker.cpp"
    ]
   },
   {
@@ -159460,7 +159460,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/leaderboard_guard.cpp"
+    "native/src/core/guards/frontend/leaderboard_guard.cpp"
    ]
   },
   {
@@ -159487,7 +159487,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/leaderboard_guard.cpp"
+    "native/src/core/guards/frontend/leaderboard_guard.cpp"
    ]
   },
   {
@@ -159514,7 +159514,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/pit_box.cpp"
+    "native/src/core/guards/garage/pit_box.cpp"
    ],
    "func_start": "0x1434c3520"
   },
@@ -159542,7 +159542,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/pit_box.cpp"
+    "native/src/core/guards/garage/pit_box.cpp"
    ],
    "func_start": "0x1434c3520"
   },
@@ -159570,7 +159570,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/thrustmaster_lcd.cpp"
+    "native/src/core/guards/session/thrustmaster_lcd.cpp"
    ]
   },
   {
@@ -159597,7 +159597,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/thrustmaster_lcd.cpp"
+    "native/src/core/guards/session/thrustmaster_lcd.cpp"
    ]
   },
   {
@@ -159624,7 +159624,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/watchdog_grace.cpp"
+    "native/src/core/guards/engine/watchdog_grace.cpp"
    ]
   },
   {
@@ -159651,7 +159651,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/watchdog_grace.cpp"
+    "native/src/core/guards/engine/watchdog_grace.cpp"
    ]
   },
   {
@@ -159678,7 +159678,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/garage_setup.cpp"
+    "native/src/core/guards/garage/garage_setup.cpp"
    ]
   },
   {
@@ -159705,7 +159705,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/garage_setup.cpp"
+    "native/src/core/guards/garage/garage_setup.cpp"
    ]
   },
   {
@@ -159782,7 +159782,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/session_enter.cpp"
+    "native/src/core/guards/session/session_enter.cpp"
    ]
   },
   {
@@ -159980,7 +159980,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/standings_guard.cpp"
+    "native/src/core/guards/career/standings_guard.cpp"
    ]
   },
   {
@@ -160007,7 +160007,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/garage_crew.cpp"
+    "native/src/core/guards/garage/garage_crew.cpp"
    ]
   },
   {
@@ -160034,7 +160034,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/garage_crew.cpp"
+    "native/src/core/guards/garage/garage_crew.cpp"
    ]
   },
   {
@@ -160061,7 +160061,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/garage_crew.cpp"
+    "native/src/core/guards/garage/garage_crew.cpp"
    ]
   },
   {
@@ -160088,7 +160088,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/garage_crew.cpp"
+    "native/src/core/guards/garage/garage_crew.cpp"
    ]
   },
   {
@@ -160115,7 +160115,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/ai_corner_guard.cpp"
+    "native/src/core/guards/ai/ai_corner_guard.cpp"
    ]
   },
   {
@@ -160142,7 +160142,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/ai_corner_guard.cpp"
+    "native/src/core/guards/ai/ai_corner_guard.cpp"
    ]
   },
   {
@@ -160169,7 +160169,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/leaderboard_guard.cpp"
+    "native/src/core/guards/frontend/leaderboard_guard.cpp"
    ]
   },
   {
@@ -160196,7 +160196,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/leaderboard_guard.cpp"
+    "native/src/core/guards/frontend/leaderboard_guard.cpp"
    ]
   },
   {
@@ -160222,7 +160222,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/fe_tile_guard.cpp"
+    "native/src/core/guards/frontend/fe_tile_guard.cpp"
    ]
   },
   {
@@ -160248,7 +160248,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/fe_tile_guard.cpp"
+    "native/src/core/guards/frontend/fe_tile_guard.cpp"
    ]
   },
   {
@@ -160275,7 +160275,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/fe_tile_guard.cpp"
+    "native/src/core/guards/frontend/fe_tile_guard.cpp"
    ]
   },
   {
@@ -160302,7 +160302,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/fe_tile_guard.cpp"
+    "native/src/core/guards/frontend/fe_tile_guard.cpp"
    ]
   },
   {
@@ -160329,7 +160329,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/fe_tile_guard.cpp"
+    "native/src/core/guards/frontend/fe_tile_guard.cpp"
    ]
   },
   {
@@ -160356,7 +160356,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/fe_tile_guard.cpp"
+    "native/src/core/guards/frontend/fe_tile_guard.cpp"
    ]
   },
   {
@@ -160383,7 +160383,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/fe_tile_guard.cpp"
+    "native/src/core/guards/frontend/fe_tile_guard.cpp"
    ]
   },
   {
@@ -160436,7 +160436,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/crash.cpp"
+    "native/src/core/diagnostics/crash/crash.cpp"
    ]
   },
   {
@@ -160463,7 +160463,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/view_state.cpp"
+    "native/src/core/frontend/view_state.cpp"
    ]
   },
   {
@@ -160490,7 +160490,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/view_state.cpp"
+    "native/src/core/frontend/view_state.cpp"
    ]
   },
   {
@@ -160517,7 +160517,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/view_state.cpp"
+    "native/src/core/frontend/view_state.cpp"
    ]
   },
   {
@@ -160544,7 +160544,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/teamhq_track_guard.cpp"
+    "native/src/core/guards/career/teamhq_track_guard.cpp"
    ]
   },
   {
@@ -160571,7 +160571,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/teamhq_track_guard.cpp"
+    "native/src/core/guards/career/teamhq_track_guard.cpp"
    ]
   },
   {
@@ -160598,7 +160598,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/teamhq_track_guard.cpp"
+    "native/src/core/guards/career/teamhq_track_guard.cpp"
    ]
   },
   {
@@ -160625,7 +160625,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/setup_vm_guard.cpp"
+    "native/src/core/guards/frontend/setup_vm_guard.cpp"
    ]
   },
   {
@@ -160652,7 +160652,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/setup_vm_guard.cpp"
+    "native/src/core/guards/frontend/setup_vm_guard.cpp"
    ]
   },
   {
@@ -160679,7 +160679,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/setup_vm_guard.cpp"
+    "native/src/core/guards/frontend/setup_vm_guard.cpp"
    ]
   },
   {
@@ -160706,7 +160706,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/setup_vm_guard.cpp"
+    "native/src/core/guards/frontend/setup_vm_guard.cpp"
    ]
   },
   {
@@ -160733,7 +160733,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/activity_resume_guard.cpp"
+    "native/src/core/guards/career/activity_resume_guard.cpp"
    ],
    "func_start": "0x151948840",
    "data1_reason": "the race length text body is a .data1 body (thunk 0x14386b1d0, called from Game_ActivitiesUIDeeplinkManager_ReportCareerActivityResume at 0x1438682e5); no .xtls site sees the ui variable group before it is read"
@@ -160762,7 +160762,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/activity_resume_guard.cpp"
+    "native/src/core/guards/career/activity_resume_guard.cpp"
    ],
    "func_start": "0x151948840",
    "data1_reason": "the race length text body is a .data1 body (thunk 0x14386b1d0, called from Game_ActivitiesUIDeeplinkManager_ReportCareerActivityResume at 0x1438682e5); no .xtls site sees the ui variable group before it is read"
@@ -160791,7 +160791,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/activity_resume_guard.cpp"
+    "native/src/core/guards/career/activity_resume_guard.cpp"
    ],
    "func_start": "0x151948840",
    "data1_reason": "the race length text body is a .data1 body (thunk 0x14386b1d0, called from Game_ActivitiesUIDeeplinkManager_ReportCareerActivityResume at 0x1438682e5); no .xtls site sees the ui variable group before it is read"
@@ -160820,7 +160820,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/teammate_pairs_guard.cpp"
+    "native/src/core/guards/session/teammate_pairs_guard.cpp"
    ]
   },
   {
@@ -160846,7 +160846,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/standings_drop.cpp"
+    "native/src/core/guards/career/standings_drop.cpp"
    ]
   },
   {
@@ -160872,7 +160872,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/standings_drop.cpp"
+    "native/src/core/guards/career/standings_drop.cpp"
    ]
   },
   {
@@ -160899,7 +160899,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/sequencer_records_guard.cpp"
+    "native/src/core/guards/career/sequencer_records_guard.cpp"
    ]
   },
   {
@@ -160926,7 +160926,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/sequencer_records_guard.cpp"
+    "native/src/core/guards/career/sequencer_records_guard.cpp"
    ]
   },
   {
@@ -160953,7 +160953,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/ai_line_set_guard.cpp"
+    "native/src/core/guards/ai/ai_line_set_guard.cpp"
    ]
   },
   {
@@ -161380,7 +161380,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/entitlements.cpp"
+    "native/src/core/assets/entitlements.cpp"
    ]
   },
   {
@@ -161407,7 +161407,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/estimate_laptime_guard.cpp"
+    "native/src/core/guards/session/estimate_laptime_guard.cpp"
    ]
   },
   {
@@ -161434,7 +161434,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/estimate_laptime_guard.cpp"
+    "native/src/core/guards/session/estimate_laptime_guard.cpp"
    ]
   },
   {
@@ -161462,7 +161462,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/live_state.cpp"
+    "native/src/core/live/live_state.cpp"
    ]
   },
   {
@@ -161490,7 +161490,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/live_state.cpp"
+    "native/src/core/live/live_state.cpp"
    ]
   },
   {
@@ -161518,7 +161518,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/live_state.cpp"
+    "native/src/core/live/live_state.cpp"
    ]
   },
   {
@@ -161546,7 +161546,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/live_state.cpp"
+    "native/src/core/live/live_state.cpp"
    ]
   },
   {
@@ -161574,7 +161574,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/live_state.cpp"
+    "native/src/core/live/live_state.cpp"
    ]
   },
   {
@@ -161602,7 +161602,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/live_state.cpp"
+    "native/src/core/live/live_state.cpp"
    ]
   },
   {
@@ -161656,7 +161656,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/live_state.cpp"
+    "native/src/core/live/live_state.cpp"
    ]
   },
   {
@@ -161684,7 +161684,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/live_state.cpp"
+    "native/src/core/live/live_state.cpp"
    ]
   },
   {
@@ -161712,7 +161712,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/live_state.cpp"
+    "native/src/core/live/live_state.cpp"
    ]
   },
   {
@@ -161740,7 +161740,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/live_state.cpp"
+    "native/src/core/live/live_state.cpp"
    ]
   },
   {
@@ -161768,7 +161768,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/live_state.cpp"
+    "native/src/core/live/live_state.cpp"
    ]
   },
   {
@@ -161796,7 +161796,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/live_state.cpp"
+    "native/src/core/live/live_state.cpp"
    ]
   },
   {
@@ -161824,7 +161824,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/live_state.cpp"
+    "native/src/core/live/live_state.cpp"
    ]
   },
   {
@@ -161852,7 +161852,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/live_state.cpp"
+    "native/src/core/live/live_state.cpp"
    ]
   },
   {
@@ -161880,7 +161880,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/live_state.cpp"
+    "native/src/core/live/live_state.cpp"
    ]
   },
   {
@@ -161936,7 +161936,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/live_state.cpp"
+    "native/src/core/live/live_state.cpp"
    ]
   },
   {
@@ -161964,7 +161964,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/main_menu.cpp"
+    "native/src/core/frontend/main_menu.cpp"
    ]
   },
   {
@@ -161991,7 +161991,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/theatre_list.cpp"
+    "native/src/core/guards/frontend/theatre_list.cpp"
    ]
   },
   {
@@ -162018,7 +162018,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/theatre_list.cpp"
+    "native/src/core/guards/frontend/theatre_list.cpp"
    ]
   },
   {
@@ -163004,7 +163004,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/era_picker.cpp"
+    "native/src/core/boxes/era_picker.cpp"
    ]
   },
   {
@@ -163031,7 +163031,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/leaderboard_guard.cpp"
+    "native/src/core/guards/frontend/leaderboard_guard.cpp"
    ]
   },
   {
@@ -163058,7 +163058,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/leaderboard_guard.cpp"
+    "native/src/core/guards/frontend/leaderboard_guard.cpp"
    ]
   },
   {
@@ -163085,7 +163085,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/leaderboard_guard.cpp"
+    "native/src/core/guards/frontend/leaderboard_guard.cpp"
    ]
   },
   {
@@ -163112,7 +163112,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/leaderboard_guard.cpp"
+    "native/src/core/guards/frontend/leaderboard_guard.cpp"
    ]
   },
   {
@@ -163139,7 +163139,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/gp_continue_guard.cpp"
+    "native/src/core/guards/frontend/gp_continue_guard.cpp"
    ]
   },
   {
@@ -163166,7 +163166,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/gp_continue_guard.cpp"
+    "native/src/core/guards/frontend/gp_continue_guard.cpp"
    ]
   },
   {
@@ -163193,8 +163193,8 @@
     }
    ],
    "used_by": [
-    "native/src/core/myteam_vehicle_guard.cpp",
-    "native/src/core/myteam_vehicle_keep.cpp"
+    "native/src/core/guards/career/myteam_vehicle_guard.cpp",
+    "native/src/core/guards/career/myteam_vehicle_keep.cpp"
    ]
   },
   {
@@ -163221,8 +163221,8 @@
     }
    ],
    "used_by": [
-    "native/src/core/myteam_vehicle_guard.cpp",
-    "native/src/core/myteam_vehicle_keep.cpp"
+    "native/src/core/guards/career/myteam_vehicle_guard.cpp",
+    "native/src/core/guards/career/myteam_vehicle_keep.cpp"
    ]
   },
   {
@@ -163248,7 +163248,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/leaderboard_guard.cpp"
+    "native/src/core/guards/frontend/leaderboard_guard.cpp"
    ],
    "expect": "80 BA F0 00 00 00 00"
   },
@@ -163275,7 +163275,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/leaderboard_guard.cpp"
+    "native/src/core/guards/frontend/leaderboard_guard.cpp"
    ],
    "expect": "48 8D 35"
   },
@@ -163303,7 +163303,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/gp_weekend_track_guard.cpp"
+    "native/src/core/guards/tracks/gp_weekend_track_guard.cpp"
    ]
   },
   {
@@ -163330,7 +163330,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/leaderboard_guard.cpp"
+    "native/src/core/guards/frontend/leaderboard_guard.cpp"
    ]
   },
   {
@@ -163357,7 +163357,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/leaderboard_guard.cpp"
+    "native/src/core/guards/frontend/leaderboard_guard.cpp"
    ]
   },
   {
@@ -163384,7 +163384,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/track_list_guard.cpp"
+    "native/src/core/guards/tracks/track_list_guard.cpp"
    ]
   },
   {
@@ -163411,7 +163411,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/track_list_guard.cpp"
+    "native/src/core/guards/tracks/track_list_guard.cpp"
    ]
   },
   {
@@ -163438,7 +163438,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/track_list_guard.cpp"
+    "native/src/core/guards/tracks/track_list_guard.cpp"
    ]
   },
   {
@@ -163465,7 +163465,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/track_list_guard.cpp"
+    "native/src/core/guards/tracks/track_list_guard.cpp"
    ]
   },
   {
@@ -163492,7 +163492,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/myteam_vehicle_heal.cpp"
+    "native/src/core/guards/career/myteam_vehicle_heal.cpp"
    ]
   },
   {
@@ -163519,7 +163519,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/myteam_vehicle_keep.cpp"
+    "native/src/core/guards/career/myteam_vehicle_keep.cpp"
    ]
   },
   {
@@ -163546,7 +163546,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/sequencer_records_guard.cpp"
+    "native/src/core/guards/career/sequencer_records_guard.cpp"
    ]
   },
   {
@@ -163573,7 +163573,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/sequencer_records_guard.cpp"
+    "native/src/core/guards/career/sequencer_records_guard.cpp"
    ]
   },
   {
@@ -163600,7 +163600,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/sequencer_records_guard.cpp"
+    "native/src/core/guards/career/sequencer_records_guard.cpp"
    ]
   },
   {
@@ -163626,7 +163626,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/sequencer_records_guard.cpp"
+    "native/src/core/guards/career/sequencer_records_guard.cpp"
    ],
    "expect": "C6 83 E4 05"
   },
@@ -163655,7 +163655,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/race_retirement_guard.cpp"
+    "native/src/core/guards/session/race_retirement_guard.cpp"
    ]
   },
   {
@@ -163681,7 +163681,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/race_retirement_guard.cpp"
+    "native/src/core/guards/session/race_retirement_guard.cpp"
    ],
    "expect": "48 83 C1 18 48 8D 54 24 50"
   },
@@ -163708,7 +163708,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/race_retirement_guard.cpp"
+    "native/src/core/guards/session/race_retirement_guard.cpp"
    ],
    "expect": "48 8B 54 24 60"
   },
@@ -163735,7 +163735,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/theatre_list.cpp"
+    "native/src/core/guards/frontend/theatre_list.cpp"
    ],
    "expect": "4C 69 F7 C8 04 00 00"
   },
@@ -163762,7 +163762,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/theatre_list.cpp"
+    "native/src/core/guards/frontend/theatre_list.cpp"
    ],
    "expect": "4A 8D 14 C2 4D 8B 41 38"
   },
@@ -163789,7 +163789,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/theatre_list.cpp"
+    "native/src/core/guards/frontend/theatre_list.cpp"
    ],
    "expect": "48 83 C4 28 5B"
   },
@@ -163816,7 +163816,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/session_job_probe.cpp"
+    "native/src/core/diagnostics/session_job_probe.cpp"
    ]
   },
   {
@@ -163842,7 +163842,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/tile_list_select_guard.cpp"
+    "native/src/core/guards/frontend/tile_list_select_guard.cpp"
    ],
    "expect": "49 8B 3F 4C 8B 77 30"
   },
@@ -163869,7 +163869,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/tile_list_select_guard.cpp"
+    "native/src/core/guards/frontend/tile_list_select_guard.cpp"
    ],
    "expect": "49 83 C7 08 4D 39 E7"
   },
@@ -186120,7 +186120,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/red_flag_recompute_guard.cpp"
+    "native/src/core/guards/session/red_flag_recompute_guard.cpp"
    ]
   },
   {
@@ -186147,7 +186147,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/sequencer_records_guard.cpp"
+    "native/src/core/guards/career/sequencer_records_guard.cpp"
    ]
   },
   {
@@ -186174,7 +186174,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/sequencer_records_guard.cpp"
+    "native/src/core/guards/career/sequencer_records_guard.cpp"
    ]
   },
   {
@@ -186200,7 +186200,7 @@
     }
    ],
    "used_by": [
-    "native/src/core/tile_list_select_guard.cpp"
+    "native/src/core/guards/frontend/tile_list_select_guard.cpp"
    ]
   },
   {

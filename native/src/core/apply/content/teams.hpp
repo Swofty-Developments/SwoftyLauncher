@@ -1,7 +1,7 @@
 #pragma once
 
-#include "liveries.hpp"
-#include "lower.hpp"
+#include "core/apply/content/liveries.hpp"
+#include "core/apply/content/lower.hpp"
 
 #include <cstdio>
 #include <cstring>

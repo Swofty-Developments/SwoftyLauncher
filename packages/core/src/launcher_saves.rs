@@ -23,7 +23,7 @@ pub const DIR: &str = "saves";
 pub const REMOTE: &str = "remote";
 pub const MARKER: &str = "imported.json";
 /// The exit code the core ends F1 25 with when launcher saves cannot be armed
-/// (native/src/core/save_sandbox_logic.hpp `EXIT_LAUNCHER`).
+/// (native/src/core/testing/save_sandbox_logic.hpp `EXIT_LAUNCHER`).
 pub const EXIT: i32 = 93;
 /// Status the core writes next to settings.json when it ends the game with [`EXIT`].
 pub const STATUS_FILE: &str = "swofty/launcher-saves.json";

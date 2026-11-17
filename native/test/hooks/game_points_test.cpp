@@ -5,7 +5,7 @@
 // changes reach the game's code, that a replace handler stands in for it, that a raw wrap installed
 // before the window stage chains below the point, and that a raw overwrite wins: the point yields,
 // reports the conflict and leaves the function to it. run_game_points_test.sh builds and runs it.
-#include "../../src/core/hooks/game_points.hpp"
+#include "core/hooks/game_points.hpp"
 #include "../sdk_payloads.h"
 
 #include <cmath>

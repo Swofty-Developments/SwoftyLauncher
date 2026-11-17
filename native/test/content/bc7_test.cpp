@@ -1,4 +1,4 @@
-#include "../../src/core/apply/content/logo_array.hpp"
+#include "core/apply/content/logo_array.hpp"
 
 #include <cstdio>
 #include <fstream>

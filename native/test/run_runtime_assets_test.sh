@@ -14,7 +14,7 @@ rm -rf "$OUT/game"
 mkdir -p "$OUT/game"
 
 echo "==== dbread logic unit test"
-"${PIN[@]}" zig c++ -target x86_64-linux-musl -std=c++23 -O2 -Wall -Wextra -I../../packages/sdk/include -o "$OUT/dbread_unit" dbread_unit.cpp
+"${PIN[@]}" zig c++ -target x86_64-linux-musl -I../src -std=c++23 -O2 -Wall -Wextra -I../../packages/sdk/include -o "$OUT/dbread_unit" dbread_unit.cpp
 "$OUT/dbread_unit"
 
 ZS=../third_party/zstd
@@ -23,10 +23,10 @@ ZOBJ=()
 for c in $ZS/common/*.c $ZS/decompress/*.c; do
     o=$OUT/zstd/$(basename "${c%.c}").o
     ZOBJ+=("$o")
-    [[ $o -nt $c ]] || "${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -DZSTD_DISABLE_ASM -DXXH_NAMESPACE=ZSTD_ -DZSTD_LEGACY_SUPPORT=0 -I$ZS -c "$c" -o "$o" &
+    [[ $o -nt $c ]] || "${PIN[@]}" zig cc -target x86_64-windows-gnu -I../src -O2 -DZSTD_DISABLE_ASM -DXXH_NAMESPACE=ZSTD_ -DZSTD_LEGACY_SUPPORT=0 -I$ZS -c "$c" -o "$o" &
 done
 wait
-"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -Wno-unused-function -I$ZS -o "$OUT/game/F1_25.exe" fake_runtime.c "${ZOBJ[@]}" -lversion -luser32 -lws2_32
+"${PIN[@]}" zig cc -target x86_64-windows-gnu -I../src -O2 -Wno-unused-function -I$ZS -o "$OUT/game/F1_25.exe" fake_runtime.c "${ZOBJ[@]}" -lversion -luser32 -lws2_32
 cat > "$OUT/slow_mod.c" <<'EOC'
 #include <windows.h>
 __declspec(dllexport) int SwoftyAddonInit(const void *api)
@@ -37,7 +37,7 @@ __declspec(dllexport) int SwoftyAddonInit(const void *api)
     return 1;
 }
 EOC
-"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -shared -o "$OUT/t_slow.dll" "$OUT/slow_mod.c"
+"${PIN[@]}" zig cc -target x86_64-windows-gnu -I../src -O2 -shared -o "$OUT/t_slow.dll" "$OUT/slow_mod.c"
 cat > "$OUT/plain_mod.c" <<'EOC'
 __declspec(dllexport) int SwoftyAddonInit(const void *api)
 {
@@ -46,7 +46,7 @@ __declspec(dllexport) int SwoftyAddonInit(const void *api)
 }
 EOC
 for n in t_early t_window; do
-    "${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -shared -o "$OUT/$n.dll" "$OUT/plain_mod.c"
+    "${PIN[@]}" zig cc -target x86_64-windows-gnu -I../src -O2 -shared -o "$OUT/$n.dll" "$OUT/plain_mod.c"
 done
 cat > "$OUT/t_files.cpp" <<'EOC'
 #include <swofty/registry.hpp>
@@ -66,8 +66,8 @@ SWOFTY_REGISTER
 
 SWOFTY_ADDON()
 EOC
-"${PIN[@]}" zig c++ -target x86_64-windows-gnu -std=c++23 -O2 -I../../packages/sdk/include -shared -s -o "$OUT/t_files.dll" "$OUT/t_files.cpp" &
-"${PIN[@]}" zig c++ -target x86_64-windows-gnu -std=c++23 -O2 -DSECOND -I../../packages/sdk/include -shared -s -o "$OUT/t_files2.dll" "$OUT/t_files.cpp" &
+"${PIN[@]}" zig c++ -target x86_64-windows-gnu -I../src -std=c++23 -O2 -I../../packages/sdk/include -shared -s -o "$OUT/t_files.dll" "$OUT/t_files.cpp" &
+"${PIN[@]}" zig c++ -target x86_64-windows-gnu -I../src -std=c++23 -O2 -DSECOND -I../../packages/sdk/include -shared -s -o "$OUT/t_files2.dll" "$OUT/t_files.cpp" &
 wait
 cp -r "../$DIST/." "$OUT/game/"
 python3 - "$OUT/game/swofty/addons/core/bindings.json" <<'EOB'

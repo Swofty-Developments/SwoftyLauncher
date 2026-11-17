@@ -10,9 +10,9 @@ OUT=${1:-$PWD/../build/game-points-test}
 PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 SH=../third_party/safetyhook
 mkdir -p "$OUT"
-[[ $OUT/Zydis.o -nt $SH/Zydis.c ]] || "${PIN[@]}" zig cc -target x86_64-linux-musl -O2 -I$SH -c $SH/Zydis.c -o "$OUT/Zydis.o"
+[[ $OUT/Zydis.o -nt $SH/Zydis.c ]] || "${PIN[@]}" zig cc -target x86_64-linux-musl -I../src -O2 -I$SH -c $SH/Zydis.c -o "$OUT/Zydis.o"
 [[ $OUT/safetyhook.o -nt $SH/safetyhook.cpp ]] ||
-    "${PIN[@]}" zig c++ -target x86_64-linux-musl -std=c++23 -O2 -I$SH -c $SH/safetyhook.cpp -o "$OUT/safetyhook.o"
-"${PIN[@]}" zig c++ -target x86_64-linux-musl -std=c++23 -O1 -Wall -Wextra -Wno-nullability-completeness \
+    "${PIN[@]}" zig c++ -target x86_64-linux-musl -I../src -std=c++23 -O2 -I$SH -c $SH/safetyhook.cpp -o "$OUT/safetyhook.o"
+"${PIN[@]}" zig c++ -target x86_64-linux-musl -I../src -std=c++23 -O1 -Wall -Wextra -Wno-nullability-completeness \
     -I../../packages/sdk/include -I$SH -o "$OUT/game_points_test" hooks/game_points_test.cpp "$OUT/safetyhook.o" "$OUT/Zydis.o"
 "$OUT/game_points_test"

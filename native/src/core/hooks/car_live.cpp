@@ -1,4 +1,4 @@
-#include "../runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
@@ -10,17 +10,17 @@
 #include <unordered_set>
 #include <vector>
 
-#include "../apply/content/race_fuel.hpp"
-#include "../perf.hpp"
-#include "../registry/table.hpp"
-#include "car_live.hpp"
-#include "car_profile.hpp"
-#include "context.hpp"
-#include "core_events.hpp"
-#include "hooks.hpp"
-#include "player_facts.hpp"
-#include "../view_state.hpp"
-#include "session_points.hpp"
+#include "core/apply/content/race_fuel.hpp"
+#include "core/diagnostics/perf.hpp"
+#include "core/registry/table.hpp"
+#include "core/hooks/car_live.hpp"
+#include "core/hooks/car_profile.hpp"
+#include "core/hooks/context.hpp"
+#include "core/hooks/core_events.hpp"
+#include "core/hooks/hooks.hpp"
+#include "core/hooks/player_facts.hpp"
+#include "core/frontend/view_state.hpp"
+#include "core/hooks/session_points.hpp"
 
 // The live car operations on the running game (car_live.hpp): g_Sess_VehicleTable and g_Sess_VehicleCount
 // resolve once the code is ready, memory reads and writes are checked (swofty::mem), writes run only on the

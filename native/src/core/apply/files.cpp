@@ -1,8 +1,8 @@
-#include "files.hpp"
-#include "files_api.hpp"
+#include "core/apply/files.hpp"
+#include "core/apply/files_api.hpp"
 
-#include "../registry/table.hpp"
-#include "../runtime.hpp"
+#include "core/registry/table.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mixin.hpp>
 

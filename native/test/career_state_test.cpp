@@ -3,7 +3,7 @@
 // plain millisecond value. The Driver Career sequence is the one a real run logged: components say
 // driver_career before Team HQ opens, then StateTeamHQ -> StateTeamHQUpdate Updating, then the Team
 // HQ answer "not My Team". run_events_test.sh builds and runs it.
-#include "../src/core/career_state.hpp"
+#include "core/career/career_state.hpp"
 
 #include <cstdio>
 #include <string>

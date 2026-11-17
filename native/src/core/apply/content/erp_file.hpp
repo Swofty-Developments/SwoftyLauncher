@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../erp_zstd.hpp"
+#include "core/assets/erp_zstd.hpp"
 
 #include <zstd.h>
 

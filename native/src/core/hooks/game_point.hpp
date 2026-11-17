@@ -6,7 +6,7 @@
 
 #include <safetyhook.hpp>
 
-#include "dispatch.hpp"
+#include "core/hooks/dispatch.hpp"
 
 // A game hook point: the core's detour on one game function, installed while the point has
 // subscribers. It yields to a raw overwrite of the same function from any addon (the 1.5 rule: the

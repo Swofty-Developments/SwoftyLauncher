@@ -8,5 +8,5 @@ if ! command -v "$CXX" >/dev/null; then
 fi
 OUT=${1:-$PWD/../build/thrustmaster-lcd-test}
 mkdir -p "$OUT"
-"$CXX" -std=c++23 -O2 -Wall -Wextra -I../src/core -o "$OUT/thrustmaster_lcd_test" thrustmaster_lcd_test.cpp
+"$CXX" -std=c++23 -O2 -Wall -Wextra -I../src -o "$OUT/thrustmaster_lcd_test" thrustmaster_lcd_test.cpp
 "$OUT/thrustmaster_lcd_test"

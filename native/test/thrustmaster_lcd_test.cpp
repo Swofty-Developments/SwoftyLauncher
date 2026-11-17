@@ -1,7 +1,7 @@
-// Host-native unit test for the core's Thrustmaster LCD guard (native/src/core/thrustmaster_lcd_logic.hpp).
+// Host-native unit test for the core's Thrustmaster LCD guard (native/src/core/guards/session/thrustmaster_lcd_logic.hpp).
 // Built and run by native/test/run_thrustmaster_lcd_test.sh.
 
-#include "thrustmaster_lcd_logic.hpp"
+#include "core/guards/session/thrustmaster_lcd_logic.hpp"
 
 #include <cstdio>
 

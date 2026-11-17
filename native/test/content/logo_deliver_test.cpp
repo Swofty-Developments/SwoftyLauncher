@@ -1,7 +1,7 @@
 #define ZSTD_STATIC_LINKING_ONLY
-#include "../../src/core/apply/content/logo_build.hpp"
-#include "../../src/core/apply/content/logo_deliver.hpp"
-#include "../../src/core/apply/files.hpp"
+#include "core/apply/content/logo_build.hpp"
+#include "core/apply/content/logo_deliver.hpp"
+#include "core/apply/files.hpp"
 
 #include <cstdio>
 #include <filesystem>

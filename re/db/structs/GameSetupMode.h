@@ -4,7 +4,7 @@
 // notes: one game_setup.game_setup_modes row, built once per row by Sess_Parse_GameSetupMode (0x142a14f20).
 // String fields are holder pointers: the Gdb value record + 0x38, whose +0x10 is the decoded char* label;
 // a missing value points at the shared empty holder 0x146cc42e8. The entrants manager's container (its
-// vtable slot +0x1d0, native/src/core/era_picker.cpp) lists these objects; EntrantsManager +0x2b0 names
+// vtable slot +0x1d0, native/src/core/boxes/era_picker.cpp) lists these objects; EntrantsManager +0x2b0 names
 // the current one, and the DRS system resolves the current mode's DRS group from +0x1e0 by label.
 struct GameSetupMode {
     /* 0x084 */ int32_t tyre_pitstop_threshold;   // L1 decomp:re/decomp/142a14f20.c;decomp:re/decomp/14357aed0.c tyre_regulations.pitstop_threshold, scaled by the race length into TyreRegulations +0xa4
