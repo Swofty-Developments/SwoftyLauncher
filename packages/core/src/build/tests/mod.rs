@@ -64,8 +64,6 @@ impl Addon for Rows {
     }
 }
 
-pub(super) static LENDING: std::sync::Mutex<()> = std::sync::Mutex::new(());
-
 pub(super) fn archive(names: &[&str], byte: u8) -> Vec<u8> {
     archive_of("UILayout", names, byte)
 }

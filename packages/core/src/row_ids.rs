@@ -225,18 +225,37 @@ impl Overrides {
     }
 }
 
+#[cfg(not(test))]
 static LENT: std::sync::Mutex<Option<Overrides>> = std::sync::Mutex::new(None);
+
+// Tests run side by side in one process, so a test's lend stays on its own thread: a build in another
+// test must never see it.
+#[cfg(test)]
+thread_local! {
+    static LENT: std::cell::RefCell<Option<Overrides>> = const { std::cell::RefCell::new(None) };
+}
 
 /// Makes this process's builds use `overrides` (a room launch's), or none. The `swofty run` that starts
 /// the game for a room calls it once; no other process does.
 pub fn lend(overrides: Option<Overrides>) {
-    *LENT.lock().unwrap_or_else(std::sync::PoisonError::into_inner) = overrides.filter(|o| !o.is_empty());
+    let overrides = overrides.filter(|o| !o.is_empty());
+    #[cfg(not(test))]
+    {
+        *LENT.lock().unwrap_or_else(std::sync::PoisonError::into_inner) = overrides;
+    }
+    #[cfg(test)]
+    LENT.with(|lent| *lent.borrow_mut() = overrides);
 }
 
 pub fn lent() -> Option<Overrides> {
-    LENT.lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner)
-        .clone()
+    #[cfg(not(test))]
+    {
+        LENT.lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .clone()
+    }
+    #[cfg(test)]
+    LENT.with(|lent| lent.borrow().clone())
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -1390,6 +1409,18 @@ impl RowIds for Scoped<'_> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn a_tests_lend_never_reaches_a_build_in_another_test() {
+        let host = Overrides {
+            order: vec!["a".into()],
+            ..Default::default()
+        };
+        lend(Some(host.clone()));
+        let elsewhere = std::thread::spawn(lent).join().unwrap();
+        assert_eq!((lent(), elsewhere), (Some(host), None));
+        lend(None);
+    }
+
     #[test]
     fn the_hosts_order_fills_the_places_its_addons_held_and_is_part_of_the_cache_key() {
         let host = Overrides {
