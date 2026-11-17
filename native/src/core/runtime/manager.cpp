@@ -19,6 +19,7 @@
 #include "safetyhook.hpp"
 #include "core/runtime/scan_cache.hpp"
 #include "core/frontend/view_state.hpp"
+#include "core/guards/install.hpp"
 #include "swofty_api.h"
 
 void crash_attach(SwoftyApi *a, const std::wstring &dir);
@@ -45,103 +46,8 @@ struct CoreMixins {
 };
 std::vector<CoreMixins> career_mixins();
 const SwoftyCareerContent *career_content_table();
-std::vector<CoreMixins> career_content_mixins();
-void career_content_commit();
 const SwoftyEra *era_table();
 const SwoftyRegistry *registry_table();
-std::vector<CoreMixins> era_mixins();
-void era_commit();
-std::vector<CoreMixins> tt_guard_mixins();
-void tt_guard_commit();
-std::vector<CoreMixins> career_alias_mixins();
-void career_alias_commit();
-std::vector<CoreMixins> car_category_mixins();
-void car_category_commit();
-std::vector<CoreMixins> save_splice_mixins();
-void save_splice_commit();
-std::vector<CoreMixins> save_sandbox_mixins();
-void save_sandbox_commit();
-std::vector<CoreMixins> ers_newlap_mixins();
-void ers_newlap_commit();
-std::vector<CoreMixins> ers_mode_mixins();
-void ers_mode_commit();
-std::vector<CoreMixins> car_levers_mixins();
-void car_levers_commit();
-std::vector<CoreMixins> standings_guard_mixins();
-void standings_guard_commit();
-std::vector<CoreMixins> fe_tile_guard_mixins();
-void fe_tile_guard_commit();
-std::vector<CoreMixins> myteam_vehicle_guard_mixins();
-void myteam_vehicle_guard_commit();
-std::vector<CoreMixins> myteam_vehicle_heal_mixins();
-void myteam_vehicle_heal_commit();
-std::vector<CoreMixins> myteam_vehicle_keep_mixins();
-void myteam_vehicle_keep_commit();
-std::vector<CoreMixins> ai_corner_guard_mixins();
-void ai_corner_guard_commit();
-std::vector<CoreMixins> replay_grid_guard_mixins();
-void replay_grid_guard_commit();
-std::vector<CoreMixins> watchdog_grace_mixins();
-void watchdog_grace_commit();
-std::vector<CoreMixins> tyre_slots_mixins();
-void tyre_slots_commit();
-std::vector<CoreMixins> tyre_models_mixins();
-void tyre_models_commit();
-std::vector<CoreMixins> garage_crew_mixins();
-std::vector<CoreMixins> garage_placement_mixins();
-std::vector<CoreMixins> pit_slots_mixins();
-void garage_crew_commit();
-void pit_slots_commit();
-std::vector<CoreMixins> pit_box_mixins();
-void pit_box_commit();
-std::vector<CoreMixins> garage_slots_mixins();
-void garage_slots_commit();
-std::vector<CoreMixins> chassis_registry_mixins();
-void chassis_registry_commit();
-std::vector<CoreMixins> track_acclim_mixins();
-void track_acclim_commit();
-std::vector<CoreMixins> audio_queue_mixins();
-void audio_queue_commit();
-std::vector<CoreMixins> heap_sizes_mixins();
-void heap_sizes_commit();
-std::vector<CoreMixins> track_select_mixins();
-void track_select_commit();
-std::vector<CoreMixins> team_slots_mixins();
-void team_slots_commit();
-std::vector<CoreMixins> leaderboard_guard_mixins();
-std::vector<CoreMixins> lap_host_mixins();
-void lap_host_commit();
-void leaderboard_guard_commit();
-std::vector<CoreMixins> thrustmaster_lcd_mixins();
-void thrustmaster_lcd_commit();
-std::vector<CoreMixins> estimate_laptime_mixins();
-std::vector<CoreMixins> gp_continue_mixins();
-void gp_continue_commit();
-void estimate_laptime_commit();
-std::vector<CoreMixins> red_flag_recompute_mixins();
-void red_flag_recompute_commit();
-std::vector<CoreMixins> box_grid_mixins();
-void box_grid_commit();
-std::vector<CoreMixins> quali_tyres_mixins();
-void quali_tyres_commit();
-std::vector<CoreMixins> track_list_guard_mixins();
-void track_list_guard_commit();
-std::vector<CoreMixins> garage_setup_mixins();
-void garage_setup_commit();
-std::vector<CoreMixins> theatre_list_mixins();
-void theatre_list_commit();
-std::vector<CoreMixins> tile_list_select_mixins();
-void tile_list_select_commit();
-std::vector<CoreMixins> session_enter_mixins();
-std::vector<CoreMixins> ai_line_set_mixins();
-void ai_line_set_commit();
-void session_enter_commit();
-std::vector<CoreMixins> characters_mixins();
-std::vector<CoreMixins> wizard_mixins();
-std::vector<CoreMixins> tile_route_mixins();
-void characters_commit();
-void wizard_commit();
-void tile_route_commit();
 std::string load_stage();
 void career_setup();
 void popup_setup();
@@ -1855,65 +1761,13 @@ void add_core_sets(std::vector<runtime::CoreMixins> sets)
 size_t offer_core_sets()
 {
     size_t before = addons.size();
-    for (auto *sets : {runtime::save_sandbox_mixins, runtime::career_content_mixins, runtime::characters_mixins, runtime::wizard_mixins,
-                       runtime::tile_route_mixins, runtime::era_mixins, runtime::tt_guard_mixins, runtime::career_alias_mixins, runtime::car_category_mixins,
-                       runtime::save_splice_mixins, runtime::ers_newlap_mixins, runtime::ers_mode_mixins, runtime::car_levers_mixins,
-                       runtime::garage_crew_mixins, runtime::garage_placement_mixins, runtime::pit_slots_mixins, runtime::pit_box_mixins, runtime::garage_slots_mixins, runtime::chassis_registry_mixins, runtime::standings_guard_mixins, runtime::ai_corner_guard_mixins, runtime::replay_grid_guard_mixins, runtime::fe_tile_guard_mixins, runtime::myteam_vehicle_guard_mixins, runtime::myteam_vehicle_heal_mixins, runtime::myteam_vehicle_keep_mixins, runtime::tyre_slots_mixins, runtime::tyre_models_mixins, runtime::track_acclim_mixins,
-                       runtime::audio_queue_mixins, runtime::heap_sizes_mixins, runtime::team_slots_mixins, runtime::track_select_mixins,
-                       runtime::leaderboard_guard_mixins, runtime::lap_host_mixins, runtime::thrustmaster_lcd_mixins, runtime::estimate_laptime_mixins, runtime::red_flag_recompute_mixins, runtime::quali_tyres_mixins, runtime::box_grid_mixins, runtime::gp_continue_mixins, runtime::track_list_guard_mixins, runtime::watchdog_grace_mixins, runtime::garage_setup_mixins, runtime::theatre_list_mixins, runtime::tile_list_select_mixins, runtime::session_enter_mixins, runtime::ai_line_set_mixins})
-        add_core_sets(sets());
+    swofty_core::guards::offer_core_sets(add_core_sets);
     return addons.size() - before;
 }
 
 void settle_core_sets()
 {
-    runtime::save_sandbox_commit();
-    runtime::tile_route_commit();
-    runtime::career_content_commit();
-    runtime::characters_commit();
-    runtime::wizard_commit();
-    runtime::era_commit();
-    runtime::tt_guard_commit();
-    runtime::career_alias_commit();
-    runtime::car_category_commit();
-    runtime::save_splice_commit();
-    runtime::ers_newlap_commit();
-    runtime::lap_host_commit();
-    runtime::ers_mode_commit();
-    runtime::car_levers_commit();
-    runtime::standings_guard_commit();
-    runtime::fe_tile_guard_commit();
-    runtime::myteam_vehicle_guard_commit();
-    runtime::myteam_vehicle_heal_commit();
-    runtime::myteam_vehicle_keep_commit();
-    runtime::ai_corner_guard_commit();
-    runtime::replay_grid_guard_commit();
-    runtime::watchdog_grace_commit();
-    runtime::tyre_slots_commit();
-    runtime::tyre_models_commit();
-    runtime::garage_crew_commit();
-    runtime::pit_slots_commit();
-    runtime::pit_box_commit();
-    runtime::garage_slots_commit();
-    runtime::chassis_registry_commit();
-    runtime::track_acclim_commit();
-    runtime::audio_queue_commit();
-    runtime::heap_sizes_commit();
-    runtime::team_slots_commit();
-    runtime::track_select_commit();
-    runtime::leaderboard_guard_commit();
-    runtime::thrustmaster_lcd_commit();
-    runtime::estimate_laptime_commit();
-    runtime::red_flag_recompute_commit();
-    runtime::box_grid_commit();
-    runtime::quali_tyres_commit();
-    runtime::gp_continue_commit();
-    runtime::track_list_guard_commit();
-    runtime::garage_setup_commit();
-    runtime::theatre_list_commit();
-    runtime::tile_list_select_commit();
-    runtime::session_enter_commit();
-    runtime::ai_line_set_commit();
+    swofty_core::guards::commit_core_sets();
 }
 
 void extend_held(Held &h, const Group &g)
