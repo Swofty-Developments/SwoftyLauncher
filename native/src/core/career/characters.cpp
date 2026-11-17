@@ -135,7 +135,7 @@ std::atomic<uint32_t> builds_logged, stand_ins, missing_logged, muted_lines, sha
 struct Part {
     const char *name, *label;
     std::atomic<bool> wanted{false};
-    runtime::loader::MixinGate gate;
+    runtime::loader::MixinGate gate{};
     std::atomic<bool> live{false}, late_logged{false};
 };
 

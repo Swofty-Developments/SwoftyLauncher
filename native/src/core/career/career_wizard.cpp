@@ -116,7 +116,7 @@ std::atomic<uint32_t> logged[8];
 struct Part {
     const char *name;
     std::atomic<bool> wanted{false};
-    runtime::loader::MixinGate gate;
+    runtime::loader::MixinGate gate{};
     std::atomic<bool> live{false}, late_logged{false};
 };
 

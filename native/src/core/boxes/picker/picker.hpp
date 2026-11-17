@@ -95,7 +95,7 @@ struct Picker {
     std::mutex lock;
     std::vector<logic::Box> boxes;
     std::vector<std::string> skipped;
-    runtime::loader::MixinGate gate;
+    runtime::loader::MixinGate gate{};
     std::atomic<bool> live{}, off{};
     std::string off_why;
     Set set{};
@@ -174,7 +174,7 @@ extern Hold hold;
 using SetupVehicles_t = void(void *module);
 struct VehicleGuard {
     SetupVehicles_t *orig = nullptr;
-    runtime::loader::MixinGate gate;
+    runtime::loader::MixinGate gate{};
     std::atomic<bool> bound{};
     uint32_t logged = 0;
 };
@@ -192,7 +192,7 @@ extern TimeTrialGuard time_trial_guard;
 
 struct AliasGuard {
     int (*orig)(void *, void *) = nullptr;
-    runtime::loader::MixinGate gate;
+    runtime::loader::MixinGate gate{};
     std::atomic<bool> bound{};
 };
 
