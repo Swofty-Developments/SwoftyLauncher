@@ -2,7 +2,9 @@
 #include "core/diagnostics/perf.hpp"
 #include "core/frontend/view_state.hpp"
 #include "core/hud/hud_guard.hpp"
+#include "core/render/postfx/back_buffer_views.hpp"
 #include "core/render/postfx/capture.hpp"
+#include "core/render/postfx/depth_copy.hpp"
 #include "core/render/postfx/gpu.hpp"
 #include "core/render/postfx/pass.hpp"
 #include "core/render/postfx/report.hpp"
@@ -148,18 +150,7 @@ struct BackUse {
     unsigned seen = 0;
 };
 BackUse back_uses[6];
-// The back buffers' render target views by descriptor address, and the latest views made, so a view
-// made before its back buffer was named is still found. A list that binds one of them draws into that
-// back buffer: the game sometimes ends the picture's list inside the HUD-less step and draws the rest
-// of the picture in the next list, and that list closes the step with the back buffer bound.
-struct ViewAt {
-    std::atomic<SIZE_T> at{0};
-    std::atomic<ID3D12Resource *> res{nullptr};
-};
-ViewAt back_views[32], recent_views[64];
-std::atomic<unsigned> recent_next;
-std::atomic<SIZE_T> views_lo{SIZE_T(-1)}, views_hi{0};
-void pin_view(SIZE_T at, ID3D12Resource *res);
+BackBufferViews back_views;
 unsigned back_seen;
 postfx::HudRead hud_read;
 
@@ -535,55 +526,7 @@ void build_mips(ID3D12GraphicsCommandList *l, ID3D12Resource *r, DXGI_FORMAT f, 
 }
 
 
-// The depth buffer as the game leaves each of its passes that write it. On track the passes run in the
-// HUD's list, which never moves the depth buffer, so its state there is unknown; instead the core copies
-// the buffer right before the game's own barrier that takes it out of DEPTH_WRITE, where its state is
-// that barrier's StateBefore, exactly (copy_depth). The last copy of a frame holds the frame's finished
-// depth. The copy rests in NON_PIXEL_SHADER_RESOURCE, and passes read it wherever the place they run
-// leaves no readable depth of its own.
-std::atomic<ID3D12Resource *> depth_copy;
-std::atomic<unsigned> depth_copy_frame;  // frame_count when a copy was last recorded
-std::atomic<unsigned> depth_copy_until;  // copies are made until this frame: passes ran without readable depth
-constexpr unsigned DEPTH_COPY_FRAMES = 120;
-ID3D12Resource *depth_copy_of;           // the game's buffer the copy matches, compared, not held; under lock
-D3D12_RESOURCE_DESC depth_copy_desc;
-bool depth_copy_logged, depth_copy_failed;
-
-// The copy for the game's depth buffer src, made or remade when the game's buffer changed. Under lock.
-ID3D12Resource *depth_copy_for(ID3D12Resource *src, const D3D12_RESOURCE_DESC &d)
-{
-    ID3D12Resource *have = depth_copy.load(std::memory_order_acquire);
-    const D3D12_RESOURCE_DESC &h = depth_copy_desc;
-    if (have && depth_copy_of == src && h.Width == d.Width && h.Height == d.Height && h.Format == d.Format &&
-        h.MipLevels == d.MipLevels && h.DepthOrArraySize == d.DepthOrArraySize)
-        return have;
-    if (!gpu.device || depth_copy_failed)
-        return nullptr;
-    D3D12_RESOURCE_DESC cd = d;
-    cd.Flags &= ~D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
-    D3D12_HEAP_PROPERTIES heap{};
-    heap.Type = D3D12_HEAP_TYPE_DEFAULT;
-    ID3D12Resource *r = nullptr;
-    if (FAILED(gpu.device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &cd,
-                                               D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, nullptr,
-                                               IID_PPV_ARGS(&r)))) {
-        depth_copy_failed = true;
-        swofty::log("[postfx] could not make a copy of the game's depth buffer (%llux%u, format %d); passes read "
-                    "depth only where the game leaves it readable",
-                    static_cast<unsigned long long>(d.Width), d.Height, int(d.Format));
-        return nullptr;
-    }
-    retire({depth_copy.exchange(r, std::memory_order_acq_rel)});
-    depth_copy_of = src;
-    depth_copy_desc = d;
-    if (!depth_copy_logged) {
-        depth_copy_logged = true;
-        swofty::log("[postfx] the core copies the game's depth buffer (%llux%u, format %d) where the game stops "
-                    "writing it, for passes that run where it isn't readable",
-                    static_cast<unsigned long long>(d.Width), d.Height, int(d.Format));
-    }
-    return r;
-}
+DepthCopy depth_copy;
 
 
 std::string describe(const RenderPass &p)
@@ -934,9 +877,7 @@ bool record(const Where &w, int k)
     // only while passes keep running in such places (depth_copy_until).
     bool depth_copied = false;
     if (!depth) {
-        depth_copy_until.store(frame_count + DEPTH_COPY_FRAMES, std::memory_order_relaxed);
-        ID3D12Resource *dc = depth_copy.load(std::memory_order_acquire);
-        if (dc && frame_count - depth_copy_frame.load(std::memory_order_relaxed) <= 2) {
+        if (ID3D12Resource *dc = depth_copy.fresh(frame_count)) {
             D3D12_RESOURCE_DESC dd = dc->GetDesc();
             depth = dc;
             depth_fmt = depth_view(dd.Format);
@@ -1160,9 +1101,7 @@ void on_setname(ID3D12Object *o, LPCWSTR name)
     drop_depths(wcscmp(name, DEPTH_NAME) == 0 ? res : nullptr, res);
     bool tonemap = wcscmp(name, TONEMAP_NAME) == 0, back = wcscmp(name, BACKBUFFER_NAME) == 0;
     if (back)
-        for (auto &v : recent_views)
-            if (v.res.load(std::memory_order_relaxed) == res)
-                pin_view(v.at.load(std::memory_order_relaxed), res);
+        back_views.named(res);
     uint8_t bits = (tonemap ? W_TONEMAP : 0) | (back ? W_BACK : 0) | (wcscmp(name, HUDLESS_NAME) == 0 ? W_HUDLESS : 0) |
                    (wcscmp(name, DEPTH_NAME) == 0 ? W_DEPTH : 0) |
                    (wcsncmp(name, UI_PREFIX, wcslen(UI_PREFIX)) == 0 ? W_UI : 0);
@@ -1215,55 +1154,19 @@ void unmark(ID3D12GraphicsCommandList *list)
     }
 }
 
-void pin_view(SIZE_T at, ID3D12Resource *res)
-{
-    if (!at)
-        return;
-    for (auto &v : back_views)
-        if (v.at.load(std::memory_order_relaxed) == at) {
-            v.res.store(res, std::memory_order_relaxed);
-            return;
-        }
-    if (!res)
-        return;
-    for (auto &v : back_views) {
-        SIZE_T none = 0;
-        if (v.at.compare_exchange_strong(none, at)) {
-            v.res.store(res, std::memory_order_relaxed);
-            SIZE_T lo = views_lo.load(std::memory_order_relaxed), hi = views_hi.load(std::memory_order_relaxed);
-            while (at < lo && !views_lo.compare_exchange_weak(lo, at))
-                ;
-            while (at > hi && !views_hi.compare_exchange_weak(hi, at))
-                ;
-            return;
-        }
-    }
-}
-
 void on_create_rtv(ID3D12Resource *res, D3D12_CPU_DESCRIPTOR_HANDLE at)
 {
-    ViewAt &r = recent_views[recent_next.fetch_add(1, std::memory_order_relaxed) % 64];
-    r.at.store(at.ptr, std::memory_order_relaxed);
-    r.res.store(res, std::memory_order_relaxed);
-    pin_view(at.ptr, res && (watched.bits(res) & W_BACK) ? res : nullptr);
+    back_views.created(res, at, watched);
 }
 
-// The picture and the HUD draw into the back buffer as the first render target. Binds of anything else
-// fall outside the back buffers' views and return at the range check.
+// The picture and the HUD draw into the back buffer as the first render target.
 void on_render_targets(ID3D12GraphicsCommandList *list, UINT n, const D3D12_CPU_DESCRIPTOR_HANDLE *rtvs, BOOL)
 {
     if (!n || !rtvs)
         return;
-    SIZE_T at = rtvs[0].ptr;
-    if (at < views_lo.load(std::memory_order_relaxed) || at > views_hi.load(std::memory_order_relaxed))
-        return;
-    for (auto &v : back_views)
-        if (v.at.load(std::memory_order_relaxed) == at) {
-            if (ID3D12Resource *res = v.res.load(std::memory_order_relaxed))
-                if (Side *s = side_marks.find(list, true))
-                    s->bound.store(res, std::memory_order_relaxed);
-            return;
-        }
+    if (ID3D12Resource *res = back_views.bound(rtvs[0].ptr))
+        if (Side *s = side_marks.find(list, true))
+            s->bound.store(res, std::memory_order_relaxed);
 }
 
 // Takes a list's side marks into its Mark m. A depth barrier makes the Mark when the list has none, as
@@ -1309,54 +1212,6 @@ bool mark_aside(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
     return true;
 }
 
-// Before the game records a barrier batch that takes its depth buffer out of DEPTH_WRITE: copies the
-// buffer into depth_copy, from the state the barrier names as its StateBefore, and puts it back in that
-// state, so the game's barrier then runs as it would have. Whole-resource, unsplit barriers in direct
-// lists only; one copy per batch.
-void copy_depth(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers)
-{
-    for (UINT i = 0; i < n; i++) {
-        const D3D12_RESOURCE_BARRIER &b = barriers[i];
-        if (b.Type != D3D12_RESOURCE_BARRIER_TYPE_TRANSITION || !(watched.bits(b.Transition.pResource) & W_DEPTH) ||
-            b.Flags != D3D12_RESOURCE_BARRIER_FLAG_NONE ||
-            b.Transition.Subresource != D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES ||
-            !(b.Transition.StateBefore & D3D12_RESOURCE_STATE_DEPTH_WRITE) ||
-            (b.Transition.StateAfter & D3D12_RESOURCE_STATE_DEPTH_WRITE))
-            continue;
-        if (list->GetType() != D3D12_COMMAND_LIST_TYPE_DIRECT)
-            return;
-        ID3D12Resource *src = b.Transition.pResource;
-        D3D12_RESOURCE_DESC d = src->GetDesc();
-        if (d.Dimension != D3D12_RESOURCE_DIMENSION_TEXTURE2D || d.SampleDesc.Count != 1 ||
-            depth_view(d.Format) == DXGI_FORMAT_UNKNOWN)
-            return;
-        ID3D12Resource *copy;
-        {
-            std::lock_guard<std::recursive_mutex> g(lock);
-            copy = depth_copy_for(src, d);
-        }
-        if (!copy)
-            return;
-        D3D12_RESOURCE_BARRIER to[2]{}, back[2]{};
-        for (auto *t : {to, back})
-            for (int j = 0; j < 2; j++) {
-                t[j].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-                t[j].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-            }
-        to[0].Transition.pResource = back[0].Transition.pResource = src;
-        to[0].Transition.StateBefore = back[0].Transition.StateAfter = b.Transition.StateBefore;
-        to[0].Transition.StateAfter = back[0].Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
-        to[1].Transition.pResource = back[1].Transition.pResource = copy;
-        to[1].Transition.StateBefore = back[1].Transition.StateAfter = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-        to[1].Transition.StateAfter = back[1].Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-        d3d12hooks::barrier_original(list, 2u, to);
-        list->CopyResource(copy, src);
-        d3d12hooks::barrier_original(list, 2u, back);
-        depth_copy_frame.store(frame_count, std::memory_order_relaxed);
-        return;
-    }
-}
-
 // Marks what each game list does with the watched resources. At the HUD-less step (the HUD-less copy
 // leaves UAV while this list has made the back buffer a render target) the passes are recorded into the
 // list, before the game's barrier, with every state as it was before this batch.
@@ -1374,8 +1229,8 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
         return false;
     static const uint32_t marking = perf::probe("core", "postfx ResourceBarrier (watched)");
     perf::Scope m_scope(marking);
-    if ((seen & W_DEPTH) && gpu.device && frame_count <= depth_copy_until.load(std::memory_order_relaxed))
-        copy_depth(list, n, barriers);
+    if ((seen & W_DEPTH) && gpu.device && depth_copy.wanted(frame_count))
+        depth_copy.record(list, n, barriers, gpu, watched, lock, retired, frame_count);
     if (!(seen & (W_TONEMAP | W_BACK | W_HUDLESS)) && mark_aside(list, n, barriers, seen & W_DEPTH))
         return false;
     std::lock_guard<std::recursive_mutex> g(lock);
