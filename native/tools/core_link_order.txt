@@ -76,6 +76,7 @@ src/core/render/d3d12/swapchain_hooks.cpp
 src/core/render/d3d12/device_hooks.cpp
 src/core/render/d3d12/list_state.cpp
 src/core/render/d3d12/srv_clamp.cpp
+src/core/render/d3d12/rtas_guard.cpp
 src/core/render/d3d12/hooking.cpp
 src/core/render/d3d12/swapchains.cpp
 src/core/render/grade.cpp

@@ -294,7 +294,7 @@ ui::strings.add("lng_team_alpine", {
 });
 ```
 
-The game looks text up every frame. The core builds a table of the effective strings when content becomes active and when a session loads, and `lang.lookup` reads that table. The same goes for the other hook points the game calls every frame, such as team logos and view-model nodes. A handler on one of them runs on every call, so it should only read a table of its own.
+The game looks text up every frame. The core keeps a table of every `lang.string` record, and each lookup checks the record's `within` against the current content, mode and career. The last record in load order that applies wins; when none applies, the game's own text shows. `lang.lookup` reads that table. The same goes for the other hook points the game calls every frame, such as team logos and view-model nodes. A handler on one of them runs on every call, so it should only read a table of its own.
 
 ## Events and operations
 
