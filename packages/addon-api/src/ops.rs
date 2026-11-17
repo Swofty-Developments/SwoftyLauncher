@@ -250,6 +250,13 @@ const STAT_ID_CEILINGS: &[(&str, &str, StatIdCeiling)] = &[
         "entrant_setup_mode",
         StatIdCeiling { max: 31, from: None },
     ),
+    // The F1 Life scene holds two car customisation slots (+0xd00, +0xe20) and writes car group `stat_id`
+    // into slot `stat_id` with no bounds check (0x14252ccd0 on build 26566308).
+    (
+        "customisation.customisation_cars",
+        "customisation_car_group",
+        StatIdCeiling { max: 1, from: None },
+    ),
 ];
 
 /// The key that holds the id of `table`'s rows named `row`: `statId` for scenarios and seasons, else `stat_id`.
@@ -272,6 +279,11 @@ pub fn stat_id_ceiling(table: &str, row: &str) -> Option<StatIdCeiling> {
 /// picking another id: appended to the "no free stat_id" error so the message says what to change.
 pub fn stat_id_ceiling_reason(table: &str, row: &str) -> Option<&'static str> {
     match (table, row) {
+        ("customisation.customisation_cars", "customisation_car_group") => Some(concat!(
+            "the F1 Life scene behind the main menu has two car slots and indexes them by the car ",
+            "group's stat_id, so a third car group crashes the game at the main menu; leave the car ",
+            "groups alone or edit one of the two"
+        )),
         ("game_setup.game_setup_modes", "game_setup_mode")
         | ("entrants.entrant_setup_modes", "entrant_setup_mode") => Some(concat!(
             "the game keeps setup modes in a 32-bit mask (bit = stat_id) and stops at boot with ",
@@ -2058,6 +2070,23 @@ mod tests {
             );
         }
         assert_eq!(stat_id_ceiling_reason("entrants.vehicles", "vehicle"), None);
+    }
+
+    #[test]
+    fn a_third_car_group_fails_the_build_instead_of_the_main_menu() {
+        const CARS: &str = "customisation.customisation_cars";
+        let mut db = table(CARS, "customisation_car_group", &[0, 1]);
+        let stock: HashSet<u64> = db.records.iter().map(|r| r.key).collect();
+        let err = apply_db_ops_report(
+            &mut db,
+            &add_rows(CARS, "customisation_car_group", &[("sw12_cars", None)]),
+            &stock,
+            &mut DbReport::default(),
+        )
+        .unwrap_err()
+        .to_string();
+        assert!(err.contains("has no free stat_id up to 1"), "{err}");
+        assert!(err.contains("crashes the game at the main menu"), "{err}");
     }
 
     fn db() -> Gvdb {
