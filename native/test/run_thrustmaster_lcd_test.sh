@@ -3,9 +3,8 @@ set -euo pipefail
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
 CXX=${CXX:-c++}
-if ! command -v "$CXX" >/dev/null; then
-    exec nix shell nixpkgs#gcc -c "$SELF" "$@"
-fi
+NEEDS=c++
+. "$(dirname "$SELF")/lib/env.sh"
 OUT=${1:-$PWD/../build/thrustmaster-lcd-test}
 mkdir -p "$OUT"
 "$CXX" -std=c++23 -O2 -Wall -Wextra -I../src -o "$OUT/thrustmaster_lcd_test" thrustmaster_lcd_test.cpp

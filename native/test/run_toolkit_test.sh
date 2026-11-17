@@ -2,9 +2,8 @@
 set -euo pipefail
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
-if ! command -v wine >/dev/null || ! command -v zig >/dev/null; then
-    exec nix shell nixpkgs#zig nixpkgs#wineWow64Packages.stable -c "$SELF" "$@"
-fi
+NEEDS="zig wine"
+. "$(dirname "$SELF")/lib/env.sh"
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
 OUT=${1:-$PWD/../build/toolkit-test}
 mkdir -p "$OUT"
