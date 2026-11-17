@@ -1362,6 +1362,9 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             }
             let ops: Vec<AssetOp> = batch.ops.iter().map(|op| op.op.clone()).collect();
             hash_sources(&mut hasher, store, id, &ops)?;
+            for line in &batch.lines {
+                out.line(line);
+            }
             built
                 .lines
                 .extend(batch.lines.iter().map(|l| format!("{id}: {l}")));
