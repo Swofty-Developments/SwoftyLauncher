@@ -1,7 +1,7 @@
 [workspace]
 resolver = "3"
-members = ["addons/builtins", "apps/cli", "apps/launcher", "installer", "packages/addon-api", "packages/core", "packages/formats", "packages/i18n", "packages/preview", "packages/sdk", "packages/shaders", "templates/launcher-addon", "templates/std/whatif/launcher"]
-default-members = ["addons/builtins", "apps/cli", "packages/addon-api", "packages/core", "packages/formats", "packages/i18n", "packages/sdk", "packages/shaders", "templates/launcher-addon", "templates/std/whatif/launcher"]
+members = ["addons/builtins", "apps/ads-helper", "apps/cli", "apps/launcher", "installer", "packages/addon-api", "packages/ads", "packages/core", "packages/formats", "packages/i18n", "packages/preview", "packages/sdk", "packages/shaders", "templates/launcher-addon", "templates/std/whatif/launcher"]
+default-members = ["addons/builtins", "apps/cli", "packages/addon-api", "packages/ads", "packages/core", "packages/formats", "packages/i18n", "packages/sdk", "packages/shaders", "templates/launcher-addon", "templates/std/whatif/launcher"]
 
 [workspace.package]
 version = "1.9.61"
@@ -12,6 +12,7 @@ repository = "https://github.com/Swofty-Developments/SwoftyLauncher"
 
 [workspace.dependencies]
 swofty-addon = { path = "packages/addon-api" }
+swofty-ads = { path = "packages/ads" }
 swofty-builtins = { path = "addons/builtins" }
 swofty-core = { path = "packages/core" }
 swofty-formats = { path = "packages/formats" }
