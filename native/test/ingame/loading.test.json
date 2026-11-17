@@ -1,0 +1,143 @@
+{
+  "schema": 1,
+  "suite": "swofty.testsuite-loading",
+  "defaults": {
+    "addons": [],
+    "timeout_s": 900
+  },
+  "tests": [
+    {
+      "id": "boot_and_time_trial_load",
+      "tags": [
+        "loading"
+      ],
+      "fresh": true,
+      "env": {
+        "kind": "route",
+        "routes": [
+          "f1_world",
+          "play"
+        ]
+      },
+      "steps": [
+        {
+          "pad": {
+            "press": "right"
+          }
+        },
+        {
+          "pad": {
+            "press": "a",
+            "ms": 250
+          }
+        },
+        {
+          "pad": {
+            "press": "a",
+            "ms": 250
+          }
+        },
+        {
+          "pad": {
+            "press": "a",
+            "ms": 250
+          }
+        },
+        {
+          "pad": {
+            "press": "a",
+            "ms": 250
+          }
+        },
+        {
+          "wait": {
+            "log": "\\[career\\] flow \"StateLoadSession\" None -> Entering"
+          },
+          "timeout_s": 120
+        },
+        {
+          "wait": {
+            "log": "\\[career\\] flow \"#ba16bc16\" None -> Entering"
+          },
+          "timeout_s": 300
+        },
+        {
+          "wait": {
+            "ms": 5000
+          }
+        }
+      ],
+      "assert": [
+        {
+          "log": "\\[career\\] flow \"StateSession\" Entering -> Updating",
+          "min": 1
+        },
+        {
+          "no_crash": true
+        }
+      ]
+    },
+    {
+      "id": "benchmark_race_load",
+      "tags": [
+        "benchmark"
+      ],
+      "fresh": true,
+      "env": {
+        "kind": "benchmark",
+        "track": "bahrain",
+        "laps": 1,
+        "cars": 20
+      },
+      "steps": [
+        {
+          "wait": {
+            "log": "\\[career\\] flow \"StateLoadSession\" None -> Entering"
+          },
+          "timeout_s": 300
+        },
+        {
+          "wait": {
+            "log": "\\[career\\] flow \"#ba16bc16\" None -> Entering"
+          },
+          "timeout_s": 300
+        }
+      ],
+      "assert": [
+        {
+          "log": "\\[career\\] flow \"StateSession\" Entering -> Updating",
+          "min": 1
+        },
+        {
+          "no_crash": true
+        }
+      ]
+    },
+    {
+      "id": "boot_with_the_stock_intro",
+      "tags": [
+        "intro"
+      ],
+      "fresh": true,
+      "env": {
+        "kind": "boot"
+      },
+      "settings": {
+        "swofty.core": {
+          "startup_intro": false
+        }
+      },
+      "steps": [
+        {
+          "home": true,
+          "timeout_s": 180
+        }
+      ],
+      "assert": [
+        {
+          "no_crash": true
+        }
+      ]
+    }
+  ]
+}
