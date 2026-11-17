@@ -91,24 +91,12 @@ void hook_flow_frame(double dt, void *user)
 
 namespace postfx {
 
-namespace {
-
 // Frame generation from the game's hardware settings, read every two seconds; on while unknown.
-bool frame_gen_on()
+bool Pipeline::frame_gen_on(ULONGLONG now)
 {
-    static ULONGLONG checked;
-    static bool on = true;
-    static std::wstring path;
-    ULONGLONG now = GetTickCount64();
-    if (checked && now - checked < 2000)
-        return on;
-    checked = now;
-    if (path.empty())
-        path = hardware_settings::path();
-    on = hardware_settings::frame_gen(path).on();
-    return on;
-}
-
+    if (frame_gen_poll.due(now))
+        frame_gen = hardware_settings::frame_gen(frame_gen_poll.file_path()).on();
+    return frame_gen;
 }
 
 bool Pipeline::killed_now()
@@ -213,15 +201,13 @@ std::string Pipeline::own_frames_by(const d3d12hooks::Swapchain *known, void *ca
 {
     if (known)
         return postfx::presents_own_frames(known->fg) ? known->fg : std::string();
-    static void *seen;
-    static std::string by;
-    if (caller != seen) {
-        seen = caller;
-        by = d3d12hooks::module_of(caller);
-        if (!postfx::presents_own_frames(by))
-            by.clear();
+    if (caller != own_frames_caller) {
+        own_frames_caller = caller;
+        own_frames_module = d3d12hooks::module_of(caller);
+        if (!postfx::presents_own_frames(own_frames_module))
+            own_frames_module.clear();
     }
-    return by;
+    return own_frames_module;
 }
 
 // The passes of a frame that reached Present with its HUD-less step open and no list the core saw taking the back
@@ -250,9 +236,8 @@ void Pipeline::present_fallback(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain
     } else {
         D3D12_RESOURCE_DESC a = shown->GetDesc(), b = waiting->back->GetDesc();
         bool same_shape = a.Width == b.Width && a.Height == b.Height && a.Format == b.Format;
-        bool generating = frame_gen_on();
-        static bool told;
-        if (!std::exchange(told, true))
+        bool generating = frame_gen_on(GetTickCount64());
+        if (!std::exchange(told_copied, true))
             swofty::log("[postfx] swapchain %p shows buffer %p, which is not the back buffer %p the game drew into "
                         "(a frame generation swapchain copies the game's frames into its own); frame generation is "
                         "%s in the game's settings, so passes that wait for Present %s",
@@ -283,7 +268,7 @@ void Pipeline::on_present(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *know
     std::lock_guard<std::recursive_mutex> g(lock);
     if (broken)
         return;
-    fg_on = !known || !known->queue || !known->fg.empty() || (known->streamline && frame_gen_on());
+    fg_on = !known || !known->queue || !known->fg.empty() || (known->streamline && frame_gen_on(GetTickCount64()));
     ULONGLONG now = GetTickCount64();
     present_at.store(now, std::memory_order_relaxed);
     std::string by = own_frames_by(known, caller);
@@ -296,8 +281,7 @@ void Pipeline::on_present(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *know
         stat_line(now);
         return;
     }
-    static bool told;
-    if (generated && !std::exchange(told, true))
+    if (generated && !std::exchange(told_generated, true))
         swofty::log("[postfx] %s presents the game's frames and its own generated ones on swapchain %p; the passes' "
                     "frames close once per frame the game draws, where it submits the list that draws into its next "
                     "back buffer",
@@ -328,8 +312,7 @@ void Pipeline::flow_frame(double, void *)
     std::lock_guard<std::recursive_mutex> g(lock);
     if (broken || !frame_clock.flow(now, started))
         return;
-    static bool told;
-    if (!std::exchange(told, true))
+    if (!std::exchange(told_flow, true))
         swofty::log("[postfx] no Present has reached the core's swapchain hooks for %llu ms; the game's own frames "
                     "close the passes' frames where it submits the list that draws into its next back buffer, and the "
                     "game's flow tick runs the toggle keys and live settings",

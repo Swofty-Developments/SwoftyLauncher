@@ -1,4 +1,5 @@
 #pragma once
+#include "core/hud/hardware_settings.hpp"
 #include "core/render/d3d12_hooks.hpp"
 #include "core/render/postfx/capture.hpp"
 #include "core/render/postfx/depth_copy.hpp"
@@ -65,9 +66,16 @@ private:
     void end_frame(ULONGLONG now);
     void tick(ULONGLONG now);
     void stat_line(ULONGLONG now);
+    bool frame_gen_on(ULONGLONG now);
     std::string own_frames_by(const d3d12hooks::Swapchain *known, void *caller);
     void present_fallback(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known);
     void passes_listed();
+
+    hardware_settings::Poll frame_gen_poll;
+    bool frame_gen = true;
+    void *own_frames_caller = nullptr;
+    std::string own_frames_module;
+    bool told_copied = false, told_generated = false, told_flow = false;
 };
 
 }
