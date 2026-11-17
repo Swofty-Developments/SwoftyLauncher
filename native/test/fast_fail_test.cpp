@@ -1,4 +1,4 @@
-// Host unit test for the fast-fail crash report logic (fast_fail_logic.hpp). run_fast_fail_test.sh builds and runs it.
+// Host unit test for the fast-fail crash report logic (fast_fail_logic.hpp). native/test/run_tests.sh fast_fail builds and runs it.
 #include "core/diagnostics/crash/fast_fail_logic.hpp"
 
 #include <cstdio>

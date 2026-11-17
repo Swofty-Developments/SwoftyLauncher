@@ -1,6 +1,6 @@
 // Host test for per_package.hpp and the box fuel plan of data_session.cpp (fuel_plan.hpp): entry targets by track,
 // venue or the id's last code, a variant package inheriting its base's entries with its own winning, and the
-// writes and put-back order of the fuel plan over a fake data set. run_track_lists_test.sh builds and runs it.
+// writes and put-back order of the fuel plan over a fake data set. native/test/run_tests.sh track_lists builds and runs it.
 #include "fixture.hpp"
 
 #include "core/apply/tracks/fuel_plan.hpp"
