@@ -1,11 +1,14 @@
+#[cfg(target_os = "linux")]
 use std::process::Command;
 
 use super::antivirus::{STUB, virus_code};
 use super::consent::consent_path;
-use super::exec::{command_for, elf_interpreter, exec_mode_in};
-use super::extension::{
-    BLOCKED, RUNNERS, download, fetch_release, install_files, set_executable, staging_dir,
-};
+use super::exec::exec_mode_in;
+#[cfg(target_os = "linux")]
+use super::exec::{command_for, elf_interpreter};
+#[cfg(target_os = "linux")]
+use super::extension::set_executable;
+use super::extension::{BLOCKED, RUNNERS, download, fetch_release, install_files, staging_dir};
 use super::heal::heal_launcher;
 use super::*;
 use crate::game_folder::baseline::{DepotHashes, sha256_file};
