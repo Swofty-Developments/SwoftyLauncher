@@ -243,6 +243,13 @@ jobs:
       - name: Build the tests
         run: cargo nextest run --workspace --profile ci --no-run
 
+      # rust-cache saves at the end of a job that succeeded, or of any job once CACHE_ON_FAILURE is true. Set
+      # here, a failing or cancelled test run still saves the finished build; a build that failed or was
+      # cancelled halfway saves nothing, which would otherwise sit under the exact key and never be completed.
+      - name: Keep the build if the tests fail
+        shell: bash
+        run: echo "CACHE_ON_FAILURE=true" >> "$GITHUB_ENV"
+
       # Every test of every binary in one pool (.config/nextest.toml), with the slow ones listed at the end.
       # The real-file round trips skip without F1_25_DIR; CI has no game files.
       - name: Test
