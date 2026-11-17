@@ -5,11 +5,12 @@ use std::collections::HashMap;
 use std::time::{Instant, SystemTime};
 use swofty_core::store::Store;
 
-mod account;
+pub(crate) mod account;
 mod barfit;
 mod config;
 mod console_window;
 pub(crate) mod download_dock;
+mod host;
 mod launch_alerts;
 mod nav;
 pub(crate) mod notices;
