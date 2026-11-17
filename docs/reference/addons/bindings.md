@@ -136,7 +136,9 @@ Anything else gets a normal review. The workflow's summary lists the reason.
 - `target` is `match + anchor` for `addr`; the rel32 or disp32 operand is wildcarded for `rel32` and `riprel`; `expect` agrees with the pattern's bytes.
 - The signature kind fits the binding kind, the section is `.xtls` (or `.data1` with a reason), the address is inside the KB image.
 - Each proof's digest matches the signature and its exe hash; a proof on the KB build found the record's `match` and `target`.
-- After merging, the `main` job runs `binding.py check` over every record again.
+- The name and address have no verify rows yet, so an old verdict cannot back a new record.
+- `kb_lint.py --structural` passes over the base branch with the PR's records added: no drift between rows, signatures, structs, verify rows and tests.
+- After merging, the `main` job runs `binding.py check` and `kb_lint.py --structural` over `main` again.
 
 ## Threat model
 
