@@ -208,7 +208,7 @@ jobs:
       - uses: ./.github/actions/setup-rust
         with:
           cache: clippy
-          save: ${{ github.ref == 'refs/heads/main' }}
+          save: true
 
       # The launcher and the installer are not default members; --workspace reaches them too.
       - run: cargo clippy --workspace --all-targets -- -D warnings
@@ -238,7 +238,7 @@ jobs:
       - uses: ./.github/actions/setup-rust
         with:
           cache: test
-          save: ${{ github.ref == 'refs/heads/main' }}
+          save: true
           nextest: true
 
       # --workspace takes in the launcher's and the installer's tests too. Building as a step of its own shows
@@ -333,6 +333,7 @@ jobs:
       - uses: ./.github/actions/setup-rust
         with:
           cache: release
+          save: true
           system-libraries: false
 
       - name: Build
