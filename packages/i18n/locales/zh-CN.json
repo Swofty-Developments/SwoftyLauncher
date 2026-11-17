@@ -1,4 +1,6 @@
 {
+  "Also update the addons that are off in your profile when Play updates addons. Turned off, only the addons that are on are updated.": "当“开始游戏”更新插件时，也更新配置中已关闭的插件。关闭后，只更新已开启的插件。",
+  "Update turned-off addons": "更新已关闭的插件",
   "{count} addon": ["{count} 个插件"],
   "{count} changed setting": ["{count} 项已更改的设置"],
   "{count} minute ago": ["{count} 分钟前"],

@@ -2382,6 +2382,15 @@ extern "C" __declspec(dllexport) uint32_t SwoftyCoreOverlayVersion(void)
 
 namespace runtime {
 
+std::wstring hardware_settings_file()
+{
+    return hardware_settings_path();
+}
+
+}
+
+namespace runtime {
+
 const SwoftyOverlay *overlay_table()
 {
     return &table;

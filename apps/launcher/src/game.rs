@@ -910,7 +910,7 @@ mod tests {
 
     #[test]
     fn an_addon_that_needs_a_newer_game_shows_the_update() {
-        let outdated = "Classic Seasons needs F1 25 1.0.141.7865, the latest update. Your F1 25 is 1.0.136.6820. \
+        let outdated = "Classic Seasons needs F1 25 1.0.145.2472, the latest update. Your F1 25 is 1.0.136.6820. \
                         Update F1 25 in Steam or the EA app, then press Play again.";
         let log = format!(
             "[info] launching F1 25 directly; waiting for the wrapper, output in C:\\Swofty\\state/wrapper-run.log\n\

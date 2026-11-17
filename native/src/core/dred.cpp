@@ -29,6 +29,7 @@ std::vector<std::string> debug_lines;
 ID3D12InfoQueue *polled[kDevices];
 LONG npolled;
 HANDLE poll_thread;
+std::vector<BuildStop> stops;
 
 bool readable(const void *p, size_t n)
 {
@@ -321,7 +322,16 @@ template <typename Node> std::string breadcrumbs(const Node *head)
             uint32_t count = n->BreadcrumbCount;
             uint32_t done = n->pLastBreadcrumbValue && readable(n->pLastBreadcrumbValue, 4) ? *n->pLastBreadcrumbValue : 0;
             s += node_header(shown++, pick(n->pCommandListDebugNameA, n->pCommandListDebugNameW).c_str(),
-                             pick(n->pCommandQueueDebugNameA, n->pCommandQueueDebugNameW).c_str(), count, done);
+                             pick(n->pCommandQueueDebugNameA, n->pCommandQueueDebugNameW).c_str(), count, done,
+                             reinterpret_cast<uint64_t>(n->pCommandList));
+            if (list == &unfinished && n->pCommandHistory && readable(n->pCommandHistory, count * sizeof(uint32_t))) {
+                BuildStop st = build_stop(n->pCommandHistory, count, done, reinterpret_cast<uint64_t>(n->pCommandList));
+                bool seen = false;
+                for (const BuildStop &o : stops)
+                    seen = seen || (o.list == st.list && o.nth == st.nth && o.of == st.of);
+                if (st.nth && !seen)
+                    stops.push_back(st);
+            }
             Window w = op_window(count, done);
             if (w.from)
                 s += "      ... " + std::to_string(w.from) + " earlier op(s) not shown\n";
@@ -529,8 +539,14 @@ std::string section(bool registers_show_removal)
     return dred_section(registers_show_removal) + debug_section();
 }
 
+std::vector<BuildStop> build_stops()
+{
+    return stops;
+}
+
 static std::string dred_section(bool registers_show_removal)
 {
+    stops.clear();
     std::string head = "\n== GPU device removal (D3D12 DRED)\n";
     int removed = 0;
     std::string body;

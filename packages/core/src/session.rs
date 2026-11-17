@@ -137,6 +137,9 @@ pub struct Config {
     pub home_video: bool,
     #[serde(default = "on", skip_serializing_if = "is_on")]
     pub use_profiles: bool,
+    /// Offer Addon Browser updates for installed addons that are off as well; off unless turned on.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub update_off_addons: bool,
 }
 
 fn on() -> bool {
@@ -1108,6 +1111,24 @@ mod tests {
                 .unwrap()
                 .contains("use_profiles")
         );
+    }
+
+    #[test]
+    fn off_addons_are_left_out_of_updates_unless_turned_on() {
+        assert!(!Config::default().update_off_addons);
+        assert!(!serde_json::from_str::<Config>("{}").unwrap().update_off_addons);
+        assert!(
+            !serde_json::to_string(&Config::default())
+                .unwrap()
+                .contains("update_off_addons")
+        );
+        let on = Config {
+            update_off_addons: true,
+            ..Config::default()
+        };
+        let json = serde_json::to_string(&on).unwrap();
+        assert!(json.contains(r#""update_off_addons":true"#));
+        assert!(serde_json::from_str::<Config>(&json).unwrap().update_off_addons);
     }
 
     #[test]
