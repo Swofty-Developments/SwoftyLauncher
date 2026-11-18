@@ -64,7 +64,7 @@ namespace guards = swofty_core::guards;
 namespace tl = runtime::track_list_guard;
 
 uintptr_t next_row = 0;
-bool guarded = false, logging = false;
+bool guarded = false;
 std::mutex lock;
 tl::Load load;
 std::vector<uintptr_t> matches;
@@ -179,7 +179,6 @@ private:
         if (sites.empty()) {
             swofty::log("[saves] custom_track_list count lines off: needs %s or %s, which this build does not resolve", ENTRY_DONE, SAVE);
         } else {
-            logging = true;
             out.push_back({LOG_MIXIN, std::move(sites)});
         }
     }
@@ -192,7 +191,7 @@ private:
                         guards::install_state(guarded, "armed: each stored custom_track_list entry loads one event instead "
                                                        "of every event with its id"));
         }
-        if (logging && !runtime::core_mixins_active(LOG_MIXIN))
+        if (offered_set(LOG_MIXIN) && !runtime::core_mixins_active(LOG_MIXIN))
             swofty::log("[saves] custom_track_list count lines %s", guards::NOT_INSTALLED);
     }
 };

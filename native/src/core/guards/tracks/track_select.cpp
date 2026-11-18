@@ -43,7 +43,7 @@ using Handler = void *(void *vm, uint32_t **cmd);
 Handler *gp_orig, *tt_orig;
 std::atomic<uintptr_t> last_record{0};
 std::atomic<uint64_t> counter{0}, record_seq{0}, select_seq{0};
-std::atomic<bool> wanted, live;
+std::atomic<bool> live;
 guards::LogFirst<LOG_FIRST * 4> logged;
 std::mutex confirmed_lock;
 std::string confirmed_time_trial;
@@ -135,7 +135,6 @@ private:
                 swofty::log("[tracks] track select guard off: needs %s, which this build does not resolve", id);
                 return;
             }
-        wanted = true;
         out.push_back({MIXIN,
                        {{GP, SWOFTY_MIXIN_WRAP, 100, (void *)&gp_entry, (void **)&gp_orig},
                         {TT, SWOFTY_MIXIN_WRAP, 100, (void *)&tt_entry, (void **)&tt_orig},
@@ -144,7 +143,7 @@ private:
 
     void settle() override
     {
-        if (!wanted)
+        if (!offered_set(MIXIN))
             return;
         live = runtime::core_mixins_active(MIXIN);
         swofty::log("[tracks] track select guard %s",
