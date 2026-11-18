@@ -183,6 +183,11 @@ pub struct StandingsPreset {
 }
 
 #[repr(C)]
+pub struct StandingsTableEntry {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
 pub struct TrackLayer {
     _opaque: [u8; 0],
 }

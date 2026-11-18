@@ -201,6 +201,7 @@ struct StandingsPreset;
 struct StandingsResult;
 struct StandingsRound;
 struct StandingsSession;
+struct StandingsTableEntry;
 struct StatInfo;
 struct StopGoObject;
 struct TeamRecord;
