@@ -167,6 +167,18 @@ inline std::optional<std::string> team_badge_texture(uint32_t vehicle)
     return std::string(path);
 }
 
+// The fitted visual compound's compact icon, using the effective GameDB template.
+// Empty on cores older than version 5 or when the mapping is unavailable.
+inline std::optional<std::string> tyre_icon_texture(uint32_t vehicle)
+{
+    const auto *t = detail::table();
+    char path[160] = {};
+    if (!t || t->version < 5 || !t->tyre_icon_texture ||
+        t->tyre_icon_texture(vehicle, path, sizeof path) != SWOFTY_ASSET_OK)
+        return std::nullopt;
+    return std::string(path);
+}
+
 // Caller-owned image bytes; no disk files or table presentation policy.
 inline const SwoftyLiveImages *images()
 {

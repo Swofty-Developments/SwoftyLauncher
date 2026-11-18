@@ -1074,7 +1074,8 @@ typedef struct SwoftyContentOps {
    zero, never another car's value. Calls answer SWOFTY_ASSET_UNAVAILABLE while no session is live, the build is
    not the one the offsets are from, or the group is off because a KB row it needs has no independent verify row
    yet (the core logs "live <group> off: needs <row>" once), and SWOFTY_ASSET_INVALID for a bad argument.
-   Table version 4 appends images (see swofty/live_images.h); version 3 appends team_badge_texture.
+   Table version 5 appends tyre_icon_texture; version 4 appends images (see swofty/live_images.h);
+   version 3 appends team_badge_texture. Check version >= 5 before reading tyre_icon_texture.
    Version 2 adds driver_name and version 1 is the members up to seq; each keeps its layout, so
    check version >= 3 before calling team_badge_texture and version >= 2 before calling driver_name.
    session: the session header. car: one car by vehicle id. subject: the watched car while the spectator HUD is
@@ -1093,7 +1094,7 @@ typedef struct SwoftyContentOps {
    Steam 26566308 build use the saved assignment for the active mode and loaded career slot; an unavailable
    saved assignment is not replaced by the entrant fallback.
    SWOFTY_ASSET_UNAVAILABLE when the reference cannot be read or the path does not fit cap. */
-#define SWOFTY_LIVE_VERSION 4
+#define SWOFTY_LIVE_VERSION 5
 #define SWOFTY_LIVE_MAX_CARS 32
 #define SWOFTY_LIVE_NO_GAP INT32_MIN
 
@@ -1249,6 +1250,11 @@ typedef struct SwoftyLive {
     int (*driver_name)(uint32_t vehicle, char *out, uint32_t cap);
     int (*team_badge_texture)(uint32_t vehicle, char *path, uint32_t cap);
     const SwoftyLiveImages *(*images)(void);
+    /* Version 5: fitted visual compound's effective GameDB "small" icon template.
+       Pass the returned reference to images()->image(). No stock-letter fallback.
+       UTF-8 buffer of 160 bytes suffices; INVALID for a short buffer/invalid car,
+       UNAVAILABLE while fitted tyres, GameDB or the supported template are absent. */
+    int (*tyre_icon_texture)(uint32_t vehicle, char *path, uint32_t cap);
 } SwoftyLive;
 
 /* Live car operations (standard library 1.6, experimental), from the core export SwoftyCoreCarOps; not a SwoftyApi
