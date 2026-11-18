@@ -1,19 +1,20 @@
 use std::path::Path;
+#[cfg(not(windows))]
 use std::time::Instant;
 
-use anyhow::{Result, anyhow, bail};
+use anyhow::{Result, bail};
 use swofty_core::ea_app::{self, Handoff};
 use swofty_core::install::{Game, Source};
 #[cfg(not(windows))]
 use swofty_core::process::stop_process;
+#[cfg(not(windows))]
 use swofty_core::steam_client;
 use swofty_core::store::Store;
 
+#[cfg(not(windows))]
 use crate::console::output::say;
 #[cfg(not(windows))]
 use crate::stores::ea::SERVER_STOP_TIMEOUT;
-use crate::stores::ea::{APP_SETTLE, APP_START_TIMEOUT, AppStart, detach, wait_for_app};
-use crate::stores::steam::StageFile;
 
 /// Which store Play brings up first for a copy of the game.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -28,23 +29,6 @@ pub fn store_start(source: Source) -> StoreStart {
     match source {
         Source::EaApp => StoreStart::EaApp,
         _ => StoreStart::Steam,
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Policy {
-    NoHandoff,
-    Running,
-    Start,
-    Off,
-}
-
-pub fn policy(handoff: bool, on: bool, running: bool) -> Policy {
-    match (handoff, running, on) {
-        (false, _, _) => Policy::NoHandoff,
-        (true, true, _) => Policy::Running,
-        (true, false, true) => Policy::Start,
-        (true, false, false) => Policy::Off,
     }
 }
 
@@ -79,53 +63,6 @@ pub(super) fn desktop_opener(h: &Handoff) -> Option<(std::process::Command, bool
 /// app leaves it as installed.
 pub fn stages_offline(via_ea: bool, vanilla: bool) -> bool {
     !(via_ea && vanilla)
-}
-
-/// An EA app copy needs the EA app: start it when it is closed and wait for
-/// it, as Steam is for a Steam copy. On Linux the launch.ea_launch_command
-/// setting, run without a link, starts it; a command that needs the link
-/// leaves the start to the link.
-pub fn ensure(store: &Store, opted_out: bool) -> Result<()> {
-    let h = handoff(store);
-    let on = store.config().launch.start_store && !opted_out;
-    match policy(h.is_some(), on, ea_app::running()) {
-        Policy::NoHandoff => bail!("{}", ea_app::no_handoff()),
-        Policy::Running => say("ea app", "detected: running"),
-        Policy::Off => bail!(
-            "the EA app is closed and starting it is turned off (launch.start_store or --no-start-store); \
-             open the EA app and press Play again"
-        ),
-        Policy::Start => match h.as_ref().and_then(desktop_opener) {
-            Some((mut open, exit_tells)) => {
-                say("ea app", "detected: closed; starting the EA app");
-                let stage = StageFile(store.root.join(steam_client::STAGE_FILE));
-                stage.set("Starting the EA app…");
-                let mut child = detach(&mut open).map_err(|e| {
-                    anyhow!("could not start the EA app ({e}); open the EA app and press Play again")
-                })?;
-                let since = Instant::now();
-                match wait_for_app(&mut child, exit_tells, || since.elapsed() >= APP_START_TIMEOUT) {
-                    AppStart::Running => {
-                        say(
-                            "ea app",
-                            &format!("running after {:.1} s", since.elapsed().as_secs_f64()),
-                        );
-                        std::thread::sleep(APP_SETTLE);
-                    }
-                    AppStart::CommandFailed(exit) => say(
-                        "ea app",
-                        &format!("the command did not open the EA app ({exit}); the launch link starts it"),
-                    ),
-                    AppStart::TimedOut => bail!(
-                        "the EA app didn't start within {} s; open the EA app and press Play again",
-                        APP_START_TIMEOUT.as_secs()
-                    ),
-                }
-            }
-            None => say("ea app", "detected: closed; the launch link starts it"),
-        },
-    }
-    Ok(())
 }
 
 /// Wine reads a prefix's user.reg only when its wineserver starts, and the

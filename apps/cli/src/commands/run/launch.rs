@@ -20,7 +20,7 @@ use super::follow::{Follow, Follower, symbols};
 use super::wrapper_process::{Silence, WrapperProcess, start_wrapper};
 use crate::console::output::{info, say};
 use crate::signals::{install_ctrl_c, stop_requested};
-use crate::stores::steam::{ensure_steam, ensure_steamvr};
+use crate::stores::steam::ensure_steamvr;
 use crate::time::now_secs;
 
 pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Result<ExitCode> {
@@ -67,16 +67,14 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
     {
         bail!("Steam is {state} F1 25; wait for it to finish, then press Play again");
     }
-    match crate::stores::ea::store_start(Source::detect(&game)) {
-        crate::stores::ea::StoreStart::EaApp => {
-            crate::stores::ea::check_recorded(&game)?;
-            if args.apply && swofty_core::build_support::blocked(&game.join(GAME_EXE)).is_none() {
-                crate::stores::ea::dll_setting(store, g, args.no_start_store)?;
-            }
-            crate::stores::ea::ensure(store, args.no_start_store)?
+    let source = Source::detect(&game);
+    if crate::stores::ea::store_start(source) == crate::stores::ea::StoreStart::EaApp {
+        crate::stores::ea::check_recorded(&game)?;
+        if args.apply && swofty_core::build_support::blocked(&game.join(GAME_EXE)).is_none() {
+            crate::stores::ea::dll_setting(store, g, args.no_start_store)?;
         }
-        crate::stores::ea::StoreStart::Steam => ensure_steam(store, &game, args.no_start_store)?,
     }
+    crate::stores::client::ensure_client(store, source, &game, args.no_start_store)?;
     let id = format!("{:x}{:x}", std::process::id(), (now_secs() * 1e6) as u64);
     let request = LaunchRequest {
         id: id.clone(),
