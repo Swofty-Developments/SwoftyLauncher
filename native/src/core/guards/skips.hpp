@@ -127,6 +127,13 @@ public:
         return seen_.size();
     }
 
+    // Forgets every noted key: the next keys are noted, and logged, as the first again.
+    void clear()
+    {
+        std::lock_guard<std::mutex> hold(lock_);
+        seen_.clear();
+    }
+
     const char *tail() const
     {
         return tail_.text();

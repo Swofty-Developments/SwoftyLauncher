@@ -1251,25 +1251,26 @@ static void test_exec_plan()
 static void test_text_entry()
 {
     using namespace hud::input;
-    CHECK(text_entry::is_entry_message("team_name_entry") && text_entry::is_entry_message("Profile_Name_Entry"),
+    CHECK(hud::text_entry::is_entry_message("team_name_entry") && hud::text_entry::is_entry_message("Profile_Name_Entry"),
           "a name entry popup counts as a text box");
-    CHECK(!text_entry::is_entry_message("rnd_research_complete") && !text_entry::is_entry_message("career_entrylist_popup") &&
-              text_entry::is_entry_message("driver_search") && text_entry::is_entry_message("lobby_text_input"),
+    CHECK(!hud::text_entry::is_entry_message("rnd_research_complete") &&
+              !hud::text_entry::is_entry_message("career_entrylist_popup") &&
+              hud::text_entry::is_entry_message("driver_search") && hud::text_entry::is_entry_message("lobby_text_input"),
           "text entry names match whole words between underscores, not inside other words");
-    CHECK(!text_entry::is_entry_message("beta_motd") && !text_entry::is_entry_message("swofty_message"),
+    CHECK(!hud::text_entry::is_entry_message("beta_motd") && !hud::text_entry::is_entry_message("swofty_message"),
           "an ordinary popup is not a text box");
-    text_entry::State st;
+    hud::text_entry::State st;
     CHECK(!st.active(1000), "no text box is open at start");
     st.begin(1000);
-    CHECK(st.active(1001) && st.active(1000 + text_entry::IDLE_MS - 1), "a text box is open from its popup");
-    CHECK(!st.active(1000 + text_entry::IDLE_MS), "an abandoned text box times out");
+    CHECK(st.active(1001) && st.active(1000 + hud::text_entry::IDLE_MS - 1), "a text box is open from its popup");
+    CHECK(!st.active(1000 + hud::text_entry::IDLE_MS), "an abandoned text box times out");
     st.begin(1000);
     st.key('B', 15000);
     CHECK(st.active(30000), "typing keeps the text box open");
-    st.key(text_entry::KEY_ENTER, 31000);
+    st.key(hud::text_entry::KEY_ENTER, 31000);
     CHECK(!st.active(31001), "enter closes the text box");
     st.begin(40000);
-    st.key(text_entry::KEY_ESCAPE, 40010);
+    st.key(hud::text_entry::KEY_ESCAPE, 40010);
     CHECK(!st.active(40011), "escape closes the text box");
     st.key('B', 50000);
     CHECK(!st.active(50001), "a key outside a text box does not open one");

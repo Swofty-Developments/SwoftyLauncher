@@ -3,7 +3,7 @@
 
 #include "core/hud/hud_drawlist.hpp"
 
-namespace runtime::main_menu {
+namespace frontend::main_menu {
 
 bool enabled();
 bool wants_overlay();

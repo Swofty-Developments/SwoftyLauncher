@@ -49,7 +49,7 @@ public:
     // ADDON SETTINGS changes in game.
     void refresh_live();
     void poll_toggles();
-    std::vector<int> live_passes(const view::State &v, unsigned *idle = nullptr);
+    std::vector<int> live_passes(const frontend::view::State &v, unsigned *idle = nullptr);
     bool addon_off(const std::string &id);
     std::string describe(const RenderPass &p);
     int texture_named(const std::string &name);

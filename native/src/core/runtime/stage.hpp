@@ -17,5 +17,7 @@ void stage_catch_up();
 // Whether a runtime asset feature is on: stable ones always, experimental ones when assets.json lists them.
 bool enabled(const char *feature, const char *what);
 std::string load_stage();
+// The loader has given the window stage.
+bool window_reached();
 
 }

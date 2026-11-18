@@ -313,8 +313,8 @@
    "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Sess_PreRaceToRace_Update": {
-   "pattern": "E9 ?? ?? ?? 0B E9 CC CC CC CC CC CC CC CC CC CC",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? F3 C1 82 CC CC CC CC CC CC CC CC B0 01 C3",
+   "note": "The Steam 1.0.145 pattern (E9 ?? ?? ?? 0B and padding) matches once on EA 1.0.145 too, but at 0x143607c90, a thunk to a different function (sub rsp; xor edx, edx; call; xor eax, eax; ret). The EA 1.0.145 thunk is 0x142d7c5a0: at the shift -0x9d30 of Sess_PreRace_OnStateExit and Game_SessionState_EnableOnDemandTextureStreaming on either side, in the slot 0x1458f60a8 whose neighbours hold the KB slot 0x1457e1398 neighbours at that shift, and its .xtls body 0x14d851880 is the KB body (mov rax, rdx; the FlowLinkContinue word into *route; ret). The pattern is its jmp, the filler and the next function's first bytes; it matches once in .arch."
   },
   "Sess_RaceRuleset_OnLapCompleted": {
    "pattern": "E9 ?? ?? ?? ?? 0F 8D 15 74 C2 FD 0F 87 8B 5E 67",
@@ -1344,6 +1344,10 @@
   "Car_Read_Differential_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? 36 05 43 0F 86 DB F2 34",
    "note": "A protector thunk; the pattern is its EA 1.0.145 bytes. It is at the same place relative to its neighbours (-0x7500, as Car_Write_Differential and Car_Write_FuelTank) and its jmp target starts with the KB build's function body."
+  },
+  "Game_SessionStateTalkingPoints_ParseParams_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 37 83 18 B8 0F 83 C9 25 10 FE E9 1F 41 03",
+   "note": "The KB pattern is the jmp and the protector filler after it, which differs on EA 1.0.145, so it matches nothing there. The EA 1.0.145 thunk is 0x142d8b0f0, at the shift -0x9d30 of Sess_StoryStartLights_OnStateEnter and Sess_PlayerTerminalDamage_Enter on either side, and the same slot of the same vtable: the pointer at 0x1458f7a08 is the KB 0x1457e2cf8, and the slots around it hold the KB slots at that shift. Its jmp reaches the .xtls body 0x14d89d470, which is the KB body 0x14eb3abf0 instruction for instruction (71 of 72; the protector rewrote one rip-relative junk instruction), with the +0xea1 store at the same place. The pattern is the EA jmp and filler, as long as the KB one; it matches once in .arch."
   }
  },
  "hints": {
@@ -1691,6 +1695,12 @@
   },
   "Car_Read_Differential_Thunk": {
    "match": "0x46768f0"
+  },
+  "Game_SessionStateTalkingPoints_ParseParams_Thunk": {
+   "match": "0x2d8b0f0"
+  },
+  "Sess_PreRaceToRace_Update": {
+   "match": "0x2d7c5a0"
   }
  },
  "unresolvable": {

@@ -10,7 +10,7 @@
 #include <mutex>
 #include <string>
 
-namespace name_copies {
+namespace frontend::player_name {
 
 namespace bp = ::runtime::build_proof;
 
@@ -34,7 +34,7 @@ inline constexpr RegistryVtables REGISTRY_VTABLES[] = {
 };
 
 // The registry layout of an image at `base` on `build`; all zero on a build with no row.
-constexpr runtime::ui_registry::Layout registry_layout(bp::Build build, uint64_t base)
+constexpr frontend::ui_registry::Layout registry_layout(bp::Build build, uint64_t base)
 {
     for (const RegistryVtables &v : REGISTRY_VTABLES)
         if (v.build == build)
@@ -69,7 +69,7 @@ private:
         uint64_t serial = 0;
         std::string stock, name;
         const char *source = "";
-        runtime::player_name::SwapWhy why = runtime::player_name::SwapWhy::none;
+        frontend::player_name::SwapWhy why = frontend::player_name::SwapWhy::none;
     };
 
     void swap_worker();
@@ -79,7 +79,7 @@ private:
     SwapJob swap_job;
     bool swap_queued = false;
     std::atomic<bool> swap_busy{false};
-    runtime::player_name::SwapPlan swap_plan;
+    frontend::player_name::SwapPlan swap_plan;
     std::once_flag swap_thread_once;
 };
 

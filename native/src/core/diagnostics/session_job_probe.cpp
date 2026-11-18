@@ -2,6 +2,7 @@
 #include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/diagnostics/session_job_probe_logic.hpp"
+#include "core/runtime/loader/core_rank.hpp"
 
 #include <windows.h>
 
@@ -203,6 +204,8 @@ void session_job_probe_flow(uint32_t to, const char *name)
 }
 
 }
+
+SWOFTY_CORE_RANK(session_job_probe)
 
 SWOFTY_ON_LOAD
 {

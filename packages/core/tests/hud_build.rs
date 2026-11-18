@@ -6,8 +6,8 @@ use std::path::{Path, PathBuf};
 
 use swofty_addon::asset::{AssetOp, Root};
 use swofty_addon::ops::ErpOp;
-use swofty_core::baseline::Identity;
 use swofty_core::build::{GVDB, build};
+use swofty_core::game_folder::baseline::Identity;
 use swofty_core::hud::{self, GameStock, Stock, dials};
 use swofty_core::install::Game;
 use swofty_core::store::Store;
@@ -66,7 +66,7 @@ struct Fixture {
     root: PathBuf,
     store: Store,
     game: Game,
-    _pin: swofty_core::builtin::LoaderPin,
+    _pin: swofty_core::addons::builtin::LoaderPin,
 }
 
 impl Fixture {
@@ -108,7 +108,7 @@ impl Fixture {
             store: Store::new(root.join("data")),
             root,
             game,
-            _pin: swofty_core::builtin::LoaderPin::to(loader),
+            _pin: swofty_core::addons::builtin::LoaderPin::to(loader),
         }
     }
 

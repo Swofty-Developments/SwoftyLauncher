@@ -18,7 +18,7 @@ use crate::ui::theme::{Palette, ScrollArea};
 use crate::ui::tokens::space::GUTTER;
 
 impl Shell {
-    pub(super) fn mp_lobby(&mut self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+    pub(super) fn room_lobby(&mut self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let subtitle =
             "Race with players who use the same addons. The host picks tracks in F1 25's LAN lobby."
                 .to_owned();
@@ -31,23 +31,23 @@ impl Shell {
                     .outline()
                     .icon(IconName::Plus)
                     .label(tr("Create room"))
-                    .disabled(self.mp_page.form)
-                    .on_click(cx.listener(|this, _, window, cx| this.mp_open_form(window, cx))),
+                    .disabled(self.rooms.form)
+                    .on_click(cx.listener(|this, _, window, cx| this.room_open_form(window, cx))),
             );
-        let rooms: AnyElement = if let Some(why) = &self.mp_page.refused {
+        let rooms: AnyElement = if let Some(why) = &self.rooms.refused {
             div()
                 .text_size(px(13.))
                 .text_color(p.text_muted)
                 .child(refusal_text(why))
                 .into_any_element()
-        } else if !self.mp_page.lobby.rooms_loaded && self.mp_page.lobby.rooms_error.is_none() {
+        } else if !self.rooms.lobby.rooms_loaded && self.rooms.lobby.rooms_error.is_none() {
             div()
                 .text_size(px(13.))
                 .text_color(p.text_muted)
                 .child(tr("Loading rooms\u{2026}"))
                 .into_any_element()
-        } else if self.mp_page.lobby.rooms.is_empty() {
-            let body = match &self.mp_page.lobby.rooms_error {
+        } else if self.rooms.lobby.rooms.is_empty() {
+            let body = match &self.rooms.lobby.rooms_error {
                 Some(_) => tr("The room list didn't load. It tries again in a few seconds."),
                 None => tr("Create one, or join a private room with its invite code."),
             };
@@ -69,7 +69,7 @@ impl Shell {
                 .child(div().text_size(px(13.)).text_color(p.text_muted).child(body))
                 .into_any_element()
         } else {
-            let list = self.mp_page.lobby.rooms.clone();
+            let list = self.rooms.lobby.rooms.clone();
             v_flex()
                 .rounded(px(6.))
                 .border_1()
@@ -94,16 +94,16 @@ impl Shell {
                     .pt(px(4.))
                     .pb(px(24.))
                     .gap(px(24.))
-                    .when(self.mp_page.form, |d| d.child(self.create_form(p, cx)))
+                    .when(self.rooms.form, |d| d.child(self.create_form(p, cx)))
                     .child(
                         v_flex()
                             .gap(px(8.))
                             .child(
                                 self.section_head(
-                                    if self.mp_page.lobby.rooms_loaded {
+                                    if self.rooms.lobby.rooms_loaded {
                                         trf!(
                                             "OPEN ROOMS \u{00b7} {count}",
-                                            count = self.mp_page.lobby.rooms.len()
+                                            count = self.rooms.lobby.rooms.len()
                                         )
                                     } else {
                                         tr("OPEN ROOMS").to_owned()
@@ -113,10 +113,10 @@ impl Shell {
                                 .child(div().flex_1())
                                 .child(self.code_join(p, cx)),
                             )
-                            .when_some(self.mp_page.notice.clone(), |d, n| {
+                            .when_some(self.rooms.notice.clone(), |d, n| {
                                 d.child(div().text_size(px(13.)).text_color(p.text_muted).child(n))
                             })
-                            .when_some(self.mp_page.error.clone(), |d, e| {
+                            .when_some(self.rooms.error.clone(), |d, e| {
                                 d.child(div().text_size(px(13.)).text_color(p.error).child(e))
                             })
                             .child(rooms),
@@ -126,20 +126,18 @@ impl Shell {
     }
 
     pub(super) fn code_join(&self, _p: Palette, cx: &mut Context<Self>) -> Div {
-        let typed = !self.mp_page.code.read(cx).value().trim().is_empty();
+        let typed = !self.rooms.code.read(cx).value().trim().is_empty();
         let joining = self
-            .mp_page
+            .rooms
             .starting
             .as_ref()
             .is_some_and(|s| s.as_str() != "create");
         h_flex()
             .gap(px(8.))
             .child(
-                div().w(px(170.)).child(
-                    Input::new(&self.mp_page.code)
-                        .tap_sm()
-                        .disabled(self.mp_page.busy()),
-                ),
+                div()
+                    .w(px(170.))
+                    .child(Input::new(&self.rooms.code).tap_sm().disabled(self.rooms.busy())),
             )
             .child(
                 Button::new("mp-join-code")
@@ -147,8 +145,8 @@ impl Shell {
                     .tap_sm()
                     .label(tr("Join with code"))
                     .loading(joining && typed)
-                    .disabled(!typed || self.mp_page.busy())
-                    .on_click(cx.listener(|this, _, window, cx| this.mp_join_code(window, cx))),
+                    .disabled(!typed || self.rooms.busy())
+                    .on_click(cx.listener(|this, _, window, cx| this.room_join_code(window, cx))),
             )
     }
 
@@ -159,7 +157,7 @@ impl Shell {
         p: Palette,
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let status = RoomStatus::of(room, self.mp_page.lobby.digest.as_deref());
+        let status = RoomStatus::of(room, self.rooms.lobby.digest.as_deref());
         let code = room.code.clone();
         let names = card_addons(room);
         h_flex()
@@ -221,14 +219,14 @@ impl Shell {
                     .tap_sm()
                     .outline()
                     .label("View")
-                    .disabled(self.mp_page.busy())
-                    .on_click(cx.listener(move |this, _, _, cx| this.mp_open_room(code.clone(), cx))),
+                    .disabled(self.rooms.busy())
+                    .on_click(cx.listener(move |this, _, _, cx| this.room_open(code.clone(), cx))),
             )
             .into_any_element()
     }
 
     pub(super) fn create_form(&self, p: Palette, cx: &mut Context<Self>) -> Div {
-        let m = &self.mp_page;
+        let m = &self.rooms;
         let creating = m.starting.as_deref() == Some("create");
         let shell = cx.entity().downgrade();
         let players = Button::new("mp-max")
@@ -245,7 +243,7 @@ impl Shell {
                             .on_click(move |_, _, cx| {
                                 shell
                                     .update(cx, |s, cx| {
-                                        s.mp_page.max = n;
+                                        s.rooms.max = n;
                                         cx.notify();
                                     })
                                     .ok();
@@ -261,7 +259,7 @@ impl Shell {
                     .checked(m.public)
                     .tap_sm()
                     .on_click(cx.listener(|this, on: &bool, _, cx| {
-                        this.mp_page.public = *on;
+                        this.rooms.public = *on;
                         cx.notify();
                     })),
             )
@@ -338,7 +336,7 @@ impl Shell {
                             .tap_sm()
                             .label("Cancel")
                             .on_click(cx.listener(|this, _, _, cx| {
-                                this.mp_page.form = false;
+                                this.rooms.form = false;
                                 cx.notify();
                             })),
                     )
@@ -349,7 +347,7 @@ impl Shell {
                             .label(tr("Create room"))
                             .loading(creating)
                             .disabled(m.busy())
-                            .on_click(cx.listener(|this, _, window, cx| this.mp_create(window, cx))),
+                            .on_click(cx.listener(|this, _, window, cx| this.room_create(window, cx))),
                     ),
             )
     }

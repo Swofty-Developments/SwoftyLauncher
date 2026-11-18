@@ -10,12 +10,16 @@
   binding.py doctor [--author LOGIN]
                                   what the pull request check decides for your changes, why, and how to fix it
   binding.py check [FILE...]      the static checks CI runs (every record when no file is given)
+  binding.py exports [--base REF] fails when a binding the base commit exports no longer exports (doctor runs it)
   binding.py status [NAME...]     records, their level, proofs, verifiers and what each still needs to export
   binding.py unfold [NAME...] [--table functions|globals] [--skip-unfit] --author LOGIN
                                   maintainer: move bindings from the shared tables into records; rows that would
                                   fail the record rules stay (named ones are an error unless --skip-unfit)
   binding.py ci --files FILES.json --head DIR --author LOGIN --out RESULT.json
                                   the pull request check (.github/workflows/bindings.yml)
+  binding.py port --exe NEW.exe [--json OUT]
+                                  maintainer: what a game update leaves off in the core (bindings by hint and by scan,
+                                  layout proofs and live groups with no evidence for it) and the step for each
 """
 import argparse, datetime, hashlib, json, os, sys
 
@@ -257,7 +261,7 @@ def cmd_new(a):
     sig['used_by'] = a.used_by
     sig = {k: v for k, v in sig.items() if v is not None}
     table = 'functions' if a.kind == 'func' else 'globals'
-    row = {'addr': f'0x{va:x}', 'level': a.level, 'subsystem': sub, 'evidence': a.evidence, 'notes': a.notes,
+    row = {'addr': sig['target'] if port else f'0x{va:x}', 'level': a.level, 'subsystem': sub, 'evidence': a.evidence, 'notes': a.notes,
            'proto': a.proto, 'type': 'code' if a.kind == 'site' else (a.type or '-')}
     rec = br.Record.create(a.name, table, a.author, row, sig)
     errs = bc.check_record(rec, bc.Knowledge())
@@ -432,12 +436,156 @@ def judge(changes, other, author, knowledge):
         if lint_errors:
             result['verdict'] = 'fail'
             result['errors'] += lint_errors
+    if result['verdict'] != 'fail':
+        drops = export_drops(changes)
+        if drops:
+            result['verdict'] = 'fail'
+            result['errors'] += drops
+    headers = [p for p in other if p.startswith(HEADERS)]
+    other = [p for p in other if not p.startswith(HEADERS)]
+    if result['verdict'] != 'fail':
+        moved = header_changes([(path, new) for path, _, new in changes if new is not None])
+        if moved and not headers:
+            result['notes'].append(f'these records change what bindgen writes to {", ".join(moved)}, and the pull '
+                                   'request does not carry the regenerated headers: review needed')
+    if headers:
+        result['notes'].append(f'the pull request changes the generated headers ({", ".join(headers[:3])}'
+                               f'{" and more" if len(headers) > 3 else ""}): review needed')
     if other:
-        result['verdict'] = 'fail' if result['verdict'] == 'fail' else 'review'
         shown = ', '.join(other[:5]) + (f' and {len(other) - 5} more' if len(other) > 5 else '')
         result['notes'].append(f'{len(other)} file(s) outside re/bindings/*/*.json: review needed ({shown})')
+    if (headers or other or result['notes']) and result['verdict'] != 'fail':
+        result['verdict'] = 'review'
     result['summary'] = summary(result)
     return result
+
+
+HEADERS = 'native/include/swofty/'
+
+
+def export_drops(changes):
+    """One error per binding the base exports that these record changes stop exporting."""
+    import bindgen
+    rows = kb.read_table('verify')[0]
+    touched = {path[len('re/bindings/'):] for path, _, _ in changes}
+    after, new_rows = {}, [r for r in rows if r.get('_record') not in touched]
+    for path, _, new in changes:
+        if new is None:
+            continue
+        try:
+            rec = br.Record.from_bytes(new, path[len('re/bindings/'):])
+        except br.RecordError:
+            continue
+        after[path] = rec
+        new_rows += rec.verify_rows()
+    before_gate, after_gate = bindgen.Gate(rows=rows), bindgen.Gate(rows=new_rows)
+    out = []
+    for path, old, new in changes:
+        if old is None:
+            continue
+        try:
+            rec = br.Record.from_bytes(old, path[len('re/bindings/'):])
+        except br.RecordError:
+            continue
+        status, _ = export_state(before_gate, rec)
+        if status == 'not exported':
+            continue
+        if new is None:
+            out.append(f'{path}: removes {rec.name}, which is exported ({status}), so it stops exporting')
+        elif path in after:
+            now, need = export_state(after_gate, after[path])
+            if now == 'not exported':
+                out.append(f'{path}: {rec.name} is exported ({status}) and stops exporting after this change: {need}')
+    return out
+
+
+def bindgen_ids(root):
+    """The ids of the KB set that the bindgen in the tree at `root` exports, run in a scratch folder."""
+    import subprocess, tempfile
+    with tempfile.TemporaryDirectory() as d:
+        out = os.path.join(d, 'bindings.json')
+        r = subprocess.run([sys.executable, '-I', os.path.join(root, 're', 'tools', 'bindgen.py'), '--no-exe',
+                            '--json', out, '--symbols', os.path.join(d, 'symbols.tsv'),
+                            '--include', os.path.join(d, 'include'), '--rust', os.path.join(d, 'game.rs')],
+                           capture_output=True, cwd=d)
+        if r.returncode or not os.path.exists(out):
+            raise SystemExit(f'binding.py: bindgen in {root} failed: {r.stderr.decode(errors="replace").strip()[-400:]}')
+        with open(out) as f:
+            return {b['id'] for b in json.load(f)['bindings']}
+
+
+def lost_exports(base):
+    """The ids the KB set exports at commit `base`, by that commit's own bindgen, that this checkout no longer exports."""
+    import io, tarfile, tempfile
+    have = set(git('ls-tree', '--name-only', base, 're/').stdout.decode().split())
+    paths = [p for p in ('re/tools', 're/db', 're/tests', 're/bindings') if p in have]
+    with tempfile.TemporaryDirectory() as d:
+        with tarfile.open(fileobj=io.BytesIO(git('archive', base, *paths).stdout)) as tar:
+            if hasattr(tarfile, 'data_filter'):
+                tar.extractall(d, filter='data')
+            else:
+                tar.extractall(d)
+        then = bindgen_ids(d)
+    return sorted(then - bindgen_ids(kb.ROOT))
+
+
+def print_lost(lost, base):
+    print(f'error: {len(lost)} binding(s) that {base[:12]} exports no longer export here; removing an export breaks the '
+          'addons that resolve it:')
+    for name in lost:
+        print(f'  {name}')
+    print('  fix: binding.py status <name> says what each one needs, usually an agree row after a newer partial row '
+          'whose corrections are in the notes')
+
+
+def cmd_exports(a):
+    base = pick_base(a.base)
+    lost = lost_exports(base)
+    if lost:
+        print_lost(lost, base)
+        return 1
+    print(f'binding.py exports: every binding {base[:12]} exports still exports')
+    return 0
+
+
+def header_changes(changes):
+    """The tracked header files whose generated text these record changes alter and which do not yet hold it."""
+    import bindgen
+    records = []
+    for path, data in changes:
+        try:
+            records.append(br.Record.from_bytes(data, path[len('re/bindings/'):]))
+        except br.RecordError:
+            continue
+    store = br.Store.get()
+    base = store.records
+
+    def generate():
+        build, bindings, structs, _ = bindgen.load(bindgen.Gate())
+        out = {os.path.join(bindgen.OUT_INC, k): v for k, v in bindgen.gen_cpp(build, bindings, structs).items()}
+        rust, formatted = bindgen.rustfmt(bindgen.gen_rust(build, bindings, structs))
+        out[bindgen.OUT_RS] = rust if formatted else None
+        return out
+    try:
+        before = generate()
+        store.overlay(records)
+        after = generate()
+    finally:
+        store.records = base
+
+    def tracked(p):
+        if not os.path.isfile(p):
+            return None
+        with open(p, encoding='utf-8') as f:
+            return f.read()
+    moved = []
+    for p in sorted(set(before) | set(after)):
+        if before.get(p) == after.get(p):
+            continue
+        if after.get(p) is not None and tracked(p) == after[p]:
+            continue
+        moved.append(os.path.relpath(p, kb.ROOT))
+    return moved
 
 
 def summary(result):
@@ -536,6 +684,10 @@ def cmd_doctor(a):
             if rec:
                 status, need = export_state(gate, rec)
                 print(f'  {rec.name}: {status}' + (f'; needs {need}' if need != '-' else ''))
+    lost = lost_exports(base)
+    if lost:
+        print_lost(lost, base)
+        return 1
     return 1 if result['verdict'] == 'fail' else 0
 
 
@@ -676,6 +828,79 @@ def cmd_ci(a):
     return 1 if result['verdict'] == 'fail' else 0
 
 
+def port_overlay(stamp):
+    import bindgen
+    for name, overlay in bindgen.load_overlays(kb.load_signatures()['build'])[1].items():
+        if overlay['build']['pe_timestamp'] == stamp:
+            return name
+    return None
+
+
+def port_report(path):
+    import bindverify, buildport
+    img = bindverify.Image(path)
+    overlay = port_overlay(img.stamp)
+    doc = bindverify.gen_set(overlay or bindverify.kb_name())
+    res = bindverify.Resolver(img, doc, None if img.flat else os.path.getsize(path))
+    results = res.run()
+    resolved = {r['id'] for r in results if r['result'] == 'resolved'}
+    _, known = buildport.known_builds()
+    build = buildport.identify(known, img.stamp, img.size)
+    kb_rva = {b['id']: b['rva'] for b in bindverify.gen_set(bindverify.kb_name())['bindings']}
+    unresolved = [{'id': r['id'], 'result': r['result'], 'reason': r['reason'], 'kb_rva': kb_rva.get(r['id'])}
+                  for r in results if r['result'] not in ('resolved', 'unresolvable')]
+    out = {'exe': {'path': path, 'pe_timestamp': img.stamp, 'size_of_image': img.size, 'flat': img.flat},
+           'overlay': overlay, 'set': doc['build'].get('distribution'), 'hints_used': res.kb_first and res.same_build,
+           'coverage': bindverify.coverage(results), 'unresolved': unresolved}
+    out.update(buildport.layout_report(build, lambda n: n in resolved))
+    target = overlay or '<new build>'
+    out['bindings_do'] = (f'for each: python3 re/tools/sigport.py --port {path} --build {target} NAME=<KB RVA> prints '
+                          f'the target on this exe; record it as a hint or override in re/db/builds/{target}.json'
+                          if overlay else
+                          'make re/db/builds/<name>.json for this exe first (build: sha256, size, pe_timestamp, '
+                          'distribution, packed; sections: the KB section names to this exe\'s), so the core picks '
+                          'its own set and uses hints; then bind the rest with sigport.py --port')
+    return out
+
+
+def print_port(r):
+    e, c = r['exe'], r['coverage']
+    print(f'binding.py port: {e["path"]} (PE timestamp {e["pe_timestamp"]}, SizeOfImage 0x{e["size_of_image"]:x}'
+          f'{", a flat dump" if e["flat"] else ""})')
+    print(f'  overlay: {"re/db/builds/" + r["overlay"] + ".json" if r["overlay"] else "none"}; the core uses the '
+          f'{r["set"]} set, hints {"used" if r["hints_used"] else "not used"}')
+    print(f'  build_proof.hpp: {r["build"] or "not in KNOWN, so no layout proof holds"}')
+    if r.get('first'):
+        print(f'    do first: {r["first"]}')
+    print(f'bindings: {c["total"]}: by hint {c["hint"]}, by scan {c["scan"]}, by string anchor {c["anchor"]}, '
+          f'unresolved {c["unresolved"]}, deferred {c["deferred"]}, unresolvable {c["unresolvable"]}')
+    for u in r['unresolved']:
+        print(f'  {u["id"]:48s} {u["result"]:10s} KB {u["kb_rva"] or "-":>10s}  {u["reason"]}')
+    if r['unresolved']:
+        print(f'    do: {r["bindings_do"]}')
+    print(f'layout proofs with no evidence for this build: {len(r["proofs"])}')
+    for p in r['proofs']:
+        print(f'  {p["proof"]} ({p["where"]}): {p["what"]}; proven on {", ".join(p["proven_on"]) or "no build"}')
+        print(f'    off: {"; ".join(p["off"])}')
+        print(f'    do: {p["do"]}')
+    if r['unused']:
+        print(f'  ({", ".join(r["unused"])} gates nothing)')
+    print(f'live groups off on this build: {len(r["live"])}')
+    for g in r['live']:
+        print(f'  {g["group"]}: {"; ".join(g["why"])} ({g["needs"]})')
+        for d in g['do']:
+            print(f'    do: {d}')
+
+
+def cmd_port(a):
+    r = port_report(a.exe)
+    if a.json:
+        with open(a.json, 'w') as f:
+            json.dump(r, f, indent=1)
+            f.write('\n')
+    print_port(r)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sp = ap.add_subparsers(dest='cmd', required=True, metavar='command')
@@ -720,6 +945,10 @@ def main(argv=None):
                                   'itself, need a review or fail, why, and the fix for each problem.')
     p.add_argument('--author', help='the GitHub login that opens the pull request (default: the records\' author)')
     p.add_argument('--base', help='the commit to compare with (default: where HEAD leaves origin/main or main)')
+    p = sp.add_parser('exports', help='fail when a binding the main branch exports no longer exports',
+                      description='Runs the base commit\'s own bindgen and this checkout\'s, and lists every binding '
+                                  'the base exports that this checkout does not. doctor runs it too.')
+    p.add_argument('--base', help='the commit to compare with (default: where HEAD leaves origin/main or main)')
     p = sp.add_parser('verify', help='prove existing records again on your exe',
                       description='Resolve each record on your exe with the core\'s rules and store the proof, '
                                   'replacing your earlier proof on the same exe. Any build in re/db/builds works.')
@@ -749,9 +978,18 @@ def main(argv=None):
     p.add_argument('--head', required=True, help='a folder with the pull request\'s copies of its record files')
     p.add_argument('--author', required=True, help='the pull request author\'s login')
     p.add_argument('--out', required=True, help='where to write the result JSON')
+    p = sp.add_parser('port', help='maintainer: what a game update leaves off in the core, and what to do for each',
+                      description='Resolves the bindings set the core would pick on the exe with the core\'s rules '
+                                  '(the build\'s overlay with its hints, or bindings.json by scan), then reads the '
+                                  'layout proofs (native/src/core/runtime/build_proof.hpp and every Proof the core '
+                                  'declares) and the live state groups (native/src/core/live/live_rows.hpp) and lists '
+                                  'each one that has no evidence for this build, the features it turns off and the '
+                                  'step that brings it back. Static: nothing runs the game.')
+    p.add_argument('--exe', required=True, help='the new F1_25.exe, or a flat image dump of it')
+    p.add_argument('--json', metavar='OUT', help='also write the report as JSON')
     a = ap.parse_args(argv)
     return {'new': cmd_new, 'doctor': cmd_doctor, 'verify': cmd_verify, 'agree': cmd_agree, 'check': cmd_check,
-            'status': cmd_status, 'unfold': cmd_unfold, 'ci': cmd_ci}[a.cmd](a) or 0
+            'status': cmd_status, 'unfold': cmd_unfold, 'ci': cmd_ci, 'port': cmd_port, 'exports': cmd_exports}[a.cmd](a) or 0
 
 
 if __name__ == '__main__':

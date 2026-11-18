@@ -75,6 +75,18 @@ struct ProbeScope {
     ProbeScope &operator=(const ProbeScope &) = delete;
 };
 
+// Starts block, the ready subsystems the probe scope covers, on a worker and returns true once D3D12CreateDevice
+// and the CreateDXGIFactory exports are hooked so that the game's calls to them wait for it
+// (render/arm_gate_logic.hpp). Returns false having run nothing, so the caller runs block in the stage as before,
+// when SWOFTY_ARM_SYNC=1 is set, an overlay that patches D3D12 entry points is in the process or running, early is
+// false (the core did not load at the early stage, or the window stage has come), the stage holds the loader lock,
+// or an export did not hook; logged once.
+bool arm_on_worker(void (*block)(), bool early);
+
+// The caller of the creation export this thread is inside, when the arm's gate hook is in front of the hook asking;
+// ret otherwise. A hook on D3D12CreateDevice that tells the core's calls from the game's by return address asks this.
+void *creation_caller(void *ret);
+
 void exec_original(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists);
 void barrier_original(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers);
 

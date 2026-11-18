@@ -434,6 +434,106 @@ fn install_ops(store: &Store, root: &Path, id: &str, name: &str, ops: &str, file
         .unwrap();
 }
 
+/// The changed zstd fragments of at least the frame cache's 16 KiB in the archives a build wrote: how many
+/// there are, and how many came from a cache [`frame_cache::mark`] marked.
+fn cached_frames(built: &Built, game: &Game) -> (usize, usize) {
+    use crate::erp::pack::frame_cache;
+    use swofty_formats::erp::Erp;
+    let (mut changed, mut marked) = (0, 0);
+    for (rel, path) in built.plan.data.iter().chain(&built.plan.added) {
+        if !rel.ends_with(".erp") {
+            continue;
+        }
+        let stock = std::fs::read(game.dir.join(rel))
+            .ok()
+            .and_then(|b| Erp::parse(&b).ok());
+        let written = Erp::parse(&std::fs::read(path).unwrap()).unwrap();
+        for r in &written.resources {
+            let before = stock
+                .as_ref()
+                .and_then(|e| e.resources.iter().find(|s| s.name == r.name));
+            for (i, f) in r.fragments.iter().enumerate() {
+                let kept = before
+                    .and_then(|s| s.fragments.get(i))
+                    .is_some_and(|s| s.raw() == f.raw());
+                if kept || !f.is_zstd() || f.size < 16 << 10 {
+                    continue;
+                }
+                changed += 1;
+                marked += usize::from(f.raw().is_some_and(frame_cache::marked));
+            }
+        }
+    }
+    (changed, marked)
+}
+
+#[test]
+fn a_rebuild_takes_every_changed_fragment_from_the_frame_cache() {
+    use crate::erp::pack::frame_cache;
+    use swofty_formats::erp::{Erp, HEADER_LEN, MAGIC};
+    let _pin = crate::addons::builtin::LoaderPin::none();
+    let root = std::env::temp_dir().join(format!("swofty-build-frames-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let dir = root.join("game");
+    std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+    std::fs::create_dir_all(dir.join("2025_asset_groups")).unwrap();
+    std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::default().to_bytes()).unwrap();
+    let noise = |seed: u8| -> Vec<u8> {
+        (0..20u32 << 10)
+            .map(|i| ((i % 251) as u8 ^ (i / 1021) as u8).wrapping_add(seed))
+            .collect()
+    };
+    let stock = "2025_asset_groups/s.erp";
+    let (one, two) = ("eaid://s/one.mat", "eaid://s/two.mat");
+    let mut header = [0u8; HEADER_LEN];
+    header[..4].copy_from_slice(MAGIC);
+    header[4..8].copy_from_slice(&3u32.to_le_bytes());
+    let archive = Erp {
+        header,
+        version: 3,
+        resources: vec![
+            frame_cache::zstd_resource(one, "Material", &noise(1)),
+            frame_cache::zstd_resource(two, "Material", &noise(2)),
+        ],
+    }
+    .to_bytes()
+    .unwrap();
+    std::fs::write(dir.join(stock), archive).unwrap();
+    let game = Game {
+        identity: Identity::detect(&dir, Some(1)).unwrap(),
+        dir,
+        user_reg: None,
+    };
+    let store = Store::new(root.join("data"));
+    let replace = |res: &str, src: &str| {
+        format!(
+            r#"{{"op":"erp.replace-resource","erp":"{stock}","resource":"{res}","fragment":0,"source":"{src}"}}"#
+        )
+    };
+    install_ops(
+        &store,
+        &root,
+        "t.edit",
+        "Edit",
+        &format!("{},{}", replace(one, "one.bin"), replace(two, "two.bin")),
+        &[("one.bin", noise(3)), ("two.bin", noise(4))],
+    );
+    let first = build(&store, "default", &game).unwrap();
+    assert_eq!(cached_frames(&first, &game), (2, 0), "{:?}", first.lines);
+    let cache = store.root.join("cache");
+    assert_eq!(frame_cache::mark(&cache.join(crate::cache::PACKED_DIR)), 2);
+    std::fs::remove_dir_all(&first.overlay).unwrap();
+    std::fs::remove_dir_all(cache.join(crate::cache::ARCHIVES_DIR)).ok();
+    let second = build(&store, "default", &game).unwrap();
+    assert_eq!(
+        cached_frames(&second, &game),
+        (2, 2),
+        "a rebuild compresses no fragment the first build compressed"
+    );
+    std::fs::remove_dir_all(&root).ok();
+}
+
 #[test]
 fn an_edit_of_a_resource_another_addons_archive_lacks_is_skipped() {
     if loader_dir().is_some() {

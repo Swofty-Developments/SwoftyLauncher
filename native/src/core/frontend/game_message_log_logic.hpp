@@ -11,7 +11,7 @@
 // ("[popup] game message 'continue_solo_gp_f1w_offline_warning'"). Messages the core raises itself (swofty_message,
 // swofty_toast_*, the beta_motd fallback) are not stock messages and are left out.
 
-namespace runtime::game_message_log {
+namespace frontend::game_message_log {
 
 constexpr size_t MAX_IDS = 96;
 constexpr size_t MAX_ID_CHARS = 96;

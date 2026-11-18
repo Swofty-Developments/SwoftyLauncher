@@ -188,6 +188,11 @@ pub struct StandingsPreset {
 }
 
 #[repr(C)]
+pub struct TrackLayer {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
 pub struct UiLayoutStep {
     _opaque: [u8; 0],
 }
@@ -4416,6 +4421,7 @@ pub type Game_PitLane_ProjectBoxPose_t = unsafe extern "C" fn(
     flags: u32,
 ) -> bool;
 pub type Game_PitLane_PutVehicleInPitBox_t = unsafe extern "C" fn(pitlane: *mut c_void, vehicle: u8);
+pub type Game_PitLane_UpdateMovement_t = unsafe extern "C" fn(mgr: *mut c_void, dt: f32);
 pub type Game_Pitlane_SetVehicleStatus_t = unsafe extern "C" fn(self_: *mut c_void, vehicle: u8, status: u32);
 pub type Game_Place_Vehicle_t = unsafe extern "C" fn(
     car: *mut c_void,
@@ -4437,6 +4443,8 @@ pub type Game_Read_GridConfig_t = unsafe extern "C" fn(placement: *mut c_void);
 pub type Game_Read_QualifyingConfig_t = unsafe extern "C" fn(track_data_system: *mut c_void);
 pub type Game_Read_StoryForcedTitleUpdateValueSetting_t = unsafe extern "C" fn(ctx: *mut c_void) -> bool;
 pub type Game_Read_TrackInfoConfig_t = unsafe extern "C" fn(self_: *mut c_void);
+pub type Game_Read_TrackLayerRow_t =
+    unsafe extern "C" fn(row: *mut c_void, reader: *mut c_void) -> *mut c_void;
 pub type Game_Read_UIMovieBuildSetting_t = unsafe extern "C" fn(self_: *mut c_void) -> u64;
 pub type Game_Refresh_PerformanceComparison_t = unsafe extern "C" fn(comparison: *mut c_void);
 pub type Game_RendererModule_Initialise_t = unsafe extern "C" fn(module: *mut c_void) -> c_int;
@@ -11767,6 +11775,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_PitLane_AssignGarageIndices: Binding = Binding {
+        id: "Game_PitLane_AssignGarageIndices",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_PitLane_EnterControlRelease: Binding = Binding {
         id: "Game_PitLane_EnterControlRelease",
         kind: "func",
@@ -11784,6 +11797,16 @@ pub mod bindings {
     };
     pub const Game_PitLane_ExitLimitZone: Binding = Binding {
         id: "Game_PitLane_ExitLimitZone",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitLane_GetDistanceToBox: Binding = Binding {
+        id: "Game_PitLane_GetDistanceToBox",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitLane_GetGaragePose_Thunk: Binding = Binding {
+        id: "Game_PitLane_GetGaragePose_Thunk",
         kind: "func",
         status: Status::Experimental,
     };
@@ -11847,6 +11870,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_PitLane_UpdateMovement: Binding = Binding {
+        id: "Game_PitLane_UpdateMovement",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_PitLane_VehicleEntering: Binding = Binding {
         id: "Game_PitLane_VehicleEntering",
         kind: "func",
@@ -11854,6 +11882,11 @@ pub mod bindings {
     };
     pub const Game_PitLane_VehicleEnteringInternal: Binding = Binding {
         id: "Game_PitLane_VehicleEnteringInternal",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitLane_VehicleExiting: Binding = Binding {
+        id: "Game_PitLane_VehicleExiting",
         kind: "func",
         status: Status::Experimental,
     };
@@ -12224,6 +12257,11 @@ pub mod bindings {
     };
     pub const Game_Read_TrackInfoConfig: Binding = Binding {
         id: "Game_Read_TrackInfoConfig",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Read_TrackLayerRow: Binding = Binding {
+        id: "Game_Read_TrackLayerRow",
         kind: "func",
         status: Status::Experimental,
     };
@@ -13044,6 +13082,11 @@ pub mod bindings {
     };
     pub const Game_TrackSpace_LapDistance: Binding = Binding {
         id: "Game_TrackSpace_LapDistance",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TrackSpace_LoadXml: Binding = Binding {
+        id: "Game_TrackSpace_LoadXml",
         kind: "func",
         status: Status::Experimental,
     };
@@ -15207,8 +15250,18 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_MoverCollision_BuildMoverShapes: Binding = Binding {
+        id: "Ne_MoverCollision_BuildMoverShapes",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_MoverCollision_BuildQueryContext: Binding = Binding {
         id: "Ne_MoverCollision_BuildQueryContext",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_MoverCollision_CreateResource: Binding = Binding {
+        id: "Ne_MoverCollision_CreateResource",
         kind: "func",
         status: Status::Experimental,
     };
@@ -19569,6 +19622,16 @@ pub mod bindings {
     };
     pub const Sess_Veh_UpdateWheelMap: Binding = Binding {
         id: "Sess_Veh_UpdateWheelMap",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_VehiclePlacementRequest_ParseGroupAndId: Binding = Binding {
+        id: "Sess_VehiclePlacementRequest_ParseGroupAndId",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_VehiclePlacementRequest_Register: Binding = Binding {
+        id: "Sess_VehiclePlacementRequest_Register",
         kind: "func",
         status: Status::Experimental,
     };

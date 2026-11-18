@@ -95,7 +95,7 @@ namespace postfx {
 bool Pipeline::frame_gen_on(ULONGLONG now)
 {
     if (frame_gen_poll.due(now))
-        frame_gen = hardware_settings::frame_gen(frame_gen_poll.file_path()).on();
+        frame_gen = hud::hardware_settings::frame_gen(frame_gen_poll.file_path()).on();
     return frame_gen;
 }
 
@@ -183,7 +183,7 @@ void Pipeline::tick(ULONGLONG now)
     config.poll_toggles();
     config.check_active(now, false);
     rules.live_frame(now, swofty_root_dir);
-    rules.frame(view::current(), now, config.active, config.plan, config.passes);
+    rules.frame(frontend::view::current(), now, config.active, config.plan, config.passes);
     if (now - live_at >= 250) {
         live_at = now;
         config.refresh_live();
@@ -304,7 +304,7 @@ void Pipeline::game_frame(const void *was, ULONGLONG now)
 // does not close the passes' frames: the game's own frames do, where their lists are submitted.
 void Pipeline::flow_frame(double, void *)
 {
-    if (!device_armed.load(std::memory_order_relaxed))
+    if (!device_armed.load(std::memory_order_acquire))
         return;
     ULONGLONG now = GetTickCount64(), presented = present_at.load(std::memory_order_relaxed);
     if (!postfx::presents_gone(now, presented, started))

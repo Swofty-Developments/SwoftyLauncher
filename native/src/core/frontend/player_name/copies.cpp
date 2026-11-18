@@ -26,13 +26,13 @@
 // stock name on a screen 30 s or more after the last scan (two times a session at most). It stops when the session ends.
 // SWOFTY_TT_PLAYER_NAME_SWAP=0 turns it off.
 
-namespace name_copies {
+namespace frontend::player_name {
 
 constinit SourceSwap source_swap;
 
 namespace {
 
-namespace pn = runtime::player_name;
+namespace pn = frontend::player_name;
 namespace sl = runtime::session_life;
 
 // Reads of game memory. Small reads (node fields) are guarded copies; anything bigger goes through ReadProcessMemory, which reports a
@@ -127,7 +127,7 @@ struct SwapResult {
 // The scan stops the moment the session it was planned for ends.
 SwapResult swap_sources(const std::string &stock, const std::string &name_in, uint64_t serial)
 {
-    namespace ms = runtime::mem_scan;
+    namespace ms = frontend::mem_scan;
     SwapResult res;
     constexpr size_t CHUNK = size_t(1) << 20, OVERLAP = 256;
     const int64_t deadline = int64_t(GetTickCount64()) + 20000;
@@ -216,7 +216,7 @@ bool registry_read(uint64_t at, void *out, size_t n)
 
 void probe_registry(int pass)
 {
-    namespace ur = runtime::ui_registry;
+    namespace ur = frontend::ui_registry;
     if (!runtime::proven(TT_NAME) || !swofty::game::g_Vm_Registry.address())
         return;
     uint64_t base = swofty::api->module_base(), reg = uint64_t(*swofty::game::g_Vm_Registry);
@@ -248,7 +248,7 @@ void probe_registry(int pass)
 
 void scan_copies(std::string stock)
 {
-    namespace ms = runtime::mem_scan;
+    namespace ms = frontend::mem_scan;
     constexpr size_t CHUNK = size_t(1) << 20, OVERLAP = 256;
     const int64_t deadline = int64_t(GetTickCount64()) + 25000;
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_LOWEST);
@@ -361,7 +361,7 @@ scanned_all:
 
 int pin_names(const std::string &name, const std::string &stock)
 {
-    namespace ur = runtime::ui_registry;
+    namespace ur = frontend::ui_registry;
     if (!swofty::game::g_Vm_Registry.address() || !swofty::game::Vm_Set_String.address() || !swofty::game::Ne_Make_StrFromCStr.address())
         return 0;
     uint64_t base = swofty::api->module_base(), reg = uint64_t(*swofty::game::g_Vm_Registry);
@@ -375,10 +375,10 @@ int pin_names(const std::string &name, const std::string &stock)
     static std::atomic<int> logged{0};
     int written = 0;
     for (auto &h : hits) {
-        const char *leaf = h.depth >= 1 ? runtime::player_name::leaf_name(h.chain[h.depth - 1]) : nullptr;
-        if (!leaf || !h.parent || h.depth < 2 || !runtime::player_name::root_allowed(h.chain[0]))
+        const char *leaf = h.depth >= 1 ? frontend::player_name::leaf_name(h.chain[h.depth - 1]) : nullptr;
+        if (!leaf || !h.parent || h.depth < 2 || !frontend::player_name::root_allowed(h.chain[0]))
             continue;
-        vm::set_string(reinterpret_cast<void *>(reg), reinterpret_cast<void *>(h.parent + 8), leaf, name.c_str());
+        frontend::vm::set_string(reinterpret_cast<void *>(reg), reinterpret_cast<void *>(h.parent + 8), leaf, name.c_str());
         written++;
     }
     if (written && logged.fetch_add(1) < 6)

@@ -83,6 +83,19 @@ static bool build_logos(lb::Env env, const std::vector<lb::Want> &wants, lb::Res
     return ok;
 }
 
+static std::shared_ptr<ef::Source> open_bytes(std::shared_ptr<const std::string> bytes)
+{
+    auto src = std::make_shared<ef::Source>();
+    src->size = bytes->size();
+    src->read = [bytes](uint64_t off, size_t n, char *out) {
+        if (off > bytes->size() || n > bytes->size() - off)
+            return false;
+        std::memcpy(out, bytes->data() + off, n);
+        return true;
+    };
+    return src;
+}
+
 static std::string rewrite_to_string(const ef::Source &src, const ef::Archive &arc, const ef::Changes &changes, std::string &why)
 {
     std::string out;
@@ -234,6 +247,103 @@ int main(int argc, char **argv)
         std::ofstream(out / name, std::ios::binary) << built;
     }
     check(true, "archives written to " + out.string() + " for check_logo_build.py");
+
+    {
+        namespace lc = content::logo_cache;
+        const std::string OTHER = "eaid://ui_package/databases/other.uidb";
+        auto stock = std::make_shared<const std::string>(slurp(game / lb::DATABASES));
+        auto changed = [&](const std::string &name, const std::string &bytes) {
+            auto src = open_bytes(stock);
+            ef::Archive arc;
+            ef::open(*src, arc, why);
+            return std::make_shared<const std::string>(rewrite_to_string(*src, arc, {{name, {bytes}}}, why));
+        };
+        auto with_db = [&](std::shared_ptr<const std::string> db) {
+            lb::Env e = env;
+            e.open = [&env, db](const std::string &rel) { return rel == lb::DATABASES ? open_bytes(db) : env.open(rel); };
+            return e;
+        };
+        auto key_of = [&](const lb::Env &e, std::shared_ptr<const std::string> db) {
+            lc::Env stamp{
+                [&](const std::string &rel, uint64_t &size, uint64_t &time) {
+                    size = rel == lb::DATABASES ? db->size() : fs::file_size(game / rel);
+                    time = 1;
+                    return true;
+                },
+                [&](const std::string &rel, uint64_t &hash) {
+                    return lb::input_hash(e, rel, [&](const std::string &r, uint64_t &h) {
+                        std::string bytes = r == lb::DATABASES ? *db : slurp(game / r);
+                        lc::Bytes b;
+                        b.add(bytes.data(), bytes.size());
+                        h = b.done();
+                        return true;
+                    }, hash);
+                },
+            };
+            return lc::key_archives(7, list, res.read, stamp, {}).key;
+        };
+        auto build_with = [&](std::shared_ptr<const std::string> db, std::string &copy) {
+            lb::Result r;
+            bool ok = build_logos(with_db(db), wants, r) && r.changes.count(lb::DATABASES);
+            auto src = open_bytes(db);
+            ef::Archive arc;
+            ok = ok && ef::open(*src, arc, why);
+            copy = ok ? rewrite_to_string(*src, arc, r.changes[lb::DATABASES], why) : std::string();
+            return ok;
+        };
+        auto remade = [&](std::shared_ptr<const std::string> db, const std::string &copy) {
+            std::string out;
+            bool ok = lb::databases_copy(*open_bytes(db), copy, [&](const char *p, size_t n) { out.append(p, n); return true; }, why);
+            return ok ? out : std::string();
+        };
+        auto entry_of = [&](const std::string &archive, const std::string &name) {
+            auto src = open_bytes(std::make_shared<const std::string>(archive));
+            ef::Archive arc;
+            std::string data, w2;
+            const ef::Entry *e = ef::open(*src, arc, w2) ? arc.find(name) : nullptr;
+            return e && !e->frags.empty() && ef::fragment(*src, arc, e->frags[0], data, w2) ? data : std::string("-");
+        };
+
+        std::string cached;
+        check(build_with(stock, cached), "databases.erp: a build makes its copy");
+        uint64_t stock_hash = 0;
+        check(lb::databases_hash(*open_bytes(stock), stock_hash), "databases.erp: with no texture array it counts by its overrides.uidb alone");
+        uint64_t carrier_hash = 0;
+        check(!lb::databases_hash(*open_file(game / list[1]), carrier_hash), "an archive that carries a texture array counts by all of its bytes");
+
+        auto outside = changed(OTHER, std::string(300, 'o'));
+        uint64_t outside_hash = 0;
+        check(*outside != *stock && outside->size() != stock->size() && lb::databases_hash(*open_bytes(outside), outside_hash) &&
+                  outside_hash == stock_hash,
+              "databases.erp changed outside overrides.uidb (and resized, so overrides.uidb moves) counts the same");
+        check(key_of(with_db(outside), outside) == key_of(with_db(stock), stock),
+              "databases.erp changed outside overrides.uidb keeps the cache key: the cached logos are reused");
+        std::string fresh, again = remade(outside, cached);
+        check(build_with(outside, fresh) && !again.empty() && again == fresh,
+              "the copy made again from the cached one is byte for byte the copy a build of the changed databases.erp writes");
+        check(again != cached && entry_of(again, OTHER) == std::string(300, 'o') &&
+                  entry_of(again, lb::OVERRIDES) == entry_of(cached, lb::OVERRIDES),
+              "the copy made again carries the changed entry and the overrides.uidb the build wrote");
+        check(remade(stock, cached) == cached, "made again from the databases.erp it was built from, the copy is unchanged");
+
+        content::uidb::Pkg grown;
+        std::string add_why;
+        content::uidb::Node *node = grown.read(entry_of(*stock, lb::OVERRIDES)) ? grown.find(lb::list_path("teams.driver_select_team_logos")) : nullptr;
+        check(node && grown.append_entry(*node, "extra", std::string(lb::TEXTURE_PATH) + "extra.tif", add_why), "overrides.uidb takes one more entry");
+        auto inside = changed(lb::OVERRIDES, grown.write());
+        uint64_t inside_hash = 0;
+        check(lb::databases_hash(*open_bytes(inside), inside_hash) && inside_hash != stock_hash &&
+                  key_of(with_db(inside), inside) != key_of(with_db(stock), stock),
+              "databases.erp changed inside overrides.uidb changes the cache key: the logos are built again");
+        std::string rebuilt;
+        check(build_with(inside, rebuilt) && entry_of(rebuilt, lb::OVERRIDES) != entry_of(cached, lb::OVERRIDES),
+              "a build of that databases.erp writes another overrides.uidb, so the cached one would be wrong");
+
+        auto restamped = changed(lb::OVERRIDES, entry_of(*stock, lb::OVERRIDES));
+        uint64_t same_hash = 0;
+        check(lb::databases_hash(*open_bytes(restamped), same_hash) && same_hash == stock_hash,
+              "databases.erp written again with the same overrides.uidb counts the same");
+    }
 
     {
         fs::path ov = out / "overlay";

@@ -308,7 +308,7 @@ impl Shell {
 
     pub(crate) fn news_page(&mut self, p: Palette, short: bool, cx: &mut Context<Self>) -> AnyElement {
         if self.news.stale() {
-            self.fetch_news(cx);
+            super::News::fetch(self, cx);
         }
         let refresh = Button::new("news-refresh")
             .ghost()
@@ -316,7 +316,7 @@ impl Shell {
             .icon(IconName::RefreshCw)
             .label(tr("Refresh"))
             .disabled(self.news.fetching)
-            .on_click(cx.listener(|this, _, _, cx| this.fetch_news(cx)));
+            .on_click(cx.listener(|this, _, _, cx| super::News::fetch(this, cx)));
         let stacked = self.layout.content_width < STACK_BELOW;
         let side = (self.layout.content_width * 0.32).clamp(260., 380.);
         let side = self.ad_rail_width().map_or(side, |w| side.max(w));

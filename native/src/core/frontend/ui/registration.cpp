@@ -12,7 +12,7 @@
 #include "core/frontend/ui/screen_loader.hpp"
 #include "core/frontend/ui_vm.hpp"
 
-namespace ui {
+namespace frontend::ui {
 
 namespace {
 

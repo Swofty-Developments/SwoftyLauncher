@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/runtime/loader/mixin_gate.hpp"
+
 #include <string>
 #include <vector>
 
@@ -34,6 +36,6 @@ inline std::string hook_failed(const std::string &name, const char *site, const 
     return name + ": " + (site ? std::string(site) + ": " : std::string()) + "the hook failed: " + error;
 }
 
-inline std::string not_installed(const std::string &name) { return name + " did not install (see the [core] lines)"; }
+inline std::string not_installed(const std::string &name) { return name + " " + ::runtime::loader::NOT_INSTALLED; }
 
 }

@@ -3,9 +3,11 @@ use std::process::Command;
 
 use swofty_formats::erp::Erp;
 use swofty_formats::gvdb::Gvdb;
+use swofty_formats::hash::fnv1a64_from;
 use swofty_formats::lng::Lng;
 use swofty_formats::nefs::Archive;
 use swofty_formats::pkg::{Pkg, is_pkg};
+use swofty_formats::texture;
 
 const GVDB: &str = "game_package/gamedatabases/gamedatabases.2025.bin";
 const ERPS: &[&str] = &[
@@ -159,6 +161,47 @@ fn pkg_round_trip_is_byte_identical() {
         }
     }
     eprintln!("{checked} !pkg fragments round-tripped");
+}
+
+#[test]
+fn stock_ui_surfaces_decode_at_their_header_size() {
+    let Some(dir) = game_dir() else { return };
+    let (mut checked, mut skipped, mut sum) = (0, 0, 0xcbf2_9ce4_8422_2325u64);
+    for rel in PKG_ERPS {
+        let Some(data) = read(&dir, rel) else { continue };
+        let erp = Erp::parse(&data).unwrap();
+        for res in erp.resources.iter().filter(|r| r.name.ends_with(".image")) {
+            let h = texture::header(res).unwrap_or_else(|e| panic!("{rel}: {}: {e}", res.name));
+            if h.codec().is_none() {
+                skipped += 1;
+                continue;
+            }
+            let image = texture::decode(res).unwrap_or_else(|e| panic!("{rel}: {}: {e}", res.name));
+            assert_eq!(
+                (image.width, image.height),
+                (h.width, h.height),
+                "{rel}: {}",
+                res.name
+            );
+            assert_eq!(
+                image.rgba.len(),
+                (h.width * h.height * 4) as usize,
+                "{rel}: {}",
+                res.name
+            );
+            let near = texture::decode_near(res, Some(&dir), 64)
+                .unwrap_or_else(|e| panic!("{rel}: {}: {e}", res.name));
+            assert_eq!(
+                near.rgba.len(),
+                (near.width * near.height * 4) as usize,
+                "{rel}: {}",
+                res.name
+            );
+            sum = fnv1a64_from(fnv1a64_from(sum, &image.rgba), &near.rgba);
+            checked += 1;
+        }
+    }
+    eprintln!("{checked} stock UI surfaces decoded, {skipped} in other formats, pixels {sum:016x}");
 }
 
 #[test]

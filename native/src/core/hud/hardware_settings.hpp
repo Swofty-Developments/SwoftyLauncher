@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <string>
 
-namespace hardware_settings {
+namespace hud::hardware_settings {
 
 std::wstring path();
 hud::guard::FgSetting frame_gen(const std::wstring &path);

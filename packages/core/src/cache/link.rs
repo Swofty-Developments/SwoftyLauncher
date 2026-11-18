@@ -386,7 +386,7 @@ mod tests {
     }
 
     fn sha(body: &str) -> String {
-        crate::baseline::sha256_bytes(body.as_bytes())
+        crate::game_folder::baseline::sha256_bytes(body.as_bytes())
     }
 
     #[test]

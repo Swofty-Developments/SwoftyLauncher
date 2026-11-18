@@ -11,7 +11,7 @@ impl Pipeline<'_, '_> {
     /// Gives the stock car archives the handling records' changes and the tracks' ERS settings; the
     /// result is the tracks' ERS settings, which car archives addons change get later.
     pub(super) fn car_archives<'i>(&mut self, inputs: &'i Inputs) -> Result<Vec<ErsMap<'i>>> {
-        let packer = self.eager_packer();
+        let packer = self.run.eager_packer();
         let (run, built, caches) = (self.run, &mut self.built, &mut self.caches);
         let (store, game) = (run.store, run.game);
         let (fitted, handling_maps) = (&inputs.tracks, &inputs.handling_maps);

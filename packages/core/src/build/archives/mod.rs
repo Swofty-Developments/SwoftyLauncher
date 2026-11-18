@@ -106,7 +106,7 @@ impl Pipeline<'_, '_> {
         let resolve = |rel: &str| run.original(rel);
         let mut erps = ErpBuild::new(&base)
             .with_baseline(&resolve)
-            .with_packer(self.packer.clone());
+            .with_packer(self.run.packer.clone());
         for rel in puts.keys() {
             erps.load(rel)?;
         }
@@ -144,7 +144,7 @@ impl Pipeline<'_, '_> {
     fn compose_hud(&mut self, inputs: &Inputs, bases: &Bases, erp_ops: &[Op]) -> Result<Vec<Op>> {
         let run = self.run;
         let (store, game) = (run.store, run.game);
-        let packer = self.eager_packer();
+        let packer = self.run.eager_packer();
         let Self { built, session, .. } = self;
         let hud_inputs = &inputs.hud_inputs;
         let stock = crate::hud::GameStock::with_baseline(&game.dir, &store.root)
@@ -325,7 +325,7 @@ impl Pipeline<'_, '_> {
     ) -> Result<()> {
         let run = self.run;
         let name = |origin: &str| run.origin_name(origin);
-        let packer = self.packer.clone();
+        let packer = self.run.packer.clone();
         let Self { planner, built, .. } = self;
         built.warnings.extend(erps.wheel_warnings());
         if !ers_maps.is_empty() {
@@ -421,7 +421,7 @@ impl Pipeline<'_, '_> {
             stage_erps(built, staged, written)?;
             return Ok(resized);
         }
-        let crate::erpbuild::BuiltIn {
+        let crate::erp::BuiltIn {
             outside,
             resized,
             reused,

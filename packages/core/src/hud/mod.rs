@@ -149,7 +149,7 @@ impl GameStock {
         {
             let carried = self.carried.borrow();
             for n in names.iter().filter(|n| !carried.contains_key(**n)) {
-                match crate::erpbuild::group_dir(n) {
+                match crate::erp::group_dir(n) {
                     Some(g) => {
                         by_group.entry(g).or_default().insert(n);
                     }
@@ -172,7 +172,7 @@ impl GameStock {
                 return Err(err(format!("{} is not a folder", dir.display())));
             }
             let mut files = Vec::new();
-            crate::erpbuild::erp_files(&dir, group, &mut files);
+            crate::erp::erp_files(&dir, group, &mut files);
             files.sort();
             for rel in files {
                 let Ok(f) = ErpFile::open(&self.original(&rel)) else {
@@ -249,7 +249,7 @@ impl Stock for GameStock {
 /// The composer starts from these, so its overlay carries those changes instead of overwriting them.
 pub struct Layered<'a> {
     pub inner: &'a dyn Stock,
-    pub build: &'a crate::erpbuild::ErpBuild<'a>,
+    pub build: &'a crate::erp::ErpBuild<'a>,
 }
 
 impl Stock for Layered<'_> {

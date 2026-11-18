@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace runtime::toast {
+namespace hud::toast {
 
 constexpr int64_t MAX_AGE_S = 10;
 constexpr uint64_t SHOW_MS = 5000;

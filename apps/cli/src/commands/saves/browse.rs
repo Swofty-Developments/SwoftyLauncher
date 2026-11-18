@@ -1,6 +1,6 @@
 use anyhow::Result;
+use swofty_core::saves::vault::{self, Snapshot, Vault, migrate};
 use swofty_core::store::Store;
-use swofty_core::vault::{self, Snapshot, Vault, migrate};
 
 use crate::commands::saves::open;
 use crate::commands::saves::session::report;

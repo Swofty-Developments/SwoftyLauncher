@@ -6,7 +6,7 @@ use swofty_core::store::Store;
 
 pub fn restore(store: &Store, game: Option<PathBuf>) -> Result<ExitCode> {
     let g = super::game(store, game)?;
-    let done = swofty_core::recovery::restore(&store.root, &g)?;
+    let done = swofty_core::game_folder::recovery::restore(&store.root, &g)?;
     for n in &done.notes {
         println!("restored: {n}");
     }

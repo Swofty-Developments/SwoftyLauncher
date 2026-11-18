@@ -20,7 +20,7 @@ use crate::asset::{AssetOp, ItemOp};
 use crate::content::runtime_assets::Runtime;
 use crate::content::shaders::BuildFiles;
 use crate::game_folder::baseline::sha256_file;
-use crate::multiplayer::fingerprint;
+use crate::online::multiplayer::fingerprint;
 use crate::row_ids::Overrides;
 use crate::stdlib::deps::Std;
 use crate::ui::{ERPS as MENU_ERPS, READS as MENU_READS, ui_file};
@@ -254,7 +254,6 @@ impl Inputs {
             built,
             session,
             caches,
-            packer: setup.packer.clone(),
         };
         Ok((pipeline, inputs))
     }

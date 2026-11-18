@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-namespace view {
+namespace frontend::view {
 
 enum Kind : uint32_t { UNKNOWN = 0, COCKPIT, TCAM, TCAM_OFFSET, CHASE_NEAR, CHASE_FAR, OTHER };
 enum Flag : uint32_t { PAUSED = 1, REPLAY = 2, PHOTO = 4, MENU = 8, CUTSCENE = 16, SPECTATING = 32 };

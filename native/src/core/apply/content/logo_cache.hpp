@@ -19,12 +19,16 @@
 // the same. Each input counts by a hash of its bytes. The stamps file next to the cached archives names the inputs of
 // the last build and keeps each hash under the size and write time it was taken at; only an input whose size or write
 // time differs is read again. Every other archive counts by its path and size and is never read: the build only looks
-// in it for a wanted array, and an archive that gains one grows.
+// in it for a wanted array, and an archive that gains one grows. databases.erp counts by what the build reads from it
+// (logo_build::databases_hash): an install writes the addon option values into it before every session, and the
+// build reads only its overrides.uidb. The manifest names the hash of all of databases.erp its copy was made from
+// (SOURCE_LINE); a cached build whose databases.erp has changed since gets that copy made again from the new one.
 
 namespace swofty_core::apply::content::logo_cache {
 
 inline constexpr const char *STAMPS = "inputs.stamps";
 inline constexpr const char *OLD_STAMPS = "archives.stamps";
+inline constexpr const char *STAMPS_FORMAT = "#format\t2";
 
 class Bytes {
 public:
@@ -126,9 +130,14 @@ inline Stamps parse(const std::string &text)
     return out;
 }
 
+inline bool stamps_current(const std::string &text)
+{
+    return text.compare(0, std::strlen(STAMPS_FORMAT) + 1, std::string(STAMPS_FORMAT) + "\n") == 0;
+}
+
 inline std::string text(const Stamps &stamps)
 {
-    std::string out;
+    std::string out = std::string(STAMPS_FORMAT) + "\n";
     char hex[17];
     for (auto &[rel, s] : stamps) {
         std::snprintf(hex, sizeof hex, "%016llx", static_cast<unsigned long long>(s.hash));
@@ -137,23 +146,33 @@ inline std::string text(const Stamps &stamps)
     return out;
 }
 
-inline constexpr const char *CACHE_FORMAT = "|logo-cache-3";
+inline constexpr const char *CACHE_FORMAT = "|logo-cache-4";
 inline constexpr const char *BUILT_LINE = "#built";
+inline constexpr const char *SOURCE_LINE = "#source";
 
 using Routes = std::vector<std::pair<std::string, std::string>>;
+using Sources = std::map<std::string, uint64_t>;
 
-inline std::string manifest_text(int built, const Routes &routes)
+inline std::string manifest_text(int built, const Routes &routes, const Sources &sources = {})
 {
     std::string out = std::string(BUILT_LINE) + "\t" + std::to_string(built) + "\n";
+    char hex[17];
+    for (auto &[rel, hash] : sources) {
+        std::snprintf(hex, sizeof hex, "%016llx", static_cast<unsigned long long>(hash));
+        out += std::string(SOURCE_LINE) + "\t" + rel + "\t" + hex + "\n";
+    }
     for (auto &[rel, file] : routes)
         out += rel + "\t" + file + "\n";
     return out;
 }
 
-inline bool manifest_parse(const std::string &text, const std::function<bool(const std::string &file)> &exists, int &built, Routes &routes)
+inline bool manifest_parse(const std::string &text, const std::function<bool(const std::string &file)> &exists, int &built, Routes &routes,
+                           Sources *sources = nullptr)
 {
     built = -1;
     routes.clear();
+    if (sources)
+        sources->clear();
     size_t at = 0;
     while (at < text.size()) {
         size_t end = text.find('\n', at);
@@ -166,14 +185,23 @@ inline bool manifest_parse(const std::string &text, const std::function<bool(con
             continue;
         if (line.compare(0, tab, BUILT_LINE) == 0)
             built = std::atoi(line.c_str() + tab + 1);
-        else
+        else if (line.compare(0, tab, SOURCE_LINE) == 0) {
+            size_t at_hash = line.rfind('\t');
+            char *stop = nullptr;
+            uint64_t hash = std::strtoull(line.c_str() + at_hash + 1, &stop, 16);
+            if (sources && at_hash > tab && !*stop && at_hash + 1 < line.size())
+                (*sources)[line.substr(tab + 1, at_hash - tab - 1)] = hash;
+        } else
             routes.emplace_back(line.substr(0, tab), line.substr(tab + 1));
     }
     bool whole = built >= 0 && !routes.empty();
     for (auto &r : routes)
         whole = whole && exists(r.second);
-    if (!whole)
+    if (!whole) {
         routes.clear();
+        if (sources)
+            sources->clear();
+    }
     return whole;
 }
 
@@ -227,7 +255,7 @@ inline Keyed key_archives(uint64_t key, const std::vector<std::string> &files, c
         }
         char hex[17];
         std::snprintf(hex, sizeof hex, "%016llx", static_cast<unsigned long long>(now.hash));
-        key = runtime::fnv64_field(key, rel + "|" + std::to_string(now.size) + "|" + (now.hashed ? std::string("h") + hex : "t" + std::to_string(now.time)));
+        key = runtime::fnv64_field(key, rel + "|" + (now.hashed ? std::string("h") + hex : std::to_string(now.size) + "|t" + std::to_string(now.time)));
         out.stamps[rel] = now;
     }
     out.key = key;

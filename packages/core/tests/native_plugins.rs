@@ -1,11 +1,11 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use swofty_core::baseline::Identity;
 use swofty_core::build::{GVDB, Plugins, plugin_files};
+use swofty_core::game_folder::baseline::Identity;
 use swofty_core::install::{Game, Installer, Plan};
 use swofty_core::profile::Profile;
-use swofty_core::resolver::resolve;
+use swofty_core::profile::resolver::resolve;
 use swofty_core::store::Store;
 
 const CORE: &str = "swofty/addons/core/swofty_core.dll";
@@ -221,7 +221,7 @@ fn the_integrity_module_is_placed_for_a_session_and_rolled_back_with_it() {
 
 #[test]
 fn a_server_plugin_is_placed_for_a_session_and_rolled_back_with_it() {
-    use swofty_core::modules::{self, Module, TT_GAME};
+    use swofty_core::online::modules::{self, Module, TT_GAME};
     const DLL: &str = "swofty/addons/swofty.tt/swofty_tt.dll";
     let f = Fixture::new("server-plugin");
     let cached = f

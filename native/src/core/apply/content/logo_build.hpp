@@ -2,6 +2,7 @@
 
 #include "core/apply/content/erp_file.hpp"
 #include "core/apply/content/logo_array.hpp"
+#include "core/apply/content/logo_cache.hpp"
 #include "core/apply/content/png_straight.hpp"
 #include "core/apply/content/uidb.hpp"
 #include "core/runtime/hashing.hpp"
@@ -317,6 +318,70 @@ inline std::vector<std::string> array_layers(const Env &env, const std::string &
             out.push_back(l);
     }
     return out;
+}
+
+// What the build reads from databases.erp: whether it carries a texture array, and the contents of the first fragment
+// of its overrides.uidb. A databases.erp that carries none counts by those contents alone (true), wherever the entry
+// lies and however it is packed; one that carries one, or does not read, counts by all of its bytes (false).
+inline bool databases_hash(const erpfile::Source &src, uint64_t &hash)
+{
+    erpfile::Archive arc;
+    std::string why, data;
+    if (!erpfile::open(src, arc, why))
+        return false;
+    size_t prefix = std::char_traits<char>::length(ARRAY_URI);
+    if (std::any_of(arc.entries.begin(), arc.entries.end(), [&](const erpfile::Entry &e) { return e.name.compare(0, prefix, ARRAY_URI) == 0; }))
+        return false;
+    const erpfile::Entry *e = arc.find(OVERRIDES);
+    if (e && !e->frags.empty() && !erpfile::fragment(src, arc, e->frags[0], data, why))
+        return false;
+    std::string tag = !e ? "no overrides.uidb" : e->frags.empty() ? "an empty overrides.uidb" : "overrides.uidb";
+    logo_cache::Bytes b;
+    b.add(tag.data(), tag.size() + 1);
+    b.add(data.data(), data.size());
+    hash = b.done();
+    return true;
+}
+
+// The hash an input counts by: databases_hash for databases.erp when it applies, all of its bytes (whole) otherwise.
+inline bool input_hash(const Env &env, const std::string &rel, const std::function<bool(const std::string &, uint64_t &)> &whole,
+                       uint64_t &hash)
+{
+    if (rel == DATABASES) {
+        auto src = env.open(rel);
+        if (src && databases_hash(*src, hash))
+            return true;
+    }
+    return whole(rel, hash);
+}
+
+// The copy of databases.erp a cached build wrote, made from databases.erp as it is now (now): the overrides.uidb the
+// build wrote (from copy) in place of its own, and every other byte as now has it. A build under the same key reads
+// the same overrides.uidb (databases_hash) and writes the same one, so this is the copy it writes.
+inline bool databases_copy(const erpfile::Source &now, const std::string &copy, const erpfile::Sink &sink, std::string &why)
+{
+    erpfile::Source held;
+    held.size = copy.size();
+    held.read = [&copy](uint64_t off, size_t n, char *out) {
+        if (off > copy.size() || n > copy.size() - off)
+            return false;
+        std::memcpy(out, copy.data() + off, n);
+        return true;
+    };
+    erpfile::Archive was, arc;
+    std::string written;
+    if (!erpfile::open(held, was, why) || !erpfile::open(now, arc, why))
+        return false;
+    const erpfile::Entry *e = was.find(OVERRIDES);
+    if (!e || e->frags.empty())
+        return why = "the copy has no overrides.uidb", false;
+    if (!arc.find(OVERRIDES))
+        return why = "databases.erp has no overrides.uidb", false;
+    if (!erpfile::fragment(held, was, e->frags[0], written, why))
+        return false;
+    erpfile::Changes changes;
+    changes[OVERRIDES] = {written};
+    return erpfile::rewrite(now, arc, changes, sink, why);
 }
 
 inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)

@@ -54,11 +54,11 @@ impl Shell {
             self.navigation.page = Page::Addons;
         }
         if self.navigation.page == Page::Careers {
-            self.refresh_saves_in_background(cx);
+            crate::features::career_saves::SavesPage::refresh(self, cx);
         } else {
-            self.refresh_banner_in_background(cx);
+            crate::features::career_saves::SavesPage::refresh_banner(self, cx);
         }
-        self.refresh_views(cx);
+        crate::features::sections::AddonViews::refresh(self, cx);
         self.db_profile_changed(cx);
         self.browser.sync_updates(&self.library);
         self.sync_shaders(true, cx);

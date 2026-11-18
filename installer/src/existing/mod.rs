@@ -5,11 +5,12 @@ mod roots;
 use std::path::{Path, PathBuf};
 
 use eframe::egui::{self, RichText};
-use swofty_core::process::same_folder;
-use swofty_core::update;
+use swofty_core::platform::process::same_folder;
+use swofty_core::updates::release as update;
 
 use self::roots::find;
-use crate::{FOLDER_NAME, MUTED};
+use crate::FOLDER_NAME;
+use crate::theme::MUTED;
 
 pub use moving::{Move, plan};
 
@@ -136,7 +137,7 @@ impl Existing {
     pub fn planned(&self, target: &Path) -> Result<Option<Move>, String> {
         match self.root() {
             Some(from) if !self.keep && is_install(from) && !same_folder(from, target) => {
-                plan(from, target, &swofty_core::paths::data_dir()).map(Some)
+                plan(from, target, &swofty_core::data::paths::data_dir()).map(Some)
             }
             _ => Ok(None),
         }

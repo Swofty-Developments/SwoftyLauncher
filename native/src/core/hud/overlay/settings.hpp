@@ -42,7 +42,7 @@ public:
     int mode(ULONGLONG now);
 
 private:
-    hardware_settings::Poll poll;
+    hud::hardware_settings::Poll poll;
     FILETIME at{};
     int value = -1;
 };
@@ -61,7 +61,7 @@ private:
 // The game's frame generation setting, read again when its hardware settings change. Once it is seen on, it stays
 // on for the session.
 struct FgWatch {
-    hardware_settings::Poll poll;
+    hud::hardware_settings::Poll poll;
     FILETIME at{};
     hud::guard::FgSetting setting;
     bool tripped = false, told = false;

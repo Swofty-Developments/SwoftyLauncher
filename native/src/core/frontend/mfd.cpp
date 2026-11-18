@@ -24,7 +24,7 @@ const runtime::Sig S_OPEN{"Game_Mfd_Open call (damage auto-open)",
                           "B8 A8 2C 12 01 41 B9 ED AC C0 5B 44 0F 44 C8 48 8B 8E 88 02 00 00 C6 44 24 20 01 E8 ?? ?? ?? ??",
                           0x2a8cca0, runtime::Sig::rel32, 27, 28, 5};
 
-using name_hash::djb2;
+using frontend::name_hash::djb2;
 
 constexpr uint32_t OSD_MFD = djb2("osd_mfd"), OSD_MAIN = djb2("osd_main");
 

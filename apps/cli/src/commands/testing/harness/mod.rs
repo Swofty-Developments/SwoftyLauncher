@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
 use anyhow::{Result, bail};
-use swofty_core::builtin::CORE_ID;
+use swofty_core::addons::builtin::CORE_ID;
 use swofty_core::session::LogMark;
 use swofty_core::store::Store;
 use swofty_core::testsuite::plan::{Batch, Plan};

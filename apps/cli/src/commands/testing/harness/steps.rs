@@ -1,7 +1,7 @@
 use std::time::{Duration, Instant};
 
-use swofty_core::journal::Journal;
-use swofty_core::recovery::SessionLock;
+use swofty_core::game_folder::journal::Journal;
+use swofty_core::game_folder::recovery::SessionLock;
 use swofty_core::testsuite::bench;
 use swofty_core::testsuite::checks::{self, Failure};
 use swofty_core::testsuite::report::{StepReport, TestReport};

@@ -92,10 +92,68 @@ class References(unittest.TestCase):
         self.assertEqual(ic.unlisted_references(refs, allowed),
                          ([('toast.cpp', 'popup::messages')], [('gone.cpp', 'perf::g_live')]))
 
-    def test_an_inline_variables_constructor_is_not_a_units_reference(self):
-        u = Unit('a.cpp', ['SWOFTY_ON_LOAD'], ['_ZN6swofty6career7marketsE'])
-        u.ctors[1].external = ['_ZN5popup8messagesE']
-        self.assertEqual(ic.references([u]), [])
+    def test_an_inline_variables_reference_is_listed_once_under_the_variable(self):
+        first = Unit('first.cpp', ['SWOFTY_ON_LOAD'], ['_ZN6swofty6career7marketsE'])
+        second = Unit('second.cpp', ['SWOFTY_ON_LOAD'], ['_ZN6swofty6career7marketsE'])
+        for u in (first, second):
+            u.ctors[1].external = ['_ZN5popup8messagesE']
+        self.assertEqual(ic.references([first, second]), [('inline swofty::career::markets', 'popup::messages')])
+        self.assertEqual(ic.references([second, first]), ic.references([first, second]))
+
+
+class ExplicitOrder(unittest.TestCase):
+    MARKS = {'a.cpp': [(1, 'a')], 'b.cpp': [(1, 'b')]}
+
+    def explicit(self, units, ranks, marks=None, hooks=()):
+        marks = marks if marks is not None else self.MARKS
+        return ic.explicit_order(units, list(hooks), BODIES, ranks, lambda name, bodies: marks.get(name, []))
+
+    def test_ranks_that_list_units_in_their_run_order_give_that_order(self):
+        text, problems = self.explicit([Unit('a.cpp', ['SWOFTY_ON_LOAD']), Unit('b.cpp', ['SWOFTY_ON_LOAD'])], ['b', 'a'])
+        self.assertEqual(section(text, 'explicit'), ['b  b.cpp  SWOFTY_ON_LOAD', 'a  a.cpp  SWOFTY_ON_LOAD'])
+        self.assertEqual(problems, [])
+
+    def test_the_rank_order_does_not_follow_the_link_order(self):
+        a, b = Unit('a.cpp', ['SWOFTY_ON_LOAD']), Unit('b.cpp', ['SWOFTY_ON_LOAD'])
+        self.assertEqual(self.explicit([a, b], ['b', 'a'])[0], self.explicit([b, a], ['b', 'a'])[0])
+
+    def test_ranks_in_another_order_than_the_run_order_fail(self):
+        _, problems = self.explicit([Unit('a.cpp', ['SWOFTY_ON_LOAD']), Unit('b.cpp', ['SWOFTY_ON_LOAD'])], ['a', 'b'])
+        self.assertTrue(problems and 'otherwise than the run order' in problems[0])
+
+    def test_a_registering_unit_without_a_rank_fails(self):
+        _, problems = self.explicit([Unit('a.cpp', ['SWOFTY_ON_LOAD']), Unit('c.cpp', ['SWOFTY_ON_LOAD'])], ['a'])
+        self.assertEqual(problems, ['c.cpp: registers mixins or on-load entries but names no rank with SWOFTY_CORE_RANK'])
+
+    def test_a_rank_named_after_the_first_registration_fails(self):
+        _, problems = self.explicit([Unit('a.cpp', ['SWOFTY_ON_LOAD', 'SWOFTY_ON_LOAD'])], ['a'], {'a.cpp': [(2, 'a')]})
+        self.assertEqual(problems, ["a.cpp:2: the rank is named after the unit's first registration (line 1)"])
+
+    def test_a_rank_no_registering_unit_names_fails(self):
+        _, problems = self.explicit([Unit('a.cpp', ['SWOFTY_ON_LOAD'])], ['a', 'gone'])
+        self.assertEqual(problems, [f"{ic.RANK_HEADER}: CoreRank::gone is no registering unit's rank"])
+
+    def test_two_units_with_one_rank_fail(self):
+        _, problems = self.explicit([Unit('a.cpp', ['SWOFTY_ON_LOAD']), Unit('b.cpp', ['SWOFTY_ON_LOAD'])], ['a'],
+                                    {'a.cpp': [(1, 'a')], 'b.cpp': [(1, 'a')]})
+        self.assertEqual(problems, ['a.cpp:1: b.cpp names the same rank, a'])
+
+    def test_a_hook_guard_in_rank_order_arms_its_own_guard(self):
+        units = [Unit('g.cpp', ['SWOFTY_HOOK_GUARD(g, "g", setup)']), Unit('h.cpp', ['SWOFTY_MID_HOOK_GUARD(h, "h", hook)'])]
+        text, problems = self.explicit(units, ['h', 'g'], {'g.cpp': [(1, 'g')], 'h.cpp': [(1, 'h')]}, ['h', 'g'])
+        self.assertEqual(section(text, 'explicit'), ['h  h.cpp  SWOFTY_MID_HOOK_GUARD(h), arms h',
+                                                     'g  g.cpp  SWOFTY_HOOK_GUARD(g), arms g'])
+        self.assertEqual(problems, [])
+
+    def test_a_hook_guards_rank_is_read_through_its_macro(self):
+        bodies = dict(BODIES, SWOFTY_HOOK_GUARD=' SWOFTY_CORE_RANK(id) ' + BODIES['SWOFTY_HOOK_GUARD'])
+        lines = ic.source_lines.__defaults__[0]
+        lines['g.cpp'] = ['#include "core/guards/guard.hpp"', '', 'SWOFTY_MID_HOOK_GUARD(gp, "gp", hook)',
+                          '    // SWOFTY_CORE_RANK(comment)', 'SWOFTY_CORE_RANK(own)']
+        try:
+            self.assertEqual(ic.rank_marks('g.cpp', bodies), [(3, 'gp'), (5, 'own')])
+        finally:
+            del lines['g.cpp']
 
 
 class FindDecl(unittest.TestCase):

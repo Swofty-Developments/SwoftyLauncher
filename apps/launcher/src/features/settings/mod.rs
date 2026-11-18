@@ -77,7 +77,7 @@ impl Shell {
     pub(crate) fn settings_page(&mut self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let category = self.settings.category;
         if category == Category::Storage && self.settings.usage.is_none() {
-            self.settings_measure(cx);
+            Settings::measure(self, cx);
         }
         v_flex()
             .size_full()

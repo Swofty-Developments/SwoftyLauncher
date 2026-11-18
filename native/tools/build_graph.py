@@ -152,7 +152,7 @@ def main():
     check = ['--out', f'{a.builddir}/static-init.txt', '--obj-root', f'{a.builddir}/obj', '--order-out',
              f'{a.builddir}/init-order.txt', '--link-order', 'tools/core_link_order.txt']
     checked = ['tools/init_check.py', 'tools/coff_ctors.py', 'tools/init_allow.txt', 'tools/core_link_order.txt',
-               'src/core/guards/order.hpp']
+               'src/core/guards/order.hpp', 'src/core/runtime/loader/core_rank.hpp']
     if a.order_snapshot:
         check += ['--snapshot', a.order_snapshot]
         checked.append(a.order_snapshot)

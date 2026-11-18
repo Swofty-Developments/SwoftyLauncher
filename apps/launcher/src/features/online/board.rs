@@ -1,6 +1,6 @@
 use super::model::*;
 use super::widgets::*;
-use super::{Load, Target};
+use super::{Load, Online, Target};
 use crate::shell::Shell;
 use crate::ui::format::{iso_date, lap_time, sector_time};
 use crate::ui::scale::{Hit, px};
@@ -53,7 +53,7 @@ impl Shell {
                     .text_color(p.text_muted)
                     .border_t_1()
                     .border_color(p.border_variant)
-                    .child(if self.board_category().is_default() {
+                    .child(if self.online.board_category().is_default() {
                         tr("No laps on this board yet.")
                     } else {
                         tr("No laps with these filters. Change the assists or input above.")
@@ -75,7 +75,7 @@ impl Shell {
                 } else {
                     tr("Show more laps")
                 })
-                .on_click(cx.listener(move |this, _, _, cx| this.online_load_board(key.clone(), at, cx)))
+                .on_click(cx.listener(move |this, _, _, cx| Online::load_board(this, key.clone(), at, cx)))
         });
         let header = self.board_header(&page, p, cx);
         let filters = self.filter_chips(p, cx);
@@ -90,7 +90,7 @@ impl Shell {
             .filter(|m| page.rows.iter().all(|r| r.lap_id != m.lap_id))
             .map(|m| self.board_row(&m, usize::MAX, leader, &best, sectors, true, p, cx));
         let history = self.history_strip(&page, p);
-        let watch = self.online_watch_notice().map(|(ok, text)| {
+        let watch = self.online.watch_notice().map(|(ok, text)| {
             div()
                 .text_size(px(13.))
                 .text_color(if *ok { p.text_muted } else { p.error })
@@ -200,7 +200,7 @@ impl Shell {
     }
 
     fn filter_chips(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        let cat = self.board_category();
+        let cat = self.online.board_category();
         let differs = self.online.board_category.is_some();
         h_flex()
             .gap(px(14.))
@@ -218,7 +218,7 @@ impl Shell {
                         .on_click(cx.listener(|this, _, _, cx| {
                             let global = this.online.category;
                             this.online.board_category = None;
-                            this.online_set_board_category(global, cx);
+                            Online::set_board_category(this, global, cx);
                         })),
                 )
             })
@@ -240,7 +240,7 @@ impl Shell {
         let driver = r.driver.clone();
         let personal: Vec<Option<u64>> = (0..3).map(|i| r.sectors_ms.get(i).copied()).collect();
         let colour = medal(r.rank, &p);
-        let shown = shown_rank(idx, r.rank, !self.board_category().is_default());
+        let shown = shown_rank(idx, r.rank, !self.online.board_category().is_default());
         h_flex()
             .id(SharedString::from(format!("row-{idx}-{}", r.lap_id)))
             .h(px(38.))
@@ -285,11 +285,9 @@ impl Shell {
                     )
                     .when(mine, |d| d.child(chip(tr("YOU"), p)))
                     .children(self.input_icons(r, p))
-                    .on_click(
-                        cx.listener(move |this, _, _, cx| {
-                            this.online_go(Target::Profile(driver.clone()), cx)
-                        }),
-                    ),
+                    .on_click(cx.listener(move |this, _, _, cx| {
+                        Online::go(this, Target::Profile(driver.clone()), cx)
+                    })),
             )
             .child(
                 div()
@@ -408,7 +406,7 @@ impl Shell {
                 tr("The game folder is not known")
             })
             .on_click(cx.listener(move |this, _, _, cx| {
-                this.online_add_to_game(id.clone(), cx);
+                Online::add_to_game(this, id.clone(), cx);
             }))
     }
 

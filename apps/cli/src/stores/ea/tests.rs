@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::time::SystemTime;
 
 #[cfg(unix)]
-use swofty_core::launch;
+use swofty_core::diagnostics::launch;
 
 #[cfg(unix)]
 use super::stub::STUB_SETTLE;
@@ -134,7 +134,7 @@ fn a_stub_in_place_after_staging_lets_the_link_go() {
     let (root, game, store, _) = ea_copy("stub-there");
     let slot = game.join("EAAntiCheat.GameServiceLauncher.exe");
     std::fs::write(&slot, "stub").unwrap();
-    let sha = swofty_core::baseline::sha256_file(&slot).unwrap();
+    let sha = swofty_core::game_folder::baseline::sha256_file(&slot).unwrap();
     let journal = stage_journal(&store, &game, &sha);
     std::fs::File::options()
         .write(true)

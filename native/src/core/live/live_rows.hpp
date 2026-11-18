@@ -1,5 +1,6 @@
 #pragma once
 #include "core/runtime/build_proof.hpp"
+#include "core/runtime/car_layout.hpp"
 #include "core/runtime/game_manager_layout.hpp"
 #include "core/live/live_layout.hpp"
 #include "core/live/live_mem.hpp"
@@ -187,17 +188,21 @@ inline constexpr BuildProof EA_BUILD = {runtime::build_proof::known(runtime::bui
 
 // Steam 26566308 (1.0.145.2472): existing Live State layouts checked against this executable.
 // See re/research/live-steam-26566308.md for the build identity and instruction evidence.
-// Resolving a binding alone does not prove the object layout behind it; the current ERS mode moved by four bytes.
+// Resolving a binding alone does not prove the object layout behind it; the current ERS mode moved by four bytes
+// (runtime::car_layout::ERS_MODE).
 inline constexpr uint32_t STEAM_26566308_GROUPS = ALL_GROUPS;
 inline constexpr BuildProof STEAM_26566308_BUILD = {
     runtime::build_proof::known(runtime::build_proof::Build::steam_1_0_145)->pe_timestamp,
     "Steam 26566308",
     STEAM_26566308_GROUPS,
     layout::progress::from_manager,
-    0x1a6c,
+    runtime::car_layout::ers_mode(runtime::build_proof::Build::steam_1_0_145),
     bit(G_DRIVER_NAMES)};
 
 inline constexpr const BuildProof *PROVEN_BUILDS[] = {&KB_BUILD, &EA_BUILD, &STEAM_26566308_BUILD};
+
+static_assert(runtime::car_layout::ers_mode(runtime::build_proof::Build::kb) == layout::ers::mode,
+              "the KB build reads the ERS mode at the std layout's offset");
 
 inline const BuildProof *proof_for(uint32_t pe_timestamp)
 {

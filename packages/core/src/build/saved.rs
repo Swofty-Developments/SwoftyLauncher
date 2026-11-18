@@ -5,14 +5,14 @@ use serde::{Deserialize, Serialize};
 
 use super::buildhash::small_file_digest;
 use super::{Built, SAVED_FILE, SAVED_VERSION};
+use crate::addons::builtin::{loader_dir, loader_files};
+use crate::addons::settings::SessionSettings;
 use crate::asset::Op;
-use crate::baseline::Baseline;
-use crate::builtin::{loader_dir, loader_files};
-use crate::conflicts::Report;
 use crate::diagnostics::phases;
+use crate::game_folder::baseline::Baseline;
 use crate::install::Game;
 use crate::planner::Conflict;
-use crate::settings::SessionSettings;
+use crate::profile::conflicts::Report;
 use crate::store::Store;
 use crate::{Result, io_err};
 
@@ -186,9 +186,9 @@ impl Saved {
         built.warnings.extend(self.warnings);
         built.report = match self.report {
             Some(report) => report,
-            None => crate::conflicts::summarise(&built.plan.profile, &self.conflicts, &|_| None).0,
+            None => crate::profile::conflicts::summarise(&built.plan.profile, &self.conflicts, &|_| None).0,
         };
-        built.report.built_at = crate::conflicts::now();
+        built.report.built_at = crate::profile::conflicts::now();
         built.conflicts = self.conflicts;
         built.waiting = self.waiting;
         built.row_ids = self.row_ids;

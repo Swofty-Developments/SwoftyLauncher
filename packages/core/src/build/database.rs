@@ -16,7 +16,7 @@ use crate::asset::Kind;
 use crate::content::runtime_assets::{db_edits, runtime_loaded_estimate, runtime_record_room};
 use crate::dbedit::driver_manager;
 use crate::game_db::owned::Added;
-use crate::multiplayer::fingerprint;
+use crate::online::multiplayer::fingerprint;
 use crate::planner::{Route, kept_lists_line, stock_removals_line, track_removals_line};
 use crate::{Error, Result, io_err};
 
@@ -122,17 +122,7 @@ impl Pipeline<'_, '_> {
         let grid = grid_size(&db.db);
         let worlds = layer_worlds(&db.db);
         self.write_database(db, staged, &recorded.row_adders, inputs.room_asked)?;
-        let packer = self.eager_packer();
-        fitted.place(
-            self.run,
-            &worlds,
-            &recorded.ai_teams,
-            grid,
-            &mut self.planner,
-            &mut self.built,
-            &mut self.caches,
-            &packer,
-        )?;
+        self.place_tracks(fitted, &worlds, &recorded.ai_teams, grid)?;
         Ok(edits)
     }
 

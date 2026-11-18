@@ -226,7 +226,7 @@ impl Hosted for Multiplayer {
 impl Host<Multiplayer> for Shell {
     fn split(&mut self) -> (&mut Multiplayer, OnlineNeeds<'_>) {
         (
-            &mut self.mp_page,
+            &mut self.rooms,
             OnlineNeeds {
                 store: &self.store,
                 profile: &self.library.profile.name,

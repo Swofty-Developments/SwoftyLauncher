@@ -14,11 +14,11 @@
 #include "core/runtime/json.hpp"
 #include "core/runtime/settings.hpp"
 
-namespace addon_page {
+namespace frontend::addon_page {
 
 namespace {
 
-using name_hash::djb2;
+using frontend::name_hash::djb2;
 using swofty::ui::ViewModel;
 
 struct Option {

@@ -1,5 +1,4 @@
-use gpui_kit::assets::IconName;
-use gpui_kit::component::{Icon, h_flex};
+use gpui_kit::component::h_flex;
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
@@ -12,7 +11,6 @@ use crate::ui::theme::palette;
 pub(crate) struct Pill {
     label: SharedString,
     tone: Option<Tone>,
-    icon: Option<IconName>,
     style: StyleRefinement,
 }
 
@@ -21,18 +19,12 @@ impl Pill {
         Self {
             label: label.into(),
             tone: None,
-            icon: None,
             style: StyleRefinement::default(),
         }
     }
 
     pub(crate) fn tone(mut self, tone: Tone) -> Self {
         self.tone = Some(tone);
-        self
-    }
-
-    pub(crate) fn icon(mut self, icon: IconName) -> Self {
-        self.icon = Some(icon);
         self
     }
 }
@@ -63,7 +55,6 @@ impl RenderOnce for Pill {
                 }
                 None => d.border_1().border_color(p.border).text_color(p.text_muted),
             })
-            .children(self.icon.map(|i| Icon::new(i).size(text::caption())))
             .child(self.label);
         pill.style().refine(&self.style);
         pill

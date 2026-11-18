@@ -1,8 +1,8 @@
 use std::path::Path;
 use std::time::Instant;
 
+use swofty_core::diagnostics::quarantine::{self, Stage};
 use swofty_core::install::PROXY;
-use swofty_core::quarantine::{self, Stage};
 use swofty_core::store::Store;
 
 use crate::console::output::{info, say};

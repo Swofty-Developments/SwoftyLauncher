@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use serde_json::json;
 use swofty_core::activation::db::{Registry, Report, TrackHost, activate, datasets, weekend_format};
 use swofty_core::activation::dbx::Db;
-use swofty_core::map::TrackPackage;
+use swofty_core::content::track_package::TrackPackage;
 use swofty_formats::gvdb::{Gvdb, Record};
 
 type Case = (

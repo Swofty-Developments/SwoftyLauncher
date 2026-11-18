@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <string>
 
-namespace t = runtime::toast;
+namespace t = hud::toast;
 
 static int failed = 0;
 static void expect(bool ok, const char *what)

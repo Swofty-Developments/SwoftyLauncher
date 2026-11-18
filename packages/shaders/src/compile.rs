@@ -275,7 +275,7 @@ pub fn compile_pass(
 }
 
 /// Compiles an effect's passes, one blob per pass. `dir` holds the effect's HLSL; `dxc` is the
-/// compiler (`swofty_core::postfx::dxc()`); `header` is `postfx.hlsli`.
+/// compiler (`swofty_core::content::postfx::dxc()`); `header` is `postfx.hlsli`.
 pub fn compile(
     effect: &Effect,
     dir: &Path,

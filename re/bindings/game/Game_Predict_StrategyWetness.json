@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "float Game_Predict_StrategyWetness(void *self, const float *window3)",
   "evidence": "decomp:re/decomp/1436a4500.c;xref:0x1436a3b83,0x1436a67d7,0x1436a69ca",
-  "notes": "Strategy wetness forecast: integrates the track-wetness change over a look-ahead window. param_2 = {steps (float, rounded down), step length, start offset}. For each step samples the wetness at weather time t (active slot byte [[self+0x10]+0x20]+0x26c4, stride 0x288: (t0 + t1) * scale + offset*scale) through FUN_140b12c10 on the weather curve ([[self+0x10]+0x28]+0xd48 + slot*0x30), or the current surface wetness [[[self+0x10]+0x90]+0xf48]+0x3f0a38 when the offset is 0 and no forced weather (+0xb42b/+0xb42c); sums the deltas, adds the fractional last step, returns current + total delta. Callers 0x1436a3b83, 0x1436a67d7, 0x1436a69ca (AI tyre strategy). (used by vmknolle wet-track: AI pit decisions follow addon wetness)"
+  "notes": "Strategy wetness forecast: integrates the track-wetness change over a look-ahead window. param_2 = {steps (float, rounded down), step length, start offset}. For each step samples the wetness at weather time t (active slot byte [[self+0x10]+0x20]+0x26c4, stride 0x288: (t0 + t1) * scale + offset*scale) through FUN_140b12c10 on the weather curve ([[self+0x10]+0x28]+0xd48 + slot*0x30), or the current surface wetness [[[self+0x10]+0x90]+0xf48]+0x3f0a38 when the offset is 0 and no forced weather (+0xb42b/+0xb42c); sums the deltas, adds the fractional last step, returns current + total delta. Callers 0x1436a3b83, 0x1436a67d7, 0x1436a69ca (AI tyre strategy). (used by vmknolle wet-track: AI pit decisions follow addon wetness) | re-bindings 2026-11-18: Steam 1.0.145 (sigport --witness): 0x1436a6a90, 147/147 equal, with all 3 uses of +0x3f0a38 at the same instructions."
  },
  "signature": {
   "id": "game.strategy_predict_wetness",
@@ -48,5 +48,44 @@
    "notes": "V1051 samples the session weather/wetness curve (0x140b12c10, live fallback +0x3f0a38) at offset w[2] then window[0] steps of w[1], returns predicted end value; caller compares delta vs tolerance and picks dry/inter/wet compound; float(self,const float[3]) matches"
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1436a3b79",
+    "target": "0x1436a4500"
+   },
+   "sigcheck": "passed",
+   "digest": "1986c31ca57163ab94c4660502c73f813c5ea6c9b283829e733887c1ddc9c9b5"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1436a6109",
+    "target": "0x1436a6a90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2927a9718eb0b922884153e739b3e1d1a002ac7ab1414cb82e3b3f9c1de83ccc"
+  }
+ ]
 }

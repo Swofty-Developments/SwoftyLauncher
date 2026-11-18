@@ -9,6 +9,7 @@
 
 #include "core/runtime/json.hpp"
 #include "core/diagnostics/perf.hpp"
+#include "core/runtime/loader/core_rank.hpp"
 
 namespace {
 
@@ -185,6 +186,8 @@ void own_item(uint32_t key, const std::string &addon, const std::string &what)
     hook_owned();
 }
 }
+
+SWOFTY_CORE_RANK(items)
 
 SWOFTY_ON_LOAD
 {

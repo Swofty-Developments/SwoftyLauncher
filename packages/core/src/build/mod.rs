@@ -3,7 +3,7 @@ mod archives;
 mod buildhash;
 mod cars;
 mod database;
-mod digests;
+pub(crate) mod digests;
 mod failure;
 mod files;
 mod finish;
@@ -127,16 +127,6 @@ struct Pipeline<'a, 'p> {
     session: SessionSettings,
     /// The cache folders the build uses, which the cache prune keeps.
     caches: Vec<PathBuf>,
-    /// The packer of [`Setup`], deferring: the archive edits are compressed by each archive's write.
-    packer: swofty_formats::erp::Packer,
-}
-
-impl Pipeline<'_, '_> {
-    /// The build's packer compressing as it goes, for the archives written straight to disk instead of
-    /// through the archive build.
-    fn eager_packer(&self) -> swofty_formats::erp::Packer {
-        self.packer.clone().deferring(false)
-    }
 }
 
 /// A `checking` build gives addon build hooks a host that lists addons but
@@ -152,6 +142,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         lent,
         mut built,
     } = Start::read(store, profile, game, &addons)?;
+    let packer = swofty_formats::erp::Packer::cached(setup::packed_dir(store)).deferring(true);
     let run = Run {
         store,
         game,
@@ -161,6 +152,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         order: &order,
         settings: &settings,
         on: &on,
+        packer: &packer,
     };
     if settings.is_vanilla() {
         built.report = start::report(run);

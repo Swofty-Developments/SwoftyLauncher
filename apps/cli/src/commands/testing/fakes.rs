@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::time::Duration;
 
-use swofty_core::process::stop_process;
+use swofty_core::platform::process::stop_process;
 use swofty_core::session::{Ending, LOADER_LOG, PERF_LOG, SessionEnd};
 #[cfg(unix)]
 use swofty_core::testsuite::agent;

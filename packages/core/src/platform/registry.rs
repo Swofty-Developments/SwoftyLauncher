@@ -152,26 +152,30 @@ fn render_into(out: &mut String, key: &Key, ask: Ask) {
     }
 }
 
+/// `raw` as the UTF-16 code units Windows keeps text in, a trailing odd byte left out.
+fn units(raw: &[u8]) -> Vec<u16> {
+    raw.chunks_exact(2)
+        .map(|c| u16::from_le_bytes([c[0], c[1]]))
+        .collect()
+}
+
+/// UTF-16 text up to its first NUL. Every character reads as Windows keeps it, outside ASCII too; an
+/// unpaired surrogate, which no string can hold, reads as U+FFFD where reg.exe prints a `?`.
+fn utf16(raw: &[u8]) -> String {
+    let wide = units(raw);
+    let end = wide.iter().position(|&c| c == 0).unwrap_or(wide.len());
+    String::from_utf16_lossy(&wide[..end])
+}
+
 /// The data a value of type `kind` holds in `raw`, as `reg query` reads it.
 pub fn data(kind: u32, raw: &[u8]) -> Data {
-    let text = |raw: &[u8]| -> String {
-        let wide: Vec<u16> = raw
-            .chunks_exact(2)
-            .map(|c| u16::from_le_bytes([c[0], c[1]]))
-            .take_while(|&c| c != 0)
-            .collect();
-        String::from_utf16_lossy(&wide)
-    };
     match kind {
-        1 => Data::Sz(text(raw)),
-        2 => Data::ExpandSz(text(raw)),
+        1 => Data::Sz(utf16(raw)),
+        2 => Data::ExpandSz(utf16(raw)),
         3 => Data::Binary(raw.to_vec()),
         4 if raw.len() >= 4 => Data::Dword(u32::from_le_bytes([raw[0], raw[1], raw[2], raw[3]])),
         7 => {
-            let wide: Vec<u16> = raw
-                .chunks_exact(2)
-                .map(|c| u16::from_le_bytes([c[0], c[1]]))
-                .collect();
+            let wide = units(raw);
             let mut items: Vec<String> = wide.split(|&c| c == 0).map(String::from_utf16_lossy).collect();
             while items.last().is_some_and(String::is_empty) {
                 items.pop();
@@ -523,6 +527,116 @@ mod tests {
     }
 
     #[test]
+    fn text_outside_ascii_reads_exactly_and_an_unpaired_surrogate_as_a_replacement() {
+        let le = |units: &[u16]| -> Vec<u8> { units.iter().flat_map(|u| u.to_le_bytes()).collect() };
+        let wide = |s: &str| -> Vec<u16> { s.encode_utf16().chain([0]).collect() };
+        assert_eq!(
+            utf16(&le(&wide("Microsoft® Corporation"))),
+            "Microsoft® Corporation"
+        );
+        assert_eq!(
+            data(1, &le(&wide(r"C:\Users\Zoë\Yeni klasör 🏁"))),
+            sz(r"C:\Users\Zoë\Yeni klasör 🏁")
+        );
+        assert_eq!(utf16(&le(&[0x46, 0xD83C, 0x31, 0, 0x58])), "F\u{FFFD}1");
+        assert_eq!(utf16(&le(&[0xDC00, 0x41])), "\u{FFFD}A");
+        assert_eq!(
+            data(2, &le(&[0x25, 0xD800, 0xD800, 0xDE00])),
+            Data::ExpandSz("%\u{FFFD}\u{10200}".into())
+        );
+        assert_eq!(
+            data(7, &le(&[0x61, 0xD800, 0, 0xAE, 0, 0])),
+            Data::MultiSz(vec!["a\u{FFFD}".into(), "®".into()])
+        );
+        assert_eq!(utf16(&[0x41, 0, 0x42]), "A");
+    }
+
+    /// The keys two `reg query` listings of the same key hold, compared value by value as the parsers see
+    /// them. reg.exe writes text in the console's code page, which may not hold every character, and
+    /// writes a near letter or a `?` for one it lacks (`®` as `r`). So a key path, value name or value
+    /// outside ASCII on either side only has to be there on both and read in process without U+FFFD;
+    /// the rest have to match.
+    fn listings_agree(here: &str, tool: &str) -> Result<usize, String> {
+        use crate::platform::ea_app::reg_tree;
+        let blocks = |out: &str| -> Vec<(String, Vec<(String, String)>)> {
+            reg_tree(out)
+                .into_iter()
+                .map(|(path, values)| (path, parse_reg_query(&values)))
+                .filter(|(_, values)| !values.is_empty())
+                .collect()
+        };
+        let (here, tool) = (blocks(here), blocks(tool));
+        if here.len() != tool.len() {
+            return Err(format!(
+                "{} keys in process, {} from reg.exe",
+                here.len(),
+                tool.len()
+            ));
+        }
+        let agree = |ours: &str, theirs: &str, same: fn(&str, &str) -> bool| match ours.is_ascii()
+            && theirs.is_ascii()
+        {
+            true => same(ours, theirs),
+            false => !ours.contains('\u{FFFD}'),
+        };
+        for ((path, values), (tool_path, tool_values)) in here.iter().zip(&tool) {
+            if !agree(path, tool_path, |a, b| a.eq_ignore_ascii_case(b)) {
+                return Err(format!("{path} in process, {tool_path} from reg.exe"));
+            }
+            if values.len() != tool_values.len() {
+                return Err(format!(
+                    "{path}: {values:?} in process, {tool_values:?} from reg.exe"
+                ));
+            }
+            for ((name, data), (tool_name, tool_data)) in values.iter().zip(tool_values) {
+                if !agree(name, tool_name, |a, b| a == b) || !agree(data, tool_data, |a, b| a == b) {
+                    return Err(format!(
+                        "{path}: {name} = {data:?} in process, {tool_name} = {tool_data:?} from reg.exe"
+                    ));
+                }
+            }
+        }
+        Ok(here.len())
+    }
+
+    #[test]
+    fn listings_agree_where_reg_exe_writes_a_letter_its_code_page_lacks_another_way() {
+        let key = r"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+        let listing = |id: &str, publisher: &str, version: &str| {
+            format!(
+                "\r\n{key}\\{id}\r\n    DisplayVersion    REG_SZ    {version}\r\n    Publisher    REG_SZ    \
+                 {publisher}\r\n    DisplayName    REG_SZ    Azure Cosmos DB Emulator\r\n\r\n"
+            )
+        };
+        let id = "{CB0238CA-3B36-47AB-86FD-D60F4C47607A}";
+        let here = listing(id, "Microsoft® Corporation", "2.14.28");
+        assert_eq!(
+            listings_agree(&here, &listing(id, "Microsoftr Corporation", "2.14.28")),
+            Ok(1)
+        );
+        assert_eq!(
+            listings_agree(&here, &listing(id, "Microsoft? Corporation", "2.14.28")),
+            Ok(1)
+        );
+        assert_eq!(listings_agree(&here, &here), Ok(1));
+        assert_eq!(
+            listings_agree(&listing("F1® 25", "EA", "1"), &listing("F1r 25", "EA", "1")),
+            Ok(1)
+        );
+
+        assert!(listings_agree(&here, &listing(id, "Microsoftr Corporation", "2.14.29")).is_err());
+        assert!(listings_agree(&listing("{A}", "EA", "1"), &listing("{B}", "EA", "1")).is_err());
+        let replaced = listing(id, "Microsoft\u{FFFD} Corporation", "2.14.28");
+        assert!(listings_agree(&replaced, &listing(id, "Microsoft? Corporation", "2.14.28")).is_err());
+        let without = format!(
+            "\r\n{key}\\{id}\r\n    DisplayVersion    REG_SZ    2.14.28\r\n    DisplayName    REG_SZ    \
+             Azure Cosmos DB Emulator\r\n\r\n"
+        );
+        assert!(listings_agree(&without, &listing(id, "Microsoftr Corporation", "2.14.28")).is_err());
+        assert!(listings_agree(&format!("{here}{here}"), &here).is_err());
+    }
+
+    #[test]
     fn values_read_by_name_whatever_the_case_and_by_their_type() {
         let key = Key {
             path: r"HKEY_LOCAL_MACHINE\SOFTWARE\x".into(),
@@ -579,19 +693,10 @@ mod tests {
         assert_eq!(hive(r"HKXX\a"), None);
     }
 
-    /// The in-process read and reg.exe agree on keys every Windows has, value by value as the parsers
-    /// see them. Values with characters outside ASCII are left out: reg.exe writes them in the console's
-    /// code page, which may not hold them.
+    /// The in-process read and reg.exe agree on keys every Windows has, as [`listings_agree`] holds them.
     #[cfg(windows)]
     #[test]
     fn the_in_process_read_agrees_with_reg_exe() {
-        use crate::platform::ea_app::reg_tree;
-        let ascii = |pairs: Vec<(String, String)>| -> Vec<(String, String)> {
-            pairs
-                .into_iter()
-                .filter(|(n, d)| n.is_ascii() && d.is_ascii())
-                .collect()
-        };
         for args in [
             &[r"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion"][..],
             &[r"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "/reg:64"][..],
@@ -611,16 +716,10 @@ mod tests {
             let here = reg_query(args).unwrap_or_default();
             let here_took = start.elapsed();
             eprintln!("reg query {args:?}: reg.exe {tool_took:?}, in process {here_took:?}");
-            let blocks = |out: &str| -> Vec<(String, Vec<(String, String)>)> {
-                reg_tree(out)
-                    .into_iter()
-                    .filter(|(h, _)| h.is_ascii())
-                    .map(|(h, v)| (h.to_ascii_lowercase(), ascii(parse_reg_query(&v))))
-                    .filter(|(_, v)| !v.is_empty())
-                    .collect()
-            };
-            assert!(!blocks(&here).is_empty(), "{args:?}");
-            assert_eq!(blocks(&here), blocks(&tool), "{args:?}");
+            match listings_agree(&here, &tool) {
+                Ok(keys) => assert!(keys > 0, "{args:?}"),
+                Err(e) => panic!("{args:?}: {e}"),
+            }
             for line in tool.lines().filter(|l| l.contains("    REG_DWORD    ")) {
                 let name = line.trim_start().split("    ").next().unwrap_or_default();
                 assert_eq!(reg_dword(&here, name), reg_dword(&tool, name), "{args:?} {name}");

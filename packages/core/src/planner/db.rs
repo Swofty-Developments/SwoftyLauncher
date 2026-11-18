@@ -81,6 +81,13 @@ struct Waiting {
     since: usize,
 }
 
+// How an addon's database file applies: in load order, with the owned row counts the file before it left
+// when nothing changed the database since, or again after a later addon added rows.
+enum Pass {
+    InOrder(Option<owned::Counts>),
+    Retry,
+}
+
 impl<'a> Planner<'a> {
     pub fn has_db(&self) -> bool {
         !self.db.is_empty()
@@ -137,16 +144,22 @@ impl<'a> Planner<'a> {
         };
         let mut waiting = Vec::new();
         let mut grew: Vec<String> = Vec::new();
+        let mut counted = None;
         for ((origin, ops), later) in pending.into_iter().zip(later) {
             let size = db.records.len();
             let names = shared.names(&origin.addon, &later);
-            let (failed, rows) = self.apply_ops(db, &origin, &ops, &names, report, false);
+            let (failed, rows, after) =
+                self.apply_ops(db, &origin, &ops, &names, report, Pass::InOrder(counted.take()));
             added.extend(rows);
             let since = grew.len();
             let adder = origin.addon.clone();
             waiting.extend(self.wait(origin, &ops, later, failed, since)?);
+            counted = Some(after);
             if db.records.len() != size {
                 grew.push(adder);
+                if !waiting.is_empty() {
+                    counted = None;
+                }
                 self.retry(db, &mut waiting, &shared, report, &mut added, &grew)?;
             }
         }
@@ -176,7 +189,7 @@ impl<'a> Planner<'a> {
         } in std::mem::take(waiting)
         {
             let names = shared.names(&origin.addon, &later);
-            let (failed, rows) = self.apply_ops(db, &origin, &ops, &names, report, true);
+            let (failed, rows, _) = self.apply_ops(db, &origin, &ops, &names, report, Pass::Retry);
             added.extend(rows);
             if failed.len() < ops.ops.len() {
                 for adder in grew[since.min(grew.len())..]
@@ -379,13 +392,13 @@ impl<'a> Planner<'a> {
         ops: &DbOps,
         names: &Reserving,
         report: &mut DbReport,
-        late: bool,
-    ) -> (Vec<(usize, swofty_addon::Error)>, Vec<Added>) {
+        pass: Pass,
+    ) -> (Vec<(usize, swofty_addon::Error)>, Vec<Added>, owned::Counts) {
         let rank = self.rank(origin);
-        let before = owned::counts(db);
-        let guarded = match late {
-            true => self.later_records(db, origin),
-            false => Vec::new(),
+        let (before, guarded) = match pass {
+            Pass::InOrder(Some(counted)) => (counted, Vec::new()),
+            Pass::InOrder(None) => (owned::counts(db), Vec::new()),
+            Pass::Retry => (owned::counts(db), self.later_records(db, origin)),
         };
         let mut ours = DbReport::default();
         let lists = self.lists.as_ref().filter(|l| l.touched(ops));
@@ -460,7 +473,12 @@ impl<'a> Planner<'a> {
             self.write(Target::Record(key), origin, true);
         }
         restore_later_records(db, guarded);
-        (failed, owned::added(db, &origin.addon, &before))
+        let after = owned::counts(db);
+        (
+            failed,
+            owned::added_between(&before, &after, &origin.addon),
+            after,
+        )
     }
 
     fn later_records(&self, db: &Gvdb, origin: &Origin) -> Vec<(usize, swofty_formats::gvdb::Record)> {

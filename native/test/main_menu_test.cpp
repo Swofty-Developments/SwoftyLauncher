@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace mm = runtime::main_menu;
+namespace mm = frontend::main_menu;
 
 static int fails;
 

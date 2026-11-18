@@ -108,7 +108,7 @@ pub fn supported(g: &Game) -> Result<()> {
 /// switcher), else Steam's.
 fn game_dir(store: &Store, explicit: Option<PathBuf>) -> Result<PathBuf> {
     explicit
-        .or_else(|| swofty_core::copies::find_active(&store.config()).map(|c| c.dir))
+        .or_else(|| swofty_core::game_folder::copies::find_active(&store.config()).map(|c| c.dir))
         .context("F1 25 not found; pass --game, add the folder with swofty game add, or run swofty doctor")
 }
 
@@ -131,8 +131,8 @@ pub fn build(store: &Store, profile: &str, game: Option<PathBuf>, side_data: boo
 
 /// Prints the Play path's phase timings and findings recorded since the last call.
 pub fn print_phases() {
-    for line in swofty_core::phases::take() {
-        crate::console::output::say(swofty_core::phases::TAG, &line);
+    for line in swofty_core::diagnostics::phases::take() {
+        crate::console::output::say(swofty_core::diagnostics::phases::TAG, &line);
     }
 }
 

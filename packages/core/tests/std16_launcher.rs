@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
-use swofty_core::baseline::Identity;
 use swofty_core::build::{GVDB, build};
+use swofty_core::game_folder::baseline::Identity;
 use swofty_core::install::Game;
 use swofty_core::store::Store;
 use swofty_formats::gvdb::{Gvdb, Record};
@@ -15,7 +15,7 @@ struct Fixture {
     root: PathBuf,
     store: Store,
     game: Game,
-    _pin: swofty_core::builtin::LoaderPin,
+    _pin: swofty_core::addons::builtin::LoaderPin,
 }
 
 impl Fixture {
@@ -41,7 +41,7 @@ impl Fixture {
             root,
             store,
             game,
-            _pin: swofty_core::builtin::LoaderPin::none(),
+            _pin: swofty_core::addons::builtin::LoaderPin::none(),
         }
     }
 

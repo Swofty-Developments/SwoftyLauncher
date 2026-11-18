@@ -5,7 +5,7 @@
 
 #include <cstdio>
 
-namespace rc = runtime::room_cover;
+namespace rc = hud::room_cover;
 
 static int failed = 0;
 

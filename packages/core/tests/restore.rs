@@ -1,10 +1,10 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use swofty_core::baseline::{Identity, sha256_bytes};
+use swofty_core::game_folder::baseline::{Identity, sha256_bytes};
+use swofty_core::game_folder::journal::{Journal, Op, State};
+use swofty_core::game_folder::recovery;
 use swofty_core::install::{Drift, Game, Installer, OVERRIDE_HEADER, Plan};
-use swofty_core::journal::{Journal, Op, State};
-use swofty_core::recovery;
 
 const GVDB: &str = "game_package/gamedatabases/gamedatabases.2025.bin";
 const UI: &str = "2025_asset_groups/ui_package/flow_frontend.erp";
@@ -22,8 +22,8 @@ const REG: &str = "WINE REGISTRY Version 2\n;; All keys relative to \\\\User\n\n
 
 #[test]
 fn sweep_rechecks_changed_cached_files_and_preserves_user_edits() {
-    use swofty_core::baseline::Hashes;
-    use swofty_core::placed::Placed;
+    use swofty_core::game_folder::baseline::Hashes;
+    use swofty_core::game_folder::placed::Placed;
     let f = Fixture::new("sweep-cache-edits");
     let mut placed = Placed::default();
     let mut hashes = Hashes::load(&f.data);
@@ -44,8 +44,8 @@ fn sweep_rechecks_changed_cached_files_and_preserves_user_edits() {
 #[test]
 #[ignore = "manual large-profile sweep benchmark"]
 fn benchmark_large_profile_sweep_hash_cache() {
-    use swofty_core::baseline::Hashes;
-    use swofty_core::placed::Placed;
+    use swofty_core::game_folder::baseline::Hashes;
+    use swofty_core::game_folder::placed::Placed;
     for warm in [false, true] {
         let f = Fixture::new(if warm { "bench-warm" } else { "bench-cold" });
         let bytes = vec![42u8; 256 * 1024];
@@ -305,7 +305,7 @@ fn the_live_shader_config_comes_out_whatever_the_session_rewrote_it_to() {
     let original = f.snapshot();
     let game = f.game("1");
     let inst = Installer::new(&f.data, &game);
-    let live = swofty_core::shaders::LIVE_FILE;
+    let live = swofty_core::content::shaders::LIVE_FILE;
     write(&f.src.join("active"), "{\"serial\": 1}");
     let mut plan = f.plan("a");
     plan.loader.insert(live.into(), f.src.join("active"));
@@ -603,8 +603,8 @@ fn a_restore_removes_the_proxy_swofty_ships_without_setting_it_aside() {
     let f = Fixture::new("shipped-proxy");
     let loader = f.root.join("loader");
     write(&loader.join("version.dll"), "proxy");
-    write(&loader.join(swofty_core::builtin::CORE_DLL), "core");
-    let _pin = swofty_core::builtin::LoaderPin::to(loader);
+    write(&loader.join(swofty_core::addons::builtin::CORE_DLL), "core");
+    let _pin = swofty_core::addons::builtin::LoaderPin::to(loader);
     let original = f.snapshot();
     let game = f.game("1");
     let inst = Installer::new(&f.data, &game);
@@ -864,20 +864,20 @@ fn a_build_output_on_another_volume_than_the_game_is_copied() {
     assert_eq!(std::fs::read_to_string(&plan.data[GVDB]).unwrap(), "db-B");
 }
 
-fn two_drives(p: &Path) -> Option<swofty_core::disk::Volume> {
+fn two_drives(p: &Path) -> Option<swofty_core::platform::disk::Volume> {
     let id = if p.components().any(|c| c.as_os_str() == "overlay") {
         "data"
     } else {
         "game"
     };
-    Some(swofty_core::disk::Volume {
+    Some(swofty_core::platform::disk::Volume {
         id: id.into(),
         name: id.into(),
     })
 }
 
 #[cfg(unix)]
-fn one_drive(_: &Path) -> Option<swofty_core::disk::Volume> {
+fn one_drive(_: &Path) -> Option<swofty_core::platform::disk::Volume> {
     two_drives(Path::new("elsewhere"))
 }
 

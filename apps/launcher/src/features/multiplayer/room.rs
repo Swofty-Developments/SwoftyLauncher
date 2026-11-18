@@ -15,13 +15,8 @@ use crate::ui::theme::{Palette, ScrollArea};
 use crate::ui::tokens::space::GUTTER;
 
 impl Shell {
-    pub(super) fn mp_room_view(
-        &mut self,
-        room: &RoomSummary,
-        p: Palette,
-        cx: &mut Context<Self>,
-    ) -> AnyElement {
-        let on = self.mp_enabled_addons();
+    pub(super) fn room_view(&mut self, room: &RoomSummary, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+        let on = self.room_enabled_addons();
         let listed = room.addons.as_ref().filter(|a| !a.list.is_empty());
         let checks = listed.map(|a| addon_checks(&a.list, &on)).unwrap_or_default();
         let lacking = missing(&checks);
@@ -31,7 +26,7 @@ impl Shell {
                 .outline()
                 .icon(IconName::ArrowLeft)
                 .label(tr("Back to rooms"))
-                .on_click(cx.listener(|this, _, _, cx| this.mp_close_view(cx))),
+                .on_click(cx.listener(|this, _, _, cx| this.room_close_view(cx))),
         );
         let summary = if checks.is_empty() {
             tr("The host's launcher hasn't listed its addons.").to_owned()
@@ -121,7 +116,7 @@ impl Shell {
         p: Palette,
         cx: &mut Context<Self>,
     ) -> Div {
-        let m = &self.mp_page;
+        let m = &self.rooms;
         let (icon, color) = match st.tone {
             Tone::Working => (IconName::LoaderCircle, p.accent),
             Tone::Blocked => (IconName::CircleAlert, p.warning),
@@ -178,14 +173,14 @@ impl Shell {
                         .tap_sm()
                         .icon(IconName::RefreshCw)
                         .label("Retry")
-                        .on_click(cx.listener(|this, _, _, cx| this.mp_retry(cx)))
+                        .on_click(cx.listener(|this, _, _, cx| this.room_retry(cx)))
                 } else {
                     Button::new("mp-problem-leave")
                         .primary()
                         .tap_sm()
                         .icon(IconName::LogOut)
                         .label("Leave")
-                        .on_click(cx.listener(|this, _, _, cx| this.mp_leave(cx)))
+                        .on_click(cx.listener(|this, _, _, cx| this.room_leave(cx)))
                 }
             });
         let running = !self.game.processes.is_empty();
@@ -201,7 +196,7 @@ impl Shell {
                     .tap_sm()
                     .label(tr("Restart F1 25"))
                     .on_click(cx.listener(|this, _, window, cx| {
-                        this.mp_close_game(window, cx);
+                        this.room_close_game(window, cx);
                         cx.notify();
                     }))
             });
@@ -224,13 +219,13 @@ impl Shell {
                             tr("Hide the room from the list while you race")
                         })
                         .on_click(cx.listener(move |this, _, _, cx| {
-                            if let Some(s) = &this.mp_page.session {
+                            if let Some(s) = &this.rooms.session {
                                 s.mark_race(!started);
                             }
                             cx.notify();
                         }))
                 });
-        self.mp_card(p)
+        self.room_card(p)
             .gap(px(14.))
             .child(
                 h_flex()
@@ -280,8 +275,8 @@ impl Shell {
             .when(!over, |d| d.child(bar).child(steps))
     }
 
-    pub(super) fn mp_room(&mut self, state: &SessionState, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        let m = &self.mp_page;
+    pub(super) fn room(&mut self, state: &SessionState, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+        let m = &self.rooms;
         let over = state.phase.is_over();
         let room = state.room.clone();
         let title = room
@@ -325,7 +320,7 @@ impl Shell {
                             code
                         })
                         .tooltip(tr("Copy the invite code"))
-                        .on_click(cx.listener(move |this, _, _, cx| this.mp_copy_code(copy.clone(), cx))),
+                        .on_click(cx.listener(move |this, _, _, cx| this.room_copy_code(copy.clone(), cx))),
                 )
             })
             .child(
@@ -340,7 +335,7 @@ impl Shell {
                         "Leave"
                     })
                     .disabled(m.leaving)
-                    .on_click(cx.listener(|this, _, _, cx| this.mp_leave(cx))),
+                    .on_click(cx.listener(|this, _, _, cx| this.room_leave(cx))),
             );
         let st = room_status(state);
         let status = self.status_card(&st, state, p, cx);

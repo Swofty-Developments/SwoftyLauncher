@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use swofty_core::asset::{AssetOp, FileKind, OpFile, Source};
-use swofty_core::erpbuild::ErpBuild;
+use swofty_core::erp::ErpBuild;
 use swofty_formats::erp::{Erp, ErpFile, Resource};
 
 const ARCHIVE: &str = "2025_asset_groups/f1_safetycar_package/safety_car_2/wep/safety_car_2.erp";

@@ -10,7 +10,7 @@
 // slots (128 characters plus NUL); the HUD and the leaderboard show about 16 to 24 characters. A name is trimmed, cut at
 // 24 characters on a character boundary, and only used when every character is one the game's HUD font draws (ASCII and the
 // Latin-1 letters); otherwise the stock name stays.
-namespace runtime::player_name {
+namespace frontend::player_name {
 
 constexpr size_t MAX_CHARS = 24, MAX_BYTES = 80;
 
@@ -70,7 +70,7 @@ inline bool sanitize(const std::string &name, std::string &out)
 }
 
 
-using name_hash::djb2;
+using frontend::name_hash::djb2;
 
 // The name to show: SWOFTY_TT_PLAYER_NAME holds the text itself ("0" turns the feature off, empty or unset falls back to the launcher
 // account name read from home_menu.json).
@@ -89,7 +89,7 @@ inline bool display_source(const char *env, const std::string &account, std::str
 
 // Whether the user id struct handed to the name cache lookup (kind at +0x4c, type at +0, the id as value ^ mask at +8/+0x10, flag at +0x39)
 // is the local presence's id. Only kind 0 keys of the presence's own type are compared; type 3 and 7 keys use other fields and never match.
-inline bool is_local_id(const uint8_t id[0x50], const presence_id::Id &me)
+inline bool is_local_id(const uint8_t id[0x50], const runtime::presence_id::Id &me)
 {
     uint32_t kind;
     std::memcpy(&kind, id + 0x4c, 4);
@@ -102,14 +102,14 @@ inline bool is_local_id(const uint8_t id[0x50], const presence_id::Id &me)
 }
 
 // The local presence id packed for the lookup hook's lock-free compare: is_local_id only reads type, value[0] and flag39.
-inline uint32_t id_tag(const presence_id::Id &me)
+inline uint32_t id_tag(const runtime::presence_id::Id &me)
 {
     return uint32_t(me.type) | (me.flag39 ? 0x100u : 0u);
 }
 
-inline presence_id::Id id_of(uint32_t tag, uint64_t value0)
+inline runtime::presence_id::Id id_of(uint32_t tag, uint64_t value0)
 {
-    presence_id::Id me;
+    runtime::presence_id::Id me;
     me.type = uint8_t(tag & 0xff);
     me.flag39 = (tag & 0x100u) != 0;
     me.value[0] = value0;

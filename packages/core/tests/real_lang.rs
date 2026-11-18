@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use swofty_core::baseline::{Identity, exe_version, lang_dir, original_lang};
+use swofty_core::game_folder::baseline::{Identity, exe_version, lang_dir, original_lang};
 use swofty_formats::lng::Lng;
 
 #[test]

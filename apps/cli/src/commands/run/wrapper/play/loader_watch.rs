@@ -1,8 +1,8 @@
 use std::time::{Instant, SystemTime};
 
+use swofty_core::diagnostics::quarantine::{self, Attach, AttachWatch};
 use swofty_core::install::{Game, PROXY};
 use swofty_core::loader_check;
-use swofty_core::quarantine::{self, Attach, AttachWatch};
 use swofty_core::store::Store;
 
 use crate::commands::run::wrapper::loader::{loader_missed, note_refused};

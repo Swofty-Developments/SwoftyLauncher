@@ -179,7 +179,7 @@ const char *player_label(uint32_t what)
 
 uint32_t view_flags()
 {
-    return view::current().flags;
+    return frontend::view::current().flags;
 }
 
 void *game_manager()

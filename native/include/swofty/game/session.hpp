@@ -780,6 +780,8 @@ inline constexpr fn<"Sess_Tyre_ShowFittedSet", Sess_Tyre_ShowFittedSet_t> Sess_T
 using Sess_Tyres_ClosestAvailableCompound_t = uint32_t(void *tyre_rules, uint8_t vehicle, const uint32_t *preference, float wear_scale);
 inline constexpr fn<"Sess_Tyres_ClosestAvailableCompound", Sess_Tyres_ClosestAvailableCompound_t> Sess_Tyres_ClosestAvailableCompound{}; // L2 experimental
 inline constexpr address<"Sess_Veh_UpdateWheelMap"> Sess_Veh_UpdateWheelMap{}; // L2 experimental
+inline constexpr address<"Sess_VehiclePlacementRequest_ParseGroupAndId"> Sess_VehiclePlacementRequest_ParseGroupAndId{}; // L2 experimental
+inline constexpr address<"Sess_VehiclePlacementRequest_Register"> Sess_VehiclePlacementRequest_Register{}; // L2 experimental
 inline constexpr address<"Sess_VehiclePlacement_BroadcastGrid"> Sess_VehiclePlacement_BroadcastGrid{}; // L2 experimental
 inline constexpr address<"Sess_VehiclePlacement_FormatFlags"> Sess_VehiclePlacement_FormatFlags{}; // L2 experimental
 inline constexpr address<"Sess_VehiclePlacement_HandleGridRequest"> Sess_VehiclePlacement_HandleGridRequest{}; // L2 experimental

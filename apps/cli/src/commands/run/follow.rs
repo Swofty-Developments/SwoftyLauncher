@@ -2,7 +2,7 @@ use std::io::{Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 
 use anyhow::{Result, bail};
-use swofty_core::crash::{Event, LogScan, Symbols, fatal_name};
+use swofty_core::diagnostics::crash::{Event, LogScan, Symbols, fatal_name};
 use swofty_core::session::{LogMark, SessionRecord};
 use swofty_core::{GAME_EXE, STEAM_APP_ID};
 

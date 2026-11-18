@@ -53,8 +53,8 @@ pub(crate) fn shell_command(store: &Store, a: ShellArgs) -> Result<ExitCode> {
     if let Err(e) = terms(store) {
         return Ok(infra(e));
     }
-    if !swofty_core::setup::done(&store.root) {
-        return Ok(infra(swofty_core::setup::NEEDED));
+    if !swofty_core::game_folder::setup::done(&store.root) {
+        return Ok(infra(swofty_core::game_folder::setup::NEEDED));
     }
     let dir = a.lock.clone().unwrap_or_else(|| lock::default_path(&store.root));
     let owner = lock::owner_line(&run_id, &["shell".to_owned()], &hh_mm());
@@ -95,10 +95,10 @@ fn shell_session(store: &Store, game: &Path, a: &ShellArgs, run_id: &str) -> Res
     let exe_sha = match &fixture {
         None => None,
         Some(_) => {
-            let mut hashes = swofty_core::baseline::Hashes::load(&store.root);
+            let mut hashes = swofty_core::game_folder::baseline::Hashes::load(&store.root);
             let sha = hashes.sha256(&game.join(swofty_core::GAME_EXE))?;
             hashes.save();
-            let loader = swofty_core::builtin::loader_dir();
+            let loader = swofty_core::addons::builtin::loader_dir();
             match loader.as_deref().map(|l| sandbox::verified(l, &sha)) {
                 Some(Ok(proof)) => say(&format!("save sandbox: verified for this F1_25.exe by {proof}")),
                 Some(Err(e)) => return Ok(infra(format!("the shell's save sandbox: {e}"))),
@@ -113,8 +113,8 @@ fn shell_session(store: &Store, game: &Path, a: &ShellArgs, run_id: &str) -> Res
     };
     let live_saves = exe_sha
         .as_ref()
-        .and_then(|_| swofty_core::steam::find_game())
-        .and_then(|i| swofty_core::steam::save_dir(&i.steam_root));
+        .and_then(|_| swofty_core::platform::steam::find_game())
+        .and_then(|i| swofty_core::platform::steam::save_dir(&i.steam_root));
     let launch_json = store.root.join("state/launch.json");
     let saved = std::fs::read(&launch_json).ok();
     let profile = format!("test-{run_id}");

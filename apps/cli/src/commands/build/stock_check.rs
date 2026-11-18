@@ -1,10 +1,10 @@
 use std::path::Path;
 
 use anyhow::Result;
-use swofty_core::baseline::DepotHashes;
+use swofty_core::game_folder::baseline::DepotHashes;
+use swofty_core::game_folder::stock::{self, Depots};
 use swofty_core::install::Game;
-use swofty_core::steam;
-use swofty_core::stock::{self, Depots};
+use swofty_core::platform::steam;
 use swofty_core::store::Store;
 
 /// Refuse a modded build or session on a copy no store checks the
@@ -15,11 +15,11 @@ pub fn check_entitled(store: &Store, g: &Game) -> Result<()> {
     let depots = steam::find_game()
         .filter(|i| i.dir == g.dir)
         .and_then(|i| Depots::load(&i).ok());
-    swofty_core::entitlement::check(&g.dir, depots.as_ref())?;
+    swofty_core::game_folder::entitlement::check(&g.dir, depots.as_ref())?;
     let Some(depots) = depots else {
         return Ok(());
     };
-    let changed = swofty_core::entitlement::changed_files(&store.root, &g.dir, &depots)?;
+    let changed = swofty_core::game_folder::entitlement::changed_files(&store.root, &g.dir, &depots)?;
     if !changed.is_empty() {
         stock::Report::new(changed.clone(), &g.dir).write(&store.root)?;
         return Err(swofty_core::Error::NotStock(changed).into());
@@ -48,7 +48,7 @@ pub(super) fn check_stock(store: &Store, g: &Game, out: &dyn Fn(&str)) -> Result
     heal_launcher(store, &g.dir, Some(&depots as &dyn DepotHashes), out)?;
     let checked = stock::check(&store.root, g, &depots)?;
     if !checked.missing.is_empty() {
-        let version = swofty_core::exe_version::read(&g.dir.join(swofty_core::GAME_EXE));
+        let version = swofty_core::game_folder::exe_version::read(&g.dir.join(swofty_core::GAME_EXE));
         stock::Report::missing(checked.missing.clone(), &g.dir, version.clone())
             .write(&store.root)
             .ok();
@@ -111,7 +111,7 @@ pub(super) fn check_stock(store: &Store, g: &Game, out: &dyn Fn(&str)) -> Result
             ));
         }
         let (changed, missing) = stock::split_absent(&checked.detail);
-        let version = swofty_core::exe_version::read(&g.dir.join(swofty_core::GAME_EXE));
+        let version = swofty_core::game_folder::exe_version::read(&g.dir.join(swofty_core::GAME_EXE));
         if changed.is_empty() && !missing.is_empty() {
             stock::Report::missing(missing.clone(), &g.dir, version.clone())
                 .with_detail(checked.detail.clone())

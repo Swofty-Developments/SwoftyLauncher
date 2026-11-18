@@ -10,7 +10,7 @@ use std::time::{Duration, Instant, SystemTime};
 use anyhow::Result;
 use swofty_core::GAME_EXE;
 use swofty_core::install::Game;
-use swofty_core::process::{descends_from, game_processes, stop_process};
+use swofty_core::platform::process::{descends_from, game_processes, stop_process};
 use swofty_core::session::{
     Config, LOADER_FALLBACK, LOADER_LOG, LOADER_MARK, LaunchMode, LaunchRequest, LogMark, game_args,
     parse_steam_command,
@@ -78,7 +78,7 @@ pub(crate) fn play(
             &format!("starting F1 25 in VR ({})", command.extra.join(" ")),
         );
     }
-    let usage = swofty_core::usage::Session::start(&store.root, game);
+    let usage = swofty_core::online::server::usage::Session::start(&store.root, game);
     let laps = crate::commands::laps::begin(store, config, profile, g);
     let mut watch = LoaderWatch::new(store, g, &session, launched, placed_loader);
     let ea = match args.via_ea {

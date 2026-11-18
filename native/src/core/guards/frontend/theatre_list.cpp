@@ -133,7 +133,7 @@ const char *state(const char *mixin, bool offered_it)
 {
     if (!offered_it)
         return "not offered";
-    return runtime::core_mixins_active(mixin) ? "armed" : "did not install (see the [core] lines)";
+    return guards::install_state(runtime::core_mixins_active(mixin), "armed");
 }
 
 class TheatreListGuard final : public guards::Guard {

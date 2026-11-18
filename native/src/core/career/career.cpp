@@ -239,7 +239,7 @@ void on_flow(SwoftyContext *c)
     runtime::session_host_flow(hash, to);
     runtime::entitlements_flow(hash, to);
     runtime::testagent_flow(name, to);
-    view::flow(hash, to);
+    frontend::view::flow(hash, to);
     if (known) {
         runtime::era_session_trace(known, int(to));
         runtime::era_session_unloaded(known, int(to));

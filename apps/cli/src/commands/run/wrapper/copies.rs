@@ -1,7 +1,7 @@
 use std::path::Path;
 use std::time::{Duration, Instant};
 
-use swofty_core::process::{descends_from, game_processes, stop_process};
+use swofty_core::platform::process::{descends_from, game_processes, stop_process};
 
 use crate::console::output::{info, say};
 use crate::signals::{StopPhase, session_stop};
@@ -32,7 +32,7 @@ pub(crate) fn wait_relaunched(game: &Path, dir: &Path, before: &[u32], code: Opt
     let mut asked = false;
     loop {
         let running = game_processes();
-        let others = swofty_core::process::started_elsewhere(&running, game, before, |pid| {
+        let others = swofty_core::platform::process::started_elsewhere(&running, game, before, |pid| {
             descends_from(pid, std::process::id())
         });
         let new: Vec<u32> = others.iter().copied().filter(|p| !seen.contains(p)).collect();

@@ -7,7 +7,7 @@ use super::tracks::track_files;
 use super::{ARCHIVE_AGE, ARCHIVE_BYTES, Built, PACKED_AGE, PLAN_FILE, Pipeline, SAVED_FILE, source_dir};
 use crate::addons::builtin::CORE_ID;
 use crate::asset::{Op, Source};
-use crate::multiplayer::fingerprint;
+use crate::online::multiplayer::fingerprint;
 use crate::planner::{Target, waiting_lines};
 use crate::profile::conflicts::Report;
 use crate::{Result, io_err};

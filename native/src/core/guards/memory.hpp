@@ -20,8 +20,10 @@ inline bool read_if_readable(uint64_t address, void *out, size_t n, void *)
     return true;
 }
 
-// Copies n bytes from in to address when the core's page table says they are readable; it does not ask whether
-// they are writable.
+// Copies n bytes from in to address when the core's page table says they are readable. It does not ask whether
+// they are writable, so a readable page that is not writable faults in the copy. Its one caller, ai_line_set's
+// repair, writes into the game's AI build records on its heap, whose pages are read-write. A caller that may write
+// anywhere else asks runtime::writable_in_region (runtime/pages.hpp) instead.
 inline bool write_if_readable(uint64_t address, const void *in, size_t n, void *)
 {
     if (!::runtime::readable(reinterpret_cast<const void *>(address), n))
