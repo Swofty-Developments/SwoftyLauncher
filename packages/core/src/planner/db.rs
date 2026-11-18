@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, HashSet};
 
 use swofty_formats::gvdb::Gvdb;
 
@@ -513,14 +513,13 @@ fn hid(r: &Rewrite, s: &crate::ops::Selector, db: &Gvdb) -> bool {
         .any(|rec| hidden.contains(&rec.key) && rec.text() == s.want.as_str())
 }
 
-fn restore_later_records(db: &mut Gvdb, guarded: Vec<(usize, swofty_formats::gvdb::Record)>) {
+pub(super) fn restore_later_records(db: &mut Gvdb, guarded: Vec<(usize, swofty_formats::gvdb::Record)>) {
     if guarded.is_empty() {
         return;
     }
-    let at: HashMap<u64, usize> = db.records.iter().enumerate().map(|(i, r)| (r.key, i)).collect();
     for (was, record) in guarded {
-        match at.get(&record.key) {
-            Some(&i) => db.records[i] = record,
+        match db.records.value_mut(record.key) {
+            Some((tag, value)) => (*tag, *value) = (record.tag, record.value),
             None => {
                 let to = was.min(db.records.len());
                 db.records.insert(to, record)
