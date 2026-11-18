@@ -58,6 +58,16 @@
    "verdict": "partial",
    "evidence": "decomp:own capstone disasm 0x1417264c0-0x141726614,0x141697b90-0x141698441,0x141726150,0x141726160-0x141726340,0x141725380-0x141725614,0x141726b00-0x141726c06,0x14173e6a2-0x14173e6be,0x14173e986-0x14173ea26,0x141740552-0x141740608,0x141726340-0x141726471,0x141726680-0x1417267df,0x140975db0-0x1409760ab,0x1407d07a0-0x1407d0906,0x1407b10c0-0x1407b118a,1.0.145 0x141727c40-0x141727d94;xref:0x145704010,0x14174058f,0x141740583,0x14570e954,0x1417264e9,0x1417264fb,0x1417265e9,0x1417265fc,0x145706160",
    "notes": "V100001 Blind: partial, derived before reading the notes. Own disasm confirms the proto (only rcx read; rdx/r8 forwarded to FeTile_ItemBase_Populate 0x141697b90, which reads [rdx+8] and hands r8d to vslot 0x08), vtable 0x145703ff0 slot 0x20 (0x145704010), creation in FeTile_Build_List switch case 6 (table 0x14570e954) as career_default_content with +0x180 f1_career_2025, 0x1407d07a0([+0x158],0), +0x148 = vslot 0xa0 at 0x1417264e9, vslot 0x98 (a bare ret here), Vm_Set_Bool(g_Vm_Registry,[+0x20]+8,is_dlc_content,&+0x190) at 0x1417264fb (ctor leaves +0x190=0), both lng keys, and 1.0.145 0x141727c40 81/81 equal. Imprecise: 0x14174058b is the disp of the lea at 0x141740588 (vptr store 0x14174058f). Template binding not checkable."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "FeTile_CareerDefaultItem_Populate",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1417264c0-0x141726614,0x141697b90-0x141698441,0x14173df80-0x14174527b,0x141725380-0x141725614,0x141726340-0x141726471,0x141726680-0x1417267df,0x140975db0-0x1409760ab,0x141726160-0x141726340,0x141726b00-0x141726c00,1.0.145 0x141727c40-0x141727d94;xref:0x145704010,0x14174058f,0x14173e986,0x141740559,0x141740583,0x1417255e0,0x1417264e9,0x1417264fb,0x145706160,0x141741d08",
+   "notes": "V100006 Blind: agree. Own disasm: 3 args, rdx/r8 untouched into FeTile_ItemBase_Populate 0x141697b90 (reads [node+8], passes a7 to slot +0x8, a bare ret here). Only pointer 0x145704010 = vtable 0x145703ff0 +0x20. Built in FeTile_Build_List table 0x14570e954 case 6 (button_1): size 0x1b8, parent ctor 0x141725380 (+0x190=0 at 0x1417255e0), vtable store 0x14174058f, +0x180 f1_career_2025. Body: 0x1407d07a0([+0x158],0) (setCurrentGameMode), +0x148 = slot +0xa0, slot +0x98 (ret), Vm_Set_Bool(g_Vm_Registry, [item+0x20]+8 or 0x146ca0e90, is_dlc_content, item+0x190, 1), title/description keys via 0x1407b10c0. Steam 0x141727c40: 81/81 insns equal. Template binding not checkable."
   }
  ],
  "proofs": [
