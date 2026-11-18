@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use super::Built;
 use super::buildhash::BuildHash;
-use super::op_files::{core_intro, package_ops, render_file, unbuilt};
+use super::op_files::{core_intro, package_ops, refuse_by, refuse_placements, render_file, unbuilt};
 use super::registry::added_tables;
 use super::run::Run;
 use crate::addons::builtin::{CORE_DB, CORE_ID, core_db_ops};
@@ -176,7 +176,8 @@ impl Gather<'_, '_, '_> {
                 ));
                 continue;
             }
-            let file = render_file(&dir.join(rel), kind, m, run.settings, run.on, self.hash)?;
+            let mut file = render_file(&dir.join(rel), kind, m, run.settings, run.on, self.hash)?;
+            refuse_placements(id, rel, &mut file.ops, &mut self.built.warnings);
             self.hash.sources(run.store, id, &file.ops)?;
             ops.files.push((kind, file));
         }
@@ -229,6 +230,7 @@ impl Gather<'_, '_, '_> {
             .warnings
             .extend(batch.warnings.iter().map(|w| format!("{id}: {w}")));
         let mut ops = batch.ops;
+        refuse_by(id, "build hook", &mut ops, |o| &o.op, &mut self.built.warnings);
         if let Some(op) = unbuilt(ops.iter().map(|o| &o.op)) {
             self.built
                 .warnings
