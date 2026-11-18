@@ -15,6 +15,6 @@ void session_enter();
 void tick();
 void style_settings(void *item);
 void command(void *home_vm, uint32_t command_hash, uint32_t focused_hash);
-void paint(hud::Frame &frame, uint64_t now);
+void paint(hud::drawlist::Frame &frame, uint64_t now);
 
 }

@@ -39,6 +39,8 @@
 // Unconfirmed in game: that the HUD's top-left name comes through this lookup (the log line below says whether the hook was
 // hit and what it replaced).
 
+namespace frontend::player_name {
+
 namespace {
 
 const runtime::Sig S_NAME{"Game_PresenceNameCache_Lookup",
@@ -350,21 +352,23 @@ void setup()
 
 }
 
+}
+
 namespace runtime {
 
 void player_name_probe_tick()
 {
-    tt_name.probe_tick();
+    frontend::player_name::tt_name.probe_tick();
 }
 
 void player_name_pin_tick()
 {
-    tt_name.pin_tick();
+    frontend::player_name::tt_name.pin_tick();
 }
 
 void player_name_session()
 {
-    tt_name.session();
+    frontend::player_name::tt_name.session();
 }
 
 }
@@ -373,5 +377,5 @@ SWOFTY_CORE_RANK(player_name)
 
 SWOFTY_ON_LOAD
 {
-    runtime::when_code_ready("time trial player name", setup);
+    runtime::when_code_ready("time trial player name", frontend::player_name::setup);
 }

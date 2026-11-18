@@ -126,6 +126,10 @@ uintptr_t root_global = 0, despawn_main_scene = 0;
 // function cited beside the offsets it backs). On the EA App KB build every cited function is the same except the game
 // manager's reader 0x14022d920, which loads the entrants system from +0x260 there (runtime::manager_entrants_system()),
 // and StateLoadSession's +0xcd0 is witnessed at its constructor 0x1437b57d0.
+// EA App 1.0.145 (not in VERIFIED_LAYOUT; static proof only, no run): the same witnesses on its decrypted dump find every
+// cited offset at the same instructions, with the game manager's entrants system at +0x260 as on the EA App KB build. The
+// flow machine (0x14441b290 there) and the track select confirm (0x141c02d80) open with a jump the loader patched in,
+// so they are compared in place past it (2415 of 2416 and 1318 of 1318 instructions).
 namespace bp = runtime::build_proof;
 constexpr uint32_t VERIFIED_BUILDS = bp::proofs::VERIFIED_LAYOUT.builds;
 constexpr bp::Proof SESSION_DRIVER{"the session driver's layout (the Grand Prix entity +0x1030, +0xf08, +0xf58, +0xe18, "

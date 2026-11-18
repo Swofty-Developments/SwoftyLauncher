@@ -14,6 +14,8 @@
 // system's per-frame update takes the system as its only argument, so a wrap on it records the system and
 // runs development opens on the update's own thread.
 
+namespace frontend {
+
 namespace {
 
 const runtime::Sig S_UPDATE{"Game_MfdSystem_Update",
@@ -125,16 +127,18 @@ void MfdTest::tick()
 
 }
 
+}
+
 namespace runtime {
 
 void mfd_setup()
 {
-    mfd_test.setup();
+    frontend::mfd_test.setup();
 }
 
 void mfd_tick()
 {
-    mfd_test.tick();
+    frontend::mfd_test.tick();
 }
 
 }

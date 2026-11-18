@@ -15,6 +15,8 @@
 // movie block's first instruction, the je's fall-through right after the 6 bytes the
 // site_FeHome_AfterCareerCall hook relocates; a short jmp there to the F1 World block builds the
 // flag-clear list, so the button numbering stays contiguous. No branch lands in the 2 replaced bytes.
+namespace frontend {
+
 namespace {
 
 const runtime::Sig S_MOVIE_TILE{"FeHome_MovieTileBlock",
@@ -56,8 +58,6 @@ void hide_lan_tile()
 
 }
 
-namespace runtime {
-
 void hide_movie_tile()
 {
     static constexpr uint8_t skip_movie[] = {0xEB, 0x10};
@@ -72,9 +72,13 @@ void hide_movie_tile()
     swofty::log("[core] F1 THE MOVIE home tile %s", hidden ? "hidden" : "left in place (signature did not resolve)");
 }
 
+}
+
+namespace runtime {
+
 void local_tiles_setup()
 {
-    hide_lan_tile();
+    frontend::hide_lan_tile();
 }
 
 }

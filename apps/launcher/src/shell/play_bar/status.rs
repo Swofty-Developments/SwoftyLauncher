@@ -253,7 +253,9 @@ impl Shell {
                         )))
                         .child(
                             link("steam-once", tr("Play once with your Steam saves"), p).on_click(
-                                cx.listener(|this, _, window, cx| this.play_with_steam_saves(window, cx)),
+                                cx.listener(|this, _, window, cx| {
+                                    crate::shell::Launching::play_with_steam_saves(this, window, cx)
+                                }),
                             ),
                         )
                         .child(

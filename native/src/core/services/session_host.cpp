@@ -161,7 +161,7 @@ void api_cover_signal(SwoftySessionSignalFn fn, void *user)
 
 int api_ui_set(const char *path, int type, const void *value)
 {
-    return path && value && ui_vm_set_path(path, type, value);
+    return path && value && frontend::ui_vm_set_path(path, type, value);
 }
 
 int api_car_category(const char *value, char *why, size_t cap)

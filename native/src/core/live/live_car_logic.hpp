@@ -23,16 +23,18 @@ struct Fields {
     bool drs = false;
 };
 
-// On Steam 1.0.145 the wheel spin and slip fields and the suspension's wheel pointers are at the KB displacements, and
-// g_Game_WeatherSurfaceState, found there by signature, holds the track wetness at the same +0x3f0a38
-// (re/tools/portcheck.py, re/research/port-steam-26566308.md).
+// On both 1.0.145 builds the wheel spin and slip fields and the suspension's wheel pointers are at the KB displacements,
+// and g_Game_WeatherSurfaceState, found there by signature, holds the track wetness at the same +0x3f0a38
+// (re/tools/portcheck.py, re/research/port-steam-26566308.md, re/research/ea-1-0-145.md).
 namespace bp = ::runtime::build_proof;
 
 inline constexpr bp::Proof WHEEL_FIELDS{"the wheel spin and slip fields (CarSuspension +0x70, CarWheel +0x188, +0x3b0, "
                                         "+0x3b4)",
-                                        bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145)};
+                                        bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145) |
+                                            bp::bit(bp::Build::ea_1_0_145)};
 inline constexpr bp::Proof TRACK_WETNESS{"the track wetness (g_Game_WeatherSurfaceState +0x3f0a38)",
-                                         bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145)};
+                                         bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145) |
+                                             bp::bit(bp::Build::ea_1_0_145)};
 inline constexpr bp::Proof SURFACE_FIELDS{"the wheel surface and wetness, chassis basis and body angular velocity "
                                           "(CarWheel +0x200, +0x280, CarChassis +0x190, body +0x210)",
                                           bp::bit(bp::Build::kb)};

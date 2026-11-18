@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace hud {
+namespace hud::drawlist {
 
 inline float signed_area(const std::vector<Pt> &p)
 {

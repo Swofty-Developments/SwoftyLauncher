@@ -49,13 +49,13 @@ int ov_available()
     bool arming = overlay.arming.load();
     if (!overlay.implemented || !(arming || overlay.armed.load()))
         return 0;
-    return hud::listed(settings().off, owner_of(caller(__builtin_return_address(0)))) ? 0 : 1;
+    return hud::drawlist::listed(settings().off, owner_of(caller(__builtin_return_address(0)))) ? 0 : 1;
 }
 
 int ov_on_paint(SwoftyPaintFn fn, void *user, uint32_t *token)
 {
     Caller c = caller(__builtin_return_address(0));
-    if (hud::listed(settings().off, owner_of(c))) {
+    if (hud::drawlist::listed(settings().off, owner_of(c))) {
         swofty::log("[overlay] api: %s on_paint -> unavailable (turned off for this addon in the launcher)",
                     owner_of(c).c_str());
         return SWOFTY_ASSET_UNAVAILABLE;
@@ -85,7 +85,7 @@ int ov_remove(uint32_t token)
 
 void ov_size(const SwoftyPaint *paint, float *width, float *height)
 {
-    auto *f = reinterpret_cast<const hud::Frame *>(paint);
+    auto *f = reinterpret_cast<const hud::drawlist::Frame *>(paint);
     if (width)
         *width = f ? f->width : 0;
     if (height)
@@ -95,30 +95,30 @@ void ov_size(const SwoftyPaint *paint, float *width, float *height)
 void ov_rect(SwoftyPaint *paint, float x, float y, float w, float h, uint32_t rgba)
 {
     if (paint)
-        hud::rect(*reinterpret_cast<hud::Frame *>(paint), x, y, w, h, rgba);
+        hud::drawlist::rect(*reinterpret_cast<hud::drawlist::Frame *>(paint), x, y, w, h, rgba);
 }
 
 void ov_rect_outline(SwoftyPaint *paint, float x, float y, float w, float h, float thickness, uint32_t rgba)
 {
     if (paint)
-        hud::rect_outline(*reinterpret_cast<hud::Frame *>(paint), x, y, w, h, thickness, rgba);
+        hud::drawlist::rect_outline(*reinterpret_cast<hud::drawlist::Frame *>(paint), x, y, w, h, thickness, rgba);
 }
 
 void ov_line(SwoftyPaint *paint, float x0, float y0, float x1, float y1, float thickness, uint32_t rgba)
 {
     if (paint)
-        hud::line(*reinterpret_cast<hud::Frame *>(paint), x0, y0, x1, y1, thickness, rgba);
+        hud::drawlist::line(*reinterpret_cast<hud::drawlist::Frame *>(paint), x0, y0, x1, y1, thickness, rgba);
 }
 
 void ov_text(SwoftyPaint *paint, float x, float y, float size, uint32_t rgba, const char *utf8)
 {
     if (paint && utf8)
-        hud::text(*reinterpret_cast<hud::Frame *>(paint), x, y, size, rgba, utf8);
+        hud::drawlist::text(*reinterpret_cast<hud::drawlist::Frame *>(paint), x, y, size, rgba, utf8);
 }
 
 void ov_measure(const SwoftyPaint *, float size, const char *utf8, float *width, float *height)
 {
-    hud::measure(size, utf8 ? utf8 : "", width, height);
+    hud::drawlist::measure(size, utf8 ? utf8 : "", width, height);
 }
 
 int ov_load_image(const char *id, const char *file)
@@ -152,9 +152,9 @@ int ov_load_image(const char *id, const char *file)
     return SWOFTY_ASSET_OK;
 }
 
-hud::Frame *frame_of(SwoftyPaint *paint)
+hud::drawlist::Frame *frame_of(SwoftyPaint *paint)
 {
-    return reinterpret_cast<hud::Frame *>(paint);
+    return reinterpret_cast<hud::drawlist::Frame *>(paint);
 }
 
 struct Found {
@@ -171,7 +171,7 @@ Found find_image(const std::string &owner, const char *id)
     key.assign(owner).append(1, '\n').append(id);
     std::lock_guard<std::mutex> g(overlay.reg_lock);
     f.slot = overlay.reg.find_image(key);
-    if (const hud::Image *im = overlay.reg.image(f.slot)) {
+    if (const hud::drawlist::Image *im = overlay.reg.image(f.slot)) {
         f.w = float(im->width);
         f.h = float(im->height);
     }
@@ -186,63 +186,64 @@ int ov_image(SwoftyPaint *paint, const char *id, float x, float y, float w, floa
     if (f.slot < 0)
         return SWOFTY_ASSET_INVALID;
     if (paint)
-        hud::image(*frame_of(paint), f.slot, x, y, w, h, tint);
+        hud::drawlist::image(*frame_of(paint), f.slot, x, y, w, h, tint);
     return SWOFTY_ASSET_OK;
 }
 
 void ov_rect_rounded(SwoftyPaint *paint, float x, float y, float w, float h, float radius, uint32_t rgba)
 {
     if (paint)
-        hud::rect_rounded(*frame_of(paint), x, y, w, h, radius, rgba);
+        hud::drawlist::rect_rounded(*frame_of(paint), x, y, w, h, radius, rgba);
 }
 
 void ov_rect_rounded_outline(SwoftyPaint *paint, float x, float y, float w, float h, float radius, float thickness,
                              uint32_t rgba)
 {
     if (paint)
-        hud::rect_rounded_outline(*frame_of(paint), x, y, w, h, radius, thickness, rgba);
+        hud::drawlist::rect_rounded_outline(*frame_of(paint), x, y, w, h, radius, thickness, rgba);
 }
 
 void ov_rect_gradient(SwoftyPaint *paint, float x, float y, float w, float h, float radius, uint32_t from, uint32_t to,
                       uint32_t flags)
 {
     if (paint)
-        hud::rect_gradient(*frame_of(paint), x, y, w, h, radius, from, to, flags);
+        hud::drawlist::rect_gradient(*frame_of(paint), x, y, w, h, radius, from, to, flags);
 }
 
 void ov_circle(SwoftyPaint *paint, float cx, float cy, float radius, uint32_t rgba)
 {
     if (paint)
-        hud::circle(*frame_of(paint), cx, cy, radius, rgba);
+        hud::drawlist::circle(*frame_of(paint), cx, cy, radius, rgba);
 }
 
 void ov_circle_outline(SwoftyPaint *paint, float cx, float cy, float radius, float thickness, uint32_t rgba)
 {
     if (paint)
-        hud::circle_outline(*frame_of(paint), cx, cy, radius, thickness, rgba);
+        hud::drawlist::circle_outline(*frame_of(paint), cx, cy, radius, thickness, rgba);
 }
 
 void ov_arc(SwoftyPaint *paint, float cx, float cy, float radius, float from, float to, float thickness, uint32_t rgba)
 {
     if (paint)
-        hud::arc(*frame_of(paint), cx, cy, radius, from, to, thickness, rgba);
+        hud::drawlist::arc(*frame_of(paint), cx, cy, radius, from, to, thickness, rgba);
 }
 
 void ov_polyline(SwoftyPaint *paint, const float *xy, uint32_t count, float thickness, uint32_t rgba, uint32_t flags)
 {
     if (paint)
-        hud::polyline(*frame_of(paint), xy, std::min<uint32_t>(count, hud::MAX_VERTS / 18), thickness, rgba, flags);
+        hud::drawlist::polyline(*frame_of(paint), xy, std::min<uint32_t>(count, hud::drawlist::MAX_VERTS / 18), thickness, rgba,
+                                flags);
 }
 
 void ov_polygon(SwoftyPaint *paint, const float *xy, uint32_t count, uint32_t rgba)
 {
     if (paint)
-        hud::polygon(*frame_of(paint), xy, std::min<uint32_t>(count, hud::MAX_VERTS / 9), rgba);
+        hud::drawlist::polygon(*frame_of(paint), xy, std::min<uint32_t>(count, hud::drawlist::MAX_VERTS / 9), rgba);
 }
 
-hud::TextStyle text_style(const SwoftyTextStyle *s)
+hud::drawlist::TextStyle text_style(const SwoftyTextStyle *s)
 {
-    hud::TextStyle t;
+    hud::drawlist::TextStyle t;
     if (!s || s->size < offsetof(SwoftyTextStyle, px) + sizeof(float)) {
         t.px = 0;
         return t;
@@ -274,12 +275,12 @@ hud::TextStyle text_style(const SwoftyTextStyle *s)
 void ov_text_styled(SwoftyPaint *paint, float x, float y, const SwoftyTextStyle *style, const char *utf8)
 {
     if (paint && utf8)
-        hud::text(*frame_of(paint), x, y, text_style(style), utf8);
+        hud::drawlist::text(*frame_of(paint), x, y, text_style(style), utf8);
 }
 
 void ov_measure_styled(const SwoftyPaint *, const SwoftyTextStyle *style, const char *utf8, float *width, float *height)
 {
-    hud::measure(text_style(style), utf8 ? utf8 : "", width, height);
+    hud::drawlist::measure(text_style(style), utf8 ? utf8 : "", width, height);
 }
 
 int ov_image_uv(SwoftyPaint *paint, const char *id, float x, float y, float w, float h, float u0, float v0, float u1,
@@ -291,7 +292,7 @@ int ov_image_uv(SwoftyPaint *paint, const char *id, float x, float y, float w, f
     if (f.slot < 0)
         return SWOFTY_ASSET_INVALID;
     if (paint)
-        hud::image_uv(*frame_of(paint), f.slot, x, y, w, h, u0, v0, u1, v1, tint);
+        hud::drawlist::image_uv(*frame_of(paint), f.slot, x, y, w, h, u0, v0, u1, v1, tint);
     return SWOFTY_ASSET_OK;
 }
 
@@ -304,7 +305,7 @@ int ov_image_nine(SwoftyPaint *paint, const char *id, float x, float y, float w,
     if (f.slot < 0)
         return SWOFTY_ASSET_INVALID;
     if (paint)
-        hud::image_nine(*frame_of(paint), f.slot, f.w, f.h, x, y, w, h, left, top, right, bottom, scale, tint);
+        hud::drawlist::image_nine(*frame_of(paint), f.slot, f.w, f.h, x, y, w, h, left, top, right, bottom, scale, tint);
     return SWOFTY_ASSET_OK;
 }
 
@@ -323,48 +324,48 @@ int ov_image_size(const char *id, float *width, float *height)
 void ov_push_clip(SwoftyPaint *paint, float x, float y, float w, float h)
 {
     if (paint)
-        hud::push_clip(*frame_of(paint), x, y, w, h);
+        hud::drawlist::push_clip(*frame_of(paint), x, y, w, h);
 }
 
 void ov_pop_clip(SwoftyPaint *paint)
 {
     if (paint)
-        hud::pop_clip(*frame_of(paint));
+        hud::drawlist::pop_clip(*frame_of(paint));
 }
 
 void ov_push_transform(SwoftyPaint *paint, const float *m)
 {
     if (paint)
-        hud::push_transform(*frame_of(paint), m);
+        hud::drawlist::push_transform(*frame_of(paint), m);
 }
 
 void ov_pop_transform(SwoftyPaint *paint)
 {
     if (paint)
-        hud::pop_transform(*frame_of(paint));
+        hud::drawlist::pop_transform(*frame_of(paint));
 }
 
 void ov_push_opacity(SwoftyPaint *paint, float opacity)
 {
     if (paint)
-        hud::push_opacity(*frame_of(paint), opacity);
+        hud::drawlist::push_opacity(*frame_of(paint), opacity);
 }
 
 void ov_pop_opacity(SwoftyPaint *paint)
 {
     if (paint)
-        hud::pop_opacity(*frame_of(paint));
+        hud::drawlist::pop_opacity(*frame_of(paint));
 }
 
 void ov_safe_area(const SwoftyPaint *paint, float *x, float *y, float *w, float *h)
 {
-    hud::Frame empty;
-    hud::safe_area(paint ? *reinterpret_cast<const hud::Frame *>(paint) : empty, x, y, w, h);
+    hud::drawlist::Frame empty;
+    hud::drawlist::safe_area(paint ? *reinterpret_cast<const hud::drawlist::Frame *>(paint) : empty, x, y, w, h);
 }
 
 float ov_ui_scale(const SwoftyPaint *paint)
 {
-    return paint ? hud::ui_scale(*reinterpret_cast<const hud::Frame *>(paint)) : 1.0f;
+    return paint ? hud::drawlist::ui_scale(*reinterpret_cast<const hud::drawlist::Frame *>(paint)) : 1.0f;
 }
 
 int ov_input(const SwoftyPaint *paint, SwoftyInput *out)
@@ -375,7 +376,7 @@ int ov_input(const SwoftyPaint *paint, SwoftyInput *out)
         return SWOFTY_ASSET_INVALID;
     SwoftyInput full{};
     full.size = sizeof full;
-    overlay.input.view(reinterpret_cast<const hud::Frame *>(paint)->owner, full);
+    overlay.input.view(reinterpret_cast<const hud::drawlist::Frame *>(paint)->owner, full);
     uint32_t size = out->size;
     memcpy(out, &full, std::min<size_t>(size, sizeof full));
     out->size = size;
@@ -457,7 +458,7 @@ int overlay_image(const std::string &id, const std::string &path, uint32_t *widt
     {
         std::lock_guard<std::mutex> g(overlay.reg_lock);
         int slot = overlay.reg.find_image(id);
-        const hud::Image *im = slot >= 0 ? overlay.reg.image(slot) : nullptr;
+        const hud::drawlist::Image *im = slot >= 0 ? overlay.reg.image(slot) : nullptr;
         if (im && im->generation > 0 && im->source == key) {
             if (width)
                 *width = im->width;

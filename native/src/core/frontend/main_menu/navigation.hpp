@@ -25,7 +25,7 @@ public:
     void session_enter();
     void screen(const char *name);
     bool covering() const;
-    void paint_cover(hud::Frame &f);
+    void paint_cover(hud::drawlist::Frame &f);
 
     uint64_t container_command(void *container, swofty::game::NeStr **message, void *third);
     void tabs_added(void *vm);

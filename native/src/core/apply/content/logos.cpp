@@ -275,14 +275,41 @@ void list_erps(const std::wstring &dir, const std::string &rel, std::vector<std:
     std::sort(out.begin(), out.end());
 }
 
-bool stat_file(const std::string &rel, uint64_t &size, uint64_t &time)
+bool size_file(const std::string &rel, uint64_t &size)
 {
     WIN32_FILE_ATTRIBUTE_DATA a{};
     if (!GetFileAttributesExW(game_file(rel).c_str(), GetFileExInfoStandard, &a))
         return false;
     size = (uint64_t(a.nFileSizeHigh) << 32) | a.nFileSizeLow;
-    time = (uint64_t(a.ftLastWriteTime.dwHighDateTime) << 32) | a.ftLastWriteTime.dwLowDateTime;
     return true;
+}
+
+bool stat_file(const std::string &rel, logo_cache::Seen &now)
+{
+    HANDLE h = CreateFileW(game_file(rel).c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+                           OPEN_EXISTING, 0, nullptr);
+    if (h == INVALID_HANDLE_VALUE)
+        return false;
+    BY_HANDLE_FILE_INFORMATION info{};
+    FILE_BASIC_INFO basic{};
+    bool ok = GetFileInformationByHandle(h, &info) && GetFileInformationByHandleEx(h, FileBasicInfo, &basic, sizeof basic) &&
+              !(info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
+    CloseHandle(h);
+    if (!ok)
+        return false;
+    now.size = (uint64_t(info.nFileSizeHigh) << 32) | info.nFileSizeLow;
+    now.time = uint64_t(basic.LastWriteTime.QuadPart);
+    now.changed = uint64_t(basic.ChangeTime.QuadPart);
+    now.id = (uint64_t(info.nFileIndexHigh) << 32) | info.nFileIndexLow;
+    now.links = info.nNumberOfLinks;
+    return true;
+}
+
+uint64_t file_clock()
+{
+    FILETIME ft;
+    GetSystemTimeAsFileTime(&ft);
+    return (uint64_t(ft.dwHighDateTime) << 32) | ft.dwLowDateTime;
 }
 
 bool hash_file(const std::string &rel, uint64_t &hash)
@@ -477,7 +504,8 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     std::wstring stamps_path = runtime::under_swofty(dir + logo_cache::STAMPS);
     DeleteFileW(runtime::under_swofty(dir + logo_cache::OLD_STAMPS).c_str());
     std::string stamps_before = runtime::read_file(stamps_path, size_t(16) << 20);
-    logo_cache::Env stamp_env{stat_file, [&](const std::string &rel, uint64_t &hash) { return logo_build::input_hash(env, rel, hash_file, hash); }};
+    logo_cache::Env stamp_env{size_file, stat_file,
+                              [&](const std::string &rel, uint64_t &hash) { return logo_build::input_hash(env, rel, hash_file, hash); }, file_clock};
     auto key_inputs = [&](const std::set<std::string> &inputs, const logo_cache::Stamps &before) {
         DWORD t0 = GetTickCount();
         logo_cache::Keyed k = logo_cache::key_archives(key, keyed_files, inputs, stamp_env, before);
@@ -487,8 +515,6 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         return k;
     };
     logo_cache::Stamps before = logo_cache::parse(stamps_before);
-    if (!logo_cache::stamps_current(stamps_before))
-        before.erase(logo_build::DATABASES);
     std::set<std::string> inputs = logo_cache::inputs_of(before);
     inputs.insert(logo_build::DATABASES);
     logo_cache::Keyed keyed = key_inputs(inputs, before);

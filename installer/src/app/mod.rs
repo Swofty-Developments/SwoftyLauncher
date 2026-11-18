@@ -12,6 +12,7 @@ use self::setup::{install, install_folder, launch, pick_folder};
 use crate::theme::visuals;
 use crate::{FINDING, HEIGHT, data, existing, resolve, running};
 
+#[derive(Clone)]
 enum Stage {
     Ready,
     Open(PathBuf, String),

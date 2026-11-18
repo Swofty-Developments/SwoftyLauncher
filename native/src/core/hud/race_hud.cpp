@@ -37,7 +37,8 @@ int api_set(const char *path, uint32_t type, const void *value)
 
 void apply_set(const Set &q)
 {
-    bool ok = q.type == 0 ? ui_vm_set_path(q.path, 0, q.text.c_str()) : ui_vm_set_path(q.path, q.type, &q.number);
+    bool ok =
+        q.type == 0 ? frontend::ui_vm_set_path(q.path, 0, q.text.c_str()) : frontend::ui_vm_set_path(q.path, q.type, &q.number);
     if (!ok || state.sets_told.fetch_add(1) < 16)
         swofty::log("[hud] set %s by %s: %s = %s%s", ok ? "applied" : "failed", q.by.c_str(), q.path.c_str(),
                     q.type == 0 ? ("\"" + q.text.substr(0, 60) + "\"").c_str() : std::to_string(q.number).c_str(),
@@ -122,7 +123,8 @@ const SwoftyHud hud_table = {SWOFTY_HUD_VERSION,
 bool apply_leaf(const hud::leaves::Leaf &l)
 {
     perf::Pause game;
-    bool ok = l.type == 0 ? ui_vm_set_path(l.path, 0, l.want_text.c_str()) : ui_vm_set_path(l.path, int(l.type), &l.want_num);
+    bool ok = l.type == 0 ? frontend::ui_vm_set_path(l.path, 0, l.want_text.c_str())
+                          : frontend::ui_vm_set_path(l.path, int(l.type), &l.want_num);
     if (!ok && !l.failed && state.leaves_told.fetch_add(1) < 16)
         swofty::log("[hud] leaf %s by %s did not resolve yet (the parent node is missing); retrying", l.path.c_str(),
                     l.by.c_str());
@@ -178,11 +180,11 @@ void RaceHud::leaves_watch(uint64_t now)
         w.known = leaf_table.size();
         w.parents = leaf_table.parents();
         w.tokens.assign(w.parents.size(), 0);
-        w.epoch = ui_vm_epoch();
+        w.epoch = frontend::ui_vm_epoch();
         w.next = 0;
     }
     bool rebuilt = false;
-    uintptr_t e = ui_vm_epoch();
+    uintptr_t e = frontend::ui_vm_epoch();
     if (e != w.epoch) {
         if (w.epoch)
             rebuilt = true;
@@ -190,7 +192,7 @@ void RaceHud::leaves_watch(uint64_t now)
     }
     for (size_t k = 0; k < 4 && !w.parents.empty(); k++) {
         size_t i = w.next++ % w.parents.size();
-        uintptr_t t = ui_vm_node_token(w.parents[i]);
+        uintptr_t t = frontend::ui_vm_node_token(w.parents[i]);
         if (w.tokens[i] && t != w.tokens[i])
             rebuilt = true;
         if (t)

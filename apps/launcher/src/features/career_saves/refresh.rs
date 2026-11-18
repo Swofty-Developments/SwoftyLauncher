@@ -7,7 +7,7 @@ use super::Banner;
 use super::build::build_saves;
 use super::state::{Built, SavesPage};
 use crate::services::game::Install;
-use crate::shell::host::{Host, Hosted};
+use crate::shell::host::{Host, Hosted, reports_nothing};
 use crate::shell::{Page, Shell};
 
 pub(crate) struct SavesNeeds<'a> {
@@ -33,9 +33,7 @@ impl Host<SavesPage> for Shell {
         )
     }
 
-    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
-        match change {}
-    }
+    reports_nothing!();
 }
 
 impl SavesPage {

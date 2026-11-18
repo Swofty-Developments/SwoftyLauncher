@@ -5,9 +5,9 @@ pub(crate) fn catalog() -> Catalog {
     let ambient = parse_effect(crate::effect::tests::AMBIENT, Origin::Library).unwrap();
     let grain = parse_effect(
         r#"{"id":"grain","name":"Grain","description":"Film grain.","params":[
-            {"id":"amount","type":"float","default":0.1,"min":0,"max":1,"label":"Amount","doc":"Strength."},
-            {"id":"size","type":"int","default":2,"min":1,"max":8}],
-          "passes":[{"name":"p","shader":"grain.hlsl"}]}"#,
+                {"id":"amount","type":"float","default":0.1,"min":0,"max":1,"label":"Amount","doc":"Strength."},
+                {"id":"size","type":"int","default":2,"min":1,"max":8}],
+              "passes":[{"name":"p","shader":"grain.hlsl"}]}"#,
         Origin::Library,
     )
     .unwrap();

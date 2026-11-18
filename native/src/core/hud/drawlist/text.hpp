@@ -10,7 +10,7 @@
 #include <string_view>
 #include <vector>
 
-namespace hud {
+namespace hud::drawlist {
 
 // ----- text -------------------------------------------------------------------------------------
 
