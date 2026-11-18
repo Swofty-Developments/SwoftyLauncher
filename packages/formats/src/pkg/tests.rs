@@ -1,4 +1,5 @@
 use super::*;
+use crate::hash::fnv1a32;
 
 fn sample() -> Pkg {
     let props = Obj::new(vec![
