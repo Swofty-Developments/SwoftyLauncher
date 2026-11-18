@@ -7,6 +7,8 @@ mod page;
 mod raw;
 mod save;
 mod state;
+#[cfg(test)]
+mod tests;
 mod util;
 mod view;
 

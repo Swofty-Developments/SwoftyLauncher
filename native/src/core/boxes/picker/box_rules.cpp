@@ -5,10 +5,7 @@
 #include "core/apply/content/appliers.hpp"
 #include "core/boxes/box_grid.hpp"
 #include "core/boxes/box_options.hpp"
-
-namespace swofty_core::hooks {
-void race_fuel_rules(const swofty_core::apply::content::FuelRules &rules);
-}
+#include "core/hooks/race_fuel_rules.hpp"
 
 namespace era_picker {
 

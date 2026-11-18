@@ -2,10 +2,11 @@ use std::process::Command;
 
 use clap::Parser;
 use swofty_core::manifest::{AddonManifest, MANIFEST_FILE};
+use swofty_formats::pe::{exports, has_export};
 
 use super::addon_logs::{matches, needles};
 use super::link::{junction_target, mount_point_buffer};
-use super::recording::{native_dlls, wine_path};
+use super::recording::{REGISTER_EXPORT, native_dlls, wine_path};
 use super::scaffold::{short_name, title};
 use super::toolchain::which;
 use super::*;
@@ -314,4 +315,19 @@ fn pack_records_a_registry_dll_when_wine_is_there() {
     assert!(String::from_utf8_lossy(&pkg).contains(LOCK_FILE));
     assert!(String::from_utf8_lossy(&pkg).contains("sounds/v10.bdl"));
     std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn reads_the_recorder_tests_dlls_when_built() {
+    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../native/build/recorder-test");
+    let (Ok(with), Ok(without)) = (
+        std::fs::read(dir.join("t_register.dll")),
+        std::fs::read(dir.join("t_plain.dll")),
+    ) else {
+        eprintln!("skipped: run packages/sdk/recorder/test/run_recorder_test.sh to build the test DLLs");
+        return;
+    };
+    assert!(has_export(&with, REGISTER_EXPORT));
+    assert!(!has_export(&without, REGISTER_EXPORT));
+    assert!(exports(&without).unwrap().iter().any(|n| n == "SwoftyAddonInit"));
 }

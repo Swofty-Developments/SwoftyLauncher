@@ -2,14 +2,17 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
 
-use anyhow::Result;
+use anyhow::{Result, anyhow};
+use swofty_core::install::Source;
+use swofty_core::platform::Steam;
 use swofty_core::process::steamvr_running;
 use swofty_core::session::LaunchMode;
-use swofty_core::steam_client::{self, Ready, Report, State, Wait};
+use swofty_core::steam_client;
 use swofty_core::store::Store;
 use swofty_core::{STEAM_APP_ID, steam};
 
 use crate::console::output::say;
+use crate::stores::client::Notes;
 
 const STEAMVR_START_TIMEOUT: Duration = Duration::from_secs(90);
 
@@ -56,26 +59,6 @@ pub(crate) fn ensure_steamvr() {
     say("info", "VR: SteamVR is running");
 }
 
-#[derive(Debug, PartialEq)]
-pub(crate) enum SteamPolicy {
-    Start,
-    Off,
-    NotSteam,
-    SteamSession,
-}
-
-pub(crate) fn steam_policy(on: bool, game: &Path, steam_session: bool) -> SteamPolicy {
-    if !steam::in_steam_library(game) {
-        SteamPolicy::NotSteam
-    } else if steam_session {
-        SteamPolicy::SteamSession
-    } else if on {
-        SteamPolicy::Start
-    } else {
-        SteamPolicy::Off
-    }
-}
-
 /// The launcher's status line while the launch waits on Steam; gone once
 /// the wait ends.
 pub(crate) struct StageFile(pub(crate) PathBuf);
@@ -111,69 +94,12 @@ pub(crate) fn steam_command(args: &[String]) -> Command {
         })
 }
 
-/// A Steam copy of the game needs the Steam client up and signed in; start
-/// it when it is closed, as Steam's own Play button would.
-pub(crate) fn ensure_steam(store: &Store, game: &Path, opted_out: bool) -> Result<()> {
-    let on = store.config().launch.start_store && !opted_out;
-    match steam_policy(on, game, steam_client::steam_session()) {
-        SteamPolicy::NotSteam => say(
-            "steam",
-            "the game folder isn't in a Steam library; not checking Steam",
-        ),
-        SteamPolicy::SteamSession => say("steam", "Steam runs this session; not checking it"),
-        SteamPolicy::Off => {
-            let status = steam_client::status();
-            say("steam", &format!("detected: {status}"));
-            if !status.state.usable() {
-                say(
-                    "steam",
-                    "starting Steam is turned off (launch.start_store or --no-start-store); \
-                     open Steam if F1 25 doesn't start",
-                );
-            }
-        }
-        SteamPolicy::Start => bring_up_steam(store, Some(game))?,
-    }
-    Ok(())
-}
-
+/// Bring Steam up and signed in, whatever folder the game is in.
 pub(crate) fn bring_up_steam(store: &Store, game: Option<&Path>) -> Result<()> {
-    let starter = steam_starter(game);
-    let stage = StageFile(store.root.join(steam_client::STAGE_FILE));
-    let ready = steam_client::ensure(
-        steam_client::status,
-        || {
-            let starter = starter.as_ref().ok_or_else(|| {
-                std::io::Error::new(
-                    std::io::ErrorKind::NotFound,
-                    "Steam was not found on this computer",
-                )
-            })?;
-            say("steam", &format!("starting Steam: {starter}"));
-            starter.start()
-        },
-        Wait::default(),
-        |report| match report {
-            Report::Detected(status) => say("steam", &format!("detected: {status}")),
-            Report::Changed(status, after) if status.state == State::Ready => say(
-                "steam",
-                &format!("ready after {:.1} s ({})", after.as_secs_f64(), status.detail()),
-            ),
-            Report::Changed(status, after) => {
-                say("steam", &format!("{status} at {:.1} s", after.as_secs_f64()))
-            }
-            Report::Stage(s) => stage.set(s.text()),
-        },
-    )?;
-    if ready == Ready::Unconfirmed {
-        say(
-            "steam",
-            &format!(
-                "no sign-in seen after {} s; launching anyway",
-                steam_client::READY_TIMEOUT.as_secs()
-            ),
-        );
-    }
+    let mut notes = Notes::new(&store.root, Source::Steam, say);
+    Steam
+        .start_client(game, &mut |n| notes.note(n))
+        .map_err(|e| anyhow!(e))?;
     Ok(())
 }
 
@@ -189,22 +115,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn starts_steam_only_for_a_steam_copy_with_the_setting_on() {
+    fn the_status_line_goes_when_the_wait_ends() {
         let root = std::env::temp_dir().join(format!("swofty-run-{}-policy", std::process::id()));
-        let game = root.join("lib/steamapps/common/F1 25");
-        let other = root.join("Games/F1 25");
-        std::fs::create_dir_all(&game).unwrap();
-        std::fs::create_dir_all(&other).unwrap();
-        std::fs::write(
-            root.join(format!("lib/steamapps/appmanifest_{STEAM_APP_ID}.acf")),
-            r#""AppState" { "installdir" "F1 25" }"#,
-        )
-        .unwrap();
-        assert_eq!(steam_policy(true, &game, false), SteamPolicy::Start);
-        assert_eq!(steam_policy(false, &game, false), SteamPolicy::Off);
-        assert_eq!(steam_policy(true, &game, true), SteamPolicy::SteamSession);
-        assert_eq!(steam_policy(true, &other, false), SteamPolicy::NotSteam);
-        assert_eq!(steam_policy(false, &other, true), SteamPolicy::NotSteam);
         let stage = StageFile(root.join("data").join(steam_client::STAGE_FILE));
         stage.set(steam_client::Stage::SigningIn.text());
         assert_eq!(

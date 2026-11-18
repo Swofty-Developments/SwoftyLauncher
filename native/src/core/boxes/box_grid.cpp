@@ -2,6 +2,7 @@
 
 #include "core/boxes/box_grid_logic.hpp"
 #include "core/runtime/loader/core_sets.hpp"
+#include "core/runtime/loader/mixin_gate.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -101,7 +102,8 @@ thread_local uintptr_t override_request = 0;
 thread_local bg::Vec3 override_pos{};
 int rows_logged = 0;
 
-bool offered = false, settled = false, wanted = false;
+runtime::loader::MixinGate mixin_gate;
+bool wanted = false;
 std::mutex lock;
 std::optional<bg::Rule> active;
 std::string active_box;
@@ -376,11 +378,11 @@ void box_grid_set(const std::optional<box_grid::Rule> &rule, const std::string &
 std::vector<CoreMixins> box_grid_mixins()
 {
     std::vector<CoreMixins> out;
-    if (offered || !code_ready())
+    if (mixin_gate.offered() || !code_ready())
         return out;
     if (!swofty_core::apply::content::any_grid_rule())
         return out;
-    offered = true;
+    mixin_gate.offer();
     char v[16] = {};
     DWORD n = GetEnvironmentVariableA("SWOFTY_BOX_GRID", v, sizeof v);
     if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
@@ -409,12 +411,12 @@ std::vector<CoreMixins> box_grid_mixins()
 
 void box_grid_commit()
 {
-    if (!offered || settled || !wanted)
+    if (!wanted || !mixin_gate.settle())
         return;
-    settled = true;
     swofty::log("[grid] grid rules per box %s",
-                core_mixins_active(MIXIN) ? "armed: a box's rules.grid re-ranks the weekend's qualifying classification"
-                                          : "did not install (see the [core] lines); every box keeps the game's grid");
+                loader::install_state(core_mixins_active(MIXIN),
+                                      "armed: a box's rules.grid re-ranks the weekend's qualifying classification",
+                                      "did not install (see the [core] lines); every box keeps the game's grid"));
 }
 
 static loader::FunctionSet box_grid_core_set{loader::CoreSetId::box_grid, box_grid_mixins, box_grid_commit};

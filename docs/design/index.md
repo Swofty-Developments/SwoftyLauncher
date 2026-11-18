@@ -42,6 +42,8 @@ The proposed sponsor registry, one record per sponsor with ids and textures hand
 
 How the core's overlay arms, how a post-process pass is recorded, the shared D3D12 probe device and how to add a screen are at [Native render and front end](/design/native-render).
 
+How the core starts its subsystems, the memory checks in `pages.hpp`, the per-build proof gates, the step lines, the crash handler and the career operations are at [Native runtime](/design/native-runtime).
+
 ## Profiles and saves
 
 Your profile holds your addons, tracks and options. The design also calls for separate saves under `$DATA/saves/<profile>/` for each profile, keeping them away from vanilla saves and Steam Cloud.

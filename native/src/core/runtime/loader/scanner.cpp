@@ -200,6 +200,22 @@ int Scanner::scan(const char *section, const char *pattern, uintptr_t *out)
     return hits;
 }
 
+bool Scanner::recall(const char *section, const char *pattern, uint64_t &rva)
+{
+    AcquireSRWLockShared(&lock_);
+    bool have = cache_on_ && cache_.find(section, pattern, rva);
+    ReleaseSRWLockShared(&lock_);
+    return have;
+}
+
+void Scanner::remember(const char *section, const char *pattern, int hits, uint64_t rva)
+{
+    AcquireSRWLockExclusive(&lock_);
+    if (cache_on_)
+        cache_.found(section, pattern, hits, rva);
+    ReleaseSRWLockExclusive(&lock_);
+}
+
 void Scanner::read_section_map(const json::Value &doc, const std::string &file, const std::unordered_map<std::string, size_t> &uses,
                                bool any_binding)
 {

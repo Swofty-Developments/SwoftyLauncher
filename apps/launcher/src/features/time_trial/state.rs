@@ -8,6 +8,7 @@ use swofty_core::online::timetrial::barred::{self, Barred};
 use swofty_core::online::timetrial::boards::{Group, Row, Run, RunBoard};
 use swofty_i18n::{tr, trf};
 
+use crate::services::library::Library;
 use crate::shell::Shell;
 use crate::shell::host::{Host, Hosted};
 
@@ -531,15 +532,17 @@ fn load<T>(got: Result<T, ApiError>) -> Load<T> {
     }
 }
 
-impl Shell {
-    /// The barred addons the active profile has enabled, at the versions installed.
-    pub(super) fn tt_barred_enabled(&self) -> Vec<&Barred> {
-        let registry = &self.library.registry;
-        barred::in_profile(&self.tt.barred, &self.library.profile, |id| {
+impl TtPage {
+    /// The barred addons `library`'s active profile has enabled, at the versions installed.
+    pub(super) fn barred_in(&self, library: &Library) -> Vec<&Barred> {
+        let registry = &library.registry;
+        barred::in_profile(&self.barred, &library.profile, |id| {
             registry.get(id).map(|e| e.addon.manifest().version.to_string())
         })
     }
+}
 
+impl Shell {
     pub(crate) fn tt_admin(&self) -> bool {
         self.account.session.as_ref().is_some_and(|s| s.admin)
     }

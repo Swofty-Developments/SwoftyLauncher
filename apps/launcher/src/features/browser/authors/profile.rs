@@ -155,8 +155,9 @@ impl Shell {
                 .child(Icon::new(IconName::CircleAlert).size(px(13.)))
                 .child(tr("Couldn't load the full profile"))
                 .child(
-                    text_link("browser-author-retry".into(), tr("Retry"), p)
-                        .on_click(cx.listener(move |this, _, _, cx| this.fetch_profile(&target, cx))),
+                    text_link("browser-author-retry".into(), tr("Retry"), p).on_click(
+                        cx.listener(move |this, _, _, cx| Browser::fetch_profile(this, &target, cx)),
+                    ),
                 )
                 .tooltip(move |window, cx| Tooltip::new(tip.clone()).build(window, cx))
                 .into_any_element()

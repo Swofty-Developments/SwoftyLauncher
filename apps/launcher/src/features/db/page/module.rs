@@ -12,6 +12,7 @@ use swofty_core::dbedit::{Module, Scope};
 use swofty_i18n::{tr, trf, trn};
 
 use super::{MOVE_W, NAME_W, notice};
+use crate::features::db::Db;
 use crate::features::db::{ViewSlot, icon_named, swap_field};
 use crate::shell::Shell;
 use crate::ui::theme::Palette;
@@ -190,7 +191,7 @@ impl Shell {
                             let text = if n.is_empty() { l.clone() } else { n.clone() };
                             menu = menu.item(PopupMenuItem::new(text).checked(*l == current).on_click(
                                 move |_, _, cx| {
-                                    shell.update(cx, |s, cx| s.db_set_scope(value.clone(), cx)).ok();
+                                    shell.update(cx, |s, cx| Db::set_scope(s, value.clone(), cx)).ok();
                                 },
                             ));
                         }

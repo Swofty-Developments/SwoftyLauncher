@@ -5,6 +5,7 @@ use gpui_kit::*;
 use swofty_i18n::{tr, trf, trn};
 
 use super::{CellEdit, Reveal, Slots, guarded, swap_field};
+use crate::features::db::Db;
 use crate::shell::Shell;
 
 impl Shell {
@@ -19,7 +20,7 @@ impl Shell {
         match result {
             Ok(()) => {
                 self.db.errors.remove(&key);
-                self.db_changed(Some(key), true, cx);
+                Db::changed(self, Some(key), true, cx);
                 true
             }
             Err(e) => {
@@ -51,7 +52,7 @@ impl Shell {
         }
         let edits = &mut self.db.draft.edits;
         match guarded(|| edits.copy_row(&catalog, &table, &field, from.as_deref(), &to)) {
-            Ok(()) => self.db_changed(None, true, cx),
+            Ok(()) => Db::changed(self, None, true, cx),
             Err(e) => {
                 crate::app::app_log::action("db editor: copy a row").failed(&e);
                 self.db.toasts.push(Notification::error(e));
@@ -74,7 +75,7 @@ impl Shell {
         if guarded(|| Ok(self.db.draft.edits.remove_row(table, field, to))).unwrap_or(false) {
             self.db.errors.clear();
             self.db.slots = Slots::default();
-            self.db_changed(None, true, cx);
+            Db::changed(self, None, true, cx);
         }
     }
 
@@ -200,7 +201,7 @@ impl Shell {
                     label = label,
                     rows = trn(n, "{count} row", "{count} rows")
                 )));
-                self.db_changed(None, true, cx);
+                Db::changed(self, None, true, cx);
             }
             Err(e) => {
                 crate::app::app_log::action("db editor: change rows").failed(&e);
@@ -217,7 +218,7 @@ impl Shell {
             return;
         }
         if guarded(|| Ok(self.db.draft.edits.revert(key))).unwrap_or(false) {
-            self.db_changed(Some(key), true, cx);
+            Db::changed(self, Some(key), true, cx);
         }
         cx.notify();
     }
@@ -247,7 +248,7 @@ impl Shell {
                             s.db.draft.edits.clear();
                             s.db.errors.clear();
                             s.db.slots = Slots::default();
-                            s.db_changed(None, true, cx);
+                            Db::changed(s, None, true, cx);
                         })
                         .ok();
                     true
