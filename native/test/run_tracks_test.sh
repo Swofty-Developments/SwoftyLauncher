@@ -8,8 +8,9 @@ cd "$(dirname "$SELF")"
 OUT=$1
 python3 ../src/core/apply/tracks/track_keys.py --check
 python3 ../src/core/apply/tracks/venues.py --check
-GAMEDB="/mnt/gaming/SteamLibrary/steamapps/common/F1 25/game_package/gamedatabases/gamedatabases.2025.bin"
-if [[ ${MAKE_FIXTURE:-} == 1 && -f $GAMEDB ]]; then
+# MAKE_FIXTURE=1 remakes the fixture from a stock database (content/stock_gamedb.py), never the game folder's.
+if [[ ${MAKE_FIXTURE:-} == 1 ]]; then
+    GAMEDB=$(python3 content/stock_gamedb.py)
     "$OUT/lower_test" --make-fixture "$GAMEDB" tracks/fixture/tracks.tsv
 fi
 "$OUT/lower_test" tracks ../../packages/sdk/std/registries

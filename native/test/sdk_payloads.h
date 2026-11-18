@@ -238,6 +238,23 @@ typedef struct SwoftyEvCatalogueBuild {
     void *user;
 } SwoftyEvCatalogueBuild;
 
+typedef struct SwoftyEvWeatherSlot {
+    uint8_t kind;
+    uint8_t reserved[3];
+    float duration_s, transition_s, intensity;
+} SwoftyEvWeatherSlot;
+
+typedef struct SwoftyEvWeatherSetup {
+    uint32_t size, payload_version;
+    uint32_t session_type;
+    uint8_t game_scripted, time_trial, seed_forced, set_seed;
+    uint32_t seed;
+    uint8_t script_mask;
+    uint8_t counts[8];
+    uint8_t reserved[3];
+    SwoftyEvWeatherSlot slots[8][6];
+} SwoftyEvWeatherSetup;
+
 /* X(C struct, C++ namespace, C++ struct, size) */
 #define SWOFTY_EV_PAYLOADS(X)                                                                                   \
     X(SwoftyEvShell, career, Created, 8)                                                                       \
@@ -275,7 +292,8 @@ typedef struct SwoftyEvCatalogueBuild {
     X(SwoftyEvRatingsRead, drivers, RatingsRead, 24)                                                           \
     X(SwoftyEvNumberAssign, drivers, NumberAssign, 24)                                                         \
     X(SwoftyEvHeadResolve, drivers, HeadResolve, 40)                                                           \
-    X(SwoftyEvCatalogueBuild, wearables, CatalogueBuild, 24)
+    X(SwoftyEvCatalogueBuild, wearables, CatalogueBuild, 24)                                                   \
+    X(SwoftyEvWeatherSetup, weather, Setup, 800)
 
 /* X(C struct, C++ namespace, C++ struct, field, offset) */
 #define SWOFTY_EV_FIELDS(X)                                                                                     \
@@ -391,6 +409,15 @@ typedef struct SwoftyEvCatalogueBuild {
     X(SwoftyEvHeadResolve, drivers, HeadResolve, set_head_fn, 24)                                              \
     X(SwoftyEvHeadResolve, drivers, HeadResolve, user, 32)                                                     \
     X(SwoftyEvCatalogueBuild, wearables, CatalogueBuild, add_fn, 8)                                            \
-    X(SwoftyEvCatalogueBuild, wearables, CatalogueBuild, user, 16)
+    X(SwoftyEvCatalogueBuild, wearables, CatalogueBuild, user, 16)                                             \
+    X(SwoftyEvWeatherSetup, weather, Setup, session_type, 8)                                                   \
+    X(SwoftyEvWeatherSetup, weather, Setup, game_scripted, 12)                                                 \
+    X(SwoftyEvWeatherSetup, weather, Setup, time_trial, 13)                                                    \
+    X(SwoftyEvWeatherSetup, weather, Setup, seed_forced, 14)                                                   \
+    X(SwoftyEvWeatherSetup, weather, Setup, set_seed, 15)                                                      \
+    X(SwoftyEvWeatherSetup, weather, Setup, seed, 16)                                                          \
+    X(SwoftyEvWeatherSetup, weather, Setup, script_mask, 20)                                                   \
+    X(SwoftyEvWeatherSetup, weather, Setup, counts, 21)                                                        \
+    X(SwoftyEvWeatherSetup, weather, Setup, slots, 32)
 
 #endif

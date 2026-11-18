@@ -70,4 +70,31 @@ private:
     std::string why_;
 };
 
+// One part of a core mixin set that addons ask for separately: the mixin's name, the label its lines use, whether an
+// addon wants it, the MixinGate its offer and commit run through, whether its mixins installed, and whether its late
+// registration has been logged.
+struct MixinPart {
+    const char *name, *label;
+    std::atomic<bool> wanted{false};
+    MixinGate gate{};
+    std::atomic<bool> live{false}, late_logged{false};
+
+    // True for the offer that offers the part, once an addon wants it.
+    bool offer() { return wanted && gate.offer(); }
+    // Whether an entry for the part can take effect: it is live, or it has not settled and commits remain.
+    bool usable(bool commits_closed) const { return live || (!gate.settled() && !commits_closed); }
+    // The commit for an offered part that has not settled: records installed() as live; true for the settling commit.
+    template <class Installed> bool settle(Installed &&installed)
+    {
+        if (!gate.offered() || gate.settled())
+            return false;
+        live = installed();
+        return gate.settle();
+    }
+    // The part's word on a setup line: "armed", "off" or "not used".
+    const char *state() const { return live ? "armed" : gate.settled() ? "off" : "not used"; }
+    // True the first time it is asked, for the one line a late registration logs.
+    bool first_late() { return !late_logged.exchange(true); }
+};
+
 }

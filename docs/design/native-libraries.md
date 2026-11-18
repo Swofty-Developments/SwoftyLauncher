@@ -20,9 +20,10 @@ You'll find the engine addresses below in `re/db/functions.tsv`. They're VAs for
 ## Feature gates
 
 The feature table lives in `native/src/core/runtime/stage.cpp` (`FEATURES`); `native/build.sh` writes it to
-`swofty/addons/core/features.json`. Stable features are always on. An experimental feature is on
-when `"features"` in `swofty/assets.json` lists it. The build writes it there while an addon in the
-profile lists it under `experimental_features` in its `swofty.json`.
+`swofty/addons/core/features.json`. Stable features are always on, except the two loading features
+`loading_skip_minimum_time` and `loading_skip_session_transition`, which SwoftyMod's `shorter_loading_waits` toggle turns
+off. An experimental feature is on when `"features"` in `swofty/assets.json` lists it. The build writes it there while an
+addon in the profile lists it under `experimental_features` in its `swofty.json`.
 
 | Feature | Default | Library |
 |---|---|---|
