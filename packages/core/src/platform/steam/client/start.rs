@@ -117,7 +117,7 @@ pub fn windows_starter(reg: &dyn Registry, roots: &[PathBuf]) -> Starter {
 #[cfg(windows)]
 pub fn starter(_install: &[&Path]) -> Option<Starter> {
     Some(windows_starter(
-        &super::RegExe,
+        &super::LocalRegistry,
         &crate::platform::steam::steam_roots(),
     ))
 }
