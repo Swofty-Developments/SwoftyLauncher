@@ -762,7 +762,119 @@ fn splits_a_perf_report_into_sections() {
 }
 
 #[test]
-fn excerpts_the_summary_and_addons_sections_in_sixty_lines() {
+fn excerpts_the_pacing_section_between_the_summary_and_addons() {
+    let text = "== Summary\nuptime: 60 s\n\n== Pacing (last 2 minute(s), one row a minute, local time at its end)\ntime fps\n\
+                14:02:00 117\n\n== Addons\nowner calls\n\n== Hooks\nx\n";
+    let lines = perf::excerpt(text, PERF_LINES);
+    assert_eq!(
+        lines,
+        [
+            "== Summary",
+            "uptime: 60 s",
+            "",
+            "== Pacing (last 2 minute(s), one row a minute, local time at its end)",
+            "time fps",
+            "14:02:00 117",
+            "",
+            "== Addons",
+            "owner calls"
+        ]
+    );
+}
+
+const LOADER_MINUTES: &str = "\
+2026-11-14 10:00:01.000 [  812] [perf] gpu engine use: sampled from the GPU Engine counters every 5 s (first read 31 ms)
+2026-11-14 10:00:02.000 [  812] [perf] gpu 0: the driver gives no engine performance data (0xc00000bb); no core clock
+2026-11-14 10:01:00.000 [  812] [perf] last 60 s: pacing: 7000 frame(s) 117 fps; frame times p50 8.38 ms, p99 10.12, p99.9 \
+14.88, max 21.4 ms; 0.8% uneven (over 20% and 1 ms off the previous one), change p99 1.88 ms; 3 over 2x the median, 0 over 50 \
+ms, 0 over 250 ms; 2 spike(s) over 2x the running average
+2026-11-14 10:01:00.000 [  812] [perf] last 60 s: verdict: smooth in frame times; GPU bound (3D engine 98% busy)
+2026-11-14 10:01:00.500 [  812] [perf] display: the game's window is on \\\\.\\DISPLAY1 (2560x1440 at 144 Hz)
+2026-11-14 10:02:00.000 [  812] [perf] last 60 s: pacing: 6900 frame(s) 115 fps; frame times p50 8.62 ms, p99 30.12, p99.9 \
+70.88, max 80.0 ms; 12.0% uneven (over 20% and 1 ms off the previous one), change p99 9.88 ms; 30 over 2x the median, 2 over 50 \
+ms, 0 over 250 ms; 25 spike(s) over 2x the running average
+2026-11-14 10:02:00.000 [  812] [perf] last 60 s: verdict: stutter (2 frame(s) over 50 ms, 25 spike(s) over 2x the running \
+average); judder (12% of frames over 20% off the previous one); display mismatch (VSync off at 115 presents/s on a 144 Hz \
+display: tearing and uneven motion unless FreeSync or G-Sync is on)
+2026-11-14 10:02:30.000 [  812] [perf] overlay module in the game: RTSSHooks64.dll
+2026-11-14 10:02:31.000 [  812] [perf] gpu engine use: sampled from the GPU Engine counters every 5 s (first read 31 ms)
+2026-11-14 10:03:00.000 [  812] [perf] last 60 s: pacing: 7100 frame(s) 118 fps; frame times p50 8.38 ms, p99 9.88, p99.9 \
+10.12, max 12.0 ms; 0.5% uneven (over 20% and 1 ms off the previous one), change p99 1.12 ms; 0 over 2x the median, 0 over 50 \
+ms, 0 over 250 ms; 0 spike(s) over 2x the running average
+2026-11-14 10:03:00.000 [  812] [perf] last 60 s: presents: 7100 (118.3/s, 1.00 per game frame); intervals p50 8.38 ms
+2026-11-14 10:03:00.000 [  812] [perf] last 60 s: gpu 0: clocks and sensors unavailable; 3D engine busy 97%
+2026-11-14 10:03:00.000 [  812] [perf] last 60 s: cpu: system load 31-44% (average 38%)
+2026-11-14 10:03:00.000 [  812] [perf] last 60 s: other processes: 0.40 cores in total
+2026-11-14 10:03:00.000 [  812] [perf] last 60 s: verdict: smooth in frame times; GPU bound (3D engine 97% busy)
+2026-11-14 10:04:00.000 [  812] [perf] last 60 s: verdict: too few frames to judge (3)
+";
+
+#[test]
+fn smoothness_counts_verdicts_and_keeps_the_newest_and_roughest_minutes() {
+    let out = perf::smoothness(LOADER_MINUTES);
+    assert_eq!(
+        out[0],
+        "  verdicts: 3 minute(s) judged: 2 smooth in frame times, 1 stutter, 1 judder; 2 GPU bound, 0 CPU bound; 1 display \
+         mismatch; 0 background load (1 with too few frames)"
+    );
+    assert!(
+        out[1].starts_with("  newest display: 2026-11-14 10:01:00.500"),
+        "{out:?}"
+    );
+    assert_eq!(out[2], "  newest minute:");
+    assert!(
+        out[3].ends_with("[perf] last 60 s: verdict: too few frames to judge (3)"),
+        "{out:?}"
+    );
+    assert!(out[4].contains("pacing: 7100 frame(s)"), "{out:?}");
+    assert!(out[5].contains("presents: 7100"), "{out:?}");
+    assert!(out[6].contains("gpu 0: clocks"), "{out:?}");
+    assert!(out[7].contains("cpu: system load"), "{out:?}");
+    assert!(out[8].contains("other processes: 0.40"), "{out:?}");
+    assert!(
+        out[9].starts_with("  roughest minute: 2026-11-14 10:02:00.000") && out[9].contains("25 spike(s)"),
+        "{out:?}"
+    );
+    assert_eq!(out.len(), 13, "{out:?}");
+    assert!(out[10].contains("gpu engine use: sampled"));
+    assert!(out[11].contains("the driver gives no engine performance data"));
+    assert!(out[12].contains("overlay module in the game: RTSSHooks64.dll"));
+    assert_eq!(
+        perf::smoothness("[perf] last 60 s: 10 frame(s) (60 fps, p99 1.0 ms, 0 over 50 ms)\n"),
+        ["  no [perf] verdict lines (a core older than this launcher, or the game ran for under a minute)"]
+    );
+}
+
+#[test]
+fn verdicts_count_each_part_once() {
+    let mut v = perf::Verdicts::default();
+    v.add("smooth in frame times; CPU bound (busiest game thread 0.95 cores); background load (1.20 cores in other processes)");
+    v.add("judder (11% of frames over 20% off the previous one)");
+    assert_eq!(
+        (v.judged, v.smooth, v.judder, v.cpu, v.background, v.gpu),
+        (2, 1, 1, 1, 1, 0)
+    );
+    assert!(!v.text().contains("too few frames"));
+}
+
+#[test]
+fn summary_has_a_smoothness_section_from_the_loader_log() {
+    let root = tmp("smooth");
+    let (store, game) = fake_data(&root);
+    put(&game.join("swofty/loader.log"), LOADER_MINUTES);
+    let bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "20261021-130000");
+    let summary = summary_of(&bundle);
+    assert!(
+        summary.contains("\nSmoothness\ngame/loader.log\n  verdicts: 3 minute(s) judged"),
+        "{summary}"
+    );
+    assert!(summary.find("\nGraphics and memory\n") < summary.find("\nSmoothness\n"));
+    assert!(summary.find("\nSmoothness\n") < summary.find("\nCrash\n"));
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn excerpts_the_summary_and_addons_sections_in_the_line_cap() {
     let lines = perf::excerpt(PERF, PERF_LINES);
     assert_eq!(lines.first().map(String::as_str), Some("== Summary"));
     assert_eq!(lines[1], "uptime: 00:12:41");

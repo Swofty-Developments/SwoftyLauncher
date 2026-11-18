@@ -24,7 +24,7 @@ pub const PART_LIMIT: usize = 9 << 20;
 pub const SESSIONS: usize = 3;
 pub const SNAPSHOT: &str = "swofty/addons/swofty.career-editor/snapshot.json";
 const CAREER_EDITOR: &str = "swofty.career-editor";
-pub const PERF_LINES: usize = 60;
+pub const PERF_LINES: usize = 100;
 const LOADER_HEAD: u64 = 16 << 10;
 pub const LOADER_DIR: &str = "swofty";
 pub const KEPT_DIR: &str = "logs";
@@ -662,6 +662,11 @@ impl Bundle {
             s.push_str(&l);
             s.push('\n');
         }
+        s.push_str("\nSmoothness\n");
+        for l in smoothness_lines(&logs) {
+            s.push_str(&l);
+            s.push('\n');
+        }
         s.push_str("\nCrash\n");
         match crash {
             CrashFound::Report(text) => {
@@ -972,8 +977,9 @@ fn overlay_lines(store: &Store, logs: &[(String, PathBuf)]) -> Vec<String> {
 }
 
 const SAVES_LINES: usize = 60;
-const SYSTEM_LINES: usize = 12;
+const SYSTEM_LINES: usize = 24;
 const SYSTEM_TAIL: u64 = 256 << 10;
+const SMOOTH_TAIL: u64 = 8 << 20;
 
 /// The `[system]` lines core logs at boot (each GPU's name, driver and VRAM, RAM and commit), and the
 /// newest per-minute memory line from the end of the log.
@@ -1030,6 +1036,22 @@ fn saves_excerpt(text: &str, cap: usize) -> Vec<String> {
         .take(cap)
         .map(|l| format!("  {}", l.trim_end()))
         .collect()
+}
+
+/// Each log's [`perf::smoothness`] lines, from the end of the log.
+fn smoothness_lines(logs: &[(String, PathBuf)]) -> Vec<String> {
+    let mut out = Vec::new();
+    for (label, log) in logs {
+        let Ok((tail, _)) = read_tail(log, SMOOTH_TAIL) else {
+            continue;
+        };
+        out.push(label.clone());
+        out.extend(perf::smoothness(&String::from_utf8_lossy(&tail)));
+    }
+    if out.is_empty() {
+        out.push("  No loader log was found".to_owned());
+    }
+    out
 }
 
 fn saves_lines(logs: &[(String, PathBuf)]) -> Vec<String> {
