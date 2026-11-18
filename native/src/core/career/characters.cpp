@@ -1,4 +1,5 @@
 #include "core/career/career_ui.hpp"
+#include "core/career/characters_logic.hpp"
 #include "core/guards/skips.hpp"
 #include "core/registry/older.hpp"
 #include "core/runtime/loader/core_sets.hpp"
@@ -180,23 +181,13 @@ const uint8_t *find_row(const std::string &name)
 std::string replacement_for(const std::string &character)
 {
     std::lock_guard<std::mutex> g(lock);
-    if (active.empty())
-        return {};
-    for (auto it = eswaps.rbegin(); it != eswaps.rend(); ++it)
-        if (it->group == active && it->character == character)
-            return it->replacement;
-    return {};
+    return runtime::characters::replacement_in(eswaps, active, character);
 }
 
 bool speaker_muted(const char *speaker)
 {
     std::lock_guard<std::mutex> g(lock);
-    if (active.empty() || !speaker)
-        return false;
-    for (auto &m : emutes)
-        if (m.group == active && m.speaker == speaker)
-            return true;
-    return false;
+    return runtime::characters::muted_in(emutes, active, speaker);
 }
 
 void *build_ref(void *out, const uint8_t *character, void *node)
@@ -334,10 +325,7 @@ bool rebuild(const char *why)
 
 bool group_used(const std::string &group)
 {
-    for (auto &s : eswaps)
-        if (s.group == group)
-            return true;
-    return false;
+    return runtime::characters::group_in(eswaps, group);
 }
 
 void set_active(std::string now, const char *why)
@@ -471,11 +459,6 @@ bool add_text(const std::string &group, const std::string &language, const std::
     return active == group;
 }
 
-std::string language_of(const char *language)
-{
-    return !language || !*language ? "*" : language;
-}
-
 int api_string_set(const char *group, const char *language, const char *key, const char *text)
 {
     if (!cu::valid_name(group) || !cu::valid_name(key))
@@ -485,7 +468,7 @@ int api_string_set(const char *group, const char *language, const char *key, con
     bool now;
     {
         std::lock_guard<std::mutex> g(lock);
-        now = add_text(group, language_of(language), key, text, owner, addon);
+        now = add_text(group, runtime::characters::language_of(language), key, text, owner, addon);
         store_record(addon, group);
     }
     subscribe();
@@ -513,7 +496,7 @@ int api_strings_json(const char *group, const char *text, size_t len)
         for (auto &[language, keys] : doc.o)
             for (auto &[key, value] : keys.o)
                 if (value.type == json::Value::Str && cu::valid_name(key.c_str())) {
-                    now = add_text(group, language_of(language.c_str()), key, value.s.c_str(), owner, addon);
+                    now = add_text(group, runtime::characters::language_of(language.c_str()), key, value.s.c_str(), owner, addon);
                     n++;
                 }
         store_record(addon, group);

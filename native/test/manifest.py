@@ -72,6 +72,7 @@ UNITS = [
     Unit('audio_queue', 'Audio job queue fix unit test'),
     Unit('direct_start', 'Direct start unit test'),
     Unit('direct_start_tt', 'Direct start Time Trial unit test'),
+    Unit('characters_logic', 'Character override rules unit test'),
     Unit('dred', 'GPU device removal report unit test'),
     Unit('report_text', 'Crash report section text unit test'),
     Unit('ers_newlap', 'ERS new-lap site unit test'),
