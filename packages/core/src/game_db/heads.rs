@@ -3,10 +3,11 @@
 //! mod, gets a row copied from a stock head and its asset groups registered
 //! when a profile builds, so drivers can wear it.
 
+use std::borrow::Cow;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::{Path, PathBuf};
 
-use swofty_addon::asset::{AssetOp, FileOp, GroupOp, Op, OpFile, Origin, Root};
+use swofty_addon::asset::{AssetOp, FileKind, FileOp, GroupOp, Op, OpFile, Origin, Root};
 use swofty_addon::manifest::AddonManifest;
 use swofty_addon::ops::{DbOp, StatIdMode};
 use swofty_formats::erp::ErpFile;
@@ -246,6 +247,11 @@ impl Head {
     }
 }
 
+#[cfg(test)]
+thread_local! {
+    static PARSED: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
 /// What a profile's addons put and add for driver heads, op by op in load order.
 #[derive(Debug, Default)]
 pub struct Puts {
@@ -277,18 +283,23 @@ impl Puts {
         }
     }
 
-    /// Notes every op an installed addon's op files and manifest give.
+    /// Notes every op an installed addon's op files and manifest give. An erp
+    /// op file only edits archives, and one [`may_note`] rules out holds no op
+    /// noted, so neither is parsed.
     pub fn addon(&mut self, store: &Store, id: &str, m: &AddonManifest) {
         let dir = store.addons_dir().join(id);
         let roots = |root: Root| crate::build::source_dir(store, id, root);
-        for (kind, rel) in m.operations.op_files() {
+        for (kind, rel) in m.operations.op_files().filter(|(kind, _)| *kind != FileKind::Erp) {
             let Some(file) = std::fs::read(dir.join(rel))
                 .ok()
+                .filter(|d| may_note(kind, d))
                 .and_then(|d| serde_json::from_slice(&d).ok())
                 .and_then(|doc| OpFile::from_value(doc, kind).ok())
             else {
                 continue;
             };
+            #[cfg(test)]
+            PARSED.with(|n| n.set(n.get() + 1));
             for op in &file.ops {
                 self.op(id, op, &roots);
             }
@@ -357,6 +368,37 @@ impl Puts {
             })
             .collect()
     }
+}
+
+/// Whether `bytes`, an op file of `kind`, may hold an op [`Puts::op`] notes.
+/// A database file holds one only in an add-row on the head table; a file
+/// whose ops don't read as names is read in full.
+fn may_note(kind: FileKind, bytes: &[u8]) -> bool {
+    #[derive(serde::Deserialize)]
+    struct Named<'a> {
+        #[serde(borrow, default)]
+        op: Option<Cow<'a, str>>,
+        #[serde(borrow, default)]
+        table: Option<Cow<'a, str>>,
+    }
+    #[derive(serde::Deserialize)]
+    struct Names<'a> {
+        #[serde(borrow, default)]
+        ops: Vec<Named<'a>>,
+    }
+    let Ok(names) = serde_json::from_slice::<Names>(bytes) else {
+        return true;
+    };
+    names.ops.iter().any(|o| {
+        let on_table = o.table.as_deref().is_none_or(|t| t == TABLE);
+        match (kind, o.op.as_deref().unwrap_or_default()) {
+            (FileKind::Erp, _) => false,
+            (FileKind::Database, "add-row") => on_table,
+            (FileKind::Database, _) => false,
+            (_, "db.add-row") => on_table,
+            (_, name) => matches!(name, "file.put" | "group.register"),
+        }
+    })
 }
 
 /// What [`ops`] gives a build.
@@ -535,5 +577,88 @@ mod tests {
             model_path("eaid://character_package/heads/male_driver/x/idf/x_rig_head_morph_v1.idf?render"),
             None
         );
+    }
+
+    #[test]
+    fn a_database_op_file_names_a_head_only_in_an_add_row_on_the_head_table() {
+        let ops = |ops: &str| format!(r#"{{"schema_version":1,"ops":[{ops}]}}"#);
+        let db = |ops_: &str| may_note(FileKind::Database, ops(ops_).as_bytes());
+        let assets = |ops_: &str| may_note(FileKind::Assets, ops(ops_).as_bytes());
+        assert!(!db(
+            r#"{"op":"set","select":"a.b[_metadata_=c]","field":"f","value":"v"}"#
+        ));
+        assert!(!db(
+            r#"{"op":"add-row","table":"entrants.drivers","from":"x","set":{}}"#
+        ));
+        assert!(!db(r#"{"op":"warn","message":"m"},{"op":"file.put"}"#));
+        assert!(db(&format!(
+            r#"{{"op":"set"}},{{"op":"add-row","table":"{TABLE}"}}"#
+        )));
+        assert!(db(&format!(r#"{{"op":"add-row","table":"{TABLE}"}}"#)));
+        assert!(db(r#"{"op":"add-row"}"#));
+        assert!(!assets(
+            r#"{"op":"db.set"},{"op":"erp.patch-pkg"},{"op":"track.add"}"#
+        ));
+        assert!(!assets(r#"{"op":"db.add-row","table":"entrants.drivers"}"#));
+        assert!(assets(&format!(r#"{{"op":"db.add-row","table":"{TABLE}"}}"#)));
+        assert!(assets(r#"{"op":"file.put"}"#));
+        assert!(assets(r#"{"op":"group.register"}"#));
+        assert!(may_note(FileKind::Database, b"{\"ops\":3}"));
+        assert!(may_note(FileKind::Database, b"{\"ops\":[{\"op\":1}]}"));
+        assert!(may_note(FileKind::Database, b"not json"));
+        assert!(!may_note(FileKind::Erp, ops(r#"{"op":"file.put"}"#).as_bytes()));
+        assert!(!may_note(FileKind::Database, b"{\"schema_version\":1}"));
+    }
+
+    #[test]
+    fn an_addon_s_heads_are_found_parsing_only_the_op_files_that_can_put_or_name_one() {
+        let root = std::env::temp_dir().join(format!("swofty-heads-parse-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let src = root.join("src");
+        let write = |rel: &str, text: &str| {
+            let path = src.join(rel);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, text).unwrap();
+        };
+        write(
+            "swofty.json",
+            r#"{ "schema_version": 1, "id": "t.mix", "name": "Mix", "version": "1.0.0", "author": "t",
+                 "compat": { "game": "f1_25" },
+                 "operations": { "database": ["db/sets.json", "db/heads.json"], "erp": ["erp/edits.json"],
+                                 "assets": ["ops.json"] } }"#,
+        );
+        let set = r#"{"op":"set","select":"entrants.drivers.driver[_metadata_=lando_norris]","field":"head","value":"own_head"}"#;
+        write(
+            "db/sets.json",
+            &format!(r#"{{"schema_version":1,"ops":[{set},{set}]}}"#),
+        );
+        write(
+            "db/heads.json",
+            &format!(
+                r#"{{"schema_version":1,"ops":[{set},{{"op":"add-row","table":"{TABLE}","from":"{ROWS}[_metadata_=male_ls222]","set":{{"_metadata_":"own_head"}}}}]}}"#
+            ),
+        );
+        write(
+            "erp/edits.json",
+            r#"{"schema_version":1,"ops":[{"op":"patch-pkg","erp":"a.erp","resource":"r","edits":[{"op":"set-value","path":"a","value":1}]}]}"#,
+        );
+        write("files/own_head.erp", "erp");
+        write(
+            "ops.json",
+            &format!(
+                r#"{{"schema_version":1,"ops":[{{"op":"file.put","source":"files/own_head.erp","target":"{ARCHIVES}/heads/own_head.erp"}}]}}"#
+            ),
+        );
+        let store = Store::new(root.join("data"));
+        store.install_addon(&src).unwrap();
+        let m = store.addons().unwrap().remove("t.mix").unwrap();
+        PARSED.with(|n| n.set(0));
+        let mut puts = Puts::default();
+        puts.addon(&store, "t.mix", &m);
+        assert_eq!(PARSED.with(|n| n.get()), 2);
+        assert!(puts.rows.contains("own_head"));
+        assert!(puts.archives.contains_key(&("own_head".to_owned(), Part::Head)));
+        assert!(!puts.pending());
+        std::fs::remove_dir_all(&root).ok();
     }
 }
