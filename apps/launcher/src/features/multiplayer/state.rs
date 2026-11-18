@@ -12,7 +12,8 @@ use swofty_core::online::multiplayer::types::{GameStatus, RoomSummary, SessionSt
 use swofty_core::store::Store;
 use swofty_i18n::tr;
 
-use super::model::{exit_leaves, exit_notice};
+use super::model::exit_notice;
+use super::room_game::RoomGame;
 use crate::shell::host::{Host, Hosted, reports_nothing};
 use crate::shell::{Page, Shell};
 
@@ -54,13 +55,9 @@ pub(crate) struct Multiplayer {
     pub(super) leaving: bool,
     pub(super) viewing: Option<String>,
     pub(super) notice: Option<String>,
-    pub(super) closing: Option<Vec<u32>>,
-    pub(super) game_seen: bool,
     pub(super) error: Option<String>,
     pub(super) copied: Option<Instant>,
-    pub(super) launch_seen: u32,
-    pub(super) room_launching: bool,
-    pub(super) held: Option<RoomLaunch>,
+    pub(crate) game: RoomGame,
     pub(super) faces: HashMap<String, Arc<Image>>,
     pub(super) faces_asked: HashSet<String>,
     pub(super) _inputs: [Subscription; 2],
@@ -93,13 +90,9 @@ impl Multiplayer {
             leaving: false,
             viewing: None,
             notice: None,
-            closing: None,
-            game_seen: false,
             error: None,
             copied: None,
-            launch_seen: 0,
-            room_launching: false,
-            held: None,
+            game: RoomGame::default(),
             faces: HashMap::new(),
             faces_asked: HashSet::new(),
             _inputs: inputs,
@@ -113,13 +106,9 @@ impl Multiplayer {
 
     pub(super) fn finish_leaving(&mut self) {
         self.session = None;
-        self.launch_seen = 0;
-        self.room_launching = false;
-        self.held = None;
+        self.game = RoomGame::default();
         self.state = None;
         self.leaving = false;
-        self.closing = None;
-        self.game_seen = false;
         self.viewing = None;
         self.lobby.refresh();
     }
@@ -212,52 +201,18 @@ pub(super) fn unasked(urls: Vec<String>, asked: &HashSet<String>) -> Vec<String>
 }
 
 impl Multiplayer {
-    /// A prompt Play opened holds the room launch: its Play goes on with it through `Shell::play`.
-    pub(crate) fn hold(&mut self, room: RoomLaunch) {
-        self.held = Some(room);
-    }
-
-    pub(crate) fn take_held(&mut self) -> Option<RoomLaunch> {
-        self.held.take()
-    }
-
     /// Drops a held room launch once its prompt closed without Play. True when one was dropped.
     pub(crate) fn drop_held(&mut self) -> bool {
-        if self.held.take().is_none() {
-            return false;
-        }
-        self.room_launching = false;
-        if let Some(session) = &self.session {
-            session.launch_failed("Play was cancelled");
-        }
-        true
+        self.game.drop_held(self.session.as_ref())
     }
 
     pub(crate) fn launch_result(&mut self, started: bool) {
-        let Some(session) = &self.session else {
-            return;
-        };
-        if started {
-            session.launched();
-        } else {
-            self.room_launching = false;
-            session.launch_failed("see the notice, finish what it asks, then try again");
-        }
+        self.game.launch_result(self.session.as_ref(), started);
     }
 
-    /// The launch `launch` started ended without the game: `why` says what stopped it.
+    /// The launch the room started ended without the game: `why` says what stopped it.
     pub(crate) fn launch_ended(&mut self, why: Option<String>) {
-        if !std::mem::take(&mut self.room_launching) {
-            return;
-        }
-        match why {
-            None => self.game_seen = true,
-            Some(why) => {
-                if let Some(session) = &self.session {
-                    session.launch_failed(&why);
-                }
-            }
-        }
+        self.game.launch_ended(self.session.as_ref(), why);
     }
 
     /// Leaves the room. True when there was one to leave.
@@ -276,14 +231,9 @@ impl Multiplayer {
         if self.session.is_none() {
             return false;
         }
-        if running && self.launch_seen != 0 && self.closing.is_none() {
-            self.game_seen = true;
-        }
-        if self.closing.is_some() && !running {
-            self.closing = None;
-        }
+        let exited = self.game.exited(running, busy);
         let over = self.state.as_ref().is_some_and(|s| s.phase.is_over());
-        if over || self.leaving || !exit_leaves(self.game_seen, running, busy) {
+        if over || self.leaving || !exited {
             return false;
         }
         let host = self.state.as_ref().is_some_and(|s| s.host);

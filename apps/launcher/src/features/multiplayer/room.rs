@@ -187,7 +187,7 @@ impl Shell {
         let reopen = (st.problem.is_some()
             && state.launch.is_some()
             && running
-            && m.closing.is_none()
+            && m.game.closing.is_none()
             && !over
             && !m.leaving)
             .then(|| {

@@ -54,7 +54,7 @@ impl Shell {
                 return false;
             }
         }
-        self.rooms.closing = Some(pids);
+        self.rooms.game.closing = Some(pids);
         true
     }
 
@@ -455,44 +455,16 @@ impl Multiplayer {
         let Some(session) = &m.session else {
             return;
         };
-        let Some(ask) = session.state().launch else {
+        let Some(ask) = m.game.due(session, needs.busy || needs.running) else {
             return;
         };
-        if m.launch_seen == ask.seq || needs.busy || needs.running {
-            return;
-        }
-        m.closing = None;
         if let Some(dir) = needs.game_dir {
             diag::forget_status(dir);
         }
-        let row_ids = match &ask.row_ids {
-            Some(ids) => {
-                let file = needs.store.root.join("state/room-row-ids.json");
-                if let Err(e) = std::fs::create_dir_all(needs.store.root.join("state"))
-                    .map_err(|e| e.to_string())
-                    .and_then(|()| ids.write(&file).map_err(|e| e.to_string()))
-                {
-                    m.launch_seen = ask.seq;
-                    session.launch_failed(&format!("the host's ids and settings couldn't be written ({e})"));
-                    return;
-                }
-                Some(file)
-            }
-            None => None,
+        let Some(room) = m.game.begin(session, ask, &needs.store.root) else {
+            return;
         };
-        m.launch_seen = ask.seq;
-        m.game_seen = false;
-        m.room_launching = true;
-        let direct_start = ask.direct_start.clone();
-        let started = Launching::play_for(
-            host,
-            Some(RoomLaunch {
-                row_ids,
-                direct_start,
-            }),
-            window,
-            cx,
-        );
+        let started = Launching::play_for(host, Some(room), window, cx);
         if !started {
             <H as Host<Self>>::split(host).0.launch_result(false);
         }
