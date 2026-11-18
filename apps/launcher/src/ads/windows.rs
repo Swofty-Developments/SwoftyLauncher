@@ -3,7 +3,6 @@
 //! topmost DirectComposition target, which covers child windows.
 
 use super::{Area, Unit};
-use anyhow::Context as _;
 use gpui_kit::Window;
 use raw_window_handle::{HandleError, HasWindowHandle, RawWindowHandle, Win32WindowHandle, WindowHandle};
 use std::cell::{Cell, RefCell};
@@ -239,7 +238,7 @@ impl View {
 /// dialog of its own when it can't create that folder.
 fn profile(data: &Path) -> anyhow::Result<()> {
     let dir = data.join("EBWebView");
-    super::writable(&dir).with_context(|| format!("{} can't be written", dir.display()))
+    super::writable(&dir).map_err(|e| anyhow::anyhow!("{} can't be written: {e}", dir.display()))
 }
 
 fn hwnd(raw: isize) -> HWND {
