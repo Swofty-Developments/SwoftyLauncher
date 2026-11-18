@@ -1509,7 +1509,7 @@ typedef struct SwoftyApi {
 typedef int (*SwoftyAddonInitFn)(const SwoftyApi *api);
 typedef SwoftyAddonInitFn SwoftyModInitFn;
 
-/* Lap host, from the core export SwoftyCoreLapHost; not a SwoftyApi field. Table version 1. What a lap module
+/* Lap host, from the core export SwoftyCoreLapHost; not a SwoftyApi field. Table version 2. What a lap module
    (a plugin that records laps and serves lap boards) needs from the core beyond the SDK. A string a function
    returns belongs to the calling thread until its next call of this table; never NULL. NULL table: a core
    without it.
@@ -1531,7 +1531,13 @@ typedef SwoftyAddonInitFn SwoftyModInitFn;
    wrote. copy: a guarded memory write. notice: one line of text the core paints at the top of the overlay frame
    (NULL or empty: none); the core asks the client notice_wanted once, at overlay setup, whether to arm the
    overlay for it, and gives screen every UI screen that opens. name_tick: the core's player name display step, run
-   from the module's in-session tick (probe 1: its probe step). */
+   from the module's in-session tick (probe 1: its probe step).
+   Table version 2 adds mark at the end: a timing line of the player's Time Trial lap, for server-timed laps. lap is
+   the session's lap counter (the lap_index of the lap file the lap ends in), which 0 the start line, 1 sector 1,
+   2 sector 2, 3 the finish, game_ms the game's lap clock at the line; call it at the line, on the flow thread, and the
+   finish before the lap's file is written. The core stamps the moment and hands it to the launcher, which sends it
+   off the game's threads; 1 queued, 0 refused. A module takes a table of at least SWOFTY_LAP_HOST_V1_SIZE bytes and
+   calls mark only on version 2 or later. */
 typedef struct SwoftyLapClient {
     uint32_t size, version;
     void (*offer)(void);
@@ -1615,9 +1621,11 @@ typedef struct SwoftyLapHost {
     int (*copy)(void *to, const void *from, size_t n);
     void (*notice)(const char *text);
     void (*name_tick)(int probe);
+    int (*mark)(int32_t lap, int32_t which, int32_t game_ms);
 } SwoftyLapHost;
 
-#define SWOFTY_LAP_HOST_VERSION 1
+#define SWOFTY_LAP_HOST_VERSION 2
+#define SWOFTY_LAP_HOST_V1_SIZE offsetof(SwoftyLapHost, mark)
 #define SWOFTY_LAP_CAR_SPEED 1u
 #define SWOFTY_LAP_CAR_PEDALS 2u
 #define SWOFTY_LAP_CAR_STEER 4u
