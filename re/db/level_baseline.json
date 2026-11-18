@@ -948,7 +948,6 @@
   "func:Car_Tuning_SetFinalDrive": "V2377",
   "func:Car_TyreSystem_PitstopComplete": "V2880",
   "func:Car_Tyre_MagicFormula": "V6829",
-  "func:Car_Tyre_SetWearFactor": "V5541",
   "func:Car_Tyre_UpdateWear": "V6819",
   "func:Car_TyresPitstopComplete_ForCarPair": "V2859",
   "func:Car_Tyres_ApplyStateToCarPair": "V2858",
