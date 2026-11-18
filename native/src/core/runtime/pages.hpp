@@ -14,8 +14,10 @@
 //     module, whose answers are kept for a few milliseconds. Reads of the game's objects use it.
 //   pages::readable_now: one VirtualQuery per page and no cache, so it takes no lock and allocates nothing. The crash
 //     code reads with it while it handles a fault.
-//   loader::page_readable (runtime/loader/image.cpp): one VirtualQuery for the region at an address, which the n bytes
-//     must end inside, behind the binding pass's ProtectionSpans.
+//   pages::readable_in_region: one VirtualQuery for the region at an address, which the n bytes must end inside.
+//   loader::page_readable (runtime/loader/image.cpp): the same question behind the binding pass's ProtectionSpans.
+// Writes ask writable_in_region (one region, copy-on-write allowed) or read_write_span (runtime::readable, then every
+// region the bytes cross must be read-write, copy-on-write refused).
 // None of them raises an exception, and none makes a read safe against a page that changes after the answer.
 namespace runtime::pages {
 
@@ -43,6 +45,14 @@ inline bool readable_now(uintptr_t a, size_t n)
     return true;
 }
 
+inline bool readable_in_region(uintptr_t p, size_t n)
+{
+    MEMORY_BASIC_INFORMATION m{};
+    if (!VirtualQuery(reinterpret_cast<const void *>(p), &m, sizeof m) || !readable_region(m))
+        return false;
+    return p + n <= reinterpret_cast<uintptr_t>(m.BaseAddress) + m.RegionSize;
+}
+
 // n bytes at p sit in one committed region that can be written and is not a guard page.
 inline bool writable_in_region(uintptr_t p, size_t n)
 {
@@ -59,5 +69,29 @@ inline bool writable_in_region(uintptr_t p, size_t n)
 namespace runtime {
 
 bool readable(const void *p, size_t n);
+
+}
+
+namespace runtime::pages {
+
+inline bool read_write_span(uintptr_t at, size_t n)
+{
+    if (!runtime::readable(reinterpret_cast<const void *>(at), n))
+        return false;
+    uintptr_t p = at, end = at + n;
+    while (p < end) {
+        MEMORY_BASIC_INFORMATION mbi{};
+        if (!VirtualQuery(reinterpret_cast<const void *>(p), &mbi, sizeof mbi) || mbi.State != MEM_COMMIT)
+            return false;
+        DWORD prot = mbi.Protect & 0xff;
+        if (mbi.Protect & (PAGE_GUARD | PAGE_NOACCESS) || !(prot == PAGE_READWRITE || prot == PAGE_EXECUTE_READWRITE))
+            return false;
+        uintptr_t next = reinterpret_cast<uintptr_t>(mbi.BaseAddress) + mbi.RegionSize;
+        if (next <= p)
+            return false;
+        p = next;
+    }
+    return true;
+}
 
 }

@@ -1,29 +1,14 @@
-#include "core/runtime/pages.hpp"
 #include "core/runtime/runtime.hpp"
-#include "core/registry/table.hpp"
-
-#include <swofty/game.hpp>
-#include <swofty/mem.hpp>
-#include <swofty/mixin.hpp>
+#include "core/runtime/settings.hpp"
 
 #include <algorithm>
 #include <atomic>
-#include <cmath>
-#include <cstdio>
-#include <map>
 #include <mutex>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
-#include "core/career/ops/driver_rows.hpp"
-#include "core/career/ops/lineup_plan.hpp"
-#include "core/career/ops/number_plan.hpp"
 #include "core/career/ops/seat_plan.hpp"
-#include "core/career/ops/start_teams.hpp"
 #include "core/career/ops/stats.hpp"
-#include "core/career/ops/teams_plan.hpp"
-#include "core/career/ops/teams_store.hpp"
 #include "core/apply/content/teams.hpp"
 #include "core/registry/table.hpp"
 #include "core/career/ops/track_fuel.hpp"
@@ -31,8 +16,6 @@
 #include "core/career/ops/lineup.hpp"
 #include "core/career/ops/ops_api.hpp"
 #include "core/career/ops/tables.hpp"
-
-std::string settings_addon(const void *from, std::string &dll);
 
 // The core's career operations (standard library 1.6, SwoftyCareerOps): apply_lineup, set_driver_ratings and
 // swap_drivers, (table version 2) report_season, which the career snapshots answer (snapshots/runtime.cpp), and
@@ -416,7 +399,6 @@ int api_set_look(const char *driver_ref, const char *look_ref)
                 r == SWOFTY_ASSET_OK ? "applied" : "not applied");
     return r == SWOFTY_TOO_SMALL ? SWOFTY_ASSET_OK : r;
 }
-
 
 int api_team_stat(const char *ref, uint32_t *out)
 {

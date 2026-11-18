@@ -1,5 +1,6 @@
 #include <atomic>
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 #include "core/frontend/main_menu.hpp"
 #include "core/services/lap_host.hpp"
 
@@ -23,8 +24,6 @@
 namespace runtime {
 std::string hook_error(const safetyhook::MidHook::Error &e);
 }
-
-std::string settings_addon(const void *from, std::string &dll);
 
 namespace swofty_core::hooks {
 void bridge_legacy(const char *event, int64_t a, int64_t b, const void *data);

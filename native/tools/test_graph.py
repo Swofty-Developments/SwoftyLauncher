@@ -13,7 +13,8 @@ Ninja starts first the edges with the longest chain of edges behind them. A unit
 run), and the run of a script without programs, which takes longest, has none, so PRIORITY stamp edges follow each
 such run and one follows the run of a script with programs: those scripts start first, then their programs' compiles,
 then the units. A Program of kind 'obj' has a stamp edge in place of a link, so its compile is not left with the
-units.
+units. Among edges with chains alike ninja starts the one written first, and the compiles are written first, largest
+source first, so the longest compiles start early instead of finishing last.
 
 With --jobs and --wine-jobs, compiles, links and host test runs share a pool of --jobs slots and Wine test runs a
 pool of --wine-jobs, so a Wine test, which spends most of its time waiting on Wine, holds no slot a compile could use
@@ -133,6 +134,10 @@ def main():
     ]
 
     names, host, wine, table, groups, compiled = set(), [], [], [], {}, {}
+    rules, lines, compiles = [line for line in lines if line is not None], [], []
+
+    def emit_compile(source, edge):
+        compiles.append((-os.path.getsize(os.path.join(NATIVE, source)), len(compiles), edge))
     available = {'': True, 'sanitizers': host_has(a.host_cxx, ['-fsanitize=address,undefined'])}
 
     def claim(name):
@@ -147,7 +152,8 @@ def main():
             rule = 'cxx_program' if source.endswith('.cpp') else 'cc_program'
         if not os.path.isfile(os.path.join(NATIVE, source)):
             sys.exit(f'test_graph.py: {source} is missing')
-        lines.extend([f'build {path}: {rule} {source}', f'  target = {objects.target}', f'  flags = {quote(objects.flags)}'])
+        emit_compile(source, [f'build {path}: {rule} {source}', f'  target = {objects.target}',
+                              f'  flags = {quote(objects.flags)}'])
 
     def shared_objects(objects):
         tag = hashlib.sha1(repr((objects.target, objects.flags)).encode()).hexdigest()[:10]
@@ -212,7 +218,7 @@ def main():
             sys.exit(f'test_graph.py: {u.source} is missing')
         d = f'{b}/{u.name}'
         exe = f'{d}/{u.name}_test'
-        lines.append(f'build {exe}.o: cxx_{u.compiler} {u.source}')
+        emit_compile(u.source, [f'build {exe}.o: cxx_{u.compiler} {u.source}'])
         lines.append(f'build {exe}: link_{u.compiler} {exe}.o')
         inputs = [os.path.normpath(os.path.join('test', x)) for x in u.args if os.path.isfile(os.path.join(NATIVE, 'test', x))]
         lines.append(f'build {d}/ok: run {exe}' + (' | ' + ' '.join(inputs) if inputs else ''))
@@ -229,7 +235,7 @@ def main():
     for group, done in groups.items():
         claim(group)
         lines.append(f'build {group}: phony {" ".join(done)}')
-    lines = [line for line in lines if line is not None]
+    lines = rules + [line for _, _, edge in sorted(compiles) for line in edge] + [''] + lines
     lines += ['', f'build test: phony {" ".join(host)}', f'build test-wine: phony {" ".join(wine)}', 'default test', '']
     write_if_changed(a.out, '\n'.join(lines))
     write_if_changed(os.path.join(os.path.dirname(a.out), 'tests.tsv'),

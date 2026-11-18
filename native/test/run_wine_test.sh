@@ -4,7 +4,8 @@ set -euo pipefail
 # the fake games, the test addons and the prepared folders into DIR/base and makes a Wine prefix there; --case
 # NAME [DIR] then runs one case in DIR/NAME, a fresh copy of DIR/base with a copy of that prefix of its own, so
 # cases can run side by side. The copy hard-links the prefix's program files (.dll, .exe and the like), which
-# Wine only reads. --list prints the case names. DIR defaults to native/build/wine-test.
+# Wine only reads. Without a wineserver of the same Wine build (lib/wineserver.sh), or when making the prefix
+# fails, the setup says so and each case makes its own prefix, as the first Wine start in an empty one does. --list prints the case names. DIR defaults to native/build/wine-test.
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
 CASES=(modes crash acclim acclim_penalty ers_mode standings weekends teamhq activity setup_vm pairs fe_tiles ai_corner replay_grid garage_crew pit_slots leaderboard myteam_vehicle myteam_keep myteam_heal track_list ntpage int3 stages packed filled register)
@@ -12,7 +13,7 @@ if [[ ${1:-} == --list ]]; then
     printf '%s\n' "${CASES[@]}"
     exit 0
 fi
-NEEDS="zig wine wineserver xvfb-run"
+NEEDS="zig wine xvfb-run"
 . "$(dirname "$SELF")/lib/env.sh"
 MODE=all CASE=
 case ${1:-} in
@@ -1436,8 +1437,16 @@ setup)
     build
     environment
     rm -rf "$WINEPREFIX"
-    timeout 300 "${PIN[@]}" xvfb-run -a wine wineboot -i >/dev/null 2>&1 || { echo "run_wine_test.sh: wineboot -i failed" >&2; exit 1; }
-    timeout 60 wineserver -w
+    . "$(dirname "$SELF")/lib/wineserver.sh"
+    if ! WINESERVER=$(swofty_wineserver); then
+        echo "run_wine_test.sh: no wineserver of the Wine build $(command -v wine) runs was found; each case makes its own Wine prefix"
+    elif ! timeout 300 "${PIN[@]}" xvfb-run -a wine wineboot -i >/dev/null 2>&1 || ! timeout 60 "$WINESERVER" -w; then
+        echo "run_wine_test.sh: making the shared Wine prefix with $WINESERVER failed; each case makes its own Wine prefix"
+        timeout 30 "$WINESERVER" -k 2>/dev/null || :
+        rm -rf "$WINEPREFIX"
+    else
+        echo "run_wine_test.sh: made the shared Wine prefix; $WINESERVER saved it"
+    fi
     ;;
 case)
     [[ " ${CASES[*]} " == *" $CASE "* ]] || { echo "run_wine_test.sh: there is no case $CASE" >&2; exit 2; }

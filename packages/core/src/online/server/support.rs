@@ -3,7 +3,7 @@
 use serde::Deserialize;
 use serde_json::{Value, json};
 
-use crate::online::timetrial::api::{Api, ApiError};
+use crate::online::server::api::{Api, ApiError};
 use crate::online::timetrial::boards::Rows;
 
 pub const BIO_MAX: usize = 140;

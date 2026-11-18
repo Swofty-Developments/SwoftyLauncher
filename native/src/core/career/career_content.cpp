@@ -1,5 +1,7 @@
 #include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
+#include "core/runtime/resolve.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>
@@ -14,8 +16,6 @@
 
 #include "core/career/career_content_logic.hpp"
 #include "core/registry/older.hpp"
-
-std::string settings_addon(const void *from, std::string &dll);
 
 // Extra career contents (swofty/career_content.hpp). An addon registers a content from its init;
 // the core then owns everything the stock code would refuse for it:
@@ -722,35 +722,27 @@ bool predicate_entry(void *self, void *championship)
     return ok;
 }
 
-uintptr_t need(const char *id, std::string &missing)
-{
-    uintptr_t a = swofty::api->resolve(id);
-    if (!a)
-        missing += std::string(missing.empty() ? "" : ", ") + id;
-    return a;
-}
-
 bool bind_all(std::string &why)
 {
     std::string missing;
     bool y25 = false, y26 = false;
     for (size_t i = 0; i < used(); i++)
         (slots[i].desc.model == content::MODEL_2025 ? y25 : y26) = true;
-    b.site = need("site_FeTile_CareerContentEnd", missing);
-    b.route = need("FeTile_Route_CareerItem", missing);
-    b.gate = need("Game_Career_IsDriverCareerMode", missing);
-    b.predicate_vt = need("vt_Game_DriverCareerSlotPredicate", missing);
-    b.select_vt = need("vt_Game_CareerDLCSelectViewModel", missing);
-    b.add_tile = need("FeHome_Add_CareerTile", missing);
-    b.construct = need("FeTile_Construct_CareerItem", missing);
-    b.populate_2026 = y26 ? need("FeTile_CareerDlcItem_Populate", missing) : 0;
-    b.populate_2025 = y25 ? need("FeTile_CareerDefaultItem_Populate", missing) : 0;
-    b.customisation = need("g_FeTile_CustomisationSystem", missing);
-    b.selected = need("g_FeTile_SelectedCareerContent", missing);
-    b.setup_desc = need("k_Career_CareerSetupComponentDesc", missing);
-    b.make_str = need("Ne_Make_StrFromCStr", missing);
-    b.set_string = need("Vm_Set_String", missing);
-    b.vm_registry = need("g_Vm_Registry", missing);
+    b.site = runtime::resolve_or_note("site_FeTile_CareerContentEnd", missing);
+    b.route = runtime::resolve_or_note("FeTile_Route_CareerItem", missing);
+    b.gate = runtime::resolve_or_note("Game_Career_IsDriverCareerMode", missing);
+    b.predicate_vt = runtime::resolve_or_note("vt_Game_DriverCareerSlotPredicate", missing);
+    b.select_vt = runtime::resolve_or_note("vt_Game_CareerDLCSelectViewModel", missing);
+    b.add_tile = runtime::resolve_or_note("FeHome_Add_CareerTile", missing);
+    b.construct = runtime::resolve_or_note("FeTile_Construct_CareerItem", missing);
+    b.populate_2026 = y26 ? runtime::resolve_or_note("FeTile_CareerDlcItem_Populate", missing) : 0;
+    b.populate_2025 = y25 ? runtime::resolve_or_note("FeTile_CareerDefaultItem_Populate", missing) : 0;
+    b.customisation = runtime::resolve_or_note("g_FeTile_CustomisationSystem", missing);
+    b.selected = runtime::resolve_or_note("g_FeTile_SelectedCareerContent", missing);
+    b.setup_desc = runtime::resolve_or_note("k_Career_CareerSetupComponentDesc", missing);
+    b.make_str = runtime::resolve_or_note("Ne_Make_StrFromCStr", missing);
+    b.set_string = runtime::resolve_or_note("Vm_Set_String", missing);
+    b.vm_registry = runtime::resolve_or_note("g_Vm_Registry", missing);
     b.list_child = swofty::api->resolve("Vm_GetOrCreate_ListChild");
     b.set_bool = swofty::api->resolve("Vm_Set_Bool");
     if (missing.empty())

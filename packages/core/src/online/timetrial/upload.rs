@@ -9,12 +9,12 @@ use std::time::{Duration, Instant};
 
 use serde_json::Value;
 
-use super::api::{Api, Boards, Nonce};
 use super::bridge::Pump;
 use super::game_replay;
 use super::queue::{Event, Folder, Limits, Queue, Report, unix_now};
 use super::toast;
 use super::{laps_dirs, token, write_session_keys};
+use crate::online::server::api::{Api, Boards, Nonce};
 use crate::session::Config;
 
 const WATCH_EVERY: Duration = Duration::from_secs(5);
@@ -401,7 +401,7 @@ mod tests {
     }
 
     use super::*;
-    use crate::online::timetrial::api::Uploaded;
+    use crate::online::server::api::Uploaded;
 
     #[test]
     fn the_nonce_is_asked_for_three_times_quickly_and_then_once_a_minute() {

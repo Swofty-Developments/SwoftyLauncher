@@ -1,34 +1,11 @@
 #include "core/career/ops/lineup.hpp"
 
-#include "core/runtime/pages.hpp"
-#include "core/runtime/runtime.hpp"
-#include "core/registry/table.hpp"
-
-#include <swofty/game.hpp>
-#include <swofty/mem.hpp>
-#include <swofty/mixin.hpp>
-
 #include <algorithm>
-#include <atomic>
-#include <cmath>
 #include <cstdio>
 #include <map>
 #include <mutex>
-#include <string>
-#include <unordered_map>
-#include <vector>
 
 #include "core/career/ops/driver_rows.hpp"
-#include "core/career/ops/lineup_plan.hpp"
-#include "core/career/ops/number_plan.hpp"
-#include "core/career/ops/seat_plan.hpp"
-#include "core/career/ops/start_teams.hpp"
-#include "core/career/ops/stats.hpp"
-#include "core/career/ops/teams_plan.hpp"
-#include "core/career/ops/teams_store.hpp"
-#include "core/apply/content/teams.hpp"
-#include "core/registry/table.hpp"
-#include "core/career/ops/track_fuel.hpp"
 #include "core/career/ops/tables.hpp"
 
 namespace career_ops::live {

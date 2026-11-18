@@ -1,4 +1,5 @@
 #pragma once
+#include "core/runtime/build_proof.hpp"
 #include "core/runtime/game_manager_layout.hpp"
 #include "core/live/live_layout.hpp"
 #include "core/live/live_mem.hpp"
@@ -174,21 +175,27 @@ struct BuildProof {
 
 inline constexpr uint32_t ALL_GROUPS = (1u << G_COUNT) - 1;
 
-inline constexpr BuildProof KB_BUILD = {1789118616u, "Steam", ALL_GROUPS, layout::progress::from_manager};
+inline constexpr BuildProof KB_BUILD = {runtime::build_proof::known(runtime::build_proof::Build::kb)->pe_timestamp, "Steam",
+                                        ALL_GROUPS, layout::progress::from_manager};
 
 // Driver names read the EntrantsSystem driver tables and VehicleHelperSystem participants, which have not been compared
 // against the EA build's layout yet; the rendered badge path reads a SessionEntrantView field that has not been either.
 inline constexpr uint32_t EA_GROUPS = ALL_GROUPS & ~(bit(G_DRIVER_NAMES) | bit(G_BADGE_RENDER));
 
-inline constexpr BuildProof EA_BUILD = {1789128892u, "EA", EA_GROUPS,
-                                         runtime::game_manager::tail_field(layout::progress::from_manager, "ea")};
+inline constexpr BuildProof EA_BUILD = {runtime::build_proof::known(runtime::build_proof::Build::ea)->pe_timestamp, "EA",
+                                        EA_GROUPS, runtime::game_manager::tail_field(layout::progress::from_manager, "ea")};
 
 // Steam 26566308 (1.0.145.2472): existing Live State layouts checked against this executable.
 // See re/research/live-steam-26566308.md for the build identity and instruction evidence.
 // Resolving a binding alone does not prove the object layout behind it; the current ERS mode moved by four bytes.
 inline constexpr uint32_t STEAM_26566308_GROUPS = ALL_GROUPS;
 inline constexpr BuildProof STEAM_26566308_BUILD = {
-    1794312636u, "Steam 26566308", STEAM_26566308_GROUPS, layout::progress::from_manager, 0x1a6c, bit(G_DRIVER_NAMES)};
+    runtime::build_proof::known(runtime::build_proof::Build::steam_1_0_145)->pe_timestamp,
+    "Steam 26566308",
+    STEAM_26566308_GROUPS,
+    layout::progress::from_manager,
+    0x1a6c,
+    bit(G_DRIVER_NAMES)};
 
 inline constexpr const BuildProof *PROVEN_BUILDS[] = {&KB_BUILD, &EA_BUILD, &STEAM_26566308_BUILD};
 

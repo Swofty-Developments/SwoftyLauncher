@@ -162,11 +162,103 @@ class BuildSet(unittest.TestCase):
         self.assertEqual(bindgen.set_path('/d/bindings.json', 'ea', False), '/d/bindings.ea.json')
 
 
+def vrow(date, kind, item, verdict, vid):
+    return {'date': date, 'kind': kind, 'item': item, 'verdict': verdict, 'notes': f'{vid} text'}
+
+
+class GateOrder(unittest.TestCase):
+    KEYS = [('func', 'Sess_Do_Thing'), ('func', '0x140001000')]
+
+    def gate(self, rows, exceptions=None):
+        return bindgen.Gate(rows=rows, exceptions=exceptions or {})
+
+    def test_a_newer_partial_on_the_address_outranks_an_older_agree_on_the_name(self):
+        g = self.gate([vrow('2026-10-28', 'func', 'Sess_Do_Thing', 'agree', 'V1'),
+                       vrow('2026-10-31', 'func', '0x140001000', 'partial', 'V2')])
+        self.assertEqual(g('L2', '-', self.KEYS), (None, 'L2 whose newest verify row is partial'))
+
+    def test_a_newer_agree_on_either_key_exports(self):
+        g = self.gate([vrow('2026-10-31', 'func', '0x140001000', 'partial', 'V2'),
+                       vrow('2026-11-17', 'func', 'Sess_Do_Thing', 'agree', 'V3')])
+        self.assertEqual(g('L2', '-', self.KEYS), ('experimental', 'verify:V3'))
+
+    def test_dates_beat_file_order(self):
+        g = self.gate([vrow('2026-11-01', 'func', 'Sess_Do_Thing', 'disagree', 'V9'),
+                       vrow('2026-10-01', 'func', 'Sess_Do_Thing', 'agree', 'V10')])
+        self.assertEqual(g('L2', '-', self.KEYS)[0], None)
+
+    def test_on_one_date_the_later_row_wins(self):
+        g = self.gate([vrow('2026-11-01', 'func', '0x140001000', 'agree', 'V4'),
+                       vrow('2026-11-01', 'func', 'Sess_Do_Thing', 'partial', 'V5')])
+        self.assertEqual(g('L2', '-', self.KEYS)[0], None)
+        g = self.gate([vrow('2026-11-01', 'func', 'Sess_Do_Thing', 'partial', 'V5'),
+                       vrow('2026-11-01', 'func', '0x140001000', 'agree', 'V6')])
+        self.assertEqual(g('L2', '-', self.KEYS), ('experimental', 'verify:V6'))
+
+    def test_no_row_and_low_levels(self):
+        g = self.gate([])
+        self.assertEqual(g('L2', '-', self.KEYS), (None, 'L2 without an agree verify row'))
+        self.assertEqual(g('L1', '-', self.KEYS), (None, 'L1'))
+
+
+class GateExceptions(unittest.TestCase):
+    ROWS = [vrow('2026-10-28', 'func', 'Sess_Do_Thing', 'agree', 'V1'),
+            vrow('2026-10-31', 'func', '0x140001000', 'partial', 'V2')]
+    KEYS = GateOrder.KEYS
+
+    def entry(self, covers='V2'):
+        return {('func', 'Sess_Do_Thing'): {'kind': 'func', 'covers': covers, 'reason': 'native hook; offsets agree'}}
+
+    def test_a_listed_exception_exports_and_names_the_row_it_covers(self):
+        g = bindgen.Gate(rows=self.ROWS, exceptions=self.entry())
+        self.assertEqual(g('L2', '-', self.KEYS), ('experimental', 'exception:V2'))
+        self.assertEqual(g.excepted, {('func', 'Sess_Do_Thing')})
+
+    def test_a_newer_row_ends_the_exception(self):
+        rows = self.ROWS + [vrow('2026-11-17', 'func', 'Sess_Do_Thing', 'disagree', 'V3')]
+        g = bindgen.Gate(rows=rows, exceptions=self.entry())
+        self.assertEqual(g('L2', '-', self.KEYS)[0], None)
+        self.assertEqual(g.excepted, set())
+
+    def test_an_exception_does_not_lift_low_levels(self):
+        g = bindgen.Gate(rows=self.ROWS, exceptions=self.entry())
+        self.assertEqual(g('L1', '-', self.KEYS), (None, 'L1'))
+
+    def write(self, doc):
+        d = tempfile.mkdtemp()
+        p = os.path.join(d, 'export_exceptions.json')
+        with open(p, 'w') as f:
+            json.dump(doc, f)
+        return p
+
+    def test_the_file_format(self):
+        ok = {'kind': 'func', 'covers': 'V2', 'reason': 'why'}
+        p = self.write({'schema': 1, 'exceptions': {'Sess_Do_Thing': ok}})
+        self.assertEqual(bindgen.load_exceptions(p), {('func', 'Sess_Do_Thing'): ok})
+        self.assertEqual(bindgen.load_exceptions(os.path.join(os.path.dirname(p), 'absent.json')), {})
+        for bad in ({'schema': 2, 'exceptions': {}}, {'schema': 1},
+                    {'schema': 1, 'exceptions': {'X_Y': {**ok, 'reason': ' '}}},
+                    {'schema': 1, 'exceptions': {'X_Y': {**ok, 'covers': '2'}}},
+                    {'schema': 1, 'exceptions': {'X_Y': {**ok, 'kind': 'field'}}},
+                    {'schema': 1, 'exceptions': {'X_Y': {**ok, 'extra': 1}}}):
+            with self.assertRaises(SystemExit, msg=bad):
+                bindgen.load_exceptions(self.write(bad))
+
+
 class RepoData(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.build, cls.bindings, cls.structs, _ = bindgen.load()
+        cls.gate = bindgen.Gate()
+        cls.build, cls.bindings, cls.structs, _ = bindgen.load(cls.gate)
         cls.kb_name, cls.overlays = bindgen.load_overlays(cls.build)
+
+    def test_every_export_exception_is_in_use_and_named_by_native_code(self):
+        import binding_check
+        for key, e in self.gate.exceptions.items():
+            self.assertIn(key, self.gate.excepted, f'{key[1]}: its newest verify row is no longer {e["covers"]} or it '
+                                                   'is agree now; remove it from re/db/export_exceptions.json')
+            self.assertTrue(binding_check.referenced_in_code(key[1], bindgen.ROOT, ('native/src',)),
+                            f'{key[1]}: only bindings native/src names may be listed')
 
     REGENERATE = ('stale; run python3 re/tools/bindgen.py --no-exe --json <scratch>/bindings.json '
                   '--symbols <scratch>/symbols.tsv and commit native/include')

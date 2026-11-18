@@ -11,3 +11,4 @@ pub mod overlay_guard;
 pub mod phases;
 pub mod quarantine;
 pub mod send_logs;
+pub mod session_end;

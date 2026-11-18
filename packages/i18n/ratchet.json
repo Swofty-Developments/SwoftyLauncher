@@ -10,5 +10,5 @@
   "services/game/discovery.rs": 1,
   "services/game/run.rs": 2,
   "services/play_checks.rs": 1,
-  "shell/play_bar/mod.rs": 1
+  "shell/play_bar/status.rs": 1
 }

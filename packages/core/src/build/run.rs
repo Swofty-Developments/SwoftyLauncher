@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use crate::Result;
 use crate::addons::settings::OnAddons;
-use crate::asset::Root;
+use crate::asset::{Origin, Root};
 use crate::install::Game;
 use crate::manifest::AddonManifest;
 use crate::planner::Planner;
@@ -26,6 +26,14 @@ pub(super) struct Run<'a> {
 }
 
 impl<'a> Run<'a> {
+    /// Where `origin`'s addon comes in the load order; an addon outside it comes last.
+    pub fn rank(&self, origin: &Origin) -> usize {
+        self.order
+            .iter()
+            .position(|id| *id == origin.addon)
+            .unwrap_or(usize::MAX)
+    }
+
     /// The addon's display name, or its id when it is not installed.
     pub fn name(&self, id: &str) -> String {
         self.addons
