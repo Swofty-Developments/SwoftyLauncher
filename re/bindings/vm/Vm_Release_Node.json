@@ -9,7 +9,7 @@
   "subsystem": "vm",
   "proto": "void Vm_Release_Node(void *registry, void *node)",
   "evidence": "decomp:re/decomp/1442b3d70.c;decomp:re/decomp/141b6ba20.c;xref:0x141b6ba9d,0x141b6bb07,0x141b6bb71;xref:0x1407a4860,0x1407bb6c0",
-  "notes": "Drops one reference a VM handle holds on node (refcount u16 at node+0x24); at 1 left it destroys the node (vtable +8) and frees it through the registry's allocator. Callers first unlink the handle {node,next,prev} from the node's holder list at node+0x28 (0x141b6ba20 does it for each handle of a tile set). | (Allocator **a, Resource *r): drops a reference (u16 atomic refcount r+0x24); before that triggers async unload (0x1442b4120 / 0x1442b3e30) when the resource is idle; at refcount 1 calls dtor (vtable +8) and frees via allocator vtable +0x38. 105 callers (game mode parse, session HUD, season UI). | #589 proposed the name Ne_Resource_Release | #589 proposed the subsystem core"
+  "notes": "Drops one reference a VM handle holds on node (refcount u16 at node+0x24); at 1 left it destroys the node (vtable +8) and frees it through the registry's allocator. Callers first unlink the handle {node,next,prev} from the node's holder list at node+0x28 (0x141b6ba20 does it for each handle of a tile set). | (Allocator **a, Resource *r): drops a reference (u16 atomic refcount r+0x24); before that triggers async unload (0x1442b4120 / 0x1442b3e30) when the resource is idle; at refcount 1 calls dtor (vtable +8) and frees via allocator vtable +0x38. Callers: census steam 0x42b3d70, among them game mode parse, the session HUD and the season UI. | #589 proposed the name Ne_Resource_Release | #589 proposed the subsystem core"
  },
  "signature": {
   "id": "vm.release_node",

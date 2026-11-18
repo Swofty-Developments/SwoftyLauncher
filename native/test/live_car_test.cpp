@@ -12,7 +12,7 @@ static int failures;
         }                                                                                                              \
     } while (0)
 
-using namespace postfx;
+using namespace render::postfx;
 
 int main()
 {

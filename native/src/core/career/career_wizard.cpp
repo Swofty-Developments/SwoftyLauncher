@@ -1,8 +1,9 @@
 #include "core/career/career_ui.hpp"
+#include "core/career/wizard_state.hpp"
 #include "core/guards/skips.hpp"
 #include "core/registry/older.hpp"
 #include "core/runtime/loader/core_sets.hpp"
-#include "core/runtime/loader/mixin_gate.hpp"
+#include "core/runtime/loader/hook_set.hpp"
 
 #include <swofty/game.hpp>
 
@@ -15,28 +16,12 @@
 // Career wizard control (SwoftyCareerWizard). Keyed by the data group of the career content tile the
 // wizard opened from; the wizard state carries it at +0x128 (copied from the tile item's +0x180).
 //
-// - Game_CareerWizard_StartsInF1(entrants, wizard data, data group): answers yes for a registered
-//   group, so the wizard has no Skip to F1 / Start in F2 step and no team-icons step and the driver
-//   select takes the F1 path.
 // - FeTile_Route_CareerItem(item, out): every career tile press ends here. The core's career tile
 //   route wrap (career_content.cpp), shared with the career content library, hands each press here
 //   after the game's router: the tile's data group is recorded and, for a registered group, the
 //   route the tile fires (out type 1) is replaced.
-// - Game_CareerWizard_PushNextStep(wizard): runs right after the add-option body pushed the
-//   player's option byte on wizard +0x100..+0x108 and pushes the next step byte on +0xe0..+0xe8.
-//   Before it runs, a forced option rewrites that last option byte; after it, a replaced step
-//   rewrites the step it pushed.
-// - site_Game_CareerWizardConfirm_NextRoute: rdx is the route the confirm step picked, rsi the view
-//   model (+0x270 the wizard state); a registered route swap changes rdx.
-// - site_Game_DriverSelectHeader_BuildTabs: the call to the shared tab builder for the Choose
-//   Driver header (its first argument is header +0x270) records which entries of the content group
-//   (+0x08..+0x10, 0x30 bytes each, tab name string +0x08 with its text at +0x09) are hidden tabs,
-//   for the last tile's group while no career of another group is loaded. The header keeps every
-//   tab: the screen spawns one tab box per entry of the stock group, so a header built without a tab
-//   leaves an empty box with its notification marker. Game_DriverSelectHeader_SetTabState keeps a
-//   hidden tab at content_visible 0 and enabled 0, the state the game gives a tab it doesn't offer,
-//   and skips an index past the header's tabs (vector at header +0x2b8, 0x70 each), which it has no
-//   bounds check for.
+//
+// The other controls' wraps and sites are in wizard_hooks.cpp.
 //
 // Each control is a core mixin set of its own (runtime/loader/mixin_manager.cpp), offered only once an addon registers an
 // entry for it: at the next mixin commit for a registration from an addon's init, right after the
@@ -44,35 +29,7 @@
 // addon that wraps these functions itself keeps its wraps. A binding that does not resolve drops
 // only that control.
 
-namespace {
-
-namespace cu = runtime::career_ui;
-namespace mem = swofty::mem;
-using swofty::game::Action;
-constexpr uintptr_t NESTR_CHARS = 0x09;
-
-constexpr const char *START_MIXIN = "swofty_core.dll (wizard start in F1)";
-constexpr const char *STEP_MIXIN = "swofty_core.dll (wizard steps)";
-constexpr const char *CONFIRM_MIXIN = "swofty_core.dll (wizard confirm route)";
-constexpr const char *TABS_MIXIN = "swofty_core.dll (wizard driver tabs)";
-constexpr uintptr_t WIZARD_GROUP = 0x128, STEPS = 0xe0, OPTIONS = 0x100, VM_WIZARD = 0x270, HEADER_BUILD = 0x270,
-                    HEADER_TABS = 0x2b8;
-constexpr size_t TAB_ITEM = 0x70, CONTENT_TAB = 0x30, MAX_TABS = 64;
-
-using StartsInF1 = bool(void *entrants, void *wizard_data, const char *group);
-using PushStep = void(void *wizard);
-using BuildTabs = int64_t(void *tabs, void *alloc, void *node, const void *group);
-using SetTabState = void(void *header, uint64_t tab, uint8_t content_visible, uint8_t enabled);
-
-enum Kind { START, TILE_ROUTE, STEP, OPTION, CONFIRM_ROUTE, TAB };
-
-struct Entry {
-    Kind kind;
-    std::string group, from, to;
-    uint32_t a, b;
-    HMODULE owner;
-    std::string addon;
-};
+namespace career::wizard {
 
 StartsInF1 *orig_starts;
 PushStep *orig_push;
@@ -81,6 +38,23 @@ SetTabState *orig_tab_state;
 
 std::mutex lock;
 std::vector<Entry> entries, effective;
+
+namespace {
+
+std::set<std::string> interned;
+
+}
+
+std::string last_tile;
+std::atomic<uintptr_t> hidden_header{0};
+std::atomic<uint64_t> hidden_tabs{0};
+std::atomic<bool> any{false};
+
+namespace {
+
+constinit swofty_core::guards::LogFirst<6> note_lines[8];
+
+}
 
 namespace older = swofty_core::registry::older;
 
@@ -94,43 +68,12 @@ void rebuild_effective()
     effective = std::move(out);
 }
 
-void store_record(const std::string &addon, const std::string &group)
-{
-    std::vector<older::WizardEntry> given;
-    for (auto &e : entries)
-        if (e.addon == addon && e.group == group)
-            given.push_back({older::WizardKind(e.kind), e.group, e.from, e.to, e.a, e.b});
-    auto &st = runtime::older_store();
-    if (given.empty())
-        older::drop(st, addon, older::WIZARD, group);
-    else
-        older::put(st, addon, older::WIZARD, group, older::wizard_record(group, given), "career::wizard");
-    rebuild_effective();
-}
-std::set<std::string> interned;
-std::string last_tile;
-std::atomic<uintptr_t> hidden_header{0};
-std::atomic<uint64_t> hidden_tabs{0};
-std::atomic<bool> any{false};
-constinit swofty_core::guards::LogFirst<6> note_lines[8];
-
-struct Part {
-    const char *name;
-    std::atomic<bool> wanted{false};
-    runtime::loader::MixinGate gate{};
-    std::atomic<bool> live{false}, late_logged{false};
-};
-
-constexpr int ROUTE = 1, TABS = 4;
-Part parts[5] = {{START_MIXIN}, {nullptr}, {STEP_MIXIN}, {CONFIRM_MIXIN}, {TABS_MIXIN}};
-const char *const part_names[5] = {"start in F1", "tile route", "steps and options", "confirm route", "driver tabs"};
-
 const char *intern(const std::string &s)
 {
     return interned.insert(s).first->c_str();
 }
 
-void note(int which, const char *fmt, const char *a = "", const char *b = "", const char *c = "")
+void note(int which, const char *fmt, const char *a, const char *b, const char *c)
 {
     if (note_lines[which].note())
         swofty::log(fmt, a, b, c);
@@ -155,167 +98,40 @@ std::string wizard_group(const void *wizard)
     return wizard && mem::read(reinterpret_cast<uintptr_t>(wizard) + WIZARD_GROUP, g) ? read_cstr(g) : std::string();
 }
 
-template <class F> bool find(Kind kind, const std::string &group, F &&match)
+}
+
+using namespace career::wizard;
+
+namespace {
+
+namespace cu = career::ui;
+using swofty::game::Action;
+
+constexpr const char *START_MIXIN = "swofty_core.dll (wizard start in F1)";
+constexpr const char *STEP_MIXIN = "swofty_core.dll (wizard steps)";
+constexpr const char *CONFIRM_MIXIN = "swofty_core.dll (wizard confirm route)";
+constexpr const char *TABS_MIXIN = "swofty_core.dll (wizard driver tabs)";
+
+void store_record(const std::string &addon, const std::string &group)
 {
-    if (!any.load() || group.empty())
-        return false;
-    std::lock_guard<std::mutex> g(lock);
+    std::vector<older::WizardEntry> given;
+    for (auto &e : entries)
+        if (e.addon == addon && e.group == group)
+            given.push_back({older::WizardKind(e.kind), e.group, e.from, e.to, e.a, e.b});
+    auto &st = runtime::older_store();
+    if (given.empty())
+        older::drop(st, addon, older::WIZARD, group);
+    else
+        older::put(st, addon, older::WIZARD, group, older::wizard_record(group, given), "career::wizard");
     rebuild_effective();
-    for (auto it = effective.rbegin(); it != effective.rend(); ++it)
-        if (it->kind == kind && it->group == group && match(*it))
-            return true;
-    return false;
 }
 
-bool starts_in_f1(void *entrants, void *wizard_data, const char *group)
-{
-    bool stock = orig_starts(entrants, wizard_data, group);
-    std::string g = read_cstr(reinterpret_cast<uintptr_t>(group));
-    if (!stock && find(START, g, [](const Entry &) { return true; })) {
-        note(0, "[wizard] %s starts in F1 (no F2 choice, no team-icons step)", g.c_str());
-        return true;
-    }
-    return stock;
-}
-
-bool last_byte(const void *wizard, uintptr_t vec, uintptr_t &at, size_t &count)
-{
-    uintptr_t b = 0, e = 0;
-    if (!mem::read(reinterpret_cast<uintptr_t>(wizard) + vec, b) || !mem::read(reinterpret_cast<uintptr_t>(wizard) + vec + 8, e) ||
-        !b || e <= b || e - b > 256)
-        return count = 0, false;
-    count = e - b;
-    at = e - 1;
-    return true;
-}
-
-void push_step(void *wizard)
-{
-    if (!any.load() || !wizard)
-        return orig_push(wizard);
-    std::string g = wizard_group(wizard);
-    uintptr_t at = 0;
-    size_t before = 0;
-    uint32_t with = 0;
-    if (last_byte(wizard, OPTIONS, at, before)) {
-        uint8_t option = *reinterpret_cast<uint8_t *>(at);
-        if (find(OPTION, g, [&](const Entry &e) { return e.a == option && (with = e.b, true); }) && with != option) {
-            *reinterpret_cast<uint8_t *>(at) = uint8_t(with);
-            char a[8], b[8];
-            snprintf(a, sizeof a, "%u", option), snprintf(b, sizeof b, "%u", with);
-            note(2, "[wizard] %s: option %s recorded as %s", g.c_str(), a, b);
-        }
-    }
-    last_byte(wizard, STEPS, at, before);
-    orig_push(wizard);
-    size_t after = 0;
-    if (!last_byte(wizard, STEPS, at, after) || after != before + 1)
-        return;
-    uint8_t step = *reinterpret_cast<uint8_t *>(at);
-    if (find(STEP, g, [&](const Entry &e) { return e.a == step && (with = e.b, true); }) && with != step) {
-        *reinterpret_cast<uint8_t *>(at) = uint8_t(with);
-        char a[8], b[8];
-        snprintf(a, sizeof a, "%u", step), snprintf(b, sizeof b, "%u", with);
-        note(3, "[wizard] %s: step %s replaced by step %s", g.c_str(), a, b);
-    }
-}
-
-void confirm_route(SwoftyContext *c)
-{
-    if (!any.load() || !c->rdx || !c->rsi)
-        return;
-    uintptr_t wizard = 0;
-    if (!mem::read(c->rsi + VM_WIZARD, wizard) || !wizard)
-        return;
-    std::string g = wizard_group(reinterpret_cast<void *>(wizard)), route = read_cstr(c->rdx);
-    const char *to = nullptr;
-    if (find(CONFIRM_ROUTE, g, [&](const Entry &e) {
-            if (!e.from.empty() && e.from != route)
-                return false;
-            to = intern(e.to);
-            return true;
-        })) {
-        c->rdx = reinterpret_cast<uintptr_t>(to);
-        note(4, "[wizard] %s: confirm opens %s instead of %s", g.c_str(), to, route.c_str());
-    }
-}
-
-std::string tab_name(const uint8_t *entry)
-{
-    uintptr_t s = 0;
-    return mem::read(reinterpret_cast<uintptr_t>(entry) + 0x08, s) && s ? read_cstr(s + 9) : std::string();
-}
-
-// Bit i set when entry i of the header's content group is a tab hidden for the last tile's group.
-uint64_t hidden_mask(const void *group)
-{
-    std::string g;
-    {
-        std::lock_guard<std::mutex> lk(lock);
-        g = last_tile;
-    }
-    if (!any.load() || !group || g.empty() || !find(TAB, g, [](const Entry &) { return true; }))
-        return 0;
-    std::string loaded = cu::loaded_group();
-    if (!loaded.empty() && loaded != g)
-        return 0;
-    struct Group {
-        uint8_t head[0x08];
-        const uint8_t *begin, *end;
-    } copy;
-    if (!mem::read(group, copy) || !copy.begin || copy.end < copy.begin || size_t(copy.end - copy.begin) % CONTENT_TAB ||
-        size_t(copy.end - copy.begin) / CONTENT_TAB > MAX_TABS) {
-        note(5, "[wizard] %s: the Choose Driver header group does not look like a content group; its tabs stay", g.c_str());
-        return 0;
-    }
-    std::lock_guard<std::mutex> lk(lock);
-    uint64_t mask = 0;
-    size_t i = 0, dropped = 0, total = size_t(copy.end - copy.begin) / CONTENT_TAB;
-    for (const uint8_t *p = copy.begin; p < copy.end; p += CONTENT_TAB, i++) {
-        std::string name = tab_name(p);
-        bool hide = false;
-        for (auto &e : effective)
-            hide |= e.kind == TAB && e.group == g && e.from == name;
-        if (hide)
-            mask |= uint64_t(1) << i, dropped++;
-    }
-    if (mask) {
-        char a[16], b[16];
-        snprintf(a, sizeof a, "%zu", dropped), snprintf(b, sizeof b, "%zu", total);
-        note(6, "[wizard] %s: Choose Driver header tabs: %s of %s off", g.c_str(), a, b);
-    }
-    return mask;
-}
-
-int64_t build_tabs(void *tabs, void *alloc, void *node, const void *group)
-{
-    uintptr_t header = tabs ? reinterpret_cast<uintptr_t>(tabs) - HEADER_BUILD : 0;
-    if (uint64_t mask = hidden_mask(group)) {
-        hidden_tabs = mask;
-        hidden_header = header;
-    } else {
-        uintptr_t expected = header;
-        hidden_header.compare_exchange_strong(expected, 0);
-    }
-    return orig_tabs(tabs, alloc, node, group);
-}
-
-void tab_state(void *header, uint64_t tab, uint8_t content_visible, uint8_t enabled)
-{
-    uintptr_t b = 0, e = 0;
-    if (header && mem::read(reinterpret_cast<uintptr_t>(header) + HEADER_TABS, b) &&
-        mem::read(reinterpret_cast<uintptr_t>(header) + HEADER_TABS + 8, e) && b && e >= b &&
-        tab >= size_t(e - b) / TAB_ITEM) {
-        char a[24];
-        snprintf(a, sizeof a, "%llu", (unsigned long long)tab);
-        note(7, "[wizard] Choose Driver tab %s state skipped, past the header's tabs", a);
-        return;
-    }
-    if (header && reinterpret_cast<uintptr_t>(header) == hidden_header.load() && tab < MAX_TABS &&
-        (hidden_tabs.load() >> tab & 1))
-        content_visible = enabled = 0;
-    orig_tab_state(header, tab, content_visible, enabled);
-}
+constexpr int ROUTE = 1, TABS = 4;
+runtime::loader::MixinPart parts[5] = {{START_MIXIN, "start in F1"},
+                                       {nullptr, "tile route"},
+                                       {STEP_MIXIN, "steps and options"},
+                                       {CONFIRM_MIXIN, "confirm route"},
+                                       {TABS_MIXIN, "driver tabs"}};
 
 bool part_live(int i)
 {
@@ -326,7 +142,7 @@ bool part_usable(int i)
 {
     if (i == ROUTE)
         return runtime::tile_route_state() != runtime::TileRoute::off;
-    return parts[i].live || (!parts[i].gate.settled() && !runtime::core_mixins_closed());
+    return parts[i].usable(runtime::core_mixins_closed());
 }
 
 int need(int i, bool want)
@@ -342,8 +158,8 @@ int need(int i, bool want)
     }
     if (part_usable(i) && (i != TABS || part_usable(ROUTE)))
         return SWOFTY_ASSET_OK;
-    if (want && runtime::core_mixins_closed() && !parts[i].gate.offered() && !parts[i].late_logged.exchange(true))
-        swofty::log("[wizard] %s registered after the last mixin commit; its hook is not installed", part_names[i]);
+    if (want && runtime::core_mixins_closed() && !parts[i].gate.offered() && parts[i].first_late())
+        swofty::log("[wizard] %s registered after the last mixin commit; its hook is not installed", parts[i].label);
     return SWOFTY_ASSET_UNAVAILABLE;
 }
 
@@ -457,44 +273,38 @@ static std::vector<CoreMixins> wizard_mixins()
     std::vector<CoreMixins> out;
     if (!enabled("career", nullptr))
         return out;
-    auto offer = [&](int i) { return parts[i].wanted && parts[i].gate.offer(); };
-    if (offer(0))
+    if (parts[0].offer())
         out.push_back(
             {START_MIXIN,
              {{"Game_CareerWizard_StartsInF1", SWOFTY_MIXIN_WRAP, 100, (void *)&starts_in_f1, (void **)&orig_starts}}});
-    if (offer(2))
+    if (parts[2].offer())
         out.push_back(
             {STEP_MIXIN,
              {{"Game_CareerWizard_PushNextStep", SWOFTY_MIXIN_WRAP, 100, (void *)&push_step, (void **)&orig_push}}});
-    if (offer(3))
+    if (parts[3].offer())
         out.push_back(
             {CONFIRM_MIXIN,
              {{"site_Game_CareerWizardConfirm_NextRoute", SWOFTY_MIXIN_SITE, 100, (void *)&confirm_route, nullptr}}});
-    if (offer(4))
+    if (parts[4].offer())
         out.push_back({TABS_MIXIN,
                        {{"site_Game_DriverSelectHeader_BuildTabs", SWOFTY_MIXIN_REDIRECT, 100, (void *)&build_tabs,
                          (void **)&orig_tabs},
                         {"Game_DriverSelectHeader_SetTabState", SWOFTY_MIXIN_WRAP, 100, (void *)&tab_state,
                          (void **)&orig_tab_state}}});
-    if (parts[ROUTE].wanted)
-        parts[ROUTE].gate.offer();
+    parts[ROUTE].offer();
     return out;
 }
 
 static void wizard_commit()
 {
     bool any = false;
-    for (int i = 0; i < 5; i++) {
-        Part &p = parts[i];
-        if (!p.gate.offered() || p.gate.settled() || (i == ROUTE && tile_route_state() == TileRoute::pending))
-            continue;
-        p.live = i == ROUTE ? tile_route_state() == TileRoute::live : core_mixins_active(p.name);
-        any |= p.gate.settle();
-    }
-    auto state = [](int i) { return parts[i].live ? "armed" : parts[i].gate.settled() ? "off" : "not used"; };
+    for (int i = 0; i < 5; i++)
+        if (i != ROUTE || tile_route_state() != TileRoute::pending)
+            any |= parts[i].settle(
+                [i] { return i == ROUTE ? tile_route_state() == TileRoute::live : core_mixins_active(parts[i].name); });
     if (any)
         swofty::log("[wizard] setup: start in F1 %s, tile route %s, steps and options %s, confirm route %s, driver tabs %s",
-                    state(0), state(1), state(2), state(3), state(4));
+                    parts[0].state(), parts[1].state(), parts[2].state(), parts[3].state(), parts[4].state());
 }
 
 static loader::FunctionSet wizard_core_set{loader::CoreSetId::wizard, wizard_mixins, wizard_commit};

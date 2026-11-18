@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::io::BufRead;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use anyhow::Result;
 use serde_json::Value;
@@ -17,7 +17,7 @@ use swofty_core::testsuite::session;
 use swofty_core::testsuite::suite::{Env, Kind};
 
 use crate::commands::testing::game_lock::{free_the_game, hh_mm, take_lock};
-use crate::commands::testing::harness::{BatchResults, Harness, Times};
+use crate::commands::testing::harness::{BatchResults, Harness, Times, until_polled};
 use crate::commands::testing::launcher::SwoftyRun;
 use crate::commands::testing::preflight::terms;
 use crate::commands::testing::run::Stop;
@@ -286,50 +286,4 @@ fn shell_loop(
         Some(_) => ExitCode::from(exit::INFRA),
         None => ExitCode::SUCCESS,
     })
-}
-
-/// The game mode of the career a career environment continues, from the
-/// fixture's `holds`: the career in the test's slot, else the only one.
-pub(crate) fn career_mode(f: &Fixture, slot: Option<u64>) -> Option<String> {
-    let careers = &f.manifest.holds.careers;
-    let c = match slot {
-        Some(n) => careers.iter().find(|c| c.slot == Some(n)),
-        None if careers.len() == 1 => careers.first(),
-        None => None,
-    }?;
-    let m = c.mode.to_ascii_lowercase();
-    if m.contains("my_team") || m.contains("myteam") {
-        Some("my_team_career".into())
-    } else if m.contains("driver") {
-        Some("driver_career".into())
-    } else {
-        None
-    }
-}
-
-pub(crate) fn copy_tree(from: &Path, to: &Path) -> std::io::Result<()> {
-    std::fs::create_dir_all(to)?;
-    for e in std::fs::read_dir(from)? {
-        let e = e?;
-        let (src, dst) = (e.path(), to.join(e.file_name()));
-        if e.file_type()?.is_dir() {
-            copy_tree(&src, &dst)?;
-        } else {
-            std::fs::copy(&src, &dst)?;
-        }
-    }
-    Ok(())
-}
-
-pub(crate) fn until_polled(limit: Duration, poll: Duration, mut done: impl FnMut() -> bool) -> bool {
-    let start = Instant::now();
-    loop {
-        if done() {
-            return true;
-        }
-        if start.elapsed() >= limit {
-            return false;
-        }
-        std::thread::sleep(poll);
-    }
 }

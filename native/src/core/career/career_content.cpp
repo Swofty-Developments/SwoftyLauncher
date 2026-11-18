@@ -1,6 +1,5 @@
 #include "core/career/content_state.hpp"
 #include "core/runtime/loader/core_sets.hpp"
-#include "core/runtime/loader/mixin_gate.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <swofty/game.hpp>
@@ -28,15 +27,12 @@
 // them, and a build where one of them, the router or a binding the handlers call does not resolve
 // turns every content off with a log line.
 
-namespace career_content {
+namespace career::content {
 
 Slot slots[content::MAX_CONTENTS];
 Bound b{};
-std::mutex lock;
-std::atomic<bool> live{false}, off{false};
-Route *route_orig;
-Gate *gate_orig;
-Predicate *predicate_orig;
+constinit ContentHooks hooks;
+constinit RouteHooks route;
 std::mutex pressed_lock;
 std::string pressed_group;
 bool pressed_any;
@@ -48,9 +44,7 @@ constexpr const char *ROUTE_MIXIN = "swofty_core.dll (career tile route)";
 
 std::set<std::string> records_tried;
 std::atomic<size_t> count{0};
-runtime::loader::MixinGate mixin_gate, route_mixin_gate;
-std::atomic<bool> route_wanted{false}, route_live{false};
-std::string off_why;
+std::atomic<bool> route_wanted{false};
 
 bool db_text(const std::string &key, std::string &out, void *)
 {
@@ -85,7 +79,7 @@ void resolve(Slot &s, bool now, bool building)
 {
     if (s.resolved || s.state != SWOFTY_CAREER_CONTENT_LIVE || !runtime::db_table()->available())
         return;
-    std::lock_guard<std::mutex> g(lock);
+    std::lock_guard<std::mutex> g(hooks.lock);
     uint64_t t = GetTickCount64();
     if (s.resolved || (!now && !s.retry.due(t)))
         return;
@@ -145,7 +139,7 @@ void from_records()
         if (addon.empty() || addon == "game" || addon == "swofty.core")
             continue;
         {
-            std::lock_guard<std::mutex> g(lock);
+            std::lock_guard<std::mutex> g(hooks.lock);
             bool made = false;
             for (size_t i = 0; i < used(); i++)
                 made = made || slots[i].record == id;
@@ -177,14 +171,14 @@ void from_records()
 
 int add_slot(const content::Desc &desc, const std::string &who, const std::string &addon, const std::string *record)
 {
-    std::lock_guard<std::mutex> g(lock);
+    std::lock_guard<std::mutex> g(hooks.lock);
     size_t n = used();
     std::string own = addon + "/" + desc.id;
     size_t at = n;
     if (!record)
         for (size_t i = 0; i < n; i++)
             if (slots[i].from_record && slots[i].record == own && !slots[i].vt &&
-                (!mixin_gate.offered() || slots[i].desc.model == desc.model))
+                (!hooks.gate.offered() || slots[i].desc.model == desc.model))
                 at = i;
     std::string why = content::check(desc, [&](const char *field, const std::string &v) {
         for (size_t i = 0; i < n; i++) {
@@ -223,9 +217,11 @@ int add_slot(const content::Desc &desc, const std::string &who, const std::strin
         s.retry = {};
         s.why.clear();
     }
-    uint32_t state = off ? SWOFTY_CAREER_CONTENT_OFF : live ? SWOFTY_CAREER_CONTENT_LIVE : SWOFTY_CAREER_CONTENT_QUEUED;
-    if (off)
-        s.why = off_why;
+    uint32_t state = hooks.off()    ? SWOFTY_CAREER_CONTENT_OFF
+                     : hooks.live() ? SWOFTY_CAREER_CONTENT_LIVE
+                                    : SWOFTY_CAREER_CONTENT_QUEUED;
+    if (hooks.off())
+        s.why = hooks.why();
     s.state = state;
     if (!took_over)
         count.store(n + 1, std::memory_order_release);
@@ -237,15 +233,15 @@ int add_slot(const content::Desc &desc, const std::string &who, const std::strin
                 desc.id.c_str(), from.c_str(), at + 1, desc.model == content::MODEL_2025 ? "2025" : "2026",
                 desc.data_group.c_str(), desc.suffix.c_str(), desc.mode.c_str(),
                 state == SWOFTY_CAREER_CONTENT_LIVE ? "live (hooks already installed)"
-                : state == SWOFTY_CAREER_CONTENT_OFF ? ("off: " + off_why).c_str()
+                : state == SWOFTY_CAREER_CONTENT_OFF ? ("off: " + hooks.why()).c_str()
                                                      : "queued for the next mixin commit");
-    return off ? SWOFTY_ASSET_UNAVAILABLE : SWOFTY_ASSET_OK;
+    return hooks.off() ? SWOFTY_ASSET_UNAVAILABLE : SWOFTY_ASSET_OK;
 }
 
 void turn_off(Slot &s, const std::string &why)
 {
     {
-        std::lock_guard<std::mutex> g(lock);
+        std::lock_guard<std::mutex> g(hooks.lock);
         s.why = why;
     }
     s.state = SWOFTY_CAREER_CONTENT_OFF;
@@ -307,13 +303,13 @@ void shown_from_records()
 
 }
 
-using namespace career_content;
+using namespace career::content;
 
 namespace runtime {
 
 std::string career_content_owner(const std::string &data_group, std::string *save_name)
 {
-    std::lock_guard<std::mutex> g(lock);
+    std::lock_guard<std::mutex> g(hooks.lock);
     for (size_t i = 0; i < used(); i++)
         if (slots[i].desc.data_group == data_group) {
             if (save_name)
@@ -327,26 +323,25 @@ static std::vector<CoreMixins> career_content_mixins()
 {
     std::vector<CoreMixins> out;
     from_records();
-    if (mixin_gate.offered() || !used() || off || !code_ready())
+    if (hooks.gate.offered() || !used() || hooks.off() || !code_ready())
         return out;
-    mixin_gate.offer();
+    hooks.gate.offer();
     std::string why;
-    if (route_mixin_gate.settled() && !route_live)
+    if (route.gate.settled() && !route.live())
         why = "the career tile route hook did not install (see the [core] lines for " + std::string(ROUTE_MIXIN) + ")";
     if (!why.empty() || !bind_all(why)) {
-        off_why = why;
-        off = true;
+        hooks.turn_off(why);
         for (size_t i = 0; i < used(); i++)
             turn_off(slots[i], why);
         return out;
     }
     out.push_back({MIXIN,
                    {{"site_FeTile_CareerContentEnd", SWOFTY_MIXIN_SITE, 100, (void *)&site_entry, nullptr},
-                    {"Game_Career_IsDriverCareerMode", SWOFTY_MIXIN_WRAP, 100, (void *)&gate_entry, (void **)&gate_orig},
+                    {"Game_Career_IsDriverCareerMode", SWOFTY_MIXIN_WRAP, 100, (void *)&gate_entry, hooks.driver_gate.slot()},
                     {"vt_Game_DriverCareerSlotPredicate", SWOFTY_MIXIN_WITH_ARG(SWOFTY_MIXIN_VTABLE, 2), 100,
-                     (void *)&predicate_entry, (void **)&predicate_orig},
+                     (void *)&predicate_entry, hooks.slot_predicate.slot()},
                     {"vt_Game_CareerDLCSelectViewModel", SWOFTY_MIXIN_WITH_ARG(SWOFTY_MIXIN_VTABLE, 10), 100,
-                     (void *)&command_entry, (void **)&command_orig}}});
+                     (void *)&command_entry, hooks.select_command.slot()}}});
     tile_route_want();
     swofty::log("[career] contents: %zu registered; offering the career content hooks", used());
     return out;
@@ -360,38 +355,39 @@ void tile_route_want()
 static std::vector<CoreMixins> tile_route_mixins()
 {
     std::vector<CoreMixins> out;
-    if (!route_wanted || route_mixin_gate.offered())
+    if (!route_wanted || route.gate.offered())
         return out;
-    route_mixin_gate.offer();
+    route.gate.offer();
     out.push_back({ROUTE_MIXIN,
-                   {{"FeTile_Route_CareerItem", SWOFTY_MIXIN_WRAP, 100, (void *)&route_entry, (void **)&route_orig}}});
+                   {{"FeTile_Route_CareerItem", SWOFTY_MIXIN_WRAP, 100, (void *)&route_entry, route.route_item.slot()}}});
     return out;
 }
 
 static void tile_route_commit()
 {
-    if (!route_mixin_gate.offered() || route_mixin_gate.settled())
+    if (!route.gate.offered() || route.gate.settled())
         return;
-    route_live = core_mixins_active(ROUTE_MIXIN);
-    route_mixin_gate.settle();
-    swofty::log("[career] career tile route: %s", route_live ? "armed" : "off");
+    if (core_mixins_active(ROUTE_MIXIN))
+        route.set_live();
+    route.gate.settle();
+    swofty::log("[career] career tile route: %s", route.live() ? "armed" : "off");
 }
 
 static loader::FunctionSet tile_route_core_set{loader::CoreSetId::tile_route, tile_route_mixins, tile_route_commit};
 
 TileRoute tile_route_state()
 {
-    return route_live                                                             ? TileRoute::live
-           : route_mixin_gate.settled() || (route_wanted && core_mixins_closed()) ? TileRoute::off
+    return route.live()                                                           ? TileRoute::live
+           : route.gate.settled() || (route_wanted && core_mixins_closed())       ? TileRoute::off
                                                                                   : TileRoute::pending;
 }
 
 static void career_content_commit()
 {
-    if (!route_mixin_gate.settled() || !mixin_gate.settle())
+    if (!route.gate.settled() || !hooks.gate.settle())
         return;
-    if (core_mixins_active(MIXIN) && route_live) {
-        live = true;
+    if (core_mixins_active(MIXIN) && route.live()) {
+        hooks.set_live();
         for (size_t i = 0; i < used(); i++)
             if (slots[i].state == SWOFTY_CAREER_CONTENT_QUEUED)
                 slots[i].state = SWOFTY_CAREER_CONTENT_LIVE;
@@ -400,12 +396,11 @@ static void career_content_commit()
                     used());
         return;
     }
-    off_why = "the career content hooks did not install (see the [core] lines for " +
-              std::string(route_live ? MIXIN : ROUTE_MIXIN) + ")";
-    off = true;
+    hooks.turn_off("the career content hooks did not install (see the [core] lines for " +
+                   std::string(route.live() ? MIXIN : ROUTE_MIXIN) + ")");
     for (size_t i = 0; i < used(); i++)
         if (slots[i].state != SWOFTY_CAREER_CONTENT_OFF)
-            turn_off(slots[i], off_why);
+            turn_off(slots[i], hooks.why());
 }
 
 static loader::FunctionSet career_content_core_set{loader::CoreSetId::career_content, career_content_mixins,
@@ -413,7 +408,7 @@ static loader::FunctionSet career_content_core_set{loader::CoreSetId::career_con
 
 void career_content_tick()
 {
-    if (live && used())
+    if (hooks.live() && used())
         resolve_all(false);
 }
 

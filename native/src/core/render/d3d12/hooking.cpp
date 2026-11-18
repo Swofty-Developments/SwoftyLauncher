@@ -4,12 +4,13 @@
 #include "core/hud/arm_policy.hpp"
 #include "core/render/d3d12_hooks.hpp"
 #include "core/render/probe_logic.hpp"
+#include "core/runtime/loader/hook_install.hpp"
 
 #include <swofty/mixin.hpp>
 
 #include <mutex>
 
-namespace d3d12hooks {
+namespace render::d3d12 {
 
 namespace {
 
@@ -24,16 +25,15 @@ bool install(safetyhook::InlineHook &h, void *target, void *detour, const char *
         swofty::log("[d3d12] hooking %s skipped: no target", what);
         return false;
     }
-    auto made = safetyhook::InlineHook::create(target, detour, safetyhook::InlineHook::StartDisabled);
-    if (!made) {
+    if (!runtime::loader::install(h, reinterpret_cast<uintptr_t>(target), what, detour, safetyhook::InlineHook::StartDisabled)) {
         swofty::log("[d3d12] hooking %s at %p failed", what, target);
         return false;
     }
-    if (!made->original<void *>()) {
+    if (!h.original<void *>()) {
         swofty::log("[d3d12] hooking %s at %p failed: no trampoline", what, target);
+        h = {};
         return false;
     }
-    h = std::move(*made);
     if (!h.enable()) {
         swofty::log("[d3d12] hooking %s at %p failed: the hook did not enable", what, target);
         h = {};

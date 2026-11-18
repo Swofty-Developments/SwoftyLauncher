@@ -21,7 +21,7 @@
 // a season, a slot never filled by any season, a team identity on two slots of one season, a slot row shared
 // by two slots, a slot above the table, seats named for a slot with no team.
 
-namespace career_ops::teams {
+namespace career::ops::teams {
 
 constexpr int kMaxSlots = 12;
 constexpr int kSeats = 2;
@@ -276,4 +276,4 @@ inline std::string summary(const Plan &p)
            " open, " + std::to_string(p.count(Kind::closed)) + " closed, " + std::to_string(p.count(Kind::dressed)) + " dressed";
 }
 
-} // namespace career_ops::teams
+} // namespace career::ops::teams

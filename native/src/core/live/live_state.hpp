@@ -15,6 +15,12 @@ namespace swofty_core::live {
 
 namespace L = layout;
 
+// The pit box of a garage index: garage >> 1, box 12 for the safety car's garage 99.
+inline uint8_t garage_pit_box(uint8_t garage)
+{
+    return garage == L::pit::garage_safety_car ? uint8_t(L::pit::safety_car_box) : uint8_t(garage >> 1);
+}
+
 constexpr unsigned MAX_CARS = SWOFTY_LIVE_MAX_CARS;
 constexpr size_t MAX_ENTRIES = 64;
 
@@ -370,6 +376,9 @@ private:
         bool have = false;
         uint8_t visual = 0xff, actual = 0xff;
         char letter = 0;
+        bool damage = false;
+        uint8_t state[4] = {};
+        float deflation[4] = {};
     };
 
     Mem m_;
@@ -424,6 +433,8 @@ private:
     uint8_t pit_status_[MAX_CARS] = {};
     uint8_t pit_stops_[MAX_CARS] = {};
     bool pit_lane_ok_[MAX_CARS] = {};
+    uint8_t garage_[MAX_CARS] = {};
+    bool garage_ok_[MAX_CARS] = {};
     bool retire_from_bus_ = false;
     uint32_t player_gen_ = 0, subject_gen_ = 0;
     uintptr_t player_ptr_ = 0, subject_ptr_ = 0;
@@ -438,6 +449,7 @@ private:
         std::memset(cars, 0, sizeof cars);
         std::memset(pit_, 0xff, sizeof pit_);
         std::memset(pit_lane_ok_, 0, sizeof pit_lane_ok_);
+        std::memset(garage_ok_, 0, sizeof garage_ok_);
         reset_timers();
     }
 
@@ -495,6 +507,7 @@ private:
             t = Tyre{};
         std::memset(pit_, 0xff, sizeof pit_);
         std::memset(pit_lane_ok_, 0, sizeof pit_lane_ok_);
+        std::memset(garage_ok_, 0, sizeof garage_ok_);
         ++seq;
     }
 
@@ -853,6 +866,7 @@ private:
     {
         std::memset(pit_, 0xff, sizeof pit_);
         std::memset(pit_lane_ok_, 0, sizeof pit_lane_ok_);
+        std::memset(garage_ok_, 0, sizeof garage_ok_);
         uintptr_t s = find(c_pit_, s_.key_pit);
         uintptr_t rec[MAX_CARS * 2];
         if (!s || !m_.read(s + L::pit::records, rec, sizeof rec))
@@ -875,6 +889,14 @@ private:
                 pit_status_[vid] = !in_lane ? 0 : st == 4 ? 2 : 1;
                 pit_stops_[vid] = uint8_t(stops & 0xff);
                 pit_lane_ok_[vid] = true;
+                if constexpr (L::HAS_GARAGE) {
+                    int32_t garage = -1;
+                    if (m_.get(flags + L::pit::garage, garage) && garage >= 0 &&
+                        garage <= int32_t(L::pit::garage_safety_car)) {
+                        garage_[vid] = uint8_t(garage);
+                        garage_ok_[vid] = true;
+                    }
+                }
             }
         }
     }
@@ -941,8 +963,33 @@ private:
         }
     }
 
+    void read_tyre_damage(uintptr_t V, Tyre &t)
+    {
+        namespace D = L::tyre_damage;
+        uintptr_t physics = 0, car = 0, suspension = 0, wheels[4] = {};
+        if (!m_.get(V + D::physics, physics) || !physics || (physics & 7) || !m_.get(physics + D::car, car) || !car ||
+            (car & 7) || !m_.get(car + D::suspension, suspension) || !suspension || (suspension & 7) ||
+            !m_.read(suspension + D::wheels, wheels, sizeof wheels))
+            return;
+        for (unsigned w = 0; w < 4; w++) {
+            uint8_t flags = 0;
+            float deflation = 0;
+            if (!wheels[w] || (wheels[w] & 7) || !m_.get(wheels[w] + D::flags, flags) ||
+                !m_.get(wheels[w] + D::deflation, deflation) || !(deflation == deflation) || deflation < 0 ||
+                deflation > 100)
+                return;
+            uint8_t st = flags & D::state_mask;
+            t.state[w] = st == 2 || st == 3 ? st : 0;
+            t.deflation[w] = deflation;
+        }
+        t.damage = true;
+    }
+
     void read_tyre(uintptr_t V, Tyre &t)
     {
+        if constexpr (L::HAS_TYRE_DAMAGE)
+            if (s_.tyre_damage && V && !(V & 7))
+                read_tyre_damage(V, t);
         uint8_t b[L::tyres::hi - L::tyres::lo];
         auto F = [&](uintptr_t off) { return off - L::tyres::lo; };
         if (!V || (V & 7) || !m_.read(V + L::tyres::lo, b, sizeof b))
@@ -1500,6 +1547,11 @@ private:
                 c.pit_status = pit_status_[id];
                 c.pit_stops = pit_stops_[id];
             }
+            if (garage_ok_[id]) {
+                c.have |= SWOFTY_LIVE_HAVE_GARAGE;
+                c.garage = garage_[id];
+                c.pit_box = garage_pit_box(garage_[id]);
+            }
             c.gap_leader_ms = c.gap_ahead_ms = SWOFTY_LIVE_NO_GAP;
             const Gap &g = gap_[id];
             bool ok_status = k.have && (k.status == 2 || k.status == 3) && !(pit_[id] >= 2 && pit_[id] <= 15);
@@ -1525,6 +1577,13 @@ private:
             if (t.have) {
                 c.have |= SWOFTY_LIVE_HAVE_TYRE;
                 c.tyre_letter = t.letter;
+            }
+            if (t.damage) {
+                c.have |= SWOFTY_LIVE_HAVE_TYRE_DAMAGE;
+                for (unsigned w = 0; w < 4; w++) {
+                    c.tyre_damage[w] = t.state[w];
+                    c.tyre_deflation[w] = t.deflation[w];
+                }
             }
         }
 

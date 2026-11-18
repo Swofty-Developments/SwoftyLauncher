@@ -28,6 +28,10 @@ namespace swofty_core::registry {
 class Store;
 }
 
+namespace career::saves {
+struct SlotRead;
+}
+
 namespace runtime {
 
 // The text of swofty/settings.json as the launcher wrote it (empty when absent).
@@ -127,9 +131,6 @@ void mfd_tick();
 int popup_show(const std::string &title, const std::string &body, const std::string &by);
 int hud_toast(const std::string &text, const std::string &detail, float seconds, const std::string &by,
               const std::string &icon = {});
-namespace toast {
-void tick();
-}
 const SwoftyCareerContent *career_content_table();
 void career_content_tick();
 void entitlements_tick();
@@ -151,13 +152,10 @@ bool era_session_unlisted(std::string &list);
 void era_session_trace(const char *state, int to);
 void era_session_unloaded(const char *state, int to);
 // Career saves (career_saves.cpp): the career index and per-career addon data.
-namespace career_saves {
-struct SlotRead;
-}
 void career_saves_start();
 void career_saves_saving();
 void career_saves_saved();
-void career_saves_listed(const std::vector<career_saves::SlotRead> &slots, bool complete, bool at_load);
+void career_saves_listed(const std::vector<career::saves::SlotRead> &slots, bool complete, bool at_load);
 // Save sandbox (save_sandbox.cpp): under `swofty test` with a run token, or with the launcher's saves.
 bool save_sandbox_test_mode();
 bool save_sandbox_launcher_mode();

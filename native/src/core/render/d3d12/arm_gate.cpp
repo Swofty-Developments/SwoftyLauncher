@@ -14,15 +14,18 @@
 #include <cstring>
 #include <string>
 
-namespace d3d12hooks {
+namespace render::d3d12 {
 
 namespace {
 
-namespace ag = arm_gate;
-
 constexpr size_t PATCH_KEPT = 32;
 
-safetyhook::InlineHook h_device, h_factory, h_factory1, h_factory2;
+// The arm gate's set: the creation exports it holds the game's calls at while the arm runs on its worker.
+struct ArmHooks : runtime::loader::HookSet<> {
+    safetyhook::InlineHook device, factory, factory1, factory2;
+};
+
+ArmHooks hooks;
 
 // A creation export the gate holds. The device export stays hooked until its first call from outside the arm,
 // which it times; the factory exports are unhooked as soon as the worker has finished.
@@ -38,13 +41,13 @@ struct Export {
 enum { DEVICE, FACTORY, FACTORY1, FACTORY2, EXPORTS };
 
 constinit Export exports[EXPORTS] = {
-    {"d3d12.dll", "D3D12CreateDevice", true, &h_device},
-    {"dxgi.dll", "CreateDXGIFactory", false, &h_factory},
-    {"dxgi.dll", "CreateDXGIFactory1", false, &h_factory1},
-    {"dxgi.dll", "CreateDXGIFactory2", false, &h_factory2},
+    {"d3d12.dll", "D3D12CreateDevice", true, &hooks.device},
+    {"dxgi.dll", "CreateDXGIFactory", false, &hooks.factory},
+    {"dxgi.dll", "CreateDXGIFactory1", false, &hooks.factory1},
+    {"dxgi.dll", "CreateDXGIFactory2", false, &hooks.factory2},
 };
 
-constinit ag::Gate gate;
+constinit arm_gate::Gate gate;
 constinit void (*block_fn)() = nullptr;
 constinit HMODULE core_module = nullptr;
 std::wstring windows_dir, d3d12_dir;
@@ -86,17 +89,17 @@ std::wstring module_path(const void *addr, HMODULE *mod)
     return n && n < MAX_PATH * 2 ? std::wstring(path, n) : std::wstring();
 }
 
-ag::Exempt exempt_of(void *caller)
+arm_gate::Exempt exempt_of(void *caller)
 {
     if (holds_loader_lock())
-        return ag::Exempt::loader_lock;
+        return arm_gate::Exempt::loader_lock;
     HMODULE m = nullptr;
     std::wstring path = module_path(caller, &m);
     if (m && m == core_module)
-        return ag::Exempt::core;
-    if (ag::system_module(path, windows_dir, d3d12_dir))
-        return ag::Exempt::system;
-    return ag::Exempt::none;
+        return arm_gate::Exempt::core;
+    if (arm_gate::system_module(path, windows_dir, d3d12_dir))
+        return arm_gate::Exempt::system;
+    return arm_gate::Exempt::none;
 }
 
 void unhook(Export &e)
@@ -116,20 +119,20 @@ template <class Call> HRESULT gated(int which, void *caller, Call call)
     Export &e = exports[which];
     CallerScope scope(caller);
     double waited = 0;
-    ag::Pass p = ag::Pass::open;
+    arm_gate::Pass p = arm_gate::Pass::open;
     if (gate.running()) {
         uint32_t me = GetCurrentThreadId();
-        p = gate.wait(me, gate.is_worker(me) ? ag::Exempt::none : exempt_of(caller), ag::WAIT_CAP, &waited);
+        p = gate.wait(me, gate.is_worker(me) ? arm_gate::Exempt::none : exempt_of(caller), arm_gate::WAIT_CAP, &waited);
     }
-    if (p == ag::Pass::timed_out)
+    if (p == arm_gate::Pass::timed_out)
         swofty::log("[d3d12] %s from %s (thread %lu) waited %.0f ms for the D3D12 arm on its worker and goes on without it",
                     e.name, module_of(caller).c_str(), GetCurrentThreadId(), waited);
-    if (p == ag::Pass::worker)
+    if (p == arm_gate::Pass::worker)
         return call();
-    if (p != ag::Pass::open && p != ag::Pass::waited && p != ag::Pass::timed_out) {
+    if (p != arm_gate::Pass::open && p != arm_gate::Pass::waited && p != arm_gate::Pass::timed_out) {
         if (passes_told.fetch_add(1) < PASSES_TOLD)
             swofty::log("[d3d12] %s from %s (thread %lu) while the D3D12 arm runs: %s", e.name,
-                        module_of(caller).c_str(), GetCurrentThreadId(), ag::pass_name(p));
+                        module_of(caller).c_str(), GetCurrentThreadId(), arm_gate::pass_name(p));
         return call();
     }
     if (!e.first.exchange(false))
@@ -139,7 +142,7 @@ template <class Call> HRESULT gated(int which, void *caller, Call call)
     double ms = took.total_ms();
     swofty::log("[d3d12] the first %s from outside the D3D12 arm, from %s (thread %lu): %s, %.1f ms waited, %.1f ms in the "
                 "call (0x%08lx)",
-                e.name, module_of(caller).c_str(), GetCurrentThreadId(), ag::pass_name(p), waited, ms,
+                e.name, module_of(caller).c_str(), GetCurrentThreadId(), arm_gate::pass_name(p), waited, ms,
                 static_cast<unsigned long>(hr));
     swofty::log(perf::STEP_LINE, waited, (std::string("d3d12 first ") + e.name + " outside the arm, waiting for it").c_str());
     swofty::log(perf::STEP_LINE, ms, (std::string("d3d12 first ") + e.name + " outside the arm, the call").c_str());
@@ -154,23 +157,23 @@ using Factory2Fn = HRESULT(WINAPI *)(UINT, REFIID, void **);
 HRESULT WINAPI device_hook(IUnknown *adapter, D3D_FEATURE_LEVEL level, REFIID riid, void **out)
 {
     return gated(DEVICE, __builtin_return_address(0),
-                 [&] { return h_device.original<PFN_D3D12_CREATE_DEVICE>()(adapter, level, riid, out); });
+                 [&] { return hooks.device.original<PFN_D3D12_CREATE_DEVICE>()(adapter, level, riid, out); });
 }
 
 HRESULT WINAPI factory_hook(REFIID riid, void **out)
 {
-    return gated(FACTORY, __builtin_return_address(0), [&] { return h_factory.original<FactoryFn>()(riid, out); });
+    return gated(FACTORY, __builtin_return_address(0), [&] { return hooks.factory.original<FactoryFn>()(riid, out); });
 }
 
 HRESULT WINAPI factory1_hook(REFIID riid, void **out)
 {
-    return gated(FACTORY1, __builtin_return_address(0), [&] { return h_factory1.original<FactoryFn>()(riid, out); });
+    return gated(FACTORY1, __builtin_return_address(0), [&] { return hooks.factory1.original<FactoryFn>()(riid, out); });
 }
 
 HRESULT WINAPI factory2_hook(UINT flags, REFIID riid, void **out)
 {
     return gated(FACTORY2, __builtin_return_address(0),
-                 [&] { return h_factory2.original<Factory2Fn>()(flags, riid, out); });
+                 [&] { return hooks.factory2.original<Factory2Fn>()(flags, riid, out); });
 }
 
 // Every export the process has takes its hook; D3D12CreateDevice and CreateDXGIFactory1, which the arm itself
@@ -233,13 +236,13 @@ struct Platform {
     void unhook()
     {
         for (auto &e : exports)
-            d3d12hooks::unhook(e);
+            d3d12::unhook(e);
     }
 
     void unhook_factories()
     {
         for (int i = FACTORY; i < EXPORTS; i++)
-            d3d12hooks::unhook(exports[i]);
+            d3d12::unhook(exports[i]);
     }
 };
 
@@ -249,7 +252,7 @@ DWORD WINAPI worker(void *)
 {
     name_thread(L"swofty d3d12 arm");
     perf::Stopwatch took;
-    ag::run_worker(gate, block_fn, platform);
+    arm_gate::run_worker(gate, block_fn, platform);
     swofty::log(perf::STEP_LINE, took.total_ms(), "d3d12 arm on its worker");
     return 0;
 }
@@ -271,11 +274,10 @@ void *creation_caller(void *ret)
 
 bool arm_on_worker(void (*block)(), bool early)
 {
-    static std::atomic<bool> asked{false};
-    if (asked.exchange(true))
+    if (!hooks.gate.offer())
         return false;
     char v[8] = {};
-    DWORD n = GetEnvironmentVariableA(ag::SYNC_ENV, v, sizeof v);
+    DWORD n = GetEnvironmentVariableA(arm_gate::SYNC_ENV, v, sizeof v);
     std::string sync = n && n < sizeof v ? v : "";
     std::string rival = sync == "1" ? std::string() : hud::overlay::device_hook_rival();
     GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
@@ -285,20 +287,20 @@ bool arm_on_worker(void (*block)(), bool early)
     windows_dir = wn && wn < MAX_PATH ? std::wstring(w, wn) : std::wstring();
     d3d12_dir = runtime::game_root().empty() ? std::wstring() : runtime::game_root() + L"D3D12\\";
     block_fn = block;
-    ag::Inputs in;
+    arm_gate::Inputs in;
     in.sync_env = sync;
     in.rival = rival;
     in.early = early;
     in.loader_lock = holds_loader_lock();
-    ag::Choice c = ag::begin(in, gate, platform);
+    arm_gate::Choice c = arm_gate::begin(in, gate, platform);
     if (!c.worker) {
         swofty::log("[d3d12] the D3D12 arm runs in the stage: %s", c.why.c_str());
-        return false;
+        return settle(hooks, false, c.why.c_str());
     }
     swofty::log("[d3d12] the D3D12 arm runs on a worker; the game's D3D12CreateDevice and CreateDXGIFactory calls wait "
                 "for it (%s=1 runs it in the stage)",
-                ag::SYNC_ENV);
-    return true;
+                arm_gate::SYNC_ENV);
+    return settle(hooks, true);
 }
 
 }

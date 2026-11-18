@@ -32,7 +32,7 @@
 
 namespace {
 
-namespace cs = runtime::career_saves;
+namespace cs = career::saves;
 namespace hk = swofty_core::hooks;
 namespace reg = swofty_core::registry;
 using swofty::json::Value;
@@ -360,7 +360,7 @@ void career_saves_saving()
     flush_locked();
 }
 
-void career_saves_listed(const std::vector<career_saves::SlotRead> &slots, bool complete, bool at_load)
+void career_saves_listed(const std::vector<career::saves::SlotRead> &slots, bool complete, bool at_load)
 {
     cs::ListResult r;
     {

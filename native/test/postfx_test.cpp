@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-using namespace postfx;
+using namespace render::postfx;
 
 static int failed;
 

@@ -1,9 +1,9 @@
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 
 use crate::shell::notices::Notification;
 use gpui_kit::*;
-use swofty_core::dbedit::draft::{Opened, Written};
+use swofty_core::dbedit::draft::{Draft, Opened, Written};
 use swofty_core::dbedit::package::{self, PackageInfo};
 use swofty_i18n::{tr, trf};
 
@@ -62,7 +62,7 @@ impl Db {
         if !db.autosave.begin() {
             return;
         }
-        let (store, draft, file) = (needs.store.clone(), db.draft.clone(), db.file.clone());
+        let (store, draft, file) = (needs.store.clone(), db.book.draft.clone(), db.file.clone());
         cx.spawn(async move |this, cx| {
             let result = cx
                 .background_executor()
@@ -83,33 +83,15 @@ impl Db {
 
 impl Shell {
     pub(crate) fn db_count(&self) -> usize {
-        self.db.draft.unsaved()
+        self.db.book.draft.unsaved()
     }
 
     pub(crate) fn db_profile_changed(&mut self, cx: &mut Context<Self>) {
         self.db_refresh(cx);
     }
 
-    pub(crate) fn db_addon(&self, id: &str) -> Option<&PackageInfo> {
-        self.db.addons.iter().find(|p| p.id == id)
-    }
-
-    /// The installed addon the draft edits, if any.
-    pub(crate) fn db_bound(&self) -> Option<&PackageInfo> {
-        self.db.draft.addon.as_deref().and_then(|id| self.db_addon(id))
-    }
-
-    /// The draft's addon name, or "the new addon".
-    pub(crate) fn db_draft_name(&self) -> String {
-        match (&self.db.draft.addon, self.db_bound()) {
-            (_, Some(info)) => info.name.clone(),
-            (Some(id), None) => id.clone(),
-            (None, None) => "the new addon".into(),
-        }
-    }
-
     pub(crate) fn db_locked(&self) -> bool {
-        self.db.addon_error.is_some()
+        self.db.book.addon_error.is_some()
     }
 
     pub(crate) fn db_enabled(&self, id: &str) -> bool {
@@ -121,7 +103,7 @@ impl Shell {
         self.library
             .profile
             .enabled()
-            .filter(|id| self.db_addon(id).is_some())
+            .filter(|id| self.db.book.addon(id).is_some())
             .map(str::to_owned)
             .collect()
     }
@@ -146,7 +128,7 @@ impl Shell {
             })
             .collect();
         addons.sort_by_key(|p| p.name.to_lowercase());
-        self.db.addons = addons;
+        self.db.book.addons = addons;
         if !self.db.draft_read {
             self.db_read_draft();
         }
@@ -161,7 +143,7 @@ impl Shell {
         let opened = guarded(|| Ok(lock(&self.db.file).open(&store)));
         let body = match opened {
             Ok(Opened::Read(d)) => {
-                self.db.draft = d;
+                self.db.book.draft = d;
                 None
             }
             Ok(Opened::SetAside { error, kept }) => Some(trf!(
@@ -206,7 +188,7 @@ impl Shell {
         if !self.db.autosave.unwritten || self.db.autosave.newer {
             return;
         }
-        let (store, draft) = (self.store.clone(), &self.db.draft);
+        let (store, draft) = (self.store.clone(), &self.db.book.draft);
         if let Ok(Written::Saved) = guarded(|| lock(&self.db.file).write(&store, draft).map_err(text)) {
             self.db.autosave.unwritten = false;
         }
@@ -217,7 +199,7 @@ impl Shell {
         self.db.autosave.give_way();
         self.db.draft_read = false;
         self.db_read_draft();
-        self.db.seen = None;
+        self.db.book.seen = None;
         self.db.errors.clear();
         self.db.cell = None;
         self.db.slots = Slots::default();
@@ -254,50 +236,50 @@ impl Shell {
 
     // Follows the draft's addon on disk: removed, damaged, or saved by another writer.
     fn db_sync_addon(&mut self, quiet: bool, cx: &mut Context<Self>) {
-        let Some(id) = self.db.draft.addon.clone() else {
-            if self.db.addon_error.take().is_some() {
+        let Some(id) = self.db.book.draft.addon.clone() else {
+            if self.db.book.addon_error.take().is_some() {
                 Db::changed(self, None, false, cx);
             }
             return;
         };
         let store = self.store.clone();
         if !guarded(|| Ok(package::is_package(&store, &id))).unwrap_or(false) {
-            let name = self.db_draft_name();
-            if self.db.draft.is_dirty() {
-                let edits = self.db.draft.edits.clone();
-                self.db.draft.clear();
-                self.db.draft.edits = edits;
-                self.db.draft.name = Some(name.clone());
+            let name = self.db.book.draft_name();
+            if self.db.book.draft.is_dirty() {
+                let edits = self.db.book.draft.edits.clone();
+                self.db.book.draft.clear();
+                self.db.book.draft.edits = edits;
+                self.db.book.draft.name = Some(name.clone());
                 self.db.toasts.push(Notification::warning(trf!(
                     "{name} was removed. Your unsaved changes stay in the DB Editor as a new addon.",
                     name = name
                 )));
             } else {
-                self.db.draft.clear();
+                self.db.book.draft.clear();
             }
-            self.db.addon_error = None;
-            self.db.seen = None;
+            self.db.book.addon_error = None;
+            self.db.book.seen = None;
             Db::persist(self, cx);
             Db::changed(self, None, false, cx);
             return;
         }
         let stamp = guarded(|| Ok(package::modified(&store, &id))).ok().flatten();
-        if self.db.seen == Some(stamp) {
+        if self.db.book.seen == Some(stamp) {
             return;
         }
-        self.db.seen = Some(stamp);
-        if self.db.addon_error.is_none() && stamp == self.db.draft.stamp {
+        self.db.book.seen = Some(stamp);
+        if self.db.book.addon_error.is_none() && stamp == self.db.book.draft.stamp {
             return;
         }
         match guarded(|| package::Package::open(&store, &id).map_err(text)) {
             Ok(pkg) => {
-                let reload = self.db.addon_error.is_none() && self.db.draft.stamp.is_some();
-                let dirty = self.db.draft.is_dirty();
-                self.db.draft.rebase(pkg.edits, stamp);
-                self.db.addon_error = None;
+                let reload = self.db.book.addon_error.is_none() && self.db.book.draft.stamp.is_some();
+                let dirty = self.db.book.draft.is_dirty();
+                self.db.book.draft.rebase(pkg.edits, stamp);
+                self.db.book.addon_error = None;
                 Db::persist(self, cx);
                 if reload && !quiet {
-                    let name = self.db_draft_name();
+                    let name = self.db.book.draft_name();
                     self.db.toasts.push(Notification::info(if dirty {
                         trf!(
                             "{name} changed on disk and was reloaded. Your unsaved changes are kept on top.",
@@ -308,7 +290,7 @@ impl Shell {
                     }));
                 }
             }
-            Err(e) => self.db.addon_error = Some(e),
+            Err(e) => self.db.book.addon_error = Some(e),
         }
         self.db.errors.clear();
         self.db.cell = None;
@@ -318,13 +300,13 @@ impl Shell {
 
     /// Re-reads the draft's addon after this window changed its files, without a notice.
     pub(crate) fn db_quiet_reload(&mut self, cx: &mut Context<Self>) {
-        self.db.seen = None;
+        self.db.book.seen = None;
         self.db_sync_addon(true, cx);
     }
 
     /// Try again on a draft whose addon did not read.
     pub(crate) fn db_retry(&mut self, cx: &mut Context<Self>) {
-        self.db.seen = None;
+        self.db.book.seen = None;
         self.db_sync_addon(false, cx);
         cx.notify();
     }
@@ -335,14 +317,14 @@ impl Shell {
             return;
         }
         self.db_follow_draft(cx);
-        if self.db.draft.addon.is_some() {
+        if self.db.book.draft.addon.is_some() {
             self.db_sync_addon(false, cx);
         }
     }
 
     pub(super) fn db_ready_to_edit(&mut self, cx: &mut Context<Self>) -> bool {
         self.db_sync_addon(false, cx);
-        self.db.catalog().is_some() && self.db.addon_error.is_none()
+        self.db.catalog().is_some() && self.db.book.addon_error.is_none()
     }
 
     pub(crate) fn db_turn_on(&mut self, id: &str) -> Result<(), String> {
@@ -356,9 +338,9 @@ impl Shell {
     /// draft ask Save / Discard / Cancel first.
     pub(crate) fn db_edit_addon(&mut self, id: &str, cx: &mut Context<Self>) {
         self.open_page(Page::Database, cx);
-        if self.db.draft.addon.as_deref() == Some(id) {
+        if self.db.book.draft.addon.as_deref() == Some(id) {
             self.db_retry(cx);
-        } else if self.db.draft.is_dirty() {
+        } else if self.db.book.draft.is_dirty() {
             self.db.pending_open = Some(id.to_owned());
         } else {
             self.db_then(Then::Open(id.to_owned()), cx);
@@ -371,24 +353,24 @@ impl Shell {
         let mut toast = None;
         match then {
             Then::Open(id) => {
-                let draft = &mut self.db.draft;
-                self.db.addon_error = guarded(|| draft.open(&store, &id).map_err(text)).err();
-                if self.db.addon_error.is_some() {
-                    self.db.draft.clear();
-                    self.db.draft.addon = Some(id);
+                let draft = &mut self.db.book.draft;
+                self.db.book.addon_error = guarded(|| draft.open(&store, &id).map_err(text)).err();
+                if self.db.book.addon_error.is_some() {
+                    self.db.book.draft.clear();
+                    self.db.book.draft.addon = Some(id);
                 }
             }
-            Then::New => self.db.draft.clear(),
+            Then::New => self.db.book.draft.clear(),
             Then::Load {
                 file,
                 name,
                 edits,
                 report,
             } => {
-                self.db.draft.clear();
-                self.db.draft.edits = edits;
-                self.db.draft.name = Some(name);
-                self.db.addon_error = None;
+                self.db.book.draft.clear();
+                self.db.book.draft.edits = edits;
+                self.db.book.draft.name = Some(name);
+                self.db.book.addon_error = None;
                 let note = if report.format == "bin" && report.skipped.len() > 1 {
                     Notification::warning(report_text(&report)).autohide(false)
                 } else {
@@ -401,7 +383,7 @@ impl Shell {
                 Db::go(self, Nav::Changes, cx);
             }
         }
-        self.db.seen = Some(self.db.draft.stamp);
+        self.db.book.seen = Some(self.db.book.draft.stamp);
         self.db.errors.clear();
         self.db.cell = None;
         self.db.slots = Slots::default();
@@ -413,7 +395,7 @@ impl Shell {
 
     /// "Also changed by …" for a key another enabled DB Editor addon changes.
     pub(crate) fn db_others(&self, key: u64) -> Option<String> {
-        let editing = self.db.draft.addon.as_deref();
+        let editing = self.db.book.draft.addon.as_deref();
         let others: Vec<&(String, String)> = self
             .db
             .others
@@ -423,7 +405,9 @@ impl Shell {
             .collect();
         let last = others.last()?;
         let name = |id: &str| {
-            self.db_addon(id)
+            self.db
+                .book
+                .addon(id)
                 .map_or_else(|| id.to_owned(), |p| p.name.clone())
         };
         let list: Vec<String> = others
@@ -452,7 +436,7 @@ impl Shell {
     }
 
     pub(crate) fn db_shared(&self, key: u64) -> bool {
-        let editing = self.db.draft.addon.as_deref();
+        let editing = self.db.book.draft.addon.as_deref();
         self.db
             .others
             .get(&key)
@@ -479,5 +463,44 @@ impl Shell {
         if matches!(db.nav, Nav::Raw(_)) {
             db.nav = Nav::Raw(0);
         }
+    }
+}
+
+/// The draft and the DB Editor addons it can be saved into.
+#[derive(Default)]
+pub(crate) struct DraftBook {
+    /// The changes being edited; `draft.edits` is what every view shows.
+    pub draft: Draft,
+    /// The DB Editor addons installed, from their manifests.
+    pub addons: Vec<PackageInfo>,
+    /// Why the draft's addon could not be read; editing stays off until it reads.
+    pub addon_error: Option<String>,
+    /// The addon file time last looked at, so a damaged file is read once per change.
+    pub(super) seen: Option<Option<SystemTime>>,
+}
+
+impl DraftBook {
+    pub(crate) fn addon(&self, id: &str) -> Option<&PackageInfo> {
+        self.addons.iter().find(|p| p.id == id)
+    }
+
+    /// The installed addon the draft edits, if any.
+    pub(crate) fn bound(&self) -> Option<&PackageInfo> {
+        self.draft.addon.as_deref().and_then(|id| self.addon(id))
+    }
+
+    /// The draft's addon name, or "the new addon".
+    pub(crate) fn draft_name(&self) -> String {
+        match (&self.draft.addon, self.bound()) {
+            (_, Some(info)) => info.name.clone(),
+            (Some(id), None) => id.clone(),
+            (None, None) => "the new addon".into(),
+        }
+    }
+
+    /// A save wrote the addon: its last read error no longer holds, and its file is read again.
+    pub(crate) fn saved(&mut self) {
+        self.addon_error = None;
+        self.seen = None;
     }
 }

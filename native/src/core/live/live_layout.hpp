@@ -91,6 +91,10 @@ constexpr uintptr_t records = 0x68, state = 0x4, stops = 0x14;
 constexpr uintptr_t lane_object = 0x48, lane_flags = 0x938, in_lane = 0x103;
 constexpr size_t lane_flag_stride = 0x10;
 constexpr unsigned max_slots = 0x1b;
+// The garage index Game_PitLane_AssignGarageIndices writes (0x7fffffff unassigned, 99 the safety car); its pit box is
+// garage >> 1, box 12 for the safety car.
+constexpr uintptr_t garage = 0xe0;
+constexpr uint32_t garage_safety_car = 99, safety_car_box = 12;
 }
 
 namespace penalty_log {
@@ -293,6 +297,20 @@ LIVE_TIE(PitLaneSystem, lane, pit::lane_object);
 LIVE_TIE(PitLaneTrack, vehicle_slots, pit::lane_flags);
 LIVE_TIE(PitLaneVehicleSlot, lane, 0x0);
 LIVE_TIE(PitLaneVehicle, in_lane, pit::in_lane);
+LIVE_TIE(PitLaneVehicle, garage_index, pit::garage);
+// The garage read is compiled in once the generated header exports PitLaneVehicle.garage_index (a verify row).
+inline constexpr bool HAS_GARAGE = LIVE_HAS(PitLaneVehicle, garage_index);
+// Each wheel's puncture state and deflation: VehicleTyreComponent +0x20 (the physics record), CarPhysicsRecord.car
+// +0x58, CarLive.suspension +0x580, the four wheels at CarSuspension +0x70..+0x88 (RL, RR, FL, FR), CarWheel.tyre_flags
+// +0x20 (bit 1 punctured, bit 0 burst) and CarWheel.deflation +0x98. The chain is runtime::car_layout::PUNCTURES; the
+// read is compiled in once the generated header exports both wheel fields.
+namespace tyre_damage {
+constexpr uintptr_t physics = 0x20, car = 0x58, suspension = 0x580, wheels = 0x70, flags = 0x20, deflation = 0x98;
+constexpr uint8_t state_mask = 0x03;
+}
+LIVE_TIE(CarWheel, tyre_flags, tyre_damage::flags);
+LIVE_TIE(CarWheel, deflation, tyre_damage::deflation);
+inline constexpr bool HAS_TYRE_DAMAGE = LIVE_HAS(CarWheel, tyre_flags) && LIVE_HAS(CarWheel, deflation);
 LIVE_SIZE(PitLaneVehicleSlot, pit::lane_flag_stride);
 LIVE_TIE(SpectatorDirectorGap, gap_mode, spectate::gap);
 LIVE_TIE(TyreSystem, vehicles_begin, tyres::per_vehicle);

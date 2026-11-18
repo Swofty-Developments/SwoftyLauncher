@@ -1,6 +1,6 @@
 #include "core/guards/session/replay_grid_logic.hpp"
 #include "core/guards/guard.hpp"
-#include "core/runtime/hook_errors.hpp"
+#include "core/runtime/loader/hook_install.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -275,13 +275,10 @@ void read_delta(safetyhook::Context &c)
 
 bool arm_read(safetyhook::MidHook &slot_hook, const runtime::Sig &s, uintptr_t at, void (*fn)(safetyhook::Context &))
 {
-    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), fn);
-    if (!h) {
-        swofty::log("[replay] read guard: %s: the hook failed: %s", s.what, runtime::hook_error(h.error()).c_str());
-        return false;
-    }
-    slot_hook = std::move(*h);
-    return true;
+    runtime::loader::Installed r = runtime::loader::install(slot_hook, at, s.what, fn);
+    if (!r)
+        swofty::log("[replay] read guard: %s: the hook failed: %s", s.what, r.error.c_str());
+    return bool(r);
 }
 
 void setup_read()

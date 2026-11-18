@@ -9,7 +9,7 @@
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/144676d40.c;xref:0x145bf9cb8;kb:subsystems/car.md#chassis",
-  "notes": "Chassis system vtable 0x145bf9ca0 slot +0x18 = OnReset(sys, flags) (CarComponentBase layout); the name is historical. Flag 0x8 gate; 0x2000: live COM z sys+0x158 = lerp(F1Tuning COM-Z range [vt+0x40]->+0x10/+0x14, slider tuning+0x210 clamped 0..1), logs F1_TUNING 'Setting chassis z-com to %f.'; 0x200: sets body COM (COMY, com_z) via 0x144676a80, mass sys+0x150 = sqrt_mass^2, inv mass +0x154, MOI +0x160..+0x168 from the CarObfFloat data, clears velocity accumulators +0x2e0..+0x328. Raw Chassis edits need this slot (flag 0x200) to reach the body."
+  "notes": "Chassis system vtable 0x145bf9ca0 slot +0x18 = OnReset(sys, flags) (CarComponentBase layout); the name is historical. Flag 0x8 gate; 0x2000: live COM z sys+0x158 = lerp(F1Tuning COM-Z range [vt+0x40]->+0x10/+0x14, slider tuning+0x210 clamped 0..1), logs F1_TUNING 'Setting chassis z-com to %f.'; 0x200: sets body COM (COMY, com_z) via 0x144676a80, mass sys+0x150 = sqrt_mass^2, inv mass +0x154, MOI +0x160..+0x168 from the CarObfFloat data, clears velocity accumulators +0x2e0..+0x328. Raw Chassis edits need this slot (flag 0x200) to reach the body. Callers: census steam 0x4676d40."
  },
  "signature": {
   "id": "car.tuning_set_chassis_z_com",

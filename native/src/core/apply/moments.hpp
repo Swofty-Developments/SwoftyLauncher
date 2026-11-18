@@ -12,8 +12,8 @@
 namespace swofty_core::apply::moments {
 
 void attach();
-std::size_t boot_plan();
-bool boot_work();
+void start_boot_plan();
+bool boot_may_work();
 void boot_load(room::Report &report);
 void boot_without_database(room::Report report);
 void write_room(const room::Report &report);

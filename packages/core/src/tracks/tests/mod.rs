@@ -91,7 +91,7 @@ fn stock_lists() -> Gvdb {
         };
         records.push(rec(&format!("{TRACK_DATA}_{set}.TrackData_{row}.track"), code));
     }
-    Gvdb { records }
+    Gvdb::new(records)
 }
 
 fn build_track(addon: &str, code: &str, base: &str) -> BuildTrack {
@@ -175,7 +175,7 @@ fn db() -> Gvdb {
             activity,
         ));
     }
-    Gvdb { records }
+    Gvdb::new(records)
 }
 
 fn weekends(db: &mut Gvdb, rows: &[(&str, &str)]) {
@@ -212,5 +212,5 @@ fn schedule() -> Schedule {
         records.push(rec(&format!("{EVENTS}_{i}._metadata_"), &format!("rw_{code}")));
         records.push(rec(&format!("{EVENTS}_{i}.activity"), code));
     }
-    Schedule::of(&Gvdb { records })
+    Schedule::of(&Gvdb::new(records))
 }

@@ -53,7 +53,7 @@ namespace {
 
 namespace mem = swofty::mem;
 namespace ss = runtime::save_sandbox;
-namespace sdg = runtime::save_diag;
+namespace sdg = career::save_diag;
 
 constexpr const char *MIXIN = "swofty_core.dll (test save sandbox)";
 constexpr const char *START = "Ne_SaveSystem2Win_Start";

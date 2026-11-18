@@ -9,13 +9,19 @@
 
 #include <algorithm>
 
-namespace d3d12hooks {
+namespace render::d3d12 {
 
 constinit QueueWatch queue_watch;
 
 namespace {
 
-safetyhook::InlineHook h_exec, h_barrier, h_setname, h_rtv, h_om;
+// The device set: the queue's ExecuteCommandLists, the list's ResourceBarrier and OMSetRenderTargets, and the device's
+// SetName and CreateRenderTargetView.
+struct DeviceHooks : runtime::loader::HookSet<> {
+    safetyhook::InlineHook exec, barrier, setname, rtv, om;
+};
+
+DeviceHooks hooks;
 constexpr size_t SETNAME_SLOT = 6, EXEC_SLOT = 10, BARRIER_SLOT = 26, RTV_SLOT = 20, OM_SLOT = 46;
 
 void STDMETHODCALLTYPE exec_hook(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists)
@@ -27,7 +33,7 @@ void STDMETHODCALLTYPE exec_hook(ID3D12CommandQueue *q, UINT n, ID3D12CommandLis
         subscribers.execs.fns[i](q, n, lists, plan);
     run_plan(plan, q, n, lists, [](ID3D12CommandQueue *queue, UINT count, ID3D12CommandList *const *first) {
         perf::Pause game;
-        h_exec.call<void>(queue, count, first);
+        hooks.exec.call<void>(queue, count, first);
     });
 }
 
@@ -36,13 +42,13 @@ void STDMETHODCALLTYPE barrier_hook(ID3D12GraphicsCommandList *list, UINT n, con
     for (int i = 0, k = subscribers.barriers.n.load(); i < k; i++)
         if (subscribers.barriers.fns[i](list, n, b))
             return;
-    h_barrier.call<void>(list, n, b);
+    hooks.barrier.call<void>(list, n, b);
 }
 
 void STDMETHODCALLTYPE rtv_hook(ID3D12Device *d, ID3D12Resource *r, const D3D12_RENDER_TARGET_VIEW_DESC *desc,
                                 D3D12_CPU_DESCRIPTOR_HANDLE at)
 {
-    h_rtv.call<void>(d, r, desc, at);
+    hooks.rtv.call<void>(d, r, desc, at);
     for (int i = 0, k = subscribers.rtvs.n.load(); i < k; i++)
         subscribers.rtvs.fns[i](r, at);
 }
@@ -52,14 +58,14 @@ void STDMETHODCALLTYPE om_hook(ID3D12GraphicsCommandList *l, UINT n, const D3D12
 {
     for (int i = 0, k = subscribers.render_targets.n.load(); i < k; i++)
         subscribers.render_targets.fns[i](l, n, rtv, single);
-    h_om.call<void>(l, n, rtv, single, dsv);
+    hooks.om.call<void>(l, n, rtv, single, dsv);
 }
 
 HRESULT STDMETHODCALLTYPE setname_hook(ID3D12Object *o, LPCWSTR name)
 {
     for (int i = 0, k = subscribers.setnames.n.load(); i < k; i++)
         subscribers.setnames.fns[i](o, name);
-    return h_setname.call<HRESULT>(o, name);
+    return hooks.setname.call<HRESULT>(o, name);
 }
 
 }
@@ -99,31 +105,29 @@ bool QueueWatch::recent_direct(DWORD tid, hud::arm_policy::ExecSeen &out)
 
 bool exec_hooked()
 {
-    return bool(h_exec);
+    return bool(hooks.exec);
 }
 
 void exec_original(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists)
 {
-    if (h_exec && hud::arm_policy::vtable_slot_is(q, EXEC_SLOT, h_exec.target()))
-        h_exec.call<void>(q, n, lists);
+    if (hooks.exec && hud::arm_policy::vtable_slot_is(q, EXEC_SLOT, hooks.exec.target()))
+        hooks.exec.call<void>(q, n, lists);
     else
         q->ExecuteCommandLists(n, lists);
 }
 
 void barrier_original(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *b)
 {
-    if (h_barrier && hud::arm_policy::vtable_slot_is(list, BARRIER_SLOT, h_barrier.target()))
-        h_barrier.call<void>(list, n, b);
+    if (hooks.barrier && hud::arm_policy::vtable_slot_is(list, BARRIER_SLOT, hooks.barrier.target()))
+        hooks.barrier.call<void>(list, n, b);
     else
         list->ResourceBarrier(n, b);
 }
 
 bool arm_device()
 {
-    static int state;
-    if (state)
-        return state > 0;
-    state = -1;
+    if (!hooks.gate.offer())
+        return hooks.live();
     ID3D12Device *dev = probe_device();
     ID3D12Resource *buffer = nullptr;
     ID3D12CommandAllocator *alloc = nullptr;
@@ -148,31 +152,30 @@ bool arm_device()
             SUCCEEDED(dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&alloc))) &&
             SUCCEEDED(dev->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, alloc, nullptr, IID_PPV_ARGS(&list))) &&
             SUCCEEDED(dev->CreateCommandQueue(&qd, IID_PPV_ARGS(&q))))
-            ok = install(h_setname, (*reinterpret_cast<void ***>(buffer))[SETNAME_SLOT],
+            ok = install(hooks.setname, (*reinterpret_cast<void ***>(buffer))[SETNAME_SLOT],
                          reinterpret_cast<void *>(&setname_hook), "ID3D12Object::SetName") &&
-                 install(h_barrier, (*reinterpret_cast<void ***>(list))[BARRIER_SLOT],
+                 install(hooks.barrier, (*reinterpret_cast<void ***>(list))[BARRIER_SLOT],
                          reinterpret_cast<void *>(&barrier_hook), "ID3D12GraphicsCommandList::ResourceBarrier") &&
-                 install(h_exec, (*reinterpret_cast<void ***>(q))[EXEC_SLOT], reinterpret_cast<void *>(&exec_hook),
+                 install(hooks.exec, (*reinterpret_cast<void ***>(q))[EXEC_SLOT], reinterpret_cast<void *>(&exec_hook),
                          "ID3D12CommandQueue::ExecuteCommandLists");
-        if (ok && install(h_rtv, (*reinterpret_cast<void ***>(dev))[RTV_SLOT], reinterpret_cast<void *>(&rtv_hook),
+        if (ok && install(hooks.rtv, (*reinterpret_cast<void ***>(dev))[RTV_SLOT], reinterpret_cast<void *>(&rtv_hook),
                           "ID3D12Device::CreateRenderTargetView") &&
-            !install(h_om, (*reinterpret_cast<void ***>(list))[OM_SLOT], reinterpret_cast<void *>(&om_hook),
+            !install(hooks.om, (*reinterpret_cast<void ***>(list))[OM_SLOT], reinterpret_cast<void *>(&om_hook),
                      "ID3D12GraphicsCommandList::OMSetRenderTargets"))
-            h_rtv = {};
+            hooks.rtv = {};
         if (list)
             list->Close();
     }
     if (ok)
         swofty::log("[d3d12] device hooks armed: SetName (vt+0x30), ResourceBarrier (vt+0xd0), ExecuteCommandLists "
                     "(vt+0x50)%s",
-                    h_om ? ", CreateRenderTargetView (vt+0xa0), OMSetRenderTargets (vt+0x170)" : "");
+                    hooks.om ? ", CreateRenderTargetView (vt+0xa0), OMSetRenderTargets (vt+0x170)" : "");
     release(q);
     release(list);
     release(alloc);
     release(buffer);
     release(dev);
-    state = ok ? 1 : -1;
-    return ok;
+    return settle(hooks, ok);
 }
 
 }

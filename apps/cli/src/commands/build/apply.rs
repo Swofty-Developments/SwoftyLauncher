@@ -18,10 +18,10 @@ pub fn apply(store: &Store, profile: &str, game: Option<PathBuf>) -> Result<Exit
         }
         bail!(
             "{}",
-            crate::recover::held(store, swofty_core::platform::process::game_running())
+            crate::session_lock::held(store, swofty_core::platform::process::game_running())
         );
     };
-    crate::recover::stale(store, &lock, &g, Scope::All, &out)?;
+    crate::session_lock::stale(store, &lock, &g, Scope::All, &out)?;
     install(store, profile, &g, false, &out)?;
     println!(
         "applied {profile} to {}; swofty restore puts the game back",

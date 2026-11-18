@@ -1121,6 +1121,11 @@ typedef struct SwoftyContentOps {
 #define SWOFTY_LIVE_HAVE_SECTOR (1ull << 24)
 #define SWOFTY_LIVE_HAVE_GAP_AHEAD (1ull << 25)
 #define SWOFTY_LIVE_HAVE_PIT_LANE (1ull << 26)
+#define SWOFTY_LIVE_HAVE_GARAGE (1ull << 27)
+#define SWOFTY_LIVE_GARAGE_SAFETY_CAR 99
+#define SWOFTY_LIVE_HAVE_TYRE_DAMAGE (1ull << 28)
+#define SWOFTY_LIVE_TYRE_PUNCTURED 2
+#define SWOFTY_LIVE_TYRE_BURST 3
 
 #define SWOFTY_LIVE_CAR_PLAYER (1u << 0)
 #define SWOFTY_LIVE_CAR_AI_DRIVING (1u << 1)
@@ -1165,7 +1170,21 @@ typedef struct SwoftyLiveCar {
     uint8_t pit_status;
     uint8_t pit_stops;
     uint8_t pad3[2];
-    uint32_t reserved[7];
+    /* The car's pit lane garage and pit box (SWOFTY_LIVE_HAVE_GARAGE): garage = 2 x the team's garage slot plus its
+       seat (the reverse on tracks whose garage order runs the other way), pit box = garage / 2, and
+       SWOFTY_LIVE_GARAGE_SAFETY_CAR (box 12) for the safety car. Both are 0 with the have bit clear on a build
+       whose live state does not walk the pit lane. They take the first word of what was reserved[7]: the struct's
+       size and every other offset are unchanged. */
+    uint8_t garage;
+    uint8_t pit_box;
+    uint8_t pad4[2];
+    /* Each wheel's tyre damage (SWOFTY_LIVE_HAVE_TYRE_DAMAGE), RL, RR, FL, FR: tyre_damage is the wheel's puncture
+       state, SWOFTY_LIVE_TYRE_PUNCTURED or SWOFTY_LIVE_TYRE_BURST (0 none), and tyre_deflation its deflation level
+       (0 without a puncture, 1 when one starts, growing until the tyre bursts at 2). They take the next five words of
+       what was reserved: the struct's size and every other offset are unchanged. */
+    uint8_t tyre_damage[4];
+    float tyre_deflation[4];
+    uint32_t reserved[1];
 } SwoftyLiveCar;
 
 #define SWOFTY_LIVE_SHAVE_TYPE (1ull << 0)

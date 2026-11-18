@@ -37,11 +37,11 @@ void Overlay::arm_decided()                        // "hud arm"
 bool Overlay::arm()
 {
     resolve_d3d12();
-    d3d12hooks::on_present(present_hook);
-    d3d12hooks::on_presented(presented_hook);
-    d3d12hooks::on_unread_queue(unread_queue_hook);
-    std::optional<d3d12hooks::ProbeScope> probe(std::in_place);
-    bool swapchain = d3d12hooks::arm_swapchain();
+    render::d3d12::on_present(present_hook);
+    render::d3d12::on_presented(presented_hook);
+    render::d3d12::on_unread_queue(unread_queue_hook);
+    std::optional<render::d3d12::ProbeScope> probe(std::in_place);
+    bool swapchain = render::d3d12::arm_swapchain();
     if (before_fg_wanted())                        // frame generation on, or SWOFTY_OVERLAY_FG / "overlay_fg"
         arm_before_fg("...");                      // device hooks: draw in the game's lists, before frame generation
     else if (hud::arm_policy::device_hooks_wanted_for(loaded_modules()))
@@ -83,7 +83,7 @@ s.paper_white;       // SWOFTY_OVERLAY_NITS, 350 by default
 
 ## How a post-process pass is recorded
 
-`postfx::Pipeline` (`render/postfx/pipeline.hpp`) owns every part under one recursive lock. Its `PassRecorder` records a frame's passes into one of `FRAMES` slots, in one of two places:
+`render::postfx::Pipeline` (`render/postfx/pipeline.hpp`) owns every part under one recursive lock. Its `PassRecorder` records a frame's passes into one of `FRAMES` slots, in one of two places:
 
 - In the game's list. The barrier hook (`ListPlacement`) marks what each list does with the tonemap output, the back buffers, the HUD-less copy and the depth buffer, and records the passes at the HUD-less step.
 - Between the game's lists. Where no list had such a step, the submission hook or Present records them into the slot's own list and submits it on the game's queue.
@@ -103,7 +103,7 @@ bool PassRecorder::run_between(ID3D12CommandQueue *q, ID3D12Resource *back, D3D1
     if (!made)
         return false;
     ID3D12CommandList *one[] = {s.list};
-    d3d12hooks::exec_original(q, 1u, one);
+    render::d3d12::exec_original(q, 1u, one);
     q->Signal(s.fence, ++s.fence_value);
     return true;
 }
@@ -124,7 +124,7 @@ for (int index : live) {                           // config.live_passes(fronten
 l->CopyResource(w.back, cur);                      // the last output back into the back buffer
 ```
 
-Each resource goes back to the state `Where` gave for it. In the game's list, `d3d12hooks::list_state` saves the list's root signature, heaps and pipeline first, and the recorder restores them after.
+Each resource goes back to the state `Where` gave for it. In the game's list, `render::d3d12::list_state` saves the list's root signature, heaps and pipeline first, and the recorder restores them after.
 
 ## The probe device scope
 
@@ -140,11 +140,11 @@ Hooking a D3D12 vtable needs a device to read the vtable from. One probe device 
 {"rtas guard", Start::ready, rtas_guard_setup, Probe::close},
 ```
 
-The runtime opens a `d3d12hooks::ProbeScope` at `Probe::open` and drops it after `Probe::close`. Inside it, the first `probe_device()` call makes the device and every later call gets the same one (`render/probe_logic.hpp`). Code that probes outside the table opens its own scope:
+The runtime opens a `render::d3d12::ProbeScope` at `Probe::open` and drops it after `Probe::close`. Inside it, the first `probe_device()` call makes the device and every later call gets the same one (`render/probe_logic.hpp`). Code that probes outside the table opens its own scope:
 
 ```cpp
-d3d12hooks::ProbeScope probe;                       // nests: the device lives until the outermost scope closes
-ID3D12Device *dev = d3d12hooks::probe_device();
+render::d3d12::ProbeScope probe;                       // nests: the device lives until the outermost scope closes
+ID3D12Device *dev = render::d3d12::probe_device();
 void **vt = dev ? *reinterpret_cast<void ***>(dev) : nullptr;
 release(dev);                                       // render/com.hpp
 ```
@@ -158,12 +158,12 @@ The log shows one pair per boot:
 
 ## The arm worker
 
-The first D3D12 device in the process pays the driver load, so the block from `hud arm` to `rtas guard` can take seconds. `Runtime::start` asks `d3d12hooks::arm_on_worker` (`render/d3d12/arm_gate.cpp`) to run the block on a worker, and the stage goes on to the next ready subsystem:
+The first D3D12 device in the process pays the driver load, so the block from `hud arm` to `rtas guard` can take seconds. `Runtime::start` asks `render::d3d12::arm_on_worker` (`render/d3d12/arm_gate.cpp`) to run the block on a worker, and the stage goes on to the next ready subsystem:
 
 ```cpp
 std::span<const Subsystem> block = probe_block(all, i);   // hud arm .. rtas guard
 bool early = runtime::load_stage() == "early" && !runtime::window_reached();
-if (point == Start::ready && d3d12hooks::arm_on_worker(ready_block_on_worker, early))
+if (point == Start::ready && render::d3d12::arm_on_worker(ready_block_on_worker, early))
     ;                                                     // the worker runs the block, in the same order
 else
     run_block(block, point, "");                          // in the stage, as before
@@ -179,7 +179,7 @@ Before the worker starts, `arm_on_worker` hooks the four creation exports the ga
 | A module under the Windows folder or the game's `D3D12` folder (the D3D12 and DXGI runtimes, the driver) | Goes straight through: the worker's device may wait for its threads |
 | Anything else (the game, `sl.interposer.dll`, an overlay) | Waits for the worker, for at most 30 s |
 
-So the game sees what it sees with the block in the stage, in the same order: the same hooks, and the probe device made and released before its own device and factory exist. The factory hooks come out when the worker is done. The device hook stays until the game's first `D3D12CreateDevice`, which it times, and then comes out. A hook that something patched over meanwhile stays in. DRED's own `D3D12CreateDevice` hook sits behind the gate's and asks `d3d12hooks::creation_caller` for the real caller, so it still tells the game's devices from the core's.
+So the game sees what it sees with the block in the stage, in the same order: the same hooks, and the probe device made and released before its own device and factory exist. The factory hooks come out when the worker is done. The device hook stays until the game's first `D3D12CreateDevice`, which it times, and then comes out. A hook that something patched over meanwhile stays in. DRED's own `D3D12CreateDevice` hook sits behind the gate's and asks `render::d3d12::creation_caller` for the real caller, so it still tells the game's devices from the core's.
 
 The block runs in the stage, with one line that says why, when any of these holds:
 

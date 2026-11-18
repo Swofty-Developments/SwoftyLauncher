@@ -65,6 +65,7 @@ class Script:
 
 # Built with the host C++ compiler, or with zig for x86_64-linux-musl where the compiler is zig.
 UNITS = [
+    Unit('abi_layout', 'Live car ABI layout unit test'),
     Unit('activity_resume', 'Activity resume guard unit test'),
     Unit('ai_corner', 'AI brake line guard unit test'),
     Unit('ai_curves', 'AI team curves guard unit test'),
@@ -75,6 +76,7 @@ UNITS = [
     Unit('characters_logic', 'Character override rules unit test'),
     Unit('dred', 'GPU device removal report unit test'),
     Unit('report_text', 'Crash report section text unit test'),
+    Unit('hook_set', 'Core mixin set state unit test'),
     Unit('ers_newlap', 'ERS new-lap site unit test'),
     Unit('ers_mode', 'ERS mode guard offset unit test'),
     Unit('estimate_laptime', 'Estimate lap time guard unit test'),
@@ -103,7 +105,8 @@ UNITS = [
     Unit('pit_box', 'Pit box guard unit test'),
     Unit('pit_slots', 'Pit slot guard unit test'),
     Unit('placed_record', 'placed record bound unit test'),
-    Unit('guard_lines', 'Site guard log lines test', args=['../src/core/guards', 'guard_lines/expected.txt', 'guard_lines/added.txt'],
+    Unit('guard_lines', 'Site guard log lines test',
+         args=['../src/core/guards', 'guard_lines/expected.txt', 'guard_lines/added.txt', 'guard_lines/logged.txt'],
          inputs=['src/core/guards/**/*.cpp']),
     Unit('guard_registry', 'Core mixin-set registry order test', args=['../src/core'],
          inputs=['tools/core_link_order.txt', 'src/core/**/*.cpp']),
@@ -114,10 +117,12 @@ UNITS = [
     Unit('report_queue', 'Registry report writer queue unit test'),
     Unit('protection_spans', 'Binding pass protection spans unit test'),
     Unit('game_settings', 'Game setting override table unit test'),
+    Unit('db_first_read', 'Database first-read probe unit test'),
     Unit('settings_logic', 'Addon settings model and requests file unit test'),
     Unit('player_name', 'Player name sanitising unit test'),
     Unit('postfx', 'Post-process pass logic unit test'),
     Unit('race_control', 'Race control events unit test', 'zig'),
+    Unit('tyre_damage', 'Tyre damage events unit test', 'zig'),
     Unit('race_retirement', 'Race retirement driver guard unit test'),
     Unit('red_flag_recompute', 'Red flag recompute guard unit test'),
     Unit('replay_grid', 'Replay recorder grid guard unit test'),
@@ -156,6 +161,7 @@ UNITS = [
     Unit('tyre_slots', 'Tyre slot guard unit test'),
     Unit('ui_registry_walk', 'UI registry walk unit test'),
     Unit('watchdog_grace', 'Boot watchdog grace unit test'),
+    Unit('weather_chain', 'Weather setup chain order rules unit test'),
     Unit('events_dispatch', 'Events dispatcher unit test', 'zig'),
     Unit('session_lifecycle', 'Session lifecycle kind unit test', 'zig'),
     Unit('career_state', 'Career and flow-state tracking unit test', 'zig'),
@@ -209,10 +215,12 @@ CONTENT_IDS = Objects(['src/core/apply/ids.cpp'], CONTENT_FLAGS + [SDK])
 CONTENT_WINDOWS = ['-Isrc', '-std=c++23', '-O2', '-Wall', '-Wextra', SDK, '-Iinclude', '-Ithird_party/zstd']
 CONTENT = [
     Program('lower_tool', [Objects(['test/content/lower_tool.cpp'], CONTENT_FLAGS + [SDK]), CONTENT_ENGINE]),
-    Program('rows_tool', [Objects(['test/content/rows_tool.cpp'], CONTENT_FLAGS + [SDK]), CONTENT_IDS, CONTENT_ENGINE]),
+    Program('rows_tool', [Objects(['test/content/rows_tool.cpp', 'src/core/apply/scheduler.cpp'], CONTENT_FLAGS + [SDK]), CONTENT_IDS,
+                          CONTENT_ENGINE]),
     Program('rows_test', [Objects(['test/content/rows_test.cpp', 'test/content/rows_test_packages.cpp',
                                    'test/content/rows_test_teams.cpp', 'test/content/rows_test_slots.cpp',
-                                   'test/content/rows_test_career.cpp', 'src/core/apply/scheduler.cpp'], CONTENT_FLAGS + [SDK]),
+                                   'test/content/rows_test_career.cpp', 'test/content/rows_test_plan.cpp',
+                                   'src/core/apply/scheduler.cpp'], CONTENT_FLAGS + [SDK]),
                           CONTENT_IDS, CONTENT_ENGINE]),
     *[Program(test, [Objects([f'test/content/{test}.cpp'], CONTENT_FLAGS + [SDK]), CONTENT_IDS, CONTENT_ENGINE])
       for test in ('vehicle_tower_test', 'package_id_test', 'id_pool_test', 'wear_test', 'box_world_test')],

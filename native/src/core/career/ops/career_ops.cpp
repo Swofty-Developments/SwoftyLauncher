@@ -29,7 +29,7 @@
 // The executor is lineup.cpp, the entrant rows, writes and contracts it drives are entrants.cpp, and apply_teams,
 // set_car_number and the label lookups are apply_teams.cpp, car_numbers.cpp and labels.cpp.
 
-namespace career_ops::live {
+namespace career::ops::live {
 
 Bindings bindings;
 constinit std::atomic<uint32_t> flow_tid{0};
@@ -39,7 +39,7 @@ Tables tables;
 
 namespace {
 
-using namespace career_ops::live;
+using namespace career::ops::live;
 namespace g = swofty::game;
 namespace mem = swofty::mem;
 
@@ -109,7 +109,7 @@ int api_apply_lineup(SwoftyText request, char *out, size_t cap, size_t *len)
             rep.changed = rep.written;
         }
     } else if (j["season"].type == json::Value::Obj) {
-        career_ops::plan::Input in;
+        career::ops::plan::Input in;
         int year = 0;
         std::string err;
         read_season(j["season"], in, year, err);
@@ -130,7 +130,7 @@ int api_apply_lineup(SwoftyText request, char *out, size_t cap, size_t *len)
             summary = "no career entity or its entrant rows are unreadable";
             r = SWOFTY_ASSET_LATE;
         } else {
-            career_ops::plan::Plan p = career_ops::plan::plan(in, plan_rows(rows));
+            career::ops::plan::Plan p = career::ops::plan::plan(in, plan_rows(rows));
             Lineup l;
             l.year = year;
             l.why = "season record";
@@ -178,7 +178,7 @@ int api_set_driver_ratings(uint32_t driver, const uint16_t *ids, const float *va
     }
     labels();
     std::string text;
-    int r = career_ops::stats::set(driver, ids, values, count, text);
+    int r = career::ops::stats::set(driver, ids, values, count, text);
     swofty::log("[career-ops] set_driver_ratings %s: %s", driver_name(driver).c_str(), text.c_str());
     return r;
 }
@@ -268,7 +268,7 @@ int api_set_seat(SwoftyText request, char *out, size_t cap, size_t *len)
     int r = SWOFTY_ASSET_OK;
     json::Value j;
     std::string text = request.data ? std::string(request.data, request.size) : std::string();
-    career_ops::seat::Plan sp;
+    career::ops::seat::Plan sp;
     labels();
     if (!on_flow_thread()) {
         rep.result = "failed";
@@ -312,7 +312,7 @@ int api_set_seat(SwoftyText request, char *out, size_t cap, size_t *len)
             summary = "no career entity or its entrant rows are unreadable";
             r = SWOFTY_ASSET_LATE;
         } else {
-            sp = career_ops::seat::plan(plan_rows(rows), static_cast<uint32_t>(driver), team, seat);
+            sp = career::ops::seat::plan(plan_rows(rows), static_cast<uint32_t>(driver), team, seat);
             if (!sp.refusal.empty()) {
                 rep.result = "refused";
                 rep.refusals.push_back(sp.refusal);
@@ -327,9 +327,9 @@ int api_set_seat(SwoftyText request, char *out, size_t cap, size_t *len)
                 l.why = "set_seat";
                 l.player_team = sp.player_team;
                 l.moves.push_back({sp.driver, sp.team, sp.seat, number(j["car"]), sp.holder, -1});
-                if (sp.what == career_ops::seat::Holder::swapped)
+                if (sp.what == career::ops::seat::Holder::swapped)
                     l.moves.push_back({static_cast<uint32_t>(sp.holder), sp.from_team, sp.from_seat, -1, static_cast<int>(sp.driver), -1});
-                else if (sp.what == career_ops::seat::Holder::released)
+                else if (sp.what == career::ops::seat::Holder::released)
                     l.releases.push_back(static_cast<uint32_t>(sp.holder));
                 r = execute(l, rep, summary);
                 rep.changed = r == SWOFTY_ASSET_OK ? 1 : 0;
@@ -340,7 +340,7 @@ int api_set_seat(SwoftyText request, char *out, size_t cap, size_t *len)
     if (rep.result == "ok" && r != SWOFTY_ASSET_OK)
         rep.result = "failed";
     std::string body = rep.json();
-    body.insert(body.size() - 1, ",\"holder\":" + quote(career_ops::seat::name(sp.what)));
+    body.insert(body.size() - 1, ",\"holder\":" + quote(career::ops::seat::name(sp.what)));
     int w = put(body, out, cap, len);
     return w == SWOFTY_TOO_SMALL && r == SWOFTY_ASSET_OK ? SWOFTY_TOO_SMALL : r;
 }
@@ -352,7 +352,7 @@ int api_set_track_fuel(SwoftyText request, char *out, size_t cap, size_t *len)
         swofty::log("[career-ops] set_track_fuel from %s: late: called off the flow thread", who.c_str());
         return SWOFTY_ASSET_LATE;
     }
-    return career_ops::set_track_fuel(who, request, out, cap, len);
+    return career::ops::set_track_fuel(who, request, out, cap, len);
 }
 
 int api_set_logo(const char *team_id, const char *logo_id)
@@ -481,7 +481,7 @@ void setup()
         runtime::frame_probe_name("career_ops");
         ev->on_frame(frame, nullptr, &token);
     }
-    career_ops::track_fuel_setup();
+    career::ops::track_fuel_setup();
 }
 
 }

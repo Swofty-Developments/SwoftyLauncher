@@ -5,6 +5,7 @@
 #include "core/apply/room.hpp"
 #include "core/apply/scheduler.hpp"
 #include "core/apply/tracks/keys.hpp"
+#include "core/assets/db_first_read.hpp"
 #include "core/assets/dbread_logic.hpp"
 #include "core/diagnostics/perf.hpp"
 #include "core/registry/table.hpp"
@@ -596,6 +597,8 @@ void boot16(uint8_t *db)
     }
     room::Budget budget = room::admit_whole(usable, asks);
     Tally t;
+    uint64_t digest = runtime::FNV64_BASIS;
+    size_t digested = 0;
     for (auto &v : budget.addons) {
         room_report.addons[v.addon] = {v.asked, v.admitted ? v.asked : 0};
         std::string names;
@@ -613,9 +616,14 @@ void boot16(uint8_t *db)
             ap::moments::status(v.addon, why);
             continue;
         }
-        for (auto &e : by[v.addon])
+        for (auto &e : by[v.addon]) {
+            digest = runtime::fnv64(v.addon + '\t' + e.path + '\t' + std::to_string(e.tag) + '\t' + e.value + '\n', digest);
+            digested++;
             apply_one(db, e, t);
+        }
     }
+    swofty::log("[registry] boot rows digest %016llx: %zu row(s) applied in order, value map reserved for %llu record(s)",
+                (unsigned long long)digest, digested, (unsigned long long)room_report.reserved_for);
     room_report.registry_planned = ap::scheduler().planned_keys();
     room_report.registry_counted = budget.asked_keys + early_refused;
     room_report.registry_asked = std::max<uint64_t>(room_report.registry_counted, room_report.registry_planned);
@@ -680,6 +688,7 @@ void *load_hook(void *db, void *cfg)
     static const uint32_t probe = perf::probe("core", "gamedb load edits");
     swofty::log("[assets] gamedb: Gdb_Load_GameDatabase(%p) entered on thread %lu", db, GetCurrentThreadId());
     void *r = h_load.call<void *>(db, cfg);
+    runtime::db_first_read::loaded();
     perf::Scope p(probe);
     auto d = static_cast<uint8_t *>(db);
     {
@@ -694,6 +703,7 @@ void *load_hook(void *db, void *cfg)
         apply(d, "right after Gdb_Load_GameDatabase returned");
     }
     boot16(d);
+    runtime::db_first_read::edited();
     return r;
 }
 
@@ -750,6 +760,8 @@ void without_database(const char *presize, const std::string &why)
     r.reason = why;
     r.older_asked = edits.size();
     swofty_core::apply::moments::boot_without_database(r);
+    runtime::db_first_read::cannot(
+        why.empty() ? "nothing edits the game database at boot, so Gdb_Load_GameDatabase is not wrapped" : why);
 }
 
 void reserve_setup()
@@ -778,8 +790,8 @@ void reserve_setup()
 void setup()
 {
     read_config();
-    swofty_core::apply::moments::boot_plan();
-    if (edits.empty() && !swofty_core::apply::moments::boot_work()) {
+    swofty_core::apply::moments::start_boot_plan();
+    if (edits.empty() && !swofty_core::apply::moments::boot_may_work()) {
         without_database("not_needed", "");
         return;
     }
@@ -831,6 +843,7 @@ void setup()
     swofty::log("[assets] gamedb: Gdb_Load_GameDatabase hooked at base+0x%llx (g_Gdb_Database = %p, not built yet); edits "
                 "apply when it returns",
                 (unsigned long long)(load - base), db);
+    runtime::db_first_read::arm(look);
 }
 
 }

@@ -127,7 +127,7 @@ fn keeps_profile_changes_made_during_the_build() {
     let dir = root.join("game");
     std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
     std::fs::write(dir.join(GAME_EXE), "exe").unwrap();
-    std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,
@@ -191,7 +191,7 @@ impl Harness {
         let dir = root.join("game");
         std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
         std::fs::write(dir.join(GAME_EXE), "exe").unwrap();
-        std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+        std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
         let manifest = AddonManifest::parse(
             r#"{"schema_version":1,"id":"t.putter","name":"Putter","version":"1.0.0","author":"t","compat":{"game":"f1_25"}}"#,
         )
@@ -314,7 +314,7 @@ fn a_file_of_unknown_provenance_stops_the_launch_untouched_with_what_restore_doe
     let err = Installer::new(&h.store.root, &h.game)
         .apply(&built.plan)
         .map_err(|e| match e {
-            swofty_core::Error::Leftovers(found) => crate::recover::blocked(&h.store, &h.game, &found),
+            swofty_core::Error::Leftovers(found) => crate::session_lock::blocked(&h.store, &h.game, &found),
             e => e.into(),
         })
         .unwrap_err()

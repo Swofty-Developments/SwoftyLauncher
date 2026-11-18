@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace postfx {
+namespace render::postfx {
 
 // An instance's params as the 32 option slots: missing ones are 0, extra ones are dropped.
 inline void pack_slots(const std::vector<float> &params, float out[SLOTS])

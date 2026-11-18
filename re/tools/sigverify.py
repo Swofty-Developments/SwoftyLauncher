@@ -152,6 +152,12 @@ def resolve(img, section, s):
     return hits, out, at
 
 
+def rip_relative(i):
+    """Whether `i` has a rip-relative memory operand. Its displacement is always the 4 bytes at disp_offset: capstone
+    gives disp_size 2 for some VEX stores (vmovupd [rip+d], xmm)."""
+    return bool(i.disp_size) and any(o.type == X86_OP_MEM and o.mem.base == X86_REG_RIP for o in i.operands)
+
+
 def norm(img, rva, n, to_ret=False):
     """Instructions of [rva, rva+n) with rip displacements and branch/call targets masked; with to_ret, up to the first
     ret (a short function's padding and the unrelated function after it are left out)."""
@@ -160,8 +166,8 @@ def norm(img, rva, n, to_ret=False):
         if i.address - rva >= n or (to_ret and out and out[-1] == 'c3'):
             break
         b = bytearray(i.bytes)
-        if i.disp_size and any(o.type == X86_OP_MEM and o.mem.base == X86_REG_RIP for o in i.operands):
-            b[i.disp_offset:i.disp_offset + i.disp_size] = b'\0' * i.disp_size
+        if rip_relative(i):
+            b[i.disp_offset:i.disp_offset + 4] = b'\0' * 4
         if (i.group(X86_GRP_JUMP) or i.group(X86_GRP_CALL)) and i.imm_size and any(o.type == X86_OP_IMM for o in i.operands):
             b[i.imm_offset:i.imm_offset + i.imm_size] = b'\0' * i.imm_size
         out.append(bytes(b).hex())
@@ -268,8 +274,8 @@ def masked_pattern(img, rva, n):
     pat, code = [], img.read(rva, n + 16)
     for i in md.disasm(code, rva):
         b = [f'{x:02X}' for x in i.bytes]
-        if i.disp_size and any(o.type == X86_OP_MEM and o.mem.base == X86_REG_RIP for o in i.operands):
-            b[i.disp_offset:i.disp_offset + i.disp_size] = ['??'] * i.disp_size
+        if rip_relative(i):
+            b[i.disp_offset:i.disp_offset + 4] = ['??'] * 4
         if (i.group(X86_GRP_JUMP) or i.group(X86_GRP_CALL)) and i.imm_size >= 4 and any(o.type == X86_OP_IMM for o in i.operands):
             b[i.imm_offset:i.imm_offset + i.imm_size] = ['??'] * i.imm_size
         pat.append(b)

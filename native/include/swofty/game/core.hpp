@@ -784,7 +784,7 @@ inline constexpr address<"Ne_SequenceClipInstance_BindOptional"> Ne_SequenceClip
 inline constexpr address<"Ne_SequenceInstance_Construct"> Ne_SequenceInstance_Construct{}; // L2 experimental
 inline constexpr address<"Ne_SequenceResource_CreateResource"> Ne_SequenceResource_CreateResource{}; // L2 experimental, NeSequenceResource::createResource
 inline constexpr address<"Ne_Sequence_Deserialize"> Ne_Sequence_Deserialize{}; // L2 experimental, NeSequence::setName
-using Ne_Set_FixedString_t = void(void *dst, const char *src);
+using Ne_Set_FixedString_t = void *(void *dst, const char *src);
 inline constexpr fn<"Ne_Set_FixedString", Ne_Set_FixedString_t> Ne_Set_FixedString{}; // L2 experimental
 inline constexpr address<"Ne_Settings_BindNamedEntries"> Ne_Settings_BindNamedEntries{}; // L2 experimental
 inline constexpr address<"Ne_SharedPtr_CopyAssign"> Ne_SharedPtr_CopyAssign{}; // L2 experimental

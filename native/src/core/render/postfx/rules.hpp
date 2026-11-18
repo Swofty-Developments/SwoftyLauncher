@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-namespace postfx {
+namespace render::postfx {
 
 // The shader config's rules: the signals they read (the view, the player's car, the session's events), the
 // rule engine that turns them into each instance's options and on/off state, and the log of what fired.

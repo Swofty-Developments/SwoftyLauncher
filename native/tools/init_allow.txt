@@ -34,6 +34,13 @@ src/core/testing/direct_start_tt.cpp: const bool registered_at_load = (runtime::
 
 # Default-constructed hooks, containers, mutexes and function objects: their constructors set their own members and
 # read nothing else. clang reports them only as needing a destructor.
+type: ArmHooks
+type: CategoryHooks
+type: DeviceHooks
+type: ListHooks
+type: SwapchainHooks
+type: EntrantCapHooks
+type: FirstReadHooks
 type: safetyhook::InlineHook
 type: safetyhook::MidHook
 type: std::deque
@@ -96,6 +103,7 @@ src/core/hooks/car_live.cpp: static loader::FunctionSet car_levers_core_set{load
 src/core/loading/game_settings.cpp: static loader::FunctionSet loading_core_set{loader::CoreSetId::loading, loading_mixins, loading_commit};
 src/core/services/lap_host.cpp: static loader::FunctionSet lap_host_core_set{loader::CoreSetId::lap_host, lap_host_mixins, lap_host_commit};
 src/core/testing/save_sandbox.cpp: static loader::FunctionSet save_sandbox_core_set{loader::CoreSetId::save_sandbox, save_sandbox_mixins, save_sandbox_commit};
+src/core/weather/setup.cpp: runtime::loader::FunctionSet weather_core_set{runtime::loader::CoreSetId::weather_chain, weather_mixins, weather_commit};
 
 # Default-constructed objects of the unit's own types, whose members are hooks, containers, mutexes, atomics and
 # constants of their own; their constructors read no other unit's object.
@@ -129,5 +137,5 @@ src/core/hud/toast.cpp: LapToasts toasts;
 src/core/render/d3d12/rtas_guard.cpp: RtasGuard guard;
 src/core/render/d3d12/srv_clamp.cpp: SrvReports reports;
 src/core/render/grade.cpp: Grader grader;
-src/core/render/postfx.cpp: postfx::Pipeline pipeline;
+src/core/render/postfx.cpp: Pipeline pipeline;
 src/core/telemetry/udp_ids.cpp: ids::Map map;

@@ -1,6 +1,5 @@
 #include "core/career/content_state.hpp"
 #include "core/runtime/build.hpp"
-#include "core/runtime/resolve.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <swofty/game.hpp>
@@ -25,7 +24,7 @@
 // stock false for that content's mode championship becomes the predicate's own data group check
 // (career_content_logic.hpp). Questions for any other data group keep the game's answer.
 
-namespace career_content {
+namespace career::content {
 
 namespace {
 
@@ -102,7 +101,7 @@ Action *route_entry(HomeItem *item, Action *out)
     }
     if (used())
         runtime::events_fire(SWOFTY_EVENT_CAREER_CONTENT_PRESSED, s ? int64_t(s - slots) : -1, 0, g.c_str());
-    Action *r = route_orig(item, out);
+    Action *r = route.route_item(item, out);
     runtime::wizard_tile_routed(g, out);
     return r;
 }
@@ -111,7 +110,7 @@ bool gate_entry(const void *championship)
 {
     Slot *s = used() ? by_mode(championship) : nullptr;
     if (!s)
-        return gate_orig(championship);
+        return hooks.driver_gate(championship);
     if (s->gates++ < LOG_FIRST)
         swofty::log("[career] content '%s': its mode (statId %lld) passes the driver-career gate", s->desc.id.c_str(),
                     (long long)s->mode.load());
@@ -120,7 +119,7 @@ bool gate_entry(const void *championship)
 
 bool predicate_entry(void *self, void *championship)
 {
-    bool stock = predicate_orig(self, championship);
+    bool stock = hooks.slot_predicate(self, championship);
     if (stock || !championship || !used())
         return stock;
     Slot *s = by_mode(championship);
@@ -142,31 +141,27 @@ bool predicate_entry(void *self, void *championship)
 
 bool bind_all(std::string &why)
 {
-    std::string missing;
     bool y25 = false, y26 = false;
     for (size_t i = 0; i < used(); i++)
         (slots[i].desc.model == content::MODEL_2025 ? y25 : y26) = true;
-    b.site = runtime::resolve_or_note("site_FeTile_CareerContentEnd", missing);
-    b.route = runtime::resolve_or_note("FeTile_Route_CareerItem", missing);
-    b.gate = runtime::resolve_or_note("Game_Career_IsDriverCareerMode", missing);
-    b.predicate_vt = runtime::resolve_or_note("vt_Game_DriverCareerSlotPredicate", missing);
-    b.select_vt = runtime::resolve_or_note("vt_Game_CareerDLCSelectViewModel", missing);
-    b.add_tile = runtime::resolve_or_note("FeHome_Add_CareerTile", missing);
-    b.construct = runtime::resolve_or_note("FeTile_Construct_CareerItem", missing);
-    b.populate_2026 = y26 ? runtime::resolve_or_note("FeTile_CareerDlcItem_Populate", missing) : 0;
-    b.populate_2025 = y25 ? runtime::resolve_or_note("FeTile_CareerDefaultItem_Populate", missing) : 0;
-    b.customisation = runtime::resolve_or_note("g_FeTile_CustomisationSystem", missing);
-    b.selected = runtime::resolve_or_note("g_FeTile_SelectedCareerContent", missing);
-    b.setup_desc = runtime::resolve_or_note("k_Career_CareerSetupComponentDesc", missing);
-    b.make_str = runtime::resolve_or_note("Ne_Make_StrFromCStr", missing);
-    b.set_string = runtime::resolve_or_note("Vm_Set_String", missing);
-    b.vm_registry = runtime::resolve_or_note("g_Vm_Registry", missing);
-    b.list_child = swofty::api->resolve("Vm_GetOrCreate_ListChild");
-    b.set_bool = swofty::api->resolve("Vm_Set_Bool");
-    if (missing.empty())
-        return true;
-    why = "needs " + missing + ", which this build does not resolve";
-    return false;
+    return ContentHooks::bind({{"site_FeTile_CareerContentEnd", &b.site},
+                               {"FeTile_Route_CareerItem", &b.route},
+                               {"Game_Career_IsDriverCareerMode", &b.gate},
+                               {"vt_Game_DriverCareerSlotPredicate", &b.predicate_vt},
+                               {"vt_Game_CareerDLCSelectViewModel", &b.select_vt},
+                               {"FeHome_Add_CareerTile", &b.add_tile},
+                               {"FeTile_Construct_CareerItem", &b.construct},
+                               {y26 ? "FeTile_CareerDlcItem_Populate" : nullptr, &b.populate_2026},
+                               {y25 ? "FeTile_CareerDefaultItem_Populate" : nullptr, &b.populate_2025},
+                               {"g_FeTile_CustomisationSystem", &b.customisation},
+                               {"g_FeTile_SelectedCareerContent", &b.selected},
+                               {"k_Career_CareerSetupComponentDesc", &b.setup_desc},
+                               {"Ne_Make_StrFromCStr", &b.make_str},
+                               {"Vm_Set_String", &b.set_string},
+                               {"g_Vm_Registry", &b.vm_registry},
+                               {"Vm_GetOrCreate_ListChild", &b.list_child, false},
+                               {"Vm_Set_Bool", &b.set_bool, false}},
+                              why);
 }
 
 }

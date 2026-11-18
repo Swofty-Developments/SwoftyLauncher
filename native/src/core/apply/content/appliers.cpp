@@ -669,7 +669,7 @@ void set_up_dresser()
         return v.i;
     };
     runtime::team_record_inserted([](uint16_t stat, uint8_t *record) { redress(stat, record); });
-    career_ops::teams::dresser() = &dress_slot;
+    career::ops::teams::dresser() = &dress_slot;
 }
 
 void release_database()
@@ -694,6 +694,20 @@ public:
         Expansion &x = plan_run(st);
         auto it = x.fresh.find(registry_);
         return it == x.fresh.end() ? 0 : it->second;
+    }
+
+    bool counts_off_thread() const override { return true; }
+
+    bool may_count(Store &st) override
+    {
+        std::lock_guard g(mu);
+        return has_records(st);
+    }
+
+    void forget_count() override
+    {
+        std::lock_guard g(mu);
+        state().plan.reset();
     }
 
     void boot(Store &st, Report &report) override

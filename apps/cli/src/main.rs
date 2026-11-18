@@ -1,7 +1,7 @@
 mod addon_commands;
 mod commands;
 mod console;
-mod recover;
+mod session_lock;
 mod signals;
 mod stores;
 mod time;

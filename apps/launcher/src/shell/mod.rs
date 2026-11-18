@@ -33,7 +33,7 @@ pub(crate) mod ui_mode;
 
 pub(crate) use launch_alerts::offline_terms;
 pub use page::{Page, PlayState};
-pub(crate) use play::{Launching, PlayHost};
+pub(crate) use play::Launching;
 pub(crate) use prompt::Prompt;
 pub(crate) use seen::Seen;
 pub(crate) use startup::Prepared;

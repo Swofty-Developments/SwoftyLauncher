@@ -9,7 +9,7 @@
   "subsystem": "session",
   "proto": "-",
   "evidence": "decomp:re/decomp/142f62580.c;xref:0x14023c600,0x140240c80",
-  "notes": "(placement, Request *r): r+0x18 = slot (car/grid index <32), r+0x1c = type (5 = copy from another request). Maps slot via +0x988 byte table to a vehicle id, finds the vehicle in [this+0x948]+0x28..+0x30 ([v+0x58]+0xe8 == id) and writes its 4x4 transform to r+0x20..+0x5f; 'VEHICLE_PLACEMENT Invalid slot (%d)'. Callers: cutscene SetGarageLocation/SetGridLocation, PitstopCutScene_Initialise, garage gantry, crew working on car. Addon: grid/garage transforms."
+  "notes": "(placement, Request *r): r+0x18 = slot (car/grid index <32), r+0x1c = type (5 = copy from another request). Maps slot via +0x988 byte table to a vehicle id, finds the vehicle in [this+0x948]+0x28..+0x30 ([v+0x58]+0xe8 == id) and writes its 4x4 transform to r+0x20..+0x5f; 'VEHICLE_PLACEMENT Invalid slot (%d)'. Callers: cutscene SetGarageLocation/SetGridLocation, PitstopCutScene_Initialise, garage gantry, crew working on car. Addon: grid/garage transforms. Callers: census steam 0x2f62580."
  },
  "signature": {
   "id": "session.vehicle_placement_resolve_transform",

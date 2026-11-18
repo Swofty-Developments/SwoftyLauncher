@@ -48,7 +48,7 @@ void release(FakeDevice *&d)
 
 int main()
 {
-    using Hold = d3d12hooks::ProbeHold<FakeDevice>;
+    using Hold = render::d3d12::ProbeHold<FakeDevice>;
 
     {
         Factory f;

@@ -74,7 +74,7 @@ inline constexpr Event EVENTS[] = {
     {"weekend.end", N, SHELL, 1, false, Fired::no, nullptr},
 
     {"session.load", M, SHELL, 1, false, Fired::no, nullptr},
-    {"session.weather.setup", M, SHELL, 1, false, Fired::no, nullptr},
+    {"session.weather.setup", M, "swofty::weather::events::Setup", 1, false, Fired::yes, nullptr},
     {"session.fuel.load", C, "swofty::tracks::events::FuelLoad", 1, false, Fired::game, nullptr},
     {"session.start", N, SHELL, 1, false, Fired::yes, SWOFTY_EVENT_SESSION_START},
     {"session.state.enter", N, SHELL, 1, false, Fired::no, SWOFTY_EVENT_STATE},
@@ -109,6 +109,7 @@ inline constexpr Event EVENTS[] = {
     {"car.setup.applied", N, "swofty::cars::events::SetupApplied", 1, false, Fired::game, nullptr},
     {"car.parts.register", N, "swofty::cars::events::PartsRegister", 1, false, Fired::game, nullptr},
     {"car.damage", N, "swofty::cars::events::Damage", 1, true, Fired::game, nullptr},
+    {"car.tyre.damage", N, "swofty::tyre_damage::events::Damage", 1, false, Fired::yes, nullptr},
     {"car.controllers.rebuilt", N, "swofty::cars::events::ControllersRebuilt", 1, false, Fired::game, nullptr},
 
     {"ai.controller.update", C, "swofty::ai::events::ControllerUpdate", 1, true, Fired::game, nullptr},

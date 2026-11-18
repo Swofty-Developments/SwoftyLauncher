@@ -130,7 +130,7 @@ fn a_missing_backup_stops_the_build_and_sends_the_player_through_the_setup_again
         0,
         "0",
     )];
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir: dir.clone(),

@@ -125,7 +125,11 @@ typedef struct SwoftyLiveCar {
     uint8_t drs;
     uint8_t pit_status;            // 0 on track, 1 in the pit lane, 2 in the pit box (SWOFTY_LIVE_HAVE_PIT_LANE)
     uint8_t pit_stops;             // completed stops
-    uint32_t reserved[7];
+    uint8_t garage;                // pit lane garage index, 99 the safety car (SWOFTY_LIVE_HAVE_GARAGE)
+    uint8_t pit_box;               // garage / 2, 12 for the safety car (SWOFTY_LIVE_HAVE_GARAGE)
+    uint8_t tyre_damage[4];        // RL RR FL FR: 0 none, 2 punctured, 3 burst (SWOFTY_LIVE_HAVE_TYRE_DAMAGE)
+    float tyre_deflation[4];       // RL RR FL FR: 0, 1 when a puncture starts, 2 when the tyre bursts
+    uint32_t reserved[1];
 } SwoftyLiveCar;
 ```
 
@@ -137,6 +141,10 @@ typedef struct SwoftyLiveCar {
 | `live::turn(car)` | the official turn near `car.lap_m` |
 
 `speed_kmh`, `ers_fraction`, `gap_ahead_ms`, `gap_leader_ms`, `in_pit`, `pit_status` and `pit_stops` return `std::optional` and are empty when the value is not there.
+
+`garage` and `pit_box` take the first word of what was `reserved[7]` in earlier releases. `SwoftyLiveCar` keeps its 208 bytes and every other offset. They are 0, with `SWOFTY_LIVE_HAVE_GARAGE` clear, on a build whose live state does not walk the pit lane or whose game header does not export `PitLaneVehicle.garage_index`. Read them through [`swofty/systems/pitlane.hpp`](./pitlane).
+
+`tyre_damage` and `tyre_deflation` take the next five words. They are 0, with `SWOFTY_LIVE_HAVE_TYRE_DAMAGE` clear, while the tyres group is off, on a build without the wheel puncture proof (the KB build and Steam 1.0.145 have it), or on a game header that does not export `CarWheel.tyre_flags` and `CarWheel.deflation`. Read them through [`swofty/systems/tyre_damage.hpp`](./tyre-damage).
 
 Gaps follow the game's rule. They are valid in a race while the car is running or finished and not in the pit; a lapped car's gap is invalid, so compute "+1 LAP" from the lap counters. In practice, qualifying and Time Trial the game's gap system is not fed, so the gaps stay empty.
 
