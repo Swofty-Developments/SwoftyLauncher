@@ -100,6 +100,13 @@ impl Recovered {
             || !self.cleared.is_empty()
     }
 
+    /// Whether everything an unfinished session left is back. A file that
+    /// stayed locked keeps the record that owns it, so the next start tries
+    /// again.
+    pub fn complete(&self) -> bool {
+        self.problems.is_empty()
+    }
+
     pub fn lines(&self) -> Vec<String> {
         let mut out = Vec::new();
         out.extend(self.relocated.iter().cloned());

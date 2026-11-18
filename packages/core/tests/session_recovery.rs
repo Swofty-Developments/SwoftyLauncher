@@ -879,3 +879,45 @@ fn a_zero_filled_offline_journal_never_stops_recovery_or_restore() {
         assert_eq!(now.get(GVDB), original.get(GVDB));
     }
 }
+
+#[cfg(unix)]
+#[test]
+fn an_offline_restore_a_locked_file_stopped_stays_recorded_until_the_next_start_finishes_it() {
+    use std::os::unix::fs::PermissionsExt;
+    let f = Fixture::new("offline-locked");
+    let game = f.game();
+    f.play();
+    std::fs::remove_dir_all(f.game.join("swofty")).unwrap();
+    let journal = swofty_core::offline::journal_path(&f.data);
+
+    // A folder that refuses deletes stands in for the running F1 25 or EA
+    // app that holds the staged launcher on Windows. Root ignores the mode.
+    std::fs::set_permissions(&f.game, std::fs::Permissions::from_mode(0o555)).unwrap();
+    if std::fs::write(f.game.join("probe"), "x").is_ok() {
+        std::fs::set_permissions(&f.game, std::fs::Permissions::from_mode(0o755)).unwrap();
+        return;
+    }
+    let lock = SessionLock::try_acquire(&f.data).unwrap().unwrap();
+    let locked = recovery::recover(&lock, &f.data, &game, Scope::Sessions);
+    std::fs::set_permissions(&f.game, std::fs::Permissions::from_mode(0o755)).unwrap();
+    let locked = locked.unwrap();
+    assert!(!locked.offline);
+    assert!(!locked.complete());
+    assert!(
+        locked
+            .problems
+            .iter()
+            .any(|p| p.contains(LAUNCHER) && p.contains("still locked after 5 retries")),
+        "{:?}",
+        locked.problems
+    );
+    assert!(journal.exists());
+    assert_eq!(f.read(LAUNCHER), "session-launcher");
+
+    let next = recovery::recover(&lock, &f.data, &game, Scope::Sessions).unwrap();
+    assert!(next.offline);
+    assert!(next.complete(), "{:?}", next.problems);
+    assert!(!journal.exists());
+    assert_eq!(f.read(LAUNCHER), "anticheat");
+    assert!(!f.game.join(format!("{LAUNCHER}.bak")).exists());
+}

@@ -86,6 +86,8 @@ A session journal still open while the lock is free belongs to a session that en
 
 Each session journal records the game folder it was written for (`"game"`). When that folder no longer has `F1_25.exe` and the rollback runs for another folder, as after Steam moved the library or the game was reinstalled elsewhere, the journal rolls back there only the files that hold exactly what it wrote: a replaced file goes back to its original and an added file is removed. Every other file of the journal is left in place and reported as `<file> is not what the earlier session wrote in the old game folder nor its original; left in place`; the stock check then names it. The journal closes either way and never stops a launch.
 
+When a file of offline play's journal stays locked, as while F1 25 or the EA app is still open, the roll back names each locked file and the journal stays. The direct `swofty run`, the next launcher start and the next Play replay it before anything else, and until one finishes the log never says the game files are rolled back: the wrapper says `rolled the profile's game files back, but not the offline play files above`, and the direct `swofty run` ends on `not every game file is back yet`.
+
 Offline play's journal names its game folder on its `meta` line. When that folder no longer has `F1_25.exe`, recovery and `swofty restore` move the journal's paths to the game folder they run for, when that folder holds at least one file the journal staged with the recorded digest and none that differs. Otherwise they stop with `offline play's record is for F1 25 in <folder>, which is gone, ...` and the journal stays.
 
 ## Leftovers
