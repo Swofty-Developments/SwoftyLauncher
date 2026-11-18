@@ -65,6 +65,16 @@
    "verdict": "partial",
    "evidence": "decomp:own capstone disasm 0x1434b4d30-0x1434b510e,0x142f62580-0x142f629e0,0x1434b5110-0x1434b59ab,0x1434bc073-0x1434bc4fc,0x141032b50-0x14103428f,1.0.145 0x1434b72b0-0x1434b768e 219/219;xref:0x141033089,0x1434b4d4e,0x1434b4da4,0x1434b4d77,0x1434b4eb5,0x1434b4de8,0x1434b4e04,0x1434b4e0d,0x1434b4eca,0x1434b4f8e,0x1434b50c6,0x1434b500d,0x1434bc0fc",
    "notes": "V100005 Blind: partial. Confirmed: proto (rcx mgr, dl uint8, float in xmm0 at 0x1434b509d); vehicle>0x1a -> 0.0; box=garage>>1 (0x1434b4da4); 99 or box 12 -> [P+0x738]; garage>0x3f -> -1.0; null slot or box float <0/NaN -> -1.0 with code 0x58; null record -> box 0; normal return [mgr+0xc0+box*0x90]-[[car+0x108]+0xcf8] gated by +0x185/+0x178; 13 boxes (cmp r14,0xd at 0x1434bc0fc), no bound past 13; only caller 0x141033089 in 0x141032b50; 1.0.145 0x1434b72b0 219/219. Imprecise: the other return is the XZ distance (y zeroed), and only when the box is ahead of the car's forward axis (dot>0, 0x1434b4f8e), else -1.0; null [rec]/[[rec]+0x58] -> -1.0; car = [[[mgr+0xb08]+0x38]+0xc8][vehicle]."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_PitLane_GetDistanceToBox",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434b4d30-0x1434b510e,0x142f62580-0x142f629e0,0x1434c72f0-0x1434c7cb6,0x1434bc073-0x1434bc4d0,0x141032b50-0x14103428f,0x1434e6c20-0x1434e6c53,1.0.145 0x1434b72b0-0x1434b768e;xref:0x1434b4d4e,0x1434b4d6f,0x1434b4d86,0x1434b4da4,0x1434b4dbd,0x1434b4de8,0x1434b4e04,0x1434b4e0d,0x1434b4eca,0x1434b4f4b,0x1434b4f8e,0x1434b50bc,0x1434b500d,0x1434bc0fc,0x1434c7654,0x141033089,0x14103308e,0x141033d49",
+   "notes": "V100009 Blind: agree. Own capstone read of 0x1434b4d30-0x1434b510e: rcx this, dl car (>0x1a -> 0.0), float in xmm0. Box = garage>>1; 99 or box 12 -> [P+0x738], >0x3f -> -1.0 (0x145382220, error 0x58), else [P+0x838+box*8]; null car record -> box 0. Record+0x80 <0 (or NaN) -> -1.0; S+0x185 clear and S+0x178 != 3 -> record+0x80 - [[S+0x108]+0xcf8]; else x,z distance to record+0x70 when dot(norm(box-pos), norm(T+0x1b0)) > 0 (0x1434b4f8e), else -1.0. 0x142f62580 result unused. 13 records (ctor 0x1434c72f0, writer loop 0x1434bc0fc). Sole caller 0x141033089. 1.0.145 0x1434b72b0 219/219, all offsets witnessed."
   }
  ],
  "proofs": [

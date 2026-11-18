@@ -67,6 +67,16 @@
    "verdict": "partial",
    "evidence": "decomp:own capstone disasm 0x142e94040-0x142e946cf,0x142e83130-0x142e83744,0x14f3c6a80-0x14f3c6cd3,0x142e96390-0x142e96a11,0x142e96a20-0x142e96f2d,0x14f43e230-0x14f43e3f7,0x1403c8cf0-0x1403c8e48,0x1434bdd60-0x1434bdf3e,1.0.145 0x142e965d0-0x142e96c5f 406/406;xref:0x1403c8dd3,0x1434bdd9f,0x1434bde3f,0x142e941f2,0x142e9421d,0x142e94280,0x142e944ad,0x142e944b8,0x142e946bc,0x142e83294,0x142e8329f",
    "notes": "V100003 Blind: partial. Own disasm agrees with the proto, both callers (0x1403c8dd3 edx=0, 0x1434bdd9f dl=1, result unused, pitstopComplete 0x142e94780 under the same m_tyreList bound/null guard), next-set lookup at +0x9c70 with 4/1 fallback, the 0x9938/0x9940/0x9948 compare, 0x142e96390 (activateTyreCompounds) instead of the store when pit_stop is set, the +0x208&0x1f OR, the k=0..4 clears, the bit/+0x9915 call sequence, 0x142ea2300, return 0, pitstopComplete touching only +0x4a0/+0x940, and 1.0.145 0x142e965d0 406/406. Imprecise: the record index is the byte pointed to by the qword at entry+0x10 (0x142e944ad, 0x142e944b8), not a byte at entry+0x10."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Car_Tyre_ChangeToNextCompound",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142e94040-0x142e946cf,0x142e83130-0x142e83993,0x14f43e230-0x14f43e3f7,0x14f3c6a80-0x14f3c6cd3,0x142e96390-0x142e96a12,0x142e96a20-0x142e96f2e,0x142e9e6c0-0x142e9ec5b,0x14f463120-0x14f4632a4,0x142e9eda0-0x142e9fe3f,0x14f486470-0x14f48655c,0x1434bdd60-0x1434bdf3f,0x1403c8cf0-0x1403c8e48,1.0.145 0x142e965d0-0x142e96c5f;xref:0x1434bdd9f,0x1403c8dd3,0x1434bde3f,0x142e941eb,0x142e94176,0x142e9421d,0x142e94280,0x142e944ad,0x142e944b8,0x142e946bc",
+   "notes": "V100008 Blind: agree. Own disasm 0x142e94040-0x142e946cf: rcx this, bl bool (0x142e941eb/0x142e94219), one exit xor eax,eax 0x142e946bc (rax all zero). Next set = id [+0x9c70] in 0x18-byte list +0x9bd0 (count +0x9c48), fallback id>=3?4:1 (0x142e9412e), double miss -> id -1, null ptrs. Compares +0x9938/+0x9940/+0x9948 (not +0x993c); dl=1 -> 0x142e96390, else stores +0x9938..+0x9948. ORs +0x208&0x1f, clears k=0..4, final record via [[+0x9c98]-0x6c] -> entry+0x10 byte -> [[+0x9bc0]+0x1d8]. Callers 0x1434bdd9f (dl=1, pitstopComplete next at 0x1434bde3f) and 0x1403c8dd3 (dl=0), rax unused. 1.0.145 0x142e965d0 406/406. Fallback rescan at 0x142e94490 has no bound."
   }
  ],
  "proofs": [
