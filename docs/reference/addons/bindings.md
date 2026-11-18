@@ -224,6 +224,7 @@ pub const Example_ShowFittedSet: Binding = Binding { id: "Example_ShowFittedSet"
 - `since` is the release the mode ships in. A new or changed mode ships after the release the base branch is at (`[workspace.package] version` in `Cargo.toml`).
 - `covers` is the V-id of the `partial` or `disagree` row that ends the export. The entry holds only while that row is the binding's newest; a pull request that leaves an entry not holding fails the check.
 - `reason` is one line of printable ASCII without `"` or `\`, at most 300 characters. `replacement` is optional.
+- A binding the launcher's own native code (`native/src`) names, by its header constant, its `_t` type or a resolve string, leaves the addon API only in a pull request that also moves that code off it. A deprecated one moves to its `replacement`, so a binding core names cannot be deprecated before a replacement exists. Comments do not count.
 
 Only the repository owner approves a change to `re/db/export_drops.json`. The `bindings` check fails on such a pull request until the owner has approved its head commit, or opened it; re-run the check after approving. The check reads the owner's reviews from the API with the read-only token.
 
