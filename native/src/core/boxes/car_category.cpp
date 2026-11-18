@@ -52,10 +52,6 @@
 //
 // Every hook falls back to the stock behaviour when a shape is not what it expects.
 
-namespace runtime {
-std::vector<era::Box> era_boxes();
-}
-
 namespace {
 
 namespace mem = swofty::mem;

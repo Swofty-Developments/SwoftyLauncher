@@ -20,10 +20,13 @@ LINUX, WINDOWS, HOST = 'x86_64-linux-musl', 'x86_64-windows-gnu', 'host'
 
 @dataclass
 class Unit:
+    """A test source built into one executable. `inputs` are the files, as globs relative to native/, it reads
+    beyond the files its `args` name, so a change to one runs it again."""
     name: str
     title: str
     compiler: str = 'gcc'
     args: list = field(default_factory=list)
+    inputs: list = field(default_factory=list)
 
     @property
     def source(self):
@@ -97,8 +100,10 @@ UNITS = [
     Unit('pit_box', 'Pit box guard unit test'),
     Unit('pit_slots', 'Pit slot guard unit test'),
     Unit('placed_record', 'placed record bound unit test'),
-    Unit('guard_lines', 'Site guard log lines test', args=['../src/core/guards', 'guard_lines/expected.txt']),
-    Unit('guard_registry', 'Core mixin-set registry order test', args=['../src/core']),
+    Unit('guard_lines', 'Site guard log lines test', args=['../src/core/guards', 'guard_lines/expected.txt'],
+         inputs=['src/core/guards/**/*.cpp']),
+    Unit('guard_registry', 'Core mixin-set registry order test', args=['../src/core'],
+         inputs=['tools/core_link_order.txt', 'src/core/**/*.cpp']),
     Unit('guard_skips', 'Guard first-N log cap unit test'),
     Unit('guard_on_demand', 'On-demand guard arming unit test'),
     Unit('hashing', 'Shared hash helpers unit test'),
@@ -108,6 +113,7 @@ UNITS = [
     Unit('game_settings', 'Game setting override table unit test'),
     Unit('player_name', 'Player name sanitising unit test'),
     Unit('postfx', 'Post-process pass logic unit test'),
+    Unit('race_control', 'Race control events unit test', 'zig'),
     Unit('race_retirement', 'Race retirement driver guard unit test'),
     Unit('red_flag_recompute', 'Red flag recompute guard unit test'),
     Unit('replay_grid', 'Replay recorder grid guard unit test'),
@@ -136,6 +142,7 @@ UNITS = [
     Unit('track_record', 'Round track record guard unit test'),
     Unit('build_proof', 'Per-build proof gates unit test'),
     Unit('mixin_gate', 'Core mixin set gate and commit lines unit test'),
+    Unit('picker_log_caps', 'Era picker log caps unit test'),
     Unit('tt_loaded', 'Time Trial loaded list board and team label unit test'),
     Unit('tyre_models', 'Tyre model check unit test'),
     Unit('tyre_slots', 'Tyre slot guard unit test'),
@@ -358,5 +365,7 @@ SCRIPTS = [
            ['bash', 'native/test/wineserver_test.sh']),
     Script('std_templates', 'Standard library templates', ['python3', 'tools/std/templates.py']),
     Script('loading_report', 'Loading report on synthetic loader.log runs', ['python3', '-I', 'native/test/loading_report_test.py']),
+    Script('sigverify', 'Core signatures on the KB build and Steam 1.0.145 (skipped without both executables)',
+           ['python3', '-I', 'native/test/sigverify_test.py']),
 ]
 

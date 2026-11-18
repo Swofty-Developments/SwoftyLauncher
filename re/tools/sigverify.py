@@ -27,7 +27,7 @@ compares the relocated bodies. A Sig that scans the protector's section itself i
 it is unique on the KB build: the core hooks there on the KB build only. Data targets (globals, vtables) compare the section and, for a
 vtable, the first slots' functions. Exit status 0 only when every signature is unique on both and the same.
 """
-import argparse, difflib, json, os, re, struct, sys
+import argparse, bisect, difflib, json, os, re, struct, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
@@ -40,7 +40,20 @@ from bindverify import Image, SCN_EXECUTE
 STEAM = '/mnt/gaming/SteamLibrary/steamapps/common/F1 25/F1_25.exe'
 EA = '/mnt/gaming/EAApp/ai-fix/dumps/F1_25.1789128892.110548.mem'
 CORE = os.path.join(ROOT, 'native', 'src', 'core')
-SOURCES = ['tt_bridge.cpp', 'direct_start.cpp', 'direct_start_tt.cpp', 'lap_rec.cpp', 'era_picker.cpp', 'player_name.cpp']
+
+
+def core_sources():
+    """Every core source that declares a Sig."""
+    out = []
+    for d, _, files in os.walk(CORE):
+        for f in sorted(files):
+            if f.endswith(('.cpp', '.hpp')):
+                path = os.path.join(d, f)
+                if re.search(r'\bSig\s+\w+\s*\{', open(path).read()):
+                    out.append(path)
+    return sorted(out)
+
+
 BASE = 0x140000000
 
 md = Cs(CS_ARCH_X86, CS_MODE_64)
@@ -70,6 +83,15 @@ def split_args(body):
     return out
 
 
+def int_arg(text):
+    """An integer argument: a literal, or a sum of literals and casts such as `uintptr_t(0) - 0x31c`."""
+    expr = re.sub(r'\b(?:uintptr_t|size_t|uint32_t|int32_t|int)\s*\(\s*([^()]*)\s*\)', r'\1', text)
+    terms = re.findall(r'\s*([+-]?)\s*(0[xX][0-9a-fA-F]+|\d+)[uUlL]*', expr)
+    if not terms or re.sub(r'\s|[+-]|0[xX][0-9a-fA-F]+[uUlL]*|\d+[uUlL]*', '', expr):
+        raise ValueError(f'not an integer expression: {text}')
+    return sum(-int(v, 0) if sign == '-' else int(v, 0) for sign, v in terms)
+
+
 def parse_sigs(path):
     text = strip_comments(open(path).read())
     consts = {m.group(1): ''.join(re.findall(r'"([^"]*)"', m.group(2)))
@@ -82,9 +104,9 @@ def parse_sigs(path):
         pat = ''.join(re.findall(r'"([^"]*)"', a[1])) if '"' in a[1] else consts.get(a[1])
         if pat is None:
             raise SystemExit(f'{path}: {m.group(1)}: pattern {a[1]} is not a literal or a known constant')
-        num = lambda i: int(a[i], 0) if len(a) > i else 0
+        num = lambda i: int_arg(a[i]) if len(a) > i else 0
         kind = a[3].split('::')[-1] if len(a) > 3 else 'addr'
-        sigs.append({'name': m.group(1), 'what': a[0].strip('"'), 'pattern': ' '.join(pat.split()), 'rva': int(a[2], 0),
+        sigs.append({'name': m.group(1), 'what': a[0].strip('"'), 'pattern': ' '.join(pat.split()), 'rva': int_arg(a[2]),
                      'kind': kind, 'insn': num(4), 'anchor': num(5), 'len': num(6),
                      'section': a[7].strip('"') if len(a) > 7 else '.xtls', 'file': os.path.basename(path)})
     return sigs
@@ -167,6 +189,26 @@ def same(ref, port, rt, pt, kind):
     a, b = norm(ref, follow(ref, rt), 0x60), norm(port, follow(port, pt), 0x60)
     r = ratio(a, b)
     return ('same' if r >= 0.9 else 'likely' if r >= 0.7 else 'DIFFERENT'), f'entry 0x60 alike {r:.2f}'
+
+
+def chunk_of(img, rva):
+    """[start, end) of the exception directory entry that holds rva, or None."""
+    f = img.func_base_of(rva)
+    if f is None:
+        return None
+    starts, ends = img.pdata()
+    return f, ends[bisect.bisect_left(starts, f)]
+
+
+def caller_same(ref, port, rsite, psite):
+    """The instruction count of the code around two call sites when it is the same on both images with the call at the
+    same place, else 0. Such a call reaches the same function even where the protector rewrote that function's
+    relocated body differently on each build."""
+    a, b = chunk_of(ref, rsite), chunk_of(port, psite)
+    if not a or not b or rsite - a[0] != psite - b[0] or a[1] - a[0] != b[1] - b[0]:
+        return 0
+    x, y = norm(ref, a[0], a[1] - a[0]), norm(port, b[0], b[1] - b[0])
+    return len(x) if x == y else 0
 
 
 def section_map(build):
@@ -304,7 +346,7 @@ def main():
         return 0
 
     sigs = []
-    for src in a.src or [os.path.join(CORE, s) for s in SOURCES]:
+    for src in a.src or core_sources():
         sigs += parse_sigs(src)
     if a.only:
         keep = set(a.only.split(','))
@@ -326,6 +368,10 @@ def main():
         if rh == 1 and ph == 1:
             kind = classify(ref, rt)
             verdict, detail = same(ref, port, rt, pt, kind)
+            if verdict == 'DIFFERENT' and s['kind'] == 'rel32' and detail.startswith('thunk'):
+                n = caller_same(ref, port, rm + s['insn'], pm + s['insn'])
+                if n:
+                    verdict, detail = 'same', detail + f'; the calling code is the same ({n} insns, the call at the same place)'
             if port.page_encrypted(pt) or port.page_encrypted(pm):
                 notes.append('port page reads encrypted')
             row['class'] = kind

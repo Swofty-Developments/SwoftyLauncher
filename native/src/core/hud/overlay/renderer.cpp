@@ -13,7 +13,7 @@ namespace hud::overlay {
 
 bool Renderer::compile(pD3DCompile fn, const char *entry, const char *model, ID3DBlob **out)
 {
-    static const char hlsl[] =
+    static constexpr char hlsl[] =
         "cbuffer C:register(b0){float2 inv;}"
         "Texture2D T:register(t1);SamplerState S:register(s0);"
         "struct I{float2 p:POSITION;float2 t:TEXCOORD;float4 c:COLOR;uint m:MODE;};"

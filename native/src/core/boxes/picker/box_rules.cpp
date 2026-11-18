@@ -9,6 +9,12 @@
 
 namespace era_picker {
 
+namespace {
+
+constinit Cap<LOG_FIRST> put_back_failed_lines;
+
+}
+
 template <class F> void for_each_host_mode(void *mode, F f)
 {
     SetupModes modes = setup_modes(mode);
@@ -240,8 +246,7 @@ void put_back_drs()
 
 void put_back_failed(const Narrowed &n)
 {
-    static uint32_t logged;
-    if (logged++ >= LOG_FIRST)
+    if (!put_back_failed_lines.note())
         return;
     std::vector<std::string> names;
     for (void *list : logic::left_out(n)) {

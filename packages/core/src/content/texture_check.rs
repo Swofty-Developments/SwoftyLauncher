@@ -159,15 +159,7 @@ mod tests {
     use swofty_formats::erp::Fragment;
 
     fn fragment(raw: Vec<u8>) -> Fragment {
-        Fragment {
-            name: *b"temp",
-            offset: 0,
-            size: raw.len() as u64,
-            flags: 0,
-            compression: swofty_formats::erp::STORED,
-            packed: raw.len() as u64,
-            raw,
-        }
+        Fragment::new(*b"temp", raw.len() as u64, 0, swofty_formats::erp::STORED, raw)
     }
 
     fn surface(name: &str, dims: [u32; 5], data: usize) -> Resource {

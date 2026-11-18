@@ -191,4 +191,9 @@ private:
     std::vector<Waiter> waiters_;
 };
 
+// The core's SwoftyServices table, which the addon API hands to every addon.
+const SwoftyServices *table();
+// Logs Registry::missing() once every addon has loaded.
+void report_missing();
+
 }

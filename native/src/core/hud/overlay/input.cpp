@@ -179,14 +179,13 @@ void Input::frame(const std::vector<hud::Paintsub> &subs, float fb_w, float fb_h
     if (!expired.empty())
         swofty::log("[overlay] input: %s held focus but has not painted for %llu ms; focus released", expired.c_str(),
                     static_cast<unsigned long long>(FOCUS_TIMEOUT_MS));
-    static ULONGLONG reported;
-    if (now - reported >= 60000) {
+    if (now - blocked_reported >= 60000) {
         unsigned m = blocked_msgs.exchange(0), r = blocked_raw.exchange(0);
         if (m || r)
             swofty::log("[overlay] input: last %llu s: %u window message(s) and %u raw input message(s) kept from the "
                         "game while an addon held focus",
-                        static_cast<unsigned long long>(reported ? (now - reported) / 1000 : 60), m, r);
-        reported = now;
+                        static_cast<unsigned long long>(blocked_reported ? (now - blocked_reported) / 1000 : 60), m, r);
+        blocked_reported = now;
     }
 }
 

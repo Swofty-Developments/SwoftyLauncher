@@ -129,6 +129,7 @@ Each entry names the header, the `SwoftyApi` member and its API version, the fea
 - **The game's state**
   - **[Events](./events)** (`swofty/events.hpp`): lifecycle, flow and career events, and a per-frame tick. `events`, API 5; feature `events` (stable); the flow thread.
   - **[Live state](./live)** (`swofty/live.hpp`): every car, the classification, gaps, pit state and turn numbers read from the game's memory. The core export `SwoftyCoreLive`; feature `telemetry` (experimental); any thread.
+  - **[Race control](./race-control)** (`swofty/systems/race_control.hpp`): events when the flag, the safety car, the red flag, a car's sector or a car's result status changes, and the state now. The hooks table, API 9; features `events` (stable) and `telemetry` (experimental); the flow thread.
   - **[Telemetry](./telemetry)** (`swofty/telemetry.hpp`): live car, session and participant reads. `telemetry`, API 5; feature `telemetry` (experimental); the flow thread.
   - **[Database read](./db)** (`swofty/db.hpp`): read values and walk tables of the game database. `db`, API 5; feature `db` (stable); the caller's thread.
   - **[Career](./career)** (`swofty/career.hpp`): flow states, the running career, its components, the game bus and career-mode blocks. `career`, API 6 (`block` and `unblock` 7); feature `career` (stable); the flow thread.
@@ -161,6 +162,7 @@ packages/sdk/include/
   swofty/overlay.hpp        the 2D overlay
   swofty/telemetry.hpp      live car and session reads
   swofty/live.hpp           live car, session, order and turn reads from memory
+  swofty/systems/race_control.hpp  flag, safety car, red flag, sector and result status events
   swofty/db.hpp             game-database reads
   swofty/storage.hpp        addon storage
   swofty/career.hpp         flow states, the running career, its components, the game bus and career-mode blocks

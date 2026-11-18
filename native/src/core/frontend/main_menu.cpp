@@ -50,9 +50,9 @@
 // layout; only single (one spawner, tile order) exists so far, and rows is logged as not built.
 // SWOFTY_MAIN_MENU_ENTRY=chain opens the pickers the old way (home_to_activity, then the command 900 ms after
 // the container is up); SWOFTY_MAIN_MENU_BACK=stock|home|twostep picks the game's Back, its home route or the two-step
-// hub Back instead of the launcher's routes. 1.9.4 opened grand_prix_continue straight from the home screen
-// (swofty_grand_prix_saves, a copy of the theatre route), where its slot list crashed the game in
-// Game_CareerContinue_ListSlots for many players; neither that route nor swofty_grand_prix is fired any more;
+// hub Back instead of the launcher's routes. grand_prix_continue opened straight from the home screen
+// (swofty_grand_prix_saves, a copy of the theatre route) crashes the game in Game_CareerContinue_ListSlots, so
+// neither that route nor swofty_grand_prix is fired;
 // SWOFTY_MAIN_MENU_RETURN=0 leaves the session-end hand-over on the bare container; SWOFTY_MAIN_MENU_RECOVER=0 turns
 // the recovery of a screen that did not open off; SWOFTY_MAIN_MENU_STATEFIX=0 leaves #ui_menu_data.frontend_transition_state
 // alone when leaving the container; SWOFTY_MAIN_MENU_MIGRATELOG=0 leaves the Migrate command unhooked.

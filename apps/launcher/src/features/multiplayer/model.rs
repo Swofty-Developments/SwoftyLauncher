@@ -258,3 +258,11 @@ pub(super) enum Start {
     Create(RoomSettings),
     Join(String),
 }
+
+/// What a start is waiting on, as the page's busy state names it: "create", or the code it joins.
+pub(super) fn starting(start: &Start) -> String {
+    match start {
+        Start::Create(_) => "create".into(),
+        Start::Join(code) => code.clone(),
+    }
+}

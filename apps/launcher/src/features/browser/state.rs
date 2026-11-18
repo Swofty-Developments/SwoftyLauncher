@@ -1,6 +1,5 @@
 use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet, VecDeque};
-use std::convert::Infallible;
 use std::path::Path;
 use std::sync::Arc;
 use std::time::{Instant, SystemTime};
@@ -19,6 +18,8 @@ use crate::services::library::Library;
 use crate::shell::Shell;
 use crate::shell::host::{Host, Hosted};
 use crate::ui::scale::px;
+use swofty_core::game_folder::busy::Busy;
+use swofty_core::store::Store;
 
 pub(crate) struct Browser {
     pub(crate) addons: Vec<Addon>,
@@ -257,14 +258,24 @@ impl Feed {
 }
 
 pub(crate) struct BrowserNeeds<'a> {
-    pub(crate) root: &'a Path,
+    pub(crate) store: &'a Store,
     pub(crate) library: &'a Library,
+    /// The data folder is moving; nothing fetches or installs until it is done.
     pub(crate) locked: bool,
+    /// The game folder build running now, which holds the addons it builds.
+    pub(crate) building: Option<&'a Busy>,
+}
+
+pub(crate) enum BrowserChange {
+    /// An install finished or failed, so the installed addons changed on disk.
+    Installed,
+    /// An addon installed outside an update batch: its notice offers to turn it on.
+    TurnOn { id: String, note: Notification },
 }
 
 impl Hosted for Browser {
     type Needs<'a> = BrowserNeeds<'a>;
-    type Change = Infallible;
+    type Change = BrowserChange;
 }
 
 impl Host<Browser> for Shell {
@@ -273,14 +284,26 @@ impl Host<Browser> for Shell {
         (
             &mut self.browser,
             BrowserNeeds {
-                root: &self.store.root,
+                store: &self.store,
                 library: &self.library,
                 locked,
+                building: self.game.build.as_ref(),
             },
         )
     }
 
-    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
-        match change {}
+    fn changed(&mut self, change: BrowserChange, cx: &mut Context<Self>) {
+        match change {
+            BrowserChange::Installed => self.reload(cx),
+            BrowserChange::TurnOn { id, note } => {
+                let shell = cx.entity().downgrade();
+                let note = note.action(tr("Turn on"), move |window, cx| {
+                    shell
+                        .update(cx, |s, cx| s.set_addon_enabled(&id, true, window, cx))
+                        .ok();
+                });
+                self.browser.toasts.push(note);
+            }
+        }
     }
 }

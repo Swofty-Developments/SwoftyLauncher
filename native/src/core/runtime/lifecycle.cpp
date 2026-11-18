@@ -19,14 +19,7 @@
 #include "core/runtime/loader/scanner.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/stage.hpp"
-
-namespace runtime {
-bool close_asset_registrations();
-}
-
-namespace swofty_core::services {
-void report_missing();
-}
+#include "core/services/services.hpp"
 
 extern "C" __declspec(dllexport) int SwoftyCoreAttach(SwoftyApi *a);
 

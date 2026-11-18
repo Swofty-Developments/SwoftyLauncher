@@ -350,6 +350,8 @@ void bridge_legacy(const char *event, int64_t a, int64_t b, const void *data)
         events::session_lap(uint32_t(a));
         return;
     }
+    if (id == "session.flag")
+        return; // race control fires the typed session.flag itself (core/live/race_control.cpp)
     fire_shell(e->id);
     if (id == "career.unloaded")
         update_facts([](Facts &f) {

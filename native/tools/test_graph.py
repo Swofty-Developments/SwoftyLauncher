@@ -2,8 +2,9 @@
 """Writes the ninja file native/test/run_tests.sh runs the native tests from (the list is native/test/manifest.py).
 
 Each Unit compiles to an object with a depfile and links to one executable; its run is a target whose output is
-<builddir>/<name>/ok, so ninja reruns a unit test only when its executable or an input file changed. A Script
-reruns every time, since ninja cannot see what it runs, after its Programs are built into <builddir>/<name>. Objects
+<builddir>/<name>/ok, so ninja reruns a unit test only when its executable, a file its args name or one of its
+`inputs` changed. A Script reruns every time, since ninja cannot see what it runs, after its Programs are built
+into <builddir>/<name>. Objects
 compile once under <builddir>/obj for every Program that lists them with the same target and flags. A Program with a
 `when` condition the host does not meet (`sanitizers`: the host compiler links -fsanitize=address,undefined) is left
 out, and its script runs without it. `test` is
@@ -22,6 +23,7 @@ when ninja runs with both counts' sum.
 """
 
 import argparse
+import glob
 import hashlib
 import os
 import shlex
@@ -221,6 +223,8 @@ def main():
         emit_compile(u.source, [f'build {exe}.o: cxx_{u.compiler} {u.source}'])
         lines.append(f'build {exe}: link_{u.compiler} {exe}.o')
         inputs = [os.path.normpath(os.path.join('test', x)) for x in u.args if os.path.isfile(os.path.join(NATIVE, 'test', x))]
+        inputs += sorted(os.path.relpath(path, NATIVE) for pattern in u.inputs
+                         for path in glob.glob(os.path.join(NATIVE, pattern), recursive=True))
         lines.append(f'build {d}/ok: run {exe}' + (' | ' + ' '.join(inputs) if inputs else ''))
         lines += [f'  name = {u.name}', '  kind = host', f'  dir = {os.path.abspath(os.path.join(NATIVE, d))}', '  cwd = test',
                   f'  cmd = {quote([os.path.abspath(os.path.join(NATIVE, exe))] + u.args)}']

@@ -43,10 +43,25 @@ namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 namespace sd = runtime::standings_drop;
 
-const runtime::Sig S_RECOMPUTE{"Career_Recompute_SeasonStandings", "E9 ?? ?? ?? ?? 84 F4 0F 83 ?? ?? ?? ?? 8C AB 0F",
-                               0x140b2fa60, runtime::Sig::addr, 0, 0, 0};
+// The recompute is a protector thunk whose filler differs per build: it is found from a season loop's call
+// (0x140ae95a2, rcx = season + 0x2a8).
+const runtime::Sig S_RECOMPUTE{"Career_Recompute_SeasonStandings",
+                               "E8 ?? ?? ?? ?? 48 89 F9 31 D2 E8 ?? ?? ?? ?? 49 8B 8F 10 05 00 00", 0xb2fa60,
+                               runtime::Sig::rel32, 0, 1, 5};
 const runtime::Sig S_COMPARE{"Career_Compare_StandingsEntries", "41 56 56 57 53 48 81 EC 08 01 00 00 41 8B 40 04",
-                             0x140b317a0, runtime::Sig::addr, 0, 0, 0};
+                             0xb317a0, runtime::Sig::addr, 0, 0, 0};
+
+// The layout above was checked on Steam 1.0.145. Read by the same instruction in a body that is the same on both
+// builds (re/tools/sigport.py --witness at the KB RVA): Season +0x2a8 and the entry's season at +8 (the season loop
+// 0xae9550), the championship +0x1058 and its seasons +0x548, +0x550 (0x7b2140), entries {key, total} (the compare
+// 0xb317a0). Used by the same instructions in the protector's relocated bodies (each use compared): the rounds +0x20 and
+// +0x40, 0x20-byte rounds and 0x28-byte sessions (the recompute 0x9618ee0), the session id +0x20 and the 8-byte
+// records (its callees 0x962eee0 and 0x962fff0).
+namespace bp = runtime::build_proof;
+constexpr bp::Proof STANDINGS_LAYOUT{"the season standings' layout (+0x2a8, +0x20, +0x40, sessions 0x28 with the id at "
+                                     "+0x20; the championship +0x1058, +0x548)",
+                                     bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145)};
+constexpr bp::Gate DROPPED_SCORES{"dropped scores", &STANDINGS_LAYOUT};
 
 constexpr size_t SEASON_STANDINGS = 0x2a8;
 constexpr size_t POINTS_ROUNDS = 0x20, TABLE_ROUNDS = 0x40;
@@ -229,6 +244,8 @@ protected:
             swofty::log("%s", guards::lines::off("[career] dropped scores", "SWOFTY_STANDINGS_DROP", v).c_str());
             return false;
         }
+        if (!runtime::holds(DROPPED_SCORES))
+            return false;
         uintptr_t recompute = runtime::find(S_RECOMPUTE, "career", "career"),
                   cmp = runtime::find(S_COMPARE, "career", "career");
         if (!recompute || !cmp) {

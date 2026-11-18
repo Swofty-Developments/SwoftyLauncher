@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 use swofty_formats::bxml::{Document, Element};
-use swofty_formats::erp::{Entry, ErpFile, Resource, STORED, ZSTD, compress};
+use swofty_formats::erp::{Entry, ErpFile, Packer, Resource, ZSTD_LEVEL};
 
 use crate::{Error, Result, io_err};
 
@@ -139,17 +139,7 @@ pub fn add_track(root: &mut Element, map: &ErsMap) -> Result<bool> {
 }
 
 pub(crate) fn set_data(res: &mut Resource, index: usize, data: &[u8]) -> Result<()> {
-    let f = res
-        .fragments
-        .get_mut(index)
-        .ok_or_else(|| Error::Map(format!("{}: no fragment {index}", res.name)))?;
-    let zstd =
-        f.compression == ZSTD || (f.compression != STORED && f.raw.starts_with(&[0x28, 0xb5, 0x2f, 0xfd]));
-    f.raw = if zstd { compress(data)? } else { data.to_vec() };
-    f.size = data.len() as u64;
-    f.packed = f.raw.len() as u64;
-    res.hash = res.content_hash()?;
-    Ok(())
+    crate::erp::pack::set_fragment_at(&Packer::default(), res, index, data, ZSTD_LEVEL)
 }
 
 pub fn edit_vtf(res: &Resource, maps: &[ErsMap]) -> Result<Option<Resource>> {
