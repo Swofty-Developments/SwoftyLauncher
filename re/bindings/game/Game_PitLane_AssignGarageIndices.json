@@ -8,8 +8,8 @@
   "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1434b5110.c;decomp:own disasm 1.0.145 0x1434b7690 the same 450/450;xref:0x1434ca655;xref:0x1434cc5cc",
-  "notes": "engine-re 2026-11-17 track round C (static): called from Game_PitLane_GenerateSplines (0x1434ca655) and 0x1434cc5cc. Resets the pit lane garage index (car record +0xe0) of all 27 car records [mgr+0x938+id*0x10] to 0x7fffffff (0x1434b56bc..0x1434b5876), then per entrant (vector [[mgr+0xb70]+0x1d8..+0x1e0], stride 0x98, vehicle id +0x82, ids > 0x1a skipped at 0x1434b58e3): garage = 2 x team garage slot ([e+0x88]+0x28) + seat (e+0x90) when the track byte [[[mgr+0xb80]+0x1a8]+0x30]+0x60 (copied to mgr+0xc29, tested 0x1434b591a) is set, else (2 x slot | 1) - seat (per V11203 polarity correction; H: garage order flag of the track); safety-car vehicles (list [mgr+0xb38]+0x30..+0x38) get 0x63 (99). Pit box = garage >> 1; garage 99 uses box 12 = the safety-car request (type 7 slot 0). raised by engine-re with --force 2026-11-17 at user request (lane owner review requested) | re-bindings 2026-11-18: Steam 1.0.145 (sigport --witness): 0x1434b7690, 450/450 equal, with +0x930, +0x938, +0xe0, +0xb70, +0x1d8, +0x1e0, +0x82, +0x88, +0x90, +0xb80, +0x1a8, +0xc29 and +0xb38 at the same instructions."
+  "evidence": "decomp:re/decomp/1434b5110.c;decomp:own disasm 1.0.145 0x1434b7690 the same 450/450;xref:0x1434ca654;xref:0x1434cc5cb",
+  "notes": "engine-re 2026-11-17 track round C (static): called from Game_PitLane_GenerateSplines (call at 0x1434ca654) and tail-jumped to from 0x1434cc430 (jmp at 0x1434cc5cb); both pass [parent+0x48]. It first frees and re-allocates the 27 car records (0x140 bytes each, allocator mgr+0xae0, stored at mgr+0x938+i*0x10, +0x10a = i; 0x1434b51d9..0x1434b5616) and sets each record's +0 to the vehicle of [mgr+0xb00] whose [[v+0x58]+0xe8] is that index, or 0 (0x1434b561b..0x1434b56b3). Then it resets the pit lane garage index (car record +0xe0) of all 27 car records [mgr+0x938+id*0x10] to 0x7fffffff (0x1434b56bc..0x1434b5876), then per entrant (vector [[mgr+0xb70]+0x1d8..+0x1e0], stride 0x98, vehicle id +0x82, ids > 0x1a skipped at 0x1434b58e3): garage = 2 x team garage slot ([e+0x88]+0x28) + seat (e+0x90) when the track byte [[[mgr+0xb80]+0x1a8]+0x30]+0x60 (copied to mgr+0xc29, tested 0x1434b591a) is set, else (2 x slot | 1) - seat (per V11203 polarity correction; H: garage order flag of the track); safety-car vehicles (list [mgr+0xb38]+0x30..+0x38) get 0x63 (99). Pit box = garage >> 1; garage 99 uses box 12 = the safety-car request [placement+0x738], which is type 7 slot 0 of the placement table placement+0x38+type*0x100+slot*8 that Sess_VehiclePlacementRequest_Register fills. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested) | re-bindings 2026-11-18: Steam 1.0.145 (sigport --witness): 0x1434b7690, 450/450 equal, with +0x930, +0x938, +0xe0, +0xb70, +0x1d8, +0x1e0, +0x82, +0x88, +0x90, +0xb80, +0x1a8, +0xc29 and +0xb38 at the same instructions."
  },
  "signature": {
   "id": "game.pit_lane_assign_garage_indices",
@@ -45,6 +45,16 @@
    "verdict": "partial",
    "evidence": "decomp:re/decomp/1434b5110.c;xref:0x1434b591d",
    "notes": "V11203 27 records +0xe0=0x7fffffff, stride 0x98, id byte +0x82 > 0x1a skipped, garage-99 via list mgr+0xb38 - all confirmed. CORRECTION: polarity inverted - at 0x1434b591a byte (mgr+0xc29 = [..+0x30]+0x60) SET -> 2*slot+seat; byte ZERO -> (2*slot|1)-seat."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_PitLane_AssignGarageIndices",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1434b5110-0x1434b59ab, 0x1434ca550-0x1434cb2fc, 0x1434cc430-0x1434cc5d0, 0x1434b59b0-0x1434b5ce2, 0x140388cf0-0x14038a000, 0x1434b4d30-0x1434b4f02, 0x1434b7520-0x1434b7cc0, 0x1434b8270-0x1434b83db, 1.0.145 0x1434b7690-0x1434b7f2b;xref:0x1434ca654,0x1434cc5cb,0x1434b56bc,0x1434b5876,0x1434b58e3,0x1434b590b,0x1434b5913,0x1434b591a,0x1434b58ae,0x1434b591f,0x1434b596a,0x1434b5c09,0x143687db9,0x1434b7601,0x1434b760a,0x1434b4db3",
+   "notes": "V20026 Blind: partial, derived before reading the notes. Code matches every offset claim: reset of +0xe0 to 0x7fffffff in 27 records [mgr+0x938+i*0x10] (0x1434b56bc..0x1434b5876); entrants [[mgr+0xb70]+0x1d8..0x1e0] (GarageSystem) stride 0x98, id +0x82, >0x1a skipped (0x1434b58e3); flag [[[mgr+0xb80]+0x1a8]+0x30]+0x60 copied to mgr+0xc29, tested 0x1434b591a; set 2G+s, clear (2G|1)-s; SC list [mgr+0xb38]+0x30 (SafetyCarVehicleSystem) gets 99. Box = g>>1, 99 -> 12 (0x1434b7601..0x1434b760a). Call sites cited +1 byte: E8 0x1434ca654, E9 tail jmp 0x1434cc5cb. Not in notes: records rebuilt and +0 linked to vehicles first. type 7 slot 0 not reached. 1.0.145 0x1434b7690 identical."
   }
  ],
  "proofs": [
