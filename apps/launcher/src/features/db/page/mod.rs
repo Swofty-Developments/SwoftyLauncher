@@ -233,7 +233,7 @@ impl Shell {
                     .label(tr("Import…"))
                     .loading(self.db.importing)
                     .disabled(!ready || self.db.importing)
-                    .on_click(cx.listener(|this, _, window, cx| this.db_import(window, cx))),
+                    .on_click(cx.listener(|this, _, window, cx| Db::import(this, window, cx))),
             )
             .child(self.db_export_menu(cx))
             .child(

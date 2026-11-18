@@ -8,7 +8,7 @@ use crate::shell::notices::Notification;
 use gpui_kit::component::input::InputState;
 use gpui_kit::*;
 use swofty_core::dbedit::draft::{DraftFile, Written};
-use swofty_core::dbedit::package::PackageInfo;
+use swofty_core::dbedit::package::{Imported, PackageInfo};
 use swofty_core::dbedit::{
     Catalog, Draft, Edit, Edits, Hit, ImportReport, LinkSpec, Module, ModuleView, NodeId,
 };
@@ -16,7 +16,7 @@ use swofty_core::dbedit::{
 use super::fields::Slots;
 use crate::services::game::Install;
 use crate::shell::Shell;
-use crate::shell::host::{Host, Hosted, reports_nothing};
+use crate::shell::host::{Host, Hosted, PromptHost, Prompted, reports_nothing};
 use swofty_core::store::Store;
 use swofty_i18n::trf;
 
@@ -315,6 +315,27 @@ pub(crate) struct DbNeeds<'a> {
 impl Hosted for Db {
     type Needs<'a> = DbNeeds<'a>;
     type Change = Infallible;
+}
+
+/// What the DB Editor's work hands the shell to open in the window.
+pub(crate) enum DbPrompt {
+    /// An import installed an addon: turn it on, say so and show it on Addons.
+    AddonImported(Imported),
+    /// Leave the draft for `Then`, asking first when it has unsaved changes.
+    Leave(Then),
+}
+
+impl Prompted for Db {
+    type Prompt = DbPrompt;
+}
+
+impl PromptHost<Db> for Shell {
+    fn prompt(&mut self, prompt: DbPrompt, window: &mut Window, cx: &mut Context<Self>) {
+        match prompt {
+            DbPrompt::AddonImported(done) => self.db_addon_imported(done, window, cx),
+            DbPrompt::Leave(then) => self.db_leave(then, window, cx),
+        }
+    }
 }
 
 impl Host<Db> for Shell {
