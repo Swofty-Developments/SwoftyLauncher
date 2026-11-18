@@ -248,6 +248,27 @@ static void test_dataset_checks()
            "the game's dataset holds the build's states in order, or the rebuild is a mismatch");
 }
 
+static void test_test_script()
+{
+    wx::TestScript t;
+    std::string why = wx::parse_test_script("seed=1990;r=clear:1200,overcast:600:300,heavy_rain:0:120:0.8", t);
+    expect(why.empty() && t.has_seed && t.seed == 1990 && t.mask == (1u << 5) && t.counts[5] == 3 &&
+               t.slots[5][0].kind == 0 && t.slots[5][0].duration_s == 1200 && t.slots[5][0].intensity < 0 &&
+               t.slots[5][1].kind == 2 && t.slots[5][1].transition_s == 300 && t.slots[5][2].kind == 4 &&
+               t.slots[5][2].intensity == 0.8f,
+           "a test script sets the seed and the race's three slots: " + why);
+    expect(wx::parse_test_script("q=storm:600;p1=light_rain:0", t).empty() && !t.has_seed &&
+               t.mask == ((1u << 3) | (1u << 0)) && t.counts[3] == 1 && t.counts[0] == 1,
+           "a test script scripts each dataset key it names");
+    expect(!wx::parse_test_script("seed=0", t).empty() && !wx::parse_test_script("seed=x", t).empty() &&
+               !wx::parse_test_script("fp1=clear:60", t).empty() && !wx::parse_test_script("r=snow:60", t).empty() &&
+               !wx::parse_test_script("r=clear", t).empty() && !wx::parse_test_script("r=clear:6o", t).empty() &&
+               !wx::parse_test_script("r=clear:1,clear:1,clear:1,clear:1,clear:1,clear:1,clear:1", t).empty() &&
+               !wx::parse_test_script("r", t).empty(),
+           "a test script with a bad seed, key, kind, field or slot count is refused");
+    expect(wx::parse_test_script("", t).empty() && !t.mask && !t.has_seed, "an empty test script sets nothing");
+}
+
 int main()
 {
     test_priorities();
@@ -261,6 +282,7 @@ int main()
     test_validate();
     test_ranges();
     test_dataset_checks();
+    test_test_script();
     printf("%s\n", fails ? "FAILED" : "all passed");
     return fails ? 1 : 0;
 }

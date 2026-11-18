@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <string>
 #include <vector>
 
@@ -315,6 +316,100 @@ inline bool holds(const BuiltState *states, uint32_t n, const Build &b)
         if (states[i].type != b.type[i])
             return false;
     return true;
+}
+
+
+inline constexpr const char *DATASET_KEYS[DATASETS] = {"p1", "p2", "p3", "q", "ss", "r", "r2", "r3"};
+
+// SWOFTY_WEATHER_TEST: a seed and scripts the core sets on session.weather.setup before the handlers run, for
+// checking the chain in game without an addon. "seed=1990;r=clear:1200,overcast:600:300,heavy_rain:0:120:0.8": a
+// seed, then per dataset key (DATASET_KEYS) up to six slots of kind:duration_s[:transition_s[:intensity]].
+struct TestScript {
+    bool has_seed = false;
+    uint32_t seed = 0;
+    uint8_t mask = 0;
+    uint8_t counts[DATASETS] = {};
+    Slot slots[DATASETS][MAX_STATES] = {};
+};
+
+inline int kind_of(const std::string &s)
+{
+    for (unsigned k = 0; k < MAX_STATES; k++)
+        if (s == KIND_NAMES[k])
+            return int(k);
+    return -1;
+}
+
+inline std::vector<std::string> split(const std::string &s, char sep)
+{
+    std::vector<std::string> out;
+    size_t at = 0;
+    for (;;) {
+        size_t next = s.find(sep, at);
+        out.push_back(s.substr(at, next == std::string::npos ? std::string::npos : next - at));
+        if (next == std::string::npos)
+            return out;
+        at = next + 1;
+    }
+}
+
+inline bool number(const std::string &s, float &out)
+{
+    if (s.empty())
+        return false;
+    char *end = nullptr;
+    double v = std::strtod(s.c_str(), &end);
+    if (end != s.c_str() + s.size() || !std::isfinite(v))
+        return false;
+    out = float(v);
+    return true;
+}
+
+// "" when text parses into t, else what is wrong with it.
+inline std::string parse_test_script(const std::string &text, TestScript &t)
+{
+    t = TestScript{};
+    for (const std::string &part : split(text, ';')) {
+        if (part.empty())
+            continue;
+        size_t eq = part.find('=');
+        if (eq == std::string::npos)
+            return "\"" + part + "\" is not key=value";
+        std::string key = part.substr(0, eq), value = part.substr(eq + 1);
+        if (key == "seed") {
+            char *end = nullptr;
+            unsigned long v = std::strtoul(value.c_str(), &end, 10);
+            if (value.empty() || end != value.c_str() + value.size() || v == 0 || v > 0xffffffffull)
+                return "seed \"" + value + "\" is not a number 1..4294967295";
+            t.has_seed = true;
+            t.seed = uint32_t(v);
+            continue;
+        }
+        unsigned d = 0;
+        while (d < DATASETS && key != DATASET_KEYS[d])
+            d++;
+        if (d == DATASETS)
+            return "\"" + key + "\" is not seed or a dataset key (p1 p2 p3 q ss r r2 r3)";
+        std::vector<std::string> slots = split(value, ',');
+        if (slots.size() > MAX_STATES)
+            return key + " has " + std::to_string(slots.size()) + " slots (up to " + std::to_string(MAX_STATES) + ")";
+        for (unsigned i = 0; i < slots.size(); i++) {
+            std::vector<std::string> f = split(slots[i], ':');
+            int kind = kind_of(f[0]);
+            if (kind < 0)
+                return key + " slot " + std::to_string(i) + ": \"" + f[0] + "\" is not a weather kind";
+            if (f.size() < 2 || f.size() > 4)
+                return key + " slot " + std::to_string(i) + ": want kind:duration_s[:transition_s[:intensity]]";
+            Slot &s = t.slots[d][i];
+            s.kind = uint8_t(kind);
+            if (!number(f[1], s.duration_s) || (f.size() > 2 && !number(f[2], s.transition_s)) ||
+                (f.size() > 3 && !number(f[3], s.intensity)))
+                return key + " slot " + std::to_string(i) + ": \"" + slots[i] + "\" has a field that is not a number";
+        }
+        t.counts[d] = uint8_t(slots.size());
+        t.mask = uint8_t(t.mask | (1u << d));
+    }
+    return "";
 }
 
 }
