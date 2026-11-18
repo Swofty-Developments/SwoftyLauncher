@@ -997,13 +997,16 @@ inline constexpr address<"Game_PitDriveThrough_OnNoAnimFadeOut"> Game_PitDriveTh
 inline constexpr address<"Game_PitLaneSystem_Multiplayer_handlePitLaneEventMessage"> Game_PitLaneSystem_Multiplayer_handlePitLaneEventMessage{}; // L2 experimental, PitLaneSystem::multiplayer_handlePitLaneEventMessage
 using Game_PitLane_ApplyPitstopTyres_t = void(void *mgr, uint8_t car);
 inline constexpr fn<"Game_PitLane_ApplyPitstopTyres", Game_PitLane_ApplyPitstopTyres_t> Game_PitLane_ApplyPitstopTyres{}; // L2 experimental
-inline constexpr address<"Game_PitLane_AssignGarageIndices"> Game_PitLane_AssignGarageIndices{}; // L2 experimental
+using Game_PitLane_AssignGarageIndices_t = void(void *pit_lane_manager);
+inline constexpr fn<"Game_PitLane_AssignGarageIndices", Game_PitLane_AssignGarageIndices_t> Game_PitLane_AssignGarageIndices{}; // L2 experimental
 inline constexpr address<"Game_PitLane_EnterControlRelease"> Game_PitLane_EnterControlRelease{}; // L2 experimental
 inline constexpr address<"Game_PitLane_EnterLimitZone"> Game_PitLane_EnterLimitZone{}; // L2 experimental
 inline constexpr address<"Game_PitLane_ExitControlRelease"> Game_PitLane_ExitControlRelease{}; // L2 experimental
 inline constexpr address<"Game_PitLane_ExitLimitZone"> Game_PitLane_ExitLimitZone{}; // L2 experimental
-inline constexpr address<"Game_PitLane_GetDistanceToBox"> Game_PitLane_GetDistanceToBox{}; // L2 experimental
-inline constexpr address<"Game_PitLane_GetGaragePose_Thunk"> Game_PitLane_GetGaragePose_Thunk{}; // L2 experimental
+using Game_PitLane_GetDistanceToBox_t = float(void *pit_lane_manager, uint8_t vehicle);
+inline constexpr fn<"Game_PitLane_GetDistanceToBox", Game_PitLane_GetDistanceToBox_t> Game_PitLane_GetDistanceToBox{}; // L2 experimental
+using Game_PitLane_GetGaragePose_Thunk_t = float *(void *pit_system, float *out_matrix, uint32_t garage);
+inline constexpr fn<"Game_PitLane_GetGaragePose_Thunk", Game_PitLane_GetGaragePose_Thunk_t> Game_PitLane_GetGaragePose_Thunk{}; // L2 experimental
 inline constexpr address<"Game_PitLane_HandleEnterPitBox"> Game_PitLane_HandleEnterPitBox{}; // L2 experimental
 inline constexpr address<"Game_PitLane_HoldInGarage"> Game_PitLane_HoldInGarage{}; // L2 experimental
 inline constexpr address<"Game_PitLane_HoldInPitBox"> Game_PitLane_HoldInPitBox{}; // L2 experimental

@@ -3773,6 +3773,8 @@ pub type Car_Register_DetachablePart_Thunk_t = unsafe extern "C" fn(
 pub type Car_Reset_LastFittedUpgrade_t = unsafe extern "C" fn(inst: *mut c_void);
 pub type Car_SuspensionDamage_OnCollision_t =
     unsafe extern "C" fn(susp_damage: *mut c_void, contact: *mut c_void);
+pub type Car_Tyre_ChangeToNextCompound_t =
+    unsafe extern "C" fn(tyre_component: *mut c_void, pit_stop: u8) -> u64;
 pub type Car_Tyre_CheckCompoundClassRule_t = unsafe extern "C" fn(set: *const c_void) -> bool;
 pub type Car_Tyre_IsCompoundAllowed_t = unsafe extern "C" fn(set: *const c_void) -> bool;
 pub type Car_Tyre_SetWearFactor_t =
@@ -4195,6 +4197,8 @@ pub type FeTile_Build_List_t = unsafe extern "C" fn(
     sub_kind: u8,
     a7: u32,
 );
+pub type FeTile_CareerDefaultItem_Populate_t =
+    unsafe extern "C" fn(item: *mut HomeItem, node: *mut c_void, a7: u32);
 pub type FeTile_CareerDlcItem_Populate_t =
     unsafe extern "C" fn(item: *mut HomeItem, node: *mut c_void, a7: u32);
 pub type FeTile_Check_EntrantListUsable_t =
@@ -4402,6 +4406,11 @@ pub type Game_PauseAvailabilityVM_OnActivate_t = unsafe extern "C" fn(vm: *mut c
 pub type Game_PhotoMode_InitDependencies_t =
     unsafe extern "C" fn(self_: *mut c_void, serviceProvider: *mut c_void) -> c_int;
 pub type Game_PitLane_ApplyPitstopTyres_t = unsafe extern "C" fn(mgr: *mut c_void, car: u8);
+pub type Game_PitLane_AssignGarageIndices_t = unsafe extern "C" fn(pit_lane_manager: *mut c_void);
+pub type Game_PitLane_GetDistanceToBox_t =
+    unsafe extern "C" fn(pit_lane_manager: *mut c_void, vehicle: u8) -> f32;
+pub type Game_PitLane_GetGaragePose_Thunk_t =
+    unsafe extern "C" fn(pit_system: *mut c_void, out_matrix: *mut f32, garage: u32) -> *mut f32;
 pub type Game_PitLane_MoveDownSpline_t = unsafe extern "C" fn(
     pitlane: *mut c_void,
     car: u8,
@@ -5617,6 +5626,11 @@ pub mod bindings {
     };
     pub const Car_TyreSystem_PitstopComplete: Binding = Binding {
         id: "Car_TyreSystem_PitstopComplete",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Tyre_ChangeToNextCompound: Binding = Binding {
+        id: "Car_Tyre_ChangeToNextCompound",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8424,6 +8438,11 @@ pub mod bindings {
         id: "FeTile_Build_List",
         kind: "func",
         status: Status::Stable,
+    };
+    pub const FeTile_CareerDefaultItem_Populate: Binding = Binding {
+        id: "FeTile_CareerDefaultItem_Populate",
+        kind: "func",
+        status: Status::Experimental,
     };
     pub const FeTile_CareerDlcItem_Populate: Binding = Binding {
         id: "FeTile_CareerDlcItem_Populate",
