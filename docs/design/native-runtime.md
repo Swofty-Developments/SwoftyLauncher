@@ -127,7 +127,7 @@ The crash handler in `diagnostics/crash/` is split by what runs when:
 | `report_text_logic.hpp` | the report text that reads no process state, which `test/report_text_test.cpp` pins |
 | `symbolizer.cpp`, `minidump.cpp` | symbol names and the minidump for the report |
 | `dred.cpp`, `dred_markers.cpp`, `dred_nodes.cpp` | DRED's arming and device hook, the removal markers between sessions, and a removed device's breadcrumbs, contexts and allocations (`dred_state.hpp`) |
-| `stall_report.cpp`, `stall_walk.cpp` | the load stall report (`stall_report.hpp`) |
+| `stall_report.cpp`, `stall_walk.cpp`, `stall_frames.cpp` | the load stall report (`stall_report.hpp`), its unwinder and its frames' function tables and export names |
 
 Code that runs inside a handler reads with `pages::readable_now` and does not allocate or lock. The crash files do not include `runtime.hpp`; the few runtime calls they make are declared at the top of each file.
 

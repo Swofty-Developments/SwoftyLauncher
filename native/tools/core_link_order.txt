@@ -51,6 +51,7 @@ src/core/diagnostics/crash/report_process.cpp
 src/core/diagnostics/crash/report_writer.cpp
 src/core/diagnostics/crash/minidump.cpp
 src/core/diagnostics/crash/stall_report.cpp
+src/core/diagnostics/crash/stall_frames.cpp
 src/core/diagnostics/crash/dred.cpp
 src/core/diagnostics/crash/dred_markers.cpp
 src/core/diagnostics/crash/dred_nodes.cpp
