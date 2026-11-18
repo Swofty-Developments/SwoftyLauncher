@@ -395,6 +395,39 @@ class Classify(Base):
         self.assertEqual(out['verdict'], 'review')
 
 
+class HandCallerCounts(Base):
+    def classify_notes(self, old_notes, new_notes, census_build='steam'):
+        import census
+        new = as_new(self.doc)
+        new['row']['notes'] = new_notes
+        if old_notes is None:
+            changes = [('re/bindings/' + SAMPLE, None, raw(new))]
+        else:
+            old = copy.deepcopy(new)
+            old['row']['notes'] = old_notes
+            changes = [('re/bindings/' + SAMPLE, raw(old), raw(new))]
+        with mock.patch.object(census, 'active', return_value=census_build):
+            return bc.classify(changes, AUTHOR, self.fresh, self.empty)
+
+    def test_a_new_record_cites_the_census_for_its_callers(self):
+        out = self.classify_notes(None, self.doc['row']['notes'] + ' Two callers.')
+        self.assertEqual(out['verdict'], 'fail')
+        self.assertIn('the notes count callers by hand (Two callers): cite callers: census steam <rva>', out['errors'][0])
+        self.assertIn('census.py show steam', bc.fix_for(out['errors'][0]))
+        out = self.classify_notes(None, self.doc['row']['notes'] + ' callers: census steam 0x36a3ab0.')
+        self.assertEqual(out['errors'], [])
+
+    def test_a_change_may_keep_a_count_it_found_but_not_add_one(self):
+        old = self.doc['row']['notes'] + ' Two callers.'
+        self.assertEqual(self.classify_notes(old, old + ' More text.')['errors'], [])
+        out = self.classify_notes(old, old + ' 5 call sites.')
+        self.assertEqual(out['verdict'], 'fail')
+        self.assertIn('(5 call sites)', out['errors'][0])
+
+    def test_without_a_census_of_the_kb_build_counts_pass(self):
+        self.assertEqual(self.classify_notes(None, self.doc['row']['notes'] + ' Two callers.', None)['errors'], [])
+
+
 class CiCommand(Base):
     def test_ci_reads_only_record_paths_from_the_head_copy(self):
         tmp = tempfile.mkdtemp()

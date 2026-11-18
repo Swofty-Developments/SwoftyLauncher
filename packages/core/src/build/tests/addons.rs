@@ -71,7 +71,7 @@ fn ops_and_options_that_need_an_addon_apply_only_while_the_build_has_it_on() {
                 .map(|f| Record::new(&format!("t.list_0.{f}"), 4, "off")),
         )
         .collect();
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,
@@ -193,7 +193,7 @@ fn an_option_whose_rounds_need_a_track_the_build_lacks_builds_as_off_and_says_so
             .iter()
             .map(|f| Record::new(&format!("t.list_0.{f}"), 4, "off")),
     );
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,
@@ -292,6 +292,65 @@ fn an_option_whose_rounds_need_a_track_the_build_lacks_builds_as_off_and_says_so
 }
 
 #[test]
+fn the_track_check_and_the_career_warnings_share_one_read_of_the_game_database() {
+    use swofty_formats::gvdb::Record;
+    if loader_dir().is_some() {
+        return;
+    }
+    let root = std::env::temp_dir().join(format!("swofty-build-shipped-once-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let dir = root.join("game");
+    std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+    std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+    let records = vec![
+        Record::new("tracks._Track_instancecount_", 0, "1"),
+        Record::new("tracks.Track_0._metadata_", 4, "melbourne"),
+        Record::new("entrants.teams._team_instancecount_", 0, "1"),
+        Record::new("entrants.teams.team_0.stat_id", 0, "7"),
+        Record::new("t._list_instancecount_", 0, "1"),
+        Record::new("t.list_0._metadata_", 4, "f2"),
+        Record::new("t.list_0.spa", 4, "off"),
+    ];
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
+    let game = Game {
+        identity: Identity::detect(&dir, Some(1)).unwrap(),
+        dir,
+        user_reg: None,
+    };
+    let store = Store::new(root.join("data"));
+    let src = root.join("src");
+    std::fs::create_dir_all(&src).unwrap();
+    std::fs::write(
+        src.join("swofty.json"),
+        r#"{ "schema_version": 1, "id": "t.f2", "name": "F2", "version": "1.0.0", "author": "t",
+             "compat": { "game": "f1_25" },
+             "options": [ { "id": "spa", "type": "toggle", "default": true, "binds": "db" } ],
+             "operations": { "database": ["rounds.json"] } }"#,
+    )
+    .unwrap();
+    std::fs::write(
+        src.join("rounds.json"),
+        r#"{ "schema_version": 1, "ops": [
+             { "op": "set", "select": "t.list[_metadata_=f2]", "field": "spa", "value": "on", "when": { "spa": true } } ] }"#,
+    )
+    .unwrap();
+    store.install_addon(&src).unwrap();
+    store
+        .update_profile("default", |p| p.set_enabled("t.f2", true))
+        .unwrap();
+    let careers = crate::stdlib::careers::data_path(&store.root);
+    std::fs::create_dir_all(careers.parent().unwrap()).unwrap();
+    std::fs::write(&careers, r#"[{ "career": "c1", "label": "One", "team_raw": 5 }]"#).unwrap();
+    let reads = || crate::build::originals::SHIPPED_READS.with(|n| n.get());
+    let before = reads();
+    let built = build(&store, "default", &game).unwrap();
+    assert_eq!(reads() - before, 1, "{:#?}", built.warnings);
+    let out = Gvdb::parse(&std::fs::read(&built.plan.data[GVDB]).unwrap()).unwrap();
+    assert_eq!(out.get_text("t.list_0.spa").as_deref(), Some("on"));
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
 fn runs_the_build_hooks_of_builtin_addons() {
     if loader_dir().is_some() {
         return;
@@ -301,7 +360,7 @@ fn runs_the_build_hooks_of_builtin_addons() {
     let dir = root.join("game");
     std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
     std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
-    std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,
@@ -357,7 +416,7 @@ fn fingerprints_count_what_the_build_made_not_the_rest_of_the_folders() {
         let dir = root.join("game");
         std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
         std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
-        std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+        std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
         let game = Game {
             identity: Identity::detect(&dir, Some(1)).unwrap(),
             dir,
@@ -440,7 +499,7 @@ fn an_enabled_addon_for_a_newer_launcher_is_left_out_with_a_warning() {
     let dir = root.join("game");
     std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
     std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
-    std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,
@@ -493,7 +552,7 @@ fn a_built_addon_installs_and_builds() {
     std::fs::create_dir_all(dir.join("2025_asset_groups")).unwrap();
     std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
     let records = vec![Record::new("rules.laps", 0, "5")];
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let (erp, uri) = ("2025_asset_groups/t.erp", "eaid://t/a.idf");
     std::fs::write(dir.join(erp), archive(&[uri], 0)).unwrap();
     let game = Game {
@@ -656,7 +715,7 @@ fn timed_store(name: &str, hooks: &[(&str, u64, Ends)]) -> (PathBuf, Store, Game
     let dir = root.join("game");
     std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
     std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
-    std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,

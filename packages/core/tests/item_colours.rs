@@ -48,7 +48,7 @@ fn stock() -> Gvdb {
             records.push(Record::new(&format!("{row}.{c}"), 11, value));
         }
     }
-    Gvdb { records }
+    Gvdb::new(records)
 }
 
 fn copy_op(category: &str, word: &str) -> String {

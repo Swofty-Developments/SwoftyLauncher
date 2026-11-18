@@ -9,6 +9,7 @@
 #include <cstring>
 #include <mutex>
 #include <string>
+#include <type_traits>
 #include <unordered_set>
 
 namespace render::d3d12 {
@@ -18,7 +19,13 @@ namespace {
 constexpr size_t RESOURCE_GETDESC_SLOT = 10, SRV_SLOT = 19;
 
 using SrvFn = void(STDMETHODCALLTYPE *)(ID3D12Device *, ID3D12Resource *, const D3D12_SHADER_RESOURCE_VIEW_DESC *, SIZE_T);
-SrvFn srv_orig;
+
+// The srv clamp set: the device's CreateShaderResourceView, patched in its vtable.
+struct SrvHooks : runtime::loader::HookSet<> {
+    runtime::loader::Original<std::remove_pointer_t<SrvFn>> create_srv;
+};
+
+constinit SrvHooks hooks;
 
 const GUID kNameW = {0x4cca5fd8, 0x921f, 0x42c8, {0x85, 0x66, 0x70, 0xca, 0xf2, 0xa9, 0xb7, 0x41}};
 
@@ -79,7 +86,7 @@ void STDMETHODCALLTYPE srv_hook(ID3D12Device *dev, ID3D12Resource *r, const D3D1
 {
     using namespace srv_clamp;
     if (!r || !d) {
-        srv_orig(dev, r, d, h);
+        hooks.create_srv(dev, r, d, h);
         return;
     }
     using GetDescFn = D3D12_RESOURCE_DESC *(STDMETHODCALLTYPE *)(ID3D12Resource *, D3D12_RESOURCE_DESC *);
@@ -127,7 +134,7 @@ void STDMETHODCALLTYPE srv_hook(ID3D12Device *dev, ID3D12Resource *r, const D3D1
         v.slices = cube_slices(d->TextureCubeArray.NumCubes);
         break;
     default:
-        srv_orig(dev, r, d, h);
+        hooks.create_srv(dev, r, d, h);
         return;
     }
     Resource res;
@@ -137,7 +144,7 @@ void STDMETHODCALLTYPE srv_hook(ID3D12Device *dev, ID3D12Resource *r, const D3D1
     res.mips = rd.MipLevels;
     Plan p = plan(v, res);
     if (p.action == Action::Pass) {
-        srv_orig(dev, r, d, h);
+        hooks.create_srv(dev, r, d, h);
         return;
     }
     reports.report(r, v, res, p);
@@ -182,22 +189,20 @@ void STDMETHODCALLTYPE srv_hook(ID3D12Device *dev, ID3D12Resource *r, const D3D1
     default:
         break;
     }
-    srv_orig(dev, r, &c, h);
+    hooks.create_srv(dev, r, &c, h);
 }
 
 }
 
 bool arm_srv_clamp()
 {
-    static int state;
-    if (state)
-        return state > 0;
-    state = -1;
+    if (!hooks.gate.offer())
+        return hooks.live();
     char env[8] = {};
     GetEnvironmentVariableA("SWOFTY_SRV_CLAMP", env, sizeof env);
     if (!srv_clamp::enabled(env)) {
         swofty::log("[gfx] srv clamp is off (SWOFTY_SRV_CLAMP=1 turns it on)");
-        return false;
+        return settle(hooks, false, "SWOFTY_SRV_CLAMP is not 1");
     }
     ID3D12Device *dev = probe_device();
     void **vt = dev ? *reinterpret_cast<void ***>(dev) : nullptr;
@@ -208,7 +213,7 @@ bool arm_srv_clamp()
     DWORD old = 0;
     bool ok = vt && VirtualProtect(&vt[SRV_SLOT], sizeof(void *), PAGE_READWRITE, &old);
     if (ok) {
-        srv_orig = reinterpret_cast<SrvFn>(srv_target);
+        *hooks.create_srv.slot() = srv_target;
         vt[SRV_SLOT] = reinterpret_cast<void *>(&srv_hook);
         VirtualProtect(&vt[SRV_SLOT], sizeof(void *), old, &old);
         swofty::log("[gfx] srv clamp armed: ID3D12Device::CreateShaderResourceView (vt+0x98, vtable entry for %s+0x%llx) "
@@ -217,8 +222,7 @@ bool arm_srv_clamp()
     } else
         swofty::log("[gfx] srv clamp: could not patch the ID3D12Device vtable");
     release(dev);
-    state = ok ? 1 : -1;
-    return ok;
+    return settle(hooks, ok, "could not patch the ID3D12Device vtable");
 }
 
 }

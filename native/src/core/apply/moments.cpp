@@ -574,15 +574,20 @@ void attach()
     });
 }
 
-std::size_t boot_plan()
+void start_boot_plan()
 {
     attach();
-    return scheduler().plan_boot();
+    char v[8] = {};
+    DWORD n = GetEnvironmentVariableA("SWOFTY_PLAN_SYNC", v, sizeof v);
+    bool sync = n && n < sizeof v && v[0] == '1';
+    if (sync)
+        swofty::log("[apply] boot plan: SWOFTY_PLAN_SYNC=1, so every boot applier counts on this thread");
+    scheduler().start_plan(!sync);
 }
 
-bool boot_work()
+bool boot_may_work()
 {
-    return scheduler().boot_work();
+    return scheduler().boot_may_work();
 }
 
 void status(const std::string &addon, const std::string &line)

@@ -53,7 +53,7 @@ const char *level_name(const RtasDesc &desc)
     return desc.Inputs.Type == D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL ? "top-level" : "bottom-level";
 }
 
-class RtasGuard {
+class RtasGuard : public runtime::loader::HookSet<> {
 public:
     bool arm();
     void build(ID3D12GraphicsCommandList4 *l, const RtasDesc *desc, UINT posts, const PostDesc *post);
@@ -68,7 +68,6 @@ private:
 
     safetyhook::InlineHook hook;
     rtas_guard::Mode mode = rtas_guard::Mode::on;
-    std::mutex lock;
     rtas_guard::Book book;
     rtas_guard::Trace named{RTAS_NAMED};
     std::atomic<bool> named_full{false};
@@ -76,7 +75,6 @@ private:
     std::atomic<size_t> tracked{0};
     std::atomic<uint64_t> builds{0}, faulty{0}, holes{0}, bad_posts{0}, all{0};
     uint64_t trace_builds = 0;
-    int state = 0;
 };
 
 RtasGuard guard;
@@ -326,9 +324,8 @@ void RtasGuard::build(ID3D12GraphicsCommandList4 *l, const RtasDesc *desc, UINT 
 
 bool RtasGuard::arm()
 {
-    if (state)
-        return state > 0;
-    state = -1;
+    if (!gate.offer())
+        return live();
     char env[8] = {};
     GetEnvironmentVariableA("SWOFTY_RTAS_GUARD", env, sizeof env);
     mode = rtas_guard::mode(env[0] ? env : nullptr);
@@ -340,7 +337,7 @@ bool RtasGuard::arm()
     swofty::log("[gfx] the game's hardware settings have ray tracing options: %s", rt.empty() ? "none found" : rt.c_str());
     if (mode == rtas_guard::Mode::off) {
         swofty::log("[gfx] rtas guard is off (SWOFTY_RTAS_GUARD=0)");
-        return false;
+        return settle(*this, false, "SWOFTY_RTAS_GUARD=0");
     }
     ID3D12Device *dev = probe_device();
     ID3D12CommandAllocator *alloc = nullptr;
@@ -365,8 +362,7 @@ bool RtasGuard::arm()
     release(list);
     release(alloc);
     release(dev);
-    state = ok ? 1 : -1;
-    return ok;
+    return settle(*this, ok);
 }
 
 std::string RtasGuard::recent_text(const std::vector<runtime::dred::BuildStop> &stops)

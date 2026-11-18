@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140382500.c;xref:0x1403879b1,0x14038b439",
-  "notes": "GarageCrewInstance::playSequence(idx,name,startTime): binds the named sequence clip (Ne_SequenceClipInstance_BindOptional) for a crew member, logs GARAGECREWINSTANCE_VERBOSE 'PLAY SEQUENCE [%d] %s %f', WARN 'Failed to find sequence %s'. Callers Game_GarageCrew_UpdateBaySequences (3x), Game_GarageCrewModule_SpawnGarageCrew, Game_GarageCrewInstance_PlayOverlaySequence. Addon: trigger own garage crew animations. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2818)"
+  "notes": "GarageCrewInstance::playSequence(idx,name,startTime): binds the named sequence clip (Ne_SequenceClipInstance_BindOptional) for a crew member, logs GARAGECREWINSTANCE_VERBOSE 'PLAY SEQUENCE [%d] %s %f', WARN 'Failed to find sequence %s'. Callers Game_GarageCrew_UpdateBaySequences (3x), Game_GarageCrewModule_SpawnGarageCrew, Game_GarageCrewInstance_PlayOverlaySequence. Addon: trigger own garage crew animations. Callers: census steam 0x382500. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2818)"
  },
  "signature": {
   "id": "game.garage_crew_instance_play_sequence",

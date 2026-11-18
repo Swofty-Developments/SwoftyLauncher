@@ -136,6 +136,7 @@ struct Pipeline<'a, 'p> {
 pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool) -> Result<Built> {
     let registry = store.registry()?;
     let addons = registry.manifests();
+    let shipped = originals::Shipped::new(&store.root, game);
     let Start {
         settings,
         order,
@@ -143,7 +144,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         mut std16,
         lent,
         mut built,
-    } = Start::read(store, profile, game, &addons)?;
+    } = Start::read(store, profile, &addons, &shipped)?;
     let packer = swofty_formats::erp::Packer::cached(setup::packed_dir(store)).deferring(true);
     let run = Run {
         store,
@@ -166,7 +167,8 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         Ok(features) => Hooks::start(run, &registry, &features),
         Err(_) => Hooks::default(),
     };
-    built.warnings.extend(start::career_warnings(run));
+    built.warnings.extend(start::career_warnings(run, &shipped));
+    drop(shipped);
     built.report = start::report(run);
     check_originals(&store.root, game)?;
     crate::now_doing("reading the addons");

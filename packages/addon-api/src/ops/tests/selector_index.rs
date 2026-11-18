@@ -65,7 +65,7 @@ fn seeded(rng: &mut Rng) -> Gvdb {
             });
         }
     }
-    Gvdb { records }
+    Gvdb::new(records)
 }
 
 fn write(db: &mut Db, rng: &mut Rng, keys: &[(u64, String)]) {

@@ -4631,7 +4631,7 @@ pub type Ne_SaveSystem2Win_Mount_t = unsafe extern "C" fn(
 ) -> u32;
 pub type Ne_SaveSystem2Win_Start_t = unsafe extern "C" fn(device: *mut c_void) -> u64;
 pub type Ne_SaveSystem_InitDevice_t = unsafe extern "C" fn(save_system: *mut c_void) -> c_int;
-pub type Ne_Set_FixedString_t = unsafe extern "C" fn(dst: *mut c_void, src: *const c_char);
+pub type Ne_Set_FixedString_t = unsafe extern "C" fn(dst: *mut c_void, src: *const c_char) -> *mut c_void;
 pub type Ne_Sort_HeapSortDriverPairs_t = unsafe extern "C" fn(first: *mut i64, last: *mut i64, depth: u64);
 pub type Ne_Sort_IntrosortDriverPtrsByKey_t =
     unsafe extern "C" fn(first: *mut i64, last: *mut i64, depth: u64, reverse: u32);

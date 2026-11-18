@@ -26,14 +26,12 @@ fn op(addon: &str, json: &str) -> Op {
 
 fn lists() -> Gvdb {
     use swofty_formats::gvdb::Record;
-    Gvdb {
-        records: vec![
-            Record::new("t._list_instancecount_", 0, "1"),
-            Record::new("t.list_0._metadata_", 4, "f1"),
-            Record::new("t.list_0.name", 4, "stock"),
-            Record::new("t.list_0.colour", 4, "red"),
-        ],
-    }
+    Gvdb::new(vec![
+        Record::new("t._list_instancecount_", 0, "1"),
+        Record::new("t.list_0._metadata_", 4, "f1"),
+        Record::new("t.list_0.name", 4, "stock"),
+        Record::new("t.list_0.colour", 4, "red"),
+    ])
 }
 
 fn set(row: &str, field: &str, value: &str) -> String {
@@ -71,7 +69,7 @@ fn track_sets() -> Gvdb {
         ));
         records.push(Record::new(&format!("{set}.TrackData_0.round"), 0, "1"));
     }
-    Gvdb { records }
+    Gvdb::new(records)
 }
 
 fn put(path: &str, value: &str) -> String {

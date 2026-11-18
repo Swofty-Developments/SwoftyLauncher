@@ -14,7 +14,7 @@ fn keeps_a_change_another_window_saved_while_editing() {
         Record::new("entrants.teams.team_0.stat_id", 0, "100"),
         Record::new("entrants.teams.team_0.prestige", 0, "5"),
     ];
-    let cat = Catalog::load(&Gvdb { records }.to_bytes()).unwrap();
+    let cat = Catalog::load(&Gvdb::new(records).to_bytes()).unwrap();
     let id = Package::create(&store, "Mine").unwrap().id;
     let (stat, prestige) = (
         fnv1a64("entrants.teams.team_0.stat_id"),

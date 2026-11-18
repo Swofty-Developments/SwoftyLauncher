@@ -218,6 +218,53 @@ loader::api->log(perf::STEP_LINE, steps.lap_ms(), "attach subsystems");   // [pe
 
 Attach-time lines go through the loader's `api->log`, because `swofty::log` has no API until the settings subsystem has attached. An addon init slower than `SLOW_ADDON_INIT_MS` adds a `[perf] slow addon init` line beside its step.
 
+## The boot plan
+
+The boot plan counts the new database keys every boot applier adds, before the game loads its database. The `gamedb` subsystem starts it at the ready stage, and the count of the content rows runs on a worker while the stage goes on (`apply/scheduler.cpp`):
+
+```cpp
+moments::start_boot_plan();          // scheduler().start_plan(true), or start_plan(false) with SWOFTY_PLAN_SYNC=1
+if (edits.empty() && !moments::boot_may_work())
+    without_database("not_needed", "");
+// ...
+scheduler().planned_keys();          // in reserve_target: the first reader waits for the worker
+```
+
+`start_plan` runs on the calling thread:
+
+- Every boot applier's `prepare`: the stock teams and constructors, the venues and the track seeds.
+- Every count that writes the store: the tracks' `database_keys`, which declares the record tracks' data variants.
+- The hook test. When no `counts_off_thread()` applier `may_count`, those appliers count on this thread too, and `boot_may_work()` is the counted plan's `boot_work()`. While a worker counts, `boot_may_work()` is true, and the database load is hooked. The content rows `may_count` only when a row registry holds an addon record, which makes boot work in any case.
+
+The `counts_off_thread()` appliers then count on a worker. These are the content rows, whose `database_keys` expands every content record against the game database file and only reads the store. Every reader of the plan waits for the worker first: `planned_keys`, `boot_work`, `run_boot` and `plan_boot`. At that wait the store's `generation()` is compared with its value when the worker started. If the store changed, the waiting thread forgets the worker's count and counts again. The content expansion reads no track registry, so it counts the same before and after the tracks' variants.
+
+The plan logs these step lines:
+
+```text
+[perf] step 12.0 ms: boot plan prepare (24)
+[perf] step 30.1 ms: boot plan counts on this thread (3)
+[perf] step 1210.4 ms: boot plan count off the thread (21)
+[perf] step 0.2 ms: boot plan wait for the count off the thread
+[perf] step 1301.7 ms: boot plan on this thread (24)              (SWOFTY_PLAN_SYNC=1)
+[perf] step 1190.3 ms: boot plan count again on this thread (21)  (the store changed during the count)
+```
+
+`native/test/apply/apply_test.cpp` covers the scheduler side. `native/test/run_content_test.sh` compares the database edits from both paths over Classic Seasons on the game database.
+
+### Registry writes after the register pass
+
+`SwoftyCoreRegisterDone` ends the register pass (`Store::end_register`). On a boot registry, `add`, `variant`, `provide` and `layer` are refused as `late` after that. These calls are still accepted on a boot registry and change what the boot plan and the boot apply read:
+
+| Call | Effect on a boot registry |
+|---|---|
+| `clear_layer` | drops an addon's layer |
+| `tag_add` | adds a record to a tag a layer targets |
+| `protect` | protects fields from other addons' layers |
+| `invalidate` | makes a dynamic provider's records read again |
+| `declare` | a newer minor replaces the registry's schema |
+
+A call made after the plan's wait changes the boot apply but not the plan. The plan's counts size the value map and admit addons for room, so the boot can then lay out a different number of keys than the plan counted. A call that lands before the wait moves the store's generation, and the plan is counted again. `native/test/content/rows_test_plan.cpp` shows the current behaviour: `clear_layer` on `team.identity` after the register pass is accepted and changes the expansion. To close the gap, these calls would be refused as `late` on boot registries after the register pass. Addons would see that change.
+
 ## The crash handler
 
 The crash handler in `diagnostics/crash/` is split by what runs when:

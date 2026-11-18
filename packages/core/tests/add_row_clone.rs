@@ -28,7 +28,7 @@ fn stock() -> Gvdb {
             }
         }
     }
-    Gvdb { records }
+    Gvdb::new(records)
 }
 
 fn build(file: &str) -> (Gvdb, DbReport) {
