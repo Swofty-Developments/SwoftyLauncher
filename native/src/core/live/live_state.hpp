@@ -887,8 +887,9 @@ private:
                 pit_stops_[vid] = uint8_t(stops & 0xff);
                 pit_lane_ok_[vid] = true;
                 if constexpr (L::HAS_GARAGE) {
-                    uint32_t garage = 0;
-                    if (m_.get(flags + L::pit::garage, garage) && garage <= L::pit::garage_safety_car) {
+                    int32_t garage = -1;
+                    if (m_.get(flags + L::pit::garage, garage) && garage >= 0 &&
+                        garage <= int32_t(L::pit::garage_safety_car)) {
                         garage_[vid] = uint8_t(garage);
                         garage_ok_[vid] = true;
                     }

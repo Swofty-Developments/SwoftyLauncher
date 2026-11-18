@@ -91,7 +91,8 @@ constexpr uintptr_t records = 0x68, state = 0x4, stops = 0x14;
 constexpr uintptr_t lane_object = 0x48, lane_flags = 0x938, in_lane = 0x103;
 constexpr size_t lane_flag_stride = 0x10;
 constexpr unsigned max_slots = 0x1b;
-// The garage index Game_PitLane_AssignGarageIndices writes; its pit box is garage >> 1, box 12 for the safety car.
+// The garage index Game_PitLane_AssignGarageIndices writes (0x7fffffff unassigned, 99 the safety car); its pit box is
+// garage >> 1, box 12 for the safety car.
 constexpr uintptr_t garage = 0xe0;
 constexpr uint32_t garage_safety_car = 99, safety_car_box = 12;
 }
