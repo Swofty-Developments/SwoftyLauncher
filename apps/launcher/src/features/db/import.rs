@@ -1,19 +1,20 @@
 use std::path::Path;
 
-use crate::shell::notices::{Notification, Notify};
+use crate::shell::notices::{self, Notification, Notify};
 use gpui_kit::*;
 use swofty_core::dbedit::ImportReport;
-use swofty_core::dbedit::package::{self, Incoming};
+use swofty_core::dbedit::package::{self, Imported, Incoming};
 use swofty_i18n::{tr, trf};
 
 use super::{Then, debug_path, guarded, text};
-use crate::features::db::Db;
+use crate::features::db::{Db, DbChange, DbPrompt};
 use crate::shell::Shell;
+use crate::shell::host::PromptHost;
 
-impl Shell {
-    pub(crate) fn db_import(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+impl Db {
+    pub(crate) fn import<H: PromptHost<Self>>(host: &mut H, window: &mut Window, cx: &mut Context<H>) {
         if let Some(path) = debug_path("SWOFTY_DEBUG_IMPORT") {
-            self.db_import_path(&path, window, cx);
+            Self::import_path(host, &path, window, cx);
             return;
         }
         let rx = cx.prompt_for_paths(PathPromptOptions {
@@ -29,35 +30,36 @@ impl Shell {
             let Some(path) = paths.into_iter().next() else {
                 return;
             };
-            this.update_in(cx, |s, window, cx| s.db_import_path(&path, window, cx))
+            this.update_in(cx, |host, window, cx| Self::import_path(host, &path, window, cx))
                 .ok();
         })
         .detach();
     }
 
-    fn db_import_path(&mut self, path: &Path, window: &mut Window, cx: &mut Context<Self>) {
+    fn import_path<H: PromptHost<Self>>(host: &mut H, path: &Path, window: &mut Window, cx: &mut Context<H>) {
         let file = path.file_name().map_or_else(
             || path.display().to_string(),
             |n| n.to_string_lossy().into_owned(),
         );
-        let Some(catalog) = self.db.catalog().cloned() else {
+        let (db, needs) = host.split();
+        let Some(catalog) = db.catalog().cloned() else {
             return;
         };
-        if self.db.importing {
+        if db.importing {
             return;
         }
-        self.db.importing = true;
+        db.importing = true;
+        let (store, path) = (needs.store.clone(), path.to_path_buf());
         window.notify(Notification::info(trf!("Importing {file}…", file = file)), cx);
         cx.notify();
-        let (store, path) = (self.store.clone(), path.to_path_buf());
         cx.spawn_in(window, async move |this, cx| {
             let result = cx
                 .background_executor()
                 .spawn(async move { guarded(|| package::read(&store, &catalog, &path).map_err(text)) })
                 .await;
-            this.update_in(cx, |s, window, cx| {
-                s.db.importing = false;
-                s.db_imported(result, file, window, cx);
+            this.update_in(cx, |host, window, cx| {
+                host.split().0.importing = false;
+                Self::imported(host, result, file, window, cx);
                 cx.notify();
             })
             .ok();
@@ -66,33 +68,15 @@ impl Shell {
     }
 
     // An addon .zip installs as a new addon and shows on Addons; other files open as a new draft.
-    fn db_imported(
-        &mut self,
+    fn imported<H: PromptHost<Self>>(
+        host: &mut H,
         result: Result<Incoming, String>,
         file: String,
         window: &mut Window,
-        cx: &mut Context<Self>,
+        cx: &mut Context<H>,
     ) {
         match result {
-            Ok(Incoming::Addon(done)) => {
-                let mut body = report_text(&done.report);
-                if let Some(from) = &done.renamed_from {
-                    body.push_str(&trf!(
-                        "\n{from} was already installed; this copy is {id}",
-                        from = from,
-                        id = done.package.id
-                    ));
-                }
-                let id = done.package.id.clone();
-                let profile = self.library.profile.name.clone();
-                if !self.vanilla() && self.db_turn_on(&id).is_ok() {
-                    body.push_str(&trf!("\nTurned on in {profile}", profile = profile));
-                }
-                let title = trf!("Imported {name}", name = done.package.name);
-                window.notify(Notification::success(body).title(title), cx);
-                self.reload(cx);
-                self.show_addon(&id, cx);
-            }
+            Ok(Incoming::Addon(done)) => host.changed(DbChange::Imported(done), cx),
             Ok(Incoming::Changes { name, edits, report }) => {
                 let then = Then::Load {
                     file,
@@ -100,7 +84,7 @@ impl Shell {
                     edits,
                     report,
                 };
-                self.db_leave(then, window, cx);
+                host.prompt(DbPrompt::Leave(then), window, cx);
             }
             Err(e) => {
                 crate::app::app_log::action("db editor: import")
@@ -112,6 +96,20 @@ impl Shell {
                 )
             }
         }
+    }
+}
+
+impl Shell {
+    /// Turns the imported addon on in this profile, says so, and shows it on Addons.
+    pub(crate) fn db_addon_imported(&mut self, done: Imported, cx: &mut Context<Self>) {
+        let id = done.package.id.clone();
+        let profile = self.library.profile.name.clone();
+        let on = !self.vanilla() && self.db_turn_on(&id).is_ok();
+        let body = imported_text(&done, on.then_some(profile.as_str()));
+        let title = trf!("Imported {name}", name = done.package.name);
+        notices::post(Notification::success(body).title(title), cx);
+        self.reload(cx);
+        self.show_addon(&id, cx);
     }
 
     pub(crate) fn db_add_key(
@@ -125,14 +123,31 @@ impl Shell {
         if !self.db_ready_to_edit(cx) {
             return Err(self
                 .db
+                .book
                 .addon_error
                 .clone()
                 .unwrap_or_else(|| "The draft can't be edited now.".into()));
         }
-        let key = guarded(|| self.db.draft.edits.add(&catalog, path, tag, value))?;
+        let key = guarded(|| self.db.book.draft.edits.add(&catalog, path, tag, value))?;
         Db::changed(self, Some(key), true, cx);
         Ok(())
     }
+}
+
+/// The notice body for an imported addon, and the profile it was turned on in.
+pub(super) fn imported_text(done: &Imported, turned_on_in: Option<&str>) -> String {
+    let mut body = report_text(&done.report);
+    if let Some(from) = &done.renamed_from {
+        body.push_str(&trf!(
+            "\n{from} was already installed; this copy is {id}",
+            from = from,
+            id = done.package.id
+        ));
+    }
+    if let Some(profile) = turned_on_in {
+        body.push_str(&trf!("\nTurned on in {profile}", profile = profile));
+    }
+    body
 }
 
 pub(super) fn report_text(r: &ImportReport) -> String {

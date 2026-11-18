@@ -13,8 +13,9 @@ use swofty_i18n::{tr, trf};
 
 use super::model::*;
 use super::state::*;
+use crate::shell::Launching;
 use crate::shell::host::Host;
-use crate::shell::{Launching, PlayHost};
+use crate::shell::host::PromptHost;
 use crate::shell::{Page, Shell};
 use crate::ui::monogram;
 use crate::ui::theme::Palette;
@@ -32,34 +33,8 @@ impl Shell {
         .detach();
     }
 
-    pub(super) fn room_close_game(&mut self, window: &mut Window, cx: &mut Context<Self>) -> bool {
-        let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
-            return true;
-        };
-        let pids: Vec<u32> = self
-            .game
-            .processes
-            .iter()
-            .filter(|g| g.is_in(&dir))
-            .map(|g| g.pid)
-            .collect();
-        if pids.is_empty() {
-            return true;
-        }
-        swofty_core::session::request_stop(&self.store.root);
-        for pid in &pids {
-            if let Err(e) = swofty_core::platform::process::stop_process(*pid) {
-                crate::app::app_log::action("stop f1 25").failed(&e);
-                window.notify(Notification::error(e.to_string()), cx);
-                return false;
-            }
-        }
-        self.rooms.closing = Some(pids);
-        true
-    }
-
     pub(super) fn room_begin(&mut self, start: Start, window: &mut Window, cx: &mut Context<Self>) {
-        if self.rooms.busy() || !self.room_close_game(window, cx) {
+        if self.rooms.busy() || !Multiplayer::close_game(self, window, cx) {
             return;
         }
         self.rooms.notice = None;
@@ -387,7 +362,11 @@ impl Multiplayer {
 
     /// The online page's tick: the room's launch and game watch, leaving, and the page's polls while it
     /// shows.
-    pub(super) fn tick<H: Host<Self> + PlayHost>(host: &mut H, window: &mut Window, cx: &mut Context<H>) {
+    pub(super) fn tick<H: Host<Self> + PromptHost<Launching>>(
+        host: &mut H,
+        window: &mut Window,
+        cx: &mut Context<H>,
+    ) {
         Self::launch(host, window, cx);
         let dialog = window.has_active_dialog(cx);
         let (m, needs) = <H as Host<Self>>::split(host);
@@ -448,51 +427,54 @@ impl Multiplayer {
         Self::load_shown_faces(host, cx);
     }
 
+    /// Closes the copy's F1 25 so the room can start it. False when a stop failed, which a notice says.
+    pub(super) fn close_game<H: Host<Self>>(host: &mut H, window: &mut Window, cx: &mut Context<H>) -> bool {
+        let (m, needs) = host.split();
+        let Some(dir) = needs.game_dir else {
+            return true;
+        };
+        let pids: Vec<u32> = needs
+            .processes
+            .iter()
+            .filter(|g| g.is_in(dir))
+            .map(|g| g.pid)
+            .collect();
+        if pids.is_empty() {
+            return true;
+        }
+        swofty_core::session::request_stop(&needs.store.root);
+        for pid in &pids {
+            if let Err(e) = swofty_core::platform::process::stop_process(*pid) {
+                crate::app::app_log::action("stop f1 25").failed(&e);
+                window.notify(Notification::error(e.to_string()), cx);
+                return false;
+            }
+        }
+        m.game.closing = Some(pids);
+        true
+    }
+
     /// Starts F1 25 for the room when the session asks, the game is closed and the launcher has put the
     /// game folder back.
-    pub(super) fn launch<H: Host<Self> + PlayHost>(host: &mut H, window: &mut Window, cx: &mut Context<H>) {
+    pub(super) fn launch<H: Host<Self> + PromptHost<Launching>>(
+        host: &mut H,
+        window: &mut Window,
+        cx: &mut Context<H>,
+    ) {
         let (m, needs) = <H as Host<Self>>::split(host);
         let Some(session) = &m.session else {
             return;
         };
-        let Some(ask) = session.state().launch else {
+        let Some(ask) = m.game.due(session, needs.busy || needs.running) else {
             return;
         };
-        if m.launch_seen == ask.seq || needs.busy || needs.running {
-            return;
-        }
-        m.closing = None;
         if let Some(dir) = needs.game_dir {
             diag::forget_status(dir);
         }
-        let row_ids = match &ask.row_ids {
-            Some(ids) => {
-                let file = needs.store.root.join("state/room-row-ids.json");
-                if let Err(e) = std::fs::create_dir_all(needs.store.root.join("state"))
-                    .map_err(|e| e.to_string())
-                    .and_then(|()| ids.write(&file).map_err(|e| e.to_string()))
-                {
-                    m.launch_seen = ask.seq;
-                    session.launch_failed(&format!("the host's ids and settings couldn't be written ({e})"));
-                    return;
-                }
-                Some(file)
-            }
-            None => None,
+        let Some(room) = m.game.begin(session, ask, &needs.store.root) else {
+            return;
         };
-        m.launch_seen = ask.seq;
-        m.game_seen = false;
-        m.room_launching = true;
-        let direct_start = ask.direct_start.clone();
-        let started = Launching::play_for(
-            host,
-            Some(RoomLaunch {
-                row_ids,
-                direct_start,
-            }),
-            window,
-            cx,
-        );
+        let started = Launching::play_for(host, Some(room), window, cx);
         if !started {
             <H as Host<Self>>::split(host).0.launch_result(false);
         }

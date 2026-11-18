@@ -12,7 +12,7 @@
 // save splice): a "format" string and the payload in base64, split over "d000".."d999" string
 // properties (type 'dstr': u32 length and the characters).
 
-namespace swofty_core::snapshots::format {
+namespace career::snapshots::format {
 
 constexpr size_t CHUNK = 32000;
 constexpr size_t MAX_CHUNKS = 1000;

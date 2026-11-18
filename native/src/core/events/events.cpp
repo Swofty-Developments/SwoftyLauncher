@@ -2,6 +2,7 @@
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/settings.hpp"
 #include "core/frontend/main_menu.hpp"
+#include "core/hud/toast.hpp"
 #include "core/services/lap_host.hpp"
 
 #include <safetyhook.hpp>
@@ -85,7 +86,7 @@ const Step STEPS[] = {
     {"career_tick", [] { runtime::career_tick(); }},
     {"live_tick", [] { runtime::live_tick(now_seconds()); }},
     {"telemetry_tick", [] { runtime::telemetry_tick(); }},
-    {"toast::tick", [] { runtime::toast::tick(); }},
+    {"toast::tick", [] { hud::toast::tick(); }},
     {"lap_host::tick", [] { runtime::lap_host::tick(); }},
     {"popup_tick", [] { runtime::popup_tick(); }},
     {"main_menu::tick", [] { frontend::main_menu::tick(); }},

@@ -5,7 +5,7 @@
 
 #include <algorithm>
 
-namespace swofty_core::snapshots {
+namespace career::snapshots {
 
 using swofty::json::Value;
 namespace fmt = format;

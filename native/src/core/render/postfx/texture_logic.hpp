@@ -6,7 +6,7 @@
 #include <string_view>
 #include <vector>
 
-namespace postfx {
+namespace render::postfx {
 
 // DXGI_FORMAT values for the texture format names.
 inline int format_of(std::string_view name)

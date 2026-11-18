@@ -590,27 +590,23 @@ bool race_tyres_keep(uintptr_t tyre_component, bool pit_stop_call)
     uint32_t type = g_session_type.load(std::memory_order_relaxed);
     if (!rule || !pit_stop_call)
         return false;
-    uint32_t damage = 0;
-    uint64_t count = 0;
-    if (swofty::mem::read(tyre_component + apply::content::TYRE_WHEEL_COUNT, count) && count <= 16)
-        for (uint64_t i = 0; i < count; i++) {
-            uint32_t f = 0;
-            if (swofty::mem::read(tyre_component + apply::content::TYRE_WHEELS + i * apply::content::TYRE_WHEEL_STRIDE +
-                                      apply::content::TYRE_WHEEL_FLAGS,
-                                  f))
-                damage |= f;
-        }
-    uintptr_t entity = 0, car = 0;
+    auto read = [](uint64_t at, auto &out) { return swofty::mem::read(uintptr_t(at), out); };
+    bool witnessed = runtime::build_proof::proven_on(runtime::car_layout::PUNCTURES, runtime::running_build());
+    uint8_t punctured = witnessed ? apply::content::punctured_wheels(tyre_component, read) : 0;
+    uintptr_t physics = 0, car = 0;
     uint8_t vehicle = 0xff;
-    if (swofty::mem::read(tyre_component + 0x20, entity) && entity && swofty::mem::read(entity + 0x58, car) && car)
+    if (swofty::mem::read(tyre_component + apply::content::TYRE_PHYSICS, physics) && physics &&
+        swofty::mem::read(physics + apply::content::PHYSICS_CAR, car) && car)
         swofty::mem::read(car + car_live::CAR_VEHICLE_ID, vehicle);
-    auto pick = apply::content::race_tyre_change_pick(rule, type, pit_stop_call, damage);
+    auto pick = apply::content::race_tyre_change_pick(rule, type, pit_stop_call, punctured);
     if (pick == apply::content::TyreChange::game)
         return false;
-    swofty::log("[tyres] vehicle %u pit stop in the race: %s (tyre record flags %#x)", unsigned(vehicle),
-                pick == apply::content::TyreChange::kept ? "tyres kept (box rule race_tyre_change false)"
-                                                         : "tyres changed (a tyre record carries a damage flag)",
-                damage);
+    if (pick == apply::content::TyreChange::punctured)
+        swofty::log("[tyres] vehicle %u pit stop in the race: tyres changed for a puncture (%s)", unsigned(vehicle),
+                    apply::content::wheel_names(punctured).c_str());
+    else
+        swofty::log("[tyres] vehicle %u pit stop in the race: tyres kept (box rule race_tyre_change false)%s", unsigned(vehicle),
+                    witnessed ? "" : "; this build has no witness for the puncture state, so a punctured tyre stays fitted");
     return pick == apply::content::TyreChange::kept;
 }
 

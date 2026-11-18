@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace career_ops::rows {
+namespace career::ops::rows {
 
 struct Row {
     uint32_t driver = 0;

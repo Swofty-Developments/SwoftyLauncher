@@ -7,7 +7,7 @@
 
 #include <atomic>
 
-namespace postfx {
+namespace render::postfx {
 
 // The back buffers' render target views by descriptor address, and the latest views made, so a view
 // made before its back buffer was named is still found. A list that binds one of them draws into that

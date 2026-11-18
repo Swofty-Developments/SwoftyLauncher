@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace content = runtime::content;
+namespace content = career::content;
 
 static int fails;
 

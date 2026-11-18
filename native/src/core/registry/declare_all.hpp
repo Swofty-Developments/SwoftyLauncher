@@ -49,12 +49,12 @@ template <class Declare> std::size_t declare_system_registries(Declare &&declare
     one(content::packages);
     one(content::era_boxes);
     one(power::drs_rules);
-    one(career::modes);
-    one(career::seasons);
-    one(career::calendars);
-    one(career::ratings);
-    one(career::rnd_trees);
-    one(career::markets);
+    one(swofty::career::modes);
+    one(swofty::career::seasons);
+    one(swofty::career::calendars);
+    one(swofty::career::ratings);
+    one(swofty::career::rnd_trees);
+    one(swofty::career::markets);
     one(tracks::tracks);
     one(tracks::venues);
     one(tracks::data);

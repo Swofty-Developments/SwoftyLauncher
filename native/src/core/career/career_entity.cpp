@@ -21,7 +21,7 @@
 // CareerBank or MyTeamFacilities means My Team, DriverCareerPlayerDriverStatistics Driver Career.
 // The human entrant (EntrantRecord.ordinal_flags bit 0x10000000) gives the career key.
 
-namespace career_game {
+namespace career::game {
 
 namespace {
 
@@ -96,7 +96,7 @@ uintptr_t component_of(uintptr_t e, const char *type)
 }
 
 template <class E = g::CareerEntity, class R = g::EntrantRecord>
-void entrants(uintptr_t e, runtime::career::Components &out)
+void entrants(uintptr_t e, career::state::Components &out)
 {
     if constexpr (layout::CAREER && layout::ENTRANT) {
         uintptr_t b = 0, en = 0;
@@ -169,13 +169,13 @@ void heal_my_team()
     heal_my_team_cars();
 }
 
-runtime::career::Components poll()
+career::state::Components poll()
 {
     static const uint32_t find = perf::probe("core", "career poll: entity");
     static const uint32_t lookup = perf::probe("core", "career poll: components");
     static const uint32_t walk = perf::probe("core", "career poll: entrants");
     mem::Trust trust(runtime::HEAP_TRUST_MS);
-    runtime::career::Components c;
+    career::state::Components c;
     uintptr_t e = 0;
     {
         perf::Scope p(find);

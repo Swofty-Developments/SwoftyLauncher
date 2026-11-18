@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-namespace career_ops::live {
+namespace career::ops::live {
 
 uintptr_t bind(const char *id)
 {

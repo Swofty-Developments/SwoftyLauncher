@@ -9,7 +9,7 @@
 // What the Team HQ hub tabs' builders (hub_tab.cpp) and their R&D tab (hub_rnd.cpp) share: hide_rnd and its
 // pending change, which builders follow it live, the two addresses setup() resolves for the R&D code, the R&D
 // callbacks of the builder hooks setup() places, and the hub's capped note line.
-namespace hub {
+namespace career::hub {
 
 extern std::atomic<bool> hide, pending, laptop_flag, team_hq_flag;
 extern uintptr_t a_set_visible, a_tq_vehicle;

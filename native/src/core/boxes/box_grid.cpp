@@ -2,7 +2,7 @@
 
 #include "core/boxes/box_grid_logic.hpp"
 #include "core/runtime/loader/core_sets.hpp"
-#include "core/runtime/loader/mixin_gate.hpp"
+#include "core/runtime/loader/hook_set.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -90,21 +90,25 @@ namespace mem = swofty::mem;
 using Record_t = void(void *weekend, uint8_t group, void *entries);
 using Build_t = void(void *weekend, uint8_t group, void *result);
 using Find_t = int32_t *(void *weekend, void *result, uint32_t driver_key);
-Record_t *record_orig = nullptr;
-Build_t *build_orig = nullptr;
 Find_t *find_fn = nullptr;
 using Place_t = void(void *placement, uint8_t vehicle, uint8_t type, uint32_t slot, float tolerance);
 using Resolve_t = void(void *placement, void *request);
-Place_t *place_orig = nullptr;
-Resolve_t *resolve_orig = nullptr;
+
+// The grid rules set: the group times record and result build, and the placement pair for row patterns.
+struct GridHooks : runtime::loader::HookSet<> {
+    runtime::loader::Original<Record_t> record_times;
+    runtime::loader::Original<Build_t> build_result;
+    runtime::loader::Original<Place_t> place_on_slot;
+    runtime::loader::Original<Resolve_t> resolve_transform;
+};
+
+constinit GridHooks hooks;
 std::atomic<bool> rows_on{false};   // a row pattern is active (fast path for every other placement)
 thread_local uintptr_t override_request = 0;
 thread_local bg::Vec3 override_pos{};
 int rows_logged = 0;
 
-runtime::loader::MixinGate mixin_gate;
 bool wanted = false;
-std::mutex lock;
 std::optional<bg::Rule> active;
 std::string active_box;
 uintptr_t weekend_seen = 0;
@@ -169,7 +173,7 @@ void forget_weekend(uintptr_t weekend)
     last_signature.clear();
 }
 
-// Caller holds lock.
+// Caller holds hooks.lock.
 void apply(uintptr_t weekend, const char *why)
 {
     if (!active || !active->reranks() || !find_fn)
@@ -252,10 +256,10 @@ void apply(uintptr_t weekend, const char *why)
 
 void record_entry(void *weekend, uint8_t group, void *entries)
 {
-    record_orig(weekend, group, entries);
+    hooks.record_times(weekend, group, entries);
     if (group != QUALIFYING && group != SHOOTOUT)
         return;
-    std::lock_guard<std::mutex> g(lock);
+    std::lock_guard<std::mutex> g(hooks.lock);
     if (!active || !active->reranks())
         return;
     uintptr_t w = uintptr_t(weekend);
@@ -271,10 +275,10 @@ void record_entry(void *weekend, uint8_t group, void *entries)
 
 void build_entry(void *weekend, uint8_t group, void *result)
 {
-    build_orig(weekend, group, result);
+    hooks.build_result(weekend, group, result);
     if (group != QUALIFYING)
         return;
-    std::lock_guard<std::mutex> g(lock);
+    std::lock_guard<std::mutex> g(hooks.lock);
     if (!active || !active->reranks())
         return;
     forget_weekend(uintptr_t(weekend));
@@ -289,7 +293,7 @@ uintptr_t grid_request(uintptr_t placement, uint32_t slot)
 
 void resolve_entry(void *placement, void *request)
 {
-    resolve_orig(placement, request);
+    hooks.resolve_transform(placement, request);
     if (override_request && uintptr_t(request) == override_request) {
         float p[3] = {override_pos.x, override_pos.y, override_pos.z};
         if (mem::readable(override_request + REQUEST_POS, sizeof p))
@@ -300,13 +304,13 @@ void resolve_entry(void *placement, void *request)
 void place_entry(void *placement, uint8_t vehicle, uint8_t type, uint32_t slot, float tolerance)
 {
     if (type != PLACE_GRID || slot >= PLACE_SLOTS || !rows_on.load(std::memory_order_relaxed)) {
-        place_orig(placement, vehicle, type, slot, tolerance);
+        hooks.place_on_slot(placement, vehicle, type, slot, tolerance);
         return;
     }
     std::vector<int> pattern;
     std::string box;
     {
-        std::lock_guard<std::mutex> g(lock);
+        std::lock_guard<std::mutex> g(hooks.lock);
         if (active && active->moves_slots()) {
             pattern = active->rows;
             box = active_box;
@@ -322,7 +326,7 @@ void place_entry(void *placement, uint8_t vehicle, uint8_t type, uint32_t slot, 
             float p[3] = {};
             if (!r || !mem::readable(r + REQUEST_POS, sizeof p))
                 break;
-            resolve_orig(placement, reinterpret_cast<void *>(r));
+            hooks.resolve_transform(placement, reinterpret_cast<void *>(r));
             std::memcpy(p, reinterpret_cast<const void *>(r + REQUEST_POS), sizeof p);
             if (!std::isfinite(p[0]) || !std::isfinite(p[1]) || !std::isfinite(p[2]))
                 break;
@@ -347,7 +351,7 @@ void place_entry(void *placement, uint8_t vehicle, uint8_t type, uint32_t slot, 
         override_request = req;
         override_pos = *at;
     }
-    place_orig(placement, vehicle, type, slot, tolerance);
+    hooks.place_on_slot(placement, vehicle, type, slot, tolerance);
     if (armed) {
         override_request = 0;
         std::memcpy(reinterpret_cast<void *>(req + REQUEST_POS), saved, sizeof saved);
@@ -360,7 +364,7 @@ namespace runtime {
 
 void box_grid_set(const std::optional<box_grid::Rule> &rule, const std::string &box)
 {
-    std::lock_guard<std::mutex> g(lock);
+    std::lock_guard<std::mutex> g(hooks.lock);
     bool same = box == active_box && rule.has_value() == active.has_value() &&
                 (!rule || (rule->qualifying == active->qualifying && rule->rule_107 == active->rule_107 &&
                            rule->rows == active->rows));
@@ -378,11 +382,11 @@ void box_grid_set(const std::optional<box_grid::Rule> &rule, const std::string &
 static std::vector<CoreMixins> box_grid_mixins()
 {
     std::vector<CoreMixins> out;
-    if (mixin_gate.offered() || !code_ready())
+    if (hooks.gate.offered() || !code_ready())
         return out;
     if (!swofty_core::apply::content::any_grid_rule())
         return out;
-    mixin_gate.offer();
+    hooks.gate.offer();
     char v[16] = {};
     DWORD n = GetEnvironmentVariableA("SWOFTY_BOX_GRID", v, sizeof v);
     if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
@@ -397,12 +401,12 @@ static std::vector<CoreMixins> box_grid_mixins()
     }
     find_fn = reinterpret_cast<Find_t *>(find);
     wanted = true;
-    std::vector<SwoftyMixin> specs = {{RECORD_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&record_entry, (void **)&record_orig},
-                                            {BUILD_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&build_entry, (void **)&build_orig}};
+    std::vector<SwoftyMixin> specs = {{RECORD_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&record_entry, hooks.record_times.slot()},
+                                            {BUILD_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&build_entry, hooks.build_result.slot()}};
     // Row patterns need the placement pair; without it the boxes keep the track's 2-wide slots (scoring still works).
     if (swofty::api->resolve(PLACE_FN) && swofty::api->resolve(RESOLVE_FN)) {
-        specs.push_back({PLACE_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&place_entry, (void **)&place_orig});
-        specs.push_back({RESOLVE_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&resolve_entry, (void **)&resolve_orig});
+        specs.push_back({PLACE_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&place_entry, hooks.place_on_slot.slot()});
+        specs.push_back({RESOLVE_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&resolve_entry, hooks.resolve_transform.slot()});
     } else
         swofty::log("[grid] row patterns off: this build does not resolve %s and %s", PLACE_FN, RESOLVE_FN);
     out.push_back({MIXIN, specs});
@@ -411,7 +415,7 @@ static std::vector<CoreMixins> box_grid_mixins()
 
 static void box_grid_commit()
 {
-    if (!wanted || !mixin_gate.settle())
+    if (!wanted || !hooks.gate.settle())
         return;
     swofty::log("[grid] grid rules per box %s",
                 loader::install_state(core_mixins_active(MIXIN),

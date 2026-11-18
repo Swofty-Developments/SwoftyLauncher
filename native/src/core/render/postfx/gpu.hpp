@@ -7,7 +7,7 @@
 
 #include <vector>
 
-namespace postfx {
+namespace render::postfx {
 
 DXGI_FORMAT view_format(DXGI_FORMAT f);
 DXGI_FORMAT depth_view(DXGI_FORMAT f);

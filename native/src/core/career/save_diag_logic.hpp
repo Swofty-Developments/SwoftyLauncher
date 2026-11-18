@@ -5,7 +5,7 @@
 
 #include "core/career/career_saves_logic.hpp"
 
-namespace runtime::save_diag {
+namespace career::save_diag {
 
 inline std::string utc(int64_t secs)
 {
@@ -45,24 +45,24 @@ inline std::string file_line(const std::string &name, int64_t bytes, int64_t mti
     return "save file " + name + ": " + std::to_string(bytes) + " bytes, modified " + utc(mtime);
 }
 
-inline const char *mode_of(const career_saves::SlotRead &s)
+inline const char *mode_of(const career::saves::SlotRead &s)
 {
-    return s.flags & career_saves::FLAG_MY_TEAM ? "gm_my_team" : "gm_driver_career";
+    return s.flags & career::saves::FLAG_MY_TEAM ? "gm_my_team" : "gm_driver_career";
 }
 
-inline std::string slot_line(unsigned load, size_t manager, size_t index, const career_saves::SlotRead &s,
+inline std::string slot_line(unsigned load, size_t manager, size_t index, const career::saves::SlotRead &s,
                              const std::string &career)
 {
     char b[512];
-    std::string key = career_saves::slot_key(s.id, s.guid);
+    std::string key = career::saves::slot_key(s.id, s.guid);
     snprintf(b, sizeof b, "profile load %u: manager %zu slot %zu: %s%s id=%llu key=%s career=%s flags=0x%02x", load, manager,
-             index, s.details ? mode_of(s) : "details-unreadable", career_saves::career_slot(s) ? "" : " (not a career slot)",
+             index, s.details ? mode_of(s) : "details-unreadable", career::saves::career_slot(s) ? "" : " (not a career slot)",
              (unsigned long long)s.id, key.c_str(), career.empty() ? "?" : career.c_str(), s.flags);
     std::string out = b;
     if (s.details) {
         snprintf(b, sizeof b, " setup=%u season=%d weekend=%d date=%llu", s.setup_mode,
-                 s.season == career_saves::NO_INDEX ? -1 : int(s.season) + 1,
-                 s.weekend == career_saves::NO_INDEX ? -1 : int(s.weekend), (unsigned long long)s.date);
+                 s.season == career::saves::NO_INDEX ? -1 : int(s.season) + 1,
+                 s.weekend == career::saves::NO_INDEX ? -1 : int(s.weekend), (unsigned long long)s.date);
         out += b;
     }
     if (!s.name.empty())

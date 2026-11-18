@@ -365,7 +365,7 @@ impl Db {
             .as_ref()
             .filter(|v| !stale && v.module == id && v.scope == scope)
             .map(|v| v.choices.clone());
-        let edits = db.draft.edits.clone();
+        let edits = db.book.draft.edits.clone();
         let store = needs.store.clone();
         cx.spawn(async move |this, cx| {
             let (view, choices) = cx
