@@ -1,6 +1,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
 
+use swofty_formats::erp::Packer;
+
 use super::archives::Archives;
 use super::inputs::Inputs;
 use super::tracks::left_over;
@@ -16,6 +18,7 @@ use crate::{Error, Result};
 
 /// Places the files `file.put` ops and the archive build's mip files put, each as a game file it replaces or
 /// a file it adds; car archives get the tracks' handling and ERS settings on the way.
+#[allow(clippy::too_many_arguments)]
 pub(super) fn put_files(
     built: &mut Built,
     store: &Store,
@@ -24,6 +27,7 @@ pub(super) fn put_files(
     ops: Vec<Op>,
     built_over: &BTreeSet<String>,
     car_maps: (&[ErsMap], &[HandlingMap]),
+    packer: &Packer,
 ) -> Result<()> {
     let (ers_maps, handling_maps) = car_maps;
     let baseline = Baseline::load_or_new(&store.root, &game.identity).ok();
@@ -81,7 +85,7 @@ pub(super) fn put_files(
         if !group.is_empty() && !over.contains(&lower) {
             let out = built.overlay.join("handling").join(&rel);
             let mut lines = Vec::new();
-            if handling::edit_archive(&src, &group, &out, &mut lines)? > 0 {
+            if handling::edit_archive(&src, &group, &out, &mut lines, packer)? > 0 {
                 src = out;
             }
             built.lines.extend(lines);
@@ -89,7 +93,7 @@ pub(super) fn put_files(
         let car = !ers_maps.is_empty() && ers::is_car_archive(&rel);
         if car && !over.contains(&lower) {
             let out = built.overlay.join("ers").join(&rel);
-            let n = ers::edit_archive(&src, ers_maps, &out)?;
+            let n = ers::edit_archive(&src, ers_maps, &out, packer)?;
             if n > 0 {
                 handling += n;
                 src = out;
@@ -148,6 +152,7 @@ impl Pipeline<'_, '_> {
             mipmaps,
             built_over,
         } = archives;
+        let packer = self.eager_packer();
         put_files(
             &mut self.built,
             self.run.store,
@@ -156,6 +161,7 @@ impl Pipeline<'_, '_> {
             file_ops,
             &built_over,
             (ers_maps, &inputs.handling_maps),
+            &packer,
         )
     }
 }

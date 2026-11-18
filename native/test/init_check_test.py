@@ -98,6 +98,33 @@ class References(unittest.TestCase):
         self.assertEqual(ic.references([u]), [])
 
 
+class FindDecl(unittest.TestCase):
+    def setUp(self):
+        self.saved = dict(ic.source_lines.__defaults__[0])
+        ic.source_lines.__defaults__[0]['unit.cpp'] = [
+            'void report()',
+            '{',
+            '    swofty::log("[tyres] slot guard (%s): no usable slot", name);',
+            '    if (guard == nullptr)',
+            '}',
+            'guards::SiteGuard guard{',
+            'static std::map<std::string, int> rules;',
+        ]
+
+    def tearDown(self):
+        ic.source_lines.__defaults__[0].clear()
+        ic.source_lines.__defaults__[0].update(self.saved)
+
+    def test_a_declaration_is_found_past_a_statement_that_names_it(self):
+        self.assertEqual(ic.find_decl('unit.cpp', 'guard'), (6, 'guards::SiteGuard guard{'))
+
+    def test_a_declaration_with_template_arguments_is_found(self):
+        self.assertEqual(ic.find_decl('unit.cpp', 'rules'), (7, 'static std::map<std::string, int> rules;'))
+
+    def test_a_name_that_is_never_declared_is_not_found(self):
+        self.assertEqual(ic.find_decl('unit.cpp', 'name'), (0, ''))
+
+
 class Expansion(unittest.TestCase):
     def test_expands_to_follows_macros_to_any_depth(self):
         self.assertTrue(ic.expands_to('SWOFTY_LATE_HOOK_GUARD', 'SWOFTY_HOOK_GUARD', BODIES))
