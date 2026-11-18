@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/144121bc0.c;xref:0x1406a6783",
-  "notes": "Equality of two user-id records: same type byte (0 none, 3 anon, 7 special) then 64-bit XOR-folded id compare. 376 callers (ReplicationManagers, ElasticSearch batch)."
+  "notes": "Equality of two user-id records: same type byte (0 none, 3 anon, 7 special) then 64-bit XOR-folded id compare. Callers: census steam 0x4121bc0, among them the ReplicationManagers and the ElasticSearch batch."
  },
  "signature": {
   "id": "core.user_id_equals",

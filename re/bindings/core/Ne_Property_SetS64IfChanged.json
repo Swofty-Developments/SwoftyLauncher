@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/140977b20.c;xref:0x1406a7517",
-  "notes": "Setter with change notification for a 64-bit property: skips when flag byte +0x26 &1; reads current via vcall +0x38 of [param_1+0x58]; if param_4 (force) or value differs, optionally calls 0x1442bc5b0 (flag +0x60&2), builds a large stack message record (label 'unknown' inline) and notifies listeners. 778 call sites (generic variable system, e.g. Game_Game_SetCurrentGameMode). Hypothesis. Int32 twin = Ne_Property_SetS32IfChanged."
+  "notes": "Setter with change notification for a 64-bit property: skips when flag byte +0x26 &1; reads current via vcall +0x38 of [param_1+0x58]; if param_4 (force) or value differs, optionally calls 0x1442bc5b0 (flag +0x60&2), builds a large stack message record (label 'unknown' inline) and notifies listeners. Callers: census steam 0x977b20, in the generic variable system (e.g. Game_Game_SetCurrentGameMode). Hypothesis. Int32 twin = Ne_Property_SetS32IfChanged."
  },
  "signature": {
   "id": "core.property_set_s64_if_changed",

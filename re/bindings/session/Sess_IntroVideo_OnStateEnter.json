@@ -9,7 +9,7 @@
   "subsystem": "session",
   "proto": "-",
   "evidence": "decomp:re/decomp/142d6cfc0.c;xref:0x1457df8f0",
-  "notes": "SessionStateIntroVideo slot 8: requests fade OUT reasons Broadcast (bit 2), BroadcastFull (bit 3), CareerHub (bit 14)."
+  "notes": "SessionStateIntroVideo slot 8: requests fade OUT reasons Broadcast (bit 2), BroadcastFull (bit 3), CareerHub (bit 14). Callers: census steam 0x2d6cfc0."
  },
  "signature": {
   "id": "session.intro_video_on_state_enter",

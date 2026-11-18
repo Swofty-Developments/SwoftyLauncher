@@ -9,7 +9,7 @@
   "subsystem": "career",
   "proto": "-",
   "evidence": "decomp:re/decomp/1422bc710.c;xref:0x14577a9f0",
-  "notes": "TeamHQAdvanceViewModel vtable 0x14577a9c0 slot +0x30 (init/bind). Logs 'Setting isOnlineCareer to'; binds open_advance_render_target, department_events, team_hq_overview, lng_advance_timeline_next_grand_prix; subscribes bus messages TeamHQReadyToAdvance, TeamHQAdvanceTime, StartContractNegotiationsFlow, TeamHQStartEndOfSeasonSetup, TeamHQReadyToAdvanceToGridReveal, team_hq_department_event_outcome_chosen_message, team_hq_advance_season_break_message, team_hq_end_season_break_message, team_hq_enable_pause. Addon: catalogue of Team HQ timeline bus messages to post or subscribe. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3083)"
+  "notes": "TeamHQAdvanceViewModel vtable 0x14577a9c0 slot +0x30 (init/bind). Logs 'Setting isOnlineCareer to'; binds open_advance_render_target, department_events, team_hq_overview, lng_advance_timeline_next_grand_prix; subscribes bus messages TeamHQReadyToAdvance, TeamHQAdvanceTime, StartContractNegotiationsFlow, TeamHQStartEndOfSeasonSetup, TeamHQReadyToAdvanceToGridReveal, team_hq_department_event_outcome_chosen_message, team_hq_advance_season_break_message, team_hq_end_season_break_message, team_hq_enable_pause. Addon: catalogue of Team HQ timeline bus messages to post or subscribe. Callers: census steam 0x22bc710. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3083)"
  },
  "signature": {
   "id": "career.team_hq_advance_v_m_initialise",

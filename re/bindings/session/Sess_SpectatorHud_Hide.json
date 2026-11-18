@@ -9,7 +9,7 @@
   "subsystem": "session",
   "proto": "void()",
   "evidence": "decomp:re/decomp/141c237e0.c;xref:0x141c232c5,0x141c24793,0x141c26ba1;xref:0x141c232c4,0x141c26ba0,0x141c24792",
-  "notes": "Adds HUD hide reason 6 (bit 0x40 in the hide-reason words at 0x14604e900 for player 0 and 0x14604e904 for player 1, log HIDE_REASONS) and posts MessageSpectatorHudVisibility (message vtable 0x145751818, byte +0x10 = 0)."
+  "notes": "Adds HUD hide reason 6 (bit 0x40 in the hide-reason words at 0x14604e900 for player 0 and 0x14604e904 for player 1, log HIDE_REASONS) and posts MessageSpectatorHudVisibility (message vtable 0x145751818, byte +0x10 = 0). Callers: census steam 0x1c237e0."
  },
  "signature": {
   "id": "session.spectator_hud_hide",

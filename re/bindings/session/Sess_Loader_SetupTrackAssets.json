@@ -9,7 +9,7 @@
   "subsystem": "session",
   "proto": "-",
   "evidence": "pat:log-channel-SESSION_LOADER;decomp:re/decomp/142d48b70.c;xref:0x142d47291,0x142da7ec6",
-  "notes": "named from its log messages (channel SESSION_LOADER): 'Asset data has been set up to load track \"%s\", statid=%d'"
+  "notes": "named from its log messages (channel SESSION_LOADER): 'Asset data has been set up to load track \"%s\", statid=%d' Callers: census steam 0x2d48b70."
  },
  "signature": {
   "id": "session.loader_setup_track_assets",

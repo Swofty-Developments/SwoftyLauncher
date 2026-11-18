@@ -9,7 +9,7 @@
   "subsystem": "session",
   "proto": "-",
   "evidence": "pat:log-channel-VEHICLE_PLACEMENT;decomp:re/decomp/142f343d0.c;xref:0x142a3c7b2,0x142a3f2e3,0x142d14e20,0x142d17447",
-  "notes": "named from its log messages (channel VEHICLE_PLACEMENT): 'Placing vehicle %-12s %2d on slot %2d at pos (%+f, %+f, %+f) with type %s'"
+  "notes": "named from its log messages (channel VEHICLE_PLACEMENT): 'Placing vehicle %-12s %2d on slot %2d at pos (%+f, %+f, %+f) with type %s' Callers: census steam 0x2f343d0."
  },
  "signature": {
   "id": "session.vehicle_placement_place_on_slot",

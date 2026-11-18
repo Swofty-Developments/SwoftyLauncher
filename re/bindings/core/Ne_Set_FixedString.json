@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "void Ne_Set_FixedString(void *dst, const char *src)",
   "evidence": "decomp:re/decomp/144321670.c;xref:0x14149b57b,0x14149b598;doc:research/ui-native.md#12;decomp:re/decomp/141600d80.c",
-  "notes": "writes src into an XOR-obfuscated 0x100-byte fixed string (length at +0x100); used for VM names at vm+0x38/+0x148 cb1-verify correction: XOR is per byte with (index+1), not a single key"
+  "notes": "writes src into an XOR-obfuscated 0x100-byte fixed string (length at +0x100); used for VM names at vm+0x38/+0x148 cb1-verify correction: XOR is per byte with (index+1), not a single key Callers: census steam 0x1600d80."
  },
  "signature": {
   "id": "core.set_fixed_string",
