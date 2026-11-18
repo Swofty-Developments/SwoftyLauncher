@@ -89,7 +89,15 @@ pub fn key_text(key: u32) -> String {
     format!("{key:#010x}")
 }
 
+#[cfg(test)]
+thread_local! {
+    /// How many times this test thread has counted a database's owned rows.
+    pub(crate) static COUNTED: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
 pub fn counts(db: &Gvdb) -> Counts {
+    #[cfg(test)]
+    COUNTED.with(|n| n.set(n.get() + 1));
     let mut index = HashMap::with_capacity(db.records.len());
     for r in &db.records {
         index.entry(r.key).or_insert(r);
@@ -118,14 +126,19 @@ pub fn counts(db: &Gvdb) -> Counts {
 }
 
 pub fn added(db: &Gvdb, addon: &str, before: &Counts) -> Vec<Added> {
-    counts(db)
-        .into_iter()
-        .filter_map(|((table, row), after)| {
-            let from = before.get(&(table.clone(), row)).copied().unwrap_or(0);
-            let kind = OWNED_ROWS.iter().find(|k| k.row == row)?;
+    added_between(before, &counts(db), addon)
+}
+
+/// The owned rows `addon` added between the counts `before` and `after` of one database.
+pub fn added_between(before: &Counts, after: &Counts, addon: &str) -> Vec<Added> {
+    after
+        .iter()
+        .filter_map(|((table, row), &after)| {
+            let from = before.get(&(table.clone(), *row)).copied().unwrap_or(0);
+            let kind = OWNED_ROWS.iter().find(|k| k.row == *row)?;
             (after > from).then(|| Added {
                 addon: addon.to_owned(),
-                table,
+                table: table.clone(),
                 kind,
                 rows: from..after,
             })
