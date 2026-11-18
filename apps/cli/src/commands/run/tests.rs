@@ -92,7 +92,7 @@ impl Modded {
     fn vanilla(&self) -> bool {
         std::fs::read_to_string(self.game.dir.join("game_package/db.bin")).unwrap() == "db"
             && !self.game.dir.join("swofty").exists()
-            && swofty_core::journal::Journal::open(&self.store.root)
+            && swofty_core::game_folder::journal::Journal::open(&self.store.root)
                 .unwrap()
                 .is_empty()
             && Installer::new(&self.store.root, &self.game)

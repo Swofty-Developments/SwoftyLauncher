@@ -3,8 +3,8 @@ use std::path::Path;
 use std::time::Instant;
 
 use anyhow::{Result, bail};
-use swofty_core::ea_app::{self, Handoff};
 use swofty_core::install::{Game, Source};
+use swofty_core::platform::ea_app::{self, Handoff};
 #[cfg(not(windows))]
 use swofty_core::platform::process::stop_process;
 #[cfg(not(windows))]
@@ -54,7 +54,7 @@ pub fn check_recorded(game: &Path) -> Result<()> {
 }
 
 pub(super) fn desktop_opener(h: &Handoff) -> Option<(std::process::Command, bool)> {
-    ea_app::desktop_opener(h, swofty_core::compat::elevated())
+    ea_app::desktop_opener(h, swofty_core::platform::run_as_admin::elevated())
 }
 
 /// Whether a session puts offline play's file in EA AntiCheat's launcher's

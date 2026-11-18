@@ -7,8 +7,8 @@ use swofty_core::data::relocate::{
     journal_pending,
     link::{create as link, remove as unlink},
 };
-use swofty_core::disk;
 use swofty_core::launcher::Progress;
+use swofty_core::platform::disk;
 use swofty_core::platform::process::{same_folder, same_path};
 
 #[derive(Debug, Clone, Copy, PartialEq)]

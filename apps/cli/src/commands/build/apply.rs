@@ -4,7 +4,7 @@ use std::process::ExitCode;
 use crate::commands::build::install::install;
 use crate::commands::build::supported;
 use anyhow::{Result, bail};
-use swofty_core::busy::Busy;
+use swofty_core::game_folder::busy::Busy;
 use swofty_core::game_folder::recovery::{Scope, SessionLock};
 use swofty_core::store::Store;
 

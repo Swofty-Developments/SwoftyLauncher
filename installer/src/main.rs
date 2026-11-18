@@ -13,9 +13,9 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use eframe::egui::{self, Color32, CornerRadius, Margin, RichText, Stroke};
-use swofty_core::app_control::Block;
 use swofty_core::data::relocate::find;
 use swofty_core::launcher::Progress;
+use swofty_core::platform::app_control::Block;
 use swofty_core::session::COMPAT_LAYER;
 use swofty_core::update::{self, Install};
 
@@ -577,7 +577,7 @@ fn install(
 fn launch(exe: &Path, data_env: Option<&Path>) -> Result<(), String> {
     #[cfg(windows)]
     if let Some(root) = exe.parent().and_then(Path::parent)
-        && swofty_core::compat::elevated()
+        && swofty_core::platform::run_as_admin::elevated()
         && win32::shell_open(exe, root).is_ok()
     {
         return Ok(());

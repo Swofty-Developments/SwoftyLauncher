@@ -6,7 +6,7 @@ use swofty_core::install::Game;
 use swofty_core::multiplayer::client::parse_launch_env;
 use swofty_core::session::{Config, LaunchRequest, RUNTIME_LIBS_DIR, is_compat_layer};
 use swofty_core::store::Store;
-use swofty_core::{STEAM_APP_ID, steam};
+use swofty_core::{STEAM_APP_ID, platform::steam};
 
 use crate::console::output::say;
 

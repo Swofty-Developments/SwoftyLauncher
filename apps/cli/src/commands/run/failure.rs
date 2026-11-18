@@ -2,8 +2,8 @@ use std::path::Path;
 use std::process::{Child, Command};
 
 use anyhow::Result;
-use swofty_core::app_control::Block;
 use swofty_core::launch;
+use swofty_core::platform::app_control::Block;
 use swofty_core::store::Store;
 
 use crate::console::output::{info, say};

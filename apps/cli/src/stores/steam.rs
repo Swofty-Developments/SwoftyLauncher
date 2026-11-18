@@ -9,7 +9,7 @@ use swofty_core::platform::process::steamvr_running;
 use swofty_core::platform::steam::client as steam_client;
 use swofty_core::session::LaunchMode;
 use swofty_core::store::Store;
-use swofty_core::{STEAM_APP_ID, steam};
+use swofty_core::{STEAM_APP_ID, platform::steam};
 
 use crate::console::output::say;
 use crate::stores::client::Notes;

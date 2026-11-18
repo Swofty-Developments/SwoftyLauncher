@@ -6,11 +6,11 @@ use std::process::{Child, Stdio};
 use std::time::{Duration, Instant};
 
 use anyhow::{Result, anyhow, bail};
-use swofty_core::ea_app;
 use swofty_core::ea_diag::{self, Tracker};
 use swofty_core::game_folder::recovery::Scope;
 use swofty_core::install::{Game, Source};
 use swofty_core::offline::{self, Slot};
+use swofty_core::platform::ea_app;
 use swofty_core::platform::process::own_elevation;
 use swofty_core::platform::process::{GameProcess, game_processes, stop_process};
 use swofty_core::platform::steam::client as steam_client;

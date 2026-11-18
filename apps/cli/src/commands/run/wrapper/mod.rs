@@ -35,17 +35,20 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
     let lock = crate::recover::lock(store, &info)?;
     crate::recover::stale(store, &lock, g, Scope::All, &info)?;
     crate::commands::offline::gate(store, false)?;
-    swofty_core::entitlement::check_store_start(&g.dir, args.via_ea)?;
+    swofty_core::game_folder::entitlement::check_store_start(&g.dir, args.via_ea)?;
     crate::commands::build::check_entitled(store, g)?;
-    let version = swofty_core::exe_version::read(&g.dir.join(GAME_EXE));
+    let version = swofty_core::game_folder::exe_version::read(&g.dir.join(GAME_EXE));
     if let Some(d) = swofty_core::known_problems::outdated_exe(version.as_deref()) {
         say("warning", &format!("{}: {}", d.title, d.text()));
     }
-    if let Some(reason) = swofty_core::compat::elevation_blocker(&g.dir) {
+    if let Some(reason) = swofty_core::platform::run_as_admin::elevation_blocker(&g.dir) {
         bail!("{reason}");
     }
-    if swofty_core::compat::write_blocker(&g.dir).is_some() {
-        bail!("{}", swofty_core::compat::write_blocked_text(&g.dir));
+    if swofty_core::platform::run_as_admin::write_blocker(&g.dir).is_some() {
+        bail!(
+            "{}",
+            swofty_core::platform::run_as_admin::write_blocked_text(&g.dir)
+        );
     }
     end_on_signals();
     let config: Config = std::fs::read(store.config_path())
@@ -200,7 +203,7 @@ fn stage_offline(store: &Store, game: &Path) -> Result<()> {
     let journal = swofty_core::offline::journal_path(&store.root);
     let staged = swofty_core::offline::stage(game, &artifacts, &journal);
     if let Err(swofty_core::Error::MissingStock { files, version }) = &staged {
-        swofty_core::stock::Report::missing(files.clone(), game, version.clone())
+        swofty_core::game_folder::stock::Report::missing(files.clone(), game, version.clone())
             .write(&store.root)
             .ok();
     }

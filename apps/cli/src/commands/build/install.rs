@@ -8,12 +8,12 @@ use crate::commands::build::profile::{report, server_plugins, timed_build};
 use crate::commands::build::stock_check::{check_entitled, check_stock, not_stock};
 use anyhow::{Result, bail};
 use swofty_core::GAME_EXE;
-use swofty_core::busy::{self, Busy};
 use swofty_core::game_folder::baseline::DepotHashes;
+use swofty_core::game_folder::busy::{self, Busy};
 use swofty_core::game_folder::recovery::Blocked;
+use swofty_core::game_folder::stock;
 use swofty_core::install::{Game, Installer};
 use swofty_core::managed;
-use swofty_core::stock;
 use swofty_core::store::Store;
 
 const REPAIR_TIMEOUT: Duration = Duration::from_secs(20);
@@ -22,8 +22,11 @@ const REPAIR_TIMEOUT: Duration = Duration::from_secs(20);
 /// way that are provably ours are cleared and the install is tried once
 /// more; anything else stops it untouched, with what a restore would do.
 pub fn install(store: &Store, profile: &str, g: &Game, session: bool, out: &dyn Fn(&str)) -> Result<()> {
-    if swofty_core::compat::write_blocker(&g.dir).is_some() {
-        bail!("{}", swofty_core::compat::write_blocked_text(&g.dir));
+    if swofty_core::platform::run_as_admin::write_blocker(&g.dir).is_some() {
+        bail!(
+            "{}",
+            swofty_core::platform::run_as_admin::write_blocked_text(&g.dir)
+        );
     }
     repair_importer(store, profile, out);
     let done = AtomicBool::new(false);
@@ -108,7 +111,7 @@ pub(super) fn denied(e: anyhow::Error, data: &Path, game: &Path) -> anyhow::Erro
 /// to an F1 25 older than the newest update the launcher knows. The build's
 /// own error follows on the next line, for the logs and Send Logs.
 fn outdated(store: &Store, g: &Game, e: anyhow::Error) -> anyhow::Error {
-    let version = swofty_core::exe_version::read(&g.dir.join(GAME_EXE));
+    let version = swofty_core::game_folder::exe_version::read(&g.dir.join(GAME_EXE));
     let names = store
         .addons()
         .map(|a| a.into_iter().map(|(id, m)| (id, m.name)).collect())

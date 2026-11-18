@@ -574,13 +574,13 @@ fn a_cancelled_build_stops_and_the_next_one_starts_fresh() {
     std::fs::write(store.addon_data_dir("t.put").join("mip"), "mip").unwrap();
     let reused = |b: &Built| b.lines.iter().any(|l| l.starts_with("build: nothing changed"));
 
-    crate::busy::request_cancel(&store.root).unwrap();
+    crate::game_folder::busy::request_cancel(&store.root).unwrap();
     assert!(matches!(build(&store, "default", &game), Err(Error::Cancelled)));
-    crate::busy::clear_cancel(&store.root);
+    crate::game_folder::busy::clear_cancel(&store.root);
     let fresh = build(&store, "default", &game).unwrap();
     assert!(!reused(&fresh), "{:?}", fresh.lines);
     assert!(reused(&build(&store, "default", &game).unwrap()));
-    crate::busy::request_cancel(&store.root).unwrap();
+    crate::game_folder::busy::request_cancel(&store.root).unwrap();
     build_as(&store, "default", &game, true).unwrap();
     std::fs::remove_dir_all(&root).ok();
 }

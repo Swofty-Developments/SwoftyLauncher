@@ -53,8 +53,8 @@ pub(crate) fn shell_command(store: &Store, a: ShellArgs) -> Result<ExitCode> {
     if let Err(e) = terms(store) {
         return Ok(infra(e));
     }
-    if !swofty_core::setup::done(&store.root) {
-        return Ok(infra(swofty_core::setup::NEEDED));
+    if !swofty_core::game_folder::setup::done(&store.root) {
+        return Ok(infra(swofty_core::game_folder::setup::NEEDED));
     }
     let dir = a.lock.clone().unwrap_or_else(|| lock::default_path(&store.root));
     let owner = lock::owner_line(&run_id, &["shell".to_owned()], &hh_mm());
@@ -113,8 +113,8 @@ fn shell_session(store: &Store, game: &Path, a: &ShellArgs, run_id: &str) -> Res
     };
     let live_saves = exe_sha
         .as_ref()
-        .and_then(|_| swofty_core::steam::find_game())
-        .and_then(|i| swofty_core::steam::save_dir(&i.steam_root));
+        .and_then(|_| swofty_core::platform::steam::find_game())
+        .and_then(|i| swofty_core::platform::steam::save_dir(&i.steam_root));
     let launch_json = store.root.join("state/launch.json");
     let saved = std::fs::read(&launch_json).ok();
     let profile = format!("test-{run_id}");

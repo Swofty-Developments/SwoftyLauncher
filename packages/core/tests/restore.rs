@@ -2,9 +2,9 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 use swofty_core::game_folder::baseline::{Identity, sha256_bytes};
+use swofty_core::game_folder::journal::{Journal, Op, State};
 use swofty_core::game_folder::recovery;
 use swofty_core::install::{Drift, Game, Installer, OVERRIDE_HEADER, Plan};
-use swofty_core::journal::{Journal, Op, State};
 
 const GVDB: &str = "game_package/gamedatabases/gamedatabases.2025.bin";
 const UI: &str = "2025_asset_groups/ui_package/flow_frontend.erp";
@@ -23,7 +23,7 @@ const REG: &str = "WINE REGISTRY Version 2\n;; All keys relative to \\\\User\n\n
 #[test]
 fn sweep_rechecks_changed_cached_files_and_preserves_user_edits() {
     use swofty_core::game_folder::baseline::Hashes;
-    use swofty_core::placed::Placed;
+    use swofty_core::game_folder::placed::Placed;
     let f = Fixture::new("sweep-cache-edits");
     let mut placed = Placed::default();
     let mut hashes = Hashes::load(&f.data);
@@ -45,7 +45,7 @@ fn sweep_rechecks_changed_cached_files_and_preserves_user_edits() {
 #[ignore = "manual large-profile sweep benchmark"]
 fn benchmark_large_profile_sweep_hash_cache() {
     use swofty_core::game_folder::baseline::Hashes;
-    use swofty_core::placed::Placed;
+    use swofty_core::game_folder::placed::Placed;
     for warm in [false, true] {
         let f = Fixture::new(if warm { "bench-warm" } else { "bench-cold" });
         let bytes = vec![42u8; 256 * 1024];
@@ -864,20 +864,20 @@ fn a_build_output_on_another_volume_than_the_game_is_copied() {
     assert_eq!(std::fs::read_to_string(&plan.data[GVDB]).unwrap(), "db-B");
 }
 
-fn two_drives(p: &Path) -> Option<swofty_core::disk::Volume> {
+fn two_drives(p: &Path) -> Option<swofty_core::platform::disk::Volume> {
     let id = if p.components().any(|c| c.as_os_str() == "overlay") {
         "data"
     } else {
         "game"
     };
-    Some(swofty_core::disk::Volume {
+    Some(swofty_core::platform::disk::Volume {
         id: id.into(),
         name: id.into(),
     })
 }
 
 #[cfg(unix)]
-fn one_drive(_: &Path) -> Option<swofty_core::disk::Volume> {
+fn one_drive(_: &Path) -> Option<swofty_core::platform::disk::Volume> {
     two_drives(Path::new("elsewhere"))
 }
 

@@ -1,6 +1,6 @@
 //! The `swofty setup` commands and the launch gate for the one-time setup.
 //!
-//! See `swofty_core::setup`: the game folder is put back, the record of
+//! See `swofty_core::game_folder::setup`: the game folder is put back, the record of
 //! original game files starts over, and the player verifies the game files
 //! before the first modded session.
 
@@ -10,8 +10,8 @@ use crate::commands::{Execute, Invocation};
 use anyhow::{Result, bail};
 use clap::Subcommand;
 use std::process::ExitCode;
+use swofty_core::game_folder::setup;
 use swofty_core::install::Source;
-use swofty_core::setup;
 use swofty_core::store::Store;
 
 impl Execute for SetupCommand {

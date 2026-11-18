@@ -1,11 +1,11 @@
 use std::process::ExitCode;
 
 use anyhow::Result;
-use swofty_core::copies;
-use swofty_core::ea_app;
+use swofty_core::game_folder::copies;
 use swofty_core::install::{Game, Installer, Source};
+use swofty_core::platform::ea_app;
 use swofty_core::store::Store;
-use swofty_core::{STEAM_APP_ID, steam};
+use swofty_core::{STEAM_APP_ID, platform::steam};
 
 pub fn doctor(store: &Store) -> Result<ExitCode> {
     let (lines, ok) = report(store, None);
@@ -136,7 +136,7 @@ pub fn report(store: &Store, session: Option<&Game>) -> (Vec<String>, bool) {
     }
     if cfg!(windows) {
         let dir = session.map_or(&game.dir, |g| &g.dir);
-        let found = swofty_core::compat::session_admin_layers(dir);
+        let found = swofty_core::platform::run_as_admin::session_admin_layers(dir);
         if found.is_empty() {
             row("run as admin", "not set".into());
         }

@@ -14,31 +14,31 @@ use crate::commands::testing::say;
 /// Checks before the lock: nothing here changes anything.
 pub(crate) fn preflight(store: &Store, g: &Game, plan: &Plan, out: &Path) -> std::result::Result<(), String> {
     terms(store)?;
-    if !swofty_core::setup::done(&store.root) {
-        return Err(swofty_core::setup::NEEDED.to_owned());
+    if !swofty_core::game_folder::setup::done(&store.root) {
+        return Err(swofty_core::game_folder::setup::NEEDED.to_owned());
     }
-    if swofty_core::steam::in_steam_library(&g.dir) {
+    if swofty_core::platform::steam::in_steam_library(&g.dir) {
         let status = swofty_core::platform::steam::client::status();
         if !status.state.usable() {
             return Err(format!(
                 "Steam is not ready ({status}); start Steam and sign in, then run the tests again"
             ));
         }
-        if let Some(state) = swofty_core::steam::find_game()
-            .filter(|i| swofty_core::copies::same_dir(&i.dir, &g.dir))
-            .and_then(|i| swofty_core::steam::busy(&i))
+        if let Some(state) = swofty_core::platform::steam::find_game()
+            .filter(|i| swofty_core::game_folder::copies::same_dir(&i.dir, &g.dir))
+            .and_then(|i| swofty_core::platform::steam::busy(&i))
         {
             return Err(format!("Steam is {state} F1 25; wait for it to finish"));
         }
     }
-    if let Some(free) = swofty_core::disk::free_space(out)
+    if let Some(free) = swofty_core::platform::disk::free_space(out)
         && free < MIN_FREE
     {
         return Err(format!(
             "{} has {} free; a test run needs at least {}",
             out.display(),
-            swofty_core::disk::gb(free),
-            swofty_core::disk::gb(MIN_FREE)
+            swofty_core::platform::disk::gb(free),
+            swofty_core::platform::disk::gb(MIN_FREE)
         ));
     }
     addons_installed(store, plan)

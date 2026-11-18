@@ -9,8 +9,8 @@ use swofty_core::GAME_EXE;
 use swofty_core::asset::{AssetBatch, AssetOp, FileOp, Op, Origin, Root, Source};
 use swofty_core::build::GVDB;
 use swofty_core::builtin::loader_dir;
-use swofty_core::busy::{Busy, Step};
 use swofty_core::game_folder::baseline::Identity;
+use swofty_core::game_folder::busy::{Busy, Step};
 use swofty_core::install::Installer;
 use swofty_core::launcher::{Addon, BuildCx, Builtin};
 use swofty_core::manifest::AddonManifest;
@@ -216,9 +216,9 @@ impl Harness {
     }
 
     fn install(&self, log: &RefCell<Vec<String>>) -> Result<()> {
-        if !swofty_core::setup::done(&self.store.root) {
-            swofty_core::setup::reset(&self.store.root, &self.game, false)?;
-            swofty_core::setup::finish(&self.store.root)?;
+        if !swofty_core::game_folder::setup::done(&self.store.root) {
+            swofty_core::game_folder::setup::reset(&self.store.root, &self.game, false)?;
+            swofty_core::game_folder::setup::finish(&self.store.root)?;
         }
         install(&self.store, "default", &self.game, true, &|l| {
             log.borrow_mut().push(l.to_owned())
@@ -262,7 +262,7 @@ fn a_leftover_from_an_interrupted_session_is_recovered_and_the_launch_proceeds()
     assert!(log.iter().any(|l| l.starts_with("doctor: data dir")), "{log:?}");
     assert!(log.iter().any(|l| l.starts_with("doctor: baseline")), "{log:?}");
     assert_eq!(h.mip(), "mip-ferrari");
-    let open = swofty_core::journal::Journal::open(&h.store.root).unwrap();
+    let open = swofty_core::game_folder::journal::Journal::open(&h.store.root).unwrap();
     assert_eq!(open.len(), 1);
     assert!(open[0].session);
     assert!(open[0].entries.iter().any(|e| e.path == MIP));
@@ -329,7 +329,7 @@ fn a_file_of_unknown_provenance_stops_the_launch_untouched_with_what_restore_doe
     assert!(!err.contains('\n'));
     assert_eq!(h.mip(), "copied in by hand");
     assert!(
-        swofty_core::journal::Journal::open(&h.store.root)
+        swofty_core::game_folder::journal::Journal::open(&h.store.root)
             .unwrap()
             .is_empty()
     );

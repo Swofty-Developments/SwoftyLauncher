@@ -4,12 +4,12 @@ use std::process::{Child, Command, ExitStatus, Stdio};
 use std::time::{Duration, Instant, SystemTime};
 
 use anyhow::{Context, Result};
-use swofty_core::busy::Busy;
+use swofty_core::game_folder::busy::Busy;
 use swofty_core::install::Source;
 use swofty_core::platform::process::flag;
 use swofty_core::session::LaunchMode;
 use swofty_core::store::Store;
-use swofty_core::{GAME_EXE, STEAM_APP_ID, steam};
+use swofty_core::{GAME_EXE, STEAM_APP_ID, platform::steam};
 
 use super::failure::start;
 use crate::console::output::say;
@@ -139,7 +139,7 @@ pub(crate) fn start_wrapper(
     let install = steam::find_game();
     let wrapped = install
         .as_ref()
-        .filter(|g| swofty_core::copies::same_dir(&g.dir, game))
+        .filter(|g| swofty_core::game_folder::copies::same_dir(&g.dir, game))
         .map(|g| {
             steam::launch_options(&g.steam_root)
                 .iter()

@@ -5,8 +5,8 @@ use crate::diagnostics::phases;
 use crate::game_folder::baseline::{
     Baseline, DepotHashes, FileRecord, Hashes, Identity, Objects, sha256_bytes, sha256_file, sha256_opt,
 };
-use crate::journal::{Journal, Op, State};
-use crate::placed::{self, Placed};
+use crate::game_folder::journal::{Journal, Op, State};
+use crate::game_folder::placed::{self, Placed};
 use crate::profile::VANILLA;
 use crate::{Error, Result, addon_storage, io_err, with_retry};
 
@@ -26,7 +26,7 @@ impl Game {
     /// The game in `dir`, with the Proton prefix's user.reg when Steam
     /// installed it there, or the EA app's prefix from `launch.ea_prefix`.
     pub fn locate(data: &Path, dir: PathBuf) -> Result<Self> {
-        let found = crate::steam::find_game().filter(|g| g.dir == dir);
+        let found = crate::platform::steam::find_game().filter(|g| g.dir == dir);
         let user_reg = found
             .as_ref()
             .and_then(|g| g.prefix())
@@ -41,7 +41,7 @@ impl Game {
                             .ea_prefix
                     })
                     .flatten()
-                    .and_then(|p| crate::ea_app::prefix_user_reg(&p))
+                    .and_then(|p| crate::platform::ea_app::prefix_user_reg(&p))
             });
         let identity = Identity::detect_cached(data, &dir, found.and_then(|g| g.build_id))?;
         Ok(Self {
@@ -192,7 +192,7 @@ pub struct Installer<'a> {
     pub free_space: fn(&Path) -> Option<u64>,
     /// The volume a folder is on; tells Play whether the build output and the
     /// game folder are on different drives.
-    pub volume: fn(&Path) -> Option<crate::disk::Volume>,
+    pub volume: fn(&Path) -> Option<crate::platform::disk::Volume>,
     /// Copy every file instead of hard-linking build outputs; set by
     /// `SWOFTY_INSTALL_COPY=1`.
     pub copy_only: bool,
@@ -394,8 +394,8 @@ impl<'a> Installer<'a> {
             session: false,
             out: &quiet,
             progress: &unwatched,
-            free_space: crate::disk::free_space,
-            volume: crate::disk::volume,
+            free_space: crate::platform::disk::free_space,
+            volume: crate::platform::disk::volume,
             copy_only: std::env::var_os("SWOFTY_INSTALL_COPY").is_some_and(|v| v == "1"),
         }
     }
@@ -454,7 +454,7 @@ impl<'a> Installer<'a> {
     /// roll back; the rest stay and are reported.
     fn stranded(&self, j: &Journal) -> bool {
         j.game.as_deref().is_some_and(|was| {
-            !was.join(crate::GAME_EXE).is_file() && !crate::copies::same_dir(was, &self.game.dir)
+            !was.join(crate::GAME_EXE).is_file() && !crate::game_folder::copies::same_dir(was, &self.game.dir)
         })
     }
 
@@ -837,7 +837,7 @@ impl<'a> Installer<'a> {
 
     fn step(&self, n: &mut usize) -> Result<()> {
         if self.session {
-            crate::busy::check(self.data)?;
+            crate::game_folder::busy::check(self.data)?;
         }
         *n += 1;
         match self.stop_after {
@@ -905,7 +905,11 @@ impl<'a> Installer<'a> {
     /// Whether the game's drive has room to keep the game files `plan` replaces until the rollback, beside
     /// everything the install writes and the link cache's spare room. Without it each replaced file is
     /// deleted, as its backup holds it.
-    fn room_for_originals(&self, plan: &Plan, space: &[(PathBuf, crate::disk::Volume, u64)]) -> bool {
+    fn room_for_originals(
+        &self,
+        plan: &Plan,
+        space: &[(PathBuf, crate::platform::disk::Volume, u64)],
+    ) -> bool {
         let kept: u64 = plan
             .data
             .keys()
@@ -922,7 +926,7 @@ impl<'a> Installer<'a> {
     /// The bytes an install of `plan` writes on each volume: its copies, less
     /// the files they replace, on the game folder's; the originals it backs
     /// up for the first time and its state files on the data folder's.
-    fn space(&self, plan: &Plan, baseline: &Baseline) -> Vec<(PathBuf, crate::disk::Volume, u64)> {
+    fn space(&self, plan: &Plan, baseline: &Baseline) -> Vec<(PathBuf, crate::platform::disk::Volume, u64)> {
         let size = |p: &Path| std::fs::metadata(p).map_or(0, |m| m.len());
         let (mut game, mut data) = (0, 0);
         for (rel, src) in &plan.data {
@@ -936,16 +940,16 @@ impl<'a> Installer<'a> {
             game += size(src);
         }
         data += (plan.data.len() + plan.added.len() + plan.loader.len()) as u64 * STATE_PER_FILE;
-        crate::disk::volumes([(self.game.dir.as_path(), game), (self.data, data)])
+        crate::platform::disk::volumes([(self.game.dir.as_path(), game), (self.data, data)])
     }
 
     /// A write that failed on a full volume, as the volume and the room the
     /// install needed there.
-    fn full(&self, e: Error, space: &[(PathBuf, crate::disk::Volume, u64)]) -> Error {
+    fn full(&self, e: Error, space: &[(PathBuf, crate::platform::disk::Volume, u64)]) -> Error {
         let Error::Io { path, source } = &e else {
             return e;
         };
-        let on = crate::disk::volume(path).filter(|_| crate::disk::is_full(source));
+        let on = crate::platform::disk::volume(path).filter(|_| crate::platform::disk::is_full(source));
         match on.and_then(|on| space.iter().find(|(_, v, _)| v.id == on.id)) {
             Some((dir, v, need)) => Error::NoSpace {
                 drive: v.name.clone(),
@@ -963,7 +967,7 @@ impl<'a> Installer<'a> {
             .keys()
             .chain(plan.added.keys())
             .chain(plan.loader.keys())
-            .find(|rel| crate::stock::is_upscaler_drop_in(rel))
+            .find(|rel| crate::game_folder::stock::is_upscaler_drop_in(rel))
         {
             return Err(Error::Resolve(format!(
                 "{rel} is an upscaler drop-in file and stays as the player put it; no addon or profile can replace it"
@@ -989,7 +993,7 @@ impl<'a> Installer<'a> {
         if !missing.is_empty() {
             return Err(Error::MissingStock {
                 files: missing,
-                version: crate::exe_version::read(&self.path(crate::GAME_EXE)),
+                version: crate::game_folder::exe_version::read(&self.path(crate::GAME_EXE)),
             });
         }
         for (rel, sha) in backed_up {
@@ -1334,7 +1338,7 @@ impl<'a> Installer<'a> {
     fn link_cache(
         &self,
         built: &Path,
-        entries: &[crate::journal::Entry],
+        entries: &[crate::game_folder::journal::Entry],
         sources: &BTreeMap<&str, &PathBuf>,
     ) -> LinkCache {
         let apart = crate::link_cache::apart((self.volume)(built), (self.volume)(&self.game.dir));
@@ -1609,13 +1613,13 @@ mod tests {
         for n in 0..3u32 {
             let src = outside.join(format!("f{n}.bin"));
             std::fs::write(&src, [n as u8; 8]).unwrap();
-            entries.push(crate::journal::Entry {
+            entries.push(crate::game_folder::journal::Entry {
                 seq: n,
                 op: Op::CreateFile,
                 path: format!("mods/f{n}.bin"),
                 before: None,
                 after: None,
-                state: crate::journal::State::Pending,
+                state: crate::game_folder::journal::State::Pending,
             });
             files.push(src);
         }
@@ -1652,7 +1656,7 @@ mod tests {
             free_space: |_| Some(5 << 20),
             ..Installer::new(&root, &game)
         };
-        let space = crate::disk::volumes([(game.dir.as_path(), 3 << 30)]);
+        let space = crate::platform::disk::volumes([(game.dir.as_path(), 3 << 30)]);
         let v = space[0].1.clone();
         let full = |source: std::io::Error| Error::Io {
             path: root.join("state/journal/x.json.tmp"),

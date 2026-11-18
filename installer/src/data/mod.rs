@@ -9,7 +9,7 @@ use swofty_core::data::relocate::{
     find::{self, Found},
     link::target as link_target,
 };
-use swofty_core::disk;
+use swofty_core::platform::disk;
 use swofty_core::platform::process::{same_folder, same_path};
 
 pub use moving::{DataMove, Ops, plan};

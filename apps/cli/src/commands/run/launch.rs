@@ -61,9 +61,9 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
     if args.apply {
         crate::commands::setup::gate(store)?;
     }
-    if let Some(state) = swofty_core::steam::find_game()
-        .filter(|i| swofty_core::copies::same_dir(&i.dir, &game))
-        .and_then(|i| swofty_core::steam::busy(&i))
+    if let Some(state) = swofty_core::platform::steam::find_game()
+        .filter(|i| swofty_core::game_folder::copies::same_dir(&i.dir, &game))
+        .and_then(|i| swofty_core::platform::steam::busy(&i))
     {
         bail!("Steam is {state} F1 25; wait for it to finish, then press Play again");
     }

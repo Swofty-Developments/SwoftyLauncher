@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use anyhow::{Context, Result};
-use swofty_core::steam;
+use swofty_core::platform::steam;
 use swofty_core::store::Store;
 
 use crate::commands::run::{Follow, symbols};
