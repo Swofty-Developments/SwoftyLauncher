@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/143a42f10.c;xref:0x140356f96",
-  "notes": "Lookup under lock (0x1449e2298): if map empty/key missing writes default param_4 to *param_3 and tags TLS error contexts code 2 (stack capture), else reads the record. Callers Game_Podium2019CutSceneScript_ChooseCutScenesToPlay, Asset_Load_DevSessionWorlds. Hypothesis. Callers: census steam 0x3a42f10."
+  "notes": "Reads an integer config value under the shared SRW lock at self+0x10 (0x1449e2298, released through 0x1449e22bc on every path): rcx self, rdx const char *key, r8 int32 *out, r9d int32 default; returns 0, 2 or 0x21. The map at self+8 is searched with FNV-1a and strcmp (0x143905280); the value is the string at entry+8, parsed with strtol(value, &end, 0) (0x143a42f7b) into *out, returning 0. When nothing parses, *out = default and the error code is 0x21 (0x143a42f88). A null map pointer at self+8 writes the default with error code 2 (0x143a42f3c). Both error paths set the code in every thread error context node (0x14391ade0), capture the caller's address with RtlCaptureStackBackTrace and put {caller, code} into a 10-entry ring only while tracing is on for the current thread. A key that is not in the map writes the default and returns 2 with no tag and no ring entry (0x143a43187). Callers Game_Podium2019CutSceneScript_ChooseCutScenesToPlay, Asset_Load_DevSessionWorlds. Callers: census steam 0x3a42f10."
  },
  "signature": {
   "id": "core.map_find_or_default_with_error_context",
