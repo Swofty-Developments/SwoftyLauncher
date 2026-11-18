@@ -3463,7 +3463,6 @@
   "func:Sess_TyreAllocation_SwapSets": "V3683",
   "func:Sess_TyreCompoundClasses_SortEntries": "V8110",
   "func:Sess_TyreCompoundClasses_SortEntriesB": "V8111",
-  "func:Sess_Tyre_ShowFittedSet": "V7565",
   "func:Sess_Veh_UpdateWheelMap": "V1900",
   "func:Sess_VehiclePlacement_BroadcastGrid": "V1909",
   "func:Sess_VehiclePlacement_FormatFlags": "V3741",
