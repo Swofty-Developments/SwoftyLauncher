@@ -4,11 +4,11 @@
 Every C++ file under src/core is a translation unit of swofty_core.dll unless CORE_EXCLUDE names it, so a new
 source file needs no build change. Each translation unit compiles to its own object under <builddir>/obj with a
 depfile, so ninja rebuilds exactly what an edit touches and reruns a compile whose command line changed.
-swofty_core.dll links its objects in the order tools/core_link_order.txt gives, which is also the order their static
-initializers, SDK registrations and on-load entries run in and the reverse of the order their static destructors run
-in. Every core compile also reports its objects with a dynamic initializer (tools/cxx_init.sh), and
-tools/init_check.py fails the build on one that tools/init_allow.txt does not list, so no initializer reads another
-unit's object.
+swofty_core.dll links its objects in the order tools/core_link_order.txt gives; their static initializers, SDK
+registrations and on-load entries run in the reverse of that order (the mingw runtime calls the .ctors list from its
+end) and their static destructors in it. Every core compile also reports its objects clang finds with a dynamic
+initializer (tools/cxx_init.sh), and tools/init_check.py reads the objects for the ones it misses and fails the build
+on one that tools/init_allow.txt does not list, so no initializer reads another unit's object.
 """
 
 import argparse
@@ -151,7 +151,8 @@ def main():
     reports = [f'{o}.init' for o in link_order(objects) if o in core]
     check = ['--out', f'{a.builddir}/static-init.txt', '--obj-root', f'{a.builddir}/obj', '--order-out',
              f'{a.builddir}/init-order.txt', '--link-order', 'tools/core_link_order.txt']
-    checked = ['tools/init_check.py', 'tools/init_allow.txt', 'tools/core_link_order.txt', 'src/core/guards/order.hpp']
+    checked = ['tools/init_check.py', 'tools/coff_ctors.py', 'tools/init_allow.txt', 'tools/core_link_order.txt',
+               'src/core/guards/order.hpp']
     if a.order_snapshot:
         check += ['--snapshot', a.order_snapshot]
         checked.append(a.order_snapshot)
