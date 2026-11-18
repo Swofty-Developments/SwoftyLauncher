@@ -3,7 +3,7 @@
 
 #include "core/hud/hud_drawlist.hpp"
 
-namespace runtime::room_cover {
+namespace hud::room_cover {
 
 bool setup();
 bool active();

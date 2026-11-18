@@ -14,12 +14,12 @@
 #include <mutex>
 #include <string>
 
-namespace runtime::main_menu {
+namespace frontend::main_menu {
 
 namespace {
 
 using namespace swofty::game;
-namespace logic = ::runtime::main_menu;
+namespace logic = ::frontend::main_menu;
 
 const char *route_name()
 {

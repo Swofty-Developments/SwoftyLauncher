@@ -5,8 +5,8 @@
 #include <cstdio>
 #include <string>
 
-using view::PauseEdge;
-using view::pause_edge;
+using frontend::view::pause_edge;
+using frontend::view::PauseEdge;
 
 static int fails;
 

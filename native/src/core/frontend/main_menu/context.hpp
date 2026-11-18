@@ -11,7 +11,7 @@
 #include <cstdint>
 #include <mutex>
 
-namespace runtime::main_menu {
+namespace frontend::main_menu {
 
 constexpr size_t NESTR_CHARS = 9;
 

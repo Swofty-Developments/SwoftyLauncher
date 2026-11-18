@@ -7,7 +7,7 @@
 // The game hashes a flow node's own name, not its class name: Game_SessionStateViewInstantReplay is the node
 // "InstantReplay" (0x24941c93), the driving node is "InGame" (0xba16bc16). Each entry below is the djb2 of a node
 // name that a real run logged, either as a "[career] flow" line or in the "[direct] flow node" graph dump.
-namespace view_flow {
+namespace frontend::view_flow {
 
 enum Group : uint32_t { G_DRIVING = 1, G_PAUSE = 2, G_REPLAY = 4, G_CUTSCENE = 8, G_SPECTATE = 16, G_SESSION = 32 };
 

@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <string_view>
 
-namespace name_hash {
+namespace frontend::name_hash {
 
 // The engine's name hash: djb2 with seed 5381 over the bytes as unsigned values. Screen, group and view model names,
 // UI registry node names and settings commands are all keyed by it.

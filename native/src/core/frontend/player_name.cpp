@@ -46,7 +46,7 @@ const runtime::Sig S_NAME{"Game_PresenceNameCache_Lookup",
                           "8B 49 08 4C 8D 76 30 89 CD EB 31 48 89 D9",
                           0x816b10};
 
-namespace pn = runtime::player_name;
+namespace pn = frontend::player_name;
 namespace sl = runtime::session_life;
 
 // The launcher account is read from home_menu.json on a worker thread (the main menu's own state is not loaded when the game
@@ -74,7 +74,7 @@ void LauncherAccount::watch()
             bool have = GetFileAttributesExW(path.c_str(), GetFileExInfoStandard, &d) != 0;
             bool same = have && had && CompareFileTime(&d.ftLastWriteTime, &stamp) == 0;
             if (pn::account_reread(read_once, had, have, same)) {
-                auto state = runtime::main_menu::parse_state(have ? runtime::read_file(path, size_t(1) << 20) : std::string());
+                auto state = frontend::main_menu::parse_state(have ? runtime::read_file(path, size_t(1) << 20) : std::string());
                 {
                     std::lock_guard<std::mutex> g(lock);
                     signed_in = state.loaded && state.signed_in && !state.name.empty();
@@ -130,7 +130,7 @@ private:
     std::atomic<bool> rename_armed{false};
     std::atomic<uint64_t> rename_serial{0}, rename_value{0};
     std::atomic<uint32_t> rename_tag{0};
-    char shown_buf[2][runtime::player_name::MAX_BYTES + 1] = {};
+    char shown_buf[2][frontend::player_name::MAX_BYTES + 1] = {};
     std::atomic<int> shown_slot{0};
     std::atomic<const char *> shown_source{""};
 
@@ -156,10 +156,10 @@ bool TimeTrialName::wanted_name(std::string &clean, const char *&source)
     std::string name;
     account.name(name);
     std::string text;
-    if (!runtime::player_name::display_source(env, name, text))
+    if (!frontend::player_name::display_source(env, name, text))
         return false;
     source = env[0] ? "SWOFTY_TT_PLAYER_NAME" : "home_menu.json discord name";
-    return runtime::player_name::sanitize(text, clean);
+    return frontend::player_name::sanitize(text, clean);
 }
 
 bool TimeTrialName::arm_rename(uint64_t serial)
@@ -209,11 +209,11 @@ const char *TimeTrialName::lookup(void *cache, void *id)
     int n = replaced.fetch_add(1) + 1;
     bool learn = stock_serial.load(std::memory_order_relaxed) != serial;
     if (learn || n <= 3 || n == 50) {
-        char seen[runtime::player_name::MAX_BYTES + 1] = {};
+        char seen[frontend::player_name::MAX_BYTES + 1] = {};
         {
             swofty::mem::Trust trust(runtime::HEAP_TRUST_MS);
             if (swofty::mem::readable(stock, 4))
-                strncpy(seen, stock, runtime::player_name::MAX_BYTES);
+                strncpy(seen, stock, frontend::player_name::MAX_BYTES);
         }
         if (learn && seen[0]) {
             std::lock_guard<std::mutex> g(stock_lock);
@@ -234,7 +234,7 @@ void TimeTrialName::setup()
     auto gate = swofty::json::parse(runtime::read_file(runtime::swofty_root() + L"tt.json", size_t(1) << 20));
     char v[8] = {};
     bool off = GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME", v, sizeof v) && !strcmp(v, "0");
-    if (!gate.is_object() || !gate["tt_bridge"].as_bool(false) || off || !runtime::holds(name_copies::TT_NAME))
+    if (!gate.is_object() || !gate["tt_bridge"].as_bool(false) || off || !runtime::holds(frontend::player_name::TT_NAME))
         return;
     uintptr_t at = runtime::find(S_NAME, "boards", "boards");
     if (!at) {
@@ -265,7 +265,7 @@ void TimeTrialName::probe_tick()
         probe_entered = now;
     static constexpr int64_t at_ms[] = {8000, 40000};
     if (probe_pass < 2 && now - probe_entered >= at_ms[probe_pass])
-        name_copies::probe_registry(++probe_pass);
+        frontend::player_name::probe_registry(++probe_pass);
 }
 
 void TimeTrialName::pin_tick()
@@ -299,15 +299,15 @@ void TimeTrialName::pin_tick()
     else if (!have_me)
         why = "the presence id was not read yet (no board request has passed the gate)";
     if (why.empty() && stock.empty() && swofty::game::g_Vm_Registry.address()) {
-        namespace ur = runtime::ui_registry;
+        namespace ur = frontend::ui_registry;
         uint64_t base = swofty::api->module_base(), reg = uint64_t(*swofty::game::g_Vm_Registry);
-        ur::Layout lay = name_copies::registry_layout(runtime::running_build(), base);
+        ur::Layout lay = frontend::player_name::registry_layout(runtime::running_build(), base);
         std::vector<ur::Hit> all;
         ur::Stats st;
-        auto rd = [](uint64_t at, void *out, size_t n) { return name_copies::registry_read(at, out, n); };
+        auto rd = [](uint64_t at, void *out, size_t n) { return frontend::player_name::registry_read(at, out, n); };
         ur::find_string(rd, reg, lay, "", all, 8000, st, {}, true);
-        uint32_t players = runtime::player_name::djb2("players"), player0 = runtime::player_name::djb2("player0"),
-                 gamertag = runtime::player_name::djb2("gamertag");
+        uint32_t players = frontend::player_name::djb2("players"), player0 = frontend::player_name::djb2("player0"),
+                 gamertag = frontend::player_name::djb2("gamertag");
         for (auto &h : all)
             if (h.depth == 3 && h.chain[0] == players && h.chain[1] == player0 && h.chain[2] == gamertag) {
                 stock = h.value;
@@ -332,9 +332,9 @@ void TimeTrialName::pin_tick()
         return;
     char diag[8] = {};
     if (GetEnvironmentVariableA("SWOFTY_TT_DIAG", diag, sizeof diag) && !strcmp(diag, "1") && !scan_started.exchange(true))
-        std::thread([stock] { name_copies::scan_copies(stock); }).detach();
-    bool visible = name_copies::pin_names(clean, stock) > 0;
-    name_copies::source_swap.plan_swap(true, stock, clean, source, visible);
+        std::thread([stock] { frontend::player_name::scan_copies(stock); }).detach();
+    bool visible = frontend::player_name::pin_names(clean, stock) > 0;
+    frontend::player_name::source_swap.plan_swap(true, stock, clean, source, visible);
 }
 
 void TimeTrialName::session()

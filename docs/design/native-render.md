@@ -15,7 +15,7 @@ void Overlay::setup()
 {
     if (settings().killed("all"))                  // SWOFTY_OVERLAY_KILL / "overlay_kill" lists all
         return;
-    hud::guard::ArmReasons reasons{settings().gate, capture.on, room_cover::setup(), menu || barred};
+    hud::guard::ArmReasons reasons{settings().gate, capture.on, hud::room_cover::setup(), menu || barred};
     if (!reasons.any())                            // no overlay addon, capture, cover, menu panel or TT warning
         return;
     std::string rival = device_hook_rival();       // RivaTuner Statistics Server
@@ -96,7 +96,7 @@ bool PassRecorder::run_between(ID3D12CommandQueue *q, ID3D12Resource *back, D3D1
 
 ```cpp
 l->CopyResource(work.orig, w.back);                // the frame before any pass
-for (int index : live) {                           // config.live_passes(view::current())
+for (int index : live) {                           // config.live_passes(frontend::view::current())
     l->EndQuery(queries, D3D12_QUERY_TYPE_TIMESTAMP, ...);
     l->SetPipelineState(p.pso);
     l->SetComputeRoot32BitConstants(0, CONSTANTS, c, 0);

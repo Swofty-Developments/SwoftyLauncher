@@ -49,7 +49,7 @@
 // The launcher adds swofty_toast_<seconds> to hud_messages.uimsg: literal (localise false) message and
 // sub_message attributes and a fixed msg_duration per id, so a toast picks the id nearest its duration.
 
-namespace popup {
+namespace frontend::popup {
 
 MessageSystem messages;
 
@@ -151,8 +151,8 @@ Handle *MessageSystem::constructed(void *s, Handle *out, FixedId *id, Callback *
     const char *name = id && swofty::mem::readable(id, sizeof(FixedId)) && id->data && swofty::mem::readable(id->data, 1)
                            ? id->data
                            : nullptr;
-    if (name && text_entry::is_entry_message(name)) {
-        text_entry::state.begin(GetTickCount64());
+    if (name && hud::text_entry::is_entry_message(name)) {
+        hud::text_entry::state.begin(GetTickCount64());
         swofty::log("[popup] '%.64s' takes typed text; core hotkeys are held back until it closes", name);
     }
     if (name && out && cb && swofty::mem::readable(cb, sizeof *cb) && runtime::session_host_message(name, cb->fn, cb->ctx)) {
@@ -160,7 +160,7 @@ Handle *MessageSystem::constructed(void *s, Handle *out, FixedId *id, Callback *
         return out;
     }
     Handle *r = h_construct.call<Handle *>(s, out, id, cb, a5, a6);
-    if (runtime::game_message_log::stock(name, opening))
+    if (frontend::game_message_log::stock(name, opening))
         log_game_message(name, r && swofty::mem::readable(r, sizeof *r) && r->msg);
     return r;
 }
@@ -352,7 +352,7 @@ void MessageSystem::setup()
         toast_test_next = GetTickCount64() + uint64_t(toast_test_every) * 1000;
         swofty::log("[hud] SWOFTY_TOAST_TEST: a test toast every %us", toast_test_every);
     }
-    race_hud::state.read_switches();
+    hud::race_hud::state.read_switches();
     swofty::log("[popup] setup: live; construct base+0x%llx, set attribute base+0x%llx, release base+0x%llx, id vtable "
                 "base+0x%llx",
                 (unsigned long long)(a_construct - base), (unsigned long long)(a_set_attr - base),
@@ -400,40 +400,40 @@ namespace runtime {
 
 const SwoftyPopup *popup_table()
 {
-    return &popup::table;
+    return &frontend::popup::table;
 }
 
 int popup_show(const std::string &title, const std::string &body, const std::string &by)
 {
-    return popup::messages.enqueue(title, body, by);
+    return frontend::popup::messages.enqueue(title, body, by);
 }
 
 int hud_toast(const std::string &text, const std::string &detail, float seconds, const std::string &by, const std::string &icon)
 {
-    return popup::messages.toast_enqueue(text, detail, seconds, icon, by);
+    return frontend::popup::messages.toast_enqueue(text, detail, seconds, icon, by);
 }
 
 void hud_rebuilt()
 {
-    race_hud::state.leaf_table.rebuilt();
+    hud::race_hud::state.leaf_table.rebuilt();
 }
 
-void popup_setup() { popup::messages.setup(); }
+void popup_setup() { frontend::popup::messages.setup(); }
 
 bool typing(const char *what)
 {
-    if (!text_entry::state.active(GetTickCount64()))
+    if (!hud::text_entry::state.active(GetTickCount64()))
         return false;
-    if (what && text_entry::state.first_suppression())
+    if (what && hud::text_entry::state.first_suppression())
         swofty::log("[popup] %s ignored: a text box has focus", what);
     return true;
 }
 
 void popup_tick()
 {
-    popup::messages.toast_test_tick();
-    race_hud::state.tick();
-    popup::messages.tick();
+    frontend::popup::messages.toast_test_tick();
+    hud::race_hud::state.tick();
+    frontend::popup::messages.tick();
 }
 
 }

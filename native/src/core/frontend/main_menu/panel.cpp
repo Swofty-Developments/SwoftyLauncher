@@ -16,11 +16,11 @@
 #include <utility>
 #include <vector>
 
-namespace runtime::main_menu {
+namespace frontend::main_menu {
 
 namespace {
 
-namespace logic = ::runtime::main_menu;
+namespace logic = ::frontend::main_menu;
 
 constexpr uint64_t PANEL_DELAY_MS = 450, PANEL_FADE_MS = 250;
 

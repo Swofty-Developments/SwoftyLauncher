@@ -88,7 +88,7 @@ const Step STEPS[] = {
     {"toast::tick", [] { runtime::toast::tick(); }},
     {"lap_host::tick", [] { runtime::lap_host::tick(); }},
     {"popup_tick", [] { runtime::popup_tick(); }},
-    {"main_menu::tick", [] { runtime::main_menu::tick(); }},
+    {"main_menu::tick", [] { frontend::main_menu::tick(); }},
     {"mfd_tick", [] { runtime::mfd_tick(); }},
     {"career_content_tick", [] { runtime::career_content_tick(); }},
     {"entitlements_tick", [] { runtime::entitlements_tick(); }},
@@ -188,7 +188,7 @@ void session_enter_mid(safetyhook::Context &)
     swofty_core::apply::moments::session_load("Game_GameModule_OnSessionEnter");
     runtime::telemetry_session_enter();
     runtime::lap_host::session_enter();
-    runtime::main_menu::session_enter();
+    frontend::main_menu::session_enter();
     runtime::hud_rebuilt();
     bool restart;
     {

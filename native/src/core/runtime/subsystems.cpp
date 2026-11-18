@@ -24,7 +24,7 @@ constexpr Subsystem SUBSYSTEMS[] = {
     {"crash: Ne_ReportMemoryError hook", Start::attach_code, crash_game_hooks},
     {"popup: message system hook", Start::commit_code, popup_setup},
     {"mfd: development switch", Start::commit_code, mfd_setup},
-    {"view state hooks", Start::commit_code, view::setup},
+    {"view state hooks", Start::commit_code, frontend::view::setup},
     {"assets", Start::ready, assets_setup},
     {"resources", Start::ready, resources_setup},
     {"gamedb", Start::ready, gamedb_setup},

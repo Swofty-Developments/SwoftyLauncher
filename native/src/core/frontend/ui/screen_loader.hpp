@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-namespace ui {
+namespace frontend::ui {
 
 struct NeStrHdr {
     uint32_t hash;
@@ -53,7 +53,7 @@ using Table_t = uint8_t *(void *self);
 
 constexpr unsigned MAX_ENGINE_FAILURES = 50;
 
-using name_hash::djb2;
+using frontend::name_hash::djb2;
 const char *chars(const void *s);
 bool readable(const void *p, size_t n);
 

@@ -119,7 +119,7 @@ void ShaderConfig::drop_instance(int inst)
                     : "?");
 }
 
-std::vector<int> ShaderConfig::live_passes(const view::State &v, unsigned *idle)
+std::vector<int> ShaderConfig::live_passes(const frontend::view::State &v, unsigned *idle)
 {
     std::vector<int> live;
     if (shaders_off)

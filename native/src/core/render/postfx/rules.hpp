@@ -23,7 +23,7 @@ public:
     // Reads the player's car when a rule or the live car trace (swofty/shaders/live.trace) wants it.
     void live_frame(ULONGLONG now, const std::wstring &swofty_root);
     // Steps the rules with this frame's signals and writes the instance passes' options and on/off state.
-    void frame(const view::State &v, ULONGLONG now, const ActiveSpec &active, const Plan &plan,
+    void frame(const frontend::view::State &v, ULONGLONG now, const ActiveSpec &active, const Plan &plan,
                std::vector<RenderPass> &passes);
     // Feeds the session's events into the rules.
     void subscribe(const SwoftyEvents *ev);

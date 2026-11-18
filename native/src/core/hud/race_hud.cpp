@@ -16,9 +16,9 @@
 #include "core/frontend/ui_vm.hpp"
 #include "core/hud/race_hud.hpp"
 
-namespace race_hud {
+namespace hud::race_hud {
 
-RaceHud state{popup::messages.queue_lock};
+RaceHud state{frontend::popup::messages.queue_lock};
 
 namespace {
 
@@ -27,7 +27,7 @@ constexpr size_t MAX_SETS = 512;
 
 int api_set(const char *path, uint32_t type, const void *value)
 {
-    std::string by = popup::who(__builtin_return_address(0));
+    std::string by = frontend::popup::who(__builtin_return_address(0));
     if (!path || !value)
         return SWOFTY_ASSET_INVALID;
     if (type == 0)
@@ -46,10 +46,10 @@ void apply_set(const Set &q)
 
 int leaves_register(const SwoftyHudLeaf *leaves, uint32_t n, uint32_t *ids)
 {
-    std::string by = popup::who(__builtin_return_address(0));
+    std::string by = frontend::popup::who(__builtin_return_address(0));
     if (!leaves || !ids)
         return SWOFTY_ASSET_INVALID;
-    if (!popup::api_available())
+    if (!frontend::popup::api_available())
         return SWOFTY_ASSET_UNAVAILABLE;
     int rc = SWOFTY_ASSET_OK;
     for (uint32_t i = 0; i < n; i++) {
@@ -61,7 +61,7 @@ int leaves_register(const SwoftyHudLeaf *leaves, uint32_t n, uint32_t *ids)
         std::string path = leaves[i].path;
         if (!path.empty() && path[0] == '#')
             path.erase(0, 1);
-        if (state.leaf_table.register_leaf(path, leaves[i].type, leaves[i].text_cap, by, ids[i]) != runtime::hud_leaves::OK) {
+        if (state.leaf_table.register_leaf(path, leaves[i].type, leaves[i].text_cap, by, ids[i]) != hud::leaves::OK) {
             swofty::log("[hud] leaf registration by %s refused: '%.120s' (type %u) is not a hud_* leaf or is already "
                         "registered with another type",
                         by.c_str(), path.c_str(), leaves[i].type);
@@ -77,7 +77,7 @@ int leaves_set(const uint32_t *ids, const void *const *values, uint32_t n)
 {
     if (!ids || !values)
         return SWOFTY_ASSET_INVALID;
-    return state.leaf_table.set(ids, values, n) == runtime::hud_leaves::OK ? SWOFTY_ASSET_OK : SWOFTY_ASSET_INVALID;
+    return state.leaf_table.set(ids, values, n) == hud::leaves::OK ? SWOFTY_ASSET_OK : SWOFTY_ASSET_INVALID;
 }
 
 int leaves_begin()
@@ -108,10 +108,18 @@ int leaves_stats(SwoftyHudStats *out)
     return SWOFTY_ASSET_OK;
 }
 
-const SwoftyHud hud_table = {SWOFTY_HUD_VERSION, popup::api_available, popup::api_toast, api_set,           leaves_register,
-                             leaves_set,         leaves_begin,         leaves_end,       leaves_generation, leaves_stats};
+const SwoftyHud hud_table = {SWOFTY_HUD_VERSION,
+                             frontend::popup::api_available,
+                             frontend::popup::api_toast,
+                             api_set,
+                             leaves_register,
+                             leaves_set,
+                             leaves_begin,
+                             leaves_end,
+                             leaves_generation,
+                             leaves_stats};
 
-bool apply_leaf(const runtime::hud_leaves::Leaf &l)
+bool apply_leaf(const hud::leaves::Leaf &l)
 {
     perf::Pause game;
     bool ok = l.type == 0 ? ui_vm_set_path(l.path, 0, l.want_text.c_str()) : ui_vm_set_path(l.path, int(l.type), &l.want_num);
@@ -134,7 +142,7 @@ int RaceHud::set_enqueue(std::string path, int type, std::string text, int32_t n
                     by.c_str(), path.c_str());
         return SWOFTY_ASSET_INVALID;
     }
-    if (!popup::api_available())
+    if (!frontend::popup::api_available())
         return SWOFTY_ASSET_UNAVAILABLE;
     int registered = leaf_table.type_of(path);
     if (registered >= 0 && registered != type) {
@@ -142,8 +150,8 @@ int RaceHud::set_enqueue(std::string path, int type, std::string text, int32_t n
                     registered, type);
         return SWOFTY_ASSET_INVALID;
     }
-    if (text.size() > popup::MAX_TOAST_TEXT)
-        text.resize(popup::MAX_TOAST_TEXT);
+    if (text.size() > frontend::popup::MAX_TOAST_TEXT)
+        text.resize(frontend::popup::MAX_TOAST_TEXT);
     std::lock_guard<std::mutex> g(queue_lock);
     for (auto &q : sets)
         if (q.path == path) {
@@ -307,5 +315,5 @@ void RaceHud::tick()
 
 extern "C" __declspec(dllexport) const SwoftyHud *SwoftyCoreHud(void)
 {
-    return &race_hud::hud_table;
+    return &hud::race_hud::hud_table;
 }
