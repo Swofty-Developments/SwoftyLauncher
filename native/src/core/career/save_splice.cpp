@@ -1,5 +1,6 @@
 #include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/loader/mixin_gate.hpp"
+#include "core/guards/skips.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/resolve.hpp"
 
@@ -81,6 +82,7 @@ struct Bindings {
 } b;
 
 runtime::loader::MixinGate mixin_gate;
+constinit swofty_core::guards::LogFirst<1> pool_line;
 bool live = false;
 std::mutex lock;
 sp::Store store;
@@ -460,9 +462,7 @@ void count_entry(SwoftyContext *c)
                     store.size() - picked.size());
     if (picked.empty())
         return;
-    static bool pool_logged = false;
-    if (!pool_logged) {
-        pool_logged = true;
+    if (pool_line.note()) {
         uint64_t heap_bytes = 0;
         bool raised = runtime::save_heap_raised(heap_bytes);
         uint64_t bytes = 0;
