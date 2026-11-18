@@ -169,6 +169,71 @@ An `agree` counts only at the level it was made at or a lower one. Raising a bin
 
 An exported binding is part of the addon API, so the set main exports must not shrink. A pull request whose record change leaves an exported binding unexported fails the check. `binding.py exports` runs the bindgen of the commit where the branch leaves main, and the checkout's, and lists every binding main exports that the checkout does not; `binding.py doctor` runs it too. After a newer `partial` row, the binding exports again once the notes carry its corrections and someone who did not write them adds an `agree` row.
 
+### Taking a binding out on purpose
+
+When a blind round finds an exported binding wrong, the repository owner can take it out of the addon API with an entry in `re/db/export_drops.json`:
+
+```json
+{
+ "schema": 1,
+ "note": "...",
+ "entries": {
+  "func:Example_ShowFittedSet": {
+   "mode": "deprecated",
+   "since": "1.10.0",
+   "covers": "V100013",
+   "reason": "its fourth argument is a u8 wing flag, not a u32 model mask",
+   "replacement": "Example_ShowFittedSet2"
+  },
+  "func:Example_ApplyCompound": {
+   "mode": "dropped",
+   "since": "1.10.0",
+   "covers": "V100021",
+   "reason": "it frees the wheel models a second time when the car is in the garage",
+   "harm": "crash"
+  }
+ }
+}
+```
+
+`deprecated` keeps the binding exporting for one release. Its `bindings.json` entry carries a `deprecated` object, and the headers mark it:
+
+```json
+{"id": "Example_ShowFittedSet", "kind": "func", "status": "experimental", "...": "...",
+ "deprecated": {"since": "1.10.0", "reason": "its fourth argument is a u8 wing flag, not a u32 model mask",
+                "replacement": "Example_ShowFittedSet2"}}
+```
+
+```cpp
+[[deprecated("deprecated in 1.10.0, removed in the next release: its fourth argument is a u8 wing flag, not a u32 model mask; use Example_ShowFittedSet2")]] inline constexpr fn<"Example_ShowFittedSet", Example_ShowFittedSet_t> Example_ShowFittedSet{}; // L2 experimental
+```
+
+```rust
+#[deprecated(since = "1.10.0", note = "deprecated in 1.10.0, removed in the next release: ...")]
+pub const Example_ShowFittedSet: Binding = Binding { id: "Example_ShowFittedSet", kind: "func", status: Status::Experimental };
+```
+
+`dropped` stops exporting it: the headers lose it, and every bindings set lists it instead:
+
+```json
+"dropped": [{"id": "Example_ApplyCompound", "since": "1.10.0",
+             "reason": "it frees the wheel models a second time when the car is in the garage"}]
+```
+
+- A binding is dropped without a deprecation release only when it crashes or corrupts state: `"harm": "crash"` or `"harm": "corrupts state"`. Any other binding is deprecated in one release and dropped in a later one, and its `dropped` entry keeps `"deprecated"` set to the release that deprecated it.
+- `since` is the release the mode ships in. A new or changed mode ships after the release the base branch is at (`[workspace.package] version` in `Cargo.toml`).
+- `covers` is the V-id of the `partial` or `disagree` row that ends the export. The entry holds only while that row is the binding's newest; a pull request that leaves an entry not holding fails the check.
+- `reason` is one line of printable ASCII without `"` or `\`, at most 300 characters. `replacement` is optional.
+
+Only the repository owner approves a change to `re/db/export_drops.json`. The `bindings` check fails on such a pull request until the owner has approved its head commit, or opened it; re-run the check after approving. The check reads the owner's reviews from the API with the read-only token.
+
+```sh
+python3 re/tools/binding.py drops                    # each entry's state; due deprecations; exits 1 on stale or overdue ones
+python3 re/tools/binding.py drops --release 1.10.0   # the lines the 1.10.0 release notes carry
+```
+
+The tests fail when `docs/releases/<since>.md` exists without the line for an entry of that release, and when a binding deprecated in one release is still deprecated at a later one.
+
 A second contributor re-derives the binding from the code alone (PROTOCOL.md §5), proves it on their own exe and adds the agree row:
 
 ```sh
@@ -239,10 +304,11 @@ Anything else gets a normal review. The workflow's summary lists each reason wit
 | A new name switches on code that already names it | a binding named anywhere in shipped code needs review. |
 | A fabricated proof | CI cannot run the game, so a proof is a consistency check, not evidence. A record with one proof is not exported. Export needs an agree row from a second GitHub account (or a maintainer), and stable needs a maintainer's L3 trace test. |
 | One person with two GitHub accounts | The agree row only proves a second account, so one person with two accounts can take a new binding to `experimental` alone. What they get is an experimental binding that no shipped code names (a name already used in shipped code needs review): nothing calls it unless an addon names it in a hook, and that addon already runs its own native code. They cannot change an existing binding (review) or reach `stable`: stable needs L3, and only a maintainer sets L3, after a trace test the lead runs passes on the KB build (`re/PROTOCOL.md` §1, §8). Maintainers can demote a record (`kb.py set ... level=L1`) or revert it; `bindings: auto-merge` marks every self-merged PR. |
+| A PR takes a binding out of the addon API | `re/db/export_drops.json` is outside `re/bindings`, so it never merges itself, and `validate` fails until the repository owner (`github.repository_owner`, from the base branch's workflow) has approved the PR's head commit or opened the PR. |
 | Two PRs add the same name | both write the same path, so the second one conflicts and stays open. Two PRs at one address under different names are caught by the `main` job and `test_db_unique`. |
 
 ## Repository settings this needs
 
 - Allow auto-merge.
-- Protect `main`: require a pull request, require the CI checks to pass, do not allow bypassing.
+- Protect `main`: require a pull request, require the CI checks to pass (the `bindings` workflow's `validate` among them, which carries the owner's approval of export drops), do not allow bypassing.
 - A `bindings: auto-merge` label.
