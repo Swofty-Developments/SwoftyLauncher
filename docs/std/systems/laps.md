@@ -132,16 +132,31 @@ Without the plugin no lap is recorded and the in-game boards are off.
 
 ## The integrity module
 
-The launcher loads one more native addon for a session in which Time Trial boards is on and the player is signed in with Discord: `swofty.integrity`, a closed-source DLL that Swofty's server publishes. The launcher fetches it from `GET /v1/tt/integrity`, checks its size and sha256, and checks an Ed25519 signature over `swofty-tt-integrity-v1\0 || version || \0 || sha256` against the public key pinned in the launcher. A copy that passes is kept under `timetrial/integrity/<version>/` in the launcher's data folder, the newest two versions. The session places it as `swofty/addons/swofty.integrity/swofty_integrity.dll` and lists it in `swofty/settings.json` under `plugins`, and the session's rollback removes it with every other placed file.
+The launcher loads one more native addon for a session in which Time Trial boards is on and the player is signed in with Discord: `swofty.integrity`, a closed-source DLL that Swofty's server publishes. The launcher reads the offer from `GET /v1/tt/integrity`, downloads the file from the CDN link in the offer when the offer has one and from `GET /v1/tt/integrity/file` otherwise, checks its size and sha256, and checks an Ed25519 signature over `swofty-tt-integrity-v1\0 || version || \0 || sha256` against the public key pinned in the launcher. A copy that passes is kept under `timetrial/integrity/<version>/` in the launcher's data folder with the offer it came with, the newest two versions. The session places it as `swofty/addons/swofty.integrity/swofty_integrity.dll` and lists it in `swofty/settings.json` under `plugins`, and the session's rollback removes it with every other placed file.
+
+The integrity module and the Time Trial plugin are fetched the same way. When Swofty's server times out, can't be reached, answers `too many requests` or a server error, the launcher uses the newest cached copy whose kept offer and bytes still verify; for the integrity module, only one the server offered in the last 14 days. With no such copy, the launcher asks again after 1 and 2 seconds, within 12 seconds in all.
 
 It is not an addon in any profile, the addon list, the load order or the addon set a lap is uploaded with. It is named in `loader.log` as an addon DLL and in the launcher's session log:
 
 ```
 integrity: swofty_integrity.dll 2026.11.10.1 under swofty/addons/swofty.integrity
+integrity module: asking for the offer failed (couldn't reach https://...); trying again in 1 s (try 2 of 3)
+integrity module: the server's copy could not be had (couldn't reach https://...); using the cached copy 2026.11.10.1, verified offline
 integrity module: not loaded for this session: couldn't reach https://...
 ```
 
-When the offer is missing, unreachable or fails a check, the session starts without the module and the lap is written without an `ATST` section.
+When the offer is missing, unreachable or fails a check and no cached copy can stand in, the session starts without the module and the lap is written without an `ATST` section. The launcher then says so in a dialog at Play: Time Trial laps that session won't be sealed and won't rank.
+
+Each lap's upload meta says what the session did about the module, under `integrity`:
+
+```json
+{"state": "server", "version": "2026.11.10.1"}
+{"state": "cached", "version": "2026.11.10.1", "why": "couldn't reach https://..."}
+{"state": "local"}
+{"state": "missing", "kind": "unreachable", "why": "couldn't reach https://...: timeout: global"}
+```
+
+`kind` is `unreachable` (no answer and no cached copy), `refused` (the server said no, in its own words) or `invalid` (a check failed). A launcher that does not know leaves `integrity` out.
 
 At `laps.sealing` the module appends the `ATST` section: a length-prefixed JSON document and a 32-byte HMAC-SHA256 of it.
 
