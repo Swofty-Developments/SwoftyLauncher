@@ -40,6 +40,17 @@ public:
     // effective records will add, for the value-map sizing. Called once, after the register pass.
     virtual std::size_t database_keys(Store &) { return 0; }
 
+    // True when database_keys only reads the store and files: the boot plan counts it on a worker after every other
+    // boot applier has prepared and counted, while the stage goes on.
+    virtual bool counts_off_thread() const { return false; }
+
+    // False only when database_keys is sure to count no key. When no off-thread applier may count, the boot plan counts
+    // them all on the calling thread, and the database hook is decided on the counted plan.
+    virtual bool may_count(Store &) { return true; }
+
+    // Drops what database_keys counted, so the next call counts again from the store.
+    virtual void forget_count() {}
+
     // Before the game database loads (Applies::boot), after sizing: put the records into the
     // database in memory, or into the asset manifest.
     virtual void boot(Store &, Report &) {}
