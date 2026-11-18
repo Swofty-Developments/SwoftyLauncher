@@ -721,6 +721,56 @@ class CheckAndStatus(Base):
         self.assertIn('binding.py status lists them', str(e.exception))
 
 
+class ExportsDoNotShrink(Base):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        import binding, bindgen
+        gate = bindgen.Gate()
+        cls.exported = next(r for r in br.Store.get().records
+                            if r.table == 'functions' and binding.export_state(gate, r)[0] == 'experimental')
+
+    def change(self, verdict):
+        doc = copy.deepcopy(self.exported.doc)
+        row = agree_row(doc, 'contributor-b')
+        row.update(kind='func', verdict=verdict, date=max(v['date'] for v in doc['verify']))
+        doc['verify'].append(row)
+        doc['proofs'].append(make_proof(doc, 'contributor-b'))
+        return doc
+
+    def judge(self, new):
+        import binding
+        path = 're/bindings/' + self.exported.relpath
+        return binding.judge([(path, raw(self.exported.doc), new and raw(new))], [], 'contributor-b', self.knowledge)
+
+    def test_a_newer_partial_row_on_an_exported_binding_fails(self):
+        result = self.judge(self.change('partial'))
+        self.assertEqual(result['verdict'], 'fail', result['summary'])
+        errors = [e for e in result['errors'] if 'stops exporting' in e]
+        self.assertEqual(len(errors), 1, result['errors'])
+        self.assertIn(self.exported.name, errors[0])
+        fix = result['summary'][result['summary'].index('error: ' + errors[0]) + 1]
+        self.assertIn('addon API', fix)
+
+    def test_removing_an_exported_record_fails(self):
+        result = self.judge(None)
+        self.assertEqual(result['verdict'], 'fail', result['summary'])
+        self.assertTrue(any('removes ' + self.exported.name in e for e in result['errors']), result['errors'])
+
+    def test_a_newer_agree_row_keeps_it_exported(self):
+        result = self.judge(self.change('agree'))
+        self.assertFalse(any('stops exporting' in e for e in result['errors']), result['errors'])
+
+    def test_lost_exports_lists_what_the_base_exports_and_the_checkout_does_not(self):
+        import binding
+        with mock.patch.object(binding, 'bindgen_ids', side_effect=[{'Kept', 'Dropped'}, {'Kept', 'Added'}]):
+            self.assertEqual(binding.lost_exports('HEAD'), ['Dropped'])
+
+    def test_the_checkout_exports_everything_its_commit_does(self):
+        import binding
+        self.assertEqual(binding.lost_exports('HEAD'), [])
+
+
 @unittest.skipUnless(os.environ.get('SWOFTY_STEAM_EXE'), 'set SWOFTY_STEAM_EXE to the KB build F1_25.exe')
 class NewOnTheKbBuild(unittest.TestCase):
     TWIN = 0x142e9dc20

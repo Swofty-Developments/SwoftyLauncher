@@ -95,6 +95,8 @@ FIXES = [(re.compile(p), t) for p, t in (
      'and main\'s tests fail without them'),
     (r'changes the generated headers', 'nothing to fix when binding.py doctor no longer asks for them: a maintainer '
      'checks they are what bindgen writes and merges it'),
+    (r'stops exporting', 'an exported binding is part of the addon API: correct the notes and add an agree row in '
+     'the same pull request, or ask a maintainer to review the removal'),
     (r'has no regular file there', 'commit the record as a plain file, not a symlink or a submodule'),
     (r'more than \d+ files', 'split the records over several pull requests'),
     (r'changes no binding record', 'add or change a file under re/bindings/<subsystem>/<Name>.json'),

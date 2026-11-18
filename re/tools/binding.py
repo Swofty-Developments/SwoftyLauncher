@@ -10,6 +10,7 @@
   binding.py doctor [--author LOGIN]
                                   what the pull request check decides for your changes, why, and how to fix it
   binding.py check [FILE...]      the static checks CI runs (every record when no file is given)
+  binding.py exports [--base REF] fails when a binding the base commit exports no longer exports (doctor runs it)
   binding.py status [NAME...]     records, their level, proofs, verifiers and what each still needs to export
   binding.py unfold [NAME...] [--table functions|globals] [--skip-unfit] --author LOGIN
                                   maintainer: move bindings from the shared tables into records; rows that would
@@ -435,6 +436,11 @@ def judge(changes, other, author, knowledge):
         if lint_errors:
             result['verdict'] = 'fail'
             result['errors'] += lint_errors
+    if result['verdict'] != 'fail':
+        drops = export_drops(changes)
+        if drops:
+            result['verdict'] = 'fail'
+            result['errors'] += drops
     headers = [p for p in other if p.startswith(HEADERS)]
     other = [p for p in other if not p.startswith(HEADERS)]
     if result['verdict'] != 'fail':
@@ -455,6 +461,91 @@ def judge(changes, other, author, knowledge):
 
 
 HEADERS = 'native/include/swofty/'
+
+
+def export_drops(changes):
+    """One error per binding the base exports that these record changes stop exporting."""
+    import bindgen
+    rows = kb.read_table('verify')[0]
+    touched = {path[len('re/bindings/'):] for path, _, _ in changes}
+    after, new_rows = {}, [r for r in rows if r.get('_record') not in touched]
+    for path, _, new in changes:
+        if new is None:
+            continue
+        try:
+            rec = br.Record.from_bytes(new, path[len('re/bindings/'):])
+        except br.RecordError:
+            continue
+        after[path] = rec
+        new_rows += rec.verify_rows()
+    before_gate, after_gate = bindgen.Gate(rows=rows), bindgen.Gate(rows=new_rows)
+    out = []
+    for path, old, new in changes:
+        if old is None:
+            continue
+        try:
+            rec = br.Record.from_bytes(old, path[len('re/bindings/'):])
+        except br.RecordError:
+            continue
+        status, _ = export_state(before_gate, rec)
+        if status == 'not exported':
+            continue
+        if new is None:
+            out.append(f'{path}: removes {rec.name}, which is exported ({status}), so it stops exporting')
+        elif path in after:
+            now, need = export_state(after_gate, after[path])
+            if now == 'not exported':
+                out.append(f'{path}: {rec.name} is exported ({status}) and stops exporting after this change: {need}')
+    return out
+
+
+def bindgen_ids(root):
+    """The ids of the KB set that the bindgen in the tree at `root` exports, run in a scratch folder."""
+    import subprocess, tempfile
+    with tempfile.TemporaryDirectory() as d:
+        out = os.path.join(d, 'bindings.json')
+        r = subprocess.run([sys.executable, '-I', os.path.join(root, 're', 'tools', 'bindgen.py'), '--no-exe',
+                            '--json', out, '--symbols', os.path.join(d, 'symbols.tsv'),
+                            '--include', os.path.join(d, 'include'), '--rust', os.path.join(d, 'game.rs')],
+                           capture_output=True, cwd=d)
+        if r.returncode or not os.path.exists(out):
+            raise SystemExit(f'binding.py: bindgen in {root} failed: {r.stderr.decode(errors="replace").strip()[-400:]}')
+        with open(out) as f:
+            return {b['id'] for b in json.load(f)['bindings']}
+
+
+def lost_exports(base):
+    """The ids the KB set exports at commit `base`, by that commit's own bindgen, that this checkout no longer exports."""
+    import io, tarfile, tempfile
+    have = set(git('ls-tree', '--name-only', base, 're/').stdout.decode().split())
+    paths = [p for p in ('re/tools', 're/db', 're/tests', 're/bindings') if p in have]
+    with tempfile.TemporaryDirectory() as d:
+        with tarfile.open(fileobj=io.BytesIO(git('archive', base, *paths).stdout)) as tar:
+            if hasattr(tarfile, 'data_filter'):
+                tar.extractall(d, filter='data')
+            else:
+                tar.extractall(d)
+        then = bindgen_ids(d)
+    return sorted(then - bindgen_ids(kb.ROOT))
+
+
+def print_lost(lost, base):
+    print(f'error: {len(lost)} binding(s) that {base[:12]} exports no longer export here; removing an export breaks the '
+          'addons that resolve it:')
+    for name in lost:
+        print(f'  {name}')
+    print('  fix: binding.py status <name> says what each one needs, usually an agree row after a newer partial row '
+          'whose corrections are in the notes')
+
+
+def cmd_exports(a):
+    base = pick_base(a.base)
+    lost = lost_exports(base)
+    if lost:
+        print_lost(lost, base)
+        return 1
+    print(f'binding.py exports: every binding {base[:12]} exports still exports')
+    return 0
 
 
 def header_changes(changes):
@@ -593,6 +684,10 @@ def cmd_doctor(a):
             if rec:
                 status, need = export_state(gate, rec)
                 print(f'  {rec.name}: {status}' + (f'; needs {need}' if need != '-' else ''))
+    lost = lost_exports(base)
+    if lost:
+        print_lost(lost, base)
+        return 1
     return 1 if result['verdict'] == 'fail' else 0
 
 
@@ -850,6 +945,10 @@ def main(argv=None):
                                   'itself, need a review or fail, why, and the fix for each problem.')
     p.add_argument('--author', help='the GitHub login that opens the pull request (default: the records\' author)')
     p.add_argument('--base', help='the commit to compare with (default: where HEAD leaves origin/main or main)')
+    p = sp.add_parser('exports', help='fail when a binding the main branch exports no longer exports',
+                      description='Runs the base commit\'s own bindgen and this checkout\'s, and lists every binding '
+                                  'the base exports that this checkout does not. doctor runs it too.')
+    p.add_argument('--base', help='the commit to compare with (default: where HEAD leaves origin/main or main)')
     p = sp.add_parser('verify', help='prove existing records again on your exe',
                       description='Resolve each record on your exe with the core\'s rules and store the proof, '
                                   'replacing your earlier proof on the same exe. Any build in re/db/builds works.')
@@ -890,7 +989,7 @@ def main(argv=None):
     p.add_argument('--json', metavar='OUT', help='also write the report as JSON')
     a = ap.parse_args(argv)
     return {'new': cmd_new, 'doctor': cmd_doctor, 'verify': cmd_verify, 'agree': cmd_agree, 'check': cmd_check,
-            'status': cmd_status, 'unfold': cmd_unfold, 'ci': cmd_ci, 'port': cmd_port}[a.cmd](a) or 0
+            'status': cmd_status, 'unfold': cmd_unfold, 'ci': cmd_ci, 'port': cmd_port, 'exports': cmd_exports}[a.cmd](a) or 0
 
 
 if __name__ == '__main__':
