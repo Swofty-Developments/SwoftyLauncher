@@ -1,6 +1,6 @@
 #include "core/boxes/picker/picker.hpp"
 
-#include "core/runtime/hook_errors.hpp"
+#include "core/runtime/loader/hook_install.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/guards/session/replay_grid_logic.hpp"
 
@@ -29,7 +29,13 @@ constexpr bp::Proof FILL_ENTRANTS{"the Time Trial fill's entrants at its partici
 constexpr bp::Gate ENTRANT_CAP{"the Time Trial entrant cap", &FILL_ENTRANTS};
 const runtime::Sig SIG_FILL_PARTICIPANTS{"session.time_trial_fill_participants", "48 8B B7 E0 02 00 00 48 89 7C 24 60",
                                          0x2939dc2};
-safetyhook::MidHook h_entrant_cap;
+const runtime::loader::HookSite FILL_PARTICIPANTS{SIG_FILL_PARTICIPANTS, "Time Trial entrant cap", "era", &ENTRANT_CAP};
+
+// The Time Trial entrant cap: a mid hook at the fill's participant loop.
+struct EntrantCapHooks : runtime::loader::HookSet<> {
+    safetyhook::MidHook fill_participants;
+};
+EntrantCapHooks entrant_cap;
 Cap<LOG_FIRST> cap_lines;
 
 void entrant_cap_mid(safetyhook::Context &c)
@@ -61,22 +67,20 @@ void entrant_cap_mid(safetyhook::Context &c)
 
 bool install_entrant_cap()
 {
-    if (h_entrant_cap)
+    if (entrant_cap.live())
         return true;
-    uintptr_t at = runtime::holds(ENTRANT_CAP) ? runtime::find(SIG_FILL_PARTICIPANTS, "Time Trial entrant cap", "era") : 0;
-    if (!at) {
+    auto r = runtime::loader::install(entrant_cap.fill_participants, FILL_PARTICIPANTS, entrant_cap_mid);
+    if (r.step == runtime::loader::Installed::Step::failed) {
+        swofty::log("[era] Time Trial entrant cap off: the hook on the fill's participant loop failed: %s", r.error.c_str());
+    } else if (!r) {
         swofty::log("[era] Time Trial entrant cap off: the fill's participant loop is not proven or did not resolve on this "
                     "build");
-        return false;
+    } else {
+        entrant_cap.set_live();
+        return true;
     }
-    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), entrant_cap_mid);
-    if (!h) {
-        swofty::log("[era] Time Trial entrant cap off: the hook on the fill's participant loop failed: %s",
-                    runtime::hook_error(h.error()).c_str());
-        return false;
-    }
-    h_entrant_cap = std::move(*h);
-    return true;
+    entrant_cap.turn_off(std::move(r.why));
+    return false;
 }
 
 std::string session_list(uintptr_t ctx)

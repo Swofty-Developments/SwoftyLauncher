@@ -39,6 +39,8 @@ type: CategoryHooks
 type: DeviceHooks
 type: ListHooks
 type: SwapchainHooks
+type: EntrantCapHooks
+type: FirstReadHooks
 type: safetyhook::InlineHook
 type: safetyhook::MidHook
 type: std::deque
