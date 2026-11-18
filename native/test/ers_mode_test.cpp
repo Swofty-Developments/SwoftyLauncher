@@ -38,11 +38,14 @@ int main()
     CHECK(known == 2, "two of the known builds have a witness for the mode's offset");
     uint32_t seen = 0;
     bool twice = false;
-    for (const ers::ModeAt &m : ers::MODE_AT) {
+    for (const runtime::car_layout::PerBuild &m : runtime::car_layout::ERS_MODE) {
         twice |= (seen & m.proof.builds) != 0;
         seen |= m.proof.builds;
     }
     CHECK(!twice, "no build has two mode offsets");
+    for (const bp::Known &k : bp::KNOWN)
+        CHECK(ers::mode_offset(k.build) == runtime::car_layout::ers_mode(k.build) || !ers::mode_offset(k.build),
+              "the guard's offset is the shared car layout's");
 
     printf("%s\n", failures ? "FAILED" : "all passed");
     return failures ? 1 : 0;
