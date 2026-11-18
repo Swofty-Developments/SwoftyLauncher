@@ -1623,6 +1623,54 @@
    "used_by": [
     "native/src/core/frontend/swofty_core.cpp"
    ]
+  },
+  {
+   "id": "session.vehicle_placement_request_register",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 78 29 BC 24 B0 00 00 00 C5 78 29 B4 24 A0 00 00 00 C5 78 29 AC 24 90 00 00 00 C5 78 29 A4 24 80 00 00 00 C5 78 29 5C 24 70 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 CE 48 8B 41 08",
+   "match": "0x142f60c80",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f60c80",
+   "kind": "func_start",
+   "names": [
+    "Sess_VehiclePlacementRequest_Register"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-18",
+     "by": "re-bindings",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.vehicle_placement_request_parse_group_and_id",
+   "section": ".xtls",
+   "pattern": "5D 41 5E 41 5F C3 CC CC CC CC CC CC CC CC CC CC C3 CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC 41 57 41 56 56 57",
+   "match": "0x142f604c0",
+   "anchor": "0x20",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f604e0",
+   "kind": "func_start",
+   "names": [
+    "Sess_VehiclePlacementRequest_ParseGroupAndId"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-18",
+     "by": "re-bindings",
+     "how": "static"
+    }
+   ],
+   "used_by": []
   }
  ]
 }
