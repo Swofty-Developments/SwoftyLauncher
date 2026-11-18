@@ -81,7 +81,12 @@ fn replaces_adds_and_removes_textures_in_a_game_archive() {
         );
         assert_eq!(f.data().unwrap(), s.data().unwrap());
     }
-    let raw = |r: &Resource| r.fragments.iter().map(|f| f.raw.clone()).collect::<Vec<_>>();
+    let raw = |r: &Resource| {
+        r.fragments
+            .iter()
+            .map(|f| f.raw().map(<[u8]>::to_vec))
+            .collect::<Vec<_>>()
+    };
     let mut copied = 0;
     for r in stock
         .erp
@@ -158,7 +163,12 @@ fn round_trips_and_resizes_a_scene_in_a_game_archive() {
         }
         b
     };
-    let raw = |r: &Resource| r.fragments.iter().map(|f| f.raw.clone()).collect::<Vec<_>>();
+    let raw = |r: &Resource| {
+        r.fragments
+            .iter()
+            .map(|f| f.raw().map(<[u8]>::to_vec))
+            .collect::<Vec<_>>()
+    };
     let check = |written: &Erp, data: &[u8]| {
         assert_eq!(written.resources.len(), stock.erp.resources.len());
         for (w, s) in written.resources.iter().zip(&stock.erp.resources) {
@@ -193,6 +203,6 @@ fn round_trips_and_resizes_a_scene_in_a_game_archive() {
     let bytes = std::fs::read(out.join(SCENES)).unwrap();
     let mut written = Erp::parse(&bytes).unwrap();
     check(&written, &bigger);
-    assert_eq!(written.to_bytes(), bytes);
+    assert_eq!(written.to_bytes().unwrap(), bytes);
     std::fs::remove_dir_all(&dir).ok();
 }

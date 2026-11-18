@@ -1,11 +1,16 @@
 use std::path::{Path, PathBuf};
 
-use swofty_formats::erp::Entry;
+use swofty_formats::erp::{Entry, Packer};
 
 use super::checks::is_handling;
-use super::{Archive, ErpBuild, Slot, fail, served_at_runtime};
+use super::{Archive, ErpBuild, Slot, fail, pack, served_at_runtime};
 use crate::content::runtime_assets::{foreign_argument, layout_change};
 use crate::{Error, Result};
+
+/// The version of the cache key's layout, raised whenever what [`ArchiveWrite::key`] hashes changes, so
+/// an archive cached under an older layout is never taken for one written now. 2: a fragment hashes as
+/// stored or as pending.
+const KEY_VERSION: u32 = 2;
 
 pub(super) const HANDLING_WHY: &str =
     "a car handling file is read from the game file, as a hand copy puts it";
@@ -16,29 +21,31 @@ pub struct Resized {
     pub resources: Vec<(String, String)>,
 }
 
-/// The write of one archive: the archive as the ops left it, the file it goes to and the cache of
-/// archives earlier builds wrote. A write owns all it reads and writes, so the writes of different
-/// archives share nothing.
+/// The write of one archive: the archive as the ops left it, the file it goes to, the cache of
+/// archives earlier builds wrote and the packer that compresses its pending fragments. A write owns
+/// all it reads and writes, so the writes of different archives share nothing.
 struct ArchiveWrite {
     rel: String,
     archive: Archive,
     path: PathBuf,
     cache: Option<PathBuf>,
+    packer: Packer,
 }
 
 impl ArchiveWrite {
-    fn new(out: &Path, rel: String, archive: Archive, cache: Option<&Path>) -> Self {
+    fn new(out: &Path, rel: String, archive: Archive, cache: Option<&Path>, packer: &Packer) -> Self {
         Self {
             path: out.join(&rel),
             rel,
             archive,
             cache: cache.map(Path::to_path_buf),
+            packer: packer.clone(),
         }
     }
 
-    /// A hash of everything that decides the archive's bytes: the build pipeline,
-    /// the source archive (path, size and modified time) and every slot, stock by
-    /// index and owned by all of its fields and fragment bytes.
+    /// A hash of everything that decides the archive's bytes: the key's layout, the build pipeline,
+    /// the source archive (path, size and modified time) and every slot, stock by index and owned by
+    /// all of its fields and fragments: stored bytes, or the data and level of a pending compression.
     fn key(&self) -> Option<String> {
         use sha2::{Digest, Sha256};
         let a = &self.archive;
@@ -48,6 +55,7 @@ impl ArchiveWrite {
             h.update((b.len() as u64).to_le_bytes());
             h.update(b);
         };
+        field(&KEY_VERSION.to_le_bytes());
         field(env!("SWOFTY_PIPELINE").as_bytes());
         field(self.rel.as_bytes());
         field(a.file.path.to_string_lossy().as_bytes());
@@ -73,8 +81,18 @@ impl ArchiveWrite {
                         field(&f.size.to_le_bytes());
                         field(&f.flags.to_le_bytes());
                         field(&[f.compression]);
-                        field(&f.packed.to_le_bytes());
-                        field(&f.raw);
+                        match f.pending() {
+                            Some((data, level)) => {
+                                field(b"pending");
+                                field(&level.to_le_bytes());
+                                field(data);
+                            }
+                            None => {
+                                field(b"stored");
+                                field(&f.packed().unwrap_or_default().to_le_bytes());
+                                field(f.raw().unwrap_or_default());
+                            }
+                        }
                     }
                     field(b"end");
                 }
@@ -85,7 +103,8 @@ impl ArchiveWrite {
 
     /// Writes the archive, or links it from the cache when an earlier build
     /// wrote the same bytes; a newly written one is linked into the cache. True
-    /// when it came from the cache. Without hard links nothing is cached.
+    /// when it came from the cache. Without hard links nothing is cached. The
+    /// fragments still pending are compressed first, one batch per level.
     fn run(self) -> Result<bool> {
         let path = &self.path;
         if let Some(dir) = path.parent() {
@@ -104,9 +123,20 @@ impl ArchiveWrite {
             return Ok(true);
         }
         let Self {
-            rel, archive, path, ..
+            rel,
+            archive,
+            path,
+            packer,
+            ..
         } = self;
-        let Archive { file, slots } = archive;
+        let Archive { file, mut slots } = archive;
+        pack::settle(
+            &packer,
+            slots.iter_mut().filter_map(|s| match s {
+                Slot::Owned(r) => Some(r),
+                Slot::Stock(_) => None,
+            }),
+        )?;
         let entries = slots
             .into_iter()
             .map(|s| match s {
@@ -129,6 +159,13 @@ impl ArchiveWrite {
 }
 
 impl ErpBuild<'_> {
+    /// Compresses every written fragment still pending, one batch per level across all the archives, for
+    /// a caller that copies the resources out instead of writing the archives; how many it compressed.
+    pub fn settle(&mut self) -> Result<usize> {
+        let packer = self.packer.clone();
+        pack::settle(&packer, self.erps.values_mut().flat_map(|a| a.written_mut()))
+    }
+
     // The in-game loader reads a replaced resource with the stock entry's
     // layout, so an archive whose changes alter a stock entry's type, argument
     // or fragment sizes is rewritten whole instead, and leaves the runtime set.
@@ -168,7 +205,7 @@ impl ErpBuild<'_> {
             .collect();
         for rel in &outside {
             let archive = self.erps.remove(rel).expect("listed above");
-            ArchiveWrite::new(out, rel.clone(), archive, None).run()?;
+            ArchiveWrite::new(out, rel.clone(), archive, None, &self.packer).run()?;
         }
         Ok(outside)
     }
@@ -177,7 +214,7 @@ impl ErpBuild<'_> {
         let found = self.resized();
         for r in &found {
             let archive = self.erps.remove(&r.erp).expect("found above");
-            ArchiveWrite::new(out, r.erp.clone(), archive, None).run()?;
+            ArchiveWrite::new(out, r.erp.clone(), archive, None, &self.packer).run()?;
         }
         Ok(found)
     }
@@ -199,7 +236,7 @@ impl ErpBuild<'_> {
             .erps
             .into_iter()
             .filter(|(_, a)| !a.untouched())
-            .map(|(rel, archive)| ArchiveWrite::new(out, rel, archive, cache))
+            .map(|(rel, archive)| ArchiveWrite::new(out, rel, archive, cache, &self.packer))
             .collect();
         let mut written = Vec::new();
         let mut reused = 0;

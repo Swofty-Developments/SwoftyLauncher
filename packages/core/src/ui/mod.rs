@@ -1999,15 +1999,7 @@ mod tests {
             unk: vec![0; 6],
             fragments: frags
                 .iter()
-                .map(|d| Fragment {
-                    name: *b"temp",
-                    offset: 0,
-                    size: d.len() as u64,
-                    flags: 0,
-                    compression: STORED,
-                    packed: d.len() as u64,
-                    raw: d.to_vec(),
-                })
+                .map(|d| Fragment::new(*b"temp", d.len() as u64, 0, STORED, d.to_vec()))
                 .collect(),
             hash: [0; 16],
         };
@@ -2035,7 +2027,7 @@ mod tests {
         };
         let path = root.join(ui_file(rel));
         std::fs::create_dir_all(path.parent().unwrap()).unwrap();
-        std::fs::write(&path, erp.to_bytes()).unwrap();
+        std::fs::write(&path, erp.to_bytes().unwrap()).unwrap();
         path
     }
 

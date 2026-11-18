@@ -103,7 +103,9 @@ impl Pipeline<'_, '_> {
         self.note_built_over_puts(&erp_ops, &puts);
         let base = |rel: &str| bases.path(rel);
         let resolve = |rel: &str| run.original(rel);
-        let mut erps = ErpBuild::new(&base).with_baseline(&resolve);
+        let mut erps = ErpBuild::new(&base)
+            .with_baseline(&resolve)
+            .with_packer(self.packer.clone());
         for rel in puts.keys() {
             erps.load(rel)?;
         }
@@ -438,6 +440,7 @@ impl Pipeline<'_, '_> {
                 prebuilt.len()
             ));
         }
+        erps.settle()?;
         let notes = runtime.resources(erps.resources(), &ranks, &prebuilt, &built.overlay)?;
         built.warnings.extend(notes);
         stage_erps(built, staged, built_in)?;

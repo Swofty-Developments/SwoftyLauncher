@@ -42,7 +42,7 @@ pub fn verify(store: &Store, game: Option<PathBuf>) -> Result<ExitCode> {
     for rel in UI_ERPS {
         check(
             rel,
-            read(&game, rel).and_then(|d| Ok(Erp::parse(&d)?.to_bytes() == d)),
+            read(&game, rel).and_then(|d| Ok(Erp::parse(&d)?.to_bytes()? == d)),
         );
     }
     if !game.join(GAME_EXE).is_file() {

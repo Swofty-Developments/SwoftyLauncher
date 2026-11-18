@@ -127,7 +127,7 @@ fn erp_round_trip_is_byte_identical() {
     for rel in ERPS {
         let Some(data) = read(&dir, rel) else { continue };
         let mut erp = Erp::parse(&data).unwrap();
-        assert!(erp.to_bytes() == data, "{rel}: ERP round trip differs");
+        assert!(erp.to_bytes().unwrap() == data, "{rel}: ERP round trip differs");
         for res in erp.resources.iter().take(50) {
             assert_eq!(res.content_hash().unwrap(), res.hash, "{rel}: {} hash", res.name);
         }

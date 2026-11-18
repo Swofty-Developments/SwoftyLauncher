@@ -59,7 +59,8 @@ pub(super) fn same_copy(a: &Resource, b: &Resource) -> bool {
                 && x.flags == y.flags
                 && x.size == y.size
                 && x.compression == y.compression
-                && x.raw == y.raw
+                && x.raw() == y.raw()
+                && x.pending() == y.pending()
         })
 }
 

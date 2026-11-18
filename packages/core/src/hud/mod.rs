@@ -960,7 +960,7 @@ pub fn cover_carriers(stock: &dyn Stock, archives: &mut Vec<Built>, lines: &mut 
             added.push(Built {
                 file,
                 erps,
-                bytes: erp.to_bytes(),
+                bytes: erp.to_bytes()?,
             });
         }
     }
@@ -1024,7 +1024,7 @@ pub fn archive(stock: &dyn Stock, resources: Vec<Res>) -> Result<Vec<u8>> {
         version,
         resources: out,
     };
-    Ok(erp.to_bytes())
+    Ok(erp.to_bytes()?)
 }
 
 /// Reads the records of an addon's hud file into inputs.
@@ -1524,34 +1524,19 @@ mod tests {
                     name: (*n).into(),
                     kind: swofty_formats::erp::kind("UILayout").unwrap(),
                     unk: vec![0; 4],
-                    fragments: vec![Fragment {
-                        name: *b"temp",
-                        offset: 0,
-                        size: 1,
-                        flags: 0x10,
-                        compression: STORED,
-                        packed: 1,
-                        raw: vec![n.len() as u8],
-                    }],
+                    fragments: vec![Fragment::new(*b"temp", 1, 0x10, STORED, vec![n.len() as u8])],
                     hash: [0; 16],
                 })
                 .collect(),
         }
         .to_bytes()
+        .unwrap()
     }
 
     #[test]
     fn a_clip_whose_syst_is_not_a_multiple_of_16_bytes_is_reported() {
         use swofty_formats::erp::{Fragment, HEADER_LEN, MAGIC, STORED};
-        let frag = |name: &[u8; 4], raw: Vec<u8>| Fragment {
-            name: *name,
-            offset: 0,
-            size: raw.len() as u64,
-            flags: 0x10,
-            compression: STORED,
-            packed: raw.len() as u64,
-            raw,
-        };
+        let frag = |name: &[u8; 4], raw: Vec<u8>| Fragment::new(*name, raw.len() as u64, 0x10, STORED, raw);
         let clip = |name: &str, syst: usize| Resource {
             name: name.into(),
             kind: swofty_formats::erp::kind("AnimClip").unwrap(),
@@ -1567,7 +1552,8 @@ mod tests {
             version: 3,
             resources: vec![clip("slide", 92), clip("needle", 112), clip("short", 108)],
         }
-        .to_bytes();
+        .to_bytes()
+        .unwrap();
         let built = [Built {
             file: "hud_scene.erp".into(),
             erps: vec![],

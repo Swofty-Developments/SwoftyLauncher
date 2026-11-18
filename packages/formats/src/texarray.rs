@@ -109,15 +109,7 @@ mod tests {
     use crate::erp::Fragment;
 
     fn fragment(data: Vec<u8>) -> Fragment {
-        Fragment {
-            name: *b"temp",
-            offset: 0,
-            size: data.len() as u64,
-            flags: 0x10,
-            compression: crate::erp::STORED,
-            packed: data.len() as u64,
-            raw: data,
-        }
+        Fragment::new(*b"temp", data.len() as u64, 0x10, crate::erp::STORED, data)
     }
 
     fn surface(width: u32, slices: &[[u8; 4]]) -> Resource {

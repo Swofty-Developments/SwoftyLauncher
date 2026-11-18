@@ -100,7 +100,7 @@ fn build(game: &Path, pkg: &TrackPackage, dir: &Path, db: Option<&Path>, cache: 
         dir,
         asset_group: track_group("flagtest", "flagtest"),
     }];
-    build_ui(&maps, &resolve, cache).unwrap()
+    build_ui(&maps, &resolve, cache, &swofty_formats::erp::Packer::default()).unwrap()
 }
 
 #[test]
@@ -221,7 +221,13 @@ fn an_addon_with_its_own_track_pictures_leaves_the_built_menus() {
         asset_group: track_group("kepttest", "kepttest"),
     }];
     let resolve = |rel: &str| game.join(rel);
-    let built = build_ui(&maps, &resolve, &out.join("cache")).unwrap();
+    let built = build_ui(
+        &maps,
+        &resolve,
+        &out.join("cache"),
+        &swofty_formats::erp::Packer::default(),
+    )
+    .unwrap();
 
     let addon = out.join("addon");
     std::fs::create_dir_all(&addon).unwrap();

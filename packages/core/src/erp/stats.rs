@@ -1,4 +1,4 @@
-use swofty_formats::erp::{ErpFile, Resource};
+use swofty_formats::erp::{ErpFile, Packer, Resource};
 
 use super::ErpBuild;
 use super::pack;
@@ -34,7 +34,7 @@ pub fn repair_stats_in(file: &ErpFile) -> Result<ArchiveRepair> {
         .filter(|(_, r)| r.has_stats())
     {
         let mut res = file.load(r)?;
-        match pack::repair_stats(&mut res) {
+        match pack::repair_stats(&Packer::default(), &mut res) {
             Ok(true) => fixed.push((i, res)),
             Ok(false) => {}
             Err(_) => broken.push(r.name.clone()),
@@ -77,12 +77,13 @@ impl ErpBuild<'_> {
     // Rewrites the TSMD stats of every resource the ops left with a bxml fragment its
     // stats no longer describe, with the origin that last wrote each.
     pub fn repair_stats(&mut self) -> StatsRepair {
+        let packer = self.packer.clone();
         let mut out = StatsRepair::default();
         for (rel, archive) in &mut self.erps {
             for r in archive.written_mut() {
                 let origin = self.writers.get(&(rel.clone(), r.name.clone()));
                 let at = (origin.cloned().unwrap_or_default(), r.name.clone());
-                match pack::repair_stats(r) {
+                match pack::repair_stats(&packer, r) {
                     Ok(true) => out.repaired.push(at),
                     Ok(false) => {}
                     Err(_) => out.broken.push(at),
