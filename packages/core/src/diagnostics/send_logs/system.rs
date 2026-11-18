@@ -4,6 +4,7 @@ use std::path::PathBuf;
 
 use super::OVERLAY_READ;
 use super::files::{read_head, read_tail};
+use crate::platform::registry::{self, Ask};
 
 pub(super) const SYSTEM_LINES: usize = 12;
 
@@ -89,19 +90,12 @@ pub(super) fn windows_version() -> String {
         .map(|(_, v)| v.trim().trim_end_matches(']').trim().to_owned())
         .unwrap_or_default();
     let build: u32 = number.split('.').nth(2).and_then(|b| b.parse().ok()).unwrap_or(0);
-    let display = crate::platform::run_as_admin::windows_tool(
-        "reg",
-        &[
-            "query",
-            r"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion",
-            "/v",
-            "DisplayVersion",
-        ],
+    let display = registry::read(
+        r"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion",
+        Ask::default(),
     )
-    .and_then(|out| {
-        out.lines()
-            .find_map(|l| l.split("REG_SZ").nth(1).map(|v| v.trim().to_owned()))
-    })
+    .and_then(|k| k.text("DisplayVersion"))
+    .map(|v| v.trim().to_owned())
     .filter(|v| !v.is_empty());
     let name = if build >= 22_000 {
         "Windows 11"
