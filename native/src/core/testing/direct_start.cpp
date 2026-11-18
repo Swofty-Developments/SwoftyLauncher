@@ -122,8 +122,10 @@ struct GrandPrix {
 uintptr_t root_global = 0, despawn_main_scene = 0;
 
 // The builds the driver runs on: every build whose struct layouts were checked against the signatures' functions
-// (bp::proofs::VERIFIED_LAYOUT; the KB build and Steam 26566308 also by sigport.py --witness, each function cited
-// beside the offsets it backs).
+// (bp::proofs::VERIFIED_LAYOUT; the KB build, Steam 26566308 and the EA App KB build also by sigport.py --witness, each
+// function cited beside the offsets it backs). On the EA App KB build every cited function is the same except the game
+// manager's reader 0x14022d920, which loads the entrants system from +0x260 there (runtime::manager_entrants_system()),
+// and StateLoadSession's +0xcd0 is witnessed at its constructor 0x1437b57d0.
 namespace bp = runtime::build_proof;
 constexpr uint32_t VERIFIED_BUILDS = bp::proofs::VERIFIED_LAYOUT.builds;
 constexpr bp::Proof SESSION_DRIVER{"the session driver's layout (the Grand Prix entity +0x1030, +0xf08, +0xf58, +0xe18, "
