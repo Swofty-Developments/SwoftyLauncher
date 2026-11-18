@@ -119,8 +119,10 @@ static void test_half()
     for (float v : {0.0f, 1e-5f, 0.001f, 0.18f, 0.5f, 1.0f, 1.132f, 3.75f})
         round &= near(render::grade::unpack_half(render::grade::pack_half(v)), v, v * 1e-3f + 1e-7f);
     CHECK(round, "half floats round-trip display colours");
-    CHECK(render::grade::pack_half(-1.0f) == 0 && render::grade::pack_half(1e9f) == 0x7bff, "negatives pack as 0, overflow as the largest half");
-    CHECK(render::grade::unpack_half(0x3c00) == 1.0f && render::grade::unpack_half(0xbc00) == -1.0f, "1.0 and -1.0 unpack exactly");
+    CHECK(render::grade::pack_half(-1.0f) == 0 && render::grade::pack_half(1e9f) == 0x7bff,
+          "negatives pack as 0, overflow as the largest half");
+    CHECK(render::grade::unpack_half(0x3c00) == 1.0f && render::grade::unpack_half(0xbc00) == -1.0f,
+          "1.0 and -1.0 unpack exactly");
 }
 
 int main()

@@ -96,8 +96,8 @@ void RtasGuard::log_hole(uint64_t nth, const RtasDesc &desc, const rtas_guard::C
     }
     const char *what = mode == rtas_guard::Mode::log ? "sent as is (SWOFTY_RTAS_GUARD=log)" : rtas_guard::act_name(a);
     swofty::log("[gfx] rtas guard: %s build%s has %s (dest 0x%llx, scratch 0x%llx, source 0x%llx, %u %s at 0x%llx); %s",
-                level_name(desc), c.update ? " (update)" : "", rtas_guard::hole_name(rtas_guard::hole(c)), (unsigned long long)c.dest,
-                (unsigned long long)c.scratch, (unsigned long long)c.source, c.count,
+                level_name(desc), c.update ? " (update)" : "", rtas_guard::hole_name(rtas_guard::hole(c)),
+                (unsigned long long)c.dest, (unsigned long long)c.scratch, (unsigned long long)c.source, c.count,
                 c.level == rtas_guard::kTop ? "instances" : "geometries", (unsigned long long)c.instances, what);
 }
 
@@ -114,7 +114,8 @@ void RtasGuard::log_bad_posts(uint64_t nth, const RtasDesc &desc, UINT posts, si
                 mode == rtas_guard::Mode::log ? "asked as is (SWOFTY_RTAS_GUARD=log)" : "those are dropped");
 }
 
-void RtasGuard::log_faulty(uint64_t nth, const RtasDesc &desc, const std::vector<rtas_guard::Geo> &geos, const rtas_guard::Plan &plan)
+void RtasGuard::log_faulty(uint64_t nth, const RtasDesc &desc, const std::vector<rtas_guard::Geo> &geos,
+                           const rtas_guard::Plan &plan)
 {
     if (!rtas_guard::detailed(nth, RTAS_DETAILED)) {
         if (rtas_guard::milestone(nth))
