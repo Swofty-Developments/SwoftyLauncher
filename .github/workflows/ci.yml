@@ -448,21 +448,28 @@ jobs:
         run: |
           echo "$(nproc) CPUs:$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2)"
 
-      # The EC2 runner has a 150 GB root volume and Wine baked in. The hosted fallback has about 14 GB free,
-      # which the Wine prefixes of the parallel tests fill, so it drops the preinstalled toolchains it never
-      # uses, and it installs Wine and Xvfb. Only the Wine tests need either, so both run in the background
-      # while the build does, and the step before the tests waits for them.
-      - name: Start freeing disk space and installing Wine and Xvfb
+      # The EC2 runner has Wine baked in. A hosted runner installs Wine and Xvfb in the background while the build
+      # runs, and the step before the tests waits for them; each line of the install log starts with its time.
+      # Hosted runners have a 145 GB disk with about 68 GB free; one with under 40 GB free first drops the
+      # preinstalled toolchains the job never uses, which the Wine prefixes of the parallel tests would fill.
+      # The man-db trigger, which rebuilds the manual page index after the install, is turned off.
+      - name: Start installing Wine and Xvfb
         if: matrix.part != 'host'
         run: |
           (
             set +e
-            if [ "$RUNNER_ENVIRONMENT" = github-hosted ]; then
-              sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/.ghcup
-            fi
-            sudo dpkg --add-architecture i386 && .github/runners/apt-install.sh wine64 wine xvfb
-            echo $? > "$RUNNER_TEMP/wine-install.status"
-          ) > "$RUNNER_TEMP/wine-install.log" 2>&1 &
+            {
+              free=$(df --output=avail -BG / | tail -1 | tr -dc 0-9)
+              echo "${free} GB free"
+              if [ "$RUNNER_ENVIRONMENT" = github-hosted ] && [ "$free" -lt 40 ]; then
+                sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/.ghcup
+                echo "removed the unused toolchains"
+              fi
+              sudo rm -f /var/lib/man-db/auto-update
+              sudo dpkg --add-architecture i386 && .github/runners/apt-install.sh wine64 wine xvfb
+            } 2>&1 | while IFS= read -r line; do printf '%(%T)T %s\n' -1 "$line"; done > "$RUNNER_TEMP/wine-install.log"
+            echo "${PIPESTATUS[0]}" > "$RUNNER_TEMP/wine-install.status"
+          ) &
 
       # The binding generator, capture and verifier tests use only the standard library.
       - name: RE tools unit tests
