@@ -841,4 +841,110 @@ mod tests {
             (vec!["a".into(), "b".into()], vec!["b".into(), "c".into()])
         );
     }
+
+    fn menu() -> Pkg {
+        let widget = |name: &str, i: u8| {
+            let mut o = Obj::new(vec![
+                (Val::str("name"), Node::Val(Val::str(name))),
+                (Val::str("pos"), Node::Val(Val::raw(*b"vec4", [i; 16]))),
+                (
+                    Val::str("guid"),
+                    Node::Val(Val::raw(*b"ui64", [i, 1, 2, 3, 4, 5, 6, 7])),
+                ),
+                (Val::str("flags"), Node::Val(Val::raw(*b"ui16", [i, 0]))),
+                (Val::str("visible"), Node::Val(Val::bool(i % 2 == 0))),
+                (Val::str("bounds"), Node::Val(Val::raw(*b"bbox", [i; 32]))),
+                (Val::str("xform"), Node::Val(Val::raw(*b"mat4", [i; 64]))),
+                (Val::str("tint"), Node::Val(Val::raw(*b"ui08", [i]))),
+                (Val::str("children"), Node::Arr(Arr::new(vec![Node::Iar([i; 8])]))),
+            ]);
+            o.version = i % 2;
+            Node::Obj(o)
+        };
+        let screen = |name: &str, n: u8| {
+            Node::Obj(Obj::new(vec![
+                (Val::str("name"), Node::Val(Val::str(name))),
+                (Val::str("id"), Node::Val(Val::u32(0x1000 + n as u32))),
+                (
+                    Val::str("Widgets"),
+                    Node::Arr(Arr::new(
+                        (0..n).map(|i| widget(&format!("{name}_w{i}"), i)).collect(),
+                    )),
+                ),
+            ]))
+        };
+        let mut tags = Arr::new(vec![Node::Val(Val::str("fe")), Node::Val(Val::str("home"))]);
+        tags.tag = *b"!vca";
+        let root = Obj::new(vec![
+            (
+                Val::str("Screens"),
+                Node::Arr(Arr::new(vec![screen("fe_home", 3), screen("fe_options", 2)])),
+            ),
+            (Val::str("Tags"), Node::Arr(tags)),
+            (Val::str("name"), Node::Val(Val::str("fe_home"))),
+        ]);
+        Pkg {
+            name: *b"menu",
+            root: Node::Obj(root),
+            vca: Vec::new(),
+            layout: None,
+        }
+    }
+
+    fn pin(bytes: &[u8]) -> (usize, u32) {
+        (bytes.len(), fnv1a32(bytes))
+    }
+
+    #[test]
+    fn a_menu_tree_writes_the_pinned_bytes() {
+        let bytes = menu().to_bytes().unwrap();
+        assert_eq!(pin(&bytes), (1588, 0xe2049b17));
+        let back = Pkg::parse(&bytes).unwrap();
+        assert!(back.layout.is_none());
+        assert_eq!(back.to_bytes().unwrap(), bytes);
+    }
+
+    #[test]
+    fn an_edited_menu_writes_the_pinned_bytes() {
+        let mut pkg = Pkg::parse(&menu().to_bytes().unwrap()).unwrap();
+        let root = pkg.root.as_obj_mut().unwrap();
+        root.remove("name");
+        root.set("tooltipsName", Node::Val(Val::str("mod_menu")));
+        let screens = root.get_mut("Screens").unwrap().as_arr_mut().unwrap();
+        let home = screens.items[0].as_obj_mut().unwrap();
+        home.get_mut("id").unwrap().as_val_mut().unwrap().set_u32(0xfeed);
+        let widgets = home.get_mut("Widgets").unwrap().as_arr_mut().unwrap();
+        widgets.items[1]
+            .as_obj_mut()
+            .unwrap()
+            .get_mut("name")
+            .unwrap()
+            .as_val_mut()
+            .unwrap()
+            .set_str("fe_home_mods");
+        widgets.items.push(Node::Val(Val::str("fe_home_w0")));
+        let out = pkg.to_bytes().unwrap();
+        assert_eq!(pin(&out), (1620, 0x3c6e52c7));
+        assert_eq!(Pkg::parse(&out).unwrap().to_bytes().unwrap(), out);
+    }
+
+    #[test]
+    fn in_place_edits_write_the_pinned_bytes() {
+        let pkg = Pkg::parse(&edited_in_place()).unwrap();
+        let mut renamed = pkg.clone();
+        let second = renamed.root.as_obj_mut().unwrap().get_mut("second").unwrap();
+        second.as_arr_mut().unwrap().items[0]
+            .as_val_mut()
+            .unwrap()
+            .set_str("c");
+        assert_eq!(pin(&renamed.to_bytes().unwrap()), (124, 0xc0cf6709));
+        let mut grown = pkg;
+        let first = grown.root.as_obj_mut().unwrap().get_mut("first").unwrap();
+        first
+            .as_arr_mut()
+            .unwrap()
+            .items
+            .push(Node::Val(Val::str("first")));
+        assert_eq!(pin(&grown.to_bytes().unwrap()), (116, 0xed3e5421));
+    }
 }
