@@ -34,7 +34,7 @@ public:
         std::memset(present_, 0, sizeof present_);
         table_ = {SWOFTY_LIVE_VERSION, &Live::t_available, &Live::t_session, &Live::t_car, &Live::t_subject,
                   &Live::t_turn,       &Live::t_track_turns, &Live::t_badge, &Live::t_seq,
-                  &Live::t_driver_name, &Live::t_badge_texture};
+                  &Live::t_driver_name, &Live::t_badge_texture, nullptr};
     }
 
     ~Live() { uninstall(); }

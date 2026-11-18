@@ -41,6 +41,7 @@ Subs<ResizeFn> resizes;
 Subs<ExecFn> execs;
 Subs<BarrierFn> barriers;
 Subs<SetNameFn> setnames;
+Subs<TextureCopyFn> texture_copies;
 Subs<ResetFn> resets;
 Subs<RenderTargetsFn> render_targets;
 Subs<RtvFn> rtvs;
@@ -58,9 +59,10 @@ std::vector<Swapchain> chains;
 std::vector<std::pair<void *, UINT>> pending_color_space;
 
 safetyhook::InlineHook h_present, h_present1, h_resize, h_resize1, h_color_space, h_create, h_create_hwnd, h_create_core,
-    h_create_comp, h_exec, h_barrier, h_setname;
+    h_create_comp, h_exec, h_barrier, h_setname, h_texture_copy, h_resource_copy;
 HMODULE impl_create, impl_hwnd, impl_core, impl_comp;
 constexpr size_t RESOURCE_GETDESC_SLOT = 10, SRV_SLOT = 19, SETNAME_SLOT = 6, EXEC_SLOT = 10, BARRIER_SLOT = 26, RTV_SLOT = 20, OM_SLOT = 46;
+constexpr size_t TEXTURE_COPY_SLOT = 16, RESOURCE_COPY_SLOT = 17;
 thread_local int creating, presenting;
 std::atomic<bool> in_present;
 
@@ -496,8 +498,12 @@ void STDMETHODCALLTYPE exec_hook(ID3D12CommandQueue *q, UINT n, ID3D12CommandLis
     });
 }
 
+Subs<BarrierObserverFn> barrier_observers;
+
 void STDMETHODCALLTYPE barrier_hook(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *b)
 {
+    for (int i = 0, k = barrier_observers.n.load(); i < k; i++)
+        barrier_observers.fns[i](list, n, b);
     for (int i = 0, k = barriers.n.load(); i < k; i++)
         if (barriers.fns[i](list, n, b))
             return;
@@ -713,6 +719,22 @@ HRESULT STDMETHODCALLTYPE setname_hook(ID3D12Object *o, LPCWSTR name)
     for (int i = 0, k = setnames.n.load(); i < k; i++)
         setnames.fns[i](o, name);
     return h_setname.call<HRESULT>(o, name);
+}
+
+void STDMETHODCALLTYPE texture_copy_hook(ID3D12GraphicsCommandList *list, const D3D12_TEXTURE_COPY_LOCATION *dst,
+                                         UINT x, UINT y, UINT z, const D3D12_TEXTURE_COPY_LOCATION *src, const D3D12_BOX *box)
+{
+    h_texture_copy.call<void>(list, dst, x, y, z, src, box);
+    for (int i = 0, n = texture_copies.n.load(); i < n; ++i) texture_copies.fns[i](list, dst, x, y, z, src, box);
+}
+
+void STDMETHODCALLTYPE resource_copy_hook(ID3D12GraphicsCommandList *list, ID3D12Resource *dst_resource, ID3D12Resource *src_resource)
+{
+    h_resource_copy.call<void>(list, dst_resource, src_resource);
+    D3D12_TEXTURE_COPY_LOCATION dst{}, src{};
+    dst.pResource = dst_resource; dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+    src.pResource = src_resource; src.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+    for (int i = 0, n = texture_copies.n.load(); i < n; ++i) texture_copies.fns[i](list, &dst, 0, 0, 0, &src, nullptr);
 }
 
 using SrvFn = void(STDMETHODCALLTYPE *)(ID3D12Device *, ID3D12Resource *, const D3D12_SHADER_RESOURCE_VIEW_DESC *, SIZE_T);
@@ -996,6 +1018,8 @@ void on_setname(SetNameFn fn)
     setnames.add(fn);
 }
 
+void on_texture_copy(TextureCopyFn fn) { texture_copies.add(fn); }
+
 void on_render_targets(RenderTargetsFn fn)
 {
     render_targets.add(fn);
@@ -1009,6 +1033,11 @@ void on_create_rtv(RtvFn fn)
 void on_reset(ResetFn fn)
 {
     resets.add(fn);
+}
+
+void on_barrier_observe(BarrierObserverFn fn)
+{
+    barrier_observers.add(fn);
 }
 
 void on_unread_queue(UnreadQueueFn fn)
@@ -1249,6 +1278,16 @@ bool arm_device()
                          reinterpret_cast<void *>(&barrier_hook), "ID3D12GraphicsCommandList::ResourceBarrier") &&
                  install(h_exec, (*reinterpret_cast<void ***>(q))[EXEC_SLOT], reinterpret_cast<void *>(&exec_hook),
                          "ID3D12CommandQueue::ExecuteCommandLists");
+        if (ok) {
+            // Optional subscribers must not prevent existing device features
+            // from arming if a copy entry cannot be hooked on a platform.
+            install(h_texture_copy, (*reinterpret_cast<void ***>(list))[TEXTURE_COPY_SLOT],
+                    reinterpret_cast<void *>(&texture_copy_hook), "ID3D12GraphicsCommandList::CopyTextureRegion");
+            install(h_resource_copy, (*reinterpret_cast<void ***>(list))[RESOURCE_COPY_SLOT],
+                    reinterpret_cast<void *>(&resource_copy_hook), "ID3D12GraphicsCommandList::CopyResource");
+            swofty::log("[d3d12] texture copy observers: CopyTextureRegion %s, CopyResource %s",
+                        h_texture_copy ? "armed" : "unavailable", h_resource_copy ? "armed" : "unavailable");
+        }
         if (ok && install(h_rtv, (*reinterpret_cast<void ***>(dev))[RTV_SLOT], reinterpret_cast<void *>(&rtv_hook),
                           "ID3D12Device::CreateRenderTargetView") &&
             !install(h_om, (*reinterpret_cast<void ***>(list))[OM_SLOT], reinterpret_cast<void *>(&om_hook),

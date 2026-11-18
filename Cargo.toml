@@ -22,6 +22,7 @@ swofty-sdk = { path = "packages/sdk" }
 swofty-shaders = { path = "packages/shaders" }
 aes = "0.9"
 anyhow = "1"
+base64 = "0.22"
 bcdec_rs = "0.2"
 clap = { version = "4", features = ["derive", "env", "string"] }
 flate2 = "1"

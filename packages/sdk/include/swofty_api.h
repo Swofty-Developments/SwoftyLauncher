@@ -1074,7 +1074,8 @@ typedef struct SwoftyContentOps {
    zero, never another car's value. Calls answer SWOFTY_ASSET_UNAVAILABLE while no session is live, the build is
    not the one the offsets are from, or the group is off because a KB row it needs has no independent verify row
    yet (the core logs "live <group> off: needs <row>" once), and SWOFTY_ASSET_INVALID for a bad argument.
-   Table version 3; version 2 adds driver_name and version 1 is the members up to seq; each keeps its layout, so
+   Table version 4 appends images (see swofty/live_images.h); version 3 appends team_badge_texture.
+   Version 2 adds driver_name and version 1 is the members up to seq; each keeps its layout, so
    check version >= 3 before calling team_badge_texture and version >= 2 before calling driver_name.
    session: the session header. car: one car by vehicle id. subject: the watched car while the spectator HUD is
    up, else the player's. turn: the official turn at that car's lap_m (SWOFTY_ASSET_UNAVAILABLE for a track
@@ -1088,9 +1089,11 @@ typedef struct SwoftyContentOps {
    team_badge_texture (version 3): the texture path the race HUD timing pill binds for
    that car, NUL-terminated within cap: "#overrides.osd.timing_tower.team_badges_hud.<key>" for a catalogue team,
    "eaid://ui_package/art/textures/render_badge_<table> <index>" (or render_badge_default.tga) for a team record
-   with show_custom_badge_in_UI set; SWOFTY_ASSET_UNAVAILABLE for a user-defined (My Team) team and when the
-   path does not fit cap. */
-#define SWOFTY_LIVE_VERSION 3
+   with show_custom_badge_in_UI set, or for a user-defined team's badge. My Team careers on the verified
+   Steam 26566308 build use the saved assignment for the active mode and loaded career slot; an unavailable
+   saved assignment is not replaced by the entrant fallback.
+   SWOFTY_ASSET_UNAVAILABLE when the reference cannot be read or the path does not fit cap. */
+#define SWOFTY_LIVE_VERSION 4
 #define SWOFTY_LIVE_MAX_CARS 32
 #define SWOFTY_LIVE_NO_GAP INT32_MIN
 
@@ -1232,6 +1235,7 @@ typedef struct SwoftyLiveTurn {
     uint32_t reserved[4];
 } SwoftyLiveTurn;
 
+typedef struct SwoftyLiveImages SwoftyLiveImages;
 typedef struct SwoftyLive {
     uint32_t version;
     int (*available)(void);
@@ -1244,6 +1248,7 @@ typedef struct SwoftyLive {
     int (*seq)(uint64_t *frame);
     int (*driver_name)(uint32_t vehicle, char *out, uint32_t cap);
     int (*team_badge_texture)(uint32_t vehicle, char *path, uint32_t cap);
+    const SwoftyLiveImages *(*images)(void);
 } SwoftyLive;
 
 /* Live car operations (standard library 1.6, experimental), from the core export SwoftyCoreCarOps; not a SwoftyApi

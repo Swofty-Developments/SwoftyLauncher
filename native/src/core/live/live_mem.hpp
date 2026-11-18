@@ -15,6 +15,7 @@ struct Mem {
 };
 
 struct Sites {
+    bool my_team_saved_badge = false; // The saved-slot chain is independently checked on Steam 26566308.
     uintptr_t vehicle_table = 0, vehicle_count = 0, game_manager = 0, track_length = 0, session_type = 0;
     uintptr_t vt_car_systems = 0;
     uintptr_t key_results = 0, key_spectator = 0, key_timing = 0, key_pit = 0, key_safety_car = 0, key_penalty_log = 0,

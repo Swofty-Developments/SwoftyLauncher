@@ -104,8 +104,34 @@ impl Shell {
         if spec.align == Align::Right {
             content = content.justify_end();
         }
-        // A picture before the text: a square as tall as the row allows, or the cell's size.
-        if let Some(image) = &c.image {
+        let memory_image = c.image_data.as_ref().and_then(|data| {
+            self.blocks
+                .image_data
+                .borrow_mut()
+                .get(&data.png)
+                .map(|image| (data, image))
+        });
+        if let Some((data, image)) = memory_image {
+            let (w, h) = data.size((row_h - 8.).max(16.));
+            let (w, h) = (w.clamp(1., 512.), h.clamp(1., (row_h - 4.).max(1.)));
+            let fit = match data.fit {
+                Fit::Cover => ObjectFit::Cover,
+                Fit::Contain => ObjectFit::Contain,
+            };
+            content = content.child(
+                div()
+                    .w(px(w))
+                    .h(px(h))
+                    .flex_shrink_0()
+                    .when(!data.transparent, |d| {
+                        d.rounded(px(if h > 24. { 6. } else { 2. }))
+                    })
+                    .overflow_hidden()
+                    .when(!data.transparent, |d| d.bg(p.elevated))
+                    .child(img(image).w(px(w)).h(px(h)).object_fit(fit)),
+            );
+        // Existing file-backed pictures retain their existing allowed-root checks.
+        } else if let Some(image) = &c.image {
             let (w, h) = image.size((row_h - 8.).max(16.));
             let (w, h) = (w.clamp(1., 512.), h.clamp(1., (row_h - 4.).max(1.)));
             let fit = match image.fit() {

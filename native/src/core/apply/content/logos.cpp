@@ -2,6 +2,7 @@
 
 #include "../files_api.hpp"
 #include "../../runtime.hpp"
+#include "../../badge_images.hpp"
 #include "logo_build.hpp"
 #include "logo_cache.hpp"
 #include "logo_deliver.hpp"
@@ -324,8 +325,13 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
             }
             held[logo_deliver::overlay_key(rel)] = std::move(c);
         }
-        if (logo_deliver::overlay_copies().offer(held))
+        if (logo_deliver::overlay_copies().offer(held)) {
+            std::map<std::string, std::string> active;
+            for (const auto &[rel, copy] : held)
+                active[rel] = copy.path;
+            badge_images::overlay_routes(active);
             return true;
+        }
         why = "the resource overlay was handed to the game before the logo build ended";
         return false;
     };

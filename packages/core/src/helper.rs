@@ -435,7 +435,10 @@ impl HelperAddon {
             profile: cx.profile.clone(),
             launcher: Some(env!("CARGO_PKG_VERSION").into()),
             host_calls: host_calls(cx),
-            capabilities: vec![swofty_addon::helper::VIEW_CHART.into()],
+            capabilities: vec![
+                swofty_addon::helper::VIEW_CHART.into(),
+                swofty_addon::helper::VIEW_CELL_IMAGE_DATA.into(),
+            ],
         });
         let welcome = self
             .exchange(&mut live, cx, hello, self.timeouts.quick, None)?

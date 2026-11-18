@@ -635,7 +635,7 @@ static void test_badge()
     Live live(w.mem(), w.s, Gates::all());
     live.update(0.0);
     Arena &a = w.a;
-    uintptr_t mode = a.get<uintptr_t>(w.mode_ctx + L::badge::mode), game = a.alloc(0x400), ents = a.alloc(L::badge::entrant_stride * 2),
+    uintptr_t mode = a.get<uintptr_t>(w.mode_ctx + L::badge::mode), game = a.alloc(0x1200), ents = a.alloc(L::badge::entrant_stride * 2),
               tt = a.alloc(0x400), table = a.alloc(0x40), vec = a.alloc(32), rec = a.alloc(0x600), key = a.alloc(32);
     a.put<uintptr_t>(mode + L::badge::game, game);
     a.put<uintptr_t>(game + L::badge::entrants, ents);
@@ -688,7 +688,81 @@ static void test_badge()
     a.put<uint8_t>(rec + L::badge::record_render, 1);
     a.put<uint32_t>(ents + L::badge::entrant_stride + L::badge::entrant_team, (3u << 16) | L::badge::my_team_kind);
     a.put<uint32_t>(badge, (4u << 16) | 1);
-    CHECK(!live.read_team_badge(1, out, sizeof out) && !live.read_team_badge_texture(1, path, sizeof path));
+    CHECK(!live.read_team_badge(1, out, sizeof out));
+    CHECK(live.read_team_badge_texture(1, path, sizeof path) &&
+          !std::strcmp(path, "eaid://ui_package/art/textures/render_badge_eUserDefined 4"));
+    a.put<uint32_t>(badge, 1);
+    CHECK(live.read_team_badge_texture(1, path, sizeof path) &&
+          !std::strcmp(path, "eaid://ui_package/art/textures/render_badge_eUserDefined 0"));
+    a.put<uint32_t>(ents + L::badge::entrant_team, L::badge::my_team_kind);
+    a.put<uint32_t>(ents + L::badge::entrant_badge, (6u << 16) | 1);
+    CHECK(live.read_team_badge_texture(9, path, sizeof path) &&
+          !std::strcmp(path, "eaid://ui_package/art/textures/render_badge_eUserDefined 6"));
+    CHECK(live.read_team_badge_texture(1, path, sizeof path) &&
+          !std::strcmp(path, "eaid://ui_package/art/textures/render_badge_eUserDefined 0"));
+    CHECK(!plain.read_team_badge_texture(1, path, sizeof path) && !path[0]);
+    // The packed badge's own table/index are independent of the My Team's
+    // table/index. A My Team can use a preloaded or replicated badge too.
+    a.put<uint32_t>(badge, (12u << 16) | 0x5500 | 2);
+    CHECK(live.read_team_badge_texture(1, path, sizeof path) &&
+          !std::strcmp(path, "eaid://ui_package/art/textures/render_badge_eNetworkReplicated 12"));
+    a.put<uint32_t>(badge, (7u << 16));
+    CHECK(live.read_team_badge_texture(1, path, sizeof path) &&
+          !std::strcmp(path, "eaid://ui_package/art/textures/render_badge_ePreLoaded 7"));
+    a.put<uint32_t>(badge, (L::badge::badge_none << 16) | 1);
+    CHECK(live.read_team_badge_texture(1, path, sizeof path) &&
+          !std::strcmp(path, "eaid://ui_package/art/textures/render_badge_default.tga"));
+    a.put<uint32_t>(badge, (4u << 16) | 3);
+    CHECK(!live.read_team_badge_texture(1, path, sizeof path) && !path[0]);
+    a.put<uint32_t>(badge, (4u << 16) | 1);
+    CHECK(!live.read_team_badge_texture(1, path, 12) && !path[0]);
+    CHECK(!live.read_team_badge_texture(1, nullptr, 0));
+    // Regression from the real career: fallback badge 0x1, but mode 79 /
+    // loaded slot 11 has saved badge 0x10001. Both My Team cars use index 1.
+    uintptr_t custom = a.alloc(0x300), descriptor = a.alloc(0x20), type_name = a.alloc(64);
+    std::memcpy(&a.mem[type_name - BASE], "playerCustomisationInfoSystem", 29);
+    a.put<uintptr_t>(descriptor + 8, type_name);
+    a.put<uintptr_t>(slots + 16 * 13, descriptor);
+    a.put<uintptr_t>(slots + 16 * 13 + 8, custom);
+    a.put<uint8_t>(info + 13, 1);
+    uintptr_t head = a.alloc(0x40), node = a.alloc(0x40), tree = a.alloc(0x40), leaf = a.alloc(0x40);
+    a.put<uintptr_t>(custom + 0x120, head); a.put<uint64_t>(custom + 0x128, 1);
+    a.put<uintptr_t>(head, node); a.put<uintptr_t>(node, head); a.put<uint32_t>(node + 0x10, 79);
+    a.put<uintptr_t>(node + 0x20, tree); a.put<uint64_t>(node + 0x28, 1);
+    a.put<uintptr_t>(tree + 8, leaf); a.put<uintptr_t>(leaf, tree); a.put<uintptr_t>(leaf + 0x10, tree);
+    a.put<uint64_t>(leaf + 0x20, 11); a.put<uint32_t>(leaf + 0x28, 0x10001);
+    uintptr_t save = a.alloc(0x300), children = a.alloc(8), component = a.alloc(0x300);
+    uintptr_t vt = a.alloc(0x40), fn = a.alloc(16), save_type = a.alloc(0x20), save_name = a.alloc(64), slot = a.alloc(16);
+    a.put<uintptr_t>(game + 0xf08, save);
+    a.put<uintptr_t>(save + 0x238, children); a.put<uintptr_t>(save + 0x240, children + 8);
+    a.put<uintptr_t>(children, component); a.put<uintptr_t>(component + 0x18, vt);
+    a.put<uintptr_t>(vt + 0x28, fn);
+    const uint8_t type_code[] = {0x48, 0x8d, 0x05, 0, 0, 0, 0, 0xc3};
+    std::memcpy(&a.mem[fn - BASE], type_code, sizeof type_code);
+    a.put<int32_t>(fn + 3, int32_t(save_type - fn - 7));
+    std::memcpy(&a.mem[save_name - BASE], "SaveSlotGameModeComponent", 26);
+    a.put<uintptr_t>(save_type + 8, save_name); a.put<uintptr_t>(component + 0x280, slot); a.put<uint64_t>(slot, 11);
+    uintptr_t career_name = a.alloc(64);
+    std::memcpy(&a.mem[career_name - BASE], "my_team_career_26", 18);
+    a.put<uintptr_t>(mode + L::mode::label, career_name); a.put<uint32_t>(game + 0x2a8, 79);
+    a.put<uint32_t>(badge, 1);
+    Sites career_sites = w.s; career_sites.my_team_saved_badge = true;
+    career_sites.image_hi = BASE + a.mem.size(); // Fixture type-getter code and metadata live in its arena.
+    Live career_badges(w.mem(), career_sites, Gates::all()); career_badges.update(2.0);
+    CHECK(career_badges.read_team_badge_texture(1, path, sizeof path) &&
+          !std::strcmp(path, "eaid://ui_package/art/textures/render_badge_eUserDefined 1"));
+    CHECK(career_badges.read_team_badge_texture(9, path, sizeof path) &&
+          !std::strcmp(path, "eaid://ui_package/art/textures/render_badge_eUserDefined 1"));
+    a.put<uint64_t>(slot, 12);
+    CHECK(!career_badges.read_team_badge_texture(1, path, sizeof path) && !path[0]);
+    a.put<uint64_t>(slot, 11); a.put<uint32_t>(node + 0x10, 27);
+    CHECK(!career_badges.read_team_badge_texture(1, path, sizeof path) && !path[0]);
+    a.put<uint32_t>(node + 0x10, 79); a.put<uintptr_t>(node, node);
+    CHECK(!career_badges.read_team_badge_texture(1, path, sizeof path) && !path[0]);
+    a.put<uintptr_t>(node, head); a.put<uint8_t>(fn, 0xe9);
+    CHECK(!career_badges.read_team_badge_texture(1, path, sizeof path) && !path[0]);
+    a.put<uint8_t>(fn, 0x48);
+    CHECK(!live.read_team_badge_texture(1, path, sizeof path) && !path[0]); // Old unproved build stays unavailable.
     a.put<uint32_t>(ents + L::badge::entrant_stride + L::badge::entrant_team, (3u << 16) | 0);
     a.put<uint8_t>(rec + L::badge::record_render, 0);
     CHECK(live.read_team_badge(1, out, sizeof out));

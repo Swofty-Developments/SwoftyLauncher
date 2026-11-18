@@ -13,6 +13,8 @@ pub use crate::run_helper::{claim_word, run_helper};
 pub const API_VERSION: u32 = 1;
 /// Optional support for the data-only native Chart view block.
 pub const VIEW_CHART: &str = "view.chart";
+/// Optional caller-supplied in-memory PNG pictures in generic table cells.
+pub const VIEW_CELL_IMAGE_DATA: &str = "view.cell.image_data";
 pub const RESTART: &str = "swofty.restart";
 // The host calls a launcher lists in hello's host_calls when it answers them.
 pub const ADDON_CALLS: [&str; 4] = ["addons", "install_addon", "set_addon_enabled", "remove_addon"];

@@ -8,6 +8,10 @@
 
 using namespace swofty::game;
 
+namespace badge_images {
+void trace(const char *message) { swofty::log("[badges] %s", message); }
+}
+
 bool settings_command(uint32_t hash);
 
 #if defined(SWOFTY_NO_MOD_SETTINGS)

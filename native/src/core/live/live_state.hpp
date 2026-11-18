@@ -3,6 +3,7 @@
 
 #include "live_layout.hpp"
 #include "live_mem.hpp"
+#include "live_badges.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -234,8 +235,10 @@ public:
 
     bool read_team_badge_texture(uint32_t vehicle, char *path, size_t cap)
     {
+        if (path && cap)
+            path[0] = 0;
         BadgeRef b;
-        if (cap < 2 || !find_badge(vehicle, b) || b.kind == L::badge::my_team_kind)
+        if (!path || cap < 2 || !find_badge(vehicle, b))
             return false;
         char id[40];
         int n = -1;
@@ -243,6 +246,20 @@ public:
             if (read_cstr(b.key, id, sizeof id))
                 n = std::snprintf(path, cap, "%s%s", L::badge::catalogue_prefix, id);
         } else if (uint32_t badge = 0; g_[G_BADGE_RENDER] && m_.get(b.entrant + L::badge::entrant_badge, badge)) {
+            if (b.kind == L::badge::my_team_kind) {
+                uintptr_t label = 0;
+                char name[64]{};
+                if (!g_[G_MODE] || !m_.get(b.mode + L::mode::label, label) || !read_cstr(label, name, sizeof name))
+                    return false;
+                if (!std::strncmp(name, "my_team_career", 14) && (name[14] == 0 || name[14] == '_')) {
+                    uint64_t slot = 0;
+                    uint32_t mode_id = 0;
+                    if (!s_.my_team_saved_badge || !current_badge_slot(m_, b.game, s_.image_lo, s_.image_hi, slot) ||
+                        !m_.get(b.game + 0x2a8, mode_id) ||
+                        !assigned_badge(m_, customisation_system(), mode_id, slot, badge))
+                        return false;
+                }
+            }
             unsigned table = badge & 0xff, index = badge >> 16;
             if (index == L::badge::badge_none)
                 n = std::snprintf(path, cap, "%s", L::badge::render_default);
@@ -388,6 +405,9 @@ private:
     size_t entrants_ = 0;
 
     Slot c_results_, c_spectator_, c_timing_, c_pit_, c_sc_, c_log_, c_s1_, c_tyres_, c_marshal_, c_red_, c_mode_, c_teams_;
+    Slot c_customisation_;
+    uintptr_t customisation_key_ = 0;
+    double customisation_scan_ = -2.0;
 
     SysRec sys_[MAX_CARS];
     ErsRec ers_[MAX_CARS];
@@ -467,7 +487,9 @@ private:
         observed_valid_ = false;
         events_.clear();
         c_results_ = c_spectator_ = c_timing_ = c_pit_ = c_sc_ = c_log_ = c_s1_ = c_tyres_ = c_marshal_ = c_red_ = c_mode_ =
-            c_teams_ = Slot{};
+            c_teams_ = c_customisation_ = Slot{};
+        customisation_key_ = 0;
+        customisation_scan_ = -2.0;
         if (player_ptr_) {
             player_ptr_ = 0;
             player_gen_++;
@@ -521,7 +543,7 @@ private:
 
     struct BadgeRef {
         unsigned kind = 0;
-        uintptr_t entrant = 0, key = 0;
+        uintptr_t entrant = 0, key = 0, mode = 0, game = 0;
         uint8_t render = 0;
     };
 
@@ -549,8 +571,14 @@ private:
                 return false;
             out.kind = kind;
             out.entrant = e;
-            if (kind == L::badge::my_team_kind)
+            out.mode = mode;
+            out.game = game;
+            if (kind == L::badge::my_team_kind) {
+                // User-defined teams have no catalogue key. The HUD's rendered
+                // fallback uses this entrant's badge key, not the team index.
+                out.render = 1;
                 return true;
+            }
             uintptr_t tt = find(c_teams_, s_.key_team_tables), table = 0, vec[2], rec = 0;
             return tt && m_.get(tt + L::badge::tables + kind * 16, table) && table &&
                    m_.read(table + L::badge::table_vec, vec, sizeof vec) && vec[1] > vec[0] &&
@@ -559,6 +587,34 @@ private:
                    (out.render || out.key);
         }
         return false;
+    }
+
+    uintptr_t customisation_system()
+    {
+        if (customisation_key_)
+            return find(c_customisation_, customisation_key_);
+        if (now_ >= customisation_scan_ && now_ - customisation_scan_ < 1.0)
+            return 0;
+        customisation_scan_ = now_;
+        uintptr_t manager = 0, registry = 0, entries[2]{};
+        if (!m_.get(s_.game_manager, manager) || !manager ||
+            !m_.get(manager + L::registry::from_manager, registry) || !registry ||
+            !m_.read(registry + L::registry::slots, entries, sizeof entries)) return 0;
+        if (!entries[0] || (entries[0] & 7) || entries[1] <= entries[0] ||
+            (entries[1] - entries[0]) % 16 || (entries[1] - entries[0]) / 16 > L::registry::max_slots) return 0;
+        uintptr_t match = 0;
+        for (size_t i = 0, count = (entries[1] - entries[0]) / 16; i < count; ++i) {
+            uint8_t used = 0;
+            uintptr_t key = 0, name_pointer = 0;
+            char name[64]{};
+            if (!m_.get(entries[1] + i, used) || !used || !m_.get(entries[0] + i * 16, key) || !key ||
+                !m_.get(key + 8, name_pointer) || !read_cstr(name_pointer, name, sizeof name)) continue;
+            if (std::strcmp(name, "playerCustomisationInfoSystem")) continue;
+            if (match) return 0;
+            match = key;
+        }
+        customisation_key_ = match;
+        return match ? find(c_customisation_, match) : 0;
     }
 
     uintptr_t find(Slot &c, uintptr_t key)

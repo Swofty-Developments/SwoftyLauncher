@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
+#include <swofty/live_images.h>
 #include <atomic>
 #include <cstdint>
 #include <optional>
@@ -164,6 +165,13 @@ inline std::optional<std::string> team_badge_texture(uint32_t vehicle)
         t->team_badge_texture(vehicle, path, sizeof path) != SWOFTY_ASSET_OK)
         return std::nullopt;
     return std::string(path);
+}
+
+// Caller-owned image bytes; no disk files or table presentation policy.
+inline const SwoftyLiveImages *images()
+{
+    const auto *t = detail::table();
+    return t && t->version >= 4 && t->images ? t->images() : nullptr;
 }
 
 inline std::optional<uint64_t> frame()

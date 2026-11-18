@@ -9,6 +9,7 @@ mod cell;
 pub(crate) mod chart;
 mod colour_edit;
 mod form;
+mod image_data;
 mod layout;
 mod search;
 mod select;
@@ -135,7 +136,13 @@ impl Shell {
     }
 
     pub(crate) fn sync_blocks(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        for image in self.blocks.image_data.borrow_mut().retired() {
+            window.drop_image(image).ok();
+        }
         let Some((addon, section, view, generation)) = self.current_view() else {
+            for image in self.blocks.image_data.borrow_mut().clear() {
+                window.drop_image(image).ok();
+            }
             self.blocks.charts.clear();
             self.blocks.forms.clear();
             self.blocks.searches.clear();

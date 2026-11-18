@@ -52,14 +52,8 @@ pub(super) fn image_of(frame: &Frame) -> Result<Arc<RenderImage>, String> {
     if frame.rgba.len() < w * h * 4 || w == 0 || h == 0 {
         return Err(tr("The frame is empty").into());
     }
-    let mut bgra = frame.rgba[..w * h * 4].to_vec();
-    for px in bgra.chunks_exact_mut(4) {
-        px.swap(0, 2);
-        px[3] = 255;
-    }
-    let buffer =
-        image::RgbaImage::from_raw(frame.width, frame.height, bgra).ok_or(tr("The frame is empty"))?;
-    Ok(Arc::new(RenderImage::new(vec![image::Frame::new(buffer)])))
+    crate::ui::memory_image::rgba(frame.width, frame.height, &frame.rgba[..w * h * 4], true)
+        .ok_or_else(|| tr("The frame is empty").into())
 }
 
 pub(super) const STEP: usize = 8;

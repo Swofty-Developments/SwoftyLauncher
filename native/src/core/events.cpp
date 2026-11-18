@@ -1,5 +1,6 @@
 #include <atomic>
 #include "runtime.hpp"
+#include "badge_images.hpp"
 #include "main_menu.hpp"
 #include "services/lap_host.hpp"
 
@@ -423,6 +424,7 @@ void session_emit(const session_life::Emit &e)
         events_fire(SWOFTY_EVENT_SESSION_END, e.reason, 0, nullptr);
     }
     if (e.unload) {
+        badge_images::session_unloaded();
         swofty::log("[events] session.unload (StateUnloadSession entering)");
         events_fire(SWOFTY_EVENT_SESSION_UNLOAD, 0, 0, nullptr);
         runtime::hud_rebuilt();

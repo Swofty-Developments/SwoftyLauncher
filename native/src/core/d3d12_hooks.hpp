@@ -31,7 +31,13 @@ using ExecPlan = BasicExecPlan<ID3D12CommandQueue>;
 // Appends the steps it wants run around the game's lists of one ExecuteCommandLists call to the plan.
 using ExecFn = void (*)(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, ExecPlan &plan);
 using BarrierFn = bool (*)(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers);
+// Observers run before a replacing subscriber can consume the original batch.
+using BarrierObserverFn = void (*)(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers);
 using SetNameFn = void (*)(ID3D12Object *object, LPCWSTR name);
+// Runs after the game's copy is recorded. CopyResource supplies mip-zero
+// locations; subscribers must validate the resource dimensions themselves.
+using TextureCopyFn = void (*)(ID3D12GraphicsCommandList *, const D3D12_TEXTURE_COPY_LOCATION *, UINT, UINT, UINT,
+                              const D3D12_TEXTURE_COPY_LOCATION *, const D3D12_BOX *);
 using ResetFn = void (*)(ID3D12GraphicsCommandList *list);
 using RenderTargetsFn = void (*)(ID3D12GraphicsCommandList *list, UINT n, const D3D12_CPU_DESCRIPTOR_HANDLE *rtvs,
                                  BOOL single_range);
@@ -45,7 +51,9 @@ void on_presented(PresentedFn fn);
 void on_resize(ResizeFn fn);
 void on_exec(ExecFn fn);
 void on_barrier(BarrierFn fn);
+void on_barrier_observe(BarrierObserverFn fn);
 void on_setname(SetNameFn fn);
+void on_texture_copy(TextureCopyFn fn);
 void on_reset(ResetFn fn);
 
 // The newest ray tracing builds, for a crash report, led by the build each unfinished command list stopped on;

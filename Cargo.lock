@@ -7875,6 +7875,7 @@ name = "swofty-launcher"
 version = "1.9.70"
 dependencies = [
  "anyhow",
+ "base64 0.22.1",
  "gpui-kit",
  "image",
  "lsp-types",

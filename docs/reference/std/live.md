@@ -59,7 +59,7 @@ SWOFTY_ADDON()
 ```
 
 - **Header:** `swofty/live.hpp`, namespace `swofty::live`; host test fake `swofty/fake_live.hpp`
-- **Table:** the core export `SwoftyCoreLive` (`SwoftyLive`, table version 3; version 2 adds `driver_name` and version 1 ends at `seq`; version 3 adds `team_badge_texture`); `SWOFTY_API_VERSION` is unchanged
+- **Table:** the core export `SwoftyCoreLive` (`SwoftyLive`, table version 4 appends image access; version 2 adds `driver_name` and version 1 ends at `seq`; version 3 adds `team_badge_texture`); `SWOFTY_API_VERSION` is unchanged
 - **Feature:** `telemetry`, experimental, off by default (the live state is the memory source of std telemetry)
 - **Thread:** any thread; every call copies from the core's per-frame snapshot, except `team_badge` and `driver_name`, which read the game's memory at the call
 
@@ -245,7 +245,7 @@ eaid://ui_package/art/textures/render_badge_default.tga              a team with
 
 The badge table name is `ePreLoaded`, `eUserDefined` or `eNetworkReplicated`. Both paths go into a `texture` binding as they are.
 
-`team_badge` answers empty for My Team and for teams the game draws a rendered badge for. `team_badge_texture` answers empty for My Team (a user-defined team) and on a core older than table version 3. The rendered path reads in the group `rendered badges`, which is on for the Steam build.
+`team_badge` answers empty for My Team and for teams the game draws a rendered badge for. On the locally verified Steam 26566308 build, `team_badge_texture` resolves a My Team career badge from the current mode and loaded save slot in `playerCustomisationInfoSystem`'s saved assignments. It reads the checked SaveSlotGameModeComponent metadata and slot without invoking game functions. A missing slot, assignment or verified layout returns unavailable instead of using the entrant's potentially different fallback badge. Outside a My Team career, user-defined teams retain the entrant-badge path. The badge's own table and index select the resource independently of the team index. The rendered path reads in the group `rendered badges`, which is on for the Steam build. Older cores may return empty for My Team; cores older than table version 3 have no texture callback.
 
 `driver_name` is the name the game itself shows for the car (`Sess_Get_CarDriverName`): the player's name for a car a human drives, else the display name of the driver record the car's session entrant points at, so a tower with one text leaf per row can fill each row from the classification order instead of carrying a copy of every car. The C call `driver_name(vehicle, out, cap)` writes at most `cap - 1` bytes, cut at a UTF-8 character boundary, then a NUL; it answers `SWOFTY_ASSET_INVALID` for a null buffer, `cap < 2` or a vehicle id of 32 or more, and `SWOFTY_ASSET_UNAVAILABLE` for a car the game has no name for. The C++ wrapper asks with a 128-byte buffer and answers empty on a core whose table is older than version 2. It reads the driver names group, which is off on the EA App build until its layout is compared there.
 
@@ -301,3 +301,13 @@ The core also subscribes to the game's `r_car_to_car_col` and `vehicle_status_ch
 ## Not read yet
 
 Active aero mode, Boost and Overtake state, DRS allowed and distance, the pit limiter, driver name and team colour, the session clock and lap total, lap and sector times, and tyre temperatures have no verified memory source. `SWOFTY_LIVE_HAVE_BOOST`, `_AERO_MODE` and `_IDENTITY` are declared so the structs stay stable when they land and stay clear until then. The game's own view-model leaves carry most of these values, but the core has no leaf reader: the node's value layout is not in the knowledge base, so there is no `hud::get` yet.
+
+## Images through the live API (table v4)
+
+`SwoftyCoreLive()->images()` (or `swofty::live::images()`) exposes pixels for the references returned by `team_badge_texture`. Check the outer table version before reading the appended member; older cores have no image access.
+
+Call `start()` when enabling image access. Pass the exact reference to `image(reference, rgba, capacity, &width, &height, &revision)`. The caller owns the buffer (16,384 bytes covers the maximum 64 x 64 RGBA8 image); alpha and aspect ratio are preserved. `SWOFTY_ASSET_OK` returns pixels, `SWOFTY_ASSET_LATE` means an archive request is still loading, `SWOFTY_ASSET_UNAVAILABLE` means no usable pixels, and `SWOFTY_ASSET_INVALID` means invalid arguments or insufficient capacity. Retry on later frames without blocking the game thread.
+
+Catalogue images follow the native router's current archive winners and accepted overlay copies. Runtime images use bounded, fenced D3D12 readback. The service writes no image files and returns no game-owned pointers. Session unload retires in-flight requests and archive results from the old session. Completed runtime captures may survive while their exact named GPU resources remain valid, bounded to 32 images; replacement resources, changed names/routes and explicit cache clearing invalidate them. Live session gates still clear the car references when the session ends. `sources()` is a routing receipt for diagnostics/invalidation, not a table-cell instruction; add-ons should leave global `clear()` to the core.
+
+The add-on selects the car/reference, converts RGBA to an in-memory PNG if needed, and decides when to include it in a view. The launcher only renders the generic `image_data` cell. No launcher-side badge lookup, archive batch or column readiness state is involved.
