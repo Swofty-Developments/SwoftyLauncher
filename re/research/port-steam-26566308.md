@@ -40,7 +40,7 @@ binding of the set resolves on the port (3,698: 3,689 by hint, 9 by scan, `bindv
 | live car track wetness (`wetness`) | `live_car_logic.hpp`, `live_car.cpp` (hard-coded RVA) | proven, below | `TRACK_WETNESS`, and the global is found by signature |
 | live car wheel surface and wetness, orientation, angular velocity | `live_car_logic.hpp` | not proven (no KB function found that reads +0x200, +0x280, +0x190 or +0x210 and ports) | off |
 | game database edits after the database is built | `gamedb.cpp` `late_inplace` | proven | `RECORD_CLASSES` names Steam 1.0.145; record classes found by signature |
-| Time Trial player name bridge | `player_name.cpp` `setup` | proven | `NAME_FUNCTIONS` names Steam 1.0.145; UI registry layout found by signature |
+| Time Trial player name bridge | `player_name.cpp` `setup` | proven: `Game_PresenceNameCache_Lookup` 0x140816b10 = port 0x140816b60, 362/362 instructions equal, with the user id reads +8, +0x10, +0x39, +0x4c; the registry walk's functions and the four node vtables below | `copies.hpp` `TT_NAME_LAYOUT` names Steam 1.0.145; `REGISTRY_VTABLES` holds each build's vtables |
 | crash symbol names | `crash.cpp` `KB_STAMP` | n/a | names from the binding set on any exe that `symbols.tsv` does not cover |
 
 ### Car points
@@ -105,8 +105,8 @@ the last two.
 2. Run `portcheck.py --port <exe> --build <new>`.
 3. Add the build to `runtime/build_proof.hpp` `KNOWN[]`. For every feature it reports proven, set the build's bit in
    that feature's proof: `hooks/car_proofs.hpp`, `live/live_car_logic.hpp`, `assets/gamedb.cpp` `RECORD_CLASSES`,
-   `frontend/player_name/copies.hpp` `NAME_FUNCTIONS`. The signature-found parts (game database classes, UI registry layout,
-   crash names) follow on their own.
+   `frontend/player_name/copies.hpp` `TT_NAME_LAYOUT`, with the build's row in `REGISTRY_VTABLES` (the vtable RVAs
+   portcheck prints). The signature-found parts (game database classes, crash names) follow on their own.
 4. A failing dependency names the function to port by hand.
 
 ## Appendix: portcheck.py output for this build
