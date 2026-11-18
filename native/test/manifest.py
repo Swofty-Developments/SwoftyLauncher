@@ -368,5 +368,7 @@ SCRIPTS = [
     Script('loading_report', 'Loading report on synthetic loader.log runs', ['python3', '-I', 'native/test/loading_report_test.py']),
     Script('sigverify', 'Core signatures on the KB build and Steam 1.0.145 (skipped without both executables)',
            ['python3', '-I', 'native/test/sigverify_test.py']),
+    Script('init_check', 'Static initializer check: run order, inline variables and hook guard arming',
+           ['python3', '-I', 'native/test/init_check_test.py']),
 ]
 
