@@ -452,6 +452,12 @@ struct CarTurbo {
 static_assert(offsetof(CarTurbo, car) == 0x8);
 static_assert(offsetof(CarTurbo, max_boost) == 0x2d8);
 
+struct CarWheel {
+    uint8_t _pad_0x0[0x98];
+    float deflation; // L2 experimental
+};
+static_assert(offsetof(CarWheel, deflation) == 0x98);
+
 inline constexpr address<"Car_Assets_CreateSystemForPerformanceMode"> Car_Assets_CreateSystemForPerformanceMode{}; // L3 stable
 inline constexpr address<"Car_BrakeEcu_ApplyBias"> Car_BrakeEcu_ApplyBias{}; // L2 experimental
 inline constexpr address<"Car_Build_VtfComponents"> Car_Build_VtfComponents{}; // L2 experimental

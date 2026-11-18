@@ -123,11 +123,6 @@ pub struct CarVtfAsset {
 }
 
 #[repr(C)]
-pub struct CarWheel {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
 pub struct CarWheelProxies {
     _opaque: [u8; 0],
 }
@@ -1215,6 +1210,13 @@ pub struct CarTurbo {
 }
 const _: () = assert!(core::mem::offset_of!(CarTurbo, car) == 0x8);
 const _: () = assert!(core::mem::offset_of!(CarTurbo, max_boost) == 0x2d8);
+
+#[repr(C)]
+pub struct CarWheel {
+    _pad_0x0: [u8; 0x98],
+    pub deflation: f32,
+}
+const _: () = assert!(core::mem::offset_of!(CarWheel, deflation) == 0x98);
 
 #[repr(C)]
 pub struct CareerBankComponent {
@@ -3473,7 +3475,9 @@ const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, total_b) == 0x
 
 #[repr(C)]
 pub struct VehicleTyreComponent {
-    _pad_0x0: [u8; 0x9bc0],
+    _pad_0x0: [u8; 0x20],
+    pub physics: *mut CarPhysicsRecord,
+    _pad_0x28: [u8; 0x9b98],
     pub compound_class: *mut c_void,
     _pad_0x9bc8: [u8; 0x8],
     pub slots: [TyreSlot; 5],
@@ -3484,6 +3488,7 @@ pub struct VehicleTyreComponent {
     pub set_begin: *mut u8,
     pub set_end: *mut u8,
 }
+const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, physics) == 0x20);
 const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, compound_class) == 0x9bc0);
 const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, slots) == 0x9bd0);
 const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, slot_count) == 0x9c48);
