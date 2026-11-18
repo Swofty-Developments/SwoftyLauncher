@@ -291,6 +291,18 @@ The career operations (`SwoftyCareerOps`, standard library 1.6) are in `career/o
 
 An operation runs on the flow thread (`flow_tid`) or before the first frame, and resolves its bindings once through `bind`.
 
+## Garage namespaces
+
+Code in `core/garage/` is in `garage::`. `garage_placement.cpp` defines `garage_placement_reset`, which `runtime/runtime.hpp` declares, and its core set in `runtime`, over `garage::edits`:
+
+| Namespace | Files |
+|---|---|
+| `garage` | `garage_owner.hpp`, `garage_car_pose.hpp`, `garage_central.hpp` (with `crew_detail`), `garage_rig.hpp` (with `rig_detail`) |
+| `garage::edits` | `garage_edits.hpp`, `garage_placement.cpp`, `garage_crew_edits.cpp`, `garage_member_edits.cpp`, `garage_car_edits.cpp` |
+| `garage::members`, `garage::vehicle` | `garage_members.hpp`, `garage_vehicle.hpp` |
+| `garage::crew_pose` | `garage_crew_pose.hpp` |
+| `garage::steam_26566308` | `steam_26566308.hpp`: the authored pits of Steam build 26566308 |
+
 ## Units split across files
 
 These units keep their state in the first file listed; the other files hold code by concept and reach that state through the unit's shared header:

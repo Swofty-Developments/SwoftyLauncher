@@ -9,12 +9,12 @@
 #include <memory>
 #include <mutex>
 
-namespace runtime::garage_placement::edits {
+namespace garage::edits {
 
 std::atomic<unsigned> active_edits{};
 Refresh refresh{};
 Node node{};
-runtime::garage_crew_pose::FindNode find_node{};
+garage::crew_pose::FindNode find_node{};
 
 namespace {
 
@@ -212,7 +212,7 @@ R visit(const char *track, const sdk::Pit *pits, uint32_t count, uint32_t garage
 
 }
 
-using namespace runtime::garage_placement::edits;
+using namespace garage::edits;
 
 namespace runtime {
 static std::vector<CoreMixins> garage_placement_mixins()
@@ -224,7 +224,7 @@ static std::vector<CoreMixins> garage_placement_mixins()
         return {};
     refresh = reinterpret_cast<Refresh>(resolve("Game_Scene_UpdateInstanceTransformsBatch"));
     node = reinterpret_cast<Node>(resolve("Game_Get_ModelNodeId"));
-    find_node = reinterpret_cast<runtime::garage_crew_pose::FindNode>(resolve("Ne_NodeTable_FindIndexByHash"));
+    find_node = reinterpret_cast<garage::crew_pose::FindNode>(resolve("Ne_NodeTable_FindIndexByHash"));
     if (!refresh || !node)
         return {};
     placement_enabled = true;
