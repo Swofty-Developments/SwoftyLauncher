@@ -8,6 +8,13 @@
    "covers": "V100063",
    "reason": "renamed: every caller sets a UIDBRef weak object reference through it and the compare is object identity, not a numeric S64 compare",
    "replacement": "Ne_Property_SetUIDBRefIfChanged"
+  },
+  "func:Ne_Std_ThrowException": {
+   "mode": "deprecated",
+   "since": "1.10.0",
+   "covers": "V100066",
+   "reason": "renamed: it is std::_Throw_bad_optional_access, which only raises std::bad_optional_access and ends the process in a fast fail",
+   "replacement": "Ne_Std_ThrowBadOptionalAccess"
   }
  }
 }

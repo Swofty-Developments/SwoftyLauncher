@@ -2935,7 +2935,6 @@
   "func:Ne_Std_ThrowBadArrayNewLength": "V7725",
   "func:Ne_Std_ThrowBadFunctionCall": "V3746",
   "func:Ne_Std_ThrowDequeTooLong": "V8119",
-  "func:Ne_Std_ThrowException": "V3517",
   "func:Ne_Std_ThrowExceptionNoReturn": "V8312",
   "func:Ne_Std_ThrowInvalidBitsetPosition": "V3378",
   "func:Ne_Std_ThrowMapSetTooLong": "V7728",
