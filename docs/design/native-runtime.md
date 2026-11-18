@@ -268,7 +268,7 @@ Code in `core/career/` is in `career::`. The entry points `runtime/runtime.hpp` 
 | `career::game` | `career_entity.hpp`, `career_entity.cpp`: the championship entity, its components and entrants |
 | `career::content` | `career_content_logic.hpp`, `content_state.hpp`, `career_content.cpp`, `content_*.cpp` |
 | `career::characters` | `characters_logic.hpp`, `characters_state.hpp`, `characters.cpp`, `characters_hooks.cpp` |
-| `career::hub` | `hub_state.hpp`, `hub_tab.cpp`, `hub_rnd.cpp` |
+| `career::hub` | `hub_state.hpp`, `hub_tab.cpp`, `hub_team_hq.cpp`, `hub_rnd.cpp` |
 | `career::saves`, `career::start`, `career::ui` | `career_saves_logic.hpp`, `career_start.hpp`, `career_ui.hpp` |
 | `career::save_data`, `career::save_splice` | `save_data.hpp`, `save_data.cpp`, `save_splice_logic.hpp`, `save_splice.cpp` |
 | `career::save_diag`, `career::save_heap` | `save_diag_logic.hpp`, `save_heap_logic.hpp` |
@@ -305,7 +305,8 @@ These units keep their state in the first file listed; the other files hold code
 | `career/save_data.cpp`, `save_data.hpp` | the game's save-data objects: the root, a child's bag and its encoding, the string table, slot managers |
 | `career/snapshots/snapshots.cpp` | the snapshots entry, the save and career moments and the reads |
 | `career/snapshots/freeze.cpp`, `book_cache.hpp` | `Book::freeze`, `season_start` and `career_created` |
-| `career/hub_tab.cpp`, `hub_state.hpp` | the hub tabs, their options and `SwoftyCoreHub` |
+| `career/hub_tab.cpp`, `hub_state.hpp` | the hub tabs and their options, the page, the laptop builder, setup and `SwoftyCoreHub` |
+| `career/hub_team_hq.cpp` | the Driver Career Team HQ builder |
 | `career/hub_rnd.cpp` | the R&D tab's visibility on Team HQ and the laptop, and `hub_tick` |
 | `career/career_content.cpp`, `content_state.hpp` | the content registry and its core sets |
 | `career/content_hooks.cpp` | the router, gate and slot predicate wraps and `bind_all` |
