@@ -1,5 +1,5 @@
 use std::collections::{BTreeMap, BTreeSet};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use super::archives::Archives;
 use super::inputs::Inputs;
@@ -76,21 +76,42 @@ pub(super) fn put_files(
     let (mut replaced, mut added, mut handling) = (0, 0, 0);
     let addon_dir = |id: &str| store.addons_dir().join(id);
     let targets = handling::AddonTargets::new(handling_maps, &addon_dir);
+    let edits = store.root.join("cache").join(crate::cache::ARCHIVES_DIR);
     for (_, (rel, mut src, origin)) in put {
         let lower = rel.to_ascii_lowercase();
         let group = targets.for_source(&src);
+        let mut key = identity(&src);
         if !group.is_empty() && !over.contains(&lower) {
             let out = built.overlay.join("handling").join(&rel);
-            let mut lines = Vec::new();
-            if handling::edit_archive(&src, &group, &out, &mut lines, packer)? > 0 {
+            let at = key.as_ref().map(|id| {
+                let mut text = format!("{id}|{rel}");
+                for m in &group {
+                    text.push_str(&format!(
+                        "|{}|{:?}|{:?}|{:?}|{:?}",
+                        m.id, m.target, m.plan, m.resources, m.base
+                    ));
+                }
+                edit_key("handling", &text)
+            });
+            let edit = |lines: &mut Vec<String>| handling::edit_archive(&src, &group, &out, lines, packer);
+            if cached_edit(&edits, at.as_deref(), &out, &mut built.lines, edit)? > 0 {
                 src = out;
+                key = at;
             }
-            built.lines.extend(lines);
         }
         let car = !ers_maps.is_empty() && ers::is_car_archive(&rel);
         if car && !over.contains(&lower) {
             let out = built.overlay.join("ers").join(&rel);
-            let n = ers::edit_archive(&src, ers_maps, &out, packer)?;
+            let at = key.as_ref().map(|k| {
+                let mut text = format!("{k}|{rel}");
+                for m in ers_maps {
+                    let values = serde_json::to_string(m.values).expect("json");
+                    text.push_str(&format!("|{}|{}|{values}", m.code, m.base));
+                }
+                edit_key("ers", &text)
+            });
+            let edit = |_: &mut Vec<String>| ers::edit_archive(&src, ers_maps, &out, packer);
+            let n = cached_edit(&edits, at.as_deref(), &out, &mut built.lines, edit)?;
             if n > 0 {
                 handling += n;
                 src = out;
@@ -157,5 +178,80 @@ impl Pipeline<'_, '_> {
             &built_over,
             (ers_maps, &inputs.handling_maps),
         )
+    }
+}
+
+/// What the caches take as a file's contents: its path, length and modified time.
+fn identity(path: &Path) -> Option<String> {
+    let meta = std::fs::metadata(path).ok()?;
+    Some(format!(
+        "{}|{}|{:?}",
+        path.display(),
+        meta.len(),
+        meta.modified().ok()?
+    ))
+}
+
+const EDIT_KEY_VERSION: u32 = 1;
+
+/// The archive cache key of a put file's `stage` edit, from `text`, which names its source and settings.
+fn edit_key(stage: &str, text: &str) -> String {
+    let digest = <sha2::Sha256 as sha2::Digest>::digest(format!("put {stage} {EDIT_KEY_VERSION}|{text}"));
+    crate::game_folder::baseline::hex(&digest)
+}
+
+/// Runs `edit`, which writes `out` and returns how many resources it changed, or links `out` and the lines
+/// `edit` gave from the archive cache in `cache`, where an earlier build kept them under `key`. A record
+/// beside the archive keeps the count and the lines; an edit that changed nothing keeps only the record.
+/// Without a key, or without hard links, nothing is cached.
+fn cached_edit(
+    cache: &Path,
+    key: Option<&str>,
+    out: &Path,
+    lines: &mut Vec<String>,
+    edit: impl FnOnce(&mut Vec<String>) -> Result<usize>,
+) -> Result<usize> {
+    let Some(key) = key else {
+        return edit(lines);
+    };
+    let archive = cache.join(&key[..2]).join(format!("{key}.erp"));
+    let record = archive.with_extension("json");
+    let kept: Option<(usize, Vec<String>)> = std::fs::read(&record)
+        .ok()
+        .and_then(|b| serde_json::from_slice(&b).ok());
+    if let Some((n, kept)) = kept
+        && (n == 0 || link(&archive, out))
+    {
+        touch(&record);
+        if n > 0 {
+            touch(&archive);
+        }
+        lines.extend(kept);
+        return Ok(n);
+    }
+    let mut new = Vec::new();
+    let n = edit(&mut new)?;
+    let dir = archive.parent().expect("has parent");
+    if std::fs::create_dir_all(dir).is_ok() {
+        std::fs::remove_file(&archive).ok();
+        if n == 0 || std::fs::hard_link(out, &archive).is_ok() {
+            std::fs::write(&record, serde_json::to_vec(&(n, &new)).expect("json")).ok();
+        }
+    }
+    lines.extend(new);
+    Ok(n)
+}
+
+/// Links `out` to the cached archive at `archive`; false when there is none or it cannot link.
+fn link(archive: &Path, out: &Path) -> bool {
+    archive.is_file()
+        && out.parent().is_some_and(|d| std::fs::create_dir_all(d).is_ok())
+        && std::fs::hard_link(archive, out).is_ok()
+}
+
+/// Marks a cache entry used now, so the cache prune keeps it.
+fn touch(path: &Path) {
+    if let Ok(f) = std::fs::File::options().write(true).open(path) {
+        f.set_modified(std::time::SystemTime::now()).ok();
     }
 }
