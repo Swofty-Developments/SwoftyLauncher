@@ -189,6 +189,10 @@ These units keep their state in the first file listed; the other files hold code
 | `career/content_hooks.cpp` | the router, gate and slot predicate wraps and `bind_all` |
 | `career/content_api.cpp` | the addon table (`SwoftyCoreCareerContent`) |
 | `career/content_tiles.cpp` | the content tiles and the Addons row |
+| `garage/garage_placement.cpp`, `garage_edits.hpp` | the bays, the scene, sequence and update hooks, visits, the departure restore and the export tables |
+| `garage/garage_crew_edits.cpp` | the garage root and central crew poses, reads and restore |
+| `garage/garage_member_edits.cpp` | the mechanic list, reads, edits and restore |
+| `garage/garage_car_edits.cpp` | the parked car edit, its verification and restore |
 | `runtime/loader/bindings.cpp` | choosing and loading the binding set, its KB addresses and the binding report |
 | `runtime/loader/binding_resolve.cpp` | resolving a binding by address, pattern or anchor, deferral and the retry passes |
 | `runtime/settings.cpp` | settings.json's addon options, the settings API, the MFD rows and the commands |
