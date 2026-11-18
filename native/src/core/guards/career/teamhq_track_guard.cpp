@@ -1,5 +1,5 @@
 #include "core/guards/guard.hpp"
-#include "core/runtime/hook_errors.hpp"
+#include "core/runtime/loader/hook_install.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/guards/career/teamhq_track_logic.hpp"
 
@@ -167,12 +167,11 @@ uintptr_t arm(safetyhook::MidHook &slot, const runtime::Sig &s, void (*fn)(safet
     if (!at)
         return 0;
     next = at + len;
-    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), fn);
-    if (!h) {
-        swofty::log("[career] teamhq track guard: %s: the hook failed: %s", s.what, runtime::hook_error(h.error()).c_str());
+    runtime::loader::Installed r = runtime::loader::install(slot, at, s.what, fn);
+    if (!r) {
+        swofty::log("[career] teamhq track guard: %s: the hook failed: %s", s.what, r.error.c_str());
         return 0;
     }
-    slot = std::move(*h);
     return at;
 }
 
