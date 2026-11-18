@@ -18,8 +18,6 @@ namespace frontend::main_menu {
 
 namespace {
 
-namespace logic = ::frontend::main_menu;
-
 struct PadSample {
     bool connected = false;
     uint32_t packet = 0;
@@ -54,9 +52,9 @@ bool any_key_down()
     return false;
 }
 
-void open_video(const logic::State &s)
+void open_video(const State &s)
 {
-    std::string body = logic::open_request_json(s.video_url);
+    std::string body = open_request_json(s.video_url);
     bool ok = runtime::write_file(runtime::under_swofty("open_url.json"), body);
     swofty::log("[main-menu] watch pressed: %s open_url.json for %s", ok ? "wrote" : "could not write", s.video_url.c_str());
 }
@@ -98,8 +96,8 @@ bool BindSampler::pressed_edge(bool *on_pad)
     if (pad_at != key_at)
         shown_pad = p.connected && pad_at > key_at;
     *on_pad = shown_pad;
-    bool y = p.connected && (p.buttons & logic::WATCH_PAD_MASK);
-    bool key = (GetAsyncKeyState(logic::WATCH_KEY_VK) & 0x8000) != 0 && GetForegroundWindow() != nullptr;
+    bool y = p.connected && (p.buttons & WATCH_PAD_MASK);
+    bool key = (GetAsyncKeyState(WATCH_KEY_VK) & 0x8000) != 0 && GetForegroundWindow() != nullptr;
     bool down = y || key;
     bool edge = down && !was;
     was = down;
@@ -134,12 +132,12 @@ bool BindSampler::poll(uint64_t now)
 
 void Panel::set_offline_text(long long online)
 {
-    std::string text = logic::offline_text(online);
+    std::string text = offline_text(online);
     if (online == offline_shown)
         return;
     if (ui_vm_set_path("ui_menu_data.swofty_offline_text", 0, text.c_str())) {
         offline_shown = online;
-        swofty::log("[main-menu] Launched with panel text set: %s", logic::online_line(online).empty() ? "no online line" : logic::online_line(online).c_str());
+        swofty::log("[main-menu] Launched with panel text set: %s", online_line(online).empty() ? "no online line" : online_line(online).c_str());
     } else {
         if (offline_fails++ % 60 == 0)
             swofty::log("[main-menu] could not set ui_menu_data.swofty_offline_text yet (try %d)", offline_fails);
@@ -153,7 +151,7 @@ void Panel::read_state(bool force)
     if (!force && state_read_at && now - state_read_at < 1000)
         return;
     state_read_at = now;
-    auto next = logic::parse_state(runtime::read_file(runtime::under_swofty("home_menu.json"), size_t(1) << 20));
+    auto next = parse_state(runtime::read_file(runtime::under_swofty("home_menu.json"), size_t(1) << 20));
     if (const char *override_path = std::getenv("SWOFTY_HOME_VIDEO_JSON"); override_path && *override_path) {
         json::Value v;
         if (json::parse(runtime::read_file(runtime::wide(override_path), size_t(1) << 20), v)) {
@@ -164,14 +162,14 @@ void Panel::read_state(bool force)
         }
     }
     if (next.loaded != state.loaded || next.signed_in != state.signed_in || next.video_url != state.video_url)
-        swofty::log("[main-menu] state: %s, %s, video %s", next.loaded ? logic::version_line(next).c_str() : "no file",
-                    logic::discord_line(next).c_str(), logic::has_video(next) ? "yes" : "none");
+        swofty::log("[main-menu] state: %s, %s, video %s", next.loaded ? version_line(next).c_str() : "no file",
+                    discord_line(next).c_str(), has_video(next) ? "yes" : "none");
     state = next;
     state_loaded = next.loaded;
     set_offline_text(next.online);
 }
 
-logic::State Panel::snapshot()
+State Panel::snapshot()
 {
     std::lock_guard<std::mutex> g(state_lock);
     return state;
@@ -190,7 +188,7 @@ bool Panel::account(std::string &name)
 
 bool Panel::due()
 {
-    return logic::panel_due(menu.patched.load(), menu.home_open.load() && !runtime::in_session_now(), state_loaded.load(),
+    return panel_due(menu.patched.load(), menu.home_open.load() && !runtime::in_session_now(), state_loaded.load(),
                             panel_disabled.load(), panel_prepared.load());
 }
 
@@ -230,7 +228,7 @@ void Panel::sync_strip()
 void Panel::prepare()
 {
     uint64_t now = GetTickCount64();
-    logic::State s;
+    State s;
     {
         std::lock_guard<std::mutex> g(state_lock);
         s = state;
@@ -245,15 +243,15 @@ void Panel::prepare()
     auto p = std::make_shared<Prepared>();
     p->s = s;
     uint32_t w = 0, h = 0;
-    if (logic::has_avatar(s))
+    if (has_avatar(s))
         p->avatar_slot = runtime::overlay_image("core.main_menu\navatar", host_path(s.avatar), &w, &h);
-    if (logic::has_video(s)) {
+    if (has_video(s)) {
         p->video_slot = runtime::overlay_image("core.main_menu\nvideo", host_path(s.video_thumbnail), &w, &h);
         p->video_w = w;
         p->video_h = h;
     }
-    p->version = logic::version_line(s);
-    p->discord = logic::discord_line(s);
+    p->version = version_line(s);
+    p->discord = discord_line(s);
     {
         std::lock_guard<std::mutex> g(prepared_lock);
         prepared = p;

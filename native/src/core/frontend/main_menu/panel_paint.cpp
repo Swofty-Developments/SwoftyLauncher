@@ -14,8 +14,6 @@ namespace frontend::main_menu {
 
 namespace {
 
-namespace logic = ::frontend::main_menu;
-
 constexpr uint64_t PANEL_DELAY_MS = 450, PANEL_FADE_MS = 250;
 
 void fade_panel(hud::drawlist::Frame &f, float x, float y, float w, float h, float fade_left, float fade_right, float k)
@@ -157,9 +155,9 @@ void Panel::paint(hud::drawlist::Frame &f, uint64_t now)
     if (!std::exchange(told_drawn, true))
         swofty::log("[main-menu] panel: first draw on a %.0fx%.0f frame; video card %s, avatar %s", double(W), double(H),
                     p->video_slot >= 0 ? "yes" : "no", p->avatar_slot >= 0 ? "yes" : "no");
-    const float k = logic::panel_scale(W, H);
-    const float band_top = logic::ui_band(W, H).top;
-    auto anchor = logic::scene_to_px(logic::CARD_RIGHT_X, logic::CARD_BOTTOM_Y, W, H);
+    const float k = panel_scale(W, H);
+    const float band_top = ui_band(W, H).top;
+    auto anchor = scene_to_px(CARD_RIGHT_X, CARD_BOTTOM_Y, W, H);
     const float right = anchor.x;
     {
         hud::drawlist::TextStyle name_style;
@@ -211,7 +209,7 @@ void Panel::paint(hud::drawlist::Frame &f, uint64_t now)
         watch_style.rgba = 0xd5d9e3ffu;
         const std::string caption = "LATEST VIDEO";
         const bool pad_dev = bind.on_pad();
-        const std::string key = logic::button_name(pad_dev);
+        const std::string key = button_name(pad_dev);
         float tmp_h = 0, cap_w = 0, watch_w = 0, key_w = 0;
         hud::drawlist::TextStyle key_probe;
         key_probe.px = 26 * k * 0.62f;
@@ -220,7 +218,7 @@ void Panel::paint(hud::drawlist::Frame &f, uint64_t now)
         hud::drawlist::measure(key_probe, key, &key_w, &tmp_h);
         const float row_h = 26 * k;
         const float glyph_w = pad_dev ? std::max(row_h * 1.5f, key_w + 18 * k) : std::max(row_h, key_w + 14 * k);
-        auto plan0 = logic::plan_card(k, 0);
+        auto plan0 = plan_card(k, 0);
         auto title_lines = wrap_title(title_style, p->s.video_title, plan0.text_max, 2);
         float title_w = 0;
         for (auto &line : title_lines) {
@@ -229,7 +227,7 @@ void Panel::paint(hud::drawlist::Frame &f, uint64_t now)
             title_w = std::max(title_w, w);
         }
         float text_w = std::max({cap_w, title_w, glyph_w + 10 * k + watch_w}) * 1.06f + 4 * k;
-        auto card = logic::plan_card(k, text_w);
+        auto card = plan_card(k, text_w);
         float cx = right - card.width, cy = anchor.y - card.height;
         fade_panel(f, cx - 110 * k, cy, card.width + 110 * k, card.height, 0.45f, 0.04f, k);
         float tx = cx + card.pad + 12 * k;
@@ -267,9 +265,9 @@ void Panel::paint(hud::drawlist::Frame &f, uint64_t now)
     QueryPerformanceCounter(&t1);
     QueryPerformanceFrequency(&freq);
     double ms = double(t1.QuadPart - t0.QuadPart) * 1000.0 / double(freq.QuadPart);
-    if (logic::panel_too_slow(ms) && !panel_disabled.exchange(true))
+    if (panel_too_slow(ms) && !panel_disabled.exchange(true))
         swofty::log("[main-menu] panel: one draw took %.2f ms (budget %.1f ms); the panel is disabled for this session", ms,
-                    logic::PANEL_BUDGET_MS);
+                    PANEL_BUDGET_MS);
 }
 
 }
