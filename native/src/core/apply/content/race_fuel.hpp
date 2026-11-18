@@ -3,6 +3,7 @@
 #include "core/apply/content/lower.hpp"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <optional>
@@ -87,7 +88,7 @@ inline FuelRules fuel_rules_pick(const std::string &entrant_list,
         add("a pit stop refuels to " + (stint ? kg_text(*stint) : std::string("a full tank")));
     }
     if (r.tyres_kept())
-        add("race pit stops keep the tyres (a change only with tyre damage)");
+        add("race pit stops keep the tyres (a change only for a puncture)");
     r.line = head + parts;
     return r;
 }
@@ -96,19 +97,57 @@ inline FuelRules fuel_rules_pick(const std::string &entrant_list,
 // (Car_Tyre_ChangeToNextCompound 0x142e94040, log PITSTOP_TYRES 'PITLANE CHANGEOVER'). Its pit stop caller
 // Game_PitLane_ApplyPitstopTyres 0x1434bdd60 calls it with flag 1 and ignores its result (always 0); the garage actor
 // (Game_PitBoxCarActor_Update) calls it with flag 0. In a race session a flag-1 call is skipped, so the fitted compound,
-// its wear (the resets 0x142e83130 in the body) and temperatures stay; pitstopComplete still runs. A car whose tyre
-// records (TyreComponent +0x30 + i * 0xde0, count +0x98d0) carry a flag in dword +0x208 & 0x1f, which the body OR-s
-// into its per-wheel reset arguments, keeps the game's change (read as puncture/damage: HYPOTHESIS, logged per stop).
-constexpr uintptr_t TYRE_WHEELS = 0x30, TYRE_WHEEL_STRIDE = 0xde0, TYRE_WHEEL_FLAGS = 0x208, TYRE_WHEEL_COUNT = 0x98d0;
-constexpr uint32_t TYRE_DAMAGE_MASK = 0x1f;
+// its wear and temperatures stay; pitstopComplete still runs. A car with a punctured tyre keeps the game's change.
+//
+// The puncture state is byte +0x20 of each of the car's four SuspensionSystem wheels ([CarLive +0x580] +0x70 RL, +0x78
+// RR, +0x80 FL, +0x88 FR; the CarLive is the TyreComponent's entity +0x20, then +0x58, as 0x142e92f70 reaches it): bit 1
+// is a puncture the tyre damage monitor admitted (Car_Puncture_Add 0x14464e200, which Car_Tyre_SyncPunctureState
+// 0x142e88840 calls from the fitted set's per-wheel puncture byte), bit 0 a puncture Car_Tyre_SetPunctureState
+// 0x144656f80 set, which deflates the tyre to the rim (0x1446b7060). Bits 2 and 3 are the suspension's collision corner
+// flags. Dword +0x208 of the TyreComponent's tyre records is the tyre model's visibility mask (m_tyreModelVisibility, set
+// per shown part by setTyreVisibility 0x142e83130), not a damage state.
+constexpr uint64_t TYRE_ENTITY = 0x20, ENTITY_CAR = 0x58, CAR_SUSPENSION = 0x580, WHEEL_STATE = 0x20;
+constexpr uint64_t SUSPENSION_WHEELS[4] = {0x70, 0x78, 0x80, 0x88};
+constexpr uint8_t WHEEL_PUNCTURED = 0x03;
+inline constexpr const char *WHEEL_NAMES[4] = {"RL", "RR", "FL", "FR"};
 
-enum class TyreChange { game, kept, damage };
+// The punctured wheels of the TyreComponent's car, bit i for SUSPENSION_WHEELS[i]. `read(address, out)` copies an
+// object of out's type from the game; a wheel whose state can't be read counts as not punctured.
+template <class Read> uint8_t punctured_wheels(uint64_t tyre_component, Read read)
+{
+    uint64_t entity = 0, car = 0, suspension = 0;
+    if (!read(tyre_component + TYRE_ENTITY, entity) || !entity || !read(entity + ENTITY_CAR, car) || !car ||
+        !read(car + CAR_SUSPENSION, suspension) || !suspension)
+        return 0;
+    uint8_t out = 0;
+    for (size_t i = 0; i < 4; i++) {
+        uint64_t wheel = 0;
+        uint8_t state = 0;
+        if (read(suspension + SUSPENSION_WHEELS[i], wheel) && wheel && read(wheel + WHEEL_STATE, state) &&
+            (state & WHEEL_PUNCTURED))
+            out |= uint8_t(1u << i);
+    }
+    return out;
+}
 
-inline TyreChange race_tyre_change_pick(bool kept_rule, uint32_t session_type, bool pit_stop_call, uint32_t damage_bits)
+// The wheels of a punctured_wheels mask, for the log ("RL, FR").
+inline std::string wheel_names(uint8_t wheels)
+{
+    std::string out;
+    for (size_t i = 0; i < 4; i++)
+        if (wheels & (1u << i))
+            out += (out.empty() ? "" : ", ") + std::string(WHEEL_NAMES[i]);
+    return out;
+}
+
+enum class TyreChange { game, kept, punctured };
+
+// `punctured` is punctured_wheels' mask, 0 on a build without a witness for the wheel state.
+inline TyreChange race_tyre_change_pick(bool kept_rule, uint32_t session_type, bool pit_stop_call, uint8_t punctured)
 {
     if (!kept_rule || !pit_stop_call || !(session_type >= 15 && session_type <= 17))
         return TyreChange::game;
-    return (damage_bits & TYRE_DAMAGE_MASK) ? TyreChange::damage : TyreChange::kept;
+    return punctured ? TyreChange::punctured : TyreChange::kept;
 }
 
 // One car as the fuel plan sees it in a frame. pit_stops_ok: the live snapshot read the car's pit stop counter.
