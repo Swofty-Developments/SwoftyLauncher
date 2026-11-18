@@ -78,7 +78,7 @@ bool Textures::upload(Renderer &r, ID3D12GraphicsCommandList *l, UINT index, DXG
 void Textures::sync(Renderer &r, ID3D12GraphicsCommandList *l)
 {
     if (const hud::img::Pixels *px = font.pending(decode_font)) {
-        if (upload(r, l, hud::TEX_FONT, DXGI_FORMAT_R8_UNORM, px->width, px->height, 1, px->rgba.data()))
+        if (upload(r, l, hud::drawlist::TEX_FONT, DXGI_FORMAT_R8_UNORM, px->width, px->height, 1, px->rgba.data()))
             swofty::log("[overlay] font atlas uploaded: %s, %ux%u SDF", hud::font::NAME, px->width, px->height);
         else
             swofty::log("[overlay] uploading the font atlas failed; text draws nothing");
@@ -86,7 +86,7 @@ void Textures::sync(Renderer &r, ID3D12GraphicsCommandList *l)
     }
     std::lock_guard<std::mutex> g(overlay.reg_lock);
     for (size_t slot = 0; slot < overlay.reg.image_count(); slot++) {
-        hud::Image *im = overlay.reg.image(int(slot));
+        hud::drawlist::Image *im = overlay.reg.image(int(slot));
         UINT index = UINT(slot + 1);
         if (!im || im->rgba.empty() || index >= TEX_MAX || entries[index].generation == im->generation)
             continue;

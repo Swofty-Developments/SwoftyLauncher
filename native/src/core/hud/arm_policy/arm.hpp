@@ -5,7 +5,7 @@
 #include <string_view>
 #include <vector>
 
-namespace hud::guard {
+namespace hud::arm_policy {
 
 // Overlays that patch the D3D12 entry points the core's device hooks patch. RivaTuner Statistics Server's
 // hook attaches when a window is created and hooks over whatever is in the prologue; a prologue the core

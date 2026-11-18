@@ -76,7 +76,7 @@ public:
             return last_fg;
         std::string name = module_of(caller);
         last = caller;
-        last_fg = hud::guard::fg_module(name) && !hud::guard::streamline_hook(name) ? name : std::string();
+        last_fg = hud::arm_policy::fg_module(name) && !hud::arm_policy::streamline_hook(name) ? name : std::string();
         return last_fg;
     }
 
@@ -141,7 +141,7 @@ void PresentLog::count(IDXGISwapChain3 *sc, void *caller, const char *how)
 template <class Original>
 HRESULT dispatch_present(IDXGISwapChain3 *sc, UINT flags, void *caller, const char *how, Original original)
 {
-    if (!hud::guard::dispatches_present(presenting))
+    if (!hud::arm_policy::dispatches_present(presenting))
         return original();
     presenting++;
     if (!(flags & DXGI_PRESENT_TEST))

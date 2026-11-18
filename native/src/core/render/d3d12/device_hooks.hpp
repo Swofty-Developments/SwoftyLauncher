@@ -13,13 +13,13 @@ namespace d3d12hooks {
 class QueueWatch {
 public:
     void count(ID3D12CommandQueue *q);
-    bool recent_direct(DWORD tid, hud::guard::ExecSeen &out);
+    bool recent_direct(DWORD tid, hud::arm_policy::ExecSeen &out);
     void want() { wanted_on.store(true, std::memory_order_relaxed); }
     bool wanted() const { return wanted_on.load(std::memory_order_relaxed); }
 
 private:
     std::mutex lock;
-    std::vector<hud::guard::ExecSeen> seen;
+    std::vector<hud::arm_policy::ExecSeen> seen;
     std::atomic<bool> wanted_on{false};
 };
 
