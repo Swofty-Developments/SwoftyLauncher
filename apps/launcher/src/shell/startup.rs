@@ -210,7 +210,7 @@ impl Shell {
                 );
             });
         }
-        shell.fetch_news(cx);
+        crate::features::news::News::fetch(&mut shell, cx);
         shell.browser.sync_updates(&shell.library);
         Browser::fetch_catalog(&mut shell, cx);
         shell.db_profile_changed(cx);
