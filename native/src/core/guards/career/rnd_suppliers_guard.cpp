@@ -1,6 +1,6 @@
 #include "core/guards/career/rnd_suppliers_logic.hpp"
 #include "core/guards/guard.hpp"
-#include "core/runtime/hook_errors.hpp"
+#include "core/runtime/loader/hook_install.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -228,19 +228,17 @@ void setup()
         swofty::log("[rnd] supplier budget off: Career_Add_TeamUpgrades or Career_Load_UpgradeTreeNodes did not resolve");
         return;
     }
-    auto l = safetyhook::InlineHook::create(reinterpret_cast<void *>(load), reinterpret_cast<void *>(&load_hook));
+    runtime::loader::Installed l = runtime::loader::install(h_load, load, S_LOAD.what, reinterpret_cast<void *>(&load_hook));
     if (!l) {
-        swofty::log("[rnd] supplier budget: the loader hook failed: %s", runtime::hook_error(l.error()).c_str());
+        swofty::log("[rnd] supplier budget: the loader hook failed: %s", l.error.c_str());
         return;
     }
-    h_load = std::move(*l);
-    auto a = safetyhook::InlineHook::create(reinterpret_cast<void *>(add), reinterpret_cast<void *>(&add_hook));
+    runtime::loader::Installed a = runtime::loader::install(h_add, add, S_ADD.what, reinterpret_cast<void *>(&add_hook));
     if (!a) {
         h_load = {};
-        swofty::log("[rnd] supplier budget: the model hook failed: %s", runtime::hook_error(a.error()).c_str());
+        swofty::log("[rnd] supplier budget: the model hook failed: %s", a.error.c_str());
         return;
     }
-    h_add = std::move(*a);
     swofty::log("[rnd] supplier budget armed: a team's R&D trees hold at most 384 / trees upgrade rows; past that only "
                 "the team's own engine supplier's rows (then others while they fit) are loaded");
 }
