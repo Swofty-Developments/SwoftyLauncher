@@ -261,6 +261,17 @@ impl Inputs {
 }
 
 /// Where a profile's small build sources' digests are kept between its builds.
+/// Where the reply of `addon`'s build hook is kept for the profile's next build.
+pub(super) fn hook_reply_path(store: &crate::store::Store, profile: &str, addon: &str) -> PathBuf {
+    store
+        .root
+        .join("state")
+        .join("profiles")
+        .join(profile)
+        .join("hooks")
+        .join(format!("{addon}.json"))
+}
+
 pub(super) fn source_digests_path(store: &crate::store::Store, profile: &str) -> PathBuf {
     store
         .root

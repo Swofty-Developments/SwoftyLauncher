@@ -196,14 +196,23 @@ impl Gather<'_, '_, '_> {
             .iter()
             .map(|o| (o.id.clone(), run.on.value(run.settings, m, o)))
             .collect();
-        let batch = entry
-            .addon
-            .build(&BuildCx {
-                cx: host.cx(),
-                options: &options,
-                features: self.features,
-            })
-            .map_err(|e| Error::Other(format!("building {id}: {e}")))?;
+        let cx = BuildCx {
+            cx: host.cx(),
+            options: &options,
+            features: self.features,
+        };
+        let batch = match &entry.plugin {
+            Some(plugin) => plugin
+                .build_kept(&cx, &super::inputs::hook_reply_path(run.store, run.profile, id))
+                .map(|(batch, ran)| {
+                    if let Some(ran) = ran {
+                        crate::diagnostics::phases::note(format!("hook {id} {ran}"));
+                    }
+                    batch
+                }),
+            None => entry.addon.build(&cx),
+        }
+        .map_err(|e| Error::Other(format!("building {id}: {e}")))?;
         self.hash.json(&batch.ops);
         if !batch.fields.is_empty() {
             self.hash.json(&batch.fields);

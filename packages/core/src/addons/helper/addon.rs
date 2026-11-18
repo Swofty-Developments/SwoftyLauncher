@@ -2,6 +2,7 @@
 
 use std::path::{Path, PathBuf};
 use std::sync::TryLockError;
+use std::time::SystemTime;
 
 use swofty_addon::asset::{AssetBatch, Op, Origin};
 use swofty_addon::helper::{Built, Call, RESTART};
@@ -10,7 +11,7 @@ use swofty_addon::manifest::AddonManifest;
 use swofty_addon::view::{Effect, Event, SectionSpec, View};
 
 use super::protocol::Run;
-use super::{HelperAddon, Result};
+use super::{HelperAddon, HookRun, Result, reads};
 
 impl Addon for HelperAddon {
     fn manifest(&self) -> &AddonManifest {
@@ -52,29 +53,8 @@ impl Addon for HelperAddon {
         if !self.spec.build {
             return Ok(AssetBatch::default());
         }
-        let call = Call::Build {
-            options: cx.options.clone(),
-            features: cx.features.clone(),
-        };
-        let built: Built = self.call(&cx.cx, call, self.timeouts.long, None)?;
-        let mut items = built.items.into_iter();
-        Ok(AssetBatch {
-            ops: built
-                .ops
-                .into_iter()
-                .map(|op| Op {
-                    op,
-                    origin: Origin {
-                        addon: self.manifest.id.clone(),
-                        item: items.next().flatten(),
-                    },
-                })
-                .collect(),
-            lines: built.lines,
-            warnings: built.warnings,
-            fields: built.fields,
-            reads: built.reads,
-        })
+        let built: Built = self.call(&cx.cx, build_call(cx), self.timeouts.long, None)?;
+        Ok(self.batch(built))
     }
 
     fn commands(&self) -> Vec<CommandSpec> {
@@ -106,6 +86,74 @@ impl Addon for HelperAddon {
             .flatten();
         last.insert(cx.profile.name.clone(), summary.clone());
         summary
+    }
+}
+
+fn build_call(cx: &BuildCx) -> Call {
+    Call::Build {
+        options: cx.options.clone(),
+        features: cx.features.clone(),
+    }
+}
+
+impl HelperAddon {
+    fn batch(&self, built: Built) -> AssetBatch {
+        let mut items = built.items.into_iter();
+        AssetBatch {
+            ops: built
+                .ops
+                .into_iter()
+                .map(|op| Op {
+                    op,
+                    origin: Origin {
+                        addon: self.manifest.id.clone(),
+                        item: items.next().flatten(),
+                    },
+                })
+                .collect(),
+            lines: built.lines,
+            warnings: built.warnings,
+            fields: built.fields,
+            reads: built.reads,
+        }
+    }
+
+    /// The build hook's ops, answered with the reply kept at `kept` while nothing it depends on changed,
+    /// else from the helper, whose reply is then kept there; and whether the helper ran, and why.
+    pub fn build_kept(&self, cx: &BuildCx, kept: &Path) -> Result<(AssetBatch, Option<HookRun>)> {
+        if !self.spec.build {
+            return Ok((AssetBatch::default(), None));
+        }
+        let call = build_call(cx);
+        let asking = reads::Asking::new(&super::hello(&cx.cx), &call);
+        let folders = reads::Folders {
+            own: &self.dir,
+            data: cx.cx.data_dir,
+        };
+        let why = match reads::reuse(kept, &asking, &folders, &cx.cx) {
+            Ok((built, why)) => return Ok((self.batch(built), Some(HookRun::Reused(why)))),
+            Err(why) => why,
+        };
+        let started = SystemTime::now();
+        let mut asked = Vec::new();
+        let built: Result<Built> = self.call_asking(
+            self.lock(),
+            &cx.cx,
+            call,
+            self.timeouts.long,
+            None,
+            Some(&mut asked),
+        );
+        match built {
+            Ok(built) => {
+                reads::keep(kept, asking, &built, asked, started, &folders, self.settled);
+                Ok((self.batch(built), Some(HookRun::Ran(why))))
+            }
+            Err(e) => {
+                reads::forget(kept);
+                Err(e)
+            }
+        }
     }
 }
 
