@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/14535d850.c;xref:0x140204fe0,0x14023b9a0",
-  "notes": "CRT strcmp (qword-at-a-time). 218+ callers (cutscene command parser, morph rig parse, asset resolve)."
+  "notes": "MSVC x64 CRT strcmp(s1, s2): compares bytes until s1 is 8-byte aligned, then a qword at a time with unaligned s2 loads, falling back to bytes on a mismatch or when s2 is within 8 bytes of a 4 KiB page end (0x14535d880). Bytes compare unsigned and it returns -1, 0 or 1 in the full rax, not a difference. 5366 direct calls (4867 in .xtls from 2048 functions, 499 in .data1) and 43 jumps (9 in .xtls, 34 in .data1, 33 of them nop+jmp stubs); its address is OpenSSL lhash's default comparator (0x144f15e41). Callers include the cutscene command parser, morph rig parse and asset resolve."
  },
  "signature": {
   "id": "core.crt_strcmp",
