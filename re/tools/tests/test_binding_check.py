@@ -952,9 +952,10 @@ class UnfoldKeepsBindgenOutput(unittest.TestCase):
             records = {r.name: r.relpath for r in br.Store.get().records if r.author == 'kb-import' and not r.proofs}
             before = finish(first, os.path.join(tmp, 'before'))
             to_fold, to_unfold = {}, {}
+            tabled = {r['name'] for t in ('functions', 'globals') for r in kb.read_table(t)[0] if not r.get('_record')}
             for b in json.loads(before['bindings.json'])['bindings']:
-                pick = to_fold if b['id'] in records else to_unfold
-                if sum(1 for k in pick.values() if k == b['kind']) < self.PER_KIND:
+                pick = to_fold if b['id'] in records else to_unfold if b['id'] in tabled else None
+                if pick is not None and sum(1 for k in pick.values() if k == b['kind']) < self.PER_KIND:
                     pick[b['id']] = b['kind']
             subsystem = {r['name']: r['subsystem'] for t in ('functions', 'globals') for r in kb.read_table(t)[0]}
             fold(outputs, list(to_fold))
