@@ -223,6 +223,7 @@ impl Watcher {
     /// nothing leaves the machine. With `retry_nonce` the session nonce the start could not get is asked
     /// for again on a thread of its own, for `game_build`. Each lap is kept with `integrity`, what the session did about the
     /// integrity module, for its upload meta.
+    #[allow(clippy::too_many_arguments)]
     pub fn start(
         data: &Path,
         game: &Path,
