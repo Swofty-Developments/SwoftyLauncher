@@ -6,7 +6,9 @@ use std::time::SystemTime;
 use swofty_core::diagnostics::launch;
 use swofty_core::platform::ea_app::Handoff;
 use swofty_core::platform::run_as_admin as compat;
-use swofty_core::session::{LOADER_LOG, LogMark};
+#[cfg(unix)]
+use swofty_core::session::LOADER_LOG;
+use swofty_core::session::LogMark;
 
 use super::setup::{handoff_failed, refused_elevation};
 #[cfg(unix)]
