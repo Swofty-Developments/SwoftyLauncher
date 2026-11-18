@@ -45,6 +45,26 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/142f62580.c;xref:0x140240cb2,0x140240db1,0x14026abc3",
    "notes": "V3743 slot <0x20 via +0x988 byte table, type 5 copies another request, [this+0x948]+0x28 vehicle search, 'VEHICLE_PLACEMENT'/'Invalid slot (%d)' strings verified."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Sess_VehiclePlacement_ResolveTransform",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142f62580-0x142f629e0,0x142f629e0-0x142f62b28,0x140240c80-0x140240d3b,0x140240d40-0x140240e61,0x14023e255-0x14023e2f6,0x14020a740-0x14020a7be,0x140349e41-0x140349eb2,0x142f63019-0x142f63335,0x1503fecf0-0x1503fed5a,0x150818fb9-0x15081902d,1.0.145 0x142f64b10-0x142f64f70;xref:0x142f625ba,0x142f62637,0x142f625c4,0x142f6260e,0x142f62785,0x142f6271a,0x142f62652,0x142f627a6,0x142f627f8,0x142f6288e,0x142f628bd,0x142f629c7,0x140240cb2,0x14023e2a0,0x14023e2f6",
+   "notes": "V100057 Blind: partial. Confirmed: 2 args (rcx placement P, rdx node r); r+0x18 u32 slot, unsigned <32 (0x142f625ba); r+0x1c u8 type, unsigned <=8 via jump table (0x142f62637); P+0x988 slot->id byte map, 0xff=none; vehicle scan [P+0x948]+0x28..+0x30 stride 16, [v+0x58]+0xe8==id; log VEHICLE_PLACEMENT/Invalid slot (%d); census 153/77 (.xtls 145,.data1 8). Imprecise: output is not the vehicle's 4x4: rows come from node [P+0x38+slot*8] (resolved recursively), the vehicle adds only a translation v+0xb00(+0xb10). Type 5 = Q x L, Q=[P+0x238+slot*8] (0x142f628bd); a copy only when the slot is unmapped. Types 0,2,6,7,8 write nothing, >8 identity. Void."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Sess_VehiclePlacement_ResolveTransform",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142f62580-0x142f629e0,0x142f629e0-0x142f62b28,0x14023c600-0x14023e540,0x14847a000-0x14847a080,1.0.145 0x142f64b10-0x142f64f70;xref:0x142f625ba,0x142f625c4,0x142f6260e,0x142f62642,0x142f629c7,0x142f62666,0x142f627b4,0x142f627b9,0x142f628bd,0x142f62743,0x142f62796,0x142f62a13,0x14023e2a0,0x14023e2f6,0x140240cb2,0x140240db1,0x14026abc3",
+   "notes": "V100058 Blind: agree. Own disasm 0x142f62580-0x142f629e0 (247 insns) matches every checkable claim: rcx P, rdx node, void (no caller reads rax); u32 slot +0x18 unsigned <32, u8 type +0x1c; map P+0x988 (0xff none); match [v+0x58]+0xe8 over 16-byte list [P+0x948]+0x28..+0x30 (null v+0x58 skipped); table 0x1458042c4: 0,2,6,7,8 no write, >8 identity; type 1/4/3/5 math, c 0x1460fe940, Q x L 0x142f628bd; log and type-5 copy 0x142f62743; mutual recursion with 0x142f629e0. Tail jumps 0x14023e2a0/0x14023e2f6 on SetGarageLocation/SetGridLocation strings; Game_PitstopCutScene_Initialise 0x14026aac0 calls at 0x14026abc3. Census 153/77 matches. 1.0.145 twin 0x142f64b10 247/247 same."
   }
  ],
  "proofs": []

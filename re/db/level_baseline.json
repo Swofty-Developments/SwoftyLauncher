@@ -3451,7 +3451,6 @@
   "func:Sess_VehiclePlacement_BroadcastGrid": "V1909",
   "func:Sess_VehiclePlacement_FormatFlags": "V3741",
   "func:Sess_VehiclePlacement_HandleGridRequest": "V1908",
-  "func:Sess_VehiclePlacement_ResolveTransform": "V3743",
   "func:Sess_VehicleProgress_IsPastLapFraction": "V6761",
   "func:Sess_ViewReplay_EnterPhotoMode": "V3716",
   "func:Sess_VirtualLapsRuleset_FinaliseResults": "V4156",
