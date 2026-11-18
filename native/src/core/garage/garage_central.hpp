@@ -4,7 +4,7 @@
 #include "core/garage/garage_rig.hpp"
 #include <algorithm>
 
-namespace runtime::garage_placement {
+namespace garage {
 
 using CrewDelta = std::array<float, 3>;
 enum class CrewRole : unsigned { mb, eb1 };
@@ -197,4 +197,4 @@ CrewResult set_central_crew(const Owner& owner, const CrewPlacement& saved, bool
         return restore_pair() ? CrewResult::rolled_back : CrewResult::rollback_failed;
     return CrewResult::applied;
 }
-} // namespace runtime::garage_placement
+} // namespace garage

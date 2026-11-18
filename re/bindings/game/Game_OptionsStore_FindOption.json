@@ -59,6 +59,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/142b5dfd0.c;xref:0x1407a49e6,0x1407a7dc3",
    "notes": "V3466 FNV-1a over C string * seed +0x10, 16B slots +0x18, meta +0x20, mask +0x30, strcmp 0x14535d850; 431 refs incl benchmark/HUD callers"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_OptionsStore_FindOption",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142b5dfd0-0x142b5e116,0x14535d850-0x14535d8b6,0x14315da96-0x14315dae5,0x1407a49b5-0x1407a4a03,0x1414a8e7c-0x1414a8ed3,0x140c52576-0x140c52599,1.0.145 0x142b60560-0x142b606a6;xref:0x142b5dfed,0x142b5e02f,0x142b5e0a7,0x142b5e0bc,0x142b5e0f2,0x142b5e100,0x14315dac8,0x1407a49e6,0x1414a8eba,0x152be3793",
+   "notes": "V100051 Blind: agree. rcx=map, rdx=address of a const char* (0x142b5dfed). FNV-1a 64 (0x142b5dfe3/dffd), *[map+0x10], ^>>33; info=[+0x40]+((h&0x1f)>>[+0x44]), idx=(h>>5)&[+0x30]; robin-hood probe unrolled x2 over 16-byte slots [+0x18] and info bytes [+0x20], null slot keys skipped, strcmp 0x14535d850. Hit returns the slot index; miss returns ([+0x20]-[+0x18])>>4 = end, or 0 when mask==0 (0x142b5e100). Callers add idx*16 to store+0x288, cmp store+0x290, read entry+8. Census row 423/235/.data1:60,.xtls:363/8/4/4/0/0/0 matches census.py. 120 sites load g_Game_OptionsStore 0x146079258; others pass +0x270 of member-held pointers (0x1414a8e95). 1.0.145 twin 0x142b60560 identical."
   }
  ],
  "proofs": []

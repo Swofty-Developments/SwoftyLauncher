@@ -9,7 +9,7 @@
   "subsystem": "vm",
   "proto": "int64_t Vm_Build_AcclaimBadgeRow(void *vm, void *a, void *b, int64_t *node, void *c)",
   "evidence": "decomp:re/decomp/14167c320.c;xref:0x1419aa466;xref:0x141a12bae;xref:0x141a6bdee",
-  "notes": "myteam-g2: Creates/refreshes a corporate/sponsor row node: Vm_Resolve_RegistryNode, Ui_Build_ShowAcclaim, Vm_Holder_SetCStr and Ne_Property_SetS64IfChanged on its bindings. UI only (contract hub, corporate setup cards, sponsor livery)."
+  "notes": "myteam-g2: Creates/refreshes a corporate/sponsor row node: Vm_Resolve_RegistryNode, Ui_Build_ShowAcclaim, Vm_Holder_SetCStr and Ne_Property_SetUIDBRefIfChanged on its bindings. UI only (contract hub, corporate setup cards, sponsor livery)."
  },
  "signature": {
   "id": "vm.build_acclaim_badge_row",

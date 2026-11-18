@@ -3,7 +3,7 @@
 
 #include "core/garage/garage_owner.hpp"
 
-namespace runtime::garage_placement {
+namespace garage {
 
 enum class RootResult { unavailable, invalid_transform, applied, rolled_back, rollback_failed };
 
@@ -142,4 +142,4 @@ RootResult set_garage_root(const Owner& owner, const Matrix& root, Read&& read, 
     return RootResult::applied;
 }
 
-} // namespace runtime::garage_placement
+} // namespace garage

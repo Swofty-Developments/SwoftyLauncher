@@ -1,0 +1,60 @@
+{
+ "schema": 1,
+ "name": "Sess_LapTimes_ReportLapInvalidation_Thunk",
+ "table": "functions",
+ "author": "load-game",
+ "row": {
+  "addr": "0x142f2bda0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_LapTimes_ReportLapInvalidation_Thunk(void *lapTimes, uint8_t car, uint32_t lap, uint8_t valid)",
+  "evidence": "decomp:own disasm 0x14f7403b0-0x14f7404db;xref:0x142941328,0x14356d8e2,0x1505c46bd,0x1505c47d3,0x14d4f3b9c,0x14d4f3c28,0x14d4f45ba,0x14d4f4631",
+  "notes": "5-byte jmp into .data1 body=0x14f7403b0 (plaintext in the KB file). Each caller first writes a lap record's valid key ([lapTimes+0x58][car] + index*200, index u8 +0x9c80 at most 199: valid while (u64 +0xe0 & 1) == u8 +0xd8; the 200 records of 200 bytes start at entry+0x40, so +0xd8/+0xe0 are a record's +0x98/+0xa0 and +0x9c80 is the first byte after them; Sess_LapTimes_ReportNewLapTime reads its index from u8 entry+0x38 instead, 0x142f2f7cc). For car <= 0x1f the body returns unless the lobby byte [[[[lapTimes+0x78]+0x88]+0x260]+0xf88]+0x101+car*2 equals the local machine's id (vcall +0x18 on [[..]+0x40]+0xd8); for a higher id it returns when [..+0x28] > 1. It logs LAPTIMES 'Reporting LAP INVALIDATION (%d) for vehicle Ix %d' (lap, car) and posts a message (vtable 0x1458015e0, +0x08 0x500000005, +0x10 u8 car, +0x14 u32 lap, +0x18 u8 valid) through 0x14402e500 on [lapTimes+0x90]. valid 0 follows a write that makes the record invalid (+0xd8 = ((+0xe0 & 1) == 0)), with lap = the record index: the rules update's corner cutting branch at 0x14356d8e2 ('Corner_Cutting: Invalidate Current Lap!'), Sess_Rules_InvalidateLap_Thunk's body at 0x1505c46bd and 0x1505c47d3, and Game_PracticeProgrammeSystem_BindCompareLap at 0x142941328 when the telemetry lap is not clean. valid 1 follows a write that makes the record valid (+0xd8 = +0xe0 & 1), with lap = the current index + 1 (wrapping at 200): the .data1 bodies 0x14d4f3ad0 (thunk 0x142924700, at 0x14d4f3b9c and 0x14d4f3c28) and 0x14d4f4540 (at 0x14d4f45ba and 0x14d4f4631), and Game_PracticeProgrammeSystem_BindCompareLap at 0x142941328 when the telemetry lap is clean. Steam 1.0.145 thunk 0x142f2e330 (body 0x14f2ef320) and EA 1.0.145 0x142f22310 (body 0x14e2d8060, restored dump): aligned 75 of 76 instructions, the port adds one protector store to a global in the log gate; +0x78/+0x90/+0x101 at the same places."
+ },
+ "signature": {
+  "id": "session.lap_times_report_lap_invalidation_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? FC 3C CE D3 01 5D 0D 5F 9C E9 8E",
+  "match": "0x142f2bda0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f2bda0",
+  "kind": "func_start",
+  "names": [
+   "Sess_LapTimes_ReportLapInvalidation_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-18",
+    "by": "load-game",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "load-game",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f2bda0",
+    "target": "0x142f2bda0"
+   },
+   "sigcheck": "passed",
+   "digest": "c08ed27a1b2fb3a342e71c73f9047ff5ba36ade4a935e859777d52b111a7ef61"
+  }
+ ]
+}

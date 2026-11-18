@@ -1342,6 +1342,18 @@
   "Game_SessionStateTalkingPoints_ParseParams_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? 37 83 18 B8 0F 83 C9 25 10 FE E9 1F 41 03",
    "note": "The KB pattern is the jmp and the protector filler after it, which differs on EA 1.0.145, so it matches nothing there. The EA 1.0.145 thunk is 0x142d8b0f0, at the shift -0x9d30 of Sess_StoryStartLights_OnStateEnter and Sess_PlayerTerminalDamage_Enter on either side, and the same slot of the same vtable: the pointer at 0x1458f7a08 is the KB 0x1457e2cf8, and the slots around it hold the KB slots at that shift. Its jmp reaches the .xtls body 0x14d89d470, which is the KB body 0x14eb3abf0 instruction for instruction (71 of 72; the protector rewrote one rip-relative junk instruction), with the +0xea1 store at the same place. The pattern is the EA jmp and filler, as long as the KB one; it matches once in .arch."
+  },
+  "Game_TelemetryLaps_ApplyLapValidity_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 32 E9 96 6D B2 00 D9 83",
+   "note": "The pattern is anchored on the EA image (the decrypted dump with the core's patches restored from its loader.log): it matches once, at the thunk 0x14291f480; Game_TelemetryLaps_OnNewLapRecorded calls it at the same place (0x1437a044c), and its jmp target 0x14c61ad90 is the KB body's twin."
+  },
+  "Sess_LapTimes_ReportLapInvalidation_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 5F 44 0F 87 67 74 99 01",
+   "note": "The pattern is anchored on the EA image (the decrypted dump with the core's patches restored from its loader.log): it matches once, at the thunk 0x142f22310; the rules update and Game_PracticeProgrammeSystem_BindCompareLap call it at the same places (0x143560072, 0x14293ca68), and its jmp target 0x14e2d8060 is the KB body's twin."
+  },
+  "Sess_Rules_InvalidateLap_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? DB 8D 6A B4 84 2A 0F 84",
+   "note": "The pattern is anchored on the EA image (the decrypted dump with the core's patches restored from its loader.log): it matches once, at the thunk 0x143567460; the rules update calls it at the same place (0x14355e2f4), and its jmp target 0x14efc1eb0 is the KB body's twin."
   }
  },
  "hints": {

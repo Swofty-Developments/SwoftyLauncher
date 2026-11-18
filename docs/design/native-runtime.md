@@ -206,6 +206,21 @@ constexpr bp::Gate LEVERS{"live car levers", &CAR_LEVERS, LEVER_BINDINGS};   // 
 
 An exe the table does not list holds no proof, so gated code stays off on a game update until its layout is checked again with `re/tools/sigport.py --compare` and `re/tools/sigverify.py --disp`. Adding a build is one row in `KNOWN` and one `Build` value. `same_build()` (the KB build) and `verified_build()` (`proofs::VERIFIED_LAYOUT`) read the same table. `native/test/build_proof_test.cpp` covers the KB build, Steam 1.0.145 and an unknown build.
 
+## Deprecated and dropped bindings
+
+A `bindings.json` entry can carry `"deprecated": {"since", "reason", "replacement"?}`, and the set a top-level `"dropped": [{"id", "since", "reason", "replacement"?}]`. `runtime/loader/binding_policy.hpp` reads both when the set loads, and `BindingSet::note_use` answers each resolve. The set logs its counts at load when either is not 0, and an id its line on its first resolve:
+
+```text
+[core] bindings.json: 2 binding(s) deprecated, 1 dropped
+[bind] id=Game_Old deprecated since=1.10.0 replacement=Game_New reason="split in two by the 1.0.145 patch"
+[bind] id=Game_Gone dropped since=1.10.0 replacement=- reason="the game no longer has it"
+```
+
+- A deprecated id still resolves. A dropped id resolves to 0, like an id the set does not list, and an addon with a mixin on it is dropped with `needs <id>, which <file> drops`.
+- `since` and `replacement` are printable ASCII without a space, `"` or `\`. `reason` is printable ASCII, 1 to 300 characters, without `"` or `\`.
+- A malformed entry logs one `[core] <file>: ...` line at load and is left out: its binding resolves with no notice, or nothing is dropped. A `dropped` id the set still lists is malformed.
+- `native/test/binding_policy_test.cpp` covers each line and the malformed entries.
+
 ## Step lines
 
 A boot or a load logs each phase as one stable line that the launcher's tools read (`diagnostics/steps.hpp`):
@@ -337,6 +352,18 @@ The career operations (`SwoftyCareerOps`, standard library 1.6) are in `career/o
 | `*_plan.hpp`, `driver_rows.hpp`, `fuel_logic.hpp` | the pure planners the host tests run (`run_career_ops_test.sh`) |
 
 An operation runs on the flow thread (`flow_tid`) or before the first frame, and resolves its bindings once through `bind`.
+
+## Garage namespaces
+
+Code in `core/garage/` is in `garage::`. `garage_placement.cpp` defines `garage_placement_reset`, which `runtime/runtime.hpp` declares, and its core set in `runtime`, over `garage::edits`:
+
+| Namespace | Files |
+|---|---|
+| `garage` | `garage_owner.hpp`, `garage_car_pose.hpp`, `garage_central.hpp` (with `crew_detail`), `garage_rig.hpp` (with `rig_detail`) |
+| `garage::edits` | `garage_edits.hpp`, `garage_placement.cpp`, `garage_crew_edits.cpp`, `garage_member_edits.cpp`, `garage_car_edits.cpp` |
+| `garage::members`, `garage::vehicle` | `garage_members.hpp`, `garage_vehicle.hpp` |
+| `garage::crew_pose` | `garage_crew_pose.hpp` |
+| `garage::steam_26566308` | `steam_26566308.hpp`: the authored pits of Steam build 26566308 |
 
 ## Units split across files
 

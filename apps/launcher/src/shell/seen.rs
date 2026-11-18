@@ -2,6 +2,7 @@ use swofty_core::diagnostics::launch;
 use swofty_core::diagnostics::quarantine;
 use swofty_core::game_folder::recovery::Notice;
 use swofty_core::game_folder::stock;
+use swofty_core::online::server::integrity;
 use swofty_core::store::Store;
 
 use crate::services::game;
@@ -15,6 +16,7 @@ pub(crate) struct Seen {
     pub(crate) not_stock: f64,
     pub(crate) blocked: f64,
     pub(crate) launch_failed: f64,
+    pub(crate) integrity_missing: f64,
 }
 
 impl Seen {
@@ -26,6 +28,7 @@ impl Seen {
             not_stock: stock::Report::read(root).map_or(0.0, |r| r.at),
             blocked: game::blocked_at(root).unwrap_or(0.0),
             launch_failed: launch::Failure::read(root).map_or(0.0, |f| f.at),
+            integrity_missing: integrity::Notice::read(root).map_or(0.0, |n| n.at),
         }
     }
 }

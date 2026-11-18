@@ -6,6 +6,7 @@ use swofty_core::diagnostics::quarantine;
 use swofty_core::game_folder::busy::Busy;
 use swofty_core::game_folder::recovery::{Blocked, Notice, SessionLock};
 use swofty_core::game_folder::stock;
+use swofty_core::online::server::integrity;
 use swofty_core::platform::process::{GameProcess, game_processes};
 use swofty_core::platform::steam;
 use swofty_core::session::SessionRecord;
@@ -30,6 +31,7 @@ pub struct Probe {
     pub blocked: Option<Blocked>,
     pub blocked_at: Option<f64>,
     pub launch_failed: Option<launch::Failure>,
+    pub integrity_missing: Option<integrity::Notice>,
     pub busy: Option<Busy>,
     pub(crate) banner_profile: String,
     pub(crate) banner: Option<Option<crate::features::career_saves::Banner>>,
@@ -63,6 +65,7 @@ pub fn probe(
         blocked: Blocked::read(&store.root),
         blocked_at: blocked_at(&store.root),
         launch_failed: launch::Failure::read(&store.root),
+        integrity_missing: integrity::Notice::read(&store.root),
         busy: build_state(store),
         banner_profile: profile.to_owned(),
         banner: banner_due

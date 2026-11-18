@@ -7,6 +7,7 @@
 #include "core/telemetry/telemetry_feed.hpp"
 #include "core/telemetry/udp_telemetry_logic.hpp"
 
+#include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <map>
@@ -1184,6 +1185,36 @@ static void test_steam_26566308()
     a.put<uint64_t>(components[0] + L::tyres::built_for, 1);
     live.update(3.0);
     CHECK(live.cars[0].have & SWOFTY_LIVE_HAVE_TYRE);
+
+    if constexpr (L::HAS_TYRE_DAMAGE) {
+        namespace D = L::tyre_damage;
+        CHECK(!(live.cars[1].have & SWOFTY_LIVE_HAVE_TYRE_DAMAGE));
+        uintptr_t physics = a.alloc(0x60), car = a.alloc(D::suspension + 8), susp = a.alloc(D::wheels + 32), wheel[4];
+        a.put<uintptr_t>(components[1] + D::physics, physics);
+        a.put<uintptr_t>(physics + D::car, car);
+        a.put<uintptr_t>(car + D::suspension, susp);
+        const uint8_t flags[4] = {0x00, 0x0b, 0x02, 0x04};
+        const float deflation[4] = {0, 2.0f, 1.25f, 0};
+        for (unsigned i = 0; i < 4; i++) {
+            wheel[i] = a.alloc(0xa0);
+            a.put<uintptr_t>(susp + D::wheels + 8 * i, wheel[i]);
+            a.put<uint8_t>(wheel[i] + D::flags, flags[i]);
+            a.put<float>(wheel[i] + D::deflation, deflation[i]);
+        }
+        Sites with = sites;
+        with.tyre_damage = true;
+        Live dmg(w.mem(), with, d.gates);
+        dmg.update(0.0);
+        dmg.update(1.0);
+        const SwoftyLiveCar &c = dmg.cars[1];
+        CHECK((c.have & SWOFTY_LIVE_HAVE_TYRE_DAMAGE) && c.tyre_damage[0] == 0 && c.tyre_damage[1] == SWOFTY_LIVE_TYRE_BURST &&
+              c.tyre_damage[2] == SWOFTY_LIVE_TYRE_PUNCTURED && c.tyre_damage[3] == 0 && c.tyre_deflation[1] == 2.0f &&
+              c.tyre_deflation[2] == 1.25f);
+        CHECK(!(dmg.cars[0].have & SWOFTY_LIVE_HAVE_TYRE_DAMAGE) && (dmg.cars[0].have & SWOFTY_LIVE_HAVE_TYRE));
+        a.put<float>(wheel[3] + D::deflation, NAN);
+        dmg.update(2.0);
+        CHECK(!(dmg.cars[1].have & SWOFTY_LIVE_HAVE_TYRE_DAMAGE) && (dmg.cars[1].have & SWOFTY_LIVE_HAVE_TYRE));
+    }
 
     sites.key_pit = 0;
     d = decide(sites, *build, false);

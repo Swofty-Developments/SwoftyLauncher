@@ -103,6 +103,13 @@ pub(super) fn write_archive_copying(
     entries.extend(copied.into_iter().map(Entry::Owned));
     let dir = dst.parent().expect("has parent");
     std::fs::create_dir_all(dir).map_err(io_err(dir))?;
+    #[cfg(test)]
+    WRITTEN.with(|w| w.borrow_mut().push(dst.to_owned()));
     file.write(entries, dst)?;
     Ok(())
+}
+
+#[cfg(test)]
+thread_local! {
+    pub(super) static WRITTEN: std::cell::RefCell<Vec<std::path::PathBuf>> = const { std::cell::RefCell::new(Vec::new()) };
 }

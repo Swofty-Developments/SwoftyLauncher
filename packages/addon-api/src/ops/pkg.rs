@@ -2,6 +2,12 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
+/// The vehicle placements a world layer holds per kind, with the ids 1 to 32. The game stores a placement request at
+/// slot `Id - 1` of its kind's 32 (Sess_VehiclePlacementRequest_Register, 0x142f60c80) with no bound, so another id
+/// writes into another kind's requests or past the table.
+pub const PLACEMENT_SLOTS: u32 = 32;
+const PLACEMENT_KEYS: [&str; 2] = ["overrides.VehPlacement.Id", "overrides.F1Garage.id"];
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct PkgPatch {
@@ -85,4 +91,41 @@ pub enum PkgEdit {
         path: String,
         value: serde_json::Value,
     },
+}
+
+fn placement_id(key: &str, value: &serde_json::Value) -> Option<String> {
+    let id: i128 = match value {
+        serde_json::Value::Number(n) => n
+            .as_i64()
+            .map(i128::from)
+            .or_else(|| n.as_u64().map(i128::from))?,
+        serde_json::Value::String(s) => s.trim().parse().ok()?,
+        _ => return None,
+    };
+    if (1..=i128::from(PLACEMENT_SLOTS)).contains(&id) {
+        return None;
+    }
+    Some(format!(
+        "{key} {id} is outside 1..={PLACEMENT_SLOTS}, the vehicle placements the game holds per kind"
+    ))
+}
+
+impl PkgEdit {
+    /// Why the edit is refused: it gives an entry a vehicle placement or garage id outside 1..=[`PLACEMENT_SLOTS`].
+    pub fn refusal(&self) -> Option<String> {
+        match self {
+            PkgEdit::CloneEntry { name, set, .. } => PLACEMENT_KEYS.iter().find_map(|key| {
+                let why = placement_id(key, set.get(*key)?)?;
+                Some(format!("clone-entry {name}: {why}"))
+            }),
+            PkgEdit::SetValue { path, value } => PLACEMENT_KEYS.iter().find_map(|key| {
+                if path != key && !path.strip_suffix(key)?.ends_with('.') {
+                    return None;
+                }
+                let why = placement_id(key, value)?;
+                Some(format!("set-value {path}: {why}"))
+            }),
+            _ => None,
+        }
+    }
 }

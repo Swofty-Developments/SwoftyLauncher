@@ -1423,5 +1423,11 @@
   "Too many tracks": "Pistas demais",
   "Left out: the game holds {room} tracks": "Deixada de fora: o jogo comporta {room} pistas",
   "{shown} and {more} more": "{shown} e mais {more}",
-  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["O jogo comporta {room} pistas, então {count} pista fica de fora desta compilação: {list}. Desative alguns complementos de pistas para jogá-la.", "O jogo comporta {room} pistas, então {count} pistas ficam de fora desta compilação: {list}. Desative alguns complementos de pistas para jogá-las.", "O jogo comporta {room} pistas, então {count} pistas ficam de fora desta compilação: {list}. Desative alguns complementos de pistas para jogá-las."]
+  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["O jogo comporta {room} pistas, então {count} pista fica de fora desta compilação: {list}. Desative alguns complementos de pistas para jogá-la.", "O jogo comporta {room} pistas, então {count} pistas ficam de fora desta compilação: {list}. Desative alguns complementos de pistas para jogá-las.", "O jogo comporta {room} pistas, então {count} pistas ficam de fora desta compilação: {list}. Desative alguns complementos de pistas para jogá-las."],
+  "The launcher couldn't reach Swofty's server in time.": "O launcher não conseguiu acessar o servidor do Swofty a tempo.",
+  "Swofty's server didn't offer it to you.": "O servidor do Swofty não o ofereceu para você.",
+  "The download failed its safety check.": "O download não passou na verificação de segurança.",
+  "Time Trial laps you drive this session won't be sealed, so they won't rank on the boards. Everything else works as usual. To try again, close the game and press Play.": "As voltas de Contrarrelógio que você fizer nesta sessão não serão seladas, então não vão entrar nas classificações. Todo o resto funciona normalmente. Para tentar de novo, feche o jogo e clique em Jogar.",
+  "Details: {why}": "Detalhes: {why}",
+  "The Time Trial integrity module didn't load": "O módulo de integridade do Contrarrelógio não foi carregado"
 }

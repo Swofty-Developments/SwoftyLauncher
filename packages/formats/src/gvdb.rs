@@ -435,6 +435,26 @@ mod tests {
     }
 
     #[test]
+    fn inserting_a_record_shifts_the_index_and_the_first_record_of_its_key_stays_first() {
+        let mut db = sample();
+        let name = "tracks.Track_3.instanceName";
+        let start = built();
+        index(&db);
+        db.records.insert(1, Record::new(name, 4, "sakhir"));
+        assert_eq!(db.get_text(name).as_deref(), Some("bahrain"));
+        db.records.insert(0, Record::new(name, 4, "first"));
+        assert_eq!(db.get_text(name).as_deref(), Some("first"));
+        assert_eq!(db.position(fnv1a64("tracks._Track_instancecount_")), Some(5));
+        db.records
+            .insert(6, Record::new("tracks.Track_4.instanceName", 4, "imola"));
+        assert_eq!(db.position(fnv1a64("tracks.Track_4.instanceName")), Some(6));
+        for (i, r) in db.records.iter().enumerate() {
+            assert!(db.position(r.key).is_some_and(|at| at <= i));
+        }
+        assert_eq!(built() - start, 1);
+    }
+
+    #[test]
     fn many_keys_come_from_the_index_once_one_is_built() {
         let mut db = sample();
         db.records
