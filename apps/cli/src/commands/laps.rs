@@ -275,7 +275,7 @@ pub fn begin(
         return None;
     };
     let nonce = match upload::nonce(&store.root, config) {
-        Ok(n) => Some(n.nonce),
+        Ok(n) => Some(n),
         Err(e) => {
             say(
                 "laps",
@@ -284,7 +284,7 @@ pub fn begin(
             None
         }
     };
-    if let Err(e) = timetrial::write_session_keys(&g.dir, nonce.as_deref(), config.time_trial_ingame) {
+    if let Err(e) = timetrial::write_session_keys(&g.dir, nonce.as_ref(), config.time_trial_ingame) {
         say("laps", &format!("lap recording is off: {e}"));
         return None;
     }

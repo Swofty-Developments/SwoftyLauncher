@@ -101,7 +101,7 @@ fn nonce_until_issued(
         }
         match nonce(data, config) {
             Ok(n) => {
-                match write_session_keys(game, Some(&n.nonce), config.time_trial_ingame) {
+                match write_session_keys(game, Some(&n), config.time_trial_ingame) {
                     Ok(()) => say(&format!(
                         "session nonce issued on retry {}: the laps written from here carry it",
                         attempt + 1

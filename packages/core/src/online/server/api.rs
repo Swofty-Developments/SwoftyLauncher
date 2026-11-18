@@ -131,6 +131,10 @@ pub struct Nonce {
     pub nonce: String,
     #[serde(default)]
     pub expires: u64,
+    /// What the server asks the integrity module to prove about the game's image at each lap end, when it sends
+    /// a challenge. Older servers don't.
+    #[serde(default)]
+    pub challenge: Option<Value>,
 }
 
 /// What the queue needs of the server, so the queue's logic can run against a fake.
