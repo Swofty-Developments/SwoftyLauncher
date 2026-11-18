@@ -127,6 +127,7 @@ On Linux, the launcher hands the EA app a launch link through a command you set.
 ```
 
 - `ea_launch_command` runs with `sh -c`. With a link, it must reach the EA app that is already running, in the same Wine prefix.
+- A path with spaces written without quotes, such as `/home/me/.steam/steam/steamapps/common/Proton - Experimental/proton`, is put in quotes when the whole path is on disk. This covers the program, its arguments and the value of a leading `NAME=` setting, up to the first quote or other shell syntax. When the shell finds no program at the path, the launch log says so, and the shell's message is in `ea_handoff.log` in the session folder.
 - When the EA app is closed, **Play** runs `ea_launch_command` with `{url}` left out to start it, waits up to 90 seconds for `EADesktop.exe`, then 10 seconds more before it hands over the link. When that command exits with an error, the launch link starts the EA app instead.
 - The EA app must keep running after `swofty` exits. A sandbox that ends with its parent, such as `steam-run`, needs `setsid -f` in front of the command that starts the EA app.
 - `ea_prefix` is the EA app's Wine prefix: the folder with `user.reg`, or the Proton folder that holds `pfx`. Before it starts the EA app, the launcher writes the in-game loader's DLL setting there and leaves it in place. Wine reads it only when the EA app starts, so the first modded **Play** with the EA app open closes the EA app and starts it again.
