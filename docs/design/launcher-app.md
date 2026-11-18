@@ -209,6 +209,8 @@ if let Some(played) = step.played() {
 }
 ```
 
+The DB Editor's `DbPrompt` works the same way: an import or a new addon hands the shell the addon to turn on in the profile, and a draft that has to be left hands it the Save / Discard dialog.
+
 `Press::of` decides what a press comes to before the checks run, and `Step::of` turns the checks' gate and verdict into the one thing Play does next. The tests in `shell/play.rs` pin each result of both.
 
 ## When to use an entity instead
