@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141ca43e0.c;xref:0x145741c48",
-  "notes": "LoadingScreenViewModel slot 13 (onScreenActivated): fills loading_tips_list, track / session / game_mode names, story chapter, branding_override, UI.ShowLoadingTips hints, then releases fade reason FrontEnd (bit 1) -> fade in. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2675)"
+  "notes": "LoadingScreenViewModel slot 13 (onScreenActivated): fills loading_tips_list, track / session / game_mode names, story chapter, branding_override, UI.ShowLoadingTips hints, then releases fade reason FrontEnd (bit 1) -> fade in. Callers: census steam 0x1ca43e0. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2675)"
  },
  "signature": {
   "id": "game.loading_screen_v_m_on_screen_activated",

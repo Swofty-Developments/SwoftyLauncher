@@ -9,7 +9,7 @@
   "subsystem": "session",
   "proto": "-",
   "evidence": "decomp:re/decomp/142f29820.c;xref:0x142d565bb,0x142d5d8bc",
-  "notes": "(raceState): zeroes +0xa0..+0x178 block, recomputes +0x1d0 via 0x142e60e00 from session world, resets every vehicle (+0x88..+0x90 list) with 0x142f21ee0, calls 0x142f273e0 (flag from settings +0x1cda/+0x1cd8), then refreshes 36 entries (+0x428 stride 0x10, byte +9) from 0x14358d1e0(+0x410,i). Callers: Sess_FormationLap_Update, Sess_Session_ResetForRestart."
+  "notes": "(raceState): zeroes +0xa0..+0x178 block, recomputes +0x1d0 via 0x142e60e00 from session world, resets every vehicle (+0x88..+0x90 list) with 0x142f21ee0, calls 0x142f273e0 (flag from settings +0x1cda/+0x1cd8), then refreshes 36 entries (+0x428 stride 0x10, byte +9) from 0x14358d1e0(+0x410,i). Callers: Sess_FormationLap_Update, Sess_Session_ResetForRestart. Callers: census steam 0x2f29820."
  },
  "signature": {
   "id": "session.race_state_reset_timing_and_tow_state",

@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/144121bc0.c;xref:0x1406a6783",
-  "notes": "Equality of two user-id records: same type byte (0 none, 3 anon, 7 special) then 64-bit XOR-folded id compare. 376 callers (ReplicationManagers, ElasticSearch batch)."
+  "notes": "Equality of two user-id records, bool(a, b) in al; it writes neither. With equal type bytes (+0): type 0 is never equal, not even to another type 0 (0x144121bdf); type 3 compares the +0x38 bytes when either is non-zero and otherwise the XOR-folded ids [+8]^[+0x10] (0x144121bfa); every other type, 7 included, needs equal folded ids and equal +0x39 bytes (0x144121f15..0x144121f35). With different type bytes (0x144121c18) the two are equal only when each equals a zero record of its own type, which it builds on the stack with fresh XOR pairs and checks by calling itself (0x144121d91, 0x144121f0a). Callers: census steam 0x4121bc0, among them the ReplicationManagers and the ElasticSearch serialiser 0x1407622c0."
  },
  "signature": {
   "id": "core.user_id_equals",
