@@ -596,6 +596,8 @@ void boot16(uint8_t *db)
     }
     room::Budget budget = room::admit_whole(usable, asks);
     Tally t;
+    uint64_t digest = runtime::FNV64_BASIS;
+    size_t digested = 0;
     for (auto &v : budget.addons) {
         room_report.addons[v.addon] = {v.asked, v.admitted ? v.asked : 0};
         std::string names;
@@ -613,9 +615,14 @@ void boot16(uint8_t *db)
             ap::moments::status(v.addon, why);
             continue;
         }
-        for (auto &e : by[v.addon])
+        for (auto &e : by[v.addon]) {
+            digest = runtime::fnv64(v.addon + '\t' + e.path + '\t' + std::to_string(e.tag) + '\t' + e.value + '\n', digest);
+            digested++;
             apply_one(db, e, t);
+        }
     }
+    swofty::log("[registry] boot rows digest %016llx: %zu row(s) applied in order, value map reserved for %llu record(s)",
+                (unsigned long long)digest, digested, (unsigned long long)room_report.reserved_for);
     room_report.registry_planned = ap::scheduler().planned_keys();
     room_report.registry_counted = budget.asked_keys + early_refused;
     room_report.registry_asked = std::max<uint64_t>(room_report.registry_counted, room_report.registry_planned);
