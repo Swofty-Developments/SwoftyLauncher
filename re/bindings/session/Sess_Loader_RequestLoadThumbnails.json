@@ -9,7 +9,7 @@
   "subsystem": "session",
   "proto": "-",
   "evidence": "decomp:re/decomp/142d4d040.c;xref:0x142d4ac53,0x142d4b786",
-  "notes": "Called from Sess_Loader_Update and Game_StreamingAssetLoadTask_Update (param_2 flag): sets ThumbnailSystem reason 3 (+0x140 or 8 = session loading) and queues thumbnails via 0x142e31cf0 / 0x140ac6b30. Reason 3 = session loading."
+  "notes": "Called from Sess_Loader_Update and Game_StreamingAssetLoadTask_Update (param_2 flag): sets ThumbnailSystem reason 3 (+0x140 or 8 = session loading) and queues thumbnails via 0x142e31cf0 / 0x140ac6b30. Reason 3 = session loading. Callers: census steam 0x2d4d040."
  },
  "signature": {
   "id": "session.loader_request_load_thumbnails",

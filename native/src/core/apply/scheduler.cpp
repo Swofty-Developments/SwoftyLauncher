@@ -5,7 +5,10 @@
 #include "core/diagnostics/steps.hpp"
 
 #include <algorithm>
+#include <condition_variable>
 #include <cstdio>
+#include <system_error>
+#include <thread>
 
 namespace swofty_core::apply {
 
@@ -137,10 +140,14 @@ void Scheduler::log(const std::string &line)
 
 void Scheduler::reset()
 {
-    Lock g(mu_);
+    Lock g = settled_lock();
     ctx_ = Context();
     have_ctx_ = false;
     planned_ = booted_ = read_ = session_ = work_ = false;
+    started_ = false;
+    boot_.clear();
+    boot_keys_.clear();
+    boot_content_.clear();
     keys_.clear();
     active_.clear();
     active_label_.clear();
@@ -247,65 +254,221 @@ bool Scheduler::has_addon_content(const std::string &registry)
     return false;
 }
 
-std::size_t Scheduler::plan_boot()
+struct Scheduler::OffThread {
+    std::mutex mu;
+    std::condition_variable cv;
+    bool done = false;
+    uint64_t generation = 0;
+    std::vector<std::size_t> picks, keys;
+    std::string error;
+};
+
+void Scheduler::start_plan(bool off_thread)
 {
     Lock g(mu_);
-    if (planned_) {
-        std::size_t n = 0;
-        for (auto &[reg, k] : keys_)
-            n += k;
-        return n;
-    }
-    planned_ = true;
+    if (started_)
+        return;
+    started_ = true;
+    perf::Stopwatch steps;
+    boot_.clear();
     for (Applier *a : appliers())
         if (a->applies() == Applies::boot)
-            a->prepare(store_);
-    std::size_t total = 0;
-    int boot = 0;
-    for (Applier *a : appliers()) {
-        if (a->applies() != Applies::boot)
-            continue;
-        boot++;
-        std::size_t k = a->database_keys(store_);
-        bool content = has_addon_content(a->registry());
-        keys_.push_back({a->registry(), k});
-        total += k;
-        work_ = work_ || k || content;
-        log(std::string("[apply] ") + a->registry() + " boot: " + std::to_string(k) + " new database key(s) planned" +
-            (content ? "" : "; no addon records or layers"));
+            boot_.push_back(a);
+    for (Applier *a : boot_)
+        a->prepare(store_);
+    boot_keys_.assign(boot_.size(), 0);
+    boot_content_.assign(boot_.size(), 0);
+    if (!off_thread) {
+        count_on_thread_locked();
+        log(step_line(steps.total_ms(), "boot plan on this thread (" + std::to_string(boot_.size()) + ")"));
+        return;
     }
-    log("[apply] boot plan: " + std::to_string(boot) + " boot applier(s), " + std::to_string(total) +
-        " new database key(s) for the value map" + (work_ ? "" : "; nothing for the database to apply"));
-    return total;
+    log(step_line(steps.lap_ms(), "boot plan prepare (" + std::to_string(boot_.size()) + ")"));
+    auto off = std::make_shared<OffThread>();
+    std::vector<Applier *> todo;
+    bool counts = false;
+    for (std::size_t i = 0; i < boot_.size(); i++) {
+        Applier *a = boot_[i];
+        if (a->counts_off_thread()) {
+            counts = a->may_count(store_) || counts;
+            off->picks.push_back(i);
+            todo.push_back(a);
+            continue;
+        }
+        boot_keys_[i] = a->database_keys(store_);
+        boot_content_[i] = has_addon_content(a->registry());
+    }
+    log(step_line(steps.lap_ms(), "boot plan counts on this thread (" + std::to_string(boot_.size() - todo.size()) + ")"));
+    off->generation = store_.generation();
+    auto here = [&](const char *why) {
+        for (Applier *a : todo)
+            off->keys.push_back(a->database_keys(store_));
+        off->done = true;
+        log(step_line(steps.lap_ms(), std::string("boot plan counts on this thread, ") + why + " (" +
+                                          std::to_string(todo.size()) + ")"));
+        settle_locked(*off);
+    };
+    if (!counts) {
+        here("none can count a key");
+        return;
+    }
+    std::function<void(const std::string &)> say = log_;
+    Store &st = store_;
+    try {
+        std::thread([off, todo, &st, say] {
+            perf::Stopwatch took;
+            try {
+                for (Applier *a : todo)
+                    off->keys.push_back(a->database_keys(st));
+            } catch (const std::exception &e) {
+                off->error = e.what();
+            } catch (...) {
+                off->error = "an unknown exception";
+            }
+            if (say)
+                say(step_line(took.total_ms(), "boot plan count off the thread (" + std::to_string(todo.size()) + ")"));
+            {
+                std::lock_guard l(off->mu);
+                off->done = true;
+            }
+            off->cv.notify_all();
+        }).detach();
+        off_ = off;
+    } catch (const std::system_error &) {
+        here("no worker thread");
+    }
 }
 
-std::size_t Scheduler::planned_keys() const
+void Scheduler::count_on_thread_locked()
 {
+    for (std::size_t i = 0; i < boot_.size(); i++) {
+        boot_keys_[i] = boot_[i]->database_keys(store_);
+        boot_content_[i] = has_addon_content(boot_[i]->registry());
+        note_count_locked(i);
+    }
+    close_plan_locked();
+}
+
+void Scheduler::note_count_locked(std::size_t i)
+{
+    std::size_t k = boot_keys_[i];
+    bool content = boot_content_[i];
+    keys_.push_back({boot_[i]->registry(), k});
+    work_ = work_ || k || content;
+    log(std::string("[apply] ") + boot_[i]->registry() + " boot: " + std::to_string(k) + " new database key(s) planned" +
+        (content ? "" : "; no addon records or layers"));
+}
+
+void Scheduler::close_plan_locked()
+{
+    std::size_t total = 0;
+    for (auto &[reg, k] : keys_)
+        total += k;
+    planned_ = true;
+    log("[apply] boot plan: " + std::to_string(boot_.size()) + " boot applier(s), " + std::to_string(total) +
+        " new database key(s) for the value map" + (work_ ? "" : "; nothing for the database to apply"));
+}
+
+void Scheduler::settle_locked(const OffThread &off)
+{
+    if (off_.get() == &off)
+        off_.reset();
+    perf::Stopwatch took;
+    bool moved = store_.generation() != off.generation;
+    if (moved || !off.error.empty() || off.keys.size() != off.picks.size()) {
+        log(std::string("[apply] boot plan: ") +
+            (moved ? std::string("the registry changed after the count off the thread started")
+                   : "the count off the thread failed (" + (off.error.empty() ? std::string("no count") : off.error) + ")") +
+            "; counted again on this thread");
+        for (std::size_t i : off.picks)
+            boot_[i]->forget_count();
+        for (std::size_t i : off.picks)
+            boot_keys_[i] = boot_[i]->database_keys(store_);
+        log(step_line(took.lap_ms(), "boot plan count again on this thread (" + std::to_string(off.picks.size()) + ")"));
+    } else
+        for (std::size_t n = 0; n < off.picks.size(); n++)
+            boot_keys_[off.picks[n]] = off.keys[n];
+    for (std::size_t i : off.picks)
+        boot_content_[i] = has_addon_content(boot_[i]->registry());
+    for (std::size_t i = 0; i < boot_.size(); i++)
+        note_count_locked(i);
+    close_plan_locked();
+}
+
+void Scheduler::await_count()
+{
+    std::shared_ptr<OffThread> off;
+    {
+        Lock g(mu_);
+        off = off_;
+    }
+    if (!off)
+        return;
+    perf::Stopwatch waited;
+    {
+        std::unique_lock l(off->mu);
+        off->cv.wait(l, [&] { return off->done; });
+    }
+    double ms = waited.total_ms();
     Lock g(mu_);
+    log(step_line(ms, "boot plan wait for the count off the thread"));
+    if (off_ == off)
+        settle_locked(*off);
+}
+
+Scheduler::Lock Scheduler::settled_lock()
+{
+    for (;;) {
+        await_count();
+        Lock g(mu_);
+        if (!off_)
+            return g;
+    }
+}
+
+std::size_t Scheduler::plan_boot()
+{
+    start_plan(false);
+    Lock g = settled_lock();
     std::size_t n = 0;
     for (auto &[reg, k] : keys_)
         n += k;
     return n;
 }
 
-std::size_t Scheduler::planned_keys(const std::string &registry) const
+std::size_t Scheduler::planned_keys()
 {
-    Lock g(mu_);
+    Lock g = settled_lock();
+    std::size_t n = 0;
+    for (auto &[reg, k] : keys_)
+        n += k;
+    return n;
+}
+
+std::size_t Scheduler::planned_keys(const std::string &registry)
+{
+    Lock g = settled_lock();
     for (auto &[reg, k] : keys_)
         if (reg == registry)
             return k;
     return 0;
 }
 
-bool Scheduler::boot_work() const
+bool Scheduler::boot_work()
+{
+    Lock g = settled_lock();
+    return work_;
+}
+
+bool Scheduler::boot_may_work() const
 {
     Lock g(mu_);
-    return work_;
+    return !planned_ || work_;
 }
 
 Totals Scheduler::run_boot()
 {
-    Lock g(mu_);
+    Lock g = settled_lock();
     if (booted_)
         return {};
     if (!planned_)

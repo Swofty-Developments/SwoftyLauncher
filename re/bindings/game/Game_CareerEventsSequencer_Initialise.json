@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140c71e80.c;xref:0x1456838a8",
-  "notes": "CareerEventsSequencer vtable slot +8: sets up career_hub / career_hub_room / career_hub_short scenes, laptop_container.tab_controller, idle event (createIdleEvent), CareerEventResourceManager asset groups (common area, team mate, driver), driver_rnd_area_idle; subscribes CareerEventTriggerMessage, MessageSessionQuickPracticeIntroVideo, StartPracticeFlow. Addon: career hub scene set-up entry. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3024)"
+  "notes": "CareerEventsSequencer vtable slot +8: sets up career_hub / career_hub_room / career_hub_short scenes, laptop_container.tab_controller, idle event (createIdleEvent), CareerEventResourceManager asset groups (common area, team mate, driver), driver_rnd_area_idle; subscribes CareerEventTriggerMessage, MessageSessionQuickPracticeIntroVideo, StartPracticeFlow. Addon: career hub scene set-up entry. Callers: census steam 0xc71e80. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3024)"
  },
  "signature": {
   "id": "game.career_events_sequencer_initialise",

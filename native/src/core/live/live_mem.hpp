@@ -26,6 +26,7 @@ struct Sites {
     uintptr_t image_lo = 0, image_hi = 0;
     uintptr_t progress_from_manager = 0;
     uintptr_t ers_mode = 0; // Zero uses the KB layout; other builds supply their independently checked displacement.
+    bool tyre_damage = false; // The wheel puncture chain (runtime::car_layout::PUNCTURES) is proven on this build.
 };
 
 enum Group : unsigned {

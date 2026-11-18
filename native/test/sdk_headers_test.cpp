@@ -39,6 +39,8 @@
 #include <swofty/systems/tyres.hpp>
 #include <swofty/systems/wearables.hpp>
 #include <swofty/systems/tracks.hpp>
+#include <swofty/systems/tyre_damage.hpp>
+#include <swofty/systems/weather.hpp>
 
 #include "sdk_payloads.h"
 

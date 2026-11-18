@@ -248,9 +248,12 @@ struct PitLaneTrack {
 static_assert(offsetof(PitLaneTrack, vehicle_slots) == 0x938);
 
 struct PitLaneVehicle {
-    uint8_t _pad_0x0[0x103];
+    uint8_t _pad_0x0[0xe0];
+    int32_t garage_index; // L2 experimental
+    uint8_t _pad_0xe4[0x1f];
     uint8_t in_lane; // L2 experimental
 };
+static_assert(offsetof(PitLaneVehicle, garage_index) == 0xe0);
 static_assert(offsetof(PitLaneVehicle, in_lane) == 0x103);
 
 struct RacingOwner {
@@ -438,7 +441,9 @@ static_assert(offsetof(VehicleProgressEntry, total_a) == 0x98);
 static_assert(offsetof(VehicleProgressEntry, total_b) == 0xa0);
 
 struct VehicleTyreComponent {
-    uint8_t _pad_0x0[0x9bc0];
+    uint8_t _pad_0x0[0x20];
+    CarPhysicsRecord *physics; // L2 experimental
+    uint8_t _pad_0x28[0x9b98];
     void *compound_class; // L2 experimental
     uint8_t _pad_0x9bc8[0x8];
     TyreSlot slots[5]; // L2 experimental
@@ -449,6 +454,7 @@ struct VehicleTyreComponent {
     uint8_t *set_begin; // L2 experimental
     uint8_t *set_end; // L2 experimental
 };
+static_assert(offsetof(VehicleTyreComponent, physics) == 0x20);
 static_assert(offsetof(VehicleTyreComponent, compound_class) == 0x9bc0);
 static_assert(offsetof(VehicleTyreComponent, slots) == 0x9bd0);
 static_assert(offsetof(VehicleTyreComponent, slot_count) == 0x9c48);

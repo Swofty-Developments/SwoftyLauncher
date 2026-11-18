@@ -1,5 +1,6 @@
 #include "core/apply/content/boot.hpp"
 #include "core/apply/ids.hpp"
+#include "core/apply/scheduler.hpp"
 #include "core/registry/table.hpp"
 #include "core/registry/validate.hpp"
 
@@ -7,11 +8,13 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <thread>
 
 // The core's boot apply of the content registries, outside the game: the same expansion appliers.cpp runs, over a
 // game database file and a build's swofty/assets.json db_edits (the older addons' edits), with a fresh stat-id store.
 // It writes the database the game would hold after the boot apply, as db_edits against the file (the records that
-// differ from it), and a summary.
+// differ from it), and a summary. With --plan worker or --plan here, the plan is counted through the scheduler's boot
+// plan, on a worker or on this thread, as the core counts it.
 
 using namespace swofty_core;
 using swofty::json::Value;
@@ -25,6 +28,28 @@ static std::string slurp(const std::string &path)
     return s.str();
 }
 
+class PlanRows : public apply::Applier {
+public:
+    PlanRows(content::Expansion &plan, std::thread::id main) : plan_(plan), main_(main) {}
+    const char *registry() const override { return "vehicle"; }
+    registry::Applies applies() const override { return registry::Applies::boot; }
+    bool counts_off_thread() const override { return true; }
+    std::size_t database_keys(registry::Store &st) override
+    {
+        off_thread = std::this_thread::get_id() != main_;
+        content::expand(st, plan_, content::planning_ids());
+        std::size_t n = 0;
+        for (auto &[reg, k] : plan_.fresh)
+            n += k;
+        return n;
+    }
+    bool off_thread = false;
+
+private:
+    content::Expansion &plan_;
+    std::thread::id main_;
+};
+
 static std::string hex16(uint64_t k)
 {
     char b[24];
@@ -34,7 +59,7 @@ static std::string hex16(uint64_t k)
 
 int main(int argc, char **argv)
 {
-    std::string regs, gvdb_path, out_path, edits_path, summary_path, room_text;
+    std::string regs, gvdb_path, out_path, edits_path, summary_path, room_text, plan_how;
     bool box_worlds = false;
     std::vector<std::pair<std::string, std::string>> files;
     for (int i = 1; i < argc; i++) {
@@ -54,6 +79,8 @@ int main(int argc, char **argv)
             room_text = next();
         else if (a == "--box-worlds")
             box_worlds = true;
+        else if (a == "--plan")
+            plan_how = next();
         else if (i + 1 < argc) {
             files.push_back({a, argv[i + 1]});
             i++;
@@ -122,7 +149,18 @@ int main(int argc, char **argv)
 
     content::Expansion plan(base);
     plan.box_worlds = box_worlds;
-    content::expand(st, plan, content::planning_ids());
+    bool plan_off_thread = false;
+    if (plan_how.empty())
+        content::expand(st, plan, content::planning_ids());
+    else {
+        apply::clear_appliers();
+        auto &rows = apply::make<PlanRows>(plan, std::this_thread::get_id());
+        apply::Scheduler sched(st);
+        sched.start_plan(plan_how == "worker");
+        sched.planned_keys();
+        plan_off_thread = rows.off_thread;
+        apply::clear_appliers();
+    }
 
     auto text = [&](const std::string &path) -> std::optional<std::string> {
         auto r = base(content::gvdb::fnv64(path));
@@ -210,6 +248,7 @@ int main(int argc, char **argv)
         return o;
     };
     summary["plan_fresh"] = counts(plan.fresh);
+    summary["plan_off_thread"] = Value(plan_off_thread);
     summary["boot_fresh"] = counts(boot.fresh);
     summary["addon_fresh"] = counts(plan.addon_fresh);
     Value recs = Value::object(), refused = Value::object(), lines = Value::object();

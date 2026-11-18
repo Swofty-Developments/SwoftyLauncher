@@ -24,12 +24,31 @@ python3 content/check_logo_build.py content/bc7 "$OUT/logo_out"
 "$OUT/wear_test" ../../packages/sdk/std/registries
 python3 content/check_lowering.py "$OUT/lower_tool"
 python3 content/check_wide_default.py "$OUT/lower_tool"
-GAMEDB="/mnt/gaming/SteamLibrary/steamapps/common/F1 25/game_package/gamedatabases/gamedatabases.2025.bin"
-if [[ -f $GAMEDB ]]; then
+# The steps on the game database read a stock copy (content/stock_gamedb.py), never the game folder's.
+if GAMEDB=$(python3 content/stock_gamedb.py 2>"$OUT/stock_gamedb.why"); then
+    echo "game database steps on $GAMEDB"
     "$OUT/rows_tool" --registries ../../packages/sdk/std/registries --db "$GAMEDB" --out "$OUT/f2012_edits.json" --summary "$OUT/f2012_summary.json" \
         swofty.f2012 content/wear/f2012.json
     "$OUT/rows_tool" --registries ../../packages/sdk/std/registries --db "$GAMEDB" --out "$OUT/drs_edits.json" --summary "$OUT/drs_summary.json" \
         test.drs content/drs/drs.json
+    CS=()
+    for y in 2016 2017 2018 2019 2020 2021 2022 2023 2024; do
+        CS+=("swofty.classic-seasons-$y" "content/classic-seasons/classic-seasons-$y/registry/content.json")
+    done
+    for how in here worker; do
+        "$OUT/rows_tool" --registries ../../packages/sdk/std/registries --db "$GAMEDB" --plan "$how" \
+            --out "$OUT/plan_${how}_edits.json" --summary "$OUT/plan_${how}_summary.json" "${CS[@]}" >/dev/null 2>&1 || true
+    done
+    cmp "$OUT/plan_here_edits.json" "$OUT/plan_worker_edits.json"
+    python3 - "$OUT/plan_here_summary.json" "$OUT/plan_worker_summary.json" "$OUT/plan_here_edits.json" <<'EOF'
+import json, sys
+here, worker = (json.load(open(p)) for p in sys.argv[1:3])
+edits = len(json.load(open(sys.argv[3]))["db_edits"])
+assert not here["plan_off_thread"] and worker["plan_off_thread"], (here["plan_off_thread"], worker["plan_off_thread"])
+assert here["plan_fresh"] == worker["plan_fresh"] and here["staged_records"] == worker["staged_records"], "plans differ"
+assert edits > 50000, edits
+print("Classic Seasons on the game database: the plan counted on a worker and on this thread give the same %d database edit(s)" % edits)
+EOF
     python3 - "$OUT/drs_summary.json" <<'EOF'
 import json, sys
 s = json.load(open(sys.argv[1]))
@@ -59,4 +78,6 @@ assert any("11 teams, its world holds 10 garages: season swofty_box_cs_f1_2016" 
            "layer swofty_box_cs_f1_2016_world (f1_26, 11 garages" in l for l in lines), lines
 print("box worlds on the game database: an 11-team swofty_f1 box gets its own season and f1_26 layer")
 EOF
+else
+    echo "game database steps skipped: $(cat "$OUT/stock_gamedb.why")"
 fi

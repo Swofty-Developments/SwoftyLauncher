@@ -1280,7 +1280,7 @@ mod tests {
                 "williams",
             ),
         ];
-        Gvdb { records }
+        Gvdb::new(records)
     }
 
     fn build_with(ops: &str, ignore: &[&str]) -> Report {

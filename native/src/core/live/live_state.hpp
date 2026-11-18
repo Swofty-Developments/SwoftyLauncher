@@ -376,6 +376,9 @@ private:
         bool have = false;
         uint8_t visual = 0xff, actual = 0xff;
         char letter = 0;
+        bool damage = false;
+        uint8_t state[4] = {};
+        float deflation[4] = {};
     };
 
     Mem m_;
@@ -960,8 +963,33 @@ private:
         }
     }
 
+    void read_tyre_damage(uintptr_t V, Tyre &t)
+    {
+        namespace D = L::tyre_damage;
+        uintptr_t physics = 0, car = 0, suspension = 0, wheels[4] = {};
+        if (!m_.get(V + D::physics, physics) || !physics || (physics & 7) || !m_.get(physics + D::car, car) || !car ||
+            (car & 7) || !m_.get(car + D::suspension, suspension) || !suspension || (suspension & 7) ||
+            !m_.read(suspension + D::wheels, wheels, sizeof wheels))
+            return;
+        for (unsigned w = 0; w < 4; w++) {
+            uint8_t flags = 0;
+            float deflation = 0;
+            if (!wheels[w] || (wheels[w] & 7) || !m_.get(wheels[w] + D::flags, flags) ||
+                !m_.get(wheels[w] + D::deflation, deflation) || !(deflation == deflation) || deflation < 0 ||
+                deflation > 100)
+                return;
+            uint8_t st = flags & D::state_mask;
+            t.state[w] = st == 2 || st == 3 ? st : 0;
+            t.deflation[w] = deflation;
+        }
+        t.damage = true;
+    }
+
     void read_tyre(uintptr_t V, Tyre &t)
     {
+        if constexpr (L::HAS_TYRE_DAMAGE)
+            if (s_.tyre_damage && V && !(V & 7))
+                read_tyre_damage(V, t);
         uint8_t b[L::tyres::hi - L::tyres::lo];
         auto F = [&](uintptr_t off) { return off - L::tyres::lo; };
         if (!V || (V & 7) || !m_.read(V + L::tyres::lo, b, sizeof b))
@@ -1549,6 +1577,13 @@ private:
             if (t.have) {
                 c.have |= SWOFTY_LIVE_HAVE_TYRE;
                 c.tyre_letter = t.letter;
+            }
+            if (t.damage) {
+                c.have |= SWOFTY_LIVE_HAVE_TYRE_DAMAGE;
+                for (unsigned w = 0; w < 4; w++) {
+                    c.tyre_damage[w] = t.state[w];
+                    c.tyre_deflation[w] = t.deflation[w];
+                }
             }
         }
 

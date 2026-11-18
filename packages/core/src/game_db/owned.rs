@@ -281,7 +281,7 @@ mod tests {
                 records.push(Record::new(&format!("{SE}.se_livery_{i}.{f}"), tag, v));
             }
         }
-        Gvdb { records }
+        Gvdb::new(records)
     }
 
     fn ops(unlock_set: &str) -> DbOps {

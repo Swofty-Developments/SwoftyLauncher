@@ -125,6 +125,7 @@ src/core/assets/lang_override.cpp
 src/core/career/characters.cpp
 src/core/career/characters_hooks.cpp
 src/core/career/career_wizard.cpp
+src/core/career/wizard_hooks.cpp
 src/core/boxes/era_picker.cpp
 src/core/boxes/picker/time_trial.cpp
 src/core/boxes/car_category.cpp
@@ -160,6 +161,7 @@ src/core/diagnostics/load_stall.cpp
 src/core/guards/cars/tyre_slots.cpp
 src/core/diagnostics/tyre_models.cpp
 src/core/career/hub_tab.cpp
+src/core/career/hub_team_hq.cpp
 src/core/career/hub_rnd.cpp
 src/core/registry/schema.cpp
 src/core/hooks/hooks.cpp
@@ -215,7 +217,9 @@ src/core/guards/frontend/tile_list_select_guard.cpp
 src/core/guards/session/session_enter.cpp
 src/core/diagnostics/session_job_probe.cpp
 src/core/guards/ai/ai_line_set_guard.cpp
+src/core/weather/setup.cpp
 src/core/hud/room_cover.cpp
 src/core/assets/entitlements.cpp
 src/core/live/live_state.cpp
 src/core/loading/game_settings.cpp
+src/core/assets/db_first_read.cpp

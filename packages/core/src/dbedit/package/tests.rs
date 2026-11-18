@@ -718,9 +718,7 @@ fn refuses_stock_and_foreign_databases() {
         err("stock.bin", &sample()),
         "stock.bin is the same as this game's stock database"
     );
-    let foreign = Gvdb {
-        records: vec![Record::new("a.b", 0, "1")],
-    };
+    let foreign = Gvdb::new(vec![Record::new("a.b", 0, "1")]);
     for (name, bytes) in [
         ("junk.bin", b"not a database".to_vec()),
         ("other.bin", foreign.to_bytes()),

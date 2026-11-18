@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/143a44700.c;xref:0x14020a6a2,0x140346003",
-  "notes": "(cfg, key, outBuf, default) -> NEerrno: looks up key in the config hash map (+8) and copies the value (or default) into outBuf (+0x10 data, +8 cap). 84 call sites: Ne_Gfx2Renderer_Initialise, Asset_Load_DevSessionWorlds, Sess_Entrant_BuildCandidate, Game_GridCutSceneScript_SetupDriverTalkToPress."
+  "notes": "(cfg, key, outBuf, default) -> NEerrno: looks up key in the config hash map (+8) and copies the value (or default) into outBuf (+0x10 data, +8 cap). Callers: census steam 0x3a44700, among them Ne_Gfx2Renderer_Initialise, Asset_Load_DevSessionWorlds, Sess_Entrant_BuildCandidate, Game_GridCutSceneScript_SetupDriverTalkToPress."
  },
  "signature": {
   "id": "core.config_get_string",

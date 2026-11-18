@@ -9,7 +9,7 @@
   "subsystem": "career",
   "proto": "uint64_t (void *tab, void *ctx, uint64_t day_mask)",
   "evidence": "decomp:re/decomp/14197a5b0.c;xref:0x141979f64;xref:0x14197fc2c;xref:0x141c45e48",
-  "notes": "myteam-g2: Variant of the development tab check that tests each upgrade for affordability (FUN_141993d00/1419947e0 with team modifiers Career_Get_TeamModifiers at +0xc90). Returns true if one can be bought. Read-only."
+  "notes": "myteam-g2: Variant of the development tab check that tests each upgrade for affordability (FUN_141993d00/1419947e0 with team modifiers Career_Get_TeamModifiers at +0xc90). Returns true if one can be bought. Read-only. Callers: census steam 0x197a5b0."
  },
  "signature": {
   "id": "career.check_development_tab_has_affordable_upgrade",

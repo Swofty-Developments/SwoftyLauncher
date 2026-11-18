@@ -1,5 +1,5 @@
 #include "core/guards/guard.hpp"
-#include "core/runtime/hook_errors.hpp"
+#include "core/runtime/loader/hook_install.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/guards/frontend/setup_vm_logic.hpp"
 
@@ -44,8 +44,10 @@ const runtime::Sig S_VALUE_SET{"site_Game_CarSetupVm_ValueSetCarLoad",
                                0xc1cbca, runtime::Sig::addr, 0, 0, 0};
 const runtime::Sig S_CHANGED_A{"site_Game_CarSetupVm_OnValueChangedCarLoadA", "48 8B 40 28 83 B8 40 9F 00 00 64 0F 85", 0xc1ed9f,
                                runtime::Sig::addr, 0, 4, 0};
+// The view model's byte after the calls is +0x7e6a on the KB build and +0x7e62 on EA 1.0.145 (its fields from +0x7e60
+// sit 8 bytes lower there); nothing reads it, so the pattern leaves it open (re/research/ea-1-0-145.md).
 const runtime::Sig S_CHANGED_B{"site_Game_CarSetupVm_OnValueChangedCarLoadB",
-                               "83 B8 40 9F 00 00 64 75 10 48 89 F1 E8 ?? ?? ?? ?? 48 89 F1 E8 ?? ?? ?? ?? 80 BE 6A 7E 00 00 00",
+                               "83 B8 40 9F 00 00 64 75 10 48 89 F1 E8 ?? ?? ?? ?? 48 89 F1 E8 ?? ?? ?? ?? 80 BE ?? 7E 00 00 00",
                                0xc1eeb7, runtime::Sig::addr, 0, 0, 0};
 
 uintptr_t skip_to[SITES];
@@ -81,13 +83,13 @@ bool arm(size_t n, const runtime::Sig &s, void (*fn)(safetyhook::Context &))
         swofty::log("[setups] car guard: %s: no jne after the compare", s.what);
         return false;
     }
-    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), fn);
-    if (!h) {
-        swofty::log("[setups] car guard: %s: the hook failed: %s", s.what, runtime::hook_error(h.error()).c_str());
+    skip_to[n] = to;
+    runtime::loader::Installed r = runtime::loader::install(hooks[n], at, s.what, fn);
+    if (!r) {
+        skip_to[n] = 0;
+        swofty::log("[setups] car guard: %s: the hook failed: %s", s.what, r.error.c_str());
         return false;
     }
-    skip_to[n] = to;
-    hooks[n] = std::move(*h);
     return true;
 }
 
