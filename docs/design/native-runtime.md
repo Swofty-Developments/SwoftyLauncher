@@ -122,9 +122,12 @@ The crash handler in `diagnostics/crash/` is split by what runs when:
 | `crash.cpp` | `crash_attach` and `crash_game_hooks` (`crash.hpp`), the two subsystem entry points |
 | `capture.cpp` | the vectored handler, the top-level filter and the exit hooks, on fixed-size state that never allocates |
 | `fatal_paths.cpp` | the game's own fatal paths (`Ne_ReportMemoryError`, fast fails) |
-| `report_writer.cpp`, `report_sections.cpp` | the writer thread that turns one request into `crash-<time>.txt` |
-| `symbolizer.cpp`, `minidump.cpp`, `dred.cpp` | symbol names, the minidump and the D3D12 DRED data for the report |
-| `stall_report.cpp`, `stall_walk.cpp` | the load stall report |
+| `report_writer.cpp`, `report_sections.cpp` | the writer thread that turns one request into `crash-<time>.txt`, one step at a time |
+| `report_memory.cpp`, `report_process.cpp` | the sections about memory (the exception, the memory at the registers, the Ne heap) and about the process (modules, threads, loader.log) |
+| `report_text_logic.hpp` | the report text that reads no process state, which `test/report_text_test.cpp` pins |
+| `symbolizer.cpp`, `minidump.cpp` | symbol names and the minidump for the report |
+| `dred.cpp`, `dred_markers.cpp`, `dred_nodes.cpp` | DRED's arming and device hook, the removal markers between sessions, and a removed device's breadcrumbs, contexts and allocations (`dred_state.hpp`) |
+| `stall_report.cpp`, `stall_walk.cpp`, `stall_frames.cpp` | the load stall report (`stall_report.hpp`), its unwinder and its frames' function tables and export names |
 
 Code that runs inside a handler reads with `pages::readable_now` and does not allocate or lock. The crash files do not include `runtime.hpp`; the few runtime calls they make are declared at the top of each file.
 
@@ -184,7 +187,14 @@ These units keep their state in the first file listed; the other files hold code
 | `career/hub_rnd.cpp` | the R&D tab's visibility on Team HQ and the laptop, and `hub_tick` |
 | `career/career_content.cpp`, `content_state.hpp` | the content registry, its API, wraps and core sets |
 | `career/content_tiles.cpp` | the content tiles and the Addons row |
+| `runtime/loader/bindings.cpp` | choosing and loading the binding set, its KB addresses and the binding report |
+| `runtime/loader/binding_resolve.cpp` | resolving a binding by address, pattern or anchor, deferral and the retry passes |
+| `runtime/settings.cpp` | settings.json's addon options, the settings API, the MFD rows and the commands |
+| `runtime/settings_logic.hpp` | the option model, the requests.json text and an option's value (`test/settings_logic_test.cpp`) |
+| `career/characters.cpp`, `characters_state.hpp` | the character entries, the active group, the strings and the `SwoftyCharacters` table |
+| `career/characters_hooks.cpp` | the character ref and voice wraps and the character list's rebuild |
+| `career/characters_logic.hpp` | which swap and mute act in the active group (`test/characters_logic_test.cpp`) |
 | `diagnostics/net_trace.cpp` | the socket trace's log, socket notes and setup |
 | `diagnostics/net_trace/hooks.cpp`, `trace.hpp` | the ws2_32 hooks and their table |
 
-Each added file follows the file that holds its state in `tools/core_link_order.txt` and has no static objects.
+No added file has a static object of its own; each follows its unit's first file in `tools/core_link_order.txt` when that file is listed.

@@ -46,10 +46,15 @@ src/core/diagnostics/crash/symbolizer.cpp
 src/core/diagnostics/crash/capture.cpp
 src/core/diagnostics/crash/fatal_paths.cpp
 src/core/diagnostics/crash/report_sections.cpp
+src/core/diagnostics/crash/report_memory.cpp
+src/core/diagnostics/crash/report_process.cpp
 src/core/diagnostics/crash/report_writer.cpp
 src/core/diagnostics/crash/minidump.cpp
 src/core/diagnostics/crash/stall_report.cpp
+src/core/diagnostics/crash/stall_frames.cpp
 src/core/diagnostics/crash/dred.cpp
+src/core/diagnostics/crash/dred_markers.cpp
+src/core/diagnostics/crash/dred_nodes.cpp
 src/core/runtime/settings.cpp
 src/core/frontend/home_tiles.cpp
 src/core/frontend/ui.cpp
@@ -115,6 +120,7 @@ src/core/diagnostics/perf/frames.cpp
 src/core/diagnostics/perf/report.cpp
 src/core/assets/lang_override.cpp
 src/core/career/characters.cpp
+src/core/career/characters_hooks.cpp
 src/core/career/career_wizard.cpp
 src/core/boxes/era_picker.cpp
 src/core/boxes/car_category.cpp

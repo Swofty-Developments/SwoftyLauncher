@@ -34,4 +34,14 @@ extern ReportSections sections;
 
 void read_addons(const std::wstring &path);
 
+// The sections the steps write from report_memory.cpp: the exception, the memory at the registers and the Ne heap.
+void section_exception(const Request &r);
+void section_memory(const Request &r);
+void section_heap(const Request &r);
+
+// The sections the steps write from report_process.cpp: the addons and modules, the threads and loader.log's end.
+void section_modules();
+void section_threads(const Request &r);
+void section_log();
+
 }
