@@ -11,6 +11,10 @@ use crate::{Error, Result};
 
 pub const GRID_LIST: &str = "entrants.entrant_lists.entrant_list_34";
 const KINDS: [(&str, u32); 4] = [("PitGarage", 2), ("F1Garage", 1), ("PitBox", 1), ("GridSlot", 2)];
+/// The vehicle placement requests the game holds per kind. Sess_VehiclePlacementRequest_Register (0x142f60c80)
+/// stores a request at slot `VehPlacement.Id - 1` of its kind's 32 with no bound, so an Id past 32 writes into the
+/// next kind's requests or past the table.
+const PLACEMENT_SLOTS: u32 = 32;
 
 pub fn grid_size(db: &Gvdb) -> u32 {
     db.instance_count(GRID_LIST, "entrant").map_or(0, |n| n as u32)
@@ -141,6 +145,14 @@ pub fn extend(code: &str, layers: &mut [Node], cars: u32) -> Result<Option<Exten
     let before = room(&spots);
     if before.holds(cars) {
         return Ok(None);
+    }
+    for (kind, _) in KINDS {
+        let top = wanted(kind, cars);
+        if kind != "F1Garage" && top > PLACEMENT_SLOTS {
+            return Err(Error::Map(format!(
+                "{cars} cars need {kind}{top}, past the {PLACEMENT_SLOTS} {kind} placements the game holds"
+            )));
+        }
     }
     let last = spots
         .get(&("GridSlot", before.grid_slots))
@@ -390,6 +402,107 @@ pub(crate) mod tests {
             .unwrap(),
             "1b000000"
         );
+    }
+
+    fn ids(layers: &[Node], kind: &str) -> Vec<u32> {
+        spots(layers)
+            .into_keys()
+            .filter(|(k, _)| *k == kind)
+            .map(|(_, n)| n)
+            .collect()
+    }
+
+    #[test]
+    fn fills_every_placement_slot_and_no_more() {
+        let mut layers = world();
+        let ext = extend("map", &mut layers, PLACEMENT_SLOTS).unwrap().unwrap();
+        assert_eq!(
+            ext.after,
+            Room {
+                grid_slots: 32,
+                garages: 16,
+                pit_boxes: 16
+            }
+        );
+        for kind in ["GridSlot", "PitGarage", "PitBox"] {
+            assert!(
+                ids(&layers, kind)
+                    .iter()
+                    .all(|&n| (1..=PLACEMENT_SLOTS).contains(&n)),
+                "{kind}"
+            );
+        }
+        let p = "vehicles_current_myteam$";
+        let id = |name: &str| {
+            value_text(
+                &layers[1],
+                &format!("instances[name={p}{name}].overrides.VehPlacement.Id"),
+            )
+            .unwrap()
+        };
+        assert_eq!(id("GridSlot32"), "20000000");
+        assert_eq!(id("PitGarage32"), "20000000");
+        assert_eq!(id("PitBox16"), "10000000");
+    }
+
+    #[test]
+    fn refuses_more_cars_than_the_game_has_placement_slots() {
+        for cars in [PLACEMENT_SLOTS + 1, 40, 64, u32::MAX] {
+            let mut layers = world();
+            let before = spots(&layers).len();
+            let err = extend("map", &mut layers, cars).unwrap_err().to_string();
+            assert!(
+                err.contains("past the 32 PitGarage placements the game holds"),
+                "{cars}: {err}"
+            );
+            assert_eq!(spots(&layers).len(), before, "{cars} cars wrote no entry");
+        }
+        let mut layers = world();
+        extend("map", &mut layers, 28).unwrap().unwrap();
+        assert!(extend("map", &mut layers, PLACEMENT_SLOTS + 1).is_err());
+        assert_eq!(ids(&layers, "GridSlot").into_iter().max(), Some(28));
+    }
+
+    #[test]
+    fn an_added_placement_keeps_the_group_of_the_entry_it_copies() {
+        let grouped = |kind: &str, n: u32, at: [f32; 3]| {
+            entry(
+                &format!("v${kind}{n}"),
+                at,
+                vec![("Id", Val::u32(n)), ("group", Val::str(format!("{kind} group")))],
+            )
+        };
+        let mut entries = Vec::new();
+        for n in 1..=4 {
+            entries.push(grouped(
+                "GridSlot",
+                n,
+                [6.0 * (n % 2) as f32, 0.0, -8.0 * ((n - 1) / 2) as f32],
+            ));
+            entries.push(grouped("PitGarage", n, [6.0 * n as f32, 0.0, 12.0]));
+        }
+        for g in 1..=2 {
+            entries.push(garage("v", g, 12.0 * g as f32));
+            entries.push(grouped("PitBox", g, [12.0 * g as f32, 0.0, 4.0]));
+        }
+        let mut layers = vec![layer(entries)];
+        extend("map", &mut layers, 8).unwrap().unwrap();
+        let group = |name: &str| {
+            value_text(
+                &layers[0],
+                &format!("instances[name=v${name}].overrides.VehPlacement.group"),
+            )
+        };
+        for (kind, added) in [("GridSlot", 8), ("PitGarage", 8), ("PitBox", 4)] {
+            for n in 1..=added {
+                assert_eq!(
+                    group(&format!("{kind}{n}")).unwrap(),
+                    group(&format!("{kind}1")).unwrap(),
+                    "{kind}{n}"
+                );
+            }
+        }
+        assert_ne!(group("GridSlot8").unwrap(), group("PitGarage8").unwrap());
     }
 
     #[test]
