@@ -73,6 +73,7 @@ impl Addon for HelperAddon {
             lines: built.lines,
             warnings: built.warnings,
             fields: built.fields,
+            reads: built.reads,
         })
     }
 
