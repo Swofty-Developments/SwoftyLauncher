@@ -698,16 +698,31 @@ pub fn place(input: &PlaceInput, cache: &Path, packer: &Packer) -> Result<Placem
         std::fs::write(&done, b"").map_err(io_err(&done))?;
     }
     if let Some(at) = read_as.filter(|at| erp_stamp(&erp_path) == Some(*at) && settled(at)) {
+        let Placement {
+            dir: _,
+            archive: _,
+            groups,
+            replaced: _,
+            added: _,
+            aliases,
+            ai_aliases,
+            mips,
+            grid,
+            repaired,
+            spaced,
+            notes,
+        } = &placement;
         let keep = Kept {
             version: KEPT_VERSION,
             erp: at,
-            groups: placement.groups.clone(),
-            aliases: placement.aliases.clone(),
-            mips: placement.mips,
-            grid: placement.grid.clone(),
-            repaired: placement.repaired.clone(),
-            spaced: placement.spaced.clone(),
-            notes: placement.notes.clone(),
+            groups: groups.clone(),
+            aliases: aliases.clone(),
+            ai_aliases: ai_aliases.clone(),
+            mips: *mips,
+            grid: grid.clone(),
+            repaired: repaired.clone(),
+            spaced: spaced.clone(),
+            notes: notes.clone(),
             shipped: names.clone(),
             used: used.clone(),
         };
@@ -721,7 +736,7 @@ pub fn place(input: &PlaceInput, cache: &Path, packer: &Packer) -> Result<Placem
 /// The file beside a placed archive that keeps what placing it found, read instead of the track's archive
 /// while that archive's size, modified time and change time are unchanged.
 const KEPT_FILE: &str = "placement.json";
-const KEPT_VERSION: u32 = 1;
+const KEPT_VERSION: u32 = 2;
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct Kept {
@@ -729,6 +744,7 @@ struct Kept {
     erp: (u64, crate::build::digests::Times),
     groups: Vec<String>,
     aliases: BTreeMap<String, String>,
+    ai_aliases: BTreeMap<String, String>,
     mips: usize,
     grid: Option<grid::Extension>,
     repaired: Vec<String>,
@@ -790,14 +806,17 @@ fn kept(
     }
     let placement = Placement {
         dir: out,
+        archive: String::new(),
         groups: keep.groups,
+        replaced: BTreeMap::new(),
+        added: BTreeMap::new(),
         aliases: keep.aliases,
+        ai_aliases: keep.ai_aliases,
         mips: keep.mips,
         grid: keep.grid,
         repaired: keep.repaired,
         spaced: keep.spaced,
         notes: keep.notes,
-        ..Placement::default()
     };
     let archive = match input.slot {
         Some((slot, _)) => slot_file(slot),
@@ -1490,6 +1509,44 @@ mod tests {
         let placement = place(&input, &dir.join("cache"), &Packer::default()).unwrap();
         let placed = ErpFile::open(&placement.dir.join(&placement.archive)).unwrap();
         (placement, placed)
+    }
+
+    #[test]
+    fn a_track_placed_again_from_what_it_kept_has_the_same_ai_stand_ins() {
+        let (first, _) = place_with_ai("ai-kept", &["lotus"]);
+        let dir = first.dir.parent().unwrap().parent().unwrap().to_path_buf();
+        let pkg = TrackPackage::parse(crate::content::track_package::tests::OKAYAMA_LIKE.as_bytes()).unwrap();
+        let old = std::time::SystemTime::now() - std::time::Duration::from_secs(60);
+        std::fs::File::options()
+            .write(true)
+            .open(dir.join(&pkg.erp))
+            .unwrap()
+            .set_modified(old)
+            .unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(2100));
+        let teams = [lotus_and_cater()];
+        let input = PlaceInput {
+            pkg: &pkg,
+            dir: &dir,
+            game: &dir,
+            slot: None,
+            cars: 0,
+            worlds: &[],
+            ai_teams: &teams,
+        };
+        let before = opened();
+        let read = place(&input, &dir.join("cache"), &Packer::default()).unwrap();
+        assert_eq!(read.ai_aliases.len(), 1);
+        assert_eq!(
+            place(&input, &dir.join("cache"), &Packer::default()).unwrap(),
+            read
+        );
+        assert_eq!(
+            opened() - before,
+            1,
+            "the second placement reads the kept findings, not the archive"
+        );
+        std::fs::remove_dir_all(&dir).ok();
     }
 
     #[test]
