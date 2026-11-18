@@ -1,5 +1,9 @@
 use super::*;
 
+use super::file::{retrying, transient};
+use super::packer::{ENCODERS, PACKED_MIN, compress_cached, encode};
+use crate::Error;
+
 #[test]
 fn a_cut_short_archive_names_its_file() {
     let dir = std::env::temp_dir().join(format!("swofty-erp-short-{}", std::process::id()));
