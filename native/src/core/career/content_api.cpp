@@ -9,7 +9,7 @@
 #include <mutex>
 #include <string>
 
-namespace career_content {
+namespace career::content {
 
 namespace {
 
@@ -36,7 +36,7 @@ std::string caller(const void *from)
 
 int api_available()
 {
-    return runtime::enabled("career", nullptr) && !off.load();
+    return runtime::enabled("career", nullptr) && !hooks.off();
 }
 
 int api_add(const SwoftyCareerContentDesc *d)
@@ -67,7 +67,7 @@ int api_info(const char *id, SwoftyCareerContentInfo *out)
         if (s.desc.id != id)
             continue;
         resolve(s, true);
-        std::lock_guard<std::mutex> g(lock);
+        std::lock_guard<std::mutex> g(hooks.lock);
         *out = {};
         out->index = uint32_t(i);
         out->state = s.state;
@@ -109,7 +109,7 @@ int api_pressed(char *out, size_t cap)
     if (!out || !cap)
         return SWOFTY_ASSET_INVALID;
     out[0] = 0;
-    if (!live)
+    if (!hooks.live())
         return SWOFTY_ASSET_UNAVAILABLE;
     std::lock_guard<std::mutex> l(pressed_lock);
     if (!pressed_any)
@@ -123,7 +123,7 @@ const SwoftyCareerContent table = {api_available, api_add, api_info, api_data_gr
 
 }
 
-using namespace career_content;
+using namespace career::content;
 
 extern "C" __declspec(dllexport) const SwoftyCareerContent *SwoftyCoreCareerContent(void)
 {

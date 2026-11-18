@@ -10,7 +10,7 @@
 // the game reads come in through the Access and Db callbacks, so the unit test drives them with
 // fake memory and a fake database.
 
-namespace runtime::content {
+namespace career::content {
 
 constexpr size_t MAX_CONTENTS = 8;
 constexpr size_t ID_MAX = 48;

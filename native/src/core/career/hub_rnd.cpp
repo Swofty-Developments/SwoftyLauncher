@@ -44,7 +44,7 @@
 // which covers any other path that rewrites header_states. A hide_rnd(false) is never undone: both only act
 // while it is on.
 
-namespace hub {
+namespace career::hub {
 
 std::atomic<bool> hide{false}, pending{false}, laptop_flag{false}, team_hq_flag{false};
 uintptr_t a_set_visible, a_tq_vehicle;
@@ -216,13 +216,13 @@ namespace runtime {
 void hub_tick()
 {
     static uint32_t ticks;
-    bool change = hub::pending.load() && hub::pending.exchange(false), on = hub::hide.load();
+    bool change = career::hub::pending.load() && career::hub::pending.exchange(false), on = career::hub::hide.load();
     if (!change && !(on && ++ticks % 5 == 0))
         return;
-    if (hub::team_hq_flag.load())
-        hub::keep(hub::team_hq_bar, change, on);
-    if (hub::laptop_flag.load())
-        hub::keep(hub::laptop_bar, change, on);
+    if (career::hub::team_hq_flag.load())
+        career::hub::keep(career::hub::team_hq_bar, change, on);
+    if (career::hub::laptop_flag.load())
+        career::hub::keep(career::hub::laptop_bar, change, on);
 }
 
 }

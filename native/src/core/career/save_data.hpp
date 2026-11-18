@@ -11,7 +11,7 @@
 
 // The save splice's reads of the game's save-data objects (save_data.cpp): the root container, a child's
 // property and bag, the bag codec, the string table, the save slot managers and the root's registered children.
-namespace save_data {
+namespace career::save_data {
 
 struct Bindings {
     uintptr_t root_vt = 0, write_bag = 0, lookup = 0, codec_vt = 0, counting_vt = 0, memory_vt = 0, table = 0,
@@ -37,7 +37,7 @@ bool encode(void *bag, std::vector<uint8_t> &out, std::string &why);
 // The string table's name for a key hash, or empty.
 std::string name_of(uint64_t hash);
 // Every save slot of the manager at base; false when the list or a slot does not read.
-bool read_manager(uintptr_t base, std::vector<runtime::career_saves::SlotRead> &out);
+bool read_manager(uintptr_t base, std::vector<career::saves::SlotRead> &out);
 // The names of the root's registered children between begin and end; false when one does not read.
 template <class S = swofty::game::SaveDataContainer>
 bool child_names(uintptr_t begin, uintptr_t end, std::vector<std::string> &out);

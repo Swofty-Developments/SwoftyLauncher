@@ -8,11 +8,11 @@
 #include <cstdio>
 #include <string>
 
-using runtime::career::Components;
-using runtime::career::djb2;
-using runtime::career::Edges;
-using runtime::career::PollSchedule;
-using runtime::career::Tracker;
+using career::state::Components;
+using career::state::djb2;
+using career::state::Edges;
+using career::state::PollSchedule;
+using career::state::Tracker;
 
 static int fails;
 
@@ -94,8 +94,8 @@ int main()
     }
 
     {
-        using runtime::career::poll_reads;
-        using runtime::career::Where;
+        using career::state::poll_reads;
+        using career::state::Where;
         expect(poll_reads(Where::career) && poll_reads(Where::unknown) && !poll_reads(Where::elsewhere),
                "the component poll reads the game in a career and in an unknown mode, not elsewhere");
         Tracker t;
@@ -168,7 +168,7 @@ int main()
         t.team_hq_answer(false);
         t.components(entity_only, 100);
         expect(!t.loaded(), "entity without a CareerComponent: not loaded while within the grace period");
-        t.components(entity_only, 100 + runtime::career::COMPONENT_GRACE_MS + 1);
+        t.components(entity_only, 100 + career::state::COMPONENT_GRACE_MS + 1);
         expect(t.loaded() && t.state().components == SWOFTY_CAREER_COMPONENTS_FALLBACK &&
                    t.mode() == SWOFTY_CAREER_DRIVER,
                "components broken in Team HQ: fall back to the flow states and the Team HQ answer");
@@ -176,7 +176,7 @@ int main()
 
     {
         Tracker t;
-        for (uint32_t i = 0; i < runtime::career::MAX_STATES + 10; i++) {
+        for (uint32_t i = 0; i < career::state::MAX_STATES + 10; i++) {
             char n[32];
             snprintf(n, sizeof n, "StateX%u", i);
             t.flow(djb2(n), 0, 1, n, true, i);
@@ -186,14 +186,14 @@ int main()
         expect(t.status_of(djb2("StateX0"), st, age, 0) && !t.status_of(djb2("StateX300"), st, age, 0),
                "state table is bounded");
         t.flow(djb2("StateTeamHQUpdate"), 0, 2, "StateTeamHQUpdate", true, 0);
-        expect(t.status(runtime::career::TeamHqUpdate) == SWOFTY_FLOW_NONE,
+        expect(t.status(career::state::TeamHqUpdate) == SWOFTY_FLOW_NONE,
                "a full table drops new states (documented limit)");
     }
 
     {
-        using runtime::career::IDLE_POLL_MS;
-        using runtime::career::POLL_MS;
-        using runtime::career::SETTLE_MS;
+        using career::state::IDLE_POLL_MS;
+        using career::state::POLL_MS;
+        using career::state::SETTLE_MS;
         PollSchedule p;
         const uint64_t t0 = 600000;
         expect(p.due(t0, 0, false), "the first poll runs at once");

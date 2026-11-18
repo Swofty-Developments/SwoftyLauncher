@@ -2,7 +2,7 @@
 
 void twelve_slot_tests(const std::string &regs)
 {
-    namespace ct = career_ops::teams;
+    namespace ct = career::ops::teams;
     registry::reset_store();
     auto &st = registry::store();
     const std::string by = "bydanix.f1-2012-season", group = "bydanix_2012";
