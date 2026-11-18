@@ -1,3 +1,4 @@
+#include "core/guards/skips.hpp"
 #include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/loader/mixin_gate.hpp"
 #include "core/runtime/runtime.hpp"
@@ -122,7 +123,8 @@ Forced forced;
 Game_CreateSessionDlcSelectTab_BuildTiles_t *build_orig;
 Game_CreateSessionDlcSelectTab_HandleCommand_t *press_orig;
 Game_Network_CategoryOptionUsing_t *setup_orig;
-uint32_t logged_builds, logged_values, logged_unknown, logged_refused, logged_setup, logged_scenario;
+constinit swofty_core::guards::LogFirst<LOG_FIRST> build_lines, value_lines, refused_lines, setup_lines, scenario_lines;
+constinit swofty_core::guards::LogFirst<16> unknown_lines;
 thread_local bool applying;
 
 template <class T> T at(const void *base, size_t off)
@@ -241,7 +243,7 @@ void build_entry(void *vm)
     std::string why;
     void *option = category_option(why);
     std::vector<logic::Value> values = option ? values_of(option) : std::vector<logic::Value>{};
-    if (logged_values++ < LOG_FIRST) {
+    if (value_lines.note()) {
         std::string listed;
         for (size_t i = 0; i < values.size(); ++i)
             listed += (i ? ", " : "") + std::to_string(i) + "=" + values[i].name + " (" + values[i].display + ")";
@@ -284,7 +286,7 @@ void build_entry(void *vm)
     }
     built_vm = added.empty() ? nullptr : v;
     size_t after = children(list);
-    if (logged_builds++ < LOG_FIRST)
+    if (build_lines.note())
         swofty::log("[car-category] Car Category built: view model %p, buttons list %p, %zu child(ren) before and %zu "
                     "after; stock tiles on nodes %p (F1 2025) and %p (F1 2026); %zu addon box(es) added",
                     vm, list, before, after, at<void *>(v, VM_TILE_A + 8), at<void *>(v, VM_TILE_B + 8), added.size());
@@ -307,14 +309,14 @@ char *press_entry(void *vm, void *command)
     }
     int box = logic::added_box_of(hash, added.size());
     if (box < 0) {
-        if (hash != logic::BACK && logged_unknown++ < 16)
+        if (hash != logic::BACK && unknown_lines.note())
             swofty::log("[car-category] command %s on the Car Category screen is not a stock or addon box (%zu addon box(es))",
                         hex_hash(hash).c_str(), added.size());
         g.unlock();
         return press_orig(vm, command);
     }
     if (vm != built_vm) {
-        if (logged_refused++ < LOG_FIRST)
+        if (refused_lines.note())
             swofty::log("[car-category] addon box press refused: the screen that raised it is not the one the boxes were "
                         "built for");
         g.unlock();
@@ -396,7 +398,7 @@ void play_scenario(void *self, const std::string &want)
     }
     int role = at<int>(session, SESSION_ROLE);
     if (!logic::decides_scenario(role)) {
-        if (logged_scenario++ < LOG_FIRST)
+        if (scenario_lines.note())
             swofty::log("[car-category] setupFromUnranked: session role %d takes the host's scenario", role);
         return;
     }
@@ -428,7 +430,7 @@ void setup_entry(void *self)
     std::unique_lock<std::recursive_mutex> g(lock);
     std::string want = chosen;
     if (want.empty()) {
-        if (forced.option && logged_setup++ < LOG_FIRST)
+        if (forced.option && setup_lines.note())
             swofty::log("[car-category] setupFromUnranked with no addon category chosen; the forced index stays until "
                         "the next build or stock press");
         return;

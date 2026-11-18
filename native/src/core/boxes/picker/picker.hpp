@@ -103,10 +103,9 @@ struct Picker {
     Narrowed narrowed[16];
     size_t narrowed_count = 0;
     std::string last_pick, last_press;
-    uint32_t logged_renarrow = 0;
     FeTile_Press_EraTile_t *press_orig = nullptr;
     Game_F1WorldActivityContainer_SelectEntrantList_t *select_orig = nullptr;
-    uint32_t logged_builds = 0, logged_narrow = 0, logged_refused = 0, logged_detached = 0;
+    PickerLines lines;
 };
 
 extern Picker picker;
@@ -148,7 +147,7 @@ struct VirtualLists {
     std::atomic<void *> boot_registry{};
     std::atomic<bool> parse_list_bound{};
     std::map<std::string, std::array<uint8_t, LIST_VECTOR_SIZE>> parsed_lists;
-    uint32_t logged_virtual = 0;
+    Cap<LOG_FIRST> virtual_lines;
 };
 
 extern VirtualLists virtual_lists;
@@ -176,7 +175,7 @@ struct VehicleGuard {
     SetupVehicles_t *orig = nullptr;
     runtime::loader::MixinGate gate{};
     std::atomic<bool> bound{};
-    uint32_t logged = 0;
+    Cap<LOG_FIRST> lines;
 };
 
 extern VehicleGuard vehicle_guard;
@@ -185,7 +184,7 @@ struct TimeTrialGuard {
     uint32_t trace_lines = 0;
     std::atomic<int64_t> budget{-1};
     std::vector<std::string> kept_out;
-    uint32_t logged_kept = 0;
+    Cap<LOG_FIRST * 4> kept_lines;
 };
 
 extern TimeTrialGuard time_trial_guard;
@@ -217,7 +216,7 @@ using CollectSetupModes_t = void *(void *out, void *allocator);
 struct SetupListGuard {
     CollectSetupModes_t *orig = nullptr;
     std::atomic<bool> bound{};
-    std::atomic<uint32_t> swaps{};
+    Cap<LOG_FIRST> swap_lines;
 };
 
 extern SetupListGuard setup_list_guard;

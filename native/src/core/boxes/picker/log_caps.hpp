@@ -22,4 +22,9 @@ struct BudgetLines {
     Cap<LOG_FIRST * 3> budget;
 };
 
+// The era select's build and press lines (tiles.cpp, virtual_lists.cpp), each logged for the first builds or presses.
+struct PickerLines {
+    Cap<LOG_FIRST> renarrow, builds, narrow, refused, detached;
+};
+
 }
