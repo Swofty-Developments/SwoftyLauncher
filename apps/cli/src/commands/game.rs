@@ -34,7 +34,7 @@ pub(crate) enum GameCommand {
 }
 
 pub(crate) fn command(store: &Store, cmd: GameCommand) -> Result<()> {
-    use swofty_core::copies::{self, Choice};
+    use swofty_core::game_folder::copies::{self, Choice};
     let mut config = store.config();
     match cmd {
         GameCommand::List => {

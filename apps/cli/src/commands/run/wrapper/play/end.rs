@@ -3,8 +3,8 @@ use std::process::ExitStatus;
 use std::time::{Duration, SystemTime};
 
 use anyhow::Result;
-use swofty_core::launch;
-use swofty_core::process::{descends_from, game_processes, stop_process};
+use swofty_core::diagnostics::launch;
+use swofty_core::platform::process::{descends_from, game_processes, stop_process};
 use swofty_core::session::{
     LOADER_LOG, LogMark, PERF_LOG, STOP_FILE, SessionEnd, SessionRecord, written_since,
 };
@@ -30,7 +30,7 @@ pub(super) fn end_session(
     dir: &Path,
     played: Played,
     launched: SystemTime,
-    usage: Option<swofty_core::usage::Session>,
+    usage: Option<swofty_core::online::server::usage::Session>,
 ) -> Result<i32> {
     let loader = std::fs::read(dir.join("loader.log"))
         .ok()
@@ -76,14 +76,14 @@ pub(super) fn end_session(
 fn note_known_problem(store: &Store, game: &Path, dir: &Path, crashed: bool) {
     let record = SessionRecord::read(dir);
     if !crashed {
-        if let Some(d) = swofty_core::known_problems::stall(&record, Some(game), store)
-            .or_else(|| swofty_core::known_problems::tyres(&record, Some(game), store))
+        if let Some(d) = swofty_core::diagnostics::known_problems::stall(&record, Some(game), store)
+            .or_else(|| swofty_core::diagnostics::known_problems::tyres(&record, Some(game), store))
         {
             say("warning", &format!("known problem {}: {}", d.id, d.title));
         }
         return;
     }
-    match swofty_core::known_problems::crash(&record, Some(game), store) {
+    match swofty_core::diagnostics::known_problems::crash(&record, Some(game), store) {
         Some(d) => say("crash", &format!("known problem {}: {}", d.id, d.title)),
         None => say("crash", "no known problem matches this crash"),
     }
@@ -126,7 +126,7 @@ pub(crate) fn keep_game_logs(
     before: Option<&LogMark>,
     launched: SystemTime,
 ) {
-    swofty_core::crash_report::keep_fallback(data, &dir.join("game-logs"), launched);
+    swofty_core::diagnostics::crash_report::keep_fallback(data, &dir.join("game-logs"), launched);
     let loader = game.join(LOADER_LOG);
     if LogMark::replaced(&loader, before) {
         std::fs::copy(&loader, dir.join("loader.log")).ok();

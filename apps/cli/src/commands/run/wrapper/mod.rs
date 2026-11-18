@@ -9,11 +9,11 @@ use std::time::{Duration, Instant};
 
 use anyhow::{Result, bail};
 use swofty_core::GAME_EXE;
+use swofty_core::diagnostics::launch;
+use swofty_core::diagnostics::quarantine;
+use swofty_core::game_folder::recovery::{Scope, SessionLock};
 use swofty_core::install::{Game, Installer};
-use swofty_core::launch;
-use swofty_core::process::{game_processes, games_in};
-use swofty_core::quarantine;
-use swofty_core::recovery::{Scope, SessionLock};
+use swofty_core::platform::process::{game_processes, games_in};
 use swofty_core::session::{Config, LaunchRequest, parse_cpu_list};
 use swofty_core::store::Store;
 
@@ -35,17 +35,20 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
     let lock = crate::recover::lock(store, &info)?;
     crate::recover::stale(store, &lock, g, Scope::All, &info)?;
     crate::commands::offline::gate(store, false)?;
-    swofty_core::entitlement::check_store_start(&g.dir, args.via_ea)?;
+    swofty_core::game_folder::entitlement::check_store_start(&g.dir, args.via_ea)?;
     crate::commands::build::check_entitled(store, g)?;
-    let version = swofty_core::exe_version::read(&g.dir.join(GAME_EXE));
-    if let Some(d) = swofty_core::known_problems::outdated_exe(version.as_deref()) {
+    let version = swofty_core::game_folder::exe_version::read(&g.dir.join(GAME_EXE));
+    if let Some(d) = swofty_core::diagnostics::known_problems::outdated_exe(version.as_deref()) {
         say("warning", &format!("{}: {}", d.title, d.text()));
     }
-    if let Some(reason) = swofty_core::compat::elevation_blocker(&g.dir) {
+    if let Some(reason) = swofty_core::platform::run_as_admin::elevation_blocker(&g.dir) {
         bail!("{reason}");
     }
-    if swofty_core::compat::write_blocker(&g.dir).is_some() {
-        bail!("{}", swofty_core::compat::write_blocked_text(&g.dir));
+    if swofty_core::platform::run_as_admin::write_blocker(&g.dir).is_some() {
+        bail!(
+            "{}",
+            swofty_core::platform::run_as_admin::write_blocked_text(&g.dir)
+        );
     }
     end_on_signals();
     let config: Config = std::fs::read(store.config_path())
@@ -84,7 +87,7 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
     let (profile, request) = gate_unsupported_build(build_blocked.clone(), profile, request);
     if let (Ok(p), Ok(installed)) = (store.profile(&profile), store.addons()) {
         let catalog = swofty_core::catalog::cached(&store.root).unwrap_or_default();
-        for (base, family) in swofty_core::resolver::lonely_bases(&p, &installed, &catalog) {
+        for (base, family) in swofty_core::profile::resolver::lonely_bases(&p, &installed, &catalog) {
             if installed
                 .values()
                 .any(|m| m.name == base && store.is_builtin(&m.id))
@@ -119,7 +122,7 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
         crate::commands::build::install(store, &profile, g, true, &info)?;
     }
     let installed = apply.then(Instant::now);
-    let _home_menu = swofty_core::home_menu::publish(
+    let _home_menu = swofty_core::ui::home_menu::publish(
         &store.root,
         &game,
         env!("CARGO_PKG_VERSION"),
@@ -200,7 +203,7 @@ fn stage_offline(store: &Store, game: &Path) -> Result<()> {
     let journal = swofty_core::offline::journal_path(&store.root);
     let staged = swofty_core::offline::stage(game, &artifacts, &journal);
     if let Err(swofty_core::Error::MissingStock { files, version }) = &staged {
-        swofty_core::stock::Report::missing(files.clone(), game, version.clone())
+        swofty_core::game_folder::stock::Report::missing(files.clone(), game, version.clone())
             .write(&store.root)
             .ok();
     }
@@ -278,7 +281,7 @@ impl Drop for Session<'_> {
             )),
         }
         let inst = Installer::new(&self.store.root, self.game);
-        let rolled_back = swofty_core::phases::time("rollback.total", || inst.roll_back(false));
+        let rolled_back = swofty_core::diagnostics::phases::time("rollback.total", || inst.roll_back(false));
         crate::commands::build::print_phases();
         match rolled_back {
             Ok(done) => {
@@ -292,7 +295,7 @@ impl Drop for Session<'_> {
                 if kept > 0 {
                     info(&format!(
                         "kept {kept} file(s) addons wrote in {}",
-                        swofty_core::addon_storage::dir(&self.store.root).display()
+                        swofty_core::addons::storage::dir(&self.store.root).display()
                     ));
                 }
             }

@@ -224,7 +224,7 @@ struct RunWrap {
 pub fn run_args(game: Option<&Path>) -> Vec<OsString> {
     let mut args: Vec<OsString> = vec!["run".into(), "--apply".into(), "--direct".into()];
     if let Some(g) = game {
-        args.push(swofty_core::process::flag("game", g));
+        args.push(swofty_core::platform::process::flag("game", g));
     }
     args
 }

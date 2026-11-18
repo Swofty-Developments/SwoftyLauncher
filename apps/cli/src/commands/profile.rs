@@ -45,7 +45,7 @@ pub(crate) fn command(store: &Store, cmd: ProfileCommand) -> Result<()> {
         }
         ProfileCommand::Delete { name, yes } => {
             let plan = store.plan_profile_deletion(&name)?;
-            if swofty_core::process::game_running() {
+            if swofty_core::platform::process::game_running() {
                 bail!("close F1 25 before deleting a profile");
             }
             if !yes {

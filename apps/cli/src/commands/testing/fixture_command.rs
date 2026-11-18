@@ -104,8 +104,8 @@ pub(crate) fn capture_command(store: &Store, a: CaptureArgs) -> Result<ExitCode>
     let mut exe = fixture::Exe::default();
     let (remote, storage, source) = match &a.from {
         Some(dir) => {
-            if let Some(live) =
-                swofty_core::steam::find_game().and_then(|i| swofty_core::steam::save_dir(&i.steam_root))
+            if let Some(live) = swofty_core::platform::steam::find_game()
+                .and_then(|i| swofty_core::platform::steam::save_dir(&i.steam_root))
                 && let (Ok(x), Ok(y)) = (dir.canonicalize(), live.canonicalize())
                 && (x == y || y.starts_with(&x))
             {
@@ -156,10 +156,10 @@ pub(crate) fn capture_command(store: &Store, a: CaptureArgs) -> Result<ExitCode>
     if exe.sha256.is_empty()
         && let Ok(g) = crate::commands::build::game(store, None)
     {
-        let mut hashes = swofty_core::baseline::Hashes::load(&store.root);
+        let mut hashes = swofty_core::game_folder::baseline::Hashes::load(&store.root);
         if let Ok(sha) = hashes.sha256(&g.dir.join(swofty_core::GAME_EXE)) {
             exe.sha256 = sha;
-            exe.version = swofty_core::exe_version::read(&g.dir.join(swofty_core::GAME_EXE));
+            exe.version = swofty_core::game_folder::exe_version::read(&g.dir.join(swofty_core::GAME_EXE));
         }
         hashes.save();
     }

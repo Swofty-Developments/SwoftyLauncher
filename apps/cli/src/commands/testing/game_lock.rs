@@ -1,8 +1,8 @@
 use std::path::Path;
 use std::time::{Duration, Instant};
 
-use swofty_core::process::{game_processes, stop_process};
-use swofty_core::recovery::SessionLock;
+use swofty_core::game_folder::recovery::SessionLock;
+use swofty_core::platform::process::{game_processes, stop_process};
 use swofty_core::session::request_stop;
 use swofty_core::store::Store;
 use swofty_core::testsuite::lock::GameLock;

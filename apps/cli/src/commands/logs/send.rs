@@ -3,7 +3,7 @@ use std::process::ExitCode;
 
 use anyhow::{Context, Result, anyhow, bail};
 use clap::Args;
-use swofty_core::send_logs::{self, Bundle, GameInfo, LogServer, PART_LIMIT, Report, Stage};
+use swofty_core::diagnostics::send_logs::{self, Bundle, GameInfo, LogServer, PART_LIMIT, Report, Stage};
 use swofty_core::store::Store;
 
 #[derive(Args, Debug)]
@@ -230,9 +230,10 @@ mod tests {
         std::fs::write(data.join("state/launcher-run.log"), "hello\n").unwrap();
         let store = Store::new(&data);
         let kept = |store: &Store| -> Vec<PathBuf> {
-            let mut zips: Vec<PathBuf> = std::fs::read_dir(swofty_core::send_logs::kept_dir(store))
-                .map(|d| d.flatten().map(|e| e.path()).collect())
-                .unwrap_or_default();
+            let mut zips: Vec<PathBuf> =
+                std::fs::read_dir(swofty_core::diagnostics::send_logs::kept_dir(store))
+                    .map(|d| d.flatten().map(|e| e.path()).collect())
+                    .unwrap_or_default();
             zips.sort();
             zips
         };
@@ -243,7 +244,7 @@ mod tests {
         };
 
         let (url, server) = stub_log_server(200);
-        let hook = swofty_core::send_logs::LogServer::new(Some(&url));
+        let hook = swofty_core::diagnostics::send_logs::LogServer::new(Some(&url));
         assert_eq!(send_to(&store, args("sender"), hook).unwrap(), ExitCode::SUCCESS);
         assert!(server.join().unwrap() > 0);
         let zips = kept(&store);
@@ -258,7 +259,7 @@ mod tests {
         assert_eq!(store.config().discord_username.as_deref(), Some("sender"));
 
         let (url, server) = stub_log_server(400);
-        let hook = swofty_core::send_logs::LogServer::new(Some(&url));
+        let hook = swofty_core::diagnostics::send_logs::LogServer::new(Some(&url));
         let err = send_to(&store, args("refused"), hook).unwrap_err();
         assert!(err.to_string().contains("HTTP 400"), "{err}");
         server.join().unwrap();

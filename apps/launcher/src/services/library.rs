@@ -157,7 +157,7 @@ impl Changes {
                     let names = source
                         .resolve(&swofty_core::build::source_dir(store, &m.id, source.root))
                         .ok()
-                        .and_then(|path| swofty_core::erpbuild::overlay_names(&path).ok());
+                        .and_then(|path| swofty_core::erp::overlay_names(&path).ok());
                     c.resources += names.map_or(1, |n| n.len() * erps.len().max(1));
                 }
                 AssetOp::Erp(_) => c.resources += 1,

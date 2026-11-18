@@ -1,11 +1,13 @@
 use std::time::{Duration, SystemTime};
 
 use swofty_core::install::Game;
-use swofty_core::launcher_saves;
-use swofty_core::save_backup;
+use swofty_core::saves::backup as save_backup;
+use swofty_core::saves::launcher as launcher_saves;
+use swofty_core::saves::vault::restore::Running;
+use swofty_core::saves::vault::{
+    self, Checked, Location, Meta, Notice, Reason, Snapshot, Vault, migrate, watch,
+};
 use swofty_core::store::Store;
-use swofty_core::vault::restore::Running;
-use swofty_core::vault::{self, Checked, Location, Meta, Notice, Reason, Snapshot, Vault, migrate, watch};
 
 use crate::console::output::say;
 
@@ -61,7 +63,7 @@ pub(super) fn before_session_at(
             &format!("saves: could not move save-backups into the career vault: {e}"),
         ),
     }
-    for line in swofty_core::save_stall::sweep(store, game_loc.as_ref(), Running::now(), vault::now()) {
+    for line in swofty_core::saves::stall::sweep(store, game_loc.as_ref(), Running::now(), vault::now()) {
         say("warning", &line);
     }
     let p = store.profile(profile);

@@ -2,10 +2,10 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::time::Duration;
 
-use swofty_core::app_control::Block;
 use swofty_core::launcher::Progress;
+use swofty_core::platform::app_control::Block;
 use swofty_core::session::COMPAT_LAYER;
-use swofty_core::update::{self, Install};
+use swofty_core::updates::release::{self as update, Install};
 
 use crate::app::Reporter;
 #[cfg(windows)]
@@ -67,7 +67,7 @@ pub(super) fn install(
 pub(super) fn launch(exe: &Path, data_env: Option<&Path>) -> Result<(), String> {
     #[cfg(windows)]
     if let Some(root) = exe.parent().and_then(Path::parent)
-        && swofty_core::compat::elevated()
+        && swofty_core::platform::run_as_admin::elevated()
         && win32::shell_open(exe, root).is_ok()
     {
         return Ok(());

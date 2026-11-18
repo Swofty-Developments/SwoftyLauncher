@@ -2,7 +2,7 @@ use std::path::Path;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
-use swofty_core::busy::{Busy, Step};
+use swofty_core::game_folder::busy::{Busy, Step};
 
 #[derive(Default)]
 pub(super) struct Copied(pub(super) AtomicU64, pub(super) AtomicU64);

@@ -3,9 +3,9 @@ use std::process::{Command, ExitCode};
 use std::time::{Duration, Instant};
 
 use swofty_core::GAME_EXE;
+use swofty_core::diagnostics::quarantine::{self, Stage};
+use swofty_core::game_folder::recovery::SessionLock;
 use swofty_core::install::{Game, Installer, PROXY};
-use swofty_core::quarantine::{self, Stage};
-use swofty_core::recovery::SessionLock;
 use swofty_core::session::{Config, LaunchRequest};
 use swofty_core::store::Store;
 
@@ -64,7 +64,7 @@ impl Modded {
         std::fs::write(root.join("src/db"), "modded").unwrap();
         std::fs::write(root.join("src/core"), "core").unwrap();
         let game = Game {
-            identity: swofty_core::baseline::Identity::detect(&dir, Some(1)).unwrap(),
+            identity: swofty_core::game_folder::baseline::Identity::detect(&dir, Some(1)).unwrap(),
             dir,
             user_reg: None,
         };
@@ -92,7 +92,7 @@ impl Modded {
     fn vanilla(&self) -> bool {
         std::fs::read_to_string(self.game.dir.join("game_package/db.bin")).unwrap() == "db"
             && !self.game.dir.join("swofty").exists()
-            && swofty_core::journal::Journal::open(&self.store.root)
+            && swofty_core::game_folder::journal::Journal::open(&self.store.root)
                 .unwrap()
                 .is_empty()
             && Installer::new(&self.store.root, &self.game)
@@ -196,7 +196,7 @@ fn rolls_back_a_session_whose_wrapper_was_killed_after_the_game_exited() {
         std::fs::read_to_string(m.store.root.join("sessions/orphaned-logs/loader.log")).unwrap(),
         "attached\n"
     );
-    let notice = swofty_core::recovery::Notice::read(&m.store.root).unwrap();
+    let notice = swofty_core::game_folder::recovery::Notice::read(&m.store.root).unwrap();
     assert!(notice.lines[0].ends_with("(6 change(s) for profile MODDED) that a session left open"));
 }
 
@@ -206,7 +206,7 @@ fn waits_for_a_steam_wrapper_to_finish_rolling_back_before_recovering() {
         return;
     }
     let m = Modded::new("steam");
-    let lock = swofty_core::recovery::lock_path(&m.store.root);
+    let lock = swofty_core::game_folder::recovery::lock_path(&m.store.root);
     let mut holder = Command::new("flock")
         .arg(&lock)
         .args(["sleep", "1"])

@@ -31,26 +31,6 @@ pub mod tracks;
 pub mod ui;
 pub mod updates;
 
-pub use self::erp as erpbuild;
-pub use addons::{builtin, registry, settings, storage as addon_storage};
-pub use cache::link as link_cache;
-pub use content::{postfx, runtime_assets as runtime, shaders, track_package as map};
-pub use data::{paths, relocate as data_move};
-pub use diagnostics::{
-    crash, crash_report, ea_launch as ea_diag, known_problems, launch, phases, quarantine, send_logs,
-};
-pub use game_db::{livery_kits, owned, row_keys as rowkeys};
-pub use game_folder::{
-    baseline, busy, copies, entitlement, exe_version, journal, placed, recovery, setup, stock,
-};
-pub use online::server::{sign_in as mpauth, usage};
-pub use online::{modules, multiplayer, server, timetrial};
-pub use platform::{app_control, disk, ea_app, process, run_as_admin as compat, steam};
-pub use profile::{conflicts, resolver};
-pub use saves::{backup as save_backup, launcher as launcher_saves, stall as save_stall, vault};
-pub use ui::home_menu;
-pub use updates::{managed, release as update};
-
 pub const STEAM_APP_ID: u32 = 3_059_520;
 pub const GAME_EXE: &str = "F1_25.exe";
 pub const IMAGE_BASE: u64 = 0x1_4000_0000;
@@ -85,26 +65,26 @@ pub enum Error {
     Leftovers(Vec<install::Conflict>),
     #[error(
         "{} {} not the copy Steam installed, usually after a mod was copied into the game folder by hand; nothing in the game folder was changed; verify the game files in Steam to put them back (open {}, or F1 25 > Properties > Installed Files > Verify integrity of game files), then try again",
-        stock::names(.0),
+        game_folder::stock::names(.0),
         if .0.len() == 1 { "is" } else { "are" },
-        stock::STEAM_VERIFY_URL
+        game_folder::stock::STEAM_VERIFY_URL
     )]
     NotStock(Vec<String>),
-    #[error("{}", stock::missing_text(files, version.as_deref()))]
+    #[error("{}", game_folder::stock::missing_text(files, version.as_deref()))]
     MissingStock {
         files: Vec<String>,
         version: Option<String>,
     },
-    #[error("{}", stock::changed_and_missing_text(changed, missing, version.as_deref()))]
+    #[error("{}", game_folder::stock::changed_and_missing_text(changed, missing, version.as_deref()))]
     NotStockAndMissing {
         changed: Vec<String>,
         missing: Vec<String>,
         version: Option<String>,
     },
     #[error("{}", .0.text())]
-    Blocked(app_control::Block),
+    Blocked(platform::app_control::Block),
     #[error("{}", .0.text())]
-    NotEntitled(entitlement::Refusal),
+    NotEntitled(game_folder::entitlement::Refusal),
     #[error("{0}")]
     Requires(catalog::requires::Refusal),
     /// The dependency check of the 1.6 standard library stopped Play.
@@ -112,7 +92,7 @@ pub enum Error {
     Dependencies(String),
     #[error("{}", no_space(drive, *need, *free))]
     NoSpace { drive: String, need: u64, free: u64 },
-    #[error("{}", busy::CANCELLED)]
+    #[error("{}", game_folder::busy::CANCELLED)]
     Cancelled,
     #[error("{0}")]
     Other(String),
@@ -122,8 +102,8 @@ fn no_space(drive: &str, need: u64, free: u64) -> String {
     let colon = if drive.ends_with(':') { "" } else { ":" };
     format!(
         "not enough free space on {drive}{colon} this profile needs about {} GB, {} GB free",
-        disk::gb(need),
-        disk::gb(free)
+        platform::disk::gb(need),
+        platform::disk::gb(free)
     )
 }
 

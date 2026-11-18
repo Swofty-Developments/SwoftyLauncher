@@ -5,12 +5,12 @@ use std::time::{Duration, Instant};
 
 use anyhow::{Result, bail};
 use swofty_core::GAME_EXE;
+use swofty_core::diagnostics::launch;
+use swofty_core::diagnostics::quarantine::{self, Stage};
+use swofty_core::game_folder::recovery::{Scope, SessionLock};
 use swofty_core::install::{Game, Source};
-use swofty_core::launch;
-use swofty_core::multiplayer::client::LAUNCH_ENV as NETPLAY_ENV;
-use swofty_core::process::{game_processes, game_running_in, stop_game_in};
-use swofty_core::quarantine::{self, Stage};
-use swofty_core::recovery::{Scope, SessionLock};
+use swofty_core::online::multiplayer::client::LAUNCH_ENV as NETPLAY_ENV;
+use swofty_core::platform::process::{game_processes, game_running_in, stop_game_in};
 use swofty_core::session::{LOADER_LOG, LaunchMode, LaunchRequest, LogMark, request_stop};
 use swofty_core::store::Store;
 
@@ -61,9 +61,9 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
     if args.apply {
         crate::commands::setup::gate(store)?;
     }
-    if let Some(state) = swofty_core::steam::find_game()
-        .filter(|i| swofty_core::copies::same_dir(&i.dir, &game))
-        .and_then(|i| swofty_core::steam::busy(&i))
+    if let Some(state) = swofty_core::platform::steam::find_game()
+        .filter(|i| swofty_core::game_folder::copies::same_dir(&i.dir, &game))
+        .and_then(|i| swofty_core::platform::steam::busy(&i))
     {
         bail!("Steam is {state} F1 25; wait for it to finish, then press Play again");
     }
@@ -99,7 +99,7 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
     let loader = game.join(LOADER_LOG);
     let before = LogMark::read(&loader);
     let asked = now_secs();
-    let _home_menu = swofty_core::home_menu::publish(
+    let _home_menu = swofty_core::ui::home_menu::publish(
         &store.root,
         &game,
         env!("CARGO_PKG_VERSION"),
@@ -151,7 +151,7 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
     let mut quiet = false;
     let mut opened: Option<Instant> = None;
     while !dir.join("exit_code").exists() {
-        if let Some(url) = swofty_core::home_menu::take_open_request(&game)
+        if let Some(url) = swofty_core::ui::home_menu::take_open_request(&game)
             && opened.is_none_or(|at: Instant| at.elapsed() >= OPEN_AGAIN)
         {
             open_in_browser(&url);
@@ -284,7 +284,7 @@ pub(crate) fn settle(
         }
         std::thread::sleep(Duration::from_millis(250));
     };
-    match swofty_core::recovery::recover(&lock, &store.root, g, Scope::All) {
+    match swofty_core::game_folder::recovery::recover(&lock, &store.root, g, Scope::All) {
         Ok(r) if r.recovered() => {
             say("info", "the wrapper ended without rolling the session back");
             crate::recover::announce(store, g, &r.lines(), &info);

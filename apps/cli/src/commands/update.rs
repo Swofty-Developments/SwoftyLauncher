@@ -5,7 +5,7 @@ use crate::commands::{Execute, Invocation};
 use anyhow::{Result, bail};
 use clap::Args;
 use swofty_core::launcher::Progress;
-use swofty_core::update::{self, Install};
+use swofty_core::updates::release::{self as update, Install};
 
 #[derive(Args)]
 pub(crate) struct UpdateArgs {

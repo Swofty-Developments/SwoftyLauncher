@@ -1,10 +1,10 @@
 use std::time::Duration;
 
 use anyhow::{Result, bail};
-use swofty_core::busy::Busy;
+use swofty_core::game_folder::busy::Busy;
+use swofty_core::game_folder::recovery::{self, Blocked, HEADLINE, Notice, Recovered, Scope, SessionLock};
 use swofty_core::install::{Conflict, Game};
-use swofty_core::process::game_processes;
-use swofty_core::recovery::{self, Blocked, HEADLINE, Notice, Recovered, Scope, SessionLock};
+use swofty_core::platform::process::game_processes;
 use swofty_core::store::Store;
 
 pub const LOCK_WAIT: Duration = Duration::from_secs(120);
@@ -103,7 +103,7 @@ pub fn record_cleared(store: &Store, lines: &[String]) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use swofty_core::busy::Step;
+    use swofty_core::game_folder::busy::Step;
 
     fn temp(name: &str) -> std::path::PathBuf {
         let d = std::env::temp_dir().join(format!("swofty-cli-lock-{name}-{}", std::process::id()));

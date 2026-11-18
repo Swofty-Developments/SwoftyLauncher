@@ -3,10 +3,10 @@ use std::path::{Path, PathBuf};
 
 use anyhow::Result;
 use swofty_core::install::Game;
-use swofty_core::multiplayer::client::parse_launch_env;
+use swofty_core::online::multiplayer::client::parse_launch_env;
 use swofty_core::session::{Config, LaunchRequest, RUNTIME_LIBS_DIR, is_compat_layer};
 use swofty_core::store::Store;
-use swofty_core::{STEAM_APP_ID, steam};
+use swofty_core::{STEAM_APP_ID, platform::steam};
 
 use crate::console::output::say;
 
@@ -73,7 +73,7 @@ pub(super) fn game_env(
         .map(|(k, v)| (k.to_owned(), v)),
     );
     if request.steam_saves_once {
-        env.insert(swofty_core::launcher_saves::OFF_ENV.to_owned(), "off".to_owned());
+        env.insert(swofty_core::saves::launcher::OFF_ENV.to_owned(), "off".to_owned());
     }
     if let Some(armed) = &request.netplay {
         merge_launch_env(&mut env, parse_launch_env(armed));

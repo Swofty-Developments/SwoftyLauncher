@@ -33,7 +33,7 @@ use crate::game_folder::baseline::{Baseline, Objects, hex};
 use crate::launcher::BuildCx;
 use crate::launcher::{Addon, Builtin};
 use crate::manifest::AddonManifest;
-use crate::multiplayer::fingerprint;
+use crate::online::multiplayer::fingerprint;
 use crate::profile::Profile;
 
 mod addons;

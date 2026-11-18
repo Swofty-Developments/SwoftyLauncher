@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use anyhow::{Context, Result};
-use swofty_core::steam;
+use swofty_core::platform::steam;
 use swofty_core::store::Store;
 
 use crate::commands::run::{Follow, symbols};
@@ -47,10 +47,11 @@ pub fn summarise(store: &Store, dir: Option<PathBuf>, exe: Option<PathBuf>) -> R
     let mut follow = Follow::new(&dir, None, symbols(&game, exe.as_deref()));
     follow.poll();
     follow.summary()?;
-    if let Some(crash) = swofty_core::send_logs::newest_crash(store, Some(&game), std::slice::from_ref(&dir))
+    if let Some(crash) =
+        swofty_core::diagnostics::send_logs::newest_crash(store, Some(&game), std::slice::from_ref(&dir))
     {
         say("crash", &format!("crash report {}", crash.report.display()));
-        match swofty_core::send_logs::summarise_crash(&crash.report) {
+        match swofty_core::diagnostics::send_logs::summarise_crash(&crash.report) {
             Ok(lines) => {
                 for l in lines {
                     say("crash", &l);

@@ -4,8 +4,8 @@ use std::process::ExitCode;
 use crate::commands::build::install::install;
 use crate::commands::build::supported;
 use anyhow::{Result, bail};
-use swofty_core::busy::Busy;
-use swofty_core::recovery::{Scope, SessionLock};
+use swofty_core::game_folder::busy::Busy;
+use swofty_core::game_folder::recovery::{Scope, SessionLock};
 use swofty_core::store::Store;
 
 pub fn apply(store: &Store, profile: &str, game: Option<PathBuf>) -> Result<ExitCode> {
@@ -18,7 +18,7 @@ pub fn apply(store: &Store, profile: &str, game: Option<PathBuf>) -> Result<Exit
         }
         bail!(
             "{}",
-            crate::recover::held(store, swofty_core::process::game_running())
+            crate::recover::held(store, swofty_core::platform::process::game_running())
         );
     };
     crate::recover::stale(store, &lock, &g, Scope::All, &out)?;

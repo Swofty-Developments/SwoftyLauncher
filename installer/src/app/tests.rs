@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use swofty_core::session::COMPAT_LAYER;
-use swofty_core::update;
+use swofty_core::updates::release as update;
 
 use super::setup::{command, install_folder};
 use super::view::addons_text;

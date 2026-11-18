@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use eframe::egui;
-use swofty_core::data_move::find;
+use swofty_core::data::relocate::find;
 use swofty_core::launcher::Progress;
 
 use self::setup::{install, install_folder, launch, pick_folder};

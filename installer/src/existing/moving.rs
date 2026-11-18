@@ -2,8 +2,8 @@ use std::collections::BTreeMap;
 use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 
-use swofty_core::process::same_folder;
-use swofty_core::update::Install;
+use swofty_core::platform::process::same_folder;
+use swofty_core::updates::release::Install;
 
 use crate::existing::roots::{remove_stale, running_roots};
 use crate::existing::{DATA_ENTRIES, RELEASE, is_install};
@@ -61,7 +61,7 @@ impl Move {
         if running_roots().iter().any(|r| same_folder(r, &self.from)) {
             return Err("Close the Swofty Launcher before moving it.".into());
         }
-        if swofty_core::process::game_running() {
+        if swofty_core::platform::process::game_running() {
             return Err("Close F1 25 before moving the launcher.".into());
         }
         Install {

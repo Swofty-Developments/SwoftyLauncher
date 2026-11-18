@@ -421,7 +421,7 @@ impl Pipeline<'_, '_> {
             stage_erps(built, staged, written)?;
             return Ok(resized);
         }
-        let crate::erpbuild::BuiltIn {
+        let crate::erp::BuiltIn {
             outside,
             resized,
             reused,
