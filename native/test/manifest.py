@@ -77,6 +77,7 @@ UNITS = [
     Unit('dred', 'GPU device removal report unit test'),
     Unit('report_text', 'Crash report section text unit test'),
     Unit('hook_set', 'Core mixin set state unit test'),
+    Unit('binding_policy', 'Binding drop policy unit test'),
     Unit('ers_newlap', 'ERS new-lap site unit test'),
     Unit('ers_mode', 'ERS mode guard offset unit test'),
     Unit('estimate_laptime', 'Estimate lap time guard unit test'),
