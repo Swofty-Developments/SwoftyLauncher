@@ -204,3 +204,5 @@ These units keep their state in the first file listed; the other files hold code
 | `diagnostics/net_trace/hooks.cpp`, `trace.hpp` | the ws2_32 hooks and their table |
 
 No added file has a static object of its own; each follows its unit's first file in `tools/core_link_order.txt` when that file is listed.
+
+The swofty_registry entry codec is header-only: `career/snapshots/items.hpp` holds the tagged items and their checksum, `format.hpp` the entry, its careers and seasons, and `bag.hpp` the property bag the save carries it in.
