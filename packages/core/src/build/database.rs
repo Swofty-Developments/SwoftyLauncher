@@ -121,17 +121,7 @@ impl Pipeline<'_, '_> {
         let grid = grid_size(&db.db);
         let worlds = layer_worlds(&db.db);
         self.write_database(db, staged, &recorded.row_adders, inputs.room_asked)?;
-        let packer = self.eager_packer();
-        fitted.place(
-            self.run,
-            &worlds,
-            &recorded.ai_teams,
-            grid,
-            &mut self.planner,
-            &mut self.built,
-            &mut self.caches,
-            &packer,
-        )?;
+        self.place_tracks(fitted, &worlds, &recorded.ai_teams, grid)?;
         Ok(edits)
     }
 

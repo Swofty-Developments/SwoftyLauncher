@@ -157,7 +157,7 @@ impl Pipeline<'_, '_> {
         edits: &DbEdits,
         std16: &BTreeMap<String, Std>,
     ) -> Result<()> {
-        let packer = self.eager_packer();
+        let packer = self.run.eager_packer();
         let run = self.run;
         let store = run.store;
         let Self {
