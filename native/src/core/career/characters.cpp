@@ -23,7 +23,7 @@
 // where no addon swaps or mutes runs none of them, so an addon that wraps these functions itself
 // keeps its wraps. A binding that does not resolve drops only that part.
 
-namespace career_characters {
+namespace career::characters {
 
 constexpr const char *REF_MIXIN = "swofty_core.dll (character refs)";
 constexpr const char *VOICE_MIXIN = "swofty_core.dll (character voices)";
@@ -39,11 +39,11 @@ Part ref{REF_MIXIN, "ref"}, voice{VOICE_MIXIN, "voice"};
 
 }
 
-using namespace career_characters;
+using namespace career::characters;
 
 namespace {
 
-namespace cu = runtime::career_ui;
+namespace cu = career::ui;
 namespace mem = swofty::mem;
 
 struct Swap {
@@ -151,7 +151,7 @@ void apply_strings(const std::string &group)
 
 bool group_used(const std::string &group)
 {
-    return runtime::characters::group_in(eswaps, group);
+    return career::characters::group_in(eswaps, group);
 }
 
 void set_active(std::string now, const char *why)
@@ -294,7 +294,7 @@ int api_string_set(const char *group, const char *language, const char *key, con
     bool now;
     {
         std::lock_guard<std::mutex> g(lock);
-        now = add_text(group, runtime::characters::language_of(language), key, text, owner, addon);
+        now = add_text(group, career::characters::language_of(language), key, text, owner, addon);
         store_record(addon, group);
     }
     subscribe();
@@ -322,7 +322,7 @@ int api_strings_json(const char *group, const char *text, size_t len)
         for (auto &[language, keys] : doc.o)
             for (auto &[key, value] : keys.o)
                 if (value.type == json::Value::Str && cu::valid_name(key.c_str())) {
-                    now = add_text(group, runtime::characters::language_of(language.c_str()), key, value.s.c_str(), owner, addon);
+                    now = add_text(group, career::characters::language_of(language.c_str()), key, value.s.c_str(), owner, addon);
                     n++;
                 }
         store_record(addon, group);
@@ -375,18 +375,18 @@ const SwoftyCharacters table = {api_available, api_career_group, api_swap,  api_
 
 }
 
-namespace career_characters {
+namespace career::characters {
 
 std::string replacement_for(const std::string &character)
 {
     std::lock_guard<std::mutex> g(lock);
-    return runtime::characters::replacement_in(eswaps, active, character);
+    return career::characters::replacement_in(eswaps, active, character);
 }
 
 bool speaker_muted(const char *speaker)
 {
     std::lock_guard<std::mutex> g(lock);
-    return runtime::characters::muted_in(emutes, active, speaker);
+    return career::characters::muted_in(emutes, active, speaker);
 }
 
 }

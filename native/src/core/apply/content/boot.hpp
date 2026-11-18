@@ -429,7 +429,7 @@ inline std::map<std::string, std::vector<AddedSeat>> added_seats(registry::Store
             continue;
         for (auto &t : *teams) {
             std::string team(t["team"].as_string());
-            if (!career_ops::teams::added_team_id(team))
+            if (!career::ops::teams::added_team_id(team))
                 continue;
             for (std::size_t k = 0; k < 2; k++) {
                 std::string driver(t["seats"][k].as_string());

@@ -20,8 +20,8 @@ impl Shell {
     /// "Share addon (.zip)" and "Export game files (.zip)".
     pub(crate) fn db_export_menu(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let shell = cx.entity().downgrade();
-        let share = self.db.draft.addon.is_some() && !self.db_locked();
-        let game = !self.db.draft.edits.is_empty() || !self.db_stack().is_empty();
+        let share = self.db.book.draft.addon.is_some() && !self.db_locked();
+        let game = !self.db.book.draft.edits.is_empty() || !self.db_stack().is_empty();
         Button::new("db-export")
             .outline()
             .icon(IconName::FileUp)
@@ -55,11 +55,11 @@ impl Db {
     /// Shares the draft's addon as a .zip.
     pub(crate) fn export_addon<H: Host<Self>>(host: &mut H, window: &mut Window, cx: &mut Context<H>) {
         let (db, needs) = host.split();
-        let Some(id) = db.draft.addon.clone() else {
+        let Some(id) = db.book.draft.addon.clone() else {
             return;
         };
-        let name = db.draft_name();
-        let unsaved = db.draft.unsaved();
+        let name = db.book.draft_name();
+        let unsaved = db.book.draft.unsaved();
         let file = format!("{}.zip", id.trim_start_matches(package::ID_PREFIX));
         let store = needs.store.clone();
         let home = crate::features::db::home(&store);

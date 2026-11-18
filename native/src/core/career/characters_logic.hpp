@@ -5,7 +5,7 @@
 // The character overrides' rules (characters.cpp) over its swap and mute lists, which test/characters_logic_test.cpp
 // pins: an entry acts only in careers of its group, the last swap of a character wins and a string without a language
 // is for every language.
-namespace runtime::characters {
+namespace career::characters {
 
 // The character's replacement in careers of the active group: the last swap's, or empty.
 template <class Swaps> std::string replacement_in(const Swaps &swaps, const std::string &active, const std::string &character)

@@ -9,7 +9,7 @@
 #include "core/runtime/loader/mixin_gate.hpp"
 
 // What the character overrides' entries and API (characters.cpp) and their game hooks (characters_hooks.cpp) share.
-namespace career_characters {
+namespace career::characters {
 
 using BuildRef = void *(void *out, const uint8_t *character, void *node);
 using ListLoaded = int64_t(void *ctx, const void *message);

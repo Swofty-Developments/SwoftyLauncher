@@ -272,7 +272,7 @@ void team_tests(const std::string &regs)
     check(content::team_label(Value("constructor/toro_rosso"), refs) == "toro_rosso_b", "and a constructor/ reference resolves to its label");
     check(refs.lines.size() == 1 && refs.lines[0].find("provided by mod.b/toro_rosso_b") != std::string::npos, "the constructor report line");
 
-    namespace ct = career_ops::teams;
+    namespace ct = career::ops::teams;
     auto season = [](int year, const char *team) {
         ct::SeasonIn s;
         s.year = year;

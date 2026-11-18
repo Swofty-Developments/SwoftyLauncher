@@ -458,7 +458,7 @@ fn a_link_that_cannot_be_made_restores_the_default_folder() {
     };
     let p = plan(&loc(&default), &to, &failing).unwrap();
     move_data(&p, &failing, &Quiet, &no_cancel()).unwrap();
-    let err = recover(&default, &failing).unwrap().unwrap_err();
+    let err = recover_trying(&default, &failing, 2).unwrap().unwrap_err();
     assert!(err.to_string().contains("Could not point"), "{err}");
     assert!(spot_is_folder(&default));
     whole(&default);
@@ -606,7 +606,7 @@ fn a_failed_switch_of_a_linked_folder_relinks_the_first_place() {
         },
         ..OTHER_DRIVE
     };
-    recover(&default, &failing).unwrap().unwrap_err();
+    recover_trying(&default, &failing, 2).unwrap().unwrap_err();
     assert_eq!(link::target(&default), Some(first));
     whole(&default);
     assert!(!second.exists());

@@ -12,7 +12,6 @@ use swofty_core::testsuite::suite::Kind;
 
 use crate::commands::testing::harness::Harness;
 use crate::commands::testing::say;
-use crate::commands::testing::shell::{career_mode, copy_tree};
 
 /// A batch's save sandbox: the fixture copied into the run folder's saves
 /// and the player's save folder listing before the game started.
@@ -197,4 +196,37 @@ impl Harness<'_> {
                 .push(format!("could not delete the batch profile {profile}: {e}"));
         }
     }
+}
+
+/// The game mode of the career a career environment continues, from the
+/// fixture's `holds`: the career in the test's slot, else the only one.
+pub(crate) fn career_mode(f: &Fixture, slot: Option<u64>) -> Option<String> {
+    let careers = &f.manifest.holds.careers;
+    let c = match slot {
+        Some(n) => careers.iter().find(|c| c.slot == Some(n)),
+        None if careers.len() == 1 => careers.first(),
+        None => None,
+    }?;
+    let m = c.mode.to_ascii_lowercase();
+    if m.contains("my_team") || m.contains("myteam") {
+        Some("my_team_career".into())
+    } else if m.contains("driver") {
+        Some("driver_career".into())
+    } else {
+        None
+    }
+}
+
+fn copy_tree(from: &Path, to: &Path) -> std::io::Result<()> {
+    std::fs::create_dir_all(to)?;
+    for e in std::fs::read_dir(from)? {
+        let e = e?;
+        let (src, dst) = (e.path(), to.join(e.file_name()));
+        if e.file_type()?.is_dir() {
+            copy_tree(&src, &dst)?;
+        } else {
+            std::fs::copy(&src, &dst)?;
+        }
+    }
+    Ok(())
 }

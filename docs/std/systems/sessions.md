@@ -141,7 +141,7 @@ struct Rules {                                 // a box's session rules (content
     std::optional<float> refuel_stint_kg;      // content.package 1.5: a pit stop fills to this; nullopt: race_fuel_kg, else full
     std::optional<float> quali_fuel_kg;        // content.package 1.5: qualifying start fuel; nullopt: the game's
     bool race_start_fuel_from_quali = false;   // content.package 1.5: parc ferme, race start fuel = fuel left after qualifying
-    bool race_tyre_change = true;              // content.package 1.5: false keeps the tyres at race pit stops (damage excepted)
+    bool race_tyre_change = true;              // content.package 1.5: false keeps unpunctured tyres at race pit stops
     std::optional<int> race_time_limit_s;      // content.package 1.5: race time limit in seconds; nullopt: the mode's
     std::string weekend_mode;                  // content.package 1.5: a setup mode whose weekend the box runs; empty: the mode's
     std::optional<std::string> safety_car;     // content.package 1.5: off, reduced, standard, increased; nullopt: the player's
@@ -388,7 +388,7 @@ F1 25 has no refuelling rule and its pit stop has no fuel service, so the core p
 | `refuel_stint_kg` | The fuel a stop fills to; empty: `race_fuel_kg`, else a full tank. A stop never drains a car that holds more. |
 | `quali_fuel_kg` | The fuel each car starts a qualifying session with. |
 | `race_start_fuel_from_quali` | Parc fermé (2003 to 2009): each car starts the race on the fuel it had left at the end of qualifying, `quali_fuel_kg` when it ran none. |
-| `race_tyre_change: false` | 2005: one tyre set for qualifying and race. A race pit stop keeps the car's compound and wear; the stop still refuels. |
+| `race_tyre_change: false` | 2005: one tyre set for qualifying and race. A race pit stop keeps the car's compound and wear, unless a tyre is punctured; the stop still refuels. |
 
 ```cpp
 content::packages.layer(content::packages["community.f1-2008/f1_2008"], [](content::Package &p) {
@@ -410,10 +410,11 @@ content::packages.layer(content::packages["community.f1-2005/f1_2005"], [](conte
 [fuel] car 3: pit stop refuel, 6.2 -> 60.0 kg
 ```
 
-The core writes the FuelTank's `fuel_mass` (the live car field `fuel_mass`, never above the tank's capacity). A start fuel is written again while the car has burned none of it, since the start sequence may load its own fuel after the session loads. The pit stop is the game's stop counter (`PitLaneCarState.pit_stops`), read from the live snapshot, so the fuel plan needs the live snapshot (the `telemetry` feature) and no hook. `race_tyre_change: false` is a wrap on `Car_Tyre_ChangeToNextCompound` (0x142e94040, the `PITLANE CHANGEOVER` log): its pit stop caller `Game_PitLane_ApplyPitstopTyres` calls it with flag 1 and ignores the result, and the wrap skips that call in a race session, so `pitstopComplete` and the rest of the stop run as before. The garage actor's call (flag 0) and every non-race session keep the game's change. A tyre record with a flag in `+0x208 & 0x1f`, which the function feeds into its per-wheel resets, keeps the change as tyre damage (a hypothesis; each skipped or allowed stop is logged with the flags). `SWOFTY_RACE_TYRE_RULE=0` turns the wrap off.
+The core writes the FuelTank's `fuel_mass` (the live car field `fuel_mass`, never above the tank's capacity). A start fuel is written again while the car has burned none of it, since the start sequence may load its own fuel after the session loads. The pit stop is the game's stop counter (`PitLaneCarState.pit_stops`), read from the live snapshot, so the fuel plan needs the live snapshot (the `telemetry` feature) and no hook. `race_tyre_change: false` is a wrap on `Car_Tyre_ChangeToNextCompound` (0x142e94040, the `PITLANE CHANGEOVER` log): its pit stop caller `Game_PitLane_ApplyPitstopTyres` calls it with flag 1 and ignores the result, and the wrap skips that call in a race session, so `pitstopComplete` and the rest of the stop run as before. The garage actor's call (flag 0) and every non-race session keep the game's change. A car with a punctured tyre keeps the game's change. The core reads each of the car's wheels' `CarWheel.tyre_flags` (`+0x20`; bit 1: punctured, bit 0: burst) on the builds that state is proven on, the KB build and Steam 1.0.145. On any other build a punctured tyre stays fitted, and the line says so. Each skipped or allowed stop is logged. `SWOFTY_RACE_TYRE_RULE=0` turns the wrap off.
 
 ```text
-[tyres] vehicle 7 pit stop in the race: tyres kept (box rule race_tyre_change false) (tyre record flags 0)
+[tyres] vehicle 7 pit stop in the race: tyres kept (box rule race_tyre_change false)
+[tyres] vehicle 12 pit stop in the race: tyres changed for a puncture (FR)
 ```
 
 Experimental: tested on the host only. Known limits: the AI does not plan a stop for fuel, so a race fuel too small for the distance can run an AI car dry; the MFD's fuel readout and the garage refuel between qualifying runs are the game's own.

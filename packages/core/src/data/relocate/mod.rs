@@ -630,6 +630,11 @@ fn abort(j: &Journal, ops: &Ops) {
 /// launcher restarted after a copy, or crashed part way. `None` when no move is
 /// waiting. Call it before anything opens a file in the data folder.
 pub fn recover(default: &Path, ops: &Ops) -> Option<Result<Recovered, Error>> {
+    recover_trying(default, ops, STARTUP_TRIES)
+}
+
+/// [`recover`], trying the switch `tries` times.
+fn recover_trying(default: &Path, ops: &Ops, tries: u32) -> Option<Result<Recovered, Error>> {
     let path = Journal::path(default);
     let text = std::fs::read_to_string(&path).ok()?;
     let journal: Journal = match serde_json::from_str(&text) {
@@ -639,7 +644,7 @@ pub fn recover(default: &Path, ops: &Ops) -> Option<Result<Recovered, Error>> {
             return Some(Err(Error::io("Ignored an unreadable data folder move", e)));
         }
     };
-    Some(match finish(&journal, ops, STARTUP_TRIES) {
+    Some(match finish(&journal, ops, tries) {
         Ok(done) => Ok(done),
         Err(e) => {
             abort(&journal, ops);

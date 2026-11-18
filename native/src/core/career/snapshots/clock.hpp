@@ -24,7 +24,7 @@
 // career.season.start fires once per career and year: once this session, and not again for a per-season
 // career whose saved entry already holds that year's snapshot.
 
-namespace swofty_core::snapshots::seasons {
+namespace career::snapshots::seasons {
 
 namespace reg = swofty_core::registry;
 

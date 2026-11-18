@@ -1,4 +1,4 @@
-mod setup;
+mod install;
 mod view;
 
 use std::path::{Path, PathBuf};
@@ -8,7 +8,7 @@ use eframe::egui;
 use swofty_core::data::relocate::find;
 use swofty_core::launcher::Progress;
 
-use self::setup::{install, install_folder, launch, pick_folder};
+use self::install::{install, install_folder, launch, pick_folder};
 use crate::theme::visuals;
 use crate::{FINDING, HEIGHT, data, existing, resolve, running};
 
