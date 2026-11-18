@@ -1,11 +1,15 @@
 // Host unit test for the weather setup chain's order rules (core/weather/chain.hpp): Career Mode Editor's wrap above
 // the core's, the seed forced above the core kept, a handler's seed forced for one build and released, and who owns
 // each dataset with and without a Career Mode Editor plan, and the TimeOfDaySystem gates of a rebuild. The chain is
-// played as the mixin chain runs it: the higher priority first on the way in and last on the way out.
+// played as the mixin chain runs it: the higher priority first on the way in and last on the way out. Then the
+// build rules Career Mode Editor's plans are held to: building a script, validating it, clamping intensities into the
+// track's type ranges, refusing a wet state the track cannot draw, and checking the dataset the game built.
 #include "core/weather/chain.hpp"
 
+#include <cmath>
 #include <cstdio>
 #include <string>
+#include <vector>
 
 namespace wx = swofty_core::weather;
 
@@ -143,6 +147,107 @@ static void test_rebuild_gate()
     expect(!*wx::rebuild_gate(t), "the random and scripted flags without the override run the normal build");
 }
 
+static void test_build_of()
+{
+    wx::Slot spa[3] = {{0, 1200, 0, -1}, {2, 600, 300, -1}, {4, 0, 120, 0.8f}};
+    wx::Build b = wx::build_of(spa, 3, 3600);
+    expect(b.n == 3 && b.dropped == 0 && b.type[0] == 0 && b.type[1] == 2 && b.type[2] == 4,
+           "dry, overcast, heavy rain: three states in order");
+    expect(b.hold[0] == 1200 && b.trans[0] == 300 && b.hold[1] == 600 && b.trans[1] == 120,
+           "each state holds its duration, then changes over the next slot's transition");
+    expect(b.hold[2] == 3600 - 2220 && b.trans[2] == 0 && b.intensity[2] == 0.8f,
+           "the last state holds to the end of the session with no transition");
+    expect(wx::validate(b, 3600).empty(), "and the build validates");
+
+    wx::Slot late[3] = {{0, 3000, 0, -1}, {3, 500, 300, -1}, {5, 600, 60, -1}};
+    wx::Build l = wx::build_of(late, 3, 3600);
+    expect(l.n == 2 && l.dropped == 1 && l.hold[1] == 300,
+           "a change with no room for its transition and a hold before the end is dropped; the state before it holds on");
+
+    wx::Slot many[8];
+    for (unsigned i = 0; i < 8; i++)
+        many[i] = {uint8_t(i % 6), 60, 30, -1};
+    wx::Build m = wx::build_of(many, 8, 3600);
+    expect(m.n == wx::MAX_STATES && m.dropped == 2, "past six states the rest are dropped and counted");
+    expect(wx::validate(m, 3600).empty(), "six states validate");
+
+    wx::Slot tiny[2] = {{1, 0, 0, -1}, {3, 0, 0, -1}};
+    wx::Build t = wx::build_of(tiny, 2, 3600);
+    expect(t.hold[0] == wx::MIN_HOLD_S && t.trans[0] == wx::MIN_TRANSITION_S,
+           "a zero duration or transition is raised to the 1 s minimum");
+    expect(wx::build_of(spa, 0, 3600).n == 0 && !wx::validate(wx::build_of(spa, 0, 3600), 3600).empty(),
+           "no slots: no build, and it does not validate");
+}
+
+static void test_validate()
+{
+    wx::Build ok = wx::plain_build(2, 3600);
+    expect(wx::validate(ok, 3600).empty() && ok.type[0] == 2, "the plain build keeps the game's first type");
+    expect(wx::plain_build(9, 3600).type[0] == 0, "and falls back to clear without one");
+    auto bad = [&](auto edit, const char *starts, const std::string &what) {
+        wx::Build b = ok;
+        b.n = 2;
+        b.type[1] = 3;
+        b.hold[0] = 1000;
+        b.trans[0] = 60;
+        b.hold[1] = 2540;
+        b.trans[1] = 0;
+        edit(b);
+        std::string why = wx::validate(b, 3600);
+        expect(*starts ? why.starts_with(starts) : why.empty(), what + (why.empty() ? "" : " (" + why + ")"));
+    };
+    bad([](wx::Build &) {}, "", "a two-state build fits");
+    bad([](wx::Build &b) { b.type[1] = 6; }, "state 1 has type 6", "a type past storm");
+    bad([](wx::Build &b) { b.hold[0] = 0.5f; }, "state 0 hold", "a hold under 1 s");
+    bad([](wx::Build &b) { b.trans[1] = 5; }, "state 1 transition", "a transition after the last state");
+    bad([](wx::Build &b) { b.trans[0] = NAN; }, "state 0 transition", "a transition that is not a number");
+    bad([](wx::Build &b) { b.intensity[1] = 1.5f; }, "state 1 intensity", "an intensity above 1");
+    bad([](wx::Build &b) { b.hold[1] = 4000; }, "states add up to", "states past the session's end");
+    bad([](wx::Build &b) { b.n = 7; }, "7 states", "more than six states");
+    expect(!wx::validate(ok, NAN).empty(), "a session length that is not a number");
+    expect(wx::session_length(5400, 3) == 5400 && wx::session_length(0, 3) == 3600 && wx::session_length(NAN, 5) == 7200,
+           "the game's length when plausible, else an hour, or two for a race");
+}
+
+static void test_ranges()
+{
+    wx::TypeRange ranges[wx::MAX_STATES] = {{0, 0}, {0, 0.4f}, {0.2f, 0.6f}, {0.1f, 0.5f}, {0, 0}, {0.6f, 1}};
+    wx::Slot wet[2] = {{3, 600, 0, -1}, {4, 0, 120, -1}};
+    wx::Build b = wx::build_of(wet, 2, 3600);
+    expect(wx::unsupported_state(b, ranges) == "heavy_rain", "heavy rain on a track whose range cannot draw it");
+    wx::Slot dry[2] = {{0, 600, 0, -1}, {2, 0, 120, -1}};
+    wx::Build d = wx::build_of(dry, 2, 3600);
+    expect(wx::unsupported_state(d, ranges).empty(), "dry states are never refused");
+
+    wx::Slot set[3] = {{2, 600, 0, 0.9f}, {3, 600, 60, 0.3f}, {5, 0, 60, 0.2f}};
+    wx::Build c = wx::build_of(set, 3, 3600);
+    std::vector<std::string> lines = wx::clamp(c, ranges);
+    expect(c.intensity[0] == 0.6f && c.intensity[1] == 0.3f && c.intensity[2] == 0.6f,
+           "intensities move into their type's range; one already in it stays");
+    expect(lines.size() == 2 && lines[0] == "state 0 overcast intensity 0.90 -> 0.60 (game range 0.20..0.60)",
+           "one line per changed state");
+    wx::TypeRange broken[wx::MAX_STATES] = {{0, 0}, {0, 0}, {NAN, 1}, {0, 1}, {0, 1}, {0, 1}};
+    wx::Build u = wx::build_of(set, 3, 3600);
+    std::vector<std::string> back = wx::clamp(u, broken);
+    expect(u.intensity[0] == -1 && back.size() == 1 && back[0].find("the game's draw") != std::string::npos,
+           "an unusable range hands the state back to the game's draw");
+}
+
+static void test_dataset_checks()
+{
+    wx::BuiltState good[2] = {{0, 1200, 300, 0}, {4, 3600, 0, 0.7f}};
+    wx::BuiltState nan[2] = {{0, 1200, NAN, 0}, {4, 3600, 0, 0.7f}};
+    wx::BuiltState high[2] = {{0, 1200, 300, 0}, {4, 3600, 0, 1.2f}};
+    expect(wx::dataset_finite(good, 2) && !wx::dataset_finite(nan, 2) && !wx::dataset_finite(high, 2) &&
+               wx::dataset_finite(high, 2, false),
+           "a built dataset is checked finite, and in range unless asked not to");
+    wx::Slot two[2] = {{0, 1200, 0, -1}, {4, 0, 300, -1}};
+    wx::Build b = wx::build_of(two, 2, 3600);
+    wx::BuiltState other[2] = {{0, 1200, 300, 0}, {3, 3600, 0, 0.5f}};
+    expect(wx::holds(good, 2, b) && !wx::holds(other, 2, b) && !wx::holds(good, 1, b),
+           "the game's dataset holds the build's states in order, or the rebuild is a mismatch");
+}
+
 int main()
 {
     test_priorities();
@@ -152,6 +257,10 @@ int main()
     test_nothing_forced();
     test_scripted_and_time_trial();
     test_rebuild_gate();
+    test_build_of();
+    test_validate();
+    test_ranges();
+    test_dataset_checks();
     printf("%s\n", fails ? "FAILED" : "all passed");
     return fails ? 1 : 0;
 }
