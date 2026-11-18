@@ -18,8 +18,11 @@ and a reason. The agree counts only when its claimed level is the binding's leve
 a new agree; re/db/level_baseline.json lists, by V-id, the bindings that exported on a lower-level agree
 when that rule came in, and it only shrinks. re/db/export_drops.json takes a binding whose newest verify row is
 a partial or disagree out of the addon API on purpose: `deprecated` keeps exporting it for one release, marked
-deprecated, and `dropped` lists it in the sets' `dropped` array instead of exporting it. Runtime bindings need a
-signature verified on the KB build; struct fields go through the same gate.
+deprecated, and `dropped` lists it in the sets' `dropped` array instead of exporting it. A renamed binding (binding.py
+rename) keeps its old name the same way: an entry for a name no record holds any more, whose rows were retired with the
+rename, covers the newest of those retired rows; `deprecated` exports the old name for one release as an alias of its
+`replacement`, which must export itself. Runtime bindings need a signature verified on the KB build; struct fields go
+through the same gate.
 """
 import argparse, json, os, re, subprocess, sys
 
@@ -263,6 +266,16 @@ class Gate:
             return None, f'{level} without an agree verify row'
         return None, f'{level}'
 
+    def renamed(self, key):
+        """The entry for a binding renamed away, when the newest of its retired rows is the partial or disagree the
+        entry covers; it then counts as deprecated or dropped like an entry over a record."""
+        dr = self.drops.get(key)
+        v = self.newest([(key[0], 'retired:' + key[1])])
+        if not (dr and v and dr['covers'] == v[1] and v[0] in ('partial', 'disagree')):
+            return None
+        (self.deprecated if dr['mode'] == 'deprecated' else self.dropped)[key] = dr
+        return dr
+
     def newest(self, keys):
         """The newest verify row over all keys, by date and then file order: a later partial on the address
         outranks an older agree on the name."""
@@ -420,6 +433,7 @@ def load(gate=None):
                 b['string_anchor'] = {'string': an['string'], 'func_rva': an['func_rva'],
                                       'func_offset': an['func_offset'], 'durable': an['durable']}
             bindings.append(b)
+    bindings += aliases(gate, funcs, globs, bindings, skip)
 
     structs = {}
     sdir = os.path.join(kb.DB, 'structs')
@@ -437,6 +451,31 @@ def load(gate=None):
             structs[s['name']] = {'name': s['name'], 'subsystem': s['subsystem'], 'fields': fields,
                                   'size': s['size'] if sstatus else None}
     return build, sorted(bindings, key=lambda b: b['id']), structs, skipped
+
+
+def aliases(gate, funcs, globs, bindings, skip):
+    """The deprecated old names of renamed bindings, each a copy of its replacement's binding under the old id."""
+    names = {('func', r['name']) for r in funcs} | {('global', r['name']) for r in globs}
+    exported = {b['id']: b for b in bindings}
+    out = []
+    for key, dr in sorted(gate.drops.items()):
+        if key in names:
+            continue
+        if not gate.renamed(key):
+            skip('export drops: a renamed binding whose newest retired row is not the one its entry covers')
+            continue
+        if dr['mode'] != 'deprecated':
+            continue
+        b = exported.get(dr.get('replacement'))
+        if b is None or (b['kind'] == 'func') != (key[0] == 'func'):
+            del gate.deprecated[key]
+            skip('export drops: a renamed binding whose replacement does not export')
+            continue
+        a = dict(b, id=key[1], evidence='deprecated:' + dr['covers'], deprecated=drop_doc(dr), alias=b['id'])
+        if b.get('proto'):
+            a['proto'] = re.sub(rf'\b{re.escape(b["id"])}\b', key[1], b['proto'], count=1)
+        out.append(a)
+    return out
 
 
 def is_num(v):
@@ -560,7 +599,8 @@ def build_set(overlay, bindings, is_kb, dropped=()):
     out = []
     for base in bindings:
         i = base['id']
-        ov, hint = overrides.get(i, {}), hints.get(i, {})
+        src = base.get('alias', i)
+        ov, hint = overrides.get(src, {}), hints.get(src, {})
         made_on = base.get('made_on')
         if made_on and 'match' not in hint and b['sha256'].startswith(made_on['build']):
             hint = {**hint, 'match': made_on['match']}
@@ -568,7 +608,7 @@ def build_set(overlay, bindings, is_kb, dropped=()):
             raise SystemExit(f'bindgen: hint func_rva for {i}, which has no string anchor')
         e = {}
         for k, v in base.items():
-            if k == 'made_on':
+            if k in ('made_on', 'alias'):
                 continue
             if k == 'build':
                 v = b['sha256']
@@ -594,9 +634,9 @@ def build_set(overlay, bindings, is_kb, dropped=()):
                 elif not is_kb:
                     v.pop('func_rva', None)
             e[k] = v
-        if i in unres:
+        if src in unres:
             e['status'] = 'unresolvable'
-            e['reason'] = unres[i]
+            e['reason'] = unres[src]
         out.append(e)
     doc = {'schema': 1, 'generator': 're/tools/bindgen.py', 'build': {k: b[k] for k in BUILD_KEYS}}
     if sections:
