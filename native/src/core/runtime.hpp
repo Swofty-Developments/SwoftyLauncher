@@ -285,8 +285,6 @@ bool myteam_keep_forced(const std::string &label);
 bool myteam_keep_substitute(SwoftyContext *c, uint32_t stat, const std::string &label);
 std::vector<CoreMixins> ai_corner_guard_mixins();
 void ai_corner_guard_commit();
-std::vector<CoreMixins> ai_ers_guard_mixins();
-void ai_ers_guard_commit();
 std::vector<CoreMixins> replay_grid_guard_mixins();
 void replay_grid_guard_commit();
 std::vector<CoreMixins> watchdog_grace_mixins();
