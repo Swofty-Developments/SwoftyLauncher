@@ -496,6 +496,20 @@ def cmd_note(a):
     print(f'noted in {p}')
 
 
+SHARED_VERIFY_IDS_UP_TO = 10540
+
+
+def colliding_verify_ids(rows):
+    """{n: rows} for each verify id above SHARED_VERIFY_IDS_UP_TO that more than one row carries. The ids up to that
+    bound were handed out twice on parallel branches before kb_lint checked them, and stay as they are."""
+    out = {}
+    for r in rows:
+        m = re.match(r'V(\d+) ', r.get('notes') or '')
+        if m and int(m.group(1)) > SHARED_VERIFY_IDS_UP_TO:
+            out.setdefault(int(m.group(1)), []).append(r)
+    return {n: rs for n, rs in out.items() if len(rs) > 1}
+
+
 def cmd_verify(a):
     table = {'func': 'functions', 'global': 'globals', 'db_key': 'db_keys', 'anchor': 'strings_anchors'}.get(a.kind)
     claimed = '-'
