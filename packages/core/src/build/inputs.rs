@@ -254,7 +254,6 @@ impl Inputs {
             built,
             session,
             caches,
-            packer: setup.packer.clone(),
         };
         Ok((pipeline, inputs))
     }
