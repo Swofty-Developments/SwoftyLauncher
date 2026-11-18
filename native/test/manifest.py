@@ -145,6 +145,7 @@ UNITS = [
     Unit('toast', 'Lap toast message and state machine unit test'),
     Unit('track_list_guard', 'Career calendar track list guard unit test'),
     Unit('track_record', 'Round track record guard unit test'),
+    Unit('track_select', 'Track select guard confirm decision unit test'),
     Unit('build_proof', 'Per-build proof gates unit test'),
     Unit('mixin_gate', 'Core mixin set gate and commit lines unit test'),
     Unit('core_rank', 'Core mixin list rank order unit test'),
