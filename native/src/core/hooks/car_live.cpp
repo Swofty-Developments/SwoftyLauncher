@@ -27,10 +27,10 @@
 
 // The live car operations on the running game (car_live.hpp): g_Sess_VehicleTable and g_Sess_VehicleCount
 // resolve once the code is ready, memory reads and writes are checked (swofty::mem), writes run only on the
-// flow thread (the one that ticks on_frame), and nothing is handed over on an exe outside car_live::CAR_BUILDS,
-// the builds whose field offsets these are. car.built and car.reset are game points: the mid-hook on site_Car_LiveCarBuilt
-// and the detour on Car_Systems_Reset_Thunk sit there while an addon subscribes, and the events fire from the next
-// frame (car_live.hpp, Ops::take).
+// flow thread (the one that ticks on_frame), and nothing is handed over on an exe the car_proofs gates refuse
+// (runtime::car_layout::CAR_LIVE names the builds whose field offsets these are). car.built and car.reset are game
+// points: the mid-hook on site_Car_LiveCarBuilt and the detour on Car_Systems_Reset_Thunk sit there while an addon
+// subscribes, and the events fire from the next frame (car_live.hpp, Ops::take).
 
 extern "C" __declspec(dllexport) const SwoftyLive *SwoftyCoreLive(void);
 
@@ -43,15 +43,6 @@ struct CoreTag {};
 using Ops = car_live::Ops<CoreTag>;
 
 std::atomic<uint32_t> g_flow_tid{0};
-
-const car_live::CarBuild *car_build()
-{
-    static const car_live::CarBuild *build = [] {
-        runtime::build_proof::Exe exe = runtime::running_exe();
-        return car_live::car_build_for(exe.pe_timestamp, exe.size_of_image);
-    }();
-    return build;
-}
 
 bool on_flow_thread()
 {
@@ -517,8 +508,8 @@ void setup()
     e.flow_thread = on_flow_thread;
     e.enabled = [] { return runtime::enabled("events", nullptr); };
     e.row_ready = row_ready;
-    const car_live::CarBuild *build = car_build();
-    if (!build) {
+    runtime::build_proof::Build build = runtime::running_build();
+    if (!runtime::proven(car_proofs::OPERATIONS)) {
         runtime::build_proof::Exe exe = runtime::running_exe();
         swofty::log("[cars] live car operations off: build %u (image 0x%x) has no checked car layouts", exe.pe_timestamp,
                     exe.size_of_image);
@@ -528,7 +519,7 @@ void setup()
         if (!e.table || !e.count)
             swofty::log("[cars] live car operations off: g_Sess_VehicleTable or g_Sess_VehicleCount does not resolve");
         else
-            swofty::log("[cars] live car operations on (%s): %zu fields", build->name,
+            swofty::log("[cars] live car operations on (%s): %zu fields", car_proofs::log_name(build),
                         sizeof car_live::FIELDS / sizeof car_live::FIELDS[0]);
         if (uintptr_t fn = swofty::api->resolve("Car_Engine_ComputeDerived_Thunk"))
             e.engine_derived = [fn](uintptr_t engine) {
@@ -563,7 +554,7 @@ void setup()
             };
         else
             swofty::log("[cars] fuel_ecu fields off: Car_FuelEcu_SetMode_Thunk does not resolve");
-        e.mode_avail = [rva = build->mode_avail_rva] {
+        e.mode_avail = [rva = runtime::car_layout::mode_avail_rva(build)] {
             uintptr_t at = swofty::api->module_base() + rva, ptr = 0;
             return mem::read(at, ptr) && mem::object_like(ptr) ? ptr : uintptr_t(0);
         };
@@ -650,7 +641,7 @@ void declare_car_points(Table &t)
 
 void arm_car_points()
 {
-    if (!car_build())
+    if (!runtime::holds(car_proofs::POINTS))
         return;
     g_built->keep(true);
     g_built->install(false, "the core");
@@ -704,7 +695,7 @@ namespace runtime {
 static std::vector<CoreMixins> car_levers_mixins()
 {
     std::vector<CoreMixins> out;
-    if (g_levers_offered || !code_ready() || !swofty_core::hooks::car_build())
+    if (g_levers_offered || !code_ready() || !holds(swofty_core::hooks::car_proofs::LEVERS))
         return out;
     g_levers_offered = true;
     std::vector<SwoftyMixin> mixins;
