@@ -5,7 +5,7 @@ use swofty_core::game_folder::copies::{self};
 use swofty_core::game_folder::recovery::SessionLock;
 use swofty_core::install::Source;
 use swofty_core::platform::process::GameProcess;
-use swofty_core::platform::steam::client as steam_client;
+use swofty_core::platform::steam;
 use swofty_core::saves::vault;
 use swofty_core::store::Store;
 
@@ -66,7 +66,7 @@ pub(super) fn should_retry_import(g: RetryGate) -> bool {
 pub(super) fn launch_in_progress(store: &Store) -> bool {
     Busy::live(&store.root).is_some()
         || SessionLock::held_elsewhere(&store.root)
-        || std::fs::read_to_string(store.root.join(steam_client::STAGE_FILE))
+        || std::fs::read_to_string(store.root.join(steam::client::STAGE_FILE))
             .is_ok_and(|s| !s.trim().is_empty())
 }
 

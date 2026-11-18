@@ -7,7 +7,7 @@ use swofty_core::game_folder::busy::Busy;
 use swofty_core::game_folder::recovery::{Blocked, Notice, SessionLock};
 use swofty_core::game_folder::stock;
 use swofty_core::platform::process::{GameProcess, game_processes};
-use swofty_core::platform::steam::client as steam_client;
+use swofty_core::platform::steam;
 use swofty_core::session::SessionRecord;
 use swofty_core::store::Store;
 
@@ -69,7 +69,7 @@ pub fn probe(
             .then(|| crate::features::career_saves::SavesPage::banner_for(&store.root, profile)),
         saves_marker: swofty_core::saves::launcher::marker(&store.root).is_some(),
         saves_print,
-        launch_stage: std::fs::read_to_string(store.root.join(steam_client::STAGE_FILE))
+        launch_stage: std::fs::read_to_string(store.root.join(steam::client::STAGE_FILE))
             .ok()
             .map(|s| s.trim().to_owned())
             .filter(|s| !s.is_empty()),

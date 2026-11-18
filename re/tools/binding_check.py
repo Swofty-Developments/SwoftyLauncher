@@ -22,8 +22,96 @@ SECTIONS = ('.xtls', '.data1')
 SIG_KINDS = {'func_start', 'mid', 'call', 'data'}
 AUTO_LEVELS = ('L1', 'L2')
 MAX_AUTO_RECORDS = 25
+NO_RECORDS = 'the pull request changes no binding record'
 CODE_DIRS = ('native/src', 'addons', 'packages', 'templates', 'apps')
 CODE_EXTS = ('.c', '.cc', '.cpp', '.h', '.hpp', '.rs', '.py', '.json', '.toml', '.ts', '.js', '.lua')
+
+NEW = 'make the record again with binding.py new, which writes every signature field and the proof'
+VERIFY = 'prove it again: re/tools/py re/tools/binding.py verify {name} --exe <your F1_25.exe> --by <your GitHub login>'
+FIXES = [(re.compile(p), t) for p, t in (
+    (r'invalid JSON|not valid JSON|duplicate key|a record is a JSON object|the limit is|not UTF-8|nests too deeply|'
+     r'not a regular file|unknown key|^\S+: \S+ missing$|'
+     r'is not a signature field|is not a (functions|globals) column|must be a one-line string',
+     'the file is not what binding.py writes; ' + NEW),
+    (r'must live at (re/bindings/\S+)|file must be (re/bindings/\S+)', 'move the file to {0}'),
+    (r'L[23] needs (decomp: and xref:|xref:|decomp:)',
+     'add the missing {0} token to --evidence (tokens are kind:value joined by ;, for example '
+     '"decomp:own disasm 0x142ea5a50-0x142ea5adf;xref:0x142ea5763"), or pass --level L1'),
+    (r'unknown evidence token kind|empty evidence token',
+     'evidence tokens are kind:value joined by ; and the kinds are ' + ', '.join(kb.TOKEN_KINDS)),
+    (r'not in subsystems\.tsv|no subsystem has the prefix',
+     'pass --subsystem with an id from re/db/subsystems.tsv, or start the name with that subsystem\'s prefix'),
+    (r'name \S+ (is a tool default name|does not follow)|has invalid characters|name prefix \S+ !=|global name|'
+     r'global prefix \S+ !=',
+     'name it <Prefix>_<Verb>_<Noun> (a function) or g_, k_, vt_ or site_<Prefix>_<Noun> (a global), with the prefix '
+     'of its subsystem in re/db/subsystems.tsv (re/PROTOCOL.md §3)'),
+    (r'signature\.verified needs', 'binding.py new must run on the KB build; ' + NEW),
+    (r'signature\.(id|section|kind|pattern|match|target|names|anchor|resolve|expect|func_start)|data1_reason', NEW),
+    (r'row\.addr is outside', 'use the address on the KB build (Steam 1.0.141.7865), 0x14xxxxxxx or 0x15xxxxxxx'),
+    (r'digest mismatch|found match \S+ target \S+, the record says', 'the signature changed after the proof; ' + VERIFY),
+    (r'did not resolve to exactly one match', 'the pattern is not unique on that exe; make the record again with '
+     'binding.py new --match-from <an earlier instruction>'),
+    (r'which is not a build in re/db/builds|the proof is not on a known build',
+     'prove it on the KB build or on a build in re/db/builds; ' + VERIFY),
+    (r'exe size or timestamp differs', 'that exe is not an unmodified KB build; ' + VERIFY),
+    (r'name (\S+) is already in the knowledge base', 'pick another name: {0} already exists'),
+    (r'(0x[0-9a-f]+) is already (\S+) in', 'the knowledge base already names {0} as {1}: use that binding, or open a '
+     'pull request for review if it is wrong'),
+    (r'signature id (\S+) is already used', 'pass --id <subsystem>.<another_snake_case_name>'),
+    (r'are the same as (\S+)|already has the \S+ signature (\S+)',
+     'the knowledge base already finds this place through {0}: use that binding'),
+    (r'already has rows about', 'an earlier verdict exists for this name or address: pick another name, or ask for '
+     'review'),
+    (r'cannot verify their own|already vouched', 'the agree row must come from a second GitHub account'),
+    (r'must be about (func|global) (\S+) or sig', 'a record\'s verify rows are about its own name, address or '
+     'signature id; ' + NEW),
+    (r'author (\S+) is not the pull request author (\S+)',
+     'open the pull request from {0}, or set "author" to {1} and prove it as {1}: re/tools/py re/tools/binding.py '
+     'verify {name} --exe <your F1_25.exe> --by {1}'),
+    (r'needs a proof by (\S+) from', 're/tools/py re/tools/binding.py verify {name} --exe <your F1_25.exe> --by {0}'),
+    (r'a new record carries no verify rows', 'remove the verify rows; a second contributor adds the agree row later '
+     'with binding.py agree'),
+    (r'needs review \(new records land', 'make it with --level L2 or L1; only a maintainer sets L3'),
+    (r'already named in (\S+), so exporting',
+     'nothing to fix: {0} already uses the name, so a maintainer reviews the pull request'),
+    (r'changes an existing record|removes a record|base copy does not parse',
+     'nothing to fix: changing or removing a merged record gets a review; only adding one agree row and one proof '
+     'merges itself'),
+    (r'exactly one verify row and one proof', 'run binding.py agree once: one pull request adds one agree row and its '
+     'proof'),
+    (r'verdict \S+ needs review', 'nothing to fix: only an agree row merges itself'),
+    (r'must both be by the pull request author', 'run binding.py agree with --by set to the GitHub account that opens '
+     'the pull request'),
+    (r'needs decomp: and xref: evidence of its own',
+     'pass binding.py agree --evidence "decomp:...;xref:..." from your own reading of the code'),
+    (r'outside re/bindings|is not a binding record$', 'binding records are re/bindings/<subsystem>/<Name>.json; move '
+     'every other change to a separate pull request'),
+    (r'has no regular file there', 'commit the record as a plain file, not a symlink or a submodule'),
+    (r'more than \d+ files', 'split the records over several pull requests'),
+    (r'changes no binding record', 'add or change a file under re/bindings/<subsystem>/<Name>.json'),
+    (r'kb_lint: ', 'python3 re/tools/kb_lint.py --structural prints the whole report'),
+)]
+
+
+def fix_for(message):
+    """What to run or which field to change for one check message, or None."""
+    m = re.match(r'^(?:bindings/|re/bindings/)?(?:[a-z0-9_]+/)?([A-Za-z][A-Za-z0-9_]*)\.json: ', message)
+    name = m.group(1) if m else '<Name>'
+    for pat, text in FIXES:
+        f = pat.search(message)
+        if f:
+            return text.format(*[g for g in f.groups() if g is not None], name=name)
+    return None
+
+
+def with_fixes(messages):
+    out = []
+    for msg in messages:
+        out.append(msg)
+        fix = fix_for(msg)
+        if fix:
+            out.append(f'  fix: {fix}')
+    return out
 
 
 def binding_kind(table, row, sig):
@@ -297,18 +385,21 @@ def check_record(record, knowledge, relpath=None):
     return errs
 
 
-def referenced_in_code(name, root):
+def referenced_in_code(name, root, dirs=CODE_DIRS):
     """In-repo code that already names the binding would start using it the moment it is exported."""
     pat = re.compile(rb'(?<![A-Za-z0-9_])' + re.escape(name.encode()) + rb'(?![A-Za-z0-9_])')
-    for d in CODE_DIRS:
+    for d in dirs:
         for dirpath, dirnames, filenames in os.walk(os.path.join(root, d)):
             dirnames[:] = [x for x in dirnames if x not in ('node_modules', 'target', 'dist', 'build', '.git')]
             for f in filenames:
                 if f.endswith(CODE_EXTS):
                     p = os.path.join(dirpath, f)
                     try:
-                        if os.path.getsize(p) <= 4 << 20 and pat.search(open(p, 'rb').read()):
-                            return os.path.relpath(p, root)
+                        if os.path.getsize(p) > 4 << 20:
+                            continue
+                        with open(p, 'rb') as fh:
+                            if pat.search(fh.read()):
+                                return os.path.relpath(p, root)
                     except OSError:
                         continue
     return None
@@ -386,7 +477,7 @@ def classify(changes, author, knowledge, repo_root):
     out = {'verdict': 'auto', 'records': [], 'errors': [], 'notes': []}
     if not changes:
         out['verdict'] = 'review'
-        out['notes'].append('the pull request changes no binding record')
+        out['notes'].append(NO_RECORDS)
     if len(changes) > MAX_AUTO_RECORDS:
         out['notes'].append(f'more than {MAX_AUTO_RECORDS} files: split it or ask for review')
     seen = knowledge

@@ -11,7 +11,7 @@ use swofty_core::store::Store;
 use swofty_core::vault::{self, Location, Vault};
 
 use crate::commands::saves::browse::{careers, list, show, versions};
-use crate::commands::saves::manage::{backup, export_cmd, import_cmd, pin_cmd, restore_cmd};
+use crate::commands::saves::manage::{backup, export_saves, import_saves, pin_snapshot, restore_snapshot};
 use crate::commands::{Execute, Invocation};
 pub use session::{after_session, before_session, notice_since};
 
@@ -161,16 +161,16 @@ pub fn command(store: &Store, cmd: SavesCommand) -> Result<ExitCode> {
             from,
             from_profile,
             profile,
-        } => import_cmd(store, from, from_profile, profile)?,
-        SavesCommand::Export { to, profile } => export_cmd(store, &to, profile)?,
+        } => import_saves(store, from, from_profile, profile)?,
+        SavesCommand::Export { to, profile } => export_saves(store, &to, profile)?,
         SavesCommand::List { source } => list(store, source.as_deref())?,
         SavesCommand::Show { snapshot, source } => show(store, &snapshot, source.as_deref())?,
         SavesCommand::Versions { source } => versions(store, source.as_deref())?,
         SavesCommand::Careers { source } => careers(store, source.as_deref())?,
-        SavesCommand::Pin { snapshot, source } => pin_cmd(store, &snapshot, source.as_deref(), true)?,
-        SavesCommand::Unpin { snapshot, source } => pin_cmd(store, &snapshot, source.as_deref(), false)?,
+        SavesCommand::Pin { snapshot, source } => pin_snapshot(store, &snapshot, source.as_deref(), true)?,
+        SavesCommand::Unpin { snapshot, source } => pin_snapshot(store, &snapshot, source.as_deref(), false)?,
         SavesCommand::Backup => backup(store)?,
-        SavesCommand::Restore { snapshot, source } => restore_cmd(store, &snapshot, source.as_deref())?,
+        SavesCommand::Restore { snapshot, source } => restore_snapshot(store, &snapshot, source.as_deref())?,
         SavesCommand::Cap { mb: None } => println!(
             "{} MB",
             store.config().vault_cap_mb.unwrap_or(vault::DEFAULT_CAP_MB)

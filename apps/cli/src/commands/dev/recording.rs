@@ -7,11 +7,14 @@ use anyhow::{Context, Result, bail};
 use serde_json::Value;
 use swofty_core::manifest::MANIFEST_FILE;
 use swofty_core::store::Store;
+use swofty_formats::pe::has_export;
 
 use crate::commands::dev::lock::{LOCK_FILE, Lock};
 use crate::commands::dev::native_test::ENGINE_SOURCES;
 use crate::commands::dev::toolchain::which;
-use crate::commands::dev::{RECORDER_ENV, WINE_ENV, check, data_root, lock, paths, pe};
+use crate::commands::dev::{RECORDER_ENV, WINE_ENV, check, data_paths, data_root, lock};
+
+pub const REGISTER_EXPORT: &str = "SwoftyAddonRegister";
 
 pub fn manifest_json(folder: &Path) -> Result<Value> {
     let path = folder.join(MANIFEST_FILE);
@@ -34,7 +37,7 @@ pub fn register_dlls(folder: &Path, manifest: &Value) -> Result<Vec<PathBuf>> {
         let path = folder.join(&rel);
         let image =
             std::fs::read(&path).with_context(|| format!("{rel} is missing; build the addon first"))?;
-        if pe::has_register(&image) {
+        if has_export(&image, REGISTER_EXPORT) {
             out.push(path);
         }
     }
@@ -50,15 +53,15 @@ pub struct Recorded {
 pub fn recorded_files(sdk: &Path, folder: &Path, recordings: &[Value]) -> (Vec<String>, Vec<String>) {
     let (mut files, mut missing) = (Vec::new(), Vec::new());
     for rec in recordings {
-        for (registry, value) in paths::recorded_values(rec) {
-            paths::file_strings(folder, value, &mut files);
+        for (registry, value) in data_paths::recorded_values(rec) {
+            data_paths::file_strings(folder, value, &mut files);
             if let Some(schema) = check::sdk_schema(sdk, registry) {
                 let mut named = Vec::new();
-                paths::schema_paths(&schema, &schema, value, &mut named, 0);
+                data_paths::schema_paths(&schema, &schema, value, &mut named, 0);
                 for p in named {
-                    if !paths::inside(folder, &p) && !missing.contains(&p) {
+                    if !data_paths::inside(folder, &p) && !missing.contains(&p) {
                         missing.push(p);
-                    } else if paths::inside(folder, &p) {
+                    } else if data_paths::inside(folder, &p) {
                         let norm = p.replace('\\', "/");
                         if !files.contains(&norm) {
                             files.push(norm);

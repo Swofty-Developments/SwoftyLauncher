@@ -1,6 +1,7 @@
 use super::drag::DropAt;
 use crate::services::library::{Changes, Source, Type};
 use crate::shell::Shell;
+use crate::shell::notices::Notification;
 use crate::ui::scale::px;
 use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::*;
@@ -10,7 +11,7 @@ use swofty_core::manifest::Category;
 use swofty_core::profile::conflicts::Report;
 use swofty_core::profile::folders::Key;
 use swofty_core::profile::order;
-use swofty_i18n::tr;
+use swofty_i18n::{tr, trn};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(super) enum State {
@@ -132,9 +133,7 @@ pub(crate) struct AddonsPage {
     pub(super) seen: Option<Instant>,
     pub(super) scroll_pending: bool,
     pub(super) animating: bool,
-    pub(super) report: Option<Report>,
     pub(super) read_at: Option<Instant>,
-    pub(crate) checking: bool,
     pub(super) open_pairs: HashSet<(String, String)>,
     pub(super) details: HashSet<(String, String)>,
     pub(super) all_items: HashSet<(String, String)>,
@@ -151,6 +150,8 @@ pub(crate) struct AddonsPage {
     pub(super) problems_key: Option<(Instant, u64, u64)>,
     pub(super) careers: Vec<swofty_core::stdlib::careers::Career>,
     pub(super) _search: Subscription,
+    pub(crate) conflicts: Conflicts,
+    pub(crate) toasts: Vec<Notification>,
 }
 
 impl AddonsPage {
@@ -175,9 +176,7 @@ impl AddonsPage {
             seen: None,
             scroll_pending: false,
             animating: false,
-            report: None,
             read_at: None,
-            checking: false,
             open_pairs: HashSet::new(),
             details: HashSet::new(),
             all_items: HashSet::new(),
@@ -192,6 +191,8 @@ impl AddonsPage {
             problems_key: None,
             careers: Vec::new(),
             _search: changed,
+            conflicts: Conflicts::default(),
+            toasts: Vec::new(),
         }
     }
 
@@ -217,9 +218,46 @@ impl AddonsPage {
     }
 }
 
+/// The last conflict check of the active profile, and whether one is running now.
+#[derive(Default)]
+pub(crate) struct Conflicts {
+    pub(super) report: Option<Report>,
+    pub(crate) checking: bool,
+}
+
+impl Conflicts {
+    pub(super) fn begin(&mut self, blocked: bool) -> bool {
+        if self.checking || blocked {
+            return false;
+        }
+        self.checking = true;
+        true
+    }
+
+    /// Takes a finished check of `profile`'s build, keeping its report while that profile is still
+    /// active, and returns the notice that says how it went.
+    pub(super) fn take(&mut self, active: &str, result: Result<Report, String>) -> Notification {
+        self.checking = false;
+        match result {
+            Ok(report) => {
+                let text = match report.pairs.len() {
+                    0 => tr("No conflicts between addons").to_owned(),
+                    n => trn(n, "Found {count} conflict", "Found {count} conflicts"),
+                };
+                if report.profile == active {
+                    self.report = Some(report);
+                }
+                Notification::success(text)
+            }
+            Err(e) => Notification::error(e).title(tr("Could not check conflicts")),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{AddonListItem, anchor};
+    use super::{AddonListItem, Conflicts, anchor};
+    use swofty_core::profile::conflicts::Report;
 
     fn addon(id: &str, index: usize) -> AddonListItem {
         AddonListItem::Addon {
@@ -258,5 +296,54 @@ mod tests {
     #[test]
     fn anchor_is_none_without_old_rows() {
         assert_eq!(anchor(&[], &[AddonListItem::Heading], 0), None);
+    }
+
+    fn report(profile: &str) -> Report {
+        Report {
+            profile: profile.to_owned(),
+            ..Report::default()
+        }
+    }
+
+    #[test]
+    fn a_conflict_check_runs_once_at_a_time_and_never_while_blocked() {
+        let mut c = Conflicts::default();
+        assert!(!c.begin(true));
+        assert!(!c.checking);
+        assert!(c.begin(false));
+        assert!(!c.begin(false));
+        c.take("Main", Ok(report("Main")));
+        assert!(!c.checking);
+        assert!(c.begin(false));
+    }
+
+    #[test]
+    fn a_check_of_the_active_profile_keeps_its_report() {
+        let mut c = Conflicts::default();
+        c.begin(false);
+        c.take("Main", Ok(report("Main")));
+        assert_eq!(c.report.as_ref().map(|r| r.profile.as_str()), Some("Main"));
+    }
+
+    #[test]
+    fn a_check_finishing_after_a_profile_switch_leaves_the_report_alone() {
+        let mut c = Conflicts {
+            report: Some(report("Other")),
+            checking: true,
+        };
+        c.take("Other", Ok(report("Main")));
+        assert_eq!(c.report.as_ref().map(|r| r.profile.as_str()), Some("Other"));
+        assert!(!c.checking);
+    }
+
+    #[test]
+    fn a_failed_check_ends_and_keeps_the_last_report() {
+        let mut c = Conflicts {
+            report: Some(report("Main")),
+            checking: true,
+        };
+        c.take("Main", Err("Locate F1 25 first.".into()));
+        assert!(!c.checking);
+        assert!(c.report.is_some());
     }
 }

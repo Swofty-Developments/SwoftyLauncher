@@ -180,7 +180,7 @@ impl Shell {
             })
             .on_click(cx.listener(move |this, _, _, cx| {
                 cx.stop_propagation();
-                this.toggle_star(&target, cx);
+                Browser::toggle_star(this, &target, cx);
             }))
     }
 

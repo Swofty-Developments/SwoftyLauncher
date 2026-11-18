@@ -61,14 +61,14 @@ pub enum Source {
 }
 
 impl Source {
+    /// The store whose install `dir` is, by the first of [`crate::platform::PLATFORMS`] that claims it.
     pub fn detect(dir: &Path) -> Self {
-        if dir.join("EAJavelinInstaller_installscript.vdf").is_file() || crate::steam::in_steam_library(dir) {
-            Self::Steam
-        } else if dir.join("__Installer/installerdata.xml").is_file() {
-            Self::EaApp
-        } else {
-            Self::Unknown
-        }
+        crate::platform::installed_by(dir).map_or(Self::Unknown, |p| p.source())
+    }
+
+    /// The store this source names; none for a folder no store installed.
+    pub fn platform(self) -> Option<&'static dyn crate::platform::LaunchPlatform> {
+        crate::platform::for_source(self)
     }
 }
 

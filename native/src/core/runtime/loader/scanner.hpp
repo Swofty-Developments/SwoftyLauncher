@@ -24,6 +24,10 @@ public:
     void prescan(const std::string &section, const std::vector<std::string> &patterns);
     void end_prescan();
     int addon_scan(const char *section, const char *pattern, uintptr_t *out);
+    // Entries of the scan cache that core code with a scan of its own keeps under a section name of its own: no scan and
+    // no log line here, and nothing while the scan cache is off. The caller checks a recalled address before using it.
+    bool recall(const char *section, const char *pattern, uint64_t &rva);
+    void remember(const char *section, const char *pattern, int hits, uint64_t rva);
     void read_section_map(const json::Value &doc, const std::string &file, const std::unordered_map<std::string, size_t> &uses,
                           bool any_binding);
     std::string game_code() const;

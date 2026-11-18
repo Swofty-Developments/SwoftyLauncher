@@ -8,7 +8,7 @@ use crate::commands::saves::session::report;
 use crate::commands::saves::{PINNED, open};
 use crate::console::output::say;
 
-pub(super) fn pin_cmd(store: &Store, id: &str, source: Option<&str>, pin: bool) -> Result<()> {
+pub(super) fn pin_snapshot(store: &Store, id: &str, source: Option<&str>, pin: bool) -> Result<()> {
     let (v, _) = open(store, source)?;
     let s = match pin {
         true => v.pin(id, PINNED, vault::now())?,
@@ -42,7 +42,7 @@ pub(super) fn backup(store: &Store) -> Result<()> {
     Ok(())
 }
 
-pub(super) fn restore_cmd(store: &Store, id: &str, source: Option<&str>) -> Result<()> {
+pub(super) fn restore_snapshot(store: &Store, id: &str, source: Option<&str>) -> Result<()> {
     let (v, loc) = open(store, source)?;
     let snap = v.find(id)?;
     let loc = match loc {
@@ -82,7 +82,7 @@ fn profile_arg(store: &Store, profile: Option<String>) -> Result<String> {
     Ok(p)
 }
 
-pub(super) fn import_cmd(
+pub(super) fn import_saves(
     store: &Store,
     from: Option<String>,
     from_profile: Option<String>,
@@ -126,7 +126,7 @@ pub(super) fn import_cmd(
     Ok(())
 }
 
-pub(super) fn export_cmd(store: &Store, to: &str, profile: Option<String>) -> Result<()> {
+pub(super) fn export_saves(store: &Store, to: &str, profile: Option<String>) -> Result<()> {
     if to != "steam" {
         bail!("--to takes steam");
     }

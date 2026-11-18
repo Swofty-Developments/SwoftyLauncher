@@ -6,7 +6,6 @@ use std::time::SystemTime;
 #[cfg(unix)]
 use swofty_core::launch;
 
-use super::setup::{Policy, policy};
 #[cfg(unix)]
 use super::stub::STUB_SETTLE;
 use super::stub::waiting;
@@ -17,54 +16,6 @@ fn the_active_copy_picks_the_store_to_start() {
     assert_eq!(store_start(Source::Steam), StoreStart::Steam);
     assert_eq!(store_start(Source::EaApp), StoreStart::EaApp);
     assert_eq!(store_start(Source::Unknown), StoreStart::Steam);
-}
-
-#[test]
-fn starts_the_ea_app_only_when_it_can_and_may() {
-    assert_eq!(policy(false, true, true), Policy::NoHandoff);
-    assert_eq!(policy(true, false, true), Policy::Running);
-    assert_eq!(policy(true, true, false), Policy::Start);
-    assert_eq!(policy(true, false, false), Policy::Off);
-}
-
-#[test]
-fn stops_waiting_when_the_open_command_fails() {
-    if ea_app::running() {
-        return;
-    }
-    let mut fail = if cfg!(windows) {
-        let mut c = std::process::Command::new("cmd");
-        c.args(["/c", "exit 3"]);
-        c
-    } else {
-        std::process::Command::new("false")
-    };
-    let mut child = fail.spawn().unwrap();
-    assert!(matches!(
-        wait_for_app(&mut child, true, || false),
-        AppStart::CommandFailed(_)
-    ));
-    let mut child = fail.spawn().unwrap();
-    let polls = std::cell::Cell::new(0);
-    let timed_out = || {
-        polls.set(polls.get() + 1);
-        polls.get() > 3
-    };
-    assert_eq!(wait_for_app(&mut child, false, timed_out), AppStart::TimedOut);
-    let mut ok = if cfg!(windows) {
-        let mut c = std::process::Command::new("cmd");
-        c.args(["/c", "exit 0"]);
-        c
-    } else {
-        std::process::Command::new("true")
-    };
-    let mut child = ok.spawn().unwrap();
-    let polls = std::cell::Cell::new(0);
-    let timed_out = || {
-        polls.set(polls.get() + 1);
-        polls.get() > 3
-    };
-    assert_eq!(wait_for_app(&mut child, true, timed_out), AppStart::TimedOut);
 }
 
 #[test]

@@ -21,14 +21,8 @@ use self::stub::{NoGame, antivirus, check_stub, no_game, removed_after_link, res
 use crate::console::output::say;
 use crate::signals::{StopPhase, ending, session_stop};
 use crate::stores::steam::StageFile;
-pub use setup::{StoreStart, check_recorded, dll_setting, ensure, stages_offline, store_start};
+pub use setup::{StoreStart, check_recorded, dll_setting, stages_offline, store_start};
 pub use stub::note_stub_blocked;
-
-const APP_START_TIMEOUT: Duration = Duration::from_secs(90);
-
-// A link handed over while the EA app is still starting can be dropped:
-// under Proton one sent a second after EADesktop.exe appeared never arrived.
-const APP_SETTLE: Duration = Duration::from_secs(10);
 
 // The EA app syncs cloud saves before it starts the game, which took about
 // 170 s on a test copy, so the wait for the link outlasts that sync.
@@ -40,34 +34,6 @@ const SERVER_STOP_TIMEOUT: Duration = Duration::from_secs(30);
 const PRESS_PLAY_TIMEOUT: Duration = Duration::from_secs(600);
 
 const HANDOFF_LOG: &str = "ea_handoff.log";
-
-#[derive(Debug, PartialEq)]
-enum AppStart {
-    Running,
-    CommandFailed(std::process::ExitStatus),
-    TimedOut,
-}
-
-/// Wait for EADesktop.exe after `child` was asked to open the EA app. A
-/// command that exits with an error opened nothing, so waiting is pointless,
-/// unless its exit code says nothing about the EA app (`exit_tells` false).
-fn wait_for_app(child: &mut Child, exit_tells: bool, timed_out: impl Fn() -> bool) -> AppStart {
-    loop {
-        if ea_app::running() {
-            return AppStart::Running;
-        }
-        if let Ok(Some(exit)) = child.try_wait()
-            && exit_tells
-            && !exit.success()
-        {
-            return AppStart::CommandFailed(exit);
-        }
-        if timed_out() {
-            return AppStart::TimedOut;
-        }
-        std::thread::sleep(steam_client::POLL_INTERVAL);
-    }
-}
 
 fn detach(c: &mut std::process::Command) -> std::io::Result<Child> {
     c.stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::null());
@@ -234,7 +200,7 @@ pub fn launch_installed(store: &Store, g: &Game, vr: bool, opted_out: bool) -> R
         let lock = crate::recover::lock(store, &out)?;
         crate::recover::stale(store, &lock, g, Scope::All, &out)?;
     }
-    ensure(store, opted_out)?;
+    crate::stores::client::ensure_client(store, Source::EaApp, &g.dir, opted_out)?;
     let args: Vec<String> = if vr { vec!["-vr".into()] } else { Vec::new() };
     let url = ea_app::install_url(&g.dir, &args).map_err(|e| anyhow!(e))?;
     let h = handoff(store).ok_or_else(|| anyhow!("{}", ea_app::no_handoff()))?;

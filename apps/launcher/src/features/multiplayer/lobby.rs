@@ -40,14 +40,14 @@ impl Shell {
                 .text_color(p.text_muted)
                 .child(refusal_text(why))
                 .into_any_element()
-        } else if !self.mp_page.rooms_loaded && self.mp_page.rooms_error.is_none() {
+        } else if !self.mp_page.lobby.rooms_loaded && self.mp_page.lobby.rooms_error.is_none() {
             div()
                 .text_size(px(13.))
                 .text_color(p.text_muted)
                 .child(tr("Loading rooms\u{2026}"))
                 .into_any_element()
-        } else if self.mp_page.rooms.is_empty() {
-            let body = match &self.mp_page.rooms_error {
+        } else if self.mp_page.lobby.rooms.is_empty() {
+            let body = match &self.mp_page.lobby.rooms_error {
                 Some(_) => tr("The room list didn't load. It tries again in a few seconds."),
                 None => tr("Create one, or join a private room with its invite code."),
             };
@@ -69,7 +69,7 @@ impl Shell {
                 .child(div().text_size(px(13.)).text_color(p.text_muted).child(body))
                 .into_any_element()
         } else {
-            let list = self.mp_page.rooms.clone();
+            let list = self.mp_page.lobby.rooms.clone();
             v_flex()
                 .rounded(px(6.))
                 .border_1()
@@ -100,8 +100,11 @@ impl Shell {
                             .gap(px(8.))
                             .child(
                                 self.section_head(
-                                    if self.mp_page.rooms_loaded {
-                                        trf!("OPEN ROOMS \u{00b7} {count}", count = self.mp_page.rooms.len())
+                                    if self.mp_page.lobby.rooms_loaded {
+                                        trf!(
+                                            "OPEN ROOMS \u{00b7} {count}",
+                                            count = self.mp_page.lobby.rooms.len()
+                                        )
                                     } else {
                                         tr("OPEN ROOMS").to_owned()
                                     },
@@ -156,7 +159,7 @@ impl Shell {
         p: Palette,
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let status = RoomStatus::of(room, self.mp_page.digest.as_deref());
+        let status = RoomStatus::of(room, self.mp_page.lobby.digest.as_deref());
         let code = room.code.clone();
         let names = card_addons(room);
         h_flex()

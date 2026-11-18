@@ -12,6 +12,7 @@ use gpui_kit::*;
 use swofty_i18n::{tr, trf};
 
 use super::{LinkState, Load, Nav};
+use crate::features::db::Db;
 use crate::shell::Shell;
 use crate::ui::theme::Palette;
 use crate::ui::tokens::space::GUTTER;
@@ -241,7 +242,7 @@ impl Shell {
                     .icon(IconName::ListChecks)
                     .label(trf!("All changes ({n})", n = n))
                     .disabled(!ready)
-                    .on_click(cx.listener(|this, _, _, cx| this.db_go(Nav::Changes, cx))),
+                    .on_click(cx.listener(|this, _, _, cx| Db::go(this, Nav::Changes, cx))),
             )
             .child(save)
     }
@@ -371,12 +372,12 @@ impl Shell {
             .child(strip)
             .children(vanilla)
             .children(broken)
-            .children(self.db.save_error.clone().map(|e| {
+            .children(self.db.autosave.error.clone().map(|e| {
                 notice("db-save-error", IconName::CircleAlert, p.error, e, p)
                     .mx(px(GUTTER))
                     .mb(px(10.))
             }))
-            .children(self.db.newer.then(|| {
+            .children(self.db.autosave.newer.then(|| {
                 notice(
                     "db-newer-draft",
                     IconName::TriangleAlert,

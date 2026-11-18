@@ -1,3 +1,4 @@
+use super::AddonsPage;
 use crate::shell::notices::{Notification, Notify};
 use crate::shell::{Page, Shell};
 use crate::ui::scale::{Hit, px};
@@ -27,7 +28,12 @@ impl Shell {
     }
 
     pub(super) fn refresh_problems(&mut self) {
-        let built = self.addons.report.as_ref().map_or(0, |r| r.built_at.to_bits());
+        let built = self
+            .addons
+            .conflicts
+            .report
+            .as_ref()
+            .map_or(0, |r| r.built_at.to_bits());
         let mut hasher = std::collections::hash_map::DefaultHasher::new();
         self.library.profile.enabled().for_each(|id| id.hash(&mut hasher));
         let key = (self.library.loaded, built, hasher.finish());
@@ -55,7 +61,7 @@ impl Shell {
         let store = &self.store;
         let pinned = |id: &str| store.is_builtin(id) || order::is_pinned(id);
         order::ProfileOrder::new(&self.library.profile, &installed, &pinned).diagnose(
-            self.addons.report.as_ref(),
+            self.addons.conflicts.report.as_ref(),
             &self.addons.careers,
             &|id| tracks.contains(id),
             &|id| self.library.place(id),
@@ -154,8 +160,8 @@ impl Shell {
             .replace("{names}", &names.join(", "));
             window.notify(Notification::info(text), cx);
         }
-        if self.addons.report.is_some() {
-            self.check_conflicts(window, cx);
+        if self.addons.conflicts.report.is_some() {
+            AddonsPage::check(self, cx);
         }
     }
 

@@ -1,5 +1,5 @@
 mod apply;
-mod db;
+mod db_ops;
 mod erp;
 mod field_names;
 mod game_db;
@@ -17,7 +17,7 @@ pub use apply::{
     AddedRow, DbReport, Rewrite, apply_db_op, apply_db_ops, apply_db_ops_lenient, apply_db_ops_report,
     row_keys,
 };
-pub use db::{CopyMode, DbOp, DbOps, IdFrom, SideData, StatIdMode};
+pub use db_ops::{CopyMode, DbOp, DbOps, IdFrom, SideData, StatIdMode};
 pub use erp::{ErpOp, MaterialNumber, MaterialValue};
 pub use field_names::{ANY_SHAPE, Claimed, FieldNames, RowIds, row_shape};
 pub use hud::HudFile;

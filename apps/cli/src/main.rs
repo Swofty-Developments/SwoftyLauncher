@@ -14,7 +14,6 @@ use clap::FromArgMatches;
 use swofty_core::store::Store;
 
 use crate::addon_commands::AddonCommands;
-pub(crate) use crate::commands::cli::GAME_HELP;
 use crate::commands::cli::{Cli, Command, data_dir_arg};
 use crate::commands::{Execute, Invocation, doctor, registry};
 
