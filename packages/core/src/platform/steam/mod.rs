@@ -16,8 +16,8 @@ use crate::{GAME_EXE, STEAM_APP_ID};
 use vdf::Vdf;
 
 pub use library::{
-    drive_roots, find_game, find_game_in, in_steam_library, libraries, registered_roots, root_of_game,
-    root_of_game_in, steam_roots,
+    drive_roots, find_app, find_app_in, find_game, find_game_in, in_steam_library, libraries,
+    registered_roots, root_of_game, root_of_game_in, steam_roots,
 };
 pub use proton::{ProtonSearch, compat_tool, find_proton, find_proton_in, system_compat_dirs};
 pub use saves::{
