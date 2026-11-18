@@ -172,6 +172,7 @@ impl ErpBuild<'_> {
     }
 
     pub fn apply(&mut self, op: &ErpOp, resolve: &dyn Fn(&Source) -> Result<PathBuf>) -> Result<()> {
+        let packer = self.packer.clone();
         if let Some(name) = unsupported(op) {
             return Err(fail(format!("{name} is not built yet")));
         }
@@ -245,7 +246,7 @@ impl ErpBuild<'_> {
                     swofty_formats::material::set(&mut body, name, &values)
                         .map_err(|err| fail(format!("{erp}: {resource}: {err}")))?;
                 }
-                pack::set_fragment(res, 0, &body).map_err(|err| fail(format!("{erp}: {err}")))
+                pack::set_fragment(&packer, res, 0, &body).map_err(|err| fail(format!("{erp}: {err}")))
             }
             ErpOp::ReplaceResource {
                 erp,
@@ -260,7 +261,8 @@ impl ErpBuild<'_> {
                 if res.kind() == SCENE && *fragment == 0 {
                     check_scene(resource, &data).map_err(|err| fail(format!("{erp}: {resource}: {err}")))?;
                 }
-                pack::set_fragment(res, *fragment, &data).map_err(|err| fail(format!("{erp}: {err}")))
+                pack::set_fragment(&packer, res, *fragment, &data)
+                    .map_err(|err| fail(format!("{erp}: {err}")))
             }
             ErpOp::AddResource {
                 erp,

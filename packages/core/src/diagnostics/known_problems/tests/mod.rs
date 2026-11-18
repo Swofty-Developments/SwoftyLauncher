@@ -7,6 +7,7 @@ mod graphics;
 mod hang;
 mod hooks;
 mod memory;
+mod slow_init;
 mod stall;
 mod system;
 mod tyres;

@@ -131,7 +131,7 @@ std::string flag_text(uint32_t flags)
 
 const char *kind_text(uint32_t kind)
 {
-    static const char *const NAMES[] = {"unknown", "cockpit", "tcam", "tcam_offset", "chase_near", "chase_far", "other"};
+    static constexpr const char *NAMES[] = {"unknown", "cockpit", "tcam", "tcam_offset", "chase_near", "chase_far", "other"};
     return kind < 7 ? NAMES[kind] : "unknown";
 }
 

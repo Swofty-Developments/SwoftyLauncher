@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 use swofty_core::catalog::requires::{Event, Plan, Step};
 use swofty_core::catalog::{Addon, Stage, Update, Version};
@@ -6,11 +6,12 @@ use swofty_core::catalog::{Addon, Stage, Update, Version};
 use super::ACTIVITY_KEPT;
 use super::detail::shown_versions;
 use super::host;
-use super::jobs::{RetryAction, requested_version_available, retry_action};
-use super::model::{Activity, Job, Op, Progress, Verb};
+use super::jobs::{RetryAction, installed_version, requested_version_available, retry_action, riders};
+use super::model::{Activity, Batch, Job, Op, Progress, Verb};
 use super::state::Feed;
 use super::updates::{due_updates, held_failure, takes_updates, updated_addons};
 use crate::services::library::{AddonItem, Source};
+use crate::services::test_library::TestLibrary;
 use crate::ui::format;
 use swofty_core::catalog::Trouble;
 
@@ -451,4 +452,32 @@ fn the_activity_list_keeps_the_newest_first_and_drops_the_oldest() {
     assert_eq!(feed.activity.len(), ACTIVITY_KEPT);
     assert_eq!(feed.activity[0].title, format!("fetch {}", ACTIVITY_KEPT + 2));
     assert_eq!(feed.activity.back().unwrap().title, "fetch 3");
+}
+
+#[test]
+fn an_install_brings_only_the_requirements_no_other_install_is_bringing() {
+    let working: HashMap<String, Job> = [("t.lib".to_owned(), Job::new(0))].into();
+    let batch = Batch {
+        left: ["t.queued".to_owned()].into(),
+        ..Batch::default()
+    };
+    let preview = vec!["t.lib".to_owned(), "t.queued".to_owned(), "t.new".to_owned()];
+    assert_eq!(riders(preview.clone(), &working, Some(&batch)), ["t.new"]);
+    assert_eq!(
+        riders(preview, &HashMap::new(), None),
+        ["t.lib", "t.queued", "t.new"]
+    );
+}
+
+#[test]
+fn the_installed_version_comes_from_the_library() {
+    let library = TestLibrary::new("browser-installed")
+        .addon("t.mine", "1.4.2")
+        .profile("Main", &["t.mine"])
+        .read();
+    assert_eq!(
+        installed_version(&library, "t.mine"),
+        Some(semver::Version::new(1, 4, 2))
+    );
+    assert_eq!(installed_version(&library, "t.other"), None);
 }

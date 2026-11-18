@@ -67,17 +67,25 @@ HRESULT STDMETHODCALLTYPE create_comp_hook(IDXGIFactory2 *f, IUnknown *dev, cons
     return hr;
 }
 
-std::string fg_caller(void *caller)
-{
-    static void *last;
-    static std::string last_fg;
-    if (caller == last)
+// The frame generation module a Present came from, remembered for the last caller.
+class FgCaller {
+public:
+    std::string of(void *caller)
+    {
+        if (caller == last)
+            return last_fg;
+        std::string name = module_of(caller);
+        last = caller;
+        last_fg = hud::guard::fg_module(name) && !hud::guard::streamline_hook(name) ? name : std::string();
         return last_fg;
-    std::string name = module_of(caller);
-    last = caller;
-    last_fg = hud::guard::fg_module(name) && !hud::guard::streamline_hook(name) ? name : std::string();
-    return last_fg;
-}
+    }
+
+private:
+    void *last = nullptr;
+    std::string last_fg;
+};
+
+constinit FgCaller fg_caller;
 
 struct PresentSeen {
     void *sc, *caller;
@@ -139,7 +147,7 @@ HRESULT dispatch_present(IDXGISwapChain3 *sc, UINT flags, void *caller, const ch
     if (!(flags & DXGI_PRESENT_TEST))
         present_log.count(sc, caller, how);
     if (!(flags & DXGI_PRESENT_TEST) && subscribers.presents.n.load() && !in_present.exchange(true)) {
-        std::string pfg = fg_caller(caller);
+        std::string pfg = fg_caller.of(caller);
         Swapchain c;
         bool known = swapchains.at_present(sc, pfg, c);
         if (!known)

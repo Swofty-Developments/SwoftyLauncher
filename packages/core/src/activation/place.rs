@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
 use md5::{Digest as _, Md5};
-use swofty_formats::erp::{Entry, ErpFile, Resource, STORED, ZSTD, compress};
+use swofty_formats::erp::{Entry, ErpFile, Packer, Resource, ZSTD_LEVEL};
 use swofty_formats::gvdb::Gvdb;
 use swofty_formats::pkg::{Node, Pkg, is_pkg};
 
@@ -374,17 +374,7 @@ fn renamed_pkg(res: &Resource, team: &AiTeam) -> Option<Vec<u8>> {
 }
 
 fn set_data(res: &mut Resource, index: usize, data: &[u8]) -> Result<()> {
-    let f = res
-        .fragments
-        .get_mut(index)
-        .ok_or_else(|| Error::Map(format!("{}: no fragment {index}", res.name)))?;
-    let zstd =
-        f.compression == ZSTD || (f.compression != STORED && f.raw.starts_with(&[0x28, 0xb5, 0x2f, 0xfd]));
-    f.raw = if zstd { compress(data)? } else { data.to_vec() };
-    f.size = data.len() as u64;
-    f.packed = f.raw.len() as u64;
-    res.hash = res.content_hash()?;
-    Ok(())
+    crate::erp::pack::set_fragment_at(&Packer::default(), res, index, data, ZSTD_LEVEL)
 }
 
 pub fn shipped_name(path: &str) -> String {
@@ -799,6 +789,8 @@ fn walk(dir: &Path) -> Result<Vec<PathBuf>> {
 
 #[cfg(test)]
 mod tests {
+    use swofty_formats::erp::STORED;
+
     use super::*;
 
     #[test]
@@ -843,15 +835,7 @@ mod tests {
             },
             tail: Vec::new(),
         };
-        let fragment = |raw: Vec<u8>| Fragment {
-            name: *b"temp",
-            offset: 0,
-            size: raw.len() as u64,
-            flags: 0x10,
-            compression: STORED,
-            packed: raw.len() as u64,
-            raw,
-        };
+        let fragment = |raw: Vec<u8>| Fragment::new(*b"temp", raw.len() as u64, 0x10, STORED, raw);
         let resource = |name: &str, kind: &str, fragments: Vec<Fragment>| Resource {
             name: name.into(),
             kind: swofty_formats::erp::kind(kind).unwrap(),
@@ -877,6 +861,7 @@ mod tests {
                 ],
             }
             .to_bytes()
+            .unwrap()
         };
         let input = PlaceInput {
             pkg: &pkg,
@@ -920,15 +905,7 @@ mod tests {
         std::fs::remove_dir_all(&dir).ok();
         std::fs::create_dir_all(&dir).unwrap();
         let pkg = TrackPackage::parse(crate::content::track_package::tests::OKAYAMA_LIKE.as_bytes()).unwrap();
-        let fragment = |raw: Vec<u8>| Fragment {
-            name: *b"temp",
-            offset: 0,
-            size: raw.len() as u64,
-            flags: 0x10,
-            compression: STORED,
-            packed: raw.len() as u64,
-            raw,
-        };
+        let fragment = |raw: Vec<u8>| Fragment::new(*b"temp", raw.len() as u64, 0x10, STORED, raw);
         let resource = |name: &str, kind: &str, fragments: Vec<Fragment>| Resource {
             name: name.into(),
             kind: swofty_formats::erp::kind(kind).unwrap(),
@@ -953,7 +930,8 @@ mod tests {
                 ),
             ],
         }
-        .to_bytes();
+        .to_bytes()
+        .unwrap();
         std::fs::write(dir.join(&pkg.erp), bytes).unwrap();
         let input = PlaceInput {
             pkg: &pkg,
@@ -1027,15 +1005,7 @@ mod tests {
     fn world_archive(dir: &Path, pkg: &TrackPackage, extra: &[String]) {
         use swofty_formats::erp::{Erp, Fragment, HEADER_LEN, MAGIC};
         use swofty_formats::pkg::{Arr, Obj, Val};
-        let fragment = |raw: Vec<u8>| Fragment {
-            name: *b"temp",
-            offset: 0,
-            size: raw.len() as u64,
-            flags: 0x10,
-            compression: STORED,
-            packed: raw.len() as u64,
-            raw,
-        };
+        let fragment = |raw: Vec<u8>| Fragment::new(*b"temp", raw.len() as u64, 0x10, STORED, raw);
         let resource = |name: &str, kind: &str, data: Vec<u8>| Resource {
             name: name.into(),
             kind: swofty_formats::erp::kind(kind).unwrap(),
@@ -1076,7 +1046,8 @@ mod tests {
             version: 3,
             resources: eaids.flat_map(|e| world(&e)).collect(),
         }
-        .to_bytes();
+        .to_bytes()
+        .unwrap();
         std::fs::write(dir.join(&pkg.erp), bytes).unwrap();
     }
 
@@ -1128,15 +1099,7 @@ mod tests {
             name,
             kind: swofty_formats::erp::kind(kind).unwrap(),
             unk: vec![0; 4],
-            fragments: vec![Fragment {
-                name: *b"temp",
-                offset: 0,
-                size: raw.len() as u64,
-                flags: 0x10,
-                compression: STORED,
-                packed: raw.len() as u64,
-                raw,
-            }],
+            fragments: vec![Fragment::new(*b"temp", raw.len() as u64, 0x10, STORED, raw)],
             hash: [0; 16],
         };
         let mut ai = Vec::new();

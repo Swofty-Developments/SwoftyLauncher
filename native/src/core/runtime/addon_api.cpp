@@ -4,18 +4,12 @@
 #include <unordered_map>
 #include <utility>
 
+#include "core/hooks/hooks.hpp"
 #include "core/runtime/loader/host_api.hpp"
 #include "core/runtime/loader/mixins.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/settings.hpp"
-
-namespace swofty_core::hooks {
-const SwoftyHooks *table();
-}
-
-namespace swofty_core::services {
-const SwoftyServices *table();
-}
+#include "core/services/services.hpp"
 
 namespace runtime {
 

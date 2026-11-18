@@ -216,11 +216,11 @@ fn a_resized_scene_rewrites_its_archive_instead_of_the_runtime_overlay() {
         (before.find(uri).unwrap().kind, &before.find(uri).unwrap().unk)
     );
     assert_eq!(
-        written.find(other).unwrap().fragments[0].raw,
-        before.find(other).unwrap().fragments[0].raw
+        written.find(other).unwrap().fragments[0].raw(),
+        before.find(other).unwrap().fragments[0].raw()
     );
     let mut again = Erp::parse(&built).unwrap();
-    assert_eq!(again.to_bytes(), built);
+    assert_eq!(again.to_bytes().unwrap(), built);
 
     let fails = |src: &str, res: &str| {
         apply(

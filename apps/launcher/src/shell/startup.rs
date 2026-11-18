@@ -77,7 +77,7 @@ impl Shell {
         } = prepared;
         swofty_i18n::set_language(config.language.as_deref());
         let scaling = crate::shell::ui_mode::Scaling::new(&config, window, cx);
-        let prefs = crate::shell::config::Prefs::from_config(&config);
+        let prefs = crate::shell::prefs::Prefs::from_config(&config);
         Self::guard_close(window, cx);
         Self::recover_in_background(&store, prefs.clear_old_session_logs, cx);
         let poll = Self::poll_game(window, cx);

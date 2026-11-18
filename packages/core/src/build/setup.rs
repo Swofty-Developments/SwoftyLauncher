@@ -1,6 +1,8 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
+use swofty_formats::erp::Packer;
+
 use super::buildhash::BuildHash;
 use super::loader::loader_line;
 use super::run::Run;
@@ -23,6 +25,9 @@ pub(super) struct Setup<'a> {
     pub packages: BTreeMap<String, String>,
     /// The folder of compressed archive data the formats crate reuses between builds.
     pub packed: PathBuf,
+    /// The build's packer: it reuses the frames in `packed` and leaves the archive edits' compression to
+    /// each archive's write.
+    pub packer: Packer,
     overlay_names: Box<OverlayNames<'a>>,
     mipmap_names: Box<MipmapNames<'a>>,
 }
@@ -31,7 +36,6 @@ impl<'a> Setup<'a> {
     pub fn read(run: Run<'a>, built: &mut Built) -> Result<Self> {
         let store = run.store;
         let packed = store.root.join("cache").join(crate::cache::PACKED_DIR);
-        swofty_formats::erp::cache_compressed(Some(compressed_cache(&packed)));
         let loader = loader_dir();
         let exe_dir = std::env::current_exe()
             .ok()
@@ -56,6 +60,7 @@ impl<'a> Setup<'a> {
             features,
             config: store.config(),
             packages,
+            packer: Packer::cached(&packed).deferring(true),
             packed,
             overlay_names: Box::new(move |origin: &Origin, src: &Source| -> Vec<String> {
                 src.resolve(&source_dir(store, &origin.addon, src.root))
@@ -102,17 +107,4 @@ impl<'a> Setup<'a> {
             }
         }
     }
-}
-
-/// The folder the formats crate keeps compressed fragments in for this process: the store's. The setting is
-/// one for the whole process, and tests build side by side in one process, each in a store it deletes
-/// after, so every test build shares one folder that outlives them all.
-#[cfg(not(test))]
-fn compressed_cache(packed: &Path) -> PathBuf {
-    packed.to_path_buf()
-}
-
-#[cfg(test)]
-fn compressed_cache(_: &Path) -> PathBuf {
-    std::env::temp_dir().join("swofty-core-tests-zstd")
 }

@@ -40,6 +40,7 @@ private:
     std::atomic<HWND> game_wnd{nullptr};
     std::atomic<uint32_t> client_size{0};
     std::atomic<unsigned> blocked_msgs{0}, blocked_raw{0};
+    ULONGLONG blocked_reported = 0;
     hud::input::Utf16 utf16;
     std::atomic<ULONGLONG> read_ms{0};
 

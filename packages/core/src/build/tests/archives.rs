@@ -20,20 +20,13 @@ fn warns_about_stock_archives_that_still_carry_a_resized_resource() {
                     name: (*n).into(),
                     kind: swofty_formats::erp::kind("UILayout").unwrap(),
                     unk: vec![0; 4],
-                    fragments: vec![Fragment {
-                        name: *b"temp",
-                        offset: 0,
-                        size: 1,
-                        flags: 0x10,
-                        compression: STORED,
-                        packed: 1,
-                        raw: vec![0],
-                    }],
+                    fragments: vec![Fragment::new(*b"temp", 1, 0x10, STORED, vec![0])],
                     hash: [0; 16],
                 })
                 .collect(),
         }
         .to_bytes()
+        .unwrap()
     };
     for (rel, names) in [
         ("flow_career_hub.erp", vec![scene]),
@@ -82,15 +75,7 @@ fn logo_archive(name: &str, slices: &[u8]) -> Vec<u8> {
     head[12..16].copy_from_slice(&2u32.to_le_bytes());
     head[28..32].copy_from_slice(&(slices.len() as u32).to_le_bytes());
     let pixels: Vec<u8> = slices.iter().flat_map(|&b| [b; 4]).collect();
-    let fragment = |raw: Vec<u8>| Fragment {
-        name: *b"temp",
-        offset: 0,
-        size: raw.len() as u64,
-        flags: 0x10,
-        compression: STORED,
-        packed: raw.len() as u64,
-        raw,
-    };
+    let fragment = |raw: Vec<u8>| Fragment::new(*b"temp", raw.len() as u64, 0x10, STORED, raw);
     let mut header = [0u8; HEADER_LEN];
     header[..4].copy_from_slice(MAGIC);
     header[4..8].copy_from_slice(&3u32.to_le_bytes());
@@ -106,6 +91,7 @@ fn logo_archive(name: &str, slices: &[u8]) -> Vec<u8> {
         }],
     }
     .to_bytes()
+    .unwrap()
 }
 
 #[test]
@@ -759,15 +745,7 @@ fn a_resource_edit_that_leaves_stale_tsmd_stats_gets_them_rebuilt() {
         },
         tail: Vec::new(),
     };
-    let fragment = |raw: Vec<u8>| Fragment {
-        name: *b"temp",
-        offset: 0,
-        size: raw.len() as u64,
-        flags: 0x10,
-        compression: STORED,
-        packed: raw.len() as u64,
-        raw,
-    };
+    let fragment = |raw: Vec<u8>| Fragment::new(*b"temp", raw.len() as u64, 0x10, STORED, raw);
     let res = "eaid://environment_package/tracks/bahrain/ai/bahrain_ai_track.aispline";
     let mut header = [0u8; HEADER_LEN];
     header[..4].copy_from_slice(MAGIC);
@@ -784,7 +762,8 @@ fn a_resource_edit_that_leaves_stale_tsmd_stats_gets_them_rebuilt() {
             hash: [0; 16],
         }],
     }
-    .to_bytes();
+    .to_bytes()
+    .unwrap();
     std::fs::write(dir.join(erp), bytes).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
@@ -853,7 +832,12 @@ fn fragments(path: &Path) -> Vec<(String, Vec<u8>)> {
     f.erp
         .resources
         .iter()
-        .map(|r| (r.name.clone(), f.load(r).unwrap().fragments[0].raw.clone()))
+        .map(|r| {
+            (
+                r.name.clone(),
+                f.load(r).unwrap().fragments[0].raw().unwrap().to_vec(),
+            )
+        })
         .collect()
 }
 

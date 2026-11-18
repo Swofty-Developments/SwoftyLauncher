@@ -34,7 +34,7 @@ VERIFY_COLUMNS = ('date', 'verifier', 'kind', 'item', 'claimed', 'verdict', 'evi
 TOP_KEYS = ('schema', 'name', 'table', 'author', 'row', 'signature', 'verify', 'proofs')
 SIGNATURE_KEYS = ('id', 'section', 'pattern', 'match', 'anchor', 'resolve', 'target', 'kind', 'names', 'verified',
                   'used_by')
-SIGNATURE_OPTIONAL = ('expect', 'func_start', 'data1_reason')
+SIGNATURE_OPTIONAL = ('expect', 'func_start', 'data1_reason', 'made_on', 'made_on_match', 'made_on_target', 'twin')
 RESOLUTION_KEYS = ('section', 'pattern', 'anchor', 'resolve', 'expect', 'kind', 'match', 'target')
 PROOF_KEYS = ('by', 'date', 'tool', 'exe', 'result', 'sigcheck', 'digest')
 PROOF_EXE_KEYS = ('sha256', 'size', 'pe_timestamp')

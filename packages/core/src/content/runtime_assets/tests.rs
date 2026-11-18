@@ -25,15 +25,7 @@ fn op(addon: &str, json: &str) -> Op {
 }
 
 fn fragment(name: &[u8; 4], flags: u32, data: &[u8]) -> ErpFragment {
-    ErpFragment {
-        name: *name,
-        offset: 0,
-        size: data.len() as u64,
-        flags,
-        compression: STORED,
-        packed: data.len() as u64,
-        raw: data.to_vec(),
-    }
+    ErpFragment::new(*name, data.len() as u64, flags, STORED, data.to_vec())
 }
 
 #[test]

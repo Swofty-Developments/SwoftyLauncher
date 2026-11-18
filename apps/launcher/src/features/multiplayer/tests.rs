@@ -6,6 +6,7 @@ use swofty_core::online::multiplayer::types::{
     RoomAddons, RoomSummary, Screen, SessionState, User,
 };
 
+use super::model::starting;
 use super::model::{
     GameState, RoomStatus, Start, Tone, addon_checks, card_addons, content_check, content_word, exit_leaves,
     exit_notice, joined, member_word, missing, refusal, refusal_text, restart_ok_text, room_meta,
@@ -390,4 +391,10 @@ fn avatars_are_asked_for_once_and_only_from_the_web() {
     );
     wanted.sort();
     assert_eq!(wanted, ["https://a/2.png"]);
+}
+
+#[test]
+fn a_start_names_what_the_page_waits_on() {
+    assert_eq!(starting(&Start::Create(Default::default())), "create");
+    assert_eq!(starting(&Start::Join("ABCD".into())), "ABCD");
 }

@@ -6,21 +6,19 @@ use std::time::{Instant, SystemTime};
 use swofty_core::store::Store;
 
 pub(crate) mod account;
-mod barfit;
-mod config;
 mod console_window;
 pub(crate) mod download_dock;
 pub(crate) mod host;
 mod launch_alerts;
 mod nav;
 pub(crate) mod notices;
-mod overflow;
 mod overlays;
 mod page;
 pub(crate) mod page_parts;
 mod play;
 pub(crate) mod play_bar;
 mod play_dialogs;
+mod prefs;
 mod probe;
 mod profile_edit;
 pub(crate) mod profile_panel;
@@ -75,7 +73,7 @@ pub struct Shell {
     pub(crate) game: crate::shell::probe::GameWatch,
     pub(crate) launching: crate::shell::play::Launching,
     pub(crate) account: crate::shell::account::Account,
-    pub(crate) prefs: crate::shell::config::Prefs,
+    pub(crate) prefs: crate::shell::prefs::Prefs,
     pub(crate) addon_views: crate::features::sections::AddonViews,
     pub(crate) scaling: crate::shell::ui_mode::Scaling,
     pub(crate) crashes: crate::dialogs::crash::Crashes,

@@ -33,10 +33,6 @@
 // vehicle's at +0x5c. Once the garage is up the front end's main scene is despawned and the intro fade released.
 
 namespace runtime {
-std::vector<era::Box> era_boxes();
-}
-
-namespace runtime {
 std::string hook_error(const safetyhook::InlineHook::Error &e);
 }
 

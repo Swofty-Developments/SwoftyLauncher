@@ -1806,20 +1806,13 @@ mod tests {
                     name: (*n).into(),
                     kind: swofty_formats::erp::kind("VTF").unwrap(),
                     unk: vec![0; 4],
-                    fragments: vec![Fragment {
-                        name: *b"temp",
-                        offset: 0,
-                        size: 1,
-                        flags: 0x10,
-                        compression: STORED,
-                        packed: 1,
-                        raw: vec![0],
-                    }],
+                    fragments: vec![Fragment::new(*b"temp", 1, 0x10, STORED, vec![0])],
                     hash: [0; 16],
                 })
                 .collect(),
         }
         .to_bytes()
+        .unwrap()
     }
 
     #[test]

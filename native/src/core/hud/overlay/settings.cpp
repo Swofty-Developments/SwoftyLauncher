@@ -172,7 +172,7 @@ UINT OutputMode::pick(IDXGISwapChain3 *sc, DXGI_FORMAT fmt, UINT color_space)
     if (told_sc != sc || told_out != out) {
         told_sc = sc;
         told_out = out;
-        static const char *names[] = {"SDR", "HDR10 (BT.2020 PQ)", "scRGB (linear)"};
+        static constexpr const char *names[] = {"SDR", "HDR10 (BT.2020 PQ)", "scRGB (linear)"};
         char why[96];
         if (color_space != hud::guard::COLOR_SPACE_UNSET)
             snprintf(why, sizeof why, "colour space %u from SetColorSpace1", color_space);

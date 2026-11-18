@@ -1,4 +1,5 @@
 use super::AddonsPage;
+use crate::features::browser::Browser;
 use crate::shell::notices::{Notification, Notify};
 use crate::shell::{Page, Shell};
 use crate::ui::scale::{Hit, px};
@@ -171,7 +172,7 @@ impl Shell {
 
     pub(super) fn install_missing(&mut self, id: &str, cx: &mut Context<Self>) {
         match self.browser.has(id) {
-            true => self.install_from_catalog(id, cx),
+            true => Browser::install(self, id, cx),
             false => self.open_page(Page::Browser, cx),
         }
     }

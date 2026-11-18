@@ -256,7 +256,7 @@ impl Runtime {
                 version: stock.version,
                 resources,
             };
-            std::fs::write(&path, erp.to_bytes()).map_err(io_err(&path))?;
+            std::fs::write(&path, erp.to_bytes()?).map_err(io_err(&path))?;
             self.place(rel.clone(), path)?;
             listed.push((
                 rank,

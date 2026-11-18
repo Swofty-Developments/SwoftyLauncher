@@ -1,4 +1,5 @@
 use std::collections::{BTreeMap, HashSet};
+use std::path::Path;
 
 use crate::shell::notices::{Notification, Notify};
 use gpui_kit::assets::IconName;
@@ -122,7 +123,7 @@ impl Shell {
             ..Batch::default()
         });
         for update in updates {
-            if !self.enqueue_catalog(&update.id, cx) {
+            if !Browser::enqueue(self, &update.id, cx) {
                 let error =
                     tr("This update is no longer available or another version is already queued.").to_owned();
                 let addon = self
@@ -147,34 +148,13 @@ impl Shell {
             .as_ref()
             .is_some_and(|batch| batch.left.is_empty())
         {
-            self.finish_addon_updates();
+            self.browser.finish_updates(&self.store.root);
         }
     }
 
     pub(super) fn retry_addon_updates(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.browser.held.clear();
         self.update_addons(window, cx);
-    }
-
-    pub(super) fn finish_addon_updates(&mut self) {
-        let Some(b) = self.browser.batch.take() else {
-            return;
-        };
-        let summary = b.summary();
-        catalog::log(&self.store.root, &summary.replace('\n', "; "));
-        let title = fill(
-            &trn(
-                b.total(),
-                "Updated {done} of {count} addon",
-                "Updated {done} of {count} addons",
-            ),
-            &[("done", b.updated.len().to_string())],
-        );
-        self.browser.toasts.push(if b.failed.is_empty() {
-            Notification::success(summary).title(title)
-        } else {
-            Notification::warning(summary).title(title)
-        });
     }
 
     pub(super) fn batch_progress(&self) -> Option<(f32, String)> {
@@ -344,5 +324,28 @@ impl Shell {
                         .on_click(cx.listener(|this, _, window, cx| this.retry_addon_updates(window, cx))),
                 ),
         )
+    }
+}
+
+impl Browser {
+    pub(super) fn finish_updates(&mut self, root: &Path) {
+        let Some(b) = self.batch.take() else {
+            return;
+        };
+        let summary = b.summary();
+        catalog::log(root, &summary.replace('\n', "; "));
+        let title = fill(
+            &trn(
+                b.total(),
+                "Updated {done} of {count} addon",
+                "Updated {done} of {count} addons",
+            ),
+            &[("done", b.updated.len().to_string())],
+        );
+        self.toasts.push(if b.failed.is_empty() {
+            Notification::success(summary).title(title)
+        } else {
+            Notification::warning(summary).title(title)
+        });
     }
 }

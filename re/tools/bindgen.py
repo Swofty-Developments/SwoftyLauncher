@@ -217,7 +217,8 @@ def load(gate=None):
                 skip(f'{table}: {status} but no signature')
                 continue
             s = sigs[r['sig']]
-            if not any(build['sha256'].startswith(v.get('build', '-')) for v in s.get('verified', [])):
+            on = [build['sha256']] + ([s['made_on']] if s.get('made_on') else [])
+            if not any(b.startswith(v.get('build', '-')) for v in s.get('verified', []) for b in on):
                 skip(f'{table}: signature not verified on the KB build')
                 continue
             if table == 'functions':
@@ -241,6 +242,9 @@ def load(gate=None):
                  'pattern': s['pattern'], 'anchor': int(str(s['anchor']), 0), 'resolve': res, 'expect': s.get('expect'),
                  'rva': hex(int(str(s['target']), 0) - int(build['image_base'], 16)),
                  'match': hex(int(str(s['match']), 0) - int(build['image_base'], 16))}
+            if s.get('made_on'):
+                b['made_on'] = {'build': s['made_on'],
+                                'match': hex(int(s['made_on_match'], 16) - int(build['image_base'], 16))}
             if kind == 'func':
                 b['proto'] = r['proto'] if r['proto'] != '-' and parse_proto(r['proto'], r['name']) else None
             elif kind == 'vtable':
@@ -397,10 +401,15 @@ def build_set(overlay, bindings, is_kb):
     for base in bindings:
         i = base['id']
         ov, hint = overrides.get(i, {}), hints.get(i, {})
+        made_on = base.get('made_on')
+        if made_on and 'match' not in hint and b['sha256'].startswith(made_on['build']):
+            hint = {**hint, 'match': made_on['match']}
         if 'func_rva' in hint and 'string_anchor' not in base:
             raise SystemExit(f'bindgen: hint func_rva for {i}, which has no string anchor')
         e = {}
         for k, v in base.items():
+            if k == 'made_on':
+                continue
             if k == 'build':
                 v = b['sha256']
             elif k == 'section':

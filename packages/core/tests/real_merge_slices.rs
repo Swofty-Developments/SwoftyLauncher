@@ -49,7 +49,7 @@ fn merges_two_addons_logo_slices_from_the_game_array() {
             version: stock.erp.version,
             resources: vec![changed],
         };
-        std::fs::write(dir.join(name), erp.to_bytes()).unwrap();
+        std::fs::write(dir.join(name), erp.to_bytes().unwrap()).unwrap();
     }
     let original = |rel: &str| game.join(rel);
     let resolve = |s: &Source| Ok(s.resolve(&dir)?);

@@ -32,6 +32,9 @@ struct Stats {
 struct Overlay {
     std::mutex reg_lock;
     hud::Registry reg;
+    // The id|path keys overlay_image could not load; they are not tried again.
+    std::mutex image_failed_lock;
+    std::vector<std::string> image_failed;
     bool implemented = false;
     std::string device_hook_rival_seen;
     std::vector<std::pair<void *, bool>> told;
@@ -51,6 +54,7 @@ struct Overlay {
     BeforeFrameGen before_fg;
     bool device_hooked = false;
     bool before_fg_tried = false;
+    bool menu_frame_told = false;
 
     void setup();
     void device_lost(HRESULT present_hr);

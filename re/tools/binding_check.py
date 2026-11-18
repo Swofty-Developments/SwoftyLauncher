@@ -45,10 +45,14 @@ FIXES = [(re.compile(p), t) for p, t in (
      r'global prefix \S+ !=',
      'name it <Prefix>_<Verb>_<Noun> (a function) or g_, k_, vt_ or site_<Prefix>_<Noun> (a global), with the prefix '
      'of its subsystem in re/db/subsystems.tsv (re/PROTOCOL.md §3)'),
-    (r'signature\.verified needs', 'binding.py new must run on the KB build; ' + NEW),
-    (r'signature\.(id|section|kind|pattern|match|target|names|anchor|resolve|expect|func_start)|data1_reason', NEW),
+    (r'signature\.verified needs', 'binding.py new must run on the KB build or on a build in re/db/builds; ' + NEW),
+    (r'signature\.made_on \S+ is not a build', 'make the record on the KB build or on a build in re/db/builds (the '
+     'current Steam build is one); ' + NEW),
+    (r'signature\.(id|section|kind|pattern|match|target|names|anchor|resolve|expect|func_start|made_on|twin)|'
+     r'data1_reason', NEW),
     (r'row\.addr is outside', 'use the address on the KB build (Steam 1.0.141.7865), 0x14xxxxxxx or 0x15xxxxxxx'),
-    (r'digest mismatch|found match \S+ target \S+, the record says', 'the signature changed after the proof; ' + VERIFY),
+    (r'digest mismatch|found match \S+ target \S+(, the record says| on the build the record was made on)',
+     'the signature changed after the proof; ' + VERIFY),
     (r'did not resolve to exactly one match', 'the pattern is not unique on that exe; make the record again with '
      'binding.py new --match-from <an earlier instruction>'),
     (r'which is not a build in re/db/builds|the proof is not on a known build',
@@ -308,12 +312,43 @@ def signature_errors(sig, row, table, name, kb_build):
                 if p is not None and p != b:
                     errs.append(f'signature.expect byte {i} contradicts the pattern')
                     break
-    for k in ('func_start',):
+    for k in ('func_start', 'made_on_match', 'made_on_target'):
         if sig.get(k) is not None and not kb.ADDR_RE.match(sig[k]):
             errs.append(f'signature.{k} must be an address')
-    if not any(isinstance(v, dict) and kb_build.startswith(v.get('build', '-') or '-') and len(v.get('build', '')) >= 16
+    errs += made_on_errors(sig)
+    on = [kb_build] + ([sig['made_on']] if sig.get('made_on') else [])
+    if not any(isinstance(v, dict) and len(v.get('build', '')) >= 16 and any(b.startswith(v['build']) for b in on)
                for v in sig['verified']):
-        errs.append(f'signature.verified needs an entry for the KB build {kb_build[:16]}')
+        errs.append(f'signature.verified needs an entry for the KB build {kb_build[:16]}' +
+                    (f' or for {sig["made_on"]}, the build it was made on' if sig.get('made_on') else ''))
+    return errs
+
+
+MADE_ON = ('made_on', 'made_on_match', 'made_on_target', 'twin')
+
+
+def made_on_errors(sig):
+    """A record made on another build than the KB build says which build, where it matched there and how its KB
+    addresses were found."""
+    have = [k for k in MADE_ON if sig.get(k) is not None]
+    if not have:
+        return []
+    if len(have) != len(MADE_ON):
+        return [f'signature.{k} missing: a record made on another build needs made_on, made_on_match, '
+                f'made_on_target and twin' for k in MADE_ON if k not in have]
+    errs = []
+    if not re.match(r'^[0-9a-f]{16,64}$', sig['made_on']):
+        errs.append('signature.made_on must be the sha256 (or its first 16 hex digits) of the build it was made on')
+    if not sig['twin'].strip():
+        errs.append('signature.twin must say how the KB addresses were found')
+    try:
+        anchor = br.number(sig['anchor'])
+    except (ValueError, TypeError):
+        return errs
+    if sig['resolve'].get('kind') == 'addr' and kb.ADDR_RE.match(sig['made_on_match']) and \
+            kb.ADDR_RE.match(sig['made_on_target']) and \
+            int(sig['made_on_match'], 16) + anchor != int(sig['made_on_target'], 16):
+        errs.append('signature.made_on_target must equal made_on_match + anchor for resolve kind addr')
     return errs
 
 
@@ -330,6 +365,10 @@ def proof_errors(record, known_builds, kb_build):
             errs.append(f'{where} is for a different signature or exe (digest mismatch); rerun binding.py verify')
         if p['result']['result'] != 'resolved' or p['result']['matches'] != 1:
             errs.append(f'{where} did not resolve to exactly one match')
+        if sig.get('made_on') and sha.startswith(sig['made_on']) and \
+                (p['result']['match'], p['result']['target']) != (sig.get('made_on_match'), sig.get('made_on_target')):
+            errs.append(f'{where} found match {p["result"]["match"]} target {p["result"]["target"]} on the build the '
+                        f'record was made on, which says {sig.get("made_on_match")} {sig.get("made_on_target")}')
         if sha == kb_build['sha256']:
             if p['exe']['size'] != kb_build['size'] or p['exe']['pe_timestamp'] != kb_build['pe_timestamp']:
                 errs.append(f'{where} exe size or timestamp differs from the KB build')
@@ -381,6 +420,10 @@ def check_record(record, knowledge, relpath=None):
             errs.append(f'verify[{i}] must be about {vkind} {record.name} or sig {sig["id"]}')
         if v['verdict'] == 'agree' and v['verifier'] == record.author:
             errs.append(f'verify[{i}]: the author cannot verify their own binding (PROTOCOL.md §5)')
+    if sig.get('made_on'):
+        on = [b for b in knowledge.builds if b.startswith(sig['made_on'])]
+        if not on or on == [knowledge.build['sha256']]:
+            errs.append(f'signature.made_on {sig["made_on"]} is not a build in re/db/builds other than the KB build')
     errs += proof_errors(record, knowledge.builds, knowledge.build)
     return errs
 
