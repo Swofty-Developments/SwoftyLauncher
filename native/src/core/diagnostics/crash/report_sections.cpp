@@ -20,11 +20,11 @@
 #include "core/diagnostics/crash/constants.hpp"
 #include "core/diagnostics/crash/minidump.hpp"
 #include "core/diagnostics/crash/process.hpp"
+#include "core/diagnostics/crash/report_text_logic.hpp"
 #include "core/diagnostics/crash/report_writer.hpp"
 #include "core/diagnostics/crash/symbolizer.hpp"
 #include "core/diagnostics/perf.hpp"
 #include "core/render/d3d12_hooks.hpp"
-#include "core/runtime/json.hpp"
 
 namespace runtime {
 void placed_record_crash_text(char *out, size_t cap);
@@ -183,26 +183,6 @@ void heap_block(const neheap::Heap &h, uintptr_t a, const char *why, bool as_use
     }
 }
 
-void scan_message_pointers(const char *msg, uintptr_t *found, int &n, int max)
-{
-    for (const char *p = msg; *p && n < max; p++) {
-        const char *s = p;
-        if (s[0] == '0' && (s[1] == 'x' || s[1] == 'X'))
-            s += 2;
-        int digits = 0;
-        uint64_t v = 0;
-        while (digits < 17 && isxdigit((unsigned char)s[digits])) {
-            char c = s[digits];
-            v = v * 16 + uint64_t(c <= '9' ? c - '0' : (c | 0x20) - 'a' + 10);
-            digits++;
-        }
-        if (digits >= 8 && digits <= 16) {
-            found[n++] = uintptr_t(v);
-            p = s + digits - 1;
-        }
-    }
-}
-
 const char *reg_names[] = {"rax", "rcx", "rdx", "rbx", "rsp", "rbp", "rsi", "rdi",
                            "r8",  "r9",  "r10", "r11", "r12", "r13", "r14", "r15"};
 
@@ -231,14 +211,7 @@ bool call_before(uintptr_t v)
 {
     uint8_t b[8];
     Reader rd;
-    if (!rd.read(v - 8, b, 8))
-        return false;
-    if (b[3] == 0xE8)
-        return true;
-    for (int len : {2, 3, 4, 6, 7})
-        if (b[8 - len] == 0xFF && ((b[8 - len + 1] >> 3) & 7) == 2)
-            return true;
-    return false;
+    return rd.read(v - 8, b, 8) && report_text::call_before(b);
 }
 
 void section_stack(const CONTEXT &ctx, uintptr_t lo, uintptr_t hi, const char *title)
@@ -331,7 +304,7 @@ void section_heap(const Request &r)
     uintptr_t from_msg[8];
     int nmsg = 0;
     if (game_paths.heap_error.set)
-        scan_message_pointers(game_paths.heap_error.msg, from_msg, nmsg, 8);
+        report_text::scan_message_pointers(game_paths.heap_error.msg, from_msg, nmsg, 8);
     for (int i = 0; i < nmsg; i++)
         if (const neheap::Heap *h = heap_for(from_msg[i]))
             heap_block(*h, from_msg[i], "pointer from the error message", true);
@@ -412,12 +385,7 @@ void section_probes(const Request &r)
     static char text[48 << 10];
     text[0] = 0;
     perf::crash_text(text, sizeof text, r.probes, r.nprobes);
-    for (char *line = text; *line;) {
-        char *nl = strchr(line, '\n');
-        size_t len = nl ? size_t(nl - line) : strlen(line);
-        report_writer.out.put("  %.*s\n", int(len), line);
-        line += len + (nl ? 1 : 0);
-    }
+    report_text::each_line(text, [](const char *line, size_t len) { report_writer.out.put("  %.*s\n", int(len), line); });
 }
 
 void section_modules()
@@ -533,21 +501,7 @@ void section_log()
     DWORD got = 0;
     ReadFile(f, tail, DWORD(LOG_TAIL), &got, nullptr);
     CloseHandle(f);
-    tail[got] = 0;
-    int lines = 0;
-    char *start = tail + got;
-    if (start > tail && start[-1] == '\n')
-        start--;
-    while (start > tail && lines < LOG_LINES)
-        if (*--start == '\n')
-            lines++;
-    if (*start == '\n')
-        start++;
-    char *w = start;
-    for (char *p = start; *p; p++)
-        if (*p != '\r')
-            *w++ = *p;
-    *w = 0;
+    char *start = report_text::log_tail(tail, got, LOG_LINES);
     report_writer.out.put("%s%s", start, got && tail[got - 1] != '\n' ? "\n" : "");
 }
 
@@ -638,15 +592,9 @@ void step_dred(Request &r)
         return;
     report_writer.out.put("%s", text.c_str());
     std::string builds = d3d12hooks::rtas_recent_text(runtime::dred::build_stops());
-    for (size_t at = 0; at < builds.size();) {
-        size_t end = builds.find('\n', at);
-        end = end == std::string::npos ? builds.size() : end + 1;
-        report_writer.out.put("%.*s", int(end - at), builds.data() + at);
-        size_t from = builds.find_first_not_of(' ', at), to = builds[end - 1] == '\n' ? end - 1 : end;
-        if (from < to)
-            logger.api->log("[gfx] rtas recent: %.*s", int(to - from), builds.data() + from);
-        at = end;
-    }
+    report_text::indented_lines(
+        builds, [](const char *line, size_t len) { report_writer.out.put("%.*s", int(len), line); },
+        [](const char *line, size_t len) { logger.api->log("[gfx] rtas recent: %.*s", int(len), line); });
 }
 
 void step_close(Request &)
@@ -697,21 +645,7 @@ void read_addons(const std::wstring &path)
             text.append(b, n);
         fclose(f);
     }
-    json::Value doc;
-    if (text.empty() || !json::parse(text, doc)) {
-        sections.addon_text = text.empty() ? "  no settings.json\n" : "  settings.json is not valid JSON\n";
-        return;
-    }
-    const json::Value &list = doc.field("addons", "mods");
-    sections.addon_text = fmt("  profile '%s', %zu addon(s)\n", doc["profile"].str("?").c_str(), list.a.size());
-    for (auto &a : list.a) {
-        std::string dlls;
-        for (auto &d : a["dlls"].a)
-            dlls += (dlls.empty() ? "" : ", ") + d.str();
-        sections.addon_text += fmt("  %-36s %-10s %-3s %s\n", a["id"].str("?").c_str(), a["version"].str("?").c_str(),
-                          a["enabled"].type == json::Value::Bool && !a["enabled"].b ? "off" : "on",
-                          dlls.empty() ? "(no dll)" : dlls.c_str());
-    }
+    sections.addon_text = report_text::addon_text(text, fmt);
 }
 
 static_assert(sizeof STEPS / sizeof *STEPS == NSTEPS);

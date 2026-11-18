@@ -14,6 +14,7 @@
 #include "core/diagnostics/crash/crash_dir.hpp"
 #include "core/diagnostics/crash/crash_log.hpp"
 #include "core/diagnostics/crash/process.hpp"
+#include "core/diagnostics/crash/report_text_logic.hpp"
 #include "core/diagnostics/crash/report_writer.hpp"
 #include "core/diagnostics/crash/stall_order_logic.hpp"
 #include "core/diagnostics/crash/stall_report.hpp"
@@ -547,12 +548,7 @@ bool stall_report(int index, int max, const char *why, const char *state)
     }
     cl("[stall] load-stall report %d of at most %d: %s; %d thread(s) read in %llu ms; written to %s", index, max, why, n,
        (unsigned long long)took, where.c_str());
-    for (char *line = t.b; *line;) {
-        char *nl = strchr(line, '\n');
-        size_t len = nl ? size_t(nl - line) : strlen(line);
-        cl("[stall] %.*s", int(std::min<size_t>(len, 1000)), line);
-        line += len + (nl ? 1 : 0);
-    }
+    report_text::each_line(t.b, [](const char *line, size_t len) { cl("[stall] %.*s", int(std::min<size_t>(len, 1000)), line); });
     cl("[stall] end of load-stall report %d", index);
     InterlockedExchange(&stall_busy, 0);
     return true;
