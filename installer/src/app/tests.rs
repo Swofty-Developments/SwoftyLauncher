@@ -3,7 +3,7 @@ use std::path::Path;
 use swofty_core::session::COMPAT_LAYER;
 use swofty_core::updates::release as update;
 
-use super::setup::{command, install_folder};
+use super::install::{command, install_folder};
 use super::view::addons_text;
 use crate::{FOLDER_NAME, data, resolve};
 
