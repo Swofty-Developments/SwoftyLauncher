@@ -52,8 +52,8 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
         }
     }
     {
-        let lock = crate::recover::lock(store, &info)?;
-        crate::recover::stale(store, &lock, g, Scope::All, &info)?;
+        let lock = crate::session_lock::lock(store, &info)?;
+        crate::session_lock::stale(store, &lock, g, Scope::All, &info)?;
     }
     // Modded sessions run without EA AntiCheat: the terms are accepted once,
     // and declining means the game is not launched.
@@ -287,7 +287,7 @@ pub(crate) fn settle(
     match swofty_core::game_folder::recovery::recover(&lock, &store.root, g, Scope::All) {
         Ok(r) if r.recovered() => {
             say("info", "the wrapper ended without rolling the session back");
-            crate::recover::announce(store, g, &r.lines(), &info);
+            crate::session_lock::announce(store, g, &r.lines(), &info);
         }
         Ok(r) => {
             r.lines().iter().for_each(|l| info(l));

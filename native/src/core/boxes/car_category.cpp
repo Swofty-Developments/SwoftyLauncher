@@ -1,8 +1,7 @@
 #include "core/guards/skips.hpp"
 #include "core/runtime/loader/core_sets.hpp"
-#include "core/runtime/loader/mixin_gate.hpp"
+#include "core/runtime/loader/hook_set.hpp"
 #include "core/runtime/runtime.hpp"
-#include "core/runtime/resolve.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>
@@ -110,19 +109,20 @@ struct Forced {
     int prior = -1, ours = -1;
 };
 
-std::recursive_mutex lock;
-runtime::loader::MixinGate mixin_gate;
-std::atomic<bool> live, off;
-std::string off_why;
+// The Car Category set: the tile build, the button press and the category setup from the unranked lobby.
+struct CategoryHooks : runtime::loader::HookSet<std::recursive_mutex> {
+    runtime::loader::Original<Game_CreateSessionDlcSelectTab_BuildTiles_t> build_tiles;
+    runtime::loader::Original<Game_CreateSessionDlcSelectTab_HandleCommand_t> handle_command;
+    runtime::loader::Original<Game_Network_CategoryOptionUsing_t> option_using;
+};
+
+CategoryHooks hooks;
 alignas(16) uint8_t tiles[logic::MAX_ADDED][TILE_BYTES];
 size_t tiles_used;
 std::vector<Added> added;
 uint8_t *built_vm;
 std::string chosen;
 Forced forced;
-Game_CreateSessionDlcSelectTab_BuildTiles_t *build_orig;
-Game_CreateSessionDlcSelectTab_HandleCommand_t *press_orig;
-Game_Network_CategoryOptionUsing_t *setup_orig;
 constinit swofty_core::guards::LogFirst<LOG_FIRST> build_lines, value_lines, refused_lines, setup_lines, scenario_lines;
 constinit swofty_core::guards::LogFirst<16> unknown_lines;
 thread_local bool applying;
@@ -224,15 +224,15 @@ void build_entry(void *vm)
 {
     auto *v = static_cast<uint8_t *>(vm);
     {
-        std::lock_guard<std::recursive_mutex> g(lock);
+        std::lock_guard<std::recursive_mutex> g(hooks.lock);
         release_tiles();
         restore_forced("the Car Category screen was built again");
         chosen.clear();
     }
-    build_orig(vm);
-    if (!live || off || !mem::readable(v, VM_SPAN))
+    hooks.build_tiles(vm);
+    if (!hooks.live() || hooks.off() || !mem::readable(v, VM_SPAN))
         return;
-    std::lock_guard<std::recursive_mutex> g(lock);
+    std::lock_guard<std::recursive_mutex> g(hooks.lock);
     uint8_t *list = at<uint8_t *>(v, VM_LIST_NODE);
     size_t before = children(list);
     if (before == SIZE_MAX) {
@@ -296,16 +296,16 @@ char *press_entry(void *vm, void *command)
 {
     auto *cmd = command ? *static_cast<const uint32_t **>(command) : nullptr;
     if (!cmd || !mem::readable(cmd, 4))
-        return press_orig(vm, command);
+        return hooks.handle_command(vm, command);
     uint32_t hash = *cmd;
-    std::unique_lock<std::recursive_mutex> g(lock);
+    std::unique_lock<std::recursive_mutex> g(hooks.lock);
     if (hash == logic::BUTTON_1 || hash == logic::BUTTON_2) {
         if (!chosen.empty() || forced.option)
             swofty::log("[car-category] stock box %s pressed; the addon category is dropped", hash == logic::BUTTON_1 ? "F1 2025" : "F1 2026");
         chosen.clear();
         restore_forced("a stock box was pressed");
         g.unlock();
-        return press_orig(vm, command);
+        return hooks.handle_command(vm, command);
     }
     int box = logic::added_box_of(hash, added.size());
     if (box < 0) {
@@ -313,14 +313,14 @@ char *press_entry(void *vm, void *command)
             swofty::log("[car-category] command %s on the Car Category screen is not a stock or addon box (%zu addon box(es))",
                         hex_hash(hash).c_str(), added.size());
         g.unlock();
-        return press_orig(vm, command);
+        return hooks.handle_command(vm, command);
     }
     if (vm != built_vm) {
         if (refused_lines.note())
             swofty::log("[car-category] addon box press refused: the screen that raised it is not the one the boxes were "
                         "built for");
         g.unlock();
-        return press_orig(vm, command);
+        return hooks.handle_command(vm, command);
     }
     chosen = added[size_t(box)].value;
     swofty::log("[car-category] addon box %d pressed: category %s; running the F1 2025 path (button_1)", box,
@@ -328,7 +328,7 @@ char *press_entry(void *vm, void *command)
     g.unlock();
     uint32_t stock = logic::BUTTON_1;
     const void *fake[4] = {&stock, nullptr, nullptr, nullptr};
-    return press_orig(vm, fake);
+    return hooks.handle_command(vm, fake);
 }
 
 std::vector<logic::Scenario> scenarios()
@@ -423,11 +423,11 @@ void play_scenario(void *self, const std::string &want)
 void setup_entry(void *self)
 {
     if (applying) {
-        setup_orig(self);
+        hooks.option_using(self);
         return;
     }
-    setup_orig(self);
-    std::unique_lock<std::recursive_mutex> g(lock);
+    hooks.option_using(self);
+    std::unique_lock<std::recursive_mutex> g(hooks.lock);
     std::string want = chosen;
     if (want.empty()) {
         if (forced.option && setup_lines.note())
@@ -443,23 +443,19 @@ void setup_entry(void *self)
 
 bool bind_all(std::string &why)
 {
-    std::string missing;
-    b.build = runtime::resolve_or_note("Game_CreateSessionDlcSelectTab_BuildTiles", missing);
-    b.press = runtime::resolve_or_note("Game_CreateSessionDlcSelectTab_HandleCommand", missing);
-    b.fill = runtime::resolve_or_note("Game_CreateSessionDlcSelectTab_FillTile", missing);
-    b.append = runtime::resolve_or_note("Vm_List_AppendChild", missing);
-    b.release = runtime::resolve_or_note("Vm_Release_Node", missing);
-    b.setup = runtime::resolve_or_note("Game_Network_CategoryOptionUsing", missing);
-    b.find = runtime::resolve_or_note("Game_OptionsStore_FindOption", missing);
-    b.store = runtime::resolve_or_note("g_Game_OptionsStore", missing);
-    b.key = runtime::resolve_or_note("k_Gdb_StringXorKey", missing);
-    b.registry = runtime::resolve_or_note("g_Vm_Registry", missing);
-    b.set_scenario = runtime::resolve_or_note("Game_Network_SetScenario", missing);
-    b.scenarios = runtime::resolve_or_note("g_Game_Scenarios", missing);
-    if (missing.empty())
-        return true;
-    why = "needs " + missing + ", which this build does not resolve";
-    return false;
+    return CategoryHooks::bind({{"Game_CreateSessionDlcSelectTab_BuildTiles", &b.build},
+                                {"Game_CreateSessionDlcSelectTab_HandleCommand", &b.press},
+                                {"Game_CreateSessionDlcSelectTab_FillTile", &b.fill},
+                                {"Vm_List_AppendChild", &b.append},
+                                {"Vm_Release_Node", &b.release},
+                                {"Game_Network_CategoryOptionUsing", &b.setup},
+                                {"Game_OptionsStore_FindOption", &b.find},
+                                {"g_Game_OptionsStore", &b.store},
+                                {"k_Gdb_StringXorKey", &b.key},
+                                {"g_Vm_Registry", &b.registry},
+                                {"Game_Network_SetScenario", &b.set_scenario},
+                                {"g_Game_Scenarios", &b.scenarios}},
+                               why);
 }
 
 }
@@ -471,15 +467,15 @@ namespace runtime {
 // stock host starts from the stock index. False, with the reason, when the value cannot be applied.
 bool car_category_choose(const std::string &value, std::string &why)
 {
-    std::lock_guard<std::recursive_mutex> g(lock);
+    std::lock_guard<std::recursive_mutex> g(hooks.lock);
     if (value.empty()) {
         chosen.clear();
         restore_forced("a stock category was chosen without the screen");
         return true;
     }
-    if (!live || off) {
+    if (!hooks.live() || hooks.off()) {
         why = "the addon category " + value + " needs the Car Category hooks, which are " +
-              (off ? "off: " + off_why : std::string("not installed"));
+              (hooks.off() ? "off: " + hooks.why() : std::string("not installed"));
         return false;
     }
     std::string err;
@@ -500,39 +496,37 @@ bool car_category_choose(const std::string &value, std::string &why)
 static std::vector<CoreMixins> car_category_mixins()
 {
     std::vector<CoreMixins> out;
-    if (mixin_gate.offered() || off || !code_ready() || era_boxes().empty())
+    if (hooks.gate.offered() || hooks.off() || !code_ready() || era_boxes().empty())
         return out;
-    mixin_gate.offer();
+    hooks.gate.offer();
     std::string why;
     if (!bind_all(why)) {
-        off_why = why;
-        off = true;
+        hooks.turn_off(why);
         swofty::log("[car-category] addon boxes off: %s", why.c_str());
         return out;
     }
     out.push_back({MIXIN,
                    {{"Game_CreateSessionDlcSelectTab_BuildTiles", SWOFTY_MIXIN_WRAP, 100, (void *)&build_entry,
-                     (void **)&build_orig},
+                     hooks.build_tiles.slot()},
                     {"Game_CreateSessionDlcSelectTab_HandleCommand", SWOFTY_MIXIN_WRAP, 100, (void *)&press_entry,
-                     (void **)&press_orig},
+                     hooks.handle_command.slot()},
                     {"Game_Network_CategoryOptionUsing", SWOFTY_MIXIN_WRAP, 100, (void *)&setup_entry,
-                     (void **)&setup_orig}}});
+                     hooks.option_using.slot()}}});
     swofty::log("[car-category] %zu era box(es) registered; offering the Car Category hooks", era_boxes().size());
     return out;
 }
 
 static void car_category_commit()
 {
-    if (off || !mixin_gate.settle())
+    if (hooks.off() || !hooks.gate.settle())
         return;
     if (core_mixins_active(MIXIN)) {
-        live = true;
+        hooks.set_live();
         swofty::log("[car-category] Car Category hooks installed; addon boxes show from the next build of the screen");
         return;
     }
-    off_why = "the Car Category hooks did not install (see the [core] lines for " + std::string(MIXIN) + ")";
-    off = true;
-    swofty::log("[car-category] addon boxes off: %s", off_why.c_str());
+    hooks.turn_off("the Car Category hooks did not install (see the [core] lines for " + std::string(MIXIN) + ")");
+    swofty::log("[car-category] addon boxes off: %s", hooks.why().c_str());
 }
 
 static loader::FunctionSet car_category_core_set{loader::CoreSetId::car_category, car_category_mixins, car_category_commit};

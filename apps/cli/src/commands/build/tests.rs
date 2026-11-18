@@ -314,7 +314,7 @@ fn a_file_of_unknown_provenance_stops_the_launch_untouched_with_what_restore_doe
     let err = Installer::new(&h.store.root, &h.game)
         .apply(&built.plan)
         .map_err(|e| match e {
-            swofty_core::Error::Leftovers(found) => crate::recover::blocked(&h.store, &h.game, &found),
+            swofty_core::Error::Leftovers(found) => crate::session_lock::blocked(&h.store, &h.game, &found),
             e => e.into(),
         })
         .unwrap_err()

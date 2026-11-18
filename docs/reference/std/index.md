@@ -129,6 +129,7 @@ Each entry names the header, the `SwoftyApi` member and its API version, the fea
 - **The game's state**
   - **[Events](./events)** (`swofty/events.hpp`): lifecycle, flow and career events, and a per-frame tick. `events`, API 5; feature `events` (stable); the flow thread.
   - **[Live state](./live)** (`swofty/live.hpp`): every car, the classification, gaps, pit state and turn numbers read from the game's memory. The core export `SwoftyCoreLive`; feature `telemetry` (experimental); any thread.
+  - **[Pit lane](./pitlane)** (`swofty/systems/pitlane.hpp`): each car's garage and pit box from the live state. The live state, API 9; feature `telemetry` (experimental); any thread.
   - **[Race control](./race-control)** (`swofty/systems/race_control.hpp`): events when the flag, the safety car, the red flag, a car's sector or a car's result status changes, and the state now. The hooks table, API 9; features `events` (stable) and `telemetry` (experimental); the flow thread.
   - **[Telemetry](./telemetry)** (`swofty/telemetry.hpp`): live car, session and participant reads. `telemetry`, API 5; feature `telemetry` (experimental); the flow thread.
   - **[Database read](./db)** (`swofty/db.hpp`): read values and walk tables of the game database. `db`, API 5; feature `db` (stable); the caller's thread.

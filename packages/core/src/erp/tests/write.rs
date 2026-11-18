@@ -269,6 +269,62 @@ fn an_unchanged_archive_is_linked_from_the_cache() {
 }
 
 #[test]
+fn a_linked_archive_keeps_the_time_it_was_written() {
+    let root = std::env::temp_dir().join(format!("swofty-erpcache-time-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let game = root.join("game");
+    let addon = root.join("addon");
+    std::fs::create_dir_all(game.join("ui")).unwrap();
+    std::fs::create_dir_all(addon.join("raw")).unwrap();
+    let x = "eaid://ui_package/x.tif.image";
+    std::fs::write(
+        game.join("ui/a.erp"),
+        archive(vec![surface(x, b"HEADER-X", b"PIXELS-X")]),
+    )
+    .unwrap();
+    std::fs::write(addon.join("raw/pixels.bin"), b"PAINTED!").unwrap();
+    let ops = erp_ops(
+        r#"{"schema_version":1,"ops":[{"op":"replace-resource","erp":"ui/a.erp",
+            "resource":"eaid://ui_package/x.tif.image","fragment":1,"source":"raw/pixels.bin"}]}"#,
+    );
+    let original = |rel: &str| game.join(rel);
+    let cache = root.join("cache");
+    let build = |n: &str| {
+        let mut b = ErpBuild::new(&original);
+        apply(&mut b, &ops, &addon).unwrap();
+        let out = root.join(n);
+        let (_, reused) = b.write_cached(&out, Some(&cache), &|| Ok(())).unwrap();
+        (out.join("ui/a.erp"), reused)
+    };
+    let (first, _) = build("one");
+    let written = std::time::SystemTime::now() - std::time::Duration::from_secs(3600);
+    std::fs::File::options()
+        .write(true)
+        .open(&first)
+        .unwrap()
+        .set_modified(written)
+        .unwrap();
+    let (second, reused) = build("two");
+    assert_eq!(reused, 1);
+    assert_eq!(
+        std::fs::metadata(&second).unwrap().modified().unwrap(),
+        written,
+        "linking the cached archive changes its write time"
+    );
+    let used: Vec<std::time::SystemTime> = std::fs::read_dir(&cache)
+        .unwrap()
+        .flatten()
+        .flat_map(|sub| std::fs::read_dir(sub.path()).unwrap().flatten())
+        .map(|e| e.path())
+        .filter(|p| p.extension().is_some_and(|e| e == "used"))
+        .map(|p| std::fs::metadata(p).unwrap().modified().unwrap())
+        .collect();
+    assert_eq!(used.len(), 1, "the link marks the entry used");
+    assert!(used[0] > written);
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
 fn a_same_size_handling_file_rewrites_its_archive_instead_of_the_runtime_overlay() {
     let root = std::env::temp_dir().join(format!("swofty-erphandling-{}", std::process::id()));
     std::fs::remove_dir_all(&root).ok();

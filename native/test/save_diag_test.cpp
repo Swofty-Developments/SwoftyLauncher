@@ -2,8 +2,8 @@
 
 #include <cstdio>
 
-namespace sd = runtime::save_diag;
-namespace cs = runtime::career_saves;
+namespace sd = career::save_diag;
+namespace cs = career::saves;
 
 static int fails;
 static void expect(bool ok, const std::string &what)

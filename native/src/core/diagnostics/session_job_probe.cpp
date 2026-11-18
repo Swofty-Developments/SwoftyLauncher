@@ -1,8 +1,8 @@
 #include "core/diagnostics/crash/blackbox.hpp"
-#include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/diagnostics/session_job_probe_logic.hpp"
 #include "core/runtime/loader/core_rank.hpp"
+#include "core/runtime/loader/hook_install.hpp"
 
 #include <windows.h>
 
@@ -179,12 +179,10 @@ void setup()
         swofty::log("[session-job] 0x1445acb00 entry probe off: needs %s, which this build does not resolve", FUNC);
         return;
     }
-    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), on_entry);
-    if (!h) {
-        swofty::log("[session-job] 0x1445acb00 entry probe: the hook failed: %s", runtime::hook_error(h.error()).c_str());
+    if (auto r = runtime::loader::install(hook, at, FUNC, on_entry); !r) {
+        swofty::log("[session-job] 0x1445acb00 entry probe: the hook failed: %s", r.error.c_str());
         return;
     }
-    hook = std::move(*h);
     hooked.store(true);
     swofty::log("[session-job] 0x1445acb00 entry probe hooked at 0x%llx (%s): while a session is entered (StateSession or "
                 "StateLoadSession Entering, for %llu s, cut to %llu s after StateSession updates) it logs the wheel tyre "

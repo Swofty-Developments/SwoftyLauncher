@@ -9,7 +9,7 @@
 #include <atomic>
 #include <mutex>
 
-namespace postfx {
+namespace render::postfx {
 
 // The depth buffer as the game leaves each of its passes that write it. On track the passes run in the
 // HUD's list, which never moves the depth buffer, so its state there is unknown; instead the core copies

@@ -1,5 +1,5 @@
-mod data;
 mod provides;
+mod schemas;
 
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
@@ -10,9 +10,9 @@ use swofty_core::manifest::{AddonManifest, MANIFEST_FILE};
 use swofty_core::stdlib::manifest::{RegistryManifest, Target};
 use swofty_core::store::Store;
 
-pub use self::data::sdk_schema;
-use self::data::{missing_paths, validate_data};
 use self::provides::{data_files, data_ids, installed_ids, provided};
+pub use self::schemas::sdk_schema;
+use self::schemas::{missing_paths, validate_data};
 use super::lock::LOCK_FILE;
 
 pub const REGISTRY_FILE: &str = "registry.json";

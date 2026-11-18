@@ -24,9 +24,12 @@
 // list or the entrant setup mode's first list holds more than 23 cars, selects a list of at most 23 cars
 // from the same entrant setup mode instead (the box pressed, then its Time Trial list, then the first that
 // fits) and holds the entrant setup mode's max_entrants (+0x268, the selector's limit, research grid24-cap
-// §2 step 6) at 23 until the session ends or a box is pressed. As the last net, a wrap of 0x142f45960
-// (Sess_Setup_VehicleComponents) that sees more vehicles than the table's 26 hands the game a vector of the
-// first 26 for that call and logs the list, so the table is never written past its end.
+// §2 step 6) at 23 until the session ends or a box is pressed. When the fill still selects more entrants than the
+// table holds, the entrant cap (table_entrants below) leaves the lists' cars past the table out before the game builds
+// its participants. As the last net, a wrap of 0x142f45960 (Sess_Setup_VehicleComponents) that sees more vehicles than the
+// table's 26 hands the game a vector of the first 26 for that call and logs the list, so the table is never written past
+// its end; the AI job (0x14063e370) still walks every vehicle and reads a null component for the 27th (V2134), so that
+// net only turns a write past the table into a fault.
 
 namespace runtime::era {
 
@@ -548,4 +551,50 @@ inline uintptr_t vehicles_end_within_table(uintptr_t begin, uintptr_t end)
     return session_vehicles(begin, end) > TT_TABLE ? begin + TT_TABLE * VEHICLE_SLOT : end;
 }
 
+// The Time Trial entrant cap. The fill (0x142936760) pushes its records through 0x140af2ab0: two sites before
+// its setup mode walks (its human records carry +0x48 = 0x10000000, stored at 0x1429378f9 and 0x142938303), the lists'
+// cars in the walk (0x142938e2b), and one record of its own after the walks (0x142939be8, straight-line code that every
+// path to the loop passes, so always the last). At 0x142939dc2, inside its entrants-changing messages
+// (0x1424e2b90 .. 0x1424e2f00), builds one participant per entrant whose vehicle ref (+0x5c) resolves. The session's
+// vehicles are those participants, so entrants held to the table's 26 there keep every later reader (the vehicle setup's
+// table, the AI update's cache 0x1405ee110 and its job 0x14063e370) within what the game holds. Records are erased the
+// way the game's own selector erases them (V2126): later records copied down, then the end moved. The fill itself clears
+// the vector by setting its end to its begin (0x1429367ed), so a record owns nothing that a copy or a drop would break.
+constexpr size_t ENTRANT_HUMAN_BYTE = 0x4b;
+constexpr uint8_t ENTRANT_HUMAN = 0x10;
+
+// The entrants kept, ascending: every fixed one (a human record, or the fill's own last record), and the others in their
+// order while the table has room.
+inline std::vector<size_t> table_entrants(const std::vector<bool> &fixed, size_t table = TT_TABLE)
+{
+    size_t always = size_t(std::count(fixed.begin(), fixed.end(), true));
+    size_t room = table > always ? table - always : 0;
+    std::vector<size_t> keep;
+    for (size_t i = 0; i < fixed.size(); ++i) {
+        if (fixed[i]) {
+            keep.push_back(i);
+        } else if (room) {
+            keep.push_back(i);
+            --room;
+        }
+    }
+    return keep;
+}
+
+// Moves the kept records to the front in their order; returns the new end.
+inline uint8_t *keep_entrants(uint8_t *begin, const std::vector<size_t> &keep)
+{
+    for (size_t k = 0; k < keep.size(); ++k)
+        if (keep[k] != k)
+            std::memmove(begin + k * ENTRANT_RECORD, begin + keep[k] * ENTRANT_RECORD, ENTRANT_RECORD);
+    return begin + keep.size() * ENTRANT_RECORD;
+}
+
+inline std::string entrant_cap_line(size_t entrants, size_t kept, size_t humans)
+{
+    return "the Time Trial session selected " + std::to_string(entrants) + " entrants for a vehicle table of " +
+           std::to_string(TT_TABLE) + "; it keeps " + std::to_string(kept) + " (" + std::to_string(humans) +
+           " human) and leaves " + std::to_string(entrants - kept) +
+           " of the lists' cars out before the game builds its participants";
+}
 }

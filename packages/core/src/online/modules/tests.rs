@@ -67,10 +67,29 @@ fn run(
     (got, d, seen)
 }
 
+/// A port nothing listens on: Windows takes about two seconds to refuse a connection to it.
+const REFUSED: &str = "http://127.0.0.1:1";
+
+/// A server that closes each connection unanswered, which the client can't reach either, and at once.
+fn hangs_up() -> String {
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let url = format!("http://{}", listener.local_addr().unwrap());
+    std::thread::spawn(move || {
+        for c in listener.incoming() {
+            drop(c);
+        }
+    });
+    url
+}
+
 fn offline(d: &Path, key: &Ed25519KeyPair, abi: u32) -> Result<Module, Unavailable> {
+    offline_at(d, key, abi, &hangs_up())
+}
+
+fn offline_at(d: &Path, key: &Ed25519KeyPair, abi: u32, server: &str) -> Result<Module, Unavailable> {
     ensure_with(
         d,
-        &Api::with_server("http://127.0.0.1:1", "tok"),
+        &Api::with_server(server, "tok"),
         NAME,
         WINDOWS,
         abi,
@@ -262,6 +281,12 @@ fn a_refusal_does_not_fall_back_to_the_cache() {
 fn offline_uses_the_newest_cached_copy_of_the_abi() {
     let key = pair();
     let d = data("offline");
+    assert!(
+        offline_at(&d, &key, 1, REFUSED)
+            .unwrap_err()
+            .why
+            .contains("couldn't reach")
+    );
     assert!(offline(&d, &key, 1).unwrap_err().why.contains("couldn't reach"));
     assert!(!d.join("modules").exists());
     fetch(&d, &key, "1.9", 1, b"MZ nine");

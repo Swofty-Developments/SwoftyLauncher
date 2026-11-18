@@ -1224,6 +1224,32 @@ static void test_steam_26566308_ers_mode()
     CHECK(live.cars[0].have & SWOFTY_LIVE_HAVE_ERS_STORE);
 }
 
+static void test_ea_1_0_145()
+{
+    const BuildProof *build = proof_for(1794315435u);
+    CHECK(build == &EA_1_0_145_BUILD && build->groups == ALL_GROUPS);
+    CHECK(build->progress_from_manager == 0x2a0 && build->ers_mode == 0x1a6c);
+    CHECK(build->field_proofs == bit(G_DRIVER_NAMES));
+    CHECK(!proof_for(1794315434u) && !proof_for(1794315436u));
+
+    World w(build->progress_from_manager);
+    Sites sites = resolved_everywhere(w.s);
+    Decision d = decide(sites, *build, false);
+    for (unsigned i = 0; i < G_COUNT; i++)
+        CHECK(d.gates[Group(i)] == (ROWS[i].mapped && (ROWS[i].fields || i == G_DRIVER_NAMES)));
+    sites.key_tyres = 0;
+    CHECK(!decide(sites, *build, false).gates[G_TYRES]);
+
+    Sites read = w.s;
+    read.ers_mode = build->ers_mode;
+    w.a.put<int32_t>(w.ers[0] + L::ers::mode, 0x7fffffff);
+    w.a.put<int32_t>(w.ers[0] + read.ers_mode, 1);
+    Live live(w.mem(), read, Gates::all());
+    live.update(0.0);
+    CHECK(live.active() && (live.cars[0].have & SWOFTY_LIVE_HAVE_PROGRESS) && live.cars[0].lap_m == 3000.f);
+    CHECK((live.cars[0].have & SWOFTY_LIVE_HAVE_ERS_MODE) && live.cars[0].ers_mode == 1);
+}
+
 static void test_readiness_rows()
 {
     for (unsigned g = 0; g < G_COUNT; g++) {
@@ -1262,6 +1288,7 @@ int main()
     test_build_gate();
     test_steam_26566308();
     test_steam_26566308_ers_mode();
+    test_ea_1_0_145();
     if (failures) {
         std::printf("%d failures\n", failures);
         return 1;

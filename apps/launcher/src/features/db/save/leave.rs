@@ -13,12 +13,12 @@ use crate::shell::Shell;
 
 impl Shell {
     pub(crate) fn db_discard(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let n = self.db.draft.unsaved();
+        let n = self.db.book.draft.unsaved();
         if n == 0 {
             return;
         }
         let shell = cx.entity().downgrade();
-        let body = match self.db_bound() {
+        let body = match self.db.book.bound() {
             Some(info) => trf!(
                 "This puts {name} back to how it was last saved.",
                 name = info.name
@@ -39,7 +39,7 @@ impl Shell {
                 .on_ok(move |_, _, cx| {
                     shell
                         .update(cx, |s, cx| {
-                            s.db.draft.discard();
+                            s.db.book.draft.discard();
                             s.db.errors.clear();
                             s.db.slots = crate::features::db::Slots::default();
                             Db::changed(s, None, true, cx);
@@ -52,13 +52,13 @@ impl Shell {
 
     /// Runs `then`, first asking Save / Discard / Cancel when the draft has unsaved changes.
     pub(crate) fn db_leave(&mut self, then: Then, window: &mut Window, cx: &mut Context<Self>) {
-        let n = self.db.draft.unsaved();
+        let n = self.db.book.draft.unsaved();
         if n == 0 {
             self.db_then(then, cx);
             return;
         }
-        let name = self.db_draft_name();
-        let bound = self.db.draft.addon.is_some();
+        let name = self.db.book.draft_name();
+        let bound = self.db.book.draft.addon.is_some();
         let shell = cx.entity().downgrade();
         window.open_alert_dialog(cx, move |alert, _, _| {
             let (s1, s2, t1, t2) = (shell.clone(), shell.clone(), then.clone(), then.clone());
@@ -76,7 +76,7 @@ impl Shell {
                         .on_click(move |_, window, cx| {
                             window.close_dialog(cx);
                             s1.update(cx, |s, cx| {
-                                s.db.draft.discard();
+                                s.db.book.draft.discard();
                                 s.db_then(t1.clone(), cx);
                             })
                             .ok();
@@ -90,7 +90,7 @@ impl Shell {
                             window.close_dialog(cx);
                             s2.update(cx, |s, cx| {
                                 if bound {
-                                    s.db_save_bound(Some(t2.clone()), window, cx);
+                                    Db::save_bound(s, Some(t2.clone()), window, cx);
                                 } else {
                                     s.db_save_as(Some(t2.clone()), window, cx);
                                 }

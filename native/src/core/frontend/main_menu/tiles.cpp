@@ -18,7 +18,6 @@ namespace frontend::main_menu {
 namespace {
 
 using namespace swofty::game;
-namespace logic = ::frontend::main_menu;
 
 constexpr size_t OFF_F1WORLD = 11, OFF_CHALLENGE = 32, OFF_DIVIDER = 47, OFF_LOCAL_MP = 59, OFF_THEATRE = 98, OFF_END_JMP = 103;
 
@@ -47,8 +46,8 @@ void showroom_populate(HomeItem *item, void *node, uint32_t a7) { menu.tiles.pop
 Action *showroom_action(HomeItem *item, Action *out)
 {
     menu.via = 2;
-    swofty::log("[main-menu] showroom card pressed (item %p): route %s", item, logic::SHOWROOM_ROUTE);
-    return route_action(out, logic::SHOWROOM_ROUTE);
+    swofty::log("[main-menu] showroom card pressed (item %p): route %s", item, SHOWROOM_ROUTE);
+    return route_action(out, SHOWROOM_ROUTE);
 }
 
 void customisation_populate(HomeItem *item, void *node, uint32_t a7) { menu.tiles.populate_customisation(item, node, a7); }
@@ -57,8 +56,8 @@ Action *customisation_action(HomeItem *item, Action *out)
 {
     menu.customisation_armed = true;
     swofty::log("[main-menu] customisation card pressed (item %p): route %s; the Customisation screen's Back returns to the main menu",
-                item, logic::CUSTOMISATION_ROUTE);
-    return route_action(out, logic::CUSTOMISATION_ROUTE);
+                item, CUSTOMISATION_ROUTE);
+    return route_action(out, CUSTOMISATION_ROUTE);
 }
 
 void split_screen_populate(HomeItem *item, void *node, uint32_t a7) { menu.tiles.populate_split_screen(item, node, a7); }
@@ -142,7 +141,7 @@ bool Tiles::customisation_on()
 
 void Tiles::style_item(HomeItem *item)
 {
-    const char *tpl = logic::template_for(id_of(item), rows_on());
+    const char *tpl = template_for(id_of(item), rows_on());
     auto node = item ? static_cast<uint8_t *>(item->button_node.node) : nullptr;
     if (!*tpl)
         return;
@@ -170,11 +169,11 @@ void Tiles::populate_typed(HomeItem *item, void *node, uint32_t a7)
 void Tiles::wrap_item(HomeItem *item)
 {
     const char *id = id_of(item);
-    if (!*logic::template_for(id, rows_on()))
+    if (!*template_for(id, rows_on()))
         return;
-    if (!std::strcmp(id, logic::ID_GRAND_PRIX) || !std::strcmp(id, logic::ID_TIME_TRIAL) ||
-        !std::strcmp(id, logic::ID_LOCAL) || !std::strcmp(id, logic::ID_SHOWROOM) || !std::strcmp(id, logic::ID_CUSTOMISATION) ||
-        !std::strcmp(id, logic::ID_SETTINGS))
+    if (!std::strcmp(id, ID_GRAND_PRIX) || !std::strcmp(id, ID_TIME_TRIAL) ||
+        !std::strcmp(id, ID_LOCAL) || !std::strcmp(id, ID_SHOWROOM) || !std::strcmp(id, ID_CUSTOMISATION) ||
+        !std::strcmp(id, ID_SETTINGS))
         return;
     auto vt = reinterpret_cast<void **>(item->vtable);
     {
@@ -219,7 +218,7 @@ void Tiles::populate_showroom(HomeItem *item, void *node, uint32_t a7)
 void Tiles::populate_customisation(HomeItem *item, void *node, uint32_t a7)
 {
     reinterpret_cast<Populate_t>(theatre_populate)(item, node, a7);
-    retitle(item, logic::CUSTOMISATION_TITLE, logic::CUSTOMISATION_DESCRIPTION);
+    retitle(item, CUSTOMISATION_TITLE, CUSTOMISATION_DESCRIPTION);
 }
 
 void Tiles::add_theatre_copy(TileList *list, uint8_t index, const char *id, Populate_t populate, GetAction_t action)
@@ -244,7 +243,7 @@ void Tiles::add_theatre_copy(TileList *list, uint8_t index, const char *id, Popu
 void Tiles::populate_split_screen(HomeItem *item, void *node, uint32_t a7)
 {
     reinterpret_cast<Populate_t>(local_mp_populate)(item, node, a7);
-    retitle(item, logic::SPLIT_SCREEN_TITLE, logic::SPLIT_SCREEN_DESCRIPTION);
+    retitle(item, SPLIT_SCREEN_TITLE, SPLIT_SCREEN_DESCRIPTION);
 }
 
 // The stock Local Multiplayer item, titled Split Screen: its id and its action (the local_multiplayer route, which
@@ -273,7 +272,7 @@ void Tiles::populate_card(HomeItem *item, void *node, uint32_t a7)
     auto vm_node = static_cast<uint8_t *>(item->button_node.node);
     if (!vm_node)
         return;
-    bool gp = !std::strcmp(id_of(item), logic::ID_GRAND_PRIX);
+    bool gp = !std::strcmp(id_of(item), ID_GRAND_PRIX);
     void *reg = *g_Vm_Registry, *parent = vm_node + 8;
     uint8_t no = 0;
     set_string(reg, parent, "title", gp ? "GRAND PRIX" : "TIME TRIAL");
@@ -325,21 +324,21 @@ uint8_t Tiles::add(TileList *list, uint8_t career_index, const uint8_t *flags)
     if (!arm_patch())
         return career_index;
     uint8_t index = career_index;
-    add_card(list, ++index, logic::ID_GRAND_PRIX);
-    add_card(list, ++index, logic::ID_TIME_TRIAL);
+    add_card(list, ++index, ID_GRAND_PRIX);
+    add_card(list, ++index, ID_TIME_TRIAL);
     add_split_screen(list, ++index);
     if (flags && (flags[8] & 1))
         block.challenge(list, ++index);
     block.theatre(list, ++index);
     bool showroom = menu_on();
     if (showroom)
-        add_theatre_copy(list, ++index, logic::ID_SHOWROOM, showroom_populate, showroom_action);
+        add_theatre_copy(list, ++index, ID_SHOWROOM, showroom_populate, showroom_action);
     bool customisation = customisation_on();
     if (customisation)
-        add_theatre_copy(list, ++index, logic::ID_CUSTOMISATION, customisation_populate, customisation_action);
+        add_theatre_copy(list, ++index, ID_CUSTOMISATION, customisation_populate, customisation_action);
     block.divider(list, ++index);
     if (HomeItem *divider = last_item(list)) {
-        Ne_Make_StrFromCStr(&divider->id, logic::ID_DIVIDER, 0, 0);
+        Ne_Make_StrFromCStr(&divider->id, ID_DIVIDER, 0, 0);
         swofty::log("[main-menu] divider tile added before Addon Settings (index %u)", unsigned(index));
     }
     style_list(list);

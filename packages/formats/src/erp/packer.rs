@@ -1,11 +1,11 @@
 use std::collections::BTreeMap;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
-use md5::{Digest, Md5};
-
+use crate::Result;
+use crate::erp::ZSTD_LEVEL;
+use crate::erp::encoders::encode;
 use crate::erp::fragment::{Fragment, Payload};
-use crate::erp::{ZSTD_LEVEL, ZSTD_WINDOW_LOG};
-use crate::{Error, Result};
+use crate::erp::frame_cache::compress_cached;
 
 pub fn compress(data: &[u8]) -> Result<Vec<u8>> {
     Packer::default().compress(data)
@@ -147,7 +147,7 @@ impl Packer {
 
 /// How many compressions run at once, and how many workers one large frame is split across: half the
 /// cores, at most four, so a build leaves the rest of the PC responsive.
-fn parallelism() -> usize {
+pub(super) fn parallelism() -> usize {
     static N: std::sync::OnceLock<usize> = std::sync::OnceLock::new();
     *N.get_or_init(|| std::thread::available_parallelism().map_or(1, |n| (n.get() / 2).clamp(1, 4)))
 }
@@ -165,122 +165,3 @@ pub(super) fn worked() {
 }
 
 pub(super) const PACKED_MIN: usize = 16 << 10;
-
-pub(super) type Encoder = zstd::zstd_safe::CCtx<'static>;
-
-/// Compression contexts kept between fragments, by level. Setting one up
-/// starts a worker thread and allocates its window, which cost as much as
-/// compressing a small fragment. A reused context keeps its parameters, so it
-/// writes the same bytes as a new one.
-pub(super) static ENCODERS: std::sync::Mutex<Vec<(i32, Encoder)>> = std::sync::Mutex::new(Vec::new());
-
-fn zstd_error(code: usize) -> Error {
-    Error::Format(format!("zstd: {}", zstd::zstd_safe::get_error_name(code)))
-}
-
-/// The settings `zstd -c -<level> --zstd=wlog=20 --stream-size=<n>` compresses
-/// with: a checksum, the content size, a 1 MiB window, and the command line's
-/// multithreaded path, whose output differs from the single-threaded encoder's
-/// on large inputs. That path cuts a frame into jobs by size alone, so its
-/// output is the same for any number of workers; more workers only finish a
-/// frame of several jobs sooner.
-fn encoder(level: i32) -> Result<Encoder> {
-    use zstd::zstd_safe::CParameter;
-    let mut ctx =
-        Encoder::try_create().ok_or_else(|| Error::Format("zstd: no memory for an encoder".into()))?;
-    for p in [
-        CParameter::CompressionLevel(level),
-        CParameter::WindowLog(ZSTD_WINDOW_LOG),
-        CParameter::ContentSizeFlag(true),
-        CParameter::ChecksumFlag(true),
-        CParameter::NbWorkers(parallelism() as u32),
-    ] {
-        ctx.set_parameter(p).map_err(zstd_error)?;
-    }
-    Ok(ctx)
-}
-
-pub(super) fn encode(data: &[u8], level: i32) -> Result<Vec<u8>> {
-    use zstd::zstd_safe::{InBuffer, OutBuffer, ResetDirective, zstd_sys::ZSTD_EndDirective};
-    worked();
-    let pooled = {
-        let mut pool = ENCODERS.lock().unwrap_or_else(|e| e.into_inner());
-        pool.iter()
-            .position(|(l, _)| *l == level)
-            .map(|i| pool.swap_remove(i).1)
-    };
-    let mut ctx = match pooled {
-        Some(ctx) => ctx,
-        None => encoder(level)?,
-    };
-    ctx.reset(ResetDirective::SessionOnly).map_err(zstd_error)?;
-    ctx.set_pledged_src_size(Some(data.len() as u64))
-        .map_err(zstd_error)?;
-    let mut out: Vec<u8> = Vec::with_capacity(zstd::compress_bound(data.len()) + 64);
-    let mut input = InBuffer::around(data);
-    // The input goes in first and the frame ends after, as the command line
-    // does with a pledged size, so the bytes match the command line's.
-    while input.pos() < data.len() {
-        if out.capacity() - out.len() < (1 << 16) {
-            out.reserve(1 << 16);
-        }
-        let at = out.len();
-        ctx.compress_stream2(
-            &mut OutBuffer::around_pos(&mut out, at),
-            &mut input,
-            ZSTD_EndDirective::ZSTD_e_continue,
-        )
-        .map_err(zstd_error)?;
-    }
-    let mut end = InBuffer::around(&[]);
-    loop {
-        let at = out.len();
-        let left = ctx
-            .compress_stream2(
-                &mut OutBuffer::around_pos(&mut out, at),
-                &mut end,
-                ZSTD_EndDirective::ZSTD_e_end,
-            )
-            .map_err(zstd_error)?;
-        if left == 0 {
-            break;
-        }
-        out.reserve(left.max(1 << 16));
-    }
-    ENCODERS
-        .lock()
-        .unwrap_or_else(|e| e.into_inner())
-        .push((level, ctx));
-    Ok(out)
-}
-
-pub(super) fn compress_cached(dir: &Path, data: &[u8], level: i32) -> Result<Vec<u8>> {
-    let digest: String = Md5::digest(data).iter().map(|b| format!("{b:02x}")).collect();
-    let name = format!(
-        "{digest}-{}-{level}-w{ZSTD_WINDOW_LOG}-{}",
-        data.len(),
-        zstd::zstd_safe::version_number()
-    );
-    let path = dir.join(&name[..2]).join(&name);
-    if let Ok(raw) = std::fs::read(&path)
-        && zstd::decode_all(raw.as_slice()).is_ok_and(|back| back == data)
-    {
-        if let Ok(f) = std::fs::File::options().write(true).open(&path) {
-            f.set_modified(std::time::SystemTime::now()).ok();
-        }
-        return Ok(raw);
-    }
-    let raw = encode(data, level)?;
-    static TMP: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-    let n = TMP.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-    let tmp = path.with_extension(format!("{}-{n}.tmp", std::process::id()));
-    let stored = path
-        .parent()
-        .map_or(Ok(()), std::fs::create_dir_all)
-        .and_then(|()| std::fs::write(&tmp, &raw))
-        .and_then(|()| std::fs::rename(&tmp, &path));
-    if stored.is_err() {
-        std::fs::remove_file(&tmp).ok();
-    }
-    Ok(raw)
-}

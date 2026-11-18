@@ -24,7 +24,7 @@
 // through the emitter's setter (vtable +0x60), then posts as usual, so subtitles and the
 // end-of-line callbacks still run.
 
-namespace career_characters {
+namespace career::characters {
 
 namespace {
 

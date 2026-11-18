@@ -8,7 +8,7 @@
 #include "core/career/ops/driver_rows.hpp"
 #include "core/career/ops/tables.hpp"
 
-namespace career_ops::live {
+namespace career::ops::live {
 
 std::string quote(const std::string &s)
 {
@@ -90,11 +90,11 @@ bool read_lineup(const json::Value &j, Lineup &l, std::string &err)
 
 int row_index(const std::vector<Row> &rows, uint32_t stat, uint32_t domain)
 {
-    std::vector<career_ops::rows::Row> view;
+    std::vector<career::ops::rows::Row> view;
     view.reserve(rows.size());
     for (auto &r : rows)
         view.push_back({driver_of(r.rec), teamless(r.rec)});
-    return career_ops::rows::pick(view, stat, domain);
+    return career::ops::rows::pick(view, stat, domain);
 }
 
 int holder_of(const std::vector<Row> &rows, uint32_t team, int seat)
@@ -444,16 +444,16 @@ int execute(const Lineup &p, Report &rep, std::string &summary)
     return fin ? SWOFTY_ASSET_OK : SWOFTY_ASSET_INVALID;
 }
 
-std::vector<career_ops::plan::Row> plan_rows(const std::vector<Row> &rows)
+std::vector<career::ops::plan::Row> plan_rows(const std::vector<Row> &rows)
 {
-    std::vector<career_ops::plan::Row> out;
+    std::vector<career::ops::plan::Row> out;
     for (auto &r : rows)
         out.push_back({driver_of(r.rec), teamless(r.rec) ? -1 : static_cast<int>(stat_of(r.rec.team_stat_id)), position_of(r.rec),
                        has_car(r.rec) && !teamless(r.rec), human(r.rec)});
     return out;
 }
 
-bool read_season(const json::Value &s, career_ops::plan::Input &in, int &year, std::string &err)
+bool read_season(const json::Value &s, career::ops::plan::Input &in, int &year, std::string &err)
 {
     if (s.type != json::Value::Obj) {
         err = "\"season\" is not an object";
@@ -469,10 +469,10 @@ bool read_season(const json::Value &s, career_ops::plan::Input &in, int &year, s
             in.slot_teams = it->second;
     }
     for (auto &t : s["teams"].a) {
-        career_ops::plan::Team team;
+        career::ops::plan::Team team;
         team.slot = number(t["slot"], 0);
         const json::Value &seats = t["seats"];
-        for (size_t k = 0; k < career_ops::plan::kSeats && k < seats.a.size(); ++k) {
+        for (size_t k = 0; k < career::ops::plan::kSeats && k < seats.a.size(); ++k) {
             team.refs[k] = seats.a[k].str();
             team.drivers[k] = team.refs[k].empty() ? -1 : resolve_driver(team.refs[k]);
         }

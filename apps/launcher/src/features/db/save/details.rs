@@ -18,7 +18,7 @@ use super::category_picker;
 impl Shell {
     /// Name, version, author, category and description of the draft's addon.
     pub(crate) fn db_details(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(id) = self.db.draft.addon.clone() else {
+        let Some(id) = self.db.book.draft.addon.clone() else {
             return;
         };
         let pkg = match guarded(|| Package::open(&self.store, &id).map_err(text)) {
@@ -87,7 +87,7 @@ impl Shell {
                             });
                             if r.is_ok() {
                                 if !author.is_empty() {
-                                    s.db.draft.author = Some(author.clone());
+                                    s.db.book.draft.author = Some(author.clone());
                                 }
                                 s.db_quiet_reload(cx);
                                 s.reload(cx);
