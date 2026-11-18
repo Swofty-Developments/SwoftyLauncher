@@ -9,7 +9,9 @@
 
 #include <cstdint>
 #include <cstring>
+#include <mutex>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace runtime {
@@ -43,8 +45,17 @@ std::string hook_error(const safetyhook::MidHook::Error &e);
 // read (call [rax+0x28] / [rax+0x40] after 0x1445ceece). Both are found by byte scan; a remembered recordable whose
 // stored state is empty skips the apply and keeps its current state.
 //
-// A session of 24 cars or fewer, the size of My Team's stock grid, runs the game's code unchanged: the recorder there
-// writes CannedEventsSystem's state a few bytes past its holder, as it did before this guard.
+// A session of 24 cars or fewer, the size of My Team's stock grid, keeps the game's code for a state past the holder's
+// capacity that still fits its buffer: the recorder there writes CannedEventsSystem's state a few bytes past the
+// capacity, inside the buffer, as it did before this guard. Only a state larger than the buffer (the distance from the
+// current buffer [rsp+0xc0] to the previous one [rsp+0xe8]), whose copy would leave the holder's block, gets the larger
+// holder there. Track data does that: DragReductionSystem's state is every car's RearWing record (13 bytes, plus 5 per
+// detection point time the car holds, plus 2 per DRS zone) and 5 bytes of its own, and its 0x400 byte holder (0x480
+// buffer) fits 22 cars on at most 5 zones or 24 on 4. Le Mans (mod.lemans) has 7, so late on a lap the previous-buffer
+// copy writes up to 5 bytes into the next block, MarshalZoneMonitor's holder, whose vtable the walk then calls.
+//
+// The holder classes are looked up once, on a thread of their own when the guard installs, so the build scan (about
+// 50 ms on a build whose class vtables moved) does not land in a race frame.
 //
 // SWOFTY_REPLAY_GRID_GUARD=0 turns it off.
 
@@ -56,7 +67,8 @@ constexpr const char *SITE = "site_Ne_ReplayAfterRecord";
 bool offered = false, settled = false;
 runtime::replay_grid::Tally tally, grown_tally, read_tally;
 runtime::replay_grid::Emptied emptied;
-bool classes_checked = false, classes_ok = false;
+std::once_flag classes_once;
+bool classes_ok = false;
 safetyhook::MidHook h_full, h_delta;
 
 uint64_t &slot(SwoftyContext *c, uint32_t off)
@@ -140,12 +152,9 @@ void discover_classes()
     }
 }
 
-bool check_classes()
+void find_classes()
 {
     namespace rg = runtime::replay_grid;
-    if (classes_checked)
-        return classes_ok;
-    classes_checked = true;
     bool all = true;
     for (int i = 0; i < rg::CLASS_COUNT && all; i++) {
         rg::HolderClass k{};
@@ -160,30 +169,35 @@ bool check_classes()
                     classes.size());
     }
     classes_ok = classes.size() >= 5;
+}
+
+bool check_classes()
+{
+    std::call_once(classes_once, find_classes);
     return classes_ok;
 }
 
-bool grow_holder(SwoftyContext *c, uint64_t state)
+uint64_t grow_holder(SwoftyContext *c, uint64_t state)
 {
     namespace rg = runtime::replay_grid;
     uintptr_t old = slot(c, rg::HOLDER);
     if (!swofty::mem::object_like(old) || !check_classes())
-        return false;
+        return 0;
     uintptr_t vt = *reinterpret_cast<uintptr_t *>(old), base_addr = swofty::api->module_base();
     const int n = int(classes.size());
     int from = rg::class_of_rva(classes.data(), n, vt - base_addr), to = rg::grown_class(classes.data(), n, from, state);
     if (from < 0 || to < 0)
-        return false;
+        return 0;
     uintptr_t entry_slot = slot(c, rg::ENTRY_BASE) + slot(c, rg::ENTRY_INDEX) + 0x20, alloc = 0;
     if (!runtime::readable(reinterpret_cast<void *>(entry_slot - 8), 16) || *reinterpret_cast<uintptr_t *>(entry_slot) != old ||
         !swofty::mem::read(entry_slot - 8, alloc) || !swofty::mem::object_like(alloc))
-        return false;
+        return 0;
     const rg::HolderClass a = classes[from], b = classes[to];
     using Alloc = void *(*)(uintptr_t, uint64_t, uint64_t);
     auto alloc_fn = reinterpret_cast<Alloc>((*reinterpret_cast<uintptr_t **>(alloc))[3]);
     auto *fresh = static_cast<uint8_t *>(alloc_fn(alloc, rg::HEADER + 2 * uint64_t(b.buf), 0x10));
     if (!fresh)
-        return false;
+        return 0;
     auto *src = reinterpret_cast<const uint8_t *>(old);
     memset(fresh, 0, rg::HEADER + 2 * size_t(b.buf));
     memcpy(fresh, src, rg::HEADER);
@@ -202,9 +216,7 @@ bool grow_holder(SwoftyContext *c, uint64_t state)
         if (rg::capacity_of(slot(c, off)) == a.cap)
             slot(c, off) = b.cap;
     c->r12 = now;
-    if (grown_tally.skipped.fetch_add(1, std::memory_order_relaxed) < 64)
-        swofty::log("%s", rg::grown_line(rg::session_vehicles.load(), name_of(c->r13), state, a.cap, b.cap).c_str());
-    return true;
+    return b.cap;
 }
 
 uintptr_t recordable_of_entry(SwoftyContext *c)
@@ -219,18 +231,30 @@ uintptr_t recordable_of_entry(SwoftyContext *c)
 void after_record(SwoftyContext *c)
 {
     namespace rg = runtime::replay_grid;
-    if (!rg::guards(rg::session_vehicles.load()))
-        return;
+    const int64_t cars = rg::session_vehicles.load();
+    const bool raised = rg::guards(cars);
     uint64_t pos = slot(c, rg::STREAM_POS), base = slot(c, rg::STREAM_BASE);
     uint64_t cap = rg::capacity_of(slot(c, rg::HOLDER_CAPACITY));
-    if (!rg::outgrew(pos, base, cap))
+    uint64_t limit = raised ? cap : rg::room_of(slot(c, rg::CUR_SLOT), slot(c, rg::PREV_SLOT), cap);
+    if (!rg::outgrew(pos, base, limit))
         return;
-    if (grow_holder(c, pos - base))
+    const uint64_t state = pos - base;
+    if (uint64_t grown = grow_holder(c, state)) {
+        if (grown_tally.skipped.fetch_add(1, std::memory_order_relaxed) < 64) {
+            std::string name = name_of(c->r13);
+            swofty::log("%s", (raised ? rg::grown_line(cars, name, state, cap, grown)
+                                      : rg::room_line(cars, name, state, limit, grown))
+                                  .c_str());
+        }
         return;
+    }
     slot(c, rg::STREAM_POS) = base;
     emptied.add(recordable_of_entry(c));
-    if (tally.first())
-        swofty::log("%s", rg::line(rg::session_vehicles.load(), name_of(c->r13), pos - base, cap).c_str());
+    if (tally.first()) {
+        std::string name = name_of(c->r13);
+        swofty::log("%s",
+                    (raised ? rg::line(cars, name, state, cap) : rg::room_line(cars, name, state, limit, 0)).c_str());
+    }
 }
 
 constexpr uint32_t STORED_SIZE = 0xa8;
@@ -330,9 +354,12 @@ void replay_grid_guard_commit()
     if (!offered || settled)
         return;
     settled = true;
+    const bool armed = core_mixins_active(MIXIN);
     swofty::log("[replay] recorder grid guard %s",
-                core_mixins_active(MIXIN) ? "armed: a recordable whose state outgrows its holder gets a larger holder"
-                                          : "did not install (see the [core] lines)");
+                armed ? "armed: a recordable whose state outgrows its holder gets a larger holder"
+                      : "did not install (see the [core] lines)");
+    if (armed)
+        std::thread([] { check_classes(); }).detach();
 }
 
 }
