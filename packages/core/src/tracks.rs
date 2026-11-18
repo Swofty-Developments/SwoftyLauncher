@@ -511,7 +511,7 @@ pub const TRACK_LIST_ROOM: usize = 64;
 /// The track the game leaves out of those lists by name.
 const UNLISTED_TRACK: &str = "madrid";
 /// The fewest added tracks that can fill the lists: F1 25 ships 43 track rows.
-const FILL_FROM: usize = TRACK_LIST_ROOM - 43 + 1;
+pub const FILL_FROM: usize = TRACK_LIST_ROOM - 43 + 1;
 
 /// The tracks a database puts in the game's track lists: its tracks.Track rows with a TrackData row in any
 /// dataset, but madrid.

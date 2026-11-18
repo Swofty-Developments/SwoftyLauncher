@@ -80,6 +80,8 @@ pub struct Built {
     pub row_ids: BTreeMap<String, BTreeMap<String, i64>>,
     /// The track addons left out because the game's track lists are full.
     pub track_limit: Option<crate::tracks::TrackLimit>,
+    /// The build restored a saved build with the same hash instead of building again.
+    pub reused: bool,
 }
 
 /// The recorded originals of the last baseline read, by its path and when it
@@ -900,18 +902,54 @@ fn trackless_options(
     out
 }
 
+/// What [`track_limit`] found and how its check went.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct TrackLimitCheck {
+    /// The tracks the on addons add with `track.add`.
+    pub added: usize,
+    /// The track addons left out because the game's track lists are full.
+    pub limit: Option<crate::tracks::TrackLimit>,
+    /// How long reading the profile and counting its tracks took.
+    pub counting: std::time::Duration,
+    /// The check build's steps, folded by [`crate::fold_steps`]; empty when too few tracks are on for it to run.
+    pub steps: Vec<crate::Step>,
+    /// The check build restored a saved build with the same hash.
+    pub reused: bool,
+    /// The check build is saved, so a build of the same addons and game files restores it.
+    pub saved: bool,
+}
+
+impl TrackLimitCheck {
+    /// Whether a check build ran.
+    pub fn built(&self) -> bool {
+        !self.steps.is_empty()
+    }
+}
+
 /// A `checking` build gives addon build hooks a host that lists addons but
 /// cannot install, remove, turn on or move them.
 /// The track addons `profile` would lose to the game's full track lists, found by planning the build
-/// without installing it; none when too few tracks are on to fill them.
-pub fn track_limit(store: &Store, profile: &str, game: &Game) -> Result<Option<crate::tracks::TrackLimit>> {
+/// without installing it; none, and no build, when too few tracks are on to fill them.
+pub fn track_limit(store: &Store, profile: &str, game: &Game) -> Result<TrackLimitCheck> {
+    let started = std::time::Instant::now();
     let addons = store.registry()?.manifests();
     let p = store.profile(profile)?;
     let order = resolve(&p, &addons)?.order;
-    if !crate::tracks::may_fill_track_lists(crate::tracks::added_count(store, &order, &addons)) {
-        return Ok(None);
+    let mut check = TrackLimitCheck {
+        added: crate::tracks::added_count(store, &order, &addons),
+        counting: started.elapsed(),
+        ..TrackLimitCheck::default()
+    };
+    if !crate::tracks::may_fill_track_lists(check.added) {
+        return Ok(check);
     }
-    Ok(build_as(store, profile, game, true)?.track_limit)
+    let (built, steps) = crate::timed_steps("resolving the addons", || build_as(store, profile, game, true));
+    let built = built?;
+    check.steps = crate::fold_steps(steps, 3);
+    check.reused = built.reused;
+    check.saved = built.overlay.join(SAVED_FILE).is_file();
+    check.limit = built.track_limit;
+    Ok(check)
 }
 
 pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool) -> Result<Built> {
@@ -1684,6 +1722,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     let (lines_at, warnings_at) = (built.lines.len(), built.warnings.len());
     if let Some(saved) = Saved::load(&built.overlay, &built.buildhash).filter(|s| s.usable(store, game)) {
         saved.restore(&mut built)?;
+        built.reused = true;
         built.report.order = p.enabled().map(str::to_owned).collect();
         crate::write_json(&crate::conflicts::path(store, profile), &built.report)?;
         if !checking {
