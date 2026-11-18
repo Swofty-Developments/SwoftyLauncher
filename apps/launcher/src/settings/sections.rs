@@ -70,7 +70,7 @@ impl Shell {
         let update_off_addons = Switch::new("settings-update-off-addons")
             .checked(self.update_off_addons)
             .on_click(cx.listener(|this, on: &bool, window, cx| this.set_update_off_addons(*on, window, cx)));
-        let ad_privacy = self.ads_allowed().then(|| {
+        let ad_privacy = self.ads.on().then(|| {
             SettingRow::new(tr("Ad privacy choices"))
                 .description(tr("Choose how ads in the launcher may use your data"))
                 .control(

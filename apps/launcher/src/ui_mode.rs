@@ -12,6 +12,7 @@ impl Shell {
         crate::scale::apply(mode, self.ui_scale, window, cx);
         if !self.store.config().needs_onboarding() {
             window.focus(&self.root_focus, cx);
+            self.check_ad_consent(window, cx);
             return;
         }
         self.start_onboarding(mode, window, cx);

@@ -12,16 +12,20 @@ use gpui_kit::*;
 use swofty_core::session::{ONBOARDING_VERSION, UiMode};
 use swofty_i18n::tr;
 
+use crate::ads::Unit;
 use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use crate::shell::Shell;
 use crate::theme::Palette;
-use crate::time_trial::Load;
+use swofty_ads::Consent;
 
 const BUTTON_HEIGHT: f32 = 48.;
 
 /// How long the consent form may take to load before the player can move on without it.
 const CONSENT_WAIT: Duration = Duration::from_secs(25);
+
+/// How long the check at start waits for the consent page to say whether it needs an answer.
+const CONSENT_CHECK: Duration = Duration::from_secs(60);
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub(crate) enum Step {
@@ -51,8 +55,10 @@ impl Step {
 pub(crate) struct Onboarding {
     step: Step,
     mode: UiMode,
-    /// Only the ad privacy choices, opened again from Settings.
+    /// Only the ad privacy choices: from Settings, or at start when no answer is saved.
     privacy_only: bool,
+    /// Opens the form over a saved answer, so it can be changed.
+    reopen: bool,
     consent_since: Instant,
     pub(crate) focus: FocusHandle,
 }
@@ -63,6 +69,7 @@ impl Onboarding {
             step: Step::Welcome,
             mode,
             privacy_only: false,
+            reopen: false,
             consent_since: Instant::now(),
             focus: cx.focus_handle(),
         }
@@ -84,10 +91,67 @@ impl Shell {
         let mut wizard = Onboarding::new(self.ui_mode.unwrap_or_default(), cx);
         wizard.step = Step::Ads;
         wizard.privacy_only = true;
+        wizard.reopen = true;
         window.focus(&wizard.focus, cx);
         self.onboarding = Some(wizard);
         self.watch_consent(cx);
         cx.notify();
+    }
+
+    /// Loads the consent page out of sight at start and opens the ad privacy
+    /// choices when it still needs an answer, whoever the player is.
+    pub(crate) fn check_ad_consent(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if !self.ads.on() {
+            return;
+        }
+        self.consent_check = true;
+        let started = Instant::now();
+        cx.spawn_in(window, async move |this, cx| {
+            loop {
+                cx.background_executor().timer(Duration::from_millis(200)).await;
+                let checking = this
+                    .update_in(cx, |s, window, cx| s.consent_check_step(started, window, cx))
+                    .unwrap_or(false);
+                if !checking {
+                    break;
+                }
+            }
+        })
+        .detach();
+    }
+
+    fn consent_check_step(&mut self, started: Instant, window: &mut Window, cx: &mut Context<Self>) -> bool {
+        if self.onboarding.is_some() {
+            self.consent_check = false;
+            return false;
+        }
+        self.ads.poll_consent();
+        match self.ads.consent() {
+            Some(Consent::Asking) => {
+                self.consent_check = false;
+                let mut wizard = Onboarding::new(self.ui_mode.unwrap_or_default(), cx);
+                wizard.step = Step::Ads;
+                wizard.privacy_only = true;
+                window.focus(&wizard.focus, cx);
+                self.onboarding = Some(wizard);
+                self.watch_consent(cx);
+            }
+            None if started.elapsed() < CONSENT_CHECK => return true,
+            _ => {
+                self.consent_check = false;
+                self.ads.close(Unit::Consent);
+            }
+        }
+        cx.notify();
+        false
+    }
+
+    /// The consent page the check at start loads, out of sight.
+    pub(crate) fn consent_probe(&self, p: Palette) -> Option<impl IntoElement> {
+        if !self.consent_check || self.onboarding.is_some() {
+            return None;
+        }
+        terms::preload(&self.ads, p)
     }
 
     /// Reads the consent page's reports while onboarding is open.
@@ -116,9 +180,9 @@ impl Shell {
         .detach();
     }
 
-    /// Whether the ads step is part of onboarding: the player could see ads.
+    /// Whether the ads step is part of onboarding: for everyone while ads are on.
     fn asks_ad_consent(&self) -> bool {
-        self.ads.on() && !matches!(&self.support.me, Load::Ready(me) if !me.sees_ads())
+        self.ads.on()
     }
 
     fn onboarding_steps(&self) -> Vec<Step> {
@@ -247,7 +311,7 @@ impl Shell {
         let Some(wizard) = self.onboarding.take() else {
             return;
         };
-        self.ads.close(crate::ads::Unit::Consent);
+        self.ads.close(Unit::Consent);
         window.focus(&self.root_focus, cx);
         if wizard.privacy_only {
             cx.notify();
@@ -290,7 +354,7 @@ impl Shell {
             Step::Language => self.language_step(p, cx),
             Step::Display => self.display_step(wizard.mode, p, cx),
             Step::Terms => terms::eula(p),
-            Step::Ads => self.ads_step(wizard.privacy_only, p),
+            Step::Ads => self.ads_step(wizard.privacy_only, wizard.reopen, p),
             Step::Done => steps::done(p),
         };
         let stage = div()

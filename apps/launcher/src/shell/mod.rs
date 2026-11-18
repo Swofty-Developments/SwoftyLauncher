@@ -112,6 +112,8 @@ pub struct Shell {
     pub(crate) ui_scale_drag: Option<u16>,
     pub(crate) _ui_scale_changes: Subscription,
     pub(crate) onboarding: Option<crate::onboarding::Onboarding>,
+    /// The check at start for an unanswered ad consent form is running.
+    pub(crate) consent_check: bool,
     pub(crate) developer_mode: bool,
     /// `clear_old_session_logs` from config.json: opt-in, old session logs are cleared at start.
     pub(crate) clear_old_session_logs: bool,

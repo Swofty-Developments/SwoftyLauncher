@@ -184,6 +184,7 @@ impl Shell {
             ui_scale_drag: None,
             _ui_scale_changes,
             onboarding: None,
+            consent_check: false,
             developer_mode,
             clear_old_session_logs,
             time_trial_boards,
