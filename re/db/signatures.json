@@ -1623,6 +1623,79 @@
    "used_by": [
     "native/src/core/frontend/swofty_core.cpp"
    ]
+  },
+  {
+   "id": "game.pit_lane_assign_garage_indices",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 78 29 94 24 80 00 00 00 C5 78 29 4C 24 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 89 CE 48 8D 81 30 09 00 00",
+   "match": "0x1434b5110",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1434b5110",
+   "kind": "func_start",
+   "names": [
+    "Game_PitLane_AssignGarageIndices"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-18",
+     "by": "re-bindings",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.pit_lane_get_distance_to_box",
+   "section": ".xtls",
+   "pattern": "56 57 55 53 48 83 EC 68 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 C5 C8 57 F6",
+   "match": "0x1434b4d30",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1434b4d30",
+   "kind": "func_start",
+   "names": [
+    "Game_PitLane_GetDistanceToBox"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-18",
+     "by": "re-bindings",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.pit_lane_get_garage_pose_thunk",
+   "section": ".xtls",
+   "pattern": "45 89 C8 E8 ?? ?? ?? ?? 40 F6 C5 01",
+   "match": "0x1434c35a8",
+   "anchor": "0x4",
+   "resolve": {
+    "kind": "rel32",
+    "insn": "0x3"
+   },
+   "target": "0x1434c01a0",
+   "kind": "call",
+   "names": [
+    "Game_PitLane_GetGaragePose_Thunk"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-18",
+     "by": "re-bindings",
+     "how": "static"
+    }
+   ],
+   "used_by": []
   }
  ]
 }
