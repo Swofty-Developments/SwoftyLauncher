@@ -104,6 +104,9 @@ src/core/runtime/sdk.cpp
 src/core/diagnostics/perf.cpp
 src/core/diagnostics/perf/vq.cpp
 src/core/diagnostics/perf/sysmem.cpp
+src/core/diagnostics/perf/probes.cpp
+src/core/diagnostics/perf/frames.cpp
+src/core/diagnostics/perf/report.cpp
 src/core/assets/lang_override.cpp
 src/core/career/characters.cpp
 src/core/career/career_wizard.cpp

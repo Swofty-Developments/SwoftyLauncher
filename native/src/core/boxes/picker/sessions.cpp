@@ -413,7 +413,7 @@ void *setup_list_entry(void *out, void *allocator)
 {
     uintptr_t slot = swofty::api->resolve("g_Ne_DefaultAllocator"), heap = 0;
     if (allocator && on_this_stack(allocator) && slot && mem::read(slot, heap) && heap) {
-        if (setup_list_guard.swaps++ < LOG_FIRST)
+        if (setup_list_guard.swap_lines.note())
             swofty::log("[era] era press: the game mode's setup mode list grows on the heap, not in the 256-byte "
                         "stack arena that holds 9");
         return setup_list_guard.orig(out, reinterpret_cast<void *>(heap));

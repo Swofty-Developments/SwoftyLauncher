@@ -1,3 +1,4 @@
+#include "core/guards/skips.hpp"
 #include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/loader/mixin_gate.hpp"
 #include "core/runtime/runtime.hpp"
@@ -144,7 +145,7 @@ Command *command_orig;
 std::atomic<TileList *> last_list{nullptr};
 std::mutex row_lock;
 Row row;
-uint32_t logged_rows, logged_rowless, logged_refused, logged_other;
+constinit swofty_core::guards::LogFirst<LOG_FIRST> row_lines, rowless_lines, refused_lines, other_lines;
 std::mutex pressed_lock;
 std::string pressed_group;
 bool pressed_any;
@@ -581,7 +582,7 @@ void site_entry(SwoftyContext *c)
     void *vm = owner_of(list, c);
     uintptr_t vt = 0;
     if (!content_select(list, vm, vt)) {
-        if (logged_other++ < LOG_FIRST)
+        if (other_lines.note())
             swofty::log("[career] tile list of another screen (view model %p, vtable 0x%llx, %zu tile(s)) left as is",
                         vm, (unsigned long long)vt,
                         list->items_begin ? size_t(list->items_end - list->items_begin) : size_t(0));
@@ -615,10 +616,10 @@ void site_entry(SwoftyContext *c)
         std::lock_guard<std::mutex> g(row_lock);
         row = addon ? Row{list, vm, addon, stock, tiles, career} : Row{};
     }
-    if (addon && logged_rows++ < LOG_FIRST)
+    if (addon && row_lines.note())
         swofty::log("[career] %s content select: %zu stock tile(s), %zu content tile(s) in the Addons row",
                     content::career_name(career), stock, tiles);
-    if (!addon && tiles && logged_rowless++ < LOG_FIRST)
+    if (!addon && tiles && rowless_lines.note())
         swofty::log("[career] %s content select: no Addons row (%s); %zu content tile(s) follow the stock tiles",
                     content::career_name(career),
                     !b.list_child ? "Vm_GetOrCreate_ListChild does not resolve"
@@ -646,7 +647,7 @@ void command_entry(void *vm, void *cmd, void *data)
                      : nullptr;
     size_t items = list && list->items_begin ? size_t(list->items_end - list->items_begin) : 0;
     if (!list || list != r.list || vm != r.vm || !r.tiles || items != r.stock + r.tiles) {
-        if (logged_refused++ < LOG_FIRST)
+        if (refused_lines.note())
             swofty::log("[career] Addons row command 0x%08x ignored: the content select was rebuilt or is not the one "
                         "the row was built for (%zu items, row built with %zu + %zu)",
                         *name, items, r.stock, r.tiles);
