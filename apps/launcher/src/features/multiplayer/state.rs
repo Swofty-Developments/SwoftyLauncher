@@ -13,7 +13,7 @@ use swofty_core::store::Store;
 use swofty_i18n::tr;
 
 use crate::shell::Shell;
-use crate::shell::host::{Host, Hosted};
+use crate::shell::host::{Host, Hosted, reports_nothing};
 
 pub(super) const TICK: Duration = Duration::from_millis(500);
 pub(super) const GAME_EVERY: Duration = Duration::from_secs(2);
@@ -237,7 +237,5 @@ impl Host<Multiplayer> for Shell {
         )
     }
 
-    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
-        match change {}
-    }
+    reports_nothing!();
 }

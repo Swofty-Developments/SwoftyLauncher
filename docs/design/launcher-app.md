@@ -92,7 +92,17 @@ fn a_saved_bio_reloads_and_a_failed_one_says_why() {
 }
 ```
 
-A state with nothing to report sets `type Change = Infallible`, and its `changed` is `match change {}`.
+A state with nothing to report sets `type Change = Infallible`, and its `Host` impl writes `changed` with the macro from `shell/host.rs`:
+
+```rust
+impl Host<News> for Shell {
+    fn split(&mut self) -> (&mut News, NewsNeeds<'_>) {
+        (&mut self.news, NewsNeeds { root: &self.store.root })
+    }
+
+    reports_nothing!();
+}
+```
 
 A state whose constructor needs a window keeps the fields its tests drive in a plain `Default` struct inside it, and the async method calls that struct's methods:
 

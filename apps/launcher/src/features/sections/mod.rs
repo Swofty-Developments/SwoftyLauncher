@@ -19,7 +19,7 @@ use swofty_i18n::trf;
 use crate::services::game::Install;
 use crate::services::library::{Library, SectionItem};
 use crate::shell::Shell;
-use crate::shell::host::{self as shell_host, Hosted};
+use crate::shell::host::{self as shell_host, Hosted, reports_nothing};
 use crate::ui::theme::Palette;
 use crate::ui::{badge, monogram};
 
@@ -186,9 +186,7 @@ impl shell_host::Host<AddonViews> for Shell {
         )
     }
 
-    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
-        match change {}
-    }
+    reports_nothing!();
 }
 
 impl AddonViews {
