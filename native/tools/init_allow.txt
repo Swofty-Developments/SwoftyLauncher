@@ -34,6 +34,7 @@ src/core/testing/direct_start_tt.cpp: const bool registered_at_load = (runtime::
 
 # Default-constructed hooks, containers, mutexes and function objects: their constructors set their own members and
 # read nothing else. clang reports them only as needing a destructor.
+type: CategoryHooks
 type: safetyhook::InlineHook
 type: safetyhook::MidHook
 type: std::deque
