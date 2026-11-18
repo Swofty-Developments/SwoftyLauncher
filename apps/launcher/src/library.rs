@@ -74,6 +74,10 @@ pub struct AddonItem {
     /// Built from the DB Editor (see [`swofty_core::dbedit::package::is_package`]).
     pub package: bool,
     pub source: Source,
+    /// Where it was installed from, which decides whether the play bar updates it.
+    pub from: swofty_core::catalog::source::Source,
+    /// The id it asked for, when the launcher installed it under another one.
+    pub asked: Option<String>,
     /// Why builds leave out each track package it adds that can't be used.
     pub left_out: Vec<String>,
 }
@@ -343,6 +347,8 @@ impl Library {
                         && swofty_core::tracks::is_track_addon(&store.addons_dir().join(&m.id), m),
                     package,
                     source,
+                    from: swofty_core::catalog::source::source(store, m),
+                    asked: swofty_core::catalog::source::local_install(store, &m.id).and_then(|l| l.asked),
                     left_out: match m.is_builtin() {
                         true => Vec::new(),
                         false => {
@@ -491,6 +497,8 @@ mod tests {
             track,
             package: false,
             source: Source::Installed,
+            from: swofty_core::catalog::source::Source::Registry,
+            asked: None,
             left_out: Vec::new(),
         }
     }

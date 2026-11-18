@@ -1341,5 +1341,17 @@
   "Open the full picture in your browser": "在浏览器中打开完整图片",
   "Play the video in your browser": "在浏览器中播放视频",
   "Watch on {site}": "在 {site} 上观看",
-  "Watch in your browser": "在浏览器中观看"
+  "Watch in your browser": "在浏览器中观看",
+  "Skip this version": "跳过此版本",
+  "Skip these versions": "跳过这些版本",
+  "Could not skip the addon updates": "无法跳过插件更新",
+  "This import has the same id as {name} in the Addon Browser; it is kept separate. Remove the import on the Addons page to install {name} from here.": "此导入与插件浏览器中的 {name} ID 相同；它会单独保留。在插件页面移除该导入后即可从这里安装 {name}。",
+  "Installed v{from} · Update to v{to}": "已安装 v{from} · 更新到 v{to}",
+  "Your import v{version} has this id": "你的导入 v{version} 使用了此 ID",
+  "Your import has this id": "你的导入使用了此 ID",
+  "This import has the same id as {name} in the Addon Browser; it is kept separate.": "此导入与插件浏览器中的 {name} ID 相同；它会单独保留。",
+  "This copy came from a file and has the same id as {name} in the Addon Browser, so the play bar doesn't update it.": "此副本来自文件，且与插件浏览器中的 {name} ID 相同，因此游戏栏不会更新它。",
+  "This import asked for the id {asked}, which {name} in the Addon Browser has; it is kept separate as {id}.": "此导入请求的 ID {asked} 已被插件浏览器中的 {name} 使用；它以 {id} 单独保留。",
+  "{v} is available. You skipped it in the play bar; update it from its Addon Browser page.": "{v} 已推出。你在游戏栏中跳过了它；请在它的插件浏览器页面中更新。",
+  "Kept separate": "单独保留"
 }

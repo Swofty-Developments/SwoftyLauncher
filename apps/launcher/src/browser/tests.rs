@@ -178,9 +178,9 @@ fn update(id: &str, to: &str) -> Update {
 fn only_addons_that_are_on_hold_up_play() {
     let updates = [update("on", "1.1.0"), update("off", "1.1.0")];
     let on = HashSet::from(["on"]);
-    let due = due_updates(&updates, &on, &BTreeMap::new());
+    let due = due_updates(&updates, &on, &BTreeMap::new(), &BTreeMap::new());
     assert_eq!(due.iter().map(|u| u.id.as_str()).collect::<Vec<_>>(), ["on"]);
-    assert!(due_updates(&updates, &HashSet::new(), &BTreeMap::new()).is_empty());
+    assert!(due_updates(&updates, &HashSet::new(), &BTreeMap::new(), &BTreeMap::new()).is_empty());
 }
 
 fn installed(manifest: &str, enabled: bool) -> AddonItem {
@@ -192,6 +192,8 @@ fn installed(manifest: &str, enabled: bool) -> AddonItem {
         track: false,
         package: false,
         source: Source::Installed,
+        from: swofty_core::catalog::source::Source::Registry,
+        asked: None,
         left_out: Vec::new(),
     }
 }
@@ -214,14 +216,14 @@ fn a_shader_only_addon_takes_updates_without_a_switch() {
         .map(|a| a.manifest.id.as_str())
         .collect();
     let updates = [update("t.look", "1.1.0"), update("t.plain", "1.1.0")];
-    let due = due_updates(&updates, &on, &BTreeMap::new());
+    let due = due_updates(&updates, &on, &BTreeMap::new(), &BTreeMap::new());
     assert_eq!(due.iter().map(|u| u.id.as_str()).collect::<Vec<_>>(), ["t.look"]);
 }
 
 fn due_ids(addons: &[AddonItem], vanilla: bool, off_too: bool) -> Vec<String> {
     let updates = [update("t.on", "1.1.0"), update("t.off", "1.1.0")];
     let on = updated_addons(addons, vanilla, off_too);
-    due_updates(&updates, &on, &BTreeMap::new())
+    due_updates(&updates, &on, &BTreeMap::new(), &BTreeMap::new())
         .iter()
         .map(|u| u.id.clone())
         .collect()
@@ -276,9 +278,60 @@ fn an_update_that_failed_at_that_version_is_skipped() {
     let on = HashSet::from(["on"]);
     let mut held = BTreeMap::new();
     held.insert("on".to_owned(), (semver::Version::new(1, 1, 0), "x".to_owned()));
-    assert!(due_updates(&updates, &on, &held).is_empty());
+    assert!(due_updates(&updates, &on, &held, &BTreeMap::new()).is_empty());
     held.insert("on".to_owned(), (semver::Version::new(1, 0, 5), "x".to_owned()));
-    assert_eq!(due_updates(&updates, &on, &held).len(), 1);
+    assert_eq!(due_updates(&updates, &on, &held, &BTreeMap::new()).len(), 1);
+}
+
+#[test]
+fn a_skipped_version_gives_play_back_until_the_next_one() {
+    let updates = [update("on", "1.1.0"), update("other", "2.0.0")];
+    let on = HashSet::from(["on", "other"]);
+    let mut skipped = BTreeMap::new();
+    skipped.insert("on".to_owned(), semver::Version::new(1, 1, 0));
+    let due = due_updates(&updates, &on, &BTreeMap::new(), &skipped);
+    assert_eq!(due.iter().map(|u| u.id.as_str()).collect::<Vec<_>>(), ["other"]);
+    let newer = [update("on", "1.2.0")];
+    assert_eq!(due_updates(&newer, &on, &BTreeMap::new(), &skipped).len(), 1);
+}
+
+#[test]
+fn an_import_or_a_skipped_version_is_updated_from_the_addon_browser_page() {
+    use super::model::Offer;
+    use super::offer::{browser_offer, standing};
+    let listed = listed_addon(serde_json::json!([
+        {"version": "1.1.0", "size": 9, "sha256": "", "url": ""}
+    ]));
+    let v = |s: &str| semver::Version::parse(s).unwrap();
+    let standing = || {
+        standing(
+            listed.offered(&swofty_core::update::current_version()),
+            Some(v("1.0.0")),
+            || false,
+        )
+    };
+    use swofty_core::catalog::source::Source as From;
+    assert_eq!(
+        browser_offer(standing(), Some((From::Registry, v("1.0.0"))), false),
+        Offer::Update(v("1.0.0"), v("1.1.0"))
+    );
+    assert_eq!(
+        browser_offer(standing(), Some((From::Unrecorded, v("1.0.0"))), false),
+        Offer::Update(v("1.0.0"), v("1.1.0"))
+    );
+    assert_eq!(
+        browser_offer(standing(), Some((From::Registry, v("1.0.0"))), true),
+        Offer::UpdateHere(v("1.0.0"), v("1.1.0"))
+    );
+    assert_eq!(
+        browser_offer(standing(), Some((From::Local, v("1.0.0"))), false),
+        Offer::UpdateHere(v("1.0.0"), v("1.1.0"))
+    );
+    assert_eq!(
+        browser_offer(standing(), Some((From::Made, v("1.0.0"))), false),
+        Offer::Separate(v("1.0.0"))
+    );
+    assert_eq!(browser_offer(Offer::Install, None, false), Offer::Install);
 }
 
 fn tested_on(platforms: serde_json::Value) -> Addon {

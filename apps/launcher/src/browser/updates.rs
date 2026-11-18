@@ -17,16 +17,19 @@ use crate::scale::px;
 use crate::shell::{PlayState, Shell};
 use crate::theme::Palette;
 
-/// The updates for addons in `on` that haven't failed at the version offered in `held`.
+/// The updates for addons in `on` that haven't failed at the version offered in `held`, and whose
+/// version the player didn't skip.
 pub(super) fn due_updates<'a>(
     updates: &'a [Update],
     on: &HashSet<&str>,
     held: &BTreeMap<String, (semver::Version, String)>,
+    skipped: &BTreeMap<String, semver::Version>,
 ) -> Vec<&'a Update> {
     updates
         .iter()
         .filter(|u| on.contains(u.id.as_str()))
         .filter(|u| held.get(&u.id).is_none_or(|(v, _)| *v != u.to.version))
+        .filter(|u| skipped.get(&u.id) != Some(&u.to.version))
         .collect()
 }
 
@@ -81,10 +84,47 @@ pub(super) fn held_failure(error: &str) -> bool {
 impl Shell {
     /// The addon updates the play bar offers: every outdated registry addon that's on in the active
     /// profile or shader-only, or every installed one with Update turned-off addons on, except the
-    /// ones that failed at this version.
+    /// ones that failed at this version and the versions skipped.
     pub(crate) fn addon_updates(&self) -> Vec<&Update> {
         let on = updated_addons(&self.library.addons, self.vanilla(), self.update_off_addons);
-        due_updates(&self.browser.updates, &on, &self.browser.held)
+        due_updates(
+            &self.browser.updates,
+            &on,
+            &self.browser.held,
+            &self.browser.skipped,
+        )
+    }
+
+    /// Whether the play bar leaves the update of `id` out because its version was skipped.
+    pub(crate) fn update_skipped(&self, id: &str) -> bool {
+        self.catalog_update(id)
+            .is_some_and(|u| self.browser.skipped.get(id) == Some(&u.to.version))
+    }
+
+    /// Skips the versions the play bar offers, so Play comes back; the next version of each
+    /// is offered again.
+    pub(super) fn skip_addon_updates(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let versions: Vec<(String, semver::Version)> = self
+            .addon_updates()
+            .into_iter()
+            .map(|u| (u.id.clone(), u.to.version.clone()))
+            .collect();
+        if versions.is_empty() {
+            return;
+        }
+        let names: Vec<String> = versions.iter().map(|(id, v)| format!("{id} {v}")).collect();
+        match catalog::source::skip(&self.store.root, versions) {
+            Ok(all) => {
+                let names = names.join(", ");
+                catalog::log(&self.store.root, &format!("skipped updates: {names}"));
+                self.browser.skipped = all;
+            }
+            Err(e) => window.notify(
+                Notification::error(e.to_string()).title(tr("Could not skip the addon updates")),
+                cx,
+            ),
+        }
+        cx.notify();
     }
 
     pub(super) fn updating_addons(&self) -> bool {
@@ -307,10 +347,22 @@ impl Shell {
                 .iter()
                 .map(|u| format!("{} {} → {}", u.name, u.installed, u.to.version))
                 .collect();
-            return Some(row.child(dot(p.accent)).child(text(trf!(
-                "Addon updates: {changes}.",
-                changes = changes.join(", ")
-            ))));
+            let skip = match due.len() {
+                1 => tr("Skip this version"),
+                _ => tr("Skip these versions"),
+            };
+            return Some(
+                row.child(dot(p.accent))
+                    .child(text(trf!(
+                        "Addon updates: {changes}.",
+                        changes = changes.join(", ")
+                    )))
+                    .child(
+                        link("addon-updates-skip", skip, p)
+                            .flex_shrink_0()
+                            .on_click(cx.listener(|this, _, window, cx| this.skip_addon_updates(window, cx))),
+                    ),
+            );
         }
         let failed: Vec<String> = self
             .browser

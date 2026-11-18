@@ -7,6 +7,7 @@ use std::time::{Duration, UNIX_EPOCH};
 use swofty_core::conflicts::{self};
 use swofty_core::folders::Entry;
 use swofty_core::manifest::MANIFEST_FILE;
+use swofty_i18n::trf;
 
 impl Shell {
     pub(super) fn addon_on(&self, m: &AddonItem) -> bool {
@@ -16,6 +17,34 @@ impl Shell {
     pub(super) fn update_ready(&self, m: &AddonItem) -> bool {
         (m.manifest.id == swofty_core::managed::ID && self.updates.plan().addon.is_some())
             || self.catalog_update(&m.manifest.id).is_some()
+    }
+
+    /// Why the play bar leaves an import or a file copy out when an Addon Browser addon has its id,
+    /// or the id it asked for.
+    pub(super) fn kept_separate(&self, m: &AddonItem) -> Option<String> {
+        use swofty_core::catalog::source::Source as From;
+        let id = m.manifest.id.as_str();
+        let asked = m
+            .asked
+            .as_deref()
+            .and_then(|a| self.browser.find(a).map(|x| (a, x)));
+        match (m.from, self.browser.find(id), asked) {
+            (From::Made, Some(a), _) => Some(trf!(
+                "This import has the same id as {name} in the Addon Browser; it is kept separate.",
+                name = a.name
+            )),
+            (From::Local, Some(a), _) => Some(trf!(
+                "This copy came from a file and has the same id as {name} in the Addon Browser, so the play bar doesn't update it.",
+                name = a.name
+            )),
+            (From::Made, None, Some((asked, a))) => Some(trf!(
+                "This import asked for the id {asked}, which {name} in the Addon Browser has; it is kept separate as {id}.",
+                asked = asked,
+                name = a.name,
+                id = id
+            )),
+            _ => None,
+        }
     }
 
     pub(super) fn changed_since(&self, id: &str, built_at: f64) -> bool {

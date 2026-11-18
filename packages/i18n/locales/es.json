@@ -1341,5 +1341,17 @@
   "Open the full picture in your browser": "Abrir la imagen completa en el navegador",
   "Play the video in your browser": "Reproducir el vídeo en el navegador",
   "Watch on {site}": "Ver en {site}",
-  "Watch in your browser": "Ver en el navegador"
+  "Watch in your browser": "Ver en el navegador",
+  "Skip this version": "Omitir esta versión",
+  "Skip these versions": "Omitir estas versiones",
+  "Could not skip the addon updates": "No se pudieron omitir las actualizaciones de complementos",
+  "This import has the same id as {name} in the Addon Browser; it is kept separate. Remove the import on the Addons page to install {name} from here.": "Esta importación tiene el mismo id que {name} en el Explorador de complementos; se mantiene aparte. Quita la importación en la página Complementos para instalar {name} desde aquí.",
+  "Installed v{from} · Update to v{to}": "Instalada la v{from} · Actualizar a la v{to}",
+  "Your import v{version} has this id": "Tu importación v{version} tiene este id",
+  "Your import has this id": "Tu importación tiene este id",
+  "This import has the same id as {name} in the Addon Browser; it is kept separate.": "Esta importación tiene el mismo id que {name} en el Explorador de complementos; se mantiene aparte.",
+  "This copy came from a file and has the same id as {name} in the Addon Browser, so the play bar doesn't update it.": "Esta copia viene de un archivo y tiene el mismo id que {name} en el Explorador de complementos, así que la barra de Jugar no la actualiza.",
+  "This import asked for the id {asked}, which {name} in the Addon Browser has; it is kept separate as {id}.": "Esta importación pidió el id {asked}, que tiene {name} en el Explorador de complementos; se mantiene aparte como {id}.",
+  "{v} is available. You skipped it in the play bar; update it from its Addon Browser page.": "{v} está disponible. La omitiste en la barra de Jugar; actualízala desde su página del Explorador de complementos.",
+  "Kept separate": "Se mantiene aparte"
 }

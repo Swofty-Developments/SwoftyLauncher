@@ -358,11 +358,16 @@ impl Shell {
             )
             .when(self.update_ready(m), |d| {
                 let to = self.catalog_update(&id).map(|u| format!("v{}", u.to.version));
+                let skipped = self.update_skipped(&id);
                 d.child(
                     pill(IconName::CircleArrowUp, to.clone().unwrap_or_default(), p.accent)
                         .id(SharedString::from(format!("update-{id}")))
                         .tooltip(move |window, cx| {
                             Tooltip::new(match &to {
+                                Some(v) if skipped => trf!(
+                                    "{v} is available. You skipped it in the play bar; update it from its Addon Browser page.",
+                                    v = v
+                                ),
                                 Some(v) => {
                                     trf!("{v} is available. Update addons from the play bar.", v = v)
                                 }
@@ -370,6 +375,13 @@ impl Shell {
                             })
                             .build(window, cx)
                         }),
+                )
+            })
+            .when_some(self.kept_separate(m), |d, why| {
+                d.child(
+                    pill(IconName::TriangleAlert, tr("Kept separate"), p.warning)
+                        .id(SharedString::from(format!("separate-{id}")))
+                        .tooltip(move |window, cx| Tooltip::new(why.clone()).build(window, cx)),
                 )
             })
             .when(!m.left_out.is_empty(), |d| {

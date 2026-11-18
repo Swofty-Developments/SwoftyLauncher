@@ -1244,9 +1244,12 @@ impl Shell {
                 .label(progress.short())
                 .disabled(true)
                 .into_any_element(),
-            Offer::Installed(_) | Offer::Update(..) => {
+            Offer::Installed(_) | Offer::Update(..) | Offer::UpdateHere(..) => {
                 tag(tr("Installed"), p).text_color(p.success).into_any_element()
             }
+            Offer::Separate(_) => tag(tr("Your import has this id"), p)
+                .text_color(p.warning)
+                .into_any_element(),
             Offer::TooOld => tag(tr("Needs a newer launcher"), p).into_any_element(),
             Offer::Blocked => tag(tr("Missing requirements"), p)
                 .text_color(p.warning)
