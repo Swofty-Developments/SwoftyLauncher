@@ -10,7 +10,7 @@
 #include <mutex>
 #include <string>
 
-namespace runtime::main_menu {
+namespace frontend::main_menu {
 
 class Navigation {
 public:

@@ -33,7 +33,7 @@ use std::rc::Rc;
 use swofty_addon::asset::{Root, Source};
 use swofty_addon::ops::ErpOp;
 use swofty_formats::animclip;
-use swofty_formats::erp::{Erp, ErpFile, Resource};
+use swofty_formats::erp::{Erp, ErpFile, Packer, Resource};
 use swofty_formats::pkg::Pkg;
 
 use dials::DialFacts;
@@ -510,12 +510,17 @@ fn first(v: Vec<Vec<u8>>, what: &str) -> Result<Vec<u8>> {
 
 /// Composes `inputs` against the stock files into the overlay archives.
 pub fn compose(stock: &dyn Stock, inputs: &[Input]) -> Result<Output> {
-    compose_with(stock, inputs, None)
+    compose_with(stock, inputs, None, &Packer::default())
 }
 
 /// [`compose`] with `base` applied to the template the composer starts from. The composer is the last
 /// step: its nodes go on top of `base`'s edit and of whatever `stock` reads.
-pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBase>) -> Result<Output> {
+pub fn compose_with(
+    stock: &dyn Stock,
+    inputs: &[Input],
+    base: Option<TemplateBase>,
+    packer: &Packer,
+) -> Result<Output> {
     let mut out = Output::default();
     if inputs.is_empty() {
         return Ok(out);
@@ -843,7 +848,7 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
         out.archives.push(Built {
             file: "hud_scene.erp".into(),
             erps: dials::SCENE_ERPS.iter().map(|s| (*s).to_owned()).collect(),
-            bytes: archive(stock, all)?,
+            bytes: archive(stock, all, packer)?,
         });
     }
     if !target_scenes.is_empty() {
@@ -860,7 +865,7 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
         out.archives.push(Built {
             file: "hud_target_scene.erp".into(),
             erps,
-            bytes: archive(stock, target_scenes)?,
+            bytes: archive(stock, target_scenes, packer)?,
         });
     }
     out.archives.push(Built {
@@ -869,6 +874,7 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
         bytes: archive(
             stock,
             vec![(dials::TEMPLATE.to_owned(), "UIDF", vec![template.to_bytes()?])],
+            packer,
         )?,
     });
     if spectator_used {
@@ -877,10 +883,11 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
         out.archives.push(Built {
             file: "hud_spectator.erp".into(),
             erps: dials::SPECTATOR_ERPS.iter().map(|s| (*s).to_owned()).collect(),
-            bytes: archive(stock, res)?,
+            bytes: archive(stock, res, packer)?,
         });
     }
-    out.archives.extend(screen_build::archives(stock, &screens_out)?);
+    out.archives
+        .extend(screen_build::archives(stock, &screens_out, packer)?);
     cover_carriers(stock, &mut out.archives, &mut out.lines)?;
     Ok(out)
 }
@@ -1008,7 +1015,7 @@ pub fn clip_resources(
 }
 
 /// A ready archive of `resources`, each laid out like the stock resource it is made after.
-pub fn archive(stock: &dyn Stock, resources: Vec<Res>) -> Result<Vec<u8>> {
+pub fn archive(stock: &dyn Stock, resources: Vec<Res>, packer: &Packer) -> Result<Vec<u8>> {
     let (header, version) = stock.header()?;
     let mut out = Vec::with_capacity(resources.len());
     let mut seen = std::collections::BTreeSet::new();
@@ -1017,7 +1024,7 @@ pub fn archive(stock: &dyn Stock, resources: Vec<Res>) -> Result<Vec<u8>> {
             return Err(err(format!("the resource {name} is made twice")));
         }
         let template = stock.layout(&name, kind, frags.len())?;
-        out.push(Resource::like(&name, &template, &frags)?);
+        out.push(Resource::like_with(packer, &name, &template, &frags)?);
     }
     let mut erp = Erp {
         header,
@@ -1053,6 +1060,58 @@ pub fn inputs_of(addon: &str, dir: &Path, file: &str) -> Result<Vec<Input>> {
 mod tests {
     use super::*;
     use crate::ui::node::{NodeExt, ObjExt};
+
+    /// A stock that lays every resource out with zstd fragments.
+    struct ZstdLayout;
+
+    impl Stock for ZstdLayout {
+        fn read(&self, erp: &str, resource: &str) -> Result<Vec<Vec<u8>>> {
+            Err(err(format!("no stock {resource} in {erp}")))
+        }
+
+        fn layout(&self, name: &str, kind: &str, fragments: usize) -> Result<Resource> {
+            let mut r = crate::erp::pack::frame_cache::zstd_resource(name, kind, b"");
+            r.fragments = vec![r.fragments[0].clone(); fragments];
+            Ok(r)
+        }
+
+        fn header(&self) -> Result<([u8; swofty_formats::erp::HEADER_LEN], u32)> {
+            let mut header = [0u8; swofty_formats::erp::HEADER_LEN];
+            header[..4].copy_from_slice(swofty_formats::erp::MAGIC);
+            header[4..8].copy_from_slice(&3u32.to_le_bytes());
+            Ok((header, 3))
+        }
+
+        fn carriers(&self, _: &[&str]) -> Result<BTreeMap<String, Vec<String>>> {
+            Ok(BTreeMap::new())
+        }
+    }
+
+    #[test]
+    fn a_second_hud_archive_takes_its_frames_from_the_cache() {
+        use crate::erp::pack::frame_cache;
+        let scene: Vec<u8> = (0..24u32 << 10)
+            .map(|i| (i % 251) as u8 ^ (i / 1021) as u8)
+            .collect();
+        let resources = || {
+            vec![(
+                "eaid://ui_package/hud/a.uidf".to_owned(),
+                "UIDF",
+                vec![scene.clone()],
+            )]
+        };
+        let dir = std::env::temp_dir().join(format!("swofty-hud-frames-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        let packer = Packer::cached(&dir);
+        let first = archive(&ZstdLayout, resources(), &packer).unwrap();
+        assert_eq!(frame_cache::marked_in(&first), 0);
+        assert_eq!(frame_cache::mark(&dir), 1);
+        let second = archive(&ZstdLayout, resources(), &packer).unwrap();
+        assert_eq!(frame_cache::marked_in(&second), 1);
+        let erp = Erp::parse(&second).unwrap();
+        assert_eq!(erp.resources[0].fragments[0].data().unwrap(), scene);
+        std::fs::remove_dir_all(&dir).ok();
+    }
 
     fn game() -> Option<GameStock> {
         let Some(dir) = std::env::var_os("F1_25_DIR") else {

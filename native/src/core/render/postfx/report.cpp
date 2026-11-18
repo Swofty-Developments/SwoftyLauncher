@@ -20,7 +20,7 @@ void FrameReport::note_idle(bool killed, bool shaders_off, bool hud_reads, unsig
         return;
     }
     onoff_lines++;
-    view::State v = view::current();
+    frontend::view::State v = frontend::view::current();
     std::string view = std::string(view_text(v.kind)), flags = flag_text(v.flags);
     if (c == OnOff::STOPPED)
         swofty::log("[postfx] the passes stopped at frame %u: %s%s%s (view %s, flags %s, serial %u)", frame_count,

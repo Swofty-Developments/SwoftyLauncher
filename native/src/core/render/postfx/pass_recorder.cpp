@@ -223,7 +223,7 @@ bool PassRecorder::record(const Where &w, int k)
         s.views_made = pipeline.frame.textures_made;
     }
     SlotTextures &wk = pipeline.frame.work[k];
-    view::State v = view::current();
+    frontend::view::State v = frontend::view::current();
     pipeline.report.trace.view = v;
     unsigned idle = 0;
     std::vector<int> live = pipeline.config.live_passes(v, &idle);

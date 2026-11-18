@@ -303,6 +303,29 @@ bool hash_file(const std::string &rel, uint64_t &hash)
     return ok;
 }
 
+bool write_copy(const std::wstring &path, const std::function<bool(const erpfile::Sink &, std::string &)> &emit, std::string &why)
+{
+    std::wstring tmp = path + L".tmp";
+    HANDLE out = CreateFileW(tmp.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+    bool ok = out != INVALID_HANDLE_VALUE && emit([&](const char *p, size_t n) {
+        DWORD put = 0;
+        while (n) {
+            DWORD want = DWORD(std::min<size_t>(n, size_t(1) << 24));
+            if (!WriteFile(out, p, want, &put, nullptr) || !put)
+                return false;
+            p += put;
+            n -= put;
+        }
+        return true;
+    }, why);
+    if (out != INVALID_HANDLE_VALUE)
+        CloseHandle(out);
+    if (ok && MoveFileExW(tmp.c_str(), path.c_str(), MOVEFILE_REPLACE_EXISTING))
+        return true;
+    DeleteFileW(tmp.c_str());
+    return false;
+}
+
 std::string flat(const std::string &rel)
 {
     std::string folder = logo_build::UI_FOLDER;
@@ -454,7 +477,7 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     std::wstring stamps_path = runtime::under_swofty(dir + logo_cache::STAMPS);
     DeleteFileW(runtime::under_swofty(dir + logo_cache::OLD_STAMPS).c_str());
     std::string stamps_before = runtime::read_file(stamps_path, size_t(16) << 20);
-    logo_cache::Env stamp_env{stat_file, hash_file};
+    logo_cache::Env stamp_env{stat_file, [&](const std::string &rel, uint64_t &hash) { return logo_build::input_hash(env, rel, hash_file, hash); }};
     auto key_inputs = [&](const std::set<std::string> &inputs, const logo_cache::Stamps &before) {
         DWORD t0 = GetTickCount();
         logo_cache::Keyed k = logo_cache::key_archives(key, keyed_files, inputs, stamp_env, before);
@@ -464,6 +487,8 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         return k;
     };
     logo_cache::Stamps before = logo_cache::parse(stamps_before);
+    if (!logo_cache::stamps_current(stamps_before))
+        before.erase(logo_build::DATABASES);
     std::set<std::string> inputs = logo_cache::inputs_of(before);
     inputs.insert(logo_build::DATABASES);
     logo_cache::Keyed keyed = key_inputs(inputs, before);
@@ -473,16 +498,18 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     std::string manifest_name = "logos_" + id + ".manifest";
     std::string manifest = runtime::read_file(runtime::under_swofty(dir + manifest_name), size_t(1) << 20);
     logo_cache::Routes routes;
+    logo_cache::Sources sources;
     int cached_built = -1;
     if (!manifest.empty())
         logo_cache::manifest_parse(manifest, [&](const std::string &file) {
             return GetFileAttributesW(runtime::under_swofty(dir + file).c_str()) != INVALID_FILE_ATTRIBUTES;
-        }, cached_built, routes);
+        }, cached_built, routes, &sources);
     struct Built {
         std::vector<std::string> lines;
         int built = 0, refused = 0;
         size_t changes = 0;
         DWORD t0 = 0;
+        logo_cache::Sources sources;
     } made;
     bool layered = false;
     auto make = [&](const std::set<std::string> &dropped) {
@@ -520,28 +547,16 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         layered = false;
         for (auto &[rel, changes] : res.changes) {
             auto src = env.open(rel);
-            erpfile::Archive arc;
             std::string why;
             std::string file = "logos_" + id + "_" + flat(rel);
-            std::wstring path = runtime::under_swofty(dir + file), tmp = path + L".tmp";
-            HANDLE out = CreateFileW(tmp.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-            bool ok = src && out != INVALID_HANDLE_VALUE && erpfile::open(*src, arc, why) &&
-                      erpfile::rewrite(*src, arc, changes, [&](const char *p, size_t n) {
-                          DWORD put = 0;
-                          while (n) {
-                              DWORD want = DWORD(std::min<size_t>(n, size_t(1) << 24));
-                              if (!WriteFile(out, p, want, &put, nullptr) || !put)
-                                  return false;
-                              p += put;
-                              n -= put;
-                          }
-                          return true;
-                      }, why);
-            if (out != INVALID_HANDLE_VALUE)
-                CloseHandle(out);
+            uint64_t whole = 0;
+            bool hashed = rel == logo_build::DATABASES && hash_file(rel, whole);
+            bool ok = write_copy(runtime::under_swofty(dir + file), [&](const erpfile::Sink &sink, std::string &w) {
+                erpfile::Archive arc;
+                return src && erpfile::open(*src, arc, w) && erpfile::rewrite(*src, arc, changes, sink, w);
+            }, why);
             a.arrays[rel] = logo_deliver::arrays_of(changes, logo_build::ARRAY_URI);
-            if (!ok || !MoveFileExW(tmp.c_str(), path.c_str(), MOVEFILE_REPLACE_EXISTING)) {
-                DeleteFileW(tmp.c_str());
+            if (!ok) {
                 made.lines.push_back("team.logo: " + rel + " could not be rewritten" + (why.empty() ? "" : ": " + why));
                 made.refused++;
                 a.unwritten.push_back({rel, "it could not be rewritten" + (why.empty() ? "" : ": " + why)});
@@ -549,6 +564,8 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
             }
             layered = layered || overlay_rels.count(rel);
             a.routes.emplace_back(rel, file);
+            if (hashed)
+                made.sources[rel] = whole;
         }
         step(build_steps.lap_ms(), "archive rewrite (" + std::to_string(res.changes.size()) + " archive(s))");
         return a;
@@ -579,6 +596,38 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         why = "the resource overlay was handed to the game before the logo build ended";
         return false;
     };
+    auto databases_again = [&] {
+        for (auto &[rel, file] : routes) {
+            if (rel != logo_build::DATABASES)
+                continue;
+            uint64_t whole = 0;
+            if (!hash_file(rel, whole))
+                return false;
+            auto was = sources.find(rel);
+            if (was != sources.end() && was->second == whole)
+                return true;
+            perf::Stopwatch took;
+            std::wstring path = runtime::under_swofty(dir + file);
+            std::string copy = runtime::read_file(path, size_t(256) << 20), why;
+            auto now = env.open(rel);
+            if (copy.empty() || !now || !write_copy(path, [&](const erpfile::Sink &sink, std::string &w) {
+                    return logo_build::databases_copy(*now, copy, sink, w);
+                }, why)) {
+                report.lines.push_back("team.logo: the cached copy of " + rel + " could not be made again" + (why.empty() ? "" : ": " + why) +
+                                       "; the logos are built again");
+                return false;
+            }
+            sources[rel] = whole;
+            runtime::write_file(runtime::under_swofty(dir + manifest_name), logo_cache::manifest_text(cached_built, routes, sources));
+            double ms = took.lap_ms();
+            step(ms, "databases.erp copy");
+            report.lines.push_back("team.logo: " + rel + " changed outside its overrides.uidb; its cached copy is made again in " +
+                                   std::to_string(int(ms)) + " ms");
+        }
+        return true;
+    };
+    if (!routes.empty() && !databases_again())
+        routes.clear();
     logo_deliver::Attempt first;
     if (!routes.empty()) {
         first.routes = routes;
@@ -601,7 +650,7 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
             report.lines.push_back(l);
         report.refused += made.refused;
         if (logo_cache::cacheable(routes.size(), made.changes, made.refused))
-            runtime::write_file(runtime::under_swofty(dir + manifest_name), logo_cache::manifest_text(made.built, routes));
+            runtime::write_file(runtime::under_swofty(dir + manifest_name), logo_cache::manifest_text(made.built, routes, made.sources));
         report.built = made.built;
         report.lines.push_back("team.logo: " + std::to_string(made.built) + " slice(s) built into " + std::to_string(routes.size()) +
                                " archive(s) in " + std::to_string(GetTickCount() - made.t0) + " ms");

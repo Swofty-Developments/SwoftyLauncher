@@ -12,7 +12,7 @@ calls, hooks and sites hold on the two 1.0.145.2472 builds, and the one address 
 | Steam 26566308 | `1794312636` | `0x18434000` | `F1_25.exe`, SHA256 `46009bd3…d9389` | `0x146070c28` |
 | EA 1.0.145 | `1794315435` | `0x1615e000` | decrypted dump `F1_25.1794315435.105156.mem` (SHA256 `34d00776…bd441`) of the packed `F1_25.exe` (SHA256 `8361a266…a99f7`) | `0x1461a7968` |
 
-`car_live::CAR_BUILDS` lists these builds; the operations stay off on any other image. This is static evidence:
+`runtime::car_layout::CAR_LIVE` names these builds; the operations stay off on any other image. This is static evidence:
 no game session ran on either 1.0.145 build with the gate open. The EA dump was taken with the core loaded, so its
 code carries the core's hook jumps; the tool leaves the instructions under a jump out of the image out of the
 comparison and says so.
@@ -70,7 +70,7 @@ Both builds: 69 of 73 checks pass, none fail, and 4 protected bodies differ only
   - The fuel mix test in Sess_ControllerSystem_ApplyRecord (0x14389a2b0) is aligned and identical: it loads that
     global, reads `ecu+0x128`, tests `[obj + 0x28 + car*0x20 + mix*4]` and calls the build's
     Car_FuelEcu_SetMode_Thunk.
-  - The global is not a binding. car_live reads it at `CarBuild::mode_avail_rva`.
+  - The global is not a binding. car_live reads it at `runtime::car_layout::mode_avail_rva`.
 
 ## Key addresses
 
@@ -118,7 +118,7 @@ Live State already carries the ERS move (`STEAM_26566308_BUILD`, `ers_mode` 0x1a
   rewrite those globals at run time; nothing seen so far suggests it does.
 - Field meanings are the KB's (re/db/structs). Identical code shows that the same offsets are read and written in
   the same way. It does not show what the values do in a session.
-- Old EA (`1789128892`) is not in `CAR_BUILDS`. On its dump the Turbo constructor does not align, so the tool does
+- Old EA (`1789128892`) is not in `CAR_LIVE`. On its dump the Turbo constructor does not align, so the tool does
   not pass that build.
 
 ## Runtime check owed

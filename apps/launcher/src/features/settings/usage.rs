@@ -1,6 +1,8 @@
 //! What the data folder holds, measured off the UI thread, and the clear
 //! actions that act on it.
 
+use std::convert::Infallible;
+use std::path::Path;
 use std::time::SystemTime;
 
 use crate::shell::notices::{Notification, Notify};
@@ -8,10 +10,12 @@ use crate::ui::scale::px;
 use gpui_kit::component::WindowExt;
 use gpui_kit::component::button::ButtonVariant;
 use gpui_kit::*;
-use swofty_core::data::space::{self as data_usage, KEEP_FOR, KEEP_SESSIONS};
+use swofty_core::data::space::{self as data_usage, KEEP_FOR, KEEP_SESSIONS, Pruned, Usage};
 use swofty_i18n::{tr, trf};
 
+use super::Settings;
 use crate::shell::Shell;
+use crate::shell::host::{Host, Hosted};
 use crate::ui::format::size_coarse as size;
 
 /// The link cache Play keeps in the game folder when the data folder is on
@@ -81,49 +85,6 @@ impl Shell {
         cx.notify();
     }
 
-    /// Measures the data folder again, off the UI thread.
-    pub(crate) fn settings_measure(&mut self, cx: &mut Context<Self>) {
-        if self.settings.measuring {
-            return;
-        }
-        self.settings.measuring = true;
-        let root = self.store.root.clone();
-        let game = self.game.install.as_ref().map(|i| i.dir.clone());
-        cx.spawn(async move |this, cx| {
-            let (usage, prunable, cache) = cx
-                .background_executor()
-                .spawn(async move {
-                    let usage = data_usage::measure(&root);
-                    let old = data_usage::prunable(
-                        &root.join("sessions"),
-                        KEEP_SESSIONS,
-                        KEEP_FOR,
-                        SystemTime::now(),
-                    );
-                    let cache = game.map_or_else(GameCopy::default, |g| GameCopy {
-                        bytes: swofty_core::cache::link::size(&g),
-                        apart: swofty_core::cache::link::apart(
-                            swofty_core::platform::disk::volume(&swofty_core::store::overlay_root(&root)),
-                            swofty_core::platform::disk::volume(&g),
-                        )
-                        .unwrap_or(false),
-                    });
-                    (usage, old, cache)
-                })
-                .await;
-            this.update(cx, |s, cx| {
-                s.settings.usage = Some(usage);
-                s.settings.prunable = prunable;
-                s.settings.cache = cache;
-                s.settings.measuring = false;
-                cx.notify();
-            })
-            .ok();
-        })
-        .detach();
-        cx.notify();
-    }
-
     pub(crate) fn confirm_clear_logs(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if !self.game.processes.is_empty() {
             window.notify(
@@ -184,7 +145,7 @@ impl Shell {
                     )),
                     cx,
                 );
-                s.settings_measure(cx);
+                super::Settings::measure(s, cx);
             })
             .ok();
         })
@@ -224,7 +185,7 @@ impl Shell {
                     )),
                     cx,
                 );
-                s.settings_measure(cx);
+                super::Settings::measure(s, cx);
             })
             .ok();
         })
@@ -233,9 +194,90 @@ impl Shell {
     }
 }
 
+pub(crate) struct SettingsNeeds<'a> {
+    pub(crate) root: &'a Path,
+    pub(crate) game_dir: Option<&'a Path>,
+}
+
+impl Hosted for Settings {
+    type Needs<'a> = SettingsNeeds<'a>;
+    type Change = Infallible;
+}
+
+impl Host<Settings> for Shell {
+    fn split(&mut self) -> (&mut Settings, SettingsNeeds<'_>) {
+        (
+            &mut self.settings,
+            SettingsNeeds {
+                root: &self.store.root,
+                game_dir: self.game.install.as_ref().map(|i| i.dir.as_path()),
+            },
+        )
+    }
+
+    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
+        match change {}
+    }
+}
+
+impl Settings {
+    /// Measures the data folder again, off the UI thread.
+    pub(crate) fn measure<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (settings, needs) = host.split();
+        if !settings.begin_measure() {
+            return;
+        }
+        let root = needs.root.to_path_buf();
+        let game = needs.game_dir.map(Path::to_path_buf);
+        cx.spawn(async move |this, cx| {
+            let (usage, prunable, cache) = cx
+                .background_executor()
+                .spawn(async move {
+                    let usage = data_usage::measure(&root);
+                    let old = data_usage::prunable(
+                        &root.join("sessions"),
+                        KEEP_SESSIONS,
+                        KEEP_FOR,
+                        SystemTime::now(),
+                    );
+                    let cache = game.map_or_else(GameCopy::default, |g| GameCopy {
+                        bytes: swofty_core::cache::link::size(&g),
+                        apart: swofty_core::cache::link::apart(
+                            swofty_core::platform::disk::volume(&swofty_core::store::overlay_root(&root)),
+                            swofty_core::platform::disk::volume(&g),
+                        )
+                        .unwrap_or(false),
+                    });
+                    (usage, old, cache)
+                })
+                .await;
+            this.update(cx, |host, cx| {
+                host.split().0.took_measure(usage, prunable, cache);
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
+        cx.notify();
+    }
+
+    /// False while a measure is already running.
+    fn begin_measure(&mut self) -> bool {
+        !std::mem::replace(&mut self.measuring, true)
+    }
+
+    fn took_measure(&mut self, usage: Usage, prunable: Pruned, cache: GameCopy) {
+        self.usage = Some(usage);
+        self.prunable = prunable;
+        self.cache = cache;
+        self.measuring = false;
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::low_space_warning;
+    use super::{GameCopy, Settings, low_space_warning};
+    use swofty_core::data::space::{self as data_usage, Pruned};
     use swofty_core::data::space::{GAME_DRIVE, Room};
 
     const GB: u64 = 1 << 30;
@@ -263,5 +305,17 @@ mod tests {
             data.starts_with("Only 1.0 GB free on the drive with your addons and saves"),
             "{data}"
         );
+    }
+
+    #[test]
+    fn a_second_measure_waits_for_the_first() {
+        let mut settings = Settings::default();
+        assert!(settings.begin_measure());
+        assert!(!settings.begin_measure());
+        let none = std::env::temp_dir().join(format!("swofty-settings-measure-{}", std::process::id()));
+        settings.took_measure(data_usage::measure(&none), Pruned::default(), GameCopy::default());
+        assert!(!settings.measuring);
+        assert!(settings.usage.is_some());
+        assert!(settings.begin_measure());
     }
 }

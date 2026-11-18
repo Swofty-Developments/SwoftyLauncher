@@ -1,5 +1,7 @@
 #include "core/runtime/runtime.hpp"
 
+#include "core/career/career_entity.hpp"
+
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
@@ -27,14 +29,6 @@
 // Career_Is_MyTeamGameMode which Team HQ to open; the site reads that answer (al) right after the
 // call. It answers in both career modes. Read only.
 //
-// Career (g_Game_Manager, GameManager, GameModeContext, ChampionshipHolder, CareerEntity,
-// EntrantRecord, k_Career_<Class>Desc). The championship entity is
-// manager->mode_context->championship_holder->entity; its component registry is embedded at
-// CareerEntity.component_registry and answers get(registry, &desc, search_parents) at vtable slot
-// +0x10, the call the game's own components make. A CareerComponent means a loaded career;
-// CareerBank or MyTeamFacilities means My Team, DriverCareerPlayerDriverStatistics Driver Career.
-// The human entrant (EntrantRecord.ordinal_flags bit 0x10000000) gives the career key.
-//
 // Bus (g_Game_MessageBus, GameMessageBusHolder, NeMessageBus, Ne_Post_BusMessage). post() hands a
 // caller-built message to the game's synchronous publish while the bus is active.
 //
@@ -49,18 +43,13 @@ namespace layout = runtime::layout;
 namespace mem = swofty::mem;
 using runtime::career::PollSchedule;
 using runtime::career::Tracker;
+using career_game::binding;
 
 constexpr const char *FLOW_MIXIN = "swofty_core.dll (flow states)";
 constexpr const char *TEAM_HQ_MIXIN = "swofty_core.dll (Team HQ answer)";
-constexpr uintptr_t REGISTRY_GET_SLOT = 0x10;
-constexpr uint32_t HUMAN_FLAG = 0x10000000u;
-constexpr size_t MAX_ENTRANTS = runtime::myteam_heal::MAX_ENTRANTS;
 constexpr const char *STATUS[4] = {"None", "Entering", "Updating", "Exiting"};
 
-using RegistryGet = void *(void *registry, const void *desc, uint32_t search_parents);
 using Post = uint64_t(void *bus, void *msg);
-
-template <class E = g::CareerEntity, class R = g::EntrantRecord> void heal_my_team_cars();
 
 std::mutex lock;
 Tracker tracker;
@@ -111,18 +100,6 @@ uint64_t now_ms()
     return GetTickCount64();
 }
 
-uintptr_t binding(const std::string &id)
-{
-    std::lock_guard<std::mutex> g(bind_lock);
-    auto it = bound.find(id);
-    if (it != bound.end())
-        return it->second;
-    uintptr_t a = swofty::api->resolve(id.c_str());
-    if (a || runtime::code_ready())
-        bound[id] = a;
-    return a;
-}
-
 void fire(const char *event, int64_t a, int64_t b, const void *data)
 {
     runtime::events_fire(event, a, b, data);
@@ -155,7 +132,7 @@ void publish(const runtime::career::Edges &e, const SwoftyCareerState &s)
                                                                         : "unseen",
                     mode_name(s.component_mode), mode_name(s.team_hq_mode));
         if (s.mode == SWOFTY_CAREER_MY_TEAM)
-            heal_my_team_cars();
+            career_game::heal_my_team();
         std::string id = runtime::snapshots_career_loaded(s.key, s.mode);
         swofty_core::apply::moments::career_loaded(id.c_str(), s.mode);
         fire(SWOFTY_EVENT_CAREER_LOADED, s.mode, 0, &s);
@@ -262,7 +239,7 @@ void on_flow(SwoftyContext *c)
     runtime::session_host_flow(hash, to);
     runtime::entitlements_flow(hash, to);
     runtime::testagent_flow(name, to);
-    view::flow(hash, to);
+    frontend::view::flow(hash, to);
     if (known) {
         runtime::era_session_trace(known, int(to));
         runtime::era_session_unloaded(known, int(to));
@@ -293,150 +270,6 @@ void on_team_hq(SwoftyContext *c)
         swofty::log("[career] Team HQ entered: the game reports %s (Career_Is_MyTeamGameMode)",
                     my_team ? "My Team" : "not My Team");
     settle_and_publish();
-}
-
-template <class M = g::GameManager, class C = g::GameModeContext, class H = g::ChampionshipHolder,
-          class E = g::CareerEntity>
-uintptr_t championship_entity(runtime::myteam_heal::Load *trace = nullptr)
-{
-    if constexpr (layout::career_chain<M, C, H, E>) {
-        runtime::myteam_heal::Load own;
-        auto &t = trace ? *trace : own;
-        uintptr_t slot = binding("g_Game_Manager"), mgr = 0, ctx = 0, holder = 0, e = 0;
-        if (!slot)
-            t.stop = "g_Game_Manager is not resolved";
-        else if (!mem::read(slot, mgr) || !mgr)
-            t.stop = "[g_Game_Manager] reads null";
-        else if (!mem::read(mgr + offsetof(M, mode_context), ctx) || !ctx)
-            t.stop = "the game manager's mode context reads null";
-        else if (!mem::read(ctx + offsetof(C, championship_holder), holder) || !holder)
-            t.stop = "the championship holder reads null";
-        else if (!mem::read(holder + offsetof(H, entity), e) || !e)
-            t.stop = "the championship entity reads null";
-        else if (!mem::object_like(e) || !mem::object_like(e + offsetof(E, component_registry)))
-            t.stop = "the championship entity is not a game object";
-        t.manager = mgr, t.context = ctx, t.holder = holder, t.entity = e;
-        return t.stop ? 0 : e;
-    } else {
-        (void)trace;
-        return 0;
-    }
-}
-
-template <class E = g::CareerEntity> uintptr_t registry_get(uintptr_t e, uintptr_t desc)
-{
-    if constexpr (layout::CAREER) {
-        uintptr_t reg = e + offsetof(E, component_registry), vt = 0, fn = 0;
-        if (!e || !desc || !mem::read(reg, vt) || !mem::in_image(vt) || !mem::read(vt + REGISTRY_GET_SLOT, fn) ||
-            !mem::in_image(fn))
-            return 0;
-        static const uint32_t probe = perf::probe("core", "career RegistryGet (game call)");
-        perf::Scope p(probe);
-        auto c = reinterpret_cast<uintptr_t>(
-            reinterpret_cast<RegistryGet *>(fn)(reinterpret_cast<void *>(reg), reinterpret_cast<const void *>(desc), 1));
-        return mem::object_like(c) ? c : 0;
-    } else {
-        (void)e, (void)desc;
-        return 0;
-    }
-}
-
-std::string desc_id(const char *type)
-{
-    std::string t = type ? type : "";
-    if (t.empty() || t.rfind("k_", 0) == 0)
-        return t;
-    return "k_Career_" + t + "Desc";
-}
-
-uintptr_t component_of(uintptr_t e, const char *type)
-{
-    std::string id = desc_id(type);
-    return id.empty() ? 0 : registry_get(e, binding(id));
-}
-
-template <class E = g::CareerEntity, class R = g::EntrantRecord>
-void entrants(uintptr_t e, runtime::career::Components &out)
-{
-    if constexpr (layout::CAREER && layout::ENTRANT) {
-        uintptr_t b = 0, en = 0;
-        if (!mem::read(e + offsetof(E, entrants_begin), b) || !mem::read(e + offsetof(E, entrants_end), en) || !b ||
-            en < b || (en - b) % sizeof(R) || (en - b) / sizeof(R) > MAX_ENTRANTS || (en != b && !mem::readable(b, en - b)))
-            return;
-        uint32_t humans = 0;
-        for (uintptr_t p = b; p < en; p += sizeof(R)) {
-            uint32_t flags = 0, driver = 0, team = 0;
-            mem::read(p + offsetof(R, ordinal_flags), flags);
-            if (!(flags & HUMAN_FLAG))
-                continue;
-            mem::read(p + offsetof(R, id_lo), driver);
-            mem::read(p + offsetof(R, team_stat_id), team);
-            out.driver = driver, out.team = team;
-            ++humans;
-        }
-        out.humans = humans;
-        out.player = humans == 1;
-        if (!out.player)
-            out.driver = out.team = 0;
-    } else {
-        (void)e, (void)out;
-    }
-}
-
-template <class E, class R> void heal_my_team_cars()
-{
-    if constexpr (layout::CAREER && layout::ENTRANT) {
-        static_assert(offsetof(R, vehicle_ref) == runtime::myteam_heal::ENTRANT_VEHICLE &&
-                      offsetof(R, ordinal_flags) == runtime::myteam_heal::ENTRANT_FLAGS &&
-                      sizeof(R) == runtime::myteam_heal::ENTRANT_SIZE);
-        mem::Trust trust(runtime::HEAP_TRUST_MS);
-        runtime::myteam_heal::Load load;
-        uintptr_t e = championship_entity(&load), b = 0, en = 0, es = 0;
-        if (e) {
-            bool read = mem::read(e + offsetof(E, entrants_begin), b) && mem::read(e + offsetof(E, entrants_end), en);
-            load.first = b, load.end = en;
-            load.stop = runtime::myteam_heal::range_stop(read, b, en, MAX_ENTRANTS,
-                                                         [](uint64_t p, uint64_t n) { return mem::readable(p, n); });
-        }
-        load.offset = runtime::manager_entrants_system();
-        if (load.manager && mem::read(load.manager + load.offset, es))
-            load.system = es;
-        if (!load.stop && !es)
-            load.stop = "the entrants system reads null";
-        runtime::myteam_vehicle_heal_entrants(load);
-    }
-}
-
-runtime::career::Components poll()
-{
-    static const uint32_t find = perf::probe("core", "career poll: entity");
-    static const uint32_t lookup = perf::probe("core", "career poll: components");
-    static const uint32_t walk = perf::probe("core", "career poll: entrants");
-    mem::Trust trust(runtime::HEAP_TRUST_MS);
-    runtime::career::Components c;
-    uintptr_t e = 0;
-    {
-        perf::Scope p(find);
-        e = championship_entity();
-    }
-    c.entity = e != 0;
-    if (!e)
-        return c;
-    {
-        perf::Scope p(lookup);
-        c.career = component_of(e, "CareerComponent");
-        if (c.career) {
-            if (component_of(e, "CareerBankComponent") || component_of(e, "MyTeamFacilitiesComponent"))
-                c.mode = SWOFTY_CAREER_MY_TEAM;
-            else if (component_of(e, "DriverCareerPlayerDriverStatisticsComponent"))
-                c.mode = SWOFTY_CAREER_DRIVER;
-        }
-    }
-    if (c.career) {
-        perf::Scope p(walk);
-        entrants(e, c);
-    }
-    return c;
 }
 
 int api_available()
@@ -490,23 +323,24 @@ void *api_entity()
 {
     if (!runtime::enabled("career", nullptr))
         return nullptr;
-    return reinterpret_cast<void *>(championship_entity());
+    return reinterpret_cast<void *>(career_game::entity());
 }
 
 void *api_component(const char *type)
 {
     if (!runtime::enabled("career", nullptr) || !type || !*type)
         return nullptr;
-    uintptr_t e = championship_entity();
-    return e ? reinterpret_cast<void *>(component_of(e, type)) : nullptr;
+    uintptr_t e = career_game::entity();
+    return e ? reinterpret_cast<void *>(career_game::component(e, type)) : nullptr;
 }
 
 void *api_component_by_desc(const void *desc)
 {
     if (!runtime::enabled("career", nullptr) || !desc)
         return nullptr;
-    uintptr_t e = championship_entity();
-    return e ? reinterpret_cast<void *>(registry_get(e, reinterpret_cast<uintptr_t>(desc))) : nullptr;
+    uintptr_t e = career_game::entity();
+    return e ? reinterpret_cast<void *>(career_game::component_by_desc(e, reinterpret_cast<uintptr_t>(desc)))
+             : nullptr;
 }
 
 template <class H = g::GameMessageBusHolder, class B = g::NeMessageBus> int api_post(void *msg)
@@ -558,6 +392,18 @@ void team_hq_entry(SwoftyContext *c)
     on_team_hq(c);
 }
 
+}
+
+uintptr_t career_game::binding(const std::string &id)
+{
+    std::lock_guard<std::mutex> g(bind_lock);
+    auto it = bound.find(id);
+    if (it != bound.end())
+        return it->second;
+    uintptr_t a = swofty::api->resolve(id.c_str());
+    if (a || runtime::code_ready())
+        bound[id] = a;
+    return a;
 }
 
 namespace runtime {
@@ -626,7 +472,7 @@ void career_tick()
     if (said.exchange(reads) != int(reads))
         swofty::log("[career] component poll %s (game mode %s)", reads ? "reads the game" : "off: no career can be loaded here, it reports none without a read",
                     facts::mode_kind_name(kind));
-    runtime::career::Components c = reads ? poll() : runtime::career::Components{};
+    runtime::career::Components c = reads ? career_game::poll() : runtime::career::Components{};
     {
         std::lock_guard<std::mutex> g(lock);
         tracker.components(c, now);

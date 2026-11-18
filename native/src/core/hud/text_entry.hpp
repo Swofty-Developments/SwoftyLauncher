@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <string_view>
 
-namespace text_entry {
+namespace hud::text_entry {
 
 constexpr uint64_t IDLE_MS = 20000;
 constexpr uint32_t KEY_ENTER = 0x0d, KEY_ESCAPE = 0x1b;

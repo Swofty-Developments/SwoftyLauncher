@@ -2,19 +2,25 @@
 # "<source>: <declaration>", as "<header>: #define <MACRO>" for every object spelled in that core macro, or as
 # "type: <type>" for every object of that type declared without an initializer, under the reason its initializer
 # reads no other translation unit's object, and each static constructor's reference to another unit's object as
-# "refers: <source>: <object>", under the reason it reads nothing of it.
+# "refers: <source>: <object>" (or, for the constructor of an inline variable or a class template's static member,
+# "refers: inline <variable>: <object>"), under the reason it reads nothing of it.
 
 # Constructs a HookGuard, which writes itself into hook_guards(), a function-local static in guards/registry.cpp; the
 # guards arm in HookGuardId order from there, whatever order their units initialize in.
 src/core/guards/guard.hpp: #define SWOFTY_HOOK_GUARD
 
+# Constructs a RankMark, which writes the length of the SDK mixin list into a constinit array in
+# runtime/loader/core_rank.cpp. The length depends on the order units initialize in, but rank_core_mixins orders the
+# list by rank from these marks, whatever that order.
+src/core/runtime/loader/core_rank.hpp: #define SWOFTY_CORE_RANK
+
 # A string copied from a literal.
 src/core/assets/gamedb.cpp: std::string reserve_off = "the reserve site is not hooked";
 
-# Binds a reference to popup::messages.queue_lock in frontend/popup.cpp, whose address is fixed at link time; it
+# Binds a reference to frontend::popup::messages.queue_lock in frontend/popup.cpp, whose address is fixed at link time; it
 # reads nothing of it.
-src/core/hud/race_hud.cpp: RaceHud state{popup::messages.queue_lock};
-refers: src/core/hud/race_hud.cpp: popup::messages
+src/core/hud/race_hud.cpp: RaceHud state{frontend::popup::messages.queue_lock};
+refers: src/core/hud/race_hud.cpp: frontend::popup::messages
 
 # Reads the system clock.
 src/core/career/career_saves.cpp: std::string session_id = std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(

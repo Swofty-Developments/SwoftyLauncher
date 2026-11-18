@@ -15,9 +15,7 @@ pub(crate) mod format;
 mod header;
 mod lock;
 mod overlay;
-#[allow(dead_code)]
 mod pill;
-#[allow(dead_code)]
 mod progress;
 mod row;
 pub(crate) mod scale;
@@ -26,7 +24,6 @@ mod section;
 mod segmented;
 mod step;
 pub(crate) mod theme;
-#[allow(dead_code)]
 pub mod tokens;
 
 pub(crate) use atoms::*;

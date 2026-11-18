@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-namespace runtime::toast {
+namespace hud::toast {
 namespace {
 
 constexpr ULONGLONG POLL_MS = 400;
@@ -36,7 +36,7 @@ LapToasts toasts;
 bool LapToasts::gate_on()
 {
     if (gate < 0) {
-        auto doc = swofty::json::parse(read_file(swofty_root() + L"tt.json", size_t(1) << 20));
+        auto doc = swofty::json::parse(runtime::read_file(runtime::swofty_root() + L"tt.json", size_t(1) << 20));
         char v[8] = {};
         bool off = GetEnvironmentVariableA("SWOFTY_TT_TOAST", v, sizeof v) && v[0] == '0';
         gate = doc.is_object() && doc["tt_boards"].as_bool(false) && !off;
@@ -61,7 +61,7 @@ void LapToasts::take(const std::wstring &dir)
     int64_t now = int64_t(std::time(nullptr));
     for (const auto &n : names) {
         std::wstring path = dir + L"\\" + n;
-        std::string text = read_file(path, size_t(1) << 16);
+        std::string text = runtime::read_file(path, size_t(1) << 16);
         DeleteFileW(path.c_str());
         Message m;
         Status st = parse(text, m);
@@ -81,27 +81,31 @@ void LapToasts::tick()
 {
     if (!gate_on())
         return;
-    if (!lap_host::recording()) {
+    if (!runtime::lap_host::recording()) {
         machine.clear();
         return;
     }
     ULONGLONG now = GetTickCount64();
     if (now - last_poll >= POLL_MS) {
         last_poll = now;
-        take(files_root() + L"tt\\toast");
-        if (files_root() != swofty_root())
-            take(swofty_root() + L"tt\\toast");
+        take(runtime::files_root() + L"tt\\toast");
+        if (runtime::files_root() != runtime::swofty_root())
+            take(runtime::swofty_root() + L"tt\\toast");
     }
     Snapshot s = machine.step(now, int64_t(std::time(nullptr)));
     if (s.started)
-        hud_toast(title_of(s.message), detail_of(s.message), SHOW_SECONDS, "time trial boards", "fast_lap");
+        runtime::hud_toast(title_of(s.message), detail_of(s.message), SHOW_SECONDS, "time trial boards", "fast_lap");
 }
 
 }
+
+}
+
+namespace runtime::toast {
 
 void tick()
 {
-    toasts.tick();
+    hud::toast::toasts.tick();
 }
 
 }

@@ -33,5 +33,7 @@ int main()
     for (uint32_t t = 100; t < 100 + SEEN_TEAMS + 4; t++)
         seen.first(0x3000, t);
     CHECK(!seen.first(0x3000, 100), "a team seen before the table filled stays quiet");
+    CHECK(!seen.first(0x3000, 1000), "a new team once the table is full is not logged");
+    CHECK(seen.first(0x4000, 1000), "the table starts empty in the next session");
     return failures ? 1 : 0;
 }

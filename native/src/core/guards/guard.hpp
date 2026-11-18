@@ -4,7 +4,9 @@
 #include "core/guards/on_demand.hpp"
 #include "core/guards/order.hpp"
 #include "core/guards/skips.hpp"
+#include "core/runtime/loader/core_rank.hpp"
 #include "core/runtime/loader/core_sets.hpp"
+#include "core/runtime/loader/mixin_gate.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <swofty/mixin.hpp>
@@ -17,6 +19,9 @@ namespace swofty_core::guards {
 
 using ::runtime::loader::CoreSet;
 using ::runtime::loader::CoreSetId;
+using ::runtime::loader::install_state;
+using ::runtime::loader::MixinGate;
+using ::runtime::loader::NOT_INSTALLED;
 
 // True when the environment variable holds a value `off_value` accepts (by default 0 or off); `value` gets what
 // it holds.
@@ -39,7 +44,7 @@ protected:
     virtual void settle() = 0;
 
 private:
-    bool offered_ = false, settled_ = false;
+    MixinGate gate_;
 };
 
 // A binding a guard's handlers need the address of, resolved before the guard's sites.
@@ -135,6 +140,7 @@ void arm_next_hook_guard();
 }
 
 #define SWOFTY_HOOK_GUARD(id, what, setup)                                                                                       \
+    SWOFTY_CORE_RANK(id)                                                                                                         \
     namespace {                                                                                                                  \
     const ::swofty_core::guards::HookGuard hook_guard{::swofty_core::guards::HookGuardId::id, what, setup};                      \
     }                                                                                                                            \

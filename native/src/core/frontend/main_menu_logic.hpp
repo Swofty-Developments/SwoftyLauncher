@@ -7,7 +7,7 @@
 #include "core/frontend/name_hash.hpp"
 #include "core/runtime/json.hpp"
 
-namespace runtime::main_menu {
+namespace frontend::main_menu {
 
 constexpr const char *ID_STORY = "story";
 constexpr const char *ID_CAREER = "career";
@@ -186,7 +186,7 @@ inline Point scene_to_px(double x, double y, float width, float height)
             b.top + float(SCENE_CENTRE_Y) * b.height - s * float(y)};
 }
 
-using name_hash::djb2;
+using frontend::name_hash::djb2;
 
 inline std::string button_name(bool pad) { return pad ? "RB" : "V"; }
 

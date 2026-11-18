@@ -7,7 +7,7 @@
 #include <cstdio>
 #include <string>
 
-namespace gm = runtime::game_message_log;
+namespace gm = frontend::game_message_log;
 
 static int failed = 0;
 

@@ -1,4 +1,5 @@
 #include "core/diagnostics/load_stall_logic.hpp"
+#include "core/diagnostics/crash/stall_report.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -29,10 +30,6 @@
 // with SWOFTY_TEST_LOAD_STALL_AT=<flow> it holds the first thread that moves that flow to Entering instead
 // (StateSession: where the 1.9.x first-session loads hang until the game logs its deadlock WARN).
 // SWOFTY_TEST_LOAD_STALL_REPORT=1 writes one report at once, before setup returns (the Wine test).
-
-namespace runtime {
-bool stall_report(int index, int max, const char *why, const char *state);
-}
 
 namespace {
 

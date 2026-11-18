@@ -1,10 +1,12 @@
-use super::feed::{CACHE_DIR, FEED_FILE, Post, STALE, Trouble, embedded, fetch, merge, parse};
+use super::feed::{CACHE_DIR, FEED_FILE, Fetched, Post, STALE, Trouble, embedded, fetch, merge, parse};
 use super::markdown::{Block, safe_url};
 use super::view::parsed_body;
 use crate::shell::Shell;
+use crate::shell::host::{Host, Hosted};
 use crate::ui::scale::px;
 use gpui_kit::*;
 use std::collections::HashMap;
+use std::convert::Infallible;
 use std::path::Path;
 use std::sync::Arc;
 use std::time::Instant;
@@ -222,45 +224,73 @@ impl News {
     }
 }
 
-impl Shell {
-    pub(crate) fn fetch_news(&mut self, cx: &mut Context<Self>) {
-        if self.news.fetching {
+pub(crate) struct NewsNeeds<'a> {
+    pub(crate) root: &'a Path,
+}
+
+impl Hosted for News {
+    type Needs<'a> = NewsNeeds<'a>;
+    type Change = Infallible;
+}
+
+impl Host<News> for Shell {
+    fn split(&mut self) -> (&mut News, NewsNeeds<'_>) {
+        (
+            &mut self.news,
+            NewsNeeds {
+                root: &self.store.root,
+            },
+        )
+    }
+
+    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
+        match change {}
+    }
+}
+
+impl News {
+    pub(crate) fn fetch<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (news, needs) = host.split();
+        if news.fetching {
             return;
         }
-        self.news.fetching = true;
-        let root = self.store.root.clone();
-        let shown = self.news.posts.clone();
+        news.fetching = true;
+        let root = needs.root.to_path_buf();
+        let shown = news.posts.clone();
         cx.spawn(async move |this, cx| {
             let fetched = cx
                 .background_executor()
                 .spawn(async move { fetch(&root, shown) })
                 .await;
-            this.update(cx, |s, cx| {
-                let news = &mut s.news;
-                news.fetching = false;
-                news.checked = Some(Instant::now());
-                news.trouble = fetched.error.as_ref().map(|(t, _)| *t);
-                if let Some((_, e)) = &fetched.error {
-                    eprintln!("swofty-launcher: could not check for news: {e}");
-                }
-                let mut changed = !fetched.images.is_empty();
-                if let Some(posts) = fetched.posts {
-                    if news.posts != posts {
-                        changed = true;
-                        news.blocks = posts.iter().map(parsed_body).collect();
-                        news.posts = posts;
-                    }
-                    news.live = true;
-                }
-                news.images.extend(fetched.images);
-                if changed {
-                    news.revision = news.revision.wrapping_add(1);
-                }
+            this.update(cx, |host, cx| {
+                host.split().0.took_fetch(fetched);
                 cx.notify();
             })
             .ok();
         })
         .detach();
         cx.notify();
+    }
+
+    pub(super) fn took_fetch(&mut self, fetched: Fetched) {
+        self.fetching = false;
+        self.checked = Some(Instant::now());
+        self.trouble = fetched.error.as_ref().map(|(t, _)| *t);
+        if let Some((_, e)) = &fetched.error {
+            eprintln!("swofty-launcher: could not check for news: {e}");
+        }
+        let mut changed = !fetched.images.is_empty();
+        if let Some(posts) = fetched.posts {
+            if self.posts != posts {
+                changed = true;
+                self.blocks = posts.iter().map(parsed_body).collect();
+                self.posts = posts;
+            }
+            self.live = true;
+        }
+        self.images.extend(fetched.images);
+        if changed {
+            self.revision = self.revision.wrapping_add(1);
+        }
     }
 }

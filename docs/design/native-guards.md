@@ -121,6 +121,11 @@ new hook guard takes the `HookGuardId` slot that matches where its source falls 
 goes in `HOOKED` in `native/test/guard_registry_test.cpp` at the same slot. Pin a `MidHookSpec` guard's off,
 failed and armed lines in `added.txt` under `[hook <id>]`.
 
+Both macros also name the guard's `CoreRank` (`native/src/core/runtime/loader/core_rank.hpp`) under its `HookGuardId`
+name, so a new hook guard adds that name to `CoreRank` too, where its on-load entry runs among the other registering
+units (the `explicit` section of `native/tools/core_init_order.txt`); the core build fails on a missing name, and
+`tools/init_check.py` fails it when the ranks give another order than the run order.
+
 ## Guard
 
 Subclass `Guard` and write `build()` and `settle()` yourself when the lines or the offer don't fit a spec. Each
@@ -210,7 +215,9 @@ guards::read_catching_faults(address, &out, sizeof out, nullptr);   // a copy th
 ```
 
 `read_if_readable`, `write_if_readable` and `read_catching_faults` (`guards/memory.hpp`) have the signature the logic
-headers take for memory access. `write_if_readable` asks whether the bytes are readable, not whether they're writable.
+headers take for memory access. `write_if_readable` asks whether the bytes are readable, not whether they're writable:
+a readable page that isn't writable faults in its copy. Its one caller, `ai_line_set`'s repair, writes into the game's
+AI build records on its heap. Code that may write anywhere else asks `runtime::writable_in_region` instead.
 
 ## What the tests guarantee
 

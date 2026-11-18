@@ -72,7 +72,9 @@ UNITS = [
     Unit('audio_queue', 'Audio job queue fix unit test'),
     Unit('direct_start', 'Direct start unit test'),
     Unit('direct_start_tt', 'Direct start Time Trial unit test'),
+    Unit('characters_logic', 'Character override rules unit test'),
     Unit('dred', 'GPU device removal report unit test'),
+    Unit('report_text', 'Crash report section text unit test'),
     Unit('ers_newlap', 'ERS new-lap site unit test'),
     Unit('ers_mode', 'ERS mode guard offset unit test'),
     Unit('estimate_laptime', 'Estimate lap time guard unit test'),
@@ -112,6 +114,7 @@ UNITS = [
     Unit('report_queue', 'Registry report writer queue unit test'),
     Unit('protection_spans', 'Binding pass protection spans unit test'),
     Unit('game_settings', 'Game setting override table unit test'),
+    Unit('settings_logic', 'Addon settings model and requests file unit test'),
     Unit('player_name', 'Player name sanitising unit test'),
     Unit('postfx', 'Post-process pass logic unit test'),
     Unit('race_control', 'Race control events unit test', 'zig'),
@@ -128,6 +131,7 @@ UNITS = [
     Unit('srv_clamp', 'Shader resource view clamp unit test'),
     Unit('rtas_guard', 'Ray tracing build guard unit test'),
     Unit('d3d12_probe', 'D3D12 probe device sharing unit test'),
+    Unit('arm_gate', 'D3D12 arm gate unit test'),
     Unit('font_upload', 'Overlay font atlas upload unit test'),
     Unit('lang_scope', 'String scope unit test'),
     Unit('stall_order', 'Load-stall report running-threads order unit test'),
@@ -143,6 +147,7 @@ UNITS = [
     Unit('track_record', 'Round track record guard unit test'),
     Unit('build_proof', 'Per-build proof gates unit test'),
     Unit('mixin_gate', 'Core mixin set gate and commit lines unit test'),
+    Unit('core_rank', 'Core mixin list rank order unit test'),
     Unit('picker_log_caps', 'Era picker log caps unit test'),
     Unit('tt_loaded', 'Time Trial loaded list board and team label unit test'),
     Unit('tyre_models', 'Tyre model check unit test'),
@@ -282,8 +287,9 @@ TRACKS = [
 
 SNAPSHOTS_FLAGS = ['-Isrc', '-std=c++23', '-O2', '-Wall', '-Wextra', '-Wno-nullability-completeness', SDK, '-Ithird_party/zstd']
 SNAPSHOTS = [Program('snapshots_test', [
-    Objects(['test/snapshots/snapshots_test.cpp', 'src/core/career/snapshots/snapshots.cpp', 'src/core/registry/store.cpp',
-             'src/core/registry/validate.cpp', 'src/core/registry/schema.cpp'], SNAPSHOTS_FLAGS), ZSTD])]
+    Objects(['test/snapshots/snapshots_test.cpp', 'src/core/career/snapshots/snapshots.cpp',
+             'src/core/career/snapshots/freeze.cpp', 'src/core/registry/store.cpp', 'src/core/registry/validate.cpp',
+             'src/core/registry/schema.cpp'], SNAPSHOTS_FLAGS), ZSTD])]
 
 CAR_LIVE = [Program(t, [Objects([f'test/hooks/{t}.cpp'], ['-Isrc', '-std=c++23', '-O1', '-Wall', '-Wextra', '-Werror',
                                                           '-Wno-nullability-completeness', SDK])])

@@ -280,3 +280,44 @@ fn database_files_keep_their_schema_and_report_replaced_records() {
     assert_eq!(planned.conflicts[0].winner, origin("b"));
     assert_eq!(planned.conflicts[0].overridden, [origin("a")]);
 }
+
+#[test]
+fn each_database_file_counts_the_owned_rows_once_after_the_first() {
+    use swofty_formats::gvdb::Record;
+    let features = Features::default();
+    let opt_in = BTreeSet::new();
+    let folder = "unlockable_content.unlockable_items.unlockable_item_list_0.folder_0";
+    let mut db = Gvdb {
+        records: vec![
+            Record::new(
+                "unlockable_content.unlockable_items._unlockable_item_list_instancecount_",
+                0,
+                "1",
+            ),
+            Record::new(
+                "unlockable_content.unlockable_items.unlockable_item_list_0._folder_instancecount_",
+                0,
+                "1",
+            ),
+            Record::new(&format!("{folder}._unlockable_se_livery_instancecount_"), 0, "1"),
+            Record::new(&format!("{folder}.unlockable_se_livery_0._metadata_"), 0, "stock"),
+            Record::new(&format!("{folder}.unlockable_se_livery_0.a"), 0, "7"),
+        ],
+    };
+    let add = format!(r#"{{"op":"db.add-row","table":"{folder}","from":"{folder}.unlockable_se_livery_0"}}"#);
+    let mut p = Planner::new(&features, &opt_in);
+    for addon in ["a", "b", "c"] {
+        p.add_fields(
+            addon,
+            BTreeMap::from([(format!("{folder}.unlockable_se_livery"), vec!["a".to_owned()])]),
+        );
+        p.push(op(addon, &add));
+    }
+    let before = crate::game_db::owned::COUNTED.with(std::cell::Cell::get);
+    let added = p.apply_db(&mut db).unwrap();
+    let counted = crate::game_db::owned::COUNTED.with(std::cell::Cell::get) - before;
+    let got: Vec<(&str, std::ops::Range<usize>)> =
+        added.iter().map(|a| (a.addon.as_str(), a.rows.clone())).collect();
+    assert_eq!(got, [("a", 1..2), ("b", 2..3), ("c", 3..4)]);
+    assert_eq!(counted, 4, "one count before the first file and one after each");
+}

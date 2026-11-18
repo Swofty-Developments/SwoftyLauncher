@@ -135,7 +135,7 @@ impl Shell {
             .saves
             .refresh_due(self.navigation.page == Page::Careers, probe.saves_print)
         {
-            self.refresh_saves_in_background(cx);
+            crate::features::career_saves::SavesPage::refresh(self, cx);
         }
         if probe.saves_marker && self.saves.take_notice(&root) {
             self.show_saves_notice(window, cx);
@@ -226,12 +226,12 @@ impl Shell {
         if let Some(found) = found {
             let changed = self.game.take_copies(found);
             if self.navigation.page == Page::Careers && (changed || merged) {
-                self.refresh_saves_in_background(cx);
+                crate::features::career_saves::SavesPage::refresh(self, cx);
             }
             if merged {
                 self.reload(cx);
             } else if changed {
-                self.refresh_views(cx);
+                crate::features::sections::AddonViews::refresh(self, cx);
                 self.db_profile_changed(cx);
             }
         } else if merged {
@@ -241,7 +241,7 @@ impl Shell {
 
     fn finish_launch(&mut self, probe: &Probe) {
         if let Some(failed) = self.launching.follow(&mut self.game, &self.store, probe) {
-            self.mp_launch_ended(failed);
+            self.room_launch_ended(failed);
         }
     }
 }

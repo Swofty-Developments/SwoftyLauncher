@@ -2,7 +2,7 @@
 
 #include <cstdio>
 
-using namespace runtime::mem_scan;
+using namespace frontend::mem_scan;
 
 static int failures = 0;
 #define CHECK(c)                                                                                                       \

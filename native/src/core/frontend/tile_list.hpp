@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace tile_list {
+namespace frontend::tile_list {
 
 inline swofty::game::HomeItem *last_item(swofty::game::TileList *list, size_t *count = nullptr)
 {

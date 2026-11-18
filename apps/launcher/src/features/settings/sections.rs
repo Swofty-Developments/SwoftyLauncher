@@ -232,7 +232,7 @@ impl Shell {
             .icon(IconName::RefreshCw)
             .label(tr("Refresh"))
             .disabled(self.settings.measuring)
-            .on_click(cx.listener(|this, _, _, cx| this.settings_measure(cx)));
+            .on_click(cx.listener(|this, _, _, cx| super::Settings::measure(this, cx)));
         let section = SettingsSection::new(tr("Usage")).action(refresh);
         let Some(u) = &self.settings.usage else {
             return section.row(SettingRow::new(tr("Size")).description(tr("Measuring…")));

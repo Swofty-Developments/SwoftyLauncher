@@ -60,7 +60,7 @@ impl Shell {
                                 v.dismiss_loss().ok();
                             }
                         }
-                        this.refresh_saves_in_background(cx);
+                        super::SavesPage::refresh(this, cx);
                         cx.notify();
                     })),
             );

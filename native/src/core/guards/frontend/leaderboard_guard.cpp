@@ -280,30 +280,29 @@ private:
     {
         if (boards_done)
             swofty::log("[leaderboard] time trial leaderboard guard %s",
-                        runtime::core_mixins_active(MIXIN)
-                            ? "armed: View Leaderboards at a track without a board returns instead of faulting"
-                            : "did not install (see the [core] lines)");
+                        guards::install_state(runtime::core_mixins_active(MIXIN),
+                                              "armed: View Leaderboards at a track without a board returns instead of faulting"));
         if (tab_done || bound_tab_done)
             swofty::log("[leaderboard] time trial leaderboard tab guard %s",
-                        runtime::core_mixins_active(TAB_MIXIN)
-                            ? (tab_done && bound_tab_done
-                                   ? "armed: activating the leaderboard tab without a child list model returns instead of faulting"
-                                   : "armed on one of its two tab activations (see the [core] lines)")
-                            : "did not install (see the [core] lines)");
+                        guards::install_state(
+                            runtime::core_mixins_active(TAB_MIXIN),
+                            (tab_done && bound_tab_done
+                                 ? "armed: activating the leaderboard tab without a child list model returns instead of faulting"
+                                 : "armed on one of its two tab activations (see the [core] lines)")));
         if (reference_done || rival_done)
-            swofty::log("[leaderboard] time trial reference log guard %s",
-                        runtime::core_mixins_active(REFERENCE_MIXIN)
-                            ? (rival_done && reference_done
-                                   ? "armed: the game's GAME and GHOSTLAP-TRACE lines for a reference with no board are "
-                                     "skipped instead of faulting"
-                                   : "armed on one of its two log lines (see the [core] lines)")
-                            : "did not install (see the [core] lines)");
+            swofty::log(
+                "[leaderboard] time trial reference log guard %s",
+                guards::install_state(runtime::core_mixins_active(REFERENCE_MIXIN),
+                                      (rival_done && reference_done
+                                           ? "armed: the game's GAME and GHOSTLAP-TRACE lines for a reference with no board are "
+                                             "skipped instead of faulting"
+                                           : "armed on one of its two log lines (see the [core] lines)")));
         if (list_done)
             swofty::log("[leaderboard] time trial reference list guard %s",
-                        runtime::core_mixins_active(LIST_MIXIN)
-                            ? "armed: a Time Trial reference for a selected list without a leaderboard is left unset instead of "
-                              "throwing"
-                            : "did not install (see the [core] lines)");
+                        guards::install_state(
+                            runtime::core_mixins_active(LIST_MIXIN),
+                            "armed: a Time Trial reference for a selected list without a leaderboard is left unset instead of "
+                            "throwing"));
     }
 };
 

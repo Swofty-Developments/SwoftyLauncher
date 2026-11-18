@@ -71,7 +71,7 @@ private:
     void present_fallback(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known);
     void passes_listed();
 
-    hardware_settings::Poll frame_gen_poll;
+    hud::hardware_settings::Poll frame_gen_poll;
     bool frame_gen = true;
     void *own_frames_caller = nullptr;
     std::string own_frames_module;

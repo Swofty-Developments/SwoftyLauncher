@@ -513,3 +513,19 @@ fn a_steam_copy_profile_shows_its_own_launcher_save() {
     assert!(!built.view.shared_by_every_profile());
     std::fs::remove_dir_all(&root).ok();
 }
+
+#[test]
+fn a_saves_refresh_overtaken_by_a_newer_one_is_dropped() {
+    let root = std::env::temp_dir().join(format!("swofty-saves-refresh-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    std::fs::create_dir_all(&root).unwrap();
+    let store = swofty_core::store::Store::new(&root);
+    let mut page = SavesPage::default();
+    let old = page.next_generation();
+    let new = page.next_generation();
+    assert!(!page.took(old, build_saves(&store, None, "Race", false)));
+    assert!(page.view.is_none());
+    assert!(page.took(new, build_saves(&store, None, "Race", false)));
+    assert_eq!(page.view.as_ref().map(|v| v.profile.as_str()), Some("Race"));
+    std::fs::remove_dir_all(&root).ok();
+}

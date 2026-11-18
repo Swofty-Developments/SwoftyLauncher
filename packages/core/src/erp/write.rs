@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use swofty_formats::erp::{Entry, Packer};
+use swofty_formats::erp::{Entry, Packer, Resource};
 
 use super::checks::is_handling;
 use super::{Archive, ErpBuild, Slot, fail, pack, served_at_runtime};
@@ -21,25 +21,34 @@ pub struct Resized {
     pub resources: Vec<(String, String)>,
 }
 
-/// The write of one archive: the archive as the ops left it, the file it goes to, the cache of
-/// archives earlier builds wrote and the packer that compresses its pending fragments. A write owns
-/// all it reads and writes, so the writes of different archives share nothing.
+/// The archives a runtime-route build writes whole instead of the in-game loader patching them.
+#[derive(Debug, Default)]
+pub struct BuiltIn {
+    /// The archives outside the asset groups, which the in-game loader never patches.
+    pub outside: Vec<String>,
+    /// The archives whose changes alter a stock entry's layout.
+    pub resized: Vec<Resized>,
+    /// How many of them came from the cache.
+    pub reused: usize,
+}
+
+/// The write of one archive: the archive as the ops left it, the file it goes to and the cache of
+/// archives earlier builds wrote. A write owns all it reads and writes, so the writes of different
+/// archives share nothing.
 struct ArchiveWrite {
     rel: String,
     archive: Archive,
     path: PathBuf,
     cache: Option<PathBuf>,
-    packer: Packer,
 }
 
 impl ArchiveWrite {
-    fn new(out: &Path, rel: String, archive: Archive, cache: Option<&Path>, packer: &Packer) -> Self {
+    fn new(out: &Path, rel: String, archive: Archive, cache: Option<&Path>) -> Self {
         Self {
             path: out.join(&rel),
             rel,
             archive,
             cache: cache.map(Path::to_path_buf),
-            packer: packer.clone(),
         }
     }
 
@@ -101,42 +110,37 @@ impl ArchiveWrite {
         Some(h.finalize().iter().map(|b| format!("{b:02x}")).collect())
     }
 
-    /// Writes the archive, or links it from the cache when an earlier build
-    /// wrote the same bytes; a newly written one is linked into the cache. True
-    /// when it came from the cache. Without hard links nothing is cached. The
-    /// fragments still pending are compressed first, one batch per level.
-    fn run(self) -> Result<bool> {
-        let path = &self.path;
-        if let Some(dir) = path.parent() {
+    /// Where the cache keeps this archive, under a key taken before any pending fragment is compressed.
+    fn entry(&self) -> Option<PathBuf> {
+        let dir = self.cache.as_deref()?;
+        let key = self.key()?;
+        Some(dir.join(&key[..2]).join(format!("{key}.erp")))
+    }
+
+    /// Links the archive from the cache `entry` an earlier build wrote; true when it did. Without hard
+    /// links nothing is cached.
+    fn link(&self, entry: Option<&Path>) -> Result<bool> {
+        if let Some(dir) = self.path.parent() {
             std::fs::create_dir_all(dir).map_err(crate::io_err(dir))?;
         }
-        let cached = self.cache.as_deref().and_then(|dir| {
-            let key = self.key()?;
-            Some(dir.join(&key[..2]).join(format!("{key}.erp")))
-        });
-        if let Some(c) = cached.as_ref().filter(|c| c.is_file())
-            && std::fs::hard_link(c, path).is_ok()
-        {
-            if let Ok(f) = std::fs::File::options().write(true).open(c) {
-                f.set_modified(std::time::SystemTime::now()).ok();
-            }
-            return Ok(true);
+        let Some(c) = entry.filter(|c| c.is_file()) else {
+            return Ok(false);
+        };
+        if std::fs::hard_link(c, &self.path).is_err() {
+            return Ok(false);
         }
+        if let Ok(f) = std::fs::File::options().write(true).open(c) {
+            f.set_modified(std::time::SystemTime::now()).ok();
+        }
+        Ok(true)
+    }
+
+    /// Writes the archive, its fragments compressed, and links it into the cache at `entry`.
+    fn write(self, entry: Option<PathBuf>) -> Result<()> {
         let Self {
-            rel,
-            archive,
-            path,
-            packer,
-            ..
+            rel, archive, path, ..
         } = self;
-        let Archive { file, mut slots } = archive;
-        pack::settle(
-            &packer,
-            slots.iter_mut().filter_map(|s| match s {
-                Slot::Owned(r) => Some(r),
-                Slot::Stock(_) => None,
-            }),
-        )?;
+        let Archive { file, slots } = archive;
         let entries = slots
             .into_iter()
             .map(|s| match s {
@@ -148,14 +152,58 @@ impl ArchiveWrite {
             swofty_formats::Error::IoAt { .. } => Error::Formats(e),
             e => fail(format!("{rel}: {e}")),
         })?;
-        if let Some(c) = cached {
+        if let Some(c) = entry {
             if let Some(dir) = c.parent() {
                 std::fs::create_dir_all(dir).ok();
             }
             std::fs::hard_link(&path, &c).ok();
         }
-        Ok(false)
+        Ok(())
     }
+}
+
+/// Runs `writes`: links from the cache each archive an earlier build wrote the same, compresses the
+/// pending fragments of the others and of `more` together, one batch per level across all of them,
+/// and writes those archives. For each write in order, its archive and whether it came from the cache.
+/// `cancel` runs before each archive.
+fn run_all<'r>(
+    writes: Vec<ArchiveWrite>,
+    packer: &Packer,
+    more: impl IntoIterator<Item = &'r mut Resource>,
+    cancel: &dyn Fn() -> Result<()>,
+) -> Result<Vec<(String, bool)>> {
+    let mut runs = Vec::with_capacity(writes.len());
+    for write in writes {
+        cancel()?;
+        let entry = write.entry();
+        let linked = write.link(entry.as_deref())?;
+        runs.push((write, entry, linked));
+    }
+    let mut owned: Vec<&mut Resource> = runs
+        .iter_mut()
+        .filter(|(_, _, linked)| !linked)
+        .flat_map(|(write, _, _)| write.archive.written_mut())
+        .collect();
+    for r in more {
+        owned.push(r);
+    }
+    crate::now_doing("compressing the changed fragments");
+    pack::settle(packer, owned)?;
+    let mut done = Vec::with_capacity(runs.len());
+    for (write, entry, linked) in runs {
+        let rel = write.rel.clone();
+        if !linked {
+            cancel()?;
+            crate::now_doing(format!("writing {rel}"));
+            write.write(entry)?;
+        }
+        done.push((rel, linked));
+    }
+    Ok(done)
+}
+
+fn reused(done: &[(String, bool)]) -> usize {
+    done.iter().filter(|(_, linked)| *linked).count()
 }
 
 impl ErpBuild<'_> {
@@ -195,28 +243,60 @@ impl ErpBuild<'_> {
     // The in-game loader patches only archives the asset groups list, through the
     // manifest's name map; the engine opens any other archive, such as the shader
     // packages Simplified Studio packs mods into, through a hashed path an overlay never
-    // reaches. Those are written whole: the stock archive with every addon's resources.
-    pub fn take_outside(&mut self, out: &Path) -> Result<Vec<String>> {
-        let outside: Vec<String> = self
-            .erps
+    // reaches. Those are written whole: the stock archive with every addon's resources,
+    // linked from `cache` when an earlier build wrote the same. The archives written and
+    // how many came from the cache.
+    pub fn take_outside(&mut self, out: &Path, cache: Option<&Path>) -> Result<(Vec<String>, usize)> {
+        let outside = self.outside();
+        let writes = outside.iter().map(|rel| self.write_of(out, rel, cache)).collect();
+        let done = run_all(writes, &self.packer, std::iter::empty(), &|| Ok(()))?;
+        Ok((outside, reused(&done)))
+    }
+
+    fn outside(&self) -> Vec<String> {
+        self.erps
             .iter()
             .filter(|(rel, a)| !served_at_runtime(rel) && !a.untouched())
             .map(|(rel, _)| rel.clone())
-            .collect();
-        for rel in &outside {
-            let archive = self.erps.remove(rel).expect("listed above");
-            ArchiveWrite::new(out, rel.clone(), archive, None, &self.packer).run()?;
-        }
-        Ok(outside)
+            .collect()
     }
 
-    pub fn take_resized(&mut self, out: &Path) -> Result<Vec<Resized>> {
+    fn write_of(&mut self, out: &Path, rel: &str, cache: Option<&Path>) -> ArchiveWrite {
+        let archive = self.erps.remove(rel).expect("an archive of the build");
+        ArchiveWrite::new(out, rel.to_owned(), archive, cache)
+    }
+
+    /// Writes whole the archives [`Self::resized`] finds, linking from `cache` the ones an earlier
+    /// build wrote the same; those archives and how many came from the cache.
+    pub fn take_resized(&mut self, out: &Path, cache: Option<&Path>) -> Result<(Vec<Resized>, usize)> {
         let found = self.resized();
-        for r in &found {
-            let archive = self.erps.remove(&r.erp).expect("found above");
-            ArchiveWrite::new(out, r.erp.clone(), archive, None, &self.packer).run()?;
-        }
-        Ok(found)
+        let writes = found.iter().map(|r| self.write_of(out, &r.erp, cache)).collect();
+        let done = run_all(writes, &self.packer, std::iter::empty(), &|| Ok(()))?;
+        Ok((found, reused(&done)))
+    }
+
+    /// Takes out and writes whole the archives [`Self::take_outside`] and then [`Self::take_resized`]
+    /// take, linking from `cache` the ones an earlier build wrote the same, and compresses the pending
+    /// fragments of the archives left, which the runtime overlay copies out, in the same batches.
+    pub fn take_built_in(
+        &mut self,
+        out: &Path,
+        cache: Option<&Path>,
+        cancel: &dyn Fn() -> Result<()>,
+    ) -> Result<BuiltIn> {
+        let outside = self.outside();
+        let mut writes: Vec<ArchiveWrite> =
+            outside.iter().map(|rel| self.write_of(out, rel, cache)).collect();
+        let resized = self.resized();
+        writes.extend(resized.iter().map(|r| self.write_of(out, &r.erp, cache)));
+        let packer = self.packer.clone();
+        let left = self.erps.values_mut().flat_map(|a| a.written_mut());
+        let done = run_all(writes, &packer, left, cancel)?;
+        Ok(BuiltIn {
+            outside,
+            resized,
+            reused: reused(&done),
+        })
     }
 
     pub fn write(self, out: &Path) -> Result<Vec<String>> {
@@ -236,17 +316,10 @@ impl ErpBuild<'_> {
             .erps
             .into_iter()
             .filter(|(_, a)| !a.untouched())
-            .map(|(rel, archive)| ArchiveWrite::new(out, rel, archive, cache, &self.packer))
+            .map(|(rel, archive)| ArchiveWrite::new(out, rel, archive, cache))
             .collect();
-        let mut written = Vec::new();
-        let mut reused = 0;
-        for write in writes {
-            cancel()?;
-            crate::now_doing(format!("writing {}", write.rel));
-            let rel = write.rel.clone();
-            reused += usize::from(write.run()?);
-            written.push(rel);
-        }
-        Ok((written, reused))
+        let done = run_all(writes, &self.packer, std::iter::empty(), cancel)?;
+        let reused = reused(&done);
+        Ok((done.into_iter().map(|(rel, _)| rel).collect(), reused))
     }
 }

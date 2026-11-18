@@ -201,11 +201,11 @@ private:
         if (!manager_slot && !test_stock_set)
             return;
         live = runtime::core_mixins_active(MIXIN);
-        swofty::log("[myteam] vehicle keep %s%s%s",
-                    live ? "armed: a My Team car whose row is gone loads as a stock placeholder that keeps its id, and saves keep "
-                           "the original car"
-                         : "did not install (see the [core] lines); a car whose row is gone is skipped",
-                    live && test_label[0] ? "; test car " : "", live && test_label[0] ? test_label : "");
+        swofty::log("[myteam] vehicle keep %s%s%s%s",
+                    guards::install_state(live, "armed: a My Team car whose row is gone loads as a stock placeholder that "
+                                                "keeps its id, and saves keep the original car"),
+                    live ? "" : "; a car whose row is gone is skipped", live && test_label[0] ? "; test car " : "",
+                    live && test_label[0] ? test_label : "");
     }
 };
 

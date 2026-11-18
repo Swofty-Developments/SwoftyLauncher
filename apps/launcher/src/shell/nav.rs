@@ -31,13 +31,13 @@ impl Shell {
         let was = self.navigation.page;
         self.navigation.page = page;
         if page == Page::Online {
-            self.online_enter(cx);
+            crate::features::online::Online::enter(self, cx);
         }
         if page == Page::Shaders {
             self.sync_shaders(true, cx);
         }
         if page == Page::Careers && was != Page::Careers {
-            self.refresh_saves_in_background(cx);
+            crate::features::career_saves::SavesPage::refresh(self, cx);
         }
         if page == Page::Moderation {
             crate::features::time_trial::TtPage::open(self, cx);
@@ -46,7 +46,7 @@ impl Shell {
             crate::features::support::SupportPage::open(self, cx);
         }
         if let Some(i) = self.open_section().filter(|i| !self.section_loaded(*i)) {
-            self.fetch_views(Some(i), cx);
+            crate::features::sections::AddonViews::fetch(self, Some(i), cx);
         }
         cx.notify();
     }

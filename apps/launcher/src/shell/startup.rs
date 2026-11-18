@@ -83,7 +83,7 @@ impl Shell {
         let poll = Self::poll_game(window, cx);
         Self::rediscover_periodically(cx);
         let live = Self::poll_live(cx);
-        let updates = Self::watch_updates(cx);
+        let updates = crate::features::update::Updates::watch(cx);
         let shell = cx.weak_entity();
         let console_closed = cx.on_window_closed(move |cx, id| {
             shell.update(cx, |s, cx| s.console_closed(id, cx)).ok();
@@ -103,7 +103,7 @@ impl Shell {
             popup_timer: false,
             root_focus: cx.focus_handle(),
             online: crate::features::online::Online::new(&root),
-            mp_page: crate::features::multiplayer::Multiplayer::new(window, cx),
+            rooms: crate::features::multiplayer::Multiplayer::new(window, cx),
             seen,
             sliders: HashMap::new(),
             requests: None,
@@ -113,10 +113,8 @@ impl Shell {
             slow_logged: false,
             updates: crate::features::update::Updates::new(),
             blocks: crate::blocks::Blocks::default(),
-            ticking: false,
             painted: Instant::now(),
             dock: crate::shell::download_dock::Dock::default(),
-            live_n: 0,
             addons: crate::features::addons::AddonsPage::new(window, cx),
             saves: crate::features::career_saves::SavesPage::default(),
             tt: crate::features::time_trial::TtPage::default(),
@@ -167,7 +165,7 @@ impl Shell {
                 highlight: None,
             },
         };
-        shell.refresh_views(cx);
+        crate::features::sections::AddonViews::refresh(&mut shell, cx);
         match std::env::var("SWOFTY_LAUNCHER_OPEN_PAGE").as_deref() {
             Ok("saves") => shell.open_page(Page::Careers, cx),
             Ok("shaders") => shell.open_page(Page::Shaders, cx),
@@ -210,7 +208,7 @@ impl Shell {
                 );
             });
         }
-        shell.fetch_news(cx);
+        crate::features::news::News::fetch(&mut shell, cx);
         shell.browser.sync_updates(&shell.library);
         Browser::fetch_catalog(&mut shell, cx);
         shell.db_profile_changed(cx);
@@ -323,7 +321,12 @@ impl Shell {
         cx.spawn(async move |this, cx| {
             loop {
                 cx.background_executor().timer(Duration::from_millis(250)).await;
-                if this.update(cx, |s, cx| s.live_poll(cx)).is_err() {
+                if this
+                    .update(cx, |s, cx| {
+                        crate::features::sections::AddonViews::live_poll(s, cx)
+                    })
+                    .is_err()
+                {
                     break;
                 }
             }

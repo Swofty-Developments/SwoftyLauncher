@@ -191,22 +191,22 @@ impl Tracks {
             })
             .collect()
     }
+}
 
+impl Pipeline<'_, '_> {
     /// Places each kept track's archive, world files and the AI data the added AI teams borrow in the plan,
     /// and registers its asset groups.
-    #[allow(clippy::too_many_arguments)]
-    pub fn place(
-        &self,
-        run: Run,
+    pub(super) fn place_tracks(
+        &mut self,
+        tracks: &Tracks,
         worlds: &[LayerWorld],
         ai_teams: &[AiTeam],
         grid: u32,
-        planner: &mut Planner,
-        built: &mut Built,
-        caches: &mut Vec<PathBuf>,
     ) -> Result<()> {
+        let (run, planner, built, caches) = (self.run, &mut self.planner, &mut self.built, &mut self.caches);
         let (store, game) = (run.store, run.game);
-        for ((dir, pkg, origin), slot) in self.kept.iter().zip(&self.slots) {
+        let packer = &run.eager_packer();
+        for ((dir, pkg, origin), slot) in tracks.kept.iter().zip(&tracks.slots) {
             let slot_original = slot.map(|s| run.original(&slot_file(s)));
             let track_worlds = missing_worlds(worlds, &pkg.track_code, |group| {
                 planner.last_writer(&[Target::Group(group.to_owned())]).is_some()
@@ -232,6 +232,7 @@ impl Tracks {
                     ai_teams: &track_ai,
                 },
                 &store.root.join("cache/maps").join(&pkg.track_code),
+                packer,
             )?;
             caches.push(placement.dir.clone());
             let at = match slot {
@@ -467,18 +468,14 @@ impl Pipeline<'_, '_> {
     /// Builds the menu pictures of the kept tracks; the result is the menu resources the build keeps
     /// over an addon's own, by the tracks they belong to.
     pub(super) fn track_menus(&mut self, inputs: &Inputs) -> Result<Kept> {
+        let packer = self.run.eager_packer();
         let (run, built, caches) = (self.run, &mut self.built, &mut self.caches);
         let store = run.store;
         let resolve = |rel: &str| run.original(rel);
         let ui_maps = inputs.tracks.ui_maps();
         let mut menu_kept = Kept::new();
         if !ui_maps.is_empty() {
-            let ui = build_ui(
-                &ui_maps,
-                &resolve,
-                &store.root.join("cache/menus"),
-                &self.packer.clone().deferring(false),
-            )?;
+            let ui = build_ui(&ui_maps, &resolve, &store.root.join("cache/menus"), &packer)?;
             caches.push(ui.dir.clone());
             menu_kept = ui.kept;
             built

@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 use serde_json::{Map, Value};
 use swofty_formats::bxml::{Document, Element, Kind};
-use swofty_formats::erp::{Entry, ErpFile, Resource};
+use swofty_formats::erp::{Entry, ErpFile, Packer, Resource};
 use swofty_formats::pkg::{self, Node, Pkg, Val};
 
 use crate::activation::wheel_check;
@@ -855,20 +855,20 @@ pub fn edit_vtf_data(data: &[u8], plan: &Plan) -> Result<Option<(Vec<u8>, Applie
     Ok(Some((bytes, applied)))
 }
 
-pub fn edit_resource(res: &Resource, plan: &Plan) -> Result<Option<(Resource, Applied)>> {
+pub fn edit_resource(res: &Resource, plan: &Plan, packer: &Packer) -> Result<Option<(Resource, Applied)>> {
     let data = res.fragments[0].data()?;
     let Some((bytes, applied)) = edit_vtf_data(&data, plan)? else {
         return Ok(None);
     };
     let mut out = res.clone();
-    crate::activation::ers::set_data(&mut out, 0, &bytes)?;
+    crate::activation::ers::set_data(packer, &mut out, 0, &bytes)?;
     if let Some(stats) = out.fragments.get(1) {
         let old = stats.data()?;
         let version = old
             .get(4..8)
             .map_or(1, |b| u32::from_le_bytes(b.try_into().expect("4 bytes")));
         let doc = Document::parse(&bytes)?;
-        crate::activation::ers::set_data(&mut out, 1, &doc.string_stats(version))?;
+        crate::activation::ers::set_data(packer, &mut out, 1, &doc.string_stats(version))?;
     }
     Ok(Some((out, applied)))
 }
@@ -956,7 +956,13 @@ fn base_layer(data: &[u8], bases: &[(&str, &str)]) -> Result<Option<(Vec<u8>, Ve
     Ok(Some((doc.to_bytes()?, lines)))
 }
 
-pub fn edit_archive(src: &Path, maps: &[&HandlingMap], out: &Path, lines: &mut Vec<String>) -> Result<usize> {
+pub fn edit_archive(
+    src: &Path,
+    maps: &[&HandlingMap],
+    out: &Path,
+    lines: &mut Vec<String>,
+    packer: &Packer,
+) -> Result<usize> {
     let file = ErpFile::open(src)?;
     let mut replace = BTreeMap::new();
     let bases: Vec<(&str, &str)> = maps
@@ -969,7 +975,7 @@ pub fn edit_archive(src: &Path, maps: &[&HandlingMap], out: &Path, lines: &mut V
             let res = file.load(r)?;
             if let Some((bytes, applied)) = base_layer(&res.fragments[0].data()?, &bases)? {
                 let mut new = res.clone();
-                crate::activation::ers::set_data(&mut new, 0, &bytes)?;
+                crate::activation::ers::set_data(packer, &mut new, 0, &bytes)?;
                 let layer = r.name.rsplit('/').next().unwrap_or(&r.name);
                 lines.extend(applied.iter().map(|l| format!("handling {layer}: {l}")));
                 replace.insert(i, new);
@@ -989,7 +995,7 @@ pub fn edit_archive(src: &Path, maps: &[&HandlingMap], out: &Path, lines: &mut V
             {
                 continue;
             }
-            if let Some((new, applied)) = edit_resource(&res, &m.plan)? {
+            if let Some((new, applied)) = edit_resource(&res, &m.plan, packer)? {
                 let vehicle = r.name.rsplit('/').next().unwrap_or(&r.name).to_owned();
                 lines.push(format!(
                     "handling {} -> {vehicle}: {} change(s)",
@@ -1069,6 +1075,7 @@ pub fn build_stock(
     maps: &[HandlingMap],
     original: &dyn Fn(&str) -> PathBuf,
     cache: &Path,
+    packer: &Packer,
 ) -> Result<HandlingBuild> {
     let mut build = HandlingBuild::default();
     let mut by_rel: BTreeMap<&str, Vec<&HandlingMap>> = BTreeMap::new();
@@ -1092,7 +1099,7 @@ pub fn build_stock(
     if !log.is_file() {
         let mut lines = Vec::new();
         for (rel, group) in &by_rel {
-            edit_archive(&original(rel), group, &out.join(rel), &mut lines)?;
+            edit_archive(&original(rel), group, &out.join(rel), &mut lines, packer)?;
         }
         std::fs::create_dir_all(&out).map_err(io_err(&out))?;
         std::fs::write(&log, lines.join("\n")).map_err(io_err(&log))?;
@@ -1614,6 +1621,43 @@ pub fn for_source<'a>(
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[test]
+    fn a_second_handling_edit_takes_its_frames_from_the_cache() {
+        use crate::erp::pack::frame_cache;
+        let mut root = car();
+        root.children.push(el(
+            "Padding",
+            &[],
+            (0..900).map(|i| lf(&format!("Pad{i}"), "0.123456789")).collect(),
+        ));
+        let data = Document {
+            root,
+            tail: Vec::new(),
+        }
+        .to_bytes();
+        assert!(
+            data.len() > 16 << 10,
+            "the handling file is {} bytes, under the cached size",
+            data.len()
+        );
+        let res = frame_cache::zstd_resource("eaid://vehicle_package/teams/a/a.vtf", "VTF", &data);
+        let plan = Plan::from_record(&json!({ "chassis": { "ffb_scale": 1.3 } }));
+        assert!(plan.notes.is_empty(), "{:?}", plan.notes);
+        let dir = std::env::temp_dir().join(format!("swofty-handling-frames-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        let packer = Packer::cached(&dir);
+        let (first, _) = edit_resource(&res, &plan, &packer).unwrap().unwrap();
+        assert!(!frame_cache::marked(first.fragments[0].raw().unwrap()));
+        assert_eq!(frame_cache::mark(&dir), 1);
+        let (second, _) = edit_resource(&res, &plan, &packer).unwrap().unwrap();
+        assert!(frame_cache::marked(second.fragments[0].raw().unwrap()));
+        assert_eq!(
+            second.fragments[0].data().unwrap(),
+            first.fragments[0].data().unwrap()
+        );
+        std::fs::remove_dir_all(&dir).ok();
+    }
 
     fn el(name: &str, attrs: &[(&str, &str)], children: Vec<Element>) -> Element {
         Element {

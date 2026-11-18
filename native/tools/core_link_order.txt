@@ -37,6 +37,8 @@ third_party/zstd/decompress/zstd_ddict.c
 third_party/zstd/decompress/zstd_decompress_block.c
 third_party/zstd/decompress/zstd_decompress.c
 src/core/runtime/loader/mixin_manager.cpp
+src/core/runtime/loader/mixin_install.cpp
+src/core/runtime/loader/mixin_queries.cpp
 src/core/runtime/loader/patch_set.cpp
 src/core/diagnostics/crash/crash.cpp
 src/core/diagnostics/crash/crash_log.cpp
@@ -44,10 +46,15 @@ src/core/diagnostics/crash/symbolizer.cpp
 src/core/diagnostics/crash/capture.cpp
 src/core/diagnostics/crash/fatal_paths.cpp
 src/core/diagnostics/crash/report_sections.cpp
+src/core/diagnostics/crash/report_memory.cpp
+src/core/diagnostics/crash/report_process.cpp
 src/core/diagnostics/crash/report_writer.cpp
 src/core/diagnostics/crash/minidump.cpp
 src/core/diagnostics/crash/stall_report.cpp
+src/core/diagnostics/crash/stall_frames.cpp
 src/core/diagnostics/crash/dred.cpp
+src/core/diagnostics/crash/dred_markers.cpp
+src/core/diagnostics/crash/dred_nodes.cpp
 src/core/runtime/settings.cpp
 src/core/frontend/home_tiles.cpp
 src/core/frontend/ui.cpp
@@ -72,6 +79,7 @@ src/core/guards/session/teammate_pairs_guard.cpp
 src/core/guards/frontend/setup_vm_guard.cpp
 src/core/guards/engine/heap_sizes.cpp
 src/core/diagnostics/net_trace.cpp
+src/core/diagnostics/net_trace/hooks.cpp
 src/core/telemetry/udp_ids.cpp
 src/core/assets/assets.cpp
 src/core/assets/resources.cpp
@@ -88,6 +96,7 @@ src/core/render/d3d12/srv_clamp.cpp
 src/core/render/d3d12/rtas_guard.cpp
 src/core/render/d3d12/hooking.cpp
 src/core/render/d3d12/swapchains.cpp
+src/core/render/d3d12/arm_gate.cpp
 src/core/render/grade.cpp
 src/core/render/postfx.cpp
 src/core/live/live_car.cpp
@@ -96,7 +105,9 @@ src/core/telemetry/telemetry.cpp
 src/core/assets/dbread.cpp
 src/core/runtime/storage.cpp
 src/core/career/career.cpp
+src/core/career/career_entity.cpp
 src/core/career/career_content.cpp
+src/core/career/content_tiles.cpp
 src/core/career/career_start.cpp
 src/core/frontend/popup.cpp
 src/core/hud/race_hud.cpp
@@ -110,12 +121,14 @@ src/core/diagnostics/perf/frames.cpp
 src/core/diagnostics/perf/report.cpp
 src/core/assets/lang_override.cpp
 src/core/career/characters.cpp
+src/core/career/characters_hooks.cpp
 src/core/career/career_wizard.cpp
 src/core/boxes/era_picker.cpp
 src/core/boxes/car_category.cpp
 src/core/boxes/box_options.cpp
 src/core/boxes/box_grid.cpp
 src/core/career/save_splice.cpp
+src/core/career/save_data.cpp
 src/core/career/career_saves.cpp
 src/core/guards/cars/ers_newlap.cpp
 src/core/guards/garage/garage_crew.cpp
@@ -141,6 +154,7 @@ src/core/diagnostics/load_stall.cpp
 src/core/guards/cars/tyre_slots.cpp
 src/core/diagnostics/tyre_models.cpp
 src/core/career/hub_tab.cpp
+src/core/career/hub_rnd.cpp
 src/core/registry/schema.cpp
 src/core/hooks/hooks.cpp
 src/core/hooks/core_events.cpp
@@ -155,6 +169,7 @@ src/core/registry/table.cpp
 src/core/registry/validate.cpp
 src/core/registry/core.cpp
 src/core/career/snapshots/snapshots.cpp
+src/core/career/snapshots/freeze.cpp
 src/core/career/snapshots/runtime.cpp
 src/core/guards/tracks/track_acclim.cpp
 src/core/guards/frontend/gp_continue_guard.cpp

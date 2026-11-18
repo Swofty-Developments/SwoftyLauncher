@@ -11,6 +11,7 @@ impl Pipeline<'_, '_> {
     /// Gives the stock car archives the handling records' changes and the tracks' ERS settings; the
     /// result is the tracks' ERS settings, which car archives addons change get later.
     pub(super) fn car_archives<'i>(&mut self, inputs: &'i Inputs) -> Result<Vec<ErsMap<'i>>> {
+        let packer = self.run.eager_packer();
         let (run, built, caches) = (self.run, &mut self.built, &mut self.caches);
         let (store, game) = (run.store, run.game);
         let (fitted, handling_maps) = (&inputs.tracks, &inputs.handling_maps);
@@ -30,7 +31,12 @@ impl Pipeline<'_, '_> {
             .iter()
             .any(|m| matches!(m.target, handling::Target::Stock(_)))
         {
-            let hb = handling::build_stock(handling_maps, &resolve, &store.root.join("cache/handling"))?;
+            let hb = handling::build_stock(
+                handling_maps,
+                &resolve,
+                &store.root.join("cache/handling"),
+                &packer,
+            )?;
             caches.extend(hb.dir.clone());
             for line in hb.lines {
                 match line.strip_prefix(crate::activation::wheel_check::WARNING_PREFIX) {
@@ -48,7 +54,13 @@ impl Pipeline<'_, '_> {
             }
         }
         if !ers_maps.is_empty() {
-            let ers = build_ers(&ers_maps, &game.dir, &current, &store.root.join("cache/ers"))?;
+            let ers = build_ers(
+                &ers_maps,
+                &game.dir,
+                &current,
+                &store.root.join("cache/ers"),
+                &packer,
+            )?;
             for (rel, src) in &handled {
                 if ers_cars(rel) && !ers.replaced.contains_key(rel) {
                     built.plan.data.insert(rel.clone(), src.clone());

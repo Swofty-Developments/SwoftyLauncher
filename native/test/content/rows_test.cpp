@@ -568,7 +568,7 @@ static void selector_index_tests()
     const char *dup = R"({"op":"add-row","table":"t.rows","from":"t.rows.row[_metadata_=a]","set":{"_metadata_":"b"}})";
     check(indexed.apply(op(dup)).empty() && scan.apply(op(dup)).empty(), "a row added with a label another row holds");
     check(!indexed.resolve("t.rows.row[_metadata_=b]", &why) && why.find("2 rows match") != std::string::npos,
-          "makes the indexed selector refuse it: the write under the table drops the kept values");
+          "makes the indexed selector refuse it: the added row joins the kept values");
     std::size_t mark_i = indexed.mark(), mark_s = scan.mark();
     const char *rename = R"({"op":"set","select":"t.rows.row[_metadata_=c]","field":"speed","value":"9"})";
     check(indexed.apply(op(rename)).empty() && scan.apply(op(rename)).empty() &&
@@ -595,6 +595,34 @@ static void selector_index_tests()
     check(indexed.apply(op(grow.c_str())).empty() && scan.apply(op(grow.c_str())).empty() &&
               indexed.resolve("t.rows.row[speed=7]") == std::optional<std::string>("t.rows.row_3"),
           "and is matched again once the count takes it back in");
+
+    {
+        rows::Engine kept(db.base(), keys), plain(db.base(), keys);
+        kept.index_selectors(true);
+        kept.attribute("mod.a", "vehicle");
+        plain.attribute("mod.a", "vehicle");
+        auto both = [&](const std::string &o) { return kept.apply(op(o.c_str())).empty() && plain.apply(op(o.c_str())).empty(); };
+        auto agree = [&](const std::string &path) {
+            std::string a, b;
+            return kept.resolve(path, &a) == plain.resolve(path, &b) && a == b;
+        };
+        check(kept.resolve("t.rows.row[_metadata_=a]") && kept.selector_builds() == 1, "the first selector reads its field once");
+        bool added = true;
+        for (int i = 0; i < 6; i++)
+            added = added && both(R"({"op":"add-row","table":"t.rows","from":"t.rows.row[_metadata_=a]","set":{"_metadata_":"z)" +
+                                  std::to_string(i) + R"(","speed":")" + std::to_string(20 + i) + R"("}})");
+        check(added && kept.resolve("t.rows.row[_metadata_=z5]") == plain.resolve("t.rows.row[_metadata_=z5]") &&
+                  agree("t.rows.row[_metadata_=a]") && kept.selector_builds() == 1,
+              "rows added after it are found without reading the field again");
+        check(agree("t.rows.row[speed=24]") && kept.selector_builds() == 2, "a second field is read once");
+        check(both(R"({"op":"set","select":"t.rows.row[_metadata_=z4]","field":"speed","value":"31"})") &&
+                  agree("t.rows.row[speed=31]") && agree("t.rows.row[speed=24]") && kept.selector_builds() == 2,
+              "and a set value moves its row to the new value without reading the field again");
+        check(both(R"({"op":"set","select":"t.rows","field":"_row_instancecount_","value":"5"})") &&
+                  agree("t.rows.row[_metadata_=z3]") && agree("t.rows.row[speed=31]") && agree("t.rows.row[_metadata_=a]") &&
+                  kept.selector_builds() == 2,
+              "a lowered instance count takes the rows past it out in place");
+    }
 
     uint64_t seed = 11;
     auto next = [&seed] {

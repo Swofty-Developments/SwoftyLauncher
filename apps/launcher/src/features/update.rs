@@ -12,11 +12,13 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use semver::Version;
 use swofty_core::platform::app_control::Block;
+use swofty_core::store::Store;
 use swofty_core::updates::managed;
 use swofty_core::updates::release::{self as update, Install, Release};
 use swofty_core::updates::updater::{self, Catalog, Gate, Part, Phase, Plan, Ran, Track};
 
 use crate::features::sections::{Reporter, Shared};
+use crate::shell::host::{Host, Hosted};
 use crate::shell::play_bar::link;
 use crate::shell::{PlayState, Shell};
 use crate::ui::theme::Palette;
@@ -129,6 +131,44 @@ impl Updates {
             )
         })
     }
+
+    pub(crate) fn gate(&self, busy: bool) -> Gate {
+        updater::gate(&self.phase, !self.plan().is_empty(), busy)
+    }
+
+    /// Takes a finished check; comes back with the managed addon's release when it is missing and
+    /// nothing else is running.
+    fn took_check(&mut self, addon: Catalog, launcher: Track, installed: Option<Version>) -> Option<Release> {
+        log_change(Part::Addon, &self.addon.latest.error, &addon.latest.error);
+        log_change(Part::Addon, &self.addon.error, &addon.error);
+        log_change(Part::Launcher, &self.launcher.error, &launcher.error);
+        (self.addon, self.launcher, self.addon_installed, self.checking) =
+            (addon, launcher, installed, false);
+        if self.phase == Phase::Idle
+            && let Some(offer) = self.launcher_offer()
+            && self.expected.as_deref() == Some(offer.tag_name.as_str())
+            && let Some(text) = updater::did_not_take(self.expected.as_deref(), &update::current_version())
+        {
+            self.phase = Phase::Failed(text);
+        }
+        if self.addon_installed.is_none() && !self.adding && self.phase == Phase::Idle {
+            return self.missing_addon().cloned();
+        }
+        None
+    }
+
+    /// The plan to run on its own after a launcher update restarted, once, when nothing holds it.
+    fn follow_up(&mut self, busy: bool) -> Option<Plan> {
+        let plan = self.plan();
+        if self.followed_up
+            || !updater::follow_up(self.expected.is_some(), &plan)
+            || self.gate(busy) != Gate::Update
+        {
+            return None;
+        }
+        self.followed_up = true;
+        Some(plan)
+    }
 }
 
 fn log_change(part: Part, before: &Option<String>, after: &Option<String>) {
@@ -151,137 +191,8 @@ fn blocked_text(version: &Version, reason: &str) -> String {
 pub(crate) const NOT_RELEASE_FOLDER: &str = "does not run from a release folder";
 
 impl Shell {
-    pub(crate) fn watch_updates(cx: &mut Context<Self>) -> Task<()> {
-        cx.spawn(async move |this, cx| {
-            loop {
-                if this.update(cx, |s, cx| s.tick_updates(cx)).is_err() {
-                    break;
-                }
-                cx.background_executor().timer(TICK).await;
-            }
-        })
-    }
-
-    fn tick_updates(&mut self, cx: &mut Context<Self>) {
-        let now = update::now_secs();
-        let check_launcher = self.store.config().updates.check;
-        let u = &self.updates;
-        let addon_due = u.addon.probe_due(now);
-        let launcher_due = check_launcher && u.launcher.probe_due(now);
-        if u.checking
-            || matches!(u.phase, Phase::Installing | Phase::Restarting)
-            || !(addon_due || launcher_due)
-            || self.data_move_locked()
-        {
-            return;
-        }
-        self.updates.checking = true;
-        let (mut addon, mut launcher) = (self.updates.addon.clone(), self.updates.launcher.clone());
-        let can_install = self.updates.copy.is_ok();
-        let store = self.store.clone();
-        cx.spawn(async move |this, cx| {
-            let (addon, launcher, installed) = cx
-                .background_executor()
-                .spawn(async move {
-                    let installed = managed::installed(&store);
-                    let current = update::current_version();
-                    if launcher_due {
-                        launcher.check(Part::Launcher, Some(&current), can_install, now);
-                    }
-                    if addon_due {
-                        addon.check(&store, installed.as_ref(), &current, now);
-                    }
-                    (addon, launcher, installed)
-                })
-                .await;
-            this.update(cx, |s, cx| s.checked(addon, launcher, installed, cx))
-                .ok();
-        })
-        .detach();
-    }
-
-    fn checked(
-        &mut self,
-        addon: Catalog,
-        launcher: Track,
-        installed: Option<Version>,
-        cx: &mut Context<Self>,
-    ) {
-        let u = &mut self.updates;
-        log_change(Part::Addon, &u.addon.latest.error, &addon.latest.error);
-        log_change(Part::Addon, &u.addon.error, &addon.error);
-        log_change(Part::Launcher, &u.launcher.error, &launcher.error);
-        (u.addon, u.launcher, u.addon_installed, u.checking) = (addon, launcher, installed, false);
-        if u.phase == Phase::Idle
-            && let Some(offer) = u.launcher_offer()
-            && u.expected.as_deref() == Some(offer.tag_name.as_str())
-            && let Some(text) = updater::did_not_take(u.expected.as_deref(), &update::current_version())
-        {
-            u.phase = Phase::Failed(text);
-        }
-        if u.addon_installed.is_none()
-            && !u.adding
-            && u.phase == Phase::Idle
-            && let Some(release) = u.missing_addon().cloned()
-        {
-            self.add_missing_addon(release, cx);
-        }
-        let plan = self.updates.plan();
-        if !self.updates.followed_up
-            && updater::follow_up(self.updates.expected.is_some(), &plan)
-            && self.update_gate(&self.play_state()) == Gate::Update
-        {
-            self.updates.followed_up = true;
-            let task = self.run_plan(plan, false, cx);
-            cx.spawn(async move |this, cx| {
-                let ran = task.await;
-                this.update(cx, |s, cx| s.finish_updates(ran, cx)).ok();
-            })
-            .detach();
-        }
-        cx.notify();
-    }
-
-    fn add_missing_addon(&mut self, release: Release, cx: &mut Context<Self>) {
-        self.updates.adding = true;
-        let store = self.store.clone();
-        cx.spawn(async move |this, cx| {
-            let result = cx
-                .background_executor()
-                .spawn(async move {
-                    let launcher = update::current_version();
-                    managed::install_release(&store, &release, &launcher, &Reporter(Shared::default()))
-                })
-                .await;
-            this.update(cx, |s, cx| {
-                s.updates.adding = false;
-                match result {
-                    Ok(version) => {
-                        eprintln!("swofty-launcher: installed {} {version}", managed::ID);
-                        s.updates.addon_installed = Some(version);
-                        s.reload(cx);
-                    }
-                    Err(e) => eprintln!("swofty-launcher: could not install {}: {e}", managed::ID),
-                }
-            })
-            .ok();
-        })
-        .detach();
-    }
-
     pub(crate) fn update_gate(&self, state: &PlayState) -> Gate {
-        let busy = matches!(
-            state,
-            PlayState::Running
-                | PlayState::Elsewhere(_)
-                | PlayState::Launching
-                | PlayState::Preparing
-                | PlayState::Restoring
-                | PlayState::Detecting
-                | PlayState::Checking
-                | PlayState::Building
-        );
-        updater::gate(&self.updates.phase, !self.updates.plan().is_empty(), busy)
+        self.updates.gate(holds_updates(state))
     }
 
     fn start_updates(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -300,11 +211,11 @@ impl Shell {
         if plan.is_empty() {
             return;
         }
-        let task = self.run_plan(plan, true, cx);
+        let task = Updates::run_plan(self, plan, true, cx);
         cx.spawn_in(window, async move |this, cx| {
             let ran = task.await;
             this.update_in(cx, |s, window, cx| {
-                if let Some(e) = s.finish_updates(ran, cx) {
+                if let Some(e) = Updates::finish(s, ran, cx) {
                     crate::app::app_log::action("update").failed(&e);
                     window.notify(Notification::error(e).title(tr("Update failed")), cx);
                 }
@@ -315,123 +226,10 @@ impl Shell {
         cx.notify();
     }
 
-    fn run_plan(&mut self, plan: Plan, restarts: bool, cx: &mut Context<Self>) -> Task<Ran> {
-        self.updates.phase = Phase::Installing;
-        self.updates.restarts = restarts || plan.launcher.is_some();
-        let shared: Shared = Arc::new(Mutex::new(Some((0., "Starting the update".into()))));
-        let reporter = Reporter(shared.clone());
-        self.follow_update_progress(shared, cx);
-        let store = self.store.clone();
-        let copy = self.updates.copy.clone().ok();
-        cx.background_executor().spawn(async move {
-            let current = update::current_version();
-            let ran = updater::run(&plan, &current, &reporter, |part, release, launcher, progress| {
-                updater::install(&store, copy.as_ref(), part, release, launcher, progress)
-            });
-            if let Ok(mut p) = reporter.0.lock() {
-                *p = None;
-            }
-            ran
-        })
-    }
-
-    fn finish_updates(&mut self, ran: Ran, cx: &mut Context<Self>) -> Option<String> {
-        let u = &mut self.updates;
-        u.progress = None;
-        if let Some(version) = ran.addon() {
-            u.addon_installed = Some(version.clone());
-        }
-        if let Some(tag) = ran.failed_tag(Part::Addon) {
-            u.held = Some(tag.to_owned());
-        }
-        let error = ran.error();
-        if ran.launcher().is_some() || (u.restarts && ran.restart()) {
-            u.phase = Phase::Restarting;
-            u.restarting = ran.done.clone();
-            let launcher = ran.launcher().map(|v| format!("v{v}"));
-            cx.spawn(async move |this, cx| {
-                cx.background_executor().timer(RESTART_DELAY).await;
-                this.update(cx, |s, cx| s.restart(launcher, cx)).ok();
-            })
-            .detach();
-            cx.notify();
-            return None;
-        }
-        u.phase = match &error {
-            Some(e) => Phase::Failed(trf!("Update failed: {e}", e = e)),
-            None => Phase::Idle,
-        };
-        if ran.addon().is_some() {
-            self.reload(cx);
-        }
-        cx.notify();
-        error
-    }
-
     fn retry_addon(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.updates.held = None;
         self.updates.phase = Phase::Idle;
         self.start_updates(window, cx);
-    }
-
-    fn follow_update_progress(&mut self, shared: Shared, cx: &mut Context<Self>) {
-        self.updates.progress = shared.lock().ok().and_then(|p| p.clone());
-        cx.spawn(async move |this, cx| {
-            loop {
-                cx.background_executor().timer(Duration::from_millis(100)).await;
-                let now = shared.lock().ok().and_then(|p| p.clone());
-                let done = now.is_none();
-                if this
-                    .update(cx, |s, cx| {
-                        if now.is_some() {
-                            s.updates.progress = now;
-                        }
-                        cx.notify();
-                    })
-                    .is_err()
-                    || done
-                {
-                    break;
-                }
-            }
-        })
-        .detach();
-    }
-
-    fn restart(&mut self, launcher: Option<String>, cx: &mut Context<Self>) {
-        let exe = match &self.updates.copy {
-            Ok(install) => Ok(install.launcher()),
-            Err(_) => std::env::current_exe(),
-        };
-        let mut command = match exe {
-            Ok(exe) => std::process::Command::new(exe),
-            Err(e) => {
-                self.updates.phase = Phase::Failed(trf!(
-                    "Updated, but could not restart: {e}. Close and reopen the launcher.",
-                    e = e
-                ));
-                cx.notify();
-                return;
-            }
-        };
-        command.env_remove(update::PRETEND_ENV);
-        match &launcher {
-            Some(tag) => command.env(updater::UPDATED_ENV, tag),
-            None => command.env_remove(updater::UPDATED_ENV),
-        };
-        match command.spawn() {
-            Ok(_) => cx.quit(),
-            Err(e) => {
-                self.updates.phase = Phase::Failed(match Block::of(Path::new(command.get_program()), &e) {
-                    Some(b) => trf!("Updated, but could not restart: {e}", e = b.text()),
-                    None => trf!(
-                        "Updated, but could not restart: {e}. Close and reopen the launcher.",
-                        e = e
-                    ),
-                });
-                cx.notify();
-            }
-        }
     }
 
     pub(crate) fn update_status(
@@ -697,6 +495,283 @@ impl Shell {
     }
 }
 
+/// The play states an update waits for.
+fn holds_updates(state: &PlayState) -> bool {
+    matches!(
+        state,
+        PlayState::Running
+            | PlayState::Elsewhere(_)
+            | PlayState::Launching
+            | PlayState::Preparing
+            | PlayState::Restoring
+            | PlayState::Detecting
+            | PlayState::Checking
+            | PlayState::Building
+    )
+}
+
+pub(crate) struct UpdatesNeeds<'a> {
+    pub(crate) store: &'a Store,
+    /// The data folder is moving; nothing checks until it is done.
+    pub(crate) locked: bool,
+    /// The game or a launch holds updates back.
+    pub(crate) busy: bool,
+}
+
+pub(crate) enum UpdatesChange {
+    /// The managed addon was installed or updated, so the installed addons changed on disk.
+    Installed,
+}
+
+impl Hosted for Updates {
+    type Needs<'a> = UpdatesNeeds<'a>;
+    type Change = UpdatesChange;
+}
+
+impl Host<Updates> for Shell {
+    fn split(&mut self) -> (&mut Updates, UpdatesNeeds<'_>) {
+        let locked = self.data_move_locked();
+        let busy = holds_updates(&self.play_state());
+        (
+            &mut self.updates,
+            UpdatesNeeds {
+                store: &self.store,
+                locked,
+                busy,
+            },
+        )
+    }
+
+    fn changed(&mut self, change: UpdatesChange, cx: &mut Context<Self>) {
+        match change {
+            UpdatesChange::Installed => self.reload(cx),
+        }
+    }
+}
+
+impl Updates {
+    pub(crate) fn watch<H: Host<Self>>(cx: &mut Context<H>) -> Task<()> {
+        cx.spawn(async move |this, cx| {
+            loop {
+                if this.update(cx, |host, cx| Self::tick(host, cx)).is_err() {
+                    break;
+                }
+                cx.background_executor().timer(TICK).await;
+            }
+        })
+    }
+
+    fn tick<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (u, needs) = host.split();
+        let now = update::now_secs();
+        let check_launcher = needs.store.config().updates.check;
+        let addon_due = u.addon.probe_due(now);
+        let launcher_due = check_launcher && u.launcher.probe_due(now);
+        if u.checking
+            || matches!(u.phase, Phase::Installing | Phase::Restarting)
+            || !(addon_due || launcher_due)
+            || needs.locked
+        {
+            return;
+        }
+        u.checking = true;
+        let (mut addon, mut launcher) = (u.addon.clone(), u.launcher.clone());
+        let can_install = u.copy.is_ok();
+        let store = needs.store.clone();
+        cx.spawn(async move |this, cx| {
+            let (addon, launcher, installed) = cx
+                .background_executor()
+                .spawn(async move {
+                    let installed = managed::installed(&store);
+                    let current = update::current_version();
+                    if launcher_due {
+                        launcher.check(Part::Launcher, Some(&current), can_install, now);
+                    }
+                    if addon_due {
+                        addon.check(&store, installed.as_ref(), &current, now);
+                    }
+                    (addon, launcher, installed)
+                })
+                .await;
+            this.update(cx, |host, cx| Self::checked(host, addon, launcher, installed, cx))
+                .ok();
+        })
+        .detach();
+    }
+
+    fn checked<H: Host<Self>>(
+        host: &mut H,
+        addon: Catalog,
+        launcher: Track,
+        installed: Option<Version>,
+        cx: &mut Context<H>,
+    ) {
+        if let Some(release) = host.split().0.took_check(addon, launcher, installed) {
+            Self::add_missing(host, release, cx);
+        }
+        let (u, needs) = host.split();
+        if let Some(plan) = u.follow_up(needs.busy) {
+            let task = Self::run_plan(host, plan, false, cx);
+            cx.spawn(async move |this, cx| {
+                let ran = task.await;
+                this.update(cx, |host, cx| Self::finish(host, ran, cx)).ok();
+            })
+            .detach();
+        }
+        cx.notify();
+    }
+
+    fn add_missing<H: Host<Self>>(host: &mut H, release: Release, cx: &mut Context<H>) {
+        let (u, needs) = host.split();
+        u.adding = true;
+        let store = needs.store.clone();
+        cx.spawn(async move |this, cx| {
+            let result = cx
+                .background_executor()
+                .spawn(async move {
+                    let launcher = update::current_version();
+                    managed::install_release(&store, &release, &launcher, &Reporter(Shared::default()))
+                })
+                .await;
+            this.update(cx, |host, cx| {
+                let u = host.split().0;
+                u.adding = false;
+                match result {
+                    Ok(version) => {
+                        eprintln!("swofty-launcher: installed {} {version}", managed::ID);
+                        u.addon_installed = Some(version);
+                        host.changed(UpdatesChange::Installed, cx);
+                    }
+                    Err(e) => eprintln!("swofty-launcher: could not install {}: {e}", managed::ID),
+                }
+            })
+            .ok();
+        })
+        .detach();
+    }
+
+    pub(crate) fn run_plan<H: Host<Self>>(
+        host: &mut H,
+        plan: Plan,
+        restarts: bool,
+        cx: &mut Context<H>,
+    ) -> Task<Ran> {
+        let u = host.split().0;
+        u.phase = Phase::Installing;
+        u.restarts = restarts || plan.launcher.is_some();
+        let shared: Shared = Arc::new(Mutex::new(Some((0., "Starting the update".into()))));
+        let reporter = Reporter(shared.clone());
+        Self::follow_progress(host, shared, cx);
+        let (u, needs) = host.split();
+        let store = needs.store.clone();
+        let copy = u.copy.clone().ok();
+        cx.background_executor().spawn(async move {
+            let current = update::current_version();
+            let ran = updater::run(&plan, &current, &reporter, |part, release, launcher, progress| {
+                updater::install(&store, copy.as_ref(), part, release, launcher, progress)
+            });
+            if let Ok(mut p) = reporter.0.lock() {
+                *p = None;
+            }
+            ran
+        })
+    }
+
+    pub(crate) fn finish<H: Host<Self>>(host: &mut H, ran: Ran, cx: &mut Context<H>) -> Option<String> {
+        let u = host.split().0;
+        u.progress = None;
+        if let Some(version) = ran.addon() {
+            u.addon_installed = Some(version.clone());
+        }
+        if let Some(tag) = ran.failed_tag(Part::Addon) {
+            u.held = Some(tag.to_owned());
+        }
+        let error = ran.error();
+        if ran.launcher().is_some() || (u.restarts && ran.restart()) {
+            u.phase = Phase::Restarting;
+            u.restarting = ran.done.clone();
+            let launcher = ran.launcher().map(|v| format!("v{v}"));
+            cx.spawn(async move |this, cx| {
+                cx.background_executor().timer(RESTART_DELAY).await;
+                this.update(cx, |host, cx| Self::restart(host, launcher, cx)).ok();
+            })
+            .detach();
+            cx.notify();
+            return None;
+        }
+        u.phase = match &error {
+            Some(e) => Phase::Failed(trf!("Update failed: {e}", e = e)),
+            None => Phase::Idle,
+        };
+        if ran.addon().is_some() {
+            host.changed(UpdatesChange::Installed, cx);
+        }
+        cx.notify();
+        error
+    }
+
+    fn follow_progress<H: Host<Self>>(host: &mut H, shared: Shared, cx: &mut Context<H>) {
+        host.split().0.progress = shared.lock().ok().and_then(|p| p.clone());
+        cx.spawn(async move |this, cx| {
+            loop {
+                cx.background_executor().timer(Duration::from_millis(100)).await;
+                let now = shared.lock().ok().and_then(|p| p.clone());
+                let done = now.is_none();
+                if this
+                    .update(cx, |host, cx| {
+                        if now.is_some() {
+                            host.split().0.progress = now;
+                        }
+                        cx.notify();
+                    })
+                    .is_err()
+                    || done
+                {
+                    break;
+                }
+            }
+        })
+        .detach();
+    }
+
+    fn restart<H: Host<Self>>(host: &mut H, launcher: Option<String>, cx: &mut Context<H>) {
+        let u = host.split().0;
+        let exe = match &u.copy {
+            Ok(install) => Ok(install.launcher()),
+            Err(_) => std::env::current_exe(),
+        };
+        let mut command = match exe {
+            Ok(exe) => std::process::Command::new(exe),
+            Err(e) => {
+                u.phase = Phase::Failed(trf!(
+                    "Updated, but could not restart: {e}. Close and reopen the launcher.",
+                    e = e
+                ));
+                cx.notify();
+                return;
+            }
+        };
+        command.env_remove(update::PRETEND_ENV);
+        match &launcher {
+            Some(tag) => command.env(updater::UPDATED_ENV, tag),
+            None => command.env_remove(updater::UPDATED_ENV),
+        };
+        match command.spawn() {
+            Ok(_) => cx.quit(),
+            Err(e) => {
+                u.phase = Phase::Failed(match Block::of(Path::new(command.get_program()), &e) {
+                    Some(b) => trf!("Updated, but could not restart: {e}", e = b.text()),
+                    None => trf!(
+                        "Updated, but could not restart: {e}. Close and reopen the launcher.",
+                        e = e
+                    ),
+                });
+                cx.notify();
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -733,5 +808,33 @@ mod tests {
         let mut u = blocked();
         u.launcher.tag = Some("v0.0.1".into());
         assert!(u.blocked_notice().is_none());
+    }
+
+    #[test]
+    fn an_update_waits_while_the_game_runs_or_gets_ready() {
+        for busy in [
+            PlayState::Running,
+            PlayState::Launching,
+            PlayState::Checking,
+            PlayState::Building,
+        ] {
+            assert!(holds_updates(&busy));
+        }
+        for free in [PlayState::Ready, PlayState::NotInstalled] {
+            assert!(!holds_updates(&free));
+        }
+    }
+
+    #[test]
+    fn a_check_with_nothing_new_ends_the_check_and_installs_nothing() {
+        let mut u = Updates::new();
+        u.checking = true;
+        assert!(
+            u.took_check(Catalog::default(), Track::default(), Some(Version::new(1, 0, 0)))
+                .is_none()
+        );
+        assert!(!u.checking);
+        assert_eq!(u.addon_installed, Some(Version::new(1, 0, 0)));
+        assert!(u.follow_up(false).is_none());
     }
 }

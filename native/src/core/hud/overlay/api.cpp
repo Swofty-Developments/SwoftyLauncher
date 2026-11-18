@@ -46,7 +46,8 @@ std::string addon_image(const Caller &c, const char *file, std::string &why)
 
 int ov_available()
 {
-    if (!overlay.implemented || !overlay.armed.load())
+    bool arming = overlay.arming.load();
+    if (!overlay.implemented || !(arming || overlay.armed.load()))
         return 0;
     return hud::listed(settings().off, owner_of(caller(__builtin_return_address(0)))) ? 0 : 1;
 }

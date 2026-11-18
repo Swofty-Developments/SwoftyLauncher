@@ -1,6 +1,8 @@
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
+use swofty_formats::erp::Packer;
+
 use crate::Result;
 use crate::addons::settings::OnAddons;
 use crate::asset::{Origin, Root};
@@ -23,9 +25,18 @@ pub(super) struct Run<'a> {
     pub order: &'a [String],
     pub settings: &'a Profile,
     pub on: &'a OnAddons,
+    /// The build's packer: it reuses the frames earlier builds compressed into the store's cache, and leaves
+    /// the archive build's compression to each archive's write.
+    pub packer: &'a Packer,
 }
 
 impl<'a> Run<'a> {
+    /// The build's packer compressing as it goes, for the archives written straight to disk instead of
+    /// through the archive build.
+    pub fn eager_packer(&self) -> Packer {
+        self.packer.clone().deferring(false)
+    }
+
     /// Where `origin`'s addon comes in the load order; an addon outside it comes last.
     pub fn rank(&self, origin: &Origin) -> usize {
         self.order

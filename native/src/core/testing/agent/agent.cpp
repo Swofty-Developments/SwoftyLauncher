@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "core/apply/tracks/box.hpp"
-#include "core/hooks/car_live.hpp"
+#include "core/runtime/car_layout.hpp"
 #include "core/testing/title_skip.hpp"
 #include "core/testing/virtual_pad.hpp"
 #include "core/testing/agent/agent_logic.hpp"
@@ -40,23 +40,15 @@ namespace ta = testagent;
 
 // Each offset is read by the same instruction on the KB build and on Steam 1.0.145: in a function whose body is
 // the same on both (re/tools/sigport.py --witness, at the KB RVA), or where it says so, at its readers aligned by
-// re/tools/layoutcmp.py. Cars: the system slots +0x530..+0x5a8
-// 0x473c2e0; mass +0x150 0x4676d40; fuel flow and mass +0x100, +0x108 0x468edb0; max torque and limiter
-// +0x2518, +0x2528 0x4687d60; rotation rate +0x2538 0x46878d0; throttle +0x2574 0x46e2290 (whose only change is
-// the ERS mode); gear +0x680 0x46a4c20; ERS energy +0x19f0 0x46d1210; drag +0x19e8 0x46dceb0; is_ai +0x124
-// 0x46dc4b0; fuel capacity +0x98, brake bias +0x21d8, fuel mode +0x128 and vehicle id +0xe8 at their readers
-// (layoutcmp.py). The ERS mode moved to +0x1a6c on 1.0.145 (its reset store,
-// re/research/live-steam-26566308.md). Tiles: fe_career's list +0x2c8 (slot 12 0x1b2d230), the home list +0x358 and
-// router +0x28 (0x1bb17f0), TileList +0x78, +0x80, Tile +0xd0 and item +0x10 (the populate loop 0x173df80,
-// get_action 0x1725620). Resume screens: cards +0x328 and 0x540 each, busy +0x1380 (0x1a1eb80, 0x1a0a210) and the
+// re/tools/layoutcmp.py. The car fields' proofs are runtime::car_layout's. Tiles: fe_career's list +0x2c8 (slot 12
+// 0x1b2d230), the home list +0x358 and router +0x28 (0x1bb17f0), TileList +0x78, +0x80, Tile +0xd0 and item +0x10
+// (the populate loop 0x173df80, get_action 0x1725620). Resume screens: cards +0x328 and 0x540 each, busy +0x1380 (0x1a1eb80, 0x1a0a210) and the
 // handler's node +0x12f0 (0x1a0b280). Team HQ: +0x620 and +0x6e0 (onCommandRaised 0x22c3540), +0x758 and +0x759
 // (0x22c6860), the clock [+0x6e0]+0x2b0 (0x22c9e40). The game manager's system map +0x30 (0x336830, 0x361670) and
 // its entries +0x18, +0x20 (the find 0x30ffd0).
 namespace bp = runtime::build_proof;
 constexpr uint32_t KB_AND_1_0_145 = bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145);
-constexpr bp::Proof CAR_LAYOUT{"CarLive's system slots (+0x530..+0x5a8), +0xe8, +0x124 and the agent's car fields",
-                               KB_AND_1_0_145};
-constexpr bp::Gate CAR_READS{"the test agent's car fields", &CAR_LAYOUT};
+constexpr bp::Gate CAR_READS{"the test agent's car fields", &runtime::car_layout::TELEMETRY};
 constexpr bp::Proof TILE_LAYOUT{"the tile screens' lists (+0x2c8, home +0x358, router +0x28; TileList +0x78, +0x80; "
                                 "Tile +0xd0; item +0x10)",
                                 KB_AND_1_0_145};
@@ -389,33 +381,26 @@ void controller_setup()
     controller_why.clear();
 }
 
-
-// Cars: g_Sess_VehicleTable (0x146ce86e0, L2) holds a CarLive per vehicle id, read on the builds CAR_LAYOUT
-// names. The field table is the KB's L3 rows (re/db/structs/Car*.h), with a field's 1.0.145 offset where it
-// moved there; "obf" fields are CarObfFloat pairs: the float's bits XOR the key 8 bytes on.
+// Cars: g_Sess_VehicleTable (0x146ce86e0, L2) holds a CarLive per vehicle id, read on the builds
+// runtime::car_layout::TELEMETRY names. The field table is the KB's L3 rows (re/db/structs/Car*.h); a field whose
+// offset moves between builds takes it from runtime::car_layout; "obf" fields are CarObfFloat pairs: the float's bits
+// XOR the key 8 bytes on.
 constexpr size_t CAR_VEHICLE_ID = 0xe8, CAR_IS_AI = 0x124;
 enum class Ty { f32, obf, u32, i32, u8 };
 struct Field {
     const char *system, *field;
     size_t sys_off, off;
     Ty ty;
-    size_t off_1_0_145 = 0;
+    size_t (*off_on)(bp::Build) = nullptr;
 };
 constexpr Field FIELDS[] = {
-    {"chassis", "mass", 0x558, 0x150, Ty::f32},
-    {"fuel_tank", "fuel_mass", 0x540, 0x100, Ty::f32},
-    {"fuel_tank", "fuel_flow", 0x540, 0x108, Ty::f32},
-    {"fuel_tank", "fuel_capacity", 0x540, 0x98, Ty::obf},
-    {"engine", "max_torque", 0x530, 0x2518, Ty::obf},
-    {"engine", "limiter_rotation_rate", 0x530, 0x2528, Ty::f32},
-    {"engine", "rotation_rate", 0x530, 0x2538, Ty::f32},
-    {"engine", "throttle", 0x530, 0x2574, Ty::f32},
-    {"gearbox", "gear_index", 0x538, 0x680, Ty::u32},
-    {"brake_ecu", "brake_bias", 0x550, 0x21d8, Ty::f32},
-    {"ers", "energy", 0x5a8, 0x19f0, Ty::f32},
-    {"ers", "ers_mode", 0x5a8, 0x1a68, Ty::i32, 0x1a6c},
-    {"fuel_ecu", "fuel_mode", 0x548, 0x128, Ty::i32},
-    {"f1_aero", "total_drag", 0x570, 0x19e8, Ty::f32},
+    {"chassis", "mass", 0x558, 0x150, Ty::f32},          {"fuel_tank", "fuel_mass", 0x540, 0x100, Ty::f32},
+    {"fuel_tank", "fuel_flow", 0x540, 0x108, Ty::f32},   {"fuel_tank", "fuel_capacity", 0x540, 0x98, Ty::obf},
+    {"engine", "max_torque", 0x530, 0x2518, Ty::obf},    {"engine", "limiter_rotation_rate", 0x530, 0x2528, Ty::f32},
+    {"engine", "rotation_rate", 0x530, 0x2538, Ty::f32}, {"engine", "throttle", 0x530, 0x2574, Ty::f32},
+    {"gearbox", "gear_index", 0x538, 0x680, Ty::u32},    {"brake_ecu", "brake_bias", 0x550, 0x21d8, Ty::f32},
+    {"ers", "energy", 0x5a8, 0x19f0, Ty::f32},           {"ers", "ers_mode", 0x5a8, 0, Ty::i32, &runtime::car_layout::ers_mode},
+    {"fuel_ecu", "fuel_mode", 0x548, 0x128, Ty::i32},    {"f1_aero", "total_drag", 0x570, 0x19e8, Ty::f32},
 };
 
 const char *ty_name(Ty t)
@@ -432,13 +417,12 @@ std::string car_unbound()
     return {};
 }
 
-// ai_drives_player reads only CarLive.vehicle_id and is_ai, which re/research/car-live-1-0-145.md checked on every
-// build in car_live::CAR_BUILDS; the other car fields stay behind CAR_READS.
+// ai_drives_player reads only CarLive.vehicle_id and is_ai, which runtime::car_layout::CAR_LIVE proves on more
+// builds; the other car fields stay behind CAR_READS.
 std::string player_car_unbound()
 {
-    runtime::build_proof::Exe exe = runtime::running_exe();
-    if (!swofty_core::hooks::car_live::car_build_for(exe.pe_timestamp, exe.size_of_image))
-        return "CarLive.vehicle_id and is_ai are not checked on build " + std::to_string(exe.pe_timestamp);
+    if (!bp::proven_on(runtime::car_layout::CAR_LIVE, runtime::running_build()))
+        return "CarLive.vehicle_id and is_ai are not checked on build " + std::to_string(runtime::running_exe().pe_timestamp);
     if (!ga.vehicle_table || !ga.vehicle_count)
         return "g_Sess_VehicleTable or g_Sess_VehicleCount did not resolve on this build";
     return {};
@@ -510,7 +494,11 @@ uint8_t *field_at(const std::string &path, const Field **out, std::string &why)
     if (!car)
         return nullptr;
     uint8_t *sys = *reinterpret_cast<uint8_t **>(car + f->sys_off);
-    size_t off = f->off_1_0_145 && runtime::running_build() == bp::Build::steam_1_0_145 ? f->off_1_0_145 : f->off;
+    size_t off = f->off_on ? f->off_on(runtime::running_build()) : f->off;
+    if (!off) {
+        why = p.system + "." + p.field + " has no proven offset on this build";
+        return nullptr;
+    }
     if (!sys || !runtime::readable(sys + off, 16)) {
         why = "car " + std::to_string(idx) + " has no " + p.system;
         return nullptr;

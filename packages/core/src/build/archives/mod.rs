@@ -106,7 +106,7 @@ impl Pipeline<'_, '_> {
         let resolve = |rel: &str| run.original(rel);
         let mut erps = ErpBuild::new(&base)
             .with_baseline(&resolve)
-            .with_packer(self.packer.clone());
+            .with_packer(self.run.packer.clone());
         for rel in puts.keys() {
             erps.load(rel)?;
         }
@@ -144,6 +144,7 @@ impl Pipeline<'_, '_> {
     fn compose_hud(&mut self, inputs: &Inputs, bases: &Bases, erp_ops: &[Op]) -> Result<Vec<Op>> {
         let run = self.run;
         let (store, game) = (run.store, run.game);
+        let packer = self.run.eager_packer();
         let Self { built, session, .. } = self;
         let hud_inputs = &inputs.hud_inputs;
         let stock = crate::hud::GameStock::with_baseline(&game.dir, &store.root)
@@ -166,6 +167,7 @@ impl Pipeline<'_, '_> {
                 baseline: &resolve,
                 puts: &put_names,
                 name: &name,
+                packer: &packer,
             },
             erp_ops,
             hud_inputs,
@@ -323,11 +325,12 @@ impl Pipeline<'_, '_> {
     ) -> Result<()> {
         let run = self.run;
         let name = |origin: &str| run.origin_name(origin);
+        let packer = self.run.packer.clone();
         let Self { planner, built, .. } = self;
         built.warnings.extend(erps.wheel_warnings());
         if !ers_maps.is_empty() {
             let edited = erps.edit_written(|rel, r| match ers::in_teams(rel) && r.kind() == "VTF" {
-                true => ers::edit_vtf(r, ers_maps),
+                true => ers::edit_vtf(r, ers_maps, &packer),
                 false => Ok(None),
             })?;
             if edited > 0 {
@@ -405,9 +408,9 @@ impl Pipeline<'_, '_> {
         if let Some(note) = planner.route_note(Kind::Erp) {
             built.lines.push(format!("erp: {note}"));
         }
+        let archives = run.store.root.join("cache").join(crate::cache::ARCHIVES_DIR);
         if planner.route(Kind::Erp) != Route::Runtime {
             let resized = erps.resized();
-            let archives = run.store.root.join("cache").join(crate::cache::ARCHIVES_DIR);
             let (written, reused) = erps.write_cached(&built.overlay, Some(&archives), &|| run.cancel())?;
             if reused > 0 {
                 built.lines.push(format!(
@@ -418,13 +421,16 @@ impl Pipeline<'_, '_> {
             stage_erps(built, staged, written)?;
             return Ok(resized);
         }
-        let outside = erps.take_outside(&built.overlay)?;
+        let crate::erp::BuiltIn {
+            outside,
+            resized,
+            reused,
+        } = erps.take_built_in(&built.overlay, Some(&archives), &|| run.cancel())?;
         for rel in &outside {
             built.lines.push(format!(
                 "erp: {rel} built into the game files; the in-game loader patches only archives under 2025_asset_groups"
             ));
         }
-        let resized = erps.take_resized(&built.overlay)?;
         for r in &resized {
             let (uri, why) = &r.resources[0];
             built.lines.push(format!(
@@ -434,6 +440,12 @@ impl Pipeline<'_, '_> {
             ));
         }
         let built_in: Vec<String> = resized.iter().map(|r| r.erp.clone()).chain(outside).collect();
+        if reused > 0 {
+            built.lines.push(format!(
+                "erp: {reused} of the {} archive(s) built into the game files unchanged since an earlier build, linked from the cache",
+                built_in.len()
+            ));
+        }
         let Applied { ranks, prebuilt } = applied;
         if !prebuilt.is_empty() {
             built.lines.push(format!(
@@ -441,7 +453,6 @@ impl Pipeline<'_, '_> {
                 prebuilt.len()
             ));
         }
-        erps.settle()?;
         let notes = runtime.resources(erps.resources(), &ranks, &prebuilt, &built.overlay)?;
         built.warnings.extend(notes);
         stage_erps(built, staged, built_in)?;

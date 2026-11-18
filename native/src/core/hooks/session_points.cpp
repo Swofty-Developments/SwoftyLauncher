@@ -9,6 +9,7 @@
 
 #include "core/hooks/hooks.hpp"
 #include "core/hooks/session_points.hpp"
+#include "core/runtime/loader/core_rank.hpp"
 
 // The session hook points and operations on the live game (session_points.hpp): memory reads are checked
 // (swofty::mem), the flow thread is the one that ticks on_frame, and the config picks the ai.controller.update
@@ -129,6 +130,8 @@ extern "C" __declspec(dllexport) const SwoftySessionOps *SwoftyCoreSessionOps(vo
 {
     return &swofty_core::hooks::g_ops;
 }
+
+SWOFTY_CORE_RANK(session_points)
 
 SWOFTY_ON_LOAD
 {

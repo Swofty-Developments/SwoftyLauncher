@@ -11,8 +11,9 @@
 #include "core/runtime/json.hpp"
 #include "core/frontend/ui/screen_loader.hpp"
 #include "core/frontend/ui_vm.hpp"
+#include "core/runtime/loader/core_rank.hpp"
 
-namespace ui {
+namespace frontend::ui {
 
 ScreenLoader loader;
 
@@ -230,9 +231,11 @@ void when_code_ready(const char *what, void (*fn)());
 
 namespace {
 
-void ui_load() { ui::loader.load(); }
+void ui_load() { frontend::ui::loader.load(); }
 
 }
+
+SWOFTY_CORE_RANK(ui)
 
 SWOFTY_ON_LOAD
 {

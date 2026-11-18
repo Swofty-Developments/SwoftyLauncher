@@ -122,15 +122,7 @@ impl Pipeline<'_, '_> {
         let grid = grid_size(&db.db);
         let worlds = layer_worlds(&db.db);
         self.write_database(db, staged, &recorded.row_adders, inputs.room_asked)?;
-        fitted.place(
-            self.run,
-            &worlds,
-            &recorded.ai_teams,
-            grid,
-            &mut self.planner,
-            &mut self.built,
-            &mut self.caches,
-        )?;
+        self.place_tracks(fitted, &worlds, &recorded.ai_teams, grid)?;
         Ok(edits)
     }
 

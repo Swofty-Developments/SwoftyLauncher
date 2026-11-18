@@ -303,6 +303,7 @@ fn alias_world(
     graph: &Resource,
     eaid: String,
     name: String,
+    packer: &Packer,
 ) -> Result<[Resource; 2]> {
     let mut graph = file.load(graph)?;
     graph.name = format!("{eaid}?event_graph");
@@ -319,7 +320,7 @@ fn alias_world(
             _ => return Err(Error::Map(format!("{}: world has no {key} string", world.name))),
         }
     }
-    set_data(&mut world, 0, &pkg.to_bytes()?)?;
+    set_data(packer, &mut world, 0, &pkg.to_bytes()?)?;
     world.name = eaid;
     Ok([world, graph])
 }
@@ -340,7 +341,13 @@ fn rename_strings(node: &mut Node, from: &str, to: &str) -> usize {
     }
 }
 
-fn ai_stand_in(file: &ErpFile, res: &Resource, code: &str, team: &AiTeam) -> Result<Resource> {
+fn ai_stand_in(
+    file: &ErpFile,
+    res: &Resource,
+    code: &str,
+    team: &AiTeam,
+    packer: &Packer,
+) -> Result<Resource> {
     let (src, dst) = (
         ai_dir(code, &team.package, &team.from),
         ai_dir(code, &team.package, &team.team),
@@ -353,7 +360,7 @@ fn ai_stand_in(file: &ErpFile, res: &Resource, code: &str, team: &AiTeam) -> Res
     let mut res = file.load(res)?;
     if let Some(data) = renamed_pkg(&res, team) {
         let mut copy = res.clone();
-        if set_data(&mut copy, 0, &data).is_ok() {
+        if set_data(packer, &mut copy, 0, &data).is_ok() {
             res = copy;
         }
     }
@@ -373,8 +380,8 @@ fn renamed_pkg(res: &Resource, team: &AiTeam) -> Option<Vec<u8>> {
     pkg.to_bytes().ok()
 }
 
-fn set_data(res: &mut Resource, index: usize, data: &[u8]) -> Result<()> {
-    crate::erp::pack::set_fragment_at(&Packer::default(), res, index, data, ZSTD_LEVEL)
+fn set_data(packer: &Packer, res: &mut Resource, index: usize, data: &[u8]) -> Result<()> {
+    crate::erp::pack::set_fragment_at(packer, res, index, data, ZSTD_LEVEL)
 }
 
 pub fn shipped_name(path: &str) -> String {
@@ -388,6 +395,7 @@ fn repoint_mips(
     res: &Resource,
     code: &str,
     shipped: &BTreeSet<String>,
+    packer: &Packer,
 ) -> Result<Option<(Resource, String)>> {
     if res.kind() != "GfxSurfaceRes" || res.fragments.len() < 3 {
         return Ok(None);
@@ -427,7 +435,7 @@ fn repoint_mips(
     out.push(text.len() as u8);
     out.extend_from_slice(&text);
     out.extend_from_slice(&data[1 + len..]);
-    set_data(&mut loaded, 2, &out)?;
+    set_data(packer, &mut loaded, 2, &out)?;
     Ok(Some((loaded, name)))
 }
 
@@ -464,9 +472,21 @@ fn stamp(input: &PlaceInput) -> Result<String> {
     Ok(crate::game_folder::baseline::hex(&sha2::Digest::finalize(h))[..16].to_owned())
 }
 
-pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
+pub fn place(input: &PlaceInput, cache: &Path, packer: &Packer) -> Result<Placement> {
     let code = &input.pkg.track_code;
-    let file = ErpFile::open(&input.dir.join(&input.pkg.erp))?;
+    let erp_path = input.dir.join(&input.pkg.erp);
+    let read_as = erp_stamp(&erp_path);
+    let early = read_as.and_then(|_| stamp(input).ok());
+    if let Some(placement) = early
+        .as_deref()
+        .zip(read_as)
+        .and_then(|(stamp, at)| kept(input, cache, stamp, at))
+    {
+        return Ok(placement);
+    }
+    #[cfg(test)]
+    OPENED.with(|n| n.set(n.get() + 1));
+    let file = ErpFile::open(&erp_path)?;
     let common = world_eaid(code, "common");
     if !file.erp.resources.iter().any(|r| r.name == common) {
         return Err(Error::Map(format!(
@@ -478,11 +498,14 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
     let fix = format!(
         "Turn {who} off in this profile, and set any race weekend that uses it back to another track."
     );
-    let (fixed, broken) = crate::erp::repair_stats_in(&file)?;
+    let (fixed, broken) = crate::erp::repair_stats_in(&file, packer)?;
     if !broken.is_empty() {
         return Err(Error::Other(crate::erp::unrepairable_message(who, &broken, &fix)));
     }
-    let stamp = stamp(input)?;
+    let stamp = match early {
+        Some(stamp) => stamp,
+        None => stamp(input)?,
+    };
     let out = cache.join(match fixed.is_empty() {
         true => stamp,
         false => format!("{stamp}-stats"),
@@ -492,13 +515,7 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
         repaired: fixed.iter().map(|(_, r)| r.name.clone()).collect(),
         ..Placement::default()
     };
-    let shipped: BTreeMap<String, PathBuf> = input
-        .pkg
-        .copy_directories
-        .iter()
-        .flat_map(|c| walk(&input.dir.join(c.source.trim_end_matches('/'))).unwrap_or_default())
-        .filter_map(|p| Some((p.file_name()?.to_str()?.to_owned(), p)))
-        .collect();
+    let shipped = shipped(input);
     let names: BTreeSet<String> = shipped.keys().cloned().collect();
     let present = variants(&file, code);
     let archive = match input.slot {
@@ -529,6 +546,7 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
             graph,
             world_eaid(code, v),
             format!("{code}_{v}"),
+            packer,
         )?);
         placement
             .aliases
@@ -554,7 +572,7 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
             continue;
         }
         for r in from {
-            owned.push(ai_stand_in(&file, r, code, team)?);
+            owned.push(ai_stand_in(&file, r, code, team, packer)?);
         }
         placement.ai_aliases.insert(
             format!("{}/{}", team.package, team.team),
@@ -581,7 +599,7 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
                 let (Some(world), Some(graph)) = (find(&src), find(&format!("{src}?event_graph"))) else {
                     continue;
                 };
-                owned.extend(alias_world(&file, world, graph, eri, name)?);
+                owned.extend(alias_world(&file, world, graph, eri, name, packer)?);
                 placement.aliases.insert(w.label(code), format!("{code}_{from}"));
             }
             layer_groups.push(w.group(code));
@@ -591,7 +609,7 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
     let mut used = BTreeSet::new();
     if !names.is_empty() {
         for (i, r) in file.erp.resources.iter().enumerate() {
-            if let Some((res, name)) = repoint_mips(&file, r, code, &names)? {
+            if let Some((res, name)) = repoint_mips(&file, r, code, &names, packer)? {
                 repointed.insert(i, res);
                 used.insert(name);
             }
@@ -616,11 +634,11 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
                 }
             }
             Spacing::Fixed { doc, routes } => {
-                set_data(&mut res, 0, &doc.to_bytes())?;
+                set_data(packer, &mut res, 0, &doc.to_bytes())?;
                 if res.has_stats() {
                     let stats = res.fragments[1].data()?;
                     let version = u32::from_le_bytes(stats[4..8].try_into().expect("4 bytes"));
-                    set_data(&mut res, 1, &doc.string_stats(version))?;
+                    set_data(packer, &mut res, 1, &doc.string_stats(version))?;
                 }
                 placement.spaced.extend(routes);
                 repointed.insert(i, res);
@@ -630,7 +648,7 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
             }
         }
     }
-    match extend_grid(&file, code, input.cars) {
+    match extend_grid(&file, code, input.cars, packer) {
         Ok(Some((i, res, ext))) => {
             repointed.insert(i, res);
             placement.grid = Some(ext);
@@ -679,24 +697,143 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
         file.write(entries, &archive_path)?;
         std::fs::write(&done, b"").map_err(io_err(&done))?;
     }
-    if input.slot.is_none() && !input.game.join(&archive).is_file() {
-        placement.added.insert(archive.clone(), archive_path);
+    if let Some(at) = read_as.filter(|at| erp_stamp(&erp_path) == Some(*at) && settled(at)) {
+        let keep = Kept {
+            version: KEPT_VERSION,
+            erp: at,
+            groups: placement.groups.clone(),
+            aliases: placement.aliases.clone(),
+            mips: placement.mips,
+            grid: placement.grid.clone(),
+            repaired: placement.repaired.clone(),
+            spaced: placement.spaced.clone(),
+            notes: placement.notes.clone(),
+            shipped: names.clone(),
+            used: used.clone(),
+        };
+        if crate::write_json_shared(&out.join(KEPT_FILE), &keep).is_err() {
+            std::fs::remove_file(out.join(KEPT_FILE)).ok();
+        }
+    }
+    Ok(finish(placement, input, &archive, &shipped, &used).expect("every used mip file is shipped"))
+}
+
+/// The file beside a placed archive that keeps what placing it found, read instead of the track's archive
+/// while that archive's size, modified time and change time are unchanged.
+const KEPT_FILE: &str = "placement.json";
+const KEPT_VERSION: u32 = 1;
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct Kept {
+    version: u32,
+    erp: (u64, crate::build::digests::Times),
+    groups: Vec<String>,
+    aliases: BTreeMap<String, String>,
+    mips: usize,
+    grid: Option<grid::Extension>,
+    repaired: Vec<String>,
+    spaced: Vec<String>,
+    notes: Vec<String>,
+    shipped: BTreeSet<String>,
+    used: BTreeSet<String>,
+}
+
+#[cfg(test)]
+thread_local! {
+    /// How many track archives this test thread has opened to place them.
+    static OPENED: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
+fn erp_stamp(path: &Path) -> Option<(u64, crate::build::digests::Times)> {
+    let meta = std::fs::metadata(path).ok()?;
+    Some((meta.len(), crate::build::digests::times(path, &meta)?))
+}
+
+/// Whether the archive last changed long enough ago that a later write moves its times.
+fn settled(at: &(u64, crate::build::digests::Times)) -> bool {
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| d.as_nanos() as i128);
+    now - at.1.changed.max(at.1.modified) >= 2_000_000_000
+}
+
+fn shipped(input: &PlaceInput) -> BTreeMap<String, PathBuf> {
+    input
+        .pkg
+        .copy_directories
+        .iter()
+        .flat_map(|c| walk(&input.dir.join(c.source.trim_end_matches('/'))).unwrap_or_default())
+        .filter_map(|p| Some((p.file_name()?.to_str()?.to_owned(), p)))
+        .collect()
+}
+
+/// The placement kept for `stamp` beside its archive, when the track's archive is the one it was read from.
+fn kept(
+    input: &PlaceInput,
+    cache: &Path,
+    stamp: &str,
+    at: (u64, crate::build::digests::Times),
+) -> Option<Placement> {
+    let (out, keep) = [stamp.to_owned(), format!("{stamp}-stats")]
+        .into_iter()
+        .find_map(|name| {
+            let out = cache.join(name);
+            if !out.join(".done").is_file() {
+                return None;
+            }
+            let keep: Kept = serde_json::from_slice(&std::fs::read(out.join(KEPT_FILE)).ok()?).ok()?;
+            (keep.version == KEPT_VERSION && keep.erp == at).then_some((out, keep))
+        })?;
+    let shipped = shipped(input);
+    if shipped.keys().ne(keep.shipped.iter()) {
+        return None;
+    }
+    let placement = Placement {
+        dir: out,
+        groups: keep.groups,
+        aliases: keep.aliases,
+        mips: keep.mips,
+        grid: keep.grid,
+        repaired: keep.repaired,
+        spaced: keep.spaced,
+        notes: keep.notes,
+        ..Placement::default()
+    };
+    let archive = match input.slot {
+        Some((slot, _)) => slot_file(slot),
+        None => track_file(&input.pkg.track_code),
+    };
+    finish(placement, input, &archive, &shipped, &keep.used)
+}
+
+/// Adds where the archive and the mip files it uses go, and the shipped mip files nothing uses.
+fn finish(
+    mut placement: Placement,
+    input: &PlaceInput,
+    archive: &str,
+    shipped: &BTreeMap<String, PathBuf>,
+    used: &BTreeSet<String>,
+) -> Option<Placement> {
+    let archive_path = placement.dir.join(archive);
+    if input.slot.is_none() && !input.game.join(archive).is_file() {
+        placement.added.insert(archive.to_owned(), archive_path);
     } else {
-        placement.replaced.insert(archive.clone(), archive_path);
+        placement.replaced.insert(archive.to_owned(), archive_path);
     }
-    placement.archive = archive;
-    for name in &used {
-        placement
-            .added
-            .insert(format!("{}/{name}", mip_dir(code)), shipped[name].clone());
+    placement.archive = archive.to_owned();
+    for name in used {
+        placement.added.insert(
+            format!("{}/{name}", mip_dir(&input.pkg.track_code)),
+            shipped.get(name)?.clone(),
+        );
     }
-    let unused = names.len() - used.len();
+    let unused = shipped.len() - used.len();
     if unused > 0 {
         placement.notes.push(format!(
             "{unused} shipped mip file(s) belong to no texture and are left out"
         ));
     }
-    Ok(placement)
+    Some(placement)
 }
 
 fn world_layers(file: &ErpFile, eaid: &str) -> Result<Vec<String>> {
@@ -739,6 +876,7 @@ pub fn extend_grid(
     file: &ErpFile,
     code: &str,
     cars: u32,
+    packer: &Packer,
 ) -> Result<Option<(usize, Resource, grid::Extension)>> {
     let present = variants(file, code);
     let Some(variant) = grid_variants().find(|v| present.contains(v)) else {
@@ -766,7 +904,7 @@ pub fn extend_grid(
     let mut pkg = roots.swap_remove(ext.layer);
     pkg.root = layers.swap_remove(ext.layer);
     let (i, mut res) = found.swap_remove(ext.layer);
-    set_data(&mut res, 0, &pkg.to_bytes()?)?;
+    set_data(packer, &mut res, 0, &pkg.to_bytes()?)?;
     Ok(Some((i, res, ext)))
 }
 
@@ -874,7 +1012,7 @@ mod tests {
         };
         let edited = line("a longer racing line");
         std::fs::write(dir.join(&pkg.erp), archive(edited.to_bytes())).unwrap();
-        let placement = place(&input, &dir.join("cache")).unwrap();
+        let placement = place(&input, &dir.join("cache"), &Packer::default()).unwrap();
         assert_eq!(placement.repaired, [spline]);
         assert!(placement.dir.to_string_lossy().ends_with("-stats"));
         let placed = ErpFile::open(&placement.dir.join(&placement.archive)).unwrap();
@@ -885,7 +1023,7 @@ mod tests {
         let mut cut = line("default").to_bytes();
         cut.truncate(cut.len() - 3);
         std::fs::write(dir.join(&pkg.erp), archive(cut)).unwrap();
-        let Err(e) = place(&input, &dir.join("cache")) else {
+        let Err(e) = place(&input, &dir.join("cache"), &Packer::default()) else {
             panic!("the package should be refused");
         };
         assert_eq!(
@@ -942,7 +1080,7 @@ mod tests {
             worlds: &[],
             ai_teams: &[],
         };
-        let placement = place(&input, &dir.join("cache")).unwrap();
+        let placement = place(&input, &dir.join("cache"), &Packer::default()).unwrap();
         assert_eq!(placement.spaced, ["pit"]);
         assert!(placement.repaired.is_empty());
         let placed = ErpFile::open(&placement.dir.join(&placement.archive)).unwrap();
@@ -959,6 +1097,207 @@ mod tests {
             ailine::fixed_note(pkg.display_name(), &placement.spaced),
             "fixed the AI pit lane of Test Ring so F1 25 doesn't crash when an AI car drives it"
         );
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    fn testring(dir: &Path, pit: impl Fn(u32) -> (f32, f32)) -> TrackPackage {
+        use swofty_formats::erp::{Erp, Fragment, HEADER_LEN, MAGIC};
+        let pkg = TrackPackage::parse(crate::content::track_package::tests::OKAYAMA_LIKE.as_bytes()).unwrap();
+        let fragment = |raw: Vec<u8>| Fragment::new(*b"temp", raw.len() as u64, 0x10, STORED, raw);
+        let resource = |name: &str, kind: &str, fragments: Vec<Fragment>| Resource {
+            name: name.into(),
+            kind: swofty_formats::erp::kind(kind).unwrap(),
+            unk: vec![0; 4],
+            fragments,
+            hash: [0; 16],
+        };
+        let mut header = [0u8; HEADER_LEN];
+        header[..4].copy_from_slice(MAGIC);
+        header[4..8].copy_from_slice(&3u32.to_le_bytes());
+        let line = ailine::tests::aispline(pit, 7);
+        let bytes = Erp {
+            header,
+            version: 3,
+            resources: vec![
+                resource(&world_eaid("testring", "common"), "WEP", vec![fragment(vec![0])]),
+                resource(
+                    "eaid://environment_package/tracks/testring/ai/testring_ai_track.aispline",
+                    "AISplineData",
+                    vec![fragment(line.to_bytes()), fragment(line.string_stats(1))],
+                ),
+            ],
+        }
+        .to_bytes()
+        .unwrap();
+        std::fs::write(dir.join(&pkg.erp), bytes).unwrap();
+        pkg
+    }
+
+    fn opened() -> usize {
+        OPENED.with(std::cell::Cell::get)
+    }
+
+    #[test]
+    fn placing_an_unchanged_track_again_reads_only_what_it_kept() {
+        let dir = std::env::temp_dir().join(format!("swofty-place-kept-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(&dir).unwrap();
+        let pkg = testring(&dir, |_| (-4.1, 3.0));
+        let old = std::time::SystemTime::now() - std::time::Duration::from_secs(60);
+        std::fs::File::options()
+            .write(true)
+            .open(dir.join(&pkg.erp))
+            .unwrap()
+            .set_modified(old)
+            .unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(2100));
+        let input = PlaceInput {
+            pkg: &pkg,
+            dir: &dir,
+            game: &dir,
+            slot: None,
+            cars: 22,
+            worlds: &[],
+            ai_teams: &[],
+        };
+        let before = opened();
+        let first = place(&input, &dir.join("cache"), &Packer::default()).unwrap();
+        assert_eq!(first.spaced, ["pit"]);
+        assert_eq!(
+            place(&input, &dir.join("cache"), &Packer::default()).unwrap(),
+            first
+        );
+        assert_eq!(
+            opened() - before,
+            1,
+            "the second placement reads the kept findings, not the archive"
+        );
+
+        std::fs::write(first.dir.join(KEPT_FILE), b"{ not json").unwrap();
+        assert_eq!(
+            place(&input, &dir.join("cache"), &Packer::default()).unwrap(),
+            first
+        );
+        assert_eq!(
+            opened() - before,
+            2,
+            "unreadable kept findings place the track again"
+        );
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    /// The archive is rewritten in place with a pit lane that needs no fix, keeping its size and its old
+    /// modified time, as `cp -p` over it would: only its change time tells it apart.
+    #[test]
+    fn a_track_archive_restored_in_place_with_its_old_times_is_read_again() {
+        let dir = std::env::temp_dir().join(format!("swofty-place-restore-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(&dir).unwrap();
+        let pkg = testring(&dir, |_| (-1.5, 6.0));
+        let erp = dir.join(&pkg.erp);
+        let old = std::time::SystemTime::now() - std::time::Duration::from_secs(60);
+        std::fs::File::options()
+            .write(true)
+            .open(&erp)
+            .unwrap()
+            .set_modified(old)
+            .unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(2100));
+        let input = PlaceInput {
+            pkg: &pkg,
+            dir: &dir,
+            game: &dir,
+            slot: None,
+            cars: 22,
+            worlds: &[],
+            ai_teams: &[],
+        };
+        let before = opened();
+        let first = place(&input, &dir.join("cache"), &Packer::default()).unwrap();
+        assert_eq!(first.spaced, ["pit"]);
+        let size = std::fs::metadata(&erp).unwrap().len();
+        testring(&dir, |n| if n < 6 { (-1.5, 6.0) } else { (-6.0, 1.5) });
+        std::fs::File::options()
+            .write(true)
+            .open(&erp)
+            .unwrap()
+            .set_modified(old)
+            .unwrap();
+        assert_eq!(std::fs::metadata(&erp).unwrap().len(), size);
+        let again = place(&input, &dir.join("cache"), &Packer::default()).unwrap();
+        assert_eq!(opened() - before, 2);
+        assert!(again.spaced.is_empty(), "{:?}", again.spaced);
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn a_second_placement_takes_its_frames_from_the_cache() {
+        use crate::erp::pack::frame_cache;
+        use swofty_formats::erp::{Erp, Fragment, HEADER_LEN, MAGIC};
+        let dir = std::env::temp_dir().join(format!("swofty-place-frames-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(&dir).unwrap();
+        let pkg = TrackPackage::parse(crate::content::track_package::tests::OKAYAMA_LIKE.as_bytes()).unwrap();
+        let spline = "eaid://environment_package/tracks/testring/ai/testring_ai_track.aispline";
+        let mut line = ailine::tests::aispline(|_| (-4.1, 3.0), 7);
+        line.root.children.push(swofty_formats::bxml::Element {
+            kind: swofty_formats::bxml::Kind::Element,
+            pad: 0,
+            name: b"padding".to_vec(),
+            attrs: vec![(
+                b"value".to_vec(),
+                (0..20u32 << 10).map(|i| b'0' + (i % 7) as u8).collect(),
+            )],
+            children: Vec::new(),
+            end_pad: 0,
+        });
+        let line = line.to_bytes();
+        assert!(
+            line.len() > 16 << 10,
+            "the spline is {} bytes, under the cached size",
+            line.len()
+        );
+        let mut header = [0u8; HEADER_LEN];
+        header[..4].copy_from_slice(MAGIC);
+        header[4..8].copy_from_slice(&3u32.to_le_bytes());
+        let world = Resource {
+            name: world_eaid("testring", "common"),
+            kind: swofty_formats::erp::kind("WEP").unwrap(),
+            unk: vec![0; 4],
+            fragments: vec![Fragment::new(*b"temp", 1, 0x10, STORED, vec![0])],
+            hash: [0; 16],
+        };
+        let bytes = Erp {
+            header,
+            version: 3,
+            resources: vec![world, frame_cache::zstd_resource(spline, "AISplineData", &line)],
+        }
+        .to_bytes()
+        .unwrap();
+        std::fs::write(dir.join(&pkg.erp), bytes).unwrap();
+        let input = PlaceInput {
+            pkg: &pkg,
+            dir: &dir,
+            game: &dir,
+            slot: None,
+            cars: 22,
+            worlds: &[],
+            ai_teams: &[],
+        };
+        let packer = Packer::cached(dir.join("zstd"));
+        let spline_of = |placement: &Placement| {
+            let placed = std::fs::read(placement.dir.join(&placement.archive)).unwrap();
+            let file = Erp::parse(&placed).unwrap();
+            let res = file.resources.into_iter().find(|r| r.name == spline).unwrap();
+            (frame_cache::marked_in(&placed), res.fragments[0].data().unwrap())
+        };
+        let first = place(&input, &dir.join("first"), &packer).unwrap();
+        assert_eq!(first.spaced, ["pit"]);
+        let (marked, placed) = spline_of(&first);
+        assert_eq!(marked, 0);
+        assert_eq!(frame_cache::mark(&dir.join("zstd")), 1);
+        let second = place(&input, &dir.join("second"), &packer).unwrap();
+        assert_eq!(spline_of(&second), (1, placed));
         std::fs::remove_dir_all(&dir).ok();
     }
 
@@ -1067,7 +1406,7 @@ mod tests {
             worlds: &worlds,
             ai_teams: &[],
         };
-        let placement = place(&input, &dir.join("cache")).unwrap();
+        let placement = place(&input, &dir.join("cache"), &Packer::default()).unwrap();
         let placed = ErpFile::open(&placement.dir.join(&placement.archive)).unwrap();
         (placement, placed)
     }
@@ -1148,7 +1487,7 @@ mod tests {
             worlds: &[],
             ai_teams: &[lotus_and_cater()],
         };
-        let placement = place(&input, &dir.join("cache")).unwrap();
+        let placement = place(&input, &dir.join("cache"), &Packer::default()).unwrap();
         let placed = ErpFile::open(&placement.dir.join(&placement.archive)).unwrap();
         (placement, placed)
     }

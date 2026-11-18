@@ -189,11 +189,11 @@ private:
         if (guarded) {
             guarded = runtime::core_mixins_active(MIXIN);
             swofty::log("[saves] career calendar track list guard %s",
-                        guarded ? "armed: each stored custom_track_list entry loads one event instead of every event with its id"
-                                : "did not install (see the [core] lines)");
+                        guards::install_state(guarded, "armed: each stored custom_track_list entry loads one event instead "
+                                                       "of every event with its id"));
         }
         if (logging && !runtime::core_mixins_active(LOG_MIXIN))
-            swofty::log("[saves] custom_track_list count lines did not install (see the [core] lines)");
+            swofty::log("[saves] custom_track_list count lines %s", guards::NOT_INSTALLED);
     }
 };
 

@@ -33,18 +33,17 @@ bool env_off(const char *name, char (&value)[16], bool (*off_value)(const char *
 std::vector<runtime::CoreMixins> Guard::offer()
 {
     std::vector<runtime::CoreMixins> out;
-    if (offered_ || !runtime::code_ready() || !ready())
+    if (gate_.offered() || !runtime::code_ready() || !ready())
         return out;
-    offered_ = true;
+    gate_.offer();
     build(out);
     return out;
 }
 
 void Guard::commit()
 {
-    if (!offered_ || settled_)
+    if (!gate_.settle())
         return;
-    settled_ = true;
     settle();
 }
 

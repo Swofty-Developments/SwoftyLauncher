@@ -1,7 +1,7 @@
 #pragma once
 #include <swofty/game.hpp>
 
-namespace vm {
+namespace frontend::vm {
 
 // Writes a string leaf of a view model node: makes the engine string, sets it (overwriting) and lets go of it.
 inline void set_string(void *reg, void *parent, const char *name, const char *text)

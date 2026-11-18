@@ -9,12 +9,14 @@ mod season;
 mod widgets;
 
 use crate::shell::Shell;
+use crate::shell::host::{Host, Hosted};
 use api::{BoardsApi, HttpBoards};
 use gpui_kit::component::input::InputState;
 use gpui_kit::*;
 use images::{Art, Images};
 use model::*;
 use std::collections::HashMap;
+use std::convert::Infallible;
 use std::sync::Arc;
 
 pub(crate) enum Load<T> {
@@ -123,42 +125,70 @@ fn art_urls<'a>(
         .collect()
 }
 
-impl Shell {
-    pub(crate) fn online_enter(&mut self, cx: &mut Context<Self>) {
-        if matches!(self.online.overview, Load::Idle) {
-            self.online_reload(cx);
+pub(crate) struct OnlineNeeds<'a> {
+    pub(crate) token: Option<&'a str>,
+    /// The signed-in player's name, which picks their own profile and times off the boards.
+    pub(crate) me: Option<String>,
+    pub(crate) game_found: bool,
+}
+
+impl Hosted for Online {
+    type Needs<'a> = OnlineNeeds<'a>;
+    type Change = Infallible;
+}
+
+impl Host<Online> for Shell {
+    fn split(&mut self) -> (&mut Online, OnlineNeeds<'_>) {
+        (
+            &mut self.online,
+            OnlineNeeds {
+                token: self.account.session.as_ref().map(|s| s.token.as_str()),
+                me: self.account.display_name(),
+                game_found: self.game.install.is_some(),
+            },
+        )
+    }
+
+    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
+        match change {}
+    }
+}
+
+impl Online {
+    pub(crate) fn enter<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        if matches!(host.split().0.overview, Load::Idle) {
+            Self::reload(host, cx);
         }
     }
 
-    pub(crate) fn online_reload(&mut self, cx: &mut Context<Self>) {
-        self.online.epoch += 1;
-        let epoch = self.online.epoch;
-        self.online.overview = Load::Loading;
-        self.online.seasons.clear();
-        self.online.profiles.clear();
-        self.online.feeds.clear();
-        self.online
-            .api
-            .set_token(self.account.session.as_ref().map(|m| m.token.clone()));
-        let me_api = self.online.api.clone();
+    pub(crate) fn reload<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (o, needs) = host.split();
+        o.epoch += 1;
+        let epoch = o.epoch;
+        o.overview = Load::Loading;
+        o.seasons.clear();
+        o.profiles.clear();
+        o.feeds.clear();
+        o.api.set_token(needs.token.map(str::to_owned));
+        let me_api = o.api.clone();
         cx.spawn(async move |this, cx| {
             let me = cx.background_executor().spawn(async move { me_api.me() }).await;
-            this.update(cx, |s, cx| {
-                s.online.me = me.ok().flatten();
+            this.update(cx, |host, cx| {
+                host.split().0.me = me.ok().flatten();
                 cx.notify();
             })
             .ok();
         })
         .detach();
-        let api = self.online.api.clone();
-        let cat = self.online.category;
+        let api = o.api.clone();
+        let cat = o.category;
         cx.spawn(async move |this, cx| {
             let overview = cx
                 .background_executor()
                 .spawn(async move { api.overview(&cat) })
                 .await;
-            this.update(cx, |s, cx| {
-                if s.online.epoch != epoch {
+            this.update(cx, |host, cx| {
+                if host.split().0.epoch != epoch {
                     return;
                 }
                 if let Ok(o) = &overview {
@@ -172,22 +202,22 @@ impl Shell {
                             .map(|s| s.cover.as_ref())
                             .chain(o.custom.iter().map(|t| t.layout.as_ref())),
                     );
-                    s.online_prefetch(urls, cx);
+                    Self::prefetch(host, urls, cx);
                 }
-                let me = s.account.display_name();
+                let me = host.split().1.me;
                 if let (Ok(o), Some(me)) = (&overview, me)
                     && let Some(r) = o.global.iter().find(|r| r.driver.name == me)
                 {
                     let id = r.driver.id.clone();
-                    s.online_load_profile(&id, cx);
+                    Self::load_profile(host, &id, cx);
                 }
                 if let (true, Ok(o)) = (cfg!(debug_assertions), &overview)
                     && let Ok(start) = std::env::var("SWOFTY_ONLINE_START")
                     && let Some(first) = o.seasons.first()
                 {
                     let (id, name) = (first.id.clone(), first.name.clone());
-                    s.online.overview = Load::from(overview.clone());
-                    s.online_go(Target::Season(id.clone(), name), cx);
+                    host.split().0.overview = Load::from(overview.clone());
+                    Self::go(host, Target::Season(id.clone(), name), cx);
                     let board = match start.as_str() {
                         "board" => Some(TrackCard::bare(
                             BoardKey {
@@ -202,28 +232,29 @@ impl Shell {
                     };
                     if let Some(card) = board {
                         let name = card.name.clone();
-                        s.online_go(Target::Board(Box::new(card), name), cx);
+                        Self::go(host, Target::Board(Box::new(card), name), cx);
                     }
                     return;
                 }
-                s.online.overview = Load::from(overview);
+                host.split().0.overview = Load::from(overview);
                 cx.notify();
             })
             .ok();
         })
         .detach();
-        match self.online.trail.current().clone() {
+        match o.trail.current().clone() {
             Screen::Landing => {}
-            Screen::Season(id) => self.online_load_season(&id, cx),
-            Screen::Board(key) => self.online_load_board(key, 0, cx),
-            Screen::Profile(id) => self.online_load_profile(&id, cx),
+            Screen::Season(id) => Self::load_season(host, &id, cx),
+            Screen::Board(key) => Self::load_board(host, key, 0, cx),
+            Screen::Profile(id) => Self::load_profile(host, &id, cx),
         }
         cx.notify();
     }
 
-    fn online_prefetch(&mut self, urls: Vec<String>, cx: &mut Context<Self>) {
-        let dir = self.online.images.dir();
-        for url in self.online.images.wanted(urls) {
+    fn prefetch<H: Host<Self>>(host: &mut H, urls: Vec<String>, cx: &mut Context<H>) {
+        let o = host.split().0;
+        let dir = o.images.dir();
+        for url in o.images.wanted(urls) {
             let dir = dir.clone();
             cx.spawn(async move |this, cx| {
                 let u = url.clone();
@@ -231,8 +262,8 @@ impl Shell {
                     .background_executor()
                     .spawn(async move { images::load(&dir, &u) })
                     .await;
-                this.update(cx, |s, cx| {
-                    s.online.images.finish(url, art);
+                this.update(cx, |host, cx| {
+                    host.split().0.images.finish(url, art);
                     cx.notify();
                 })
                 .ok();
@@ -241,36 +272,37 @@ impl Shell {
         }
     }
 
-    pub(crate) fn online_rank_ensure(&mut self, scope: &str, cx: &mut Context<Self>) {
-        let feed = self.online.feeds.get(scope);
+    pub(crate) fn rank_ensure<H: Host<Self>>(host: &mut H, scope: &str, cx: &mut Context<H>) {
+        let feed = host.split().0.feeds.get(scope);
         if feed.is_none_or(|f| !f.started && !f.loading) {
-            self.online_rank_load(scope, 0, cx);
+            Self::rank_load(host, scope, 0, cx);
         }
     }
 
-    pub(crate) fn online_rank_load(&mut self, scope: &str, offset: u32, cx: &mut Context<Self>) {
-        let feed = self.online.feeds.entry(scope.to_owned()).or_default();
+    pub(crate) fn rank_load<H: Host<Self>>(host: &mut H, scope: &str, offset: u32, cx: &mut Context<H>) {
+        let o = host.split().0;
+        let feed = o.feeds.entry(scope.to_owned()).or_default();
         if feed.loading {
             return;
         }
         feed.loading = true;
-        let (api, key, epoch) = (self.online.api.clone(), scope.to_owned(), self.online.epoch);
-        let cat = self.online.category;
+        let (api, key, epoch) = (o.api.clone(), scope.to_owned(), o.epoch);
+        let cat = o.category;
         cx.spawn(async move |this, cx| {
             let k = key.clone();
             let page = cx
                 .background_executor()
                 .spawn(async move { api.rankings(&k, &cat, offset) })
                 .await;
-            this.update(cx, |s, cx| {
-                if s.online.epoch != epoch {
+            this.update(cx, |host, cx| {
+                if host.split().0.epoch != epoch {
                     return;
                 }
                 if let Ok(p) = &page {
                     let urls = art_urls(p.rows.iter().map(|r| &r.driver), []);
-                    s.online_prefetch(urls, cx);
+                    Self::prefetch(host, urls, cx);
                 }
-                let feed = s.online.feeds.entry(key).or_default();
+                let feed = host.split().0.feeds.entry(key).or_default();
                 match page {
                     Ok(p) => feed.apply(offset, p),
                     Err(e) => feed.failed(e.message),
@@ -282,22 +314,24 @@ impl Shell {
         .detach();
     }
 
-    pub(crate) fn online_load_season(&mut self, id: &str, cx: &mut Context<Self>) {
-        if matches!(self.online.seasons.get(id), Some(Load::Ready(_) | Load::Loading)) {
+    pub(crate) fn load_season<H: Host<Self>>(host: &mut H, id: &str, cx: &mut Context<H>) {
+        let o = host.split().0;
+        if matches!(o.seasons.get(id), Some(Load::Ready(_) | Load::Loading)) {
             return;
         }
-        self.online.seasons.insert(id.to_owned(), Load::Loading);
-        self.online_rank_ensure(id, cx);
-        let (api, key, epoch) = (self.online.api.clone(), id.to_owned(), self.online.epoch);
-        let cat = self.online.category;
+        o.seasons.insert(id.to_owned(), Load::Loading);
+        Self::rank_ensure(host, id, cx);
+        let o = host.split().0;
+        let (api, key, epoch) = (o.api.clone(), id.to_owned(), o.epoch);
+        let cat = o.category;
         cx.spawn(async move |this, cx| {
             let k = key.clone();
             let page = cx
                 .background_executor()
                 .spawn(async move { api.season(&k, &cat) })
                 .await;
-            this.update(cx, |s, cx| {
-                if s.online.epoch != epoch {
+            this.update(cx, |host, cx| {
+                if host.split().0.epoch != epoch {
                     return;
                 }
                 if let Ok(p) = &page {
@@ -312,9 +346,9 @@ impl Shell {
                             .map(|t| t.layout.as_ref())
                             .chain([p.season.cover.as_ref()]),
                     );
-                    s.online_prefetch(urls, cx);
+                    Self::prefetch(host, urls, cx);
                 }
-                s.online.seasons.insert(key, Load::from(page));
+                host.split().0.seasons.insert(key, Load::from(page));
                 cx.notify();
             })
             .ok();
@@ -323,29 +357,27 @@ impl Shell {
         cx.notify();
     }
 
-    pub(crate) fn online_load_board(&mut self, key: BoardKey, offset: u32, cx: &mut Context<Self>) {
+    pub(crate) fn load_board<H: Host<Self>>(host: &mut H, key: BoardKey, offset: u32, cx: &mut Context<H>) {
+        let o = host.split().0;
         if offset == 0 {
-            self.online.board = Some((key.clone(), Load::Loading));
+            o.board = Some((key.clone(), Load::Loading));
         } else {
-            if self.online.more {
+            if o.more {
                 return;
             }
-            self.online.more = true;
+            o.more = true;
         }
-        let (api, filter, epoch) = (
-            self.online.api.clone(),
-            self.online.board_category.unwrap_or(self.online.category),
-            self.online.epoch,
-        );
+        let (api, filter, epoch) = (o.api.clone(), o.board_category(), o.epoch);
         cx.spawn(async move |this, cx| {
             let k = key.clone();
             let page = cx
                 .background_executor()
                 .spawn(async move { api.board(&k, &filter, offset) })
                 .await;
-            this.update(cx, |s, cx| {
-                s.online.more = false;
-                if s.online.epoch != epoch || s.online.board.as_ref().map(|b| &b.0) != Some(&key) {
+            this.update(cx, |host, cx| {
+                let o = host.split().0;
+                o.more = false;
+                if o.epoch != epoch || o.board.as_ref().map(|b| &b.0) != Some(&key) {
                     return;
                 }
                 if let Ok(p) = &page {
@@ -356,9 +388,9 @@ impl Shell {
                             .chain(p.history.iter().map(|h| &h.driver)),
                         [p.track.layout.as_ref()],
                     );
-                    s.online_prefetch(urls, cx);
+                    Self::prefetch(host, urls, cx);
                 }
-                match (offset, page, s.online.board.as_mut()) {
+                match (offset, page, host.split().0.board.as_mut()) {
                     (0, page, Some(slot)) => slot.1 = Load::from(page),
                     (_, Ok(next), Some((_, Load::Ready(cur)))) => {
                         cur.total = next.total;
@@ -374,32 +406,34 @@ impl Shell {
         cx.notify();
     }
 
-    pub(crate) fn online_load_profile(&mut self, id: &str, cx: &mut Context<Self>) {
-        if matches!(self.online.profiles.get(id), Some(Load::Ready(_) | Load::Loading)) {
+    pub(crate) fn load_profile<H: Host<Self>>(host: &mut H, id: &str, cx: &mut Context<H>) {
+        let o = host.split().0;
+        if matches!(o.profiles.get(id), Some(Load::Ready(_) | Load::Loading)) {
             return;
         }
-        self.online.profiles.insert(id.to_owned(), Load::Loading);
-        let (api, key, epoch) = (self.online.api.clone(), id.to_owned(), self.online.epoch);
-        let cat = self.online.category;
+        o.profiles.insert(id.to_owned(), Load::Loading);
+        let (api, key, epoch) = (o.api.clone(), id.to_owned(), o.epoch);
+        let cat = o.category;
         cx.spawn(async move |this, cx| {
             let k = key.clone();
             let page = cx
                 .background_executor()
                 .spawn(async move { api.profile(&k, &cat) })
                 .await;
-            this.update(cx, |s, cx| {
-                if s.online.epoch != epoch {
+            this.update(cx, |host, cx| {
+                if host.split().0.epoch != epoch {
                     return;
                 }
                 if let Ok(p) = &page {
-                    s.online_prefetch(art_urls([&p.driver], p.bests.iter().map(|_| None)), cx);
+                    Self::prefetch(host, art_urls([&p.driver], p.bests.iter().map(|_| None)), cx);
                 }
+                let (o, needs) = host.split();
                 if let Ok(p) = &page
-                    && s.account.display_name().as_deref() == Some(p.driver.name.as_str())
+                    && needs.me.as_deref() == Some(p.driver.name.as_str())
                 {
-                    s.online.my_times = p.bests.iter().map(|b| (b.key.clone(), b.time_ms)).collect();
+                    o.my_times = p.bests.iter().map(|b| (b.key.clone(), b.time_ms)).collect();
                 }
-                s.online.profiles.insert(key, Load::from(page));
+                o.profiles.insert(key, Load::from(page));
                 cx.notify();
             })
             .ok();
@@ -408,103 +442,107 @@ impl Shell {
         cx.notify();
     }
 
-    pub(crate) fn online_go(&mut self, target: Target, cx: &mut Context<Self>) {
-        self.online.cursor = None;
+    pub(crate) fn go<H: Host<Self>>(host: &mut H, target: Target, cx: &mut Context<H>) {
+        let o = host.split().0;
+        o.cursor = None;
         match target {
             Target::Season(id, name) => {
-                self.online.recents.visit(&id, &name);
-                self.online.recents.save(&self.online.data);
-                self.online.filter_tracks = TrackFilter::default();
-                self.online.trail.push(Screen::Season(id.clone()), name);
-                self.online_load_season(&id, cx);
+                o.recents.visit(&id, &name);
+                o.recents.save(&o.data);
+                o.filter_tracks = TrackFilter::default();
+                o.trail.push(Screen::Season(id.clone()), name);
+                Self::load_season(host, &id, cx);
             }
             Target::Board(card, label) => {
                 let key = card.key.clone();
-                self.online.trail.push(Screen::Board(key.clone()), label);
-                self.online.board_category = None;
-                self.online_load_board(key, 0, cx);
+                o.trail.push(Screen::Board(key.clone()), label);
+                o.board_category = None;
+                Self::load_board(host, key, 0, cx);
             }
             Target::Profile(driver) => {
-                self.online
-                    .trail
+                o.trail
                     .push(Screen::Profile(driver.id.clone()), driver.name.clone());
-                self.online_load_profile(&driver.id, cx);
+                Self::load_profile(host, &driver.id, cx);
             }
         }
         cx.notify();
     }
 
-    pub(crate) fn online_open_recent(&mut self, id: String, name: String, cx: &mut Context<Self>) {
-        self.online.cursor = None;
-        self.online.recents.visit(&id, &name);
-        self.online.recents.save(&self.online.data);
-        self.online.filter_tracks = TrackFilter::default();
-        self.online.trail.jump(1);
-        self.online.trail.push(Screen::Season(id.clone()), name);
-        self.online_load_season(&id, cx);
+    pub(crate) fn open_recent<H: Host<Self>>(host: &mut H, id: String, name: String, cx: &mut Context<H>) {
+        let o = host.split().0;
+        o.cursor = None;
+        o.recents.visit(&id, &name);
+        o.recents.save(&o.data);
+        o.filter_tracks = TrackFilter::default();
+        o.trail.jump(1);
+        o.trail.push(Screen::Season(id.clone()), name);
+        Self::load_season(host, &id, cx);
         cx.notify();
     }
 
-    pub(crate) fn online_back(&mut self, cx: &mut Context<Self>) {
-        self.online.cursor = None;
-        self.online.trail.back();
-        self.online_reenter(cx);
+    pub(crate) fn back<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let o = host.split().0;
+        o.cursor = None;
+        o.trail.back();
+        Self::reenter(host, cx);
     }
 
-    pub(crate) fn online_jump(&mut self, depth: usize, cx: &mut Context<Self>) {
-        self.online.cursor = None;
-        self.online.trail.jump(depth);
-        self.online_reenter(cx);
+    pub(crate) fn jump<H: Host<Self>>(host: &mut H, depth: usize, cx: &mut Context<H>) {
+        let o = host.split().0;
+        o.cursor = None;
+        o.trail.jump(depth);
+        Self::reenter(host, cx);
     }
 
-    fn online_reenter(&mut self, cx: &mut Context<Self>) {
-        match self.online.trail.current().clone() {
-            Screen::Board(key) if self.online.board.as_ref().map(|b| &b.0) != Some(&key) => {
-                self.online_load_board(key, 0, cx);
+    fn reenter<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let o = host.split().0;
+        match o.trail.current().clone() {
+            Screen::Board(key) if o.board.as_ref().map(|b| &b.0) != Some(&key) => {
+                Self::load_board(host, key, 0, cx);
             }
-            Screen::Season(id) => self.online_load_season(&id, cx),
-            Screen::Profile(id) => self.online_load_profile(&id, cx),
+            Screen::Season(id) => Self::load_season(host, &id, cx),
+            Screen::Profile(id) => Self::load_profile(host, &id, cx),
             _ => {}
         }
         cx.notify();
     }
 
-    pub(crate) fn online_set_category(&mut self, cat: Category, cx: &mut Context<Self>) {
-        if self.online.category == cat {
+    pub(crate) fn set_category<H: Host<Self>>(host: &mut H, cat: Category, cx: &mut Context<H>) {
+        let o = host.split().0;
+        if o.category == cat {
             return;
         }
-        self.online.category = cat;
-        cat.save(&self.online.data);
-        self.online.board_category = None;
-        self.online.board = None;
-        self.online.overview = Load::Idle;
-        self.online_reload(cx);
+        o.category = cat;
+        cat.save(&o.data);
+        o.board_category = None;
+        o.board = None;
+        o.overview = Load::Idle;
+        Self::reload(host, cx);
     }
 
-    pub(crate) fn online_set_board_category(&mut self, cat: Category, cx: &mut Context<Self>) {
-        self.online.board_category = (cat != self.online.category).then_some(cat);
-        if let Screen::Board(key) = self.online.trail.current().clone() {
-            self.online_load_board(key, 0, cx);
+    pub(crate) fn set_board_category<H: Host<Self>>(host: &mut H, cat: Category, cx: &mut Context<H>) {
+        let o = host.split().0;
+        o.board_category = (cat != o.category).then_some(cat);
+        if let Screen::Board(key) = o.trail.current().clone() {
+            Self::load_board(host, key, 0, cx);
         }
     }
 
     pub(crate) fn board_category(&self) -> Category {
-        self.online.board_category.unwrap_or(self.online.category)
+        self.board_category.unwrap_or(self.category)
     }
 
     /// Ask the running game to play lap `id` as the ghost in Time Trial.
-    pub(crate) fn online_add_to_game(&mut self, id: String, cx: &mut Context<Self>) {
-        let (Some(api), Some(_)) = (
-            self.account
-                .session
-                .as_ref()
-                .map(|s| swofty_core::online::server::api::Api::new(&s.token)),
-            self.game.install.as_ref(),
+    pub(crate) fn add_to_game<H: Host<Self>>(host: &mut H, id: String, cx: &mut Context<H>) {
+        let (o, needs) = host.split();
+        let (Some(api), true) = (
+            needs.token.map(swofty_core::online::server::api::Api::new),
+            needs.game_found,
         ) else {
             return;
         };
-        self.online.watch_notice = Some((true, swofty_i18n::tr("Adding the replay to the game…").to_owned()));
-        self.online.watch_lap = Some(id.clone());
+        o.watch_notice = Some((true, swofty_i18n::tr("Adding the replay to the game…").to_owned()));
+        o.watch_lap = Some(id.clone());
         cx.notify();
         cx.spawn(async move |this, cx| {
             let lap = id.clone();
@@ -518,8 +556,9 @@ impl Shell {
                     )
                 })
                 .await;
-            this.update(cx, |s, cx| {
-                s.online.watch_notice = Some(match done {
+            this.update(cx, |host, cx| {
+                let o = host.split().0;
+                o.watch_notice = Some(match done {
                     Ok(()) => (
                         true,
                         swofty_i18n::tr("Added. Open Theatre in the game to watch it.").to_owned(),
@@ -536,7 +575,7 @@ impl Shell {
                         )
                     }
                 });
-                s.online.watch_lap = Some(id);
+                o.watch_lap = Some(id);
                 cx.notify();
             })
             .ok();
@@ -544,43 +583,43 @@ impl Shell {
         .detach();
     }
 
-    pub(crate) fn online_watch_notice(&self) -> Option<&(bool, String)> {
-        self.online.watch_notice.as_ref()
+    pub(crate) fn watch_notice(&self) -> Option<&(bool, String)> {
+        self.watch_notice.as_ref()
     }
 
     /// The notice of "Add to game" for lap `id`, if that was the last lap it ran for.
-    pub(crate) fn online_replay_notice(&self, id: &str) -> Option<&(bool, String)> {
-        self.online
-            .watch_notice
+    pub(crate) fn replay_notice(&self, id: &str) -> Option<&(bool, String)> {
+        self.watch_notice
             .as_ref()
-            .filter(|_| self.online.watch_lap.as_deref() == Some(id))
+            .filter(|_| self.watch_lap.as_deref() == Some(id))
     }
 
-    pub(crate) fn online_has_cursor(&self) -> bool {
-        self.online.cursor.is_some()
+    pub(crate) fn has_cursor(&self) -> bool {
+        self.cursor.is_some()
     }
 
-    pub(crate) fn online_key(&mut self, key: &str, cx: &mut Context<Self>) -> bool {
-        let n = self.online.items.len();
+    pub(crate) fn key<H: Host<Self>>(host: &mut H, key: &str, cx: &mut Context<H>) -> bool {
+        let o = host.split().0;
+        let n = o.items.len();
         if n == 0 {
-            return key == "escape" && self.online.trail.depth() > 1 && {
-                self.online_back(cx);
+            return key == "escape" && o.trail.depth() > 1 && {
+                Self::back(host, cx);
                 true
             };
         }
-        let at = self.online.cursor;
+        let at = o.cursor;
         match key {
-            "down" | "right" => self.online.cursor = Some(at.map_or(0, |i| (i + 1).min(n - 1))),
-            "up" | "left" => self.online.cursor = Some(at.map_or(0, |i| i.saturating_sub(1))),
+            "down" | "right" => o.cursor = Some(at.map_or(0, |i| (i + 1).min(n - 1))),
+            "up" | "left" => o.cursor = Some(at.map_or(0, |i| i.saturating_sub(1))),
             "enter" => {
-                if let Some(t) = at.and_then(|i| self.online.items.get(i)).cloned() {
-                    self.online_go(t, cx);
+                if let Some(t) = at.and_then(|i| o.items.get(i)).cloned() {
+                    Self::go(host, t, cx);
                 }
                 return true;
             }
             "escape" | "backspace" => {
-                if self.online.trail.depth() > 1 {
-                    self.online_back(cx);
+                if o.trail.depth() > 1 {
+                    Self::back(host, cx);
                     return true;
                 }
                 return false;
@@ -601,7 +640,7 @@ impl Shell {
     ) -> AnyElement {
         use crate::ui::scale::px;
         use gpui_kit::component::v_flex;
-        self.online_enter(cx);
+        Online::enter(self, cx);
         if self.online.search.is_none() {
             self.online.search =
                 Some(cx.new(|cx| InputState::new(window, cx).placeholder(swofty_i18n::tr("Search tracks"))));
@@ -621,5 +660,38 @@ impl Shell {
             .children(banner)
             .child(v_flex().flex_1().min_h_0().child(body))
             .into_any_element()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Online;
+    use super::model::{AssistFilter, Category};
+
+    fn online() -> Online {
+        Online::new(&std::env::temp_dir().join(format!("swofty-launcher-online-{}", std::process::id())))
+    }
+
+    #[test]
+    fn the_replay_notice_shows_only_on_the_lap_last_sent_to_the_game() {
+        let mut o = online();
+        let added = (true, "Added".to_owned());
+        o.watch_notice = Some(added.clone());
+        o.watch_lap = Some("lap-1".into());
+        assert_eq!(o.replay_notice("lap-1"), Some(&added));
+        assert_eq!(o.replay_notice("lap-2"), None);
+        assert_eq!(o.watch_notice(), Some(&added));
+    }
+
+    #[test]
+    fn a_board_follows_the_page_category_until_it_picks_its_own() {
+        let mut o = online();
+        assert_eq!(o.board_category(), o.category);
+        let own = Category {
+            assists: AssistFilter::None,
+            ..o.category
+        };
+        o.board_category = Some(own);
+        assert_eq!(o.board_category(), own);
     }
 }

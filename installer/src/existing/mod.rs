@@ -9,7 +9,8 @@ use swofty_core::platform::process::same_folder;
 use swofty_core::updates::release as update;
 
 use self::roots::find;
-use crate::{FOLDER_NAME, MUTED};
+use crate::FOLDER_NAME;
+use crate::theme::MUTED;
 
 pub use moving::{Move, plan};
 

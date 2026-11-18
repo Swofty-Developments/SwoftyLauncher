@@ -13,12 +13,12 @@
 #include <map>
 #include <mutex>
 
-namespace runtime::main_menu {
+namespace frontend::main_menu {
 
 namespace {
 
 using namespace swofty::game;
-namespace logic = ::runtime::main_menu;
+namespace logic = ::frontend::main_menu;
 
 constexpr size_t OFF_F1WORLD = 11, OFF_CHALLENGE = 32, OFF_DIVIDER = 47, OFF_LOCAL_MP = 59, OFF_THEATRE = 98, OFF_END_JMP = 103;
 
@@ -36,9 +36,9 @@ Add_t target(const uint8_t *at, size_t off)
     return reinterpret_cast<Add_t>(const_cast<uint8_t *>(at) + off + 5 + rel);
 }
 
-using tile_list::last_item;
-using tile_list::route_action;
-using vm::set_string;
+using frontend::tile_list::last_item;
+using frontend::tile_list::route_action;
+using frontend::vm::set_string;
 
 void typed_populate(HomeItem *item, void *node, uint32_t a7) { menu.tiles.populate_typed(item, node, a7); }
 

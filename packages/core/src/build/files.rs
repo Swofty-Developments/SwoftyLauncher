@@ -3,28 +3,28 @@ use std::path::PathBuf;
 
 use super::archives::Archives;
 use super::inputs::Inputs;
+use super::run::Run;
 use super::tracks::left_over;
 use super::{Built, Pipeline, source_dir};
 use crate::activation::ers::{self, ErsMap};
 use crate::activation::handling::{self, HandlingMap};
 use crate::asset::{AssetOp, FileOp, Op, Origin};
 use crate::game_folder::baseline::Baseline;
-use crate::install::Game;
 use crate::manifest::relative_inside;
-use crate::store::Store;
 use crate::{Error, Result};
 
 /// Places the files `file.put` ops and the archive build's mip files put, each as a game file it replaces or
 /// a file it adds; car archives get the tracks' handling and ERS settings on the way.
 pub(super) fn put_files(
     built: &mut Built,
-    store: &Store,
-    game: &Game,
+    run: Run,
     mipmaps: BTreeMap<String, PathBuf>,
     ops: Vec<Op>,
     built_over: &BTreeSet<String>,
     car_maps: (&[ErsMap], &[HandlingMap]),
 ) -> Result<()> {
+    let (store, game) = (run.store, run.game);
+    let packer = &run.eager_packer();
     let (ers_maps, handling_maps) = car_maps;
     let baseline = Baseline::load_or_new(&store.root, &game.identity).ok();
     let mut spelling: BTreeMap<String, String> = BTreeMap::new();
@@ -81,7 +81,7 @@ pub(super) fn put_files(
         if !group.is_empty() && !over.contains(&lower) {
             let out = built.overlay.join("handling").join(&rel);
             let mut lines = Vec::new();
-            if handling::edit_archive(&src, &group, &out, &mut lines)? > 0 {
+            if handling::edit_archive(&src, &group, &out, &mut lines, packer)? > 0 {
                 src = out;
             }
             built.lines.extend(lines);
@@ -89,7 +89,7 @@ pub(super) fn put_files(
         let car = !ers_maps.is_empty() && ers::is_car_archive(&rel);
         if car && !over.contains(&lower) {
             let out = built.overlay.join("ers").join(&rel);
-            let n = ers::edit_archive(&src, ers_maps, &out)?;
+            let n = ers::edit_archive(&src, ers_maps, &out, packer)?;
             if n > 0 {
                 handling += n;
                 src = out;
@@ -150,8 +150,7 @@ impl Pipeline<'_, '_> {
         } = archives;
         put_files(
             &mut self.built,
-            self.run.store,
-            self.run.game,
+            self.run,
             mipmaps,
             file_ops,
             &built_over,

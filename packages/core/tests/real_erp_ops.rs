@@ -198,7 +198,7 @@ fn round_trips_and_resizes_a_scene_in_a_game_archive() {
     assert_eq!(resized[0].erp, SCENES);
     assert_eq!(resized[0].resources[0].0, SCENE);
     let out = dir.join("five");
-    assert_eq!(b.take_resized(&out).unwrap(), resized);
+    assert_eq!(b.take_resized(&out, None).unwrap(), (resized, 0));
     assert_eq!(b.resources().count(), 0);
     let bytes = std::fs::read(out.join(SCENES)).unwrap();
     let mut written = Erp::parse(&bytes).unwrap();

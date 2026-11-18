@@ -161,7 +161,7 @@ private:
         if (!(car_bound || warning_bound))
             return;
         if (!runtime::core_mixins_active(MIXIN))
-            swofty::log("[gp] continue F1 World car guard did not install (see the [core] lines)");
+            swofty::log("[gp] continue F1 World car guard %s", guards::NOT_INSTALLED);
         else if (car_bound && warning_bound)
             swofty::log("[gp] continue F1 World car guard armed: Grand Prix Continue asks to go online only for a save on the "
                         "F1 World car");

@@ -74,10 +74,10 @@ const Settings &settings()
 bool before_fg_wanted()
 {
     int forced = settings().before_fg_forced;
-    std::wstring path = forced < 0 ? hardware_settings::path() : std::wstring();
+    std::wstring path = forced < 0 ? hud::hardware_settings::path() : std::wstring();
     hud::guard::FgSetting game;
     if (!path.empty())
-        game = hardware_settings::frame_gen(path);
+        game = hud::hardware_settings::frame_gen(path);
     bool want = hud::guard::before_fg_wanted(forced, game);
     if (forced >= 0)
         swofty::log("[overlay] at start SWOFTY_OVERLAY_FG / \"overlay_fg\" is %d, so the game's frame generation "
@@ -132,7 +132,7 @@ bool FgWatch::frame_gen_off(ULONGLONG now)
         setting = {};
     } else if (CompareFileTime(&fa.ftLastWriteTime, &at) || !told) {
         at = fa.ftLastWriteTime;
-        setting = hardware_settings::frame_gen(path);
+        setting = hud::hardware_settings::frame_gen(path);
     }
     bool off = !setting.on();
     if (!told) {

@@ -98,7 +98,7 @@ impl Shell {
             }
         };
         window.notify(note, cx);
-        self.refresh_saves_in_background(cx);
+        super::SavesPage::refresh(self, cx);
         cx.notify();
     }
 
@@ -145,7 +145,7 @@ impl Shell {
             }
         };
         window.notify(note, cx);
-        self.refresh_saves_in_background(cx);
+        super::SavesPage::refresh(self, cx);
         cx.notify();
     }
 
@@ -201,7 +201,7 @@ impl Shell {
             }
         };
         window.notify(note, cx);
-        self.refresh_saves_in_background(cx);
+        super::SavesPage::refresh(self, cx);
         cx.notify();
     }
 
@@ -214,7 +214,7 @@ impl Shell {
         if let Err(e) = done {
             crate::app::app_log::action("pin a version").failed(&e);
         }
-        self.refresh_saves_in_background(cx);
+        super::SavesPage::refresh(self, cx);
         cx.notify();
     }
 
@@ -251,7 +251,7 @@ impl Shell {
     }
     pub(super) fn retry_steam_import(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         crate::services::game::import_now(&self.store);
-        self.refresh_saves_in_background(cx);
+        super::SavesPage::refresh(self, cx);
         let found = !self.saves.view.as_ref().is_some_and(|v| v.steam_missing);
         window.notify(
             match found {

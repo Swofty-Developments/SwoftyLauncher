@@ -17,15 +17,15 @@
 
 namespace {
 
-using view_flow::G_CUTSCENE;
-using view_flow::G_DRIVING;
-using view_flow::G_PAUSE;
-using view_flow::G_REPLAY;
-using view_flow::G_SESSION;
-using view_flow::G_SPECTATE;
-using view_flow::TRACKED;
-using view_flow::TRACKED_N;
-using view_flow::GROUP_MASK_ALL;
+using frontend::view_flow::G_CUTSCENE;
+using frontend::view_flow::G_DRIVING;
+using frontend::view_flow::G_PAUSE;
+using frontend::view_flow::G_REPLAY;
+using frontend::view_flow::G_SESSION;
+using frontend::view_flow::G_SPECTATE;
+using frontend::view_flow::GROUP_MASK_ALL;
+using frontend::view_flow::TRACKED;
+using frontend::view_flow::TRACKED_N;
 
 const runtime::Sig S_PHOTO_ON{"site_Game_PhotoModeActiveSet",
                               "C5 F8 29 85 80 03 00 00 C6 85 94 03 00 00 01", 0x2bdba77, runtime::Sig::addr, 0, 8};
@@ -44,9 +44,9 @@ constexpr uint64_t pack(uint32_t kind, uint32_t flags, bool valid, uint32_t seri
     return uint64_t(kind & 0xff) | uint64_t(flags & 0xff) << 8 | uint64_t(valid ? 1 : 0) << 16 | uint64_t(serial) << 32;
 }
 
-view::State unpack(uint64_t p)
+frontend::view::State unpack(uint64_t p)
 {
-    view::State s;
+    frontend::view::State s;
     s.kind = uint32_t(p & 0xff);
     s.flags = uint32_t(p >> 8 & 0xff);
     s.valid = (p >> 16 & 1) != 0;
@@ -56,7 +56,7 @@ view::State unpack(uint64_t p)
 
 class ViewState {
 public:
-    view::State current() const { return unpack(packed.load(std::memory_order_acquire)); }
+    frontend::view::State current() const { return unpack(packed.load(std::memory_order_acquire)); }
     uint32_t pause_reasons() const { return pause_mask.load(std::memory_order_relaxed); }
     void flow(uint32_t hash, uint32_t to);
     void setup();
@@ -98,20 +98,20 @@ uint32_t camera_kind(int value)
 {
     switch (value) {
     case 3:
-        return view::COCKPIT;
+        return frontend::view::COCKPIT;
     case 4:
-        return view::TCAM;
+        return frontend::view::TCAM;
     case 5:
-        return view::TCAM_OFFSET;
+        return frontend::view::TCAM_OFFSET;
     case 6:
-        return view::CHASE_NEAR;
+        return frontend::view::CHASE_NEAR;
     case 7:
-        return view::CHASE_FAR;
+        return frontend::view::CHASE_FAR;
     case 1:
     case 2:
-        return view::OTHER;
+        return frontend::view::OTHER;
     default:
-        return view::UNKNOWN;
+        return frontend::view::UNKNOWN;
     }
 }
 
@@ -120,8 +120,9 @@ std::string flag_text(uint32_t flags)
     static const struct {
         uint32_t bit;
         const char *name;
-    } NAMES[] = {{view::PAUSED, "paused"},     {view::REPLAY, "replay"},       {view::PHOTO, "photo"},
-                 {view::MENU, "menu"},         {view::CUTSCENE, "cutscene"},   {view::SPECTATING, "spectating"}};
+    } NAMES[] = {{frontend::view::PAUSED, "paused"},     {frontend::view::REPLAY, "replay"},
+                 {frontend::view::PHOTO, "photo"},       {frontend::view::MENU, "menu"},
+                 {frontend::view::CUTSCENE, "cutscene"}, {frontend::view::SPECTATING, "spectating"}};
     std::string out;
     for (auto &n : NAMES)
         if (flags & n.bit)
@@ -148,36 +149,36 @@ void ViewState::recompute()
 
     uint32_t flags = 0;
     if (paused)
-        flags |= view::PAUSED;
+        flags |= frontend::view::PAUSED;
     if (replay)
-        flags |= view::REPLAY;
+        flags |= frontend::view::REPLAY;
     if (is_photo)
-        flags |= view::PHOTO;
+        flags |= frontend::view::PHOTO;
     if (cutscene)
-        flags |= view::CUTSCENE;
+        flags |= frontend::view::CUTSCENE;
     if (spectating)
-        flags |= view::SPECTATING;
+        flags |= frontend::view::SPECTATING;
     bool player_view = in_session && (driving || paused);
     if (!in_session || !(player_view || replay || cutscene || spectating || is_photo))
-        flags |= view::MENU;
+        flags |= frontend::view::MENU;
 
-    uint32_t kind = view::UNKNOWN;
+    uint32_t kind = frontend::view::UNKNOWN;
     bool valid = flow_seen.load(std::memory_order_relaxed);
-    if (flags & view::MENU) {
+    if (flags & frontend::view::MENU) {
         // MENU comes from no recognised session state, which is also what an unrecognised one looks like.
-        kind = view::UNKNOWN;
+        kind = frontend::view::UNKNOWN;
         valid = false;
     } else if (replay || is_photo || cutscene || spectating) {
-        kind = view::OTHER;
+        kind = frontend::view::OTHER;
     } else {
         int cam = camera_value.load(std::memory_order_relaxed);
-        kind = trust_camera ? camera_kind(cam) : view::UNKNOWN;
-        if (kind == view::UNKNOWN)
+        kind = trust_camera ? camera_kind(cam) : frontend::view::UNKNOWN;
+        if (kind == frontend::view::UNKNOWN)
             valid = false;
     }
 
     std::lock_guard<std::mutex> lock(change_lock);
-    view::State old = unpack(packed.load(std::memory_order_relaxed));
+    frontend::view::State old = unpack(packed.load(std::memory_order_relaxed));
     if (old.kind == kind && old.flags == flags && old.valid == valid && old.serial)
         return;
     uint32_t serial = old.serial + 1;
@@ -224,14 +225,14 @@ void ViewState::pause(safetyhook::Context &ctx)
     pause_mask.store(mask, std::memory_order_relaxed);
     if (pause_logged.fetch_add(1, std::memory_order_relaxed) < 64)
         swofty::log("[view] pause reason bit %d %s, mask %08x", bit, set ? "set" : "cleared", mask);
-    switch (view::pause_edge(before, mask)) {
-    case view::PauseEdge::paused:
+    switch (frontend::view::pause_edge(before, mask)) {
+    case frontend::view::PauseEdge::paused:
         runtime::events_fire(SWOFTY_EVENT_PAUSE, mask, bit, nullptr);
         break;
-    case view::PauseEdge::resumed:
+    case frontend::view::PauseEdge::resumed:
         runtime::events_fire(SWOFTY_EVENT_RESUME, 0, bit, nullptr);
         break;
-    case view::PauseEdge::none:
+    case frontend::view::PauseEdge::none:
         break;
     }
 }
@@ -287,7 +288,7 @@ void ViewState::setup()
 
 }
 
-namespace view {
+namespace frontend::view {
 
 State current()
 {
@@ -313,5 +314,5 @@ void setup()
 
 extern "C" __declspec(dllexport) uint32_t SwoftyCorePauseReasons(void)
 {
-    return view::pause_reasons();
+    return frontend::view::pause_reasons();
 }

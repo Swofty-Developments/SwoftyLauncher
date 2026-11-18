@@ -4,7 +4,7 @@
 
 #include <windows.h>
 
-namespace hardware_settings {
+namespace hud::hardware_settings {
 
 std::wstring path()
 {
