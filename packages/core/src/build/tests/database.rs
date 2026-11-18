@@ -41,7 +41,7 @@ fn an_editor_op_on_a_row_a_later_addon_adds_applies() {
         Record::new("t.list_0._metadata_", 4, "f1"),
         Record::new("t.list_0.name", 4, "stock"),
     ];
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,
@@ -112,7 +112,7 @@ fn applies_db_editor_packages_leniently_in_load_order() {
         Record::new("entrants.teams.team_0.stat_id", 0, "100"),
         Record::new("entrants.teams.team_0.prestige", 0, "5"),
     ];
-    let stock = Gvdb { records }.to_bytes();
+    let stock = Gvdb::new(records).to_bytes();
     std::fs::write(dir.join(GVDB), &stock).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
@@ -237,7 +237,7 @@ fn a_row_count_past_the_rows_there_stays_at_the_rows() {
         records.push(Record::new(&format!("{row}._metadata_"), 2, format!("ref_{e}")));
         records.push(Record::new(&format!("{row}.event_name"), 4, *e));
     }
-    let stock = Gvdb { records }.to_bytes();
+    let stock = Gvdb::new(records).to_bytes();
     std::fs::write(dir.join(GVDB), &stock).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
@@ -314,7 +314,7 @@ fn a_special_livery_with_an_unknown_team_kit_builds_with_an_empty_one() {
             "2026-mclaren",
         ));
     }
-    let stock = Gvdb { records }.to_bytes();
+    let stock = Gvdb::new(records).to_bytes();
     std::fs::write(dir.join(GVDB), &stock).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
@@ -424,7 +424,7 @@ fn adds_a_driver_head_row_and_its_groups_for_a_head_archive_no_row_names() {
         Record::new("entrants.drivers.driver_0._metadata_", 2, "lando_norris"),
         Record::new("entrants.drivers.driver_0.head", 4, "lando_norris"),
     ]);
-    let stock = Gvdb { records };
+    let stock = Gvdb::new(records);
     std::fs::write(dir.join(GVDB), stock.to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
@@ -690,7 +690,7 @@ fn skips_removals_of_stock_records_so_runtime_edits_still_apply() {
         Record::new("entrants.teams.team_0.stat_id", 0, "100"),
     ];
     records.extend((0..5).map(|i| Record::new(&format!("stock.key_{i}"), 0, i.to_string())));
-    let stock = Gvdb { records };
+    let stock = Gvdb::new(records);
     std::fs::write(dir.join(GVDB), stock.to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
@@ -825,7 +825,7 @@ fn warns_of_the_entrant_lists_an_addon_renames_or_removes() {
             format!("lng_{name}"),
         ));
     }
-    let stock = Gvdb { records };
+    let stock = Gvdb::new(records);
     std::fs::write(dir.join(GVDB), stock.to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),

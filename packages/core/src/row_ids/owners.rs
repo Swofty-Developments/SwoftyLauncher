@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::Path;
 
 use serde_json::Value;
-use swofty_formats::gvdb::{Gvdb, instance_count_path};
+use swofty_formats::gvdb::{Gvdb, Record, instance_count_path};
 use swofty_formats::hash::fnv1a64;
 
 use crate::ops::{IdFrom, stat_id_field};
@@ -194,26 +194,38 @@ pub fn label_owners(data: &Path, table: &str) -> BTreeMap<String, BTreeSet<Strin
 /// (`entrants.teams.team`): an id above it in a save names a row an addon added. A table `db`
 /// holds no rows of is left out.
 pub fn stock_max_ids(db: &Gvdb) -> BTreeMap<String, i64> {
-    let index: HashMap<u64, usize> = db.records.iter().enumerate().map(|(i, r)| (r.key, i)).collect();
-    let text = |path: &str| {
-        index
-            .get(&fnv1a64(path))
-            .map(|&i| db.records[i].text().trim().to_owned())
+    let tables: Vec<(&str, &str, &str)> = ALIAS_TABLES
+        .iter()
+        .filter_map(|(full, _)| {
+            let (table, row) = full.rsplit_once('.')?;
+            Some((*full, table, row))
+        })
+        .collect();
+    let text = |found: &HashMap<u64, &Record>, path: &str| {
+        found.get(&fnv1a64(path)).map(|r| r.text().trim().to_owned())
     };
-    let mut out = BTreeMap::new();
-    for (full, _) in ALIAS_TABLES {
-        let Some((table, row)) = full.rsplit_once('.') else {
-            continue;
-        };
-        let count = text(&instance_count_path(table, row))
+    let count_path = |table: &str, row: &str| instance_count_path(table, row);
+    let counted = db.get_keys(&tables.iter().map(|(_, t, r)| fnv1a64(count_path(t, r))).collect());
+    let count = |table: &str, row: &str| {
+        text(&counted, &count_path(table, row))
             .and_then(|v| v.parse::<usize>().ok())
-            .unwrap_or(0);
-        let field = stat_id_field(table, row);
-        let max = (0..count)
-            .filter_map(|i| text(&format!("{table}.{row}_{i}.{field}"))?.parse::<i64>().ok())
+            .unwrap_or(0)
+    };
+    let id_path =
+        |table: &str, row: &str, i: usize| format!("{table}.{row}_{i}.{}", stat_id_field(table, row));
+    let ids = db.get_keys(
+        &tables
+            .iter()
+            .flat_map(|&(_, t, r)| (0..count(t, r)).map(move |i| fnv1a64(id_path(t, r, i))))
+            .collect(),
+    );
+    let mut out = BTreeMap::new();
+    for (full, table, row) in tables {
+        let max = (0..count(table, row))
+            .filter_map(|i| text(&ids, &id_path(table, row, i))?.parse::<i64>().ok())
             .max();
         if let Some(max) = max {
-            out.insert((*full).to_owned(), max);
+            out.insert(full.to_owned(), max);
         }
     }
     out

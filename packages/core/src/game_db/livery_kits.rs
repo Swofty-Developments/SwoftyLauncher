@@ -127,7 +127,7 @@ mod tests {
             records.push(Record::new(&format!("{TABLE}.{ROW}_{i}._metadata_"), 2, *label));
             records.push(Record::new(&format!("{TABLE}.{ROW}_{i}.{FIELD}"), 4, *kit));
         }
-        Gvdb { records }
+        Gvdb::new(records)
     }
 
     fn kit_of(db: &Gvdb, i: usize) -> Option<String> {
@@ -176,12 +176,10 @@ mod tests {
         assert!(keep_kits(&mut above).is_empty());
         assert_eq!(kit_of(&above, 1).as_deref(), Some("2026-lotus"));
 
-        let mut bare = Gvdb {
-            records: vec![
-                Record::new(&format!("{TABLE}._{ROW}_instancecount_"), 0, "1"),
-                Record::new(&format!("{TABLE}.{ROW}_0.{FIELD}"), 4, "2026-lotus"),
-            ],
-        };
+        let mut bare = Gvdb::new(vec![
+            Record::new(&format!("{TABLE}._{ROW}_instancecount_"), 0, "1"),
+            Record::new(&format!("{TABLE}.{ROW}_0.{FIELD}"), 4, "2026-lotus"),
+        ]);
         assert!(keep_kits(&mut bare).is_empty());
         assert_eq!(kit_of(&bare, 0).as_deref(), Some("2026-lotus"));
     }

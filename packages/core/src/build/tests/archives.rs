@@ -109,7 +109,11 @@ fn the_core_ships_the_startup_intro_and_a_later_addon_replaces_it() {
         0,
         "0",
     )];
-    std::fs::write(dir.join(GVDB), swofty_formats::gvdb::Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(
+        dir.join(GVDB),
+        swofty_formats::gvdb::Gvdb::new(records).to_bytes(),
+    )
+    .unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir: dir.clone(),
@@ -184,7 +188,7 @@ fn merged_slices_conflict_one_slice_at_a_time() {
     std::fs::create_dir_all(dir.join("2025_asset_groups/ui_package")).unwrap();
     std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
     let records = vec![Record::new("entrants.teams._team_instancecount_", 0, "0")];
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     std::fs::write(dir.join(ui), logo_archive(logos, &[0, 1, 2, 3])).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
@@ -621,7 +625,7 @@ fn records_and_reports_the_conflicts_between_addons() {
         Record::new("entrants.teams.team_0._metadata_", 4, "mclaren_26"),
         Record::new("entrants.teams.team_0.stat_id", 0, "100"),
     ];
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let erp = "2025_asset_groups/t.erp";
     let uri = "eaid://t/a.idf";
     std::fs::write(dir.join(erp), archive(&[uri, "eaid://t/b.idf"], 0)).unwrap();
@@ -765,7 +769,7 @@ fn build_put_and_edit(name: &str, edit_first: bool) -> (Built, PathBuf, PathBuf)
     std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
     std::fs::create_dir_all(dir.join("2025_asset_groups")).unwrap();
     std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
-    std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
     let erp = "2025_asset_groups/t.erp";
     std::fs::write(
         dir.join(erp),
@@ -833,7 +837,7 @@ fn a_resource_edit_that_leaves_stale_tsmd_stats_gets_them_rebuilt() {
     std::fs::create_dir_all(dir.join(erp).parent().unwrap()).unwrap();
     std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
     std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
-    std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
     let spline = |gate: &str| Document {
         root: Element {
             kind: Kind::Element,

@@ -920,7 +920,7 @@ mod tests {
             records.push(rec(&format!("tracks.Track_{i}._metadata_"), code));
             records.push(rec(&format!("tracks.Track_{i}.gp_short_name"), "lng_x"));
         }
-        let cat = Catalog::load(&Gvdb { records }.to_bytes()).unwrap();
+        let cat = Catalog::load(&Gvdb::new(records).to_bytes()).unwrap();
         let weekends = module("race-weekends").unwrap();
         let track = weekends.fields.iter().position(|f| f.id == "track").unwrap();
         let view = weekends.view(&cat, &Edits::default(), None).unwrap();
@@ -1069,7 +1069,7 @@ mod tests {
                 ));
             }
         }
-        let cat = Catalog::load(&Gvdb { records }.to_bytes()).unwrap();
+        let cat = Catalog::load(&Gvdb::new(records).to_bytes()).unwrap();
         let drivers = module("drivers").unwrap();
         let at = |id: &str| drivers.fields.iter().position(|f| f.id == id).unwrap();
         let (mistakes, number, name) = (at("trait_mistakes"), at("car_number"), at("full_name"));
