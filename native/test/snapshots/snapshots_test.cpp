@@ -17,11 +17,11 @@
 #include <random>
 #include <sstream>
 
-namespace snap = swofty_core::snapshots;
-namespace fmt = swofty_core::snapshots::format;
+namespace snap = career::snapshots;
+namespace fmt = career::snapshots::format;
 namespace reg = swofty_core::registry;
 namespace sp = career::save_splice;
-namespace sn = swofty_core::snapshots::seasons;
+namespace sn = career::snapshots::seasons;
 using swofty::json::Value;
 
 static int fails;

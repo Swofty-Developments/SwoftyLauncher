@@ -22,7 +22,7 @@
 
 namespace {
 
-namespace pf = career_ops::fuel;
+namespace pf = career::ops::fuel;
 
 struct GameMem {
     bool read(uintptr_t at, void *out, size_t n)
@@ -208,7 +208,7 @@ void on_unloaded(const SwoftyEvent *, void *)
 
 }
 
-namespace career_ops {
+namespace career::ops {
 
 int set_track_fuel(const std::string &who, SwoftyText request, char *out, size_t cap, size_t *len)
 {

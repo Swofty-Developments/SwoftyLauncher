@@ -11,7 +11,7 @@
 
 // What the book's entry and career moments (snapshots.cpp) and its freezes (freeze.cpp) share: the decoded
 // seasons and record majors the reads use, and the size text of the book's lines.
-namespace swofty_core::snapshots {
+namespace career::snapshots {
 
 struct Book::Cache {
     struct Decoded {

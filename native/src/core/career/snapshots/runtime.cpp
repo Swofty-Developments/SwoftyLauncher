@@ -41,12 +41,12 @@ namespace runtime {
 namespace {
 
 namespace reg = swofty_core::registry;
-namespace snap = swofty_core::snapshots;
+namespace snap = career::snapshots;
 namespace sp = career::save_splice;
 namespace hk = swofty_core::hooks;
 
 namespace g = swofty::game;
-namespace sn = swofty_core::snapshots::seasons;
+namespace sn = career::snapshots::seasons;
 
 std::once_flag started;
 std::unique_ptr<snap::Book> the_book;

@@ -33,7 +33,7 @@ namespace swofty_core::apply::tracks {
 
 namespace {
 
-namespace pf = ::career_ops::fuel;
+namespace pf = ::career::ops::fuel;
 
 constexpr uintptr_t ENTITY_MODE = 0x2b0, MODE_STAT = 0x80, ENTITY_LIST = 0xe18, LIST_SEASON = 0xb0;
 

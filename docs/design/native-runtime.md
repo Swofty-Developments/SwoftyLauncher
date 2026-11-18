@@ -245,6 +245,8 @@ Code in `core/career/` is in `career::`. The entry points `runtime/runtime.hpp` 
 | `career::saves`, `career::start`, `career::ui` | `career_saves_logic.hpp`, `career_start.hpp`, `career_ui.hpp` |
 | `career::save_data`, `career::save_splice` | `save_data.hpp`, `save_data.cpp`, `save_splice_logic.hpp`, `save_splice.cpp` |
 | `career::save_diag`, `career::save_heap` | `save_diag_logic.hpp`, `save_heap_logic.hpp` |
+| `career::ops` | `ops/`: the career operations below |
+| `career::snapshots` | `snapshots/`: the career snapshot book, its entry format and the save bag |
 
 ## Career operations
 
