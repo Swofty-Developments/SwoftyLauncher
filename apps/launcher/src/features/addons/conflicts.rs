@@ -1,8 +1,12 @@
 use super::ITEMS_SHOWN;
 use super::row::stock_removals_text;
+use std::convert::Infallible;
+
+use super::AddonsPage;
+use crate::services::game::Install;
 use crate::services::library::AddonItem;
 use crate::shell::Shell;
-use crate::shell::notices::{Notification, Notify};
+use crate::shell::host::{Host, Hosted};
 use crate::ui::format::{ago_since, title_case};
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;
@@ -14,6 +18,7 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::profile::VANILLA;
 use swofty_core::profile::conflicts::{self, Pair};
+use swofty_core::store::Store;
 use swofty_i18n::{tr, trf, trn};
 
 pub(super) fn pair_counts(pair: &Pair) -> String {
@@ -98,6 +103,7 @@ pub(super) fn item_group(item: &str) -> (String, String) {
 impl Shell {
     pub(super) fn pairs_of<'a>(&'a self, id: &'a str) -> impl Iterator<Item = &'a Pair> + 'a {
         self.addons
+            .conflicts
             .report
             .iter()
             .flat_map(|r| r.pairs.iter())
@@ -109,6 +115,7 @@ impl Shell {
     pub(super) fn live_pairs<'a>(&'a self, m: &'a AddonItem) -> Vec<&'a Pair> {
         let current = self
             .addons
+            .conflicts
             .report
             .as_ref()
             .is_some_and(|r| r.is_current(&self.library.profile));
@@ -120,7 +127,7 @@ impl Shell {
 
     /// Removals of stock database records the last build of the current load order skipped.
     pub(super) fn stock_removals(&self, m: &AddonItem) -> usize {
-        match &self.addons.report {
+        match &self.addons.conflicts.report {
             Some(r) if r.is_current(&self.library.profile) && self.addon_on(m) => {
                 r.stock_removals.get(&m.manifest.id).copied().unwrap_or(0)
             }
@@ -128,68 +135,24 @@ impl Shell {
         }
     }
 
-    pub(super) fn check_conflicts(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        if self.addons.checking || self.vanilla() || self.launching() {
-            return;
-        }
-        self.addons.checking = true;
-        let (store, install) = (self.store.clone(), self.game.install.clone());
-        let profile = self.library.profile.name.clone();
-        cx.spawn_in(window, async move |this, cx| {
-            let result = cx
-                .background_executor()
-                .spawn(async move {
-                    let game =
-                        crate::features::sections::game(&store, install.as_ref()).ok_or_else(|| {
-                            tr("Locate F1 25 first. Checking conflicts reads its files.").to_owned()
-                        })?;
-                    conflicts::check(&store, &profile, &game).map_err(|e| e.to_string())
-                })
-                .await;
-            this.update_in(cx, |s, window, cx| {
-                s.addons.checking = false;
-                match result {
-                    Ok(report) => {
-                        let text = match report.pairs.len() {
-                            0 => tr("No conflicts between addons").to_owned(),
-                            n => trn(n, "Found {count} conflict", "Found {count} conflicts"),
-                        };
-                        window.notify(Notification::success(text), cx);
-                        if report.profile == s.library.profile.name {
-                            s.addons.report = Some(report);
-                        }
-                    }
-                    Err(e) => {
-                        crate::app::app_log::action("check conflicts").failed(&e);
-                        window.notify(Notification::error(e).title(tr("Could not check conflicts")), cx)
-                    }
-                }
-                cx.notify();
-            })
-            .ok();
-        })
-        .detach();
-        cx.notify();
-    }
-
     pub(super) fn check_button(&self, id: &'static str, small: bool, cx: &mut Context<Self>) -> Button {
         Button::new(id)
             .outline()
             .when(small, |b| b.tap_xs())
             .icon(IconName::RefreshCw)
-            .label(if self.addons.checking {
+            .label(if self.addons.conflicts.checking {
                 tr("Checking…")
             } else {
                 tr("Check conflicts")
             })
             .tooltip(tr("Plans this profile's build without installing it"))
-            .loading(self.addons.checking)
-            .disabled(self.vanilla() || self.addons.checking || self.launching())
-            .on_click(cx.listener(|this, _, window, cx| this.check_conflicts(window, cx)))
+            .loading(self.addons.conflicts.checking)
+            .disabled(self.vanilla() || self.addons.conflicts.checking || self.launching())
+            .on_click(cx.listener(|this, _, _, cx| AddonsPage::check(this, cx)))
     }
 
     pub(super) fn conflicts_block(&self, id: &str, p: Palette, cx: &mut Context<Self>) -> impl IntoElement {
-        let report = self.addons.report.as_ref();
+        let report = self.addons.conflicts.report.as_ref();
         let kept = self
             .library
             .addons
@@ -484,5 +447,72 @@ impl Shell {
                 },
             ))
             .children(raw)
+    }
+}
+
+pub(crate) struct AddonsNeeds<'a> {
+    pub(crate) store: &'a Store,
+    pub(crate) install: Option<&'a Install>,
+    pub(crate) profile: &'a str,
+    /// Vanilla or a launch under way: the check would plan a build nobody can use.
+    pub(crate) blocked: bool,
+}
+
+impl Hosted for AddonsPage {
+    type Needs<'a> = AddonsNeeds<'a>;
+    type Change = Infallible;
+}
+
+impl Host<AddonsPage> for Shell {
+    fn split(&mut self) -> (&mut AddonsPage, AddonsNeeds<'_>) {
+        let blocked = self.vanilla() || self.launching();
+        (
+            &mut self.addons,
+            AddonsNeeds {
+                store: &self.store,
+                install: self.game.install.as_ref(),
+                profile: &self.library.profile.name,
+                blocked,
+            },
+        )
+    }
+
+    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
+        match change {}
+    }
+}
+
+impl AddonsPage {
+    pub(super) fn check<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (page, needs) = host.split();
+        if !page.conflicts.begin(needs.blocked) {
+            return;
+        }
+        let (store, install) = (needs.store.clone(), needs.install.cloned());
+        let profile = needs.profile.to_owned();
+        cx.spawn(async move |this, cx| {
+            let result = cx
+                .background_executor()
+                .spawn(async move {
+                    let game =
+                        crate::features::sections::game(&store, install.as_ref()).ok_or_else(|| {
+                            tr("Locate F1 25 first. Checking conflicts reads its files.").to_owned()
+                        })?;
+                    conflicts::check(&store, &profile, &game).map_err(|e| e.to_string())
+                })
+                .await;
+            this.update(cx, |host, cx| {
+                if let Err(e) = &result {
+                    crate::app::app_log::action("check conflicts").failed(e);
+                }
+                let (page, needs) = host.split();
+                let note = page.conflicts.take(needs.profile, result);
+                page.toasts.push(note);
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
+        cx.notify();
     }
 }

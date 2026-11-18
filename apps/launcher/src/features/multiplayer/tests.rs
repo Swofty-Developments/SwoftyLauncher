@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::time::Instant;
 
 use swofty_core::online::multiplayer::types::{
     GameStatus, MemberStage, MemberState, Phase, PrintMatch, RelayStatus, Role, RoomAddon, RoomAddons,
@@ -9,6 +10,7 @@ use super::model::{
     GameState, RoomStatus, Start, Tone, addon_checks, card_addons, content_check, content_word, exit_leaves,
     exit_notice, joined, member_word, missing, refusal, refusal_text, restart_ok_text, room_meta,
 };
+use super::state::{Lobby, unasked};
 use swofty_core::online::multiplayer::types::RoomContent;
 
 fn status(screen: Screen) -> GameStatus {
@@ -289,4 +291,85 @@ fn the_cars_row_shows_this_players_f1_2026_answer() {
         content_check(&s),
         Some((Some(false), "Your copy of F1 25 doesn't have the F1 2026 content"))
     );
+}
+
+#[test]
+fn a_shown_page_polls_the_game_rooms_and_addons_at_once() {
+    let now = Instant::now();
+    let mut lobby = Lobby {
+        game_at: Some(now),
+        rooms_at: Some(now),
+        digest: Some("abc".into()),
+        ..Lobby::default()
+    };
+    assert!(!lobby.game_due(now) && !lobby.rooms_due(now) && !lobby.digest_due());
+    lobby.refresh();
+    assert!(lobby.game_due(now) && lobby.rooms_due(now) && lobby.digest_due());
+}
+
+#[test]
+fn a_poll_already_running_is_not_due_again() {
+    let now = Instant::now();
+    let lobby = Lobby {
+        game_polling: true,
+        rooms_polling: true,
+        digest_busy: true,
+        ..Lobby::default()
+    };
+    assert!(!lobby.game_due(now) && !lobby.rooms_due(now) && !lobby.digest_due());
+}
+
+#[test]
+fn a_game_read_reports_a_change_only_when_the_status_moved() {
+    let now = Instant::now();
+    let mut lobby = Lobby {
+        game_polling: true,
+        ..Lobby::default()
+    };
+    assert!(lobby.took_game(Some(status(Screen::MainMenu)), now));
+    assert!(!lobby.game_polling && lobby.game_at == Some(now));
+    assert!(!lobby.took_game(Some(status(Screen::MainMenu)), now));
+    assert!(lobby.took_game(None, now));
+}
+
+#[test]
+fn a_failed_room_list_keeps_the_rooms_shown_and_says_why() {
+    let now = Instant::now();
+    let mut lobby = Lobby::default();
+    lobby.took_rooms(Ok(Vec::new()), now);
+    assert!(lobby.rooms_loaded && lobby.rooms_error.is_none());
+    lobby.rooms_polling = true;
+    lobby.took_rooms(Err("offline".into()), now);
+    assert!(lobby.rooms_loaded && !lobby.rooms_polling);
+    assert_eq!(lobby.rooms_error.as_deref(), Some("offline"));
+    lobby.took_rooms(Ok(Vec::new()), now);
+    assert!(lobby.rooms_error.is_none());
+}
+
+#[test]
+fn a_digest_that_does_not_read_is_asked_for_again() {
+    let mut lobby = Lobby {
+        digest_busy: true,
+        ..Lobby::default()
+    };
+    lobby.took_digest(Err("no game".into()));
+    assert!(lobby.digest_due());
+    lobby.took_digest(Ok("abc".into()));
+    assert!(!lobby.digest_due());
+}
+
+#[test]
+fn avatars_are_asked_for_once_and_only_from_the_web() {
+    let asked: HashSet<String> = ["https://a/1.png".to_owned()].into();
+    let mut wanted = unasked(
+        vec![
+            "https://a/1.png".into(),
+            "https://a/2.png".into(),
+            "https://a/2.png".into(),
+            "file:///c.png".into(),
+        ],
+        &asked,
+    );
+    wanted.sort();
+    assert_eq!(wanted, ["https://a/2.png"]);
 }

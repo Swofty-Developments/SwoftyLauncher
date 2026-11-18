@@ -508,10 +508,22 @@ def similarity(a, b):
     return sum(x == y for x, y in zip(a, b)) / max(min(len(a), len(b)), 1) if a and b else 0.0
 
 
+def relocated_body(img, rva):
+    """The body a protector thunk at rva jumps to outside its own section, or None."""
+    s = img.section_of(rva)
+    if s is None or not img.readable(rva, 5) or img.mem[rva] != 0xE9:
+        return None
+    body = follow_jumps(img, rva)
+    return body if body != rva and not s.has(body) and img.readable(body, 16) else None
+
+
 def compare(ref_img, ref_doc, ref_results, img, doc, results, context=0.4, callee=0.5):
     """Flag bindings that resolve on both builds but probably not to the same place. A pattern made of protector
     filler can match once elsewhere, so the bytes around the match (outside the pattern) and, for a call, the
-    callee's first bytes must look like the reference build's."""
+    callee's first bytes must look like the reference build's. Around a protector thunk the filler differs per
+    build, so there the relocated bodies the two thunks jump to must look alike instead. An override pattern can sit
+    somewhere else than the reference pattern, at a caller for instance, so for a code target with an override the
+    first bytes of the code at the two targets may stand in for the bytes around the match."""
     ref = {b['id']: (b, r) for b, r in zip(ref_doc['bindings'], ref_results)}
     out = []
     for b, r in zip(doc['bindings'], results):
@@ -522,12 +534,22 @@ def compare(ref_img, ref_doc, ref_results, img, doc, results, context=0.4, calle
             continue
         m, rm = r['match'] if r['match'] is not None else r['target'], rr['match'] if rr['match'] is not None else rr['target']
         n, rn = len(b['pattern'].split()), len(rb['pattern'].split())
-        around = max(similarity(img.read(m - 16, 16), ref_img.read(rm - 16, 16)),
-                     similarity(img.read(m + n, 16), ref_img.read(rm + rn, 16)))
-        why = []
-        if around < context:
-            why.append(f'bytes around the match look {around:.2f} alike')
         t, rt = r['target'], rr['target']
+        body, rbody = relocated_body(img, t), relocated_body(ref_img, rt)
+        why = []
+        if body is not None and rbody is not None:
+            sim = similarity(img.read(body, 16), ref_img.read(rbody, 16))
+            if sim < context:
+                why.append(f'the thunk body {body:#x} looks {sim:.2f} like the reference body {rbody:#x}')
+        else:
+            around = max(similarity(img.read(m - 16, 16), ref_img.read(rm - 16, 16)),
+                         similarity(img.read(m + n, 16), ref_img.read(rm + rn, 16)))
+            if around < context and b['pattern'] != rb['pattern'] and b['kind'] in ('func', 'site'):
+                code = similarity(img.read(follow_jumps(img, t), 16), ref_img.read(follow_jumps(ref_img, rt), 16))
+                if code < context:
+                    why.append(f'bytes around the match look {around:.2f} alike and the code at the target {code:.2f}')
+            elif around < context:
+                why.append(f'bytes around the match look {around:.2f} alike')
         if ref_img.readable(rt, 5) and ref_img.mem[rt] == 0xE8:
             if not (img.readable(t, 5) and img.mem[t] == 0xE8):
                 why.append('the reference site is a call and this one is not')
@@ -574,6 +596,46 @@ def gen_set_for(img):
 def verify(image, doc, exe_size=None):
     img = image if isinstance(image, Image) else Image(image)
     return Resolver(img, doc, exe_size).run()
+
+
+def anchors(port, build):
+    """[(port RVA, KB RVA, binding id, port section)] for every binding that resolves on the port image, sorted."""
+    kb_rva = {b['id']: int(b['rva'], 16) for b in gen_set(kb_name())['bindings']}
+    doc = gen_set(build)
+    out = []
+    for b, r in zip(doc['bindings'], verify(port, doc)):
+        if r['target'] is not None and b['id'] in kb_rva and port.section_of(r['target']) is not None:
+            out.append((r['target'], kb_rva[b['id']], b['id'], port.section_of(r['target']).name))
+    return sorted(out)
+
+
+def kb_name():
+    import bindgen, kb
+    return bindgen.load_overlays(kb.load_signatures()['build'])[0]
+
+
+def kb_twin(port, build, rva, marks=None):
+    """(KB RVA, evidence) for a port RVA from the shift of the bindings on either side of it, or (None, why)."""
+    marks = anchors(port, build) if marks is None else marks
+    sec = port.section_of(rva)
+    if sec is None:
+        return None, f'{rva:#x} is in no section of the port image'
+    same = [m for m in marks if m[3] == sec.name]
+    at = next((m for m in same if m[0] == rva), None)
+    if at:
+        return at[1], {'how': 'binding', 'text': f'{at[2]} is bound here on both builds'}
+    below = [m for m in same if m[0] < rva]
+    above = [m for m in same if m[0] > rva]
+    if not below or not above:
+        return None, f'no binding {"below" if not below else "above"} {rva:#x} in {sec.name} to take the shift from'
+    lo, hi = below[-1], above[0]
+    dl, dh = lo[0] - lo[1], hi[0] - hi[1]
+    if dl != dh:
+        return None, (f'the bindings around {rva:#x} moved by different amounts ({lo[2]} by {dl:#x}, {hi[2]} by '
+                      f'{dh:#x}), so code changed between them')
+    return rva - dl, {'how': 'neighbours', 'shift': dl, 'below': lo[2], 'above': hi[2],
+                      'text': f'{lo[2]} ({lo[0]:#x}) and {hi[2]} ({hi[0]:#x}) on either side both sit {dl:#x} '
+                              f'{"above" if dl >= 0 else "below"} their KB addresses'}
 
 
 def rx(v):

@@ -304,9 +304,8 @@ class EngineBoundaries(Base):
 
     def test_an_agree_about_the_signature_does_not_export_the_binding(self):
         import bindgen
-        gate = bindgen.Gate.__new__(bindgen.Gate)
-        gate.verdicts = {('sig', self.doc['signature']['id']): ('agree', 'V1')}
-        gate.passed = set()
+        gate = bindgen.Gate(rows=[{'date': '2026-11-17', 'kind': 'sig', 'item': self.doc['signature']['id'],
+                                   'verdict': 'agree', 'notes': 'V1 text'}], exceptions={})
         row = self.doc['row']
         status, _ = gate('L2', row['evidence'], [('global', self.doc['name']), ('global', row['addr'])])
         self.assertIsNone(status)
@@ -397,14 +396,336 @@ class CiCommand(Base):
                 json.dump(files, f)
             out = os.path.join(tmp, 'out.json')
             import binding
-            code = binding.main(['ci', '--files', os.path.join(tmp, 'files.json'), '--head', head, '--author', AUTHOR,
-                                 '--out', out])
+            with contextlib.redirect_stdout(io.StringIO()):
+                code = binding.main(['ci', '--files', os.path.join(tmp, 'files.json'), '--head', head, '--author',
+                                     AUTHOR, '--out', out])
             with open(out) as f:
                 result = json.load(f)
             self.assertNotEqual(result['verdict'], 'auto')
             self.assertIn(code, (0, 1))
         finally:
             shutil.rmtree(tmp)
+
+
+class MadeOn(Classify):
+    PORT = 'steam-26566308'
+
+    def port_sha(self):
+        return next(sha for sha, name in self.knowledge.builds.items() if name == self.PORT)
+
+    def made_on(self, drop=(), **change):
+        d = as_new(self.doc, proof=False)
+        s, sha = d['signature'], self.port_sha()
+        s.update(made_on=sha[:16], made_on_match=hex(int(s['match'], 16) + 0x2590),
+                 made_on_target=hex(int(s['target'], 16) + 0x2590),
+                 twin='made on steam-26566308; the target is KB 0x1436a3b83: both neighbours sit 0x2590 above',
+                 verified=[{'build': sha[:16], 'date': '2026-11-17', 'by': AUTHOR, 'how': 'static'}])
+        s.update(change)
+        for k in drop:
+            s.pop(k)
+        p = make_proof(d, AUTHOR, sha)
+        p['result'].update(match=s.get('made_on_match', s['match']), target=s.get('made_on_target', s['target']))
+        d['proofs'] = [p]
+        return d
+
+    def classify_doc(self, d):
+        return self.run_classify([('re/bindings/' + SAMPLE, None, raw(d))])
+
+    def test_a_record_made_on_the_current_build_merges_itself(self):
+        out = self.classify_doc(self.made_on())
+        self.assertEqual((out['verdict'], out['errors'], out['notes']), ('auto', [], []))
+
+    def test_its_proof_there_must_land_where_it_was_made(self):
+        d = self.made_on()
+        d['proofs'][0]['result']['target'] = '0x140001000'
+        out = self.classify_doc(d)
+        self.assertEqual(out['verdict'], 'fail')
+        self.assertTrue(any('on the build the record was made on' in e for e in out['errors']), out['errors'])
+
+    def test_the_made_on_fields_come_together(self):
+        out = self.classify_doc(self.made_on(drop=('twin',)))
+        self.assertEqual(out['verdict'], 'fail')
+        self.assertTrue(any('signature.twin missing' in e for e in out['errors']), out['errors'])
+
+    def test_made_on_names_a_build_other_than_the_kb_build(self):
+        kb_sha = self.knowledge.build['sha256'][:16]
+        out = self.classify_doc(self.made_on(made_on=kb_sha))
+        self.assertTrue(any('other than the KB build' in e for e in out['errors']), out['errors'])
+
+    def test_without_made_on_the_kb_build_must_be_verified(self):
+        out = self.classify_doc(self.made_on(drop=('made_on', 'made_on_match', 'made_on_target', 'twin')))
+        self.assertTrue(any('signature.verified needs an entry for the KB build' in e for e in out['errors']),
+                        out['errors'])
+
+    def test_every_made_on_error_has_a_fix(self):
+        d = self.made_on(made_on_target='0x140001000')
+        d['proofs'][0]['result']['target'] = '0x140001000'
+        for e in self.classify_doc(d)['errors'] + self.classify_doc(self.made_on(drop=('twin',)))['errors']:
+            self.assertIsNotNone(bc.fix_for(e), e)
+
+
+class Fixes(Classify):
+    def messages(self, out):
+        return out['errors'] + out['notes']
+
+    def scenarios(self):
+        path = 're/bindings/' + SAMPLE
+        no_decomp = as_new(self.doc)
+        no_decomp['row']['evidence'] = 'xref:0x1436a3b74'
+        no_decomp['proofs'] = [make_proof(no_decomp, AUTHOR)]
+        wild = as_new(self.doc)
+        wild['signature']['pattern'] = '?? ' + wild['signature']['pattern']
+        moved = as_new(self.doc)
+        moved['signature']['pattern'] += ' 90'
+        bad_token = as_new(self.doc)
+        bad_token['row']['evidence'] += ';guess:x'
+        bad_token['proofs'] = [make_proof(bad_token, AUTHOR)]
+        edited = as_new(self.doc)
+        edited['row']['notes'] += ' more'
+        root = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, root)
+        os.makedirs(os.path.join(root, 'native', 'src'))
+        with open(os.path.join(root, 'native', 'src', 'x.cpp'), 'w') as f:
+            f.write(f'resolve("{self.doc["name"]}");\n')
+        yield self.run_classify([(path, None, raw(no_decomp))])
+        yield self.run_classify([(path, None, raw(wild))])
+        yield self.run_classify([(path, None, raw(moved))])
+        yield self.run_classify([(path, None, raw(bad_token))])
+        yield self.run_classify([(path, None, raw(as_new(self.doc)))], author='someone-else')
+        yield self.run_classify([(path, None, raw(as_new(self.doc, proof=False)))])
+        yield self.run_classify([(path, None, b'{"schema": 1, "schema": 2}')])
+        yield self.run_classify([(path, None, b'not json')])
+        yield self.run_classify([('re/tools/bindgen.py', None, b'x')])
+        yield self.run_classify([(path, raw(self.doc), None)])
+        yield self.run_classify([(path, raw(as_new(self.doc)), raw(edited))])
+        yield self.run_classify([])
+        yield self.run_classify([(path, None, raw(as_new(self.doc)))], root=root)
+        yield self.second_proof(AUTHOR)
+        yield self.second_proof('contributor-b', 'disagree')
+        yield bc.classify([(path, None, raw(as_new(self.doc)))], AUTHOR, self.knowledge, self.empty)
+
+    def test_every_message_of_these_pull_requests_has_a_fix(self):
+        seen = 0
+        for out in self.scenarios():
+            for msg in self.messages(out):
+                seen += 1
+                self.assertIsNotNone(bc.fix_for(msg), msg)
+        self.assertGreater(seen, 15)
+
+    def test_a_fix_names_the_record_and_the_command(self):
+        out = self.run_classify([('re/bindings/' + SAMPLE, None, raw(as_new(self.doc)))], author='someone-else')
+        fixes = [bc.fix_for(m) for m in out['notes']]
+        name = self.doc['name']
+        self.assertTrue(any(f'binding.py verify {name} --exe' in f and '--by someone-else' in f for f in fixes), fixes)
+
+    def test_the_fix_follows_its_message(self):
+        msg = f're/bindings/{SAMPLE}: row: L2 needs xref:'
+        self.assertEqual(bc.with_fixes([msg, 'no fix for this']),
+                         [msg, '  fix: ' + bc.fix_for(msg), 'no fix for this'])
+        self.assertIn('xref:', bc.fix_for(msg))
+        self.assertIsNone(bc.fix_for('no fix for this'))
+
+
+class CiSummary(Base):
+    def test_the_summary_names_the_outside_files_and_the_fixes(self):
+        import binding
+        tmp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, tmp)
+        files = [{'filename': 'docs/a.md', 'status': 'modified'}, {'filename': 'native/src/b.cpp', 'status': 'added'}]
+        with open(os.path.join(tmp, 'files.json'), 'w') as f:
+            json.dump(files, f)
+        out = os.path.join(tmp, 'out.json')
+        with contextlib.redirect_stdout(io.StringIO()) as printed:
+            binding.main(['ci', '--files', os.path.join(tmp, 'files.json'), '--head', tmp, '--author', AUTHOR,
+                          '--out', out])
+        with open(out) as f:
+            result = json.load(f)
+        self.assertEqual(result['verdict'], 'review')
+        self.assertTrue(any('docs/a.md, native/src/b.cpp' in n for n in result['notes']), result['notes'])
+        self.assertTrue(any(line.startswith('  fix: ') for line in result['summary']), result['summary'])
+        self.assertIn('  fix: ', printed.getvalue())
+
+    def test_a_record_without_a_regular_file_in_the_pull_request_needs_review(self):
+        import binding
+        tmp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, tmp)
+        with open(os.path.join(tmp, 'files.json'), 'w') as f:
+            json.dump([{'filename': 're/bindings/session/site_Sess_NewThing.json', 'status': 'added'}], f)
+        out = os.path.join(tmp, 'out.json')
+        with contextlib.redirect_stdout(io.StringIO()):
+            binding.main(['ci', '--files', os.path.join(tmp, 'files.json'), '--head', tmp, '--author', AUTHOR,
+                          '--out', out])
+        with open(out) as f:
+            result = json.load(f)
+        self.assertEqual(result['verdict'], 'review')
+        self.assertEqual(result['notes'], ['re/bindings/session/site_Sess_NewThing.json: the pull request has no '
+                                           'regular file there: review needed'])
+
+    def test_a_list_that_is_not_a_file_list_fails_with_a_summary(self):
+        import binding
+        tmp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, tmp)
+        with open(os.path.join(tmp, 'files.json'), 'w') as f:
+            f.write('{"filename": "x"}')
+        out = os.path.join(tmp, 'out.json')
+        with contextlib.redirect_stdout(io.StringIO()):
+            code = binding.main(['ci', '--files', os.path.join(tmp, 'files.json'), '--head', tmp, '--author', AUTHOR,
+                                 '--out', out])
+        with open(out) as f:
+            result = json.load(f)
+        self.assertEqual((code, result['verdict']), (1, 'fail'))
+        self.assertEqual(result['summary'], ['error: the file list is not a GitHub API file list'])
+
+
+class Doctor(Base):
+    BASE = 'f' * 40
+
+    def doctor(self, changes, other=(), *args):
+        import binding
+        store = br.Store.get()
+        before = store.records
+        with mock.patch.object(binding, 'pick_base', return_value=self.BASE), \
+                mock.patch.object(binding, 'doctor_changes', return_value=(list(changes), list(other))), \
+                contextlib.redirect_stdout(io.StringIO()) as out:
+            code = binding.main(['doctor', *args])
+        self.assertIs(store.records, before)
+        return code, out.getvalue()
+
+    def test_a_new_record_would_merge_itself(self):
+        code, out = self.doctor([('re/bindings/' + SAMPLE, None, raw(as_new(self.doc)))])
+        self.assertEqual(code, 0, out)
+        self.assertIn('pull request by contributor-a', out)
+        self.assertIn('verdict: auto: this pull request would merge itself', out)
+        self.assertIn(f'{self.doc["name"]}: ', out.split('after the merge:')[1])
+
+    def test_a_review_says_why_and_names_the_other_files(self):
+        old = as_new(self.doc)
+        new = copy.deepcopy(old)
+        new['row']['notes'] += ' more'
+        code, out = self.doctor([('re/bindings/' + SAMPLE, raw(old), raw(new))], ['docs/a.md'], '--author', AUTHOR)
+        self.assertEqual(code, 0, out)
+        self.assertIn('verdict: review', out)
+        self.assertIn('changes an existing record', out)
+        self.assertIn('(docs/a.md)', out)
+        self.assertIn('    fix: ', out)
+
+    def test_a_failure_prints_each_error_with_its_fix(self):
+        d = as_new(self.doc)
+        d['row']['evidence'] = 'xref:0x1436a3b74'
+        d['proofs'] = [make_proof(d, AUTHOR)]
+        code, out = self.doctor([('re/bindings/' + SAMPLE, None, raw(d))])
+        self.assertEqual(code, 1, out)
+        self.assertIn('verdict: fail', out)
+        self.assertIn(f'- error: re/bindings/{SAMPLE}: row: L2 needs decomp:', out)
+        self.assertIn('    fix: add the missing decomp: token to --evidence', out)
+
+    def test_records_by_two_authors_need_the_author(self):
+        other = as_new(self.doc, author='contributor-b')
+        with self.assertRaises(SystemExit) as e:
+            self.doctor([('re/bindings/' + SAMPLE, None, raw(as_new(self.doc))),
+                         ('re/bindings/session/site_Sess_Other.json', None, raw(other))])
+        self.assertIn('pass --author', str(e.exception))
+        self.assertIn('contributor-a, contributor-b', str(e.exception))
+
+    def test_local_changes_include_commits_edits_deletions_and_new_files(self):
+        import binding
+        repo = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, repo)
+
+        def run(*args):
+            subprocess.run(['git', '-C', repo, '-c', 'user.email=t@t', '-c', 'user.name=t', *args], check=True,
+                           capture_output=True)
+        run('init', '-q')
+        for name in ('kept', 'edited', 'gone', 'committed'):
+            with open(os.path.join(repo, name), 'w') as f:
+                f.write(name)
+        run('add', '-A')
+        run('commit', '-qm', 'base')
+        base = subprocess.run(['git', '-C', repo, 'rev-parse', 'HEAD'], capture_output=True).stdout.decode().strip()
+        with open(os.path.join(repo, 'committed'), 'a') as f:
+            f.write('2')
+        run('commit', '-qam', 'head')
+        with open(os.path.join(repo, 'edited'), 'a') as f:
+            f.write('2')
+        os.remove(os.path.join(repo, 'gone'))
+        with open(os.path.join(repo, 'untracked'), 'w') as f:
+            f.write('new')
+        with mock.patch.object(binding.kb, 'ROOT', repo):
+            got = binding.local_changes(base)
+        self.assertEqual(got, [('committed', 'modified'), ('edited', 'modified'), ('gone', 'removed'),
+                               ('untracked', 'added')])
+
+
+class CheckAndStatus(Base):
+    def test_check_counts_the_files_it_was_given(self):
+        import binding
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            code = binding.main(['check', os.path.join(br.RECORDS, SAMPLE), os.path.join(br.RECORDS, 'x', 'Nope.json')])
+        self.assertEqual(code, 1)
+        self.assertIn('Nope.json: no such file', out.getvalue())
+        self.assertRegex(out.getvalue(), r'binding\.py check: 2 of \d+ record\(s\) checked, 1 error\(s\)')
+
+    def test_status_takes_names(self):
+        import binding
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            binding.main(['status', self.doc['name']])
+        lines = out.getvalue().splitlines()
+        self.assertEqual((len(lines), lines[-1]), (3, '1 record(s)'))
+        self.assertTrue(lines[1].startswith(self.doc['name']))
+
+    def test_status_of_an_unknown_name_says_where_records_are(self):
+        import binding
+        with self.assertRaises(SystemExit) as e:
+            binding.main(['status', 'Nope_Not_There'])
+        self.assertIn('binding.py status lists them', str(e.exception))
+
+
+@unittest.skipUnless(os.environ.get('SWOFTY_STEAM_EXE'), 'set SWOFTY_STEAM_EXE to the KB build F1_25.exe')
+class NewOnTheKbBuild(unittest.TestCase):
+    TWIN = 0x142e9dc20
+
+    def test_a_function_whose_bytes_repeat_gets_a_call_signature(self):
+        import binding, sigcheck
+        exe = os.environ['SWOFTY_STEAM_EXE']
+        img = sigcheck.Image(exe)
+        self.assertIsNone(sigcheck.make(img, self.TWIN, 'func_start', None))
+        site, sig = binding.call_candidate(img, exe, self.TWIN)
+        self.assertEqual((sig['kind'], sig['resolve']['kind'], sig['target']), ('call', 'rel32', hex(self.TWIN)))
+        start = int(sig['match'], 16)
+        self.assertEqual(start + int(sig['resolve']['insn'], 16), site)
+        self.assertEqual(img.read(site, 1), b'\xe8')
+
+
+
+class NewOnAnotherBuild(unittest.TestCase):
+    def test_an_unknown_build_is_refused_with_the_builds_that_work(self):
+        import binding
+        with self.assertRaises(SystemExit) as e:
+            binding.port_exe_or_exit('F1_25.exe', {'sha256': 'f' * 64, 'size': 1, 'pe_timestamp': 2}, 'new')
+        self.assertIn('1.0.141.7865', str(e.exception))
+        self.assertIn('re/db/builds', str(e.exception))
+
+    def test_only_builds_other_than_the_kb_build_are_ports(self):
+        import binding, kb
+        self.assertIsNone(binding.build_name(kb.load_signatures()['build']['sha256']))
+        sha = next(sha for sha, name in bc.Knowledge().builds.items() if name == 'steam-26566308')
+        self.assertEqual(binding.build_name(sha), 'steam-26566308')
+
+    @unittest.skipUnless(os.environ.get('SWOFTY_STEAM_145_EXE'), 'set SWOFTY_STEAM_145_EXE to the Steam 1.0.145 exe')
+    def test_the_current_build_maps_an_address_to_its_kb_twin(self):
+        import binding, sigcheck
+        exe = os.environ['SWOFTY_STEAM_145_EXE']
+        ident = binding.exe_identity(exe)
+        self.assertEqual(binding.port_exe_or_exit(exe, ident, 'new'), 'steam-26566308')
+        sig = sigcheck.make(sigcheck.Image(exe), 0x142e91ae0, 'func_start')
+        with mock.patch.dict(os.environ, {'SWOFTY_KB_EXE': os.environ.get('SWOFTY_STEAM_EXE', '')}):
+            out = binding.to_kb(sig, exe, 'steam-26566308', ident)
+        self.assertEqual((out['target'], out['match'], out['section']), ('0x142e8f550', '0x142e8f550', '.xtls'))
+        self.assertEqual((out['made_on'], out['made_on_match'], out['made_on_target']),
+                         (ident['sha256'][:16], '0x142e91ae0', '0x142e91ae0'))
+        self.assertIn('0x2590', out['twin'])
+        if os.environ.get('SWOFTY_STEAM_EXE'):
+            self.assertIn('checked on the KB exe: same', out['twin'])
 
 
 class CiLint(Base):
@@ -452,6 +773,17 @@ class UnfoldKeepsBindgenOutput(unittest.TestCase):
                             files[os.path.relpath(os.path.join(dp, f), top)] = fh.read()
                 return files
 
+            def listing(top):
+                """{path: (size, mtime)} under top. copy2 keeps both, so a file whose pair still matches its source
+                was never rewritten; every other file is compared byte for byte."""
+                out = {}
+                for dp, dirs, fs in os.walk(top):
+                    dirs[:] = [x for x in dirs if x != '__pycache__']
+                    for f in fs:
+                        st = os.stat(os.path.join(dp, f))
+                        out[os.path.relpath(os.path.join(dp, f), top)] = (st.st_size, st.st_mtime_ns)
+                return out
+
             def copy(name, dirs=('db', 'tools', 'tests', 'bindings')):
                 root = os.path.join(tmp, name)
                 for d in dirs:
@@ -489,8 +821,8 @@ class UnfoldKeepsBindgenOutput(unittest.TestCase):
                 with open(os.path.join(db, 'signatures.json'), 'w') as f:
                     f.write(json.dumps(sigs, indent=1) + '\n')
 
+            first = gen(os.path.dirname(re_dir), os.path.join(tmp, 'before'))
             outputs, again = copy('outputs'), copy('again', ('db', 'bindings'))
-            first = gen(outputs, os.path.join(tmp, 'before'))
             records = {r.name: r.relpath for r in br.Store.get().records if r.author == 'kb-import' and not r.proofs}
             before = finish(first, os.path.join(tmp, 'before'))
             to_fold, to_unfold = {}, {}
@@ -512,11 +844,13 @@ class UnfoldKeepsBindgenOutput(unittest.TestCase):
             if to_fold:
                 unfold(again, list(to_fold))
             for d in ('db', 'bindings'):
-                was, now = snapshot(os.path.join(re_dir, d)), snapshot(os.path.join(again, 're', d))
-                was = {k: v for k, v in was.items() if '__pycache__' not in k}
+                was, now = listing(os.path.join(re_dir, d)), listing(os.path.join(again, 're', d))
                 self.assertEqual(sorted(now), sorted(was))
-                for path in was:
-                    self.assertEqual(now[path], was[path], path)
+                for path, st in was.items():
+                    if now[path] != st:
+                        with open(os.path.join(re_dir, d, path), 'rb') as a, \
+                                open(os.path.join(again, 're', d, path), 'rb') as b:
+                            self.assertEqual(b.read(), a.read(), path)
 
             after = finish(second, os.path.join(tmp, 'after'))
             self.assertEqual(sorted(before), sorted(after))

@@ -1,3 +1,4 @@
+use crate::features::browser::Browser;
 use crate::services::game::{self};
 use crate::services::library::Library;
 use crate::shell::notices::{Notification, Notify};
@@ -87,10 +88,10 @@ impl Shell {
         let console_closed = cx.on_window_closed(move |cx, id| {
             shell.update(cx, |s, cx| s.console_closed(id, cx)).ok();
         });
-        let browser = crate::features::browser::Browser::new(&store.root, window, cx);
+        let browser = Browser::new(&store.root, window, cx);
         let shaders = cx.new(|cx| crate::features::shaders::ShadersView::new(store.clone(), window, cx));
         let shaders_events = cx.subscribe(&shaders, Self::shaders_event);
-        let catalog = Self::watch_catalog(cx);
+        let catalog = Browser::watch(cx);
         let mp = Self::start_account(&store, cx);
         Self::watch_multiplayer(window, cx);
         let root = store.root.clone();
@@ -210,8 +211,8 @@ impl Shell {
             });
         }
         shell.fetch_news(cx);
-        shell.sync_catalog_updates();
-        shell.fetch_catalog(cx);
+        shell.browser.sync_updates(&shell.library);
+        Browser::fetch_catalog(&mut shell, cx);
         shell.db_profile_changed(cx);
         Self::warn_if_elevated(window, cx);
         shell

@@ -279,9 +279,9 @@ void era_press(const char *entrant_list)
 std::vector<CoreMixins> tt_guard_mixins()
 {
     std::vector<CoreMixins> out;
-    if (vehicle_guard.offered || !code_ready())
+    if (vehicle_guard.gate.offered() || !code_ready())
         return out;
-    vehicle_guard.offered = true;
+    vehicle_guard.gate.offer();
     if (!swofty::api->resolve(VEHICLE_FN)) {
         swofty::log("[era] session vehicle guard off: needs %s, which this build does not resolve", VEHICLE_FN);
     } else {
@@ -320,9 +320,9 @@ std::vector<CoreMixins> tt_guard_mixins()
 std::vector<CoreMixins> career_alias_mixins()
 {
     std::vector<CoreMixins> out;
-    if (alias_guard.offered || !code_ready())
+    if (alias_guard.gate.offered() || !code_ready())
         return out;
-    alias_guard.offered = true;
+    alias_guard.gate.offer();
     if (!swofty::api->resolve(CAREER_ALIAS_FN)) {
         swofty::log("[era] career id aliases off: needs %s, which this build does not resolve (a verify agree row on its "
                     "saved record layout is missing)",
@@ -338,43 +338,41 @@ std::vector<CoreMixins> career_alias_mixins()
 
 void career_alias_commit()
 {
-    if (!alias_guard.offered || alias_guard.settled)
+    if (!alias_guard.gate.settle())
         return;
-    alias_guard.settled = true;
     if (alias_guard.bound)
         swofty::log("[era] career id aliases %s",
-                    core_mixins_active(CAREER_ALIAS_MIXIN)
-                        ? "armed: a career saved with earlier row ids has its entrants mapped to the current ids as it loads"
-                        : "did not install (see the [core] lines)");
+                    loader::install_state(core_mixins_active(CAREER_ALIAS_MIXIN),
+                                          "armed: a career saved with earlier row ids has its entrants mapped to the "
+                                          "current ids as it loads"));
 }
 
 static loader::FunctionSet career_alias_core_set{loader::CoreSetId::career_alias, career_alias_mixins, career_alias_commit};
 
 void tt_guard_commit()
 {
-    if (!vehicle_guard.offered || vehicle_guard.settled)
+    if (!vehicle_guard.gate.settle())
         return;
-    vehicle_guard.settled = true;
     if (vehicle_guard.bound)
         swofty::log("[era] session vehicle guard %s",
-                    core_mixins_active(VEHICLE_MIXIN)
-                        ? "armed: a session with more vehicles than its table of 26 sets up the first 26 instead of writing past it"
-                        : "did not install (see the [core] lines)");
+                    loader::install_state(core_mixins_active(VEHICLE_MIXIN),
+                                          "armed: a session with more vehicles than its table of 26 sets up the first 26 "
+                                          "instead of writing past it"));
     if (availability_guard.bound)
         swofty::log("[era] setup mode guard %s",
-                    core_mixins_active(AVAILABILITY_MIXIN)
-                        ? "armed: when the game rebuilds its setup modes the core drops the pointers it keeps into them"
-                        : "did not install (see the [core] lines)");
+                    loader::install_state(core_mixins_active(AVAILABILITY_MIXIN),
+                                          "armed: when the game rebuilds its setup modes the core drops the pointers it "
+                                          "keeps into them"));
     if (setup_list_guard.bound)
         swofty::log("[era] era press setup mode list %s",
-                    core_mixins_active(SETUP_LIST_MIXIN)
-                        ? "armed: a game mode with more than 9 setup modes no longer crashes an era tile press"
-                        : "did not install (see the [core] lines)");
+                    loader::install_state(core_mixins_active(SETUP_LIST_MIXIN),
+                                          "armed: a game mode with more than 9 setup modes no longer crashes an era tile "
+                                          "press"));
     if (virtual_lists.parse_list_bound)
-        swofty::log("[era] virtual entrant lists %s", core_mixins_active(PARSE_LIST_MIXIN)
-                                                          ? "armed: a box whose list lies above the table's count "
-                                                            "is read into swofty_virtual_list when it is pressed"
-                                                          : "did not install (see the [core] lines)");
+        swofty::log("[era] virtual entrant lists %s",
+                    loader::install_state(core_mixins_active(PARSE_LIST_MIXIN),
+                                          "armed: a box whose list lies above the table's count is read into "
+                                          "swofty_virtual_list when it is pressed"));
 }
 
 static loader::FunctionSet tt_guard_core_set{loader::CoreSetId::tt_guard, tt_guard_mixins, tt_guard_commit};
@@ -382,14 +380,14 @@ static loader::FunctionSet tt_guard_core_set{loader::CoreSetId::tt_guard, tt_gua
 std::vector<CoreMixins> era_mixins()
 {
     std::vector<CoreMixins> out;
-    if (picker.offered || split_off() || picker.off || !code_ready())
+    if (picker.gate.offered() || split_off() || picker.off || !code_ready())
         return out;
     {
         std::lock_guard<std::mutex> g(picker.lock);
         if (picker.boxes.empty())
             return out;
     }
-    picker.offered = true;
+    picker.gate.offer();
     std::string why;
     if (!bind_all(why)) {
         picker.off_why = why;
@@ -408,9 +406,8 @@ std::vector<CoreMixins> era_mixins()
 
 void era_commit()
 {
-    if (!picker.offered || picker.settled || picker.off)
+    if (picker.off || !picker.gate.settle())
         return;
-    picker.settled = true;
     if (core_mixins_active(MIXIN)) {
         picker.live = true;
         swofty::log("[era] era picker hooks installed; addon boxes show from the next build of the picker");

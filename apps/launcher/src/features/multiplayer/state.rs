@@ -1,4 +1,5 @@
 use std::collections::{HashMap, HashSet};
+use std::convert::Infallible;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -12,6 +13,7 @@ use swofty_core::store::Store;
 use swofty_i18n::tr;
 
 use crate::shell::Shell;
+use crate::shell::host::{Host, Hosted};
 
 pub(super) const TICK: Duration = Duration::from_millis(500);
 pub(super) const GAME_EVERY: Duration = Duration::from_secs(2);
@@ -39,17 +41,7 @@ pub(crate) struct RoomLaunch {
 
 pub(crate) struct Multiplayer {
     pub(super) visible: bool,
-    pub(super) game: Option<GameStatus>,
-    pub(super) game_at: Option<Instant>,
-    pub(super) game_polling: bool,
-    pub(super) rooms: Vec<RoomSummary>,
-    pub(super) rooms_loaded: bool,
-    pub(super) rooms_error: Option<String>,
     pub(super) refused: Option<String>,
-    pub(super) rooms_at: Option<Instant>,
-    pub(super) rooms_polling: bool,
-    pub(super) digest: Option<String>,
-    pub(super) digest_busy: bool,
     pub(super) form: bool,
     pub(super) name: Entity<InputState>,
     pub(super) code: Entity<InputState>,
@@ -70,6 +62,7 @@ pub(crate) struct Multiplayer {
     pub(super) faces: HashMap<String, Arc<Image>>,
     pub(super) faces_asked: HashSet<String>,
     pub(super) _inputs: [Subscription; 2],
+    pub(super) lobby: Lobby,
 }
 
 impl Multiplayer {
@@ -86,17 +79,7 @@ impl Multiplayer {
         let inputs = [changed(cx, &name), changed(cx, &code)];
         Self {
             visible: false,
-            game: None,
-            game_at: None,
-            game_polling: false,
-            rooms: Vec::new(),
-            rooms_loaded: false,
-            rooms_error: None,
             refused: None,
-            rooms_at: None,
-            rooms_polling: false,
-            digest: None,
-            digest_busy: false,
             form: false,
             name,
             code,
@@ -117,6 +100,7 @@ impl Multiplayer {
             faces: HashMap::new(),
             faces_asked: HashSet::new(),
             _inputs: inputs,
+            lobby: Lobby::default(),
         }
     }
 
@@ -133,12 +117,124 @@ impl Multiplayer {
         self.closing = None;
         self.game_seen = false;
         self.viewing = None;
-        self.rooms_at = None;
-        self.game_at = None;
-        self.digest = None;
+        self.lobby.refresh();
     }
 }
 
 pub(super) fn due(at: Option<Instant>, every: Duration, now: Instant) -> bool {
     at.is_none_or(|at| now.duration_since(at) >= every)
+}
+
+/// What the page polls while no room is joined: the game, the room list and this profile's addons.
+#[derive(Default)]
+pub(crate) struct Lobby {
+    pub(super) game: Option<GameStatus>,
+    pub(super) game_at: Option<Instant>,
+    pub(super) game_polling: bool,
+    pub(super) rooms: Vec<RoomSummary>,
+    pub(super) rooms_loaded: bool,
+    pub(super) rooms_error: Option<String>,
+    pub(super) rooms_at: Option<Instant>,
+    pub(super) rooms_polling: bool,
+    pub(super) digest: Option<String>,
+    pub(super) digest_busy: bool,
+}
+
+impl Lobby {
+    /// Polls everything again at once, as when the page is shown or a room is left.
+    pub(super) fn refresh(&mut self) {
+        self.rooms_at = None;
+        self.game_at = None;
+        self.digest = None;
+    }
+
+    pub(super) fn game_due(&self, now: Instant) -> bool {
+        !self.game_polling && due(self.game_at, GAME_EVERY, now)
+    }
+
+    pub(super) fn rooms_due(&self, now: Instant) -> bool {
+        !self.rooms_polling && due(self.rooms_at, ROOMS_EVERY, now)
+    }
+
+    pub(super) fn digest_due(&self) -> bool {
+        self.digest.is_none() && !self.digest_busy
+    }
+
+    pub(super) fn no_game(&mut self, now: Instant) {
+        self.game = None;
+        self.game_at = Some(now);
+    }
+
+    /// Takes a read of the game's status; true when it changed.
+    pub(super) fn took_game(&mut self, status: Option<GameStatus>, now: Instant) -> bool {
+        self.game_polling = false;
+        self.game_at = Some(now);
+        if self.game == status {
+            return false;
+        }
+        self.game = status;
+        true
+    }
+
+    pub(super) fn took_rooms(&mut self, result: Result<Vec<RoomSummary>, String>, now: Instant) {
+        self.rooms_polling = false;
+        self.rooms_at = Some(now);
+        match result {
+            Ok(rooms) => {
+                self.rooms = rooms;
+                self.rooms_loaded = true;
+                self.rooms_error = None;
+            }
+            Err(e) => self.rooms_error = Some(e),
+        }
+    }
+
+    pub(super) fn took_digest(&mut self, digest: Result<String, String>) {
+        self.digest_busy = false;
+        match digest {
+            Ok(d) => self.digest = Some(d),
+            Err(e) => eprintln!("swofty-launcher: couldn't read this profile's addons: {e}"),
+        }
+    }
+}
+
+/// The web avatars in `urls` not asked for yet, each once.
+pub(super) fn unasked(urls: Vec<String>, asked: &HashSet<String>) -> Vec<String> {
+    urls.into_iter()
+        .filter(|u| u.starts_with("http") && !asked.contains(u))
+        .collect::<HashSet<_>>()
+        .into_iter()
+        .collect()
+}
+
+pub(crate) struct OnlineNeeds<'a> {
+    pub(crate) store: &'a Store,
+    pub(crate) profile: &'a str,
+    pub(crate) game_dir: Option<&'a Path>,
+    pub(crate) running: bool,
+    pub(crate) token: Option<&'a str>,
+}
+
+impl Hosted for Multiplayer {
+    type Needs<'a> = OnlineNeeds<'a>;
+    type Change = Infallible;
+}
+
+impl Host<Multiplayer> for Shell {
+    fn split(&mut self) -> (&mut Multiplayer, OnlineNeeds<'_>) {
+        (
+            &mut self.mp_page,
+            OnlineNeeds {
+                store: &self.store,
+                profile: &self.library.profile.name,
+                game_dir: self.game.install.as_ref().map(|i| i.dir.as_path()),
+                running: !self.game.processes.is_empty(),
+                token: self.account.session.as_ref().map(|m| m.token.as_str()),
+            },
+        )
+    }
+
+    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
+        match change {}
+    }
 }

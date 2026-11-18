@@ -180,7 +180,7 @@ pub fn recorded(reg: impl Fn(&[&str]) -> Option<String>) -> Vec<PathBuf> {
 
 #[cfg(windows)]
 pub fn recorded_here() -> Vec<PathBuf> {
-    recorded(reg_exe)
+    recorded(read_reg)
 }
 
 #[cfg(not(windows))]
@@ -242,17 +242,11 @@ pub fn moved(dir: &Path, recorded: &[PathBuf], is_install: impl Fn(&Path) -> boo
     })
 }
 
-/// `reg query` of an install record or the link handler, kept for [`crate::platform::KEEP_RECORDS`]: the
-/// game's copies are looked for several times in one Play, and the uninstall lists are long.
+/// What `reg query <args>` prints for an install record or the link handler, read in process; None when
+/// the key is not there.
 #[cfg(windows)]
-fn reg_exe(args: &[&str]) -> Option<String> {
-    static KEPT: crate::platform::Kept<Vec<String>, Option<String>> = crate::platform::Kept::new();
-    let mut all = vec!["query"];
-    all.extend_from_slice(args);
-    let key = all.iter().map(|a| (*a).to_owned()).collect();
-    KEPT.get(key, crate::platform::KEEP_RECORDS, || {
-        crate::platform::run_as_admin::windows_tool("reg", &all).filter(|o| !o.trim().is_empty())
-    })
+fn read_reg(args: &[&str]) -> Option<String> {
+    crate::platform::registry::reg_query(args).filter(|o| !o.trim().is_empty())
 }
 
 #[cfg(windows)]
@@ -302,7 +296,7 @@ pub fn installs() -> Vec<PathBuf> {
         .flat_map(|ini| library_dirs(&ini))
         .chain(program_files().into_iter().map(|p| p.join("EA Games")))
         .collect();
-    find_installs(reg_exe, &defaults, is_install)
+    find_installs(read_reg, &defaults, is_install)
 }
 
 /// Linux has no standard place for the EA app's games; players add the
@@ -532,10 +526,10 @@ pub fn handoff(setting: Option<&str>) -> Option<Handoff> {
 
 #[cfg(windows)]
 fn windows_handoff() -> Option<Handoff> {
-    if let Some(h) = reg_exe(&[PROTOCOL_KEY, "/ve"]).and_then(|o| Handoff::from_protocol(&o)) {
+    if let Some(h) = read_reg(&[PROTOCOL_KEY, "/ve"]).and_then(|o| Handoff::from_protocol(&o)) {
         return Some(h);
     }
-    let desktop: String = DESKTOP_KEYS.iter().filter_map(|k| reg_exe(&[k])).collect();
+    let desktop: String = DESKTOP_KEYS.iter().filter_map(|k| read_reg(&[k])).collect();
     let defaults: Vec<PathBuf> = program_files()
         .iter()
         .map(|p| {

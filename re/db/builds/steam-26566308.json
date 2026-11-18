@@ -19,6 +19,18 @@
    "pattern": "E9 ?? ?? ?? ?? 33 0F 88 46 73 F5 FB 0F",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
   },
+  "Car_Differential_Reset_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 84 8F CA BB 0F 8C 99 C5",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours (+0x2870, as Car_Write_Differential and Car_Write_FuelTank), its one vtable slot is at the same place relative to the KB build's (+0x21c0) and its jmp target starts with the same prologue as on the KB build."
+  },
+  "Car_FuelEcu_Reset_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 9F 06 66 0F 82 F8 30 90",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours (+0x2870, as Car_Write_Differential and Car_Write_FuelTank), its one vtable slot is at the same place relative to the KB build's (+0x21c0) and its jmp target starts with the same prologue as on the KB build."
+  },
+  "Car_Read_Differential_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 71 EE F5 6E E0 C2 D9 FE",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours (+0x2870, as Car_Write_Differential and Car_Write_FuelTank), its one vtable slot is at the same place relative to the KB build's (+0x21c0) and its jmp target starts with the same prologue as on the KB build."
+  },
   "Car_Register_DetachablePart_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? E2 0F 83 16 25 89 FF 31",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
@@ -26,10 +38,6 @@
   "Car_Systems_Reset_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? E9 4A 56 ?? ?? ?? ?? 84",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
-  },
-  "Career_GameValue_GetUpgradesFailedDuringTimeAdvance": {
-   "pattern": "48 83 EC 28 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 89 C0 C4 E1 FA 2A C0 48 83 C4 28 C3 CC CC CC CC 48 83 EC 28",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
   },
   "Career_Get_CareerLengthDays_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? EA 0F 89 46 26 C8 FD 13 E9",
@@ -74,6 +82,10 @@
   "Game_SeasonLength_PushCalendarEntry": {
    "pattern": "E9 ?? ?? ?? ?? E9 DD 91 5A 00 EA 2A",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Game_SessionStateTalkingPoints_ParseParams_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 2B 4A E9 BA A6 61 02 75 A7 D0 9F BF A7 69",
+   "note": "The KB pattern is the jmp and the protector filler after it, which differs on 1.0.145, so it matches nothing there. The 1.0.145 thunk is 0x142d973b0, slot 7 of the vtable whose slot 7 pointer is 0x1457e4e38, at the shift 0x2590 of Sess_StoryStartLights_OnStateEnter and Sess_PlayerTerminalDamage_Enter on either side. Its jmp reaches the .trace body 0x14e6cc9b0, which is the KB body 0x14eb3abf0 instruction for instruction (one KB-only and ecx in between): the Game.SkipTalkingPoints and Game.ecaEnabled reads, the +0xea1 store and the releaseCutscenesOnExit param at the same offsets. The pattern is the 1.0.145 jmp and filler, as long as the KB one; it matches once."
   },
   "Game_Set_VehicleController_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? 0F 8B 25 77 0D 00 E9 3B D8",
@@ -131,10 +143,6 @@
    "pattern": "48 89 5C 24 20 55 56 57 41 56 41 57 48 8D 6C 24 C9 48 81 EC C0 00 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 45 27 66 0F 6F 0D ?? ?? A5 00",
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
   },
-  "Ne_Gfx2Renderer_PostEvent_AllocateResource": {
-   "pattern": "E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 4C 8D 05",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
-  },
   "Ne_HashMap_FatalStub_GroundCover": {
    "pattern": "E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 0F",
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
@@ -159,13 +167,18 @@
    "pattern": "56 48 83 EC 20 48 8B 71 08 48 85 F6 74 23 F0 FF 4E 08 75 1D 48 8B 06 48 89 F1 FF 10 F0 FF 4E 0C 75 0F 48 8B 06 48 89 F1 48 83 C4 20 5E 48 FF 60 08 90 48 83 C4 20 5E C3 CC CC CC CC CC CC CC CC E9",
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
   },
+  "Ne_StdMap_At_141107280": {
+   "pattern": "48 89 F9 E8 ?? ?? ?? ?? 48 85 C0 74 60 48 8D 5C 24 28",
+   "anchor": 4,
+   "note": "The call site of the KB build was rewritten. This caller of the same lookup function (4 callers there, 3 here) resolves to it through the call.",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 3
+   }
+  },
   "Sess_Flow_ParseXml": {
    "pattern": "E9 ?? ?? ?? ?? E9 FB EE DB 00 C7 B8 26 7C 03 9A",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
-  },
-  "Sess_FormationLapLogic_SubscribeSafetyCarDeployment": {
-   "pattern": "E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 48 8D 05 ?? ?? ?? ?? 48 89 44 24 38 C7 44 24 40 00 00 00 00 4C 8D 44 24 38 48 89 F2 E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 48 8D 05 ?? ?? ?? ?? 48 89 44 24 38 C7 44 24 40 00 00 00 00 4C 8D 44 24 38 48 89 F2 E8",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
   },
   "Sess_GridRundown_Update": {
    "pattern": "E9 ?? ?? ?? ?? 85 D2 E9 ?? ?? ?? ?? F6 E9",
@@ -505,6 +518,11 @@
    "expect": "E8 6F 01 DA FE",
    "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
   },
+  "site_Game_CareerWizard_BackRoute": {
+   "pattern": "48 89 54 24 40 48 8D 15 ?? ?? ?? ?? 48 8D 7C 24 40 48 89 F9 45 31 C0 45 31 C9 E8",
+   "anchor": 12,
+   "note": "The base pattern fails on 1.0.145 because the zeroing store and the call before it changed. The lea of \"back\" and the rest of the sequence are the same."
+  },
   "site_Game_DriverSelectHeader_BuildTabs": {
    "pattern": "E8 ?? ?? ?? ?? C6 86 10 03 00 00 01 48 8B 86 C0 02 00 00",
    "expect": "E8 39 9B 7F 02",
@@ -535,15 +553,15 @@
    "expect": "E8 36 A6 8E 02",
    "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
   },
-  "site_Team_LoadInsertCall": {
-   "pattern": "E8 ?? ?? ?? ?? 8B 7C 24 4C 4C 8D 74 24 68",
-   "expect": "E8 07 14 87 FE",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
-  },
   "site_Ne_HwBool_CrowdInShadows": {
    "pattern": "49 8B 4C 24 50 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 0D",
    "anchor": 12,
    "note": "The base pattern fails on 1.0.145 because the junk after the call changed. The pattern keeps the call and the following lea of the same reader (the attribute loop that loads 'crowdInShadows')."
+  },
+  "site_Ne_HwBool_NightShadowCharCast": {
+   "pattern": "49 8B 4C 24 50 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 85 C0 0F 94 96 C1 05",
+   "anchor": 12,
+   "note": "The base pattern fails on 1.0.145 because the code around the call changed. Same call in the 'nightShadowCharacterCast' reader."
   },
   "site_Ne_HwInt_NightShadowMapSize": {
    "pattern": "49 8B 4C 24 50 31 D2 45 31 C0 E8 ?? ?? ?? ?? 32 0D",
@@ -555,41 +573,15 @@
    "anchor": 7,
    "note": "The base pattern fails on 1.0.145 because the junk after the call changed. Same call in the 'sampling' reader."
   },
-  "site_Ne_HwBool_NightShadowCharCast": {
-   "pattern": "49 8B 4C 24 50 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 85 C0 0F 94 96 C1 05",
-   "anchor": 12,
-   "note": "The base pattern fails on 1.0.145 because the code around the call changed. Same call in the 'nightShadowCharacterCast' reader."
-  },
-  "site_Game_CareerWizard_BackRoute": {
-   "pattern": "48 89 54 24 40 48 8D 15 ?? ?? ?? ?? 48 8D 7C 24 40 48 89 F9 45 31 C0 45 31 C9 E8",
-   "anchor": 12,
-   "note": "The base pattern fails on 1.0.145 because the zeroing store and the call before it changed. The lea of \"back\" and the rest of the sequence are the same."
+  "site_Team_LoadInsertCall": {
+   "pattern": "E8 ?? ?? ?? ?? 8B 7C 24 4C 4C 8D 74 24 68",
+   "expect": "E8 07 14 87 FE",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
   },
   "vt_Sess_UnloadRewardSequence": {
    "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 06 66 C7 86 80 0C 00",
    "section": ".trace",
    "note": "The constructor moved from the code section into the packed section on 1.0.145; the pattern is unchanged and the vtable it stores has the same entries."
-  },
-  "Ne_StdMap_At_141107280": {
-   "pattern": "48 89 F9 E8 ?? ?? ?? ?? 48 85 C0 74 60 48 8D 5C 24 28",
-   "anchor": 4,
-   "note": "The call site of the KB build was rewritten. This caller of the same lookup function (4 callers there, 3 here) resolves to it through the call.",
-   "resolve": {
-    "kind": "rel32",
-    "insn": 3
-   }
-  },
-  "Car_Differential_Reset_Thunk": {
-   "pattern": "E9 ?? ?? ?? ?? 84 8F CA BB 0F 8C 99 C5",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours (+0x2870, as Car_Write_Differential and Car_Write_FuelTank), its one vtable slot is at the same place relative to the KB build's (+0x21c0) and its jmp target starts with the same prologue as on the KB build."
-  },
-  "Car_FuelEcu_Reset_Thunk": {
-   "pattern": "E9 ?? ?? ?? ?? 9F 06 66 0F 82 F8 30 90",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours (+0x2870, as Car_Write_Differential and Car_Write_FuelTank), its one vtable slot is at the same place relative to the KB build's (+0x21c0) and its jmp target starts with the same prologue as on the KB build."
-  },
-  "Car_Read_Differential_Thunk": {
-   "pattern": "E9 ?? ?? ?? ?? 71 EE F5 6E E0 C2 D9 FE",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours (+0x2870, as Car_Write_Differential and Car_Write_FuelTank), its one vtable slot is at the same place relative to the KB build's (+0x21c0) and its jmp target starts with the same prologue as on the KB build."
   }
  },
  "hints": {
@@ -719,6 +711,12 @@
   "Ai_Get_GeneralSettings": {
    "match": "0x6662bd"
   },
+  "Ai_Get_SegmentTurnRadius": {
+   "match": "0x60daf0"
+  },
+  "Ai_Get_TurnRadiusAtDistance": {
+   "match": "0x60d870"
+  },
   "Ai_Handle_PitStateChanged_Thunk": {
    "match": "0x6b3150"
   },
@@ -748,6 +746,9 @@
   },
   "Ai_Lookahead_AdvancePhase": {
    "match": "0x6807f0"
+  },
+  "Ai_Overtake_EvaluateGap": {
+   "match": "0x66de90"
   },
   "Ai_Parse_BlockingConfig": {
    "match": "0x65dca8"
@@ -845,11 +846,23 @@
   "Ai_TestGraph_EvalTimeSpeed": {
    "match": "0x5fc2bd"
   },
+  "Ai_TrackLine_FindCornerEndAndStart": {
+   "match": "0x66dfb0"
+  },
+  "Ai_TrackLine_FindNextSideMarker": {
+   "match": "0x66e520"
+  },
+  "Ai_TrackLine_FindSideMarkerInCorner": {
+   "match": "0x66ef00"
+  },
   "Ai_Update_CompoundPaceCurves": {
    "match": "0x5fb400"
   },
   "Ai_Update_DriverTick": {
    "match": "0x5f5e10"
+  },
+  "Ai_Update_VehicleDriver": {
+   "match": "0x614db0"
   },
   "Ai_Write_AdaptiveAiSessionRecord": {
    "match": "0x3e1a50"
@@ -3194,6 +3207,9 @@
   "Game_CutsceneManager_WaitTextureStreaming": {
    "match": "0x212210"
   },
+  "Game_DRLSystem_OnMessagePlayerDroppedIn": {
+   "match": "0x243d5f0"
+  },
   "Game_DRLSystem_ResolveDependencies": {
    "match": "0x243c440"
   },
@@ -3256,6 +3272,9 @@
   },
   "Game_DeptEventViewModel_Update": {
    "match": "0x22ebdf0"
+  },
+  "Game_DifficultySystem_ApplySettingsToUi": {
+   "match": "0x241b150"
   },
   "Game_DriverCareerTeamSelect_OnMessage": {
    "match": "0x1a6b230"
@@ -5143,6 +5162,9 @@
   },
   "Game_SessionSettings_SetSessionId": {
    "match": "0x2cd4800"
+  },
+  "Game_SessionStateTalkingPoints_ParseParams_Thunk": {
+   "match": "0x2d973b0"
   },
   "Game_SessionState_EnableOnDemandTextureStreaming": {
    "match": "0x2d89950"

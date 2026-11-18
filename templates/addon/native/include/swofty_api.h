@@ -1567,6 +1567,9 @@ typedef struct SwoftyLapHost {
     int (*hooks_active)(const char *name);
     int (*when_code_ready)(const char *what, void (*fn)(void));
     int (*code_ready)(void);
+    /* Bit 0: the exe is the Steam KB build (PE timestamp 1789118616). Bit 1: its struct layouts were checked against the
+       core's signatures (the KB build, its EA App link and Steam 1.0.145). A module that reads game structs asks bit 1,
+       or feature(name) for whether one core feature is on; bit 0 stays clear on every later build. */
     uint32_t (*build)(void);
     const char *(*build_sha)(void);
     int (*feature)(const char *name);

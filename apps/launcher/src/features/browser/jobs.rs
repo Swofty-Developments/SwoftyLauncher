@@ -251,7 +251,7 @@ impl Shell {
             .ok();
         })
         .detach();
-        self.tick_browser(cx);
+        Browser::tick(self, cx);
         cx.notify();
     }
 
@@ -266,7 +266,8 @@ impl Shell {
                 trf!("also installed {names}", names = also.join(", "))
             ));
         }
-        self.record(Op::Install, true, title.clone(), detail, f.took);
+        self.browser
+            .record(&self.store.root, Op::Install, true, title.clone(), detail, f.took);
         self.reload(cx);
         if f.in_batch {
             if let Some(b) = self.browser.batch.as_mut() {
@@ -295,7 +296,8 @@ impl Shell {
         crate::app::app_log::action(f.verb.action())
             .addon(&f.addon.id)
             .failed(&error);
-        self.record(
+        self.browser.record(
+            &self.store.root,
             Op::Install,
             false,
             f.verb.failed(&f.addon.name, &f.version.version),

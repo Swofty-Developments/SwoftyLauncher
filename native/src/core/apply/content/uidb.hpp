@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/runtime/hashing.hpp"
+
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
@@ -42,10 +44,7 @@ struct Data {
 
 inline uint32_t fnv1a32(const std::string &s)
 {
-    uint32_t h = 0x811C9DC5u;
-    for (unsigned char c : s)
-        h = (h ^ c) * 0x01000193u;
-    return h;
+    return ::runtime::fnv32(s);
 }
 
 inline uint32_t align_of(const std::string &t)

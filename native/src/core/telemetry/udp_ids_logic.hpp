@@ -1,4 +1,5 @@
 #pragma once
+#include "core/runtime/hashing.hpp"
 #include "core/runtime/json.hpp"
 
 #include <algorithm>
@@ -283,12 +284,7 @@ constexpr size_t TRACK_PACKET_SIZE = HEADER + 4 + 1 + TRACK_KEY;
 
 inline uint32_t hashed_track_id(const std::string &key)
 {
-    uint32_t h = 0x811c9dc5u;
-    for (unsigned char c : key) {
-        h ^= c;
-        h *= 0x01000193u;
-    }
-    return 0x80000000u | (h & 0x7fffffffu);
+    return 0x80000000u | (::runtime::fnv32(key) & 0x7fffffffu);
 }
 
 inline uint32_t swofty_track_id(const Map &m, const std::string &key)

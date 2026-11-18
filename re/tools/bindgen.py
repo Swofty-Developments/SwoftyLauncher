@@ -11,9 +11,11 @@ symbols.tsv (every KB function name by rva) is a crash-log label table, not a bi
 Every re/db/builds/<build>.json overlay yields one bindings set from the same gated bindings: the overlay
 whose build is the KB build writes bindings.json, every other one writes bindings.<build>.json beside it.
 
-Gate: L3 whose trace test passed -> stable; L2 (or L3 without a passed test) with an `agree` as the
-latest verify.tsv verdict -> experimental; everything else is not exported. Runtime bindings need a
-signature verified on the KB build; struct fields go through the same gate.
+Gate: L3 whose trace test passed -> stable; L2 (or L3 without a passed test) whose newest verify row
+(by date, then file order, over both the name and the address) is `agree` -> experimental; everything
+else is not exported, unless re/db/export_exceptions.json lists the binding with that newest row's V-id
+and a reason. Runtime bindings need a signature verified on the KB build; struct fields go through the
+same gate.
 """
 import argparse, json, os, re, subprocess, sys
 
@@ -43,13 +45,38 @@ RS_PRIM = {'void': 'c_void', 'char': 'c_char', 'bool': 'bool', 'int': 'c_int', '
            'intptr_t': 'isize'}
 
 
+EXCEPTIONS = os.path.join(kb.DB, 'export_exceptions.json')
+EXCEPTION_KEYS = {'kind', 'covers', 'reason'}
+
+
+def load_exceptions(path=EXCEPTIONS):
+    """{(kind, name): entry} from export_exceptions.json; a malformed file stops the build instead of exporting more."""
+    if not os.path.exists(path):
+        return {}
+    doc = json.load(open(path))
+    if doc.get('schema') != 1 or not isinstance(doc.get('exceptions'), dict):
+        raise SystemExit(f'bindgen: {path}: needs "schema": 1 and an "exceptions" object')
+    out = {}
+    for name, e in doc['exceptions'].items():
+        if not isinstance(e, dict) or set(e) != EXCEPTION_KEYS or e['kind'] not in ('func', 'global') or \
+                not re.match(r'^V\d+$', str(e['covers'])) or not str(e['reason']).strip():
+            raise SystemExit(f'bindgen: {path}: exception {name} needs exactly kind (func or global), covers (the V-id '
+                             'of the newest verify row it overrides) and a non-empty reason')
+        out[(e['kind'], name)] = e
+    return out
+
+
 class Gate:
     dev = False
 
-    def __init__(self):
+    def __init__(self, rows=None, exceptions=None):
         self.verdicts = {}
-        for r in kb.read_table('verify')[0]:
-            self.verdicts[(r['kind'], r['item'])] = (r['verdict'], r['notes'].split()[0])
+        for n, r in enumerate(kb.read_table('verify')[0] if rows is None else rows):
+            key, rank = (r['kind'], r['item']), (r['date'], n)
+            if key not in self.verdicts or rank >= self.verdicts[key][2]:
+                self.verdicts[key] = (r['verdict'], r['notes'].split()[0], rank)
+        self.exceptions = load_exceptions() if exceptions is None else exceptions
+        self.excepted = set()
         self.passed = set()
         tdir = os.path.join(kb.RE, 'tests')
         for f in os.listdir(tdir):
@@ -64,14 +91,25 @@ class Gate:
             if tests:
                 return 'stable', 'trace:' + ','.join(tests)
         if level in ('L2', 'L3'):
-            for key in keys:
-                v = self.verdicts.get(key)
-                if v and v[0] == 'agree':
-                    return 'experimental', 'verify:' + v[1]
+            v = self.newest(keys)
+            if v and v[0] == 'agree':
+                return 'experimental', 'verify:' + v[1]
+            ex = next((k for k in keys if k in self.exceptions), None)
+            if v and ex and self.exceptions[ex]['covers'] == v[1]:
+                self.excepted.add(ex)
+                return 'experimental', 'exception:' + v[1]
             if self.dev:
                 return 'dev', 'unverified'
+            if v:
+                return None, f'{level} whose newest verify row is {v[0]}'
             return None, f'{level} without an agree verify row'
         return None, f'{level}'
+
+    def newest(self, keys):
+        """The newest verify row over all keys, by date and then file order: a later partial on the address
+        outranks an older agree on the name."""
+        found = [self.verdicts[k] for k in keys if k in self.verdicts]
+        return max(found, key=lambda v: v[2]) if found else None
 
 
 def notes_cxx(notes):
@@ -153,8 +191,8 @@ def rs_type(ctype, ret=False):
     return out
 
 
-def load():
-    gate = Gate()
+def load(gate=None):
+    gate = gate or Gate()
     sigdoc = kb.load_signatures()
     build = sigdoc['build']
     sigs = {s['id']: s for s in sigdoc['signatures']}
@@ -179,7 +217,8 @@ def load():
                 skip(f'{table}: {status} but no signature')
                 continue
             s = sigs[r['sig']]
-            if not any(build['sha256'].startswith(v.get('build', '-')) for v in s.get('verified', [])):
+            on = [build['sha256']] + ([s['made_on']] if s.get('made_on') else [])
+            if not any(b.startswith(v.get('build', '-')) for v in s.get('verified', []) for b in on):
                 skip(f'{table}: signature not verified on the KB build')
                 continue
             if table == 'functions':
@@ -203,6 +242,9 @@ def load():
                  'pattern': s['pattern'], 'anchor': int(str(s['anchor']), 0), 'resolve': res, 'expect': s.get('expect'),
                  'rva': hex(int(str(s['target']), 0) - int(build['image_base'], 16)),
                  'match': hex(int(str(s['match']), 0) - int(build['image_base'], 16))}
+            if s.get('made_on'):
+                b['made_on'] = {'build': s['made_on'],
+                                'match': hex(int(s['made_on_match'], 16) - int(build['image_base'], 16))}
             if kind == 'func':
                 b['proto'] = r['proto'] if r['proto'] != '-' and parse_proto(r['proto'], r['name']) else None
             elif kind == 'vtable':
@@ -359,10 +401,15 @@ def build_set(overlay, bindings, is_kb):
     for base in bindings:
         i = base['id']
         ov, hint = overrides.get(i, {}), hints.get(i, {})
+        made_on = base.get('made_on')
+        if made_on and 'match' not in hint and b['sha256'].startswith(made_on['build']):
+            hint = {**hint, 'match': made_on['match']}
         if 'func_rva' in hint and 'string_anchor' not in base:
             raise SystemExit(f'bindgen: hint func_rva for {i}, which has no string anchor')
         e = {}
         for k, v in base.items():
+            if k == 'made_on':
+                continue
             if k == 'build':
                 v = b['sha256']
             elif k == 'section':

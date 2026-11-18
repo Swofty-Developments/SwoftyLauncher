@@ -200,7 +200,7 @@ pub fn search_save_in(
 #[cfg(windows)]
 pub fn active_user() -> Option<u32> {
     use super::client::{self, Registry};
-    let out = client::RegExe.query(client::ACTIVE_PROCESS_KEY)?;
+    let out = client::LocalRegistry.query(client::ACTIVE_PROCESS_KEY)?;
     crate::platform::run_as_admin::reg_dword(&out, "ActiveUser").filter(|u| *u != 0)
 }
 

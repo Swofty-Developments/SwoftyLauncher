@@ -48,13 +48,19 @@ constexpr uint32_t of_i32(int32_t v) { return std::bit_cast<uint32_t>(v); }
 // Game.SkipGridRundown: Game_GridRundown_ShouldPlay (0x140ac6b30) returns false before any other test, so
 // Sess_Loader_RequestLoadThumbnails (0x142d4d040) neither enters loader step 0x1e, asks the thumbnail system for the
 // grid render (reason 3) nor queues the 32 grid slots' thumbnails, and the rundown does not play.
-inline constexpr std::array<Override, 3> OVERRIDES{{
+// Game.SkipTalkingPoints: SessionStateTalkingPoints' parse params (0x142d94e20, a jump to its body 0x14eb3abf0) stores
+// +0xea1 = 1 with it on, so its enter (0x142d94f30) generates no broadcast sequence and its update takes the state's own
+// `skipped` link on the first frame. The reader record (re/bindings/game/Game_SessionStateTalkingPoints_ParseParams_Thunk.json)
+// has its author's proof only and still needs a second contributor's agree row.
+inline constexpr std::array<Override, 4> OVERRIDES{{
     {"loading_skip_minimum_time", "Game.IgnoreMinimumLoadingTime", Type::boolean, of_bool(true),
      "the 3 s minimum of the session transition, track load and story hub loading screens is dropped"},
     {"loading_skip_session_intro_video", "Game.SkipIntroVideo", Type::boolean, of_bool(true),
      "the intro video before a session may end as soon as it starts"},
     {"loading_skip_grid_rundown", "Game.SkipGridRundown", Type::boolean, of_bool(true),
      "the race load queues no grid rundown thumbnails and the rundown does not play"},
+    {"loading_skip_talking_points", "Game.SkipTalkingPoints", Type::boolean, of_bool(true),
+     "the talking points before a race or practice session take their skipped link at once"},
 }};
 
 // Not an override: every distinct name and value the wrapped getters return is logged once (and again when it

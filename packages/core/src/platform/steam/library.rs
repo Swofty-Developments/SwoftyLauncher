@@ -90,7 +90,7 @@ pub fn registered_roots(reg: &dyn client::Registry) -> Vec<PathBuf> {
 pub(super) fn registered_roots_cached() -> Vec<PathBuf> {
     static KEPT: crate::platform::Kept<(), Vec<PathBuf>> = crate::platform::Kept::new();
     KEPT.get((), crate::platform::KEEP_RECORDS, || {
-        let mut roots = registered_roots(&client::RegExe);
+        let mut roots = registered_roots(&client::LocalRegistry);
         roots.extend(
             crate::platform::process::named_paths("steam.exe")
                 .iter()

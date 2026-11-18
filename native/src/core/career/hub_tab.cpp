@@ -1,6 +1,7 @@
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/settings.hpp"
 #include "core/registry/older.hpp"
+#include "core/frontend/ui_vm.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/game.hpp>
@@ -73,7 +74,6 @@
 
 bool settings_state(const std::string &addon, const std::string &option, size_t &current,
                     std::vector<std::string> *texts, std::vector<std::string> *commands, std::vector<std::string> *values);
-bool ui_vm_set_path(const std::string &path, int type, const void *value);
 
 namespace {
 

@@ -7,7 +7,7 @@ use crate::ops::game_db::Db;
 use crate::ops::stat_ids::{stat_id_field, stat_id_unusable};
 
 // The stat_ids of a table's rows, read once and kept up to date by add-row until any other write.
-pub(crate) struct StatIds {
+pub(crate) struct StatIdCache {
     pub(crate) table: String,
     pub(crate) row: String,
     pub(crate) generation: u64,
@@ -23,7 +23,7 @@ pub(crate) struct StatIds {
     pub(crate) lowest_free: Option<(i64, i64)>,
 }
 
-impl StatIds {
+impl StatIdCache {
     pub(crate) fn read(db: &Db, names: &dyn FieldNames, table: &str, row: &str, rows: usize) -> Self {
         let field = stat_id_field(table, row);
         let mut ids = Self {

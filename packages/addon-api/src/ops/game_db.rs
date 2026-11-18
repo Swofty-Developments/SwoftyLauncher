@@ -5,7 +5,7 @@ use swofty_formats::hash::fnv1a64;
 
 use crate::ops::apply::Cx;
 use crate::ops::field_names::FieldNames;
-use crate::ops::stat_id_cache::StatIds;
+use crate::ops::stat_id_cache::StatIdCache;
 use crate::ops::stat_ids::stat_id_field;
 use crate::{Error, Result};
 
@@ -18,7 +18,7 @@ pub(crate) struct Db<'a> {
     pub(crate) ties: std::cell::RefCell<Vec<String>>,
     // Bumped by every write, so a cached read of the records knows when it is stale.
     pub(crate) generation: u64,
-    pub(crate) stat_ids: std::cell::RefCell<HashMap<(String, String), StatIds>>,
+    pub(crate) stat_ids: std::cell::RefCell<HashMap<(String, String), StatIdCache>>,
 }
 
 impl<'a> Db<'a> {
@@ -45,13 +45,13 @@ impl<'a> Db<'a> {
         table: &str,
         row: &str,
         rows: usize,
-    ) -> std::cell::RefMut<'_, StatIds> {
+    ) -> std::cell::RefMut<'_, StatIdCache> {
         std::cell::RefMut::map(self.stat_ids.borrow_mut(), |all| {
             let ids = all
                 .entry((table.to_owned(), row.to_owned()))
-                .or_insert_with(|| StatIds::read(self, names, table, row, rows));
+                .or_insert_with(|| StatIdCache::read(self, names, table, row, rows));
             if ids.generation != self.generation || ids.ids.len() != rows {
-                *ids = StatIds::read(self, names, table, row, rows);
+                *ids = StatIdCache::read(self, names, table, row, rows);
             }
             ids
         })

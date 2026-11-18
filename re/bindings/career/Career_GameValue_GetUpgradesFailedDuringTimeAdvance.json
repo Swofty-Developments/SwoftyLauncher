@@ -14,7 +14,7 @@
  "signature": {
   "id": "career.game_value_get_upgrades_failed_during_time_advance",
   "section": ".xtls",
-  "pattern": "48 83 EC 28 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 89 C0 C4 E1 FA 2A C0 48 83 C4 28 C3 CC CC CC CC 48 83 EC 28",
+  "pattern": "48 83 EC 28 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 89 C0 C4 E1 FA 2A C0 48 83 C4 28 C3 CC CC CC CC 48 83 EC 28 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 89 C0 C4 E1 FA 2A C0 48 83 C4 28 C3 CC CC CC CC 48 83 EC 28",
   "match": "0x140a78a60",
   "anchor": "0x0",
   "resolve": {

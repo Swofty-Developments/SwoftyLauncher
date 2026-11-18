@@ -7,7 +7,7 @@ use sha2::{Digest, Sha256};
 use crate::asset::{AssetOp, Op};
 use crate::baseline::hex;
 use crate::builtin::{loader_dir, loader_files};
-use crate::erpbuild::reads;
+use crate::erp::reads;
 use crate::install::Game;
 use crate::manifest::AddonManifest;
 use crate::store::Store;
