@@ -470,6 +470,8 @@ using Car_FrontWing_Init_t = void(void *front_wing, char reset);
 inline constexpr fn<"Car_FrontWing_Init", Car_FrontWing_Init_t> Car_FrontWing_Init{}; // L2 experimental, game::FrontWing
 inline constexpr address<"Car_FrontWing_OnCollision"> Car_FrontWing_OnCollision{}; // L2 experimental
 inline constexpr address<"Car_FuelEcu_SetMode_Thunk"> Car_FuelEcu_SetMode_Thunk{}; // L2 experimental
+using Car_GearBox_UpdateShiftTimersAndFaults_t = void(void *gearbox, float dt);
+inline constexpr fn<"Car_GearBox_UpdateShiftTimersAndFaults", Car_GearBox_UpdateShiftTimersAndFaults_t> Car_GearBox_UpdateShiftTimersAndFaults{}; // L2 experimental
 inline constexpr address<"Car_Load_Vtf"> Car_Load_Vtf{}; // L2 experimental
 inline constexpr address<"Car_Model_BindCockpitNodes"> Car_Model_BindCockpitNodes{}; // L2 experimental
 inline constexpr address<"Car_Physics_PostVehicleUpdate"> Car_Physics_PostVehicleUpdate{}; // L2 experimental
@@ -523,6 +525,7 @@ inline constexpr site<"site_Car_AeroStoreTotalDrag"> site_Car_AeroStoreTotalDrag
 inline constexpr site<"site_Car_AeroStoreTotalLift"> site_Car_AeroStoreTotalLift{}; // L2 experimental
 inline constexpr site<"site_Car_ChassisRegistryCount"> site_Car_ChassisRegistryCount{}; // L2 experimental
 inline constexpr site<"site_Car_EngineDriveTorque"> site_Car_EngineDriveTorque{}; // L2 experimental
+inline constexpr call<"site_Car_EngineStepInput_UpdateWearCall"> site_Car_EngineStepInput_UpdateWearCall{}; // L2 experimental
 inline constexpr site<"site_Car_ErsGearModifierLoad"> site_Car_ErsGearModifierLoad{}; // L2 experimental
 inline constexpr site<"site_Car_FuelFlowStore"> site_Car_FuelFlowStore{}; // L2 experimental
 inline constexpr site<"site_Car_FuelMassStore"> site_Car_FuelMassStore{}; // L2 experimental

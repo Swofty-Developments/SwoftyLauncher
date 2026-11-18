@@ -3755,6 +3755,7 @@ pub type Car_Create_DetachablePart_t = unsafe extern "C" fn(
 ) -> *mut c_void;
 pub type Car_DetachablePart_Update_t = unsafe extern "C" fn(part: *mut c_void, dt: f32) -> bool;
 pub type Car_FrontWing_Init_t = unsafe extern "C" fn(front_wing: *mut c_void, reset: c_char);
+pub type Car_GearBox_UpdateShiftTimersAndFaults_t = unsafe extern "C" fn(gearbox: *mut c_void, dt: f32);
 pub type Car_PitStop_ApplyTyreAndWingVisuals_t =
     unsafe extern "C" fn(car_visual: *mut c_void, a2: f32, a3: bool);
 pub type Car_Register_DetachablePart_Thunk_t = unsafe extern "C" fn(
@@ -5447,6 +5448,11 @@ pub mod bindings {
     };
     pub const Car_FuelEcu_SetMode_Thunk: Binding = Binding {
         id: "Car_FuelEcu_SetMode_Thunk",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_GearBox_UpdateShiftTimersAndFaults: Binding = Binding {
+        id: "Car_GearBox_UpdateShiftTimersAndFaults",
         kind: "func",
         status: Status::Experimental,
     };
@@ -21223,6 +21229,11 @@ pub mod bindings {
     pub const site_Car_EngineDriveTorque: Binding = Binding {
         id: "site_Car_EngineDriveTorque",
         kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Car_EngineStepInput_UpdateWearCall: Binding = Binding {
+        id: "site_Car_EngineStepInput_UpdateWearCall",
+        kind: "call",
         status: Status::Experimental,
     };
     pub const site_Car_ErsGearModifierLoad: Binding = Binding {
