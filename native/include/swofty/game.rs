@@ -188,6 +188,11 @@ pub struct StandingsPreset {
 }
 
 #[repr(C)]
+pub struct TrackLayer {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
 pub struct UiLayoutStep {
     _opaque: [u8; 0],
 }
