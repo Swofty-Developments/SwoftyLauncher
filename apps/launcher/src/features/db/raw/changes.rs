@@ -143,12 +143,12 @@ impl Shell {
                     0 => trf!(
                         "{changes} in {name}",
                         changes = trn(n, "{count} change", "{count} changes"),
-                        name = self.db_draft_name()
+                        name = self.db.draft_name()
                     ),
                     k => trf!(
                         "{changes} in {name} · {k} not saved yet",
                         changes = trn(n, "{count} change", "{count} changes"),
-                        name = self.db_draft_name(),
+                        name = self.db.draft_name(),
                         k = k
                     ),
                 },
