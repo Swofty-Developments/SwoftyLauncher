@@ -113,6 +113,7 @@ UNITS = [
     Unit('report_queue', 'Registry report writer queue unit test'),
     Unit('protection_spans', 'Binding pass protection spans unit test'),
     Unit('game_settings', 'Game setting override table unit test'),
+    Unit('settings_logic', 'Addon settings model and requests file unit test'),
     Unit('player_name', 'Player name sanitising unit test'),
     Unit('postfx', 'Post-process pass logic unit test'),
     Unit('race_control', 'Race control events unit test', 'zig'),
