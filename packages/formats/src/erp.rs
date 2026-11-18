@@ -1292,6 +1292,52 @@ mod tests {
         }
     }
 
+    fn stored_archive() -> Erp {
+        let mut header = [0u8; HEADER_LEN];
+        header[..4].copy_from_slice(MAGIC);
+        header[4..8].copy_from_slice(&4u32.to_le_bytes());
+        let resources = (0..3u8)
+            .map(|i| {
+                let mut kind = [0u8; 16];
+                kind[..3].copy_from_slice(b"TEX");
+                let body = vec![i ^ 0x5a; 64 * (i as usize + 1)];
+                let mut res = Resource {
+                    name: format!("eaid://ui_package/art/r{i}.tif.image"),
+                    kind,
+                    unk: vec![i; 6],
+                    fragments: vec![
+                        Fragment::new(*b"temp", 40, 0, 0, vec![i; 40]),
+                        Fragment::new(*b"data", body.len() as u64, 0, 0, body),
+                    ],
+                    hash: [0; 16],
+                };
+                res.hash = res.content_hash().unwrap();
+                res
+            })
+            .collect();
+        Erp {
+            header,
+            version: 4,
+            resources,
+        }
+    }
+
+    fn pin(bytes: &[u8]) -> (usize, u64) {
+        (bytes.len(), crate::hash::fnv1a64(bytes))
+    }
+
+    #[test]
+    fn a_stored_archive_and_its_edit_write_the_pinned_bytes() {
+        let bytes = stored_archive().to_bytes().unwrap();
+        assert_eq!(pin(&bytes), (998, 0x3aebb140d8c4a597));
+        let mut back = Erp::parse(&bytes).unwrap();
+        assert_eq!(back.to_bytes().unwrap(), bytes);
+        let res = back.find_mut("eaid://ui_package/art/r1.tif.image").unwrap();
+        res.set_fragment(1, &[7; 200]).unwrap();
+        assert_eq!(res.hash, res.content_hash().unwrap());
+        assert_eq!(pin(&back.to_bytes().unwrap()), (1070, 0xee051df975c21b8f));
+    }
+
     #[test]
     fn write_parse_write_is_identical() {
         let bytes = sample().to_bytes().unwrap();
