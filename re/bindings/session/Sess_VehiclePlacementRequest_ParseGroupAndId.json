@@ -1,0 +1,90 @@
+{
+ "schema": 1,
+ "name": "Sess_VehiclePlacementRequest_ParseGroupAndId",
+ "table": "functions",
+ "author": "re-bindings",
+ "row": {
+  "addr": "0x142f604e0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f604e0.c;decomp:own disasm 1.0.145 0x142f62a70 the same 423/423;xref:0x1457fa538",
+  "notes": "engine-re 2026-11-17 track round C (static, d873a1c8): slot of the VehPlacement request component vtable (pointer 0x1457fa538, type string VehPlacement 0x1457fa504). Reads the marker string attribute 'Group' (0x145611631), FNV-1a 64 of the lower-cased string -> request type byte +0x1c: gridperfect 1, gridrandomoffset 2, gridformationlappenalty 3, gridformationlapnoseposition 4, grid 5, garage 6, safetycar 7, pit 8, empty or any other string 0 (stock GridSlotN markers use Group GridWheelMarker -> 0). Integer attribute 'Id' (0x145623d61) -> slot +0x18 = Id-1 (Id 0 logs an error, no range check against 32). Track markers (F1_TrackLab dump of stock commons, data): GridSlotN -> type 0, PitGarageN (Group Garage) -> 6, PitBoxN (Group Pit) -> 8; F1Garage objects are not placement requests. | re-bindings 2026-11-18: Its entry bytes repeat elsewhere and it is reached only through the vtable, so the signature starts 0x20 bytes before it, in the previous function's epilogue and the padding around a one-byte function. Steam 1.0.145 (sigport --witness): 0x142f62a70, 423/423 equal, with +0x1c, +0x18, +0xe0, +0xe8 and +0xf0 at the same instructions."
+ },
+ "signature": {
+  "id": "session.vehicle_placement_request_parse_group_and_id",
+  "section": ".xtls",
+  "pattern": "5D 41 5E 41 5F C3 CC CC CC CC CC CC CC CC CC CC C3 CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC 41 57 41 56 56 57",
+  "match": "0x142f604c0",
+  "anchor": "0x20",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f604e0",
+  "kind": "func_start",
+  "names": [
+   "Sess_VehiclePlacementRequest_ParseGroupAndId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-18",
+    "by": "re-bindings",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-17",
+   "verifier": "trkps-verify",
+   "kind": "func",
+   "item": "Sess_VehiclePlacementRequest_ParseGroupAndId",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f604e0.c;xref:0x142f607ea",
+   "notes": "V11200 Strings 0x145611631='Group', 0x145623d61='Id'; ASCII A-Z lowercased, FNV-1a64 constants match all 8 names (recomputed) -> byte +0x1c (0x142f607ea); Id stored then decremented. Nuance: Id==0 leaves +0x18=0 and logs trace 0x58; attribute looked up in 3 sources (+0xf0,+0xe8,+0xe0)."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f604c0",
+    "target": "0x142f604e0"
+   },
+   "sigcheck": "passed",
+   "digest": "0773ab30faeac204f6b6db3f692294a70dae49367fb74c34e5922d327ab6e147"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f62a50",
+    "target": "0x142f62a70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ed91467a1c2b1095fa1702de4eb70da4e60d6be0bf4f8de86dae6dafa9151e6e"
+  }
+ ]
+}

@@ -101,6 +101,27 @@ fn kept_digests_of_another_version_or_unreadable_are_dropped_whole() {
 }
 
 #[test]
+fn every_spelling_of_a_windows_path_keeps_its_digest_under_one_key() {
+    use super::super::digests::key;
+    let walked = r"C:\Users\Ann\AppData\Roaming\Swofty\addon-data\test.pack\assets\a.json";
+    for named in [
+        r"C:\Users\Ann\AppData\Roaming\Swofty\addon-data\test.pack\assets/a.json",
+        r"C:\Users\Ann\AppData\Roaming\Swofty\addon-data\test.pack\Assets\A.json",
+        "c:/users/ann/appdata/roaming/swofty/addon-data/test.pack/assets/a.json",
+    ] {
+        assert_eq!(key(named, true), key(walked, true), "{named}");
+    }
+    assert_ne!(
+        key("/home/ann/assets/A.json", false),
+        key("/home/ann/assets/a.json", false)
+    );
+    assert_ne!(
+        key(r"/home/ann/assets\a.json", false),
+        key("/home/ann/assets/a.json", false)
+    );
+}
+
+#[test]
 fn kept_digests_leave_the_build_hash_as_reading_every_source_makes_it() {
     let root = scratch("hash");
     let store = Store::new(&root);

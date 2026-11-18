@@ -1,0 +1,83 @@
+{
+ "schema": 1,
+ "name": "Game_GameMode_AddTrackLayerWorlds",
+ "table": "functions",
+ "author": "re-bindings",
+ "row": {
+  "addr": "0x1407a1310",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_GameMode_AddTrackLayerWorlds(void *entity, void *track, void *worlds, void *layers)",
+  "evidence": "decomp:own disasm KB 0x1407a1310-0x1407a1748, 1.0.145 0x1407a1350 the same 164/164;xref:0x1407a6554,0x1407b7e33,0x142df739e,0x1487321c2,0x14d45e55a",
+  "notes": "Builds a session's extra worlds from track layer rows. layers (8-byte row pointers, u64 count at +0x100) wins when it is non-null and non-empty; otherwise entity vt+0xc8 (Trk_ChampionshipEntity_TrackDataQuery_Body 0x1485962f0 in the base, benchmark, championship and Time Trial vtables) fills a 6-byte query and Trk_TrackData_CollectLayersForQuery 0x142e60550 takes every matching row of [entity+0xf58]+0x1e0. Each row goes through Game_TrackLayer_BuildExtraWorldDesc 0x142e57e90 (0x150-byte stack records) and is copied into worlds. Callers: championship BuildSessionSettings 0x1407b7e33 (layers from 0x1407b7950: the team icon entity's +0x2c0 list, the career setup track_layer_override list, the dev session list), benchmark 0x1407a6554 and Time Trial 0x1487321c2 (layers null), 0x142df739e, and the custom team config slot 10 body 0x14d45e55a (the config row's track_layers_override at row+0x40, count +0x140)."
+ },
+ "signature": {
+  "id": "game.game_mode_add_track_layer_worlds",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 10 0D 00 00",
+  "match": "0x1407a1310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407a1310",
+  "kind": "func_start",
+  "names": [
+   "Game_GameMode_AddTrackLayerWorlds"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-18",
+    "by": "re-bindings",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1407a1350",
+  "made_on_target": "0x1407a1350",
+  "twin": "made on steam-26566308; the target 0x1407a1350 is KB 0x1407a1310: Game_RetrieveConsumableEntitlementsTask_RequestSteamPrices (0x793910) and Game_BenchmarkGameMode_BuildSessionSettings (0x7a48a0) on either side both sit 0x40 above their KB addresses; checked on the KB exe: same: entry 0x60 alike 1.00"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1407a1350",
+    "target": "0x1407a1350"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b739505586faaa184b146b2ca59c5b7e52ad275810686907e64fe596bf4e8f3a"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1407a1310",
+    "target": "0x1407a1310"
+   },
+   "sigcheck": "passed",
+   "digest": "cfa019a1d455d406c7fe6463889a2261e9c10158047bcf47b11cab095e4d7855"
+  }
+ ]
+}

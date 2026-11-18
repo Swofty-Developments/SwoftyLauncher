@@ -7,6 +7,17 @@ import binding_check as bc
 import binding_record as br
 
 SAMPLE = 'session/site_Sess_StintTyreCheckPredictCall.json'
+
+
+def have_exe_modules():
+    try:
+        import capstone, numpy, pefile  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+
+NEEDS_EXE_MODULES = unittest.skipUnless(have_exe_modules(), 'capstone, numpy and pefile are required (re/tools/py)')
 AUTHOR = 'contributor-a'
 
 
@@ -577,19 +588,67 @@ class CiSummary(Base):
         self.assertEqual(result['summary'], ['error: the file list is not a GitHub API file list'])
 
 
+class HeadersFollowTheExport(Base):
+    def judge(self, new, other=()):
+        import binding
+        path = 're/bindings/' + SAMPLE
+        return binding.judge([(path, raw(self.doc), raw(new))], list(other), 'contributor-b', self.knowledge)
+
+    def agreed(self):
+        doc = copy.deepcopy(self.doc)
+        doc['verify'] = doc['verify'] + [agree_row(doc, 'contributor-b')]
+        doc['proofs'] = doc['proofs'] + [make_proof(doc, 'contributor-b')]
+        return doc
+
+    def test_an_agree_row_that_exports_a_binding_asks_for_the_headers(self):
+        result = self.judge(self.agreed())
+        self.assertEqual(result['verdict'], 'review', result['summary'])
+        notes = [n for n in result['notes'] if 'change what bindgen writes' in n]
+        self.assertEqual(len(notes), 1, result['notes'])
+        self.assertIn('native/include/swofty/game.rs', notes[0])
+        self.assertIn('native/include/swofty/game/session.hpp', notes[0])
+        fix = result['summary'][result['summary'].index(notes[0]) + 1]
+        self.assertIn('re/tools/bindgen.py --no-exe', fix)
+
+    def test_carrying_the_headers_is_a_review_of_the_headers_alone(self):
+        result = self.judge(self.agreed(), ['native/include/swofty/game.rs', 'native/include/swofty/game/session.hpp'])
+        self.assertEqual(result['verdict'], 'review')
+        self.assertFalse(any('change what bindgen writes' in n for n in result['notes']), result['notes'])
+        self.assertFalse(any('outside re/bindings' in n for n in result['notes']), result['notes'])
+        self.assertTrue(any('changes the generated headers' in n for n in result['notes']), result['notes'])
+
+    def test_a_record_that_stays_unexported_changes_no_header(self):
+        import binding
+        self.assertEqual(binding.header_changes([('re/bindings/' + SAMPLE, raw(as_new(self.doc)))]), [])
+
+    def test_the_store_is_put_back(self):
+        import binding
+        store = br.Store.get()
+        before = store.records
+        binding.header_changes([('re/bindings/' + SAMPLE, raw(self.agreed()))])
+        self.assertIs(store.records, before)
+
+
 class Doctor(Base):
     BASE = 'f' * 40
 
-    def doctor(self, changes, other=(), *args):
+    def doctor(self, changes, other=(), *args, lost=()):
         import binding
         store = br.Store.get()
         before = store.records
         with mock.patch.object(binding, 'pick_base', return_value=self.BASE), \
                 mock.patch.object(binding, 'doctor_changes', return_value=(list(changes), list(other))), \
+                mock.patch.object(binding, 'lost_exports', return_value=list(lost)) as floor, \
                 contextlib.redirect_stdout(io.StringIO()) as out:
             code = binding.main(['doctor', *args])
         self.assertIs(store.records, before)
+        floor.assert_called_once_with(self.BASE)
         return code, out.getvalue()
+
+    def test_a_binding_the_base_exports_that_stops_exporting_fails(self):
+        code, out = self.doctor([('re/bindings/' + SAMPLE, None, raw(as_new(self.doc)))], lost=['Dropped'])
+        self.assertEqual(code, 1, out)
+        self.assertIn('Dropped', out)
 
     def test_a_new_record_would_merge_itself(self):
         code, out = self.doctor([('re/bindings/' + SAMPLE, None, raw(as_new(self.doc)))])
@@ -680,6 +739,57 @@ class CheckAndStatus(Base):
         self.assertIn('binding.py status lists them', str(e.exception))
 
 
+class ExportsDoNotShrink(Base):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        import binding, bindgen
+        gate = bindgen.Gate()
+        cls.exported = next(r for r in br.Store.get().records
+                            if r.table == 'functions' and binding.export_state(gate, r)[0] == 'experimental')
+
+    def change(self, verdict):
+        doc = copy.deepcopy(self.exported.doc)
+        row = agree_row(doc, 'contributor-b')
+        row.update(kind='func', verdict=verdict, date=max(v['date'] for v in doc['verify']))
+        doc['verify'].append(row)
+        doc['proofs'].append(make_proof(doc, 'contributor-b'))
+        return doc
+
+    def judge(self, new):
+        import binding
+        path = 're/bindings/' + self.exported.relpath
+        return binding.judge([(path, raw(self.exported.doc), new and raw(new))], [], 'contributor-b', self.knowledge)
+
+    def test_a_newer_partial_row_on_an_exported_binding_fails(self):
+        result = self.judge(self.change('partial'))
+        self.assertEqual(result['verdict'], 'fail', result['summary'])
+        errors = [e for e in result['errors'] if 'stops exporting' in e]
+        self.assertEqual(len(errors), 1, result['errors'])
+        self.assertIn(self.exported.name, errors[0])
+        fix = result['summary'][result['summary'].index('error: ' + errors[0]) + 1]
+        self.assertIn('addon API', fix)
+
+    def test_removing_an_exported_record_fails(self):
+        result = self.judge(None)
+        self.assertEqual(result['verdict'], 'fail', result['summary'])
+        self.assertTrue(any('removes ' + self.exported.name in e for e in result['errors']), result['errors'])
+
+    def test_a_newer_agree_row_keeps_it_exported(self):
+        result = self.judge(self.change('agree'))
+        self.assertFalse(any('stops exporting' in e for e in result['errors']), result['errors'])
+
+    def test_lost_exports_lists_what_the_base_exports_and_the_checkout_does_not(self):
+        import binding
+        with mock.patch.object(binding, 'bindgen_ids', side_effect=[{'Kept', 'Dropped'}, {'Kept', 'Added'}]):
+            self.assertEqual(binding.lost_exports('HEAD'), ['Dropped'])
+
+    def test_the_checkout_exports_everything_its_commit_does(self):
+        import binding
+        self.assertEqual(binding.lost_exports('HEAD'), [])
+
+
+@NEEDS_EXE_MODULES
 @unittest.skipUnless(os.environ.get('SWOFTY_STEAM_EXE'), 'set SWOFTY_STEAM_EXE to the KB build F1_25.exe')
 class NewOnTheKbBuild(unittest.TestCase):
     TWIN = 0x142e9dc20
@@ -711,6 +821,7 @@ class NewOnAnotherBuild(unittest.TestCase):
         sha = next(sha for sha, name in bc.Knowledge().builds.items() if name == 'steam-26566308')
         self.assertEqual(binding.build_name(sha), 'steam-26566308')
 
+    @NEEDS_EXE_MODULES
     @unittest.skipUnless(os.environ.get('SWOFTY_STEAM_145_EXE'), 'set SWOFTY_STEAM_145_EXE to the Steam 1.0.145 exe')
     def test_the_current_build_maps_an_address_to_its_kb_twin(self):
         import binding, sigcheck
@@ -727,6 +838,21 @@ class NewOnAnotherBuild(unittest.TestCase):
         if os.environ.get('SWOFTY_STEAM_EXE'):
             self.assertIn('checked on the KB exe: same', out['twin'])
 
+
+    @NEEDS_EXE_MODULES
+    @unittest.skipUnless(os.environ.get('SWOFTY_STEAM_145_EXE'), 'set SWOFTY_STEAM_145_EXE to the Steam 1.0.145 exe')
+    def test_a_record_made_on_the_current_build_holds_kb_addresses(self):
+        import binding
+        saved = []
+        with mock.patch.object(br.Record, 'save', lambda rec, *a: saved.append(rec)), \
+                mock.patch.dict(os.environ, {'SWOFTY_KB_EXE': ''}), contextlib.redirect_stdout(io.StringIO()):
+            binding.main(['new', 'Sess_Tyre_ProbeFunctionA', '0x142e91ae0', '--kind', 'func', '--author',
+                          'contributor-a', '--exe', os.environ['SWOFTY_STEAM_145_EXE'], '--evidence',
+                          'decomp:own disasm 0x142e91ae0;xref:0x142e91ae0', '--notes', 'probe'])
+        rec = saved[0]
+        self.assertEqual((rec.table_row()['addr'], rec.signature['target']), ('0x142e8f550', '0x142e8f550'))
+        self.assertEqual(rec.signature['made_on_target'], '0x142e91ae0')
+        self.assertEqual(rec.proofs[0]['result']['target'], '0x142e91ae0')
 
 class CiLint(Base):
     def test_ci_lints_the_pull_requests_records_with_the_base(self):
@@ -826,9 +952,10 @@ class UnfoldKeepsBindgenOutput(unittest.TestCase):
             records = {r.name: r.relpath for r in br.Store.get().records if r.author == 'kb-import' and not r.proofs}
             before = finish(first, os.path.join(tmp, 'before'))
             to_fold, to_unfold = {}, {}
+            tabled = {r['name'] for t in ('functions', 'globals') for r in kb.read_table(t)[0] if not r.get('_record')}
             for b in json.loads(before['bindings.json'])['bindings']:
-                pick = to_fold if b['id'] in records else to_unfold
-                if sum(1 for k in pick.values() if k == b['kind']) < self.PER_KIND:
+                pick = to_fold if b['id'] in records else to_unfold if b['id'] in tabled else None
+                if pick is not None and sum(1 for k in pick.values() if k == b['kind']) < self.PER_KIND:
                     pick[b['id']] = b['kind']
             subsystem = {r['name']: r['subsystem'] for t in ('functions', 'globals') for r in kb.read_table(t)[0]}
             fold(outputs, list(to_fold))

@@ -8,8 +8,8 @@
   "level": "L2",
   "subsystem": "game",
   "proto": "void Game_PitLane_PutVehicleInPitBox(void *pitlane, uint8_t vehicle)",
-  "evidence": "decomp:re/decomp/1434d1260.c;decomp:re/decomp/142dfb460.c;decomp:re/decomp/1434d0b90.c;decomp:re/decomp/1434cf7c0.c;xref:0x142dfb4de",
-  "notes": "Pit lane: puts car idx (< 27) in its pit box from any pit status, the way the red flag does it for every car (Sess_RedFlagSimulate_Enter, the one direct call 0x142dfb4de, idx = vehicle component +0xe8, self = [[state+0xdc0]+0x100], the same PitLaneSystem Game_Pitlane_SetVehicleStatus takes). Body: slot from the car's pit-stop record ([self+0x48]+0x938+idx*16: record+0xe0 >> 1, 12 for state 99, 0 without a record, 13 for idx > 26); Game_PitLane_VehicleEntering 0x1434cf7c0 (acts only while the status is 1 OnTrack); per-slot state self+0x210+slot*4 = 1 (slot states 0/1/2); Game_Pitlane_SetVehicleStatus(self, idx, 4 InPitBox); 0x1434d0b90 (thunk into .data1 0x150452e70; for a status other than 1 and 16 it reaches the controller switch through 0x1434cf650, .data1 0x150450f50, skipped while feature flag bit 34 is set, and hands the car to the AI with the pit-lane controller flag); re-issues an active pit-stop record (+0xd4 != 6, +0xe0 < 24) through 0x1434c03c0; logs PITLANE vehicleEnteredPitBox. Only when byte self+0x300 is set does it post MessageTriggerGarageCrewEvent request 7 PushIntoGarage (tail jump 0x1434bf1d0 to vehicleEnteredPitBox); otherwise the car stays in status 4 InPitBox. The pit lane constructor 0x1434c72f0 zeroes self+0x300 at 0x1434c7509 and no other pit lane code writes it; vehicleEnteredPitBox reads it at 0x1503eaea4 to gate the garage push. Returns nothing. Renamed from Game_PitLane_PutVehicleInGarage after verify V2152 (partial). Raised by qualilaps for the F1 1990 qualifying lap limit (owner bypass approved by the lead)."
+  "evidence": "decomp:re/decomp/1434d1260.c;decomp:re/decomp/142dfb460.c;decomp:re/decomp/1434d0b90.c;decomp:re/decomp/1434cf7c0.c;decomp:own disasm 1.0.145 0x1434d37f0 the same 66/66;xref:0x142dfb4de",
+  "notes": "Pit lane: puts car idx (< 27) in its pit box from any pit status, the way the red flag does it for every car (Sess_RedFlagSimulate_Enter, the one direct call 0x142dfb4de, idx = vehicle component +0xe8, self = [[state+0xdc0]+0x100], the same PitLaneSystem Game_Pitlane_SetVehicleStatus takes). Body: slot from the car's pit-stop record ([self+0x48]+0x938+idx*16: record+0xe0 >> 1, 12 for state 99, 0 without a record, 13 for idx > 26); Game_PitLane_VehicleEntering 0x1434cf7c0 (acts only while the status is 1 OnTrack); per-slot state self+0x210+slot*4 = 1 (slot states 0/1/2); Game_Pitlane_SetVehicleStatus(self, idx, 4 InPitBox); 0x1434d0b90 (thunk into .data1 0x150452e70; for a status other than 1 and 16 it reaches the controller switch through 0x1434cf650, .data1 0x150450f50, skipped while feature flag bit 34 is set, and hands the car to the AI with the pit-lane controller flag); re-issues an active pit-stop record (+0xd4 != 6, +0xe0 < 24) through 0x1434c03c0; logs PITLANE vehicleEnteredPitBox. Only when byte self+0x300 is set does it post MessageTriggerGarageCrewEvent request 7 PushIntoGarage (tail jump 0x1434bf1d0 to vehicleEnteredPitBox); otherwise the car stays in status 4 InPitBox. The pit lane constructor 0x1434c72f0 zeroes self+0x300 at 0x1434c7509 and no other pit lane code writes it; vehicleEnteredPitBox reads it at 0x1503eaea4 to gate the garage push. Returns nothing. Renamed from Game_PitLane_PutVehicleInGarage after verify V2152 (partial). Raised by qualilaps for the F1 1990 qualifying lap limit (owner bypass approved by the lead). | re-bindings 2026-11-18: Steam 1.0.145 (sigport --witness): 0x1434d37f0, 66/66 equal, with the pit-stop record path +0x48, +0x938 and +0xe0 at the same instructions."
  },
  "signature": {
   "id": "game.pit_lane_put_vehicle_in_pit_box",
@@ -97,5 +97,44 @@
    "notes": "V6034 name and description match body; log string/pretty name present"
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434d1260",
+    "target": "0x1434d1260"
+   },
+   "sigcheck": "passed",
+   "digest": "1ec01a19964302924289c134e166543db1eda4b4036d0baf5fa5e48ce0a98d98"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434d37f0",
+    "target": "0x1434d37f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1da6a465036619d3c5856a9d7c11451aa7ef9262125386e9d34c7ee1c6b63185"
+  }
+ ]
 }

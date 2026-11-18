@@ -9,7 +9,7 @@
   "subsystem": "fe_tiles",
   "proto": "void FeTile_CareerDefaultItem_Populate(HomeItem *item, void *node, uint32_t a7)",
   "evidence": "decomp:re/decomp/1417264c0.c;xref:0x145704010;decomp:re/decomp/14173df80.c",
-  "notes": "Career menu 2025 content tile (career_default_content, vtable 0x145703ff0 slot +0x20, item set in FeTile_Build_List case 6 at 0x14174058b): FeTile_ItemBase_Populate, then Vm_Set_Bool(g_Vm_Registry, button_node.node+8, is_dlc_content, item+0x148), title lng_career_default_content and its description. The template fe_tile_button_default binds enabled (bool) on the same node. Raised by native-1990 for the F1 1990 Career menu (doc:/mnt/work/.f1-1990/addon/native-requests.md#N6). Clone of the other content tile populate: the signature starts in the bytes before the function."
+  "notes": "Career menu 2025 content tile (career_default_content, vtable 0x145703ff0 slot +0x20, item set in FeTile_Build_List case 6 at 0x14174058b): FeTile_ItemBase_Populate, then 0x1407d07a0([item+0x158], 0), item+0x148 = the return of vtable slot +0xa0 (0x1417264e9), vtable slot +0x98, then Vm_Set_Bool(g_Vm_Registry, button_node.node+8, is_dlc_content, item+0x190) (lea r9,[rsi+0x190] at 0x1417264fb; corrected from item+0x148 by re-bindings 2026-11-18 as V0905 asks, the same code on Steam 1.0.145 at 0x141727c40), title lng_career_default_content and its description. The template fe_tile_button_default binds enabled (bool) on the same node. Raised by native-1990 for the F1 1990 Career menu (doc:/mnt/work/.f1-1990/addon/native-requests.md#N6). Clone of the other content tile populate: the signature starts in the bytes before the function."
  },
  "signature": {
   "id": "fe_tiles.career_default_item_populate",

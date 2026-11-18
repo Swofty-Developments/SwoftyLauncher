@@ -125,6 +125,38 @@ int main()
     expect(f.ok && f.no_facts.front() == "no track layer for setup mode swofty_f1",
            "facts without a swofty_f1 layer pass the world rules and say so; the core doesn't guess a layer");
 
+    trk::BoxInfo own = cs2016();
+    own.season = "swofty_box_f1_2016";
+    own.layer = "f1_26";
+    expect(trk::worlds_for(built, own) == std::vector<std::string>{"f1_26"},
+           "a box with a world of its own loads that world alone");
+    expect(trk::fits(own, *base.by_code("melbourne"), trk::Mode::grand_prix, &built).ok,
+           "an 11-team box with its own f1_26 world fits Melbourne's 11 garages");
+    f = trk::fits(own, *base.by_code("igora_drive"), trk::Mode::grand_prix, &built);
+    expect(!f.ok && f.rule == trk::Rule::garages && f.have == 10 && f.need == 11 &&
+               f.reason == "its f1_26 world has 10 garages; the box runs 11 teams",
+           "garages: a box with its own world leaves out a track whose world has fewer garages than its teams");
+    trk::Decision pit = trk::decide(base.by_code("igora_drive"), own, trk::Mode::grand_prix, f, "");
+    expect(!pit.ok && pit.body.rfind("Its pit lane holds 10 teams. ", 0) == 0 && pit.body.find(" runs 11.") != std::string::npos,
+           "the guard's popup for garages");
+    own.layer = "myteam_26";
+    expect(trk::worlds_for(built, own) == std::vector<std::string>{"f1_26_myteam"},
+           "a layer the facts don't list loads the stock row's world");
+    f = trk::fits(own, *base.by_code("melbourne"), trk::Mode::grand_prix, &built);
+    expect(f.ok && !f.no_facts.empty() && f.no_facts.front() == "no f1_26_myteam world",
+           "a track without facts for the box's world passes and says so");
+    std::map<std::string, std::string> layer_rows = {
+        {"track_data.track_layers.TrackLayer[_metadata_=swofty_box_f1_2016_world].worldEri", "eri/f1_26"},
+        {"track_data.track_layers.TrackLayer[_metadata_=f1].worldEri", "eri/f1"},
+        {"track_data.track_layers.TrackLayer[_metadata_=f1_26].worldEri", "eri/f1_26"}};
+    trk::TextRead layer_read = [&layer_rows](const std::string &path) -> std::optional<std::string> {
+        auto it = layer_rows.find(path);
+        return it == layer_rows.end() ? std::nullopt : std::optional<std::string>(it->second);
+    };
+    expect(trk::own_layer(layer_read, "swofty_box_f1_2016") == "f1_26" && trk::own_layer(layer_read, "season_2025").empty() &&
+               trk::own_layer(layer_read, "swofty_box_other").empty(),
+           "a box's own layer is the stock row whose worldEri its layer row carries");
+
     trk::BoxInfo stock;
     stock.package = "game/f1_2026";
     f = trk::fits(stock, *base.by_code("igora_drive"), trk::Mode::grand_prix, &facts);

@@ -164,6 +164,8 @@ site_Sess_PitEntryDecision   L2     not exported       1  -                 an a
 
 The newest row is the latest by date over the binding's name and its address together, so a later `partial` or `disagree` takes an exported binding out of the next build until someone verifies it again. A binding the core's own code needs can stay exported through `re/db/export_exceptions.json`, which names the row it overrides and the reason; that file always needs review.
 
+An exported binding is part of the addon API, so the set main exports must not shrink. A pull request whose record change leaves an exported binding unexported fails the check. `binding.py exports` runs the bindgen of the commit where the branch leaves main, and the checkout's, and lists every binding main exports that the checkout does not; `binding.py doctor` runs it too. After a newer `partial` row, the binding exports again once the notes carry its corrections and someone who did not write them adds an `agree` row.
+
 A second contributor re-derives the binding from the code alone (PROTOCOL.md §5), proves it on their own exe and adds the agree row:
 
 ```sh
@@ -171,7 +173,14 @@ re/tools/py re/tools/binding.py agree site_Sess_PitEntryDecision --exe ~/F1_25.e
     --evidence "decomp:own disasm 0x1436a3ab0;xref:0x1436a3b74" --notes "same call, rcx is the car record"
 ```
 
-That pull request merges itself too. The next launcher build exports the binding as `experimental`, and your addon can hook it.
+An agree row that exports the binding also changes the generated headers in `native/include/swofty` (`game.rs` and `game/<subsystem>.hpp`), and main's tests fail when the tracked headers differ from what `bindgen.py` writes. `binding.py doctor` names the headers that change. Regenerate them and commit them in the same pull request:
+
+```sh
+python3 re/tools/bindgen.py --no-exe --json /tmp/bindings.json --symbols /tmp/symbols.tsv
+git add native/include/swofty
+```
+
+`bindgen.py` writes `game.rs` through `rustfmt`, so run it where `rustfmt` is installed (`nix develop` has it). A pull request that changes the headers waits for a maintainer's review, who checks they are what `bindgen.py` writes. After the merge, the next launcher build exports the binding as `experimental`, and your addon can hook it.
 
 Proving an existing record again, for example after a game update, adds a proof without changing anything else:
 
@@ -188,6 +197,7 @@ The `bindings` workflow labels the pull request `bindings: auto-merge` and turns
 - a changed record only gains one agree row and one proof, both by the pull request's author, who is neither the record's author nor an earlier verifier;
 - the name, address, signature id, pattern and target are new to the knowledge base;
 - no code in `native/src`, `addons`, `packages`, `templates` or `apps` already names the binding;
+- the records leave what `bindgen.py` writes to `native/include/swofty` unchanged (a binding that starts exporting changes it, so its agree row gets a review);
 - `binding.py check` passes, and the repository's required CI checks pass.
 
 Anything else gets a normal review. The workflow's summary lists each reason with its fix, the same lines `binding.py doctor` prints.

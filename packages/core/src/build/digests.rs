@@ -83,15 +83,15 @@ impl Digests {
     /// The SHA-256 of the file at `path`, whose metadata is `meta`: the kept one when its size, modified
     /// time and change time are unchanged, else read from the file. A path that is not UTF-8 is always read.
     pub fn sha256(&mut self, path: &Path, meta: &std::fs::Metadata) -> Result<String> {
-        let key = path.to_str();
-        let times = key.and_then(|_| times(path, meta));
-        if let (Some(key), Some(t)) = (key, times)
+        let key = path.to_str().map(|p| key(p, cfg!(windows)));
+        let times = key.as_ref().and_then(|_| times(path, meta));
+        if let (Some(key), Some(t)) = (&key, times)
             && let Some(e) = (self.used.get(key))
                 .or(self.kept.get(key))
                 .filter(|e| e.size == meta.len() && e.times == t)
         {
             let sha = e.sha256.clone();
-            self.used.insert(key.to_owned(), e.clone());
+            self.used.insert(key.clone(), e.clone());
             return Ok(sha);
         }
         let data = std::fs::read(path).map_err(io_err(path))?;
@@ -107,7 +107,7 @@ impl Digests {
                 sha256: sha.clone(),
             };
             if times_of(path).is_some_and(|after| after == t) {
-                self.used.insert(key.to_owned(), entry);
+                self.used.insert(key, entry);
             }
         }
         Ok(sha)
@@ -126,6 +126,16 @@ impl Digests {
         if crate::write_json_shared(at, &file).is_err() {
             std::fs::remove_file(at).ok();
         }
+    }
+}
+
+/// The key a file's digest is kept under, one for every spelling of its path: on Windows a path may use
+/// either separator and any case, as an op's path joined onto a folder does beside the same file found by
+/// walking that folder.
+pub(super) fn key(path: &str, windows: bool) -> String {
+    match windows {
+        true => path.replace('/', "\\").to_lowercase(),
+        false => path.to_owned(),
     }
 }
 
