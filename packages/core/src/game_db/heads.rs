@@ -353,13 +353,20 @@ impl Puts {
 
     /// Every head put that drivers can wear once the profile builds: one an
     /// addon adds a row for, or one a build adds a row for.
-    pub fn wearable(&self, stock: &BTreeSet<String>, names: &HashMap<String, String>) -> Vec<ProfileHead> {
+    /// `stock` gives the game's own head labels, and is only read for a head
+    /// with no head model that no addon adds a row for.
+    pub fn wearable(
+        &self,
+        stock: impl FnOnce() -> BTreeSet<String>,
+        names: &HashMap<String, String>,
+    ) -> Vec<ProfileHead> {
+        let stock = std::cell::LazyCell::new(stock);
         self.heads()
             .into_iter()
             .filter_map(|h| {
                 let models = h.models();
-                let has_row = stock.contains(&h.label) || self.rows.contains(&h.label);
-                (has_row || models.is_some()).then(|| ProfileHead {
+                let wearable = models.is_some() || self.rows.contains(&h.label) || stock.contains(&h.label);
+                wearable.then(|| ProfileHead {
                     female: models.is_some_and(|m| m.female),
                     addon_name: names.get(&h.addon).cloned(),
                     label: h.label,
@@ -514,7 +521,7 @@ pub fn for_profile(store: &Store, game: &crate::install::Game, profile: &str) ->
         return Ok(ProfileHeads::default());
     }
     Ok(ProfileHeads {
-        heads: puts.wearable(&stock_labels(store, game), &names),
+        heads: puts.wearable(|| stock_labels(store, game), &names),
     })
 }
 
@@ -530,7 +537,7 @@ pub fn installed(store: &Store) -> Vec<ProfileHead> {
         puts.addon(store, &id, &m);
         names.insert(id, m.name);
     }
-    puts.wearable(&BTreeSet::new(), &names)
+    puts.wearable(BTreeSet::new, &names)
 }
 
 #[cfg(test)]
@@ -660,5 +667,43 @@ mod tests {
         assert!(puts.archives.contains_key(&("own_head".to_owned(), Part::Head)));
         assert!(!puts.pending());
         std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn the_game_s_own_heads_are_read_only_for_a_head_nothing_else_makes_wearable() {
+        let dir = std::env::temp_dir();
+        let put = |label: &str| {
+            AssetOp::File(FileOp::Put {
+                source: swofty_addon::asset::Source::addon(format!("missing/{label}.erp")),
+                target: Part::Head.archive(label),
+            })
+        };
+        let row = |label: &str| {
+            AssetOp::Db(DbOp::AddRow {
+                table: TABLE.to_owned(),
+                from: format!("{ROWS}[_metadata_={MALE}]"),
+                set: BTreeMap::from([("_metadata_".to_owned(), label.to_owned())]),
+                copy: None,
+                stat_id: None,
+            })
+        };
+        let names = HashMap::new();
+        let mut puts = Puts::default();
+        for op in [put("own_head"), row("own_head")] {
+            puts.op("t.own", &op, &|_| dir.clone());
+        }
+        let read = std::cell::Cell::new(0);
+        let stock = || {
+            read.set(read.get() + 1);
+            BTreeSet::from(["lando_norris".to_owned()])
+        };
+        let labels = |heads: Vec<ProfileHead>| heads.into_iter().map(|h| h.label).collect::<Vec<_>>();
+        assert_eq!(labels(puts.wearable(stock, &names)), ["own_head"]);
+        assert_eq!(read.get(), 0);
+        for op in [put("lando_norris"), put("nobody")] {
+            puts.op("t.stock", &op, &|_| dir.clone());
+        }
+        assert_eq!(labels(puts.wearable(stock, &names)), ["lando_norris", "own_head"]);
+        assert_eq!(read.get(), 1);
     }
 }
