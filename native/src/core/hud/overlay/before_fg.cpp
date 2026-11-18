@@ -23,7 +23,7 @@ bool hook_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_
     return overlay.before_fg.on_barrier(list, n, barriers);
 }
 
-void hook_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, d3d12hooks::ExecPlan &plan)
+void hook_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, render::d3d12::ExecPlan &plan)
 {
     overlay.before_fg.on_exec(q, n, lists, plan);
 }
@@ -32,9 +32,9 @@ void hook_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, d
 
 void BeforeFrameGen::subscribe()
 {
-    d3d12hooks::on_setname(hook_setname);
-    d3d12hooks::on_barrier(hook_barrier);
-    d3d12hooks::on_exec(hook_exec);
+    render::d3d12::on_setname(hook_setname);
+    render::d3d12::on_barrier(hook_barrier);
+    render::d3d12::on_exec(hook_exec);
 }
 
 void BeforeFrameGen::drop()
@@ -174,7 +174,7 @@ bool BeforeFrameGen::on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D
     return false;
 }
 
-void BeforeFrameGen::on_exec(ID3D12CommandQueue *, UINT n, ID3D12CommandList *const *lists, d3d12hooks::ExecPlan &plan)
+void BeforeFrameGen::on_exec(ID3D12CommandQueue *, UINT n, ID3D12CommandList *const *lists, render::d3d12::ExecPlan &plan)
 {
     if (!lists || !n || !presenting_count.load(std::memory_order_relaxed))
         return;

@@ -210,6 +210,7 @@ struct PitStop {                               // the game counts a pit stop for
     uint32_t car;                              // vehicle index in the session
     uint32_t stops;                            // the car's stop count after it
 };
+// a car's garage and pit box: swofty/systems/pitlane.hpp (Pit lane)
 
 // payloads on the Events page
 struct WeekendStart    { static constexpr const char *point = "weekend.start"; };

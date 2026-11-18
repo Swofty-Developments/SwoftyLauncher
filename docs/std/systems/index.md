@@ -56,6 +56,7 @@ Shipped in 1.6.0:
 
 Added in 1.10.0:
 
+- **[Pit lane](/reference/std/pitlane)** `swofty/systems/pitlane.hpp`: each car's garage and pit box, `pitlane::garage`, `pitlane::pit_box`, `pitlane::side` and `pitlane::safety_car`.
 - **[Race control](/reference/std/race-control)** `swofty/systems/race_control.hpp`: the `session.flag`, `session.safety_car.deploy`, `session.red_flag`, `session.sector` and `session.car.status` payloads, and `race_control::now`.
 
 Described on their pages, in headers that come later:

@@ -16,7 +16,7 @@ use super::*;
 use std::collections::BTreeMap;
 use std::sync::Mutex;
 
-use swofty_addon::asset::{AssetOp, Features};
+use swofty_addon::asset::{AssetBatch, AssetOp, Features};
 use swofty_addon::launcher::{GameFiles, GameStatus, StateStore};
 
 use crate::addons::import::{Route, route};
@@ -805,4 +805,203 @@ esac"#;
     );
     assert!(!h.running(), "claims runs apart from the live session");
     std::fs::remove_dir_all(&root).ok();
+}
+
+// A helper that logs each start to `starts` beside its addon folder, asks `asks` once during the build and
+// replies with `reply`'s fields beside one op and one line.
+fn reading_script(root: &Path, asks: &str, reply: &str) -> String {
+    let starts = root.join("starts");
+    format!(
+        r#"echo start >> "{}"
+read -r l; echo '{{"id":0,"result":{{"api":1}}}}'
+read -r l
+echo '{{"id":9,"method":"{asks}","params":null}}'
+read -r l
+echo '{{"id":1,"result":{{"ops":[{{"op":"file.put","source":"a.dds","target":"b.dds"}}],"lines":["built"]{reply}}}}}'
+read -r l
+"#,
+        starts.display()
+    )
+}
+
+// Written executable, so that starting it does not change the addon's folder during the build.
+fn reading_addon(dir: &Path, script: &str) {
+    use std::os::unix::fs::PermissionsExt;
+    addon(dir, script);
+    std::fs::set_permissions(dir.join("bin/helper"), std::fs::Permissions::from_mode(0o755)).unwrap();
+}
+
+fn starts(root: &Path) -> usize {
+    std::fs::read_to_string(root.join("starts")).map_or(0, |s| s.lines().count())
+}
+
+struct Reading {
+    root: PathBuf,
+    data: PathBuf,
+    cache: PathBuf,
+    kept: PathBuf,
+    state: Memory,
+}
+
+impl Reading {
+    fn new(name: &str) -> Self {
+        let root = tmp(name);
+        let (data, cache) = (root.join("data"), root.join("cache"));
+        std::fs::create_dir_all(&data).unwrap();
+        std::fs::create_dir_all(&cache).unwrap();
+        Self {
+            kept: root.join("kept/t.helper.json"),
+            root,
+            data,
+            cache,
+            state: Memory::default(),
+        }
+    }
+
+    fn build(
+        &self,
+        h: &HelperAddon,
+        profile: &ProfileInfo,
+        options: &BTreeMap<String, Value>,
+    ) -> (AssetBatch, HookRun) {
+        let cx = BuildCx {
+            cx: Cx::new("t.helper", profile, &self.data, &self.cache, None, &self.state),
+            options,
+            features: &Features::default(),
+        };
+        let (batch, ran) = h.build_kept(&cx, &self.kept).unwrap();
+        h.stop();
+        (batch, ran.unwrap())
+    }
+}
+
+#[test]
+fn a_build_reply_that_lists_its_reads_answers_the_next_build_until_one_changes() {
+    let r = Reading::new("reads");
+    let dir = r.root.join("addon");
+    let (file, folder, missing) = (
+        r.root.join("read.txt"),
+        r.root.join("read-dir"),
+        r.root.join("absent"),
+    );
+    std::fs::write(&file, "a").unwrap();
+    std::fs::create_dir_all(folder.join("sub")).unwrap();
+    std::fs::write(folder.join("sub/x"), "x").unwrap();
+    let reads = format!(
+        r#","reads":["{}","{}","{}"]"#,
+        file.display(),
+        folder.display(),
+        missing.display()
+    );
+    reading_addon(&dir, &reading_script(&r.root, "get_state", &reads));
+    let h = helper(&dir).settled_after(Duration::ZERO);
+    let (p, options) = (profile("default"), BTreeMap::new());
+    let (first, ran) = r.build(&h, &p, &options);
+    assert_eq!(ran, HookRun::Ran("no reply is kept from an earlier build".into()));
+    assert_eq!(first.lines, ["built"]);
+    assert!(first.reads.is_some());
+    let (again, ran) = r.build(&h, &p, &options);
+    assert_eq!(again, first);
+    assert_eq!(
+        ran.to_string(),
+        "reused: 3 read path(s), 1 host call answer(s) and its own and data folders are unchanged"
+    );
+    assert_eq!(starts(&r.root), 1, "a reused reply starts no helper");
+
+    let ran_after = |change: &dyn Fn(), options: &BTreeMap<String, Value>, p: &ProfileInfo| {
+        change();
+        let before = starts(&r.root);
+        let (batch, ran) = r.build(&h, p, options);
+        assert_eq!((batch, starts(&r.root)), (first.clone(), before + 1));
+        ran.to_string()
+    };
+    let none = || {};
+    let changed = |p: &Path| format!("ran: {} changed", p.display());
+    assert_eq!(
+        ran_after(&|| std::fs::write(&file, "bb").unwrap(), &options, &p),
+        changed(&file)
+    );
+    assert_eq!(
+        ran_after(
+            &|| std::fs::write(folder.join("sub/y"), "y").unwrap(),
+            &options,
+            &p
+        ),
+        changed(&folder)
+    );
+    assert_eq!(
+        ran_after(&|| std::fs::write(&missing, "now").unwrap(), &options, &p),
+        changed(&missing)
+    );
+    assert_eq!(
+        ran_after(
+            &|| r.state.set("t.helper", serde_json::json!(1)).unwrap(),
+            &options,
+            &p
+        ),
+        "ran: the launcher's answer to get_state changed"
+    );
+    assert_eq!(
+        ran_after(&|| std::fs::write(r.data.join("d"), "d").unwrap(), &options, &p),
+        "ran: its data folder changed"
+    );
+    assert_eq!(
+        ran_after(&|| std::fs::write(dir.join("extra"), "e").unwrap(), &options, &p),
+        "ran: its own folder changed"
+    );
+    let sized = BTreeMap::from([("size".to_owned(), serde_json::json!(24))]);
+    assert_eq!(
+        ran_after(&none, &sized, &p),
+        "ran: its options or the launcher's features changed"
+    );
+    assert_eq!(
+        ran_after(&none, &sized, &profile("other")),
+        "ran: the hello's profile changed"
+    );
+    let (_, ran) = r.build(&h, &profile("other"), &sized);
+    assert!(matches!(ran, HookRun::Reused(_)), "{ran}");
+    std::fs::remove_dir_all(&r.root).ok();
+}
+
+#[test]
+fn a_build_reply_is_not_kept_without_reads_after_a_change_it_made_or_one_too_recent() {
+    type Why = fn(&Path) -> String;
+    let cases: [(&str, &str, Duration, Why); 4] = [
+        ("get_state", "", Duration::ZERO, |_| {
+            "ran: its last reply listed no reads".into()
+        }),
+        ("set_state", r#","reads":[]"#, Duration::ZERO, |_| {
+            "ran: its last build sent set_state".into()
+        }),
+        ("get_state", r#","reads":["rel.txt"]"#, Duration::ZERO, |_| {
+            "ran: its last reply's reads name rel.txt, which is not an absolute path".into()
+        }),
+        ("get_state", "fresh", Duration::from_secs(2), |root| {
+            format!(
+                "ran: {} changed less than 2 s before its last build ended",
+                root.join("fresh.txt").display()
+            )
+        }),
+    ];
+    for (i, (asks, reply, settled, why)) in cases.into_iter().enumerate() {
+        let r = Reading::new(&format!("not-kept-{i}"));
+        let fresh = r.root.join("fresh.txt");
+        let reply = match reply {
+            "fresh" => format!(r#","reads":["{}"]"#, fresh.display()),
+            other => other.to_owned(),
+        };
+        let dir = r.root.join("addon");
+        reading_addon(&dir, &reading_script(&r.root, asks, &reply));
+        if !settled.is_zero() {
+            std::thread::sleep(settled + Duration::from_millis(100));
+            std::fs::write(&fresh, "new").unwrap();
+        }
+        let h = helper(&dir).settled_after(settled);
+        let (p, options) = (profile("default"), BTreeMap::new());
+        r.build(&h, &p, &options);
+        let (_, ran) = r.build(&h, &p, &options);
+        assert_eq!(ran.to_string(), why(&r.root), "case {i}");
+        assert_eq!(starts(&r.root), 2, "case {i}");
+        std::fs::remove_dir_all(&r.root).ok();
+    }
 }

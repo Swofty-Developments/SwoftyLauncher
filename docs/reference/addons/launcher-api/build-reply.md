@@ -150,3 +150,5 @@ Anything else runs `build` as usual: a changed or unreadable path, a reply witho
 - `progress`, `tasks` and `invalidate` notifications have no effect on reuse.
 - A build that sends `reads` writes nothing outside `cache_dir`: on a reused build it does not run.
 - Leave `reads` out and the launcher calls `build` on every Play. A launcher without `build.reads` ignores `reads`, so send it whatever `capabilities` lists.
+- Each Play logs what the launcher did, and Send Logs carries the line: `[play] hook <addon> reused: <why>` when the kept reply answered the build, `[play] hook <addon> ran: <why>` when `build` ran, such as `ran: C:/…/racecraft.json changed` or `ran: its last reply listed no reads`.
+- A Rust helper on `run_helper` sets `reads: Some(paths)` in the `AssetBatch` its `build` returns.

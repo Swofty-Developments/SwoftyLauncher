@@ -12,8 +12,9 @@ use gpui_kit::*;
 use swofty_core::dbedit::package::{self, Package};
 use swofty_i18n::{tr, trf, trn};
 
-use crate::features::db::{guarded, text};
+use crate::features::db::{Db, guarded, text};
 use crate::shell::Shell;
+use crate::shell::host::Host;
 
 impl Shell {
     /// "Share addon (.zip)" and "Export game files (.zip)".
@@ -35,7 +36,7 @@ impl Shell {
                             .icon(IconName::Package)
                             .disabled(!share)
                             .on_click(move |_, window, cx| {
-                                s1.update(cx, |s, cx| s.db_export_addon(window, cx)).ok();
+                                s1.update(cx, |s, cx| Db::export_addon(s, window, cx)).ok();
                             }),
                     )
                     .item(
@@ -48,15 +49,20 @@ impl Shell {
                     )
             })
     }
+}
 
-    pub(crate) fn db_export_addon(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(id) = self.db.draft.addon.clone() else {
+impl Db {
+    /// Shares the draft's addon as a .zip.
+    pub(crate) fn export_addon<H: Host<Self>>(host: &mut H, window: &mut Window, cx: &mut Context<H>) {
+        let (db, needs) = host.split();
+        let Some(id) = db.draft.addon.clone() else {
             return;
         };
-        let name = self.db_draft_name();
-        let unsaved = self.db.draft.unsaved();
+        let name = db.draft_name();
+        let unsaved = db.draft.unsaved();
         let file = format!("{}.zip", id.trim_start_matches(package::ID_PREFIX));
-        let store = self.store.clone();
+        let store = needs.store.clone();
+        let home = crate::features::db::home(&store);
         let export = move |path: PathBuf, window: &mut Window, cx: &mut App| {
             let (store, id) = (store.clone(), id.clone());
             let target = path.clone();
@@ -95,7 +101,7 @@ impl Shell {
             export(dir.join(&file), window, cx);
             return;
         }
-        let rx = cx.prompt_for_new_path(&crate::features::db::home(&self.store), Some(&file));
+        let rx = cx.prompt_for_new_path(&home, Some(&file));
         cx.spawn_in(window, async move |_, cx| {
             if let Ok(Ok(Some(path))) = rx.await {
                 cx.update(|window, cx| export(path, window, cx)).ok();

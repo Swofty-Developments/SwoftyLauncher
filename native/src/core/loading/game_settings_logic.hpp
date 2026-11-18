@@ -49,9 +49,12 @@ constexpr uint32_t of_i32(int32_t v) { return std::bit_cast<uint32_t>(v); }
 // Sess_Loader_RequestLoadThumbnails (0x142d4d040) neither enters loader step 0x1e, asks the thumbnail system for the
 // grid render (reason 3) nor queues the 32 grid slots' thumbnails, and the rundown does not play.
 // Game.SkipTalkingPoints: SessionStateTalkingPoints' parse params (0x142d94e20, a jump to its body 0x14eb3abf0) stores
-// +0xea1 = 1 with it on, so its enter (0x142d94f30) generates no broadcast sequence and its update takes the state's own
-// `skipped` link on the first frame. The reader record (re/bindings/game/Game_SessionStateTalkingPoints_ParseParams_Thunk.json)
-// has its author's proof only and still needs a second contributor's agree row.
+// +0xea1 = 1 with it on (or with Game.ecaEnabled off). Its enter (0x142d94f30) ORs +0xea1 into +0xea0, which it also sets
+// when the mode is not a GameModeChampionship or has no component 0x14605b108, and with +0xea0 set it generates no
+// broadcast sequence. Its update (0x142d95b90) then returns the `skipped` link on every update while +0xea0 is set and
+// neither +0xea3 nor bit 1 of +0xcc9 is, or `snapshot` in its place when the mode is a GameModeChampionship with component
+// 0x146062fc0 and byte [[[0x146075a78]+0x20]+0xd8]+6 is 0. The reader record
+// (re/bindings/game/Game_SessionStateTalkingPoints_ParseParams_Thunk.json) holds the blind-verified notes.
 inline constexpr std::array<Override, 4> OVERRIDES{{
     {"loading_skip_minimum_time", "Game.IgnoreMinimumLoadingTime", Type::boolean, of_bool(true),
      "the 3 s minimum of the session transition, track load and story hub loading screens is dropped"},
@@ -60,7 +63,8 @@ inline constexpr std::array<Override, 4> OVERRIDES{{
     {"loading_skip_grid_rundown", "Game.SkipGridRundown", Type::boolean, of_bool(true),
      "the race load queues no grid rundown thumbnails and the rundown does not play"},
     {"loading_skip_talking_points", "Game.SkipTalkingPoints", Type::boolean, of_bool(true),
-     "the talking points before a race or practice session take their skipped link at once"},
+     "the talking points before a race or practice session generate no broadcast sequence and leave by their skipped "
+     "link, or snapshot in a championship mode, on their next update"},
 }};
 
 // Not an override: every distinct name and value the wrapped getters return is logged once (and again when it

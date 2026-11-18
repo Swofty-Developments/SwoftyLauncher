@@ -127,9 +127,6 @@ void mfd_tick();
 int popup_show(const std::string &title, const std::string &body, const std::string &by);
 int hud_toast(const std::string &text, const std::string &detail, float seconds, const std::string &by,
               const std::string &icon = {});
-namespace toast {
-void tick();
-}
 const SwoftyCareerContent *career_content_table();
 void career_content_tick();
 void entitlements_tick();

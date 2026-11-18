@@ -7,7 +7,7 @@
 
 #include <vector>
 
-namespace postfx {
+namespace render::postfx {
 
 class Pipeline;
 
