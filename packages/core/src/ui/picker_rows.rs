@@ -9,6 +9,34 @@ use super::{Writer, ui_file};
 use super::{car_category, check, era};
 use crate::{Error, Result, io_err};
 
+/// The era picker's Built In and Addons rows, while `split` (SwoftyMod's Split the season picker) is on, and the
+/// Car Category screen's addon boxes, with the archives they wrote.
+pub(super) fn picker_rows(
+    split: bool,
+    input: &dyn Fn(&str) -> PathBuf,
+    writer: &Writer,
+    out: &Path,
+    lines: &mut Vec<String>,
+    warnings: &mut Vec<String>,
+    packer: &Packer,
+) -> Result<Vec<&'static str>> {
+    let mut written = if split {
+        era_rows(input, writer, out, lines, warnings, packer)?
+    } else {
+        lines.push(
+            "ui: the season picker keeps the game's single row (SwoftyMod's Split the season picker is off)"
+                .into(),
+        );
+        Vec::new()
+    };
+    for rel in car_category_boxes(input, writer, out, &written, lines, warnings, packer)? {
+        if !written.contains(&rel) {
+            written.push(rel);
+        }
+    }
+    Ok(written)
+}
+
 pub(super) fn era_rows(
     input: &dyn Fn(&str) -> PathBuf,
     writer: &Writer,
