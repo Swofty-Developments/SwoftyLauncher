@@ -26,6 +26,7 @@ impl Shell {
         let mut groups: Vec<(String, Vec<ChangeItem>)> = Vec::new();
         let rows: Vec<ChangeItem> = self
             .db
+            .book
             .draft
             .edits
             .rows
@@ -42,7 +43,7 @@ impl Shell {
         if !rows.is_empty() {
             groups.push((tr("Copied rows").to_owned(), rows));
         }
-        for e in &self.db.draft.edits.edits {
+        for e in &self.db.book.draft.edits.edits {
             let node = catalog.node_of_key(e.key);
             let mut path = Some(e.path.clone().unwrap_or_else(|| hex(e.key)));
             let (name, group) = match node {
@@ -123,7 +124,7 @@ impl Shell {
     }
 
     pub(crate) fn db_changes(&mut self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        let n = self.db.draft.edits.len();
+        let n = self.db.book.draft.edits.len();
         let actions = h_flex().gap(px(8.)).child(
             Button::new("db-revert-all")
                 .outline()
@@ -139,16 +140,16 @@ impl Shell {
             .child(SectionHead::new(
                 IconName::ListChecks,
                 tr("Changes"),
-                match self.db.draft.unsaved() {
+                match self.db.book.draft.unsaved() {
                     0 => trf!(
                         "{changes} in {name}",
                         changes = trn(n, "{count} change", "{count} changes"),
-                        name = self.db.draft_name()
+                        name = self.db.book.draft_name()
                     ),
                     k => trf!(
                         "{changes} in {name} · {k} not saved yet",
                         changes = trn(n, "{count} change", "{count} changes"),
-                        name = self.db.draft_name(),
+                        name = self.db.book.draft_name(),
                         k = k
                     ),
                 },
@@ -207,7 +208,7 @@ impl Shell {
 
     fn change_values(&self, e: &Edit) -> (String, String, Option<String>) {
         let copied = self.db.catalog().filter(|_| e.is_copied()).and_then(|c| {
-            let source = self.db.draft.edits.copied(c, e.key)?.source;
+            let source = self.db.book.draft.edits.copied(c, e.key)?.source;
             c.record_by_key(source).map(|r| r.value.to_owned())
         });
         let stock = match e.stock.clone().or(copied) {

@@ -76,11 +76,12 @@ impl Shell {
     pub(crate) fn db_game_export(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let name = self
             .db
+            .book
             .bound()
             .map_or_else(|| tr("DB Editor changes").to_owned(), |i| i.name.clone());
-        let n = self.db.draft.edits.len();
+        let n = self.db.book.draft.edits.len();
         let draft = (n > 0)
-            .then(|| guarded(|| Package::unsaved(&name, self.db.draft.edits.clone()).map_err(text)).ok())
+            .then(|| guarded(|| Package::unsaved(&name, self.db.book.draft.edits.clone()).map_err(text)).ok())
             .flatten();
         let profile = self.library.profile.name.clone();
         let stack = guarded(|| package::enabled_packages(&self.store, &profile).map_err(text))
@@ -90,6 +91,7 @@ impl Shell {
         let p = palette(cx);
         let file_stem = self
             .db
+            .book
             .draft
             .addon
             .as_deref()

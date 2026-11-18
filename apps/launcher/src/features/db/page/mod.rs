@@ -98,9 +98,9 @@ impl Shell {
 
     fn db_header_line(&self, p: Palette, cx: &mut Context<Self>) -> Div {
         let profile = self.library.profile.name.clone();
-        let unsaved = self.db.draft.unsaved();
-        let bound = self.db.draft.addon.clone();
-        let info = self.db.bound().cloned();
+        let unsaved = self.db.book.draft.unsaved();
+        let bound = self.db.book.draft.addon.clone();
+        let info = self.db.book.bound().cloned();
         let on = bound.as_deref().is_some_and(|id| self.db_enabled(id));
         let broken = self.db_locked();
         let target = match (&bound, &info) {
@@ -207,9 +207,9 @@ impl Shell {
 
     fn db_header_actions(&self, cx: &mut Context<Self>) -> Div {
         let ready = self.db.catalog().is_some();
-        let n = self.db.draft.edits.len();
-        let unsaved = self.db.draft.unsaved();
-        let bound = self.db.draft.addon.clone();
+        let n = self.db.book.draft.edits.len();
+        let unsaved = self.db.book.draft.unsaved();
+        let bound = self.db.book.draft.addon.clone();
         let broken = self.db_locked();
         let save = match &bound {
             Some(_) => Button::new("db-save")
@@ -342,7 +342,7 @@ impl Shell {
             .mx(px(GUTTER))
             .mb(px(10.))
         });
-        let broken = self.db.addon_error.clone().map(|e| {
+        let broken = self.db.book.addon_error.clone().map(|e| {
             notice(
                 "db-addon-error",
                 IconName::CircleAlert,
