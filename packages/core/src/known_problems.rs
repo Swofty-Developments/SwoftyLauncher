@@ -859,6 +859,20 @@ const RETIREMENT_NAME: &str = "Sess_InGameRace_Update+0x77e";
 const RETIREMENT_READ: &str = "reading 0x1f0";
 /// The fault in the weekend list builder of the Team HQ screens: the read of the node of a round's track record.
 const WEEKENDS_TRACK_NODE: &str = "Career_Weekends_BuildResultNodes+0x4da";
+/// The fault in the session loader's weekend set-up when the current season of the career's current championship has
+/// no weekend at its current round: the read of the null weekend's session list (`mov r12, [r15+0x250]`), by name and
+/// as the Steam 1.0.145 frame writes it unnamed.
+const NO_WEEKEND_LOAD: [&str; 2] = [
+    "Sess_WeekendManager_PrepareTrackLoad+0x11b",
+    " fn base+0x240b9b0+0x11b",
+];
+const NO_WEEKEND_READ: &str = "reading 0x250";
+/// Custom Calendar, whose picker (F9) replaces the career's calendar when it imports its rounds into the game's track
+/// select screen, and the line it logs for that import.
+const CUSTOM_CALENDAR: &str = "majorpayne8779.progressive-season-screen";
+const CALENDAR_IMPORT: &str = "[Progressive season] Imported ";
+/// F2 Revamp, whose career starts in the F2 championship.
+const F2_REVAMP: &str = "miguelvf3.f2-revamp";
 /// The game function that reads a car's racing line, which a car with no line of its own faults in.
 const LINE_CACHE: &str = "Ai_LineCache_UpdateIfChanged+";
 /// What the core logs for a car that is the third of its team.
@@ -1871,6 +1885,47 @@ fn weekends_track_crash(f: &Fatal) -> bool {
         && f.frames.first().is_some_and(|l| l.contains(WEEKENDS_TRACK_NODE))
 }
 
+/// Whether F1 25 faulted loading the first session of a career whose current season has no weekend, after Custom
+/// Calendar's picker imported the career's rounds: the nearest frame is in [`NO_WEEKEND_LOAD`], the fault read
+/// [`NO_WEEKEND_READ`] and the loader logged [`CALENDAR_IMPORT`] before the crash.
+fn imported_calendar_crash(e: &Evidence, f: &Fatal) -> bool {
+    let at = f.module.as_deref() == Some("f1_25.exe")
+        && f.frames
+            .first()
+            .is_some_and(|l| NO_WEEKEND_LOAD.iter().any(|site| l.contains(site)))
+        && f.record.iter().any(|l| l.trim_end().ends_with(NO_WEEKEND_READ));
+    let end = crash_time(e, f);
+    at && e
+        .loader
+        .lines()
+        .any(|l| l.contains(CALENDAR_IMPORT) && end.is_none_or(|end| stamp(l).is_none_or(|t| t <= end)))
+}
+
+fn imported_calendar_empty_season(e: &Evidence) -> Diagnosis {
+    let picker = name(e, CUSTOM_CALENDAR);
+    let career = match e.enabled.iter().any(|id| id == F2_REVAMP) {
+        true => format!(" into {}'s career, which starts in F2", name(e, F2_REVAMP)),
+        false => String::new(),
+    };
+    Diagnosis {
+        id: "imported_calendar_empty_season",
+        title: format!("{picker}'s imported calendar left your career without a first round"),
+        what: format!(
+            "F1 25 crashed loading the first session of your new career: the career's first season has no rounds. \
+             Its calendar was imported with the {picker} picker (F9){career}, and that import left the first season \
+             empty."
+        ),
+        steps: vec![
+            format!(
+                "Start the career again and choose its season on the game's own screens, without the {picker} picker \
+                 (F9). The career you just started has no first round, so it can't be played."
+            ),
+            format!("Or turn off {picker} in your profile before you start the career."),
+            "Press Play again.".to_owned(),
+        ],
+    }
+}
+
 fn weekends_track_record_bad_index() -> Diagnosis {
     Diagnosis {
         id: "weekends_track_record_bad_index",
@@ -2394,6 +2449,9 @@ fn matched(e: &Evidence) -> Option<Diagnosis> {
     }
     if weekends_track_crash(&f) {
         return Some(weekends_track_record_bad_index());
+    }
+    if imported_calendar_crash(e, &f) {
+        return Some(imported_calendar_empty_season(e));
     }
     if third_car_line_crash(e, &f) {
         return Some(third_car_line(e));
@@ -4290,6 +4348,86 @@ runtime      Windows
 2026-11-15 16:15:41.332 [ 9736] [crash]   #1  F1_25.exe+0x181b37b .xtls fn base+0x181b280+0xfb
 2026-11-15 16:15:41.341 [ 9736] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+0x181b87a .xtls Career_Weekends_BuildResultNodes+0x4da reached the top-level filter; passing it to the game's filter
 ";
+
+    const NO_WEEKEND: &str = "\
+2026-11-17 10:25:53.419 [ 2100] [Progressive season] Imported 12 rounds into the Career picker.
+2026-11-17 10:25:53.773 [ 2100] [Progressive season] Advancing imported calendar.
+2026-11-17 10:25:53.773 [ 2100] [Free Calendar] Confirmed 12 selected rounds.
+2026-11-17 10:31:07.402 [ 1500] [view] pause reason bit 0 cleared, mask 00000000
+2026-11-17 10:31:07.453 [ 1500] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 1500, 412 s after load, at F1_25.exe+0x240bacb .tls$ fn base+0x240b9b0+0x11b
+2026-11-17 10:31:07.453 [ 1500] [crash]   reading 0x250
+2026-11-17 10:31:07.453 [ 1500] [crash]   r12=0000000001000000 r13=0000000002000000 r14=0000000000000000 r15=0000000000000000
+2026-11-17 10:31:07.454 [ 1500] [crash]   stack:
+2026-11-17 10:31:07.454 [ 1500] [crash]   #0  F1_25.exe+0x240bacb .tls$ fn base+0x240b9b0+0x11b
+2026-11-17 10:31:07.454 [ 1500] [crash]   #1  F1_25.exe+0x2da9fb1 .tls$ fn base+0x2da9e00+0x1b1
+2026-11-17 10:31:07.456 [ 1500] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+0x240bacb .tls$ fn base+0x240b9b0+0x11b reached the top-level filter; passing it to the game's filter
+";
+
+    #[test]
+    fn a_first_session_without_a_weekend_after_a_calendar_import_names_the_picker() {
+        let mut e = with_names(
+            ev(NO_WEEKEND, &[]),
+            &[(CUSTOM_CALENDAR, "Custom Calendar"), (F2_REVAMP, "F2 Revamp")],
+        );
+        e.enabled = vec![CUSTOM_CALENDAR.to_owned(), F2_REVAMP.to_owned()];
+        let d = diagnose(&e).unwrap();
+        assert_eq!(d.id, "imported_calendar_empty_season");
+        assert_eq!(
+            d.title,
+            "Custom Calendar's imported calendar left your career without a first round"
+        );
+        assert!(
+            d.what.contains("F2 Revamp's career, which starts in F2"),
+            "{}",
+            d.what
+        );
+        assert!(
+            d.steps[0].contains("without the Custom Calendar picker (F9)"),
+            "{}",
+            d.steps[0]
+        );
+
+        e.enabled = vec![CUSTOM_CALENDAR.to_owned()];
+        let d = diagnose(&e).unwrap();
+        assert_eq!(d.id, "imported_calendar_empty_season");
+        assert!(!d.what.contains("F2 Revamp"), "{}", d.what);
+
+        let named = NO_WEEKEND.replace(
+            " fn base+0x240b9b0+0x11b",
+            " Sess_WeekendManager_PrepareTrackLoad+0x11b",
+        );
+        assert_eq!(
+            diagnose(&ev(&named, &[])).map(|d| d.id),
+            Some("imported_calendar_empty_season"),
+            "the frame by name"
+        );
+        let no_import = NO_WEEKEND.replace(
+            "[Progressive season] Imported 12",
+            "[Progressive season] Accepted 12",
+        );
+        assert_eq!(diagnose(&ev(&no_import, &[])).map(|d| d.id), None, "no import");
+        let late = format!(
+            "{NO_WEEKEND}2026-11-17 10:40:00.000 [ 2100] [Progressive season] Imported 3 rounds into the Career picker.\n"
+        );
+        let late = late.replacen(
+            "[Progressive season] Imported 12",
+            "[Progressive season] Accepted 12",
+            1,
+        );
+        assert_eq!(
+            diagnose(&ev(&late, &[])).map(|d| d.id),
+            None,
+            "an import after the crash"
+        );
+        let other = NO_WEEKEND.replace("+0x240b9b0+0x11b", "+0x240b9b0+0x1d2");
+        assert_eq!(
+            diagnose(&ev(&other, &[])).map(|d| d.id),
+            None,
+            "another offset of the function"
+        );
+        let read = NO_WEEKEND.replace("reading 0x250", "reading 0x268");
+        assert_eq!(diagnose(&ev(&read, &[])).map(|d| d.id), None, "another read");
+    }
 
     #[test]
     fn a_crash_reading_a_round_s_track_node_names_no_addon() {
