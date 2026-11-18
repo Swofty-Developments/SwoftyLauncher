@@ -495,6 +495,8 @@ inline constexpr address<"Car_Tuning_SetChassisZCom"> Car_Tuning_SetChassisZCom{
 inline constexpr address<"Car_Tuning_SetEngineBrakingAndRadiator"> Car_Tuning_SetEngineBrakingAndRadiator{}; // L2 experimental
 inline constexpr address<"Car_Tuning_SetFinalDrive"> Car_Tuning_SetFinalDrive{}; // L2 experimental
 inline constexpr address<"Car_TyreSystem_PitstopComplete"> Car_TyreSystem_PitstopComplete{}; // L2 experimental
+using Car_Tyre_ChangeToNextCompound_t = uint64_t(void *tyre_component, bool pit_stop);
+inline constexpr fn<"Car_Tyre_ChangeToNextCompound", Car_Tyre_ChangeToNextCompound_t> Car_Tyre_ChangeToNextCompound{}; // L2 experimental
 using Car_Tyre_CheckCompoundClassRule_t = bool(const void *set);
 inline constexpr fn<"Car_Tyre_CheckCompoundClassRule", Car_Tyre_CheckCompoundClassRule_t> Car_Tyre_CheckCompoundClassRule{}; // L2 experimental
 inline constexpr address<"Car_Tyre_GripScale"> Car_Tyre_GripScale{}; // L2 experimental

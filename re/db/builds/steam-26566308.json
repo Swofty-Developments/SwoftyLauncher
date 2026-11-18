@@ -968,6 +968,9 @@
   "Car_TyreSystem_PitstopComplete": {
    "match": "0x2e96c60"
   },
+  "Car_Tyre_ChangeToNextCompound": {
+   "match": "0x2e965d0"
+  },
   "Car_Tyre_CheckCompoundClassRule": {
    "match": "0x2e8acc0"
   },
@@ -10321,6 +10324,9 @@
   },
   "k_Sess_TyreComponentType": {
    "match": "0x36923c2"
+  },
+  "k_Vm_EmptyNodeHandle": {
+   "match": "0x6d2118"
   },
   "site_Ai_BuildSystem_RecordPushed": {
    "match": "0x60051d"

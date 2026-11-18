@@ -3767,6 +3767,8 @@ pub type Car_Register_DetachablePart_Thunk_t = unsafe extern "C" fn(
 pub type Car_Reset_LastFittedUpgrade_t = unsafe extern "C" fn(inst: *mut c_void);
 pub type Car_SuspensionDamage_OnCollision_t =
     unsafe extern "C" fn(susp_damage: *mut c_void, contact: *mut c_void);
+pub type Car_Tyre_ChangeToNextCompound_t =
+    unsafe extern "C" fn(tyre_component: *mut c_void, pit_stop: bool) -> u64;
 pub type Car_Tyre_CheckCompoundClassRule_t = unsafe extern "C" fn(set: *const c_void) -> bool;
 pub type Car_Tyre_IsCompoundAllowed_t = unsafe extern "C" fn(set: *const c_void) -> bool;
 pub type Car_Tyre_SetWearFactor_t =
@@ -5550,6 +5552,11 @@ pub mod bindings {
     };
     pub const Car_TyreSystem_PitstopComplete: Binding = Binding {
         id: "Car_TyreSystem_PitstopComplete",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Tyre_ChangeToNextCompound: Binding = Binding {
+        id: "Car_Tyre_ChangeToNextCompound",
         kind: "func",
         status: Status::Experimental,
     };
@@ -21160,6 +21167,11 @@ pub mod bindings {
     };
     pub const k_Sess_TyreComponentType: Binding = Binding {
         id: "k_Sess_TyreComponentType",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Vm_EmptyNodeHandle: Binding = Binding {
+        id: "k_Vm_EmptyNodeHandle",
         kind: "data",
         status: Status::Experimental,
     };
