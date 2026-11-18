@@ -83,7 +83,7 @@ impl Shell {
         let poll = Self::poll_game(window, cx);
         Self::rediscover_periodically(cx);
         let live = Self::poll_live(cx);
-        let updates = Self::watch_updates(cx);
+        let updates = crate::features::update::Updates::watch(cx);
         let shell = cx.weak_entity();
         let console_closed = cx.on_window_closed(move |cx, id| {
             shell.update(cx, |s, cx| s.console_closed(id, cx)).ok();
