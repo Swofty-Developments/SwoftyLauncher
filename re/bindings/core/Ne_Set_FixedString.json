@@ -7,9 +7,9 @@
   "addr": "0x141600d80",
   "level": "L2",
   "subsystem": "core",
-  "proto": "void Ne_Set_FixedString(void *dst, const char *src)",
+  "proto": "void *Ne_Set_FixedString(void *dst, const char *src)",
   "evidence": "decomp:re/decomp/144321670.c;xref:0x14149b57b,0x14149b598;doc:research/ui-native.md#12;decomp:re/decomp/141600d80.c",
-  "notes": "writes src into an XOR-obfuscated 0x100-byte fixed string (length at +0x100); used for VM names at vm+0x38/+0x148 cb1-verify correction: XOR is per byte with (index+1), not a single key Callers: census steam 0x1600d80."
+  "notes": "Writes src into an XOR-obfuscated fixed string of 0x108 bytes and returns dst (0x141602c7b), which the callers ignore. src is read before any null test (0x141600d8c), so a null src faults. dst[i] = src[i] ^ ((i+1) % 127) for i up to min(strlen, 0xfe), the NUL included, so the key is 0 at i = 0x7e and 0xfd (0x141601acf) and 1 at 0x7f and 0xfe (0x141601ae8, 0x141602c4e); the bytes after the string are plain 0 and dst[0xff] is 0 (0x141602c56). The qword at +0x100 holds min(strlen, 0xff) (0x141602c74), so a longer src is cut without a log. Used for VM names at vm+0x38/+0x148, among other destinations. Callers: census steam 0x1600d80."
  },
  "signature": {
   "id": "core.set_fixed_string",
