@@ -91,6 +91,10 @@
    "pattern": "E9 ?? ?? ?? ?? 0F 8B 25 77 0D 00 E9 3B D8",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
   },
+  "Game_TelemetryLaps_ApplyLapValidity_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 4F 3B 55 D9 B6 6C 0F 8E",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The pattern matches once, at the thunk 0x142926100; Game_TelemetryLaps_OnNewLapRecorded calls it at the same place (0x1437b319c), and its jmp target 0x14d1c5210 is the KB body's twin (same instructions modulo the protector's constants)."
+  },
   "Game_TileList_PushChildSelection_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? 0F 88 D2 3B ?? ?? ?? ?? 5C DB 96 00 E9",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
@@ -188,6 +192,10 @@
    "pattern": "E9 ?? ?? ?? ?? D0 CC 0F 8E 17 E5 7B",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
   },
+  "Sess_LapTimes_ReportLapInvalidation_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? CC 78 32 15 48 E9 9A 52",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The pattern matches once, at the thunk 0x142f2e330; the rules update and Game_PracticeProgrammeSystem_BindCompareLap call it at the same places (0x14356fe72, 0x1429436e8), and its jmp target 0x14f2ef320 is the KB body's twin (same instructions modulo the protector's constants)."
+  },
   "Sess_PreLights_Update": {
    "pattern": "E9 ?? ?? ?? ?? C2 B1 66 D9 0F 8A 4E FE F1 01 7B",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
@@ -219,6 +227,10 @@
   "Sess_RedFlagSystem_OnStartLightsBegin": {
    "pattern": "E9 ?? ?? ?? ?? 34 57 67 F9 DF E5 ?? ?? ?? ?? B3",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Sess_Rules_InvalidateLap_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? FF B9 E9 4A 6F 22 01 E9",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The pattern matches once, at the thunk 0x143577260; the rules update calls it at the same place (0x14356e0f4), and its jmp target 0x15002f460 is the KB body's twin (same instructions modulo the protector's constants)."
   },
   "Sess_SafetyCarTether_UpdateTarget": {
    "pattern": "E9 ?? ?? ?? ?? 1C B2 E9 4A ?? ?? ?? ?? CC CC 2E",

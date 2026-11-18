@@ -1,0 +1,60 @@
+{
+ "schema": 1,
+ "name": "Game_TelemetryLaps_OnNewLapRecorded",
+ "table": "functions",
+ "author": "load-game",
+ "row": {
+  "addr": "0x1437b0aa0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_TelemetryLaps_OnNewLapRecorded(void *laps, void *msg)",
+  "evidence": "decomp:own disasm 0x1437b0aa0-0x1437b0f0a;xref:0x1437af554,0x1437b1216,0x1437b0c0c,0x1437b0e6e,0x1437b0f05",
+  "notes": "vehicle_newlap_recorded handler of the telemetry laps (rcx laps, rdx msg: +0x10 u8 car, +0x18 u8 gate for the ranking and the lap start, +0x1c f32 lap s); subscribed by Game_TelemetryLaps_CreateLaps at 0x1437af554 (name 'vehicle_newlap_recorded' at 0x1437af562) and again at 0x1437b1216. Telemetry lap vector laps+0x50..+0x58: slot 0 the lap being driven, slot 1 the previous lap, slot 2 the previous best, slot 3 the best. Returns at once unless laps+0xa80 and +0xa81 are set and slot 0's car (+0x130 -> +0xe8) is msg+0x10. Calls Game_TelemetryLaps_ApplyLapValidity_Thunk 0x142923d40 on the validity component (0x1437b0c0c) and stores the lap time in slot 0's summary (+0x268, 0x1437b0d5d). The ranking (0x1437b0e00..0x1437b0ef2) reads bit 0 of the summary flags +0x2c0 as not clean: a clean lap beats a slower not-clean best, and a faster lap beats the best when it is clean or when both laps share a flags bit. Slot 0 also replaces slot 3 when slot 3 has no time, slot 3+0x214 is 0, bit 3 of slot 3's flags is set, laps+0xa85 is set, or slot 0 is faster and bit 1 of slot 3's flags is set; it replaces it only while slot 0+0x250 is 0 (Game_TelemetryLap_CopyFrom 0x1437acec0 at 0x1437b0e6e), and then posts the new personal best message carrying bit 1 of the old best's flags. With msg+0x18 set it ends with the lap start body (thunk 0x1437b2b00 at 0x1437b0f05: slot 1 = copy of slot 0, slot 2 = copy of slot 3, slot 0 cleared with flags &= 0xf0, then the validity thunk again). Steam 1.0.145 0x1437b3030 and EA 1.0.145 0x1437a02e0 (restored dump): 267 of 267 instructions the same, +0x2c0/+0x268/+0x250/+0x18 used at the same places."
+ },
+ "signature": {
+  "id": "game.telemetry_laps_on_new_lap_recorded",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 80 B9 81 0A 00 00 00",
+  "match": "0x1437b0aa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437b0aa0",
+  "kind": "func_start",
+  "names": [
+   "Game_TelemetryLaps_OnNewLapRecorded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-18",
+    "by": "load-game",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "load-game",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1437b0aa0",
+    "target": "0x1437b0aa0"
+   },
+   "sigcheck": "passed",
+   "digest": "2f00f2fd8d4f65c158d5096348383be1d3916d9bd0c4ec09b4a73129605c215f"
+  }
+ ]
+}
