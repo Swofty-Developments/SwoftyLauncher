@@ -388,7 +388,7 @@ F1 25 has no refuelling rule and its pit stop has no fuel service, so the core p
 | `refuel_stint_kg` | The fuel a stop fills to; empty: `race_fuel_kg`, else a full tank. A stop never drains a car that holds more. |
 | `quali_fuel_kg` | The fuel each car starts a qualifying session with. |
 | `race_start_fuel_from_quali` | Parc fermé (2003 to 2009): each car starts the race on the fuel it had left at the end of qualifying, `quali_fuel_kg` when it ran none. |
-| `race_tyre_change: false` | 2005: one tyre set for qualifying and race. A race pit stop keeps the car's compound and wear, unless a tyre is punctured; the stop still refuels. |
+| `race_tyre_change: false` | 2005: one tyre set for qualifying and race. A race pit stop keeps the car's compound and wear, unless a tyre is punctured; the stop still refuels. Set `mandatory_tyre_change: false` (1.6) with it: a car that keeps its tyres can't race two dry compounds and earns the game's penalty. |
 
 ```cpp
 content::packages.layer(content::packages["community.f1-2008/f1_2008"], [](content::Package &p) {
@@ -401,6 +401,7 @@ content::packages.layer(content::packages["community.f1-2008/f1_2008"], [](conte
 content::packages.layer(content::packages["community.f1-2005/f1_2005"], [](content::Package &p) {
     p.rules.refuelling = true;
     p.rules.race_tyre_change = false;                 // one set for qualifying and race
+    p.rules.mandatory_tyre_change = false;            // no two dry compounds rule
 });
 ```
 
