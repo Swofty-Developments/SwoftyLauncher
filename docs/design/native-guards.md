@@ -257,6 +257,7 @@ bindings and `runtime::find`, and the guard logs its needs or not-hooked line.
   entries and sets only their id, so each added request keeps the type of the entry it copies. No std library code
   reaches the placement system.
 - `Sess_VehiclePlacementRequest_Register` (0x142f60c80) stores the request at table[type][slot] from its +0x1c and
-  +0x18 with no bound. The ids the world extension adds stop at the Time Trial grid's entrant count
-  (`entrants.entrant_lists.entrant_list_34`, 26 in the game data) for GridSlot and PitGarage, and at half of it for
-  F1Garage and PitBox.
+  +0x18 (slot = `VehPlacement.Id - 1`) with no bound. The ids the world extension adds stop at the Time Trial grid's
+  entrant count (`entrants.entrant_lists.entrant_list_34`, 26 in the game data) for GridSlot and PitGarage, and at
+  half of it for F1Garage and PitBox. `extend` refuses a count that needs an id past 32 and writes no entry
+  (`refuses_more_cars_than_the_game_has_placement_slots`).
