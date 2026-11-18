@@ -13,6 +13,7 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use serde::{Deserialize, Serialize};
 
+use crate::baseline::{Baseline, DepotHashes, FileRecord, Objects};
 use crate::install::{Conflict, Drift, Game, Installer, RolledBack};
 use crate::{Error, Result, io_err, read_json, write_json};
 
@@ -293,28 +294,106 @@ pub struct Restored {
 
 /// `swofty restore`: roll back every journal and the offline play staging,
 /// move the files that blocked the last launch aside, and put the game folder
-/// back to the baseline.
+/// back to the baseline. A session that holds the lock refuses it at once.
 pub fn restore(data: &Path, game: &Game) -> Result<Restored> {
-    let Some(lock) = SessionLock::try_acquire(data)? else {
-        return Err(Error::Other(SESSION_HELD.into()));
-    };
+    let lock = wait_for_lock(data, Wait::NONE, &|| crate::process::game_running_in(&game.dir))?;
     let out = restore_locked(&lock, data, game)?;
     drop(lock);
     Ok(out)
 }
 
-pub const SESSION_HELD: &str = "a modded session is still running or rolling back; close F1 25 and try again";
+pub const SESSION_HELD: &str = "the last Play is still starting F1 25 or putting the game files back, with F1 25 closed; \
+     close any Steam or EA app window that is starting F1 25, wait a minute, then restore the game folder again";
+
+pub const GAME_RUNNING: &str = "F1 25 is still running; close F1 25, then restore the game folder again";
+
+/// How long a restore waits for the session lock. A Play still building or
+/// checking the game files is waited for up to `build`; a session that holds
+/// the lock with F1 25 closed (starting the game, or putting its files back)
+/// up to `other`. A running F1 25 is never waited for.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Wait {
+    pub build: Duration,
+    pub other: Duration,
+}
+
+impl Wait {
+    pub const NONE: Self = Self {
+        build: Duration::ZERO,
+        other: Duration::ZERO,
+    };
+}
+
+const LOCK_POLL: Duration = Duration::from_millis(250);
+
+/// Take the session lock for a restore, or say what holds it: a Play's build
+/// (by its progress), a running F1 25, or a session that is starting the game
+/// or putting its files back.
+pub fn wait_for_lock(data: &Path, wait: Wait, game_running: &dyn Fn() -> bool) -> Result<SessionLock> {
+    let start = Instant::now();
+    let mut other_since: Option<Instant> = None;
+    loop {
+        if let Some(lock) = SessionLock::try_acquire(data)? {
+            return Ok(lock);
+        }
+        let build = crate::busy::Busy::live(data);
+        if build.is_none() && game_running() {
+            return Err(Error::Other(GAME_RUNNING.into()));
+        }
+        match build {
+            Some(b) => {
+                other_since = None;
+                if start.elapsed() >= wait.build {
+                    return Err(Error::Other(b.restore_text()));
+                }
+            }
+            None => {
+                if other_since.get_or_insert_with(Instant::now).elapsed() >= wait.other {
+                    return Err(Error::Other(SESSION_HELD.into()));
+                }
+            }
+        }
+        std::thread::sleep(LOCK_POLL);
+    }
+}
 
 /// [`restore`] under a session lock the caller holds.
-pub fn restore_locked(_lock: &SessionLock, data: &Path, game: &Game) -> Result<Restored> {
+pub fn restore_locked(lock: &SessionLock, data: &Path, game: &Game) -> Result<Restored> {
+    let depots = crate::steam::find_game()
+        .filter(|i| same_dir(&i.dir, &game.dir))
+        .and_then(|i| crate::stock::Depots::load(&i).ok());
+    let steam: &dyn DepotHashes = match &depots {
+        Some(d) => d,
+        None => &(),
+    };
+    restore_locked_with(lock, data, game, steam)
+}
+
+/// [`restore_locked`] with Steam's list of the game's files. A file that
+/// blocked the last launch and is Steam's copy, as after a Verify, stays in
+/// place and becomes the original on record.
+pub fn restore_locked_with(
+    _lock: &SessionLock,
+    data: &Path,
+    game: &Game,
+    steam: &dyn DepotHashes,
+) -> Result<Restored> {
     let mut out = Restored::default();
     out.notes.extend(relocate_offline(data, &game.dir)?);
     if let Some(notes) = crate::offline::restore_pending(data, &game.dir)? {
         out.notes.push("offline play staging".into());
         out.notes.extend(notes);
     }
-    if let Some(blocked) = Blocked::read(data) {
+    if let Some(mut blocked) = Blocked::read(data) {
         if same_dir(&blocked.game, &game.dir) {
+            let kept = keep_stock(data, game, &blocked, steam)?;
+            if !kept.is_empty() {
+                out.notes.push(format!(
+                    "{} file(s) in the way are Steam's copy; they stay and are the originals on record now",
+                    kept.len()
+                ));
+            }
+            blocked.files.retain(|f| !kept.contains(&f.path));
             out.set_aside = set_aside(data, game, &blocked)?;
         }
         Blocked::clear(data)?;
@@ -399,6 +478,37 @@ pub fn relocate_offline(data: &Path, game: &Path) -> Result<Option<String>> {
         was.display(),
         game.display()
     )))
+}
+
+/// Back up each replaced file in `blocked` that is Steam's copy as its
+/// original, and name them.
+fn keep_stock(data: &Path, game: &Game, blocked: &Blocked, steam: &dyn DepotHashes) -> Result<Vec<String>> {
+    let mut kept = Vec::new();
+    let mut baseline = Baseline::load_or_new(data, &game.identity)?;
+    let objects = Objects {
+        root: data.join("baseline/objects"),
+    };
+    for f in blocked.files.iter().filter(|f| f.replaced) {
+        let path = game.dir.join(&f.path);
+        if !path.is_file() || steam.stock(&f.path, &path)? != Some(true) {
+            continue;
+        }
+        let size = std::fs::metadata(&path).map_err(io_err(&path))?.len();
+        let sha256 = objects.put_file(&path)?;
+        baseline.files.insert(
+            f.path.clone(),
+            FileRecord {
+                size,
+                sha256,
+                source: crate::baseline::Source::Depot,
+            },
+        );
+        kept.push(f.path.clone());
+    }
+    if !kept.is_empty() {
+        baseline.save(data)?;
+    }
+    Ok(kept)
 }
 
 fn set_aside(data: &Path, game: &Game, blocked: &Blocked) -> Result<Vec<PathBuf>> {

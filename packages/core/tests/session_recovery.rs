@@ -303,15 +303,100 @@ fn a_live_session_is_never_rolled_back_underneath_it() {
     f.session(&game);
     assert!(SessionLock::held_elsewhere(&f.data));
     assert!(SessionLock::try_acquire(&f.data).unwrap().is_none());
-    assert!(
-        recovery::restore(&f.data, &game)
-            .unwrap_err()
-            .to_string()
-            .contains("still running")
+    assert_eq!(
+        recovery::restore(&f.data, &game).unwrap_err().to_string(),
+        recovery::SESSION_HELD
     );
     assert_eq!(f.read(GVDB), "db-modded");
     drop(wrapper);
     assert!(!SessionLock::held_elsewhere(&f.data));
+}
+
+fn play_build(data: &Path) -> busy::Busy {
+    let b = busy::Busy {
+        pid: std::process::id().wrapping_add(1),
+        ..busy::Busy::new("default", vec!["swofty.classic-seasons".into()])
+    };
+    b.write(data).unwrap();
+    b
+}
+
+#[test]
+fn a_restore_pressed_while_play_checks_the_game_files_waits_for_it_then_restores() {
+    let f = Fixture::new("restore-waits-build");
+    let game = f.game();
+    let wrapper = SessionLock::try_acquire(&f.data).unwrap().unwrap();
+    f.session(&game);
+    play_build(&f.data);
+    let data = f.data.clone();
+    let play = std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_millis(600));
+        busy::Busy::clear(&data);
+        drop(wrapper);
+    });
+    let wait = recovery::Wait {
+        build: std::time::Duration::from_secs(30),
+        other: std::time::Duration::ZERO,
+    };
+    let lock = recovery::wait_for_lock(&f.data, wait, &|| false).unwrap();
+    play.join().unwrap();
+    let done = recovery::restore_locked(&lock, &f.data, &game).unwrap();
+    assert!(done.left.is_empty(), "{:?}", done.left);
+    assert_eq!(f.read(GVDB), "db-v1");
+}
+
+#[test]
+fn a_restore_that_outwaits_its_limit_names_the_build_still_running() {
+    let f = Fixture::new("restore-names-build");
+    let _wrapper = SessionLock::try_acquire(&f.data).unwrap().unwrap();
+    let b = play_build(&f.data);
+    let wait = recovery::Wait {
+        build: std::time::Duration::from_millis(300),
+        other: std::time::Duration::ZERO,
+    };
+    let err = recovery::wait_for_lock(&f.data, wait, &|| false)
+        .unwrap_err()
+        .to_string();
+    assert_eq!(err, b.restore_text());
+    assert!(
+        err.starts_with("Play is still building the mods for profile default, started under a minute ago;"),
+        "{err}"
+    );
+    assert!(err.contains("cancel the build"), "{err}");
+}
+
+#[test]
+fn a_restore_while_f1_25_runs_says_to_close_it_without_waiting() {
+    let f = Fixture::new("restore-game-runs");
+    let _wrapper = SessionLock::try_acquire(&f.data).unwrap().unwrap();
+    let wait = recovery::Wait {
+        build: std::time::Duration::from_secs(600),
+        other: std::time::Duration::from_secs(600),
+    };
+    let start = std::time::Instant::now();
+    let err = recovery::wait_for_lock(&f.data, wait, &|| true)
+        .unwrap_err()
+        .to_string();
+    assert_eq!(err, recovery::GAME_RUNNING);
+    assert!(start.elapsed() < std::time::Duration::from_secs(5));
+}
+
+#[test]
+fn a_restore_waits_for_a_session_that_is_putting_the_game_files_back() {
+    let f = Fixture::new("restore-waits-rollback");
+    let game = f.game();
+    let wrapper = SessionLock::try_acquire(&f.data).unwrap().unwrap();
+    let rollback = std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_millis(400));
+        drop(wrapper);
+    });
+    let wait = recovery::Wait {
+        build: std::time::Duration::ZERO,
+        other: std::time::Duration::from_secs(30),
+    };
+    let lock = recovery::wait_for_lock(&f.data, wait, &|| false).unwrap();
+    rollback.join().unwrap();
+    recovery::restore_locked(&lock, &f.data, &game).unwrap();
 }
 
 #[test]

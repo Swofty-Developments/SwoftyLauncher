@@ -43,6 +43,8 @@ Steam keeps a manifest for each installed depot in `<steam>/depotcache/<depot>_<
 - Before the check, a stale `EAAntiCheat.GameServiceLauncher.exe.bak` an interrupted session left is cleared: a backup that is Steam's copy is put back over the live exe, and a backup that is not is set aside under `swofty/offline-recovery/` while a Steam-verified live exe is kept. This step is skipped while a session is pending.
 - Each original the install backs up for the first time is compared with Steam's copy before it is copied.
 
+Some Steam installs keep their manifests with the file names encrypted (`filenames_encrypted` in the manifest's metadata). Each file is still listed under the SHA-1 of its lowercased path with `\` separators, with its size and content SHA-1, and the checks above find a file by that path hash. A file whose path hash isn't listed counts as Steam's when its size and SHA-1 are those of a file in the manifest. With encrypted names, the size check of every file is skipped, `stock_checked` stays false, and the launch log says `[stock] Steam's manifests have encrypted file names`. `setup::store_checks` counts such a copy as one it can't check.
+
 A file that doesn't match, other than an EA AntiCheat launcher file or a third-party DLL, stops the session before anything is built or changed and writes `state/not-stock.json`. The launcher opens a **Your game files have been edited** modal that says how many files changed, names the first six, and lists the fix: **Verify game files in Steam** (`steam://validate/3059520`), or add mods through the Simplified Importer. `swofty run` and `swofty apply` print the same link. Files Steam doesn't list are not checked. A game folder outside Steam is not checked. Without a readable manifest for every installed depot, the check is skipped and the launch log says why.
 
 ## The one-time setup
@@ -88,7 +90,15 @@ Offline play's journal names its game folder on its `meta` line. When that folde
 
 ## Leftovers
 
-A file in the way of an install counts as the launcher's own when `placed.json` records those exact bytes at that path, or when it is byte-identical to the file about to be placed and not a backed-up original. The install clears those files, logs the recovery and the `swofty doctor` report, and tries once more. Any other file stops the install untouched and is recorded in `blocked.json`; `swofty restore` moves it to `$DATA/set-aside/<time>/`. The launcher opens the **Your game files have been edited** modal, whose **Restore game folder** button runs the same restore.
+A file in the way of an install counts as the launcher's own when `placed.json` records those exact bytes at that path, or when it is byte-identical to the file about to be placed and not a backed-up original. The install clears those files, logs the recovery and the `swofty doctor` report, and tries once more. Any other file stops the install untouched and is recorded in `blocked.json`; `swofty restore` moves it to `$DATA/set-aside/<time>/`. A recorded file that replaced a game file and is now Steam's copy, as after a Verify, stays in place instead, and the baseline takes it as the original (`"source": "depot"`). The launcher opens the **Your game files have been edited** modal, whose **Restore game folder** button runs the same restore.
+
+`swofty restore` stops at once while another process holds `session.lock`. **Restore game folder** waits for it:
+
+| What holds the lock | The button |
+|---|---|
+| A Play still building or checking the game files (a live `build.json`) | Waits up to 15 minutes, then says `Play is still <step> for profile <name>, started <when>; restore the game folder again when it finishes, or cancel the build in the launcher` |
+| F1 25, running from that game folder | Stops at once with `F1 25 is still running; close F1 25, then restore the game folder again` |
+| A session starting F1 25 or putting its files back, with F1 25 closed | Waits up to 2 minutes, then says to close any Steam or EA app window that is starting F1 25 and try again |
 
 At start, files that `placed.json` records and no open journal covers are cleared the same way.
 
