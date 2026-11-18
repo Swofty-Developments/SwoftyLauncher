@@ -1058,6 +1058,7 @@ addr	name
 0x140794a00	Game_RetrieveConsumableEntitlementsTask_CollatePackageData
 0x140796010	Game_Steam_ParsePriceOverview
 0x1407972c0	Game_Read_VteEnabled
+0x1407a1310	Game_GameMode_AddTrackLayerWorlds
 0x1407a1870	Game_GameModeBenchmark_OnStartLightsComplete
 0x1407a2250	Sess_Benchmark_InitFromCmdline
 0x1407a2780	Sess_Parse_BenchmarkConfig
@@ -2386,6 +2387,7 @@ addr	name
 0x1413d4e10	Sess_Read_ContentSetListRow0
 0x1413d5a60	Sess_Parse_ContentSet
 0x1413e1cd0	Sess_Get_CurrentContentSetName
+0x1413e3120	Sess_ContentSet_ApplyTrackOverrides
 0x1413e37f0	Sess_ContentList_AddUniqueByte
 0x1413e3a20	Sess_ContentList_AddUniqueTriple
 0x1413e3d20	Ne_ByteVector_InsertUnique
@@ -4588,6 +4590,7 @@ addr	name
 0x142a14f20	Sess_Parse_GameSetupMode
 0x142a1a0b0	Game_Options_OptionValueSubsetMismatch
 0x142a224f0	Game_Load_Scenarios
+0x142a23850	Game_Read_SeasonRef
 0x142a399d0	Sess_Set_GarageSlotEntrant_Thunk
 0x142a39b80	Game_Garage_OnPitStateChanged
 0x142a3a560	Game_Garage_FadeOutForExit
@@ -5162,6 +5165,7 @@ addr	name
 0x142e58f20	Sess_Load_TrackDatabase
 0x142e5dc20	Sess_Collect_AvailableTracks
 0x142e5e010	Game_TrackDataSystem_Init
+0x142e60550	Trk_TrackData_CollectLayersForQuery
 0x142e60850	Game_TrackDataSystem_AddTrackFromPath
 0x142e60e00	Game_TrackData_GetTrack
 0x142e65060	Game_GameTransactionSystem_StartItemPurchaseFlow

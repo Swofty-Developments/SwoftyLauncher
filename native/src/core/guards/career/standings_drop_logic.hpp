@@ -140,4 +140,103 @@ inline bool table_key(uint64_t standings, Read read, void *user, uint64_t &packe
     return false;
 }
 
+// The career entity's championship (+0x1058) lists its seasons in 0x10-byte entries at +0x548..+0x550, the season at
+// entry +8; a season's standings are embedded at Season +0x2a8.
+constexpr size_t CHAMPIONSHIP = 0x1058, SEASONS_BEGIN = 0x548, SEASONS_END = 0x550, SEASON_ENTRY = 0x10, ENTRY_SEASON = 8;
+constexpr size_t SEASON_STANDINGS = 0x2a8;
+constexpr size_t MAX_SEASONS = 4096;
+
+// Whether `standings` are the standings of one of the seasons of the championship of the career entity at `entity`.
+// False when the championship or its season vector doesn't read, the vector isn't whole entries or holds more than
+// MAX_SEASONS.
+inline bool in_championship(uint64_t entity, uint64_t standings, Read read, void *user)
+{
+    uint64_t champ = 0, b = 0, e = 0;
+    if (!read_as(read, user, entity + CHAMPIONSHIP, champ) || !champ || !read_as(read, user, champ + SEASONS_BEGIN, b) ||
+        !read_as(read, user, champ + SEASONS_END, e) || e < b || (e - b) % SEASON_ENTRY || (e - b) / SEASON_ENTRY > MAX_SEASONS)
+        return false;
+    for (uint64_t p = b; p < e; p += SEASON_ENTRY) {
+        uint64_t season = 0;
+        if (read_as(read, user, p + ENTRY_SEASON, season) && season && season + SEASON_STANDINGS == standings)
+            return true;
+    }
+    return false;
+}
+
+// An entry of a table session: the driver's key and cumulative total.
+struct TableEntry {
+    uint32_t key;
+    int32_t total;
+};
+static_assert(sizeof(TableEntry) == RECORD_SIZE);
+
+// A table session: its entries at +0x08..+0x10 and its session id at +0x20.
+struct TableSession {
+    uint64_t entries = 0;
+    size_t count = 0;
+    uint32_t id = 0;
+};
+
+// The table session at `session`; false when its entries are not a whole number of entries, more than MAX_RECORDS,
+// or its vector or id doesn't read.
+inline bool table_session(uint64_t session, Read read, void *user, TableSession &out)
+{
+    uint64_t b = 0, e = 0;
+    if (!read_as(read, user, session + 8, b) || !read_as(read, user, session + 16, e) || e < b || (e - b) % sizeof(TableEntry) ||
+        (e - b) / sizeof(TableEntry) > MAX_RECORDS || !read_as(read, user, session + SESSION_ID, out.id))
+        return false;
+    out.entries = b;
+    out.count = (e - b) / sizeof(TableEntry);
+    return true;
+}
+
+// The order a table session is sorted in after its totals change (the game's own comparison); `user` is passed on.
+using Less = bool (*)(const TableEntry &a, const TableEntry &b, void *user);
+
+// Sets each of the `count` entries' total to its driver's counted total at session `session_id` of round `round`
+// (counted_total) and, with `less`, sorts them with it. Returns how many totals changed.
+inline size_t recount_session(TableEntry *entries, size_t count, const std::vector<PointsRound> &points, size_t round,
+                              uint32_t session_id, size_t best, Less less, void *less_user)
+{
+    size_t changed = 0;
+    for (size_t i = 0; i < count; i++) {
+        int32_t counted = counted_total(points, round, session_id, entries[i].key, best);
+        changed += counted != entries[i].total;
+        entries[i].total = counted;
+    }
+    if (less)
+        std::sort(entries, entries + count, [&](const TableEntry &a, const TableEntry &b) { return less(a, b, less_user); });
+    return changed;
+}
+
+// Where the `count` entries at `address` can be written in place; null when they can't.
+using Entries = TableEntry *(*)(uint64_t address, size_t count, void *user);
+
+struct Recounted {
+    size_t sessions = 0, changed = 0;
+};
+
+// Recounts every table session of the standings at `standings` (recount_session). A round or session that doesn't
+// read whole, or whose entries `entries` can't place, is passed over and not counted in `sessions`.
+inline Recounted recount_table(uint64_t standings, const std::vector<PointsRound> &points, size_t best, Read read, void *user,
+                               Entries entries, Less less, void *less_user)
+{
+    Recounted out;
+    size_t rounds = round_count(standings + TABLE_ROUNDS, read, user);
+    for (size_t r = 0; r < rounds; r++) {
+        RoundView v;
+        if (!round_at(standings + TABLE_ROUNDS, r, read, user, v))
+            continue;
+        for (uint64_t s = v.sessions_begin; s < v.sessions_end; s += SESSION_SIZE) {
+            TableSession ts;
+            TableEntry *at = nullptr;
+            if (!table_session(s, read, user, ts) || !(at = entries(ts.entries, ts.count, user)))
+                continue;
+            out.changed += recount_session(at, ts.count, points, r, ts.id, best, less, less_user);
+            out.sessions++;
+        }
+    }
+    return out;
+}
+
 }

@@ -74,7 +74,7 @@ inline constexpr Event EVENTS[] = {
     {"weekend.end", N, SHELL, 1, false, Fired::no, nullptr},
 
     {"session.load", M, SHELL, 1, false, Fired::no, nullptr},
-    {"session.weather.setup", M, SHELL, 1, false, Fired::no, nullptr},
+    {"session.weather.setup", M, "swofty::weather::events::Setup", 1, false, Fired::yes, nullptr},
     {"session.fuel.load", C, "swofty::tracks::events::FuelLoad", 1, false, Fired::game, nullptr},
     {"session.start", N, SHELL, 1, false, Fired::yes, SWOFTY_EVENT_SESSION_START},
     {"session.state.enter", N, SHELL, 1, false, Fired::no, SWOFTY_EVENT_STATE},

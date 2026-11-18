@@ -5,6 +5,8 @@
   sigverify.py --src a.cpp b.cpp            Sigs of these sources
   sigverify.py --only S_PUSH,S_XML          a subset
   sigverify.py --json out.json              also write the per-signature results
+  sigverify.py --port DUMP --restore LOG    first put back over a dump taken with the core running the bytes the
+                                            core's unique scans matched on the live image (LOG is that run's loader.log)
   sigverify.py --mk RVA [--kind riprel|rel32] [--back N] [--max N]
                                             print a pattern at the KB RVA that matches once on BOTH images
   sigverify.py --refs RVA [--on port] [--section NAME]
@@ -117,6 +119,29 @@ def parse_sigs(path):
     return sigs
 
 
+SCAN_HIT = re.compile(r'scan (\S+) \[([^\]]+)\] -> 1 hit at 0x[0-9a-f]+ \(base\+0x([0-9a-f]+)\)')
+
+
+def restore(img, log_lines):
+    """Writes over img the fixed bytes of each pattern a loader.log line says matched once on the live image
+    ("scan SEC [PATTERN] -> 1 hit at ... (base+0xRVA)"): the bytes the core's patches covered in a dump taken with the
+    core running. Returns (patterns that differed, bytes put back)."""
+    hits = {}
+    for line in log_lines:
+        m = SCAN_HIT.search(line)
+        if m:
+            hits[(m.group(1), m.group(2))] = int(m.group(3), 16)
+    mem, patterns, put = bytearray(img.mem), 0, 0
+    for (_, text), at in hits.items():
+        fixed = [(k, int(t, 16)) for k, t in enumerate(text.split()) if t != '??' and at + k < len(mem)]
+        wrong = [(k, b) for k, b in fixed if mem[at + k] != b]
+        for k, b in wrong:
+            mem[at + k] = b
+        patterns, put = patterns + bool(wrong), put + len(wrong)
+    img.mem, img._scans = mem, {}
+    return patterns, put
+
+
 def resolve(img, section, s):
     hits, at, first = img.scan(section, s['pattern'])
     if hits != 1:
@@ -127,6 +152,12 @@ def resolve(img, section, s):
     return hits, out, at
 
 
+def rip_relative(i):
+    """Whether `i` has a rip-relative memory operand. Its displacement is always the 4 bytes at disp_offset: capstone
+    gives disp_size 2 for some VEX stores (vmovupd [rip+d], xmm)."""
+    return bool(i.disp_size) and any(o.type == X86_OP_MEM and o.mem.base == X86_REG_RIP for o in i.operands)
+
+
 def norm(img, rva, n, to_ret=False):
     """Instructions of [rva, rva+n) with rip displacements and branch/call targets masked; with to_ret, up to the first
     ret (a short function's padding and the unrelated function after it are left out)."""
@@ -135,8 +166,8 @@ def norm(img, rva, n, to_ret=False):
         if i.address - rva >= n or (to_ret and out and out[-1] == 'c3'):
             break
         b = bytearray(i.bytes)
-        if i.disp_size and any(o.type == X86_OP_MEM and o.mem.base == X86_REG_RIP for o in i.operands):
-            b[i.disp_offset:i.disp_offset + i.disp_size] = b'\0' * i.disp_size
+        if rip_relative(i):
+            b[i.disp_offset:i.disp_offset + 4] = b'\0' * 4
         if (i.group(X86_GRP_JUMP) or i.group(X86_GRP_CALL)) and i.imm_size and any(o.type == X86_OP_IMM for o in i.operands):
             b[i.imm_offset:i.imm_offset + i.imm_size] = b'\0' * i.imm_size
         out.append(bytes(b).hex())
@@ -243,8 +274,8 @@ def masked_pattern(img, rva, n):
     pat, code = [], img.read(rva, n + 16)
     for i in md.disasm(code, rva):
         b = [f'{x:02X}' for x in i.bytes]
-        if i.disp_size and any(o.type == X86_OP_MEM and o.mem.base == X86_REG_RIP for o in i.operands):
-            b[i.disp_offset:i.disp_offset + i.disp_size] = ['??'] * i.disp_size
+        if rip_relative(i):
+            b[i.disp_offset:i.disp_offset + 4] = ['??'] * 4
         if (i.group(X86_GRP_JUMP) or i.group(X86_GRP_CALL)) and i.imm_size >= 4 and any(o.type == X86_OP_IMM for o in i.operands):
             b[i.imm_offset:i.imm_offset + i.imm_size] = ['??'] * i.imm_size
         pat.append(b)
@@ -307,8 +338,13 @@ def main():
     ap.add_argument('--dis', nargs='+')
     ap.add_argument('--twin')
     ap.add_argument('--disp', nargs=3)
+    ap.add_argument('--restore')
     a = ap.parse_args()
     ref, port, smap = Image(a.ref), Image(a.port), section_map(a.build)
+    if a.restore:
+        with open(a.restore, errors='replace') as f:
+            n, put = restore(port, f)
+        print(f'restored {put} byte(s) under {n} pattern(s) the live run matched ({a.restore})')
 
     if a.dis:
         img = ref if a.dis[0] == 'ref' else port

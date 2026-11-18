@@ -1,7 +1,7 @@
 #include "core/guards/guard.hpp"
 #include "core/guards/lines.hpp"
 #include "core/guards/mid_hook.hpp"
-#include "core/runtime/hook_errors.hpp"
+#include "core/runtime/loader/hook_install.hpp"
 
 #include <windows.h>
 
@@ -150,12 +150,11 @@ void install_mid_hook(const MidHookSpec &spec)
     uintptr_t at = spec.site();
     if (!at)
         return;
-    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), spec.destination);
-    if (!h) {
-        swofty::log("%s", lines::hook_failed(spec.name, spec.failed_at, runtime::hook_error(h.error())).c_str());
+    ::runtime::loader::Installed r = ::runtime::loader::install(spec.hook, at, spec.name, spec.destination);
+    if (!r) {
+        swofty::log("%s", lines::hook_failed(spec.name, spec.failed_at, r.error).c_str());
         return;
     }
-    spec.hook = std::move(*h);
     swofty::log("%s", lines::armed(spec.name, spec.armed).c_str());
 }
 

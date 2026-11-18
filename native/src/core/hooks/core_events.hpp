@@ -32,6 +32,9 @@ struct RedFlag;
 struct Sector;
 struct CarStatus;
 }
+namespace swofty::weather::events {
+struct Setup;
+}
 namespace swofty::career::events {
 struct AddActivity;
 struct StandingsRebuild;
@@ -84,6 +87,7 @@ bool session_red_flag(swofty::race_control::events::RedFlag &payload);
 bool session_sector(swofty::race_control::events::Sector &payload);
 bool session_car_status(swofty::race_control::events::CarStatus &payload);
 bool laps_sealing(swofty::laps::events::Sealing &payload);
+bool weather_setup(swofty::weather::events::Setup &payload);
 bool laps_recorded(const char *path, int32_t time_ms, int32_t valid);
 
 }

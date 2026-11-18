@@ -54,6 +54,8 @@ using FeTile_Add_EraTile_t = void(void *tiles, void *alloc, uint8_t index, const
 inline constexpr fn<"FeTile_Add_EraTile", FeTile_Add_EraTile_t> FeTile_Add_EraTile{}; // L2 experimental
 using FeTile_Build_List_t = void(TileList *self, void *ctx, void *a3, void *a4, uint8_t menu_kind, uint8_t sub_kind, uint32_t a7);
 inline constexpr fn<"FeTile_Build_List", FeTile_Build_List_t> FeTile_Build_List{}; // L3 stable
+using FeTile_CareerDefaultItem_Populate_t = void(HomeItem *item, void *node, uint32_t a7);
+inline constexpr fn<"FeTile_CareerDefaultItem_Populate", FeTile_CareerDefaultItem_Populate_t> FeTile_CareerDefaultItem_Populate{}; // L2 experimental
 using FeTile_CareerDlcItem_Populate_t = void(HomeItem *item, void *node, uint32_t a7);
 inline constexpr fn<"FeTile_CareerDlcItem_Populate", FeTile_CareerDlcItem_Populate_t> FeTile_CareerDlcItem_Populate{}; // L2 experimental
 using FeTile_Check_EntrantListUsable_t = uint64_t(void *tile_ctx, const char *label);

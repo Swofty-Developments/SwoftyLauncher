@@ -775,7 +775,7 @@ using Sess_TyreClass_FromName_t = void *(void *classes, const void *name, uint8_
 inline constexpr fn<"Sess_TyreClass_FromName", Sess_TyreClass_FromName_t> Sess_TyreClass_FromName{}; // L2 experimental
 inline constexpr address<"Sess_TyreCompoundClasses_SortEntries"> Sess_TyreCompoundClasses_SortEntries{}; // L2 experimental
 inline constexpr address<"Sess_TyreCompoundClasses_SortEntriesB"> Sess_TyreCompoundClasses_SortEntriesB{}; // L2 experimental
-using Sess_Tyre_ShowFittedSet_t = void(void *tyre_component, uint8_t apply_set, uint8_t show, uint32_t models, uint16_t force);
+using Sess_Tyre_ShowFittedSet_t = void(void *tyre_component, uint8_t apply_set, uint8_t show, uint8_t with_wing, uint16_t force);
 inline constexpr fn<"Sess_Tyre_ShowFittedSet", Sess_Tyre_ShowFittedSet_t> Sess_Tyre_ShowFittedSet{}; // L2 experimental
 using Sess_Tyres_ClosestAvailableCompound_t = uint32_t(void *tyre_rules, uint8_t vehicle, const uint32_t *preference, float wear_scale);
 inline constexpr fn<"Sess_Tyres_ClosestAvailableCompound", Sess_Tyres_ClosestAvailableCompound_t> Sess_Tyres_ClosestAvailableCompound{}; // L2 experimental

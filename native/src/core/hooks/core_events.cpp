@@ -8,6 +8,7 @@
 #include <swofty/systems/sounds.hpp>
 #include <swofty/systems/spectator.hpp>
 #include <swofty/systems/tracks.hpp>
+#include <swofty/systems/weather.hpp>
 
 #include "core/hooks/core_events.hpp"
 #include "core/hooks/hooks.hpp"
@@ -69,6 +70,7 @@ static_assert(declared<swofty::race_control::events::RedFlag>(SWOFTY_POINT_NOTIF
 static_assert(declared<swofty::race_control::events::Sector>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::race_control::events::CarStatus>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::laps::events::Sealing>(SWOFTY_POINT_MODIFY));
+static_assert(declared<swofty::weather::events::Setup>(SWOFTY_POINT_MODIFY));
 static_assert(declared<swofty::laps::events::Recorded>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::spectator::events::HudVisible>(SWOFTY_POINT_MODIFY));
 static_assert(declared<so::BundleResolve>(SWOFTY_POINT_MODIFY));
@@ -166,6 +168,7 @@ bool session_sector(swofty::race_control::events::Sector &payload) { return fire
 bool session_car_status(swofty::race_control::events::CarStatus &payload) { return fire(payload); }
 
 bool laps_sealing(swofty::laps::events::Sealing &payload) { return fire(payload); }
+bool weather_setup(swofty::weather::events::Setup &payload) { return fire(payload); }
 
 bool laps_recorded(const char *path, int32_t time_ms, int32_t valid)
 {
