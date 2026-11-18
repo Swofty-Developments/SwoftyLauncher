@@ -71,7 +71,16 @@ play() {
     env "$@" T_STEAM_DIR='Z:'"${OUT//\//\\}"'\steam\'"$name" SWOFTY_EARLY_STAGE=1 \
         timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" >"$OUT/$name.out" 2>&1 || code=$?
     grep -E '^(ok  |FAIL|ALL|SOME)' "$OUT/$name.out" | sed 's/^/      game: /'
-    if [[ $code == "$want" ]]; then echo "ok  : $name: the game exited with $want"; else echo "FAIL: $name: exit $code, want $want"; status=1; fi
+    if [[ $code == "$want" ]]; then
+        echo "ok  : $name: the game exited with $want"
+    else
+        echo "FAIL: $name: exit $code, want $want"
+        status=1
+        echo "      $name.out without its ok lines (last 40):"
+        grep -vE '^ok  ' "$OUT/$name.out" | tail -n 40 | sed 's/^/      out: /' || true
+        echo "      loader.log (last 30 lines):"
+        tail -n 30 "$LOG" 2>/dev/null | sed 's/^/      log: /' || true
+    fi
     cp "$LOG" "$OUT/$name.loader.log" 2>/dev/null || true
 }
 steam_untouched() {

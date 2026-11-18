@@ -362,6 +362,75 @@ pub fn split_handler(line: &str) -> Vec<String> {
     }
 }
 
+/// The longest run of words a path with spaces is looked for in.
+const PATH_WORDS: usize = 8;
+
+/// Whether `word` holds no shell syntax: no quotes, escapes, expansions,
+/// separators, redirections, globs or braces, and no `~` to expand.
+fn plain_word(word: &str) -> bool {
+    !word.starts_with('~')
+        && !word
+            .chars()
+            .any(|c| c.is_whitespace() || "'\"\\`$;|&<>(){}[]*?#!".contains(c))
+}
+
+fn shell_name(name: &str) -> bool {
+    let mut chars = name.chars();
+    chars.next().is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
+        && chars.all(|c| c.is_ascii_alphanumeric() || c == '_')
+}
+
+/// A shell command line with each unquoted absolute path that runs on past
+/// a space put in single quotes. The shell cuts
+/// `/home/me/.steam/steam/steamapps/common/Proton - Experimental/proton` at
+/// its first space, so where the path up to a space is not on disk and the
+/// path with the words after it is, those words are quoted together. The
+/// value of a leading `NAME=` assignment counts the same. A line whose paths
+/// are on disk as written stays as it is, and so does everything from the
+/// first word with shell syntax on.
+pub fn quote_spaced_paths(line: &str, exists: &dyn Fn(&Path) -> bool) -> String {
+    let words: Vec<&str> = line.split(' ').collect();
+    let mut out: Vec<String> = Vec::with_capacity(words.len());
+    let mut i = 0;
+    while i < words.len() {
+        let word = words[i];
+        if !plain_word(word) && !word.is_empty() {
+            out.extend(words[i..].iter().map(|w| (*w).to_owned()));
+            break;
+        }
+        let (prefix, path) = match word.split_once('=') {
+            Some((name, value)) if shell_name(name) => (&word[..=name.len()], value),
+            _ => ("", word),
+        };
+        let mut quoted = None;
+        if path.starts_with('/') && !exists(Path::new(path)) {
+            let mut joined = path.to_owned();
+            for (j, next) in words.iter().enumerate().skip(i + 1).take(PATH_WORDS) {
+                if !plain_word(next) && !next.is_empty() {
+                    break;
+                }
+                joined.push(' ');
+                joined.push_str(next);
+                if exists(Path::new(&joined)) {
+                    quoted = Some((j, format!("{prefix}'{joined}'")));
+                    break;
+                }
+            }
+        }
+        match quoted {
+            Some((last, word)) => {
+                out.push(word);
+                i = last + 1;
+            }
+            None => {
+                out.push(word.to_owned());
+                i += 1;
+            }
+        }
+    }
+    out.join(" ")
+}
+
 /// How a launch link reaches the EA app.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Handoff {
@@ -386,7 +455,7 @@ impl Handoff {
         } else if cfg!(windows) {
             Some(Self::Program(split_handler(command)))
         } else {
-            Some(Self::Shell(command.to_owned()))
+            Some(Self::Shell(quote_spaced_paths(command, &|p: &Path| p.exists())))
         }
     }
 
@@ -801,6 +870,101 @@ mod tests {
         assert_eq!(open.get_program(), "sh");
         assert_eq!(args, ["-c", "/games/ea-app.sh wine start "]);
         assert!(opener(&Handoff::Program(vec!["open.bat".into()])).is_none());
+    }
+
+    fn on_disk<'a>(paths: &'a [&'a str]) -> impl Fn(&Path) -> bool + 'a {
+        move |p: &Path| paths.iter().any(|q| Path::new(q) == p)
+    }
+
+    #[test]
+    fn an_unquoted_proton_path_with_spaces_is_quoted() {
+        let disk = [
+            "/home/me/.local/share/Steam/steamapps/common/Proton - Experimental/proton",
+            "/home/me/.local/share/Steam/steamapps/compatdata/my prefix",
+        ];
+        let line = "STEAM_COMPAT_DATA_PATH=/home/me/.local/share/Steam/steamapps/compatdata/my prefix \
+                    /home/me/.local/share/Steam/steamapps/common/Proton - Experimental/proton run {url}";
+        assert_eq!(
+            quote_spaced_paths(line, &on_disk(&disk)),
+            "STEAM_COMPAT_DATA_PATH='/home/me/.local/share/Steam/steamapps/compatdata/my prefix' \
+             '/home/me/.local/share/Steam/steamapps/common/Proton - Experimental/proton' run {url}"
+        );
+        let args = "/opt/ea app.sh wine /games/EA Desktop/EALauncher.exe {url}";
+        assert_eq!(
+            quote_spaced_paths(
+                args,
+                &on_disk(&["/opt/ea app.sh", "/games/EA Desktop/EALauncher.exe"])
+            ),
+            "'/opt/ea app.sh' wine '/games/EA Desktop/EALauncher.exe' {url}"
+        );
+    }
+
+    #[test]
+    fn a_line_that_runs_as_written_is_left_alone() {
+        let disk = ["/games/ea-app.sh", "/games/Proton - Experimental/proton"];
+        for line in [
+            "/games/ea-app.sh wine start {url}",
+            "'/games/Proton - Experimental/proton' run {url}",
+            "\"/games/Proton - Experimental/proton\" run {url}",
+            "u={url}; L='C:\\Program Files\\EA Desktop\\EALauncher.exe'; exec /games/ea-app.sh wine \"$L\" \"$u\"",
+            "/missing/Proton - Experimental/proton run {url}",
+            "~/Proton - Experimental/proton run {url}",
+            "printf %s {url} > '/tmp/got url'",
+            "/games/ea-app.sh  wine  start {url}",
+        ] {
+            assert_eq!(quote_spaced_paths(line, &on_disk(&disk)), line);
+        }
+        assert_eq!(
+            quote_spaced_paths(
+                "/games/Proton - Experimental/proton run {url} ; /games/Proton - Experimental/proton",
+                &on_disk(&disk)
+            ),
+            "'/games/Proton - Experimental/proton' run {url} ; /games/Proton - Experimental/proton",
+            "nothing from the first shell syntax on is touched"
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn the_setting_runs_a_proton_path_with_spaces_written_without_quotes() {
+        use std::os::unix::fs::PermissionsExt;
+        let root = std::env::temp_dir().join(format!("swofty-ea-spaced-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let proton = root.join("steamapps/common/Proton - Experimental/proton");
+        let compat = root.join("steamapps/compatdata/my prefix");
+        std::fs::create_dir_all(proton.parent().unwrap()).unwrap();
+        std::fs::create_dir_all(&compat).unwrap();
+        let got = root.join("got.txt");
+        std::fs::write(
+            &proton,
+            format!(
+                "#!/bin/sh\nprintf '%s|%s|%s' \"$STEAM_COMPAT_DATA_PATH\" \"$1\" \"$2\" > '{}'\n",
+                got.display()
+            ),
+        )
+        .unwrap();
+        std::fs::set_permissions(&proton, std::fs::Permissions::from_mode(0o755)).unwrap();
+        let setting = format!(
+            "STEAM_COMPAT_DATA_PATH={} {} run {{url}}",
+            compat.display(),
+            proton.display()
+        );
+        let h = Handoff::from_setting(&setting).unwrap();
+        let url = "origin2://game/launch?offerIds=1&autoDownload=1";
+        let mut status = h.command(url).status().unwrap();
+        for _ in 0..20 {
+            if status.code() != Some(126) {
+                break;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(50));
+            status = h.command(url).status().unwrap();
+        }
+        assert!(status.success(), "{h}: {status}");
+        assert_eq!(
+            std::fs::read_to_string(&got).unwrap(),
+            format!("{}|run|{url}", compat.display())
+        );
+        std::fs::remove_dir_all(&root).ok();
     }
 
     #[test]

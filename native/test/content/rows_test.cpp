@@ -1138,6 +1138,10 @@ static void stock_team_rows(Db &db)
         db.put(p + "._story_info_instancecount_", 0, "1");
         row(p + ".story_info_0", {{"_metadata_", "s"}, {"description", i ? "lng_desc_tr" : "lng_desc_mer"}, {"hashtag", "#x"}});
     }
+    db.put("entrants.nationality._nationality_instancecount_", 0, "3");
+    const char *nations[] = {"default", "britain", "italy"};
+    for (int i = 0; i < 3; i++)
+        row("entrants.nationality.nationality_" + std::to_string(i), {{"_metadata_", nations[i]}});
     db.put("pit_lane.pit_times._team_pit_times_instancecount_", 0, "2");
     for (int i = 0; i < 2; i++) {
         std::string p = "pit_lane.pit_times.team_pit_times_" + std::to_string(i);
@@ -1190,7 +1194,7 @@ static void team_tests(const std::string &regs)
         "lost": { "donor": "game/nobody", "names": { "code": "LST" }, "livery_name": "x" },
         "mercedes": { "donor": "game/mercedes", "names": { "code": "MER" }, "livery_name": "x" },
         "plain_team": { "donor": "game/mercedes", "names": { "code": "PLN" }, "livery_name": "cs_plain",
-                        "logo": "mod.a/plain", "stat_id": "auto" } },
+                        "logo": "mod.a/plain", "stat_id": "auto", "nationality": "atlantis" } },
       "team.pit_times": { "toro_rosso": { "team": "mod.a/toro_rosso_2017", "from": "game/mercedes", "min_pit_time": 2.3 } } })j");
     int r2 = registry::load_data_file("mod.b", "registry/teams.json", R"j({
       "team.identity": { "toro_rosso_b": { "extends": "mod.a/toro_rosso_2017", "livery_name": "b_toro_rosso",
@@ -1266,6 +1270,11 @@ static void team_tests(const std::string &regs)
           "names: a lang key stays one, a literal is the text");
     check(field(tr, "livery_name") == "cs17_toro_rosso" && field(tr, "nationality") == "italy" && field(tr, "prestige") == "2",
           "livery name, nationality and prestige");
+    bool told_nation = false;
+    for (auto &l : x.lines["team.identity"])
+        told_nation |= l == "team.identity mod.a/plain_team: nationality atlantis is not an entrants.nationality row, default used";
+    check(field(pl, "nationality") == "default" && field(vrow, "nationality") == "italy" && told_nation,
+          "a nationality with no entrants.nationality row becomes default, and the line says so");
     auto signed_argb = [](uint32_t v) { return std::to_string(int32_t(v)); };
     check(field(tr, "primary_colour") == signed_argb(0xFF0A1E3C) && field(tr, "ui_team_colour") == signed_argb(0xFF0A1E3C) &&
               field(tr, "tertiary_colour") == signed_argb(0x80FFFFFF),

@@ -8,12 +8,14 @@ inline constexpr address<"Render_Batch_Submit"> Render_Batch_Submit{}; // L2 exp
 inline constexpr address<"Render_CloudGenerator_Update"> Render_CloudGenerator_Update{}; // L2 experimental
 inline constexpr address<"Render_DDGISystem_Render"> Render_DDGISystem_Render{}; // L2 experimental
 inline constexpr address<"Render_DamageMaskGenerator_Render"> Render_DamageMaskGenerator_Render{}; // L2 experimental
+inline constexpr address<"Render_Draw_ComputeInstanceLodScale"> Render_Draw_ComputeInstanceLodScale{}; // L2 experimental
 inline constexpr address<"Render_Gfx2Buffer_Construct"> Render_Gfx2Buffer_Construct{}; // L2 experimental
 inline constexpr address<"Render_Gfx2Buffer_Destroy"> Render_Gfx2Buffer_Destroy{}; // L2 experimental
 inline constexpr address<"Render_Gfx2Device_Initialise"> Render_Gfx2Device_Initialise{}; // L2 experimental
 inline constexpr address<"Render_GroundCoverPlugin_Render"> Render_GroundCoverPlugin_Render{}; // L2 experimental
 inline constexpr address<"Render_Hbcn_OnCompressRequest"> Render_Hbcn_OnCompressRequest{}; // L2 experimental
 inline constexpr address<"Render_LightListResource_Create"> Render_LightListResource_Create{}; // L2 experimental
+inline constexpr address<"Render_Material_CountResourceSlots"> Render_Material_CountResourceSlots{}; // L2 experimental
 inline constexpr address<"Render_Model_ValidateMaterialParams"> Render_Model_ValidateMaterialParams{}; // L2 experimental
 inline constexpr address<"Render_OnRaytracingValidationMsg"> Render_OnRaytracingValidationMsg{}; // L2 experimental
 inline constexpr address<"Render_ParticleManager_DrawMeshParticles"> Render_ParticleManager_DrawMeshParticles{}; // L2 experimental
