@@ -633,7 +633,7 @@ int sources(char *out, uint32_t cap, uint64_t *revision)
 
 struct ArchiveWork
 {
-    std::shared_ptr<archive::Catalogue> catalogue;
+    std::map<std::string, std::shared_ptr<archive::Catalogue>> catalogues;
     std::map<std::string, archive::Pixels> result;
     uint64_t source{}, session{};
 };
@@ -641,7 +641,7 @@ struct ArchiveAccess
 {
     std::mutex lock;
     std::future<ArchiveWork> pending;
-    std::shared_ptr<archive::Catalogue> catalogue;
+    std::map<std::string, std::shared_ptr<archive::Catalogue>> catalogues;
     std::map<std::string, archive::Pixels> cache;
     std::set<std::string> waiting;
     uint64_t source{}, session{}, serial{};
@@ -679,7 +679,7 @@ int archive_image(const char *reference, uint8_t *rgba, uint32_t cap, uint32_t *
     {
         state.source = source;
         state.session = session;
-        state.catalogue.reset();
+        state.catalogues.clear();
         state.cache.clear();
         state.waiting.clear();
         ++state.serial;
@@ -689,7 +689,7 @@ int archive_image(const char *reference, uint8_t *rgba, uint32_t cap, uint32_t *
         auto result = state.pending.get();
         if (result.source == source && result.session == session)
         {
-            state.catalogue = std::move(result.catalogue);
+            state.catalogues = std::move(result.catalogues);
             for (auto &[key, pixels] : result.result)
             {
                 state.cache[key] = std::move(pixels);
@@ -718,10 +718,10 @@ int archive_image(const char *reference, uint8_t *rgba, uint32_t cap, uint32_t *
     if (!state.pending.valid())
     {
         auto keys = state.waiting;
-        auto catalogue = state.catalogue;
+        auto catalogues = state.catalogues;
         state.pending = std::async(
             std::launch::async,
-            [env = std::move(env), keys = std::move(keys), catalogue = std::move(catalogue), source, session]() mutable
+            [env = std::move(env), keys = std::move(keys), catalogues = std::move(catalogues), source, session]() mutable
             {
                 ArchiveWork result;
                 result.source = source;
@@ -735,18 +735,17 @@ int archive_image(const char *reference, uint8_t *rgba, uint32_t cap, uint32_t *
                             resources = std::make_unique<archive::Resources>(env);
                         return *resources;
                     };
-                    if (!catalogue)
-                    {
-                        auto loaded = std::make_shared<archive::Catalogue>();
-                        if (loaded->load(get_resources()))
-                            catalogue = std::move(loaded);
-                    }
-                    result.catalogue = catalogue;
                     for (auto &key : keys)
                     {
                         archive::Pixels pixels;
-                        if (key.starts_with(archive::PREFIX))
+                        if (const auto *descriptor = live_image_reference::catalogue(key))
                         {
+                            auto &catalogue = catalogues[descriptor->path];
+                            if (!catalogue) {
+                                auto loaded = std::make_shared<archive::Catalogue>(*descriptor);
+                                if (loaded->load(get_resources()))
+                                    catalogue = std::move(loaded);
+                            }
                             if (catalogue)
                                 catalogue->decode(key, pixels);
                         }
@@ -759,6 +758,7 @@ int archive_image(const char *reference, uint8_t *rgba, uint32_t cap, uint32_t *
                         }
                         result.result.emplace(key, std::move(pixels));
                     }
+                    result.catalogues = std::move(catalogues);
                 }
                 catch (...)
                 {
@@ -775,7 +775,7 @@ int image(const char *reference, uint8_t *rgba, uint32_t cap, uint32_t *width, u
 {
     if (!reference || !rgba || !width || !height || !revision || strnlen(reference, 160) >= 160)
         return SWOFTY_ASSET_INVALID;
-    if (std::string_view(reference).starts_with(archive::PREFIX))
+    if (live_image_reference::catalogue(reference))
         return archive_image(reference, rgba, cap, width, height, revision);
     if (!data::reference(reference))
         return SWOFTY_ASSET_UNAVAILABLE;

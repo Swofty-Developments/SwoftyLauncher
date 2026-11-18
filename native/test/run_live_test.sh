@@ -16,3 +16,5 @@ mkdir -p "$OUT"
 "$OUT/live_gates_test"
 "$CXX" -std=c++23 -O2 -Wall -Wextra -I../../packages/sdk/include -o "$OUT/live_sdk_test" live_sdk_test.cpp
 "$OUT/live_sdk_test"
+"$CXX" -std=c++23 -O2 -Wall -Wextra -I../../packages/sdk/include -o "$OUT/live_tyre_mapping_test" live_tyre_mapping_test.cpp
+"$OUT/live_tyre_mapping_test"

@@ -15,6 +15,7 @@
 #include <fstream>
 #include <iterator>
 #include <filesystem>
+#include "tyre_image_service_tests.hpp"
 
 using Microsoft::WRL::ComPtr;
 namespace d3d12hooks {
@@ -61,6 +62,8 @@ int main(int argc, char **argv)
 {
     setvbuf(stdout, nullptr, _IONBF, 0);
     using namespace badge_images;
+    if (argc == 2 && std::strcmp(argv[1], "--tyres") == 0)
+        return tyre_image_service_tests::run(badge_images::api());
     assert(data::reference("eaid://ui_package/art/textures/render_badge_ePreLoaded 7.image") == "eaid://ui_package/art/textures/render_badge_ePreLoaded 7");
     assert(!data::reference("render_badge_ePreLoaded 7wrong"));
     assert(!data::reference("render_badge_eNetworkReplicated 16383"));

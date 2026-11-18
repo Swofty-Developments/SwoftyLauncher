@@ -59,9 +59,9 @@ SWOFTY_ADDON()
 ```
 
 - **Header:** `swofty/live.hpp`, namespace `swofty::live`; host test fake `swofty/fake_live.hpp`
-- **Table:** the core export `SwoftyCoreLive` (`SwoftyLive`, table version 4 appends image access; version 2 adds `driver_name` and version 1 ends at `seq`; version 3 adds `team_badge_texture`); `SWOFTY_API_VERSION` is unchanged
+- **Table:** the core export `SwoftyCoreLive` (`SwoftyLive`, table version 5 appends `tyre_icon_texture`; version 4 appends image access; version 2 adds `driver_name` and version 1 ends at `seq`; version 3 adds `team_badge_texture`); `SWOFTY_API_VERSION` is unchanged
 - **Feature:** `telemetry`, experimental, off by default (the live state is the memory source of std telemetry)
-- **Thread:** any thread; every call copies from the core's per-frame snapshot, except `team_badge` and `driver_name`, which read the game's memory at the call
+- **Thread:** any thread; car/session calls copy the core's per-frame snapshot. Badge/name getters read the game's memory at the call; `tyre_icon_texture` resolves the snapshot's fitted visual compound through the loaded GameDB.
 
 ## What a call answers
 
@@ -219,6 +219,42 @@ typedef struct SwoftyLiveTurn {
 The table holds the 24 stock circuits' official turn numbers, picked by the game's internal track name and accepted only when the track length is within 3 % of the table's. With no usable name, a length within 1.5 % of exactly one circuit picks it. Reverse and short layouts, new tracks and modded tracks have no table, and `turn()` and `track_turns()` answer empty for them. The learned-bend fallback of the original is not part of the core yet.
 
 The table is Project Halo's, by nyannoying ("Uses work from Project Halo by nyannoying", <https://github.com/nyannoying1337/f1-25-project-halo>); see `THIRD_PARTY.md` in the launcher repository.
+
+## Tyre images
+
+`live::tyre_icon_texture(vehicle)` (Live table version 5) returns the fitted visual
+compound's compact icon reference, for example
+`#overrides.tyre_allocation.key_icons.Soft`. It resolves the effective GameDB
+`texture_name` and the named `small` texture template, so a 2026 or modded visual
+retains its own name. It does not infer the image from the physical compound or
+`tyre_letter`. Missing/unverified fitted tyres, an unavailable GameDB, ambiguous
+rows or an unsupported template answer empty. Older cores answer empty too.
+
+Pass the reference to the same image service used for badges:
+
+```cpp
+if (auto reference = live::tyre_icon_texture(vehicle)) {
+    if (auto images = live::images()) {
+        uint8_t rgba[64 * 64 * 4];
+        uint32_t width = 0, height = 0;
+        uint64_t revision = 0;
+        int status = images->image(reference->c_str(), rgba, sizeof rgba, &width, &height, &revision);
+        // OK: copy/use the tight RGBA8 bytes; LATE: retry on a later update.
+        // UNAVAILABLE: omit the image. Presentation and PNG encoding belong to the addon.
+    }
+}
+```
+
+The existing image table remains version 1. Live v5 adds support for the
+`overrides.tyre_allocation.key_icons`, `compound_icons`, `tyre_icons` and
+`overrides.tyres.tyres_small` catalogues. The default small icons are 28px;
+larger arrays retain aspect ratio and are reduced to a maximum side of 64px.
+The worker reads the effective UIDB slice names and array URI through active
+archive redirects and resource overlays, preserving alpha. Route changes,
+explicit clear and session retirement invalidate the cache and retire old work.
+Differing duplicate archive resources answer unavailable rather than selecting
+an arbitrary copy. In-place edits at unchanged routes need an explicit clear;
+runtime-only GPU texture modifications are not captured for tyre icons.
 
 ## team_badge, team_badge_texture, driver_name and frame
 

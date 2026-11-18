@@ -34,7 +34,7 @@ public:
         std::memset(present_, 0, sizeof present_);
         table_ = {SWOFTY_LIVE_VERSION, &Live::t_available, &Live::t_session, &Live::t_car, &Live::t_subject,
                   &Live::t_turn,       &Live::t_track_turns, &Live::t_badge, &Live::t_seq,
-                  &Live::t_driver_name, &Live::t_badge_texture, nullptr};
+                  &Live::t_driver_name, &Live::t_badge_texture, nullptr, &Live::t_tyre_icon_texture};
     }
 
     ~Live() { uninstall(); }
@@ -112,6 +112,7 @@ public:
     // Answer as an older core does: version 1 has no driver_name member, version 2 no team_badge_texture member.
     void set_table_version(uint32_t v) { table_.version = v; }
     void set_badge_texture(uint32_t vehicle, const std::string &path) { textures_[vehicle] = path; }
+    void set_tyre_icon_texture(uint32_t vehicle, const std::string &path) { tyre_textures_[vehicle] = path; }
     void advance() { frame_++; }
 
 private:
@@ -233,6 +234,23 @@ private:
         return SWOFTY_ASSET_OK;
     }
 
+    static int t_tyre_icon_texture(uint32_t vehicle, char *path, uint32_t cap)
+    {
+        if (!path || cap < 2 || vehicle >= SWOFTY_LIVE_MAX_CARS)
+            return SWOFTY_ASSET_INVALID;
+        path[0] = 0;
+        if (!t_available() || !current()->present_[vehicle] ||
+            !(current()->cars_[vehicle].have & SWOFTY_LIVE_HAVE_TYRE))
+            return SWOFTY_ASSET_UNAVAILABLE;
+        const auto it = current()->tyre_textures_.find(vehicle);
+        if (it == current()->tyre_textures_.end() || it->second.empty())
+            return SWOFTY_ASSET_UNAVAILABLE;
+        if (it->second.size() + 1 > cap)
+            return SWOFTY_ASSET_INVALID;
+        std::memcpy(path, it->second.c_str(), it->second.size() + 1);
+        return SWOFTY_ASSET_OK;
+    }
+
     bool available_ = true;
     uint64_t frame_ = 1;
     SwoftyLiveSession session_;
@@ -240,6 +258,7 @@ private:
     bool present_[SWOFTY_LIVE_MAX_CARS];
     std::vector<SwoftyLiveTurn> turns_;
     std::map<uint32_t, std::string> badges_, textures_;
+    std::map<uint32_t, std::string> tyre_textures_;
     std::map<uint32_t, std::string> names_;
     SwoftyLive table_;
 };

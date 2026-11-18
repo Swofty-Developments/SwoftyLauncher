@@ -65,6 +65,7 @@ t "Post-process pass logic unit test" native/test/run_postfx_test.sh
 t "Shader rules engine unit test" native/test/run_rules_test.sh
 t "Live car signal mapping unit test" native/test/run_live_car_test.sh
 t "Live state memory reads, derivations and telemetry fill" native/test/run_live_test.sh
+t "Live tyre image catalogues, mod routes and archive worker" native/test/run_tyre_images_test.sh
 t "ERS new-lap site unit test" native/test/run_ers_newlap_test.sh
 t "Round track record guard unit test" native/test/run_track_record_test.sh
 t "Team HQ track guard unit test" native/test/run_teamhq_track_test.sh
