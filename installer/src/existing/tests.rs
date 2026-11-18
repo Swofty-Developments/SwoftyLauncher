@@ -1,4 +1,8 @@
 use super::*;
+use std::io::ErrorKind;
+
+use crate::existing::lnk::{HAS_ID_LIST, HAS_LINK_INFO, HAS_WORKING_DIR, IS_UNICODE, lnk_roots, read_lnk};
+use crate::existing::roots::{collect, root_of};
 
 fn temp(name: &str) -> PathBuf {
     let dir = std::env::temp_dir().join(format!("swofty-installer-{name}-{}", std::process::id()));
@@ -177,6 +181,9 @@ fn ignores_files_that_are_not_shortcuts() {
 #[cfg(not(windows))]
 #[test]
 fn reads_back_the_menu_entry_it_writes() {
+    use crate::existing::roots::desktop_roots;
+    use crate::shortcut;
+
     let root = PathBuf::from("/home/a b/$HOME \"q\" `x` 100%/SwoftyLauncher");
     let exe = root.join("bin/swofty-launcher");
     let entry = shortcut::entry(&root, &exe);
