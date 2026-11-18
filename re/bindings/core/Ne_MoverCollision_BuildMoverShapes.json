@@ -95,6 +95,16 @@
    "verdict": "partial",
    "evidence": "decomp:own capstone disasm 0x1440caa60-0x1440cc1e8, 0x1440cfc90-0x1440d0113, 0x1444537a0-0x144453f98;xref:0x1440caaea,0x1440cad08,0x1440cacdc,0x1440cad95,0x1440cad9b,0x1440caee2,0x1440caefa,0x1440caf30,0x1440caf37,0x1440cb04e,0x1440cbabd,0x1440cb5c8,0x1440cbb99,0x1440cc0dc,0x144453b6b",
    "notes": "V20020 Blind: own disasm 0x1440caa60-0x1440cc1e8 + sole caller 0x144453b6b (JPAK kind 2, BIGF kind 1), derived before reading the notes. Confirmed: pool cmp 0x1440caaea (err 0xC, ret 0); fatal jle 0x1440cad08; +0x2c/+0x34 copy for >=0x20003 (0x1440cacdc); +0x28/30/38/40 relocated; ids at +0x50 widened backwards to ptrs via lib [[obj+0xe8]+0x28] (+0x20/+8/+0x10/+0x18); id 0 or err 2 -> first entry; null only for flag 0 or [lib+8] null; +0x1d0 mask from +0x38; legacy cmp 0x1440cad95/jg 0x1440cad9b with verts>0; packed word, 0.25/0.335/0.05/4.0 tests, tri decode. Imprecise: leaf layout leaves out the u16 0xFFFF pad written after the indices when the count is even (0x1440cb5c8-0x1440cb5d4), before the per-tri dwords."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_MoverCollision_BuildMoverShapes",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1440caa60-0x1440cc1e8,0x1440cfc90-0x1440d0113,0x1444537a0-0x144453f98;xref:0x144453b6b,0x1440caaea,0x1440cacdc,0x1440cad08,0x1440cc1e2,0x1440cad95,0x1440cad9b,0x1440caefa,0x1440caee2,0x1440caf30,0x1440caf70,0x1440cb017,0x1440cb0e0,0x1440cb5c8,0x1440cba94,0x1440cc0dc,0x1440cc0ed",
+   "notes": "V20022 Blind: agree, derived before reading the notes. Own disasm 0x1440caa60-0x1440cc1e8 (+base ctor 0x1440cfc90, caller 0x1444537a0). Pool [W+0x40] used +0x1c vs cap +0x18 at 0x1440caaea (jae; empty free list too) -> err 0xc, ret 0. v<=0x20001: jle 0x1440cad08 -> trap 0x1440cc1e2; +0x2c/+0x34 -> obj+0x1a0/+0x1a4 if v>=0x20003 (0x1440cacdc). u32 ids at +0x50 -> u64 ptrs, last first; lib [[obj+0xe8]+0x28]; unknown nonzero id -> err 2 + entry 0; id 0 -> entry 0 silently; null iff lib+0x20==0 or lib+8 null (0x1440caf30). Legacy only v==0x20002, verts>0: word bits, ground/wall/tall order, even-count 0xffff pad, per-tri XZ bytes, 0.25/0.335/0.05/4.0 match. Word range sits inside 0x1440cba94-0x1440cbaef. Sole caller 0x144453b6b (JPAK/BIGF)."
   }
  ],
  "proofs": []
