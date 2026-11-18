@@ -68,12 +68,12 @@ void QueueWatch::count(ID3D12CommandQueue *q)
 {
     DWORD tid = GetCurrentThreadId();
     ULONGLONG now = GetTickCount64();
-    auto same = [&](const hud::guard::ExecSeen &e) { return e.queue == q; };
+    auto same = [&](const hud::arm_policy::ExecSeen &e) { return e.queue == q; };
     {
         std::lock_guard<std::mutex> g(lock);
         auto it = std::find_if(seen.begin(), seen.end(), same);
         if (it != seen.end()) {
-            if (it->type == hud::guard::LIST_TYPE_DIRECT) {
+            if (it->type == hud::arm_policy::LIST_TYPE_DIRECT) {
                 it->tid = tid;
                 it->tick = now;
             }
@@ -88,10 +88,10 @@ void QueueWatch::count(ID3D12CommandQueue *q)
         seen.push_back({q, type, tid, now});
 }
 
-bool QueueWatch::recent_direct(DWORD tid, hud::guard::ExecSeen &out)
+bool QueueWatch::recent_direct(DWORD tid, hud::arm_policy::ExecSeen &out)
 {
     std::lock_guard<std::mutex> g(lock);
-    const hud::guard::ExecSeen *e = hud::guard::present_queue_from_execs(seen, tid);
+    const hud::arm_policy::ExecSeen *e = hud::arm_policy::present_queue_from_execs(seen, tid);
     if (e)
         out = *e;
     return e != nullptr;
@@ -104,7 +104,7 @@ bool exec_hooked()
 
 void exec_original(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists)
 {
-    if (h_exec && hud::guard::vtable_slot_is(q, EXEC_SLOT, h_exec.target()))
+    if (h_exec && hud::arm_policy::vtable_slot_is(q, EXEC_SLOT, h_exec.target()))
         h_exec.call<void>(q, n, lists);
     else
         q->ExecuteCommandLists(n, lists);
@@ -112,7 +112,7 @@ void exec_original(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *list
 
 void barrier_original(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *b)
 {
-    if (h_barrier && hud::guard::vtable_slot_is(list, BARRIER_SLOT, h_barrier.target()))
+    if (h_barrier && hud::arm_policy::vtable_slot_is(list, BARRIER_SLOT, h_barrier.target()))
         h_barrier.call<void>(list, n, b);
     else
         list->ResourceBarrier(n, b);

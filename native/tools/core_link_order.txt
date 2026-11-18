@@ -108,6 +108,8 @@ src/core/career/career.cpp
 src/core/career/career_entity.cpp
 src/core/career/career_content.cpp
 src/core/career/content_tiles.cpp
+src/core/career/content_hooks.cpp
+src/core/career/content_api.cpp
 src/core/career/career_start.cpp
 src/core/frontend/popup.cpp
 src/core/hud/race_hud.cpp
@@ -134,6 +136,9 @@ src/core/career/career_saves.cpp
 src/core/guards/cars/ers_newlap.cpp
 src/core/guards/garage/garage_crew.cpp
 src/core/garage/garage_placement.cpp
+src/core/garage/garage_crew_edits.cpp
+src/core/garage/garage_member_edits.cpp
+src/core/garage/garage_car_edits.cpp
 src/core/guards/garage/pit_box.cpp
 src/core/guards/garage/garage_slots.cpp
 src/core/guards/cars/chassis_registry.cpp

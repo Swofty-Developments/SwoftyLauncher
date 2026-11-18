@@ -15,7 +15,7 @@ use swofty_i18n::{tr, trf};
 
 use super::Settings;
 use crate::shell::Shell;
-use crate::shell::host::{Host, Hosted};
+use crate::shell::host::{Host, Hosted, reports_nothing};
 use crate::ui::format::size_coarse as size;
 
 /// The link cache Play keeps in the game folder when the data folder is on
@@ -215,9 +215,7 @@ impl Host<Settings> for Shell {
         )
     }
 
-    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
-        match change {}
-    }
+    reports_nothing!();
 }
 
 impl Settings {

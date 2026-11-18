@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace hud {
+namespace hud::drawlist {
 
 constexpr uint32_t MAX_VERTS = 1u << 17;
 constexpr size_t MAX_STACK = 64;

@@ -7,6 +7,7 @@ use gpui_kit::*;
 
 use swofty_core::install::EA_APP_SEEN;
 use swofty_core::platform::ea_app::Moved;
+use swofty_core::store::Store;
 
 use crate::shell::Shell;
 use crate::ui::discord::invite_button;
@@ -161,12 +162,12 @@ fn body(p: Palette) -> impl IntoElement {
         )
 }
 
-impl Shell {
-    /// Whether the EA app warning still needs showing before play.
-    pub(crate) fn ea_app_warn_pending(&self) -> bool {
-        !self.store.config().news_seen.contains(EA_APP_SEEN)
-    }
+/// Whether the EA app warning still needs showing before play.
+pub(crate) fn warn_due(store: &Store) -> bool {
+    !store.config().news_seen.contains(EA_APP_SEEN)
+}
 
+impl Shell {
     fn mark_ea_app_seen(&mut self) {
         let mut config = self.store.config();
         if config.news_seen.insert(EA_APP_SEEN.into()) {

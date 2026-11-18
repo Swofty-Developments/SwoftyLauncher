@@ -2,7 +2,7 @@ use super::feed::{CACHE_DIR, FEED_FILE, Fetched, Post, STALE, Trouble, embedded,
 use super::markdown::{Block, safe_url};
 use super::view::parsed_body;
 use crate::shell::Shell;
-use crate::shell::host::{Host, Hosted};
+use crate::shell::host::{Host, Hosted, reports_nothing};
 use crate::ui::scale::px;
 use gpui_kit::*;
 use std::collections::HashMap;
@@ -243,9 +243,7 @@ impl Host<News> for Shell {
         )
     }
 
-    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
-        match change {}
-    }
+    reports_nothing!();
 }
 
 impl News {

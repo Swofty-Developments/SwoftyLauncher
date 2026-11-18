@@ -10,6 +10,7 @@
 #include <string>
 
 #include "core/apply/tracks/box.hpp"
+#include "core/guards/tracks/track_select_logic.hpp"
 
 // The track select guard (work/std16/TRACKS-PLAN.md R1; re/db/subsystems/tracks.md#select, verify V1625-V1637).
 // The Grand Prix track select (HomeSoloTrackSelectViewModel::onCommandRaised 0x141c06dc0, advance_pressed
@@ -28,13 +29,13 @@ namespace {
 
 namespace guards = swofty_core::guards;
 namespace trk = swofty_core::apply::tracks;
+namespace ts = runtime::track_select;
 namespace mem = swofty::mem;
 
 constexpr const char *MIXIN = "swofty_core.dll (track select guard)";
 constexpr const char *GP = "Trk_GrandPrixTrackSelectVm_OnCommandRaised";
 constexpr const char *TT = "Trk_TimeTrialTrackSelectVm_OnCommandRaised";
 constexpr const char *SITE = "site_Trk_TrackData_SetMatched";
-constexpr uint32_t ADVANCE_PRESSED = 0xfc8f026cu, SELECT_PRESSED = 0x2b0357au, SELECTED_CHANGED = 0xdcd54bcbu;
 constexpr uintptr_t RECORD_STAT_ID = 0x01, RECORD_NAME = 0xd0;
 constexpr uint32_t LOG_FIRST = 8;
 
@@ -43,7 +44,7 @@ using Handler = void *(void *vm, uint32_t **cmd);
 Handler *gp_orig, *tt_orig;
 std::atomic<uintptr_t> last_record{0};
 std::atomic<uint64_t> counter{0}, record_seq{0}, select_seq{0};
-std::atomic<bool> wanted, live;
+std::atomic<bool> live;
 guards::LogFirst<LOG_FIRST * 4> logged;
 std::mutex confirmed_lock;
 std::string confirmed_time_trial;
@@ -65,7 +66,7 @@ bool refused(bool time_trial)
     uintptr_t rec = last_record.load(std::memory_order_relaxed);
     std::string name;
     uint8_t stat = 0xff;
-    if (!rec || record_seq.load() <= select_seq.load() || !mem::read(rec + RECORD_STAT_ID, stat)) {
+    if (!ts::looked_up(rec, record_seq.load(), select_seq.load()) || !mem::read(rec + RECORD_STAT_ID, stat)) {
         note(std::string("[tracks] guard: ") + (time_trial ? "Time Trial" : "Grand Prix") +
              " confirm with no track looked up since the last selection; allowed");
         return false;
@@ -82,10 +83,7 @@ bool refused(bool time_trial)
         note("[tracks] guard: " + name + " confirmed with no box picked; allowed");
         return false;
     }
-    const trk::Base &b = trk::base();
-    const trk::BaseTrack *track = b.ready ? b.by_code(name) : nullptr;
-    if (!track && b.ready)
-        track = b.by_stat_id(stat);
+    const trk::BaseTrack *track = ts::track_of(trk::base(), name, stat);
     trk::Decision d = trk::guard_package(a.package, track, time_trial ? trk::Mode::time_trial : trk::Mode::grand_prix,
                                          track ? std::string_view(track->name) : std::string_view(name));
     note(d.line);
@@ -100,9 +98,10 @@ void *handle(Handler *orig, void *vm, uint32_t **cmd, uint32_t confirm, bool tim
     uint32_t hash = 0;
     uintptr_t p = 0;
     if (cmd && mem::read(reinterpret_cast<uintptr_t>(cmd), p) && p && mem::read(p, hash)) {
-        if (hash == SELECTED_CHANGED)
+        ts::Command what = ts::command(hash, confirm);
+        if (what == ts::Command::selection_changed)
             select_seq.store(++counter);
-        else if (hash == confirm && live && refused(time_trial))
+        else if (what == ts::Command::confirm && live && refused(time_trial))
             return nullptr;
     }
     return orig(vm, cmd);
@@ -110,12 +109,12 @@ void *handle(Handler *orig, void *vm, uint32_t **cmd, uint32_t confirm, bool tim
 
 void *gp_entry(void *vm, uint32_t **cmd)
 {
-    return handle(gp_orig, vm, cmd, ADVANCE_PRESSED, false);
+    return handle(gp_orig, vm, cmd, ts::ADVANCE_PRESSED, false);
 }
 
 void *tt_entry(void *vm, uint32_t **cmd)
 {
-    return handle(tt_orig, vm, cmd, SELECT_PRESSED, true);
+    return handle(tt_orig, vm, cmd, ts::SELECT_PRESSED, true);
 }
 
 class TrackSelectGuard final : public guards::Guard {
@@ -135,7 +134,6 @@ private:
                 swofty::log("[tracks] track select guard off: needs %s, which this build does not resolve", id);
                 return;
             }
-        wanted = true;
         out.push_back({MIXIN,
                        {{GP, SWOFTY_MIXIN_WRAP, 100, (void *)&gp_entry, (void **)&gp_orig},
                         {TT, SWOFTY_MIXIN_WRAP, 100, (void *)&tt_entry, (void **)&tt_orig},
@@ -144,7 +142,7 @@ private:
 
     void settle() override
     {
-        if (!wanted)
+        if (!offered_set(MIXIN))
             return;
         live = runtime::core_mixins_active(MIXIN);
         swofty::log("[tracks] track select guard %s",

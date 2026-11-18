@@ -21,6 +21,6 @@ constexpr size_t mode_offset(build_proof::Build b)
     return build_proof::proven_on(RESET_STORE, b) ? car_layout::ers_mode(b) : 0;
 }
 
-static_assert(mode_offset(build_proof::Build::kb) && mode_offset(build_proof::Build::steam_1_0_145),
+static_assert(mode_offset(build_proof::Build::kb) != 0 && mode_offset(build_proof::Build::steam_1_0_145) != 0,
               "every build the guard is proven on has an ERS mode offset");
 }

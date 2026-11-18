@@ -1,15 +1,15 @@
 #include "core/guards/guard.hpp"
+#include "core/guards/memory.hpp"
+#include "core/guards/tracks/track_acclim_logic.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 
-#include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <vector>
 
 // Track Acclimatisation guards (re/db/functions.tsv Game_PracticeTrackAcclimatisation_RefreshState and
@@ -33,15 +33,13 @@
 namespace {
 
 namespace guards = swofty_core::guards;
-namespace mem = swofty::mem;
+namespace ta = runtime::track_acclim;
 
 constexpr const char *MIXIN = "swofty_core.dll (track acclimatisation guard)";
 constexpr const char *PENALTY_MIXIN = "swofty_core.dll (track acclimatisation penalty guard)";
 constexpr const char *TARGET = "Game_PracticeTrackAcclimatisation_RefreshState";
 constexpr const char *PENALTY_ENTRY = "site_Game_AcclimPenalty_Entry";
 constexpr const char *PENALTY_RETURN = "site_Game_AcclimPenalty_Return";
-constexpr size_t TARGETS_BEGIN = 0x350;
-constexpr size_t TARGETS_END = 0x358;
 constexpr int LOG_FIRST = 4;
 
 using Refresh = void(void *);
@@ -51,10 +49,8 @@ guards::LogFirst<LOG_FIRST> skipped{"skips"}, penalty_skipped{"skips"};
 
 void refresh(void *self)
 {
-    uintptr_t begin = 0, end = 0;
-    memcpy(&begin, static_cast<const uint8_t *>(self) + TARGETS_BEGIN, sizeof begin);
-    memcpy(&end, static_cast<const uint8_t *>(self) + TARGETS_END, sizeof end);
-    if (begin != end) {
+    uint64_t begin = 0;
+    if (!ta::no_targets(reinterpret_cast<uintptr_t>(self), guards::read_if_readable, nullptr, begin)) {
         orig_refresh(self);
         return;
     }
@@ -68,8 +64,8 @@ void refresh(void *self)
 
 void penalty_entry(SwoftyContext *c)
 {
-    uintptr_t begin = 0, end = 0;
-    if (!mem::read(c->rcx + TARGETS_BEGIN, begin) || !mem::read(c->rcx + TARGETS_END, end) || begin != end)
+    uint64_t begin = 0;
+    if (!ta::no_targets(c->rcx, guards::read_if_readable, nullptr, begin))
         return;
     c->rip = penalty_return;
     auto line = penalty_skipped.note();

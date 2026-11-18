@@ -107,7 +107,7 @@ class Expr:
             v = self.binary(0)
             self.take(')')
             return v
-        if kind == 'name' and val == 'bit' and self.peek() == ('op', '('):
+        if kind == 'name' and val.split('::')[-1] == 'bit' and self.peek() == ('op', '('):
             self.take('(')
             arg = self.take()
             self.take(')')
