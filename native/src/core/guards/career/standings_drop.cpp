@@ -156,7 +156,8 @@ protected:
             return false;
         }
         h_recompute = std::move(*h);
-        swofty::log("[career] dropped scores armed (hook at base+0x%llx), first rule set", (unsigned long long)recompute);
+        swofty::log("[career] dropped scores armed (hook at base+0x%llx), first rule set",
+                    (unsigned long long)(recompute - swofty::api->module_base()));
         return true;
     }
 };
