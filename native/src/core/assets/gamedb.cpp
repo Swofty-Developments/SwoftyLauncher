@@ -5,6 +5,7 @@
 #include "core/apply/room.hpp"
 #include "core/apply/scheduler.hpp"
 #include "core/apply/tracks/keys.hpp"
+#include "core/assets/db_first_read.hpp"
 #include "core/assets/dbread_logic.hpp"
 #include "core/diagnostics/perf.hpp"
 #include "core/registry/table.hpp"
@@ -680,6 +681,7 @@ void *load_hook(void *db, void *cfg)
     static const uint32_t probe = perf::probe("core", "gamedb load edits");
     swofty::log("[assets] gamedb: Gdb_Load_GameDatabase(%p) entered on thread %lu", db, GetCurrentThreadId());
     void *r = h_load.call<void *>(db, cfg);
+    runtime::db_first_read::loaded();
     perf::Scope p(probe);
     auto d = static_cast<uint8_t *>(db);
     {
@@ -694,6 +696,7 @@ void *load_hook(void *db, void *cfg)
         apply(d, "right after Gdb_Load_GameDatabase returned");
     }
     boot16(d);
+    runtime::db_first_read::edited();
     return r;
 }
 
@@ -750,6 +753,8 @@ void without_database(const char *presize, const std::string &why)
     r.reason = why;
     r.older_asked = edits.size();
     swofty_core::apply::moments::boot_without_database(r);
+    runtime::db_first_read::cannot(
+        why.empty() ? "nothing edits the game database at boot, so Gdb_Load_GameDatabase is not wrapped" : why);
 }
 
 void reserve_setup()
@@ -831,6 +836,7 @@ void setup()
     swofty::log("[assets] gamedb: Gdb_Load_GameDatabase hooked at base+0x%llx (g_Gdb_Database = %p, not built yet); edits "
                 "apply when it returns",
                 (unsigned long long)(load - base), db);
+    runtime::db_first_read::arm(look);
 }
 
 }

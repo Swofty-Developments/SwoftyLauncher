@@ -35,6 +35,15 @@
       "default": true,
       "binds": "db",
       "multiplayer": "cosmetic"
+    },
+    {
+      "id": "shorter_loading_waits",
+      "type": "toggle",
+      "label": "Shorter loading waits",
+      "description": "Skip the 3 second waits the game adds to loading screens and between sessions. Applies the next time you press Play.",
+      "default": true,
+      "binds": "native",
+      "multiplayer": "cosmetic"
     }
   ],
   "operations": {
