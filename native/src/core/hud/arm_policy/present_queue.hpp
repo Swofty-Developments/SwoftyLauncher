@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace hud::guard {
+namespace hud::arm_policy {
 
 // Whether a Present or Present1 closes the frame: not one made inside another on the same thread (DXVK's Present
 // calls its Present1), which is the same frame.

@@ -721,7 +721,7 @@ static void test_scene(const char *out_dir)
 
 static void test_guard()
 {
-    using namespace hud::guard;
+    using namespace hud::arm_policy;
     CHECK(fg_module("sl.dlss_g.dll") && fg_module("C:\\Games\\F1 25\\NVNGX_DLSSG.DLL"), "dlss frame generation modules count");
     CHECK(fg_module("amd_fidelityfx_dx12.dll") && fg_module("libxess_fg.dll"), "fsr and xess frame generation modules count");
     CHECK(!fg_module("sl.interposer.dll") && !fg_module("nvngx_dlss.dll") && !fg_module("F1_25.exe"),
@@ -958,7 +958,7 @@ const void *hooked()
 
 void exec_original(void *q, unsigned n, void *const *lists)
 {
-    if (hud::guard::vtable_slot_is(q, EXEC, hooked()))
+    if (hud::arm_policy::vtable_slot_is(q, EXEC, hooked()))
         native_exec(q, n, lists);
     else
         through_vtable(q, n, lists);
@@ -979,10 +979,10 @@ static void test_original_dispatch()
     Proxy list_proxy{list_proxy_vt, 1, &list};
     void *native_list[] = {&list}, *proxied_list[] = {&list_proxy}, *four[] = {&list, &list, &list, &list};
 
-    CHECK(hud::guard::vtable_slot_is(&game, EXEC, hooked()), "a native queue runs the hooked body");
-    CHECK(!hud::guard::vtable_slot_is(&proxy, EXEC, hooked()), "streamline's queue proxy does not");
-    CHECK(!hud::guard::vtable_slot_is(&rehooked, EXEC, hooked()), "a queue whose slot another hook moved does not");
-    CHECK(!hud::guard::vtable_slot_is(nullptr, EXEC, hooked()) && !hud::guard::vtable_slot_is(&game, EXEC, nullptr),
+    CHECK(hud::arm_policy::vtable_slot_is(&game, EXEC, hooked()), "a native queue runs the hooked body");
+    CHECK(!hud::arm_policy::vtable_slot_is(&proxy, EXEC, hooked()), "streamline's queue proxy does not");
+    CHECK(!hud::arm_policy::vtable_slot_is(&rehooked, EXEC, hooked()), "a queue whose slot another hook moved does not");
+    CHECK(!hud::arm_policy::vtable_slot_is(nullptr, EXEC, hooked()) && !hud::arm_policy::vtable_slot_is(&game, EXEC, nullptr),
           "no object or no hook is never the hooked body");
 
     misread = 0;
@@ -1061,7 +1061,7 @@ static void test_png(const char *out)
 
 static void test_device_hook_rival()
 {
-    using namespace hud::guard;
+    using namespace hud::arm_policy;
     CHECK(device_hook_rival("RTSSHooks64.dll") == "RTSSHooks64.dll" &&
               device_hook_rival("C:\\Program Files (x86)\\RivaTuner Statistics Server\\rtsshooks64.DLL") == "RTSSHooks64.dll" &&
               device_hook_rival("RTSSHooks.dll") == "RTSSHooks.dll",
@@ -1103,32 +1103,32 @@ static void test_device_hook_rival()
 
 static void test_fg_gate()
 {
-    using hud::guard::Gate;
-    CHECK(hud::guard::gate_for(false, false, true) == Gate::Direct, "no frame generation module draws at Present");
-    CHECK(hud::guard::gate_for(false, true, true) == Gate::Direct, "streamline with frame generation off draws at Present");
-    CHECK(hud::guard::gate_for(false, true, false) == Gate::FrameGenStreamline, "streamline with frame generation on is gated");
-    CHECK(hud::guard::gate_for(true, false, true) == Gate::FrameGenNamed, "a named frame generation module is gated");
-    CHECK(hud::guard::gate_for(true, true, true) == Gate::FrameGenNamed, "a named module wins over streamline");
+    using hud::arm_policy::Gate;
+    CHECK(hud::arm_policy::gate_for(false, false, true) == Gate::Direct, "no frame generation module draws at Present");
+    CHECK(hud::arm_policy::gate_for(false, true, true) == Gate::Direct, "streamline with frame generation off draws at Present");
+    CHECK(hud::arm_policy::gate_for(false, true, false) == Gate::FrameGenStreamline, "streamline with frame generation on is gated");
+    CHECK(hud::arm_policy::gate_for(true, false, true) == Gate::FrameGenNamed, "a named frame generation module is gated");
+    CHECK(hud::arm_policy::gate_for(true, true, true) == Gate::FrameGenNamed, "a named module wins over streamline");
     // FidelityFX's loader creates the swapchain for upscaling too: it gates like Streamline, not like a named module
-    CHECK(hud::guard::ffx_loader("amd_fidelityfx_dx12.dll") &&
-              hud::guard::ffx_loader("C:\\Games\\F1 25\\AMD_FidelityFX_DX12.dll") &&
-              hud::guard::ffx_loader("amd_fidelityfx_dx12.dll (calls Present)"),
+    CHECK(hud::arm_policy::ffx_loader("amd_fidelityfx_dx12.dll") &&
+              hud::arm_policy::ffx_loader("C:\\Games\\F1 25\\AMD_FidelityFX_DX12.dll") &&
+              hud::arm_policy::ffx_loader("amd_fidelityfx_dx12.dll (calls Present)"),
           "the fidelityfx loader is recognised by name, path and as a Present caller");
-    CHECK(!hud::guard::ffx_loader("amd_fidelityfx_framegeneration_dx12.dll") &&
-              !hud::guard::ffx_loader("ffx_frameinterpolation_x64.dll") && !hud::guard::ffx_loader("") &&
-              !hud::guard::ffx_loader("sl.dlss_g.dll"),
+    CHECK(!hud::arm_policy::ffx_loader("amd_fidelityfx_framegeneration_dx12.dll") &&
+              !hud::arm_policy::ffx_loader("ffx_frameinterpolation_x64.dll") && !hud::arm_policy::ffx_loader("") &&
+              !hud::arm_policy::ffx_loader("sl.dlss_g.dll"),
           "frame generation modules and other names are not the loader");
     {
         auto gate = [](const char *fg, bool streamline, bool fg_off) {
-            return hud::guard::gate_for_swapchain(fg, streamline, [=] { return fg_off; });
+            return hud::arm_policy::gate_for_swapchain(fg, streamline, [=] { return fg_off; });
         };
         CHECK(gate("", false, true) == Gate::Direct && gate("", true, false) == Gate::FrameGenStreamline &&
                   gate("libxess_fg.dll", false, true) == Gate::FrameGenNamed,
               "gate_for_swapchain keeps the plain, streamline and named cases");
         {
             bool asked = false;
-            hud::guard::gate_for_swapchain("ffx_frameinterpolation_x64.dll", false, [&] { return asked = true; });
-            hud::guard::gate_for_swapchain("", false, [&] { return asked = true; });
+            hud::arm_policy::gate_for_swapchain("ffx_frameinterpolation_x64.dll", false, [&] { return asked = true; });
+            hud::arm_policy::gate_for_swapchain("", false, [&] { return asked = true; });
             CHECK(!asked, "the settings are not read when they cannot change the gate");
         }
         CHECK(gate("amd_fidelityfx_dx12.dll", false, true) == Gate::Direct,
@@ -1140,24 +1140,24 @@ static void test_fg_gate()
         CHECK(gate("amd_fidelityfx_framegeneration_dx12.dll", false, true) == Gate::FrameGenNamed,
               "a fidelityfx frame generation provider stays a named module");
     }
-    CHECK(hud::guard::draws_at_present(Gate::Direct) && !hud::guard::draws_at_present(Gate::FrameGenNamed) &&
-              !hud::guard::draws_at_present(Gate::FrameGenStreamline),
+    CHECK(hud::arm_policy::draws_at_present(Gate::Direct) && !hud::arm_policy::draws_at_present(Gate::FrameGenNamed) &&
+              !hud::arm_policy::draws_at_present(Gate::FrameGenStreamline),
           "Present renders only for the direct gate");
-    CHECK(hud::guard::draws_before_present(Gate::FrameGenNamed, true) &&
-              hud::guard::draws_before_present(Gate::FrameGenStreamline, true),
+    CHECK(hud::arm_policy::draws_before_present(Gate::FrameGenNamed, true) &&
+              hud::arm_policy::draws_before_present(Gate::FrameGenStreamline, true),
           "gated swapchains draw before Present when the device hooks armed");
-    CHECK(!hud::guard::draws_before_present(Gate::FrameGenNamed, false) && !hud::guard::draws_before_present(Gate::Direct, true),
+    CHECK(!hud::arm_policy::draws_before_present(Gate::FrameGenNamed, false) && !hud::arm_policy::draws_before_present(Gate::Direct, true),
           "no device hooks or no gate means no exec-time draw");
     for (int g = 0; g < 3; g++) {
         auto gate = Gate(g);
-        CHECK(hud::guard::draws_at_present(gate) != hud::guard::draws_before_present(gate, true),
+        CHECK(hud::arm_policy::draws_at_present(gate) != hud::arm_policy::draws_before_present(gate, true),
               "a frame is drawn at Present or before it, never both");
     }
 }
 
 static void test_fg_barriers()
 {
-    using namespace hud::guard;
+    using namespace hud::arm_policy;
     CHECK(presents_back_buffer(STATE_RENDER_TARGET, STATE_PRESENT, 0), "render target to present/common counts");
     CHECK(presents_back_buffer(STATE_RENDER_TARGET, STATE_PRESENT, 0x2), "an end-only split barrier counts");
     CHECK(!presents_back_buffer(STATE_RENDER_TARGET, STATE_PRESENT, BARRIER_FLAG_BEGIN_ONLY), "a begin-only split does not");

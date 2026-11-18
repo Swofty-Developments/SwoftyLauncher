@@ -75,10 +75,10 @@ bool before_fg_wanted()
 {
     int forced = settings().before_fg_forced;
     std::wstring path = forced < 0 ? hud::hardware_settings::path() : std::wstring();
-    hud::guard::FgSetting game;
+    hud::arm_policy::FgSetting game;
     if (!path.empty())
         game = hud::hardware_settings::frame_gen(path);
-    bool want = hud::guard::before_fg_wanted(forced, game);
+    bool want = hud::arm_policy::before_fg_wanted(forced, game);
     if (forced >= 0)
         swofty::log("[overlay] at start SWOFTY_OVERLAY_FG / \"overlay_fg\" is %d, so the game's frame generation "
                     "setting is not read; drawing before frame generation is %s",
@@ -93,7 +93,7 @@ bool before_fg_wanted()
 
 std::string device_hook_rival()
 {
-    for (auto name : hud::guard::DEVICE_HOOK_RIVALS)
+    for (auto name : hud::arm_policy::DEVICE_HOOK_RIVALS)
         if (GetModuleHandleA(std::string(name).c_str()))
             return std::string(name);
     if (HANDLE rtss = OpenFileMappingW(FILE_MAP_READ, FALSE, L"RTSSSharedMemoryV2")) {
@@ -160,21 +160,21 @@ int HdrWatch::mode(ULONGLONG now)
     if (!path.empty() && GetFileAttributesExW(path.c_str(), GetFileExInfoStandard, &fa) &&
         CompareFileTime(&fa.ftLastWriteTime, &at)) {
         at = fa.ftLastWriteTime;
-        value = hud::guard::hdr_mode(runtime::read_file(path, 1 << 20));
+        value = hud::arm_policy::hdr_mode(runtime::read_file(path, 1 << 20));
     }
     return value;
 }
 
 UINT OutputMode::pick(IDXGISwapChain3 *sc, DXGI_FORMAT fmt, UINT color_space)
 {
-    int game = color_space == hud::guard::COLOR_SPACE_UNSET && fmt == DXGI_FORMAT_R10G10B10A2_UNORM ? hdr.mode(GetTickCount64()) : -1;
-    auto out = hud::guard::output_for(int(fmt), color_space, game);
+    int game = color_space == hud::arm_policy::COLOR_SPACE_UNSET && fmt == DXGI_FORMAT_R10G10B10A2_UNORM ? hdr.mode(GetTickCount64()) : -1;
+    auto out = hud::arm_policy::output_for(int(fmt), color_space, game);
     if (told_sc != sc || told_out != out) {
         told_sc = sc;
         told_out = out;
         static constexpr const char *names[] = {"SDR", "HDR10 (BT.2020 PQ)", "scRGB (linear)"};
         char why[96];
-        if (color_space != hud::guard::COLOR_SPACE_UNSET)
+        if (color_space != hud::arm_policy::COLOR_SPACE_UNSET)
             snprintf(why, sizeof why, "colour space %u from SetColorSpace1", color_space);
         else if (game >= 0)
             snprintf(why, sizeof why, "no SetColorSpace1 seen; the game's hdr mode is %d", game);
