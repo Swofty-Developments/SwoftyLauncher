@@ -161,6 +161,18 @@ inline std::string addon_of(std::string_view id)
     return slash == std::string_view::npos ? std::string() : std::string(id.substr(0, slash));
 }
 
+inline constexpr const char *NATIONALITIES = "entrants.nationality.nationality";
+inline constexpr const char *DEFAULT_NATIONALITY = "default";
+
+// The game resolves a driver's or team's nationality label to its entrants.nationality row while it loads the
+// entrants, and a label with no row there reads a junk record and crashes the game on the way to the main menu.
+inline std::string nationality_of(const Read &read, const std::string &label)
+{
+    if (!read("entrants.nationality._nationality_instancecount_"))
+        return label;
+    return read(std::string(NATIONALITIES) + "[_metadata_=" + label + "]._metadata_") ? label : std::string(DEFAULT_NATIONALITY);
+}
+
 inline std::string title_text(const Value &t)
 {
     if (t.is_string())
