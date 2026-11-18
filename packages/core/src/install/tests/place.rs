@@ -3,7 +3,8 @@ use std::path::Path;
 
 use super::*;
 use crate::game_folder::placed::Placed;
-use crate::install::apply::{Copied, Linker, copy_report, refuse_drop_ins};
+use crate::install::checks::refuse_drop_ins;
+use crate::install::copy::{Copied, Linker, copy_report};
 use crate::platform::disk::Volume;
 
 const GVDB: &str = "game_package/gamedatabases/gamedatabases.2025.bin";
