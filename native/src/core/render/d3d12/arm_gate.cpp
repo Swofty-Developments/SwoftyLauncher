@@ -20,7 +20,12 @@ namespace {
 
 constexpr size_t PATCH_KEPT = 32;
 
-safetyhook::InlineHook h_device, h_factory, h_factory1, h_factory2;
+// The arm gate's set: the creation exports it holds the game's calls at while the arm runs on its worker.
+struct ArmHooks : runtime::loader::HookSet<> {
+    safetyhook::InlineHook device, factory, factory1, factory2;
+};
+
+ArmHooks hooks;
 
 // A creation export the gate holds. The device export stays hooked until its first call from outside the arm,
 // which it times; the factory exports are unhooked as soon as the worker has finished.
@@ -36,10 +41,10 @@ struct Export {
 enum { DEVICE, FACTORY, FACTORY1, FACTORY2, EXPORTS };
 
 constinit Export exports[EXPORTS] = {
-    {"d3d12.dll", "D3D12CreateDevice", true, &h_device},
-    {"dxgi.dll", "CreateDXGIFactory", false, &h_factory},
-    {"dxgi.dll", "CreateDXGIFactory1", false, &h_factory1},
-    {"dxgi.dll", "CreateDXGIFactory2", false, &h_factory2},
+    {"d3d12.dll", "D3D12CreateDevice", true, &hooks.device},
+    {"dxgi.dll", "CreateDXGIFactory", false, &hooks.factory},
+    {"dxgi.dll", "CreateDXGIFactory1", false, &hooks.factory1},
+    {"dxgi.dll", "CreateDXGIFactory2", false, &hooks.factory2},
 };
 
 constinit arm_gate::Gate gate;
@@ -152,23 +157,23 @@ using Factory2Fn = HRESULT(WINAPI *)(UINT, REFIID, void **);
 HRESULT WINAPI device_hook(IUnknown *adapter, D3D_FEATURE_LEVEL level, REFIID riid, void **out)
 {
     return gated(DEVICE, __builtin_return_address(0),
-                 [&] { return h_device.original<PFN_D3D12_CREATE_DEVICE>()(adapter, level, riid, out); });
+                 [&] { return hooks.device.original<PFN_D3D12_CREATE_DEVICE>()(adapter, level, riid, out); });
 }
 
 HRESULT WINAPI factory_hook(REFIID riid, void **out)
 {
-    return gated(FACTORY, __builtin_return_address(0), [&] { return h_factory.original<FactoryFn>()(riid, out); });
+    return gated(FACTORY, __builtin_return_address(0), [&] { return hooks.factory.original<FactoryFn>()(riid, out); });
 }
 
 HRESULT WINAPI factory1_hook(REFIID riid, void **out)
 {
-    return gated(FACTORY1, __builtin_return_address(0), [&] { return h_factory1.original<FactoryFn>()(riid, out); });
+    return gated(FACTORY1, __builtin_return_address(0), [&] { return hooks.factory1.original<FactoryFn>()(riid, out); });
 }
 
 HRESULT WINAPI factory2_hook(UINT flags, REFIID riid, void **out)
 {
     return gated(FACTORY2, __builtin_return_address(0),
-                 [&] { return h_factory2.original<Factory2Fn>()(flags, riid, out); });
+                 [&] { return hooks.factory2.original<Factory2Fn>()(flags, riid, out); });
 }
 
 // Every export the process has takes its hook; D3D12CreateDevice and CreateDXGIFactory1, which the arm itself
@@ -269,8 +274,7 @@ void *creation_caller(void *ret)
 
 bool arm_on_worker(void (*block)(), bool early)
 {
-    static std::atomic<bool> asked{false};
-    if (asked.exchange(true))
+    if (!hooks.gate.offer())
         return false;
     char v[8] = {};
     DWORD n = GetEnvironmentVariableA(arm_gate::SYNC_ENV, v, sizeof v);
@@ -291,12 +295,12 @@ bool arm_on_worker(void (*block)(), bool early)
     arm_gate::Choice c = arm_gate::begin(in, gate, platform);
     if (!c.worker) {
         swofty::log("[d3d12] the D3D12 arm runs in the stage: %s", c.why.c_str());
-        return false;
+        return settle(hooks, false, c.why.c_str());
     }
     swofty::log("[d3d12] the D3D12 arm runs on a worker; the game's D3D12CreateDevice and CreateDXGIFactory calls wait "
                 "for it (%s=1 runs it in the stage)",
                 arm_gate::SYNC_ENV);
-    return true;
+    return settle(hooks, true);
 }
 
 }

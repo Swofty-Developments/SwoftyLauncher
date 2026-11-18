@@ -447,7 +447,7 @@ pub(crate) mod tests {
                 "380",
             ),
         ]);
-        Gvdb { records }
+        Gvdb::new(records)
     }
 
     fn driver(id: u32, first: &str, last: &str, code: &str) -> serde_json::Value {

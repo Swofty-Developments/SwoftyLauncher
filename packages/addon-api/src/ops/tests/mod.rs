@@ -46,7 +46,7 @@ pub(super) fn db() -> Gvdb {
             });
         }
     }
-    Gvdb { records }
+    Gvdb::new(records)
 }
 
 pub(super) fn names() -> BTreeMap<String, Vec<String>> {
@@ -99,7 +99,7 @@ pub(super) fn track_db() -> Gvdb {
             ));
         }
     }
-    Gvdb { records }
+    Gvdb::new(records)
 }
 
 pub(super) struct Catalogue {
@@ -167,7 +167,7 @@ pub(super) fn modes(ids: [&str; 2]) -> Gvdb {
     ] {
         records.push(Record::new(k, tag, v));
     }
-    Gvdb { records }
+    Gvdb::new(records)
 }
 
 pub(super) fn add_mode(extra: &str) -> DbOps {
@@ -188,7 +188,7 @@ pub(super) fn table(path: &str, row: &str, ids: &[i64]) -> Gvdb {
         records.push(Record::new(&format!("{r}._metadata_"), 4, format!("stock_{i}")));
         records.push(Record::new(&format!("{r}.stat_id"), 0, id.to_string()));
     }
-    Gvdb { records }
+    Gvdb::new(records)
 }
 
 pub(super) fn ids(db: &Gvdb, path: &str, row: &str) -> Vec<i64> {

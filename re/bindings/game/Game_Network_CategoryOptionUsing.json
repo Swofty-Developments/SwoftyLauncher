@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "void Game_Network_CategoryOptionUsing(void *self)",
   "evidence": "pat:log-channel-NETWORK;decomp:re/decomp/14315d880.c;xref:0x14581ddf0",
-  "notes": "named from its log messages (channel NETWORK): '? no 'category' option: using %s'  setupFromUnranked (vtable slot at 0x14581ddf0): reads the category option from the options store (*(0x146079258)+0x270 map, lookup 0x142b5dfd0 with key category; entries 0x10 apart at store+0x288, option object at entry+8): current index via vtable +0x10, value entries 0x50 bytes at opt[0x10] (name at +0x38); no option -> f1_generic; then locates the scenario by statId."
+  "notes": "named from its log messages (channel NETWORK): '? no 'category' option: using %s'  setupFromUnranked (vtable slot at 0x14581ddf0): reads the category option from the options store (*(0x146079258)+0x270 map, lookup 0x142b5dfd0 with key category; entries 0x10 apart at store+0x288, option object at entry+8): current index via vtable +0x10, value entries 0x50 bytes at opt[0x10] (name at +0x38); no option -> f1_generic; then locates the scenario by statId. Callers: census steam 0x315d880."
  },
  "signature": {
   "id": "game.network_category_option_using",

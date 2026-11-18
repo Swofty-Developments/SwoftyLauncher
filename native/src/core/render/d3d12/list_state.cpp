@@ -32,8 +32,13 @@ enum : size_t {
     PSO1_SLOT = 75,
 };
 
-safetyhook::InlineHook h_reset, h_clear_state, h_pso, h_heaps, h_compute_root, h_compute_table, h_compute_constant,
-    h_compute_constants, h_compute_cbv, h_compute_srv, h_compute_uav, h_pso1, h_graphics_root, h_graphics_table;
+// The list state set: every command list call whose bindings list_state reads back.
+struct ListHooks : runtime::loader::HookSet<> {
+    safetyhook::InlineHook reset, clear_state, pso, heaps, compute_root, compute_table, compute_constant, compute_constants,
+        compute_cbv, compute_srv, compute_uav, pso1, graphics_root, graphics_table;
+};
+
+ListHooks hooks;
 thread_local ID3D12GraphicsCommandList *state_list;
 thread_local ListState *state_of;
 
@@ -96,7 +101,7 @@ RootArg *arg_at(ListState *s, UINT index)
 
 HRESULT STDMETHODCALLTYPE reset_hook(ID3D12GraphicsCommandList *l, ID3D12CommandAllocator *a, ID3D12PipelineState *p)
 {
-    HRESULT hr = h_reset.call<HRESULT>(l, a, p);
+    HRESULT hr = hooks.reset.call<HRESULT>(l, a, p);
     if (SUCCEEDED(hr)) {
         forget(tracked(l), p);
         for (int i = 0, k = subscribers.resets.n.load(); i < k; i++)
@@ -107,7 +112,7 @@ HRESULT STDMETHODCALLTYPE reset_hook(ID3D12GraphicsCommandList *l, ID3D12Command
 
 void STDMETHODCALLTYPE clear_state_hook(ID3D12GraphicsCommandList *l, ID3D12PipelineState *p)
 {
-    h_clear_state.call<void>(l, p);
+    hooks.clear_state.call<void>(l, p);
     ListState *s = tracked(l);
     bool known = s->known;
     forget(s, p);
@@ -116,7 +121,7 @@ void STDMETHODCALLTYPE clear_state_hook(ID3D12GraphicsCommandList *l, ID3D12Pipe
 
 void STDMETHODCALLTYPE pso_hook(ID3D12GraphicsCommandList *l, ID3D12PipelineState *p)
 {
-    h_pso.call<void>(l, p);
+    hooks.pso.call<void>(l, p);
     ListState *s = tracked(l);
     s->pso = p;
     s->state_object = nullptr;
@@ -124,7 +129,7 @@ void STDMETHODCALLTYPE pso_hook(ID3D12GraphicsCommandList *l, ID3D12PipelineStat
 
 void STDMETHODCALLTYPE pso1_hook(ID3D12GraphicsCommandList *l, ID3D12StateObject *o)
 {
-    h_pso1.call<void>(l, o);
+    hooks.pso1.call<void>(l, o);
     ListState *s = tracked(l);
     s->state_object = o;
     s->pso = nullptr;
@@ -132,7 +137,7 @@ void STDMETHODCALLTYPE pso1_hook(ID3D12GraphicsCommandList *l, ID3D12StateObject
 
 void STDMETHODCALLTYPE heaps_hook(ID3D12GraphicsCommandList *l, UINT n, ID3D12DescriptorHeap *const *h)
 {
-    h_heaps.call<void>(l, n, h);
+    hooks.heaps.call<void>(l, n, h);
     ListState *s = tracked(l);
     s->heaps = std::min<UINT>(n, 2);
     for (UINT i = 0; i < s->heaps; i++)
@@ -141,7 +146,7 @@ void STDMETHODCALLTYPE heaps_hook(ID3D12GraphicsCommandList *l, UINT n, ID3D12De
 
 void STDMETHODCALLTYPE compute_root_hook(ID3D12GraphicsCommandList *l, ID3D12RootSignature *r)
 {
-    h_compute_root.call<void>(l, r);
+    hooks.compute_root.call<void>(l, r);
     ListState *s = tracked(l);
     if (s->compute_root != r)
         s->args = 0;
@@ -150,7 +155,7 @@ void STDMETHODCALLTYPE compute_root_hook(ID3D12GraphicsCommandList *l, ID3D12Roo
 
 void STDMETHODCALLTYPE graphics_root_hook(ID3D12GraphicsCommandList *l, ID3D12RootSignature *r)
 {
-    h_graphics_root.call<void>(l, r);
+    hooks.graphics_root.call<void>(l, r);
     ListState *s = tracked(l);
     if (s->graphics_root != r)
         s->tables = 0;
@@ -159,7 +164,7 @@ void STDMETHODCALLTYPE graphics_root_hook(ID3D12GraphicsCommandList *l, ID3D12Ro
 
 void STDMETHODCALLTYPE graphics_table_hook(ID3D12GraphicsCommandList *l, UINT i, D3D12_GPU_DESCRIPTOR_HANDLE h)
 {
-    h_graphics_table.call<void>(l, i, h);
+    hooks.graphics_table.call<void>(l, i, h);
     if (i >= 64)
         return;
     ListState *s = tracked(l);
@@ -171,7 +176,7 @@ void STDMETHODCALLTYPE graphics_table_hook(ID3D12GraphicsCommandList *l, UINT i,
 
 void STDMETHODCALLTYPE compute_table_hook(ID3D12GraphicsCommandList *l, UINT i, D3D12_GPU_DESCRIPTOR_HANDLE h)
 {
-    h_compute_table.call<void>(l, i, h);
+    hooks.compute_table.call<void>(l, i, h);
     if (RootArg *a = arg_at(tracked(l), i)) {
         a->kind = ARG_TABLE;
         a->value = h.ptr;
@@ -180,7 +185,7 @@ void STDMETHODCALLTYPE compute_table_hook(ID3D12GraphicsCommandList *l, UINT i, 
 
 void STDMETHODCALLTYPE compute_constant_hook(ID3D12GraphicsCommandList *l, UINT i, UINT v, UINT at)
 {
-    h_compute_constant.call<void>(l, i, v, at);
+    hooks.compute_constant.call<void>(l, i, v, at);
     RootArg *a = arg_at(tracked(l), i);
     if (a && at < 64) {
         if (a->kind != ARG_CONSTANTS)
@@ -193,7 +198,7 @@ void STDMETHODCALLTYPE compute_constant_hook(ID3D12GraphicsCommandList *l, UINT 
 
 void STDMETHODCALLTYPE compute_constants_hook(ID3D12GraphicsCommandList *l, UINT i, UINT n, const void *v, UINT at)
 {
-    h_compute_constants.call<void>(l, i, n, v, at);
+    hooks.compute_constants.call<void>(l, i, n, v, at);
     RootArg *a = arg_at(tracked(l), i);
     if (a && v && at + n <= 64) {
         if (a->kind != ARG_CONSTANTS)
@@ -204,10 +209,10 @@ void STDMETHODCALLTYPE compute_constants_hook(ID3D12GraphicsCommandList *l, UINT
     }
 }
 
-template <uint8_t KIND, safetyhook::InlineHook *H>
+template <uint8_t KIND, safetyhook::InlineHook ListHooks::*H>
 void STDMETHODCALLTYPE compute_view_hook(ID3D12GraphicsCommandList *l, UINT i, D3D12_GPU_VIRTUAL_ADDRESS va)
 {
-    H->call<void>(l, i, va);
+    (hooks.*H).call<void>(l, i, va);
     if (RootArg *a = arg_at(tracked(l), i)) {
         a->kind = KIND;
         a->value = va;
@@ -218,7 +223,7 @@ void STDMETHODCALLTYPE compute_view_hook(ID3D12GraphicsCommandList *l, UINT i, D
 
 bool list_state(ID3D12GraphicsCommandList *list, ListState &out)
 {
-    if (!h_reset)
+    if (!hooks.reset)
         return false;
     ListState *s = tracked(list);
     if (!s->known)
@@ -287,10 +292,8 @@ void restore_list_state(ID3D12GraphicsCommandList *l, const ListState &s)
 
 bool arm_list_state()
 {
-    static int state;
-    if (state)
-        return state > 0;
-    state = -1;
+    if (!hooks.gate.offer())
+        return hooks.live();
     ID3D12Device *dev = probe_device();
     ID3D12CommandAllocator *alloc = nullptr;
     ID3D12GraphicsCommandList *list = nullptr;
@@ -305,20 +308,23 @@ bool arm_list_state()
             safetyhook::InlineHook *h;
             void *detour;
         } want[] = {
-            {RESET_SLOT, &h_reset, reinterpret_cast<void *>(&reset_hook)},
-            {CLEAR_STATE_SLOT, &h_clear_state, reinterpret_cast<void *>(&clear_state_hook)},
-            {PSO_SLOT, &h_pso, reinterpret_cast<void *>(&pso_hook)},
-            {HEAPS_SLOT, &h_heaps, reinterpret_cast<void *>(&heaps_hook)},
-            {COMPUTE_ROOT_SLOT, &h_compute_root, reinterpret_cast<void *>(&compute_root_hook)},
-            {COMPUTE_TABLE_SLOT, &h_compute_table, reinterpret_cast<void *>(&compute_table_hook)},
-            {GRAPHICS_ROOT_SLOT, &h_graphics_root, reinterpret_cast<void *>(&graphics_root_hook)},
-            {GRAPHICS_TABLE_SLOT, &h_graphics_table, reinterpret_cast<void *>(&graphics_table_hook)},
-            {COMPUTE_CONSTANT_SLOT, &h_compute_constant, reinterpret_cast<void *>(&compute_constant_hook)},
-            {COMPUTE_CONSTANTS_SLOT, &h_compute_constants, reinterpret_cast<void *>(&compute_constants_hook)},
-            {COMPUTE_CBV_SLOT, &h_compute_cbv, reinterpret_cast<void *>(&compute_view_hook<ARG_CBV, &h_compute_cbv>)},
-            {COMPUTE_SRV_SLOT, &h_compute_srv, reinterpret_cast<void *>(&compute_view_hook<ARG_SRV, &h_compute_srv>)},
-            {COMPUTE_UAV_SLOT, &h_compute_uav, reinterpret_cast<void *>(&compute_view_hook<ARG_UAV, &h_compute_uav>)},
-            {PSO1_SLOT, &h_pso1, reinterpret_cast<void *>(&pso1_hook)},
+            {RESET_SLOT, &hooks.reset, reinterpret_cast<void *>(&reset_hook)},
+            {CLEAR_STATE_SLOT, &hooks.clear_state, reinterpret_cast<void *>(&clear_state_hook)},
+            {PSO_SLOT, &hooks.pso, reinterpret_cast<void *>(&pso_hook)},
+            {HEAPS_SLOT, &hooks.heaps, reinterpret_cast<void *>(&heaps_hook)},
+            {COMPUTE_ROOT_SLOT, &hooks.compute_root, reinterpret_cast<void *>(&compute_root_hook)},
+            {COMPUTE_TABLE_SLOT, &hooks.compute_table, reinterpret_cast<void *>(&compute_table_hook)},
+            {GRAPHICS_ROOT_SLOT, &hooks.graphics_root, reinterpret_cast<void *>(&graphics_root_hook)},
+            {GRAPHICS_TABLE_SLOT, &hooks.graphics_table, reinterpret_cast<void *>(&graphics_table_hook)},
+            {COMPUTE_CONSTANT_SLOT, &hooks.compute_constant, reinterpret_cast<void *>(&compute_constant_hook)},
+            {COMPUTE_CONSTANTS_SLOT, &hooks.compute_constants, reinterpret_cast<void *>(&compute_constants_hook)},
+            {COMPUTE_CBV_SLOT, &hooks.compute_cbv,
+             reinterpret_cast<void *>(&compute_view_hook<ARG_CBV, &ListHooks::compute_cbv>)},
+            {COMPUTE_SRV_SLOT, &hooks.compute_srv,
+             reinterpret_cast<void *>(&compute_view_hook<ARG_SRV, &ListHooks::compute_srv>)},
+            {COMPUTE_UAV_SLOT, &hooks.compute_uav,
+             reinterpret_cast<void *>(&compute_view_hook<ARG_UAV, &ListHooks::compute_uav>)},
+            {PSO1_SLOT, &hooks.pso1, reinterpret_cast<void *>(&pso1_hook)},
         };
         ok = true;
         for (auto &a : want)
@@ -344,8 +350,7 @@ bool arm_list_state()
     release(list);
     release(alloc);
     release(dev);
-    state = ok ? 1 : -1;
-    return ok;
+    return settle(hooks, ok);
 }
 
 }

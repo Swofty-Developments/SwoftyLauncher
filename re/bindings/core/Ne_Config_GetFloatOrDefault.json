@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/143a44090.c;xref:0x14014d586,0x14014d5ae",
-  "notes": "Locked config lookup: enters lock this+0x10; if store +8 is missing writes default param_4 to *param_3 and records error code 2; else looks up key param_2 (0x143905280). Callers: Game_Read_RendererGfxConfig. cv3-verify partial: value parsed as float"
+  "notes": "Locked config lookup: enters lock this+0x10; if store +8 is missing writes default param_4 to *param_3 and records error code 2; else looks up key param_2 (0x143905280). Callers: Game_Read_RendererGfxConfig. cv3-verify partial: value parsed as float Callers: census steam 0x3a44090."
  },
  "signature": {
   "id": "core.config_get_value_or_default",

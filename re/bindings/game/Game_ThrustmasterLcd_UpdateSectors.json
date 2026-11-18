@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "pat:log-channel-THRUSTMASTER_LCD_DATA;decomp:re/decomp/142fd95e0.c;xref:0x142fdc294",
-  "notes": "named from its log messages (channel THRUSTMASTER_LCD_DATA): 'Sector %d, fastest vehicle = %d, player vehicle = %d | Sector %d - current time = (%s), personal fastest = (%s), overall fastest = (%s) |  - Set Flags state (%d)'  | 1.7.2: looks up each sector entrant's record with FUN_1423dbcf0 at 0x142fdc294 and reads its team name at +0xc8 (0x142fdc596); a null record faults. Sites site_Game_ThrustmasterLcd_EntrantRecord and site_Game_ThrustmasterLcd_SectorTail carry the core guard."
+  "notes": "named from its log messages (channel THRUSTMASTER_LCD_DATA): 'Sector %d, fastest vehicle = %d, player vehicle = %d Callers: census steam 0x2fd95e0. | Sector %d - current time = (%s), personal fastest = (%s), overall fastest = (%s) |  - Set Flags state (%d)'  | 1.7.2: looks up each sector entrant's record with FUN_1423dbcf0 at 0x142fdc294 and reads its team name at +0xc8 (0x142fdc596); a null record faults. Sites site_Game_ThrustmasterLcd_EntrantRecord and site_Game_ThrustmasterLcd_SectorTail carry the core guard."
  },
  "signature": {
   "id": "game.thrustmaster_lcd_update_sectors",

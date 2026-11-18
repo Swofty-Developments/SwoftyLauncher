@@ -9,6 +9,7 @@ request changes with the base branch and decides whether the change may merge wi
   review   anything else
 """
 import json, os, re, sys
+from collections import Counter
 from collections.abc import Mapping
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -106,6 +107,9 @@ FIXES = [(re.compile(p), t) for p, t in (
      'move native/src to it in the pull request that deprecates this one'),
     (r'which core names, and the pull request leaves', 'move the code under native/src off the binding in the same '
      'pull request; python3 re/tools/binding.py drops lists what it still names'),
+    (r'the notes count callers by hand .*: cite callers: census (\S+) <rva>', 'take the counts from python3 '
+     're/tools/census.py show {0} <address>, write callers: census {0} <rva> in their place and store the row with '
+     'python3 re/tools/census.py update {0}'),
     (r'only the repository owner approves', 'nothing to fix: the bindings check passes once the repository owner '
      'approves the pull request at its head commit, after a re-run of the check'),
     (r'has no regular file there', 'commit the record as a plain file, not a symlink or a submodule'),
@@ -477,6 +481,22 @@ def is_append(old, new):
     return isinstance(new, list) and len(new) >= len(old) and new[:len(old)] == old
 
 
+def hand_count_errors(relpath, old, new):
+    """Once the KB build has a caller census, the notes a pull request adds or changes cite it for every caller count
+    they add."""
+    import census
+    build = census.active()
+    if not build:
+        return []
+    added = Counter(census.hand_counts(new.table_row()['notes']))
+    if old is not None:
+        added -= Counter(census.hand_counts(old.table_row()['notes']))
+    if not added:
+        return []
+    return [f'{relpath}: the notes count callers by hand ({"; ".join(sorted(added))}): cite callers: census {build} '
+            f'<rva> instead']
+
+
 def classify_record(relpath, old_bytes, new_bytes, author, knowledge, repo_root):
     """-> (decision, errors, notes) for one changed path. old_bytes/new_bytes are None for an absent side."""
     if not br.RECORD_PATH_RE.match(relpath):
@@ -489,6 +509,7 @@ def classify_record(relpath, old_bytes, new_bytes, author, knowledge, repo_root)
         return 'fail', [f'{relpath}: {e}'], []
     if old_bytes is None:
         errs = [f'{relpath}: {e}' for e in check_record(new, knowledge, relpath)]
+        errs += hand_count_errors(relpath, None, new)
         if errs:
             return 'fail', errs, []
         notes = []
@@ -509,6 +530,7 @@ def classify_record(relpath, old_bytes, new_bytes, author, knowledge, repo_root)
     except br.RecordError:
         return 'review', [], [f'{relpath}: the base copy does not parse']
     errs = [f'{relpath}: {e}' for e in check_record(new, knowledge.without(old), relpath)]
+    errs += hand_count_errors(relpath, old, new)
     if errs:
         return 'fail', errs, []
     same = {k: v for k, v in old.doc.items() if k not in ('verify', 'proofs')} == \

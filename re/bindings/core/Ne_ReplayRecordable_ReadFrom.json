@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "pat:log-channel-REPLAY;decomp:re/decomp/1445cd9d0.c;xref:0x1445d2fc9,0x1445d3059,0x1445d3189,0x1445d33c9",
-  "notes": "named from its log messages (channel REPLAY): 'Recordable %s' cb4-verify-b (disagree with old name): reads/generates state from the replay stream (readFrom ... Updated Game/Cached/Prev State); Recordable %s is one log"
+  "notes": "named from its log messages (channel REPLAY): 'Recordable %s' cb4-verify-b (disagree with old name): reads/generates state from the replay stream (readFrom ... Updated Game/Cached/Prev State); Recordable %s is one log Callers: census steam 0x45cd9d0."
  },
  "signature": {
   "id": "core.replay_register_recordable",

@@ -219,7 +219,7 @@ mod tests {
         );
         set(&mut records, 1, "2026", &[]);
         let before = records.len();
-        let mut db = Gvdb { records };
+        let mut db = Gvdb::new(records);
         let lines = drop_missing(&mut db);
         assert!(lines.is_empty(), "{lines:?}");
         assert_eq!(db.records.len(), before);
@@ -244,7 +244,7 @@ mod tests {
         );
         set(&mut records, 1, "2026", &[("f", "f1", "")]);
         let before = records.len();
-        let mut db = Gvdb { records };
+        let mut db = Gvdb::new(records);
         let lines = drop_missing(&mut db);
         assert_eq!(lines.len(), 3, "{lines:?}");
         assert!(
@@ -289,16 +289,14 @@ mod tests {
 
     #[test]
     fn a_database_without_the_tables_is_left_alone() {
-        let mut db = Gvdb {
-            records: vec![rec("game_setup._season_instancecount_", 0, "4")],
-        };
+        let mut db = Gvdb::new(vec![rec("game_setup._season_instancecount_", 0, "4")]);
         assert!(drop_missing(&mut db).is_empty());
         assert_eq!(db.records.len(), 1);
 
         let mut records = vec![rec(&instance_count_path(SETS, SET_ROW), 0, "1")];
         set(&mut records, 0, "2025", &[("a", "gone", "classic")]);
         let before = records.len();
-        let mut db = Gvdb { records };
+        let mut db = Gvdb::new(records);
         let lines = drop_missing(&mut db);
         assert_eq!(lines.len(), 1, "{lines:?}");
         assert!(lines[0].contains("kept unchecked"), "{lines:?}");

@@ -190,7 +190,7 @@ mod tests {
             records.push(rec(&format!("{row}.stat_id"), 0, id));
             records.push(rec(&format!("{row}.available"), 4, "False"));
         }
-        Gvdb { records }
+        Gvdb::new(records)
     }
 
     fn get(db: &Gvdb, path: &str) -> Option<String> {

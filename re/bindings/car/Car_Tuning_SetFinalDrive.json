@@ -9,7 +9,7 @@
   "subsystem": "car",
   "proto": "-",
   "evidence": "pat:log-channel-F1_TUNING;decomp:re/decomp/1446a4c20.c;xref:0x145bfb268",
-  "notes": "Log channel F1_TUNING: 'Setting final drive ratio to %f.' | car-b: this is the GearBox system Reset (vtable +0x18, flags). test dil,0x20/je at 0x1446a4c40 gates all of it, so the 0x1000 and 0x2000 paths need 0x20 too (corrected per V1233): 0x20|0x200 gear_index = 1 (N) and inv_total_ratio[11] +0x5fc = 1/(ratio x final drive) from the VTF pairs (or setup_ratios +0x628 / setup_final_drive +0x654 when +0x540); 0x20|0x1000 clears faults; 0x20|0x2000 sets setup_final_drive +0x654 from the F1Tuning slider +0x258 and rebuilds the table"
+  "notes": "Log channel F1_TUNING: 'Setting final drive ratio to %f.' Callers: census steam 0x46a4c20. | car-b: this is the GearBox system Reset (vtable +0x18, flags). test dil,0x20/je at 0x1446a4c40 gates all of it, so the 0x1000 and 0x2000 paths need 0x20 too (corrected per V1233): 0x20|0x200 gear_index = 1 (N) and inv_total_ratio[11] +0x5fc = 1/(ratio x final drive) from the VTF pairs (or setup_ratios +0x628 / setup_final_drive +0x654 when +0x540); 0x20|0x1000 clears faults; 0x20|0x2000 sets setup_final_drive +0x654 from the F1Tuning slider +0x258 and rebuilds the table"
  },
  "signature": {
   "id": "car.tuning_set_final_drive",

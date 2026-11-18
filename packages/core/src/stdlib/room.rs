@@ -221,12 +221,10 @@ mod tests {
 
     #[test]
     fn padding_adds_unique_int_records_up_to_the_target() {
-        let mut db = Gvdb {
-            records: vec![
-                Record::new("a.b", 0, "1"),
-                Record::new(&format!("{PAD_PATH}._pad_0_"), 0, "7"),
-            ],
-        };
+        let mut db = Gvdb::new(vec![
+            Record::new("a.b", 0, "1"),
+            Record::new(&format!("{PAD_PATH}._pad_0_"), 0, "7"),
+        ]);
         assert_eq!(pad(&mut db, 6), 4);
         assert_eq!(db.records.len(), 6);
         let keys: std::collections::HashSet<u64> = db.records.iter().map(|r| r.key).collect();

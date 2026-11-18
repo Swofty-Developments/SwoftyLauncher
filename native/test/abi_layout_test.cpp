@@ -75,7 +75,9 @@ static void expect(bool ok, const std::string &what)
     X(garage, 176) \
     X(pit_box, 177) \
     X(pad4, 178) \
-    X(reserved, 180)
+    X(tyre_damage, 180) \
+    X(tyre_deflation, 184) \
+    X(reserved, 200)
 
 static_assert(sizeof(SwoftyLiveCar) == 208 && alignof(SwoftyLiveCar) == 8);
 #define X(f, at) static_assert(offsetof(SwoftyLiveCar, f) == (at), #f);
@@ -93,8 +95,12 @@ int main()
     expect(all, "every field up to pad3 keeps its offset");
     expect(offsetof(SwoftyLiveCar, garage) == 176 && offsetof(SwoftyLiveCar, pit_box) == 177,
            "garage and pit_box take the first word of the old reserved[7]");
+    expect(offsetof(SwoftyLiveCar, tyre_damage) == 180 && offsetof(SwoftyLiveCar, tyre_deflation) == 184,
+           "tyre_damage and tyre_deflation take the next five words of the old reserved[7]");
     expect(offsetof(SwoftyLiveCar, reserved) + sizeof(((SwoftyLiveCar *)nullptr)->reserved) == 204,
-           "reserved[6] ends where reserved[7] ended");
+           "reserved[1] ends where reserved[7] ended");
+    expect(SWOFTY_LIVE_HAVE_TYRE_DAMAGE == (1ull << 28) && !(SWOFTY_LIVE_HAVE_TYRE_DAMAGE & SWOFTY_LIVE_HAVE_GARAGE),
+           "the tyre damage have bit is a new bit");
     expect(SWOFTY_LIVE_HAVE_GARAGE == (1ull << 27) && !(SWOFTY_LIVE_HAVE_GARAGE & (SWOFTY_LIVE_HAVE_PIT_LANE |
                                                                                   SWOFTY_LIVE_HAVE_GAP_AHEAD)),
            "the garage have bit is a new bit");
