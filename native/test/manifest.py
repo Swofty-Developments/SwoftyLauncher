@@ -93,6 +93,7 @@ UNITS = [
     Unit('heap_sizes', 'Heap size table unit test'),
     Unit('hud_leaves', 'HUD leaf table unit test'),
     Unit('hud_osd', 'HUD runtime headers test'),
+    Unit('lap_marks', 'Lap timing marks and lap host table unit test'),
     Unit('leaderboard_guard', 'Leaderboard guard unit test'),
     Unit('live_car', 'Live car signal mapping unit test'),
     Unit('load_stall', 'Load-stall watchdog trigger unit test'),

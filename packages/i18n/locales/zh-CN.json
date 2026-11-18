@@ -1333,5 +1333,11 @@
   "Too many tracks": "赛道过多",
   "Left out: the game holds {room} tracks": "已排除：游戏最多容纳 {room} 条赛道",
   "{shown} and {more} more": "{shown} 等另外 {more} 条",
-  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["游戏最多容纳 {room} 条赛道，因此 {count} 条赛道被排除在此次构建之外：{list}。关闭一些赛道插件即可游玩。"]
+  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["游戏最多容纳 {room} 条赛道，因此 {count} 条赛道被排除在此次构建之外：{list}。关闭一些赛道插件即可游玩。"],
+  "The launcher couldn't reach Swofty's server in time.": "启动器未能及时连接到 Swofty 的服务器。",
+  "Swofty's server didn't offer it to you.": "Swofty 的服务器没有向你提供它。",
+  "The download failed its safety check.": "下载的文件未通过安全检查。",
+  "Time Trial laps you drive this session won't be sealed, so they won't rank on the boards. Everything else works as usual. To try again, close the game and press Play.": "你在本次会话中跑出的计时赛圈速不会被封存，因此不会计入排行榜。其他功能照常可用。要重试，请关闭游戏并点击“开始游戏”。",
+  "Details: {why}": "详情：{why}",
+  "The Time Trial integrity module didn't load": "计时赛完整性校验模块未能加载"
 }

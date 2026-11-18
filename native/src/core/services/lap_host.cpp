@@ -12,17 +12,21 @@
 #include "core/live/live_car.hpp"
 #include "core/frontend/view_state.hpp"
 #include "core/services/lap_host.hpp"
+#include "core/services/lap_marks_logic.hpp"
 
 #include <swofty/mixin.hpp>
 #include <swofty/systems/laps.hpp>
 
 #include <atomic>
+#include <condition_variable>
 #include <deque>
 #include <mutex>
+#include <thread>
 
 // The lap host (swofty_api.h SwoftyLapHost, the core export SwoftyCoreLapHost): what a lap module needs from the
 // core beyond the SDK, and the module's callbacks the core calls where it has the moment (flow tick, session
-// enter and end, a new lap, hook set offer and settle).
+// enter and end, a new lap, hook set offer and settle). The module's timing marks (version 2) are stamped on the
+// caller's thread and written for the launcher by a writer thread of their own (lap_marks_logic.hpp).
 namespace runtime {
 
 void player_name_probe_tick();
@@ -396,12 +400,76 @@ void name_tick(int probe)
         player_name_pin_tick();
 }
 
+std::mutex marks_lock;
+std::condition_variable marks_wake;
+lap_marks::Queue marks;
+std::once_flag marks_writer;
+
+int64_t unix_ms()
+{
+    FILETIME ft;
+    GetSystemTimePreciseAsFileTime(&ft);
+    uint64_t t = (uint64_t(ft.dwHighDateTime) << 32) | ft.dwLowDateTime;
+    return int64_t(t / 10000ull) - 11644473600000ll;
+}
+
+bool write_mark(const lap_marks::Mark &m)
+{
+    std::string body = lap_marks::json(m);
+    std::wstring name = wide(lap_marks::file_name(m));
+    for (const std::wstring &root : {files_root(), swofty_root()}) {
+        if (root.empty())
+            continue;
+        CreateDirectoryW((root + L"tt").c_str(), nullptr);
+        CreateDirectoryW((root + L"tt\\ticks").c_str(), nullptr);
+        if (write_file(root + L"tt\\ticks\\" + name, body))
+            return true;
+    }
+    return false;
+}
+
+void marks_loop()
+{
+    bool warned = false;
+    uint64_t dropped = 0;
+    for (;;) {
+        lap_marks::Mark m;
+        uint64_t lost = 0;
+        {
+            std::unique_lock<std::mutex> g(marks_lock);
+            marks_wake.wait(g, [] { return !marks.marks.empty(); });
+            m = marks.marks.front();
+            marks.marks.pop_front();
+            lost = marks.dropped - dropped;
+            dropped = marks.dropped;
+        }
+        if (lost)
+            swofty::log("[lap-host] %llu timing mark(s) dropped: the writer fell behind", (unsigned long long)lost);
+        if (!write_mark(m) && !std::exchange(warned, true))
+            swofty::log("[lap-host] a timing mark could not be written for the launcher (error %lu); this session's laps are untimed",
+                        GetLastError());
+    }
+}
+
+int mark(int32_t lap, int32_t which, int32_t game_ms)
+{
+    int64_t at = unix_ms();
+    {
+        std::lock_guard<std::mutex> g(marks_lock);
+        if (!marks.push(lap, which, game_ms, at))
+            return 0;
+    }
+    std::call_once(marks_writer, [] { std::thread(marks_loop).detach(); });
+    marks_wake.notify_one();
+    return 1;
+}
+
 const SwoftyLapHost table = {sizeof(SwoftyLapHost), SWOFTY_LAP_HOST_VERSION, attach, add_hooks, hooks_active, host_when_code_ready, host_code_ready,
                              build, build_sha, feature, host_swofty_root, host_files_root, host_session_kind, mode_kind, session_mode,
                              session_content, content_title, player_label, view_flags, game_manager, host_flow_link_listen, time_trial_track,
                              time_trial_list, time_trial_team, time_trial_team_of, time_trial_track_stat, time_trial_setup,
                              time_trial_setup_reset, press_list, session_unlisted, track, content_ids, car, motion, car_state, player_car,
-                             sealing, recorded, copy, notice, name_tick};
+                             sealing, recorded, copy, notice, name_tick, mark};
 
 const SwoftyLapClient *live()
 {
