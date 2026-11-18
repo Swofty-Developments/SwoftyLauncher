@@ -199,7 +199,18 @@ inline constexpr BuildProof STEAM_26566308_BUILD = {
     runtime::car_layout::ers_mode(runtime::build_proof::Build::steam_1_0_145),
     bit(G_DRIVER_NAMES)};
 
-inline constexpr const BuildProof *PROVEN_BUILDS[] = {&KB_BUILD, &EA_BUILD, &STEAM_26566308_BUILD};
+// EA App 1.0.145: the Live State fields compare equal with the KB build's (re/tools/layoutcmp.py) except the game
+// manager's tail, 0x30 lower as on the EA App KB build (progress +0x2a0), and the ERS mode, moved as on Steam 1.0.145.
+// The driver name getter is the KB's instruction for instruction (re/research/ea-1-0-145.md).
+inline constexpr BuildProof EA_1_0_145_BUILD = {
+    runtime::build_proof::known(runtime::build_proof::Build::ea_1_0_145)->pe_timestamp,
+    "EA 1.0.145",
+    ALL_GROUPS,
+    runtime::game_manager::tail_field(layout::progress::from_manager, "ea"),
+    runtime::car_layout::ers_mode(runtime::build_proof::Build::ea_1_0_145),
+    bit(G_DRIVER_NAMES)};
+
+inline constexpr const BuildProof *PROVEN_BUILDS[] = {&KB_BUILD, &EA_BUILD, &STEAM_26566308_BUILD, &EA_1_0_145_BUILD};
 
 static_assert(runtime::car_layout::ers_mode(runtime::build_proof::Build::kb) == layout::ers::mode,
               "the KB build reads the ERS mode at the std layout's offset");

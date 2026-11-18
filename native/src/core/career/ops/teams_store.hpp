@@ -10,7 +10,7 @@
 // The career.season records of one data group as the planner's input (docs/std/systems/career.md): the
 // effective records for the data group's context, the teams list read slot by slot, a team identity as its id.
 
-namespace career_ops::teams {
+namespace career::ops::teams {
 
 inline SlotIn slot_of(const swofty::json::Value &t)
 {
@@ -50,4 +50,4 @@ inline std::vector<SeasonIn> seasons_of(swofty_core::registry::Store &store, con
     return out;
 }
 
-} // namespace career_ops::teams
+} // namespace career::ops::teams

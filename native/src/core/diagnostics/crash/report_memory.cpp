@@ -222,7 +222,7 @@ void section_heap(const Request &r)
                     reinterpret_cast<void *>(h.heap), h.name, (unsigned long long)h.capacity, (unsigned long long)h.used,
                     (unsigned long long)h.free_bytes, (unsigned long long)h.largest);
         if (h.pool)
-            report_writer.out.put("  %s\n", runtime::save_heap::pool_line(h.pool_info, runtime::save_heap::parse_request(h.msg)).c_str() + 8);
+            report_writer.out.put("  %s\n", career::save_heap::pool_line(h.pool_info, career::save_heap::parse_request(h.msg)).c_str() + 8);
     }
     for (int i = 0; i < sections.nheaps; i++) {
         const neheap::Heap &h = sections.heaps[i];

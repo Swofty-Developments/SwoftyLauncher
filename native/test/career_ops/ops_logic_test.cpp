@@ -11,7 +11,7 @@
 #include "core/career/ops/number_plan.hpp"
 #include "core/career/ops/seat_plan.hpp"
 
-using namespace career_ops;
+using namespace career::ops;
 
 static int failures = 0;
 #define CHECK(c)                                                                                                       \

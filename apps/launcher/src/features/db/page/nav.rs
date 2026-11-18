@@ -120,7 +120,7 @@ impl Shell {
                 "db-nav-changes".into(),
                 IconName::ListChecks,
                 tr("Changes").into(),
-                Some(self.db.draft.edits.len().to_string()),
+                Some(self.db.book.draft.edits.len().to_string()),
                 Nav::Changes,
                 cx,
             ),

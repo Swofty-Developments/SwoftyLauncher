@@ -16,7 +16,7 @@ impl Shell {
         if !self.db_ready_to_edit(cx) {
             return false;
         }
-        let result = guarded(|| self.db.draft.edits.set(&catalog, key, value));
+        let result = guarded(|| self.db.book.draft.edits.set(&catalog, key, value));
         match result {
             Ok(()) => {
                 self.db.errors.remove(&key);
@@ -50,7 +50,7 @@ impl Shell {
         if !self.db_ready_to_edit(cx) {
             return;
         }
-        let edits = &mut self.db.draft.edits;
+        let edits = &mut self.db.book.draft.edits;
         match guarded(|| edits.copy_row(&catalog, &table, &field, from.as_deref(), &to)) {
             Ok(()) => Db::changed(self, None, true, cx),
             Err(e) => {
@@ -72,7 +72,7 @@ impl Shell {
         if !self.db_ready_to_edit(cx) {
             return;
         }
-        if guarded(|| Ok(self.db.draft.edits.remove_row(table, field, to))).unwrap_or(false) {
+        if guarded(|| Ok(self.db.book.draft.edits.remove_row(table, field, to))).unwrap_or(false) {
             self.db.errors.clear();
             self.db.slots = Slots::default();
             Db::changed(self, None, true, cx);
@@ -185,7 +185,7 @@ impl Shell {
             .get(field)
             .map(|f| f.label.clone())
             .unwrap_or_default();
-        let edits = &mut self.db.draft.edits;
+        let edits = &mut self.db.book.draft.edits;
         match guarded(|| module.set_all(&catalog, edits, &view, &rows, field, value)) {
             Ok(0) => {
                 self.db.toasts.push(Notification::info(trf!(
@@ -217,14 +217,14 @@ impl Shell {
         if !self.db_ready_to_edit(cx) {
             return;
         }
-        if guarded(|| Ok(self.db.draft.edits.revert(key))).unwrap_or(false) {
+        if guarded(|| Ok(self.db.book.draft.edits.revert(key))).unwrap_or(false) {
             Db::changed(self, Some(key), true, cx);
         }
         cx.notify();
     }
 
     pub(crate) fn db_revert_all(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let n = self.db.draft.edits.len();
+        let n = self.db.book.draft.edits.len();
         if n == 0 {
             return;
         }
@@ -245,7 +245,7 @@ impl Shell {
                             if !s.db_ready_to_edit(cx) {
                                 return;
                             }
-                            s.db.draft.edits.clear();
+                            s.db.book.draft.edits.clear();
                             s.db.errors.clear();
                             s.db.slots = Slots::default();
                             Db::changed(s, None, true, cx);

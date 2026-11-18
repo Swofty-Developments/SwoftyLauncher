@@ -1,4 +1,4 @@
-use super::data::{shown_path, validate_report};
+use super::schemas::{shown_path, validate_report};
 use super::*;
 
 fn scratch(name: &str) -> PathBuf {
@@ -71,7 +71,7 @@ fn data_files_name_paths_that_must_be_in_the_addon() {
     std::fs::write(
         dir.join("registry/sounds.json"),
         r#"{"engine_sound":{"v12":{"bundle":"sounds/v12.bdl"},"v8":{"bundle":"sounds/v8.bdl"},
-            "stock":{"bundle":{"stock":"audio/x.bdl"}}}}"#,
+                "stock":{"bundle":{"stock":"audio/x.bdl"}}}}"#,
     )
     .unwrap();
     let mut r = Report::default();
@@ -101,16 +101,16 @@ fn registry_json_fields_and_references() {
     std::fs::write(
         dir.join(REGISTRY_FILE),
         r#"{
-          "requires": [ { "record": "vehicle:swofty.classic-seasons-2017/ferrari" },
-                        { "registry": "career.season", "version": "^1" },
-                        { "record": "vehicle:game/ferrari_2025" },
-                        { "id": "swofty.classic-seasons-2017", "version": ">=0.6.0" },
-                        { "record": "no-colon" },
-                        { "registry": "career.season", "version": "not a range" } ],
-          "recommends": [ { "record": "track:venue/sochi" } ],
-          "breaks": [ { "addon": "mod.old", "version": "<1" }, { "version": "1" } ],
-          "colour": "red"
-        }"#,
+              "requires": [ { "record": "vehicle:swofty.classic-seasons-2017/ferrari" },
+                            { "registry": "career.season", "version": "^1" },
+                            { "record": "vehicle:game/ferrari_2025" },
+                            { "id": "swofty.classic-seasons-2017", "version": ">=0.6.0" },
+                            { "record": "no-colon" },
+                            { "registry": "career.season", "version": "not a range" } ],
+              "recommends": [ { "record": "track:venue/sochi" } ],
+              "breaks": [ { "addon": "mod.old", "version": "<1" }, { "version": "1" } ],
+              "colour": "red"
+            }"#,
     )
     .unwrap();
     let r = check(&store, &None, &dir).unwrap();
@@ -171,9 +171,9 @@ fn lock_needs_and_data_files() {
     std::fs::write(
         dir.join(LOCK_FILE),
         r#"{"generated_by":"x","provides":{"engine_sound":["mod.esp/v10"]},
-            "needs":[{"record":"engine_sound:mod.esp/v10","policy":"required"},
-                     {"record":"livery:mod.l/red","policy":"optional"},
-                     {"record":"livery:mod.l/blue","or":["engine_sound:mod.esp/v10"],"policy":"required"}]}"#,
+                "needs":[{"record":"engine_sound:mod.esp/v10","policy":"required"},
+                         {"record":"livery:mod.l/red","policy":"optional"},
+                         {"record":"livery:mod.l/blue","or":["engine_sound:mod.esp/v10"],"policy":"required"}]}"#,
     )
     .unwrap();
     std::fs::create_dir_all(dir.join("registry")).unwrap();

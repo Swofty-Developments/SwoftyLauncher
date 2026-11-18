@@ -8,7 +8,10 @@ needing a destructor, and one whose class has a virtual destructor it defaulted 
 dynamically initialized when clang says so or when its unit's constructor initializes it; a declaration is matched
 to the object by its name, by the body of the macro it is spelled in, or by the line a macro-made name ends in, and
 read from the unit's source when clang reported nothing. An object only destroyed at exit was constant-initialized,
-reads nothing at load and is listed in the output only.
+reads nothing at load and is listed in the output only. Those reads take the source as it is now, so when a unit's
+source no longer has the hash its report recorded as the compile started, or a header its report names is newer than
+the report, the check says that file changed during the build, removes the unit's report so the next build compiles
+the unit again, and fails without checking anything else.
 
 A dynamic initializer runs in a fixed order with every other unit's, so each one must either be spelled in a
 registration macro of the SDK or of include/swofty (it appends to a list in the SDK headers that is zero-initialized
@@ -41,6 +44,7 @@ import argparse
 import collections
 import difflib
 import glob
+import hashlib
 import os
 import re
 import sys
@@ -177,6 +181,29 @@ def report_entries(report):
     return entries
 
 
+def compiled_hash(report):
+    with open(report) as f:
+        first = f.readline().split()
+    return first[2] if first[:2] == ['#', 'sha256'] and len(first) == 3 else None
+
+
+def source_hash(path):
+    full = os.path.join(NATIVE, path)
+    if not os.path.isfile(full):
+        return ''
+    with open(full, 'rb') as f:
+        return hashlib.sha256(f.read()).hexdigest()
+
+
+def changed_during_build(unit):
+    changed = [unit.name] if unit.compiled is not None and source_hash(unit.name) != unit.compiled else []
+    for path in dict.fromkeys(e.path for e in unit.entries):
+        full = os.path.join(NATIVE, path)
+        if path != unit.name and os.path.isfile(full) and os.path.getmtime(full) > unit.built:
+            changed.append(path)
+    return changed
+
+
 def locate(symbol, unit, entries, bodies, taken):
     name = coff_ctors.leaf(symbol)
     word = re.compile(rf'(?<!\w){re.escape(name)}(?!\w)')
@@ -199,6 +226,9 @@ class Unit:
         if not name.endswith('.o.init'):
             sys.exit(f'init_check.py: {report} is not a core report under {obj_root}')
         self.name = name[:-len('.o.init')] + '.cpp'
+        self.report = report
+        self.built = os.path.getmtime(report)
+        self.compiled = compiled_hash(report)
         self.entries = report_entries(report)
         self.ctors = coff_ctors.ctors(report[:-len('.init')])
         taken = set()
@@ -387,6 +417,16 @@ def main():
 
     macros, bodies = sdk_macros(), macro_bodies()
     units = [Unit(report, a.obj_root, bodies) for report in a.reports]
+    changed = {u.report: changed_during_build(u) for u in units}
+    if any(changed.values()):
+        for report, paths in changed.items():
+            if paths:
+                os.remove(report)
+        for path in dict.fromkeys(p for paths in changed.values() for p in paths):
+            print(f'init_check.py: {path} changed during the build; rebuild', file=sys.stderr)
+        if os.path.exists(a.out):
+            os.remove(a.out)
+        sys.exit(1)
     found = collections.OrderedDict()
     for u in units:
         for e in u.entries:

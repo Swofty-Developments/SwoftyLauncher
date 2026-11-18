@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-namespace d3d12hooks {
+namespace render::d3d12 {
 
 // The game's swapchains the core knows: recorded at creation, or learned at their first Present when they
 // were made before the creation hooks.

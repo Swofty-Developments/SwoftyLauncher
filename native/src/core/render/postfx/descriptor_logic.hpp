@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <type_traits>
 
-namespace postfx {
+namespace render::postfx {
 
 // A view a slot wrote into one entry of its descriptor tables: the resource and its format.
 template <class R, class F> struct Written {

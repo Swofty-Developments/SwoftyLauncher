@@ -1,6 +1,6 @@
 #pragma once
 
-namespace d3d12hooks {
+namespace render::d3d12 {
 
 // The device the vtable probes share. While a scope is open, the first probe makes the device and the holder keeps a
 // reference of its own until the last scope closes, so every probe in between gets the same device; without an open

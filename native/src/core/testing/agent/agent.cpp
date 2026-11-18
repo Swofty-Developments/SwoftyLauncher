@@ -38,16 +38,18 @@ namespace {
 
 namespace ta = testagent;
 
-// Each offset is read by the same instruction on the KB build and on Steam 1.0.145: in a function whose body is
-// the same on both (re/tools/sigport.py --witness, at the KB RVA), or where it says so, at its readers aligned by
-// re/tools/layoutcmp.py. The car fields' proofs are runtime::car_layout's. Tiles: fe_career's list +0x2c8 (slot 12
-// 0x1b2d230), the home list +0x358 and router +0x28 (0x1bb17f0), TileList +0x78, +0x80, Tile +0xd0 and item +0x10
-// (the populate loop 0x173df80, get_action 0x1725620). Resume screens: cards +0x328 and 0x540 each, busy +0x1380 (0x1a1eb80, 0x1a0a210) and the
-// handler's node +0x12f0 (0x1a0b280). Team HQ: +0x620 and +0x6e0 (onCommandRaised 0x22c3540), +0x758 and +0x759
-// (0x22c6860), the clock [+0x6e0]+0x2b0 (0x22c9e40). The game manager's system map +0x30 (0x336830, 0x361670) and
-// its entries +0x18, +0x20 (the find 0x30ffd0).
+// Each offset is read by the same instruction on the KB build and on both 1.0.145 builds (EA 1.0.145:
+// re/research/ea-1-0-145.md): in a function whose body is the same on each (re/tools/sigport.py --witness, at the KB
+// RVA), or where it says so, at its readers aligned by re/tools/layoutcmp.py. The car fields' proofs are
+// runtime::car_layout's. Tiles: fe_career's list +0x2c8 (slot 12 0x1b2d230), the home list +0x358 and router +0x28
+// (0x1bb17f0), TileList +0x78, +0x80, Tile +0xd0 and item +0x10 (the populate loop 0x173df80, get_action 0x1725620).
+// Resume screens: cards +0x328 and 0x540 each, busy +0x1380 (0x1a1eb80, 0x1a0a210) and the handler's node +0x12f0
+// (0x1a0b280). Team HQ: +0x620 and +0x6e0 (onCommandRaised 0x22c3540), +0x758 and +0x759 (0x22c6860), the clock
+// [+0x6e0]+0x2b0 (0x22c9e40). The game manager's system map +0x30 (0x336830, 0x361670) and its entries +0x18, +0x20
+// (the find 0x30ffd0).
 namespace bp = runtime::build_proof;
-constexpr uint32_t KB_AND_1_0_145 = bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145);
+constexpr uint32_t KB_AND_1_0_145 =
+    bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145) | bp::bit(bp::Build::ea_1_0_145);
 constexpr bp::Gate CAR_READS{"the test agent's car fields", &runtime::car_layout::TELEMETRY};
 constexpr bp::Proof TILE_LAYOUT{"the tile screens' lists (+0x2c8, home +0x358, router +0x28; TileList +0x78, +0x80; "
                                 "Tile +0xd0; item +0x10)",

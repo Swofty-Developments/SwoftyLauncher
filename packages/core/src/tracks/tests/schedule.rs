@@ -238,3 +238,45 @@ fn an_option_adding_rounds_at_a_track_the_build_lacks_is_named_and_present_or_fi
          turn the option off"
     );
 }
+
+#[test]
+fn a_large_database_s_schedule_is_read_in_one_pass_over_its_records() {
+    let (weekends, events) = (400, 3000);
+    let mut records: Vec<Record> = (0..200_000)
+        .map(|i| rec(&format!("filler.row_{i}.value"), "x"))
+        .collect();
+    records.extend([
+        rec("tracks._Track_instancecount_", "2"),
+        rec(&format!("{TRACKS}_0._metadata_"), "melbourne"),
+        rec(&format!("{TRACKS}_1._metadata_"), " spa_francorchamps "),
+        rec(&format!("{TRACKS}_1._metadata_"), "monza"),
+        rec(
+            "schedule.activities._activity_race_weekend_instancecount_",
+            &weekends.to_string(),
+        ),
+        rec(
+            "schedule.all_track_events._fixed_event_instancecount_",
+            &events.to_string(),
+        ),
+    ]);
+    for i in 0..weekends {
+        records.push(rec(&format!("{ACTIVITIES}_{i}._metadata_"), &format!("rw_{i}")));
+        records.push(rec(&format!("{ACTIVITIES}_{i}.track"), "melbourne"));
+    }
+    for i in 0..events {
+        records.push(rec(&format!("{EVENTS}_{i}._metadata_"), &format!("ev_{i}")));
+        records.push(rec(
+            &format!("{EVENTS}_{i}.activity"),
+            &format!("rw_{}", i % weekends),
+        ));
+    }
+    let db = Gvdb { records };
+    let started = std::time::Instant::now();
+    let schedule = Schedule::of(&db);
+    let took = started.elapsed();
+    assert_eq!(
+        schedule.tracks,
+        HashSet::from(["melbourne".to_owned(), "spa_francorchamps".to_owned()])
+    );
+    assert!(took < std::time::Duration::from_secs(1), "{took:?}");
+}

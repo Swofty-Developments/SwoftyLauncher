@@ -187,7 +187,7 @@ impl Shell {
         let reopen = (st.problem.is_some()
             && state.launch.is_some()
             && running
-            && m.closing.is_none()
+            && m.game.closing.is_none()
             && !over
             && !m.leaving)
             .then(|| {
@@ -196,7 +196,7 @@ impl Shell {
                     .tap_sm()
                     .label(tr("Restart F1 25"))
                     .on_click(cx.listener(|this, _, window, cx| {
-                        this.room_close_game(window, cx);
+                        super::Multiplayer::close_game(this, window, cx);
                         cx.notify();
                     }))
             });

@@ -16,6 +16,16 @@ pub(crate) trait Host<T: Hosted>: Sized + 'static {
     fn changed(&mut self, change: T::Change, cx: &mut Context<Self>);
 }
 
+/// A hosted state whose work stops on prompts in the window: a dialog to answer, a notice to read.
+pub(crate) trait Prompted: Hosted {
+    type Prompt;
+}
+
+/// A [`Host`] that also opens a state's prompts in the window.
+pub(crate) trait PromptHost<T: Prompted>: Host<T> {
+    fn prompt(&mut self, prompt: T::Prompt, window: &mut Window, cx: &mut Context<Self>);
+}
+
 /// The `changed` of a state that reports nothing back, whose `Change` is `Infallible`.
 macro_rules! reports_nothing {
     () => {
