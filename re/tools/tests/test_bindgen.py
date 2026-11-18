@@ -465,7 +465,7 @@ class RenamedBindings(unittest.TestCase):
         o = overlay('b' * 64, 2, hints={'Sess_New': {'match': '0x2000'}}, unresolvable={'Sess_New': 'gone'})
         doc = bindgen.build_set(o, [binding('Sess_New'), alias], False)
         a, n = doc['bindings'][1], doc['bindings'][0]
-        self.assertNotIn('alias', a)
+        self.assertEqual(a['alias'], 'Sess_New')
         self.assertEqual((a['match'], a['status'], a['reason']), (n['match'], 'unresolvable', 'gone'))
         self.assertEqual(bindgen.unknown_ids(o, [binding('Sess_New'), alias]), [])
 
@@ -623,7 +623,7 @@ class RepoData(unittest.TestCase):
             hinted = ov.get('hints', {})
             for e in doc['bindings']:
                 self.assertNotIn('rva', e)
-                self.assertEqual('match' in e, 'match' in hinted.get(e['id'], {}), e['id'])
+                self.assertEqual('match' in e, 'match' in hinted.get(e.get('alias', e['id']), {}), e['id'])
 
     def test_f2_revamp_bindings(self):
         by_id = {b['id']: b for b in self.bindings}
