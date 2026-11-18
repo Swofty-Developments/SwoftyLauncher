@@ -221,7 +221,7 @@ impl Shell {
                 .label(tr("Install"))
                 .on_click(cx.listener(move |this, _, _, cx| {
                     cx.stop_propagation();
-                    this.install_from_catalog(&target, cx);
+                    Browser::install(this, &target, cx);
                 }))
                 .into_any_element(),
             Offer::Failed => Button::new(key)

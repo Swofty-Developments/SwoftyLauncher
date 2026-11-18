@@ -11,7 +11,7 @@ use swofty_core::updates::release::current_version;
 use swofty_i18n::{tr, trf};
 
 use super::*;
-use crate::services::library::Source;
+use crate::services::library::{Library, Source};
 use crate::shell::{Page, Shell};
 
 impl Shell {
@@ -38,27 +38,6 @@ impl Shell {
         )
     }
 
-    /// What installing the version of `a` this launcher would get also
-    /// installs, from the requirements the registry lists; none when it doesn't
-    /// list them all.
-    pub(super) fn requirements(&self, a: &Addon) -> Option<swofty_core::Result<Plan>> {
-        let launcher = current_version();
-        let v = a.offered(&launcher)?;
-        // An unknown root requirement list can never produce a complete preview.
-        v.requires.as_ref()?;
-        let builtin: BTreeSet<&str> = self
-            .library
-            .addons
-            .iter()
-            .filter(|x| x.source == Source::Builtin)
-            .map(|x| x.manifest.id.as_str())
-            .collect();
-        let have = Have::new(self.library.addons.iter().map(|x| &x.manifest), |id| {
-            builtin.contains(id)
-        });
-        requires::preview(a, v, &self.browser.addons, &have, &launcher)
-    }
-
     /// The other addons installing `a` brings, as `Name 1.2.0`, and why it
     /// can't be installed when the registry's requirements already say.
     pub(super) fn needs_of(&self, a: &Addon) -> (Vec<String>, Option<String>) {
@@ -71,7 +50,7 @@ impl Shell {
         if let Some(cached) = self.browser.needs_cache.borrow().get(&a.id) {
             return cached.clone();
         }
-        let needs = match self.requirements(a) {
+        let needs = match self.browser.requirements(&self.library, a) {
             Some(Ok(plan)) => (plan.also().iter().map(|s| s.label()).collect(), None),
             Some(Err(e)) => (Vec::new(), Some(e.to_string())),
             None => (Vec::new(), None),
@@ -180,7 +159,7 @@ impl Shell {
         };
         button.on_click(cx.listener(move |this, _, _, cx| {
             cx.stop_propagation();
-            this.install_from_catalog(&target, cx);
+            Browser::install(this, &target, cx);
         }))
     }
 }
@@ -198,5 +177,27 @@ pub(super) fn standing(
         (Some(_), None) if blocked() => Offer::Blocked,
         (Some(_), None) => Offer::Install,
         (None, None) => Offer::TooOld,
+    }
+}
+
+impl Browser {
+    /// What installing the version of `a` this launcher would get also
+    /// installs, from the requirements the registry lists; none when it doesn't
+    /// list them all.
+    pub(super) fn requirements(&self, library: &Library, a: &Addon) -> Option<swofty_core::Result<Plan>> {
+        let launcher = current_version();
+        let v = a.offered(&launcher)?;
+        // An unknown root requirement list can never produce a complete preview.
+        v.requires.as_ref()?;
+        let builtin: BTreeSet<&str> = library
+            .addons
+            .iter()
+            .filter(|x| x.source == Source::Builtin)
+            .map(|x| x.manifest.id.as_str())
+            .collect();
+        let have = Have::new(library.addons.iter().map(|x| &x.manifest), |id| {
+            builtin.contains(id)
+        });
+        requires::preview(a, v, &self.addons, &have, &launcher)
     }
 }

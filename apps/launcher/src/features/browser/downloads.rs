@@ -205,9 +205,9 @@ impl Shell {
                                 batch.left.remove(&id);
                             }
                             if this.browser.batch.as_ref().is_some_and(|b| b.left.is_empty()) {
-                                this.finish_addon_updates();
+                                this.browser.finish_updates(&this.store.root);
                             }
-                            this.start_queued_downloads(cx);
+                            Browser::start_queued(this, cx);
                         }
                     })),
             ),
@@ -235,11 +235,11 @@ impl Shell {
                         .on_click(cx.listener(move |this, _, _, cx| match action {
                             RetryAction::Retry => {
                                 if this.browser.queue.retry_at(index, &id) {
-                                    this.start_queued_downloads(cx);
+                                    Browser::start_queued(this, cx);
                                 }
                             }
                             RetryAction::RequestCurrent => {
-                                this.enqueue_catalog(&id, cx);
+                                Browser::enqueue(this, &id, cx);
                             }
                             RetryAction::Unavailable => {}
                         })),
@@ -256,14 +256,14 @@ impl Shell {
         if let Some(index) = index {
             let action = retry_action(self.browser.find(id), &self.browser.queue.jobs()[index].request.1);
             if action == RetryAction::RequestCurrent {
-                self.enqueue_catalog(id, cx);
+                Browser::enqueue(self, id, cx);
             } else if action == RetryAction::Retry && self.browser.queue.retry_at(index, id) {
                 self.browser.failed.remove(id);
                 self.browser.refused.remove(id);
-                self.start_queued_downloads(cx);
+                Browser::start_queued(self, cx);
             }
         } else {
-            self.install_from_catalog(id, cx);
+            Browser::install(self, id, cx);
         }
     }
 
@@ -275,6 +275,6 @@ impl Shell {
             return;
         }
         self.browser.queue.set_limit(config.download_jobs());
-        self.start_queued_downloads(cx);
+        Browser::start_queued(self, cx);
     }
 }
