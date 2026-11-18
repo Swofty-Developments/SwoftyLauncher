@@ -16,7 +16,6 @@ gpui-kit = "=0.9.1"
 anyhow.workspace = true
 lsp-types = { version = "0.97", features = ["proposed"] }
 image = { version = "0.25", default-features = false }
-png.workspace = true
 raw-window-handle = "0.6"
 semver.workspace = true
 serde.workspace = true

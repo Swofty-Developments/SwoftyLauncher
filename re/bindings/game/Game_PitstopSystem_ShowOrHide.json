@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "pat:log-message-method",
-  "notes": "logged method name showOrHide (class from the log channel); log channel PitstopSystem: 'showOrHide'"
+  "notes": "logged method name showOrHide (class from the log channel); log channel PitstopSystem: 'showOrHide'  | engine-re track RE round B2 2026-11-17 (static): this+0xc0 = first show_pitstop_zone item of the pit-lane TrackSpace markup (Game_PitstopSystem_FindShowPitstopZone_Body 0x147de5cd0); 0 -> returns at once."
  },
  "signature": {
   "id": "game.pitstop_system_show_or_hide",

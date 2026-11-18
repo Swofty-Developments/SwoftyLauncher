@@ -68,7 +68,7 @@ The error's second line holds the network error, and `state/registry.log` in the
 
 ## Updates
 
-When an installed addon that is on in your active profile has a newer version, **Play** becomes **Update addons** with the number of updates. Updates for addons that are off are listed here and on the Addons page without changing **Play**. See [Updating](/using/updating#addon-updates).
+When an installed addon that is on in your active profile has a newer version, **Play** becomes **Update addons** with the number of updates. Updates for addons that are off are listed here and on the Addons page without changing **Play**, unless **Update turned-off addons** is on in [Settings](/using/settings#general). See [Updating](/using/updating#addon-updates).
 
 ## Stars
 

@@ -83,6 +83,15 @@ LEFT_OUT = ['diff_on_throttle', 'diff_off_throttle', 'brakes_bias', 'brakes_pres
             'susp_rear_camber', 'susp_rear_toe', 'susp_rear_anti_roll', 'susp_rear_ride_height_offset',
             'chassis_ballast_kg']
 TIERS = ['very_low', 'low', 'medium', 'high', 'very_high']
+# vehicle.handling section -> handling file section, as the launcher's activation/handling.rs maps them.
+SECTIONS = {
+    'engine': 'Engine', 'gearbox': 'GearBox', 'fuel_tank': 'FuelTank', 'fuel_ecu': 'FuelECU', 'brake_ecu': 'BrakeECU',
+    'chassis': 'Chassis', 'steering': 'Steering', 'core_aero': 'CoreAero', 'differential': 'Differential',
+    'suspension': 'SuspensionSystem', 'f1_aero': 'F1Aero', 'assists': 'F1Assists', 'tuning': 'F1Tuning',
+    'plank': 'F1Plank', 'suspension_damage': 'F1SuspensionDamage', 'wing_damage': 'F1WingDamage',
+    'tyre_damage': 'F1TyreDamage', 'body_damage': 'F1BodyDamage', 'turbo': 'Turbo', 'ers': 'EnergyRecoverySystem',
+}
+NOT_HANDLING = ('vtf', 'extends', 'within')
 
 
 def f32(x):
@@ -193,6 +202,93 @@ def apply_profile(values, profile):
     return out
 
 
+def norm(key):
+    return key.replace('_', '').lower()
+
+
+def apply_record(values, record):
+    """The sealed fields after the build applies a vehicle.handling record to the handling file."""
+    out = dict(values)
+    for snake, fields in (record or {}).items():
+        section = SECTIONS.get(snake)
+        if section is None or not isinstance(fields, dict):
+            continue
+        for key, v in fields.items():
+            if snake == 'gearbox' and key == 'ratios' and isinstance(v, list):
+                for i in range(len(GEARS)):
+                    out['gear_ratio_%d' % (i + 1)] = float(v[i]) if i < len(v) else 0.0
+                continue
+            if isinstance(v, bool) or not isinstance(v, (int, float)):
+                continue
+            for field, (sec, name, _default) in SOURCES.items():
+                if sec == section and norm(name) == norm(key):
+                    out[field] = float(v)
+    return out
+
+
+def resolve(records, rid, addon, seen=()):
+    rec = records[rid]
+    parent = rec.get('extends')
+    if not parent:
+        return rec
+    pid = parent.split('/', 1)[1] if parent.startswith(addon + '/') else parent
+    if pid not in records or pid in seen:
+        return rec
+    return deep_merge(resolve(records, pid, addon, seen + (rid,)), rec)
+
+
+def deep_merge(base, over):
+    out = dict(base)
+    for k, v in over.items():
+        if isinstance(v, dict) and isinstance(out.get(k), dict):
+            out[k] = deep_merge(out[k], v)
+        else:
+            out[k] = v
+    out.pop('extends', None)
+    return out
+
+
+def handling_package(record):
+    for res in (record.get('vtf') or {}).get('resources') or []:
+        if res.startswith('eaid://'):
+            return res[len('eaid://'):].split('/', 1)[0]
+    return None
+
+
+def agree(values, total):
+    if len(values) * 2 < total:
+        return None
+    if all(isinstance(v, dict) for v in values):
+        out = {}
+        for key in sorted({k for v in values for k in v}):
+            got = agree([v[key] for v in values if key in v], total)
+            if got is not None:
+                out[key] = got
+        return out or None
+    counts = []
+    for v in values:
+        text = json.dumps(v, sort_keys=True)
+        hit = next((c for c in counts if c[0] == text), None)
+        if hit:
+            hit[1] += 1
+        else:
+            counts.append([text, 1, v])
+    best = max(c[1] for c in counts)
+    return next(c[2] for c in counts if c[1] == best)
+
+
+def consensus(records):
+    """The season's equal performance base car: each value most of the package's handling records share, as the
+    launcher's activation/handling.rs builds it."""
+    keys = sorted({k for r in records for k in r if k not in NOT_HANDLING})
+    out = {}
+    for key in keys:
+        got = agree([r[key] for r in records if key in r], len(records))
+        if got is not None:
+            out[key] = got
+    return out
+
+
 def merge(variants):
     out = {}
     for field in variants[0]:
@@ -205,9 +301,11 @@ def merge(variants):
     return out
 
 
-def car_entry(content, version, stat, team, roots, tiers, profile=None, drop=()):
-    """roots: the handling files a car may be built from (its own, and its equal performance base)."""
-    base = [read_fields(r) for r in roots]
+def car_entry(content, version, stat, team, roots, tiers, profile=None, drop=(), records=None):
+    """roots: the handling files a car may be built from (its own, and its equal performance base), with the
+    vehicle.handling record the build applies to each in `records`."""
+    records = records or [None] * len(roots)
+    base = [apply_record(read_fields(r), rec) for r, rec in zip(roots, records)]
     fin = (lambda v: apply_profile(v, profile)) if profile else (lambda v: v)
     values = merge([fin(b) for b in base])
     for f in drop:
@@ -316,6 +414,14 @@ def season_cars(addon_dir, stock, db, tiers):
     reg = json.load(open(reg_path))
     addon = manifest['id']
     cars, problems = [], []
+    raw = reg.get('vehicle.handling', {})
+    handling = {rid: resolve(raw, rid, addon) for rid in raw}
+    by_erp, by_package = {}, collections.defaultdict(list)
+    for rid, rec in handling.items():
+        by_package[handling_package(rec)].append(rec)
+        erp_rel = (rec.get('vtf') or {}).get('erp')
+        if erp_rel:
+            by_erp.setdefault(erp_rel, rec)
     put, groups = {}, []
     for rel in manifest.get('operations', {}).get('assets', []):
         for op in json.load(open(os.path.join(addon_dir, rel))).get('ops', []):
@@ -359,15 +465,21 @@ def season_cars(addon_dir, stock, db, tiers):
             if own is None:
                 problems.append('%s %s: no handling file in its car archive' % (content, label))
                 continue
-            roots = [own]
+            own_rec = by_erp.get(os.path.relpath(path, addon_dir).replace(os.sep, '/'))
+            roots, records = [own], [own_rec]
             target = [t for t, src in put.items() if os.path.abspath(src) == os.path.abspath(path)]
             base = files.get('fom_car_%s.vtf' % vkey) or (group_vtf(target[0], 'fom_car.vtf') if target else None)
             if base is not None:
                 roots.append(base)
+                # A season with handling records drives the consensus of its package's records as its equal
+                # performance base car; the stock base is never driven then.
+                package = handling_package(own_rec) if own_rec else None
+                records.append(consensus(by_package[package]) if package else None)
             else:
                 problems.append('%s %s: no equal performance base found' % (content, label))
             drop = [PROFILE[k] for k in ('lift_scale', 'drag_scale') if profile.get(k, 1.0) != 1.0]
-            cars.append(car_entry(content, manifest['version'], None, label, roots, tiers, profile, drop=drop))
+            cars.append(car_entry(content, manifest['version'], None, label, roots, tiers, profile, drop=drop,
+                                  records=records))
     return cars, problems
 
 

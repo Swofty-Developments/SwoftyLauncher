@@ -61,8 +61,8 @@ impl Account {
                     self.toasts.push(Notification::success(tr(
                         "Your account has been granted access to: Multiplayer",
                     )));
+                    swofty_core::online::multiplayer::client::load_in_background(data, &session.token);
                 }
-                swofty_core::online::multiplayer::client::load_in_background(data, &session.token);
                 self.session = Some(session);
                 true
             }
@@ -87,7 +87,12 @@ impl Account {
         match refreshed {
             Some(session) => {
                 let gained = session.allowed && !was_allowed;
-                swofty_core::online::multiplayer::client::load_in_background(data, &session.token);
+                if gained {
+                    swofty_core::online::multiplayer::client::forget_failure();
+                }
+                if session.allowed {
+                    swofty_core::online::multiplayer::client::load_in_background(data, &session.token);
+                }
                 self.session = Some(session);
                 if gained {
                     self.toasts.push(Notification::success(tr(

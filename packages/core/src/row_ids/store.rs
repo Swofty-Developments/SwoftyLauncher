@@ -5,7 +5,7 @@ use serde_json::Value;
 use swofty_formats::gvdb::{Gvdb, instance_count_path};
 use swofty_formats::hash::fnv1a64;
 
-use crate::ops::{DbOp, DbOps, IdFrom, add_row_name, row_shape};
+use crate::ops::{DbOp, DbOps, IdFrom, UNLOCK_ROW, add_row_name, row_shape, unlock_list};
 use crate::stdlib::reports;
 use crate::{Loaded, Result};
 
@@ -185,6 +185,10 @@ impl Store {
                 };
                 if let Some(row) = add_row_name(table, from) {
                     self.adds_to.insert((addon.to_owned(), format!("{table}.{row}")));
+                }
+                if let Some(list) = unlock_list(table) {
+                    self.adds_to
+                        .insert((addon.to_owned(), format!("{list}.{UNLOCK_ROW}")));
                 }
                 if table.contains(['[', '{']) || row_shape(table).contains("_N") {
                     continue;

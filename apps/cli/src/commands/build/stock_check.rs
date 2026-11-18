@@ -77,20 +77,23 @@ pub(super) fn check_stock(store: &Store, g: &Game, out: &dyn Fn(&str)) -> Result
             d.steam
         ));
     }
-    for d in &checked.vr {
+    if !checked.third_party.is_empty() {
+        let dlls: Vec<String> = checked
+            .third_party
+            .iter()
+            .map(|d| {
+                format!(
+                    "{} (size {}, Steam {})",
+                    d.rel,
+                    d.size.map_or("missing".to_owned(), |n| n.to_string()),
+                    d.steam
+                )
+            })
+            .collect();
         out(&format!(
-            "[stock] {} differs from Steam's copy (size {}, Steam {}); a VR runtime replaces it, continuing",
-            d.rel,
-            d.size.map_or("missing".to_owned(), |n| n.to_string()),
-            d.steam
-        ));
-    }
-    for d in &checked.upscaler {
-        out(&format!(
-            "[stock] {} differs from Steam's copy (size {}, Steam {}); an upscaler drop-in replaces it, continuing",
-            d.rel,
-            d.size.map_or("missing".to_owned(), |n| n.to_string()),
-            d.steam
+            "[stock] {} DLL file(s) differ from Steam's copy and are left as third-party files, continuing: {}",
+            dlls.len(),
+            dlls.join(", ")
         ));
     }
     if let Some(n) = checked.swept {

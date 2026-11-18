@@ -4,11 +4,13 @@
 // on the obfuscated values. It checks that nothing is answered before the table is bound or without the
 // globals, the car list and the slot/owner/handle checks, decoding and re-encoding (the key is kept, the
 // plain half changes), range refusals (steering lock, differential, fuel over capacity, NaN), writes off
-// the flow thread, a car without a system, and cars::live::cars/get/set/scale/is_ai through the table.
+// the flow thread, a car without a system, cars::live::cars/get/set/scale/is_ai through the table, and the builds
+// the operations run on (car_build_for).
 // native/test/run_tests.sh car_live builds and runs it.
 #include "core/hooks/car_live.hpp"
 #include "core/hooks/car_proofs.hpp"
 #include "core/hooks/player_facts.hpp"
+#include "core/runtime/build_proof.hpp"
 
 #include <swofty/systems/cars.hpp>
 
@@ -822,28 +824,28 @@ static void player_facts_sync()
     count = CARS;
 }
 
-static void car_gates()
+static void car_builds()
 {
-    namespace bp = runtime::build_proof;
-    namespace cp = swofty_core::hooks::car_proofs;
-    auto all = [](const char *) { return true; };
-    expect(bool(bp::check(cp::POINTS, bp::Build::kb, all)), "the KB build runs the car points");
-    expect(bool(bp::check(cp::POINTS, bp::Build::steam_1_0_145, all)), "Steam 1.0.145 runs the car points");
-    expect(!bp::check(cp::POINTS, bp::Build::ea, all), "the EA build runs no car points");
-    expect(!bp::check(cp::POINTS, bp::Build::unknown, all), "an unknown build runs no car points");
-    for (const bp::Gate *g : {&cp::OPERATIONS, &cp::LEVERS}) {
-        expect(bool(bp::check(*g, bp::Build::kb, all)), "the KB build runs the car operations and levers");
-        expect(!bp::check(*g, bp::Build::steam_1_0_145, all), "Steam 1.0.145 runs no car operations or levers");
-        expect(!bp::check(*g, bp::Build::ea, all) && !bp::check(*g, bp::Build::unknown, all),
-               "the EA build and an unknown build run no car operations or levers");
-    }
-    expect(bp::identify({1794312636u, 0x18434000}) == bp::Build::steam_1_0_145, "Steam 1.0.145 is known by its header");
-    expect(bp::identify({1794312636u, 0x18435000}) == bp::Build::unknown, "its stamp on another image size is no proof");
+    const cl::CarBuild *kb = cl::car_build_for(1789118616u, 0x193e6000u);
+    expect(kb && kb->mode_avail_rva == 0x606ec28, "the KB build runs with g_Game_EngineModeAvail at 0x606ec28");
+    expect(!cl::car_build_for(1789118616u, 0x5000000u), "the KB stamp on a packed image is off");
+    const cl::CarBuild *steam = cl::car_build_for(1794312636u, 0x18434000u);
+    expect(steam && steam->mode_avail_rva == 0x6070c28, "Steam 26566308 runs with g_Game_EngineModeAvail at 0x6070c28");
+    const cl::CarBuild *ea = cl::car_build_for(1794315435u, 0x1615e000u);
+    expect(ea && ea->mode_avail_rva == 0x61a7968, "EA 1.0.145 runs with g_Game_EngineModeAvail at 0x61a7968");
+    expect(!cl::car_build_for(1794312636u, 0x1615e000u), "a known stamp with another image size is off");
+    expect(!cl::car_build_for(1789128892u, 0x155dc000u), "the unchecked EA KB-version build is off");
+    expect(!cl::car_build_for(0, 0), "an unknown build is off");
+    bool known = true;
+    for (const cl::CarBuild &b : cl::CAR_BUILDS)
+        known = known && runtime::build_proof::identify({b.pe_timestamp, b.size_of_image ? b.size_of_image : 0x193e6000u}) !=
+                             runtime::build_proof::Build::unknown;
+    expect(known, "every build the live car operations run on is a build runtime::build_proof knows");
 }
 
 int main()
 {
-    car_gates();
+    car_builds();
     core_ops();
     sdk_side();
     pending_queue();

@@ -4,9 +4,9 @@ use anyhow::{Context, Result};
 use swofty_core::build::ADDONS_DIR;
 use swofty_core::install::{Game, LOADER_DIR};
 use swofty_core::modules::{self, Plugin};
+use swofty_core::online::server::integrity::{self, Module};
 use swofty_core::settings::SETTINGS_FILE;
 use swofty_core::store::Store;
-use swofty_core::timetrial::integrity::{self, Module};
 
 pub(super) fn timed_build(
     store: &Store,
@@ -93,7 +93,7 @@ pub(super) fn server_plugins(store: &Store, out: &dyn Fn(&str)) -> Vec<(Plugin, 
     let Some(session) = swofty_core::mpauth::load(&store.root) else {
         return Vec::new();
     };
-    let api = swofty_core::timetrial::api::Api::new(&session.token);
+    let api = swofty_core::online::server::api::Api::new(&session.token);
     let mut found = Vec::new();
     let wanted = [modules::TT_GAME]
         .into_iter()

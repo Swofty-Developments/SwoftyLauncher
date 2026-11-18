@@ -17,7 +17,7 @@ use swofty_core::testsuite::session;
 use swofty_core::testsuite::suite::{Env, Kind};
 
 use crate::commands::testing::game_lock::{free_the_game, hh_mm, take_lock};
-use crate::commands::testing::harness::{Harness, Times};
+use crate::commands::testing::harness::{BatchResults, Harness, Times};
 use crate::commands::testing::launcher::SwoftyRun;
 use crate::commands::testing::preflight::terms;
 use crate::commands::testing::run::Stop;
@@ -261,7 +261,17 @@ fn shell_loop(
     br.started_game = true;
     let sandboxed = sandbox.is_some();
     if let Some(s) = sandbox {
-        h.close_sandbox(s, Some(&agent.run), b, h.profile, &mut br, &mut reports, &[]);
+        h.close_sandbox(
+            s,
+            Some(&agent.run),
+            b,
+            h.profile,
+            BatchResults {
+                br: &mut br,
+                reports: &mut reports,
+                runnable: &[],
+            },
+        );
     }
     let id = agent.run.id.clone();
     h.close_run(Some(agent), &mut br);

@@ -23,6 +23,7 @@
 #include "core/diagnostics/crash/report_writer.hpp"
 #include "core/diagnostics/crash/symbolizer.hpp"
 #include "core/diagnostics/perf.hpp"
+#include "core/render/d3d12_hooks.hpp"
 #include "core/runtime/json.hpp"
 
 namespace runtime {
@@ -633,8 +634,19 @@ void step_dred(Request &r)
     if (r.has_prior)
         look(r.prior.ctx);
     std::string text = runtime::dred::section(removal);
-    if (!text.empty())
-        report_writer.out.put("%s", text.c_str());
+    if (text.empty())
+        return;
+    report_writer.out.put("%s", text.c_str());
+    std::string builds = d3d12hooks::rtas_recent_text(runtime::dred::build_stops());
+    for (size_t at = 0; at < builds.size();) {
+        size_t end = builds.find('\n', at);
+        end = end == std::string::npos ? builds.size() : end + 1;
+        report_writer.out.put("%.*s", int(end - at), builds.data() + at);
+        size_t from = builds.find_first_not_of(' ', at), to = builds[end - 1] == '\n' ? end - 1 : end;
+        if (from < to)
+            logger.api->log("[gfx] rtas recent: %.*s", int(to - from), builds.data() + from);
+        at = end;
+    }
 }
 
 void step_close(Request &)

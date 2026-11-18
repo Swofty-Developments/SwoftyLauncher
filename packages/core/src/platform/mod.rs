@@ -23,7 +23,6 @@ use crate::install::Source;
 pub use ea_app::EaApp;
 pub use ensure::{ClientNote, ClientReady, ClientStart};
 pub use steam::Steam;
-pub use steam::{client as steam_client, vdf};
 
 /// A store that installs F1 25 and starts it for the player.
 pub trait LaunchPlatform: Sync {

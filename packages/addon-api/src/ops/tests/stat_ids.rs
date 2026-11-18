@@ -22,6 +22,48 @@ fn mask_tables_say_why_their_ceiling_is_31() {
 }
 
 #[test]
+fn a_third_car_group_fails_the_build_instead_of_the_main_menu() {
+    const CARS: &str = "customisation.customisation_cars";
+    let mut db = table(CARS, "customisation_car_group", &[0, 1]);
+    let stock: HashSet<u64> = db.records.iter().map(|r| r.key).collect();
+    let err = apply_db_ops_report(
+        &mut db,
+        &add_rows(CARS, "customisation_car_group", &[("sw12_cars", None)]),
+        &stock,
+        &mut DbReport::default(),
+    )
+    .unwrap_err()
+    .to_string();
+    assert!(err.contains("has no free stat_id up to 1"), "{err}");
+    assert!(err.contains("crashes the game at the main menu"), "{err}");
+}
+
+#[test]
+fn unlock_folders_name_their_list_and_share_its_stat_id_space() {
+    let list = "unlockable_content.unlockable_items.unlockable_item_list_2";
+    assert_eq!(unlock_list(&format!("{list}.folder_23")), Some(list));
+    assert_eq!(unlock_list(list), None);
+    assert_eq!(unlock_list(&format!("{list}.folder_x")), None);
+    assert_eq!(unlock_list(&format!("{list}.folder_2.more")), None);
+    assert_eq!(
+        stat_id_field(&format!("{list}.folder_0"), "unlockable_suit"),
+        "statId"
+    );
+    assert!(is_unlock_ids(&format!("{list}.{UNLOCK_ROW}")));
+    assert!(!is_unlock_ids("entrants.teams.team"));
+    let ops: DbOps = serde_json::from_str(&format!(
+        r#"{{"schema_version":1,"ops":[
+        {{"op":"add-row","table":"{list}.folder_23","from":"{list}.folder_23.unlockable_se_livery_0","set":{{"_metadata_":"a","statId":"7"}}}},
+        {{"op":"add-row","table":"{list}.folder_1","from":"{list}.folder_1.unlockable_suit[_metadata_=x]","set":{{"_metadata_":"b"}}}}]}}"#
+    ))
+    .unwrap();
+    assert_eq!(
+        explicit_stat_ids(&ops).collect::<Vec<_>>(),
+        [(format!("{list}.unlockable_item"), 7)]
+    );
+}
+
+#[test]
 fn add_row_gives_a_clone_the_next_free_stat_id_and_reports_it() {
     let mut db = modes(["3", "7"]);
     let mut report = DbReport::default();

@@ -20,12 +20,13 @@ use super::run::Run;
 use super::{Built, Pipeline, source_dir};
 use crate::activation::ers::{self, ErsMap};
 use crate::activation::ui::Kept;
+use crate::asset::Kind;
 use crate::asset::{AssetOp, Op, Source};
 use crate::content::runtime_assets::{Prebuilt, overlay_fits};
 use crate::erp::{ErpBuild, Held, Resized, reads, writes};
 use crate::manifest::relative_inside;
 use crate::ops::ErpOp;
-use crate::planner::{Kind, Route};
+use crate::planner::Route;
 use crate::{Error, Result};
 
 /// What applying the archive changes leaves for placing the files.

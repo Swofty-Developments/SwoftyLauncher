@@ -10,10 +10,10 @@ use swofty_core::ea_app;
 use swofty_core::ea_diag::{self, Tracker};
 use swofty_core::install::{Game, Source};
 use swofty_core::offline::{self, Slot};
+use swofty_core::platform::steam::client as steam_client;
 use swofty_core::process::own_elevation;
 use swofty_core::process::{GameProcess, game_processes, stop_process};
 use swofty_core::recovery::Scope;
-use swofty_core::steam_client;
 use swofty_core::store::Store;
 
 use self::setup::{desktop_opener, handoff};

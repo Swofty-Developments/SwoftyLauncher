@@ -3,6 +3,7 @@ mod archives;
 mod buildhash;
 mod cars;
 mod database;
+mod digests;
 mod failure;
 mod files;
 mod finish;

@@ -5,7 +5,9 @@ use std::time::Duration;
 use crate::updates::transfer;
 use crate::{Error, Result};
 
-use super::{CDN_HOST, FIXTURE_ENV, LATEST_URL, MANIFEST_URL, Manifest, Release, now_secs};
+#[cfg(debug_assertions)]
+use super::{CDN_HOST, FIXTURE_ENV};
+use super::{LATEST_URL, MANIFEST_URL, Manifest, Release, now_secs};
 
 pub(super) fn user_agent() -> String {
     format!(

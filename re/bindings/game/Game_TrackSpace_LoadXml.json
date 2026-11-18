@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1445eb600.c;xref:0x145bf1500",
-  "notes": "TrackSpace XML loader (vt slot 0x145bf1500, 5282 decomp lines): rootnode Trackspace -> VolumeList (Volume point1..point4, Gates/Gate, sector_1..3, pit, Start/End), TrackSpaceSpline, AiSpline, TrackspaceMarkup -> MarkupList -> MarkupElement (SplineName, Attributes/Attribute name/type/value; property keys focuscar_name, carbehind_name, woosh_type, template_name, chance_blowout, radius_modifier, cull_distance, transition_duration, screen_culling). Logs TRACKSPACE 'Loading TrackSpace Markup Element: %s (%s)', 'Volume type \"%s\" is invalid!', 'Volume remap overlap detected at dist %f...', 'Recalculating volume length: oldLength %f, newLength %f...'. Track modding: the parser that reads the TrackSpace data a custom track ships. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2317)"
+  "notes": "TrackSpace XML loader (vt slot 0x145bf1500, 5282 decomp lines): rootnode Trackspace -> VolumeList (Volume point1..point4, Gates/Gate, sector_1..3, pit, Start/End), TrackSpaceSpline, AiSpline, TrackspaceMarkup -> MarkupList -> MarkupElement (SplineName, Attributes/Attribute name/type/value; property keys focuscar_name, carbehind_name, woosh_type, template_name, chance_blowout, radius_modifier, cull_distance, transition_duration, screen_culling). Logs TRACKSPACE 'Loading TrackSpace Markup Element: %s (%s)', 'Volume type \"%s\" is invalid!', 'Volume remap overlap detected at dist %f...', 'Recalculating volume length: oldLength %f, newLength %f...'. Track modding: the parser that reads the TrackSpace data a custom track ships. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2317) | 2026-11-17 engine-re track runtime round 2, static. Gate points: <Gate> point4..point1 are read in that order into slots 0..3 (each 'x,y,z'), two gates per <Volume> -> Game_TrackSpace_AddVolumeFromGates (3 strip volumes per XML volume, split above 100 m). After all volumes: grid sized by Game_TrackSpaceGrid_Init_Thunk and filled by Game_TrackSpaceGrid_InsertVolume. TrackSpaceSpline and AiSpline both go to Game_TrackSpace_ReadSplineKnots; the 4 route splines are finalised with closed hard-coded (main 1, pit 0). raised by engine-re with --force 2026-11-17 at user request (lane owner review requested) TrackspaceMarkup part (engine-re track RE round B 2026-11-17, static): per MarkupElement it reads Start/End (floats, default 0), SplineName and each Attributes/Attribute Type. Type is matched exactly against the 49 names of k_Game_TrackMarkup_TypeNames (Game_TrackMarkup_GetTypeName); 'sector_1'/'sector_2'/'sector_3' go to Game_TrackMarkup_AddSector_Thunk; any other unknown Type logs TRACKSPACE 'Unknown property type: %hs' and the attribute is skipped (no crash). A switch on the type id allocates the item (0x18..0x120 bytes, vtables 0x145bf1af0..0x145bf23d0), reads its Properties (Game_TrackMarkup_ReadProperties_Thunk) and calls vtable slot 2 (validate); items that fail (ai_hint without a known template_name, aud_env_zone / spch_vo_trig with empty names, ...) are freed. Plain 'sector' (id 0) has no case and is dropped. Kept items get +0x10 Start and +0x14 End clamped to 0..1 (0x1445ee37d..); End == 0 with Start != 0 becomes End = 1.0 (wrap to the lap end); +0xc = spline byte of the container (+0x40). Each item is appended to the container's all-items vector (+0x28) and to the per-type vector: arr = [container+8], begin at arr + id*0x20 + 8 (count bound container+0x10) (skipped if id >= the type count). There is no limit on the number of items per type and no duplicate-ID check here."
  },
  "signature": {
   "id": "game.track_space_load_xml",
@@ -45,6 +45,26 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/1445eb600.c;xref:0x145bf1500",
    "notes": "V2317 Log strings (Volume remap overlap, Recalculating volume length, TrackspaceMarkup, focuscar_name, screen_culling) all present in the exe; large XML loader consistent."
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkrt2-verify",
+   "kind": "func",
+   "item": "0x1445eb600",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm of 0x1445ec570..0x1445ec9e4;xref:0x1445ec6ed;xref:0x1445ec5bd",
+   "notes": "V10792 Attr table at 0x1445ec6ed..0x1445ec7b9 = point4 (0x145bf179a), point3, point2, point1 into rsp+0x2b0/2b8/2c0/2c8, parsed in that order (comma split, 0x145343fec atof). Register trace: point4 xyz -> xmm7/xmm6/xmm14 stored at rsp+0x180+gate*0x40 +0..+8 (slot0), point3 -> slot1 (+0x10), point2 -> slot2 (+0x20, y,z via rsp+0x48/0x40), point1 -> slot3 (+0x30, xmm8/xmm11/xmm15); w=0; gate index r12d 0 then 1 (0x1445ec670). Confirmed slot0=point4..slot3=point1."
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkb-verify",
+   "kind": "func",
+   "item": "0x1445eb600",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 1445ecc39-1445ecea2,1445ecee4-1445ed128,1445ee36b-1445ee594;xref:1445f8a00 calls,1445ee57c log",
+   "notes": "V11102 sector_1/2/3 -> call 1445f8a00(edx 0/1/2) OK; r15==-1 logs 'Unknown property type: %hs' OK; End==0&&Start!=0 -> End=1.0 OK; Start->item+0x10 End->+0x14 clamped [0,1] (xmm6=0,xmm7=1.0) OK. WRONG/imprecise: per-type array is via pointer: arr=*(container+8) (count bound container+0x10), vector begin at arr+type*0x20+8 (not inline container+8+type*0x20+8); item is also first pushed to flat vector container+0x28/0x30/0x38; type index 0 (sector) items are dropped by the switch (type-1>0x2f)"
   }
  ],
  "proofs": []

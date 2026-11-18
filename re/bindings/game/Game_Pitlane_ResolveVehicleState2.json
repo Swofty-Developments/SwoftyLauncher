@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1434c1c00.c;xref:0x1434bf8a4",
-  "notes": "State 2 handler (returns char result): Sess_VehiclePlacement_ResolveTransform + Ne_Crt_Fmodf (angle/distance wrap) + memcpy. 3184 bytes. Callers Game_Pitlane_ApplyVehicleResetState (0x1434c0459), 0x1434bf8a4, 0x1434c291c. Hypothesis."
+  "notes": "State 2 handler (returns char result): Sess_VehiclePlacement_ResolveTransform + Ne_Crt_Fmodf (angle/distance wrap) + memcpy. 3184 bytes. Callers Game_Pitlane_ApplyVehicleResetState (0x1434c0459), 0x1434bf8a4, 0x1434c291c. Hypothesis. | engine-re 2026-11-17 track round C2 (static): per-car box EXIT spline, normal (neighbour box busy), into car record +0x128 (Game_PitLane_BuildBoxExitSpline 0x1434bf8a4); finalised at 0x1434c27f9."
  },
  "signature": {
   "id": "game.pitlane_resolve_vehicle_state2",

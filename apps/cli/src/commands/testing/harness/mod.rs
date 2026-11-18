@@ -16,6 +16,8 @@ use swofty_core::testsuite::report::{BatchReport, Report, Status, TestReport};
 
 use crate::commands::testing::launcher::Launcher;
 
+pub(crate) use sandboxes::BatchResults;
+
 pub(crate) struct Times {
     pub start: Duration,
     pub step: Duration,

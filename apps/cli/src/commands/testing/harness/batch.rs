@@ -13,7 +13,7 @@ use swofty_core::testsuite::sandbox;
 use swofty_core::testsuite::suite::{self, Kind};
 
 use crate::commands::testing::harness::agent_steps::Agent;
-use crate::commands::testing::harness::sandboxes::{Sandbox, Staged};
+use crate::commands::testing::harness::sandboxes::{BatchResults, Sandbox, Staged};
 use crate::commands::testing::harness::{Harness, Live, ms, read};
 use crate::commands::testing::launcher::Running;
 use crate::commands::testing::preflight::{batch_fixture, sandboxed};
@@ -233,9 +233,11 @@ impl Harness<'_> {
                 agent.as_ref().map(|a| &a.run),
                 batch.b,
                 &profile,
-                &mut batch.br,
-                &mut batch.reports,
-                &batch.runnable,
+                BatchResults {
+                    br: &mut batch.br,
+                    reports: &mut batch.reports,
+                    runnable: &batch.runnable,
+                },
             );
         }
         self.close_run(agent, &mut batch.br);
