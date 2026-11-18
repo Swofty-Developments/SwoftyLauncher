@@ -103,7 +103,7 @@ impl Shell {
             popup_timer: false,
             root_focus: cx.focus_handle(),
             online: crate::features::online::Online::new(&root),
-            mp_page: crate::features::multiplayer::Multiplayer::new(window, cx),
+            rooms: crate::features::multiplayer::Multiplayer::new(window, cx),
             seen,
             sliders: HashMap::new(),
             requests: None,

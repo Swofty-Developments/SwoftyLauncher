@@ -23,7 +23,10 @@ impl Shell {
         cx.spawn_in(window, async move |this, cx| {
             loop {
                 cx.background_executor().timer(TICK).await;
-                if this.update_in(cx, |s, window, cx| s.mp_tick(window, cx)).is_err() {
+                if this
+                    .update_in(cx, |s, window, cx| s.room_tick(window, cx))
+                    .is_err()
+                {
                     break;
                 }
             }
@@ -31,21 +34,21 @@ impl Shell {
         .detach();
     }
 
-    pub(super) fn mp_tick(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        self.mp_room_launch(window, cx);
-        self.mp_held_dropped(window, cx);
-        self.mp_watch_game(cx);
-        let m = &mut self.mp_page;
+    pub(super) fn room_tick(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.room_launch(window, cx);
+        self.room_held_dropped(window, cx);
+        self.room_watch_game(cx);
+        let m = &mut self.rooms;
         if m.leaving && m.session.as_ref().is_none_or(Session::is_finished) {
             m.finish_leaving();
             cx.notify();
         }
         if self.navigation.page != Page::Multiplayer || !self.account.allowed() {
-            self.mp_page.visible = false;
+            self.rooms.visible = false;
             return;
         }
         let now = Instant::now();
-        let m = &mut self.mp_page;
+        let m = &mut self.rooms;
         if !m.visible {
             m.visible = true;
             m.lobby.refresh();
@@ -74,11 +77,11 @@ impl Shell {
         if m.session.is_none() && m.lobby.game_due(now) {
             Multiplayer::poll_game(self, cx);
         }
-        let m = &self.mp_page;
+        let m = &self.rooms;
         if m.session.is_none() && m.lobby.rooms_due(now) {
             Multiplayer::poll_rooms(self, cx);
         }
-        let m = &self.mp_page;
+        let m = &self.rooms;
         if m.session.is_none() && m.lobby.digest_due() {
             Multiplayer::read_digest(self, cx);
         }
@@ -87,21 +90,20 @@ impl Shell {
 
     /// Starts F1 25 for the room when the session asks, the game is closed and the launcher has put the
     /// game folder back.
-    pub(super) fn mp_room_launch(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(session) = &self.mp_page.session else {
+    pub(super) fn room_launch(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let Some(session) = &self.rooms.session else {
             return;
         };
         let Some(ask) = session.state().launch else {
             return;
         };
-        if self.mp_page.launch_seen == ask.seq || self.launching.launch.is_some() || self.game.build.is_some()
-        {
+        if self.rooms.launch_seen == ask.seq || self.launching.launch.is_some() || self.game.build.is_some() {
             return;
         }
         if !self.game.processes.is_empty() || self.launching.restoring {
             return;
         }
-        self.mp_page.closing = None;
+        self.rooms.closing = None;
         if let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) {
             diag::forget_status(&dir);
         }
@@ -112,7 +114,7 @@ impl Shell {
                     .map_err(|e| e.to_string())
                     .and_then(|()| ids.write(&file).map_err(|e| e.to_string()))
                 {
-                    self.mp_page.launch_seen = ask.seq;
+                    self.rooms.launch_seen = ask.seq;
                     session.launch_failed(&format!("the host's ids and settings couldn't be written ({e})"));
                     return;
                 }
@@ -120,9 +122,9 @@ impl Shell {
             }
             None => None,
         };
-        self.mp_page.launch_seen = ask.seq;
-        self.mp_page.game_seen = false;
-        self.mp_page.room_launching = true;
+        self.rooms.launch_seen = ask.seq;
+        self.rooms.game_seen = false;
+        self.rooms.room_launching = true;
         let direct_start = ask.direct_start.clone();
         let started = self.play_for(
             Some(RoomLaunch {
@@ -133,62 +135,62 @@ impl Shell {
             cx,
         );
         if !started {
-            self.mp_room_launch_result(false);
+            self.room_launch_result(false);
         }
         cx.notify();
     }
 
     /// A prompt Play opened holds the room launch: its Play goes on with it through [`Shell::play`].
-    pub(crate) fn mp_hold_room(&mut self, room: RoomLaunch) {
-        self.mp_page.held = Some(room);
+    pub(crate) fn room_hold(&mut self, room: RoomLaunch) {
+        self.rooms.held = Some(room);
     }
 
-    pub(crate) fn mp_take_held(&mut self) -> Option<RoomLaunch> {
-        self.mp_page.held.take()
+    pub(crate) fn room_take_held(&mut self) -> Option<RoomLaunch> {
+        self.rooms.held.take()
     }
 
-    fn mp_held_dropped(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        if self.mp_page.held.is_none() || window.has_active_dialog(cx) {
+    fn room_held_dropped(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.rooms.held.is_none() || window.has_active_dialog(cx) {
             return;
         }
-        self.mp_page.held = None;
-        self.mp_page.room_launching = false;
-        if let Some(session) = &self.mp_page.session {
+        self.rooms.held = None;
+        self.rooms.room_launching = false;
+        if let Some(session) = &self.rooms.session {
             session.launch_failed("Play was cancelled");
         }
         cx.notify();
     }
 
-    pub(crate) fn mp_room_launch_result(&mut self, started: bool) {
-        let Some(session) = &self.mp_page.session else {
+    pub(crate) fn room_launch_result(&mut self, started: bool) {
+        let Some(session) = &self.rooms.session else {
             return;
         };
         if started {
             session.launched();
         } else {
-            self.mp_page.room_launching = false;
+            self.rooms.room_launching = false;
             session.launch_failed("see the notice, finish what it asks, then try again");
         }
     }
 
-    /// The launch `mp_room_launch` started ended without the game: `why` says what stopped it.
-    pub(crate) fn mp_launch_ended(&mut self, why: Option<String>) {
-        if !std::mem::take(&mut self.mp_page.room_launching) {
+    /// The launch `room_launch` started ended without the game: `why` says what stopped it.
+    pub(crate) fn room_launch_ended(&mut self, why: Option<String>) {
+        if !std::mem::take(&mut self.rooms.room_launching) {
             return;
         }
         match why {
-            None => self.mp_page.game_seen = true,
+            None => self.rooms.game_seen = true,
             Some(why) => {
-                if let Some(session) = &self.mp_page.session {
+                if let Some(session) = &self.rooms.session {
                     session.launch_failed(&why);
                 }
             }
         }
     }
 
-    pub(super) fn mp_watch_game(&mut self, cx: &mut Context<Self>) {
+    pub(super) fn room_watch_game(&mut self, cx: &mut Context<Self>) {
         let busy = self.launching.launch.is_some() || self.game.build.is_some() || self.launching.restoring;
-        let m = &mut self.mp_page;
+        let m = &mut self.rooms;
         if m.session.is_none() {
             return;
         }
@@ -208,10 +210,10 @@ impl Shell {
             "launcher: F1 25 exited; leaving the room ({})",
             exit_notice(host)
         ));
-        self.mp_leave(cx);
+        self.room_leave(cx);
     }
 
-    pub(super) fn mp_close_game(&mut self, window: &mut Window, cx: &mut Context<Self>) -> bool {
+    pub(super) fn room_close_game(&mut self, window: &mut Window, cx: &mut Context<Self>) -> bool {
         let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
             return true;
         };
@@ -233,25 +235,25 @@ impl Shell {
                 return false;
             }
         }
-        self.mp_page.closing = Some(pids);
+        self.rooms.closing = Some(pids);
         true
     }
 
-    pub(super) fn mp_begin(&mut self, start: Start, window: &mut Window, cx: &mut Context<Self>) {
-        if self.mp_page.busy() || !self.mp_close_game(window, cx) {
+    pub(super) fn room_begin(&mut self, start: Start, window: &mut Window, cx: &mut Context<Self>) {
+        if self.rooms.busy() || !self.room_close_game(window, cx) {
             return;
         }
-        self.mp_page.notice = None;
+        self.rooms.notice = None;
         Multiplayer::start(self, start, cx);
     }
 
-    pub(super) fn mp_play(&mut self, start: Start, window: &mut Window, cx: &mut Context<Self>) {
+    pub(super) fn room_play(&mut self, start: Start, window: &mut Window, cx: &mut Context<Self>) {
         let dir = self.game.install.as_ref().map(|i| i.dir.clone());
         let running = dir
             .as_ref()
             .is_some_and(|d| self.game.processes.iter().any(|g| g.is_in(d)));
         if !running {
-            self.mp_begin(start, window, cx);
+            self.room_begin(start, window, cx);
             return;
         }
         let shell = cx.entity().downgrade();
@@ -268,30 +270,30 @@ impl Shell {
                 .show_cancel(true)
                 .on_ok(move |_, window, cx| {
                     shell
-                        .update(cx, |s, cx| s.mp_begin(start.clone(), window, cx))
+                        .update(cx, |s, cx| s.room_begin(start.clone(), window, cx))
                         .ok();
                     true
                 })
         });
     }
 
-    pub(crate) fn mp_view_play(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(code) = self.mp_page.viewing.clone() else {
+    pub(crate) fn room_view_play(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let Some(code) = self.rooms.viewing.clone() else {
             return;
         };
         self.go(Page::Multiplayer, cx);
-        self.mp_play(Start::Join(code), window, cx);
+        self.room_play(Start::Join(code), window, cx);
     }
 
-    pub(crate) fn mp_viewed_room(&self) -> Option<&RoomSummary> {
-        let code = self.mp_page.viewing.as_deref()?;
-        self.mp_page.lobby.rooms.iter().find(|r| r.code == code)
+    pub(crate) fn room_viewed(&self) -> Option<&RoomSummary> {
+        let code = self.rooms.viewing.as_deref()?;
+        self.rooms.lobby.rooms.iter().find(|r| r.code == code)
     }
 
     /// The play button's word while a shared session starts and F1 25 isn't building or running yet, so it
     /// can't be pressed as a second Play.
-    pub(crate) fn mp_starting_label(&self) -> Option<&'static str> {
-        let m = &self.mp_page;
+    pub(crate) fn room_starting_label(&self) -> Option<&'static str> {
+        let m = &self.rooms;
         if !m.busy() {
             return None;
         }
@@ -303,15 +305,15 @@ impl Shell {
         })
     }
 
-    pub(crate) fn mp_can_play_room(&self) -> bool {
+    pub(crate) fn room_can_play(&self) -> bool {
         self.navigation.page == Page::Multiplayer
             && self.account.allowed()
-            && !self.mp_page.busy()
-            && self.mp_viewed_room().is_some()
+            && !self.rooms.busy()
+            && self.room_viewed().is_some()
     }
 
     pub(crate) fn face(&self, name: &str, url: Option<&str>, size: f32, p: Palette) -> Div {
-        match url.and_then(|u| self.mp_page.faces.get(u)) {
+        match url.and_then(|u| self.rooms.faces.get(u)) {
             Some(image) => div()
                 .size(px(size))
                 .flex_shrink_0()
@@ -322,82 +324,80 @@ impl Shell {
         }
     }
 
-    pub(super) fn mp_game_state(&self) -> GameState {
-        let status = match &self.mp_page.state {
-            Some(state) if self.mp_page.session.is_some() => state.game.as_ref(),
-            _ => self.mp_page.lobby.game.as_ref(),
+    pub(super) fn room_game_state(&self) -> GameState {
+        let status = match &self.rooms.state {
+            Some(state) if self.rooms.session.is_some() => state.game.as_ref(),
+            _ => self.rooms.lobby.game.as_ref(),
         };
         GameState::of(!self.game.processes.is_empty(), status)
     }
 
-    pub(super) fn mp_create(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let typed = self.mp_page.name.read(cx).value().trim().to_owned();
+    pub(super) fn room_create(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let typed = self.rooms.name.read(cx).value().trim().to_owned();
         let name = if typed.is_empty() {
-            self.mp_default_name()
+            self.room_default_name()
         } else {
             typed
         };
         let settings = RoomSettings {
             name: Some(name),
-            public: self.mp_page.public,
-            max_members: self.mp_page.max,
+            public: self.rooms.public,
+            max_members: self.rooms.max,
             ..RoomSettings::default()
         };
-        self.mp_play(Start::Create(settings), window, cx);
+        self.room_play(Start::Create(settings), window, cx);
     }
 
-    pub(super) fn mp_default_name(&self) -> String {
+    pub(super) fn room_default_name(&self) -> String {
         let you = self.account.session.as_ref().map_or("Your", |m| m.name.as_str());
         format!("{you}'s room")
     }
 
-    pub(super) fn mp_open_form(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        self.mp_page.form = !self.mp_page.form;
-        if self.mp_page.form && self.mp_page.name.read(cx).value().is_empty() {
-            let name = self.mp_default_name();
-            self.mp_page
-                .name
-                .update(cx, |s, cx| s.set_value(name, window, cx));
+    pub(super) fn room_open_form(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.rooms.form = !self.rooms.form;
+        if self.rooms.form && self.rooms.name.read(cx).value().is_empty() {
+            let name = self.room_default_name();
+            self.rooms.name.update(cx, |s, cx| s.set_value(name, window, cx));
         }
         cx.notify();
     }
 
-    pub(super) fn mp_join_code(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let code = self.mp_page.code.read(cx).value().trim().to_owned();
+    pub(super) fn room_join_code(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let code = self.rooms.code.read(cx).value().trim().to_owned();
         if !code.is_empty() {
-            self.mp_play(Start::Join(code), window, cx);
+            self.room_play(Start::Join(code), window, cx);
         }
     }
 
-    pub(crate) fn mp_leave(&mut self, cx: &mut Context<Self>) {
-        let Some(session) = &self.mp_page.session else {
+    pub(crate) fn room_leave(&mut self, cx: &mut Context<Self>) {
+        let Some(session) = &self.rooms.session else {
             return;
         };
         session.leave();
-        self.mp_page.leaving = true;
+        self.rooms.leaving = true;
         cx.notify();
     }
 
-    pub(super) fn mp_retry(&mut self, cx: &mut Context<Self>) {
-        if let Some(session) = &self.mp_page.session {
+    pub(super) fn room_retry(&mut self, cx: &mut Context<Self>) {
+        if let Some(session) = &self.rooms.session {
             session.retry();
         }
         cx.notify();
     }
 
-    pub(super) fn mp_open_room(&mut self, code: String, cx: &mut Context<Self>) {
-        self.mp_page.viewing = Some(code);
+    pub(super) fn room_open(&mut self, code: String, cx: &mut Context<Self>) {
+        self.rooms.viewing = Some(code);
         cx.notify();
     }
 
-    pub(super) fn mp_close_view(&mut self, cx: &mut Context<Self>) {
-        self.mp_page.viewing = None;
+    pub(super) fn room_close_view(&mut self, cx: &mut Context<Self>) {
+        self.rooms.viewing = None;
         cx.notify();
     }
 
-    pub(super) fn mp_copy_code(&mut self, code: String, cx: &mut Context<Self>) {
+    pub(super) fn room_copy_code(&mut self, code: String, cx: &mut Context<Self>) {
         cx.write_to_clipboard(ClipboardItem::new_string(code));
-        self.mp_page.copied = Some(Instant::now());
+        self.rooms.copied = Some(Instant::now());
         cx.notify();
     }
 }

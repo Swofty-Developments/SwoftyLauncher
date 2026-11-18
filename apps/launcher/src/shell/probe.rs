@@ -241,7 +241,7 @@ impl Shell {
 
     fn finish_launch(&mut self, probe: &Probe) {
         if let Some(failed) = self.launching.follow(&mut self.game, &self.store, probe) {
-            self.mp_launch_ended(failed);
+            self.room_launch_ended(failed);
         }
     }
 }

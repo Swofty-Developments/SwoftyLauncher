@@ -44,7 +44,7 @@ pub struct Shell {
     pub(crate) root_focus: FocusHandle,
     pub(crate) online: crate::features::online::Online,
     pub(crate) library: Library,
-    pub(crate) mp_page: crate::features::multiplayer::Multiplayer,
+    pub(crate) rooms: crate::features::multiplayer::Multiplayer,
     pub(crate) seen: Seen,
     pub(crate) sliders: HashMap<String, SliderSlot>,
     pub(crate) requests: Option<SystemTime>,
