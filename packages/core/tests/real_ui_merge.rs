@@ -49,7 +49,7 @@ struct Fixture {
     root: PathBuf,
     store: Store,
     game: Game,
-    _pin: swofty_core::builtin::LoaderPin,
+    _pin: swofty_core::addons::builtin::LoaderPin,
 }
 
 impl Fixture {
@@ -98,7 +98,7 @@ impl Fixture {
             store: Store::new(root.join("data")),
             root,
             game,
-            _pin: swofty_core::builtin::LoaderPin::to(loader),
+            _pin: swofty_core::addons::builtin::LoaderPin::to(loader),
         }
     }
 

@@ -9,7 +9,7 @@ use swofty_addon::asset::{AssetOp, Op, Origin};
 use swofty_addon::ops::ErpOp;
 
 use super::{Input, Layered, Output, Stock, TemplateBase, compose_with, dials, screen_build, screens};
-use crate::erpbuild::ErpBuild;
+use crate::erp::ErpBuild;
 use crate::store::Store;
 use crate::{Error, Result};
 
@@ -66,7 +66,7 @@ fn touched(op: &ErpOp, written: &BTreeSet<&str>, source: &dyn Fn() -> Option<Pat
             let erps: Vec<&str> = erps.iter().map(String::as_str).collect();
             ours(&erps)
                 && source()
-                    .and_then(|p| crate::erpbuild::overlay_names(&p).ok())
+                    .and_then(|p| crate::erp::overlay_names(&p).ok())
                     .is_some_and(|names| names.iter().any(|n| written.contains(n.as_str())))
         }
         _ => false,

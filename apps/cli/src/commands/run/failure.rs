@@ -2,7 +2,7 @@ use std::path::Path;
 use std::process::{Child, Command};
 
 use anyhow::Result;
-use swofty_core::launch;
+use swofty_core::diagnostics::launch;
 use swofty_core::platform::app_control::Block;
 use swofty_core::store::Store;
 

@@ -125,7 +125,7 @@ pub(super) fn outdated_with(
     names: &std::collections::BTreeMap<String, String>,
 ) -> anyhow::Error {
     let raw = format!("{e:#}");
-    match swofty_core::known_problems::outdated_game(&raw, version, names) {
+    match swofty_core::diagnostics::known_problems::outdated_game(&raw, version, names) {
         Some(d) => anyhow::anyhow!("{}\n({raw})", d.text()),
         None => e,
     }
@@ -146,7 +146,7 @@ fn install_checked(
     if !session {
         check_entitled(store, g)?;
     }
-    let depots = swofty_core::phases::time("play.stock_check", || check_stock(store, g, out))?;
+    let depots = swofty_core::diagnostics::phases::time("play.stock_check", || check_stock(store, g, out))?;
     let inst = Installer {
         session,
         depot: depots.as_ref().map_or(&() as &dyn DepotHashes, |d| d),
@@ -156,19 +156,19 @@ fn install_checked(
     };
     let integrity = session
         .then(|| {
-            swofty_core::phases::time("play.fetch.integrity", || {
+            swofty_core::diagnostics::phases::time("play.fetch.integrity", || {
                 crate::commands::laps::integrity(store, out)
             })
         })
         .flatten();
     let plugins = if session {
-        swofty_core::phases::time("play.fetch.modules", || server_plugins(store, out))
+        swofty_core::diagnostics::phases::time("play.fetch.modules", || server_plugins(store, out))
     } else {
         Vec::new()
     };
     let built = timed_build(store, profile, g, integrity.as_ref(), &plugins)?;
     report(profile, &built);
-    let found = match swofty_core::phases::time("play.install", || inst.apply(&built.plan)) {
+    let found = match swofty_core::diagnostics::phases::time("play.install", || inst.apply(&built.plan)) {
         Err(swofty_core::Error::Leftovers(found)) => found,
         r => return Ok(not_stock(store, g, r)?),
     };
@@ -180,7 +180,7 @@ fn install_checked(
     crate::recover::record_cleared(store, &cleared);
     let built = timed_build(store, profile, g, integrity.as_ref(), &plugins)?;
     report(profile, &built);
-    match swofty_core::phases::time("play.install", || inst.apply(&built.plan)) {
+    match swofty_core::diagnostics::phases::time("play.install", || inst.apply(&built.plan)) {
         Err(swofty_core::Error::Leftovers(found)) => Err(crate::recover::blocked(store, g, &found)),
         r => Ok(not_stock(store, g, r)?),
     }

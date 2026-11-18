@@ -131,8 +131,8 @@ pub fn build(store: &Store, profile: &str, game: Option<PathBuf>, side_data: boo
 
 /// Prints the Play path's phase timings and findings recorded since the last call.
 pub fn print_phases() {
-    for line in swofty_core::phases::take() {
-        crate::console::output::say(swofty_core::phases::TAG, &line);
+    for line in swofty_core::diagnostics::phases::take() {
+        crate::console::output::say(swofty_core::diagnostics::phases::TAG, &line);
     }
 }
 

@@ -6,9 +6,9 @@ use std::sync::atomic::Ordering;
 use std::time::{Duration, Instant};
 
 use swofty_core::GAME_EXE;
+use swofty_core::addons::builtin::loader_dir;
 use swofty_core::asset::{AssetBatch, AssetOp, FileOp, Op, Origin, Root, Source};
 use swofty_core::build::GVDB;
-use swofty_core::builtin::loader_dir;
 use swofty_core::game_folder::baseline::Identity;
 use swofty_core::game_folder::busy::{Busy, Step};
 use swofty_core::install::Installer;

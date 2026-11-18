@@ -5,12 +5,12 @@ use std::time::{Duration, Instant};
 
 use anyhow::{Result, bail};
 use swofty_core::GAME_EXE;
+use swofty_core::diagnostics::launch;
+use swofty_core::diagnostics::quarantine::{self, Stage};
 use swofty_core::game_folder::recovery::{Scope, SessionLock};
 use swofty_core::install::{Game, Source};
-use swofty_core::launch;
 use swofty_core::multiplayer::client::LAUNCH_ENV as NETPLAY_ENV;
 use swofty_core::platform::process::{game_processes, game_running_in, stop_game_in};
-use swofty_core::quarantine::{self, Stage};
 use swofty_core::session::{LOADER_LOG, LaunchMode, LaunchRequest, LogMark, request_stop};
 use swofty_core::store::Store;
 

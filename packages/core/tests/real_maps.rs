@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use swofty_core::activation::db::{Registry, Schema, Table, TrackHost, activate, datasets};
 use swofty_core::activation::dbx::{Db, field, row, sub_count, sub_table};
-use swofty_core::map::TrackPackage;
+use swofty_core::content::track_package::TrackPackage;
 use swofty_formats::gvdb::Gvdb;
 
 const GVDB: &str = "game_package/gamedatabases/gamedatabases.2025.bin";

@@ -40,7 +40,7 @@ pub fn overlay_fits(
             let (Some(v), Some(i)) = (find(view)?, find(&format!("{view}.image"))?) else {
                 continue;
             };
-            if let Some((said, has)) = crate::erpbuild::view_mismatch(&v, &i)? {
+            if let Some((said, has)) = crate::erp::view_mismatch(&v, &i)? {
                 return Ok(Err(format!(
                     "{view} in {target}: its view says {said} slices, the image has {has}"
                 )));

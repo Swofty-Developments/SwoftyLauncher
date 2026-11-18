@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use clap::Parser;
 #[cfg(unix)]
-use swofty_core::builtin::CORE_ID;
+use swofty_core::addons::builtin::CORE_ID;
 use swofty_core::store::Store;
 use swofty_core::testsuite::plan;
 use swofty_core::testsuite::report::{Report, Status, exit};

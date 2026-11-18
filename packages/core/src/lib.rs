@@ -31,13 +31,6 @@ pub mod tracks;
 pub mod ui;
 pub mod updates;
 
-pub use self::erp as erpbuild;
-pub use addons::{builtin, registry, settings, storage as addon_storage};
-pub use cache::link as link_cache;
-pub use content::{postfx, runtime_assets as runtime, shaders, track_package as map};
-pub use diagnostics::{
-    crash, crash_report, ea_launch as ea_diag, known_problems, launch, phases, quarantine, send_logs,
-};
 pub use game_db::{livery_kits, owned, row_keys as rowkeys};
 pub use online::server::{sign_in as mpauth, usage};
 pub use online::{modules, multiplayer, server, timetrial};

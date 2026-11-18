@@ -2,8 +2,8 @@ use std::path::Path;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use anyhow::{Result, anyhow};
-use swofty_core::ea_diag;
-use swofty_core::launch;
+use swofty_core::diagnostics::ea_launch as ea_diag;
+use swofty_core::diagnostics::launch;
 use swofty_core::offline::{self, Slot};
 use swofty_core::platform::app_control::Block;
 use swofty_core::store::Store;

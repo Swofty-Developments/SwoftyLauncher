@@ -5,14 +5,14 @@ use serde::{Deserialize, Serialize};
 
 use super::buildhash::small_file_digest;
 use super::{Built, SAVED_FILE, SAVED_VERSION};
+use crate::addons::builtin::{loader_dir, loader_files};
+use crate::addons::settings::SessionSettings;
 use crate::asset::Op;
-use crate::builtin::{loader_dir, loader_files};
 use crate::conflicts::Report;
 use crate::diagnostics::phases;
 use crate::game_folder::baseline::Baseline;
 use crate::install::Game;
 use crate::planner::Conflict;
-use crate::settings::SessionSettings;
 use crate::store::Store;
 use crate::{Result, io_err};
 

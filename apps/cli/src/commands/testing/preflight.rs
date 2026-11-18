@@ -68,7 +68,7 @@ pub(crate) fn sandbox_preflight(
         .sha256(&exe)
         .map_err(|e| format!("could not hash {}: {e}", exe.display()))?;
     hashes.save();
-    let loader = swofty_core::builtin::loader_dir();
+    let loader = swofty_core::addons::builtin::loader_dir();
     check_sandbox(
         loader.as_deref(),
         &sha,

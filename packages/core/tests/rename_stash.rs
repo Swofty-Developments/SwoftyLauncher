@@ -6,10 +6,10 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
+use swofty_core::cache::link as link_cache;
 use swofty_core::game_folder::baseline::{Identity, sha256_bytes};
 use swofty_core::game_folder::journal::{Journal, Op};
 use swofty_core::install::{Game, Installer, Plan};
-use swofty_core::link_cache;
 use swofty_core::platform::disk::Volume;
 
 const GVDB: &str = "game_package/gamedatabases/gamedatabases.2025.bin";

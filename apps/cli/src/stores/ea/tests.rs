@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::time::SystemTime;
 
 #[cfg(unix)]
-use swofty_core::launch;
+use swofty_core::diagnostics::launch;
 
 #[cfg(unix)]
 use super::stub::STUB_SETTLE;

@@ -4,7 +4,7 @@ use std::process::ExitCode;
 use crate::commands::{Execute, Invocation};
 use anyhow::{Context, Result, bail};
 use clap::Subcommand;
-use swofty_core::shaders::{self, ConfigRef};
+use swofty_core::content::shaders::{self, ConfigRef};
 use swofty_core::store::Store;
 use swofty_shaders::{ParamKind, Severity, Value};
 

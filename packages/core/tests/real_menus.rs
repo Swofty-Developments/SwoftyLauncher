@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use swofty_core::settings::SessionSettings;
+use swofty_core::addons::settings::SessionSettings;
 use swofty_formats::erp::Erp;
 
 fn dirs() -> Option<(PathBuf, PathBuf)> {
@@ -135,7 +135,7 @@ fn menus_and_a_map_patch_one_databases_erp() {
     use swofty_core::activation::place::track_group;
     use swofty_core::activation::ui::{MapUi, build_ui};
     use swofty_core::build::{Built, build_menus};
-    use swofty_core::map::TrackPackage;
+    use swofty_core::content::track_package::TrackPackage;
     use swofty_formats::pkg::Pkg;
 
     let Some(game) = std::env::var_os("F1_25_DIR").map(PathBuf::from) else {
@@ -1262,9 +1262,9 @@ fn addon_settings_pages_its_home_so_each_home_screen_stays_small() {
 fn the_mfd_page_and_a_map_patch_share_flow_race_and_persistent() {
     use swofty_core::activation::place::track_group;
     use swofty_core::activation::ui::{MapUi, build_ui};
+    use swofty_core::addons::settings::SessionAddon;
     use swofty_core::build::{Built, build_menus};
-    use swofty_core::map::TrackPackage;
-    use swofty_core::settings::SessionAddon;
+    use swofty_core::content::track_package::TrackPackage;
     use swofty_core::ui::mfd;
 
     let Some(game) = std::env::var_os("F1_25_DIR").map(PathBuf::from) else {

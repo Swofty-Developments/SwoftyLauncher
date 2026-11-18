@@ -41,7 +41,7 @@ pub(crate) fn command(store: &Store, profile: &str, cmd: SettingsCommand) -> Res
         SettingsCommand::List { id } => {
             let p = store.profile(profile)?;
             let pending = p.rebuild_pending(&addons);
-            let on = swofty_core::settings::OnAddons::of(&p, &addons);
+            let on = swofty_core::addons::settings::OnAddons::of(&p, &addons);
             for m in addons
                 .values()
                 .filter(|m| id.as_deref().is_none_or(|i| i == m.id))
@@ -117,7 +117,7 @@ pub(crate) fn command(store: &Store, profile: &str, cmd: SettingsCommand) -> Res
     Ok(())
 }
 
-pub(crate) fn report_merge(m: &swofty_core::settings::Merge) {
+pub(crate) fn report_merge(m: &swofty_core::addons::settings::Merge) {
     for c in &m.changed {
         println!("in game: {c}");
     }

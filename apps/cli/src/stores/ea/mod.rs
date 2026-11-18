@@ -6,7 +6,7 @@ use std::process::{Child, Stdio};
 use std::time::{Duration, Instant};
 
 use anyhow::{Result, anyhow, bail};
-use swofty_core::ea_diag::{self, Tracker};
+use swofty_core::diagnostics::ea_launch::{self as ea_diag, Tracker};
 use swofty_core::game_folder::recovery::Scope;
 use swofty_core::install::{Game, Source};
 use swofty_core::offline::{self, Slot};

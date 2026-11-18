@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
-use swofty_core::addon_storage;
+use swofty_core::addons::storage as addon_storage;
 use swofty_core::testsuite::bench;
 use swofty_core::testsuite::fixture::Fixture;
 use swofty_core::testsuite::plan::Batch;

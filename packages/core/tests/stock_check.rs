@@ -399,7 +399,7 @@ fn an_older_game_exe_routes_to_the_update_fix_with_third_party_dlls_in_place() {
         "{}",
         report.text()
     );
-    let outdated = swofty_core::known_problems::outdated_exe(version.as_deref()).unwrap();
+    let outdated = swofty_core::diagnostics::known_problems::outdated_exe(version.as_deref()).unwrap();
     assert_eq!(outdated.id, "outdated_exe");
 
     let mut current = versioned_exe(1 << 16, (145 << 16) | 2472);
@@ -408,10 +408,10 @@ fn an_older_game_exe_routes_to_the_update_fix_with_third_party_dlls_in_place() {
     let version = swofty_core::game_folder::exe_version::read(&f.game.dir.join(swofty_core::GAME_EXE));
     assert_eq!(
         version.as_deref(),
-        Some(swofty_core::known_problems::LATEST_GAME_VERSION)
+        Some(swofty_core::diagnostics::known_problems::LATEST_GAME_VERSION)
     );
     assert_eq!(stock::fix_for(version.as_deref()), stock::Fix::Verify);
-    assert!(swofty_core::known_problems::outdated_exe(version.as_deref()).is_none());
+    assert!(swofty_core::diagnostics::known_problems::outdated_exe(version.as_deref()).is_none());
 }
 
 #[test]

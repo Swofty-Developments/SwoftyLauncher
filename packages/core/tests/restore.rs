@@ -305,7 +305,7 @@ fn the_live_shader_config_comes_out_whatever_the_session_rewrote_it_to() {
     let original = f.snapshot();
     let game = f.game("1");
     let inst = Installer::new(&f.data, &game);
-    let live = swofty_core::shaders::LIVE_FILE;
+    let live = swofty_core::content::shaders::LIVE_FILE;
     write(&f.src.join("active"), "{\"serial\": 1}");
     let mut plan = f.plan("a");
     plan.loader.insert(live.into(), f.src.join("active"));
@@ -603,8 +603,8 @@ fn a_restore_removes_the_proxy_swofty_ships_without_setting_it_aside() {
     let f = Fixture::new("shipped-proxy");
     let loader = f.root.join("loader");
     write(&loader.join("version.dll"), "proxy");
-    write(&loader.join(swofty_core::builtin::CORE_DLL), "core");
-    let _pin = swofty_core::builtin::LoaderPin::to(loader);
+    write(&loader.join(swofty_core::addons::builtin::CORE_DLL), "core");
+    let _pin = swofty_core::addons::builtin::LoaderPin::to(loader);
     let original = f.snapshot();
     let game = f.game("1");
     let inst = Installer::new(&f.data, &game);

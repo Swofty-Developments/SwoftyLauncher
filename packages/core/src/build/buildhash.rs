@@ -5,8 +5,8 @@ use serde::Serialize;
 use sha2::{Digest, Sha256};
 
 use super::digests::Digests;
+use crate::addons::builtin::{loader_dir, loader_files};
 use crate::asset::{AssetOp, Op};
-use crate::builtin::{loader_dir, loader_files};
 use crate::erp::reads;
 use crate::game_folder::baseline::hex;
 use crate::install::Game;

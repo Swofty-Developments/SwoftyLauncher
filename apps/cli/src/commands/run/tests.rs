@@ -3,9 +3,9 @@ use std::process::{Command, ExitCode};
 use std::time::{Duration, Instant};
 
 use swofty_core::GAME_EXE;
+use swofty_core::diagnostics::quarantine::{self, Stage};
 use swofty_core::game_folder::recovery::SessionLock;
 use swofty_core::install::{Game, Installer, PROXY};
-use swofty_core::quarantine::{self, Stage};
 use swofty_core::session::{Config, LaunchRequest};
 use swofty_core::store::Store;
 

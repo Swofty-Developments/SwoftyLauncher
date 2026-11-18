@@ -9,11 +9,11 @@ use std::time::{Duration, Instant};
 
 use anyhow::{Result, bail};
 use swofty_core::GAME_EXE;
+use swofty_core::diagnostics::launch;
+use swofty_core::diagnostics::quarantine;
 use swofty_core::game_folder::recovery::{Scope, SessionLock};
 use swofty_core::install::{Game, Installer};
-use swofty_core::launch;
 use swofty_core::platform::process::{game_processes, games_in};
-use swofty_core::quarantine;
 use swofty_core::session::{Config, LaunchRequest, parse_cpu_list};
 use swofty_core::store::Store;
 
@@ -38,7 +38,7 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
     swofty_core::game_folder::entitlement::check_store_start(&g.dir, args.via_ea)?;
     crate::commands::build::check_entitled(store, g)?;
     let version = swofty_core::game_folder::exe_version::read(&g.dir.join(GAME_EXE));
-    if let Some(d) = swofty_core::known_problems::outdated_exe(version.as_deref()) {
+    if let Some(d) = swofty_core::diagnostics::known_problems::outdated_exe(version.as_deref()) {
         say("warning", &format!("{}: {}", d.title, d.text()));
     }
     if let Some(reason) = swofty_core::platform::run_as_admin::elevation_blocker(&g.dir) {
@@ -281,7 +281,7 @@ impl Drop for Session<'_> {
             )),
         }
         let inst = Installer::new(&self.store.root, self.game);
-        let rolled_back = swofty_core::phases::time("rollback.total", || inst.roll_back(false));
+        let rolled_back = swofty_core::diagnostics::phases::time("rollback.total", || inst.roll_back(false));
         crate::commands::build::print_phases();
         match rolled_back {
             Ok(done) => {
@@ -295,7 +295,7 @@ impl Drop for Session<'_> {
                 if kept > 0 {
                     info(&format!(
                         "kept {kept} file(s) addons wrote in {}",
-                        swofty_core::addon_storage::dir(&self.store.root).display()
+                        swofty_core::addons::storage::dir(&self.store.root).display()
                     ));
                 }
             }

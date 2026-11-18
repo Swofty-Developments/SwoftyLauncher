@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
 
-use swofty_core::addon_storage;
+use swofty_core::addons::storage as addon_storage;
 use swofty_core::game_folder::baseline::{Identity, sha256_bytes};
 use swofty_core::game_folder::journal::Journal;
 use swofty_core::game_folder::recovery::{self, Scope, SessionLock};

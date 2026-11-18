@@ -4,9 +4,9 @@ use std::process::ExitCode;
 
 use anyhow::{Context, Result};
 use clap::{Arg, ArgAction, ArgMatches, CommandFactory};
+use swofty_core::addons::registry::{Host, Registry};
 use swofty_core::launcher::CommandSpec;
 use swofty_core::manifest::MANIFEST_FILE;
-use swofty_core::registry::{Host, Registry};
 use swofty_core::store::Store;
 
 use crate::commands::cli::Cli;

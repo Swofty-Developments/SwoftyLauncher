@@ -98,7 +98,7 @@ fn shell_session(store: &Store, game: &Path, a: &ShellArgs, run_id: &str) -> Res
             let mut hashes = swofty_core::game_folder::baseline::Hashes::load(&store.root);
             let sha = hashes.sha256(&game.join(swofty_core::GAME_EXE))?;
             hashes.save();
-            let loader = swofty_core::builtin::loader_dir();
+            let loader = swofty_core::addons::builtin::loader_dir();
             match loader.as_deref().map(|l| sandbox::verified(l, &sha)) {
                 Some(Ok(proof)) => say(&format!("save sandbox: verified for this F1_25.exe by {proof}")),
                 Some(Err(e)) => return Ok(infra(format!("the shell's save sandbox: {e}"))),

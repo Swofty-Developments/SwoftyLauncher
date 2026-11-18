@@ -1,11 +1,11 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use anyhow::{Context, Result};
+use swofty_core::addons::settings::SETTINGS_FILE;
 use swofty_core::build::ADDONS_DIR;
 use swofty_core::install::{Game, LOADER_DIR};
 use swofty_core::modules::{self, Plugin};
 use swofty_core::online::server::integrity::{self, Module};
-use swofty_core::settings::SETTINGS_FILE;
 use swofty_core::store::Store;
 
 pub(super) fn timed_build(
@@ -15,9 +15,9 @@ pub(super) fn timed_build(
     integrity: Option<&Module>,
     plugins: &[(Plugin, modules::Module)],
 ) -> Result<swofty_core::build::Built> {
-    swofty_core::phases::time("play.build", || {
+    swofty_core::diagnostics::phases::time("play.build", || {
         let built = build_profile(store, profile, g, integrity, plugins);
-        swofty_core::phases::end_step();
+        swofty_core::diagnostics::phases::end_step();
         built
     })
 }

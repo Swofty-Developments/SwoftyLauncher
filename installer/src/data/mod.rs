@@ -3,7 +3,7 @@ mod moving;
 
 use std::path::{Path, PathBuf};
 
-use swofty_core::builtin::CORE_ID;
+use swofty_core::addons::builtin::CORE_ID;
 use swofty_core::data::relocate::{
     self as data_move, Location,
     find::{self, Found},

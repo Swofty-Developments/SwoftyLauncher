@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use swofty_core::addon_storage;
+use swofty_core::addons::storage as addon_storage;
 use swofty_core::store::Store;
 use swofty_core::testsuite::fixture;
 use swofty_core::testsuite::plan;
