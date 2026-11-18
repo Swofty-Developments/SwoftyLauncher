@@ -389,6 +389,15 @@ std::string track_label(int stat_id)
     return it == track_labels.end() ? std::string() : it->second;
 }
 
+std::string cached_track_label(int stat_id)
+{
+    std::lock_guard g(tracks_mu);
+    if (!tracks_read)
+        return {};
+    auto it = track_labels.find(stat_id);
+    return it == track_labels.end() ? std::string() : it->second;
+}
+
 std::vector<gp_track::Source> track_sources()
 {
     std::vector<gp_track::Source> out;
@@ -747,6 +756,11 @@ std::pair<std::string, std::string> session_mode_track()
 std::string current_mode(const char *where)
 {
     return game::mode_of(game::current_context(), where);
+}
+
+std::string cached_track_label(int stat_id)
+{
+    return game::cached_track_label(stat_id);
 }
 
 void grand_prix_track_check()
