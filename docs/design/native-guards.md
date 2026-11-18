@@ -121,6 +121,10 @@ new hook guard takes the `HookGuardId` slot that matches where its source falls 
 goes in `HOOKED` in `native/test/guard_registry_test.cpp` at the same slot. Pin a `MidHookSpec` guard's off,
 failed and armed lines in `added.txt` under `[hook <id>]`.
 
+Every guard source's `swofty::log` formats are pinned in `native/test/guard_lines/logged.txt`, in source order under
+`[log <path>]`, and `guard_lines` fails when a source logs other formats or a source that logs has no section. A change
+to a guard's log text changes its section in the same commit.
+
 Both macros also name the guard's `CoreRank` (`native/src/core/runtime/loader/core_rank.hpp`) under its `HookGuardId`
 name, so a new hook guard adds that name to `CoreRank` too, where its on-load entry runs among the other registering
 units (the `explicit` section of `native/tools/core_init_order.txt`); the core build fails on a missing name, and
