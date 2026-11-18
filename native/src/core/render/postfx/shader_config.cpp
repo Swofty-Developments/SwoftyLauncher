@@ -3,16 +3,13 @@
 #include "core/render/postfx/option_logic.hpp"
 #include "core/render/postfx/pipeline.hpp"
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 
 #include <swofty/mixin.hpp>
 
 #include <algorithm>
 #include <cstring>
 #include <iterator>
-
-bool settings_state(const std::string &addon, const std::string &option, size_t &current,
-                    std::vector<std::string> *texts, std::vector<std::string> *commands,
-                    std::vector<std::string> *values);
 
 namespace postfx {
 
