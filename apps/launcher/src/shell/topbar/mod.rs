@@ -1,4 +1,5 @@
 mod bar;
+mod fit;
 mod popovers;
 
 use gpui_kit::assets::IconName;
