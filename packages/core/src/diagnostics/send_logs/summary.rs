@@ -379,6 +379,14 @@ impl Bundle {
                 "No performance report was found (an older launcher, or the game never reached the menus)\n",
             ),
         }
+        let slow = logs.iter().find_map(|(label, log)| {
+            let head = read_head(log, OVERLAY_READ).ok()?;
+            let d = crate::diagnostics::known_problems::slow_start(&String::from_utf8_lossy(&head), store)?;
+            Some((label, d))
+        });
+        if let Some((label, d)) = slow {
+            s.push_str(&format!("  start: {} ({label})\n", d.title));
+        }
         s.push_str("\nAddons\n");
         s.push_str(&from.addon_lines());
         s.push_str("\nFiles\n");
