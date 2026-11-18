@@ -3,7 +3,7 @@
 #include <atomic>
 #include <cstdint>
 
-// The counters and the timestamp clock the profiler's parts (perf.cpp, perf/vq.cpp) share. A counter only its own
+// The counters and the timestamp clock the profiler's parts (perf.cpp and the files in perf/) share. A counter only its own
 // thread writes is updated with a relaxed load and store (add, raise), one several threads write with a compare and
 // swap (raise_shared).
 namespace perf::detail {
