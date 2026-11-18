@@ -29,6 +29,7 @@
 #include <swofty/systems/drivers.hpp>
 #include <swofty/systems/liveries.hpp>
 #include <swofty/systems/power.hpp>
+#include <swofty/systems/race_control.hpp>
 #include <swofty/systems/sessions.hpp>
 #include <swofty/systems/sounds.hpp>
 #include <swofty/systems/laps.hpp>
@@ -69,6 +70,10 @@ static_assert(std::is_standard_layout_v<swofty::cars::live::Car> && std::is_triv
 static_assert(std::is_same_v<std::underlying_type_t<swofty::cars::Department>, int32_t>);
 static_assert(std::is_same_v<std::underlying_type_t<swofty::teams::LogoContext>, int32_t>);
 static_assert(std::is_same_v<std::underlying_type_t<swofty::drivers::Stat>, int32_t>);
+static_assert(std::is_same_v<std::underlying_type_t<swofty::race_control::Flag>, uint8_t> &&
+              std::is_same_v<std::underlying_type_t<swofty::race_control::RedFlag>, uint8_t> &&
+              std::is_same_v<std::underlying_type_t<swofty::race_control::Status>, uint8_t> &&
+              std::is_same_v<std::underlying_type_t<swofty::race_control::Deployment>, uint8_t>);
 
 using namespace swofty;
 
