@@ -2736,7 +2736,6 @@
   "func:Ne_NetVoiceNotificationClient_WaveInAddBuffer": "V2024",
   "func:Ne_Network_Init": "V2000",
   "func:Ne_Network_StartAsync": "V2001",
-  "func:Ne_NodeTable_FindIndexByHash": "V3631",
   "func:Ne_Node_DestroyTreeRecursive": "V7736",
   "func:Ne_Noise_Fbm1D": "V3521",
   "func:Ne_OSHTTPRequestAndResponseResponseHandler_CbHttpResponse": "V2215",
