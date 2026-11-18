@@ -2,6 +2,8 @@ import os, sys, unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import buildport
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from test_binding_check import NEEDS_EXE_MODULES
 
 
 class NativeTables(unittest.TestCase):
@@ -53,6 +55,19 @@ class NativeTables(unittest.TestCase):
         r = buildport.layout_report('kb', lambda name: name != site)
         self.assertTrue(r['live'])
         self.assertTrue(all(site in ' '.join(g['why']) for g in r['live']), r['live'])
+
+
+@NEEDS_EXE_MODULES
+@unittest.skipUnless(os.environ.get('SWOFTY_STEAM_145_EXE'), 'set SWOFTY_STEAM_145_EXE to the Steam 1.0.145 exe')
+class PortSteam145(unittest.TestCase):
+    def test_the_current_build_resolves_every_binding_and_holds_every_live_group(self):
+        import binding
+        r = binding.port_report(os.environ['SWOFTY_STEAM_145_EXE'])
+        self.assertEqual(r['build'], 'steam_1_0_145')
+        self.assertNotIn('first', r)
+        self.assertEqual(r['unresolved'], [])
+        self.assertEqual(r['live'], [])
+        self.assertTrue(all(p['off'] and p['do'] for p in r['proofs']), r['proofs'])
 
 
 if __name__ == '__main__':
