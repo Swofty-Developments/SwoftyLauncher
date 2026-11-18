@@ -428,56 +428,51 @@ A plugin subscribes by listing them in its `launcher` block: `"lifecycle": ["bui
 
 ## Adding an event
 
-Adding a core event takes one catalogue entry, a hand-written payload, one fire call and a test. The catalogue is `packages/sdk/std/events/catalogue.json`:
-
-```json
-{
-  "name": "session.pit_stop",
-  "since": "1.6.0",
-  "status": "experimental",
-  "kind": "notify",
-  "thread": "session",
-  "parent": "session",
-  "payload": { "c": "SwoftyEvPitStop", "cpp": "swofty::sessions::events::PitStop", "header": "swofty/systems/sessions.hpp", "version": 1 },
-  "context": { "session": "always", "player": "always", "participants": "always", "career": "in_career" },
-  "source": { "how": "detour", "binding": "Game_Pitlane_SetVehicleStatus" },
-  "doc": "The game counts a pit stop for a car."
-}
-```
+Adding a core event takes a payload in an SDK header, one catalogue row, a fire function, a C mirror of the payload and a test. `session.red_flag` (race control) as the example:
 
 ```cpp
-// swofty/systems/sessions.hpp
-namespace swofty::sessions::events {
-struct PitStop {
-    static constexpr const char *point = "session.pit_stop";
+// packages/sdk/include/swofty/systems/race_control.hpp: the payload
+namespace swofty::race_control::events {
+struct RedFlag {
+    static constexpr const char *point = "session.red_flag";
     static constexpr uint32_t version = 1;
     uint32_t size, payload_version;
-    uint32_t car;            // vehicle index in the session
-    uint32_t stops;          // the car's stop count after it
+    race_control::RedFlag state;
+    race_control::RedFlag previous;
+    int32_t lap;
 };
 }
 ```
 
 ```cpp
-// native/src/core/hooks/car_live.cpp: the one fire call, after the game stores the new pit status
-if (stops_after != stops_before)
-    events::session_pit_stop(vehicle, stops_after);
+// native/src/core/hooks/catalogue.hpp: id, kind, payload type, version, hot, fired, 1.x name
+{"session.red_flag", N, "swofty::race_control::events::RedFlag", 1, false, Fired::yes, nullptr},
 ```
 
-`tools/std/eventcheck.py` checks the rest in CI:
-
-```text
-ok   62 events, every name unique and dotted; released entries unchanged since v1.6.0
-ok   swofty/systems/sessions.hpp: struct sessions::events::PitStop, point == "session.pit_stop", version == 1
-ok   native/src/core: a fire of session.pit_stop (car_live.cpp:154)
-ok   native/test: a test names session.pit_stop
-ok   docs: a section for session.pit_stop
+```cpp
+// native/src/core/hooks/core_events.cpp: the catalogue row must match the payload's point, kind and version
+static_assert(declared<rc::events::RedFlag>(SWOFTY_POINT_NOTIFY));
+bool session_red_flag(rc::events::RedFlag &e) { return fire(e); }
 ```
 
+```cpp
+// native/src/core/live/race_control.cpp: the one fire call
+ev::session_red_flag(e);
+```
+
+```c
+// native/test/sdk_payloads.h: the C mirror, its size and each field's offset
+typedef struct SwoftyEvRedFlag {
+    uint32_t size, payload_version;
+    uint8_t state, previous;
+    int32_t lap;
+} SwoftyEvRedFlag;
+X(SwoftyEvRedFlag, race_control, RedFlag, 16)
+X(SwoftyEvRedFlag, race_control, RedFlag, lap, 12)
+```
+
+- **What checks it.** The `static_assert` stops the core build when the catalogue row and the payload disagree. `native/test/sdk_headers_test.cpp` checks each mirror's size and field offsets against the C++ payload. A unit test in `native/test/manifest.py` covers the moments the event fires on (`race_control_test.cpp`).
+- **Fired.** `Fired::no` keeps the point declared but unfired: `live()` reports it unavailable and an attach logs that the core does not fire it in this version. `Fired::yes` is fired by the core, `Fired::game` by a game hook point the core installs while it has handlers, and `Fired::after_only` runs only after handlers.
+- **The 1.x name.** A row with a 1.x name that the core fires (any `fired` but `no`) gets a shell fire from the 1.x event through `bridge_legacy` (`native/src/core/hooks/hooks.cpp`) unless the point fires its own typed payload, as `session.lap` and `session.flag` do.
 - **The KB first.** An event that changes the game's behaviour (`modify`, `cancel`) needs every binding it uses at L2 with an independent verify. A `notify` event may use a binding at L1: it only reads.
-- **Per-frame moments** use tables the core builds at content and session moments, as game hook points do (see [Hooks](/std/hooks#hook-points-the-game-calls-every-frame)).
-- **Threads:** the core logs the thread of each event's first fire, and checks it against the catalogue:
-
-```text
-[events] first session.pit on thread 0x3a08 (flow thread 0x2f1c): catalogue says session, ok
-```
+- **Per-frame moments** use tables the core builds at content and session moments, as game hook points do (see [Hooks](/std/hooks#hook-points-the-game-calls-every-frame)). A hot event (`hot` true) is logged only at its first fire of a session.

@@ -20,14 +20,20 @@ namespace rc = swofty::race_control;
 
 constexpr unsigned LINES = 200;
 
-rcl::Tracker g_tracker;
-unsigned g_lines;
+struct State {
+    rcl::Tracker tracker;
+    lv::Snapshot read{};
+    unsigned lines = 0;
+    int8_t events = -1;
+};
+
+constinit State g{};
 
 void line(const char *fmt, ...)
 {
-    if (g_lines >= LINES)
+    if (g.lines >= LINES)
         return;
-    if (++g_lines == LINES) {
+    if (++g.lines == LINES) {
         swofty::log("[race-control] %u lines this session; the rest of the session's moments fire without a line", LINES);
         return;
     }
@@ -87,17 +93,19 @@ void fire(rcl::Moments &m)
 
 namespace runtime {
 
-void race_control_tick(const lv::Snapshot *s)
+void race_control_tick(const lv::Snapshot &published)
 {
-    static const bool on = enabled("events", nullptr);
-    if (!on)
+    if (g.events < 0)
+        g.events = enabled("events", nullptr) ? 1 : 0;
+    if (!g.events)
         return;
-    uint64_t before = g_tracker.sessions();
-    rcl::Moments m = g_tracker.step(s);
-    if (!g_tracker.primed())
+    const lv::Snapshot *s = lv::snap_read(&published, &g.read) ? &g.read : nullptr;
+    uint64_t before = g.tracker.sessions();
+    rcl::Moments m = g.tracker.step(s);
+    if (!g.tracker.primed())
         return;
-    if (g_tracker.sessions() != before) {
-        g_lines = 0;
+    if (g.tracker.sessions() != before) {
+        g.lines = 0;
         report(*s);
     }
     if (!m.empty())
