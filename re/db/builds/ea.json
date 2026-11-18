@@ -747,6 +747,10 @@
    },
    "section": ".xcode",
    "note": "The KB pattern does not match the earlier EA image. EA's vtable is 0x58f5190, the one whose type record names SessionStateUnloadRewardSequence in the dump; its slots 1 and 3 to 7 and 10 match the KB vtable entry for entry. The pattern is the lea at 0xd8ec513 that loads it, in the code the EA protector moved to .xcode, where the KB bytes match once."
+  },
+  "Game_SessionStateTalkingPoints_ParseParams_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 32 E9 75 E5 77 01 0F 80 1B E8 FC FD 31 7A",
+   "note": "The KB pattern is the jmp and the protector filler after it, which differs on EA, so it matches nothing there. The EA thunk is 0x142d88b60, at the shift -0xc2c0 of Sess_StoryStartLights_OnStateEnter and Sess_PlayerTerminalDamage_Enter on either side, and the same slot of the same vtable: the pointer at 0x1458f48c8 is the KB 0x1457e2cf8, its only reference, and the 15 slots around it hold the KB slots at -0xc2c0 or -0xfdc0. Its jmp reaches the .xcode body 0x14d5237b0, which is the KB body 0x14eb3abf0 instruction for instruction (69 of 72; the protector rewrote one lea through a constant, dropped one KB-only junk and and padded one nop), with the +0xea1, +0xeb0 and +0xeb4 stores at the same places. The pattern is the EA jmp and filler, as long as the KB one; it matches once in the image."
   }
  },
  "hints": {
@@ -2140,6 +2144,9 @@
   },
   "Car_Read_Differential_Thunk": {
    "match": "0x4674080"
+  },
+  "Game_SessionStateTalkingPoints_ParseParams_Thunk": {
+   "match": "0x2d88b60"
   }
  },
  "unresolvable": {
