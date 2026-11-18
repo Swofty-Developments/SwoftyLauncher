@@ -1,4 +1,5 @@
 #include "core/runtime/loader/core_sets.hpp"
+#include "core/runtime/loader/mixin_gate.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/resolve.hpp"
 
@@ -79,7 +80,8 @@ struct Bindings {
               bag_type = 0, done = 0;
 } b;
 
-bool offered = false, settled = false, live = false;
+runtime::loader::MixinGate mixin_gate;
+bool live = false;
 std::mutex lock;
 sp::Store store;
 sp::Owed owed;
@@ -568,9 +570,9 @@ namespace runtime {
 std::vector<CoreMixins> save_splice_mixins()
 {
     std::vector<CoreMixins> out;
-    if (offered || !code_ready())
+    if (mixin_gate.offered() || !code_ready())
         return out;
-    offered = true;
+    mixin_gate.offer();
     // W4b: the career id's save slot, whether or not the splice runs.
     out.push_back({SLOT_MIXIN, {{"site_Game_SaveSlot_Selected", SWOFTY_MIXIN_SITE, 100, (void *)&slot_selected, nullptr}}});
     char v[16] = {};
@@ -619,15 +621,14 @@ void save_splice_commit()
         swofty::log("[saves] career list details off: needs SaveSlotInfo.game_setup_mode, info_season, info_weekend, "
                     "info_team, info_driver, info_vehicle, info_date and type_flags (a verify agree row each); the "
                     "list still holds every save slot's key");
-    if (!offered || settled || !b.done) {
+    if (!b.done || !mixin_gate.settle()) {
         snapshots_start(false);
         return;
     }
-    settled = true;
     live = core_mixins_active(MIXIN);
     swofty::log("[saves] save splice %s",
-                live ? "armed: save containers no loaded game mode claims are kept through each profile load and save"
-                     : "did not install (see the [core] lines)");
+                loader::install_state(live, "armed: save containers no loaded game mode claims are kept through each profile "
+                                            "load and save"));
     snapshots_start(live);
 }
 

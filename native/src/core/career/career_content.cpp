@@ -1,4 +1,5 @@
 #include "core/runtime/loader/core_sets.hpp"
+#include "core/runtime/loader/mixin_gate.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/settings.hpp"
 #include "core/runtime/resolve.hpp"
@@ -131,8 +132,9 @@ std::mutex lock;
 Slot slots[content::MAX_CONTENTS];
 std::set<std::string> records_tried;
 std::atomic<size_t> count{0};
-std::atomic<bool> offered{false}, live{false}, settled{false}, off{false};
-std::atomic<bool> route_wanted{false}, route_offered{false}, route_settled{false}, route_live{false};
+runtime::loader::MixinGate mixin_gate, route_mixin_gate;
+std::atomic<bool> live{false}, off{false};
+std::atomic<bool> route_wanted{false}, route_live{false};
 std::string off_why;
 Bound b{};
 Route *route_orig;
@@ -806,7 +808,7 @@ int add_slot(const content::Desc &desc, const std::string &who, const std::strin
     if (!record)
         for (size_t i = 0; i < n; i++)
             if (slots[i].from_record && slots[i].record == own && !slots[i].vt &&
-                (!offered || slots[i].desc.model == desc.model))
+                (!mixin_gate.offered() || slots[i].desc.model == desc.model))
                 at = i;
     std::string why = content::check(desc, [&](const char *field, const std::string &v) {
         for (size_t i = 0; i < n; i++) {
@@ -1014,11 +1016,11 @@ std::vector<CoreMixins> career_content_mixins()
 {
     std::vector<CoreMixins> out;
     from_records();
-    if (offered || !used() || off || !code_ready())
+    if (mixin_gate.offered() || !used() || off || !code_ready())
         return out;
-    offered = true;
+    mixin_gate.offer();
     std::string why;
-    if (route_settled && !route_live)
+    if (route_mixin_gate.settled() && !route_live)
         why = "the career tile route hook did not install (see the [core] lines for " + std::string(ROUTE_MIXIN) + ")";
     if (!why.empty() || !bind_all(why)) {
         off_why = why;
@@ -1047,9 +1049,9 @@ void tile_route_want()
 std::vector<CoreMixins> tile_route_mixins()
 {
     std::vector<CoreMixins> out;
-    if (!route_wanted || route_offered)
+    if (!route_wanted || route_mixin_gate.offered())
         return out;
-    route_offered = true;
+    route_mixin_gate.offer();
     out.push_back({ROUTE_MIXIN,
                    {{"FeTile_Route_CareerItem", SWOFTY_MIXIN_WRAP, 100, (void *)&route_entry, (void **)&route_orig}}});
     return out;
@@ -1057,10 +1059,10 @@ std::vector<CoreMixins> tile_route_mixins()
 
 void tile_route_commit()
 {
-    if (!route_offered || route_settled)
+    if (!route_mixin_gate.offered() || route_mixin_gate.settled())
         return;
     route_live = core_mixins_active(ROUTE_MIXIN);
-    route_settled = true;
+    route_mixin_gate.settle();
     swofty::log("[career] career tile route: %s", route_live ? "armed" : "off");
 }
 
@@ -1068,16 +1070,15 @@ static loader::FunctionSet tile_route_core_set{loader::CoreSetId::tile_route, ti
 
 TileRoute tile_route_state()
 {
-    return route_live ? TileRoute::live
-           : route_settled || (route_wanted && core_mixins_closed()) ? TileRoute::off
-                                                                     : TileRoute::pending;
+    return route_live                                                             ? TileRoute::live
+           : route_mixin_gate.settled() || (route_wanted && core_mixins_closed()) ? TileRoute::off
+                                                                                  : TileRoute::pending;
 }
 
 void career_content_commit()
 {
-    if (!offered || settled || !route_settled)
+    if (!route_mixin_gate.settled() || !mixin_gate.settle())
         return;
-    settled = true;
     if (core_mixins_active(MIXIN) && route_live) {
         live = true;
         for (size_t i = 0; i < used(); i++)

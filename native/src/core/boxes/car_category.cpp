@@ -1,4 +1,5 @@
 #include "core/runtime/loader/core_sets.hpp"
+#include "core/runtime/loader/mixin_gate.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/resolve.hpp"
 
@@ -113,7 +114,8 @@ struct Forced {
 };
 
 std::recursive_mutex lock;
-std::atomic<bool> offered, settled, live, off;
+runtime::loader::MixinGate mixin_gate;
+std::atomic<bool> live, off;
 std::string off_why;
 alignas(16) uint8_t tiles[logic::MAX_ADDED][TILE_BYTES];
 size_t tiles_used;
@@ -500,9 +502,9 @@ bool car_category_choose(const std::string &value, std::string &why)
 std::vector<CoreMixins> car_category_mixins()
 {
     std::vector<CoreMixins> out;
-    if (offered || off || !code_ready() || era_boxes().empty())
+    if (mixin_gate.offered() || off || !code_ready() || era_boxes().empty())
         return out;
-    offered = true;
+    mixin_gate.offer();
     std::string why;
     if (!bind_all(why)) {
         off_why = why;
@@ -523,9 +525,8 @@ std::vector<CoreMixins> car_category_mixins()
 
 void car_category_commit()
 {
-    if (!offered || settled || off)
+    if (off || !mixin_gate.settle())
         return;
-    settled = true;
     if (core_mixins_active(MIXIN)) {
         live = true;
         swofty::log("[car-category] Car Category hooks installed; addon boxes show from the next build of the screen");

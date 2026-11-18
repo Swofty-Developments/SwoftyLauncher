@@ -1,6 +1,7 @@
 #include "core/hud/room_cover.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/testing/virtual_pad.hpp"
+#include "core/frontend/ui_vm.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -11,8 +12,6 @@
 // The session host table (swofty_api.h SwoftySessionHost, the core export SwoftyCoreSessionHost): what a
 // plugin that sets up an online session needs from the core beyond the SDK. The core's own hooks report
 // to the plugin's listeners through the runtime::session_host_* calls below; with no plugin they do nothing.
-
-bool ui_vm_set_path(const std::string &path, int type, const void *value);
 
 namespace runtime {
 bool car_category_choose(const std::string &value, std::string &why);

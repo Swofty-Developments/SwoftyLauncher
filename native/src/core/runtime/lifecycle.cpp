@@ -6,6 +6,7 @@
 #include <optional>
 
 #include "core/diagnostics/steps.hpp"
+#include "core/hooks/hooks.hpp"
 #include "core/render/d3d12_hooks.hpp"
 #include "core/runtime/addon_api.hpp"
 #include "core/runtime/loader/bindings.hpp"
@@ -21,10 +22,6 @@
 
 namespace runtime {
 bool close_asset_registrations();
-}
-
-namespace swofty_core::hooks {
-void window_stage();
 }
 
 namespace swofty_core::services {
