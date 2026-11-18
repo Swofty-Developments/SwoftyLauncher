@@ -109,7 +109,7 @@ inline void boot_ahead(registry::Store &st, const ids::Store &live, rows::Base b
 
 // What the boot sees when it would adopt the expansion made ahead.
 struct AheadNow {
-    uint64_t store_generation = 0, ids_generation = 0;
+    uint64_t store_generation = 0;
     bool box_worlds = false;
     std::string day;
     const OlderEdits *edits = nullptr;
@@ -119,15 +119,13 @@ struct AheadNow {
 };
 
 // Empty when the boot may adopt the expansion made ahead, else why it may not. The stat-id store's generation is
-// checked again by ids::Store::commit, under its lock.
+// checked by ids::Store::commit, under its lock (adopt_ahead).
 inline std::string ahead_refusal(const Ahead &a, const AheadNow &now)
 {
     if (!a.boot || !a.ids)
         return "the expansion ahead did not finish";
     if (now.store_generation != a.store_generation)
         return "the registry changed after the expansion ahead started";
-    if (now.ids_generation != a.ids_generation)
-        return "the stat-id store changed after the expansion ahead started";
     if (now.box_worlds != a.box_worlds)
         return std::string("SWOFTY_BOX_WORLDS is ") + (now.box_worlds ? "on" : "off") + " at the boot and was " +
                (a.box_worlds ? "on" : "off") + " ahead";

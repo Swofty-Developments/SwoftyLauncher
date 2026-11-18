@@ -346,7 +346,6 @@ bool boot_from_ahead(Store &st, Database &d, Expansion &plan, uint64_t room, Ahe
     if (why.empty()) {
         AheadNow now;
         now.store_generation = scheduler().boot_generation();
-        now.ids_generation = ids::store().generation();
         now.box_worlds = box_worlds_on();
         now.day = today();
         now.edits = &d.edits;

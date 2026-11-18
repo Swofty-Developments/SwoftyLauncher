@@ -228,7 +228,6 @@ int main(int argc, char **argv)
         auto t = Clock::now();
         content::AheadNow now;
         now.store_generation = st.generation();
-        now.ids_generation = ids.generation();
         now.box_worlds = box_worlds;
         now.day = day;
         now.edits = &edits;
