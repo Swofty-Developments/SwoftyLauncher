@@ -358,5 +358,7 @@ SCRIPTS = [
            ['bash', 'native/test/wineserver_test.sh']),
     Script('std_templates', 'Standard library templates', ['python3', 'tools/std/templates.py']),
     Script('loading_report', 'Loading report on synthetic loader.log runs', ['python3', '-I', 'native/test/loading_report_test.py']),
+    Script('sigverify', 'Core signatures on the KB build and Steam 1.0.145 (skipped without both executables)',
+           ['python3', '-I', 'native/test/sigverify_test.py']),
 ]
 
