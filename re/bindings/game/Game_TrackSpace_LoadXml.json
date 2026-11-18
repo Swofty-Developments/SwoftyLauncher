@@ -85,6 +85,16 @@
    "verdict": "partial",
    "evidence": "decomp:own capstone disasm 0x1445eb600-0x1445f1b87, 0x1445f2b60-0x1445f329d, 0x1445f24c0-0x1445f2640, 0x1445f88a0-0x1445f88bc, 0x1445f8530-0x1445f85e2, 0x144502490-0x144502548, 0x14534d918-0x14534d978;xref:0x145bf1500,0x1445ec5a8,0x1445ec55b,0x1445ec584,0x1445eca8d,0x1445ecae9,0x1445ee611,0x1445ee629,0x1445ecffe,0x1445eceee,0x1445ee583,0x1445ed11b,0x1445ed1bf,0x1445f857d,0x1445ed255,0x1445ee108,0x1445ece97,0x1445ee3b7,0x1445ee481,0x1445edd0d",
    "notes": "V20018 Blind: own capstone of 0x1445eb600-0x1445f1b87 plus callee heads, derived before reading the notes. Confirmed vt slot 0x145bf1500, readers TS+0x80/TS+0x88, node/attr names, 4 logs, point4..point1 into slots 0..3, AddVolumeFromGates (3 strips, split >100), Grid Init/Insert, ReadSplineKnots, closed 1/0, 49-name _stricmp match, sector_1..3 -> AddSector, unknown log+skip, sizes, vtable range, slot-2 id list, frees, clamp/wrap, +0xc, both item vectors and bound. Wrong: drs_det/drs_act/x_mode call ParseZoneIdType 0x1445f8530 (0x1445ed1bf), not ReadProperties_Thunk, which 18 other types call directly (10 sites). Imprecise: two Gate per <Gates> (one call each, 0x1445ec55b); spline reader is [ctx+0x18]+0x28."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_TrackSpace_LoadXml",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1445eb600-0x1445f1b87, 0x1445f2b60-0x1445f2f80, 0x1445f1f30-0x1445f2194, 0x1445f24c0-0x1445f2b5f, 0x1445f8530-0x1445f85ef, 0x1445f88a0-0x1445f88bc, 0x1445f75f0-0x1445f76cc, 0x144502490-0x144502577;xref:0x145bf1500,0x1445ec7d3,0x1445ec5bd,0x1445ec55b,0x1445eca8d,0x1445ecae9,0x1445ee611,0x1445ee629,0x1445eb87f,0x1445ecffe,0x1445ed00a,0x1445ed04d,0x1445ee583,0x1445ed128,0x1445edd0d,0x1445ee108,0x1445ee113,0x1445ece97,0x1445ee37d,0x1445ee3b7,0x1445ee460,0x1445ee47e",
+   "notes": "V20021 Blind: agree, derived before reading the notes. Own capstone pass over 0x1445eb600-0x1445f1b87; only absolute pointer to it is 0x145bf1500. Readers [[ctx+0x10]+0x28]+0x80 (volumes), +0x88 (markup), [ctx+0x18]+0x28 (splines). Gate attrs point4..point1 into slots 0..3, 2 Gate per Gates, one AddVolumeFromGates per Gates (0x1445ec55b; 3 strips, split >100). TrackSpaceSpline/AiSpline -> ReadSplineKnots, finalise closed main 1/pit 0. Type _stricmp over 49 names, sector_1..3 -> AddSector, unknown logged. Sizes, vtables, 10 ReadProperties sites and ids, ZoneIdType for 31/32/48, slot-2 ids, inline checks, clamp/wrap, +0xc and both stores match. Note: own readers 2,5,8,35,44,45 also call ReadProperties."
   }
  ],
  "proofs": []
