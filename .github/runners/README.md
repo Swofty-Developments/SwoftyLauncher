@@ -67,18 +67,24 @@ The workflows save these, measured on hosted and EC2 runs in November 2026:
 |---|---|---|
 | `v0-rust-test-…-Linux-…` | Rust tests on main, and on a pull request whose key main lacks | 0.96 GB |
 | `v0-rust-test-…-Windows_NT-…` | the same | 0.84 GB |
-| `zig-Linux-0.16.0-<month>-<hash>` | the native job on main, on EC2 with only the files that run read; the step after it deletes main's older ones | 2.75 GB with every file; build.sh and the host tests read 72 MB of it locally |
+| `v0-rust-installer-…-Windows_NT-…` | the Windows installer job on main; pull requests only restore it | 0.25–0.35 GB, expected |
+| `zig-Linux-0.16.0-<month>-<hash>` | the native job on main, on EC2 with only the files that run read; the step after it deletes main's older ones | 2.85 GB with every file; a hosted run reads 96 MB (host part) and 187 MB (Wine part) of it |
 | `ccache-Linux-zig0.16.0-<part>-<run>` | the native job on every branch, one per part (`all` on EC2, `host` and `wine` on hosted runners); the step after it deletes that branch's older ones | 0.11 GB for the host part, 0.02 GB for the Wine part |
 | `wine-debs-Linux-<hash>` | the hosted Wine job, when its set of Wine packages changes; the step after it deletes that branch's older ones | 0.25 GB |
 | `pnpm-*` | the documentation build on main | 0.10 GB |
 | `setup-zig-tarball-*` | `mlugg/setup-zig`, per branch | 0.05–0.09 GB |
 
-Main holds about 4.8 GB and its ccache. Every pull request that changes native code adds its own ccache, and
-one that changes `Cargo.lock`, the toolchain or the root `[profile]` sections adds its own test caches (1.8 GB),
-so main and two such pull requests stay under 9 GB plus their ccaches. Each ccache holds only the objects its
-last run used, and at most 1 GB (`CCACHE_MAXSIZE`). In CI the
-templates' Zig cache folders link to the native one, which saves their libc++ and MinGW builds once. Clippy,
-the installer and the release builds keep no Rust cache.
+Main holds about 2.4–2.8 GB with a Zig cache of only the files its run read, and 5.2–5.4 GB with every file,
+which the native job keeps when the runner's file system records no reads. Every pull request that changes
+native code adds its own ccaches and Wine packages (0.4 GB), and one that changes `Cargo.lock`, the toolchain or
+the root `[profile]` sections adds its own test caches (1.8 GB), so main and two such pull requests stay under
+7.5 GB, or 10 GB with main's Zig cache whole. Each ccache holds only the objects its last run used, and at most
+1 GB (`CCACHE_MAXSIZE`). In CI the templates' Zig cache folders link to the native one, which saves their libc++
+and MinGW builds once. Clippy, the Linux installer and the release builds keep no Rust cache.
+
+Main's native job also deletes, on every branch, the caches under the keys only the workflow before 1.10.0
+wrote: `v0-rust-workspace-debug-`, `v0-rust-installer-release-` and `v0-rust-release-` (1.75 GB on main in
+November 2026).
 
 ## First run of the bindings workflow
 

@@ -6,7 +6,7 @@
 
 #include <cstdio>
 
-namespace cs = runtime::career_saves;
+namespace cs = career::saves;
 using swofty::json::Value;
 
 static int fails;
@@ -92,6 +92,7 @@ static void data_files()
 static void sdk_over_fake()
 {
     using namespace swofty;
+    namespace career = swofty::career;
     expect(!career::saves::available() && career::saves::index().empty() && career::saves::current().empty(),
            "without a table nothing is available");
     expect(career::saves::need("a.b") == career::Result::unavailable, "need is unavailable without a table");

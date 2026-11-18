@@ -14,7 +14,7 @@
 namespace hud::overlay {
 
 using Vertex = hud::drawlist::Vertex;
-using com::release;
+using render::com::release;
 
 constexpr UINT MAX_VERTS = hud::drawlist::MAX_VERTS;
 constexpr UINT SLOTS = 3;

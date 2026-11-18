@@ -13,7 +13,7 @@
 // a career mode and to what the player picked: the mode alone (the season or save choice comes
 // next), a new career, or an existing save.
 
-namespace runtime::career_start {
+namespace career::start {
 
 struct Route {
     const char *name;

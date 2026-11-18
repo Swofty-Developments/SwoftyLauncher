@@ -8,7 +8,7 @@
 #include "core/career/ops/lineup.hpp"
 #include "core/career/ops/tables.hpp"
 
-namespace career_ops::live {
+namespace career::ops::live {
 
 constexpr uintptr_t kVtCurrentWeekendOf = 0xa8;
 constexpr uintptr_t kWeekendRowsBegin = 0x20;
@@ -72,7 +72,7 @@ int api_set_car_number(uint32_t driver, int32_t want_number, uint32_t flags)
     if (!on_flow_thread()) {
         summary = "late: called off the flow thread";
         r = SWOFTY_ASSET_LATE;
-    } else if (!career_ops::rows::driver_id(driver) || (flags & ~uint32_t(SWOFTY_NUMBER_SWAP))) {
+    } else if (!career::ops::rows::driver_id(driver) || (flags & ~uint32_t(SWOFTY_NUMBER_SWAP))) {
         summary = "a driver save id (stat id 0..16382, the domain in bits 14-15) and flags 0 or SWOFTY_NUMBER_SWAP are needed";
         r = SWOFTY_ASSET_INVALID;
     } else if (!bind("Career_Set_EntrantData_Thunk")) {
@@ -85,18 +85,18 @@ int api_set_car_number(uint32_t driver, int32_t want_number, uint32_t flags)
         summary = "the game is in the middle of an entrant update";
         r = SWOFTY_ASSET_LATE;
     } else {
-        std::vector<career_ops::numbers::Row> view;
+        std::vector<career::ops::numbers::Row> view;
         size_t humans = 0;
         for (auto &row : rows) {
             view.push_back({driver_of(row.rec), row.rec.car_number, !teamless(row.rec)});
             humans += human(row.rec);
         }
         int idx = row_index(rows, stat, domain);
-        uint32_t key = idx >= 0 ? driver_of(rows[idx].rec) : career_ops::rows::key_of_id(driver);
-        career_ops::numbers::Plan np = career_ops::numbers::plan(view, key, want_number, flags & SWOFTY_NUMBER_SWAP);
-        if (np.error != career_ops::numbers::Error::none) {
+        uint32_t key = idx >= 0 ? driver_of(rows[idx].rec) : career::ops::rows::key_of_id(driver);
+        career::ops::numbers::Plan np = career::ops::numbers::plan(view, key, want_number, flags & SWOFTY_NUMBER_SWAP);
+        if (np.error != career::ops::numbers::Error::none) {
             summary = "refused: " + np.why;
-            r = np.error == career_ops::numbers::Error::taken ? int(SWOFTY_REFUSED) : int(SWOFTY_ASSET_INVALID);
+            r = np.error == career::ops::numbers::Error::taken ? int(SWOFTY_REFUSED) : int(SWOFTY_ASSET_INVALID);
         } else if (np.unchanged) {
             summary = "already " + number_text(rows[np.row].rec.car_number);
         } else {

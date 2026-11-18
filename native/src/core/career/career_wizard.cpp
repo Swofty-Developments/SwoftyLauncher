@@ -46,7 +46,7 @@
 
 namespace {
 
-namespace cu = runtime::career_ui;
+namespace cu = career::ui;
 namespace mem = swofty::mem;
 using swofty::game::Action;
 constexpr uintptr_t NESTR_CHARS = 0x09;

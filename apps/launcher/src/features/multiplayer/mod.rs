@@ -3,6 +3,7 @@ mod lobby;
 mod model;
 mod page;
 mod room;
+mod room_game;
 mod state;
 #[cfg(test)]
 mod tests;

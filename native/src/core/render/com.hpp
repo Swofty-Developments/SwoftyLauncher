@@ -1,6 +1,6 @@
 #pragma once
 
-namespace com {
+namespace render::com {
 
 template <class T> void release(T *&p)
 {

@@ -1,5 +1,6 @@
 pub mod link;
 
+use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 use crate::build::PLAN_FILE;
@@ -75,23 +76,50 @@ pub const ARCHIVES_DIR: &str = "archives";
 /// Drop cached archives not used for `max_age`, then the least recently used
 /// until the rest fit in `max_bytes`. An archive an overlay still links keeps
 /// its bytes there.
+/// Marks the archive cache entry at `entry` used now, for [`prune_archives`]. The mark is a file of its own
+/// beside the entry: the entry shares its inode with every overlay file linked to it, whose write time
+/// must stay the time the archive was written.
+pub fn mark_used(entry: &Path) {
+    let mark = entry.with_extension("used");
+    if let Ok(f) = std::fs::File::create(&mark) {
+        f.set_modified(std::time::SystemTime::now()).ok();
+    }
+}
+
+/// Prunes the archive cache in `dir` to the entries used within `max_age`, most recently used first up to
+/// `max_bytes`. An entry is the files under one key, its archive and the record and use mark beside it, last
+/// used when the newest of them was written or marked; the entries removed.
 pub fn prune_archives(dir: &Path, max_age: std::time::Duration, max_bytes: u64) -> usize {
-    let mut files: Vec<(std::time::SystemTime, u64, PathBuf)> = children(dir)
+    let mut entries: BTreeMap<PathBuf, (std::time::SystemTime, u64, Vec<PathBuf>)> = BTreeMap::new();
+    for e in children(dir)
         .iter()
         .flat_map(|sub| std::fs::read_dir(sub).into_iter().flatten().flatten())
-        .filter_map(|e| {
-            let meta = e.metadata().ok()?;
-            Some((meta.modified().ok()?, meta.len(), e.path()))
-        })
-        .collect();
-    files.sort_by_key(|f| std::cmp::Reverse(f.0));
+    {
+        let Some((at, len)) = e
+            .metadata()
+            .ok()
+            .and_then(|m| Some((m.modified().ok()?, m.len())))
+        else {
+            continue;
+        };
+        let path = e.path();
+        let entry = entries.entry(path.with_extension("")).or_insert((
+            std::time::SystemTime::UNIX_EPOCH,
+            0,
+            Vec::new(),
+        ));
+        entry.0 = entry.0.max(at);
+        entry.1 += len;
+        entry.2.push(path);
+    }
+    let mut entries: Vec<_> = entries.into_values().collect();
+    entries.sort_by_key(|e| std::cmp::Reverse(e.0));
     let (mut kept, mut removed) = (0u64, 0);
-    for (at, len, path) in files {
+    for (at, len, files) in entries {
         let stale = at.elapsed().is_ok_and(|age| age > max_age);
         if stale || kept + len > max_bytes {
-            if std::fs::remove_file(&path).is_ok() {
-                removed += 1;
-            }
+            let gone = files.iter().filter(|f| std::fs::remove_file(f).is_ok()).count();
+            removed += usize::from(gone > 0);
         } else {
             kept += len;
         }
@@ -126,6 +154,46 @@ mod tests {
         std::fs::create_dir_all(dir).unwrap();
         std::fs::write(dir.join(".done"), "").unwrap();
         dir.to_path_buf()
+    }
+
+    #[test]
+    fn pruning_archives_drops_the_least_recently_used_entry_whatever_its_write_time() {
+        let dir = std::env::temp_dir().join(format!("swofty-prune-archives-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(dir.join("ab")).unwrap();
+        let now = std::time::SystemTime::now();
+        let hours = |n: u64| now - std::time::Duration::from_secs(n * 3600);
+        let file = |name: &str, bytes: &[u8], at: std::time::SystemTime| {
+            let path = dir.join("ab").join(name);
+            std::fs::write(&path, bytes).unwrap();
+            std::fs::File::options()
+                .write(true)
+                .open(&path)
+                .unwrap()
+                .set_modified(at)
+                .unwrap();
+            path
+        };
+        let used = file("ab01.erp", &[1; 10], hours(3));
+        mark_used(&used);
+        let unused = file("ab02.erp", &[2; 10], hours(1));
+        let record = file("ab02.json", b"[0,[]]", hours(1));
+        let stale = file("ab03.json", b"[0,[]]", hours(100));
+        let removed = prune_archives(&dir, std::time::Duration::from_secs(72 * 3600), 16);
+        let left = |p: &Path| p.is_file();
+        assert_eq!(
+            (left(&used), left(&used.with_extension("used"))),
+            (true, true),
+            "the entry used last stays, though written first"
+        );
+        assert_eq!(
+            (left(&unused), left(&record)),
+            (false, false),
+            "an entry goes whole"
+        );
+        assert!(!left(&stale));
+        assert_eq!(removed, 2);
+        std::fs::remove_dir_all(&dir).ok();
     }
 
     #[test]

@@ -1,4 +1,4 @@
-use super::data::{shown_path, validate_report};
+use super::schemas::{shown_path, validate_report};
 use super::*;
 
 fn scratch(name: &str) -> PathBuf {

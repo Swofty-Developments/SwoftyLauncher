@@ -13,8 +13,9 @@ use gpui_kit::*;
 use swofty_core::dbedit::package::{self, Package};
 use swofty_i18n::{tr, trf, trn};
 
-use crate::features::db::{guarded, text};
+use crate::features::db::{Db, guarded, text};
 use crate::shell::Shell;
+use crate::shell::host::Host;
 use crate::ui::Callout;
 use crate::ui::theme::{Palette, palette};
 
@@ -74,11 +75,13 @@ impl Shell {
     /// applied and saves it as a .zip of game files.
     pub(crate) fn db_game_export(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let name = self
-            .db_bound()
+            .db
+            .book
+            .bound()
             .map_or_else(|| tr("DB Editor changes").to_owned(), |i| i.name.clone());
-        let n = self.db.draft.edits.len();
+        let n = self.db.book.draft.edits.len();
         let draft = (n > 0)
-            .then(|| guarded(|| Package::unsaved(&name, self.db.draft.edits.clone()).map_err(text)).ok())
+            .then(|| guarded(|| Package::unsaved(&name, self.db.book.draft.edits.clone()).map_err(text)).ok())
             .flatten();
         let profile = self.library.profile.name.clone();
         let stack = guarded(|| package::enabled_packages(&self.store, &profile).map_err(text))
@@ -88,6 +91,7 @@ impl Shell {
         let p = palette(cx);
         let file_stem = self
             .db
+            .book
             .draft
             .addon
             .as_deref()
@@ -171,23 +175,33 @@ impl Shell {
                         ),
                     };
                     shell
-                        .update(cx, |s, cx| s.db_game_export_to(pick, file, window, cx))
+                        .update(cx, |s, cx| Db::export_game_files_to(s, pick, file, window, cx))
                         .ok();
                     true
                 })
         });
     }
+}
 
-    fn db_game_export_to(&mut self, pick: Pick, file: String, window: &mut Window, cx: &mut Context<Self>) {
-        let store = self.store.clone();
-        let Some(game) = crate::features::sections::game(&store, self.game.install.as_ref()) else {
+impl Db {
+    fn export_game_files_to<H: Host<Self>>(
+        host: &mut H,
+        pick: Pick,
+        file: String,
+        window: &mut Window,
+        cx: &mut Context<H>,
+    ) {
+        let needs = host.split().1;
+        let store = needs.store.clone();
+        let Some(game) = crate::features::sections::game(&store, needs.install) else {
             window.notify(
                 Notification::error(tr("F1 25 was not found.")).title(tr("Export failed")),
                 cx,
             );
             return;
         };
-        let run = move |out: PathBuf, window: &mut Window, cx: &mut Context<Self>| {
+        let home = crate::features::db::home(&store);
+        let run = move |out: PathBuf, window: &mut Window, cx: &mut Context<H>| {
             window.notify(Notification::info(tr("Building the game files…")), cx);
             let (store, game, pick) = (store.clone(), game.clone(), pick.clone());
             cx.spawn_in(window, async move |_, cx| {
@@ -240,7 +254,7 @@ impl Shell {
             run(dir.join(&file), window, cx);
             return;
         }
-        let rx = cx.prompt_for_new_path(&crate::features::db::home(&self.store), Some(&file));
+        let rx = cx.prompt_for_new_path(&home, Some(&file));
         cx.spawn_in(window, async move |this, cx| {
             if let Ok(Ok(Some(path))) = rx.await {
                 this.update_in(cx, |_, window, cx| run(path, window, cx)).ok();

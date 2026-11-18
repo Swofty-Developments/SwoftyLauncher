@@ -8,7 +8,7 @@
 
 // The book's freezes: what a career's creation and each season start copy out of the registries into its entry,
 // and the years and data group a record belongs to.
-namespace swofty_core::snapshots {
+namespace career::snapshots {
 
 using swofty::json::Value;
 namespace fmt = format;

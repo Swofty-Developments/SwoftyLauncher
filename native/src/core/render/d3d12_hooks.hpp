@@ -12,7 +12,7 @@
 
 // The core's one set of D3D12 / DXGI hooks. Features subscribe instead of hooking the same entry points
 // themselves. Subscribe before arming; callbacks run on the game's thread inside the hooked call.
-namespace d3d12hooks {
+namespace render::d3d12 {
 
 struct Swapchain {
     void *sc = nullptr;

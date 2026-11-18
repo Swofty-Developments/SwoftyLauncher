@@ -11,7 +11,7 @@
 // 3D LUT in the build's packed form (packages/formats/src/cube.rs): "SLUT", version 1, size,
 // domain min and max, then size^3 RGB entries with red changing fastest, all little-endian.
 
-namespace grade {
+namespace render::grade {
 
 struct Lut {
     uint32_t size = 0;

@@ -19,7 +19,7 @@
 
 namespace swofty_core::apply::tracks {
 
-namespace fuel = ::career_ops::fuel;
+namespace fuel = ::career::ops::fuel;
 
 struct FuelWrite {
     uintptr_t object = 0;

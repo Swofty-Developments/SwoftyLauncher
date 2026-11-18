@@ -38,7 +38,7 @@ public:
     void set_active(bool on) { active.store(on); }
     void on_setname(ID3D12Object *o, LPCWSTR name);
     bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers);
-    void on_exec(ID3D12CommandQueue *, UINT n, ID3D12CommandList *const *lists, d3d12hooks::ExecPlan &plan);
+    void on_exec(ID3D12CommandQueue *, UINT n, ID3D12CommandList *const *lists, render::d3d12::ExecPlan &plan);
 
 private:
     void draw(ID3D12CommandQueue *q, ID3D12Resource *res, D3D12_RESOURCE_STATES state);

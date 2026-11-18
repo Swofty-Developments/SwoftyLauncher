@@ -10,7 +10,7 @@
 // and the component poll feed facts in, and settle() reports which career events to publish. The
 // clock is a millisecond value supplied by the caller, so the host test drives it directly.
 
-namespace runtime::career {
+namespace career::state {
 
 constexpr uint32_t djb2(const char *s)
 {
