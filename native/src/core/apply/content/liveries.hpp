@@ -235,13 +235,14 @@ inline std::vector<PoolScan> scan_livery_pools(const std::function<std::optional
             top = std::max<int64_t>(top, std::strtoll(v->c_str(), nullptr, 10));
     se.lo = top + 1;
     out.push_back(se);
+    // Every kind of row an unlock folder holds, as the launcher's UNLOCK_KINDS (packages/addon-api/src/ops.rs).
     static constexpr const char *KINDS[] = {
         "consumable_xp_booster", "currency_reward", "unlockable_badge_bg", "unlockable_badge_emblem",
-        "unlockable_casual_footwear", "unlockable_casual_headwear", "unlockable_decal_set", "unlockable_driver",
-        "unlockable_driver_number", "unlockable_eyewear", "unlockable_gloves", "unlockable_head", "unlockable_helmet",
-        "unlockable_item_pack", "unlockable_livery", "unlockable_personal_sticker", "unlockable_podium_emote",
-        "unlockable_pose", "unlockable_se_livery", "unlockable_suit", "unlockable_tops", "unlockable_trousers",
-        "unlockable_victory_vo"};
+        "unlockable_casual_footwear", "unlockable_casual_headwear", "unlockable_decal_group", "unlockable_decal_set",
+        "unlockable_driver", "unlockable_driver_number", "unlockable_eyewear", "unlockable_gloves", "unlockable_head",
+        "unlockable_helmet", "unlockable_item_pack", "unlockable_livery", "unlockable_personal_sticker",
+        "unlockable_podium_emote", "unlockable_pose", "unlockable_se_livery", "unlockable_suit", "unlockable_team",
+        "unlockable_tops", "unlockable_trousers", "unlockable_vehicle", "unlockable_victory_vo"};
     PoolScan un{UNLOCK_IDS, "unlockable_content.unlockable_items", 0, 65535, {}};
     int64_t utop = 0;
     for (int l = 0; l < 8; l++) {

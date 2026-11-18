@@ -51,8 +51,22 @@ pub(super) fn reason_label(r: Reason) -> &'static str {
     }
 }
 
-pub(super) fn careers_held(held: &[String]) -> String {
-    trn(held.len(), "{count} career", "{count} careers")
+pub(super) fn careers_held_line(count: usize, newest: Option<&str>, missing: usize) -> String {
+    let mut out = trn(count, "{count} career", "{count} careers");
+    if let Some(name) = newest {
+        out.push_str(&trf!(", newest: {name}", name = name));
+    }
+    if missing > 0 {
+        out.push_str(&trf!(", {missing} marked missing", missing = missing));
+    }
+    out
+}
+
+pub(super) fn missing_warning(missing: &[Brief]) -> String {
+    trf!(
+        "This version lists {careers} as missing, so restoring it does not bring them back.",
+        careers = list(missing)
+    )
 }
 
 pub(super) fn imported_from(snaps: &[Snapshot]) -> Imported {

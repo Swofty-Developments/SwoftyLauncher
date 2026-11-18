@@ -15,6 +15,7 @@
 
 #include "core/apply/moments.hpp"
 #include "core/testing/direct_start_logic.hpp"
+#include "core/testing/direct_start_tt.hpp"
 #include "core/runtime/json.hpp"
 #include "core/hud/room_cover.hpp"
 #include "core/testing/agent/agent_logic.hpp"
@@ -65,57 +66,47 @@ const runtime::Sig SIG_FTUE_EXIT{"game.state_ftue_on_state_exit",
 const runtime::Sig SIG_BUILD_SETTINGS{"game.championship_game_mode_build_session_settings",
                                       "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 68 00", 0x7b7b90};
 
-// The session driver's game addresses, each a pattern that matches once on the KB build and on Steam 26566308
-// (re/tools/sigport.py). Thunk entries and functions with no unique entry are found from a call to them, globals and
-// vtables from a load of them. The struct offsets the driver uses were checked on both builds in the game functions
-// cited beside them (sigport.py --witness: each function the same instructions on both, the offset used in the same
-// places).
-const runtime::Sig SIG_SET_SETUP_MODE{"game.entity_set_setup_mode_thunk_14079f300",
-                                      "E8 ?? ?? ?? ?? 48 8D 84 24 20 03 00 00 48 C7 84 24 10 03 00 00 80 00 00 00", 0x79f300,
-                                      runtime::Sig::rel32, 0, 1, 5};
-const runtime::Sig SIG_LIST_STAT_ID{"game.list_stat_id",
-                                    "E8 ?? ?? ?? ?? 0F B6 C0 48 8B 8F 60 05 00 00 48 8B 97 68 05 00 00 48 29 CA 48 C1 FA 04 48 39 "
-                                    "C2 0F 86 ?? ?? ?? ?? 48 C1 E0 04 48 8B 44 01 08 48 85 C0 0F 84 ?? ?? ?? ?? 4C 8B 60 10 4C 8B "
-                                    "68 18 4D 39 EC 0F 84 ?? ?? ?? ?? 48 8D 9E 88 00 00 00 4C 8D 74 24 2C 4C 8D 7C 24 30 41 8B 6C "
-                                    "24 5C",
-                                    0x24286e0, runtime::Sig::rel32, 0, 1, 5};
-const runtime::Sig SIG_ROUNDS_CLEAR{"game.rounds_clear",
-                                    "E8 ?? ?? ?? ?? 48 8B 8E 70 02 00 00 48 8B 01 FF 90 88 00 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 48 "
-                                    "89 C3",
-                                    0x420cd60, runtime::Sig::rel32, 0, 1, 5};
-const runtime::Sig SIG_ADD_TRACK{"game.add_track", "E8 ?? ?? ?? ?? 48 83 C6 08 48 39 DE 75 EC 48 8B BC 24 70 01 00 00",
-                                 0xb99450, runtime::Sig::rel32, 0, 1, 5};
-const runtime::Sig SIG_BUILD_SEASON{"game.build_season", "56 48 83 EC 20 48 89 CE BA 98 02 00 00", 0x1207290};
-const runtime::Sig SIG_FILL_ENTRANTS{"game.fill_entrants",
-                                     "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 4D 89 CE 4C 89 C7", 0x2460230};
-const runtime::Sig SIG_ROUNDS_COMPONENT{"game.rounds_component", "48 8D 15 ?? ?? ?? ?? FF 50 10 48 89 83 50 05 00 00",
-                                        0x605ad40, runtime::Sig::riprel, 0, 3, 7};
-const runtime::Sig SIG_WEEKEND_STRUCTURE{"game.weekend_structure",
-                                         "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 44 89 CD 45 89 C6", 0xb025f0};
-const runtime::Sig SIG_WEEKEND_SERVICE{"game.weekend_service",
-                                       "48 8D 15 ?? ?? ?? ?? 41 B8 01 00 00 00 FF 50 10 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B 8E 90 02 "
-                                       "00 00",
-                                       0x605ada0, runtime::Sig::riprel, 0, 3, 7};
-const runtime::Sig SIG_MESSAGE_BUS{"game.message_bus", "41 FF 51 08 48 8B 05 ?? ?? ?? ?? 48 8B 78 08", 0x618b3b8,
-                                   runtime::Sig::riprel, 4, 7, 7};
-const runtime::Sig SIG_POST_BEGIN{"game.post_begin", "E8 ?? ?? ?? ?? C6 86 F8 02 00 00 01 4C 89 F1", 0x24e2b90,
-                                  runtime::Sig::rel32, 0, 1, 5};
-const runtime::Sig SIG_POST_END{"game.post_end", "E8 ?? ?? ?? ?? C6 86 F8 02 00 00 00 85 FF", 0x24e2f00, runtime::Sig::rel32,
-                                0, 1, 5};
-const runtime::Sig SIG_VT_MSG_BEGIN{"game.vt_msg_begin",
-                                    "48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 48 8B 48 08 48 8D 54 24 20 E8 ?? ?? ?? ?? C6 86 F8 02 00 "
-                                    "00 01",
-                                    0x578d4e8, runtime::Sig::riprel, 0, 3, 7};
-const runtime::Sig SIG_VT_MSG_END{"game.vt_msg_end",
-                                  "48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 89 74 24 30 48 8B 48 08 48 8D 54 24 20 E8 ?? ?? ?? ?? "
-                                  "C6 86 F8 02 00 00 00",
-                                  0x578d510, runtime::Sig::riprel, 0, 3, 7};
-const runtime::Sig SIG_GAME_ROOT{"game.root_14601db08",
-                                 "48 8B 05 ?? ?? ?? ?? 48 8B 40 60 48 8B 88 D0 09 00 00 FF 15 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 "
-                                 "8B 40 60",
-                                 0x601db08, runtime::Sig::riprel, 0, 3, 7};
-const runtime::Sig SIG_DESPAWN_MAIN_SCENE{"game.despawn_main_scene",
+// The session driver's game addresses, each a pattern that matches once on the KB, EA and Steam 26566308 builds at the
+// same code (re/tools/sigverify.py). Thunk entries and functions with no unique entry are found from a call to them,
+// globals and vtables from a load of them. The struct offsets the driver uses were checked on the KB build and Steam
+// 26566308 in the game functions cited beside them (re/tools/sigport.py --witness: each function the same instructions
+// on both, the offset used in the same places). The game root and Entity_SetSetupMode come from the Time Trial setup,
+// which finds them the same way.
+const runtime::Sig SIG_DESPAWN_MAIN_SCENE{"game.frontend_scene_manager_despawn_main_scene_1428d9a90",
                                           "56 57 53 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 66 B8 BD 00 00 00", 0x28d9a90};
+const runtime::Sig SIG_LIST_STAT_ID{"game.entrant_list_stat_id_thunk_1424286e0",
+                                    "E8 ?? ?? ?? ?? 41 89 C6 48 8D 4C 24 50 48 8D 15", 0x24286e0, runtime::Sig::rel32, 0, 1, 5};
+const runtime::Sig SIG_ROUNDS_CLEAR{"game.championship_rounds_clear_thunk_14420cd60",
+                                    "E8 ?? ?? ?? ?? 48 8B 8E 70 02 00 00 48 8B 01 FF 90 88 00 00 00 48 85 C0 0F 84 ?? ?? ?? ?? "
+                                    "48 89 C3",
+                                    0x420cd60, runtime::Sig::rel32, 0, 1, 5};
+const runtime::Sig SIG_ADD_TRACK{"game.championship_rounds_add_track_thunk_140b99450",
+                                 "E8 ?? ?? ?? ?? 48 83 C6 08 48 39 DE 75 EC 48 8B BC 24 70 01 00 00", 0xb99450,
+                                 runtime::Sig::rel32, 0, 1, 5};
+const runtime::Sig SIG_BUILD_SEASON{"game.championship_build_season_141207290", "56 48 83 EC 20 48 89 CE BA 98 02 00 00",
+                                    0x1207290};
+const runtime::Sig SIG_FILL_ENTRANTS{"sess.build_candidate_pool_142460230",
+                                     "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 4D 89 CE 4C 89 C7", 0x2460230};
+const runtime::Sig SIG_WEEKEND_STRUCTURE{"sess.build_dev_weekend_structure_140b025f0",
+                                         "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 44 89 CD 45 89 C6", 0xb025f0};
+const runtime::Sig SIG_WEEKEND_SERVICE{"game.weekend_service_component_14605ada0",
+                                       "48 8D 15 ?? ?? ?? ?? 41 B8 01 00 00 00 FF 50 10 48 85 C0 74 4B", 0x605ada0,
+                                       runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig SIG_ROUNDS_COMPONENT{"game.championship_rounds_component_14605ad40",
+                                        "48 8D 15 ?? ?? ?? ?? FF 50 10 48 89 83 50 05 00 00", 0x605ad40, runtime::Sig::riprel,
+                                        0, 3, 7};
+const runtime::Sig SIG_MESSAGE_BUS{"ne.message_bus_14618b3b8", "48 8B 05 ?? ?? ?? ?? 48 85 C0 74 30 48 8B 48 08", 0x618b3b8,
+                                   runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig SIG_POST_BEGIN{"ne.post_entrants_document_opened_thunk_1424e2b90",
+                                  "E8 ?? ?? ?? ?? C6 86 F8 02 00 00 01 4C 89 F1", 0x24e2b90, runtime::Sig::rel32, 0, 1, 5};
+const runtime::Sig SIG_POST_END{"ne.post_entrants_document_closed_thunk_1424e2f00", "E8 ?? ?? ?? ?? C6 86 F8 02 00 00 00 85 FF",
+                                0x24e2f00, runtime::Sig::rel32, 0, 1, 5};
+const runtime::Sig SIG_VT_MSG_BEGIN{"game.vt_entrants_document_opened_14578d4e8",
+                                    "4C 8D 25 ?? ?? ?? ?? 4C 89 64 24 50 48 8B 48 08", 0x578d4e8, runtime::Sig::riprel, 0, 3, 7};
+// sigverify.py's slot comparison reads two slots past this vtable; its type getter (slot 1) names EntrantsDocumentClosed
+// on all three builds.
+const runtime::Sig SIG_VT_MSG_END{"game.vt_entrants_document_closed_14578d510",
+                                  "48 8D 0D ?? ?? ?? ?? 48 89 4C 24 38 4C 89 74 24 48", 0x578d510, runtime::Sig::riprel, 0, 3, 7};
 
 struct GrandPrix {
     uintptr_t set_setup_mode = 0, list_stat_id = 0, rounds_clear = 0, add_track = 0, build_season = 0, fill_entrants = 0,
@@ -130,22 +121,23 @@ struct GrandPrix {
 } gp;
 uintptr_t root_global = 0, despawn_main_scene = 0;
 
-// What the driver's struct offsets were checked on: the KB build and Steam 26566308 (sigport.py --witness, each
-// function cited beside the offsets it backs).
+// The builds the driver runs on: every build whose struct layouts were checked against the signatures' functions
+// (bp::proofs::VERIFIED_LAYOUT; the KB build and Steam 26566308 also by sigport.py --witness, each function cited
+// beside the offsets it backs).
 namespace bp = runtime::build_proof;
-constexpr uint32_t KB_AND_1_0_145 = bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145);
+constexpr uint32_t VERIFIED_BUILDS = bp::proofs::VERIFIED_LAYOUT.builds;
 constexpr bp::Proof SESSION_DRIVER{"the session driver's layout (the Grand Prix entity +0x1030, +0xf08, +0xf58, +0xe18, "
                                    "+0x2e0, +0x2b0, +0x2d8, +0x2f8; entrants 0x88 with +0x48, +0x4b; the weekend chain "
                                    "+0x88, +0x260, +0x1058, +0x548, +0x560, +0x288, +0x2a0, +0x220, +0x238, +0x278; "
                                    "StateLoadSession +0xcd0; the fade owner +0xa0, +0x7b8, +0x7bc; the front end scene "
                                    "+0xd20, +0x40, +0x1048)",
-                                   KB_AND_1_0_145};
+                                   VERIFIED_BUILDS};
 constexpr bp::Gate DIRECT_START{"the direct start", &SESSION_DRIVER};
-constexpr bp::Proof FTUE_QUEUE{"StateFTUE's interrupt queue (+0xbf8, its front +0x30, the kind at +0x10)", KB_AND_1_0_145};
+constexpr bp::Proof FTUE_QUEUE{"StateFTUE's interrupt queue (+0xbf8, its front +0x30, the kind at +0x10)", VERIFIED_BUILDS};
 constexpr bp::Gate FTUE_EXIT{"the direct start's StateFTUE exit", &FTUE_QUEUE};
 constexpr bp::Proof FLOW_STATES{"the flow states' layout (+0xb0, +0xb8, +0xc0, +0xaf0, +0xb30, +0xbd8, +0xc10) and the "
                                 "link's stack slot (+0x40)",
-                                KB_AND_1_0_145};
+                                VERIFIED_BUILDS};
 constexpr bp::Gate FLOW_LINK{"the direct start's flow link", &FLOW_STATES};
 
 constexpr uintptr_t MANAGER_MODES = 0xc0, ENTITY_REGISTRY = 0x1030, ENTITY_MODE = 0xf08;
@@ -240,8 +232,10 @@ void release_frontend_fade()
 {
     auto *root = root_global ? *reinterpret_cast<uint8_t **>(root_global) : nullptr;
     uint8_t *owner = nullptr;
-    if (!root || !rd(root, 0xa0, owner) || !owner || !runtime::readable(owner + 0x7b8, 0x18))
+    if (!root || !rd(root, 0xa0, owner) || !owner || !runtime::readable(owner + 0x7b8, 0x18)) {
+        swofty::log("[direct] no fade owner to release FrontEnd on (game root %p)", root);
         return;
+    }
     auto &mask = *reinterpret_cast<uint32_t *>(owner + 0x7b8);
     uint32_t was = mask, state = *reinterpret_cast<uint32_t *>(owner + 0x7bc);
     fade_released = true;
@@ -333,10 +327,6 @@ void despawn_frontend_scene(const char *when)
 {
     if (frontend_scene_despawned.load())
         return;
-    if (!despawn_main_scene) {
-        swofty::log("[direct] the front end's main scene is not despawned %s: its despawn did not resolve", when);
-        return;
-    }
     uint8_t *mgr = nullptr;
     bool spawned = frontend_main_scene(mgr);
     if (!mgr) {
@@ -345,6 +335,10 @@ void despawn_frontend_scene(const char *when)
     }
     if (!spawned) {
         swofty::log("[direct] the front end's main scene is not spawned %s (manager %p)", when, mgr);
+        return;
+    }
+    if (!despawn_main_scene) {
+        swofty::log("[direct] the front end's main scene stays %s: DespawnMainScene did not resolve", when);
         return;
     }
     frontend_scene_despawned = true;
@@ -707,8 +701,7 @@ constinit void (*time_trial_screen)(const char *name) = nullptr;
 // writes the requested laps over it after the game's own value. On Steam 26566308 the function is the same 1358
 // instructions with the laps at the same +0xdf0 / +0xdf8 (re/tools/sigport.py --compare, sigverify.py --disp).
 constexpr runtime::build_proof::Proof SESSION_LAPS{"the session settings' laps layout (+0xdf0, +0xdf8)",
-                                                   runtime::build_proof::bit(runtime::build_proof::Build::kb) |
-                                                       runtime::build_proof::bit(runtime::build_proof::Build::steam_1_0_145)};
+                                                   runtime::build_proof::proofs::VERIFIED_LAYOUT.builds};
 constexpr runtime::build_proof::Gate RACE_LAPS{"the direct start's race laps", &SESSION_LAPS};
 safetyhook::InlineHook h_settings;
 
@@ -1310,23 +1303,23 @@ void direct_start_setup()
         swofty::log("[direct] off: the session driver's layout is not proven on this build");
         return;
     }
-    root_global = runtime::find(SIG_GAME_ROOT, "game root", "direct");
-    despawn_main_scene = runtime::find(SIG_DESPAWN_MAIN_SCENE, "front end scene despawn", "direct");
+    root_global = runtime::direct_start::tt::game_root();
+    despawn_main_scene = runtime::find(SIG_DESPAWN_MAIN_SCENE, "front end scene", "direct");
     if (target == "session") {
-        gp.set_setup_mode = runtime::find(SIG_SET_SETUP_MODE, "Grand Prix setup", "direct");
-        gp.list_stat_id = runtime::find(SIG_LIST_STAT_ID, "Grand Prix setup", "direct");
-        gp.rounds_clear = runtime::find(SIG_ROUNDS_CLEAR, "Grand Prix setup", "direct");
-        gp.add_track = runtime::find(SIG_ADD_TRACK, "Grand Prix setup", "direct");
-        gp.build_season = runtime::find(SIG_BUILD_SEASON, "Grand Prix setup", "direct");
-        gp.fill_entrants = runtime::find(SIG_FILL_ENTRANTS, "Grand Prix setup", "direct");
-        gp.rounds_component = runtime::find(SIG_ROUNDS_COMPONENT, "Grand Prix setup", "direct");
-        gp.weekend_structure = runtime::find(SIG_WEEKEND_STRUCTURE, "Grand Prix setup", "direct");
-        gp.weekend_service = runtime::find(SIG_WEEKEND_SERVICE, "Grand Prix setup", "direct");
-        gp.message_bus = runtime::find(SIG_MESSAGE_BUS, "Grand Prix setup", "direct");
-        gp.post_begin = runtime::find(SIG_POST_BEGIN, "Grand Prix setup", "direct");
-        gp.post_end = runtime::find(SIG_POST_END, "Grand Prix setup", "direct");
-        gp.vt_msg_begin = runtime::find(SIG_VT_MSG_BEGIN, "Grand Prix setup", "direct");
-        gp.vt_msg_end = runtime::find(SIG_VT_MSG_END, "Grand Prix setup", "direct");
+        gp.set_setup_mode = runtime::direct_start::tt::set_setup_mode();
+        gp.list_stat_id = runtime::find(SIG_LIST_STAT_ID, "Grand Prix weekend", "direct");
+        gp.rounds_clear = runtime::find(SIG_ROUNDS_CLEAR, "Grand Prix weekend", "direct");
+        gp.add_track = runtime::find(SIG_ADD_TRACK, "Grand Prix weekend", "direct");
+        gp.build_season = runtime::find(SIG_BUILD_SEASON, "Grand Prix weekend", "direct");
+        gp.fill_entrants = runtime::find(SIG_FILL_ENTRANTS, "Grand Prix weekend", "direct");
+        gp.rounds_component = runtime::find(SIG_ROUNDS_COMPONENT, "Grand Prix weekend", "direct");
+        gp.weekend_structure = runtime::find(SIG_WEEKEND_STRUCTURE, "Grand Prix weekend", "direct");
+        gp.weekend_service = runtime::find(SIG_WEEKEND_SERVICE, "Grand Prix weekend", "direct");
+        gp.message_bus = runtime::find(SIG_MESSAGE_BUS, "Grand Prix weekend", "direct");
+        gp.post_begin = runtime::find(SIG_POST_BEGIN, "Grand Prix weekend", "direct");
+        gp.post_end = runtime::find(SIG_POST_END, "Grand Prix weekend", "direct");
+        gp.vt_msg_begin = runtime::find(SIG_VT_MSG_BEGIN, "Grand Prix weekend", "direct");
+        gp.vt_msg_end = runtime::find(SIG_VT_MSG_END, "Grand Prix weekend", "direct");
     }
     // StateFTUE's exit: on Steam 26566308 the same 178 instructions, with the interrupt queue +0xbf8 and its front +0x30
     // in the same places (the pattern holds the queue's +0x18 / +0x20 and the front's kind at +0x10).

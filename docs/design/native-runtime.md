@@ -81,7 +81,7 @@ A game update moves struct offsets, so code that reads or writes a struct field 
 namespace bp = runtime::build_proof;
 
 constexpr bp::Proof SESSION_LAPS{"the session settings' laps layout (+0xdf0, +0xdf8)",
-                                 bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145)};
+                                 bp::proofs::VERIFIED_LAYOUT.builds};   // or bp::bit(bp::Build::kb) | ...
 constexpr bp::Gate RACE_LAPS{"the direct start's race laps", &SESSION_LAPS};   // testing/direct_start.cpp
 
 if (!runtime::holds(RACE_LAPS))   // logs once: "[build] the direct start's race laps off on <exe>: <proof> is proven on <builds> only"

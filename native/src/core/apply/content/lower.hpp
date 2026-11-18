@@ -724,6 +724,12 @@ inline void lower_package(const std::string &id, const Value &rec, const Lookup 
     if (standing_rows && *standing_rows && teams.size() > *standing_rows)
         plan.lines.push_back("content.package " + id + ": standings " + standings + " has " + std::to_string(teams.size()) +
                              " teams; " + standings_from + " holds " + std::to_string(*standing_rows) + ", the rest are added");
+    if (standing_rows && teams.size() && teams.size() < *standing_rows) {
+        push_op(plan, set_op(own_standings, "_team_reference_instancecount_", std::to_string(teams.size())));
+        plan.lines.push_back("content.package " + id + ": standings " + standings + " has " + std::to_string(teams.size()) +
+                             " teams; " + standings_from + " holds " + std::to_string(*standing_rows) +
+                             ", the rest are left out");
+    }
     Value row = Value::object({{"_metadata_", list},
                                {"display_name", title},
                                {"previous_season_team_standings", standings},
@@ -792,6 +798,11 @@ inline void lower_package(const std::string &id, const Value &rec, const Lookup 
     if (list_rows && *list_rows && slot > *list_rows)
         plan.lines.push_back("content.package " + id + ": entrant list " + list + " has " + std::to_string(slot) +
                              " entrants; " + list_from + " holds " + std::to_string(*list_rows) + ", the rest are added");
+    if (list_rows && slot && slot < *list_rows) {
+        push_op(plan, set_op(own_list, "_entrant_instancecount_", std::to_string(slot)));
+        plan.lines.push_back("content.package " + id + ": entrant list " + list + " has " + std::to_string(slot) +
+                             " entrants; " + list_from + " holds " + std::to_string(*list_rows) + ", the rest are left out");
+    }
     Value scenario = Value::object({{"_metadata_", list},
                                     {"display_name", title},
                                     {"entrant_list", list},

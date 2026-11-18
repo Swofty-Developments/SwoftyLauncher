@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "uint32_t (void *cfg)",
   "evidence": "decomp:re/decomp/1443db170.c;xref:0x145a89248",
-  "notes": "myteam-g1: Reads ResourceMessageHandler.synchronousResourceProcessingTimeBudget and ErpLoader.* settings (readBufferSize 0x200000, readBufferCount 4, forceSequentialReads). Generic engine resource loader config."
+  "notes": "myteam-g1: Reads ResourceMessageHandler.synchronousResourceProcessingTimeBudget and ErpLoader.* settings (readBufferSize 0x200000, readBufferCount 4, forceSequentialReads). Generic engine resource loader config.  2026-11-17 engine-re: also AssetGroupLoader.rollbackOnLoadError (default 0), AssetGroupLoader.retryOnDescriptionLoadError (0), AssetGroupLoader.pathPrefix/pathSuffix (0x40-byte strings at 0x14628f520/0x14628f560), Storage.UserMarkers.decompressErp, ErpLoader.useApr; ends by loading the asset manifest (Ne_AssetManifest_Load 0x143a5a550, call 0x1443dbe67)"
  },
  "signature": {
   "id": "core.init_resource_message_handler_config",
