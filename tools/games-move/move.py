@@ -42,7 +42,7 @@ def to_new(p):
     for name in ENTRIES:
         old = f"{SRC}/{name}"
         if p == old or p.startswith(old + "/"):
-            return f"{INTO}/{name}{p[len(old):]}"
+            return f"{INTO}/{name}{p[len(old) :]}"
     return p
 
 
@@ -52,7 +52,7 @@ def to_old(p):
     for name in ENTRIES:
         new = f"{INTO}/{name}"
         if p == new or p.startswith(new + "/"):
-            return f"{SRC}/{name}{p[len(new):]}"
+            return f"{SRC}/{name}{p[len(new) :]}"
     return p
 
 
@@ -63,7 +63,7 @@ def exists_after(p):
 
 
 def git(*args, check=True):
-    out = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True)
+    out = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, check=False)
     if check and out.returncode != 0:
         sys.exit(f"git {' '.join(args)}: {out.stderr.strip()}")
     return out.stdout
@@ -97,13 +97,13 @@ def include_edits(files, problems):
         new_dir = posixpath.dirname(new_rel)
         old_dir = posixpath.dirname(to_old(new_rel))
 
-        def fix(m):
+        def fix(m, rel=rel, new_dir=new_dir, old_dir=old_dir):
             arg = m.group(2)
             if exists_after(posixpath.normpath(posixpath.join(new_dir, arg))):
                 return m.group(0)
             target = to_new(posixpath.normpath(posixpath.join(old_dir, arg)))
             if not exists_after(target):
-                problems.append(f"{rel}: {m.group(1)}!(\"{arg}\") points at nothing")
+                problems.append(f'{rel}: {m.group(1)}!("{arg}") points at nothing')
                 return m.group(0)
             return f'{m.group(1)}!("{posixpath.relpath(target, new_dir)}")'
 
@@ -175,11 +175,7 @@ REEXPORT = re.compile(r"pub use games::f1_25::\{([^}]*)\};\n")
 
 
 def lib_edit(text):
-    kept = [
-        line
-        for line in text.splitlines(keepends=True)
-        if not any(line == f"pub mod {m};\n" for m in MODULES)
-    ]
+    kept = [line for line in text.splitlines(keepends=True) if not any(line == f"pub mod {m};\n" for m in MODULES)]
     text = "".join(kept)
     names = sorted(MODULES)
     line = f"pub use games::f1_25::{{{', '.join(names)}}};\n"
@@ -187,13 +183,13 @@ def lib_edit(text):
     if found:
         have = sorted(n.strip() for n in found.group(1).split(",") if n.strip())
         return text if have == names else text.replace(found.group(0), line)
-    mods = [m.end() for m in re.finditer(r"^pub mod \w+;\n", text, re.M)]
+    mods = [m.end() for m in re.finditer(r"^pub mod \w+;\n", text, re.MULTILINE)]
     at = mods[-1] if mods else 0
     return text[:at] + "\n" + line + text[at:]
 
 
 def f1_mod_edit(text):
-    missing = [m for m in MODULES if not re.search(rf"^pub mod {m};$", text, re.M)]
+    missing = [m for m in MODULES if not re.search(rf"^pub mod {m};$", text, re.MULTILINE)]
     if not missing:
         return text
     lines = text.splitlines(keepends=True)
@@ -244,7 +240,7 @@ def apply_after_moves(check):
 def cargo(*args, env=None):
     print("+ cargo", " ".join(args), flush=True)
     full = dict(os.environ, **(env or {}))
-    if subprocess.run(["cargo", *args], cwd=ROOT, env=full).returncode != 0:
+    if subprocess.run(["cargo", *args], cwd=ROOT, env=full, check=False).returncode != 0:
         sys.exit(f"cargo {' '.join(args)} failed")
 
 
@@ -299,7 +295,11 @@ def main():
         cargo("fmt", "--all")
         if not (ROOT / BOUNDARY).exists():
             cargo(
-                "test", "-p", "swofty-core", "--test", "boundary",
+                "test",
+                "-p",
+                "swofty-core",
+                "--test",
+                "boundary",
                 env={"SWOFTY_BOUNDARY_UPDATE": "1"},
             )
         git("add", "-A")
