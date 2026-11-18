@@ -22,6 +22,15 @@ class NativeTables(unittest.TestCase):
                 self.assertIsNone(buildport.identify(self.known, k['pe_timestamp'], k['size_of_image']))
         self.assertIsNone(buildport.identify(self.known, 1, 1))
 
+    def test_a_qualified_bit_reads_as_the_plain_one(self):
+        bit = dict(self.order)
+        plain = buildport.Expr('bit(Build::kb) | bit(Build::steam_1_0_145)', {}, bit).value()
+        qualified = buildport.Expr(
+            'build_proof::bit(build_proof::Build::kb) | build_proof::bit(build_proof::Build::steam_1_0_145)', {}, bit
+        ).value()
+        self.assertEqual(qualified, plain)
+        self.assertEqual(plain, 1 << bit['kb'] | 1 << bit['steam_1_0_145'])
+
     def test_every_proof_names_known_builds_and_where_it_is(self):
         self.assertTrue(self.proofs)
         for p in self.proofs.values():
