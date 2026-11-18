@@ -284,8 +284,8 @@ impl Host<Launching> for Shell {
 
     fn changed(&mut self, change: PlayChange, _: &mut Context<Self>) {
         match change {
-            PlayChange::RoomLaunched(started) => self.room_launch_result(started),
-            PlayChange::HoldRoom(room) => self.room_hold(room),
+            PlayChange::RoomLaunched(started) => self.rooms.launch_result(started),
+            PlayChange::HoldRoom(room) => self.rooms.hold(room),
         }
     }
 }
@@ -488,10 +488,10 @@ impl Shell {
     }
 
     pub(crate) fn play(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let room = self.room_take_held();
+        let room = self.rooms.take_held();
         let is_room = room.is_some();
         if !Launching::play_for(self, room, window, cx) && is_room {
-            self.room_launch_result(false);
+            self.rooms.launch_result(false);
         }
     }
 
