@@ -80,6 +80,8 @@ assert any("11 teams, its world holds 10 garages: season swofty_box_cs_f1_2016" 
            "layer swofty_box_cs_f1_2016_world (f1_26, 11 garages" in l for l in lines), lines
 print("box worlds on the game database: an 11-team swofty_f1 box gets its own season and f1_26 layer")
 EOF
+    python3 content/check_boot_ahead.py "$OUT/rows_tool" "$GAMEDB" "$OUT" "${CS[@]}" -- \
+        swofty.classic-seasons-2016 "$OUT/box_world_box.json"
 else
     echo "game database steps skipped: $(cat "$OUT/stock_gamedb.why")"
 fi

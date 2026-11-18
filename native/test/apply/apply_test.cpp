@@ -312,8 +312,11 @@ void test_ids_ahead()
     check(live.generation() == g, "reading the stat-id store leaves its generation where it was");
     live.allocate("vehicle", "x/a", "d");
     check(live.generation() == g, "an allocation that keeps an id is a read too");
+    live.map_for_career("a career");
+    g = live.generation();
     ap::ids::Store ahead(live);
-    check(ahead.generation() == g && ahead.dump() == live.dump(), "a copy carries the contents and the generation");
+    check(ahead.generation() == g && ahead.dump() == live.dump() && ahead.dump().find("a career") != std::string::npos,
+          "a copy carries the contents, careers included, and the generation");
     ahead.allocate("vehicle", "x/b", "d");
     ahead.set_live("vehicle", {"x/a", "x/b"});
     check(ahead.generation() != g && live.generation() == g && live.get("vehicle", "x/b").id == -1,
