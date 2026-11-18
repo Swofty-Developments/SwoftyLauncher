@@ -195,28 +195,34 @@ impl ErpBuild<'_> {
     // The in-game loader patches only archives the asset groups list, through the
     // manifest's name map; the engine opens any other archive, such as the shader
     // packages Simplified Studio packs mods into, through a hashed path an overlay never
-    // reaches. Those are written whole: the stock archive with every addon's resources.
-    pub fn take_outside(&mut self, out: &Path) -> Result<Vec<String>> {
+    // reaches. Those are written whole: the stock archive with every addon's resources,
+    // linked from `cache` when an earlier build wrote the same. The archives written and
+    // how many came from the cache.
+    pub fn take_outside(&mut self, out: &Path, cache: Option<&Path>) -> Result<(Vec<String>, usize)> {
         let outside: Vec<String> = self
             .erps
             .iter()
             .filter(|(rel, a)| !served_at_runtime(rel) && !a.untouched())
             .map(|(rel, _)| rel.clone())
             .collect();
+        let mut reused = 0;
         for rel in &outside {
             let archive = self.erps.remove(rel).expect("listed above");
-            ArchiveWrite::new(out, rel.clone(), archive, None, &self.packer).run()?;
+            reused += usize::from(ArchiveWrite::new(out, rel.clone(), archive, cache, &self.packer).run()?);
         }
-        Ok(outside)
+        Ok((outside, reused))
     }
 
-    pub fn take_resized(&mut self, out: &Path) -> Result<Vec<Resized>> {
+    /// Writes whole the archives [`Self::resized`] finds, linking from `cache` the ones an earlier
+    /// build wrote the same; those archives and how many came from the cache.
+    pub fn take_resized(&mut self, out: &Path, cache: Option<&Path>) -> Result<(Vec<Resized>, usize)> {
         let found = self.resized();
+        let mut reused = 0;
         for r in &found {
             let archive = self.erps.remove(&r.erp).expect("found above");
-            ArchiveWrite::new(out, r.erp.clone(), archive, None, &self.packer).run()?;
+            reused += usize::from(ArchiveWrite::new(out, r.erp.clone(), archive, cache, &self.packer).run()?);
         }
-        Ok(found)
+        Ok((found, reused))
     }
 
     pub fn write(self, out: &Path) -> Result<Vec<String>> {

@@ -27,12 +27,93 @@ fn archives_outside_the_asset_groups_are_written_whole() {
     apply(&mut b, &ops, &addon).unwrap();
 
     assert!(served_at_runtime(group) && !served_at_runtime(shader));
-    assert_eq!(b.take_outside(&out).unwrap(), [shader]);
+    assert_eq!(b.take_outside(&out, None).unwrap(), (vec![shader.to_owned()], 0));
     let written = Erp::parse(&std::fs::read(out.join(shader)).unwrap()).unwrap();
     let names: Vec<&str> = written.resources.iter().map(|r| r.name.as_str()).collect();
     assert_eq!(names, ["eaid://shader", "eaid://car"]);
     let left: Vec<&str> = b.resources().map(|(rel, ..)| rel).collect();
     assert_eq!(left, [group]);
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn a_runtime_route_build_links_the_archives_it_builds_into_the_game_files_unchanged() {
+    use crate::erp::pack::frame_cache;
+    let root = std::env::temp_dir().join(format!("swofty-erpcache-built-in-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let (game, addon) = (root.join("game"), root.join("addon"));
+    let shader = "shader_package_2025/object_flag.nefx2.sm51.erp";
+    let group = "2025_asset_groups/ui_package/screens.erp";
+    let (shader_res, group_res) = ("eaid://shader", "eaid://ui_package/screens/a.ui");
+    let noise = |seed: u8, len: u32| -> Vec<u8> {
+        (0..len)
+            .map(|i| ((i % 251) as u8 ^ (i / 1021) as u8).wrapping_add(seed))
+            .collect()
+    };
+    for (rel, name) in [(shader, shader_res), (group, group_res)] {
+        let path = game.join(rel);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(
+            path,
+            archive(vec![frame_cache::zstd_resource(
+                name,
+                "UIDF",
+                &noise(1, 20 << 10),
+            )]),
+        )
+        .unwrap();
+    }
+    std::fs::create_dir_all(addon.join("raw")).unwrap();
+    std::fs::write(addon.join("raw/shader.bin"), noise(2, 24 << 10)).unwrap();
+    std::fs::write(addon.join("raw/screen.bin"), noise(3, 24 << 10)).unwrap();
+    let replace = |erp: &str, res: &str, src: &str| {
+        format!(
+            r#"{{"op":"replace-resource","erp":"{erp}","resource":"{res}","fragment":0,"source":"raw/{src}"}}"#
+        )
+    };
+    let ops = erp_ops(&format!(
+        r#"{{"schema_version":1,"ops":[{},{}]}}"#,
+        replace(shader, shader_res, "shader.bin"),
+        replace(group, group_res, "screen.bin")
+    ));
+    let original = |rel: &str| game.join(rel);
+    let (zstd, cache) = (root.join("zstd"), root.join("archives"));
+    let build = |n: &str, cache: Option<&Path>| {
+        let mut b = ErpBuild::new(&original).with_packer(Packer::cached(&zstd).deferring(true));
+        apply(&mut b, &ops, &addon).unwrap();
+        let out = root.join(n);
+        let (outside, outside_reused) = b.take_outside(&out, cache).unwrap();
+        let (resized, resized_reused) = b.take_resized(&out, cache).unwrap();
+        assert_eq!(outside, [shader]);
+        assert_eq!(
+            resized.iter().map(|r| r.erp.as_str()).collect::<Vec<_>>(),
+            [group]
+        );
+        let bytes = [shader, group].map(|rel| std::fs::read(out.join(rel)).unwrap());
+        (bytes, outside_reused + resized_reused)
+    };
+    let (first, reused) = build("one", Some(&cache));
+    assert_eq!(reused, 0);
+    assert_eq!(
+        frame_cache::mark(&zstd),
+        2,
+        "the replaced fragments are in the frame cache"
+    );
+    let (again, reused) = build("two", Some(&cache));
+    assert_eq!(reused, 2, "the same build links both archives");
+    assert_eq!(again, first);
+    assert_eq!(
+        again.map(|a| frame_cache::marked_in(&a)),
+        [0, 0],
+        "a linked archive compresses nothing"
+    );
+    let (uncached, reused) = build("three", None);
+    assert_eq!(reused, 0);
+    assert_eq!(
+        uncached.map(|a| frame_cache::marked_in(&a)),
+        [1, 1],
+        "without the archive cache it compresses again"
+    );
     std::fs::remove_dir_all(&root).ok();
 }
 
@@ -129,7 +210,7 @@ fn a_same_size_handling_file_rewrites_its_archive_instead_of_the_runtime_overlay
     }];
     assert_eq!(b.resized(), expected);
     let out = root.join("out");
-    assert_eq!(b.take_resized(&out).unwrap(), expected);
+    assert_eq!(b.take_resized(&out, None).unwrap(), (expected, 0));
     assert_eq!(b.resources().count(), 0);
     let written = Erp::parse(&std::fs::read(out.join("car/ferrari.erp")).unwrap()).unwrap();
     assert_eq!(
@@ -199,7 +280,7 @@ fn a_resized_scene_rewrites_its_archive_instead_of_the_runtime_overlay() {
     }];
     assert_eq!(b.resized(), expected);
     let out = root.join("out");
-    assert_eq!(b.take_resized(&out).unwrap(), expected);
+    assert_eq!(b.take_resized(&out, None).unwrap(), (expected, 0));
     let left: Vec<(&str, &str)> = b.resources().map(|(e, r, _, _)| (e, r.name.as_str())).collect();
     assert_eq!(left, [("ui/hq.erp", side)]);
     assert_eq!(b.write(&root.join("rest")).unwrap(), ["ui/hq.erp"]);

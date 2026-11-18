@@ -407,9 +407,9 @@ impl Pipeline<'_, '_> {
         if let Some(note) = planner.route_note(Kind::Erp) {
             built.lines.push(format!("erp: {note}"));
         }
+        let archives = run.store.root.join("cache").join(crate::cache::ARCHIVES_DIR);
         if planner.route(Kind::Erp) != Route::Runtime {
             let resized = erps.resized();
-            let archives = run.store.root.join("cache").join(crate::cache::ARCHIVES_DIR);
             let (written, reused) = erps.write_cached(&built.overlay, Some(&archives), &|| run.cancel())?;
             if reused > 0 {
                 built.lines.push(format!(
@@ -420,13 +420,13 @@ impl Pipeline<'_, '_> {
             stage_erps(built, staged, written)?;
             return Ok(resized);
         }
-        let outside = erps.take_outside(&built.overlay)?;
+        let (outside, outside_reused) = erps.take_outside(&built.overlay, Some(&archives))?;
         for rel in &outside {
             built.lines.push(format!(
                 "erp: {rel} built into the game files; the in-game loader patches only archives under 2025_asset_groups"
             ));
         }
-        let resized = erps.take_resized(&built.overlay)?;
+        let (resized, resized_reused) = erps.take_resized(&built.overlay, Some(&archives))?;
         for r in &resized {
             let (uri, why) = &r.resources[0];
             built.lines.push(format!(
@@ -436,6 +436,13 @@ impl Pipeline<'_, '_> {
             ));
         }
         let built_in: Vec<String> = resized.iter().map(|r| r.erp.clone()).chain(outside).collect();
+        let reused = outside_reused + resized_reused;
+        if reused > 0 {
+            built.lines.push(format!(
+                "erp: {reused} of the {} archive(s) built into the game files unchanged since an earlier build, linked from the cache",
+                built_in.len()
+            ));
+        }
         let Applied { ranks, prebuilt } = applied;
         if !prebuilt.is_empty() {
             built.lines.push(format!(
