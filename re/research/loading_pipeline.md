@@ -868,6 +868,14 @@ calls only).
   - the boot stage.
 
   `g_Gdb_Database` has 237 direct readers that do not call the lookup. Sample a few of them before trusting the probe alone.
+
+  The probe is `native/src/core/assets/db_first_read.cpp`, on with `SWOFTY_DB_FIRST_READ=1`. It lists the first 24
+  distinct call sites after the core's edits, and the first 8 from other threads while the edits run. The boot step
+  comes from the boot thread's stack: while step N runs, the slot under `Boot_Init_NeApplication`'s frame holds that
+  step's return site. The function is 318 of 318 instructions the same on each port, and each of the 28 return sites
+  follows a call there. Each listed line names the path and whether it was found, the caller, the thread, the time
+  since the load returned and since the edits, and the boot step. One line at the end of the edits gives their time,
+  their own lookups, and how many lookups came from other threads during them.
 - **Step 17**, which sets up the job system's workers. After it, a job on another thread can read the database.
 - **The core's own readers**: `boot16()` reads the edited database, and the core's window stage (`window_stage`, step 22)
   reads `g_Gdb_Database` to report the edits.
