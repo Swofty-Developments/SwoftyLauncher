@@ -40,6 +40,7 @@ mod addons;
 mod archives;
 mod cars;
 mod database;
+mod digests;
 mod failure;
 mod picture;
 mod registry;

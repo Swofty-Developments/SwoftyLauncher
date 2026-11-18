@@ -5,6 +5,7 @@ use swofty_formats::gvdb::Gvdb;
 
 use super::addons::{Gather, Gathered, experimental_features};
 use super::buildhash::BuildHash;
+use super::digests::Digests;
 use super::registry::replaced_operations;
 use super::run::Run;
 use super::setup::Setup;
@@ -64,7 +65,7 @@ impl Inputs {
         let (store, game, profile) = (run.store, run.game, run.profile);
         let (addons, p, on) = (run.addons, run.settings, run.on);
         let mut planner = setup.planner(run);
-        let mut hash = BuildHash::new();
+        let mut hash = BuildHash::with_digests(Digests::load(source_digests_path(store, profile)));
         setup.hash(&mut hash);
         let mut runtime = Runtime::new(planner.features());
         experimental_features(run, &mut built, &mut hash, &mut runtime);
@@ -220,6 +221,7 @@ impl Inputs {
         if let Some(stamp) = lent_ids.as_ref().and_then(|o| o.stamp(run.order)) {
             hash.update(stamp);
         }
+        hash.save_digests();
         built.buildhash = hash.finish();
         built.overlay = store.overlay_dir(profile, &built.buildhash);
         built.warnings.extend(core_warning);
@@ -255,4 +257,14 @@ impl Inputs {
         };
         Ok((pipeline, inputs))
     }
+}
+
+/// Where a profile's small build sources' digests are kept between its builds.
+pub(super) fn source_digests_path(store: &crate::store::Store, profile: &str) -> PathBuf {
+    store
+        .root
+        .join("state")
+        .join("profiles")
+        .join(profile)
+        .join("source-digests.json")
 }

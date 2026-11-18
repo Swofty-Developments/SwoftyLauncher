@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 
+use super::digests::Digests;
 use crate::asset::{AssetOp, Op};
 use crate::baseline::hex;
 use crate::builtin::{loader_dir, loader_files};
@@ -29,23 +30,39 @@ pub(super) fn small_file_digest(path: &Path, meta: &std::fs::Metadata) -> Result
 
 /// What a source contributes to the build hash: a small file's digest, else its size and modified time. A
 /// folder is its files, which the caller stamps one by one.
-fn source_stamp(path: &Path, meta: &std::fs::Metadata) -> Result<Vec<u8>> {
+fn source_stamp(path: &Path, meta: &std::fs::Metadata, digests: &mut Digests) -> Result<Vec<u8>> {
     if meta.is_dir() {
         return Ok(b"dir".to_vec());
     }
-    Ok(match small_file_digest(path, meta)? {
-        Some(sha) => format!("{}|sha256 {sha}", meta.len()),
-        None => format!("{}|{:?}", meta.len(), meta.modified().ok()),
+    Ok(match meta.is_file() && meta.len() <= CONTENT_STAMP_MAX {
+        true => format!("{}|sha256 {}", meta.len(), digests.sha256(path, meta)?),
+        false => format!("{}|{:?}", meta.len(), meta.modified().ok()),
     }
     .into_bytes())
 }
 
 /// The digest of everything a build reads; two builds with the same hash make the same overlay.
-pub(super) struct BuildHash(Sha256);
+pub(super) struct BuildHash(Sha256, Digests);
 
 impl BuildHash {
+    #[cfg(test)]
     pub fn new() -> Self {
-        Self(Sha256::new())
+        Self::with_digests(Digests::none())
+    }
+
+    /// A build hash that reuses the small sources' digests in `digests`.
+    pub fn with_digests(digests: Digests) -> Self {
+        Self(Sha256::new(), digests)
+    }
+
+    /// Keeps the small sources' digests for the next build.
+    pub fn save_digests(&self) {
+        self.1.save();
+    }
+
+    #[cfg(test)]
+    pub fn digests(&self) -> &Digests {
+        &self.1
     }
 
     pub fn update(&mut self, data: impl AsRef<[u8]>) {
@@ -89,13 +106,13 @@ impl BuildHash {
             let path = src.resolve(&super::source_dir(store, addon, src.root))?;
             if !stamps.contains_key(&path) {
                 let meta = std::fs::metadata(&path).map_err(io_err(&path))?;
-                let mut stamp = source_stamp(&path, &meta)?;
+                let mut stamp = source_stamp(&path, &meta, &mut self.1)?;
                 if meta.is_dir() {
                     for (rel, p) in loader_files(&path)? {
                         let meta = std::fs::metadata(&p).map_err(io_err(&p))?;
                         stamp.extend_from_slice(rel.as_bytes());
                         stamp.extend_from_slice(b"|");
-                        stamp.extend_from_slice(&source_stamp(&p, &meta)?);
+                        stamp.extend_from_slice(&source_stamp(&p, &meta, &mut self.1)?);
                     }
                 }
                 stamps.insert(path.clone(), stamp);
