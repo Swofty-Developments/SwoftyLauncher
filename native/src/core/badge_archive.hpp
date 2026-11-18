@@ -395,10 +395,10 @@ struct Catalogue
                 }
         }
         std::vector<std::string> fragments;
-        if (!read("eaid://" + uri + ".image", fragments) || !surface.load(fragments) ||
-            surface.layers != node->list.size())
-            return false;
-        return true;
+        // A catalogue may expose only part of an array. Preserve the badge
+        // reader's per-reference availability: decode() bounds-checks the
+        // requested index, so an unused/missing slice cannot hide valid rows.
+        return read("eaid://" + uri + ".image", fragments) && surface.load(fragments);
     }
     bool decode(const std::string &reference, Pixels &out) const
     {

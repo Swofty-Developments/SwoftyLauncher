@@ -61,7 +61,13 @@ static void slices()
     assert(c.decode(prefix + "Soft", pixels) && pixels.rgba[1] == 255);
     assert(c.load(catalogue({"Soft", "Soft"}, custom), read));
     assert(!c.decode(prefix + "Soft", pixels));
-    assert(!c.load(catalogue({"Soft"}, custom), read));
+    // Extra, unreferenced slices do not invalidate the catalogue. A missing
+    // slice affects only the row that requests it, as in the badge reader.
+    assert(c.load(catalogue({"Soft"}, custom), read));
+    assert(c.decode(prefix + "Soft", pixels) && pixels.rgba[0] == 255);
+    assert(c.load(catalogue({"Soft", "Wet", "Hard"}, custom), read));
+    assert(c.decode(prefix + "Wet", pixels) && pixels.rgba[1] == 255);
+    assert(!c.decode(prefix + "Hard", pixels));
     assert(!c.load(catalogue({"Soft", "Wet"}, "../../outside.texarray"), read));
     assert(!live_image_reference::catalogue(prefix + "../Soft"));
     assert(!live_image_reference::catalogue(prefix));
