@@ -349,7 +349,7 @@ fn a_file_of_unknown_provenance_stops_the_launch_untouched_with_what_restore_doe
 
 #[test]
 fn prints_each_pair_then_its_items() {
-    use swofty_core::conflicts::{Pair, Report};
+    use swofty_core::profile::conflicts::{Pair, Report};
     let mut report = Report {
         profile: "default".into(),
         built_at: 1.0,
@@ -373,7 +373,7 @@ fn prints_each_pair_then_its_items() {
         conflicts_text(&report, &names),
         "Second overrides t.a on 1 database value and 1 file\n  rules.laps\n  x/a.dds\n"
     );
-    let max = swofty_core::conflicts::MAX_ITEMS;
+    let max = swofty_core::profile::conflicts::MAX_ITEMS;
     report.pairs[0] = Pair {
         database: max,
         strings: 2,

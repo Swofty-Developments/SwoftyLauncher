@@ -78,7 +78,7 @@ pub(crate) fn play(
             &format!("starting F1 25 in VR ({})", command.extra.join(" ")),
         );
     }
-    let usage = swofty_core::usage::Session::start(&store.root, game);
+    let usage = swofty_core::online::server::usage::Session::start(&store.root, game);
     let laps = crate::commands::laps::begin(store, config, profile, g);
     let mut watch = LoaderWatch::new(store, g, &session, launched, placed_loader);
     let ea = match args.via_ea {

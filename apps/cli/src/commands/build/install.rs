@@ -13,8 +13,8 @@ use swofty_core::game_folder::busy::{self, Busy};
 use swofty_core::game_folder::recovery::Blocked;
 use swofty_core::game_folder::stock;
 use swofty_core::install::{Game, Installer};
-use swofty_core::managed;
 use swofty_core::store::Store;
+use swofty_core::updates::managed;
 
 const REPAIR_TIMEOUT: Duration = Duration::from_secs(20);
 

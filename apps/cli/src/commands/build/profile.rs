@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use swofty_core::addons::settings::SETTINGS_FILE;
 use swofty_core::build::ADDONS_DIR;
 use swofty_core::install::{Game, LOADER_DIR};
-use swofty_core::modules::{self, Plugin};
+use swofty_core::online::modules::{self, Plugin};
 use swofty_core::online::server::integrity::{self, Module};
 use swofty_core::store::Store;
 
@@ -90,7 +90,7 @@ pub fn with_session_env(on: bool) {
 /// The in-game plugins the server publishes for a signed-in session, verified. A plugin that is not
 /// there is one log line with the reason and the session goes on without it.
 pub(super) fn server_plugins(store: &Store, out: &dyn Fn(&str)) -> Vec<(Plugin, modules::Module)> {
-    let Some(session) = swofty_core::mpauth::load(&store.root) else {
+    let Some(session) = swofty_core::online::server::sign_in::load(&store.root) else {
         return Vec::new();
     };
     let api = swofty_core::online::server::api::Api::new(&session.token);

@@ -794,7 +794,7 @@ impl<'a> Installer<'a> {
         {
             return Ok(0);
         }
-        let status = self.path(crate::launcher_saves::STATUS_FILE);
+        let status = self.path(crate::saves::launcher::STATUS_FILE);
         if status.is_file() {
             with_retry(&status, || std::fs::remove_file(&status))?;
         }
@@ -1452,7 +1452,7 @@ impl<'a> Installer<'a> {
     /// Move `proxy` to a folder of its own under the set-aside folder.
     fn set_proxy_aside(&self, proxy: &Path) -> Result<PathBuf> {
         let dir = crate::game_folder::recovery::set_aside_dir(self.data);
-        let mut stamp = crate::update::now_secs();
+        let mut stamp = crate::updates::release::now_secs();
         while dir.join(stamp.to_string()).join(PROXY).exists() {
             stamp += 1;
         }

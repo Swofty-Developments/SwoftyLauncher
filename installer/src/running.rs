@@ -6,7 +6,7 @@ use swofty_core::data::paths;
 use swofty_core::game_folder::recovery::{self, SessionLock};
 use swofty_core::launcher::Progress;
 use swofty_core::platform::process;
-use swofty_core::update;
+use swofty_core::updates::release as update;
 
 const PARTS: [(&str, &str); 3] = [
     ("swofty-launcher", "Swofty Launcher"),

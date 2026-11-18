@@ -8,11 +8,11 @@ use swofty_core::game_folder::baseline::Identity;
 use swofty_core::install::Game;
 use swofty_core::online::server::api::{Api, Boards};
 use swofty_core::online::server::integrity::{self, Module};
+use swofty_core::online::timetrial::barred::{self, Barred};
+use swofty_core::online::timetrial::queue::{Entry, Folder, Limits, Queue, unix_now};
+use swofty_core::online::timetrial::upload::{self, Watcher};
+use swofty_core::online::timetrial::{self, token};
 use swofty_core::store::Store;
-use swofty_core::timetrial::barred::{self, Barred};
-use swofty_core::timetrial::queue::{Entry, Folder, Limits, Queue, unix_now};
-use swofty_core::timetrial::upload::{self, Watcher};
-use swofty_core::timetrial::{self, token};
 
 use crate::commands::{Execute, Invocation};
 use crate::console::output::say;
@@ -210,8 +210,8 @@ fn hand_over(game: &std::path::Path, addons: &[Barred]) {
 
 fn fingerprint(store: &Store, profile: &str, identity: &Identity) -> Option<Value> {
     let p = store.profile(profile).ok()?;
-    let fp = swofty_core::multiplayer::fingerprint::fingerprint(store, &p, identity).ok()?;
-    Some(swofty_core::timetrial::fingerprint::wire(&fp))
+    let fp = swofty_core::online::multiplayer::fingerprint::fingerprint(store, &p, identity).ok()?;
+    Some(swofty_core::online::timetrial::fingerprint::wire(&fp))
 }
 
 fn send(store: &Store, profile: &str, file: Option<PathBuf>) -> Result<()> {

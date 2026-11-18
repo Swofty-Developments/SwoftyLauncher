@@ -16,7 +16,7 @@ use crate::asset::Kind;
 use crate::content::runtime_assets::{db_edits, runtime_loaded_estimate, runtime_record_room};
 use crate::dbedit::driver_manager;
 use crate::game_db::owned::Added;
-use crate::multiplayer::fingerprint;
+use crate::online::multiplayer::fingerprint;
 use crate::planner::{Route, kept_lists_line, stock_removals_line, track_removals_line};
 use crate::{Error, Result, io_err};
 

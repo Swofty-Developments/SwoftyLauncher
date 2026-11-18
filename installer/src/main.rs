@@ -17,7 +17,7 @@ use swofty_core::data::relocate::find;
 use swofty_core::launcher::Progress;
 use swofty_core::platform::app_control::Block;
 use swofty_core::session::COMPAT_LAYER;
-use swofty_core::update::{self, Install};
+use swofty_core::updates::release::{self as update, Install};
 
 const FOLDER_NAME: &str = "SwoftyLauncher";
 const FINDING: &str = "Finding the latest release";

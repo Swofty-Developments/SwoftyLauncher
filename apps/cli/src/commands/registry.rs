@@ -171,7 +171,7 @@ pub fn report(store: &Store, profile: &str) -> Result<deps::Report> {
     if p.is_vanilla() {
         return Ok(deps::Report::default());
     }
-    let order = swofty_core::resolver::resolve(&p, &installed)?.order;
+    let order = swofty_core::profile::resolver::resolve(&p, &installed)?.order;
     let all = deps::read_all(store, &installed);
     Ok(deps::for_order(profile, &order, &installed, &all))
 }
@@ -242,7 +242,7 @@ pub fn careers(store: &Store, profile: &str) -> Result<()> {
     let p = store.profile(profile)?;
     let order = match p.is_vanilla() {
         true => Vec::new(),
-        false => swofty_core::resolver::resolve(&p, &installed)
+        false => swofty_core::profile::resolver::resolve(&p, &installed)
             .map(|r| r.order)
             .unwrap_or_default(),
     };

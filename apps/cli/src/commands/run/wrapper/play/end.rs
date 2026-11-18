@@ -30,7 +30,7 @@ pub(super) fn end_session(
     dir: &Path,
     played: Played,
     launched: SystemTime,
-    usage: Option<swofty_core::usage::Session>,
+    usage: Option<swofty_core::online::server::usage::Session>,
 ) -> Result<i32> {
     let loader = std::fs::read(dir.join("loader.log"))
         .ok()

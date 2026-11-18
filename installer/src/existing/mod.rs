@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 
 use eframe::egui::{self, RichText};
 use swofty_core::platform::process::same_folder;
-use swofty_core::update;
+use swofty_core::updates::release as update;
 
 use self::roots::find;
 use crate::{FOLDER_NAME, MUTED};

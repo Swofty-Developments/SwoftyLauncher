@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use swofty_core::platform::process::same_folder;
-use swofty_core::update;
+use swofty_core::updates::release as update;
 
 use crate::existing::lnk::lnk_roots;
 use crate::existing::{default_root, is_install};

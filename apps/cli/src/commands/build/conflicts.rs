@@ -6,8 +6,8 @@ use swofty_core::store::Store;
 
 pub fn conflicts(store: &Store, profile: &str, check: bool, game: Option<PathBuf>) -> Result<ExitCode> {
     let report = match check {
-        true => swofty_core::conflicts::check(store, profile, &super::game(store, game)?)?,
-        false => match swofty_core::conflicts::last(store, profile) {
+        true => swofty_core::profile::conflicts::check(store, profile, &super::game(store, game)?)?,
+        false => match swofty_core::profile::conflicts::last(store, profile) {
             Some(report) => report,
             None => {
                 println!("{profile} has not been built yet; run swofty conflicts --check");
@@ -26,7 +26,7 @@ pub fn conflicts(store: &Store, profile: &str, check: bool, game: Option<PathBuf
 }
 
 pub(super) fn conflicts_text(
-    report: &swofty_core::conflicts::Report,
+    report: &swofty_core::profile::conflicts::Report,
     names: &std::collections::BTreeMap<String, String>,
 ) -> String {
     if report.pairs.is_empty() {
@@ -42,7 +42,7 @@ pub(super) fn conflicts_text(
         }
         let more =
             (pair.database + pair.resources + pair.files + pair.strings).saturating_sub(pair.items.len());
-        if more > 0 && pair.items.len() >= swofty_core::conflicts::MAX_ITEMS {
+        if more > 0 && pair.items.len() >= swofty_core::profile::conflicts::MAX_ITEMS {
             out.push_str(&format!("  and {more} more\n"));
         }
     }

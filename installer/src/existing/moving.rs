@@ -3,7 +3,7 @@ use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 
 use swofty_core::platform::process::same_folder;
-use swofty_core::update::Install;
+use swofty_core::updates::release::Install;
 
 use crate::existing::roots::{remove_stale, running_roots};
 use crate::existing::{DATA_ENTRIES, RELEASE, is_install};

@@ -9,7 +9,7 @@ use swofty_core::diagnostics::launch;
 use swofty_core::diagnostics::quarantine::{self, Stage};
 use swofty_core::game_folder::recovery::{Scope, SessionLock};
 use swofty_core::install::{Game, Source};
-use swofty_core::multiplayer::client::LAUNCH_ENV as NETPLAY_ENV;
+use swofty_core::online::multiplayer::client::LAUNCH_ENV as NETPLAY_ENV;
 use swofty_core::platform::process::{game_processes, game_running_in, stop_game_in};
 use swofty_core::session::{LOADER_LOG, LaunchMode, LaunchRequest, LogMark, request_stop};
 use swofty_core::store::Store;
@@ -99,7 +99,7 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
     let loader = game.join(LOADER_LOG);
     let before = LogMark::read(&loader);
     let asked = now_secs();
-    let _home_menu = swofty_core::home_menu::publish(
+    let _home_menu = swofty_core::ui::home_menu::publish(
         &store.root,
         &game,
         env!("CARGO_PKG_VERSION"),
@@ -151,7 +151,7 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
     let mut quiet = false;
     let mut opened: Option<Instant> = None;
     while !dir.join("exit_code").exists() {
-        if let Some(url) = swofty_core::home_menu::take_open_request(&game)
+        if let Some(url) = swofty_core::ui::home_menu::take_open_request(&game)
             && opened.is_none_or(|at: Instant| at.elapsed() >= OPEN_AGAIN)
         {
             open_in_browser(&url);

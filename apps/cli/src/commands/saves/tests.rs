@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use swofty_core::GAME_EXE;
 use swofty_core::game_folder::baseline::Identity;
 use swofty_core::install::Game;
-use swofty_core::vault::Reason;
+use swofty_core::saves::vault::Reason;
 
 use super::session::before_session_at;
 use super::*;

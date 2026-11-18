@@ -1,8 +1,8 @@
 use anyhow::{Result, bail};
-use swofty_core::launcher_saves;
+use swofty_core::saves::launcher as launcher_saves;
+use swofty_core::saves::vault::restore::{self, Running};
+use swofty_core::saves::vault::{self, Location, Meta, Reason, Taken, Vault, migrate};
 use swofty_core::store::Store;
-use swofty_core::vault::restore::{self, Running};
-use swofty_core::vault::{self, Location, Meta, Reason, Taken, Vault, migrate};
 
 use crate::commands::saves::session::report;
 use crate::commands::saves::{PINNED, open};

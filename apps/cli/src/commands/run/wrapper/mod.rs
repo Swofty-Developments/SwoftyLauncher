@@ -87,7 +87,7 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
     let (profile, request) = gate_unsupported_build(build_blocked.clone(), profile, request);
     if let (Ok(p), Ok(installed)) = (store.profile(&profile), store.addons()) {
         let catalog = swofty_core::catalog::cached(&store.root).unwrap_or_default();
-        for (base, family) in swofty_core::resolver::lonely_bases(&p, &installed, &catalog) {
+        for (base, family) in swofty_core::profile::resolver::lonely_bases(&p, &installed, &catalog) {
             if installed
                 .values()
                 .any(|m| m.name == base && store.is_builtin(&m.id))
@@ -122,7 +122,7 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
         crate::commands::build::install(store, &profile, g, true, &info)?;
     }
     let installed = apply.then(Instant::now);
-    let _home_menu = swofty_core::home_menu::publish(
+    let _home_menu = swofty_core::ui::home_menu::publish(
         &store.root,
         &game,
         env!("CARGO_PKG_VERSION"),

@@ -6,9 +6,9 @@ use std::process::ExitCode;
 
 use anyhow::{Result, bail};
 use clap::Subcommand;
-use swofty_core::launcher_saves;
+use swofty_core::saves::launcher as launcher_saves;
+use swofty_core::saves::vault::{self, Location, Vault};
 use swofty_core::store::Store;
-use swofty_core::vault::{self, Location, Vault};
 
 use crate::commands::saves::browse::{careers, list, show, versions};
 use crate::commands::saves::manage::{backup, export_saves, import_saves, pin_snapshot, restore_snapshot};

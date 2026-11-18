@@ -107,7 +107,7 @@ pub fn addon_count(dir: &Path) -> usize {
     std::fs::read_dir(dir.join("addons")).map_or(0, |read| {
         read.flatten()
             .filter(|e| e.path().join("swofty.json").is_file())
-            .filter(|e| !swofty_core::managed::is_managed(&e.file_name().to_string_lossy()))
+            .filter(|e| !swofty_core::updates::managed::is_managed(&e.file_name().to_string_lossy()))
             .count()
     })
 }
@@ -122,7 +122,7 @@ pub fn finder(data: &Data, installs: &[PathBuf]) -> Vec<Found> {
         install: data.install.clone(),
         games: Vec::new(),
     };
-    let bundled = [CORE_ID.to_owned(), swofty_core::managed::ID.to_owned()];
+    let bundled = [CORE_ID.to_owned(), swofty_core::updates::managed::ID.to_owned()];
     find::candidates(&location, installs, &bundled)
 }
 
@@ -133,7 +133,7 @@ pub fn adopt(data: &Data, found: &Path, installs: &[PathBuf]) -> Result<(), Stri
         install: data.install.clone(),
         games: Vec::new(),
     };
-    let bundled = [CORE_ID.to_owned(), swofty_core::managed::ID.to_owned()];
+    let bundled = [CORE_ID.to_owned(), swofty_core::updates::managed::ID.to_owned()];
     data_move::adopt(&location, found, installs, &bundled).map_err(|e| e.to_string())?;
     match data_move::recover(&data.default, &data_move::Ops::system()) {
         Some(Ok(_)) | None => Ok(()),
