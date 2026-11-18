@@ -68,6 +68,7 @@ pub(super) fn update_identity(update: &Update) -> Addon {
         updated_at: String::new(),
         latest: None,
         versions: Vec::new(),
+        media: Vec::new(),
     }
 }
 

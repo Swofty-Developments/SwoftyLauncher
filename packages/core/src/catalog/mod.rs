@@ -2,6 +2,7 @@
 //! Swofty registry, fetched and saved so the last catalog shows offline, and
 //! downloads checked against the size and SHA-256 the registry lists.
 
+pub mod media;
 pub mod publishers;
 pub mod requires;
 pub mod search;
@@ -87,6 +88,13 @@ pub struct Addon {
     pub latest: Option<Version>,
     #[serde(default)]
     pub versions: Vec<Version>,
+    /// The pictures, videos and video links on the addon's page, in order.
+    #[serde(
+        default,
+        deserialize_with = "media::listed",
+        skip_serializing_if = "Vec::is_empty"
+    )]
+    pub media: Vec<media::Media>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
@@ -848,6 +856,7 @@ mod tests {
             updated_at: String::new(),
             latest: versions.first().cloned(),
             versions,
+            media: Vec::new(),
         }
     }
 
