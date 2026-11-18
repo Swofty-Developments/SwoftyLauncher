@@ -248,7 +248,7 @@ mod tests {
                 *last,
             ));
         }
-        Gvdb { records: r }
+        Gvdb::new(r)
     }
 
     fn english() -> Vec<u8> {

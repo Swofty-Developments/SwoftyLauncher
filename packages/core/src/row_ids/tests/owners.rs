@@ -109,7 +109,7 @@ fn stock_max_ids_are_the_highest_stat_id_of_each_stock_table() {
             id.to_string(),
         ));
     }
-    let max = stock_max_ids(&Gvdb { records });
+    let max = stock_max_ids(&Gvdb::new(records));
     assert_eq!(max.get("entrants.teams.team"), Some(&159));
     assert_eq!(max.get("entrants.vehicles.vehicle"), None);
 }

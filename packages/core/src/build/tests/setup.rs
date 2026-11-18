@@ -15,7 +15,11 @@ fn a_deleted_test_store_gets_no_compressed_fragments_after_its_build() {
         0,
         "0",
     )];
-    std::fs::write(dir.join(GVDB), swofty_formats::gvdb::Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(
+        dir.join(GVDB),
+        swofty_formats::gvdb::Gvdb::new(records).to_bytes(),
+    )
+    .unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir: dir.clone(),

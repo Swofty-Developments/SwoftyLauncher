@@ -16,7 +16,6 @@ use swofty_core::store::Store;
 use crate::addon_commands::AddonCommands;
 use crate::commands::cli::{Cli, Command, data_dir_arg};
 use crate::commands::{Execute, Invocation, doctor, registry};
-use crate::session_lock as recover;
 
 fn main() -> ExitCode {
     let args: Vec<OsString> = std::env::args_os().collect();

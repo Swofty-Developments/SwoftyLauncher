@@ -361,7 +361,7 @@ pub(crate) mod tests {
                 }
             }
         }
-        Gvdb { records: r }
+        Gvdb::new(r)
     }
 
     fn cat() -> Catalog {
@@ -769,7 +769,7 @@ pub(crate) mod tests {
             r.push(Record::new(&format!("{row}._metadata_"), 2, format!("ref_{e}")));
             r.push(Record::new(&format!("{row}.event_name"), 4, *e));
         }
-        Gvdb { records: r }
+        Gvdb::new(r)
     }
 
     fn count_of(db: &Gvdb) -> Option<String> {

@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <functional>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -30,10 +31,19 @@ public:
     void set_log(std::function<void(const std::string &)> fn);
     void set_facts(std::function<void(const Context &)> fn);
 
+    // The boot plan. start_plan runs every boot applier's prepare and each count that is not counts_off_thread() on
+    // this thread. With off_thread, the counts_off_thread() appliers then count on a worker; without it, every applier
+    // counts here in applier order, as plan_boot does. Every call below waits for the worker first. The store's
+    // generation is compared at that wait: a store that moved while the worker counted is counted again on the
+    // waiting thread.
+    void start_plan(bool off_thread);
     std::size_t plan_boot();
-    std::size_t planned_keys() const;
-    std::size_t planned_keys(const std::string &registry) const;
-    bool boot_work() const;
+    std::size_t planned_keys();
+    std::size_t planned_keys(const std::string &registry);
+    bool boot_work();
+    // Without waiting: true until the plan is counted, then boot_work(). When no counts_off_thread() applier may_count,
+    // start_plan counts on this thread and the plan is counted when it returns.
+    bool boot_may_work() const;
     bool boot_planned() const;
     Totals run_boot();
     bool booted() const;
@@ -68,8 +78,16 @@ private:
     void publish(Lock &);
     Totals run(Moment m, Applies kind, const std::function<void(Applier &, Report &)> &call,
                std::vector<Applier *> *ran, bool reverse_order, const std::vector<Applier *> *only);
+    struct OffThread;
+
     void log(const std::string &line);
     bool has_addon_content(const std::string &registry);
+    void count_on_thread_locked();
+    void note_count_locked(std::size_t i);
+    void close_plan_locked();
+    void await_count();
+    void settle_locked(const OffThread &off);
+    Lock settled_lock();
     Totals activate_locked(Lock &, const std::string &content, const std::string &label, const std::string &why);
     Totals deactivate_locked(Lock &, const std::string &why);
     Totals session_end_locked(Lock &, const std::string &why);
@@ -86,6 +104,11 @@ private:
     bool planned_ = false, booted_ = false, read_ = false, session_ = false;
     std::vector<std::pair<std::string, std::size_t>> keys_;
     bool work_ = false;
+    bool started_ = false;
+    std::vector<Applier *> boot_;
+    std::vector<std::size_t> boot_keys_;
+    std::vector<char> boot_content_;
+    std::shared_ptr<OffThread> off_;
     std::string active_, active_label_;
     int career_year_ = 0;
     std::string session_name_;

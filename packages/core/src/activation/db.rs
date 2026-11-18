@@ -690,9 +690,7 @@ mod tests {
 
     #[test]
     fn override_paths_take_selectors() {
-        let mut gvdb = Gvdb {
-            records: vec![Record::new("t.Row_0.Weather._Slot_instancecount_", 0, "3")],
-        };
+        let mut gvdb = Gvdb::new(vec![Record::new("t.Row_0.Weather._Slot_instancecount_", 0, "3")]);
         for (i, label) in ["dry", "wet", "wet"].iter().enumerate() {
             for (f, v) in [("_metadata_", *label), ("rain", &*i.to_string())] {
                 gvdb.records

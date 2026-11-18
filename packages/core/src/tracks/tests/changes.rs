@@ -4,25 +4,21 @@ use super::*;
 fn track_changes_survive_ops_that_carry_shipped_values() {
     let list = |path: &str, v: &str| Record::new(path, 13, v);
     let int = |path: &str, v: &str| Record::new(path, 0, v);
-    let shipped = Gvdb {
-        records: vec![
-            list("sets.a.tracks", "melbourne,suzuka"),
-            list("sets.b.tracks", "melbourne"),
-            list("sets.c.tracks", "melbourne"),
-            int("tracks._Track_instancecount_", "2"),
-            int("tracks.Track_0.statId", "5"),
-        ],
-    };
-    let mut db = Gvdb {
-        records: vec![
-            list("sets.a.tracks", "melbourne,suzuka,testring"),
-            list("sets.b.tracks", "melbourne,testring"),
-            list("sets.c.tracks", "melbourne,testring"),
-            int("tracks._Track_instancecount_", "3"),
-            int("tracks.Track_0.statId", "6"),
-            int("tracks.Track_2.statId", "50"),
-        ],
-    };
+    let shipped = Gvdb::new(vec![
+        list("sets.a.tracks", "melbourne,suzuka"),
+        list("sets.b.tracks", "melbourne"),
+        list("sets.c.tracks", "melbourne"),
+        int("tracks._Track_instancecount_", "2"),
+        int("tracks.Track_0.statId", "5"),
+    ]);
+    let mut db = Gvdb::new(vec![
+        list("sets.a.tracks", "melbourne,suzuka,testring"),
+        list("sets.b.tracks", "melbourne,testring"),
+        list("sets.c.tracks", "melbourne,testring"),
+        int("tracks._Track_instancecount_", "3"),
+        int("tracks.Track_0.statId", "6"),
+        int("tracks.Track_2.statId", "50"),
+    ]);
     let changed = changed_records(&db, &shipped);
     assert_eq!(changed.len(), 5);
     db.set("sets.a.tracks", "melbourne,suzuka", None).unwrap();

@@ -17,7 +17,7 @@ fn a_row_id_a_conflict_check_gave_is_kept_by_the_build_after_it() {
         records.push(Record::new(&format!("{row}._metadata_"), 4, *label));
         records.push(Record::new(&format!("{row}.stat_id"), 0, (100 + i).to_string()));
     }
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,
@@ -70,7 +70,7 @@ fn build_reply_fields_name_the_columns_add_row_copies() {
         records.push(Record::new(&format!("{row}._metadata_"), 4, *label));
         records.push(Record::new(&format!("{row}.stat_id"), 0, (100 + i).to_string()));
     }
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,
@@ -172,7 +172,7 @@ fn a_room_launch_build_uses_the_hosts_ids_under_its_own_cache_key_and_keeps_row_
         records.push(Record::new(&format!("{row}._metadata_"), 4, *label));
         records.push(Record::new(&format!("{row}.stat_id"), 0, (100 + i).to_string()));
     }
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,

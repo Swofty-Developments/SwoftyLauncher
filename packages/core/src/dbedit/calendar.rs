@@ -104,7 +104,7 @@ mod tests {
                 *e,
             ));
         }
-        Gvdb { records: r }
+        Gvdb::new(r)
     }
 
     #[test]

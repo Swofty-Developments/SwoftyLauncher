@@ -9,6 +9,7 @@
 #include "core/hooks/guard.hpp"
 #include "core/hooks/hooks.hpp"
 #include "core/live/race_control.hpp"
+#include "core/live/tyre_damage.hpp"
 
 #include <mutex>
 #include <string>
@@ -182,7 +183,9 @@ int h_live(const char *point, uint32_t *version)
     if (!point)
         return SWOFTY_ASSET_INVALID;
     int r = the_table().live(point, version);
-    if (r == SWOFTY_ASSET_OK && swofty_core::live::race_control::fires(point) && !runtime::live_on())
+    if (r == SWOFTY_ASSET_OK &&
+        (swofty_core::live::race_control::fires(point) || swofty_core::live::tyre_damage::fires(point)) &&
+        !runtime::live_on())
         return SWOFTY_ASSET_UNAVAILABLE;
     return r;
 }
