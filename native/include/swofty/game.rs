@@ -2480,9 +2480,12 @@ const _: () = assert!(core::mem::offset_of!(PitLaneTrack, vehicle_slots) == 0x93
 
 #[repr(C)]
 pub struct PitLaneVehicle {
-    _pad_0x0: [u8; 0x103],
+    _pad_0x0: [u8; 0xe0],
+    pub garage_index: i32,
+    _pad_0xe4: [u8; 0x1f],
     pub in_lane: u8,
 }
+const _: () = assert!(core::mem::offset_of!(PitLaneVehicle, garage_index) == 0xe0);
 const _: () = assert!(core::mem::offset_of!(PitLaneVehicle, in_lane) == 0x103);
 
 #[repr(C)]

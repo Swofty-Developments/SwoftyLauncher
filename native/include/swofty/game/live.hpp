@@ -248,9 +248,12 @@ struct PitLaneTrack {
 static_assert(offsetof(PitLaneTrack, vehicle_slots) == 0x938);
 
 struct PitLaneVehicle {
-    uint8_t _pad_0x0[0x103];
+    uint8_t _pad_0x0[0xe0];
+    int32_t garage_index; // L2 experimental
+    uint8_t _pad_0xe4[0x1f];
     uint8_t in_lane; // L2 experimental
 };
+static_assert(offsetof(PitLaneVehicle, garage_index) == 0xe0);
 static_assert(offsetof(PitLaneVehicle, in_lane) == 0x103);
 
 struct RacingOwner {
