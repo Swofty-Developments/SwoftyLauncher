@@ -1215,7 +1215,7 @@ addr	name
 0x140974550	Ui_Resolve_TokenNodeByName_B
 0x140975db0	Vm_Set_Bool
 0x1409763b0	Game_GameModes_IndexByName
-0x140977b20	Ne_Property_SetS64IfChanged
+0x140977b20	Ne_Property_SetUIDBRefIfChanged
 0x140984f20	Sess_LapRecord_Construct
 0x140989b10	Game_NetworkLaptimes_SerialiseNetwork
 0x14098b3d0	Game_NetworkLaptimes_DeserialiseNetwork

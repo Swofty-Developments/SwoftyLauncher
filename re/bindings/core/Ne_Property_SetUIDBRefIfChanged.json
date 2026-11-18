@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "name": "Ne_Property_SetS64IfChanged",
+ "name": "Ne_Property_SetUIDBRefIfChanged",
  "table": "functions",
  "author": "kb-import",
  "row": {
@@ -23,7 +23,7 @@
   "target": "0x140977b20",
   "kind": "func_start",
   "names": [
-   "Ne_Property_SetS64IfChanged"
+   "Ne_Property_SetUIDBRefIfChanged"
   ],
   "verified": [
    {
@@ -50,7 +50,7 @@
    "date": "2026-11-18",
    "verifier": "re-bindings-blind",
    "kind": "func",
-   "item": "Ne_Property_SetS64IfChanged",
+   "item": "retired:Ne_Property_SetS64IfChanged",
    "claimed": "L2",
    "verdict": "partial",
    "evidence": "decomp:own capstone disasm 0x140977b20-0x140977e0d,0x1442bc5b0-0x1442bc6e1,0x1442bc390-0x1442bc4c4,0x1442bc760-0x1442bc863,0x1453484a0-0x1453484cb,0x140972de0-0x1409730ce,0x141b85c40-0x141b85f2f,1.0.145 0x140977b70-0x140977e5d;xref:0x140977b2d,0x140977b54,0x140977b66,0x140977bf7,0x140977cba,0x140977d6e,0x140977dbb,0x140977def,0x1406a7517,0x1407d0af9,0x14099b99b,0x1442b1766,0x141ac0b4f",
