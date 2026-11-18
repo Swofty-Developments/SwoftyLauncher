@@ -154,6 +154,7 @@ UNITS = [
     Unit('tyre_slots', 'Tyre slot guard unit test'),
     Unit('ui_registry_walk', 'UI registry walk unit test'),
     Unit('watchdog_grace', 'Boot watchdog grace unit test'),
+    Unit('weather_chain', 'Weather setup chain order rules unit test'),
     Unit('events_dispatch', 'Events dispatcher unit test', 'zig'),
     Unit('session_lifecycle', 'Session lifecycle kind unit test', 'zig'),
     Unit('career_state', 'Career and flow-state tracking unit test', 'zig'),
