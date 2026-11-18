@@ -141,6 +141,7 @@ UNITS = [
     Unit('lang_scope', 'String scope unit test'),
     Unit('stall_order', 'Load-stall report running-threads order unit test'),
     Unit('standings_drop', 'Standings dropped scores unit test'),
+    Unit('standings_read', 'Season standings read unit test'),
     Unit('teamhq_track', 'Team HQ track guard unit test'),
     Unit('teammate_pairs', 'Teammate pairs guard unit test'),
     Unit('theatre_list', 'Theatre list guard unit test'),
