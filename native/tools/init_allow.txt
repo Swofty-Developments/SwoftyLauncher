@@ -36,6 +36,7 @@ src/core/testing/direct_start_tt.cpp: const bool registered_at_load = (runtime::
 # read nothing else. clang reports them only as needing a destructor.
 type: CategoryHooks
 type: EntrantCapHooks
+type: FirstReadHooks
 type: safetyhook::InlineHook
 type: safetyhook::MidHook
 type: std::deque

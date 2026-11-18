@@ -11,6 +11,7 @@
 # reads it, under each unit's rank; the build fails unless it is the order of the mixins and on-load sections. After
 # an intended change, copy native/build/init-order.txt here.
 init
+  src/core/assets/db_first_read.cpp
   src/core/loading/game_settings.cpp
   src/core/live/live_state.cpp
   src/core/hud/room_cover.cpp
@@ -317,6 +318,7 @@ exit
   src/core/guards/ai/ai_line_set_guard.cpp
   src/core/hud/room_cover.cpp
   src/core/live/live_state.cpp
+  src/core/assets/db_first_read.cpp
 mixins
   src/core/diagnostics/session_job_probe.cpp  SWOFTY_ON_LOAD
   src/core/hooks/car_live.cpp  SWOFTY_ON_LOAD
