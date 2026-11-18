@@ -290,6 +290,125 @@ class GateLevels(unittest.TestCase):
             self.assertEqual(json.load(f), {'schema': 1, 'note': 'why', 'entries': {'func:B': 'V2'}})
 
 
+def drop(mode='deprecated', since='1.10.0', covers='V4', **kw):
+    return {'mode': mode, 'since': since, 'covers': covers, 'reason': 'its proto has the wrong fourth argument', **kw}
+
+
+class ExportDrops(unittest.TestCase):
+    KEYS = GateOrder.KEYS
+    ROWS = [vrow('2026-10-30', 'func', 'Sess_Do_Thing', 'agree', 'V1'),
+            vrow('2026-11-18', 'func', '0x140001000', 'partial', 'V4')]
+
+    def gate(self, rows, drops):
+        return bindgen.Gate(rows=rows, exceptions={}, baseline={}, drops=drops)
+
+    def test_a_partial_on_an_exported_binding_stops_its_export_without_an_entry(self):
+        self.assertEqual(self.gate(self.ROWS, {})('L2', '-', self.KEYS)[0], None)
+
+    def test_a_deprecated_entry_keeps_exporting_it_marked_deprecated(self):
+        e = drop()
+        g = self.gate(self.ROWS, {('func', 'Sess_Do_Thing'): e})
+        self.assertEqual(g('L2', '-', self.KEYS), ('experimental', 'deprecated:V4'))
+        self.assertEqual(g.deprecated, {('func', 'Sess_Do_Thing'): e})
+
+    def test_a_dropped_entry_stops_the_export_and_lists_the_binding(self):
+        e = drop('dropped', harm='crash')
+        g = self.gate(self.ROWS, {('func', 'Sess_Do_Thing'): e})
+        self.assertEqual(g('L2', '-', self.KEYS), (None, 'dropped by export_drops.json'))
+        self.assertEqual(g.dropped, {('func', 'Sess_Do_Thing'): e})
+
+    def test_an_entry_holds_only_while_its_row_is_the_newest(self):
+        for rows in (self.ROWS + [vrow('2026-11-19', 'func', 'Sess_Do_Thing', 'partial', 'V5')],
+                     self.ROWS + [vrow('2026-11-19', 'func', 'Sess_Do_Thing', 'agree', 'V6')]):
+            g = self.gate(rows, {('func', 'Sess_Do_Thing'): drop()})
+            self.assertNotEqual(g('L2', '-', self.KEYS)[1], 'deprecated:V4')
+            self.assertEqual((g.deprecated, g.dropped), ({}, {}))
+
+    def test_an_entry_over_an_agree_row_does_nothing(self):
+        g = self.gate(self.ROWS[:1], {('func', 'Sess_Do_Thing'): drop(covers='V1')})
+        self.assertEqual(g('L2', '-', self.KEYS), ('experimental', 'verify:V1'))
+        self.assertEqual(g.deprecated, {})
+
+    def test_a_binding_cannot_be_both_excepted_and_dropped(self):
+        with self.assertRaises(SystemExit):
+            bindgen.Gate(rows=self.ROWS, exceptions={('func', 'Sess_Do_Thing'): {'kind': 'func', 'covers': 'V4',
+                                                                                 'reason': 'r'}},
+                         baseline={}, drops={('func', 'Sess_Do_Thing'): drop()})
+
+    def test_entry_rules(self):
+        ok = [drop(), drop('dropped', harm='crash'), drop('dropped', harm='corrupts state'),
+              drop('dropped', since='1.10.1', deprecated='1.10.0'), drop(replacement='Sess_Do_Other')]
+        for e in ok:
+            self.assertEqual(bindgen.drop_errors('func:Sess_Do_Thing', e), [], e)
+        bad = [drop('dropped'), drop('removed'), drop(since='1.10'), drop(covers='4'), drop(harm='slow'),
+               drop(deprecated='1.9.0'), drop('dropped', deprecated='1.10.0'), drop('dropped', deprecated='1.11.0'),
+               drop(replacement='Sess_Do_Thing'), drop(replacement='not a name'), drop(reason=''),
+               drop(reason='a "quoted" reason'), drop(reason='two\nlines'), drop(reason='x' * 301), drop(extra=1),
+               {'mode': 'deprecated', 'since': '1.10.0', 'covers': 'V4'}, 'deprecated']
+        for e in bad:
+            self.assertTrue(bindgen.drop_errors('func:Sess_Do_Thing', e), e)
+        for key in ('field:Thing.flag', 'struct:Thing', 'func:', 'Sess_Do_Thing'):
+            self.assertTrue(bindgen.drop_errors(key, drop()), key)
+
+    def test_a_disagree_is_dropped_at_once_only_with_harm(self):
+        self.assertTrue(bindgen.drop_errors('func:Sess_Do_Thing', drop('dropped', covers='V7')))
+        g = self.gate(self.ROWS[:1] + [vrow('2026-11-18', 'func', 'Sess_Do_Thing', 'disagree', 'V7')],
+                      {('func', 'Sess_Do_Thing'): drop('dropped', covers='V7', harm='corrupts state')})
+        self.assertEqual(g('L2', '-', self.KEYS)[0], None)
+        self.assertIn(('func', 'Sess_Do_Thing'), g.dropped)
+
+    def test_file_format(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, 'export_drops.json')
+            self.assertEqual(bindgen.load_drops(path), {})
+            for doc in ({'schema': 1, 'entries': {}}, {'schema': 2, 'note': 'n', 'entries': {}},
+                        {'schema': 1, 'note': 'n', 'entries': {'func:Sess_Do_Thing': drop('dropped')}}):
+                with open(path, 'w') as f:
+                    json.dump(doc, f)
+                with self.assertRaises(SystemExit):
+                    bindgen.load_drops(path)
+            with open(path, 'w') as f:
+                json.dump({'schema': 1, 'note': 'n', 'entries': {'global:g_Thing': drop()}}, f)
+            self.assertEqual(bindgen.load_drops(path), {('global', 'g_Thing'): drop()})
+
+    def test_versions(self):
+        self.assertEqual(bindgen.version('1.10.0'), (1, 10, 0))
+        self.assertLess(bindgen.version('1.9.74'), bindgen.version('1.10.0'))
+        for v in ('1.10', 'v1.10.0', '1.10.0-rc1', None, 1):
+            self.assertIsNone(bindgen.version(v))
+        with tempfile.TemporaryDirectory() as d:
+            with open(os.path.join(d, 'Cargo.toml'), 'w') as f:
+                f.write('[package]\nversion = "9.9.9"\n\n[workspace.package]\nedition = "2024"\nversion = "1.10.0"\n')
+            self.assertEqual(bindgen.workspace_version(d), (1, 10, 0))
+            with open(os.path.join(d, 'Cargo.toml'), 'w') as f:
+                f.write('[package]\nversion = "9.9.9"\n')
+            with self.assertRaises(SystemExit):
+                bindgen.workspace_version(d)
+
+    def test_the_sets_list_dropped_bindings_and_keep_deprecated_ones(self):
+        dep = binding('Fn_D', deprecated=bindgen.drop_doc(drop(replacement='Fn_A')))
+        dropped = [bindgen.drop_doc(drop('dropped', harm='crash'), 'Fn_E')]
+        for is_kb, o in ((True, overlay()), (False, overlay('b' * 64, 2))):
+            doc = bindgen.build_set(o, [binding('Fn_A'), dep], is_kb, dropped)
+            self.assertEqual(doc['dropped'], [{'id': 'Fn_E', 'since': '1.10.0',
+                                               'reason': 'its proto has the wrong fourth argument'}])
+            self.assertEqual(doc['bindings'][1]['deprecated'], {'since': '1.10.0', 'replacement': 'Fn_A',
+                                                                'reason': 'its proto has the wrong fourth argument'})
+            self.assertEqual(doc['bindings'][1]['status'], 'experimental')
+        self.assertNotIn('dropped', bindgen.build_set(overlay(), [binding('Fn_A')], True))
+
+    def test_the_headers_mark_a_deprecated_binding(self):
+        build = {'sha256': 'a' * 64}
+        dep = binding('Fn_D', proto='void Fn_D(void *thing)',
+                      deprecated=bindgen.drop_doc(drop(replacement='Fn_A')))
+        text = 'deprecated in 1.10.0, removed in the next release: its proto has the wrong fourth argument; use Fn_A'
+        cpp = bindgen.gen_cpp(build, [binding('Fn_A', proto='void Fn_A(void *thing)'), dep], {})['game/core.hpp']
+        self.assertIn(f'[[deprecated("{text}")]] inline constexpr fn<"Fn_D", Fn_D_t> Fn_D{{}};', cpp)
+        self.assertIn('\ninline constexpr fn<"Fn_A", Fn_A_t> Fn_A{};', cpp)
+        rust = bindgen.gen_rust(build, [dep], {})
+        self.assertEqual(rust.count(f'#[deprecated(since = "1.10.0", note = "{text}")]'), 2)
+
+
 class StructLevels(unittest.TestCase):
     def test_field_and_struct_rows_claim_the_struct_files_levels(self):
         import kb_lint
@@ -357,6 +476,26 @@ class RepoData(unittest.TestCase):
         stale = sorted(f'{k}:{n}' for k, n in self.gate.baseline if (k, n) not in self.gate.baselined)
         self.assertEqual(stale, [], 'these level baseline entries no longer hold (a newer verify row, or an agree at '
                                     'the binding\'s level): run python3 re/tools/binding.py baseline --prune')
+
+    def test_every_export_drop_entry_holds(self):
+        stale = sorted(f'{k}:{n}' for k, n in self.gate.drops
+                       if (k, n) not in self.gate.deprecated and (k, n) not in self.gate.dropped)
+        self.assertEqual(stale, [], 'these export drops entries no longer hold (their newest verify row is not the '
+                                    'partial or disagree they cover): python3 re/tools/binding.py drops')
+
+    def test_no_deprecation_outlives_its_release(self):
+        at = bindgen.workspace_version()
+        overdue = sorted(f'{k}:{n}' for (k, n), e in self.gate.drops.items()
+                         if e['mode'] == 'deprecated' and bindgen.version(e['since']) < at)
+        self.assertEqual(overdue, [], 'these bindings were deprecated in an earlier release and this one still ships '
+                                      'them: set mode dropped in re/db/export_drops.json')
+
+    def test_the_release_notes_list_every_export_drop_of_their_release(self):
+        for (_, name), e in sorted(self.gate.drops.items()):
+            path = os.path.join(bindgen.ROOT, 'docs', 'releases', e['since'] + '.md')
+            if os.path.exists(path):
+                self.assertIn(f'`{name}`', bindgen.read_text(path), f'docs/releases/{e["since"]}.md does not list '
+                              f'{name}: python3 re/tools/binding.py drops --release {e["since"]} prints its line')
 
     def test_every_export_exception_is_in_use_and_named_by_native_code(self):
         import binding_check

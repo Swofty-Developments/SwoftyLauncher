@@ -16,8 +16,10 @@ Gate: L3 whose trace test passed -> stable; L2 (or L3 without a passed test) who
 else is not exported, unless re/db/export_exceptions.json lists the binding with that newest row's V-id
 and a reason. The agree counts only when its claimed level is the binding's level or above, so a raise needs
 a new agree; re/db/level_baseline.json lists, by V-id, the bindings that exported on a lower-level agree
-when that rule came in, and it only shrinks. Runtime bindings need a signature verified on the KB build;
-struct fields go through the same gate.
+when that rule came in, and it only shrinks. re/db/export_drops.json takes a binding whose newest verify row is
+a partial or disagree out of the addon API on purpose: `deprecated` keeps exporting it for one release, marked
+deprecated, and `dropped` lists it in the sets' `dropped` array instead of exporting it. Runtime bindings need a
+signature verified on the KB build; struct fields go through the same gate.
 """
 import argparse, json, os, re, subprocess, sys
 
@@ -51,6 +53,15 @@ EXCEPTIONS = os.path.join(kb.DB, 'export_exceptions.json')
 EXCEPTION_KEYS = {'kind', 'covers', 'reason'}
 BASELINE = os.path.join(kb.DB, 'level_baseline.json')
 BASELINE_KINDS = ('func', 'global', 'field', 'struct')
+DROPS = os.path.join(kb.DB, 'export_drops.json')
+DROP_KINDS = ('func', 'global')
+DROP_MODES = ('deprecated', 'dropped')
+DROP_HARMS = ('crash', 'corrupts state')
+DROP_KEYS = {'mode', 'since', 'covers', 'reason'}
+DROP_OPTIONAL = {'replacement', 'harm', 'deprecated'}
+DROP_TEXT_RE = re.compile(r'^[ !#-\[\]-~]{1,300}$')
+DROP_NAME_RE = re.compile(r'^[A-Za-z][A-Za-z0-9_]{1,63}$')
+VERSION_RE = re.compile(r'^(\d{1,4})\.(\d{1,4})\.(\d{1,6})$')
 
 
 def read_text(path):
@@ -100,6 +111,89 @@ def write_baseline(entries, path=BASELINE):
         f.write(json.dumps(doc, indent=1) + '\n')
 
 
+def version(text):
+    """(major, minor, patch) of a release such as 1.10.0, or None."""
+    m = VERSION_RE.match(text) if isinstance(text, str) else None
+    return tuple(int(x) for x in m.groups()) if m else None
+
+
+def workspace_version(root=ROOT):
+    """The release this checkout is at: [workspace.package] version in Cargo.toml, which a release's prep commit sets."""
+    section = None
+    for line in read_text(os.path.join(root, 'Cargo.toml')).splitlines():
+        line = line.strip()
+        if line.startswith('['):
+            section = line
+        elif section == '[workspace.package]' and re.match(r'^version\s*=', line):
+            v = version(line.split('=', 1)[1].strip().strip('"'))
+            if v:
+                return v
+    raise SystemExit('bindgen: Cargo.toml has no [workspace.package] version such as "1.10.0"')
+
+
+def drop_errors(key, e):
+    """What is wrong with one export_drops.json entry, as a list of messages."""
+    kind, _, name = key.partition(':')
+    if kind not in DROP_KINDS or not DROP_NAME_RE.match(name):
+        return [f'entry {key!r} needs the form "<func|global>:<name>"']
+    if not isinstance(e, dict) or not DROP_KEYS <= set(e) or not set(e) <= DROP_KEYS | DROP_OPTIONAL:
+        return [f'{key} needs mode, since, covers and reason, and holds nothing but replacement, harm and deprecated '
+                'besides']
+    out = []
+    if e['mode'] not in DROP_MODES:
+        out.append(f'{key}: mode is deprecated or dropped')
+    if not version(e['since']):
+        out.append(f'{key}: since is the release it ships in, such as 1.10.0')
+    if not isinstance(e['covers'], str) or not re.match(r'^V\d+$', e['covers']):
+        out.append(f'{key}: covers is the V-id of the partial or disagree row that ends the export')
+    if not isinstance(e['reason'], str) or not e['reason'].strip() or not DROP_TEXT_RE.match(e['reason']):
+        out.append(f'{key}: reason is one line of printable ASCII, at most 300 characters, without " or \\')
+    if 'replacement' in e and (not isinstance(e['replacement'], str) or not DROP_NAME_RE.match(e['replacement'])
+                               or e['replacement'] == name):
+        out.append(f'{key}: replacement is the id of another binding')
+    if 'harm' in e and e['harm'] not in DROP_HARMS:
+        out.append(f'{key}: harm is "crash" or "corrupts state"')
+    if 'deprecated' in e:
+        if e['mode'] != 'dropped':
+            out.append(f'{key}: deprecated (the release that deprecated it) belongs on a dropped entry')
+        elif not version(e['deprecated']) or not version(e['since']) or version(e['deprecated']) >= version(e['since']):
+            out.append(f'{key}: deprecated is a release before since')
+    if e['mode'] == 'dropped' and 'harm' not in e and 'deprecated' not in e:
+        out.append(f'{key}: only a binding that crashes or corrupts state (harm) is dropped at once; any other is '
+                   'deprecated for one release first, and its dropped entry keeps that release as deprecated')
+    return out
+
+
+def load_drops(path=DROPS):
+    """{(kind, name): entry} from export_drops.json; a malformed file stops the build instead of exporting more."""
+    if not os.path.exists(path):
+        return {}
+    doc = json.loads(read_text(path))
+    if doc.get('schema') != 1 or not str(doc.get('note', '')).strip() or not isinstance(doc.get('entries'), dict):
+        raise SystemExit(f'bindgen: {path}: needs "schema": 1, a "note" and an "entries" object')
+    out = {}
+    for key, e in doc['entries'].items():
+        errs = drop_errors(key, e)
+        if errs:
+            raise SystemExit(f'bindgen: {path}: ' + '; '.join(errs))
+        kind, _, name = key.partition(':')
+        out[(kind, name)] = e
+    return out
+
+
+def drop_doc(e, name=None):
+    """The bindings.json form of an entry: a deprecated binding's `deprecated` object, or a `dropped` array item."""
+    d = ({'id': name} if name else {}) | {'since': e['since'], 'reason': e['reason']}
+    if e.get('replacement'):
+        d['replacement'] = e['replacement']
+    return d
+
+
+def deprecation_text(d):
+    return f'deprecated in {d["since"]}, removed in the next release: {d["reason"]}' + \
+        (f'; use {d["replacement"]}' if d.get('replacement') else '')
+
+
 def agree_covers(claimed, level):
     """An agree counts for export only when it was made at the record's current level or above: a raise to L2 on an
     agree made at L1 needs a new agree, because the L1 agree checked neither the proto nor the L2 claims."""
@@ -109,7 +203,7 @@ def agree_covers(claimed, level):
 class Gate:
     dev = False
 
-    def __init__(self, rows=None, exceptions=None, baseline=None):
+    def __init__(self, rows=None, exceptions=None, baseline=None, drops=None):
         self.verdicts = {}
         for n, r in enumerate(kb.read_table('verify')[0] if rows is None else rows):
             key, rank = (r['kind'], r['item']), (r['date'], n)
@@ -120,6 +214,13 @@ class Gate:
         self.baseline = load_baseline() if baseline is None else baseline
         self.baselined = set()
         self.below = {}
+        self.drops = load_drops() if drops is None else drops
+        both = sorted(set(self.drops) & set(self.exceptions))
+        if both:
+            raise SystemExit(f'bindgen: {", ".join(f"{k}:{n}" for k, n in both)} is in both export_exceptions.json and '
+                             'export_drops.json')
+        self.deprecated = {}
+        self.dropped = {}
         self.passed = set()
         tdir = os.path.join(kb.RE, 'tests')
         for f in os.listdir(tdir):
@@ -146,6 +247,13 @@ class Gate:
             if v and ex and self.exceptions[ex]['covers'] == v[1]:
                 self.excepted.add(ex)
                 return 'experimental', 'exception:' + v[1]
+            dr = self.drops.get(keys[0])
+            if v and dr and dr['covers'] == v[1] and v[0] in ('partial', 'disagree'):
+                if dr['mode'] == 'deprecated':
+                    self.deprecated[keys[0]] = dr
+                    return 'experimental', 'deprecated:' + v[1]
+                self.dropped[keys[0]] = dr
+                return None, 'dropped by export_drops.json'
             if self.dev:
                 return 'dev', 'unverified'
             if v and v[0] == 'agree':
@@ -305,6 +413,8 @@ def load(gate=None):
             cxx = notes_cxx(r['notes'])
             if cxx:
                 b['cxx'] = cxx
+            if why.startswith('deprecated:'):
+                b['deprecated'] = drop_doc(gate.deprecated[(vkind, r['name'])])
             if s['id'] in anchors:
                 an = anchors[s['id']]
                 b['string_anchor'] = {'string': an['string'], 'func_rva': an['func_rva'],
@@ -443,7 +553,7 @@ def load_overlays(kb_build, bdir=BUILDS):
     return kb_names[0], overlays
 
 
-def build_set(overlay, bindings, is_kb):
+def build_set(overlay, bindings, is_kb, dropped=()):
     b = overlay['build']
     sections = overlay.get('sections', {})
     overrides, hints, unres = (overlay.get(k, {}) for k in ('overrides', 'hints', 'unresolvable'))
@@ -493,6 +603,8 @@ def build_set(overlay, bindings, is_kb):
         # core's read_section_map sends core and addon scans of a KB section name to this build's section
         doc['sections'] = dict(sections)
     doc['bindings'] = out
+    if dropped:
+        doc['dropped'] = list(dropped)
     return doc
 
 
@@ -608,23 +720,29 @@ def gen_cpp(build, bindings, structs):
         for b in mine:
             t = tag(b['status'], b['level'], b.get('cxx'))
             i = b['id']
+            dep = f'[[deprecated("{deprecation_text(b["deprecated"])}")]] ' if b.get('deprecated') else ''
             if b['kind'] == 'func' and b.get('proto'):
                 ret, params = parse_proto(b['proto'], i)
                 args = ', '.join('...' if pt == '...' else c_decl(pt, pn) for pt, pn in params)
                 out.append(f'using {i}_t = {ret}({args});\n')
-                out.append(f'inline constexpr fn<"{i}", {i}_t> {i}{{}};{t}\n')
+                out.append(f'{dep}inline constexpr fn<"{i}", {i}_t> {i}{{}};{t}\n')
             elif b['kind'] == 'func':
-                out.append(f'inline constexpr address<"{i}"> {i}{{}};{t}\n')
+                out.append(f'{dep}inline constexpr address<"{i}"> {i}{{}};{t}\n')
             elif b['kind'] == 'data':
-                out.append(f'inline constexpr data<"{i}", {b["type"]}> {i}{{}};{t}\n')
+                out.append(f'{dep}inline constexpr data<"{i}", {b["type"]}> {i}{{}};{t}\n')
             elif b['kind'] == 'vtable':
-                out.append(f'inline constexpr vtable<"{i}", {b["slots"] or 0}> {i}{{}};{t}\n')
+                out.append(f'{dep}inline constexpr vtable<"{i}", {b["slots"] or 0}> {i}{{}};{t}\n')
             else:
-                out.append(f'inline constexpr {b["kind"]}<"{i}"> {i}{{}};{t}\n')
+                out.append(f'{dep}inline constexpr {b["kind"]}<"{i}"> {i}{{}};{t}\n')
         out.append('\n}\n')
         files[f'game/{sub}.hpp'] = ''.join(out)
     files['game.hpp'] = head + ''.join(f'#include <swofty/game/{s}.hpp>\n' for s in subs)
     return files
+
+
+def rs_deprecated(b, indent):
+    d = b.get('deprecated')
+    return f'{indent}#[deprecated(since = "{d["since"]}", note = "{deprecation_text(d)}")]\n' if d else ''
 
 
 def gen_rust(build, bindings, structs):
@@ -659,11 +777,13 @@ def gen_rust(build, bindings, structs):
             ret, params = parse_proto(b['proto'], b['id'])
             r = rs_type(ret, ret=True)
             args = ', '.join('...' if pt == '...' else f'{rs_ident(pn)}: {rs_type(pt)}' for pt, pn in params)
-            out.append(f'pub type {b["id"]}_t = unsafe extern "C" fn({args})' + (f' -> {r}' if r else '') + ';\n')
+            out.append(rs_deprecated(b, '') + f'pub type {b["id"]}_t = unsafe extern "C" fn({args})' +
+                       (f' -> {r}' if r else '') + ';\n')
     out.append('\npub mod bindings {\n    use super::{Binding, Status};\n')
     for b in bindings:
         st = 'Stable' if b['status'] == 'stable' else 'Experimental'
-        out.append(f'    pub const {b["id"]}: Binding = Binding {{ id: "{b["id"]}", kind: "{b["kind"]}", status: Status::{st} }};\n')
+        out.append(rs_deprecated(b, '    ') + f'    pub const {b["id"]}: Binding = Binding {{ id: "{b["id"]}", '
+                   f'kind: "{b["kind"]}", status: Status::{st} }};\n')
     out.append('}\n')
     return ''.join(out)
 
@@ -726,7 +846,9 @@ def main():
         if {os.path.normpath(p) for p in (a.json, a.include, a.rust, a.symbols)} & shipped:
             raise SystemExit('--dev writes only to scratch paths: pass --json, --include, --rust and --symbols')
         Gate.dev = True
-    build, bindings, structs, skipped = load()
+    gate = Gate()
+    build, bindings, structs, skipped = load(gate)
+    dropped = [drop_doc(e, n) for (_, n), e in sorted(gate.dropped.items())]
     kb_name, overlays = load_overlays(build)
     bindings, sc = run_sigcheck(build, bindings, None if a.no_exe else a.exe)
     rust, formatted = rustfmt(gen_rust(build, bindings, structs))
@@ -736,7 +858,7 @@ def main():
     built = {a.symbols}
     sets = []
     for name, overlay in overlays.items():
-        doc = build_set(overlay, bindings, name == kb_name)
+        doc = build_set(overlay, bindings, name == kb_name, dropped)
         path = set_path(a.json, name, name == kb_name)
         outputs[path] = json.dumps(doc, indent=1) + '\n'
         built.add(path)
@@ -765,6 +887,8 @@ def main():
           f'{sum(bool(s["fields"]) for s in structs.values())} structs with exported fields; {sc}')
     for why, c in sorted(skipped.items()):
         print(f'  not exported: {c:4d}  {why}')
+    if gate.deprecated or gate.dropped:
+        print(f'bindgen: export_drops.json: {len(gate.deprecated)} deprecated, {len(gate.dropped)} dropped')
     for path, overlay, doc, unknown in sets:
         b = doc['build']
         print(f'bindgen: {os.path.basename(path)}: {b["distribution"]} {b["sha256"][:16]}'

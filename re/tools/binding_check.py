@@ -96,7 +96,14 @@ FIXES = [(re.compile(p), t) for p, t in (
     (r'changes the generated headers', 'nothing to fix when binding.py doctor no longer asks for them: a maintainer '
      'checks they are what bindgen writes and merges it'),
     (r'stops exporting', 'an exported binding is part of the addon API: correct the notes and add an agree row in '
-     'the same pull request, or ask a maintainer to review the removal'),
+     'the same pull request; only the repository owner takes one out, with an entry in re/db/export_drops.json'),
+    (r'export_drops.json: the entry for \S+ no longer holds', 'remove the entry in the same pull request, or point '
+     'covers at the newest partial or disagree row; the repository owner approves either'),
+    (r'export_drops.json: \S+ ships in', 'set since to the next release'),
+    (r'export_drops.json: drops \S+ without a released deprecation', 'set mode deprecated for the next release, or '
+     'set harm when the binding crashes or corrupts state'),
+    (r'only the repository owner approves', 'nothing to fix: the bindings check passes once the repository owner '
+     'approves the pull request at its head commit, after a re-run of the check'),
     (r'has no regular file there', 'commit the record as a plain file, not a symlink or a submodule'),
     (r'more than \d+ files', 'split the records over several pull requests'),
     (r'changes no binding record', 'add or change a file under re/bindings/<subsystem>/<Name>.json'),

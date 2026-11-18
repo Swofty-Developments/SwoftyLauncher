@@ -789,6 +789,121 @@ class ExportsDoNotShrink(Base):
         self.assertEqual(binding.lost_exports('HEAD'), [])
 
 
+class ExportDropsNeedTheOwner(ExportsDoNotShrink):
+    PATH = 're/db/export_drops.json'
+
+    def setUp(self):
+        import bindgen
+        at = bindgen.workspace_version()
+        self.next = f'{at[0]}.{at[1]}.{at[2] + 1}'
+        self.shipped = '.'.join(map(str, at))
+        self.key = f'func:{self.exported.name}'
+
+    def ddoc(self, entries):
+        return json.dumps({'schema': 1, 'note': 'why', 'entries': entries}).encode()
+
+    def entry(self, mode='deprecated', covers='V109991', **kw):
+        return {'mode': mode, 'since': self.next, 'covers': covers, 'reason': 'its proto is wrong', **kw}
+
+    def partial(self, vid='V109991'):
+        doc = self.change('partial')
+        doc['verify'][-1].update(verifier='re-bindings-blind', notes=f'{vid} Blind: partial, the fourth argument is a u8')
+        return doc
+
+    def judge_drops(self, new, entries, old_entries=None):
+        import binding
+        path = 're/bindings/' + self.exported.relpath
+        pair = (self.ddoc(old_entries or {}), self.ddoc(entries))
+        return binding.judge([(path, raw(self.exported.doc), new and raw(new))], [self.PATH], 'contributor-b',
+                             self.knowledge, None, pair)
+
+    def test_a_deprecated_entry_keeps_the_export_and_needs_the_owner(self):
+        result = self.judge_drops(self.partial(), {self.key: self.entry()})
+        self.assertEqual(result['verdict'], 'review', result['summary'])
+        self.assertTrue(result['owner_review'])
+        self.assertTrue(any('only the repository owner approves' in n for n in result['notes']), result['notes'])
+        self.assertTrue(any(f'deprecates {self.key} in {self.next}' in n for n in result['notes']), result['notes'])
+
+    def test_a_dropped_entry_with_harm_takes_it_out_at_once(self):
+        result = self.judge_drops(self.partial(), {self.key: self.entry('dropped', harm='crash')})
+        self.assertEqual(result['verdict'], 'review', result['summary'])
+        self.assertTrue(any('leaves the addon API' in n for n in result['notes']), result['notes'])
+        self.assertFalse(any('stops exporting' in e for e in result['errors']), result['errors'])
+
+    def test_a_drop_without_harm_or_a_released_deprecation_fails(self):
+        result = self.judge_drops(self.partial(), {self.key: self.entry('dropped', deprecated=self.shipped)})
+        self.assertEqual(result['verdict'], 'fail', result['summary'])
+        self.assertTrue(any('without a released deprecation' in e for e in result['errors']), result['errors'])
+
+    def test_a_drop_after_a_released_deprecation_passes(self):
+        import binding
+        old = self.ddoc({self.key: dict(self.entry(), since=self.shipped)})
+        self.assertEqual(binding.drops_review(old, {('func', self.exported.name): self.entry(
+            'dropped', deprecated=self.shipped)}), [])
+        unreleased = self.ddoc({self.key: self.entry()})
+        later = dict(self.entry('dropped', deprecated=self.next), since=f'{self.next[:-1]}9')
+        self.assertTrue(binding.drops_review(unreleased, {('func', self.exported.name): later}))
+
+    def test_an_entry_must_ship_in_a_later_release(self):
+        result = self.judge_drops(self.partial(), {self.key: dict(self.entry(), since=self.shipped)})
+        self.assertEqual(result['verdict'], 'fail', result['summary'])
+        self.assertTrue(any(f'ships in {self.shipped}' in e for e in result['errors']), result['errors'])
+
+    def test_an_entry_that_does_not_cover_the_newest_row_fails(self):
+        result = self.judge_drops(self.partial('V109992'), {self.key: self.entry()})
+        self.assertEqual(result['verdict'], 'fail', result['summary'])
+        self.assertTrue(any('no longer holds' in e for e in result['errors']), result['errors'])
+        self.assertTrue(any('stops exporting' in e for e in result['errors']), result['errors'])
+
+    def test_a_malformed_file_fails(self):
+        result = self.judge_drops(self.partial(), {self.key: self.entry('gone')})
+        self.assertEqual(result['verdict'], 'fail', result['summary'])
+
+    def test_a_record_change_on_a_listed_binding_keeps_its_entry_holding(self):
+        import binding, bindgen
+        listed = {('func', self.exported.name): self.entry()}
+        with mock.patch.object(bindgen, 'load_drops', return_value=listed):
+            result = self.judge(self.partial('V109993'))
+        self.assertEqual(result['verdict'], 'fail', result['summary'])
+        self.assertTrue(any('no longer holds' in e for e in result['errors']), result['errors'])
+        self.assertFalse(result['owner_review'])
+
+    def test_ci_flags_the_owner_review(self):
+        import binding
+        tmp = tempfile.mkdtemp()
+        try:
+            head = os.path.join(tmp, 'head')
+            os.makedirs(os.path.join(head, 're', 'db'))
+            with open(os.path.join(head, self.PATH), 'wb') as f:
+                f.write(self.ddoc({}))
+            with open(os.path.join(tmp, 'files.json'), 'w') as f:
+                json.dump([{'filename': self.PATH, 'status': 'modified'}], f)
+            out = os.path.join(tmp, 'out.json')
+            with contextlib.redirect_stdout(io.StringIO()):
+                binding.main(['ci', '--files', os.path.join(tmp, 'files.json'), '--head', head, '--author', AUTHOR,
+                              '--out', out])
+            with open(out) as f:
+                result = json.load(f)
+        finally:
+            shutil.rmtree(tmp)
+        self.assertEqual(result['verdict'], 'review', result['summary'])
+        self.assertTrue(result['owner_review'])
+
+    def test_lost_exports_spares_the_held_drops(self):
+        import binding
+        with mock.patch.object(binding, 'bindgen_ids', side_effect=[{'Kept', 'Dropped', 'Gone'}, {'Kept'}]), \
+                mock.patch.object(binding, 'held_drops', return_value={'Dropped'}):
+            self.assertEqual(binding.lost_exports('HEAD'), ['Gone'])
+
+    def test_release_lines(self):
+        import binding
+        self.assertEqual(binding.release_line('Fn_A', self.entry(replacement='Fn_B')),
+                         '- The addon binding `Fn_A` is deprecated and leaves the addon API in the next release: its '
+                         'proto is wrong. Use `Fn_B` instead.')
+        self.assertEqual(binding.release_line('Fn_A', self.entry('dropped', harm='crash')),
+                         '- The addon binding `Fn_A` is removed from the addon API: its proto is wrong.')
+
+
 class LevelBaselineOnlyShrinks(Base):
     PATH = 're/db/level_baseline.json'
 
