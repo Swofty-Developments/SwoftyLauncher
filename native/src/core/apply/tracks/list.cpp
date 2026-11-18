@@ -19,10 +19,6 @@
 // variant chain, its list against the effective base (C4), catalog.json's "tracks" object rewritten at each box
 // press (with the build's profile and an id of its registry/index.json), and the guard's decision for a confirmed track.
 
-namespace runtime {
-std::vector<era::Box> era_boxes();
-}
-
 namespace swofty_core::apply::tracks {
 
 namespace {

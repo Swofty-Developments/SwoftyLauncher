@@ -70,19 +70,49 @@ impl Crashes {
         self.view.as_ref().filter(|_| self.open)
     }
 
+    /// Takes a session that crashed or ended and is not diagnosed yet; false for any other.
+    fn begin(&mut self, s: &SessionRecord) -> bool {
+        if !(s.crashed() || s.end.is_some()) || self.latest.as_ref().is_some_and(|(d, _)| *d == s.dir) {
+            return false;
+        }
+        self.latest = Some((s.dir.clone(), Ok(String::new())));
+        true
+    }
+
+    /// Takes a finished diagnosis: a crash, or an ended session with a known problem, shows in the
+    /// play bar, and a fresh one opens the modal.
+    fn took(
+        &mut self,
+        dir: PathBuf,
+        summary: Result<String, StartFailure>,
+        diagnosis: Option<Diagnosis>,
+        crashed: bool,
+        fresh: bool,
+    ) {
+        if let Ok(text) = &summary
+            && (crashed || diagnosis.is_some())
+        {
+            self.view = Some(CrashView {
+                dir: dir.clone(),
+                diagnosis,
+                crashed,
+                summary: text.clone(),
+            });
+            self.open |= fresh;
+        }
+        self.latest = Some((dir, summary));
+    }
+
     /// Diagnoses a session that crashed or ended, once per session and off the UI thread, and
     /// opens the crash modal for a fresh one.
     pub(crate) fn watch<H: Host<Self>>(host: &mut H, session: Option<&SessionRecord>, cx: &mut Context<H>) {
         let (crashes, needs) = host.split();
-        if let Some(s) = session.filter(|s| s.crashed() || s.end.is_some())
-            && crashes.latest.as_ref().is_none_or(|(d, _)| *d != s.dir)
-        {
+        if let Some(s) = session.filter(|s| crashes.begin(s)) {
             let session = s.clone();
             let crashed = s.crashed();
             let game_dir = needs.game_dir.map(Path::to_path_buf);
             let store = needs.store.clone();
             let fresh = s.ended.is_some_and(|e| game::now_secs() - e < FRESH_SECS);
-            crashes.latest = Some((s.dir.clone(), Ok(String::new())));
             cx.spawn(async move |this, cx| {
                 let dir = session.dir.clone();
                 let (summary, diagnosis) = cx
@@ -99,19 +129,7 @@ impl Crashes {
                     })
                     .await;
                 this.update(cx, |host, cx| {
-                    let (crashes, _) = host.split();
-                    if let Ok(text) = &summary
-                        && (crashed || diagnosis.is_some())
-                    {
-                        crashes.view = Some(CrashView {
-                            dir: dir.clone(),
-                            diagnosis,
-                            crashed,
-                            summary: text.clone(),
-                        });
-                        crashes.open |= fresh;
-                    }
-                    crashes.latest = Some((dir, summary));
+                    host.split().0.took(dir, summary, diagnosis, crashed, fresh);
                     cx.notify();
                 })
                 .ok();
@@ -315,5 +333,70 @@ impl Shell {
                 .scrolls()
                 .child(v_flex().w(px(668.)).px(px(24.)).py(px(32.)).child(card)),
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::path::PathBuf;
+
+    use swofty_core::diagnostics::crash::StartFailure;
+    use swofty_core::session::SessionRecord;
+
+    use super::Crashes;
+
+    fn session(dir: &str, exit_code: Option<i32>) -> SessionRecord {
+        SessionRecord {
+            dir: PathBuf::from(dir),
+            request_id: None,
+            started: Some(1.0),
+            ended: Some(2.0),
+            exit_code,
+            end: None,
+        }
+    }
+
+    const ACCESS_VIOLATION: i32 = 0xC000_0005_u32 as i32;
+
+    #[test]
+    fn each_crashed_session_is_diagnosed_once() {
+        let mut crashes = Crashes::default();
+        let s = session("s1", Some(ACCESS_VIOLATION));
+        assert!(crashes.begin(&s));
+        assert!(!crashes.begin(&s));
+        assert!(crashes.begin(&session("s2", Some(ACCESS_VIOLATION))));
+    }
+
+    #[test]
+    fn a_session_still_running_is_not_diagnosed() {
+        let mut crashes = Crashes::default();
+        assert!(!crashes.begin(&session("s1", Some(0))));
+        assert!(crashes.latest.is_none());
+    }
+
+    #[test]
+    fn a_fresh_crash_opens_the_modal_and_an_old_one_only_the_play_bar() {
+        let mut crashes = Crashes::default();
+        crashes.took("s1".into(), Ok("exit c0000005".into()), None, true, false);
+        assert!(crashes.view.is_some() && !crashes.open);
+        assert!(crashes.shown().is_none());
+        crashes.took("s2".into(), Ok("exit c0000005".into()), None, true, true);
+        assert_eq!(crashes.shown().map(|v| v.dir.clone()), Some(PathBuf::from("s2")));
+    }
+
+    #[test]
+    fn a_clean_end_with_no_known_problem_shows_nothing() {
+        let mut crashes = Crashes::default();
+        crashes.took("s1".into(), Ok(String::new()), None, false, true);
+        assert!(crashes.view.is_none() && !crashes.open);
+        assert_eq!(crashes.latest.map(|(d, _)| d), Some(PathBuf::from("s1")));
+    }
+
+    #[test]
+    fn a_game_that_never_started_keeps_the_failure_for_the_play_bar() {
+        let mut crashes = Crashes::default();
+        crashes.took("s1".into(), Err(StartFailure { code: 5 }), None, true, true);
+        assert!(crashes.view.is_none());
+        assert!(matches!(crashes.latest, Some((_, Err(StartFailure { code: 5 })))));
     }
 }

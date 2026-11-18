@@ -47,6 +47,8 @@ private:
         std::atomic<bool> was_in_session{false}, return_armed{false};
     };
 
+    bool nav_flag();
+    void gp_saves_probe();
     Back back_mode();
     std::string get_flow();
     void set_flow(const std::string &f);
@@ -102,6 +104,13 @@ private:
     std::mutex swap_lock;
     std::string swap_screens;
     bool swap_reported = true;
+    std::atomic<int> nav_flag_state{-1};
+    std::atomic<bool> gp_probe_asked{false};
+    // The event blocks the route fires and the container command pass the game, one per caller.
+    struct RouteEvents {
+        uint8_t back[0x400], reopen[0x400], fire[0x400], third[0x100];
+    };
+    RouteEvents route_events{};
 };
 
 }

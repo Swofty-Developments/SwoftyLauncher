@@ -10,9 +10,9 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_i18n::tr;
 
+use super::fit::{self, Account};
+use super::overflow::Link;
 use super::{BAR_HEIGHT, Popover, SUB_HEIGHT, filled_icon};
-use crate::shell::barfit::{self, Account};
-use crate::shell::overflow::Link;
 use crate::shell::tabs::{Row, Tab};
 use crate::shell::{Page, Shell};
 
@@ -24,7 +24,7 @@ impl Shell {
         cx: &mut Context<Self>,
     ) -> impl IntoElement {
         let labels: Vec<&str> = Tab::ALL.iter().map(|t| t.label()).collect();
-        let step = barfit::choose(
+        let step = fit::choose(
             layout_width,
             &labels,
             self.account.display_name().map(|n| n.chars().count()),

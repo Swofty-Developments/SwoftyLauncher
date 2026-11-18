@@ -18,7 +18,7 @@ pub(crate) fn preflight(store: &Store, g: &Game, plan: &Plan, out: &Path) -> std
         return Err(swofty_core::setup::NEEDED.to_owned());
     }
     if swofty_core::steam::in_steam_library(&g.dir) {
-        let status = swofty_core::steam_client::status();
+        let status = swofty_core::platform::steam::client::status();
         if !status.state.usable() {
             return Err(format!(
                 "Steam is not ready ({status}); start Steam and sign in, then run the tests again"

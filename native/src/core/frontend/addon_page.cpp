@@ -32,11 +32,7 @@ struct AddonInfo {
     std::vector<Option> options;
 };
 
-std::vector<AddonInfo> &addons()
-{
-    static std::vector<AddonInfo> m;
-    return m;
-}
+constinit std::vector<AddonInfo> addons;
 
 class AddonPage : public ViewModel {
 public:
@@ -88,7 +84,7 @@ public:
 private:
     AddonInfo *find_addon()
     {
-        auto &list = addons();
+        auto &list = addons;
         size_t at = screen().find_last_of('_');
         if (at == std::string::npos)
             return nullptr;
@@ -153,10 +149,10 @@ void load(const std::wstring &settings_path)
             }
             m.options.push_back(std::move(o));
         }
-        addons().push_back(std::move(m));
+        addons.push_back(std::move(m));
     }
 }
 
-size_t count() { return addons().size(); }
+size_t count() { return addons.size(); }
 
 }

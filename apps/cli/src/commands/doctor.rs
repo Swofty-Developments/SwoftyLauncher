@@ -100,7 +100,10 @@ pub fn report(store: &Store, session: Option<&Game>) -> (Vec<String>, bool) {
         }
     }
     if session.is_none() {
-        row("steam client", swofty_core::steam_client::status().to_string());
+        row(
+            "steam client",
+            swofty_core::platform::steam::client::status().to_string(),
+        );
     }
     let Some(game) = roots.iter().find_map(|r| steam::find_game_in(r)) else {
         row(

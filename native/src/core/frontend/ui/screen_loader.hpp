@@ -102,6 +102,7 @@ private:
     safetyhook::InlineHook h_handler, h_resolve, h_openexec, h_open;
     safetyhook::MidHook m_read, m_init, m_factory, m_screen;
     unsigned engine_failures = 0;
+    bool perf_probed = false;
 };
 
 extern ScreenLoader loader;

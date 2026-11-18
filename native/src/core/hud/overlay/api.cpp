@@ -452,8 +452,6 @@ const SwoftyOverlay *overlay_table()
 
 int overlay_image(const std::string &id, const std::string &path, uint32_t *width, uint32_t *height)
 {
-    static std::mutex failed_lock;
-    static std::vector<std::string> failed;
     std::string key = id + "|" + path;
     {
         std::lock_guard<std::mutex> g(overlay.reg_lock);
@@ -468,8 +466,8 @@ int overlay_image(const std::string &id, const std::string &path, uint32_t *widt
         }
     }
     {
-        std::lock_guard<std::mutex> f(failed_lock);
-        if (std::find(failed.begin(), failed.end(), key) != failed.end())
+        std::lock_guard<std::mutex> f(overlay.image_failed_lock);
+        if (std::find(overlay.image_failed.begin(), overlay.image_failed.end(), key) != overlay.image_failed.end())
             return -1;
     }
     std::string why;
@@ -478,8 +476,8 @@ int overlay_image(const std::string &id, const std::string &path, uint32_t *widt
     std::string data = runtime::read_file(wpath, size_t(8) << 20);
     if (data.empty() || !hud::img::decode(data, px, why)) {
         swofty::log("[overlay] main menu image %s: %s", path.c_str(), data.empty() ? "unreadable" : why.c_str());
-        std::lock_guard<std::mutex> f(failed_lock);
-        failed.push_back(key);
+        std::lock_guard<std::mutex> f(overlay.image_failed_lock);
+        overlay.image_failed.push_back(key);
         return -1;
     }
     uint32_t w = px.width, h = px.height;

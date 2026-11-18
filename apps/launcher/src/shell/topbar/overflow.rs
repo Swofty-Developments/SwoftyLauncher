@@ -1,6 +1,6 @@
 use gpui_kit::SharedString;
 
-use super::Page;
+use crate::shell::Page;
 
 #[derive(Clone)]
 pub(crate) struct Link {

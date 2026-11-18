@@ -1,4 +1,5 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashMap};
+use std::path::Path;
 use std::time::{Duration, Instant};
 
 use crate::shell::notices::Notification;
@@ -6,10 +7,12 @@ use gpui_kit::*;
 use swofty_core::catalog::{self, Addon};
 use swofty_core::manifest::AddonManifest;
 use swofty_core::updates::release::current_version;
-use swofty_i18n::{tr, trf};
+use swofty_i18n::trf;
 
+use super::state::BrowserChange;
 use super::*;
-use crate::shell::Shell;
+use crate::services::library::Library;
+use crate::shell::host::Host;
 use crate::ui::format;
 
 pub(super) fn install_failure_toast(name: &str, verb: Verb, refused: bool, error: String) -> Notification {
@@ -53,29 +56,50 @@ pub(super) fn retry_action(addon: Option<&Addon>, requested: &catalog::Version) 
     }
 }
 
-impl Shell {
-    pub(crate) fn install_from_catalog(&mut self, id: &str, cx: &mut Context<Self>) {
-        self.enqueue_catalog(id, cx);
+/// The addons an install brings along that no other install is already bringing.
+pub(super) fn riders(
+    preview: Vec<String>,
+    working: &HashMap<String, Job>,
+    batch: Option<&Batch>,
+) -> Vec<String> {
+    preview
+        .into_iter()
+        .filter(|d| !working.contains_key(d) && !batch.is_some_and(|b| b.left.contains(d)))
+        .collect()
+}
+
+/// The version of `id` installed in `library`, if any.
+pub(crate) fn installed_version(library: &Library, id: &str) -> Option<semver::Version> {
+    library
+        .addons
+        .iter()
+        .find(|m| m.manifest.id == id)
+        .map(|m| m.manifest.version.clone())
+}
+
+impl Browser {
+    pub(crate) fn install<H: Host<Self>>(host: &mut H, id: &str, cx: &mut Context<H>) {
+        Self::enqueue(host, id, cx);
     }
 
     /// True when a job was queued or an existing pending job will handle it.
-    pub(super) fn enqueue_catalog(&mut self, id: &str, cx: &mut Context<Self>) -> bool {
-        if self.data_move_locked() {
+    pub(super) fn enqueue<H: Host<Self>>(host: &mut H, id: &str, cx: &mut Context<H>) -> bool {
+        let (b, needs) = host.split();
+        if needs.locked {
             return false;
         }
-        let Some(addon) = self.browser.find(id).cloned() else {
+        let Some(addon) = b.find(id).cloned() else {
             return false;
         };
         let Some(version) = addon.offered(&current_version()).cloned() else {
             return false;
         };
-        if self.game.build.as_ref().is_some_and(|b| b.holds(id)) {
-            self.browser
-                .toasts
+        if needs.building.is_some_and(|busy| busy.holds(id)) {
+            b.toasts
                 .push(Notification::warning(crate::features::update::BUILDING));
             return false;
         }
-        if let Some(existing) = self.browser.queue.jobs().iter().find(|job| {
+        if let Some(existing) = b.queue.jobs().iter().find(|job| {
             job.id == id
                 && matches!(
                     job.state,
@@ -85,23 +109,20 @@ impl Shell {
         }) {
             return existing.request.1 == version;
         }
-        let claims = match self.requirements(&addon) {
+        let claims = match b.requirements(needs.library, &addon) {
             Some(Ok(plan)) => plan.also().iter().map(|s| s.addon.id.clone()).collect(),
             _ => BTreeSet::new(),
         };
-        if self.browser.queue.enqueue(
-            id.to_owned(),
-            (addon, version, self.library.profile.name.clone()),
-            claims,
-        ) {
-            self.start_queued_downloads(cx);
+        let profile = needs.library.profile.name.clone();
+        if b.queue.enqueue(id.to_owned(), (addon, version, profile), claims) {
+            Self::start_queued(host, cx);
         }
         true
     }
 
-    pub(super) fn start_queued_downloads(&mut self, cx: &mut Context<Self>) {
-        let queued: Vec<_> = self
-            .browser
+    pub(super) fn start_queued<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (b, needs) = host.split();
+        let queued: Vec<_> = b
             .queue
             .jobs()
             .iter()
@@ -109,15 +130,17 @@ impl Shell {
             .map(|job| (job.id.clone(), job.request.0.clone()))
             .collect();
         for (id, addon) in queued {
-            if let Some(Ok(plan)) = self.requirements(&addon) {
-                self.browser
-                    .queue
+            if let Some(Ok(plan)) = b.requirements(needs.library, &addon) {
+                b.queue
                     .update_claims(&id, plan.also().iter().map(|s| s.addon.id.clone()).collect());
             }
         }
-        while let Some(id) = self.browser.queue.start_next() {
-            let (addon, version, profile) = self
-                .browser
+        loop {
+            let (b, needs) = host.split();
+            let Some(id) = b.queue.start_next() else {
+                break;
+            };
+            let (addon, version, profile) = b
                 .queue
                 .jobs()
                 .iter()
@@ -125,68 +148,57 @@ impl Shell {
                 .expect("the scheduler just activated this job")
                 .request
                 .clone();
-            if !requested_version_available(self.browser.find(&id), &version) {
-                let error = trf!(
-                    "{name} {version} is no longer available or compatible; request it again.",
-                    name = addon.name,
-                    version = version.version
-                );
-                self.browser.queue.finish(&id, Err(error.clone()));
-                self.browser.failed.insert(id.clone(), error.clone());
-                if let Some(batch) = &mut self.browser.batch
-                    && batch.left.remove(&id)
-                {
-                    batch.failed.push((addon.name.clone(), error));
-                } else {
-                    let verb = Verb::of(self.installed_version(&id).is_some());
-                    self.browser
-                        .toasts
-                        .push(install_failure_toast(&addon.name, verb, false, error));
-                }
-                if self
-                    .browser
-                    .batch
-                    .as_ref()
-                    .is_some_and(|batch| batch.left.is_empty())
-                {
-                    self.finish_addon_updates();
-                }
+            if requested_version_available(b.find(&id), &version) {
+                Self::start_install(host, addon, version, profile, cx);
                 continue;
             }
-            self.start_catalog_install(addon, version, profile, cx);
+            let error = trf!(
+                "{name} {version} is no longer available or compatible; request it again.",
+                name = addon.name,
+                version = version.version
+            );
+            b.queue.finish(&id, Err(error.clone()));
+            b.failed.insert(id.clone(), error.clone());
+            if let Some(batch) = &mut b.batch
+                && batch.left.remove(&id)
+            {
+                batch.failed.push((addon.name.clone(), error));
+            } else {
+                let verb = Verb::of(installed_version(needs.library, &id).is_some());
+                b.toasts
+                    .push(install_failure_toast(&addon.name, verb, false, error));
+            }
+            if b.batch.as_ref().is_some_and(|batch| batch.left.is_empty()) {
+                b.finish_updates(&needs.store.root);
+            }
         }
         cx.notify();
     }
 
-    pub(super) fn start_catalog_install(
-        &mut self,
+    fn start_install<H: Host<Self>>(
+        host: &mut H,
         addon: Addon,
         version: catalog::Version,
         profile: String,
-        cx: &mut Context<Self>,
+        cx: &mut Context<H>,
     ) {
+        let (b, needs) = host.split();
         let id = addon.id.as_str();
-        let updating = self.installed_version(id).is_some();
-        self.browser.failed.remove(id);
-        self.browser.refused.remove(id);
+        let updating = installed_version(needs.library, id).is_some();
+        b.failed.remove(id);
+        b.refused.remove(id);
         let job = Job::new(version.size);
-        let preview: Vec<String> = match self.requirements(&addon) {
+        let preview: Vec<String> = match b.requirements(needs.library, &addon) {
             Some(Ok(plan)) => plan.also().iter().map(|s| s.addon.id.clone()).collect(),
             _ => Vec::new(),
         };
-        let riders: Vec<String> = preview
-            .into_iter()
-            .filter(|d| {
-                !self.browser.working.contains_key(d)
-                    && !self.browser.batch.as_ref().is_some_and(|b| b.left.contains(d))
-            })
-            .collect();
+        let riders = riders(preview, &b.working, b.batch.as_ref());
         for d in &riders {
-            self.browser.working.insert(d.clone(), job.clone());
+            b.working.insert(d.clone(), job.clone());
         }
-        self.browser.working.insert(addon.id.clone(), job.clone());
+        b.working.insert(addon.id.clone(), job.clone());
         catalog::log(
-            &self.store.root,
+            &needs.store.root,
             &format!(
                 "{} {} {} ({}) from {}",
                 if updating { "updating" } else { "installing" },
@@ -196,8 +208,8 @@ impl Shell {
                 version.url
             ),
         );
-        let store = self.store.clone();
-        let catalog_now = self.browser.addons.clone();
+        let store = needs.store.clone();
+        let catalog_now = b.addons.clone();
         let started = Instant::now();
         let tracked = job.clone();
         cx.spawn(async move |this, cx| {
@@ -210,52 +222,75 @@ impl Shell {
                     })
                 })
                 .await;
-            this.update(cx, |s, cx| {
-                s.browser.working.remove(&addon.id);
+            this.update(cx, |host, cx| {
+                let (b, needs) = host.split();
                 for d in &riders {
-                    s.browser.working.remove(d);
+                    b.working.remove(d);
                 }
-                let took = started.elapsed();
-                s.browser.queue.finish(
-                    &addon.id,
-                    result
-                        .as_ref()
-                        .map(|_| ())
-                        .map_err(|error| tracked.failure(&error.to_string())),
-                );
-                let in_batch = s.browser.batch.as_mut().is_some_and(|b| b.left.remove(&addon.id));
-                let verb = Verb::of(updating);
                 let finished = Finished {
                     addon: &addon,
                     version: &version,
-                    verb,
-                    took,
-                    in_batch,
+                    verb: Verb::of(updating),
+                    took: started.elapsed(),
+                    in_batch: false,
                 };
-                match result {
-                    Ok(done) => s.install_succeeded(&finished, &done, cx),
-                    Err(e) => s.install_failed(&finished, e, cx),
+                let turn_on = b.took_install(&needs.store.root, finished, result, &tracked);
+                host.changed(BrowserChange::Installed, cx);
+                if let Some((id, note)) = turn_on {
+                    host.changed(BrowserChange::TurnOn { id, note }, cx);
                 }
-                if in_batch {
-                    let error = s.browser.failed.get(&addon.id).cloned().unwrap_or_default();
-                    s.browser
-                        .held
-                        .insert(addon.id.clone(), (version.version.clone(), error));
-                }
-                if in_batch && s.browser.batch.as_ref().is_some_and(|b| b.left.is_empty()) {
-                    s.finish_addon_updates();
-                }
-                s.start_queued_downloads(cx);
+                Self::start_queued(host, cx);
                 cx.notify();
             })
             .ok();
         })
         .detach();
-        Browser::tick(self, cx);
+        Self::tick(host, cx);
         cx.notify();
     }
 
-    fn install_succeeded(&mut self, f: &Finished<'_>, done: &[AddonManifest], cx: &mut Context<Self>) {
+    /// Takes a finished install; an addon installed outside an update batch comes back with the
+    /// notice that offers to turn it on.
+    fn took_install(
+        &mut self,
+        root: &Path,
+        mut f: Finished<'_>,
+        result: swofty_core::Result<Vec<AddonManifest>>,
+        tracked: &Job,
+    ) -> Option<(String, Notification)> {
+        let id = &f.addon.id;
+        self.working.remove(id);
+        self.queue.finish(
+            id,
+            result
+                .as_ref()
+                .map(|_| ())
+                .map_err(|error| tracked.failure(&error.to_string())),
+        );
+        f.in_batch = self.batch.as_mut().is_some_and(|b| b.left.remove(id));
+        let turn_on = match result {
+            Ok(done) => self.install_succeeded(root, &f, &done),
+            Err(e) => {
+                self.install_failed(root, &f, e);
+                None
+            }
+        };
+        if f.in_batch {
+            let error = self.failed.get(id).cloned().unwrap_or_default();
+            self.held.insert(id.clone(), (f.version.version.clone(), error));
+            if self.batch.as_ref().is_some_and(|b| b.left.is_empty()) {
+                self.finish_updates(root);
+            }
+        }
+        turn_on
+    }
+
+    fn install_succeeded(
+        &mut self,
+        root: &Path,
+        f: &Finished<'_>,
+        done: &[AddonManifest],
+    ) -> Option<(String, Notification)> {
         let (m, also) = done.split_last().expect("an install ends with its addon");
         let title = f.verb.done(&m.name, &m.version);
         let also: Vec<String> = also.iter().map(|d| format!("{} {}", d.name, d.version)).collect();
@@ -266,57 +301,47 @@ impl Shell {
                 trf!("also installed {names}", names = also.join(", "))
             ));
         }
-        self.browser
-            .record(&self.store.root, Op::Install, true, title.clone(), detail, f.took);
-        self.reload(cx);
+        self.record(root, Op::Install, true, title.clone(), detail, f.took);
         if f.in_batch {
-            if let Some(b) = self.browser.batch.as_mut() {
+            if let Some(b) = self.batch.as_mut() {
                 b.updated.push(format!("{} {}", m.name, m.version));
             }
-        } else {
-            let (shell, id) = (cx.entity().downgrade(), m.id.clone());
-            let body = match also.is_empty() {
-                true => title.clone(),
-                false => trf!("Also installed {names}", names = also.join(", ")),
-            };
-            let note = Notification::success(body).action(tr("Turn on"), move |window, cx| {
-                shell
-                    .update(cx, |s, cx| s.set_addon_enabled(&id, true, window, cx))
-                    .ok();
-            });
-            self.browser
-                .toasts
-                .push(if also.is_empty() { note } else { note.title(title) });
+            return None;
         }
+        let note = match also.is_empty() {
+            true => Notification::success(title),
+            false => {
+                Notification::success(trf!("Also installed {names}", names = also.join(", "))).title(title)
+            }
+        };
+        Some((m.id.clone(), note))
     }
 
-    fn install_failed(&mut self, f: &Finished<'_>, e: swofty_core::Error, cx: &mut Context<Self>) {
+    fn install_failed(&mut self, root: &Path, f: &Finished<'_>, e: swofty_core::Error) {
         let refused = matches!(e, swofty_core::Error::Requires(_));
         let error = e.to_string();
         crate::app::app_log::action(f.verb.action())
             .addon(&f.addon.id)
             .failed(&error);
-        self.browser.record(
-            &self.store.root,
+        self.record(
+            root,
             Op::Install,
             false,
             f.verb.failed(&f.addon.name, &f.version.version),
             error.clone(),
             f.took,
         );
-        self.browser.failed.insert(f.addon.id.clone(), error.clone());
+        self.failed.insert(f.addon.id.clone(), error.clone());
         if refused {
-            self.browser.refused.insert(f.addon.id.clone());
+            self.refused.insert(f.addon.id.clone());
         }
         if f.in_batch {
-            if let Some(b) = self.browser.batch.as_mut() {
+            if let Some(b) = self.batch.as_mut() {
                 b.failed.push((f.addon.name.clone(), error));
             }
         } else {
-            self.browser
-                .toasts
+            self.toasts
                 .push(install_failure_toast(&f.addon.name, f.verb, refused, error));
         }
-        self.reload(cx);
     }
 }

@@ -11,6 +11,12 @@
 
 namespace era_picker {
 
+namespace {
+
+constinit SessionLines lines;
+
+}
+
 std::vector<uint16_t> ids_of(uintptr_t begin, uintptr_t end, size_t field)
 {
     std::vector<uint16_t> out;
@@ -76,7 +82,6 @@ constexpr size_t VECTOR_END = 0x10;
 
 int entrant_vector_entry(void *vector, void *bag)
 {
-    static uint32_t logged;
     int result = alias_guard.orig(vector, bag);
     const logic::IdAliases &aliases = id_aliases();
     if (result != 0 || !vector || !aliases.any())
@@ -88,7 +93,7 @@ int entrant_vector_entry(void *vector, void *bag)
                                ids_of(begin, end, logic::ENTRANT_DRIVER)))
         return result;
     uint32_t n = remap_entrants(begin, end, aliases);
-    if (n && logged++ < LOG_FIRST)
+    if (n && lines.career_remap.note())
         swofty::log("[era] career load: mapped %u saved entrant id(s) to the ids the rows have now", n);
     return result;
 }
@@ -113,7 +118,6 @@ std::string mode_label(uintptr_t ctx)
 
 void leave_front_end(uintptr_t ctx)
 {
-    static uint32_t logged;
     std::string label = mode_label(ctx);
     if (label.empty())
         return;
@@ -133,14 +137,13 @@ void leave_front_end(uintptr_t ctx)
         ref<uintptr_t>(reinterpret_cast<void *>(setup), SELECTED_LIST) = 0;
     if (leave.forget_pick)
         picker.last_pick.clear();
-    if ((leave.restore || leave.clear_selected) && logged++ < LOG_FIRST)
+    if ((leave.restore || leave.clear_selected) && lines.front_end_leave.note())
         swofty::log("[era] %s session loads: %s's narrowed lists and DRS group are back%s", label.c_str(), logic::HOST,
                     leave.clear_selected ? ("; the box list " + selected + " no longer selected").c_str() : "");
 }
 
 void driver_career_load(uintptr_t ctx)
 {
-    static uint32_t logged;
     uintptr_t holder = 0, setup = 0, entrant_setup = 0, list = 0, gsm = 0, gsm_holder = 0, gsm_name = 0;
     if (!mem::read(ctx + MODE_SETUP, holder) || !holder || !mem::read(holder + SETUP_MODES, setup) || !setup ||
         !mem::read(setup + SELECTED_LIST, list) || list)
@@ -159,13 +162,12 @@ void driver_career_load(uintptr_t ctx)
     if (pick.index < 0)
         stop_session_load(logic::career_stop(pick));
     ref<void *>(reinterpret_cast<void *>(setup), SELECTED_LIST) = ptrs[size_t(pick.index)];
-    if (logged++ < LOG_FIRST)
+    if (lines.driver_career.note())
         swofty::log("[era] Driver Career load: %s", pick.line.c_str());
 }
 
 void grand_prix_load(uintptr_t ctx)
 {
-    static uint32_t logged;
     swofty_core::apply::moments::grand_prix_track_check();
     auto [mode, track] = swofty_core::apply::moments::session_mode_track();
     if (mode == "driver_career") {
@@ -210,7 +212,7 @@ void grand_prix_load(uintptr_t ctx)
         }
         if (pick.index >= 0 && track_why.empty()) {
             ref<void *>(reinterpret_cast<void *>(setup), SELECTED_LIST) = ptrs[size_t(pick.index)];
-            if (logged++ < LOG_FIRST)
+            if (lines.grand_prix.note())
                 swofty::log("[era] Grand Prix load: %s", pick.line.c_str());
             std::string grid = continue_grid.raise(reinterpret_cast<uint8_t *>(entrant_setup), cars[size_t(pick.index)].cars);
             if (!grid.empty())
@@ -265,7 +267,6 @@ void follow_loaded_list(const LoadSeen &seen)
 
 void session_load_held(LoadSeen &seen)
 {
-    static uint32_t logged, swapped;
     static std::string last_seen;
     put_back();
     uintptr_t slot = swofty::api ? swofty::api->resolve("g_Game_Manager") : 0, mgr = 0, ctx = 0, setup = 0;
@@ -295,7 +296,7 @@ void session_load_held(LoadSeen &seen)
     logic::ListCars selected = list ? list_cars(reinterpret_cast<void *>(list)) : logic::ListCars{};
     logic::ListCars first = lists.empty() ? logic::ListCars{} : lists[0];
     std::string line = setup_mode + "/" + selected.name + "/" + std::to_string(selected.cars);
-    if (line != last_seen && logged++ < LOG_FIRST * 2)
+    if (line != last_seen && lines.time_trial_list.note())
         swofty::log("[era] Time Trial session loads list %s (%lld cars) of setup mode %s (box pressed: %s)",
                     selected.name.empty() ? "?" : selected.name.c_str(), (long long)selected.cars, setup_mode.c_str(),
                     picker.last_press.empty() ? "none" : picker.last_press.c_str());
@@ -332,7 +333,7 @@ void session_load_held(LoadSeen &seen)
     }
     hold.holding = hold.held.first || hold.held.limit_was;
     time_trial_budget(reinterpret_cast<void *>(ctx), setup);
-    if (swapped++ < LOG_FIRST * 2)
+    if (lines.time_trial_swap.note())
         swofty::log("[era] %s", logic::time_trial_swap(bad.name, bad.cars, setup_mode, i >= 0 ? lists[size_t(i)].name : "",
                                                        hold.held.limit_was)
                                     .c_str());
@@ -434,13 +435,12 @@ void era_session_trace(const char *state, int to)
 
 void era_session_unloaded(const char *state, int to)
 {
-    static uint32_t logged;
     if (!state || !logic::time_trial_cut_off(state, to))
         return;
     time_trial_guard.budget = -1;
     std::lock_guard<std::mutex> g(hold.lock);
     logic::CutsPutBack r = put_back(true);
-    if ((r.put || r.failed) && logged++ < LOG_FIRST)
+    if ((r.put || r.failed) && lines.unload_put_back.note())
         swofty::log("[era] StateUnloadSession Exiting: the lists the Time Trial guards left out are back in %zu entrant "
                     "setup mode(s)%s",
                     r.put, r.failed ? ("; " + std::to_string(r.failed) + " could not be put back").c_str() : "");

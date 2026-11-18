@@ -19,7 +19,7 @@ units
   src/core/frontend/home_tiles.cpp  init
   src/core/frontend/ui.cpp  init exit
   src/core/frontend/ui_vm.cpp  init exit
-  src/core/frontend/addon_page.cpp  init
+  src/core/frontend/addon_page.cpp  init exit
   src/core/assets/items.cpp  init exit
   src/core/runtime/stage.cpp  exit
   src/core/frontend/main_menu.cpp  exit
@@ -63,6 +63,7 @@ units
   src/core/diagnostics/log_csv.cpp  exit
   src/core/runtime/sdk.cpp  exit
   src/core/diagnostics/perf.cpp  exit
+  src/core/diagnostics/perf/vq.cpp  exit
   src/core/assets/lang_override.cpp  exit
   src/core/career/characters.cpp  exit
   src/core/career/career_wizard.cpp  init exit

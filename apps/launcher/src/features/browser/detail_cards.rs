@@ -7,6 +7,7 @@ use swofty_core::catalog::Addon;
 use swofty_core::updates::release::current_version;
 use swofty_i18n::{tr, trf, trn};
 
+use super::Browser;
 use super::{day, since};
 use crate::shell::Shell;
 use crate::ui::format;
@@ -152,7 +153,7 @@ impl Shell {
             .tap_sm()
             .icon(IconName::RotateCw)
             .label(tr("Retry"))
-            .on_click(cx.listener(move |this, _, _, cx| this.install_from_catalog(&target, cx)));
+            .on_click(cx.listener(move |this, _, _, cx| Browser::install(this, &target, cx)));
         Some(
             Callout::error(error.clone())
                 .icon(IconName::CircleAlert)
@@ -168,7 +169,7 @@ impl Shell {
         if !idle {
             return None;
         }
-        match self.requirements(listed)? {
+        match self.browser.requirements(&self.library, listed)? {
             Ok(plan) if plan.also().is_empty() => None,
             Ok(plan) => {
                 let names = plan

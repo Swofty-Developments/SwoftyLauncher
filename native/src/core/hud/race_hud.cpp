@@ -38,8 +38,7 @@ int api_set(const char *path, uint32_t type, const void *value)
 void apply_set(const Set &q)
 {
     bool ok = q.type == 0 ? ui_vm_set_path(q.path, 0, q.text.c_str()) : ui_vm_set_path(q.path, q.type, &q.number);
-    static std::atomic<int> told;
-    if (!ok || told.fetch_add(1) < 16)
+    if (!ok || state.sets_told.fetch_add(1) < 16)
         swofty::log("[hud] set %s by %s: %s = %s%s", ok ? "applied" : "failed", q.by.c_str(), q.path.c_str(),
                     q.type == 0 ? ("\"" + q.text.substr(0, 60) + "\"").c_str() : std::to_string(q.number).c_str(),
                     ok ? "" : " (the parent node did not resolve)");
@@ -69,8 +68,7 @@ int leaves_register(const SwoftyHudLeaf *leaves, uint32_t n, uint32_t *ids)
             rc = SWOFTY_ASSET_INVALID;
         }
     }
-    static std::atomic<bool> first{true};
-    if (first.exchange(false) || n > 64)
+    if (!state.leaves_logged.exchange(true) || n > 64)
         swofty::log("[hud] %u leaves registered by %s (%zu in the table)", n, by.c_str(), state.leaf_table.size());
     return rc;
 }
@@ -117,8 +115,7 @@ bool apply_leaf(const runtime::hud_leaves::Leaf &l)
 {
     perf::Pause game;
     bool ok = l.type == 0 ? ui_vm_set_path(l.path, 0, l.want_text.c_str()) : ui_vm_set_path(l.path, int(l.type), &l.want_num);
-    static std::atomic<int> told;
-    if (!ok && !l.failed && told.fetch_add(1) < 16)
+    if (!ok && !l.failed && state.leaves_told.fetch_add(1) < 16)
         swofty::log("[hud] leaf %s by %s did not resolve yet (the parent node is missing); retrying", l.path.c_str(),
                     l.by.c_str());
     return ok;
