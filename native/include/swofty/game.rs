@@ -1213,9 +1213,12 @@ const _: () = assert!(core::mem::offset_of!(CarTurbo, max_boost) == 0x2d8);
 
 #[repr(C)]
 pub struct CarWheel {
-    _pad_0x0: [u8; 0x98],
+    _pad_0x0: [u8; 0x20],
+    pub tyre_flags: u8,
+    _pad_0x21: [u8; 0x77],
     pub deflation: f32,
 }
+const _: () = assert!(core::mem::offset_of!(CarWheel, tyre_flags) == 0x20);
 const _: () = assert!(core::mem::offset_of!(CarWheel, deflation) == 0x98);
 
 #[repr(C)]
