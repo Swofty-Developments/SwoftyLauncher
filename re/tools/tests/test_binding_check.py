@@ -7,6 +7,17 @@ import binding_check as bc
 import binding_record as br
 
 SAMPLE = 'session/site_Sess_StintTyreCheckPredictCall.json'
+
+
+def have_exe_modules():
+    try:
+        import capstone, numpy, pefile  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+
+NEEDS_EXE_MODULES = unittest.skipUnless(have_exe_modules(), 'capstone, numpy and pefile are required (re/tools/py)')
 AUTHOR = 'contributor-a'
 
 
@@ -771,6 +782,7 @@ class ExportsDoNotShrink(Base):
         self.assertEqual(binding.lost_exports('HEAD'), [])
 
 
+@NEEDS_EXE_MODULES
 @unittest.skipUnless(os.environ.get('SWOFTY_STEAM_EXE'), 'set SWOFTY_STEAM_EXE to the KB build F1_25.exe')
 class NewOnTheKbBuild(unittest.TestCase):
     TWIN = 0x142e9dc20
@@ -802,6 +814,7 @@ class NewOnAnotherBuild(unittest.TestCase):
         sha = next(sha for sha, name in bc.Knowledge().builds.items() if name == 'steam-26566308')
         self.assertEqual(binding.build_name(sha), 'steam-26566308')
 
+    @NEEDS_EXE_MODULES
     @unittest.skipUnless(os.environ.get('SWOFTY_STEAM_145_EXE'), 'set SWOFTY_STEAM_145_EXE to the Steam 1.0.145 exe')
     def test_the_current_build_maps_an_address_to_its_kb_twin(self):
         import binding, sigcheck
@@ -819,6 +832,7 @@ class NewOnAnotherBuild(unittest.TestCase):
             self.assertIn('checked on the KB exe: same', out['twin'])
 
 
+    @NEEDS_EXE_MODULES
     @unittest.skipUnless(os.environ.get('SWOFTY_STEAM_145_EXE'), 'set SWOFTY_STEAM_145_EXE to the Steam 1.0.145 exe')
     def test_a_record_made_on_the_current_build_holds_kb_addresses(self):
         import binding
