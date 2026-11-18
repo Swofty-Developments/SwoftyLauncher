@@ -15,8 +15,8 @@ python3 -m pip install pefile numpy capstone    # binding.py new and verify read
 python3 re/tools/binding.py --help              # every command; binding.py <command> --help for its options
 ```
 
-- **The KB build of the game.** Records hold addresses on the knowledge-base build: Steam F1 25 1.0.141.7865 (build 25251167), an `F1_25.exe` of 408063872 bytes with sha256 `d873a1c8d2044cef…` and PE timestamp 1789118616. `binding.py new` runs only on that exe and names the build it was given otherwise. `verify` and `agree` take any build in `re/db/builds`. Without the KB build, open an issue with the address on your build and your evidence; a maintainer makes the record.
-- **The address and why it is that place.** Find the function, instruction or global in your own disassembly of the KB build. `--evidence` is `kind:value` tokens joined by `;`:
+- **The game.** `binding.py new`, `verify` and `agree` run on the current Steam build (F1 25 1.0.145.2472, build 26566308) or on any other build in `re/db/builds`. Records hold addresses on the knowledge-base (KB) build, Steam 1.0.141.7865 (build 25251167). On any other build, `new` takes the KB address from the bindings just below and just above yours, which must have moved by the same amount between the two builds. The record keeps where it was made and that reasoning in `twin`. When the two bindings moved by different amounts, `new` writes nothing and names them; pick another address or ask in an issue.
+- **The address and why it is that place.** Find the function, instruction or global in your own disassembly of your build. Every address you pass, `--evidence` included, is on that build. `--evidence` is `kind:value` tokens joined by `;`:
 
   ```text
   decomp:own disasm 0x1436a3ab0-0x1436a422c    the code you read (L2 needs it)
@@ -59,6 +59,13 @@ binding.py doctor: 1 record file(s) and 0 other file(s) changed against 3f1c2a9b
 verdict: auto: this pull request would merge itself: every changed file is a binding record that passes the checks
 after the merge:
   site_Sess_PitEntryDecision: not exported; needs an agree row from a second contributor (binding.py agree)
+```
+
+On a build other than the KB build, `new` prints the KB twin before it writes the file:
+
+```text
+binding.py new: made on steam-26566308; the target 0x142e91ae0 is KB 0x142e8f550: Sess_TyreAllocation_SwapSets (0x2e90a50) and Sess_Veh_UpdateWheelMap (0x2e92af0) on either side both sit 0x2590 above their KB addresses
+wrote re/bindings/session/Sess_Tyre_ReadCompoundSets.json (session.tyre_read_compound_sets, match 0x142e8f550, proof on 46009bd31f49d93a)
 ```
 
 A failing check prints the problem, the file and the fix:
@@ -121,6 +128,18 @@ Options: `--subsystem` when the name's prefix is ambiguous, `--proto "<C prototy
  ]
 }
 ```
+
+A record made on another build has four more signature fields; `match`, `target` and `row.addr` stay KB addresses:
+
+```json
+  "verified": [{"build": "46009bd31f49d93a", "date": "2026-11-18", "by": "your-github-login", "how": "static"}],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142e91ae0",
+  "made_on_target": "0x142e91ae0",
+  "twin": "made on steam-26566308; the target 0x142e91ae0 is KB 0x142e8f550: Sess_TyreAllocation_SwapSets (0x2e90a50) and Sess_Veh_UpdateWheelMap (0x2e92af0) on either side both sit 0x2590 above their KB addresses"
+```
+
+Its proof on that build must find `made_on_match` and `made_on_target`, and the set for that build uses `made_on_match` as the match hint. With `SWOFTY_KB_EXE` set to a KB `F1_25.exe`, `new` also checks the twin against the KB bytes and adds the result to `twin`.
 
 `row` holds the same columns as `re/db/functions.tsv` or `globals.tsv` (PROTOCOL.md §4), `signature` the same object as `re/db/signatures.json` (§7). `bindgen.py`, `kb_lint.py`, `sigcheck.py` and `kb.py` read records together with the shared tables.
 
@@ -190,7 +209,7 @@ Anything else gets a normal review. The workflow's summary lists each reason wit
 - `target` is `match + anchor` for `addr`; the rel32 or disp32 operand is wildcarded for `rel32` and `riprel`; `expect` agrees with the pattern's bytes.
 - No other signature has the same section, pattern bytes, anchor, resolve and kind. The pattern is compared as parsed bytes and the offsets as numbers, the way the core scans once per pattern and resolves each binding from that match.
 - The signature kind fits the binding kind, the section is `.xtls` (or `.data1` with a reason), the address is inside the KB image.
-- Each proof's digest matches the signature and its exe hash; a proof on the KB build found the record's `match` and `target`.
+- Each proof's digest matches the signature and its exe hash; a proof on the KB build found the record's `match` and `target`, and a proof on the build in `made_on` found `made_on_match` and `made_on_target`.
 - The name and address have no verify rows yet, so an old verdict cannot back a new record. A record's own verify rows are about its name, its address or its signature id, and the export gate reads only the first two.
 - `kb_lint.py --structural` passes over the base branch with the PR's records added: no drift between rows, signatures, structs, verify rows and tests.
 - After merging, the `main` job runs `binding.py check` and `kb_lint.py --structural` over `main` again.
