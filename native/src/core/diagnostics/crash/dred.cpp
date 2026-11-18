@@ -14,9 +14,10 @@ namespace runtime::dred {
 
 std::vector<std::wstring> marker_folders;
 void (*log_fn)(const char *, ...);
-std::vector<BuildStop> stops;
 
 namespace {
+
+BuildStops stops;
 
 using CreateDeviceFn = HRESULT(WINAPI *)(IUnknown *, D3D_FEATURE_LEVEL, REFIID, void **);
 using DebugInterfaceFn = HRESULT(WINAPI *)(REFIID, void **);
@@ -127,7 +128,7 @@ void attach_info_queue(ID3D12Device *dev)
 
 HRESULT WINAPI hooked_create_device(IUnknown *adapter, D3D_FEATURE_LEVEL level, REFIID riid, void **out)
 {
-    void *ret = d3d12hooks::creation_caller(__builtin_return_address(0));
+    void *ret = render::d3d12::creation_caller(__builtin_return_address(0));
     HRESULT hr = create_hook.unsafe_call<HRESULT>(adapter, level, riid, out);
     if (SUCCEEDED(hr) && out && readable(out, sizeof *out) && *out && !caller_is_core(ret)) {
         ID3D12Device *dev = nullptr;
@@ -252,7 +253,7 @@ std::string section(bool registers_show_removal)
 
 std::vector<BuildStop> build_stops()
 {
-    return stops;
+    return stops.all();
 }
 
 static std::string dred_section(bool registers_show_removal)
@@ -266,7 +267,7 @@ static std::string dred_section(bool registers_show_removal)
         HRESULT reason = dev ? dev->GetDeviceRemovedReason() : S_OK;
         if (FAILED(reason)) {
             removed++;
-            body += removed_device(dev, reason);
+            body += removed_device(dev, reason, stops);
         }
     }
     if (removed) {

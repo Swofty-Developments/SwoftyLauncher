@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace postfx {
+namespace render::postfx {
 
 // The rules of an active config, stepped once per presented frame (docs: shader events contract, section
 // 4). reset() puts every rule off with weight 0 and takes the instances' base options; step() moves the

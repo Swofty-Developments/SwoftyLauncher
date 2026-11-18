@@ -18,7 +18,7 @@
 // Locking: Book never calls into the store while it holds its own lock, because the store calls
 // read() with the store's lock held.
 
-namespace swofty_core::snapshots {
+namespace career::snapshots {
 
 namespace reg = swofty_core::registry;
 using format::Bytes;

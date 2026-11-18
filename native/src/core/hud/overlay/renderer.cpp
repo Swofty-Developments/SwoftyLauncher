@@ -336,7 +336,7 @@ void Renderer::transition(ID3D12GraphicsCommandList *l, ID3D12Resource *r, D3D12
 }
 
 Renderer::Outcome Renderer::render(const Target &t, ID3D12CommandQueue *q, const std::vector<Vertex> &verts,
-                                   const std::vector<hud::Batch> &batches, UINT mode, float white)
+                                   const std::vector<hud::drawlist::Batch> &batches, UINT mode, float white)
 {
     const DXGI_FORMAT fmt = t.fmt;
     const UINT width = t.width, height = t.height;
@@ -396,7 +396,7 @@ Renderer::Outcome Renderer::render(const Target &t, ID3D12CommandQueue *q, const
     D3D12_VERTEX_BUFFER_VIEW vbv{vbuf->GetGPUVirtualAddress() + base, UINT(n * sizeof(Vertex)), sizeof(Vertex)};
     l->IASetVertexBuffers(0, 1, &vbv);
     l->SetDescriptorHeaps(1, &srv_heap);
-    for (const hud::Batch &b : batches) {
+    for (const hud::drawlist::Batch &b : batches) {
         if (b.first >= n)
             break;
         D3D12_RECT sr{std::max(box.left, LONG(std::floor(b.clip.x0))), std::max(box.top, LONG(std::floor(b.clip.y0))),
@@ -431,7 +431,7 @@ Renderer::Outcome Renderer::render(const Target &t, ID3D12CommandQueue *q, const
     if (FAILED(l->Close()))
         return broken;
     ID3D12CommandList *lists[] = {l};
-    d3d12hooks::exec_original(q, 1, lists);
+    render::d3d12::exec_original(q, 1, lists);
     q->Signal(fence, ++fence_val);
     s.done_at = fence_val;
     next = (next + 1) % SLOTS;

@@ -37,7 +37,17 @@ std::vector<runtime::CoreMixins> Guard::offer()
         return out;
     gate_.offer();
     build(out);
+    for (const runtime::CoreMixins &set : out)
+        offered_.push_back(set.name);
     return out;
+}
+
+bool Guard::offered_set(const char *set) const
+{
+    for (const char *name : offered_)
+        if (!strcmp(name, set))
+            return true;
+    return false;
 }
 
 void Guard::commit()
@@ -79,19 +89,15 @@ void SiteGuard::build(std::vector<runtime::CoreMixins> &out)
     if (!resolve(spec_.keeps, spec_.needs)) {
         swofty::log("%s", lines::unresolved(spec_.name, spec_.needs).c_str());
     } else if (admit()) {
-        wanted_ = true;
         runtime::CoreMixins set{spec_.set, spec_.mixins};
         extend(set);
         out.push_back(std::move(set));
     }
-    parts_offered_.assign(spec_.parts.size(), false);
-    for (size_t i = 0; i < spec_.parts.size(); i++) {
-        const SitePart &part = spec_.parts[i];
+    for (const SitePart &part : spec_.parts) {
         if (!resolve(part.keeps, part.needs)) {
             swofty::log("%s", lines::unresolved(part.name, part.needs).c_str());
             continue;
         }
-        parts_offered_[i] = true;
         out.push_back({part.set, part.mixins});
     }
 }
@@ -110,11 +116,11 @@ void settled(const char *set, const char *name, const char *armed)
 
 void SiteGuard::settle()
 {
-    if (wanted_ || spec_.settles_when_off)
+    if (offered_set(spec_.set) || spec_.settles_when_off)
         settled(spec_.set, spec_.name, spec_.armed);
-    for (size_t i = 0; i < parts_offered_.size(); i++)
-        if (parts_offered_[i])
-            settled(spec_.parts[i].set, spec_.parts[i].name, spec_.parts[i].armed);
+    for (const SitePart &part : spec_.parts)
+        if (offered_set(part.set))
+            settled(part.set, part.name, part.armed);
 }
 
 HookGuard::HookGuard(HookGuardId id, const char *what, void (*setup)()) : id_(id), what_(what), setup_(setup)

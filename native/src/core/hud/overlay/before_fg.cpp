@@ -23,7 +23,7 @@ bool hook_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_
     return overlay.before_fg.on_barrier(list, n, barriers);
 }
 
-void hook_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, d3d12hooks::ExecPlan &plan)
+void hook_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, render::d3d12::ExecPlan &plan)
 {
     overlay.before_fg.on_exec(q, n, lists, plan);
 }
@@ -32,9 +32,9 @@ void hook_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, d
 
 void BeforeFrameGen::subscribe()
 {
-    d3d12hooks::on_setname(hook_setname);
-    d3d12hooks::on_barrier(hook_barrier);
-    d3d12hooks::on_exec(hook_exec);
+    render::d3d12::on_setname(hook_setname);
+    render::d3d12::on_barrier(hook_barrier);
+    render::d3d12::on_exec(hook_exec);
 }
 
 void BeforeFrameGen::drop()
@@ -45,8 +45,8 @@ void BeforeFrameGen::drop()
     pending_ready.store(false);
 }
 
-void BeforeFrameGen::keep(IDXGISwapChain3 *sc, const hud::Frame &frame, const DXGI_SWAP_CHAIN_DESC &desc, UINT color_space,
-                          ULONGLONG now)
+void BeforeFrameGen::keep(IDXGISwapChain3 *sc, const hud::drawlist::Frame &frame, const DXGI_SWAP_CHAIN_DESC &desc,
+                          UINT color_space, ULONGLONG now)
 {
     std::lock_guard<std::mutex> g(lock);
     if (frame.verts.empty()) {
@@ -75,7 +75,7 @@ void BeforeFrameGen::draw(ID3D12CommandQueue *q, ID3D12Resource *res, D3D12_RESO
         frame = std::move(pending);
     }
     ULONGLONG now = GetTickCount64();
-    if (overlay.off.load() || overlay.renderer.failed || !hud::guard::pending_fresh(now, frame.built))
+    if (overlay.off.load() || overlay.renderer.failed || !hud::arm_policy::pending_fresh(now, frame.built))
         return;
     D3D12_COMMAND_QUEUE_DESC qd = q->GetDesc();
     if (qd.Type != D3D12_COMMAND_LIST_TYPE_DIRECT) {
@@ -89,7 +89,7 @@ void BeforeFrameGen::draw(ID3D12CommandQueue *q, ID3D12Resource *res, D3D12_RESO
     }
     D3D12_RESOURCE_DESC d = res->GetDesc();
     if (d.Dimension != D3D12_RESOURCE_DIMENSION_TEXTURE2D || !(d.Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) ||
-        !hud::guard::target_fits(frame.width, frame.height, d.Width, d.Height)) {
+        !hud::arm_policy::target_fits(frame.width, frame.height, d.Width, d.Height)) {
         if (!told_shape) {
             told_shape = true;
             swofty::log("[overlay] the game's back buffer %p (%llux%u, format %d, flags 0x%x) is not a render target "
@@ -127,7 +127,7 @@ void BeforeFrameGen::draw(ID3D12CommandQueue *q, ID3D12Resource *res, D3D12_RESO
         }
         return;
     }
-    Renderer::Target t{res, DXGI_FORMAT(hud::guard::renderable_format(int(d.Format))), frame.width, frame.height, state};
+    Renderer::Target t{res, DXGI_FORMAT(hud::arm_policy::renderable_format(int(d.Format))), frame.width, frame.height, state};
     overlay.draw_target(frame.sc, q, t, frame.verts, frame.batches, frame.color_space, now);
 }
 
@@ -156,14 +156,14 @@ bool BeforeFrameGen::on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D
     for (UINT i = 0; i < n; i++) {
         const D3D12_RESOURCE_BARRIER &b = barriers[i];
         if (b.Type != D3D12_RESOURCE_BARRIER_TYPE_TRANSITION ||
-            !hud::guard::presents_back_buffer(unsigned(b.Transition.StateBefore), unsigned(b.Transition.StateAfter),
-                                              unsigned(b.Flags)))
+            !hud::arm_policy::presents_back_buffer(unsigned(b.Transition.StateBefore), unsigned(b.Transition.StateAfter),
+                                                   unsigned(b.Flags)))
             continue;
         std::lock_guard<std::mutex> g(lock);
         if (std::find(back_buffers.begin(), back_buffers.end(), b.Transition.pResource) == back_buffers.end())
             continue;
         Presenting p{b.Transition.pResource,
-                     D3D12_RESOURCE_STATES(hud::guard::state_after_draw(unsigned(b.Transition.StateAfter)))};
+                     D3D12_RESOURCE_STATES(hud::arm_policy::state_after_draw(unsigned(b.Transition.StateAfter)))};
         auto it = std::find_if(presenting.begin(), presenting.end(), [&](const auto &e) { return e.first == list; });
         if (it != presenting.end())
             it->second = p;
@@ -174,7 +174,7 @@ bool BeforeFrameGen::on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D
     return false;
 }
 
-void BeforeFrameGen::on_exec(ID3D12CommandQueue *, UINT n, ID3D12CommandList *const *lists, d3d12hooks::ExecPlan &plan)
+void BeforeFrameGen::on_exec(ID3D12CommandQueue *, UINT n, ID3D12CommandList *const *lists, render::d3d12::ExecPlan &plan)
 {
     if (!lists || !n || !presenting_count.load(std::memory_order_relaxed))
         return;

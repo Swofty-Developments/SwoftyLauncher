@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <string>
 
-namespace hud::guard {
+namespace hud::arm_policy {
 
 inline bool xml_int(const std::string &text, const char *element, const char *attr, int &out)
 {

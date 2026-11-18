@@ -143,6 +143,15 @@ int main()
     CHECK(dr::build_stop(ops, 12, 12, 0xa).nth == 0);
     CHECK(dr::build_stop<uint32_t>(nullptr, 12, 3, 0xa).nth == 0);
 
+    dr::BuildStops stops;
+    stops.add(dr::build_stop(ops, 12, 9, 0x83e897e0));
+    stops.add(dr::build_stop(ops, 12, 9, 0x83e897e0));
+    stops.add(dr::build_stop(ops, 12, 8, 0xa));
+    stops.add(dr::build_stop(ops, 12, 3, 0xa));
+    CHECK(stops.all().size() == 2 && stops.all()[0].list == 0x83e897e0 && stops.all()[1].nth == 1);
+    stops.clear();
+    CHECK(stops.all().empty());
+
     if (!g_fail)
         std::printf("dred test passed\n");
     return g_fail ? 1 : 0;

@@ -1,6 +1,6 @@
 #include "core/render/d3d12/subscribers.hpp"
 
-namespace d3d12hooks {
+namespace render::d3d12 {
 
 constinit Subscribers subscribers;
 

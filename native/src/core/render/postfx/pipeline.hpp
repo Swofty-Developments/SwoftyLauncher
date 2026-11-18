@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-namespace postfx {
+namespace render::postfx {
 
 // The post-processing pipeline: everything the D3D12 hooks, the flow tick and the addons' calls reach, under one
 // recursive lock. There is one, a namespace-scope object of postfx.cpp; its parts reach each other through it.
@@ -55,7 +55,7 @@ public:
     void setup();
     bool killed_now();
     void retire(std::vector<IUnknown *> objects);
-    void on_present(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *caller);
+    void on_present(IDXGISwapChain3 *sc, const d3d12::Swapchain *known, void *caller);
     void game_frame(const void *was, ULONGLONG now);
     void flow_frame(double, void *);
 
@@ -67,8 +67,8 @@ private:
     void tick(ULONGLONG now);
     void stat_line(ULONGLONG now);
     bool frame_gen_on(ULONGLONG now);
-    std::string own_frames_by(const d3d12hooks::Swapchain *known, void *caller);
-    void present_fallback(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known);
+    std::string own_frames_by(const d3d12::Swapchain *known, void *caller);
+    void present_fallback(IDXGISwapChain3 *sc, const d3d12::Swapchain *known);
     void passes_listed();
 
     hud::hardware_settings::Poll frame_gen_poll;

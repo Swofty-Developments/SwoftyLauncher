@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace hud::guard {
+namespace hud::arm_policy {
 
 constexpr uint64_t REMOVED_AFTER_DRAW_MS = 10000;
 

@@ -1,6 +1,7 @@
 #include "core/guards/career/standings_drop_logic.hpp"
 #include "core/guards/guard.hpp"
 #include "core/guards/lines.hpp"
+#include "core/guards/memory.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -64,11 +65,7 @@ constexpr bp::Proof STANDINGS_LAYOUT{"the season standings' layout (+0x2a8, +0x2
 constexpr bp::Gate DROPPED_SCORES{"dropped scores", &STANDINGS_LAYOUT};
 
 constexpr size_t SEASON_STANDINGS = 0x2a8;
-constexpr size_t POINTS_ROUNDS = 0x20, TABLE_ROUNDS = 0x40;
-constexpr size_t ROUND_SIZE = 0x20, SESSION_SIZE = 0x28, RECORD_SIZE = 8;
-constexpr size_t SESSION_ID = 0x20;
 constexpr size_t CHAMPIONSHIP = 0x1058, SEASONS_BEGIN = 0x548, SEASONS_END = 0x550, SEASON_ENTRY = 0x10;
-constexpr size_t MAX_ROUNDS = 64, MAX_SESSIONS = 64, MAX_RECORDS = 128;
 
 using Compare_t = bool(void *ctx, const void *a, const void *b);
 using Recompute_t = void(void *standings, char mode);
@@ -87,58 +84,6 @@ bool logged_apply = false;
 bool rd(uintptr_t at, uintptr_t &v)
 {
     return mem::read(at, v);
-}
-
-struct RoundView {
-    uintptr_t sessions_begin = 0, sessions_end = 0;
-};
-
-bool round_at(uintptr_t array_field, size_t index, RoundView &out)
-{
-    uintptr_t b = 0, e = 0;
-    if (!rd(array_field, b) || !rd(array_field + 8, e) || e < b || (e - b) % ROUND_SIZE || index >= (e - b) / ROUND_SIZE)
-        return false;
-    uintptr_t r = b + index * ROUND_SIZE;
-    return rd(r + 8, out.sessions_begin) && rd(r + 16, out.sessions_end) && out.sessions_end >= out.sessions_begin &&
-           (out.sessions_end - out.sessions_begin) % SESSION_SIZE == 0 &&
-           (out.sessions_end - out.sessions_begin) / SESSION_SIZE <= MAX_SESSIONS;
-}
-
-size_t round_count(uintptr_t array_field)
-{
-    uintptr_t b = 0, e = 0;
-    if (!rd(array_field, b) || !rd(array_field + 8, e) || e < b || (e - b) % ROUND_SIZE)
-        return 0;
-    return std::min<size_t>((e - b) / ROUND_SIZE, MAX_ROUNDS);
-}
-
-bool read_points(uintptr_t standings, std::vector<sd::PointsRound> &out)
-{
-    size_t n = round_count(standings + POINTS_ROUNDS);
-    for (size_t r = 0; r < n; r++) {
-        RoundView v;
-        if (!round_at(standings + POINTS_ROUNDS, r, v))
-            return false;
-        sd::PointsRound round;
-        for (uintptr_t s = v.sessions_begin; s < v.sessions_end; s += SESSION_SIZE) {
-            sd::PointsSession ps;
-            uintptr_t rb = 0, re = 0;
-            uint32_t id = 0;
-            if (!rd(s + 8, rb) || !rd(s + 16, re) || re < rb || (re - rb) % RECORD_SIZE ||
-                (re - rb) / RECORD_SIZE > MAX_RECORDS || !mem::read(s + SESSION_ID, id))
-                return false;
-            ps.id = id;
-            for (uintptr_t p = rb; p < re; p += RECORD_SIZE) {
-                sd::Record rec{};
-                if (!mem::read(p, rec))
-                    return false;
-                ps.records.push_back(rec);
-            }
-            round.push_back(std::move(ps));
-        }
-        out.push_back(std::move(round));
-    }
-    return true;
 }
 
 bool is_current_season(uintptr_t standings)
@@ -176,35 +121,25 @@ uint32_t rule_for_loaded_career()
 void recount(uintptr_t standings, uint32_t best)
 {
     std::vector<sd::PointsRound> points;
-    if (!read_points(standings, points) || points.empty())
+    if (!sd::read_points(standings, guards::read_if_readable, nullptr, points) || points.empty())
         return;
-    size_t rounds = round_count(standings + TABLE_ROUNDS);
+    size_t rounds = sd::round_count(standings + sd::TABLE_ROUNDS, guards::read_if_readable, nullptr);
     uint64_t packed = 0;
-    bool have_packed = false;
-    for (size_t r = rounds; r-- > 0 && !have_packed;) {
-        RoundView v;
-        if (!round_at(standings + TABLE_ROUNDS, r, v) || v.sessions_end == v.sessions_begin)
-            continue;
-        uint32_t id = 0;
-        if (mem::read(v.sessions_end - SESSION_SIZE + SESSION_ID, id)) {
-            packed = (uint64_t(id) << 32) | uint32_t(r);
-            have_packed = true;
-        }
-    }
+    bool have_packed = sd::table_key(standings, guards::read_if_readable, nullptr, packed);
     struct Ctx {
         uintptr_t standings;
         uint64_t *packed;
     } ctx{standings, &packed};
     size_t changed = 0, sessions = 0;
     for (size_t r = 0; r < rounds; r++) {
-        RoundView v;
-        if (!round_at(standings + TABLE_ROUNDS, r, v))
+        sd::RoundView v;
+        if (!sd::round_at(standings + sd::TABLE_ROUNDS, r, guards::read_if_readable, nullptr, v))
             continue;
-        for (uintptr_t s = v.sessions_begin; s < v.sessions_end; s += SESSION_SIZE) {
+        for (uintptr_t s = v.sessions_begin; s < v.sessions_end; s += sd::SESSION_SIZE) {
             uintptr_t eb = 0, ee = 0;
             uint32_t id = 0;
             if (!rd(s + 8, eb) || !rd(s + 16, ee) || ee < eb || (ee - eb) % sizeof(Entry) ||
-                (ee - eb) / sizeof(Entry) > MAX_RECORDS || !mem::read(s + SESSION_ID, id) || !mem::readable(eb, ee - eb))
+                (ee - eb) / sizeof(Entry) > sd::MAX_RECORDS || !mem::read(s + sd::SESSION_ID, id) || !mem::readable(eb, ee - eb))
                 continue;
             auto *entries = reinterpret_cast<Entry *>(eb);
             size_t count = (ee - eb) / sizeof(Entry);

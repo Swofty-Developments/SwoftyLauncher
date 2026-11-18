@@ -92,7 +92,17 @@ fn a_saved_bio_reloads_and_a_failed_one_says_why() {
 }
 ```
 
-A state with nothing to report sets `type Change = Infallible`, and its `changed` is `match change {}`.
+A state with nothing to report sets `type Change = Infallible`, and its `Host` impl writes `changed` with the macro from `shell/host.rs`:
+
+```rust
+impl Host<News> for Shell {
+    fn split(&mut self) -> (&mut News, NewsNeeds<'_>) {
+        (&mut self.news, NewsNeeds { root: &self.store.root })
+    }
+
+    reports_nothing!();
+}
+```
 
 A state whose constructor needs a window keeps the fields its tests drive in a plain `Default` struct inside it, and the async method calls that struct's methods:
 
@@ -131,15 +141,16 @@ These states run on the pattern:
 | `SupportPage` | goal, supporters, checkout, claim, save | `features/support/state.rs` | `SupportPage` |
 | `TtPage` | barred list, catalogue, runs, moderation, searches | `features/time_trial/state.rs` | `TtPage` |
 | `Browser` | catalog fetch, star sync, addon details, publisher profiles, the install queue | `features/browser/state.rs` | `Feed`, `riders`, `installed_version` |
-| `Db` | draft autosave, "Also changed by", game database, module views, search, unnamed keys | `features/db/state.rs` | `Autosave` |
+| `Db` | draft autosave, "Also changed by", game database, module views, search, unnamed keys, importing a file, sharing the addon, exporting game files, saving the draft; `DbChange` hands the shell a saved, new or imported addon to turn on and show, and `DbPrompt` hands it leaving the draft | `features/db/state.rs`, `Db::import` in `features/db/import.rs`, `Db::export_addon`, `Db::export_game_files_to`, `Db::save_bound` and `Db::save_new` in `features/db/save/` | `Autosave`, `DraftBook` (the draft and the DB Editor addons, `features/db/draft.rs`) |
 | `AddonsPage` | the conflict check | `features/addons/conflicts.rs` | `Conflicts` |
-| `Multiplayer` (the Online page) | game status, room list, addon digest, avatars, opening and joining a room | `features/multiplayer/state.rs` | `Lobby`, `starting` |
+| `Multiplayer` (the Online page) | game status, room list, addon digest, avatars, opening and joining a room, the page's tick, starting the room's game through Play, the room's game watch, closing the game for a room | `features/multiplayer/state.rs`; `Multiplayer::tick`, `launch` and `close_game` in `features/multiplayer/actions.rs` | `Lobby`, `starting`, `RoomGame` (`features/multiplayer/room_game.rs`) |
 | `Online` (the time trial boards) | overview, seasons, boards, profiles, rankings, avatars and art, adding a lap's replay to the game | `features/online/mod.rs` | `Online` |
 | `Updates` | the update check, installing a missing managed addon, running an update plan, its progress and the restart | `features/update.rs` | `Updates`, `holds_updates` |
 | `SavesPage` | building the careers view and the saves banner | `features/career_saves/refresh.rs` | `SavesPage` |
 | `Settings` | measuring the data folder | `features/settings/usage.rs` | `Settings` |
 | `News` | checking the news feed | `features/news/state.rs` | `News` |
 | `AddonViews` | building addon section views, refreshing stale ones, ticking the open section | `features/sections/mod.rs` | `AddonViews` |
+| `Launching` | Play: the press, the checks, their outcome, the launch | `shell/play.rs` | `Launching`, `Press`, `Step` |
 
 A page's toasts go into a `toasts` list on its state, and `shell/render.rs` shows them. A state reports what other features follow through its `Change`: the browser reports `Installed`, and the shell reads the library again, and `TurnOn`, and the shell adds the "Turn on" action to the notice.
 
@@ -158,15 +169,55 @@ assert_eq!(tt.barred_in(&library.read()).len(), 1);
 | On `Shell` | Files | What it needs |
 |---|---|---|
 | Rendering every page, bar and dialog | `render.rs`, `features/*/page.rs`, `shell/play_bar/`, `shell/topbar/` | Pages read several states. gpui listeners are `Context<Shell>` closures. |
-| Play, the launch, and starting an update from the play bar | `shell/play.rs`, `shell/play_dialogs.rs`, `shell/launch_alerts.rs`, `start_updates` in `features/update.rs` | About ten states, and the window for its prompts. |
-| Starting a room's game, the game watch, closing the game | `features/multiplayer/actions.rs` (`room_launch`, `room_watch_game`, `room_close_game`) | `play_for`, `Launching`, the game copies, the window. A host for them carries Play's own needs. |
+| Play's prompts, starting an update from the play bar | `shell/play_dialogs.rs`, `shell/launch_alerts.rs`, `dialogs/`, `Shell::play` in `shell/play.rs`, `start_updates` in `features/update.rs` | The window. `Shell::play` takes the room launch a prompt held off `Multiplayer` and hands it to `Launching::play_for`. |
 | Reading the library again, profiles, turning addons on and off | `shell/reload.rs`, `shell/profile_panel.rs`, `shell/profile_edit.rs`, `features/addons/` | Every feature follows the library. |
 | Startup | `shell/startup.rs` | Builds every state and starts each watch and poll loop. |
 | The probe tick | `shell/probe.rs` | Hands its result to the game, shader, database and notice states. |
-| DB Editor save, import and export | `features/db/save/`, `features/db/import.rs` | File pickers, the Save / Discard dialog and the window for notices. An import that installs an addon turns it on, reads the library again and shows it on Addons. |
+| The DB Editor's dialogs, turning a new or imported addon on, after a save | `features/db/save/`, `Shell::db_addon_imported` in `features/db/import.rs` | The save form, the Save / Discard dialog and the game files choice are `Shell` dialogs. A new addon and an imported one are turned on in the profile. After a save the library is read again and Addons shows the addon, or the draft moves on to what the Save / Discard dialog was leaving for. |
 | Window flows | `dialogs/data_move.rs`, `dialogs/found_data.rs`, `dialogs/setup.rs`, `dialogs/send_logs.rs`, `features/onboarding/`, `features/career_saves/actions.rs`, clearing logs and the cache in `features/settings/usage.rs`, a section's startup, sends and intake in `features/sections/`, `features/importer.rs` | A dialog open in the window. |
 | Tasks tied to rendering | `features/tools.rs`, `features/ads/` | The Tools row's glide and settle, the ad video's skip timer and opening an ad slot from its canvas. |
 | The shaders page | `features/shaders/` | Its own entity, `ShadersView`. |
+
+## A host that opens prompts
+
+Play stops on a prompt: the setup dialog, the offline terms, the missing rows, a notice. A state whose work opens prompts names them as its `Prompt` type, and the shell opens them through `PromptHost` in `shell/host.rs`:
+
+```rust
+pub(crate) trait Prompted: Hosted {
+    type Prompt;
+}
+
+pub(crate) trait PromptHost<T: Prompted>: Host<T> {
+    fn prompt(&mut self, prompt: T::Prompt, window: &mut Window, cx: &mut Context<Self>);
+}
+
+impl Prompted for Launching {
+    type Prompt = Prompt;
+}
+
+pub(crate) fn play_for<H: PromptHost<Launching>>(host: &mut H, /* … */) -> bool
+```
+
+```rust
+let step = Step::of(stale, checked.gate, checked.verdict);
+// …
+if let Some(played) = step.played() {
+    if let Some(prompt) = prompt {
+        host.prompt(prompt, window, cx);
+    }
+    return played;
+}
+```
+
+The DB Editor's `DbPrompt` works the same way: a draft that has to be left hands the shell the Save / Discard dialog. What needs no dialog goes through `changed` instead, and a `changed` that has a notice to show posts it with `notices::post`, which needs no window:
+
+```rust
+DbChange::Imported(done) => self.db_addon_imported(done, cx),
+
+notices::post(Notification::success(body).title(title), cx);
+```
+
+`Press::of` decides what a press comes to before the checks run, and `Step::of` turns the checks' gate and verdict into the one thing Play does next. The tests in `shell/play.rs` pin each result of both.
 
 ## When to use an entity instead
 

@@ -7,7 +7,7 @@
 #include "core/career/ops/start_teams.hpp"
 #include "core/career/ops/teams_plan.hpp"
 
-using namespace career_ops::teams;
+using namespace career::ops::teams;
 
 static int failures = 0;
 #define CHECK(c)                                                                                                       \

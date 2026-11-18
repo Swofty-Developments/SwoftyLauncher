@@ -5,7 +5,7 @@
 #include "core/registry/table.hpp"
 #include "core/career/ops/entrants.hpp"
 
-namespace career_ops::live {
+namespace career::ops::live {
 
 bool db_int(const SwoftyDb *db, const std::string &path, int64_t &out)
 {

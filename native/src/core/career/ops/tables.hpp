@@ -11,7 +11,7 @@
 // What the career operations keep between calls, under one lock: the data groups' slot teams (set_slots), the game
 // database's driver, look and team labels (labels.cpp), and the teams a start-of-career apply_teams dressed
 // (apply_teams.cpp).
-namespace career_ops::live {
+namespace career::ops::live {
 
 struct Labels {
     bool loaded = false;

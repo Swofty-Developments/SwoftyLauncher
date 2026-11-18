@@ -13,7 +13,9 @@ use swofty_i18n::{tr, trf};
 
 use super::model::*;
 use super::state::*;
+use crate::shell::Launching;
 use crate::shell::host::Host;
+use crate::shell::host::PromptHost;
 use crate::shell::{Page, Shell};
 use crate::ui::monogram;
 use crate::ui::theme::Palette;
@@ -23,10 +25,7 @@ impl Shell {
         cx.spawn_in(window, async move |this, cx| {
             loop {
                 cx.background_executor().timer(TICK).await;
-                if this
-                    .update_in(cx, |s, window, cx| s.room_tick(window, cx))
-                    .is_err()
-                {
+                if this.update_in(cx, Multiplayer::tick).is_err() {
                     break;
                 }
             }
@@ -34,213 +33,8 @@ impl Shell {
         .detach();
     }
 
-    pub(super) fn room_tick(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        self.room_launch(window, cx);
-        self.room_held_dropped(window, cx);
-        self.room_watch_game(cx);
-        let m = &mut self.rooms;
-        if m.leaving && m.session.as_ref().is_none_or(Session::is_finished) {
-            m.finish_leaving();
-            cx.notify();
-        }
-        if self.navigation.page != Page::Multiplayer || !self.account.allowed() {
-            self.rooms.visible = false;
-            return;
-        }
-        let now = Instant::now();
-        let m = &mut self.rooms;
-        if !m.visible {
-            m.visible = true;
-            m.lobby.refresh();
-        }
-        let refused = refusal(m.refused.clone(), diag::is_loaded(), diag::unavailable());
-        if refused != m.refused {
-            if refused.is_none() {
-                m.lobby.rooms_at = None;
-            }
-            m.refused = refused;
-            cx.notify();
-        }
-        if let Some(session) = &m.session {
-            let state = session.state();
-            if m.state.as_ref() != Some(&state) {
-                m.state = Some(state);
-                cx.notify();
-            }
-        }
-        if m.copied
-            .is_some_and(|at| now.duration_since(at) > Duration::from_secs(2))
-        {
-            m.copied = None;
-            cx.notify();
-        }
-        if m.session.is_none() && m.lobby.game_due(now) {
-            Multiplayer::poll_game(self, cx);
-        }
-        let m = &self.rooms;
-        if m.session.is_none() && m.lobby.rooms_due(now) {
-            Multiplayer::poll_rooms(self, cx);
-        }
-        let m = &self.rooms;
-        if m.session.is_none() && m.lobby.digest_due() {
-            Multiplayer::read_digest(self, cx);
-        }
-        Multiplayer::load_shown_faces(self, cx);
-    }
-
-    /// Starts F1 25 for the room when the session asks, the game is closed and the launcher has put the
-    /// game folder back.
-    pub(super) fn room_launch(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(session) = &self.rooms.session else {
-            return;
-        };
-        let Some(ask) = session.state().launch else {
-            return;
-        };
-        if self.rooms.launch_seen == ask.seq || self.launching.launch.is_some() || self.game.build.is_some() {
-            return;
-        }
-        if !self.game.processes.is_empty() || self.launching.restoring {
-            return;
-        }
-        self.rooms.closing = None;
-        if let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) {
-            diag::forget_status(&dir);
-        }
-        let row_ids = match &ask.row_ids {
-            Some(ids) => {
-                let file = self.store.root.join("state/room-row-ids.json");
-                if let Err(e) = std::fs::create_dir_all(self.store.root.join("state"))
-                    .map_err(|e| e.to_string())
-                    .and_then(|()| ids.write(&file).map_err(|e| e.to_string()))
-                {
-                    self.rooms.launch_seen = ask.seq;
-                    session.launch_failed(&format!("the host's ids and settings couldn't be written ({e})"));
-                    return;
-                }
-                Some(file)
-            }
-            None => None,
-        };
-        self.rooms.launch_seen = ask.seq;
-        self.rooms.game_seen = false;
-        self.rooms.room_launching = true;
-        let direct_start = ask.direct_start.clone();
-        let started = self.play_for(
-            Some(RoomLaunch {
-                row_ids,
-                direct_start,
-            }),
-            window,
-            cx,
-        );
-        if !started {
-            self.room_launch_result(false);
-        }
-        cx.notify();
-    }
-
-    /// A prompt Play opened holds the room launch: its Play goes on with it through [`Shell::play`].
-    pub(crate) fn room_hold(&mut self, room: RoomLaunch) {
-        self.rooms.held = Some(room);
-    }
-
-    pub(crate) fn room_take_held(&mut self) -> Option<RoomLaunch> {
-        self.rooms.held.take()
-    }
-
-    fn room_held_dropped(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        if self.rooms.held.is_none() || window.has_active_dialog(cx) {
-            return;
-        }
-        self.rooms.held = None;
-        self.rooms.room_launching = false;
-        if let Some(session) = &self.rooms.session {
-            session.launch_failed("Play was cancelled");
-        }
-        cx.notify();
-    }
-
-    pub(crate) fn room_launch_result(&mut self, started: bool) {
-        let Some(session) = &self.rooms.session else {
-            return;
-        };
-        if started {
-            session.launched();
-        } else {
-            self.rooms.room_launching = false;
-            session.launch_failed("see the notice, finish what it asks, then try again");
-        }
-    }
-
-    /// The launch `room_launch` started ended without the game: `why` says what stopped it.
-    pub(crate) fn room_launch_ended(&mut self, why: Option<String>) {
-        if !std::mem::take(&mut self.rooms.room_launching) {
-            return;
-        }
-        match why {
-            None => self.rooms.game_seen = true,
-            Some(why) => {
-                if let Some(session) = &self.rooms.session {
-                    session.launch_failed(&why);
-                }
-            }
-        }
-    }
-
-    pub(super) fn room_watch_game(&mut self, cx: &mut Context<Self>) {
-        let busy = self.launching.launch.is_some() || self.game.build.is_some() || self.launching.restoring;
-        let m = &mut self.rooms;
-        if m.session.is_none() {
-            return;
-        }
-        if !self.game.processes.is_empty() && m.launch_seen != 0 && m.closing.is_none() {
-            m.game_seen = true;
-        }
-        if m.closing.is_some() && self.game.processes.is_empty() {
-            m.closing = None;
-        }
-        let over = m.state.as_ref().is_some_and(|s| s.phase.is_over());
-        if over || m.leaving || !exit_leaves(m.game_seen, !self.game.processes.is_empty(), busy) {
-            return;
-        }
-        let host = m.state.as_ref().is_some_and(|s| s.host);
-        m.notice = Some(exit_notice(host).to_owned());
-        diag::line(format!(
-            "launcher: F1 25 exited; leaving the room ({})",
-            exit_notice(host)
-        ));
-        self.room_leave(cx);
-    }
-
-    pub(super) fn room_close_game(&mut self, window: &mut Window, cx: &mut Context<Self>) -> bool {
-        let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
-            return true;
-        };
-        let pids: Vec<u32> = self
-            .game
-            .processes
-            .iter()
-            .filter(|g| g.is_in(&dir))
-            .map(|g| g.pid)
-            .collect();
-        if pids.is_empty() {
-            return true;
-        }
-        swofty_core::session::request_stop(&self.store.root);
-        for pid in &pids {
-            if let Err(e) = swofty_core::platform::process::stop_process(*pid) {
-                crate::app::app_log::action("stop f1 25").failed(&e);
-                window.notify(Notification::error(e.to_string()), cx);
-                return false;
-            }
-        }
-        self.rooms.closing = Some(pids);
-        true
-    }
-
     pub(super) fn room_begin(&mut self, start: Start, window: &mut Window, cx: &mut Context<Self>) {
-        if self.rooms.busy() || !self.room_close_game(window, cx) {
+        if self.rooms.busy() || !Multiplayer::close_game(self, window, cx) {
             return;
         }
         self.rooms.notice = None;
@@ -370,12 +164,9 @@ impl Shell {
     }
 
     pub(crate) fn room_leave(&mut self, cx: &mut Context<Self>) {
-        let Some(session) = &self.rooms.session else {
-            return;
-        };
-        session.leave();
-        self.rooms.leaving = true;
-        cx.notify();
+        if self.rooms.leave() {
+            cx.notify();
+        }
     }
 
     pub(super) fn room_retry(&mut self, cx: &mut Context<Self>) {
@@ -566,6 +357,127 @@ impl Multiplayer {
             .ok();
         })
         .detach();
+        cx.notify();
+    }
+
+    /// The online page's tick: the room's launch and game watch, leaving, and the page's polls while it
+    /// shows.
+    pub(super) fn tick<H: Host<Self> + PromptHost<Launching>>(
+        host: &mut H,
+        window: &mut Window,
+        cx: &mut Context<H>,
+    ) {
+        Self::launch(host, window, cx);
+        let dialog = window.has_active_dialog(cx);
+        let (m, needs) = <H as Host<Self>>::split(host);
+        let mut changed = !dialog && m.drop_held();
+        changed |= m.watch_game(needs.running, needs.busy);
+        if m.leaving && m.session.as_ref().is_none_or(Session::is_finished) {
+            m.finish_leaving();
+            changed = true;
+        }
+        if !needs.shown {
+            m.visible = false;
+            if changed {
+                cx.notify();
+            }
+            return;
+        }
+        let now = Instant::now();
+        if !m.visible {
+            m.visible = true;
+            m.lobby.refresh();
+        }
+        let refused = refusal(m.refused.clone(), diag::is_loaded(), diag::unavailable());
+        if refused != m.refused {
+            if refused.is_none() {
+                m.lobby.rooms_at = None;
+            }
+            m.refused = refused;
+            changed = true;
+        }
+        if let Some(session) = &m.session {
+            let state = session.state();
+            if m.state.as_ref() != Some(&state) {
+                m.state = Some(state);
+                changed = true;
+            }
+        }
+        if m.copied
+            .is_some_and(|at| now.duration_since(at) > Duration::from_secs(2))
+        {
+            m.copied = None;
+            changed = true;
+        }
+        if changed {
+            cx.notify();
+        }
+        let m = <H as Host<Self>>::split(host).0;
+        if m.session.is_none() && m.lobby.game_due(now) {
+            Self::poll_game(host, cx);
+        }
+        let m = <H as Host<Self>>::split(host).0;
+        if m.session.is_none() && m.lobby.rooms_due(now) {
+            Self::poll_rooms(host, cx);
+        }
+        let m = <H as Host<Self>>::split(host).0;
+        if m.session.is_none() && m.lobby.digest_due() {
+            Self::read_digest(host, cx);
+        }
+        Self::load_shown_faces(host, cx);
+    }
+
+    /// Closes the copy's F1 25 so the room can start it. False when a stop failed, which a notice says.
+    pub(super) fn close_game<H: Host<Self>>(host: &mut H, window: &mut Window, cx: &mut Context<H>) -> bool {
+        let (m, needs) = host.split();
+        let Some(dir) = needs.game_dir else {
+            return true;
+        };
+        let pids: Vec<u32> = needs
+            .processes
+            .iter()
+            .filter(|g| g.is_in(dir))
+            .map(|g| g.pid)
+            .collect();
+        if pids.is_empty() {
+            return true;
+        }
+        swofty_core::session::request_stop(&needs.store.root);
+        for pid in &pids {
+            if let Err(e) = swofty_core::platform::process::stop_process(*pid) {
+                crate::app::app_log::action("stop f1 25").failed(&e);
+                window.notify(Notification::error(e.to_string()), cx);
+                return false;
+            }
+        }
+        m.game.closing = Some(pids);
+        true
+    }
+
+    /// Starts F1 25 for the room when the session asks, the game is closed and the launcher has put the
+    /// game folder back.
+    pub(super) fn launch<H: Host<Self> + PromptHost<Launching>>(
+        host: &mut H,
+        window: &mut Window,
+        cx: &mut Context<H>,
+    ) {
+        let (m, needs) = <H as Host<Self>>::split(host);
+        let Some(session) = &m.session else {
+            return;
+        };
+        let Some(ask) = m.game.due(session, needs.busy || needs.running) else {
+            return;
+        };
+        if let Some(dir) = needs.game_dir {
+            diag::forget_status(dir);
+        }
+        let Some(room) = m.game.begin(session, ask, &needs.store.root) else {
+            return;
+        };
+        let started = Launching::play_for(host, Some(room), window, cx);
+        if !started {
+            <H as Host<Self>>::split(host).0.launch_result(false);
+        }
         cx.notify();
     }
 }

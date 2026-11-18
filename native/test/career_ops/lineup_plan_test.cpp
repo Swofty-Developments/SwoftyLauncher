@@ -7,7 +7,7 @@
 
 #include "core/career/ops/lineup_plan.hpp"
 
-using namespace career_ops::plan;
+using namespace career::ops::plan;
 
 static int failures = 0;
 #define CHECK(c)                                                                                                       \

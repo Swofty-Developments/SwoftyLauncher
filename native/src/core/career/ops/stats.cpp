@@ -21,7 +21,7 @@
 // value rebuilt with Career_Eval_Curve; a dynamic statistic moves its level. Every other driver's shown values
 // are read before and after, and the call's writes are rolled back if one moved.
 
-namespace career_ops::stats {
+namespace career::ops::stats {
 
 namespace {
 

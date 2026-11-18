@@ -59,6 +59,84 @@ static loader::FunctionSet tyre_models_core_set{loader::CoreSetId::tyre_models, 
 
 `install_state` gives the `armed: ...` text, or `did not install (see the [core] lines)` when the set's mixins did not install. `native/test/mixin_gate_test.cpp` pins the lines.
 
+A set whose handlers keep state derives one object from `loader::HookSet` (`runtime/loader/hook_set.hpp`): its `MixinGate`, the lock over the subsystem's state, live and off with the reason, the bind step, and an `Original` for each wrapped game function:
+
+```cpp
+struct CategoryHooks : runtime::loader::HookSet<std::recursive_mutex> {
+    runtime::loader::Original<Game_CreateSessionDlcSelectTab_BuildTiles_t> build_tiles;
+    runtime::loader::Original<Game_CreateSessionDlcSelectTab_HandleCommand_t> handle_command;
+    runtime::loader::Original<Game_Network_CategoryOptionUsing_t> option_using;
+};
+
+CategoryHooks hooks;
+
+void build_entry(void *vm)
+{
+    hooks.build_tiles(vm);
+    if (!hooks.live() || hooks.off())
+        return;
+    std::lock_guard<std::recursive_mutex> g(hooks.lock);
+    // ... add the addon boxes
+}
+
+std::vector<CoreMixins> car_category_mixins()
+{
+    std::vector<CoreMixins> out;
+    if (hooks.gate.offered() || hooks.off() || !code_ready())
+        return out;
+    hooks.gate.offer();
+    std::string why;
+    if (!CategoryHooks::bind({{"Game_CreateSessionDlcSelectTab_BuildTiles", &b.build}, {"g_Vm_Registry", &b.registry}}, why)) {
+        hooks.turn_off(why);
+        swofty::log("[car-category] addon boxes off: %s", why.c_str());
+        return out;
+    }
+    out.push_back({MIXIN, {{"Game_CreateSessionDlcSelectTab_BuildTiles", SWOFTY_MIXIN_WRAP, 100, (void *)&build_entry,
+                            hooks.build_tiles.slot()}}});
+    return out;
+}
+
+void car_category_commit()
+{
+    if (hooks.off() || !hooks.gate.settle())
+        return;
+    if (core_mixins_active(MIXIN))
+        hooks.set_live();
+    else
+        hooks.turn_off("the Car Category hooks did not install (see the [core] lines for " + std::string(MIXIN) + ")");
+}
+```
+
+The career contents and their tile route, the car category boxes, the box grid and the save splice keep their hook state this way. `native/test/hook_set_test.cpp` pins the bind step's reason, `needs <ids>, which this build does not resolve`.
+
+A safetyhook mid hook or inline hook goes on through `loader::install` (`runtime/loader/hook_install.hpp`). Given a `HookSite` it checks the site's build gate, finds its signature and places the hook; given an address it only places the hook:
+
+```cpp
+// career/career_start.cpp: no build gate, a line of its own for each step
+auto r = loader::install(h_run, {S_RUN_ROUTE, "start gate", "career"}, reinterpret_cast<void *>(&run_route_hook));
+if (r.step == loader::Installed::Step::not_found)
+    swofty::log("[career] start gate: Vm_Run_Route did not resolve; career.starting never fires and blocks cannot "
+                "cancel a route");
+
+// diagnostics/session_job_probe.cpp: an address the probe resolved itself
+if (auto r = runtime::loader::install(hook, at, FUNC, on_entry); !r)
+    swofty::log("[session-job] 0x1445acb00 entry probe: the hook failed: %s", r.error.c_str());
+
+// a gated site whose hook set turns off with the reason
+if (!runtime::loader::install(hooks, h_settings, runtime::loader::HookSite{S_SETTINGS, "direct", "direct", &RACE_LAPS},
+                              reinterpret_cast<void *>(&settings_detour)))
+    swofty::log("[direct] race laps off: %s", hooks.why().c_str());
+```
+
+| `Installed::step` | `why` |
+|---|---|
+| `placed` | empty; `at` is the hooked address |
+| `not_proven` | `<feature> is not proven on this build`, after `runtime::holds` logs its `[build]` line |
+| `not_found` | `<what> did not resolve on this build` |
+| `failed` | `the hook on <what> at base+0x<rva> failed: <error>`, with `error` the `runtime::hook_error` text, or `at 0x<address>` outside the game's image |
+
+A site with lines of its own reads `step`, `at` and `error`. The career start gate, the session job probe and the Team HQ hub tab builders install this way.
+
 ## Reading and writing game memory
 
 Every check shares one protection rule, in `runtime/pages.hpp`. The checks differ only in how they ask Windows and how old the answer may be:
@@ -153,6 +231,23 @@ A new `[perf]` line is a function in `perf_logic.hpp` with a case in the test:
 swofty::log("%s", logic::hitch_line(ms, h.during, swofty_ms, h.top).c_str());
 ```
 
+## Career namespaces
+
+Code in `core/career/` is in `career::`. The entry points `runtime/runtime.hpp` declares stay in `runtime`, and `career.cpp`, `career_saves.cpp`, `career_start.cpp` and `career_wizard.cpp` define them over unnamed-namespace state:
+
+| Namespace | Files |
+|---|---|
+| `career::state` | `career_state.hpp`: the flow-state and Team HQ tracking without the game |
+| `career::game` | `career_entity.hpp`, `career_entity.cpp`: the championship entity, its components and entrants |
+| `career::content` | `career_content_logic.hpp`, `content_state.hpp`, `career_content.cpp`, `content_*.cpp` |
+| `career::characters` | `characters_logic.hpp`, `characters_state.hpp`, `characters.cpp`, `characters_hooks.cpp` |
+| `career::hub` | `hub_state.hpp`, `hub_tab.cpp`, `hub_rnd.cpp` |
+| `career::saves`, `career::start`, `career::ui` | `career_saves_logic.hpp`, `career_start.hpp`, `career_ui.hpp` |
+| `career::save_data`, `career::save_splice` | `save_data.hpp`, `save_data.cpp`, `save_splice_logic.hpp`, `save_splice.cpp` |
+| `career::save_diag`, `career::save_heap` | `save_diag_logic.hpp`, `save_heap_logic.hpp` |
+| `career::ops` | `ops/`: the career operations below |
+| `career::snapshots` | `snapshots/`: the career snapshot book, its entry format and the save bag |
+
 ## Career operations
 
 The career operations (`SwoftyCareerOps`, standard library 1.6) are in `career/ops/`. A batch of entrant writes is planned by pure headers and run by the executor:
@@ -185,8 +280,14 @@ These units keep their state in the first file listed; the other files hold code
 | `career/snapshots/freeze.cpp`, `book_cache.hpp` | `Book::freeze`, `season_start` and `career_created` |
 | `career/hub_tab.cpp`, `hub_state.hpp` | the hub tabs, their options and `SwoftyCoreHub` |
 | `career/hub_rnd.cpp` | the R&D tab's visibility on Team HQ and the laptop, and `hub_tick` |
-| `career/career_content.cpp`, `content_state.hpp` | the content registry, its API, wraps and core sets |
+| `career/career_content.cpp`, `content_state.hpp` | the content registry and its core sets |
+| `career/content_hooks.cpp` | the router, gate and slot predicate wraps and `bind_all` |
+| `career/content_api.cpp` | the addon table (`SwoftyCoreCareerContent`) |
 | `career/content_tiles.cpp` | the content tiles and the Addons row |
+| `garage/garage_placement.cpp`, `garage_edits.hpp` | the bays, the scene, sequence and update hooks, visits, the departure restore and the export tables |
+| `garage/garage_crew_edits.cpp` | the garage root and central crew poses, reads and restore |
+| `garage/garage_member_edits.cpp` | the mechanic list, reads, edits and restore |
+| `garage/garage_car_edits.cpp` | the parked car edit, its verification and restore |
 | `runtime/loader/bindings.cpp` | choosing and loading the binding set, its KB addresses and the binding report |
 | `runtime/loader/binding_resolve.cpp` | resolving a binding by address, pattern or anchor, deferral and the retry passes |
 | `runtime/settings.cpp` | settings.json's addon options, the settings API, the MFD rows and the commands |
@@ -198,3 +299,5 @@ These units keep their state in the first file listed; the other files hold code
 | `diagnostics/net_trace/hooks.cpp`, `trace.hpp` | the ws2_32 hooks and their table |
 
 No added file has a static object of its own; each follows its unit's first file in `tools/core_link_order.txt` when that file is listed.
+
+The swofty_registry entry codec is header-only: `career/snapshots/items.hpp` holds the tagged items and their checksum, `format.hpp` the entry, its careers and seasons, and `bag.hpp` the property bag the save carries it in.

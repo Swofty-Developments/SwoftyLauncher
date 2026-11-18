@@ -13,10 +13,10 @@
 
 namespace hud::overlay {
 
-using Vertex = hud::Vertex;
-using com::release;
+using Vertex = hud::drawlist::Vertex;
+using render::com::release;
 
-constexpr UINT MAX_VERTS = hud::MAX_VERTS;
+constexpr UINT MAX_VERTS = hud::drawlist::MAX_VERTS;
 constexpr UINT SLOTS = 3;
 
 struct Pso {
@@ -93,7 +93,7 @@ struct Renderer {
     };
 
     Outcome render(const Target &t, ID3D12CommandQueue *q, const std::vector<Vertex> &verts,
-                   const std::vector<hud::Batch> &batches, UINT mode, float white);
+                   const std::vector<hud::drawlist::Batch> &batches, UINT mode, float white);
     void shutdown();
 };
 

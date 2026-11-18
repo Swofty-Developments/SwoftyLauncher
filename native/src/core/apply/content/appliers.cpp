@@ -56,6 +56,15 @@ std::recursive_mutex mu;
 std::mutex drs_mu;
 std::map<std::string, DrsGroup> drs_groups;
 
+// Boxes with more teams than their world has garages get a world of their own (box_world.hpp) only with
+// SWOFTY_BOX_WORLDS=1, until an in-game check on 1.0.145 proves it.
+bool box_worlds_on()
+{
+    char v[8] = {};
+    DWORD n = GetEnvironmentVariableA("SWOFTY_BOX_WORLDS", v, sizeof v);
+    return n && n < sizeof v && v[0] == '1';
+}
+
 void publish_drs(Store &st, Expansion &x)
 {
     std::map<std::string, DrsGroup> groups;
@@ -161,6 +170,13 @@ rows::Base base_of(Database &d)
     };
 }
 
+std::unique_ptr<Expansion> expansion(Database &d)
+{
+    auto x = std::make_unique<Expansion>(base_of(d));
+    x->box_worlds = box_worlds_on();
+    return x;
+}
+
 void ensure_stock(Store &st)
 {
     State &s = state();
@@ -205,7 +221,7 @@ Expansion &plan_run(Store &st)
     State &s = state();
     if (!s.plan) {
         Database &d = database();
-        s.plan = std::make_unique<Expansion>(base_of(d));
+        s.plan = expansion(d);
         if (d.ok)
             expand(st, *s.plan, planning_ids());
     }
@@ -272,12 +288,15 @@ void run_boot(Store &st)
     State &s = state();
     Database &d = database();
     Expansion &plan = plan_run(st);
-    s.boot = std::make_unique<Expansion>(base_of(d));
+    s.boot = expansion(d);
     if (!d.ok)
         return;
     read_edits(d);
     std::map<std::string, PoolScan> scans;
     define_pools(d, s.boot_lines, scans);
+    if (s.boot->box_worlds)
+        s.boot_lines.push_back("box worlds on (SWOFTY_BOX_WORLDS=1): a box with more teams than its world has garages "
+                               "gets a season and a track layer of its own");
     pin_all(st, scans);
     for (const char *registry : {"vehicle", "vehicle.package", "content.package", "team.identity"})
         if (scans.count(registry))
@@ -298,7 +317,7 @@ void run_boot(Store &st)
                         "rows are laid out again without it",
                         again.refused[i].first.c_str(), again.refused[i].second);
         adm = std::move(again);
-        s.boot = std::make_unique<Expansion>(base_of(d));
+        s.boot = expansion(d);
         expand(st, *s.boot, stat_id, adm.skip);
     }
     for (auto &[addon, keys] : adm.refused) {
@@ -650,7 +669,7 @@ void set_up_dresser()
         return v.i;
     };
     runtime::team_record_inserted([](uint16_t stat, uint8_t *record) { redress(stat, record); });
-    career_ops::teams::dresser() = &dress_slot;
+    career::ops::teams::dresser() = &dress_slot;
 }
 
 void release_database()

@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <cstdio>
 
-namespace d3d12hooks {
+namespace render::d3d12 {
 
 namespace {
 
@@ -56,8 +56,8 @@ void Swapchains::created(const char *how, IUnknown *device, void *sc, UINT w, UI
         mods.push_back(module_of(frames[i]));
     char impl_path[MAX_PATH] = {};
     DWORD impl_n = impl ? GetModuleFileNameA(impl, impl_path, MAX_PATH) : 0;
-    std::string impl_name(hud::guard::base_name(std::string_view(impl_path, impl_n)));
-    std::string by = hud::guard::chain(mods, self_module(), impl_name);
+    std::string impl_name(hud::arm_policy::base_name(std::string_view(impl_path, impl_n)));
+    std::string by = hud::arm_policy::chain(mods, self_module(), impl_name);
     ID3D12CommandQueue *q = nullptr;
     if (!device || FAILED(device->QueryInterface(IID_PPV_ARGS(&q))) || !q) {
         swofty::log("[d3d12] swapchain %p (%s, by %s) was not created on a D3D12 command queue; ignored", sc, how,
@@ -71,10 +71,10 @@ void Swapchains::created(const char *how, IUnknown *device, void *sc, UINT w, UI
     c.queue = q;
     c.how = how;
     c.by = by;
-    c.fg = hud::guard::fg_in(mods);
-    c.streamline = hud::guard::streamline_in(mods);
+    c.fg = hud::arm_policy::fg_in(mods);
+    c.streamline = hud::arm_policy::streamline_in(mods);
     // FidelityFX's loader is on the stack whatever the settings, so it does not stand in for a non-direct queue.
-    if (qd.Type != D3D12_COMMAND_LIST_TYPE_DIRECT && (c.fg.empty() || hud::guard::ffx_loader(c.fg)))
+    if (qd.Type != D3D12_COMMAND_LIST_TYPE_DIRECT && (c.fg.empty() || hud::arm_policy::ffx_loader(c.fg)))
         c.fg = "a non-direct present queue";
     store(c);
     swofty::log("[d3d12] swapchain %p created through %s on queue %p (type %d, %ux%u, format %d, %u buffer(s)); "
@@ -106,7 +106,7 @@ bool Swapchains::learn(IDXGISwapChain3 *sc, void *caller, const std::string &pfg
         else {
             void *native = nullptr;
             int sr = get_native(sc, &native);
-            if (!hud::guard::streamline_result_ok(sr) || !native) {
+            if (!hud::arm_policy::streamline_result_ok(sr) || !native) {
                 char buf[64];
                 snprintf(buf, sizeof buf, "slGetNativeInterface returned %d", sr);
                 native_note = buf;
@@ -124,7 +124,7 @@ bool Swapchains::learn(IDXGISwapChain3 *sc, void *caller, const std::string &pfg
         }
     }
     D3D12_COMMAND_QUEUE_DESC qd{};
-    hud::guard::ExecSeen exec{};
+    hud::arm_policy::ExecSeen exec{};
     if (q) {
         qd = q->GetDesc();
         q->Release();
@@ -132,14 +132,14 @@ bool Swapchains::learn(IDXGISwapChain3 *sc, void *caller, const std::string &pfg
         bool told = listed(waiting, sc);
         if (!told && waiting.size() < 16)
             waiting.push_back(sc);
-        using hud::guard::UnreadQueue;
-        UnreadQueue step = hud::guard::unread_queue_step(exec_hooked(), unread_arm_asked, false);
+        using hud::arm_policy::UnreadQueue;
+        UnreadQueue step = hud::arm_policy::unread_queue_step(exec_hooked(), unread_arm_asked, false);
         if (step == UnreadQueue::Arm) {
             unread_arm_asked = true;
             for (int i = 0, k = subscribers.unread_queues.n.load(); i < k; i++)
                 if (subscribers.unread_queues.fns[i](sc, caller))
                     break;
-            step = hud::guard::unread_queue_step(exec_hooked(), unread_arm_asked, false);
+            step = hud::arm_policy::unread_queue_step(exec_hooked(), unread_arm_asked, false);
         }
         if (step == UnreadQueue::Refuse) {
             refused.push_back(sc);
@@ -150,7 +150,7 @@ bool Swapchains::learn(IDXGISwapChain3 *sc, void *caller, const std::string &pfg
         }
         queue_watch.want();
         bool seen = queue_watch.recent_direct(tid, exec);
-        if (hud::guard::unread_queue_step(true, unread_arm_asked, seen) == UnreadQueue::Wait) {
+        if (hud::arm_policy::unread_queue_step(true, unread_arm_asked, seen) == UnreadQueue::Wait) {
             if (!told)
                 swofty::log("[d3d12] swapchain %p was made before the creation hooks and its present queue cannot be "
                             "read (GetDevice: 0x%08lx; %s); no direct command queue has executed command lists yet, "
@@ -169,8 +169,8 @@ bool Swapchains::learn(IDXGISwapChain3 *sc, void *caller, const std::string &pfg
     out.queue = q;
     out.how = via;
     out.by = by;
-    out.fg = hud::guard::learned_fg(qd.Type == D3D12_COMMAND_LIST_TYPE_DIRECT, pfg);
-    out.streamline = hud::guard::streamline_caller(by);
+    out.fg = hud::arm_policy::learned_fg(qd.Type == D3D12_COMMAND_LIST_TYPE_DIRECT, pfg);
+    out.streamline = hud::arm_policy::streamline_caller(by);
     out.armed_late = exec.queue && unread_arm_asked;
     store(out);
     if (exec.queue)

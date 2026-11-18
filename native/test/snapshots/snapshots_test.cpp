@@ -9,6 +9,7 @@
 #include "core/career/save_splice_logic.hpp"
 #include "core/career/snapshots/clock.hpp"
 #include "core/career/snapshots/snapshots.hpp"
+#include "core/career/snapshots/bag.hpp"
 
 #include <cstdio>
 #include <filesystem>
@@ -16,11 +17,11 @@
 #include <random>
 #include <sstream>
 
-namespace snap = swofty_core::snapshots;
-namespace fmt = swofty_core::snapshots::format;
+namespace snap = career::snapshots;
+namespace fmt = career::snapshots::format;
 namespace reg = swofty_core::registry;
-namespace sp = runtime::save_splice;
-namespace sn = swofty_core::snapshots::seasons;
+namespace sp = career::save_splice;
+namespace sn = career::snapshots::seasons;
 using swofty::json::Value;
 
 static int fails;

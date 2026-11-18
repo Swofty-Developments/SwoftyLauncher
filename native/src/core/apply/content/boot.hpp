@@ -296,6 +296,9 @@ struct Expansion {
     std::set<std::string> owners;
     std::map<std::string, std::map<std::string, int>> left_out;
     std::vector<std::string> virtual_lists;
+    // A box with more teams than its world has garages gets a world of its own (box_world.hpp); off unless the core
+    // turns it on (SWOFTY_BOX_WORLDS=1).
+    bool box_worlds = false;
 };
 
 // The runtime twin of the build's virtual-list step (packages/core/src/game_db/virtual_lists.rs) for content.package lists
@@ -426,7 +429,7 @@ inline std::map<std::string, std::vector<AddedSeat>> added_seats(registry::Store
             continue;
         for (auto &t : *teams) {
             std::string team(t["team"].as_string());
-            if (!career_ops::teams::added_team_id(team))
+            if (!career::ops::teams::added_team_id(team))
                 continue;
             for (std::size_t k = 0; k < 2; k++) {
                 std::string driver(t["seats"][k].as_string());
@@ -680,7 +683,8 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
             else if (r == "career.market")
                 lower_market(id, *rec, lookup, read, refs, plan);
             else
-                lower_package(id, *rec, lookup, plan, stat, &wear.person_driver, read, &refs.constructor_team, &dropped);
+                lower_package(id, *rec, lookup, plan, stat, &wear.person_driver, read, &refs.constructor_team, &dropped,
+                              x.box_worlds);
             x.engine.add_fields(plan.fields);
             x.engine.attribute(owner, reg, id);
             std::size_t mark = x.engine.mark();

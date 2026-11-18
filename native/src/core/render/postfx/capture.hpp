@@ -9,7 +9,7 @@
 
 #include <string>
 
-namespace postfx {
+namespace render::postfx {
 
 // SWOFTY_POSTFX_CAPTURE: the picture before and after the passes, read back and written as a pair of PPM files,
 // a few times after the passes first run and whenever swofty/postfx.capture appears.

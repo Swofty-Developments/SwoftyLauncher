@@ -145,7 +145,10 @@ reg::Store &older_store()
 }
 }
 
+namespace frontend {
 bool ui_vm_set_path(const std::string &, int, const void *) { return true; }
+}
+
 void hub_option_changed(const std::string &, const std::string &) {}
 
 int main()

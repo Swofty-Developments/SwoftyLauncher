@@ -1,3 +1,5 @@
+use std::collections::{HashMap, HashSet};
+
 use crate::bytes::Reader;
 use crate::hash::fnv1a64;
 use crate::{Error, Result};
@@ -182,6 +184,21 @@ impl Gvdb {
         self.get_key(fnv1a64(path))
     }
 
+    /// The record [`Gvdb::get_key`] finds for each of `keys` the database
+    /// holds, found in one pass over the records.
+    pub fn get_keys(&self, keys: &HashSet<u64>) -> HashMap<u64, &Record> {
+        let mut out = HashMap::with_capacity(keys.len());
+        for r in &self.records {
+            if out.len() == keys.len() {
+                break;
+            }
+            if keys.contains(&r.key) {
+                out.entry(r.key).or_insert(r);
+            }
+        }
+        out
+    }
+
     pub fn get_text(&self, path: &str) -> Option<String> {
         self.get(path).map(|r| r.text().into_owned())
     }
@@ -287,6 +304,25 @@ mod tests {
             db.get_text("tracks.Track_3.numberOfCorners").as_deref(),
             Some("16")
         );
+    }
+
+    #[test]
+    fn finds_many_keys_in_one_pass_as_one_lookup_each_finds_them() {
+        let mut db = sample();
+        db.records
+            .push(Record::new("tracks.Track_3.instanceName", 4, "sakhir"));
+        let paths = [
+            "tracks.Track_3.instanceName",
+            "tracks._Track_instancecount_",
+            "tracks.Track_9.instanceName",
+        ];
+        let found = db.get_keys(&paths.iter().map(fnv1a64).collect());
+        assert_eq!(found.len(), 2);
+        for path in paths {
+            assert_eq!(found.get(&fnv1a64(path)).copied(), db.get(path));
+        }
+        assert_eq!(found[&fnv1a64(paths[0])].text(), "bahrain");
+        assert!(db.get_keys(&HashSet::new()).is_empty());
     }
 
     #[test]

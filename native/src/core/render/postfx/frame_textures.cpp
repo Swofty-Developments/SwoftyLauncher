@@ -6,7 +6,7 @@
 
 #include <cstring>
 
-namespace postfx {
+namespace render::postfx {
 
 UINT FrameTextures::mip_base()
 {

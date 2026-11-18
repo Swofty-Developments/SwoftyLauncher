@@ -3,7 +3,7 @@
 #include <string_view>
 #include <vector>
 
-namespace hud::guard {
+namespace hud::arm_policy {
 
 inline constexpr std::string_view FG_MODULES[] = {
     "sl.dlss_g.dll",

@@ -345,29 +345,41 @@ jobs:
         run: python3 -m unittest discover -s tools/compat/tests -t tools/compat
 
   # Clippy lints the installer on both systems; this job builds the release binary people test. On main the
-  # release build makes it instead (release-binaries.yml).
+  # release build makes it instead (release-binaries.yml), and this job runs only on Windows, to save the Rust
+  # cache that pull requests restore there; it skips the build when that cache is already current.
   installer:
     name: Installer (${{ matrix.os }})
     needs: changes
-    if: github.event_name == 'pull_request' && needs.changes.outputs.installer == 'true'
+    if: needs.changes.outputs.installer == 'true'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         # ubuntu-22.04 is the release build's glibc baseline.
-        os: [ubuntu-22.04, windows-latest]
+        os: ${{ fromJSON(github.event_name == 'pull_request' && '["ubuntu-22.04", "windows-latest"]' || '["windows-latest"]') }}
     steps:
       - uses: actions/checkout@v7
 
+      # Windows only: the Linux build is never the longest job, and the cache space is short.
       - uses: ./.github/actions/setup-rust
+        id: rust
         with:
           system-libraries: false
+          cache: ${{ runner.os == 'Windows' && 'installer' || '' }}
+          save: ${{ github.event_name == 'push' }}
 
+      # The release binaries on every push to main build the installer with the release profile's thin LTO,
+      # which takes a third of the build: 678 s with it and 567 s without on 4 cores, the final link 195 s
+      # and 7 s. A pull request builds it without, so its uploaded executable is not the release build.
       - name: Build
+        if: github.event_name == 'pull_request' || steps.rust.outputs.cache-hit != 'true'
+        env:
+          CARGO_PROFILE_RELEASE_LTO: 'false'
         run: cargo build --release -p swofty-launcher-installer
 
       - name: Upload the executable
+        if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v7
         with:
           name: installer-${{ runner.os }}
@@ -422,6 +434,18 @@ jobs:
       # The native job builds the templates; this checks their registry data files against the schemas.
       - name: Template data files
         run: python3 tools/std/templates.py --no-build
+
+  # The binding generator, capture and verifier tests use only the standard library. A job of their own reports
+  # them apart from the native build and tests.
+  re-tools:
+    name: RE tools unit tests
+    needs: changes
+    if: needs.changes.outputs.native == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - run: python3 -m unittest discover -s re/tools/tests
 
   # On a 32-core EC2 runner one job runs every native test. On 4-core hosted runners two jobs split them, one
   # for the host tests and one for the Wine tests, each with its own CPUs. Both build the loader themselves:
@@ -486,11 +510,6 @@ jobs:
             } 2>&1 | while IFS= read -r line; do printf '%(%T)T %s\n' -1 "$line"; done > "$RUNNER_TEMP/wine-install.log"
             echo "${PIPESTATUS[0]}" > "$RUNNER_TEMP/wine-install.status"
           ) &
-
-      # The binding generator, capture and verifier tests use only the standard library.
-      - name: RE tools unit tests
-        if: matrix.part != 'wine'
-        run: python3 -m unittest discover -s re/tools/tests
 
       # The native tests run side by side, and the stock xvfb-run -a can give two calls started together the
       # same display. This one takes the next display number from a counter under a lock.
@@ -656,7 +675,7 @@ jobs:
       # Once the tests have run, the objects this run did not use leave the cache, so it holds one build of the
       # tree and does not grow.
       - name: Ccache use
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.ccache.outcome == 'success' }}
         env:
           TESTS: ${{ steps.native-tests.outcome }}
         run: |
@@ -727,17 +746,27 @@ jobs:
           key: ${{ steps.zig-cache.outputs.cache-primary-key }}
 
       # Only the newest saved Zig cache is kept; several of them push the Rust caches out of the repository's
-      # cache space.
-      - name: Remove the older Zig caches
-        if: steps.zig-save.outcome == 'success'
+      # cache space. So are no caches under the keys only the workflow before 1.10.0 wrote, which nothing
+      # restores now: its debug build of the workspace, its installer build and its release builds.
+      - name: Remove the older Zig caches and the old workflow's caches
+        if: ${{ !cancelled() && github.ref == 'refs/heads/main' && matrix.part != 'wine' }}
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
+          ZIG_SAVED: ${{ steps.zig-save.outcome }}
           KEEP: ${{ steps.zig-cache.outputs.cache-primary-key }}
         run: |
-          gh cache list --repo "$GITHUB_REPOSITORY" --ref refs/heads/main --key "zig-$RUNNER_OS-" --limit 100 \
-            --json id,key --jq '.[] | select(.key != env.KEEP) | .id' | while read -r id; do
-            gh cache delete "$id" --repo "$GITHUB_REPOSITORY" && echo "removed cache $id"
+          if [ "$ZIG_SAVED" = success ]; then
+            gh cache list --repo "$GITHUB_REPOSITORY" --ref refs/heads/main --key "zig-$RUNNER_OS-" --limit 100 \
+              --json id,key --jq '.[] | select(.key != env.KEEP) | .id' | while read -r id; do
+              gh cache delete "$id" --repo "$GITHUB_REPOSITORY" && echo "removed cache $id"
+            done
+          fi
+          for prefix in v0-rust-workspace-debug- v0-rust-installer-release- v0-rust-release-; do
+            gh cache list --repo "$GITHUB_REPOSITORY" --key "$prefix" --limit 100 --json id,key,ref \
+              --jq '.[] | "\(.id) \(.key) \(.ref)"' | while read -r id key ref; do
+              gh cache delete "$id" --repo "$GITHUB_REPOSITORY" && echo "removed cache $key on $ref"
+            done
           done
 
   # Every push to main also builds the release binaries: the run keeps the release cache warm, and a tag on

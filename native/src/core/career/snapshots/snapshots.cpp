@@ -1,10 +1,11 @@
 #include "core/career/snapshots/snapshots.hpp"
+#include "core/career/snapshots/bag.hpp"
 #include "core/career/snapshots/book_cache.hpp"
 #include "core/career/snapshots/clock.hpp"
 
 #include <algorithm>
 
-namespace swofty_core::snapshots {
+namespace career::snapshots {
 
 using swofty::json::Value;
 namespace fmt = format;

@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace ch = runtime::characters;
+namespace ch = career::characters;
 
 static int g_fail;
 

@@ -23,7 +23,7 @@
 //   dress      the slot row, as the data group's slot table names it, wears the added team in the new-career wizard
 //              of that start season; a slot with no row (a twelfth team) has nothing to dress until its season starts
 
-namespace career_ops::teams {
+namespace career::ops::teams {
 
 struct StartDress {
     int slot = 0;
@@ -145,4 +145,4 @@ inline std::string plan_json(const StartPlan &p)
     return out + "]}";
 }
 
-} // namespace career_ops::teams
+} // namespace career::ops::teams

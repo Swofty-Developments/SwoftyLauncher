@@ -12,7 +12,7 @@ static int failures;
         }                                                                                                              \
     } while (0)
 
-using namespace postfx;
+using namespace render::postfx;
 
 int main()
 {
@@ -48,6 +48,9 @@ int main()
         CHECK(steam.table && steam.wetness && steam.surface && steam.orient && steam.angvel && steam.wheels && steam.drs);
         CHECK(port.table && port.drs && port.wheels && port.wetness);
         CHECK(!port.surface && !port.orient && !port.angvel);
+        live_car::Fields ea145 = live_car::fields_of(bp::Build::ea_1_0_145);
+        CHECK(ea145.wheels && ea145.wetness);
+        CHECK(!ea145.table && !ea145.drs && !ea145.surface && !ea145.orient && !ea145.angvel);
     }
 
     if (failures)
