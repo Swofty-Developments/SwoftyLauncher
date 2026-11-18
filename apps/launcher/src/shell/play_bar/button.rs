@@ -91,7 +91,10 @@ impl Shell {
                                 PopupMenuItem::new(tr("Play once with your Steam saves"))
                                     .icon(IconName::Play)
                                     .on_click(move |_, window, cx| {
-                                        once.update(cx, |s, cx| s.play_with_steam_saves(window, cx)).ok();
+                                        once.update(cx, |s, cx| {
+                                            crate::shell::Launching::play_with_steam_saves(s, window, cx)
+                                        })
+                                        .ok();
                                     }),
                             )
                         })

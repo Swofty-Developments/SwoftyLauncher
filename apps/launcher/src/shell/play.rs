@@ -1,5 +1,6 @@
 use crate::dialogs::game_edited::Edited;
-use crate::services::game::{self, Launch, Owner, Probe};
+use crate::features::multiplayer::RoomLaunch;
+use crate::services::game::{self, Install, Launch, Owner, Probe};
 use crate::services::play_checks;
 use crate::shell::notices::{Notification, Notify};
 use gpui_kit::*;
@@ -7,12 +8,14 @@ use std::path::PathBuf;
 use swofty_core::diagnostics::quarantine;
 use swofty_core::game_folder::recovery::Blocked;
 use swofty_core::install::Source;
+use swofty_core::platform::ea_app::Moved;
 use swofty_core::session::{LaunchMode, SessionRecord};
 use swofty_core::store::Store;
 
+use super::host::{Host, Hosted};
 use super::launch_alerts::note_notification;
 use super::probe::GameWatch;
-use super::{PlayState, Shell};
+use super::{PlayState, Seen, Shell};
 use swofty_i18n::{tr, trf, trn};
 
 #[derive(Default)]
@@ -211,6 +214,270 @@ impl Step {
     }
 }
 
+/// What Play opens in the window.
+pub(crate) enum Prompt {
+    EaAppWarn,
+    EaMoved(Moved),
+    AdminNeeded(Install),
+    Setup,
+    ConfirmOffline,
+    FirstLaunch,
+    ConfirmRows(String),
+    Notice(Notification),
+}
+
+pub(crate) struct PlayNeeds<'a> {
+    pub(crate) store: &'a Store,
+    pub(crate) profile: &'a str,
+    pub(crate) game: &'a mut GameWatch,
+    pub(crate) seen: &'a mut Seen,
+    /// The session whose crash the play bar no longer shows.
+    pub(crate) dismissed: &'a mut Option<PathBuf>,
+    /// The data folder is moving; Play waits until it is done.
+    pub(crate) locked: bool,
+    /// The conflict check is running; Play waits for it.
+    pub(crate) checking_addons: bool,
+    /// The signed-in account may join sessions, so the game starts ready for one.
+    pub(crate) online: bool,
+    pub(crate) mode: LaunchMode,
+}
+
+pub(crate) enum PlayChange {
+    /// A room's Play passed its checks and started the game, or stopped.
+    RoomLaunched(bool),
+    /// A prompt whose Play presses Play again holds the room launch until it is answered.
+    HoldRoom(RoomLaunch),
+}
+
+/// The shell as Play sees it: a [`Host`] that also opens Play's prompts in the window.
+pub(crate) trait PlayHost: Host<Launching> {
+    fn prompt(&mut self, prompt: Prompt, window: &mut Window, cx: &mut Context<Self>);
+}
+
+impl Hosted for Launching {
+    type Needs<'a> = PlayNeeds<'a>;
+    type Change = PlayChange;
+}
+
+impl Host<Launching> for Shell {
+    fn split(&mut self) -> (&mut Launching, PlayNeeds<'_>) {
+        let (locked, online, mode) = (
+            self.data_move_locked(),
+            self.account.allowed(),
+            self.launch_mode(),
+        );
+        (
+            &mut self.launching,
+            PlayNeeds {
+                store: &self.store,
+                profile: &self.library.profile.name,
+                game: &mut self.game,
+                seen: &mut self.seen,
+                dismissed: &mut self.crashes.dismissed,
+                locked,
+                checking_addons: self.addons.conflicts.checking,
+                online,
+                mode,
+            },
+        )
+    }
+
+    fn changed(&mut self, change: PlayChange, _: &mut Context<Self>) {
+        match change {
+            PlayChange::RoomLaunched(started) => self.room_launch_result(started),
+            PlayChange::HoldRoom(room) => self.room_hold(room),
+        }
+    }
+}
+
+impl PlayHost for Shell {
+    fn prompt(&mut self, prompt: Prompt, window: &mut Window, cx: &mut Context<Self>) {
+        match prompt {
+            Prompt::EaAppWarn => self.ea_app_warn(window, cx),
+            Prompt::EaMoved(moved) => self.show_ea_moved(moved, window, cx),
+            Prompt::AdminNeeded(install) => self.show_admin_needed(&install, window, cx),
+            Prompt::Setup => self.open_setup(window, cx),
+            Prompt::ConfirmOffline => self.confirm_offline_play(window, cx),
+            Prompt::FirstLaunch => self.first_launch_notice(window, cx),
+            Prompt::ConfirmRows(text) => self.confirm_missing_rows(text, window, cx),
+            Prompt::Notice(note) => window.notify(note, cx),
+        }
+    }
+}
+
+impl Launching {
+    /// Play, or Play for a room: armed to go straight to the room's lobby, with the host's row ids for the
+    /// build when `room` has them. Whether Play was taken up: the pre-launch checks run off the UI thread
+    /// and the launch follows when they pass.
+    pub(crate) fn play_for<H: PlayHost>(
+        host: &mut H,
+        room: Option<RoomLaunch>,
+        window: &mut Window,
+        cx: &mut Context<H>,
+    ) -> bool {
+        let (launching, needs) = host.split();
+        if needs.locked || launching.play_pending.is_active() {
+            return false;
+        }
+        let Some(install) = needs.game.install.clone() else {
+            return false;
+        };
+        if install.source == Source::EaApp && crate::dialogs::ea_app::warn_due(needs.store) {
+            host.prompt(Prompt::EaAppWarn, window, cx);
+            return false;
+        }
+        if needs.checking_addons {
+            let wait = Notification::info(tr("Play when the conflict check finishes."));
+            host.prompt(Prompt::Notice(wait), window, cx);
+            return false;
+        }
+        if let Some(moved) = install.moved.clone() {
+            host.prompt(Prompt::EaMoved(moved), window, cx);
+            return false;
+        }
+        let Some(generation) = launching.play_pending.begin() else {
+            return false;
+        };
+        let inputs = play_checks::Inputs {
+            store: needs.store.clone(),
+            profile: needs.profile.to_owned(),
+            game: install.dir.clone(),
+            build_id: install.build_id,
+            anyway: std::mem::take(&mut launching.play_anyway),
+        };
+        // This press's ask only: a dialog, a cancel or a stale result must not hand it to the next Play.
+        let steam_saves_once = std::mem::take(&mut launching.steam_saves_once);
+        cx.notify();
+        let is_room = room.is_some();
+        cx.spawn_in(window, async move |this, cx| {
+            let checked = cx
+                .background_executor()
+                .spawn(async move { play_checks::run(inputs) })
+                .await;
+            this.update_in(cx, |host, window, cx| {
+                if !host.split().0.play_pending.finish(generation) {
+                    return;
+                }
+                let played = Self::play_checked(host, checked, room, steam_saves_once, window, cx);
+                if is_room && played != Played::Asking {
+                    host.changed(PlayChange::RoomLaunched(played == Played::Started), cx);
+                }
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
+        true
+    }
+
+    fn play_checked<H: PlayHost>(
+        host: &mut H,
+        checked: play_checks::Checked,
+        room: Option<RoomLaunch>,
+        steam_saves_once: bool,
+        window: &mut Window,
+        cx: &mut Context<H>,
+    ) -> Played {
+        crate::app::app_log::note(&checked.timings.line());
+        let (launching, needs) = host.split();
+        let stale = needs.profile != checked.profile
+            || needs.game.install.as_ref().map(|i| &i.dir) != Some(&checked.game);
+        let step = Step::of(stale, checked.gate, checked.verdict);
+        let Some(install) = needs.game.install.clone().filter(|_| step != Step::Dropped) else {
+            crate::app::app_log::note("[play] dropped: the profile or game copy changed during the checks");
+            return Played::Stopped;
+        };
+        let notes = if step.clears() {
+            launching.notice = None;
+            launching.game_edited = None;
+            needs.game.blocked = None;
+            Blocked::clear(&needs.store.root).ok();
+            needs.seen.blocked = game::blocked_at(&needs.store.root).unwrap_or(0.0);
+            *needs.dismissed = needs.game.session.as_ref().map(|s| s.dir.clone());
+            checked.notes
+        } else {
+            Vec::new()
+        };
+        let played = step.played();
+        let prompt = match step {
+            Step::AdminNeeded => Some(Prompt::AdminNeeded(install.clone())),
+            Step::Setup => Some(Prompt::Setup),
+            Step::ConfirmOffline => Some(Prompt::ConfirmOffline),
+            Step::FirstLaunch => Some(Prompt::FirstLaunch),
+            Step::Stop(stop) => {
+                launching.notice = Some(stop);
+                None
+            }
+            Step::ConfirmRows(text) => Some(Prompt::ConfirmRows(text)),
+            Step::Dropped | Step::Launch => None,
+        };
+        for note in &notes {
+            host.prompt(Prompt::Notice(note_notification(note)), window, cx);
+        }
+        if let Some(played) = played {
+            if let Some(prompt) = prompt {
+                host.prompt(prompt, window, cx);
+            }
+            if played == Played::Asking
+                && let Some(room) = room
+            {
+                host.changed(PlayChange::HoldRoom(room), cx);
+            }
+            return played;
+        }
+        if let Some(d) = swofty_core::diagnostics::known_problems::outdated_exe(install.version().as_deref())
+        {
+            let outdated = Notification::warning(d.text()).title(d.title).autohide(false);
+            host.prompt(Prompt::Notice(outdated), window, cx);
+        }
+        if let Some(short) = crate::features::settings::low_space_warning(checked.room) {
+            let text = trf!(
+                "{short} Settings shows what takes the room and clears old logs.",
+                short = short
+            );
+            crate::app::app_log::note(&format!("play: {text}"));
+            let low = Notification::warning(text)
+                .title(tr("Low on disk space"))
+                .autohide(false);
+            host.prompt(Prompt::Notice(low), window, cx);
+        }
+        let (launching, needs) = host.split();
+        let armed = (room.is_some() || needs.online).then(|| {
+            swofty_core::online::multiplayer::client::launch_env_value(&needs.store.root, SESSION_MODULE_WAIT)
+        });
+        match Launch::start(
+            needs.store,
+            needs.profile,
+            &install,
+            needs.mode,
+            armed.as_deref(),
+            room.as_ref().and_then(|r| r.row_ids.as_deref()),
+            room.as_ref().map(|r| r.direct_start.as_str()),
+            steam_saves_once,
+        ) {
+            Ok(l) => {
+                launching.launch = Some(l);
+                Played::Started
+            }
+            Err(e) => {
+                needs.seen.launch_failed = game::now_secs();
+                let failed = Notification::error(e)
+                    .title(tr("Could not launch F1 25"))
+                    .autohide(false);
+                host.prompt(Prompt::Notice(failed), window, cx);
+                Played::Stopped
+            }
+        }
+    }
+
+    pub(crate) fn play_with_steam_saves<H: PlayHost>(host: &mut H, window: &mut Window, cx: &mut Context<H>) {
+        host.split().0.steam_saves_once = true;
+        if !Self::play_for(host, None, window, cx) {
+            host.split().0.steam_saves_once = false;
+        }
+    }
+}
+
 impl Shell {
     pub(crate) fn play_state(&self) -> PlayState {
         self.launching.play_state(
@@ -223,170 +490,9 @@ impl Shell {
     pub(crate) fn play(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let room = self.room_take_held();
         let is_room = room.is_some();
-        if !self.play_for(room, window, cx) && is_room {
+        if !Launching::play_for(self, room, window, cx) && is_room {
             self.room_launch_result(false);
         }
-    }
-
-    /// Play, or Play for a room: armed to go straight to the room's lobby, with the host's row ids for the
-    /// build when `room` has them. Whether Play was taken up: the pre-launch checks run off the UI thread
-    /// and the launch follows when they pass.
-    pub(crate) fn play_for(
-        &mut self,
-        room: Option<crate::features::multiplayer::RoomLaunch>,
-        window: &mut Window,
-        cx: &mut Context<Self>,
-    ) -> bool {
-        if self.data_move_locked() || self.launching.play_pending.is_active() {
-            return false;
-        }
-        let Some(install) = self.game.install.clone() else {
-            return false;
-        };
-        if install.source == Source::EaApp && self.ea_app_warn_pending() {
-            self.ea_app_warn(window, cx);
-            return false;
-        }
-        if self.addons.conflicts.checking {
-            window.notify(
-                Notification::info(tr("Play when the conflict check finishes.")),
-                cx,
-            );
-            return false;
-        }
-        if let Some(moved) = install.moved.clone() {
-            self.show_ea_moved(moved, window, cx);
-            return false;
-        }
-        let Some(generation) = self.launching.play_pending.begin() else {
-            return false;
-        };
-        let inputs = play_checks::Inputs {
-            store: self.store.clone(),
-            profile: self.library.profile.name.clone(),
-            game: install.dir.clone(),
-            build_id: install.build_id,
-            anyway: std::mem::take(&mut self.launching.play_anyway),
-        };
-        // This press's ask only: a dialog, a cancel or a stale result must not hand it to the next Play.
-        let steam_saves_once = std::mem::take(&mut self.launching.steam_saves_once);
-        cx.notify();
-        let is_room = room.is_some();
-        cx.spawn_in(window, async move |this, cx| {
-            let checked = cx
-                .background_executor()
-                .spawn(async move { play_checks::run(inputs) })
-                .await;
-            this.update_in(cx, |s, window, cx| {
-                if !s.launching.play_pending.finish(generation) {
-                    return;
-                }
-                let played = s.play_checked(checked, room, steam_saves_once, window, cx);
-                if is_room && played != Played::Asking {
-                    s.room_launch_result(played == Played::Started);
-                }
-                cx.notify();
-            })
-            .ok();
-        })
-        .detach();
-        true
-    }
-
-    pub(super) fn play_checked(
-        &mut self,
-        checked: play_checks::Checked,
-        room: Option<crate::features::multiplayer::RoomLaunch>,
-        steam_saves_once: bool,
-        window: &mut Window,
-        cx: &mut Context<Self>,
-    ) -> Played {
-        crate::app::app_log::note(&checked.timings.line());
-        let stale = self.library.profile.name != checked.profile
-            || self.game.install.as_ref().map(|i| &i.dir) != Some(&checked.game);
-        let step = Step::of(stale, checked.gate, checked.verdict);
-        let Some(install) = self.game.install.clone().filter(|_| step != Step::Dropped) else {
-            crate::app::app_log::note("[play] dropped: the profile or game copy changed during the checks");
-            return Played::Stopped;
-        };
-        if step.clears() {
-            self.launching.notice = None;
-            self.game.blocked = None;
-            self.launching.game_edited = None;
-            Blocked::clear(&self.store.root).ok();
-            self.seen.blocked = game::blocked_at(&self.store.root).unwrap_or(0.0);
-            self.crashes.dismissed = self.game.session.as_ref().map(|s| s.dir.clone());
-            for note in &checked.notes {
-                window.notify(note_notification(note), cx);
-            }
-        }
-        let played = step.played();
-        match step {
-            Step::AdminNeeded => self.show_admin_needed(&install, window, cx),
-            Step::Setup => self.open_setup(window, cx),
-            Step::ConfirmOffline => self.confirm_offline_play(window, cx),
-            Step::FirstLaunch => self.first_launch_notice(window, cx),
-            Step::Stop(stop) => self.launching.notice = Some(stop),
-            Step::ConfirmRows(text) => self.confirm_missing_rows(text, window, cx),
-            Step::Dropped | Step::Launch => {}
-        }
-        match played {
-            Some(Played::Asking) => return self.asking(room),
-            Some(played) => return played,
-            None => {}
-        }
-        if let Some(d) = swofty_core::diagnostics::known_problems::outdated_exe(install.version().as_deref())
-        {
-            window.notify(Notification::warning(d.text()).title(d.title).autohide(false), cx);
-        }
-        if let Some(short) = crate::features::settings::low_space_warning(checked.room) {
-            let text = trf!(
-                "{short} Settings shows what takes the room and clears old logs.",
-                short = short
-            );
-            crate::app::app_log::note(&format!("play: {text}"));
-            window.notify(
-                Notification::warning(text)
-                    .title(tr("Low on disk space"))
-                    .autohide(false),
-                cx,
-            );
-        }
-        let armed = (room.is_some() || self.account.allowed()).then(|| {
-            swofty_core::online::multiplayer::client::launch_env_value(&self.store.root, SESSION_MODULE_WAIT)
-        });
-        match Launch::start(
-            &self.store,
-            &self.library.profile.name,
-            &install,
-            self.launch_mode(),
-            armed.as_deref(),
-            room.as_ref().and_then(|r| r.row_ids.as_deref()),
-            room.as_ref().map(|r| r.direct_start.as_str()),
-            steam_saves_once,
-        ) {
-            Ok(l) => {
-                self.launching.launch = Some(l);
-                Played::Started
-            }
-            Err(e) => {
-                self.seen.launch_failed = game::now_secs();
-                window.notify(
-                    Notification::error(e)
-                        .title(tr("Could not launch F1 25"))
-                        .autohide(false),
-                    cx,
-                );
-                Played::Stopped
-            }
-        }
-    }
-
-    fn asking(&mut self, room: Option<crate::features::multiplayer::RoomLaunch>) -> Played {
-        if let Some(room) = room {
-            self.room_hold(room);
-        }
-        Played::Asking
     }
 
     pub(crate) fn saves_refused(&self) -> Option<&SessionRecord> {
@@ -395,13 +501,6 @@ impl Shell {
                 && self.crashes.dismissed.as_ref() != Some(&s.dir)
                 && s.ended.is_some_and(|e| game::now_secs() - e < 1800.0)
         })
-    }
-
-    pub(crate) fn play_with_steam_saves(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        self.launching.steam_saves_once = true;
-        if !self.play_for(None, window, cx) {
-            self.launching.steam_saves_once = false;
-        }
     }
 
     pub(crate) fn launch_mode(&self) -> LaunchMode {

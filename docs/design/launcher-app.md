@@ -150,6 +150,7 @@ These states run on the pattern:
 | `Settings` | measuring the data folder | `features/settings/usage.rs` | `Settings` |
 | `News` | checking the news feed | `features/news/state.rs` | `News` |
 | `AddonViews` | building addon section views, refreshing stale ones, ticking the open section | `features/sections/mod.rs` | `AddonViews` |
+| `Launching` | Play: the checks, their outcome, the launch | `shell/play.rs` | `Launching`, `Step` |
 
 A page's toasts go into a `toasts` list on its state, and `shell/render.rs` shows them. A state reports what other features follow through its `Change`: the browser reports `Installed`, and the shell reads the library again, and `TurnOn`, and the shell adds the "Turn on" action to the notice.
 
@@ -168,7 +169,7 @@ assert_eq!(tt.barred_in(&library.read()).len(), 1);
 | On `Shell` | Files | What it needs |
 |---|---|---|
 | Rendering every page, bar and dialog | `render.rs`, `features/*/page.rs`, `shell/play_bar/`, `shell/topbar/` | Pages read several states. gpui listeners are `Context<Shell>` closures. |
-| Play, the launch, and starting an update from the play bar | `shell/play.rs`, `shell/play_dialogs.rs`, `shell/launch_alerts.rs`, `start_updates` in `features/update.rs` | About ten states, and the window for its prompts. |
+| Play's prompts, the room Play holds, starting an update from the play bar | `shell/play_dialogs.rs`, `shell/launch_alerts.rs`, `dialogs/`, `Shell::play` in `shell/play.rs`, `start_updates` in `features/update.rs` | The window. `Shell::play` takes the room launch a prompt held and hands it to `Launching::play_for`. |
 | Starting a room's game, the game watch, closing the game | `features/multiplayer/actions.rs` (`room_launch`, `room_watch_game`, `room_close_game`) | `play_for`, `Launching`, the game copies, the window. A host for them carries Play's own needs. |
 | Reading the library again, profiles, turning addons on and off | `shell/reload.rs`, `shell/profile_panel.rs`, `shell/profile_edit.rs`, `features/addons/` | Every feature follows the library. |
 | Startup | `shell/startup.rs` | Builds every state and starts each watch and poll loop. |
@@ -177,6 +178,27 @@ assert_eq!(tt.barred_in(&library.read()).len(), 1);
 | Window flows | `dialogs/data_move.rs`, `dialogs/found_data.rs`, `dialogs/setup.rs`, `dialogs/send_logs.rs`, `features/onboarding/`, `features/career_saves/actions.rs`, clearing logs and the cache in `features/settings/usage.rs`, a section's startup, sends and intake in `features/sections/`, `features/importer.rs` | A dialog open in the window. |
 | Tasks tied to rendering | `features/tools.rs`, `features/ads/` | The Tools row's glide and settle, the ad video's skip timer and opening an ad slot from its canvas. |
 | The shaders page | `features/shaders/` | Its own entity, `ShadersView`. |
+
+## A host that opens prompts
+
+Play stops on a prompt: the setup dialog, the offline terms, the missing rows, a notice. `Launching` reaches them through `PlayHost`, a `Host` that also opens prompts in the window:
+
+```rust
+pub(crate) trait PlayHost: Host<Launching> {
+    fn prompt(&mut self, prompt: Prompt, window: &mut Window, cx: &mut Context<Self>);
+}
+
+let step = Step::of(stale, checked.gate, checked.verdict);
+// …
+if let Some(played) = step.played() {
+    if let Some(prompt) = prompt {
+        host.prompt(prompt, window, cx);
+    }
+    return played;
+}
+```
+
+`Step::of` turns the checks' gate and verdict into the one thing Play does next, and the tests in `shell/play.rs` pin each result.
 
 ## When to use an entity instead
 

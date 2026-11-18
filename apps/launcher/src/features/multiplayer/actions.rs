@@ -126,7 +126,8 @@ impl Shell {
         self.rooms.game_seen = false;
         self.rooms.room_launching = true;
         let direct_start = ask.direct_start.clone();
-        let started = self.play_for(
+        let started = crate::shell::Launching::play_for(
+            self,
             Some(RoomLaunch {
                 row_ids,
                 direct_start,
