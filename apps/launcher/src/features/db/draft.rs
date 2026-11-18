@@ -90,24 +90,6 @@ impl Shell {
         self.db_refresh(cx);
     }
 
-    pub(crate) fn db_addon(&self, id: &str) -> Option<&PackageInfo> {
-        self.db.addons.iter().find(|p| p.id == id)
-    }
-
-    /// The installed addon the draft edits, if any.
-    pub(crate) fn db_bound(&self) -> Option<&PackageInfo> {
-        self.db.draft.addon.as_deref().and_then(|id| self.db_addon(id))
-    }
-
-    /// The draft's addon name, or "the new addon".
-    pub(crate) fn db_draft_name(&self) -> String {
-        match (&self.db.draft.addon, self.db_bound()) {
-            (_, Some(info)) => info.name.clone(),
-            (Some(id), None) => id.clone(),
-            (None, None) => "the new addon".into(),
-        }
-    }
-
     pub(crate) fn db_locked(&self) -> bool {
         self.db.addon_error.is_some()
     }
@@ -121,7 +103,7 @@ impl Shell {
         self.library
             .profile
             .enabled()
-            .filter(|id| self.db_addon(id).is_some())
+            .filter(|id| self.db.addon(id).is_some())
             .map(str::to_owned)
             .collect()
     }
@@ -262,7 +244,7 @@ impl Shell {
         };
         let store = self.store.clone();
         if !guarded(|| Ok(package::is_package(&store, &id))).unwrap_or(false) {
-            let name = self.db_draft_name();
+            let name = self.db.draft_name();
             if self.db.draft.is_dirty() {
                 let edits = self.db.draft.edits.clone();
                 self.db.draft.clear();
@@ -297,7 +279,7 @@ impl Shell {
                 self.db.addon_error = None;
                 Db::persist(self, cx);
                 if reload && !quiet {
-                    let name = self.db_draft_name();
+                    let name = self.db.draft_name();
                     self.db.toasts.push(Notification::info(if dirty {
                         trf!(
                             "{name} changed on disk and was reloaded. Your unsaved changes are kept on top.",
@@ -423,7 +405,8 @@ impl Shell {
             .collect();
         let last = others.last()?;
         let name = |id: &str| {
-            self.db_addon(id)
+            self.db
+                .addon(id)
                 .map_or_else(|| id.to_owned(), |p| p.name.clone())
         };
         let list: Vec<String> = others
@@ -478,6 +461,26 @@ impl Shell {
         db.slots = Slots::default();
         if matches!(db.nav, Nav::Raw(_)) {
             db.nav = Nav::Raw(0);
+        }
+    }
+}
+
+impl Db {
+    pub(crate) fn addon(&self, id: &str) -> Option<&PackageInfo> {
+        self.addons.iter().find(|p| p.id == id)
+    }
+
+    /// The installed addon the draft edits, if any.
+    pub(crate) fn bound(&self) -> Option<&PackageInfo> {
+        self.draft.addon.as_deref().and_then(|id| self.addon(id))
+    }
+
+    /// The draft's addon name, or "the new addon".
+    pub(crate) fn draft_name(&self) -> String {
+        match (&self.draft.addon, self.bound()) {
+            (_, Some(info)) => info.name.clone(),
+            (Some(id), None) => id.clone(),
+            (None, None) => "the new addon".into(),
         }
     }
 }

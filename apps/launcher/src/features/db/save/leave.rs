@@ -18,7 +18,7 @@ impl Shell {
             return;
         }
         let shell = cx.entity().downgrade();
-        let body = match self.db_bound() {
+        let body = match self.db.bound() {
             Some(info) => trf!(
                 "This puts {name} back to how it was last saved.",
                 name = info.name
@@ -57,7 +57,7 @@ impl Shell {
             self.db_then(then, cx);
             return;
         }
-        let name = self.db_draft_name();
+        let name = self.db.draft_name();
         let bound = self.db.draft.addon.is_some();
         let shell = cx.entity().downgrade();
         window.open_alert_dialog(cx, move |alert, _, _| {

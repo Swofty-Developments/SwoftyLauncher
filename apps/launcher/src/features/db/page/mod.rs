@@ -100,7 +100,7 @@ impl Shell {
         let profile = self.library.profile.name.clone();
         let unsaved = self.db.draft.unsaved();
         let bound = self.db.draft.addon.clone();
-        let info = self.db_bound().cloned();
+        let info = self.db.bound().cloned();
         let on = bound.as_deref().is_some_and(|id| self.db_enabled(id));
         let broken = self.db_locked();
         let target = match (&bound, &info) {

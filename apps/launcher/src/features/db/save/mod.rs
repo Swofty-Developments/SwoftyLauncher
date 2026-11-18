@@ -258,7 +258,7 @@ impl Shell {
             window.notify(Notification::error(e).title(tr("Could not save")), cx);
             return false;
         }
-        let name = self.db_draft_name();
+        let name = self.db.draft_name();
         let store = self.store.clone();
         let draft = &mut self.db.draft;
         match guarded(|| draft.save_addon(&store, &catalog).map_err(text)) {
