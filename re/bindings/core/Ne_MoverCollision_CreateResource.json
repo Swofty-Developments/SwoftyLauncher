@@ -75,6 +75,16 @@
    "verdict": "partial",
    "evidence": "decomp:own capstone disasm 0x1444537a0-0x144453f98, 0x144458380-0x144458460, 0x143994b50-0x143994b90, 0x1440caa60-0x1440cc1e8, 0x144453090-0x14445366c, 0x14535e280-0x14535e2fd, 0x14532aaf8-0x14532ab98, 0x14536123c-0x145361266, 0x14391ade0-0x14391ae30;xref:0x145a8f4e0,0x1444583fa,0x143994b76,0x144453b6b,0x144453b8d,0x144453bcb,0x144453be8,0x144453c35,0x144453c4c,0x144453c65,0x144453934,0x144453dd0,0x144453e6a,0x144453e92,0x144453e9f",
    "notes": "V20016 Blind: own disasm 0x1444537a0-0x144453f98 (.pdata) plus callees. Confirmed: slot 0x145a8f4e0 = +0x60 of vtable 0x145a8f480 installed at 0x1444583fa; 'MoverCollision' 0x145a8f01a is 0x4c6 before it; JPAK {name+0,size+4,data+8} 0x20, count +8, table +0x20; BIGF 0x18 + trace; 0x1440caa60 per entry in file order; blob version >0x20003 gate; strncmp qt_/qt., strstr lower-case 'sign' (case-sensitive); [obj+0x18] +0x164=0x18 if not set, +0x168 from +0xe8/+0x30/+0x1080; callee null only on pool full (0xc); then 0xe, exit; null manager 0xe; >=0x261b calls 0x144453090. Imprecise: 0x144453dd0 is the per-thread TLS error write, not the ring; ring write 0x144453e6a is gated by 0x1461078d0 and thread id."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_MoverCollision_CreateResource",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1444537a0-0x144453f98,0x1440caa60-0x1440cc1e8,0x144453090-0x14445366c,0x14535e280-0x14535e2fd,0x14532aaf8-0x14532ace0,0x14536123c-0x145361266,0x14391ade0-0x14391af40,0x144457220-0x144458c2e;xref:0x145a8f4e0,0x1444583fa,0x144458401,0x144453b6b,0x144453b87,0x144453bcb,0x144453be8,0x144453c22,0x144453c35,0x144453c4c,0x144453c65,0x144453934,0x144453dd0,0x144453e66,0x144453e6a,0x144453e92,0x144453e9f,0x1440caaed,0x1440cb0e0",
+   "notes": "V20019 Blind: agree, derived before reading the notes. Own disasm 0x1444537a0-0x144453f98: slot +0x60 of vt 0x145a8f480 (lea 0x1444583fa, 3rd of 5 physics factories, [mod+0x90]). JPAK {name+0,size+4,data+8} 0x20, count +8, table +0x20; BIGF 0x18 entries, count +4, table +0x24, trace only if signed [hdr+0xc]<=0x400 and trace hash 0x0c0a4884 on. In order, one 0x1440caa60 per entry (0x144453b6b); blob dword>=0x20004 gate; strncmp qt_/qt., case-sensitive strstr 'sign' (literal tolower'd); [obj+0x18]+0x164=0x18, +0x168 from +0xe8/+0x30/+0x1080. Null body (pool full, 0xc) or null [[this+0x10]+0x20]: 0xe on every TLS chain node, gated ring {caller ret addr,0xe}, returns partial resource. >=0x261b -> 0x144453090."
   }
  ],
  "proofs": []
