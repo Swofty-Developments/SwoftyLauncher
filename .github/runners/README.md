@@ -69,6 +69,7 @@ The workflows save these, measured on hosted and EC2 runs in November 2026:
 | `v0-rust-test-…-Windows_NT-…` | the same | 0.84 GB |
 | `zig-Linux-0.16.0-<month>-<hash>` | the native job on main, on EC2 with only the files that run read; the step after it deletes main's older ones | 2.75 GB with every file; build.sh and the host tests read 72 MB of it locally |
 | `ccache-Linux-zig0.16.0-<part>-<run>` | the native job on every branch, one per part (`all` on EC2, `host` and `wine` on hosted runners); the step after it deletes that branch's older ones | 0.02 GB for build.sh's objects; the test objects are not measured yet |
+| `wine-debs-Linux-<hash>` | the hosted Wine job, when its set of Wine packages changes; the step after it deletes that branch's older ones | 0.25 GB |
 | `pnpm-*` | the documentation build on main | 0.10 GB |
 | `setup-zig-tarball-*` | `mlugg/setup-zig`, per branch | 0.05–0.09 GB |
 
