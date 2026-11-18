@@ -23,7 +23,8 @@ static void table_layout()
                offsetof(SwoftyLapHost, name_tick) == 8 + 38 * sizeof(void *),
            "the version 1 fields keep their offsets");
     expect(SWOFTY_LAP_HOST_V1_SIZE == 8 + 39 * sizeof(void *), "a version 1 table ends where mark begins");
-    expect(offsetof(SwoftyLapHost, mark) == SWOFTY_LAP_HOST_V1_SIZE && sizeof(SwoftyLapHost) == SWOFTY_LAP_HOST_V1_SIZE + sizeof(void *),
+    expect(offsetof(SwoftyLapHost, mark) == SWOFTY_LAP_HOST_V1_SIZE &&
+               sizeof(SwoftyLapHost) == SWOFTY_LAP_HOST_V1_SIZE + sizeof(void *),
            "mark is the one field version 2 adds, at the end");
 }
 
@@ -32,10 +33,10 @@ static void marks()
     expect(std::string(m::name(0)) == "start" && std::string(m::name(1)) == "s1" && std::string(m::name(2)) == "s2" &&
                std::string(m::name(3)) == "end" && std::string(m::name(4)).empty() && std::string(m::name(-1)).empty(),
            "the four timing lines have their wire names");
-    expect(m::valid(0, 0, 0) && m::valid(7, 3, 91234), "a lap's marks are taken");
-    expect(!m::valid(-1, 1, 10) && !m::valid(1, 4, 10) && !m::valid(1, -1, 10) && !m::valid(1, 1, -5) &&
-               !m::valid(1, 3, m::MAX_GAME_MS),
-           "a negative lap, an unknown line, a negative clock or an hour-long lap is refused");
+    expect(m::valid(0, 0, 0) && m::valid(7, 3, 91234) && m::valid(m::MAX_LAP, 3, m::MAX_GAME_MS), "a lap's marks are taken");
+    expect(!m::valid(-1, 1, 10) && !m::valid(m::MAX_LAP + 1, 1, 10) && !m::valid(1, 4, 10) && !m::valid(1, -1, 10) &&
+               !m::valid(1, 1, -5) && !m::valid(1, 3, m::MAX_GAME_MS + 1),
+           "a lap past the server's counter range, an unknown line, a negative clock or a lap over an hour is refused");
 
     m::Mark k{12, 3, 1, 28411, 1795000123456};
     expect(m::json(k) == R"({"seq":12,"lap":3,"mark":"s1","game_ms":28411,"at_ms":1795000123456})", "a mark's file body");
