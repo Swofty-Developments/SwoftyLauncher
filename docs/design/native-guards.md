@@ -260,4 +260,6 @@ bindings and `runtime::find`, and the guard logs its needs or not-hooked line.
   +0x18 (slot = `VehPlacement.Id - 1`) with no bound. The ids the world extension adds stop at the Time Trial grid's
   entrant count (`entrants.entrant_lists.entrant_list_34`, 26 in the game data) for GridSlot and PitGarage, and at
   half of it for F1Garage and PitBox. `extend` refuses a count that needs an id past 32 and writes no entry
-  (`refuses_more_cars_than_the_game_has_placement_slots`).
+  (`refuses_more_cars_than_the_game_has_placement_slots`). The build refuses an addon's `patch-pkg` edit that sets
+  `overrides.VehPlacement.Id` or `overrides.F1Garage.id` outside 1 to 32 (`PkgEdit::refusal`), with a warning that
+  names the addon, the op file and the entry, and skips that op.
