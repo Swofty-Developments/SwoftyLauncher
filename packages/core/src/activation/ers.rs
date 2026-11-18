@@ -142,15 +142,41 @@ pub(crate) fn set_data(packer: &Packer, res: &mut Resource, index: usize, data: 
     crate::erp::pack::set_fragment_at(packer, res, index, data, ZSTD_LEVEL)
 }
 
+#[cfg(test)]
+thread_local! {
+    static PARSED: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
+/// Whether the ERS edit for `maps` can change the handling file `data`. A BXML file keeps its element names and
+/// attribute values as they are, so one without TrackSettings under EnergyRecoverySystem, or without a Track value
+/// naming a map's track or its base, has nothing [`add_track`] can change. A file that is not BXML is left to the
+/// parser.
+fn may_change(data: &[u8], maps: &[ErsMap]) -> bool {
+    let has = |needle: &[u8]| data.windows(needle.len()).any(|w| w == needle);
+    let value = |track: &str| [&b"value\0"[..], track.as_bytes(), b"\0"].concat();
+    !data.starts_with(swofty_formats::bxml::MAGIC)
+        || has(&[ERS, b"\0"].concat())
+            && has(&[SETTINGS, b"\0"].concat())
+            && maps.iter().any(|m| has(&value(m.code)) || has(&value(m.base)))
+}
+
 pub fn edit_vtf(res: &Resource, maps: &[ErsMap], packer: &Packer) -> Result<Option<Resource>> {
     let data = res.fragments[0].data()?;
+    if !may_change(&data, maps) {
+        return Ok(None);
+    }
+    #[cfg(test)]
+    PARSED.with(|n| n.set(n.get() + 1));
     let mut doc = Document::parse(&data)?;
     let mut changed = false;
     for m in maps {
         changed |= add_track(&mut doc.root, m)?;
     }
+    if !changed {
+        return Ok(None);
+    }
     let bytes = doc.to_bytes();
-    if !changed || bytes == data {
+    if bytes == data {
         return Ok(None);
     }
     let mut out = res.clone();
@@ -475,6 +501,139 @@ mod tests {
             new.child(b"MediumDeployFactor").unwrap().attr(b"value"),
             Some(&b"0.9"[..])
         );
+    }
+
+    fn vtf_archive(path: &Path, vtfs: &[(&str, Element)]) {
+        use swofty_formats::erp::{Erp, Fragment, HEADER_LEN, MAGIC, STORED};
+        let mut header = [0u8; HEADER_LEN];
+        header[..4].copy_from_slice(MAGIC);
+        header[4..8].copy_from_slice(&3u32.to_le_bytes());
+        let resources = vtfs
+            .iter()
+            .map(|(name, root)| {
+                let data = Document {
+                    root: root.clone(),
+                    tail: Vec::new(),
+                }
+                .to_bytes();
+                Resource {
+                    name: (*name).into(),
+                    kind: swofty_formats::erp::kind("VTF").unwrap(),
+                    unk: vec![0; 4],
+                    fragments: vec![Fragment::new(*b"temp", data.len() as u64, 0x10, STORED, data)],
+                    hash: [0; 16],
+                }
+            })
+            .collect();
+        let bytes = Erp {
+            header,
+            version: 3,
+            resources,
+        }
+        .to_bytes()
+        .unwrap();
+        std::fs::write(path, bytes).unwrap();
+    }
+
+    fn settings(track: &str) -> Element {
+        el(
+            "VTF",
+            &[],
+            vec![el(
+                "EnergyRecoverySystem",
+                &[("numTrackSettingsTypes", "1")],
+                vec![el(
+                    "TrackSettings",
+                    &[("name", "0")],
+                    vec![leaf("Track", track), leaf("HarvestLimitMGUK", "7400000")],
+                )],
+            )],
+        )
+    }
+
+    #[test]
+    fn a_handling_file_no_track_setting_can_change_is_left_unread() {
+        let dir = std::env::temp_dir().join(format!("swofty-ers-unread-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(&dir).unwrap();
+        let values = BTreeMap::from([("HarvestLimitMGUK".to_owned(), serde_json::json!(9000000))]);
+        let maps = [ErsMap {
+            code: "bahrain24",
+            base: "bahrain",
+            values: &values,
+        }];
+        let packer = Packer::default();
+        let chassis = el("VTF", &[], vec![el("Chassis", &[], vec![leaf("Mass", "798")])]);
+        let src = dir.join("none.erp");
+        vtf_archive(
+            &src,
+            &[
+                ("eaid://p/teams/a/handling/a.vtf", chassis.clone()),
+                ("eaid://p/teams/b/handling/b.vtf", settings("monza")),
+            ],
+        );
+        PARSED.with(|n| n.set(0));
+        let out = dir.join("none-out.erp");
+        assert_eq!(edit_archive(&src, &maps, &out, &packer).unwrap(), 0);
+        assert!(!out.exists());
+        assert_eq!(
+            PARSED.with(|n| n.get()),
+            0,
+            "a handling file without the track's or its base's settings is parsed"
+        );
+
+        let src = dir.join("some.erp");
+        vtf_archive(
+            &src,
+            &[
+                ("eaid://p/teams/a/handling/a.vtf", chassis),
+                ("eaid://p/teams/b/handling/b.vtf", settings("bahrain")),
+            ],
+        );
+        PARSED.with(|n| n.set(0));
+        let out = dir.join("some-out.erp");
+        assert_eq!(edit_archive(&src, &maps, &out, &packer).unwrap(), 1);
+        assert_eq!(PARSED.with(|n| n.get()), 1);
+        let file = ErpFile::open(&out).unwrap();
+        let doc = Document::parse(
+            &file.load(&file.erp.resources[1]).unwrap().fragments[0]
+                .data()
+                .unwrap(),
+        )
+        .unwrap();
+        let mut root = settings("bahrain");
+        assert!(add_track(&mut root, &maps[0]).unwrap());
+        assert_eq!(doc.root, root);
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn settings_equal_to_the_handling_files_own_change_nothing() {
+        let values = BTreeMap::from([("HarvestLimitMGUK".to_owned(), serde_json::json!(7400000))]);
+        let maps = [ErsMap {
+            code: "bahrain",
+            base: "bahrain",
+            values: &values,
+        }];
+        let data = Document {
+            root: settings("bahrain"),
+            tail: Vec::new(),
+        }
+        .to_bytes();
+        let res = Resource {
+            name: "eaid://p/teams/b/handling/b.vtf".into(),
+            kind: swofty_formats::erp::kind("VTF").unwrap(),
+            unk: vec![0; 4],
+            fragments: vec![swofty_formats::erp::Fragment::new(
+                *b"temp",
+                data.len() as u64,
+                0x10,
+                swofty_formats::erp::STORED,
+                data,
+            )],
+            hash: [0; 16],
+        };
+        assert!(edit_vtf(&res, &maps, &Packer::default()).unwrap().is_none());
     }
 
     #[test]
