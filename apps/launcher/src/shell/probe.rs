@@ -135,7 +135,7 @@ impl Shell {
             .saves
             .refresh_due(self.navigation.page == Page::Careers, probe.saves_print)
         {
-            self.refresh_saves_in_background(cx);
+            crate::features::career_saves::SavesPage::refresh(self, cx);
         }
         if probe.saves_marker && self.saves.take_notice(&root) {
             self.show_saves_notice(window, cx);
@@ -226,7 +226,7 @@ impl Shell {
         if let Some(found) = found {
             let changed = self.game.take_copies(found);
             if self.navigation.page == Page::Careers && (changed || merged) {
-                self.refresh_saves_in_background(cx);
+                crate::features::career_saves::SavesPage::refresh(self, cx);
             }
             if merged {
                 self.reload(cx);

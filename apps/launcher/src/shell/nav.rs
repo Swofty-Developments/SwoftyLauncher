@@ -37,7 +37,7 @@ impl Shell {
             self.sync_shaders(true, cx);
         }
         if page == Page::Careers && was != Page::Careers {
-            self.refresh_saves_in_background(cx);
+            crate::features::career_saves::SavesPage::refresh(self, cx);
         }
         if page == Page::Moderation {
             crate::features::time_trial::TtPage::open(self, cx);
