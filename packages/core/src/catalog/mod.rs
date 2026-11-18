@@ -303,12 +303,12 @@ pub fn updates<'a>(
         .collect()
 }
 
-/// [`updates`] for the addons in `store`, leaving out the ones the launcher ships and the ones
-/// that weren't installed from the Addon Browser ([`source::Source::takes_updates`]).
+/// [`updates`] for the addons in `store`, leaving out the ones the launcher ships and the imports
+/// ([`source::takes_updates`]).
 pub fn store_updates(store: &Store, catalog: &[Addon], launcher: &semver::Version) -> Result<Vec<Update>> {
     let addons = store.addons()?;
     let installed = addons.values().filter(|m| {
-        !store.is_builtin(&m.id) && !crate::managed::is_managed(&m.id) && source::takes_updates(store, m)
+        !store.is_builtin(&m.id) && !crate::managed::is_managed(&m.id) && source::takes_updates(m)
     });
     Ok(updates(installed, catalog, launcher))
 }

@@ -240,12 +240,6 @@ impl Store {
             .join(format!("{id}.json"))
     }
 
-    /// Where an install from anywhere but the Addon Browser records what installed `id`
-    /// ([`crate::catalog::source::LocalInstall`]); an Addon Browser install or a removal deletes it.
-    pub fn local_install_path(&self, id: &str) -> PathBuf {
-        self.root.join("state/local-installs").join(format!("{id}.json"))
-    }
-
     pub fn profiles_dir(&self) -> PathBuf {
         self.root.join("profiles")
     }
@@ -682,7 +676,6 @@ impl Store {
         if matches!(from, InstallFrom::Catalog(..)) {
             crate::imported::refuse_listed(self, &m)?;
         }
-        let asked = m.id.clone();
         let id = match from {
             InstallFrom::Helper(helper) if crate::imported::made_by(helper, &m) => {
                 crate::imported::install_id(self, src, &m)?
@@ -741,41 +734,10 @@ impl Store {
             &mut |d| std::fs::remove_dir_all(d),
         )?;
         std::fs::remove_file(self.registry_install_path(&m.id)).ok();
-        self.record_source(&m.id, &asked, from);
         if fresh {
             self.add_to_install_profile(&m.id, profile);
         }
         Ok(m)
-    }
-
-    /// Records where `id`, which asked for the id `asked`, was installed from. A helper installing
-    /// it again under its own id keeps the id it first asked for.
-    fn record_source(&self, id: &str, asked: &str, from: InstallFrom) {
-        let first = || {
-            crate::catalog::source::local_install(self, id)
-                .filter(|l| matches!(from, InstallFrom::Helper(h) if l.by.as_deref() == Some(h)))
-                .and_then(|l| l.asked)
-        };
-        let local = crate::catalog::source::LocalInstall {
-            by: match from {
-                InstallFrom::Helper(helper) => Some(helper.to_owned()),
-                _ => None,
-            },
-            asked: match asked != id {
-                true => Some(asked.to_owned()),
-                false => first(),
-            },
-        };
-        match from {
-            InstallFrom::Other | InstallFrom::Helper(_) => {
-                if let Err(e) = crate::catalog::source::record_local(self, id, &local) {
-                    warn(format!("couldn't record where {id} was installed from: {e}"));
-                }
-            }
-            InstallFrom::Catalog(..) | InstallFrom::ManagedRelease => {
-                std::fs::remove_file(self.local_install_path(id)).ok();
-            }
-        }
     }
 
     /// A new addon goes into the profile it was installed from, off, rather than
@@ -876,7 +838,6 @@ impl Store {
             &mut delete,
         )?;
         std::fs::remove_file(self.registry_install_path(id)).ok();
-        std::fs::remove_file(self.local_install_path(id)).ok();
         for name in self.profile_names()? {
             let path = self.profiles_dir().join(format!("{name}.json"));
             if name == profile::VANILLA || !path.is_file() {

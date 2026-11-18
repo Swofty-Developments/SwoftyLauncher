@@ -36,7 +36,7 @@ impl Shell {
             .addons
             .iter()
             .find(|x| x.manifest.id == a.id)
-            .map(|x| (x.from, x.manifest.version.clone()));
+            .map(|x| (x.source, x.manifest.version.clone()));
         let standing = standing(
             a.offered(&current_version()),
             self.installed_version(&a.id),
@@ -214,19 +214,17 @@ impl Shell {
 }
 
 /// What the Addon Browser offers for an addon that stands at `standing`, with the copy installed under
-/// its id when there is one: an import keeps its id to itself, and the page itself updates a copy from a
-/// file or a version the player skipped, which the play bar doesn't.
+/// its id when there is one: an import keeps its id to itself, and the page itself updates a version
+/// the player skipped, which the play bar doesn't.
 pub(super) fn browser_offer(
     standing: Offer,
-    installed: Option<(catalog::source::Source, semver::Version)>,
+    installed: Option<(crate::library::Source, semver::Version)>,
     skipped: bool,
 ) -> Offer {
-    use catalog::source::Source as From;
+    use crate::library::Source;
     match (standing, installed) {
-        (_, Some((From::Made, version))) => Offer::Separate(version),
-        (Offer::Update(from, to), Some((source, _))) if skipped || !source.takes_updates() => {
-            Offer::UpdateHere(from, to)
-        }
+        (_, Some((Source::Importer, version))) => Offer::Separate(version),
+        (Offer::Update(from, to), Some(_)) if skipped => Offer::UpdateHere(from, to),
         (offer, _) => offer,
     }
 }

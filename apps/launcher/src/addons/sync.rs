@@ -1,5 +1,5 @@
 use super::FADE;
-use crate::library::{AddonItem, Changes};
+use crate::library::{AddonItem, Changes, Source};
 use crate::shell::Shell;
 use gpui_kit::*;
 use std::collections::{HashMap, HashSet};
@@ -19,32 +19,27 @@ impl Shell {
             || self.catalog_update(&m.manifest.id).is_some()
     }
 
-    /// Why the play bar leaves an import or a file copy out when an Addon Browser addon has its id,
-    /// or the id it asked for.
+    /// Why the play bar leaves an import out when an Addon Browser addon has its id, or the id the
+    /// Simplified Importer gave it ([`swofty_core::imported::asked_id`]).
     pub(super) fn kept_separate(&self, m: &AddonItem) -> Option<String> {
-        use swofty_core::catalog::source::Source as From;
+        if m.source != Source::Importer {
+            return None;
+        }
         let id = m.manifest.id.as_str();
-        let asked = m
-            .asked
-            .as_deref()
-            .and_then(|a| self.browser.find(a).map(|x| (a, x)));
-        match (m.from, self.browser.find(id), asked) {
-            (From::Made, Some(a), _) => Some(trf!(
+        if let Some(a) = self.browser.find(id) {
+            return Some(trf!(
                 "This import has the same id as {name} in the Addon Browser; it is kept separate.",
                 name = a.name
-            )),
-            (From::Local, Some(a), _) => Some(trf!(
-                "This copy came from a file and has the same id as {name} in the Addon Browser, so the play bar doesn't update it.",
-                name = a.name
-            )),
-            (From::Made, None, Some((asked, a))) => Some(trf!(
-                "This import asked for the id {asked}, which {name} in the Addon Browser has; it is kept separate as {id}.",
-                asked = asked,
-                name = a.name,
-                id = id
-            )),
-            _ => None,
+            ));
         }
+        let asked = swofty_core::imported::asked_id(&m.manifest)?;
+        let a = self.browser.find(&asked)?;
+        Some(trf!(
+            "This import asked for the id {asked}, which {name} in the Addon Browser has; it is kept separate as {id}.",
+            asked = asked,
+            name = a.name,
+            id = id
+        ))
     }
 
     pub(super) fn changed_since(&self, id: &str, built_at: f64) -> bool {

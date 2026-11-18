@@ -77,7 +77,7 @@ The error's second line holds the network error, and `state/registry.log` in the
 
 ## Updates
 
-When an addon you installed from the Addon Browser is on in your active profile and has a newer version, **Play** becomes **Update addons** with the number of updates. An import with an Addon Browser addon's id shows **Your import v1.0.0 has this id** instead of **Install**; remove the import on the **Addons** page to install that addon. Updates for addons that are off are listed here and on the Addons page without changing **Play**, unless **Update turned-off addons** is on in [Settings](/using/settings#general). See [Updating](/using/updating#addon-updates).
+When an installed addon that is on in your active profile has a newer version, **Play** becomes **Update addons** with the number of updates. This includes an addon you installed from a file. An import with an Addon Browser addon's id gets no updates and shows **Your import v1.0.0 has this id** instead of **Install**; remove the import on the **Addons** page to install that addon. Updates for addons that are off are listed here and on the Addons page without changing **Play**, unless **Update turned-off addons** is on in [Settings](/using/settings#general). See [Updating](/using/updating#addon-updates).
 
 ## Stars
 

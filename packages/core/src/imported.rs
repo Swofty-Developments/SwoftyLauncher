@@ -23,6 +23,16 @@ pub fn is_import(m: &AddonManifest) -> bool {
     m.origin.as_ref().is_some_and(|o| o.tool == crate::managed::ID)
 }
 
+/// The id the Simplified Importer gave the import `m`, `mod.<name>`, when the launcher installed it
+/// under another one ([`candidates`]). None for an addon that isn't an import or that kept its id.
+pub fn asked_id(m: &AddonManifest) -> Option<String> {
+    if !is_import(m) {
+        return None;
+    }
+    let (ns, name) = m.id.split_once('.')?;
+    (ns != IMPORTER_NAMESPACE).then(|| format!("{IMPORTER_NAMESPACE}.{name}"))
+}
+
 /// Whether the helper of the addon `helper` installing `m` is the Simplified Importer installing
 /// an addon it made.
 pub fn made_by(helper: &str, m: &AddonManifest) -> bool {
@@ -183,7 +193,7 @@ mod tests {
     use swofty_addon::launcher::AddonInfo;
 
     use super::*;
-    use crate::catalog::source::{self, Source};
+    use crate::catalog::source;
     use crate::catalog::{Addon, Version};
     use crate::registry::Host;
 
@@ -335,10 +345,9 @@ mod tests {
         assert_eq!(info.id, "imported-mod.sepang");
         assert_eq!(info.dir, store.addons_dir().join("imported-mod.sepang"));
         let m = &store.addons().unwrap()["imported-mod.sepang"];
-        assert_eq!(source::source(&store, m), Source::Made);
-        let local = source::local_install(&store, "imported-mod.sepang").unwrap();
-        assert_eq!(local.asked.as_deref(), Some("mod.sepang"));
-        assert_eq!(local.by.as_deref(), Some(crate::managed::ID));
+        assert!(is_import(m));
+        assert!(!source::takes_updates(m));
+        assert_eq!(asked_id(m).as_deref(), Some("mod.sepang"));
         assert!(
             store
                 .profile(crate::store::DEFAULT_PROFILE)
@@ -353,8 +362,7 @@ mod tests {
             assert_eq!(ids(&store), ["imported-mod.sepang"]);
             let m = &store.addons().unwrap()["imported-mod.sepang"];
             assert_eq!(m.version.to_string(), version);
-            let local = source::local_install(&store, "imported-mod.sepang").unwrap();
-            assert_eq!(local.asked.as_deref(), Some("mod.sepang"));
+            assert_eq!(asked_id(m).as_deref(), Some("mod.sepang"));
         }
         std::fs::remove_dir_all(&root).ok();
     }
@@ -376,6 +384,8 @@ mod tests {
         let src = track(&root.join("out"), "mod.sepang", "sepang", Some("Pajko"), "1.2.0");
         assert_eq!(import(&store, &src).unwrap().id, "pajko.sepang");
         assert_eq!(ids(&store), ["pajko.sepang"]);
+        let m = &store.addons().unwrap()["pajko.sepang"];
+        assert_eq!(asked_id(m).as_deref(), Some("mod.sepang"));
         let src = track(&root.join("out"), "mod.monza", "monza", Some("Swofty"), "1.0.0");
         assert_eq!(import(&store, &src).unwrap().id, "imported-mod.monza");
         std::fs::remove_dir_all(&root).ok();
@@ -397,7 +407,7 @@ mod tests {
         assert!(addons["mod.sepang"].origin.is_none());
         assert_eq!(addons["ashton.monza"].version.to_string(), "1.0.0");
 
-        // Only the Addon Browser installs take its updates, whatever the import's id or version.
+        // The imports take no Addon Browser updates, whatever their id or version.
         let catalog = [
             listed("mod.sepang", "4.4.3"),
             listed("ashton.monza", "2.0.0"),
@@ -431,14 +441,14 @@ mod tests {
         // As a launcher that kept the importer's ids installed it.
         let src = track(&root.join("out"), "mod.sepang", "sepang", Some("Pajko"), "1.0.0");
         store.install_addon(&src).unwrap();
-        std::fs::remove_file(store.local_install_path("mod.sepang")).unwrap();
         store
             .update_profile(crate::store::DEFAULT_PROFILE, |p| {
                 p.set_enabled("mod.sepang", true)
             })
             .unwrap();
         let m = &store.addons().unwrap()["mod.sepang"];
-        assert_eq!(source::source(&store, m), Source::Made);
+        assert!(is_import(m));
+        assert_eq!(asked_id(m), None);
         assert!(update_ids(&store, &[listed("mod.sepang", "4.4.3")]).is_empty());
 
         let src = track(&root.join("out"), "mod.sepang", "sepang", Some("Pajko"), "1.1.0");
@@ -463,7 +473,6 @@ mod tests {
 
         // Once the player removes the import, it installs.
         store.remove_addon("mod.sepang").unwrap();
-        assert!(!store.local_install_path("mod.sepang").exists());
         store
             .install_listed(&dir, None, "mod.sepang", &"4.4.3".parse().unwrap())
             .unwrap();
@@ -471,7 +480,7 @@ mod tests {
     }
 
     #[test]
-    fn a_file_copy_takes_no_updates_and_an_unrecorded_install_still_does() {
+    fn a_file_install_takes_updates_and_an_import_never_does() {
         let root = tmp("sources");
         let store = Store::new(root.join("data"));
         let write = |id: &str| {
@@ -487,25 +496,29 @@ mod tests {
             dir
         };
         store.install_addon(&write("t.file")).unwrap();
-        store.install_addon(&write("t.old")).unwrap();
-        std::fs::remove_file(store.local_install_path("t.old")).unwrap();
         from_registry(&store, &root, "t.listed", "1.0.0");
+        from_registry(&store, &root, "t.old", "1.0.0");
+        // As a launcher that recorded no Addon Browser installs left it.
+        std::fs::remove_file(store.registry_install_path("t.old")).unwrap();
+        let src = track(&root.join("out"), "mod.sepang", "sepang", None, "1.0.0");
+        assert_eq!(import(&store, &src).unwrap().id, "imported-mod.sepang");
+        let src = track(&root.join("legacy"), "t.import", "monza", None, "1.0.0");
+        store.install_addon(&src).unwrap();
         let addons = store.addons().unwrap();
-        assert_eq!(source::source(&store, &addons["t.file"]), Source::Local);
-        assert_eq!(source::source(&store, &addons["t.old"]), Source::Unrecorded);
-        assert_eq!(source::source(&store, &addons["t.listed"]), Source::Registry);
+        for id in ["t.file", "t.listed", "t.old"] {
+            assert!(source::takes_updates(&addons[id]), "{id}");
+        }
+        for id in ["imported-mod.sepang", "t.import"] {
+            assert!(!source::takes_updates(&addons[id]), "{id}");
+        }
         let catalog = [
             listed("t.file", "2.0.0"),
-            listed("t.old", "2.0.0"),
             listed("t.listed", "2.0.0"),
+            listed("t.old", "2.0.0"),
+            listed("imported-mod.sepang", "2.0.0"),
+            listed("t.import", "2.0.0"),
         ];
-        assert_eq!(update_ids(&store, &catalog), ["t.listed", "t.old"]);
-
-        // Installing from the Addon Browser makes a file copy an Addon Browser install.
-        from_registry(&store, &root, "t.file", "2.0.0");
-        assert!(!store.local_install_path("t.file").exists());
-        let addons = store.addons().unwrap();
-        assert_eq!(source::source(&store, &addons["t.file"]), Source::Registry);
+        assert_eq!(update_ids(&store, &catalog), ["t.file", "t.listed", "t.old"]);
         std::fs::remove_dir_all(&root).ok();
     }
 

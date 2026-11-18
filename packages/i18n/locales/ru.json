@@ -1350,7 +1350,6 @@
   "Your import v{version} has this id": "Ваш импорт v{version} использует этот id",
   "Your import has this id": "Ваш импорт использует этот id",
   "This import has the same id as {name} in the Addon Browser; it is kept separate.": "У этого импорта тот же id, что и у {name} в каталоге аддонов; он хранится отдельно.",
-  "This copy came from a file and has the same id as {name} in the Addon Browser, so the play bar doesn't update it.": "Эта копия установлена из файла, и у неё тот же id, что и у {name} в каталоге аддонов, поэтому панель запуска её не обновляет.",
   "This import asked for the id {asked}, which {name} in the Addon Browser has; it is kept separate as {id}.": "Этот импорт запросил id {asked}, который есть у {name} в каталоге аддонов; он хранится отдельно как {id}.",
   "{v} is available. You skipped it in the play bar; update it from its Addon Browser page.": "Доступна версия {v}. Вы пропустили её на панели запуска; обновите её на её странице в каталоге аддонов.",
   "Kept separate": "Хранится отдельно"

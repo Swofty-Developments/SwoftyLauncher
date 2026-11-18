@@ -1440,7 +1440,6 @@
   "Your import v{version} has this id": "Dein Import v{version} hat diese ID",
   "Your import has this id": "Dein Import hat diese ID",
   "This import has the same id as {name} in the Addon Browser; it is kept separate.": "Dieser Import hat dieselbe ID wie {name} im Addon-Browser; er wird getrennt gehalten.",
-  "This copy came from a file and has the same id as {name} in the Addon Browser, so the play bar doesn't update it.": "Diese Kopie stammt aus einer Datei und hat dieselbe ID wie {name} im Addon-Browser, daher aktualisiert die Spielleiste sie nicht.",
   "This import asked for the id {asked}, which {name} in the Addon Browser has; it is kept separate as {id}.": "Dieser Import wollte die ID {asked}, die {name} im Addon-Browser hat; er wird getrennt als {id} gehalten.",
   "{v} is available. You skipped it in the play bar; update it from its Addon Browser page.": "{v} ist verfügbar. Du hast diese Version in der Spielleiste übersprungen; aktualisiere sie auf ihrer Seite im Addon-Browser.",
   "Kept separate": "Getrennt gehalten"

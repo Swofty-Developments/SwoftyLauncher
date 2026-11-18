@@ -1440,7 +1440,6 @@
   "Your import v{version} has this id": "가져온 v{version}이(가) 이 ID를 사용합니다",
   "Your import has this id": "가져온 애드온이 이 ID를 사용합니다",
   "This import has the same id as {name} in the Addon Browser; it is kept separate.": "이 가져온 애드온은 Addon Browser의 {name}와(과) ID가 같습니다. 별도로 유지됩니다.",
-  "This copy came from a file and has the same id as {name} in the Addon Browser, so the play bar doesn't update it.": "이 사본은 파일에서 설치되었고 Addon Browser의 {name}와(과) ID가 같아서 플레이 바에서 업데이트하지 않습니다.",
   "This import asked for the id {asked}, which {name} in the Addon Browser has; it is kept separate as {id}.": "이 가져온 애드온은 Addon Browser의 {name}이(가) 사용하는 ID {asked}을(를) 요청했습니다. {id}(으)로 별도 유지됩니다.",
   "{v} is available. You skipped it in the play bar; update it from its Addon Browser page.": "{v}을(를) 사용할 수 있습니다. 플레이 바에서 건너뛰었으니 Addon Browser 페이지에서 업데이트하세요.",
   "Kept separate": "별도로 유지됨"

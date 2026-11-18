@@ -294,7 +294,7 @@ impl Shell {
             .library
             .addons
             .iter()
-            .filter(|a| a.source != Source::Builtin && a.from.takes_updates())
+            .filter(|a| !matches!(a.source, Source::Builtin | Source::Importer))
             .map(|a| &a.manifest);
         self.browser.updates = catalog::updates(installed, &self.browser.addons, &current_version());
     }

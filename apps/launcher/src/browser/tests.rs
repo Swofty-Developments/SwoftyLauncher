@@ -192,8 +192,6 @@ fn installed(manifest: &str, enabled: bool) -> AddonItem {
         track: false,
         package: false,
         source: Source::Installed,
-        from: swofty_core::catalog::source::Source::Registry,
-        asked: None,
         left_out: Vec::new(),
     }
 }
@@ -296,7 +294,7 @@ fn a_skipped_version_gives_play_back_until_the_next_one() {
 }
 
 #[test]
-fn an_import_or_a_skipped_version_is_updated_from_the_addon_browser_page() {
+fn an_import_is_kept_separate_and_a_skipped_version_is_updated_from_the_addon_browser_page() {
     use super::model::Offer;
     use super::offer::{browser_offer, standing};
     let listed = listed_addon(serde_json::json!([
@@ -310,25 +308,21 @@ fn an_import_or_a_skipped_version_is_updated_from_the_addon_browser_page() {
             || false,
         )
     };
-    use swofty_core::catalog::source::Source as From;
+    use crate::library::Source;
     assert_eq!(
-        browser_offer(standing(), Some((From::Registry, v("1.0.0"))), false),
+        browser_offer(standing(), Some((Source::Installed, v("1.0.0"))), false),
         Offer::Update(v("1.0.0"), v("1.1.0"))
     );
     assert_eq!(
-        browser_offer(standing(), Some((From::Unrecorded, v("1.0.0"))), false),
+        browser_offer(standing(), Some((Source::Installed, v("1.0.0"))), true),
+        Offer::UpdateHere(v("1.0.0"), v("1.1.0"))
+    );
+    assert_eq!(
+        browser_offer(standing(), Some((Source::DbEditor, v("1.0.0"))), false),
         Offer::Update(v("1.0.0"), v("1.1.0"))
     );
     assert_eq!(
-        browser_offer(standing(), Some((From::Registry, v("1.0.0"))), true),
-        Offer::UpdateHere(v("1.0.0"), v("1.1.0"))
-    );
-    assert_eq!(
-        browser_offer(standing(), Some((From::Local, v("1.0.0"))), false),
-        Offer::UpdateHere(v("1.0.0"), v("1.1.0"))
-    );
-    assert_eq!(
-        browser_offer(standing(), Some((From::Made, v("1.0.0"))), false),
+        browser_offer(standing(), Some((Source::Importer, v("1.0.0"))), false),
         Offer::Separate(v("1.0.0"))
     );
     assert_eq!(browser_offer(Offer::Install, None, false), Offer::Install);
