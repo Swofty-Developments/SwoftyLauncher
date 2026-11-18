@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/1453784c0.c;xref:0x14018a550,0x1401a5b10",
-  "notes": "CRT memcpy/memmove (dst, src, size) with size switch + AVX block copy. 448+ direct callers (scene manager, cutscenes, vectors)."
+  "notes": "MSVC x64 CRT memcpy, which is also memmove: (dst, src, size) with size an unsigned size_t, returning dst on every path. Sizes 0..15 go through the jump table 0x145d2cdf0 and 16..32 through two overlapping 16-byte moves; above 32, a dst inside (src, src+size) takes the SSE backward copy 0x145378a50. Forward copies use a 256-byte AVX loop when __isa_available >= 3 (0x145378611), with non-temporal stores and sfence above 0x180000 bytes, else a 128-byte SSE2 loop, and rep movsb (0x1453784b0) when __favor has the ERMSB bit (over 0x2000 up to 0x180000 on the AVX path, over 0x800 on the SSE2 path). 22084 direct calls (21147 in .xtls, 937 in .data1) from 7683 functions, plus 98 jumps (70 of them .data1 nop+jmp thunks); the load config's GuardMemcpyFunctionPointer (0x146e68030) points at it. Callers include the scene manager, cutscenes and vectors."
  },
  "signature": {
   "id": "core.crt_memcpy",
