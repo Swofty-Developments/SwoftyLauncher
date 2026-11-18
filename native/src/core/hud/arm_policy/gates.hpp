@@ -3,7 +3,7 @@
 
 #include <string_view>
 
-namespace hud::guard {
+namespace hud::arm_policy {
 
 enum class Gate { Direct, FrameGenNamed, FrameGenStreamline };
 

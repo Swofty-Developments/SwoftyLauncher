@@ -423,6 +423,18 @@ jobs:
       - name: Template data files
         run: python3 tools/std/templates.py --no-build
 
+  # The binding generator, capture and verifier tests use only the standard library. A job of their own reports
+  # them apart from the native build and tests.
+  re-tools:
+    name: RE tools unit tests
+    needs: changes
+    if: needs.changes.outputs.native == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - run: python3 -m unittest discover -s re/tools/tests
+
   # On a 32-core EC2 runner one job runs every native test. On 4-core hosted runners two jobs split them, one
   # for the host tests and one for the Wine tests, each with its own CPUs. Both build the loader themselves:
   # sharing one build through an artifact would start the Wine job's own setup only after the other job's
@@ -486,11 +498,6 @@ jobs:
             } 2>&1 | while IFS= read -r line; do printf '%(%T)T %s\n' -1 "$line"; done > "$RUNNER_TEMP/wine-install.log"
             echo "${PIPESTATUS[0]}" > "$RUNNER_TEMP/wine-install.status"
           ) &
-
-      # The binding generator, capture and verifier tests use only the standard library.
-      - name: RE tools unit tests
-        if: matrix.part != 'wine'
-        run: python3 -m unittest discover -s re/tools/tests
 
       # The native tests run side by side, and the stock xvfb-run -a can give two calls started together the
       # same display. This one takes the next display number from a counter under a lock.
@@ -656,7 +663,7 @@ jobs:
       # Once the tests have run, the objects this run did not use leave the cache, so it holds one build of the
       # tree and does not grow.
       - name: Ccache use
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.ccache.outcome == 'success' }}
         env:
           TESTS: ${{ steps.native-tests.outcome }}
         run: |

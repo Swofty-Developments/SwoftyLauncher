@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace hud {
+namespace hud::drawlist {
 
 // ----- state stacks -----------------------------------------------------------------------------
 

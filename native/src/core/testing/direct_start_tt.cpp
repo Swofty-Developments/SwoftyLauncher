@@ -460,7 +460,7 @@ Setup place(uint8_t *e, const json::Value &request, std::string &why)
             return Setup::failed;
         }
         const char *file = c_name(at<const char *>(rec, TRACK_NAME));
-        bool written = ui_vm_set_path(TRACK_NODE, 0, file);
+        bool written = frontend::ui_vm_set_path(TRACK_NODE, 0, file);
         uint8_t *now = ptr<CurrentTrack_t>(game().current_track)(e);
         const char *reads = now && swofty::mem::readable(now, TRACK_NAME + 8) ? c_name(at<const char *>(now, TRACK_NAME)) : nullptr;
         swofty::log("[direct] Time Trial: track %s (%p): the VM node %s, the getter reads %s", file, rec,
@@ -477,7 +477,7 @@ Setup place(uint8_t *e, const json::Value &request, std::string &why)
             why = "the Time Trial has no weather '" + weather + "' (clear or wet)";
             return Setup::failed;
         }
-        bool ok = ui_vm_set_path(WEATHER_NODE, 0, value);
+        bool ok = frontend::ui_vm_set_path(WEATHER_NODE, 0, value);
         swofty::log("[direct] Time Trial: weather %s %s", value, ok ? "set" : "NOT set (the VM node is missing)");
     }
     return Setup::done;

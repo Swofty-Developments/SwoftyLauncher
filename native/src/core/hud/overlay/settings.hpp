@@ -63,7 +63,7 @@ private:
 struct FgWatch {
     hud::hardware_settings::Poll poll;
     FILETIME at{};
-    hud::guard::FgSetting setting;
+    hud::arm_policy::FgSetting setting;
     bool tripped = false, told = false;
 
     bool frame_gen_off(ULONGLONG now);

@@ -15,6 +15,8 @@
 #include "core/frontend/pause_edge.hpp"
 #include "core/frontend/view_flow_logic.hpp"
 
+namespace frontend::view {
+
 namespace {
 
 using frontend::view_flow::G_CUTSCENE;
@@ -287,8 +289,6 @@ void ViewState::setup()
 }
 
 }
-
-namespace frontend::view {
 
 State current()
 {

@@ -147,7 +147,7 @@ void Input::hook_window(HWND wnd)
                 static_cast<void *>(wnd), reinterpret_cast<void *>(prev));
 }
 
-void Input::frame(const std::vector<hud::Paintsub> &subs, float fb_w, float fb_h, ULONGLONG now)
+void Input::frame(const std::vector<hud::drawlist::Paintsub> &subs, float fb_w, float fb_h, ULONGLONG now)
 {
     uint32_t cs = client_size.load(std::memory_order_relaxed);
     float sx = 1, sy = 1, cw = float(cs & 0xffff), ch = float(cs >> 16);
@@ -189,20 +189,20 @@ void Input::frame(const std::vector<hud::Paintsub> &subs, float fb_w, float fb_h
     }
 }
 
-void Input::draw_cursor(hud::Frame &f)
+void Input::draw_cursor(hud::drawlist::Frame &f)
 {
     if (!frame_focus.held() || frame_snap.x < 0)
         return;
-    hud::reset_state(f);
-    float s = std::max(0.75f, hud::ui_scale(f)), x = frame_snap.x, y = frame_snap.y;
+    hud::drawlist::reset_state(f);
+    float s = std::max(0.75f, hud::drawlist::ui_scale(f)), x = frame_snap.x, y = frame_snap.y;
     const float m[6] = {s, 0, 0, s, x, y};
-    hud::push_transform(f, m);
+    hud::drawlist::push_transform(f, m);
     const float tip[] = {0, 0, 0, 17, 12.5f, 12.5f};
     const float tail[] = {3.2f, 13.5f, 6.4f, 12.2f, 10.2f, 20.5f, 7.0f, 21.8f};
-    hud::polygon(f, tail, 4, 0xffffffffu);
-    hud::polygon(f, tip, 3, 0xffffffffu);
-    hud::polyline(f, tip, 3, 1.2f, 0x000000ffu, SWOFTY_POLYLINE_CLOSED);
-    hud::pop_transform(f);
+    hud::drawlist::polygon(f, tail, 4, 0xffffffffu);
+    hud::drawlist::polygon(f, tip, 3, 0xffffffffu);
+    hud::drawlist::polyline(f, tip, 3, 1.2f, 0x000000ffu, SWOFTY_POLYLINE_CLOSED);
+    hud::drawlist::pop_transform(f);
 }
 
 void Input::view(const std::string &owner, SwoftyInput &full)

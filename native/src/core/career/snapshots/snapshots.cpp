@@ -1,4 +1,5 @@
 #include "core/career/snapshots/snapshots.hpp"
+#include "core/career/snapshots/bag.hpp"
 #include "core/career/snapshots/book_cache.hpp"
 #include "core/career/snapshots/clock.hpp"
 

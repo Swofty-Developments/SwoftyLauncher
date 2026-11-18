@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace hud {
+namespace hud::drawlist {
 
 // ----- v2 shapes --------------------------------------------------------------------------------
 

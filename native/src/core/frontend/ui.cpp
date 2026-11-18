@@ -229,9 +229,13 @@ namespace runtime {
 void when_code_ready(const char *what, void (*fn)());
 }
 
+namespace frontend::ui {
+
 namespace {
 
-void ui_load() { frontend::ui::loader.load(); }
+void ui_load() { loader.load(); }
+
+}
 
 }
 
@@ -239,5 +243,5 @@ SWOFTY_CORE_RANK(ui)
 
 SWOFTY_ON_LOAD
 {
-    runtime::when_code_ready("ui: screen hooks", ui_load);
+    runtime::when_code_ready("ui: screen hooks", frontend::ui::ui_load);
 }

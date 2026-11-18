@@ -29,19 +29,19 @@ uint32_t with_alpha(uint32_t rgba, float k)
     return (rgba & 0xffffff00u) | a;
 }
 
-hud::TextStyle style(float px, uint32_t rgba, float tracking = 0)
+hud::drawlist::TextStyle style(float px, uint32_t rgba, float tracking = 0)
 {
-    hud::TextStyle s;
+    hud::drawlist::TextStyle s;
     s.px = px;
     s.rgba = rgba;
     s.tracking = px * tracking;
     return s;
 }
 
-float text_width(const hud::TextStyle &st, const std::string &t)
+float text_width(const hud::drawlist::TextStyle &st, const std::string &t)
 {
     float w = 0, h = 0;
-    hud::measure(st, t, &w, &h);
+    hud::drawlist::measure(st, t, &w, &h);
     return w;
 }
 
@@ -52,10 +52,10 @@ public:
     void set_subtitle(const char *text);
     bool setup();
     bool active() { return armed.load(); }
-    void paint(hud::Frame &f, uint64_t now);
+    void paint(hud::drawlist::Frame &f, uint64_t now);
 
 private:
-    void draw(hud::Frame &f, uint64_t now, float alpha);
+    void draw(hud::drawlist::Frame &f, uint64_t now, float alpha);
 
     std::mutex lock;
     Cover cover;
@@ -69,58 +69,58 @@ private:
 
 constinit CoverScreen screen;
 
-void CoverScreen::draw(hud::Frame &f, uint64_t now, float alpha)
+void CoverScreen::draw(hud::drawlist::Frame &f, uint64_t now, float alpha)
 {
-    hud::reset_state(f);
+    hud::drawlist::reset_state(f);
     f.opacity = alpha;
     float W = f.width, H = f.height, u = H / 1080.0f, cx = W * 0.5f;
-    hud::rect_gradient(f, 0, 0, W, H, 0, BG_TOP, BG_BOTTOM, 0);
+    hud::drawlist::rect_gradient(f, 0, 0, W, H, 0, BG_TOP, BG_BOTTOM, 0);
 
-    hud::TextStyle word = style(112 * u, TEXT, 0.16f);
+    hud::drawlist::TextStyle word = style(112 * u, TEXT, 0.16f);
     std::string name = "SWOFTY";
     float ww = text_width(word, name);
     float wy = H * 0.30f;
-    hud::text(f, cx - ww * 0.5f + word.tracking * 0.5f, wy, word, name);
+    hud::drawlist::text(f, cx - ww * 0.5f + word.tracking * 0.5f, wy, word, name);
 
-    hud::TextStyle tag = style(26 * u, ACCENT_HI, 0.62f);
+    hud::drawlist::TextStyle tag = style(26 * u, ACCENT_HI, 0.62f);
     std::string tagline = "LAUNCHER";
     float tw = text_width(tag, tagline);
     float ty = wy + 112 * u * 1.25f;
-    hud::text(f, cx - tw * 0.5f + tag.tracking * 0.5f, ty, tag, tagline);
+    hud::drawlist::text(f, cx - tw * 0.5f + tag.tracking * 0.5f, ty, tag, tagline);
     float rule = 64 * u, ry = ty + 13 * u;
-    hud::rect_rounded(f, cx - tw * 0.5f - 24 * u - rule, ry, rule, 2 * u, u, with_alpha(ACCENT, 0.55f));
-    hud::rect_rounded(f, cx + tw * 0.5f + 24 * u, ry, rule, 2 * u, u, with_alpha(ACCENT, 0.55f));
+    hud::drawlist::rect_rounded(f, cx - tw * 0.5f - 24 * u - rule, ry, rule, 2 * u, u, with_alpha(ACCENT, 0.55f));
+    hud::drawlist::rect_rounded(f, cx + tw * 0.5f + 24 * u, ry, rule, 2 * u, u, with_alpha(ACCENT, 0.55f));
 
-    hud::TextStyle sub = style(34 * u, MUTED, 0.04f);
+    hud::drawlist::TextStyle sub = style(34 * u, MUTED, 0.04f);
     float sw = text_width(sub, subtitle);
     float sy = H * 0.55f;
-    hud::text(f, cx - sw * 0.5f, sy, sub, subtitle);
+    hud::drawlist::text(f, cx - sw * 0.5f, sy, sub, subtitle);
 
     float bw = std::min(W * 0.34f, 720 * u * 1.6f), bh = 8 * u, bx = cx - bw * 0.5f, by = H * 0.67f;
     float shown = progress.shown(now);
     int pct = progress.percent(now);
 
-    hud::TextStyle status = style(24 * u, MUTED);
-    hud::TextStyle pctst = style(24 * u, TEXT, 0.04f);
+    hud::drawlist::TextStyle status = style(24 * u, MUTED);
+    hud::drawlist::TextStyle pctst = style(24 * u, TEXT, 0.04f);
     std::string pt = std::to_string(pct) + "%";
     float ly = by - 24 * u - 34 * u;
-    hud::text(f, bx, ly, status, progress.label());
+    hud::drawlist::text(f, bx, ly, status, progress.label());
     float pw = text_width(pctst, pt);
-    hud::text(f, bx + bw - pw, ly, pctst, pt);
+    hud::drawlist::text(f, bx + bw - pw, ly, pctst, pt);
 
-    hud::rect_rounded(f, bx, by, bw, bh, bh * 0.5f, TRACK);
+    hud::drawlist::rect_rounded(f, bx, by, bw, bh, bh * 0.5f, TRACK);
     float fw = std::max(bh, bw * shown);
-    hud::rect_gradient(f, bx, by, fw, bh, bh * 0.5f, ACCENT, ACCENT_HI, SWOFTY_GRADIENT_HORIZONTAL);
+    hud::drawlist::rect_gradient(f, bx, by, fw, bh, bh * 0.5f, ACCENT, ACCENT_HI, SWOFTY_GRADIENT_HORIZONTAL);
     float sweep = std::fmod(float(now % 1800) / 1800.0f, 1.0f);
     float sx = bx + (fw + 90 * u) * sweep - 90 * u, sl = std::max(sx, bx), sr = std::min(sx + 90 * u, bx + fw);
     if (!progress.completed() && sr - sl > bh)
-        hud::rect_rounded(f, sl, by, sr - sl, bh, bh * 0.5f, with_alpha(0xffffffffu, 0.22f));
-    hud::rect_rounded(f, bx + fw - bh, by - 2 * u, bh, bh + 4 * u, (bh + 4 * u) * 0.5f, with_alpha(ACCENT_HI, 0.35f));
+        hud::drawlist::rect_rounded(f, sl, by, sr - sl, bh, bh * 0.5f, with_alpha(0xffffffffu, 0.22f));
+    hud::drawlist::rect_rounded(f, bx + fw - bh, by - 2 * u, bh, bh + 4 * u, (bh + 4 * u) * 0.5f, with_alpha(ACCENT_HI, 0.35f));
 
-    hud::TextStyle foot = style(20 * u, FAINT, 0.04f);
+    hud::drawlist::TextStyle foot = style(20 * u, FAINT, 0.04f);
     std::string note = "This only takes a moment";
     float nw = text_width(foot, note);
-    hud::text(f, cx - nw * 0.5f, by + 40 * u, foot, note);
+    hud::drawlist::text(f, cx - nw * 0.5f, by + 40 * u, foot, note);
 }
 
 
@@ -174,7 +174,7 @@ bool CoverScreen::setup()
     return true;
 }
 
-void CoverScreen::paint(hud::Frame &f, uint64_t now)
+void CoverScreen::paint(hud::drawlist::Frame &f, uint64_t now)
 {
     if (!armed.load())
         return;
@@ -234,7 +234,7 @@ bool active()
     return screen.active();
 }
 
-void paint(hud::Frame &f, uint64_t now)
+void paint(hud::drawlist::Frame &f, uint64_t now)
 {
     screen.paint(f, now);
 }

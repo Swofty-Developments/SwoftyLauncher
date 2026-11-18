@@ -41,7 +41,7 @@ std::string pick(const char *a, const wchar_t *w)
     return s.empty() && w ? name_w(w) : s;
 }
 
-template <typename Node> std::string breadcrumbs(const Node *head)
+template <typename Node> std::string breadcrumbs(const Node *head, BuildStops &stops)
 {
     std::vector<const Node *> unfinished, finished;
     unsigned total = 0;
@@ -68,14 +68,8 @@ template <typename Node> std::string breadcrumbs(const Node *head)
             s += node_header(shown++, pick(n->pCommandListDebugNameA, n->pCommandListDebugNameW).c_str(),
                              pick(n->pCommandQueueDebugNameA, n->pCommandQueueDebugNameW).c_str(), count, done,
                              reinterpret_cast<uint64_t>(n->pCommandList));
-            if (list == &unfinished && n->pCommandHistory && readable(n->pCommandHistory, count * sizeof(uint32_t))) {
-                BuildStop st = build_stop(n->pCommandHistory, count, done, reinterpret_cast<uint64_t>(n->pCommandList));
-                bool seen = false;
-                for (const BuildStop &o : stops)
-                    seen = seen || (o.list == st.list && o.nth == st.nth && o.of == st.of);
-                if (st.nth && !seen)
-                    stops.push_back(st);
-            }
+            if (list == &unfinished && n->pCommandHistory && readable(n->pCommandHistory, count * sizeof(uint32_t)))
+                stops.add(build_stop(n->pCommandHistory, count, done, reinterpret_cast<uint64_t>(n->pCommandList)));
             Window w = op_window(count, done);
             if (w.from)
                 s += "      ... " + std::to_string(w.from) + " earlier op(s) not shown\n";
@@ -133,7 +127,7 @@ uint64_t object_of(const D3D12_DRED_ALLOCATION_NODE1 *a)
 
 }
 
-std::string removed_device(ID3D12Device *dev, HRESULT reason)
+std::string removed_device(ID3D12Device *dev, HRESULT reason, BuildStops &stops)
 {
     char b[200];
     std::snprintf(b, sizeof b, "  device %p: GetDeviceRemovedReason 0x%08lx (%s)\n", static_cast<void *>(dev), (unsigned long)reason,
@@ -145,7 +139,7 @@ std::string removed_device(ID3D12Device *dev, HRESULT reason)
         D3D12_DRED_PAGE_FAULT_OUTPUT1 pf{};
         HRESULT ha = d1->GetAutoBreadcrumbsOutput1(&ab), hp = d1->GetPageFaultAllocationOutput1(&pf);
         if (SUCCEEDED(ha)) {
-            s += breadcrumbs(ab.pHeadAutoBreadcrumbNode);
+            s += breadcrumbs(ab.pHeadAutoBreadcrumbNode, stops);
             s += contexts(ab.pHeadAutoBreadcrumbNode);
         } else {
             std::snprintf(b, sizeof b, "\n  auto-breadcrumbs: unavailable (0x%08lx; DRED was not on for this device)\n", (unsigned long)ha);
@@ -167,7 +161,7 @@ std::string removed_device(ID3D12Device *dev, HRESULT reason)
         D3D12_DRED_AUTO_BREADCRUMBS_OUTPUT ab{};
         D3D12_DRED_PAGE_FAULT_OUTPUT pf{};
         if (SUCCEEDED(d0->GetAutoBreadcrumbsOutput(&ab)))
-            s += breadcrumbs(ab.pHeadAutoBreadcrumbNode);
+            s += breadcrumbs(ab.pHeadAutoBreadcrumbNode, stops);
         if (SUCCEEDED(d0->GetPageFaultAllocationOutput(&pf))) {
             s += "\n" + page_fault_line(pf.PageFaultVA);
             s += allocations("existing allocations", pf.pHeadExistingAllocationNode, no_object);
