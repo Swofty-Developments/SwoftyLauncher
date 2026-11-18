@@ -140,6 +140,7 @@ src/core/diagnostics/load_stall.cpp
 src/core/guards/cars/tyre_slots.cpp
 src/core/diagnostics/tyre_models.cpp
 src/core/career/hub_tab.cpp
+src/core/career/hub_rnd.cpp
 src/core/registry/schema.cpp
 src/core/hooks/hooks.cpp
 src/core/hooks/core_events.cpp
