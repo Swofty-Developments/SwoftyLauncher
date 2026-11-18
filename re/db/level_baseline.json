@@ -3409,7 +3409,6 @@
   "func:Sess_SortAssignGarages_Thunk": "V4040",
   "func:Sess_SortEntrantsByGarageOrder": "V3462",
   "func:Sess_SpectatorDirector_SetActive": "V3821",
-  "func:Sess_SpectatorHud_Hide": "V2671",
   "func:Sess_SpectatorHud_Show": "V2673",
   "func:Sess_SpeedLimitPenalty_ReceiveData": "V1936",
   "func:Sess_SpeedLimitPenalty_SendData": "V1937",
