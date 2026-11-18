@@ -24,8 +24,9 @@ python3 content/check_logo_build.py content/bc7 "$OUT/logo_out"
 "$OUT/wear_test" ../../packages/sdk/std/registries
 python3 content/check_lowering.py "$OUT/lower_tool"
 python3 content/check_wide_default.py "$OUT/lower_tool"
-GAMEDB="/mnt/gaming/SteamLibrary/steamapps/common/F1 25/game_package/gamedatabases/gamedatabases.2025.bin"
-if [[ -f $GAMEDB ]]; then
+# The steps on the game database read a stock copy (content/stock_gamedb.py), never the game folder's.
+if GAMEDB=$(python3 content/stock_gamedb.py 2>"$OUT/stock_gamedb.why"); then
+    echo "game database steps on $GAMEDB"
     "$OUT/rows_tool" --registries ../../packages/sdk/std/registries --db "$GAMEDB" --out "$OUT/f2012_edits.json" --summary "$OUT/f2012_summary.json" \
         swofty.f2012 content/wear/f2012.json
     "$OUT/rows_tool" --registries ../../packages/sdk/std/registries --db "$GAMEDB" --out "$OUT/drs_edits.json" --summary "$OUT/drs_summary.json" \
@@ -59,4 +60,6 @@ assert any("11 teams, its world holds 10 garages: season swofty_box_cs_f1_2016" 
            "layer swofty_box_cs_f1_2016_world (f1_26, 11 garages" in l for l in lines), lines
 print("box worlds on the game database: an 11-team swofty_f1 box gets its own season and f1_26 layer")
 EOF
+else
+    echo "game database steps skipped: $(cat "$OUT/stock_gamedb.why")"
 fi
