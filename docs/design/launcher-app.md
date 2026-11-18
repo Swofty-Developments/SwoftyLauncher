@@ -134,6 +134,7 @@ These states run on the pattern:
 | `Db` | draft autosave, "Also changed by", game database, module views, search, unnamed keys | `features/db/state.rs` | `Autosave` |
 | `AddonsPage` | the conflict check | `features/addons/conflicts.rs` | `Conflicts` |
 | `Multiplayer` (the Online page) | game status, room list, addon digest, avatars, opening and joining a room | `features/multiplayer/state.rs` | `Lobby`, `starting` |
+| `Online` (the time trial boards) | overview, seasons, boards, profiles, rankings, avatars and art, adding a lap's replay to the game | `features/online/mod.rs` | `Online` |
 
 A page's toasts go into a `toasts` list on its state, and `shell/render.rs` shows them. A state reports what other features follow through its `Change`: the browser reports `Installed`, and the shell reads the library again, and `TurnOn`, and the shell adds the "Turn on" action to the notice.
 
@@ -158,7 +159,7 @@ assert_eq!(tt.barred_in(&library.read()).len(), 1);
 | The probe tick | `shell/probe.rs` | Hands its result to the game, shader, database and notice states. |
 | DB Editor save, import and export | `features/db/save/`, `features/db/import.rs` | File pickers, the Save / Discard dialog and the window for notices. An import that installs an addon turns it on, reads the library again and shows it on Addons. |
 | Window flows | `dialogs/data_move.rs`, `dialogs/found_data.rs`, `dialogs/setup.rs`, `dialogs/send_logs.rs`, `features/onboarding/` | A dialog open in the window. |
-| Background work not yet on a host | `features/update.rs`, `features/online/` (the boards), `features/news/`, `features/career_saves/`, `features/sections/`, `features/settings/usage.rs`, `features/tools.rs`, `features/importer.rs`, `features/ads/` | Each is a candidate for the pattern. |
+| Background work not yet on a host | `features/update.rs`, `features/news/`, `features/career_saves/`, `features/sections/`, `features/settings/usage.rs`, `features/tools.rs`, `features/importer.rs`, `features/ads/` | Each is a candidate for the pattern. |
 | The shaders page | `features/shaders/` | Its own entity, `ShadersView`. |
 
 ## When to use an entity instead

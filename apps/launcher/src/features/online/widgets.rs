@@ -169,9 +169,9 @@ impl Shell {
     ) -> AnyElement {
         let set = move |this: &mut Self, next: Category, cx: &mut Context<Self>| {
             if local {
-                this.online_set_board_category(next, cx);
+                Online::set_board_category(this, next, cx);
             } else {
-                this.online_set_category(next, cx);
+                Online::set_category(this, next, cx);
             }
         };
         let handle = cx.entity().downgrade();
@@ -254,7 +254,7 @@ impl Shell {
 
     pub(super) fn board_or_global(&self, local: bool) -> Category {
         if local {
-            self.board_category()
+            self.online.board_category()
         } else {
             self.online.category
         }
@@ -404,7 +404,7 @@ impl Shell {
                     .tap_sm()
                     .icon(IconName::ChevronLeft)
                     .disabled(self.online.trail.depth() <= 1)
-                    .on_click(cx.listener(|this, _, _, cx| this.online_back(cx))),
+                    .on_click(cx.listener(|this, _, _, cx| Online::back(this, cx))),
             )
             .child(
                 div()
@@ -418,7 +418,7 @@ impl Shell {
                     })
                     .hover(move |s| s.text_color(p.text))
                     .child(tr("Time Trial"))
-                    .on_click(cx.listener(|this, _, _, cx| this.online_jump(1, cx))),
+                    .on_click(cx.listener(|this, _, _, cx| Online::jump(this, 1, cx))),
             )
             .children(crumbs.into_iter().enumerate().flat_map(|(i, (depth, label))| {
                 let current = i + 1 == last;
@@ -438,7 +438,7 @@ impl Shell {
                         })
                         .hover(move |s| s.text_color(p.text))
                         .child(label)
-                        .on_click(cx.listener(move |this, _, _, cx| this.online_jump(depth, cx)))
+                        .on_click(cx.listener(move |this, _, _, cx| Online::jump(this, depth, cx)))
                         .into_any_element(),
                 ]
             }))
@@ -449,7 +449,7 @@ impl Shell {
                     .tap_sm()
                     .icon(IconName::RefreshCw)
                     .label(tr("Refresh"))
-                    .on_click(cx.listener(|this, _, _, cx| this.online_reload(cx))),
+                    .on_click(cx.listener(|this, _, _, cx| Online::reload(this, cx))),
             )
             .into_any_element()
     }
@@ -515,7 +515,7 @@ impl Shell {
                     .tap_sm()
                     .icon(IconName::RefreshCw)
                     .label(tr("Try again"))
-                    .on_click(cx.listener(|this, _, _, cx| this.online_reload(cx))),
+                    .on_click(cx.listener(|this, _, _, cx| Online::reload(this, cx))),
             )
             .into_any_element()
     }
@@ -536,7 +536,7 @@ impl Shell {
                     .outline()
                     .tap_sm()
                     .label(tr("Show all laps"))
-                    .on_click(cx.listener(|this, _, _, cx| this.online_set_category(Category::default(), cx))),
+                    .on_click(cx.listener(|this, _, _, cx| Online::set_category(this, Category::default(), cx))),
             )
             .into_any_element()
     }

@@ -1,6 +1,6 @@
 use super::model::*;
 use super::widgets::*;
-use super::{Load, Target};
+use super::{Load, Online, Target};
 use crate::shell::Shell;
 use crate::ui::format::{iso_date, lap_time};
 use crate::ui::scale::px;
@@ -249,7 +249,7 @@ impl Shell {
                 SHOW_SETUPS
                     .then(|| self.setup_button(&format!("best-{idx}"), &b.lap_id, b.setup.is_some(), cx)),
             )
-            .on_click(cx.listener(move |this, _, _, cx| this.online_go(target.clone(), cx)))
+            .on_click(cx.listener(move |this, _, _, cx| Online::go(this, target.clone(), cx)))
             .into_any_element()
     }
 }

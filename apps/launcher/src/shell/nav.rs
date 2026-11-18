@@ -31,7 +31,7 @@ impl Shell {
         let was = self.navigation.page;
         self.navigation.page = page;
         if page == Page::Online {
-            self.online_enter(cx);
+            crate::features::online::Online::enter(self, cx);
         }
         if page == Page::Shaders {
             self.sync_shaders(true, cx);
