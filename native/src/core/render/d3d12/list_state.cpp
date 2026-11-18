@@ -10,7 +10,7 @@
 #include <mutex>
 #include <vector>
 
-namespace d3d12hooks {
+namespace render::d3d12 {
 
 namespace {
 

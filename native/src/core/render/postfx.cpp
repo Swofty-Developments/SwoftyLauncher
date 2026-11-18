@@ -35,7 +35,7 @@
 //
 // In the game's lists the core records its passes before the game's barrier and then puts back the
 // pipeline, descriptor heaps, compute bindings and graphics descriptor tables it changed
-// (d3d12hooks::list_state). The passes copy the back buffer, run as DXIL compute shaders
+// (render::d3d12::list_state). The passes copy the back buffer, run as DXIL compute shaders
 // (swofty/postfx.hlsli) through a slot's own textures, and copy the result back; with frame generation
 // on, the result goes into the game's HUD-less copy too. Each slot has its own fence and working
 // textures, so frames the GPU runs at once on different queues never share them; every texture rests
@@ -57,12 +57,12 @@ bool hook_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_
     return pipeline.placement.on_barrier(list, n, barriers);
 }
 
-void hook_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, d3d12hooks::ExecPlan &plan)
+void hook_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, render::d3d12::ExecPlan &plan)
 {
     pipeline.placement.on_exec(q, n, lists, plan);
 }
 
-void hook_present(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *caller)
+void hook_present(IDXGISwapChain3 *sc, const render::d3d12::Swapchain *known, void *caller)
 {
     pipeline.on_present(sc, known, caller);
 }
@@ -197,13 +197,13 @@ void Pipeline::stat_line(ULONGLONG now)
 
 // The frame generation module that presents frames of its own on a swapchain (postfx::presents_own_frames): the
 // one its creation named, or for a swapchain the core does not know, the module that calls Present.
-std::string Pipeline::own_frames_by(const d3d12hooks::Swapchain *known, void *caller)
+std::string Pipeline::own_frames_by(const render::d3d12::Swapchain *known, void *caller)
 {
     if (known)
         return postfx::presents_own_frames(known->fg) ? known->fg : std::string();
     if (caller != own_frames_caller) {
         own_frames_caller = caller;
-        own_frames_module = d3d12hooks::module_of(caller);
+        own_frames_module = render::d3d12::module_of(caller);
         if (!postfx::presents_own_frames(own_frames_module))
             own_frames_module.clear();
     }
@@ -215,7 +215,7 @@ std::string Pipeline::own_frames_by(const d3d12hooks::Swapchain *known, void *ca
 // frame, so the picture never goes without them. A frame generation swapchain shows a buffer of its own that it
 // copied the game's back buffer into: the passes run on that copy while it holds the waiting picture
 // (postfx::shown_is_waiting).
-void Pipeline::present_fallback(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known)
+void Pipeline::present_fallback(IDXGISwapChain3 *sc, const render::d3d12::Swapchain *known)
 {
     ListPlacement::BackUse *waiting = placement.waiting_back();
     if (!waiting || !known || !known->queue || killed_now() || config.passes.empty())
@@ -261,7 +261,7 @@ void Pipeline::present_fallback(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain
 // Present closes the frame (its trace line and counts) and runs the toggle keys and the live settings. While
 // frame generation presents frames of its own, a Present is not one of the game's frames: it only runs the
 // toggle keys and the live settings, and the game's own frames close the frame where their lists are submitted.
-void Pipeline::on_present(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *caller)
+void Pipeline::on_present(IDXGISwapChain3 *sc, const render::d3d12::Swapchain *known, void *caller)
 {
     static const uint32_t probe = perf::probe("core", "postfx Present");
     perf::Scope p(probe);
@@ -374,24 +374,24 @@ void Pipeline::setup()
     if (GetEnvironmentVariableA("SWOFTY_POSTFX_ORDER", v, sizeof v) && v[0])
         placement.order_left = unsigned(std::strtoul(v, nullptr, 10));
     config.refresh_live();
-    d3d12hooks::on_setname(hook_setname);
-    d3d12hooks::on_barrier(hook_barrier);
-    d3d12hooks::on_exec(hook_exec);
-    d3d12hooks::on_present(hook_present);
-    d3d12hooks::on_reset(hook_reset);
-    d3d12hooks::on_render_targets(hook_render_targets);
-    d3d12hooks::on_create_rtv(hook_create_rtv);
-    d3d12hooks::ProbeScope probe;
-    bool hooked = d3d12hooks::arm_device();
+    render::d3d12::on_setname(hook_setname);
+    render::d3d12::on_barrier(hook_barrier);
+    render::d3d12::on_exec(hook_exec);
+    render::d3d12::on_present(hook_present);
+    render::d3d12::on_reset(hook_reset);
+    render::d3d12::on_render_targets(hook_render_targets);
+    render::d3d12::on_create_rtv(hook_create_rtv);
+    render::d3d12::ProbeScope probe;
+    bool hooked = render::d3d12::arm_device();
     if (!hooked) {
         swofty::log("[postfx] the core's D3D12 device hooks did not arm; post-processing is off");
         return;
     }
     device_armed = true;
-    placement.state_armed = d3d12hooks::arm_list_state();
+    placement.state_armed = render::d3d12::arm_list_state();
     if (!placement.state_armed)
         swofty::log("[postfx] the command list state hooks did not arm; passes run only between the game's lists");
-    if (!d3d12hooks::arm_swapchain())
+    if (!render::d3d12::arm_swapchain())
         swofty::log("[postfx] the swapchain hooks did not arm; toggle keys, live settings and traces are off");
     swofty::log("[postfx] %zu pass(es) and %zu texture(s) wait for the game's picture%s%s", config.passes.size(),
                 config.textures.size(), capture.dir().empty() ? "" : "; captures go to ", capture.dir().c_str());

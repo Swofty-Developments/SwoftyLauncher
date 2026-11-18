@@ -72,7 +72,7 @@ public:
     void on_render_targets(ID3D12GraphicsCommandList *list, UINT n, const D3D12_CPU_DESCRIPTOR_HANDLE *rtvs, BOOL);
     bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers);
     void on_reset(ID3D12GraphicsCommandList *list);
-    void on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, d3d12hooks::ExecPlan &plan);
+    void on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, render::d3d12::ExecPlan &plan);
 
     void drop_depths(ID3D12Resource *keep, ID3D12Resource *renamed = nullptr);
     BackUse &back_use(ID3D12Resource *b);

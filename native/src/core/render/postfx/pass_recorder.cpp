@@ -233,8 +233,8 @@ bool PassRecorder::record(const Where &w, int k)
         pipeline.report.trace.why = postfx::idle_text(pipeline.report.trace.tried);
         return false;
     }
-    d3d12hooks::ListState saved;
-    if (w.game && !d3d12hooks::list_state(w.list, saved)) {
+    render::d3d12::ListState saved;
+    if (w.game && !render::d3d12::list_state(w.list, saved)) {
         pipeline.report.stats.unknown_state++;
         pipeline.report.trace.tried = postfx::IDLE_LIST_STATE;
         pipeline.report.trace.why = postfx::idle_text(pipeline.report.trace.tried);
@@ -436,7 +436,7 @@ bool PassRecorder::record(const Where &w, int k)
     }
     transition(l, cur, D3D12_RESOURCE_STATE_COPY_SOURCE, HOME);
     if (w.game)
-        d3d12hooks::restore_list_state(l, saved);
+        render::d3d12::restore_list_state(l, saved);
 
     s.pending = true;
     s.armed_at = now;
@@ -483,7 +483,7 @@ bool PassRecorder::run_between(ID3D12CommandQueue *q, ID3D12Resource *back, D3D1
         return false;
     read_frequency(q);
     ID3D12CommandList *one[] = {s.list};
-    d3d12hooks::exec_original(q, 1u, one);
+    render::d3d12::exec_original(q, 1u, one);
     q->Signal(s.fence, ++s.fence_value);
     s.pending = false;
     pipeline.capture.signalled(k, s.fence_value);

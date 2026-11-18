@@ -11,7 +11,7 @@
 #include <string>
 #include <unordered_set>
 
-namespace d3d12hooks {
+namespace render::d3d12 {
 
 namespace {
 
@@ -227,7 +227,7 @@ namespace runtime {
 
 void srv_clamp_setup()
 {
-    d3d12hooks::arm_srv_clamp();
+    render::d3d12::arm_srv_clamp();
 }
 
 }

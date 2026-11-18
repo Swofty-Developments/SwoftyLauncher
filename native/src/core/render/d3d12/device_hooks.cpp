@@ -9,7 +9,7 @@
 
 #include <algorithm>
 
-namespace d3d12hooks {
+namespace render::d3d12 {
 
 constinit QueueWatch queue_watch;
 

@@ -12,7 +12,7 @@
 #include <mutex>
 #include <vector>
 
-namespace d3d12hooks {
+namespace render::d3d12 {
 
 namespace {
 
@@ -394,7 +394,7 @@ namespace runtime {
 
 void rtas_guard_setup()
 {
-    d3d12hooks::arm_rtas_guard();
+    render::d3d12::arm_rtas_guard();
 }
 
 }

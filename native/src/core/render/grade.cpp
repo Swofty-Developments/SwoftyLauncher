@@ -336,7 +336,7 @@ bool Grader::on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RES
                 D3D12_RESOURCE_BARRIER step = b;
                 step.Transition.StateBefore = state;
                 step.Transition.StateAfter = to;
-                d3d12hooks::barrier_original(list, 1u, &step);
+                render::d3d12::barrier_original(list, 1u, &step);
                 state = to;
             };
             if (reading) {
@@ -361,7 +361,7 @@ bool Grader::on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RES
     }
     if (changed.empty())
         return false;
-    d3d12hooks::barrier_original(list, n, changed.data());
+    render::d3d12::barrier_original(list, n, changed.data());
     return true;
 }
 
@@ -384,11 +384,11 @@ void Grader::setup()
     strength = st.type == json::Value::Num ? std::clamp(float(st.n), 0.0f, 1.0f) : 1.0f;
     addon = s["addon"].str("an addon");
     settings_path = hud::hardware_settings::path();
-    d3d12hooks::on_setname([](ID3D12Object *o, LPCWSTR name) { grader.on_setname(o, name); });
-    d3d12hooks::on_barrier([](ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers) {
+    render::d3d12::on_setname([](ID3D12Object *o, LPCWSTR name) { grader.on_setname(o, name); });
+    render::d3d12::on_barrier([](ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers) {
         return grader.on_barrier(list, n, barriers);
     });
-    bool hooked = d3d12hooks::arm_device();
+    bool hooked = render::d3d12::arm_device();
     if (!hooked)
         swofty::log("[shaders] the core's D3D12 device hooks did not arm; the game's colours stay");
     if (hooked)

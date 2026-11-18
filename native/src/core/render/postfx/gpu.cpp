@@ -70,7 +70,7 @@ void transition(ID3D12GraphicsCommandList *list, ID3D12Resource *r, D3D12_RESOUR
     b.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
     b.Transition.StateBefore = from;
     b.Transition.StateAfter = to;
-    d3d12hooks::barrier_original(list, 1u, &b);
+    render::d3d12::barrier_original(list, 1u, &b);
 }
 
 void transition_level(ID3D12GraphicsCommandList *list, ID3D12Resource *r, UINT level, D3D12_RESOURCE_STATES from,
@@ -82,7 +82,7 @@ void transition_level(ID3D12GraphicsCommandList *list, ID3D12Resource *r, UINT l
     b.Transition.Subresource = level;
     b.Transition.StateBefore = from;
     b.Transition.StateAfter = to;
-    d3d12hooks::barrier_original(list, 1u, &b);
+    render::d3d12::barrier_original(list, 1u, &b);
 }
 
 ID3D12Resource *GpuContext::buffer(D3D12_HEAP_TYPE type, UINT64 size, D3D12_RESOURCE_STATES state) const
