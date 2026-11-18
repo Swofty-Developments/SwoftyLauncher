@@ -16,6 +16,9 @@
                                   fail the record rules stay (named ones are an error unless --skip-unfit)
   binding.py ci --files FILES.json --head DIR --author LOGIN --out RESULT.json
                                   the pull request check (.github/workflows/bindings.yml)
+  binding.py port --exe NEW.exe [--json OUT]
+                                  maintainer: what a game update leaves off in the core (bindings by hint and by scan,
+                                  layout proofs and live groups with no evidence for it) and the step for each
 """
 import argparse, datetime, hashlib, json, os, sys
 
@@ -730,6 +733,79 @@ def cmd_ci(a):
     return 1 if result['verdict'] == 'fail' else 0
 
 
+def port_overlay(stamp):
+    import bindgen
+    for name, overlay in bindgen.load_overlays(kb.load_signatures()['build'])[1].items():
+        if overlay['build']['pe_timestamp'] == stamp:
+            return name
+    return None
+
+
+def port_report(path):
+    import bindverify, buildport
+    img = bindverify.Image(path)
+    overlay = port_overlay(img.stamp)
+    doc = bindverify.gen_set(overlay or bindverify.kb_name())
+    res = bindverify.Resolver(img, doc, None if img.flat else os.path.getsize(path))
+    results = res.run()
+    resolved = {r['id'] for r in results if r['result'] == 'resolved'}
+    _, known = buildport.known_builds()
+    build = buildport.identify(known, img.stamp, img.size)
+    kb_rva = {b['id']: b['rva'] for b in bindverify.gen_set(bindverify.kb_name())['bindings']}
+    unresolved = [{'id': r['id'], 'result': r['result'], 'reason': r['reason'], 'kb_rva': kb_rva.get(r['id'])}
+                  for r in results if r['result'] not in ('resolved', 'unresolvable')]
+    out = {'exe': {'path': path, 'pe_timestamp': img.stamp, 'size_of_image': img.size, 'flat': img.flat},
+           'overlay': overlay, 'set': doc['build'].get('distribution'), 'hints_used': res.kb_first and res.same_build,
+           'coverage': bindverify.coverage(results), 'unresolved': unresolved}
+    out.update(buildport.layout_report(build, lambda n: n in resolved))
+    target = overlay or '<new build>'
+    out['bindings_do'] = (f'for each: python3 re/tools/sigport.py --port {path} --build {target} NAME=<KB RVA> prints '
+                          f'the target on this exe; record it as a hint or override in re/db/builds/{target}.json'
+                          if overlay else
+                          'make re/db/builds/<name>.json for this exe first (build: sha256, size, pe_timestamp, '
+                          'distribution, packed; sections: the KB section names to this exe\'s), so the core picks '
+                          'its own set and uses hints; then bind the rest with sigport.py --port')
+    return out
+
+
+def print_port(r):
+    e, c = r['exe'], r['coverage']
+    print(f'binding.py port: {e["path"]} (PE timestamp {e["pe_timestamp"]}, SizeOfImage 0x{e["size_of_image"]:x}'
+          f'{", a flat dump" if e["flat"] else ""})')
+    print(f'  overlay: {"re/db/builds/" + r["overlay"] + ".json" if r["overlay"] else "none"}; the core uses the '
+          f'{r["set"]} set, hints {"used" if r["hints_used"] else "not used"}')
+    print(f'  build_proof.hpp: {r["build"] or "not in KNOWN, so no layout proof holds"}')
+    if r.get('first'):
+        print(f'    do first: {r["first"]}')
+    print(f'bindings: {c["total"]}: by hint {c["hint"]}, by scan {c["scan"]}, by string anchor {c["anchor"]}, '
+          f'unresolved {c["unresolved"]}, deferred {c["deferred"]}, unresolvable {c["unresolvable"]}')
+    for u in r['unresolved']:
+        print(f'  {u["id"]:48s} {u["result"]:10s} KB {u["kb_rva"] or "-":>10s}  {u["reason"]}')
+    if r['unresolved']:
+        print(f'    do: {r["bindings_do"]}')
+    print(f'layout proofs with no evidence for this build: {len(r["proofs"])}')
+    for p in r['proofs']:
+        print(f'  {p["proof"]} ({p["where"]}): {p["what"]}; proven on {", ".join(p["proven_on"]) or "no build"}')
+        print(f'    off: {"; ".join(p["off"])}')
+        print(f'    do: {p["do"]}')
+    if r['unused']:
+        print(f'  ({", ".join(r["unused"])} gates nothing)')
+    print(f'live groups off on this build: {len(r["live"])}')
+    for g in r['live']:
+        print(f'  {g["group"]}: {"; ".join(g["why"])} ({g["needs"]})')
+        for d in g['do']:
+            print(f'    do: {d}')
+
+
+def cmd_port(a):
+    r = port_report(a.exe)
+    if a.json:
+        with open(a.json, 'w') as f:
+            json.dump(r, f, indent=1)
+            f.write('\n')
+    print_port(r)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sp = ap.add_subparsers(dest='cmd', required=True, metavar='command')
@@ -803,9 +879,18 @@ def main(argv=None):
     p.add_argument('--head', required=True, help='a folder with the pull request\'s copies of its record files')
     p.add_argument('--author', required=True, help='the pull request author\'s login')
     p.add_argument('--out', required=True, help='where to write the result JSON')
+    p = sp.add_parser('port', help='maintainer: what a game update leaves off in the core, and what to do for each',
+                      description='Resolves the bindings set the core would pick on the exe with the core\'s rules '
+                                  '(the build\'s overlay with its hints, or bindings.json by scan), then reads the '
+                                  'layout proofs (native/src/core/runtime/build_proof.hpp and every Proof the core '
+                                  'declares) and the live state groups (native/src/core/live/live_rows.hpp) and lists '
+                                  'each one that has no evidence for this build, the features it turns off and the '
+                                  'step that brings it back. Static: nothing runs the game.')
+    p.add_argument('--exe', required=True, help='the new F1_25.exe, or a flat image dump of it')
+    p.add_argument('--json', metavar='OUT', help='also write the report as JSON')
     a = ap.parse_args(argv)
     return {'new': cmd_new, 'doctor': cmd_doctor, 'verify': cmd_verify, 'agree': cmd_agree, 'check': cmd_check,
-            'status': cmd_status, 'unfold': cmd_unfold, 'ci': cmd_ci}[a.cmd](a) or 0
+            'status': cmd_status, 'unfold': cmd_unfold, 'ci': cmd_ci, 'port': cmd_port}[a.cmd](a) or 0
 
 
 if __name__ == '__main__':
