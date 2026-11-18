@@ -1,5 +1,6 @@
 #pragma once
 #include "core/guards/garage/garage_crew_logic.hpp"
+#include "core/guards/skips.hpp"
 
 #include <cstdint>
 
@@ -21,23 +22,18 @@ inline uint64_t cars(uint64_t bytes)
     return bytes / CAR_BYTES;
 }
 
+// The teams the guard has logged in the current session: each of the session's first SEEN_TEAMS distinct teams once.
 struct Seen {
     uint64_t session = 0;
-    uint32_t teams[SEEN_TEAMS] = {};
-    size_t used = 0;
+    swofty_core::guards::FirstKeys<uint32_t, SEEN_TEAMS> teams;
 
     bool first(uint64_t now, uint32_t team)
     {
         if (now != session) {
             session = now;
-            used = 0;
+            teams.clear();
         }
-        for (size_t i = 0; i < used; i++)
-            if (teams[i] == team)
-                return false;
-        if (used < SEEN_TEAMS)
-            teams[used++] = team;
-        return true;
+        return bool(teams.note(team));
     }
 };
 
