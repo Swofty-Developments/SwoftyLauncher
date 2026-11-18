@@ -274,7 +274,7 @@ fn an_ea_career_batch_runs_in_the_ea_title_folder_and_checks_the_prefix_save_fol
 #[test]
 fn a_capture_from_a_copy_of_an_ea_save_folder_is_an_ea_fixture() {
     let root = temp("capture-ea-from");
-    let store = Store::new(&root.join("data"));
+    let store = Store::new(root.join("data"));
     let copy = root.join("backup/savegame");
     std::fs::create_dir_all(copy.join("ea/profile")).unwrap();
     std::fs::create_dir_all(copy.join("ea/highlights000")).unwrap();
