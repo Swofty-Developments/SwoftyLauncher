@@ -5,6 +5,8 @@
 
 #include <d3d12.h>
 
+#include <cstdint>
+
 #include <safetyhook.hpp>
 
 namespace d3d12hooks {
@@ -17,5 +19,8 @@ bool install(safetyhook::InlineHook &h, void *target, void *detour, const char *
 
 // A device to read vtables from: the one a ProbeScope holds, or a new one.
 ID3D12Device *probe_device();
+
+// The frames the game has presented so far, counted by the present hook.
+uint64_t frames_presented();
 
 }

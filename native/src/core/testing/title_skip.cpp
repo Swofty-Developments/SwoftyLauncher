@@ -13,9 +13,10 @@
 
 namespace {
 
-// StateIntro's onStateUpdate (FeFlow_StateIntro_OnUpdate 0x1436da4d0, slot 9 of vt_Sess_Intro 0x14585bff0) waits until the title's sync point (state+0xcd0, sync_points.boot;
-// Vm_SyncPoint_IsComplete 0x1442626c0) has both bool nodes true: the request node +0x80 and the UI's node
-// +0xa0, which the title's UI sets on a button. Then it sends its own request (kind 0x2e), which loads the
+// StateIntro's onStateUpdate (FeFlow_StateIntro_OnUpdate 0x1436da4d0, slot 9 of vt_Sess_Intro 0x14585bff0,
+// L1) waits until the title's sync point (state+0xcd0, sync_points.boot; Vm_SyncPoint_IsComplete 0x1442626c0, a
+// protector thunk, found through the update's own call) has both bool nodes true: the request node +0x80 and the
+// UI's node +0xa0, which the title's UI sets on a button. Then it sends its own request (kind 0x2e), which loads the
 // profile and whose callback (FeFlow_StateIntro_OnEngaged) sets +0xef4, and the next update returns the
 // front-end link. The core sets the two nodes with Vm_NodeSet_Bool (0x140973e20, (node, &value, 0, 0) as the
 // sync point's own writes do) once the title's view exists ([[state+0xc88]+0x140]+0x198), so the game's own
@@ -26,7 +27,8 @@ namespace {
 // point is found from the update's call to it: its thunk's filler differs per build.
 const runtime::Sig SIG_INTRO_UPDATE{"fe_flow.state_intro_on_update", "41 57 41 56 56 57 53 48 83 EC 70 48 89 D6 48 89 CF 48 8B 89 F8 0B 00 00", 0x36da4d0};
 const runtime::Sig SIG_NODE_SET_BOOL{"vm.node_set_bool", "41 56 56 57 55 53 48 81 EC 20 03 00 00 F6 41 26 01 0F 85 ?? ?? ?? ?? 44 89 CB 44 89 C7 49 89 D6 48 89 CE 48 8B 49 58 48 8B 01 FF 50 38 84 DB 75 0E 0F B6 08", 0x973e20};
-const runtime::Sig SIG_SYNC_COMPLETE{"vm.sync_point_is_complete", "48 8D 8F D0 0C 00 00 E8 ?? ?? ?? ?? 84 C0", 0x42626c0, runtime::Sig::rel32, 7, 8, 5};
+const runtime::Sig SIG_SYNC_COMPLETE{"vm.sync_point_is_complete", "48 8D 8F D0 0C 00 00 E8 ?? ?? ?? ?? 84 C0", 0x42626c0,
+                                     runtime::Sig::rel32, 7, 8, 5};
 const runtime::Sig SIG_INTRO_VT{"session.intro", "48 8D 05 ?? ?? ?? ?? 48 89 01 48 81 C1 E0 0D 00 00", 0x585bff0, runtime::Sig::riprel, 0, 3, 7};
 const runtime::Sig SIG_BOOL_TYPE{"vm.bool_type_desc", "48 8D 0D ?? ?? ?? ?? FF 50 10 39 C3 75 17 48 8B 07", 0x6129dc0, runtime::Sig::riprel, 0, 3, 7};
 const runtime::Sig SIG_EMPTY_NODE{"vm.empty_node_handle", "0F 85 ?? ?? ?? ?? 48 8B 1D ?? ?? ?? ?? C5 F8 57 C0 C5 F8 29 44 24 30 48 C7 44 24 40 00 00 00 00 48 8D 15 ?? ?? ?? ?? 4C 8D 05", 0x6ca0e90, runtime::Sig::riprel, 39, 42, 7};
@@ -116,10 +118,10 @@ constexpr size_t PM_PRIMARY = 0x198, PM_LEAD = 0x1b0, PM_CANDIDATE = 0x1d0, PM_S
 
 namespace bp = runtime::build_proof;
 
-constexpr bp::Proof SIGNIN_STATE{"the player manager's sign-in state at +0x1f0", bp::bit(bp::Build::kb)};
+// Written on every build the title helper runs on.
+constexpr bp::Proof SIGNIN_STATE{"the player manager's sign-in state at +0x1f0", bp::proofs::VERIFIED_LAYOUT.builds};
 constexpr bp::Gate SIGNIN_WRITE{"SWOFTY_DIRECT_SIGNIN", &SIGNIN_STATE};
-constexpr bp::Proof STATE_INTRO{"StateIntro's state layout (+0xcd0, +0xef3, +0xef4)",
-                                bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145)};
+constexpr bp::Proof STATE_INTRO{"StateIntro's state layout (+0xcd0, +0xef3, +0xef4)", bp::proofs::VERIFIED_LAYOUT.builds};
 constexpr bp::Gate TITLE_HELPER{"the title helper", &STATE_INTRO};
 
 uint8_t *player_manager(uint8_t *state)
@@ -223,7 +225,7 @@ void title_setup()
     ga.bool_type = runtime::find(SIG_BOOL_TYPE, "title", "title");
     ga.empty_node = runtime::find(SIG_EMPTY_NODE, "title", "title");
     if (!runtime::proven(TITLE_HELPER)) {
-        title_why = "StateIntro's state layout (+0xcd0, +0xef3, +0xef4) was checked on the KB build and Steam 1.0.145 only";
+        title_why = "StateIntro's state layout (+0xcd0, +0xef3, +0xef4) is not verified on this build";
         return;
     }
     if (!ga.intro_update || !ga.intro_vt || !ga.node_set_bool || !ga.sync_complete || !ga.bool_type || !ga.empty_node) {

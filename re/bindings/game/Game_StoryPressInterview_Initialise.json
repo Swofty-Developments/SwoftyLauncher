@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141056fb0.c;xref:0x1456b9350,0x14104ef27",
-  "notes": "Story mode press interview initialise (vt slot 0x1456b9350, also called from 0x14104ef27): DriverPlacement, PressInterviewDriver, Driver1, reporter_storymode_lighting, storymode_mtp_bg01_25, lanyard, las_vegas variant; CutSceneParams embedded at +0x2a0 (flags +0x47e/+0x480/+0x481). Addon: skip story press interviews. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3165)"
+  "notes": "Story mode press interview initialise (vt slot 0x1456b9350, also called from 0x14104ef27): DriverPlacement, PressInterviewDriver, Driver1, reporter_storymode_lighting, storymode_mtp_bg01_25, lanyard, las_vegas variant; CutSceneParams embedded at +0x2a0 (flags +0x47e/+0x480/+0x481). Addon: skip story press interviews. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3165)  | 2026-11-17 engine-re round A2: hard-coded track: same las_vegas night test as Game_Podium2019CutSceneScript_Starting (0x141057a89): bool 0x23 = 0 for the press interview scene. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested)"
  },
  "signature": {
   "id": "game.story_press_interview_initialise",

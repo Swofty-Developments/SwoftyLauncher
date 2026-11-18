@@ -556,13 +556,18 @@ pub struct Diff {
     pub get_back: Vec<Brief>,
     /// In the save now, not in the version.
     pub lose: Vec<Brief>,
+    /// In the save now and listed in the version as missing or deleted: restoring it does not bring them back.
+    pub marked_missing: Vec<Brief>,
     /// In both, with further progress now than in the version: `(now, in the version)`.
     pub progress: Vec<(Brief, Brief)>,
 }
 
 impl Diff {
     pub fn is_empty(&self) -> bool {
-        self.get_back.is_empty() && self.lose.is_empty() && self.progress.is_empty()
+        self.get_back.is_empty()
+            && self.lose.is_empty()
+            && self.marked_missing.is_empty()
+            && self.progress.is_empty()
     }
 }
 
@@ -583,12 +588,45 @@ pub fn diff(now: &[Career], version: &[Career]) -> Diff {
             Some(_) => {}
         }
     }
+    let flagged: BTreeSet<&str> = marked_missing(version)
+        .iter()
+        .map(|c| c.career.as_str())
+        .collect();
     for (id, c) in &have {
         if !then.contains_key(id) {
             out.lose.push(brief(c));
+            if flagged.contains(id) {
+                out.marked_missing.push(brief(c));
+            }
         }
     }
     out
+}
+
+/// The careers with a save slot that an index lists as missing or deleted.
+pub fn marked_missing(index: &[Career]) -> Vec<&Career> {
+    index
+        .iter()
+        .filter(|c| matches!(c.status(), "missing" | "deleted"))
+        .filter(|c| {
+            c.extra
+                .get("slot")
+                .and_then(|v| v.as_str())
+                .is_some_and(|s| !s.is_empty())
+        })
+        .collect()
+}
+
+/// `marked_missing` as the restore panel lists them.
+pub fn missing_briefs(index: &[Career]) -> Vec<Brief> {
+    marked_missing(index).into_iter().map(brief).collect()
+}
+
+/// The career an index holds in the save that was played last.
+pub fn newest(index: &[Career]) -> Option<Brief> {
+    in_save(index)
+        .max_by_key(|c| number(c, "last_played").or(number(c, "last_saved").map(|ms| ms / 1000)))
+        .map(brief)
 }
 
 #[cfg(test)]
@@ -728,5 +766,48 @@ mod tests {
         let dropped = t.observe("s2", 2, &table(&[other.to_owned()]));
         assert_eq!(dropped, [("mt-1-a".to_owned(), "s1".to_owned())]);
         assert!(t.find("mt-1-a").unwrap().status.is_missing());
+    }
+
+    #[test]
+    fn diff_reports_the_careers_a_version_lists_as_missing() {
+        let now = parse(
+            r#"{"careers":[
+            {"career":"a","slot":"a","status":"present"},
+            {"career":"b","slot":"b","status":"present"},
+            {"career":"c","slot":"c","status":"present"}]}"#,
+        );
+        let version = parse(
+            r#"{"careers":[
+            {"career":"a","slot":"a","status":"present"},
+            {"career":"b","slot":"b","status":"missing"},
+            {"career":"c","slot":"c","status":"deleted"}]}"#,
+        );
+        let d = diff(&now, &version);
+        let ids = |l: &[Brief]| l.iter().map(|b| b.career.clone()).collect::<Vec<_>>();
+        assert_eq!(ids(&d.lose), ["b", "c"]);
+        assert_eq!(ids(&d.marked_missing), ["b", "c"]);
+        assert!(!d.is_empty());
+    }
+
+    #[test]
+    fn a_career_absent_from_the_version_is_lost_but_not_marked_missing() {
+        let now = parse(r#"{"careers":[{"career":"a","slot":"a","status":"present"}]}"#);
+        let d = diff(&now, &[]);
+        assert_eq!(d.lose.len(), 1);
+        assert!(d.marked_missing.is_empty());
+    }
+
+    #[test]
+    fn marked_missing_ignores_records_without_a_slot() {
+        let idx = index();
+        let found = marked_missing(&idx);
+        let ids: Vec<_> = found.iter().map(|c| c.career.as_str()).collect();
+        assert_eq!(ids, ["driver_career:b2", "my_team:c3"]);
+    }
+
+    #[test]
+    fn newest_is_the_last_played_career_in_the_save() {
+        assert_eq!(newest(&index()).unwrap().career, "driver_career:e5");
+        assert!(newest(&[]).is_none());
     }
 }

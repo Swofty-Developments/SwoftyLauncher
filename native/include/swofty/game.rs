@@ -11855,11 +11855,6 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
-    pub const Game_PitLane_VehicleExiting: Binding = Binding {
-        id: "Game_PitLane_VehicleExiting",
-        kind: "func",
-        status: Status::Experimental,
-    };
     pub const Game_PitStopActionObserver_SetTransitionSequence: Binding = Binding {
         id: "Game_PitStopActionObserver_SetTransitionSequence",
         kind: "func",
@@ -12202,6 +12197,11 @@ pub mod bindings {
     };
     pub const Game_Read_GridConfig: Binding = Binding {
         id: "Game_Read_GridConfig",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Read_PhysicsWorldConfig: Binding = Binding {
+        id: "Game_Read_PhysicsWorldConfig",
         kind: "func",
         status: Status::Experimental,
     };
@@ -13037,11 +13037,6 @@ pub mod bindings {
     };
     pub const Game_TrackSpace_LapDistance: Binding = Binding {
         id: "Game_TrackSpace_LapDistance",
-        kind: "func",
-        status: Status::Experimental,
-    };
-    pub const Game_TrackSpace_LoadXml: Binding = Binding {
-        id: "Game_TrackSpace_LoadXml",
         kind: "func",
         status: Status::Experimental,
     };
@@ -15205,18 +15200,8 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
-    pub const Ne_MoverCollision_BuildMoverShapes: Binding = Binding {
-        id: "Ne_MoverCollision_BuildMoverShapes",
-        kind: "func",
-        status: Status::Experimental,
-    };
     pub const Ne_MoverCollision_BuildQueryContext: Binding = Binding {
         id: "Ne_MoverCollision_BuildQueryContext",
-        kind: "func",
-        status: Status::Experimental,
-    };
-    pub const Ne_MoverCollision_CreateResource: Binding = Binding {
-        id: "Ne_MoverCollision_CreateResource",
         kind: "func",
         status: Status::Experimental,
     };
@@ -17465,6 +17450,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Render_Draw_ComputeInstanceLodScale: Binding = Binding {
+        id: "Render_Draw_ComputeInstanceLodScale",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Render_Gfx2Buffer_Construct: Binding = Binding {
         id: "Render_Gfx2Buffer_Construct",
         kind: "func",
@@ -17492,6 +17482,11 @@ pub mod bindings {
     };
     pub const Render_LightListResource_Create: Binding = Binding {
         id: "Render_LightListResource_Create",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_Material_CountResourceSlots: Binding = Binding {
+        id: "Render_Material_CountResourceSlots",
         kind: "func",
         status: Status::Experimental,
     };

@@ -33,6 +33,7 @@ mod tabs;
 mod topbar;
 pub(crate) mod ui_mode;
 
+pub(crate) use launch_alerts::offline_terms;
 pub use page::{Page, PlayState};
 pub(crate) use prompt::Prompt;
 pub(crate) use seen::Seen;

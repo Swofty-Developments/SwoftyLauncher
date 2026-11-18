@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/1444537a0.c;xref:0x145a8f4e0",
-  "notes": "MoverCollision resource factory (vtable slot 0x145a8f4e0, next to string 'MoverCollision'): container must be JPAK (entries 0x20, count +8, table +0x20) or legacy BIGF (entries 0x18, trace 'very large alignment for a loaded bigfile'); creates one collision object per entry (0x1440caa60). For object version >0x20003, entry names NOT starting with 'qt_' or 'qt.' that contain 'sign' (case-insensitive) get collision type byte +0x164 = 0x18 (24) and a material from +0xe8->+0x30->+0x1080; this is why 'qtsign.vcqtc' is a sign-collision tile. Track modding: tile naming rules for the TRN~ JPAK."
+  "notes": "MoverCollision resource factory (vtable slot 0x145a8f4e0, next to string 'MoverCollision'): container must be JPAK (entries 0x20, count +8, table +0x20) or legacy BIGF (entries 0x18, trace 'very large alignment for a loaded bigfile'); creates one collision object per entry (0x1440caa60). For object version >0x20003, entry names NOT starting with 'qt_' or 'qt.' that contain 'sign' (case-insensitive) get collision type byte +0x164 = 0x18 (24) and a material from +0xe8->+0x30->+0x1080; this is why 'qtsign.vcqtc' is a sign-collision tile. Track modding: tile naming rules for the TRN~ JPAK. | 2026-11-17 engine-re (track runtime round, static): JPAK entry = {name_off +0, size +4, data_off +8} (0x20 bytes, count +8, table +0x20). Entries are processed strictly in file order, one Ne_MoverCollision_BuildMoverShapes call each (0x144453b6b); the entry name is read only for the sign test (Ne_Crt_Strncmp 'qt_' / 'qt.' at 0x144453bcb / 0x144453be8, then Ne_Crt_Strstr with lower-case 'sign' at 0x144453c35). No sort, no quadtree parse, no ancestor check: tile names and their JPAK order carry no meaning for this loader. The qt_/qt./sign test runs only for tile version > 0x20003. When BuildMoverShapes returns 0 (object pool full = its error 0xc, or a bad tile) this function logs error 0xe, leaves the loop and returns the resource with only the tiles created so far (no crash on this path; later tiles silently missing; the query-context call is skipped then). With >= 0x261b (9755) entries and no failure it also calls Ne_MoverCollision_BuildQueryContext (cmp at 0x144453e92). Verifier V-row 2026-11-17 partial, corrections applied."
  },
  "signature": {
   "id": "core.mover_collision_create_resource",
@@ -45,6 +45,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/1444537a0.c;xref:0x1444537a0",
    "notes": "V2913 decomp checked: offsets/calls/strings match claim"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkrt-verify",
+   "kind": "func",
+   "item": "Ne_MoverCollision_CreateResource",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1444537a0.c;xref:0x144453b6b,0x144453bcb,0x144453be8,0x144453c35,0x144453e92",
+   "notes": "V10775 blind pass 2026-11-17: JPAK layout, file-order loop, name test and 0x261b compare confirmed; corrected: sign test only for version > 0x20003, failure path logs 0xe and skips the query-context call (applied)"
   }
  ],
  "proofs": []

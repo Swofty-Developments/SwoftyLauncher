@@ -13,7 +13,7 @@
 // holds no proof, so code gated this way stays off on a game update until its layout is checked again.
 namespace runtime::build_proof {
 
-enum class Build : uint8_t { kb, ea, steam_1_0_145, unknown };
+enum class Build : uint8_t { kb, ea, steam_1_0_145, ea_1_0_145, unknown };
 
 struct Exe {
     uint32_t pe_timestamp, size_of_image;
@@ -31,6 +31,7 @@ inline constexpr Known KNOWN[] = {
     {Build::kb, "the Steam KB build", 1789118616u, 0x6000000, true},
     {Build::ea, "the EA App KB build", 1789128892u, 0x155dc000, false},
     {Build::steam_1_0_145, "Steam 1.0.145 (26566308)", 1794312636u, 0x18434000, false},
+    {Build::ea_1_0_145, "EA App 1.0.145", 1794315435u, 0x1615e000, false},
 };
 
 constexpr const Known *known(Build b)

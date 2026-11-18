@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1434c1780.c;xref:0x1434b7ad0",
-  "notes": "State 5 handler (returns 64-bit): Sess_VehiclePlacement_ResolveTransform + memcpy, 1142 bytes; also used directly by Game_PitLane_HandleEnterPitBox (0x1434b7ad0) and Game_Pitlane_ApplyVehicleResetState (0x1434c05a2). Hypothesis."
+  "notes": "State 5 handler (returns 64-bit): Sess_VehiclePlacement_ResolveTransform + memcpy, 1142 bytes; also used directly by Game_PitLane_HandleEnterPitBox (0x1434b7ad0) and Game_Pitlane_ApplyVehicleResetState (0x1434c05a2). Hypothesis. | engine-re 2026-11-17 track round C2 (static): per-car pit SPLINE builder for 'eSplineToMarks' (direct spline from the car to the box marks, used when the flag byte of 0x1413ca0d0 has bit 2; logs eSplineToMarks / handleSplineToPitBoxMarks); record +0xd4 = 5; finalised at 0x1434c1bd7."
  },
  "signature": {
   "id": "game.pitlane_resolve_vehicle_state5",

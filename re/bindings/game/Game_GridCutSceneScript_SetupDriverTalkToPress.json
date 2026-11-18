@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140345f60.c;xref:0x140344f4e,0x140346d76",
-  "notes": "Shared grid helper (called from 6 grid initialisers): checks Game.Context.overrideTrackName / TrackName == 'monaco' for the _m variants, picks grid_driver_talk_to_press_01/02(_m/_generic), crew_holding_umbrella_L/R, photo01_propcam, dttp02_cam01, cam01_propvidcam; sets +0x1de/+0x1df=0, +0x1e0 by player count (<2), +0x1e1=0; vehicle part proxies 0x14024d440. Addon: Monaco-specific grid variants are selected by track name here. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3122)"
+  "notes": "Shared grid helper (called from 6 grid initialisers): checks Game.Context.overrideTrackName / TrackName == 'monaco' for the _m variants, picks grid_driver_talk_to_press_01/02(_m/_generic), crew_holding_umbrella_L/R, photo01_propcam, dttp02_cam01, cam01_propvidcam; sets +0x1de/+0x1df=0, +0x1e0 by player count (<2), +0x1e1=0; vehicle part proxies 0x14024d440. Addon: Monaco-specific grid variants are selected by track name here. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3122)  | 2026-11-17 engine-re round A2: hard-coded track: track name (Game.Context.overrideTrackName, else Game.Context.TrackName) == 'monaco' (0x140346038) binds four extra prop cameras to grid_driver_talk_to_press_02 (photo01_propcam, dttp02_cam01, cam01_propvidcam, dttp02_photo01). The '_m' scene variants depend on the mirrored flag, not on Monaco. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested)"
  },
  "signature": {
   "id": "game.grid_cut_scene_script_setup_driver_talk_to_press",

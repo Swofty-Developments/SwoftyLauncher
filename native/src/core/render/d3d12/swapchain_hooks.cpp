@@ -89,12 +89,14 @@ struct PresentSeen {
 class PresentLog {
 public:
     void count(IDXGISwapChain3 *sc, void *caller, const char *how);
+    uint64_t frames() const { return frames_.load(std::memory_order_relaxed); }
 
 private:
     std::mutex lock;
     std::vector<PresentSeen> seen;
     ULONGLONG since = 0;
     unsigned presents = 0;
+    std::atomic<uint64_t> frames_{0};
 };
 
 constinit PresentLog present_log;
@@ -105,6 +107,7 @@ void PresentLog::count(IDXGISwapChain3 *sc, void *caller, const char *how)
     ULONGLONG now = GetTickCount64();
     std::lock_guard<std::mutex> g(lock);
     presents++;
+    frames_.fetch_add(1, std::memory_order_relaxed);
     if (!since)
         since = now;
     bool fresh = seen.size() < 32 &&
@@ -239,6 +242,8 @@ bool learning(void *sc)
 {
     return swapchains.learning(sc);
 }
+
+uint64_t frames_presented() { return present_log.frames(); }
 
 bool arm_swapchain()
 {

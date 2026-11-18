@@ -24,6 +24,7 @@ pub use hud::HudFile;
 pub use pkg::{EventReplacement, PkgEdit, PkgPatch, PkgTarget, Signal};
 pub use resolve::{Segment, Selector, first_segment, ids_exhausted, no_row, no_row_selectors, record_key};
 pub use stat_ids::{
-    MovedStatId, StatIdCeiling, VIRTUAL_LISTS, explicit_stat_ids, stat_id_ceiling, stat_id_ceiling_reason,
-    stat_id_field, stat_id_unusable,
+    MovedStatId, StatIdCeiling, UNLOCK_FRESH_FROM, UNLOCK_KINDS, UNLOCK_ROW, UNLOCK_STAT_MAX, VIRTUAL_LISTS,
+    explicit_stat_ids, is_unlock_ids, stat_id_ceiling, stat_id_ceiling_reason, stat_id_field,
+    stat_id_unusable, unlock_list,
 };

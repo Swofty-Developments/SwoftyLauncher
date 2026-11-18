@@ -118,12 +118,39 @@ inline std::string op_line(uint32_t index, uint32_t completed, uint32_t op)
     return b;
 }
 
-inline std::string node_header(unsigned n, const char *list, const char *queue, uint32_t count, uint32_t completed)
+constexpr uint32_t kBuildOp = 31;
+
+// Where an unfinished command list stopped among its ray tracing builds: the first op the GPU did not complete is
+// build #nth of the `of` builds the list records. nth is 0 when that op is not a ray tracing build.
+struct BuildStop {
+    uint64_t list = 0;
+    uint32_t nth = 0, of = 0;
+};
+
+template <typename Op> BuildStop build_stop(const Op *ops, uint32_t count, uint32_t completed, uint64_t list)
 {
-    char b[400];
-    std::snprintf(b, sizeof b, "    node %u: command list %s on queue %s, %u of %u op(s) completed%s\n", n,
-                  list && *list ? list : "(unnamed)", queue && *queue ? queue : "(unnamed)", completed > count ? count : completed,
-                  count, node_incomplete(count, completed) ? ", NOT FINISHED" : "");
+    BuildStop s;
+    if (!ops || completed >= count || uint32_t(ops[completed]) != kBuildOp)
+        return s;
+    s.list = list;
+    for (uint32_t i = 0; i < count; i++)
+        if (uint32_t(ops[i]) == kBuildOp) {
+            s.of++;
+            if (i <= completed)
+                s.nth++;
+        }
+    return s;
+}
+
+inline std::string node_header(unsigned n, const char *list, const char *queue, uint32_t count, uint32_t completed,
+                               uint64_t object = 0)
+{
+    char b[440], at[40] = "";
+    if (object)
+        std::snprintf(at, sizeof at, " (0x%llx)", (unsigned long long)object);
+    std::snprintf(b, sizeof b, "    node %u: command list %s%s on queue %s, %u of %u op(s) completed%s\n", n,
+                  list && *list ? list : "(unnamed)", at, queue && *queue ? queue : "(unnamed)",
+                  completed > count ? count : completed, count, node_incomplete(count, completed) ? ", NOT FINISHED" : "");
     return b;
 }
 

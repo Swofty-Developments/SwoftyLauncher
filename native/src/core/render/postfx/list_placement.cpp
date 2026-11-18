@@ -143,8 +143,8 @@ void ListPlacement::on_setname(ID3D12Object *o, LPCWSTR name)
 }
 
 // While the game reads the finished picture for its HUD (paused, panels over the race), that read is the one
-// place the passes run; without such reads they run at the HUD-less step or between the game's lists
-// (postfx::HudRead).
+// place the passes run; without such reads they run at the HUD-less step or between the game's lists, and in
+// the frame after a read with none in it, between the game's lists or at Present (postfx::HudRead).
 bool ListPlacement::hud_reads()
 {
     return hud_read.holds(pipeline.frame_count);
@@ -276,7 +276,8 @@ bool ListPlacement::on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3
     // per frame for its HUD, as the first back buffer barrier of the HUD's list (or the first one that
     // leaves the render target in the list that drew it): the passes run there and nowhere else. In
     // menus there is no such read; the passes run at the HUD-less step of the list that made the back
-    // buffer a render target, once per back buffer and frame.
+    // buffer a render target, once per back buffer and frame. In the frame after a read the step is held
+    // off, and the picture's submission leaves the passes waiting for this frame's read or the fallbacks.
     if ((hudless || leaving) && state_armed && list->GetType() == D3D12_COMMAND_LIST_TYPE_DIRECT && !pipeline.killed_now() &&
         !pipeline.config.passes.empty()) {
         PassRecorder::Where w{list, true, nullptr, D3D12_RESOURCE_STATE_RENDER_TARGET, hudless, hudless_now, nullptr,
@@ -474,7 +475,8 @@ void ListPlacement::on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *co
             }
             if (m.target && !m.tonemap)
                 back_use(m.target).place.moved(m.state == D3D12_RESOURCE_STATE_RENDER_TARGET);
-            if (m.tonemap && m.slot < 0 && split == n && !hud_reads() && !pipeline.killed_now() && !pipeline.config.passes.empty()) {
+            if (m.tonemap && m.slot < 0 && split == n && !hud_read.read_in(pipeline.frame_count) && !pipeline.killed_now() &&
+                !pipeline.config.passes.empty()) {
                 if (m.ui) {
                     pipeline.report.stats.ui_together++;
                     pipeline.report.trace.tried = postfx::IDLE_UI_TOGETHER;
@@ -483,10 +485,15 @@ void ListPlacement::on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *co
                     // The picture is in the back buffer. A list that ends with the HUD-less step still open
                     // leaves the passes to the list that closes the step, which may draw the rest of the
                     // picture first; while the game's own frames close the passes' frames there is no Present
-                    // to fall back on, and the passes run right after this list.
+                    // to fall back on, and the passes run right after this list. In the frame after a HUD read
+                    // with none in this one yet, they wait too: the HUD's list may still read the picture and
+                    // run them there, and without that read they run at the fallbacks (postfx::HudRead).
                     bool open = m.hudless && (m.hudless_state & D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-                    bool may_defer = open && !pipeline.frame_clock.game_frames(GetTickCount64(), pipeline.started);
-                    postfx::PictureEnd end = back_use(m.target).place.picture_submitted(pipeline.frame_count, open, may_defer);
+                    postfx::PictureWait wait =
+                        postfx::picture_wait(open, hud_read.latch(pipeline.frame_count),
+                                             pipeline.frame_clock.game_frames(GetTickCount64(), pipeline.started));
+                    postfx::PictureEnd end =
+                        back_use(m.target).place.picture_submitted(pipeline.frame_count, wait.open, wait.may_defer);
                     pipeline.report.stats.deferred += end == postfx::END_DEFER;
                     if (end == postfx::END_BETWEEN) {
                         split = i;
