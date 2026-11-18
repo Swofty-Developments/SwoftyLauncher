@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 
-namespace career_ops::stats {
+namespace career::ops::stats {
 
 // One driver's base values of the given statistics (game stat ids: experience 0, racecraft 1, awareness 3,
 // pace 4, focus 5), written into the loaded career's driver statistics. text says what changed.

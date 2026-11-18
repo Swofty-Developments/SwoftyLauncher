@@ -29,6 +29,7 @@
 #include <swofty/systems/drivers.hpp>
 #include <swofty/systems/liveries.hpp>
 #include <swofty/systems/power.hpp>
+#include <swofty/systems/pitlane.hpp>
 #include <swofty/systems/race_control.hpp>
 #include <swofty/systems/sessions.hpp>
 #include <swofty/systems/sounds.hpp>

@@ -436,7 +436,7 @@ fn install_ops(store: &Store, root: &Path, id: &str, name: &str, ops: &str, file
 
 /// The changed zstd fragments of at least the frame cache's 16 KiB in the archives a build wrote: how many
 /// there are, and how many came from a cache [`frame_cache::mark`] marked.
-fn cached_frames(built: &Built, game: &Game) -> (usize, usize) {
+pub(super) fn cached_frames(built: &Built, game: &Game) -> (usize, usize) {
     use crate::erp::pack::frame_cache;
     use swofty_formats::erp::Erp;
     let (mut changed, mut marked) = (0, 0);

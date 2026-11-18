@@ -2,6 +2,7 @@ use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
 use swofty_addon::manifest::AddonManifest;
 use swofty_formats::gvdb::{Gvdb, Record};
+use swofty_formats::hash::fnv1a64;
 
 use crate::store::Store;
 
@@ -175,11 +176,35 @@ pub(crate) struct Schedule {
 
 impl Schedule {
     pub(crate) fn of(db: &Gvdb) -> Self {
-        let text = |path: &str| db.get_text(path).map(|t| t.trim().to_owned());
-        let count = |table: &str| {
+        let count_key = |table: &str| {
             let (container, row) = table.rsplit_once('.').expect("a table path");
-            db.instance_count(container, row).unwrap_or(0)
+            fnv1a64(swofty_formats::gvdb::instance_count_path(container, row))
         };
+        let tables = [
+            (ACTIVITIES, "track"),
+            (EVENTS, "activity"),
+            (TRACKS, "_metadata_"),
+        ];
+        let counts = db.get_keys(&tables.iter().map(|(t, _)| count_key(t)).collect());
+        let count = |table: &str| {
+            counts
+                .get(&count_key(table))
+                .and_then(|r| r.text().trim().parse().ok())
+                .unwrap_or(0)
+        };
+        let wanted = tables
+            .iter()
+            .flat_map(|&(table, field)| {
+                (0..count(table)).flat_map(move |i| {
+                    [
+                        fnv1a64(format!("{table}_{i}._metadata_")),
+                        fnv1a64(format!("{table}_{i}.{field}")),
+                    ]
+                })
+            })
+            .collect();
+        let rows = db.get_keys(&wanted);
+        let text = |path: &str| rows.get(&fnv1a64(path)).map(|r| r.text().trim().to_owned());
         let pairs = |table: &str, field: &str| {
             (0..count(table))
                 .filter_map(|i| {

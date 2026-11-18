@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace postfx {
+namespace render::postfx {
 
 class Pipeline;
 

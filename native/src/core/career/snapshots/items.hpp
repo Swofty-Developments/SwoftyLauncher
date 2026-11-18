@@ -7,7 +7,7 @@
 // The tagged items the swofty_registry entry is built from: a u16 tag, a u32 length and the body,
 // little-endian, with the CRC-32 the entry header carries.
 
-namespace swofty_core::snapshots::format {
+namespace career::snapshots::format {
 
 using Bytes = std::vector<uint8_t>;
 

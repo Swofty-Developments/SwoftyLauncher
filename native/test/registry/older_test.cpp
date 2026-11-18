@@ -76,11 +76,11 @@ int main()
         call.data_group = "f1_career_1990";
         call.suffix = "90";
         call.mode = "driver_career_1990";
-        call.model = runtime::content::MODEL_2025;
+        call.model = career::content::MODEL_2025;
         call.car_group = 2;
         call.badge = 1;
         call.entitlement = "ent";
-        call.careers = runtime::content::CAREER_ALL;
+        call.careers = career::content::CAREER_ALL;
         swofty::json::Value rec = older::content_record(call);
         check(rec["model"].as_string() == "game/f1_career_2025",
               "career.content: a 2025-model call records game/f1_career_2025");
@@ -129,9 +129,9 @@ int main()
                                        d, why);
         };
         auto passes = [](const older::ContentDesc &d) {
-            runtime::content::Desc c{d.id,    d.title,     d.description, d.data_group, d.suffix, d.mode,
+            career::content::Desc c{d.id,    d.title,     d.description, d.data_group, d.suffix, d.mode,
                                      d.entitlement, d.model, d.car_group, d.badge,     d.careers};
-            return runtime::content::check(c, [](const char *, const std::string &) { return false; });
+            return career::content::check(c, [](const char *, const std::string &) { return false; });
         };
         bool listed = false;
         for (auto &id : older::in_load_order(st, older::CONTENT))
@@ -142,13 +142,13 @@ int main()
         check(from("ex.data/f1_2012", d, why), "career.content: a data-file record with a mode makes a tile");
         check(d.id == "f1_2012" && d.data_group == "f1_career_2012" && d.mode == "driver_career_2012" &&
                   d.title == "lng_f1_2012_title" && d.description == "lng_f1_2012_title" && d.suffix == "12" &&
-                  d.model == runtime::content::MODEL_2026 && d.careers == runtime::content::CAREER_ALL && d.badge == 3 &&
+                  d.model == career::content::MODEL_2026 && d.careers == career::content::CAREER_ALL && d.badge == 3 &&
                   d.car_group == -1,
               "career.content: data group, save container and title come from the career.mode record, the description "
               "from the title, the model defaults to 2026");
         check(passes(d).empty(), "career.content: the data-file descriptor passes the call's check");
         check(from("ex.data/f1_2012_short", d, why) && d.title == "F1 2012" && d.data_group == "f1_career_2012b" &&
-                  d.mode == "driver_career_2012b" && d.model == runtime::content::MODEL_2025 &&
+                  d.mode == "driver_career_2012b" && d.model == career::content::MODEL_2025 &&
                   d.description == "lng_f1_2012b_desc" && passes(d).empty(),
               "career.content: a bare mode key names the record's own addon's mode; the record's fields win over it");
         check(from("ex.data/f1-1990", d, why) && d.id == "f1-1990" && d.car_group == 2 && d.mode == "driver_career_1990" &&

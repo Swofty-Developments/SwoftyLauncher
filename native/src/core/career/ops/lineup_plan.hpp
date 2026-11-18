@@ -19,7 +19,7 @@
 // unchanged; any other driver is moved. A race-seat holder of a seat that got a target, who is not the
 // player and is targeted nowhere, is released. Mid-season changes are not planned here.
 
-namespace career_ops::plan {
+namespace career::ops::plan {
 
 constexpr int kSeats = 2;
 
@@ -208,4 +208,4 @@ inline void defer_to(Plan &p, const std::vector<Given> &lineup)
                      p.releases.end());
 }
 
-} // namespace career_ops::plan
+} // namespace career::ops::plan

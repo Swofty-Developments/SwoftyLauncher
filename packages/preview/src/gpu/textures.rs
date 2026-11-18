@@ -106,7 +106,7 @@ pub(super) fn format_of(_decl: &TextureDecl) -> wgpu::TextureFormat {
 }
 
 /// Declared textures are all rgba16float here. After a pass writes one declared with another format, the
-/// helper this names gives it the values the game's texture of that format holds: clamped and rounded
+/// kernel this names gives it the values the game's texture of that format holds: clamped and rounded
 /// for the unorm formats, missing channels as 0 (alpha 1), no negatives for r11g11b10f.
 pub(super) const NARROW: [&str; 5] = ["as_rgba8", "as_rgb10a2", "as_rg", "as_r", "as_r11g11b10f"];
 

@@ -65,6 +65,7 @@ class Script:
 
 # Built with the host C++ compiler, or with zig for x86_64-linux-musl where the compiler is zig.
 UNITS = [
+    Unit('abi_layout', 'Live car ABI layout unit test'),
     Unit('activity_resume', 'Activity resume guard unit test'),
     Unit('ai_corner', 'AI brake line guard unit test'),
     Unit('ai_curves', 'AI team curves guard unit test'),
@@ -75,6 +76,7 @@ UNITS = [
     Unit('characters_logic', 'Character override rules unit test'),
     Unit('dred', 'GPU device removal report unit test'),
     Unit('report_text', 'Crash report section text unit test'),
+    Unit('hook_set', 'Core mixin set state unit test'),
     Unit('ers_newlap', 'ERS new-lap site unit test'),
     Unit('ers_mode', 'ERS mode guard offset unit test'),
     Unit('estimate_laptime', 'Estimate lap time guard unit test'),
@@ -156,6 +158,7 @@ UNITS = [
     Unit('tyre_slots', 'Tyre slot guard unit test'),
     Unit('ui_registry_walk', 'UI registry walk unit test'),
     Unit('watchdog_grace', 'Boot watchdog grace unit test'),
+    Unit('weather_chain', 'Weather setup chain order rules unit test'),
     Unit('events_dispatch', 'Events dispatcher unit test', 'zig'),
     Unit('session_lifecycle', 'Session lifecycle kind unit test', 'zig'),
     Unit('career_state', 'Career and flow-state tracking unit test', 'zig'),

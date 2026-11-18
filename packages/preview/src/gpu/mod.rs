@@ -1,5 +1,5 @@
 mod effects;
-mod helpers;
+mod kernels;
 mod plan;
 mod textures;
 
@@ -9,7 +9,7 @@ use std::sync::{Arc, Mutex};
 use swofty_shaders::ActiveInstance;
 
 use self::effects::{EffectGpu, Inst, layout_for, sampler};
-use self::helpers::HELPERS;
+use self::kernels::KERNELS;
 use self::plan::{Clock, dispatch};
 use self::textures::{NARROW, Targets, Tex, clear};
 use crate::{ClipInfo, CompiledEffect, Frame};
@@ -99,9 +99,9 @@ impl Preview {
         let layout = layout_for(&device);
         let module = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("preview helpers"),
-            source: wgpu::ShaderSource::Wgsl(HELPERS.into()),
+            source: wgpu::ShaderSource::Wgsl(KERNELS.into()),
         });
-        let helper = |entry: &str| {
+        let kernel = |entry: &str| {
             device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
                 label: Some(entry),
                 layout: None,
@@ -111,10 +111,10 @@ impl Preview {
                 cache: None,
             })
         };
-        let up = helper("up");
-        let down = helper("down");
-        let mip = helper("mip");
-        let narrow = NARROW.iter().map(|&entry| (entry, helper(entry))).collect();
+        let up = kernel("up");
+        let down = kernel("down");
+        let mip = kernel("mip");
+        let narrow = NARROW.iter().map(|&entry| (entry, kernel(entry))).collect();
         let uniforms = Self::uniform_buffer(&device, 32);
         let preview = Self {
             device,

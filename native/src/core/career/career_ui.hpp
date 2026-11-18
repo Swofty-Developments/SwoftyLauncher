@@ -18,7 +18,7 @@
 // entries, group at +8) and the name *(group +0x28) +0x10. The first championship with such a
 // component names the career. These offsets are not KB struct rows yet (see the docs).
 
-namespace runtime::career_ui {
+namespace career::ui {
 
 namespace mem = swofty::mem;
 
@@ -83,7 +83,7 @@ inline std::string group_of_championship(uintptr_t champ, uintptr_t desc)
 
 inline std::string loaded_group()
 {
-    const SwoftyCareer *c = career_table();
+    const SwoftyCareer *c = runtime::career_table();
     void *e = c && c->entity ? c->entity() : nullptr;
     uintptr_t desc = swofty::api->resolve("k_Career_CareerSetupComponentDesc"), b = 0, end = 0;
     if (!e || !desc || !mem::read(reinterpret_cast<uintptr_t>(e) + CHAMPIONSHIPS, b) ||

@@ -11,7 +11,7 @@
 #include <string>
 #include <unordered_set>
 
-namespace d3d12hooks {
+namespace render::d3d12 {
 
 namespace {
 
@@ -41,8 +41,8 @@ std::string srv_name(ID3D12Resource *r)
 // One line for each clamped or skipped view, the first time it is made.
 class SrvReports {
 public:
-    void report(ID3D12Resource *r, const runtime::srv_clamp::View &v, const runtime::srv_clamp::Resource &res,
-                const runtime::srv_clamp::Plan &p);
+    void report(ID3D12Resource *r, const srv_clamp::View &v, const srv_clamp::Resource &res,
+                const srv_clamp::Plan &p);
 
 private:
     std::mutex lock;
@@ -51,10 +51,10 @@ private:
 
 SrvReports reports;
 
-void SrvReports::report(ID3D12Resource *r, const runtime::srv_clamp::View &v, const runtime::srv_clamp::Resource &res,
-                        const runtime::srv_clamp::Plan &p)
+void SrvReports::report(ID3D12Resource *r, const srv_clamp::View &v, const srv_clamp::Resource &res,
+                        const srv_clamp::Plan &p)
 {
-    using runtime::srv_clamp::Action;
+    using srv_clamp::Action;
     uint64_t key = (reinterpret_cast<uint64_t>(r) * 0x9e3779b97f4a7c15ull) ^ (uint64_t(v.slices) << 40) ^
                    (uint64_t(v.first_slice) << 20) ^ (uint64_t(v.mip_levels) << 8) ^ v.most_detailed_mip;
     {
@@ -77,7 +77,7 @@ void SrvReports::report(ID3D12Resource *r, const runtime::srv_clamp::View &v, co
 void STDMETHODCALLTYPE srv_hook(ID3D12Device *dev, ID3D12Resource *r, const D3D12_SHADER_RESOURCE_VIEW_DESC *d,
                                 SIZE_T h)
 {
-    using namespace runtime::srv_clamp;
+    using namespace srv_clamp;
     if (!r || !d) {
         srv_orig(dev, r, d, h);
         return;
@@ -195,7 +195,7 @@ bool arm_srv_clamp()
     state = -1;
     char env[8] = {};
     GetEnvironmentVariableA("SWOFTY_SRV_CLAMP", env, sizeof env);
-    if (!runtime::srv_clamp::enabled(env)) {
+    if (!srv_clamp::enabled(env)) {
         swofty::log("[gfx] srv clamp is off (SWOFTY_SRV_CLAMP=1 turns it on)");
         return false;
     }
@@ -227,7 +227,7 @@ namespace runtime {
 
 void srv_clamp_setup()
 {
-    d3d12hooks::arm_srv_clamp();
+    render::d3d12::arm_srv_clamp();
 }
 
 }

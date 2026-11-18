@@ -9,7 +9,7 @@
 // splice owes the save it bumped, and the byte layout of one kept entry. No game calls, so the unit
 // test runs on the host.
 
-namespace runtime::save_splice {
+namespace career::save_splice {
 
 constexpr size_t NAME_LIMIT = 63;
 // W4: the career snapshots' own root container (native/src/core/career/snapshots/format.hpp), and the bag

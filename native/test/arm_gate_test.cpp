@@ -9,7 +9,7 @@
 #include <thread>
 #include <vector>
 
-namespace ag = d3d12hooks::arm_gate;
+namespace ag = render::d3d12::arm_gate;
 using namespace std::chrono_literals;
 
 int fails;
