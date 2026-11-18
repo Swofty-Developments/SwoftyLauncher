@@ -21,7 +21,7 @@
                                   maintainer: what a game update leaves off in the core (bindings by hint and by scan,
                                   layout proofs and live groups with no evidence for it) and the step for each
 """
-import argparse, datetime, hashlib, json, os, sys
+import argparse, datetime, hashlib, json, os, re, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -367,11 +367,23 @@ def export_state(gate, rec):
     row = rec.table_row()
     vkind = 'func' if rec.table == 'functions' else 'global'
     status, why = gate(row['level'], row['evidence'], [(vkind, rec.name), (vkind, row['addr'])])
+    if status and why.startswith('baseline:'):
+        return status, f'an agree at {row["level"]}: it exports on the level baseline entry {why[9:]}'
+    if status and why.startswith('deprecated:'):
+        e = gate.deprecated[(vkind, rec.name)]
+        return status, (f'deprecated in {e["since"]} by {DROPS_PATH} ({e["reason"]}): it leaves the addon API in the '
+                        'next release unless an agree row at its level replaces the newer partial or disagree')
+    if (vkind, rec.name) in gate.dropped:
+        e = gate.dropped[(vkind, rec.name)]
+        return 'dropped', f'dropped in {e["since"]} by {DROPS_PATH}: {e["reason"]}'
     if status:
         return status, '-'
     if row['level'] not in ('L2', 'L3'):
         return 'not exported', 'L2: decomp: and xref: evidence, then an agree row'
     newest = gate.newest([(vkind, rec.name), (vkind, row['addr'])])
+    if newest and newest[0] == 'agree':
+        return 'not exported', (f'its newest verify row {newest[1]} is an agree made at {newest[3]}, below '
+                                f'{row["level"]}: an agree row at {row["level"]} (binding.py agree)')
     if newest:
         return 'not exported', (f'its newest verify row {newest[1]} is {newest[0]}: a new agree row after the notes '
                                 f'are fixed (binding.py agree)')
@@ -428,19 +440,87 @@ def pick_base(base):
     raise SystemExit('binding.py doctor: no main branch to compare with; pass --base <the commit your branch starts from>')
 
 
-def judge(changes, other, author, knowledge):
-    """What the bindings workflow decides for these record changes plus `other` paths, with a printable summary."""
+BASELINE_PATH = 're/db/level_baseline.json'
+DROPS_PATH = 're/db/export_drops.json'
+
+
+def read_file(path, limit):
+    """The first `limit` bytes of a regular file, or None when there is none (a symlink counts as none)."""
+    if not os.path.isfile(path) or os.path.islink(path):
+        return None
+    with open(path, 'rb') as f:
+        return f.read(limit)
+
+
+def parse_db_file(data, loader):
+    """`loader` (bindgen.load_baseline or load_drops) over these bytes: its entries, or its error message."""
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        path = os.path.join(d, 'db.json')
+        with open(path, 'wb') as f:
+            f.write(data)
+        try:
+            return loader(path)
+        except (SystemExit, ValueError) as e:
+            return str(e) or 'does not parse'
+
+
+def baseline_growth(old, new):
+    """One error per entry the new level_baseline.json bytes add or re-point against the old bytes; the list only
+    shrinks, so a raise cannot be exported on a lower-level agree by listing it."""
+    import bindgen
+    if new is None:
+        return []
+    before = parse_db_file(old, bindgen.load_baseline) if old is not None else {}
+    after = parse_db_file(new, bindgen.load_baseline)
+    if isinstance(after, str):
+        return [f'{BASELINE_PATH}: {after}']
+    if isinstance(before, str):
+        before = {}
+    out = []
+    for key, covers in sorted(after.items()):
+        if key not in before:
+            out.append(f'{BASELINE_PATH}: adds {key[0]}:{key[1]}; the level baseline only shrinks, so a binding '
+                       'raised past its agree needs a new agree at its level')
+        elif before[key] != covers:
+            out.append(f'{BASELINE_PATH}: moves {key[0]}:{key[1]} from {before[key]} to {covers}; the level '
+                       'baseline only shrinks')
+    return out
+
+
+def judge(changes, other, author, knowledge, baseline=None, drops=None):
+    """What the bindings workflow decides for these record changes plus `other` paths, with a printable summary.
+    `baseline` and `drops` are (base bytes, pull request bytes) of the level baseline and of the export drops when the
+    pull request changes them. A change to the export drops sets owner_review: only the repository owner approves it."""
+    import bindgen
     result = bc.classify(changes, author, knowledge, kb.ROOT)
+    result['owner_review'] = drops is not None or DROPS_PATH in other
+    if baseline is not None:
+        grown = baseline_growth(*baseline)
+        if grown:
+            result['verdict'] = 'fail'
+            result['errors'] += grown
+    entries = None
+    if drops is not None:
+        entries = parse_db_file(drops[1], bindgen.load_drops) if drops[1] is not None else {}
+        if isinstance(entries, str):
+            result['verdict'] = 'fail'
+            result['errors'].append(f'{DROPS_PATH}: {entries}')
+            entries = None
     if result['verdict'] != 'fail':
         lint_errors = lint_with([(path, new) for path, _, new in changes if new is not None])
         if lint_errors:
             result['verdict'] = 'fail'
             result['errors'] += lint_errors
     if result['verdict'] != 'fail':
-        drops = export_drops(changes)
-        if drops:
+        lost, left, after = export_drops(changes, entries)
+        result['notes'] += left
+        errors = lost + drop_holding(after, changes, entries, drops, other)
+        if errors:
             result['verdict'] = 'fail'
-            result['errors'] += drops
+            result['errors'] += errors
+    if drops is not None:
+        result['notes'] += drops_notes(*drops)
     headers = [p for p in other if p.startswith(HEADERS)]
     other = [p for p in other if not p.startswith(HEADERS)]
     if result['verdict'] != 'fail':
@@ -463,8 +543,10 @@ def judge(changes, other, author, knowledge):
 HEADERS = 'native/include/swofty/'
 
 
-def export_drops(changes):
-    """One error per binding the base exports that these record changes stop exporting."""
+def export_drops(changes, drops=None):
+    """(errors, notes, after) for these record changes: an error per binding the base exports that they stop exporting,
+    a note per one that leaves the addon API through an export drops entry (`drops`, the pull request's entries when
+    it changes that file), and `after`, the gate and records as they are after the change."""
     import bindgen
     rows = kb.read_table('verify')[0]
     touched = {path[len('re/bindings/'):] for path, _, _ in changes}
@@ -478,8 +560,8 @@ def export_drops(changes):
             continue
         after[path] = rec
         new_rows += rec.verify_rows()
-    before_gate, after_gate = bindgen.Gate(rows=rows), bindgen.Gate(rows=new_rows)
-    out = []
+    before_gate, after_gate = bindgen.Gate(rows=rows), bindgen.Gate(rows=new_rows, drops=drops)
+    out, notes = [], []
     for path, old, new in changes:
         if old is None:
             continue
@@ -488,7 +570,7 @@ def export_drops(changes):
         except br.RecordError:
             continue
         status, _ = export_state(before_gate, rec)
-        if status == 'not exported':
+        if status in ('not exported', 'dropped'):
             continue
         if new is None:
             out.append(f'{path}: removes {rec.name}, which is exported ({status}), so it stops exporting')
@@ -496,6 +578,115 @@ def export_drops(changes):
             now, need = export_state(after_gate, after[path])
             if now == 'not exported':
                 out.append(f'{path}: {rec.name} is exported ({status}) and stops exporting after this change: {need}')
+            elif now == 'dropped':
+                notes.append(f'{path}: {rec.name} leaves the addon API: {need}')
+    return out, notes, (after_gate, list(after.values()))
+
+
+def drop_keys(kind, name, records=()):
+    """The gate's keys for an export drops entry: its name and, when the knowledge base has its row, its address."""
+    rec = next((r for r in records if r.name == name), None) or br.Store.get().by_item(name)
+    if rec and rec.table == ('functions' if kind == 'func' else 'globals'):
+        return [(kind, name), (kind, rec.table_row()['addr'])]
+    row = next((r for r in kb.read_table('functions' if kind == 'func' else 'globals')[0] if r['name'] == name), None)
+    return [(kind, name)] + ([(kind, row['addr'])] if row else [])
+
+
+def drop_holds(gate, key, entry, records=()):
+    """An export drops entry holds while its `covers` row, a partial or disagree, is the binding's newest verify row."""
+    v = gate.newest(drop_keys(*key, records))
+    return bool(v) and v[1] == entry['covers'] and v[0] in ('partial', 'disagree')
+
+
+def drop_holding(after, changes, entries, drops, other=()):
+    """Errors for export drops entries that stop holding: every entry when the pull request changes the file, else
+    the entries of the bindings its records touch. `after` is export_drops' (gate, records) after the change, and
+    `other` the pull request's paths outside re/bindings."""
+    import bindgen
+    gate, records = after
+    if entries is None:
+        entries = gate.drops
+    names = {r.name for r in records}
+    for path, old, _ in changes:
+        if old is not None:
+            try:
+                names.add(br.Record.from_bytes(old, path[len('re/bindings/'):]).name)
+            except br.RecordError:
+                pass
+    out = []
+    for key, e in sorted(entries.items()):
+        if (drops is not None or key[1] in names) and not drop_holds(gate, key, e, records):
+            out.append(f'{DROPS_PATH}: the entry for {key[0]}:{key[1]} no longer holds: its newest verify row is not '
+                       f'{e["covers"]}, the partial or disagree it covers')
+    if drops is not None:
+        out += drops_review(drops[0], entries, other=other)
+    return out
+
+
+CORE = 'native/src/'
+
+
+def core_names(name, root=None):
+    """The first file under native/src that names the binding outside a comment, by a header constant, its `_t`
+    type or a resolve string, or None."""
+    return bc.referenced_in_code(name, root or kb.ROOT, (CORE.rstrip('/'),), comments=False)
+
+
+def drops_review(old, after, base=None, other=()):
+    """Errors for a pull request that changes the export drops from the `old` bytes to the `after` entries: a new or
+    changed mode ships in a later release than the one the base branch is at (`base`), a binding that neither
+    crashes nor corrupts state is dropped only after a released deprecation, and a binding core names in this
+    checkout is taken out only by a pull request that also changes core (`other` has a native/src path), to the
+    replacement when it is deprecated, so one without a replacement cannot be deprecated yet."""
+    import bindgen
+    base = base or bindgen.workspace_version()
+    before = parse_db_file(old, bindgen.load_drops) if old is not None else {}
+    if isinstance(before, str):
+        before = {}
+    shown = '.'.join(map(str, base))
+    out = []
+    for (kind, name), e in sorted(after.items()):
+        was = before.get((kind, name))
+        if was != e and core_names(name):
+            if e['mode'] == 'deprecated' and 'replacement' not in e:
+                out.append(f'{DROPS_PATH}: deprecates {kind}:{name}, which core names, without a replacement: core '
+                           'moves off a binding in the change that deprecates it, so one without a replacement '
+                           'cannot be deprecated yet')
+            elif not any(p.startswith(CORE) for p in other):
+                to = f' to {e["replacement"]}' if 'replacement' in e else ''
+                out.append(f'{DROPS_PATH}: {"deprecates" if e["mode"] == "deprecated" else "drops"} {kind}:'
+                           f'{name}, which core names, and the pull request leaves {CORE} as it is: core moves '
+                           f'off it{to} in the same change')
+        if was and (was['mode'], was['since']) == (e['mode'], e['since']):
+            continue
+        if bindgen.version(e['since']) <= base:
+            out.append(f'{DROPS_PATH}: {kind}:{name} ships in {e["since"]}, which is not after {shown}, the release the '
+                       'base branch is at')
+        if e['mode'] == 'dropped' and 'harm' not in e and not (
+                was and was['mode'] == 'deprecated' and was['since'] == e.get('deprecated') and
+                bindgen.version(was['since']) <= base):
+            out.append(f'{DROPS_PATH}: drops {kind}:{name} without a released deprecation: a binding that neither '
+                       'crashes nor corrupts state is deprecated in one release and dropped in a later one, with '
+                       'deprecated set to the release that deprecated it')
+    return out
+
+
+def drops_notes(old, new):
+    """What a change to the export drops does, one note per entry it adds, changes or removes."""
+    import bindgen
+    before = parse_db_file(old, bindgen.load_drops) if old is not None else {}
+    after = parse_db_file(new, bindgen.load_drops) if new is not None else {}
+    if isinstance(before, str):
+        before = {}
+    if isinstance(after, str):
+        return []
+    out = [f'{DROPS_PATH}: only the repository owner approves a change to the export drops']
+    for (kind, name), e in sorted(after.items()):
+        if before.get((kind, name)) != e:
+            what = 'deprecates' if e['mode'] == 'deprecated' else 'drops'
+            out.append(f'{DROPS_PATH}: {what} {kind}:{name} in {e["since"]} ({e["reason"]})')
+    for kind, name in sorted(set(before) - set(after)):
+        out.append(f'{DROPS_PATH}: removes the entry for {kind}:{name}')
     return out
 
 
@@ -514,8 +705,17 @@ def bindgen_ids(root):
             return {b['id'] for b in json.load(f)['bindings']}
 
 
+def held_drops():
+    """The ids this checkout's export drops take out of the addon API, entries that hold only."""
+    import bindgen
+    gate = bindgen.Gate()
+    bindgen.load(gate)
+    return {name for _, name in gate.dropped}
+
+
 def lost_exports(base):
-    """The ids the KB set exports at commit `base`, by that commit's own bindgen, that this checkout no longer exports."""
+    """The ids the KB set exports at commit `base`, by that commit's own bindgen, that this checkout no longer exports
+    and no export drops entry takes out."""
     import io, tarfile, tempfile
     have = set(git('ls-tree', '--name-only', base, 're/').stdout.decode().split())
     paths = [p for p in ('re/tools', 're/db', 're/tests', 're/bindings') if p in have]
@@ -526,7 +726,8 @@ def lost_exports(base):
             else:
                 tar.extractall(d)
         then = bindgen_ids(d)
-    return sorted(then - bindgen_ids(kb.ROOT))
+    lost = then - bindgen_ids(kb.ROOT)
+    return sorted(lost - held_drops() if lost else lost)
 
 
 def print_lost(lost, base):
@@ -535,7 +736,7 @@ def print_lost(lost, base):
     for name in lost:
         print(f'  {name}')
     print('  fix: binding.py status <name> says what each one needs, usually an agree row after a newer partial row '
-          'whose corrections are in the notes')
+          f'whose corrections are in the notes; only the repository owner takes one out on purpose ({DROPS_PATH})')
 
 
 def cmd_exports(a):
@@ -664,8 +865,13 @@ def cmd_doctor(a):
         author = authors.pop()
     store = br.Store.get()
     knowledge, keep = base_knowledge(changes)
+    pairs = {}
+    for p in (BASELINE_PATH, DROPS_PATH):
+        if p in other:
+            got = git('show', f'{base}:{p}', check=False)
+            pairs[p] = (got.stdout if got.returncode == 0 else None, read_file(os.path.join(kb.ROOT, p), 4 << 20))
     try:
-        result = judge(changes, other, author, knowledge)
+        result = judge(changes, other, author, knowledge, pairs.get(BASELINE_PATH), pairs.get(DROPS_PATH))
     finally:
         store.records = keep
     print(f'binding.py doctor: {len(changes)} record file(s) and {len(other)} other file(s) changed against '
@@ -684,11 +890,90 @@ def cmd_doctor(a):
             if rec:
                 status, need = export_state(gate, rec)
                 print(f'  {rec.name}: {status}' + (f'; needs {need}' if need != '-' else ''))
+    import bindgen
+    print(f'level baseline: {len(bindgen.load_baseline())} binding(s) still export on an agree made below their '
+          f'level ({BASELINE_PATH}); binding.py baseline lists them')
+    drops = bindgen.load_drops()
+    print(f'export drops: {sum(e["mode"] == "deprecated" for e in drops.values())} deprecated, '
+          f'{sum(e["mode"] == "dropped" for e in drops.values())} dropped ({DROPS_PATH}); binding.py drops lists them')
+    if result['owner_review']:
+        print(f'  the pull request changes {DROPS_PATH}: only the repository owner approves it')
     lost = lost_exports(base)
     if lost:
         print_lost(lost, base)
         return 1
     return 1 if result['verdict'] == 'fail' else 0
+
+
+def cmd_baseline(a):
+    """The level baseline's entries: how many are left, which are no longer in use, and --prune to drop those."""
+    import bindgen
+    entries = bindgen.load_baseline()
+    gate = bindgen.Gate()
+    bindgen.load(gate)
+    stale = {k: v for k, v in entries.items() if k not in gate.baselined}
+    if a.prune and stale:
+        bindgen.write_baseline({k: v for k, v in entries.items() if k not in stale})
+    left = len(entries) - (len(stale) if a.prune else 0)
+    print(f'binding.py baseline: {left} binding(s) export on an agree made below their level ({BASELINE_PATH})')
+    if a.list:
+        for (kind, name), covers in sorted(entries.items()):
+            if (kind, name) not in stale or not a.prune:
+                print(f'  {kind}:{name} {covers}')
+    for (kind, name), covers in sorted(stale.items()):
+        print(f'  {"removed" if a.prune else "not in use"}: {kind}:{name} {covers} (a newer verify row or an agree at '
+              'its level)')
+    return 1 if stale and not a.prune else 0
+
+
+def release_line(name, e):
+    """One release notes line for an export drops entry."""
+    reason = e['reason'].rstrip('. ')
+    use = f' Use `{e["replacement"]}` instead.' if e.get('replacement') else ''
+    if e['mode'] == 'deprecated':
+        return f'- The addon binding `{name}` is deprecated and leaves the addon API in the next release: {reason}.{use}'
+    return f'- The addon binding `{name}` is removed from the addon API: {reason}.{use}'
+
+
+def cmd_drops(a):
+    """The export drops: each entry's state against this checkout's release, or --release lines for release notes."""
+    import bindgen
+    drops = bindgen.load_drops()
+    if a.release:
+        if not bindgen.version(a.release):
+            raise SystemExit('binding.py drops: --release takes a release such as 1.10.0')
+        for (_, name), e in sorted(drops.items()):
+            if e['since'] == a.release:
+                print(release_line(name, e))
+        return 0
+    gate = bindgen.Gate()
+    bindgen.load(gate)
+    at = bindgen.workspace_version()
+    shown = '.'.join(map(str, at))
+    print(f'binding.py drops: {sum(e["mode"] == "deprecated" for e in drops.values())} deprecated, '
+          f'{sum(e["mode"] == "dropped" for e in drops.values())} dropped ({DROPS_PATH}); the checkout is at {shown}')
+    bad = 0
+    for (kind, name), e in sorted(drops.items()):
+        since = bindgen.version(e['since'])
+        if (kind, name) not in gate.deprecated and (kind, name) not in gate.dropped:
+            bad += 1
+            state = f'stale: its newest verify row is no longer {e["covers"]}; remove the entry'
+        elif e['mode'] == 'dropped':
+            state = f'dropped in {e["since"]}'
+        elif since > at:
+            state = f'deprecated in {e["since"]}, not released yet'
+        elif since == at:
+            state = (f'deprecated in {e["since"]}, due: drop it in the next release (mode dropped, deprecated '
+                     f'{e["since"]}, since the next release)')
+        else:
+            bad += 1
+            state = f'overdue: deprecated in {e["since"]}, and {shown} still ships it; drop it'
+        used = core_names(name)
+        if used:
+            bad += 1
+            state += f'; core still names it in {used}: move it off'
+        print(f'  {kind}:{name} {e["covers"]}: {state}')
+    return 1 if bad else 0
 
 
 def remove_lines(path, keep):
@@ -791,30 +1076,34 @@ def cmd_ci(a):
     checkout, which is the base branch."""
     with open(a.files, 'rb') as f:
         files = br.parse_json(f.read(4 << 20)) if os.path.getsize(a.files) <= 4 << 20 else None
-    result = {'verdict': 'review', 'records': [], 'errors': [], 'notes': []}
+    result = {'verdict': 'review', 'records': [], 'errors': [], 'notes': [], 'owner_review': False}
     if not isinstance(files, list) or not all(isinstance(x, dict) and isinstance(x.get('filename'), str) for x in files):
         result['verdict'] = 'fail'
         result['errors'].append('the file list is not a GitHub API file list')
         result['summary'] = summary(result)
     else:
-        changes, other, missing = [], [], []
+        changes, other, missing, pairs = [], [], [], {}
         for x in files:
             path, status = x['filename'], x.get('status')
+            if path in (BASELINE_PATH, DROPS_PATH) and status in ('added', 'modified', 'removed'):
+                old = read_file(os.path.join(kb.ROOT, path), 4 << 20)
+                new = None if status == 'removed' else read_file(os.path.join(a.head, path), 4 << 20)
+                if status == 'removed' or new is not None:
+                    pairs[path] = (old, new)
+                else:
+                    missing.append(path)
             if not br.RECORD_PATH_RE.match(path) or status not in ('added', 'modified', 'removed'):
                 other.append(path)
                 continue
-            base = os.path.join(kb.ROOT, path)
-            old = open(base, 'rb').read(br.MAX_BYTES + 1) if os.path.isfile(base) and not os.path.islink(base) else None
+            old = read_file(os.path.join(kb.ROOT, path), br.MAX_BYTES + 1)
             new = None
             if status != 'removed':
-                head = os.path.join(a.head, path)
-                if not os.path.isfile(head) or os.path.islink(head):
+                new = read_file(os.path.join(a.head, path), br.MAX_BYTES + 1)
+                if new is None:
                     missing.append(path)
                     continue
-                with open(head, 'rb') as f:
-                    new = f.read(br.MAX_BYTES + 1)
             changes.append((path, old, new))
-        result = judge(changes, other, a.author, bc.Knowledge())
+        result = judge(changes, other, a.author, bc.Knowledge(), pairs.get(BASELINE_PATH), pairs.get(DROPS_PATH))
         if missing:
             result['verdict'] = 'fail' if result['verdict'] == 'fail' else 'review'
             result['notes'] = [n for n in result['notes'] if n != bc.NO_RECORDS] + [
@@ -949,6 +1238,18 @@ def main(argv=None):
                       description='Runs the base commit\'s own bindgen and this checkout\'s, and lists every binding '
                                   'the base exports that this checkout does not. doctor runs it too.')
     p.add_argument('--base', help='the commit to compare with (default: where HEAD leaves origin/main or main)')
+    p = sp.add_parser('baseline', help='the bindings that still export on an agree made below their level',
+                      description='Counts the entries of re/db/level_baseline.json and lists those no longer in use '
+                                  '(a newer verify row over the binding, or an agree at its level); exits 1 while any '
+                                  'is listed. --prune removes them.')
+    p.add_argument('--prune', action='store_true', help='remove the entries no longer in use')
+    p.add_argument('--list', action='store_true', help='also list every entry')
+    p = sp.add_parser('drops', help='the bindings taken out of the addon API on purpose',
+                      description=f'Lists the entries of {DROPS_PATH} with their state against the release the '
+                                  'checkout is at (Cargo.toml): not released yet, due to become a drop, dropped, or '
+                                  'stale or overdue, which exit 1. --release prints the release notes lines for the '
+                                  'entries whose since is that release.')
+    p.add_argument('--release', help='print the release notes lines for this release, such as 1.10.0')
     p = sp.add_parser('verify', help='prove existing records again on your exe',
                       description='Resolve each record on your exe with the core\'s rules and store the proof, '
                                   'replacing your earlier proof on the same exe. Any build in re/db/builds works.')
@@ -989,7 +1290,8 @@ def main(argv=None):
     p.add_argument('--json', metavar='OUT', help='also write the report as JSON')
     a = ap.parse_args(argv)
     return {'new': cmd_new, 'doctor': cmd_doctor, 'verify': cmd_verify, 'agree': cmd_agree, 'check': cmd_check,
-            'status': cmd_status, 'unfold': cmd_unfold, 'ci': cmd_ci, 'port': cmd_port, 'exports': cmd_exports}[a.cmd](a) or 0
+            'status': cmd_status, 'unfold': cmd_unfold, 'ci': cmd_ci, 'port': cmd_port, 'exports': cmd_exports,
+            'baseline': cmd_baseline, 'drops': cmd_drops}[a.cmd](a) or 0
 
 
 if __name__ == '__main__':
