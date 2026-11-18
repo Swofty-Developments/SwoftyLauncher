@@ -11,9 +11,8 @@ use swofty_core::testsuite::report::Status;
 use swofty_core::testsuite::sandbox;
 use swofty_core::testsuite::suite::{self, Selector};
 
-use crate::commands::testing::harness::{BatchResults, Harness};
+use crate::commands::testing::harness::{BatchResults, Harness, career_mode};
 use crate::commands::testing::preflight::{batch_fixture, check_sandbox};
-use crate::commands::testing::shell::career_mode;
 
 use crate::commands::testing::fakes::*;
 use crate::commands::testing::*;

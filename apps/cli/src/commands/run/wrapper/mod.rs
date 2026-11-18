@@ -32,8 +32,8 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
             "close it before launching it again",
         ));
     }
-    let lock = crate::recover::lock(store, &info)?;
-    crate::recover::stale(store, &lock, g, Scope::All, &info)?;
+    let lock = crate::session_lock::lock(store, &info)?;
+    crate::session_lock::stale(store, &lock, g, Scope::All, &info)?;
     crate::commands::offline::gate(store, false)?;
     swofty_core::game_folder::entitlement::check_store_start(&g.dir, args.via_ea)?;
     crate::commands::build::check_entitled(store, g)?;
