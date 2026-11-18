@@ -134,7 +134,7 @@ pub(super) struct Targets {
     pub(super) upload: Tex,
     pub(super) original: Tex,
     pub(super) previous: Tex,
-    pub(super) pictures: [Tex; 2],
+    pictures: [Tex; 2],
     pub(super) out: Tex,
     pub(super) readback: wgpu::Buffer,
     pub(super) row_bytes: u32,

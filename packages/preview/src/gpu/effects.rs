@@ -119,7 +119,7 @@ pub(super) fn words(bytes: &[u8]) -> Result<Vec<u32>, String> {
 }
 
 impl Preview {
-    pub(super) fn build_effect(&self, id: &str) -> Result<EffectGpu, String> {
+    fn build_effect(&self, id: &str) -> Result<EffectGpu, String> {
         let source = self
             .sources
             .get(id)
