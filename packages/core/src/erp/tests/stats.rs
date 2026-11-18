@@ -9,15 +9,7 @@ fn the_build_rewrites_stale_tsmd_stats_of_a_replaced_bxml_fragment() {
     std::fs::create_dir_all(addon.join("ai")).unwrap();
     const SPLINE: &str = "eaid://environment_package/tracks/bahrain/ai/bahrain_ai_track.aispline";
     let stock = spline("ai_gate_track");
-    let fragment = |raw: Vec<u8>| Fragment {
-        name: *b"temp",
-        offset: 0,
-        size: raw.len() as u64,
-        flags: 0,
-        compression: STORED,
-        packed: raw.len() as u64,
-        raw,
-    };
+    let fragment = |raw: Vec<u8>| Fragment::new(*b"temp", raw.len() as u64, 0, STORED, raw);
     let mut res = Resource {
         name: SPLINE.into(),
         kind: erp::kind("AISplineData").unwrap(),
@@ -34,7 +26,11 @@ fn the_build_rewrites_stale_tsmd_stats_of_a_replaced_bxml_fragment() {
         version: 4,
         resources: vec![res],
     };
-    std::fs::write(game.join("tracks/bahrain_common.erp"), archive.to_bytes()).unwrap();
+    std::fs::write(
+        game.join("tracks/bahrain_common.erp"),
+        archive.to_bytes().unwrap(),
+    )
+    .unwrap();
     assert!(
         stale_stats_in(&ErpFile::open(&game.join("tracks/bahrain_common.erp")).unwrap())
             .unwrap()
@@ -90,7 +86,7 @@ fn the_build_rewrites_stale_tsmd_stats_of_a_replaced_bxml_fragment() {
     assert_eq!(repair.broken, at);
 
     archive.resources[0].set_fragment(0, &edited.to_bytes()).unwrap();
-    std::fs::write(root.join("broken.erp"), archive.to_bytes()).unwrap();
+    std::fs::write(root.join("broken.erp"), archive.to_bytes().unwrap()).unwrap();
     let file = ErpFile::open(&root.join("broken.erp")).unwrap();
     assert_eq!(stale_stats_in(&file).unwrap(), [SPLINE]);
     let (fixed, broken) = repair_stats_in(&file).unwrap();

@@ -59,6 +59,7 @@ pub(crate) struct Multiplayer {
     pub(super) copied: Option<Instant>,
     pub(super) launch_seen: u32,
     pub(super) room_launching: bool,
+    pub(super) held: Option<RoomLaunch>,
     pub(super) faces: HashMap<String, Arc<Image>>,
     pub(super) faces_asked: HashSet<String>,
     pub(super) _inputs: [Subscription; 2],
@@ -97,6 +98,7 @@ impl Multiplayer {
             copied: None,
             launch_seen: 0,
             room_launching: false,
+            held: None,
             faces: HashMap::new(),
             faces_asked: HashSet::new(),
             _inputs: inputs,
@@ -112,6 +114,7 @@ impl Multiplayer {
         self.session = None;
         self.launch_seen = 0;
         self.room_launching = false;
+        self.held = None;
         self.state = None;
         self.leaving = false;
         self.closing = None;

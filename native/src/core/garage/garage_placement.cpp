@@ -556,7 +556,7 @@ R restore_crew(uint64_t t)
 }
 
 namespace runtime {
-std::vector<CoreMixins> garage_placement_mixins()
+static std::vector<CoreMixins> garage_placement_mixins()
 {
     if (placement_enabled || !code_ready() || !backend::supported(build_distribution(), build_exe_sha()))
         return {};

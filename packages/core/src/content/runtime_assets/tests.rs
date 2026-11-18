@@ -25,15 +25,7 @@ fn op(addon: &str, json: &str) -> Op {
 }
 
 fn fragment(name: &[u8; 4], flags: u32, data: &[u8]) -> ErpFragment {
-    ErpFragment {
-        name: *name,
-        offset: 0,
-        size: data.len() as u64,
-        flags,
-        compression: STORED,
-        packed: data.len() as u64,
-        raw: data.to_vec(),
-    }
+    ErpFragment::new(*name, data.len() as u64, flags, STORED, data.to_vec())
 }
 
 #[test]
@@ -229,7 +221,8 @@ fn writes_assets_json_in_the_core_schema() {
 
 #[test]
 fn a_default_applies_before_every_set_and_never_conflicts() {
-    use crate::planner::{Features, Planner};
+    use crate::asset::Features;
+    use crate::planner::Planner;
     let out = std::env::temp_dir().join(format!("swofty-runtime-default-{}", std::process::id()));
     std::fs::remove_dir_all(&out).ok();
     let features = Features {

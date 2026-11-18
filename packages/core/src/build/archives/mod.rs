@@ -20,12 +20,13 @@ use super::run::Run;
 use super::{Built, Pipeline, source_dir};
 use crate::activation::ers::{self, ErsMap};
 use crate::activation::ui::Kept;
+use crate::asset::Kind;
 use crate::asset::{AssetOp, Op, Source};
 use crate::content::runtime_assets::{Prebuilt, overlay_fits};
 use crate::erp::{ErpBuild, Held, Resized, reads, writes};
 use crate::manifest::relative_inside;
 use crate::ops::ErpOp;
-use crate::planner::{Kind, Route};
+use crate::planner::Route;
 use crate::{Error, Result};
 
 /// What applying the archive changes leaves for placing the files.
@@ -103,7 +104,9 @@ impl Pipeline<'_, '_> {
         self.note_built_over_puts(&erp_ops, &puts);
         let base = |rel: &str| bases.path(rel);
         let resolve = |rel: &str| run.original(rel);
-        let mut erps = ErpBuild::new(&base).with_baseline(&resolve);
+        let mut erps = ErpBuild::new(&base)
+            .with_baseline(&resolve)
+            .with_packer(self.packer.clone());
         for rel in puts.keys() {
             erps.load(rel)?;
         }
@@ -438,6 +441,7 @@ impl Pipeline<'_, '_> {
                 prebuilt.len()
             ));
         }
+        erps.settle()?;
         let notes = runtime.resources(erps.resources(), &ranks, &prebuilt, &built.overlay)?;
         built.warnings.extend(notes);
         stage_erps(built, staged, built_in)?;

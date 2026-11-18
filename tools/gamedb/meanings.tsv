@@ -60,12 +60,12 @@ table	track_data.sorted_track_order.sorted_track_order_N	Track orders used by me
 table	track_data.sorted_track_order.sorted_track_order_N.TrackRef_N	One track in a menu order		proven	0x1413d5a60
 table	track_data.restricted_tracks.*	Tracks a mode may not use (madrid for F2)		inferred	values
 table	content_sets.content_set_N	Content sets: the tracks, grids, modes and features a game edition offers		proven	0x1413d5a60
-table	content_sets.content_set_N.track_layer_override_N	Track layer world swaps of the content set: when the set loads, the target layer takes the override layer's world		proven	Sess_ContentSet_ApplyTrackOverrides 0x1413e3120
-key	content_sets.content_set_N.track_layer_override_N.override	Label of the row in track_data.track_layers whose worldAssetGroup and worldEri the target layer takes; a label with no row makes the game read past the layer table		proven	Sess_Parse_ContentSet 0x1413d6bc1, Sess_ContentSet_ApplyTrackOverrides 0x1413e3120
-key	content_sets.content_set_N.track_layer_override_N.target	Label of the row in track_data.track_layers whose world is replaced, for every mode that loads it; a label with no row crashes the game at load		proven	Sess_Parse_ContentSet 0x1413d6bb7, Sess_ContentSet_ApplyTrackOverrides 0x1413e3120
 key	content_sets.content_set_N.available_tracks_N.tracks	Comma list of playable track ids in the content set		proven	0x1413d5a60
 key	content_sets.content_set_N.initial_tracks_N.tracks	Comma list of tracks unlocked at the start		inferred	name
 key	content_sets.current_content_set	Content set used when the config sets none (empty in the shipping file)		proven	0x1413d5a60
+table	content_sets.content_set_N.track_layer_override_N	Track layer overrides: after the track database loads, the game copies the override layer's world (worldAssetGroup, worldEri) onto the target layer, for every game setup mode		proven	0x1413e3120
+key	content_sets.content_set_N.track_layer_override_N.target	Label of the track_data.track_layers.TrackLayer_N row whose world is replaced; a label with no layer row makes the game write through a null layer		proven	0x1413e3120
+key	content_sets.content_set_N.track_layer_override_N.override	Label of the track_data.track_layers.TrackLayer_N row whose world is copied; a label with no layer row reads past the end of the layer table		proven	0x1413e3120
 table	entrants.teams.team_N	Teams: names, codes, colours, livery, kit, audio, boss, base and stat id		proven	Sess_Load_Teams 0x142469440, Sess_Parse_Entrant 0x142452e60
 table	entrants.teams.team_N.story_info_N	Team description and hashtag text		inferred	field names
 key	entrants.teams.team_N.display_name_code	Three-letter team code (timing tower, results)		inferred	values MER, FER, RBR

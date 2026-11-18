@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1434b7520.c;xref:0x1434ba589,0x1434ba90a,0x1434bb352",
-  "notes": "Log channel PITLANE: 'PitLaneMovementManager::handleEnterPitBox %d' | 'PitLaneMovementManager::assessBoxEntry pitboxId %d crewReady %s' | 'PitLaneMovementManager::eSplineToMarks %d' | 'PitLaneMovementManager::handleSplineToPitBoxMarks %d' | 'PitLaneMovementManager::assessBoxEntry garageBehindSafeToCross %s' | 'PitLaneMovementMan L2 2026-11-14 (engine-re round 2): decomp read; 3 reference(s) (0x1434ba589, 0x1434ba90a, 0x1434bb352); the body itself references 'PITLANE' / 'PitLaneMovementManager::handleEnterPitBox %d' / 'false' / 'true'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+  "notes": "Log channel PITLANE: 'PitLaneMovementManager::handleEnterPitBox %d' | 'PitLaneMovementManager::assessBoxEntry pitboxId %d crewReady %s' | 'PitLaneMovementManager::eSplineToMarks %d' | 'PitLaneMovementManager::handleSplineToPitBoxMarks %d' | 'PitLaneMovementManager::assessBoxEntry garageBehindSafeToCross %s' | 'PitLaneMovementMan L2 2026-11-14 (engine-re round 2): decomp read; 3 reference(s) (0x1434ba589, 0x1434ba90a, 0x1434bb352); the body itself references 'PITLANE' / 'PitLaneMovementManager::handleEnterPitBox %d' / 'false' / 'true'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) | engine-re 2026-11-17 track round C: sets status 3 EnteringPitBox (0x1434b8048, the only call with r8d=3)."
  },
  "signature": {
   "id": "game.pit_lane_handle_enter_pit_box",

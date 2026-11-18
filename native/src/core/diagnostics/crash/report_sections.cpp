@@ -23,6 +23,7 @@
 #include "core/diagnostics/crash/report_writer.hpp"
 #include "core/diagnostics/crash/symbolizer.hpp"
 #include "core/diagnostics/perf.hpp"
+#include "core/render/d3d12_hooks.hpp"
 #include "core/runtime/json.hpp"
 
 namespace runtime {
@@ -594,6 +595,8 @@ void step_header(Request &r)
             (unsigned long)nt->FileHeader.TimeDateStamp, (unsigned long long)process.exe_base);
     report_writer.out.put("symbols      %zu KB function name(s)%s\n", symbol_table.symbols.size(),
             symbol_table.matches ? "" : " (symbols.tsv is for another build or missing)");
+    if (size_t bound = symbol_table.bound_count())
+        report_writer.out.put("symbols      %zu function name(s) from the binding set\n", bound);
     report_writer.out.put("runtime      %s\n", process.wine_version ? fmt("Wine %s", process.wine_version()).c_str() : "Windows");
     report_writer.out.put("first-chance fatal-class exceptions before this report: %ld\n", capture.fatal_count);
 }
@@ -631,8 +634,19 @@ void step_dred(Request &r)
     if (r.has_prior)
         look(r.prior.ctx);
     std::string text = runtime::dred::section(removal);
-    if (!text.empty())
-        report_writer.out.put("%s", text.c_str());
+    if (text.empty())
+        return;
+    report_writer.out.put("%s", text.c_str());
+    std::string builds = d3d12hooks::rtas_recent_text(runtime::dred::build_stops());
+    for (size_t at = 0; at < builds.size();) {
+        size_t end = builds.find('\n', at);
+        end = end == std::string::npos ? builds.size() : end + 1;
+        report_writer.out.put("%.*s", int(end - at), builds.data() + at);
+        size_t from = builds.find_first_not_of(' ', at), to = builds[end - 1] == '\n' ? end - 1 : end;
+        if (from < to)
+            logger.api->log("[gfx] rtas recent: %.*s", int(to - from), builds.data() + from);
+        at = end;
+    }
 }
 
 void step_close(Request &)

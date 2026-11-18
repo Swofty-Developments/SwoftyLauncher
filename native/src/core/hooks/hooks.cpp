@@ -8,6 +8,7 @@
 #include "core/hooks/core_events.hpp"
 #include "core/hooks/guard.hpp"
 #include "core/hooks/hooks.hpp"
+#include "core/live/race_control.hpp"
 
 #include <mutex>
 #include <string>
@@ -180,7 +181,10 @@ int h_live(const char *point, uint32_t *version)
 {
     if (!point)
         return SWOFTY_ASSET_INVALID;
-    return the_table().live(point, version);
+    int r = the_table().live(point, version);
+    if (r == SWOFTY_ASSET_OK && swofty_core::live::race_control::fires(point) && !runtime::live_on())
+        return SWOFTY_ASSET_UNAVAILABLE;
+    return r;
 }
 
 int attach_from(const void *from, const char *point, uint32_t phase, int32_t priority, SwoftyText selectors,
@@ -350,6 +354,8 @@ void bridge_legacy(const char *event, int64_t a, int64_t b, const void *data)
         events::session_lap(uint32_t(a));
         return;
     }
+    if (id == "session.flag")
+        return; // race control fires the typed session.flag itself (core/live/race_control.cpp)
     fire_shell(e->id);
     if (id == "career.unloaded")
         update_facts([](Facts &f) {

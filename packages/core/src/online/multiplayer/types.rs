@@ -176,6 +176,9 @@ pub struct Progress {
 pub struct Problem {
     pub text: String,
     pub retry: bool,
+    /// One more sentence on what is wrong, shown under the text.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub detail: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

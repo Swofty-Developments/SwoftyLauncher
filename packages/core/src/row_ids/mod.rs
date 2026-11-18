@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use crate::ops::{IdFrom, stat_id_field};
+use crate::ops::{IdFrom, is_unlock_ids, stat_id_field};
 use crate::stdlib::reports;
 use crate::{Result, io_err};
 
@@ -52,7 +52,18 @@ const REGISTRY_TABLES: &[(&str, &str)] = &[
     ("team.identity", "entrants.teams.team"),
     ("driver.identity", "entrants.drivers.driver"),
     ("driver.head", "entrants.animation.driver_heads.driver_head"),
+    // The core's livery unlock pool spans every unlock list ([`pool`]).
+    ("livery.unlock", UNLOCK_POOL),
 ];
+
+/// The name the core's livery unlock ids go under: the pool is one for all unlock lists.
+const UNLOCK_POOL: &str = "unlockable_content.unlockable_items";
+
+/// The name `ids.json`'s ids and careers of `table`'s rows go under: every unlock list's id space
+/// (`<list>.unlockable_item`) shares the core's one livery unlock pool.
+fn pool(table: &str) -> &str {
+    if is_unlock_ids(table) { UNLOCK_POOL } else { table }
+}
 
 /// The core registries whose careers never hold ids: saves name vehicle packages by label, not by `stat_id`.
 const UNHELD_REGISTRIES: &[&str] = &["vehicle.package"];

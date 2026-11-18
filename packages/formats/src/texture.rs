@@ -293,15 +293,7 @@ mod tests {
     use crate::erp::Fragment;
 
     fn fragment(raw: Vec<u8>) -> Fragment {
-        Fragment {
-            name: *b"temp",
-            offset: 0,
-            size: raw.len() as u64,
-            flags: 0,
-            compression: 0,
-            packed: raw.len() as u64,
-            raw,
-        }
+        Fragment::new(*b"temp", raw.len() as u64, 0, 0, raw)
     }
 
     fn surface_with(format: u32, width: u32, height: u32, levels: u32, data: Vec<u8>) -> Resource {

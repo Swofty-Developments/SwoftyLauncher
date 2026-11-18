@@ -31,7 +31,7 @@ bool renarrow(void *mode)
     if (list.empty() || !is_ours(list.c_str()))
         return false;
     narrow(mode, list.c_str());
-    if (picker.logged_renarrow++ < LOG_FIRST)
+    if (picker.lines.renarrow.note())
         swofty::log("[era] picker built with %s still selected (%s): %s narrowed to it again", list.c_str(),
                     selected ? "the setup's selected list" : "the last addon box pressed", logic::HOST);
     return true;
@@ -64,7 +64,8 @@ uint8_t *addon_selection(uint8_t *vm)
 
 bool reset_set(uint8_t *vm, uint8_t *list)
 {
-    if ((picker.set.list.node || picker.set.selected.node) && (picker.set.list.node != list || picker.built.vm != vm) && picker.logged_detached++ < LOG_FIRST)
+    if ((picker.set.list.node || picker.set.selected.node) && (picker.set.list.node != list || picker.built.vm != vm) &&
+        picker.lines.detached.note())
         swofty::log("[era] detached the addon row from a previous view model (its boxes there cleared, its two nodes "
                     "unlinked and released)");
     logic::relink(picker.set, list, [](Set &s) { reinterpret_cast<FeTile_Clear_EraTileSet_Thunk_t *>(b.clear)(&s); });
@@ -155,7 +156,7 @@ void site_entry(SwoftyContext *c)
         uint8_t visible = picker.built.boxes > 0;
         reinterpret_cast<Vm_Set_Bool_t *>(b.set_bool)(registry(), root + 8, logic::ADDON_TILES_VISIBLE, &visible, 1);
     }
-    if (picker.logged_builds++ < LOG_FIRST)
+    if (picker.lines.builds.note())
         swofty::log("[era] era select%s: %zu stock box(es), %zu addon box(es) of %zu registered",
                     tt ? " (Time Trial)" : "", stock, picker.built.boxes, order.size());
 }
@@ -172,7 +173,7 @@ char *press_entry(void *vm, void *command)
     std::string why = logic::press_refusal(v == picker.built.vm, picker.set.list.node && picker.set.selected.node, count, picker.built.stock,
                                            picker.built.boxes);
     if (!why.empty()) {
-        if (picker.logged_refused++ < LOG_FIRST)
+        if (picker.lines.refused.note())
             swofty::log("[era] addon box press refused: %s", why.c_str());
         return nullptr;
     }
@@ -206,7 +207,7 @@ void select_entry(void *container, const char *entrant_list)
     if (mode && !ours && time_trial(mode))
         keep_time_trial_lists(mode);
     picker.last_press = entrant_list ? entrant_list : "";
-    if (ours && !mode && picker.logged_narrow++ < LOG_FIRST)
+    if (ours && !mode && picker.lines.narrow.note())
         swofty::log("[era] %s pressed but the container has no mode; %s is not narrowed", entrant_list, logic::HOST);
     picker.last_pick = ours ? entrant_list : "";
     swofty_core::apply::moments::box_picked(entrant_list, mode);

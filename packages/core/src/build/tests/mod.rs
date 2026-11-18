@@ -40,6 +40,7 @@ mod addons;
 mod archives;
 mod cars;
 mod database;
+mod digests;
 mod failure;
 mod picture;
 mod registry;
@@ -100,18 +101,11 @@ pub(super) fn archive_of(kind: &str, names: &[&str], byte: u8) -> Vec<u8> {
                 name: (*n).into(),
                 kind: swofty_formats::erp::kind(kind).unwrap(),
                 unk: vec![0; 4],
-                fragments: vec![Fragment {
-                    name: *b"temp",
-                    offset: 0,
-                    size: 1,
-                    flags: 0x10,
-                    compression: STORED,
-                    packed: 1,
-                    raw: vec![byte],
-                }],
+                fragments: vec![Fragment::new(*b"temp", 1, 0x10, STORED, vec![byte])],
                 hash: [0; 16],
             })
             .collect(),
     }
     .to_bytes()
+    .unwrap()
 }

@@ -67,7 +67,21 @@ impl Shell {
         let use_profiles = Switch::new("settings-use-profiles")
             .checked(self.prefs.use_profiles)
             .on_click(cx.listener(|this, on: &bool, window, cx| this.set_use_profiles(*on, window, cx)));
-        SettingsSection::new(tr("General"))
+        let update_off_addons = Switch::new("settings-update-off-addons")
+            .checked(self.prefs.update_off_addons)
+            .on_click(cx.listener(|this, on: &bool, window, cx| this.set_update_off_addons(*on, window, cx)));
+        let ad_privacy = self.ads_allowed().then(|| {
+            SettingRow::new(tr("Ad privacy choices"))
+                .description(tr("Choose how ads in the launcher may use your data"))
+                .control(
+                    Button::new("settings-ad-privacy")
+                        .outline()
+                        .tap_sm()
+                        .label(tr("Change"))
+                        .on_click(cx.listener(|this, _, window, cx| this.open_ad_privacy(window, cx))),
+                )
+        });
+        let section = SettingsSection::new(tr("General"))
             .row(
                 SettingRow::new(tr("Language"))
                     .description(tr("The launcher's own text. Text that isn't translated yet stays in English, and addons and F1 25 keep their own"))
@@ -84,6 +98,11 @@ impl Shell {
                     .control(use_profiles),
             )
             .row(
+                SettingRow::new(tr("Update turned-off addons"))
+                    .description(tr("Also update the addons that are off in your profile when Play updates addons. Turned off, only the addons that are on are updated."))
+                    .control(update_off_addons),
+            )
+            .row(
                 SettingRow::new(tr("Time Trial boards"))
                     .description(tr("Upload your Time Trial laps to the Swofty leaderboards. Ranked laps load a closed-source integrity module from Swofty's server."))
                     .control(time_trial),
@@ -97,8 +116,12 @@ impl Shell {
                 SettingRow::new(tr("Home screen video"))
                     .description(tr("Show the latest Swofty video in the bottom right of the F1 25 home screen. A change shows the next time you press Play."))
                     .control(home_video),
-            )
-            .into_any_element()
+            );
+        match ad_privacy {
+            Some(row) => section.row(row),
+            None => section,
+        }
+        .into_any_element()
     }
 
     pub(super) fn settings_display(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {

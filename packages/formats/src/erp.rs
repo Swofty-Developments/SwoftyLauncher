@@ -1,5 +1,6 @@
+use std::collections::BTreeMap;
 use std::io::{Read, Seek, SeekFrom};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use crate::bytes::Reader;
@@ -31,11 +32,86 @@ pub struct Fragment {
     pub size: u64,
     pub flags: u32,
     pub compression: u8,
-    pub packed: u64,
-    pub raw: Vec<u8>,
+    payload: Payload,
+}
+
+/// A fragment's bytes: as its archive stores them, or its data waiting for a [`Packer::settle`] that
+/// compresses it. An archive is laid out from stored bytes only, so a pending fragment is compressed
+/// before any write.
+#[derive(Debug, Clone)]
+enum Payload {
+    /// The bytes and how many of them the archive holds; `raw` stays empty until they are loaded.
+    Stored {
+        packed: u64,
+        raw: Vec<u8>,
+    },
+    Pending {
+        data: Vec<u8>,
+        level: i32,
+    },
 }
 
 impl Fragment {
+    /// A fragment stored as `raw`, at offset 0 until an archive lays it out.
+    pub fn new(name: [u8; 4], size: u64, flags: u32, compression: u8, raw: Vec<u8>) -> Self {
+        Self {
+            name,
+            offset: 0,
+            size,
+            flags,
+            compression,
+            payload: Payload::Stored {
+                packed: raw.len() as u64,
+                raw,
+            },
+        }
+    }
+
+    /// The bytes as the archive stores them; none while compression is pending.
+    pub fn raw(&self) -> Option<&[u8]> {
+        match &self.payload {
+            Payload::Stored { raw, .. } => Some(raw),
+            Payload::Pending { .. } => None,
+        }
+    }
+
+    /// How many bytes the archive stores; none while compression is pending.
+    pub fn packed(&self) -> Option<u64> {
+        match self.payload {
+            Payload::Stored { packed, .. } => Some(packed),
+            Payload::Pending { .. } => None,
+        }
+    }
+
+    /// The data a pending compression takes and the level it runs at; none once the fragment is stored.
+    pub fn pending(&self) -> Option<(&[u8], i32)> {
+        match &self.payload {
+            Payload::Stored { .. } => None,
+            Payload::Pending { data, level } => Some((data, *level)),
+        }
+    }
+
+    /// Whether the fragment holds a zstd frame: by its compression, or by its bytes when the compression
+    /// names neither zstd nor stored. A pending fragment is one.
+    pub fn is_zstd(&self) -> bool {
+        match &self.payload {
+            Payload::Stored { raw, .. } => {
+                self.compression == ZSTD || self.compression != STORED && raw.starts_with(&ZSTD_MAGIC)
+            }
+            Payload::Pending { .. } => true,
+        }
+    }
+
+    fn stored(&self) -> Result<(u64, &[u8])> {
+        match &self.payload {
+            Payload::Stored { packed, raw } => Ok((*packed, raw)),
+            Payload::Pending { .. } => Err(Error::Format(format!(
+                "{}: a fragment's compression is still pending",
+                self.name()
+            ))),
+        }
+    }
+
     pub fn name(&self) -> String {
         String::from_utf8_lossy(&self.name)
             .trim_end_matches('\0')
@@ -47,10 +123,10 @@ impl Fragment {
     }
 
     pub(crate) fn data_cow(&self) -> Result<std::borrow::Cow<'_, [u8]>> {
-        if self.compression == ZSTD || self.compression != STORED && self.raw.starts_with(&ZSTD_MAGIC) {
-            Ok(zstd::decode_all(self.raw.as_slice())?.into())
-        } else {
-            Ok(std::borrow::Cow::Borrowed(&self.raw))
+        match &self.payload {
+            Payload::Pending { data, .. } => Ok(std::borrow::Cow::Borrowed(data)),
+            Payload::Stored { raw, .. } if self.is_zstd() => Ok(zstd::decode_all(raw.as_slice())?.into()),
+            Payload::Stored { raw, .. } => Ok(std::borrow::Cow::Borrowed(raw)),
         }
     }
 }
@@ -80,6 +156,11 @@ impl Resource {
     }
 
     pub fn like(name: &str, template: &Resource, data: &[Vec<u8>]) -> Result<Self> {
+        Self::like_with(&Packer::default(), name, template, data)
+    }
+
+    /// A resource named `name` with `template`'s kind and fragments holding `data`, compressed by `packer`.
+    pub fn like_with(packer: &Packer, name: &str, template: &Resource, data: &[Vec<u8>]) -> Result<Self> {
         check_name(name)?;
         if data.len() != template.fragments.len() {
             return Err(Error::Format(format!(
@@ -98,16 +179,8 @@ impl Resource {
             hash: [0; 16],
         };
         for (t, d) in template.fragments.iter().zip(data) {
-            let mut f = Fragment {
-                name: t.name,
-                offset: 0,
-                size: 0,
-                flags: t.flags,
-                compression: t.compression,
-                packed: 0,
-                raw: Vec::new(),
-            };
-            fill(&mut f, d)?;
+            let mut f = Fragment::new(t.name, 0, t.flags, t.compression, Vec::new());
+            fill(packer, &mut f, d)?;
             res.fragments.push(f);
         }
         res.hash = res.content_hash()?;
@@ -130,36 +203,40 @@ impl Resource {
     // Rewrites stale TSMD stats from fragment 0, as the game's own tools write them;
     // true when it did. Fails when fragment 0 starts as binary XML but does not parse.
     pub fn repair_stats(&mut self) -> Result<bool> {
+        self.repair_stats_with(&Packer::default())
+    }
+
+    /// [`Resource::repair_stats`], compressing the new stats with `packer`.
+    pub fn repair_stats_with(&mut self, packer: &Packer) -> Result<bool> {
         if !self.stale_stats()? {
             return Ok(false);
         }
         let stats = self.fragments[1].data()?;
         let version = u32::from_le_bytes(stats[4..8].try_into().expect("4 bytes"));
         let doc = crate::bxml::Document::parse(&self.fragments[0].data()?)?;
-        self.set_fragment(1, &doc.string_stats(version))?;
+        self.set_fragment_with(packer, 1, &doc.string_stats(version))?;
         Ok(true)
     }
 
     pub fn set_fragment(&mut self, index: usize, data: &[u8]) -> Result<()> {
+        self.set_fragment_with(&Packer::default(), index, data)
+    }
+
+    /// Puts `data` in fragment `index`, compressed by `packer` when the fragment is zstd, and rehashes.
+    pub fn set_fragment_with(&mut self, packer: &Packer, index: usize, data: &[u8]) -> Result<()> {
         let f = self
             .fragments
             .get_mut(index)
             .ok_or_else(|| Error::Format(format!("{}: no fragment {index}", self.name)))?;
-        fill(f, data)?;
+        fill(packer, f, data)?;
         self.hash = self.content_hash()?;
         Ok(())
     }
 }
 
-fn fill(f: &mut Fragment, data: &[u8]) -> Result<()> {
-    f.raw = if f.compression == ZSTD {
-        compress(data)?
-    } else {
-        data.to_vec()
-    };
-    f.size = data.len() as u64;
-    f.packed = f.raw.len() as u64;
-    Ok(())
+fn fill(packer: &Packer, f: &mut Fragment, data: &[u8]) -> Result<()> {
+    let zstd = f.compression == ZSTD;
+    packer.put(f, data, zstd, ZSTD_LEVEL)
 }
 
 pub fn check_name(name: &str) -> Result<()> {
@@ -185,45 +262,141 @@ pub fn kind(name: &str) -> Result<[u8; 16]> {
 }
 
 pub fn compress(data: &[u8]) -> Result<Vec<u8>> {
-    compress_at(data, ZSTD_LEVEL)
+    Packer::default().compress(data)
 }
 
 pub fn compress_at(data: &[u8], level: i32) -> Result<Vec<u8>> {
-    let dir = PACKED.lock().unwrap_or_else(|e| e.into_inner()).clone();
-    match dir.filter(|_| data.len() >= PACKED_MIN) {
-        Some(dir) => compress_cached(&dir, data, level),
-        None => encode(data, level),
-    }
+    Packer::default().compress_at(data, level)
 }
 
-/// Compresses each of `inputs` at `level` as [`compress_at`] does, several at a time, and returns them
-/// in the same order. Each frame is the same bytes whichever thread wrote it.
+/// [`Packer::compress_many`] without a folder of frames to reuse.
 pub fn compress_many(inputs: &[&[u8]], level: i32) -> Result<Vec<Vec<u8>>> {
-    let threads = parallelism().min(inputs.len());
-    if threads <= 1 {
-        return inputs.iter().map(|data| compress_at(data, level)).collect();
-    }
-    let next = std::sync::atomic::AtomicUsize::new(0);
-    let done: Vec<std::sync::Mutex<Option<Result<Vec<u8>>>>> =
-        inputs.iter().map(|_| std::sync::Mutex::new(None)).collect();
-    std::thread::scope(|s| {
-        for _ in 0..threads {
-            s.spawn(|| {
-                loop {
-                    let at = next.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                    let Some(data) = inputs.get(at) else { break };
-                    *done[at].lock().unwrap_or_else(|e| e.into_inner()) = Some(compress_at(data, level));
-                }
-            });
+    Packer::default().compress_many(inputs, level)
+}
+
+/// How the launcher compresses the fragments it changes: with the folder of frames it reuses between
+/// builds, and whether compression waits for a [`Packer::settle`], which compresses every fragment
+/// pending at one level together. Deferred or not, a fragment ends as the same bytes.
+#[derive(Debug, Clone, Default)]
+pub struct Packer {
+    cache: Option<PathBuf>,
+    defer: bool,
+}
+
+impl Packer {
+    /// A packer that reuses the frames in `dir` and keeps the ones it writes there.
+    pub fn cached(dir: impl Into<PathBuf>) -> Self {
+        Self {
+            cache: Some(dir.into()),
+            defer: false,
         }
-    });
-    done.into_iter()
-        .map(|slot| {
-            slot.into_inner()
-                .unwrap_or_else(|e| e.into_inner())
-                .expect("every input is compressed")
-        })
-        .collect()
+    }
+
+    /// This packer, leaving each zstd fragment it is given pending until a [`Packer::settle`] when `defer`.
+    pub fn deferring(mut self, defer: bool) -> Self {
+        self.defer = defer;
+        self
+    }
+
+    pub fn defers(&self) -> bool {
+        self.defer
+    }
+
+    pub fn compress(&self, data: &[u8]) -> Result<Vec<u8>> {
+        self.compress_at(data, ZSTD_LEVEL)
+    }
+
+    pub fn compress_at(&self, data: &[u8], level: i32) -> Result<Vec<u8>> {
+        match self.cache.as_deref().filter(|_| data.len() >= PACKED_MIN) {
+            Some(dir) => compress_cached(dir, data, level),
+            None => encode(data, level),
+        }
+    }
+
+    /// Compresses each of `inputs` at `level` as [`Packer::compress_at`] does, several at a time, and
+    /// returns them in the same order. Each frame is the same bytes whichever thread wrote it.
+    pub fn compress_many(&self, inputs: &[&[u8]], level: i32) -> Result<Vec<Vec<u8>>> {
+        let threads = parallelism().min(inputs.len());
+        if threads <= 1 {
+            return inputs.iter().map(|data| self.compress_at(data, level)).collect();
+        }
+        let next = std::sync::atomic::AtomicUsize::new(0);
+        let done: Vec<std::sync::Mutex<Option<Result<Vec<u8>>>>> =
+            inputs.iter().map(|_| std::sync::Mutex::new(None)).collect();
+        std::thread::scope(|s| {
+            for _ in 0..threads {
+                s.spawn(|| {
+                    loop {
+                        let at = next.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                        let Some(data) = inputs.get(at) else { break };
+                        *done[at].lock().unwrap_or_else(|e| e.into_inner()) =
+                            Some(self.compress_at(data, level));
+                    }
+                });
+            }
+        });
+        done.into_iter()
+            .map(|slot| {
+                slot.into_inner()
+                    .unwrap_or_else(|e| e.into_inner())
+                    .expect("every input is compressed")
+            })
+            .collect()
+    }
+
+    /// Puts `data` in `f` with its size: compressed at `level` when `zstd`, else as it is. A deferring
+    /// packer leaves a zstd fragment pending, and its readers see `data` until [`Packer::settle`].
+    pub fn put(&self, f: &mut Fragment, data: &[u8], zstd: bool, level: i32) -> Result<()> {
+        f.payload = match zstd {
+            false => Payload::Stored {
+                packed: data.len() as u64,
+                raw: data.to_vec(),
+            },
+            true if self.defer => Payload::Pending {
+                data: data.to_vec(),
+                level,
+            },
+            true => {
+                let raw = self.compress_at(data, level)?;
+                Payload::Stored {
+                    packed: raw.len() as u64,
+                    raw,
+                }
+            }
+        };
+        f.size = data.len() as u64;
+        Ok(())
+    }
+
+    /// Compresses every pending fragment of `fragments`, one [`Packer::compress_many`] per level, and
+    /// returns how many it compressed.
+    pub fn settle<'a>(&self, fragments: impl IntoIterator<Item = &'a mut Fragment>) -> Result<usize> {
+        let mut levels: BTreeMap<i32, Vec<&'a mut Fragment>> = BTreeMap::new();
+        for f in fragments {
+            if let Some((_, level)) = f.pending() {
+                levels.entry(level).or_default().push(f);
+            }
+        }
+        let mut settled = 0;
+        for (level, frags) in levels {
+            let packed = {
+                let inputs: Vec<&[u8]> = frags
+                    .iter()
+                    .filter_map(|f| f.pending())
+                    .map(|(data, _)| data)
+                    .collect();
+                self.compress_many(&inputs, level)?
+            };
+            settled += frags.len();
+            for (f, raw) in frags.into_iter().zip(packed) {
+                f.payload = Payload::Stored {
+                    packed: raw.len() as u64,
+                    raw,
+                };
+            }
+        }
+        Ok(settled)
+    }
 }
 
 /// How many compressions run at once, and how many workers one large frame is split across: half the
@@ -232,8 +405,6 @@ fn parallelism() -> usize {
     static N: std::sync::OnceLock<usize> = std::sync::OnceLock::new();
     *N.get_or_init(|| std::thread::available_parallelism().map_or(1, |n| (n.get() / 2).clamp(1, 4)))
 }
-
-static PACKED: std::sync::Mutex<Option<std::path::PathBuf>> = std::sync::Mutex::new(None);
 
 static WORK: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
@@ -247,13 +418,6 @@ fn worked() {
     WORK.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 }
 const PACKED_MIN: usize = 16 << 10;
-
-pub fn cache_compressed(dir: Option<std::path::PathBuf>) {
-    if dir.is_none() {
-        ENCODERS.lock().unwrap_or_else(|e| e.into_inner()).clear();
-    }
-    *PACKED.lock().unwrap_or_else(|e| e.into_inner()) = dir;
-}
 
 type Encoder = zstd::zstd_safe::CCtx<'static>;
 
@@ -386,9 +550,11 @@ impl Erp {
         let (mut erp, data_off) = Self::parse_index(data)?;
         for res in &mut erp.resources {
             for f in &mut res.fragments {
-                f.raw = Reader::new(data, data_off.saturating_add(f.offset as usize))
-                    .take(f.packed as usize)?
+                let (packed, _) = f.stored()?;
+                let raw = Reader::new(data, data_off.saturating_add(f.offset as usize))
+                    .take(packed as usize)?
                     .to_vec();
+                f.payload = Payload::Stored { packed, raw };
             }
         }
         Ok(erp)
@@ -436,8 +602,10 @@ impl Erp {
                     size: r.u64()?,
                     flags: r.u32()?,
                     compression: r.u8()?,
-                    packed: r.u64()?,
-                    raw: Vec::new(),
+                    payload: Payload::Stored {
+                        packed: r.u64()?,
+                        raw: Vec::new(),
+                    },
                 });
             }
             resources.push(Resource {
@@ -482,17 +650,19 @@ impl Erp {
             .expect("found above"))
     }
 
-    pub fn to_bytes(&mut self) -> Vec<u8> {
-        let mut out = self.layout();
+    /// The archive's bytes, after compressing any fragment still pending.
+    pub fn to_bytes(&mut self) -> Result<Vec<u8>> {
+        Packer::default().settle(self.resources.iter_mut().flat_map(|r| r.fragments.iter_mut()))?;
+        let mut out = self.layout()?;
         for res in &self.resources {
             for f in &res.fragments {
-                out.extend_from_slice(&f.raw);
+                out.extend_from_slice(f.stored()?.1);
             }
         }
-        out
+        Ok(out)
     }
 
-    fn layout(&mut self) -> Vec<u8> {
+    fn layout(&mut self) -> Result<Vec<u8>> {
         let mut index = Vec::new();
         let mut fragments = 0u32;
         let mut offset = 0u64;
@@ -506,14 +676,15 @@ impl Erp {
             e.extend_from_slice(&res.unk);
             e.push(res.fragments.len() as u8);
             for f in &mut res.fragments {
+                let (packed, _) = f.stored()?;
                 f.offset = offset;
-                offset += f.packed;
+                offset += packed;
                 e.extend_from_slice(&f.name);
                 e.extend_from_slice(&f.offset.to_le_bytes());
                 e.extend_from_slice(&f.size.to_le_bytes());
                 e.extend_from_slice(&f.flags.to_le_bytes());
                 e.push(f.compression);
-                e.extend_from_slice(&f.packed.to_le_bytes());
+                e.extend_from_slice(&packed.to_le_bytes());
                 fragments += 1;
             }
             e.extend_from_slice(&res.hash);
@@ -530,7 +701,7 @@ impl Erp {
         out.extend_from_slice(&(self.resources.len() as u32).to_le_bytes());
         out.extend_from_slice(&fragments.to_le_bytes());
         out.extend_from_slice(&index);
-        out
+        Ok(out)
     }
 }
 
@@ -583,21 +754,25 @@ impl ErpFile {
         let len = file.metadata().map_err(crate::io_at(&self.path))?.len();
         let mut out = res.clone();
         for f in &mut out.fragments {
+            let (packed, _) = f.stored()?;
             let end = self
                 .data_off
                 .checked_add(f.offset)
-                .and_then(|at| at.checked_add(f.packed));
+                .and_then(|at| at.checked_add(packed));
             if end.is_none_or(|end| end > len) {
                 return Err(crate::io_at(&self.path)(std::io::ErrorKind::UnexpectedEof.into()));
             }
             file.seek(SeekFrom::Start(self.data_off + f.offset))
                 .map_err(crate::io_at(&self.path))?;
-            f.raw = vec![0; f.packed as usize];
-            file.read_exact(&mut f.raw).map_err(crate::io_at(&self.path))?;
+            let mut raw = vec![0; packed as usize];
+            file.read_exact(&mut raw).map_err(crate::io_at(&self.path))?;
+            f.payload = Payload::Stored { packed, raw };
         }
         Ok(out)
     }
 
+    /// Writes `entries` to `dst`, copying stock resources from this archive and compressing any owned
+    /// fragment still pending first.
     pub fn write(&self, entries: Vec<Entry<'_>>, dst: &Path) -> Result<()> {
         let mut spans = Vec::new();
         let mut resources = Vec::with_capacity(entries.len());
@@ -606,8 +781,12 @@ impl ErpFile {
                 Entry::Copy(r) => {
                     let mut r = r.clone();
                     for f in &mut r.fragments {
-                        spans.push(Some((self.data_off + f.offset, f.packed)));
-                        f.raw = Vec::new();
+                        let (packed, _) = f.stored()?;
+                        spans.push(Some((self.data_off + f.offset, packed)));
+                        f.payload = Payload::Stored {
+                            packed,
+                            raw: Vec::new(),
+                        };
                     }
                     resources.push(r);
                 }
@@ -617,12 +796,13 @@ impl ErpFile {
                 }
             }
         }
+        Packer::default().settle(resources.iter_mut().flat_map(|r| r.fragments.iter_mut()))?;
         let mut erp = Erp {
             header: self.erp.header,
             version: self.erp.version,
             resources,
         };
-        let head = erp.layout();
+        let head = erp.layout()?;
         let tmp = dst.with_extension("erp.tmp");
         let mut src = open(&self.path)?;
         let mut out = std::io::BufWriter::with_capacity(
@@ -645,7 +825,7 @@ impl ErpFile {
                     if let Some(done) = run.take() {
                         self.copy_span(&mut src, done, &mut buf, &mut out)?;
                     }
-                    std::io::Write::write_all(&mut out, &f.raw)?;
+                    std::io::Write::write_all(&mut out, f.stored()?.1)?;
                 }
             }
         }
@@ -806,16 +986,22 @@ mod tests {
     #[test]
     fn a_fragment_past_the_end_of_its_file_is_an_error_not_a_panic() {
         let path = std::env::temp_dir().join(format!("swofty-erp-packed-{}.erp", std::process::id()));
-        std::fs::write(&path, sample().to_bytes()).unwrap();
+        std::fs::write(&path, sample().to_bytes().unwrap()).unwrap();
         let file = ErpFile::open(&path).unwrap();
         let mut res = file.erp.resources[0].clone();
-        res.fragments[0].packed = u64::MAX;
+        res.fragments[0].payload = Payload::Stored {
+            packed: u64::MAX,
+            raw: Vec::new(),
+        };
         let err = file.load(&res).unwrap_err();
         assert!(
             matches!(&err, Error::IoAt { source, .. } if source.kind() == std::io::ErrorKind::UnexpectedEof),
             "{err}"
         );
-        res.fragments[0].packed = 1 << 40;
+        res.fragments[0].payload = Payload::Stored {
+            packed: 1 << 40,
+            raw: Vec::new(),
+        };
         assert!(file.load(&res).is_err());
         assert!(file.load(&file.erp.resources[0]).is_ok());
         std::fs::remove_file(&path).ok();
@@ -871,6 +1057,94 @@ mod tests {
     }
 
     #[test]
+    fn a_settled_fragment_is_the_bytes_an_eager_packer_writes_at_its_level() {
+        let noisy = |n: usize, salt: u64| -> Vec<u8> {
+            let mut seed = salt;
+            (0..n)
+                .map(|i| {
+                    seed = seed
+                        .wrapping_mul(6364136223846793005)
+                        .wrapping_add(1442695040888963407);
+                    if i % 3 == 0 {
+                        (seed >> 59) as u8
+                    } else {
+                        b"surface_"[i % 8]
+                    }
+                })
+                .collect()
+        };
+        let inputs: Vec<(Vec<u8>, i32)> = [
+            (0, 3),
+            (300, ZSTD_LEVEL),
+            (70 << 10, 3),
+            (1 << 20, ZSTD_LEVEL),
+            (9, 3),
+        ]
+        .into_iter()
+        .enumerate()
+        .map(|(i, (n, level))| (noisy(n, i as u64 + 1), level))
+        .collect();
+        let dir = std::env::temp_dir().join(format!("swofty-settle-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        for packer in [Packer::default(), Packer::cached(&dir)] {
+            let deferring = packer.clone().deferring(true);
+            let mut frags: Vec<Fragment> = inputs
+                .iter()
+                .map(|(data, level)| {
+                    let mut f = Fragment::new(*b"temp", 0, 0, ZSTD, Vec::new());
+                    deferring.put(&mut f, data, true, *level).unwrap();
+                    assert_eq!(
+                        (f.raw(), f.packed(), f.pending()),
+                        (None, None, Some((&data[..], *level)))
+                    );
+                    assert_eq!((f.data().unwrap(), f.size), (data.clone(), data.len() as u64));
+                    f
+                })
+                .collect();
+            assert_eq!(packer.settle(&mut frags).unwrap(), inputs.len());
+            for (f, (data, level)) in frags.iter().zip(&inputs) {
+                let eager = compress_at(data, *level).unwrap();
+                assert_eq!(f.raw(), Some(&eager[..]), "{} bytes, level {level}", data.len());
+                assert_eq!((f.packed(), f.pending()), (Some(eager.len() as u64), None));
+                assert_eq!(f.data().unwrap(), *data);
+            }
+            assert_eq!(packer.settle(&mut frags).unwrap(), 0);
+        }
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn an_archive_with_pending_fragments_writes_the_bytes_an_eager_one_does() {
+        let eager = sample().to_bytes().unwrap();
+        let mut pending = sample();
+        let res = &mut pending.resources[0];
+        res.set_fragment_with(&Packer::default().deferring(true), 0, b"!pkg sample payload")
+            .unwrap();
+        assert_eq!(
+            res.fragments[0].pending(),
+            Some((&b"!pkg sample payload"[..], ZSTD_LEVEL))
+        );
+        assert_eq!(res.hash, sample().resources[0].hash);
+        assert_eq!(pending.clone().to_bytes().unwrap(), eager);
+
+        let dir = std::env::temp_dir().join(format!("swofty-erp-pending-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join("src.erp"), &eager).unwrap();
+        let file = ErpFile::open(&dir.join("src.erp")).unwrap();
+        file.write(
+            vec![Entry::Owned(pending.resources[0].clone())],
+            &dir.join("out.erp"),
+        )
+        .unwrap();
+        assert_eq!(std::fs::read(dir.join("out.erp")).unwrap(), eager);
+        assert!(
+            file.write(vec![Entry::Copy(&pending.resources[0])], &dir.join("copy.erp"))
+                .is_err()
+        );
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
     fn a_reused_encoder_writes_what_a_new_one_does() {
         let mut seed = 7u64;
         let mut noisy = |n: usize| -> Vec<u8> {
@@ -907,7 +1181,7 @@ mod tests {
                 }
             }
         }
-        cache_compressed(None);
+        ENCODERS.lock().unwrap_or_else(|e| e.into_inner()).clear();
         assert_eq!(
             encode(&inputs[2], ZSTD_LEVEL).unwrap(),
             streamed(&inputs[2], ZSTD_LEVEL)
@@ -1005,24 +1279,8 @@ mod tests {
             kind,
             unk: vec![0; 6],
             fragments: vec![
-                Fragment {
-                    name: *b"temp",
-                    offset: 0,
-                    size: text.len() as u64,
-                    flags: 0,
-                    compression: ZSTD,
-                    packed: packed.len() as u64,
-                    raw: packed,
-                },
-                Fragment {
-                    name: *b"syst",
-                    offset: 0,
-                    size: 3,
-                    flags: 0,
-                    compression: 0,
-                    packed: 3,
-                    raw: b"abc".to_vec(),
-                },
+                Fragment::new(*b"temp", text.len() as u64, 0, ZSTD, packed),
+                Fragment::new(*b"syst", 3, 0, 0, b"abc".to_vec()),
             ],
             hash: [0; 16],
         };
@@ -1036,9 +1294,9 @@ mod tests {
 
     #[test]
     fn write_parse_write_is_identical() {
-        let bytes = sample().to_bytes();
+        let bytes = sample().to_bytes().unwrap();
         let mut back = Erp::parse(&bytes).unwrap();
-        assert_eq!(back.to_bytes(), bytes);
+        assert_eq!(back.to_bytes().unwrap(), bytes);
         let res = back.find("eaid://ui_package/screens/sample.ui").unwrap();
         assert_eq!(res.fragments[0].data().unwrap(), b"!pkg sample payload");
         assert_eq!(res.kind(), "UI");
@@ -1072,7 +1330,7 @@ mod tests {
         let res = erp.find_mut("eaid://ui_package/screens/sample.ui").unwrap();
         res.set_fragment(0, b"changed").unwrap();
         let hash = res.hash;
-        let bytes = erp.to_bytes();
+        let bytes = erp.to_bytes().unwrap();
         let back = Erp::parse(&bytes).unwrap();
         let res = &back.resources[0];
         assert_eq!(res.fragments[0].data().unwrap(), b"changed");
@@ -1135,12 +1393,12 @@ mod tests {
             assert_eq!((f.name, f.flags, f.compression), (s.name, s.flags, s.compression));
         }
         assert_eq!(res.fragments[0].data().unwrap(), b"one");
-        assert_ne!(res.fragments[0].raw, b"one");
+        assert_ne!(res.fragments[0].raw(), Some(&b"one"[..]));
         assert_eq!(
-            (res.fragments[0].size, res.fragments[0].packed),
-            (3, res.fragments[0].raw.len() as u64)
+            (res.fragments[0].size, res.fragments[0].packed()),
+            (3, res.fragments[0].raw().map(|r| r.len() as u64))
         );
-        assert_eq!(res.fragments[1].raw, b"two");
+        assert_eq!(res.fragments[1].raw(), Some(&b"two"[..]));
         assert_eq!(res.hash, res.content_hash().unwrap());
         assert!(Resource::like("eaid://ui_package/x.ui", t, &[b"one".to_vec()]).is_err());
         assert!(Resource::like("", t, &[b"one".to_vec(), b"two".to_vec()]).is_err());
@@ -1153,7 +1411,7 @@ mod tests {
     #[test]
     fn reads_matching_resources_from_a_file() {
         let path = std::env::temp_dir().join(format!("swofty-erp-{}.erp", std::process::id()));
-        std::fs::write(&path, sample().to_bytes()).unwrap();
+        std::fs::write(&path, sample().to_bytes().unwrap()).unwrap();
         let found = Erp::read_matching(&path, |n| n.ends_with("sample.ui")).unwrap();
         assert_eq!(found.len(), 1);
         assert_eq!(found[0].fragments[0].data().unwrap(), b"!pkg sample payload");
@@ -1175,7 +1433,7 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("swofty-erpfile-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let src = dir.join("src.erp");
-        let bytes = two().to_bytes();
+        let bytes = two().to_bytes().unwrap();
         std::fs::write(&src, &bytes).unwrap();
         let file = ErpFile::open(&src).unwrap();
         let all = file.erp.resources.iter().map(Entry::Copy).collect();
@@ -1222,7 +1480,7 @@ mod tests {
             erp.resources.push(res);
         }
         let src = dir.join("src.erp");
-        std::fs::write(&src, erp.to_bytes()).unwrap();
+        std::fs::write(&src, erp.to_bytes().unwrap()).unwrap();
         let file = ErpFile::open(&src).unwrap();
         let r = &file.erp.resources;
         let mut owned = file.load(&r[3]).unwrap();
@@ -1257,7 +1515,10 @@ mod tests {
                 })
                 .collect(),
         };
-        assert_eq!(std::fs::read(dir.join("out.erp")).unwrap(), expected.to_bytes());
+        assert_eq!(
+            std::fs::read(dir.join("out.erp")).unwrap(),
+            expected.to_bytes().unwrap()
+        );
         std::fs::remove_dir_all(&dir).ok();
     }
 
@@ -1266,7 +1527,7 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("swofty-erp-in-place-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("databases.erp");
-        std::fs::write(&path, two().to_bytes()).unwrap();
+        std::fs::write(&path, two().to_bytes().unwrap()).unwrap();
         let mut perms = std::fs::metadata(&path).unwrap().permissions();
         perms.set_readonly(true);
         std::fs::set_permissions(&path, perms).unwrap();
@@ -1346,7 +1607,7 @@ mod tests {
 
     #[test]
     fn rejects_bad_magic() {
-        let mut bytes = sample().to_bytes();
+        let mut bytes = sample().to_bytes().unwrap();
         bytes[0] = b'X';
         assert!(matches!(Erp::parse(&bytes), Err(Error::Magic { .. })));
     }

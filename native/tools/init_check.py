@@ -1,20 +1,34 @@
 #!/usr/bin/env python3
 """Fails the build when an object in src/core gets a dynamic initializer that tools/init_allow.txt does not list.
 
-tools/cxx_init.sh reports every namespace-scope or static-member object that clang's -Wglobal-constructors flags,
-with the innermost macro it is spelled in. An object that is only destroyed at exit was constant-initialized, so it
-reads nothing at load and is listed in the output only. A dynamic initializer runs in link order, before or after
-another unit's, so each one must either be spelled in a registration macro of the SDK or of include/swofty (it
-appends to a list in the SDK headers that is zero-initialized before any code runs, or to a function-local static)
-or be listed in tools/init_allow.txt with the reason its initializer reads no other unit's object: as
-"<source>: <declaration>" for one object, or as "<header>: #define <MACRO>" for every object spelled in a core macro.
-The fix for a new one is constinit or constexpr, a function-local static, or a SWOFTY_ON_LOAD handler.
+Each core object is read for what its static constructors do (tools/coff_ctors.py): the objects they initialize and
+the destructors they register. tools/cxx_init.sh adds the declarations clang's -Wglobal-constructors reports, with
+the innermost macro each is spelled in. clang reports an object whose class has a non-trivial destructor only as
+needing a destructor, and one whose class has a virtual destructor it defaulted not at all, so an object counts as
+dynamically initialized when clang says so or when its unit's constructor initializes it; a declaration is matched
+to the object by its name, by the body of the macro it is spelled in, or by the line a macro-made name ends in, and
+read from the unit's source when clang reported nothing. An object only destroyed at exit was constant-initialized,
+reads nothing at load and is listed in the output only.
 
-With --obj-root it also derives what the link order decides from the reports, given in link order: the units with
-static objects (init: a dynamic initializer, exit: a destructor run at exit, in reverse), the SDK mixin list they
-append to, the on-load entries in the order the loader runs them with the hook guard each SWOFTY_HOOK_GUARD entry
-arms, and the units whose binding uses add to the SDK's wanted list. It writes that to --order-out and, with
---snapshot, fails when it differs from the snapshot or a unit with static objects is not in --link-order.
+A dynamic initializer runs in a fixed order with every other unit's, so each one must either be spelled in a
+registration macro of the SDK or of include/swofty (it appends to a list in the SDK headers that is zero-initialized
+before any code runs, or to a function-local static) or be listed in tools/init_allow.txt with the reason its
+initializer reads no other unit's object: as "<source>: <declaration>" for one object, as "<header>: #define <MACRO>"
+for every object spelled in a core macro, or as "type: <type>" for every object of that type declared without an
+initializer. The fix for a new one is constinit or constexpr, a function-local static, or a SWOFTY_ON_LOAD handler.
+A static constructor that refers to another unit's object fails the build the same way unless the allow list names
+that reference as "refers: <source>: <object>".
+
+With --obj-root it also derives what the link order decides, from the objects given in link order. lld lays out the
+.ctors entries in link order (in each object, its sections in order, and a COMDAT entry only from the first object
+that has it) and the mingw runtime calls them from the last to the first, so units initialize in the reverse of the
+link order, and the destructors they register with atexit run in the reverse of that. It writes the units with a
+static constructor of their own and the inline variables they initialize, both in the order they run, the units whose
+destructors run at exit in that order, the SDK mixin list in the order it is built, the on-load entries in the order
+the loader runs them with the hook guard each one spelled in a macro that expands to SWOFTY_HOOK_GUARD arms, and the
+units whose copies of the SDK's binding slots add to its wanted list, in order, to --order-out. It fails when a hook
+guard's entry arms another guard than its own, and with --snapshot when what it writes differs from the snapshot or
+a unit with static objects is not in --link-order.
 """
 
 import argparse
@@ -25,24 +39,48 @@ import os
 import re
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import coff_ctors  # noqa: E402
+
 NATIVE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SDK = os.path.normpath(os.path.join(NATIVE, '../packages/sdk/include'))
 MACRO_HEADERS = [SDK, os.path.join(NATIVE, 'include')]
 DIAG = re.compile(r'^(.+?):(\d+):\d+: warning: declaration requires a global (constructor|destructor)')
+BINDING = re.compile(r'^_ZN6swofty6detail5boundI.*4addrE$')
+DEFAULT_DECL = re.compile(r'(?:(?:static|inline|thread_local)\s+)*((?:\w+::)*\w+)(?:\s*<.*>)?\s+[\w\s,*&\[\]]+;')
 ORDER_HEADER = """# What tools/core_link_order.txt decides in swofty_core.dll, as tools/init_check.py derives it from the core's
-# compile reports on every build, which fails when it differs from this file. units: the units with static objects in
-# link order (init: a dynamic initializer, exit: a destructor, which runs at exit in the reverse order). mixins: the
-# SDK mixin list in the order the units append to it. on-load: its on-load entries in the order the loader runs them,
-# each SWOFTY_HOOK_GUARD entry arming the next hook guard in HookGuardId order. bindings: the units whose binding uses
-# add to the SDK's wanted list, in order. After an intended change, copy native/build/init-order.txt here.
+# objects on every build, which fails when it differs from this file. The mingw runtime runs the .ctors entries lld
+# lays out in link order from the last to the first, so units initialize in the reverse of the link order. init: the
+# units with a static constructor of their own, in the order they run. inline: the inline variables and static members
+# of class templates with a dynamic initializer, other than the SDK's binding slots, under the unit whose copy the
+# linker keeps, in the order they run. exit: the units whose destructors run at exit, in that order (the reverse of
+# the order they registered them). mixins: the SDK mixin list in the order it is built. on-load: its on-load entries
+# in the order the loader runs them, each hook guard's entry arming the next hook guard in HookGuardId order.
+# bindings: the units whose copies of the SDK's binding slots add to its wanted list, in order. After an intended
+# change, copy native/build/init-order.txt here.
 """
+
+Entry = collections.namedtuple('Entry', 'path line kind decl macro')
+
+
+def headers(roots):
+    return [p for root in roots for p in glob.glob(os.path.join(root, '**/*.h*'), recursive=True)]
 
 
 def sdk_macros():
     names = set()
-    for path in [p for root in MACRO_HEADERS for p in glob.glob(os.path.join(root, '**/*.h*'), recursive=True)]:
+    for path in headers(MACRO_HEADERS):
         names.update(re.findall(r'^\s*#\s*define\s+(\w+)', open(path).read(), re.M))
     return names
+
+
+def macro_bodies():
+    bodies = {}
+    for path in headers(MACRO_HEADERS + [os.path.join(NATIVE, 'src/core')]):
+        text = open(path, errors='replace').read().replace('\\\n', ' ')
+        for name, body in re.findall(r'^\s*#\s*define\s+(\w+)(.*)$', text, re.M):
+            bodies[name] = bodies.get(name, '') + body
+    return bodies
 
 
 def head(decl):
@@ -52,48 +90,159 @@ def head(decl):
     return f'{m.group(1)}({m.group(2).strip()})' if m.group(2) else m.group(1)
 
 
+def expands_to(name, target, bodies, seen=None):
+    if name == target:
+        return True
+    seen = seen if seen is not None else set()
+    if name in seen:
+        return False
+    seen.add(name)
+    return any(expands_to(m, target, bodies, seen) for m in re.findall(r'\bSWOFTY_\w+', bodies.get(name, '')))
+
+
 def hook_guard_ids():
     path = os.path.join(NATIVE, 'src/core/guards/order.hpp')
     m = re.search(r'enum class HookGuardId[^{]*\{([^}]*)\}', open(path).read()) if os.path.isfile(path) else None
     return [n for n in re.findall(r'(\w+)\s*,', m.group(1)) if n != 'count'] if m else []
 
 
-def link_order_effects(reports, obj_root):
-    units, mixins, onload, bindings = [], [], [], []
-    hooks, armed = hook_guard_ids(), 0
-    for report in reports:
-        unit = os.path.relpath(report, obj_root)
-        if not unit.endswith('.o.init'):
+def source_lines(path, cache={}):
+    if path not in cache:
+        full = os.path.join(NATIVE, path)
+        cache[path] = open(full, errors='replace').read().split('\n') if os.path.isfile(full) else []
+    return cache[path]
+
+
+def statement(path, line):
+    lines = source_lines(path)
+    if not 0 < line <= len(lines):
+        return ''
+    start = line - 1
+    while start > 0 and not re.search(r'[;{}:]\s*$|^\s*$|^\s*(//|#)', lines[start - 1]):
+        start -= 1
+    end = line - 1
+    while end < len(lines) - 1 and ';' not in lines[end]:
+        end += 1
+    return re.sub(r'\s+', ' ', ' '.join(re.sub(r'//.*', '', l) for l in lines[start:end + 1])).strip()
+
+
+def default_type(path, line):
+    m = DEFAULT_DECL.fullmatch(statement(path, line))
+    return m.group(1) if m else None
+
+
+def find_decl(unit, name):
+    word = re.compile(rf'(?<![\w.>]){re.escape(name)}\s*(\{{|\(|=|;|\[)')
+    for n, text in enumerate(source_lines(unit), 1):
+        if word.search(text) and not re.match(r'\s*(//|#|return\b|if\b|for\b|while\b)', text) and \
+                re.match(r'\s*(static\s+|inline\s+|const\s+|constinit\s+)*[\w:<>, *&]+\s', text):
+            return n, text.strip()
+    return 0, ''
+
+
+def report_entries(report):
+    entries = []
+    for line in open(report):
+        diag, decl, macro = (line.rstrip('\n').split('\t') + ['', ''])[:3]
+        m = DIAG.match(diag)
+        if m:
+            path = os.path.relpath(os.path.normpath(os.path.join(NATIVE, m.group(1))), NATIVE)
+            entries.append(Entry(path, int(m.group(2)), m.group(3), decl.strip(), macro))
+    return entries
+
+
+def locate(symbol, unit, entries, bodies, taken):
+    name = coff_ctors.leaf(symbol)
+    word = re.compile(rf'(?<!\w){re.escape(name)}(?!\w)')
+    hits = [e for e in entries if word.search(e.decl)]
+    if not hits:
+        num = re.search(r'_(\d+)$', name)
+        hits = [e for e in entries if e.macro and (word.search(bodies.get(e.macro, '')) or
+                                                    num and int(num.group(1)) == e.line)]
+    hits.sort(key=lambda e: ((e.path, e.line, e.macro, name) in taken, e.kind != 'constructor'))
+    if hits:
+        taken.add((hits[0].path, hits[0].line, hits[0].macro, name))
+        return hits[0]
+    line, decl = find_decl(unit, name)
+    return Entry(unit, line, 'constructor', decl or coff_ctors.readable(symbol), '')
+
+
+class Unit:
+    def __init__(self, report, obj_root, bodies):
+        name = os.path.relpath(report, obj_root)
+        if not name.endswith('.o.init'):
             sys.exit(f'init_check.py: {report} is not a core report under {obj_root}')
-        unit = unit[:-len('.o.init')] + '.cpp'
-        entries = []
-        for line in open(report):
-            diag, decl, macro = (line.rstrip('\n').split('\t') + ['', ''])[:3]
-            m = DIAG.match(diag)
-            if m:
-                path = os.path.relpath(os.path.normpath(os.path.join(NATIVE, m.group(1))), NATIVE)
-                entries.append((path, int(m.group(2)), m.group(3), decl.strip(), macro))
-        if not entries:
-            continue
-        kinds = [k for k in ('init', 'exit') if any((e[2] == 'constructor') == (k == 'init') for e in entries)]
-        units.append(f'{unit}  {" ".join(kinds)}')
-        own = sorted((e for e in entries if e[0] == unit and e[2] == 'constructor'), key=lambda e: e[1])
-        for path, line, kind, decl, macro in own:
-            if macro not in ('SWOFTY_REG_', 'SWOFTY_ON_LOAD'):
+        self.name = name[:-len('.o.init')] + '.cpp'
+        self.entries = report_entries(report)
+        self.ctors = coff_ctors.ctors(report[:-len('.init')])
+        taken = set()
+        self.objects = {}
+        for c in self.ctors:
+            for symbol in c.initialized:
+                self.objects[symbol] = locate(symbol, self.name, self.entries, bodies, taken)
+
+
+def order_effects(units, hooks, bodies):
+    listed, kept = [], set()
+    for u in units:
+        for c in u.ctors:
+            key = tuple(c.initialized) or c.function
+            if c.comdat:
+                if key in kept:
+                    continue
+                kept.add(key)
+            listed.append((u, c))
+    run = list(reversed(listed))
+    init, inline, bindings, registered = [], [], [], []
+    for u, c in run:
+        if not c.comdat and u.name not in init:
+            init.append(u.name)
+        for symbol in c.initialized if c.comdat else []:
+            if BINDING.match(symbol):
+                if u.name not in bindings:
+                    bindings.append(u.name)
+            else:
+                inline.append(f'{u.name}  {coff_ctors.readable(symbol)}')
+        registered += [u.name] * len(c.destroyed)
+    exit_order = []
+    for name in reversed(registered):
+        if name not in exit_order:
+            exit_order.append(name)
+    by_name = {u.name: u for u in units}
+    mixins, onload, armed, misarmed = [], [], 0, []
+    for name in init:
+        own = sorted((e for e in by_name[name].entries if e.path == name and e.kind == 'constructor'),
+                     key=lambda e: e.line)
+        for e in own:
+            if e.macro not in ('SWOFTY_REG_', 'SWOFTY_ON_LOAD'):
                 continue
-            mixins.append(f'{unit}  {head(decl)}')
-            if macro == 'SWOFTY_ON_LOAD':
-                entry = f'{unit}  {head(decl)}'
-                if decl.startswith('SWOFTY_HOOK_GUARD'):
-                    entry += f', arms {hooks[armed] if armed < len(hooks) else "no hook guard"}'
+            mixins.append(f'{name}  {head(e.decl)}')
+            if e.macro == 'SWOFTY_ON_LOAD':
+                entry = f'{name}  {head(e.decl)}'
+                spelled = re.match(r'\s*(SWOFTY_\w+)\s*(?:\(\s*(\w+))?', e.decl)
+                if spelled and expands_to(spelled.group(1), 'SWOFTY_HOOK_GUARD', bodies):
+                    arms = hooks[armed] if armed < len(hooks) else 'no hook guard'
+                    entry += f', arms {arms}'
                     armed += 1
+                    if arms != spelled.group(2):
+                        misarmed.append(f'{name}  {head(e.decl)} arms {arms}')
                 onload.append(entry)
-        if any(e[2] == 'constructor' and e[0].endswith('swofty/mixin.hpp') and 'wanted(' in e[3] for e in entries):
-            bindings.append(unit)
     text = ORDER_HEADER
-    for name, rows in (('units', units), ('mixins', mixins), ('on-load', onload), ('bindings', bindings)):
-        text += name + '\n' + ''.join(f'  {r}\n' for r in rows)
-    return text, [u.split('  ')[0] for u in units]
+    for title, rows in (('init', init), ('inline', inline), ('exit', exit_order), ('mixins', mixins),
+                        ('on-load', onload), ('bindings', bindings)):
+        text += title + '\n' + ''.join(f'  {r}\n' for r in rows)
+    involved = [u.name for u in units if u.name in set(init) | set(exit_order) | set(bindings) |
+                {r.split('  ')[0] for r in inline}]
+    return text, involved, misarmed
+
+
+def references(units):
+    return [(u.name, coff_ctors.readable(symbol)) for u in units
+            for symbol in dict.fromkeys(e for c in u.ctors if not c.comdat for e in c.external)]
+
+
+def unlisted_references(refs, allowed_refs):
+    return [r for r in refs if r not in allowed_refs], [r for r in allowed_refs if r not in refs]
 
 
 def check_order(text, units, a):
@@ -110,10 +259,10 @@ def check_order(text, units, a):
     want = body(open(a.snapshot).read()) if os.path.isfile(a.snapshot) else []
     if body(text) != want:
         print(f'init_check.py: what the link order decides differs from {a.snapshot}. A reordered '
-              'tools/core_link_order.txt, or a unit that gains its first or loses its last static object, mixin, on-load '
-              'entry or binding use, changes the order the core\'s initializers, registrations, on-load entries and '
-              'exit-time destructors run in. If that is intended, copy native/build/init-order.txt to '
-              f'native/{a.snapshot} and commit it with the change:', file=sys.stderr)
+              'tools/core_link_order.txt, or a unit that gains its first or loses its last static object, inline '
+              'variable, mixin, on-load entry or binding use, changes the order the core\'s initializers, registrations, '
+              'on-load entries and exit-time destructors run in. If that is intended, copy native/build/init-order.txt '
+              f'to native/{a.snapshot} and commit it with the change:', file=sys.stderr)
         sys.stderr.writelines(l + '\n' for l in difflib.unified_diff(want, body(text), a.snapshot, 'init-order.txt',
                                                                      n=1, lineterm=''))
         return False
@@ -124,22 +273,30 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--allow', required=True)
     ap.add_argument('--out', required=True)
-    ap.add_argument('--obj-root')
+    ap.add_argument('--obj-root', required=True)
     ap.add_argument('--order-out')
     ap.add_argument('--link-order')
     ap.add_argument('--snapshot')
     ap.add_argument('reports', nargs='+')
     a = ap.parse_args()
 
-    allowed, allowed_macros = {}, {}
+    allowed, allowed_macros, allowed_types, allowed_refs = {}, {}, {}, {}
     for n, line in enumerate(open(a.allow), 1):
         line = line.rstrip('\n')
         if line.strip() and not line.startswith('#'):
             path, sep, decl = line.partition(': ')
             if not sep:
-                sys.exit(f'{a.allow}:{n}: expected "<source>: <declaration>" or "<header>: #define <MACRO>"')
+                sys.exit(f'{a.allow}:{n}: expected "<source>: <declaration>", "<header>: #define <MACRO>", '
+                         '"type: <type>" or "refers: <source>: <object>"')
             m = re.fullmatch(r'#define (\w+)', decl.strip())
-            if m:
+            if path == 'type':
+                allowed_types[decl.strip()] = n
+            elif path == 'refers':
+                source, sep, obj = decl.strip().partition(': ')
+                if not sep:
+                    sys.exit(f'{a.allow}:{n}: expected "refers: <source>: <object>"')
+                allowed_refs[(source, obj)] = n
+            elif m:
                 header = os.path.join(NATIVE, path)
                 if not os.path.isfile(header) or not re.search(rf'^\s*#\s*define\s+{m.group(1)}\b', open(header).read(), re.M):
                     sys.exit(f'{a.allow}:{n}: {path} does not define {m.group(1)}')
@@ -147,24 +304,25 @@ def main():
             else:
                 allowed[(path, decl.strip())] = n
 
-    macros = sdk_macros()
+    macros, bodies = sdk_macros(), macro_bodies()
+    units = [Unit(report, a.obj_root, bodies) for report in a.reports]
     found = collections.OrderedDict()
-    for report in a.reports:
-        for line in open(report):
-            diag, decl, macro = (line.rstrip('\n').split('\t') + ['', ''])[:3]
-            m = DIAG.match(diag)
-            if m:
-                path = os.path.relpath(os.path.normpath(os.path.join(NATIVE, m.group(1))), NATIVE)
-                found.setdefault((path, int(m.group(2)), macro), (m.group(3), decl.strip()))
+    for u in units:
+        for e in u.entries:
+            found.setdefault((e.path, e.line, e.macro), [e.kind, e.decl, 'clang'])
+        for e in u.objects.values():
+            got = found.setdefault((e.path, e.line, e.macro), ['constructor', e.decl, 'object'])
+            if got[0] == 'destructor':
+                got[0], got[2] = 'constructor', 'object'
 
     def where(path, line, macro):
         return f'{path}:{line}' + (f' (in {macro})' if macro else '')
 
     dynamic, unknown, used = [], [], set()
-    for (path, line, macro), (kind, decl) in found.items():
+    for (path, line, macro), (kind, decl, origin) in found.items():
         if kind != 'constructor':
             continue
-        dynamic.append((path, line, macro, decl))
+        dynamic.append((path, line, macro, decl, origin))
         if os.path.normpath(os.path.join(NATIVE, path)).startswith(SDK + os.sep) or macro in macros:
             continue
         if macro in allowed_macros:
@@ -173,33 +331,58 @@ def main():
         if (path, decl) in allowed:
             used.add((path, decl))
             continue
+        typ = default_type(path, line) if not macro else None
+        if typ in allowed_types:
+            used.add(('type', typ))
+            continue
         unknown.append(f'{where(path, line, macro)}: {decl}')
     stale = [f'{a.allow}:{n}: {path}: {decl}' for (path, decl), n in allowed.items() if (path, decl) not in used]
     stale += [f'{a.allow}:{n}: {path}: #define {name}' for name, (n, path) in allowed_macros.items() if name not in used]
+    stale += [f'{a.allow}:{n}: type: {typ}' for typ, n in allowed_types.items() if ('type', typ) not in used]
+    refs = references(units)
+    new_refs, gone_refs = unlisted_references(refs, allowed_refs)
+    stale += [f'{a.allow}:{allowed_refs[r]}: refers: {r[0]}: {r[1]}' for r in gone_refs]
 
     with open(a.out, 'w') as out:
-        out.write('# Objects in src/core with a dynamic initializer, then those only destroyed at exit.\n')
-        for path, line, macro, decl in dynamic:
-            out.write(f'init\t{where(path, line, macro)}\t{decl}\n')
-        for (path, line, macro), (kind, decl) in found.items():
+        out.write('# Objects in src/core with a dynamic initializer, then those only destroyed at exit, then the other '
+                  'units\' objects\n# a unit\'s constructor refers to. "object" marks one clang does not report as '
+                  'dynamically initialized,\n# found in its unit\'s constructor.\n')
+        for path, line, macro, decl, origin in dynamic:
+            out.write(f'init\t{where(path, line, macro)}\t{decl}' + ('\tobject\n' if origin == 'object' else '\n'))
+        for (path, line, macro), (kind, decl, origin) in found.items():
             if kind == 'destructor':
                 out.write(f'exit\t{where(path, line, macro)}\t{decl}\n')
+        for source, obj in refs:
+            out.write(f'refers\t{source}\t{obj}\n')
     order_ok = True
-    if a.obj_root:
-        text, units = link_order_effects(a.reports, a.obj_root)
+    if a.order_out:
+        text, involved, misarmed = order_effects(units, hook_guard_ids(), bodies)
         with open(a.order_out, 'w') as out:
             out.write(text)
+        if misarmed:
+            print('init_check.py: these hook guards\' on-load entries arm another hook guard than their own. Each arms the '
+                  'next one in HookGuardId order, so src/core/guards/order.hpp must list the hook guards in the order '
+                  'their on-load entries run (the on-load section of native/build/init-order.txt):', file=sys.stderr)
+            print('\n'.join(f'  {m}' for m in misarmed), file=sys.stderr)
+            order_ok = False
         if a.snapshot:
-            order_ok = check_order(text, units, a)
-    if unknown or stale or not order_ok:
+            order_ok = check_order(text, involved, a) and order_ok
+    if unknown or stale or new_refs or not order_ok:
+        if new_refs:
+            print('init_check.py: these units\' static constructors refer to another unit\'s object, whose own '
+                  'initializer may not have run yet. Read it from a function-local static or a SWOFTY_ON_LOAD handler '
+                  'instead, or, if the constructor only takes its address, list it with that reason in '
+                  'tools/init_allow.txt as "refers: <source>: <object>":', file=sys.stderr)
+            print('\n'.join(f'  {source}: {obj}' for source, obj in new_refs), file=sys.stderr)
         if unknown:
-            print('init_check.py: these objects have a dynamic initializer, which runs in link order. Make them constinit '
-                  'or constexpr, a function-local static or a SWOFTY_ON_LOAD handler, or, if the initializer reads no '
-                  'other unit\'s object, list them with that reason in tools/init_allow.txt:', file=sys.stderr)
+            print('init_check.py: these objects have a dynamic initializer, which runs in a fixed order with every other '
+                  'unit\'s. Make them constinit or constexpr, a function-local static or a SWOFTY_ON_LOAD handler, or, '
+                  'if the initializer reads no other unit\'s object, list them with that reason in tools/init_allow.txt:',
+                  file=sys.stderr)
             print('\n'.join(f'  {u}' for u in unknown), file=sys.stderr)
         if stale:
-            print('init_check.py: tools/init_allow.txt lists objects that no longer have a dynamic initializer; remove '
-                  'them:', file=sys.stderr)
+            print('init_check.py: tools/init_allow.txt lists objects that no longer have a dynamic initializer, or '
+                  'references no constructor makes any more; remove them:', file=sys.stderr)
             print('\n'.join(f'  {s}' for s in stale), file=sys.stderr)
         os.remove(a.out)
         sys.exit(1)

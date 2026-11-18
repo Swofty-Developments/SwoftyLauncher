@@ -13,7 +13,7 @@ use swofty_formats::erp::ErpFile;
 use swofty_formats::gvdb::Gvdb;
 use swofty_formats::hash::fnv1a64;
 
-pub use crate::launcher::{ProfileHead, ProfileHeads};
+use crate::launcher::{ProfileHead, ProfileHeads};
 use crate::store::Store;
 
 pub const TABLE: &str = "entrants.animation.driver_heads";

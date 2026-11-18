@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::ops::IdFrom;
 use crate::{Loaded, Result};
 
-use super::{Store, addon_of, row_name, table_of};
+use super::{Store, addon_of, pool, row_name, table_of};
 
 /// What a room's host lends a joiner for one session's builds, so both copies' fingerprints match: the
 /// ids the host gave the addons' rows (`rows`, by addon and then `<table>.<row>/<label>`, in place of the
@@ -214,7 +214,7 @@ impl Store {
                     row_name(other)
                 ));
             }
-            if let Some(record) = self.pinned.get(table).and_then(|ids| ids.get(&id))
+            if let Some(record) = self.pinned.get(pool(table)).and_then(|ids| ids.get(&id))
                 && self.pin_holds(record)
             {
                 return Err(format!(
@@ -238,7 +238,10 @@ impl Store {
         let addon = addon_of(key);
         let adds = self.adds_to.contains(&(addon.to_owned(), table.to_owned()));
         (!self.building.contains(addon) || (!adds && !self.claimed.contains(key)))
-            && !self.career_held.get(table).is_some_and(|ids| ids.contains(&id))
+            && !self
+                .career_held
+                .get(pool(table))
+                .is_some_and(|ids| ids.contains(&id))
     }
 
     /// Whether `record`, which `ids.json` holds `id` for, belongs to an addon this build leaves out and no career
@@ -250,7 +253,10 @@ impl Store {
             && addon != "game"
             && !self.building.contains(addon)
             && !self.lent_build.contains(addon)
-            && !self.career_held.get(table).is_some_and(|ids| ids.contains(&id))
+            && !self
+                .career_held
+                .get(pool(table))
+                .is_some_and(|ids| ids.contains(&id))
     }
 
     /// Whether a registry record keeps its id from this build. While a host's ids are lent, a record of an

@@ -49,6 +49,7 @@ impl ErpBuild<'_> {
     // the game or earlier addons left it, and sets the slice count in the array's
     // header and in its view (the same name without `.image`, the count at 0x14).
     pub(super) fn append_slices(&mut self, erp: &str, resource: &str, from: &Path) -> Result<()> {
+        let packer = self.packer.clone();
         let source = self.load_from(from, resource)?;
         let theirs = Array::read_slices(&source).ok_or_else(|| {
             fail(format!(
@@ -80,8 +81,8 @@ impl ErpBuild<'_> {
             .data()?;
         let head =
             Array::with_count(&head, into.count).ok_or_else(|| fail(format!("{resource}: short header")))?;
-        pack::set_fragment(&mut res, 0, &head).map_err(|e| fail(format!("{erp}: {e}")))?;
-        pack::set_fragment(&mut res, 1, &into.data).map_err(|e| fail(format!("{erp}: {e}")))?;
+        pack::set_fragment(&packer, &mut res, 0, &head).map_err(|e| fail(format!("{erp}: {e}")))?;
+        pack::set_fragment(&packer, &mut res, 1, &into.data).map_err(|e| fail(format!("{erp}: {e}")))?;
         self.place(erp, res, true)?;
         if let Some(view) = resource.strip_suffix(".image") {
             let found = match self.current(erp, view)? {
@@ -96,7 +97,7 @@ impl ErpBuild<'_> {
                     .data()?;
                 if let Some(at) = d.get_mut(VIEW_COUNT..VIEW_COUNT + 4) {
                     at.copy_from_slice(&(into.count as u32).to_le_bytes());
-                    pack::set_fragment(&mut v, 0, &d).map_err(|e| fail(format!("{erp}: {e}")))?;
+                    pack::set_fragment(&packer, &mut v, 0, &d).map_err(|e| fail(format!("{erp}: {e}")))?;
                     self.place(erp, v, true)?;
                 }
             }
@@ -111,6 +112,7 @@ impl ErpBuild<'_> {
     }
 
     pub(super) fn merge_slices(&mut self, erp: &str, resource: &str, from: &Path) -> Result<SliceMerge> {
+        let packer = self.packer.clone();
         let mut merge = SliceMerge {
             erp: erp.to_owned(),
             resource: resource.to_owned(),
@@ -199,12 +201,13 @@ impl ErpBuild<'_> {
         if merge.changed.is_empty() {
             return Ok(merge);
         }
-        pack::set_fragment(&mut res, 1, &into.data).map_err(|e| fail(format!("{erp}: {e}")))?;
+        pack::set_fragment(&packer, &mut res, 1, &into.data).map_err(|e| fail(format!("{erp}: {e}")))?;
         self.place(erp, res, true)?;
         Ok(merge)
     }
 
     pub fn cohere_arrays(&mut self) -> Result<Vec<String>> {
+        let packer = self.packer.clone();
         let mut lines = Vec::new();
         let rels: Vec<String> = self.erps.keys().cloned().collect();
         for rel in rels {
@@ -244,7 +247,7 @@ impl ErpBuild<'_> {
                     continue;
                 };
                 at.copy_from_slice(&(count as u32).to_le_bytes());
-                pack::set_fragment(&mut v, 0, &data).map_err(|e| fail(format!("{rel}: {e}")))?;
+                pack::set_fragment(&packer, &mut v, 0, &data).map_err(|e| fail(format!("{rel}: {e}")))?;
                 self.place(&rel, v, true)?;
                 if let Some(origin) = self.writers.get(&(rel.clone(), image.clone())).cloned() {
                     self.writers.insert((rel.clone(), view.clone()), origin);

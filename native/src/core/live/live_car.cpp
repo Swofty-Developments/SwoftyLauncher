@@ -35,7 +35,10 @@ constexpr size_t SURFACE_STATE_WETNESS = 0x3f0a38;
 constexpr int MAX_CARS = 26;
 constexpr float RAD_S_TO_RPM = 60.0f / 6.2831855f;
 
-uintptr_t table = 0, count = 0;
+const runtime::Sig S_WEATHER{"g_Game_WeatherSurfaceState", "48 8B 05 ?? ?? ?? ?? 48 85 C0 74 35 80 B8 8B 0A 3F 00 00",
+                             RVA_WEATHER_SURFACE_STATE, runtime::Sig::riprel, 0, 3, 7};
+
+uintptr_t table = 0, count = 0, weather = 0;
 bool resolved = false;
 Fields fields;
 int last_player = -1;
@@ -43,7 +46,7 @@ int last_player = -1;
 void resolve()
 {
     resolved = true;
-    fields = fields_of(runtime::same_build(), runtime::verified_build());
+    fields = fields_of(runtime::running_build());
     if (!fields.table) {
         swofty::log("[shaders] live car signals are unavailable: this is not a build the car offsets are checked on");
         return;
@@ -58,9 +61,15 @@ void resolve()
                     "resolve");
         return;
     }
+    if (fields.wetness && swofty::api)
+        weather = runtime::same_build() ? swofty::api->module_base() + RVA_WEATHER_SURFACE_STATE
+                                        : runtime::find(S_WEATHER, "live car", "shaders");
     if (!fields.wheels)
         swofty::log("[shaders] live car signals on this build read the proven car fields only: wheel surface, wheel "
                     "wetness, track wetness, orientation, wheel spin and slip are off until their offsets are checked on it");
+    else if (!fields.surface)
+        swofty::log("[shaders] live car signals on this build read the proven car fields only: wheel surface, wheel "
+                    "wetness, orientation and angular velocity are off until their offsets are checked on it");
 }
 
 uintptr_t car_at(int i)
@@ -185,9 +194,9 @@ bool vec3(uintptr_t at, float (&out)[3])
 
 void read_wetness(LiveCar &out)
 {
-    if (!swofty::api || !fields.wetness)
+    if (!swofty::api || !fields.wetness || !weather)
         return;
-    uintptr_t state = ptr(swofty::api->module_base() + RVA_WEATHER_SURFACE_STATE, 0);
+    uintptr_t state = ptr(weather, 0);
     float w = 0;
     if (state && mem::read(state + SURFACE_STATE_WETNESS, w) && real(w)) {
         out.wetness = w < 0 ? 0 : w > 1 ? 1 : w;

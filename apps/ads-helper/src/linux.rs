@@ -2,12 +2,12 @@ use gtk::glib;
 use gtk::prelude::*;
 use std::cell::Cell;
 use std::collections::HashMap;
-use std::io::BufRead;
+use std::io::{BufRead, Write};
 use std::path::PathBuf;
 use std::rc::Rc;
 use std::sync::mpsc;
 use std::time::Duration;
-use swofty_ads::Command;
+use swofty_ads::{Command, Consent, Event};
 use wry::raw_window_handle as rwh;
 use wry::{Rect, WebContext, WebView, WebViewExtUnix};
 
@@ -71,12 +71,14 @@ impl Host {
                     return;
                 }
                 let strayed = Rc::new(Cell::new(false));
+                let key = slot.clone();
                 let built = swofty_ads::view::builder(
                     &mut self.context,
                     &url,
                     bounds,
                     swofty_ads::slot_background(&url).unwrap_or([0, 0, 0]),
                     strayed.clone(),
+                    move |consent| report(&key, consent),
                 )
                 .with_url(&url)
                 .build_as_child(&self.parent);
@@ -114,6 +116,17 @@ impl Host {
             }
         }
     }
+}
+
+/// Tells the launcher, on stdout, what a slot's consent page reported.
+fn report(slot: &str, consent: Consent) {
+    let line = Event {
+        slot: slot.to_owned(),
+        consent,
+    }
+    .line();
+    let mut out = std::io::stdout().lock();
+    let _ = out.write_all(line.as_bytes()).and_then(|()| out.flush());
 }
 
 fn arg(args: &[String], name: &str) -> Option<String> {

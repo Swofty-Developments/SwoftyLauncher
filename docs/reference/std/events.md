@@ -358,7 +358,7 @@ This mask is the game's pause call. The `paused` view flag that [post-processing
 
 ## Availability
 
-The core implements `on_frame`, `session.start`, `race.start` and, from core 0.2.11 (API version 6), the four flow and career events above, and from core 0.2.12 (API version 7) `career.starting`. `career.content.pressed` fires on cores with [career contents](./career-content). `telemetry.overtake`, `telemetry.collision` and `telemetry.retirement` fire on cores with the [telemetry](./telemetry#events) feature on. `pause` and `resume` fire on cores that export `SwoftyCorePauseReasons` ([pause and resume](#pause-and-resume)). The other names (`session.end`, `lap`, `flag`, `state`, `screen`, `results`) are accepted but do not fire yet.
+The core implements `on_frame`, `session.start`, `race.start` and, from core 0.2.11 (API version 6), the four flow and career events above, and from core 0.2.12 (API version 7) `career.starting`. `career.content.pressed` fires on cores with [career contents](./career-content). `telemetry.overtake`, `telemetry.collision` and `telemetry.retirement` fire on cores with the [telemetry](./telemetry#events) feature on. `pause` and `resume` fire on cores that export `SwoftyCorePauseReasons` ([pause and resume](#pause-and-resume)). `flag` fires on cores with [race control](./race-control#the-flag) while the `telemetry` feature is on, with `e->a` the flag (`SWOFTY_FLAG_*`, 5 for the chequered flag) and `e->b` the yellow sectors. The other names (`session.end`, `lap`, `state`, `screen`, `results`) are accepted but do not fire yet.
 
 A build where a hook does not resolve leaves only that event silent. The `[events] setup:` and `[career] setup:` lines say which:
 

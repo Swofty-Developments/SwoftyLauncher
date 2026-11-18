@@ -69,7 +69,7 @@ constexpr size_t RECORD_NODE = 0x2c0;
 constexpr size_t NODE_FIRST_WORD = 0x8;
 
 uintptr_t track_done = 0, record_next = 0;
-runtime::track_record::Seen record_seen;
+guards::FirstBytes record_seen;
 std::mutex record_lock;
 guards::FirstKeys<uint32_t, LOG_ROUNDS> logged{"rounds"};
 

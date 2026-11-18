@@ -2,8 +2,8 @@ use std::collections::HashSet;
 use std::time::Instant;
 
 use swofty_core::online::multiplayer::types::{
-    GameStatus, MemberStage, MemberState, Phase, PrintMatch, RelayStatus, Role, RoomAddon, RoomAddons,
-    RoomSummary, Screen, SessionState, User,
+    GameStatus, MemberStage, MemberState, Phase, PrintMatch, Problem, RelayStatus, Role, RoomAddon,
+    RoomAddons, RoomSummary, Screen, SessionState, User,
 };
 
 use super::model::starting;
@@ -13,6 +13,24 @@ use super::model::{
 };
 use super::state::{Lobby, unasked};
 use swofty_core::online::multiplayer::types::RoomContent;
+
+#[test]
+fn a_problem_reads_with_or_without_its_detail() {
+    let read = |json: &str| serde_json::from_str::<Problem>(json).unwrap();
+    assert_eq!(
+        read(r#"{"text":"Simplified doesn't match the host's.","retry":false}"#).detail,
+        None
+    );
+    let said = read(
+        r#"{"text":"Simplified doesn't match the host's.","retry":false,"detail":"Its build step made more."}"#,
+    );
+    assert_eq!(said.detail.as_deref(), Some("Its build step made more."));
+    assert!(
+        !serde_json::to_string(&read(r#"{"text":"x","retry":true}"#))
+            .unwrap()
+            .contains("detail")
+    );
+}
 
 fn status(screen: Screen) -> GameStatus {
     GameStatus {

@@ -54,6 +54,10 @@ Shipped in 1.6.0:
 - **[The spectator camera](./graphics#the-spectator-camera)** `swofty/systems/spectator.hpp`: `spectator::set_active`, `follow`, `set_camera`, `current`.
 - **[Your own systems](./custom)**: an addon's own registries, scope, projection, scoped hooks and service.
 
+Added in 1.10.0:
+
+- **[Race control](/reference/std/race-control)** `swofty/systems/race_control.hpp`: the `session.flag`, `session.safety_car.deploy`, `session.red_flag`, `session.sector` and `session.car.status` payloads, and `race_control::now`.
+
 Described on their pages, in headers that come later:
 
 - **[Cars](./cars)**: `vehicle.damage_model`, `vehicle.parts`.

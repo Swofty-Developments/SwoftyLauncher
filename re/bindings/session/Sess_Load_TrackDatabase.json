@@ -8,8 +8,8 @@
   "level": "L2",
   "subsystem": "session",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e58f20.c;xref:0x1413e4e15",
-  "notes": "Loads the track database: 'tracks.track_resources' (worldAssetGroup, worldEri, crowdEri, garage_%02u, iblProbes/iblRoot/iblKey/iblSuffix, aoBakeAssetGroup, radianceBakeAssetGroup, lightListAssetGroup, ddgiAssetGroup, trackMapAssetGroup, loadAIData), 'tyres.allocation_tyre_preset'/'tyres.mandatory_tyre_presets' per session, 'track_data.track_layers', 'track_data.restricted_tracks', 'schedule.track_lists'/all_track_events/fixed_event(_reference)/date_time, game_setup_modes, ERS settings. Caller Sess_Apply_ContentAvailability. Addon: where per-track asset groups (garages, IBL, DDGI, track map) are bound."
+  "evidence": "decomp:re/decomp/142e58f20.c;xref:0x1413e4e15;xref:0x142e5afa0",
+  "notes": "Loads the track database: 'tracks.track_resources' (worldAssetGroup, worldEri, crowdEri, garage_%02u, iblProbes/iblRoot/iblKey/iblSuffix, aoBakeAssetGroup, radianceBakeAssetGroup, lightListAssetGroup, ddgiAssetGroup, trackMapAssetGroup, loadAIData), 'tyres.allocation_tyre_preset'/'tyres.mandatory_tyre_presets' per session, 'track_data.track_layers', 'track_data.restricted_tracks', 'schedule.track_lists'/all_track_events/fixed_event(_reference)/date_time, game_setup_modes, ERS settings. Caller Sess_Apply_ContentAvailability. Addon: where per-track asset groups (garages, IBL, DDGI, track map) are bound.  | 2026-11-17 engine-re round A2: TrackResource row layout (stores 0x142e5afa0..0x142e5b046 from the field slots read at 0x142e5954b..0x142e5a3bd): +0x08 worldAssetGroup, +0x10 worldEri, +0x18 crowdEri, +0x20 aoBakeAssetGroup, +0x28 radianceBakeAssetGroup, +0x30 lightListAssetGroup, +0x38 ddgiAssetGroup, +0x40 iblAssetGroupsRoot, +0x48 iblRoot, +0x50 iblKey, +0x58 iblSuffix, +0x60 trackMapAssetGroup (null when empty), +0x70/+0x78 iblProbes vector; loadAIData read first. Values are Gdb field slots, expanded later with FILENAME/FOLDER/BASETRACK."
  },
  "signature": {
   "id": "session.load_track_database",
@@ -65,6 +65,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/142e58f20.c;xref:0x1413e4e15",
    "notes": "V4161 Strings track_data.track_list, loadAIData, worldAssetGroup, worldEri, crowdEri, aoBakeAssetGroup, radianceBakeAssetGroup, lightListAssetGroup, ddgiAssetGroup, iblRoot/iblKey/iblSuffix, trackMapAssetGroup, garage_%02u, game_setup_modes; calls Game_Read_ERSSettingsConfig; caller Sess_Apply_ContentAvailability"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkerp-verify2",
+   "kind": "func",
+   "item": "Sess_Load_TrackDatabase",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x142e5954b-0x142e5a3b2 (attr lookups) and 0x142e5afa0-0x142e5b046 (stores)",
+   "notes": "V11019 rsp slots: worldAssetGroup 0x108->+0x08, worldEri 0x100->+0x10, crowdEri 0xf8->+0x18, iblAssetGroupsRoot 0xc8->+0x40, iblRoot 0xd0->+0x48, trackMapAssetGroup 0x90->+0x60 (null if empty); also aoBake +0x20, radianceBake +0x28, lightList +0x30, ddgi +0x38, iblKey +0x50, iblSuffix +0x58; row stride 0x88"
   }
  ],
  "proofs": []

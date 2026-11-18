@@ -3,18 +3,6 @@
 
 namespace runtime::track_record {
 
-struct Seen {
-    bool bits[256] = {};
-
-    bool first(uint8_t track)
-    {
-        if (bits[track])
-            return false;
-        bits[track] = true;
-        return true;
-    }
-};
-
 enum class Verdict { game, no_record, past_table, bad_record, bad_node };
 
 struct Round {

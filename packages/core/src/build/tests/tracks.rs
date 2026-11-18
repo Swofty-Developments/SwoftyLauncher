@@ -553,15 +553,7 @@ fn the_tracks_keep_their_menu_pictures_over_an_addon_that_ships_its_own() {
             unk: vec![0; 4],
             fragments: fragments
                 .into_iter()
-                .map(|data| Fragment {
-                    name: *b"temp",
-                    offset: 0,
-                    size: data.len() as u64,
-                    flags: 0x10,
-                    compression: STORED,
-                    packed: data.len() as u64,
-                    raw: data,
-                })
+                .map(|data| Fragment::new(*b"temp", data.len() as u64, 0x10, STORED, data))
                 .collect(),
             hash: [0; 16],
         };
@@ -591,6 +583,7 @@ fn the_tracks_keep_their_menu_pictures_over_an_addon_that_ships_its_own() {
             resources,
         }
         .to_bytes()
+        .unwrap()
     };
     let obj = |pairs: Vec<(&str, Node)>| {
         Node::Obj(Obj::new(

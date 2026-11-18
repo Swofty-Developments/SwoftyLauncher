@@ -1,4 +1,5 @@
-// Host test of the per-build proof gates (core/runtime/build_proof.hpp): the KB build, Steam 1.0.145 and an unknown build.
+// Host test of the per-build proof gates (core/runtime/build_proof.hpp): the KB build, Steam 1.0.145, EA App 1.0.145 and an
+// unknown build.
 
 #include "core/runtime/build_proof.hpp"
 
@@ -18,7 +19,8 @@ static void expect(bool ok, const char *what)
 }
 
 static constexpr bp::Exe KB{1789118616u, 0x6a00000}, KB_SMALL{1789118616u, 0x6000000}, EA{1789128892u, 0x155dc000},
-    STEAM_145{1794312636u, 0x18434000}, STEAM_145_RESIZED{1794312636u, 0x18435000}, UNKNOWN{1799999999u, 0x18500000};
+    STEAM_145{1794312636u, 0x18434000}, STEAM_145_RESIZED{1794312636u, 0x18435000}, EA_145{1794315435u, 0x1615e000},
+    UNKNOWN{1799999999u, 0x18500000};
 
 static constexpr bp::Proof KB_AND_145{"the test layout at +0x10", bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145)};
 static constexpr const char *BINDINGS[] = {"Game_Test_First", "Game_Test_Second"};
@@ -39,6 +41,7 @@ int main()
     expect(bp::identify(EA) == bp::Build::ea, "the EA App link is known by its timestamp and exact image size");
     expect(bp::identify(STEAM_145) == bp::Build::steam_1_0_145, "Steam 1.0.145 is known by its timestamp and exact image size");
     expect(bp::identify(STEAM_145_RESIZED) == bp::Build::unknown, "the 1.0.145 timestamp with another image size is unknown");
+    expect(bp::identify(EA_145) == bp::Build::ea_1_0_145, "EA App 1.0.145 is known by its timestamp and exact image size");
     expect(bp::identify(UNKNOWN) == bp::Build::unknown && bp::identify({0, 0}) == bp::Build::unknown,
            "an exe the table does not list is unknown");
 
@@ -60,8 +63,9 @@ int main()
     expect(bp::proven_on(bp::proofs::VERIFIED_LAYOUT, bp::Build::kb) &&
                bp::proven_on(bp::proofs::VERIFIED_LAYOUT, bp::Build::ea) &&
                bp::proven_on(bp::proofs::VERIFIED_LAYOUT, bp::Build::steam_1_0_145) &&
+               !bp::proven_on(bp::proofs::VERIFIED_LAYOUT, bp::Build::ea_1_0_145) &&
                !bp::proven_on(bp::proofs::VERIFIED_LAYOUT, bp::Build::unknown),
-           "the verified layout holds on the three known builds and no other");
+           "the verified layout holds on the KB, EA App KB and Steam 1.0.145 builds and no other");
 
     resolved.erase("Game_Test_Second");
     bp::Verdict missing = bp::check(PORTED, bp::Build::steam_1_0_145, resolves);

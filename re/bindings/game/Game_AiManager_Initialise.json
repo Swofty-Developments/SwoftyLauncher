@@ -45,6 +45,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/405fe750.c;xref:None",
    "notes": "V3178 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkb2-verify",
+   "kind": "func",
+   "item": "0x1405fe750",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 1405feab6-1405febc6,1407e5b4b-1407e5bfa;xref:none",
+   "notes": "V11125 0x100 alloc from [mgr+0x10], +8=[mgr+0x10] value, +0xe8 16B from 0x14562f1d0 'AIBrakeSettings', final vt 0x145638da0/+0x10 0x145638e10, stored mgr+0xb8; 0x145638da0[12]=0x14066c2d0; 1407e5b55 'AI_SYSTEM' heap -> obj+0x10, obj vt 0x1456341e0"
   }
  ],
  "proofs": []

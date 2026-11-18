@@ -3,6 +3,7 @@ mod archives;
 mod buildhash;
 mod cars;
 mod database;
+mod digests;
 mod failure;
 mod files;
 mod finish;
@@ -126,6 +127,8 @@ struct Pipeline<'a, 'p> {
     session: SessionSettings,
     /// The cache folders the build uses, which the cache prune keeps.
     caches: Vec<PathBuf>,
+    /// The packer of [`Setup`], deferring: the archive edits are compressed by each archive's write.
+    packer: swofty_formats::erp::Packer,
 }
 
 /// A `checking` build gives addon build hooks a host that lists addons but

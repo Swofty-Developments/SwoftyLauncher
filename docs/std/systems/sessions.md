@@ -215,7 +215,8 @@ struct PitStop {                               // the game counts a pit stop for
 struct WeekendStart    { static constexpr const char *point = "weekend.start"; };
 struct ResultsFinalise { static constexpr const char *point = "session.results.finalise"; };
 struct StateEnter      { static constexpr const char *point = "session.state.enter"; };
-struct SafetyCarDeploy { static constexpr const char *point = "session.safety_car.deploy"; };
+// session.flag, session.safety_car.deploy, session.red_flag, session.sector and session.car.status:
+// swofty/systems/race_control.hpp (Race control)
 
 } // namespace events
 
@@ -579,10 +580,11 @@ sessions::issue_penalty(car, sessions::PenaltyKind::grid, 3.0f);
 - **Partial:** points and penalties. The data is ready, and the runtime code is L1. A box's points apply through the standings lookup, which still needs reverse engineering; until then they come from the setup mode.
 - **A box's grid rule (`rules.grid`): offline only.** Scoring and the 107 % rule re-rank the Qualifying group result (L2 bindings, the path F1 1990's best-of grid used); not yet run in game in this form. Row patterns move the grid slots through the placement pair below (L2 experimental bindings); not yet run in game.
 - **A box's DRS rule (`rules.drs`) applies from 1.6.4:** the box press points `swofty_f1`'s DRS group at the rule's group. See [DRS per box](./power-units#drs-per-box).
-- **Unknown:** flags and red flags, the knockout cut writer, red-flag restarts, penalty decision thresholds at run time, the difficulty preset selector.
+- **Flags, the safety car and the red flag: read-only.** [Race control](/reference/std/race-control) fires `session.flag`, `session.safety_car.deploy`, `session.red_flag`, `session.sector` and `session.car.status` from the live state. Changing a flag or deploying a safety car has no operation.
+- **Unknown:** writing flags and red flags, the knockout cut writer, red-flag restarts, penalty decision thresholds at run time, the difficulty preset selector.
 - **Who drives a car: implemented, waiting on verification.** `Game_Set_VehicleController` (the fourth argument is a flag index, not a free reason code) and the controller set (human controller at +0x20, AI controller at +0x28, flags at +0x30, mode = dword[+0x10] ^ dword[+0x18]) are L2. The core binds them after the independent verify, and until then `set_control` and `car.control()` report unavailable. Whether a flashback or Return to Garage rebuilds the sets is test T144; `car.controllers.rebuilt` fires after every build of the sets (`Sess_ControllerSystem_BuildSets`, L2), and needs the T144 in-game run.
 - **Grid:** 32 vehicle slots, a 27-car clamp at session enter, an AI table of 30, a wheel map that rehashes at the 26th car, replay holders sized for 22 to 24 cars. `sessions::grids` refuses a size the game can't hold, naming the limit.
-- **Grid size is one boot setting per install.** The track worlds that hold the grid are picked once at boot for every box, and each box and mode is clamped to that size.
+- **Grid size is one boot setting per install.** The core patches the slots for that size into the world archives at boot, and each box and mode is clamped to that size. The game picks a session's worlds each time it builds the session's settings: every `track_data.track_layers` row whose setup modes, seasons and weekend formats hold the session's setup mode, its entrant list's season and its weekend format adds one world.
 - **Points** are whole numbers in arrays of 23, padded to the grid size. 1990's half points are rounded.
 - **Setup modes** take stat ids of 31 or lower. 18 are free (5, 7, 16 to 31), and F1 1990 uses 16. A mode needs the content set and an available mode row.
 - **Option restrictions** are tags shared across modes (`gamesetup_f1`).

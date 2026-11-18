@@ -154,6 +154,24 @@ fn profiles_are_on_unless_turned_off() {
 }
 
 #[test]
+fn off_addons_are_left_out_of_updates_unless_turned_on() {
+    assert!(!Config::default().update_off_addons);
+    assert!(!serde_json::from_str::<Config>("{}").unwrap().update_off_addons);
+    assert!(
+        !serde_json::to_string(&Config::default())
+            .unwrap()
+            .contains("update_off_addons")
+    );
+    let on = Config {
+        update_off_addons: true,
+        ..Config::default()
+    };
+    let json = serde_json::to_string(&on).unwrap();
+    assert!(json.contains(r#""update_off_addons":true"#));
+    assert!(serde_json::from_str::<Config>(&json).unwrap().update_off_addons);
+}
+
+#[test]
 fn time_trial_boards_is_on_unless_turned_off() {
     assert!(Config::default().time_trial_boards);
     assert!(serde_json::from_str::<Config>("{}").unwrap().time_trial_boards);

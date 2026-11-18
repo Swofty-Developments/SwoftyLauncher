@@ -217,10 +217,10 @@ bool registry_read(uint64_t at, void *out, size_t n)
 void probe_registry(int pass)
 {
     namespace ur = runtime::ui_registry;
-    if (!swofty::game::g_Vm_Registry.address())
+    if (!runtime::proven(TT_NAME) || !swofty::game::g_Vm_Registry.address())
         return;
     uint64_t base = swofty::api->module_base(), reg = uint64_t(*swofty::game::g_Vm_Registry);
-    ur::Layout lay = registry_layout(base);
+    ur::Layout lay = registry_layout(runtime::running_build(), base);
     char stock[96] = "Swooftyy";
     GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME_STOCK", stock, sizeof stock);
     std::vector<ur::Hit> hits;
@@ -365,7 +365,9 @@ int pin_names(const std::string &name, const std::string &stock)
     if (!swofty::game::g_Vm_Registry.address() || !swofty::game::Vm_Set_String.address() || !swofty::game::Ne_Make_StrFromCStr.address())
         return 0;
     uint64_t base = swofty::api->module_base(), reg = uint64_t(*swofty::game::g_Vm_Registry);
-    ur::Layout lay = registry_layout(base);
+    ur::Layout lay = registry_layout(runtime::running_build(), base);
+    if (!lay.object_vt)
+        return 0;
     std::vector<ur::Hit> hits;
     ur::Stats st;
     auto rd = [](uint64_t at, void *out, size_t n) { return registry_read(at, out, n); };

@@ -1,4 +1,5 @@
 #include "core/guards/guard.hpp"
+#include "core/guards/memory.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -44,20 +45,12 @@ namespace guards = swofty_core::guards;
 uintptr_t not_found = 0;
 guards::LogFirst<gs::LOG_FIRST> skipped{"skips"};
 
-bool read_memory(uint64_t address, void *out, size_t n, void *)
-{
-    if (!swofty::mem::readable(address, n))
-        return false;
-    memcpy(out, reinterpret_cast<const void *>(address), n);
-    return true;
-}
-
 void entry_step(SwoftyContext *c)
 {
     bool usable;
     {
         swofty::mem::Trust trust(runtime::HEAP_TRUST_MS);
-        usable = gs::entry_usable(c->r9, read_memory, nullptr);
+        usable = gs::entry_usable(c->r9, guards::read_if_readable, nullptr);
     }
     if (usable)
         return;
