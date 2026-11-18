@@ -77,17 +77,17 @@ void on_heap_error(int code, const char *msg, bool is_fatal, void *heap)
         h.largest = reinterpret_cast<Largest>(vt[0x80 / 8])(heap, 1);
         h.stats = true;
     }
-    else if (heap && readable(h.heap, runtime::save_heap::kPoolFlags + 8) && !(h.heap & 7) &&
-             *reinterpret_cast<uintptr_t *>(h.heap) == process.exe_base + (runtime::save_heap::kPoolVtable - runtime::save_heap::kImageBase)) {
+    else if (heap && readable(h.heap, career::save_heap::kPoolFlags + 8) && !(h.heap & 7) &&
+             *reinterpret_cast<uintptr_t *>(h.heap) == process.exe_base + (career::save_heap::kPoolVtable - career::save_heap::kImageBase)) {
         const uint8_t *p = reinterpret_cast<const uint8_t *>(h.heap);
         auto &pi = h.pool_info;
-        memcpy(&pi.start, p + runtime::save_heap::kPoolStart, 8);
-        memcpy(&pi.size, p + runtime::save_heap::kPoolSize, 8);
-        memcpy(&pi.cursor, p + runtime::save_heap::kPoolCursor, 8);
-        memcpy(&pi.flags, p + runtime::save_heap::kPoolFlags, 4);
+        memcpy(&pi.start, p + career::save_heap::kPoolStart, 8);
+        memcpy(&pi.size, p + career::save_heap::kPoolSize, 8);
+        memcpy(&pi.cursor, p + career::save_heap::kPoolCursor, 8);
+        memcpy(&pi.flags, p + career::save_heap::kPoolFlags, 4);
         h.pool = true;
         snprintf(h.name, sizeof h.name, "SAVE_PROPERTY_BAG_TEMP");
-        cl("%s", runtime::save_heap::pool_line(pi, runtime::save_heap::parse_request(h.msg)).c_str());
+        cl("%s", career::save_heap::pool_line(pi, career::save_heap::parse_request(h.msg)).c_str());
     }
     h.set = true;
     char line[blackbox::TEXT];

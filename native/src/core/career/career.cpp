@@ -41,9 +41,9 @@ namespace {
 namespace g = swofty::game;
 namespace layout = runtime::layout;
 namespace mem = swofty::mem;
-using runtime::career::PollSchedule;
-using runtime::career::Tracker;
-using career_game::binding;
+using career::state::PollSchedule;
+using career::state::Tracker;
+using career::game::binding;
 
 constexpr const char *FLOW_MIXIN = "swofty_core.dll (flow states)";
 constexpr const char *TEAM_HQ_MIXIN = "swofty_core.dll (Team HQ answer)";
@@ -110,7 +110,7 @@ const char *mode_name(uint32_t m)
     return m == SWOFTY_CAREER_MY_TEAM ? "my_team" : m == SWOFTY_CAREER_DRIVER ? "driver_career" : "none";
 }
 
-void publish(const runtime::career::Edges &e, const SwoftyCareerState &s)
+void publish(const career::state::Edges &e, const SwoftyCareerState &s)
 {
     if (e.hub == 0) {
         perf::mark("career", "hub left");
@@ -132,7 +132,7 @@ void publish(const runtime::career::Edges &e, const SwoftyCareerState &s)
                                                                         : "unseen",
                     mode_name(s.component_mode), mode_name(s.team_hq_mode));
         if (s.mode == SWOFTY_CAREER_MY_TEAM)
-            career_game::heal_my_team();
+            career::game::heal_my_team();
         std::string id = runtime::snapshots_career_loaded(s.key, s.mode);
         swofty_core::apply::moments::career_loaded(id.c_str(), s.mode);
         fire(SWOFTY_EVENT_CAREER_LOADED, s.mode, 0, &s);
@@ -146,7 +146,7 @@ void publish(const runtime::career::Edges &e, const SwoftyCareerState &s)
 
 void settle_and_publish()
 {
-    runtime::career::Edges e;
+    career::state::Edges e;
     SwoftyCareerState s;
     {
         std::lock_guard<std::mutex> g(lock);
@@ -175,12 +175,12 @@ bool state_name(uint32_t hash, uint64_t size, uintptr_t chars, std::string &out)
         return false;
     out.assign(reinterpret_cast<const char *>(chars), size_t(size - 1));
     if (out.find('\0') == std::string::npos && mem::printable_utf8(out) &&
-        runtime::career::djb2(out.c_str()) == hash)
+        career::state::djb2(out.c_str()) == hash)
         return true;
     uintptr_t key = binding("k_Gdb_StringXorKey");
     if (key && mem::readable(key, 4) &&
         dbread::decode_text(reinterpret_cast<const uint8_t *>(chars), size, reinterpret_cast<const uint8_t *>(key), out) &&
-        runtime::career::djb2(out.c_str()) == hash)
+        career::state::djb2(out.c_str()) == hash)
         return true;
     out.clear();
     return false;
@@ -211,7 +211,7 @@ void on_flow(SwoftyContext *c)
                 snprintf(b, sizeof b, "#%08x", hash);
                 name = b;
             }
-            if (names.size() < runtime::career::MAX_STATES)
+            if (names.size() < career::state::MAX_STATES)
                 names[hash] = name;
         }
     }
@@ -323,23 +323,23 @@ void *api_entity()
 {
     if (!runtime::enabled("career", nullptr))
         return nullptr;
-    return reinterpret_cast<void *>(career_game::entity());
+    return reinterpret_cast<void *>(career::game::entity());
 }
 
 void *api_component(const char *type)
 {
     if (!runtime::enabled("career", nullptr) || !type || !*type)
         return nullptr;
-    uintptr_t e = career_game::entity();
-    return e ? reinterpret_cast<void *>(career_game::component(e, type)) : nullptr;
+    uintptr_t e = career::game::entity();
+    return e ? reinterpret_cast<void *>(career::game::component(e, type)) : nullptr;
 }
 
 void *api_component_by_desc(const void *desc)
 {
     if (!runtime::enabled("career", nullptr) || !desc)
         return nullptr;
-    uintptr_t e = career_game::entity();
-    return e ? reinterpret_cast<void *>(career_game::component_by_desc(e, reinterpret_cast<uintptr_t>(desc)))
+    uintptr_t e = career::game::entity();
+    return e ? reinterpret_cast<void *>(career::game::component_by_desc(e, reinterpret_cast<uintptr_t>(desc)))
              : nullptr;
 }
 
@@ -394,7 +394,7 @@ void team_hq_entry(SwoftyContext *c)
 
 }
 
-uintptr_t career_game::binding(const std::string &id)
+uintptr_t career::game::binding(const std::string &id)
 {
     std::lock_guard<std::mutex> g(bind_lock);
     auto it = bound.find(id);
@@ -464,15 +464,15 @@ void career_tick()
         return;
     namespace facts = swofty_core::apply::facts;
     facts::ModeKind kind = swofty_core::apply::moments::mode_kind();
-    runtime::career::Where where = kind == facts::ModeKind::career  ? runtime::career::Where::career
-                                   : kind == facts::ModeKind::unknown ? runtime::career::Where::unknown
-                                                                      : runtime::career::Where::elsewhere;
-    bool reads = runtime::career::poll_reads(where);
+    career::state::Where where = kind == facts::ModeKind::career  ? career::state::Where::career
+                                   : kind == facts::ModeKind::unknown ? career::state::Where::unknown
+                                                                      : career::state::Where::elsewhere;
+    bool reads = career::state::poll_reads(where);
     static std::atomic<int> said{-1};
     if (said.exchange(reads) != int(reads))
         swofty::log("[career] component poll %s (game mode %s)", reads ? "reads the game" : "off: no career can be loaded here, it reports none without a read",
                     facts::mode_kind_name(kind));
-    runtime::career::Components c = reads ? career_game::poll() : runtime::career::Components{};
+    career::state::Components c = reads ? career::game::poll() : career::state::Components{};
     {
         std::lock_guard<std::mutex> g(lock);
         tracker.components(c, now);

@@ -1,3 +1,4 @@
+#include "core/runtime/loader/hook_install.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/settings.hpp"
 
@@ -23,7 +24,7 @@
 
 namespace {
 
-namespace cs = runtime::career_start;
+namespace cs = career::start;
 
 const runtime::Sig S_RUN_ROUTE{"Vm_Run_Route",
                                "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 4C 89 "
@@ -188,18 +189,16 @@ namespace {
 
 void start_gate_setup()
 {
-    uintptr_t at = find(S_RUN_ROUTE, "start gate", "career");
-    if (!at) {
+    auto r = loader::install(h_run, {S_RUN_ROUTE, "start gate", "career"}, reinterpret_cast<void *>(&run_route_hook));
+    if (r.step == loader::Installed::Step::not_found) {
         swofty::log("[career] start gate: Vm_Run_Route did not resolve; career.starting never fires and blocks cannot "
                     "cancel a route");
         return;
     }
-    auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&run_route_hook));
     if (!r) {
         swofty::log("[career] start gate: hook on Vm_Run_Route failed; blocks cannot cancel a route");
         return;
     }
-    h_run = std::move(*r);
     live = true;
     char v[8] = {};
     DWORD got = GetEnvironmentVariableA("SWOFTY_UI_DIAG", v, sizeof v);
@@ -210,7 +209,7 @@ void start_gate_setup()
         n = blocks.size();
     }
     swofty::log("[career] start gate: live on Vm_Run_Route (base+0x%llx), %zu block(s) held",
-                (unsigned long long)(at - swofty::api->module_base()), n);
+                (unsigned long long)(r.at - swofty::api->module_base()), n);
 }
 
 }

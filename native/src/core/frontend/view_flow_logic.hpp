@@ -18,7 +18,7 @@ struct Tracked {
 
 constexpr uint32_t djb2(const char *s)
 {
-    return runtime::career::djb2(s);
+    return career::state::djb2(s);
 }
 
 constexpr Tracked TRACKED[] = {

@@ -43,9 +43,11 @@
 // time stays above its budget, is turned off and logged; SWOFTY_POSTFX=0 or a swofty/postfx.off file
 // turns every pass off.
 
+namespace render::postfx {
+
 namespace {
 
-render::postfx::Pipeline pipeline;
+Pipeline pipeline;
 
 void hook_setname(ID3D12Object *o, LPCWSTR name)
 {
@@ -57,12 +59,12 @@ bool hook_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_
     return pipeline.placement.on_barrier(list, n, barriers);
 }
 
-void hook_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, render::d3d12::ExecPlan &plan)
+void hook_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, d3d12::ExecPlan &plan)
 {
     pipeline.placement.on_exec(q, n, lists, plan);
 }
 
-void hook_present(IDXGISwapChain3 *sc, const render::d3d12::Swapchain *known, void *caller)
+void hook_present(IDXGISwapChain3 *sc, const d3d12::Swapchain *known, void *caller)
 {
     pipeline.on_present(sc, known, caller);
 }
@@ -88,8 +90,6 @@ void hook_flow_frame(double dt, void *user)
 }
 
 }
-
-namespace render::postfx {
 
 // Frame generation from the game's hardware settings, read every two seconds; on while unknown.
 bool Pipeline::frame_gen_on(ULONGLONG now)
@@ -403,10 +403,12 @@ namespace runtime {
 
 void postfx_setup()
 {
-    pipeline.setup();
+    render::postfx::pipeline.setup();
 }
 
 }
+
+namespace render::postfx {
 
 namespace {
 
@@ -418,7 +420,7 @@ std::wstring module_path(HMODULE m)
     return n && n < std::size(path) ? std::wstring(path, n) : std::wstring();
 }
 
-// The id of the addon whose native code is at `at` (render::postfx::addon_of_module); empty for code that isn't an addon's.
+// The id of the addon whose native code is at `at` (postfx::addon_of_module); empty for code that isn't an addon's.
 std::string addon_at(const void *at)
 {
     HMODULE m = nullptr;
@@ -426,7 +428,7 @@ std::string addon_at(const void *at)
                             static_cast<LPCWSTR>(at), &m) ||
         !m)
         return {};
-    return render::postfx::addon_of_module(module_path(m), module_path(nullptr));
+    return postfx::addon_of_module(module_path(m), module_path(nullptr));
 }
 
 std::string lower(std::string s)
@@ -434,6 +436,8 @@ std::string lower(std::string s)
     for (auto &ch : s)
         ch = char(tolower(static_cast<unsigned char>(ch)));
     return s;
+}
+
 }
 
 }
@@ -450,13 +454,14 @@ std::string lower(std::string s)
 extern "C" __declspec(dllexport) int SwoftyCorePostfxSetData(const char *addon_id, const char *pass, const void *data,
                                                              uint32_t size)
 {
+    using namespace render::postfx;
     if (!addon_id || !*addon_id || !pass || !*pass || (size && !data))
         return -1;
-    if (size > render::postfx::DATA_MAX)
+    if (size > DATA_MAX)
         return -2;
     if (addon_at(__builtin_return_address(0)) != lower(addon_id))
         return -3;
-    std::string key = render::postfx::DataStore::key(addon_id, pass);
+    std::string key = DataStore::key(addon_id, pass);
     {
         std::lock_guard<std::mutex> g(pipeline.recorder.data_lock);
         if (!pipeline.recorder.pass_data.is_listed()) {
@@ -468,7 +473,7 @@ extern "C" __declspec(dllexport) int SwoftyCorePostfxSetData(const char *addon_i
     bool known = false, running = false;
     {
         std::lock_guard<std::recursive_mutex> g(pipeline.lock);
-        for (const render::postfx::RenderPass &p : pipeline.config.passes)
+        for (const RenderPass &p : pipeline.config.passes)
             if (p.addon_id == addon_id && p.name == pass) {
                 known = true;
                 running = running ||
