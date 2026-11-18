@@ -85,7 +85,7 @@ pub fn nonce_retry_pause(attempt: usize) -> Duration {
 
 /// Keeps asking for the session nonce until the server issues one or the game ends, and puts it in the
 /// session file for the core. Without it every lap of the session is refused by the server.
-fn nonce_until_issued(
+pub(crate) fn nonce_until_issued(
     data: &Path,
     game: &Path,
     config: &Config,

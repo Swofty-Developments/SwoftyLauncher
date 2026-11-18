@@ -1,0 +1,24 @@
+{
+  "about": "The integrity module offer, asked for before each signed-in session.",
+  "answer": {
+    "body": {
+      "sha256": "dc847b665f00cbfa25a6847aad0374fefa81c75930bb55cebf98ede540d1621b",
+      "signature": "<signature>",
+      "size": 18,
+      "url": "/v1/tt/integrity/file?version=2026.11.18.1",
+      "version": "2026.11.18.1"
+    },
+    "status": 200
+  },
+  "request": {
+    "body": null,
+    "headers": {
+      "accept": "*/*",
+      "accept-encoding": "identity",
+      "authorization": "Bearer <token>",
+      "user-agent": "swofty-launcher"
+    },
+    "method": "GET",
+    "path": "/v1/tt/integrity"
+  }
+}
