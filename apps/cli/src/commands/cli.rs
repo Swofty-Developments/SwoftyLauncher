@@ -4,8 +4,8 @@ use std::path::PathBuf;
 use clap::{Parser, Subcommand};
 
 use crate::commands::{
-    addons, build, db, dev, game, hud, laps, logs, offline, postfx, profile, registry, run, saves, settings,
-    setup, shaders, steam, testing, update,
+    addons, build, db, dev, game, games, hud, laps, logs, offline, postfx, profile, registry, run, saves,
+    settings, setup, shaders, steam, testing, update,
 };
 
 #[derive(Parser)]
@@ -81,6 +81,10 @@ pub(crate) enum Command {
         about = "List the copies of F1 25 (Steam, EA app, added folders) and pick the one to play"
     )]
     Game(game::GameCommand),
+    #[command(
+        about = "List the games the launcher knows, whether each is supported, and where each was found"
+    )]
+    Games(games::GamesArgs),
     #[command(
         about = "Show whether Steam is running and signed in; --start starts it and waits, as Play does"
     )]

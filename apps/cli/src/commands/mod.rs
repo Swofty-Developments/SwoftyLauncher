@@ -5,6 +5,7 @@ pub(crate) mod db;
 pub(crate) mod dev;
 pub(crate) mod doctor;
 pub(crate) mod game;
+pub(crate) mod games;
 pub(crate) mod hud;
 pub(crate) mod laps;
 pub(crate) mod logs;
