@@ -12,12 +12,13 @@ use crate::activation::place::{
     LayerWorld, PlaceInput, SLOTS, missing_worlds, place, room_for, slot_asset_group, slot_file, track_group,
 };
 use crate::activation::ui::{Kept, MapUi, build_ui, plan_lists};
+use crate::asset::Kind;
 use crate::asset::{AssetOp, GroupOp, Op, Origin, TrackOp};
 use crate::content::track_package::{TrackPackage, Unusable};
 use crate::game_folder::baseline::{Baseline, sha256_opt};
 use crate::game_folder::placed::Placed;
 use crate::install::Game;
-use crate::planner::{Kind, Planner, Route, Target};
+use crate::planner::{Planner, Route, Target};
 use crate::stdlib::deps::Std;
 use crate::store::Store;
 use crate::{Error, Result, io_err};

@@ -45,7 +45,6 @@ pub use game_folder::{
 };
 pub use online::server::{sign_in as mpauth, usage};
 pub use online::{modules, multiplayer, server, timetrial};
-pub use platform::steam::client as steam_client;
 pub use platform::{app_control, disk, ea_app, process, run_as_admin as compat, steam};
 pub use profile::{conflicts, resolver};
 pub use saves::{backup as save_backup, launcher as launcher_saves, stall as save_stall, vault};
