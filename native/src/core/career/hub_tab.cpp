@@ -1,5 +1,6 @@
 #include "core/career/hub_tab.hpp"
 
+#include "core/guards/skips.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/settings.hpp"
 #include "core/registry/older.hpp"
@@ -183,11 +184,11 @@ SRWLOCK bars_lock = SRWLOCK_INIT;
 Bar laptop_bar{"laptop", 0x2b8, 0x2c0, 0x2d0, 0xb88a669}, team_hq_bar{"Team HQ", 0x2d0, 0x2d8, 0x2e8, 0xf4482186};
 void **page_vt, **page_vt_src;
 Command_t *page_cmd;
-std::atomic<uint32_t> told{0};
+constinit swofty_core::guards::LogFirst<48> note_lines;
 
 void note(const char *fmt, const char *a = "", const char *b = "", const char *c = "")
 {
-    if (told.fetch_add(1) < 48)
+    if (note_lines.note())
         swofty::log(fmt, a, b, c);
 }
 
