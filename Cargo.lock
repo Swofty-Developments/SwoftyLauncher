@@ -7866,7 +7866,6 @@ dependencies = [
  "gpui-kit",
  "image",
  "lsp-types",
- "png 0.18.1",
  "raw-window-handle",
  "semver",
  "serde",
