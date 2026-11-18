@@ -387,5 +387,7 @@ SCRIPTS = [
            ['python3', '-I', 'native/test/sigverify_test.py']),
     Script('init_check', 'Static initializer check: run order, inline variables and hook guard arming',
            ['python3', '-I', 'native/test/init_check_test.py']),
+    Script('patch_sites', 'Every line that writes game code is in tools/patch_sites.txt',
+           ['python3', '-I', 'native/tools/patch_sites.py', '--check']),
 ]
 
