@@ -27,7 +27,7 @@ use crate::platform::steam::vdf;
 use crate::platform::steam::vdf::Vdf;
 
 pub use linux::{linux_status, processes};
-pub use registry::{RegExe, Registry, windows_status};
+pub use registry::{LocalRegistry, Registry, windows_status};
 pub use start::{
     Ready, Report, Stage, StartError, Starter, Wait, ensure, linux_starter, starter, windows_starter,
 };
@@ -190,7 +190,7 @@ pub fn status() -> Status {
         .map(|p| p.pid)
         .collect();
     windows_status(
-        &RegExe,
+        &LocalRegistry,
         &pids,
         &crate::platform::process::started,
         &crate::platform::steam::steam_roots(),
