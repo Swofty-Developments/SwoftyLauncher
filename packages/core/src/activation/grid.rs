@@ -16,7 +16,7 @@ pub fn grid_size(db: &Gvdb) -> u32 {
     db.instance_count(GRID_LIST, "entrant").map_or(0, |n| n as u32)
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Room {
     pub grid_slots: u32,
     pub garages: u32,
@@ -29,7 +29,7 @@ impl Room {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Extension {
     pub layer: usize,
     pub before: Room,

@@ -378,7 +378,19 @@ fn stamp(input: &PlaceInput) -> Result<String> {
 
 pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
     let code = &input.pkg.track_code;
-    let file = ErpFile::open(&input.dir.join(&input.pkg.erp))?;
+    let erp_path = input.dir.join(&input.pkg.erp);
+    let read_as = erp_stamp(&erp_path);
+    let early = read_as.and_then(|_| stamp(input).ok());
+    if let Some(placement) = early
+        .as_deref()
+        .zip(read_as)
+        .and_then(|(stamp, at)| kept(input, cache, stamp, at))
+    {
+        return Ok(placement);
+    }
+    #[cfg(test)]
+    OPENED.with(|n| n.set(n.get() + 1));
+    let file = ErpFile::open(&erp_path)?;
     let common = world_eaid(code, "common");
     if !file.erp.resources.iter().any(|r| r.name == common) {
         return Err(Error::Map(format!(
@@ -394,7 +406,10 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
     if !broken.is_empty() {
         return Err(Error::Other(crate::erp::unrepairable_message(who, &broken, &fix)));
     }
-    let stamp = stamp(input)?;
+    let stamp = match early {
+        Some(stamp) => stamp,
+        None => stamp(input)?,
+    };
     let out = cache.join(match fixed.is_empty() {
         true => stamp,
         false => format!("{stamp}-stats"),
@@ -404,13 +419,7 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
         repaired: fixed.iter().map(|(_, r)| r.name.clone()).collect(),
         ..Placement::default()
     };
-    let shipped: BTreeMap<String, PathBuf> = input
-        .pkg
-        .copy_directories
-        .iter()
-        .flat_map(|c| walk(&input.dir.join(c.source.trim_end_matches('/'))).unwrap_or_default())
-        .filter_map(|p| Some((p.file_name()?.to_str()?.to_owned(), p)))
-        .collect();
+    let shipped = shipped(input);
     let names: BTreeSet<String> = shipped.keys().cloned().collect();
     let present = variants(&file, code);
     let archive = match input.slot {
@@ -564,24 +573,143 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
         file.write(entries, &archive_path)?;
         std::fs::write(&done, b"").map_err(io_err(&done))?;
     }
-    if input.slot.is_none() && !input.game.join(&archive).is_file() {
-        placement.added.insert(archive.clone(), archive_path);
+    if let Some(at) = read_as.filter(|at| erp_stamp(&erp_path) == Some(*at) && settled(at)) {
+        let keep = Kept {
+            version: KEPT_VERSION,
+            erp: at,
+            groups: placement.groups.clone(),
+            aliases: placement.aliases.clone(),
+            mips: placement.mips,
+            grid: placement.grid.clone(),
+            repaired: placement.repaired.clone(),
+            spaced: placement.spaced.clone(),
+            notes: placement.notes.clone(),
+            shipped: names.clone(),
+            used: used.clone(),
+        };
+        if crate::write_json_shared(&out.join(KEPT_FILE), &keep).is_err() {
+            std::fs::remove_file(out.join(KEPT_FILE)).ok();
+        }
+    }
+    Ok(finish(placement, input, &archive, &shipped, &used).expect("every used mip file is shipped"))
+}
+
+/// The file beside a placed archive that keeps what placing it found, read instead of the track's archive
+/// while that archive's size, modified time and change time are unchanged.
+const KEPT_FILE: &str = "placement.json";
+const KEPT_VERSION: u32 = 1;
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct Kept {
+    version: u32,
+    erp: (u64, crate::build::digests::Times),
+    groups: Vec<String>,
+    aliases: BTreeMap<String, String>,
+    mips: usize,
+    grid: Option<grid::Extension>,
+    repaired: Vec<String>,
+    spaced: Vec<String>,
+    notes: Vec<String>,
+    shipped: BTreeSet<String>,
+    used: BTreeSet<String>,
+}
+
+#[cfg(test)]
+thread_local! {
+    /// How many track archives this test thread has opened to place them.
+    static OPENED: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
+fn erp_stamp(path: &Path) -> Option<(u64, crate::build::digests::Times)> {
+    let meta = std::fs::metadata(path).ok()?;
+    Some((meta.len(), crate::build::digests::times(path, &meta)?))
+}
+
+/// Whether the archive last changed long enough ago that a later write moves its times.
+fn settled(at: &(u64, crate::build::digests::Times)) -> bool {
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| d.as_nanos() as i128);
+    now - at.1.changed.max(at.1.modified) >= 2_000_000_000
+}
+
+fn shipped(input: &PlaceInput) -> BTreeMap<String, PathBuf> {
+    input
+        .pkg
+        .copy_directories
+        .iter()
+        .flat_map(|c| walk(&input.dir.join(c.source.trim_end_matches('/'))).unwrap_or_default())
+        .filter_map(|p| Some((p.file_name()?.to_str()?.to_owned(), p)))
+        .collect()
+}
+
+/// The placement kept for `stamp` beside its archive, when the track's archive is the one it was read from.
+fn kept(
+    input: &PlaceInput,
+    cache: &Path,
+    stamp: &str,
+    at: (u64, crate::build::digests::Times),
+) -> Option<Placement> {
+    let (out, keep) = [stamp.to_owned(), format!("{stamp}-stats")]
+        .into_iter()
+        .find_map(|name| {
+            let out = cache.join(name);
+            if !out.join(".done").is_file() {
+                return None;
+            }
+            let keep: Kept = serde_json::from_slice(&std::fs::read(out.join(KEPT_FILE)).ok()?).ok()?;
+            (keep.version == KEPT_VERSION && keep.erp == at).then_some((out, keep))
+        })?;
+    let shipped = shipped(input);
+    if shipped.keys().ne(keep.shipped.iter()) {
+        return None;
+    }
+    let placement = Placement {
+        dir: out,
+        groups: keep.groups,
+        aliases: keep.aliases,
+        mips: keep.mips,
+        grid: keep.grid,
+        repaired: keep.repaired,
+        spaced: keep.spaced,
+        notes: keep.notes,
+        ..Placement::default()
+    };
+    let archive = match input.slot {
+        Some((slot, _)) => slot_file(slot),
+        None => track_file(&input.pkg.track_code),
+    };
+    finish(placement, input, &archive, &shipped, &keep.used)
+}
+
+/// Adds where the archive and the mip files it uses go, and the shipped mip files nothing uses.
+fn finish(
+    mut placement: Placement,
+    input: &PlaceInput,
+    archive: &str,
+    shipped: &BTreeMap<String, PathBuf>,
+    used: &BTreeSet<String>,
+) -> Option<Placement> {
+    let archive_path = placement.dir.join(archive);
+    if input.slot.is_none() && !input.game.join(archive).is_file() {
+        placement.added.insert(archive.to_owned(), archive_path);
     } else {
-        placement.replaced.insert(archive.clone(), archive_path);
+        placement.replaced.insert(archive.to_owned(), archive_path);
     }
-    placement.archive = archive;
-    for name in &used {
-        placement
-            .added
-            .insert(format!("{}/{name}", mip_dir(code)), shipped[name].clone());
+    placement.archive = archive.to_owned();
+    for name in used {
+        placement.added.insert(
+            format!("{}/{name}", mip_dir(&input.pkg.track_code)),
+            shipped.get(name)?.clone(),
+        );
     }
-    let unused = names.len() - used.len();
+    let unused = shipped.len() - used.len();
     if unused > 0 {
         placement.notes.push(format!(
             "{unused} shipped mip file(s) belong to no texture and are left out"
         ));
     }
-    Ok(placement)
+    Some(placement)
 }
 
 fn world_layers(file: &ErpFile, eaid: &str) -> Result<Vec<String>> {
@@ -842,6 +970,128 @@ mod tests {
             ailine::fixed_note(pkg.display_name(), &placement.spaced),
             "fixed the AI pit lane of Test Ring so F1 25 doesn't crash when an AI car drives it"
         );
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    fn testring(dir: &Path, pit: impl Fn(u32) -> (f32, f32)) -> TrackPackage {
+        use swofty_formats::erp::{Erp, Fragment, HEADER_LEN, MAGIC};
+        let pkg = TrackPackage::parse(crate::content::track_package::tests::OKAYAMA_LIKE.as_bytes()).unwrap();
+        let fragment = |raw: Vec<u8>| Fragment::new(*b"temp", raw.len() as u64, 0x10, STORED, raw);
+        let resource = |name: &str, kind: &str, fragments: Vec<Fragment>| Resource {
+            name: name.into(),
+            kind: swofty_formats::erp::kind(kind).unwrap(),
+            unk: vec![0; 4],
+            fragments,
+            hash: [0; 16],
+        };
+        let mut header = [0u8; HEADER_LEN];
+        header[..4].copy_from_slice(MAGIC);
+        header[4..8].copy_from_slice(&3u32.to_le_bytes());
+        let line = ailine::tests::aispline(pit, 7);
+        let bytes = Erp {
+            header,
+            version: 3,
+            resources: vec![
+                resource(&world_eaid("testring", "common"), "WEP", vec![fragment(vec![0])]),
+                resource(
+                    "eaid://environment_package/tracks/testring/ai/testring_ai_track.aispline",
+                    "AISplineData",
+                    vec![fragment(line.to_bytes()), fragment(line.string_stats(1))],
+                ),
+            ],
+        }
+        .to_bytes()
+        .unwrap();
+        std::fs::write(dir.join(&pkg.erp), bytes).unwrap();
+        pkg
+    }
+
+    fn opened() -> usize {
+        OPENED.with(std::cell::Cell::get)
+    }
+
+    #[test]
+    fn placing_an_unchanged_track_again_reads_only_what_it_kept() {
+        let dir = std::env::temp_dir().join(format!("swofty-place-kept-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(&dir).unwrap();
+        let pkg = testring(&dir, |_| (-4.1, 3.0));
+        let old = std::time::SystemTime::now() - std::time::Duration::from_secs(60);
+        std::fs::File::options()
+            .write(true)
+            .open(dir.join(&pkg.erp))
+            .unwrap()
+            .set_modified(old)
+            .unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(2100));
+        let input = PlaceInput {
+            pkg: &pkg,
+            dir: &dir,
+            game: &dir,
+            slot: None,
+            cars: 22,
+            worlds: &[],
+        };
+        let before = opened();
+        let first = place(&input, &dir.join("cache")).unwrap();
+        assert_eq!(first.spaced, ["pit"]);
+        assert_eq!(place(&input, &dir.join("cache")).unwrap(), first);
+        assert_eq!(
+            opened() - before,
+            1,
+            "the second placement reads the kept findings, not the archive"
+        );
+
+        std::fs::write(first.dir.join(KEPT_FILE), b"{ not json").unwrap();
+        assert_eq!(place(&input, &dir.join("cache")).unwrap(), first);
+        assert_eq!(
+            opened() - before,
+            2,
+            "unreadable kept findings place the track again"
+        );
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    /// The archive is rewritten in place with a pit lane that needs no fix, keeping its size and its old
+    /// modified time, as `cp -p` over it would: only its change time tells it apart.
+    #[test]
+    fn a_track_archive_restored_in_place_with_its_old_times_is_read_again() {
+        let dir = std::env::temp_dir().join(format!("swofty-place-restore-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(&dir).unwrap();
+        let pkg = testring(&dir, |_| (-1.5, 6.0));
+        let erp = dir.join(&pkg.erp);
+        let old = std::time::SystemTime::now() - std::time::Duration::from_secs(60);
+        std::fs::File::options()
+            .write(true)
+            .open(&erp)
+            .unwrap()
+            .set_modified(old)
+            .unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(2100));
+        let input = PlaceInput {
+            pkg: &pkg,
+            dir: &dir,
+            game: &dir,
+            slot: None,
+            cars: 22,
+            worlds: &[],
+        };
+        let before = opened();
+        let first = place(&input, &dir.join("cache")).unwrap();
+        assert_eq!(first.spaced, ["pit"]);
+        let size = std::fs::metadata(&erp).unwrap().len();
+        testring(&dir, |n| if n < 6 { (-1.5, 6.0) } else { (-6.0, 1.5) });
+        std::fs::File::options()
+            .write(true)
+            .open(&erp)
+            .unwrap()
+            .set_modified(old)
+            .unwrap();
+        assert_eq!(std::fs::metadata(&erp).unwrap().len(), size);
+        let again = place(&input, &dir.join("cache")).unwrap();
+        assert_eq!(opened() - before, 2);
+        assert!(again.spaced.is_empty(), "{:?}", again.spaced);
         std::fs::remove_dir_all(&dir).ok();
     }
 
