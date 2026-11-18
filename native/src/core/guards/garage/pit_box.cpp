@@ -49,7 +49,7 @@ namespace pb = runtime::pit_box;
 
 uintptr_t pose_false = 0;
 bool wanted = false;
-pb::Seen seen;
+pb::Seen seen{"repairs"};
 
 constexpr const char *TYRE_MIXIN = "swofty_core.dll (race tyre change rule)";
 constexpr const char *TYRE_CHANGE = "Car_Tyre_ChangeToNextCompound";
@@ -69,10 +69,9 @@ void box_read(SwoftyContext *c)
     uint32_t box = uint32_t(c->rdi);
     if (pb::box_usable(box))
         return;
-    pb::Log l = seen.note(box);
-    if (l != pb::Log::none)
+    if (auto line = seen.note(box))
         swofty::log("[pit] guard: a car in the garage has pit box %d, which has no spline slot; it is not aligned%s",
-                    int32_t(box), l == pb::Log::last ? " (further repairs are not logged)" : "");
+                    int32_t(box), line.tail);
     c->rdi = PROJECTION_FAILED;
     c->rip = pose_false;
 }
@@ -114,14 +113,12 @@ private:
     {
         if (tyre_wanted)
             swofty::log("[pit] race tyre change rule %s",
-                        runtime::core_mixins_active(TYRE_MIXIN)
-                            ? "armed: a box with race_tyre_change false keeps its tyres at race stops"
-                            : "did not install (see the [core] lines)");
+                        guards::install_state(runtime::core_mixins_active(TYRE_MIXIN),
+                                              "armed: a box with race_tyre_change false keeps its tyres at race stops"));
         if (!wanted)
             return;
-        swofty::log("[pit] box guard %s",
-                    runtime::core_mixins_active(MIXIN) ? "armed: a garage car without a pit box is left where it is"
-                                                       : "did not install (see the [core] lines)");
+        swofty::log("[pit] box guard %s", guards::install_state(runtime::core_mixins_active(MIXIN),
+                                                                "armed: a garage car without a pit box is left where it is"));
     }
 };
 

@@ -148,9 +148,9 @@ private:
             return;
         live = runtime::core_mixins_active(MIXIN);
         swofty::log("[tracks] track select guard %s",
-                    live ? "armed: a Grand Prix or Time Trial confirm of a track the box can't run shows why and stays on the "
-                           "screen"
-                         : "did not install (see the [core] lines)");
+                    guards::install_state(
+                        live, "armed: a Grand Prix or Time Trial confirm of a track the box can't run shows why and stays on the "
+                              "screen"));
     }
 };
 
