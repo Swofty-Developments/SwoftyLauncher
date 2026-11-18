@@ -108,6 +108,8 @@ src/core/career/career.cpp
 src/core/career/career_entity.cpp
 src/core/career/career_content.cpp
 src/core/career/content_tiles.cpp
+src/core/career/content_hooks.cpp
+src/core/career/content_api.cpp
 src/core/career/career_start.cpp
 src/core/frontend/popup.cpp
 src/core/hud/race_hud.cpp
