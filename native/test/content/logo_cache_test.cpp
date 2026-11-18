@@ -110,6 +110,9 @@ int main()
     check(back.size() == 2 && back["a/b.erp"].hash == 0xabcdef && back["a/b.erp"].hashed && !back["c.erp"].hashed &&
               back["c.erp"].size == 1 && back["c.erp"].time == 2,
           "stamps read back what they wrote and skip broken lines");
+    check(lc::stamps_current(lc::text(st)) && lc::stamps_current(lc::text({})) && !lc::stamps_current("a/b.erp\t10\t20\t0000000000abcdef\n") &&
+              !lc::stamps_current(""),
+          "stamps name their format, and stamps from before it do not count as current");
 
     Disk disk;
     disk.files[DATABASES] = {"database bytes", 100};
@@ -227,6 +230,14 @@ int main()
         check(!lc::manifest_parse("ui/a.erp\tlogos_x_a.erp\nui/b.erp\tlogos_x_b.erp\n", exists, built, back) && back.empty(),
               "a manifest written before the built count was kept is not reused");
         check(!lc::manifest_parse(lc::manifest_text(0, {}), exists, built, back), "a manifest with no archives is not reused");
+        lc::Sources sources = {{"ui/a.erp", 0x0123456789abcdefull}}, sources_back;
+        check(lc::manifest_parse(lc::manifest_text(84, routes, sources), exists, built, back, &sources_back) && built == 84 &&
+                  back == routes && sources_back == sources,
+              "a manifest keeps the hash each copy was made from, apart from its routes");
+        check(lc::manifest_parse(lc::manifest_text(84, routes, sources), exists, built, back) && back == routes,
+              "a reader that does not ask for the hashes still gets the routes alone");
+        check(lc::manifest_parse(lc::manifest_text(84, routes), exists, built, back, &sources_back) && sources_back.empty(),
+              "a manifest with no hashes reads back none");
         check(lc::cacheable(2, 2, 0), "a build that wrote every archive and refused nothing is cached");
         check(!lc::cacheable(2, 3, 0), "a build that lost an archive is not cached");
         check(!lc::cacheable(2, 2, 1), "a build with a refused slot is not cached");

@@ -304,7 +304,7 @@ void Pipeline::game_frame(const void *was, ULONGLONG now)
 // does not close the passes' frames: the game's own frames do, where their lists are submitted.
 void Pipeline::flow_frame(double, void *)
 {
-    if (!device_armed.load(std::memory_order_relaxed))
+    if (!device_armed.load(std::memory_order_acquire))
         return;
     ULONGLONG now = GetTickCount64(), presented = present_at.load(std::memory_order_relaxed);
     if (!postfx::presents_gone(now, presented, started))

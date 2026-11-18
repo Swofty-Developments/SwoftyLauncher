@@ -397,6 +397,12 @@ std::string hex16(uint64_t v)
     return b;
 }
 
+bool window_reached()
+{
+    std::lock_guard<std::mutex> g(stage_lock);
+    return window_seen;
+}
+
 void on_stage(void (*fn)(int))
 {
     std::lock_guard<std::mutex> g(stage_lock);

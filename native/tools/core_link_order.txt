@@ -96,6 +96,7 @@ src/core/render/d3d12/srv_clamp.cpp
 src/core/render/d3d12/rtas_guard.cpp
 src/core/render/d3d12/hooking.cpp
 src/core/render/d3d12/swapchains.cpp
+src/core/render/d3d12/arm_gate.cpp
 src/core/render/grade.cpp
 src/core/render/postfx.cpp
 src/core/live/live_car.cpp

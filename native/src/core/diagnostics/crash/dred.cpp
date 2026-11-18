@@ -6,6 +6,7 @@
 
 #include "core/diagnostics/crash/dred_logic.hpp"
 #include "core/diagnostics/crash/dred_state.hpp"
+#include "core/render/d3d12_hooks.hpp"
 #include "core/runtime/pages.hpp"
 #include "safetyhook.hpp"
 
@@ -126,7 +127,7 @@ void attach_info_queue(ID3D12Device *dev)
 
 HRESULT WINAPI hooked_create_device(IUnknown *adapter, D3D_FEATURE_LEVEL level, REFIID riid, void **out)
 {
-    void *ret = __builtin_return_address(0);
+    void *ret = d3d12hooks::creation_caller(__builtin_return_address(0));
     HRESULT hr = create_hook.unsafe_call<HRESULT>(adapter, level, riid, out);
     if (SUCCEEDED(hr) && out && readable(out, sizeof *out) && *out && !caller_is_core(ret)) {
         ID3D12Device *dev = nullptr;

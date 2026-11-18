@@ -43,6 +43,8 @@ struct Overlay {
     std::mutex render_lock;
     bool dropped_told = false;
     std::atomic<bool> armed{false}, off{false}, lost_once{false};
+    // From setup deciding to arm until the arm is done, which may be on the arm worker; ov_available counts it as armed.
+    std::atomic<bool> arming{false};
     std::atomic<ID3D12Device *> live_dev{nullptr};
     std::atomic<ULONGLONG> last_draw_ms{0};
     std::string drawn_by;
@@ -57,6 +59,7 @@ struct Overlay {
     bool menu_frame_told = false;
 
     void setup();
+    void arm_decided();
     void device_lost(HRESULT present_hr);
     void draw_target(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const Renderer::Target &t, const std::vector<Vertex> &verts,
                      const std::vector<hud::Batch> &batches, UINT color_space, ULONGLONG now);

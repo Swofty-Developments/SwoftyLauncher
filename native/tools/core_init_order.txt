@@ -100,6 +100,7 @@ init
   src/core/frontend/view_state.cpp
   src/core/render/postfx.cpp
   src/core/render/grade.cpp
+  src/core/render/d3d12/arm_gate.cpp
   src/core/render/d3d12/rtas_guard.cpp
   src/core/render/d3d12/srv_clamp.cpp
   src/core/render/d3d12/list_state.cpp
@@ -223,6 +224,7 @@ exit
   src/core/render/d3d12/list_state.cpp
   src/core/render/d3d12/srv_clamp.cpp
   src/core/render/d3d12/rtas_guard.cpp
+  src/core/render/d3d12/arm_gate.cpp
   src/core/render/grade.cpp
   src/core/render/postfx.cpp
   src/core/frontend/view_state.cpp
