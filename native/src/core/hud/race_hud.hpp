@@ -33,6 +33,9 @@ struct RaceHud {
     std::atomic<size_t> sets_pending{0};
     std::atomic<uint32_t> sets_dropped{0};
     runtime::hud_leaves::Table leaf_table;
+    // The first 16 applied sets and unresolved leaves are logged, and the first leaf registration.
+    std::atomic<int> sets_told{0}, leaves_told{0};
+    std::atomic<bool> leaves_logged{false};
 
 private:
     struct EpochWatch {

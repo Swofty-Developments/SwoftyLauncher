@@ -5,6 +5,8 @@
 #endif
 #include <windows.h>
 
+#include "core/runtime/pages_logic.hpp"
+
 #include <cstddef>
 #include <cstdint>
 
@@ -24,6 +26,7 @@ namespace runtime::pages {
 // PAGE_READONLY, PAGE_READWRITE, PAGE_WRITECOPY and the three PAGE_EXECUTE_ forms of them.
 constexpr DWORD READABLE_ACCESS = 0xEE;
 constexpr DWORD WRITABLE_ACCESS = PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY;
+static_assert(WRITABLE_ACCESS == WRITABLE_PROTECTION && PAGE_NOACCESS == NOACCESS_PROTECTION && PAGE_GUARD == GUARD_PROTECTION);
 
 constexpr bool readable_protection(DWORD p)
 {
@@ -59,9 +62,7 @@ inline bool writable_in_region(uintptr_t p, size_t n)
     MEMORY_BASIC_INFORMATION m{};
     if (VirtualQuery(reinterpret_cast<const void *>(p), &m, sizeof m) != sizeof m)
         return false;
-    if (m.State != MEM_COMMIT || (m.Protect & PAGE_GUARD) || !(m.Protect & WRITABLE_ACCESS))
-        return false;
-    return p + n <= reinterpret_cast<uintptr_t>(m.BaseAddress) + m.RegionSize;
+    return writable_answer(m.State == MEM_COMMIT, m.Protect, reinterpret_cast<uintptr_t>(m.BaseAddress), m.RegionSize, p, n);
 }
 
 }

@@ -47,6 +47,14 @@ const runtime::Sig S_NAME{"Game_PresenceNameCache_Lookup",
 
 namespace pn = runtime::player_name;
 namespace sl = runtime::session_life;
+namespace bp = runtime::build_proof;
+
+// What the bridge reads besides its byte signature: the user id the lookup is given (type +0, the id as value ^ mask at
+// +8/+0x10, flag +0x39, kind +0x4c; player_name_logic.hpp) and the view model registry's vtables the pin pass walks
+// (name_copies::registry_layout; ui_registry_walk.hpp's node offsets).
+constexpr bp::Proof TT_NAME_LAYOUT{"the name cache lookup's user id layout and the view model registry vtables",
+                                   bp::bit(bp::Build::kb)};
+constexpr bp::Gate TT_NAME{"the Time Trial player name", &TT_NAME_LAYOUT};
 
 // The launcher account is read from home_menu.json on a worker thread (the main menu's own state is not loaded when the game
 // starts through the chain entry); the file is read again only when its write time changes, and not during a session of
@@ -233,7 +241,7 @@ void TimeTrialName::setup()
     auto gate = swofty::json::parse(runtime::read_file(runtime::swofty_root() + L"tt.json", size_t(1) << 20));
     char v[8] = {};
     bool off = GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME", v, sizeof v) && !strcmp(v, "0");
-    if (!gate.is_object() || !gate["tt_bridge"].as_bool(false) || off || !runtime::same_build())
+    if (!gate.is_object() || !gate["tt_bridge"].as_bool(false) || off || !runtime::holds(TT_NAME))
         return;
     uintptr_t at = runtime::find(S_NAME, "boards", "boards");
     if (!at) {
@@ -300,7 +308,7 @@ void TimeTrialName::pin_tick()
     if (why.empty() && stock.empty() && swofty::game::g_Vm_Registry.address()) {
         namespace ur = runtime::ui_registry;
         uint64_t base = swofty::api->module_base(), reg = uint64_t(*swofty::game::g_Vm_Registry);
-        ur::Layout lay{base + 0x5a70080, base + 0x5a6ff90, base + 0x565f200, base + 0x5660370};
+        ur::Layout lay = name_copies::registry_layout(base);
         std::vector<ur::Hit> all;
         ur::Stats st;
         auto rd = [](uint64_t at, void *out, size_t n) { return name_copies::registry_read(at, out, n); };

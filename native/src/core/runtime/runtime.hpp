@@ -58,6 +58,9 @@ const SwoftyAssets *assets_table();
 const SwoftyEvents *events_table();
 void frame_probe_name(const char *what);
 const SwoftyOverlay *overlay_table();
+// Loads the image file at `path` as the overlay image `id`: its slot, or -1. An id and path that failed once are not
+// tried again.
+int overlay_image(const std::string &id, const std::string &path, uint32_t *width, uint32_t *height);
 const SwoftyTelemetry *telemetry_table();
 const SwoftyDb *db_table();
 // True once a db_table() call has resolved the database reader's signatures; the core's own readers check it so

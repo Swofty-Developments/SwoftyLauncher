@@ -27,18 +27,6 @@ const char *route_name()
     return *r ? r : "home_to_activity";
 }
 
-bool nav_flag()
-{
-    static std::atomic<int> flag{-1};
-    int f = flag.load();
-    if (f < 0) {
-        f = runtime::read_file(runtime::under_swofty("ui\\home_nav.flag"), 16).empty() ? 0 : 1;
-        flag = f;
-        swofty::log("[main-menu] nav: the launcher's Time Trial, Grand Prix and Back routes %s", f ? "are in this build" : "are not in this build; the old chain and the game's Back stay");
-    }
-    return f == 1;
-}
-
 // The function's first 64 bytes are shared with a second lookup (0x1407c7280), so the pattern is taken from the first
 // byte that differs (function + 0x31c: the lea/call displacements are wildcards, the short jump after them is not) and
 // the anchor walks back to the entry.
@@ -49,18 +37,33 @@ const runtime::Sig S_GAME_MANAGER{"game.manager",
                                   "48 8B B8 98 01 00 00 48 85 FF 0F 84 ?? ?? ?? ?? 48 8D 4C 24 70 E8 ?? ?? ?? ?? 48 8B 05", 0x604c2c8,
                                   runtime::Sig::riprel, 26, 29, 7};
 
+// The championship modes the Grand Prix season probe asks, as name addresses in the KB image.
+constexpr uintptr_t GP_MODE_NAMES[] = {0x5734370, 0x573438c, 0x57343a8, 0x570a6b2, 0x570a6c9};
+
+
+}
+
+bool Navigation::nav_flag()
+{
+    int f = nav_flag_state.load();
+    if (f < 0) {
+        f = runtime::read_file(runtime::under_swofty("ui\\home_nav.flag"), 16).empty() ? 0 : 1;
+        nav_flag_state = f;
+        swofty::log("[main-menu] nav: the launcher's Time Trial, Grand Prix and Back routes %s", f ? "are in this build" : "are not in this build; the old chain and the game's Back stay");
+    }
+    return f == 1;
+}
+
 // The stock Grand Prix entry (grand_prix_continue) shows its saved seasons when GrandPrixContinueViewModel's mode
 // lookup (Game_GrandPrixContinueVm_FindModeEntity 0x141bccc00) finds a championship mode whose season registry
 // (entity +0x1030, virtual +0x78) answers 1: F2_2026/F2_2025/F2_2024_Championship_Season, F1_Championship_Season,
 // F1_2026_Championship_Season, in that order. The card does not decide on this lookup any more: in the field it found
-// no entity for any name, F1_Championship_Season included, so the card never opened the saves screen (1.9.0 to 1.9.3).
+// no entity for any name, F1_Championship_Season included, so a card deciding on it never opened the saves screen.
 // It is asked once per session and logged (the modes pointer and every answer) so the field says which step fails.
-void gp_saves_probe()
+void Navigation::gp_saves_probe()
 {
-    static std::atomic<bool> asked{false};
-    if (asked.exchange(true))
+    if (gp_probe_asked.exchange(true))
         return;
-    static const uintptr_t names[] = {0x5734370, 0x573438c, 0x57343a8, 0x570a6b2, 0x570a6c9};
     uintptr_t find = runtime::find(S_MODE_BY_NAME, "home", "core"), manager = runtime::find(S_GAME_MANAGER, "home", "core");
     if (!find || !manager) {
         swofty::log("[main-menu] probe: the Grand Prix season lookup did not resolve (mode lookup %p, game manager %p)",
@@ -78,7 +81,7 @@ void gp_saves_probe()
                 (unsigned long long)(find - base));
     if (!modes || !runtime::readable(modes, 8))
         return;
-    for (uintptr_t rva : names) {
+    for (uintptr_t rva : GP_MODE_NAMES) {
         const char *name = reinterpret_cast<const char *>(base + rva);
         if (!runtime::readable(name, 8) || std::strlen(name) > 40 || std::strncmp(name, "F", 1)) {
             swofty::log("[main-menu] probe: mode name at base+0x%llx is not a name", (unsigned long long)rva);
@@ -101,8 +104,6 @@ void gp_saves_probe()
         int answer = reinterpret_cast<int (*)(void *)>(vt[0x78 / 8])(entity + 0x1030);
         swofty::log("[main-menu] probe: Grand Prix mode %s: entity %p, season registry answers %d", name, entity, answer);
     }
-}
-
 }
 
 bool Navigation::entry_by_route() { return nav_flag() && std::strcmp(env("SWOFTY_MAIN_MENU_ENTRY"), "chain") != 0; }
@@ -369,7 +370,7 @@ void Navigation::hub_back()
         hub_at = 0;
         void *router = last_router.load();
         if (router && h_fire) {
-            static uint8_t scratch[0x400];
+            uint8_t *scratch = route_events.back;
             *reinterpret_cast<uint32_t *>(scratch + 0x250) = logic::djb2("fe_f1_world");
             NeStr *route = nullptr;
             Ne_Make_StrFromCStr(&route, "back", 0, 0);
@@ -414,7 +415,7 @@ void Navigation::tick_chain()
         void *router = last_router.load();
         chain.step = Step::done;
         if (router && h_fire) {
-            static uint8_t scratch[0x400];
+            uint8_t *scratch = route_events.reopen;
             *reinterpret_cast<uint32_t *>(scratch + 0x250) = logic::djb2("fe_home");
             NeStr *route = nullptr;
             Ne_Make_StrFromCStr(&route, "open", 0, 0);

@@ -111,6 +111,7 @@ void Overlay::draw_target(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const Rend
 hud::Frame &Overlay::build_frame(const std::vector<hud::Paintsub> &subs, UINT width, UINT height, ULONGLONG now)
 {
     static const uint32_t paint_probe = perf::probe("core", "overlay paint callbacks");
+    // Not a member: the frame's text cache (std::unordered_map) has no constexpr constructor and the overlay is constinit.
     static hud::Frame frame;
     {
         perf::Scope painting(paint_probe);
@@ -165,8 +166,7 @@ void Overlay::draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known
     bool menu = runtime::main_menu::drawing();
     bool barred = runtime::lap_host::notice_drawing();
     if (menu) {
-        static bool told = false;
-        if (!std::exchange(told, true))
+        if (!std::exchange(menu_frame_told, true))
             swofty::log("[main-menu] the present hook passed its first frame with the main menu panel due (%zu paint callback(s))",
                         subs.size());
     }

@@ -16,10 +16,6 @@
 #include <utility>
 #include <vector>
 
-namespace runtime {
-int overlay_image(const std::string &id, const std::string &path, uint32_t *width, uint32_t *height);
-}
-
 namespace runtime::main_menu {
 
 namespace {
