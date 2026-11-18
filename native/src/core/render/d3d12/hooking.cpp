@@ -68,7 +68,7 @@ std::string module_of(const void *addr, HMODULE *mod)
         *mod = m;
     char path[MAX_PATH] = {};
     DWORD n = GetModuleFileNameA(m, path, MAX_PATH);
-    return std::string(hud::guard::base_name(std::string_view(path, n)));
+    return std::string(hud::arm_policy::base_name(std::string_view(path, n)));
 }
 
 ProbeScope::ProbeScope()

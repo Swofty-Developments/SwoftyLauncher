@@ -7,7 +7,7 @@
 namespace hud::hardware_settings {
 
 std::wstring path();
-hud::guard::FgSetting frame_gen(const std::wstring &path);
+hud::arm_policy::FgSetting frame_gen(const std::wstring &path);
 
 // The game's hardware settings file, looked at again at most every two seconds. Its path is found on the first look
 // that finds one.

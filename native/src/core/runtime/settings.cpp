@@ -428,7 +428,7 @@ bool settings_command(uint32_t hash)
         api->log("[settings] restart requested: relaunch = true");
     for (size_t k = 0; o && k < mfd_rows.size(); k++)
         if (mfd_rows[k].addon == c.addon && mfd_rows[k].option == c.option)
-            ui_vm_set_path("ui_menu_data.swofty.m" + std::to_string(k), 0, o->states[c.state].text.c_str());
+            frontend::ui_vm_set_path("ui_menu_data.swofty.m" + std::to_string(k), 0, o->states[c.state].text.c_str());
     DWORD err = write_requests(text);
     ReleaseSRWLockExclusive(&io);
     if (err)

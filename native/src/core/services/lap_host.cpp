@@ -470,7 +470,7 @@ bool notice_drawing()
     return notice_on.load(std::memory_order_relaxed);
 }
 
-void notice_paint(hud::Frame &f, uint64_t)
+void notice_paint(hud::drawlist::Frame &f, uint64_t)
 {
     if (!notice_on.load(std::memory_order_relaxed))
         return;
@@ -481,26 +481,26 @@ void notice_paint(hud::Frame &f, uint64_t)
     }
     if (text.empty() || f.width <= 0 || f.height <= 0)
         return;
-    hud::reset_state(f);
+    hud::drawlist::reset_state(f);
     const float W = f.width, H = f.height, k = H / 1080.0f;
-    hud::TextStyle s;
+    hud::drawlist::TextStyle s;
     s.px = 26 * k;
     s.rgba = 0xff3b30ffu;
     s.outline_rgba = 0x000000e0u;
     s.outline_px = 2 * k;
     float w = 0, h = 0;
-    hud::measure(s, text, &w, &h);
+    hud::drawlist::measure(s, text, &w, &h);
     const float room = W * 0.92f;
     if (w > room && w > 0) {
         s.px *= room / w;
         s.outline_px *= room / w;
-        hud::measure(s, text, &w, &h);
+        hud::drawlist::measure(s, text, &w, &h);
     }
     const float pad_x = 18 * k, pad_y = 10 * k, top = 16 * k;
     const float x = (W - w) * 0.5f;
-    hud::rect_rounded(f, x - pad_x, top, w + 2 * pad_x, h + 2 * pad_y, 8 * k, 0x0b0b0fd0u);
-    hud::rect_rounded_outline(f, x - pad_x, top, w + 2 * pad_x, h + 2 * pad_y, 8 * k, 2 * k, 0xff3b30c0u);
-    hud::text(f, x, top + pad_y, s, text);
+    hud::drawlist::rect_rounded(f, x - pad_x, top, w + 2 * pad_x, h + 2 * pad_y, 8 * k, 0x0b0b0fd0u);
+    hud::drawlist::rect_rounded_outline(f, x - pad_x, top, w + 2 * pad_x, h + 2 * pad_y, 8 * k, 2 * k, 0xff3b30c0u);
+    hud::drawlist::text(f, x, top + pad_y, s, text);
 }
 
 }

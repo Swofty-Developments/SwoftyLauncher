@@ -15,11 +15,11 @@ void Overlay::setup()                              // "hud", always in the stage
 {
     if (settings().killed("all"))                  // SWOFTY_OVERLAY_KILL / "overlay_kill" lists all
         return;
-    hud::guard::ArmReasons reasons{settings().gate, capture.on, hud::room_cover::setup(), menu || barred};
+    hud::arm_policy::ArmReasons reasons{settings().gate, capture.on, hud::room_cover::setup(), menu || barred};
     if (!reasons.any())                            // no overlay addon, capture, cover, menu panel or TT warning
         return;
     std::string rival = device_hook_rival();       // RivaTuner Statistics Server
-    if (hud::guard::present_hook_yields(reasons, rival, settings().rival_forced))
+    if (hud::arm_policy::present_hook_yields(reasons, rival, settings().rival_forced))
         return;
     implemented = on;
     arming.store(true);
@@ -44,14 +44,14 @@ bool Overlay::arm()
     bool swapchain = d3d12hooks::arm_swapchain();
     if (before_fg_wanted())                        // frame generation on, or SWOFTY_OVERLAY_FG / "overlay_fg"
         arm_before_fg("...");                      // device hooks: draw in the game's lists, before frame generation
-    else if (hud::guard::device_hooks_wanted_for(loaded_modules()))
+    else if (hud::arm_policy::device_hooks_wanted_for(loaded_modules()))
         arm_before_fg("the NVIDIA app's present layer is in the process");
     probe.reset();
     return swapchain;
 }
 ```
 
-A swapchain whose present queue the core cannot read arms the device hooks late, at its first Present (`hud::guard::on_demand_arm`), and the overlay draws on it from the next frame.
+A swapchain whose present queue the core cannot read arms the device hooks late, at its first Present (`hud::arm_policy::on_demand_arm`), and the overlay draws on it from the next frame.
 
 An addon's init can run while the arm is still on the worker. Every overlay call an addon can make then is safe before the arm finishes: none reads the renderer, the device or anything else the arm builds.
 

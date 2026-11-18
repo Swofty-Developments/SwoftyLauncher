@@ -4,7 +4,7 @@
 #include <cmath>
 #include <cstdint>
 
-namespace hud {
+namespace hud::drawlist {
 
 // ----- v1 calls ---------------------------------------------------------------------------------
 

@@ -31,7 +31,7 @@ struct Stats {
 // the session.
 struct Overlay {
     std::mutex reg_lock;
-    hud::Registry reg;
+    hud::drawlist::Registry reg;
     // The id|path keys overlay_image could not load; they are not tried again.
     std::mutex image_failed_lock;
     std::vector<std::string> image_failed;
@@ -62,15 +62,15 @@ struct Overlay {
     void arm_decided();
     void device_lost(HRESULT present_hr);
     void draw_target(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const Renderer::Target &t, const std::vector<Vertex> &verts,
-                     const std::vector<hud::Batch> &batches, UINT color_space, ULONGLONG now);
+                     const std::vector<hud::drawlist::Batch> &batches, UINT color_space, ULONGLONG now);
     void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *);
     void presented(IDXGISwapChain3 *, HRESULT hr);
     bool arm_for_unread_queue(IDXGISwapChain3 *sc, void *caller);
 
 private:
     void flush_stats(ULONGLONG now);
-    hud::Frame &build_frame(const std::vector<hud::Paintsub> &subs, UINT width, UINT height, ULONGLONG now);
-    void paint_frame(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const std::vector<hud::Paintsub> &subs,
+    hud::drawlist::Frame &build_frame(const std::vector<hud::drawlist::Paintsub> &subs, UINT width, UINT height, ULONGLONG now);
+    void paint_frame(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const std::vector<hud::drawlist::Paintsub> &subs,
                      const DXGI_SWAP_CHAIN_DESC &desc, ULONGLONG now, UINT color_space);
     bool resolve_d3d12();
     bool arm();

@@ -222,12 +222,12 @@ void Navigation::cover_down(const char *picker)
 
 bool Navigation::covering() const { return cover_on.load(); }
 
-void Navigation::paint_cover(hud::Frame &f)
+void Navigation::paint_cover(hud::drawlist::Frame &f)
 {
     frame_no++;
     if (cover_on.load()) {
-        hud::reset_state(f);
-        hud::rect(f, 0, 0, f.width, f.height, 0x000000ffu);
+        hud::drawlist::reset_state(f);
+        hud::drawlist::rect(f, 0, 0, f.width, f.height, 0x000000ffu);
         cover_frames++;
     }
 }

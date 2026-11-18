@@ -41,7 +41,7 @@ public:
     void want_strip(int visible);
     void home_tick();
     void sync_strip();
-    void paint(hud::Frame &f, uint64_t now);
+    void paint(hud::drawlist::Frame &f, uint64_t now);
 
 private:
     struct Prepared {

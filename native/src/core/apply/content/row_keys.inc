@@ -1150,6 +1150,10 @@ game_setup_mode
 race_class
 statId
 use_custom_vehicle_spec
+@game_setup.seasons.season_N
+_metadata_
+statId
+year
 @game_setup.session_standings.session_standing_preset_N
 +reduced_points_data
 _metadata_
@@ -1200,5 +1204,14 @@ history
 poles
 team
 team_name
-wins)keys",
+wins
+@track_data.track_layers.TrackLayer_N
+_metadata_
+game_setup_modes
+is_invalid
+seasons
+statId
+weekend_formats
+worldAssetGroup
+worldEri)keys",
 };

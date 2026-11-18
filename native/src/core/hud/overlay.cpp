@@ -53,7 +53,7 @@ void Overlay::device_lost(HRESULT present_hr)
     ID3D12Device *dev = live_dev.load();
     HRESULT reason = dev ? dev->GetDeviceRemovedReason() : S_OK;
     ULONGLONG now = GetTickCount64(), last = last_draw_ms.load();
-    if (!hud::guard::removal_after_draw(now, last)) {
+    if (!hud::arm_policy::removal_after_draw(now, last)) {
         swofty::log("[overlay] the GPU was removed (present 0x%08lx, reason 0x%08lx) %s; the overlay stops drawing",
                     static_cast<unsigned long>(present_hr), static_cast<unsigned long>(reason),
                     last ? "more than 10 s after the overlay last drew" : "and the overlay had not drawn");
@@ -83,7 +83,7 @@ void Overlay::flush_stats(ULONGLONG now)
 }
 
 void Overlay::draw_target(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const Renderer::Target &t,
-                          const std::vector<Vertex> &verts, const std::vector<hud::Batch> &batches, UINT color_space,
+                          const std::vector<Vertex> &verts, const std::vector<hud::drawlist::Batch> &batches, UINT color_space,
                           ULONGLONG now)
 {
     static const uint32_t probe = perf::probe("core", "overlay record");
@@ -108,15 +108,16 @@ void Overlay::draw_target(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const Rend
     }
 }
 
-hud::Frame &Overlay::build_frame(const std::vector<hud::Paintsub> &subs, UINT width, UINT height, ULONGLONG now)
+hud::drawlist::Frame &Overlay::build_frame(const std::vector<hud::drawlist::Paintsub> &subs, UINT width, UINT height,
+                                           ULONGLONG now)
 {
     static const uint32_t paint_probe = perf::probe("core", "overlay paint callbacks");
     // Not a member: the frame's text cache (std::unordered_map) has no constexpr constructor and the overlay is constinit.
-    static hud::Frame frame;
+    static hud::drawlist::Frame frame;
     {
         perf::Scope painting(paint_probe);
         input.frame(subs, float(width), float(height), now);
-        hud::build(subs, frame, float(width), float(height), settings().off);
+        hud::drawlist::build(subs, frame, float(width), float(height), settings().off);
         input.draw_cursor(frame);
         hud::room_cover::paint(frame, now);
         frontend::main_menu::paint(frame, now);
@@ -127,15 +128,15 @@ hud::Frame &Overlay::build_frame(const std::vector<hud::Paintsub> &subs, UINT wi
         dropped_told = true;
         swofty::log("[overlay] a frame's paint callbacks drew more than %u vertices; %u primitive(s) past that were "
                     "dropped",
-                    hud::MAX_VERTS, frame.dropped);
+                    hud::drawlist::MAX_VERTS, frame.dropped);
     }
     return frame;
 }
 
-void Overlay::paint_frame(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const std::vector<hud::Paintsub> &subs,
+void Overlay::paint_frame(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const std::vector<hud::drawlist::Paintsub> &subs,
                           const DXGI_SWAP_CHAIN_DESC &desc, ULONGLONG now, UINT color_space)
 {
-    hud::Frame &frame = build_frame(subs, desc.BufferDesc.Width, desc.BufferDesc.Height, now);
+    hud::drawlist::Frame &frame = build_frame(subs, desc.BufferDesc.Width, desc.BufferDesc.Height, now);
     if (frame.verts.empty())
         return;
     ID3D12Resource *buf = nullptr;
@@ -157,7 +158,7 @@ void Overlay::draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known
         return;
     static const uint32_t probe = perf::probe("core", "overlay present");
     perf::Scope timed(probe);
-    std::vector<hud::Paintsub> subs;
+    std::vector<hud::drawlist::Paintsub> subs;
     if (implemented) {
         std::lock_guard<std::mutex> g(reg_lock);
         subs = reg.subs();
@@ -196,13 +197,13 @@ void Overlay::draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known
         told.push_back(seen);
     ULONGLONG now = GetTickCount64();
     // FidelityFX's loader, like Streamline's hook, passes frames through while frame generation is off.
-    const bool ffx = hud::guard::ffx_loader(c.fg);
+    const bool ffx = hud::arm_policy::ffx_loader(c.fg);
     const bool fg_named = !c.fg.empty() && !ffx;
-    const hud::guard::Gate gate =
-        hud::guard::gate_for_swapchain(c.fg, c.streamline, c.armed_late, [&] { return fg_watch.frame_gen_off(now); });
-    const UINT color_space = c.color_space_set ? c.color_space : hud::guard::COLOR_SPACE_UNSET;
-    if (!hud::guard::draws_at_present(gate)) {
-        if (!hud::guard::draws_before_present(gate, device_hooked)) {
+    const hud::arm_policy::Gate gate =
+        hud::arm_policy::gate_for_swapchain(c.fg, c.streamline, c.armed_late, [&] { return fg_watch.frame_gen_off(now); });
+    const UINT color_space = c.color_space_set ? c.color_space : hud::arm_policy::COLOR_SPACE_UNSET;
+    if (!hud::arm_policy::draws_at_present(gate)) {
+        if (!hud::arm_policy::draws_before_present(gate, device_hooked)) {
             before_fg.set_active(false);
             before_fg.drop();
             std::string why = device_hook_rival_seen.empty()
@@ -237,8 +238,8 @@ void Overlay::draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known
         before_fg.set_active(true);
         bool addons = !subs.empty() && !settings().killed("paint");
         if (addons || cover || menu || barred) {
-            hud::Frame &frame = build_frame(addons ? subs : std::vector<hud::Paintsub>(), desc.BufferDesc.Width,
-                                            desc.BufferDesc.Height, now);
+            hud::drawlist::Frame &frame = build_frame(addons ? subs : std::vector<hud::drawlist::Paintsub>(),
+                                                      desc.BufferDesc.Width, desc.BufferDesc.Height, now);
             before_fg.keep(sc, frame, desc, color_space, now);
         } else {
             before_fg.drop();
@@ -288,7 +289,7 @@ void Overlay::draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known
     }
     bool addons = !subs.empty() && !settings().killed("paint");
     if (addons || cover || menu || barred)
-        paint_frame(sc, c.queue, addons ? subs : std::vector<hud::Paintsub>(), desc, now, color_space);
+        paint_frame(sc, c.queue, addons ? subs : std::vector<hud::drawlist::Paintsub>(), desc, now, color_space);
     if (capture.on && !settings().killed("capture"))
         capture.step(renderer, sc, c.queue, desc, now);
 }
@@ -320,7 +321,7 @@ bool Overlay::arm_for_unread_queue(IDXGISwapChain3 *sc, void *caller)
     if (device_hooked || before_fg_tried)
         return device_hooked;
     std::string by = d3d12hooks::module_of(caller);
-    hud::guard::OnDemandArm on = hud::guard::on_demand_arm(loaded_modules(), by, settings().before_fg_forced);
+    hud::arm_policy::OnDemandArm on = hud::arm_policy::on_demand_arm(loaded_modules(), by, settings().before_fg_forced);
     if (!on.arms()) {
         swofty::log("[overlay] swapchain %p presents from %s and its present queue cannot be read; the core's device "
                     "hooks stay off (%s), so the overlay does not draw on it",
@@ -352,10 +353,10 @@ bool Overlay::arm()
     swofty::log(perf::STEP_LINE, steps.lap_ms(), "overlay arm swapchain (probe device made)");
     if (before_fg_wanted()) {
         arm_before_fg("frame generation is on in the game's settings, or SWOFTY_OVERLAY_FG / \"overlay_fg\"");
-    } else if (std::vector<std::string> mods = loaded_modules(); hud::guard::device_hooks_wanted_for(mods)) {
+    } else if (std::vector<std::string> mods = loaded_modules(); hud::arm_policy::device_hooks_wanted_for(mods)) {
         swofty::log("[overlay] %s is in the process; the game's swapchain may be made outside the creation hooks, so "
                     "the core's device hooks arm to learn its present queue from ExecuteCommandLists",
-                    hud::guard::present_layer_in(mods).c_str());
+                    hud::arm_policy::present_layer_in(mods).c_str());
         arm_before_fg("the NVIDIA app's present layer is in the process");
     }
     swofty::log(perf::STEP_LINE, steps.lap_ms(), "overlay arm device hooks");
@@ -370,7 +371,7 @@ void Overlay::arm_before_fg(const char *why)
     if (std::exchange(before_fg_tried, true))
         return;
     std::string rival = device_hook_rival();
-    if (!hud::guard::device_hooks_allowed(rival, settings().before_fg_forced)) {
+    if (!hud::arm_policy::device_hooks_allowed(rival, settings().before_fg_forced)) {
         device_hook_rival_seen = rival;
         swofty::log("[overlay] %s hooks the D3D12 entry points the core's device hooks use, so they are not armed: the "
                     "overlay draws at Present as before 1.8.38 and does not draw while frame generation is on "
@@ -402,13 +403,13 @@ void Overlay::setup()
     bool cover = hud::room_cover::setup();
     bool menu = frontend::main_menu::wants_overlay();
     bool barred = runtime::lap_host::notice_wanted();
-    hud::guard::ArmReasons reasons{on, capture.on, cover, menu || barred};
+    hud::arm_policy::ArmReasons reasons{on, capture.on, cover, menu || barred};
     if (!reasons.any()) {
         swofty::log("[overlay] the overlay feature is experimental and off; the HUD present hook is not armed");
         return;
     }
     std::string rival = device_hook_rival();
-    if (hud::guard::present_hook_yields(reasons, rival, settings().rival_forced)) {
+    if (hud::arm_policy::present_hook_yields(reasons, rival, settings().rival_forced)) {
         if (reasons.menu_only())
             swofty::log("[main-menu] %s hooks the game's Present, so the present hook is not armed for the main menu "
                         "panel and video card: they do not draw while RivaTuner Statistics Server is running (the "

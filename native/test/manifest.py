@@ -215,7 +215,7 @@ CONTENT = [
                                    'test/content/rows_test_career.cpp', 'src/core/apply/scheduler.cpp'], CONTENT_FLAGS + [SDK]),
                           CONTENT_IDS, CONTENT_ENGINE]),
     *[Program(test, [Objects([f'test/content/{test}.cpp'], CONTENT_FLAGS + [SDK]), CONTENT_IDS, CONTENT_ENGINE])
-      for test in ('vehicle_tower_test', 'package_id_test', 'id_pool_test', 'wear_test')],
+      for test in ('vehicle_tower_test', 'package_id_test', 'id_pool_test', 'wear_test', 'box_world_test')],
     Program('appliers.windows.o', [Objects(['src/core/apply/content/appliers.cpp'], CONTENT_WINDOWS, WINDOWS)], 'obj'),
     Program('logos.windows.o', [Objects(['src/core/apply/content/logos.cpp'], CONTENT_WINDOWS, WINDOWS)], 'obj'),
     Program('bc7_test', [Objects(['test/content/bc7_test.cpp'], CONTENT_FLAGS + ['-ffp-contract=off'])]),

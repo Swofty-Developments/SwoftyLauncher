@@ -18,7 +18,6 @@ namespace runtime::dred {
 
 extern std::vector<std::wstring> marker_folders;
 extern void (*log_fn)(const char *, ...);
-extern std::vector<BuildStop> stops;
 
 inline bool readable(const void *p, size_t n)
 {
@@ -30,7 +29,8 @@ inline bool readable(const void *p, size_t n)
 bool prior_session_removed(const char **how);
 // Leaves dred.flag for the next session.
 void write_flag();
-// The DRED breadcrumbs, contexts and page fault allocations of a removed device, with the build stops it read.
-std::string removed_device(ID3D12Device *dev, HRESULT reason);
+// The DRED breadcrumbs, contexts and page fault allocations of a removed device; the builds its unfinished command lists
+// stopped on go into stops.
+std::string removed_device(ID3D12Device *dev, HRESULT reason, BuildStops &stops);
 
 }
