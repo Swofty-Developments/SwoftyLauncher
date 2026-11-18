@@ -474,7 +474,11 @@ Totals Scheduler::run_boot()
     if (!planned_)
         plan_boot();
     booted_ = true;
+    uint64_t from = store_.generation();
+    Context was = store_.context();
     publish(g);
+    boot_published_ = store_.generation();
+    boot_from_ = boot_published_ == from + 1 && store_.context() == was ? from : boot_published_;
     Totals t = run(Moment::boot, Applies::boot, [&](Applier &a, Report &r) { a.boot(store_, r); }, nullptr, false,
                    nullptr);
     log("[apply] boot: " + std::to_string(t.appliers) + " applier(s); " + counts(t) + " (" + summary(ctx_) + ")");
@@ -487,6 +491,13 @@ Totals Scheduler::run_boot()
     }
     log_unapplied();
     return t;
+}
+
+uint64_t Scheduler::boot_generation() const
+{
+    Lock g(mu_);
+    uint64_t now = store_.generation();
+    return booted_ && now == boot_published_ ? boot_from_ : now;
 }
 
 void Scheduler::log_unapplied()
