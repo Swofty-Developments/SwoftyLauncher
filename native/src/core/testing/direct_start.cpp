@@ -122,8 +122,10 @@ struct GrandPrix {
 uintptr_t root_global = 0, despawn_main_scene = 0;
 
 // The builds the driver runs on: every build whose struct layouts were checked against the signatures' functions
-// (bp::proofs::VERIFIED_LAYOUT; the KB build and Steam 26566308 also by sigport.py --witness, each function cited
-// beside the offsets it backs).
+// (bp::proofs::VERIFIED_LAYOUT; the KB build, Steam 26566308 and the EA App KB build also by sigport.py --witness, each
+// function cited beside the offsets it backs). On the EA App KB build every cited function is the same except the game
+// manager's reader 0x14022d920, which loads the entrants system from +0x260 there (runtime::manager_entrants_system()),
+// and StateLoadSession's +0xcd0 is witnessed at its constructor 0x1437b57d0.
 namespace bp = runtime::build_proof;
 constexpr uint32_t VERIFIED_BUILDS = bp::proofs::VERIFIED_LAYOUT.builds;
 constexpr bp::Proof SESSION_DRIVER{"the session driver's layout (the Grand Prix entity +0x1030, +0xf08, +0xf58, +0xe18, "
@@ -684,6 +686,24 @@ void link_mid(safetyhook::Context &c)
         link_live.exchange(false))
         swofty::log("[direct] %s start: the flow link has nothing left to do (%s); it returns at once from now on", driver.target.name.c_str(),
                     ds::phase_name(driver.phase));
+}
+
+// The direct start and the flow link listeners share one hook on the flow link site, made by whichever asks first.
+std::mutex link_hook_lock;
+
+std::string hook_flow_link()
+{
+    std::lock_guard<std::mutex> g(link_hook_lock);
+    if (h_link)
+        return {};
+    uintptr_t at = runtime::holds(FLOW_LINK) ? runtime::find(SIG_FLOW_LINK, "flow link", "direct") : 0;
+    if (!at)
+        return "the flow link site is not proven or did not resolve on this build";
+    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), link_mid);
+    if (!h)
+        return "the hook on the flow link site failed: " + runtime::hook_error(h.error());
+    h_link = std::move(*h);
+    return {};
 }
 
 void *registry_call(uint8_t *entity, size_t slot, const void *a2, int a3)
@@ -1342,17 +1362,11 @@ void direct_start_setup()
     // +0xc0, +0xaf0, +0xb30 and +0xbd8 in the same places (+0xc10, the parent, the same in 0x141d5ee30), and the pattern
     // holds the hook point and the link's stack slot.
     if (t.exit_state || t.from_state) {
-        uintptr_t at = runtime::holds(FLOW_LINK) ? runtime::find(SIG_FLOW_LINK, "flow link", "direct") : 0;
-        if (!at) {
-            swofty::log("[direct] off: the flow link site is not proven or did not resolve on this build");
+        std::string why = hook_flow_link();
+        if (!why.empty()) {
+            swofty::log("[direct] off: %s", why.c_str());
             return;
         }
-        auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), link_mid);
-        if (!h) {
-            swofty::log("[direct] off: the hook on the flow link site failed: %s", runtime::hook_error(h.error()).c_str());
-            return;
-        }
-        h_link = std::move(*h);
     }
     {
         std::lock_guard<std::mutex> g(lock);
@@ -1440,17 +1454,11 @@ int direct_start_cover_signal()
 bool flow_link_listen(FlowLinkListener listener)
 {
     link_listener = listener;
-    if (h_link)
-        return true;
-    uintptr_t at = runtime::verified_build() ? runtime::find(SIG_FLOW_LINK, "flow link", "direct") : 0;
-    if (!at)
-        return false;
-    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), link_mid);
-    if (!h) {
-        swofty::log("[direct] the hook on the flow link site failed: %s", runtime::hook_error(h.error()).c_str());
+    std::string why = hook_flow_link();
+    if (!why.empty()) {
+        swofty::log("[direct] the flow link listener is off: %s", why.c_str());
         return false;
     }
-    h_link = std::move(*h);
     return true;
 }
 

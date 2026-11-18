@@ -83,8 +83,11 @@ def split_args(body):
     return out
 
 
-def int_arg(text):
-    """An integer argument: a literal, or a sum of literals and casts such as `uintptr_t(0) - 0x31c`."""
+def int_arg(text, names=None):
+    """An integer argument: a literal, a constant the file declares, or a sum of literals and casts such as
+    `uintptr_t(0) - 0x31c`."""
+    if names and text.strip() in names:
+        return names[text.strip()]
     expr = re.sub(r'\b(?:uintptr_t|size_t|uint32_t|int32_t|int)\s*\(\s*([^()]*)\s*\)', r'\1', text)
     terms = re.findall(r'\s*([+-]?)\s*(0[xX][0-9a-fA-F]+|\d+)[uUlL]*', expr)
     if not terms or re.sub(r'\s|[+-]|0[xX][0-9a-fA-F]+[uUlL]*|\d+[uUlL]*', '', expr):
@@ -96,6 +99,8 @@ def parse_sigs(path):
     text = strip_comments(open(path).read())
     consts = {m.group(1): ''.join(re.findall(r'"([^"]*)"', m.group(2)))
               for m in re.finditer(r'constexpr\s+const\s+char\s*\*\s*(\w+)\s*=\s*((?:"[^"]*"\s*)+);', text)}
+    int_decl = r'constexpr\s+(?:uintptr_t|size_t|uint32_t|uint64_t|int)\s+(\w+)\s*=\s*(0[xX][0-9a-fA-F]+|\d+)[uUlL]*\s*;'
+    ints = {m.group(1): int(m.group(2), 0) for m in re.finditer(int_decl, text)}
     sigs = []
     for m in re.finditer(r'\bSig\s+(\w+)\s*\{(.*?)\}\s*;', text, flags=re.S):
         a = split_args(m.group(2))
@@ -104,9 +109,9 @@ def parse_sigs(path):
         pat = ''.join(re.findall(r'"([^"]*)"', a[1])) if '"' in a[1] else consts.get(a[1])
         if pat is None:
             raise SystemExit(f'{path}: {m.group(1)}: pattern {a[1]} is not a literal or a known constant')
-        num = lambda i: int_arg(a[i]) if len(a) > i else 0
+        num = lambda i: int_arg(a[i], ints) if len(a) > i else 0
         kind = a[3].split('::')[-1] if len(a) > 3 else 'addr'
-        sigs.append({'name': m.group(1), 'what': a[0].strip('"'), 'pattern': ' '.join(pat.split()), 'rva': int_arg(a[2]),
+        sigs.append({'name': m.group(1), 'what': a[0].strip('"'), 'pattern': ' '.join(pat.split()), 'rva': int_arg(a[2], ints),
                      'kind': kind, 'insn': num(4), 'anchor': num(5), 'len': num(6),
                      'section': a[7].strip('"') if len(a) > 7 else '.xtls', 'file': os.path.basename(path)})
     return sigs
