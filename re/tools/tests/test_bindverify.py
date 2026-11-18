@@ -251,5 +251,44 @@ class EaDump(unittest.TestCase):
         self.assertEqual([i for i, _ in odd if i not in SAME_FUNCTION_DIFFERENT_BYTES], [])
 
 
+
+class FakeSection:
+    def __init__(self, name):
+        self.name = name
+
+
+class FakePort:
+    def section_of(self, rva):
+        return FakeSection('.tls$') if rva < 0x100000 else FakeSection('.trace') if rva < 0x200000 else None
+
+
+MARKS = [(0x1000, 0x900, 'A', '.tls$'), (0x3000, 0x2900, 'B', '.tls$'), (0x5000, 0x4800, 'C', '.tls$'),
+         (0x101000, 0x100000, 'D', '.trace'), (0x103000, 0x102000, 'E', '.trace')]
+
+
+class KbTwin(unittest.TestCase):
+    def twin(self, rva):
+        return bindverify.kb_twin(FakePort(), 'port', rva, MARKS)
+
+    def test_between_two_bindings_that_moved_alike(self):
+        kb, why = self.twin(0x2000)
+        self.assertEqual((kb, why['how'], why['shift'], why['below'], why['above']), (0x1900, 'neighbours', 0x700, 'A', 'B'))
+
+    def test_a_bound_address_is_its_binding(self):
+        self.assertEqual(self.twin(0x3000)[0], 0x2900)
+
+    def test_neighbours_that_moved_differently_give_no_twin(self):
+        kb, why = self.twin(0x4000)
+        self.assertIsNone(kb)
+        self.assertIn('moved by different amounts', why)
+
+    def test_neighbours_come_from_the_same_section(self):
+        self.assertEqual(self.twin(0x102000)[0], 0x101000)
+        kb, why = self.twin(0x6000)
+        self.assertIsNone(kb)
+        self.assertIn('no binding above', why)
+        self.assertIn('no section', self.twin(0x300000)[1])
+
+
 if __name__ == '__main__':
     unittest.main()
