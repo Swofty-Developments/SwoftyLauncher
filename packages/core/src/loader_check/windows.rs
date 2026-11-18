@@ -1,5 +1,6 @@
 use super::paths::{norm, tidy};
 use super::*;
+use crate::platform::registry::{self, Ask, Data, Key};
 use crate::platform::run_as_admin::windows_tool_within;
 
 const SESSION_MANAGER: &str = r"SYSTEM\CurrentControlSet\Control\Session Manager";
@@ -92,14 +93,19 @@ fn ea_app(pid: u32, game: &Path, windows: Option<&str>) -> EaApp {
     }
 }
 
+/// The key under HKEY_LOCAL_MACHINE (the 64-bit view), None when it does not exist.
+fn hklm(path: &str) -> Result<Option<Key>, i32> {
+    registry::open(&format!(r"HKLM\{path}"), Ask::default())
+}
+
 fn search() -> Probe<Search> {
-    let known = registry::Key::open(&format!(r"{SESSION_MANAGER}\KnownDLLs")).map_err(error)?;
+    let known = hklm(&format!(r"{SESSION_MANAGER}\KnownDLLs")).map_err(error)?;
     let known_dll = known.is_some_and(|k| {
-        k.values()
+        k.values
             .iter()
-            .any(|(_, v)| matches!(v, registry::Value::Text(t) if t.eq_ignore_ascii_case(PROXY)))
+            .any(|(_, v)| matches!(v, Data::Sz(t) | Data::ExpandSz(t) if t.eq_ignore_ascii_case(PROXY)))
     });
-    let safe_search = registry::Key::open(SESSION_MANAGER)
+    let safe_search = hklm(SESSION_MANAGER)
         .map_err(error)?
         .and_then(|k| k.dword("SafeDllSearchMode"));
     Ok(Search {
@@ -109,24 +115,24 @@ fn search() -> Probe<Search> {
 }
 
 fn exec_options() -> Probe<Vec<String>> {
-    let Some(key) = registry::Key::open(EXEC_OPTIONS).map_err(error)? else {
+    let Some(key) = hklm(EXEC_OPTIONS).map_err(error)? else {
         return Ok(Vec::new());
     };
-    let mut names: Vec<String> = key.values().into_iter().map(|(n, _)| n).collect();
-    for sub in key.subkeys() {
-        if let Ok(Some(k)) = registry::Key::open(&format!(r"{EXEC_OPTIONS}\{sub}")) {
-            names.extend(k.values().into_iter().map(|(n, _)| format!(r"{sub}\{n}")));
+    let mut names: Vec<String> = key.values.into_iter().map(|(n, _)| n).collect();
+    for sub in &key.subkeys {
+        if let Ok(Some(k)) = hklm(&format!(r"{EXEC_OPTIONS}\{sub}")) {
+            names.extend(k.values.into_iter().map(|(n, _)| format!(r"{sub}\{n}")));
         }
     }
     Ok(names)
 }
 
 fn prefer_from(exe: &Path) -> Probe<Vec<PreferSource>> {
-    let on = |k: &registry::Key| k.bytes("MitigationOptions").is_some_and(|b| prefers_system32(&b));
+    let on = |k: &Key| k.bytes("MitigationOptions").is_some_and(|b| prefers_system32(&b));
     let mut found = Vec::new();
-    if let Some(key) = registry::Key::open(EXEC_OPTIONS).map_err(error)? {
-        for sub in key.subkeys() {
-            let Ok(Some(k)) = registry::Key::open(&format!(r"{EXEC_OPTIONS}\{sub}")) else {
+    if let Some(key) = hklm(EXEC_OPTIONS).map_err(error)? {
+        for sub in &key.subkeys {
+            let Ok(Some(k)) = hklm(&format!(r"{EXEC_OPTIONS}\{sub}")) else {
                 continue;
             };
             if let Some(path) = k.text("FilterFullPath").filter(|p| same_file(p, exe))
@@ -140,7 +146,7 @@ fn prefer_from(exe: &Path) -> Probe<Vec<PreferSource>> {
         }
     }
     for policy in EXPLOIT_POLICIES {
-        if let Ok(Some(k)) = registry::Key::open(policy)
+        if let Ok(Some(k)) = hklm(policy)
             && let Some(source) = k
                 .text("ExploitProtectionSettings")
                 .and_then(|t| policy_source(&t))
@@ -148,7 +154,7 @@ fn prefer_from(exe: &Path) -> Probe<Vec<PreferSource>> {
             found.push(source);
         }
     }
-    let kernel = registry::Key::open(&format!(r"{SESSION_MANAGER}\kernel")).map_err(error)?;
+    let kernel = hklm(&format!(r"{SESSION_MANAGER}\kernel")).map_err(error)?;
     if kernel.is_some_and(|k| on(&k)) {
         found.push(PreferSource::System);
     }
@@ -160,18 +166,18 @@ fn same_file(path: &str, exe: &Path) -> bool {
 }
 
 fn smart_app_control() -> Probe<Option<u32>> {
-    Ok(registry::Key::open(CI_POLICY)
+    Ok(hklm(CI_POLICY)
         .map_err(error)?
         .and_then(|k| k.dword("VerifiedAndReputablePolicyState")))
 }
 
 fn antivirus() -> Probe<Vec<String>> {
-    let listed: Vec<String> = match registry::Key::open(ANTIVIRUS) {
+    let listed: Vec<String> = match hklm(ANTIVIRUS) {
         Ok(Some(key)) => key
-            .subkeys()
+            .subkeys
             .iter()
             .filter_map(|sub| {
-                let k = registry::Key::open(&format!(r"{ANTIVIRUS}\{sub}")).ok()??;
+                let k = hklm(&format!(r"{ANTIVIRUS}\{sub}")).ok()??;
                 let name = k.text("DISPLAYNAME")?;
                 Some(antivirus_name(&name, k.dword("STATE")))
             })
@@ -347,187 +353,6 @@ mod win32 {
         fn drop(&mut self) {
             // SAFETY: the handle came from OpenProcess and is closed once.
             unsafe { CloseHandle(self.0) };
-        }
-    }
-}
-
-/// Read-only access to HKEY_LOCAL_MACHINE (the 64-bit view).
-mod registry {
-    use std::ffi::c_void;
-
-    const HKEY_LOCAL_MACHINE: isize = 0x8000_0002u32 as i32 as isize;
-    const KEY_READ: u32 = 0x20019;
-    const KEY_WOW64_64KEY: u32 = 0x0100;
-    const ERROR_FILE_NOT_FOUND: i32 = 2;
-    const REG_SZ: u32 = 1;
-    const REG_EXPAND_SZ: u32 = 2;
-    const REG_BINARY: u32 = 3;
-    const REG_DWORD: u32 = 4;
-    const REG_QWORD: u32 = 11;
-
-    #[link(name = "advapi32")]
-    unsafe extern "system" {
-        fn RegOpenKeyExW(
-            key: *mut c_void,
-            sub: *const u16,
-            options: u32,
-            access: u32,
-            out: *mut *mut c_void,
-        ) -> i32;
-        fn RegCloseKey(key: *mut c_void) -> i32;
-        fn RegEnumValueW(
-            key: *mut c_void,
-            index: u32,
-            name: *mut u16,
-            name_len: *mut u32,
-            reserved: *mut u32,
-            kind: *mut u32,
-            data: *mut u8,
-            data_len: *mut u32,
-        ) -> i32;
-        fn RegEnumKeyExW(
-            key: *mut c_void,
-            index: u32,
-            name: *mut u16,
-            name_len: *mut u32,
-            reserved: *mut u32,
-            class: *mut u16,
-            class_len: *mut u32,
-            written: *mut u64,
-        ) -> i32;
-    }
-
-    pub enum Value {
-        Text(String),
-        Dword(u32),
-        Bytes(Vec<u8>),
-        Other,
-    }
-
-    pub struct Key(*mut c_void);
-
-    impl Key {
-        /// The key under HKEY_LOCAL_MACHINE, None when it does not exist.
-        pub fn open(path: &str) -> Result<Option<Self>, i32> {
-            let wide: Vec<u16> = path.encode_utf16().chain([0]).collect();
-            let mut key = std::ptr::null_mut();
-            // SAFETY: `wide` is NUL-terminated and `key` a valid out
-            // pointer; the predefined root needs no opening.
-            let status = unsafe {
-                RegOpenKeyExW(
-                    HKEY_LOCAL_MACHINE as *mut c_void,
-                    wide.as_ptr(),
-                    0,
-                    KEY_READ | KEY_WOW64_64KEY,
-                    &mut key,
-                )
-            };
-            match status {
-                0 => Ok(Some(Self(key))),
-                ERROR_FILE_NOT_FOUND => Ok(None),
-                e => Err(e),
-            }
-        }
-
-        pub fn values(&self) -> Vec<(String, Value)> {
-            let mut out = Vec::new();
-            let mut name = vec![0u16; 16_384];
-            let mut data = vec![0u8; 1 << 16];
-            for index in 0.. {
-                let mut name_len = name.len() as u32;
-                let mut data_len = data.len() as u32;
-                let mut kind = 0u32;
-                // SAFETY: the buffers hold the lengths passed, which the
-                // call updates to what it wrote.
-                let status = unsafe {
-                    RegEnumValueW(
-                        self.0,
-                        index,
-                        name.as_mut_ptr(),
-                        &mut name_len,
-                        std::ptr::null_mut(),
-                        &mut kind,
-                        data.as_mut_ptr(),
-                        &mut data_len,
-                    )
-                };
-                if status != 0 {
-                    break;
-                }
-                let bytes = &data[..data_len as usize];
-                let value = match kind {
-                    REG_SZ | REG_EXPAND_SZ => {
-                        let wide: Vec<u16> = bytes
-                            .chunks_exact(2)
-                            .map(|c| u16::from_le_bytes([c[0], c[1]]))
-                            .take_while(|&c| c != 0)
-                            .collect();
-                        Value::Text(String::from_utf16_lossy(&wide))
-                    }
-                    REG_DWORD if bytes.len() >= 4 => {
-                        Value::Dword(u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]))
-                    }
-                    REG_BINARY | REG_QWORD => Value::Bytes(bytes.to_vec()),
-                    _ => Value::Other,
-                };
-                out.push((String::from_utf16_lossy(&name[..name_len as usize]), value));
-            }
-            out
-        }
-
-        pub fn subkeys(&self) -> Vec<String> {
-            let mut out = Vec::new();
-            let mut name = vec![0u16; 256];
-            for index in 0.. {
-                let mut len = name.len() as u32;
-                // SAFETY: `name` holds `len` u16s; the class and time
-                // out pointers may be null.
-                let status = unsafe {
-                    RegEnumKeyExW(
-                        self.0,
-                        index,
-                        name.as_mut_ptr(),
-                        &mut len,
-                        std::ptr::null_mut(),
-                        std::ptr::null_mut(),
-                        std::ptr::null_mut(),
-                        std::ptr::null_mut(),
-                    )
-                };
-                if status != 0 {
-                    break;
-                }
-                out.push(String::from_utf16_lossy(&name[..len as usize]));
-            }
-            out
-        }
-
-        pub fn dword(&self, name: &str) -> Option<u32> {
-            self.values().into_iter().find_map(|(n, v)| match v {
-                Value::Dword(d) if n.eq_ignore_ascii_case(name) => Some(d),
-                _ => None,
-            })
-        }
-
-        pub fn bytes(&self, name: &str) -> Option<Vec<u8>> {
-            self.values().into_iter().find_map(|(n, v)| match v {
-                Value::Bytes(b) if n.eq_ignore_ascii_case(name) => Some(b),
-                _ => None,
-            })
-        }
-
-        pub fn text(&self, name: &str) -> Option<String> {
-            self.values().into_iter().find_map(|(n, v)| match v {
-                Value::Text(t) if n.eq_ignore_ascii_case(name) => Some(t),
-                _ => None,
-            })
-        }
-    }
-
-    impl Drop for Key {
-        fn drop(&mut self) {
-            // SAFETY: the key came from RegOpenKeyExW and is closed once.
-            unsafe { RegCloseKey(self.0) };
         }
     }
 }

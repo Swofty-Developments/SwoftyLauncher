@@ -27,6 +27,40 @@ pub struct Key {
     pub children: Vec<Key>,
 }
 
+impl Key {
+    /// The value named `name`, the case ignored as the registry ignores it.
+    pub fn value(&self, name: &str) -> Option<&Data> {
+        self.values
+            .iter()
+            .find(|(n, _)| n.eq_ignore_ascii_case(name))
+            .map(|(_, d)| d)
+    }
+
+    /// A REG_SZ or REG_EXPAND_SZ value's text.
+    pub fn text(&self, name: &str) -> Option<String> {
+        match self.value(name)? {
+            Data::Sz(s) | Data::ExpandSz(s) => Some(s.clone()),
+            _ => None,
+        }
+    }
+
+    pub fn dword(&self, name: &str) -> Option<u32> {
+        match self.value(name)? {
+            Data::Dword(n) => Some(*n),
+            _ => None,
+        }
+    }
+
+    /// A REG_BINARY value's bytes, or a REG_QWORD's eight little-endian bytes.
+    pub fn bytes(&self, name: &str) -> Option<Vec<u8>> {
+        match self.value(name)? {
+            Data::Binary(b) => Some(b.clone()),
+            Data::Qword(n) => Some(n.to_le_bytes().to_vec()),
+            _ => None,
+        }
+    }
+}
+
 /// What `reg query` is asked: `/s` lists every subkey's values below the key, `/ve` only the unnamed
 /// default value, `/reg:32` the 32-bit view of a 64-bit Windows.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -161,21 +195,31 @@ pub fn reg_query(args: &[&str]) -> Option<String> {
     read(key, ask).map(|k| render(&k, ask))
 }
 
-#[cfg(windows)]
+/// The key, read as `reg query` with `ask` reads it; None when it cannot be opened.
 pub fn read(key: &str, ask: Ask) -> Option<Key> {
-    let (name, handle, rest) = hive(key)?;
-    let root = win32::predefined(handle);
+    open(key, ask).ok().flatten()
+}
+
+/// The key read with `ask`, None when it does not exist, or the error Windows gave for opening it.
+#[cfg(windows)]
+pub fn open(key: &str, ask: Ask) -> Result<Option<Key>, i32> {
+    let Some((name, handle, rest)) = hive(key) else {
+        return Err(win32::ERROR_INVALID_PARAMETER);
+    };
     let path = match rest.is_empty() {
         true => name.to_owned(),
         false => format!("{name}\\{rest}"),
     };
-    let open = win32::Open::at(root, rest, ask.view32)?;
-    Some(win32::key(&open, path, ask))
+    match win32::Open::at(win32::predefined(handle), rest, ask.view32) {
+        Ok(open) => Ok(Some(win32::key(&open, path, ask))),
+        Err(win32::ERROR_FILE_NOT_FOUND) => Ok(None),
+        Err(e) => Err(e),
+    }
 }
 
 #[cfg(not(windows))]
-pub fn read(_: &str, _: Ask) -> Option<Key> {
-    None
+pub fn open(_: &str, _: Ask) -> Result<Option<Key>, i32> {
+    Ok(None)
 }
 
 #[cfg(windows)]
@@ -188,6 +232,8 @@ mod win32 {
     const KEY_WOW64_64KEY: u32 = 0x0100;
     const KEY_WOW64_32KEY: u32 = 0x0200;
     const ERROR_SUCCESS: i32 = 0;
+    pub const ERROR_FILE_NOT_FOUND: i32 = 2;
+    pub const ERROR_INVALID_PARAMETER: i32 = 87;
     const ERROR_MORE_DATA: i32 = 234;
     const ERROR_NO_MORE_ITEMS: i32 = 259;
 
@@ -234,13 +280,16 @@ mod win32 {
     }
 
     impl Open {
-        pub fn at(parent: *mut c_void, sub: &str, view32: bool) -> Option<Self> {
+        pub fn at(parent: *mut c_void, sub: &str, view32: bool) -> Result<Self, i32> {
             let wide: Vec<u16> = sub.encode_utf16().chain(Some(0)).collect();
             let view = if view32 { KEY_WOW64_32KEY } else { KEY_WOW64_64KEY };
             let mut handle = std::ptr::null_mut();
             // SAFETY: `wide` is NUL-terminated and outlives the call; `handle` is written on success only.
             let status = unsafe { RegOpenKeyExW(parent, wide.as_ptr(), 0, KEY_READ | view, &mut handle) };
-            (status == ERROR_SUCCESS).then_some(Self { handle, view32 })
+            match status {
+                ERROR_SUCCESS => Ok(Self { handle, view32 }),
+                e => Err(e),
+            }
         }
     }
 
@@ -327,7 +376,7 @@ mod win32 {
             true => subkeys
                 .iter()
                 .filter_map(|sub| {
-                    let child = Open::at(open.handle, sub, open.view32)?;
+                    let child = Open::at(open.handle, sub, open.view32).ok()?;
                     Some(key(&child, format!("{path}\\{sub}"), ask))
                 })
                 .collect(),
@@ -474,6 +523,36 @@ mod tests {
     }
 
     #[test]
+    fn values_read_by_name_whatever_the_case_and_by_their_type() {
+        let key = Key {
+            path: r"HKEY_LOCAL_MACHINE\SOFTWARE\x".into(),
+            values: vec![
+                ("DisplayName".into(), sz("Defender")),
+                ("Path".into(), Data::ExpandSz(r"%SystemRoot%\x".into())),
+                ("STATE".into(), Data::Dword(0x61100)),
+                ("MitigationOptions".into(), Data::Qword(0x1000_0000_0000_0000)),
+                ("Raw".into(), Data::Binary(vec![1, 2, 3])),
+            ],
+            ..Key::default()
+        };
+        assert_eq!(key.text("displayname").as_deref(), Some("Defender"));
+        assert_eq!(key.text("PATH").as_deref(), Some(r"%SystemRoot%\x"));
+        assert_eq!(key.text("State"), None);
+        assert_eq!(key.dword("state"), Some(0x61100));
+        assert_eq!(key.dword("DisplayName"), None);
+        assert_eq!(
+            key.bytes("mitigationoptions"),
+            Some(vec![0, 0, 0, 0, 0, 0, 0, 0x10])
+        );
+        assert_eq!(key.bytes("raw"), Some(vec![1, 2, 3]));
+        assert_eq!(key.bytes("missing"), None);
+        assert_eq!(
+            data(11, &0x1000_0000_0000_0000u64.to_le_bytes()),
+            Data::Qword(0x1000_0000_0000_0000)
+        );
+    }
+
+    #[test]
     fn the_switches_the_launcher_passes_parse_and_others_do_not() {
         let all = parse_args(&[r"HKLM\X", "/s"]).unwrap();
         assert_eq!(
@@ -555,5 +634,32 @@ mod tests {
             )
         );
         assert_eq!(reg_query(&[r"HKLM\SOFTWARE\no such key swofty"]), None);
+        assert_eq!(
+            open(r"HKLM\SOFTWARE\no such key swofty", Ask::default()),
+            Ok(None)
+        );
+        let session = open(
+            r"HKLM\SYSTEM\CurrentControlSet\Control\Session Manager",
+            Ask::default(),
+        )
+        .unwrap()
+        .unwrap();
+        assert!(
+            session
+                .subkeys
+                .iter()
+                .any(|s| s.eq_ignore_ascii_case("KnownDLLs"))
+        );
+        let known = open(
+            r"HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\KnownDLLs",
+            Ask::default(),
+        )
+        .unwrap()
+        .unwrap();
+        assert!(
+            known
+                .text("kernel32")
+                .is_some_and(|t| t.eq_ignore_ascii_case("kernel32.dll"))
+        );
     }
 }
