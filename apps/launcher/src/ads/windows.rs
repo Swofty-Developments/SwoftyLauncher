@@ -3,6 +3,7 @@
 //! topmost DirectComposition target, which covers child windows.
 
 use super::{Area, Unit};
+use anyhow::Context as _;
 use gpui_kit::Window;
 use raw_window_handle::{HandleError, HasWindowHandle, RawWindowHandle, Win32WindowHandle, WindowHandle};
 use std::cell::{Cell, RefCell};
@@ -54,7 +55,7 @@ impl Opener {
             })
         };
         View::open(self.owner, &self.data, &self.url, self.area, report)
-            .inspect_err(|e| crate::app_log::note(&format!("the {} ad slot didn't open: {e}", self.slot)))
+            .inspect_err(|e| crate::app_log::note(&format!("the {} ad slot didn't open: {e:#}", self.slot)))
             .ok()
     }
 }
@@ -77,9 +78,14 @@ impl Backend {
             crate::app_log::note(&format!("no ad slots: WebView2 isn't available: {e}"));
             return None;
         }
+        let data = data.join("ads");
+        if let Err(e) = profile(&data) {
+            crate::app_log::note(&format!("no ad slots: {e:#}"));
+            return None;
+        }
         Some(Self {
             owner: handle.hwnd.get(),
-            data: data.join("ads"),
+            data,
             views: HashMap::new(),
             opening: HashSet::new(),
             events: Rc::default(),
@@ -157,6 +163,7 @@ impl View {
         area: Area,
         report: impl Fn(Consent) + 'static,
     ) -> anyhow::Result<Self> {
+        profile(data)?;
         register_class();
         let (x, y) = to_screen(owner, area);
         let popup = unsafe {
@@ -226,6 +233,13 @@ impl View {
             let _ = self.webview.set_visible(true);
         }
     }
+}
+
+/// WebView2 keeps its profile in `EBWebView` inside `data`, and stops on a
+/// dialog of its own when it can't create that folder.
+fn profile(data: &Path) -> anyhow::Result<()> {
+    let dir = data.join("EBWebView");
+    super::writable(&dir).with_context(|| format!("{} can't be written", dir.display()))
 }
 
 fn hwnd(raw: isize) -> HWND {

@@ -40,7 +40,10 @@ impl Backend {
         };
         let helper = helper()?;
         let dir = data.join("ads");
-        std::fs::create_dir_all(&dir).ok()?;
+        if let Err(e) = super::writable(&dir) {
+            crate::app_log::note(&format!("no ad slots: {} can't be written: {e}", dir.display()));
+            return None;
+        }
         let log = std::fs::File::create(dir.join("helper.log")).map(Stdio::from);
         let mut child = Command::new(&helper)
             .arg("--parent")

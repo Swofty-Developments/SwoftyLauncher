@@ -437,6 +437,15 @@ fn base_url() -> Option<String> {
         .filter(|u| !u.trim().is_empty())
 }
 
+/// Creates `dir` and writes and removes a file in it, as a webview profile kept
+/// there would.
+fn writable(dir: &Path) -> std::io::Result<()> {
+    std::fs::create_dir_all(dir)?;
+    let probe = dir.join(format!(".swofty-write-check-{}", std::process::id()));
+    std::fs::File::create(&probe)?;
+    std::fs::remove_file(&probe)
+}
+
 fn inside(bounds: Bounds<Pixels>, clip: Bounds<Pixels>) -> bool {
     let slack = px(0.5);
     bounds.left() + slack >= clip.left()
@@ -453,7 +462,7 @@ fn rgb_of(colour: Hsla) -> [u8; 3] {
 
 #[cfg(test)]
 mod tests {
-    use super::{Area, inside, rgb_of};
+    use super::{Area, inside, rgb_of, writable};
     use gpui_kit::{Bounds, Rgba, point, px, size};
 
     #[test]
@@ -477,6 +486,46 @@ mod tests {
         assert!(inside(slot(350.), clip));
         assert!(!inside(slot(351.), clip));
         assert!(!inside(slot(-10.), clip));
+    }
+
+    #[test]
+    fn a_folder_under_a_file_is_not_writable() {
+        let root = std::env::temp_dir().join(format!("swofty-ads-writable-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        std::fs::create_dir_all(&root).unwrap();
+        let file = root.join("file");
+        std::fs::write(&file, "x").unwrap();
+        assert!(writable(&file.join("ads")).is_err());
+        let ads = root.join("data/ads/EBWebView");
+        writable(&ads).unwrap();
+        assert_eq!(
+            std::fs::read_dir(&ads).unwrap().count(),
+            0,
+            "the check leaves nothing behind"
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_read_only_folder_is_not_writable() {
+        use std::os::unix::fs::PermissionsExt;
+        let root = std::env::temp_dir().join(format!("swofty-ads-read-only-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let locked = root.join("locked");
+        std::fs::create_dir_all(&locked).unwrap();
+        let lock =
+            |mode: u32| std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(mode)).unwrap();
+        lock(0o555);
+        let root_writes = std::fs::write(locked.join("root"), "").is_ok();
+        let child = writable(&locked.join("ads"));
+        let itself = writable(&locked);
+        lock(0o755);
+        std::fs::remove_dir_all(&root).ok();
+        if !root_writes {
+            assert!(child.is_err());
+            assert!(itself.is_err());
+        }
     }
 
     #[test]
