@@ -3320,7 +3320,6 @@
   "func:Sess_ResetReplay_OnStateEnter": "V2343",
   "func:Sess_ResetReplay_Update": "V1867",
   "func:Sess_Reset_OnTrackRuntimeState": "V3564",
-  "func:Sess_ResolveEntityHandle": "V4034",
   "func:Sess_Resolve_DriverRef": "V3384",
   "func:Sess_Resolve_PlayerVehicleRef": "V3373",
   "func:Sess_Resolve_SelectionDomainId": "V3389",
