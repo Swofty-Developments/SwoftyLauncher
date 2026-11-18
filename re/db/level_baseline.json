@@ -2031,7 +2031,6 @@
   "func:Game_OnlineSystemGetFriendRequestListTask_Update": "V3301",
   "func:Game_OptionsColourCorrectionVM_OnScreenActivated": "V2676",
   "func:Game_OptionsCrossplayVM_OnScreenActivated": "V2677",
-  "func:Game_OptionsStore_FindOption": "V3466",
   "func:Game_OptionsSystem_ResolveOptionValue": "V2474",
   "func:Game_OptionsUI_ApplyFilterLevelCollectChanges": "V2462",
   "func:Game_PagedBuffer_Transfer": "V2918",
