@@ -120,7 +120,11 @@ pub(super) fn write_archive_copying(
             false => extra.push(res),
         }
     }
-    let slots: Vec<Slot> = (file.erp.resources.iter().enumerate())
+    let slots: Vec<Slot> = file
+        .erp
+        .resources
+        .iter()
+        .enumerate()
         .map(|(i, r)| match owned.remove(&r.name) {
             Some(new) => Slot::Owned(new),
             None => Slot::Stock(i),
