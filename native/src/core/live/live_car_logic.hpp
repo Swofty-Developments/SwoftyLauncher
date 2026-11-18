@@ -35,6 +35,12 @@ inline constexpr bp::Proof WHEEL_FIELDS{"the wheel spin and slip fields (CarSusp
 inline constexpr bp::Proof TRACK_WETNESS{"the track wetness (g_Game_WeatherSurfaceState +0x3f0a38)",
                                          bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145) |
                                              bp::bit(bp::Build::ea_1_0_145)};
+// On EA 1.0.145 the vehicle table's car fields (CarLive +0x124, inputs +0x188, +0x190, +0x224, engine, gearbox, chassis,
+// steering, suspension and aero pointers, the gear index, engine rates, chassis g and body, body position and velocity,
+// steering angle and lock) and the aero's wing_open_fraction +0x19a8 are read at the KB displacements by code that is the
+// same there (re/tools/layoutcmp.py, sigport.py --witness; re/research/ea-1-0-145.md).
+inline constexpr bp::Proof CAR_TABLE{"the vehicle table's car, engine, gearbox, chassis, body, steering and aero fields",
+                                     bp::proofs::VERIFIED_LAYOUT.builds | bp::bit(bp::Build::ea_1_0_145)};
 inline constexpr bp::Proof SURFACE_FIELDS{"the wheel surface and wetness, chassis basis and body angular velocity "
                                           "(CarWheel +0x200, +0x280, CarChassis +0x190, body +0x210)",
                                           bp::bit(bp::Build::kb)};
@@ -42,7 +48,7 @@ inline constexpr bp::Proof SURFACE_FIELDS{"the wheel surface and wetness, chassi
 constexpr Fields fields_of(bp::Build build)
 {
     Fields f;
-    f.table = f.drs = bp::proven_on(bp::proofs::VERIFIED_LAYOUT, build);
+    f.table = f.drs = bp::proven_on(CAR_TABLE, build);
     f.wheels = bp::proven_on(WHEEL_FIELDS, build);
     f.wetness = bp::proven_on(TRACK_WETNESS, build);
     f.surface = f.orient = f.angvel = bp::proven_on(SURFACE_FIELDS, build);
@@ -53,6 +59,8 @@ static_assert(!fields_of(bp::Build::unknown).table && !fields_of(bp::Build::unkn
 static_assert(fields_of(bp::Build::ea).table && fields_of(bp::Build::ea).drs && !fields_of(bp::Build::ea).surface &&
               !fields_of(bp::Build::ea).wetness);
 static_assert(fields_of(bp::Build::kb).table && fields_of(bp::Build::kb).surface && fields_of(bp::Build::kb).drs);
+static_assert(fields_of(bp::Build::ea_1_0_145).table && fields_of(bp::Build::ea_1_0_145).drs &&
+              !fields_of(bp::Build::ea_1_0_145).surface);
 static_assert(fields_of(bp::Build::steam_1_0_145).wheels && fields_of(bp::Build::steam_1_0_145).wetness &&
               !fields_of(bp::Build::steam_1_0_145).surface && !fields_of(bp::Build::steam_1_0_145).orient);
 

@@ -22,13 +22,11 @@ const VEHICLES: (&str, &str) = ("entrants.vehicles", "vehicle");
 const PACKAGES: (&str, &str) = ("entrants.vehicles.vehicle_packages", "vehicle_package");
 
 fn db((table, row): (&str, &str), stock: i64) -> Gvdb {
-    Gvdb {
-        records: vec![
-            Record::new(&format!("{table}._{row}_instancecount_"), 0, "1"),
-            Record::new(&format!("{table}.{row}_0._metadata_"), 4, "base"),
-            Record::new(&format!("{table}.{row}_0.stat_id"), 0, stock.to_string()),
-        ],
-    }
+    Gvdb::new(vec![
+        Record::new(&format!("{table}._{row}_instancecount_"), 0, "1"),
+        Record::new(&format!("{table}.{row}_0._metadata_"), 4, "base"),
+        Record::new(&format!("{table}.{row}_0.stat_id"), 0, stock.to_string()),
+    ])
 }
 
 pub(super) struct Built {
@@ -258,7 +256,7 @@ pub(super) fn table_to((table, row): (&str, &str), top: i64) -> Gvdb {
             i.to_string(),
         ));
     }
-    Gvdb { records }
+    Gvdb::new(records)
 }
 
 fn host_ids(rows: &[(&str, &str, i64)]) -> Overrides {

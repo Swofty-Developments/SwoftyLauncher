@@ -521,7 +521,10 @@ fn restore_later_records(db: &mut Gvdb, guarded: Vec<(usize, swofty_formats::gvd
     for (was, record) in guarded {
         match at.get(&record.key) {
             Some(&i) => db.records[i] = record,
-            None => db.records.insert(was.min(db.records.len()), record),
+            None => {
+                let to = was.min(db.records.len());
+                db.records.insert(to, record)
+            }
         }
     }
 }

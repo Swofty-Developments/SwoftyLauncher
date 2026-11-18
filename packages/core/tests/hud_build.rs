@@ -76,7 +76,7 @@ impl Fixture {
         let dir = root.join("game");
         write(&dir.join("F1_25.exe"), "exe");
         std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
-        std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+        std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
         let originals = GameStock::with_baseline(real, &Store::open_default().root).unwrap();
         let ui = |rel: &str| format!("2025_asset_groups/ui_package/{rel}");
         let mut rels: Vec<String> = swofty_core::ui::ERPS

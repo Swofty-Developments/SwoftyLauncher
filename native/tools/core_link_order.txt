@@ -222,3 +222,4 @@ src/core/hud/room_cover.cpp
 src/core/assets/entitlements.cpp
 src/core/live/live_state.cpp
 src/core/loading/game_settings.cpp
+src/core/assets/db_first_read.cpp

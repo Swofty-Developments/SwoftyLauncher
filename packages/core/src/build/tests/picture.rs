@@ -10,7 +10,7 @@ fn an_addon_turns_on_the_experimental_features_it_lists() {
     let dir = root.join("game");
     std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
     std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
-    std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,
@@ -59,7 +59,7 @@ fn telemetry_is_on_only_for_an_addon_that_lists_it() {
     let dir = root.join("game");
     std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
     std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
-    std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,
@@ -112,7 +112,7 @@ fn a_shader_pack_grades_with_the_look_its_settings_pick() {
     let dir = root.join("game");
     std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
     std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
-    std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,
@@ -216,7 +216,7 @@ fn the_template_shader_pack_builds() {
     let dir = root.join("game");
     std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
     std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
-    std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,
@@ -251,7 +251,7 @@ fn the_template_postfx_pass_compiles_into_the_build() {
     let dir = root.join("game");
     std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
     std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
-    std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,
@@ -343,7 +343,7 @@ fn shader_effects_and_the_active_config_build_into_the_loader_plan() {
     let dir = root.join("game");
     std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
     std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
-    std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,
@@ -428,7 +428,7 @@ fn a_config_with_errors_builds_with_a_warning_and_shaders_off() {
     let dir = root.join("game");
     std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
     std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
-    std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,
@@ -473,7 +473,7 @@ fn a_v2_postfx_addon_builds_live_slots_textures_and_toggles() {
     let dir = root.join("game");
     std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
     std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
-    std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,

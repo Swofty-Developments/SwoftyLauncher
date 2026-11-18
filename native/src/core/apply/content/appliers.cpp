@@ -696,6 +696,20 @@ public:
         return it == x.fresh.end() ? 0 : it->second;
     }
 
+    bool counts_off_thread() const override { return true; }
+
+    bool may_count(Store &st) override
+    {
+        std::lock_guard g(mu);
+        return has_records(st);
+    }
+
+    void forget_count() override
+    {
+        std::lock_guard g(mu);
+        state().plan.reset();
+    }
+
     void boot(Store &st, Report &report) override
     {
         std::lock_guard g(mu);

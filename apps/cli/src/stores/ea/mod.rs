@@ -197,8 +197,8 @@ pub fn launch_installed(store: &Store, g: &Game, vr: bool, opted_out: bool) -> R
     }
     {
         let out = |l: &str| say("info", l);
-        let lock = crate::recover::lock(store, &out)?;
-        crate::recover::stale(store, &lock, g, Scope::All, &out)?;
+        let lock = crate::session_lock::lock(store, &out)?;
+        crate::session_lock::stale(store, &lock, g, Scope::All, &out)?;
     }
     crate::stores::client::ensure_client(store, Source::EaApp, &g.dir, opted_out)?;
     let args: Vec<String> = if vr { vec!["-vr".into()] } else { Vec::new() };

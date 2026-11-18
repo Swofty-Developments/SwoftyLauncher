@@ -48,7 +48,7 @@ fn a_track_record_places_the_files_only_and_the_build_writes_the_track_files() {
             "eaid://environment_package/tracks/[FILENAME]/wep/[FILENAME]_f1_26.wep",
         ),
     ];
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir: dir.clone(),
@@ -215,7 +215,7 @@ fn a_track_rows_stat_id_is_an_added_row_id_and_a_lent_one_is_the_one_the_build_g
         Record::new(&format!("{set}.TrackData_0._metadata_"), 2, "melbourne"),
         Record::new(&format!("{set}.TrackData_0.track"), 2, "melbourne"),
     ];
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir: dir.clone(),
@@ -313,7 +313,7 @@ fn skips_removals_of_the_records_a_track_adds() {
         Record::new(&format!("{set}.TrackData_0.track"), 2, "melbourne"),
         Record::new("stock.key_0", 0, "0"),
     ];
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir: dir.clone(),
@@ -437,7 +437,7 @@ fn keeps_the_track_changes_a_whole_database_mod_carries_back() {
         Record::new(list, 13, "melbourne"),
         Record::new("stock.key_0", 0, "0"),
     ];
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir: dir.clone(),
@@ -544,7 +544,7 @@ fn the_tracks_keep_their_menu_pictures_over_an_addon_that_ships_its_own() {
         Record::new(&format!("{set}.TrackData_0._metadata_"), 2, "melbourne"),
         Record::new(&format!("{set}.TrackData_0.track"), 2, "melbourne"),
     ];
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
 
     let resource = |name: &str, kind: &str, fragments: Vec<Vec<u8>>| {
         let mut r = Resource {
@@ -840,7 +840,7 @@ fn leaves_out_a_track_package_without_a_base_track() {
         Record::new("entrants.teams.team_0._metadata_", 2, "mclaren_26"),
         Record::new("entrants.teams.team_0.stat_id", 0, "100"),
     ];
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir: dir.clone(),
@@ -982,7 +982,7 @@ fn leaves_out_the_tracks_the_game_s_track_lists_have_no_room_for() {
             code.as_str(),
         ));
     }
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir: dir.clone(),

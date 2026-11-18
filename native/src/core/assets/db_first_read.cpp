@@ -2,6 +2,7 @@
 
 #include "core/assets/db_first_read_logic.hpp"
 #include "core/runtime/build.hpp"
+#include "core/runtime/loader/hook_install.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <safetyhook.hpp>
@@ -10,6 +11,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cstdint>
+#include <mutex>
 #include <string>
 #include <utility>
 
@@ -35,15 +37,17 @@ constexpr runtime::Sig S_BOOT_INIT{"Boot_Init_NeApplication",
 
 using Lookup_t = void **(const char *);
 
-safetyhook::InlineHook *hook = nullptr;
+// The probe's wrap of Gdb_Lookup_Key; its lock is over the listing state below.
+struct FirstReadHooks : runtime::loader::HookSet<> {
+    safetyhook::InlineHook lookup;
+};
+FirstReadHooks hooks;
 std::atomic<Lookup_t *> orig{nullptr};
 std::atomic<uint8_t> phase{uint8_t(Phase::idle)};
 std::atomic<unsigned long> boot_thread{0};
 std::atomic<uint64_t> own{0};
 uintptr_t boot_init = 0;
-std::atomic<bool> on{false};
 
-SRWLOCK lock = SRWLOCK_INIT;
 int64_t freq = 0, t_load = 0, t_edits = 0;
 uint64_t seen = 0, after = 0;
 unsigned listed = 0;
@@ -84,9 +88,11 @@ __attribute__((noinline)) void note(uint64_t ret, const char *path, bool found, 
     bool fresh = false, finished = false;
     unsigned done_sites = 0;
     uint64_t done_after = 0;
-    AcquireSRWLockExclusive(&lock);
-    auto p = Phase(phase.load(std::memory_order_relaxed));
-    if (fr::take(p, r.boot_thread) == fr::Take::list) {
+    {
+        std::lock_guard<std::mutex> g(hooks.lock);
+        auto p = Phase(phase.load(std::memory_order_relaxed));
+        if (fr::take(p, r.boot_thread) != fr::Take::list)
+            return;
         r.lookup = ++seen;
         if (p == Phase::edits) {
             fresh = during_sites.add(ret);
@@ -107,7 +113,6 @@ __attribute__((noinline)) void note(uint64_t ret, const char *path, bool found, 
             r.since_edits_ms = p == Phase::after ? fr::ms(t_edits, t, freq) : -1;
         }
     }
-    ReleaseSRWLockExclusive(&lock);
     if (!fresh)
         return;
     r.thread = tid;
@@ -151,31 +156,34 @@ void runtime::db_first_read::arm(uintptr_t lookup)
         return;
     if (!runtime::holds(GATE)) {
         swofty::log("%s", off_line("it is not proven on this build").c_str());
+        hooks.turn_off(std::string(GATE.feature) + " is not proven on this build");
         return;
     }
     boot_init = runtime::find(S_BOOT_INIT, "gamedb");
     if (!lookup || !boot_init) {
-        swofty::log("%s", off_line(lookup ? "the Boot_Init_NeApplication signature is missing on this build"
-                                          : "the Gdb_Lookup_Key signature is missing on this build")
-                              .c_str());
+        std::string why = lookup ? "the Boot_Init_NeApplication signature is missing on this build"
+                                 : "the Gdb_Lookup_Key signature is missing on this build";
+        swofty::log("%s", off_line(why).c_str());
+        hooks.turn_off(std::move(why));
         return;
     }
-    auto made = safetyhook::InlineHook::create(reinterpret_cast<void *>(lookup), reinterpret_cast<void *>(&lookup_hook),
-                                               safetyhook::InlineHook::StartDisabled);
-    if (!made) {
+    auto r = runtime::loader::install(hooks.lookup, lookup, "Gdb_Lookup_Key", reinterpret_cast<void *>(&lookup_hook),
+                                      safetyhook::InlineHook::StartDisabled);
+    if (!r) {
         swofty::log("%s", off_line("hooking Gdb_Lookup_Key failed").c_str());
+        hooks.turn_off(std::move(r.why));
         return;
     }
-    orig.store(made->original<Lookup_t *>(), std::memory_order_release);
-    hook = new safetyhook::InlineHook(std::move(*made));
-    if (!hook->enable()) {
+    orig.store(hooks.lookup.original<Lookup_t *>(), std::memory_order_release);
+    if (!hooks.lookup.enable()) {
         swofty::log("%s", off_line("the Gdb_Lookup_Key hook could not be enabled").c_str());
+        hooks.turn_off("the Gdb_Lookup_Key hook could not be enabled");
         return;
     }
     LARGE_INTEGER f;
     QueryPerformanceFrequency(&f);
     freq = f.QuadPart;
-    on.store(true, std::memory_order_release);
+    hooks.set_live();
     uintptr_t base = swofty::api->module_base();
     swofty::log(
         "%s",
@@ -184,26 +192,29 @@ void runtime::db_first_read::arm(uintptr_t lookup)
 
 void runtime::db_first_read::loaded()
 {
-    if (!on.load(std::memory_order_acquire))
+    if (!hooks.live())
         return;
-    AcquireSRWLockExclusive(&lock);
+    std::lock_guard<std::mutex> g(hooks.lock);
     t_load = now();
     boot_thread.store(GetCurrentThreadId(), std::memory_order_relaxed);
     phase.store(uint8_t(Phase::edits), std::memory_order_release);
-    ReleaseSRWLockExclusive(&lock);
 }
 
 void runtime::db_first_read::edited()
 {
-    if (!on.load(std::memory_order_acquire))
+    if (!hooks.live())
         return;
-    AcquireSRWLockExclusive(&lock);
-    t_edits = now();
-    double ran = fr::ms(t_load, t_edits, freq);
-    uint64_t others = seen;
-    unsigned sites = during_sites.n;
-    phase.store(uint8_t(Phase::after), std::memory_order_release);
-    ReleaseSRWLockExclusive(&lock);
+    double ran = 0;
+    uint64_t others = 0;
+    unsigned sites = 0;
+    {
+        std::lock_guard<std::mutex> g(hooks.lock);
+        t_edits = now();
+        ran = fr::ms(t_load, t_edits, freq);
+        others = seen;
+        sites = during_sites.n;
+        phase.store(uint8_t(Phase::after), std::memory_order_release);
+    }
     swofty::log(
         "%s",
         edits_line(ran, boot_thread.load(std::memory_order_relaxed), own.load(std::memory_order_relaxed), others, sites).c_str());

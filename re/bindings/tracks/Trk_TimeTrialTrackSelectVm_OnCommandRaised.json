@@ -9,7 +9,7 @@
   "subsystem": "tracks",
   "proto": "uint64_t Trk_TimeTrialTrackSelectVm_OnCommandRaised(void *vm, uint32_t **cmd)",
   "evidence": "decomp:re/decomp/141f28410.c;xref:0x14575cec0;kb:subsystems/tracks.md#select",
-  "notes": "cxx=TrackSelectViewModel::onCommandRaised (slot 10 of vt_Trk_TimeTrialTrackSelectVm). djb2 switch on **cmd: select_pressed 0x2b0357a confirms (returns unless [vm+0x2c0]+0x130 and +0x134 are 0 or 2 and vm+0x301 is set; vm+0x308 = route t_next_time_trial, posts bus message 0x145753b20, [vm+0x278]+0x4d0 = 1, fade out, fires fade_off_screen); selected_track_changed 0xdcd54bcb sets vm+0x300 = 1; fade_off_complete 0x2dea0627 fires the vm+0x308 route; back_pressed 0x493fe92b; 0xd58b16ab hides the carousel and fires t_leaderboard. Time Trial guard site (R1)."
+  "notes": "cxx=TrackSelectViewModel::onCommandRaised (slot 10 of vt_Trk_TimeTrialTrackSelectVm). djb2 switch on **cmd: select_pressed 0x2b0357a confirms (returns unless [vm+0x2c0]+0x130 and +0x134 are 0 or 2 and vm+0x301 is set; vm+0x308 = route t_next_time_trial, posts bus message 0x145753b20, [vm+0x278]+0x4d0 = 1, fade out, fires fade_off_screen); selected_track_changed 0xdcd54bcb sets vm+0x300 = 1; fade_off_complete 0x2dea0627 fires the vm+0x308 route; back_pressed 0x493fe92b; 0xd58b16ab hides the carousel and fires t_leaderboard. Time Trial guard site (R1). Callers: census steam 0x1f28410."
  },
  "signature": {
   "id": "tracks.time_trial_track_select_vm_on_command_raised",

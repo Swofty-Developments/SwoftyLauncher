@@ -158,7 +158,7 @@ mod tests {
         for (i, n) in all.iter().enumerate() {
             table(&mut r, &format!("{es}.engine_supplier_upgrades_{i}.engine"), *n);
         }
-        Gvdb { records: r }
+        Gvdb::new(r)
     }
 
     #[test]

@@ -86,6 +86,8 @@ Cell rules: tabs and newlines are forbidden in cells; `-` means empty; addresses
 | `trace:T###/<run>[:<line>]` | runtime log under `re/traces/T###/<run>/` |
 | `sig:<id>` | (functions/globals carry it in the `sig` column instead) |
 
+**Caller counts** come from the census, never from a count made by hand. `python3 re/tools/census.py show <build> <addr> [--sites]` prints an address's direct calls and the functions they sit in, its thunks and the calls through them, the jumps, the lea loads and the 8-byte pointers to it, from every executable section of the build (.data1 included). A note cites the stored row as `callers: census <build> <rva>` and gives no count of its own. `python3 re/tools/census.py update <build>` writes a row for every citation to `re/db/census/<build>.tsv`, and kb_lint fails a citation without a row. Once the KB build has a census, kb_lint warns about notes that count callers by hand (`census.py hand` lists them), and the bindings check fails a pull request whose record notes add such a count.
+
 **Structs** (`structs/<Name>.h`), one struct per file, offsets explicit, one field per line:
 
 ```c
