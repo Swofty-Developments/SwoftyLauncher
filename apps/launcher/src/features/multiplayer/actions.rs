@@ -220,7 +220,7 @@ impl Shell {
             return;
         }
         self.mp_page.notice = None;
-        self.mp_start(start, cx);
+        Multiplayer::start(self, start, cx);
     }
 
     pub(super) fn mp_play(&mut self, start: Start, window: &mut Window, cx: &mut Context<Self>) {
@@ -306,67 +306,6 @@ impl Shell {
             _ => self.mp_page.lobby.game.as_ref(),
         };
         GameState::of(!self.game.processes.is_empty(), status)
-    }
-
-    pub(super) fn mp_start(&mut self, start: Start, cx: &mut Context<Self>) {
-        if self.mp_page.busy() {
-            return;
-        }
-        let Some(token) = self.account.session.as_ref().map(|m| m.token.clone()) else {
-            return;
-        };
-        let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
-            self.mp_page.error = Some("F1 25 was not found. Locate it from the play bar first.".into());
-            cx.notify();
-            return;
-        };
-        let (store, profile) = (self.store.clone(), self.library.profile.name.clone());
-        let m = &mut self.mp_page;
-        m.starting = Some(match &start {
-            Start::Create(_) => "create".into(),
-            Start::Join(code) => code.clone(),
-        });
-        m.error = None;
-        cx.spawn(async move |this, cx| {
-            let result = cx
-                .background_executor()
-                .spawn(async move {
-                    diag::load(&store.root, Some(&token)).map_err(|e| e.to_string())?;
-                    let local = read_local(&store, &profile, &dir)
-                        .inspect_err(|e| {
-                            diag::line(format!("session not started: couldn't read the addons: {e}"));
-                        })
-                        .map_err(|e| trf!("Couldn't read your addons: {e}", e = e).to_string())?;
-                    let mut setup = Setup::new(&token, &dir, local);
-                    setup.room_launch = true;
-                    let (refresh_store, refresh_profile, refresh_dir) =
-                        (store.clone(), profile.clone(), dir.clone());
-                    setup.refresh = Some(Arc::new(move || {
-                        read_local(&refresh_store, &refresh_profile, &refresh_dir).ok()
-                    }));
-                    match start {
-                        Start::Create(settings) => Session::create(setup, &settings),
-                        Start::Join(code) => Session::join(setup, &code),
-                    }
-                })
-                .await;
-            this.update(cx, |s, cx| {
-                let m = &mut s.mp_page;
-                m.starting = None;
-                match result {
-                    Ok(session) => {
-                        m.state = Some(session.state());
-                        m.session = Some(session);
-                        m.form = false;
-                    }
-                    Err(e) => m.error = Some(e),
-                }
-                cx.notify();
-            })
-            .ok();
-        })
-        .detach();
-        cx.notify();
     }
 
     pub(super) fn mp_create(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -547,5 +486,64 @@ impl Multiplayer {
             .ok();
         })
         .detach();
+    }
+
+    /// Opens or joins a room off the UI thread with this profile's addons.
+    pub(super) fn start<H: Host<Self>>(host: &mut H, start: Start, cx: &mut Context<H>) {
+        let (m, needs) = host.split();
+        if m.busy() {
+            return;
+        }
+        let Some(token) = needs.token.map(str::to_owned) else {
+            return;
+        };
+        let Some(dir) = needs.game_dir.map(Path::to_path_buf) else {
+            m.error = Some("F1 25 was not found. Locate it from the play bar first.".into());
+            cx.notify();
+            return;
+        };
+        let (store, profile) = (needs.store.clone(), needs.profile.to_owned());
+        m.starting = Some(starting(&start));
+        m.error = None;
+        cx.spawn(async move |this, cx| {
+            let result = cx
+                .background_executor()
+                .spawn(async move {
+                    diag::load(&store.root, Some(&token)).map_err(|e| e.to_string())?;
+                    let local = read_local(&store, &profile, &dir)
+                        .inspect_err(|e| {
+                            diag::line(format!("session not started: couldn't read the addons: {e}"));
+                        })
+                        .map_err(|e| trf!("Couldn't read your addons: {e}", e = e).to_string())?;
+                    let mut setup = Setup::new(&token, &dir, local);
+                    setup.room_launch = true;
+                    let (refresh_store, refresh_profile, refresh_dir) =
+                        (store.clone(), profile.clone(), dir.clone());
+                    setup.refresh = Some(Arc::new(move || {
+                        read_local(&refresh_store, &refresh_profile, &refresh_dir).ok()
+                    }));
+                    match start {
+                        Start::Create(settings) => Session::create(setup, &settings),
+                        Start::Join(code) => Session::join(setup, &code),
+                    }
+                })
+                .await;
+            this.update(cx, |host, cx| {
+                let m = host.split().0;
+                m.starting = None;
+                match result {
+                    Ok(session) => {
+                        m.state = Some(session.state());
+                        m.session = Some(session);
+                        m.form = false;
+                    }
+                    Err(e) => m.error = Some(e),
+                }
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
+        cx.notify();
     }
 }
