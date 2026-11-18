@@ -815,8 +815,9 @@ inline constexpr address<"Ne_Std_FatalExceptionTerminate"> Ne_Std_FatalException
 inline constexpr address<"Ne_Std_ThrowArraySubscript"> Ne_Std_ThrowArraySubscript{}; // L2 experimental
 inline constexpr address<"Ne_Std_ThrowBadArrayNewLength"> Ne_Std_ThrowBadArrayNewLength{}; // L2 experimental
 inline constexpr address<"Ne_Std_ThrowBadFunctionCall"> Ne_Std_ThrowBadFunctionCall{}; // L2 experimental
+inline constexpr address<"Ne_Std_ThrowBadOptionalAccess"> Ne_Std_ThrowBadOptionalAccess{}; // L2 experimental
 inline constexpr address<"Ne_Std_ThrowDequeTooLong"> Ne_Std_ThrowDequeTooLong{}; // L2 experimental
-inline constexpr address<"Ne_Std_ThrowException"> Ne_Std_ThrowException{}; // L2 experimental
+[[deprecated("deprecated in 1.10.0, removed in the next release: renamed: it is std::_Throw_bad_optional_access, which only raises std::bad_optional_access and ends the process in a fast fail; use Ne_Std_ThrowBadOptionalAccess")]] inline constexpr address<"Ne_Std_ThrowException"> Ne_Std_ThrowException{}; // L2 experimental
 inline constexpr address<"Ne_Std_ThrowExceptionNoReturn"> Ne_Std_ThrowExceptionNoReturn{}; // L2 experimental
 inline constexpr address<"Ne_Std_ThrowInvalidBitsetPosition"> Ne_Std_ThrowInvalidBitsetPosition{}; // L2 experimental
 inline constexpr address<"Ne_Std_ThrowMapSetTooLong"> Ne_Std_ThrowMapSetTooLong{}; // L2 experimental

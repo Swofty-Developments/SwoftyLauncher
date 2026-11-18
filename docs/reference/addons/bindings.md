@@ -232,7 +232,7 @@ A binding whose name is wrong is renamed in place, and its old name stays for on
 python3 re/tools/binding.py rename Ne_Property_SetS64IfChanged Ne_Property_SetUIDBRefIfChanged
 ```
 
-The record moves to its new name with its signature, its build overlay entries and `function_names.tsv`. The verify rows about the old name stay in the record as `retired:<old name>`, and the rows about the address carry over. The new name exports on an `agree` about itself. A `deprecated` entry keyed by the old name, covering the newest retired row and naming the new record as `replacement`, exports the old name as an alias of the replacement at the same address:
+The record moves to its new name with its signature, its build overlay entries and `function_names.tsv`. The verify rows about the old name stay in the record as `retired:<old name>`, and the rows about the address carry over. The new name exports on an `agree` about itself. A `deprecated` entry keyed by the old name, covering the newest retired row and naming the new record as `replacement`, exports the old name as an alias of the replacement at the same address, and its `bindings.json` entry names the replacement in `alias`:
 
 ```json
   "func:Ne_Property_SetS64IfChanged": {

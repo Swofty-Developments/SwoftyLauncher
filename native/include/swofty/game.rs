@@ -16803,11 +16803,20 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Std_ThrowBadOptionalAccess: Binding = Binding {
+        id: "Ne_Std_ThrowBadOptionalAccess",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Std_ThrowDequeTooLong: Binding = Binding {
         id: "Ne_Std_ThrowDequeTooLong",
         kind: "func",
         status: Status::Experimental,
     };
+    #[deprecated(
+        since = "1.10.0",
+        note = "deprecated in 1.10.0, removed in the next release: renamed: it is std::_Throw_bad_optional_access, which only raises std::bad_optional_access and ends the process in a fast fail; use Ne_Std_ThrowBadOptionalAccess"
+    )]
     pub const Ne_Std_ThrowException: Binding = Binding {
         id: "Ne_Std_ThrowException",
         kind: "func",
