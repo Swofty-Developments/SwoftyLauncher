@@ -1,5 +1,6 @@
 pub mod asset;
 pub mod builder;
+pub mod game;
 pub mod helper;
 pub mod launcher;
 pub mod manifest;
@@ -8,7 +9,7 @@ pub mod option;
 pub mod run_helper;
 pub mod view;
 
-pub const GAME_ID: &str = "f1_25";
+pub const GAME_ID: &str = game::F1_25.id;
 pub const CORE_ID: &str = "swofty.core";
 
 #[derive(Debug, thiserror::Error)]
