@@ -8,8 +8,8 @@
   "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1434b5110.c;xref:0x1434ca655;xref:0x1434cc5cc",
-  "notes": "engine-re 2026-11-17 track round C (static): called from Game_PitLane_GenerateSplines (0x1434ca655) and 0x1434cc5cc. Resets the pit lane garage index (car record +0xe0) of all 27 car records [mgr+0x938+id*0x10] to 0x7fffffff (0x1434b56bc..0x1434b5876), then per entrant (vector [[mgr+0xb70]+0x1d8..+0x1e0], stride 0x98, vehicle id +0x82, ids > 0x1a skipped at 0x1434b58e3): garage = 2 x team garage slot ([e+0x88]+0x28) + seat (e+0x90) when the track byte [[[mgr+0xb80]+0x1a8]+0x30]+0x60 (copied to mgr+0xc29, tested 0x1434b591a) is set, else (2 x slot | 1) - seat (per V11203 polarity correction; H: garage order flag of the track); safety-car vehicles (list [mgr+0xb38]+0x30..+0x38) get 0x63 (99). Pit box = garage >> 1; garage 99 uses box 12 = the safety-car request (type 7 slot 0). raised by engine-re with --force 2026-11-17 at user request (lane owner review requested)"
+  "evidence": "decomp:re/decomp/1434b5110.c;decomp:own disasm 1.0.145 0x1434b7690 the same 450/450;xref:0x1434ca655;xref:0x1434cc5cc",
+  "notes": "engine-re 2026-11-17 track round C (static): called from Game_PitLane_GenerateSplines (0x1434ca655) and 0x1434cc5cc. Resets the pit lane garage index (car record +0xe0) of all 27 car records [mgr+0x938+id*0x10] to 0x7fffffff (0x1434b56bc..0x1434b5876), then per entrant (vector [[mgr+0xb70]+0x1d8..+0x1e0], stride 0x98, vehicle id +0x82, ids > 0x1a skipped at 0x1434b58e3): garage = 2 x team garage slot ([e+0x88]+0x28) + seat (e+0x90) when the track byte [[[mgr+0xb80]+0x1a8]+0x30]+0x60 (copied to mgr+0xc29, tested 0x1434b591a) is set, else (2 x slot | 1) - seat (per V11203 polarity correction; H: garage order flag of the track); safety-car vehicles (list [mgr+0xb38]+0x30..+0x38) get 0x63 (99). Pit box = garage >> 1; garage 99 uses box 12 = the safety-car request (type 7 slot 0). raised by engine-re with --force 2026-11-17 at user request (lane owner review requested) | re-bindings 2026-11-18: Steam 1.0.145 (sigport --witness): 0x1434b7690, 450/450 equal, with +0x930, +0x938, +0xe0, +0xb70, +0x1d8, +0x1e0, +0x82, +0x88, +0x90, +0xb80, +0x1a8, +0xc29 and +0xb38 at the same instructions."
  },
  "signature": {
   "id": "game.pit_lane_assign_garage_indices",
@@ -47,5 +47,44 @@
    "notes": "V11203 27 records +0xe0=0x7fffffff, stride 0x98, id byte +0x82 > 0x1a skipped, garage-99 via list mgr+0xb38 - all confirmed. CORRECTION: polarity inverted - at 0x1434b591a byte (mgr+0xc29 = [..+0x30]+0x60) SET -> 2*slot+seat; byte ZERO -> (2*slot|1)-seat."
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434b5110",
+    "target": "0x1434b5110"
+   },
+   "sigcheck": "passed",
+   "digest": "171b412553891b7a81b2437efe88967179f50b6eaf6179bb470ab9ed2ad6845d"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434b7690",
+    "target": "0x1434b7690"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "72e4c7ca4f3babad42bcccbdf7c40bf34b4c56414c0fe872e56261b37d736ab7"
+  }
+ ]
 }

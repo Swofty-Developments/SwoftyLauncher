@@ -8,8 +8,8 @@
   "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1434c01a0.c;xref:0x1434bbd7c;xref:0x1434be1ad;xref:0x1434c35ac;xref:0x1434c366f",
-  "notes": "engine-re 2026-11-17 track round C (static): 5-byte jmp to .data1 0x1503fecf0 (Ghidra decompiles the target through the thunk). (pitSystem, out 4x4, garage): garage < 32 and a request at [[sys+8]+0x638+garage*8] (VehiclePlacement type 6 = PitGarageN marker, slot = garage) -> Sess_VehiclePlacement_ResolveTransform + copy of the request matrix (+0x20..+0x5f); garage >= 32 or no PitGarage marker -> a static default matrix with position (0, -9000, 0) (row 3 = 0xc60ca000). Callers: Game_PitLane_UpdateMovement 0x1434bbd7c, Game_PitLane_HoldInGarage 0x1434be1ad, Game_PitLane_ProjectBoxPose 0x1434c35ac/0x1434c366f. Consequence for tracks: a car whose garage has no PitGarage marker is held/aligned 9 km below the track. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested)"
+  "evidence": "decomp:re/decomp/1434c01a0.c;decomp:own disasm 1.0.145 body 0x14feb9670 the same 58/58;xref:0x1434bbd7c;xref:0x1434be1ad;xref:0x1434c35ac;xref:0x1434c366f",
+  "notes": "engine-re 2026-11-17 track round C (static): 5-byte jmp to .data1 0x1503fecf0 (Ghidra decompiles the target through the thunk). (pitSystem, out 4x4, garage): garage < 32 and a request at [[sys+8]+0x638+garage*8] (VehiclePlacement type 6 = PitGarageN marker, slot = garage) -> Sess_VehiclePlacement_ResolveTransform + copy of the request matrix (+0x20..+0x5f); garage >= 32 or no PitGarage marker -> a static default matrix with position (0, -9000, 0) (row 3 = 0xc60ca000). Callers: Game_PitLane_UpdateMovement 0x1434bbd7c, Game_PitLane_HoldInGarage 0x1434be1ad, Game_PitLane_ProjectBoxPose 0x1434c35ac/0x1434c366f. Consequence for tracks: a car whose garage has no PitGarage marker is held/aligned 9 km below the track. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested) | re-bindings 2026-11-18: Other builds: the signature is the call in Game_PitLane_ProjectBoxPose (KB 0x1434c35ab), because the filler after the thunk's jmp differs on every build. Steam 1.0.145: call 0x1434c5b2b, thunk 0x1434c2720, body 0x14feb9670, 58/58 equal with both +0x638 reads at the same instructions. EA: thunk 0x1434b04d0, body 0x14e822fe0; EA 1.0.145: thunk 0x1434b2a50, body 0x14ee21150; both 57 instructions alike, with the protector's rewrites between, and the +0x638 reads in place."
  },
  "signature": {
   "id": "game.pit_lane_get_garage_pose_thunk",
@@ -48,5 +48,44 @@
    "notes": "V11204 jmp 0x1503fecf0 (.data1); garage<=0x1f and [[sys+8]+0x638+g*8]!=0 -> copies request+0x20 matrix. Else static 0x1460fb0b0 = 0x140136690(rsp+0x60 translation matrix with row3 from 0x145843020 = (0,-9000,0,1), identity) -> translation (0,-9000,0). Minor: re-read null after 0x142f62580 gives identity 0x146095c90."
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434c35a8",
+    "target": "0x1434c01a0"
+   },
+   "sigcheck": "passed",
+   "digest": "26b49849a063182a4d3edff9a3c63798f48f14d1a35c614e0cb57b80ebca6700"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434c5b28",
+    "target": "0x1434c2720"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ab7fd7aa3512f0dae3a92b887ec39b262998e25340cba9d97aef87313394d494"
+  }
+ ]
 }

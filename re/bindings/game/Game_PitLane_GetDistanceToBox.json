@@ -8,8 +8,8 @@
   "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1434b4d30.c;xref:0x14103308a",
-  "notes": "engine-re 2026-11-17 track round C (static): (mgr, vehicle u8) -> float bits. vehicle > 0x1a -> 0. Box = garage >> 1 (garage 99 or box 12 -> safety-car request [placement+0x738]; garage > 0x3f -> -1.0; else [placement+0x838+box*8]); null request or box float < 0 -> -1.0 (trace 0x58); null car record -> box 0. Returns box record distance (mgr+0xc0+box*0x90 = record +0x80, negative = no record) minus the car's pit spline distance ([car+0x108]+0xcf8) while the car flag +0x185 is clear and state +0x178 != 3; else the straight-line distance to the box position (mgr+0xb0+box*0x90) (V11205). Only 13 box records exist (mgr+0x40, 0x90 each), so box 13..31 (garage 26..63) reads past them. One caller 0x141032b50. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested)"
+  "evidence": "decomp:re/decomp/1434b4d30.c;decomp:own disasm 1.0.145 0x1434b72b0 the same 219/219;xref:0x14103308a",
+  "notes": "engine-re 2026-11-17 track round C (static): (mgr, vehicle u8) -> float bits. vehicle > 0x1a -> 0. Box = garage >> 1 (garage 99 or box 12 -> safety-car request [placement+0x738]; garage > 0x3f -> -1.0; else [placement+0x838+box*8]); null request or box float < 0 -> -1.0 (trace 0x58); null car record -> box 0. Returns box record distance (mgr+0xc0+box*0x90 = record +0x80, negative = no record) minus the car's pit spline distance ([car+0x108]+0xcf8) while the car flag +0x185 is clear and state +0x178 != 3; else the straight-line distance to the box position (mgr+0xb0+box*0x90) (V11205). Only 13 box records exist (mgr+0x40, 0x90 each), so box 13..31 (garage 26..63) reads past them. One caller 0x141032b50. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested) | re-bindings 2026-11-18: Steam 1.0.145 (sigport --witness): 0x1434b72b0, 219/219 equal, with +0x40, +0xc0, +0x738, +0x838, +0x108, +0xcf8, +0x185, +0x178 and +0xe0 at the same instructions."
  },
  "signature": {
   "id": "game.pit_lane_get_distance_to_box",
@@ -57,5 +57,44 @@
    "notes": "V11226 garage<=0x3f accepted, box record mgr+0xc0+box*0x90 read for box 13..31; box loop 13 iterations"
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434b4d30",
+    "target": "0x1434b4d30"
+   },
+   "sigcheck": "passed",
+   "digest": "c561f8d975412e1a7e19769db1df982a24a5b03f0ec6dbd263db50a2879328dd"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434b72b0",
+    "target": "0x1434b72b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2587a61ffc9d4072b5fe8aaeda169514e192b5e724d0390dc266e8f46d68a989"
+  }
+ ]
 }
