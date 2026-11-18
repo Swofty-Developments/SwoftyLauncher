@@ -3,8 +3,8 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 #[cfg(windows)]
-use swofty_core::data_move::link::create as link;
-use swofty_core::data_move::link::remove as unlink;
+use swofty_core::data::relocate::link::create as link;
+use swofty_core::data::relocate::link::remove as unlink;
 
 #[derive(Debug, PartialEq)]
 pub(super) enum Entry {

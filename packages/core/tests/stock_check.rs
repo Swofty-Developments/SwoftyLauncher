@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use sha1::{Digest, Sha1};
-use swofty_core::baseline::{Baseline, Identity, Objects, Source, sha256_file};
+use swofty_core::game_folder::baseline::{Baseline, Identity, Objects, Source, sha256_file};
 use swofty_core::install::Game;
 use swofty_core::placed::Placed;
 use swofty_core::stock::{self, Depots, Entry};

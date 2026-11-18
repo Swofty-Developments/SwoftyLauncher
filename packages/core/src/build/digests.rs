@@ -11,7 +11,7 @@ use std::time::{Duration, SystemTime};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-use crate::baseline::hex;
+use crate::game_folder::baseline::hex;
 use crate::{Result, io_err};
 
 const VERSION: u32 = 1;

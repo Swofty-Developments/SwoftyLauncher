@@ -156,7 +156,7 @@ pub(crate) fn capture_command(store: &Store, a: CaptureArgs) -> Result<ExitCode>
     if exe.sha256.is_empty()
         && let Ok(g) = crate::commands::build::game(store, None)
     {
-        let mut hashes = swofty_core::baseline::Hashes::load(&store.root);
+        let mut hashes = swofty_core::game_folder::baseline::Hashes::load(&store.root);
         if let Ok(sha) = hashes.sha256(&g.dir.join(swofty_core::GAME_EXE)) {
             exe.sha256 = sha;
             exe.version = swofty_core::exe_version::read(&g.dir.join(swofty_core::GAME_EXE));

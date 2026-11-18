@@ -9,7 +9,7 @@ fn uncached_stamp(path: &Path) -> String {
         format!(
             "{}|sha256 {}",
             data.len(),
-            crate::baseline::hex(&Sha256::digest(&data))
+            crate::game_folder::baseline::hex(&Sha256::digest(&data))
         )
     } else {
         format!("{}|{:?}", meta.len(), meta.modified().ok())

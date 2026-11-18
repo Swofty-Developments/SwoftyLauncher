@@ -397,7 +397,7 @@ mod tests {
 
     #[test]
     fn a_profile_that_starts_with_a_dash_goes_through_as_one_value() {
-        use swofty_core::process::flag;
+        use swofty_core::platform::process::flag;
         let root = std::env::temp_dir().join(format!("swofty-cli-dash-profile-{}", std::process::id()));
         std::fs::remove_dir_all(&root).ok();
         let store = store(&root);

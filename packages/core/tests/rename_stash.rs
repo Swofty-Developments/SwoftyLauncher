@@ -6,8 +6,8 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use swofty_core::baseline::{Identity, sha256_bytes};
 use swofty_core::disk::Volume;
+use swofty_core::game_folder::baseline::{Identity, sha256_bytes};
 use swofty_core::install::{Game, Installer, Plan};
 use swofty_core::journal::{Journal, Op};
 use swofty_core::link_cache;

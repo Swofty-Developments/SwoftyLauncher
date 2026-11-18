@@ -6,8 +6,8 @@
 
 use std::path::{Path, PathBuf};
 
-use swofty_core::baseline::Identity;
 use swofty_core::build::{GVDB, build};
+use swofty_core::game_folder::baseline::Identity;
 use swofty_core::hud::{GameStock, dials};
 use swofty_core::install::Game;
 use swofty_core::store::Store;

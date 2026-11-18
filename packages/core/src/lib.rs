@@ -35,17 +35,14 @@ pub use self::erp as erpbuild;
 pub use addons::{builtin, registry, settings, storage as addon_storage};
 pub use cache::link as link_cache;
 pub use content::{postfx, runtime_assets as runtime, shaders, track_package as map};
-pub use data::{paths, relocate as data_move};
 pub use diagnostics::{
     crash, crash_report, ea_launch as ea_diag, known_problems, launch, phases, quarantine, send_logs,
 };
 pub use game_db::{livery_kits, owned, row_keys as rowkeys};
-pub use game_folder::{
-    baseline, busy, copies, entitlement, exe_version, journal, placed, recovery, setup, stock,
-};
+pub use game_folder::{busy, copies, entitlement, exe_version, journal, placed, setup, stock};
 pub use online::server::{sign_in as mpauth, usage};
 pub use online::{modules, multiplayer, server, timetrial};
-pub use platform::{app_control, disk, ea_app, process, run_as_admin as compat, steam};
+pub use platform::{app_control, disk, ea_app, run_as_admin as compat, steam};
 pub use profile::{conflicts, resolver};
 pub use saves::{backup as save_backup, launcher as launcher_saves, stall as save_stall, vault};
 pub use ui::home_menu;

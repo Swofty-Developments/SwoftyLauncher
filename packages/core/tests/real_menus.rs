@@ -321,7 +321,7 @@ fn stock(game: &Path, rel: &str) -> PathBuf {
     let listed: serde_json::Value =
         serde_json::from_slice(&std::fs::read(base.join("baseline.json")).unwrap()).unwrap();
     match listed["files"][rel]["sha256"].as_str() {
-        Some(sha) if swofty_core::baseline::sha256_file(&path).unwrap() != sha => {
+        Some(sha) if swofty_core::game_folder::baseline::sha256_file(&path).unwrap() != sha => {
             base.parent().unwrap().join("objects").join(&sha[..2]).join(sha)
         }
         _ => path,

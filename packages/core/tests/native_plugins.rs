@@ -1,8 +1,8 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use swofty_core::baseline::Identity;
 use swofty_core::build::{GVDB, Plugins, plugin_files};
+use swofty_core::game_folder::baseline::Identity;
 use swofty_core::install::{Game, Installer, Plan};
 use swofty_core::profile::Profile;
 use swofty_core::resolver::resolve;

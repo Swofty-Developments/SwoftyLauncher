@@ -8,10 +8,10 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
 
 use swofty_core::addon_storage;
-use swofty_core::baseline::{Identity, sha256_bytes};
+use swofty_core::game_folder::baseline::{Identity, sha256_bytes};
+use swofty_core::game_folder::recovery::{self, Scope, SessionLock};
 use swofty_core::install::{Game, Installer, Plan};
 use swofty_core::journal::Journal;
-use swofty_core::recovery::{self, Scope, SessionLock};
 
 const GVDB: &str = "game_package/gamedatabases/gamedatabases.2025.bin";
 const CORE: &str = "swofty/addons/core/swofty_core.dll";

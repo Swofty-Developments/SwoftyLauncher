@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use anyhow::Result;
-use swofty_core::baseline::DepotHashes;
+use swofty_core::game_folder::baseline::DepotHashes;
 use swofty_core::install::Game;
 use swofty_core::steam;
 use swofty_core::stock::{self, Depots};

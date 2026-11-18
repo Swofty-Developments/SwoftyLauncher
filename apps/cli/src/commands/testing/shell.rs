@@ -95,7 +95,7 @@ fn shell_session(store: &Store, game: &Path, a: &ShellArgs, run_id: &str) -> Res
     let exe_sha = match &fixture {
         None => None,
         Some(_) => {
-            let mut hashes = swofty_core::baseline::Hashes::load(&store.root);
+            let mut hashes = swofty_core::game_folder::baseline::Hashes::load(&store.root);
             let sha = hashes.sha256(&game.join(swofty_core::GAME_EXE))?;
             hashes.save();
             let loader = swofty_core::builtin::loader_dir();

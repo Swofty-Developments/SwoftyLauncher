@@ -1,10 +1,10 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use swofty_core::baseline::{Identity, sha256_bytes};
+use swofty_core::game_folder::baseline::{Identity, sha256_bytes};
+use swofty_core::game_folder::recovery;
 use swofty_core::install::{Drift, Game, Installer, OVERRIDE_HEADER, Plan};
 use swofty_core::journal::{Journal, Op, State};
-use swofty_core::recovery;
 
 const GVDB: &str = "game_package/gamedatabases/gamedatabases.2025.bin";
 const UI: &str = "2025_asset_groups/ui_package/flow_frontend.erp";
@@ -22,7 +22,7 @@ const REG: &str = "WINE REGISTRY Version 2\n;; All keys relative to \\\\User\n\n
 
 #[test]
 fn sweep_rechecks_changed_cached_files_and_preserves_user_edits() {
-    use swofty_core::baseline::Hashes;
+    use swofty_core::game_folder::baseline::Hashes;
     use swofty_core::placed::Placed;
     let f = Fixture::new("sweep-cache-edits");
     let mut placed = Placed::default();
@@ -44,7 +44,7 @@ fn sweep_rechecks_changed_cached_files_and_preserves_user_edits() {
 #[test]
 #[ignore = "manual large-profile sweep benchmark"]
 fn benchmark_large_profile_sweep_hash_cache() {
-    use swofty_core::baseline::Hashes;
+    use swofty_core::game_folder::baseline::Hashes;
     use swofty_core::placed::Placed;
     for warm in [false, true] {
         let f = Fixture::new(if warm { "bench-warm" } else { "bench-cold" });

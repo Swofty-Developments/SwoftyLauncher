@@ -14,7 +14,7 @@ use std::time::Duration;
 
 use eframe::egui::{self, Color32, CornerRadius, Margin, RichText, Stroke};
 use swofty_core::app_control::Block;
-use swofty_core::data_move::find;
+use swofty_core::data::relocate::find;
 use swofty_core::launcher::Progress;
 use swofty_core::session::COMPAT_LAYER;
 use swofty_core::update::{self, Install};

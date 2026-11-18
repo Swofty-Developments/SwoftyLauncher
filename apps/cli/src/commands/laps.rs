@@ -4,7 +4,7 @@ use std::process::ExitCode;
 use anyhow::{Result, bail};
 use clap::Subcommand;
 use serde_json::Value;
-use swofty_core::baseline::Identity;
+use swofty_core::game_folder::baseline::Identity;
 use swofty_core::install::Game;
 use swofty_core::online::server::api::{Api, Boards};
 use swofty_core::online::server::integrity::{self, Module};

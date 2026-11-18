@@ -62,7 +62,7 @@ pub(crate) fn sandbox_preflight(
     if need.is_empty() {
         return Ok(None);
     }
-    let mut hashes = swofty_core::baseline::Hashes::load(&store.root);
+    let mut hashes = swofty_core::game_folder::baseline::Hashes::load(&store.root);
     let exe = g.dir.join(swofty_core::GAME_EXE);
     let sha = hashes
         .sha256(&exe)

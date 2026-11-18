@@ -3,8 +3,8 @@ use std::process::{Child, Command, Stdio};
 use std::time::SystemTime;
 
 use anyhow::Result;
-use swofty_core::process::{descends_from, flag, games_in, stop_process};
-use swofty_core::recovery::SessionLock;
+use swofty_core::game_folder::recovery::SessionLock;
+use swofty_core::platform::process::{descends_from, flag, games_in, stop_process};
 use swofty_core::session::{SessionRecord, request_stop};
 use swofty_core::store::Store;
 

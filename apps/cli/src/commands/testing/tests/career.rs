@@ -97,7 +97,7 @@ fn a_career_batch_runs_in_its_own_sandbox_and_fails_closed_on_any_doubt() {
         "storage/my.addon/careers.json".into(),
         fixture::FileSum {
             size: 2,
-            sha256: swofty_core::baseline::sha256_bytes(b"{}"),
+            sha256: swofty_core::game_folder::baseline::sha256_bytes(b"{}"),
         },
     );
     std::fs::write(&f, serde_json::to_vec(&m).unwrap()).unwrap();

@@ -8,11 +8,11 @@ use crate::commands::build::profile::{report, server_plugins, timed_build};
 use crate::commands::build::stock_check::{check_entitled, check_stock, not_stock};
 use anyhow::{Result, bail};
 use swofty_core::GAME_EXE;
-use swofty_core::baseline::DepotHashes;
 use swofty_core::busy::{self, Busy};
+use swofty_core::game_folder::baseline::DepotHashes;
+use swofty_core::game_folder::recovery::Blocked;
 use swofty_core::install::{Game, Installer};
 use swofty_core::managed;
-use swofty_core::recovery::Blocked;
 use swofty_core::stock;
 use swofty_core::store::Store;
 

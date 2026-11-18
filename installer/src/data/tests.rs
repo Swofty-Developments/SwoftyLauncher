@@ -3,7 +3,7 @@ use std::io::{self, ErrorKind};
 
 use crate::data::moving::Record;
 use std::sync::Mutex;
-use swofty_core::data_move::link::{create as link, target as link_target};
+use swofty_core::data::relocate::link::{create as link, target as link_target};
 use swofty_core::launcher::Progress;
 
 struct Quiet;

@@ -1,10 +1,10 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
-use crate::baseline::{
+use crate::diagnostics::phases;
+use crate::game_folder::baseline::{
     Baseline, DepotHashes, FileRecord, Hashes, Identity, Objects, sha256_bytes, sha256_file, sha256_opt,
 };
-use crate::diagnostics::phases;
 use crate::journal::{Journal, Op, State};
 use crate::placed::{self, Placed};
 use crate::profile::VANILLA;
@@ -1034,7 +1034,7 @@ impl<'a> Installer<'a> {
                                 FileRecord {
                                     size,
                                     sha256,
-                                    source: crate::baseline::Source::Depot,
+                                    source: crate::game_folder::baseline::Source::Depot,
                                 },
                             );
                             (self.out)(&format!(
@@ -1077,12 +1077,12 @@ impl<'a> Installer<'a> {
             return Err(Error::Other(if rebuilt {
                 format!(
                     "{}. {first}{more} could not be checked against a backed-up original; nothing in the game folder was changed",
-                    crate::baseline::DAMAGED
+                    crate::game_folder::baseline::DAMAGED
                 )
             } else {
                 format!(
                     "{}. {first}{more} still holds a file swofty wrote, and no original is on record for it; nothing in the game folder was changed",
-                    crate::baseline::DAMAGED
+                    crate::game_folder::baseline::DAMAGED
                 )
             }));
         }
@@ -1446,7 +1446,7 @@ impl<'a> Installer<'a> {
 
     /// Move `proxy` to a folder of its own under the set-aside folder.
     fn set_proxy_aside(&self, proxy: &Path) -> Result<PathBuf> {
-        let dir = crate::recovery::set_aside_dir(self.data);
+        let dir = crate::game_folder::recovery::set_aside_dir(self.data);
         let mut stamp = crate::update::now_secs();
         while dir.join(stamp.to_string()).join(PROXY).exists() {
             stamp += 1;

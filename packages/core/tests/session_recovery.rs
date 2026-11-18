@@ -5,12 +5,12 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use swofty_core::baseline::{Identity, sha256_bytes};
 use swofty_core::busy;
+use swofty_core::game_folder::baseline::{Identity, sha256_bytes};
+use swofty_core::game_folder::recovery::{self, Blocked, Notice, Scope, SessionLock};
 use swofty_core::install::{Drift, Game, Installer, OVERRIDE_HEADER, Plan};
 use swofty_core::journal::Journal;
 use swofty_core::placed::Placed;
-use swofty_core::recovery::{self, Blocked, Notice, Scope, SessionLock};
 
 const GVDB: &str = "game_package/gamedatabases/gamedatabases.2025.bin";
 const UI: &str = "2025_asset_groups/ui_package/flow_frontend.erp";

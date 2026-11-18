@@ -2,10 +2,10 @@ use std::path::Path;
 use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
 
+use swofty_core::data::paths;
+use swofty_core::game_folder::recovery::{self, SessionLock};
 use swofty_core::launcher::Progress;
-use swofty_core::paths;
-use swofty_core::process;
-use swofty_core::recovery::{self, SessionLock};
+use swofty_core::platform::process;
 use swofty_core::update;
 
 const PARTS: [(&str, &str); 3] = [

@@ -6,9 +6,9 @@ use anyhow::{Result, bail};
 use swofty_core::ea_app::{self, Handoff};
 use swofty_core::install::{Game, Source};
 #[cfg(not(windows))]
-use swofty_core::platform::steam::client as steam_client;
+use swofty_core::platform::process::stop_process;
 #[cfg(not(windows))]
-use swofty_core::process::stop_process;
+use swofty_core::platform::steam::client as steam_client;
 use swofty_core::store::Store;
 
 #[cfg(not(windows))]

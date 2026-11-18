@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use swofty_core::activation::db::{Registry, TrackHost, activate};
-use swofty_core::baseline::Identity;
+use swofty_core::game_folder::baseline::Identity;
 use swofty_core::install::Game;
 use swofty_core::map::TrackPackage;
 use swofty_core::tracks::{PlanTrack, for_profile, list};

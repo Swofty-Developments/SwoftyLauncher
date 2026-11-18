@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use swofty_core::process::same_folder;
+use swofty_core::platform::process::same_folder;
 use swofty_core::update;
 
 use crate::existing::lnk::lnk_roots;

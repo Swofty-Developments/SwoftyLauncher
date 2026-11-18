@@ -9,11 +9,11 @@ use std::time::{Duration, Instant};
 
 use anyhow::{Result, bail};
 use swofty_core::GAME_EXE;
+use swofty_core::game_folder::recovery::{Scope, SessionLock};
 use swofty_core::install::{Game, Installer};
 use swofty_core::launch;
-use swofty_core::process::{game_processes, games_in};
+use swofty_core::platform::process::{game_processes, games_in};
 use swofty_core::quarantine;
-use swofty_core::recovery::{Scope, SessionLock};
 use swofty_core::session::{Config, LaunchRequest, parse_cpu_list};
 use swofty_core::store::Store;
 

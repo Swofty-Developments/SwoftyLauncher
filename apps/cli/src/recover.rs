@@ -2,9 +2,9 @@ use std::time::Duration;
 
 use anyhow::{Result, bail};
 use swofty_core::busy::Busy;
+use swofty_core::game_folder::recovery::{self, Blocked, HEADLINE, Notice, Recovered, Scope, SessionLock};
 use swofty_core::install::{Conflict, Game};
-use swofty_core::process::game_processes;
-use swofty_core::recovery::{self, Blocked, HEADLINE, Notice, Recovered, Scope, SessionLock};
+use swofty_core::platform::process::game_processes;
 use swofty_core::store::Store;
 
 pub const LOCK_WAIT: Duration = Duration::from_secs(120);

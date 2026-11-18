@@ -3,13 +3,13 @@ use std::path::{Path, PathBuf};
 
 use crate::data::files::{Entry, copy_tree, listing, remove};
 use crate::data::{CHECKING, COPYING, Data, ENV, FOLDER, MOVING};
-use swofty_core::data_move::{
+use swofty_core::data::relocate::{
     journal_pending,
     link::{create as link, remove as unlink},
 };
 use swofty_core::disk;
 use swofty_core::launcher::Progress;
-use swofty_core::process::{same_folder, same_path};
+use swofty_core::platform::process::{same_folder, same_path};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(super) enum Record {
@@ -157,7 +157,7 @@ impl DataMove {
         if let Some(why) = (ops.blocked)() {
             return Err(why);
         }
-        swofty_core::data_move::history::record(&self.default, &self.from, "moved by the installer");
+        swofty_core::data::relocate::history::record(&self.default, &self.from, "moved by the installer");
         progress.report(0.0, MOVING);
         match self.record {
             Record::Link => self.relink(ops, progress),

@@ -7,10 +7,10 @@ use std::time::{Duration, Instant};
 
 use swofty_core::GAME_EXE;
 use swofty_core::asset::{AssetBatch, AssetOp, FileOp, Op, Origin, Root, Source};
-use swofty_core::baseline::Identity;
 use swofty_core::build::GVDB;
 use swofty_core::builtin::loader_dir;
 use swofty_core::busy::{Busy, Step};
+use swofty_core::game_folder::baseline::Identity;
 use swofty_core::install::Installer;
 use swofty_core::launcher::{Addon, BuildCx, Builtin};
 use swofty_core::manifest::AddonManifest;
@@ -257,7 +257,7 @@ fn a_leftover_from_an_interrupted_session_is_recovered_and_the_launch_proceeds()
 
     h.install(&log).unwrap();
     let log = log.into_inner();
-    assert_eq!(log[0], swofty_core::recovery::HEADLINE);
+    assert_eq!(log[0], swofty_core::game_folder::recovery::HEADLINE);
     assert_eq!(log[1], format!("  removed {MIP}"));
     assert!(log.iter().any(|l| l.starts_with("doctor: data dir")), "{log:?}");
     assert!(log.iter().any(|l| l.starts_with("doctor: baseline")), "{log:?}");
@@ -266,7 +266,7 @@ fn a_leftover_from_an_interrupted_session_is_recovered_and_the_launch_proceeds()
     assert_eq!(open.len(), 1);
     assert!(open[0].session);
     assert!(open[0].entries.iter().any(|e| e.path == MIP));
-    let notice = swofty_core::recovery::Notice::read(&h.store.root).unwrap();
+    let notice = swofty_core::game_folder::recovery::Notice::read(&h.store.root).unwrap();
     let removed: Vec<_> = notice
         .lines
         .iter()
@@ -333,10 +333,10 @@ fn a_file_of_unknown_provenance_stops_the_launch_untouched_with_what_restore_doe
             .unwrap()
             .is_empty()
     );
-    let blocked = swofty_core::recovery::Blocked::read(&h.store.root).unwrap();
+    let blocked = swofty_core::game_folder::recovery::Blocked::read(&h.store.root).unwrap();
     assert_eq!(blocked.files[0].path, MIP);
 
-    let done = swofty_core::recovery::restore(&h.store.root, &h.game).unwrap();
+    let done = swofty_core::game_folder::recovery::restore(&h.store.root, &h.game).unwrap();
     assert_eq!(
         std::fs::read_to_string(&done.set_aside[0]).unwrap(),
         "copied in by hand"

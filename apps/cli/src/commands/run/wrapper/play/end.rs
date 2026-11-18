@@ -4,7 +4,7 @@ use std::time::{Duration, SystemTime};
 
 use anyhow::Result;
 use swofty_core::launch;
-use swofty_core::process::{descends_from, game_processes, stop_process};
+use swofty_core::platform::process::{descends_from, game_processes, stop_process};
 use swofty_core::session::{
     LOADER_LOG, LogMark, PERF_LOG, STOP_FILE, SessionEnd, SessionRecord, written_since,
 };

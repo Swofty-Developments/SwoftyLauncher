@@ -6,7 +6,7 @@ use std::time::{Duration, Instant, SystemTime};
 use anyhow::{Context, Result};
 use swofty_core::busy::Busy;
 use swofty_core::install::Source;
-use swofty_core::process::flag;
+use swofty_core::platform::process::flag;
 use swofty_core::session::LaunchMode;
 use swofty_core::store::Store;
 use swofty_core::{GAME_EXE, STEAM_APP_ID, steam};
@@ -258,7 +258,7 @@ pub(crate) fn which(bin: &str) -> bool {
 
 #[cfg(all(test, unix))]
 mod tests {
-    use swofty_core::recovery::SessionLock;
+    use swofty_core::game_folder::recovery::SessionLock;
     use swofty_core::session::{game_args, parse_steam_command};
 
     use crate::commands::run::tests::temp_log;
