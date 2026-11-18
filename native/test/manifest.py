@@ -144,6 +144,7 @@ UNITS = [
     Unit('lang_scope', 'String scope unit test'),
     Unit('stall_order', 'Load-stall report running-threads order unit test'),
     Unit('standings_drop', 'Standings dropped scores unit test'),
+    Unit('standings_read', 'Season standings read unit test'),
     Unit('teamhq_track', 'Team HQ track guard unit test'),
     Unit('teammate_pairs', 'Teammate pairs guard unit test'),
     Unit('theatre_list', 'Theatre list guard unit test'),
@@ -256,7 +257,7 @@ SDK_OPS_FLAGS = ['-std=c++23', '-O1', '-Wall', '-Wextra', '-Werror', '-Wno-nulla
 CAREER_OPS = [Program(t, [Objects([f'test/career_ops/{t}.cpp'], CAREER_OPS_FLAGS)])
               for t in ('lineup_plan_test', 'teams_plan_test', 'ops_logic_test')] + [
     Program(f'{t}{ext}', [Objects([f'test/career_ops/{t}.cpp'], SDK_OPS_FLAGS, target)])
-    for t in ('sdk_ops_test', 'sdk_ops_v4_test', 'sdk_ops_v6_test', 'sdk_ops_v7_test')
+    for t in ('sdk_ops_test', 'sdk_ops_v4_test', 'sdk_ops_v6_test', 'sdk_ops_v7_test', 'sdk_ops_v8_test')
     for ext, target in (('', LINUX), ('.exe', WINDOWS))]
 
 SANITIZE = ['-fsanitize=address,undefined', '-fno-sanitize-recover=all']
@@ -342,7 +343,7 @@ SCRIPTS = [
     Script('bind', 'Binding resolver Wine test', ['bash', 'native/test/run_bind_test.sh'], wine=True),
     Script('career_ops', 'Career operations planner and SDK calls host test', each(
         'lineup_plan_test', 'teams_plan_test', 'sdk_ops_test', 'ops_logic_test', 'sdk_ops_v4_test', 'sdk_ops_v6_test',
-        'sdk_ops_v7_test'), cwd='test', programs=CAREER_OPS),
+        'sdk_ops_v7_test', 'sdk_ops_v8_test'), cwd='test', programs=CAREER_OPS),
     Script('json', 'swofty::json unit test', ['bash', 'native/test/run_json_test.sh', '{out}'], programs=JSON),
     Script('build_gate', 'Loader build gate unit test', ['bash', 'native/test/run_build_gate_test.sh']),
     Script('apply', 'Live apply paths (scheduler, put-back, context, budgets, sizing, stat ids, reports)',
