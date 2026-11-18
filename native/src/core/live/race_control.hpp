@@ -58,6 +58,30 @@ inline int32_t leader_lap(const Snapshot &s)
     return s.cars[id].lap;
 }
 
+// The session a snapshot belongs to: a new key starts the trackers' session again.
+struct SessionKey {
+    uint32_t type = 0, generation = 0;
+    uint8_t game_mode = 0;
+    char track[sizeof(SwoftyLiveSession::track_name)] = {};
+
+    bool operator==(const SessionKey &o) const
+    {
+        return type == o.type && generation == o.generation && game_mode == o.game_mode &&
+               !std::memcmp(track, o.track, sizeof track);
+    }
+};
+
+inline SessionKey session_key(const Snapshot &s)
+{
+    SessionKey k;
+    k.type = (s.ses.have & SWOFTY_LIVE_SHAVE_TYPE) ? s.ses.type : 0;
+    k.generation = s.ses.generation;
+    k.game_mode = (s.ses.have & SWOFTY_LIVE_SHAVE_GAME_MODE) ? s.ses.game_mode : 0;
+    if (s.ses.have & SWOFTY_LIVE_SHAVE_TRACK_NAME)
+        std::memcpy(k.track, s.ses.track_name, sizeof k.track);
+    return k;
+}
+
 class Tracker {
 public:
     void reset()
@@ -78,7 +102,7 @@ public:
             reset();
             return out;
         }
-        Key k = key_of(*s);
+        SessionKey k = session_key(*s);
         if (!primed_ || !(k == key_)) {
             reset();
             key_ = k;
@@ -92,34 +116,11 @@ public:
     }
 
 private:
-    struct Key {
-        uint32_t type = 0, generation = 0;
-        uint8_t game_mode = 0;
-        char track[sizeof(SwoftyLiveSession::track_name)] = {};
-
-        bool operator==(const Key &o) const
-        {
-            return type == o.type && generation == o.generation && game_mode == o.game_mode &&
-                   !std::memcmp(track, o.track, sizeof track);
-        }
-    };
-
     struct CarSeen {
         bool status_known = false, sector_known = false;
         rc::Status status = rc::Status::invalid;
         uint8_t sector = 0;
     };
-
-    static Key key_of(const Snapshot &s)
-    {
-        Key k;
-        k.type = (s.ses.have & SWOFTY_LIVE_SHAVE_TYPE) ? s.ses.type : 0;
-        k.generation = s.ses.generation;
-        k.game_mode = (s.ses.have & SWOFTY_LIVE_SHAVE_GAME_MODE) ? s.ses.game_mode : 0;
-        if (s.ses.have & SWOFTY_LIVE_SHAVE_TRACK_NAME)
-            std::memcpy(k.track, s.ses.track_name, sizeof k.track);
-        return k;
-    }
 
     void session_moments(const rc::State &st, Moments &out)
     {
@@ -210,7 +211,7 @@ private:
 
     bool primed_ = false;
     uint64_t sessions_ = 0;
-    Key key_;
+    SessionKey key_;
     bool flag_known_ = false, sc_known_ = false, red_known_ = false;
     rc::Flag flag_ = rc::Flag::unknown;
     uint8_t yellow_ = 0;
