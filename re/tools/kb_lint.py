@@ -124,6 +124,7 @@ class KbLint:
         self.check_signatures()
         self.check_structs()
         self.check_verify()
+        self.check_census()
         self.check_tests()
         if self.exe:
             self.check_exe()
@@ -300,6 +301,18 @@ class KbLint:
         for k, v in last.items():
             if v == 'disagree':
                 self.W.append(f'open disagreement on {k[0]} {k[1]}')
+
+    def check_census(self):
+        import census
+        errs, warns = census.citation_errors(self.tables)
+        self.E += errs
+        self.W += warns
+        build = census.active()
+        hand = census.hand_rows(self.tables) if build else []
+        if hand:
+            self.W.append(f'{len(hand)} note(s) count callers by hand ({", ".join(n for n, _ in hand[:4])}'
+                          f'{" and more" if len(hand) > 4 else ""}): '
+                          f'cite callers: census {build} <rva> instead (python3 re/tools/census.py hand lists them)')
 
     def check_tests(self):
         for f in sorted(os.listdir(os.path.join(kb.RE, 'tests'))):

@@ -312,7 +312,7 @@ mod tests {
             })
             .map(|r| r.key)
             .collect();
-        let mut db = Gvdb { records };
+        let mut db = Gvdb::new(records);
         let lines = settle(&mut db, &stock);
         assert!(
             lines
@@ -362,7 +362,7 @@ mod tests {
     fn nothing_moves_without_the_marker_record() {
         let mut records = vec![rec(&instance_count_path(TABLE, ROW), 0, "1")];
         list(&mut records, 0, "f1_2026", &["a1"]);
-        let mut db = Gvdb { records };
+        let mut db = Gvdb::new(records);
         assert!(settle(&mut db, &HashSet::new()).is_empty());
         assert_eq!(get(&db, &instance_count_path(TABLE, ROW)).as_deref(), Some("1"));
     }

@@ -6,11 +6,11 @@ fn build_fields_apply_to_their_own_addon_only() {
     let features = Features::default();
     let opt_in = BTreeSet::new();
     let add = r#"{"op":"db.add-row","table":"t","from":"t.r_0"}"#;
-    let db = || Gvdb {
-        records: vec![
+    let db = || {
+        Gvdb::new(vec![
             Record::new("t._r_instancecount_", 0, "1"),
             Record::new("t.r_0.a", 0, "7"),
-        ],
+        ])
     };
     let mut p = Planner::new(&features, &opt_in);
     p.add_fields("a", BTreeMap::from([("t.r".to_owned(), vec!["a".to_owned()])]));
@@ -47,13 +47,11 @@ fn a_stat_id_an_earlier_addon_pins_moves_and_counts_as_a_conflict() {
         "b",
         r#"{"op":"db.add-row","table":"t","from":"t.r_0","set":{"_metadata_":"b_row","stat_id":"6"}}"#,
     ));
-    let mut db = Gvdb {
-        records: vec![
-            Record::new("t._r_instancecount_", 0, "1"),
-            Record::new("t.r_0._metadata_", 4, "base"),
-            Record::new("t.r_0.stat_id", 0, "5"),
-        ],
-    };
+    let mut db = Gvdb::new(vec![
+        Record::new("t._r_instancecount_", 0, "1"),
+        Record::new("t.r_0._metadata_", 4, "base"),
+        Record::new("t.r_0.stat_id", 0, "5"),
+    ]);
     let stock = db.records.iter().map(|r| r.key).collect();
     let mut report = DbReport::default();
     p.apply_db_report(&mut db, &stock, &HashSet::new(), &mut report)
@@ -111,13 +109,11 @@ fn a_free_stat_id_of_an_earlier_addon_leaves_the_one_a_later_addon_pins() {
         "b",
         r#"{"op":"db.add-row","table":"t","from":"t.r_0","set":{"_metadata_":"b_row","stat_id":"6"}}"#,
     ));
-    let mut db = Gvdb {
-        records: vec![
-            Record::new("t._r_instancecount_", 0, "1"),
-            Record::new("t.r_0._metadata_", 4, "base"),
-            Record::new("t.r_0.stat_id", 0, "5"),
-        ],
-    };
+    let mut db = Gvdb::new(vec![
+        Record::new("t._r_instancecount_", 0, "1"),
+        Record::new("t.r_0._metadata_", 4, "base"),
+        Record::new("t.r_0.stat_id", 0, "5"),
+    ]);
     let stock = db.records.iter().map(|r| r.key).collect();
     let mut report = DbReport::default();
     p.apply_db_report(&mut db, &stock, &HashSet::new(), &mut report)
@@ -152,13 +148,11 @@ fn a_package_stat_id_above_the_byte_ceiling_moves_with_a_warning() {
             r#"{{"op":"db.add-row","table":"{t}","from":"{t}.vehicle_package_0","set":{{"_metadata_":"era","stat_id":"300"}}}}"#
         ),
     ));
-    let mut db = Gvdb {
-        records: vec![
-            Record::new(&format!("{t}._vehicle_package_instancecount_"), 0, "1"),
-            Record::new(&format!("{t}.vehicle_package_0._metadata_"), 4, "base"),
-            Record::new(&format!("{t}.vehicle_package_0.stat_id"), 0, "58"),
-        ],
-    };
+    let mut db = Gvdb::new(vec![
+        Record::new(&format!("{t}._vehicle_package_instancecount_"), 0, "1"),
+        Record::new(&format!("{t}.vehicle_package_0._metadata_"), 4, "base"),
+        Record::new(&format!("{t}.vehicle_package_0.stat_id"), 0, "58"),
+    ]);
     let stock = db.records.iter().map(|r| r.key).collect();
     let mut report = DbReport::default();
     p.apply_db_report(&mut db, &stock, &HashSet::new(), &mut report)
@@ -206,15 +200,13 @@ fn a_scenario_stat_id_an_earlier_addon_holds_moves_and_counts_as_a_conflict() {
         ),
     ));
     p.push(op("cs22", &add("cs_f1_2022", 21)));
-    let mut db = Gvdb {
-        records: vec![
-            Record::new(&format!("{t}._scenario_instancecount_"), 0, "2"),
-            Record::new(&format!("{t}.scenario_0._metadata_"), 4, "f1"),
-            Record::new(&format!("{t}.scenario_0.statId"), 0, "14"),
-            Record::new(&format!("{t}.scenario_1._metadata_"), 4, "f1_alt"),
-            Record::new(&format!("{t}.scenario_1.statId"), 0, "14"),
-        ],
-    };
+    let mut db = Gvdb::new(vec![
+        Record::new(&format!("{t}._scenario_instancecount_"), 0, "2"),
+        Record::new(&format!("{t}.scenario_0._metadata_"), 4, "f1"),
+        Record::new(&format!("{t}.scenario_0.statId"), 0, "14"),
+        Record::new(&format!("{t}.scenario_1._metadata_"), 4, "f1_alt"),
+        Record::new(&format!("{t}.scenario_1.statId"), 0, "14"),
+    ]);
     let stock = db.records.iter().map(|r| r.key).collect();
     let mut report = DbReport::default();
     p.apply_db_report(&mut db, &stock, &HashSet::new(), &mut report)
@@ -287,23 +279,21 @@ fn each_database_file_counts_the_owned_rows_once_after_the_first() {
     let features = Features::default();
     let opt_in = BTreeSet::new();
     let folder = "unlockable_content.unlockable_items.unlockable_item_list_0.folder_0";
-    let mut db = Gvdb {
-        records: vec![
-            Record::new(
-                "unlockable_content.unlockable_items._unlockable_item_list_instancecount_",
-                0,
-                "1",
-            ),
-            Record::new(
-                "unlockable_content.unlockable_items.unlockable_item_list_0._folder_instancecount_",
-                0,
-                "1",
-            ),
-            Record::new(&format!("{folder}._unlockable_se_livery_instancecount_"), 0, "1"),
-            Record::new(&format!("{folder}.unlockable_se_livery_0._metadata_"), 0, "stock"),
-            Record::new(&format!("{folder}.unlockable_se_livery_0.a"), 0, "7"),
-        ],
-    };
+    let mut db = Gvdb::new(vec![
+        Record::new(
+            "unlockable_content.unlockable_items._unlockable_item_list_instancecount_",
+            0,
+            "1",
+        ),
+        Record::new(
+            "unlockable_content.unlockable_items.unlockable_item_list_0._folder_instancecount_",
+            0,
+            "1",
+        ),
+        Record::new(&format!("{folder}._unlockable_se_livery_instancecount_"), 0, "1"),
+        Record::new(&format!("{folder}.unlockable_se_livery_0._metadata_"), 0, "stock"),
+        Record::new(&format!("{folder}.unlockable_se_livery_0.a"), 0, "7"),
+    ]);
     let add = format!(r#"{{"op":"db.add-row","table":"{folder}","from":"{folder}.unlockable_se_livery_0"}}"#);
     let mut p = Planner::new(&features, &opt_in);
     for addon in ["a", "b", "c"] {

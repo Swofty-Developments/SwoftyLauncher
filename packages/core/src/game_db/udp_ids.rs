@@ -326,7 +326,7 @@ mod tests {
             copy("entrants.drivers.driver_0", "entrants.drivers.driver_3"),
             copy("entrants.drivers.driver_3", "entrants.drivers.driver_4"),
         ];
-        (Gvdb { records: r }, copies)
+        (Gvdb::new(r), copies)
     }
 
     fn built() -> UdpIds {
@@ -362,7 +362,7 @@ mod tests {
         count(&mut r, DRIVERS, 2);
         row(&mut r, DRIVERS, 0, 8, &NORRIS);
         row(&mut r, DRIVERS, 1, 400, &KIMI);
-        let ids = build(&Gvdb { records: r }, &[]);
+        let ids = build(&Gvdb::new(r), &[]);
         assert_eq!(ids.drivers, BTreeMap::from([(400, 255)]));
     }
 
@@ -391,7 +391,7 @@ mod tests {
         b.addon = "bdx-teams".into();
         let mut c = copy("entrants.teams.team_2", "entrants.teams.team_3");
         c.addon = "season-2012".into();
-        let ids = build(&Gvdb { records: r }, &[c, a, b]);
+        let ids = build(&Gvdb::new(r), &[c, a, b]);
         assert_eq!(ids.teams, BTreeMap::from([(700, 6), (701, 6), (702, 6)]));
     }
 
@@ -402,7 +402,7 @@ mod tests {
         row(&mut r, TEAMS, 0, 6, &[]);
         row(&mut r, TEAMS, 1, 6, &[]);
         let ids = build(
-            &Gvdb { records: r },
+            &Gvdb::new(r),
             &[copy("entrants.teams.team_0", "entrants.teams.team_1")],
         );
         assert!(ids.is_empty());
@@ -415,7 +415,7 @@ mod tests {
         row(&mut r, TEAMS, 0, 4, &[]);
         count(&mut r, DRIVERS, 1);
         row(&mut r, DRIVERS, 0, 8, &NORRIS);
-        assert!(build(&Gvdb { records: r }, &[]).is_empty());
+        assert!(build(&Gvdb::new(r), &[]).is_empty());
     }
 
     #[test]

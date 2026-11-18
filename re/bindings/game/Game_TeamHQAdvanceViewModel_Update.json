@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "uint64_t Game_TeamHQAdvanceViewModel_Update(void *vm)",
   "evidence": "decomp:re/decomp/1422ca380.c;xref:0x14577aa20;decomp:re/decomp/1422ca380.c;xref:0x14577aa20",
-  "notes": "slot 12 (vt+0x60) of vt_Game_TeamHQAdvanceViewModel, the view model's per-frame update and only reached through that slot: returns 0 while the calendar lookup on vm+0x6e8 is null; online careers re-check the super-ready window; while advancing or stopping (vm+0x759|vm+0x75a) and the tick delay vm+0x760 has elapsed since vm+0x740 (QPC, freq vm+0x750) and nothing waits (vm+0x766|vm+0x922) it runs Career_TeamHqAdvance_OnTimer(vm). rcx = the TeamHQAdvanceViewModel: the capture point for test code. ts-v1 signature for the test agent (V1490 agree)"
+  "notes": "slot 12 (vt+0x60) of vt_Game_TeamHQAdvanceViewModel, the view model's per-frame update and only reached through that slot: returns 0 while the calendar lookup on vm+0x6e8 is null; online careers re-check the super-ready window; while advancing or stopping (vm+0x759|vm+0x75a) and the tick delay vm+0x760 has elapsed since vm+0x740 (QPC, freq vm+0x750) and nothing waits (vm+0x766|vm+0x922) it runs Career_TeamHqAdvance_OnTimer(vm). rcx = the TeamHQAdvanceViewModel: the capture point for test code. ts-v1 signature for the test agent (V1490 agree) Callers: census steam 0x22ca380."
  },
  "signature": {
   "id": "game.team_hq_advance_view_model_update",

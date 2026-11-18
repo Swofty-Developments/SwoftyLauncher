@@ -115,9 +115,18 @@ int host_code_ready()
     return code_ready();
 }
 
+namespace bp = build_proof;
+// Bit 1 of build(): the lap module's signatures and bindings match once and are the same code. On EA 1.0.145 they were
+// checked on its dump with the core's patches put back from the live run's scan log (re/tools/sigverify.py --restore):
+// 59 signatures and 24 bindings, and the 57 functions they sit in compared whole (re/research/ea-1-0-145.md).
+constexpr bp::Proof LAP_MODULE_LAYOUT{"the lap module's signature functions' struct layouts",
+                                      bp::proofs::VERIFIED_LAYOUT.builds | bp::bit(bp::Build::ea_1_0_145)};
+static_assert(bp::proven_on(LAP_MODULE_LAYOUT, bp::Build::ea_1_0_145) &&
+              !bp::proven_on(LAP_MODULE_LAYOUT, bp::Build::unknown));
+
 uint32_t build()
 {
-    return (same_build() ? 1u : 0u) | (verified_build() ? 2u : 0u);
+    return (same_build() ? 1u : 0u) | (bp::proven_on(LAP_MODULE_LAYOUT, running_build()) ? 2u : 0u);
 }
 
 const char *build_sha()

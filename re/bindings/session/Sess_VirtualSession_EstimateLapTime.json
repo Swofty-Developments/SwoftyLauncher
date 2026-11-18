@@ -9,7 +9,7 @@
   "subsystem": "session",
   "proto": "-",
   "evidence": "decomp:re/decomp/142f6c8e0.c;xref:0x142980806,0x142f6b866",
-  "notes": "Simulated session: estimates a lap time for vehicle param_2 from the session rules entry (Game_RuleSet_FindForSessionFilter, factor +0xf0) and the car's XOR-obfuscated performance values (car+0x58->+0x548, pairs +0x28/+0x30 indexed by param_7), with params param_3/param_5/param_8. Callers Ai_QualiPace_Debug, Game_Network_VirtualSessionEntrant, Game_GarageReturn_ComputeTimeSkip."
+  "notes": "Simulated session: estimates a lap time for vehicle param_2 from the session rules entry (Game_RuleSet_FindForSessionFilter, factor +0xf0) and the car's XOR-obfuscated performance values (car+0x58->+0x548, pairs +0x28/+0x30 indexed by param_7), with params param_3/param_5/param_8. Callers Ai_QualiPace_Debug, Game_Network_VirtualSessionEntrant, Game_GarageReturn_ComputeTimeSkip. Callers: census steam 0x2f6c8e0."
  },
  "signature": {
   "id": "session.virtual_session_estimate_lap_time",

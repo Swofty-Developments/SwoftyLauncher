@@ -30,7 +30,7 @@ impl Fixture {
             Record::new("tracks.Track_0.laps", 0, "60"),
         ];
         std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
-        std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+        std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
         let game = Game {
             identity: Identity::detect(&dir, Some(1)).unwrap(),
             dir,

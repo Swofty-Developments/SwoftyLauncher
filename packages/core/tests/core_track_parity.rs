@@ -78,7 +78,7 @@ fn fixture() -> Gvdb {
             }
         })
         .collect();
-    Gvdb { records }
+    Gvdb::new(records)
 }
 
 fn package(code: &str, from: &str, slot: Option<&str>, sprint: &[&str]) -> TrackPackage {
