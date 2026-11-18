@@ -117,8 +117,8 @@ impl ArchiveWrite {
         Some(dir.join(&key[..2]).join(format!("{key}.erp")))
     }
 
-    /// Links the archive from the cache `entry` an earlier build wrote; true when it did. Without hard
-    /// links nothing is cached.
+    /// Links the archive from the cache `entry` an earlier build wrote and marks the entry used, leaving
+    /// the archive's write time as it was; true when it did. Without hard links nothing is cached.
     fn link(&self, entry: Option<&Path>) -> Result<bool> {
         if let Some(dir) = self.path.parent() {
             std::fs::create_dir_all(dir).map_err(crate::io_err(dir))?;
@@ -129,9 +129,7 @@ impl ArchiveWrite {
         if std::fs::hard_link(c, &self.path).is_err() {
             return Ok(false);
         }
-        if let Ok(f) = std::fs::File::options().write(true).open(c) {
-            f.set_modified(std::time::SystemTime::now()).ok();
-        }
+        crate::cache::mark_used(c);
         Ok(true)
     }
 

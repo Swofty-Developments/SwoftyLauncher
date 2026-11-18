@@ -222,10 +222,7 @@ fn cached_edit(
     if let Some((n, kept)) = kept
         && (n == 0 || link(&archive, out))
     {
-        touch(&record);
-        if n > 0 {
-            touch(&archive);
-        }
+        crate::cache::mark_used(&archive);
         lines.extend(kept);
         return Ok(n);
     }
@@ -247,11 +244,4 @@ fn link(archive: &Path, out: &Path) -> bool {
     archive.is_file()
         && out.parent().is_some_and(|d| std::fs::create_dir_all(d).is_ok())
         && std::fs::hard_link(archive, out).is_ok()
-}
-
-/// Marks a cache entry used now, so the cache prune keeps it.
-fn touch(path: &Path) {
-    if let Ok(f) = std::fs::File::options().write(true).open(path) {
-        f.set_modified(std::time::SystemTime::now()).ok();
-    }
 }
