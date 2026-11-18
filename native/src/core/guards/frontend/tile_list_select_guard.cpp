@@ -168,10 +168,10 @@ private:
     {
         if (next_child)
             swofty::log("[tile-list] select guard %s; a tile with no components is skipped when a list moves its selection",
-                        runtime::core_mixins_active(MIXIN) ? "armed" : "did not install (see the [core] lines)");
+                        guards::install_state(runtime::core_mixins_active(MIXIN), "armed"));
         if (push_offered)
             swofty::log("[tile-list] push guard %s; a focused tile with no components is not written to a list's selection",
-                        runtime::core_mixins_active(PUSH_MIXIN) ? "armed" : "did not install (see the [core] lines)");
+                        guards::install_state(runtime::core_mixins_active(PUSH_MIXIN), "armed"));
     }
 };
 

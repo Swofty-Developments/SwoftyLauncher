@@ -114,14 +114,12 @@ private:
     {
         if (tyre_wanted)
             swofty::log("[pit] race tyre change rule %s",
-                        runtime::core_mixins_active(TYRE_MIXIN)
-                            ? "armed: a box with race_tyre_change false keeps its tyres at race stops"
-                            : "did not install (see the [core] lines)");
+                        guards::install_state(runtime::core_mixins_active(TYRE_MIXIN),
+                                              "armed: a box with race_tyre_change false keeps its tyres at race stops"));
         if (!wanted)
             return;
-        swofty::log("[pit] box guard %s",
-                    runtime::core_mixins_active(MIXIN) ? "armed: a garage car without a pit box is left where it is"
-                                                       : "did not install (see the [core] lines)");
+        swofty::log("[pit] box guard %s", guards::install_state(runtime::core_mixins_active(MIXIN),
+                                                                "armed: a garage car without a pit box is left where it is"));
     }
 };
 
