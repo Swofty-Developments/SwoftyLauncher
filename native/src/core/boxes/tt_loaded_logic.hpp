@@ -18,6 +18,10 @@
 // becomes the active content when it is not already (follow): the same call a picker press makes. A list no
 // box can be named for gets no board. At each lap the team the game's own lap stats name decides the label
 // when it is not the team the entrant selection holds (team_pick).
+//
+// A Grand Prix > Continue presses no box either: the saved weekend's list is the one the session loads, and a
+// registered box's list makes its package the active content when it is not (follow_grand_prix). A stock, unlisted
+// or unread list leaves the active content as it is.
 
 namespace runtime::tt_loaded {
 
@@ -103,6 +107,17 @@ inline Follow follow(const Loaded &loaded, std::string_view package, std::string
     return {Action::follow, loaded.box,
             "[boards] content follows the loaded list: " + board_content(package) + " (box " + loaded.box +
                 "; box pressed was " + was + ", active was " + (active.empty() ? std::string("nothing") : std::string(active)) + ")"};
+}
+
+// `package` is the content package of loaded.box ("" for none) and `active` the scheduler's active label.
+inline Follow follow_grand_prix(const Loaded &loaded, std::string_view package, std::string_view active)
+{
+    if (loaded.kind != Kind::box || package.empty() || active.rfind(CAREER, 0) == 0 ||
+        active == active_label(loaded.box, package))
+        return {};
+    return {Action::follow, loaded.box,
+            "[apply] Grand Prix content follows the loaded list: " + std::string(package) + " (box " + loaded.box +
+                "; active was " + (active.empty() ? std::string("nothing") : std::string(active)) + ")"};
 }
 
 // A team reference is a stat id dword: the id in the high word, its kind in the low byte.

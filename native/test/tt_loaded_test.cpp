@@ -101,6 +101,30 @@ int main()
     expect(tl::selection_in_list({}, team(596)), "an unread list refuses nothing");
     expect(tl::same_team(team(8), team(8) | 0x0100), "bits outside the id and the kind do not make another team");
 
+    // A Grand Prix > Continue presses no box: the saved weekend's list names the content.
+    tl::Loaded gp = tl::loaded_box(boxes, "sw_f1_2015", "", HOST, VHOST, "");
+    f = tl::follow_grand_prix(gp, SW15, "");
+    expect(f.action == tl::Action::follow && f.box == "sw_f1_2015" &&
+               f.line == "[apply] Grand Prix content follows the loaded list: " + std::string(SW15) +
+                             " (box sw_f1_2015; active was nothing)",
+           "a continued Grand Prix with nothing active follows its box's list");
+    f = tl::follow_grand_prix(load(boxes, "cs_f1_2021", HOST), "a.b/cs_2021", std::string(tl::CONTENT) + SW15);
+    expect(f.action == tl::Action::follow && f.box == "cs_f1_2021", "a continued Grand Prix of another box replaces the active content");
+    expect(tl::follow_grand_prix(gp, SW15, std::string(tl::CONTENT) + SW15).action == tl::Action::keep,
+           "a Grand Prix whose box is already active keeps it, as after a New Grand Prix press");
+    expect(tl::follow_grand_prix(gp, SW15, "career abc").action == tl::Action::keep, "a career's activation is never replaced");
+    expect(tl::follow_grand_prix(load(boxes, "ms_f1_2015", HOST), "", std::string(tl::CONTENT) + SW15).action == tl::Action::keep,
+           "a box without a package leaves the active content");
+    expect(tl::follow_grand_prix(tl::loaded_box(boxes, "f1_2025", "", HOST, VHOST, ""), "", std::string(tl::CONTENT) + SW15).action ==
+               tl::Action::keep,
+           "a list no box names leaves the active content");
+    expect(tl::follow_grand_prix(tl::loaded_box(boxes, VHOST, "", HOST, VHOST, ""), "", std::string(tl::CONTENT) + SW15).action ==
+               tl::Action::keep,
+           "the virtual host list without a label leaves the active content");
+    expect(tl::follow_grand_prix(tl::loaded_box(boxes, VHOST, "", HOST, VHOST, "cs_f1_2021"), "a.b/cs_2021", "").action ==
+               tl::Action::follow,
+           "the virtual host list follows the box it holds");
+
     // The lap's team label.
     tl::TeamPick p = tl::team_pick("sw15_mercedes", true, team(596), true, team(596), "");
     expect(p.label == "sw15_mercedes" && p.from == tl::TeamFrom::selection && !p.stale, "the selection stands when the lap stats name the same team");
