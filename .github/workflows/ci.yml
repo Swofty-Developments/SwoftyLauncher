@@ -345,34 +345,41 @@ jobs:
         run: python3 -m unittest discover -s tools/compat/tests -t tools/compat
 
   # Clippy lints the installer on both systems; this job builds the release binary people test. On main the
-  # release build makes it instead (release-binaries.yml).
+  # release build makes it instead (release-binaries.yml), and this job runs only on Windows, to save the Rust
+  # cache that pull requests restore there; it skips the build when that cache is already current.
   installer:
     name: Installer (${{ matrix.os }})
     needs: changes
-    if: github.event_name == 'pull_request' && needs.changes.outputs.installer == 'true'
+    if: needs.changes.outputs.installer == 'true'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         # ubuntu-22.04 is the release build's glibc baseline.
-        os: [ubuntu-22.04, windows-latest]
+        os: ${{ fromJSON(github.event_name == 'pull_request' && '["ubuntu-22.04", "windows-latest"]' || '["windows-latest"]') }}
     steps:
       - uses: actions/checkout@v7
 
+      # Windows only: the Linux build is never the longest job, and the cache space is short.
       - uses: ./.github/actions/setup-rust
+        id: rust
         with:
           system-libraries: false
+          cache: ${{ runner.os == 'Windows' && 'installer' || '' }}
+          save: ${{ github.event_name == 'push' }}
 
       # The release binaries on every push to main build the installer with the release profile's thin LTO,
       # which takes a third of the build: 678 s with it and 567 s without on 4 cores, the final link 195 s
       # and 7 s. A pull request builds it without, so its uploaded executable is not the release build.
       - name: Build
+        if: github.event_name == 'pull_request' || steps.rust.outputs.cache-hit != 'true'
         env:
           CARGO_PROFILE_RELEASE_LTO: 'false'
         run: cargo build --release -p swofty-launcher-installer
 
       - name: Upload the executable
+        if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v7
         with:
           name: installer-${{ runner.os }}
