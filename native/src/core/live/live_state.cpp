@@ -5,6 +5,7 @@
 #include "core/live/live_telemetry_fill.hpp"
 #include "core/live/live_turns.hpp"
 #include "core/live/race_control.hpp"
+#include "core/runtime/build.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/telemetry/telemetry_feed.hpp"
 
@@ -202,6 +203,8 @@ void decide_gates(const lv::BuildProof &build)
     g_verify = env_on("SWOFTY_TELEMETRY_VERIFY");
     g_sites.progress_from_manager = build.progress_from_manager;
     g_sites.ers_mode = build.ers_mode;
+    g_sites.tyre_damage = lv::layout::HAS_TYRE_DAMAGE &&
+                          (g_forced || runtime::build_proof::proven_on(runtime::car_layout::PUNCTURES, runtime::running_build()));
     lv::Decision d = lv::decide(g_sites, build, g_forced);
     g_gates = d.gates;
     for (unsigned i = 0; i < lv::G_COUNT; i++) {
