@@ -14,6 +14,8 @@ namespace swofty_core::apply::moments {
 void attach();
 void start_boot_plan();
 bool boot_may_work();
+// The database load is hooked, so the boot will run inside it: its content expansion starts ahead on a worker.
+void boot_ahead();
 void boot_load(room::Report &report);
 void boot_without_database(room::Report report);
 void write_room(const room::Report &report);

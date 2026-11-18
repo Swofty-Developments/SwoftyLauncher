@@ -31,6 +31,7 @@ using Value = swofty::json::Value;
 struct Rec {
     int tag = -1;
     std::string text;
+    bool operator==(const Rec &) const = default;
 };
 
 using Base = std::function<std::optional<Rec>(uint64_t key)>;

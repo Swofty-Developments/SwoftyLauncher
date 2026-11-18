@@ -590,6 +590,12 @@ bool boot_may_work()
     return scheduler().boot_may_work();
 }
 
+void boot_ahead()
+{
+    attach();
+    content::start_boot_ahead();
+}
+
 void status(const std::string &addon, const std::string &line)
 {
     std::lock_guard g(status_mu);
