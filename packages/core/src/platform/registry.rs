@@ -152,26 +152,30 @@ fn render_into(out: &mut String, key: &Key, ask: Ask) {
     }
 }
 
+/// `raw` as the UTF-16 code units Windows keeps text in, a trailing odd byte left out.
+fn units(raw: &[u8]) -> Vec<u16> {
+    raw.chunks_exact(2)
+        .map(|c| u16::from_le_bytes([c[0], c[1]]))
+        .collect()
+}
+
+/// UTF-16 text up to its first NUL. Every character reads as Windows keeps it, outside ASCII too; an
+/// unpaired surrogate, which no string can hold, reads as U+FFFD where reg.exe prints a `?`.
+fn utf16(raw: &[u8]) -> String {
+    let wide = units(raw);
+    let end = wide.iter().position(|&c| c == 0).unwrap_or(wide.len());
+    String::from_utf16_lossy(&wide[..end])
+}
+
 /// The data a value of type `kind` holds in `raw`, as `reg query` reads it.
 pub fn data(kind: u32, raw: &[u8]) -> Data {
-    let text = |raw: &[u8]| -> String {
-        let wide: Vec<u16> = raw
-            .chunks_exact(2)
-            .map(|c| u16::from_le_bytes([c[0], c[1]]))
-            .take_while(|&c| c != 0)
-            .collect();
-        String::from_utf16_lossy(&wide)
-    };
     match kind {
-        1 => Data::Sz(text(raw)),
-        2 => Data::ExpandSz(text(raw)),
+        1 => Data::Sz(utf16(raw)),
+        2 => Data::ExpandSz(utf16(raw)),
         3 => Data::Binary(raw.to_vec()),
         4 if raw.len() >= 4 => Data::Dword(u32::from_le_bytes([raw[0], raw[1], raw[2], raw[3]])),
         7 => {
-            let wide: Vec<u16> = raw
-                .chunks_exact(2)
-                .map(|c| u16::from_le_bytes([c[0], c[1]]))
-                .collect();
+            let wide = units(raw);
             let mut items: Vec<String> = wide.split(|&c| c == 0).map(String::from_utf16_lossy).collect();
             while items.last().is_some_and(String::is_empty) {
                 items.pop();
@@ -520,6 +524,31 @@ mod tests {
         multi.extend([0, 0]);
         assert_eq!(data(7, &multi), Data::MultiSz(vec!["a".into(), "b".into()]));
         assert_eq!(data(1, &[]), sz(""));
+    }
+
+    #[test]
+    fn text_outside_ascii_reads_exactly_and_an_unpaired_surrogate_as_a_replacement() {
+        let le = |units: &[u16]| -> Vec<u8> { units.iter().flat_map(|u| u.to_le_bytes()).collect() };
+        let wide = |s: &str| -> Vec<u16> { s.encode_utf16().chain([0]).collect() };
+        assert_eq!(
+            utf16(&le(&wide("Microsoft® Corporation"))),
+            "Microsoft® Corporation"
+        );
+        assert_eq!(
+            data(1, &le(&wide(r"C:\Users\Zoë\Yeni klasör 🏁"))),
+            sz(r"C:\Users\Zoë\Yeni klasör 🏁")
+        );
+        assert_eq!(utf16(&le(&[0x46, 0xD83C, 0x31, 0, 0x58])), "F\u{FFFD}1");
+        assert_eq!(utf16(&le(&[0xDC00, 0x41])), "\u{FFFD}A");
+        assert_eq!(
+            data(2, &le(&[0x25, 0xD800, 0xD800, 0xDE00])),
+            Data::ExpandSz("%\u{FFFD}\u{10200}".into())
+        );
+        assert_eq!(
+            data(7, &le(&[0x61, 0xD800, 0, 0xAE, 0, 0])),
+            Data::MultiSz(vec!["a\u{FFFD}".into(), "®".into()])
+        );
+        assert_eq!(utf16(&[0x41, 0, 0x42]), "A");
     }
 
     #[test]
