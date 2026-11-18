@@ -226,6 +226,24 @@ pub const Example_ShowFittedSet: Binding = Binding { id: "Example_ShowFittedSet"
 - `reason` is one line of printable ASCII without `"` or `\`, at most 300 characters. `replacement` is optional.
 - A binding the launcher's own native code (`native/src`) names, by its header constant, its `_t` type or a resolve string, leaves the addon API only in a pull request that also moves that code off it. A deprecated one moves to its `replacement`, so a binding core names cannot be deprecated before a replacement exists. Comments do not count.
 
+A binding whose name is wrong is renamed in place, and its old name stays for one release as a deprecated alias:
+
+```sh
+python3 re/tools/binding.py rename Ne_Property_SetS64IfChanged Ne_Property_SetUIDBRefIfChanged
+```
+
+The record moves to its new name with its signature, its build overlay entries and `function_names.tsv`. The verify rows about the old name stay in the record as `retired:<old name>`, and the rows about the address carry over. The new name exports on an `agree` about itself. A `deprecated` entry keyed by the old name, covering the newest retired row and naming the new record as `replacement`, exports the old name as an alias of the replacement at the same address:
+
+```json
+  "func:Ne_Property_SetS64IfChanged": {
+   "mode": "deprecated",
+   "since": "1.10.0",
+   "covers": "V100063",
+   "reason": "renamed: every caller sets a UIDBRef weak object reference through it and the compare is object identity, not a numeric S64 compare",
+   "replacement": "Ne_Property_SetUIDBRefIfChanged"
+  }
+```
+
 Only the repository owner approves a change to `re/db/export_drops.json`. The `bindings` check fails on such a pull request until the owner has approved its head commit, or opened it; re-run the check after approving. The check reads the owner's reviews from the API with the read-only token.
 
 ```sh
