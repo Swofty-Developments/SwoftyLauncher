@@ -42,3 +42,15 @@ fn track_changes_survive_ops_that_carry_shipped_values() {
     assert_eq!(db.get_text("tracks._Track_instancecount_").as_deref(), Some("3"));
     assert_eq!(db.get_text("tracks.Track_0.statId").as_deref(), Some("9"));
 }
+
+#[test]
+fn a_track_change_held_twice_is_put_back_in_the_record_the_database_reads() {
+    let list = |path: &str, v: &str| Record::new(path, 13, v);
+    let path = "sets.a.tracks";
+    let shipped = Gvdb::new(vec![list(path, "melbourne")]);
+    let ours = list(path, "melbourne,testring");
+    let mut db = Gvdb::new(vec![ours.clone(), ours.clone()]);
+    db.set(path, "melbourne", None).unwrap();
+    assert_eq!(keep_changes(&mut db, &shipped, &[ours]), [fnv1a64(path)]);
+    assert_eq!(db.get_text(path).as_deref(), Some("melbourne,testring"));
+}
