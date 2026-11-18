@@ -6,15 +6,11 @@ use swofty_formats::gvdb::Gvdb;
 use swofty_formats::pkg::{Node, Value};
 
 use crate::content::pkg_edit::{apply_edits, value_text};
-use crate::ops::PkgEdit;
+use crate::ops::{PLACEMENT_SLOTS, PkgEdit};
 use crate::{Error, Result};
 
 pub const GRID_LIST: &str = "entrants.entrant_lists.entrant_list_34";
 const KINDS: [(&str, u32); 4] = [("PitGarage", 2), ("F1Garage", 1), ("PitBox", 1), ("GridSlot", 2)];
-/// The vehicle placement requests the game holds per kind. Sess_VehiclePlacementRequest_Register (0x142f60c80)
-/// stores a request at slot `VehPlacement.Id - 1` of its kind's 32 with no bound, so an Id past 32 writes into the
-/// next kind's requests or past the table.
-const PLACEMENT_SLOTS: u32 = 32;
 
 pub fn grid_size(db: &Gvdb) -> u32 {
     db.instance_count(GRID_LIST, "entrant").map_or(0, |n| n as u32)

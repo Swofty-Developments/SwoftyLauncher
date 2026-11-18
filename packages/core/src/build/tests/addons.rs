@@ -608,3 +608,42 @@ fn an_op_file_is_read_with_its_option_templating_filled_from_the_profile() {
     assert!(read_op_file(&path, FileKind::Database, &m, &p, &OnAddons::default()).is_err());
     std::fs::remove_dir_all(&root).ok();
 }
+
+#[test]
+fn an_addon_op_with_a_placement_id_past_the_games_32_is_refused_by_name() {
+    let file = |edits: &str| {
+        OpFile::from_value(
+            serde_json::from_str(&format!(
+                r#"{{"schema_version":1,"ops":[
+                    {{"op":"patch-pkg","erp":"a.erp","resource":"eaid://x.layer","edits":{edits}}},
+                    {{"op":"remove-resource","erp":"a.erp","resource":"eaid://y"}}]}}"#
+            ))
+            .unwrap(),
+            FileKind::Erp,
+        )
+        .unwrap()
+    };
+    let mut warnings = Vec::new();
+    let mut ok = file(
+        r#"[{"op":"clone-entry","at":"instances","src":"[name=v$GridSlot22]","as":"v$GridSlot23","set":{"overrides.VehPlacement.Id":23}}]"#,
+    );
+    crate::build::op_files::refuse_placements("t.grid", "erp.json", &mut ok.ops, &mut warnings);
+    assert_eq!(ok.ops.len(), 2);
+    assert!(warnings.is_empty(), "{warnings:?}");
+    let mut bad = file(
+        r#"[{"op":"clone-entry","at":"instances","src":"[name=v$PitBox12]","as":"v$PitBox33","set":{"overrides.VehPlacement.Id":33}}]"#,
+    );
+    crate::build::op_files::refuse_placements("t.grid", "erp.json", &mut bad.ops, &mut warnings);
+    assert_eq!(bad.ops.len(), 1, "only the refused patch-pkg is dropped");
+    assert!(matches!(
+        bad.ops[0],
+        AssetOp::Erp(crate::ops::ErpOp::RemoveResource { .. })
+    ));
+    assert_eq!(
+        warnings,
+        [
+            "t.grid: erp.json: refused a.erp eaid://x.layer: clone-entry v$PitBox33: overrides.VehPlacement.Id 33 is \
+          outside 1..=32, the vehicle placements the game holds per kind"
+        ]
+    );
+}
