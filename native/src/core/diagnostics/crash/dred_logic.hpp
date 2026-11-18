@@ -142,6 +142,24 @@ template <typename Op> BuildStop build_stop(const Op *ops, uint32_t count, uint3
     return s;
 }
 
+// The builds the unfinished command lists of one DRED section stopped on: each list and build once, in the order read.
+class BuildStops {
+public:
+    void clear() { stops.clear(); }
+    void add(const BuildStop &s)
+    {
+        bool seen = false;
+        for (const BuildStop &o : stops)
+            seen = seen || (o.list == s.list && o.nth == s.nth && o.of == s.of);
+        if (s.nth && !seen)
+            stops.push_back(s);
+    }
+    const std::vector<BuildStop> &all() const { return stops; }
+
+private:
+    std::vector<BuildStop> stops;
+};
+
 inline std::string node_header(unsigned n, const char *list, const char *queue, uint32_t count, uint32_t completed,
                                uint64_t object = 0)
 {
