@@ -632,16 +632,23 @@ class HeadersFollowTheExport(Base):
 class Doctor(Base):
     BASE = 'f' * 40
 
-    def doctor(self, changes, other=(), *args):
+    def doctor(self, changes, other=(), *args, lost=()):
         import binding
         store = br.Store.get()
         before = store.records
         with mock.patch.object(binding, 'pick_base', return_value=self.BASE), \
                 mock.patch.object(binding, 'doctor_changes', return_value=(list(changes), list(other))), \
+                mock.patch.object(binding, 'lost_exports', return_value=list(lost)) as floor, \
                 contextlib.redirect_stdout(io.StringIO()) as out:
             code = binding.main(['doctor', *args])
         self.assertIs(store.records, before)
+        floor.assert_called_once_with(self.BASE)
         return code, out.getvalue()
+
+    def test_a_binding_the_base_exports_that_stops_exporting_fails(self):
+        code, out = self.doctor([('re/bindings/' + SAMPLE, None, raw(as_new(self.doc)))], lost=['Dropped'])
+        self.assertEqual(code, 1, out)
+        self.assertIn('Dropped', out)
 
     def test_a_new_record_would_merge_itself(self):
         code, out = self.doctor([('re/bindings/' + SAMPLE, None, raw(as_new(self.doc)))])
