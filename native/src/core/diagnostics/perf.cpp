@@ -214,10 +214,9 @@ void slow_call(uint32_t id, uint64_t own)
     double ms = ms_of(own);
     SlowCall s{seconds_now(), ms, id, GetCurrentThreadId(), during()};
     uint32_t n = slow_logged[id - 1].fetch_add(1, rlx);
-    if (n < 5 || n % 100 == 0)
-        swofty::log("[perf] slow call: %s %s took %.1f ms on %sthread %lu during \"%s\"%s", names[id - 1].owner.c_str(),
-                    names[id - 1].what.c_str(), ms, background_ ? "background " : "", s.thread, s.during.c_str(),
-                    n == 4 ? " (further ones are logged every 100th)" : "");
+    if (logic::slow_call_logged(n))
+        swofty::log(
+            "%s", logic::slow_call_line(names[id - 1].owner, names[id - 1].what, ms, background_, s.thread, s.during, n).c_str());
     std::lock_guard<std::mutex> g(rings_lock);
     slow_calls.push_back(std::move(s));
     if (slow_calls.size() > SLOW_CALLS)
@@ -356,10 +355,9 @@ void hitch(uint64_t ended, double ms, double swofty_ms)
         if (per[i])
             in.push_back({per[i], i});
     Hitch h{seconds_now(), ms, swofty_ms, during(), top_list(in, 3, 0.01)};
-    bool heavy = swofty_ms >= 1.0 || swofty_ms >= ms * 0.1;
+    bool heavy = logic::heavy_hitch(ms, swofty_ms);
     if ((heavy || verbose) && hitch_lines.fetch_add(1, rlx) < 20)
-        swofty::log("[perf] hitch: %.0f ms frame during \"%s\"; swofty %.2f ms in it%s%s%s", ms, h.during.c_str(),
-                    swofty_ms, h.top.empty() ? "" : " (", h.top.c_str(), h.top.empty() ? "" : ")");
+        swofty::log("%s", logic::hitch_line(ms, h.during, swofty_ms, h.top).c_str());
     std::lock_guard<std::mutex> g(rings_lock);
     hitch_count++;
     hitch_heavy += swofty_ms >= 5.0;
@@ -949,8 +947,7 @@ void install()
     HMODULE self = self_module();
     GetModuleFileNameW(self, path, MAX_PATH * 2);
     if (hook(self, path, true))
-        swofty::log("[perf] VirtualQuery accounting on in core (%d import slot(s)); thread starts %s", mods[0].slots,
-                    real_begin ? "tracked through _beginthreadex" : "from start addresses only");
+        swofty::log("%s", logic::vq_core_line(mods[0].slots, real_begin != nullptr).c_str());
 }
 
 void scan()
@@ -983,7 +980,7 @@ void scan()
         added += (added.empty() ? "" : ", ") + m.label + " (" + std::to_string(m.slots) + ")";
     }
     if (!added.empty())
-        swofty::log("[perf] VirtualQuery accounting on in %s; import slot(s) in brackets", added.c_str());
+        swofty::log("%s", logic::vq_modules_line(added).c_str());
 }
 
 std::string site_label(uintptr_t at)
@@ -1294,13 +1291,13 @@ void minute_line(Minute &last)
             if (l.minute_of[i].load(rlx) == m && l.minute_worst[i].load(rlx) > worst)
                 worst = l.minute_worst[i].load(rlx), worst_i = i;
     });
-    std::string busiest = logic::busiest(std::move(in), secs, 3);
-    swofty::log("[perf] last %.0f s: %llu frame(s) (%.0f fps, p99 %.1f ms, %u over 50 ms); swofty %.3f ms/s on game "
-                "threads%s%s%s; worst call %.2f ms%s%s%s",
-                secs, (unsigned long long)df, p50 > 0 ? 1000 / p50 : 0, p99, over50,
-                secs > 0 ? ms_of(top - last.top) / secs : 0, busiest.empty() ? "" : " (", busiest.c_str(),
-                busiest.empty() ? "" : ")", ms_of(worst), worst ? " (" : "",
-                worst ? (names[worst_i].owner + " " + names[worst_i].what).c_str() : "", worst ? ")" : "");
+    logic::FrameMinute fm;
+    fm.secs = secs, fm.frames = df, fm.p50 = p50, fm.p99 = p99, fm.over50 = over50;
+    fm.swofty_ms = ms_of(top - last.top), fm.worst_ms = ms_of(worst);
+    fm.busiest = logic::busiest(std::move(in), secs, 3);
+    if (worst)
+        fm.worst = names[worst_i].owner + " " + names[worst_i].what;
+    swofty::log("%s", logic::frame_line(fm).c_str());
     if (vq::on && last.vq) {
         vq::scan();
         swofty::log("%s", logic::vq_line(vq::minute(*last.vq, secs)).c_str());
@@ -1504,8 +1501,7 @@ void attach()
     char v[8] = {};
     DWORD n = GetEnvironmentVariableA("SWOFTY_PROFILE", v, sizeof v);
     if (n && n < sizeof v && v[0] == '0') {
-        swofty::log("[perf] profiler off (SWOFTY_PROFILE=0); frames from %s",
-                    hooked ? "the game's frame index" : "the flow-state ticks");
+        swofty::log("%s", logic::profiler_off_line(hooked).c_str());
         return;
     }
     n = GetEnvironmentVariableA("SWOFTY_PERF", v, sizeof v);
@@ -1515,11 +1511,8 @@ void attach()
     calibrate();
     g_live = true;
     vq::install();
-    swofty::log("[perf] profiler on:%.0f MHz timestamp counter, hitches over %.0f ms, slow calls over %.0f ms, frames "
-                "from %s; report in swofty\\perf.log every %u s",
-                ticks_per_ms.load() / 1000, hitch_ms, slow_call_ms,
-                hooked ? "the game's frame index (Streamline frame tokens)" : "the flow-state ticks (no Streamline import)",
-                WRITE_MS / 1000);
+    swofty::log("%s",
+                logic::profiler_on_line(ticks_per_ms.load() / 1000, hitch_ms, slow_call_ms, hooked, WRITE_MS / 1000).c_str());
 }
 
 void start()
