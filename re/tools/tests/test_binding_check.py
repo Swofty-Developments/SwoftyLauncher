@@ -769,6 +769,20 @@ class NewOnAnotherBuild(unittest.TestCase):
             self.assertIn('checked on the KB exe: same', out['twin'])
 
 
+    @unittest.skipUnless(os.environ.get('SWOFTY_STEAM_145_EXE'), 'set SWOFTY_STEAM_145_EXE to the Steam 1.0.145 exe')
+    def test_a_record_made_on_the_current_build_holds_kb_addresses(self):
+        import binding
+        saved = []
+        with mock.patch.object(br.Record, 'save', lambda rec, *a: saved.append(rec)), \
+                mock.patch.dict(os.environ, {'SWOFTY_KB_EXE': ''}), contextlib.redirect_stdout(io.StringIO()):
+            binding.main(['new', 'Sess_Tyre_ProbeFunctionA', '0x142e91ae0', '--kind', 'func', '--author',
+                          'contributor-a', '--exe', os.environ['SWOFTY_STEAM_145_EXE'], '--evidence',
+                          'decomp:own disasm 0x142e91ae0;xref:0x142e91ae0', '--notes', 'probe'])
+        rec = saved[0]
+        self.assertEqual((rec.table_row()['addr'], rec.signature['target']), ('0x142e8f550', '0x142e8f550'))
+        self.assertEqual(rec.signature['made_on_target'], '0x142e91ae0')
+        self.assertEqual(rec.proofs[0]['result']['target'], '0x142e91ae0')
+
 class CiLint(Base):
     def test_ci_lints_the_pull_requests_records_with_the_base(self):
         import binding

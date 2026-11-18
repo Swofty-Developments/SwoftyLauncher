@@ -257,7 +257,7 @@ def cmd_new(a):
     sig['used_by'] = a.used_by
     sig = {k: v for k, v in sig.items() if v is not None}
     table = 'functions' if a.kind == 'func' else 'globals'
-    row = {'addr': f'0x{va:x}', 'level': a.level, 'subsystem': sub, 'evidence': a.evidence, 'notes': a.notes,
+    row = {'addr': sig['target'] if port else f'0x{va:x}', 'level': a.level, 'subsystem': sub, 'evidence': a.evidence, 'notes': a.notes,
            'proto': a.proto, 'type': 'code' if a.kind == 'site' else (a.type or '-')}
     rec = br.Record.create(a.name, table, a.author, row, sig)
     errs = bc.check_record(rec, bc.Knowledge())
