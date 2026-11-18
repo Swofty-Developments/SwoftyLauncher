@@ -1,8 +1,9 @@
 name: Set up ccache
 description: >
-  ccache 4.14.2 (the static Linux build) on PATH as zig, cc, c++, gcc and g++, checked against its release archive's
-  SHA-256. Every compile the native build and test graphs run is looked up in the cache first; links and other zig
-  commands run as they are. It runs after mlugg/setup-zig, since its folder has to come first on PATH.
+  ccache 4.14.2 (the static Linux build) on PATH as zig, checked against its release archive's SHA-256. Every compile
+  the native build and test graphs run is looked up in the cache first; links and other zig commands run as they are.
+  It runs after mlugg/setup-zig, since its folder has to come first on PATH. Entries are keyed by the Zig version, not
+  by the zig binary's modification time, which the copy into the runner's tool cache sets anew on every job.
 
 inputs:
   dir:
@@ -22,9 +23,11 @@ runs:
         bin=$RUNNER_TEMP/ccache-bin
         mkdir -p "$bin"
         tar xzf "$RUNNER_TEMP/ccache.tar.gz" -C "$bin" --strip-components 1 ccache-4.14.2-linux-x86_64-musl-static/ccache
-        for name in zig cc c++ gcc g++; do ln -sf ccache "$bin/$name"; done
+        ln -sf ccache "$bin/zig"
+        version=$(zig version)
         echo "$bin" >> "$GITHUB_PATH"
         {
+          echo "CCACHE_COMPILERCHECK=string:zig $version"
           echo "CCACHE_DIR=$DIR"
           echo "CCACHE_BASEDIR=$GITHUB_WORKSPACE"
           echo "CCACHE_MAXSIZE=1G"
