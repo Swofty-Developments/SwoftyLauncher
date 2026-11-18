@@ -1,5 +1,6 @@
 use super::*;
 use crate::lint::tests::{GOOD, catalog};
+use crate::{Completion, TokenKind};
 
 fn at(text: &str) -> (String, usize) {
     let i = text.find('|').expect("cursor");
