@@ -79,6 +79,8 @@ std::vector<CoreMixins> myteam_vehicle_keep_mixins();
 void myteam_vehicle_keep_commit();
 std::vector<CoreMixins> ai_corner_guard_mixins();
 void ai_corner_guard_commit();
+std::vector<CoreMixins> ai_ers_guard_mixins();
+void ai_ers_guard_commit();
 std::vector<CoreMixins> replay_grid_guard_mixins();
 void replay_grid_guard_commit();
 std::vector<CoreMixins> watchdog_grace_mixins();
@@ -1858,7 +1860,7 @@ size_t offer_core_sets()
     for (auto *sets : {runtime::save_sandbox_mixins, runtime::career_content_mixins, runtime::characters_mixins, runtime::wizard_mixins,
                        runtime::tile_route_mixins, runtime::era_mixins, runtime::tt_guard_mixins, runtime::career_alias_mixins, runtime::car_category_mixins,
                        runtime::save_splice_mixins, runtime::ers_newlap_mixins, runtime::ers_mode_mixins, runtime::car_levers_mixins,
-                       runtime::garage_crew_mixins, runtime::garage_placement_mixins, runtime::pit_slots_mixins, runtime::pit_box_mixins, runtime::garage_slots_mixins, runtime::chassis_registry_mixins, runtime::standings_guard_mixins, runtime::ai_corner_guard_mixins, runtime::replay_grid_guard_mixins, runtime::fe_tile_guard_mixins, runtime::myteam_vehicle_guard_mixins, runtime::myteam_vehicle_heal_mixins, runtime::myteam_vehicle_keep_mixins, runtime::tyre_slots_mixins, runtime::tyre_models_mixins, runtime::track_acclim_mixins,
+                       runtime::garage_crew_mixins, runtime::garage_placement_mixins, runtime::pit_slots_mixins, runtime::pit_box_mixins, runtime::garage_slots_mixins, runtime::chassis_registry_mixins, runtime::standings_guard_mixins, runtime::ai_corner_guard_mixins, runtime::ai_ers_guard_mixins, runtime::replay_grid_guard_mixins, runtime::fe_tile_guard_mixins, runtime::myteam_vehicle_guard_mixins, runtime::myteam_vehicle_heal_mixins, runtime::myteam_vehicle_keep_mixins, runtime::tyre_slots_mixins, runtime::tyre_models_mixins, runtime::track_acclim_mixins,
                        runtime::audio_queue_mixins, runtime::heap_sizes_mixins, runtime::team_slots_mixins, runtime::track_select_mixins,
                        runtime::leaderboard_guard_mixins, runtime::lap_host_mixins, runtime::thrustmaster_lcd_mixins, runtime::estimate_laptime_mixins, runtime::red_flag_recompute_mixins, runtime::quali_tyres_mixins, runtime::box_grid_mixins, runtime::gp_continue_mixins, runtime::track_list_guard_mixins, runtime::watchdog_grace_mixins, runtime::garage_setup_mixins, runtime::theatre_list_mixins, runtime::tile_list_select_mixins, runtime::session_enter_mixins, runtime::ai_line_set_mixins})
         add_core_sets(sets());
@@ -1887,6 +1889,7 @@ void settle_core_sets()
     runtime::myteam_vehicle_heal_commit();
     runtime::myteam_vehicle_keep_commit();
     runtime::ai_corner_guard_commit();
+    runtime::ai_ers_guard_commit();
     runtime::replay_grid_guard_commit();
     runtime::watchdog_grace_commit();
     runtime::tyre_slots_commit();

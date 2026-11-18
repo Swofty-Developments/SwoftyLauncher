@@ -186533,6 +186533,60 @@
     }
    ],
    "used_by": []
+  },
+  {
+   "id": "ai.ers_corner_line_read",
+   "section": ".xtls",
+   "pattern": "4F 8B 04 08 45 8B 40 10 48 C1 FA 03",
+   "match": "0x1406497d5",
+   "anchor": "0x4",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1406497d9",
+   "kind": "mid",
+   "expect": "45 8B 40 10 48 C1 FA 03",
+   "names": [
+    "site_Ai_Ers_CornerLineRead"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-18",
+     "by": "brands-hatch",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/ai_ers_guard.cpp"
+   ]
+  },
+  {
+   "id": "ai.ers_no_corner_match",
+   "section": ".xtls",
+   "pattern": "C4 A1 7A 10 44 C8 04 C4 C1 7A 11 47 5C",
+   "match": "0x140649cbf",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140649cc6",
+   "kind": "mid",
+   "expect": "C4 C1 7A 11 47 5C",
+   "names": [
+    "site_Ai_Ers_NoCornerMatch"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-18",
+     "by": "brands-hatch",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/ai_ers_guard.cpp"
+   ]
   }
  ]
 }
