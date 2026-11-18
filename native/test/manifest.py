@@ -281,8 +281,9 @@ TRACKS = [
 
 SNAPSHOTS_FLAGS = ['-Isrc', '-std=c++23', '-O2', '-Wall', '-Wextra', '-Wno-nullability-completeness', SDK, '-Ithird_party/zstd']
 SNAPSHOTS = [Program('snapshots_test', [
-    Objects(['test/snapshots/snapshots_test.cpp', 'src/core/career/snapshots/snapshots.cpp', 'src/core/registry/store.cpp',
-             'src/core/registry/validate.cpp', 'src/core/registry/schema.cpp'], SNAPSHOTS_FLAGS), ZSTD])]
+    Objects(['test/snapshots/snapshots_test.cpp', 'src/core/career/snapshots/snapshots.cpp',
+             'src/core/career/snapshots/freeze.cpp', 'src/core/registry/store.cpp', 'src/core/registry/validate.cpp',
+             'src/core/registry/schema.cpp'], SNAPSHOTS_FLAGS), ZSTD])]
 
 CAR_LIVE = [Program(t, [Objects([f'test/hooks/{t}.cpp'], ['-Isrc', '-std=c++23', '-O1', '-Wall', '-Wextra', '-Werror',
                                                           '-Wno-nullability-completeness', SDK])])

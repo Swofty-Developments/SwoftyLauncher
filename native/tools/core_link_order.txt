@@ -156,6 +156,7 @@ src/core/registry/table.cpp
 src/core/registry/validate.cpp
 src/core/registry/core.cpp
 src/core/career/snapshots/snapshots.cpp
+src/core/career/snapshots/freeze.cpp
 src/core/career/snapshots/runtime.cpp
 src/core/guards/tracks/track_acclim.cpp
 src/core/guards/frontend/gp_continue_guard.cpp
