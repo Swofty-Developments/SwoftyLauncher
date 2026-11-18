@@ -635,9 +635,9 @@ fn the_engine_resets_and_reports_on() {
 #[test]
 fn rules_round_trip_through_json_with_the_contract_shape() {
     let text = r#"{"name":"kerb tracking","priority":0,"order":0,"event":false,
-      "when":[{"signal":"car.surface","op":"is","values":[1],"wheels":2},{"signal":"car.speed","op":"above","value":150}],
-      "ramp":null,"min_ms":40,"hold_ms":120,"for_ms":0,"fade_in_ms":60,"fade_out_ms":350,
-      "set":[{"instance":0,"slot":3,"mode":"blend","values":[0.12]},{"instance":0,"slot":7,"mode":"switch","values":[1]},{"instance":1,"enabled":false}]}"#;
+          "when":[{"signal":"car.surface","op":"is","values":[1],"wheels":2},{"signal":"car.speed","op":"above","value":150}],
+          "ramp":null,"min_ms":40,"hold_ms":120,"for_ms":0,"fade_in_ms":60,"fade_out_ms":350,
+          "set":[{"instance":0,"slot":3,"mode":"blend","values":[0.12]},{"instance":0,"slot":7,"mode":"switch","values":[1]},{"instance":1,"enabled":false}]}"#;
     let r: Rule = serde_json::from_str(text).unwrap();
     assert_eq!(r.when[0].wheels, Some(2));
     assert_eq!(r.set[2].enabled, Some(false));
