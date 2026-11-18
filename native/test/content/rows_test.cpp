@@ -533,12 +533,144 @@ void variant_tests(const std::string &regs)
           "keys of owners outside the load order are charged before any addon");
 }
 
+static void selector_index_tests()
+{
+    rows::Keys keys;
+    keys.parse("@t.rows.row_N\n_metadata_\nstat_id\nspeed\n+part\n_part_instancecount_\n"
+               "@t.rows.row_N.part_N\n_metadata_\nweight\n");
+    Db db;
+    db.put("t.rows._row_instancecount_", 0, "4");
+    for (int i = 0; i < 3; i++) {
+        std::string r = "t.rows.row_" + std::to_string(i);
+        db.put(r + "._metadata_", 4, std::string(1, char('a' + i)));
+        db.put(r + ".stat_id", 0, std::to_string(40 + i));
+        db.put(r + ".speed", 1, std::to_string(i % 2));
+        db.put(r + "._part_instancecount_", 0, "1");
+        db.put(r + ".part_0._metadata_", 4, "p");
+        db.put(r + ".part_0.weight", 0, std::to_string(i));
+    }
+    db.put("t.rows.row_3.speed", 1, "7");
+    rows::Engine scan(db.base(), keys), indexed(db.base(), keys);
+    indexed.index_selectors(true);
+    auto same = [&](const std::string &path) {
+        std::string why_scan, why_indexed;
+        auto a = scan.resolve(path, &why_scan), b = indexed.resolve(path, &why_indexed);
+        return a == b && why_scan == why_indexed;
+    };
+
+    check(indexed.resolve("t.rows.row[_metadata_=b]") == std::optional<std::string>("t.rows.row_1"),
+          "an indexed selector finds the row the scan finds");
+    std::string why;
+    check(!indexed.resolve("t.rows.row[speed=0]", &why) && why.find("2 rows match") != std::string::npos,
+          "and refuses a value two rows hold, as the scan does");
+    indexed.attribute("mod.a", "vehicle");
+    scan.attribute("mod.a", "vehicle");
+    const char *dup = R"({"op":"add-row","table":"t.rows","from":"t.rows.row[_metadata_=a]","set":{"_metadata_":"b"}})";
+    check(indexed.apply(op(dup)).empty() && scan.apply(op(dup)).empty(), "a row added with a label another row holds");
+    check(!indexed.resolve("t.rows.row[_metadata_=b]", &why) && why.find("2 rows match") != std::string::npos,
+          "makes the indexed selector refuse it: the write under the table drops the kept values");
+    std::size_t mark_i = indexed.mark(), mark_s = scan.mark();
+    const char *rename = R"({"op":"set","select":"t.rows.row[_metadata_=c]","field":"speed","value":"9"})";
+    check(indexed.apply(op(rename)).empty() && scan.apply(op(rename)).empty() &&
+              indexed.resolve("t.rows.row[speed=9]") == std::optional<std::string>("t.rows.row_2"),
+          "a set field is found by its new value");
+    indexed.rollback(mark_i);
+    scan.rollback(mark_s);
+    check(!indexed.resolve("t.rows.row[speed=9]") && same("t.rows.row[speed=9]") && same("t.rows.row[speed=0]"),
+          "and a rollback takes it back");
+    check(same("t.rows.row[_metadata_=a].part[weight=0]") && same("t.rows.row_1.part[weight=1]"),
+          "nested tables are answered the same");
+    check(!indexed.resolve("t.rows.row[speed=7]") && same("t.rows.row[speed=7]"), "a row with no _metadata_ is not matched");
+    const char *label = R"({"op":"set","select":"t.rows.row_3","field":"_metadata_","value":"d","create":true,"type":4})";
+    check(indexed.apply(op(label)).empty() && scan.apply(op(label)).empty() &&
+              indexed.resolve("t.rows.row[speed=7]") == std::optional<std::string>("t.rows.row_3") && same("t.rows.row[speed=7]"),
+          "and is matched by its other fields once it gets one");
+    std::string count = indexed.text("t.rows._row_instancecount_").value_or("");
+    const char *shrink = R"({"op":"set","select":"t.rows","field":"_row_instancecount_","value":"3"})";
+    std::string why_shrink = indexed.apply(op(shrink));
+    check(why_shrink.empty() && scan.apply(op(shrink)).empty() && !indexed.resolve("t.rows.row[speed=7]") &&
+              same("t.rows.row[speed=7]"),
+          "a row past a lowered instance count is not matched " + why_shrink);
+    std::string grow = R"({"op":"set","select":"t.rows","field":"_row_instancecount_","value":")" + count + R"("})";
+    check(indexed.apply(op(grow.c_str())).empty() && scan.apply(op(grow.c_str())).empty() &&
+              indexed.resolve("t.rows.row[speed=7]") == std::optional<std::string>("t.rows.row_3"),
+          "and is matched again once the count takes it back in");
+
+    uint64_t seed = 11;
+    auto next = [&seed] {
+        seed = seed * 6364136223846793005ull + 1442695040888963407ull;
+        return seed >> 33;
+    };
+    bool agree = true;
+    int ops = 0, failed = 0, rollbacks = 0;
+    std::vector<std::pair<std::size_t, std::size_t>> marks;
+    std::vector<std::string> labels = {"a", "b", "c"};
+    auto pick = [&] { return labels[next() % labels.size()]; };
+    for (int step = 0; step < 600 && agree; step++) {
+        std::string label = pick(), fresh = next() % 8 ? "n" + std::to_string(step) : pick();
+        std::string value = std::to_string(next() % 4), o;
+        switch (next() % 7) {
+        case 0:
+        case 1:
+        case 2:
+            o = R"({"op":"add-row","table":"t.rows","from":"t.rows.row[_metadata_=)" + label + R"(]","set":{"_metadata_":")" +
+                fresh + R"(","speed":")" + value + R"("}})";
+            break;
+        case 3:
+            o = R"({"op":"set","select":"t.rows.row[_metadata_=)" + label + R"(]","field":")" + (next() % 2 ? "speed" : "_metadata_") +
+                R"(","value":")" + (next() % 2 ? value : fresh) + R"("})";
+            break;
+        case 4:
+            o = R"({"op":"add-row","table":"t.rows.row[_metadata_=)" + label + R"(]","from":"t.rows.row[_metadata_=)" + label +
+                R"(].part[_metadata_=p]","set":{"_metadata_":")" + (next() % 3 ? "q" + std::to_string(step) : std::string("p")) +
+                R"(","weight":")" + value + R"("}})";
+            break;
+        case 5:
+            marks.push_back({indexed.mark(), scan.mark()});
+            break;
+        default:
+            if (!marks.empty() && next() % 2) {
+                indexed.rollback(marks.back().first);
+                scan.rollback(marks.back().second);
+                marks.pop_back();
+                rollbacks++;
+            } else {
+                indexed.commit();
+                scan.commit();
+                marks.clear();
+            }
+        }
+        if (!o.empty()) {
+            std::string a = indexed.apply(op(o.c_str())), b = scan.apply(op(o.c_str()));
+            agree = agree && a == b;
+            ops++;
+            failed += !a.empty();
+            if (a.empty() && o.find(fresh) != std::string::npos)
+                labels.push_back(fresh);
+        }
+        for (int l = 0; l < 8 && agree; l++) {
+            std::string x = pick();
+            agree = same("t.rows.row[_metadata_=" + x + "]") && same("t.rows.row[speed=" + std::to_string(l % 4) + "]") &&
+                    same("t.rows.row[_metadata_=" + x + "].part[_metadata_=p]") &&
+                    same("t.rows.row[_metadata_=" + x + "].part[weight=" + std::to_string(l % 4) + "]");
+        }
+    }
+    agree = agree && indexed.writes().size() == scan.writes().size();
+    for (std::size_t i = 0; agree && i < scan.writes().size(); i++)
+        agree = indexed.writes()[i].path == scan.writes()[i].path && indexed.writes()[i].text == scan.writes()[i].text;
+    std::printf("selector index: %d operations (%d refused), %d rollbacks, %zu writes\n", ops, failed, rollbacks,
+                scan.writes().size());
+    check(agree && ops > 300 && failed > 20 && ops - failed > 150 && rollbacks > 10,
+          "a long run of added rows, set fields and rollbacks resolves and writes the same with the selector index");
+}
+
 int main(int argc, char **argv)
 {
     box_time_trial_tests();
     seat_entrant_tests();
     slot_tests();
     engine_tests();
+    selector_index_tests();
     room_hole_tests();
     livery_tests();
     garage_tests();

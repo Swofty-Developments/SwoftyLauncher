@@ -328,7 +328,7 @@ SCRIPTS = [
            ['bash', 'native/test/run_snapshots_test.sh', '{out}'], programs=SNAPSHOTS),
     Script('net_trace', 'Socket trace Wine test', ['bash', 'native/test/run_net_trace_test.sh'], wine=True),
     Script('career_ui', 'Career UI Wine test', ['bash', 'native/test/run_career_ui_test.sh'], wine=True),
-    Script('fast_fail', 'Fast-fail crash reports (fast-fail codes, reasons, exit statuses, byte patterns)', ['{out}/fast_fail_test'],
+    Script('fast_fail', 'Fast-fail crash reports (fast-fail codes, reasons, exit statuses, byte patterns, cached prologue addresses)', ['{out}/fast_fail_test'],
            cwd='test', programs=FAST_FAIL),
     Script('log_fallback', 'Loader log fallback Wine test', ['bash', 'native/test/run_log_fallback_test.sh'], wine=True),
     Script('lang_override', 'String override Wine test', ['bash', 'native/test/run_lang_override_test.sh'], wine=True),
