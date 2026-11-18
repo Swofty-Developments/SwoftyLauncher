@@ -1,7 +1,9 @@
 use super::*;
 
+use super::encoders::{ENCODERS, encode};
 use super::file::{retrying, transient};
-use super::packer::{ENCODERS, PACKED_MIN, compress_cached, encode};
+use super::frame_cache::compress_cached;
+use super::packer::PACKED_MIN;
 use crate::Error;
 
 #[test]
