@@ -68,6 +68,7 @@ t "Live state memory reads, derivations and telemetry fill" native/test/run_live
 t "ERS new-lap site unit test" native/test/run_ers_newlap_test.sh
 t "Round track record guard unit test" native/test/run_track_record_test.sh
 t "Team HQ track guard unit test" native/test/run_teamhq_track_test.sh
+t "Career calendar track guard unit test" native/test/run_calendar_track_test.sh
 t "Activity resume guard unit test" native/test/run_activity_resume_test.sh
 t "Events sequencer record guard unit test" native/test/run_sequencer_records_test.sh
 t "Race retirement driver guard unit test" native/test/run_race_retirement_test.sh
