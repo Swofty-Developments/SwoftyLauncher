@@ -33,7 +33,7 @@ fn put_targets_take_the_games_spelling_and_the_ers_pass_builds_on_the_addons_fil
         Record::new(&format!("{set}.TrackData_0._metadata_"), 2, "melbourne"),
         Record::new(&format!("{set}.TrackData_0.track"), 2, "melbourne"),
     ];
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let el = |name: &str, attrs: &[(&str, &str)], children: Vec<Element>| Element {
         kind: Kind::Element,
         pad: 0,
@@ -290,7 +290,7 @@ fn track_ers_settings_survive_an_addon_that_writes_the_handling_file() {
         Record::new(&format!("{set}.TrackData_0._metadata_"), 2, "melbourne"),
         Record::new(&format!("{set}.TrackData_0.track"), 2, "melbourne"),
     ];
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let el = |name: &str, attrs: &[(&str, &str)], children: Vec<Element>| Element {
         kind: Kind::Element,
         pad: 0,
@@ -470,7 +470,7 @@ fn a_handling_record_changes_the_stock_team_archive_and_an_addons_own() {
     std::fs::create_dir_all(slot.parent().unwrap()).unwrap();
     std::fs::write(&slot, archive(&["eaid://ui_package/slot.uil"], 0)).unwrap();
     let records = vec![Record::new("tracks._Track_instancecount_", 0, "0")];
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let el = |name: &str, attrs: &[(&str, &str)], children: Vec<Element>| Element {
         kind: Kind::Element,
         pad: 0,

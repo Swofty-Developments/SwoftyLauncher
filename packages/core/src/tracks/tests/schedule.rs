@@ -270,7 +270,7 @@ fn a_large_database_s_schedule_is_read_in_one_pass_over_its_records() {
             &format!("rw_{}", i % weekends),
         ));
     }
-    let db = Gvdb { records };
+    let db = Gvdb::new(records);
     let started = std::time::Instant::now();
     let schedule = Schedule::of(&db);
     let took = started.elapsed();

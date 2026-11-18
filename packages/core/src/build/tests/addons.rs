@@ -71,7 +71,7 @@ fn ops_and_options_that_need_an_addon_apply_only_while_the_build_has_it_on() {
                 .map(|f| Record::new(&format!("t.list_0.{f}"), 4, "off")),
         )
         .collect();
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,
@@ -193,7 +193,7 @@ fn an_option_whose_rounds_need_a_track_the_build_lacks_builds_as_off_and_says_so
             .iter()
             .map(|f| Record::new(&format!("t.list_0.{f}"), 4, "off")),
     );
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,
@@ -301,7 +301,7 @@ fn runs_the_build_hooks_of_builtin_addons() {
     let dir = root.join("game");
     std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
     std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
-    std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,
@@ -357,7 +357,7 @@ fn fingerprints_count_what_the_build_made_not_the_rest_of_the_folders() {
         let dir = root.join("game");
         std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
         std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
-        std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+        std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
         let game = Game {
             identity: Identity::detect(&dir, Some(1)).unwrap(),
             dir,
@@ -440,7 +440,7 @@ fn an_enabled_addon_for_a_newer_launcher_is_left_out_with_a_warning() {
     let dir = root.join("game");
     std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
     std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
-    std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,
@@ -493,7 +493,7 @@ fn a_built_addon_installs_and_builds() {
     std::fs::create_dir_all(dir.join("2025_asset_groups")).unwrap();
     std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
     let records = vec![Record::new("rules.laps", 0, "5")];
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let (erp, uri) = ("2025_asset_groups/t.erp", "eaid://t/a.idf");
     std::fs::write(dir.join(erp), archive(&[uri], 0)).unwrap();
     let game = Game {

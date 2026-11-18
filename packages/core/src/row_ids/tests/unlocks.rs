@@ -52,7 +52,7 @@ fn unlock_db() -> Gvdb {
             ));
         }
     }
-    Gvdb { records }
+    Gvdb::new(records)
 }
 
 struct Unlock<'a> {

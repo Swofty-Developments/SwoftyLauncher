@@ -128,7 +128,17 @@ pub struct Gvdb {
     pub records: Vec<Record>,
 }
 
+impl From<Vec<Record>> for Gvdb {
+    fn from(records: Vec<Record>) -> Self {
+        Self::new(records)
+    }
+}
+
 impl Gvdb {
+    pub fn new(records: Vec<Record>) -> Self {
+        Self { records }
+    }
+
     pub fn parse(data: &[u8]) -> Result<Self> {
         let mut r = Reader::new(data, 0);
         let count = r.u32()? as usize;
@@ -159,7 +169,7 @@ impl Gvdb {
                 data.len()
             )));
         }
-        Ok(Self { records })
+        Ok(Self::new(records))
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
@@ -255,14 +265,12 @@ mod tests {
     use super::*;
 
     fn sample() -> Gvdb {
-        Gvdb {
-            records: vec![
-                Record::new("tracks.Track_3.instanceName", 4, "bahrain"),
-                Record::new("tracks.Track_3.numberOfCorners", 0, "15"),
-                Record::new("tracks.Track_3.allow_night_start", 5, "True"),
-                Record::new("tracks._Track_instancecount_", 0, "43"),
-            ],
-        }
+        Gvdb::new(vec![
+            Record::new("tracks.Track_3.instanceName", 4, "bahrain"),
+            Record::new("tracks.Track_3.numberOfCorners", 0, "15"),
+            Record::new("tracks.Track_3.allow_night_start", 5, "True"),
+            Record::new("tracks._Track_instancecount_", 0, "43"),
+        ])
     }
 
     #[test]

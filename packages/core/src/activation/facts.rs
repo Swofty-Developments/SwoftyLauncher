@@ -803,7 +803,7 @@ mod tests {
             2,
             "1,1",
         ));
-        Gvdb { records: r }
+        Gvdb::new(r)
     }
 
     #[test]
