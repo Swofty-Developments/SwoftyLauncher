@@ -393,8 +393,13 @@ void name_tick(int probe)
 
 std::mutex marks_lock;
 std::condition_variable marks_wake;
-lap_marks::Queue marks;
 std::once_flag marks_writer;
+
+lap_marks::Queue &pending_marks()
+{
+    static lap_marks::Queue queue;
+    return queue;
+}
 
 int64_t unix_ms()
 {
@@ -428,11 +433,11 @@ void marks_loop()
         uint64_t lost = 0;
         {
             std::unique_lock<std::mutex> g(marks_lock);
-            marks_wake.wait(g, [] { return !marks.marks.empty(); });
-            m = marks.marks.front();
-            marks.marks.pop_front();
-            lost = marks.dropped - dropped;
-            dropped = marks.dropped;
+            marks_wake.wait(g, [] { return !pending_marks().marks.empty(); });
+            m = pending_marks().marks.front();
+            pending_marks().marks.pop_front();
+            lost = pending_marks().dropped - dropped;
+            dropped = pending_marks().dropped;
         }
         if (lost)
             swofty::log("[lap-host] %llu timing mark(s) dropped: the writer fell behind", (unsigned long long)lost);
@@ -447,7 +452,7 @@ int mark(int32_t lap, int32_t which, int32_t game_ms)
     int64_t at = unix_ms();
     {
         std::lock_guard<std::mutex> g(marks_lock);
-        if (!marks.push(lap, which, game_ms, at))
+        if (!pending_marks().push(lap, which, game_ms, at))
             return 0;
     }
     std::call_once(marks_writer, [] { std::thread(marks_loop).detach(); });
