@@ -231,7 +231,8 @@ void ov_arc(SwoftyPaint *paint, float cx, float cy, float radius, float from, fl
 void ov_polyline(SwoftyPaint *paint, const float *xy, uint32_t count, float thickness, uint32_t rgba, uint32_t flags)
 {
     if (paint)
-        hud::drawlist::polyline(*frame_of(paint), xy, std::min<uint32_t>(count, hud::drawlist::MAX_VERTS / 18), thickness, rgba, flags);
+        hud::drawlist::polyline(*frame_of(paint), xy, std::min<uint32_t>(count, hud::drawlist::MAX_VERTS / 18), thickness, rgba,
+                                flags);
 }
 
 void ov_polygon(SwoftyPaint *paint, const float *xy, uint32_t count, uint32_t rgba)

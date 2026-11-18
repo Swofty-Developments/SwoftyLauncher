@@ -309,7 +309,8 @@ static void test_batches()
     CHECK(f.batches.size() == 2 && f.batches[1].tex == 1, "an image starts a batch on its texture");
     hud::drawlist::push_clip(f, 5, 5, 100, 100);
     hud::drawlist::rect(f, 0, 0, 10, 10, 0xffffffff);
-    CHECK(f.batches.size() == 3 && f.batches[2].clip == (hud::drawlist::Clip{5, 5, 105, 105}), "a clip starts a batch with its rect");
+    CHECK(f.batches.size() == 3 && f.batches[2].clip == (hud::drawlist::Clip{5, 5, 105, 105}),
+          "a clip starts a batch with its rect");
     hud::drawlist::push_clip(f, 50, 50, 200, 200);
     CHECK(f.clip == (hud::drawlist::Clip{50, 50, 105, 105}), "nested clips intersect");
     hud::drawlist::pop_clip(f);
@@ -393,7 +394,8 @@ static void test_cap()
     hud::drawlist::Frame f = frame();
     for (uint32_t i = 0; i < hud::drawlist::MAX_VERTS / 6 + 10; i++)
         hud::drawlist::rect(f, 0, 0, 1, 1, 0xffffffff);
-    CHECK(f.verts.size() <= hud::drawlist::MAX_VERTS && f.dropped == 10, "primitives past the vertex cap are dropped and counted");
+    CHECK(f.verts.size() <= hud::drawlist::MAX_VERTS && f.dropped == 10,
+          "primitives past the vertex cap are dropped and counted");
 }
 
 
@@ -1106,7 +1108,8 @@ static void test_fg_gate()
     using hud::arm_policy::Gate;
     CHECK(hud::arm_policy::gate_for(false, false, true) == Gate::Direct, "no frame generation module draws at Present");
     CHECK(hud::arm_policy::gate_for(false, true, true) == Gate::Direct, "streamline with frame generation off draws at Present");
-    CHECK(hud::arm_policy::gate_for(false, true, false) == Gate::FrameGenStreamline, "streamline with frame generation on is gated");
+    CHECK(hud::arm_policy::gate_for(false, true, false) == Gate::FrameGenStreamline,
+          "streamline with frame generation on is gated");
     CHECK(hud::arm_policy::gate_for(true, false, true) == Gate::FrameGenNamed, "a named frame generation module is gated");
     CHECK(hud::arm_policy::gate_for(true, true, true) == Gate::FrameGenNamed, "a named module wins over streamline");
     // FidelityFX's loader creates the swapchain for upscaling too: it gates like Streamline, not like a named module
@@ -1146,7 +1149,8 @@ static void test_fg_gate()
     CHECK(hud::arm_policy::draws_before_present(Gate::FrameGenNamed, true) &&
               hud::arm_policy::draws_before_present(Gate::FrameGenStreamline, true),
           "gated swapchains draw before Present when the device hooks armed");
-    CHECK(!hud::arm_policy::draws_before_present(Gate::FrameGenNamed, false) && !hud::arm_policy::draws_before_present(Gate::Direct, true),
+    CHECK(!hud::arm_policy::draws_before_present(Gate::FrameGenNamed, false) &&
+              !hud::arm_policy::draws_before_present(Gate::Direct, true),
           "no device hooks or no gate means no exec-time draw");
     for (int g = 0; g < 3; g++) {
         auto gate = Gate(g);

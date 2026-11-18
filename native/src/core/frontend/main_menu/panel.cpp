@@ -118,7 +118,8 @@ void key_glyph(hud::drawlist::Frame &f, float x, float y, float h, float k, cons
     hud::drawlist::text(f, x + (bw - w) * 0.5f, y + (h - st.px) * 0.5f, st, key);
 }
 
-void image_rounded(hud::drawlist::Frame &f, int slot, float x, float y, float w, float h, float r, float u0, float v0, float u1, float v1)
+void image_rounded(hud::drawlist::Frame &f, int slot, float x, float y, float w, float h, float r, float u0, float v0, float u1,
+                   float v1)
 {
     if (slot < 0 || w <= 0 || h <= 0 || hud::drawlist::clipped_out(f))
         return;
@@ -144,7 +145,8 @@ void image_rounded(hud::drawlist::Frame &f, int slot, float x, float y, float w,
     }
 }
 
-std::vector<std::string> wrap_title(const hud::drawlist::TextStyle &style, const std::string &title, float max_w, size_t max_lines)
+std::vector<std::string> wrap_title(const hud::drawlist::TextStyle &style, const std::string &title, float max_w,
+                                    size_t max_lines)
 {
     std::vector<std::string> lines;
     std::string line;
@@ -449,8 +451,10 @@ void Panel::paint(hud::drawlist::Frame &f, uint64_t now)
             hud::drawlist::text(f, ax + (avatar - lw) * 0.5f, ay + (avatar - initial.px) * 0.5f, initial, letter);
         } else {
             hud::drawlist::rect_rounded(f, ax, ay, avatar, avatar, avatar * 0.5f, 0x3a3f4bffu);
-            hud::drawlist::rect_rounded(f, ax + avatar * 0.34f, ay + avatar * 0.18f, avatar * 0.32f, avatar * 0.32f, avatar * 0.16f, 0xb9bfcdffu);
-            hud::drawlist::rect_rounded(f, ax + avatar * 0.2f, ay + avatar * 0.56f, avatar * 0.6f, avatar * 0.26f, avatar * 0.13f, 0xb9bfcdffu);
+            hud::drawlist::rect_rounded(f, ax + avatar * 0.34f, ay + avatar * 0.18f, avatar * 0.32f, avatar * 0.32f,
+                                        avatar * 0.16f, 0xb9bfcdffu);
+            hud::drawlist::rect_rounded(f, ax + avatar * 0.2f, ay + avatar * 0.56f, avatar * 0.6f, avatar * 0.26f, avatar * 0.13f,
+                                        0xb9bfcdffu);
         }
         float bx = ax + avatar + gap, by = py + (ph - block_h) * 0.5f;
         hud::drawlist::rect_rounded(f, bx, by, 3 * k, block_h, 1.5f * k, 0xe10600ffu);

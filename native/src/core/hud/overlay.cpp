@@ -108,7 +108,8 @@ void Overlay::draw_target(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const Rend
     }
 }
 
-hud::drawlist::Frame &Overlay::build_frame(const std::vector<hud::drawlist::Paintsub> &subs, UINT width, UINT height, ULONGLONG now)
+hud::drawlist::Frame &Overlay::build_frame(const std::vector<hud::drawlist::Paintsub> &subs, UINT width, UINT height,
+                                           ULONGLONG now)
 {
     static const uint32_t paint_probe = perf::probe("core", "overlay paint callbacks");
     // Not a member: the frame's text cache (std::unordered_map) has no constexpr constructor and the overlay is constinit.
@@ -237,8 +238,8 @@ void Overlay::draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known
         before_fg.set_active(true);
         bool addons = !subs.empty() && !settings().killed("paint");
         if (addons || cover || menu || barred) {
-            hud::drawlist::Frame &frame = build_frame(addons ? subs : std::vector<hud::drawlist::Paintsub>(), desc.BufferDesc.Width,
-                                            desc.BufferDesc.Height, now);
+            hud::drawlist::Frame &frame = build_frame(addons ? subs : std::vector<hud::drawlist::Paintsub>(),
+                                                      desc.BufferDesc.Width, desc.BufferDesc.Height, now);
             before_fg.keep(sc, frame, desc, color_space, now);
         } else {
             before_fg.drop();

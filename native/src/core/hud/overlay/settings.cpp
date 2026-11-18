@@ -167,7 +167,9 @@ int HdrWatch::mode(ULONGLONG now)
 
 UINT OutputMode::pick(IDXGISwapChain3 *sc, DXGI_FORMAT fmt, UINT color_space)
 {
-    int game = color_space == hud::arm_policy::COLOR_SPACE_UNSET && fmt == DXGI_FORMAT_R10G10B10A2_UNORM ? hdr.mode(GetTickCount64()) : -1;
+    int game = color_space == hud::arm_policy::COLOR_SPACE_UNSET && fmt == DXGI_FORMAT_R10G10B10A2_UNORM
+                   ? hdr.mode(GetTickCount64())
+                   : -1;
     auto out = hud::arm_policy::output_for(int(fmt), color_space, game);
     if (told_sc != sc || told_out != out) {
         told_sc = sc;

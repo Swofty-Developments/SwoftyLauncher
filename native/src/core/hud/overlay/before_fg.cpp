@@ -45,8 +45,8 @@ void BeforeFrameGen::drop()
     pending_ready.store(false);
 }
 
-void BeforeFrameGen::keep(IDXGISwapChain3 *sc, const hud::drawlist::Frame &frame, const DXGI_SWAP_CHAIN_DESC &desc, UINT color_space,
-                          ULONGLONG now)
+void BeforeFrameGen::keep(IDXGISwapChain3 *sc, const hud::drawlist::Frame &frame, const DXGI_SWAP_CHAIN_DESC &desc,
+                          UINT color_space, ULONGLONG now)
 {
     std::lock_guard<std::mutex> g(lock);
     if (frame.verts.empty()) {
@@ -157,7 +157,7 @@ bool BeforeFrameGen::on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D
         const D3D12_RESOURCE_BARRIER &b = barriers[i];
         if (b.Type != D3D12_RESOURCE_BARRIER_TYPE_TRANSITION ||
             !hud::arm_policy::presents_back_buffer(unsigned(b.Transition.StateBefore), unsigned(b.Transition.StateAfter),
-                                              unsigned(b.Flags)))
+                                                   unsigned(b.Flags)))
             continue;
         std::lock_guard<std::mutex> g(lock);
         if (std::find(back_buffers.begin(), back_buffers.end(), b.Transition.pResource) == back_buffers.end())
