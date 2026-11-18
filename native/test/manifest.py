@@ -74,6 +74,7 @@ UNITS = [
     Unit('direct_start_tt', 'Direct start Time Trial unit test'),
     Unit('dred', 'GPU device removal report unit test'),
     Unit('ers_newlap', 'ERS new-lap site unit test'),
+    Unit('ers_mode', 'ERS mode guard offset unit test'),
     Unit('estimate_laptime', 'Estimate lap time guard unit test'),
     Unit('fe_tile_guard', 'Front-end tile list guard unit test'),
     Unit('game_message_log', 'Stock game message log unit test'),
