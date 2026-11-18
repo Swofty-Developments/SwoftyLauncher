@@ -12,6 +12,7 @@ use crate::{Error, Result};
 
 pub(crate) struct Db<'a> {
     pub(crate) gvdb: &'a mut Gvdb,
+    // First match, as Gvdb's own index; kept apart so removes can wait for `finish`.
     pub(crate) index: HashMap<u64, usize>,
     pub(crate) removed: Vec<usize>,
     pub(crate) added_rows: HashSet<String>,

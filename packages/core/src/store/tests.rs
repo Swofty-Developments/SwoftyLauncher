@@ -1624,3 +1624,39 @@ fn a_data_folder_linked_to_a_missing_folder_is_never_started_over() {
     assert!(!target.exists());
     std::fs::remove_dir_all(&dir).ok();
 }
+
+struct MigrationFails(AddonManifest);
+
+impl swofty_addon::launcher::Addon for MigrationFails {
+    fn manifest(&self) -> &AddonManifest {
+        &self.0
+    }
+
+    fn migrate(&self, _: &Path, version: u32) -> swofty_addon::Result<Vec<String>> {
+        Err(swofty_addon::Error::Other(format!(
+            "cannot leave data version {version}"
+        )))
+    }
+}
+
+#[test]
+fn a_built_in_addon_whose_migration_fails_stops_the_migration_before_the_backfill() {
+    let (root, store) = v3_store("builtin-fails", &["a.one"]);
+    let manifest = AddonManifest::parse(
+        r#"{"schema_version":1,"id":"b.fails","name":"Fails","version":"1.0.0","author":"t","compat":{"game":"f1_25"}}"#,
+    )
+    .unwrap();
+    let store = store.with_builtins(vec![Builtin {
+        addon: Arc::new(MigrationFails(manifest)),
+        locked: false,
+        default_on: true,
+    }]);
+    store.save_profile(&Profile::new("grid")).unwrap();
+    let profile = store.profiles_dir().join("grid.json");
+    let before = std::fs::read(&profile).unwrap();
+    let err = store.migrate().unwrap_err().to_string();
+    assert_eq!(err, "migrating b.fails: cannot leave data version 3");
+    assert_eq!(store.config().data_version, 3);
+    assert_eq!(std::fs::read(&profile).unwrap(), before);
+    std::fs::remove_dir_all(&root).ok();
+}

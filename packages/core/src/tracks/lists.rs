@@ -1,9 +1,8 @@
-use std::collections::{BTreeSet, HashMap};
+use std::collections::BTreeSet;
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 use swofty_formats::gvdb::Gvdb;
-use swofty_formats::hash::fnv1a64;
 
 use crate::Result;
 use crate::content::track_package::{TrackPackage, Unusable};
@@ -29,11 +28,7 @@ pub struct ListedTracks {
 
 impl ListedTracks {
     pub fn of(db: &Gvdb) -> Self {
-        let at: HashMap<u64, usize> = db.records.iter().enumerate().map(|(i, r)| (r.key, i)).collect();
-        let text = |path: &str| {
-            at.get(&fnv1a64(path))
-                .map(|&i| db.records[i].text().trim().to_owned())
-        };
+        let text = |path: &str| db.get(path).map(|r| r.text().trim().to_owned());
         let count = |table: &str| {
             let (container, row) = table.rsplit_once('.').expect("a table path");
             text(&swofty_formats::gvdb::instance_count_path(container, row))

@@ -12,7 +12,7 @@ use swofty_core::platform::process::GameProcess;
 use swofty_core::session::SessionRecord;
 
 use super::host::Host;
-use super::launch_alerts::{show_launch_failed, show_mods_blocked};
+use super::launch_alerts::{show_integrity_missing, show_launch_failed, show_mods_blocked};
 use super::{Page, Shell};
 use swofty_i18n::{tr, trf};
 
@@ -219,6 +219,14 @@ impl Shell {
             self.seen.launch_failed = f.at;
             self.launching.notice = Some(f.headline().to_owned());
             show_launch_failed(f, window, cx);
+        }
+        if let Some(n) = probe
+            .integrity_missing
+            .as_ref()
+            .filter(|n| n.at > self.seen.integrity_missing)
+        {
+            self.seen.integrity_missing = n.at;
+            show_integrity_missing(n, window, cx);
         }
     }
 

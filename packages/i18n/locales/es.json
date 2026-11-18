@@ -1333,5 +1333,11 @@
   "Too many tracks": "Demasiados circuitos",
   "Left out: the game holds {room} tracks": "Excluido: el juego admite {room} circuitos",
   "{shown} and {more} more": "{shown} y {more} más",
-  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["El juego admite {room} circuitos, así que {count} circuito queda fuera de esta compilación: {list}. Desactiva algunos complementos de circuitos para jugarlo.", "El juego admite {room} circuitos, así que {count} circuitos quedan fuera de esta compilación: {list}. Desactiva algunos complementos de circuitos para jugarlos."]
+  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["El juego admite {room} circuitos, así que {count} circuito queda fuera de esta compilación: {list}. Desactiva algunos complementos de circuitos para jugarlo.", "El juego admite {room} circuitos, así que {count} circuitos quedan fuera de esta compilación: {list}. Desactiva algunos complementos de circuitos para jugarlos."],
+  "The launcher couldn't reach Swofty's server in time.": "El launcher no pudo conectar a tiempo con el servidor de Swofty.",
+  "Swofty's server didn't offer it to you.": "El servidor de Swofty no te lo ofreció.",
+  "The download failed its safety check.": "La descarga no superó la comprobación de seguridad.",
+  "Time Trial laps you drive this session won't be sealed, so they won't rank on the boards. Everything else works as usual. To try again, close the game and press Play.": "Las vueltas de Contrarreloj que hagas en esta sesión no se sellarán, así que no puntuarán en las clasificaciones. Todo lo demás funciona como siempre. Para volver a intentarlo, cierra el juego y pulsa Jugar.",
+  "Details: {why}": "Detalles: {why}",
+  "The Time Trial integrity module didn't load": "El módulo de integridad de Contrarreloj no se cargó"
 }

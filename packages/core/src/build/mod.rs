@@ -7,6 +7,7 @@ pub(crate) mod digests;
 mod failure;
 mod files;
 mod finish;
+mod hooks;
 mod inputs;
 mod loader;
 mod lock;
@@ -23,6 +24,7 @@ mod tracks;
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
+use self::hooks::Hooks;
 use self::inputs::Inputs;
 use self::originals::check_originals;
 use self::run::Run;
@@ -160,14 +162,26 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         built.plan = Plan::vanilla();
         return Ok(built);
     }
+    let _lock = lock(store, profile)?;
+    let mut hooks = match setup::loader_features() {
+        Ok(features) => Hooks::start(run, &registry, &features),
+        Err(_) => Hooks::default(),
+    };
     built.warnings.extend(start::career_warnings(run, &shipped));
     drop(shipped);
     built.report = start::report(run);
     check_originals(&store.root, game)?;
-    let _lock = lock(store, profile)?;
     crate::now_doing("reading the addons");
     let setup = Setup::read(run, &mut built)?;
-    let (mut pipeline, inputs) = Inputs::read(run, &setup, &registry, &mut std16, lent.is_some(), built)?;
+    let (mut pipeline, inputs) = Inputs::read(
+        run,
+        &setup,
+        &registry,
+        &mut hooks,
+        &mut std16,
+        lent.is_some(),
+        built,
+    )?;
     if let Some(saved) =
         Saved::load(&pipeline.built.overlay, &pipeline.built.buildhash).filter(|s| s.usable(store, game))
     {

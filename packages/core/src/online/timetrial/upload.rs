@@ -11,7 +11,8 @@ use serde_json::Value;
 
 use super::bridge::Pump;
 use super::game_replay;
-use super::queue::{Event, Folder, Limits, Queue, Report, unix_now};
+use super::queue::{Event, Folder, Limits, Queue, Report, Stamp, unix_now};
+use super::ticks;
 use super::toast;
 use super::{laps_dirs, token, write_session_keys};
 use crate::online::server::api::{Api, Boards, Nonce};
@@ -22,6 +23,8 @@ const FINAL_SWEEP: Duration = Duration::from_secs(6);
 /// How long a new lap waits for the replay the core saves of a personal best, so the two upload together.
 const REPLAY_WAIT: Duration = Duration::from_secs(10);
 const HOLD_POLL: Duration = Duration::from_millis(300);
+/// How long a new lap waits for the timing marks still being sent, so it uploads with its finish receipt.
+const MARKS_WAIT: Duration = Duration::from_secs(5);
 const NONCE_RETRIES: [Duration; 3] = [
     Duration::from_secs(2),
     Duration::from_secs(5),
@@ -66,11 +69,12 @@ fn toast(data: &Path, queue: &Queue, event: &Event, say: &dyn Fn(&str)) {
     }
 }
 
-/// Ask for a nonce for the game session about to start. A failure is not fatal here: the watcher keeps
-/// asking while the game runs, and the core picks the nonce up for the laps written after it arrives.
-pub fn nonce(data: &Path, config: &Config) -> Result<Nonce, String> {
+/// Ask for a nonce for the game session about to start, for the game build `game_build` (the exe's sha256)
+/// when it is known. A failure is not fatal here: the watcher keeps asking while the game runs, and the core
+/// picks the nonce up for the laps written after it arrives.
+pub fn nonce(data: &Path, config: &Config, game_build: Option<&str>) -> Result<Nonce, String> {
     let token = token(data, config).ok_or_else(|| "nobody is signed in".to_owned())?;
-    Api::new(&token).sessions().map_err(|e| e.to_string())
+    Api::new(&token).sessions(game_build).map_err(|e| e.to_string())
 }
 
 /// How long the watcher waits before asking for the nonce again: three quick tries over about 15 s,
@@ -85,6 +89,7 @@ fn nonce_until_issued(
     data: &Path,
     game: &Path,
     config: &Config,
+    game_build: Option<&str>,
     stop: &dyn Fn() -> bool,
     say: &dyn Fn(&str),
 ) {
@@ -99,9 +104,9 @@ fn nonce_until_issued(
         if stop() || token(data, config).is_none() {
             return;
         }
-        match nonce(data, config) {
+        match nonce(data, config, game_build) {
             Ok(n) => {
-                match write_session_keys(game, Some(&n.nonce), config.time_trial_ingame) {
+                match write_session_keys(game, Some(&n), config.time_trial_ingame) {
                     Ok(()) => say(&format!(
                         "session nonce issued on retry {}: the laps written from here carry it",
                         attempt + 1
@@ -126,14 +131,14 @@ pub fn sweep(
     data: &Path,
     game: Option<&Path>,
     api: Option<&dyn Boards>,
-    fingerprint: Option<&Value>,
+    stamp: Option<&Stamp>,
     deadline: Option<Instant>,
     on: &mut dyn FnMut(Event),
 ) -> Report {
     let queue = Queue::new(data);
     if let Some(game) = game {
         for laps in laps_dirs(data, game) {
-            queue.collect(&laps, fingerprint).ok();
+            queue.collect(&laps, stamp).ok();
         }
     }
     let now = unix_now();
@@ -141,7 +146,7 @@ pub fn sweep(
     match api {
         Some(api) => queue.drain(
             api,
-            fingerprint.unwrap_or(&Value::Null),
+            stamp.map_or(&Value::Null, |s| &s.fingerprint),
             Limits {
                 now,
                 deadline,
@@ -202,23 +207,30 @@ pub struct Watcher {
     stop: Arc<AtomicBool>,
     thread: Option<JoinHandle<()>>,
     pump: Option<Pump>,
+    ticks: Option<ticks::Pump>,
     data: PathBuf,
     game: PathBuf,
     config: Config,
     fingerprint: Arc<dyn Fn() -> Option<Value> + Send + Sync>,
+    integrity: Value,
     say: Arc<dyn Fn(&str) + Send + Sync>,
 }
 
 impl Watcher {
-    /// With In-game leaderboards on and a sign-in, the bridge's mailbox pump runs beside it.
+    /// With In-game leaderboards on and a sign-in, the bridge's mailbox pump runs beside it, and with a sign-in
+    /// the timing marks of the session's laps go to the server as they are made.
     /// With Time Trial boards off or nobody signed in, the laps are still collected into the outbox and
     /// nothing leaves the machine. With `retry_nonce` the session nonce the start could not get is asked
-    /// for again on a thread of its own.
+    /// for again on a thread of its own, for `game_build`. Each lap is kept with `integrity`, what the session did about the
+    /// integrity module, for its upload meta.
+    #[allow(clippy::too_many_arguments)]
     pub fn start(
         data: &Path,
         game: &Path,
         config: &Config,
         retry_nonce: bool,
+        game_build: Option<String>,
+        integrity: Value,
         fingerprint: impl Fn() -> Option<Value> + Send + Sync + 'static,
         say: impl Fn(&str) + Send + Sync + 'static,
     ) -> Self {
@@ -236,27 +248,36 @@ impl Watcher {
                         say(l)
                     })
                 }),
+            ticks: token(data, config).map(|t| {
+                let say = say.clone();
+                ticks::Pump::start(data, game, Api::new(&t), move |l| say(l))
+            }),
             data: data.to_owned(),
             game: game.to_owned(),
             config: config.clone(),
             fingerprint: Arc::new(fingerprint),
+            integrity,
             say,
         };
         let (stop, data, game, config) = (w.stop.clone(), w.data.clone(), w.game.clone(), w.config.clone());
-        let (fingerprint, say) = (w.fingerprint.clone(), w.say.clone());
+        let (fingerprint, integrity, say) = (w.fingerprint.clone(), w.integrity.clone(), w.say.clone());
         w.thread = std::thread::Builder::new()
             .name("tt-laps".into())
             .spawn(move || {
                 let mut cached: Option<Option<Value>> = None;
                 while !stop.load(Ordering::Relaxed) {
                     let laps = has_laps(&data, &game);
-                    if laps && waiting_for_replay(&data, &game) {
+                    if laps && (waiting_for_replay(&data, &game) || waiting_for_marks(&data, &game)) {
                         std::thread::sleep(HOLD_POLL);
                         continue;
                     }
                     if laps || has_outbox(&data) {
                         let print = cached.get_or_insert_with(|| fingerprint()).clone();
-                        pass(&data, &game, &config, print.as_ref(), None, &*say);
+                        let stamp = Stamp {
+                            fingerprint: print.unwrap_or(Value::Null),
+                            integrity: integrity.clone(),
+                        };
+                        pass(&data, &game, &config, Some(&stamp), None, &*say);
                         if laps {
                             replays(&data, &game, &config, &|| stop.load(Ordering::Relaxed), &*say);
                         }
@@ -276,7 +297,7 @@ impl Watcher {
                 .name("tt-nonce".into())
                 .spawn(move || {
                     let stopped = || stop.load(Ordering::Relaxed);
-                    nonce_until_issued(&data, &game, &config, &stopped, &*say);
+                    nonce_until_issued(&data, &game, &config, game_build.as_deref(), &stopped, &*say);
                 })
                 .ok();
         }
@@ -304,17 +325,21 @@ impl Watcher {
         if let Some(pump) = self.pump.take() {
             pump.finish();
         }
+        if let Some(ticks) = self.ticks.take() {
+            ticks.finish();
+        }
         if let Some(t) = self.thread.take() {
             t.join().ok();
         }
-        let print = has_laps(&self.data, &self.game)
-            .then(|| (self.fingerprint)())
-            .flatten();
+        let stamp = has_laps(&self.data, &self.game).then(|| Stamp {
+            fingerprint: (self.fingerprint)().unwrap_or(Value::Null),
+            integrity: self.integrity.clone(),
+        });
         pass(
             &self.data,
             &self.game,
             &self.config,
-            print.as_ref(),
+            stamp.as_ref(),
             Some(Instant::now() + FINAL_SWEEP),
             &*self.say,
         );
@@ -327,15 +352,18 @@ fn hold_for_replay(lap_age: Duration, replay_ready: bool) -> bool {
     !replay_ready && lap_age < REPLAY_WAIT
 }
 
-fn waiting_for_replay(data: &Path, game: &Path) -> bool {
-    let Some(written) = laps_dirs(data, game)
+fn newest_lap(data: &Path, game: &Path) -> Option<std::time::SystemTime> {
+    laps_dirs(data, game)
         .iter()
         .filter_map(|dir| std::fs::read_dir(dir).ok())
         .flat_map(|d| d.filter_map(Result::ok))
         .filter(|e| e.path().extension().is_some_and(|x| x == "swlap"))
         .filter_map(|e| e.metadata().ok()?.modified().ok())
         .max()
-    else {
+}
+
+fn waiting_for_replay(data: &Path, game: &Path) -> bool {
+    let Some(written) = newest_lap(data, game) else {
         return false;
     };
     let age = written.elapsed().unwrap_or_default();
@@ -347,6 +375,11 @@ fn waiting_for_replay(data: &Path, game: &Path) -> bool {
         .iter()
         .any(|p| p.secs >= since);
     hold_for_replay(age, ready)
+}
+
+fn waiting_for_marks(data: &Path, game: &Path) -> bool {
+    newest_lap(data, game).is_some_and(|t| t.elapsed().unwrap_or_default() < MARKS_WAIT)
+        && ticks::pending(data, game)
 }
 
 fn has_laps(data: &Path, game: &Path) -> bool {
@@ -366,7 +399,7 @@ fn pass(
     data: &Path,
     game: &Path,
     config: &Config,
-    fingerprint: Option<&Value>,
+    stamp: Option<&Stamp>,
     deadline: Option<Instant>,
     say: &dyn Fn(&str),
 ) {
@@ -379,7 +412,7 @@ fn pass(
         data,
         Some(game),
         api.as_ref().map(|a| a as &dyn Boards),
-        fingerprint,
+        stamp,
         deadline,
         &mut |e| {
             say(&line(&e));
@@ -483,6 +516,324 @@ mod tests {
         assert_eq!((r.uploaded, r.waiting), (0, 2));
         assert!(!new.join("a.swlap").exists() && !old.join("b.swlap").exists());
         assert!(!has_laps(&data, &game));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    fn lap_with_nonce(time_ms: u64, nonce: &str) -> Vec<u8> {
+        let header = serde_json::json!({
+            "format": 1,
+            "nonce": nonce,
+            "board": {"content": "game/f1_2025", "track": "bahrain", "weather": "dry"},
+            "lap": {"time_ms": time_ms, "valid": true, "sectors_ms": [1, 2, 3]},
+        })
+        .to_string();
+        let mut out = crate::online::timetrial::swlap::MAGIC.to_vec();
+        out.extend((header.len() as u32).to_le_bytes());
+        out.extend(header.as_bytes());
+        out.extend(b"END\0\0\0\0\0");
+        out
+    }
+
+    fn stub(replies: Vec<(&'static str, &'static str)>) -> (String, JoinHandle<Vec<String>>) {
+        use std::io::{Read, Write};
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let url = format!("http://{}", listener.local_addr().unwrap());
+        let t = std::thread::spawn(move || {
+            let mut seen = Vec::new();
+            for (status, body) in replies {
+                let (mut c, _) = listener.accept().unwrap();
+                let mut got = Vec::new();
+                let mut buf = [0u8; 8192];
+                loop {
+                    let n = c.read(&mut buf).unwrap();
+                    if n == 0 {
+                        break;
+                    }
+                    got.extend_from_slice(&buf[..n]);
+                    let Some(h) = got.windows(4).position(|w| w == b"\r\n\r\n") else {
+                        continue;
+                    };
+                    let head = String::from_utf8_lossy(&got[..h]).to_ascii_lowercase();
+                    let len = head
+                        .lines()
+                        .find_map(|l| l.strip_prefix("content-length: ")?.trim().parse::<usize>().ok())
+                        .unwrap_or(0);
+                    if got.len() >= h + 4 + len {
+                        break;
+                    }
+                }
+                let reply = format!(
+                    "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                    body.len()
+                );
+                c.write_all(reply.as_bytes()).unwrap();
+                seen.push(String::from_utf8_lossy(&got).into_owned());
+            }
+            seen
+        });
+        (url, t)
+    }
+
+    fn temp(name: &str) -> (PathBuf, PathBuf, PathBuf) {
+        let root = std::env::temp_dir().join(format!("swofty-ttu-{name}-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        (root.clone(), root.join("data"), root.join("game"))
+    }
+
+    #[test]
+    fn a_sweep_sends_the_laps_of_both_folders_to_the_server_with_their_nonces() {
+        let (root, data, game) = temp("wire");
+        let [new, old] = laps_dirs(&data, &game);
+        std::fs::create_dir_all(&new).unwrap();
+        std::fs::create_dir_all(&old).unwrap();
+        std::fs::write(
+            old.join("20261118T000001-1.swlap"),
+            lap_with_nonce(91000, "n-game"),
+        )
+        .unwrap();
+        std::fs::write(
+            new.join("20261118T000002-1.swlap"),
+            lap_with_nonce(92000, "n-data"),
+        )
+        .unwrap();
+        let (url, t) = stub(vec![
+            ("200 OK", r#"{"id":"l1","status":"ranked","rank":3}"#),
+            (
+                "200 OK",
+                r#"{"id":"l2","status":"pending","reasons":["needs review: attest"]}"#,
+            ),
+        ]);
+        let api = Api::with_server(&url, "tok");
+        let mut events = Vec::new();
+        let r = sweep(
+            &data,
+            Some(&game),
+            Some(&api as &dyn Boards),
+            Some(&Stamp {
+                fingerprint: serde_json::json!({"digest": "d"}),
+                integrity: serde_json::json!({"state": "fetch_failed", "version": null, "source": null, "detail": "timeout"}),
+            }),
+            None,
+            &mut |e| events.push(line(&e)),
+        );
+        assert_eq!((r.uploaded, r.waiting, r.rejected), (2, 0, 0), "{events:?}");
+        assert!(!has_laps(&data, &game) && !has_outbox(&data));
+        let seen = t.join().unwrap();
+        let sessions: Vec<&str> = seen
+            .iter()
+            .map(|req| {
+                assert!(req.starts_with("POST /v1/tt/laps HTTP/1.1"), "{req}");
+                assert!(req.to_ascii_lowercase().contains("authorization: bearer tok"));
+                assert!(req.contains(&format!(r#""launcher":"{}""#, env!("CARGO_PKG_VERSION"))));
+                assert!(req.contains(r#""fingerprint":{"digest":"d"}"#), "{req}");
+                let integrity = req.split(r#""integrity":"#).nth(1).unwrap_or_default();
+                let integrity = &integrity[..integrity.find('}').map_or(0, |end| end + 1)];
+                for part in [
+                    r#""state":"fetch_failed""#,
+                    r#""version":null"#,
+                    r#""source":null"#,
+                    r#""detail":"timeout""#,
+                ] {
+                    assert!(integrity.contains(part), "{req}");
+                }
+                assert!(req.contains(r#""gzip":true"#));
+                if req.contains(r#""session":"n-game""#) {
+                    "n-game"
+                } else if req.contains(r#""session":"n-data""#) {
+                    "n-data"
+                } else {
+                    ""
+                }
+            })
+            .collect();
+        assert_eq!(sessions.len(), 2);
+        assert!(
+            sessions.contains(&"n-game") && sessions.contains(&"n-data"),
+            "{sessions:?}"
+        );
+        let sent = Queue::new(&data).list(Folder::Sent);
+        assert_eq!(sent.len(), 2);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    fn lap_numbered(time_ms: u64, nonce: &str, lap_index: u32) -> Vec<u8> {
+        let header = serde_json::json!({
+            "format": 1,
+            "nonce": nonce,
+            "board": {"content": "game/f1_2025", "track": "bahrain", "weather": "dry"},
+            "lap": {"time_ms": time_ms, "valid": true, "sectors_ms": [1, 2, 3], "lap_index": lap_index},
+        })
+        .to_string();
+        let mut out = crate::online::timetrial::swlap::MAGIC.to_vec();
+        out.extend((header.len() as u32).to_le_bytes());
+        out.extend(header.as_bytes());
+        out.extend(b"END\0\0\0\0\0");
+        out
+    }
+
+    #[test]
+    fn a_timed_lap_keeps_its_receipts_through_the_queue_and_an_offline_lap_uploads_without_any() {
+        let (root, data, game) = temp("timed");
+        let [laps, _] = laps_dirs(&data, &game);
+        std::fs::create_dir_all(&laps).unwrap();
+        let marks = ticks::folders(&data, &game)[0].clone();
+        std::fs::create_dir_all(&marks).unwrap();
+        let now = unix_now() * 1000;
+        for (seq, (which, game_ms)) in [("start", 0), ("s1", 28_411), ("s2", 59_000), ("end", 91_234)]
+            .into_iter()
+            .enumerate()
+        {
+            let at = now + seq as u64;
+            let body =
+                serde_json::json!({"seq": seq + 1, "lap": 4, "mark": which, "game_ms": game_ms, "at_ms": at});
+            std::fs::write(marks.join(format!("{at}-{}.json", seq + 1)), body.to_string()).unwrap();
+        }
+        let (url, t) = stub(vec![
+            ("200 OK", r#"{"receipt":"tk1.cw.bQ"}"#),
+            ("200 OK", r#"{"receipt":"tk1.czE.bQ"}"#),
+            ("200 OK", r#"{"receipt":"tk1.czI.bQ"}"#),
+            ("200 OK", r#"{"receipt":"tk1.ZQ.bQ"}"#),
+            ("503 Service Unavailable", ""),
+            ("200 OK", r#"{"id":"l1","status":"ranked","rank":3}"#),
+            ("200 OK", r#"{"id":"l2","status":"ranked","rank":9}"#),
+        ]);
+        let api = Api::with_server(&url, "tok");
+        let mut sender = ticks::Sender::new(&data, ticks::folders(&data, &game));
+        sender.step(&api, Some("n-online"), now + 20, &|_| {});
+        assert!(!ticks::pending(&data, &game));
+        std::fs::write(
+            laps.join("20261118T000001-1.swlap"),
+            lap_numbered(91_234, "n-online", 4),
+        )
+        .unwrap();
+        std::fs::write(
+            laps.join("20261118T000002-1.swlap"),
+            lap_numbered(90_100, "n-online", 5),
+        )
+        .unwrap();
+
+        let r = sweep(
+            &data,
+            Some(&game),
+            Some(&api as &dyn Boards),
+            None,
+            None,
+            &mut |_| {},
+        );
+        assert_eq!(
+            (r.uploaded, r.waiting),
+            (0, 2),
+            "the server is busy: both laps wait in the outbox"
+        );
+        let queued = Queue::new(&data).list(Folder::Outbox);
+        assert_eq!(
+            queued[0].waiting.as_ref().map(|w| w.timing.clone()),
+            Some(serde_json::json!({"lap": 4, "receipts": [
+                "tk1.cw.bQ",
+                "tk1.czE.bQ",
+                "tk1.czI.bQ",
+                "tk1.ZQ.bQ"
+            ]}))
+        );
+        assert_eq!(
+            queued[1].waiting.as_ref().map(|w| w.timing.clone()),
+            Some(Value::Null)
+        );
+
+        let queue = Queue::new(&data);
+        for entry in queue.list(Folder::Outbox) {
+            let side = entry.path.with_extension("json");
+            let mut w: serde_json::Value = serde_json::from_slice(&std::fs::read(&side).unwrap()).unwrap();
+            w["next_try"] = 0.into();
+            std::fs::write(&side, w.to_string()).unwrap();
+        }
+        let r = sweep(&data, None, Some(&api as &dyn Boards), None, None, &mut |_| {});
+        assert_eq!(r.uploaded, 2);
+        let seen = t.join().unwrap();
+        assert_eq!(seen.len(), 7);
+        assert!(
+            seen[1].starts_with("POST /v1/tt/sessions/n-online/ticks "),
+            "{}",
+            seen[1]
+        );
+        assert!(seen[1].contains(r#""prev":"tk1.cw.bQ""#), "{}", seen[1]);
+        let uploads = &seen[5..];
+        assert!(uploads.iter().all(|u| u.starts_with("POST /v1/tt/laps ")));
+        assert!(
+            uploads[0].contains(
+                r#""timing":{"lap":4,"receipts":["tk1.cw.bQ","tk1.czE.bQ","tk1.czI.bQ","tk1.ZQ.bQ"]}"#
+            ),
+            "{}",
+            uploads[0]
+        );
+        assert!(!uploads[1].contains(r#""timing""#), "{}", uploads[1]);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_refused_lap_is_set_aside_and_a_server_error_keeps_the_rest_in_the_outbox() {
+        let (root, data, game) = temp("fail");
+        let [_, laps] = laps_dirs(&data, &game);
+        std::fs::create_dir_all(&laps).unwrap();
+        std::fs::write(laps.join("20261118T000001-1.swlap"), lap_with_nonce(91000, "n")).unwrap();
+        std::fs::write(laps.join("20261118T000002-1.swlap"), lap_with_nonce(92000, "n")).unwrap();
+        std::fs::write(laps.join("20261118T000003-1.swlap"), lap_with_nonce(93000, "n")).unwrap();
+        let (url, t) = stub(vec![
+            ("400 Bad Request", r#"{"error":"the lap file is not valid"}"#),
+            ("503 Service Unavailable", ""),
+        ]);
+        let api = Api::with_server(&url, "tok");
+        let mut events = Vec::new();
+        let r = sweep(
+            &data,
+            Some(&game),
+            Some(&api as &dyn Boards),
+            None,
+            None,
+            &mut |e| events.push(line(&e)),
+        );
+        assert_eq!((r.uploaded, r.waiting, r.rejected), (0, 2, 1), "{events:?}");
+        assert_eq!(
+            events[0],
+            "20261118T000001-1.swlap not uploaded: the lap file is not valid"
+        );
+        assert!(events[1].starts_with("upload failed, will retry: "), "{events:?}");
+        assert_eq!(t.join().unwrap().len(), 2);
+        let q = Queue::new(&data);
+        assert_eq!(q.list(Folder::Rejected).len(), 1);
+        let waiting = q.list(Folder::Outbox);
+        assert_eq!(waiting.len(), 2);
+        assert!(
+            waiting
+                .iter()
+                .all(|e| e.waiting.as_ref().is_some_and(|w| w.next_try > unix_now()))
+        );
+        let r = sweep(
+            &data,
+            Some(&game),
+            Some(&api as &dyn Boards),
+            None,
+            None,
+            &mut |_| {},
+        );
+        assert_eq!((r.uploaded, r.waiting), (0, 2));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn the_startup_flush_sends_the_outbox_but_leaves_the_game_folder_alone() {
+        let (root, data, game) = temp("flush");
+        let [_, laps] = laps_dirs(&data, &game);
+        std::fs::create_dir_all(&laps).unwrap();
+        std::fs::write(laps.join("20261118T000001-1.swlap"), lap_with_nonce(91000, "n")).unwrap();
+        sweep(&data, Some(&game), None, None, None, &mut |_| {});
+        std::fs::write(laps.join("20261118T000002-1.swlap"), lap_with_nonce(92000, "n")).unwrap();
+        let (url, t) = stub(vec![("200 OK", r#"{"id":"l1","status":"ranked"}"#)]);
+        let api = Api::with_server(&url, "tok");
+        let r = sweep(&data, None, Some(&api as &dyn Boards), None, None, &mut |_| {});
+        assert_eq!((r.uploaded, r.waiting), (1, 0));
+        assert_eq!(t.join().unwrap().len(), 1);
+        assert!(laps.join("20261118T000002-1.swlap").exists());
         std::fs::remove_dir_all(&root).ok();
     }
 }

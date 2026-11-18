@@ -18,8 +18,11 @@ pub struct Game {
 }
 
 mod apply;
+mod checks;
+mod copy;
 mod files;
 mod originals;
+mod record;
 mod restore;
 mod rollback;
 mod sweep;

@@ -1423,5 +1423,11 @@
   "Too many tracks": "트랙이 너무 많습니다",
   "Left out: the game holds {room} tracks": "제외됨: 게임은 트랙 {room}개를 담습니다",
   "{shown} and {more} more": "{shown} 외 {more}개",
-  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["게임은 트랙 {room}개를 담으므로 트랙 {count}개가 이 빌드에서 제외됩니다: {list}. 트랙 애드온 일부를 끄면 플레이할 수 있습니다."]
+  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["게임은 트랙 {room}개를 담으므로 트랙 {count}개가 이 빌드에서 제외됩니다: {list}. 트랙 애드온 일부를 끄면 플레이할 수 있습니다."],
+  "The launcher couldn't reach Swofty's server in time.": "런처가 제시간에 Swofty 서버에 연결하지 못했습니다.",
+  "Swofty's server didn't offer it to you.": "Swofty 서버가 이 모듈을 제공하지 않았습니다.",
+  "The download failed its safety check.": "다운로드한 파일이 보안 검사를 통과하지 못했습니다.",
+  "Time Trial laps you drive this session won't be sealed, so they won't rank on the boards. Everything else works as usual. To try again, close the game and press Play.": "이번 세션에서 달린 타임 트라이얼 랩은 봉인되지 않아 리더보드 순위에 오르지 않습니다. 그 밖의 기능은 평소처럼 작동합니다. 다시 시도하려면 게임을 닫고 플레이를 누르세요.",
+  "Details: {why}": "세부 정보: {why}",
+  "The Time Trial integrity module didn't load": "타임 트라이얼 무결성 모듈을 불러오지 못했습니다"
 }

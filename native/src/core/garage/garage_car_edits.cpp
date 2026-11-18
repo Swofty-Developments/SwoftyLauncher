@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 #include "core/garage/garage_edits.hpp"
 
-namespace runtime::garage_placement::edits {
+namespace garage::edits {
 
 namespace {
 
