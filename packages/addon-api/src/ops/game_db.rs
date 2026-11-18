@@ -5,6 +5,7 @@ use swofty_formats::hash::fnv1a64;
 
 use crate::ops::apply::Cx;
 use crate::ops::field_names::FieldNames;
+use crate::ops::resolve::selectors::Selectors;
 use crate::ops::stat_id_cache::StatIdCache;
 use crate::ops::stat_ids::stat_id_field;
 use crate::{Error, Result};
@@ -19,6 +20,16 @@ pub(crate) struct Db<'a> {
     // Bumped by every write, so a cached read of the records knows when it is stale.
     pub(crate) generation: u64,
     pub(crate) stat_ids: std::cell::RefCell<HashMap<(String, String), StatIdCache>>,
+    pub(crate) selectors: std::cell::RefCell<Selectors>,
+    /// Answers each selector by reading every row, as the kept values must.
+    #[cfg(test)]
+    pub(crate) scan_selectors: bool,
+}
+
+#[cfg(test)]
+thread_local! {
+    /// Whether the databases this test thread opens answer selectors by reading every row.
+    pub(crate) static SCAN_SELECTORS: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
 }
 
 impl<'a> Db<'a> {
@@ -36,6 +47,9 @@ impl<'a> Db<'a> {
             ties: std::cell::RefCell::new(Vec::new()),
             generation: 0,
             stat_ids: std::cell::RefCell::new(HashMap::new()),
+            selectors: std::cell::RefCell::new(Selectors::default()),
+            #[cfg(test)]
+            scan_selectors: SCAN_SELECTORS.with(std::cell::Cell::get),
         }
     }
 
@@ -95,6 +109,7 @@ impl<'a> Db<'a> {
 
     pub(crate) fn remove(&mut self, key: u64) -> bool {
         self.generation += 1;
+        self.selectors.get_mut().forget(key);
         match self.index.remove(&key) {
             Some(i) => {
                 self.removed.push(i);
@@ -122,6 +137,7 @@ impl<'a> Db<'a> {
 
     pub(crate) fn get_mut(&mut self, key: u64) -> Option<&mut Record> {
         self.generation += 1;
+        self.selectors.get_mut().forget(key);
         self.index.get(&key).map(|&i| &mut self.gvdb.records[i])
     }
 
@@ -131,6 +147,7 @@ impl<'a> Db<'a> {
 
     pub(crate) fn push(&mut self, record: Record) {
         self.generation += 1;
+        self.selectors.get_mut().forget(record.key);
         self.index.insert(record.key, self.gvdb.records.len());
         self.gvdb.records.push(record);
     }

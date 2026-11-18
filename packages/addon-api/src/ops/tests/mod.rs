@@ -1,6 +1,8 @@
 mod add_row;
+mod bench;
 mod op_files;
 mod records;
+mod selector_index;
 mod selectors;
 mod stat_ids;
 

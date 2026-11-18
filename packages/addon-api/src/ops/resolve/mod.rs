@@ -1,4 +1,5 @@
 mod errors;
+pub(crate) mod selectors;
 
 use swofty_formats::hash::{fnv1a64, fnv1a64_from};
 
@@ -121,6 +122,29 @@ fn select_row(
             .map_or(want, String::as_str),
         _ => want,
     };
+    #[cfg(test)]
+    if db.scan_selectors {
+        return scan_row(db, table, row, field, want, first_wins, count);
+    }
+    match selectors::select(db, table, row, field, count, want) {
+        None => Err(0),
+        Some((base, 1)) => Ok((base, 1)),
+        Some((base, n)) if first_wins => Ok((base, n)),
+        Some((_, n)) => Err(n),
+    }
+}
+
+/// [`select_row`] by reading every row for the one selector.
+#[cfg(test)]
+fn scan_row(
+    db: &Db,
+    table: &Base,
+    row: &str,
+    field: &str,
+    want: &str,
+    first_wins: bool,
+    count: Option<usize>,
+) -> std::result::Result<(Base, usize), usize> {
     let mut hits = Vec::new();
     for idx in 0..count.unwrap_or(4096) {
         let candidate = Row {
