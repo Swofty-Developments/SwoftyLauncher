@@ -121,6 +121,7 @@ t "Shader resource view clamp unit test" native/test/run_srv_clamp_test.sh
 t "Ray tracing build guard unit test" native/test/run_rtas_guard_test.sh
 t "Heap size table unit test" native/test/run_heap_sizes_test.sh
 t "Profiler minute summary unit test" native/test/run_perf_logic_test.sh
+t "Frame pacing logic unit test" native/test/run_pacing_logic_test.sh
 t "Save temp heap size unit test" native/test/run_save_heap_test.sh
 t "Boot watchdog grace unit test" native/test/run_watchdog_grace_test.sh
 t "Load-stall watchdog trigger unit test" native/test/run_load_stall_test.sh

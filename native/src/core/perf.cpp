@@ -1,7 +1,9 @@
 #include "perf.hpp"
 
 #include "blackbox.hpp"
+#include "pacing_logic.hpp"
 #include "perf_logic.hpp"
+#include "perf_system.hpp"
 #include "runtime.hpp"
 
 #include <swofty/mem.hpp>
@@ -36,9 +38,11 @@ constexpr size_t LOCALS = 256;
 constexpr size_t HITCHES = 64;
 constexpr size_t SLOW_CALLS = 32;
 constexpr size_t TIMELINE = 160;
-constexpr int BUCKETS = 581;
-constexpr DWORD WRITE_MS = 15000;
-constexpr int LINE_EVERY = 4;
+constexpr int BUCKETS = pace::BUCKETS;
+constexpr DWORD SAMPLE_MS = 5000, WRITE_MS = 15000;
+constexpr unsigned WRITE_EVERY = WRITE_MS / SAMPLE_MS, LINE_EVERY = 60000 / SAMPLE_MS;
+constexpr size_t ROWS = 30;
+constexpr int SPIKES_SHOWN = 5;
 constexpr double MERGE_MS = 100;
 
 using U64 = std::atomic<uint64_t>;
@@ -46,7 +50,7 @@ constexpr auto rlx = std::memory_order_relaxed;
 
 uint64_t tsc()
 {
-    return __builtin_ia32_rdtsc();
+    return stamp();
 }
 
 void add(U64 &a, uint64_t v)
@@ -134,7 +138,18 @@ std::atomic<bool> claiming{false};
 constexpr double CLAIM_MS = 33;
 
 SRWLOCK frame_lock = SRWLOCK_INIT;
-uint32_t hist[BUCKETS], minute_hist[BUCKETS];
+pace::Pace session_pace, minute_pace;
+
+SRWLOCK present_lock = SRWLOCK_INIT;
+pace::Presents session_presents, minute_presents;
+void *main_chain;
+uint64_t main_seen, prev_present, chain_learned;
+
+std::mutex pace_lock;
+std::deque<pace::Row> pace_rows;
+pace::Tally tally;
+std::string last_verdict;
+ULARGE_INTEGER wall0;
 uint64_t frames, slow33, slow50, slow100, slow250, frames_over_1ms, frames_over_4ms, frame_ticks_max, swofty_frame_max;
 uint64_t seg_frames, seg_slow, seg_worst, seg_t0;
 
@@ -304,41 +319,8 @@ std::string top_list(const std::vector<std::pair<uint64_t, uint32_t>> &in, size_
     return out;
 }
 
-int bucket(double ms)
-{
-    if (ms < 100)
-        return std::max(0, int(ms * 4));
-    if (ms < 1000)
-        return 400 + int((ms - 100) / 10);
-    if (ms < 10000)
-        return 490 + int((ms - 1000) / 100);
-    return BUCKETS - 1;
-}
-
-double bucket_ms(int b)
-{
-    if (b < 400)
-        return (b + 0.5) / 4;
-    if (b < 490)
-        return 100 + (b - 400 + 0.5) * 10;
-    if (b < BUCKETS - 1)
-        return 1000 + (b - 490 + 0.5) * 100;
-    return 10000;
-}
-
-double percentile(const uint32_t *h, double p)
-{
-    uint64_t n = 0;
-    for (int b = 0; b < BUCKETS; b++)
-        n += h[b];
-    if (!n)
-        return 0;
-    uint64_t want = uint64_t(std::ceil(p * double(n))), seen = 0;
-    for (int b = 0; b < BUCKETS; b++)
-        if ((seen += h[b]) >= want)
-            return bucket_ms(b);
-    return bucket_ms(BUCKETS - 1);
-}
+using pace::bucket;
+using pace::percentile;
 
 void hitch(uint64_t ended, double ms, double swofty_ms)
 {
@@ -391,10 +373,9 @@ void frame(uint64_t now, bool present)
             sw += l.top_frame[ended & 1].load(rlx);
     });
     uint64_t dt = now - prev;
-    double ms = ms_of(dt), sw_ms = ms_of(sw);
-    int b = bucket(ms);
-    hist[b]++;
-    minute_hist[b]++;
+    double ms = ms_of(dt), sw_ms = ms_of(sw), at = ms_of(now - tsc0) / 1000.0;
+    session_pace.add(ms, at);
+    minute_pace.add(ms, at);
     frames++;
     seg_frames++;
     slow33 += ms > 33.4;
@@ -475,6 +456,48 @@ std::string clock_text(double s)
     return b;
 }
 
+std::string wall_text(double at)
+{
+    ULARGE_INTEGER t = wall0;
+    t.QuadPart += uint64_t(std::max(0.0, at) * 1e7);
+    FILETIME utc{t.LowPart, t.HighPart}, local;
+    SYSTEMTIME st;
+    if (!wall0.QuadPart || !FileTimeToLocalFileTime(&utc, &local) || !FileTimeToSystemTime(&local, &st))
+        return clock_text(at);
+    char b[16];
+    snprintf(b, sizeof b, "%02u:%02u:%02u", st.wHour, st.wMinute, st.wSecond);
+    return b;
+}
+
+std::string during_at(double at)
+{
+    if (at >= ms_of(seg_t0 - tsc0) / 1000)
+        return seg_what;
+    for (auto it = timeline.rbegin(); it != timeline.rend(); ++it)
+        if (at >= it->at)
+            return at <= it->at + it->ms / 1000 + 0.001 ? it->what : std::string();
+    return "";
+}
+
+std::vector<pace::SpikeRow> spike_rows(const pace::Pace &p, size_t n)
+{
+    std::vector<pace::Spike> v = p.spikes_in_order();
+    if (v.size() > n) {
+        std::sort(v.begin(), v.end(), [](const pace::Spike &a, const pace::Spike &b) { return a.ms > b.ms; });
+        v.resize(n);
+        std::sort(v.begin(), v.end(), [](const pace::Spike &a, const pace::Spike &b) { return a.at < b.at; });
+    }
+    std::vector<pace::SpikeRow> rows;
+    std::lock_guard<std::mutex> g(rings_lock);
+    for (const pace::Spike &s : v) {
+        std::string what = during_at(s.at);
+        if (what.size() > 60)
+            what = what.substr(0, 57) + "...";
+        rows.push_back({wall_text(s.at), what, s.ms, s.base});
+    }
+    return rows;
+}
+
 struct Totals {
     std::vector<uint64_t> calls, ticks, self, worst;
 };
@@ -520,14 +543,21 @@ std::string report(const char *why)
 {
     calibrate();
     double up = seconds_now();
-    uint32_t hcopy[BUCKETS], mcopy[BUCKETS];
+    static pace::Pace scopy, mcopy;
+    static pace::Presents pcopy;
+    bool presents_copied = false;
     uint64_t f, s33, s50, s100, s250, o1, o4, fmax, swmax, sf, ss, sw, st0;
     AcquireSRWLockShared(&frame_lock);
-    memcpy(hcopy, hist, sizeof hist);
-    memcpy(mcopy, minute_hist, sizeof minute_hist);
+    scopy = session_pace;
+    mcopy = minute_pace;
     f = frames, s33 = slow33, s50 = slow50, s100 = slow100, s250 = slow250, o1 = frames_over_1ms, o4 = frames_over_4ms;
     fmax = frame_ticks_max, swmax = swofty_frame_max, sf = seg_frames, ss = seg_slow, sw = seg_worst, st0 = seg_t0;
     ReleaseSRWLockShared(&frame_lock);
+    if (TryAcquireSRWLockShared(&present_lock)) {
+        pcopy = session_presents;
+        presents_copied = true;
+        ReleaseSRWLockShared(&present_lock);
+    }
     Totals t = totals();
     uint32_t n = uint32_t(t.calls.size());
     uint64_t top = top_ticks();
@@ -544,8 +574,8 @@ std::string report(const char *why)
     line(out, "uptime: %.0f s", up);
     line(out, "frames: %llu (%llu from the game's frame index, now %u; %llu from flow-state ticks while it is not updated)",
          (unsigned long long)f, (unsigned long long)shown, frame_index.load(), (unsigned long long)flo);
-    double p50 = percentile(hcopy, 0.5), p95 = percentile(hcopy, 0.95), p99 = percentile(hcopy, 0.99);
-    double m50 = percentile(mcopy, 0.5);
+    double p50 = percentile(scopy.hist, 0.5), p95 = percentile(scopy.hist, 0.95), p99 = percentile(scopy.hist, 0.99);
+    double m50 = percentile(mcopy.hist, 0.5);
     line(out, "fps: %.1f median, %.1f in the current minute", p50 > 0 ? 1000 / p50 : 0, m50 > 0 ? 1000 / m50 : 0);
     line(out, "frame times: p50 %.2f ms, p95 %.2f ms, p99 %.2f ms, max %.0f ms", p50, p95, p99, ms_of(fmax));
     line(out, "slow frames: %llu over 33 ms, %llu over 50 ms, %llu over 100 ms, %llu over 250 ms", (unsigned long long)s33,
@@ -573,6 +603,32 @@ std::string report(const char *why)
     double cores = process_cores(up, &user, &kernel);
     line(out, "game process cpu: %.2f cores on average since the core attached (user %.2f, kernel %.2f)", cores, user,
          kernel);
+    out += pace::pacing_text(pace::summary(scopy), spike_rows(scopy, pace::TOP)) + "\r\n";
+    out += (presents_copied ? pace::presents_text(up, pcopy, shown) : std::string("presents: busy")) + "\r\n";
+    pace::GpuMinute gpu;
+    pace::SysCpuMinute sys_cpu;
+    unsigned gpu_index = 0;
+    std::string display;
+    if (sys::session(gpu, gpu_index, sys_cpu, display)) {
+        out += pace::gpu_text(gpu_index, gpu) + " (since the core attached)\r\n";
+        out += pace::cpu_text(sys_cpu) + " (since the core attached)\r\n";
+        if (!display.empty())
+            out += display.substr(display.find(' ') + 1) + "\r\n";
+    }
+    std::vector<pace::Row> rows;
+    {
+        std::unique_lock<std::mutex> g(pace_lock, std::try_to_lock);
+        if (g.owns_lock()) {
+            out += "verdicts: " + tally.text() + "\r\n";
+            out += "newest verdict: " + (last_verdict.empty() ? std::string("none yet") : last_verdict) + "\r\n";
+            rows.assign(pace_rows.begin(), pace_rows.end());
+        }
+    }
+    line(out, "");
+    line(out, "== Pacing (last %zu minute(s), one row a minute, local time at its end)", rows.size());
+    out += pace::pacing_header() + "\r\n";
+    for (const pace::Row &r : rows)
+        out += pace::pacing_row(r) + "\r\n";
     line(out, "");
 
     struct Owner {
@@ -1117,11 +1173,14 @@ logic::CpuMinute cpu(Cpu &st, double secs)
                     s.user = ft(u), s.kernel = ft(k);
             }
             s.alive = true;
+            uint64_t du = logic::delta(ft(u), s.user), dk = logic::delta(ft(k), s.kernel);
             if (s.ours) {
-                uint64_t du = logic::delta(ft(u), s.user), dk = logic::delta(ft(k), s.kernel);
                 ou += du, ok += dk;
                 out.threads++;
                 out.top.push_back({s.what, logic::cores(du + dk, secs)});
+            } else if (double c = logic::cores(du + dk, secs); c > out.game_top) {
+                out.game_top = c;
+                out.game_top_what = "tid " + std::to_string(tid);
             }
             s.user = ft(u), s.kernel = ft(k);
         }
@@ -1257,16 +1316,78 @@ struct Minute {
     vq::Cpu cpu;
 };
 
+std::string now_text()
+{
+    SYSTEMTIME st;
+    GetLocalTime(&st);
+    char b[16];
+    snprintf(b, sizeof b, "%02u:%02u:%02u", st.wHour, st.wMinute, st.wSecond);
+    return b;
+}
+
+void pace_lines(double secs, const pace::Pace &mp, const pace::Presents &pp, uint64_t df, const logic::CpuMinute &pc)
+{
+    sys::Minute sm = sys::minute(secs);
+    sm.cpu.game_thread = pc.game_top;
+    sm.cpu.game_thread_what = pc.game_top_what;
+    pace::Summary fs = pace::summary(mp);
+    swofty::log("%s", pace::pacing_line(secs, fs, spike_rows(mp, SPIKES_SHOWN)).c_str());
+    swofty::log("%s", pace::presents_line(secs, pp, df).c_str());
+    swofty::log("%s", pace::gpu_line(secs, sm.gpu_index, sm.gpu).c_str());
+    swofty::log("%s", pace::cpu_line(secs, sm.cpu).c_str());
+    swofty::log("%s", pace::others_line(secs, sm.other_cores, sm.hogs, sm.tools, sm.modules).c_str());
+    if (!sm.display.empty())
+        swofty::log("%s", sm.display.c_str());
+    pace::Facts facts;
+    facts.secs = secs;
+    facts.frames = fs;
+    facts.presents = pp.pace.frames > 0;
+    facts.present = pace::summary(pp.pace);
+    facts.present_rate = facts.present.rate();
+    facts.sync = pp.sync_mode();
+    facts.refresh = sm.refresh;
+    facts.gpu_busy = sm.gpu.busy.n ? sm.gpu.busy.avg() : -1;
+    facts.game_thread = pc.game_top;
+    facts.other_cores = sm.other_cores;
+    facts.other_gpu = sm.gpu.others.n ? sm.gpu.others.avg() : -1;
+    pace::Verdict v = pace::verdict(facts);
+    swofty::log("%s", pace::verdict_line(secs, v).c_str());
+    pace::Row row;
+    row.when = now_text();
+    row.tags = pace::verdict_tags(v);
+    row.frames = fs;
+    row.presents = facts.presents;
+    row.present = facts.present;
+    row.inside_avg = pp.inside_avg();
+    row.gpu_core = sm.gpu.core.avg();
+    row.gpu_temp = sm.gpu.temp.avg();
+    row.gpu_busy = facts.gpu_busy;
+    row.cpu_busiest = sm.cpu.busiest.n ? sm.cpu.busiest.avg() : -1;
+    std::lock_guard<std::mutex> g(pace_lock);
+    if (fs.frames >= 30)
+        tally.add(v);
+    last_verdict = v.text;
+    pace_rows.push_back(std::move(row));
+    if (pace_rows.size() > ROWS)
+        pace_rows.pop_front();
+}
+
 void minute_line(Minute &last)
 {
     double now = seconds_now();
-    uint32_t mh[BUCKETS];
+    static pace::Pace mp;
+    static pace::Presents pp;
     uint64_t f;
     AcquireSRWLockExclusive(&frame_lock);
-    memcpy(mh, minute_hist, sizeof mh);
-    memset(minute_hist, 0, sizeof minute_hist);
+    mp = minute_pace;
+    minute_pace.restart();
     f = frames;
     ReleaseSRWLockExclusive(&frame_lock);
+    AcquireSRWLockExclusive(&present_lock);
+    pp = minute_presents;
+    minute_presents.restart();
+    ReleaseSRWLockExclusive(&present_lock);
+    const uint32_t *mh = mp.hist;
     uint64_t m = minute.fetch_add(1);
     uint64_t top = top_ticks(1);
     std::vector<uint64_t> ticks = probe_ticks(true), calls = probe_ticks(true, &Local::calls);
@@ -1306,8 +1427,10 @@ void minute_line(Minute &last)
         vq::scan();
         swofty::log("%s", logic::vq_line(vq::minute(*last.vq, secs)).c_str());
     }
-    swofty::log("%s", logic::cpu_line(vq::cpu(last.cpu, secs)).c_str());
+    logic::CpuMinute pc = vq::cpu(last.cpu, secs);
+    swofty::log("%s", logic::cpu_line(pc).c_str());
     swofty::log("%s", logic::memory_line(sysmem::sample(secs)).c_str());
+    pace_lines(secs, mp, pp, df, pc);
     last.top = top, last.frames = f, last.ticks = std::move(ticks), last.calls = std::move(calls), last.at = now;
     hitch_lines.store(0, rlx);
 }
@@ -1316,6 +1439,7 @@ DWORD WINAPI writer(LPVOID)
 {
     Minute last;
     sysmem::probe();
+    sys::boot();
     vq::scan();
     last.vq = new (std::nothrow) vq::Last();
     if (last.vq)
@@ -1323,13 +1447,15 @@ DWORD WINAPI writer(LPVOID)
     vq::cpu(last.cpu, 1);
     last.at = seconds_now();
     for (unsigned tick = 1;; tick++) {
-        WaitForSingleObject(wake, WRITE_MS);
+        WaitForSingleObject(wake, SAMPLE_MS);
         if (flushed.load())
             return 0;
         calibrate();
+        sys::sample();
         if (tick % LINE_EVERY == 0)
             minute_line(last);
-        write_report("periodic");
+        if (tick % WRITE_EVERY == 0)
+            write_report("periodic");
     }
 }
 
@@ -1440,6 +1566,39 @@ void frame_release()
     claiming.store(false, std::memory_order_release);
 }
 
+void presented(void *swapchain, unsigned sync, unsigned flags, long hr, uint64_t entry, uint64_t before, uint64_t after)
+{
+    if (!live())
+        return;
+    double r = ticks_per_ms.load(rlx);
+    if (r <= 0)
+        return;
+    bool fresh = false;
+    AcquireSRWLockExclusive(&present_lock);
+    if (swapchain != main_chain) {
+        bool stale = !main_chain || (entry > main_seen && entry - main_seen >= uint64_t(1000 * r));
+        if (!stale) {
+            minute_presents.other++;
+            session_presents.other++;
+            ReleaseSRWLockExclusive(&present_lock);
+            return;
+        }
+        main_chain = swapchain, prev_present = 0, chain_learned = 0;
+    }
+    if (!chain_learned || entry - chain_learned >= uint64_t(10000 * r))
+        chain_learned = entry, fresh = true;
+    main_seen = entry;
+    double interval = prev_present && entry > prev_present ? double(entry - prev_present) / r : 0;
+    prev_present = entry;
+    double inside = after > before ? double(after - before) / r : 0, at = entry > tsc0 ? double(entry - tsc0) / r / 1000 : 0;
+    bool tear = (flags & DXGI_PRESENT_ALLOW_TEARING) != 0;
+    minute_presents.add(interval, inside, sync, tear, uint32_t(hr), at);
+    session_presents.add(interval, inside, sync, tear, uint32_t(hr), at);
+    ReleaseSRWLockExclusive(&present_lock);
+    if (fresh)
+        sys::learn_chain(swapchain);
+}
+
 void background()
 {
     background_ = true;
@@ -1494,6 +1653,9 @@ void attach()
     QueryPerformanceFrequency(&qpf);
     QueryPerformanceCounter(&qpc0);
     tsc0 = tsc();
+    FILETIME now;
+    GetSystemTimeAsFileTime(&now);
+    wall0.LowPart = now.dwLowDateTime, wall0.HighPart = now.dwHighDateTime;
     seg_t0 = tsc0;
     LARGE_INTEGER q;
     do

@@ -37,6 +37,8 @@ struct CpuMinute {
     double secs = 0, user = 0, kernel = 0, ours_user = 0, ours_kernel = 0;
     size_t threads = 0;
     std::vector<ThreadCpu> top;
+    double game_top = -1;
+    std::string game_top_what;
 };
 
 struct Busy {

@@ -387,10 +387,11 @@ void count_present(IDXGISwapChain3 *sc, void *caller, const char *how)
 // Present and Present1 both close a frame. One that runs inside the other on the same thread, as DXVK's Present
 // calls its Present1, is the same frame and is dispatched once, by the outer call.
 template <class Original>
-HRESULT dispatch_present(IDXGISwapChain3 *sc, UINT flags, void *caller, const char *how, Original original)
+HRESULT dispatch_present(IDXGISwapChain3 *sc, UINT sync, UINT flags, void *caller, const char *how, Original original)
 {
     if (!hud::guard::dispatches_present(presenting))
         return original();
+    uint64_t entry = perf::stamp();
     presenting++;
     if (!(flags & DXGI_PRESENT_TEST))
         count_present(sc, caller, how);
@@ -414,7 +415,10 @@ HRESULT dispatch_present(IDXGISwapChain3 *sc, UINT flags, void *caller, const ch
             presents.fns[i](sc, known ? &c : nullptr, caller);
         in_present.store(false);
     }
+    uint64_t before = perf::stamp();
     HRESULT hr = original();
+    if (!(flags & DXGI_PRESENT_TEST))
+        perf::presented(sc, sync, flags, hr, entry, before, perf::stamp());
     for (int i = 0, n = presenteds.n.load(); i < n; i++)
         presenteds.fns[i](sc, hr);
     presenting--;
@@ -423,14 +427,14 @@ HRESULT dispatch_present(IDXGISwapChain3 *sc, UINT flags, void *caller, const ch
 
 HRESULT STDMETHODCALLTYPE present_hook(IDXGISwapChain3 *sc, UINT sync, UINT flags)
 {
-    return dispatch_present(sc, flags, __builtin_return_address(0), "Present",
+    return dispatch_present(sc, sync, flags, __builtin_return_address(0), "Present",
                             [&] { return h_present.call<HRESULT>(sc, sync, flags); });
 }
 
 HRESULT STDMETHODCALLTYPE present1_hook(IDXGISwapChain3 *sc, UINT sync, UINT flags,
                                         const DXGI_PRESENT_PARAMETERS *params)
 {
-    return dispatch_present(sc, flags, __builtin_return_address(0), "Present1",
+    return dispatch_present(sc, sync, flags, __builtin_return_address(0), "Present1",
                             [&] { return h_present1.call<HRESULT>(sc, sync, flags, params); });
 }
 
