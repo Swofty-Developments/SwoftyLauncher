@@ -91,6 +91,8 @@ Select a creator's name, or open **Creators**, for their page: their bio and lin
 
 Creators with the **Swofty Launcher Addon Creator** role on the [Swofty Discord](https://discord.swofty.net) publish at [publish.f1.swofty.net](https://publish.f1.swofty.net). Each version goes to review first, and appears in the Addon Browser once it's approved.
 
+A new addon's id starts with a namespace of yours, such as `yourname.my-addon`: your Discord username, or up to 3 team or brand names you claim by publishing the first addon in them. Only you can publish new addons in your namespaces. The site lists your namespaces above the upload box, and a refused id comes with the namespaces you can use and a suggested id. Addons published before namespaces keep their ids ([`id`](/reference/addons/manifest#identity)).
+
 ### Gallery {#gallery}
 
 Each addon under **Your addons** on [publish.f1.swofty.net](https://publish.f1.swofty.net) has a **Gallery** section. What you add there shows on the addon's page as [Media](#media), for every version.
