@@ -140,6 +140,7 @@ core/guards/engine/placed_record.cpp: auto h = safetyhook::MidHook::create(reint
 core/guards/frontend/setup_vm_guard.cpp: runtime::loader::Installed r = runtime::loader::install(hooks[n], at, s.what, fn); => via
 core/guards/frontend/setup_vm_guard.cpp: size_t armed = arm(0, S_INIT, car_load<0>) + arm(1, S_VALUE_SET, car_load<1>) + arm(2, S_CHANGED_A, car_load<2>) + => mid sig S_INIT S_VALUE_SET S_CHANGED_A
 core/guards/frontend/setup_vm_guard.cpp: arm(3, S_CHANGED_B, car_load<3>); => mid sig S_CHANGED_B
+core/guards/garage/pit_garage_state.cpp: runtime::loader::Installed r = runtime::loader::install(hooks[n], at, s.sig.what, STORE_FNS[n]); => mid sig S_UPDATE_A S_UPDATE_B S_UPDATE_C S_UPDATE_D S_UPDATE_E S_PUT_IN_BOX S_CREW_READY
 core/guards/guard.cpp: ::runtime::loader::Installed r = ::runtime::loader::install(spec.hook, at, spec.name, spec.destination); => via
 core/guards/on_demand.hpp: std::call_once(once_, [this] { armed_.store(install(), std::memory_order_release); }); => none
 core/guards/on_demand.hpp: virtual bool install() = 0; => none
