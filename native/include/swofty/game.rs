@@ -4344,8 +4344,7 @@ pub type Game_FullRaceReplaySystem_Init_t = unsafe extern "C" fn(
 ) -> c_int;
 pub type Game_Game_HandleInterruptEvent_t =
     unsafe extern "C" fn(game: *mut c_void, event: *const c_void) -> u64;
-pub type Game_Game_SetCurrentGameMode_t =
-    unsafe extern "C" fn(mode_context: *mut c_void, mode: *mut c_void) -> u64;
+pub type Game_Game_SetCurrentGameMode_t = unsafe extern "C" fn(mode_context: *mut c_void, mode: *mut c_void);
 pub type Game_Get_ModelNodeId_t = unsafe extern "C" fn(name: *const c_char) -> u32;
 pub type Game_GridRundown_ShouldPlay_t = unsafe extern "C" fn(
     variant: u8,
@@ -4760,7 +4759,7 @@ pub type Sess_TyreAllocation_OnSessionStart_t = unsafe extern "C" fn(component: 
 pub type Sess_TyreClass_FromName_t =
     unsafe extern "C" fn(classes: *mut c_void, name: *const c_void, check_weekend_format: u8) -> *mut c_void;
 pub type Sess_Tyre_ShowFittedSet_t =
-    unsafe extern "C" fn(tyre_component: *mut c_void, apply_set: u8, show: u8, models: u32, force: u16);
+    unsafe extern "C" fn(tyre_component: *mut c_void, apply_set: u8, show: u8, with_wing: u8, force: u16);
 pub type Sess_Tyres_ClosestAvailableCompound_t = unsafe extern "C" fn(
     tyre_rules: *mut c_void,
     vehicle: u8,
