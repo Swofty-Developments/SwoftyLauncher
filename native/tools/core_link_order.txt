@@ -73,6 +73,7 @@ src/core/guards/session/teammate_pairs_guard.cpp
 src/core/guards/frontend/setup_vm_guard.cpp
 src/core/guards/engine/heap_sizes.cpp
 src/core/diagnostics/net_trace.cpp
+src/core/diagnostics/net_trace/hooks.cpp
 src/core/telemetry/udp_ids.cpp
 src/core/assets/assets.cpp
 src/core/assets/resources.cpp
