@@ -81,6 +81,7 @@ init
   src/core/career/save_splice.cpp
   src/core/boxes/box_grid.cpp
   src/core/boxes/car_category.cpp
+  src/core/boxes/picker/time_trial.cpp
   src/core/boxes/era_picker.cpp
   src/core/career/career_wizard.cpp
   src/core/career/characters.cpp
@@ -245,6 +246,7 @@ exit
   src/core/career/characters.cpp
   src/core/career/career_wizard.cpp
   src/core/boxes/era_picker.cpp
+  src/core/boxes/picker/time_trial.cpp
   src/core/boxes/car_category.cpp
   src/core/boxes/box_grid.cpp
   src/core/career/save_splice.cpp

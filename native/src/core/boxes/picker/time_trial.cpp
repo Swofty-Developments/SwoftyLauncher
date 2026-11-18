@@ -1,7 +1,10 @@
 #include "core/boxes/picker/picker.hpp"
 
+#include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/guards/session/replay_grid_logic.hpp"
+
+#include <safetyhook.hpp>
 
 #include <algorithm>
 #include <iterator>
@@ -16,6 +19,64 @@ namespace {
 
 constinit BudgetLines lines;
 
+namespace bp = runtime::build_proof;
+// The fill (0x142936760) is the same 2816 instructions on Steam 26566308 and the EA App KB build, with the entrants
+// vector (+0x2d8..+0x2f8), the records' +0x5c and +0x82 and the participants (+0xad0..+0xae0) at the same instructions
+// (sigport.py --witness); the site pattern matches once on each.
+constexpr bp::Proof FILL_ENTRANTS{"the Time Trial fill's entrants at its participant loop (holder +0x2e0, +0x2e8, "
+                                  "0x88-byte records, human flag +0x4b bit 0x10)",
+                                  bp::proofs::VERIFIED_LAYOUT.builds};
+constexpr bp::Gate ENTRANT_CAP{"the Time Trial entrant cap", &FILL_ENTRANTS};
+const runtime::Sig SIG_FILL_PARTICIPANTS{"session.time_trial_fill_participants", "48 8B B7 E0 02 00 00 48 89 7C 24 60",
+                                         0x2939dc2};
+safetyhook::MidHook h_entrant_cap;
+Cap<LOG_FIRST> cap_lines;
+
+void entrant_cap_mid(safetyhook::Context &c)
+{
+    uintptr_t holder = c.rdi, begin = 0, end = 0;
+    if (!holder || !mem::read(holder + logic::MGR_SESSION_BEGIN, begin) || !mem::read(holder + logic::MGR_SESSION_END, end))
+        return;
+    int64_t n = logic::entrant_count(begin, end);
+    if (n < 0 || size_t(n) <= logic::TT_TABLE)
+        return;
+    std::vector<bool> human(static_cast<size_t>(n));
+    size_t humans = 0;
+    for (size_t i = 0; i < human.size(); ++i) {
+        uint8_t flags = 0;
+        human[i] =
+            mem::read(begin + i * logic::ENTRANT_RECORD + logic::ENTRANT_HUMAN_BYTE, flags) && (flags & logic::ENTRANT_HUMAN);
+        humans += human[i];
+    }
+    std::vector<bool> fixed = human;
+    fixed.back() = true;
+    std::vector<size_t> keep = logic::table_entrants(fixed);
+    ref<uintptr_t>(reinterpret_cast<uint8_t *>(holder), logic::MGR_SESSION_END) =
+        reinterpret_cast<uintptr_t>(logic::keep_entrants(reinterpret_cast<uint8_t *>(begin), keep));
+    if (cap_lines.note())
+        swofty::log("[era] %s", logic::entrant_cap_line(human.size(), keep.size(), humans).c_str());
+}
+
+}
+
+bool install_entrant_cap()
+{
+    if (h_entrant_cap)
+        return true;
+    uintptr_t at = runtime::holds(ENTRANT_CAP) ? runtime::find(SIG_FILL_PARTICIPANTS, "Time Trial entrant cap", "era") : 0;
+    if (!at) {
+        swofty::log("[era] Time Trial entrant cap off: the fill's participant loop is not proven or did not resolve on this "
+                    "build");
+        return false;
+    }
+    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), entrant_cap_mid);
+    if (!h) {
+        swofty::log("[era] Time Trial entrant cap off: the hook on the fill's participant loop failed: %s",
+                    runtime::hook_error(h.error()).c_str());
+        return false;
+    }
+    h_entrant_cap = std::move(*h);
+    return true;
 }
 
 std::string session_list(uintptr_t ctx)

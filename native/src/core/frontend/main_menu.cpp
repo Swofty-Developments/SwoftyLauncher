@@ -64,7 +64,6 @@ MainMenu menu;
 namespace {
 
 using namespace swofty::game;
-namespace logic = ::frontend::main_menu;
 
 }
 
@@ -131,8 +130,8 @@ void screen(const char *name)
     if (!name)
         return;
     menu.navigation.screen(name);
-    logic::Screen kind = logic::classify_screen(name);
-    if (kind != logic::Screen::overlay) {
+    Screen kind = classify_screen(name);
+    if (kind != Screen::overlay) {
         {
             std::lock_guard<std::mutex> g(menu.view_lock);
             menu.home_view.screen(name);
@@ -155,10 +154,10 @@ void screen(const char *name)
 
 void command(void *, uint32_t command_hash, uint32_t focused_hash)
 {
-    if (!menu.patched.load() || command_hash != logic::djb2("select_pressed"))
+    if (!menu.patched.load() || command_hash != djb2("select_pressed"))
         return;
-    bool tt = focused_hash == logic::djb2(logic::ID_TIME_TRIAL);
-    bool gp = focused_hash == logic::djb2(logic::ID_GRAND_PRIX);
+    bool tt = focused_hash == djb2(ID_TIME_TRIAL);
+    bool gp = focused_hash == djb2(ID_GRAND_PRIX);
     if (!tt && !gp)
         return;
     if (uint64_t at = menu.home_opened_at.load(); at && GetTickCount64() - at < 700)
@@ -168,14 +167,14 @@ void command(void *, uint32_t command_hash, uint32_t focused_hash)
     if (!tt)
         return;
     menu.panel.read_state();
-    logic::State s = menu.panel.snapshot();
-    if (!logic::time_trial_warning_due(s, true, menu.tt_warned.load())) {
+    State s = menu.panel.snapshot();
+    if (!time_trial_warning_due(s, true, menu.tt_warned.load())) {
         if (!menu.navigation.entry_by_route())
             menu.navigation.start_chain(true);
         return;
     }
     menu.tt_warned = true;
-    int r = runtime::popup_show(logic::TT_TITLE, logic::TT_BODY, "swofty_core (main menu)");
+    int r = runtime::popup_show(TT_TITLE, TT_BODY, "swofty_core (main menu)");
     swofty::log("[main-menu] Time Trial while not signed in to Discord: warning %s; the pad chain is skipped this once",
                 r == 0 ? "queued" : "refused");
 }
