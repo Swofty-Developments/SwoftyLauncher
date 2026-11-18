@@ -36,6 +36,8 @@ third_party/zstd/decompress/zstd_ddict.c
 third_party/zstd/decompress/zstd_decompress_block.c
 third_party/zstd/decompress/zstd_decompress.c
 src/core/runtime/loader/mixin_manager.cpp
+src/core/runtime/loader/mixin_install.cpp
+src/core/runtime/loader/mixin_queries.cpp
 src/core/runtime/loader/patch_set.cpp
 src/core/diagnostics/crash/crash.cpp
 src/core/diagnostics/crash/crash_log.cpp

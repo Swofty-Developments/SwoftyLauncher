@@ -78,4 +78,7 @@ private:
 
 MixinManager &mixins();
 
+// A mixin kind's name in the loader's lines: wrap, site, vtable, redirect, patch or on_load ("?" for another).
+const char *kind_name(uint32_t k);
+
 }
