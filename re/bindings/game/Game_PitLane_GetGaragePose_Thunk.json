@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_PitLane_GetGaragePose_Thunk",
+ "table": "functions",
+ "author": "re-bindings",
+ "row": {
+  "addr": "0x1434c01a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434c01a0.c;xref:0x1434bbd7c;xref:0x1434be1ad;xref:0x1434c35ac;xref:0x1434c366f",
+  "notes": "engine-re 2026-11-17 track round C (static): 5-byte jmp to .data1 0x1503fecf0 (Ghidra decompiles the target through the thunk). (pitSystem, out 4x4, garage): garage < 32 and a request at [[sys+8]+0x638+garage*8] (VehiclePlacement type 6 = PitGarageN marker, slot = garage) -> Sess_VehiclePlacement_ResolveTransform + copy of the request matrix (+0x20..+0x5f); garage >= 32 or no PitGarage marker -> a static default matrix with position (0, -9000, 0) (row 3 = 0xc60ca000). Callers: Game_PitLane_UpdateMovement 0x1434bbd7c, Game_PitLane_HoldInGarage 0x1434be1ad, Game_PitLane_ProjectBoxPose 0x1434c35ac/0x1434c366f. Consequence for tracks: a car whose garage has no PitGarage marker is held/aligned 9 km below the track. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pit_lane_get_garage_pose_thunk",
+  "section": ".xtls",
+  "pattern": "45 89 C8 E8 ?? ?? ?? ?? 40 F6 C5 01",
+  "match": "0x1434c35a8",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x1434c01a0",
+  "kind": "call",
+  "names": [
+   "Game_PitLane_GetGaragePose_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-18",
+    "by": "re-bindings",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-17",
+   "verifier": "trkps-verify",
+   "kind": "func",
+   "item": "Game_PitLane_GetGaragePose_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434c01a0.c;xref:0x1503fecf0",
+   "notes": "V11204 jmp 0x1503fecf0 (.data1); garage<=0x1f and [[sys+8]+0x638+g*8]!=0 -> copies request+0x20 matrix. Else static 0x1460fb0b0 = 0x140136690(rsp+0x60 translation matrix with row3 from 0x145843020 = (0,-9000,0,1), identity) -> translation (0,-9000,0). Minor: re-read null after 0x142f62580 gives identity 0x146095c90."
+  }
+ ],
+ "proofs": []
+}

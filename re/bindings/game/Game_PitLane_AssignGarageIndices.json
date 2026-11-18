@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PitLane_AssignGarageIndices",
+ "table": "functions",
+ "author": "re-bindings",
+ "row": {
+  "addr": "0x1434b5110",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434b5110.c;xref:0x1434ca655;xref:0x1434cc5cc",
+  "notes": "engine-re 2026-11-17 track round C (static): called from Game_PitLane_GenerateSplines (0x1434ca655) and 0x1434cc5cc. Resets the pit lane garage index (car record +0xe0) of all 27 car records [mgr+0x938+id*0x10] to 0x7fffffff (0x1434b56bc..0x1434b5876), then per entrant (vector [[mgr+0xb70]+0x1d8..+0x1e0], stride 0x98, vehicle id +0x82, ids > 0x1a skipped at 0x1434b58e3): garage = 2 x team garage slot ([e+0x88]+0x28) + seat (e+0x90) when the track byte [[[mgr+0xb80]+0x1a8]+0x30]+0x60 (copied to mgr+0xc29, tested 0x1434b591a) is set, else (2 x slot | 1) - seat (per V11203 polarity correction; H: garage order flag of the track); safety-car vehicles (list [mgr+0xb38]+0x30..+0x38) get 0x63 (99). Pit box = garage >> 1; garage 99 uses box 12 = the safety-car request (type 7 slot 0). raised by engine-re with --force 2026-11-17 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pit_lane_assign_garage_indices",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 78 29 94 24 80 00 00 00 C5 78 29 4C 24 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 89 CE 48 8D 81 30 09 00 00",
+  "match": "0x1434b5110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434b5110",
+  "kind": "func_start",
+  "names": [
+   "Game_PitLane_AssignGarageIndices"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-18",
+    "by": "re-bindings",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-17",
+   "verifier": "trkps-verify",
+   "kind": "func",
+   "item": "Game_PitLane_AssignGarageIndices",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1434b5110.c;xref:0x1434b591d",
+   "notes": "V11203 27 records +0xe0=0x7fffffff, stride 0x98, id byte +0x82 > 0x1a skipped, garage-99 via list mgr+0xb38 - all confirmed. CORRECTION: polarity inverted - at 0x1434b591a byte (mgr+0xc29 = [..+0x30]+0x60) SET -> 2*slot+seat; byte ZERO -> (2*slot|1)-seat."
+  }
+ ],
+ "proofs": []
+}
