@@ -109,6 +109,33 @@ void car_category_commit()
 
 The career contents and their tile route, the car category boxes, the box grid and the save splice keep their hook state this way. `native/test/hook_set_test.cpp` pins the bind step's reason, `needs <ids>, which this build does not resolve`.
 
+A set whose parts addons ask for one by one keeps a `loader::MixinPart` per part: the mixin's name and label, wanted, its `MixinGate`, live and whether its late registration was logged. The career wizard's five controls and the character refs and voices are parts:
+
+```cpp
+runtime::loader::MixinPart ref{REF_MIXIN, "ref"}, voice{VOICE_MIXIN, "voice"};
+
+std::vector<CoreMixins> characters_mixins()
+{
+    std::vector<CoreMixins> out;
+    if (ref.offer()) // wanted, and offered for the first time
+        out.push_back({REF_MIXIN, {/* ... */}});
+    return out;
+}
+
+void characters_commit()
+{
+    bool any = false;
+    for (runtime::loader::MixinPart *p : {&ref, &voice})
+        any |= p->settle([p] { return core_mixins_active(p->name); });
+    if (any)
+        swofty::log("[characters] setup: character refs %s, voices %s", ref.state(), voice.state()); // armed, off, not used
+}
+```
+
+`usable(core_mixins_closed())` answers whether an addon's entry can still take effect, and `first_late()` is true once, for the line a registration after the last commit logs.
+
+Two hooks stay outside these objects. `diagnostics/tyre_models.cpp` keeps a `MixinGate` and its one original: a `HookSet` holds its reason as a `std::string`, whose exit-time destructor adds the unit to the exit section of `tools/core_init_order.txt`. `diagnostics/crash/dred.cpp` places its D3D12CreateDevice hook with `safetyhook::InlineHook::create` in the crash handler's attach step (`crash_attach`), on d3d12.dll's export from `GetProcAddress` with no signature or build gate; it logs through the crash log's own line function, and its line says only `hooked` or `NOT hooked`.
+
 A safetyhook mid hook or inline hook goes on through `loader::install` (`runtime/loader/hook_install.hpp`). Given a `HookSite` it checks the site's build gate, finds its signature and places the hook; given an address it only places the hook:
 
 ```cpp

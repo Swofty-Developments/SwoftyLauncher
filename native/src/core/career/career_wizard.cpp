@@ -2,7 +2,7 @@
 #include "core/guards/skips.hpp"
 #include "core/registry/older.hpp"
 #include "core/runtime/loader/core_sets.hpp"
-#include "core/runtime/loader/mixin_gate.hpp"
+#include "core/runtime/loader/hook_set.hpp"
 
 #include <swofty/game.hpp>
 
@@ -114,16 +114,12 @@ std::atomic<uint64_t> hidden_tabs{0};
 std::atomic<bool> any{false};
 constinit swofty_core::guards::LogFirst<6> note_lines[8];
 
-struct Part {
-    const char *name;
-    std::atomic<bool> wanted{false};
-    runtime::loader::MixinGate gate{};
-    std::atomic<bool> live{false}, late_logged{false};
-};
-
 constexpr int ROUTE = 1, TABS = 4;
-Part parts[5] = {{START_MIXIN}, {nullptr}, {STEP_MIXIN}, {CONFIRM_MIXIN}, {TABS_MIXIN}};
-const char *const part_names[5] = {"start in F1", "tile route", "steps and options", "confirm route", "driver tabs"};
+runtime::loader::MixinPart parts[5] = {{START_MIXIN, "start in F1"},
+                                       {nullptr, "tile route"},
+                                       {STEP_MIXIN, "steps and options"},
+                                       {CONFIRM_MIXIN, "confirm route"},
+                                       {TABS_MIXIN, "driver tabs"}};
 
 const char *intern(const std::string &s)
 {
@@ -326,7 +322,7 @@ bool part_usable(int i)
 {
     if (i == ROUTE)
         return runtime::tile_route_state() != runtime::TileRoute::off;
-    return parts[i].live || (!parts[i].gate.settled() && !runtime::core_mixins_closed());
+    return parts[i].usable(runtime::core_mixins_closed());
 }
 
 int need(int i, bool want)
@@ -342,8 +338,8 @@ int need(int i, bool want)
     }
     if (part_usable(i) && (i != TABS || part_usable(ROUTE)))
         return SWOFTY_ASSET_OK;
-    if (want && runtime::core_mixins_closed() && !parts[i].gate.offered() && !parts[i].late_logged.exchange(true))
-        swofty::log("[wizard] %s registered after the last mixin commit; its hook is not installed", part_names[i]);
+    if (want && runtime::core_mixins_closed() && !parts[i].gate.offered() && parts[i].first_late())
+        swofty::log("[wizard] %s registered after the last mixin commit; its hook is not installed", parts[i].label);
     return SWOFTY_ASSET_UNAVAILABLE;
 }
 
@@ -457,44 +453,38 @@ static std::vector<CoreMixins> wizard_mixins()
     std::vector<CoreMixins> out;
     if (!enabled("career", nullptr))
         return out;
-    auto offer = [&](int i) { return parts[i].wanted && parts[i].gate.offer(); };
-    if (offer(0))
+    if (parts[0].offer())
         out.push_back(
             {START_MIXIN,
              {{"Game_CareerWizard_StartsInF1", SWOFTY_MIXIN_WRAP, 100, (void *)&starts_in_f1, (void **)&orig_starts}}});
-    if (offer(2))
+    if (parts[2].offer())
         out.push_back(
             {STEP_MIXIN,
              {{"Game_CareerWizard_PushNextStep", SWOFTY_MIXIN_WRAP, 100, (void *)&push_step, (void **)&orig_push}}});
-    if (offer(3))
+    if (parts[3].offer())
         out.push_back(
             {CONFIRM_MIXIN,
              {{"site_Game_CareerWizardConfirm_NextRoute", SWOFTY_MIXIN_SITE, 100, (void *)&confirm_route, nullptr}}});
-    if (offer(4))
+    if (parts[4].offer())
         out.push_back({TABS_MIXIN,
                        {{"site_Game_DriverSelectHeader_BuildTabs", SWOFTY_MIXIN_REDIRECT, 100, (void *)&build_tabs,
                          (void **)&orig_tabs},
                         {"Game_DriverSelectHeader_SetTabState", SWOFTY_MIXIN_WRAP, 100, (void *)&tab_state,
                          (void **)&orig_tab_state}}});
-    if (parts[ROUTE].wanted)
-        parts[ROUTE].gate.offer();
+    parts[ROUTE].offer();
     return out;
 }
 
 static void wizard_commit()
 {
     bool any = false;
-    for (int i = 0; i < 5; i++) {
-        Part &p = parts[i];
-        if (!p.gate.offered() || p.gate.settled() || (i == ROUTE && tile_route_state() == TileRoute::pending))
-            continue;
-        p.live = i == ROUTE ? tile_route_state() == TileRoute::live : core_mixins_active(p.name);
-        any |= p.gate.settle();
-    }
-    auto state = [](int i) { return parts[i].live ? "armed" : parts[i].gate.settled() ? "off" : "not used"; };
+    for (int i = 0; i < 5; i++)
+        if (i != ROUTE || tile_route_state() != TileRoute::pending)
+            any |= parts[i].settle(
+                [i] { return i == ROUTE ? tile_route_state() == TileRoute::live : core_mixins_active(parts[i].name); });
     if (any)
         swofty::log("[wizard] setup: start in F1 %s, tile route %s, steps and options %s, confirm route %s, driver tabs %s",
-                    state(0), state(1), state(2), state(3), state(4));
+                    parts[0].state(), parts[1].state(), parts[2].state(), parts[3].state(), parts[4].state());
 }
 
 static loader::FunctionSet wizard_core_set{loader::CoreSetId::wizard, wizard_mixins, wizard_commit};
