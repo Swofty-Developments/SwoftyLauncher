@@ -53,8 +53,8 @@ fn unlock_folders_name_their_list_and_share_its_stat_id_space() {
     assert!(!is_unlock_ids("entrants.teams.team"));
     let ops: DbOps = serde_json::from_str(&format!(
         r#"{{"schema_version":1,"ops":[
-        {{"op":"add-row","table":"{list}.folder_23","from":"{list}.folder_23.unlockable_se_livery_0","set":{{"_metadata_":"a","statId":"7"}}}},
-        {{"op":"add-row","table":"{list}.folder_1","from":"{list}.folder_1.unlockable_suit[_metadata_=x]","set":{{"_metadata_":"b"}}}}]}}"#
+            {{"op":"add-row","table":"{list}.folder_23","from":"{list}.folder_23.unlockable_se_livery_0","set":{{"_metadata_":"a","statId":"7"}}}},
+            {{"op":"add-row","table":"{list}.folder_1","from":"{list}.folder_1.unlockable_suit[_metadata_=x]","set":{{"_metadata_":"b"}}}}]}}"#
     ))
     .unwrap();
     assert_eq!(
