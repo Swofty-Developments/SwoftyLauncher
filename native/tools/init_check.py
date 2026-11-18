@@ -28,9 +28,13 @@ link order, and the destructors they register with atexit run in the reverse of 
 static constructor of their own and the inline variables they initialize, both in the order they run, the units whose
 destructors run at exit in that order, the SDK mixin list in the order it is built, the on-load entries in the order
 the loader runs them with the hook guard each one spelled in a macro that expands to SWOFTY_HOOK_GUARD arms, and the
-units whose copies of the SDK's binding slots add to its wanted list, in order, to --order-out. It fails when a hook
-guard's entry arms another guard than its own, and with --snapshot when what it writes differs from the snapshot or
-a unit with static objects is not in --link-order.
+units whose copies of the SDK's binding slots add to its wanted list, in order, to --order-out, then the mixin list in
+the order the core's ranks give it: each unit with a mixin or an on-load entry names its CoreRank, with
+SWOFTY_CORE_RANK or a macro that expands to it, before its first registration, and rank_core_mixins orders the list by
+rank before the loader reads it. It fails when a hook guard's entry arms another guard than its own, when a
+registering unit has no rank, a rank of its own or a rank named before its registrations, when a rank names no
+registering unit, when the ranks give another order than the run order, and with --snapshot when what it writes
+differs from the snapshot or a unit with static objects is not in --link-order.
 """
 
 import argparse
@@ -48,6 +52,7 @@ NATIVE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SDK = os.path.normpath(os.path.join(NATIVE, '../packages/sdk/include'))
 MACRO_HEADERS = [SDK, os.path.join(NATIVE, 'include')]
 DIAG = re.compile(r'^(.+?):(\d+):\d+: warning: declaration requires a global (constructor|destructor)')
+RANK_HEADER = 'src/core/runtime/loader/core_rank.hpp'
 BINDING = re.compile(r'^_ZN6swofty6detail5boundI.*4addrE$')
 DEFAULT_DECL = re.compile(r'(?:(?:static|inline|thread_local)\s+)*((?:\w+::)*\w+)(?:\s*<.*>)?\s+[\w\s,*&\[\]]+;')
 ORDER_HEADER = """# What tools/core_link_order.txt decides in swofty_core.dll, as tools/init_check.py derives it from the core's
@@ -58,8 +63,10 @@ ORDER_HEADER = """# What tools/core_link_order.txt decides in swofty_core.dll, a
 # linker keeps, in the order they run. exit: the units whose destructors run at exit, in that order (the reverse of
 # the order they registered them). mixins: the SDK mixin list in the order it is built. on-load: its on-load entries
 # in the order the loader runs them, each hook guard's entry arming the next hook guard in HookGuardId order.
-# bindings: the units whose copies of the SDK's binding slots add to its wanted list, in order. After an intended
-# change, copy native/build/init-order.txt here.
+# bindings: the units whose copies of the SDK's binding slots add to its wanted list, in order. explicit: the mixin
+# list in the order the core's ranks (CoreRank in src/core/runtime/loader/core_rank.hpp) put it in before the loader
+# reads it, under each unit's rank; the build fails unless it is the order of the mixins and on-load sections. After
+# an intended change, copy native/build/init-order.txt here.
 """
 
 Entry = collections.namedtuple('Entry', 'path line kind decl macro')
@@ -102,10 +109,27 @@ def expands_to(name, target, bodies, seen=None):
     return any(expands_to(m, target, bodies, seen) for m in re.findall(r'\bSWOFTY_\w+', bodies.get(name, '')))
 
 
-def hook_guard_ids():
-    path = os.path.join(NATIVE, 'src/core/guards/order.hpp')
-    m = re.search(r'enum class HookGuardId[^{]*\{([^}]*)\}', open(path).read()) if os.path.isfile(path) else None
+def enum_names(path, enum):
+    path = os.path.join(NATIVE, path)
+    m = re.search(rf'enum class {enum}[^{{]*\{{([^}}]*)\}}', open(path).read()) if os.path.isfile(path) else None
     return [n for n in re.findall(r'(\w+)\s*,', m.group(1)) if n != 'count'] if m else []
+
+
+def hook_guard_ids():
+    return enum_names('src/core/guards/order.hpp', 'HookGuardId')
+
+
+def core_ranks():
+    return enum_names(RANK_HEADER, 'CoreRank')
+
+
+def rank_marks(unit, bodies):
+    marks = []
+    for n, text in enumerate(source_lines(unit), 1):
+        m = re.match(r'\s*(SWOFTY_\w+)\s*\(\s*(\w+)', text)
+        if m and expands_to(m.group(1), 'SWOFTY_CORE_RANK', bodies):
+            marks.append((n, m.group(2)))
+    return marks
 
 
 def source_lines(path, cache={}):
@@ -197,6 +221,70 @@ def linked(units):
     return listed
 
 
+def registered_lines(unit):
+    return sorted(e.line for e in unit.entries
+                  if e.path == unit.name and e.kind == 'constructor' and e.macro in ('SWOFTY_REG_', 'SWOFTY_ON_LOAD'))
+
+
+def registrations(names, by_name, hooks, bodies):
+    mixins, onload, rows, armed, misarmed = [], [], [], 0, []
+    for name in names:
+        own = sorted((e for e in by_name[name].entries if e.path == name and e.kind == 'constructor'),
+                     key=lambda e: e.line)
+        for e in own:
+            if e.macro not in ('SWOFTY_REG_', 'SWOFTY_ON_LOAD'):
+                continue
+            entry = f'{name}  {head(e.decl)}'
+            mixins.append(entry)
+            if e.macro == 'SWOFTY_ON_LOAD':
+                spelled = re.match(r'\s*(SWOFTY_\w+)\s*(?:\(\s*(\w+))?', e.decl)
+                if spelled and expands_to(spelled.group(1), 'SWOFTY_HOOK_GUARD', bodies):
+                    arms = hooks[armed] if armed < len(hooks) else 'no hook guard'
+                    armed += 1
+                    if arms != spelled.group(2):
+                        misarmed.append(f'{entry} arms {arms}')
+                    entry += f', arms {arms}'
+                onload.append(entry)
+            rows.append(entry)
+    return mixins, onload, rows, misarmed
+
+
+def explicit_order(units, hooks, bodies, ranks, marks_of=rank_marks):
+    by_name = {u.name: u for u in units}
+    run = list(dict.fromkeys(u.name for u, c in reversed(linked(units)) if not c.comdat))
+    owner, problems = {}, []
+    for name in run:
+        lines = registered_lines(by_name[name])
+        if not lines:
+            continue
+        marks = marks_of(name, bodies)
+        if len(marks) != 1:
+            problems.append(f'{name}: ' + ('registers mixins or on-load entries but names no rank with SWOFTY_CORE_RANK'
+                                           if not marks else 'names more than one rank'))
+            continue
+        line, rank = marks[0]
+        if rank not in ranks:
+            problems.append(f'{name}:{line}: CoreRank in {RANK_HEADER} has no {rank}')
+            continue
+        if line > lines[0]:
+            problems.append(f'{name}:{line}: the rank is named after the unit\'s first registration (line {lines[0]})')
+        if rank in owner:
+            problems.append(f'{name}:{line}: {owner[rank]} names the same rank, {rank}')
+            continue
+        owner[rank] = name
+    problems += [f'{RANK_HEADER}: CoreRank::{r} is no registering unit\'s rank' for r in ranks if r not in owner]
+    rank_of = {name: rank for rank, name in owner.items()}
+    order = [owner[r] for r in ranks if r in owner]
+    mixins, onload, rows, _ = registrations(order, by_name, hooks, bodies)
+    run_mixins, run_onload, _, _ = registrations([n for n in run if n in rank_of], by_name, hooks, bodies)
+    if not problems and (mixins, onload) != (run_mixins, run_onload):
+        problems.append('the ranks order the mixins and on-load entries otherwise than the run order:')
+        problems += [l for l in difflib.unified_diff(run_mixins + ['on-load'] + run_onload, mixins + ['on-load'] + onload,
+                                                    'run order', 'rank order', lineterm='', n=1)]
+    text = 'explicit\n' + ''.join(f'  {rank_of[row.split("  ")[0]]}  {row}\n' for row in rows)
+    return text, problems
+
+
 def order_effects(units, hooks, bodies):
     run = list(reversed(linked(units)))
     init, inline, bindings, registered = [], [], [], []
@@ -214,25 +302,7 @@ def order_effects(units, hooks, bodies):
     for name in reversed(registered):
         if name not in exit_order:
             exit_order.append(name)
-    by_name = {u.name: u for u in units}
-    mixins, onload, armed, misarmed = [], [], 0, []
-    for name in init:
-        own = sorted((e for e in by_name[name].entries if e.path == name and e.kind == 'constructor'),
-                     key=lambda e: e.line)
-        for e in own:
-            if e.macro not in ('SWOFTY_REG_', 'SWOFTY_ON_LOAD'):
-                continue
-            mixins.append(f'{name}  {head(e.decl)}')
-            if e.macro == 'SWOFTY_ON_LOAD':
-                entry = f'{name}  {head(e.decl)}'
-                spelled = re.match(r'\s*(SWOFTY_\w+)\s*(?:\(\s*(\w+))?', e.decl)
-                if spelled and expands_to(spelled.group(1), 'SWOFTY_HOOK_GUARD', bodies):
-                    arms = hooks[armed] if armed < len(hooks) else 'no hook guard'
-                    entry += f', arms {arms}'
-                    armed += 1
-                    if arms != spelled.group(2):
-                        misarmed.append(f'{name}  {head(e.decl)} arms {arms}')
-                onload.append(entry)
+    mixins, onload, _, misarmed = registrations(init, {u.name: u for u in units}, hooks, bodies)
     text = ORDER_HEADER
     for title, rows in (('init', init), ('inline', inline), ('exit', exit_order), ('mixins', mixins),
                         ('on-load', onload), ('bindings', bindings)):
@@ -368,6 +438,8 @@ def main():
     order_ok = True
     if a.order_out:
         text, involved, misarmed = order_effects(units, hook_guard_ids(), bodies)
+        explicit, rank_problems = explicit_order(units, hook_guard_ids(), bodies, core_ranks())
+        text += explicit
         with open(a.order_out, 'w') as out:
             out.write(text)
         if misarmed:
@@ -375,6 +447,13 @@ def main():
                   'next one in HookGuardId order, so src/core/guards/order.hpp must list the hook guards in the order '
                   'their on-load entries run (the on-load section of native/build/init-order.txt):', file=sys.stderr)
             print('\n'.join(f'  {m}' for m in misarmed), file=sys.stderr)
+            order_ok = False
+        if rank_problems:
+            print(f'init_check.py: the core\'s ranks do not order its SDK registrations. Every unit with a mixin or an '
+                  f'on-load entry names its rank in CoreRank ({RANK_HEADER}) with SWOFTY_CORE_RANK before its first '
+                  'registration, or gets it from SWOFTY_HOOK_GUARD, and CoreRank lists those units in the order the '
+                  'mixins section of native/build/init-order.txt runs them in:', file=sys.stderr)
+            print('\n'.join(f'  {p}' for p in rank_problems), file=sys.stderr)
             order_ok = False
         if a.snapshot:
             order_ok = check_order(text, involved, a) and order_ok

@@ -9,6 +9,11 @@
 # guards arm in HookGuardId order from there, whatever order their units initialize in.
 src/core/guards/guard.hpp: #define SWOFTY_HOOK_GUARD
 
+# Constructs a RankMark, which writes the length of the SDK mixin list into a constinit array in
+# runtime/loader/core_rank.cpp. The length depends on the order units initialize in, but rank_core_mixins orders the
+# list by rank from these marks, whatever that order.
+src/core/runtime/loader/core_rank.hpp: #define SWOFTY_CORE_RANK
+
 # A string copied from a literal.
 src/core/assets/gamedb.cpp: std::string reserve_off = "the reserve site is not hooked";
 

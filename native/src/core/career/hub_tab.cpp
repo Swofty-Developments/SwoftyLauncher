@@ -6,6 +6,7 @@
 #include "core/runtime/settings.hpp"
 #include "core/registry/older.hpp"
 #include "core/frontend/ui_vm.hpp"
+#include "core/runtime/loader/core_rank.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/game.hpp>
@@ -550,6 +551,8 @@ extern "C" __declspec(dllexport) const SwoftyHub *SwoftyCoreHub(void)
 {
     return &hub::hub_table;
 }
+
+SWOFTY_CORE_RANK(hub_tab)
 
 SWOFTY_ON_LOAD
 {

@@ -9,6 +9,7 @@
 #include "core/diagnostics/perf.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/settings.hpp"
+#include "core/runtime/loader/core_rank.hpp"
 
 using namespace swofty::game;
 
@@ -20,6 +21,8 @@ using namespace swofty::game;
 #define SWOFTY_MOD_SETTINGS_MODE "active"
 #define SWOFTY_MOD_SETTINGS_ACTIVE 1
 #endif
+
+SWOFTY_CORE_RANK(home_tiles)
 
 namespace {
 
@@ -74,6 +77,7 @@ Action *mod_get_action(HomeItem *item, Action *out)
 
 bool check()
 {
+    runtime::loader::rank_core_mixins();
     uintptr_t site = site_FeHome_AfterCareerCall.address(), builder = FeTile_Build_List.address();
     swofty::log("[core] swofty_core init, game base 0x%llx", (unsigned long long)swofty::api->module_base());
     swofty::log("[core] ADDON SETTINGS mixin: %s", SWOFTY_MOD_SETTINGS_MODE);

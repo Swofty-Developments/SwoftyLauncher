@@ -16,6 +16,7 @@
 #include "core/career/ops/lineup.hpp"
 #include "core/career/ops/ops_api.hpp"
 #include "core/career/ops/tables.hpp"
+#include "core/runtime/loader/core_rank.hpp"
 
 // The core's career operations (standard library 1.6, SwoftyCareerOps): apply_lineup, set_driver_ratings and
 // swap_drivers, (table version 2) report_season, which the career snapshots answer (snapshots/runtime.cpp), and
@@ -489,6 +490,8 @@ extern "C" __declspec(dllexport) const SwoftyCareerOps *SwoftyCoreCareerOps(void
 {
     return &g_table;
 }
+
+SWOFTY_CORE_RANK(career_ops)
 
 SWOFTY_ON_LOAD
 {
