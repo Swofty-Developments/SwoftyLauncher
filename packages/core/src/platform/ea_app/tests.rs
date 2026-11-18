@@ -264,6 +264,14 @@ fn runs_the_unquoted_handler_the_ea_app_registers() {
     );
     assert_eq!(split_handler(r"C:\a.exe.d\b.exe %1"), [r"C:\a.exe.d\b.exe", "%1"]);
     assert_eq!(split_handler("open %1"), ["open", "%1"]);
+    assert_eq!(
+        h.program(),
+        Some(PathBuf::from(
+            r"C:\Program Files\Electronic Arts\EA Desktop\EA Desktop\EALauncher.exe"
+        ))
+    );
+    assert_eq!(Handoff::Program(vec!["open.bat".into()]).program(), None);
+    assert_eq!(Handoff::Shell("/games/ea-app.sh {url}".into()).program(), None);
 }
 
 #[test]

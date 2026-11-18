@@ -4,6 +4,7 @@
 pub mod builtin;
 pub mod helper;
 pub mod import;
+pub mod imported;
 pub mod package;
 pub mod registry;
 pub mod settings;

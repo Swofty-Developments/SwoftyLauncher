@@ -466,11 +466,14 @@ logic::CpuMinute cpu(Cpu &st, double secs)
                     s.user = ft(u), s.kernel = ft(k);
             }
             s.alive = true;
+            uint64_t du = logic::delta(ft(u), s.user), dk = logic::delta(ft(k), s.kernel);
             if (s.ours) {
-                uint64_t du = logic::delta(ft(u), s.user), dk = logic::delta(ft(k), s.kernel);
                 ou += du, ok += dk;
                 out.threads++;
                 out.top.push_back({s.what, logic::cores(du + dk, secs)});
+            } else if (double c = logic::cores(du + dk, secs); c > out.game_top) {
+                out.game_top = c;
+                out.game_top_what = "tid " + std::to_string(tid);
             }
             s.user = ft(u), s.kernel = ft(k);
         }

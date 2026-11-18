@@ -25,6 +25,10 @@ refers: src/core/hud/race_hud.cpp: frontend::popup::messages
 # Reads the system clock.
 src/core/career/career_saves.cpp: std::string session_id = std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(
 
+# Empty containers and a mutex: their constructors read no other unit's object.
+src/core/render/badges/badge_images.cpp: std::map<std::string, Image> images;
+src/core/render/badges/badge_images.cpp: ArchiveAccess archive_access;
+
 # Reads the process environment.
 src/core/testing/direct_start.cpp: const bool diag_on = env_flag("SWOFTY_DIRECT_DIAG");
 # Write constinit function pointers in testing/direct_start.cpp, which hold their value before any dynamic

@@ -67,7 +67,7 @@ impl Launching {
                 .launch_failed
                 .as_ref()
                 .filter(|f| f.at >= launch.at)
-                .map(|f| f.headline().to_owned());
+                .map(super::launch_alerts::launch_headline);
             self.notice = Some(match &game.blocked {
                 _ if refused => tr("an antivirus removed mod files, so F1 25 was not started").to_owned(),
                 _ if not_stock.is_some() => not_stock.unwrap_or_default(),
@@ -416,6 +416,9 @@ impl Launching {
         cx: &mut Context<H>,
     ) -> Played {
         crate::app::app_log::note(&checked.timings.line());
+        for line in &checked.lines {
+            crate::app::app_log::note(line);
+        }
         let (launching, needs) = host.split();
         let stale = needs.profile != checked.profile
             || needs.game.install.as_ref().map(|i| &i.dir) != Some(&checked.game);

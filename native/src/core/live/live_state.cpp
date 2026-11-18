@@ -8,6 +8,7 @@
 #include "core/runtime/build.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/telemetry/telemetry_feed.hpp"
+#include "core/render/badges/badge_images.hpp"
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
@@ -383,7 +384,7 @@ int live_seq(uint64_t *frame)
 
 const SwoftyLive table = {SWOFTY_LIVE_VERSION, live_available,   live_session,    live_car, live_subject,
                           live_turn,           live_track_turns, live_team_badge, live_seq, live_driver_name,
-                          live_team_badge_texture};
+                          live_team_badge_texture, badge_images::api};
 
 }
 
@@ -415,6 +416,7 @@ void live_setup()
     }
     lv::Mem mem;
     mem.fn = kernel_copy;
+    g_sites.my_team_saved_badge = stamp == 1794312636u;
     g_live = std::make_unique<lv::Live>(mem, g_sites, g_gates);
     g_on = true;
     swofty::log("[live] on (%s build): groups %s%s%s", build->name, group_list(g_gates).c_str(),

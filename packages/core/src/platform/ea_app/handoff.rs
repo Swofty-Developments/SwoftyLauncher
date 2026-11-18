@@ -125,6 +125,17 @@ impl Handoff {
         }
     }
 
+    /// The program the hand-off runs, when it is an exe rather than a shell
+    /// command line.
+    pub fn program(&self) -> Option<PathBuf> {
+        match self {
+            Self::Program(words) if words[0].to_ascii_lowercase().ends_with(".exe") => {
+                Some(PathBuf::from(&words[0]))
+            }
+            _ => None,
+        }
+    }
+
     /// The command that hands over `url`. The EA app it may start is the
     /// one that starts F1 25, so the launcher's [`COMPAT_LAYER`] stays out.
     pub fn command(&self, url: &str) -> Command {

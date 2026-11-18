@@ -13,6 +13,30 @@ static int failures;
 
 namespace live = swofty::live;
 
+static int image_getter_calls;
+static const SwoftyLiveImages test_images = {1, nullptr, nullptr, nullptr, nullptr};
+static const SwoftyLiveImages *image_getter()
+{
+    ++image_getter_calls;
+    return &test_images;
+}
+
+static void image_table_versions()
+{
+    SwoftyLive table{};
+    table.images = image_getter;
+    for (uint32_t version : {1u, 2u, 3u}) {
+        table.version = version;
+        live::detail::set_table(&table);
+        CHECK(!live::images() && image_getter_calls == 0);
+    }
+    table.version = 4;
+    CHECK(live::images() == &test_images && image_getter_calls == 1);
+    table.images = nullptr;
+    CHECK(!live::images() && image_getter_calls == 1);
+    live::detail::set_table(nullptr);
+}
+
 static SwoftyLiveTurn turn(int number, float apex)
 {
     SwoftyLiveTurn t{};
@@ -27,6 +51,7 @@ static SwoftyLiveTurn turn(int number, float apex)
 
 int main()
 {
+    image_table_versions();
     CHECK(!live::available() && !live::session() && !live::car(0) && !live::subject() && live::order().ids.empty());
 
     {

@@ -363,7 +363,7 @@ A block is a list of changes, each a section, a key, an operator and a value:
 
 ```cpp
 namespace swofty::cars {
-struct UpgradeChange { std::string section, key; char op; float value; };   // op: '*', '+', '-', '/', '='
+struct UpgradeChange { std::string section, key; char op; float value; };   // op: '=', '+', '-' or '*'
 struct RadUpgrade { std::string name; std::vector<UpgradeChange> changes; };
 }
 ```

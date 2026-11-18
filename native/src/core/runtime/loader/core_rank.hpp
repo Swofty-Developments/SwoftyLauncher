@@ -24,6 +24,8 @@ enum class CoreRank : uint8_t {
     rnd_suppliers,
     replay_read,
     ai_curves,
+    ai_ers,
+    calendar_track,
     teamhq_track,
     setup_vm,
     teammate_pairs,

@@ -1,6 +1,6 @@
 ---
 title: Addon Browser
-description: Finding, installing and starring community addons in the launcher's Addon Browser - search, categories, sorting, filters, creators, updates and publishing your own.
+description: Finding, installing and starring community addons in the launcher's Addon Browser - search, categories, sorting, filters, media, creators, updates and publishing your own.
 ---
 
 # Addon Browser
@@ -24,6 +24,15 @@ Above the rows, a strip of category tiles shows each category's glyph, name and 
 Every card shows a tag for each platform its creator tested the addon on: **Steam**, **EA**, or both. An addon whose creator lists none shows **Not tested**. The tag appears on the addon's page too. A tag never stops an install.
 
 Select an addon for its description, a 30-day downloads chart, its file size and checksum, the launcher version it needs, and every version's changelog. When the creator lists the addon's source code, a **Source code** button opens it; an addon without one has no button, and an installed addon's page shows **Not listed** under **Source code**. **More from** lists the same creator's other addons.
+
+### Media {#media}
+
+An addon whose creator added pictures, videos or video links shows a **Media** card at the top of its page: the selected item, its caption, and a row of thumbnails to pick from.
+
+- Videos and video links show a play button. Selecting a video opens it in your browser, and selecting a video link opens it on YouTube, Vimeo or Streamable. Selecting a picture opens it full size in your browser.
+- The launcher plays nothing itself and loads nothing from YouTube, Vimeo or Streamable. Pictures, video posters and video thumbnails come from the Swofty registry, the same place as the addon.
+- The pictures load when you open the addon's page, and are kept in `cache/registry/media` in the data folder, up to 256 MB.
+- Offline, or when the registry can't be reached, the card is hidden.
 
 ## Install one
 
@@ -68,7 +77,7 @@ The error's second line holds the network error, and `state/registry.log` in the
 
 ## Updates
 
-When an installed addon that is on in your active profile has a newer version, **Play** becomes **Update addons** with the number of updates. Updates for addons that are off are listed here and on the Addons page without changing **Play**, unless **Update turned-off addons** is on in [Settings](/using/settings#general). See [Updating](/using/updating#addon-updates).
+When an installed addon that is on in your active profile has a newer version, **Play** becomes **Update addons** with the number of updates. This includes an addon you installed from a file. An import with an Addon Browser addon's id gets no updates and shows **Your import v1.0.0 has this id** instead of **Install**; remove the import on the **Addons** page to install that addon. Updates for addons that are off are listed here and on the Addons page without changing **Play**, unless **Update turned-off addons** is on in [Settings](/using/settings#general). See [Updating](/using/updating#addon-updates).
 
 ## Stars
 
@@ -81,6 +90,21 @@ Select a creator's name, or open **Creators**, for their page: their bio and lin
 ## Publish your own
 
 Creators with the **Swofty Launcher Addon Creator** role on the [Swofty Discord](https://discord.swofty.net) publish at [publish.f1.swofty.net](https://publish.f1.swofty.net). Each version goes to review first, and appears in the Addon Browser once it's approved.
+
+A new addon's id starts with a namespace of yours, such as `yourname.my-addon`: your Discord username, or up to 3 team or brand names you claim by publishing the first addon in them. Only you can publish new addons in your namespaces. The site lists your namespaces above the upload box, and a refused id comes with the namespaces you can use and a suggested id. Addons published before namespaces keep their ids ([`id`](/reference/addons/manifest#identity)).
+
+### Gallery {#gallery}
+
+Each addon under **Your addons** on [publish.f1.swofty.net](https://publish.f1.swofty.net) has a **Gallery** section. What you add there shows on the addon's page as [Media](#media), for every version.
+
+- **Pictures:** PNG, JPEG or WebP, up to 5 MB and 8192 pixels a side.
+- **Videos:** MP4 or WebM, up to 100 MB. The page takes a frame from the video as its poster.
+- **Video links:** YouTube, Vimeo or Streamable. The video's title becomes the caption, and its thumbnail is copied to the registry. Private videos are refused.
+- Drop files on the gallery, or select **choose files**, to upload one or more at once. Paste a link and select **Add link** for a video link.
+- Up to 12 items, and up to 30 added to one addon in a day. The same picture, video or link can't be added twice.
+- Each item has a caption of up to 200 characters, saved when you press Enter or leave the field. The arrows change the order, and the bin deletes the item.
+- Pictures lose their location, camera and other hidden data when they're uploaded.
+- Items show in the launcher as soon as they're added. Swofty can remove an item, and the gallery then shows it as removed with the reason.
 
 ## Activity and offline use
 

@@ -19,7 +19,8 @@ pub use form::{
 };
 pub use style::{Art, Fact, Icon, Notice, Style, Tag, Tone};
 pub use table::{
-    Align, Cell, CellImage, CellSpec, Column, ColumnSpec, RowSpec, Sort, SortKey, Span, Table, TableRow,
+    Align, Cell, CellImage, CellImageData, CellSpec, Column, ColumnSpec, RowSpec, Sort, SortKey, Span, Table,
+    TableRow,
 };
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

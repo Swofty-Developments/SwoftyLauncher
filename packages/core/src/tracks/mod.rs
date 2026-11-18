@@ -15,12 +15,13 @@ mod tests;
 use self::addons::added_codes;
 pub(crate) use self::addons::adders;
 pub use self::addons::{
-    added_count, installed, is_track_addon, left_out_line, left_out_lines, older_ids, unusable,
+    added_count, installed, is_track_addon, left_out_line, left_out_lines, older_ids, package_author,
+    unusable,
 };
 pub(crate) use self::changes::{changed_records, keep_changes};
 pub use self::lists::{
-    ListedTracks, TRACK_LIST_ROOM, TrackLimit, fit_track_lists, may_fill_track_lists, record_track_limit,
-    recorded_track_limit, track_lists_full_warning,
+    FILL_FROM, ListedTracks, TRACK_LIST_ROOM, TrackLimit, fit_track_lists, may_fill_track_lists,
+    record_track_limit, recorded_track_limit, track_lists_full_warning,
 };
 pub use self::older::{
     OLDER_FILE, OLDER_VERSION, OlderTrack, OlderTracks, Venue, Venues, normalise, older_tracks, read_older,

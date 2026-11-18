@@ -41,7 +41,11 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
     if let Some(d) = swofty_core::diagnostics::known_problems::outdated_exe(version.as_deref()) {
         say("warning", &format!("{}: {}", d.title, d.text()));
     }
-    if let Some(reason) = swofty_core::platform::run_as_admin::elevation_blocker(&g.dir) {
+    // An EA app copy's session was checked before the EA app started: the EA
+    // app, not this process, starts its game.
+    if !args.via_ea
+        && let Some(reason) = swofty_core::platform::run_as_admin::elevation_blocker(&g.dir)
+    {
         bail!("{reason}");
     }
     if swofty_core::platform::run_as_admin::write_blocker(&g.dir).is_some() {

@@ -48,6 +48,9 @@ void Profiler::attach()
     QueryPerformanceFrequency(&qpf);
     QueryPerformanceCounter(&qpc0);
     tsc0 = tsc();
+    FILETIME now;
+    GetSystemTimeAsFileTime(&now);
+    wall0.LowPart = now.dwLowDateTime, wall0.HighPart = now.dwHighDateTime;
     seg_t0 = tsc0;
     LARGE_INTEGER q;
     do

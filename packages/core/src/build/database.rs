@@ -18,6 +18,7 @@ use crate::dbedit::driver_manager;
 use crate::game_db::owned::Added;
 use crate::online::multiplayer::fingerprint;
 use crate::planner::{Route, kept_lists_line, stock_removals_line, track_removals_line};
+use crate::stdlib::deps::Std;
 use crate::{Error, Result, io_err};
 
 /// What editing the game database leaves for the later stages.
@@ -94,7 +95,11 @@ struct Applied {
 impl Pipeline<'_, '_> {
     /// Adds the tracks' rows, applies the addons' database ops, keeps what the game can't load without,
     /// writes the game database or its runtime edits, and places the track files.
-    pub(super) fn edit_database(&mut self, inputs: &Inputs) -> Result<DbEdits> {
+    pub(super) fn edit_database(
+        &mut self,
+        inputs: &Inputs,
+        std16: &BTreeMap<String, Std>,
+    ) -> Result<DbEdits> {
         let fitted = &inputs.tracks;
         if fitted.is_empty() && !self.planner.has_db() && inputs.room_asked.is_none() {
             return Ok(DbEdits::default());
@@ -114,7 +119,7 @@ impl Pipeline<'_, '_> {
             (self.planner.route(Kind::Db) == Route::Runtime && self.planner.has_db()).then(|| db.db.clone());
         let applied = self.apply_db_ops(&mut db, &tracked, row_ids)?;
         drop(row_ids_lock);
-        self.keep_what_the_game_needs(&mut db, &track_changes, inputs)?;
+        self.keep_what_the_game_needs(&mut db, &track_changes, inputs, std16)?;
         let mut edits = self.take_db_reports();
         edits.id_aliases = applied.id_aliases;
         edits.row_ids_unsaved = applied.row_ids_unsaved;
@@ -268,6 +273,7 @@ impl Pipeline<'_, '_> {
         db: &mut Database,
         track_changes: &[Record],
         inputs: &Inputs,
+        std16: &BTreeMap<String, Std>,
     ) -> Result<()> {
         let run = self.run;
         let (store, game) = (run.store, run.game);
@@ -323,6 +329,10 @@ impl Pipeline<'_, '_> {
         }
         for u in crate::game_db::heads::keep_wearable(db, shipped_db) {
             built.warnings.push(u.line(&run.writer_name(planner, u.key)));
+        }
+        let added_heads = crate::game_db::heads::registry_heads(&store.addons_dir(), run.order, std16);
+        for h in crate::game_db::heads::wear_stand_ins(db, shipped_db, &added_heads) {
+            built.lines.push(h.line());
         }
         for k in crate::game_db::livery_kits::keep_kits(db) {
             built.warnings.push(k.line(&run.writer_name(planner, k.key)));

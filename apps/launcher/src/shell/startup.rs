@@ -109,6 +109,7 @@ impl Shell {
             requests: None,
             console: None,
             developer: Default::default(),
+            consent_check: false,
             reload_generation: 0,
             slow_logged: false,
             updates: crate::features::update::Updates::new(),

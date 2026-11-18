@@ -3,12 +3,16 @@ use std::path::PathBuf;
 #[cfg(unix)]
 use std::time::SystemTime;
 
-#[cfg(unix)]
 use swofty_core::diagnostics::launch;
+use swofty_core::platform::ea_app::Handoff;
+use swofty_core::platform::run_as_admin as compat;
+use swofty_core::session::{LOADER_LOG, LogMark};
 
+use super::setup::{handoff_failed, refused_elevation};
 #[cfg(unix)]
 use super::stub::STUB_SETTLE;
 use super::stub::waiting;
+use super::stub::written_after;
 use super::*;
 
 #[test]
@@ -174,5 +178,119 @@ fn hands_the_link_to_the_configured_command() {
         std::fs::read_to_string(&got).unwrap(),
         "origin2://game/launch?offerIds=16425845,16425845_oa&autoDownload=1&cmdParams=-vr"
     );
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn a_handoff_windows_refuses_with_740_names_what_to_untick() {
+    let root = std::env::temp_dir().join(format!("swofty-ea-740-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let store = Store::new(root.join("data"));
+    std::fs::create_dir_all(&store.root).unwrap();
+    let exe = r"C:\Program Files\Electronic Arts\EA Desktop\EA Desktop\EALauncher.exe";
+    let h = Handoff::Program(vec![exe.into(), "%1".into()]);
+    let c = h.command("origin2://game/launch?offerIds=16425845");
+    let err = handoff_failed(&store, &c, &h, &std::io::Error::from_raw_os_error(740)).to_string();
+    assert!(
+        err.starts_with("EALauncher.exe is set to run as administrator, so Windows won't start it"),
+        "{err}"
+    );
+    assert!(
+        err.contains(&format!("Right-click {exe}, open Properties > Compatibility")),
+        "{err}"
+    );
+    assert!(err.contains("\"Change settings for all users\""), "{err}");
+    assert!(!err.contains("Swofty Launcher as administrator"), "{err}");
+    match launch::Failure::read(&store.root).map(|f| f.cause) {
+        Some(launch::Cause::RunAsAdmin(r)) => {
+            assert_eq!(r.exes.first(), Some(&std::path::PathBuf::from(exe)));
+            assert!(!r.game);
+        }
+        other => panic!("{other:?}"),
+    }
+    launch::Failure::clear(&store.root).unwrap();
+    let err = handoff_failed(&store, &c, &h, &std::io::Error::from_raw_os_error(2)).to_string();
+    assert!(
+        err.starts_with(&format!("could not run {h} to hand the launch link")),
+        "{err}"
+    );
+    assert_eq!(launch::Failure::read(&store.root), None);
+    assert!(refused_elevation(&store, c.get_program(), &std::io::Error::other("x")).is_none());
+    std::fs::remove_dir_all(&root).ok();
+}
+
+const REFUSED_LINE: &str = "10:06:01.380 [stub] [offline] CreateProcessW failed, error 740 \
+                            (ERROR_ELEVATION_REQUIRED): Windows will only start F1_25.exe as administrator";
+
+#[test]
+fn only_the_session_launchers_lines_since_the_link_count() {
+    let root = std::env::temp_dir().join(format!("swofty-ea-stub-log-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    std::fs::create_dir_all(&root).unwrap();
+    let log = root.join("loader.log");
+    let since = |log: &Path| (LogMark::read(log), std::fs::metadata(log).map_or(0, |m| m.len()));
+    assert_eq!(written_after(&log, None, 0), "");
+    std::fs::write(&log, format!("{REFUSED_LINE}\n")).unwrap();
+    let (mark, from) = since(&log);
+    assert!(!compat::stub_needs_elevation(&written_after(
+        &log,
+        mark.as_ref(),
+        from
+    )));
+    std::fs::OpenOptions::new()
+        .append(true)
+        .open(&log)
+        .and_then(|mut f| std::io::Write::write_all(&mut f, format!("{REFUSED_LINE}\n").as_bytes()))
+        .unwrap();
+    assert!(compat::stub_needs_elevation(&written_after(
+        &log,
+        mark.as_ref(),
+        from
+    )));
+    std::fs::write(
+        &log,
+        "10:07:00.000 [stub] [offline] session launcher invoked, args: <none>\n",
+    )
+    .unwrap();
+    let (mark, from) = since(&log);
+    std::fs::write(&log, format!("{REFUSED_LINE}\n")).unwrap();
+    assert!(
+        compat::stub_needs_elevation(&written_after(&log, mark.as_ref(), from)),
+        "a log started again counts from its start"
+    );
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[cfg(unix)]
+#[test]
+fn a_session_launcher_windows_refuses_with_740_ends_the_wait_at_once() {
+    let (root, game, store, _) = ea_copy("stub-740");
+    let log = game.join(LOADER_LOG);
+    std::fs::create_dir_all(log.parent().unwrap()).unwrap();
+    std::fs::write(&log, format!("{REFUSED_LINE} (an earlier session)\n")).unwrap();
+    let mut config = store.config();
+    config.launch.ea_launch_command = Some(format!(
+        ": {{url}}; sleep 0.3; printf '%s\\n' '{REFUSED_LINE}' >> '{}'",
+        log.display()
+    ));
+    store.save_config(&config).unwrap();
+    let session = root.join("session");
+    std::fs::create_dir_all(&session).unwrap();
+    let before: Vec<u32> = game_processes().iter().map(|g| g.pid).collect();
+    let since = Instant::now();
+    let err = start(&store, &game, &[], &session, &before).err().unwrap();
+    assert!(since.elapsed() < Duration::from_secs(10), "{:?}", since.elapsed());
+    let refused = compat::game_refused_in(&[], &game);
+    assert_eq!(err.to_string(), refused.text());
+    assert!(
+        err.to_string()
+            .contains("running Swofty Launcher as administrator doesn't help"),
+        "{err}"
+    );
+    assert_eq!(
+        launch::Failure::read(&store.root).map(|f| f.cause),
+        Some(launch::Cause::RunAsAdmin(refused))
+    );
+    assert!(!store.root.join(steam_client::STAGE_FILE).exists());
     std::fs::remove_dir_all(&root).ok();
 }

@@ -166,6 +166,7 @@ impl Render for Shell {
             .children(self.data_move_overlay(p, cx))
             .children(self.found_data_overlay(p, cx))
             .when(self.overlays.dropping, |d| d.child(self.drop_overlay(p)))
+            .children(self.consent_probe(p))
             .children(self.ads.sweep());
         self.note_slow("render", page, started);
         tree

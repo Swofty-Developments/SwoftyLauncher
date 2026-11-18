@@ -70,7 +70,10 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
     let source = Source::detect(&game);
     if crate::stores::ea::store_start(source) == crate::stores::ea::StoreStart::EaApp {
         crate::stores::ea::check_recorded(&game)?;
-        if args.apply && swofty_core::build_support::blocked(&game.join(GAME_EXE)).is_none() {
+        let stock = swofty_core::build_support::blocked(&game.join(GAME_EXE)).is_some();
+        let vanilla = store.profile(profile).is_ok_and(|p| p.is_vanilla());
+        crate::stores::ea::check_elevation(store, &game, !stock && !vanilla)?;
+        if args.apply && !stock {
             crate::stores::ea::dll_setting(store, g, args.no_start_store)?;
         }
     }

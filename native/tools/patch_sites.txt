@@ -38,6 +38,7 @@ helper core/assets/overlay.cpp \bhook\(h_
 helper core/events/events.cpp = mid\(S_
 helper core/frontend/ui.cpp ^\s*mid\(m_
 helper core/guards/career/activity_resume_guard.cpp \barm\(h_
+helper core/guards/tracks/gp_weekend_track_guard.cpp \barm\(S_
 helper core/guards/career/sequencer_records_guard.cpp \barm\("
 helper core/guards/career/teamhq_track_guard.cpp \barm\(h_
 helper core/guards/frontend/setup_vm_guard.cpp \barm\(\d, S_
@@ -118,8 +119,10 @@ core/frontend/view_state.cpp: h_photo_off = install(S_PHOTO_OFF, [](safetyhook::
 core/frontend/view_state.cpp: h_camera = install(S_CAMERA, [](safetyhook::Context &ctx) { view_state.camera(ctx); }); => mid sig S_CAMERA
 core/frontend/view_state.cpp: h_pause = install(S_PAUSE, [](safetyhook::Context &ctx) { view_state.pause(ctx); }); => mid sig S_PAUSE
 core/guards/ai/ai_curves_guard.cpp: const guards::MidHookSpec spec{ => mid sig S_READ
+core/guards/ai/ai_ers_guard.cpp: const swofty_core::guards::MidHookSpec spec{ => mid sig S_READ
 core/guards/career/activity_resume_guard.cpp: runtime::loader::Installed r = runtime::loader::install(slot, at, s.what, skip); => via
 core/guards/career/activity_resume_guard.cpp: if (arm(h_first, S_FIRST, first) && arm(h_second, S_SECOND, second)) => mid sig S_FIRST S_SECOND
+core/guards/career/calendar_track_guard.cpp: const swofty_core::guards::MidHookSpec spec{ => mid sig S_CALENDAR_FILLED
 core/guards/career/rnd_suppliers_guard.cpp: runtime::loader::Installed l = runtime::loader::install(h_load, load, S_LOAD.what, reinterpret_cast<void *>(&load_hook)); => inline sig S_LOAD
 core/guards/career/rnd_suppliers_guard.cpp: runtime::loader::Installed a = runtime::loader::install(h_add, add, S_ADD.what, reinterpret_cast<void *>(&add_hook)); => inline sig S_ADD
 core/guards/career/sequencer_records_guard.cpp: runtime::loader::Installed r = runtime::loader::install(hook, at, site, fn); => via
@@ -148,7 +151,9 @@ core/guards/session/race_retirement_guard.cpp: const guards::MidHookSpec spec{ =
 core/guards/session/replay_grid_guard.cpp: runtime::loader::Installed r = runtime::loader::install(slot_hook, at, s.what, fn); => via
 core/guards/session/replay_grid_guard.cpp: if (arm_read(h_full, S_FULL, full_at, read_full) && arm_read(h_delta, S_DELTA, delta_at, read_delta)) => mid sig S_FULL S_DELTA
 core/guards/session/teammate_pairs_guard.cpp: const guards::MidHookSpec spec{ => mid sig S_SORT
-core/guards/tracks/gp_weekend_track_guard.cpp: const guards::MidHookSpec spec{ => mid sig S_PRESET_TRACK_READ
+core/guards/tracks/gp_weekend_track_guard.cpp: runtime::loader::Installed r = runtime::loader::install(into, at, sig.what, fn); => via
+core/guards/tracks/gp_weekend_track_guard.cpp: bool tyres = arm(S_PRESET_TRACK_READ, h_track, track_read); => mid sig S_PRESET_TRACK_READ
+core/guards/tracks/gp_weekend_track_guard.cpp: bool session = arm(S_SESSION_TRACK_READ, h_session, session_track_read); => mid sig S_SESSION_TRACK_READ
 core/hooks/car_live.cpp: g_built = std::make_unique<session_points::MidPoint>("car.built", "site_Car_LiveCarBuilt", &m_built, game_ops()); => mid binding site_Car_LiveCarBuilt
 core/hooks/car_live.cpp: g_reset = std::make_unique<GamePoint>("car.reset", "Car_Systems_Reset_Thunk", reinterpret_cast<void *>(&d_reset), => inline binding Car_Systems_Reset_Thunk
 core/hooks/car_live.cpp: g_replay = std::make_unique<GamePoint>("car.upgrades.replayed", "Car_Upgrades_ApplyToVehicle", => inline binding Car_Upgrades_ApplyToVehicle
@@ -184,6 +189,8 @@ core/render/d3d12/arm_gate.cpp: if (!install(*e.hook, targets[i], detours[i], e.
 core/render/d3d12/device_hooks.cpp: ok = install(hooks.setname, (*reinterpret_cast<void ***>(buffer))[SETNAME_SLOT], => outside d3d12
 core/render/d3d12/device_hooks.cpp: install(hooks.barrier, (*reinterpret_cast<void ***>(list))[BARRIER_SLOT], => outside d3d12
 core/render/d3d12/device_hooks.cpp: install(hooks.exec, (*reinterpret_cast<void ***>(q))[EXEC_SLOT], reinterpret_cast<void *>(&exec_hook), => outside d3d12
+core/render/d3d12/device_hooks.cpp: install(hooks.texture_copy, (*reinterpret_cast<void ***>(list))[TEXTURE_COPY_SLOT], => outside d3d12
+core/render/d3d12/device_hooks.cpp: install(hooks.resource_copy, (*reinterpret_cast<void ***>(list))[RESOURCE_COPY_SLOT], => outside d3d12
 core/render/d3d12/device_hooks.cpp: if (ok && install(hooks.rtv, (*reinterpret_cast<void ***>(dev))[RTV_SLOT], reinterpret_cast<void *>(&rtv_hook), => outside d3d12
 core/render/d3d12/device_hooks.cpp: !install(hooks.om, (*reinterpret_cast<void ***>(list))[OM_SLOT], reinterpret_cast<void *>(&om_hook), => outside d3d12
 core/render/d3d12/hooking.cpp: bool install(safetyhook::InlineHook &h, void *target, void *detour, const char *what) => none
