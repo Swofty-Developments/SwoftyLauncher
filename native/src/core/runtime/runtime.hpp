@@ -287,8 +287,9 @@ int direct_start_cover_signal();
 // A UI screen opened (ui.cpp): the session's own screen takes the cover off.
 void direct_start_screen(const char *name);
 uintptr_t direct_start_set_mode();
-// What the direct start knows on the flow thread from the profile load on: the game manager and the game modes
-// context (the object Game_Game_SetCurrentGameMode takes, [game manager+0xc0]).
+// What the direct start knows on the flow thread from the profile load on: the game manager and [game manager+0xc0],
+// an object with the shape of a game modes context. A scan of all 104 Game_Game_SetCurrentGameMode call sites found no
+// caller passing [[0x14604c2c8]+0xc0].
 struct DirectStartContext {
     void *game_manager = nullptr, *game_modes = nullptr;
 };
