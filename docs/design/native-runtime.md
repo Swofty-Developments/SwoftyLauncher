@@ -185,8 +185,14 @@ These units keep their state in the first file listed; the other files hold code
 | `career/snapshots/freeze.cpp`, `book_cache.hpp` | `Book::freeze`, `season_start` and `career_created` |
 | `career/hub_tab.cpp`, `hub_state.hpp` | the hub tabs, their options and `SwoftyCoreHub` |
 | `career/hub_rnd.cpp` | the R&D tab's visibility on Team HQ and the laptop, and `hub_tick` |
-| `career/career_content.cpp`, `content_state.hpp` | the content registry, its API, wraps and core sets |
+| `career/career_content.cpp`, `content_state.hpp` | the content registry and its core sets |
+| `career/content_hooks.cpp` | the router, gate and slot predicate wraps and `bind_all` |
+| `career/content_api.cpp` | the addon table (`SwoftyCoreCareerContent`) |
 | `career/content_tiles.cpp` | the content tiles and the Addons row |
+| `garage/garage_placement.cpp`, `garage_edits.hpp` | the bays, the scene, sequence and update hooks, visits, the departure restore and the export tables |
+| `garage/garage_crew_edits.cpp` | the garage root and central crew poses, reads and restore |
+| `garage/garage_member_edits.cpp` | the mechanic list, reads, edits and restore |
+| `garage/garage_car_edits.cpp` | the parked car edit, its verification and restore |
 | `runtime/loader/bindings.cpp` | choosing and loading the binding set, its KB addresses and the binding report |
 | `runtime/loader/binding_resolve.cpp` | resolving a binding by address, pattern or anchor, deferral and the retry passes |
 | `runtime/settings.cpp` | settings.json's addon options, the settings API, the MFD rows and the commands |
@@ -198,3 +204,5 @@ These units keep their state in the first file listed; the other files hold code
 | `diagnostics/net_trace/hooks.cpp`, `trace.hpp` | the ws2_32 hooks and their table |
 
 No added file has a static object of its own; each follows its unit's first file in `tools/core_link_order.txt` when that file is listed.
+
+The swofty_registry entry codec is header-only: `career/snapshots/items.hpp` holds the tagged items and their checksum, `format.hpp` the entry, its careers and seasons, and `bag.hpp` the property bag the save carries it in.
