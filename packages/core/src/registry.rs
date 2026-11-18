@@ -150,6 +150,8 @@ impl Registry {
 pub struct ProfileState {
     store: Store,
     profile: String,
+    /// The addon these calls come from.
+    addon: String,
     read_only: bool,
 }
 
@@ -208,7 +210,7 @@ impl AddonStore for ProfileState {
 
     fn install(&self, path: &Path) -> swofty_addon::Result<AddonInfo> {
         self.writable()?;
-        let m = self.store.install_addon(path).map_err(other)?;
+        let m = self.store.install_addon_by(path, &self.addon).map_err(other)?;
         let p = self.store.profile(&self.profile).map_err(other)?;
         Ok(self.info(&m, &p))
     }
@@ -384,6 +386,7 @@ impl Host {
             state: ProfileState {
                 store: store.clone(),
                 profile: profile.name.clone(),
+                addon: addon.into(),
                 read_only: false,
             },
         })

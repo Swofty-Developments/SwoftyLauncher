@@ -6,6 +6,7 @@ pub mod media;
 pub mod publishers;
 pub mod requires;
 pub mod search;
+pub mod source;
 pub mod stars;
 
 use std::io::{Read, Write};
@@ -302,12 +303,13 @@ pub fn updates<'a>(
         .collect()
 }
 
-/// [`updates`] for the addons in `store`, leaving out the ones the launcher ships.
+/// [`updates`] for the addons in `store`, leaving out the ones the launcher ships and the ones
+/// that weren't installed from the Addon Browser ([`source::Source::takes_updates`]).
 pub fn store_updates(store: &Store, catalog: &[Addon], launcher: &semver::Version) -> Result<Vec<Update>> {
     let addons = store.addons()?;
-    let installed = addons
-        .values()
-        .filter(|m| !store.is_builtin(&m.id) && !crate::managed::is_managed(&m.id));
+    let installed = addons.values().filter(|m| {
+        !store.is_builtin(&m.id) && !crate::managed::is_managed(&m.id) && source::takes_updates(store, m)
+    });
     Ok(updates(installed, catalog, launcher))
 }
 

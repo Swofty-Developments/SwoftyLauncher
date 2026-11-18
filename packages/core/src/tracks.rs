@@ -210,9 +210,8 @@ pub fn is_track_addon(dir: &Path, m: &AddonManifest) -> bool {
     tracks > 0
 }
 
-// The package folders an addon's `track.add` ops in its op files name.
-fn added_dirs(store: &Store, id: &str, m: &AddonManifest) -> Vec<PathBuf> {
-    let dir = store.addons_dir().join(id);
+// The sources of the `track.add` ops in the op files of the addon in `dir`.
+fn added_sources(dir: &Path, m: &AddonManifest) -> Vec<swofty_addon::asset::Source> {
     let mut out = Vec::new();
     for rel in &m.operations.assets {
         let Some(file) = std::fs::read(dir.join(rel))
@@ -223,14 +222,46 @@ fn added_dirs(store: &Store, id: &str, m: &AddonManifest) -> Vec<PathBuf> {
             continue;
         };
         for op in file.ops {
-            if let AssetOp::Track(TrackOp::Add { source }) = op
-                && let Ok(d) = source.resolve(&crate::build::source_dir(store, id, source.root))
-            {
-                out.push(d);
+            if let AssetOp::Track(TrackOp::Add { source }) = op {
+                out.push(source);
             }
         }
     }
     out
+}
+
+// The package folders an addon's `track.add` ops in its op files name.
+fn added_dirs(store: &Store, id: &str, m: &AddonManifest) -> Vec<PathBuf> {
+    added_sources(&store.addons_dir().join(id), m)
+        .into_iter()
+        .filter_map(|source| {
+            source
+                .resolve(&crate::build::source_dir(store, id, source.root))
+                .ok()
+        })
+        .collect()
+}
+
+/// The `author_name` of the track packages inside the addon folder `dir` that its `track.add`
+/// operations add, when they give one and the same one.
+pub fn package_author(dir: &Path, m: &AddonManifest) -> Option<String> {
+    let mut authors: Vec<String> = added_sources(dir, m)
+        .into_iter()
+        .filter(|source| source.root == swofty_addon::asset::Root::Addon)
+        .filter_map(|source| source.resolve(dir).ok())
+        .map(|d| {
+            std::fs::read(d.join(crate::map::MANIFEST_FILE))
+                .ok()
+                .and_then(|data| serde_json::from_slice::<serde_json::Value>(&data).ok())
+                .and_then(|doc| Some(doc.get("author_name")?.as_str()?.trim().to_owned()))
+                .filter(|a| !a.is_empty())
+        })
+        .collect::<Option<Vec<String>>>()?;
+    authors.dedup();
+    match authors.as_slice() {
+        [one] => Some(one.clone()),
+        _ => None,
+    }
 }
 
 /// The tracks an addon's `track.add` operations add, as the core lists them

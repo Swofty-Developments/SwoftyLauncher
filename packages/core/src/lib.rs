@@ -33,6 +33,7 @@ pub mod home_menu;
 pub mod http;
 pub mod hud;
 pub mod import;
+pub mod imported;
 pub mod install;
 pub mod journal;
 pub mod known_problems;

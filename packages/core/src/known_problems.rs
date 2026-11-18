@@ -814,8 +814,8 @@ const BUSY_GAP_SECS: f64 = 20.0;
 const BUSY_LINES: usize = 5;
 /// The archive resources two car packs must both replace to count as full ones.
 const CAR_PACK_RESOURCES: usize = 1000;
-/// Imported Sepang, the heaviest imported track.
-const SEPANG: &str = "mod.bahrain24";
+/// Imported Sepang, the heaviest imported track: the track code of its package.
+const SEPANG: &str = "bahrain24";
 /// Manual Pit Lane, and where F1 25 crashes when it takes the car as the
 /// game returns it to the garage.
 const PITLANE: &str = "kizi.pitlane";
@@ -1187,9 +1187,14 @@ fn replay_state() -> Diagnosis {
     }
 }
 
+/// Whether `id` is an import of Sepang, under any id the launcher installs one as.
+fn is_sepang(id: &str) -> bool {
+    id.split_once('.').is_some_and(|(_, name)| name == SEPANG)
+}
+
 fn game_heap(e: &Evidence) -> Diagnosis {
     let mut tracks: Vec<&String> = e.tracks.iter().collect();
-    tracks.sort_by_key(|id| id.as_str() != SEPANG);
+    tracks.sort_by_key(|id| !is_sepang(id));
     let tracks: Vec<String> = tracks.iter().map(|id| name(e, id)).collect();
     let mut heavy = tracks.clone();
     let years_on = classic_years(e);
@@ -1213,7 +1218,7 @@ fn game_heap(e: &Evidence) -> Diagnosis {
     }
     let mut steps = Vec::new();
     if let Some(first) = tracks.first() {
-        let one = tracks.len() == 1 || e.tracks.iter().any(|t| t == SEPANG);
+        let one = tracks.len() == 1 || e.tracks.iter().any(|t| is_sepang(t));
         let (which, at) = match one {
             true => (first.clone(), first.clone()),
             false => (list(&tracks), "one of them".to_owned()),

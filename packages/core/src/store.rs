@@ -155,8 +155,10 @@ fn profile_write() -> MutexGuard<'static, ()> {
 /// Where an addon being installed came from, which decides what it may be.
 #[derive(Debug, Clone, Copy)]
 enum InstallFrom<'a> {
-    /// A file the player chose, or one a helper asked to install.
+    /// A file the player chose.
     Other,
+    /// A folder the helper of the addon with this id asked to install.
+    Helper(&'a str),
     /// A download the catalog lists as this id and version.
     Catalog(&'a str, &'a semver::Version),
     /// A release of the addon the launcher manages.
@@ -236,6 +238,12 @@ impl Store {
         self.root
             .join("state/registry-installs")
             .join(format!("{id}.json"))
+    }
+
+    /// Where an install from anywhere but the Addon Browser records what installed `id`
+    /// ([`crate::catalog::source::LocalInstall`]); an Addon Browser install or a removal deletes it.
+    pub fn local_install_path(&self, id: &str) -> PathBuf {
+        self.root.join("state/local-installs").join(format!("{id}.json"))
     }
 
     pub fn profiles_dir(&self) -> PathBuf {
@@ -586,6 +594,17 @@ impl Store {
         )
     }
 
+    /// Install a folder the helper of the addon `helper` made. An addon the Simplified Importer
+    /// made may be installed under another id ([`crate::imported::install_id`]).
+    pub(crate) fn install_addon_by(&self, src: &Path, helper: &str) -> Result<AddonManifest> {
+        self.install_addon_target(
+            src,
+            &crate::update::current_version(),
+            None,
+            InstallFrom::Helper(helper),
+        )
+    }
+
     /// Install what the catalog lists as `id` at `version`, into `profile` when one is named.
     pub(crate) fn install_listed(
         &self,
@@ -641,7 +660,7 @@ impl Store {
                 p.manifest
             });
         }
-        let m = AddonManifest::load(src).map_err(|e| {
+        let mut m = AddonManifest::load(src).map_err(|e| {
             let u = Unreadable::of(src, &e, launcher);
             if u.newer {
                 Error::Other(u.line())
@@ -660,6 +679,16 @@ impl Store {
                 m.id, m.version
             )));
         }
+        if matches!(from, InstallFrom::Catalog(..)) {
+            crate::imported::refuse_listed(self, &m)?;
+        }
+        let asked = m.id.clone();
+        let id = match from {
+            InstallFrom::Helper(helper) if crate::imported::made_by(helper, &m) => {
+                crate::imported::install_id(self, src, &m)?
+            }
+            _ => m.id.clone(),
+        };
         if crate::managed::is_managed(&m.id) && !matches!(from, InstallFrom::ManagedRelease) {
             return Err(Error::Other(format!(
                 "{} is managed by the launcher, which installs and updates it itself",
@@ -682,11 +711,11 @@ impl Store {
         if let Some(why) = crate::resolver::launcher_refusal(&m, launcher) {
             return Err(Error::Other(why));
         }
-        crate::busy::refuse_change(&self.root, &m.id, &m.name)?;
-        let dest = self.addons_dir().join(&m.id);
+        crate::busy::refuse_change(&self.root, &id, &m.name)?;
+        let dest = self.addons_dir().join(&id);
         let fresh = !dest.exists();
-        self.helpers.forget(&m.id);
-        let staging = self.addons_dir().join(format!("{STAGING_PREFIX}{}", m.id));
+        self.helpers.forget(&id);
+        let staging = self.addons_dir().join(format!("{STAGING_PREFIX}{id}"));
         if staging.exists() {
             std::fs::remove_dir_all(&staging).map_err(io_err(&staging))?;
         }
@@ -694,6 +723,15 @@ impl Store {
         if !moved && let Err(e) = copy_dir(src, &staging) {
             std::fs::remove_dir_all(&staging).ok();
             return Err(e);
+        }
+        if id != m.id {
+            match crate::imported::rename(&staging, &id) {
+                Ok(renamed) => m = renamed,
+                Err(e) => {
+                    std::fs::remove_dir_all(&staging).ok();
+                    return Err(e);
+                }
+            }
         }
         swap_in(
             &staging,
@@ -703,10 +741,41 @@ impl Store {
             &mut |d| std::fs::remove_dir_all(d),
         )?;
         std::fs::remove_file(self.registry_install_path(&m.id)).ok();
+        self.record_source(&m.id, &asked, from);
         if fresh {
             self.add_to_install_profile(&m.id, profile);
         }
         Ok(m)
+    }
+
+    /// Records where `id`, which asked for the id `asked`, was installed from. A helper installing
+    /// it again under its own id keeps the id it first asked for.
+    fn record_source(&self, id: &str, asked: &str, from: InstallFrom) {
+        let first = || {
+            crate::catalog::source::local_install(self, id)
+                .filter(|l| matches!(from, InstallFrom::Helper(h) if l.by.as_deref() == Some(h)))
+                .and_then(|l| l.asked)
+        };
+        let local = crate::catalog::source::LocalInstall {
+            by: match from {
+                InstallFrom::Helper(helper) => Some(helper.to_owned()),
+                _ => None,
+            },
+            asked: match asked != id {
+                true => Some(asked.to_owned()),
+                false => first(),
+            },
+        };
+        match from {
+            InstallFrom::Other | InstallFrom::Helper(_) => {
+                if let Err(e) = crate::catalog::source::record_local(self, id, &local) {
+                    warn(format!("couldn't record where {id} was installed from: {e}"));
+                }
+            }
+            InstallFrom::Catalog(..) | InstallFrom::ManagedRelease => {
+                std::fs::remove_file(self.local_install_path(id)).ok();
+            }
+        }
     }
 
     /// A new addon goes into the profile it was installed from, off, rather than
@@ -807,6 +876,7 @@ impl Store {
             &mut delete,
         )?;
         std::fs::remove_file(self.registry_install_path(id)).ok();
+        std::fs::remove_file(self.local_install_path(id)).ok();
         for name in self.profile_names()? {
             let path = self.profiles_dir().join(format!("{name}.json"));
             if name == profile::VANILLA || !path.is_file() {
