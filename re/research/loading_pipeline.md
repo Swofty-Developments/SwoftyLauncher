@@ -814,8 +814,9 @@ The three the core shortens or overlaps next:
    is a pure 3.0 s timer, so each session-to-session transition saves about 3 s. The track load and story hub save only
    what is left of 3 s after their real load.
 2. **`gamedb load edits`, 5.0 s on the main thread inside step 10.** The brief for the load-core lane is §8.6.
-3. **The PSO worker count.** A log-only arm records the `CreatePSOs_%d` thread count the game starts. The default is -1
-   (§8.8). It changes nothing, and decides whether a `maxPsoCreationThreads` row is worth proving.
+3. **The PSO worker count.** On KB the game starts the processor count minus 1, at most 12, `CreatePSOs_%d` workers,
+   and the loop does not read `maxPsoCreationThreads` (§8.8). A log-only arm records the count the game started, read
+   from the device's thread vector. It changes nothing, and decides whether the cap of 12 is worth a closer look.
 
 ### 8.6 Brief for the load-core lane: the database edits off the main thread
 
@@ -909,6 +910,18 @@ capstone gives a 2-byte displacement. Since 754ebdf1e, `sigverify.norm` masks al
 §1.4 said the code default comes from a stack slot that nothing stores to. The slot is the render descriptor's +0x11c,
 and the descriptor's constructor stores -1 there: `mov dword ptr [rax+0x11c], 0xffffffff` in its protected body at
 0x151f5160a. The getter call at 0x1443cd336 takes that -1 as its default. The descriptor goes to the virtual calls at
-0x1443cc453 and 0x1443cd5b6, and the Steam 1.0.145 read is at 0x1443cf902 in 0x1443ce820. Still to read:
-`Render_Gfx2Device_Initialise` 0x1439bc2e0's `CreatePSOs_%d` thread loop (string references 0x1439be7e0, 0x1439be9b3),
-which decides what -1 starts. The log-only arm of §8.5 records the count it starts.
+0x1443cc453 and 0x1443cd5b6, and the Steam 1.0.145 read is at 0x1443cf902 in 0x1443ce820.
+
+The `CreatePSOs_%d` loop does not read it. `Render_Gfx2Device_Initialise` 0x1439bc2e0 sizes the loop at 0x1439be64f to
+0x1439be665:
+
+- it calls 0x1449e8304, a jump to 0x1562c49b0 that returns `GetNativeSystemInfo`'s `dwNumberOfProcessors`;
+- the count is that minus 1, at least 1 and at most 12;
+- it reserves that many slots in the device's thread vector (+0x32c8 begin, +0x32d0 end, +0x32d8 capacity), then makes
+  one 0x220-byte worker per index (0x1439be81f to 0x1439be8ff), named `CreatePSOs_<index>`.
+
+So a 16-thread CPU gets 12 PSO workers and an 8-thread CPU 7, and no `+0x11c` read appears in this function (KB, own
+disassembly: L1). Where `maxPsoCreationThreads` is used, if anywhere, is behind the two virtual calls above (not read).
+On Steam 1.0.145 the function compares 1856 of 8100 instructions by index (it is 3 instructions shorter), so the count
+code still needs a local comparison there before a gate names that build. The vector's three offsets are used at the
+same places on both builds.
