@@ -485,4 +485,195 @@ mod tests {
         assert!(!has_laps(&data, &game));
         std::fs::remove_dir_all(&root).ok();
     }
+
+    fn lap_with_nonce(time_ms: u64, nonce: &str) -> Vec<u8> {
+        let header = serde_json::json!({
+            "format": 1,
+            "nonce": nonce,
+            "board": {"content": "game/f1_2025", "track": "bahrain", "weather": "dry"},
+            "lap": {"time_ms": time_ms, "valid": true, "sectors_ms": [1, 2, 3]},
+        })
+        .to_string();
+        let mut out = crate::online::timetrial::swlap::MAGIC.to_vec();
+        out.extend((header.len() as u32).to_le_bytes());
+        out.extend(header.as_bytes());
+        out.extend(b"END\0\0\0\0\0");
+        out
+    }
+
+    fn stub(replies: Vec<(&'static str, &'static str)>) -> (String, JoinHandle<Vec<String>>) {
+        use std::io::{Read, Write};
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let url = format!("http://{}", listener.local_addr().unwrap());
+        let t = std::thread::spawn(move || {
+            let mut seen = Vec::new();
+            for (status, body) in replies {
+                let (mut c, _) = listener.accept().unwrap();
+                let mut got = Vec::new();
+                let mut buf = [0u8; 8192];
+                loop {
+                    let n = c.read(&mut buf).unwrap();
+                    if n == 0 {
+                        break;
+                    }
+                    got.extend_from_slice(&buf[..n]);
+                    let Some(h) = got.windows(4).position(|w| w == b"\r\n\r\n") else {
+                        continue;
+                    };
+                    let head = String::from_utf8_lossy(&got[..h]).to_ascii_lowercase();
+                    let len = head
+                        .lines()
+                        .find_map(|l| l.strip_prefix("content-length: ")?.trim().parse::<usize>().ok())
+                        .unwrap_or(0);
+                    if got.len() >= h + 4 + len {
+                        break;
+                    }
+                }
+                let reply = format!(
+                    "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                    body.len()
+                );
+                c.write_all(reply.as_bytes()).unwrap();
+                seen.push(String::from_utf8_lossy(&got).into_owned());
+            }
+            seen
+        });
+        (url, t)
+    }
+
+    fn temp(name: &str) -> (PathBuf, PathBuf, PathBuf) {
+        let root = std::env::temp_dir().join(format!("swofty-ttu-{name}-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        (root.clone(), root.join("data"), root.join("game"))
+    }
+
+    #[test]
+    fn a_sweep_sends_the_laps_of_both_folders_to_the_server_with_their_nonces() {
+        let (root, data, game) = temp("wire");
+        let [new, old] = laps_dirs(&data, &game);
+        std::fs::create_dir_all(&new).unwrap();
+        std::fs::create_dir_all(&old).unwrap();
+        std::fs::write(
+            old.join("20261118T000001-1.swlap"),
+            lap_with_nonce(91000, "n-game"),
+        )
+        .unwrap();
+        std::fs::write(
+            new.join("20261118T000002-1.swlap"),
+            lap_with_nonce(92000, "n-data"),
+        )
+        .unwrap();
+        let (url, t) = stub(vec![
+            ("200 OK", r#"{"id":"l1","status":"ranked","rank":3}"#),
+            (
+                "200 OK",
+                r#"{"id":"l2","status":"pending","reasons":["needs review: attest"]}"#,
+            ),
+        ]);
+        let api = Api::with_server(&url, "tok");
+        let mut events = Vec::new();
+        let r = sweep(
+            &data,
+            Some(&game),
+            Some(&api as &dyn Boards),
+            Some(&serde_json::json!({"digest": "d"})),
+            None,
+            &mut |e| events.push(line(&e)),
+        );
+        assert_eq!((r.uploaded, r.waiting, r.rejected), (2, 0, 0), "{events:?}");
+        assert!(!has_laps(&data, &game) && !has_outbox(&data));
+        let seen = t.join().unwrap();
+        let sessions: Vec<&str> = seen
+            .iter()
+            .map(|req| {
+                assert!(req.starts_with("POST /v1/tt/laps HTTP/1.1"), "{req}");
+                assert!(req.to_ascii_lowercase().contains("authorization: bearer tok"));
+                assert!(req.contains(&format!(r#""launcher":"{}""#, env!("CARGO_PKG_VERSION"))));
+                assert!(req.contains(r#""fingerprint":{"digest":"d"}"#), "{req}");
+                assert!(req.contains(r#""gzip":true"#));
+                if req.contains(r#""session":"n-game""#) {
+                    "n-game"
+                } else if req.contains(r#""session":"n-data""#) {
+                    "n-data"
+                } else {
+                    ""
+                }
+            })
+            .collect();
+        assert_eq!(sessions.len(), 2);
+        assert!(
+            sessions.contains(&"n-game") && sessions.contains(&"n-data"),
+            "{sessions:?}"
+        );
+        let sent = Queue::new(&data).list(Folder::Sent);
+        assert_eq!(sent.len(), 2);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_refused_lap_is_set_aside_and_a_server_error_keeps_the_rest_in_the_outbox() {
+        let (root, data, game) = temp("fail");
+        let [_, laps] = laps_dirs(&data, &game);
+        std::fs::create_dir_all(&laps).unwrap();
+        std::fs::write(laps.join("20261118T000001-1.swlap"), lap_with_nonce(91000, "n")).unwrap();
+        std::fs::write(laps.join("20261118T000002-1.swlap"), lap_with_nonce(92000, "n")).unwrap();
+        std::fs::write(laps.join("20261118T000003-1.swlap"), lap_with_nonce(93000, "n")).unwrap();
+        let (url, t) = stub(vec![
+            ("400 Bad Request", r#"{"error":"the lap file is not valid"}"#),
+            ("503 Service Unavailable", ""),
+        ]);
+        let api = Api::with_server(&url, "tok");
+        let mut events = Vec::new();
+        let r = sweep(
+            &data,
+            Some(&game),
+            Some(&api as &dyn Boards),
+            None,
+            None,
+            &mut |e| events.push(line(&e)),
+        );
+        assert_eq!((r.uploaded, r.waiting, r.rejected), (0, 2, 1), "{events:?}");
+        assert_eq!(
+            events[0],
+            "20261118T000001-1.swlap not uploaded: the lap file is not valid"
+        );
+        assert!(events[1].starts_with("upload failed, will retry: "), "{events:?}");
+        assert_eq!(t.join().unwrap().len(), 2);
+        let q = Queue::new(&data);
+        assert_eq!(q.list(Folder::Rejected).len(), 1);
+        let waiting = q.list(Folder::Outbox);
+        assert_eq!(waiting.len(), 2);
+        assert!(
+            waiting
+                .iter()
+                .all(|e| e.waiting.as_ref().is_some_and(|w| w.next_try > unix_now()))
+        );
+        let r = sweep(
+            &data,
+            Some(&game),
+            Some(&api as &dyn Boards),
+            None,
+            None,
+            &mut |_| {},
+        );
+        assert_eq!((r.uploaded, r.waiting), (0, 2));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn the_startup_flush_sends_the_outbox_but_leaves_the_game_folder_alone() {
+        let (root, data, game) = temp("flush");
+        let [_, laps] = laps_dirs(&data, &game);
+        std::fs::create_dir_all(&laps).unwrap();
+        std::fs::write(laps.join("20261118T000001-1.swlap"), lap_with_nonce(91000, "n")).unwrap();
+        sweep(&data, Some(&game), None, None, None, &mut |_| {});
+        std::fs::write(laps.join("20261118T000002-1.swlap"), lap_with_nonce(92000, "n")).unwrap();
+        let (url, t) = stub(vec![("200 OK", r#"{"id":"l1","status":"ranked"}"#)]);
+        let api = Api::with_server(&url, "tok");
+        let r = sweep(&data, None, Some(&api as &dyn Boards), None, None, &mut |_| {});
+        assert_eq!((r.uploaded, r.waiting), (1, 0));
+        assert_eq!(t.join().unwrap().len(), 1);
+        assert!(laps.join("20261118T000002-1.swlap").exists());
+        std::fs::remove_dir_all(&root).ok();
+    }
 }
