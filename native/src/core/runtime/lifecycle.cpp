@@ -4,6 +4,7 @@
 #include <cstring>
 #include <mutex>
 #include <optional>
+#include <span>
 
 #include "core/diagnostics/steps.hpp"
 #include "core/hooks/hooks.hpp"
@@ -32,6 +33,50 @@ using namespace loader;
 constexpr int RETRIES = 8;
 constexpr DWORD RETRY_MS = 1000;
 constexpr const char *RUNTIME_SETUP = "runtime setup (assets, resources, gamedb, dbread, overlay, lang, events, hud, telemetry)";
+constexpr const char *ON_WORKER = " (on the arm worker)";
+
+void run(const Subsystem &s, Start point, const char *suffix)
+{
+    if (point == Start::attach || point == Start::ready) {
+        perf::Stopwatch step;
+        s.install();
+        loader::api->log(perf::STEP_LINE, step.total_ms(), (std::string("subsystem ") + s.name + suffix).c_str());
+    } else
+        when_code_ready(s.name, s.install);
+}
+
+// The subsystems from the one at open, marked Probe::open, to the next marked Probe::close or the end.
+std::span<const Subsystem> probe_block(std::span<const Subsystem> all, size_t open)
+{
+    size_t end = open;
+    while (end + 1 < all.size() && all[end].probe != Probe::close)
+        end++;
+    return all.subspan(open, end - open + 1);
+}
+
+void run_block(std::span<const Subsystem> block, Start point, const char *suffix)
+{
+    std::optional<d3d12hooks::ProbeScope> probe;
+    for (const Subsystem &s : block) {
+        if (s.start != point)
+            continue;
+        if (s.probe == Probe::open)
+            probe.emplace();
+        run(s, point, suffix);
+        if (s.probe == Probe::close)
+            probe.reset();
+    }
+}
+
+void ready_block_on_worker()
+{
+    std::span<const Subsystem> all = subsystems();
+    for (size_t i = 0; i < all.size(); i++)
+        if (all[i].start == Start::ready && all[i].probe == Probe::open) {
+            run_block(probe_block(all, i), Start::ready, ON_WORKER);
+            return;
+        }
+}
 
 }
 
@@ -43,20 +88,26 @@ Runtime &Runtime::instance()
 
 void Runtime::start(Start point)
 {
-    std::optional<d3d12hooks::ProbeScope> probe;
-    for (const Subsystem &s : subsystems()) {
+    std::span<const Subsystem> all = subsystems();
+    for (size_t i = 0; i < all.size(); i++) {
+        const Subsystem &s = all[i];
         if (s.start != point)
             continue;
-        if (s.probe == Probe::open)
-            probe.emplace();
-        if (point == Start::attach || point == Start::ready) {
-            perf::Stopwatch step;
-            s.install();
-            loader::api->log(perf::STEP_LINE, step.total_ms(), (std::string("subsystem ") + s.name).c_str());
-        } else
-            when_code_ready(s.name, s.install);
-        if (s.probe == Probe::close)
-            probe.reset();
+        if (s.probe != Probe::open) {
+            run(s, point, "");
+            continue;
+        }
+        std::span<const Subsystem> block = probe_block(all, i);
+        i += block.size() - 1;
+        perf::Stopwatch step;
+        bool early = runtime::load_stage() == "early" && !runtime::window_reached();
+        if (point == Start::ready && d3d12hooks::arm_on_worker(ready_block_on_worker, early))
+            loader::api->log(perf::STEP_LINE, step.total_ms(),
+                             (std::string("subsystems ") + block.front().name + " to " + block.back().name + ON_WORKER +
+                              ", scheduled")
+                                 .c_str());
+        else
+            run_block(block, point, "");
     }
 }
 

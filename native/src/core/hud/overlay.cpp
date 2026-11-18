@@ -437,10 +437,18 @@ void Overlay::setup()
     if (!on && capture.on)
         swofty::log("[overlay] the overlay is off; the present hook arms for SWOFTY_FRAME_CAPTURE only");
     implemented = on;
+    arming.store(true);
+}
+
+void Overlay::arm_decided()
+{
+    if (!arming.load())
+        return;
     if (arm())
         armed.store(true);
     else
         swofty::log("[overlay] the present hook did not arm; on_paint callbacks will not be drawn");
+    arming.store(false);
 }
 
 }
@@ -452,6 +460,11 @@ namespace runtime {
 void hud_setup()
 {
     overlay.setup();
+}
+
+void hud_arm()
+{
+    overlay.arm_decided();
 }
 
 void hud_fatal()

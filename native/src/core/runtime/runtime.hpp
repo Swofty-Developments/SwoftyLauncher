@@ -215,6 +215,7 @@ uint8_t *team_record_of(uint16_t stat);
 void team_record_inserted(std::function<void(uint16_t, uint8_t *)> fn);
 void quali_tyres_box(uint8_t mask, const std::string &line);
 void hud_setup();
+void hud_arm();
 void focus_setup();
 void hud_fatal();
 void grade_setup();
