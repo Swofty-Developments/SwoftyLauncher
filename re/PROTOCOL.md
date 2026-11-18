@@ -113,6 +113,13 @@ A **verifier** is any agent other than the one who raised the item to its curren
 
 The verifier appends one `verify.tsv` row via `kb.py verify`: verdict `agree`, `disagree` or `partial`, with its own evidence tokens. On `disagree` the item is demoted to the highest level both sides accept, and the disagreement is written into the item's `notes` as `DISPUTE(Vnnn)` until the subsystem owner resolves it with new evidence (a new `verify` row). Nobody deletes `verify.tsv` rows. When the item a row is about is renamed to a different claim, retargeted or was never added, its `item` becomes `retired:<item>`, so the old verdict can never back a new item that reuses the name or address.
 
+Every row `kb.py verify` writes starts with its id `Vnnn`. From V100000 the ids come from ranges in `db/verify_ranges.tsv` (`first`, `last`, `owner`, `granted`, `notes`):
+
+- A range belongs to one owner: a lane name such as `re-bindings`. It covers the verifier of that name and every verifier whose name starts with it and a `-`, such as `re-bindings-blind`. The longest matching owner wins.
+- `kb.py verify` takes the next free id in the verifier's ranges, or refuses when the verifier has none or they are used up.
+- A lead grants ranges on the trunk only, with `kb.py --agent LEAD grant-range OWNER [--size 10000]`, and lanes merge the trunk before writing rows. A lane that works on two branches at once takes a range per branch, for example `re-bindings` and `re-bindings-w2`.
+- `kb_lint.py` fails on overlapping ranges, on an id from V100000 up that lies outside every range of its verifier's owner, and on an id above V10540 that two rows carry. Ids below V100000 keep the numbers they were given.
+
 ## 6. Concurrency
 
 `kb.py` records every write in `db/changes.log` (JSON lines: time, agent, op, row before/after). That journal is how `kb.py verify` knows who raised an item (the seed rows are attributed to `exe-agent`, `grid24-cap`, or `re-infra` for the T000 promotions).
