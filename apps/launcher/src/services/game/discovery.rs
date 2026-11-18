@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use swofty_core::game_folder::copies::{self, Found, GameCopy};
+use swofty_core::games;
 use swofty_core::install::Source;
 use swofty_core::platform::ea_app;
 use swofty_core::platform::steam;
@@ -14,7 +15,7 @@ pub fn discover(store: &Store) -> Option<Install> {
 
 pub fn discover_all(store: &Store) -> Copies {
     let config = store.config();
-    let found = copies::discover(&config);
+    let found = games::f1_25::copies(&config);
     let active = copies::active(&found, &config);
     let recorded = if active.is_some_and(|c| c.source == Source::EaApp) {
         ea_app::recorded_here()
