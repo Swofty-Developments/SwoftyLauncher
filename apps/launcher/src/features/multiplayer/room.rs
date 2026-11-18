@@ -196,7 +196,7 @@ impl Shell {
                     .tap_sm()
                     .label(tr("Restart F1 25"))
                     .on_click(cx.listener(|this, _, window, cx| {
-                        this.room_close_game(window, cx);
+                        super::Multiplayer::close_game(this, window, cx);
                         cx.notify();
                     }))
             });

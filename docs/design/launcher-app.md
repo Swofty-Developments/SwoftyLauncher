@@ -143,7 +143,7 @@ These states run on the pattern:
 | `Browser` | catalog fetch, star sync, addon details, publisher profiles, the install queue | `features/browser/state.rs` | `Feed`, `riders`, `installed_version` |
 | `Db` | draft autosave, "Also changed by", game database, module views, search, unnamed keys | `features/db/state.rs` | `Autosave` |
 | `AddonsPage` | the conflict check | `features/addons/conflicts.rs` | `Conflicts` |
-| `Multiplayer` (the Online page) | game status, room list, addon digest, avatars, opening and joining a room, the page's tick, starting the room's game through Play, the room's game watch | `features/multiplayer/state.rs`; `Multiplayer::tick` and `Multiplayer::launch` in `features/multiplayer/actions.rs` | `Lobby`, `starting`, `RoomGame` (`features/multiplayer/room_game.rs`) |
+| `Multiplayer` (the Online page) | game status, room list, addon digest, avatars, opening and joining a room, the page's tick, starting the room's game through Play, the room's game watch, closing the game for a room | `features/multiplayer/state.rs`; `Multiplayer::tick`, `launch` and `close_game` in `features/multiplayer/actions.rs` | `Lobby`, `starting`, `RoomGame` (`features/multiplayer/room_game.rs`) |
 | `Online` (the time trial boards) | overview, seasons, boards, profiles, rankings, avatars and art, adding a lap's replay to the game | `features/online/mod.rs` | `Online` |
 | `Updates` | the update check, installing a missing managed addon, running an update plan, its progress and the restart | `features/update.rs` | `Updates`, `holds_updates` |
 | `SavesPage` | building the careers view and the saves banner | `features/career_saves/refresh.rs` | `SavesPage` |
@@ -170,7 +170,6 @@ assert_eq!(tt.barred_in(&library.read()).len(), 1);
 |---|---|---|
 | Rendering every page, bar and dialog | `render.rs`, `features/*/page.rs`, `shell/play_bar/`, `shell/topbar/` | Pages read several states. gpui listeners are `Context<Shell>` closures. |
 | Play's prompts, starting an update from the play bar | `shell/play_dialogs.rs`, `shell/launch_alerts.rs`, `dialogs/`, `Shell::play` in `shell/play.rs`, `start_updates` in `features/update.rs` | The window. `Shell::play` takes the room launch a prompt held off `Multiplayer` and hands it to `Launching::play_for`. |
-| Closing the game for a room | `room_close_game` in `features/multiplayer/actions.rs` | The game's processes, and the window for a stop that fails. |
 | Reading the library again, profiles, turning addons on and off | `shell/reload.rs`, `shell/profile_panel.rs`, `shell/profile_edit.rs`, `features/addons/` | Every feature follows the library. |
 | Startup | `shell/startup.rs` | Builds every state and starts each watch and poll loop. |
 | The probe tick | `shell/probe.rs` | Hands its result to the game, shader, database and notice states. |

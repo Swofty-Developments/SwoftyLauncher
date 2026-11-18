@@ -9,6 +9,7 @@ use gpui_kit::*;
 use swofty_core::install::Game;
 use swofty_core::online::multiplayer::client::{self as diag, Local, Session};
 use swofty_core::online::multiplayer::types::{GameStatus, RoomSummary, SessionState};
+use swofty_core::platform::process::GameProcess;
 use swofty_core::store::Store;
 use swofty_i18n::tr;
 
@@ -251,6 +252,7 @@ pub(crate) struct OnlineNeeds<'a> {
     pub(crate) profile: &'a str,
     pub(crate) game_dir: Option<&'a Path>,
     pub(crate) running: bool,
+    pub(crate) processes: &'a [GameProcess],
     /// A launch, a build or a restore of the game folder is running.
     pub(crate) busy: bool,
     /// The online page is open and the account may use it.
@@ -272,6 +274,7 @@ impl Host<Multiplayer> for Shell {
                 profile: &self.library.profile.name,
                 game_dir: self.game.install.as_ref().map(|i| i.dir.as_path()),
                 running: !self.game.processes.is_empty(),
+                processes: &self.game.processes,
                 busy: self.launching.launch.is_some()
                     || self.game.build.is_some()
                     || self.launching.restoring,

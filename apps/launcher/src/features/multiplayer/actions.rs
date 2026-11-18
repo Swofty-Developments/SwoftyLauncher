@@ -32,34 +32,8 @@ impl Shell {
         .detach();
     }
 
-    pub(super) fn room_close_game(&mut self, window: &mut Window, cx: &mut Context<Self>) -> bool {
-        let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
-            return true;
-        };
-        let pids: Vec<u32> = self
-            .game
-            .processes
-            .iter()
-            .filter(|g| g.is_in(&dir))
-            .map(|g| g.pid)
-            .collect();
-        if pids.is_empty() {
-            return true;
-        }
-        swofty_core::session::request_stop(&self.store.root);
-        for pid in &pids {
-            if let Err(e) = swofty_core::platform::process::stop_process(*pid) {
-                crate::app::app_log::action("stop f1 25").failed(&e);
-                window.notify(Notification::error(e.to_string()), cx);
-                return false;
-            }
-        }
-        self.rooms.game.closing = Some(pids);
-        true
-    }
-
     pub(super) fn room_begin(&mut self, start: Start, window: &mut Window, cx: &mut Context<Self>) {
-        if self.rooms.busy() || !self.room_close_game(window, cx) {
+        if self.rooms.busy() || !Multiplayer::close_game(self, window, cx) {
             return;
         }
         self.rooms.notice = None;
@@ -446,6 +420,33 @@ impl Multiplayer {
             Self::read_digest(host, cx);
         }
         Self::load_shown_faces(host, cx);
+    }
+
+    /// Closes the copy's F1 25 so the room can start it. False when a stop failed, which a notice says.
+    pub(super) fn close_game<H: Host<Self>>(host: &mut H, window: &mut Window, cx: &mut Context<H>) -> bool {
+        let (m, needs) = host.split();
+        let Some(dir) = needs.game_dir else {
+            return true;
+        };
+        let pids: Vec<u32> = needs
+            .processes
+            .iter()
+            .filter(|g| g.is_in(dir))
+            .map(|g| g.pid)
+            .collect();
+        if pids.is_empty() {
+            return true;
+        }
+        swofty_core::session::request_stop(&needs.store.root);
+        for pid in &pids {
+            if let Err(e) = swofty_core::platform::process::stop_process(*pid) {
+                crate::app::app_log::action("stop f1 25").failed(&e);
+                window.notify(Notification::error(e.to_string()), cx);
+                return false;
+            }
+        }
+        m.game.closing = Some(pids);
+        true
     }
 
     /// Starts F1 25 for the room when the session asks, the game is closed and the launcher has put the
