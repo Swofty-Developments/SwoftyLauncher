@@ -6,7 +6,7 @@ use std::time::SystemTime;
 use crate::shell::notices::Notification;
 use gpui_kit::component::input::InputState;
 use gpui_kit::*;
-use swofty_core::dbedit::draft::{DraftFile, Written};
+use swofty_core::dbedit::draft::{Details, DraftFile, Written};
 use swofty_core::dbedit::package::{Imported, PackageInfo};
 use swofty_core::dbedit::{
     Catalog, Draft, Edit, Edits, Hit, ImportReport, LinkSpec, Module, ModuleView, NodeId,
@@ -328,6 +328,12 @@ pub(crate) enum DbPrompt {
     AddonImported(Imported),
     /// Leave the draft for `Then`, asking first when it has unsaved changes.
     Leave(Then),
+    /// The draft was saved as the new addon `id`: turn it on, say so, then what follows a save.
+    SavedNew {
+        id: String,
+        details: Details,
+        then: Option<Then>,
+    },
 }
 
 impl Prompted for Db {
@@ -339,6 +345,7 @@ impl PromptHost<Db> for Shell {
         match prompt {
             DbPrompt::AddonImported(done) => self.db_addon_imported(done, window, cx),
             DbPrompt::Leave(then) => self.db_leave(then, window, cx),
+            DbPrompt::SavedNew { id, details, then } => self.db_saved_new(id, &details, then, window, cx),
         }
     }
 }
