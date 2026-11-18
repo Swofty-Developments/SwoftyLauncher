@@ -9,14 +9,15 @@ use super::tracks::Tracks;
 use super::{GVDB, Pipeline};
 use crate::activation::db::{Registry, TrackHost, activate_with};
 use crate::activation::grid::grid_size;
-use crate::activation::place::{layer_worlds, slot_asset_group, slot_asset_root};
+use crate::activation::place::{AiTeam, ai_teams, layer_worlds, slot_asset_group, slot_asset_root};
 use crate::activation::ui::{Lists, plan_lists};
 use crate::addons::builtin::CORE_ID;
+use crate::asset::Kind;
 use crate::content::runtime_assets::{db_edits, runtime_loaded_estimate, runtime_record_room};
 use crate::dbedit::driver_manager;
 use crate::game_db::owned::Added;
 use crate::multiplayer::fingerprint;
-use crate::planner::{Kind, Route, kept_lists_line, stock_removals_line, track_removals_line};
+use crate::planner::{Route, kept_lists_line, stock_removals_line, track_removals_line};
 use crate::{Error, Result, io_err};
 
 /// What editing the game database leaves for the later stages.
@@ -75,6 +76,14 @@ struct TrackRows {
     ids: Vec<(String, String, i64)>,
 }
 
+/// What recording the added rows gives the later steps.
+struct Recorded {
+    /// The addons that add rows to the game's tables, which only the game file can take.
+    row_adders: Vec<String>,
+    /// The AI teams the addons added by copying another team's row.
+    ai_teams: Vec<AiTeam>,
+}
+
 /// What applying the addons' database ops gives the later steps.
 struct Applied {
     added: Vec<Added>,
@@ -109,17 +118,20 @@ impl Pipeline<'_, '_> {
         let mut edits = self.take_db_reports();
         edits.id_aliases = applied.id_aliases;
         edits.row_ids_unsaved = applied.row_ids_unsaved;
-        let row_adders = self.record_rows(&db, &applied.added, &tracks, inputs, &mut edits);
+        let recorded = self.record_rows(&db, &applied.added, &tracks, inputs, &mut edits);
         let grid = grid_size(&db.db);
         let worlds = layer_worlds(&db.db);
-        self.write_database(db, staged, &row_adders, inputs.room_asked)?;
+        self.write_database(db, staged, &recorded.row_adders, inputs.room_asked)?;
+        let packer = self.eager_packer();
         fitted.place(
             self.run,
             &worlds,
+            &recorded.ai_teams,
             grid,
             &mut self.planner,
             &mut self.built,
             &mut self.caches,
+            &packer,
         )?;
         Ok(edits)
     }
@@ -223,6 +235,9 @@ impl Pipeline<'_, '_> {
         built
             .lines
             .extend(crate::game_db::virtual_lists::settle(&mut db.db, &db.stock));
+        built
+            .lines
+            .extend(crate::game_db::track_layer_overrides::drop_missing(&mut db.db));
         built.lines.extend(crate::game_db::rnd_budget::report(&db.db));
         let mut applied = Applied {
             added,
@@ -355,8 +370,7 @@ impl Pipeline<'_, '_> {
     }
 
     /// Records the rows each addon added: their ids, the UDP ids, the side data they lack, the drivers
-    /// the driver picks name and the items they add to a career. The addons that add rows to the game's
-    /// tables, which only the game file can take.
+    /// the driver picks name and the items they add to a career, and the AI teams they copy from another.
     fn record_rows(
         &mut self,
         db: &Database,
@@ -364,7 +378,7 @@ impl Pipeline<'_, '_> {
         tracks: &TrackRows,
         inputs: &Inputs,
         edits: &mut DbEdits,
-    ) -> Vec<String> {
+    ) -> Recorded {
         let run = self.run;
         let Self {
             planner,
@@ -378,6 +392,7 @@ impl Pipeline<'_, '_> {
         }
         let row_adders = crate::stdlib::room::row_adders(copies.iter().map(|c| c.addon.as_str()), CORE_ID);
         built.row_ids = added_row_ids(&db.db, &copies);
+        let ai_teams = ai_teams(&db.db, copies.iter().map(|c| (c.from.as_str(), c.row.as_str())));
         for (addon, code, id) in &tracks.ids {
             built
                 .row_ids
@@ -409,7 +424,7 @@ impl Pipeline<'_, '_> {
             built.warnings.extend(found.warnings);
             session.owned_items = found.items;
         }
-        row_adders
+        Recorded { row_adders, ai_teams }
     }
 
     /// Hands the database edits to the runtime route when they fit there, else writes the game file,

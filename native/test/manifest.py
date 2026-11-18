@@ -74,6 +74,7 @@ UNITS = [
     Unit('direct_start_tt', 'Direct start Time Trial unit test'),
     Unit('dred', 'GPU device removal report unit test'),
     Unit('ers_newlap', 'ERS new-lap site unit test'),
+    Unit('ers_mode', 'ERS mode guard offset unit test'),
     Unit('estimate_laptime', 'Estimate lap time guard unit test'),
     Unit('fe_tile_guard', 'Front-end tile list guard unit test'),
     Unit('game_message_log', 'Stock game message log unit test'),
@@ -281,8 +282,9 @@ TRACKS = [
 
 SNAPSHOTS_FLAGS = ['-Isrc', '-std=c++23', '-O2', '-Wall', '-Wextra', '-Wno-nullability-completeness', SDK, '-Ithird_party/zstd']
 SNAPSHOTS = [Program('snapshots_test', [
-    Objects(['test/snapshots/snapshots_test.cpp', 'src/core/career/snapshots/snapshots.cpp', 'src/core/registry/store.cpp',
-             'src/core/registry/validate.cpp', 'src/core/registry/schema.cpp'], SNAPSHOTS_FLAGS), ZSTD])]
+    Objects(['test/snapshots/snapshots_test.cpp', 'src/core/career/snapshots/snapshots.cpp',
+             'src/core/career/snapshots/freeze.cpp', 'src/core/registry/store.cpp', 'src/core/registry/validate.cpp',
+             'src/core/registry/schema.cpp'], SNAPSHOTS_FLAGS), ZSTD])]
 
 CAR_LIVE = [Program(t, [Objects([f'test/hooks/{t}.cpp'], ['-Isrc', '-std=c++23', '-O1', '-Wall', '-Wextra', '-Werror',
                                                           '-Wno-nullability-completeness', SDK])])
@@ -367,5 +369,7 @@ SCRIPTS = [
     Script('loading_report', 'Loading report on synthetic loader.log runs', ['python3', '-I', 'native/test/loading_report_test.py']),
     Script('sigverify', 'Core signatures on the KB build and Steam 1.0.145 (skipped without both executables)',
            ['python3', '-I', 'native/test/sigverify_test.py']),
+    Script('init_check', 'Static initializer check: run order, inline variables and hook guard arming',
+           ['python3', '-I', 'native/test/init_check_test.py']),
 ]
 

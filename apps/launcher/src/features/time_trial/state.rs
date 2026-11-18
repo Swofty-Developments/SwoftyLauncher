@@ -2,8 +2,8 @@ use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::*;
 use std::convert::Infallible;
 use std::path::Path;
+use swofty_core::online::server::api::{Api, ApiError};
 use swofty_core::online::server::sign_in::Session;
-use swofty_core::online::timetrial::api::{Api, ApiError};
 use swofty_core::online::timetrial::barred::{self, Barred};
 use swofty_core::online::timetrial::boards::{Group, Row, Run, RunBoard};
 use swofty_i18n::{tr, trf};
@@ -566,7 +566,7 @@ impl Host<TtPage> for Shell {
 
 #[cfg(test)]
 mod tests {
-    use swofty_core::online::timetrial::api::ApiError;
+    use swofty_core::online::server::api::ApiError;
     use swofty_core::online::timetrial::barred::Barred;
     use swofty_core::online::timetrial::boards::Run;
 

@@ -1534,12 +1534,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f27ae1dd37df86211c42e150270f82743308803d90a6f6e6651cd730d5e1732f"
 
 [[package]]
-name = "data-encoding"
-version = "2.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4583a4551df46e2792f82ceeac45e850d2e2d5debba0b91f102385cda5b11f06"
-
-[[package]]
 name = "data-url"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7766,7 +7760,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-addon"
-version = "1.9.63"
+version = "1.9.74"
 dependencies = [
  "semver",
  "serde",
@@ -7777,7 +7771,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-ads"
-version = "1.9.63"
+version = "1.9.74"
 dependencies = [
  "open",
  "serde",
@@ -7789,7 +7783,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-ads-helper"
-version = "1.9.63"
+version = "1.9.74"
 dependencies = [
  "gtk",
  "swofty-ads",
@@ -7798,14 +7792,14 @@ dependencies = [
 
 [[package]]
 name = "swofty-builtins"
-version = "1.9.63"
+version = "1.9.74"
 dependencies = [
  "swofty-addon",
 ]
 
 [[package]]
 name = "swofty-cli"
-version = "1.9.63"
+version = "1.9.74"
 dependencies = [
  "anyhow",
  "clap",
@@ -7821,7 +7815,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-core"
-version = "1.9.63"
+version = "1.9.74"
 dependencies = [
  "flate2",
  "libc",
@@ -7839,20 +7833,16 @@ dependencies = [
  "sha2 0.11.1",
  "swofty-addon",
  "swofty-formats",
- "swofty-sdk",
  "swofty-shaders",
  "tar",
  "thiserror 2.0.21",
- "tungstenite",
  "ureq",
- "webpki-roots",
- "zeroize",
  "zip",
 ]
 
 [[package]]
 name = "swofty-formats"
-version = "1.9.63"
+version = "1.9.74"
 dependencies = [
  "aes 0.9.4",
  "bcdec_rs",
@@ -7863,20 +7853,19 @@ dependencies = [
 
 [[package]]
 name = "swofty-i18n"
-version = "1.9.63"
+version = "1.9.74"
 dependencies = [
  "serde_json",
 ]
 
 [[package]]
 name = "swofty-launcher"
-version = "1.9.63"
+version = "1.9.74"
 dependencies = [
  "anyhow",
  "gpui-kit",
  "image",
  "lsp-types",
- "png 0.18.1",
  "raw-window-handle",
  "semver",
  "serde",
@@ -7907,7 +7896,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-preview"
-version = "1.9.63"
+version = "1.9.74"
 dependencies = [
  "image",
  "pollster 1.0.1",
@@ -7923,11 +7912,11 @@ dependencies = [
 
 [[package]]
 name = "swofty-sdk"
-version = "1.9.63"
+version = "1.9.74"
 
 [[package]]
 name = "swofty-shaders"
-version = "1.9.63"
+version = "1.9.74"
 dependencies = [
  "serde",
  "serde_json",
@@ -8541,22 +8530,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d2df906b07856748fa3f6e0ad0cbaa047052d4a7dd609e231c4f72cee8c36f31"
 dependencies = [
  "core_maths",
-]
-
-[[package]]
-name = "tungstenite"
-version = "0.30.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e48ac77174b19c110a50ab2128b24215ac9cb40e0e12e093fb602d175c569d22"
-dependencies = [
- "bytes",
- "data-encoding",
- "http",
- "httparse",
- "log",
- "rand 0.10.3",
- "sha1",
- "thiserror 2.0.21",
 ]
 
 [[package]]

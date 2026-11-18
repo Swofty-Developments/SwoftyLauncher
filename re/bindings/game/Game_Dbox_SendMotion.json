@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/144728690.c",
-  "notes": "D-BOX motion output: logs angular acceleration/velocity, posts RaceTelemetry events (channel DBOX)."
+  "notes": "D-BOX motion output: logs angular acceleration/velocity, posts RaceTelemetry events (channel DBOX). | engine-re 2026-11-17 track round C: per wheel copies the MECHANICS ffb_surface enum (record +0x78) at 0x144728b6c into the D-BOX packet (null record skipped). Only code reader of +0x78 found by a full .xtls scan besides the UDP telemetry."
  },
  "signature": {
   "id": "game.dbox_send_motion",

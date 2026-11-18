@@ -7,12 +7,13 @@ use super::registry::added_tables;
 use super::run::Run;
 use crate::addons::builtin::{CORE_DB, CORE_ID, core_db_ops};
 use crate::addons::registry::{Host, Registry};
+use crate::asset::Features;
 use crate::asset::{AssetOp, FileKind, Op, OpFile, Origin, Root, Source};
 use crate::content::runtime_assets::Runtime;
 use crate::launcher::BuildCx;
 use crate::manifest::AddonManifest;
 use crate::multiplayer::fingerprint::{self, OutputBuilder};
-use crate::planner::{Features, Planner};
+use crate::planner::Planner;
 use crate::stdlib::manifest::RegistryManifest;
 use crate::{Error, Result, io_err};
 
@@ -209,6 +210,9 @@ impl Gather<'_, '_, '_> {
         }
         let ops: Vec<AssetOp> = batch.ops.iter().map(|op| op.op.clone()).collect();
         self.hash.sources(run.store, id, &ops)?;
+        for line in &batch.lines {
+            out.line(line);
+        }
         self.built
             .lines
             .extend(batch.lines.iter().map(|l| format!("{id}: {l}")));

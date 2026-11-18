@@ -18,6 +18,20 @@ const CORE_DLLS: &[&str] = &["swofty_core.dll", "swofty_gamelog.dll"];
 /// The folder under the game folder that native plugins are installed in, one folder per addon id.
 const ADDONS_DIR: &str = "\\swofty\\addons\\";
 
+/// What the loader logs on the thread that runs an addon's init, before and after it, from which the init time
+/// of a core that logs no `[perf] slow addon init` line is read.
+const INIT_CALLED: &str = ", calling SwoftyAddonInit";
+const INIT_RETURNED: &str = ": SwoftyAddonInit returned ";
+
+/// Each addon's init time in milliseconds, summed over its passes, in the order the log first names them: from
+/// the `[perf] slow addon init` lines, or from the loader's own lines around each init on a core older than them.
+pub(super) fn addon_inits(loader: &str) -> Vec<(String, u64)> {
+    match loader.contains(SLOW_INIT) {
+        true => slow_inits(loader),
+        false => timed_inits(loader),
+    }
+}
+
 /// Each name the `[perf] slow addon init` lines give, with its init time in milliseconds summed over its passes,
 /// in the order the log first names them.
 pub(super) fn slow_inits(loader: &str) -> Vec<(String, u64)> {
@@ -38,6 +52,50 @@ pub(super) fn slow_inits(loader: &str) -> Vec<(String, u64)> {
         match out.iter_mut().find(|(n, _)| n == addon) {
             Some((_, total)) => *total += ms,
             None => out.push((addon.to_owned(), ms)),
+        }
+    }
+    out
+}
+
+/// A loader.log line's time of day in milliseconds, its thread and its message.
+fn stamped(line: &str) -> Option<(u64, &str, &str)> {
+    let clock = line.get(11..23)?;
+    let mut parts = clock.split([':', '.']).map(|n| n.parse::<u64>().ok());
+    let (h, m, s, ms) = (parts.next()??, parts.next()??, parts.next()??, parts.next()??);
+    let rest = line.get(23..)?.trim_start().strip_prefix('[')?;
+    let (thread, message) = rest.split_once(']')?;
+    Some((
+        ((h * 60 + m) * 60 + s) * 1000 + ms,
+        thread.trim(),
+        message.trim_start(),
+    ))
+}
+
+/// Each dll's init time in milliseconds, summed over its passes, from the time between the loader's
+/// `addon <dll>: loaded at <address>, calling SwoftyAddonInit` and `addon <dll>: SwoftyAddonInit returned` lines
+/// on the same thread.
+pub(super) fn timed_inits(loader: &str) -> Vec<(String, u64)> {
+    const DAY_MS: u64 = 24 * 60 * 60 * 1000;
+    let mut called: Vec<(String, String, u64)> = Vec::new();
+    let mut out: Vec<(String, u64)> = Vec::new();
+    for (at, thread, message) in loader.lines().filter_map(stamped) {
+        let Some(rest) = message.strip_prefix("addon ") else {
+            continue;
+        };
+        if rest.contains(INIT_CALLED)
+            && let Some((dll, _)) = rest.split_once(": loaded at ")
+        {
+            called.retain(|(t, d, _)| !(t == thread && d == dll));
+            called.push((thread.to_owned(), dll.to_owned(), at));
+        } else if let Some((dll, _)) = rest.split_once(INIT_RETURNED)
+            && let Some(i) = called.iter().position(|(t, d, _)| t == thread && d == dll)
+        {
+            let (_, dll, start) = called.remove(i);
+            let ms = (at + DAY_MS - start) % DAY_MS;
+            match out.iter_mut().find(|(n, _)| *n == dll) {
+                Some((_, total)) => *total += ms,
+                None => out.push((dll, ms)),
+            }
         }
     }
     out
@@ -79,7 +137,7 @@ fn shown(e: &Evidence, logged: &str) -> Option<String> {
 
 /// The addons whose init held up F1 25's start by [`SLOW_INIT_MS`] or more, slowest first.
 pub(super) fn slow_addons(e: &Evidence) -> Vec<(String, u64)> {
-    let mut slow: Vec<(String, u64)> = slow_inits(&e.loader)
+    let mut slow: Vec<(String, u64)> = addon_inits(&e.loader)
         .into_iter()
         .filter(|(_, ms)| *ms >= SLOW_INIT_MS)
         .filter_map(|(logged, ms)| Some((shown(e, &logged)?, ms)))
@@ -118,7 +176,7 @@ pub(crate) fn slow_addon_init(e: &Evidence) -> Option<Diagnosis> {
 
 /// The addon that held up the start of the session that wrote `loader`, as Send Logs reads it.
 pub(crate) fn slow_start(loader: &str, store: &Store) -> Option<Diagnosis> {
-    if !loader.contains(SLOW_INIT) {
+    if !loader.contains(SLOW_INIT) && !loader.contains(INIT_CALLED) {
         return None;
     }
     let addons = store.addons().unwrap_or_default();

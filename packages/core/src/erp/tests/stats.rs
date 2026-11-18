@@ -89,7 +89,7 @@ fn the_build_rewrites_stale_tsmd_stats_of_a_replaced_bxml_fragment() {
     std::fs::write(root.join("broken.erp"), archive.to_bytes().unwrap()).unwrap();
     let file = ErpFile::open(&root.join("broken.erp")).unwrap();
     assert_eq!(stale_stats_in(&file).unwrap(), [SPLINE]);
-    let (fixed, broken) = repair_stats_in(&file).unwrap();
+    let (fixed, broken) = repair_stats_in(&file, &swofty_formats::erp::Packer::default()).unwrap();
     assert_eq!((fixed.len(), fixed[0].0, broken.len()), (1, 0, 0));
     assert_eq!(fixed[0].1.fragments[1].data().unwrap(), edited.string_stats(1));
     std::fs::remove_dir_all(&root).ok();

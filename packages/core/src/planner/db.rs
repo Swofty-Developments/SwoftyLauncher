@@ -9,7 +9,7 @@ use crate::game_db::owned::{self, Added};
 use crate::game_db::row_keys::{Names, RowKeys};
 use crate::ops::{
     DbOps, DbReport, FieldNames, Rewrite, RowIds, apply_db_ops_lenient, explicit_stat_ids, ids_exhausted,
-    no_row, no_row_selectors,
+    no_row, no_row_selectors, unlock_list,
 };
 use crate::{Error, Result};
 
@@ -440,15 +440,20 @@ impl<'a> Planner<'a> {
                 report.warnings.push(moved_stat_id_line(&origin.addon, None, &m));
                 continue;
             };
-            let holder = self
-                .copies
-                .iter()
-                .rev()
-                .find(|c| &c.row == held)
-                .map_or_else(|| origin.addon.clone(), |c| c.addon.clone());
+            let copy = self.copies.iter().rev().find(|c| &c.row == held);
+            // An unlock row's id moves off a stock row too; no addon added that row.
+            let game = copy.is_none()
+                && stat_row(held)
+                    .rsplit_once('.')
+                    .is_some_and(|(t, _)| unlock_list(t).is_some());
+            let holder = copy.map_or_else(|| origin.addon.clone(), |c| c.addon.clone());
+            let named = if game { "the game" } else { holder.as_str() };
             report
                 .warnings
-                .push(moved_stat_id_line(&origin.addon, Some(&holder), &m));
+                .push(moved_stat_id_line(&origin.addon, Some(named), &m));
+            if game {
+                continue;
+            }
             let keeper = Origin {
                 addon: holder,
                 item: None,

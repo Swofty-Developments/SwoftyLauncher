@@ -16,6 +16,7 @@ mod owners;
 mod registry;
 mod seed;
 mod tracks;
+mod unlocks;
 
 const VEHICLES: (&str, &str) = ("entrants.vehicles", "vehicle");
 const PACKAGES: (&str, &str) = ("entrants.vehicles.vehicle_packages", "vehicle_package");

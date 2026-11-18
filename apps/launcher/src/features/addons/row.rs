@@ -1,4 +1,4 @@
-use super::drag::{Dragged, Dragging, NESTED};
+use super::drag::{Dragged, NESTED};
 use crate::services::library::{AddonItem, Source, Type};
 use crate::shell::Shell;
 use crate::ui::facet::checkbox;
@@ -182,7 +182,7 @@ impl Shell {
         let row = match draggable {
             true => {
                 let dragged = Dragged {
-                    item: Dragging::Addon(id.clone()),
+                    item: self.drag_item(&id),
                     name: man.name.clone().into(),
                 };
                 row.on_drag(dragged, |d, _, _, cx| cx.new(|_| d.clone()))

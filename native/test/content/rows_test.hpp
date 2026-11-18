@@ -111,6 +111,7 @@ void stock_package_rows(Db &db);
 void leaderboard_tests(const std::string &regs);
 void variant_tests(const std::string &regs);
 void twelve_team_tests(const std::string &regs);
+void short_list_tests(const std::string &regs);
 void package_team_row_tests();
 void garage_tests();
 void livery_tests();

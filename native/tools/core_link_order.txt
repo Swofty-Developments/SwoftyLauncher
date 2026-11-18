@@ -1,10 +1,11 @@
-# The order swofty_core.dll links its objects in, which is also the order the C++ runtime runs their static
-# initializers. It is the order of the single zig command the core was built with up to 1.9: the separately
-# compiled objects first, then the core sources in the order that command listed them. build_graph.py links a
-# source missing from this list after the listed ones, sorted by path, and stops when a listed file is gone.
-# tools/core_init_order.txt holds what this order decides (the units with static objects, the SDK mixin list,
-# the on-load sequence and the binding uses), and the build fails when it changes or a unit with static objects is
-# not listed here.
+# The order swofty_core.dll links its objects in. The C++ runtime runs their static initializers in the reverse of
+# it (lld lays out .ctors in link order and the mingw runtime calls the list from its end), and the destructors they
+# register at exit in it. It is the order of the single zig command the core was built with up to 1.9: the
+# separately compiled objects first, then the core sources in the order that command listed them. build_graph.py
+# links a source missing from this list after the listed ones, sorted by path, and stops when a listed file is gone.
+# tools/core_init_order.txt holds what this order decides (the units with static constructors, the inline variables
+# they initialize, the units with destructors, the SDK mixin list, the on-load sequence and the binding uses), and
+# the build fails when it changes or a unit with static objects is not listed here.
 src/core/diagnostics/crash/stall_walk.cpp
 src/core/hooks/guard.cpp
 third_party/safetyhook/safetyhook.cpp
@@ -36,6 +37,8 @@ third_party/zstd/decompress/zstd_ddict.c
 third_party/zstd/decompress/zstd_decompress_block.c
 third_party/zstd/decompress/zstd_decompress.c
 src/core/runtime/loader/mixin_manager.cpp
+src/core/runtime/loader/mixin_install.cpp
+src/core/runtime/loader/mixin_queries.cpp
 src/core/runtime/loader/patch_set.cpp
 src/core/diagnostics/crash/crash.cpp
 src/core/diagnostics/crash/crash_log.cpp
@@ -71,6 +74,7 @@ src/core/guards/session/teammate_pairs_guard.cpp
 src/core/guards/frontend/setup_vm_guard.cpp
 src/core/guards/engine/heap_sizes.cpp
 src/core/diagnostics/net_trace.cpp
+src/core/diagnostics/net_trace/hooks.cpp
 src/core/telemetry/udp_ids.cpp
 src/core/assets/assets.cpp
 src/core/assets/resources.cpp
@@ -95,7 +99,9 @@ src/core/telemetry/telemetry.cpp
 src/core/assets/dbread.cpp
 src/core/runtime/storage.cpp
 src/core/career/career.cpp
+src/core/career/career_entity.cpp
 src/core/career/career_content.cpp
+src/core/career/content_tiles.cpp
 src/core/career/career_start.cpp
 src/core/frontend/popup.cpp
 src/core/hud/race_hud.cpp
@@ -115,6 +121,7 @@ src/core/boxes/car_category.cpp
 src/core/boxes/box_options.cpp
 src/core/boxes/box_grid.cpp
 src/core/career/save_splice.cpp
+src/core/career/save_data.cpp
 src/core/career/career_saves.cpp
 src/core/guards/cars/ers_newlap.cpp
 src/core/guards/garage/garage_crew.cpp
@@ -140,6 +147,7 @@ src/core/diagnostics/load_stall.cpp
 src/core/guards/cars/tyre_slots.cpp
 src/core/diagnostics/tyre_models.cpp
 src/core/career/hub_tab.cpp
+src/core/career/hub_rnd.cpp
 src/core/registry/schema.cpp
 src/core/hooks/hooks.cpp
 src/core/hooks/core_events.cpp
@@ -154,6 +162,7 @@ src/core/registry/table.cpp
 src/core/registry/validate.cpp
 src/core/registry/core.cpp
 src/core/career/snapshots/snapshots.cpp
+src/core/career/snapshots/freeze.cpp
 src/core/career/snapshots/runtime.cpp
 src/core/guards/tracks/track_acclim.cpp
 src/core/guards/frontend/gp_continue_guard.cpp
@@ -196,3 +205,4 @@ src/core/guards/ai/ai_line_set_guard.cpp
 src/core/hud/room_cover.cpp
 src/core/assets/entitlements.cpp
 src/core/live/live_state.cpp
+src/core/loading/game_settings.cpp

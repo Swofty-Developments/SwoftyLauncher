@@ -9,6 +9,7 @@ mod values;
 use std::ops::Range;
 
 use self::tables::{Cur, entry, header, rule_header};
+use crate::text::skip_ws;
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum Lit {
@@ -103,13 +104,6 @@ impl LineCtx<'_> {
     fn at(&self, from: usize, to: usize) -> Range<usize> {
         self.start + from..self.start + to
     }
-}
-
-fn skip_ws(s: &str, mut i: usize) -> usize {
-    while s[i..].starts_with([' ', '\t']) {
-        i += 1;
-    }
-    i
 }
 
 /// How many more `[`/`{` than `]`/`}` a line opens outside strings and comments.

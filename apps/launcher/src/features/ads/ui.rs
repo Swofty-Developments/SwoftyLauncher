@@ -63,6 +63,13 @@ impl Shell {
                 || matches!(&self.support.me, Load::Ready(me) if me.sees_ads()))
     }
 
+    fn ad_uid(&self) -> Option<&str> {
+        match &self.support.me {
+            Load::Ready(me) => me.ad_uid.as_deref(),
+            _ => None,
+        }
+    }
+
     fn ad_fits(unit: Unit, width: f32) -> bool {
         width * crate::ui::scale::current() >= f32::from(unit.size().width)
     }
@@ -71,7 +78,7 @@ impl Shell {
         if !self.ads_allowed() {
             return None;
         }
-        let slot = self.ads.slot(unit, background)?;
+        let slot = self.ads.slot(unit, background, self.ad_uid())?;
         Some(
             v_flex()
                 .flex_shrink_0()
@@ -159,7 +166,7 @@ impl Shell {
             return None;
         }
         let closable = video.since.elapsed() >= VIDEO_SKIP;
-        let slot = self.ads.slot(Unit::Video, p.surface)?;
+        let slot = self.ads.slot(Unit::Video, p.surface, self.ad_uid())?;
         let close = Button::new("ad-video-close")
             .ghost()
             .tap_sm()

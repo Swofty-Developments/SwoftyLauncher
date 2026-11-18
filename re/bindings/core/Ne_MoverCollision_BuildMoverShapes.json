@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/1440caa60.c;xref:0x144453b6b",
-  "notes": "Huge (0x34d70 stack, 1248 lines) builder of mover collision data, saves xmm6-15; sole caller Ne_MoverCollision_CreateResource. Hypothesis: converts mover/convex resource into runtime collision shapes."
+  "notes": "Creates one VCQTC collision tile object per JPAK entry (sole caller Ne_MoverCollision_CreateResource 0x144453b6b). 2026-11-17 engine-re decode (static): takes an object from the world pool [world+0x40] (capacity +0x18 vs used +0x1c, compare 0x1440caae7; the pool is sized from PhysicsWorldConfig maxLargeGeoms, see Ne_PhysWorld_InitFromConfig), else error 0xc and returns 0. Tile header: +0 version (vanilla 0x20004; < 0x20002 = fatal trap Ne_FatalFormat_Trap at 0x1440cad13 path), +4..+0x1c AABB, +0x1c tri count, +0x20 vert count, +0x24 material count, +0x28/+0x30/+0x38/+0x40 offsets of vertices (16-byte x,y,z,w)/nodes/triangles/leaves, relocated to pointers in place; +0x2c/+0x34 floats copied to obj+0x1a0/+0x1a4 (v > 0x20002). Material ids (u32 at +0x50) are replaced IN PLACE by 8-byte material pointers (loop from the last id down), so the header must reserve 8 bytes per material before the vertex block (vanilla: 8 materials, vertices at 0x90); an unknown non-zero id logs error 2 and falls back to the first material (id 0 not found: first material, no log). Bit i of obj+0x1d0 = material i flag (+0x38). Legacy branch (version < 0x20003, cmp 0x1440cacdc) converts old node trees and writes the leaf word itself: u32 = tallWallCount<<26 | ((trunc(50*maxY_all) - trunc(50*maxY_nonTall)) & 0x7ff)<<15 | (0x4001 + trunc(50*maxY_all)) & 0x7fff (0x1440cbabd..0x1440cbae7; the dY field is zeroed by cmove when all tris are tall walls), then u8 total tris, u8 ground tris, u16 tri indices (ground first, then walls, then tall walls), per-tri quantised AABB bytes. Ground = normal.y >= 0.25 or max dy <= 0.335 m; tall wall = |normal.y| < 0.05 and max dy > 4 m. Triangle = 4 bytes: v0 = ((b0 & 3) << 8) | b1, v1 = v0 + b2, v2 = v0 + b3. v0x20004 tiles keep the file's leaf words (no recompute). | engine-re 2026-11-17 track round C (surface): tile material ids. Header count piVar30[9], ids as a packed u32 array at header+0x50 (read [rsi+r15*4+0x50]), resolved backwards in place to 8-byte pointers ([rsi+r15*8+0x50]) into the physics material library [[ctx+0xe8]+0x28] (active byte +0x20, entries +8, count +0x10, stride +0x18; entry +0 = 4-char code, the MATERIALS records of Ne_Phys_ParseMaterials): linear search by code (store 0x1440caee2, library 0x1440caefa); an id 0 (silently) or a nonzero code not in the library (NEerrno 2 in the trace ring 0x146107830) -> the FIRST library entry; null only when the library byte +0x20 is 0 or has no entries (V11210). So a tile with an unknown ground code drives like library entry 0, not like tarmac."
  },
  "signature": {
   "id": "core.mover_collision_build_mover_shapes",
@@ -45,6 +45,26 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/1440caa60.c;xref:0x144453b6b",
    "notes": "V7613 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkrt-verify",
+   "kind": "func",
+   "item": "Ne_MoverCollision_BuildMoverShapes",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1440caa60.c;xref:0x1440caae7,0x1440cbaa4,0x1440cbaef",
+   "notes": "V10776 pool +0x18/+0x1c, fatal < 0x20002, legacy leaf word formula and in-place material pointers confirmed; additions: dY field zeroed by cmove when all tris are tall, id 0 falls back without log (applied)"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkps-verify",
+   "kind": "func",
+   "item": "Ne_MoverCollision_BuildMoverShapes",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1440caa60.c;xref:0x1440caf20",
+   "notes": "V11210 Linear search over lib entries (base [lib+8], count +0x10, stride +0x18, code at +0); not found / id 0 -> first entry. CORRECTION: ids are packed u32 (read [rsi+r15*4+0x50]) converted backwards in place to 8-byte pointer slots ([rsi+r15*8+0x50]); trace (code 2) only for nonzero unknown ids; result null if lib byte +0x20==0 or entry base null."
   }
  ],
  "proofs": []

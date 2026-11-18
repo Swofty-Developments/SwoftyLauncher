@@ -138,11 +138,11 @@ pub fn add_track(root: &mut Element, map: &ErsMap) -> Result<bool> {
     Ok(true)
 }
 
-pub(crate) fn set_data(res: &mut Resource, index: usize, data: &[u8]) -> Result<()> {
-    crate::erp::pack::set_fragment_at(&Packer::default(), res, index, data, ZSTD_LEVEL)
+pub(crate) fn set_data(packer: &Packer, res: &mut Resource, index: usize, data: &[u8]) -> Result<()> {
+    crate::erp::pack::set_fragment_at(packer, res, index, data, ZSTD_LEVEL)
 }
 
-pub fn edit_vtf(res: &Resource, maps: &[ErsMap]) -> Result<Option<Resource>> {
+pub fn edit_vtf(res: &Resource, maps: &[ErsMap], packer: &Packer) -> Result<Option<Resource>> {
     let data = res.fragments[0].data()?;
     let mut doc = Document::parse(&data)?;
     let mut changed = false;
@@ -154,13 +154,13 @@ pub fn edit_vtf(res: &Resource, maps: &[ErsMap]) -> Result<Option<Resource>> {
         return Ok(None);
     }
     let mut out = res.clone();
-    set_data(&mut out, 0, &bytes)?;
+    set_data(packer, &mut out, 0, &bytes)?;
     if let Some(stats) = out.fragments.get(1) {
         let old = stats.data()?;
         let version = old
             .get(4..8)
             .map_or(1, |b| u32::from_le_bytes(b.try_into().expect("4 bytes")));
-        set_data(&mut out, 1, &doc.string_stats(version))?;
+        set_data(packer, &mut out, 1, &doc.string_stats(version))?;
     }
     Ok(Some(out))
 }
@@ -179,12 +179,12 @@ pub fn in_teams(rel: &str) -> bool {
 
 /// Writes to `out` a copy of the archive at `src` with the tracks' entries in its handling files, and returns how
 /// many handling files changed; with none it writes nothing.
-pub fn edit_archive(src: &Path, maps: &[ErsMap], out: &Path) -> Result<usize> {
+pub fn edit_archive(src: &Path, maps: &[ErsMap], out: &Path, packer: &Packer) -> Result<usize> {
     let file = ErpFile::open(src)?;
     let mut replace = BTreeMap::new();
     for (i, r) in file.erp.resources.iter().enumerate() {
         if r.kind() == "VTF"
-            && let Some(new) = edit_vtf(&file.load(r)?, maps)?
+            && let Some(new) = edit_vtf(&file.load(r)?, maps, packer)?
         {
             replace.insert(i, new);
         }
@@ -262,6 +262,7 @@ pub fn build_ers(
     game: &Path,
     original: &dyn Fn(&str) -> PathBuf,
     cache: &Path,
+    packer: &Packer,
 ) -> Result<ErsBuild> {
     let mut build = ErsBuild::default();
     if maps.is_empty() {
@@ -274,7 +275,7 @@ pub fn build_ers(
     if !done.is_file() {
         let mut count = 0;
         for rel in &archives {
-            count += edit_archive(&original(rel), maps, &out.join(rel))?;
+            count += edit_archive(&original(rel), maps, &out.join(rel), packer)?;
         }
         std::fs::create_dir_all(&out).map_err(io_err(&out))?;
         std::fs::write(&done, count.to_string()).map_err(io_err(&done))?;
@@ -304,6 +305,60 @@ pub fn build_ers(
 mod tests {
     use super::*;
     use swofty_formats::bxml::Kind;
+
+    #[test]
+    fn a_second_ers_edit_takes_its_frames_from_the_cache() {
+        use crate::erp::pack::frame_cache;
+        let padding = (0..900)
+            .map(|i| leaf(&format!("Pad{i}"), "0.123456789"))
+            .collect();
+        let root = el(
+            "VTF",
+            &[],
+            vec![
+                el(
+                    "EnergyRecoverySystem",
+                    &[("numTrackSettingsTypes", "1")],
+                    vec![el(
+                        "TrackSettings",
+                        &[("name", "0")],
+                        vec![leaf("Track", "bahrain"), leaf("HarvestLimitMGUK", "7400000")],
+                    )],
+                ),
+                el("Padding", &[], padding),
+            ],
+        );
+        let data = Document {
+            root,
+            tail: Vec::new(),
+        }
+        .to_bytes();
+        assert!(
+            data.len() > 16 << 10,
+            "the handling file is {} bytes, under the cached size",
+            data.len()
+        );
+        let res = frame_cache::zstd_resource("eaid://vehicle_package/teams/a/a.vtf", "VTF", &data);
+        let values = BTreeMap::from([("HarvestLimitMGUK".to_owned(), serde_json::json!(9000000))]);
+        let maps = [ErsMap {
+            code: "bahrain24",
+            base: "bahrain",
+            values: &values,
+        }];
+        let dir = std::env::temp_dir().join(format!("swofty-ers-frames-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        let packer = Packer::cached(&dir);
+        let first = edit_vtf(&res, &maps, &packer).unwrap().unwrap();
+        assert!(!frame_cache::marked(first.fragments[0].raw().unwrap()));
+        assert_eq!(frame_cache::mark(&dir), 1);
+        let second = edit_vtf(&res, &maps, &packer).unwrap().unwrap();
+        assert!(frame_cache::marked(second.fragments[0].raw().unwrap()));
+        assert_eq!(
+            second.fragments[0].data().unwrap(),
+            first.fragments[0].data().unwrap()
+        );
+        std::fs::remove_dir_all(&dir).ok();
+    }
 
     fn leaf(name: &str, v: &str) -> Element {
         Element {

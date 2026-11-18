@@ -7,6 +7,7 @@ use std::path::PathBuf;
 
 use swofty_addon::asset::{AssetOp, Op, Origin};
 use swofty_addon::ops::ErpOp;
+use swofty_formats::erp::Packer;
 
 use super::{Input, Layered, Output, Stock, TemplateBase, compose_with, dials, screen_build, screens};
 use crate::erpbuild::ErpBuild;
@@ -23,6 +24,8 @@ pub struct Context<'a> {
     pub baseline: &'a dyn Fn(&str) -> PathBuf,
     pub puts: &'a [String],
     pub name: &'a dyn Fn(&str) -> String,
+    /// The build's packer, which reuses the compressed frames of earlier builds.
+    pub packer: &'a Packer,
 }
 
 pub struct Composed {
@@ -94,7 +97,9 @@ pub fn compose_in_build(
     if inputs.iter().any(|i| i.record.screen.is_some()) {
         written.extend(screen_build::written());
     }
-    let mut scratch = ErpBuild::new(cx.base).with_baseline(cx.baseline);
+    let mut scratch = ErpBuild::new(cx.base)
+        .with_baseline(cx.baseline)
+        .with_packer(cx.packer.clone());
     let mut lines = Vec::new();
     let mut warnings = Vec::new();
     let huds: Vec<String> = {
@@ -143,7 +148,7 @@ pub fn compose_in_build(
         inner: cx.stock,
         build: &scratch,
     };
-    let output = compose_with(&layered, inputs, template)
+    let output = compose_with(&layered, inputs, template, cx.packer)
         .map_err(|e| Error::Other(format!("the HUD elements do not compose: {e}")))?;
     let left = super::check::uncovered(&layered, &output.archives)?;
     if !left.is_empty() {

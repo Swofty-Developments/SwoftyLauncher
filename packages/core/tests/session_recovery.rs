@@ -493,6 +493,36 @@ fn a_hand_copied_file_is_never_deleted_or_overwritten() {
 }
 
 #[test]
+fn third_party_dlls_in_the_game_folder_never_stop_a_session_and_stay_in_place() {
+    let f = Fixture::new("third-party-dlls");
+    for rel in [
+        "dxgi.dll",
+        "d3d12.dll",
+        "nvngx_dlss.dll",
+        "reshade-shaders/addon64.dll",
+    ] {
+        write(&f.game.join(rel), "a third-party dll");
+    }
+    let original = f.snapshot();
+    let game = f.game();
+    let wrapper = SessionLock::try_acquire(&f.data).unwrap().unwrap();
+    f.session(&game);
+    assert_eq!(f.read("dxgi.dll"), "a third-party dll");
+    drop(wrapper);
+
+    let lock = SessionLock::try_acquire(&f.data).unwrap().unwrap();
+    let r = recovery::recover(&lock, &f.data, &game, Scope::Sessions).unwrap();
+    assert!(r.problems.is_empty(), "{:?}", r.problems);
+    assert_eq!(f.snapshot(), original);
+    drop(lock);
+
+    let done = recovery::restore(&f.data, &game).unwrap();
+    assert_eq!(done.left, []);
+    assert!(done.set_aside.is_empty(), "{:?}", done.set_aside);
+    assert_eq!(f.snapshot(), original);
+}
+
+#[test]
 fn placed_paths_compare_like_the_game_folder() {
     let mut p = Placed::default();
     p.insert("Swofty\\Addons/core/x.dll", "ab".into(), false);

@@ -3,8 +3,8 @@ use std::collections::BTreeMap;
 use super::Diagnosis;
 
 /// The newest F1 25 update the launcher knows, as `F1_25.exe`'s file
-/// version: Steam build 25251167, and the EA app's copy of the same update.
-pub const LATEST_GAME_VERSION: &str = "1.0.141.7865";
+/// version: Steam build 26566308, and the EA app's copy of the same update.
+pub const LATEST_GAME_VERSION: &str = "1.0.145.2472";
 
 /// A game version's four numbers, as in `1.0.141.7865`.
 pub(super) fn version_numbers(version: &str) -> Option<[u32; 4]> {

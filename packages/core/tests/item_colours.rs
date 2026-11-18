@@ -1,9 +1,10 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
 
+use swofty_core::asset::Features;
 use swofty_core::asset::{FileKind, OpFile, Origin};
 use swofty_core::ops::{DbOps, DbReport, apply_db_ops_report};
-use swofty_core::planner::{Features, Planner};
+use swofty_core::planner::Planner;
 use swofty_core::rowkeys::{Names, RowKeys};
 use swofty_core::runtime::db_edits;
 use swofty_formats::gvdb::{Gvdb, Record};

@@ -81,7 +81,7 @@ A game update moves struct offsets, so code that reads or writes a struct field 
 namespace bp = runtime::build_proof;
 
 constexpr bp::Proof SESSION_LAPS{"the session settings' laps layout (+0xdf0, +0xdf8)",
-                                 bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145)};
+                                 bp::proofs::VERIFIED_LAYOUT.builds};   // or bp::bit(bp::Build::kb) | ...
 constexpr bp::Gate RACE_LAPS{"the direct start's race laps", &SESSION_LAPS};   // testing/direct_start.cpp
 
 if (!runtime::holds(RACE_LAPS))   // logs once: "[build] the direct start's race laps off on <exe>: <proof> is proven on <builds> only"
@@ -164,3 +164,27 @@ The career operations (`SwoftyCareerOps`, standard library 1.6) are in `career/o
 | `*_plan.hpp`, `driver_rows.hpp`, `fuel_logic.hpp` | the pure planners the host tests run (`run_career_ops_test.sh`) |
 
 An operation runs on the flow thread (`flow_tid`) or before the first frame, and resolves its bindings once through `bind`.
+
+## Units split across files
+
+These units keep their state in the first file listed; the other files hold code by concept and reach that state through the unit's shared header:
+
+| Files | Hold |
+|---|---|
+| `runtime/loader/mixin_manager.cpp` | the `MixinManager` object, registration, the core sets, `on_load` and addon init |
+| `runtime/loader/mixin_install.cpp` | the install plan, dropped conflicts, chained groups, `install` and `install_late` |
+| `runtime/loader/mixin_queries.cpp` | active core sets, code owners, overwrites, load indexes and the `runtime::` query calls |
+| `career/career.cpp` | flow states, the Team HQ answer, the tracker and the `SwoftyCareer` table |
+| `career/career_entity.cpp`, `career_entity.hpp` | the championship entity, its components and entrants, and the My Team vehicle heal |
+| `career/save_splice.cpp` | the splice's store, its load and save sites, the career slot reads and its core set |
+| `career/save_data.cpp`, `save_data.hpp` | the game's save-data objects: the root, a child's bag and its encoding, the string table, slot managers |
+| `career/snapshots/snapshots.cpp` | the snapshots entry, the save and career moments and the reads |
+| `career/snapshots/freeze.cpp`, `book_cache.hpp` | `Book::freeze`, `season_start` and `career_created` |
+| `career/hub_tab.cpp`, `hub_state.hpp` | the hub tabs, their options and `SwoftyCoreHub` |
+| `career/hub_rnd.cpp` | the R&D tab's visibility on Team HQ and the laptop, and `hub_tick` |
+| `career/career_content.cpp`, `content_state.hpp` | the content registry, its API, wraps and core sets |
+| `career/content_tiles.cpp` | the content tiles and the Addons row |
+| `diagnostics/net_trace.cpp` | the socket trace's log, socket notes and setup |
+| `diagnostics/net_trace/hooks.cpp`, `trace.hpp` | the ws2_32 hooks and their table |
+
+Each added file follows the file that holds its state in `tools/core_link_order.txt` and has no static objects.

@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1434bf980.c;xref:0x142f73540,0x1434bcf85,0x1434cb804,0x1434cb81f,0x1434cb832",
-  "notes": "Log channel PITLANE: 'PitLaneSystem::vehicleExitingPitLane(%d:%s)' L2 2026-11-14 (engine-re round 2): decomp read; 5 reference(s) (0x142f73540, 0x1434bcf85, 0x1434cb804, 0x1434cb81f, 0x1434cb832); the body itself references 'PITLANE' / 'PitLaneSystem::vehicleExitingPitLane(%d:%s)'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+  "notes": "Log channel PITLANE: 'PitLaneSystem::vehicleExitingPitLane(%d:%s)' L2 2026-11-14 (engine-re round 2): decomp read; 5 reference(s) (0x142f73540, 0x1434bcf85, 0x1434cb804, 0x1434cb81f, 0x1434cb832); the body itself references 'PITLANE' / 'PitLaneSystem::vehicleExitingPitLane(%d:%s)'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) | engine-re 2026-11-17 track round C: during a session this is the only non-network writer of status 1 OnTrack besides Game_Pitlane_Multiplayer_resetToTrack (Game_PitLane_SetInitialStatuses sets 1 or 9 at session start, V11208): any status != 1 -> 1 and message 0x145845968 (guard: status 9 InGarage stays when the session byte +0x1cb is set). Callers: the plr_pit_trgr exit callback 0x1434cb7f0 (two tail jumps 0x1434cb81f/0x1434cb832, also with vehicle 0xff when the entity is unknown), Game_PitLane_IllegalPitEntry 0x1434bcf86 and 0x142f73541. So EnteringPitBox (3) -> OnTrack (1) happens when the car leaves the plr_pit_trgr TrackMarkup zone before the stop is done (pit box outside / beyond the zone, car pushed out of it) or on an illegal entry. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested)"
  },
  "signature": {
   "id": "game.pit_lane_vehicle_exiting",
@@ -55,6 +55,16 @@
    "verdict": "agree",
    "evidence": "decomp:own capstone disasm 0x1434bf980-0x1434bfbfe;xref:0x142f73540,0x1434bcf85,0x1434cb804,0x1434cb81f,0x1434cb832",
    "notes": "V10505 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Refs: call 0x142f73540, call 0x1434bcf85, jcc 0x1434cb804, jmps 0x1434cb81f/0x1434cb832. PitLaneSystem::vehicleExitingPitLane(%d:%s). 2 args."
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkps-verify",
+   "kind": "func",
+   "item": "Game_PitLane_VehicleExiting",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1434bf980.c;xref:0x1434bfb01",
+   "notes": "V11208 status!=1 -> 0x1434bc540(..,1) at 0x1434bfb01 confirmed, but guards: id>0x1a returns; in some sessions (type 0xf-0x11 flag or not 1..14/0x12) with flag +0x1cb returns if status 9. E8-scan 0x1434a-0x1434f: constant r8d=1 only at 0x1434bfb01/0x1434c0050, r8d=3 only 0x1434b8048 - BUT SetInitialStatuses also sets 1 (0x1434cb3d5 computed 1/9; .data1 0x1504496a6)."
   }
  ],
  "proofs": []

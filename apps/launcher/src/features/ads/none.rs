@@ -40,4 +40,8 @@ impl Backend {
     pub(super) fn moved(&mut self, _: impl Iterator<Item = (Unit, Area)>) {
         match *self {}
     }
+
+    pub(super) fn events(&mut self) -> Vec<swofty_ads::Event> {
+        match *self {}
+    }
 }

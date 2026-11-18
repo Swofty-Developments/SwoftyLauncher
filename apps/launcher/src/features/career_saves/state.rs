@@ -32,6 +32,8 @@ pub(super) struct Version {
     pub(super) snap: Snapshot,
     pub(super) held: Option<Vec<String>>,
     pub(super) diff: Option<Diff>,
+    pub(super) newest: Option<String>,
+    pub(super) missing: usize,
 }
 
 pub(super) struct Entry {

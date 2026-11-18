@@ -235,3 +235,12 @@ int main()
 ## Builds
 
 The library reads the live state's flags group (marshal zones, red flag, sector ends), timing (the safety car), classification (result status, the chequered flag) and progress (each car's sector and lap). On Steam 1.0.145 (build 26566308) and on EA every one of them is on; EA's live state turns off only the driver names and the rendered badges. A group that is off leaves the events that need it silent, and the `[race-control] reading the live state:` line at the first read of a session says which.
+
+The five points are live only while the live state is on: with the `telemetry` feature off, or on a build without proven live layouts, `swofty::hooks::live<rc::events::Flag>()` is false and no race control event or 1.x `flag` fires.
+
+```cpp
+#include <swofty/hooks.hpp>
+
+if (!swofty::hooks::live<rc::events::SafetyCar>())
+    swofty::log("[race-board] no race control here: turn on telemetry, or read the UDP feed yourself");
+```

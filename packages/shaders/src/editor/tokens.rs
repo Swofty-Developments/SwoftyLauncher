@@ -1,13 +1,7 @@
 use std::ops::Range;
 
+use crate::text::skip_ws;
 use crate::{Token, TokenKind};
-
-fn skip_ws(s: &str, mut i: usize) -> usize {
-    while s[i..].starts_with([' ', '\t']) {
-        i += 1;
-    }
-    i
-}
 
 fn next_char(s: &str, i: usize) -> char {
     s[i..].chars().next().unwrap_or('\0')

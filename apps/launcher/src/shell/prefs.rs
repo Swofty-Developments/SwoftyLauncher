@@ -17,6 +17,8 @@ pub(crate) struct Prefs {
     pub(crate) time_trial_ingame: bool,
     /// `home_video` from config.json: on unless turned off, shows the latest video card on the F1 25 home screen.
     pub(crate) home_video: bool,
+    /// `update_off_addons` from config.json: opt-in, the play bar also updates addons that are off.
+    pub(crate) update_off_addons: bool,
     /// `updates.check` from config.json, read when the library loads.
     pub(crate) update_check: bool,
     pub(crate) start_store: bool,
@@ -32,6 +34,7 @@ impl Prefs {
             use_profiles: config.use_profiles,
             time_trial_ingame: config.time_trial_ingame,
             home_video: config.home_video,
+            update_off_addons: config.update_off_addons,
             update_check: config.updates.check,
             start_store: config.launch.start_store,
             vr_profiles: config.vr_profiles.clone(),
@@ -142,6 +145,17 @@ impl Shell {
             window.notify(Notification::error(e.to_string()), cx);
         }
         self.prefs.home_video = config.home_video;
+        cx.notify();
+    }
+
+    pub(crate) fn set_update_off_addons(&mut self, on: bool, window: &mut Window, cx: &mut Context<Self>) {
+        let mut config = self.store.config();
+        config.update_off_addons = on;
+        if let Err(e) = self.store.save_config(&config) {
+            crate::app::app_log::action("save settings").failed(&e);
+            window.notify(Notification::error(e.to_string()), cx);
+        }
+        self.prefs.update_off_addons = config.update_off_addons;
         cx.notify();
     }
 

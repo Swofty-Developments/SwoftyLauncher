@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ERPInfo::eError; log channel EGO_ERP_LOADER: 'handleError - \"%s\" - setting m_status = ERPInfo::eError'"
+  "notes": "cxx=ERPInfo::eError; log channel EGO_ERP_LOADER: 'handleError - \"%s\" - setting m_status = ERPInfo::eError'  2026-11-17 engine-re: (loader, code): frees the header/index buffers (+0xa8/+0xe8/+0xf0), stores code in ERPInfo+0xc as the error status, removes the ERP from the pending list (+0x3d0..+0x3d8) and closes the file. Codes from Game_EgoErpLoader_ProcessSection: 0x4f bad magic or version >= 4, 0x54 header shorter than 0x30, 0x56 name length mismatch. An ERP in error does not take its asset group down by itself: the group sub task decides (Ne_AssetGroupSubTask_OnComplete)."
  },
  "signature": {
   "id": "game.erp_info_e_error",

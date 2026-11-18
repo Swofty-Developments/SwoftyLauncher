@@ -223,6 +223,11 @@ jobs:
       # The launcher and the installer are not default members; --workspace reaches them too.
       - run: cargo clippy --workspace --all-targets -- -D warnings
 
+      # swofty-core has code only debug builds compile (cfg(debug_assertions)), so it is also checked as it ships.
+      - name: Clippy of swofty-core as released
+        if: runner.os == 'Linux'
+        run: cargo clippy -p swofty-core --release --lib -- -D warnings
+
   rust:
     name: Rust tests (${{ matrix.os }})
     needs: [changes, ec2]
@@ -600,17 +605,18 @@ jobs:
           fi
           du -sh "$CCACHE_DIR"
 
-      # Main's cache serves every pull request; a pull request's own serves its next push.
+      # Main's cache serves every pull request; a pull request's own serves its next push. A run a newer push
+      # cancels saves what it compiled too.
       - name: Save ccache
         id: ccache-save
-        if: ${{ !cancelled() && steps.ccache.outcome == 'success' }}
+        if: always() && steps.ccache.outcome == 'success'
         uses: actions/cache/save@v6
         with:
           path: ${{ runner.temp }}/ccache
           key: ${{ steps.ccache.outputs.cache-primary-key }}
 
       - name: Remove this branch's older ccache caches
-        if: steps.ccache-save.outcome == 'success'
+        if: always() && steps.ccache-save.outcome == 'success'
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
