@@ -432,12 +432,66 @@ def judge(changes, other, author, knowledge):
         if lint_errors:
             result['verdict'] = 'fail'
             result['errors'] += lint_errors
+    headers = [p for p in other if p.startswith(HEADERS)]
+    other = [p for p in other if not p.startswith(HEADERS)]
+    if result['verdict'] != 'fail':
+        moved = header_changes([(path, new) for path, _, new in changes if new is not None])
+        if moved and not headers:
+            result['notes'].append(f'these records change what bindgen writes to {", ".join(moved)}, and the pull '
+                                   'request does not carry the regenerated headers: review needed')
+    if headers:
+        result['notes'].append(f'the pull request changes the generated headers ({", ".join(headers[:3])}'
+                               f'{" and more" if len(headers) > 3 else ""}): review needed')
     if other:
-        result['verdict'] = 'fail' if result['verdict'] == 'fail' else 'review'
         shown = ', '.join(other[:5]) + (f' and {len(other) - 5} more' if len(other) > 5 else '')
         result['notes'].append(f'{len(other)} file(s) outside re/bindings/*/*.json: review needed ({shown})')
+    if (headers or other or result['notes']) and result['verdict'] != 'fail':
+        result['verdict'] = 'review'
     result['summary'] = summary(result)
     return result
+
+
+HEADERS = 'native/include/swofty/'
+
+
+def header_changes(changes):
+    """The tracked header files whose generated text these record changes alter and which do not yet hold it."""
+    import bindgen
+    records = []
+    for path, data in changes:
+        try:
+            records.append(br.Record.from_bytes(data, path[len('re/bindings/'):]))
+        except br.RecordError:
+            continue
+    store = br.Store.get()
+    base = store.records
+
+    def generate():
+        build, bindings, structs, _ = bindgen.load(bindgen.Gate())
+        out = {os.path.join(bindgen.OUT_INC, k): v for k, v in bindgen.gen_cpp(build, bindings, structs).items()}
+        rust, formatted = bindgen.rustfmt(bindgen.gen_rust(build, bindings, structs))
+        out[bindgen.OUT_RS] = rust if formatted else None
+        return out
+    try:
+        before = generate()
+        store.overlay(records)
+        after = generate()
+    finally:
+        store.records = base
+
+    def tracked(p):
+        if not os.path.isfile(p):
+            return None
+        with open(p, encoding='utf-8') as f:
+            return f.read()
+    moved = []
+    for p in sorted(set(before) | set(after)):
+        if before.get(p) == after.get(p):
+            continue
+        if after.get(p) is not None and tracked(p) == after[p]:
+            continue
+        moved.append(os.path.relpath(p, kb.ROOT))
+    return moved
 
 
 def summary(result):

@@ -577,6 +577,47 @@ class CiSummary(Base):
         self.assertEqual(result['summary'], ['error: the file list is not a GitHub API file list'])
 
 
+class HeadersFollowTheExport(Base):
+    def judge(self, new, other=()):
+        import binding
+        path = 're/bindings/' + SAMPLE
+        return binding.judge([(path, raw(self.doc), raw(new))], list(other), 'contributor-b', self.knowledge)
+
+    def agreed(self):
+        doc = copy.deepcopy(self.doc)
+        doc['verify'] = doc['verify'] + [agree_row(doc, 'contributor-b')]
+        doc['proofs'] = doc['proofs'] + [make_proof(doc, 'contributor-b')]
+        return doc
+
+    def test_an_agree_row_that_exports_a_binding_asks_for_the_headers(self):
+        result = self.judge(self.agreed())
+        self.assertEqual(result['verdict'], 'review', result['summary'])
+        notes = [n for n in result['notes'] if 'change what bindgen writes' in n]
+        self.assertEqual(len(notes), 1, result['notes'])
+        self.assertIn('native/include/swofty/game.rs', notes[0])
+        self.assertIn('native/include/swofty/game/session.hpp', notes[0])
+        fix = result['summary'][result['summary'].index(notes[0]) + 1]
+        self.assertIn('re/tools/bindgen.py --no-exe', fix)
+
+    def test_carrying_the_headers_is_a_review_of_the_headers_alone(self):
+        result = self.judge(self.agreed(), ['native/include/swofty/game.rs', 'native/include/swofty/game/session.hpp'])
+        self.assertEqual(result['verdict'], 'review')
+        self.assertFalse(any('change what bindgen writes' in n for n in result['notes']), result['notes'])
+        self.assertFalse(any('outside re/bindings' in n for n in result['notes']), result['notes'])
+        self.assertTrue(any('changes the generated headers' in n for n in result['notes']), result['notes'])
+
+    def test_a_record_that_stays_unexported_changes_no_header(self):
+        import binding
+        self.assertEqual(binding.header_changes([('re/bindings/' + SAMPLE, raw(as_new(self.doc)))]), [])
+
+    def test_the_store_is_put_back(self):
+        import binding
+        store = br.Store.get()
+        before = store.records
+        binding.header_changes([('re/bindings/' + SAMPLE, raw(self.agreed()))])
+        self.assertIs(store.records, before)
+
+
 class Doctor(Base):
     BASE = 'f' * 40
 

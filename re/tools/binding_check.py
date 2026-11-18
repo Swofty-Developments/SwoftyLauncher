@@ -90,6 +90,11 @@ FIXES = [(re.compile(p), t) for p, t in (
      'pass binding.py agree --evidence "decomp:...;xref:..." from your own reading of the code'),
     (r'outside re/bindings|is not a binding record$', 'binding records are re/bindings/<subsystem>/<Name>.json; move '
      'every other change to a separate pull request'),
+    (r'change what bindgen writes to', 'run python3 re/tools/bindgen.py --no-exe --json <scratch>/bindings.json '
+     '--symbols <scratch>/symbols.tsv and commit native/include/swofty with the records; a maintainer merges it, '
+     'and main\'s tests fail without them'),
+    (r'changes the generated headers', 'nothing to fix when binding.py doctor no longer asks for them: a maintainer '
+     'checks they are what bindgen writes and merges it'),
     (r'has no regular file there', 'commit the record as a plain file, not a symlink or a submodule'),
     (r'more than \d+ files', 'split the records over several pull requests'),
     (r'changes no binding record', 'add or change a file under re/bindings/<subsystem>/<Name>.json'),
