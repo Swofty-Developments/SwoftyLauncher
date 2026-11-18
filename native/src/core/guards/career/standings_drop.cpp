@@ -52,16 +52,16 @@ const runtime::Sig S_RECOMPUTE{"Career_Recompute_SeasonStandings",
 const runtime::Sig S_COMPARE{"Career_Compare_StandingsEntries", "41 56 56 57 53 48 81 EC 08 01 00 00 41 8B 40 04",
                              0xb317a0, runtime::Sig::addr, 0, 0, 0};
 
-// The layout above was checked on Steam 1.0.145. Read by the same instruction in a body that is the same on both
-// builds (re/tools/sigport.py --witness at the KB RVA): Season +0x2a8 and the entry's season at +8 (the season loop
-// 0xae9550), the championship +0x1058 and its seasons +0x548, +0x550 (0x7b2140), entries {key, total} (the compare
-// 0xb317a0). Used by the same instructions in the protector's relocated bodies (each use compared): the rounds +0x20 and
-// +0x40, 0x20-byte rounds and 0x28-byte sessions (the recompute 0x9618ee0), the session id +0x20 and the 8-byte
-// records (its callees 0x962eee0 and 0x962fff0).
+// The layout above was checked on both 1.0.145 builds (EA 1.0.145: re/research/ea-1-0-145.md). Read by the same
+// instruction in a body that is the same on each build (re/tools/sigport.py --witness at the KB RVA): Season +0x2a8 and
+// the entry's season at +8 (the season loop 0xae9550), the championship +0x1058 and its seasons +0x548, +0x550
+// (0x7b2140), entries {key, total} (the compare 0xb317a0). Used by the same instructions in the protector's relocated
+// bodies (each use compared): the rounds +0x20 and +0x40, 0x20-byte rounds and 0x28-byte sessions (the recompute
+// 0x9618ee0), the session id +0x20 and the 8-byte records (its callees 0x962eee0 and 0x962fff0).
 namespace bp = runtime::build_proof;
 constexpr bp::Proof STANDINGS_LAYOUT{"the season standings' layout (+0x2a8, +0x20, +0x40, sessions 0x28 with the id at "
                                      "+0x20; the championship +0x1058, +0x548)",
-                                     bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145)};
+                                     bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145) | bp::bit(bp::Build::ea_1_0_145)};
 constexpr bp::Gate DROPPED_SCORES{"dropped scores", &STANDINGS_LAYOUT};
 
 constexpr size_t SEASON_STANDINGS = 0x2a8;

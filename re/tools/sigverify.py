@@ -5,6 +5,8 @@
   sigverify.py --src a.cpp b.cpp            Sigs of these sources
   sigverify.py --only S_PUSH,S_XML          a subset
   sigverify.py --json out.json              also write the per-signature results
+  sigverify.py --port DUMP --restore LOG    first put back over a dump taken with the core running the bytes the
+                                            core's unique scans matched on the live image (LOG is that run's loader.log)
   sigverify.py --mk RVA [--kind riprel|rel32] [--back N] [--max N]
                                             print a pattern at the KB RVA that matches once on BOTH images
   sigverify.py --refs RVA [--on port] [--section NAME]
@@ -115,6 +117,29 @@ def parse_sigs(path):
                      'kind': kind, 'insn': num(4), 'anchor': num(5), 'len': num(6),
                      'section': a[7].strip('"') if len(a) > 7 else '.xtls', 'file': os.path.basename(path)})
     return sigs
+
+
+SCAN_HIT = re.compile(r'scan (\S+) \[([^\]]+)\] -> 1 hit at 0x[0-9a-f]+ \(base\+0x([0-9a-f]+)\)')
+
+
+def restore(img, log_lines):
+    """Writes over img the fixed bytes of each pattern a loader.log line says matched once on the live image
+    ("scan SEC [PATTERN] -> 1 hit at ... (base+0xRVA)"): the bytes the core's patches covered in a dump taken with the
+    core running. Returns (patterns that differed, bytes put back)."""
+    hits = {}
+    for line in log_lines:
+        m = SCAN_HIT.search(line)
+        if m:
+            hits[(m.group(1), m.group(2))] = int(m.group(3), 16)
+    mem, patterns, put = bytearray(img.mem), 0, 0
+    for (_, text), at in hits.items():
+        fixed = [(k, int(t, 16)) for k, t in enumerate(text.split()) if t != '??' and at + k < len(mem)]
+        wrong = [(k, b) for k, b in fixed if mem[at + k] != b]
+        for k, b in wrong:
+            mem[at + k] = b
+        patterns, put = patterns + bool(wrong), put + len(wrong)
+    img.mem, img._scans = mem, {}
+    return patterns, put
 
 
 def resolve(img, section, s):
@@ -307,8 +332,13 @@ def main():
     ap.add_argument('--dis', nargs='+')
     ap.add_argument('--twin')
     ap.add_argument('--disp', nargs=3)
+    ap.add_argument('--restore')
     a = ap.parse_args()
     ref, port, smap = Image(a.ref), Image(a.port), section_map(a.build)
+    if a.restore:
+        with open(a.restore, errors='replace') as f:
+            n, put = restore(port, f)
+        print(f'restored {put} byte(s) under {n} pattern(s) the live run matched ({a.restore})')
 
     if a.dis:
         img = ref if a.dis[0] == 'ref' else port
