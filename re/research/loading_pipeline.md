@@ -224,10 +224,11 @@ does not change an allocation: an M4 arm can force it off with a temporary `OVER
 `Ne_Heap_OnCorruptionNotification` 0x1406cd740 L2):
 
 - PSOs are built ahead of use on `CreatePSOs_%d` worker threads that `Render_Gfx2Device_Initialise` creates (string
-  references at 0x1439be7e0 and 0x1439be9b3); `maxPsoCreationThreads` sets their number. **No config file sets it**, and its
-  code default is read from the stack slot [rsp+0x14c] (0x1443cd320) with no store to that slot anywhere in
-  `Boot_Create_Window` (0x1443cc250–0x1443ce7f8), so the effective value is whatever the slot holds (L1). M0's
-  `loading_log_settings` line `[settings] read i32 Renderer.Gfx.maxPsoCreationThreads = … (status 2)` shows it.
+  references at 0x1439be7e0 and 0x1439be9b3); `maxPsoCreationThreads` sets their number. **No config file sets it**. Its
+  code default is the descriptor's +0x11c ([rsp+0x14c], read at 0x1443cd320), which the descriptor's constructor sets to
+  -1 (`mov dword ptr [rax+0x11c], 0xffffffff` in its protected body at 0x151f5160a; §8.8 corrects the earlier "no store,
+  an uninitialised slot"). What -1 means is decided in `Render_Gfx2Device_Initialise` (§8.8). M0's `loading_log_settings`
+  line `[settings] read i32 Renderer.Gfx.maxPsoCreationThreads = … (status 2)` shows the value read.
 - With `jitPsoCreation` off (retail false), a draw whose PSO does not exist is fatal ("DX12: PSO doesn't exist ->
   shadergroup:%s", `Ne_FatalAbort`), so the shipped path is "every PSO before its first draw". L1.
 - No game-side PSO cache was found (no pipeline-cache file name, no pipeline-library use). PSOs are compiled every boot and
@@ -393,12 +394,12 @@ Ranked by likely seconds saved per load, then by safety. "Saved" is an upper bou
 
 | # | candidate | saves (inferred) | safety | evidence | status |
 |---|---|---|---|---|---|
-| 1 | `Game.IgnoreMinimumLoadingTime` | up to 3.0 s per session transition (always), per session load, track load and story hub entry when the real load is shorter | high: the game's developer switch, four readers, not set in retail config | L2 ×3 + getter agree V0021; the fourth reader (`StateLoadSession`, §1.2) L1 | **shipped**, `loading_skip_minimum_time` |
+| 1 | `Game.IgnoreMinimumLoadingTime` | up to 3.0 s per session transition (always), per session load, track load and story hub entry when the real load is shorter | high: the game's developer switch, four readers, not set in retail config | L2 ×3 + getter agree V0021; the fourth reader (`StateLoadSession`, §1.2) L1 | **on by default since 1.10** for three readers (§8.7): `loading_skip_minimum_time` (track load, story hub) and `loading_skip_session_transition`; `StateLoadSession`'s reader keeps the game's answer |
 | 2 | `Game.SkipGridRundown` | the grid render of up to 32 driver thumbnails (the thumbnail system is on in retail; capped at 7.5 s / 20 s) and the rundown sequence | medium: removes a presentation sequence the player may want | L2 predicate and waits; L1 which ids; retail false | **shipped**, `loading_skip_grid_rundown` |
 | 3 | `Game.SkipIntroVideo` | the intro video before a session: 1.6–1.9 s (log) | medium: the video may cover streaming | L2; retail false | **shipped**, `loading_skip_session_intro_video` |
 | 4 | `Game.SkipTalkingPoints` | about 4.7 s median, up to 14 s, per race or practice session | medium: the game's developer switch; removes a broadcast sequence; no new hook | reader L2 (record, author's proof only), getter agree V0021, update L1; retail false | **experimental**, `loading_skip_talking_points` (off; the reader needs an agree row, §1.8) |
 | 5 | the boot sting | done by the core's 6.0 s intro (stock 11.8 s); a 0.5 s clip saves up to 5.5 s more if the sting holds the title | high as content | header read; L1 whether it holds the title | content (§1.7); measure with `boot_with_the_stock_intro` |
-| 6 | `Renderer.Gfx.maxPsoCreationThreads` | boot time spent creating PSOs, if the effective value is low | medium | L1; retail unset, code default an uninitialised stack slot | M0 first (log the effective value) |
+| 6 | `Renderer.Gfx.maxPsoCreationThreads` | boot time spent creating PSOs, if the effective value is low | medium | L1; retail unset, code default -1 from the descriptor's constructor (§8.8) | a log-only arm records the thread count used (§8.5) |
 | 7 | `ErpLoader.forceSequentialReads` false | unknown; parallel section reads on fast drives | medium: PC config sets it on deliberately; no allocation change | L1 | M4 arm with a temporary `OVERRIDES` row |
 | 8 | ERP read buffers | unknown; fewer reader stalls | low: the 90 MiB workspace also holds up to 32 decoders' buffers; a bad value fails the boot allocation | L2 mechanism; retail 4 MiB × 4 | M0 first; then an M4 arm |
 | 9 | `ResourceMessageHandler.synchronousResourceProcessingTimeBudget` | main-thread resource creation per frame during loads | medium: longer frames during loading screens | L1 (consumer caller not read); retail unset | M0 first; read the caller of slot 0x143a719c0 |
@@ -419,11 +420,15 @@ Code: `native/src/core/loading/game_settings.cpp` and `game_settings_logic.hpp`,
 
   | feature | setting | type | forced |
   |---|---|---|---|
-  | `loading_skip_minimum_time` | `Game.IgnoreMinimumLoadingTime` | bool | 1 |
+  | `loading_skip_minimum_time` | `Game.IgnoreMinimumLoadingTime` | bool | 1 (track load and story hub readers) |
+  | `loading_skip_session_transition` | `Game.IgnoreMinimumLoadingTime` | bool | 1 (session transition reader) |
   | `loading_skip_session_intro_video` | `Game.SkipIntroVideo` | bool | 1 |
   | `loading_skip_grid_rundown` | `Game.SkipGridRundown` | bool | 1 |
   | `loading_skip_talking_points` | `Game.SkipTalkingPoints` | bool | 1 |
 
+- A row may name readers: it then answers only the getter calls whose return address is one of them (`Reader` in
+  `game_settings_logic.hpp`; each reader site is a `runtime::Sig` gated on its own build proof, §8.7). A row without
+  readers answers every caller.
 - One `SWOFTY_MIXIN_WRAP` (priority 100) per getter type that has an armed row: `Ne_Get_SettingBool` 0x143a43b90 (L2, V0021
   agree), `Ne_Get_SettingU32` 0x143a43240 (L2, V0031 agree), `Ne_Map_FindOrDefaultWithErrorContext` 0x143a42f10 (i32, L2, V7824
   agree) and `Ne_Config_GetFloatOrDefault` 0x143a44090 (float, L2, V4071 agree). The wrap calls the original, then writes the
@@ -434,8 +439,14 @@ Code: `native/src/core/loading/game_settings.cpp` and `game_settings_logic.hpp`,
   (and again when it changes), with the status (0 found, 2 missing = the code default). `native/tools/loading_report.py` lists
   these lines.
 - `SWOFTY_LOADING_FEATURES` (comma-separated feature names) arms rows without the launcher, for measurement runs.
-- Each feature is an experimental entry of `FEATURES` in `native/src/core/runtime/stage.cpp`, off unless listed in `"features"`
-  of `swofty/assets.json`. It composes with `xanpavle.re-optimization`, which wraps the bool and u32 getters too.
+- `loading_skip_minimum_time` and `loading_skip_session_transition` are stable entries of `FEATURES` in
+  `native/src/core/runtime/stage.cpp` and on for every player; SwoftyMod's `shorter_loading_waits` toggle turned off keeps
+  both off, over `SWOFTY_LOADING_FEATURES` and `"features"`. Each session logs `[loading] <feature> on by default since
+  1.10` or `off: settings`. The other features are experimental entries, off unless listed in `"features"` of
+  `swofty/assets.json`. The wraps compose with `xanpavle.re-optimization` and `trackside_audio`, which wrap the bool getter
+  at priority 0: the core's priority 100 puts its handler first in the chain, so the return address it reads is the
+  game's. Should another wrap run first, the core logs `[loading] Game.IgnoreMinimumLoadingTime read through <dll>` once
+  and the reader rows answer nothing.
 
 Adding a setting is one row in `OVERRIDES` plus one `FEATURES` entry; a new getter type is one `Getter<>` specialisation.
 
@@ -701,3 +712,203 @@ Not losses:
 - On `46009bd3`, the Time Trial, benchmark, M0 and boot sting arms run (route, virtual pad, getters).
 - The Grand Prix race arm is the only arm with talking points and the grid rundown.
 - Since round 6 the title helper and direct start run on `46009bd3` too, so the Grand Prix race arm (M3 and the talking points flag) can be measured there once an in-game run confirms the port.
+
+## 8. Field load times on 1.0.145 (round 10)
+
+Where players' boots and box presses spend their time on build 1.0.145, the core's share apart from the game's, and what
+the core shortens next. The numbers come from the loader.logs in the Send Logs triage corpus of 2026-11-17 (launcher
+1.9.74, before any `[perf] step` line shipped).
+
+### 8.1 Corpus and method
+
+- **Sessions.** 11,796 loader.logs in 20 bundles. A session is the pair (time of the attach line, pid): bundles repeat
+  sessions, so each pair keeps its largest log. That gives 499 sessions: 332 on Steam 1.0.145 (PE timestamp 1794312636 in the
+  attach header) and 65 on EA App 1.0.145 (1794315435). Logs stop at about 5.24 MB with the head kept, so a boot is always
+  whole and a long session loses its later loads. No session ran a loading feature: every Steam 1.0.145 session's arm is
+  "off".
+- **Milestones** come from `native/tools/loading_report.py --json` over the session folders:
+  - game `main`: the `trigger: KERNEL32!CreateMutexW` line;
+  - window: `stage: window`;
+  - first frame: the first `[d3d12] Present`;
+  - flow states: the `[career] flow` lines;
+  - home: `[main-menu] home screen open` or `[test] home view model`;
+  - loads: `StateLoadSession` entered to exited, then the session's flow nodes.
+- **The core's share** is measured per session over the same log:
+  - Early stage: from `trigger: ... loading addons now (early stage)` to the next `addons: done` on that line's thread
+    (the game's main thread, blocked inside `CreateMutexW`).
+  - Every gap above 30 ms between two of the main thread's lines in that stage is charged to the line that ends it, with
+    numbers and addresses blanked so the same step adds up across sessions.
+  - Window stage: from `stage: window` to the next `addons: done`.
+  - `[perf] slow call: <name> took <ms>` is summed per name, and `[perf] hitch: ... swofty <ms>` per item. Each sum has two
+    phases: boot (before home) and loads (`StateLoadSession` entered up to the next `InGame` or `StateFrontend`).
+- **Statistics.** Medians with p25 and p75, over the sessions that reach home (boot) or that have the state (loads).
+- **Redoing it with step lines.** Once the `[perf] step <ms> ms: <name>` lines ship (`perf::STEP_LINE`,
+  `native/src/core/diagnostics/steps.hpp`, f042f5eaf), sum the step lines per name inside the early stage in place of
+  the 30 ms gap rule. Their names replace the blanked line texts of §8.5. Keep the session key, the milestones and the
+  slow call and hitch sums as above.
+
+### 8.2 Boot to the home screen, Steam 1.0.145
+
+251 sessions reach home. Medians, seconds:
+
+| phase | median | the core's share in it |
+|---|---|---|
+| attach to home | 101.3 | |
+| attach to game `main` | 0.52 | |
+| game `main` to window | 15.4 | early stage 6.3 (p25 4.5, p75 11.0); `gamedb load edits` 4.5 inside step 10 (its sum correlates with this phase, r = 0.70); the game's own steps 1 to 21 the remaining 3.3 at most |
+| window to first frame | 5.7 | window stage 0.87 |
+| first frame to `StatePersistent` | 7.0 | |
+| `StatePersistent` to `StateFrontendWorld` | 2.06 | |
+| `StateFrontendWorld` to `StateIntro` | 10.69 | |
+| first frame to `StateIntro` | about 19.8 (first boot 21.6, later boots 18.5; the KB build here 5.4) | |
+| `StateIntro` to the press | 14.2 | the profile loads a median 10.7 s after the title comes up, the press comes 2.36 s after that; the fastest passes are 2.0 to 3.3 s after `StateIntro`, so the 6.0 s sting does not hold the title |
+| `StateFTUE` to `StateFrontend` | 13.0 | sign-in and online services: out of scope |
+| `StateFrontend` to home | 8.6 | includes the online services' error popup: out of scope |
+
+`core gamedb load edits` slow calls: median 5.0 s in 225 of the 251 sessions. The core's time inside boot hitches is
+0.05 s.
+
+### 8.3 Box press to track, Steam 1.0.145
+
+| state | median | notes |
+|---|---|---|
+| `StateLoadSession` | 17.16 s (first load 18.36, later 14.98) | median over 257 loads; of the 268 loads that have the state, 1 left it within 3.2 s, so its 3 s minimum almost never holds it |
+| to `StateSession` running | 18.10 s | |
+| intro video | 1.82 s | 129 loads; `f1_swipe_short.bk2` is 1.6 s (48 frames at 30 fps) |
+| talking points | 5.76 s (p75 16.31) | 113 loads |
+| grid rundown | 0.02 s | |
+| `PreRace` to `BeginGameplay` | 14.5 s | |
+
+The core's share in loads: the flow state site (`site_FeFlow_SetStateStatus`) 0.12 s median over 161 sessions, and
+`career.unloaded` 1.2 s in 13 sessions.
+
+### 8.4 EA App 1.0.145
+
+40 of the 65 sessions reach home. Medians:
+
+- attach to game `main`: 3.78 s;
+- game `main` to window: 28.99 s, with an early stage of 9.51 s;
+- the title: 24.8 s;
+- `StateFTUE`: 18.5 s.
+
+The same steps cost more there; the ranking below holds.
+
+### 8.5 The early stage, and what the core shortens
+
+Steam 1.0.145 early-stage gaps, by total over 329 sessions:
+
+- D3D12 and DXGI arming: the swapchain hook 1.25 s, the device hooks 0.33 s, the RTAS guard 0.34 s. Since c53f0279b this
+  arms on a worker.
+- The crash prologue's scans: about 1.2 s (0.164 + 0.356 + 0.352 + 0.35). Since 1e6ac2356 they are cached from the
+  second boot.
+- `[apply] engine_sound boot`: 1.33 s in 253 sessions.
+- The SRV clamp: 0.138 s.
+- The bind pass has no one gap of its own.
+
+The load-time lane's merges 7aa672ec7, 1408258a8, 07e07a601 and 7f50372d7 cover the rest of that stage.
+
+The three the core shortens or overlaps next:
+
+1. **The 3 s minimum waits (done in 1.10).** `Game.IgnoreMinimumLoadingTime` is on by default for the track load, story hub
+   and session transition readers, with SwoftyMod's `shorter_loading_waits` to opt out (§3, §8.7). The session transition
+   is a pure 3.0 s timer, so each session-to-session transition saves about 3 s. The track load and story hub save only
+   what is left of 3 s after their real load.
+2. **`gamedb load edits`, 5.0 s on the main thread inside step 10.** The brief for the load-core lane is §8.6.
+3. **The PSO worker count.** A log-only arm records the `CreatePSOs_%d` thread count the game starts. The default is -1
+   (§8.8). It changes nothing, and decides whether a `maxPsoCreationThreads` row is worth proving.
+
+### 8.6 Brief for the load-core lane: the database edits off the main thread
+
+**What runs now.** `load_hook` (`native/src/core/assets/gamedb.cpp`) wraps `Gdb_Load_GameDatabase` 0x1445a0350. After the
+call returns it runs `apply()` (the `db_edits`) and `boot16()` (the boot appliers) under the probe `gamedb load edits`. That
+is 5.0 s median on the main thread, inside boot step 10.
+
+**The load path.** Step 10 is the call at 0x1443c0759 in `Boot_Init_NeApplication`, to `Boot_Load_GameDatabase_Step`
+0x1443c45e0. From there:
+
+- app_desc vt+0x28 0x1400f7950 jumps to the `.data1` body 0x147096270;
+- that body builds a function-local static under the thread-safe static guard: `_Init_thread_header` 0x1449e05fc, then
+  `Gdb_Load_GameDatabase` on the object at 0x146015178, then the atexit registration 0x1449e071c, then
+  `_Init_thread_footer` 0x1449e06b0;
+- the only other code that names that object is 0x1400f7800 and the `.data1` body 0x147099250.
+
+**Readers.**
+
+- `g_Gdb_Database` (0x146cc4278) is read at 629 sites in 237 functions.
+- `Gdb_Lookup_Key` 0x1445a22f0 has 261 call sites in 93 functions.
+
+**The main-thread calls after step 10.** In call order from `Boot_Init_NeApplication`:
+
+| step | function |
+|---|---|
+| the calls before step 15 | 0x1443c4670, 0x1443c49b0, 0x1443c4f10, 0x1439e49c0 |
+| step 15 (hardware settings) | 0x1443c4fa0 |
+| next | 0x1443c8c50 |
+| step 17 (job queues: the job system's workers) | 0x1443c8d70 |
+| next | 0x1443cae70 |
+| step 19 (modules) | 0x1443cb030 |
+| next | 0x1443cb780, 0x1443cbf10 |
+| step 22 (window) | 0x1443cc250 |
+| next | 0x1443ce7b0, 0x1443d1620 |
+
+Through direct calls and tail jumps, five levels deep, none of them reaches a reader of `g_Gdb_Database` or a caller of
+`Gdb_Lookup_Key`. Each tree holds 8 to 352 functions. The steps make 16 to 919 indirect calls each, though, and the static
+read cannot order those. So the static evidence names no first reader before the boot flow (L1, by absence over direct
+calls only).
+
+**Where the edits must finish.** Before the first of these:
+
+- **The first game read of the database, on any thread.** It is not known statically (above). A log-only probe finds it: a
+  wrap of `Gdb_Lookup_Key`, whose signature `S_LOOKUP` already resolves on every build, logs the first call after
+  `load_hook` returns. The probe records:
+  - the time since the load returned;
+  - the thread;
+  - the return address and its function;
+  - the boot stage.
+
+  `g_Gdb_Database` has 237 direct readers that do not call the lookup. Sample a few of them before trusting the probe alone.
+- **Step 17**, which sets up the job system's workers. After it, a job on another thread can read the database.
+- **The core's own readers**: `boot16()` reads the edited database, and the core's window stage (`window_stage`, step 22)
+  reads `g_Gdb_Database` to report the edits.
+- **No concurrent reader during an edit.** `apply()` inserts through `Gdb_HashMap_Insert`, which can grow the value map. A
+  reader during that growth is unsafe. A worker running the edits must hold readers off until it ends, so finishing
+  early on average is not enough.
+
+**The size of the win.** Game `main` to window is 15.4 s: an early stage of 6.3 s, the edits' 4.5 s, and at most 3.3 s of
+the game's own steps 1 to 21. If the first reader comes before the window, an overlap saves at most the game's part of
+steps 11 to 21, under 3.3 s. If it comes in the boot flow after the first frame, the overlap can also cover window to
+first frame (5.7 s). The probe decides which case holds.
+
+### 8.7 `Game.IgnoreMinimumLoadingTime`: the readers on every build
+
+Each reader:
+
+- takes the seconds since its state started (now minus its QPC stamp, over the frequency);
+- reads the setting into a stack byte, default 0, by `Ne_Get_SettingBool` 0x143a43b90;
+- holds its state while the time is below 3.0 s, or below 0.0 s with the setting on.
+
+Only the test right after the call reads that byte; the function's later uses of the slot write it first.
+
+`sigport.py --witness` finds each function the same on every port, with its offsets at the same instructions.
+`sigverify.py` matches each site pattern once on each image. The return sites are what `game_settings.cpp` compares the
+getter's return address with.
+
+| reader | KB function (return site) | Steam 1.0.145 | EA App KB | EA App 1.0.145 | offsets | what passing the minimum does |
+|---|---|---|---|---|---|---|
+| track load | `Sess_Loader_RequestTrackLoad` 0x142da7870 (0x142da7921) | 0x142da9e00 (0x142da9eb1) | 0x142d9b5b0 (0x142d9b661) | 0x142d9db40 (0x142d9dbf1) | stamp +0xea0, frequency +0xeb0; 725 of 725 instructions on each | sets +0xe92 and goes on to the track request through +0xca0 |
+| session transition | `Sess_SessionTransition_OnStateUpdate` 0x1436f9890 (0x1436f9904) | 0x1436fbe20 (0x1436fbe94) | 0x1436e9a40 (0x1436e9ab4) | 0x1436ebfd0 (0x1436ec044) | stamp +0xd98, frequency +0xda8; 89 of 89 | calls 0x1442627a0 on its +0xc80 member |
+| story hub | `Sess_StoryHub_OnStateEnter` 0x1436fb5e0 (0x1436fb66c) | 0x1436fdb70 (0x1436fdbfc) | 0x1436eb790 (0x1436eb81c) | 0x1436edd20 (0x1436eddac) | stamp +0xe20, frequency +0xe30; 664 of 664 | sets +0xd40 and goes on through +0xc80 |
+| `StateLoadSession` | `.data1` body 0x150f50eb0 (read at 0x150f50f89) | `.trace` body 0x15089b6f0 (0x15089b7c2) | — | — | stamp +0xe00 | not answered: no site pattern is unique on both builds |
+
+The EA App builds' story hub first compared 654 of 664. The ten differences were rip-relative `vmovupd` stores, for which
+capstone gives a 2-byte displacement. Since 754ebdf1e, `sigverify.norm` masks all four bytes, and the function compares
+664 of 664.
+
+### 8.8 Correction: the `maxPsoCreationThreads` default
+
+§1.4 said the code default comes from a stack slot that nothing stores to. The slot is the render descriptor's +0x11c,
+and the descriptor's constructor stores -1 there: `mov dword ptr [rax+0x11c], 0xffffffff` in its protected body at
+0x151f5160a. The getter call at 0x1443cd336 takes that -1 as its default. The descriptor goes to the virtual calls at
+0x1443cc453 and 0x1443cd5b6, and the Steam 1.0.145 read is at 0x1443cf902 in 0x1443ce820. Still to read:
+`Render_Gfx2Device_Initialise` 0x1439bc2e0's `CreatePSOs_%d` thread loop (string references 0x1439be7e0, 0x1439be9b3),
+which decides what -1 starts. The log-only arm of §8.5 records the count it starts.
