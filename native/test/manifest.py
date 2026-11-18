@@ -389,5 +389,7 @@ SCRIPTS = [
            ['python3', '-I', 'native/test/init_check_test.py']),
     Script('patch_sites', 'Every line that writes game code is in tools/patch_sites.txt',
            ['python3', '-I', 'native/tools/patch_sites.py', '--check']),
+    Script('patch_sites_tool', 'Patch site list and patches.json on a fixture tree and a synthetic exe',
+           ['python3', '-I', 'native/test/patch_sites_test.py']),
 ]
 
