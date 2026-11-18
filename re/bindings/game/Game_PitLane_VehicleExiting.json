@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1434bf980.c;xref:0x142f73540,0x1434bcf85,0x1434cb804,0x1434cb81f,0x1434cb832",
-  "notes": "Log channel PITLANE: 'PitLaneSystem::vehicleExitingPitLane(%d:%s)' L2 2026-11-14 (engine-re round 2): decomp read; 5 reference(s) (0x142f73540, 0x1434bcf85, 0x1434cb804, 0x1434cb81f, 0x1434cb832); the body itself references 'PITLANE' / 'PitLaneSystem::vehicleExitingPitLane(%d:%s)'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) | engine-re 2026-11-17 track round C: during a session this is the only non-network writer of status 1 OnTrack besides Game_Pitlane_Multiplayer_resetToTrack (Game_PitLane_SetInitialStatuses sets 1 or 9 at session start, V11208): any status != 1 -> 1 and message 0x145845968 (guard: status 9 InGarage stays when the session byte +0x1cb is set). Callers: the plr_pit_trgr exit callback 0x1434cb7f0 (two tail jumps 0x1434cb81f/0x1434cb832, also with vehicle 0xff when the entity is unknown), Game_PitLane_IllegalPitEntry 0x1434bcf86 and 0x142f73541. So EnteringPitBox (3) -> OnTrack (1) happens when the car leaves the plr_pit_trgr TrackMarkup zone before the stop is done (pit box outside / beyond the zone, car pushed out of it) or on an illegal entry. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested)"
+  "notes": "Log channel PITLANE: 'PitLaneSystem::vehicleExitingPitLane(%d:%s)' L2 2026-11-14 (engine-re round 2): decomp read; 5 reference(s) (0x142f73540, 0x1434bcf85, 0x1434cb804, 0x1434cb81f, 0x1434cb832); the body itself references 'PITLANE' / 'PitLaneSystem::vehicleExitingPitLane(%d:%s)'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) | engine-re 2026-11-17 track round C: sets status 1 OnTrack: any status != 1 -> Game_Pitlane_SetVehicleStatus 0x1434bc540(this, id, 1) at 0x1434bfb01, then message 0x145845968 with the id (a vehicle already at 1 gets neither). A vehicle id above 0x1a returns at once. Guard: in sessions whose type [[0x14604c2c8]+0x1a8]+4 is 1..14 or 0x12 (or 0xf..0x11 with bit 3 of byte +7 of the 0x1413ca0d0 result), a vehicle at status 9 InGarage stays when byte +0x1cb of [[[this+0x270]+0x88]+0x260]+0x2b0 is set. Other callers of 0x1434bc540 that pass the constant 1: 0x1434c0050 (reset to track 0x1434bff40), 0x14293fcda (0x14293f9e0), 0x142941260 (0x1429410f0) and 0x142d59d76 (Sess_DoughnutSequence_Enter); Game_PitLane_SetInitialStatuses passes 1 or 9 at 0x1434cb3d5 and Game_Network_ApplyInitialPitAndGridState a computed status at 0x143251cc9 (corrected by re-bindings 2026-11-18 from 'the only non-network writer of status 1 during a session'; all 40 call sites of 0x1434bc540 read). Callers: the plr_pit_trgr exit callback 0x1434cb7f0 (je at 0x1434cb804, jmp at 0x1434cb81f and 0x1434cb832; also with vehicle 0xff when the entity is unknown, which returns at once), Game_PitLane_IllegalPitEntry (call at 0x1434bcf85) and 0x142f71790 (call at 0x142f73540). So EnteringPitBox (3) -> OnTrack (1) happens when the car leaves the plr_pit_trgr TrackMarkup zone before the stop is done (pit box outside / beyond the zone, car pushed out of it) or on an illegal entry. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested)"
  },
  "signature": {
   "id": "game.pit_lane_vehicle_exiting",
@@ -65,6 +65,16 @@
    "verdict": "partial",
    "evidence": "decomp:re/decomp/1434bf980.c;xref:0x1434bfb01",
    "notes": "V11208 status!=1 -> 0x1434bc540(..,1) at 0x1434bfb01 confirmed, but guards: id>0x1a returns; in some sessions (type 0xf-0x11 flag or not 1..14/0x12) with flag +0x1cb returns if status 9. E8-scan 0x1434a-0x1434f: constant r8d=1 only at 0x1434bfb01/0x1434c0050, r8d=3 only 0x1434b8048 - BUT SetInitialStatuses also sets 1 (0x1434cb3d5 computed 1/9; .data1 0x1504496a6)."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings",
+   "kind": "func",
+   "item": "Game_PitLane_VehicleExiting",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1434bf980-0x1434bfbfe;xref:0x1434bfb01,0x14293fcda,0x142941260,0x142d59d76,0x1434c0050,0x1434cb804",
+   "notes": "V20010 Re-check of the notes after V11208. Holds: PITLANE and the vehicleExitingPitLane format string, status != 1 -> 0x1434bc540(this, id, 1) at 0x1434bfb01, message 0x145845968. Wrong: 'the only non-network writer of status 1 during a session': 0x1434bc540 also gets the constant 1 at 0x14293fcda, 0x142941260 and 0x142d59d76 (all 40 call sites read). Imprecise: the +0x1cb status 9 guard holds only for some session types; ids above 0x1a return at once; 0x1434cb7f0 enters by three branches (je 0x1434cb804, jmp 0x1434cb81f, 0x1434cb832); the call sites are 0x1434bcf85 and 0x142f73540. The notes are corrected; the agree must come from a verifier who did not correct them."
   }
  ],
  "proofs": []
