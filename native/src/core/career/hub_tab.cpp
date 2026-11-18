@@ -145,21 +145,21 @@ constinit swofty_core::guards::LogFirst<48> note_lines;
 void publish(const HubTab &t)
 {
     std::string base = t.data;
-    if (!ui_vm_set_path(base + ".title", 0, t.title.c_str())) {
+    if (!frontend::ui_vm_set_path(base + ".title", 0, t.title.c_str())) {
         note("[hub] %s: %s did not resolve; the page shows no data", t.name.c_str(), base.c_str());
         return;
     }
     int32_t count = int32_t(t.options.size());
-    ui_vm_set_path(base + ".count", 2, &count);
+    frontend::ui_vm_set_path(base + ".count", 2, &count);
     for (size_t k = 0; k < t.options.size(); k++) {
         const HubOption &o = t.options[k];
         size_t current = 0;
         std::vector<std::string> texts;
         settings_state(t.addon, o.id, current, &texts, nullptr, nullptr);
         std::string row = base + ".o" + std::to_string(k);
-        ui_vm_set_path(row + ".label", 0, o.label.c_str());
-        ui_vm_set_path(row + ".value", 0, current < texts.size() ? texts[current].c_str() : "");
-        ui_vm_set_path(row + ".description", 0, o.description.c_str());
+        frontend::ui_vm_set_path(row + ".label", 0, o.label.c_str());
+        frontend::ui_vm_set_path(row + ".value", 0, current < texts.size() ? texts[current].c_str() : "");
+        frontend::ui_vm_set_path(row + ".description", 0, o.description.c_str());
     }
 }
 

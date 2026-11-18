@@ -20,6 +20,7 @@ python3 content/check_logo_build.py content/bc7 "$OUT/logo_out"
 "$OUT/vehicle_tower_test"
 "$OUT/package_id_test"
 "$OUT/id_pool_test"
+"$OUT/box_world_test"
 "$OUT/wear_test" ../../packages/sdk/std/registries
 python3 content/check_lowering.py "$OUT/lower_tool"
 python3 content/check_wide_default.py "$OUT/lower_tool"
@@ -36,5 +37,26 @@ lines = s["lines"]["rules.drs"]
 assert s["records"].get("rules.drs") == 2 and s["boot_fresh"].get("rules.drs") == 16, s["records"]
 assert any("test.drs/never: group swofty_drs_never_" in l and "race start lap 200" in l for l in lines), lines
 print("rules.drs on the game database: 2 groups, 16 new keys")
+EOF
+    python3 - content/classic-seasons/classic-seasons-2016/registry/content.json "$OUT/box_world_box.json" <<'EOF'
+import json, sys
+d = json.load(open(sys.argv[1]))
+for pkg in d["content.package"].values():
+    pkg.pop("calendar", None)
+    for t in pkg.get("teams", []):
+        t.pop("drivers", None)
+json.dump(d, open(sys.argv[2], "w"))
+EOF
+    "$OUT/rows_tool" --registries ../../packages/sdk/std/registries --db "$GAMEDB" --edits content/box_world/swofty_f1_edits.json \
+        --out "$OUT/box_world_edits.json" --summary "$OUT/box_world_summary.json" --box-worlds \
+        swofty.classic-seasons-2016 "$OUT/box_world_box.json"
+    python3 - "$OUT/box_world_summary.json" <<'EOF'
+import json, sys
+s = json.load(open(sys.argv[1]))
+lines = s["lines"]["content.package"]
+assert s["records"].get("content.package") == 1 and not s["refused"], (s["records"], s["refused"])
+assert any("11 teams, its world holds 10 garages: season swofty_box_cs_f1_2016" in l and
+           "layer swofty_box_cs_f1_2016_world (f1_26, 11 garages" in l for l in lines), lines
+print("box worlds on the game database: an 11-team swofty_f1 box gets its own season and f1_26 layer")
 EOF
 fi

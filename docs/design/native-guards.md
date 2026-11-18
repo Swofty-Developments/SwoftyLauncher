@@ -149,6 +149,9 @@ Subclass `Guard` and write `build()` and `settle()` yourself when the lines or t
 - `theatre_list` settles its three sets in one line ("recent list armed, saved list armed, rows armed").
 - `tile_list_select` reads "armed;" rather than "armed:" in its settle lines.
 
+`settle()` asks `offered_set(set)` whether `build()` offered a set rather than keeping a flag of its own; a flag the
+handler reads at runtime, such as `track_select`'s installed one, stays in the guard.
+
 `ready()` holds back the offer until it returns true. The core offers every set once its code is ready, in `CoreSetId`
 order, and settles each offered set once, in `COMMIT_ORDER` (`runtime/loader/core_set_order.hpp`).
 

@@ -23,7 +23,7 @@ void screen(const char *name);
 // The notice line: one line of text the module sets, painted at the top of the overlay frame.
 bool notice_wanted();
 bool notice_drawing();
-void notice_paint(hud::Frame &frame, uint64_t now);
+void notice_paint(hud::drawlist::Frame &frame, uint64_t now);
 
 }
 

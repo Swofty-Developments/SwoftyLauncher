@@ -282,6 +282,10 @@ pub struct AssetBatch {
     pub warnings: Vec<String>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub fields: BTreeMap<String, Vec<String>>,
+    /// The absolute paths of every file and folder the build read, sent as a helper's build reply's
+    /// `reads`; None runs the build on every Play.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reads: Option<Vec<std::path::PathBuf>>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]

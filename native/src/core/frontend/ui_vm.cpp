@@ -28,6 +28,8 @@ struct Host {
 
 }
 
+namespace frontend {
+
 namespace {
 
 using namespace swofty::game;
@@ -432,30 +434,34 @@ bool VmHost::attach(const std::string &screen)
 
 }
 
+}
+
 namespace swofty::ui {
 
 bool ViewModel::set_text(const char *prop, const char *utf8)
 {
-    return host.set(*this, prop, 0, utf8);
+    return frontend::host.set(*this, prop, 0, utf8);
 }
 
 bool ViewModel::set_bool(const char *prop, bool value)
 {
     int32_t v = value;
-    return host.set(*this, prop, 1, &v);
+    return frontend::host.set(*this, prop, 1, &v);
 }
 
 bool ViewModel::set_int(const char *prop, int32_t value)
 {
-    return host.set(*this, prop, 2, &value);
+    return frontend::host.set(*this, prop, 2, &value);
 }
 
 void register_view_model(const char *screen_prefix, Factory factory)
 {
-    host.add_factory(screen_prefix, factory);
+    frontend::host.add_factory(screen_prefix, factory);
 }
 
 }
+
+namespace frontend {
 
 bool ui_vm_init(uintptr_t module_base, const std::wstring &swofty_dir)
 {
@@ -496,4 +502,6 @@ uintptr_t ui_vm_epoch()
 void *ui_vm_message_system()
 {
     return host.message_system();
+}
+
 }

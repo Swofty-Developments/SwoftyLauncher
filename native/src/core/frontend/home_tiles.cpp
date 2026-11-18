@@ -24,6 +24,8 @@ using namespace swofty::game;
 
 SWOFTY_CORE_RANK(home_tiles)
 
+namespace frontend {
+
 namespace {
 
 static_assert(sizeof(TileEntry) == 0x10);
@@ -170,7 +172,9 @@ SWOFTY_WRAP(FeHome_Handle_Command, uint64_t, FEHomeViewModel *vm, NeStr **cmd)
 
 SWOFTY_ON_LOAD
 {
-    runtime::when_code_ready("core: F1 THE MOVIE home tile", runtime::hide_movie_tile);
+    runtime::when_code_ready("core: F1 THE MOVIE home tile", hide_movie_tile);
 }
 
-SWOFTY_MOD(check)
+}
+
+SWOFTY_MOD(frontend::check)

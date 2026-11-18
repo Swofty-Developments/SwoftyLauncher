@@ -9,6 +9,7 @@
 #include "core/career/save_splice_logic.hpp"
 #include "core/career/snapshots/clock.hpp"
 #include "core/career/snapshots/snapshots.hpp"
+#include "core/career/snapshots/bag.hpp"
 
 #include <cstdio>
 #include <filesystem>

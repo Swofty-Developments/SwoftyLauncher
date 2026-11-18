@@ -12,8 +12,9 @@ use swofty_core::online::multiplayer::types::{GameStatus, RoomSummary, SessionSt
 use swofty_core::store::Store;
 use swofty_i18n::tr;
 
-use crate::shell::Shell;
-use crate::shell::host::{Host, Hosted};
+use super::model::{exit_leaves, exit_notice};
+use crate::shell::host::{Host, Hosted, reports_nothing};
+use crate::shell::{Page, Shell};
 
 pub(super) const TICK: Duration = Duration::from_millis(500);
 pub(super) const GAME_EVERY: Duration = Duration::from_secs(2);
@@ -210,11 +211,100 @@ pub(super) fn unasked(urls: Vec<String>, asked: &HashSet<String>) -> Vec<String>
         .collect()
 }
 
+impl Multiplayer {
+    /// A prompt Play opened holds the room launch: its Play goes on with it through `Shell::play`.
+    pub(crate) fn hold(&mut self, room: RoomLaunch) {
+        self.held = Some(room);
+    }
+
+    pub(crate) fn take_held(&mut self) -> Option<RoomLaunch> {
+        self.held.take()
+    }
+
+    /// Drops a held room launch once its prompt closed without Play. True when one was dropped.
+    pub(crate) fn drop_held(&mut self) -> bool {
+        if self.held.take().is_none() {
+            return false;
+        }
+        self.room_launching = false;
+        if let Some(session) = &self.session {
+            session.launch_failed("Play was cancelled");
+        }
+        true
+    }
+
+    pub(crate) fn launch_result(&mut self, started: bool) {
+        let Some(session) = &self.session else {
+            return;
+        };
+        if started {
+            session.launched();
+        } else {
+            self.room_launching = false;
+            session.launch_failed("see the notice, finish what it asks, then try again");
+        }
+    }
+
+    /// The launch `launch` started ended without the game: `why` says what stopped it.
+    pub(crate) fn launch_ended(&mut self, why: Option<String>) {
+        if !std::mem::take(&mut self.room_launching) {
+            return;
+        }
+        match why {
+            None => self.game_seen = true,
+            Some(why) => {
+                if let Some(session) = &self.session {
+                    session.launch_failed(&why);
+                }
+            }
+        }
+    }
+
+    /// Leaves the room. True when there was one to leave.
+    pub(crate) fn leave(&mut self) -> bool {
+        let Some(session) = &self.session else {
+            return false;
+        };
+        session.leave();
+        self.leaving = true;
+        true
+    }
+
+    /// Follows the game for the room: once the game the room started has exited, the room is left.
+    /// True when it left.
+    pub(crate) fn watch_game(&mut self, running: bool, busy: bool) -> bool {
+        if self.session.is_none() {
+            return false;
+        }
+        if running && self.launch_seen != 0 && self.closing.is_none() {
+            self.game_seen = true;
+        }
+        if self.closing.is_some() && !running {
+            self.closing = None;
+        }
+        let over = self.state.as_ref().is_some_and(|s| s.phase.is_over());
+        if over || self.leaving || !exit_leaves(self.game_seen, running, busy) {
+            return false;
+        }
+        let host = self.state.as_ref().is_some_and(|s| s.host);
+        self.notice = Some(exit_notice(host).to_owned());
+        diag::line(format!(
+            "launcher: F1 25 exited; leaving the room ({})",
+            exit_notice(host)
+        ));
+        self.leave()
+    }
+}
+
 pub(crate) struct OnlineNeeds<'a> {
     pub(crate) store: &'a Store,
     pub(crate) profile: &'a str,
     pub(crate) game_dir: Option<&'a Path>,
     pub(crate) running: bool,
+    /// A launch, a build or a restore of the game folder is running.
+    pub(crate) busy: bool,
+    /// The online page is open and the account may use it.
+    pub(crate) shown: bool,
     pub(crate) token: Option<&'a str>,
 }
 
@@ -232,12 +322,14 @@ impl Host<Multiplayer> for Shell {
                 profile: &self.library.profile.name,
                 game_dir: self.game.install.as_ref().map(|i| i.dir.as_path()),
                 running: !self.game.processes.is_empty(),
+                busy: self.launching.launch.is_some()
+                    || self.game.build.is_some()
+                    || self.launching.restoring,
+                shown: self.navigation.page == Page::Multiplayer && self.account.allowed(),
                 token: self.account.session.as_ref().map(|m| m.token.as_str()),
             },
         )
     }
 
-    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
-        match change {}
-    }
+    reports_nothing!();
 }

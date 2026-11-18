@@ -16,7 +16,7 @@ use swofty_core::dbedit::{
 use super::fields::Slots;
 use crate::services::game::Install;
 use crate::shell::Shell;
-use crate::shell::host::{Host, Hosted};
+use crate::shell::host::{Host, Hosted, reports_nothing};
 use swofty_core::store::Store;
 use swofty_i18n::trf;
 
@@ -329,7 +329,5 @@ impl Host<Db> for Shell {
         )
     }
 
-    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
-        match change {}
-    }
+    reports_nothing!();
 }

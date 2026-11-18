@@ -60,7 +60,6 @@ using Push = void(void *widget, void *child);
 
 uintptr_t next_child = 0;
 Push *orig_push = nullptr;
-bool push_offered = false;
 guards::LogFirst<ts::LOG_FIRST> skipped{"skips"};
 guards::LogFirst<ts::LOG_FIRST> push_skipped{"skips"};
 
@@ -159,17 +158,16 @@ private:
         if (!swofty::api->resolve(PUSH)) {
             swofty::log("[tile-list] push guard off: needs %s, which this build does not resolve", PUSH);
         } else {
-            push_offered = true;
             out.push_back({PUSH_MIXIN, {{PUSH, SWOFTY_MIXIN_WRAP, 100, (void *)&push_child_selection, (void **)&orig_push}}});
         }
     }
 
     void settle() override
     {
-        if (next_child)
+        if (offered_set(MIXIN))
             swofty::log("[tile-list] select guard %s; a tile with no components is skipped when a list moves its selection",
                         guards::install_state(runtime::core_mixins_active(MIXIN), "armed"));
-        if (push_offered)
+        if (offered_set(PUSH_MIXIN))
             swofty::log("[tile-list] push guard %s; a focused tile with no components is not written to a list's selection",
                         guards::install_state(runtime::core_mixins_active(PUSH_MIXIN), "armed"));
     }

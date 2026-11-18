@@ -9,7 +9,7 @@ mod season;
 mod widgets;
 
 use crate::shell::Shell;
-use crate::shell::host::{Host, Hosted};
+use crate::shell::host::{Host, Hosted, reports_nothing};
 use api::{BoardsApi, HttpBoards};
 use gpui_kit::component::input::InputState;
 use gpui_kit::*;
@@ -149,9 +149,7 @@ impl Host<Online> for Shell {
         )
     }
 
-    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
-        match change {}
-    }
+    reports_nothing!();
 }
 
 impl Online {
