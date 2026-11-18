@@ -2400,7 +2400,6 @@
   "func:Ne_Crt_LogFloatAvx": "V8195",
   "func:Ne_Crt_MathErrorHandlerF": "V8196",
   "func:Ne_Crt_Memcmp": "V3772",
-  "func:Ne_Crt_Memcpy": "V3774",
   "func:Ne_Crt_Memset": "V3776",
   "func:Ne_Crt_ParseNumber_L": "V8187",
   "func:Ne_Crt_Powf": "V2221",
