@@ -789,6 +789,67 @@ class ExportsDoNotShrink(Base):
         self.assertEqual(binding.lost_exports('HEAD'), [])
 
 
+class LevelBaselineOnlyShrinks(Base):
+    PATH = 're/db/level_baseline.json'
+
+    def bdoc(self, entries):
+        return json.dumps({'schema': 1, 'note': 'why', 'entries': entries}).encode()
+
+    def test_adding_or_moving_an_entry_is_an_error_and_removing_one_is_not(self):
+        import binding
+        old = self.bdoc({'func:A': 'V1', 'func:B': 'V2'})
+        self.assertEqual(binding.baseline_growth(old, self.bdoc({'func:A': 'V1'})), [])
+        self.assertEqual(binding.baseline_growth(old, None), [])
+        grown = binding.baseline_growth(old, self.bdoc({'func:A': 'V1', 'func:B': 'V2', 'field:T.x': 'V3'}))
+        self.assertEqual(len(grown), 1, grown)
+        self.assertIn('adds field:T.x', grown[0])
+        moved = binding.baseline_growth(old, self.bdoc({'func:A': 'V7', 'func:B': 'V2'}))
+        self.assertEqual(len(moved), 1, moved)
+        self.assertIn('moves func:A from V1 to V7', moved[0])
+        self.assertEqual(len(binding.baseline_growth(None, self.bdoc({'func:A': 'V1'}))), 1)
+        self.assertEqual(len(binding.baseline_growth(old, b'{"schema": 2}')), 1)
+
+    def test_judge_fails_a_pull_request_that_grows_the_baseline(self):
+        import binding
+        old = self.bdoc({'func:A': 'V1'})
+        result = binding.judge([], [self.PATH], AUTHOR, self.knowledge, (old, self.bdoc({'func:A': 'V1', 'func:B': 'V2'})))
+        self.assertEqual(result['verdict'], 'fail', result['summary'])
+        result = binding.judge([], [self.PATH], AUTHOR, self.knowledge, (old, self.bdoc({})))
+        self.assertEqual(result['verdict'], 'review', result['summary'])
+
+    def ci(self, head_doc):
+        import binding
+        tmp = tempfile.mkdtemp()
+        try:
+            head = os.path.join(tmp, 'head')
+            os.makedirs(os.path.join(head, 're', 'db'))
+            with open(os.path.join(head, self.PATH), 'wb') as f:
+                f.write(head_doc)
+            with open(os.path.join(tmp, 'files.json'), 'w') as f:
+                json.dump([{'filename': self.PATH, 'status': 'modified'}], f)
+            out = os.path.join(tmp, 'out.json')
+            with contextlib.redirect_stdout(io.StringIO()):
+                binding.main(['ci', '--files', os.path.join(tmp, 'files.json'), '--head', head, '--author', AUTHOR,
+                              '--out', out])
+            with open(out) as f:
+                return json.load(f)
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_ci_fails_a_grown_baseline_and_reviews_a_shrunk_one(self):
+        import binding
+        with open(os.path.join(binding.kb.ROOT, self.PATH)) as f:
+            doc = json.load(f)
+        grown = copy.deepcopy(doc)
+        grown['entries']['func:Sess_Not_Listed_Before'] = 'V1'
+        result = self.ci(json.dumps(grown).encode())
+        self.assertEqual(result['verdict'], 'fail', result['summary'])
+        self.assertTrue(any('adds func:Sess_Not_Listed_Before' in e for e in result['errors']), result['errors'])
+        shrunk = copy.deepcopy(doc)
+        shrunk['entries'].pop(next(iter(shrunk['entries'])))
+        self.assertEqual(self.ci(json.dumps(shrunk).encode())['verdict'], 'review')
+
+
 @NEEDS_EXE_MODULES
 @unittest.skipUnless(os.environ.get('SWOFTY_STEAM_EXE'), 'set SWOFTY_STEAM_EXE to the KB build F1_25.exe')
 class NewOnTheKbBuild(unittest.TestCase):

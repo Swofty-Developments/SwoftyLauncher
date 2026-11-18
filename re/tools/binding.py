@@ -367,11 +367,16 @@ def export_state(gate, rec):
     row = rec.table_row()
     vkind = 'func' if rec.table == 'functions' else 'global'
     status, why = gate(row['level'], row['evidence'], [(vkind, rec.name), (vkind, row['addr'])])
+    if status and why.startswith('baseline:'):
+        return status, f'an agree at {row["level"]}: it exports on the level baseline entry {why[9:]}'
     if status:
         return status, '-'
     if row['level'] not in ('L2', 'L3'):
         return 'not exported', 'L2: decomp: and xref: evidence, then an agree row'
     newest = gate.newest([(vkind, rec.name), (vkind, row['addr'])])
+    if newest and newest[0] == 'agree':
+        return 'not exported', (f'its newest verify row {newest[1]} is an agree made at {newest[3]}, below '
+                                f'{row["level"]}: an agree row at {row["level"]} (binding.py agree)')
     if newest:
         return 'not exported', (f'its newest verify row {newest[1]} is {newest[0]}: a new agree row after the notes '
                                 f'are fixed (binding.py agree)')
@@ -428,9 +433,50 @@ def pick_base(base):
     raise SystemExit('binding.py doctor: no main branch to compare with; pass --base <the commit your branch starts from>')
 
 
-def judge(changes, other, author, knowledge):
-    """What the bindings workflow decides for these record changes plus `other` paths, with a printable summary."""
+BASELINE_PATH = 're/db/level_baseline.json'
+
+
+def baseline_growth(old, new):
+    """One error per entry the new level_baseline.json bytes add or re-point against the old bytes; the list only
+    shrinks, so a raise cannot be exported on a lower-level agree by listing it."""
+    import bindgen, tempfile
+    if new is None:
+        return []
+
+    def entries(data):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, 'level_baseline.json')
+            with open(path, 'wb') as f:
+                f.write(data)
+            try:
+                return bindgen.load_baseline(path)
+            except SystemExit as e:
+                return str(e)
+    before, after = entries(old) if old is not None else {}, entries(new)
+    if isinstance(after, str):
+        return [f'{BASELINE_PATH}: {after}']
+    if isinstance(before, str):
+        before = {}
+    out = []
+    for key, covers in sorted(after.items()):
+        if key not in before:
+            out.append(f'{BASELINE_PATH}: adds {key[0]}:{key[1]}; the level baseline only shrinks, so a binding '
+                       'raised past its agree needs a new agree at its level')
+        elif before[key] != covers:
+            out.append(f'{BASELINE_PATH}: moves {key[0]}:{key[1]} from {before[key]} to {covers}; the level '
+                       'baseline only shrinks')
+    return out
+
+
+def judge(changes, other, author, knowledge, baseline=None):
+    """What the bindings workflow decides for these record changes plus `other` paths, with a printable summary.
+    `baseline` is (base bytes, pull request bytes) of the level baseline when the pull request changes it."""
     result = bc.classify(changes, author, knowledge, kb.ROOT)
+    if baseline is not None:
+        grown = baseline_growth(*baseline)
+        if grown:
+            result['verdict'] = 'fail'
+            result['errors'] += grown
     if result['verdict'] != 'fail':
         lint_errors = lint_with([(path, new) for path, _, new in changes if new is not None])
         if lint_errors:
@@ -664,8 +710,13 @@ def cmd_doctor(a):
         author = authors.pop()
     store = br.Store.get()
     knowledge, keep = base_knowledge(changes)
+    pair = None
+    if BASELINE_PATH in other:
+        got, path = git('show', f'{base}:{BASELINE_PATH}', check=False), os.path.join(kb.ROOT, BASELINE_PATH)
+        now = open(path, 'rb').read() if os.path.isfile(path) else None
+        pair = (got.stdout if got.returncode == 0 else None, now)
     try:
-        result = judge(changes, other, author, knowledge)
+        result = judge(changes, other, author, knowledge, pair)
     finally:
         store.records = keep
     print(f'binding.py doctor: {len(changes)} record file(s) and {len(other)} other file(s) changed against '
@@ -684,11 +735,35 @@ def cmd_doctor(a):
             if rec:
                 status, need = export_state(gate, rec)
                 print(f'  {rec.name}: {status}' + (f'; needs {need}' if need != '-' else ''))
+    import bindgen
+    print(f'level baseline: {len(bindgen.load_baseline())} binding(s) still export on an agree made below their '
+          f'level ({BASELINE_PATH}); binding.py baseline lists them')
     lost = lost_exports(base)
     if lost:
         print_lost(lost, base)
         return 1
     return 1 if result['verdict'] == 'fail' else 0
+
+
+def cmd_baseline(a):
+    """The level baseline's entries: how many are left, which are no longer in use, and --prune to drop those."""
+    import bindgen
+    entries = bindgen.load_baseline()
+    gate = bindgen.Gate()
+    bindgen.load(gate)
+    stale = {k: v for k, v in entries.items() if k not in gate.baselined}
+    if a.prune and stale:
+        bindgen.write_baseline({k: v for k, v in entries.items() if k not in stale})
+    left = len(entries) - (len(stale) if a.prune else 0)
+    print(f'binding.py baseline: {left} binding(s) export on an agree made below their level ({BASELINE_PATH})')
+    if a.list:
+        for (kind, name), covers in sorted(entries.items()):
+            if (kind, name) not in stale or not a.prune:
+                print(f'  {kind}:{name} {covers}')
+    for (kind, name), covers in sorted(stale.items()):
+        print(f'  {"removed" if a.prune else "not in use"}: {kind}:{name} {covers} (a newer verify row or an agree at '
+              'its level)')
+    return 1 if stale and not a.prune else 0
 
 
 def remove_lines(path, keep):
@@ -797,9 +872,19 @@ def cmd_ci(a):
         result['errors'].append('the file list is not a GitHub API file list')
         result['summary'] = summary(result)
     else:
-        changes, other, missing = [], [], []
+        changes, other, missing, pair = [], [], [], None
         for x in files:
             path, status = x['filename'], x.get('status')
+            if path == BASELINE_PATH and status in ('added', 'modified', 'removed'):
+                base = os.path.join(kb.ROOT, path)
+                head = os.path.join(a.head, path)
+                old = open(base, 'rb').read() if os.path.isfile(base) and not os.path.islink(base) else None
+                if status == 'removed':
+                    pair = (old, None)
+                elif os.path.isfile(head) and not os.path.islink(head):
+                    pair = (old, open(head, 'rb').read(4 << 20))
+                else:
+                    missing.append(path)
             if not br.RECORD_PATH_RE.match(path) or status not in ('added', 'modified', 'removed'):
                 other.append(path)
                 continue
@@ -814,7 +899,7 @@ def cmd_ci(a):
                 with open(head, 'rb') as f:
                     new = f.read(br.MAX_BYTES + 1)
             changes.append((path, old, new))
-        result = judge(changes, other, a.author, bc.Knowledge())
+        result = judge(changes, other, a.author, bc.Knowledge(), pair)
         if missing:
             result['verdict'] = 'fail' if result['verdict'] == 'fail' else 'review'
             result['notes'] = [n for n in result['notes'] if n != bc.NO_RECORDS] + [
@@ -949,6 +1034,12 @@ def main(argv=None):
                       description='Runs the base commit\'s own bindgen and this checkout\'s, and lists every binding '
                                   'the base exports that this checkout does not. doctor runs it too.')
     p.add_argument('--base', help='the commit to compare with (default: where HEAD leaves origin/main or main)')
+    p = sp.add_parser('baseline', help='the bindings that still export on an agree made below their level',
+                      description='Counts the entries of re/db/level_baseline.json and lists those no longer in use '
+                                  '(a newer verify row over the binding, or an agree at its level); exits 1 while any '
+                                  'is listed. --prune removes them.')
+    p.add_argument('--prune', action='store_true', help='remove the entries no longer in use')
+    p.add_argument('--list', action='store_true', help='also list every entry')
     p = sp.add_parser('verify', help='prove existing records again on your exe',
                       description='Resolve each record on your exe with the core\'s rules and store the proof, '
                                   'replacing your earlier proof on the same exe. Any build in re/db/builds works.')
@@ -989,7 +1080,7 @@ def main(argv=None):
     p.add_argument('--json', metavar='OUT', help='also write the report as JSON')
     a = ap.parse_args(argv)
     return {'new': cmd_new, 'doctor': cmd_doctor, 'verify': cmd_verify, 'agree': cmd_agree, 'check': cmd_check,
-            'status': cmd_status, 'unfold': cmd_unfold, 'ci': cmd_ci, 'port': cmd_port, 'exports': cmd_exports}[a.cmd](a) or 0
+            'status': cmd_status, 'unfold': cmd_unfold, 'ci': cmd_ci, 'port': cmd_port, 'exports': cmd_exports, 'baseline': cmd_baseline}[a.cmd](a) or 0
 
 
 if __name__ == '__main__':

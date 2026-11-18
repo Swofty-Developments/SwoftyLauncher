@@ -159,10 +159,13 @@ site_Sess_PitEntryDecision   L2     not exported       1  -                 an a
 | record | exported as |
 |---|---|
 | L1, or L2 whose newest verify row is not `agree` | not exported |
-| L2 whose newest verify row is an `agree` from someone other than the author | `experimental` |
+| L2 whose newest verify row is an `agree` made at L1 | not exported |
+| L2 whose newest verify row is an `agree` made at L2 or above, from someone other than the author | `experimental` |
 | L3 with a passed trace test (maintainer) | `stable` |
 
 The newest row is the latest by date over the binding's name and its address together, so a later `partial` or `disagree` takes an exported binding out of the next build until someone verifies it again. A binding the core's own code needs can stay exported through `re/db/export_exceptions.json`, which names the row it overrides and the reason; that file always needs review.
+
+An `agree` counts only at the level it was made at or a lower one. Raising a binding from L1 to L2 takes it out of the build until someone adds an `agree` at L2, which checks the prototype and the L2 claims that an L1 `agree` never looked at. Struct fields and struct sizes follow the same rule with the level in their struct file. `re/db/level_baseline.json` lists the bindings that exported on a lower-level `agree` on 2026-11-18, each with the V-id of that row, and they keep exporting while it is still their newest row. The list only shrinks: a pull request that adds an entry or changes a V-id fails the check. `binding.py baseline` counts the entries and lists those no longer in use, and `binding.py baseline --prune` removes them; `binding.py doctor` prints how many are left.
 
 An exported binding is part of the addon API, so the set main exports must not shrink. A pull request whose record change leaves an exported binding unexported fails the check. `binding.py exports` runs the bindgen of the commit where the branch leaves main, and the checkout's, and lists every binding main exports that the checkout does not; `binding.py doctor` runs it too. After a newer `partial` row, the binding exports again once the notes carry its corrections and someone who did not write them adds an `agree` row.
 

@@ -2,6 +2,7 @@ import copy, json, os, sys, tempfile, unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import bindgen
+import kb
 
 KB = {'exe': 'F1_25.exe', 'sha256': 'a' * 64, 'size': 100, 'pe_timestamp': 1, 'image_base': '0x140000000'}
 PATTERN = '41 56 56 57 53 48 83 EC 48 48 89 CE ?? 41'
@@ -174,15 +175,15 @@ class BuildSet(unittest.TestCase):
         self.assertEqual(bindgen.set_path('/d/bindings.json', 'ea', False), '/d/bindings.ea.json')
 
 
-def vrow(date, kind, item, verdict, vid):
-    return {'date': date, 'kind': kind, 'item': item, 'verdict': verdict, 'notes': f'{vid} text'}
+def vrow(date, kind, item, verdict, vid, claimed='L2'):
+    return {'date': date, 'kind': kind, 'item': item, 'claimed': claimed, 'verdict': verdict, 'notes': f'{vid} text'}
 
 
 class GateOrder(unittest.TestCase):
     KEYS = [('func', 'Sess_Do_Thing'), ('func', '0x140001000')]
 
-    def gate(self, rows, exceptions=None):
-        return bindgen.Gate(rows=rows, exceptions=exceptions or {})
+    def gate(self, rows, exceptions=None, baseline=None):
+        return bindgen.Gate(rows=rows, exceptions=exceptions or {}, baseline=baseline or {})
 
     def test_a_newer_partial_on_the_address_outranks_an_older_agree_on_the_name(self):
         g = self.gate([vrow('2026-10-28', 'func', 'Sess_Do_Thing', 'agree', 'V1'),
@@ -211,6 +212,94 @@ class GateOrder(unittest.TestCase):
         g = self.gate([])
         self.assertEqual(g('L2', '-', self.KEYS), (None, 'L2 without an agree verify row'))
         self.assertEqual(g('L1', '-', self.KEYS), (None, 'L1'))
+
+
+class GateLevels(unittest.TestCase):
+    KEYS = GateOrder.KEYS
+    L1_AGREE = [vrow('2026-10-30', 'func', 'Sess_Do_Thing', 'agree', 'V1', claimed='L1')]
+
+    def gate(self, rows, baseline=None):
+        return bindgen.Gate(rows=rows, exceptions={}, baseline=baseline or {})
+
+    def test_an_l1_agree_then_a_raise_to_l2_without_a_new_agree_does_not_export(self):
+        g = self.gate(self.L1_AGREE)
+        self.assertEqual(g('L2', '-', self.KEYS), (None, 'L2 whose newest verify row is an agree made at L1'))
+        self.assertEqual(g.below, {('func', 'Sess_Do_Thing'): 'V1'})
+        self.assertEqual(g('L3', '-', self.KEYS)[0], None)
+
+    def test_an_agree_at_the_level_or_above_exports(self):
+        for claimed, level in (('L2', 'L2'), ('L3', 'L2'), ('L3', 'L3')):
+            g = self.gate([vrow('2026-11-18', 'func', 'Sess_Do_Thing', 'agree', 'V2', claimed=claimed)])
+            self.assertEqual(g(level, '-', self.KEYS), ('experimental', 'verify:V2'), (claimed, level))
+        g = self.gate([vrow('2026-11-18', 'func', 'Sess_Do_Thing', 'agree', 'V2', claimed='L2')])
+        self.assertEqual(g('L3', '-', self.KEYS)[0], None)
+
+    def test_an_agree_without_a_claimed_level_does_not_export(self):
+        g = self.gate([vrow('2026-11-18', 'field', 'Thing.flag', 'agree', 'V2', claimed='-')])
+        self.assertEqual(g('L2', '-', [('field', 'Thing.flag')])[0], None)
+
+    def test_a_new_agree_at_the_raised_level_exports(self):
+        g = self.gate(self.L1_AGREE + [vrow('2026-11-18', 'func', '0x140001000', 'agree', 'V3', claimed='L2')])
+        self.assertEqual(g('L2', '-', self.KEYS), ('experimental', 'verify:V3'))
+
+    def test_the_baseline_keeps_its_listed_lower_level_agree(self):
+        g = self.gate(self.L1_AGREE, baseline={('func', 'Sess_Do_Thing'): 'V1'})
+        self.assertEqual(g('L2', '-', self.KEYS), ('experimental', 'baseline:V1'))
+        self.assertEqual(g.baselined, {('func', 'Sess_Do_Thing')})
+
+    def test_a_baseline_entry_holds_only_its_own_v_id(self):
+        g = self.gate(self.L1_AGREE, baseline={('func', 'Sess_Do_Thing'): 'V9'})
+        self.assertEqual(g('L2', '-', self.KEYS)[0], None)
+        self.assertEqual(g.baselined, set())
+
+    def test_any_newer_row_ends_a_baseline_entry(self):
+        for later in (vrow('2026-11-18', 'func', '0x140001000', 'partial', 'V4', claimed='L2'),
+                      vrow('2026-11-18', 'func', 'Sess_Do_Thing', 'agree', 'V5', claimed='L1')):
+            g = self.gate(self.L1_AGREE + [later], baseline={('func', 'Sess_Do_Thing'): 'V1'})
+            self.assertEqual(g('L2', '-', self.KEYS)[0], None, later)
+            self.assertEqual(g.baselined, set())
+
+    def test_an_agree_at_the_level_leaves_the_entry_unused(self):
+        g = self.gate(self.L1_AGREE + [vrow('2026-11-18', 'func', 'Sess_Do_Thing', 'agree', 'V6', claimed='L2')],
+                      baseline={('func', 'Sess_Do_Thing'): 'V1'})
+        self.assertEqual(g('L2', '-', self.KEYS), ('experimental', 'verify:V6'))
+        self.assertEqual(g.baselined, set())
+
+    def write(self, doc):
+        d = tempfile.mkdtemp()
+        p = os.path.join(d, 'level_baseline.json')
+        with open(p, 'w') as f:
+            json.dump(doc, f)
+        return p
+
+    def test_the_baseline_file_format(self):
+        ok = {'schema': 1, 'note': 'why', 'entries': {'func:Sess_Do_Thing': 'V1', 'field:Thing.flag': 'V2'}}
+        self.assertEqual(bindgen.load_baseline(self.write(ok)),
+                         {('func', 'Sess_Do_Thing'): 'V1', ('field', 'Thing.flag'): 'V2'})
+        self.assertEqual(bindgen.load_baseline(os.path.join(tempfile.mkdtemp(), 'absent.json')), {})
+        for bad in ({**ok, 'schema': 2}, {**ok, 'note': ' '}, {'schema': 1, 'note': 'why'},
+                    {**ok, 'entries': {'Sess_Do_Thing': 'V1'}}, {**ok, 'entries': {'sig:X': 'V1'}},
+                    {**ok, 'entries': {'func:': 'V1'}}, {**ok, 'entries': {'func:X': '1'}}):
+            with self.assertRaises(SystemExit, msg=bad):
+                bindgen.load_baseline(self.write(bad))
+
+    def test_write_baseline_keeps_the_note_and_sorts(self):
+        p = self.write({'schema': 1, 'note': 'why', 'entries': {'func:B': 'V2', 'func:A': 'V1'}})
+        bindgen.write_baseline({('func', 'B'): 'V2'}, p)
+        with open(p) as f:
+            self.assertEqual(json.load(f), {'schema': 1, 'note': 'why', 'entries': {'func:B': 'V2'}})
+
+
+class StructLevels(unittest.TestCase):
+    def test_field_and_struct_rows_claim_the_struct_files_levels(self):
+        import kb_lint
+        s = kb_lint.parse_struct(os.path.join(kb.DB, 'structs', 'HomeItem.h'))
+        f = s['fields'][0]
+        self.assertEqual(kb.struct_level('field', f'HomeItem.{f["name"]}'), f['level'])
+        self.assertEqual(kb.struct_level('struct', 'HomeItem'), s['size_level'] or '-')
+        self.assertEqual(kb.struct_level('field', 'HomeItem.no_such_field'), '-')
+        self.assertEqual(kb.struct_level('field', 'NoSuchStruct.x'), '-')
+        self.assertEqual(kb.struct_level('struct', 'HomeItem.vtable'), '-')
 
 
 class GateExceptions(unittest.TestCase):
@@ -263,6 +352,11 @@ class RepoData(unittest.TestCase):
         cls.gate = bindgen.Gate()
         cls.build, cls.bindings, cls.structs, _ = bindgen.load(cls.gate)
         cls.kb_name, cls.overlays = bindgen.load_overlays(cls.build)
+
+    def test_every_level_baseline_entry_is_in_use(self):
+        stale = sorted(f'{k}:{n}' for k, n in self.gate.baseline if (k, n) not in self.gate.baselined)
+        self.assertEqual(stale, [], 'these level baseline entries no longer hold (a newer verify row, or an agree at '
+                                    'the binding\'s level): run python3 re/tools/binding.py baseline --prune')
 
     def test_every_export_exception_is_in_use_and_named_by_native_code(self):
         import binding_check

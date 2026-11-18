@@ -594,6 +594,20 @@ def cmd_grant_range(a):
     print(f'granted V{r["first"]}..V{r["last"]} to {a.owner}; commit it on the trunk before the lane writes verify rows')
 
 
+def struct_level(kind, item):
+    """The level a field or struct row claims: the field's level or the struct's size level in re/db/structs, which
+    the export gate compares with the level at export time; '-' when the struct file has no such item."""
+    from kb_lint import parse_struct
+    sname, _, fname = item.partition('.')
+    path = os.path.join(DB, 'structs', sname + '.h')
+    if not os.path.isfile(path) or (kind == 'field') != bool(fname):
+        return '-'
+    s = parse_struct(path)
+    if kind == 'struct':
+        return s['size_level'] or '-'
+    return next((f['level'] for f in s['fields'] if f['name'] == fname), '-')
+
+
 def cmd_verify(a):
     table = {'func': 'functions', 'global': 'globals', 'db_key': 'db_keys', 'anchor': 'strings_anchors'}.get(a.kind)
     claimed = '-'
@@ -606,6 +620,8 @@ def cmd_verify(a):
         who = raiser(table, '|'.join(row_key(table, r) or ()))
         if who == a.agent:
             raise SystemExit(f'refused: {a.agent} raised this item to {claimed}; verification must come from another agent')
+    elif a.kind in ('field', 'struct'):
+        claimed = struct_level(a.kind, a.item)
     r = {'date': datetime.date.today().isoformat(), 'verifier': a.agent, 'kind': a.kind, 'item': a.item, 'claimed': claimed,
          'verdict': a.verdict, 'evidence': a.evidence, 'notes': a.notes or '-'}
     e = validate_row('verify', r)

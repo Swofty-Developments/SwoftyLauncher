@@ -14,8 +14,10 @@ whose build is the KB build writes bindings.json, every other one writes binding
 Gate: L3 whose trace test passed -> stable; L2 (or L3 without a passed test) whose newest verify row
 (by date, then file order, over both the name and the address) is `agree` -> experimental; everything
 else is not exported, unless re/db/export_exceptions.json lists the binding with that newest row's V-id
-and a reason. Runtime bindings need a signature verified on the KB build; struct fields go through the
-same gate.
+and a reason. The agree counts only when its claimed level is the binding's level or above, so a raise needs
+a new agree; re/db/level_baseline.json lists, by V-id, the bindings that exported on a lower-level agree
+when that rule came in, and it only shrinks. Runtime bindings need a signature verified on the KB build;
+struct fields go through the same gate.
 """
 import argparse, json, os, re, subprocess, sys
 
@@ -47,6 +49,8 @@ RS_PRIM = {'void': 'c_void', 'char': 'c_char', 'bool': 'bool', 'int': 'c_int', '
 
 EXCEPTIONS = os.path.join(kb.DB, 'export_exceptions.json')
 EXCEPTION_KEYS = {'kind', 'covers', 'reason'}
+BASELINE = os.path.join(kb.DB, 'level_baseline.json')
+BASELINE_KINDS = ('func', 'global', 'field', 'struct')
 
 
 def read_text(path):
@@ -71,17 +75,51 @@ def load_exceptions(path=EXCEPTIONS):
     return out
 
 
+def load_baseline(path=BASELINE):
+    """{(kind, name): V-id} from level_baseline.json; a malformed file stops the build instead of exporting more."""
+    if not os.path.exists(path):
+        return {}
+    doc = json.loads(read_text(path))
+    if doc.get('schema') != 1 or not str(doc.get('note', '')).strip() or not isinstance(doc.get('entries'), dict):
+        raise SystemExit(f'bindgen: {path}: needs "schema": 1, a "note" and an "entries" object')
+    out = {}
+    for key, covers in doc['entries'].items():
+        kind, _, name = key.partition(':')
+        if kind not in BASELINE_KINDS or not name or not re.match(r'^V\d+$', str(covers)):
+            raise SystemExit(f'bindgen: {path}: entry {key!r} needs the form "<func|global|field|struct>:<name>" '
+                             'and the V-id of the agree it covers')
+        out[(kind, name)] = covers
+    return out
+
+
+def write_baseline(entries, path=BASELINE):
+    """Rewrite level_baseline.json with these {(kind, name): V-id} entries, keeping its note."""
+    doc = json.loads(read_text(path))
+    doc['entries'] = {f'{k}:{n}': v for (k, n), v in sorted(entries.items())}
+    with open(path, 'w') as f:
+        f.write(json.dumps(doc, indent=1) + '\n')
+
+
+def agree_covers(claimed, level):
+    """An agree counts for export only when it was made at the record's current level or above: a raise to L2 on an
+    agree made at L1 needs a new agree, because the L1 agree checked neither the proto nor the L2 claims."""
+    return claimed in kb.LEVELS and kb.LEVELS.index(claimed) >= kb.LEVELS.index(level)
+
+
 class Gate:
     dev = False
 
-    def __init__(self, rows=None, exceptions=None):
+    def __init__(self, rows=None, exceptions=None, baseline=None):
         self.verdicts = {}
         for n, r in enumerate(kb.read_table('verify')[0] if rows is None else rows):
             key, rank = (r['kind'], r['item']), (r['date'], n)
             if key not in self.verdicts or rank >= self.verdicts[key][2]:
-                self.verdicts[key] = (r['verdict'], r['notes'].split()[0], rank)
+                self.verdicts[key] = (r['verdict'], r['notes'].split()[0], rank, r.get('claimed', '-'))
         self.exceptions = load_exceptions() if exceptions is None else exceptions
         self.excepted = set()
+        self.baseline = load_baseline() if baseline is None else baseline
+        self.baselined = set()
+        self.below = {}
         self.passed = set()
         tdir = os.path.join(kb.RE, 'tests')
         for f in os.listdir(tdir):
@@ -97,14 +135,21 @@ class Gate:
                 return 'stable', 'trace:' + ','.join(tests)
         if level in ('L2', 'L3'):
             v = self.newest(keys)
-            if v and v[0] == 'agree':
+            if v and v[0] == 'agree' and agree_covers(v[3], level):
                 return 'experimental', 'verify:' + v[1]
+            if v and v[0] == 'agree':
+                self.below[keys[0]] = v[1]
+                if self.baseline.get(keys[0]) == v[1]:
+                    self.baselined.add(keys[0])
+                    return 'experimental', 'baseline:' + v[1]
             ex = next((k for k in keys if k in self.exceptions), None)
             if v and ex and self.exceptions[ex]['covers'] == v[1]:
                 self.excepted.add(ex)
                 return 'experimental', 'exception:' + v[1]
             if self.dev:
                 return 'dev', 'unverified'
+            if v and v[0] == 'agree':
+                return None, f'{level} whose newest verify row is an agree made at {v[3]}'
             if v:
                 return None, f'{level} whose newest verify row is {v[0]}'
             return None, f'{level} without an agree verify row'
