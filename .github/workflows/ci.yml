@@ -364,7 +364,12 @@ jobs:
         with:
           system-libraries: false
 
+      # The release binaries on every push to main build the installer with the release profile's thin LTO,
+      # which takes a third of the build: 678 s with it and 567 s without on 4 cores, the final link 195 s
+      # and 7 s. A pull request builds it without, so its uploaded executable is not the release build.
       - name: Build
+        env:
+          CARGO_PROFILE_RELEASE_LTO: 'false'
         run: cargo build --release -p swofty-launcher-installer
 
       - name: Upload the executable

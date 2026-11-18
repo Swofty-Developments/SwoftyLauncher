@@ -26,6 +26,12 @@ inputs:
 runs:
   using: composite
   steps:
+    # Build and test times follow the runner's CPU model, which differs between runners of one label.
+    - name: Runner CPU
+      shell: bash
+      run: |
+        echo "$(nproc) CPUs:$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2)"
+
     - uses: actions-rust-lang/setup-rust-toolchain@v2
       with:
         cache: false
@@ -48,6 +54,18 @@ runs:
           echo "CARGO_HOME=/home/runner/.cargo" >> "$GITHUB_ENV"
           echo "RUSTUP_HOME=/home/runner/.rustup" >> "$GITHUB_ENV"
         fi
+
+    # Cargo unpacks every crate it builds from CARGO_HOME\registry\cache into registry\src, which rust-cache
+    # does not keep. On a hosted Windows runner CARGO_HOME is on C:, several times slower than the D: volume the
+    # job works on, so a junction puts those files on D:. CARGO_HOME, and with it rust-cache's key, stays as it is.
+    - name: Crate sources on the work volume
+      if: runner.os == 'Windows' && runner.environment == 'github-hosted'
+      shell: pwsh
+      run: |
+        $src = "$env:CARGO_HOME\registry\src"
+        if (Test-Path $src) { Remove-Item -Recurse -Force $src }
+        New-Item -ItemType Directory -Force "$env:CARGO_HOME\registry", "$env:RUNNER_TEMP\cargo-src" | Out-Null
+        New-Item -ItemType Junction -Path $src -Target "$env:RUNNER_TEMP\cargo-src" | Out-Null
 
     # rust-cache 2.9.3 hashes the members' manifests but not the workspace root's, so a change to its
     # [profile] or [patch] sections would restore the old builds under an exact match, rebuild them in every
