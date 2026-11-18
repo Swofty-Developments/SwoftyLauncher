@@ -2411,7 +2411,6 @@
   "func:Ne_Crt_Sinf": "V2222",
   "func:Ne_Crt_Snprintf": "V3848",
   "func:Ne_Crt_Sqrtf": "V3761",
-  "func:Ne_Crt_Strcmp": "V3763",
   "func:Ne_Crt_Strncmp": "V3764",
   "func:Ne_Crt_Strnicmp": "V7716",
   "func:Ne_Crt_Strstr": "V3749",
