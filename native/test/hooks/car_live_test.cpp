@@ -5,7 +5,7 @@
 // globals, the car list and the slot/owner/handle checks, decoding and re-encoding (the key is kept, the
 // plain half changes), range refusals (steering lock, differential, fuel over capacity, NaN), writes off
 // the flow thread, a car without a system, cars::live::cars/get/set/scale/is_ai through the table, and the builds
-// the operations run on (car_build_for).
+// the builds the operations, points and levers run on (car_proofs.hpp, runtime/car_layout.hpp).
 // native/test/run_tests.sh car_live builds and runs it.
 #include "core/hooks/car_live.hpp"
 #include "core/hooks/car_proofs.hpp"
@@ -826,21 +826,37 @@ static void player_facts_sync()
 
 static void car_builds()
 {
-    const cl::CarBuild *kb = cl::car_build_for(1789118616u, 0x193e6000u);
-    expect(kb && kb->mode_avail_rva == 0x606ec28, "the KB build runs with g_Game_EngineModeAvail at 0x606ec28");
-    expect(!cl::car_build_for(1789118616u, 0x5000000u), "the KB stamp on a packed image is off");
-    const cl::CarBuild *steam = cl::car_build_for(1794312636u, 0x18434000u);
-    expect(steam && steam->mode_avail_rva == 0x6070c28, "Steam 26566308 runs with g_Game_EngineModeAvail at 0x6070c28");
-    const cl::CarBuild *ea = cl::car_build_for(1794315435u, 0x1615e000u);
-    expect(ea && ea->mode_avail_rva == 0x61a7968, "EA 1.0.145 runs with g_Game_EngineModeAvail at 0x61a7968");
-    expect(!cl::car_build_for(1794312636u, 0x1615e000u), "a known stamp with another image size is off");
-    expect(!cl::car_build_for(1789128892u, 0x155dc000u), "the unchecked EA KB-version build is off");
-    expect(!cl::car_build_for(0, 0), "an unknown build is off");
-    bool known = true;
-    for (const cl::CarBuild &b : cl::CAR_BUILDS)
-        known = known && runtime::build_proof::identify({b.pe_timestamp, b.size_of_image ? b.size_of_image : 0x193e6000u}) !=
-                             runtime::build_proof::Build::unknown;
-    expect(known, "every build the live car operations run on is a build runtime::build_proof knows");
+    namespace bp = runtime::build_proof;
+    namespace cp = swofty_core::hooks::car_proofs;
+    namespace layout = runtime::car_layout;
+    auto all = [](const char *) { return true; };
+    auto runs = [&](bp::Exe exe) {
+        bp::Build b = bp::identify(exe);
+        bool points = bool(bp::check(cp::POINTS, b, all)), ops = bool(bp::check(cp::OPERATIONS, b, all)),
+             levers = bool(bp::check(cp::LEVERS, b, all));
+        expect(points == ops && ops == levers, "the car points, operations and levers run on the same builds");
+        return ops ? b : bp::Build::unknown;
+    };
+    bp::Build kb = runs({1789118616u, 0x193e6000u});
+    expect(kb == bp::Build::kb && layout::mode_avail_rva(kb) == 0x606ec28,
+           "the KB build runs with g_Game_EngineModeAvail at 0x606ec28");
+    expect(runs({1789118616u, 0x5000000u}) == bp::Build::unknown, "the KB stamp on a packed image is off");
+    bp::Build steam = runs({1794312636u, 0x18434000u});
+    expect(steam == bp::Build::steam_1_0_145 && layout::mode_avail_rva(steam) == 0x6070c28,
+           "Steam 26566308 runs with g_Game_EngineModeAvail at 0x6070c28");
+    bp::Build ea = runs({1794315435u, 0x1615e000u});
+    expect(ea == bp::Build::ea_1_0_145 && layout::mode_avail_rva(ea) == 0x61a7968,
+           "EA 1.0.145 runs with g_Game_EngineModeAvail at 0x61a7968");
+    expect(runs({1794312636u, 0x1615e000u}) == bp::Build::unknown, "a known stamp with another image size is off");
+    expect(runs({1789128892u, 0x155dc000u}) == bp::Build::unknown, "the unchecked EA KB-version build is off");
+    expect(runs({0, 0}) == bp::Build::unknown, "an unknown build is off");
+    expect(!layout::mode_avail_rva(bp::Build::ea) && !layout::mode_avail_rva(bp::Build::unknown),
+           "no g_Game_EngineModeAvail address where the operations do not run");
+    expect(bool(bp::check(cp::OPERATIONS, bp::Build::kb, [](const char *) { return false; })),
+           "the gates name no binding: a binding the operations need refuses by its own line");
+    expect(std::strcmp(cp::log_name(kb), "Steam KB") == 0 && std::strcmp(cp::log_name(steam), "Steam 26566308") == 0 &&
+               std::strcmp(cp::log_name(ea), "EA 1.0.145") == 0 && !cp::log_name(bp::Build::ea),
+           "the operations' log line names the build as it has since 1.9.74");
 }
 
 int main()
