@@ -29,6 +29,9 @@ pub struct Waiting {
     /// What the session did about the integrity module, taken when the lap was collected.
     #[serde(default, skip_serializing_if = "Value::is_null")]
     pub integrity: Value,
+    /// The server's receipts for the lap's timing marks, taken when the lap was collected.
+    #[serde(default, skip_serializing_if = "Value::is_null")]
+    pub timing: Value,
     #[serde(default)]
     pub attempts: u32,
     #[serde(default)]
@@ -188,10 +191,15 @@ impl Queue {
             if move_file(&from, &to).is_err() {
                 continue;
             }
-            if let Some(stamp) = stamp {
+            let timing = swlap::read(&to).map_or(Value::Null, |h| {
+                let data = self.root.parent().unwrap_or(&self.root);
+                super::ticks::for_lap(data, h.nonce.as_deref(), h.lap.lap_index, h.lap.time_ms)
+            });
+            if stamp.is_some() || !timing.is_null() {
                 let waiting = Waiting {
-                    fingerprint: stamp.fingerprint.clone(),
-                    integrity: stamp.integrity.clone(),
+                    fingerprint: stamp.map_or(Value::Null, |s| s.fingerprint.clone()),
+                    integrity: stamp.map_or(Value::Null, |s| s.integrity.clone()),
+                    timing,
                     ..Waiting::default()
                 };
                 write_json(&to.with_extension("json"), &waiting)?;
@@ -301,7 +309,9 @@ impl Queue {
             } else {
                 waiting.fingerprint.clone()
             };
-            let meta = Meta::new(header.nonce.clone(), fingerprint).with_integrity(waiting.integrity.clone());
+            let meta = Meta::new(header.nonce.clone(), fingerprint)
+                .with_integrity(waiting.integrity.clone())
+                .with_timing(waiting.timing.clone());
             match api.upload(&bytes, &meta) {
                 Ok(answer) => {
                     let mut done = Done::of(Some(&header), limits.now);

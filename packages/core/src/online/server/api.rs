@@ -10,6 +10,8 @@ use serde_json::Value;
 use crate::online::server::http::{self, Field};
 
 const CALL_TIMEOUT: Duration = Duration::from_secs(4);
+/// A timing mark is only worth its stamp while it is fresh, so it does not wait long for an answer.
+const TICK_TIMEOUT: Duration = Duration::from_secs(2);
 const GAME_TIMEOUT: Duration = Duration::from_secs(5);
 const BOARD_TIMEOUT: Duration = Duration::from_secs(15);
 const UPLOAD_TIMEOUT: Duration = Duration::from_secs(60);
@@ -90,6 +92,10 @@ pub struct Meta {
     /// when unknown, as older launchers do.
     #[serde(skip_serializing_if = "Value::is_null")]
     pub integrity: Value,
+    /// The server's receipts for the lap's timing marks, so the server can time the lap itself. Left out when
+    /// the lap has none: driven offline, or by a launcher or module without them.
+    #[serde(skip_serializing_if = "Value::is_null")]
+    pub timing: Value,
 }
 
 impl Meta {
@@ -100,11 +106,16 @@ impl Meta {
             session,
             fingerprint,
             integrity: Value::Null,
+            timing: Value::Null,
         }
     }
 
     pub fn with_integrity(self, integrity: Value) -> Self {
         Self { integrity, ..self }
+    }
+
+    pub fn with_timing(self, timing: Value) -> Self {
+        Self { timing, ..self }
     }
 }
 
@@ -183,6 +194,18 @@ impl Api {
     /// A nonce that ties the laps of one game session together.
     pub fn sessions(&self) -> Result<Nonce, ApiError> {
         self.send("POST", "/v1/tt/sessions", None, CALL_TIMEOUT)
+    }
+
+    /// Send one timing mark of a Time Trial lap for the session `nonce`; the answer is the server's receipt.
+    pub fn tick(&self, nonce: &str, mark: &Value) -> Result<String, ApiError> {
+        #[derive(Deserialize)]
+        struct Receipt {
+            receipt: String,
+        }
+        let body = ("application/json".to_owned(), mark.to_string().into_bytes());
+        let path = format!("/v1/tt/sessions/{nonce}/ticks");
+        let answer: Receipt = self.send("POST", &path, Some(body), TICK_TIMEOUT)?;
+        Ok(answer.receipt)
     }
 
     /// One in-game request of the bridge: `{status, body}` as the server built it for the game.

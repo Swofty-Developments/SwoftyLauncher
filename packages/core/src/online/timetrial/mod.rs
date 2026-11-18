@@ -11,6 +11,7 @@ pub mod fingerprint;
 pub mod game_replay;
 pub mod queue;
 pub mod swlap;
+pub mod ticks;
 pub mod toast;
 pub mod upload;
 pub mod watch;

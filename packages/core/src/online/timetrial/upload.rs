@@ -12,6 +12,7 @@ use serde_json::Value;
 use super::bridge::Pump;
 use super::game_replay;
 use super::queue::{Event, Folder, Limits, Queue, Report, Stamp, unix_now};
+use super::ticks;
 use super::toast;
 use super::{laps_dirs, token, write_session_keys};
 use crate::online::server::api::{Api, Boards, Nonce};
@@ -22,6 +23,8 @@ const FINAL_SWEEP: Duration = Duration::from_secs(6);
 /// How long a new lap waits for the replay the core saves of a personal best, so the two upload together.
 const REPLAY_WAIT: Duration = Duration::from_secs(10);
 const HOLD_POLL: Duration = Duration::from_millis(300);
+/// How long a new lap waits for the timing marks still being sent, so it uploads with its finish receipt.
+const MARKS_WAIT: Duration = Duration::from_secs(5);
 const NONCE_RETRIES: [Duration; 3] = [
     Duration::from_secs(2),
     Duration::from_secs(5),
@@ -202,6 +205,7 @@ pub struct Watcher {
     stop: Arc<AtomicBool>,
     thread: Option<JoinHandle<()>>,
     pump: Option<Pump>,
+    ticks: Option<ticks::Pump>,
     data: PathBuf,
     game: PathBuf,
     config: Config,
@@ -211,7 +215,8 @@ pub struct Watcher {
 }
 
 impl Watcher {
-    /// With In-game leaderboards on and a sign-in, the bridge's mailbox pump runs beside it.
+    /// With In-game leaderboards on and a sign-in, the bridge's mailbox pump runs beside it, and with a sign-in
+    /// the timing marks of the session's laps go to the server as they are made.
     /// With Time Trial boards off or nobody signed in, the laps are still collected into the outbox and
     /// nothing leaves the machine. With `retry_nonce` the session nonce the start could not get is asked
     /// for again on a thread of its own. Each lap is kept with `integrity`, what the session did about the
@@ -239,6 +244,10 @@ impl Watcher {
                         say(l)
                     })
                 }),
+            ticks: token(data, config).map(|t| {
+                let say = say.clone();
+                ticks::Pump::start(data, game, Api::new(&t), move |l| say(l))
+            }),
             data: data.to_owned(),
             game: game.to_owned(),
             config: config.clone(),
@@ -254,7 +263,7 @@ impl Watcher {
                 let mut cached: Option<Option<Value>> = None;
                 while !stop.load(Ordering::Relaxed) {
                     let laps = has_laps(&data, &game);
-                    if laps && waiting_for_replay(&data, &game) {
+                    if laps && (waiting_for_replay(&data, &game) || waiting_for_marks(&data, &game)) {
                         std::thread::sleep(HOLD_POLL);
                         continue;
                     }
@@ -312,6 +321,9 @@ impl Watcher {
         if let Some(pump) = self.pump.take() {
             pump.finish();
         }
+        if let Some(ticks) = self.ticks.take() {
+            ticks.finish();
+        }
         if let Some(t) = self.thread.take() {
             t.join().ok();
         }
@@ -336,15 +348,18 @@ fn hold_for_replay(lap_age: Duration, replay_ready: bool) -> bool {
     !replay_ready && lap_age < REPLAY_WAIT
 }
 
-fn waiting_for_replay(data: &Path, game: &Path) -> bool {
-    let Some(written) = laps_dirs(data, game)
+fn newest_lap(data: &Path, game: &Path) -> Option<std::time::SystemTime> {
+    laps_dirs(data, game)
         .iter()
         .filter_map(|dir| std::fs::read_dir(dir).ok())
         .flat_map(|d| d.filter_map(Result::ok))
         .filter(|e| e.path().extension().is_some_and(|x| x == "swlap"))
         .filter_map(|e| e.metadata().ok()?.modified().ok())
         .max()
-    else {
+}
+
+fn waiting_for_replay(data: &Path, game: &Path) -> bool {
+    let Some(written) = newest_lap(data, game) else {
         return false;
     };
     let age = written.elapsed().unwrap_or_default();
@@ -356,6 +371,11 @@ fn waiting_for_replay(data: &Path, game: &Path) -> bool {
         .iter()
         .any(|p| p.secs >= since);
     hold_for_replay(age, ready)
+}
+
+fn waiting_for_marks(data: &Path, game: &Path) -> bool {
+    newest_lap(data, game).is_some_and(|t| t.elapsed().unwrap_or_default() < MARKS_WAIT)
+        && ticks::pending(data, game)
 }
 
 fn has_laps(data: &Path, game: &Path) -> bool {
@@ -628,6 +648,118 @@ mod tests {
         );
         let sent = Queue::new(&data).list(Folder::Sent);
         assert_eq!(sent.len(), 2);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    fn lap_numbered(time_ms: u64, nonce: &str, lap_index: u32) -> Vec<u8> {
+        let header = serde_json::json!({
+            "format": 1,
+            "nonce": nonce,
+            "board": {"content": "game/f1_2025", "track": "bahrain", "weather": "dry"},
+            "lap": {"time_ms": time_ms, "valid": true, "sectors_ms": [1, 2, 3], "lap_index": lap_index},
+        })
+        .to_string();
+        let mut out = crate::online::timetrial::swlap::MAGIC.to_vec();
+        out.extend((header.len() as u32).to_le_bytes());
+        out.extend(header.as_bytes());
+        out.extend(b"END\0\0\0\0\0");
+        out
+    }
+
+    #[test]
+    fn a_timed_lap_keeps_its_receipts_through_the_queue_and_an_offline_lap_uploads_without_any() {
+        let (root, data, game) = temp("timed");
+        let [laps, _] = laps_dirs(&data, &game);
+        std::fs::create_dir_all(&laps).unwrap();
+        let marks = ticks::folders(&data, &game)[0].clone();
+        std::fs::create_dir_all(&marks).unwrap();
+        let now = unix_now() * 1000;
+        for (seq, (which, game_ms)) in [("start", 0), ("s1", 28_411), ("s2", 59_000), ("end", 91_234)]
+            .into_iter()
+            .enumerate()
+        {
+            let at = now + seq as u64;
+            let body =
+                serde_json::json!({"seq": seq + 1, "lap": 4, "mark": which, "game_ms": game_ms, "at_ms": at});
+            std::fs::write(marks.join(format!("{at}-{}.json", seq + 1)), body.to_string()).unwrap();
+        }
+        let (url, t) = stub(vec![
+            ("200 OK", r#"{"receipt":"tk1.cw.bQ"}"#),
+            ("200 OK", r#"{"receipt":"tk1.czE.bQ"}"#),
+            ("200 OK", r#"{"receipt":"tk1.czI.bQ"}"#),
+            ("200 OK", r#"{"receipt":"tk1.ZQ.bQ"}"#),
+            ("503 Service Unavailable", ""),
+            ("200 OK", r#"{"id":"l1","status":"ranked","rank":3}"#),
+            ("200 OK", r#"{"id":"l2","status":"ranked","rank":9}"#),
+        ]);
+        let api = Api::with_server(&url, "tok");
+        let mut sender = ticks::Sender::new(&data, ticks::folders(&data, &game));
+        sender.step(&api, Some("n-online"), now + 20, &|_| {});
+        assert!(!ticks::pending(&data, &game));
+        std::fs::write(
+            laps.join("20261118T000001-1.swlap"),
+            lap_numbered(91_234, "n-online", 4),
+        )
+        .unwrap();
+        std::fs::write(
+            laps.join("20261118T000002-1.swlap"),
+            lap_numbered(90_100, "n-online", 5),
+        )
+        .unwrap();
+
+        let r = sweep(
+            &data,
+            Some(&game),
+            Some(&api as &dyn Boards),
+            None,
+            None,
+            &mut |_| {},
+        );
+        assert_eq!(
+            (r.uploaded, r.waiting),
+            (0, 2),
+            "the server is busy: both laps wait in the outbox"
+        );
+        let queued = Queue::new(&data).list(Folder::Outbox);
+        assert_eq!(
+            queued[0].waiting.as_ref().map(|w| w.timing.clone()),
+            Some(serde_json::json!([
+                "tk1.cw.bQ",
+                "tk1.czE.bQ",
+                "tk1.czI.bQ",
+                "tk1.ZQ.bQ"
+            ]))
+        );
+        assert_eq!(
+            queued[1].waiting.as_ref().map(|w| w.timing.clone()),
+            Some(Value::Null)
+        );
+
+        let queue = Queue::new(&data);
+        for entry in queue.list(Folder::Outbox) {
+            let side = entry.path.with_extension("json");
+            let mut w: serde_json::Value = serde_json::from_slice(&std::fs::read(&side).unwrap()).unwrap();
+            w["next_try"] = 0.into();
+            std::fs::write(&side, w.to_string()).unwrap();
+        }
+        let r = sweep(&data, None, Some(&api as &dyn Boards), None, None, &mut |_| {});
+        assert_eq!(r.uploaded, 2);
+        let seen = t.join().unwrap();
+        assert_eq!(seen.len(), 7);
+        assert!(
+            seen[1].starts_with("POST /v1/tt/sessions/n-online/ticks "),
+            "{}",
+            seen[1]
+        );
+        assert!(seen[1].contains(r#""prev":"tk1.cw.bQ""#), "{}", seen[1]);
+        let uploads = &seen[5..];
+        assert!(uploads.iter().all(|u| u.starts_with("POST /v1/tt/laps ")));
+        assert!(
+            uploads[0].contains(r#""timing":["tk1.cw.bQ","tk1.czE.bQ","tk1.czI.bQ","tk1.ZQ.bQ"]"#),
+            "{}",
+            uploads[0]
+        );
+        assert!(!uploads[1].contains(r#""timing""#), "{}", uploads[1]);
         std::fs::remove_dir_all(&root).ok();
     }
 
