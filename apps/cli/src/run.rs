@@ -145,7 +145,10 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
     match crate::ea::store_start(Source::detect(&game)) {
         crate::ea::StoreStart::EaApp => {
             crate::ea::check_recorded(&game)?;
-            if args.apply && swofty_core::build_support::blocked(&game.join(GAME_EXE)).is_none() {
+            let stock = swofty_core::build_support::blocked(&game.join(GAME_EXE)).is_some();
+            let vanilla = store.profile(profile).is_ok_and(|p| p.is_vanilla());
+            crate::ea::check_elevation(store, &game, !stock && !vanilla)?;
+            if args.apply && !stock {
                 crate::ea::dll_setting(store, &g, args.no_start_store)?;
             }
             crate::ea::ensure(store, args.no_start_store)?
@@ -434,7 +437,11 @@ fn wrapper(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Result<Exi
     if let Some(d) = swofty_core::known_problems::outdated_exe(version.as_deref()) {
         say("warning", &format!("{}: {}", d.title, d.text()));
     }
-    if let Some(reason) = swofty_core::compat::elevation_blocker(&g.dir) {
+    // An EA app copy's session was checked before the EA app started: the EA
+    // app, not this process, starts its game.
+    if !args.via_ea
+        && let Some(reason) = swofty_core::compat::elevation_blocker(&g.dir)
+    {
         bail!("{reason}");
     }
     if swofty_core::compat::write_blocker(&g.dir).is_some() {
@@ -2910,6 +2917,54 @@ mod tests {
             "{}",
             report.text()
         );
+    }
+
+    #[test]
+    fn a_game_windows_starts_only_as_administrator_rolls_back_and_frees_the_lock_at_once() {
+        if !game_processes().is_empty() {
+            return;
+        }
+        let m = Modded::new("ea-740");
+        let installer = m.game.dir.join(swofty_core::ea_app::MARKER);
+        std::fs::create_dir_all(installer.parent().unwrap()).unwrap();
+        std::fs::write(
+            &installer,
+            "<contentIDs><contentID>16425845</contentID></contentIDs>",
+        )
+        .unwrap();
+        let log = m.game.dir.join(LOADER_LOG);
+        let mut config = m.store.config();
+        config.launch.ea_launch_command = Some(format!(
+            ": {{url}}; printf '%s\\n' '10:06:01.380 [stub] [offline] CreateProcessW failed, error 740 \
+             (ERROR_ELEVATION_REQUIRED)' >> '{}'",
+            log.display()
+        ));
+        m.store.save_config(&config).unwrap();
+        let session_dir = m.root.join("session");
+        std::fs::create_dir_all(&session_dir).unwrap();
+        let session = Session {
+            store: &m.store,
+            game: &m.game,
+            request_id: "ea-740".into(),
+            _lock: SessionLock::try_acquire(&m.store.root).unwrap().unwrap(),
+        };
+        let since = Instant::now();
+        let result =
+            crate::ea::start(&m.store, &m.game.dir, &[], &session_dir, &[]).map(|_| ExitCode::SUCCESS);
+        let err = finish(session, result).unwrap_err();
+        assert!(since.elapsed() < Duration::from_secs(15), "{:?}", since.elapsed());
+        let refused = swofty_core::compat::game_refused_in(&[], &m.game.dir);
+        assert_eq!(err.to_string(), refused.text());
+        assert_eq!(
+            launch::Failure::read(&m.store.root).map(|f| f.cause),
+            Some(launch::Cause::RunAsAdmin(refused))
+        );
+        assert!(
+            SessionLock::try_acquire(&m.store.root).unwrap().is_some(),
+            "the session lock is still held"
+        );
+        assert!(m.vanilla());
+        assert!(!m.store.root.join(steam_client::STAGE_FILE).exists());
     }
 
     #[test]

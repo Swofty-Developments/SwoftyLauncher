@@ -1,9 +1,11 @@
+use std::ffi::OsStr;
 use std::path::Path;
-use std::process::{Child, Stdio};
+use std::process::{Child, Command, Stdio};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use anyhow::{Result, anyhow, bail};
 use swofty_core::app_control::Block;
+use swofty_core::compat::{self, RunAsAdmin};
 use swofty_core::ea_app::{self, Handoff};
 use swofty_core::ea_diag::{self, Tracker};
 use swofty_core::install::{Game, Source};
@@ -12,6 +14,7 @@ use swofty_core::offline::{self, Slot};
 use swofty_core::process::own_elevation;
 use swofty_core::process::{GameProcess, game_processes, stop_process};
 use swofty_core::recovery::Scope;
+use swofty_core::session::{LOADER_LOG, LogMark};
 use swofty_core::steam_client;
 use swofty_core::store::Store;
 
@@ -32,6 +35,8 @@ const STUB_LOG_WINDOW: i64 = 6 * 3600;
 // written, so the slot is checked this long after staging, before the link.
 const STUB_SETTLE: Duration = Duration::from_secs(2);
 const STUB_POLL: Duration = Duration::from_secs(5);
+const ELEVATION_POLL: Duration = Duration::from_secs(1);
+const STUB_LOG_READ: u64 = 64 << 10;
 const HANDOFF_LOG: &str = "ea_handoff.log";
 
 /// Which store Play brings up first for a copy of the game.
@@ -88,8 +93,43 @@ pub fn check_recorded(game: &Path) -> Result<()> {
     bail!("{}{pick}", m.text())
 }
 
-fn desktop_opener(h: &Handoff) -> Option<(std::process::Command, bool)> {
-    ea_app::desktop_opener(h, swofty_core::compat::elevated())
+fn desktop_opener(h: &Handoff) -> Option<(Command, bool)> {
+    ea_app::desktop_opener(h, compat::elevated())
+}
+
+/// Stop before anything is built when Windows won't start a program the
+/// session needs because it is set to run as administrator: the program that
+/// hands the EA app the launch link, or for a modded session F1 25.
+pub fn check_elevation(store: &Store, game: &Path, modded: bool) -> Result<()> {
+    let program = handoff(store).and_then(|h| h.program());
+    match compat::ea_blocker(game, program.as_deref(), modded) {
+        Some(r) => Err(refused(store, r)),
+        None => Ok(()),
+    }
+}
+
+/// A start Windows refused with error 740: `program` is set to run as
+/// administrator and this process isn't.
+fn refused_elevation(store: &Store, program: &OsStr, e: &std::io::Error) -> Option<anyhow::Error> {
+    compat::needs_elevation(e).then(|| {
+        let program = Path::new(program);
+        say(
+            "ea app",
+            &format!(
+                "Windows won't start {} for this process: it is set to run as administrator (error 740)",
+                program.display()
+            ),
+        );
+        refused(store, compat::refused_start(program))
+    })
+}
+
+/// The launch link never reached the EA app: the command that hands it over
+/// didn't start, so the session ends at once.
+fn handoff_failed(store: &Store, c: &Command, h: &Handoff, e: &std::io::Error) -> anyhow::Error {
+    refused_elevation(store, c.get_program(), e).unwrap_or_else(|| {
+        anyhow!("could not run {h} to hand the launch link to the EA app ({e}); open the EA app and press Play again")
+    })
 }
 
 /// Whether a session puts offline play's file in EA AntiCheat's launcher's
@@ -120,7 +160,9 @@ pub fn ensure(store: &Store, opted_out: bool) -> Result<()> {
                 let stage = StageFile(store.root.join(steam_client::STAGE_FILE));
                 stage.set("Starting the EA app…");
                 let mut child = detach(&mut open).map_err(|e| {
-                    anyhow!("could not start the EA app ({e}); open the EA app and press Play again")
+                    refused_elevation(store, open.get_program(), &e).unwrap_or_else(|| {
+                        anyhow!("could not start the EA app ({e}); open the EA app and press Play again")
+                    })
                 })?;
                 let since = Instant::now();
                 match wait_for_app(&mut child, exit_tells, || since.elapsed() >= APP_START_TIMEOUT) {
@@ -226,7 +268,7 @@ fn wait_for_app(child: &mut Child, exit_tells: bool, timed_out: impl Fn() -> boo
     }
 }
 
-fn detach(c: &mut std::process::Command) -> std::io::Result<Child> {
+fn detach(c: &mut Command) -> std::io::Result<Child> {
     c.stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::null());
     #[cfg(unix)]
     std::os::unix::process::CommandExt::process_group(c, 0);
@@ -314,21 +356,26 @@ pub fn start(store: &Store, game: &Path, args: &[String], session: &Path, before
     c.stdin(Stdio::null()).stdout(log.try_clone()?).stderr(log);
     #[cfg(unix)]
     std::os::unix::process::CommandExt::process_group(&mut c, 0);
+    let mut removed = removed_after_link(store, game);
+    let mut elevation = refused_after_link(store, game);
+    let mut stop = || -> Result<()> {
+        removed()?;
+        elevation()
+    };
     let mut handoff = match c.spawn() {
         Ok(child) => Some(child),
         Err(e) => {
             say("ea app", &format!("could not run {h}: {e}"));
-            None
+            return Err(handoff_failed(store, &c, &h, &e));
         }
     };
-    let mut removed = removed_after_link(store, game);
     let pid = match wait_for_game(
         game,
         before,
         HANDOFF_TIMEOUT,
         &mut handoff,
         Some(&mut tracker),
-        &mut removed,
+        &mut stop,
     )? {
         Some(pid) => pid,
         None => {
@@ -358,7 +405,7 @@ pub fn start(store: &Store, game: &Path, args: &[String], session: &Path, before
                 PRESS_PLAY_TIMEOUT,
                 &mut None,
                 Some(&mut tracker),
-                &mut removed,
+                &mut stop,
             )?
             .ok_or_else(|| {
                 anyhow!(
@@ -420,6 +467,52 @@ fn removed_after_link<'a>(store: &'a Store, game: &'a Path) -> impl FnMut() -> R
     }
 }
 
+/// After the launch link: the session launcher logs it when Windows would
+/// start F1 25 only as administrator, which the EA app, running without
+/// administrator rights, never can. That ends the wait at once. Only lines
+/// written after the link count.
+fn refused_after_link<'a>(store: &'a Store, game: &'a Path) -> impl FnMut() -> Result<()> + 'a {
+    let log = game.join(LOADER_LOG);
+    let before = LogMark::read(&log);
+    let from = std::fs::metadata(&log).map_or(0, |m| m.len());
+    let mut next = Instant::now();
+    move || {
+        if Instant::now() < next {
+            return Ok(());
+        }
+        next = Instant::now() + ELEVATION_POLL;
+        if !compat::stub_needs_elevation(&written_after(&log, before.as_ref(), from)) {
+            return Ok(());
+        }
+        say(
+            "ea app",
+            "offline play's session launcher could not start F1 25: Windows starts it only as administrator \
+             (error 740)",
+        );
+        Err(refused(store, compat::game_refused(game)))
+    }
+}
+
+/// What `log` holds past `from`, its length when `before` was read; all of
+/// it when it was started again since.
+fn written_after(log: &Path, before: Option<&LogMark>, from: u64) -> String {
+    use std::io::{Read, Seek, SeekFrom};
+    let Ok(mut f) = std::fs::File::open(log) else {
+        return String::new();
+    };
+    let len = f.metadata().map_or(0, |m| m.len());
+    let start = if len < from || LogMark::replaced(log, before) {
+        0
+    } else {
+        from
+    };
+    let mut data = Vec::new();
+    if f.seek(SeekFrom::Start(start)).is_ok() {
+        f.take(STUB_LOG_READ).read_to_end(&mut data).ok();
+    }
+    String::from_utf8_lossy(&data).into_owned()
+}
+
 fn staged_secs(store: &Store) -> Option<i64> {
     let at = offline::staged_at(&offline::journal_path(&store.root))?;
     Some(at.duration_since(UNIX_EPOCH).ok()?.as_secs() as i64)
@@ -471,12 +564,19 @@ fn stub_block(store: &Store, game: &Path) -> Option<Block> {
 /// Record an antivirus block of offline play's file for the launcher and
 /// Send Logs, and end the session with its text.
 fn antivirus(store: &Store, block: Block) -> anyhow::Error {
-    let failure = record(store, block);
+    let failure = record(store, launch::Cause::Blocked(block));
     anyhow!("{}", failure.text())
 }
 
-fn record(store: &Store, block: Block) -> launch::Failure {
-    let failure = launch::Failure::new(launch::Cause::Blocked(block));
+/// Record programs Windows won't start because they are set to run as
+/// administrator, and end the session with what to untick.
+fn refused(store: &Store, r: RunAsAdmin) -> anyhow::Error {
+    let failure = record(store, launch::Cause::RunAsAdmin(r));
+    anyhow!("{}", failure.text())
+}
+
+fn record(store: &Store, cause: launch::Cause) -> launch::Failure {
+    let failure = launch::Failure::new(cause);
     say("warning", &format!("{}: {}", failure.title(), failure.text()));
     if let Err(e) = failure.write(&store.root) {
         say("info", &format!("could not record it for the launcher: {e}"));
@@ -488,7 +588,7 @@ pub fn note_stub_blocked(store: &Store, game: &Path) -> bool {
     let Some(block) = stub_block(store, game) else {
         return false;
     };
-    record(store, block);
+    record(store, launch::Cause::Blocked(block));
     true
 }
 
@@ -540,6 +640,7 @@ pub fn launch_installed(store: &Store, g: &Game, vr: bool, opted_out: bool) -> R
         let lock = crate::recover::lock(store, &out)?;
         crate::recover::stale(store, &lock, g, Scope::All, &out)?;
     }
+    check_elevation(store, &g.dir, false)?;
     ensure(store, opted_out)?;
     let args: Vec<String> = if vr { vec!["-vr".into()] } else { Vec::new() };
     let url = ea_app::install_url(&g.dir, &args).map_err(|e| anyhow!(e))?;
@@ -561,7 +662,7 @@ pub fn launch_installed(store: &Store, g: &Game, vr: bool, opted_out: bool) -> R
     c.stdin(Stdio::null()).stdout(log.try_clone()?).stderr(log);
     #[cfg(unix)]
     std::os::unix::process::CommandExt::process_group(&mut c, 0);
-    let mut child = Some(c.spawn().map_err(|e| anyhow!("could not run {h}: {e}"))?);
+    let mut child = Some(c.spawn().map_err(|e| handoff_failed(store, &c, &h, &e))?);
     let pid = wait_for_game(
         &g.dir,
         &[],
@@ -834,6 +935,120 @@ mod tests {
         check_stub(&store, &game).unwrap();
         assert!(since.elapsed() < Duration::from_secs(1));
         assert_eq!(launch::Failure::read(&store.root), None);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_handoff_windows_refuses_with_740_names_what_to_untick() {
+        let root = std::env::temp_dir().join(format!("swofty-ea-740-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let store = Store::new(root.join("data"));
+        std::fs::create_dir_all(&store.root).unwrap();
+        let exe = r"C:\Program Files\Electronic Arts\EA Desktop\EA Desktop\EALauncher.exe";
+        let h = Handoff::Program(vec![exe.into(), "%1".into()]);
+        let c = h.command("origin2://game/launch?offerIds=16425845");
+        let err = handoff_failed(&store, &c, &h, &std::io::Error::from_raw_os_error(740)).to_string();
+        assert!(
+            err.starts_with("EALauncher.exe is set to run as administrator, so Windows won't start it"),
+            "{err}"
+        );
+        assert!(
+            err.contains(&format!("Right-click {exe}, open Properties > Compatibility")),
+            "{err}"
+        );
+        assert!(err.contains("\"Change settings for all users\""), "{err}");
+        assert!(!err.contains("Swofty Launcher as administrator"), "{err}");
+        match launch::Failure::read(&store.root).map(|f| f.cause) {
+            Some(launch::Cause::RunAsAdmin(r)) => {
+                assert_eq!(r.exes.first(), Some(&std::path::PathBuf::from(exe)));
+                assert!(!r.game);
+            }
+            other => panic!("{other:?}"),
+        }
+        launch::Failure::clear(&store.root).unwrap();
+        let err = handoff_failed(&store, &c, &h, &std::io::Error::from_raw_os_error(2)).to_string();
+        assert!(
+            err.starts_with(&format!("could not run {h} to hand the launch link")),
+            "{err}"
+        );
+        assert_eq!(launch::Failure::read(&store.root), None);
+        assert!(refused_elevation(&store, c.get_program(), &std::io::Error::other("x")).is_none());
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    const REFUSED_LINE: &str = "10:06:01.380 [stub] [offline] CreateProcessW failed, error 740 \
+                                (ERROR_ELEVATION_REQUIRED): Windows will only start F1_25.exe as administrator";
+
+    #[test]
+    fn only_the_session_launchers_lines_since_the_link_count() {
+        let root = std::env::temp_dir().join(format!("swofty-ea-stub-log-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        std::fs::create_dir_all(&root).unwrap();
+        let log = root.join("loader.log");
+        let since = |log: &Path| (LogMark::read(log), std::fs::metadata(log).map_or(0, |m| m.len()));
+        assert_eq!(written_after(&log, None, 0), "");
+        std::fs::write(&log, format!("{REFUSED_LINE}\n")).unwrap();
+        let (mark, from) = since(&log);
+        assert!(!compat::stub_needs_elevation(&written_after(
+            &log,
+            mark.as_ref(),
+            from
+        )));
+        std::fs::OpenOptions::new()
+            .append(true)
+            .open(&log)
+            .and_then(|mut f| std::io::Write::write_all(&mut f, format!("{REFUSED_LINE}\n").as_bytes()))
+            .unwrap();
+        assert!(compat::stub_needs_elevation(&written_after(
+            &log,
+            mark.as_ref(),
+            from
+        )));
+        std::fs::write(
+            &log,
+            "10:07:00.000 [stub] [offline] session launcher invoked, args: <none>\n",
+        )
+        .unwrap();
+        let (mark, from) = since(&log);
+        std::fs::write(&log, format!("{REFUSED_LINE}\n")).unwrap();
+        assert!(
+            compat::stub_needs_elevation(&written_after(&log, mark.as_ref(), from)),
+            "a log started again counts from its start"
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_session_launcher_windows_refuses_with_740_ends_the_wait_at_once() {
+        let (root, game, store, _) = ea_copy("stub-740");
+        let log = game.join(LOADER_LOG);
+        std::fs::create_dir_all(log.parent().unwrap()).unwrap();
+        std::fs::write(&log, format!("{REFUSED_LINE} (an earlier session)\n")).unwrap();
+        let mut config = store.config();
+        config.launch.ea_launch_command = Some(format!(
+            ": {{url}}; sleep 0.3; printf '%s\\n' '{REFUSED_LINE}' >> '{}'",
+            log.display()
+        ));
+        store.save_config(&config).unwrap();
+        let session = root.join("session");
+        std::fs::create_dir_all(&session).unwrap();
+        let before: Vec<u32> = game_processes().iter().map(|g| g.pid).collect();
+        let since = Instant::now();
+        let err = start(&store, &game, &[], &session, &before).err().unwrap();
+        assert!(since.elapsed() < Duration::from_secs(10), "{:?}", since.elapsed());
+        let refused = compat::game_refused_in(&[], &game);
+        assert_eq!(err.to_string(), refused.text());
+        assert!(
+            err.to_string()
+                .contains("running Swofty Launcher as administrator doesn't help"),
+            "{err}"
+        );
+        assert_eq!(
+            launch::Failure::read(&store.root).map(|f| f.cause),
+            Some(launch::Cause::RunAsAdmin(refused))
+        );
+        assert!(!store.root.join(steam_client::STAGE_FILE).exists());
         std::fs::remove_dir_all(&root).ok();
     }
 
