@@ -2623,7 +2623,6 @@
   "func:Ne_Map_DestroySubtree": "V8055",
   "func:Ne_Map_DestroySubtree_Decals": "V8046",
   "func:Ne_Map_DestroySubtree_RefCounted": "V9575",
-  "func:Ne_Map_FindOrDefaultWithErrorContext": "V7824",
   "func:Ne_Map_FindOrInsertSlot_StringKey": "V9947",
   "func:Ne_Map_InsertUnique_StringKey": "V9573",
   "func:Ne_Map_LowerBoundPairIntInt": "V7585",
