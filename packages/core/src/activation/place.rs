@@ -303,6 +303,7 @@ fn alias_world(
     graph: &Resource,
     eaid: String,
     name: String,
+    packer: &Packer,
 ) -> Result<[Resource; 2]> {
     let mut graph = file.load(graph)?;
     graph.name = format!("{eaid}?event_graph");
@@ -319,7 +320,7 @@ fn alias_world(
             _ => return Err(Error::Map(format!("{}: world has no {key} string", world.name))),
         }
     }
-    set_data(&mut world, 0, &pkg.to_bytes()?)?;
+    set_data(packer, &mut world, 0, &pkg.to_bytes()?)?;
     world.name = eaid;
     Ok([world, graph])
 }
@@ -340,7 +341,13 @@ fn rename_strings(node: &mut Node, from: &str, to: &str) -> usize {
     }
 }
 
-fn ai_stand_in(file: &ErpFile, res: &Resource, code: &str, team: &AiTeam) -> Result<Resource> {
+fn ai_stand_in(
+    file: &ErpFile,
+    res: &Resource,
+    code: &str,
+    team: &AiTeam,
+    packer: &Packer,
+) -> Result<Resource> {
     let (src, dst) = (
         ai_dir(code, &team.package, &team.from),
         ai_dir(code, &team.package, &team.team),
@@ -353,7 +360,7 @@ fn ai_stand_in(file: &ErpFile, res: &Resource, code: &str, team: &AiTeam) -> Res
     let mut res = file.load(res)?;
     if let Some(data) = renamed_pkg(&res, team) {
         let mut copy = res.clone();
-        if set_data(&mut copy, 0, &data).is_ok() {
+        if set_data(packer, &mut copy, 0, &data).is_ok() {
             res = copy;
         }
     }
@@ -373,8 +380,8 @@ fn renamed_pkg(res: &Resource, team: &AiTeam) -> Option<Vec<u8>> {
     pkg.to_bytes().ok()
 }
 
-fn set_data(res: &mut Resource, index: usize, data: &[u8]) -> Result<()> {
-    crate::erp::pack::set_fragment_at(&Packer::default(), res, index, data, ZSTD_LEVEL)
+fn set_data(packer: &Packer, res: &mut Resource, index: usize, data: &[u8]) -> Result<()> {
+    crate::erp::pack::set_fragment_at(packer, res, index, data, ZSTD_LEVEL)
 }
 
 pub fn shipped_name(path: &str) -> String {
@@ -388,6 +395,7 @@ fn repoint_mips(
     res: &Resource,
     code: &str,
     shipped: &BTreeSet<String>,
+    packer: &Packer,
 ) -> Result<Option<(Resource, String)>> {
     if res.kind() != "GfxSurfaceRes" || res.fragments.len() < 3 {
         return Ok(None);
@@ -427,7 +435,7 @@ fn repoint_mips(
     out.push(text.len() as u8);
     out.extend_from_slice(&text);
     out.extend_from_slice(&data[1 + len..]);
-    set_data(&mut loaded, 2, &out)?;
+    set_data(packer, &mut loaded, 2, &out)?;
     Ok(Some((loaded, name)))
 }
 
@@ -464,7 +472,7 @@ fn stamp(input: &PlaceInput) -> Result<String> {
     Ok(crate::game_folder::baseline::hex(&sha2::Digest::finalize(h))[..16].to_owned())
 }
 
-pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
+pub fn place(input: &PlaceInput, cache: &Path, packer: &Packer) -> Result<Placement> {
     let code = &input.pkg.track_code;
     let file = ErpFile::open(&input.dir.join(&input.pkg.erp))?;
     let common = world_eaid(code, "common");
@@ -478,7 +486,7 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
     let fix = format!(
         "Turn {who} off in this profile, and set any race weekend that uses it back to another track."
     );
-    let (fixed, broken) = crate::erp::repair_stats_in(&file)?;
+    let (fixed, broken) = crate::erp::repair_stats_in(&file, packer)?;
     if !broken.is_empty() {
         return Err(Error::Other(crate::erp::unrepairable_message(who, &broken, &fix)));
     }
@@ -529,6 +537,7 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
             graph,
             world_eaid(code, v),
             format!("{code}_{v}"),
+            packer,
         )?);
         placement
             .aliases
@@ -554,7 +563,7 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
             continue;
         }
         for r in from {
-            owned.push(ai_stand_in(&file, r, code, team)?);
+            owned.push(ai_stand_in(&file, r, code, team, packer)?);
         }
         placement.ai_aliases.insert(
             format!("{}/{}", team.package, team.team),
@@ -581,7 +590,7 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
                 let (Some(world), Some(graph)) = (find(&src), find(&format!("{src}?event_graph"))) else {
                     continue;
                 };
-                owned.extend(alias_world(&file, world, graph, eri, name)?);
+                owned.extend(alias_world(&file, world, graph, eri, name, packer)?);
                 placement.aliases.insert(w.label(code), format!("{code}_{from}"));
             }
             layer_groups.push(w.group(code));
@@ -591,7 +600,7 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
     let mut used = BTreeSet::new();
     if !names.is_empty() {
         for (i, r) in file.erp.resources.iter().enumerate() {
-            if let Some((res, name)) = repoint_mips(&file, r, code, &names)? {
+            if let Some((res, name)) = repoint_mips(&file, r, code, &names, packer)? {
                 repointed.insert(i, res);
                 used.insert(name);
             }
@@ -616,11 +625,11 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
                 }
             }
             Spacing::Fixed { doc, routes } => {
-                set_data(&mut res, 0, &doc.to_bytes())?;
+                set_data(packer, &mut res, 0, &doc.to_bytes())?;
                 if res.has_stats() {
                     let stats = res.fragments[1].data()?;
                     let version = u32::from_le_bytes(stats[4..8].try_into().expect("4 bytes"));
-                    set_data(&mut res, 1, &doc.string_stats(version))?;
+                    set_data(packer, &mut res, 1, &doc.string_stats(version))?;
                 }
                 placement.spaced.extend(routes);
                 repointed.insert(i, res);
@@ -630,7 +639,7 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
             }
         }
     }
-    match extend_grid(&file, code, input.cars) {
+    match extend_grid(&file, code, input.cars, packer) {
         Ok(Some((i, res, ext))) => {
             repointed.insert(i, res);
             placement.grid = Some(ext);
@@ -739,6 +748,7 @@ pub fn extend_grid(
     file: &ErpFile,
     code: &str,
     cars: u32,
+    packer: &Packer,
 ) -> Result<Option<(usize, Resource, grid::Extension)>> {
     let present = variants(file, code);
     let Some(variant) = grid_variants().find(|v| present.contains(v)) else {
@@ -766,7 +776,7 @@ pub fn extend_grid(
     let mut pkg = roots.swap_remove(ext.layer);
     pkg.root = layers.swap_remove(ext.layer);
     let (i, mut res) = found.swap_remove(ext.layer);
-    set_data(&mut res, 0, &pkg.to_bytes()?)?;
+    set_data(packer, &mut res, 0, &pkg.to_bytes()?)?;
     Ok(Some((i, res, ext)))
 }
 
@@ -874,7 +884,7 @@ mod tests {
         };
         let edited = line("a longer racing line");
         std::fs::write(dir.join(&pkg.erp), archive(edited.to_bytes())).unwrap();
-        let placement = place(&input, &dir.join("cache")).unwrap();
+        let placement = place(&input, &dir.join("cache"), &Packer::default()).unwrap();
         assert_eq!(placement.repaired, [spline]);
         assert!(placement.dir.to_string_lossy().ends_with("-stats"));
         let placed = ErpFile::open(&placement.dir.join(&placement.archive)).unwrap();
@@ -885,7 +895,7 @@ mod tests {
         let mut cut = line("default").to_bytes();
         cut.truncate(cut.len() - 3);
         std::fs::write(dir.join(&pkg.erp), archive(cut)).unwrap();
-        let Err(e) = place(&input, &dir.join("cache")) else {
+        let Err(e) = place(&input, &dir.join("cache"), &Packer::default()) else {
             panic!("the package should be refused");
         };
         assert_eq!(
@@ -942,7 +952,7 @@ mod tests {
             worlds: &[],
             ai_teams: &[],
         };
-        let placement = place(&input, &dir.join("cache")).unwrap();
+        let placement = place(&input, &dir.join("cache"), &Packer::default()).unwrap();
         assert_eq!(placement.spaced, ["pit"]);
         assert!(placement.repaired.is_empty());
         let placed = ErpFile::open(&placement.dir.join(&placement.archive)).unwrap();
@@ -959,6 +969,77 @@ mod tests {
             ailine::fixed_note(pkg.display_name(), &placement.spaced),
             "fixed the AI pit lane of Test Ring so F1 25 doesn't crash when an AI car drives it"
         );
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn a_second_placement_takes_its_frames_from_the_cache() {
+        use crate::erp::pack::frame_cache;
+        use swofty_formats::erp::{Erp, Fragment, HEADER_LEN, MAGIC};
+        let dir = std::env::temp_dir().join(format!("swofty-place-frames-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(&dir).unwrap();
+        let pkg = TrackPackage::parse(crate::content::track_package::tests::OKAYAMA_LIKE.as_bytes()).unwrap();
+        let spline = "eaid://environment_package/tracks/testring/ai/testring_ai_track.aispline";
+        let mut line = ailine::tests::aispline(|_| (-4.1, 3.0), 7);
+        line.root.children.push(swofty_formats::bxml::Element {
+            kind: swofty_formats::bxml::Kind::Element,
+            pad: 0,
+            name: b"padding".to_vec(),
+            attrs: vec![(
+                b"value".to_vec(),
+                (0..20u32 << 10).map(|i| b'0' + (i % 7) as u8).collect(),
+            )],
+            children: Vec::new(),
+            end_pad: 0,
+        });
+        let line = line.to_bytes();
+        assert!(
+            line.len() > 16 << 10,
+            "the spline is {} bytes, under the cached size",
+            line.len()
+        );
+        let mut header = [0u8; HEADER_LEN];
+        header[..4].copy_from_slice(MAGIC);
+        header[4..8].copy_from_slice(&3u32.to_le_bytes());
+        let world = Resource {
+            name: world_eaid("testring", "common"),
+            kind: swofty_formats::erp::kind("WEP").unwrap(),
+            unk: vec![0; 4],
+            fragments: vec![Fragment::new(*b"temp", 1, 0x10, STORED, vec![0])],
+            hash: [0; 16],
+        };
+        let bytes = Erp {
+            header,
+            version: 3,
+            resources: vec![world, frame_cache::zstd_resource(spline, "AISplineData", &line)],
+        }
+        .to_bytes()
+        .unwrap();
+        std::fs::write(dir.join(&pkg.erp), bytes).unwrap();
+        let input = PlaceInput {
+            pkg: &pkg,
+            dir: &dir,
+            game: &dir,
+            slot: None,
+            cars: 22,
+            worlds: &[],
+            ai_teams: &[],
+        };
+        let packer = Packer::cached(dir.join("zstd"));
+        let spline_of = |placement: &Placement| {
+            let placed = std::fs::read(placement.dir.join(&placement.archive)).unwrap();
+            let file = Erp::parse(&placed).unwrap();
+            let res = file.resources.into_iter().find(|r| r.name == spline).unwrap();
+            (frame_cache::marked_in(&placed), res.fragments[0].data().unwrap())
+        };
+        let first = place(&input, &dir.join("first"), &packer).unwrap();
+        assert_eq!(first.spaced, ["pit"]);
+        let (marked, placed) = spline_of(&first);
+        assert_eq!(marked, 0);
+        assert_eq!(frame_cache::mark(&dir.join("zstd")), 1);
+        let second = place(&input, &dir.join("second"), &packer).unwrap();
+        assert_eq!(spline_of(&second), (1, placed));
         std::fs::remove_dir_all(&dir).ok();
     }
 
@@ -1067,7 +1148,7 @@ mod tests {
             worlds: &worlds,
             ai_teams: &[],
         };
-        let placement = place(&input, &dir.join("cache")).unwrap();
+        let placement = place(&input, &dir.join("cache"), &Packer::default()).unwrap();
         let placed = ErpFile::open(&placement.dir.join(&placement.archive)).unwrap();
         (placement, placed)
     }
@@ -1148,7 +1229,7 @@ mod tests {
             worlds: &[],
             ai_teams: &[lotus_and_cater()],
         };
-        let placement = place(&input, &dir.join("cache")).unwrap();
+        let placement = place(&input, &dir.join("cache"), &Packer::default()).unwrap();
         let placed = ErpFile::open(&placement.dir.join(&placement.archive)).unwrap();
         (placement, placed)
     }

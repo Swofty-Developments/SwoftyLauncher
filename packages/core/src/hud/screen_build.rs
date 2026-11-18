@@ -11,6 +11,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use swofty_formats::emb;
+use swofty_formats::erp::Packer;
 use swofty_formats::pkg::{Node, Pkg, Val};
 
 use super::dials::{self, DialFacts};
@@ -976,13 +977,13 @@ pub const SCREEN_SCENE_ERPS: [&str; 3] = [
 ];
 
 /// The archives of [`Out`] that are not the spectator template's.
-pub fn archives(stock: &dyn Stock, out: &Out) -> Result<Vec<super::Built>> {
+pub fn archives(stock: &dyn Stock, out: &Out, packer: &Packer) -> Result<Vec<super::Built>> {
     let mut built = Vec::new();
     if !out.scene.is_empty() {
         built.push(super::Built {
             file: "hud_screen_scene.erp".into(),
             erps: SCREEN_SCENE_ERPS.iter().map(|s| (*s).to_owned()).collect(),
-            bytes: super::archive(stock, out.scene.clone())?,
+            bytes: super::archive(stock, out.scene.clone(), packer)?,
         });
     }
     if !out.replay_template.is_empty() {
@@ -990,12 +991,12 @@ pub fn archives(stock: &dyn Stock, out: &Out) -> Result<Vec<super::Built>> {
         built.push(super::Built {
             file: f.template_file.clone(),
             erps: f.erps.template.clone(),
-            bytes: super::archive(stock, out.replay_template.clone())?,
+            bytes: super::archive(stock, out.replay_template.clone(), packer)?,
         });
         built.push(super::Built {
             file: f.scene_file.clone(),
             erps: f.erps.scene.clone(),
-            bytes: super::archive(stock, out.replay_scene.clone())?,
+            bytes: super::archive(stock, out.replay_scene.clone(), packer)?,
         });
     }
     Ok(built)
