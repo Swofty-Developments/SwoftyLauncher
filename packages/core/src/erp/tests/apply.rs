@@ -65,13 +65,13 @@ fn patches_layers_and_writes_only_changed_archives() {
         .set_fragment(0, &patched)
         .unwrap();
     assert_eq!(
-        whole.to_bytes(),
+        whole.to_bytes().unwrap(),
         std::fs::read(out.join("tracks/t/wep/t_world.erp")).unwrap()
     );
     let untouched = Erp::parse(&world).unwrap();
     assert_eq!(
-        written.find("eaid://t-b.layer").unwrap().fragments[0].raw,
-        untouched.find("eaid://t-b.layer").unwrap().fragments[0].raw
+        written.find("eaid://t-b.layer").unwrap().fragments[0].raw(),
+        untouched.find("eaid://t-b.layer").unwrap().fragments[0].raw()
     );
     let mut bad = ErpBuild::new(&original);
     let text = erp_ops(
@@ -149,8 +149,8 @@ fn copies_resources_from_game_and_mod_archives() {
     let source = Erp::parse(&src).unwrap();
     let copied = written.find("eaid://car-model.layer").unwrap();
     assert_eq!(
-        copied.fragments[0].raw,
-        source.find("eaid://car-model.layer").unwrap().fragments[0].raw
+        copied.fragments[0].raw(),
+        source.find("eaid://car-model.layer").unwrap().fragments[0].raw()
     );
     assert_eq!(copied.hash, copied.content_hash().unwrap());
     let wep = written.find("eaid://car_alt.wep").unwrap();
@@ -204,8 +204,8 @@ fn copies_resources_from_game_and_mod_archives() {
     let names: Vec<&str> = written.resources.iter().map(|r| r.name.as_str()).collect();
     assert_eq!(names, ["eaid://slot-a.layer", "eaid://car-model.layer"]);
     assert_eq!(
-        written.resources[0].fragments[0].raw,
-        source.find("eaid://car.wep").unwrap().fragments[0].raw
+        written.resources[0].fragments[0].raw(),
+        source.find("eaid://car.wep").unwrap().fragments[0].raw()
     );
     std::fs::remove_dir_all(&root).ok();
 }
@@ -264,15 +264,15 @@ fn replaces_adds_and_removes_resources_with_the_same_bytes_on_both_routes() {
     expected
         .resources
         .push(Resource::like(z, &like, &[b"HEADER-Z".to_vec(), b"NEW PIXELS".to_vec()]).unwrap());
-    assert_eq!(built, expected.to_bytes());
+    assert_eq!(built, expected.to_bytes().unwrap());
 
     let written = Erp::parse(&built).unwrap();
     let names: Vec<&str> = written.resources.iter().map(|r| r.name.as_str()).collect();
     assert_eq!(names, [x, "eaid://ui_package/l.layer", z]);
     let before = Erp::parse(&stock).unwrap();
     let (old, new) = (before.find(x).unwrap(), written.find(x).unwrap());
-    assert_eq!(new.fragments[0].raw, old.fragments[0].raw);
-    assert_eq!(new.fragments[1].raw, b"PAINTED!");
+    assert_eq!(new.fragments[0].raw(), old.fragments[0].raw());
+    assert_eq!(new.fragments[1].raw(), Some(&b"PAINTED!"[..]));
     assert_eq!(new.fragments[1].compression, STORED);
     assert_eq!(new.hash, new.content_hash().unwrap());
     assert_ne!(new.hash, old.hash);
@@ -315,8 +315,8 @@ fn replaces_adds_and_removes_resources_with_the_same_bytes_on_both_routes() {
         assert_eq!((r.kind, &r.unk, r.hash), (b.kind, &b.unk, b.hash));
         for (f, g) in r.fragments.iter().zip(&b.fragments) {
             assert_eq!(
-                (f.name, f.size, f.flags, f.compression, f.packed, &f.raw),
-                (g.name, g.size, g.flags, g.compression, g.packed, &g.raw)
+                (f.name, f.size, f.flags, f.compression, f.packed(), f.raw()),
+                (g.name, g.size, g.flags, g.compression, g.packed(), g.raw())
             );
         }
     }

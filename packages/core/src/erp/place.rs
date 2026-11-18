@@ -19,6 +19,7 @@ impl ErpBuild<'_> {
     }
 
     pub(super) fn add(&mut self, erp: &str, name: &str, kind: &str, data: &[Vec<u8>]) -> Result<()> {
+        let packer = self.packer.clone();
         let wanted = erp::kind(kind).map_err(|e| fail(format!("add-resource {name}: {e}")))?;
         let target = self.erp(erp)?;
         let existing = target.position(name).map_err(|e| fail(format!("{erp}: {e}")))?;
@@ -41,7 +42,7 @@ impl ErpBuild<'_> {
                     data.len()
                 ))
             })?;
-        let res = pack::like(name, like, data).map_err(|e| fail(format!("{erp}: {e}")))?;
+        let res = pack::like(&packer, name, like, data).map_err(|e| fail(format!("{erp}: {e}")))?;
         match existing {
             Some(i) => target.slots[i] = Slot::Owned(res),
             None => target.slots.push(Slot::Owned(res)),
@@ -139,6 +140,7 @@ impl ErpBuild<'_> {
         fragment: usize,
         edit: impl FnOnce(&mut Node) -> Result<usize>,
     ) -> Result<()> {
+        let packer = self.packer.clone();
         let e = self.erp(erp)?;
         let i = e.find(erp, resource)?;
         let res = e.owned(i)?;
@@ -149,7 +151,7 @@ impl ErpBuild<'_> {
             .data()?;
         let mut pkg = Pkg::parse(&body).map_err(|err| fail(format!("{resource}: {err}")))?;
         edit(&mut pkg.root).map_err(|err| fail(format!("{resource}: {err}")))?;
-        pack::set_fragment(res, fragment, &pkg.to_bytes()?)?;
+        pack::set_fragment(&packer, res, fragment, &pkg.to_bytes()?)?;
         Ok(())
     }
 }

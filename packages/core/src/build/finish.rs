@@ -23,6 +23,7 @@ impl Pipeline<'_, '_> {
             mut built,
             session,
             mut caches,
+            ..
         } = self;
         let (store, game, profile) = (run.store, run.game, run.profile);
         let fitted = &inputs.tracks;

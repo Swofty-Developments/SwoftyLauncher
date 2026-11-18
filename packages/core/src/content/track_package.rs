@@ -493,15 +493,7 @@ pub(crate) mod tests {
             r#"{ "resources": { "flag_rectangle": "eaid://ui/flag.tif" } }"#,
         )
         .unwrap();
-        let fragment = |raw: Vec<u8>| Fragment {
-            name: *b"temp",
-            offset: 0,
-            size: raw.len() as u64,
-            flags: 0,
-            compression: 0,
-            packed: raw.len() as u64,
-            raw,
-        };
+        let fragment = |raw: Vec<u8>| Fragment::new(*b"temp", raw.len() as u64, 0, 0, raw);
         let mut head = vec![0; 40];
         for (at, v) in [(8, 0x46u32), (12, 4), (16, 4)] {
             head[at..at + 4].copy_from_slice(&v.to_le_bytes());
@@ -522,7 +514,7 @@ pub(crate) mod tests {
                 hash: [0; 16],
             }],
         };
-        std::fs::write(dir.join(&pkg.erp), erp.to_bytes()).unwrap();
+        std::fs::write(dir.join(&pkg.erp), erp.to_bytes().unwrap()).unwrap();
         let art = art(&dir, &pkg);
         let flag = std::fs::read(art.flag.unwrap()).unwrap();
         assert!(flag.starts_with(b"\x89PNG"));

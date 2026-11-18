@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::PathBuf;
 
-use swofty_formats::erp::{ErpFile, Resource};
+use swofty_formats::erp::{ErpFile, Packer, Resource};
 use swofty_formats::pkg::{Node, Pkg};
 
 use crate::manifest::relative_inside;
@@ -63,6 +63,7 @@ pub struct ErpBuild<'a> {
     whole: HashMap<(String, String), Vec<(String, Pkg)>>,
     ui_base: HashMap<(String, String), Option<Pkg>>,
     ui_merges: Vec<UiMerge>,
+    packer: Packer,
 }
 
 fn fail(msg: impl Into<String>) -> Error {
@@ -100,7 +101,15 @@ impl<'a> ErpBuild<'a> {
             whole: HashMap::new(),
             ui_base: HashMap::new(),
             ui_merges: Vec::new(),
+            packer: Packer::default(),
         }
+    }
+
+    /// The packer every fragment the build changes is compressed by; a deferring one leaves them for the
+    /// archive's write.
+    pub fn with_packer(mut self, packer: Packer) -> Self {
+        self.packer = packer;
+        self
     }
 
     /// The game's own files, which two addons' whole replacements of a UI resource are merged against.
