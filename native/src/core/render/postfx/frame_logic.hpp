@@ -4,7 +4,7 @@
 #include <string_view>
 #include <utility>
 
-namespace postfx {
+namespace render::postfx {
 
 inline constexpr uint64_t PRESENT_GONE_MS = 1000;
 

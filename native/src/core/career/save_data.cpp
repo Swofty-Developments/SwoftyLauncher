@@ -12,15 +12,15 @@
 #include "core/career/save_splice_logic.hpp"
 #include "core/runtime/layout.hpp"
 
-namespace save_data {
+namespace career::save_data {
 
 namespace {
 
 namespace mem = swofty::mem;
 namespace g = swofty::game;
-namespace sp = runtime::save_splice;
+namespace sp = career::save_splice;
 namespace layout = runtime::layout;
-namespace cs = runtime::career_saves;
+namespace cs = career::saves;
 
 using WriteBag_t = int (*)(void *codec, void *bag);
 using Lookup_t = const char *(*)(void *table, uint64_t hash);
@@ -152,7 +152,7 @@ std::string name_of(uint64_t hash)
     return s && mem::c_string(s, out, sp::NAME_LIMIT + 1) ? out : std::string();
 }
 
-bool read_manager(uintptr_t base, std::vector<runtime::career_saves::SlotRead> &out)
+bool read_manager(uintptr_t base, std::vector<career::saves::SlotRead> &out)
 {
     uintptr_t begin = 0, end = 0;
     if (!(mem::read(base + SLOTS_BEGIN, begin) && mem::read(base + SLOTS_END, end) && begin <= end &&

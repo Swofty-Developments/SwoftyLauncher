@@ -15,7 +15,7 @@
 // The Driver Career entrant rows as career_ops.cpp's operations read and write them: the bindings they resolve, the
 // flow thread they run on, one write per row through Career_Set_EntrantData_Thunk, the contracts behind the seats and
 // the one finalise of a batch (entrants.cpp).
-namespace career_ops::live {
+namespace career::ops::live {
 
 namespace g = swofty::game;
 namespace mem = swofty::mem;

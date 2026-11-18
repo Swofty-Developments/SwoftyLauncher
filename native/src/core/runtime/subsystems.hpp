@@ -11,7 +11,7 @@ namespace runtime {
 enum class Start { attach, attach_code, commit_code, ready };
 
 // The ready subsystems from the one marked open to the one marked close share one D3D12 probe device
-// (d3d12hooks::ProbeScope): the first of them that probes makes it and it is released right after the last.
+// (render::d3d12::ProbeScope): the first of them that probes makes it and it is released right after the last.
 enum class Probe { none, open, close };
 
 struct Subsystem {

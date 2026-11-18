@@ -48,9 +48,6 @@ const runtime::Sig S_NAME{"Game_PresenceNameCache_Lookup",
                           "8B 49 08 4C 8D 76 30 89 CD EB 31 48 89 D9",
                           0x816b10};
 
-namespace pn = frontend::player_name;
-namespace sl = runtime::session_life;
-
 // The launcher account is read from home_menu.json on a worker thread (the main menu's own state is not loaded when the game
 // starts through the chain entry); the file is read again only when its write time changes, and not during a session of
 // another mode. The lookup hook never reads it.
@@ -71,11 +68,11 @@ void LauncherAccount::watch()
     FILETIME stamp{};
     bool read_once = false, had = false;
     for (;;) {
-        if (runtime::session_kind() != sl::OTHER) {
+        if (runtime::session_kind() != runtime::session_life::OTHER) {
             WIN32_FILE_ATTRIBUTE_DATA d{};
             bool have = GetFileAttributesExW(path.c_str(), GetFileExInfoStandard, &d) != 0;
             bool same = have && had && CompareFileTime(&d.ftLastWriteTime, &stamp) == 0;
-            if (pn::account_reread(read_once, had, have, same)) {
+            if (account_reread(read_once, had, have, same)) {
                 auto state = frontend::main_menu::parse_state(have ? runtime::read_file(path, size_t(1) << 20) : std::string());
                 {
                     std::lock_guard<std::mutex> g(lock);
@@ -170,8 +167,8 @@ bool TimeTrialName::arm_rename(uint64_t serial)
     std::string clean;
     const char *source = "";
     runtime::presence_id::Id me;
-    bool ok = bridge_on.load(std::memory_order_relaxed) && sl::time_trial_live(runtime::session_kind()) && runtime::lap_host::board_session() &&
-              runtime::lap_host::player_id(me) && wanted_name(clean, source);
+    bool ok = bridge_on.load(std::memory_order_relaxed) && runtime::session_life::time_trial_live(runtime::session_kind()) &&
+              runtime::lap_host::board_session() && runtime::lap_host::player_id(me) && wanted_name(clean, source);
     if (!ok) {
         rename_armed.store(false, std::memory_order_release);
         return false;
@@ -184,7 +181,7 @@ bool TimeTrialName::arm_rename(uint64_t serial)
     }
     shown_source.store(source, std::memory_order_relaxed);
     rename_value.store(me.value[0], std::memory_order_relaxed);
-    rename_tag.store(pn::id_tag(me), std::memory_order_relaxed);
+    rename_tag.store(id_tag(me), std::memory_order_relaxed);
     rename_serial.store(serial, std::memory_order_relaxed);
     rename_armed.store(true, std::memory_order_release);
     return true;
@@ -198,12 +195,13 @@ const char *TimeTrialName::lookup(void *cache, void *id)
     if (!stock || !id || !rename_armed.load(std::memory_order_acquire))
         return stock;
     uint64_t serial = runtime::session_serial();
-    if (!pn::lookup_renames(sl::time_trial_live(runtime::session_kind()), true, rename_serial.load(std::memory_order_relaxed), serial))
+    if (!lookup_renames(runtime::session_life::time_trial_live(runtime::session_kind()), true,
+                        rename_serial.load(std::memory_order_relaxed), serial))
         return stock;
     uint8_t key[0x50];
     if (!swofty_core::hooks::guard::copy_memory(key, id, sizeof key))
         return stock;
-    if (!pn::is_local_id(key, pn::id_of(rename_tag.load(std::memory_order_relaxed), rename_value.load(std::memory_order_relaxed))))
+    if (!is_local_id(key, id_of(rename_tag.load(std::memory_order_relaxed), rename_value.load(std::memory_order_relaxed))))
         return stock;
     const char *result = shown_buf[shown_slot.load(std::memory_order_acquire)];
     if (busy.exchange(1))

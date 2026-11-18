@@ -28,7 +28,7 @@ namespace {
 
 using CreateFactoryFn = HRESULT(WINAPI *)(REFIID, void **);
 
-void present_hook(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *caller)
+void present_hook(IDXGISwapChain3 *sc, const render::d3d12::Swapchain *known, void *caller)
 {
     overlay.draw_frame(sc, known, caller);
 }
@@ -152,7 +152,7 @@ void Overlay::paint_frame(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const std:
     buf->Release();
 }
 
-void Overlay::draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
+void Overlay::draw_frame(IDXGISwapChain3 *sc, const render::d3d12::Swapchain *known, void *)
 {
     if (off.load() || renderer.failed)
         return;
@@ -178,7 +178,7 @@ void Overlay::draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known
     if (!known) {
         if (std::find(unknown_told.begin(), unknown_told.end(), sc) == unknown_told.end()) {
             unknown_told.push_back(sc);
-            if (d3d12hooks::learning(sc))
+            if (render::d3d12::learning(sc))
                 swofty::log("[overlay] swapchain %p was created outside the core's swapchain creation hooks and its "
                             "present queue is not known yet; the overlay draws on it once ExecuteCommandLists names "
                             "the queue",
@@ -190,7 +190,7 @@ void Overlay::draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known
         }
         return;
     }
-    const d3d12hooks::Swapchain &c = *known;
+    const render::d3d12::Swapchain &c = *known;
     std::pair<void *, bool> seen{sc, !c.fg.empty()};
     bool fresh = std::find(told.begin(), told.end(), seen) == told.end();
     if (fresh)
@@ -320,7 +320,7 @@ bool Overlay::arm_for_unread_queue(IDXGISwapChain3 *sc, void *caller)
 {
     if (device_hooked || before_fg_tried)
         return device_hooked;
-    std::string by = d3d12hooks::module_of(caller);
+    std::string by = render::d3d12::module_of(caller);
     hud::arm_policy::OnDemandArm on = hud::arm_policy::on_demand_arm(loaded_modules(), by, settings().before_fg_forced);
     if (!on.arms()) {
         swofty::log("[overlay] swapchain %p presents from %s and its present queue cannot be read; the core's device "
@@ -345,11 +345,11 @@ bool Overlay::arm()
     swofty::log(perf::STEP_LINE, steps.lap_ms(), "overlay arm resolve d3d12");
     if (!resolved)
         return false;
-    d3d12hooks::on_present(present_hook);
-    d3d12hooks::on_presented(presented_hook);
-    d3d12hooks::on_unread_queue(unread_queue_hook);
-    std::optional<d3d12hooks::ProbeScope> probe(std::in_place);
-    bool swapchain = d3d12hooks::arm_swapchain();
+    render::d3d12::on_present(present_hook);
+    render::d3d12::on_presented(presented_hook);
+    render::d3d12::on_unread_queue(unread_queue_hook);
+    std::optional<render::d3d12::ProbeScope> probe(std::in_place);
+    bool swapchain = render::d3d12::arm_swapchain();
     swofty::log(perf::STEP_LINE, steps.lap_ms(), "overlay arm swapchain (probe device made)");
     if (before_fg_wanted()) {
         arm_before_fg("frame generation is on in the game's settings, or SWOFTY_OVERLAY_FG / \"overlay_fg\"");
@@ -384,7 +384,7 @@ void Overlay::arm_before_fg(const char *why)
                     "\"overlay_fg\"",
                     rival.c_str());
     before_fg.subscribe();
-    device_hooked = d3d12hooks::arm_device();
+    device_hooked = render::d3d12::arm_device();
     if (!device_hooked)
         swofty::log("[overlay] the core's D3D12 device hooks did not arm; the overlay cannot draw when frame "
                     "generation owns the swapchain");

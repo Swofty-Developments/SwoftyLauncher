@@ -177,6 +177,114 @@ static void walks()
     }
 }
 
+static TableEntry *fake_entries(uint64_t at, size_t count, void *user)
+{
+    auto *f = static_cast<Fake *>(user);
+    if (at < Fake::BASE || at + count * sizeof(TableEntry) > Fake::BASE + f->bytes.size())
+        return nullptr;
+    return reinterpret_cast<TableEntry *>(&f->bytes[at - Fake::BASE]);
+}
+
+static bool by_total(const TableEntry &a, const TableEntry &b, void *user)
+{
+    ++*static_cast<int *>(user);
+    return a.total != b.total ? a.total > b.total : a.key < b.key;
+}
+
+static std::vector<TableEntry> entries_of(Fake &f, uint64_t field, size_t round, size_t session)
+{
+    TableSession ts;
+    if (!table_session(session_at(f, field, round, session), fake_read, &f, ts))
+        return {};
+    TableEntry *at = fake_entries(ts.entries, ts.count, &f);
+    return at ? std::vector<TableEntry>(at, at + ts.count) : std::vector<TableEntry>();
+}
+
+static void recounts()
+{
+    const uint64_t standings = Fake::BASE;
+    const uint32_t key = 0x00050001, other = 0x00060001;
+    const std::vector<PointsRound> points = {
+        {{3, {{key, 0}, {other, 0}}}, {15, {{key, 25}, {other, 18}}}},
+        {{15, {{key, 18}, {other, 25}}}},
+    };
+    const std::vector<PointsRound> table = {
+        {{3, {{key, 0}, {other, 0}}}, {15, {{other, 18}, {key, 25}}}},
+        {{15, {{other, 43}, {key, 43}}}},
+    };
+    {
+        Fake f;
+        put_rounds(f, standings + TABLE_ROUNDS, table);
+        int calls = 0;
+        Recounted done = recount_table(standings, points, 1, fake_read, &f, fake_entries, by_total, &calls);
+        CHECK(done.sessions == 3 && done.changed == 2, "every table session is recounted and the two gross totals change");
+        auto last = entries_of(f, standings + TABLE_ROUNDS, 1, 0);
+        CHECK(last.size() == 2 && last[0].total == 25 && last[1].total == 25,
+              "the last session's totals are each driver's best round");
+        CHECK(last[0].key == key && last[1].key == other && calls > 0, "the recounted session is sorted with the given order");
+        auto race = entries_of(f, standings + TABLE_ROUNDS, 0, 1);
+        CHECK(race.size() == 2 && race[0].key == key && race[0].total == 25 && race[1].total == 18,
+              "a session whose totals hold is sorted too");
+        Recounted again = recount_table(standings, points, 1, fake_read, &f, fake_entries, by_total, &calls);
+        CHECK(again.sessions == 3 && again.changed == 0, "a second recount of a counted table changes nothing");
+    }
+    {
+        Fake f;
+        put_rounds(f, standings + TABLE_ROUNDS, table);
+        Recounted done = recount_table(standings, points, 2, fake_read, &f, fake_entries, nullptr, nullptr);
+        auto last = entries_of(f, standings + TABLE_ROUNDS, 1, 0);
+        CHECK(done.changed == 0 && last[0].key == other && last[0].total == 43,
+              "with every round counting the gross totals stay, and without an order the entries keep theirs");
+    }
+    {
+        Fake f;
+        put_rounds(f, standings + TABLE_ROUNDS, table);
+        uint64_t last = session_at(f, standings + TABLE_ROUNDS, 1, 0), eb = 0;
+        fake_read(last + 8, &eb, sizeof eb, &f);
+        f.put64(last + 16, eb + 12);
+        TableSession ts;
+        CHECK(!table_session(last, fake_read, &f, ts), "a table session that isn't whole entries is refused");
+        Recounted done = recount_table(standings, points, 1, fake_read, &f, fake_entries, nullptr, nullptr);
+        CHECK(done.sessions == 2, "a refused table session is passed over");
+        f.put64(last + 16, eb + (MAX_RECORDS + 1) * sizeof(TableEntry));
+        CHECK(!table_session(last, fake_read, &f, ts), "a table session with more than 128 entries is refused");
+        f.put64(last + 8, 0x900000);
+        f.put64(last + 16, 0x900000 + 2 * sizeof(TableEntry));
+        CHECK(table_session(last, fake_read, &f, ts) && ts.count == 2 && ts.id == 15, "a session's vector and id read");
+        done = recount_table(standings, points, 1, fake_read, &f, fake_entries, nullptr, nullptr);
+        CHECK(done.sessions == 2 && done.changed == 0, "a session whose entries can't be written is passed over");
+    }
+}
+
+static void seasons()
+{
+    Fake f;
+    uint64_t entity = f.alloc(CHAMPIONSHIP + 8), champ = f.alloc(SEASONS_END + 8), list = f.alloc(3 * SEASON_ENTRY);
+    const uint64_t first = 0x500000, second = 0x600000;
+    f.put64(entity + CHAMPIONSHIP, champ);
+    f.put64(champ + SEASONS_BEGIN, list);
+    f.put64(champ + SEASONS_END, list + 3 * SEASON_ENTRY);
+    f.put64(list + ENTRY_SEASON, first);
+    f.put64(list + SEASON_ENTRY + ENTRY_SEASON, 0);
+    f.put64(list + 2 * SEASON_ENTRY + ENTRY_SEASON, second);
+    CHECK(in_championship(entity, second + SEASON_STANDINGS, fake_read, &f), "a season's standings past a null entry are found");
+    CHECK(in_championship(entity, first + SEASON_STANDINGS, fake_read, &f), "the first season's standings are found");
+    CHECK(!in_championship(entity, second, fake_read, &f), "an address that is not a season's standings is not");
+    CHECK(!in_championship(entity, SEASON_STANDINGS, fake_read, &f), "a null season entry matches no standings");
+    f.put64(champ + SEASONS_END, list + 2 * SEASON_ENTRY + 8);
+    CHECK(!in_championship(entity, first + SEASON_STANDINGS, fake_read, &f),
+          "a season vector that isn't whole entries is refused");
+    f.put64(champ + SEASONS_END, list - SEASON_ENTRY);
+    CHECK(!in_championship(entity, first + SEASON_STANDINGS, fake_read, &f),
+          "a season vector that ends before it begins is refused");
+    f.put64(champ + SEASONS_END, list + (MAX_SEASONS + 1) * SEASON_ENTRY);
+    CHECK(!in_championship(entity, first + SEASON_STANDINGS, fake_read, &f), "a season vector past 4096 seasons is refused");
+    f.put64(champ + SEASONS_END, list + 3 * SEASON_ENTRY);
+    f.put64(entity + CHAMPIONSHIP, 0);
+    CHECK(!in_championship(entity, first + SEASON_STANDINGS, fake_read, &f), "a career with no championship has no season");
+    CHECK(!in_championship(0x10, first + SEASON_STANDINGS, fake_read, &f), "an entity that can't be read has no season");
+}
+
 int main()
 {
     CHECK(best_sum({1, 9, 4}, 2) == 13, "best_sum keeps the two best of three");
@@ -225,5 +333,7 @@ int main()
     CHECK(same_key(0x00050001, 0x00050201), "the game's key match ignores bits 8 to 15");
     CHECK(!same_key(0x00050001, 0x00060001), "the key match compares the high half");
     walks();
+    recounts();
+    seasons();
     return failures ? 1 : 0;
 }

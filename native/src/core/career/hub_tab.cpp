@@ -7,6 +7,7 @@
 #include "core/registry/older.hpp"
 #include "core/frontend/ui_vm.hpp"
 #include "core/runtime/loader/core_rank.hpp"
+#include "core/runtime/loader/hook_install.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/game.hpp>
@@ -45,24 +46,13 @@
 // value (the current state's text) / description, again after every change of one of its options. The
 // tab's title is the lng key lng_swofty_hub_<name>, set to the title in capitals.
 
-namespace hub {
+namespace career::hub {
 
 namespace {
 
-struct HubOption {
-    std::string id, label, description;
-};
-
-struct HubTab {
-    std::string addon, name, title, group, lng, content, data;
-    std::vector<HubOption> options;
-    uint32_t key = 0;
-};
-
 constexpr uintptr_t LAPTOP_ARG2 = 0x28, LAPTOP_ALLOC = 0x2a8, LAPTOP_ARG3 = 0x268, LAPTOP_TABS = 0x2b0,
                     LAPTOP_TABS_END = 0x2c0, TAB_ALLOC = 0x270;
-constexpr size_t TAB_SIZE = 0xb68, TAB_ALIGN = 0x10, PAGE_SIZE = 0x660, PAGE_ALIGN = 8, VT_COPY = 64, VT_COMMAND = 10;
-constexpr uint32_t PAGE_TYPE = 5;
+constexpr size_t TAB_SIZE = 0xb68, PAGE_ALIGN = 8, VT_COPY = 64, VT_COMMAND = 10;
 constexpr char ICON[] = "overrides.career.laptop.page_icons[4]";
 
 const runtime::Sig S_RND_GATE{"laptop R&D gate", "80 38 00 0F 84 ?? ?? ?? ?? 4C 8B BE 68 02 00 00", 0x1c41bac};
@@ -79,23 +69,6 @@ const runtime::Sig S_PAGE_CTOR{"tab view model constructor",
 const runtime::Sig S_PAGE_ADD{"laptop tab add page", "48 89 DA E8 ?? ?? ?? ?? 4C 8B BE 68 02 00 00", 0x14c13e0,
                               runtime::Sig::rel32, 3, 4, 5};
 
-// Driver Career Team HQ (screen team_hq_container): its tabs are built by the Team HQ container's own
-// builder (0x1422cf7a0..0x1422d5e43), not the laptop's. Its primary tabs are 0xc08-byte Team HQ tabs:
-// allocated through container +0x2c0, constructed by 0x1414bf8c0 (tab, container+0x28,
-// container+0x268, container, "team_hq_tab_secondary_controller", "team_hq_secondary_tab", lng name,
-// "", 1), given the class vtables (0x145787460, +0x260 0x145787540, +0x268 0x145787570) and the
-// 0x80-byte field block from 0x14577c048 at +0xb78 (+0xbf8 and +0xc00 zero), then pushed onto
-// container +0x2c8 (begin +0x2d0, end +0x2d8) by 0x1423ac4d0. A page is allocated through the tab's
-// allocator +0x668 (0x660 bytes, align 0x10), constructed by the same tab view model constructor, and
-// appended to the tab's page vector object +0x670 {allocator, begin +0x678, end +0x680, capacity}
-// ({0, allocator, page} entries, the shape Career_Push_HubLaptopTab pushes); then bit 0x8 of page
-// +0x628 is cleared and, when bit 0x4 is set, it is cleared and the page's vt+0xc8 runs. STANDINGS
-// (0x1422d4d3e..) is the pattern, and the new tab is added at 0x1422d5cce, where the builder joins and
-// starts registering every tab (container at [rsp+0x50]). The R&D tab block (0x1422d23e5..0x1422d2ce0,
-// key 0xf4482186) has no gate in this builder: while hide_rnd is on, execution resumes at the VEHICLE
-// block (0x1422d2ce1), which reloads everything it reads from the container. The other users of the
-// R&D key (0x1422d6132 search, 0x1422d65f1 availability, 0x1422d6822 / 0x1422d6fce tab jumps) are the
-// same null-tolerant lookups as the laptop's.
 const runtime::Sig S_TQ_END{"team HQ tabs end", "4C 8B A6 D0 02 00 00 4C 8B AE D8 02 00 00", 0x22d5cce};
 const runtime::Sig S_TQ_RND{"team HQ R&D block", "E8 ?? ?? ?? ?? 4C 8B BE 68 02 00 00 4C 8B 66 28", 0x22d23e5,
                             runtime::Sig::addr, 0, 5, 0};
@@ -125,43 +98,15 @@ const runtime::Sig S_TQ_PUSH{"team HQ tab push",
                              0x23ac4d0, runtime::Sig::rel32, 0x1a, 0x1b, 5};
 
 using Alloc_t = void *(void *allocator, size_t size, size_t align);
-using TabCtor_t = void(void *tab, void *a2, void *a3, void *laptop, const char *content, const char *header,
-                       const char *name, const char *icon, uint8_t flag);
-using Push_t = void(void *tabs, const uint32_t *key, void *owned);
-using PageCtor_t = void(void *page, void *a2, void *a3, void *owner, const char *content, const char *name, void *a7,
-                        const char *a8, uint32_t page_type, uint8_t flag);
 using AddPage_t = void(void *tab, void *page);
 using Command_t = uint64_t(void *vm, swofty::game::NeStr **name, const void *data);
 
-std::vector<HubTab> tabs;
 std::atomic<bool> live{false};
-uintptr_t a_tab_ctor, a_push, a_page_ctor, a_add_page;
-uintptr_t a_tq_ctor, a_tq_vt0, a_tq_vt260, a_tq_vt268, a_tq_init, a_tq_push;
+uintptr_t a_tab_ctor, a_add_page;
 safetyhook::MidHook h_end, h_rnd, h_tq_end, h_tq_rnd, h_tq_registered, h_laptop_registered, h_tq_show_all;
 void **page_vt, **page_vt_src;
 Command_t *page_cmd;
 constinit swofty_core::guards::LogFirst<48> note_lines;
-
-void publish(const HubTab &t)
-{
-    std::string base = t.data;
-    if (!frontend::ui_vm_set_path(base + ".title", 0, t.title.c_str())) {
-        note("[hub] %s: %s did not resolve; the page shows no data", t.name.c_str(), base.c_str());
-        return;
-    }
-    int32_t count = int32_t(t.options.size());
-    frontend::ui_vm_set_path(base + ".count", 2, &count);
-    for (size_t k = 0; k < t.options.size(); k++) {
-        const HubOption &o = t.options[k];
-        size_t current = 0;
-        std::vector<std::string> texts;
-        settings_state(t.addon, o.id, current, &texts, nullptr, nullptr);
-        std::string row = base + ".o" + std::to_string(k);
-        frontend::ui_vm_set_path(row + ".label", 0, o.label.c_str());
-        frontend::ui_vm_set_path(row + ".value", 0, current < texts.size() ? texts[current].c_str() : "");
-        frontend::ui_vm_set_path(row + ".description", 0, o.description.c_str());
-    }
-}
 
 bool step(const HubTab &t, const std::string &option, bool next)
 {
@@ -201,6 +146,33 @@ uint64_t page_command(void *vm, swofty::game::NeStr **name, const void *data)
     return page_cmd ? page_cmd(vm, name, data) : 0;
 }
 
+}
+
+std::vector<HubTab> tabs;
+uintptr_t a_push, a_page_ctor;
+uintptr_t a_tq_ctor, a_tq_vt0, a_tq_vt260, a_tq_vt268, a_tq_init, a_tq_push;
+
+void publish(const HubTab &t)
+{
+    std::string base = t.data;
+    if (!frontend::ui_vm_set_path(base + ".title", 0, t.title.c_str())) {
+        note("[hub] %s: %s did not resolve; the page shows no data", t.name.c_str(), base.c_str());
+        return;
+    }
+    int32_t count = int32_t(t.options.size());
+    frontend::ui_vm_set_path(base + ".count", 2, &count);
+    for (size_t k = 0; k < t.options.size(); k++) {
+        const HubOption &o = t.options[k];
+        size_t current = 0;
+        std::vector<std::string> texts;
+        settings_state(t.addon, o.id, current, &texts, nullptr, nullptr);
+        std::string row = base + ".o" + std::to_string(k);
+        frontend::ui_vm_set_path(row + ".label", 0, o.label.c_str());
+        frontend::ui_vm_set_path(row + ".value", 0, current < texts.size() ? texts[current].c_str() : "");
+        frontend::ui_vm_set_path(row + ".description", 0, o.description.c_str());
+    }
+}
+
 bool own_vtable(void *page)
 {
     void **src = *static_cast<void ***>(page);
@@ -232,6 +204,8 @@ void *allocate(void *allocator, size_t size, size_t align)
     auto fn = at<Alloc_t *>(at<uintptr_t>(reinterpret_cast<uintptr_t>(allocator)) + 0x18);
     return fn(allocator, size, align);
 }
+
+namespace {
 
 void add_tab(uintptr_t laptop, HubTab &t)
 {
@@ -271,80 +245,6 @@ void add_tab(uintptr_t laptop, HubTab &t)
     swofty::log("[hub] %s: tab '%s' added after STANDINGS (key 0x%08x, page %s%s, data %s)", t.name.c_str(),
                 t.title.c_str(), t.key, t.content.c_str(), mine ? "" : ", its commands stay the game's",
                 t.data.c_str());
-}
-
-void add_team_hq_tab(uintptr_t hq, HubTab &t)
-{
-    constexpr uintptr_t HQ_ARG2 = 0x28, HQ_ALLOC = 0x2c0, HQ_ARG3 = 0x268, HQ_TABS = 0x2c8, HQ_TABS_END = 0x2d8,
-                        TQ_PAGE_ALLOC = 0x668, TQ_PAGES = 0x670, TQ_FIELDS = 0xb78, TQ_FIELDS_END = 0xbf8, TQ_FLAG = 0xc00,
-                        PAGE_FLAGS = 0x628, PAGE_VT_REFRESH = 0xc8;
-    constexpr size_t TQ_SIZE = 0xc08;
-    void *allocator = alloc_through(hq + HQ_ALLOC);
-    if (!allocator) {
-        note("[hub] %s: the Team HQ container has no allocator; tab not added", t.name.c_str());
-        return;
-    }
-    auto *tab = static_cast<uint8_t *>(allocate(allocator, TQ_SIZE, TAB_ALIGN));
-    if (!tab)
-        return;
-    void *a2 = at<void *>(hq + HQ_ARG2), *a3 = at<void *>(hq + HQ_ARG3);
-    reinterpret_cast<TabCtor_t *>(a_tq_ctor)(tab, a2, a3, reinterpret_cast<void *>(hq), "team_hq_tab_secondary_controller",
-                                             "team_hq_secondary_tab", t.lng.c_str(), "", 1);
-    *reinterpret_cast<uintptr_t *>(tab) = a_tq_vt0;
-    *reinterpret_cast<uintptr_t *>(tab + 0x260) = a_tq_vt260;
-    *reinterpret_cast<uintptr_t *>(tab + 0x268) = a_tq_vt268;
-    std::memcpy(tab + TQ_FIELDS, reinterpret_cast<const void *>(a_tq_init - 0x10), TQ_FIELDS_END - TQ_FIELDS);
-    *reinterpret_cast<uint64_t *>(tab + TQ_FIELDS_END) = 0;
-    tab[TQ_FLAG] = 0;
-    struct {
-        void *allocator, *obj;
-    } owned{allocator, tab};
-    uint32_t key = t.key;
-    reinterpret_cast<Push_t *>(a_tq_push)(reinterpret_cast<void *>(hq + HQ_TABS), &key, &owned);
-    uintptr_t end = at<uintptr_t>(hq + HQ_TABS_END);
-    if (!end || at<void *>(end - 8) != tab) {
-        note("[hub] %s: the tab is not Team HQ's last tab after the push; no page added", t.name.c_str());
-        return;
-    }
-    void *page_alloc = alloc_through(reinterpret_cast<uintptr_t>(tab) + TQ_PAGE_ALLOC);
-    auto *page = static_cast<uint8_t *>(page_alloc ? allocate(page_alloc, PAGE_SIZE, TAB_ALIGN) : nullptr);
-    if (!page) {
-        note("[hub] %s: no page allocated", t.name.c_str());
-        return;
-    }
-    reinterpret_cast<PageCtor_t *>(a_page_ctor)(page, a2, a3, reinterpret_cast<void *>(hq), t.content.c_str(),
-                                                t.lng.c_str(), nullptr, "", PAGE_TYPE, 0);
-    bool mine = own_vtable(page);
-    struct {
-        void *allocator, *obj;
-    } page_owned{page_alloc, page};
-    uint32_t zero_key = 0;
-    reinterpret_cast<Push_t *>(a_push)(tab + TQ_PAGES, &zero_key, &page_owned);
-    uint8_t flags = page[PAGE_FLAGS];
-    page[PAGE_FLAGS] = flags & ~0x8;
-    if (flags & 0x4) {
-        page[PAGE_FLAGS] &= ~0x4;
-        using Refresh_t = void(void *);
-        reinterpret_cast<Refresh_t *>(at<uintptr_t>(at<uintptr_t>(reinterpret_cast<uintptr_t>(page)) + PAGE_VT_REFRESH))(page);
-    }
-    publish(t);
-    swofty::log("[hub] %s: Team HQ tab '%s' added after STANDINGS (key 0x%08x, page %s%s, data %s)", t.name.c_str(),
-                t.title.c_str(), t.key, t.content.c_str(), mine ? "" : ", its commands stay the game's", t.data.c_str());
-}
-
-void team_hq_end(safetyhook::Context &c)
-{
-    uintptr_t hq = at<uintptr_t>(c.rsp + 0x50);
-    if (!hq || hq != c.rsi || !swofty::mem::object_like(hq)) {
-        note("[hub] Team HQ: the container is not where the builder keeps it; no tab");
-        return;
-    }
-    char group[64] = {};
-    if (runtime::career_content_table()->data_group(nullptr, group, sizeof group) != SWOFTY_ASSET_OK)
-        return;
-    for (auto &t : tabs)
-        if (t.group == group)
-            add_team_hq_tab(hq, t);
 }
 
 void tabs_end(safetyhook::Context &c)
@@ -420,6 +320,7 @@ void load()
 
 void setup()
 {
+    using runtime::loader::install;
     load();
     if (tabs.empty())
         return;
@@ -443,43 +344,23 @@ void setup()
     bool laptop = a_tab_ctor && a_push && a_page_ctor && a_add_page && end && gate;
     bool team_hq = a_push && a_page_ctor && a_tq_ctor && a_tq_vt0 && a_tq_vt260 && a_tq_vt268 && a_tq_init && a_tq_push &&
                    a_tq_vehicle && tq_end && tq_rnd;
-    if (laptop) {
-        auto e = safetyhook::MidHook::create(reinterpret_cast<void *>(end), tabs_end);
-        auto g = safetyhook::MidHook::create(reinterpret_cast<void *>(gate), rnd_gate);
-        if (e && g) {
-            h_end = std::move(*e);
-            h_rnd = std::move(*g);
-        } else
-            laptop = false;
+    if (laptop && !(install(h_end, end, S_TABS_END.what, tabs_end) && install(h_rnd, gate, S_RND_GATE.what, rnd_gate))) {
+        h_end = {};
+        laptop = false;
     }
-    if (team_hq) {
-        auto e = safetyhook::MidHook::create(reinterpret_cast<void *>(tq_end), team_hq_end);
-        auto g = safetyhook::MidHook::create(reinterpret_cast<void *>(tq_rnd), team_hq_rnd);
-        if (e && g) {
-            h_tq_end = std::move(*e);
-            h_tq_rnd = std::move(*g);
-        } else
-            team_hq = false;
+    if (team_hq &&
+        !(install(h_tq_end, tq_end, S_TQ_END.what, team_hq_end) && install(h_tq_rnd, tq_rnd, S_TQ_RND.what, team_hq_rnd))) {
+        h_tq_end = {};
+        team_hq = false;
     }
-    if (laptop && a_set_visible && laptop_reg) {
-        auto r = safetyhook::MidHook::create(reinterpret_cast<void *>(laptop_reg), laptop_registered);
-        if (r) {
-            h_laptop_registered = std::move(*r);
-            laptop_flag = true;
-        }
-    }
-    if (team_hq && a_set_visible && tq_registered) {
-        auto r = safetyhook::MidHook::create(reinterpret_cast<void *>(tq_registered), team_hq_registered);
-        if (r) {
-            h_tq_registered = std::move(*r);
-            team_hq_flag = true;
-        }
-    }
-    if (team_hq_flag && tq_show_all) {
-        auto r = safetyhook::MidHook::create(reinterpret_cast<void *>(tq_show_all), team_hq_show_all);
-        if (r)
-            h_tq_show_all = std::move(*r);
-    }
+    if (laptop && a_set_visible && laptop_reg &&
+        install(h_laptop_registered, laptop_reg, S_LAPTOP_REGISTERED.what, laptop_registered))
+        laptop_flag = true;
+    if (team_hq && a_set_visible && tq_registered &&
+        install(h_tq_registered, tq_registered, S_TQ_REGISTERED.what, team_hq_registered))
+        team_hq_flag = true;
+    if (team_hq_flag && tq_show_all)
+        install(h_tq_show_all, tq_show_all, S_TQ_SHOW_ALL.what, team_hq_show_all);
     swofty::log("[hub] builders: Driver Career Team HQ (team_hq_container) %s, laptop (laptop_container) %s",
                 team_hq ? "hooked" : "NOT hooked", laptop ? "hooked" : "NOT hooked");
     swofty::log("[hub] R&D tab: Team HQ %s, laptop %s", team_hq_flag ? "follows hide_rnd live" : "left out at the next entry",
@@ -534,14 +415,14 @@ void note(const char *fmt, const char *a, const char *b, const char *c)
 
 void hub_option_changed(const std::string &addon, const std::string &option)
 {
-    if (!hub::live.load())
+    if (!career::hub::live.load())
         return;
-    for (auto &t : hub::tabs) {
+    for (auto &t : career::hub::tabs) {
         if (t.addon != addon)
             continue;
         for (auto &o : t.options)
             if (o.id == option) {
-                hub::publish(t);
+                career::hub::publish(t);
                 break;
             }
     }
@@ -549,12 +430,12 @@ void hub_option_changed(const std::string &addon, const std::string &option)
 
 extern "C" __declspec(dllexport) const SwoftyHub *SwoftyCoreHub(void)
 {
-    return &hub::hub_table;
+    return &career::hub::hub_table;
 }
 
 SWOFTY_CORE_RANK(hub_tab)
 
 SWOFTY_ON_LOAD
 {
-    runtime::when_code_ready("hub tabs: laptop builder hooks", hub::setup);
+    runtime::when_code_ready("hub tabs: laptop builder hooks", career::hub::setup);
 }

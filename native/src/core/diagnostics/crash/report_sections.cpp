@@ -203,7 +203,7 @@ void step_dred(Request &r)
     if (text.empty())
         return;
     report_writer.out.put("%s", text.c_str());
-    std::string builds = d3d12hooks::rtas_recent_text(runtime::dred::build_stops());
+    std::string builds = render::d3d12::rtas_recent_text(runtime::dred::build_stops());
     report_text::indented_lines(
         builds, [](const char *line, size_t len) { report_writer.out.put("%.*s", int(len), line); },
         [](const char *line, size_t len) { logger.api->log("[gfx] rtas recent: %.*s", int(len), line); });

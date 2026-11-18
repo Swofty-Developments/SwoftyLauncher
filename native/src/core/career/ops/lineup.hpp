@@ -11,7 +11,7 @@
 
 // The line-up executor (lineup.cpp): a Lineup of moves, repositions, numbers, cars and looks run as one batch of
 // entrant writes, read back, and reported as a Report.
-namespace career_ops::live {
+namespace career::ops::live {
 
 std::string quote(const std::string &s);
 
@@ -69,7 +69,7 @@ int row_index(const std::vector<Row> &rows, uint32_t stat, uint32_t domain = 0);
 int holder_of(const std::vector<Row> &rows, uint32_t team, int seat);
 std::string seat_text(uint32_t team, int seat);
 int execute(const Lineup &p, Report &rep, std::string &summary);
-std::vector<career_ops::plan::Row> plan_rows(const std::vector<Row> &rows);
-bool read_season(const json::Value &s, career_ops::plan::Input &in, int &year, std::string &err);
+std::vector<career::ops::plan::Row> plan_rows(const std::vector<Row> &rows);
+bool read_season(const json::Value &s, career::ops::plan::Input &in, int &year, std::string &err);
 
 }

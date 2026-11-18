@@ -7,7 +7,7 @@
 #include <cstdio>
 #include <string>
 
-namespace cs = runtime::career_start;
+namespace cs = career::start;
 
 static int fails;
 

@@ -32,9 +32,6 @@ constinit SourceSwap source_swap;
 
 namespace {
 
-namespace pn = frontend::player_name;
-namespace sl = runtime::session_life;
-
 // Reads of game memory. Small reads (node fields) are guarded copies; anything bigger goes through ReadProcessMemory, which reports a
 // short read instead of faulting. A fault inside the big memcpy of the core's runtime cannot be dispatched under Wine (run67: "invalid
 // frame ... unable to dispatch exception"), so no large read may rely on the SEH guard.
@@ -132,7 +129,7 @@ SwapResult swap_sources(const std::string &stock, const std::string &name_in, ui
     constexpr size_t CHUNK = size_t(1) << 20, OVERLAP = 256;
     const int64_t deadline = int64_t(GetTickCount64()) + 20000;
     std::string name = fit_name(name_in, std::min<size_t>(stock.size(), 15));
-    if (name.empty() || name == stock || stock.size() > pn::SWAP_MAX_STOCK)
+    if (name.empty() || name == stock || stock.size() > SWAP_MAX_STOCK)
         return res;
     NT_TIB *tib = reinterpret_cast<NT_TIB *>(NtCurrentTeb());
     uint64_t stack_lo = uint64_t(tib->StackLimit), stack_hi = uint64_t(tib->StackBase);
@@ -145,7 +142,8 @@ SwapResult swap_sources(const std::string &stock, const std::string &name_in, ui
                 res.scanned_mb = size_t(scanned >> 20);
                 return res;
             }
-            if (!pn::swap_continues(sl::time_trial_live(runtime::session_kind()), serial, runtime::session_serial())) {
+            if (!swap_continues(runtime::session_life::time_trial_live(runtime::session_kind()), serial,
+                                runtime::session_serial())) {
                 res.stopped = true;
                 res.scanned_mb = size_t(scanned >> 20);
                 return res;
@@ -399,10 +397,11 @@ void SourceSwap::swap_worker()
             job = swap_job;
             swap_queued = false;
         }
-        Sleep(DWORD(pn::SWAP_SETTLE_MS));
+        Sleep(DWORD(SWAP_SETTLE_MS));
         SwapResult r;
         int64_t ms = 0;
-        bool live = pn::swap_continues(sl::time_trial_live(runtime::session_kind()), job.serial, runtime::session_serial());
+        bool live = swap_continues(runtime::session_life::time_trial_live(runtime::session_kind()), job.serial,
+                                   runtime::session_serial());
         if (live) {
             int64_t t0 = int64_t(GetTickCount64());
             r = swap_sources(job.stock, job.name, job.serial);
@@ -414,11 +413,11 @@ void SourceSwap::swap_worker()
         }
         swap_busy = false;
         if (!live)
-            swofty::log("[boards] player name source swap (%s): skipped, the session ended first", pn::swap_word(job.why));
+            swofty::log("[boards] player name source swap (%s): skipped, the session ended first", swap_word(job.why));
         else
             swofty::log("[boards] player name source swap (%s): rewrote %zu string record(s) and %zu std::string object(s) that read \"%s\" to \"%s\" "
                         "(source %s; scanned %zu MB in %lld ms%s, %zu own copies skipped)",
-                        pn::swap_word(job.why), r.records, r.strings, job.stock.c_str(), job.name.c_str(), job.source, r.scanned_mb, (long long)ms,
+                        swap_word(job.why), r.records, r.strings, job.stock.c_str(), job.name.c_str(), job.source, r.scanned_mb, (long long)ms,
                         r.limit ? ", stopped at the time limit" : r.stopped ? ", stopped as the session ended" : "", r.skipped);
     }
 }
@@ -431,10 +430,10 @@ void SourceSwap::plan_swap(bool live_ours, const std::string &stock, const std::
     uint64_t serial = runtime::session_serial(), now = GetTickCount64();
     {
         std::lock_guard<std::mutex> g(swap_lock);
-        pn::SwapWhy why = pn::swap_due(swap_plan, live_ours, serial, stock, name, visible, now);
-        if (why == pn::SwapWhy::none)
+        SwapWhy why = swap_due(swap_plan, live_ours, serial, stock, name, visible, now);
+        if (why == SwapWhy::none)
             return;
-        pn::swap_taken(swap_plan, why, serial, stock, name, now);
+        swap_taken(swap_plan, why, serial, stock, name, now);
         swap_job = SwapJob{serial, stock, name, source, why};
         swap_queued = true;
         swap_busy = true;

@@ -1,6 +1,6 @@
 // Host-native unit test for the game setting overrides (native/src/core/loading/game_settings_logic.hpp): the rows a
-// feature arms, which getter names an armed row answers with which value, the feature list a measurement run sets,
-// and the record of logged reads. The shipped table holds bool rows only; TYPED below covers the numeric getters.
+// feature arms, which getter names and which readers an armed row answers with which value, the features on by default
+// and the player's opt-out, the feature list a measurement run sets, and the record of logged reads. The shipped table holds bool rows only; TYPED below covers the numeric getters.
 // Built and run by native/test/run_tests.sh game_settings.
 
 #include "core/loading/game_settings_logic.hpp"
@@ -34,21 +34,24 @@ static constexpr std::array<gs::Override, 5> TYPED{{
 static void shipped_rows()
 {
     const uint32_t minimum = gs::rows_of("loading_skip_minimum_time"), intro = gs::rows_of("loading_skip_session_intro_video"),
-                   rundown = gs::rows_of("loading_skip_grid_rundown"), talking = gs::rows_of("loading_skip_talking_points");
+                   rundown = gs::rows_of("loading_skip_grid_rundown"), talking = gs::rows_of("loading_skip_talking_points"),
+                   transition = gs::rows_of("loading_skip_session_transition");
     CHECK(__builtin_popcount(minimum) == 1 && __builtin_popcount(intro) == 1 && __builtin_popcount(rundown) == 1 &&
-          __builtin_popcount(talking) == 1);
-    CHECK((minimum | intro | rundown | talking) == gs::rows_all());
-    CHECK(!(minimum & intro) && !(intro & rundown) && !(minimum & rundown) && !(talking & (minimum | intro | rundown)));
+          __builtin_popcount(talking) == 1 && __builtin_popcount(transition) == 1);
+    CHECK((minimum | intro | rundown | talking | transition) == gs::rows_all());
+    CHECK(!(minimum & intro) && !(intro & rundown) && !(minimum & rundown) && !(talking & (minimum | intro | rundown)) &&
+          !(transition & (minimum | intro | rundown | talking)));
     CHECK(gs::rows_of("postfx") == 0 && gs::rows_of("") == 0 && gs::rows_of("loading_skip") == 0);
     CHECK(gs::rows_of(gs::LOG_FEATURE) == 0);
     CHECK(gs::rows_typed(gs::rows_all(), Type::boolean) == gs::rows_all());
     CHECK(gs::rows_typed(gs::rows_all(), Type::u32) == 0);
 
-    CHECK(gs::match("Game.IgnoreMinimumLoadingTime", 0) == nullptr);
-    const gs::Override *row = gs::match("Game.IgnoreMinimumLoadingTime", minimum);
+    CHECK(gs::match("Game.IgnoreMinimumLoadingTime", 0, gs::TRACK_LOAD) == nullptr);
+    const gs::Override *row = gs::match("Game.IgnoreMinimumLoadingTime", minimum, gs::TRACK_LOAD);
     CHECK(row && row->bits == 1 && row->type == Type::boolean && !std::strcmp(row->feature, "loading_skip_minimum_time"));
     CHECK(gs::index_of(row) < gs::OVERRIDES.size());
-    CHECK(gs::match("Game.IgnoreMinimumLoadingTime", intro) == nullptr);
+    CHECK(gs::match("Game.IgnoreMinimumLoadingTime", minimum, gs::STORY_HUB) == row);
+    CHECK(gs::match("Game.IgnoreMinimumLoadingTime", intro, gs::TRACK_LOAD) == nullptr);
     row = gs::match("Game.SkipIntroVideo", gs::rows_all());
     CHECK(row && !std::strcmp(row->feature, "loading_skip_session_intro_video") && row->bits == 1);
     row = gs::match("Game.SkipGridRundown", rundown);
@@ -67,6 +70,67 @@ static void shipped_rows()
     CHECK(gs::match("", gs::rows_all()) == nullptr);
     CHECK(gs::match(nullptr, gs::rows_all()) == nullptr);
     CHECK(gs::index_of(nullptr) == gs::OVERRIDES.size());
+}
+
+static void readers()
+{
+    const uint32_t minimum = gs::rows_of("loading_skip_minimum_time"),
+                   transition = gs::rows_of("loading_skip_session_transition"), both = minimum | transition;
+    const char *name = "Game.IgnoreMinimumLoadingTime";
+    CHECK(gs::match(name, both) == nullptr);
+    CHECK(gs::match(name, both, gs::READERS) == nullptr);
+    CHECK(gs::match(name, both, -1) == nullptr);
+    CHECK(gs::match(name, both, 7) == nullptr);
+    CHECK(gs::match(name, gs::rows_all()) == nullptr);
+    const gs::Override *row = gs::match(name, both, gs::SESSION_TRANSITION);
+    CHECK(row && !std::strcmp(row->feature, "loading_skip_session_transition") && row->bits == 1);
+    CHECK(gs::match(name, minimum, gs::SESSION_TRANSITION) == nullptr);
+    CHECK(gs::match(name, transition, gs::TRACK_LOAD) == nullptr);
+    CHECK(gs::match(name, transition, gs::STORY_HUB) == nullptr);
+    row = gs::match(name, both, gs::TRACK_LOAD);
+    CHECK(row && !std::strcmp(row->feature, "loading_skip_minimum_time"));
+    CHECK(gs::match(name, both, gs::STORY_HUB) == row);
+    CHECK(gs::match("Game.SkipIntroVideo", gs::rows_all(), gs::READERS) != nullptr);
+    CHECK(gs::match("Game.SkipIntroVideo", gs::rows_all(), gs::TRACK_LOAD) != nullptr);
+
+    uint8_t seen = 0;
+    for (const auto &o : gs::OVERRIDES) {
+        CHECK(!(seen & o.readers));
+        seen |= o.readers;
+        CHECK(!o.readers || !std::strcmp(o.setting, name));
+    }
+    CHECK(seen == (1u << gs::READERS) - 1);
+}
+
+static void defaults()
+{
+    using gs::Toggle;
+    CHECK(gs::ON_BY_DEFAULT.size() == 2);
+    for (const char *f : gs::ON_BY_DEFAULT) {
+        CHECK(gs::rows_of(f) != 0);
+        CHECK(gs::on_by_default(f));
+        gs::State st = gs::feature_state(f, Toggle::unset, false, false);
+        CHECK(st.on && !std::strcmp(st.why, "on by default since 1.10"));
+        st = gs::feature_state(f, Toggle::on, false, false);
+        CHECK(st.on && !std::strcmp(st.why, "on by default since 1.10"));
+        st = gs::feature_state(f, Toggle::off, false, false);
+        CHECK(!st.on && !std::strcmp(st.why, "off: settings"));
+        CHECK(!gs::feature_state(f, Toggle::off, true, true).on);
+        CHECK(gs::feature_state(f, Toggle::unset, false, true).on);
+    }
+    CHECK(gs::on_by_default("loading_skip_minimum_time") && gs::on_by_default("loading_skip_session_transition"));
+    for (const char *f : {"loading_skip_session_intro_video", "loading_skip_grid_rundown", "loading_skip_talking_points"}) {
+        CHECK(!gs::on_by_default(f));
+        gs::State st = gs::feature_state(f, Toggle::unset, false, false);
+        CHECK(!st.on && !std::strcmp(st.why, "off: experimental"));
+        CHECK(!gs::feature_state(f, Toggle::on, false, false).on);
+        st = gs::feature_state(f, Toggle::off, true, false);
+        CHECK(st.on && !std::strcmp(st.why, "on: SWOFTY_LOADING_FEATURES"));
+        st = gs::feature_state(f, Toggle::off, false, true);
+        CHECK(st.on && !std::strcmp(st.why, "on: features"));
+    }
+    CHECK(!gs::on_by_default(gs::LOG_FEATURE) && !gs::on_by_default(nullptr) && !gs::on_by_default(""));
+    CHECK(!std::strcmp(gs::PLAYER_OPTION, "shorter_loading_waits"));
 }
 
 static void typed_rows()
@@ -156,15 +220,19 @@ static void seen_table()
 static void table_shape()
 {
     std::set<std::string> settings;
+    size_t shared = 0;
     for (const auto &o : gs::OVERRIDES) {
         CHECK(std::strncmp(o.feature, "loading_", 8) == 0);
         CHECK(std::strcmp(o.feature, gs::LOG_FEATURE) != 0);
         CHECK(o.setting && o.setting[0] && std::strchr(o.setting, '.'));
         CHECK(o.effect && *o.effect);
         CHECK(o.type != Type::boolean || o.bits <= 1);
-        settings.insert(o.setting);
+        bool again = !settings.insert(o.setting).second;
+        shared += again;
+        CHECK(!again || o.readers);
     }
-    CHECK(settings.size() == gs::OVERRIDES.size());
+    CHECK(settings.size() + shared == gs::OVERRIDES.size());
+    CHECK(shared == 1);
     CHECK(gs::OVERRIDES.size() <= 32);
     for (size_t i = 1; i < gs::OVERRIDES.size(); i++)
         for (size_t j = 0; j + 1 < i; j++)
@@ -175,6 +243,8 @@ static void table_shape()
 int main()
 {
     shipped_rows();
+    readers();
+    defaults();
     typed_rows();
     lists();
     seen_table();

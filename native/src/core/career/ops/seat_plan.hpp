@@ -18,7 +18,7 @@
 // reserve (R&D is per race driver), the player's seat (never given away), and an empty seat a race driver
 // would leave his own seat empty for. A driver already on the seat is unchanged.
 
-namespace career_ops::seat {
+namespace career::ops::seat {
 
 enum class Holder { none, swapped, released };
 

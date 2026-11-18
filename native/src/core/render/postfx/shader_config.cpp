@@ -11,7 +11,7 @@
 #include <cstring>
 #include <iterator>
 
-namespace postfx {
+namespace render::postfx {
 
 namespace {
 

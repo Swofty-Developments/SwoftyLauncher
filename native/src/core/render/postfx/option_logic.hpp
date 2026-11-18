@@ -4,7 +4,7 @@
 #include <string>
 #include <string_view>
 
-namespace postfx {
+namespace render::postfx {
 
 // Win32 virtual-key codes for a toggle option's key names; 0 for None and unknown names.
 inline int key_code(std::string_view key)

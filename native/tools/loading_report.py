@@ -95,10 +95,13 @@ WANTED = re.compile(r'^\[loading\] game setting overrides wanted: (.*?) \(\d+ ge
 LOG_FEATURE = 'loading_log_settings'
 FEATURE_SETTINGS = {
     'loading_skip_minimum_time': 'Game.IgnoreMinimumLoadingTime',
+    'loading_skip_session_transition': 'Game.IgnoreMinimumLoadingTime',
     'loading_skip_session_intro_video': 'Game.SkipIntroVideo',
     'loading_skip_grid_rundown': 'Game.SkipGridRundown',
     'loading_skip_talking_points': 'Game.SkipTalkingPoints',
 }
+# Read only between two sessions of a weekend, which a run need not reach.
+BETWEEN_SESSIONS = {'loading_skip_session_transition'}
 REGRESSIONS = [
     ('crash', re.compile(r'^\[crash\] #\d+ (?!first-chance)')),
     ('crash', re.compile(r'^\[crash\] TerminateProcess')),
@@ -291,7 +294,7 @@ def loading_times(lines):
 def check(run):
     armed = set() if run['arm'] == 'off' else set(run['arm'].split(','))
     for feature, setting in FEATURE_SETTINGS.items():
-        if feature in armed and feature not in run['applied']:
+        if feature in armed and feature not in run['applied'] and run['loads'] and feature not in BETWEEN_SESSIONS:
             run['regressions'].append({'kind': 'flag not applied', 't': None,
                                        'line': f'{feature} is armed but the game never read {setting}'})
         if feature not in armed and feature in run['applied']:

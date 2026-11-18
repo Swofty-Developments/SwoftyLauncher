@@ -669,7 +669,7 @@ void set_up_dresser()
         return v.i;
     };
     runtime::team_record_inserted([](uint16_t stat, uint8_t *record) { redress(stat, record); });
-    career_ops::teams::dresser() = &dress_slot;
+    career::ops::teams::dresser() = &dress_slot;
 }
 
 void release_database()

@@ -12,7 +12,7 @@ use swofty_core::platform::ea_app::Moved;
 use swofty_core::session::{LaunchMode, SessionRecord};
 use swofty_core::store::Store;
 
-use super::host::{Host, Hosted};
+use super::host::{Host, Hosted, PromptHost, Prompted};
 use super::launch_alerts::note_notification;
 use super::probe::GameWatch;
 use super::{PlayState, Seen, Shell};
@@ -283,14 +283,13 @@ pub(crate) enum PlayChange {
     HoldRoom(RoomLaunch),
 }
 
-/// The shell as Play sees it: a [`Host`] that also opens Play's prompts in the window.
-pub(crate) trait PlayHost: Host<Launching> {
-    fn prompt(&mut self, prompt: Prompt, window: &mut Window, cx: &mut Context<Self>);
-}
-
 impl Hosted for Launching {
     type Needs<'a> = PlayNeeds<'a>;
     type Change = PlayChange;
+}
+
+impl Prompted for Launching {
+    type Prompt = Prompt;
 }
 
 impl Host<Launching> for Shell {
@@ -319,12 +318,12 @@ impl Host<Launching> for Shell {
     fn changed(&mut self, change: PlayChange, _: &mut Context<Self>) {
         match change {
             PlayChange::RoomLaunched(started) => self.rooms.launch_result(started),
-            PlayChange::HoldRoom(room) => self.rooms.hold(room),
+            PlayChange::HoldRoom(room) => self.rooms.game.hold(room),
         }
     }
 }
 
-impl PlayHost for Shell {
+impl PromptHost<Launching> for Shell {
     fn prompt(&mut self, prompt: Prompt, window: &mut Window, cx: &mut Context<Self>) {
         match prompt {
             Prompt::EaAppWarn => self.ea_app_warn(window, cx),
@@ -343,7 +342,7 @@ impl Launching {
     /// Play, or Play for a room: armed to go straight to the room's lobby, with the host's row ids for the
     /// build when `room` has them. Whether Play was taken up: the pre-launch checks run off the UI thread
     /// and the launch follows when they pass.
-    pub(crate) fn play_for<H: PlayHost>(
+    pub(crate) fn play_for<H: PromptHost<Launching>>(
         host: &mut H,
         room: Option<RoomLaunch>,
         window: &mut Window,
@@ -408,7 +407,7 @@ impl Launching {
         true
     }
 
-    fn play_checked<H: PlayHost>(
+    fn play_checked<H: PromptHost<Launching>>(
         host: &mut H,
         checked: play_checks::Checked,
         room: Option<RoomLaunch>,
@@ -508,7 +507,11 @@ impl Launching {
         }
     }
 
-    pub(crate) fn play_with_steam_saves<H: PlayHost>(host: &mut H, window: &mut Window, cx: &mut Context<H>) {
+    pub(crate) fn play_with_steam_saves<H: PromptHost<Launching>>(
+        host: &mut H,
+        window: &mut Window,
+        cx: &mut Context<H>,
+    ) {
         host.split().0.steam_saves_once = true;
         if !Self::play_for(host, None, window, cx) {
             host.split().0.steam_saves_once = false;
@@ -526,7 +529,7 @@ impl Shell {
     }
 
     pub(crate) fn play(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let room = self.rooms.take_held();
+        let room = self.rooms.game.take_held();
         let is_room = room.is_some();
         if !Launching::play_for(self, room, window, cx) && is_room {
             self.rooms.launch_result(false);
