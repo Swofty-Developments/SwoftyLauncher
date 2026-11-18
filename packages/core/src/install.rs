@@ -1930,4 +1930,89 @@ mod tests {
         );
         assert!(rel_parts("version.dll").is_empty());
     }
+
+    #[test]
+    fn each_drift_and_conflict_reads_as_the_player_sees_it() {
+        let p = || "a/b.erp".to_owned();
+        let drift = [
+            (Drift::Changed(p()), "a/b.erp differs from the baseline"),
+            (Drift::Missing(p()), "a/b.erp is missing"),
+            (Drift::Addition(p()), "a/b.erp is not part of the game"),
+            (Drift::RegistryOverride, "the prefix has the version.dll override"),
+            (Drift::OpenJournal("j1".into()), "journal j1 is open"),
+            (
+                Drift::NewBuild {
+                    baseline: "1.0".into(),
+                    current: "1.1".into(),
+                },
+                "game build 1.1 differs from baseline 1.0",
+            ),
+            (
+                Drift::LeftInPlace(p()),
+                "a/b.erp changed since it was written (game update?); left in place",
+            ),
+            (
+                Drift::Stranded(p()),
+                "a/b.erp is not what the earlier session wrote in the old game folder nor its original; left in \
+                 place",
+            ),
+            (
+                Drift::NoOriginal(p()),
+                "a/b.erp still holds a file swofty wrote and its original is not on record; verify the game \
+                 files in Steam",
+            ),
+        ];
+        for (d, text) in drift {
+            assert_eq!(d.to_string(), text);
+        }
+        let conflict = |replaced, owned| Conflict {
+            path: p(),
+            sha256: None,
+            owned,
+            replaced,
+        };
+        assert_eq!(
+            conflict(true, true).to_string(),
+            "a/b.erp still holds what an unfinished session wrote"
+        );
+        assert_eq!(
+            conflict(false, true).to_string(),
+            "a/b.erp was left behind by an unfinished session"
+        );
+        assert_eq!(
+            conflict(true, false).to_string(),
+            "a/b.erp is not the original, and swofty did not write it"
+        );
+        assert_eq!(
+            conflict(false, false).to_string(),
+            "a/b.erp is already in the game folder, and swofty did not put it there"
+        );
+    }
+
+    #[test]
+    fn a_plan_is_vanilla_only_with_nothing_to_place_and_no_override() {
+        assert!(Plan::vanilla().is_vanilla());
+        assert_eq!(Plan::vanilla().profile, VANILLA);
+        let one = || BTreeMap::from([("x".to_owned(), PathBuf::from("y"))]);
+        for plan in [
+            Plan {
+                data: one(),
+                ..Plan::vanilla()
+            },
+            Plan {
+                added: one(),
+                ..Plan::vanilla()
+            },
+            Plan {
+                loader: one(),
+                ..Plan::vanilla()
+            },
+            Plan {
+                registry_override: true,
+                ..Plan::vanilla()
+            },
+        ] {
+            assert!(!plan.is_vanilla(), "{plan:?}");
+        }
+    }
 }
