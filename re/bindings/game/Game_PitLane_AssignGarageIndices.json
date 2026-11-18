@@ -75,6 +75,16 @@
    "verdict": "agree",
    "evidence": "decomp:own capstone disasm 0x1434b5110-0x1434b59ab,0x1434b4d30-0x1434b510e,0x1434c03c0-0x1434c05f9,0x1434beb30-0x1434bed40,0x1434b59b0-0x1434b5cd0,0x142f60c80-0x142f60e80,0x142f625c4-0x142f62670,0x1436aa9a0-0x1436aaad6,1.0.145 0x1434b7690-0x1434b7f2b (450/450, 0 diffs);xref:0x1434ca654,0x1434cc5cb,0x1434b54a2,0x1434b58e3,0x1434b590e,0x1434b5913,0x1434b58ae,0x1434b596a,0x1434b4d77,0x1434b4da4,0x142f60d72",
    "notes": "V20029 Blind: agree, derived before reading the notes. Own disasm 0x1434b5110-0x1434b59ab: callers 0x1434ca654 (call in 0x1434ca550) and 0x1434cc5cb (jmp), both rcx=[parent+0x48]. 27 slots mgr+0x930+i*0x10 {alloc,rec}; new 0x140 rec from [mgr+0xae0] (+0x10a=i, two 0x50 subobjects) stored before the old one is freed; +0 linked via [[v+0x58]+0xe8] else 0; +0xe0=0x7fffffff x27; idx = flag ? 2T+[e+0x90] : (2T|1)-[e+0x90], flag [[[[mgr+0xb80]+0x1a8]+0x30]+0x60] copied to mgr+0xc29; [mgr+0xb38] list gets 99. 0x1434b4d30: box=idx>>1, 99 or box 12 uses [[mgr+8]+0x738] = Register table +0x38+7*0x100 (mgr+8 by layout only). 1.0.145 0x1434b7690 450/450 identical."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_PitLane_AssignGarageIndices",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434b5110-0x1434b59ab,0x1434ca550-0x1434ca6c0,0x1434cc430-0x1434cc5d0,0x1434c03c0-0x1434c05b7,0x1434beb40-0x1434beb92,0x1434b4d30-0x1434b4f00,0x1434bd850-0x1434bd960,0x142f60c80-0x142f60e90,0x142f62580-0x142f62800,0x14028e3b0,1.0.145 0x1434b7690-0x1434b7f2b;xref:0x1434ca654,0x1434cc5cb,0x145843d88,0x1434ca659,0x1434beb6c,0x1434b5913,0x1434c0408,0x142f60d72,0x1434b4db3",
+   "notes": "V100002 Blind: agree, derived before reading the notes and proto. Own capstone 0x1434b5110-0x1434b59ab: 1 arg rcx (rsi); rax left = SC-loop end ptr, 0x1434ca659 reloads it; 0x1434cc430 only via vtable 0x145843d00+0x88 (sibling default = ret 0x14028e3b0). 27 records 0x140 B, init/sub-objects/alloc-before-free as stated; link loop bound = [mgr+0xb00]+0x28 vector count, not 27. Reset 0x7fffffff; garage = flag ? 2t+s : (2t|1)-s; flag copied to mgr+0xc29, sole reader 0x1434beb6c (xor -0.0). SC list [mgr+0xb38]+0x30 -> [[P+0x58]+0xe8] = 0x63, no id bound. Readers: box = 99 ? 12 : g>>1; box 12 (also g 24/25) -> [[mgr+8]+0x738], else <=31 -> +0x838+box*8; 0x1434c0408 jg ret. 1.0.145 0x1434b7690 450/450."
   }
  ],
  "proofs": [
