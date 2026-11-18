@@ -50,5 +50,44 @@
    "notes": "V0905 Confirmed: vtable 0x145703ff0 slot 4 (+0x20, abs ref 0x145704010), 3 args passed to FeTile_ItemBase_Populate, then 0x1407d07a0(item+0x158,0), Vm_Set_Bool is_dlc_content on button_node.node+8, title/description lng_career_default_content(_description). Differs: the is_dlc_content value pointer is item+0x190 (lea r9,[rsi+0x190] at 0x1417264fb; the ctor byte [0x32], set to 1 for the 2026 tile), not item+0x148; +0x148 receives the return of vtable slot +0xa0 (mov [rsi+0x148],al at 0x1417264e9). Fix the notes and re-verify. sigcheck: func_start 1 hit (pattern starts before the function)"
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1417264b0",
+    "target": "0x1417264c0"
+   },
+   "sigcheck": "passed",
+   "digest": "4f9023a67aaeb2ae91fde697fcb951e4cea67e1dd1054704f9877d0e2877b01c"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141727c30",
+    "target": "0x141727c40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "dcecb226112f2a606c914da686d32d25e769eff0c56db7472f69aa23f77e8ac5"
+  }
+ ]
 }
