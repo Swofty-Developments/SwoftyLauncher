@@ -497,6 +497,12 @@ class RepoData(unittest.TestCase):
                 self.assertIn(f'`{name}`', bindgen.read_text(path), f'docs/releases/{e["since"]}.md does not list '
                               f'{name}: python3 re/tools/binding.py drops --release {e["since"]} prints its line')
 
+    def test_core_names_no_binding_the_export_drops_take_out(self):
+        import binding
+        named = sorted(f'{k}:{n} ({p})' for k, n in self.gate.drops if (p := binding.core_names(n)))
+        self.assertEqual(named, [], 'core still names these bindings that re/db/export_drops.json deprecates or '
+                                    'drops: move core to the replacement in the same change')
+
     def test_every_export_exception_is_in_use_and_named_by_native_code(self):
         import binding_check
         for key, e in self.gate.exceptions.items():

@@ -810,12 +810,53 @@ class ExportDropsNeedTheOwner(ExportsDoNotShrink):
         doc['verify'][-1].update(verifier='re-bindings-blind', notes=f'{vid} Blind: partial, the fourth argument is a u8')
         return doc
 
-    def judge_drops(self, new, entries, old_entries=None):
+    def judge_drops(self, new, entries, old_entries=None, core=(), other=()):
         import binding
+        from unittest import mock
         path = 're/bindings/' + self.exported.relpath
         pair = (self.ddoc(old_entries or {}), self.ddoc(entries))
-        return binding.judge([(path, raw(self.exported.doc), new and raw(new))], [self.PATH], 'contributor-b',
-                             self.knowledge, None, pair)
+        core = set(core)
+        with mock.patch.object(binding, 'core_names', side_effect=lambda n, root=None: 'native/src/core/x.cpp'
+                               if n in core else None):
+            return binding.judge([(path, raw(self.exported.doc), new and raw(new))], [self.PATH, *other],
+                                 'contributor-b', self.knowledge, None, pair)
+
+    def test_a_binding_core_names_needs_a_replacement_to_be_deprecated(self):
+        core = {self.exported.name}
+        result = self.judge_drops(self.partial(), {self.key: self.entry()}, core=core,
+                                  other=['native/src/core/x.cpp'])
+        self.assertEqual(result['verdict'], 'fail', result['summary'])
+        self.assertTrue(any('without a replacement' in e for e in result['errors']), result['errors'])
+
+    def test_core_moves_off_a_binding_in_the_change_that_takes_it_out(self):
+        core = {self.exported.name}
+        moved = self.entry(replacement='Example_Other')
+        result = self.judge_drops(self.partial(), {self.key: moved}, core=core)
+        self.assertEqual(result['verdict'], 'fail', result['summary'])
+        self.assertTrue(any('core moves off it to Example_Other in the same change' in e for e in result['errors']),
+                        result['errors'])
+        crash = self.judge_drops(self.partial(), {self.key: self.entry('dropped', harm='crash')}, core=core)
+        self.assertTrue(any('core moves off it in the same change' in e for e in crash['errors']), crash['errors'])
+        both = self.judge_drops(self.partial(), {self.key: moved}, core=core, other=['native/src/core/x.cpp'])
+        self.assertEqual(both['verdict'], 'review', both['summary'])
+        self.assertFalse(any('core names' in e for e in both['errors']), both['errors'])
+
+    def test_core_names_skips_comments_and_reads_resolve_strings_and_types(self):
+        import binding, tempfile
+        with tempfile.TemporaryDirectory() as d:
+            os.makedirs(os.path.join(d, 'native', 'src', 'core'))
+            with open(os.path.join(d, 'native', 'src', 'core', 'a.cpp'), 'w') as f:
+                f.write('// Example_InLineComment\n/* Example_InBlock\n spans */ int x;\n'
+                        'auto f = api->resolve("Example_Resolved"); game::Example_Typed_t g; '
+                        'auto h = game::Example_Constant; // trailing Example_After\n'
+                        'const char *u = "http://example//Example_InUrl";\n')
+            with open(os.path.join(d, 'native', 'src', 'core', 'b.md'), 'w') as f:
+                f.write('Example_NotSource')
+            for n in ('Example_Resolved', 'Example_Typed', 'Example_Constant', 'Example_InUrl'):
+                self.assertEqual(binding.core_names(n, d), os.path.join('native', 'src', 'core', 'a.cpp'), n)
+            for n in ('Example_InLineComment', 'Example_InBlock', 'Example_After', 'Example_NotSource', 'Example'):
+                self.assertIsNone(binding.core_names(n, d), n)
+            self.assertTrue(bc.referenced_in_code('Example_After', d, ('native/src',)))
 
     def test_a_deprecated_entry_keeps_the_export_and_needs_the_owner(self):
         result = self.judge_drops(self.partial(), {self.key: self.entry()})

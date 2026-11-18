@@ -24,7 +24,7 @@ AUTO_LEVELS = ('L1', 'L2')
 MAX_AUTO_RECORDS = 25
 NO_RECORDS = 'the pull request changes no binding record'
 CODE_DIRS = ('native/src', 'addons', 'packages', 'templates', 'apps')
-CODE_EXTS = ('.c', '.cc', '.cpp', '.h', '.hpp', '.rs', '.py', '.json', '.toml', '.ts', '.js', '.lua')
+CODE_EXTS = ('.c', '.cc', '.cpp', '.h', '.hpp', '.inc', '.rs', '.py', '.json', '.toml', '.ts', '.js', '.lua')
 
 NEW = 'make the record again with binding.py new, which writes every signature field and the proof'
 VERIFY = 'prove it again: re/tools/py re/tools/binding.py verify {name} --exe <your F1_25.exe> --by <your GitHub login>'
@@ -102,6 +102,10 @@ FIXES = [(re.compile(p), t) for p, t in (
     (r'export_drops.json: \S+ ships in', 'set since to the next release'),
     (r'export_drops.json: drops \S+ without a released deprecation', 'set mode deprecated for the next release, or '
      'set harm when the binding crashes or corrupts state'),
+    (r'which core names, without a replacement', 'add the binding that replaces it first and set replacement, then '
+     'move native/src to it in the pull request that deprecates this one'),
+    (r'which core names, and the pull request leaves', 'move the code under native/src off the binding in the same '
+     'pull request; python3 re/tools/binding.py drops lists what it still names'),
     (r'only the repository owner approves', 'nothing to fix: the bindings check passes once the repository owner '
      'approves the pull request at its head commit, after a re-run of the check'),
     (r'has no regular file there', 'commit the record as a plain file, not a symlink or a submodule'),
@@ -442,9 +446,13 @@ def check_record(record, knowledge, relpath=None):
     return errs
 
 
-def referenced_in_code(name, root, dirs=CODE_DIRS):
-    """In-repo code that already names the binding would start using it the moment it is exported."""
-    pat = re.compile(rb'(?<![A-Za-z0-9_])' + re.escape(name.encode()) + rb'(?![A-Za-z0-9_])')
+COMMENT_RE = re.compile(rb'"(?:\\.|[^"\\\n])*"|//[^\n]*|/\*.*?\*/', re.S)
+
+
+def referenced_in_code(name, root, dirs=CODE_DIRS, comments=True):
+    """In-repo code that already names the binding, or its header `_t` type, would start using it the moment it is
+    exported. With comments=False a name inside a // or /* */ comment does not count; string contents still do."""
+    pat = re.compile(rb'(?<![A-Za-z0-9_])' + re.escape(name.encode()) + rb'(?:_t)?(?![A-Za-z0-9_])')
     for d in dirs:
         for dirpath, dirnames, filenames in os.walk(os.path.join(root, d)):
             dirnames[:] = [x for x in dirnames if x not in ('node_modules', 'target', 'dist', 'build', '.git')]
@@ -455,8 +463,11 @@ def referenced_in_code(name, root, dirs=CODE_DIRS):
                         if os.path.getsize(p) > 4 << 20:
                             continue
                         with open(p, 'rb') as fh:
-                            if pat.search(fh.read()):
-                                return os.path.relpath(p, root)
+                            data = fh.read()
+                        if not comments:
+                            data = COMMENT_RE.sub(lambda m: m.group() if m.group()[:1] == b'"' else b' ', data)
+                        if pat.search(data):
+                            return os.path.relpath(p, root)
                     except OSError:
                         continue
     return None

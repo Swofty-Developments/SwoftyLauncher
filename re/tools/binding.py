@@ -21,7 +21,7 @@
                                   maintainer: what a game update leaves off in the core (bindings by hint and by scan,
                                   layout proofs and live groups with no evidence for it) and the step for each
 """
-import argparse, datetime, hashlib, json, os, sys
+import argparse, datetime, hashlib, json, os, re, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -515,7 +515,7 @@ def judge(changes, other, author, knowledge, baseline=None, drops=None):
     if result['verdict'] != 'fail':
         lost, left, after = export_drops(changes, entries)
         result['notes'] += left
-        errors = lost + drop_holding(after, changes, entries, drops)
+        errors = lost + drop_holding(after, changes, entries, drops, other)
         if errors:
             result['verdict'] = 'fail'
             result['errors'] += errors
@@ -598,9 +598,10 @@ def drop_holds(gate, key, entry, records=()):
     return bool(v) and v[1] == entry['covers'] and v[0] in ('partial', 'disagree')
 
 
-def drop_holding(after, changes, entries, drops):
+def drop_holding(after, changes, entries, drops, other=()):
     """Errors for export drops entries that stop holding: every entry when the pull request changes the file, else
-    the entries of the bindings its records touch. `after` is export_drops' (gate, records) after the change."""
+    the entries of the bindings its records touch. `after` is export_drops' (gate, records) after the change, and
+    `other` the pull request's paths outside re/bindings."""
     import bindgen
     gate, records = after
     if entries is None:
@@ -618,14 +619,25 @@ def drop_holding(after, changes, entries, drops):
             out.append(f'{DROPS_PATH}: the entry for {key[0]}:{key[1]} no longer holds: its newest verify row is not '
                        f'{e["covers"]}, the partial or disagree it covers')
     if drops is not None:
-        out += drops_review(drops[0], entries)
+        out += drops_review(drops[0], entries, other=other)
     return out
 
 
-def drops_review(old, after, base=None):
+CORE = 'native/src/'
+
+
+def core_names(name, root=None):
+    """The first file under native/src that names the binding outside a comment, by a header constant, its `_t`
+    type or a resolve string, or None."""
+    return bc.referenced_in_code(name, root or kb.ROOT, (CORE.rstrip('/'),), comments=False)
+
+
+def drops_review(old, after, base=None, other=()):
     """Errors for a pull request that changes the export drops from the `old` bytes to the `after` entries: a new or
-    changed mode ships in a later release than the one the base branch is at (`base`), and a binding that neither
-    crashes nor corrupts state is dropped only after a released deprecation."""
+    changed mode ships in a later release than the one the base branch is at (`base`), a binding that neither
+    crashes nor corrupts state is dropped only after a released deprecation, and a binding core names in this
+    checkout is taken out only by a pull request that also changes core (`other` has a native/src path), to the
+    replacement when it is deprecated, so one without a replacement cannot be deprecated yet."""
     import bindgen
     base = base or bindgen.workspace_version()
     before = parse_db_file(old, bindgen.load_drops) if old is not None else {}
@@ -635,6 +647,16 @@ def drops_review(old, after, base=None):
     out = []
     for (kind, name), e in sorted(after.items()):
         was = before.get((kind, name))
+        if was != e and core_names(name):
+            if e['mode'] == 'deprecated' and 'replacement' not in e:
+                out.append(f'{DROPS_PATH}: deprecates {kind}:{name}, which core names, without a replacement: core '
+                           'moves off a binding in the change that deprecates it, so one without a replacement '
+                           'cannot be deprecated yet')
+            elif not any(p.startswith(CORE) for p in other):
+                to = f' to {e["replacement"]}' if 'replacement' in e else ''
+                out.append(f'{DROPS_PATH}: {"deprecates" if e["mode"] == "deprecated" else "drops"} {kind}:'
+                           f'{name}, which core names, and the pull request leaves {CORE} as it is: core moves '
+                           f'off it{to} in the same change')
         if was and (was['mode'], was['since']) == (e['mode'], e['since']):
             continue
         if bindgen.version(e['since']) <= base:
@@ -946,6 +968,10 @@ def cmd_drops(a):
         else:
             bad += 1
             state = f'overdue: deprecated in {e["since"]}, and {shown} still ships it; drop it'
+        used = core_names(name)
+        if used:
+            bad += 1
+            state += f'; core still names it in {used}: move it off'
         print(f'  {kind}:{name} {e["covers"]}: {state}')
     return 1 if bad else 0
 
