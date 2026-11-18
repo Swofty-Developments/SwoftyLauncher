@@ -75,6 +75,16 @@
    "verdict": "partial",
    "evidence": "decomp:own capstone disasm 0x142d94e20-0x142d94e25,0x14eb3abf0-0x14eb3ad06,0x14e5cf550-0x14e5cf731,0x143a43b90-0x143a43e93,0x14391a0d0-0x14391a120,0x14534d918-0x14534d95e,0x142d94f30-0x142d9586e,0x142d95990-0x142d95b8d,0x142d95b90-0x142d961cf,0x142d967e0-0x142d96dae,0x14f033680-0x14f03385b,0x14eb3c550-0x14eb3c663,0x14eb41090-0x14eb411aa,0x14eb46c90-0x14eb46d0d,0x142d96e30-0x142d96ec8,0x1439532f0-0x143953570,0x14097d980-0x14097d9c0,0x140108f70-0x140108fb8;xref:0x1457e2cf8,0x14eb3ac01,0x14eb3ac62,0x14f03380c,0x142d94f8b,0x142d94f9f,0x143953543,0x14097d99a,0x140108f92,0x142d952ae,0x142d95305,0x142d95c44,0x142d95d04,0x142d95ef9,0x14eb46d00,0x142d960ee,0x142d961a7,0x142d95d1b,0x14eb410a2,0x14eb3ac1e",
    "notes": "V20028 Blind: partial, derived before reading the notes. Confirmed: thunk, vtable 0x1457e2cc0 slot 7, slots 8-11, base call 0x142c75f90 (0x14eb3ac01), both settings (defaults 0/1), the +0xea1 rule and its only class writer (0x14eb3ac62, ctor 0x14f03380c), releaseCutscenesOnExit to +0xeb0 via _stricmp, +0xeb4=10.0f, return 0, and the skipped/snapshot/next/restart/none exits with their flags. Wrong: 0x146129ca0 is the root type NoOtiInfo, the end marker of every is-a walk. The class tested is GameModeChampionship (node 0x14604ec60, 0x14097d99a). So +0xea0=1 when the mode is not a championship or lacks 0x14605b108, and snapshot needs a championship mode. Minor: 0x14eb410a2 also sets +0xea8; +0xeac is reset to 0.6/0.3."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_SessionStateTalkingPoints_ParseParams_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142d94e20-0x142d94e25,0x14eb3abf0-0x14eb3ad06,0x14e5cf550-0x14e5cf731,0x142d74cb0-0x142d74d6c,0x142d94f30-0x142d9586e,0x142d95b90-0x142d961cf,0x142d967e0-0x142d96dae,0x142d95990-0x142d95b8d,0x142d96370-0x142d967d9,0x142d96e30-0x142d96ec6,0x14eb3c550-0x14eb3c663,0x14eb41090-0x14eb411aa,0x14eb46c90-0x14eb46d0d,0x14f033680-0x14f03385b,0x143953500-0x143953570,0x14097d939-0x14097d9b9,0x1444fdd00-0x1444fddc0;xref:0x1457e2cf8,0x14eb3ac01,0x14eb3ac2a,0x14eb3ac49,0x14eb3ac62,0x14f03380c,0x14eb3ace8,0x14eb3acee,0x142d952ae,0x142d94fd5,0x143953543,0x14097d99a,0x142d95c44,0x142d95d04,0x142d95ef9,0x14eb46d00,0x142d95ffb,0x142d961a7,0x142d95e07,0x14eb410a2,0x14eb3c562,0x142d952f8,0x142d96673,0x142d96ec0,0x14eb3ac1b",
+   "notes": "V20030 Blind: agree, derived before reading the notes. Thunk 0x142d94e20 jmp to .data1 0x14eb3abf0, slot 7 of vtable 0x1457e2cc0. Calls SessionBaseState slot 7 0x142c75f90 first, reads Game.SkipTalkingPoints (default 0) and Game.ecaEnabled (default 1) from [[state+0xdb0]+0x18], sets +0xea1=1 at 0x14eb3ac62 (only other class writer is ctor zero 0x14f03380c), stores releaseCutscenesOnExit in +0xeb0 and 10.0f in +0xeb4, returns 0. The walk sets its flag at NoOtiInfo (0x146129ca8), so it means not-a GameModeChampionship. Update exits match: skipped/snapshot, next, restart, none under +0xea3. +0xea8 setters and the 0.2/0.6/0.3 s timers match. Retail values and history not checkable."
   }
  ],
  "proofs": [
