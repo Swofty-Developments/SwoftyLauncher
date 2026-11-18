@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/apply/content/box_world.hpp"
+
 #include <swofty/json.hpp>
 
 #include <algorithm>
@@ -640,9 +642,56 @@ inline void lower_weekend_mode(const std::string &id, const Value &rec, const st
                          " made available, so the game parses it into its setup mode store");
 }
 
+// The rows of a box's own world (box_world.hpp): a season row copied from the list's season with an id from the
+// content.package.season pool, the season on every seasons list that holds the list's season, a layer row for the
+// box's setup mode and season copied from f1_26 or myteam_26 with an id from the content.package.layer pool, and the
+// season on the list row. A box whose list's world already holds its teams gets nothing.
+inline void lower_box_world(const std::string &id, const std::string &list, const std::string &mode, std::size_t teams,
+                            const std::string &list_from, Value &row, const Read &read, const StatIds &stat, Plan &plan)
+{
+    const Value &set = row;
+    std::string season = set["season"].is_string()
+                             ? std::string(set["season"].as_string())
+                             : (read ? read(std::string(LISTS) + "[_metadata_=" + list_from + "].season").value_or("") : "");
+    box_world::Choice c = box_world::choose(list, mode, teams, season, read);
+    if (!c.line.empty())
+        plan.lines.push_back("content.package " + id + ": " + c.line);
+    if (!c.apply)
+        return;
+    auto season_id = stat_of(stat, box_world::SEASON_IDS, id, -1);
+    auto layer_id = season_id ? stat_of(stat, box_world::LAYER_IDS, id, -1) : std::nullopt;
+    if (!season_id || !layer_id) {
+        plan.lines.push_back("content.package " + id + ": no free " +
+                             std::string(season_id ? "track layer id (0 to 255)" : "season id (0 to 31)") + "; its " +
+                             std::to_string(teams) + " teams keep the world as it is");
+        return;
+    }
+    push_row(plan, box_world::SEASONS,
+             std::string(box_world::SEASONS) + "." + box_world::SEASON_ROW + "[_metadata_=" + c.from_season + "]",
+             Value::object({{"_metadata_", c.season}, {"statId", std::to_string(*season_id)}}));
+    for (auto &r : c.appends)
+        push_op(plan, append_op(r, "seasons", c.season));
+    push_row(plan, box_world::LAYERS,
+             std::string(box_world::LAYERS) + "." + box_world::LAYER_ROW + "[_metadata_=" + c.from->layer + "]",
+             Value::object({{"_metadata_", c.layer},
+                            {"statId", std::to_string(*layer_id)},
+                            {"game_setup_modes", mode},
+                            {"seasons", c.season}}));
+    row["season"] = c.season;
+    plan.lines.push_back("content.package " + id + ": " + std::to_string(teams) + " teams, " +
+                         (c.now < 0 ? std::string("no layer gives its list a world")
+                                    : "its world holds " + std::to_string(c.now) + " garages") +
+                         ": season " + c.season + " (statId " +
+                         std::to_string(*season_id) + "), layer " + c.layer + " (" + c.from->world + ", " +
+                         std::to_string(c.from->garages) + " garages, statId " + std::to_string(*layer_id) + "), " +
+                         std::to_string(c.appends.size()) + " season lists");
+}
+
+// box_worlds: give a box with more teams than its world has garages a world of its own (box_world.hpp).
 inline void lower_package(const std::string &id, const Value &rec, const Lookup &lookup, Plan &plan,
                           const StatIds &stat = {}, const PersonMap *wear = nullptr, const Read &read = {},
-                          const ConstructorTeams *constructors = nullptr, const Dropped *dropped = nullptr)
+                          const ConstructorTeams *constructors = nullptr, const Dropped *dropped = nullptr,
+                          bool box_worlds = false)
 {
     plan.owner = addon_of(id);
     if (std::string gone = dropped_ref(rec, dropped); !gone.empty()) {
@@ -756,6 +805,8 @@ inline void lower_package(const std::string &id, const Value &rec, const Lookup 
     bool virt = rec["virtual_list"].is_bool() && rec["virtual_list"].as_bool();
     if (virt)
         plan.virtual_lists.push_back(list);
+    if (box_worlds && !virt && mode == box_world::SETUP_MODE)
+        lower_box_world(id, list, mode, teams.size(), list_from, row, read, stat, plan);
     auto list_id = virt ? std::optional<int64_t>() : stat_of(stat, "content.package", id, pin_of(rec));
     if (list_id)
         row["stat_id"] = std::to_string(*list_id);
@@ -905,6 +956,8 @@ inline constexpr PoolSpec POOLS[] = {
     {SCENARIO_IDS, "game_setup.scenarios", "scenario", "statId", 254},
     {LEADERBOARD_IDS, LEADERBOARD_TABLE, "leaderboard_descriptor", "stat_id", 255},
     {"team.identity", "entrants.teams", "team", "stat_id", TEAM_STAT_MAX},
+    {box_world::SEASON_IDS, box_world::SEASONS, box_world::SEASON_ROW, "statId", box_world::SEASON_ID_MAX},
+    {box_world::LAYER_IDS, box_world::LAYERS, box_world::LAYER_ROW, "statId", box_world::LAYER_ID_MAX},
 };
 
 struct PoolScan {
