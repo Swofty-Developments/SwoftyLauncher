@@ -20,12 +20,13 @@ namespace {
 constinit BudgetLines lines;
 
 namespace bp = runtime::build_proof;
-// The fill (0x142936760) is the same 2816 instructions on Steam 26566308 and the EA App KB build, with the entrants
-// vector (+0x2d8..+0x2f8), the records' +0x5c and +0x82 and the participants (+0xad0..+0xae0) at the same instructions
-// (sigport.py --witness); the site pattern matches once on each.
+// The fill (0x142936760) is the same 2816 instructions on Steam 26566308, the EA App KB build and EA 1.0.145, with the
+// entrants vector (+0x2d8..+0x2f8), the records' +0x5c and +0x82 and the participants (+0xad0..+0xae0) at the same
+// instructions (sigport.py --witness); the site pattern matches once on each. On EA 1.0.145 the human records' +0x48
+// stores and the record push 0x140af2ab0 (138 instructions, its 0x88 stride and +0x48 reads) are the same too.
 constexpr bp::Proof FILL_ENTRANTS{"the Time Trial fill's entrants at its participant loop (holder +0x2e0, +0x2e8, "
                                   "0x88-byte records, human flag +0x4b bit 0x10)",
-                                  bp::proofs::VERIFIED_LAYOUT.builds};
+                                  bp::proofs::VERIFIED_LAYOUT.builds | bp::bit(bp::Build::ea_1_0_145)};
 constexpr bp::Gate ENTRANT_CAP{"the Time Trial entrant cap", &FILL_ENTRANTS};
 const runtime::Sig SIG_FILL_PARTICIPANTS{"session.time_trial_fill_participants", "48 8B B7 E0 02 00 00 48 89 7C 24 60",
                                          0x2939dc2};
