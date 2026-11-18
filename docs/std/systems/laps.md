@@ -168,6 +168,37 @@ json = { "v": 1, "module": "2026.11.10.1", "nonce": "...", "body_sha256": "...",
 
 `body_sha256` is the hash of the lap file before the section, `values` and `db` are the handling values and database rows read for the player's car, and `modules` lists the DLLs loaded from the game folder. The key of the MAC is held by the server.
 
+## Server-timed laps
+
+At each timing line of a lap (the start line, sector 1, sector 2 and the finish) the Time Trial plugin calls the lap host's `mark` with the lap's `lap_index`, the line and the game's lap clock there. The core stamps the moment and writes one file per mark into `tt/ticks/` of the launcher's data folder (`swofty/tt/ticks/` when it can't write there):
+
+```json
+{"seq": 12, "lap": 3, "mark": "s1", "game_ms": 28411, "at_ms": 1795000123456}
+```
+
+While the game runs, the launcher sends each mark, in the order they were made, to `POST /v1/tt/sessions/{nonce}/ticks` on a thread of its own:
+
+```json
+{"lap": 3, "mark": "s1", "game_ms": 28411, "since_ms": 12, "attempt": 1, "prev": "<the receipt of the previous tick>"}
+```
+
+The server answers with a receipt, `{"receipt": "tk1...."}`. The launcher keeps a session's receipts under `timetrial/ticks/` in its data folder. When a lap is collected into the outbox it takes the receipts of its `lap_index` with it, and its upload meta carries them in mark order:
+
+```json
+"timing": ["tk1....", "tk1....", "tk1....", "tk1...."]
+```
+
+A mark is sent again after a server error or no answer, and dropped once it is 30 seconds old or when the server refuses it. A lap driven offline has no receipts and uploads without `timing`, as do laps from launchers or plugins without timing marks. The launcher sends at most 12 ticks a minute. A new lap waits up to 5 seconds for marks still being sent. The run log says when a mark couldn't be sent:
+
+```
+timing: lap 3 s1 not sent (couldn't reach https://...); trying again
+timing: lap 3 end not sent within 30 s; that lap is untimed
+```
+
+## Session challenge
+
+When Swofty's server sends a `challenge` with the session nonce, the launcher writes it into `swofty/tt.json` as `tt_challenge`, next to `tt_nonce`, for the integrity module. A challenge that is not a JSON object or is larger than 16 KB is left out. Older servers send none, and the key is then absent.
+
 ## In-game boards
 
 The Time Trial plugin shows addon content on the game's own Time Trial leaderboard screen, the Time Trial track select's View Leaderboards. It is off until the launcher writes `"tt_bridge": true` into `swofty/tt.json`, which it does when Time Trial boards in the game is on. Each step logs one `[boards]` line.
