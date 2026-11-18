@@ -8,8 +8,8 @@
   "level": "L2",
   "subsystem": "game",
   "proto": "float Game_PitLane_GetDistanceToBox(void *pit_lane_manager, uint8_t vehicle)",
-  "evidence": "decomp:re/decomp/1434b4d30.c;decomp:own disasm 1.0.145 0x1434b72b0 the same 219/219;xref:0x14103308a",
-  "notes": "engine-re 2026-11-17 track round C (static): (mgr in rcx, vehicle in dl, cmp dl,0x1a at 0x1434b4d4e) returns a float in xmm0 (vmovaps xmm0,xmm6 at 0x1434b509d). vehicle > 0x1a -> 0.0. Box = garage >> 1 (garage 99 or box 12 -> safety-car request [placement+0x738]; garage > 0x3f -> -1.0; else [placement+0x838+box*8]); null request or box float < 0 -> -1.0 (trace 0x58); null car record -> box 0. Returns box record distance (mgr+0xc0+box*0x90 = record +0x80, negative = no record) minus the car's pit spline distance ([car+0x108]+0xcf8) while the car flag +0x185 is clear and state +0x178 != 3; else the straight-line distance to the box position (mgr+0xb0+box*0x90) (V11205). Only 13 box records exist (mgr+0x40, 0x90 each), so box 13..31 (garage 26..63) reads past them. One caller: the call at 0x141033089 in 0x141032b50, with rcx = [rax+0x48] and edx = the vehicle, which keeps xmm0 (vmovaps xmm6,xmm0 at 0x14103308e). raised by engine-re with --force 2026-11-17 at user request (lane owner review requested) | re-bindings 2026-11-18: Steam 1.0.145 (sigport --witness): 0x1434b72b0, 219/219 equal, with +0x40, +0xc0, +0x738, +0x838, +0x108, +0xcf8, +0x185, +0x178 and +0xe0 at the same instructions."
+  "evidence": "decomp:re/decomp/1434b4d30.c;decomp:own disasm 1.0.145 0x1434b72b0 the same 219/219;xref:0x141033089",
+  "notes": "engine-re 2026-11-17 track round C (static): (mgr in rcx, vehicle in dl, cmp dl,0x1a at 0x1434b4d4e) returns a float in xmm0 (vmovaps xmm0,xmm6 at 0x1434b509d). vehicle > 0x1a -> 0.0. Box = garage >> 1 (garage 99 or box 12 -> safety-car request [placement+0x738]; garage > 0x3f -> -1.0; else [placement+0x838+box*8]); null request or box float < 0 -> -1.0 (trace 0x58); null vehicle record ([mgr+0x938+vehicle*0x10]) -> box 0 (0x1434b4d6f, 0x1434b4d86). Each lookup also calls Sess_VehiclePlacement_ResolveTransform(placement, request) and ignores its result. Returns box record distance (mgr+0xc0+box*0x90 = record +0x80, negative = no record) minus the car's pit spline distance ([car+0x108]+0xcf8, car = [[[mgr+0xb08]+0x38]+0xc8][vehicle*8]) while the car flag +0x185 is clear and state +0x178 != 3 (0x1434b4dee..0x1434b4e0d, 0x1434b4eca); else the horizontal (x, z) distance from the vehicle position to the box position (mgr+0xb0+box*0x90), y dropped (blend 0xa at 0x1434b4f4b), and only when the box is ahead: the position and forward axis come from [[[rec]+0x58]+0x558]+0x1c0 and +0x1b0 and the normalised dot product must be > 0 (ja at 0x1434b4f8e), else -1.0; a null vehicle record, [rec] or [[rec]+0x58] on this branch also gives -1.0 (0x1434b4e2a, 0x1434b4e36, 0x1434b4e43) (V11205). Only 13 box records exist (mgr+0x40, 0x90 each; the writer loop in 0x1434b83e0 stops at cmp r14,0xd, 0x1434bc0fc), so box 13..31 (garage 26..63) reads past them. One caller: the call at 0x141033089 in 0x141032b50, with rcx = [rax+0x48] and edx = the vehicle, which keeps xmm0 (vmovaps xmm6,xmm0 at 0x14103308e). raised by engine-re with --force 2026-11-17 at user request (lane owner review requested) | re-bindings 2026-11-18: Steam 1.0.145 (sigport --witness): 0x1434b72b0, 219/219 equal, with +0x40, +0xc0, +0x738, +0x838, +0x108, +0xcf8, +0x185, +0x178 and +0xe0 at the same instructions."
  },
  "signature": {
   "id": "game.pit_lane_get_distance_to_box",
@@ -55,6 +55,16 @@
    "verdict": "agree",
    "evidence": "xref:0x1434b4da4,0x1434b4eb5,0x1434b4dd7,0x1434bc0fc",
    "notes": "V11226 garage<=0x3f accepted, box record mgr+0xc0+box*0x90 read for box 13..31; box loop 13 iterations"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_PitLane_GetDistanceToBox",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1434b4d30-0x1434b510e,0x142f62580-0x142f629e0,0x1434b5110-0x1434b59ab,0x1434bc073-0x1434bc4fc,0x141032b50-0x14103428f,1.0.145 0x1434b72b0-0x1434b768e 219/219;xref:0x141033089,0x1434b4d4e,0x1434b4da4,0x1434b4d77,0x1434b4eb5,0x1434b4de8,0x1434b4e04,0x1434b4e0d,0x1434b4eca,0x1434b4f8e,0x1434b50c6,0x1434b500d,0x1434bc0fc",
+   "notes": "V100005 Blind: partial. Confirmed: proto (rcx mgr, dl uint8, float in xmm0 at 0x1434b509d); vehicle>0x1a -> 0.0; box=garage>>1 (0x1434b4da4); 99 or box 12 -> [P+0x738]; garage>0x3f -> -1.0; null slot or box float <0/NaN -> -1.0 with code 0x58; null record -> box 0; normal return [mgr+0xc0+box*0x90]-[[car+0x108]+0xcf8] gated by +0x185/+0x178; 13 boxes (cmp r14,0xd at 0x1434bc0fc), no bound past 13; only caller 0x141033089 in 0x141032b50; 1.0.145 0x1434b72b0 219/219. Imprecise: the other return is the XZ distance (y zeroed), and only when the box is ahead of the car's forward axis (dot>0, 0x1434b4f8e), else -1.0; null [rec]/[[rec]+0x58] -> -1.0; car = [[[mgr+0xb08]+0x38]+0xc8][vehicle]."
   }
  ],
  "proofs": [
