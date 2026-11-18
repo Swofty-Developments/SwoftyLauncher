@@ -1,5 +1,6 @@
 #include "core/render/postfx/rules.hpp"
 
+#include "core/live/live_car_logic.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <swofty/mixin.hpp>
@@ -254,11 +255,12 @@ void RuleDriver::frame(const frontend::view::State &v, ULONGLONG now, const Acti
     }
 }
 
+// The vehicle table and CarLive.is_ai +0x124 are the live car's reads (live_car::CAR_TABLE names their builds).
 bool RuleDriver::player_car(int64_t index)
 {
     if (!car_tried) {
         car_tried = true;
-        if (runtime::verified_build() && swofty::api) {
+        if (runtime::build_proof::proven_on(live_car::CAR_TABLE, runtime::running_build()) && swofty::api) {
             car_table = swofty::api->resolve("g_Sess_VehicleTable");
             car_count = swofty::api->resolve("g_Sess_VehicleCount");
         }
