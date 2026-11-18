@@ -99,14 +99,15 @@ inline FuelRules fuel_rules_pick(const std::string &entrant_list,
 // (Game_PitBoxCarActor_Update) calls it with flag 0. In a race session a flag-1 call is skipped, so the fitted compound,
 // its wear and temperatures stay; pitstopComplete still runs. A car with a punctured tyre keeps the game's change.
 //
-// The puncture state is byte +0x20 of each of the car's four SuspensionSystem wheels ([CarLive +0x580] +0x70 RL, +0x78
-// RR, +0x80 FL, +0x88 FR; the CarLive is the TyreComponent's entity +0x20, then +0x58, as 0x142e92f70 reaches it): bit 1
-// is a puncture the tyre damage monitor admitted (Car_Puncture_Add 0x14464e200, which Car_Tyre_SyncPunctureState
-// 0x142e88840 calls from the fitted set's per-wheel puncture byte), bit 0 a puncture Car_Tyre_SetPunctureState
-// 0x144656f80 set, which deflates the tyre to the rim (0x1446b7060). Bits 2 and 3 are the suspension's collision corner
-// flags. Dword +0x208 of the TyreComponent's tyre records is the tyre model's visibility mask (m_tyreModelVisibility, set
-// per shown part by setTyreVisibility 0x142e83130), not a damage state.
-constexpr uint64_t TYRE_ENTITY = 0x20, ENTITY_CAR = 0x58, CAR_SUSPENSION = 0x580, WHEEL_STATE = 0x20;
+// The puncture state is CarWheel.tyre_flags (+0x20) of each of the car's four wheels: VehicleTyreComponent.physics
+// (+0x20), CarPhysicsRecord.car (+0x58, the CarLive), CarLive.suspension (+0x580), CarSuspension.wheels (+0x70 RL,
+// +0x78 RR, +0x80 FL, +0x88 FR), the chain 0x142e92f70 and 0x142ea2300 walk. Bit 1 is a puncture (every set goes through
+// the tyre damage monitor's Car_Puncture_Add 0x14464e200, every clear through Car_Puncture_Remove 0x14464e3a0); bit 0 a
+// burst, set only while bit 1 is (the tyre update 0x1446b5720 once the deflation +0x98 reaches 2.0, or 0x144656f80); bits
+// 2 and 3 are pending hits. The pit stop's own change resets the flags of the set it fits (0x142ea2300 -> 0x142e88840 ->
+// the tyre reset 0x1446b6d10). Dword +0x208 of the TyreComponent's tyre records is the tyre model's visibility mask
+// (m_tyreModelVisibility, set per shown part by setTyreVisibility 0x142e83130), not a damage state.
+constexpr uint64_t TYRE_PHYSICS = 0x20, PHYSICS_CAR = 0x58, CAR_SUSPENSION = 0x580, WHEEL_TYRE_FLAGS = 0x20;
 constexpr uint64_t SUSPENSION_WHEELS[4] = {0x70, 0x78, 0x80, 0x88};
 constexpr uint8_t WHEEL_PUNCTURED = 0x03;
 inline constexpr const char *WHEEL_NAMES[4] = {"RL", "RR", "FL", "FR"};
@@ -115,16 +116,16 @@ inline constexpr const char *WHEEL_NAMES[4] = {"RL", "RR", "FL", "FR"};
 // object of out's type from the game; a wheel whose state can't be read counts as not punctured.
 template <class Read> uint8_t punctured_wheels(uint64_t tyre_component, Read read)
 {
-    uint64_t entity = 0, car = 0, suspension = 0;
-    if (!read(tyre_component + TYRE_ENTITY, entity) || !entity || !read(entity + ENTITY_CAR, car) || !car ||
+    uint64_t physics = 0, car = 0, suspension = 0;
+    if (!read(tyre_component + TYRE_PHYSICS, physics) || !physics || !read(physics + PHYSICS_CAR, car) || !car ||
         !read(car + CAR_SUSPENSION, suspension) || !suspension)
         return 0;
     uint8_t out = 0;
     for (size_t i = 0; i < 4; i++) {
         uint64_t wheel = 0;
-        uint8_t state = 0;
-        if (read(suspension + SUSPENSION_WHEELS[i], wheel) && wheel && read(wheel + WHEEL_STATE, state) &&
-            (state & WHEEL_PUNCTURED))
+        uint8_t flags = 0;
+        if (read(suspension + SUSPENSION_WHEELS[i], wheel) && wheel && read(wheel + WHEEL_TYRE_FLAGS, flags) &&
+            (flags & WHEEL_PUNCTURED))
             out |= uint8_t(1u << i);
     }
     return out;

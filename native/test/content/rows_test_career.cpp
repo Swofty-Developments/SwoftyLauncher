@@ -3,11 +3,11 @@
 #include <cstring>
 #include <vector>
 
-// A TyreComponent, its entity, its CarLive and the CarLive's SuspensionSystem wheels in one buffer, laid out as the game
+// A TyreComponent, its CarPhysicsRecord, its CarLive and the CarLive's SuspensionSystem wheels in one buffer, laid out as the game
 // reaches them (content::punctured_wheels), with every tyre record's model visibility mask (+0x208) set as
 // setTyreVisibility leaves it on a car on track.
 struct PitStopCar {
-    static constexpr uint64_t BASE = 0x200000, TYRES = BASE, ENTITY = BASE + 0xa000, CAR = BASE + 0xa100,
+    static constexpr uint64_t BASE = 0x200000, TYRES = BASE, PHYSICS = BASE + 0xa000, CAR = BASE + 0xa100,
                               SUSPENSION = BASE + 0xa800, WHEELS = BASE + 0xa900, WHEEL_SIZE = 0x400;
     std::vector<uint8_t> bytes = std::vector<uint8_t>(0xb000 + 4 * WHEEL_SIZE);
 
@@ -15,8 +15,8 @@ struct PitStopCar {
 
     PitStopCar()
     {
-        put<uint64_t>(TYRES + content::TYRE_ENTITY, ENTITY);
-        put<uint64_t>(ENTITY + content::ENTITY_CAR, CAR);
+        put<uint64_t>(TYRES + content::TYRE_PHYSICS, PHYSICS);
+        put<uint64_t>(PHYSICS + content::PHYSICS_CAR, CAR);
         put<uint64_t>(CAR + content::CAR_SUSPENSION, SUSPENSION);
         for (size_t i = 0; i < 4; i++)
             put<uint64_t>(SUSPENSION + content::SUSPENSION_WHEELS[i], WHEELS + i * WHEEL_SIZE);
@@ -24,7 +24,7 @@ struct PitStopCar {
         for (uint64_t i = 0; i < 4; i++)
             put<uint32_t>(TYRES + 0x30 + i * 0xde0 + 0x208, 0x1f);
     }
-    void wheel_state(size_t i, uint8_t v) { put<uint8_t>(WHEELS + i * WHEEL_SIZE + content::WHEEL_STATE, v); }
+    void tyre_flags(size_t i, uint8_t v) { put<uint8_t>(WHEELS + i * WHEEL_SIZE + content::WHEEL_TYRE_FLAGS, v); }
 
     auto reader() const
     {
@@ -45,23 +45,21 @@ static void pit_stop_wheel_tests()
     check(wheels == 0, "a car on track has its tyre models shown (+0x208 = 0x1f) and no punctured wheel");
     check(content::race_tyre_change_pick(true, 15, true, wheels) == TyreChange::kept,
           "a race stop of a car whose tyre models are shown keeps its tyres");
-    car.wheel_state(0, 0x4);
-    car.wheel_state(1, 0x8);
-    check(content::punctured_wheels(PitStopCar::TYRES, car.reader()) == 0,
-          "the suspension's collision corner flags (bits 2 and 3) are not a puncture");
-    car.wheel_state(3, 0x2);
+    car.tyre_flags(0, 0x4);
+    car.tyre_flags(1, 0x8);
+    check(content::punctured_wheels(PitStopCar::TYRES, car.reader()) == 0, "pending hits (bits 2 and 3) are not a puncture");
+    car.tyre_flags(3, 0x2);
     wheels = content::punctured_wheels(PitStopCar::TYRES, car.reader());
-    check(wheels == 0x8 && content::wheel_names(wheels) == "FR",
-          "a puncture the damage monitor admitted (bit 1) is that wheel's");
+    check(wheels == 0x8 && content::wheel_names(wheels) == "FR", "a puncture (bit 1) is that wheel's");
     check(content::race_tyre_change_pick(true, 17, true, wheels) == TyreChange::punctured,
           "a race stop with a punctured wheel gets the game's change");
-    car.wheel_state(0, 0x1 | 0x4);
+    car.tyre_flags(0, 0x3 | 0x4);
     wheels = content::punctured_wheels(PitStopCar::TYRES, car.reader());
-    check(wheels == 0x9 && content::wheel_names(wheels) == "RL, FR", "a tyre deflated to the rim (bit 0) is punctured too");
+    check(wheels == 0x9 && content::wheel_names(wheels) == "RL, FR", "a burst tyre (bit 0 with bit 1) is punctured too");
     car.put<uint64_t>(PitStopCar::SUSPENSION + content::SUSPENSION_WHEELS[3], 0x900000);
     check(content::punctured_wheels(PitStopCar::TYRES, car.reader()) == 0x1,
           "a wheel that can't be read counts as not punctured");
-    car.put<uint64_t>(PitStopCar::ENTITY + content::ENTITY_CAR, 0);
+    car.put<uint64_t>(PitStopCar::PHYSICS + content::PHYSICS_CAR, 0);
     check(content::punctured_wheels(PitStopCar::TYRES, car.reader()) == 0, "a TyreComponent with no car has no punctured wheel");
     check(content::punctured_wheels(0x10, car.reader()) == 0, "a TyreComponent that can't be read has no punctured wheel");
     check(content::wheel_names(0) == "" && content::wheel_names(0xf) == "RL, RR, FL, FR", "wheel names in suspension order");
