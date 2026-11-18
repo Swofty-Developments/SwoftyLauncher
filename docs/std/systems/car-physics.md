@@ -193,7 +193,7 @@ The `ai.<group>.<key>` fields are the per-car AI driver config slots: `blocking`
 
 A curve field's own cell is a copy of the game's curve record made flat: step 0, an all-zero sample table, and min, last value and max set to the composed value, so every x evaluates to it. `get` on a curve field returns the curve at x = 0. `ai.space_seeking.car_in_front_needed` and `ai.space_seeking.total_queue_needed` are int cells: the composed value is rounded to the nearest integer. A cell whose stock value does not fit its kind (a denormal or non-finite float, an int outside 0 to 65536, a curve record with a non-finite scale, offset, step, last value, min or max) is refused and left alone. A field turns on once its `AiDriverConfig.<group>_<key>` KB row has an independent agree verify row; the 43 added with `alongside`, `divebomb_defense`, `offset_variation`, `overtake` and `space_seeking` have none yet.
 
-A car's index is the game's vehicle id: dense from 0 in the order the cars were built, the safety car included. A `Car` from `cars()` also carries the game's car, and a call on it answers `Result::late` once that car is gone from its slot. `set` runs on the game's flow thread, so call it from a frame, setting or event handler; from another thread it answers `Result::late`. The values are read from the build the core's field table was mapped on: on any other build of the game `cars::live::available()` is false and `cars()` is empty.
+A car's index is the game's vehicle id: dense from 0 in the order the cars were built, the safety car included. A `Car` from `cars()` also carries the game's car, and a call on it answers `Result::late` once that car is gone from its slot. `set` runs on the game's flow thread, so call it from a frame, setting or event handler; from another thread it answers `Result::late`. The values are read from Steam 1.0.141, Steam 1.0.145.2472 and the EA app's 1.0.145: on any other build of the game, the EA app's 1.0.141 among them, `cars::live::available()` is false and `cars()` is empty.
 
 ## Layers
 
@@ -402,7 +402,7 @@ For how the AI drives, see [AI](/std/systems/ai).
 
 ## Readiness
 
-The parts, their fields and how they're stored are mapped from the game's code and checked independently. An in-game trace confirmed that cars are built once at session load and torn down when it ends, that the game rebuilds every car twice while a session loads and rebuilds one car when control of it changes, and the live values of engine speed, fuel, ERS, tyre wear, mass and the aero coefficients. Still to confirm in game: DRS, the fuel-mix and setup controls, career R&D upgrades, and how a car's index matches its participant. The `cars::live` fields are mapped from the game's code and checked on fake cars in the core's host test; none of them is tested in game yet. Their offsets are those of the game build the bindings document was made for: on any other build, a game patch included, the core's `same_build()` check turns `cars::live` off until the KB is re-derived for that build.
+The parts, their fields and how they're stored are mapped from the game's code and checked independently. An in-game trace confirmed that cars are built once at session load and torn down when it ends, that the game rebuilds every car twice while a session loads and rebuilds one car when control of it changes, and the live values of engine speed, fuel, ERS, tyre wear, mass and the aero coefficients. Still to confirm in game: DRS, the fuel-mix and setup controls, career R&D upgrades, and how a car's index matches its participant. The `cars::live` fields are mapped from the game's code and checked on fake cars in the core's host test; none of them is tested in game yet. Their offsets are checked for Steam 1.0.141, Steam 1.0.145.2472 and the EA app's 1.0.145: on any other build, a game patch included, `cars::live` is off.
 
 These fields are on; each rests on a verified row:
 
@@ -462,7 +462,7 @@ SWOFTY_ON_LOAD
 
 A change the game makes cannot be told from the player's: the core has no mix-changed event, so the addon records the mix it wants (here `chosen`, taken from `fuel_mix(car)` while the player drives) and re-applies it.
 
-`unlock_fuel_mixes` clears the availability entries of the mixes in the mask for every car, every frame, until the mask is 0 again. `fuel_mix(car)` reads a car's current mix. The availability table (`g_EngineModeAvail`, KB notes in car.md) has no independent verify row; the core reads it through checked memory and answers `Result::unavailable` on any other build.
+`unlock_fuel_mixes` clears the availability entries of the mixes in the mask for every car, every frame, until the mask is 0 again. `fuel_mix(car)` reads a car's current mix. The availability table (`g_EngineModeAvail`, KB notes in car.md) has no independent verify row; the core reads it through checked memory and answers `Result::unavailable` on a build without checked car layouts.
 
 ## Handling records
 
