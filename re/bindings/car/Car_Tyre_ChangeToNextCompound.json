@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e94040",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
-  "proto": "-",
-  "evidence": "pat:log-channel-PITSTOP_TYRES",
-  "notes": "Log channel PITSTOP_TYRES: 'TyreComponent::changeToNextCompound %p - PITLANE CHANGEOVER' | 'MOX/Tyres: changeToNextCompound() new type %d is not the same as next type '%s' (from %d)'"
+  "proto": "uint64_t Car_Tyre_ChangeToNextCompound(void *tyre_component, uint8_t pit_stop)",
+  "evidence": "pat:log-channel-PITSTOP_TYRES;decomp:own disasm 0x142e94040-0x142e946cf,0x14f43e230-0x14f43e3f7,0x1434bdd60-0x1434bde44,1.0.145 0x142e965d0 the same 406/406;xref:0x1434bdd9f;xref:0x1403c8dd3;xref:0x142e946bc",
+  "notes": "TyreComponent::changeToNextCompound. Log channel PITSTOP_TYRES: 'TyreComponent::changeToNextCompound %p - PITLANE CHANGEOVER' (0x142e940b4) | 'MOX/Tyres: changeToNextCompound() new type %d is not the same as next type '%s' (from %d)' (0x142e9420d). rcx = the TyreComponent (kept in rsi), dl = pit_stop (kept in ebx, tested at 0x142e941eb and 0x142e94219). Two callers, neither reads the result: Game_PitLane_ApplyPitstopTyres passes 1 (mov dl,1 at 0x1434bdd9d, call at 0x1434bdd9f) and afterwards calls pitstopComplete 0x142e94780 (0x1434bde3f) whether or not this ran; Game_PitBoxCarActor_Update passes 0 (xor edx,edx at 0x1403c8dd1, call at 0x1403c8dd3). The body finds the next set by the id at +0x9c70 among the 0x18-byte entries from +0x9bd0 (count +0x9c48). When it differs from the fitted set (+0x9938 id, +0x9940, +0x9948) it logs the second line and then, with pit_stop set, calls 0x142e96390 (0x142e941f2) instead of storing the set at +0x9938..+0x9948 itself (0x142e9421d..0x142e94231). It then calls 0x142ea1d30, ORs dword +0x208 & 0x1f of every tyre record (records at +0x30, stride 0xde0, count u64 +0x98d0; 0x142e94280..0x142e9428a) into ebp, calls 0x142e83130(record, k, 0, 0) for k = 0..4 on every record (0x142e942cb..0x142e943ce), runs the per-record calls 0x142e83130/0x142e87870/0x142e87ab0 on the selected record with those bits and byte +0x9915 (0x142e944f7..0x142e946a8), calls 0x142ea2300(component, 1, 0x101) and returns 0 (xor eax,eax at 0x142e946bc, its one exit). pitstopComplete (a jmp to 0x14f43e230) clears +0x9910 and calls 0x142e83130/0x142e87540 only on the +0x4a0 and +0x940 sub-records of each tyre record, for k = 0..5 (log 'MOX/Tyres: pitstopComplete() disabling everything but set %d'). Steam 1.0.145: the same code at 0x142e965d0 (sigport --witness 406/406, with +0x30, +0x98d0, +0x238, +0xde0, +0x9938, +0x9940, +0x9948 and +0x9915 at the same instructions). H: the +0x208 bits mark tyre damage or a puncture. | re-bindings 2026-11-18: raised to L2 for the core's race tyre change rule (native/src/core/guards/garage/pit_box.cpp)."
  },
  "signature": {
   "id": "car.tyre_change_to_next_compound",
@@ -33,7 +33,9 @@
     "how": "static"
    }
   ],
-  "used_by": []
+  "used_by": [
+   "native/src/core/guards/garage/pit_box.cpp"
+  ]
  },
  "verify": [
   {
@@ -47,5 +49,44 @@
    "notes": "V5528 body, strings and callees match name/description"
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142e94040",
+    "target": "0x142e94040"
+   },
+   "sigcheck": "passed",
+   "digest": "a93e01e85a73ab6a03dc166012d8684a9bb4c7a491868742397a188a608be1c2"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142e965d0",
+    "target": "0x142e965d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9534624eb93765e000a61e20e736a43e277829c21925f48d0363908cb3a079f9"
+  }
+ ]
 }
