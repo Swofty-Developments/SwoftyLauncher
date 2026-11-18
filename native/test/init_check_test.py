@@ -92,10 +92,13 @@ class References(unittest.TestCase):
         self.assertEqual(ic.unlisted_references(refs, allowed),
                          ([('toast.cpp', 'popup::messages')], [('gone.cpp', 'perf::g_live')]))
 
-    def test_an_inline_variables_constructor_is_not_a_units_reference(self):
-        u = Unit('a.cpp', ['SWOFTY_ON_LOAD'], ['_ZN6swofty6career7marketsE'])
-        u.ctors[1].external = ['_ZN5popup8messagesE']
-        self.assertEqual(ic.references([u]), [])
+    def test_an_inline_variables_reference_is_listed_once_under_the_variable(self):
+        first = Unit('first.cpp', ['SWOFTY_ON_LOAD'], ['_ZN6swofty6career7marketsE'])
+        second = Unit('second.cpp', ['SWOFTY_ON_LOAD'], ['_ZN6swofty6career7marketsE'])
+        for u in (first, second):
+            u.ctors[1].external = ['_ZN5popup8messagesE']
+        self.assertEqual(ic.references([first, second]), [('inline swofty::career::markets', 'popup::messages')])
+        self.assertEqual(ic.references([second, first]), ic.references([first, second]))
 
 
 class FindDecl(unittest.TestCase):

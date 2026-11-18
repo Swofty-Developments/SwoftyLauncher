@@ -17,7 +17,9 @@ initializer reads no other unit's object: as "<source>: <declaration>" for one o
 for every object spelled in a core macro, or as "type: <type>" for every object of that type declared without an
 initializer. The fix for a new one is constinit or constexpr, a function-local static, or a SWOFTY_ON_LOAD handler.
 A static constructor that refers to another unit's object fails the build the same way unless the allow list names
-that reference as "refers: <source>: <object>".
+that reference as "refers: <source>: <object>". The constructor of an inline variable or of a class template's static
+member is the same in every unit that has a copy, so its references are listed once, under the object it initializes,
+as "refers: inline <variable>: <object>".
 
 With --obj-root it also derives what the link order decides, from the objects given in link order. lld lays out the
 .ctors entries in link order (in each object, its sections in order, and a COMDAT entry only from the first object
@@ -182,7 +184,7 @@ class Unit:
                 self.objects[symbol] = locate(symbol, self.name, self.entries, bodies, taken)
 
 
-def order_effects(units, hooks, bodies):
+def linked(units):
     listed, kept = [], set()
     for u in units:
         for c in u.ctors:
@@ -192,7 +194,11 @@ def order_effects(units, hooks, bodies):
                     continue
                 kept.add(key)
             listed.append((u, c))
-    run = list(reversed(listed))
+    return listed
+
+
+def order_effects(units, hooks, bodies):
+    run = list(reversed(linked(units)))
     init, inline, bindings, registered = [], [], [], []
     for u, c in run:
         if not c.comdat and u.name not in init:
@@ -237,8 +243,13 @@ def order_effects(units, hooks, bodies):
 
 
 def references(units):
-    return [(u.name, coff_ctors.readable(symbol)) for u in units
-            for symbol in dict.fromkeys(e for c in u.ctors if not c.comdat for e in c.external)]
+    refs = []
+    for u, c in linked(units):
+        source = f'inline {coff_ctors.readable((c.initialized or [c.function])[0])}' if c.comdat else u.name
+        for symbol in c.external:
+            if (source, coff_ctors.readable(symbol)) not in refs:
+                refs.append((source, coff_ctors.readable(symbol)))
+    return refs
 
 
 def unlisted_references(refs, allowed_refs):
@@ -372,7 +383,8 @@ def main():
             print('init_check.py: these units\' static constructors refer to another unit\'s object, whose own '
                   'initializer may not have run yet. Read it from a function-local static or a SWOFTY_ON_LOAD handler '
                   'instead, or, if the constructor only takes its address, list it with that reason in '
-                  'tools/init_allow.txt as "refers: <source>: <object>":', file=sys.stderr)
+                  'tools/init_allow.txt as "refers: <source>: <object>", or "refers: inline <variable>: <object>" for '
+                  'an inline variable\'s constructor:', file=sys.stderr)
             print('\n'.join(f'  {source}: {obj}' for source, obj in new_refs), file=sys.stderr)
         if unknown:
             print('init_check.py: these objects have a dynamic initializer, which runs in a fixed order with every other '

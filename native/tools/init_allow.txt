@@ -2,7 +2,8 @@
 # "<source>: <declaration>", as "<header>: #define <MACRO>" for every object spelled in that core macro, or as
 # "type: <type>" for every object of that type declared without an initializer, under the reason its initializer
 # reads no other translation unit's object, and each static constructor's reference to another unit's object as
-# "refers: <source>: <object>", under the reason it reads nothing of it.
+# "refers: <source>: <object>" (or, for the constructor of an inline variable or a class template's static member,
+# "refers: inline <variable>: <object>"), under the reason it reads nothing of it.
 
 # Constructs a HookGuard, which writes itself into hook_guards(), a function-local static in guards/registry.cpp; the
 # guards arm in HookGuardId order from there, whatever order their units initialize in.
