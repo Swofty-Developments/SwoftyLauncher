@@ -16,7 +16,7 @@ LIVE_ROWS = os.path.join(NATIVE, 'live', 'live_rows.hpp')
 LIVE_MEM = os.path.join(NATIVE, 'live', 'live_mem.hpp')
 LIVE_STATE = os.path.join(NATIVE, 'live', 'live_state.cpp')
 QUALIFIERS = re.compile(r'\b(?:runtime::build_proof|swofty_core::live|bp|lv|runtime)::')
-TOKEN = re.compile(r'\s*(?:(0x[0-9a-fA-F]+|\d+)[uUlL]*|([A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)|'
+TOKEN = re.compile(r'\s*(?:(0x[0-9a-fA-F]+|\d+)[uUlL]*|([A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\.builds)?)|'
                    r'(<<|>>|[|&^~()+\-*,]))')
 
 
@@ -115,8 +115,8 @@ class Expr:
             if key not in self.bit:
                 raise ValueError(f'bit() of an unknown name {arg[1]!r}')
             return 1 << self.bit[key]
-        if kind == 'name' and val in self.names:
-            return self.names[val]
+        if kind == 'name' and (val in self.names or val.split('::')[-1] in self.names):
+            return self.names[val] if val in self.names else self.names[val.split('::')[-1]]
         raise ValueError(f'unknown name {val!r}')
 
 
@@ -152,7 +152,8 @@ def identify(rows, pe_timestamp, size_of_image):
 
 
 def native_sources(root=NATIVE):
-    for d, _, files in os.walk(root):
+    for d, dirs, files in os.walk(root):
+        dirs.sort()
         for f in sorted(files):
             if f.endswith(('.cpp', '.hpp')):
                 yield os.path.join(d, f)
@@ -215,7 +216,9 @@ def proofs(order, files=None):
     bit = dict(order)
     shared = constants(read(BUILD_PROOF), {}, bit)
     out = []
-    for path in (native_sources() if files is None else files):
+    sources = list(native_sources() if files is None else files)
+    sources.sort(key=lambda s: os.path.abspath(s) != os.path.abspath(BUILD_PROOF))
+    for path in sources:
         text = read(path)
         if 'Proof' not in text:
             continue
@@ -231,6 +234,7 @@ def proofs(order, files=None):
                  'builds': sorted((b for b, i in order.items() if builds >> i & 1), key=order.get),
                  'file': rel(path), 'line': line_of(text, m.start()), 'features': [], 'bindings': []}
             found[p['name']] = p
+            shared[p['name'] + '.builds'] = builds
             out.append(p)
         for m in GATE.finditer(text):
             target = found.get(m.group(3)) or next((p for p in out if p['name'] == m.group(3)), None)
@@ -238,7 +242,7 @@ def proofs(order, files=None):
                 target['features'].append(m.group(2))
                 if m.group(4) and m.group(4).strip():
                     target['bindings'].append(m.group(4).strip())
-    users = sorted(rel(p) for p in (native_sources() if files is None else files)
+    users = sorted(rel(p) for p in sources
                    if 'verified_build()' in read(p) and not p.endswith(('build.hpp', 'stage.cpp')))
     for p in out:
         if p['name'] == 'VERIFIED_LAYOUT' and not p['features']:
