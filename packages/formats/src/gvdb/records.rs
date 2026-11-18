@@ -1,8 +1,8 @@
 //! A database's records in file order, with an index of the first record of
 //! each key. The first [`SCANS`] lookups scan the records, and the next one
 //! builds the index, which costs about as much as those scans. `push` and
-//! `extend` keep the index and `remove` shifts it; any other change through
-//! `&mut` drops it and starts the count of scans again.
+//! `extend` keep the index and `insert` and `remove` shift it; any other change
+//! through `&mut` drops it and starts the count of scans again.
 
 use std::collections::HashMap;
 use std::hash::{BuildHasherDefault, Hasher};
@@ -101,6 +101,20 @@ impl Records {
             index.entry(r.key).or_insert(self.list.len());
         }
         self.list.push(r);
+    }
+
+    /// Puts `r` at `i`, before the record there.
+    pub fn insert(&mut self, i: usize, r: Record) {
+        if let Some(index) = self.index.get_mut() {
+            for at in index.values_mut() {
+                if *at >= i {
+                    *at += 1;
+                }
+            }
+            let at = index.entry(r.key).or_insert(i);
+            *at = (*at).min(i);
+        }
+        self.list.insert(i, r);
     }
 
     pub fn remove(&mut self, i: usize) -> Record {
