@@ -15,6 +15,12 @@ namespace swofty_core::live {
 
 namespace L = layout;
 
+// The pit box of a garage index: garage >> 1, box 12 for the safety car's garage 99.
+inline uint8_t garage_pit_box(uint8_t garage)
+{
+    return garage == L::pit::garage_safety_car ? uint8_t(L::pit::safety_car_box) : uint8_t(garage >> 1);
+}
+
 constexpr unsigned MAX_CARS = SWOFTY_LIVE_MAX_CARS;
 constexpr size_t MAX_ENTRIES = 64;
 
@@ -424,6 +430,8 @@ private:
     uint8_t pit_status_[MAX_CARS] = {};
     uint8_t pit_stops_[MAX_CARS] = {};
     bool pit_lane_ok_[MAX_CARS] = {};
+    uint8_t garage_[MAX_CARS] = {};
+    bool garage_ok_[MAX_CARS] = {};
     bool retire_from_bus_ = false;
     uint32_t player_gen_ = 0, subject_gen_ = 0;
     uintptr_t player_ptr_ = 0, subject_ptr_ = 0;
@@ -438,6 +446,7 @@ private:
         std::memset(cars, 0, sizeof cars);
         std::memset(pit_, 0xff, sizeof pit_);
         std::memset(pit_lane_ok_, 0, sizeof pit_lane_ok_);
+        std::memset(garage_ok_, 0, sizeof garage_ok_);
         reset_timers();
     }
 
@@ -495,6 +504,7 @@ private:
             t = Tyre{};
         std::memset(pit_, 0xff, sizeof pit_);
         std::memset(pit_lane_ok_, 0, sizeof pit_lane_ok_);
+        std::memset(garage_ok_, 0, sizeof garage_ok_);
         ++seq;
     }
 
@@ -853,6 +863,7 @@ private:
     {
         std::memset(pit_, 0xff, sizeof pit_);
         std::memset(pit_lane_ok_, 0, sizeof pit_lane_ok_);
+        std::memset(garage_ok_, 0, sizeof garage_ok_);
         uintptr_t s = find(c_pit_, s_.key_pit);
         uintptr_t rec[MAX_CARS * 2];
         if (!s || !m_.read(s + L::pit::records, rec, sizeof rec))
@@ -875,6 +886,13 @@ private:
                 pit_status_[vid] = !in_lane ? 0 : st == 4 ? 2 : 1;
                 pit_stops_[vid] = uint8_t(stops & 0xff);
                 pit_lane_ok_[vid] = true;
+                if constexpr (L::HAS_GARAGE) {
+                    uint32_t garage = 0;
+                    if (m_.get(flags + L::pit::garage, garage) && garage <= L::pit::garage_safety_car) {
+                        garage_[vid] = uint8_t(garage);
+                        garage_ok_[vid] = true;
+                    }
+                }
             }
         }
     }
@@ -1499,6 +1517,11 @@ private:
                 c.have |= SWOFTY_LIVE_HAVE_PIT_LANE;
                 c.pit_status = pit_status_[id];
                 c.pit_stops = pit_stops_[id];
+            }
+            if (garage_ok_[id]) {
+                c.have |= SWOFTY_LIVE_HAVE_GARAGE;
+                c.garage = garage_[id];
+                c.pit_box = garage_pit_box(garage_[id]);
             }
             c.gap_leader_ms = c.gap_ahead_ms = SWOFTY_LIVE_NO_GAP;
             const Gap &g = gap_[id];

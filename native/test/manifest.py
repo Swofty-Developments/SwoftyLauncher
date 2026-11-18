@@ -65,6 +65,7 @@ class Script:
 
 # Built with the host C++ compiler, or with zig for x86_64-linux-musl where the compiler is zig.
 UNITS = [
+    Unit('abi_layout', 'Live car ABI layout unit test'),
     Unit('activity_resume', 'Activity resume guard unit test'),
     Unit('ai_corner', 'AI brake line guard unit test'),
     Unit('ai_curves', 'AI team curves guard unit test'),
