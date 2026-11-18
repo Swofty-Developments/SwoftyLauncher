@@ -11,6 +11,7 @@
 # reads it, under each unit's rank; the build fails unless it is the order of the mixins and on-load sections. After
 # an intended change, copy native/build/init-order.txt here.
 init
+  src/core/guards/garage/pit_garage_state.cpp
   src/core/loading/game_settings.cpp
   src/core/live/live_state.cpp
   src/core/hud/room_cover.cpp
@@ -317,7 +318,9 @@ exit
   src/core/guards/ai/ai_line_set_guard.cpp
   src/core/hud/room_cover.cpp
   src/core/live/live_state.cpp
+  src/core/guards/garage/pit_garage_state.cpp
 mixins
+  src/core/guards/garage/pit_garage_state.cpp  SWOFTY_HOOK_GUARD(pit_garage_state)
   src/core/diagnostics/session_job_probe.cpp  SWOFTY_ON_LOAD
   src/core/hooks/car_live.cpp  SWOFTY_ON_LOAD
   src/core/hooks/session_points.cpp  SWOFTY_ON_LOAD
@@ -340,6 +343,7 @@ mixins
   src/core/frontend/home_tiles.cpp  SWOFTY_WRAP(FeHome_Handle_Command)
   src/core/frontend/home_tiles.cpp  SWOFTY_ON_LOAD
 on-load
+  src/core/guards/garage/pit_garage_state.cpp  SWOFTY_HOOK_GUARD(pit_garage_state), arms pit_garage_state
   src/core/diagnostics/session_job_probe.cpp  SWOFTY_ON_LOAD
   src/core/hooks/car_live.cpp  SWOFTY_ON_LOAD
   src/core/hooks/session_points.cpp  SWOFTY_ON_LOAD
@@ -363,6 +367,7 @@ bindings
   src/core/assets/entitlements.cpp
   src/core/frontend/home_tiles.cpp
 explicit
+  pit_garage_state  src/core/guards/garage/pit_garage_state.cpp  SWOFTY_HOOK_GUARD(pit_garage_state), arms pit_garage_state
   session_job_probe  src/core/diagnostics/session_job_probe.cpp  SWOFTY_ON_LOAD
   car_live  src/core/hooks/car_live.cpp  SWOFTY_ON_LOAD
   session_points  src/core/hooks/session_points.cpp  SWOFTY_ON_LOAD
