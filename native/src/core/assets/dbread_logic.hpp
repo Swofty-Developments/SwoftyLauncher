@@ -4,24 +4,18 @@
 #include <cstring>
 #include <string>
 
+#include "core/runtime/hashing.hpp"
 #include "swofty_api.h"
 #include <swofty/mem.hpp>
 
 namespace dbread {
-
-constexpr uint64_t FNV64_BASIS = 0xcbf29ce484222325ull;
-constexpr uint64_t FNV64_PRIME = 0x100000001b3ull;
 
 constexpr size_t REC_SCALAR = 0x8;
 constexpr size_t REC_META = 0x30;
 
 inline uint64_t fnv_cont(uint64_t h, const char *s, size_t n)
 {
-    for (size_t i = 0; i < n; i++) {
-        h ^= static_cast<unsigned char>(s[i]);
-        h *= FNV64_PRIME;
-    }
-    return h;
+    return ::runtime::fnv64(s, n, h);
 }
 
 inline uint64_t fnv_cont(uint64_t h, const char *s)
@@ -31,12 +25,12 @@ inline uint64_t fnv_cont(uint64_t h, const char *s)
 
 inline uint64_t fnv64(const char *s, size_t n)
 {
-    return fnv_cont(FNV64_BASIS, s, n);
+    return ::runtime::fnv64(s, n);
 }
 
 inline uint64_t fnv64(const std::string &s)
 {
-    return fnv_cont(FNV64_BASIS, s.data(), s.size());
+    return ::runtime::fnv64(s);
 }
 
 inline uint64_t fnv_index(uint64_t h, uint64_t index)
@@ -88,10 +82,7 @@ inline uint64_t cell_key(uint64_t row_prefix, uint64_t index, const char *field)
 
 inline uint32_t fnv32(const char *s)
 {
-    uint32_t h = 0x811c9dc5u;
-    for (; *s; s++)
-        h = (h ^ uint8_t(*s)) * 0x01000193u;
-    return h;
+    return ::runtime::fnv32(s);
 }
 
 // A row's label is its _metadata_ field, a string record whose +0x30 holds the FNV-1a-32 of the

@@ -73,7 +73,7 @@ impl Host<SupportPage> for Shell {
 
     fn changed(&mut self, change: SupportChange, cx: &mut Context<Self>) {
         match change {
-            SupportChange::Faces(faces) => self.load_faces(faces, cx),
+            SupportChange::Faces(faces) => Multiplayer::load_faces(self, faces, cx),
         }
     }
 }
@@ -92,7 +92,50 @@ fn a_saved_bio_reloads_and_a_failed_one_says_why() {
 }
 ```
 
-The same pattern runs the account (`shell/account.rs`), the crash watch (`dialogs/crash.rs`) and the time trial page (`features/time_trial/state.rs`). A state with nothing to report sets `type Change = Infallible`, and its `changed` is `match change {}`.
+A state with nothing to report sets `type Change = Infallible`, and its `changed` is `match change {}`.
+
+A state whose constructor needs a window keeps the fields its tests drive in a plain `Default` struct inside it, and the async method calls that struct's methods:
+
+```rust
+#[derive(Default)]
+pub(crate) struct Autosave { ticket: u64, unwritten: bool, writing: bool, newer: bool, error: Option<String> }
+
+impl Db {
+    pub(crate) fn flush<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (db, needs) = host.split();
+        if !db.autosave.begin() {
+            return;
+        }
+        let (store, draft, file) = (needs.store.clone(), db.draft.clone(), db.file.clone());
+        cx.spawn(async move |this, cx| {
+            let result = cx.background_executor().spawn(async move { lock(&file).write(&store, &draft) }).await;
+            this.update(cx, |host, cx| {
+                if host.split().0.autosave.written(result) {
+                    Self::persist(host, cx);
+                }
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
+    }
+}
+```
+
+These states run on the pattern:
+
+| State | Background work | `Host` impl | Plain part with tests |
+|---|---|---|---|
+| `Account` | sign in and out, session checks, avatar | `shell/account.rs` | `Account` |
+| `Crashes` | the crash watch | `shell/probe.rs` | none yet |
+| `SupportPage` | goal, supporters, checkout, claim, save | `features/support/state.rs` | `SupportPage` |
+| `TtPage` | barred list, catalogue, runs, moderation, searches | `features/time_trial/state.rs` | `TtPage` |
+| `Browser` | catalog fetch, star sync, addon details, publisher profiles, install progress tick | `features/browser/state.rs` | `Feed` |
+| `Db` | draft autosave, "Also changed by", game database, module views, search, unnamed keys | `features/db/state.rs` | `Autosave` |
+| `AddonsPage` | the conflict check | `features/addons/conflicts.rs` | `Conflicts` |
+| `Multiplayer` (the Online page) | game status, room list, addon digest, avatars | `features/multiplayer/state.rs` | `Lobby` |
+
+A page's toasts go into a `toasts` list on its state, and `shell/render.rs` shows them. The installs, the online session's start and launch, and the DB Editor's save and export dialogs still run on `Shell`.
 
 ## When to use an entity instead
 

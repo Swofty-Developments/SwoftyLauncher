@@ -150,8 +150,11 @@ const SESSION_MODULE_WAIT: std::time::Duration = std::time::Duration::from_milli
 
 impl Shell {
     pub(crate) fn play_state(&self) -> PlayState {
-        self.launching
-            .play_state(&self.game, self.addons.checking, self.crashes.dismissed.as_ref())
+        self.launching.play_state(
+            &self.game,
+            self.addons.conflicts.checking,
+            self.crashes.dismissed.as_ref(),
+        )
     }
 
     pub(crate) fn play(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -177,7 +180,7 @@ impl Shell {
             self.ea_app_warn(window, cx);
             return false;
         }
-        if self.addons.checking {
+        if self.addons.conflicts.checking {
             window.notify(
                 Notification::info(tr("Play when the conflict check finishes.")),
                 cx,

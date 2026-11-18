@@ -1,5 +1,7 @@
 #include <string>
 
+#include "core/diagnostics/crash/crash.hpp"
+
 #include "core/diagnostics/crash/capture.hpp"
 #include "core/diagnostics/crash/crash_dir.hpp"
 #include "core/diagnostics/crash/crash_log.hpp"
@@ -12,14 +14,10 @@
 #include "core/diagnostics/crash/report_writer.hpp"
 #include "core/diagnostics/crash/symbolizer.hpp"
 #include "core/runtime/loader/bindings.hpp"
+#include "core/runtime/stage.hpp"
 #include "safetyhook.hpp"
 #include "swofty_api.h"
 
-namespace runtime {
-std::string load_stage();
-void on_stage(void (*fn)(int));
-void when_code_ready(const char *what, void (*fn)());
-}
 
 // Crash log and crash reports. The crash log writes each fatal-class exception, the top-level filter
 // and calls to ExitProcess and TerminateProcess to loader.log. A crash report (swofty\crash-<time>.txt

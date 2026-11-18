@@ -92,8 +92,9 @@ jobs:
           echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
           {
             echo "### Binding check: $verdict"
-            jq -r '.errors[] | "- error: \(.)"' "$RUNNER_TEMP/result.json"
-            jq -r '.notes[] | "- \(.)"' "$RUNNER_TEMP/result.json"
+            jq -r '(.summary // ((.errors | map("error: " + .)) + .notes))[] | if startswith("  fix: ") then "  " + . else "- " + . end' "$RUNNER_TEMP/result.json"
+            echo
+            echo 'Run `python3 re/tools/binding.py doctor` in your checkout for the same check before you push.'
           } >> "$GITHUB_STEP_SUMMARY"
           exit $code
 

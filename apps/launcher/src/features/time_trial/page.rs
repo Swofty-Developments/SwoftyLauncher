@@ -89,7 +89,7 @@ impl Shell {
 
     /// The barred addons the active profile has enabled, by name and why, in red.
     fn tt_barred_notice(&self, p: Palette) -> Option<AnyElement> {
-        let enabled = self.tt_barred_enabled();
+        let enabled = self.tt.barred_in(&self.library);
         if enabled.is_empty() {
             return None;
         }

@@ -5,8 +5,15 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
+use serde_json::json;
+
+use super::files::*;
+use super::redact::*;
+use super::summary::*;
+use super::system::*;
 use super::upload::{SendError, Stage, multipart, payload};
 use super::*;
+use crate::session::{LOADER_FALLBACK, LOADER_LOG, PERF_LOG};
 
 fn tmp(name: &str) -> PathBuf {
     let d = std::env::temp_dir().join(format!("swofty-sendlogs-{name}-{}", std::process::id()));
@@ -1902,11 +1909,11 @@ fn saves_excerpt_keeps_the_save_source_and_slot_lines() {
         2 [saves] launcher saves are off for profile main: the game reads Steam's saves natively\n\
         3 [saves] sandbox: FileRead profile (call 1)\n\
         4 [saves] profile load 1: manager 0 slot 0: gm_driver_career id=3 key=0000000000abcdef career=dc-000b0000\n";
-    let lines = super::saves_excerpt(text, 10);
+    let lines = super::summary::saves_excerpt(text, 10);
     assert_eq!(lines.len(), 2);
     assert!(lines[0].contains("reads Steam's saves natively"));
     assert!(lines[1].contains("career=dc-000b0000"));
-    assert_eq!(super::saves_excerpt(text, 1).len(), 1);
+    assert_eq!(super::summary::saves_excerpt(text, 1).len(), 1);
 }
 
 #[test]
@@ -2092,15 +2099,15 @@ fn system_excerpt_takes_the_boot_lines_and_the_newest_minute() {
     let head =
         "boot\n[system] gpu 0: Card A, driver 1.2, dedicated VRAM 8192 MiB\n[system] ram: 32768 MiB\nother\n";
     let tail = "[perf] last 60 s: memory: old\nx\n[perf] last 60 s: memory: RAM 1/2 MiB; VRAM 3/4 MiB\nend\n";
-    let out = super::system_excerpt(head, tail, 12);
+    let out = super::system::system_excerpt(head, tail, 12);
     assert_eq!(out.len(), 3, "{out:?}");
     assert!(out[0].contains("Card A") && out[1].contains("[system] ram"));
     assert!(
         out[2].starts_with("  newest minute: ") && out[2].contains("VRAM 3/4"),
         "{out:?}"
     );
-    assert!(super::system_excerpt("none\n", "none\n", 12).is_empty());
-    assert_eq!(super::system_excerpt(head, tail, 1).len(), 2);
+    assert!(super::system::system_excerpt("none\n", "none\n", 12).is_empty());
+    assert_eq!(super::system::system_excerpt(head, tail, 1).len(), 2);
 }
 
 #[test]
@@ -2116,5 +2123,189 @@ fn summary_has_a_graphics_section_from_the_loader_log() {
     assert!(summary.contains("\nGraphics and memory\n"), "{summary}");
     assert!(summary.contains("Card A, driver 1.2"), "{summary}");
     assert!(summary.find("\nGraphics and memory\n") < summary.find("\nCrash\n"));
+    std::fs::remove_dir_all(&root).ok();
+}
+
+fn layout_store(root: &Path) -> (Store, PathBuf) {
+    let (store, game) = fake_data(root);
+    let data = store.root.clone();
+    let on = crate::dbedit::package::Package::create(&store, "On").unwrap();
+    store
+        .update_profile("default", |p| p.set_enabled(&on.id, true))
+        .unwrap();
+    put(
+        &crate::profile::conflicts::path(&store, "default"),
+        r#"{"conflicts":[]}"#,
+    );
+    put(&data.join("state/multiplayer.log"), "room line\n");
+    put(&data.join("state/not-stock.json"), "{}");
+    put(&data.join("state/blocked.json"), "{}");
+    put(
+        &data.join("state/stall-20261020-085500.txt"),
+        "stall in the data folder\n",
+    );
+    put(&data.join("state/multiplayer-prints/print-1.json"), "{}");
+    put(&data.join("addon-data/t.conv/logs/convert.log"), "converted\n");
+    put(&data.join("careers/index.json"), "{}");
+    for name in crate::stdlib::reports::SENT {
+        put(&crate::stdlib::reports::path(&data, name), "{}");
+    }
+    let session = data.join("sessions/20261020-090000");
+    put(&session.join("perf.log"), "perf\n");
+    put(&session.join("crash-20261019-080000.txt"), "an earlier crash\n");
+    put(&game.join(LOADER_LOG), "live loader\n");
+    put(&game.join(PERF_LOG), "live perf\n");
+    put(
+        &game.join(crate::online::multiplayer::client::GAME_STATUS_FILE),
+        "{}",
+    );
+    put(&game.join(NET_TRACE), "trace\n");
+    put(&game.join("swofty/stall-20261020-090500.txt"), "stall\n");
+    put(
+        &game.join("swofty/crash-20261020-091000.txt"),
+        "the newest crash\n",
+    );
+    put(&game.join("swofty/crash-20261020-091000.dmp"), [0u8; 64]);
+    (store, game)
+}
+
+#[test]
+fn the_bundle_keeps_its_file_names_and_their_order() {
+    let root = tmp("layout");
+    let (store, game) = layout_store(&root);
+    let earlier = store
+        .root
+        .join("sessions/20261020-090000/crash-20261019-080000.txt");
+    std::fs::File::options()
+        .write(true)
+        .open(&earlier)
+        .unwrap()
+        .set_modified(std::time::SystemTime::now() - Duration::from_secs(3600))
+        .unwrap();
+    let mut with_room = report(&game);
+    with_room.room = Some(json!({"room": "abc"}));
+    let bundle = Bundle::collect_with(&store, &with_room, Limits::default(), "20261020-101010");
+    assert_eq!(bundle.stem, "swofty-logs-swofty-20261020-101010");
+    assert_eq!(bundle.file_name(), "swofty-logs-swofty-20261020-101010.zip");
+    let got: Vec<String> = bundle
+        .entries
+        .iter()
+        .map(|e| e.path.clone())
+        .filter(|p| !p.starts_with("ea-app/") && p != "windows/application-events.txt")
+        .collect();
+    let mut want: Vec<String> = [
+        "summary.txt",
+        "config.json",
+        "addons.json",
+        "conflicts.json",
+        "db-packages/dbedit.on.json",
+        "game/loader.log",
+        "game/perf.log",
+        "game/registry/effective.json",
+        "game/registry/conflicts.json",
+        "game/registry/catalog.json",
+        "game/registry/room.json",
+        "game/registry/ids.json",
+        "game/registry/row-ids.json",
+        "game/careers/index.json",
+        "game/netplay.json",
+        "game/net-trace.log",
+        "game/stall-20261020-090500.txt",
+        "state/stall-20261020-085500.txt",
+        "multiplayer/session.json",
+        "addons/t.helper/helper.log",
+        "addons/t.conv/logs/convert.log",
+        "game/career-editor/snapshot.json",
+        "state/launcher-run.log",
+        "state/wrapper-run.log",
+        "state/multiplayer.log",
+        "state/offline.log",
+        "state/multiplayer-prints/print-1.json",
+        "state/not-stock.json",
+        "state/blocked.json",
+    ]
+    .map(String::from)
+    .into();
+    for s in ["20261020-090000", "20261019-090000", "20261018-090000"] {
+        for f in [
+            "env.txt",
+            "exit_code",
+            "game-logs/loader.prev.log",
+            "loader.log",
+            "perf.log",
+            "steam_command.txt",
+        ] {
+            if f == "perf.log" && s != "20261020-090000" {
+                continue;
+            }
+            want.push(format!("sessions/{s}/{f}"));
+        }
+    }
+    want.extend(
+        [
+            "crash/crash-20261020-091000.txt",
+            "crash/crash-20261020-091000.dmp",
+            "crash/earlier/crash-20261019-080000.txt",
+            "crash/dumps.txt",
+        ]
+        .map(String::from),
+    );
+    assert_eq!(got, want);
+    let summary = summary_of(&bundle);
+    let headings: Vec<&str> = summary
+        .lines()
+        .filter(|l| !l.is_empty() && !l.starts_with(' ') && !l.contains("  "))
+        .filter(|l| {
+            [
+                "What went wrong",
+                "Car package ids",
+                "Mod loader",
+                "Overlay",
+                "Graphics and memory",
+                "Crash",
+                "Saves",
+                "Game files against Steam",
+                "Performance",
+                "Addons",
+                "Files",
+                "Left out",
+            ]
+            .contains(l)
+        })
+        .collect();
+    assert_eq!(
+        headings,
+        [
+            "What went wrong",
+            "Car package ids",
+            "Mod loader",
+            "Overlay",
+            "Graphics and memory",
+            "Crash",
+            "Saves",
+            "Game files against Steam",
+            "Performance",
+            "Addons",
+            "Files",
+        ]
+    );
+    let parts: Vec<String> = bundle
+        .parts(1 << 10)
+        .unwrap()
+        .into_iter()
+        .map(|p| p.file_name)
+        .collect();
+    assert!(parts.len() > 1, "{parts:?}");
+    for (i, p) in parts.iter().enumerate() {
+        assert_eq!(
+            *p,
+            format!("swofty-logs-swofty-20261020-101010-part{}.zip", i + 1)
+        );
+    }
+    let kept = bundle.save(&kept_dir(&store), KEPT).unwrap();
+    assert_eq!(
+        kept,
+        store.root.join("logs/swofty-logs-swofty-20261020-101010.zip")
+    );
     std::fs::remove_dir_all(&root).ok();
 }

@@ -25,6 +25,19 @@ inline uint64_t fnv64(const std::string &s, uint64_t h = FNV64_BASIS)
     return fnv64(s.data(), s.size(), h);
 }
 
+inline uint32_t fnv32(const void *p, size_t n, uint32_t h = FNV32_BASIS)
+{
+    auto b = static_cast<const uint8_t *>(p);
+    for (size_t i = 0; i < n; i++)
+        h = (h ^ b[i]) * FNV32_PRIME;
+    return h;
+}
+
+inline uint32_t fnv32(const std::string &s, uint32_t h = FNV32_BASIS)
+{
+    return fnv32(s.data(), s.size(), h);
+}
+
 inline uint32_t fnv32(const char *s)
 {
     uint32_t h = FNV32_BASIS;

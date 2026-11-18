@@ -21,6 +21,7 @@
 #include "core/hooks/core_events.hpp"
 #include "core/hooks/hooks.hpp"
 #include "core/hooks/player_facts.hpp"
+#include "core/hooks/race_fuel_rules.hpp"
 #include "core/frontend/view_state.hpp"
 #include "core/hooks/session_points.hpp"
 

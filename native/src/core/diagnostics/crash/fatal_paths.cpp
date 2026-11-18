@@ -10,8 +10,10 @@
 #include "core/diagnostics/crash/fast_fail_logic.hpp"
 #include "core/diagnostics/crash/constants.hpp"
 #include "core/diagnostics/crash/process.hpp"
+#include "core/diagnostics/crash/prologue_cache_logic.hpp"
 #include "core/diagnostics/crash/symbolizer.hpp"
 #include "core/diagnostics/perf.hpp"
+#include "core/runtime/loader/scanner.hpp"
 #include "core/runtime/pages.hpp"
 
 namespace runtime {
@@ -211,8 +213,8 @@ uintptr_t kb_function(uint32_t rva, const uint8_t *expect, size_t n)
 
 // A byte scan of the exe's executable sections, used only to find Ne_ReportMemoryError and the CRT's
 // fast-fail paths on a build with no known address for them. It stays in the crash code and does not go through the
-// loader's scan (whose cache and log lines are the binding resolver's). It asks Windows about each
-// memory region once rather than about every page.
+// loader's scan (whose log lines are the binding resolver's); find_prologue keeps its answers in the scan cache. It asks
+// Windows about each memory region once rather than about every page.
 uintptr_t scan_exe(const uint8_t *pat, size_t n, const fast_fail::Pattern *masked = nullptr)
 {
     auto dos = reinterpret_cast<const IMAGE_DOS_HEADER *>(process.exe_base);
@@ -249,6 +251,40 @@ uintptr_t scan_exe(const uint8_t *pat, size_t n, const fast_fail::Pattern *maske
     return hits == 1 ? found : 0;
 }
 
+bool in_exe_code(uintptr_t a, size_t n)
+{
+    auto dos = reinterpret_cast<const IMAGE_DOS_HEADER *>(process.exe_base);
+    auto nt = reinterpret_cast<const IMAGE_NT_HEADERS *>(process.exe_base + dos->e_lfanew);
+    auto s = IMAGE_FIRST_SECTION(nt);
+    for (int i = 0; i < nt->FileHeader.NumberOfSections; i++, s++) {
+        uintptr_t start = process.exe_base + s->VirtualAddress, end = start + (s->Misc.VirtualSize ? s->Misc.VirtualSize : s->SizeOfRawData);
+        if ((s->Characteristics & IMAGE_SCN_MEM_EXECUTE) && a >= start && a < end && n <= end - a)
+            return true;
+    }
+    return false;
+}
+
+// scan_exe's answer for a prologue, taken from the scan cache when the last boot of this exe found it and its bytes still
+// match there; a scan's answer replaces the cached one. The scans cost about 0.35 s each on Windows.
+uintptr_t find_prologue(const char *pattern, const uint8_t *pat, size_t n, const fast_fail::Pattern *masked, bool &cached)
+{
+    auto &cache = runtime::loader::scanner();
+    prologue::Found f = prologue::find(
+        process.exe_base, [&](uint64_t &rva) { return cache.recall(prologue::CACHE_SECTION, pattern, rva); },
+        [&](uintptr_t a) {
+            return in_exe_code(a, n) && readable(a, n) &&
+                   (masked ? fast_fail::matches(reinterpret_cast<const uint8_t *>(a), *masked)
+                           : !memcmp(reinterpret_cast<const void *>(a), pat, n));
+        },
+        [&] { return scan_exe(pat, n, masked); },
+        [&](int hits, uint64_t rva) { cache.remember(prologue::CACHE_SECTION, pattern, hits, rva); });
+    cached = f.cached;
+    return f.at;
+}
+
+constexpr const char *FOUND_BY_PROLOGUE = "found by its prologue";
+constexpr const char *CACHED_PROLOGUE = "found by its prologue on an earlier boot of this exe";
+
 void hook_heap_errors()
 {
     game_paths.heap_error_fn = kb_function(RVA_HEAP_ERROR, HEAP_ERROR_PREFIX, sizeof HEAP_ERROR_PREFIX);
@@ -266,8 +302,9 @@ void hook_heap_errors()
         how = "EA app build address";
     }
     if (!game_paths.report_memory_error) {
-        game_paths.report_memory_error = scan_exe(expect, n);
-        how = "found by its prologue";
+        bool cached = false;
+        game_paths.report_memory_error = find_prologue(PATTERN_REPORT_MEMORY_ERROR, expect, n, nullptr, cached);
+        how = cached ? CACHED_PROLOGUE : FOUND_BY_PROLOGUE;
     }
     if (!game_paths.report_memory_error) {
         cl("[crash] Ne_ReportMemoryError: its prologue matched 0 or several times; a fatal heap error is reported at "
@@ -292,8 +329,9 @@ uintptr_t find_fast_fail_path(const char *name, uint32_t rva, const char *patter
     if (process.kb_build && rva < process.exe_size && readable(a, p.bytes.size()) &&
         fast_fail::matches(reinterpret_cast<const uint8_t *>(a), p))
         return a;
-    how = "found by its prologue";
-    a = scan_exe(p.bytes.data(), p.bytes.size(), &p);
+    bool cached = false;
+    a = find_prologue(pattern, p.bytes.data(), p.bytes.size(), &p, cached);
+    how = cached ? CACHED_PROLOGUE : FOUND_BY_PROLOGUE;
     if (!a)
         cl("[crash] %s: its prologue matched 0 or several times; a fast-fail from it gets no report", name);
     return a;

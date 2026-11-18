@@ -12,6 +12,13 @@ loads it. Every pattern matches exactly once in its section on both images and r
 
 --compare prints how many instructions of two whole functions are equal with rip displacements and branch targets
 masked (LEN defaults to the KB function's .pdata extent; a thunk is followed to its body on both images).
+
+  sigport.py --port EXE --build B --witness KB_RVA OFF[,OFF...] [--witness ...]
+
+--witness proves struct offsets: it finds the port's twin of the KB function (an entry pattern unique on both, else
+through a call site), compares the two whole functions, and lists per offset the instructions that use it as a
+displacement on each side. An offset is witnessed when the function is equal on both builds and uses it at the same
+instruction index on both.
 """
 import argparse, json, os, sys
 
@@ -19,6 +26,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from sigverify import STEAM, md, norm, follow, classify, same, section_map, riprel_refs, make, resolve
 from bindverify import Image
+from capstone.x86 import X86_GRP_CALL, X86_GRP_JUMP, X86_OP_IMM, X86_OP_MEM, X86_REG_RIP, X86_REG_RSP
 
 KB_EXE = os.environ.get('SWOFTY_KB_EXE', '/mnt/work/VSC/f1-modding/work/exe/F1_25.exe')
 
@@ -112,6 +120,35 @@ def compare(ref, port, a, b, n=None):
     return fa, fb, n, equal, len(x), len(y), first
 
 
+def uses(img, rva, n, offs):
+    """Per offset, (instruction index, text) of the instructions using it as a displacement off a register other than
+    rip and rsp (stack slots are not struct fields), or as an immediate (a stride or a size)."""
+    out = {o: [] for o in offs}
+    for k, i in enumerate(md.disasm(img.read(rva, n + 16) or b'', rva)):
+        if i.address - rva >= n:
+            break
+        for o in i.operands:
+            if o.type == X86_OP_MEM and o.mem.base not in (X86_REG_RIP, X86_REG_RSP) and o.mem.disp in out:
+                out[o.mem.disp].append((k, i.mnemonic + ' ' + i.op_str))
+            elif o.type == X86_OP_IMM and o.imm in out and not (i.group(X86_GRP_JUMP) or i.group(X86_GRP_CALL)):
+                out[o.imm].append((k, i.mnemonic + ' ' + i.op_str))
+    return out
+
+
+def witness(ref, port, smap, rva, offs):
+    r = port_one(ref, port, smap, 'w', rva)
+    if 'error' in r:
+        return {'rva': rva, 'error': r['error']}
+    fa, fb, n, eq, lx, ly, first = compare(ref, port, rva, r['port'])
+    ua, ub = uses(ref, fa, n, offs), uses(port, fb, n, offs)
+    per = {}
+    for o in offs:
+        a, b = ua[o], ub[o]
+        per[o] = {'kb': len(a), 'port': len(b), 'same_place': bool(a) and a == b, 'first': a[0][1] if a else None}
+    return {'rva': rva, 'port': r['port'], 'body': fa, 'port_body': fb, 'len': n, 'equal': eq, 'kb_insns': lx,
+            'port_insns': ly, 'identical': eq == lx == ly, 'offsets': per}
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--ref', default=KB_EXE)
@@ -119,10 +156,30 @@ def main():
     ap.add_argument('--build', required=True)
     ap.add_argument('--json')
     ap.add_argument('--compare', nargs='+')
+    ap.add_argument('--witness', nargs=2, action='append', metavar=('KB_RVA', 'OFFS'))
     ap.add_argument('items', nargs='*')
     a = ap.parse_args()
     ref, port = Image(a.ref), Image(a.port)
     smap = section_map(a.build)
+    if a.witness:
+        rows, bad = [], 0
+        for rva, offs in a.witness:
+            w = witness(ref, port, smap, int(rva, 16), [int(x, 16) for x in offs.split(',')])
+            rows.append(w)
+            if 'error' in w:
+                bad += 1
+                print(f'FAIL {w["rva"]:#x}: {w["error"]}')
+                continue
+            print(f'{"same" if w["identical"] else "DIFF"} {w["rva"]:#x} -> {w["port"]:#x} (bodies {w["body"]:#x} / '
+                  f'{w["port_body"]:#x}): {w["equal"]}/{w["kb_insns"]} equal, port {w["port_insns"]}')
+            for o, p in w['offsets'].items():
+                ok = w['identical'] and p['same_place']
+                bad += not ok
+                print(f'  {"ok  " if ok else "----"} +{o:#x}: kb {p["kb"]} port {p["port"]} use(s), same place {p["same_place"]}'
+                      f'{"  e.g. " + p["first"] if p["first"] else ""}')
+        if a.json:
+            json.dump(rows, open(a.json, 'w'), indent=1, default=str)
+        return 1 if bad else 0
     if a.compare:
         x, y = int(a.compare[0], 16), int(a.compare[1], 16)
         n = int(a.compare[2], 16) if len(a.compare) > 2 else None

@@ -36,9 +36,9 @@ pub(super) fn missing_paths(sdk: &Path, folder: &Path, files: &[PathBuf], r: &mu
                     continue;
                 }
                 let mut paths = Vec::new();
-                crate::commands::dev::paths::schema_paths(&schema, &schema, value, &mut paths, 0);
+                crate::commands::dev::data_paths::schema_paths(&schema, &schema, value, &mut paths, 0);
                 for p in paths {
-                    if !crate::commands::dev::paths::inside(folder, &p) {
+                    if !crate::commands::dev::data_paths::inside(folder, &p) {
                         r.error(format!(
                             "{shown}: {registry} {id} names {p}, which isn't in the addon"
                         ));

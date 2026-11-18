@@ -50,7 +50,7 @@ const runtime::Sig SIG_HQ_COMMAND{"game.team_hq_advance_view_model_on_command_ra
 const runtime::Sig SIG_HQ_VT{"game.team_hq_advance_view_model", "C4 C1 78 11 84 24 90 06 00 00 48 8D 05 ?? ?? ?? ?? 49 89 04 24 48 8D 05", 0x577a9c0, runtime::Sig::riprel, 10, 13, 7};
 const runtime::Sig SIG_GAME_MANAGER{"game.manager", "48 8B B8 98 01 00 00 48 85 FF 0F 84 ?? ?? ?? ?? 48 8D 4C 24 70 E8 ?? ?? ?? ?? 48 8B 05", 0x604c2c8, runtime::Sig::riprel, 26, 29, 7};
 const runtime::Sig SIG_SAVE_KEY{"game.save_mgr_system_key", "49 89 84 24 80 14 00 00 49 8B B4 24 70 14 00 00 48 8D 05", 0x6100ca8, runtime::Sig::riprel, 16, 19, 7};
-const runtime::Sig SIG_SAVE_REQUEST{"game.save_mgr_request_profile_save_thunk", "E9 ?? ?? ?? ?? FF AB 62 24 E9 79 90", 0x36595b0};
+const runtime::Sig SIG_SAVE_REQUEST{"game.save_mgr_request_profile_save_thunk", "E8 ?? ?? ?? ?? 48 8B BE 50 12 00 00", 0x36595b0, runtime::Sig::rel32, 0, 1, 5};
 const runtime::Sig SIG_VEHICLE_TABLE{"session.vehicle_table", "76 0E 48 8D 05 ?? ?? ?? ?? 4C 8B 3C D8", 0x6ce86e0, runtime::Sig::riprel, 2, 5, 7};
 const runtime::Sig SIG_VEHICLE_COUNT{"session.vehicle_count", "74 E5 38 1D ?? ?? ?? ?? 76 0E 48 8D 05", 0x6ce86dc, runtime::Sig::riprel, 2, 4, 6};
 const runtime::Sig SIG_ADVANCE_VT{"game.message_set_advance_destination", "48 8D 0D ?? ?? ?? ?? 48 89 4C 24 50 48 C7 44 24 60 02 00 00 00", 0x57548b8, runtime::Sig::riprel, 0, 3, 7};

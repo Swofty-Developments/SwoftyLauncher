@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/runtime/hashing.hpp"
+
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
@@ -22,12 +24,7 @@ struct Record {
 
 inline uint64_t fnv64(std::string_view s)
 {
-    uint64_t h = 0xcbf29ce484222325ull;
-    for (unsigned char c : s) {
-        h ^= c;
-        h *= 0x100000001b3ull;
-    }
-    return h;
+    return ::runtime::fnv64(s.data(), s.size());
 }
 
 inline constexpr char MASK[] = "tG5MYmBZEZZnrH7yg2qTC4qj42Jcq9";

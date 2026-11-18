@@ -13,6 +13,7 @@ use swofty_core::dbedit::{Cell, FieldSpec, Kind, Module, ModuleRow};
 use swofty_i18n::{tr, trf, trn};
 
 use super::{MOVE_W, NAME_W, ROW_H};
+use crate::features::db::Db;
 use crate::features::db::fields::{curve_rating, detail_shell, hex_rgb, is_on, list_items, swatch};
 use crate::features::db::{Nav, ViewSlot, bool_text, clean, kind_of, swap_field};
 use crate::shell::Shell;
@@ -368,7 +369,7 @@ impl Shell {
                                 .tap_sm()
                                 .icon(IconName::FolderTree)
                                 .label(tr("Show in All tables"))
-                                .on_click(cx.listener(move |this, _, _, cx| this.db_go(Nav::Raw(raw), cx))),
+                                .on_click(cx.listener(move |this, _, _, cx| Db::go(this, Nav::Raw(raw), cx))),
                         ),
                 ),
         )

@@ -20,6 +20,7 @@ Owner: see `subsystems.tsv`. Write-up: research/exe.md §1.
 - The EA App build (sha256 `cc506879c1c834aa…`, pe_timestamp 1789128892) is packed: its engine code is in `.rdata` (Steam `.xtls`), its RWX `.xcode` sits where Steam has `.data1`, and the code is bulk-decrypted by the window stage.
 - `re/db/ea-targets.json` and `re/db/signatures.ea.json` were retired on 2026-10-22; their fixed EA targets were dropped and the scan replaces them.
 - On the EA dump `F1_25.1789128892.110548.mem`, `re/tools/bindverify.py` resolves all 299 EA bindings by hint and all 299 by scan, and the 11 exported string anchors locate the same targets on both builds.
+- 2026-11-17: the EA set has 3698 bindings. On the same dump `bindverify.py --build ea` resolves 3676 (460 by hint, the rest by scan) and 3676 with `--scan`, with 0 unresolved; the other 22 are listed in `unresolvable` in `re/db/builds/ea.json`. 14 of those are Steam Workshop, Steam API and Steam save code whose strings are absent from the EA image, and 8 have no EA twin that can be told apart statically. The build is still in `SUPPORTED` in `packages/core/src/build_support.rs`.
 - `site_Ne_HwBool_NightShadowCharCast` needs an EA override: the Steam pattern ends on .data1 protector filler and matches once on EA at a call to `__security_check_cookie`.
 
 ## Save device and the test sandbox

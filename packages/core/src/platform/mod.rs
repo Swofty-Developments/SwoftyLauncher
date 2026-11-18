@@ -137,15 +137,28 @@ mod tests {
         let ea = root.join("ea");
         std::fs::create_dir_all(ea.join("__Installer")).unwrap();
         std::fs::write(ea.join(ea_app::MARKER), "<contentID>1</contentID>").unwrap();
+        let both = root.join("both");
+        std::fs::create_dir_all(both.join("__Installer")).unwrap();
+        std::fs::write(both.join("EAJavelinInstaller_installscript.vdf"), "").unwrap();
+        std::fs::write(both.join(ea_app::MARKER), "<contentID>1</contentID>").unwrap();
         let other = root.join("other");
         std::fs::create_dir_all(&other).unwrap();
-        for dir in [&steam, &javelin, &ea, &other] {
-            let by = installed_by(dir).map_or(Source::Unknown, |p| p.source());
-            assert_eq!(by, Source::detect(dir), "{}", dir.display());
+        for (dir, source) in [
+            (&steam, Source::Steam),
+            (&javelin, Source::Steam),
+            (&both, Source::Steam),
+            (&ea, Source::EaApp),
+            (&other, Source::Unknown),
+        ] {
+            assert_eq!(Source::detect(dir), source, "{}", dir.display());
+            assert_eq!(
+                installed_by(dir).map(|p| p.source()),
+                source.platform().map(|p| p.source())
+            );
         }
         assert_eq!(installed_by(&ea).map(|p| p.name()), Some("EA app"));
-        assert_eq!(for_source(Source::Steam).map(|p| p.name()), Some("Steam"));
-        assert!(for_source(Source::Unknown).is_none());
+        assert_eq!(Source::Steam.platform().map(|p| p.name()), Some("Steam"));
+        assert!(Source::Unknown.platform().is_none());
         std::fs::remove_dir_all(&root).ok();
     }
 }

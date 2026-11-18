@@ -129,7 +129,7 @@ impl Shell {
         if !self.browser.details.contains_key(id) && self.browser.asked.insert(id.to_owned()) {
             let id = id.to_owned();
             cx.spawn(async move |this, cx| {
-                this.update(cx, |s, cx| s.fetch_details(&id, cx)).ok();
+                this.update(cx, |s, cx| Browser::fetch_details(s, &id, cx)).ok();
             })
             .detach();
         }
