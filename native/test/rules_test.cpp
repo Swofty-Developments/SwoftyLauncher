@@ -5,7 +5,7 @@
 #include <fstream>
 #include <sstream>
 
-using namespace postfx;
+using namespace render::postfx;
 
 static int failed;
 

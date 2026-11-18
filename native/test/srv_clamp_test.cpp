@@ -5,7 +5,7 @@
 
 #include <cstdio>
 
-namespace sc = runtime::srv_clamp;
+namespace sc = render::srv_clamp;
 
 static int g_fail;
 

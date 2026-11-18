@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-namespace postfx {
+namespace render::postfx {
 
 // The addon whose DLL is at `module`. The loader loads an addon's DLLs from <game folder>\swofty\addons\<id>\, the
 // game folder being the exe's (`exe`), so it's the folder right under that one which holds the DLL, matched from the

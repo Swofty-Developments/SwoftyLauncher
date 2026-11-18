@@ -31,11 +31,11 @@
 //   the back buffer first: the passes run in that list while it has the back buffer bound (the split
 //   step), else in a list of the core's own right after it, or right before the list that takes the back
 //   buffer out of render target for the HUD and Present when none closed the step by then; at Present only
-//   when the core saw no such list (postfx::BackPlace).
+//   when the core saw no such list (render::postfx::BackPlace).
 //
 // In the game's lists the core records its passes before the game's barrier and then puts back the
 // pipeline, descriptor heaps, compute bindings and graphics descriptor tables it changed
-// (d3d12hooks::list_state). The passes copy the back buffer, run as DXIL compute shaders
+// (render::d3d12::list_state). The passes copy the back buffer, run as DXIL compute shaders
 // (swofty/postfx.hlsli) through a slot's own textures, and copy the result back; with frame generation
 // on, the result goes into the game's HUD-less copy too. Each slot has its own fence and working
 // textures, so frames the GPU runs at once on different queues never share them; every texture rests
@@ -45,7 +45,7 @@
 
 namespace {
 
-postfx::Pipeline pipeline;
+render::postfx::Pipeline pipeline;
 
 void hook_setname(ID3D12Object *o, LPCWSTR name)
 {
@@ -57,12 +57,12 @@ bool hook_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_
     return pipeline.placement.on_barrier(list, n, barriers);
 }
 
-void hook_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, d3d12hooks::ExecPlan &plan)
+void hook_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, render::d3d12::ExecPlan &plan)
 {
     pipeline.placement.on_exec(q, n, lists, plan);
 }
 
-void hook_present(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *caller)
+void hook_present(IDXGISwapChain3 *sc, const render::d3d12::Swapchain *known, void *caller)
 {
     pipeline.on_present(sc, known, caller);
 }
@@ -89,7 +89,7 @@ void hook_flow_frame(double dt, void *user)
 
 }
 
-namespace postfx {
+namespace render::postfx {
 
 // Frame generation from the game's hardware settings, read every two seconds; on while unknown.
 bool Pipeline::frame_gen_on(ULONGLONG now)
@@ -197,13 +197,13 @@ void Pipeline::stat_line(ULONGLONG now)
 
 // The frame generation module that presents frames of its own on a swapchain (postfx::presents_own_frames): the
 // one its creation named, or for a swapchain the core does not know, the module that calls Present.
-std::string Pipeline::own_frames_by(const d3d12hooks::Swapchain *known, void *caller)
+std::string Pipeline::own_frames_by(const d3d12::Swapchain *known, void *caller)
 {
     if (known)
         return postfx::presents_own_frames(known->fg) ? known->fg : std::string();
     if (caller != own_frames_caller) {
         own_frames_caller = caller;
-        own_frames_module = d3d12hooks::module_of(caller);
+        own_frames_module = d3d12::module_of(caller);
         if (!postfx::presents_own_frames(own_frames_module))
             own_frames_module.clear();
     }
@@ -215,7 +215,7 @@ std::string Pipeline::own_frames_by(const d3d12hooks::Swapchain *known, void *ca
 // frame, so the picture never goes without them. A frame generation swapchain shows a buffer of its own that it
 // copied the game's back buffer into: the passes run on that copy while it holds the waiting picture
 // (postfx::shown_is_waiting).
-void Pipeline::present_fallback(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known)
+void Pipeline::present_fallback(IDXGISwapChain3 *sc, const d3d12::Swapchain *known)
 {
     ListPlacement::BackUse *waiting = placement.waiting_back();
     if (!waiting || !known || !known->queue || killed_now() || config.passes.empty())
@@ -261,7 +261,7 @@ void Pipeline::present_fallback(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain
 // Present closes the frame (its trace line and counts) and runs the toggle keys and the live settings. While
 // frame generation presents frames of its own, a Present is not one of the game's frames: it only runs the
 // toggle keys and the live settings, and the game's own frames close the frame where their lists are submitted.
-void Pipeline::on_present(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *caller)
+void Pipeline::on_present(IDXGISwapChain3 *sc, const d3d12::Swapchain *known, void *caller)
 {
     static const uint32_t probe = perf::probe("core", "postfx Present");
     perf::Scope p(probe);
@@ -374,24 +374,24 @@ void Pipeline::setup()
     if (GetEnvironmentVariableA("SWOFTY_POSTFX_ORDER", v, sizeof v) && v[0])
         placement.order_left = unsigned(std::strtoul(v, nullptr, 10));
     config.refresh_live();
-    d3d12hooks::on_setname(hook_setname);
-    d3d12hooks::on_barrier(hook_barrier);
-    d3d12hooks::on_exec(hook_exec);
-    d3d12hooks::on_present(hook_present);
-    d3d12hooks::on_reset(hook_reset);
-    d3d12hooks::on_render_targets(hook_render_targets);
-    d3d12hooks::on_create_rtv(hook_create_rtv);
-    d3d12hooks::ProbeScope probe;
-    bool hooked = d3d12hooks::arm_device();
+    d3d12::on_setname(hook_setname);
+    d3d12::on_barrier(hook_barrier);
+    d3d12::on_exec(hook_exec);
+    d3d12::on_present(hook_present);
+    d3d12::on_reset(hook_reset);
+    d3d12::on_render_targets(hook_render_targets);
+    d3d12::on_create_rtv(hook_create_rtv);
+    d3d12::ProbeScope probe;
+    bool hooked = d3d12::arm_device();
     if (!hooked) {
         swofty::log("[postfx] the core's D3D12 device hooks did not arm; post-processing is off");
         return;
     }
     device_armed = true;
-    placement.state_armed = d3d12hooks::arm_list_state();
+    placement.state_armed = d3d12::arm_list_state();
     if (!placement.state_armed)
         swofty::log("[postfx] the command list state hooks did not arm; passes run only between the game's lists");
-    if (!d3d12hooks::arm_swapchain())
+    if (!d3d12::arm_swapchain())
         swofty::log("[postfx] the swapchain hooks did not arm; toggle keys, live settings and traces are off");
     swofty::log("[postfx] %zu pass(es) and %zu texture(s) wait for the game's picture%s%s", config.passes.size(),
                 config.textures.size(), capture.dir().empty() ? "" : "; captures go to ", capture.dir().c_str());
@@ -418,7 +418,7 @@ std::wstring module_path(HMODULE m)
     return n && n < std::size(path) ? std::wstring(path, n) : std::wstring();
 }
 
-// The id of the addon whose native code is at `at` (postfx::addon_of_module); empty for code that isn't an addon's.
+// The id of the addon whose native code is at `at` (render::postfx::addon_of_module); empty for code that isn't an addon's.
 std::string addon_at(const void *at)
 {
     HMODULE m = nullptr;
@@ -426,7 +426,7 @@ std::string addon_at(const void *at)
                             static_cast<LPCWSTR>(at), &m) ||
         !m)
         return {};
-    return postfx::addon_of_module(module_path(m), module_path(nullptr));
+    return render::postfx::addon_of_module(module_path(m), module_path(nullptr));
 }
 
 std::string lower(std::string s)
@@ -452,11 +452,11 @@ extern "C" __declspec(dllexport) int SwoftyCorePostfxSetData(const char *addon_i
 {
     if (!addon_id || !*addon_id || !pass || !*pass || (size && !data))
         return -1;
-    if (size > postfx::DATA_MAX)
+    if (size > render::postfx::DATA_MAX)
         return -2;
     if (addon_at(__builtin_return_address(0)) != lower(addon_id))
         return -3;
-    std::string key = postfx::DataStore::key(addon_id, pass);
+    std::string key = render::postfx::DataStore::key(addon_id, pass);
     {
         std::lock_guard<std::mutex> g(pipeline.recorder.data_lock);
         if (!pipeline.recorder.pass_data.is_listed()) {
@@ -468,7 +468,7 @@ extern "C" __declspec(dllexport) int SwoftyCorePostfxSetData(const char *addon_i
     bool known = false, running = false;
     {
         std::lock_guard<std::recursive_mutex> g(pipeline.lock);
-        for (const postfx::RenderPass &p : pipeline.config.passes)
+        for (const render::postfx::RenderPass &p : pipeline.config.passes)
             if (p.addon_id == addon_id && p.name == pass) {
                 known = true;
                 running = running ||

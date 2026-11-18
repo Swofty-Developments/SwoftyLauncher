@@ -6,7 +6,7 @@
 #include <mutex>
 #include <vector>
 
-namespace d3d12hooks {
+namespace render::d3d12 {
 
 // The command queues ExecuteCommandLists runs on, read while a swapchain made before the creation hooks waits
 // for its present queue.

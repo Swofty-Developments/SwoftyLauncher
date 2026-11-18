@@ -1,6 +1,6 @@
 #include "core/render/postfx/back_buffer_views.hpp"
 
-namespace postfx {
+namespace render::postfx {
 
 void BackBufferViews::named(ID3D12Resource *res)
 {

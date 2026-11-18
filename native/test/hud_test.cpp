@@ -885,7 +885,7 @@ static void test_guard()
           "the start log words the game's frame generation setting");
 }
 
-// Models d3d12hooks::exec_original: the hook sits on the native queue's ExecuteCommandLists (vtable
+// Models render::d3d12::exec_original: the hook sits on the native queue's ExecuteCommandLists (vtable
 // slot 10) and its trampoline runs that body, which reads this as a native queue and each list as a
 // native list. Streamline's queue proxy (vtable, refcount, native queue at +0x10) is what a swapchain
 // created through Streamline's factory records as its queue; its device makes list proxies of the
@@ -1187,7 +1187,7 @@ struct FakeList {};
 
 static void test_exec_plan()
 {
-    using Plan = d3d12hooks::BasicExecPlan<FakeQueue>;
+    using Plan = render::d3d12::BasicExecPlan<FakeQueue>;
     FakeQueue q;
     FakeList l[5];
     FakeList *const lists[] = {&l[0], &l[1], &l[2], &l[3], &l[4]};
