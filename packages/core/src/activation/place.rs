@@ -1158,11 +1158,15 @@ mod tests {
             slot: None,
             cars: 22,
             worlds: &[],
+            ai_teams: &[],
         };
         let before = opened();
-        let first = place(&input, &dir.join("cache")).unwrap();
+        let first = place(&input, &dir.join("cache"), &Packer::default()).unwrap();
         assert_eq!(first.spaced, ["pit"]);
-        assert_eq!(place(&input, &dir.join("cache")).unwrap(), first);
+        assert_eq!(
+            place(&input, &dir.join("cache"), &Packer::default()).unwrap(),
+            first
+        );
         assert_eq!(
             opened() - before,
             1,
@@ -1170,7 +1174,10 @@ mod tests {
         );
 
         std::fs::write(first.dir.join(KEPT_FILE), b"{ not json").unwrap();
-        assert_eq!(place(&input, &dir.join("cache")).unwrap(), first);
+        assert_eq!(
+            place(&input, &dir.join("cache"), &Packer::default()).unwrap(),
+            first
+        );
         assert_eq!(
             opened() - before,
             2,
@@ -1203,9 +1210,10 @@ mod tests {
             slot: None,
             cars: 22,
             worlds: &[],
+            ai_teams: &[],
         };
         let before = opened();
-        let first = place(&input, &dir.join("cache")).unwrap();
+        let first = place(&input, &dir.join("cache"), &Packer::default()).unwrap();
         assert_eq!(first.spaced, ["pit"]);
         let size = std::fs::metadata(&erp).unwrap().len();
         testring(&dir, |n| if n < 6 { (-1.5, 6.0) } else { (-6.0, 1.5) });
@@ -1216,7 +1224,7 @@ mod tests {
             .set_modified(old)
             .unwrap();
         assert_eq!(std::fs::metadata(&erp).unwrap().len(), size);
-        let again = place(&input, &dir.join("cache")).unwrap();
+        let again = place(&input, &dir.join("cache"), &Packer::default()).unwrap();
         assert_eq!(opened() - before, 2);
         assert!(again.spaced.is_empty(), "{:?}", again.spaced);
         std::fs::remove_dir_all(&dir).ok();
