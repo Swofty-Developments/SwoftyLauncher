@@ -105,11 +105,11 @@ impl Shell {
         };
         let m = existing.map(|p| &p.manifest);
         let name = m.map_or_else(
-            || self.db.draft.name.clone().unwrap_or_default(),
+            || self.db.book.draft.name.clone().unwrap_or_default(),
             |m| m.name.clone(),
         );
         let author = m.map_or_else(
-            || default_author(&self.store, self.db.draft.author.as_deref()),
+            || default_author(&self.store, self.db.book.draft.author.as_deref()),
             |m| m.author.clone(),
         );
         Form {
@@ -127,7 +127,7 @@ impl Shell {
 
     /// The header's Save (an addon) or Save as Addon (a new draft).
     pub(crate) fn db_save(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        if self.db.draft.addon.is_some() {
+        if self.db.book.draft.addon.is_some() {
             Db::save_bound(self, None, window, cx);
         } else {
             self.db_save_as(None, window, cx);
@@ -135,7 +135,7 @@ impl Shell {
     }
 
     pub(crate) fn db_save_as(&mut self, then: Option<Then>, window: &mut Window, cx: &mut Context<Self>) {
-        if self.db.draft.edits.is_empty() {
+        if self.db.book.draft.edits.is_empty() {
             window.notify(
                 Notification::info(tr("Change a value first, then save it as an addon.")),
                 cx,
@@ -146,7 +146,7 @@ impl Shell {
         let shell = cx.entity().downgrade();
         let p = palette(cx);
         let focus = Cell::new(true);
-        let n = self.db.draft.edits.len();
+        let n = self.db.book.draft.edits.len();
         let note = if self.vanilla() {
             tr("Vanilla stays stock: turn the addon on in another profile to use it.").to_owned()
         } else {
@@ -242,8 +242,7 @@ impl Shell {
 
     // A saved draft is cleared; the addon shows on Addons unless the save was on the way elsewhere.
     pub(crate) fn db_after_save(&mut self, id: String, then: Option<Then>, cx: &mut Context<Self>) {
-        self.db.addon_error = None;
-        self.db.seen = None;
+        self.db.book.saved();
         Db::persist(self, cx);
         self.reload(cx);
         match then {
@@ -270,7 +269,7 @@ impl Db {
             return false;
         };
         let store = needs.store;
-        let draft = &mut db.draft;
+        let draft = &mut db.book.draft;
         let pkg = match guarded(|| draft.save_as_addon(store, &catalog, &details).map_err(text)) {
             Ok(p) => p,
             Err(e) => {
@@ -299,14 +298,14 @@ impl Db {
         let Some(catalog) = db.catalog().cloned() else {
             return false;
         };
-        if let Some(e) = db.addon_error.clone() {
+        if let Some(e) = db.book.addon_error.clone() {
             crate::app::app_log::action("db editor: save").failed(&e);
             window.notify(Notification::error(e).title(tr("Could not save")), cx);
             return false;
         }
-        let name = db.draft_name();
+        let name = db.book.draft_name();
         let store = needs.store;
-        let draft = &mut db.draft;
+        let draft = &mut db.book.draft;
         match guarded(|| draft.save_addon(store, &catalog).map_err(text)) {
             Ok(pkg) => {
                 window.notify(Notification::success(trf!("Saved {name}", name = name)), cx);

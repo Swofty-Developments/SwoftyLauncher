@@ -132,11 +132,12 @@ impl Shell {
         if !self.db_ready_to_edit(cx) {
             return Err(self
                 .db
+                .book
                 .addon_error
                 .clone()
                 .unwrap_or_else(|| "The draft can't be edited now.".into()));
         }
-        let key = guarded(|| self.db.draft.edits.add(&catalog, path, tag, value))?;
+        let key = guarded(|| self.db.book.draft.edits.add(&catalog, path, tag, value))?;
         Db::changed(self, Some(key), true, cx);
         Ok(())
     }

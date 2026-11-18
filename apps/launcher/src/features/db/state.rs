@@ -1,17 +1,15 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use std::time::SystemTime;
 
 use crate::shell::notices::Notification;
 use gpui_kit::component::input::InputState;
 use gpui_kit::*;
 use swofty_core::dbedit::draft::{Details, DraftFile, Written};
-use swofty_core::dbedit::package::{Imported, PackageInfo};
-use swofty_core::dbedit::{
-    Catalog, Draft, Edit, Edits, Hit, ImportReport, LinkSpec, Module, ModuleView, NodeId,
-};
+use swofty_core::dbedit::package::Imported;
+use swofty_core::dbedit::{Catalog, Edit, Edits, Hit, ImportReport, LinkSpec, Module, ModuleView, NodeId};
 
+use super::draft::DraftBook;
 use super::fields::Slots;
 use crate::services::game::Install;
 use crate::shell::Shell;
@@ -71,23 +69,17 @@ pub(super) fn game_id(install: &crate::services::game::Install) -> GameId {
 
 pub(crate) struct Db {
     pub load: Load,
+    /// The draft and the DB Editor addons it can be saved into.
+    pub book: DraftBook,
     pub game: Option<GameId>,
     pub modules: &'static [Module],
-    /// The changes being edited; `draft.edits` is what every view shows.
-    pub draft: Draft,
     pub(super) draft_read: bool,
     pub(super) file: Arc<Mutex<DraftFile>>,
     pub(super) others_gen: u64,
     pub(super) _quit: Subscription,
     pub(super) index: HashMap<u64, usize>,
-    /// Why the draft's addon could not be read; editing stays off until it reads.
-    pub addon_error: Option<String>,
-    /// The DB Editor addons installed, from their manifests.
-    pub addons: Vec<PackageInfo>,
     /// An addon to open once the player answers Save / Discard / Cancel.
     pub(super) pending_open: Option<String>,
-    /// The addon file time last looked at, so a damaged file is read once per change.
-    pub(super) seen: Option<Option<SystemTime>>,
     pub others: Arc<HashMap<u64, Vec<(String, String)>>>,
     pub toasts: Vec<Notification>,
     pub nav: Nav,
@@ -137,9 +129,9 @@ impl Db {
     pub(crate) fn new(cx: &mut Context<Shell>) -> Self {
         Self {
             load: Load::Idle,
+            book: DraftBook::default(),
             game: None,
             modules: &[],
-            draft: Draft::default(),
             draft_read: false,
             file: Arc::default(),
             others_gen: 0,
@@ -148,10 +140,7 @@ impl Db {
                 async {}
             }),
             index: HashMap::new(),
-            addon_error: None,
-            addons: Vec::new(),
             pending_open: None,
-            seen: None,
             others: Arc::new(HashMap::new()),
             toasts: Vec::new(),
             nav: Nav::Raw(0),
@@ -200,7 +189,9 @@ impl Db {
     }
 
     pub(crate) fn edit(&self, key: u64) -> Option<&Edit> {
-        self.index.get(&key).and_then(|&i| self.draft.edits.edits.get(i))
+        self.index
+            .get(&key)
+            .and_then(|&i| self.book.draft.edits.edits.get(i))
     }
 
     pub(crate) fn current(&self, key: u64) -> String {
@@ -208,7 +199,7 @@ impl Db {
             Some(e) => e.value.clone().unwrap_or_default(),
             None => self
                 .catalog()
-                .and_then(|c| self.draft.edits.value(c, key))
+                .and_then(|c| self.book.draft.edits.value(c, key))
                 .map(str::to_owned)
                 .unwrap_or_default(),
         }
@@ -216,6 +207,7 @@ impl Db {
 
     pub(super) fn reindex(&mut self) {
         self.index = self
+            .book
             .draft
             .edits
             .edits

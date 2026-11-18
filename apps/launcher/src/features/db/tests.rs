@@ -1,5 +1,7 @@
 use swofty_core::dbedit::draft::Written;
+use swofty_core::dbedit::package::PackageInfo;
 
+use super::draft::DraftBook;
 use super::state::Autosave;
 
 fn changed() -> Autosave {
@@ -67,4 +69,66 @@ fn a_failed_write_keeps_the_changes_and_says_why() {
     assert!(autosave.unwritten);
     assert!(autosave.error.as_deref().is_some_and(|e| e.contains("disk full")));
     assert!(autosave.begin());
+}
+
+fn installed(id: &str, name: &str) -> PackageInfo {
+    PackageInfo {
+        id: id.into(),
+        name: name.into(),
+        version: "1.0.0".into(),
+        author: String::new(),
+        description: String::new(),
+        changes: 0,
+        game_build: String::new(),
+    }
+}
+
+fn book_on(addon: Option<&str>) -> DraftBook {
+    let mut book = DraftBook {
+        addons: vec![
+            installed("swofty-db-a", "Faster pits"),
+            installed("swofty-db-b", "Wet tyres"),
+        ],
+        ..DraftBook::default()
+    };
+    book.draft.addon = addon.map(Into::into);
+    book
+}
+
+#[test]
+fn a_draft_for_no_addon_is_the_new_addon() {
+    let book = book_on(None);
+    assert!(book.bound().is_none());
+    assert_eq!(book.draft_name(), "the new addon");
+}
+
+#[test]
+fn a_draft_bound_to_an_installed_addon_goes_by_its_name() {
+    let book = book_on(Some("swofty-db-b"));
+    assert_eq!(book.bound().map(|p| p.name.as_str()), Some("Wet tyres"));
+    assert_eq!(
+        book.addon("swofty-db-a").map(|p| p.name.as_str()),
+        Some("Faster pits")
+    );
+    assert_eq!(book.draft_name(), "Wet tyres");
+}
+
+#[test]
+fn a_draft_whose_addon_is_gone_goes_by_its_id() {
+    let book = book_on(Some("swofty-db-gone"));
+    assert!(book.bound().is_none());
+    assert_eq!(book.draft_name(), "swofty-db-gone");
+}
+
+#[test]
+fn a_save_drops_the_read_error_and_reads_the_addon_again() {
+    let mut book = DraftBook {
+        addon_error: Some("The addon file is damaged".into()),
+        seen: Some(None),
+        ..book_on(Some("swofty-db-a"))
+    };
+    book.saved();
+    assert!(book.addon_error.is_none());
+    assert!(book.seen.is_none());
+    assert_eq!(book.draft_name(), "Faster pits");
 }
