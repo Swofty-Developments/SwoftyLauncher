@@ -75,6 +75,7 @@ t "Standings dropped scores unit test" native/test/run_standings_drop_test.sh
 t "AI team curves guard unit test" native/test/run_ai_curves_test.sh
 t "Teammate pairs guard unit test" native/test/run_teammate_pairs_test.sh
 t "R&D supplier budget unit test" native/test/run_rnd_suppliers_test.sh
+t "Asset group template archives unit test" native/test/run_asset_template_test.sh
 t "Setup screen car guard unit test" native/test/run_setup_vm_test.sh
 t "AI brake line guard unit test" native/test/run_ai_corner_test.sh
 t "Replay recorder grid guard unit test" native/test/run_replay_grid_test.sh
