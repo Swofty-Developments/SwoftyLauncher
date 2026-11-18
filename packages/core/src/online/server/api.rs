@@ -192,8 +192,17 @@ impl Api {
     }
 
     /// A nonce that ties the laps of one game session together.
-    pub fn sessions(&self) -> Result<Nonce, ApiError> {
-        self.send("POST", "/v1/tt/sessions", None, CALL_TIMEOUT)
+    /// Ask for the session nonce. With `game_build`, the sha256 of the game's exe, the server can set the session a
+    /// challenge for the integrity module; without it, or with something that is not such a hash, the request has
+    /// no body, as older launchers send it.
+    pub fn sessions(&self, game_build: Option<&str>) -> Result<Nonce, ApiError> {
+        let body = game_build
+            .filter(|b| b.len() == 64 && b.bytes().all(|c| matches!(c, b'0'..=b'9' | b'a'..=b'f')))
+            .map(|b| {
+                let doc = serde_json::json!({ "game_build": b });
+                ("application/json".to_owned(), doc.to_string().into_bytes())
+            });
+        self.send("POST", "/v1/tt/sessions", body, CALL_TIMEOUT)
     }
 
     /// Send one timing mark of a Time Trial lap for the session `nonce`; the answer is the server's receipt.
@@ -508,10 +517,12 @@ pub(in crate::online) mod tests {
 
     #[test]
     fn refuses_a_token_over_plain_http() {
-        let e = Api::with_server("http://10.0.0.5:1", "t").sessions().unwrap_err();
+        let e = Api::with_server("http://10.0.0.5:1", "t")
+            .sessions(None)
+            .unwrap_err();
         assert!(e.message.contains("plain http"));
         let e = Api::with_server("http://127.0.0.1:1", "t")
-            .sessions()
+            .sessions(None)
             .unwrap_err();
         assert!(e.message.contains("couldn't reach"));
     }
@@ -606,9 +617,34 @@ pub(in crate::online) mod tests {
     }
 
     #[test]
+    fn a_session_request_names_the_game_build_and_an_unknown_build_sends_none() {
+        let build = "0123456789abcdef".repeat(4);
+        let (url, t) = serve("200 OK", r#"{"nonce":"n1","expires":9}"#);
+        let n = Api::with_server(&url, "tok").sessions(Some(&build)).unwrap();
+        assert_eq!(n.nonce, "n1");
+        let req = String::from_utf8(t.join().unwrap()).unwrap();
+        let body = &req[req.find("\r\n\r\n").unwrap() + 4..];
+        assert_eq!(
+            serde_json::from_str::<Value>(body).unwrap(),
+            serde_json::json!({ "game_build": build })
+        );
+        assert!(
+            req.to_ascii_lowercase()
+                .contains("content-type: application/json")
+        );
+        let upper = "AB".repeat(32);
+        for odd in [None, Some("exe-1234"), Some(upper.as_str())] {
+            let (url, t) = serve("200 OK", r#"{"nonce":"n2"}"#);
+            Api::with_server(&url, "tok").sessions(odd).unwrap();
+            let req = String::from_utf8(t.join().unwrap()).unwrap();
+            assert!(req.ends_with("\r\n\r\n"), "{odd:?}: {req}");
+        }
+    }
+
+    #[test]
     fn asks_for_a_session_nonce_and_reads_a_refusal() {
         let (url, t) = serve("200 OK", r#"{"nonce":"abcd","expires":99}"#);
-        let n = Api::with_server(&url, "tok").sessions().unwrap();
+        let n = Api::with_server(&url, "tok").sessions(None).unwrap();
         assert_eq!((n.nonce.as_str(), n.expires), ("abcd", 99));
         t.join().unwrap();
         let (url, t) = serve("429 Too Many Requests", r#"{"error":"slow down"}"#);

@@ -274,7 +274,8 @@ pub fn begin(
         timetrial::clear_session_keys(&g.dir);
         return None;
     };
-    let nonce = match upload::nonce(&store.root, config) {
+    let build = Some(g.identity.exe_sha256.to_ascii_lowercase()).filter(|b| !b.is_empty());
+    let nonce = match upload::nonce(&store.root, config, build.as_deref()) {
         Ok(n) => Some(n),
         Err(e) => {
             say(
@@ -297,6 +298,7 @@ pub fn begin(
         &g.dir,
         config,
         nonce.is_none(),
+        build,
         integrity,
         move || fingerprint(&s, &p, &identity),
         |line| say("laps", line),

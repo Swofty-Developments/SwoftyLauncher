@@ -69,11 +69,12 @@ fn toast(data: &Path, queue: &Queue, event: &Event, say: &dyn Fn(&str)) {
     }
 }
 
-/// Ask for a nonce for the game session about to start. A failure is not fatal here: the watcher keeps
-/// asking while the game runs, and the core picks the nonce up for the laps written after it arrives.
-pub fn nonce(data: &Path, config: &Config) -> Result<Nonce, String> {
+/// Ask for a nonce for the game session about to start, for the game build `game_build` (the exe's sha256)
+/// when it is known. A failure is not fatal here: the watcher keeps asking while the game runs, and the core
+/// picks the nonce up for the laps written after it arrives.
+pub fn nonce(data: &Path, config: &Config, game_build: Option<&str>) -> Result<Nonce, String> {
     let token = token(data, config).ok_or_else(|| "nobody is signed in".to_owned())?;
-    Api::new(&token).sessions().map_err(|e| e.to_string())
+    Api::new(&token).sessions(game_build).map_err(|e| e.to_string())
 }
 
 /// How long the watcher waits before asking for the nonce again: three quick tries over about 15 s,
@@ -88,6 +89,7 @@ fn nonce_until_issued(
     data: &Path,
     game: &Path,
     config: &Config,
+    game_build: Option<&str>,
     stop: &dyn Fn() -> bool,
     say: &dyn Fn(&str),
 ) {
@@ -102,7 +104,7 @@ fn nonce_until_issued(
         if stop() || token(data, config).is_none() {
             return;
         }
-        match nonce(data, config) {
+        match nonce(data, config, game_build) {
             Ok(n) => {
                 match write_session_keys(game, Some(&n), config.time_trial_ingame) {
                     Ok(()) => say(&format!(
@@ -219,13 +221,14 @@ impl Watcher {
     /// the timing marks of the session's laps go to the server as they are made.
     /// With Time Trial boards off or nobody signed in, the laps are still collected into the outbox and
     /// nothing leaves the machine. With `retry_nonce` the session nonce the start could not get is asked
-    /// for again on a thread of its own. Each lap is kept with `integrity`, what the session did about the
+    /// for again on a thread of its own, for `game_build`. Each lap is kept with `integrity`, what the session did about the
     /// integrity module, for its upload meta.
     pub fn start(
         data: &Path,
         game: &Path,
         config: &Config,
         retry_nonce: bool,
+        game_build: Option<String>,
         integrity: Value,
         fingerprint: impl Fn() -> Option<Value> + Send + Sync + 'static,
         say: impl Fn(&str) + Send + Sync + 'static,
@@ -293,7 +296,7 @@ impl Watcher {
                 .name("tt-nonce".into())
                 .spawn(move || {
                     let stopped = || stop.load(Ordering::Relaxed);
-                    nonce_until_issued(&data, &game, &config, &stopped, &*say);
+                    nonce_until_issued(&data, &game, &config, game_build.as_deref(), &stopped, &*say);
                 })
                 .ok();
         }

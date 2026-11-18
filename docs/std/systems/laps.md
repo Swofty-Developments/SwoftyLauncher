@@ -204,7 +204,7 @@ timing: lap 3 end not sent within 600 s; that lap is untimed
 
 ## Session challenge
 
-When Swofty's server sends a `challenge` with the session nonce, the launcher writes it into `swofty/tt.json` as `tt_challenge`, next to `tt_nonce`, for the integrity module. A challenge that is not a JSON object or is larger than 16 KB is left out. Older servers send none, and the key is then absent.
+The launcher asks for the session nonce with the sha256 of the game's exe, `{"game_build": "<sha256>"}`, when it knows it. When Swofty's server sends a `challenge` with the nonce, the launcher writes it into `swofty/tt.json` as `tt_challenge`, next to `tt_nonce`, for the integrity module. A challenge that is not a JSON object or is larger than 16 KB is left out. Older servers send none, and the key is then absent.
 
 ## In-game boards
 

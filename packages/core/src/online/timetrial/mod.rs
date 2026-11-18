@@ -176,7 +176,7 @@ pub(crate) mod tests {
         let challenge = serde_json::json!({"v": 1, "salt": "c2FsdA==", "regions": [["exe", 4128768, 65536], ["rdata", 1310720, 16384]]});
         let answer = serde_json::json!({"nonce": "n1", "expires": 99, "challenge": challenge}).to_string();
         let (url, t) = crate::online::server::api::tests::serve("200 OK", Box::leak(answer.into_boxed_str()));
-        let n = Api::with_server(&url, "tok").sessions().unwrap();
+        let n = Api::with_server(&url, "tok").sessions(None).unwrap();
         t.join().unwrap();
         write_session_keys(&game, Some(&n), false).unwrap();
         assert_eq!(
@@ -185,7 +185,7 @@ pub(crate) mod tests {
         );
 
         let (url, t) = crate::online::server::api::tests::serve("200 OK", r#"{"nonce":"n2","expires":99}"#);
-        let old = Api::with_server(&url, "tok").sessions().unwrap();
+        let old = Api::with_server(&url, "tok").sessions(None).unwrap();
         t.join().unwrap();
         write_session_keys(&game, Some(&old), false).unwrap();
         assert_eq!(read(), serde_json::json!({"tt_boards": true, "tt_nonce": "n2"}));
