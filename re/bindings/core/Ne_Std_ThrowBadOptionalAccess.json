@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "name": "Ne_Std_ThrowException",
+ "name": "Ne_Std_ThrowBadOptionalAccess",
  "table": "functions",
  "author": "kb-import",
  "row": {
@@ -23,7 +23,7 @@
   "target": "0x14029b020",
   "kind": "func_start",
   "names": [
-   "Ne_Std_ThrowException"
+   "Ne_Std_ThrowBadOptionalAccess"
   ],
   "verified": [
    {
@@ -50,7 +50,7 @@
    "date": "2026-11-19",
    "verifier": "re-bindings-blind",
    "kind": "func",
-   "item": "Ne_Std_ThrowException",
+   "item": "retired:Ne_Std_ThrowException",
    "claimed": "L2",
    "verdict": "partial",
    "evidence": "decomp:own capstone disasm 0x14029b020-0x14029b047,0x14029b050-0x14029b08b,0x14029b090-0x14029b183,0x145349d58-0x145349d9f,1.0.145 0x14029b020-0x14029b08b,1.0.145 0x14029b140-0x14029b16c,1.0.145 0x14534c718-0x14534c75f;xref:0x14029b024,0x14029b030,0x14029b041,0x14029b058,0x14029b06f,0x14029b085,0x14029b140,0x14029b150,0x145349d70,0x140232eeb,0x14023e4f2,0x14027b1c5",

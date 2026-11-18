@@ -7680,11 +7680,11 @@
   "Ne_Std_ThrowBadFunctionCall": {
    "match": "0x49e4194"
   },
+  "Ne_Std_ThrowBadOptionalAccess": {
+   "match": "0x29b020"
+  },
   "Ne_Std_ThrowDequeTooLong": {
    "match": "0x34f2ecd"
-  },
-  "Ne_Std_ThrowException": {
-   "match": "0x29b020"
   },
   "Ne_Std_ThrowExceptionNoReturn": {
    "match": "0x1b034e"
