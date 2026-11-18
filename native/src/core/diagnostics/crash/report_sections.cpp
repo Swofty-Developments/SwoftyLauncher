@@ -594,6 +594,8 @@ void step_header(Request &r)
             (unsigned long)nt->FileHeader.TimeDateStamp, (unsigned long long)process.exe_base);
     report_writer.out.put("symbols      %zu KB function name(s)%s\n", symbol_table.symbols.size(),
             symbol_table.matches ? "" : " (symbols.tsv is for another build or missing)");
+    if (size_t bound = symbol_table.bound_count())
+        report_writer.out.put("symbols      %zu function name(s) from the binding set\n", bound);
     report_writer.out.put("runtime      %s\n", process.wine_version ? fmt("Wine %s", process.wine_version()).c_str() : "Windows");
     report_writer.out.put("first-chance fatal-class exceptions before this report: %ld\n", capture.fatal_count);
 }

@@ -7,6 +7,7 @@
 // the flow thread, a car without a system, and cars::live::cars/get/set/scale/is_ai through the table.
 // native/test/run_tests.sh car_live builds and runs it.
 #include "core/hooks/car_live.hpp"
+#include "core/hooks/car_proofs.hpp"
 #include "core/hooks/player_facts.hpp"
 
 #include <swofty/systems/cars.hpp>
@@ -821,8 +822,28 @@ static void player_facts_sync()
     count = CARS;
 }
 
+static void car_gates()
+{
+    namespace bp = runtime::build_proof;
+    namespace cp = swofty_core::hooks::car_proofs;
+    auto all = [](const char *) { return true; };
+    expect(bool(bp::check(cp::POINTS, bp::Build::kb, all)), "the KB build runs the car points");
+    expect(bool(bp::check(cp::POINTS, bp::Build::steam_1_0_145, all)), "Steam 1.0.145 runs the car points");
+    expect(!bp::check(cp::POINTS, bp::Build::ea, all), "the EA build runs no car points");
+    expect(!bp::check(cp::POINTS, bp::Build::unknown, all), "an unknown build runs no car points");
+    for (const bp::Gate *g : {&cp::OPERATIONS, &cp::LEVERS}) {
+        expect(bool(bp::check(*g, bp::Build::kb, all)), "the KB build runs the car operations and levers");
+        expect(!bp::check(*g, bp::Build::steam_1_0_145, all), "Steam 1.0.145 runs no car operations or levers");
+        expect(!bp::check(*g, bp::Build::ea, all) && !bp::check(*g, bp::Build::unknown, all),
+               "the EA build and an unknown build run no car operations or levers");
+    }
+    expect(bp::identify({1794312636u, 0x18434000}) == bp::Build::steam_1_0_145, "Steam 1.0.145 is known by its header");
+    expect(bp::identify({1794312636u, 0x18435000}) == bp::Build::unknown, "its stamp on another image size is no proof");
+}
+
 int main()
 {
+    car_gates();
     core_ops();
     sdk_side();
     pending_queue();

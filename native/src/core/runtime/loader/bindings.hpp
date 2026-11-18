@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace runtime::loader {
@@ -61,6 +62,8 @@ public:
     bool kb_first() const { return kb_first_; }
     void use_kb_addresses(bool on) { kb_first_ = on; }
     std::unordered_map<std::string, size_t> section_uses() const;
+    // Every resolved function binding as (rva, id), sorted by rva.
+    std::vector<std::pair<uint32_t, std::string>> resolved_functions() const;
     bool empty() const { return bindings_.empty(); }
 
     BuildIdentity build;

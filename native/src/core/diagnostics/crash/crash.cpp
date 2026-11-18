@@ -13,6 +13,7 @@
 #include "core/diagnostics/crash/report_sections.hpp"
 #include "core/diagnostics/crash/report_writer.hpp"
 #include "core/diagnostics/crash/symbolizer.hpp"
+#include "core/runtime/loader/bindings.hpp"
 #include "core/runtime/stage.hpp"
 #include "safetyhook.hpp"
 #include "swofty_api.h"
@@ -106,6 +107,18 @@ void crash_blame(const char *text)
 
 }
 
+namespace {
+
+void adopt_binding_names()
+{
+    std::vector<Symbol> named;
+    for (auto &[rva, id] : runtime::loader::bindings().resolved_functions())
+        named.push_back({rva, id});
+    symbol_table.adopt(std::move(named));
+}
+
+}
+
 void crash_attach(SwoftyApi *a, const std::wstring &dir)
 {
     logger.api = a;
@@ -133,6 +146,8 @@ void crash_attach(SwoftyApi *a, const std::wstring &dir)
     a->log = tap;
     symbol_table.load(dir + L"symbols.tsv", nt->FileHeader.TimeDateStamp);
     process.kb_build = symbol_table.matches && nt->FileHeader.TimeDateStamp == KB_STAMP;
+    if (!symbol_table.matches)
+        runtime::when_code_ready("crash symbol names", adopt_binding_names);
     read_addons(process.swofty_dir + L"settings.json");
     v[0] = 0;
     GetEnvironmentVariableA("SWOFTY_CRASH_DUMP", v, sizeof v);
