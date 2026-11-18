@@ -688,6 +688,24 @@ void link_mid(safetyhook::Context &c)
                     ds::phase_name(driver.phase));
 }
 
+// The direct start and the flow link listeners share one hook on the flow link site, made by whichever asks first.
+std::mutex link_hook_lock;
+
+std::string hook_flow_link()
+{
+    std::lock_guard<std::mutex> g(link_hook_lock);
+    if (h_link)
+        return {};
+    uintptr_t at = runtime::holds(FLOW_LINK) ? runtime::find(SIG_FLOW_LINK, "flow link", "direct") : 0;
+    if (!at)
+        return "the flow link site is not proven or did not resolve on this build";
+    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), link_mid);
+    if (!h)
+        return "the hook on the flow link site failed: " + runtime::hook_error(h.error());
+    h_link = std::move(*h);
+    return {};
+}
+
 void *registry_call(uint8_t *entity, size_t slot, const void *a2, int a3)
 {
     auto *reg = entity + ENTITY_REGISTRY;
@@ -1344,17 +1362,11 @@ void direct_start_setup()
     // +0xc0, +0xaf0, +0xb30 and +0xbd8 in the same places (+0xc10, the parent, the same in 0x141d5ee30), and the pattern
     // holds the hook point and the link's stack slot.
     if (t.exit_state || t.from_state) {
-        uintptr_t at = runtime::holds(FLOW_LINK) ? runtime::find(SIG_FLOW_LINK, "flow link", "direct") : 0;
-        if (!at) {
-            swofty::log("[direct] off: the flow link site is not proven or did not resolve on this build");
+        std::string why = hook_flow_link();
+        if (!why.empty()) {
+            swofty::log("[direct] off: %s", why.c_str());
             return;
         }
-        auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), link_mid);
-        if (!h) {
-            swofty::log("[direct] off: the hook on the flow link site failed: %s", runtime::hook_error(h.error()).c_str());
-            return;
-        }
-        h_link = std::move(*h);
     }
     {
         std::lock_guard<std::mutex> g(lock);
@@ -1442,17 +1454,11 @@ int direct_start_cover_signal()
 bool flow_link_listen(FlowLinkListener listener)
 {
     link_listener = listener;
-    if (h_link)
-        return true;
-    uintptr_t at = runtime::verified_build() ? runtime::find(SIG_FLOW_LINK, "flow link", "direct") : 0;
-    if (!at)
-        return false;
-    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), link_mid);
-    if (!h) {
-        swofty::log("[direct] the hook on the flow link site failed: %s", runtime::hook_error(h.error()).c_str());
+    std::string why = hook_flow_link();
+    if (!why.empty()) {
+        swofty::log("[direct] the flow link listener is off: %s", why.c_str());
         return false;
     }
-    h_link = std::move(*h);
     return true;
 }
 
