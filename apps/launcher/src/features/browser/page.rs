@@ -5,6 +5,7 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_i18n::tr;
 
+use super::Browser;
 use super::authors::View;
 use crate::shell::{Page, Shell};
 use crate::ui::scale::{Hit, px};
@@ -13,7 +14,7 @@ use crate::ui::theme::Palette;
 impl Shell {
     pub(crate) fn browser_page(&mut self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         if self.browser.stale() {
-            self.fetch_catalog(cx);
+            Browser::fetch_catalog(self, cx);
         }
         let actions = h_flex()
             .gap(px(8.))
@@ -42,9 +43,9 @@ impl Shell {
                     .tap_sm()
                     .icon(IconName::RefreshCw)
                     .label(tr("Refresh"))
-                    .loading(self.browser.fetching)
-                    .disabled(self.browser.fetching)
-                    .on_click(cx.listener(|this, _, _, cx| this.fetch_catalog(cx))),
+                    .loading(self.browser.feed.fetching)
+                    .disabled(self.browser.feed.fetching)
+                    .on_click(cx.listener(|this, _, _, cx| Browser::fetch_catalog(this, cx))),
             );
         let (content, ad) = match self.browser.view.clone() {
             View::Addon(id) if self.browser.find(&id).is_some() => (self.browser_detail(&id, p, cx), None),

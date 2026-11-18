@@ -6,8 +6,9 @@ use std::process::Command;
 
 use crate::GAME_EXE;
 use crate::install::Source;
-use crate::platform::LaunchPlatform;
+use crate::platform::ensure::EaClient;
 use crate::platform::run_as_admin::parse_reg_query;
+use crate::platform::{ClientNote, ClientReady, ClientStart, LaunchPlatform};
 use crate::session::COMPAT_LAYER;
 
 pub const MARKER: &str = "__Installer/installerdata.xml";
@@ -59,6 +60,17 @@ impl LaunchPlatform for EaApp {
 
     fn move_hint(&self) -> &'static str {
         " with EA app > F1 25 > Manage > Move, not File Explorer"
+    }
+
+    fn ensure_client(
+        &self,
+        start: ClientStart<'_>,
+        note: &mut dyn FnMut(ClientNote),
+    ) -> Result<ClientReady, String> {
+        if !self.installed(start.game) {
+            return Ok(ClientReady::NotNeeded);
+        }
+        EaClient::for_launch(start).ensure(start.allowed, note)
     }
 }
 
@@ -168,7 +180,7 @@ pub fn recorded(reg: impl Fn(&[&str]) -> Option<String>) -> Vec<PathBuf> {
 
 #[cfg(windows)]
 pub fn recorded_here() -> Vec<PathBuf> {
-    recorded(reg_exe)
+    recorded(read_reg)
 }
 
 #[cfg(not(windows))]
@@ -230,11 +242,11 @@ pub fn moved(dir: &Path, recorded: &[PathBuf], is_install: impl Fn(&Path) -> boo
     })
 }
 
+/// What `reg query <args>` prints for an install record or the link handler, read in process; None when
+/// the key is not there.
 #[cfg(windows)]
-fn reg_exe(args: &[&str]) -> Option<String> {
-    let mut all = vec!["query"];
-    all.extend_from_slice(args);
-    crate::platform::run_as_admin::windows_tool("reg", &all).filter(|o| !o.trim().is_empty())
+fn read_reg(args: &[&str]) -> Option<String> {
+    crate::platform::registry::reg_query(args).filter(|o| !o.trim().is_empty())
 }
 
 #[cfg(windows)]
@@ -284,7 +296,7 @@ pub fn installs() -> Vec<PathBuf> {
         .flat_map(|ini| library_dirs(&ini))
         .chain(program_files().into_iter().map(|p| p.join("EA Games")))
         .collect();
-    find_installs(reg_exe, &defaults, is_install)
+    find_installs(read_reg, &defaults, is_install)
 }
 
 /// Linux has no standard place for the EA app's games; players add the
@@ -514,10 +526,10 @@ pub fn handoff(setting: Option<&str>) -> Option<Handoff> {
 
 #[cfg(windows)]
 fn windows_handoff() -> Option<Handoff> {
-    if let Some(h) = reg_exe(&[PROTOCOL_KEY, "/ve"]).and_then(|o| Handoff::from_protocol(&o)) {
+    if let Some(h) = read_reg(&[PROTOCOL_KEY, "/ve"]).and_then(|o| Handoff::from_protocol(&o)) {
         return Some(h);
     }
-    let desktop: String = DESKTOP_KEYS.iter().filter_map(|k| reg_exe(&[k])).collect();
+    let desktop: String = DESKTOP_KEYS.iter().filter_map(|k| read_reg(&[k])).collect();
     let defaults: Vec<PathBuf> = program_files()
         .iter()
         .map(|p| {

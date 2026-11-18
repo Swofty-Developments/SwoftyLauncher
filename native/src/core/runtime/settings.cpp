@@ -1,3 +1,5 @@
+#include "core/runtime/settings.hpp"
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <atomic>
@@ -10,10 +12,9 @@
 #include "core/runtime/json.hpp"
 #include "core/registry/older.hpp"
 #include "core/runtime/runtime.hpp"
+#include "core/career/hub_tab.hpp"
+#include "core/frontend/ui_vm.hpp"
 #include "swofty_api.h"
-
-bool ui_vm_set_path(const std::string &path, int type, const void *value);
-bool settings_command(uint32_t hash);
 
 namespace {
 
@@ -515,9 +516,6 @@ int settings_watch(const char *id, SwoftySettingFn fn, void *user)
     return o != nullptr;
 }
 
-// Core-internal access for the hub tab (ui_vm.cpp): an option's current state index and its states'
-// texts and commands, and a pick of a state by its value; the pick runs the state's command, the
-// path ADDON SETTINGS takes, so the profile, the watchers and the requests file follow.
 bool settings_state(const std::string &addon, const std::string &option, size_t &current,
                     std::vector<std::string> *texts, std::vector<std::string> *commands, std::vector<std::string> *values)
 {
@@ -546,8 +544,6 @@ bool settings_state(const std::string &addon, const std::string &option, size_t 
     ReleaseSRWLockShared(&lock);
     return found;
 }
-
-void hub_option_changed(const std::string &addon, const std::string &option);
 
 bool settings_command(uint32_t hash)
 {

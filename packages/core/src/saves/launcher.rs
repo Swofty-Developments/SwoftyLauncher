@@ -353,18 +353,18 @@ pub fn first_start_import(
 
 /// Whether profile `profile` has to play on Steam's saves for now: the first-start import has not found
 /// a Steam save yet and the profile's launcher save is empty, so redirecting the game to it would start
-/// a new profile beside a Steam save the launcher could not find. EA app copies have no Steam save.
+/// a new profile beside a Steam save the launcher could not find. EA app copies have no Steam save. The
+/// copy Play uses is looked for last, since on Windows that runs `reg query` several times.
 pub fn steam_save_pending(data: &Path, profile: &str) -> bool {
-    if !import_pending(data) || profile == crate::profile::VANILLA {
-        return false;
-    }
-    let config = crate::store::Store::new(data.to_path_buf()).config();
-    if crate::game_folder::copies::find_active(&config)
-        .is_some_and(|c| c.source == crate::install::Source::EaApp)
+    if !import_pending(data)
+        || profile == crate::profile::VANILLA
+        || has_files(&Location::launcher(data, profile))
     {
         return false;
     }
-    !has_files(&Location::launcher(data, profile))
+    let config = crate::store::Store::new(data.to_path_buf()).config();
+    !crate::game_folder::copies::find_active(&config)
+        .is_some_and(|c| c.source == crate::install::Source::EaApp)
 }
 
 pub fn first_start_import_from(

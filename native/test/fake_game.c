@@ -3389,7 +3389,60 @@ static int packed_main(const char *mode)
 
 /* nearfull / nopool: take every free 64 KB slot within 2 GB of the image before the core loads, the way the
    game's own allocations have by the window stage on a build whose core loads there. nopool first gives
-   back the hook pool the loader reserved at attach. */
+   back the hook pool the loader reserved at attach. A thread keeps the space taken until the window exists:
+   memory that existed before, such as the stack of a thread the loader started at attach, can be released
+   while the core loads (Wine frees an exited thread's stack when the next thread exits), and a hook
+   trampoline would land there. */
+static uintptr_t near_lo, near_hi;
+static volatile LONG near_keep;
+static HANDLE near_keeper;
+static int near_retaken;
+static uintptr_t near_retaken_at[8];
+static size_t near_retaken_size[8];
+
+static int take_free_near(int keeping)
+{
+    MEMORY_BASIC_INFORMATION m;
+    int taken = 0;
+    for (uintptr_t p = near_lo; p < near_hi && VirtualQuery((void *)p, &m, sizeof m);
+         p = (uintptr_t)m.BaseAddress + m.RegionSize) {
+        uintptr_t a = (p + 0xFFFF) & ~(uintptr_t)0xFFFF, e = (uintptr_t)m.BaseAddress + m.RegionSize;
+        e = (e < near_hi ? e : near_hi + 0xFFFF) & ~(uintptr_t)0xFFFF;
+        if (m.State == MEM_FREE && a < e && VirtualAlloc((void *)a, e - a, MEM_RESERVE, PAGE_NOACCESS)) {
+            taken++;
+            if (keeping && near_retaken < 8)
+                near_retaken_at[near_retaken] = a, near_retaken_size[near_retaken] = e - a;
+            near_retaken += keeping;
+        }
+    }
+    return taken;
+}
+
+static DWORD WINAPI keep_near(void *arg)
+{
+    (void)arg;
+    while (near_keep) {
+        take_free_near(1);
+        Sleep(1);
+    }
+    return 0;
+}
+
+static void keep_near_stop(void)
+{
+    if (!near_keeper)
+        return;
+    InterlockedExchange(&near_keep, 0);
+    WaitForSingleObject(near_keeper, INFINITE);
+    CloseHandle(near_keeper);
+    near_keeper = NULL;
+    printf("      kept the space within 2 GB of the image taken while the core loaded: %d region(s) released meanwhile "
+           "were taken again\n", near_retaken);
+    for (int i = 0; i < near_retaken && i < 8; i++)
+        printf("        0x%llx, %llu KB\n", (unsigned long long)near_retaken_at[i],
+               (unsigned long long)(near_retaken_size[i] >> 10));
+}
+
 static int exhaust_near(int release_pool)
 {
     wchar_t path[MAX_PATH];
@@ -3403,17 +3456,12 @@ static int exhaust_near(int release_pool)
         VirtualFree((void *)pool, 0, MEM_RELEASE);
     uintptr_t base = (uintptr_t)GetModuleHandleW(NULL);
     const IMAGE_NT_HEADERS *nt = (const IMAGE_NT_HEADERS *)(base + ((const IMAGE_DOS_HEADER *)base)->e_lfanew);
-    uintptr_t lo = base - 0x80010000ULL, hi = base + nt->OptionalHeader.SizeOfImage + 0x80010000ULL;
-    MEMORY_BASIC_INFORMATION m;
-    int taken = 0;
-    for (uintptr_t p = lo; p < hi && VirtualQuery((void *)p, &m, sizeof m); p = (uintptr_t)m.BaseAddress + m.RegionSize) {
-        uintptr_t a = (p + 0xFFFF) & ~(uintptr_t)0xFFFF, e = (uintptr_t)m.BaseAddress + m.RegionSize;
-        e = (e < hi ? e : hi + 0xFFFF) & ~(uintptr_t)0xFFFF;
-        if (m.State == MEM_FREE && a < e && VirtualAlloc((void *)a, e - a, MEM_RESERVE, PAGE_NOACCESS))
-            taken++;
-    }
+    near_lo = base - 0x80010000ULL, near_hi = base + nt->OptionalHeader.SizeOfImage + 0x80010000ULL;
+    int taken = take_free_near(0);
     printf("      reserved %d free region(s) within 2 GB of the image%s\n", taken,
            release_pool ? (pool ? ", after releasing the loader's hook pool" : ", the loader had no hook pool") : "");
+    near_keep = 1;
+    near_keeper = CreateThread(NULL, 0, keep_near, NULL, 0, NULL);
     return taken;
 }
 
@@ -3565,6 +3613,7 @@ int main(int argc, char **argv)
     HWND w = cw(0, L"EGO_WindowClass", L"F1 25", WS_OVERLAPPEDWINDOW, 0, 0, 320, 200, NULL, NULL, wc.hInstance, NULL);
     expect((void *)__imp_RegisterClassExW == real_rc && (void *)__imp_CreateWindowExW == real_cw || fallback,
            "IAT slots restored after the trigger");
+    keep_near_stop();
     if (stages)
         return stage_window(w);
     if (registers) {

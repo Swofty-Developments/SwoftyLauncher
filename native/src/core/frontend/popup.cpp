@@ -1,4 +1,5 @@
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
@@ -17,6 +18,8 @@
 #include "core/diagnostics/perf.hpp"
 #include "core/hud/text_entry.hpp"
 #include "core/frontend/popup/message_system.hpp"
+#include "core/frontend/ui_vm.hpp"
+#include "core/hud/race_hud.hpp"
 
 // Message popups (NeUIMessageSystem). The game raises every popup the same way: construct a message
 // by its UIMD id (Ui_Message_Construct, 0x1442d9bf0: system, out handle, fixed-capacity id string,
@@ -45,9 +48,6 @@
 // notification (hud_notifications_dynamic, F1HM bound to #ui_messages.hud_main_queue.hud_main) draws.
 // The launcher adds swofty_toast_<seconds> to hud_messages.uimsg: literal (localise false) message and
 // sub_message attributes and a fixed msg_duration per id, so a toast picks the id nearest its duration.
-
-std::string settings_addon(const void *from, std::string &dll);
-void *ui_vm_message_system();
 
 namespace popup {
 
@@ -352,7 +352,7 @@ void MessageSystem::setup()
         toast_test_next = GetTickCount64() + uint64_t(toast_test_every) * 1000;
         swofty::log("[hud] SWOFTY_TOAST_TEST: a test toast every %us", toast_test_every);
     }
-    hud_data.read_switches();
+    race_hud::state.read_switches();
     swofty::log("[popup] setup: live; construct base+0x%llx, set attribute base+0x%llx, release base+0x%llx, id vtable "
                 "base+0x%llx",
                 (unsigned long long)(a_construct - base), (unsigned long long)(a_set_attr - base),
@@ -415,7 +415,7 @@ int hud_toast(const std::string &text, const std::string &detail, float seconds,
 
 void hud_rebuilt()
 {
-    popup::hud_data.leaf_table.rebuilt();
+    race_hud::state.leaf_table.rebuilt();
 }
 
 void popup_setup() { popup::messages.setup(); }
@@ -432,7 +432,7 @@ bool typing(const char *what)
 void popup_tick()
 {
     popup::messages.toast_test_tick();
-    popup::hud_data.tick();
+    race_hud::state.tick();
     popup::messages.tick();
 }
 

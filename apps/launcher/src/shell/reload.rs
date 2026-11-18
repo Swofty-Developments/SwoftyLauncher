@@ -49,17 +49,17 @@ impl Shell {
         self.prefs.vr_profiles = config.vr_profiles;
         self.prefs.start_store = config.launch.start_store;
         self.prefs.update_check = config.updates.check;
-        if matches!(self.page, Page::Section(i) if i >= self.library.sections.len()) {
-            self.page = Page::Addons;
+        if matches!(self.navigation.page, Page::Section(i) if i >= self.library.sections.len()) {
+            self.navigation.page = Page::Addons;
         }
-        if self.page == Page::Careers {
+        if self.navigation.page == Page::Careers {
             self.refresh_saves_in_background(cx);
         } else {
             self.refresh_banner_in_background(cx);
         }
         self.refresh_views(cx);
         self.db_profile_changed(cx);
-        self.sync_catalog_updates();
+        self.browser.sync_updates(&self.library);
         self.sync_shaders(true, cx);
         cx.notify();
     }
@@ -91,7 +91,7 @@ impl Shell {
                 self.show_shader_addons(cx);
             }
             crate::features::shaders::Event::OpenAddon(id) => {
-                self.highlight = Some((id.clone(), Instant::now()));
+                self.navigation.highlight = Some((id.clone(), Instant::now()));
                 self.open_page(Page::Addons, cx);
             }
             crate::features::shaders::Event::ActiveChanged => self.reload_in_background(cx),

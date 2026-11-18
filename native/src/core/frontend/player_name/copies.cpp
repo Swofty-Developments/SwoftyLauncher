@@ -3,6 +3,7 @@
 #include "core/frontend/player_name/copies.hpp"
 #include "core/frontend/player_name_logic.hpp"
 #include "core/frontend/ui_registry_walk.hpp"
+#include "core/frontend/vm_string.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -219,7 +220,7 @@ void probe_registry(int pass)
     if (!swofty::game::g_Vm_Registry.address())
         return;
     uint64_t base = swofty::api->module_base(), reg = uint64_t(*swofty::game::g_Vm_Registry);
-    ur::Layout lay{base + 0x5a70080, base + 0x5a6ff90, base + 0x565f200, base + 0x5660370};
+    ur::Layout lay = registry_layout(base);
     char stock[96] = "Swooftyy";
     GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME_STOCK", stock, sizeof stock);
     std::vector<ur::Hit> hits;
@@ -364,7 +365,7 @@ int pin_names(const std::string &name, const std::string &stock)
     if (!swofty::game::g_Vm_Registry.address() || !swofty::game::Vm_Set_String.address() || !swofty::game::Ne_Make_StrFromCStr.address())
         return 0;
     uint64_t base = swofty::api->module_base(), reg = uint64_t(*swofty::game::g_Vm_Registry);
-    ur::Layout lay{base + 0x5a70080, base + 0x5a6ff90, base + 0x565f200, base + 0x5660370};
+    ur::Layout lay = registry_layout(base);
     std::vector<ur::Hit> hits;
     ur::Stats st;
     auto rd = [](uint64_t at, void *out, size_t n) { return registry_read(at, out, n); };
@@ -375,10 +376,7 @@ int pin_names(const std::string &name, const std::string &stock)
         const char *leaf = h.depth >= 1 ? runtime::player_name::leaf_name(h.chain[h.depth - 1]) : nullptr;
         if (!leaf || !h.parent || h.depth < 2 || !runtime::player_name::root_allowed(h.chain[0]))
             continue;
-        swofty::game::NeStr *str = nullptr;
-        swofty::game::Ne_Make_StrFromCStr(&str, name.c_str(), 0, 0);
-        swofty::game::Vm_Set_String(reinterpret_cast<void *>(reg), reinterpret_cast<void *>(h.parent + 8), leaf, &str, 1);
-        swofty::game::Ne_Make_StrFromCStr(&str, nullptr, 0, 0);
+        vm::set_string(reinterpret_cast<void *>(reg), reinterpret_cast<void *>(h.parent + 8), leaf, name.c_str());
         written++;
     }
     if (written && logged.fetch_add(1) < 6)

@@ -7,8 +7,10 @@
                                   resolve each record on your exe with the core's rules and record the proof
   binding.py agree NAME --exe F1_25.exe --by LOGIN --evidence "decomp:...;xref:..." [--notes TEXT]
                                   second contributor: your own proof plus an agree row (makes it experimental)
+  binding.py doctor [--author LOGIN]
+                                  what the pull request check decides for your changes, why, and how to fix it
   binding.py check [FILE...]      the static checks CI runs (every record when no file is given)
-  binding.py status               every record, its level, proofs, verifiers and what it still needs
+  binding.py status [NAME...]     records, their level, proofs, verifiers and what each still needs to export
   binding.py unfold [NAME...] [--table functions|globals] [--skip-unfit] --author LOGIN
                                   maintainer: move bindings from the shared tables into records; rows that would
                                   fail the record rules stay (named ones are an error unless --skip-unfit)
@@ -33,7 +35,8 @@ def today():
 def find(name):
     rec = br.Store.get().by_item(name)
     if not rec:
-        raise SystemExit(f'binding.py: no record for {name} under re/bindings')
+        raise SystemExit(f'binding.py: no record for {name} under re/bindings (python3 re/tools/binding.py status '
+                         f'lists them; a binding still in re/db/functions.tsv or globals.tsv has no record yet)')
     return rec
 
 
@@ -95,30 +98,148 @@ def prove(rec, exe_path, by, exe=None):
              'sigcheck': sigcheck_result(rec, exe_path, is_kb),
              'digest': br.resolution_digest(rec.signature, exe['sha256'])}
     ok = r['result'] == 'resolved' and not proof['sigcheck'].startswith('failed')
-    if ok and is_kb and (proof['result']['match'], proof['result']['target']) != (rec.signature['match'],
-                                                                                    rec.signature['target']):
+    s = rec.signature
+    if ok and is_kb and (proof['result']['match'], proof['result']['target']) != (s['match'], s['target']):
         ok = False
+    if ok and s.get('made_on') and exe['sha256'].startswith(s['made_on']) and \
+            (proof['result']['match'], proof['result']['target']) != (s['made_on_match'], s['made_on_target']):
+        return proof, False, (f'it resolves to match {proof["result"]["match"]} target {proof["result"]["target"]}, '
+                              f'not to {s["made_on_match"]} {s["made_on_target"]} where it was made')
     return proof, ok, r.get('reason', '')
 
 
+NEEDS_MODULES = ('binding.py new needs Python 3.10+ with pefile, numpy and capstone: run it through re/tools/py, or '
+                 'python3 -m pip install pefile numpy capstone')
+
+
+def build_name(want):
+    """The re/db/builds overlay name of a build that is not the KB build, else None."""
+    kb_sha = kb.load_signatures()['build']['sha256']
+    bdir = os.path.join(kb.DB, 'builds')
+    for f in sorted(os.listdir(bdir)):
+        if f.endswith('.json'):
+            with open(os.path.join(bdir, f)) as fh:
+                sha = json.load(fh)['build']['sha256']
+            if sha == want and sha != kb_sha:
+                return f[:-5]
+    return None
+
+
+def port_exe_or_exit(path, exe, cmd):
+    """The overlay name of the exe's build when it is a supported build other than the KB build."""
+    name = build_name(exe['sha256'])
+    if name:
+        return name
+    kb_build = kb.load_signatures()['build']
+    raise SystemExit(
+        f'binding.py {cmd}: {path} is an unknown build (sha256 {exe["sha256"][:16]}, size {exe["size"]}, PE timestamp '
+        f'{exe["pe_timestamp"]}).\n  binding.py {cmd} runs on the KB build (Steam F1 25 1.0.141.7865, '
+        f'{kb_build["size"]} bytes) or on a build in re/db/builds, such as the current Steam build. Update the game '
+        f'through Steam, or open an issue with the address and your evidence.')
+
+
+def to_kb(sig, path, build, exe):
+    """The signature made on another build, with its KB addresses taken from the bindings around each address
+    (bindverify.kb_twin) and the made-on fields recording where it matched and how the twin was found."""
+    import bindverify
+    img = bindverify.Image(path)
+    marks = bindverify.anchors(img, build)
+    with open(os.path.join(kb.DB, 'builds', build + '.json')) as f:
+        smap = json.load(f).get('sections', {})
+    out, texts, shift = dict(sig), [], None
+    for k in ('target', 'match', 'func_start'):
+        if not sig.get(k):
+            continue
+        va = int(sig[k], 16)
+        kb_rva, why = bindverify.kb_twin(img, build, va - IMAGE_BASE, marks)
+        if kb_rva is None:
+            raise SystemExit(f'binding.py new: nothing written, the {k} 0x{va:x} has no KB twin: {why}.\n  fix: pick '
+                             f'an address between two bindings that moved by the same amount, or ask a maintainer '
+                             f'with the KB build to make the record')
+        out[k] = hex(kb_rva + IMAGE_BASE)
+        if k == 'target':
+            shift = why.get('shift')
+        if k == 'target' or why.get('shift') is None or why['shift'] != shift:
+            texts.append(f'the {k} 0x{va:x} is KB {out[k]}: {why["text"]}')
+    inverse = {v: k for k, v in smap.items()}
+    out['section'] = inverse.get(sig['section'], sig['section'])
+    out['made_on'] = exe['sha256'][:16]
+    out['made_on_match'], out['made_on_target'] = sig['match'], sig['target']
+    twin = f'made on {build}; ' + '; '.join(texts)
+    ref = os.environ.get('SWOFTY_KB_EXE', '')
+    if ref and os.path.isfile(ref):
+        import sigport
+        ok, detail = sigport.check_twin(img, bindverify.Image(ref), smap, int(sig['target'], 16) - IMAGE_BASE,
+                                        int(out['target'], 16) - IMAGE_BASE)
+        if not ok:
+            raise SystemExit(f'binding.py new: nothing written, the KB exe in SWOFTY_KB_EXE disagrees with the twin '
+                             f'{out["target"]}: {detail}')
+        twin += f'; checked on the KB exe: {detail}'
+    out['twin'] = twin
+    return out
+
+
+def call_candidate(img, path, va):
+    """A call signature through the direct call site with the shortest unique pattern, for a function whose own
+    bytes repeat elsewhere: the core then resolves the function from the call's rel32."""
+    import bindverify, sigcheck
+    refs = bindverify.Image(path).rel32_refs(va - IMAGE_BASE)
+    best = None
+    for r in refs[:32]:
+        site = r - 1 + IMAGE_BASE
+        if img.read(site, 1) != b'\xe8':
+            continue
+        sig = sigcheck.make(img, site, 'mid')
+        if sig and (best is None or len(sig['pattern']) < len(best[1]['pattern'])):
+            best = (site, sig)
+    if not best:
+        return None, None
+    site, sig = best
+    start = int(sig['match'], 16)
+    sig.update(kind='call', anchor=hex(site + 1 - start), resolve={'kind': 'rel32', 'insn': hex(site - start)},
+               target=hex(va))
+    sig.pop('expect', None)
+    return site, sig
+
+
 def cmd_new(a):
-    import sigcheck, sitereg
+    try:
+        import sigcheck, sitereg
+        import capstone, numpy, pefile  # noqa: F401
+    except ImportError:
+        raise SystemExit(NEEDS_MODULES)
     va = int(a.va, 16)
+    if va < IMAGE_BASE:
+        raise SystemExit(f'binding.py new: {a.va} is below the image base; pass the virtual address, '
+                         f'0x{va + IMAGE_BASE:x} if {a.va} is an offset from the base')
     sub = a.subsystem or sitereg_subsystem(a.name)
+    need_exe(a.exe, 'new')
+    exe = exe_identity(a.exe)
+    port = None if exe['sha256'] == kb.load_signatures()['build']['sha256'] else port_exe_or_exit(a.exe, exe, 'new')
     img = sigcheck.Image(a.exe)
-    if sigcheck.sha256_file(a.exe) != kb.load_signatures()['build']['sha256']:
-        raise SystemExit('binding.py new: --exe must be the KB build (PROTOCOL.md header); other builds get overlay hints')
     kind = {'func': 'func_start', 'site': 'mid', 'data': 'data'}[a.kind]
+    via_call = None
     if a.kind == 'data':
         if not a.via or not a.type:
-            raise SystemExit('binding.py new: data needs --type and --via')
+            raise SystemExit('binding.py new: --kind data needs --type (the C type of the global, for example '
+                             '"void *") and --via (the address of an instruction that reads or writes it rip-relative)')
         sig = sitereg.data_candidate(img, va, int(a.via, 16))
     elif a.match_from:
         sig = sitereg.anchored_candidate(img, va, int(a.match_from, 16), kind)
     else:
         sig = sigcheck.make(img, va, kind, int(a.func_start, 16) if a.func_start else None)
+        if not sig and a.kind == 'func':
+            via_call, sig = call_candidate(img, a.exe, va)
     if not sig:
-        raise SystemExit(f'binding.py new: no unique pattern near 0x{va:x}; try --match-from')
+        hint = ('no direct call reaches it either, so pass --match-from <the address of an earlier instruction> to '
+                'start the pattern before it' if a.kind == 'func' else
+                'pass --match-from <the address of an earlier instruction in the same function> to start the pattern '
+                'before it')
+        raise SystemExit(f'binding.py new: the bytes at 0x{va:x} are not unique in {img.sec_of(va)} within 96 bytes '
+                         f'(the same code is elsewhere in the exe); {hint}')
+    if via_call:
+        print(f'binding.py new: the code at 0x{va:x} repeats elsewhere in the exe, so the record finds {a.name} '
+              f'through its call at 0x{via_call:x} (signature kind call, resolved from the rel32)')
     if a.kind == 'site':
         sig['expect'] = sitereg.expect_bytes(img, va, a.expect_len)
     else:
@@ -129,8 +250,10 @@ def cmd_new(a):
     if a.data1_reason:
         sig['data1_reason'] = a.data1_reason
     sig['names'] = [a.name]
-    sig['verified'] = [{'build': kb.load_signatures()['build']['sha256'][:16], 'date': today(), 'by': a.author,
-                        'how': 'static'}]
+    sig['verified'] = [{'build': exe['sha256'][:16], 'date': today(), 'by': a.author, 'how': 'static'}]
+    if port:
+        sig = to_kb(sig, a.exe, port, exe)
+        print(f'binding.py new: {sig["twin"]}')
     sig['used_by'] = a.used_by
     sig = {k: v for k, v in sig.items() if v is not None}
     table = 'functions' if a.kind == 'func' else 'globals'
@@ -139,14 +262,17 @@ def cmd_new(a):
     rec = br.Record.create(a.name, table, a.author, row, sig)
     errs = bc.check_record(rec, bc.Knowledge())
     if errs:
-        raise SystemExit('binding.py new: the record would fail CI:\n  ' + '\n  '.join(errs))
-    proof, ok, why = prove(rec, a.exe, a.author)
+        raise SystemExit('binding.py new: nothing written, the record would fail CI:\n  ' +
+                         '\n  '.join(bc.with_fixes([f're/bindings/{rec.relpath}: {e}' for e in errs])))
+    proof, ok, why = prove(rec, a.exe, a.author, exe)
     if not ok:
-        raise SystemExit(f'binding.py new: {a.name} does not resolve on {a.exe}: {why or proof["sigcheck"]}')
+        raise SystemExit(f'binding.py new: nothing written, {a.name} does not resolve on {a.exe}: '
+                         f'{why or proof["sigcheck"]}')
     rec.proofs.append(proof)
     rec.save()
     print(f'wrote re/bindings/{rec.relpath} ({sig["id"]}, match {sig["match"]}, proof on {proof["exe"]["sha256"][:16]})')
-    print('next: python3 re/tools/binding.py check, then open a pull request with only that file')
+    print(f'next: python3 re/tools/binding.py doctor --author {a.author}, then commit only that file and open a pull '
+          f'request')
 
 
 def sitereg_subsystem(name):
@@ -156,10 +282,17 @@ def sitereg_subsystem(name):
     for sid, s in kb.subsystems().items():
         if s['prefix'] == prefix:
             return sid
-    raise SystemExit(f'binding.py: no subsystem has the prefix of {name}; pass --subsystem')
+    raise SystemExit(f'binding.py: no subsystem has the prefix of {name}: start the name with a prefix from '
+                     f're/db/subsystems.tsv (column prefix), or pass --subsystem <its id>')
+
+
+def need_exe(path, cmd):
+    if not os.path.isfile(path):
+        raise SystemExit(f'binding.py {cmd}: --exe {path} is not a file; pass the path to your F1_25.exe')
 
 
 def cmd_verify(a):
+    need_exe(a.exe, 'verify')
     exe = exe_identity(a.exe)
     bad = 0
     for name in a.names:
@@ -178,8 +311,10 @@ def cmd_verify(a):
 
 def cmd_agree(a):
     rec = find(a.name)
+    need_exe(a.exe, 'agree')
     if a.by == rec.author:
-        raise SystemExit('binding.py agree: the author cannot verify their own binding (PROTOCOL.md §5)')
+        raise SystemExit(f'binding.py agree: {a.by} wrote {rec.name}; the agree row comes from a second GitHub '
+                         f'account that re-derived it (re/PROTOCOL.md §5)')
     proof, ok, why = prove(rec, a.exe, a.by)
     if not ok:
         raise SystemExit(f'binding.py agree: {rec.name} does not resolve on your exe: {why or proof["sigcheck"]}')
@@ -200,40 +335,208 @@ def check_paths(paths):
     store = br.Store.get()
     knowledge = bc.Knowledge()
     errs = list(store.errors)
+    wanted = {os.path.abspath(p) for p in paths}
+    known = {os.path.join(br.RECORDS, rec.relpath) for rec in store.records}
+    errs += [f'{os.path.relpath(p)}: ' + ('not a binding record; records are re/bindings/<subsystem>/<Name>.json'
+                                          if os.path.exists(p) else 'no such file')
+             for p in sorted(wanted - known)]
     for rec in store.records:
-        if paths and not any(os.path.abspath(p) == os.path.join(br.RECORDS, rec.relpath) for p in paths):
+        if paths and os.path.join(br.RECORDS, rec.relpath) not in wanted:
             continue
-        errs += [f'bindings/{rec.relpath}: {e}' for e in bc.check_record(rec, knowledge.without(rec),
-                                                                          're/bindings/' + rec.relpath)]
+        errs += [f're/bindings/{rec.relpath}: {e}' for e in bc.check_record(rec, knowledge.without(rec),
+                                                                             're/bindings/' + rec.relpath)]
     return errs
 
 
 def cmd_check(a):
     errs = check_paths(a.files)
-    for e in errs:
-        print('ERROR', e)
+    for e in bc.with_fixes(errs):
+        print(e if e.startswith('  fix: ') else 'ERROR ' + e)
     n = len(br.Store.get().records)
-    print(f'binding.py check: {n} record(s), {len(errs)} error(s)')
+    which = f'{len(a.files)} of {n}' if a.files else f'{n}'
+    print(f'binding.py check: {which} record(s) checked, {len(errs)} error(s)')
     return 1 if errs else 0
+
+
+def export_state(gate, rec):
+    """(status, what it still needs) of one record under bindgen's gate."""
+    row = rec.table_row()
+    vkind = 'func' if rec.table == 'functions' else 'global'
+    status, why = gate(row['level'], row['evidence'], [(vkind, rec.name), (vkind, row['addr'])])
+    if status:
+        return status, '-'
+    if row['level'] not in ('L2', 'L3'):
+        return 'not exported', 'L2: decomp: and xref: evidence, then an agree row'
+    newest = gate.newest([(vkind, rec.name), (vkind, row['addr'])])
+    if newest:
+        return 'not exported', (f'its newest verify row {newest[1]} is {newest[0]}: a new agree row after the notes '
+                                f'are fixed (binding.py agree)')
+    return 'not exported', 'an agree row from a second contributor (binding.py agree)'
 
 
 def cmd_status(a):
     import bindgen
     gate = bindgen.Gate()
+    store = br.Store.get()
+    recs = store.records
+    if a.names:
+        recs = [find(n) for n in a.names]
     rows = []
-    for rec in br.Store.get().records:
-        row = rec.table_row()
-        vkind = 'func' if rec.table == 'functions' else 'global'
-        status, why = gate(row['level'], row['evidence'], [(vkind, rec.name), (vkind, row['addr'])])
-        need = {None: 'an agree row from a second contributor (binding.py agree)' if row['level'] in ('L2', 'L3')
-                else 'L2 evidence (decomp: and xref:) from the subsystem owner'}.get(status, '-')
-        rows.append((rec.name, row['level'], status or 'not exported', len(rec.proofs),
+    for rec in recs:
+        status, need = export_state(gate, rec)
+        rows.append((rec.name, rec.table_row()['level'], status, len(rec.proofs),
                      ','.join(v['verifier'] for v in rec.verify if v['verdict'] == 'agree') or '-', need))
     w = max([len(r[0]) for r in rows] + [4])
-    print(f'{"name":{w}s}  level  status        proofs  verified by       needs')
-    for r in rows:
-        print(f'{r[0]:{w}s}  {r[1]:5s}  {r[2]:12s}  {r[3]:6d}  {r[4]:16s}  {r[5]}')
-    print(f'{len(rows)} record(s)')
+    try:
+        print(f'{"name":{w}s}  level  status        proofs  verified by       needs')
+        for r in rows:
+            print(f'{r[0]:{w}s}  {r[1]:5s}  {r[2]:12s}  {r[3]:6d}  {r[4]:16s}  {r[5]}')
+        print(f'{len(rows)} record(s)')
+    except BrokenPipeError:
+        sys.stdout = None
+
+
+def git(*args, check=True):
+    import subprocess
+    r = subprocess.run(['git', '-C', kb.ROOT, *args], capture_output=True)
+    if check and r.returncode:
+        raise SystemExit(f'binding.py doctor: git {" ".join(args)} failed: {r.stderr.decode(errors="replace").strip()}')
+    return r
+
+
+def local_changes(base):
+    """[(path, git status)] of everything this checkout changes against `base`, committed or not, untracked included."""
+    out = {}
+    for line in git('diff', '--name-status', '--no-renames', base, '--').stdout.decode().splitlines():
+        status, path = line.split('\t', 1)
+        out[path] = {'A': 'added', 'D': 'removed'}.get(status[0], 'modified')
+    for path in git('ls-files', '--others', '--exclude-standard').stdout.decode().splitlines():
+        out[path] = 'added'
+    return sorted(out.items())
+
+
+def pick_base(base):
+    if base:
+        return base
+    for ref in ('origin/main', 'upstream/main', 'main'):
+        if git('rev-parse', '--verify', '--quiet', ref, check=False).returncode == 0:
+            return git('merge-base', 'HEAD', ref).stdout.decode().strip()
+    raise SystemExit('binding.py doctor: no main branch to compare with; pass --base <the commit your branch starts from>')
+
+
+def judge(changes, other, author, knowledge):
+    """What the bindings workflow decides for these record changes plus `other` paths, with a printable summary."""
+    result = bc.classify(changes, author, knowledge, kb.ROOT)
+    if result['verdict'] != 'fail':
+        lint_errors = lint_with([(path, new) for path, _, new in changes if new is not None])
+        if lint_errors:
+            result['verdict'] = 'fail'
+            result['errors'] += lint_errors
+    if other:
+        result['verdict'] = 'fail' if result['verdict'] == 'fail' else 'review'
+        shown = ', '.join(other[:5]) + (f' and {len(other) - 5} more' if len(other) > 5 else '')
+        result['notes'].append(f'{len(other)} file(s) outside re/bindings/*/*.json: review needed ({shown})')
+    result['summary'] = summary(result)
+    return result
+
+
+def summary(result):
+    """Errors and notes, each followed by its fix: what the workflow prints on the pull request."""
+    out = []
+    for prefix, msgs in (('error: ', result['errors']), ('', result['notes'])):
+        for m in msgs:
+            out.append(prefix + m)
+            fix = bc.fix_for(m)
+            if fix:
+                out.append('  fix: ' + fix)
+    return out
+
+
+def base_knowledge(changes):
+    """The knowledge base as the base branch has it: the changed records as they were there, or absent."""
+    store = br.Store.get()
+    mine = {path[len('re/bindings/'):] for path, _, _ in changes}
+    before = []
+    for path, old, _ in changes:
+        if old is not None:
+            try:
+                before.append(br.Record.from_bytes(old, path[len('re/bindings/'):]))
+            except br.RecordError:
+                pass
+    keep = store.records
+    store.records = sorted([r for r in keep if r.relpath not in mine] + before, key=lambda r: r.relpath)
+    try:
+        return bc.Knowledge(), keep
+    except BaseException:
+        store.records = keep
+        raise
+
+
+def doctor_changes(base):
+    """([(path, base bytes or None, checkout bytes or None)], [other paths]) of this checkout against `base`."""
+    changes, other = [], []
+    for path, status in local_changes(base):
+        p = os.path.join(kb.ROOT, path)
+        if not br.RECORD_PATH_RE.match(path) or (status != 'removed' and (os.path.islink(p) or not os.path.isfile(p))):
+            other.append(path)
+            continue
+        new = None
+        if status != 'removed':
+            with open(p, 'rb') as f:
+                new = f.read(br.MAX_BYTES + 1)
+        got = git('show', f'{base}:{path}', check=False)
+        changes.append((path, got.stdout if got.returncode == 0 else None, new))
+    return changes, other
+
+
+DOCTOR_VERDICT = {
+    'auto': 'would merge itself: every changed file is a binding record that passes the checks',
+    'review': 'would pass the checks and wait for a maintainer\'s review, because:',
+    'fail': 'would fail the binding check, because:',
+}
+
+
+def cmd_doctor(a):
+    """The pull request check run on this checkout: the records it adds or changes against the main branch."""
+    base = pick_base(a.base)
+    changes, other = doctor_changes(base)
+    if a.author:
+        author = a.author
+    else:
+        authors = set()
+        for path, old, new in changes:
+            try:
+                if old is None and new is not None:
+                    authors.add(br.Record.from_bytes(new, path[len('re/bindings/'):]).author)
+            except br.RecordError:
+                pass
+        if len(authors) != 1:
+            found = f' (the new records name {", ".join(sorted(authors))})' if authors else ''
+            raise SystemExit(f'binding.py doctor: pass --author <the GitHub login that opens the pull request>{found}')
+        author = authors.pop()
+    store = br.Store.get()
+    knowledge, keep = base_knowledge(changes)
+    try:
+        result = judge(changes, other, author, knowledge)
+    finally:
+        store.records = keep
+    print(f'binding.py doctor: {len(changes)} record file(s) and {len(other)} other file(s) changed against '
+          f'{base[:12]}, pull request by {author}')
+    for path, _, _ in changes:
+        print(f'  {path}')
+    print(f'verdict: {result["verdict"]}: this pull request {DOCTOR_VERDICT[result["verdict"]]}')
+    for line in result['summary']:
+        print(('    ' if line.startswith('  fix: ') else '  - ') + line.strip())
+    if result['verdict'] != 'fail' and changes:
+        import bindgen
+        gate = bindgen.Gate()
+        print('after the merge:')
+        for path, _, new in changes:
+            rec = store.by_relpath(path[len('re/bindings/'):])
+            if rec:
+                status, need = export_state(gate, rec)
+                print(f'  {rec.name}: {status}' + (f'; needs {need}' if need != '-' else ''))
+    return 1 if result['verdict'] == 'fail' else 0
 
 
 def remove_lines(path, keep):
@@ -340,86 +643,115 @@ def cmd_ci(a):
     if not isinstance(files, list) or not all(isinstance(x, dict) and isinstance(x.get('filename'), str) for x in files):
         result['verdict'] = 'fail'
         result['errors'].append('the file list is not a GitHub API file list')
+        result['summary'] = summary(result)
     else:
-        changes, other = [], []
+        changes, other, missing = [], [], []
         for x in files:
             path, status = x['filename'], x.get('status')
-            if not br.RECORD_PATH_RE.match(path) or status not in ('added', 'modified'):
+            if not br.RECORD_PATH_RE.match(path) or status not in ('added', 'modified', 'removed'):
                 other.append(path)
                 continue
-            head = os.path.join(a.head, path)
-            new = open(head, 'rb').read(br.MAX_BYTES + 1) if os.path.isfile(head) and not os.path.islink(head) else None
             base = os.path.join(kb.ROOT, path)
             old = open(base, 'rb').read(br.MAX_BYTES + 1) if os.path.isfile(base) and not os.path.islink(base) else None
+            new = None
+            if status != 'removed':
+                head = os.path.join(a.head, path)
+                if not os.path.isfile(head) or os.path.islink(head):
+                    missing.append(path)
+                    continue
+                with open(head, 'rb') as f:
+                    new = f.read(br.MAX_BYTES + 1)
             changes.append((path, old, new))
-        result = bc.classify(changes, a.author, bc.Knowledge(), kb.ROOT)
-        if result['verdict'] != 'fail':
-            lint_errors = lint_with([(path, new) for path, _, new in changes if new is not None])
-            if lint_errors:
-                result['verdict'] = 'fail'
-                result['errors'] += lint_errors
-        if other:
+        result = judge(changes, other, a.author, bc.Knowledge())
+        if missing:
             result['verdict'] = 'fail' if result['verdict'] == 'fail' else 'review'
-            result['notes'].append(f'{len(other)} file(s) outside re/bindings/*/*.json: review needed')
+            result['notes'] = [n for n in result['notes'] if n != bc.NO_RECORDS] + [
+                f'{p}: the pull request has no regular file there: review needed' for p in missing]
+            result['summary'] = summary(result)
     with open(a.out, 'w') as f:
         json.dump(result, f, indent=1)
     print(f'binding.py ci: {result["verdict"]}')
-    for e in result['errors']:
-        print('ERROR', e)
-    for n in result['notes']:
-        print('NOTE ', n)
+    for line in result['summary']:
+        print(line if line.startswith('  fix: ') else ('ERROR ' + line[7:] if line.startswith('error: ') else 'NOTE  ' + line))
     return 1 if result['verdict'] == 'fail' else 0
 
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    sp = ap.add_subparsers(dest='cmd', required=True)
-    p = sp.add_parser('new')
-    p.add_argument('name')
-    p.add_argument('va')
-    p.add_argument('--kind', required=True, choices=('func', 'site', 'data'))
-    p.add_argument('--author', required=True)
-    p.add_argument('--exe', required=True)
-    p.add_argument('--evidence', required=True)
-    p.add_argument('--notes', default='-')
-    p.add_argument('--level', default='L2', choices=('L1', 'L2'))
-    p.add_argument('--subsystem')
-    p.add_argument('--proto', default='-')
-    p.add_argument('--type')
-    p.add_argument('--via')
-    p.add_argument('--id')
-    p.add_argument('--match-from')
-    p.add_argument('--expect-len', type=int)
-    p.add_argument('--func-start')
-    p.add_argument('--data1-reason')
-    p.add_argument('--used-by', action='append', default=[])
-    p = sp.add_parser('verify')
-    p.add_argument('names', nargs='+')
-    p.add_argument('--exe', required=True)
-    p.add_argument('--by', required=True)
-    p = sp.add_parser('agree')
-    p.add_argument('name')
-    p.add_argument('--exe', required=True)
-    p.add_argument('--by', required=True)
-    p.add_argument('--evidence', required=True)
-    p.add_argument('--notes', default='')
-    p = sp.add_parser('check')
-    p.add_argument('files', nargs='*')
-    sp.add_parser('status')
-    p = sp.add_parser('unfold')
-    p.add_argument('names', nargs='*')
+    sp = ap.add_subparsers(dest='cmd', required=True, metavar='command')
+    exe_help = 'your F1_25.exe'
+    p = sp.add_parser('new', help='make a record and prove it on your exe',
+                      description='Write re/bindings/<subsystem>/NAME.json: the row, a signature made from the bytes '
+                                  'at VA, and a proof that the core resolves it on your exe. Your exe is the current '
+                                  'Steam build or any build in re/db/builds. Records hold addresses on the KB build '
+                                  '(Steam 1.0.141.7865); on another build the KB addresses come from the bindings on '
+                                  'either side, which must have moved by the same amount, and the record keeps where '
+                                  'it was made and how its KB twin was found. Nothing is written when a check fails. '
+                                  'Needs pefile, numpy and capstone (re/tools/py has them).')
+    p.add_argument('name', help='the binding name, <Prefix>_<Verb>_<Noun> for a function or g_/k_/vt_/site_<Prefix>_'
+                                '<Noun> for a global (re/PROTOCOL.md §3); the prefix picks the subsystem')
+    p.add_argument('va', help='its virtual address on your exe, for example 0x142ea5a50')
+    p.add_argument('--kind', required=True, choices=('func', 'site', 'data'),
+                   help='func: a function you wrap; site: an instruction you run code at; data: a global')
+    p.add_argument('--author', required=True, help='your GitHub login, the account that opens the pull request')
+    p.add_argument('--exe', required=True, help=exe_help + ': the current Steam build or another build in re/db/builds; '
+                                                         'VA and every address option are on this exe')
+    p.add_argument('--evidence', required=True,
+                   help='kind:value tokens joined by ;, for example "decomp:own disasm 0x142ea5a50-0x142ea5adf;'
+                        'xref:0x142ea5763"; L2 needs decomp: and xref:')
+    p.add_argument('--notes', default='-', help='what it does, in one line: arguments, fields, callers')
+    p.add_argument('--level', default='L2', choices=('L1', 'L2'),
+                   help='L2 (default) when you read the code, L1 for a pattern match without a read decompile')
+    p.add_argument('--subsystem', help='the subsystem id from re/db/subsystems.tsv, when the name prefix is ambiguous')
+    p.add_argument('--proto', default='-', help='the C prototype of a func, for example "void Game_X_Y(void *self)"')
+    p.add_argument('--type', help='the C type of a data global, for example "void *"')
+    p.add_argument('--via', help='data: the address of an instruction that reads or writes the global rip-relative')
+    p.add_argument('--id', help='the signature id, <subsystem>.<snake_case_name> (default: from the name)')
+    p.add_argument('--match-from', metavar='VA', help='start the pattern at this earlier instruction when the bytes at '
+                                                      'the address are not unique')
+    p.add_argument('--expect-len', type=int, metavar='N', help='site: how many bytes at the address to expect '
+                                                               '(default: whole instructions covering 5 bytes)')
+    p.add_argument('--func-start', metavar='VA', help='a .data1 site: the start of its function when .pdata lacks it')
+    p.add_argument('--data1-reason', help='a .data1 site: why no .xtls site works (re/PROTOCOL.md §2)')
+    p.add_argument('--used-by', action='append', default=[], metavar='PATH', help='code that uses the binding')
+    p = sp.add_parser('doctor', help='what the pull request check decides for your changes, and how to fix them',
+                      description='Compares this checkout (commits, edits and new files) with the main branch and '
+                                  'runs the bindings workflow\'s check on it: whether the pull request would merge '
+                                  'itself, need a review or fail, why, and the fix for each problem.')
+    p.add_argument('--author', help='the GitHub login that opens the pull request (default: the records\' author)')
+    p.add_argument('--base', help='the commit to compare with (default: where HEAD leaves origin/main or main)')
+    p = sp.add_parser('verify', help='prove existing records again on your exe',
+                      description='Resolve each record on your exe with the core\'s rules and store the proof, '
+                                  'replacing your earlier proof on the same exe. Any build in re/db/builds works.')
+    p.add_argument('names', nargs='+', help='record names')
+    p.add_argument('--exe', required=True, help=exe_help)
+    p.add_argument('--by', required=True, help='your GitHub login')
+    p = sp.add_parser('agree', help='second contributor: add your proof and an agree row',
+                      description='Re-derive the binding from the code yourself first (re/PROTOCOL.md §5). Adds your '
+                                  'proof and an agree row; with L2 the next build exports it as experimental.')
+    p.add_argument('name', help='the record name')
+    p.add_argument('--exe', required=True, help=exe_help)
+    p.add_argument('--by', required=True, help='your GitHub login; not the record\'s author')
+    p.add_argument('--evidence', required=True, help='your own decomp: and xref: tokens')
+    p.add_argument('--notes', default='', help='what you checked')
+    p = sp.add_parser('check', help='the static checks CI runs, on every record or the given files')
+    p.add_argument('files', nargs='*', help='record files (default: every record)')
+    p = sp.add_parser('status', help='whether records export, and what each still needs')
+    p.add_argument('names', nargs='*', help='record names (default: every record)')
+    p = sp.add_parser('unfold', help='maintainer: move bindings from the shared tables into records')
+    p.add_argument('names', nargs='*', help='binding names')
     p.add_argument('--table', action='append', choices=['functions', 'globals'],
                    help='also move every row of this table that has a signature of its own')
     p.add_argument('--skip-unfit', action='store_true', help='keep named rows that fail the record rules in the tables')
-    p.add_argument('--author')
-    p = sp.add_parser('ci')
-    p.add_argument('--files', required=True)
-    p.add_argument('--head', required=True)
-    p.add_argument('--author', required=True)
-    p.add_argument('--out', required=True)
+    p.add_argument('--author', help='the author to write (default: the signature\'s first verifier)')
+    p = sp.add_parser('ci', help='the pull request check (.github/workflows/bindings.yml); doctor runs it locally')
+    p.add_argument('--files', required=True, help='the GitHub API file list of the pull request, as JSON')
+    p.add_argument('--head', required=True, help='a folder with the pull request\'s copies of its record files')
+    p.add_argument('--author', required=True, help='the pull request author\'s login')
+    p.add_argument('--out', required=True, help='where to write the result JSON')
     a = ap.parse_args(argv)
-    return {'new': cmd_new, 'verify': cmd_verify, 'agree': cmd_agree, 'check': cmd_check, 'status': cmd_status,
-            'unfold': cmd_unfold, 'ci': cmd_ci}[a.cmd](a) or 0
+    return {'new': cmd_new, 'doctor': cmd_doctor, 'verify': cmd_verify, 'agree': cmd_agree, 'check': cmd_check,
+            'status': cmd_status, 'unfold': cmd_unfold, 'ci': cmd_ci}[a.cmd](a) or 0
 
 
 if __name__ == '__main__':

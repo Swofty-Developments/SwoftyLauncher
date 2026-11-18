@@ -3,6 +3,8 @@
 
 #include <safetyhook.hpp>
 
+#include "core/frontend/name_hash.hpp"
+
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -51,7 +53,7 @@ using Table_t = uint8_t *(void *self);
 
 constexpr unsigned MAX_ENGINE_FAILURES = 50;
 
-uint32_t djb2(const char *s);
+using name_hash::djb2;
 const char *chars(const void *s);
 bool readable(const void *p, size_t n);
 
@@ -100,6 +102,7 @@ private:
     safetyhook::InlineHook h_handler, h_resolve, h_openexec, h_open;
     safetyhook::MidHook m_read, m_init, m_factory, m_screen;
     unsigned engine_failures = 0;
+    bool perf_probed = false;
 };
 
 extern ScreenLoader loader;

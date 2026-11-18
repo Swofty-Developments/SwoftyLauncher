@@ -1,5 +1,6 @@
 pub(crate) mod addons;
 pub(crate) mod build;
+pub(crate) mod cli;
 pub(crate) mod db;
 pub(crate) mod dev;
 pub(crate) mod doctor;

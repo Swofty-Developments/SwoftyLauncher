@@ -40,6 +40,8 @@ pub struct Evidence {
     pub kept_lists: BTreeMap<String, Vec<String>>,
     /// The installed addons that are built in or managed by the launcher, which a profile can't turn off.
     pub builtin: BTreeSet<String>,
+    /// The enabled addons' native plugins: the id of the addon that ships each, by the dll's file name in lower case.
+    pub plugins: BTreeMap<String, String>,
     /// The game's exit code, or the crash code the session recorded.
     pub code: Option<u32>,
     /// The game exe's version, when it can be read.
@@ -142,6 +144,17 @@ impl Evidence {
             self.conflicts = report.pairs;
             self.kept_lists = report.kept_lists;
         }
+        self.plugins = self
+            .enabled
+            .iter()
+            .filter(|id| !self.builtin.contains(*id))
+            .filter_map(|id| Some((id, addons.get(id)?)))
+            .flat_map(|(id, m)| m.operations.native.iter().map(move |p| (id, &p.dll)))
+            .filter_map(|(id, dll)| {
+                let file = dll.rsplit(['/', '\\']).next()?;
+                Some((file.to_ascii_lowercase(), id.clone()))
+            })
+            .collect();
         self
     }
 }

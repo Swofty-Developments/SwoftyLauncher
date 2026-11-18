@@ -47,5 +47,25 @@
    "notes": "V5431 body, strings and callees match name/description"
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "load-game",
+   "date": "2026-11-17",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142d95b90",
+    "target": "0x142d95b90"
+   },
+   "sigcheck": "passed",
+   "digest": "e0c1fb26d67be7372ea62425dadd5b1f4a400bca1593374dd048b0af2d44b0e0"
+  }
+ ]
 }

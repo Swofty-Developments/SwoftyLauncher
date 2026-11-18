@@ -1,15 +1,19 @@
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 use swofty_core::catalog::requires::{Event, Plan, Step};
 use swofty_core::catalog::{Addon, Stage, Update, Version};
 
+use super::ACTIVITY_KEPT;
 use super::detail::shown_versions;
 use super::host;
-use super::jobs::{RetryAction, requested_version_available, retry_action};
-use super::model::{Job, Progress, Verb};
+use super::jobs::{RetryAction, installed_version, requested_version_available, retry_action, riders};
+use super::model::{Activity, Batch, Job, Op, Progress, Verb};
+use super::state::Feed;
 use super::updates::{due_updates, held_failure, takes_updates};
 use crate::services::library::{AddonItem, Source};
+use crate::services::test_library::TestLibrary;
 use crate::ui::format;
+use swofty_core::catalog::Trouble;
 
 fn versions(list: &[&str]) -> Vec<Version> {
     list.iter()
@@ -316,7 +320,7 @@ fn a_listed_track_that_is_not_installed_offers_its_download() {
 #[test]
 fn a_byline_names_the_author_and_the_addon_when_that_tells_tracks_apart() {
     use super::tracks::byline_text;
-    use swofty_core::timetrial::boards::Byline;
+    use swofty_core::online::timetrial::boards::Byline;
     let byline = |author: Option<&str>, addon: Option<&str>| Byline {
         author: author.map(str::to_owned),
         addon: addon.map(str::to_owned),
@@ -334,4 +338,109 @@ fn a_byline_names_the_author_and_the_addon_when_that_tells_tracks_apart() {
         listed_addon(serde_json::json!([])).author_name(),
         "Twilighty Sparkle"
     );
+}
+
+fn activity(n: usize) -> Activity {
+    Activity {
+        at: std::time::SystemTime::UNIX_EPOCH,
+        op: Op::Catalog,
+        ok: true,
+        title: format!("fetch {n}"),
+        detail: String::new(),
+        took: std::time::Duration::ZERO,
+    }
+}
+
+#[test]
+fn a_catalog_fetch_runs_once_at_a_time() {
+    let mut feed = Feed::default();
+    assert!(feed.begin_fetch());
+    assert!(!feed.begin_fetch());
+    feed.fetched(None, true);
+    assert!(!feed.fetching);
+    assert!(feed.begin_fetch());
+}
+
+#[test]
+fn a_fetched_catalog_is_live_and_saved() {
+    let mut feed = Feed::default();
+    feed.begin_fetch();
+    feed.fetched(None, true);
+    assert!(feed.live && feed.saved);
+    assert!(feed.checked.is_some() && feed.fetched_at.is_some());
+    assert!(feed.trouble.is_none());
+}
+
+#[test]
+fn a_failed_fetch_keeps_the_catalog_saved_before() {
+    let mut feed = Feed {
+        saved: true,
+        ..Feed::default()
+    };
+    feed.begin_fetch();
+    feed.fetched(Some(Trouble::Offline("no route".into())), false);
+    assert!(feed.saved && !feed.live);
+    assert!(feed.fetched_at.is_none());
+    assert!(matches!(feed.trouble, Some(Trouble::Offline(_))));
+    assert!(feed.checked.is_some());
+}
+
+#[test]
+fn a_star_sync_asked_for_while_one_runs_runs_once_more_after_it() {
+    let mut feed = Feed::default();
+    assert!(feed.begin_sync());
+    assert!(!feed.begin_sync());
+    assert!(!feed.begin_sync());
+    assert!(feed.synced());
+    assert!(!feed.syncing);
+    assert!(feed.begin_sync());
+    assert!(!feed.synced());
+}
+
+#[test]
+fn only_the_last_star_click_starts_a_sync() {
+    let mut feed = Feed::default();
+    let first = feed.next_star();
+    let second = feed.next_star();
+    assert!(!feed.settled(first));
+    assert!(feed.settled(second));
+}
+
+#[test]
+fn the_activity_list_keeps_the_newest_first_and_drops_the_oldest() {
+    let mut feed = Feed::default();
+    for n in 0..ACTIVITY_KEPT + 3 {
+        feed.note(activity(n));
+    }
+    assert_eq!(feed.activity.len(), ACTIVITY_KEPT);
+    assert_eq!(feed.activity[0].title, format!("fetch {}", ACTIVITY_KEPT + 2));
+    assert_eq!(feed.activity.back().unwrap().title, "fetch 3");
+}
+
+#[test]
+fn an_install_brings_only_the_requirements_no_other_install_is_bringing() {
+    let working: HashMap<String, Job> = [("t.lib".to_owned(), Job::new(0))].into();
+    let batch = Batch {
+        left: ["t.queued".to_owned()].into(),
+        ..Batch::default()
+    };
+    let preview = vec!["t.lib".to_owned(), "t.queued".to_owned(), "t.new".to_owned()];
+    assert_eq!(riders(preview.clone(), &working, Some(&batch)), ["t.new"]);
+    assert_eq!(
+        riders(preview, &HashMap::new(), None),
+        ["t.lib", "t.queued", "t.new"]
+    );
+}
+
+#[test]
+fn the_installed_version_comes_from_the_library() {
+    let library = TestLibrary::new("browser-installed")
+        .addon("t.mine", "1.4.2")
+        .profile("Main", &["t.mine"])
+        .read();
+    assert_eq!(
+        installed_version(&library, "t.mine"),
+        Some(semver::Version::new(1, 4, 2))
+    );
+    assert_eq!(installed_version(&library, "t.other"), None);
 }

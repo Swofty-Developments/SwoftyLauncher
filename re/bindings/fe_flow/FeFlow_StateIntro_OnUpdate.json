@@ -49,5 +49,25 @@
    "notes": "V1486 ts-v1 independent re-read: slot 9 (vt+0x48) of vt_Sess_Intro 0x14585bff0 (the only lea is 0x1437b562e); leaves FlowLinkStay until Vm_SyncPoint_IsComplete(state+0xcd0) and the title view [[state+0xc88]+0x140]+0x198 is non-null; +0xef3 once-flag then the kind 0x2e request with FeFlow_StateIntro_OnEngaged; +0xef4 set returns g_FeFlow_IntroLinkFrontend. Agrees with the row."
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "load-game",
+   "date": "2026-11-17",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1436da4d0",
+    "target": "0x1436da4d0"
+   },
+   "sigcheck": "passed",
+   "digest": "73e2381ba72b2a6d11921beeb88fe7f9f37f42430968c0635dc21f3dbbff6010"
+  }
+ ]
 }

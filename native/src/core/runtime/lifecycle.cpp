@@ -3,8 +3,11 @@
 #include <cstdio>
 #include <cstring>
 #include <mutex>
+#include <optional>
 
 #include "core/diagnostics/steps.hpp"
+#include "core/hooks/hooks.hpp"
+#include "core/render/d3d12_hooks.hpp"
 #include "core/runtime/addon_api.hpp"
 #include "core/runtime/loader/bindings.hpp"
 #include "core/runtime/loader/code_encryption.hpp"
@@ -16,18 +19,7 @@
 #include "core/runtime/loader/scanner.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/stage.hpp"
-
-namespace runtime {
-bool close_asset_registrations();
-}
-
-namespace swofty_core::hooks {
-void window_stage();
-}
-
-namespace swofty_core::services {
-void report_missing();
-}
+#include "core/services/services.hpp"
 
 extern "C" __declspec(dllexport) int SwoftyCoreAttach(SwoftyApi *a);
 
@@ -51,15 +43,20 @@ Runtime &Runtime::instance()
 
 void Runtime::start(Start point)
 {
+    std::optional<d3d12hooks::ProbeScope> probe;
     for (const Subsystem &s : subsystems()) {
         if (s.start != point)
             continue;
+        if (s.probe == Probe::open)
+            probe.emplace();
         if (point == Start::attach || point == Start::ready) {
             perf::Stopwatch step;
             s.install();
             loader::api->log(perf::STEP_LINE, step.total_ms(), (std::string("subsystem ") + s.name).c_str());
         } else
             when_code_ready(s.name, s.install);
+        if (s.probe == Probe::close)
+            probe.reset();
     }
 }
 

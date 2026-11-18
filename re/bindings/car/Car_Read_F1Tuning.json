@@ -55,6 +55,16 @@
    "verdict": "partial",
    "evidence": "decomp:re/decomp/1446d1660.c",
    "notes": "V6832 Reader confirmed (125 Game_Read_VtfFloat) but values are stored plain (0 XOR in decomp); the boilerplate stores-XOR-obfuscated is wrong here. (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "re-bindings",
+   "kind": "func",
+   "item": "Car_Read_F1Tuning",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm of the archived 1.0.141 exe (PE 1789118616) 0x1446d1660-0x1446d4465;xref:0x145bfe040",
+   "notes": "V10776 Re-verified after V6832: vtable 0x145bfe030 slot 2 (abs 0x145bfe040) = 0x1446d1660; rcx=data, rdx=node; 125 calls to Game_Read_VtfFloat 0x14464e760 with r8 = data+0x10 (ChassisCOMZMin) .. +0x1f0 and names ChassisCOMZ..GearBoxRatio9th bounds, including DifferentialRearTorque/OffPowerMultiple; no xor except register zeroing, so the values are plain floats as the notes say (the XOR boilerplate V6832 refuted is no longer in the notes); Min<=Max by vucomiss, failure stores 0x16 to the TLS errno slot."
   }
  ],
  "proofs": []

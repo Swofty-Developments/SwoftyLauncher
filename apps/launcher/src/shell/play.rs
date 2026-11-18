@@ -1,16 +1,19 @@
 use crate::dialogs::game_edited::Edited;
-use crate::services::game::{self, Launch, Owner};
+use crate::services::game::{self, Launch, Owner, Probe};
 use crate::services::play_checks;
 use crate::shell::notices::{Notification, Notify};
 use gpui_kit::*;
 use std::path::PathBuf;
+use swofty_core::diagnostics::quarantine;
 use swofty_core::game_folder::recovery::Blocked;
 use swofty_core::install::Source;
 use swofty_core::session::{LaunchMode, SessionRecord};
+use swofty_core::store::Store;
 
 use super::launch_alerts::note_notification;
+use super::probe::GameWatch;
 use super::{PlayState, Shell};
-use swofty_i18n::{tr, trf};
+use swofty_i18n::{tr, trf, trn};
 
 #[derive(Default)]
 pub(crate) struct Launching {
@@ -24,52 +27,134 @@ pub(crate) struct Launching {
     pub(crate) steam_saves_once: bool,
 }
 
-/// How long Play waits for a session module load that is already running.
-const SESSION_MODULE_WAIT: std::time::Duration = std::time::Duration::from_millis(1500);
+impl Launching {
+    /// Follows a running launch through one probe. Once the launch is over it is cleared and the
+    /// result says why it failed, or `None` inside when the game started.
+    pub(crate) fn follow(
+        &mut self,
+        game: &mut GameWatch,
+        store: &Store,
+        probe: &Probe,
+    ) -> Option<Option<String>> {
+        let launch = self.launch.as_mut()?;
+        launch.saw_game |= game.owners.iter().any(|o| !matches!(o, Owner::Other(_)));
+        launch.stage = probe.launch_stage.clone();
+        let ok = launch.finished()?;
+        let failed = if !ok && !launch.saw_game {
+            game.blocked = Blocked::read(&store.root);
+            let refused = probe
+                .mods_blocked
+                .as_ref()
+                .is_some_and(|r| r.stage == quarantine::Stage::BeforeLaunch && r.at >= launch.at);
+            let not_stock = probe
+                .not_stock
+                .as_ref()
+                .filter(|r| r.at >= launch.at)
+                .map(|r| crate::dialogs::game_edited::notice(r, game.install.as_ref().map(|i| i.source)));
+            let failed = probe
+                .launch_failed
+                .as_ref()
+                .filter(|f| f.at >= launch.at)
+                .map(|f| f.headline().to_owned());
+            self.notice = Some(match &game.blocked {
+                _ if refused => tr("an antivirus removed mod files, so F1 25 was not started").to_owned(),
+                _ if not_stock.is_some() => not_stock.unwrap_or_default(),
+                Some(b) if b.ours() => trn(
+                    b.files.len(),
+                    "a file an earlier Swofty session left in the game folder is in the way; Restore game \
+                     folder clears it",
+                    "{count} files an earlier Swofty session left in the game folder are in the way; \
+                     Restore game folder clears them",
+                ),
+                Some(b) => trn(
+                    b.files.len(),
+                    "a file Swofty did not put in the game folder is in the way",
+                    "{count} files Swofty did not put in the game folder are in the way",
+                ),
+                None => failed.unwrap_or_else(|| launch.failure()),
+            })
+            .filter(|n| !n.contains(swofty_core::game_folder::busy::CANCELLED));
+            let why = self.notice.clone().unwrap_or_else(|| launch.failure());
+            if self.notice.is_some() {
+                crate::app::app_log::action("start F1 25").failed(&why);
+            }
+            Some(why)
+        } else {
+            None
+        };
+        self.launch = None;
+        Some(failed)
+    }
 
-impl Shell {
-    pub(crate) fn play_state(&self) -> PlayState {
-        if self.game.owners.contains(&Owner::Active) {
+    /// Clears a pending cancel once the build it waited for is gone. True when it just settled.
+    pub(crate) fn cancel_settled(&mut self, was_building: bool, still_busy: bool) -> bool {
+        let settled = self.cancelling && !still_busy && was_building;
+        if settled {
+            self.cancelling = false;
+        }
+        settled
+    }
+
+    pub(crate) fn play_state(
+        &self,
+        game: &GameWatch,
+        checking_addons: bool,
+        dismissed_crash: Option<&PathBuf>,
+    ) -> PlayState {
+        if game.owners.contains(&Owner::Active) {
             return PlayState::Running;
         }
-        if self.game.build.is_some() {
+        if game.build.is_some() {
             return PlayState::Building;
         }
-        if self.launching.play_pending.is_active() {
+        if self.play_pending.is_active() {
             return PlayState::Preparing;
         }
-        if let Some(launch) = &self.launching.launch {
+        if let Some(launch) = &self.launch {
             return if launch.saw_game {
                 PlayState::Restoring
             } else {
                 PlayState::Launching
             };
         }
-        if self.launching.restoring {
+        if self.restoring {
             return PlayState::Restoring;
         }
-        if !self.game.detected {
+        if !game.detected {
             return PlayState::Detecting;
         }
-        if let Some(owner) = self.game.owners.first() {
+        if let Some(owner) = game.owners.first() {
             return PlayState::Elsewhere(owner.clone());
         }
-        if self.game.install.is_none() {
+        if game.install.is_none() {
             return PlayState::NotInstalled;
         }
-        if self.addons.checking {
+        if checking_addons {
             return PlayState::Checking;
         }
-        match &self.game.session {
+        match &game.session {
             Some(s)
                 if s.crashed()
-                    && self.crashes.dismissed.as_ref() != Some(&s.dir)
+                    && dismissed_crash != Some(&s.dir)
                     && s.ended.is_some_and(|e| game::now_secs() - e < 1800.0) =>
             {
                 PlayState::Crashed(s.clone())
             }
             _ => PlayState::Ready,
         }
+    }
+}
+
+/// How long Play waits for a session module load that is already running.
+const SESSION_MODULE_WAIT: std::time::Duration = std::time::Duration::from_millis(1500);
+
+impl Shell {
+    pub(crate) fn play_state(&self) -> PlayState {
+        self.launching.play_state(
+            &self.game,
+            self.addons.conflicts.checking,
+            self.crashes.dismissed.as_ref(),
+        )
     }
 
     pub(crate) fn play(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -95,7 +180,7 @@ impl Shell {
             self.ea_app_warn(window, cx);
             return false;
         }
-        if self.addons.checking {
+        if self.addons.conflicts.checking {
             window.notify(
                 Notification::info(tr("Play when the conflict check finishes.")),
                 cx,
@@ -211,7 +296,7 @@ impl Shell {
             );
         }
         let armed = (room.is_some() || self.account.allowed()).then(|| {
-            swofty_core::multiplayer::client::launch_env_value(&self.store.root, SESSION_MODULE_WAIT)
+            swofty_core::online::multiplayer::client::launch_env_value(&self.store.root, SESSION_MODULE_WAIT)
         });
         match Launch::start(
             &self.store,
@@ -281,5 +366,107 @@ impl Shell {
         self.launching.notice = None;
         self.game.rediscover = true;
         self.reload(cx);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::path::PathBuf;
+
+    use swofty_core::install::Source;
+
+    use super::Launching;
+    use crate::services::game::{Copies, Install, Owner};
+    use crate::shell::PlayState;
+    use crate::shell::probe::GameWatch;
+
+    fn install(dir: &str) -> Install {
+        Install {
+            dir: PathBuf::from(dir),
+            build_id: None,
+            exe_version: None,
+            mode: String::new(),
+            via_steam: true,
+            manual: false,
+            source: Source::Steam,
+            moved: None,
+        }
+    }
+
+    fn found(active: &str) -> Copies {
+        Copies {
+            all: vec![install(active)],
+            active: Some(install(active)),
+            missing: Vec::new(),
+        }
+    }
+
+    #[test]
+    fn copies_count_as_changed_until_first_seen_and_when_play_moves() {
+        let mut game = GameWatch::new();
+        assert!(game.take_copies(found("a")));
+        assert!(game.detected);
+        assert!(!game.take_copies(found("a")));
+        assert!(game.take_copies(found("b")));
+        assert_eq!(game.install, Some(install("b")));
+    }
+
+    #[test]
+    fn play_waits_for_detection_then_needs_an_install() {
+        let launching = Launching::default();
+        let mut game = GameWatch::new();
+        assert!(matches!(
+            launching.play_state(&game, false, None),
+            PlayState::Detecting
+        ));
+        game.detected = true;
+        assert!(matches!(
+            launching.play_state(&game, false, None),
+            PlayState::NotInstalled
+        ));
+        game.take_copies(found("a"));
+        assert!(matches!(
+            launching.play_state(&game, false, None),
+            PlayState::Ready
+        ));
+        assert!(matches!(
+            launching.play_state(&game, true, None),
+            PlayState::Checking
+        ));
+    }
+
+    #[test]
+    fn a_running_game_outranks_a_build_and_a_build_outranks_restoring() {
+        let mut launching = Launching::default();
+        let mut game = GameWatch::new();
+        game.take_copies(found("a"));
+        launching.restoring = true;
+        assert!(matches!(
+            launching.play_state(&game, false, None),
+            PlayState::Restoring
+        ));
+        game.build = Some(Default::default());
+        assert!(matches!(
+            launching.play_state(&game, false, None),
+            PlayState::Building
+        ));
+        game.owners = vec![Owner::Active];
+        assert!(matches!(
+            launching.play_state(&game, false, None),
+            PlayState::Running
+        ));
+    }
+
+    #[test]
+    fn a_cancel_settles_once_the_build_is_gone() {
+        let mut launching = Launching {
+            cancelling: true,
+            ..Default::default()
+        };
+        assert!(!launching.cancel_settled(true, true));
+        assert!(launching.cancelling);
+        assert!(launching.cancel_settled(true, false));
+        assert!(!launching.cancelling);
+        assert!(!launching.cancel_settled(true, false));
     }
 }

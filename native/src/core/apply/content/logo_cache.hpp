@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/runtime/hashing.hpp"
+
 #include <algorithm>
 #include <cstdint>
 #include <cstdio>
@@ -23,13 +25,6 @@ namespace swofty_core::apply::content::logo_cache {
 
 inline constexpr const char *STAMPS = "inputs.stamps";
 inline constexpr const char *OLD_STAMPS = "archives.stamps";
-
-inline uint64_t stamp(uint64_t h, const std::string &s)
-{
-    for (unsigned char c : s)
-        h = (h ^ c) * 0x100000001b3ull;
-    return h * 0x100000001b3ull + 0x9e3779b97f4a7c15ull;
-}
 
 class Bytes {
 public:
@@ -219,7 +214,7 @@ inline Keyed key_archives(uint64_t key, const std::vector<std::string> &files, c
         if (!env.stat(rel, now.size, now.time))
             continue;
         if (!inputs.count(rel)) {
-            key = stamp(key, rel + "|" + std::to_string(now.size) + "|s");
+            key = runtime::fnv64_field(key, rel + "|" + std::to_string(now.size) + "|s");
             continue;
         }
         auto was = before.find(rel);
@@ -232,7 +227,7 @@ inline Keyed key_archives(uint64_t key, const std::vector<std::string> &files, c
         }
         char hex[17];
         std::snprintf(hex, sizeof hex, "%016llx", static_cast<unsigned long long>(now.hash));
-        key = stamp(key, rel + "|" + std::to_string(now.size) + "|" + (now.hashed ? std::string("h") + hex : "t" + std::to_string(now.time)));
+        key = runtime::fnv64_field(key, rel + "|" + std::to_string(now.size) + "|" + (now.hashed ? std::string("h") + hex : "t" + std::to_string(now.time)));
         out.stamps[rel] = now;
     }
     out.key = key;

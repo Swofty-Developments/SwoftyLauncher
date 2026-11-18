@@ -1,5 +1,7 @@
 #include "core/runtime/loader/core_sets.hpp"
+#include "core/runtime/loader/mixin_gate.hpp"
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/resolve.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>
@@ -14,6 +16,7 @@
 #include <vector>
 
 #include "core/boxes/car_category_logic.hpp"
+#include "core/boxes/options_store.hpp"
 
 // LAN Car Category addon boxes. The host's Car Category screen after the LAN Game dialog is the F1 World
 // container's tab session_create_dlc_select_tab (CreateSessionDLCSelectTabViewModel). Its tile build
@@ -49,20 +52,18 @@
 //
 // Every hook falls back to the stock behaviour when a shape is not what it expects.
 
-namespace runtime {
-std::vector<era::Box> era_boxes();
-}
-
 namespace {
 
 namespace mem = swofty::mem;
 namespace logic = runtime::car_category;
+namespace store = runtime::options_store;
+using store::text_at;
+using store::vfunc;
 using swofty::game::Game_CreateSessionDlcSelectTab_BuildTiles_t;
 using swofty::game::Game_CreateSessionDlcSelectTab_FillTile_t;
 using swofty::game::Game_CreateSessionDlcSelectTab_HandleCommand_t;
 using swofty::game::Game_Network_CategoryOptionUsing_t;
 using swofty::game::Game_Network_SetScenario_t;
-using swofty::game::Game_OptionsStore_FindOption_t;
 using swofty::game::Vm_List_AppendChild_t;
 using swofty::game::Vm_Release_Node_t;
 
@@ -78,20 +79,6 @@ constexpr size_t TILE_BYTES = 0x80;
 constexpr size_t TILE_HANDLES = 4;
 constexpr size_t HANDLE_WRAPPER = 0x20;
 
-constexpr size_t STORE_MAP = 0x270;
-constexpr size_t STORE_ENTRIES = 0x288;
-constexpr size_t STORE_END = 0x290;
-constexpr size_t STORE_ENTRY = 0x10;
-constexpr size_t OPT_VALUES = 0x80;
-constexpr size_t OPT_VALUES_END = 0x88;
-constexpr size_t VALUE_BYTES = 0x50;
-constexpr size_t VALUE_NAME = 0x38;
-constexpr size_t NAME_LEN = 0x10;
-constexpr size_t NAME_SRC = 0x18;
-constexpr size_t NAME_PLAIN = 0x40;
-constexpr size_t NAME_BUF = 0x48;
-constexpr size_t DISPLAY_TEXT = 0x10;
-constexpr size_t MAX_VALUES = 64;
 constexpr size_t SELF_NETWORK = 0x10;
 constexpr size_t NETWORK_SESSION = 0x418;
 constexpr size_t SESSION_ROLE = 8;
@@ -123,7 +110,8 @@ struct Forced {
 };
 
 std::recursive_mutex lock;
-std::atomic<bool> offered, settled, live, off;
+runtime::loader::MixinGate mixin_gate;
+std::atomic<bool> live, off;
 std::string off_why;
 alignas(16) uint8_t tiles[logic::MAX_ADDED][TILE_BYTES];
 size_t tiles_used;
@@ -149,23 +137,6 @@ void *registry()
     return *reinterpret_cast<void **>(b.registry);
 }
 
-bool code_ptr(const void *p)
-{
-    auto a = reinterpret_cast<uintptr_t>(p);
-    uintptr_t base = swofty::api->module_base();
-    return p && a >= base && a < base + 0x20000000 && mem::readable(p, 1);
-}
-
-template <class F> F *vfunc(void *object, size_t slot)
-{
-    if (!mem::readable(object, 8))
-        return nullptr;
-    auto **vt = *static_cast<void ***>(object);
-    if (!mem::readable(vt, (slot + 1) * 8) || !code_ptr(vt[slot]))
-        return nullptr;
-    return reinterpret_cast<F *>(vt[slot]);
-}
-
 size_t children(uint8_t *list)
 {
     if (!mem::readable(list, 0x88))
@@ -181,87 +152,28 @@ size_t children(uint8_t *list)
     return 0;
 }
 
-std::string text_at(const char *p)
-{
-    if (!p || !mem::readable(p, 1))
-        return {};
-    std::string out;
-    for (size_t i = 0; i < logic::VALUE_NAME_MAX && mem::readable(p + i, 1) && p[i]; ++i)
-        out.push_back(p[i]);
-    return out;
-}
-
 void *category_option(std::string &why)
 {
-    void *store = *reinterpret_cast<void **>(b.store);
-    if (!mem::readable(store, STORE_END + 8)) {
+    void *option = nullptr;
+    switch (store::find(b.find, *reinterpret_cast<void **>(b.store), "category", option)) {
+    case store::Found::store_unreadable:
         why = "the options store is not readable";
-        return nullptr;
-    }
-    const char *name = "category";
-    uint64_t index = reinterpret_cast<Game_OptionsStore_FindOption_t *>(b.find)(static_cast<uint8_t *>(store) + STORE_MAP,
-                                                                                 &name);
-    auto *base = at<uint8_t *>(store, STORE_ENTRIES), *end = at<uint8_t *>(store, STORE_END);
-    if (!base || end < base || index >= size_t(end - base) / STORE_ENTRY) {
+        break;
+    case store::Found::no_option:
         why = "the options store has no category option";
-        return nullptr;
-    }
-    uint8_t *entry = base + index * STORE_ENTRY;
-    void *option = mem::readable(entry, STORE_ENTRY) ? at<void *>(entry, 8) : nullptr;
-    if (!mem::readable(option, OPT_VALUES_END + 8)) {
+        break;
+    case store::Found::option_unreadable:
         why = "the category option is not readable";
-        return nullptr;
+        break;
+    case store::Found::ok:
+        break;
     }
     return option;
 }
 
 std::vector<logic::Value> values_of(void *option)
 {
-    std::vector<logic::Value> out;
-    auto *v = at<uint8_t *>(option, OPT_VALUES), *e = at<uint8_t *>(option, OPT_VALUES_END);
-    if (!v || e < v || size_t(e - v) % VALUE_BYTES || size_t(e - v) / VALUE_BYTES > MAX_VALUES ||
-        !mem::readable(v, size_t(e - v)))
-        return out;
-    const auto *key = reinterpret_cast<const uint8_t *>(b.key);
-    for (uint8_t *entry = v; entry < e; entry += VALUE_BYTES) {
-        logic::Value value;
-        auto *display = at<uint8_t *>(entry, 0);
-        if (mem::readable(display, DISPLAY_TEXT + 8))
-            value.display = text_at(at<const char *>(display, DISPLAY_TEXT));
-        auto *holder = at<uint8_t *>(entry, VALUE_NAME);
-        auto *name = mem::readable(holder, 8) ? at<uint8_t *>(holder, 0) : nullptr;
-        if (mem::readable(name, NAME_BUF + 8)) {
-            if (at<int64_t>(name, NAME_PLAIN) == 1) {
-                value.name = text_at(at<const char *>(name, NAME_BUF));
-            } else {
-                auto len = at<uint64_t>(name, NAME_LEN);
-                auto *src = at<const uint8_t *>(name, NAME_SRC);
-                if (len >= 2 && len <= logic::VALUE_NAME_MAX && mem::readable(src, size_t(len)) && mem::readable(key, 4))
-                    value.name = logic::decode_name(src, size_t(len), key);
-            }
-        }
-        out.push_back(value);
-    }
-    return out;
-}
-
-bool option_index(void *option, int &index)
-{
-    auto *get = vfunc<int(void *, void *)>(option, 2);
-    if (!get)
-        return false;
-    uint64_t scratch[2] = {};
-    index = get(option, scratch);
-    return true;
-}
-
-bool set_option_index(void *option, int index)
-{
-    auto *set = vfunc<void(void *, int)>(option, 3);
-    if (!set)
-        return false;
-    set(option, index);
-    return true;
+    return store::values(option, reinterpret_cast<const uint8_t *>(b.key));
 }
 
 void restore_forced(const char *why)
@@ -271,9 +183,9 @@ void restore_forced(const char *why)
     int now = -1;
     std::string err;
     void *option = category_option(err);
-    if (option == forced.option && option_index(option, now) && now == forced.ours && set_option_index(option, forced.prior)) {
+    if (option == forced.option && store::get_index(option, now) && now == forced.ours && store::set_index(option, forced.prior)) {
         int back = -1;
-        option_index(option, back);
+        store::get_index(option, back);
         swofty::log("[car-category] category option index %d -> %d (restored, %s)", now, back, why);
     } else {
         swofty::log("[car-category] category option left as it is (%s): %s", why,
@@ -334,7 +246,7 @@ void build_entry(void *vm)
         for (size_t i = 0; i < values.size(); ++i)
             listed += (i ? ", " : "") + std::to_string(i) + "=" + values[i].name + " (" + values[i].display + ")";
         int index = -1;
-        bool got = option && option_index(option, index);
+        bool got = option && store::get_index(option, index);
         swofty::log("[car-category] category option %p: %zu value(s): %s; current index %s%s", option, values.size(),
                     listed.empty() ? "none" : listed.c_str(), got ? std::to_string(index).c_str() : "unknown",
                     option ? "" : (" (" + why + ")").c_str());
@@ -452,18 +364,18 @@ bool hold_category(const std::string &want)
                     want.c_str(), values.size());
         return false;
     }
-    if (!option_index(option, before) || before < 0 || size_t(before) >= values.size()) {
+    if (!store::get_index(option, before) || before < 0 || size_t(before) >= values.size()) {
         swofty::log("[car-category] setupFromUnranked: category %s not set: the option's current index is %d of %zu",
                     want.c_str(), before, values.size());
         return false;
     }
     if (before == target)
         return true;
-    if (!set_option_index(option, target) || !option_index(option, after) || after != target) {
+    if (!store::set_index(option, target) || !store::get_index(option, after) || after != target) {
         swofty::log("[car-category] setupFromUnranked: setting the category option to %d (%s) read back %d; putting %d "
                     "back",
                     target, want.c_str(), after, before);
-        set_option_index(option, before);
+        store::set_index(option, before);
         return false;
     }
     if (!forced.option)
@@ -527,29 +439,21 @@ void setup_entry(void *self)
     applying = false;
 }
 
-uintptr_t need(const char *id, std::string &missing)
-{
-    uintptr_t a = swofty::api->resolve(id);
-    if (!a)
-        missing += std::string(missing.empty() ? "" : ", ") + id;
-    return a;
-}
-
 bool bind_all(std::string &why)
 {
     std::string missing;
-    b.build = need("Game_CreateSessionDlcSelectTab_BuildTiles", missing);
-    b.press = need("Game_CreateSessionDlcSelectTab_HandleCommand", missing);
-    b.fill = need("Game_CreateSessionDlcSelectTab_FillTile", missing);
-    b.append = need("Vm_List_AppendChild", missing);
-    b.release = need("Vm_Release_Node", missing);
-    b.setup = need("Game_Network_CategoryOptionUsing", missing);
-    b.find = need("Game_OptionsStore_FindOption", missing);
-    b.store = need("g_Game_OptionsStore", missing);
-    b.key = need("k_Gdb_StringXorKey", missing);
-    b.registry = need("g_Vm_Registry", missing);
-    b.set_scenario = need("Game_Network_SetScenario", missing);
-    b.scenarios = need("g_Game_Scenarios", missing);
+    b.build = runtime::resolve_or_note("Game_CreateSessionDlcSelectTab_BuildTiles", missing);
+    b.press = runtime::resolve_or_note("Game_CreateSessionDlcSelectTab_HandleCommand", missing);
+    b.fill = runtime::resolve_or_note("Game_CreateSessionDlcSelectTab_FillTile", missing);
+    b.append = runtime::resolve_or_note("Vm_List_AppendChild", missing);
+    b.release = runtime::resolve_or_note("Vm_Release_Node", missing);
+    b.setup = runtime::resolve_or_note("Game_Network_CategoryOptionUsing", missing);
+    b.find = runtime::resolve_or_note("Game_OptionsStore_FindOption", missing);
+    b.store = runtime::resolve_or_note("g_Game_OptionsStore", missing);
+    b.key = runtime::resolve_or_note("k_Gdb_StringXorKey", missing);
+    b.registry = runtime::resolve_or_note("g_Vm_Registry", missing);
+    b.set_scenario = runtime::resolve_or_note("Game_Network_SetScenario", missing);
+    b.scenarios = runtime::resolve_or_note("g_Game_Scenarios", missing);
     if (missing.empty())
         return true;
     why = "needs " + missing + ", which this build does not resolve";
@@ -594,9 +498,9 @@ bool car_category_choose(const std::string &value, std::string &why)
 static std::vector<CoreMixins> car_category_mixins()
 {
     std::vector<CoreMixins> out;
-    if (offered || off || !code_ready() || era_boxes().empty())
+    if (mixin_gate.offered() || off || !code_ready() || era_boxes().empty())
         return out;
-    offered = true;
+    mixin_gate.offer();
     std::string why;
     if (!bind_all(why)) {
         off_why = why;
@@ -617,9 +521,8 @@ static std::vector<CoreMixins> car_category_mixins()
 
 static void car_category_commit()
 {
-    if (!offered || settled || off)
+    if (off || !mixin_gate.settle())
         return;
-    settled = true;
     if (core_mixins_active(MIXIN)) {
         live = true;
         swofty::log("[car-category] Car Category hooks installed; addon boxes show from the next build of the screen");

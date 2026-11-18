@@ -7,32 +7,82 @@ description: Add a new F1 25 binding for your engine plugin - one file under re/
 
 A binding names one place in `F1_25.exe` that your [mixins](/reference/addons/hooking) can hook. A new binding is one JSON file under `re/bindings/<subsystem>/<Name>.json`. A pull request that adds only that file and passes every check merges itself.
 
+## Before you start
+
+```sh
+git clone https://github.com/<your-github-login>/SwoftyLauncher.git && cd SwoftyLauncher   # your fork
+python3 -m pip install pefile numpy capstone    # binding.py new and verify read the exe with these
+python3 re/tools/binding.py --help              # every command; binding.py <command> --help for its options
+```
+
+- **The game.** `binding.py new`, `verify` and `agree` run on the current Steam build (F1 25 1.0.145.2472, build 26566308) or on any other build in `re/db/builds`. Records hold addresses on the knowledge-base (KB) build, Steam 1.0.141.7865 (build 25251167). On any other build, `new` takes the KB address from the bindings just below and just above yours, which must have moved by the same amount between the two builds. The record keeps where it was made and that reasoning in `twin`. When the two bindings moved by different amounts, `new` writes nothing and names them; pick another address or ask in an issue.
+- **The address and why it is that place.** Find the function, instruction or global in your own disassembly of your build. Every address you pass, `--evidence` included, is on that build. `--evidence` is `kind:value` tokens joined by `;`:
+
+  ```text
+  decomp:own disasm 0x1436a3ab0-0x1436a422c    the code you read (L2 needs it)
+  xref:0x1436a3b74,0x1436a3b83                 the callers or the instructions that use it (L2 needs it)
+  str:<anchor id>                              a row in re/db/strings_anchors.tsv
+  imm:<hex>                                    a constant that ties the code to the claim
+  pat:clone-of-0x141746710                     a pattern or name match
+  doc:re/research/<note>.md#<section>          a written argument
+  ```
+
+  L2, the default, needs `decomp:` and `xref:`. `--level L1` takes any one token (re/PROTOCOL.md §1).
+- **The name.** A function is `<Prefix>_<Verb>_<Noun>` and a global `g_`, `k_`, `vt_` or `site_<Prefix>_<Noun>`; the prefix is the subsystem's `prefix` column in `re/db/subsystems.tsv` and picks the folder.
+- **Your GitHub login.** `--author` is the account that opens the pull request.
+
+`re/tools/py` runs the tools with a Python that has the three modules: `$SWOFTY_PY`, the pinned Nix one, or `python3` once `pip` installed them. `check`, `doctor` and `status` run on any Python 3.10+. On Windows, run `python re\tools\binding.py ...` in place of `re/tools/py re/tools/binding.py ...`.
+
 ## The whole flow
 
 ```sh
 # 1. Make the record. binding.py writes the signature, checks it and proves it on your exe.
+#    Nothing is written when a check fails; each error is followed by its fix.
 re/tools/py re/tools/binding.py new site_Sess_PitEntryDecision 0x1436a3b83 --kind site \
     --author your-github-login --exe ~/F1_25.exe \
     --evidence "decomp:own disasm 0x1436a3ab0-0x1436a422c;xref:0x1436a3b74,0x1436a3b83" \
     --notes "call that decides whether the AI pits this lap; rcx = car record"
 
-# 2. Run what CI runs.
-python3 re/tools/binding.py check
+# 2. Run the pull request check on your checkout: merges itself, needs review, or fails, and why.
+python3 re/tools/binding.py doctor
 
 # 3. Commit only that file and open a pull request.
+git switch -c bindings/pit-entry-decision
 git add re/bindings/session/site_Sess_PitEntryDecision.json
 git commit -m "feat(re): add the AI pit entry decision site"
+git push -u origin bindings/pit-entry-decision    # then open the pull request against main
 ```
 
-`re/tools/py` is the pinned Python with `pefile`, `numpy` and `capstone`, which `new` needs to make the signature. `check`, `verify` and `status` run on any Python 3.10+.
+```text
+binding.py doctor: 1 record file(s) and 0 other file(s) changed against 3f1c2a9b0d4e, pull request by your-github-login
+  re/bindings/session/site_Sess_PitEntryDecision.json
+verdict: auto: this pull request would merge itself: every changed file is a binding record that passes the checks
+after the merge:
+  site_Sess_PitEntryDecision: not exported; needs an agree row from a second contributor (binding.py agree)
+```
+
+On a build other than the KB build, `new` prints the KB twin before it writes the file:
+
+```text
+binding.py new: made on steam-26566308; the target 0x142e91ae0 is KB 0x142e8f550: Sess_TyreAllocation_SwapSets (0x2e90a50) and Sess_Veh_UpdateWheelMap (0x2e92af0) on either side both sit 0x2590 above their KB addresses
+wrote re/bindings/session/Sess_Tyre_ReadCompoundSets.json (session.tyre_read_compound_sets, match 0x142e8f550, proof on 46009bd31f49d93a)
+```
+
+A failing check prints the problem, the file and the fix:
+
+```text
+verdict: fail: this pull request would fail the binding check, because:
+  - error: re/bindings/session/site_Sess_PitEntryDecision.json: row: L2 needs xref:
+    fix: add the missing xref: token to --evidence (tokens are kind:value joined by ;, ...), or pass --level L1
+```
 
 | `--kind` | binding | signature |
 |---|---|---|
-| `func` | a function you wrap | `func_start` at the function |
+| `func` | a function you wrap | `func_start` at the function; `call` through its most distinctive call site when the function's own bytes repeat elsewhere in the exe |
 | `site` | an instruction you run code at | `mid` at the instruction, with `expect` bytes |
 | `data` | a global (`--type`, `--via <insn>`) | `riprel` through the instruction at `--via` |
 
-Options: `--subsystem` when the name's prefix is ambiguous, `--proto "<C prototype>"` for a `func`, `--level L1` for a pattern match without a read decompile, `--match-from <va>` to start the pattern at an earlier instruction, `--func-start` and `--data1-reason` for a `.data1` site (PROTOCOL.md §2).
+Options: `--subsystem` when the name's prefix is ambiguous, `--proto "<C prototype>"` for a `func`, `--level L1` for a pattern match without a read decompile, `--match-from <va>` to start the pattern at an earlier instruction when the bytes at the address are not unique, `--func-start` and `--data1-reason` for a `.data1` site (PROTOCOL.md §2). `binding.py new --help` describes each one.
 
 ## What the file looks like
 
@@ -79,6 +129,18 @@ Options: `--subsystem` when the name's prefix is ambiguous, `--proto "<C prototy
 }
 ```
 
+A record made on another build has four more signature fields; `match`, `target` and `row.addr` stay KB addresses:
+
+```json
+  "verified": [{"build": "46009bd31f49d93a", "date": "2026-11-18", "by": "your-github-login", "how": "static"}],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142e91ae0",
+  "made_on_target": "0x142e91ae0",
+  "twin": "made on steam-26566308; the target 0x142e91ae0 is KB 0x142e8f550: Sess_TyreAllocation_SwapSets (0x2e90a50) and Sess_Veh_UpdateWheelMap (0x2e92af0) on either side both sit 0x2590 above their KB addresses"
+```
+
+Its proof on that build must find `made_on_match` and `made_on_target`, and the set for that build uses `made_on_match` as the match hint. With `SWOFTY_KB_EXE` set to a KB `F1_25.exe`, `new` also checks the twin against the KB bytes and adds the result to `twin`.
+
 `row` holds the same columns as `re/db/functions.tsv` or `globals.tsv` (PROTOCOL.md §4), `signature` the same object as `re/db/signatures.json` (§7). `bindgen.py`, `kb_lint.py`, `sigcheck.py` and `kb.py` read records together with the shared tables.
 
 ## From merged to usable
@@ -96,9 +158,11 @@ site_Sess_PitEntryDecision   L2     not exported       1  -                 an a
 
 | record | exported as |
 |---|---|
-| L1, or L2 without an agree row | not exported |
-| L2 with an agree row from someone other than the author | `experimental` |
+| L1, or L2 whose newest verify row is not `agree` | not exported |
+| L2 whose newest verify row is an `agree` from someone other than the author | `experimental` |
 | L3 with a passed trace test (maintainer) | `stable` |
+
+The newest row is the latest by date over the binding's name and its address together, so a later `partial` or `disagree` takes an exported binding out of the next build until someone verifies it again. A binding the core's own code needs can stay exported through `re/db/export_exceptions.json`, which names the row it overrides and the reason; that file always needs review.
 
 A second contributor re-derives the binding from the code alone (PROTOCOL.md §5), proves it on their own exe and adds the agree row:
 
@@ -126,7 +190,15 @@ The `bindings` workflow labels the pull request `bindings: auto-merge` and turns
 - no code in `native/src`, `addons`, `packages`, `templates` or `apps` already names the binding;
 - `binding.py check` passes, and the repository's required CI checks pass.
 
-Anything else gets a normal review. The workflow's summary lists the reason.
+Anything else gets a normal review. The workflow's summary lists each reason with its fix, the same lines `binding.py doctor` prints.
+
+## The pull request
+
+- Only record files: a docs fix, an addon or a tool change goes in a pull request of its own.
+- Up to 25 records; split larger sets.
+- Title it like a commit, for example `feat(re): add the AI pit entry decision site`. The pull request template's checklist is for code changes and a record-only pull request leaves it out.
+- In the description, say what the binding is for and which addon will use it.
+- A pull request that needs review waits for a maintainer; the summary on the pull request says why.
 
 ## Checks CI runs without the game
 
@@ -137,7 +209,7 @@ Anything else gets a normal review. The workflow's summary lists the reason.
 - `target` is `match + anchor` for `addr`; the rel32 or disp32 operand is wildcarded for `rel32` and `riprel`; `expect` agrees with the pattern's bytes.
 - No other signature has the same section, pattern bytes, anchor, resolve and kind. The pattern is compared as parsed bytes and the offsets as numbers, the way the core scans once per pattern and resolves each binding from that match.
 - The signature kind fits the binding kind, the section is `.xtls` (or `.data1` with a reason), the address is inside the KB image.
-- Each proof's digest matches the signature and its exe hash; a proof on the KB build found the record's `match` and `target`.
+- Each proof's digest matches the signature and its exe hash; a proof on the KB build found the record's `match` and `target`, and a proof on the build in `made_on` found `made_on_match` and `made_on_target`.
 - The name and address have no verify rows yet, so an old verdict cannot back a new record. A record's own verify rows are about its name, its address or its signature id, and the export gate reads only the first two.
 - `kb_lint.py --structural` passes over the base branch with the PR's records added: no drift between rows, signatures, structs, verify rows and tests.
 - After merging, the `main` job runs `binding.py check` and `kb_lint.py --structural` over `main` again.

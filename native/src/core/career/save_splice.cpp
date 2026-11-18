@@ -1,5 +1,8 @@
 #include "core/runtime/loader/core_sets.hpp"
+#include "core/runtime/loader/mixin_gate.hpp"
+#include "core/guards/skips.hpp"
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/resolve.hpp"
 
 #include <windows.h>
 
@@ -78,7 +81,9 @@ struct Bindings {
               bag_type = 0, done = 0;
 } b;
 
-bool offered = false, settled = false, live = false;
+runtime::loader::MixinGate mixin_gate;
+constinit swofty_core::guards::LogFirst<1> pool_line;
+bool live = false;
 std::mutex lock;
 sp::Store store;
 sp::Owed owed;
@@ -457,9 +462,7 @@ void count_entry(SwoftyContext *c)
                     store.size() - picked.size());
     if (picked.empty())
         return;
-    static bool pool_logged = false;
-    if (!pool_logged) {
-        pool_logged = true;
+    if (pool_line.note()) {
         uint64_t heap_bytes = 0;
         bool raised = runtime::save_heap_raised(heap_bytes);
         uint64_t bytes = 0;
@@ -560,14 +563,6 @@ void saved_entry(SwoftyContext *c)
     runtime::career_saves_saved();
 }
 
-uintptr_t need(const char *id, std::string &missing)
-{
-    uintptr_t a = swofty::api->resolve(id);
-    if (!a)
-        missing += std::string(missing.empty() ? "" : ", ") + id;
-    return a;
-}
-
 }
 
 namespace runtime {
@@ -575,9 +570,9 @@ namespace runtime {
 static std::vector<CoreMixins> save_splice_mixins()
 {
     std::vector<CoreMixins> out;
-    if (offered || !code_ready())
+    if (mixin_gate.offered() || !code_ready())
         return out;
-    offered = true;
+    mixin_gate.offer();
     // W4b: the career id's save slot, whether or not the splice runs.
     out.push_back({SLOT_MIXIN, {{"site_Game_SaveSlot_Selected", SWOFTY_MIXIN_SITE, 100, (void *)&slot_selected, nullptr}}});
     char v[16] = {};
@@ -591,15 +586,15 @@ static std::vector<CoreMixins> save_splice_mixins()
         return out;
     }
     std::string missing;
-    b.root_vt = need("vt_Game_SaveDataRootContainer", missing);
-    b.write_bag = need("Game_SaveData_WriteBag", missing);
-    b.lookup = need("Ne_StringTable_Lookup", missing);
-    b.codec_vt = need("k_Ne_BagCodecVtbl", missing);
-    b.counting_vt = need("k_Ne_CountingStreamVtbl", missing);
-    b.memory_vt = need("k_Ne_MemWriteStreamVtbl", missing);
-    b.table = need("g_Ne_StringTable", missing);
-    b.bag_type = need("k_Ne_PropertyType_Bag", missing);
-    b.done = need("site_Game_SaveData_ContainersDone", missing);
+    b.root_vt = runtime::resolve_or_note("vt_Game_SaveDataRootContainer", missing);
+    b.write_bag = runtime::resolve_or_note("Game_SaveData_WriteBag", missing);
+    b.lookup = runtime::resolve_or_note("Ne_StringTable_Lookup", missing);
+    b.codec_vt = runtime::resolve_or_note("k_Ne_BagCodecVtbl", missing);
+    b.counting_vt = runtime::resolve_or_note("k_Ne_CountingStreamVtbl", missing);
+    b.memory_vt = runtime::resolve_or_note("k_Ne_MemWriteStreamVtbl", missing);
+    b.table = runtime::resolve_or_note("g_Ne_StringTable", missing);
+    b.bag_type = runtime::resolve_or_note("k_Ne_PropertyType_Bag", missing);
+    b.done = runtime::resolve_or_note("site_Game_SaveData_ContainersDone", missing);
     if (!missing.empty()) {
         swofty::log("[saves] save splice off: needs %s, which this build does not resolve", missing.c_str());
         return out;
@@ -626,15 +621,14 @@ static void save_splice_commit()
         swofty::log("[saves] career list details off: needs SaveSlotInfo.game_setup_mode, info_season, info_weekend, "
                     "info_team, info_driver, info_vehicle, info_date and type_flags (a verify agree row each); the "
                     "list still holds every save slot's key");
-    if (!offered || settled || !b.done) {
+    if (!b.done || !mixin_gate.settle()) {
         snapshots_start(false);
         return;
     }
-    settled = true;
     live = core_mixins_active(MIXIN);
     swofty::log("[saves] save splice %s",
-                live ? "armed: save containers no loaded game mode claims are kept through each profile load and save"
-                     : "did not install (see the [core] lines)");
+                loader::install_state(live, "armed: save containers no loaded game mode claims are kept through each profile "
+                                            "load and save"));
     snapshots_start(live);
 }
 

@@ -16,6 +16,7 @@ mod hang;
 mod hooks;
 mod memory;
 mod package_ids;
+mod slow_init;
 mod stall;
 mod system;
 mod tyres;
@@ -46,6 +47,7 @@ pub use game_version::{LATEST_GAME_VERSION, older_game, outdated_exe, outdated_g
 use graphics::graphics_mods;
 use hang::{hang, hang_watchdog};
 pub use package_ids::{PACKAGE_ID_MAX, PackageIds};
+pub(crate) use slow_init::slow_start;
 use stall::BOOT_STALL_SECS;
 pub use stall::stalled;
 pub(crate) use stall::{addon_stall, last_screen, perf_start_screen};

@@ -5,12 +5,12 @@
 #include "core/frontend/main_menu.hpp"
 #include "core/frontend/main_menu_logic.hpp"
 #include "core/frontend/tile_list.hpp"
+#include "core/frontend/vm_string.hpp"
 #include "core/diagnostics/perf.hpp"
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 
 using namespace swofty::game;
-
-bool settings_command(uint32_t hash);
 
 #if defined(SWOFTY_NO_MOD_SETTINGS)
 #define SWOFTY_MOD_SETTINGS_MODE "compiled out (diagnostic build: no site hook, no tile)"
@@ -36,12 +36,16 @@ constexpr const char *ROUTE = "mod_menu";
 constexpr const char *TITLE = "ADDON SETTINGS";
 constexpr const char *DESCRIPTION = "Configure the addons installed by Swofty Launcher";
 
-unsigned hook_calls, populate_calls, action_calls;
-void **mod_vt;
+struct SettingsTile {
+    unsigned hook_calls = 0, populate_calls = 0, action_calls = 0;
+    void **mod_vt = nullptr;
+};
+
+constinit SettingsTile tile;
 
 void mod_populate(HomeItem *item, void *node, uint32_t a7)
 {
-    unsigned call = ++populate_calls;
+    unsigned call = ++tile.populate_calls;
     FeTile_ItemBase_Populate(item, node, a7);
     auto vm_node = static_cast<uint8_t *>(item->button_node.node);
     if (!vm_node) {
@@ -50,9 +54,9 @@ void mod_populate(HomeItem *item, void *node, uint32_t a7)
     }
     void *reg = *g_Vm_Registry, *parent = vm_node + 8;
     uint8_t no = 0;
-    tile_list::set_string(reg, parent, "title", TITLE);
+    vm::set_string(reg, parent, "title", TITLE);
     Vm_Set_Bool(reg, parent, "title_localised", &no, 1);
-    tile_list::set_string(reg, parent, "description", DESCRIPTION);
+    vm::set_string(reg, parent, "description", DESCRIPTION);
     Vm_Set_Bool(reg, parent, "description_localised", &no, 1);
     swofty::log("[core] populate #%u item=%p node=%p a7=%u vm=%p: title='%s' description set, localised=false", call,
                 item, node, a7, vm_node, TITLE);
@@ -62,7 +66,7 @@ void mod_populate(HomeItem *item, void *node, uint32_t a7)
 Action *mod_get_action(HomeItem *item, Action *out)
 {
     tile_list::route_action(out, ROUTE);
-    swofty::log("[core] getAction #%u item=%p -> {type 1, route '%s'}", ++action_calls, item, ROUTE);
+    swofty::log("[core] getAction #%u item=%p -> {type 1, route '%s'}", ++tile.action_calls, item, ROUTE);
     return out;
 }
 
@@ -102,7 +106,7 @@ SWOFTY_SITE(site_FeHome_AfterCareerCall, swofty::Context &c)
 
 SWOFTY_SITE(site_FeHome_AfterCareerCall, swofty::Context &c)
 {
-    unsigned call = ++hook_calls;
+    unsigned call = ++tile.hook_calls;
     auto list = reinterpret_cast<TileList *>(c.r14);
     swofty::log("[core] hook #%u: list(r14)=0x%llx r12=0x%llx r15=0x%llx rsi=0x%llx rip=0x%llx", call,
                 (unsigned long long)c.r14, (unsigned long long)c.r12, (unsigned long long)c.r15,
@@ -128,8 +132,8 @@ SWOFTY_SITE(site_FeHome_AfterCareerCall, swofty::Context &c)
         return;
     }
     void **vt = swofty::subclass(item, {{4, reinterpret_cast<void *>(mod_populate)}, {5, reinterpret_cast<void *>(mod_get_action)}});
-    if (vt != mod_vt) {
-        mod_vt = vt;
+    if (vt != tile.mod_vt) {
+        tile.mod_vt = vt;
         swofty::log("[core] hook #%u: built mod vtable %p from career vtable %p (slot 4 populate %p -> %p, slot 5 "
                     "getAction %p -> %p)",
                     call, vt, career_vt, career_vt[4], vt[4], career_vt[5], vt[5]);

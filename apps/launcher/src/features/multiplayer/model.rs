@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use swofty_core::multiplayer::types::{
+use swofty_core::online::multiplayer::types::{
     GameStatus, MemberStage, MemberState, Phase, Problem, Progress, RoomAddon, RoomContent, RoomSettings,
     RoomSummary, Screen, SessionState, Step,
 };
@@ -257,4 +257,12 @@ pub(crate) fn card_addons(room: &RoomSummary) -> Vec<String> {
 pub(super) enum Start {
     Create(RoomSettings),
     Join(String),
+}
+
+/// What a start is waiting on, as the page's busy state names it: "create", or the code it joins.
+pub(super) fn starting(start: &Start) -> String {
+    match start {
+        Start::Create(_) => "create".into(),
+        Start::Join(code) => code.clone(),
+    }
 }

@@ -1,11 +1,16 @@
 use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::*;
-use swofty_core::timetrial::api::Api;
-use swofty_core::timetrial::barred::{self, Barred};
-use swofty_core::timetrial::boards::{Group, Row, Run, RunBoard};
+use std::convert::Infallible;
+use std::path::Path;
+use swofty_core::online::server::sign_in::Session;
+use swofty_core::online::timetrial::api::{Api, ApiError};
+use swofty_core::online::timetrial::barred::{self, Barred};
+use swofty_core::online::timetrial::boards::{Group, Row, Run, RunBoard};
 use swofty_i18n::{tr, trf};
 
+use crate::services::library::Library;
 use crate::shell::Shell;
+use crate::shell::host::{Host, Hosted};
 
 pub(crate) enum Load<T> {
     Idle,
@@ -164,7 +169,7 @@ impl TtPage {
         let Load::Ready(rows) = &self.rows else {
             return Vec::new();
         };
-        swofty_core::timetrial::boards::by_driver(rows, &self.query)
+        swofty_core::online::timetrial::boards::by_driver(rows, &self.query)
     }
 }
 
@@ -187,38 +192,53 @@ fn labelled<'a>(items: impl Iterator<Item = (&'a str, Option<&'a str>)>) -> Vec<
     out
 }
 
-impl Shell {
-    pub(super) fn tt_api(&self) -> Option<Api> {
-        self.account.session.as_ref().map(|s| Api::new(&s.token))
+/// What the time trial page borrows from the shell: the data folder and who is signed in.
+pub(crate) struct TtNeeds<'a> {
+    pub(crate) data: &'a Path,
+    pub(crate) session: Option<&'a Session>,
+}
+
+impl TtNeeds<'_> {
+    fn api(&self) -> Option<Api> {
+        self.session.map(|s| Api::new(&s.token))
     }
 
-    pub(crate) fn tt_admin(&self) -> bool {
-        self.account.session.as_ref().is_some_and(|s| s.admin)
+    pub(crate) fn admin(&self) -> bool {
+        self.session.is_some_and(|s| s.admin)
     }
+}
 
-    pub(crate) fn tt_open(&mut self, cx: &mut Context<Self>) {
-        self.tt_load_barred(cx);
-        if self.tt_admin() {
-            self.tt_load_runs(cx);
+impl Hosted for TtPage {
+    type Needs<'a> = TtNeeds<'a>;
+    type Change = Infallible;
+}
+
+impl TtPage {
+    pub(crate) fn open<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        Self::load_barred(host, cx);
+        if host.split().1.admin() {
+            Self::load_runs(host, cx);
         } else {
-            self.tt.view = View::Boards;
+            host.split().0.view = View::Boards;
         }
-        if matches!(self.tt.catalog, Load::Idle | Load::Failed(_)) {
-            self.tt_load_catalog(cx);
+        if matches!(host.split().0.catalog, Load::Idle | Load::Failed(_)) {
+            Self::load_catalog(host, cx);
         }
     }
 
     /// The barred list, from the cache while it is fresh, else from the server.
-    pub(super) fn tt_load_barred(&mut self, cx: &mut Context<Self>) {
-        let data = self.store.root.clone();
+    pub(super) fn load_barred<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let data = host.split().1.data.to_path_buf();
         cx.spawn(async move |this, cx| {
             let got = cx
                 .background_executor()
-                .spawn(async move { barred::current(&data, swofty_core::timetrial::queue::unix_now()) })
+                .spawn(
+                    async move { barred::current(&data, swofty_core::online::timetrial::queue::unix_now()) },
+                )
                 .await;
-            this.update(cx, |s, cx| {
+            this.update(cx, |host, cx| {
                 if let Some(list) = got {
-                    s.tt.barred = list;
+                    host.split().0.barred = list;
                     cx.notify();
                 }
             })
@@ -227,27 +247,17 @@ impl Shell {
         .detach();
     }
 
-    /// The barred addons the active profile has enabled, at the versions installed.
-    pub(super) fn tt_barred_enabled(&self) -> Vec<&Barred> {
-        let registry = &self.library.registry;
-        barred::in_profile(&self.tt.barred, &self.library.profile, |id| {
-            registry.get(id).map(|e| e.addon.manifest().version.to_string())
-        })
-    }
-
-    pub(super) fn tt_load_catalog(&mut self, cx: &mut Context<Self>) {
-        let Some(api) = self.tt_api() else {
+    pub(super) fn load_catalog<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (page, needs) = host.split();
+        let Some(api) = needs.api() else {
             return;
         };
-        self.tt.catalog = Load::Loading;
+        page.catalog = Load::Loading;
         cx.notify();
         cx.spawn(async move |this, cx| {
             let got = cx.background_executor().spawn(async move { api.catalog() }).await;
-            this.update(cx, |s, cx| {
-                s.tt.catalog = match got {
-                    Ok(groups) => Load::Ready(groups),
-                    Err(e) => Load::Failed(e.message),
-                };
+            this.update(cx, |host, cx| {
+                host.split().0.catalog = load(got);
                 cx.notify();
             })
             .ok();
@@ -255,115 +265,84 @@ impl Shell {
         .detach();
     }
 
-    pub(super) fn tt_load_runs(&mut self, cx: &mut Context<Self>) {
-        let Some(api) = self.tt_api().filter(|_| self.tt_admin()) else {
+    pub(super) fn load_runs<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (page, needs) = host.split();
+        let Some(api) = needs.api().filter(|_| needs.admin()) else {
             return;
         };
-        self.tt.run_generation += 1;
-        let generation = self.tt.run_generation;
-        let (seasons, tracks) = (self.tt.run_seasons.clone(), self.tt.run_tracks.clone());
-        if !matches!(self.tt.runs, Load::Ready(_)) {
-            self.tt.runs = Load::Loading;
-        }
+        let (generation, seasons, tracks) = page.begin_runs();
         cx.spawn(async move |this, cx| {
             let (runs, boards) = cx
                 .background_executor()
                 .spawn(async move { (api.runs(&seasons, &tracks), api.run_boards()) })
                 .await;
-            this.update(cx, |s, cx| {
-                if s.tt.run_generation != generation {
-                    return;
+            this.update(cx, |host, cx| {
+                if host.split().0.take_runs(generation, runs, boards) {
+                    cx.notify();
                 }
-                s.tt.runs = match runs {
-                    Ok(laps) => {
-                        if s.tt.open_lap.is_none() {
-                            s.tt.open_lap = laps.first().map(|r| r.lap_id.clone());
-                        }
-                        Load::Ready(laps)
-                    }
-                    Err(e) => Load::Failed(e.message),
-                };
-                if let Ok(boards) = boards {
-                    s.tt.run_boards = boards;
-                }
-                cx.notify();
             })
             .ok();
         })
         .detach();
     }
 
-    /// Turn one season or track filter on or off and load the runs again. Picked tracks that no picked
-    /// season has are dropped.
-    pub(super) fn tt_toggle_filter(&mut self, season: bool, value: &str, cx: &mut Context<Self>) {
-        let list = if season {
-            &mut self.tt.run_seasons
-        } else {
-            &mut self.tt.run_tracks
-        };
-        match list.iter().position(|v| v == value) {
-            Some(i) => {
-                list.remove(i);
-            }
-            None => list.push(value.to_owned()),
-        }
-        if season {
-            self.tt.keep_listed_tracks();
-        }
-        self.tt_load_runs(cx);
+    /// Turn one season or track filter on or off and load the runs again.
+    pub(super) fn toggle_filter<H: Host<Self>>(host: &mut H, season: bool, value: &str, cx: &mut Context<H>) {
+        host.split().0.toggle(season, value);
+        Self::load_runs(host, cx);
         cx.notify();
     }
 
-    pub(super) fn tt_clear_filter(&mut self, season: bool, cx: &mut Context<Self>) {
-        if season {
-            self.tt.run_seasons.clear();
-        } else {
-            self.tt.run_tracks.clear();
-        }
-        self.tt_load_runs(cx);
+    pub(super) fn clear_filter<H: Host<Self>>(host: &mut H, season: bool, cx: &mut Context<H>) {
+        host.split().0.picks_mut(season).clear();
+        Self::load_runs(host, cx);
         cx.notify();
     }
 
-    pub(super) fn tt_run_search(
-        &mut self,
+    pub(super) fn run_search<H: Host<Self>>(
+        host: &mut H,
         window: &mut Window,
-        cx: &mut Context<Self>,
+        cx: &mut Context<H>,
     ) -> Entity<InputState> {
-        if let Some(state) = &self.tt.run_search {
+        if let Some(state) = &host.split().0.run_search {
             return state.clone();
         }
         let state = cx.new(|cx| {
             InputState::new(window, cx).placeholder(swofty_i18n::tr("Search driver, season, track or lap id"))
         });
-        self.tt.run_sub = Some(cx.subscribe(&state, |this, state, ev: &InputEvent, cx| {
+        let sub = cx.subscribe(&state, |host, state, ev: &InputEvent, cx| {
             if matches!(ev, InputEvent::Change) {
-                this.tt.run_query = state.read(cx).value().to_string();
+                host.split().0.run_query = state.read(cx).value().to_string();
                 cx.notify();
             }
-        }));
-        self.tt.run_search = Some(state.clone());
+        });
+        let page = host.split().0;
+        page.run_sub = Some(sub);
+        page.run_search = Some(state.clone());
         state
     }
 
-    pub(super) fn tt_select_lap(&mut self, lap: &str, cx: &mut Context<Self>) {
-        self.tt.open_lap = Some(lap.to_owned());
-        self.tt.banning = false;
-        self.tt.notice = None;
+    pub(super) fn select_lap<H: Host<Self>>(host: &mut H, lap: &str, cx: &mut Context<H>) {
+        let page = host.split().0;
+        page.open_lap = Some(lap.to_owned());
+        page.banning = false;
+        page.notice = None;
         cx.notify();
     }
 
-    pub(super) fn tt_moderate(
-        &mut self,
+    pub(super) fn moderate<H: Host<Self>>(
+        host: &mut H,
         lap: String,
         verdict: Verdict,
         reason: String,
-        cx: &mut Context<Self>,
+        cx: &mut Context<H>,
     ) {
-        let Some(api) = self.tt_api().filter(|_| self.tt_admin() && !self.tt.acting) else {
+        let (page, needs) = host.split();
+        let Some(api) = needs.api().filter(|_| needs.admin() && !page.acting) else {
             return;
         };
-        self.tt.acting = true;
-        self.tt.notice = None;
+        page.acting = true;
+        page.notice = None;
         cx.notify();
         cx.spawn(async move |this, cx| {
             let done = cx
@@ -376,15 +355,10 @@ impl Shell {
                     }
                 })
                 .await;
-            this.update(cx, |s, cx| {
-                s.tt.acting = false;
-                match done {
-                    Ok(()) => {
-                        s.tt.banning = false;
-                        s.tt_load_runs(cx);
-                        s.tt_reload(cx);
-                    }
-                    Err(e) => s.tt.notice = Some(e.message),
+            this.update(cx, |host, cx| {
+                if host.split().0.take_moderated(done) {
+                    Self::load_runs(host, cx);
+                    Self::reload(host, cx);
                 }
                 cx.notify();
             })
@@ -393,8 +367,12 @@ impl Shell {
         .detach();
     }
 
-    pub(super) fn tt_reason(&mut self, window: &mut Window, cx: &mut Context<Self>) -> Entity<InputState> {
-        if let Some(state) = &self.tt.reason {
+    pub(super) fn reason<H: Host<Self>>(
+        host: &mut H,
+        window: &mut Window,
+        cx: &mut Context<H>,
+    ) -> Entity<InputState> {
+        if let Some(state) = &host.split().0.reason {
             return state.clone();
         }
         let state =
@@ -405,62 +383,214 @@ impl Shell {
             }
         })
         .detach();
-        self.tt.reason = Some(state.clone());
+        host.split().0.reason = Some(state.clone());
         state
     }
 
-    pub(super) fn tt_pick(&mut self, pick: Pick, cx: &mut Context<Self>) {
-        self.tt.pick = Some(pick);
-        self.tt_reload(cx);
+    pub(super) fn pick<H: Host<Self>>(host: &mut H, pick: Pick, cx: &mut Context<H>) {
+        host.split().0.pick = Some(pick);
+        Self::reload(host, cx);
     }
 
-    pub(super) fn tt_reload(&mut self, cx: &mut Context<Self>) {
-        let (Some(api), Some(pick)) = (self.tt_api(), self.tt.pick.clone()) else {
+    pub(super) fn reload<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (page, needs) = host.split();
+        let (Some(api), Some(pick)) = (needs.api(), page.pick.clone()) else {
             return;
         };
-        self.tt.generation += 1;
-        let generation = self.tt.generation;
-        self.tt.rows = Load::Loading;
+        let generation = page.begin_rows();
         cx.notify();
         cx.spawn(async move |this, cx| {
             let got = cx
                 .background_executor()
                 .spawn(async move { api.board(&pick.content, &pick.track, &pick.weather, None) })
                 .await;
-            this.update(cx, |s, cx| {
-                if s.tt.generation != generation {
-                    return;
+            this.update(cx, |host, cx| {
+                if host.split().0.take_rows(generation, got) {
+                    cx.notify();
                 }
-                s.tt.rows = match got {
-                    Ok(rows) => Load::Ready(rows),
-                    Err(e) => Load::Failed(e.message),
-                };
-                cx.notify();
             })
             .ok();
         })
         .detach();
     }
 
-    pub(super) fn tt_search(&mut self, window: &mut Window, cx: &mut Context<Self>) -> Entity<InputState> {
-        if let Some(state) = &self.tt.search {
+    pub(super) fn search<H: Host<Self>>(
+        host: &mut H,
+        window: &mut Window,
+        cx: &mut Context<H>,
+    ) -> Entity<InputState> {
+        if let Some(state) = &host.split().0.search {
             return state.clone();
         }
         let state = cx.new(|cx| InputState::new(window, cx).placeholder(swofty_i18n::tr("Search drivers")));
-        self.tt.sub = Some(cx.subscribe(&state, |this, state, ev: &InputEvent, cx| {
+        let sub = cx.subscribe(&state, |host, state, ev: &InputEvent, cx| {
             if matches!(ev, InputEvent::Change) {
-                this.tt.query = state.read(cx).value().to_string();
+                host.split().0.query = state.read(cx).value().to_string();
                 cx.notify();
             }
-        }));
-        self.tt.search = Some(state.clone());
+        });
+        let page = host.split().0;
+        page.sub = Some(sub);
+        page.search = Some(state.clone());
         state
+    }
+
+    fn picks_mut(&mut self, season: bool) -> &mut Vec<String> {
+        if season {
+            &mut self.run_seasons
+        } else {
+            &mut self.run_tracks
+        }
+    }
+
+    /// Turns one season or track pick on or off. Picked tracks that no picked season has are dropped.
+    fn toggle(&mut self, season: bool, value: &str) {
+        let list = self.picks_mut(season);
+        match list.iter().position(|v| v == value) {
+            Some(i) => {
+                list.remove(i);
+            }
+            None => list.push(value.to_owned()),
+        }
+        if season {
+            self.keep_listed_tracks();
+        }
+    }
+
+    /// Starts loading the runs for the picks: the generation the answer has to match, and the picks.
+    fn begin_runs(&mut self) -> (u64, Vec<String>, Vec<String>) {
+        self.run_generation += 1;
+        if !matches!(self.runs, Load::Ready(_)) {
+            self.runs = Load::Loading;
+        }
+        (
+            self.run_generation,
+            self.run_seasons.clone(),
+            self.run_tracks.clone(),
+        )
+    }
+
+    /// Takes loaded runs unless a newer load started since. The first run opens when none is.
+    fn take_runs(
+        &mut self,
+        generation: u64,
+        runs: Result<Vec<Run>, ApiError>,
+        boards: Result<Vec<RunBoard>, ApiError>,
+    ) -> bool {
+        if self.run_generation != generation {
+            return false;
+        }
+        self.runs = match runs {
+            Ok(laps) => {
+                if self.open_lap.is_none() {
+                    self.open_lap = laps.first().map(|r| r.lap_id.clone());
+                }
+                Load::Ready(laps)
+            }
+            Err(e) => Load::Failed(e.message),
+        };
+        if let Ok(boards) = boards {
+            self.run_boards = boards;
+        }
+        true
+    }
+
+    /// Takes a verdict's result. True when the runs and the board have to load again.
+    fn take_moderated(&mut self, done: Result<(), ApiError>) -> bool {
+        self.acting = false;
+        match done {
+            Ok(()) => {
+                self.banning = false;
+                true
+            }
+            Err(e) => {
+                self.notice = Some(e.message);
+                false
+            }
+        }
+    }
+
+    fn begin_rows(&mut self) -> u64 {
+        self.generation += 1;
+        self.rows = Load::Loading;
+        self.generation
+    }
+
+    fn take_rows(&mut self, generation: u64, got: Result<Vec<Row>, ApiError>) -> bool {
+        if self.generation != generation {
+            return false;
+        }
+        self.rows = load(got);
+        true
+    }
+}
+
+fn load<T>(got: Result<T, ApiError>) -> Load<T> {
+    match got {
+        Ok(v) => Load::Ready(v),
+        Err(e) => Load::Failed(e.message),
+    }
+}
+
+impl TtPage {
+    /// The barred addons `library`'s active profile has enabled, at the versions installed.
+    pub(super) fn barred_in(&self, library: &Library) -> Vec<&Barred> {
+        let registry = &library.registry;
+        barred::in_profile(&self.barred, &library.profile, |id| {
+            registry.get(id).map(|e| e.addon.manifest().version.to_string())
+        })
+    }
+}
+
+impl Shell {
+    pub(crate) fn tt_admin(&self) -> bool {
+        self.account.session.as_ref().is_some_and(|s| s.admin)
+    }
+}
+
+impl Host<TtPage> for Shell {
+    fn split(&mut self) -> (&mut TtPage, TtNeeds<'_>) {
+        (
+            &mut self.tt,
+            TtNeeds {
+                data: &self.store.root,
+                session: self.account.session.as_ref(),
+            },
+        )
+    }
+
+    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
+        match change {}
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{RunBoard, TtPage};
+    use swofty_core::online::timetrial::api::ApiError;
+    use swofty_core::online::timetrial::barred::Barred;
+    use swofty_core::online::timetrial::boards::Run;
+
+    use super::{Load, RunBoard, TtPage};
+    use crate::services::test_library::TestLibrary;
+
+    fn error(message: &str) -> ApiError {
+        ApiError {
+            status: 500,
+            message: message.to_owned(),
+            retry_after: None,
+        }
+    }
+
+    fn run(lap: &str) -> Run {
+        serde_json::from_value(serde_json::json!({
+            "lap_id": lap,
+            "driver": { "name": "Driver" },
+            "time_ms": 90_000,
+            "status": "pending",
+            "date": "2026-11-01",
+        }))
+        .unwrap()
+    }
 
     fn board(content: &str, season: &str, track: &str, name: &str) -> RunBoard {
         RunBoard {
@@ -546,5 +676,89 @@ mod tests {
         tt.run_tracks
             .extend(["bahrain".to_owned(), "silverstone".to_owned()]);
         assert_eq!(tt.filter_label(false, &tt.choices(false)), "Track: 3 picked");
+    }
+
+    #[test]
+    fn a_season_toggle_drops_the_tracks_it_does_not_have_and_toggles_back() {
+        let mut tt = page();
+        tt.toggle(false, "bahrain");
+        tt.toggle(false, "silverstone");
+        tt.toggle(true, "swofty.swofty-seasons-2016/f1_2016");
+        assert_eq!(tt.run_tracks, ["silverstone"]);
+        tt.toggle(true, "swofty.swofty-seasons-2016/f1_2016");
+        assert!(tt.run_seasons.is_empty());
+    }
+
+    #[test]
+    fn runs_from_an_older_load_are_dropped_and_the_first_run_opens() {
+        let mut tt = TtPage::default();
+        let (old, ..) = tt.begin_runs();
+        let (new, ..) = tt.begin_runs();
+        assert!(matches!(tt.runs, Load::Loading));
+        assert!(!tt.take_runs(old, Ok(vec![run("old")]), Ok(Vec::new())));
+        assert!(matches!(tt.runs, Load::Loading));
+        assert!(tt.take_runs(new, Ok(vec![run("a"), run("b")]), Err(error("boards down"))));
+        assert_eq!(tt.open_lap.as_deref(), Some("a"));
+        assert!(matches!(&tt.runs, Load::Ready(r) if r.len() == 2));
+        tt.begin_runs();
+        assert!(
+            matches!(tt.runs, Load::Ready(_)),
+            "loaded runs stay up while they reload"
+        );
+    }
+
+    #[test]
+    fn a_verdict_reloads_when_it_lands_and_says_why_when_it_does_not() {
+        let mut tt = TtPage {
+            acting: true,
+            banning: true,
+            ..TtPage::default()
+        };
+        assert!(!tt.take_moderated(Err(error("not allowed"))));
+        assert_eq!(tt.notice.as_deref(), Some("not allowed"));
+        assert!(!tt.acting && tt.banning);
+        assert!(tt.take_moderated(Ok(())));
+        assert!(!tt.banning);
+    }
+
+    #[test]
+    fn a_board_from_an_older_pick_is_dropped() {
+        let mut tt = TtPage::default();
+        let old = tt.begin_rows();
+        let new = tt.begin_rows();
+        assert!(!tt.take_rows(old, Ok(Vec::new())));
+        assert!(matches!(tt.rows, Load::Loading));
+        assert!(tt.take_rows(new, Err(error("gone"))));
+        assert!(matches!(&tt.rows, Load::Failed(m) if m == "gone"));
+    }
+
+    fn barred(id: &str, below: Option<&str>) -> Barred {
+        Barred {
+            id: id.to_owned(),
+            name: String::new(),
+            reason: String::new(),
+            below: below.map(str::to_owned),
+        }
+    }
+
+    #[test]
+    fn the_barred_notice_names_addons_on_in_the_profile_below_their_fixed_version() {
+        let library = TestLibrary::new("tt-barred")
+            .addon("t.old", "1.0.0")
+            .addon("t.fixed", "2.0.0")
+            .addon("t.off", "1.0.0")
+            .profile("Main", &["t.old", "t.fixed"]);
+        let mut tt = page();
+        tt.barred = vec![
+            barred("t.old", Some("2.0.0")),
+            barred("t.fixed", Some("2.0.0")),
+            barred("t.off", None),
+        ];
+        let ids: Vec<&str> = tt
+            .barred_in(&library.read())
+            .iter()
+            .map(|b| b.id.as_str())
+            .collect();
+        assert_eq!(ids, ["t.old"]);
     }
 }

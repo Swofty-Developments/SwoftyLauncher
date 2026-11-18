@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
 use md5::{Digest as _, Md5};
-use swofty_formats::erp::{Entry, ErpFile, Resource, STORED, ZSTD, compress};
+use swofty_formats::erp::{Entry, ErpFile, Packer, Resource, ZSTD_LEVEL};
 use swofty_formats::gvdb::Gvdb;
 use swofty_formats::pkg::{Node, Pkg};
 
@@ -289,17 +289,7 @@ fn alias_world(
 }
 
 fn set_data(res: &mut Resource, index: usize, data: &[u8]) -> Result<()> {
-    let f = res
-        .fragments
-        .get_mut(index)
-        .ok_or_else(|| Error::Map(format!("{}: no fragment {index}", res.name)))?;
-    let zstd =
-        f.compression == ZSTD || (f.compression != STORED && f.raw.starts_with(&[0x28, 0xb5, 0x2f, 0xfd]));
-    f.raw = if zstd { compress(data)? } else { data.to_vec() };
-    f.size = data.len() as u64;
-    f.packed = f.raw.len() as u64;
-    res.hash = res.content_hash()?;
-    Ok(())
+    crate::erp::pack::set_fragment_at(&Packer::default(), res, index, data, ZSTD_LEVEL)
 }
 
 pub fn shipped_name(path: &str) -> String {
@@ -400,11 +390,9 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
     let fix = format!(
         "Turn {who} off in this profile, and set any race weekend that uses it back to another track."
     );
-    let (fixed, broken) = crate::erpbuild::repair_stats_in(&file)?;
+    let (fixed, broken) = crate::erp::repair_stats_in(&file)?;
     if !broken.is_empty() {
-        return Err(Error::Other(crate::erpbuild::unrepairable_message(
-            who, &broken, &fix,
-        )));
+        return Err(Error::Other(crate::erp::unrepairable_message(who, &broken, &fix)));
     }
     let stamp = stamp(input)?;
     let out = cache.join(match fixed.is_empty() {
@@ -686,6 +674,8 @@ fn walk(dir: &Path) -> Result<Vec<PathBuf>> {
 
 #[cfg(test)]
 mod tests {
+    use swofty_formats::erp::STORED;
+
     use super::*;
 
     #[test]
@@ -730,15 +720,7 @@ mod tests {
             },
             tail: Vec::new(),
         };
-        let fragment = |raw: Vec<u8>| Fragment {
-            name: *b"temp",
-            offset: 0,
-            size: raw.len() as u64,
-            flags: 0x10,
-            compression: STORED,
-            packed: raw.len() as u64,
-            raw,
-        };
+        let fragment = |raw: Vec<u8>| Fragment::new(*b"temp", raw.len() as u64, 0x10, STORED, raw);
         let resource = |name: &str, kind: &str, fragments: Vec<Fragment>| Resource {
             name: name.into(),
             kind: swofty_formats::erp::kind(kind).unwrap(),
@@ -764,6 +746,7 @@ mod tests {
                 ],
             }
             .to_bytes()
+            .unwrap()
         };
         let input = PlaceInput {
             pkg: &pkg,
@@ -781,7 +764,7 @@ mod tests {
         let placed = ErpFile::open(&placement.dir.join(&placement.archive)).unwrap();
         let res = placed.load(placed.erp.find(spline).unwrap()).unwrap();
         assert_eq!(res.fragments[1].data().unwrap(), edited.string_stats(1));
-        assert!(crate::erpbuild::stale_stats_in(&placed).unwrap().is_empty());
+        assert!(crate::erp::stale_stats_in(&placed).unwrap().is_empty());
 
         let mut cut = line("default").to_bytes();
         cut.truncate(cut.len() - 3);
@@ -806,15 +789,7 @@ mod tests {
         std::fs::remove_dir_all(&dir).ok();
         std::fs::create_dir_all(&dir).unwrap();
         let pkg = TrackPackage::parse(crate::content::track_package::tests::OKAYAMA_LIKE.as_bytes()).unwrap();
-        let fragment = |raw: Vec<u8>| Fragment {
-            name: *b"temp",
-            offset: 0,
-            size: raw.len() as u64,
-            flags: 0x10,
-            compression: STORED,
-            packed: raw.len() as u64,
-            raw,
-        };
+        let fragment = |raw: Vec<u8>| Fragment::new(*b"temp", raw.len() as u64, 0x10, STORED, raw);
         let resource = |name: &str, kind: &str, fragments: Vec<Fragment>| Resource {
             name: name.into(),
             kind: swofty_formats::erp::kind(kind).unwrap(),
@@ -839,7 +814,8 @@ mod tests {
                 ),
             ],
         }
-        .to_bytes();
+        .to_bytes()
+        .unwrap();
         std::fs::write(dir.join(&pkg.erp), bytes).unwrap();
         let input = PlaceInput {
             pkg: &pkg,
@@ -861,7 +837,7 @@ mod tests {
             res.fragments[1].data().unwrap(),
             Document::parse(&data).unwrap().string_stats(1)
         );
-        assert!(crate::erpbuild::stale_stats_in(&placed).unwrap().is_empty());
+        assert!(crate::erp::stale_stats_in(&placed).unwrap().is_empty());
         assert_eq!(
             ailine::fixed_note(pkg.display_name(), &placement.spaced),
             "fixed the AI pit lane of Test Ring so F1 25 doesn't crash when an AI car drives it"
@@ -912,15 +888,7 @@ mod tests {
     fn world_archive(dir: &Path, pkg: &TrackPackage, extra: &[String]) {
         use swofty_formats::erp::{Erp, Fragment, HEADER_LEN, MAGIC};
         use swofty_formats::pkg::{Arr, Obj, Val};
-        let fragment = |raw: Vec<u8>| Fragment {
-            name: *b"temp",
-            offset: 0,
-            size: raw.len() as u64,
-            flags: 0x10,
-            compression: STORED,
-            packed: raw.len() as u64,
-            raw,
-        };
+        let fragment = |raw: Vec<u8>| Fragment::new(*b"temp", raw.len() as u64, 0x10, STORED, raw);
         let resource = |name: &str, kind: &str, data: Vec<u8>| Resource {
             name: name.into(),
             kind: swofty_formats::erp::kind(kind).unwrap(),
@@ -961,7 +929,8 @@ mod tests {
             version: 3,
             resources: eaids.flat_map(|e| world(&e)).collect(),
         }
-        .to_bytes();
+        .to_bytes()
+        .unwrap();
         std::fs::write(dir.join(&pkg.erp), bytes).unwrap();
     }
 

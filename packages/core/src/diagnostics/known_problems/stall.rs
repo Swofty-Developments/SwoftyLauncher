@@ -3,6 +3,7 @@ use crate::store::Store;
 
 use super::Diagnosis;
 use super::evidence::{Evidence, evidence};
+use super::slow_init::slow_addon_init;
 use super::wording::name;
 
 /// Addons known to keep F1 25 on Loading... after Press any button, so it never
@@ -132,10 +133,10 @@ pub(super) fn minutes(secs: f64) -> String {
 }
 
 /// The cause of a session that ended without a crash, from the first rule that
-/// recognises it.
+/// recognises it, and else the addon that held up its start.
 pub fn stalled(e: &Evidence) -> Option<Diagnosis> {
     let Some((addon, secs)) = boot_stall(e) else {
-        return stalled_save(e);
+        return stalled_save(e).or_else(|| slow_addon_init(e));
     };
     Some(Diagnosis {
         id: "boot_stall",

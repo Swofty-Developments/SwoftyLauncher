@@ -59,7 +59,7 @@ impl Shell {
         }
         let wizard = crate::features::onboarding::Onboarding::new(mode, cx);
         window.focus(&wizard.focus, cx);
-        self.onboarding = Some(wizard);
+        self.overlays.onboarding = Some(wizard);
     }
 
     pub(crate) fn set_ui_mode(&mut self, mode: UiMode, window: &mut Window, cx: &mut Context<Self>) {

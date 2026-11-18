@@ -583,6 +583,11 @@ inline void share_taken_switch(const std::string &id, const Value &rec, Plan &pl
 
 inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const std::set<std::string> &skip = {})
 {
+    struct Selectors {
+        rows::Engine &engine;
+        ~Selectors() { engine.index_selectors(false); }
+    } selectors{x.engine};
+    x.engine.index_selectors(true);
     std::map<std::string, Value> keep;
     Lookup lookup = own_lookup(st, keep);
     Source source = [&x](const std::string &key) -> std::optional<Stock> {

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "core/frontend/name_hash.hpp"
 #include "core/runtime/json.hpp"
 
 namespace runtime::main_menu {
@@ -185,13 +186,7 @@ inline Point scene_to_px(double x, double y, float width, float height)
             b.top + float(SCENE_CENTRE_Y) * b.height - s * float(y)};
 }
 
-constexpr uint32_t djb2(const char *s)
-{
-    uint32_t h = 5381;
-    for (; *s; s++)
-        h = h * 33 + uint8_t(*s);
-    return h;
-}
+using name_hash::djb2;
 
 inline std::string button_name(bool pad) { return pad ? "RB" : "V"; }
 
@@ -483,8 +478,8 @@ inline Recovery recovery_for(Expect e, const std::string &flow_now, bool home_sc
 
 // Whether the F1 World entry point (g_Game_F1WorldEntryPoint) may be cleared when a Back leaves for the main menu. The
 // global is only written through the address the running build's binding set resolved: an unresolved binding (a
-// build whose scan found no match) skips the write, as does an address that is not writable memory. 1.9.0 wrote the
-// Steam offset on every build and faulted on the EA build, where that offset is a read-only .sbss page.
+// build whose scan found no match) skips the write, as does an address that is not writable memory. The Steam offset
+// is a read-only .sbss page on the EA build, and a write there faults.
 enum class EntryPointWrite { write, unresolved, unwritable };
 
 inline EntryPointWrite entry_point_write(uintptr_t resolved, bool writable)
@@ -503,16 +498,6 @@ inline bool migrate_failed(const std::string &text)
 inline bool migrate_logged(bool failed, const std::string &flow, const std::string &flow_before)
 {
     return failed || (!flow.empty() && flow != flow_before);
-}
-
-// One VirtualQuery answer (state committed or not, protection, region base and size) says whether n bytes at p can be written.
-// The protection values are the Windows PAGE_* constants.
-inline bool region_writable(bool committed, uint32_t protect, uintptr_t base, uint64_t size, uintptr_t p, size_t n)
-{
-    constexpr uint32_t NOACCESS = 0x01, GUARD = 0x100, WRITABLE = 0x04 | 0x08 | 0x40 | 0x80;
-    if (!p || !committed || (protect & (NOACCESS | GUARD)) || !(protect & WRITABLE))
-        return false;
-    return p >= base && p + n <= base + size;
 }
 
 // A session that ended after a Time Trial or Grand Prix card press hands over to the f1_world flow's container; the

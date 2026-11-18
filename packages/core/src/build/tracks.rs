@@ -267,7 +267,7 @@ impl Tracks {
                 built.lines.push(format!(
                     "{}: {}",
                     pkg.track_code,
-                    crate::erpbuild::repaired_note(pkg.display_name(), &placement.repaired)
+                    crate::erp::repaired_note(pkg.display_name(), &placement.repaired)
                 ));
             }
             if !placement.spaced.is_empty() {
@@ -452,7 +452,12 @@ impl Pipeline<'_, '_> {
         let ui_maps = inputs.tracks.ui_maps();
         let mut menu_kept = Kept::new();
         if !ui_maps.is_empty() {
-            let ui = build_ui(&ui_maps, &resolve, &store.root.join("cache/menus"))?;
+            let ui = build_ui(
+                &ui_maps,
+                &resolve,
+                &store.root.join("cache/menus"),
+                &self.packer.clone().deferring(false),
+            )?;
             caches.push(ui.dir.clone());
             menu_kept = ui.kept;
             built

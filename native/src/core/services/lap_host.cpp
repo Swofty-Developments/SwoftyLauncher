@@ -25,7 +25,6 @@
 // enter and end, a new lap, hook set offer and settle).
 namespace runtime {
 
-std::vector<era::Box> era_boxes();
 void player_name_probe_tick();
 void player_name_pin_tick();
 

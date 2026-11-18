@@ -1,3 +1,4 @@
+use crate::features::browser::Browser;
 use crate::services::game::{self};
 use crate::services::library::Library;
 use crate::shell::notices::{Notification, Notify};
@@ -7,6 +8,7 @@ use std::rc::Rc;
 use std::time::{Duration, Instant};
 use swofty_core::store::Store;
 
+use super::account::Account;
 use super::{Page, Seen, Shell};
 use swofty_i18n::tr;
 
@@ -25,7 +27,7 @@ impl Prepared {
         let store = Store::open_default().with_builtins(swofty_builtins::all());
         let migrated = store.migrate();
         crate::app::app_log::step("store migrated");
-        swofty_core::server::usage::launcher_heartbeats(store.root.clone());
+        swofty_core::online::server::usage::launcher_heartbeats(store.root.clone());
         let seen = Seen::read(&store);
         crate::app::app_log::step("loading the library");
         let mut library = Library::load(&store);
@@ -53,6 +55,17 @@ impl Prepared {
 /// How often the signed-in account is checked, so a role given or taken away shows soon.
 const ACCOUNT_CHECK: Duration = Duration::from_secs(10);
 
+/// The subscriptions and background loops that live as long as the shell.
+pub(crate) struct Background {
+    _shaders_events: Subscription,
+    _window_moved: Subscription,
+    _console_closed: Subscription,
+    _poll: Task<()>,
+    _live: Task<()>,
+    _updates: Task<()>,
+    _catalog: Task<()>,
+}
+
 impl Shell {
     pub fn new(prepared: Prepared, window: &mut Window, cx: &mut Context<Self>) -> Self {
         let Prepared {
@@ -64,7 +77,7 @@ impl Shell {
         } = prepared;
         swofty_i18n::set_language(config.language.as_deref());
         let scaling = crate::shell::ui_mode::Scaling::new(&config, window, cx);
-        let prefs = crate::shell::config::Prefs::from_config(&config);
+        let prefs = crate::shell::prefs::Prefs::from_config(&config);
         Self::guard_close(window, cx);
         Self::recover_in_background(&store, prefs.clear_old_session_logs, cx);
         let poll = Self::poll_game(window, cx);
@@ -75,10 +88,10 @@ impl Shell {
         let console_closed = cx.on_window_closed(move |cx, id| {
             shell.update(cx, |s, cx| s.console_closed(id, cx)).ok();
         });
-        let browser = crate::features::browser::Browser::new(&store.root, window, cx);
+        let browser = Browser::new(&store.root, window, cx);
         let shaders = cx.new(|cx| crate::features::shaders::ShadersView::new(store.clone(), window, cx));
         let shaders_events = cx.subscribe(&shaders, Self::shaders_event);
-        let catalog = Self::watch_catalog(cx);
+        let catalog = Browser::watch(cx);
         let mp = Self::start_account(&store, cx);
         Self::watch_multiplayer(window, cx);
         let root = store.root.clone();
@@ -87,27 +100,15 @@ impl Shell {
         let mut shell = Self {
             library,
             store,
-            page: Page::News,
-            nav: None,
-            popover: None,
             popup_timer: false,
-            notch_beside: false,
             root_focus: cx.focus_handle(),
-            profiles_open: true,
             online: crate::features::online::Online::new(&root),
-            open_addon: None,
             mp_page: crate::features::multiplayer::Multiplayer::new(window, cx),
             seen,
             sliders: HashMap::new(),
             requests: None,
             console: None,
             developer: Default::default(),
-            progress: None,
-            tasks: None,
-            moving: None,
-            found_data: None,
-            dropping: false,
-            onboarding: None,
             reload_generation: 0,
             slow_logged: false,
             updates: crate::features::update::Updates::new(),
@@ -115,9 +116,7 @@ impl Shell {
             ticking: false,
             painted: Instant::now(),
             dock: crate::shell::download_dock::Dock::default(),
-            dock_wake: false,
             live_n: 0,
-            highlight: None,
             addons: crate::features::addons::AddonsPage::new(window, cx),
             saves: crate::features::career_saves::SavesPage::default(),
             tt: crate::features::time_trial::TtPage::default(),
@@ -127,29 +126,10 @@ impl Shell {
             news_scroll: Default::default(),
             browser,
             shaders,
-            _shaders_events: shaders_events,
             tools: Default::default(),
             settings: Default::default(),
             ads,
-            ad_video: None,
-            _window_moved: window_moved,
-            _console_closed: console_closed,
-            _poll: poll,
-            _live: live,
-            _updates: updates,
-            _catalog: catalog,
-            game: crate::shell::probe::GameWatch {
-                install: None,
-                copies: Vec::new(),
-                missing_copies: Vec::new(),
-                detected: false,
-                rediscover: true,
-                processes: Vec::new(),
-                owners: Vec::new(),
-                session: None,
-                build: None,
-                blocked: None,
-            },
+            game: crate::shell::probe::GameWatch::new(),
             launching: crate::shell::play::Launching::default(),
             account: crate::shell::account::Account {
                 session: mp,
@@ -167,6 +147,24 @@ impl Shell {
                 window_width: 1440.,
                 content_width: 900.,
                 short: false,
+            },
+            _background: crate::shell::startup::Background {
+                _shaders_events: shaders_events,
+                _window_moved: window_moved,
+                _console_closed: console_closed,
+                _poll: poll,
+                _live: live,
+                _updates: updates,
+                _catalog: catalog,
+            },
+            overlays: super::overlays::Overlays::default(),
+            navigation: crate::shell::nav::Navigation {
+                page: Page::News,
+                cursor: None,
+                popover: None,
+                profiles_open: true,
+                open_addon: None,
+                highlight: None,
             },
         };
         shell.refresh_views(cx);
@@ -213,8 +211,8 @@ impl Shell {
             });
         }
         shell.fetch_news(cx);
-        shell.sync_catalog_updates();
-        shell.fetch_catalog(cx);
+        shell.browser.sync_updates(&shell.library);
+        Browser::fetch_catalog(&mut shell, cx);
         shell.db_profile_changed(cx);
         Self::warn_if_elevated(window, cx);
         shell
@@ -277,7 +275,7 @@ impl Shell {
             loop {
                 let Ok((store, rediscover, seen, profile, banner_due, saves_open)) =
                     this.update(cx, |s, _| {
-                        let r = std::mem::take(&mut s.game.rediscover);
+                        let r = s.game.take_rediscover();
                         let profile = s.library.profile.name.clone();
                         let due = r || s.saves.banner_profile != profile || game::banner_stale();
                         (
@@ -286,7 +284,7 @@ impl Shell {
                             s.requests,
                             profile,
                             due,
-                            s.page == Page::Careers,
+                            s.navigation.page == Page::Careers,
                         )
                     })
                 else {
@@ -332,21 +330,24 @@ impl Shell {
         })
     }
 
-    fn start_account(store: &Store, cx: &mut Context<Self>) -> Option<swofty_core::server::sign_in::Session> {
-        let mp = swofty_core::server::sign_in::load(&store.root);
+    fn start_account(
+        store: &Store,
+        cx: &mut Context<Self>,
+    ) -> Option<swofty_core::online::server::sign_in::Session> {
+        let mp = swofty_core::online::server::sign_in::load(&store.root);
         if let Some(current) = mp.clone() {
             let dir = store.root.clone();
-            swofty_core::multiplayer::client::load_in_background(&dir, &current.token);
+            swofty_core::online::multiplayer::client::load_in_background(&dir, &current.token);
             cx.spawn(async move |this, cx| {
                 let refreshed = cx
                     .background_executor()
-                    .spawn(async move { swofty_core::server::sign_in::refresh_checked(&dir, &current) })
+                    .spawn(
+                        async move { swofty_core::online::server::sign_in::refresh_checked(&dir, &current) },
+                    )
                     .await;
                 this.update(cx, |s, cx| {
                     let allowed = s.account.session.as_ref().is_some_and(|m| m.allowed);
-                    s.mp_apply_check(refreshed, allowed, cx);
-                    s.sync_avatar(cx);
-                    s.sync_support(cx);
+                    Account::apply_check(s, refreshed, allowed, cx);
                 })
                 .ok();
                 let data = this
@@ -357,7 +358,7 @@ impl Shell {
                 if let Some((store, game)) = data {
                     cx.background_executor()
                         .spawn(async move {
-                            swofty_core::timetrial::upload::flush(
+                            swofty_core::online::timetrial::upload::flush(
                                 &store.root,
                                 game.as_deref(),
                                 &store.config(),
@@ -368,32 +369,7 @@ impl Shell {
             })
             .detach();
         }
-        let mp_poll = cx.spawn(async move |this, cx| {
-            loop {
-                cx.background_executor().timer(ACCOUNT_CHECK).await;
-                let current = match this.update(cx, |s, _| {
-                    s.account.session.clone().map(|sess| (s.store.root.clone(), sess))
-                }) {
-                    Ok(c) => c,
-                    Err(_) => break,
-                };
-                let Some((dir, session)) = current else {
-                    continue;
-                };
-                let was_allowed = session.allowed;
-                let refreshed = cx
-                    .background_executor()
-                    .spawn(async move { swofty_core::server::sign_in::refresh_checked(&dir, &session) })
-                    .await;
-                if this
-                    .update(cx, |s, cx| s.mp_apply_check(refreshed, was_allowed, cx))
-                    .is_err()
-                {
-                    break;
-                }
-            }
-        });
-        mp_poll.detach();
+        Account::keep_checked(ACCOUNT_CHECK, cx).detach();
         mp
     }
 

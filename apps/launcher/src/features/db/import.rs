@@ -7,6 +7,7 @@ use swofty_core::dbedit::package::{self, Incoming};
 use swofty_i18n::{tr, trf};
 
 use super::{Then, debug_path, guarded, text};
+use crate::features::db::Db;
 use crate::shell::Shell;
 
 impl Shell {
@@ -129,7 +130,7 @@ impl Shell {
                 .unwrap_or_else(|| "The draft can't be edited now.".into()));
         }
         let key = guarded(|| self.db.draft.edits.add(&catalog, path, tag, value))?;
-        self.db_changed(Some(key), true, cx);
+        Db::changed(self, Some(key), true, cx);
         Ok(())
     }
 }

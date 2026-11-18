@@ -2,6 +2,7 @@
 
 #include "core/frontend/main_menu/context.hpp"
 #include "core/frontend/main_menu_logic.hpp"
+#include "core/frontend/ui_vm.hpp"
 #include "core/runtime/json.hpp"
 
 #include <algorithm>
@@ -15,12 +16,6 @@
 #include <utility>
 #include <vector>
 
-namespace runtime {
-int overlay_image(const std::string &id, const std::string &path, uint32_t *width, uint32_t *height);
-}
-
-bool ui_vm_set_path(const std::string &path, int type, const void *value);
-
 namespace runtime::main_menu {
 
 namespace {
@@ -29,37 +24,16 @@ namespace logic = ::runtime::main_menu;
 
 constexpr uint64_t PANEL_DELAY_MS = 450, PANEL_FADE_MS = 250;
 
-void set_offline_text(long long online)
-{
-    static long long last = -1;
-    std::string text = logic::offline_text(online);
-    if (online == last)
-        return;
-    if (ui_vm_set_path("ui_menu_data.swofty_offline_text", 0, text.c_str())) {
-        last = online;
-        swofty::log("[main-menu] Launched with panel text set: %s", logic::online_line(online).empty() ? "no online line" : logic::online_line(online).c_str());
-    } else {
-        static int fails = 0;
-        if (fails++ % 60 == 0)
-            swofty::log("[main-menu] could not set ui_menu_data.swofty_offline_text yet (try %d)", fails);
-    }
-}
-
 struct PadSample {
     bool connected = false;
     uint32_t packet = 0;
     uint16_t buttons = 0;
 };
 
-PadSample sample_pad()
+PadSample sample_pad(void *xinput_get)
 {
     using Get_t = DWORD(WINAPI *)(DWORD, void *);
-    static Get_t get = [] {
-        HMODULE m = LoadLibraryA("xinput1_4.dll");
-        if (!m)
-            m = LoadLibraryA("xinput1_3.dll");
-        return m ? reinterpret_cast<Get_t>(GetProcAddress(m, "XInputGetState")) : nullptr;
-    }();
+    auto get = reinterpret_cast<Get_t>(xinput_get);
     uint8_t buf[16] = {};
     PadSample s;
     s.connected = get && get(0, buf) == 0;
@@ -68,37 +42,20 @@ PadSample sample_pad()
     return s;
 }
 
+void *xinput_get_state()
+{
+    HMODULE m = LoadLibraryA("xinput1_4.dll");
+    if (!m)
+        m = LoadLibraryA("xinput1_3.dll");
+    return m ? reinterpret_cast<void *>(GetProcAddress(m, "XInputGetState")) : nullptr;
+}
+
 bool any_key_down()
 {
     for (int vk = 8; vk < 255; vk++)
         if (GetAsyncKeyState(vk) & 0x8000)
             return true;
     return false;
-}
-
-bool bind_pressed(bool *pad)
-{
-    static bool was = false;
-    static uint32_t last_packet = 0;
-    static uint64_t pad_at = 0, key_at = 0;
-    uint64_t now = GetTickCount64();
-    PadSample p = sample_pad();
-    if (p.connected && p.packet != last_packet)
-        pad_at = now;
-    last_packet = p.packet;
-    bool key_active = GetForegroundWindow() != nullptr && any_key_down();
-    if (key_active)
-        key_at = now;
-    static bool shown_pad = false;
-    if (pad_at != key_at)
-        shown_pad = p.connected && pad_at > key_at;
-    *pad = shown_pad;
-    bool y = p.connected && (p.buttons & logic::WATCH_PAD_MASK);
-    bool key = (GetAsyncKeyState(logic::WATCH_KEY_VK) & 0x8000) != 0 && GetForegroundWindow() != nullptr;
-    bool down = y || key;
-    bool edge = down && !was;
-    was = down;
-    return edge;
 }
 
 void open_video(const logic::State &s)
@@ -227,6 +184,69 @@ std::vector<std::string> wrap_title(const hud::TextStyle &style, const std::stri
 
 }
 
+bool BindSampler::pressed_edge(bool *on_pad)
+{
+    uint64_t now = GetTickCount64();
+    if (!std::exchange(xinput_tried, true))
+        xinput_get = xinput_get_state();
+    PadSample p = sample_pad(xinput_get);
+    if (p.connected && p.packet != last_packet)
+        pad_at = now;
+    last_packet = p.packet;
+    bool key_active = GetForegroundWindow() != nullptr && any_key_down();
+    if (key_active)
+        key_at = now;
+    if (pad_at != key_at)
+        shown_pad = p.connected && pad_at > key_at;
+    *on_pad = shown_pad;
+    bool y = p.connected && (p.buttons & logic::WATCH_PAD_MASK);
+    bool key = (GetAsyncKeyState(logic::WATCH_KEY_VK) & 0x8000) != 0 && GetForegroundWindow() != nullptr;
+    bool down = y || key;
+    bool edge = down && !was;
+    was = down;
+    return edge;
+}
+
+void BindSampler::run()
+{
+    for (;;) {
+        Sleep(100);
+        if (GetTickCount64() - wanted_at.load() > 500)
+            continue;
+        uint64_t t0 = GetTickCount64();
+        bool on_pad = false;
+        if (pressed_edge(&on_pad))
+            pressed = true;
+        pad = on_pad;
+        uint64_t took = GetTickCount64() - t0;
+        if (took > 50 && slow++ % 100 == 0)
+            swofty::log("[main-menu] the video card's pad and key sample took %llu ms on its own thread (slow sample %llu)",
+                        static_cast<unsigned long long>(took), static_cast<unsigned long long>(slow));
+    }
+}
+
+bool BindSampler::poll(uint64_t now)
+{
+    wanted_at = now;
+    if (!started.exchange(true))
+        std::thread([this] { run(); }).detach();
+    return pressed.exchange(false);
+}
+
+void Panel::set_offline_text(long long online)
+{
+    std::string text = logic::offline_text(online);
+    if (online == offline_shown)
+        return;
+    if (ui_vm_set_path("ui_menu_data.swofty_offline_text", 0, text.c_str())) {
+        offline_shown = online;
+        swofty::log("[main-menu] Launched with panel text set: %s", logic::online_line(online).empty() ? "no online line" : logic::online_line(online).c_str());
+    } else {
+        if (offline_fails++ % 60 == 0)
+            swofty::log("[main-menu] could not set ui_menu_data.swofty_offline_text yet (try %d)", offline_fails);
+    }
+}
+
 void Panel::read_state(bool force)
 {
     uint64_t now = GetTickCount64();
@@ -288,8 +308,7 @@ void Panel::home_tick()
         poll_bind();
         t3 = GetTickCount64();
     }
-    static uint64_t slow = 0;
-    if (t3 - t0 > 100 && (slow++ < 10 || slow % 50 == 0))
+    if (t3 - t0 > 100 && (slow_ticks++ < 10 || slow_ticks % 50 == 0))
         swofty::log("[main-menu] slow home tick: state read %llu ms, panel prepare %llu ms, video bind %llu ms", static_cast<unsigned long long>(t1 - t0),
                     static_cast<unsigned long long>(t2 - t1), static_cast<unsigned long long>(t3 - t2));
 }
@@ -300,12 +319,11 @@ void Panel::sync_strip()
     if (want >= 0 && want != strip_set.load() && menu.patched.load()) {
         int v = want;
         bool ok = ui_vm_set_path("ui_menu_data.swofty_strip_visible", 1, &v);
-        static int tries = 0;
         if (ok) {
             strip_set = want;
             swofty::log("[main-menu] stock top-right strip %s (ui_menu_data.swofty_strip_visible = %d)", want ? "shown" : "hidden", want);
-        } else if (tries++ % 120 == 0) {
-            swofty::log("[main-menu] could not set ui_menu_data.swofty_strip_visible yet (try %d)", tries);
+        } else if (strip_tries++ % 120 == 0) {
+            swofty::log("[main-menu] could not set ui_menu_data.swofty_strip_visible yet (try %d)", strip_tries);
         }
     }
 }
@@ -347,11 +365,10 @@ void Panel::prepare()
 
 void Panel::poll_bind()
 {
-    static uint64_t last = 0;
     uint64_t now = GetTickCount64();
-    if (now - last < 100)
+    if (now - bind_polled_at < 100)
         return;
-    last = now;
+    bind_polled_at = now;
     std::shared_ptr<const Prepared> p;
     {
         std::lock_guard<std::mutex> g(prepared_lock);
@@ -359,37 +376,13 @@ void Panel::poll_bind()
     }
     if (!p || p->s.video_url.empty())
         return;
-    // XInputGetState and the key sweep can block for about a second each under Wine, so they are sampled on their own thread and the
-    // flow thread only reads the result.
-    static std::atomic<bool> pressed{false}, started{false};
-    static std::atomic<uint64_t> wanted_at{0};
-    wanted_at = now;
-    if (!started.exchange(true))
-        std::thread([this] {
-            for (;;) {
-                Sleep(100);
-                if (GetTickCount64() - wanted_at.load() > 500)
-                    continue;
-                uint64_t t0 = GetTickCount64();
-                bool on_pad = false;
-                if (bind_pressed(&on_pad))
-                    pressed = true;
-                bind_pad = on_pad;
-                uint64_t took = GetTickCount64() - t0;
-                static uint64_t slow = 0;
-                if (took > 50 && slow++ % 100 == 0)
-                    swofty::log("[main-menu] the video card's pad and key sample took %llu ms on its own thread (slow sample %llu)",
-                                static_cast<unsigned long long>(took), static_cast<unsigned long long>(slow));
-            }
-        }).detach();
-    if (pressed.exchange(false))
+    if (bind.poll(now))
         open_video(p->s);
 }
 
 void Panel::paint(hud::Frame &f, uint64_t now)
 {
     (void)now;
-    static bool told_first = false, told_blocked = false, told_noprep = false;
     if (!std::exchange(told_first, true))
         swofty::log("[main-menu] panel: paint called on a %.0fx%.0f frame (patched %d, home open %d, state %d, prepared %d, disabled %d)",
                     double(f.width), double(f.height), int(menu.patched.load()), int(menu.home_open.load()), int(state_loaded.load()),
@@ -414,7 +407,6 @@ void Panel::paint(hud::Frame &f, uint64_t now)
     size_t verts_before = f.verts.size();
     LARGE_INTEGER t0, t1, freq;
     QueryPerformanceCounter(&t0);
-    static bool told_drawn = false;
     hud::reset_state(f);
     uint64_t shown_for = GetTickCount64() - menu.home_opened_at.load();
     float fade = shown_for < PANEL_DELAY_MS ? 0.0f : std::min(1.0f, float(shown_for - PANEL_DELAY_MS) / float(PANEL_FADE_MS));
@@ -476,7 +468,7 @@ void Panel::paint(hud::Frame &f, uint64_t now)
         watch_style.px = 20 * k;
         watch_style.rgba = 0xd5d9e3ffu;
         const std::string caption = "LATEST VIDEO";
-        const bool pad_dev = bind_pad.load();
+        const bool pad_dev = bind.on_pad();
         const std::string key = logic::button_name(pad_dev);
         float tmp_h = 0, cap_w = 0, watch_w = 0, key_w = 0;
         hud::TextStyle key_probe;
@@ -527,7 +519,6 @@ void Panel::paint(hud::Frame &f, uint64_t now)
                       8 * k, u0, v0, u1, v1);
     }
     overlay_drawn = true;
-    static bool told_verts = false;
     if (!std::exchange(told_verts, true))
         swofty::log("[main-menu] panel: first draw added %zu vertices and %zu batch(es) (frame total %zu / %zu)",
                     f.verts.size() - verts_before, f.batches.size(), f.verts.size(), f.batches.size());

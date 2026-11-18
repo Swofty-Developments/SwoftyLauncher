@@ -1,5 +1,5 @@
 use super::*;
-use crate::online::timetrial::integrity::tests::{Route, b64, json, pair, serve};
+use crate::online::server::integrity::tests::{Route, b64, json, pair, serve};
 use ring::signature::{Ed25519KeyPair, KeyPair};
 
 const BYTES: &[u8] = b"MZ not really a dll";

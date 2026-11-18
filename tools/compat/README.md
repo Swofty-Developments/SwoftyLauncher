@@ -32,7 +32,7 @@ tools/compat/run.sh compare runs/<time>/snapshots/kizi.pitlane@0.3.1.a.json runs
 - `--only ID[@VERSION]` (repeatable, or comma separated) picks addons.
 - `--all-latest` also builds one profile with the newest version of every selected addon. `--profile NAME=ID[@V],ID[@V]` builds any other whole profile. `--no-per-version` skips the one-addon sets. `--exclude ID` leaves an addon out of every set.
 - `--allow CATEGORY` reports a category of difference without failing on it. The categories are `step`, `build`, `buildhash`, `order`, `file`, `loader`, `plan`, `lines`, `warnings`, `db`, `parts`, `conflicts`, `waiting` and `generated`.
-- `--jobs N` builds N sets at once (default 2). Each CLI call runs under `taskset -c 2-7,10,11,14-31 nice -n 10` unless `--no-pin` is given.
+- `--jobs N` builds N sets at once (default 2). Each CLI call runs under the prefix `native/tools/pin.sh` sets (`taskset -c 2-7,10,11,14-31 nice -n 10` on a workstation that may run on those CPUs and more, `nice -n 10` on one already held to fewer, nothing under CI or without taskset) unless `--no-pin` is given.
 - `--keep` keeps every scratch data dir (`<out>/a/sNNNN`, `<out>/b/sNNNN`). Without it they are deleted once their snapshot is written.
 - `--dxc PATH` is the shader compiler both sides use (default: the one bundled with A, else B).
 - `--offline` uses the saved catalog. `--cache` moves the cache (default `~/.cache/swofty-compat`, on the root disk).

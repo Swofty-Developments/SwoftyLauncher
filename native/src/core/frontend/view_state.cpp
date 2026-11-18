@@ -39,17 +39,6 @@ const runtime::Sig S_PAUSE{"Game_App_SetPauseReason", "41 57 41 56 41 54 56 57 5
 const char *const CAMERA_NAMES[8] = {"unknown",  "nose_cam", "nose_cam_alt", "cockpit_cam",
                                      "tv_pod", "tv_pod_offset", "near_chase", "far_chase"};
 
-safetyhook::MidHook h_photo_on, h_photo_off, h_camera, h_pause;
-
-std::atomic<uint64_t> packed{0};
-std::atomic<uint64_t> active{0};
-std::atomic<int> camera_value{-1};
-std::atomic<bool> photo{false};
-std::atomic<bool> flow_seen{false};
-std::atomic<uint32_t> pause_mask{0};
-std::mutex change_lock;
-bool trust_camera;
-
 constexpr uint64_t pack(uint32_t kind, uint32_t flags, bool valid, uint32_t serial)
 {
     return uint64_t(kind & 0xff) | uint64_t(flags & 0xff) << 8 | uint64_t(valid ? 1 : 0) << 16 | uint64_t(serial) << 32;
@@ -65,7 +54,37 @@ view::State unpack(uint64_t p)
     return s;
 }
 
-uint32_t groups_active()
+class ViewState {
+public:
+    view::State current() const { return unpack(packed.load(std::memory_order_acquire)); }
+    uint32_t pause_reasons() const { return pause_mask.load(std::memory_order_relaxed); }
+    void flow(uint32_t hash, uint32_t to);
+    void setup();
+    void photo_on();
+    void photo_off();
+    void camera(safetyhook::Context &ctx);
+    void pause(safetyhook::Context &ctx);
+
+private:
+    uint32_t groups_active();
+    void recompute();
+
+    safetyhook::MidHook h_photo_on, h_photo_off, h_camera, h_pause;
+    std::atomic<uint64_t> packed{0};
+    std::atomic<uint64_t> active{0};
+    std::atomic<int> camera_value{-1};
+    std::atomic<bool> photo{false};
+    std::atomic<bool> flow_seen{false};
+    std::atomic<uint32_t> pause_mask{0};
+    std::mutex change_lock;
+    bool trust_camera = false;
+    std::atomic<int> pause_logged{0};
+};
+
+// Not constinit: safetyhook's hooks hold a std::recursive_mutex, whose constructor is not constexpr.
+ViewState view_state;
+
+uint32_t ViewState::groups_active()
 {
     uint64_t bits = active.load(std::memory_order_relaxed);
     uint32_t out = 0;
@@ -112,11 +131,11 @@ std::string flag_text(uint32_t flags)
 
 const char *kind_text(uint32_t kind)
 {
-    static const char *const NAMES[] = {"unknown", "cockpit", "tcam", "tcam_offset", "chase_near", "chase_far", "other"};
+    static constexpr const char *NAMES[] = {"unknown", "cockpit", "tcam", "tcam_offset", "chase_near", "chase_far", "other"};
     return kind < 7 ? NAMES[kind] : "unknown";
 }
 
-void recompute()
+void ViewState::recompute()
 {
     uint32_t g = groups_active();
     bool in_session = g & G_SESSION;
@@ -167,19 +186,19 @@ void recompute()
                 serial);
 }
 
-void photo_on_mid(safetyhook::Context &)
+void ViewState::photo_on()
 {
     photo.store(true, std::memory_order_relaxed);
     recompute();
 }
 
-void photo_off_mid(safetyhook::Context &)
+void ViewState::photo_off()
 {
     photo.store(false, std::memory_order_relaxed);
     recompute();
 }
 
-void camera_mid(safetyhook::Context &ctx)
+void ViewState::camera(safetyhook::Context &ctx)
 {
     int value = int(uint32_t(ctx.r8));
     bool secondary = (ctx.r9 & 0xff) != 0;
@@ -194,7 +213,7 @@ void camera_mid(safetyhook::Context &ctx)
     recompute();
 }
 
-void pause_mid(safetyhook::Context &ctx)
+void ViewState::pause(safetyhook::Context &ctx)
 {
     bool set = (ctx.rdx & 0xff) != 0;
     int bit = int(uint32_t(ctx.r8));
@@ -203,8 +222,7 @@ void pause_mid(safetyhook::Context &ctx)
     uint32_t before = pause_mask.load(std::memory_order_relaxed);
     uint32_t mask = set ? (before | 1u << bit) : (before & ~(1u << bit));
     pause_mask.store(mask, std::memory_order_relaxed);
-    static std::atomic<int> logged{0};
-    if (logged.fetch_add(1, std::memory_order_relaxed) < 64)
+    if (pause_logged.fetch_add(1, std::memory_order_relaxed) < 64)
         swofty::log("[view] pause reason bit %d %s, mask %08x", bit, set ? "set" : "cleared", mask);
     switch (view::pause_edge(before, mask)) {
     case view::PauseEdge::paused:
@@ -232,21 +250,8 @@ safetyhook::MidHook install(const runtime::Sig &sig, safetyhook::MidHookFn fn)
     return std::move(*h);
 }
 
-}
 
-namespace view {
-
-State current()
-{
-    return unpack(packed.load(std::memory_order_acquire));
-}
-
-uint32_t pause_reasons()
-{
-    return pause_mask.load(std::memory_order_relaxed);
-}
-
-void flow(uint32_t hash, uint32_t to)
+void ViewState::flow(uint32_t hash, uint32_t to)
 {
     for (size_t i = 0; i < TRACKED_N; i++) {
         if (TRACKED[i].hash != hash)
@@ -264,20 +269,44 @@ void flow(uint32_t hash, uint32_t to)
     recompute();
 }
 
-void setup()
+void ViewState::setup()
 {
     char trust[8] = {};
     trust_camera = GetEnvironmentVariableA("SWOFTY_VIEW_TRUST_CAMERA", trust, sizeof trust) && trust[0] == '1';
-    h_photo_on = install(S_PHOTO_ON, photo_on_mid);
-    h_photo_off = install(S_PHOTO_OFF, photo_off_mid);
-    h_camera = install(S_CAMERA, camera_mid);
-    h_pause = install(S_PAUSE, pause_mid);
+    h_photo_on = install(S_PHOTO_ON, [](safetyhook::Context &) { view_state.photo_on(); });
+    h_photo_off = install(S_PHOTO_OFF, [](safetyhook::Context &) { view_state.photo_off(); });
+    h_camera = install(S_CAMERA, [](safetyhook::Context &ctx) { view_state.camera(ctx); });
+    h_pause = install(S_PAUSE, [](safetyhook::Context &ctx) { view_state.pause(ctx); });
     swofty::log("[view] setup: photo %s/%s, camera setting %s%s, pause reasons %s; flow states come from the career flow "
                 "site",
                 h_photo_on ? "armed" : "off", h_photo_off ? "armed" : "off", h_camera ? "armed" : "off",
                 trust_camera ? " (trusted for the view kind)" : " (static only: the view kind stays unknown, valid=0 on track)",
                 h_pause ? "armed" : "off");
     recompute();
+}
+
+}
+
+namespace view {
+
+State current()
+{
+    return view_state.current();
+}
+
+uint32_t pause_reasons()
+{
+    return view_state.pause_reasons();
+}
+
+void flow(uint32_t hash, uint32_t to)
+{
+    view_state.flow(hash, to);
+}
+
+void setup()
+{
+    view_state.setup();
 }
 
 }

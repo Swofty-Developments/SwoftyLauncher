@@ -1,7 +1,8 @@
 // Host unit test for the core's schema check (native/src/core/registry/schema.{hpp,cpp}): each keyword,
 // patch mode, keyed lists and "$delete", x-ref with a fake resolver, the pattern matcher, data files with
 // "$select", "$protect", keys with "/" and "extends" variants, the error cap, hostile schemas and values,
-// and a timed run over a 1 MB record set. run_schema_test.sh builds and runs it.
+// and a timed run over a 1 MB record set. run_schema_test.sh builds and runs it. The time limits are on the CPU
+// time of the test's thread, which a loaded machine does not stretch the way it stretches the wall clock.
 #include "core/registry/schema.hpp"
 
 #include <chrono>
@@ -10,6 +11,7 @@
 #include <map>
 #include <random>
 #include <string>
+#include <time.h>
 #include <vector>
 
 using swofty_core::registry::check_data;
@@ -19,6 +21,13 @@ using swofty_core::registry::DataSchemas;
 using swofty_core::registry::Schema;
 using Value = swofty::json::Value;
 using Mode = Schema::Mode;
+
+static double cpu_ms()
+{
+    timespec t;
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t);
+    return t.tv_sec * 1e3 + t.tv_nsec / 1e6;
+}
 
 static int fails, checks;
 
@@ -224,11 +233,11 @@ static void patterns()
     expect(matches("\\Aab\\Z", "ab"), "\\A and \\Z");
     expect(!matches("ab\\Z", "ab\n"), "\\Z is the very end");
     std::string long_a(100000, 'a');
-    auto t0 = std::chrono::steady_clock::now();
+    double t0 = cpu_ms();
     expect(!matches("^(a*)*b$", long_a + "c"), "nested repeats on a long string");
     expect(!matches("^(a|aa)+$", long_a + "b"), "ambiguous alternation on a long string");
-    double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
-    expect(ms < 5000, "the matcher is linear (" + std::to_string(ms) + " ms)");
+    double ms = cpu_ms() - t0;
+    expect(ms < 5000, "the matcher is linear (" + std::to_string(ms) + " ms of CPU)");
     for (auto p : {"(?=a)", "(?<=a)b", "(a)\\1", "a**", "*a", "[a", "(a", "a)", "\\q", "a{2,1}", "a{5000}", "^*", "a*+",
                    "[z-a]", "[\\d-z]", "(?i)a"})
         no_compile(std::string("{\"pattern\":") + swofty::json::dump(Value(p)) + "}", p);
@@ -429,11 +438,11 @@ static void limits()
     auto f = S(fan);
     Schema::Options small;
     small.max_steps = 100000;
-    auto t0 = std::chrono::steady_clock::now();
+    double t0 = cpu_ms();
     auto rf = f.validate(P("1"), small);
-    double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
+    double ms = cpu_ms() - t0;
     expect(!rf.ok() && rf.errors.back().message.find("steps") != std::string::npos && ms < 2000,
-           "an exponential schema stops at the step budget (" + std::to_string(ms) + " ms)");
+           "an exponential schema stops at the step budget (" + std::to_string(ms) + " ms of CPU)");
 
     auto pat = S(R"({"type":"string","pattern":"^[a-z_]+$","maxLength":2000000})");
     std::string big(1 << 20, 'a');
@@ -589,11 +598,13 @@ static void speed()
     DataOptions o;
     o.resolve = &resolver;
     auto t0 = std::chrono::steady_clock::now();
+    double c0 = cpu_ms();
     auto r = check_data(doc, lookup, o);
+    double cpu = cpu_ms() - c0;
     double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
     expect(r.ok(), "the 1 MB record set is valid");
     printf("speed: validated %d records, %zu bytes of JSON, in %.1f ms (%.1f MB/s)\n", n, bytes, ms, bytes / 1048576.0 / (ms / 1000.0));
-    expect(ms < 5000, "1 MB validates in under 5 s");
+    expect(cpu < 5000, "1 MB validates in under 5 s of CPU (" + std::to_string(cpu) + " ms)");
 }
 
 static void fuzz(int rounds)

@@ -174,7 +174,7 @@ bool GpuContext::make_mip_pso()
         swofty::log("[postfx] d3dcompiler_47.dll!D3DCompile is unavailable; mipmapped textures keep only their first level");
         return false;
     }
-    static const char hlsl[] =
+    static constexpr char hlsl[] =
         "Texture2D<float4> src:register(t2);RWTexture2D<float4> dst:register(u0);"
         "[numthreads(8,8,1)]void CS(uint3 id:SV_DispatchThreadID){uint w,h;dst.GetDimensions(w,h);"
         "if(id.x>=w||id.y>=h)return;uint sw,sh;src.GetDimensions(sw,sh);int2 m=int2(sw,sh)-1;int2 b=int2(id.xy)*2;"

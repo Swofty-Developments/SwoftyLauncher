@@ -7,10 +7,10 @@ use std::path::{Path, PathBuf};
 use serde_json::{Value, json};
 
 use super::MAILBOX_TOAST;
-use super::api::Uploaded;
 use super::boards::content_listed;
 use super::queue::{Folder, Queue};
 use super::swlap::Board;
+use crate::online::server::api::Uploaded;
 
 pub fn dir(data: &Path) -> PathBuf {
     data.join("tt").join(MAILBOX_TOAST)

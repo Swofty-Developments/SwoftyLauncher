@@ -4,20 +4,12 @@
 #include <unordered_map>
 #include <utility>
 
+#include "core/hooks/hooks.hpp"
 #include "core/runtime/loader/host_api.hpp"
 #include "core/runtime/loader/mixins.hpp"
 #include "core/runtime/runtime.hpp"
-
-int settings_get(const char *id, uint32_t type, SwoftySettingValue *out);
-int settings_watch(const char *id, SwoftySettingFn fn, void *user);
-
-namespace swofty_core::hooks {
-const SwoftyHooks *table();
-}
-
-namespace swofty_core::services {
-const SwoftyServices *table();
-}
+#include "core/runtime/settings.hpp"
+#include "core/services/services.hpp"
 
 namespace runtime {
 

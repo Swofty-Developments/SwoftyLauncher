@@ -1,0 +1,168 @@
+# Launcher app
+
+If you're working on `apps/launcher`, this page shows where code goes: the shell routes, each feature's state holds its own behaviour, and a state with background work reaches the rest of the app through a narrow host.
+
+## Layout
+
+```text
+apps/launcher/src/
+  app/        logging, fonts, dialog keys
+  services/   game discovery, probing and launch; downloads; the library
+  shell/      the Shell entity: startup, navigation, top bar, play bar, host.rs
+  dialogs/    one file or folder per dialog
+  features/   one folder per page: its state, its page and its actions
+  ui/         shared widgets and theme tokens
+  blocks/     the addon UI blocks: forms, tables, charts
+```
+
+## The shell routes
+
+`Shell` (`shell/mod.rs`) is the window's one entity. It holds a plain field for each feature's state and renders the pages. Its own methods compose: Play reads about ten states and raises their dialogs, and a probe tick hands its result to the game, shader, database and notice states. A method that needs only one state belongs on that state.
+
+## A state with background work
+
+A state that starts background work implements `Hosted`, and `Shell` implements `Host` for it (`shell/host.rs`):
+
+```rust
+pub(crate) trait Hosted: Sized + 'static {
+    type Needs<'a>;  // what it borrows from the shell beside itself
+    type Change;     // what it reports for other features to follow
+}
+
+pub(crate) trait Host<T: Hosted>: Sized + 'static {
+    fn split(&mut self) -> (&mut T, T::Needs<'_>);
+    fn changed(&mut self, change: T::Change, cx: &mut Context<Self>);
+}
+```
+
+Its async methods are generic over `H: Host<Self>`. They reach their own state and its `Needs` and nothing else, spawn in `Context<H>`, and write back through `host.split()` after the await. The state changes themselves are plain `&mut self` methods with unit tests.
+
+The support page (`features/support/state.rs`) is the worked example:
+
+```rust
+impl Hosted for SupportPage {
+    type Needs<'a> = SupportNeeds<'a>;  // { session: Option<&'a Session> }
+    type Change = SupportChange;        // Faces(Vec<String>)
+}
+
+impl SupportPage {
+    pub(super) fn save<H: Host<Self>>(host: &mut H, bio: String, cx: &mut Context<H>) {
+        let (page, needs) = host.split();
+        if !page.begin(needs.signed_in()) {
+            return;
+        }
+        let (api, mode) = (needs.api(), page.mode.clone());
+        cx.spawn(async move |this, cx| {
+            let got = cx.background_executor().spawn(async move { api.support_update(Some(&bio), Some(&mode)) }).await;
+            this.update(cx, |host, cx| {
+                if host.split().0.take_saved(got) {
+                    Self::reload(host, cx);
+                }
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
+    }
+}
+
+impl Host<SupportPage> for Shell {
+    fn split(&mut self) -> (&mut SupportPage, SupportNeeds<'_>) {
+        (&mut self.support, SupportNeeds { session: self.account.session.as_ref() })
+    }
+
+    fn changed(&mut self, change: SupportChange, cx: &mut Context<Self>) {
+        match change {
+            SupportChange::Faces(faces) => Multiplayer::load_faces(self, faces, cx),
+        }
+    }
+}
+```
+
+A page calls it with the shell as the host: `SupportPage::save(this, typed.clone(), cx)`. The test drives the plain change:
+
+```rust
+#[test]
+fn a_saved_bio_reloads_and_a_failed_one_says_why() {
+    let mut page = SupportPage { busy: true, ..Default::default() };
+    assert!(page.take_saved(Ok(())));
+    page.busy = true;
+    assert!(!page.take_saved(Err(error("too long"))));
+    assert_eq!(page.notice, Some((false, "too long".to_owned())));
+}
+```
+
+A state with nothing to report sets `type Change = Infallible`, and its `changed` is `match change {}`.
+
+A state whose constructor needs a window keeps the fields its tests drive in a plain `Default` struct inside it, and the async method calls that struct's methods:
+
+```rust
+#[derive(Default)]
+pub(crate) struct Autosave { ticket: u64, unwritten: bool, writing: bool, newer: bool, error: Option<String> }
+
+impl Db {
+    pub(crate) fn flush<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (db, needs) = host.split();
+        if !db.autosave.begin() {
+            return;
+        }
+        let (store, draft, file) = (needs.store.clone(), db.draft.clone(), db.file.clone());
+        cx.spawn(async move |this, cx| {
+            let result = cx.background_executor().spawn(async move { lock(&file).write(&store, &draft) }).await;
+            this.update(cx, |host, cx| {
+                if host.split().0.autosave.written(result) {
+                    Self::persist(host, cx);
+                }
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
+    }
+}
+```
+
+These states run on the pattern:
+
+| State | Background work | `Host` impl | Plain part with tests |
+|---|---|---|---|
+| `Account` | sign in and out, session checks, avatar | `shell/account.rs` | `Account` |
+| `Crashes` | the crash watch | `shell/probe.rs` | `Crashes` |
+| `SupportPage` | goal, supporters, checkout, claim, save | `features/support/state.rs` | `SupportPage` |
+| `TtPage` | barred list, catalogue, runs, moderation, searches | `features/time_trial/state.rs` | `TtPage` |
+| `Browser` | catalog fetch, star sync, addon details, publisher profiles, the install queue | `features/browser/state.rs` | `Feed`, `riders`, `installed_version` |
+| `Db` | draft autosave, "Also changed by", game database, module views, search, unnamed keys | `features/db/state.rs` | `Autosave` |
+| `AddonsPage` | the conflict check | `features/addons/conflicts.rs` | `Conflicts` |
+| `Multiplayer` (the Online page) | game status, room list, addon digest, avatars, opening and joining a room | `features/multiplayer/state.rs` | `Lobby`, `starting` |
+
+A page's toasts go into a `toasts` list on its state, and `shell/render.rs` shows them. A state reports what other features follow through its `Change`: the browser reports `Installed`, and the shell reads the library again, and `TurnOn`, and the shell adds the "Turn on" action to the notice.
+
+Tests that need installed addons and an active profile read a temp data folder with `services/test_library.rs`:
+
+```rust
+let library = TestLibrary::new("tt-barred")
+    .addon("t.old", "1.0.0")
+    .profile("Main", &["t.old"]);
+tt.barred = vec![barred("t.old", Some("2.0.0"))];
+assert_eq!(tt.barred_in(&library.read()).len(), 1);
+```
+
+## What stays on the shell
+
+| On `Shell` | Files | What it needs |
+|---|---|---|
+| Rendering every page, bar and dialog | `render.rs`, `features/*/page.rs`, `shell/play_bar/`, `shell/topbar/` | Pages read several states. gpui listeners are `Context<Shell>` closures. |
+| Play and the launch | `shell/play.rs`, `shell/play_dialogs.rs`, `shell/launch_alerts.rs` | About ten states, and the window for its prompts. |
+| Starting a room's game, the game watch, closing the game | `features/multiplayer/actions.rs` (`mp_room_launch`, `mp_watch_game`, `mp_close_game`) | `play_for`, `Launching`, the game copies, the window. A host for them carries Play's own needs. |
+| Reading the library again, profiles, turning addons on and off | `shell/reload.rs`, `shell/profile_panel.rs`, `shell/profile_edit.rs`, `features/addons/` | Every feature follows the library. |
+| The probe tick | `shell/probe.rs` | Hands its result to the game, shader, database and notice states. |
+| DB Editor save, import and export | `features/db/save/`, `features/db/import.rs` | File pickers, the Save / Discard dialog and the window for notices. An import that installs an addon turns it on, reads the library again and shows it on Addons. |
+| Window flows | `dialogs/data_move.rs`, `dialogs/found_data.rs`, `dialogs/setup.rs`, `dialogs/send_logs.rs`, `features/onboarding/` | A dialog open in the window. |
+| Background work not yet on a host | `features/update.rs`, `features/online/` (the boards), `features/news/`, `features/career_saves/`, `features/sections/`, `features/settings/usage.rs`, `features/tools.rs`, `features/importer.rs`, `features/ads/` | Each is a candidate for the pattern. |
+| The shaders page | `features/shaders/` | Its own entity, `ShadersView`. |
+
+## When to use an entity instead
+
+Make a part its own `Entity` when it renders itself and the shell only listens to it. The shaders page is one: `ShadersView` implements `Render` and `EventEmitter<Event>`, and `shell/startup.rs` subscribes to its events. Dialogs and the gpui-component inputs and sliders work the same way.
+
+Keep a plain field with `Hosted` when the shell renders the state and code reads it while rendering, often from `&self` helpers with no `cx`. The account, the game copies and the launch are read that way in close to two hundred places.

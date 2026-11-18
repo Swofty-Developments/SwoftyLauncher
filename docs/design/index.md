@@ -22,6 +22,8 @@ If you're contributing to Swofty Launcher for F1 25, start here for the intended
 | `native/` | In-game loader and menu entry |
 | `addons/swoftymod` | Built-in menu changes |
 
+How the launcher's code is laid out, and where a feature's behaviour goes, is in [Launcher app](/design/launcher-app).
+
 Keep the interface separate from the shared core. When you're working on the Rust format code, check it with the Python tools in `tools/`.
 
 ## Addons and tracks
@@ -37,6 +39,10 @@ You'll find the plans for mods, the Launcher API, the Asset API and the built-in
 The proposed 1.6 standard library, where addons register records, layers, events and hooks in code and the core applies them live in the game, is at [Standard library 1.6](/std/), with its product choices on [Decisions](/design/std-2/decisions).
 
 The proposed sponsor registry, one record per sponsor with ids and textures handled by the core, is at [Sponsor registry](/design/sponsor-registry).
+
+How the core's overlay arms, how a post-process pass is recorded, the shared D3D12 probe device and how to add a screen are at [Native render and front end](/design/native-render).
+
+How the core starts its subsystems, the memory checks in `pages.hpp`, the per-build proof gates, the step lines, the crash handler and the career operations are at [Native runtime](/design/native-runtime).
 
 ## Profiles and saves
 

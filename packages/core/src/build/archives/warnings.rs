@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 use crate::asset::{AssetOp, FileOp, Op};
-use crate::erpbuild::Resized;
+use crate::erp::Resized;
 
 /// The warning for an addon's archive changes a build skips because the
 /// archives they change aren't in the game folder.
@@ -75,14 +75,14 @@ pub(in crate::build) fn stock_holders(game_dir: &Path, resized: &[Resized]) -> V
         uris.sort_unstable();
         uris.dedup();
         let mut files = Vec::new();
-        crate::erpbuild::erp_files(&game_dir.join(&root), &root, &mut files);
+        crate::erp::erp_files(&game_dir.join(&root), &root, &mut files);
         files.sort();
         for rel in files {
-            let Some(index) = crate::erpbuild::index_of(&game_dir.join(&rel)) else {
+            let Some(index) = crate::erp::index_of(&game_dir.join(&rel)) else {
                 continue;
             };
             for uri in &uris {
-                if crate::erpbuild::index_holds(&index, uri)
+                if crate::erp::index_holds(&index, uri)
                     && !written.contains(&(rel.to_ascii_lowercase(), *uri))
                 {
                     out.push(format!(

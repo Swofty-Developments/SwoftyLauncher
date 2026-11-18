@@ -1,7 +1,7 @@
 #include "core/hud/overlay/before_fg.hpp"
 
 #include "core/diagnostics/perf.hpp"
-#include "core/hud/hud_guard.hpp"
+#include "core/hud/arm_policy.hpp"
 #include "core/hud/overlay/overlay.hpp"
 
 #include <swofty/mixin.hpp>
@@ -77,7 +77,6 @@ void BeforeFrameGen::draw(ID3D12CommandQueue *q, ID3D12Resource *res, D3D12_RESO
     ULONGLONG now = GetTickCount64();
     if (overlay.off.load() || overlay.renderer.failed || !hud::guard::pending_fresh(now, frame.built))
         return;
-    static bool told_queue, told_shape, told_device;
     D3D12_COMMAND_QUEUE_DESC qd = q->GetDesc();
     if (qd.Type != D3D12_COMMAND_LIST_TYPE_DIRECT) {
         if (!told_queue) {

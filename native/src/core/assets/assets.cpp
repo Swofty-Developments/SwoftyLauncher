@@ -16,6 +16,7 @@
 
 #include "core/runtime/json.hpp"
 #include "core/diagnostics/perf.hpp"
+#include "core/runtime/pages.hpp"
 #include "core/runtime/runtime.hpp"
 
 namespace {
@@ -99,16 +100,6 @@ std::mutex patch_lock;
 std::atomic<void *> patched{nullptr};
 std::wstring game_root;
 
-uint64_t fnv(const std::string &s)
-{
-    uint64_t h = 0xcbf29ce484222325ull;
-    for (unsigned char c : s) {
-        h ^= c;
-        h *= 0x100000001b3ull;
-    }
-    return h;
-}
-
 std::string norm(std::string s)
 {
     for (auto &c : s)
@@ -132,10 +123,7 @@ bool ends(const std::string &s, const char *p)
 
 bool readable(const void *p, size_t n)
 {
-    MEMORY_BASIC_INFORMATION m{};
-    if (!p || !VirtualQuery(p, &m, sizeof m) || m.State != MEM_COMMIT || (m.Protect & (PAGE_NOACCESS | PAGE_GUARD)))
-        return false;
-    return uintptr_t(p) + n <= uintptr_t(m.BaseAddress) + m.RegionSize;
+    return p && runtime::pages::readable_in_region(uintptr_t(p), n);
 }
 
 bool spans(const void *p, size_t n)
@@ -552,7 +540,7 @@ void probe_sizes(const Manifest &mf, Probe &p)
 Probe probe(const Manifest &mf)
 {
     Probe p;
-    uint64_t gh = fnv(PROBE_GROUP);
+    uint64_t gh = runtime::fnv64(PROBE_GROUP);
     Slot *g = mf.groups.find(gh);
     if (!g) {
         swofty::log("[assets] probe group %s is not in the manifest; using default naming", PROBE_GROUP);
@@ -577,7 +565,7 @@ Probe probe(const Manifest &mf)
     std::string ename = ns ? mf.decode(ns->value) : std::string();
     const Scheme *hit = nullptr;
     for (auto &s : ERP_SCHEMES)
-        if (!ename.empty() && fnv(s.fn(ename)) == eh) {
+        if (!ename.empty() && runtime::fnv64(s.fn(ename)) == eh) {
             hit = &s;
             break;
         }
@@ -657,7 +645,7 @@ void add_auto(const Manifest &mf, std::vector<Entry> &entries)
         for (auto &f : files) {
             std::string body = f.substr(strlen("2025_"));
             std::string group = body.substr(0, body.size() - 4) + ".assetgroup";
-            if (have.count(group) || mf.groups.find(fnv(group)))
+            if (have.count(group) || mf.groups.find(runtime::fnv64(group)))
                 continue;
             Entry e;
             e.group = group;
@@ -752,7 +740,7 @@ void apply_overlay(Manifest &mf, const Probe &pr, const runtime::Overlay &ov)
     };
     std::vector<Ov> ovs;
     for (auto &e : ov.erps) {
-        Ov o{&e, fnv(pr.erp_scheme->fn(e.path)), false, true, 0};
+        Ov o{&e, runtime::fnv64(pr.erp_scheme->fn(e.path)), false, true, 0};
         if (Slot *ns = mf.names.find(o.hash)) {
             std::string existing = mf.decode(ns->value);
             o.named = existing == e.path;
@@ -773,7 +761,7 @@ void apply_overlay(Manifest &mf, const Probe &pr, const runtime::Overlay &ov)
         if (!ovs[i].ok)
             continue;
         for (auto &t : ovs[i].e->targets) {
-            uint64_t th = fnv(pr.erp_scheme->fn(t));
+            uint64_t th = runtime::fnv64(pr.erp_scheme->fn(t));
             Slot *ns = mf.names.find(th);
             std::string n = ns ? norm(mf.decode(ns->value)) : std::string();
             if (ns && n != t) {
@@ -980,7 +968,7 @@ void apply(uint8_t *m, const char *when, const runtime::Overlay *ov)
     for (auto &e : entries) {
         Plan p;
         p.e = &e;
-        p.hash = fnv(e.group);
+        p.hash = runtime::fnv64(e.group);
         auto fail = [&](const std::string &w) {
             p.ok = false;
             p.why = w;
@@ -995,12 +983,12 @@ void apply(uint8_t *m, const char *when, const runtime::Overlay *ov)
             fail("no ERP given");
         if (p.ok) {
             for (auto &cand : template_candidates(e))
-                if (Slot *t = mf.groups.find(fnv(cand))) {
+                if (Slot *t = mf.groups.find(runtime::fnv64(cand))) {
                     p.tmpl = cand;
                     p.flags = (t->value >> 32) & 0xff000000ull;
-                    if (Slot *ts = mf.names.find(fnv(cand)))
+                    if (Slot *ts = mf.names.find(runtime::fnv64(cand)))
                         p.group_name_bits = uint32_t(ts->value) & 0xff000000u;
-                    if (Slot *td = mf.deps_map.mask() ? mf.deps_map.find(fnv(cand)) : nullptr)
+                    if (Slot *td = mf.deps_map.mask() ? mf.deps_map.find(runtime::fnv64(cand)) : nullptr)
                         p.dep_flags = (td->value >> 32) & 0xff000000ull;
                     break;
                 }
@@ -1019,7 +1007,7 @@ void apply(uint8_t *m, const char *when, const runtime::Overlay *ov)
                 fail("ERP not found on disk: " + narrow(game_root) + ep.path);
                 break;
             }
-            ep.hash = fnv(pr.erp_scheme->fn(ep.path));
+            ep.hash = runtime::fnv64(pr.erp_scheme->fn(ep.path));
             if (planned_erps.count(ep.hash))
                 ep.named = true;
             else if (Slot *ns = mf.names.find(ep.hash)) {
@@ -1037,7 +1025,7 @@ void apply(uint8_t *m, const char *when, const runtime::Overlay *ov)
             p.erps.push_back(ep);
         }
         for (auto &d : e.deps) {
-            uint64_t dh = fnv(d);
+            uint64_t dh = runtime::fnv64(d);
             if (!mf.groups.find(dh)) {
                 bool ours = false;
                 for (auto &o : entries)

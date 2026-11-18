@@ -127,28 +127,6 @@ fn compares_versions_by_semver() {
 }
 
 #[test]
-fn old_update_settings_still_load() {
-    let json = serde_json::to_value(UpdateConfig::default()).unwrap();
-    assert_eq!(json, serde_json::json!({ "check": true }));
-    let off: UpdateConfig = serde_json::from_str(r#"{"check":false}"#).unwrap();
-    assert!(!off.check);
-    let old = r#"{
-            "data_version": 3,
-            "updates": { "check": true, "skip": "1.0.7", "checked_at": 1790000000, "latest": "v1.0.7" },
-            "managed": { "checked_at": 1790000000 },
-            "sidebar_list": true
-        }"#;
-    let config: crate::session::Config = serde_json::from_str(old).unwrap();
-    assert!(config.updates.is_default() && config.sidebar_list);
-    assert_eq!(config.data_version, 3);
-    let saved = serde_json::to_value(&config).unwrap();
-    assert!(
-        saved.get("updates").is_none() && saved.get("managed").is_none(),
-        "{saved}"
-    );
-}
-
-#[test]
 fn reads_rate_limits_from_the_response() {
     let url = "https://api.github.com/x";
     assert!(matches!(

@@ -6,6 +6,7 @@
 #include "core/runtime/game_manager_layout.hpp"
 #include "core/runtime/state_logic.hpp"
 
+#include <iterator>
 #include <mutex>
 
 namespace runtime {
@@ -23,7 +24,8 @@ const Feature FEATURES[] = {{"group", true},    {"erp", true},        {"db", tru
                             {"shaders", false}, {"career", true},     {"popup", true},
                             {"postfx", false},  {"registry_rows", true}, {"lap_rec", true},
                             {"loading_skip_minimum_time", false}, {"loading_skip_session_intro_video", false},
-                            {"loading_skip_grid_rundown", false}, {"loading_log_settings", false}};
+                            {"loading_skip_grid_rundown", false}, {"loading_skip_talking_points", false},
+                            {"loading_log_settings", false}};
 
 std::once_flag config_once;
 json::Value config_doc;
@@ -203,21 +205,51 @@ std::string load_stage()
     return n && n < sizeof buf ? std::string(buf, n) : std::string("window");
 }
 
-bool same_build()
+build_proof::Exe running_exe()
 {
     auto b = reinterpret_cast<const uint8_t *>(swofty::api->module_base());
     auto nt = reinterpret_cast<const IMAGE_NT_HEADERS *>(b + reinterpret_cast<const IMAGE_DOS_HEADER *>(b)->e_lfanew);
-    return nt->FileHeader.TimeDateStamp == 1789118616u && nt->OptionalHeader.SizeOfImage > 0x6000000;
+    return {nt->FileHeader.TimeDateStamp, nt->OptionalHeader.SizeOfImage};
 }
 
-bool verified_build()
+build_proof::Build running_build() { return build_proof::identify(running_exe()); }
+
+namespace {
+
+build_proof::Verdict verdict_of(const build_proof::Gate &gate)
 {
-    auto b = reinterpret_cast<const uint8_t *>(swofty::api->module_base());
-    auto nt = reinterpret_cast<const IMAGE_NT_HEADERS *>(b + reinterpret_cast<const IMAGE_DOS_HEADER *>(b)->e_lfanew);
-    uint32_t stamp = nt->FileHeader.TimeDateStamp, size = nt->OptionalHeader.SizeOfImage;
-    return (stamp == 1789118616u && size > 0x6000000) || (stamp == 1789128892u && size == 0x155dc000) ||
-           (stamp == 1794312636u && size == 0x18434000);
+    return build_proof::check(gate, running_build(), [](const char *id) { return swofty::api->resolve(id) != 0; });
 }
+
+std::mutex refusals_lock;
+const build_proof::Gate *refusals_told[64];
+size_t refusals_count;
+
+}
+
+bool proven(const build_proof::Gate &gate) { return bool(verdict_of(gate)); }
+
+bool holds(const build_proof::Gate &gate)
+{
+    build_proof::Verdict v = verdict_of(gate);
+    if (v)
+        return true;
+    {
+        std::lock_guard<std::mutex> g(refusals_lock);
+        for (size_t i = 0; i < refusals_count; i++)
+            if (refusals_told[i] == &gate)
+                return false;
+        if (refusals_count < std::size(refusals_told))
+            refusals_told[refusals_count++] = &gate;
+    }
+    build_proof::Exe e = running_exe();
+    swofty::log("[build] %s", build_proof::refusal_line(gate, build_proof::identify(e), e, v).c_str());
+    return false;
+}
+
+bool same_build() { return running_build() == build_proof::Build::kb; }
+
+bool verified_build() { return build_proof::proven_on(build_proof::proofs::VERIFIED_LAYOUT, running_build()); }
 
 uintptr_t manager_entrants_system()
 {
@@ -335,26 +367,6 @@ std::string lower(std::string s)
         else if (c >= 'A' && c <= 'Z')
             c = char(c + 32);
     return s;
-}
-
-uint64_t fnv64(const char *s, size_t n)
-{
-    uint64_t h = 0xcbf29ce484222325ull;
-    for (size_t i = 0; i < n; i++) {
-        h ^= uint8_t(s[i]);
-        h *= 0x100000001b3ull;
-    }
-    return h;
-}
-
-uint32_t fnv32(const char *s)
-{
-    uint32_t h = 0x811c9dc5u;
-    for (; *s; s++) {
-        h ^= uint8_t(*s);
-        h *= 0x01000193u;
-    }
-    return h;
 }
 
 void md5(const void *data, size_t n, uint8_t out[16])

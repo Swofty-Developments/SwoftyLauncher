@@ -27,7 +27,7 @@ use crate::asset::{FileKind, GroupOp, OpFile};
 use crate::asset::{FileOp, Root, Source};
 use crate::content::runtime_assets::db_edits;
 use crate::dbedit::driver_manager;
-use crate::erpbuild::Resized;
+use crate::erp::Resized;
 use crate::game_folder::baseline::Identity;
 use crate::game_folder::baseline::{Baseline, Objects, hex};
 use crate::launcher::BuildCx;
@@ -45,6 +45,7 @@ mod picture;
 mod registry;
 mod reuse;
 mod row_ids;
+mod setup;
 mod tracks;
 
 pub(super) struct Rows(pub(super) AddonManifest);
@@ -99,18 +100,11 @@ pub(super) fn archive_of(kind: &str, names: &[&str], byte: u8) -> Vec<u8> {
                 name: (*n).into(),
                 kind: swofty_formats::erp::kind(kind).unwrap(),
                 unk: vec![0; 4],
-                fragments: vec![Fragment {
-                    name: *b"temp",
-                    offset: 0,
-                    size: 1,
-                    flags: 0x10,
-                    compression: STORED,
-                    packed: 1,
-                    raw: vec![byte],
-                }],
+                fragments: vec![Fragment::new(*b"temp", 1, 0x10, STORED, vec![byte])],
                 hash: [0; 16],
             })
             .collect(),
     }
     .to_bytes()
+    .unwrap()
 }

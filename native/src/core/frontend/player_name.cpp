@@ -45,22 +45,32 @@ const runtime::Sig S_NAME{"Game_PresenceNameCache_Lookup",
                           "8B 49 08 4C 8D 76 30 89 CD EB 31 48 89 D9",
                           0x816b10};
 
-using LookupFn = const char *(*)(void *cache, void *id);
-
-safetyhook::InlineHook h_lookup;
-std::atomic<int> replaced{0}, busy{0};
-std::atomic<bool> bridge_on{false};
-std::mutex account_lock;
-std::string account_cached;
-bool account_signed_in = false;
-
 namespace pn = runtime::player_name;
 namespace sl = runtime::session_life;
+namespace bp = runtime::build_proof;
+
+// What the bridge reads besides its byte signature: the user id the lookup is given (type +0, the id as value ^ mask at
+// +8/+0x10, flag +0x39, kind +0x4c; player_name_logic.hpp) and the view model registry's vtables the pin pass walks
+// (name_copies::registry_layout; ui_registry_walk.hpp's node offsets).
+constexpr bp::Proof TT_NAME_LAYOUT{"the name cache lookup's user id layout and the view model registry vtables",
+                                   bp::bit(bp::Build::kb)};
+constexpr bp::Gate TT_NAME{"the Time Trial player name", &TT_NAME_LAYOUT};
 
 // The launcher account is read from home_menu.json on a worker thread (the main menu's own state is not loaded when the game
 // starts through the chain entry); the file is read again only when its write time changes, and not during a session of
 // another mode. The lookup hook never reads it.
-void account_worker()
+class LauncherAccount {
+public:
+    void watch();
+    bool name(std::string &out);
+
+private:
+    std::mutex lock;
+    std::string cached;
+    bool signed_in = false;
+};
+
+void LauncherAccount::watch()
 {
     const std::wstring path = runtime::swofty_root() + L"home_menu.json";
     FILETIME stamp{};
@@ -73,9 +83,9 @@ void account_worker()
             if (pn::account_reread(read_once, had, have, same)) {
                 auto state = runtime::main_menu::parse_state(have ? runtime::read_file(path, size_t(1) << 20) : std::string());
                 {
-                    std::lock_guard<std::mutex> g(account_lock);
-                    account_signed_in = state.loaded && state.signed_in && !state.name.empty();
-                    account_cached = account_signed_in ? state.name : std::string();
+                    std::lock_guard<std::mutex> g(lock);
+                    signed_in = state.loaded && state.signed_in && !state.name.empty();
+                    cached = signed_in ? state.name : std::string();
                 }
                 read_once = true;
                 had = have;
@@ -86,26 +96,13 @@ void account_worker()
     }
 }
 
-bool account_name(std::string &out)
+bool LauncherAccount::name(std::string &out)
 {
-    std::lock_guard<std::mutex> g(account_lock);
-    if (!account_signed_in)
+    std::lock_guard<std::mutex> g(lock);
+    if (!signed_in)
         return false;
-    out = account_cached;
+    out = cached;
     return true;
-}
-
-bool wanted_name(std::string &clean, const char *&source)
-{
-    char env[128] = {};
-    GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME", env, sizeof env);
-    std::string account;
-    account_name(account);
-    std::string text;
-    if (!runtime::player_name::display_source(env, account, text))
-        return false;
-    source = env[0] ? "SWOFTY_TT_PLAYER_NAME" : "home_menu.json discord name";
-    return runtime::player_name::sanitize(text, clean);
 }
 
 bool session_ours()
@@ -113,21 +110,66 @@ bool session_ours()
     return swofty_core::apply::moments::session_mode_track().first == "time_trial" && runtime::lap_host::board_session();
 }
 
-std::mutex stock_lock;
-std::string stock_learned;
-std::atomic<uint64_t> stock_serial{~0ull};
+class TimeTrialName {
+public:
+    void setup();
+    const char *lookup(void *cache, void *id);
+    void probe_tick();
+    void pin_tick();
+    void session();
 
-// What the lookup hook needs, published by arm_rename (at session load and enter, and by the 3 s pin pass): the local presence
-// id packed into two words, the session it is armed for, and the name to show in one of two buffers.
-std::mutex rename_lock;
-std::atomic<bool> rename_armed{false};
-std::atomic<uint64_t> rename_serial{0}, rename_value{0};
-std::atomic<uint32_t> rename_tag{0};
-char shown_buf[2][runtime::player_name::MAX_BYTES + 1] = {};
-std::atomic<int> shown_slot{0};
-std::atomic<const char *> shown_source{""};
+private:
+    bool wanted_name(std::string &clean, const char *&source);
+    bool arm_rename(uint64_t serial);
 
-bool arm_rename(uint64_t serial)
+    safetyhook::InlineHook h_lookup;
+    std::atomic<int> replaced{0}, busy{0};
+    std::atomic<bool> bridge_on{false};
+    LauncherAccount account;
+
+    std::mutex stock_lock;
+    std::string stock_learned;
+    std::atomic<uint64_t> stock_serial{~0ull};
+
+    // What the lookup hook needs, published by arm_rename (at session load and enter, and by the 3 s pin pass): the local
+    // presence id packed into two words, the session it is armed for, and the name to show in one of two buffers.
+    std::mutex rename_lock;
+    std::atomic<bool> rename_armed{false};
+    std::atomic<uint64_t> rename_serial{0}, rename_value{0};
+    std::atomic<uint32_t> rename_tag{0};
+    char shown_buf[2][runtime::player_name::MAX_BYTES + 1] = {};
+    std::atomic<int> shown_slot{0};
+    std::atomic<const char *> shown_source{""};
+
+    std::atomic<bool> scan_started{false};
+    int64_t probe_entered = 0;
+    int probe_pass = 0;
+    int64_t pin_last = 0;
+    std::string last_decision;
+};
+
+// Not constinit: safetyhook's hooks hold a std::recursive_mutex, whose constructor is not constexpr.
+TimeTrialName tt_name;
+
+const char *lookup_hook(void *cache, void *id)
+{
+    return tt_name.lookup(cache, id);
+}
+
+bool TimeTrialName::wanted_name(std::string &clean, const char *&source)
+{
+    char env[128] = {};
+    GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME", env, sizeof env);
+    std::string name;
+    account.name(name);
+    std::string text;
+    if (!runtime::player_name::display_source(env, name, text))
+        return false;
+    source = env[0] ? "SWOFTY_TT_PLAYER_NAME" : "home_menu.json discord name";
+    return runtime::player_name::sanitize(text, clean);
+}
+
+bool TimeTrialName::arm_rename(uint64_t serial)
 {
     std::lock_guard<std::mutex> g(rename_lock);
     std::string clean;
@@ -155,7 +197,7 @@ bool arm_rename(uint64_t serial)
 
 // Outside an armed Time Trial session, and for every id that is not the local presence's, the hook returns the game's own
 // result after atomic loads and one guarded copy of the key: no lock, no memory check, no string copy.
-const char *lookup_hook(void *cache, void *id)
+const char *TimeTrialName::lookup(void *cache, void *id)
 {
     const char *stock = h_lookup.call<const char *>(cache, id);
     if (!stock || !id || !rename_armed.load(std::memory_order_acquire))
@@ -194,14 +236,12 @@ const char *lookup_hook(void *cache, void *id)
     return result;
 }
 
-std::atomic<bool> scan_started{false};
-
-void setup()
+void TimeTrialName::setup()
 {
     auto gate = swofty::json::parse(runtime::read_file(runtime::swofty_root() + L"tt.json", size_t(1) << 20));
     char v[8] = {};
     bool off = GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME", v, sizeof v) && !strcmp(v, "0");
-    if (!gate.is_object() || !gate["tt_bridge"].as_bool(false) || off || !runtime::same_build())
+    if (!gate.is_object() || !gate["tt_bridge"].as_bool(false) || off || !runtime::holds(TT_NAME))
         return;
     uintptr_t at = runtime::find(S_NAME, "boards", "boards");
     if (!at) {
@@ -215,46 +255,34 @@ void setup()
     }
     h_lookup = std::move(*h);
     bridge_on = true;
-    std::thread(account_worker).detach();
+    std::thread([this] { account.watch(); }).detach();
     swofty::log("[boards] player name: hook armed at base+0x%llx; in Time Trial the launcher account's name replaces the stock name",
                 (unsigned long long)(at - swofty::api->module_base()));
 }
 
-}
-
-namespace runtime {
-
-void player_name_probe_tick()
+void TimeTrialName::probe_tick()
 {
-    static int64_t entered = 0;
-    static int pass = 0;
     int64_t now = int64_t(GetTickCount64());
     if (swofty_core::apply::moments::session_mode_track().first != "time_trial") {
-        entered = 0;
-        pass = 0;
+        probe_entered = 0;
+        probe_pass = 0;
         return;
     }
-    if (!entered)
-        entered = now;
-    static const int64_t at_ms[] = {8000, 40000};
-    if (pass < 2 && now - entered >= at_ms[pass])
-        name_copies::probe_registry(++pass);
+    if (!probe_entered)
+        probe_entered = now;
+    static constexpr int64_t at_ms[] = {8000, 40000};
+    if (probe_pass < 2 && now - probe_entered >= at_ms[probe_pass])
+        name_copies::probe_registry(++probe_pass);
 }
 
-}
-
-namespace runtime {
-
-void player_name_pin_tick()
+void TimeTrialName::pin_tick()
 {
-    static int64_t last = 0;
-    static std::string last_decision;
     if (!bridge_on.load(std::memory_order_relaxed))
         return;
     int64_t now = int64_t(GetTickCount64());
-    if (now - last < 3000)
+    if (now - pin_last < 3000)
         return;
-    last = now;
+    pin_last = now;
     auto mode = swofty_core::apply::moments::session_mode_track().first;
     bool ours = session_ours();
     std::string clean, stock, why;
@@ -280,7 +308,7 @@ void player_name_pin_tick()
     if (why.empty() && stock.empty() && swofty::game::g_Vm_Registry.address()) {
         namespace ur = runtime::ui_registry;
         uint64_t base = swofty::api->module_base(), reg = uint64_t(*swofty::game::g_Vm_Registry);
-        ur::Layout lay{base + 0x5a70080, base + 0x5a6ff90, base + 0x565f200, base + 0x5660370};
+        ur::Layout lay = name_copies::registry_layout(base);
         std::vector<ur::Hit> all;
         ur::Stats st;
         auto rd = [](uint64_t at, void *out, size_t n) { return name_copies::registry_read(at, out, n); };
@@ -316,10 +344,34 @@ void player_name_pin_tick()
     name_copies::source_swap.plan_swap(true, stock, clean, source, visible);
 }
 
-void player_name_session()
+void TimeTrialName::session()
 {
     if (bridge_on.load(std::memory_order_relaxed))
-        arm_rename(session_serial());
+        arm_rename(runtime::session_serial());
+}
+
+void setup()
+{
+    tt_name.setup();
+}
+
+}
+
+namespace runtime {
+
+void player_name_probe_tick()
+{
+    tt_name.probe_tick();
+}
+
+void player_name_pin_tick()
+{
+    tt_name.pin_tick();
+}
+
+void player_name_session()
+{
+    tt_name.session();
 }
 
 }

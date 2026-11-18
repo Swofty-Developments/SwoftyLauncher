@@ -20,10 +20,13 @@ LINUX, WINDOWS, HOST = 'x86_64-linux-musl', 'x86_64-windows-gnu', 'host'
 
 @dataclass
 class Unit:
+    """A test source built into one executable. `inputs` are the files, as globs relative to native/, it reads
+    beyond the files its `args` name, so a change to one runs it again."""
     name: str
     title: str
     compiler: str = 'gcc'
     args: list = field(default_factory=list)
+    inputs: list = field(default_factory=list)
 
     @property
     def source(self):
@@ -97,10 +100,15 @@ UNITS = [
     Unit('pit_box', 'Pit box guard unit test'),
     Unit('pit_slots', 'Pit slot guard unit test'),
     Unit('placed_record', 'placed record bound unit test'),
-    Unit('guard_lines', 'Site guard log lines test', args=['../src/core/guards', 'guard_lines/expected.txt', 'guard_lines/added.txt']),
-    Unit('guard_registry', 'Core mixin-set registry order test', args=['../src/core']),
+    Unit('guard_lines', 'Site guard log lines test', args=['../src/core/guards', 'guard_lines/expected.txt', 'guard_lines/added.txt'],
+         inputs=['src/core/guards/**/*.cpp']),
+    Unit('guard_registry', 'Core mixin-set registry order test', args=['../src/core'],
+         inputs=['tools/core_link_order.txt', 'src/core/**/*.cpp']),
     Unit('guard_skips', 'Guard first-N log cap unit test'),
     Unit('guard_on_demand', 'On-demand guard arming unit test'),
+    Unit('hashing', 'Shared hash helpers unit test'),
+    Unit('steps', 'Boot step and slow addon init log line unit test'),
+    Unit('report_queue', 'Registry report writer queue unit test'),
     Unit('protection_spans', 'Binding pass protection spans unit test'),
     Unit('game_settings', 'Game setting override table unit test'),
     Unit('player_name', 'Player name sanitising unit test'),
@@ -117,6 +125,8 @@ UNITS = [
     Unit('setup_vm', 'Setup screen car guard unit test'),
     Unit('srv_clamp', 'Shader resource view clamp unit test'),
     Unit('rtas_guard', 'Ray tracing build guard unit test'),
+    Unit('d3d12_probe', 'D3D12 probe device sharing unit test'),
+    Unit('font_upload', 'Overlay font atlas upload unit test'),
     Unit('lang_scope', 'String scope unit test'),
     Unit('stall_order', 'Load-stall report running-threads order unit test'),
     Unit('standings_drop', 'Standings dropped scores unit test'),
@@ -129,6 +139,9 @@ UNITS = [
     Unit('toast', 'Lap toast message and state machine unit test'),
     Unit('track_list_guard', 'Career calendar track list guard unit test'),
     Unit('track_record', 'Round track record guard unit test'),
+    Unit('build_proof', 'Per-build proof gates unit test'),
+    Unit('mixin_gate', 'Core mixin set gate and commit lines unit test'),
+    Unit('picker_log_caps', 'Era picker log caps unit test'),
     Unit('tt_loaded', 'Time Trial loaded list board and team label unit test'),
     Unit('tyre_models', 'Tyre model check unit test'),
     Unit('tyre_slots', 'Tyre slot guard unit test'),
@@ -188,7 +201,9 @@ CONTENT_WINDOWS = ['-Isrc', '-std=c++23', '-O2', '-Wall', '-Wextra', SDK, '-Iinc
 CONTENT = [
     Program('lower_tool', [Objects(['test/content/lower_tool.cpp'], CONTENT_FLAGS + [SDK]), CONTENT_ENGINE]),
     Program('rows_tool', [Objects(['test/content/rows_tool.cpp'], CONTENT_FLAGS + [SDK]), CONTENT_IDS, CONTENT_ENGINE]),
-    Program('rows_test', [Objects(['test/content/rows_test.cpp', 'src/core/apply/scheduler.cpp'], CONTENT_FLAGS + [SDK]),
+    Program('rows_test', [Objects(['test/content/rows_test.cpp', 'test/content/rows_test_packages.cpp',
+                                   'test/content/rows_test_teams.cpp', 'test/content/rows_test_slots.cpp',
+                                   'test/content/rows_test_career.cpp', 'src/core/apply/scheduler.cpp'], CONTENT_FLAGS + [SDK]),
                           CONTENT_IDS, CONTENT_ENGINE]),
     *[Program(test, [Objects([f'test/content/{test}.cpp'], CONTENT_FLAGS + [SDK]), CONTENT_IDS, CONTENT_ENGINE])
       for test in ('vehicle_tower_test', 'package_id_test', 'id_pool_test', 'wear_test')],
@@ -320,7 +335,7 @@ SCRIPTS = [
            ['bash', 'native/test/run_snapshots_test.sh', '{out}'], programs=SNAPSHOTS),
     Script('net_trace', 'Socket trace Wine test', ['bash', 'native/test/run_net_trace_test.sh'], wine=True),
     Script('career_ui', 'Career UI Wine test', ['bash', 'native/test/run_career_ui_test.sh'], wine=True),
-    Script('fast_fail', 'Fast-fail crash reports (fast-fail codes, reasons, exit statuses, byte patterns)', ['{out}/fast_fail_test'],
+    Script('fast_fail', 'Fast-fail crash reports (fast-fail codes, reasons, exit statuses, byte patterns, cached prologue addresses)', ['{out}/fast_fail_test'],
            cwd='test', programs=FAST_FAIL),
     Script('log_fallback', 'Loader log fallback Wine test', ['bash', 'native/test/run_log_fallback_test.sh'], wine=True),
     Script('lang_override', 'String override Wine test', ['bash', 'native/test/run_lang_override_test.sh'], wine=True),
@@ -345,6 +360,11 @@ SCRIPTS = [
     Script('garage_crew_sites', 'Garage crew guard sites export test', ['bash', 'native/test/run_garage_crew_sites_test.sh']),
     Script('scan', 'Pattern scan and scan cache unit test', ['bash', 'native/test/run_scan_test.sh', '{out}'], programs=SCAN),
     Script('pin', 'CPU pin plan (CI, taskset, affinity, job count)', ['bash', 'native/test/pin_test.sh']),
+    Script('wineserver', 'Wine test wineserver lookup (beside wine, lib folders, versions)',
+           ['bash', 'native/test/wineserver_test.sh']),
     Script('std_templates', 'Standard library templates', ['python3', 'tools/std/templates.py']),
+    Script('loading_report', 'Loading report on synthetic loader.log runs', ['python3', '-I', 'native/test/loading_report_test.py']),
+    Script('sigverify', 'Core signatures on the KB build and Steam 1.0.145 (skipped without both executables)',
+           ['python3', '-I', 'native/test/sigverify_test.py']),
 ]
 

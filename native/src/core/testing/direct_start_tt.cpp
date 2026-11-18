@@ -14,6 +14,7 @@
 #include "core/testing/direct_start_tt_logic.hpp"
 #include "core/boxes/era_logic.hpp"
 #include "core/boxes/tt_loaded_logic.hpp"
+#include "core/frontend/ui_vm.hpp"
 
 // The direct start's Time Trial (a `session` request with "mode": "time_trial"): the Time Trial mode made
 // current, then its setup written where the front end's screens leave it, so StateFrontendWorld's 'session'
@@ -30,12 +31,6 @@
 // built for the screens' list. Team refs pack a kind byte with a u16 index into [[[E+0xf80]+0x58]+0x2c8+kind*0x10]
 // (16-byte entries at +8, the team's name at entry+0x18); an entrant record carries its team's ref at +0x58 and its
 // vehicle's at +0x5c. Once the garage is up the front end's main scene is despawned and the intro fade released.
-
-namespace runtime {
-std::vector<era::Box> era_boxes();
-}
-
-bool ui_vm_set_path(const std::string &path, int type, const void *value);
 
 namespace runtime {
 std::string hook_error(const safetyhook::InlineHook::Error &e);

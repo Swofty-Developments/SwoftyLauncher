@@ -5,13 +5,13 @@
 #include <swofty/mixin.hpp>
 #include <swofty/ui.hpp>
 
-#include <cstdio>
 #include <string>
 #include <vector>
 
-#include "core/runtime/json.hpp"
-
-bool settings_command(uint32_t hash);
+#include "core/frontend/addon_page.hpp"
+#include "core/frontend/name_hash.hpp"
+#include "core/frontend/ui_vm.hpp"
+#include "core/frontend/vm_string.hpp"
 
 namespace swofty::ui {
 
@@ -79,16 +79,34 @@ struct Instance {
     std::unique_ptr<ViewModel> vm;
 };
 
-uintptr_t base, a_regvm, a_fixstr, a_path, a_setint, transition_vt, helper_vt, handle_vt;
-void **ui_system;
-bool ready;
-std::vector<Factory> &factories()
-{
-    static std::vector<Factory> f;
-    return f;
-}
-std::vector<Instance *> instances;
-void *vtable[VT_SLOTS + 1], *vt260[6], *vt268[3];
+class VmHost {
+public:
+    bool init(uintptr_t module_base, const std::wstring &swofty_dir);
+    bool ready() const { return is_ready; }
+    bool attach(const std::string &screen);
+    void add_factory(const char *screen_prefix, swofty::ui::Factory factory) { factories.push_back({screen_prefix, factory}); }
+    bool set(const ViewModel &model, const char *prop, int type, const void *value) const;
+    bool set_path(const std::string &path, int type, const void *value) const;
+    uintptr_t node_token(const std::string &path) const;
+    void *message_system() const;
+
+private:
+    bool build_vtables();
+    void *binding_manager() const;
+    void **resolve(void *reg, uint8_t *root, const char *path) const;
+    void **data_node(const ViewModel &model, const char *child) const;
+    void *parent_of(const ViewModel &model, const char *prop, std::string &leaf) const;
+    bool write(void *reg, void *parent, const char *leaf, int type, const void *value) const;
+
+    uintptr_t base = 0, a_regvm = 0, a_fixstr = 0, a_path = 0, a_setint = 0, transition_vt = 0, helper_vt = 0, handle_vt = 0;
+    void **ui_system = nullptr;
+    bool is_ready = false;
+    std::vector<Factory> factories;
+    std::vector<Instance *> instances;
+    void *vtable[VT_SLOTS + 1] = {}, *vt260[6] = {}, *vt268[3] = {};
+};
+
+constinit VmHost host;
 
 uintptr_t scan(const Target &t)
 {
@@ -114,13 +132,7 @@ uintptr_t lea_target(uintptr_t insn)
     return insn + 7 + *reinterpret_cast<const int32_t *>(insn + 3);
 }
 
-uint32_t djb2(const char *s)
-{
-    uint32_t h = 5381;
-    while (*s)
-        h = h * 33 + uint8_t(*s++);
-    return h;
-}
+using name_hash::djb2;
 
 ViewModel *owner(void *native)
 {
@@ -179,7 +191,7 @@ void on_command(void *self, NeStr **name, const void *data)
                 handled ? "handled" : "not handled");
 }
 
-bool build_vtables()
+bool VmHost::build_vtables()
 {
     if (!transition_vt || !helper_vt || !handle_vt) {
         swofty::log("[ui] view models: a vtable address did not resolve (transition base+0x%llx, helper base+0x%llx, "
@@ -216,7 +228,7 @@ bool build_vtables()
     return true;
 }
 
-void *binding_manager()
+void *VmHost::binding_manager() const
 {
     if (!ui_system || !*ui_system)
         return nullptr;
@@ -225,217 +237,68 @@ void *binding_manager()
     return fn(sys);
 }
 
-void **data_node(const ViewModel &vm, const char *child)
+void **VmHost::resolve(void *reg, uint8_t *root, const char *path) const
+{
+    return reinterpret_cast<Path_t *>(a_path)(reg, root + 8, path);
+}
+
+void **VmHost::data_node(const ViewModel &model, const char *child) const
 {
     void *reg = *g_Vm_Registry;
     if (!reg || !a_path)
         return nullptr;
     auto *root = *reinterpret_cast<uint8_t **>(static_cast<uint8_t *>(reg) + 8);
-    void *root_handle = root ? static_cast<void *>(root + 8) : nullptr;
-    if (!root_handle)
+    if (!root)
         return nullptr;
-    std::string path = vm.path();
+    std::string path = model.path();
     if (child && *child)
         path += std::string(".") + child;
-    void **node = reinterpret_cast<Path_t *>(a_path)(reg, root_handle, path.c_str());
+    void **node = resolve(reg, root, path.c_str());
     return node && *node ? node : nullptr;
 }
 
-void *parent_of(const ViewModel &vm, const char *prop, std::string &leaf)
+void *VmHost::parent_of(const ViewModel &model, const char *prop, std::string &leaf) const
 {
     std::string p(prop);
     size_t dot = p.find_last_of('.');
     std::string child = dot == std::string::npos ? "" : p.substr(0, dot);
     leaf = dot == std::string::npos ? p : p.substr(dot + 1);
-    void **node = data_node(vm, child.c_str());
+    void **node = data_node(model, child.c_str());
     return node ? static_cast<uint8_t *>(*node) + 8 : nullptr;
 }
 
-}
-
-namespace swofty::ui {
-
-bool ViewModel::set_text(const char *prop, const char *utf8)
+bool VmHost::write(void *reg, void *parent, const char *leaf, int type, const void *value) const
 {
-    std::string leaf;
-    void *parent = parent_of(*this, prop, leaf);
-    if (!parent)
-        return false;
-    NeStr *s = nullptr;
-    Ne_Make_StrFromCStr(&s, utf8, 0, 0);
-    Vm_Set_String(*g_Vm_Registry, parent, leaf.c_str(), &s, 1);
-    Ne_Make_StrFromCStr(&s, nullptr, 0, 0);
-    return true;
-}
-
-bool ViewModel::set_bool(const char *prop, bool value)
-{
-    std::string leaf;
-    void *parent = parent_of(*this, prop, leaf);
-    if (!parent)
-        return false;
-    uint8_t v = value;
-    Vm_Set_Bool(*g_Vm_Registry, parent, leaf.c_str(), &v, 1);
-    return true;
-}
-
-bool ViewModel::set_int(const char *prop, int32_t value)
-{
-    std::string leaf;
-    void *parent = parent_of(*this, prop, leaf);
-    if (!parent || !a_setint)
-        return false;
-    int64_t v = value;
-    reinterpret_cast<SetInt_t *>(a_setint)(*g_Vm_Registry, parent, leaf.c_str(), &v, 1);
-    return true;
-}
-
-void register_view_model(const char *screen_prefix, Factory factory)
-{
-    factories().push_back({screen_prefix, factory});
-}
-
-}
-
-namespace {
-
-struct Option {
-    std::string id, label, type;
-    std::vector<std::string> commands, texts;
-    int current = 0;
-};
-
-struct AddonInfo {
-    std::string id, name;
-    std::vector<Option> options;
-};
-
-std::vector<AddonInfo> &addons()
-{
-    static std::vector<AddonInfo> m;
-    return m;
-}
-
-class AddonPage : public ViewModel {
-public:
-    void on_activated() override
-    {
-        const AddonInfo *m = find_addon();
-        if (!m) {
-            set_text("title", screen().c_str());
-            swofty::log("[ui] view model %s: no addon for this page in settings.json", screen().c_str());
-            return;
-        }
-        set_text("title", m->name.c_str());
-        for (size_t i = 0; i < m->options.size(); i++)
-            publish(*m, i);
-        swofty::log("[ui] view model %s: published title '%s' and %zu option row(s)", screen().c_str(), m->name.c_str(),
-                    m->options.size());
+    switch (type) {
+    case 0:
+        vm::set_string(reg, parent, leaf, static_cast<const char *>(value));
+        return true;
+    case 1: {
+        uint8_t v = *static_cast<const int32_t *>(value) != 0;
+        Vm_Set_Bool(reg, parent, leaf, &v, 1);
+        return true;
     }
-
-    bool on_command(const swofty::ui::Command &c) override
-    {
-        AddonInfo *m = find_addon();
-        if (!m)
+    case 2: {
+        if (!a_setint)
             return false;
-        std::string name = c.name ? c.name : "";
-        for (size_t i = 0; i < m->options.size(); i++) {
-            Option &o = m->options[i];
-            int count = int(o.commands.size());
-            if (!count)
-                continue;
-            int next = -1;
-            for (int k = 0; k < count && next < 0; k++)
-                if (djb2(o.commands[k].c_str()) == c.hash)
-                    next = k;
-            std::string tail = ":" + m->id + ":" + o.id;
-            if (next < 0 && name == "swofty_next" + tail)
-                next = o.type == "slider" ? (o.current + 1 < count ? o.current + 1 : o.current) : (o.current + 1) % count;
-            if (next < 0 && name == "swofty_prev" + tail)
-                next = o.type == "slider" ? (o.current > 0 ? o.current - 1 : 0) : (o.current + count - 1) % count;
-            if (next < 0)
-                continue;
-            o.current = next;
-            settings_command(djb2(o.commands[next].c_str()));
-            publish(*m, i);
-            return true;
-        }
-        return false;
+        int64_t v = *static_cast<const int32_t *>(value);
+        reinterpret_cast<SetInt_t *>(a_setint)(reg, parent, leaf, &v, 1);
+        return true;
     }
-
-private:
-    AddonInfo *find_addon()
-    {
-        auto &list = addons();
-        size_t at = screen().find_last_of('_');
-        if (at == std::string::npos)
-            return nullptr;
-        int index = atoi(screen().c_str() + at + 1);
-        return index >= 0 && size_t(index) < list.size() ? &list[size_t(index)] : nullptr;
     }
+    return false;
+}
 
-    void publish(const AddonInfo &, size_t i)
-    {
-        const Option &o = find_addon()->options[i];
-        char key[64];
-        auto prop = [&](const char *leaf) {
-            snprintf(key, sizeof key, "o%zu.%s", i, leaf);
-            return key;
-        };
-        int count = int(o.commands.size());
-        set_text(prop("label"), o.label.c_str());
-        set_text(prop("text"), o.current >= 0 && o.current < int(o.texts.size()) ? o.texts[size_t(o.current)].c_str() : "");
-        set_int(prop("index"), o.current);
-        set_int(prop("value"), o.current);
-        set_int(prop("min"), 0);
-        set_int(prop("max"), count > 0 ? count - 1 : 0);
-        set_int(prop("step"), 1);
-        set_bool(prop("is_slider"), o.type == "slider");
-    }
-};
-
-SWOFTY_VIEW_MODEL("swofty_addon_", AddonPage)
-
-void load_addons(const std::wstring &settings_path)
+bool VmHost::set(const ViewModel &model, const char *prop, int type, const void *value) const
 {
-    HANDLE f = CreateFileW(settings_path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
-    if (f == INVALID_HANDLE_VALUE)
-        return;
-    std::string text;
-    LARGE_INTEGER size{};
-    if (GetFileSizeEx(f, &size) && size.QuadPart > 0 && size.QuadPart < (16 << 20)) {
-        text.resize(size_t(size.QuadPart));
-        DWORD got = 0;
-        if (!ReadFile(f, text.data(), DWORD(text.size()), &got, nullptr))
-            text.clear();
-    }
-    CloseHandle(f);
-    json::Value doc;
-    if (text.empty() || !json::parse(text, doc))
-        return;
-    for (auto &jm : doc.field("addons", "mods").a) {
-        AddonInfo m;
-        m.id = jm["id"].str();
-        m.name = jm["name"].str(m.id.c_str());
-        for (auto &jo : jm["options"].a) {
-            Option o;
-            o.id = jo["id"].str();
-            o.label = jo["label"].str(o.id.c_str());
-            o.type = jo["type"].str();
-            o.current = int(jo["current"].num(0));
-            for (auto &st : jo["states"].a) {
-                o.commands.push_back(st["command"].str());
-                o.texts.push_back(st["text"].str());
-            }
-            m.options.push_back(std::move(o));
-        }
-        addons().push_back(std::move(m));
-    }
+    std::string leaf;
+    void *parent = parent_of(model, prop, leaf);
+    if (!parent)
+        return false;
+    return write(*g_Vm_Registry, parent, leaf.c_str(), type, value);
 }
 
-}
-
-bool ui_vm_set_path(const std::string &path, int type, const void *value)
+bool VmHost::set_path(const std::string &path, int type, const void *value) const
 {
     if (!g_Vm_Registry.address() || !a_path)
         return false;
@@ -449,35 +312,13 @@ bool ui_vm_set_path(const std::string &path, int type, const void *value)
     if (dot == std::string::npos || dot == 0 || dot + 1 >= path.size())
         return false;
     std::string leaf = path.substr(dot + 1);
-    void **node = reinterpret_cast<Path_t *>(a_path)(reg, root + 8, path.substr(0, dot).c_str());
+    void **node = resolve(reg, root, path.substr(0, dot).c_str());
     if (!node || !*node)
         return false;
-    void *parent = static_cast<uint8_t *>(*node) + 8;
-    switch (type) {
-    case 0: {
-        NeStr *s = nullptr;
-        Ne_Make_StrFromCStr(&s, static_cast<const char *>(value), 0, 0);
-        Vm_Set_String(reg, parent, leaf.c_str(), &s, 1);
-        Ne_Make_StrFromCStr(&s, nullptr, 0, 0);
-        return true;
-    }
-    case 1: {
-        uint8_t v = *static_cast<const int32_t *>(value) != 0;
-        Vm_Set_Bool(reg, parent, leaf.c_str(), &v, 1);
-        return true;
-    }
-    case 2: {
-        if (!a_setint)
-            return false;
-        int64_t v = *static_cast<const int32_t *>(value);
-        reinterpret_cast<SetInt_t *>(a_setint)(reg, parent, leaf.c_str(), &v, 1);
-        return true;
-    }
-    }
-    return false;
+    return write(reg, static_cast<uint8_t *>(*node) + 8, leaf.c_str(), type, value);
 }
 
-uintptr_t ui_vm_node_token(const std::string &path)
+uintptr_t VmHost::node_token(const std::string &path) const
 {
     if (!g_Vm_Registry.address() || !a_path)
         return 0;
@@ -487,22 +328,11 @@ uintptr_t ui_vm_node_token(const std::string &path)
     auto *root = *reinterpret_cast<uint8_t **>(static_cast<uint8_t *>(reg) + 8);
     if (!root)
         return 0;
-    void **node = reinterpret_cast<Path_t *>(a_path)(reg, root + 8, path.c_str());
+    void **node = resolve(reg, root, path.c_str());
     return node && *node ? reinterpret_cast<uintptr_t>(*node) : 0;
 }
 
-uintptr_t ui_vm_epoch()
-{
-    if (!g_Vm_Registry.address())
-        return 0;
-    void *reg = *g_Vm_Registry;
-    if (!reg)
-        return 0;
-    auto *root = *reinterpret_cast<uint8_t **>(static_cast<uint8_t *>(reg) + 8);
-    return reinterpret_cast<uintptr_t>(reg) * 31u + reinterpret_cast<uintptr_t>(root);
-}
-
-void *ui_vm_message_system()
+void *VmHost::message_system() const
 {
     if (!ui_system || !swofty::mem::readable(ui_system, sizeof(void *)) || !*ui_system)
         return nullptr;
@@ -513,7 +343,7 @@ void *ui_vm_message_system()
     return reinterpret_cast<Getter_t *>(vt[0x58 / 8])(sys);
 }
 
-bool ui_vm_init(uintptr_t module_base, const std::wstring &swofty_dir)
+bool VmHost::init(uintptr_t module_base, const std::wstring &swofty_dir)
 {
     base = module_base;
     a_regvm = scan(T_REGVM);
@@ -534,37 +364,32 @@ bool ui_vm_init(uintptr_t module_base, const std::wstring &swofty_dir)
         if (insn[0] == 0x48 && insn[1] == 0x8b && insn[2] == 0x0d)
             ui_system = reinterpret_cast<void **>(regnode + 0x16 + 7 + *reinterpret_cast<const int32_t *>(insn + 3));
     }
-    ready = a_regvm && a_fixstr && a_path && ui_system && Vm_Set_String.address() && Vm_Set_Bool.address() &&
+    is_ready = a_regvm && a_fixstr && a_path && ui_system && Vm_Set_String.address() && Vm_Set_Bool.address() &&
             g_Vm_Registry.address() && build_vtables();
     if (call && a_setint != base + 0xd38fd0)
         swofty::log("[ui] view models: Vm_Set_Int resolved to base+0x%llx (KB build has base+0xd38fd0)",
                     (unsigned long long)(a_setint - base));
-    load_addons(swofty_dir + L"settings.json");
+    addon_page::load(swofty_dir + L"settings.json");
     swofty::log("[ui] view models: %s (register base+0x%llx, path base+0x%llx, set_int base+0x%llx, vtables "
                 "base+0x%llx/0x%llx/0x%llx, ui system %p, %zu factory(ies), %zu addon(s) from settings.json)",
-                ready ? "ready" : "off", (unsigned long long)(a_regvm ? a_regvm - base : 0),
+                is_ready ? "ready" : "off", (unsigned long long)(a_regvm ? a_regvm - base : 0),
                 (unsigned long long)(a_path ? a_path - base : 0), (unsigned long long)(a_setint ? a_setint - base : 0),
                 (unsigned long long)(transition_vt ? transition_vt - base : 0),
                 (unsigned long long)(helper_vt ? helper_vt - base : 0),
                 (unsigned long long)(handle_vt ? handle_vt - base : 0), static_cast<void *>(ui_system),
-                factories().size(), addons().size());
-    return ready;
+                factories.size(), addon_page::count());
+    return is_ready;
 }
 
-bool ui_vm_ready()
+bool VmHost::attach(const std::string &screen)
 {
-    return ready;
-}
-
-bool ui_vm_attach(const std::string &screen)
-{
-    if (!ready)
+    if (!is_ready)
         return false;
     for (auto *i : instances)
         if (i->screen == screen)
             return true;
     const Factory *f = nullptr;
-    for (auto &c : factories())
+    for (auto &c : factories)
         if (screen.compare(0, c.prefix.size(), c.prefix) == 0)
             f = &c;
     if (!f) {
@@ -603,4 +428,72 @@ bool ui_vm_attach(const std::string &screen)
                 static_cast<void *>(native), key, key == djb2(screen.c_str()) ? " = djb2(screen)" : " != djb2(screen)",
                 inst->vm->path().c_str());
     return true;
+}
+
+}
+
+namespace swofty::ui {
+
+bool ViewModel::set_text(const char *prop, const char *utf8)
+{
+    return host.set(*this, prop, 0, utf8);
+}
+
+bool ViewModel::set_bool(const char *prop, bool value)
+{
+    int32_t v = value;
+    return host.set(*this, prop, 1, &v);
+}
+
+bool ViewModel::set_int(const char *prop, int32_t value)
+{
+    return host.set(*this, prop, 2, &value);
+}
+
+void register_view_model(const char *screen_prefix, Factory factory)
+{
+    host.add_factory(screen_prefix, factory);
+}
+
+}
+
+bool ui_vm_init(uintptr_t module_base, const std::wstring &swofty_dir)
+{
+    return host.init(module_base, swofty_dir);
+}
+
+bool ui_vm_ready()
+{
+    return host.ready();
+}
+
+bool ui_vm_attach(const std::string &screen)
+{
+    return host.attach(screen);
+}
+
+bool ui_vm_set_path(const std::string &path, int type, const void *value)
+{
+    return host.set_path(path, type, value);
+}
+
+uintptr_t ui_vm_node_token(const std::string &path)
+{
+    return host.node_token(path);
+}
+
+uintptr_t ui_vm_epoch()
+{
+    if (!g_Vm_Registry.address())
+        return 0;
+    void *reg = *g_Vm_Registry;
+    if (!reg)
+        return 0;
+    auto *root = *reinterpret_cast<uint8_t **>(static_cast<uint8_t *>(reg) + 8);
+    return reinterpret_cast<uintptr_t>(reg) * 31u + reinterpret_cast<uintptr_t>(root);
+}
+
+void *ui_vm_message_system()
+{
+    return host.message_system();
 }

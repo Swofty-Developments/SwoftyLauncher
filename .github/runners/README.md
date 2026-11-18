@@ -68,10 +68,38 @@ The workflows save these, measured on hosted and EC2 runs in November 2026:
 | `v0-rust-test-…-Linux-…` | Rust tests on main, and on a pull request whose key main lacks | 0.96 GB |
 | `v0-rust-test-…-Windows_NT-…` | the same | 0.84 GB |
 | `zig-Linux-0.16.0-<month>-<hash>` | the native job on main; the step after it deletes main's older ones | 2.75 GB |
+| `ccache-Linux-zig0.16.0-<part>-<run>` | the native job on every branch, one per part (`all` on EC2, `host` and `wine` on hosted runners); the step after it deletes that branch's older ones | 0.02 GB for build.sh's objects; the test objects are not measured yet |
 | `pnpm-*` | the documentation build on main | 0.10 GB |
 | `setup-zig-tarball-*` | `mlugg/setup-zig`, per branch | 0.05–0.09 GB |
 
-Main holds about 4.8 GB. A pull request that changes `Cargo.lock`, the toolchain or the root `[profile]`
-sections adds its own test caches (1.8 GB), so main and two such pull requests stay under 9 GB. In CI the
+Main holds about 4.8 GB and its ccache. Every pull request that changes native code adds its own ccache, and
+one that changes `Cargo.lock`, the toolchain or the root `[profile]` sections adds its own test caches (1.8 GB),
+so main and two such pull requests stay under 9 GB plus their ccaches. Each ccache holds only the objects its
+last run used, and at most 1 GB (`CCACHE_MAXSIZE`). In CI the
 templates' Zig cache folders link to the native one, which saves their libc++ and MinGW builds once. Clippy,
 the installer and the release builds keep no Rust cache.
+
+## First run of the bindings workflow
+
+`bindings.yml` runs on `pull_request_target`, which uses main's copy of the workflow, so it first runs once it
+is on main. Check it once with four pull requests from a fork, then delete the test records.
+
+1. Settings: General → Allow auto-merge; a ruleset on `main` that requires a pull request and the CI checks
+   with no bypass; the label `bindings: auto-merge`. Actions → General → the approval rule for fork pull
+   request workflows decides whether a maintainer must approve `ci.yml` on a new contributor's pull request
+   before its checks run; `bindings.yml` runs either way.
+2. Pull request A, one valid record. On a machine with the game, `binding.py new` then `binding.py verify
+   --exe … --by <fork owner>` for an address the knowledge base lacks; push only that file. Expected: `validate`
+   passes with "Binding check: auto" in its summary, `automerge` adds the label and enables auto-merge, and
+   `withdraw` is skipped. The squash merge lands after the CI checks pass.
+3. Pull request B, one record with a duplicate key or a pattern that starts with `??`. Expected: `validate`
+   fails and lists the error, and `automerge` is skipped.
+4. Pull request C, a valid record plus any non-record file. Expected: "Binding check: review", no label.
+5. Pinning: in a fourth valid pull request, push a second commit while the CI checks still run. `validate`
+   runs again and auto-merge moves to the new head. After the merge, `gh pr view <number> --json
+   headRefOid,mergeCommit` and `git diff <headRefOid> <mergeCommit> -- re/bindings` show that the merged
+   records are the checked ones.
+6. On each merge commit, check whether `ci.yml` and the `main` job of `bindings.yml` ran. Events that
+   `GITHUB_TOKEN` causes start no workflows, and an auto-merge it enabled can count as one. Without those
+   runs, a tag on that commit builds its binaries in `release.yml`, and `main` checks it on the next push.
+7. A maintainer's pull request deletes the test records.

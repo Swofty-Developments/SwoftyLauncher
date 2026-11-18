@@ -4,11 +4,11 @@ use gpui_kit::component::input::Input;
 use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::timetrial::boards::{Group, Row, format_time};
+use swofty_core::online::timetrial::boards::{Group, Row, format_time};
 use swofty_i18n::{tr, trf};
 
 use super::moderation::flag;
-use super::state::{Load, Pick, View};
+use super::state::{Load, Pick, TtPage, View};
 use crate::shell::Shell;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::{Palette, ScrollArea};
@@ -29,10 +29,10 @@ impl Shell {
             .icon(IconName::ArrowRightLeft)
             .label(tr("Refresh"))
             .on_click(cx.listener(|this, _, _, cx| {
-                this.tt_load_barred(cx);
-                this.tt_load_catalog(cx);
-                this.tt_reload(cx);
-                this.tt_load_runs(cx);
+                TtPage::load_barred(this, cx);
+                TtPage::load_catalog(this, cx);
+                TtPage::reload(this, cx);
+                TtPage::load_runs(this, cx);
             }));
         if self.account.session.is_none() {
             let header = self.header(
@@ -89,7 +89,7 @@ impl Shell {
 
     /// The barred addons the active profile has enabled, by name and why, in red.
     fn tt_barred_notice(&self, p: Palette) -> Option<AnyElement> {
-        let enabled = self.tt_barred_enabled();
+        let enabled = self.tt.barred_in(&self.library);
         if enabled.is_empty() {
             return None;
         }
@@ -219,7 +219,7 @@ impl Shell {
                                         .child(detail.join(" · ")),
                                 ),
                         )
-                        .on_click(cx.listener(move |this, _, _, cx| this.tt_pick(pick.clone(), cx))),
+                        .on_click(cx.listener(move |this, _, _, cx| TtPage::pick(this, pick.clone(), cx))),
                 );
             }
         }
@@ -238,7 +238,7 @@ impl Shell {
                 ))
                 .into_any_element();
         };
-        let search = self.tt_search(window, cx);
+        let search = TtPage::search(self, window, cx);
         let byline = self.tt_pick_byline(&pick);
         let rows: Vec<Row> = self.tt.visible().into_iter().cloned().collect();
         let rows_len = rows.len();
@@ -345,7 +345,7 @@ impl Shell {
             .when(flagged, |d| {
                 d.cursor_pointer()
                     .hover(move |s| s.bg(p.hover))
-                    .on_click(cx.listener(move |this, _, _, cx| this.tt_select_lap(&id, cx)))
+                    .on_click(cx.listener(move |this, _, _, cx| TtPage::select_lap(this, &id, cx)))
             })
             .when(open, |d| d.bg(p.surface))
             .child(

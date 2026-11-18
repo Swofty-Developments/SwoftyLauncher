@@ -18,6 +18,7 @@ result-*
 docs/.vitepress/dist/
 docs/.vitepress/cache/
 
+/dxc/
 native/build/
 native/dist/
 native/dist-*/

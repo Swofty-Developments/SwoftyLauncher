@@ -5,8 +5,8 @@ use std::path::{Path, PathBuf};
 
 use crate::GAME_EXE;
 use crate::install::Source;
+use crate::platform::LaunchPlatform;
 use crate::platform::steam::GameInstall;
-use crate::platform::{LaunchPlatform, for_source};
 use crate::session::Config;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -35,13 +35,13 @@ impl GameCopy {
 }
 
 pub fn store_name(source: Source) -> &'static str {
-    for_source(source).map_or("Other", |p| p.name())
+    source.platform().map_or("Other", |p| p.name())
 }
 
 /// Where the player moves a copy out of Program Files, by the store it came
 /// from.
 pub fn move_hint(source: Source) -> &'static str {
-    for_source(source).map_or("", |p| p.move_hint())
+    source.platform().map_or("", |p| p.move_hint())
 }
 
 pub fn same_dir(a: &Path, b: &Path) -> bool {
@@ -81,7 +81,15 @@ pub fn gather(steam: Option<GameInstall>, ea: Vec<PathBuf>, added: &[PathBuf]) -
     out
 }
 
+#[cfg(test)]
+thread_local! {
+    /// How many times this thread looked for the game's copies, for the tests that prove a step does not.
+    pub(crate) static LOOKS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
 pub fn discover(config: &Config) -> Vec<GameCopy> {
+    #[cfg(test)]
+    LOOKS.with(|n| n.set(n.get() + 1));
     gather(
         crate::platform::steam::find_game(),
         crate::platform::EaApp.installs(),

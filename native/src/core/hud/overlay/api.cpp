@@ -1,5 +1,6 @@
 #include "core/hud/overlay/overlay.hpp"
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -7,8 +8,6 @@
 #include <cstddef>
 #include <cstring>
 #include <mutex>
-
-std::string settings_addon(const void *from, std::string &dll);
 
 namespace hud::overlay {
 
@@ -49,18 +48,18 @@ int ov_available()
 {
     if (!overlay.implemented || !overlay.armed.load())
         return 0;
-    return hud::listed(overlay_off(), owner_of(caller(__builtin_return_address(0)))) ? 0 : 1;
+    return hud::listed(settings().off, owner_of(caller(__builtin_return_address(0)))) ? 0 : 1;
 }
 
 int ov_on_paint(SwoftyPaintFn fn, void *user, uint32_t *token)
 {
     Caller c = caller(__builtin_return_address(0));
-    if (hud::listed(overlay_off(), owner_of(c))) {
+    if (hud::listed(settings().off, owner_of(c))) {
         swofty::log("[overlay] api: %s on_paint -> unavailable (turned off for this addon in the launcher)",
                     owner_of(c).c_str());
         return SWOFTY_ASSET_UNAVAILABLE;
     }
-    if (!overlay.implemented || !gate_on())
+    if (!overlay.implemented || !settings().gate)
         return SWOFTY_ASSET_UNAVAILABLE;
     if (!fn)
         return SWOFTY_ASSET_INVALID;
@@ -77,7 +76,7 @@ int ov_on_paint(SwoftyPaintFn fn, void *user, uint32_t *token)
 
 int ov_remove(uint32_t token)
 {
-    if (!overlay.implemented || !gate_on())
+    if (!overlay.implemented || !settings().gate)
         return SWOFTY_ASSET_UNAVAILABLE;
     std::lock_guard<std::mutex> g(overlay.reg_lock);
     return overlay.reg.remove(token) ? SWOFTY_ASSET_OK : SWOFTY_ASSET_INVALID;
@@ -124,7 +123,7 @@ void ov_measure(const SwoftyPaint *, float size, const char *utf8, float *width,
 int ov_load_image(const char *id, const char *file)
 {
     Caller c = caller(__builtin_return_address(0));
-    if (!overlay.implemented || !gate_on())
+    if (!overlay.implemented || !settings().gate)
         return SWOFTY_ASSET_UNAVAILABLE;
     const char *who = c.id.empty() ? c.dll.c_str() : c.id.c_str();
     if (!id || !*id)
@@ -180,7 +179,7 @@ Found find_image(const std::string &owner, const char *id)
 
 int ov_image(SwoftyPaint *paint, const char *id, float x, float y, float w, float h, uint32_t tint)
 {
-    if (!overlay.implemented || !gate_on())
+    if (!overlay.implemented || !settings().gate)
         return SWOFTY_ASSET_UNAVAILABLE;
     Found f = find_image(paint ? frame_of(paint)->owner : owner_of(caller(__builtin_return_address(0))), id);
     if (f.slot < 0)
@@ -285,7 +284,7 @@ void ov_measure_styled(const SwoftyPaint *, const SwoftyTextStyle *style, const 
 int ov_image_uv(SwoftyPaint *paint, const char *id, float x, float y, float w, float h, float u0, float v0, float u1,
                 float v1, uint32_t tint)
 {
-    if (!overlay.implemented || !gate_on())
+    if (!overlay.implemented || !settings().gate)
         return SWOFTY_ASSET_UNAVAILABLE;
     Found f = find_image(paint ? frame_of(paint)->owner : owner_of(caller(__builtin_return_address(0))), id);
     if (f.slot < 0)
@@ -298,7 +297,7 @@ int ov_image_uv(SwoftyPaint *paint, const char *id, float x, float y, float w, f
 int ov_image_nine(SwoftyPaint *paint, const char *id, float x, float y, float w, float h, float left, float top,
                   float right, float bottom, float scale, uint32_t tint)
 {
-    if (!overlay.implemented || !gate_on())
+    if (!overlay.implemented || !settings().gate)
         return SWOFTY_ASSET_UNAVAILABLE;
     Found f = find_image(paint ? frame_of(paint)->owner : owner_of(caller(__builtin_return_address(0))), id);
     if (f.slot < 0)
@@ -310,7 +309,7 @@ int ov_image_nine(SwoftyPaint *paint, const char *id, float x, float y, float w,
 
 int ov_image_size(const char *id, float *width, float *height)
 {
-    if (!overlay.implemented || !gate_on())
+    if (!overlay.implemented || !settings().gate)
         return SWOFTY_ASSET_UNAVAILABLE;
     Found f = find_image(owner_of(caller(__builtin_return_address(0))), id);
     if (width)
@@ -369,7 +368,7 @@ float ov_ui_scale(const SwoftyPaint *paint)
 
 int ov_input(const SwoftyPaint *paint, SwoftyInput *out)
 {
-    if (!overlay.implemented || !gate_on())
+    if (!overlay.implemented || !settings().gate)
         return SWOFTY_ASSET_UNAVAILABLE;
     if (!paint || !out || out->size < offsetof(SwoftyInput, x))
         return SWOFTY_ASSET_INVALID;
@@ -385,7 +384,7 @@ int ov_input(const SwoftyPaint *paint, SwoftyInput *out)
 int ov_focus(int on)
 {
     Caller c = caller(__builtin_return_address(0));
-    if (!overlay.implemented || !gate_on())
+    if (!overlay.implemented || !settings().gate)
         return SWOFTY_ASSET_UNAVAILABLE;
     std::string who = owner_of(c), before;
     bool changed = overlay.input.take_focus(who, on != 0, before);
@@ -453,8 +452,6 @@ const SwoftyOverlay *overlay_table()
 
 int overlay_image(const std::string &id, const std::string &path, uint32_t *width, uint32_t *height)
 {
-    static std::mutex failed_lock;
-    static std::vector<std::string> failed;
     std::string key = id + "|" + path;
     {
         std::lock_guard<std::mutex> g(overlay.reg_lock);
@@ -469,8 +466,8 @@ int overlay_image(const std::string &id, const std::string &path, uint32_t *widt
         }
     }
     {
-        std::lock_guard<std::mutex> f(failed_lock);
-        if (std::find(failed.begin(), failed.end(), key) != failed.end())
+        std::lock_guard<std::mutex> f(overlay.image_failed_lock);
+        if (std::find(overlay.image_failed.begin(), overlay.image_failed.end(), key) != overlay.image_failed.end())
             return -1;
     }
     std::string why;
@@ -479,8 +476,8 @@ int overlay_image(const std::string &id, const std::string &path, uint32_t *widt
     std::string data = runtime::read_file(wpath, size_t(8) << 20);
     if (data.empty() || !hud::img::decode(data, px, why)) {
         swofty::log("[overlay] main menu image %s: %s", path.c_str(), data.empty() ? "unreadable" : why.c_str());
-        std::lock_guard<std::mutex> f(failed_lock);
-        failed.push_back(key);
+        std::lock_guard<std::mutex> f(overlay.image_failed_lock);
+        overlay.image_failed.push_back(key);
         return -1;
     }
     uint32_t w = px.width, h = px.height;

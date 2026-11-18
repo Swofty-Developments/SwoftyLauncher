@@ -60,7 +60,7 @@ namespace runtime {
 
 void hide_movie_tile()
 {
-    static const uint8_t skip_movie[] = {0xEB, 0x10};
+    static constexpr uint8_t skip_movie[] = {0xEB, 0x10};
     auto at = reinterpret_cast<void *>(runtime::find(S_MOVIE_TILE, "home", "core"));
     DWORD old;
     bool hidden = at && VirtualProtect(at, sizeof skip_movie, PAGE_EXECUTE_READWRITE, &old);

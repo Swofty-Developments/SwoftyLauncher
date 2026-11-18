@@ -30,7 +30,7 @@ pub enum SetupCommand {
     Reset {
         #[arg(long, help = "The game folder holds mods Swofty didn't add")]
         other_mods: bool,
-        #[arg(long, help = crate::GAME_HELP)]
+        #[arg(long, help = crate::commands::cli::GAME_HELP)]
         game: Option<PathBuf>,
     },
     #[command(about = "Finish the setup once the game files are verified")]

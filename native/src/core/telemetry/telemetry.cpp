@@ -40,8 +40,20 @@ using swofty::tel::feed_end;
 using swofty::tel::feed_init;
 using swofty::tel::feed_read;
 
+// The handler's first 0x116 bytes, its system lookups stored at +8..+0x30, with rip-relative operands and branch
+// targets wildcarded: a shorter head is shared with other message handlers.
 const runtime::Sig S_RESULTS{"Game_SessionStateFinaliseResultsSync_OnResultsFinalised",
-                             "56 57 53 48 83 EC 30 4C 89 C7 48 89 D0 48 89 CE 4C 8B 02 48 8D 15 5E C1 67 05", 0x9d2b20};
+                             "56 57 53 48 83 EC 30 4C 89 C7 48 89 D0 48 89 CE 4C 8B 02 48 8D 15 ?? ?? ?? ?? 48 89 C1 41 FF "
+                             "50 28 48 89 46 08 48 85 C0 0F 84 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 "
+                             "28 48 89 F9 E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 47 18 48 3B 47 20 0F 84 ?? ?? ?? ?? 48 8B 40 08 "
+                             "48 89 46 10 48 85 C0 0F 84 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 48 "
+                             "89 F9 E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 47 18 48 3B 47 20 0F 84 ?? ?? ?? ?? 48 8B 40 08 48 89 "
+                             "46 18 48 85 C0 0F 84 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 48 89 F9 "
+                             "E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 47 18 48 3B 47 20 0F 84 ?? ?? ?? ?? 48 8B 40 08 48 89 46 20 "
+                             "48 85 C0 0F 84 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 48 89 F9 E8 ?? "
+                             "?? ?? ?? 48 C1 E0 04 48 03 47 18 48 3B 47 20 0F 84 ?? ?? ?? ?? 48 8B 40 08 48 89 46 30 48 85 "
+                             "C0",
+                             0x9d2b20};
 
 constexpr const char *FEED_NAME = "Local\\SwoftyTelemetry";
 

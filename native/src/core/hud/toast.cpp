@@ -17,11 +17,23 @@ namespace {
 
 constexpr ULONGLONG POLL_MS = 400;
 
-Machine machine;
-ULONGLONG last_poll = 0;
-int gate = -1;
+class LapToasts {
+public:
+    void tick();
 
-bool gate_on()
+private:
+    bool gate_on();
+    void take(const std::wstring &dir);
+
+    Machine machine;
+    ULONGLONG last_poll = 0;
+    int gate = -1;
+};
+
+// Not constinit: std::deque's constructor is not constexpr.
+LapToasts toasts;
+
+bool LapToasts::gate_on()
 {
     if (gate < 0) {
         auto doc = swofty::json::parse(read_file(swofty_root() + L"tt.json", size_t(1) << 20));
@@ -33,7 +45,7 @@ bool gate_on()
     return gate > 0;
 }
 
-void take(const std::wstring &dir)
+void LapToasts::take(const std::wstring &dir)
 {
     WIN32_FIND_DATAW fd;
     HANDLE h = FindFirstFileW((dir + L"\\*.json").c_str(), &fd);
@@ -64,9 +76,8 @@ void take(const std::wstring &dir)
     }
 }
 
-}
 
-void tick()
+void LapToasts::tick()
 {
     if (!gate_on())
         return;
@@ -84,6 +95,13 @@ void tick()
     Snapshot s = machine.step(now, int64_t(std::time(nullptr)));
     if (s.started)
         hud_toast(title_of(s.message), detail_of(s.message), SHOW_SECONDS, "time trial boards", "fast_lap");
+}
+
+}
+
+void tick()
+{
+    toasts.tick();
 }
 
 }

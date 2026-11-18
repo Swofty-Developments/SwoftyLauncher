@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::path::Path;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
@@ -7,12 +7,13 @@ use crate::ui::scale::px;
 use gpui_kit::component::WindowExt;
 use gpui_kit::*;
 use swofty_core::catalog;
-use swofty_core::multiplayer::client::{self as diag, Session, Setup};
-use swofty_core::multiplayer::types::{RoomSettings, RoomSummary};
+use swofty_core::online::multiplayer::client::{self as diag, Session, Setup};
+use swofty_core::online::multiplayer::types::{RoomSettings, RoomSummary};
 use swofty_i18n::{tr, trf};
 
 use super::model::*;
 use super::state::*;
+use crate::shell::host::Host;
 use crate::shell::{Page, Shell};
 use crate::ui::monogram;
 use crate::ui::theme::Palette;
@@ -38,7 +39,7 @@ impl Shell {
             m.finish_leaving();
             cx.notify();
         }
-        if self.page != Page::Multiplayer || !self.account.allowed() {
+        if self.navigation.page != Page::Multiplayer || !self.account.allowed() {
             self.mp_page.visible = false;
             return;
         }
@@ -46,14 +47,12 @@ impl Shell {
         let m = &mut self.mp_page;
         if !m.visible {
             m.visible = true;
-            m.rooms_at = None;
-            m.game_at = None;
-            m.digest = None;
+            m.lobby.refresh();
         }
         let refused = refusal(m.refused.clone(), diag::is_loaded(), diag::unavailable());
         if refused != m.refused {
             if refused.is_none() {
-                m.rooms_at = None;
+                m.lobby.rooms_at = None;
             }
             m.refused = refused;
             cx.notify();
@@ -71,18 +70,18 @@ impl Shell {
             m.copied = None;
             cx.notify();
         }
-        if m.session.is_none() && !m.game_polling && due(m.game_at, GAME_EVERY, now) {
-            self.mp_poll_game(cx);
+        if m.session.is_none() && m.lobby.game_due(now) {
+            Multiplayer::poll_game(self, cx);
         }
         let m = &self.mp_page;
-        if m.session.is_none() && !m.rooms_polling && due(m.rooms_at, ROOMS_EVERY, now) {
-            self.mp_poll_rooms(cx);
+        if m.session.is_none() && m.lobby.rooms_due(now) {
+            Multiplayer::poll_rooms(self, cx);
         }
         let m = &self.mp_page;
-        if m.digest.is_none() && !m.digest_busy && m.session.is_none() {
-            self.mp_read_digest(cx);
+        if m.session.is_none() && m.lobby.digest_due() {
+            Multiplayer::read_digest(self, cx);
         }
-        self.mp_load_faces(cx);
+        Multiplayer::load_shown_faces(self, cx);
     }
 
     /// Starts F1 25 for the room when the session asks, the game is closed and the launcher has put the
@@ -221,7 +220,7 @@ impl Shell {
             return;
         }
         self.mp_page.notice = None;
-        self.mp_start(start, cx);
+        Multiplayer::start(self, start, cx);
     }
 
     pub(super) fn mp_play(&mut self, start: Start, window: &mut Window, cx: &mut Context<Self>) {
@@ -264,7 +263,7 @@ impl Shell {
 
     pub(crate) fn mp_viewed_room(&self) -> Option<&RoomSummary> {
         let code = self.mp_page.viewing.as_deref()?;
-        self.mp_page.rooms.iter().find(|r| r.code == code)
+        self.mp_page.lobby.rooms.iter().find(|r| r.code == code)
     }
 
     /// The play button's word while a shared session starts and F1 25 isn't building or running yet, so it
@@ -283,54 +282,10 @@ impl Shell {
     }
 
     pub(crate) fn mp_can_play_room(&self) -> bool {
-        self.page == Page::Multiplayer
+        self.navigation.page == Page::Multiplayer
             && self.account.allowed()
             && !self.mp_page.busy()
             && self.mp_viewed_room().is_some()
-    }
-
-    pub(super) fn mp_load_faces(&mut self, cx: &mut Context<Self>) {
-        let m = &mut self.mp_page;
-        let members = m
-            .state
-            .iter()
-            .flat_map(|s| &s.members)
-            .filter_map(|x| x.avatar.as_ref());
-        let hosts = m.rooms.iter().filter_map(|r| r.host.avatar.as_ref());
-        let wanted: Vec<String> = members.chain(hosts).cloned().collect();
-        self.load_faces(wanted, cx);
-    }
-
-    pub(crate) fn load_faces(&mut self, urls: Vec<String>, cx: &mut Context<Self>) {
-        let m = &mut self.mp_page;
-        let wanted: Vec<String> = urls
-            .into_iter()
-            .filter(|u| u.starts_with("http") && !m.faces_asked.contains(u))
-            .collect::<HashSet<_>>()
-            .into_iter()
-            .collect();
-        if wanted.is_empty() {
-            return;
-        }
-        m.faces_asked.extend(wanted.iter().cloned());
-        let dir = self.store.root.join(catalog::CACHE_DIR).join(AVATARS_DIR);
-        cx.spawn(async move |this, cx| {
-            let faces: Vec<(String, Arc<Image>)> = cx
-                .background_executor()
-                .spawn(async move {
-                    wanted
-                        .into_iter()
-                        .filter_map(|url| crate::features::news::image(&dir, &url).map(|i| (url, i)))
-                        .collect()
-                })
-                .await;
-            this.update(cx, |s, cx| {
-                s.mp_page.faces.extend(faces);
-                cx.notify();
-            })
-            .ok();
-        })
-        .detach();
     }
 
     pub(crate) fn face(&self, name: &str, url: Option<&str>, size: f32, p: Palette) -> Div {
@@ -345,157 +300,12 @@ impl Shell {
         }
     }
 
-    pub(super) fn mp_poll_game(&mut self, cx: &mut Context<Self>) {
-        let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
-            self.mp_page.game = None;
-            self.mp_page.game_at = Some(Instant::now());
-            return;
-        };
-        let running = !self.game.processes.is_empty();
-        self.mp_page.game_polling = true;
-        cx.spawn(async move |this, cx| {
-            let status = cx
-                .background_executor()
-                .spawn(async move { read_game(&dir, running) })
-                .await;
-            this.update(cx, |s, cx| {
-                let m = &mut s.mp_page;
-                m.game_polling = false;
-                m.game_at = Some(Instant::now());
-                if m.game != status {
-                    m.game = status;
-                    cx.notify();
-                }
-            })
-            .ok();
-        })
-        .detach();
-    }
-
-    pub(super) fn mp_poll_rooms(&mut self, cx: &mut Context<Self>) {
-        let Some(token) = self.account.session.as_ref().map(|m| m.token.clone()) else {
-            return;
-        };
-        self.mp_page.rooms_polling = true;
-        let data = self.store.root.clone();
-        cx.spawn(async move |this, cx| {
-            let result = cx
-                .background_executor()
-                .spawn(async move {
-                    diag::load(&data, Some(&token)).map_err(|e| e.to_string())?;
-                    diag::rooms(&token)
-                })
-                .await;
-            this.update(cx, |s, cx| {
-                let m = &mut s.mp_page;
-                m.rooms_polling = false;
-                m.rooms_at = Some(Instant::now());
-                match result {
-                    Ok(rooms) => {
-                        m.rooms = rooms;
-                        m.rooms_loaded = true;
-                        m.rooms_error = None;
-                    }
-                    Err(e) => m.rooms_error = Some(e),
-                }
-                cx.notify();
-            })
-            .ok();
-        })
-        .detach();
-    }
-
-    pub(super) fn mp_read_digest(&mut self, cx: &mut Context<Self>) {
-        let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
-            return;
-        };
-        let (store, profile) = (self.store.clone(), self.library.profile.name.clone());
-        self.mp_page.digest_busy = true;
-        cx.spawn(async move |this, cx| {
-            let digest = cx
-                .background_executor()
-                .spawn(async move { read_local(&store, &profile, &dir).map(|l| l.digest()) })
-                .await;
-            this.update(cx, |s, cx| {
-                s.mp_page.digest_busy = false;
-                match digest {
-                    Ok(d) => s.mp_page.digest = Some(d),
-                    Err(e) => eprintln!("swofty-launcher: couldn't read this profile's addons: {e}"),
-                }
-                cx.notify();
-            })
-            .ok();
-        })
-        .detach();
-    }
-
     pub(super) fn mp_game_state(&self) -> GameState {
         let status = match &self.mp_page.state {
             Some(state) if self.mp_page.session.is_some() => state.game.as_ref(),
-            _ => self.mp_page.game.as_ref(),
+            _ => self.mp_page.lobby.game.as_ref(),
         };
         GameState::of(!self.game.processes.is_empty(), status)
-    }
-
-    pub(super) fn mp_start(&mut self, start: Start, cx: &mut Context<Self>) {
-        if self.mp_page.busy() {
-            return;
-        }
-        let Some(token) = self.account.session.as_ref().map(|m| m.token.clone()) else {
-            return;
-        };
-        let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
-            self.mp_page.error = Some("F1 25 was not found. Locate it from the play bar first.".into());
-            cx.notify();
-            return;
-        };
-        let (store, profile) = (self.store.clone(), self.library.profile.name.clone());
-        let m = &mut self.mp_page;
-        m.starting = Some(match &start {
-            Start::Create(_) => "create".into(),
-            Start::Join(code) => code.clone(),
-        });
-        m.error = None;
-        cx.spawn(async move |this, cx| {
-            let result = cx
-                .background_executor()
-                .spawn(async move {
-                    diag::load(&store.root, Some(&token)).map_err(|e| e.to_string())?;
-                    let local = read_local(&store, &profile, &dir)
-                        .inspect_err(|e| {
-                            diag::line(format!("session not started: couldn't read the addons: {e}"));
-                        })
-                        .map_err(|e| trf!("Couldn't read your addons: {e}", e = e).to_string())?;
-                    let mut setup = Setup::new(&token, &dir, local);
-                    setup.room_launch = true;
-                    let (refresh_store, refresh_profile, refresh_dir) =
-                        (store.clone(), profile.clone(), dir.clone());
-                    setup.refresh = Some(Arc::new(move || {
-                        read_local(&refresh_store, &refresh_profile, &refresh_dir).ok()
-                    }));
-                    match start {
-                        Start::Create(settings) => Session::create(setup, &settings),
-                        Start::Join(code) => Session::join(setup, &code),
-                    }
-                })
-                .await;
-            this.update(cx, |s, cx| {
-                let m = &mut s.mp_page;
-                m.starting = None;
-                match result {
-                    Ok(session) => {
-                        m.state = Some(session.state());
-                        m.session = Some(session);
-                        m.form = false;
-                    }
-                    Err(e) => m.error = Some(e),
-                }
-                cx.notify();
-            })
-            .ok();
-        })
-        .detach();
-        cx.notify();
     }
 
     pub(super) fn mp_create(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -566,6 +376,174 @@ impl Shell {
     pub(super) fn mp_copy_code(&mut self, code: String, cx: &mut Context<Self>) {
         cx.write_to_clipboard(ClipboardItem::new_string(code));
         self.mp_page.copied = Some(Instant::now());
+        cx.notify();
+    }
+}
+
+impl Multiplayer {
+    pub(super) fn load_shown_faces<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let m = host.split().0;
+        let members = m
+            .state
+            .iter()
+            .flat_map(|s| &s.members)
+            .filter_map(|x| x.avatar.as_ref());
+        let hosts = m.lobby.rooms.iter().filter_map(|r| r.host.avatar.as_ref());
+        let wanted: Vec<String> = members.chain(hosts).cloned().collect();
+        Self::load_faces(host, wanted, cx);
+    }
+
+    pub(crate) fn load_faces<H: Host<Self>>(host: &mut H, urls: Vec<String>, cx: &mut Context<H>) {
+        let (m, needs) = host.split();
+        let wanted = unasked(urls, &m.faces_asked);
+        if wanted.is_empty() {
+            return;
+        }
+        m.faces_asked.extend(wanted.iter().cloned());
+        let dir = needs.store.root.join(catalog::CACHE_DIR).join(AVATARS_DIR);
+        cx.spawn(async move |this, cx| {
+            let faces: Vec<(String, Arc<Image>)> = cx
+                .background_executor()
+                .spawn(async move {
+                    wanted
+                        .into_iter()
+                        .filter_map(|url| crate::features::news::image(&dir, &url).map(|i| (url, i)))
+                        .collect()
+                })
+                .await;
+            this.update(cx, |host, cx| {
+                host.split().0.faces.extend(faces);
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
+    }
+
+    pub(super) fn poll_game<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (m, needs) = host.split();
+        let Some(dir) = needs.game_dir.map(Path::to_path_buf) else {
+            m.lobby.no_game(Instant::now());
+            return;
+        };
+        let running = needs.running;
+        m.lobby.game_polling = true;
+        cx.spawn(async move |this, cx| {
+            let status = cx
+                .background_executor()
+                .spawn(async move { read_game(&dir, running) })
+                .await;
+            this.update(cx, |host, cx| {
+                if host.split().0.lobby.took_game(status, Instant::now()) {
+                    cx.notify();
+                }
+            })
+            .ok();
+        })
+        .detach();
+    }
+
+    pub(super) fn poll_rooms<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (m, needs) = host.split();
+        let Some(token) = needs.token.map(str::to_owned) else {
+            return;
+        };
+        m.lobby.rooms_polling = true;
+        let data = needs.store.root.clone();
+        cx.spawn(async move |this, cx| {
+            let result = cx
+                .background_executor()
+                .spawn(async move {
+                    diag::load(&data, Some(&token)).map_err(|e| e.to_string())?;
+                    diag::rooms(&token)
+                })
+                .await;
+            this.update(cx, |host, cx| {
+                host.split().0.lobby.took_rooms(result, Instant::now());
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
+    }
+
+    pub(super) fn read_digest<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (m, needs) = host.split();
+        let Some(dir) = needs.game_dir.map(Path::to_path_buf) else {
+            return;
+        };
+        let (store, profile) = (needs.store.clone(), needs.profile.to_owned());
+        m.lobby.digest_busy = true;
+        cx.spawn(async move |this, cx| {
+            let digest = cx
+                .background_executor()
+                .spawn(async move { read_local(&store, &profile, &dir).map(|l| l.digest()) })
+                .await;
+            this.update(cx, |host, cx| {
+                host.split().0.lobby.took_digest(digest);
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
+    }
+
+    /// Opens or joins a room off the UI thread with this profile's addons.
+    pub(super) fn start<H: Host<Self>>(host: &mut H, start: Start, cx: &mut Context<H>) {
+        let (m, needs) = host.split();
+        if m.busy() {
+            return;
+        }
+        let Some(token) = needs.token.map(str::to_owned) else {
+            return;
+        };
+        let Some(dir) = needs.game_dir.map(Path::to_path_buf) else {
+            m.error = Some("F1 25 was not found. Locate it from the play bar first.".into());
+            cx.notify();
+            return;
+        };
+        let (store, profile) = (needs.store.clone(), needs.profile.to_owned());
+        m.starting = Some(starting(&start));
+        m.error = None;
+        cx.spawn(async move |this, cx| {
+            let result = cx
+                .background_executor()
+                .spawn(async move {
+                    diag::load(&store.root, Some(&token)).map_err(|e| e.to_string())?;
+                    let local = read_local(&store, &profile, &dir)
+                        .inspect_err(|e| {
+                            diag::line(format!("session not started: couldn't read the addons: {e}"));
+                        })
+                        .map_err(|e| trf!("Couldn't read your addons: {e}", e = e).to_string())?;
+                    let mut setup = Setup::new(&token, &dir, local);
+                    setup.room_launch = true;
+                    let (refresh_store, refresh_profile, refresh_dir) =
+                        (store.clone(), profile.clone(), dir.clone());
+                    setup.refresh = Some(Arc::new(move || {
+                        read_local(&refresh_store, &refresh_profile, &refresh_dir).ok()
+                    }));
+                    match start {
+                        Start::Create(settings) => Session::create(setup, &settings),
+                        Start::Join(code) => Session::join(setup, &code),
+                    }
+                })
+                .await;
+            this.update(cx, |host, cx| {
+                let m = host.split().0;
+                m.starting = None;
+                match result {
+                    Ok(session) => {
+                        m.state = Some(session.state());
+                        m.session = Some(session);
+                        m.form = false;
+                    }
+                    Err(e) => m.error = Some(e),
+                }
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
         cx.notify();
     }
 }

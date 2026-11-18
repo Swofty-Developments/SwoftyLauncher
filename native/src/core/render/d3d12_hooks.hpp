@@ -58,8 +58,10 @@ bool arm_device();
 bool arm_srv_clamp();
 bool arm_rtas_guard();
 
-// While one is alive, arm_device and arm_swapchain share one throwaway probe
-// device: creating a D3D12 device takes about half a second on the main thread.
+// While one is alive, every probe that reads vtables (arm_device, arm_swapchain, arm_list_state, arm_srv_clamp,
+// arm_rtas_guard) shares one throwaway device: creating a D3D12 device takes about half a second on the main
+// thread. The runtime holds one around the ready subsystems from the hud (the overlay's present hook) to the rtas
+// guard.
 struct ProbeScope {
     ProbeScope();
     ~ProbeScope();

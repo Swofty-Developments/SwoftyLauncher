@@ -1,0 +1,190 @@
+# What tools/core_link_order.txt decides in swofty_core.dll, as tools/init_check.py derives it from the core's
+# compile reports on every build, which fails when it differs from this file. units: the units with static objects in
+# link order (init: a dynamic initializer, exit: a destructor, which runs at exit in the reverse order). mixins: the
+# SDK mixin list in the order the units append to it. on-load: its on-load entries in the order the loader runs them,
+# each SWOFTY_HOOK_GUARD entry arming the next hook guard in HookGuardId order. bindings: the units whose binding uses
+# add to the SDK's wanted list, in order. After an intended change, copy native/build/init-order.txt here.
+units
+  src/core/runtime/loader/mixin_manager.cpp  exit
+  src/core/runtime/loader/patch_set.cpp  exit
+  src/core/diagnostics/crash/crash.cpp  exit
+  src/core/diagnostics/crash/crash_log.cpp  exit
+  src/core/diagnostics/crash/symbolizer.cpp  exit
+  src/core/diagnostics/crash/capture.cpp  exit
+  src/core/diagnostics/crash/fatal_paths.cpp  exit
+  src/core/diagnostics/crash/report_sections.cpp  exit
+  src/core/diagnostics/crash/report_writer.cpp  exit
+  src/core/diagnostics/crash/dred.cpp  exit
+  src/core/runtime/settings.cpp  exit
+  src/core/frontend/home_tiles.cpp  init
+  src/core/frontend/ui.cpp  init exit
+  src/core/frontend/ui_vm.cpp  init exit
+  src/core/frontend/addon_page.cpp  init exit
+  src/core/assets/items.cpp  init exit
+  src/core/runtime/stage.cpp  exit
+  src/core/frontend/main_menu.cpp  exit
+  src/core/frontend/main_menu/navigation.cpp  init
+  src/core/frontend/main_menu/navigation_hooks.cpp  init
+  src/core/frontend/main_menu/tiles.cpp  init
+  src/core/hud/toast.cpp  exit
+  src/core/frontend/player_name.cpp  init exit
+  src/core/frontend/player_name/copies.cpp  init exit
+  src/core/guards/career/activity_resume_guard.cpp  init exit
+  src/core/guards/career/sequencer_records_guard.cpp  init exit
+  src/core/guards/session/race_retirement_guard.cpp  init exit
+  src/core/guards/session/red_flag_recompute_guard.cpp  exit
+  src/core/guards/session/quali_tyres_guard.cpp  exit
+  src/core/guards/session/teammate_pairs_guard.cpp  init exit
+  src/core/guards/frontend/setup_vm_guard.cpp  init exit
+  src/core/diagnostics/net_trace.cpp  exit
+  src/core/telemetry/udp_ids.cpp  exit
+  src/core/assets/assets.cpp  exit
+  src/core/assets/resources.cpp  exit
+  src/core/assets/gamedb.cpp  exit
+  src/core/assets/overlay.cpp  exit
+  src/core/events/events.cpp  exit
+  src/core/hud/overlay.cpp  exit
+  src/core/render/d3d12/swapchain_hooks.cpp  exit
+  src/core/render/d3d12/device_hooks.cpp  exit
+  src/core/render/d3d12/list_state.cpp  exit
+  src/core/render/d3d12/srv_clamp.cpp  exit
+  src/core/render/d3d12/rtas_guard.cpp  exit
+  src/core/render/grade.cpp  exit
+  src/core/render/postfx.cpp  exit
+  src/core/frontend/view_state.cpp  exit
+  src/core/telemetry/telemetry.cpp  exit
+  src/core/assets/dbread.cpp  exit
+  src/core/runtime/storage.cpp  exit
+  src/core/career/career.cpp  exit
+  src/core/career/career_content.cpp  exit
+  src/core/career/career_start.cpp  exit
+  src/core/frontend/popup.cpp  exit
+  src/core/hud/race_hud.cpp  exit
+  src/core/diagnostics/log_csv.cpp  exit
+  src/core/runtime/sdk.cpp  exit
+  src/core/diagnostics/perf.cpp  exit
+  src/core/diagnostics/perf/vq.cpp  exit
+  src/core/assets/lang_override.cpp  exit
+  src/core/career/characters.cpp  exit
+  src/core/career/career_wizard.cpp  init exit
+  src/core/boxes/era_picker.cpp  exit
+  src/core/boxes/car_category.cpp  exit
+  src/core/boxes/box_grid.cpp  exit
+  src/core/career/save_splice.cpp  exit
+  src/core/career/career_saves.cpp  exit
+  src/core/guards/cars/ers_newlap.cpp  exit
+  src/core/guards/garage/garage_crew.cpp  exit
+  src/core/garage/garage_placement.cpp  exit
+  src/core/guards/garage/garage_slots.cpp  exit
+  src/core/guards/cars/chassis_registry.cpp  exit
+  src/core/guards/cars/ers_mode.cpp  exit
+  src/core/guards/career/standings_guard.cpp  exit
+  src/core/guards/career/standings_drop.cpp  exit
+  src/core/guards/career/teamhq_track_guard.cpp  init exit
+  src/core/guards/ai/ai_corner_guard.cpp  exit
+  src/core/guards/ai/ai_curves_guard.cpp  init exit
+  src/core/guards/engine/placed_record.cpp  exit
+  src/core/guards/session/replay_grid_guard.cpp  init exit
+  src/core/guards/career/rnd_suppliers_guard.cpp  init exit
+  src/core/guards/frontend/fe_tile_guard.cpp  exit
+  src/core/guards/career/myteam_vehicle_guard.cpp  exit
+  src/core/guards/career/myteam_vehicle_heal.cpp  exit
+  src/core/guards/career/myteam_vehicle_keep.cpp  exit
+  src/core/guards/engine/watchdog_grace.cpp  exit
+  src/core/guards/cars/tyre_slots.cpp  exit
+  src/core/career/hub_tab.cpp  init exit
+  src/core/hooks/hooks.cpp  exit
+  src/core/hooks/core_events.cpp  exit
+  src/core/services/lap_host.cpp  exit
+  src/core/career/ops/career_ops.cpp  init exit
+  src/core/registry/store.cpp  exit
+  src/core/registry/table.cpp  exit
+  src/core/registry/core.cpp  exit
+  src/core/career/snapshots/runtime.cpp  exit
+  src/core/guards/tracks/track_acclim.cpp  exit
+  src/core/guards/frontend/gp_continue_guard.cpp  exit
+  src/core/guards/tracks/gp_weekend_track_guard.cpp  init exit
+  src/core/guards/tracks/track_list_guard.cpp  exit
+  src/core/guards/engine/audio_queue.cpp  exit
+  src/core/apply/moments.cpp  exit
+  src/core/apply/content/appliers.cpp  exit
+  src/core/testing/agent/agent.cpp  exit
+  src/core/testing/title_skip.cpp  exit
+  src/core/testing/virtual_pad.cpp  exit
+  src/core/testing/direct_start.cpp  init exit
+  src/core/testing/direct_start_tt.cpp  init exit
+  src/core/frontend/mfd.cpp  exit
+  src/core/apply/files.cpp  exit
+  src/core/testing/save_sandbox.cpp  exit
+  src/core/career/ops/track_fuel.cpp  exit
+  src/core/hooks/game_points.cpp  exit
+  src/core/hooks/session_points.cpp  init exit
+  src/core/hooks/car_live.cpp  init exit
+  src/core/apply/content/logos.cpp  exit
+  src/core/apply/tracks/boot.cpp  exit
+  src/core/guards/session/team_slots.cpp  exit
+  src/core/guards/tracks/track_select.cpp  exit
+  src/core/apply/tracks/list.cpp  exit
+  src/core/apply/tracks/data_session.cpp  exit
+  src/core/guards/garage/pit_slots.cpp  exit
+  src/core/guards/session/thrustmaster_lcd.cpp  exit
+  src/core/guards/session/estimate_laptime_guard.cpp  exit
+  src/core/guards/garage/garage_setup.cpp  exit
+  src/core/guards/session/session_enter.cpp  exit
+  src/core/diagnostics/session_job_probe.cpp  init exit
+  src/core/guards/ai/ai_line_set_guard.cpp  exit
+  src/core/hud/room_cover.cpp  exit
+  src/core/assets/entitlements.cpp  init
+  src/core/live/live_state.cpp  exit
+mixins
+  src/core/frontend/home_tiles.cpp  SWOFTY_SITE(site_FeHome_AfterCareerCall)
+  src/core/frontend/home_tiles.cpp  SWOFTY_WRAP(FeHome_Handle_Command)
+  src/core/frontend/home_tiles.cpp  SWOFTY_ON_LOAD
+  src/core/frontend/ui.cpp  SWOFTY_ON_LOAD
+  src/core/assets/items.cpp  SWOFTY_ON_LOAD
+  src/core/frontend/player_name.cpp  SWOFTY_ON_LOAD
+  src/core/guards/career/activity_resume_guard.cpp  SWOFTY_HOOK_GUARD(activity_resume)
+  src/core/guards/career/sequencer_records_guard.cpp  SWOFTY_HOOK_GUARD(sequencer_records)
+  src/core/guards/session/race_retirement_guard.cpp  SWOFTY_MID_HOOK_GUARD(race_retirement)
+  src/core/guards/session/teammate_pairs_guard.cpp  SWOFTY_MID_HOOK_GUARD(teammate_pairs)
+  src/core/guards/frontend/setup_vm_guard.cpp  SWOFTY_HOOK_GUARD(setup_vm)
+  src/core/guards/career/teamhq_track_guard.cpp  SWOFTY_HOOK_GUARD(teamhq_track)
+  src/core/guards/ai/ai_curves_guard.cpp  SWOFTY_MID_HOOK_GUARD(ai_curves)
+  src/core/guards/session/replay_grid_guard.cpp  SWOFTY_HOOK_GUARD(replay_read)
+  src/core/guards/career/rnd_suppliers_guard.cpp  SWOFTY_HOOK_GUARD(rnd_suppliers)
+  src/core/career/hub_tab.cpp  SWOFTY_ON_LOAD
+  src/core/career/ops/career_ops.cpp  SWOFTY_ON_LOAD
+  src/core/guards/tracks/gp_weekend_track_guard.cpp  SWOFTY_MID_HOOK_GUARD(gp_weekend_track)
+  src/core/hooks/session_points.cpp  SWOFTY_ON_LOAD
+  src/core/hooks/car_live.cpp  SWOFTY_ON_LOAD
+  src/core/diagnostics/session_job_probe.cpp  SWOFTY_ON_LOAD
+on-load
+  src/core/frontend/home_tiles.cpp  SWOFTY_ON_LOAD
+  src/core/frontend/ui.cpp  SWOFTY_ON_LOAD
+  src/core/assets/items.cpp  SWOFTY_ON_LOAD
+  src/core/frontend/player_name.cpp  SWOFTY_ON_LOAD
+  src/core/guards/career/activity_resume_guard.cpp  SWOFTY_HOOK_GUARD(activity_resume), arms gp_weekend_track
+  src/core/guards/career/sequencer_records_guard.cpp  SWOFTY_HOOK_GUARD(sequencer_records), arms rnd_suppliers
+  src/core/guards/session/race_retirement_guard.cpp  SWOFTY_MID_HOOK_GUARD(race_retirement)
+  src/core/guards/session/teammate_pairs_guard.cpp  SWOFTY_MID_HOOK_GUARD(teammate_pairs)
+  src/core/guards/frontend/setup_vm_guard.cpp  SWOFTY_HOOK_GUARD(setup_vm), arms replay_read
+  src/core/guards/career/teamhq_track_guard.cpp  SWOFTY_HOOK_GUARD(teamhq_track), arms ai_curves
+  src/core/guards/ai/ai_curves_guard.cpp  SWOFTY_MID_HOOK_GUARD(ai_curves)
+  src/core/guards/session/replay_grid_guard.cpp  SWOFTY_HOOK_GUARD(replay_read), arms teamhq_track
+  src/core/guards/career/rnd_suppliers_guard.cpp  SWOFTY_HOOK_GUARD(rnd_suppliers), arms setup_vm
+  src/core/career/hub_tab.cpp  SWOFTY_ON_LOAD
+  src/core/career/ops/career_ops.cpp  SWOFTY_ON_LOAD
+  src/core/guards/tracks/gp_weekend_track_guard.cpp  SWOFTY_MID_HOOK_GUARD(gp_weekend_track)
+  src/core/hooks/session_points.cpp  SWOFTY_ON_LOAD
+  src/core/hooks/car_live.cpp  SWOFTY_ON_LOAD
+  src/core/diagnostics/session_job_probe.cpp  SWOFTY_ON_LOAD
+bindings
+  src/core/frontend/home_tiles.cpp
+  src/core/frontend/ui_vm.cpp
+  src/core/frontend/main_menu/navigation.cpp
+  src/core/frontend/main_menu/navigation_hooks.cpp
+  src/core/frontend/main_menu/tiles.cpp
+  src/core/frontend/player_name.cpp
+  src/core/frontend/player_name/copies.cpp
+  src/core/career/career_wizard.cpp
+  src/core/assets/entitlements.cpp

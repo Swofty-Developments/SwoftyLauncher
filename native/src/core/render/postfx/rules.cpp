@@ -70,29 +70,6 @@ std::string surface_label(int game_id)
     return std::string(signal_value_name(S_CAR_SURFACE, size_t(v)));
 }
 
-bool player_car(int64_t index)
-{
-    static uintptr_t table = 0, count = 0;
-    static bool tried = false;
-    if (!tried) {
-        tried = true;
-        if (runtime::verified_build() && swofty::api) {
-            table = swofty::api->resolve("g_Sess_VehicleTable");
-            count = swofty::api->resolve("g_Sess_VehicleCount");
-        }
-        if (!table || !count)
-            swofty::log("[shaders] session.lap is not read: the vehicle table does not resolve, so the player's car "
-                        "cannot be told from the AI's");
-    }
-    if (!table || !count || index < 0 || index >= 26)
-        return false;
-    auto *n = reinterpret_cast<const uint32_t *>(count);
-    auto *const *cars = reinterpret_cast<uint8_t *const *>(table);
-    if (!runtime::readable(n, 4) || !runtime::readable(cars, 8 * 26) || uint64_t(index) >= *n)
-        return false;
-    const uint8_t *car = cars[index];
-    return car && runtime::readable(car, 0x130) && car[0x124] == 0;
-}
 
 }
 
@@ -277,12 +254,34 @@ void RuleDriver::frame(const view::State &v, ULONGLONG now, const ActiveSpec &ac
     }
 }
 
+bool RuleDriver::player_car(int64_t index)
+{
+    if (!car_tried) {
+        car_tried = true;
+        if (runtime::verified_build() && swofty::api) {
+            car_table = swofty::api->resolve("g_Sess_VehicleTable");
+            car_count = swofty::api->resolve("g_Sess_VehicleCount");
+        }
+        if (!car_table || !car_count)
+            swofty::log("[shaders] session.lap is not read: the vehicle table does not resolve, so the player's car "
+                        "cannot be told from the AI's");
+    }
+    if (!car_table || !car_count || index < 0 || index >= 26)
+        return false;
+    auto *n = reinterpret_cast<const uint32_t *>(car_count);
+    auto *const *cars = reinterpret_cast<uint8_t *const *>(car_table);
+    if (!runtime::readable(n, 4) || !runtime::readable(cars, 8 * 26) || uint64_t(index) >= *n)
+        return false;
+    const uint8_t *car = cars[index];
+    return car && runtime::readable(car, 0x130) && car[0x124] == 0;
+}
+
 void RuleDriver::on_event(const SwoftyEvent *ev, void *user)
 {
     const Feed &feed = *static_cast<const Feed *>(user);
     RuleDriver &d = *feed.driver;
     int s = feed.signal;
-    if (s == S_SESSION_LAP && !player_car(ev->a))
+    if (s == S_SESSION_LAP && !d.player_car(ev->a))
         return;
     if (s == S_SESSION_START || s == S_SESSION_END)
         d.in_session.store(s == S_SESSION_START, std::memory_order_relaxed);

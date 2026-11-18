@@ -1,5 +1,6 @@
 #include "core/hud/overlay/textures.hpp"
 
+#include "core/diagnostics/steps.hpp"
 #include "core/hud/hud_font_atlas.hpp"
 #include "core/hud/overlay/overlay.hpp"
 
@@ -9,11 +10,16 @@
 
 namespace hud::overlay {
 
-void Textures::decode_font()
+namespace {
+
+void decode_font(hud::img::Pixels &px)
 {
-    font_tried = true;
-    if (!hud::img::grey(hud::font::ATLAS_PNG, hud::font::ATLAS_PNG_SIZE, font_px))
+    perf::Stopwatch font;
+    if (!hud::img::grey(hud::font::ATLAS_PNG, hud::font::ATLAS_PNG_SIZE, px))
         swofty::log("[overlay] decoding the built-in font atlas failed; text draws nothing");
+    swofty::log(perf::STEP_LINE, font.total_ms(), "overlay font atlas decode");
+}
+
 }
 
 bool Textures::upload(Renderer &r, ID3D12GraphicsCommandList *l, UINT index, DXGI_FORMAT fmt, UINT w, UINT h,
@@ -71,15 +77,12 @@ bool Textures::upload(Renderer &r, ID3D12GraphicsCommandList *l, UINT index, DXG
 
 void Textures::sync(Renderer &r, ID3D12GraphicsCommandList *l)
 {
-    if (!font_tried)
-        decode_font();
-    if (!font_px.rgba.empty()) {
-        if (upload(r, l, hud::TEX_FONT, DXGI_FORMAT_R8_UNORM, font_px.width, font_px.height, 1, font_px.rgba.data()))
-            swofty::log("[overlay] font atlas uploaded: %s, %ux%u SDF", hud::font::NAME, font_px.width,
-                        font_px.height);
+    if (const hud::img::Pixels *px = font.pending(decode_font)) {
+        if (upload(r, l, hud::TEX_FONT, DXGI_FORMAT_R8_UNORM, px->width, px->height, 1, px->rgba.data()))
+            swofty::log("[overlay] font atlas uploaded: %s, %ux%u SDF", hud::font::NAME, px->width, px->height);
         else
             swofty::log("[overlay] uploading the font atlas failed; text draws nothing");
-        font_px = {};
+        font.done();
     }
     std::lock_guard<std::mutex> g(overlay.reg_lock);
     for (size_t slot = 0; slot < overlay.reg.image_count(); slot++) {

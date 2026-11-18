@@ -354,7 +354,20 @@ std::string Store::pool_text_locked(const std::string &registry) const
     return s;
 }
 
-std::size_t Store::free_count_locked(const std::string &registry) const
+Store::Taken Store::taken_index_locked(const std::string &registry) const
+{
+    Taken t;
+    if (auto it = ids_.find(registry); it != ids_.end())
+        for (auto &[rec, en] : it->second)
+            t.holder.emplace(en.id, rec);
+    for (auto &[career, map] : careers_)
+        if (auto it = map.find(registry); !career.empty() && it != map.end())
+            for (auto &[rec, v] : it->second)
+                t.careers.insert(v);
+    return t;
+}
+
+std::size_t Store::free_count_locked(const std::string &registry, const Taken &taken, int64_t now_held) const
 {
     auto it = pools_.find(registry);
     if (it == pools_.end())
@@ -362,7 +375,7 @@ std::size_t Store::free_count_locked(const std::string &registry) const
     std::size_t n = 0;
     for (auto &[lo, hi] : it->second.ranges)
         for (int64_t id = lo; id <= hi; id++)
-            if (!held_locked(registry, id, nullptr) && !career_uses_locked(registry, id))
+            if (id != now_held && !taken.holder.count(id) && !taken.careers.count(id))
                 n++;
     return n;
 }
@@ -405,20 +418,20 @@ Result Store::allocate(const std::string &registry, const std::string &record, c
         r.line = "[registry] stat ids: " + registry + " " + record + ": no stat-id pool for " + registry + " on this core";
         return r;
     }
+    const Taken taken = taken_index_locked(registry);
     for (auto &[lo, hi] : pit->second.ranges)
         for (int64_t id = lo; id <= hi && r.id < 0; id++)
-            if (!held_locked(registry, id, nullptr) && !career_uses_locked(registry, id) &&
-                !db_locked(registry, id, {}, nullptr))
+            if (!taken.holder.count(id) && !taken.careers.count(id) && !db_locked(registry, id, {}, nullptr))
                 r.id = id, r.how = "allocated";
     std::string reclaimed;
     if (r.id < 0)
         for (auto &[lo, hi] : pit->second.ranges)
             for (int64_t id = lo; id <= hi && r.id < 0; id++) {
-                std::string holder;
-                if (held_locked(registry, id, &holder) && !live_locked(registry, holder) &&
-                    !career_uses_locked(registry, id) && !db_locked(registry, id, {}, nullptr)) {
-                    ids_[registry].erase(holder);
-                    reclaimed = holder;
+                auto h = taken.holder.find(id);
+                if (h != taken.holder.end() && !live_locked(registry, h->second) && !taken.careers.count(id) &&
+                    !db_locked(registry, id, {}, nullptr)) {
+                    ids_[registry].erase(h->second);
+                    reclaimed = h->second;
                     r.id = id, r.how = "reclaimed";
                 }
             }
@@ -432,7 +445,7 @@ Result Store::allocate(const std::string &registry, const std::string &record, c
     ids_[registry][record] = Entry{r.id, today};
     dirty_ = true;
     r.line = "[registry] stat ids: " + registry + " " + record + " -> " + std::to_string(r.id) + " (" +
-             pool_text_locked(registry) + ", " + std::to_string(free_count_locked(registry)) + " free after this" +
+             pool_text_locked(registry) + ", " + std::to_string(free_count_locked(registry, taken, r.id)) + " free after this" +
              (reclaimed.empty() ? std::string() : "; reused from " + reclaimed + ", which no record or career uses") + ")";
     return r;
 }

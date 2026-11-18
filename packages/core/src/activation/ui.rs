@@ -1,11 +1,12 @@
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::{Path, PathBuf};
 
-use swofty_formats::erp::{Entry, Erp, ErpFile, Resource, STORED, ZSTD, compress_at};
+use swofty_formats::erp::{Entry, Erp, ErpFile, Packer, Resource};
 use swofty_formats::pkg::{Node, Obj, Pkg, Val, Value};
 
 use super::place::{ASSET_ROOT, SLOT_DIR, slot_asset_group, slot_file};
 use crate::content::track_package::TrackPackage;
+use crate::erp::pack;
 use crate::{Error, Result, io_err};
 
 pub const PICTURE_SLOT: &str = "invitational_image_2";
@@ -117,24 +118,6 @@ fn surface(head: &[u8]) -> Result<Surface> {
         slices: u32_at(head, 28)?,
         extra: u32_at(head, 36)?,
     })
-}
-
-fn set_fragment(res: &mut Resource, index: usize, data: &[u8], level: i32) -> Result<()> {
-    let f = res
-        .fragments
-        .get_mut(index)
-        .ok_or_else(|| Error::Map(format!("{}: no fragment {index}", res.name)))?;
-    let zstd =
-        f.compression == ZSTD || (f.compression != STORED && f.raw.starts_with(&[0x28, 0xb5, 0x2f, 0xfd]));
-    f.raw = if zstd {
-        compress_at(data, level)?
-    } else {
-        data.to_vec()
-    };
-    f.size = data.len() as u64;
-    f.packed = f.raw.len() as u64;
-    res.hash = res.content_hash()?;
-    Ok(())
 }
 
 struct Map<'a> {
@@ -271,10 +254,10 @@ fn put_slice(data: &mut Vec<u8>, slices: &mut u32, index: usize, pixels: &[u8], 
     }
 }
 
-fn edit_pkg(res: &mut Resource, edit: impl FnOnce(&mut Pkg) -> Result<()>) -> Result<()> {
+fn edit_pkg(packer: &Packer, res: &mut Resource, edit: impl FnOnce(&mut Pkg) -> Result<()>) -> Result<()> {
     let mut pkg = Pkg::parse(&res.fragments[0].data()?)?;
     edit(&mut pkg)?;
-    set_fragment(res, 0, &pkg.to_bytes()?, 19)
+    pack::set_fragment_at(packer, res, 0, &pkg.to_bytes()?, 19)
 }
 
 fn f(v: &serde_json::Value) -> Result<f32> {
@@ -337,8 +320,8 @@ fn minimap_entry(
     Ok(e)
 }
 
-fn patch_minimap(res: &mut Resource, maps: &[Map]) -> Result<()> {
-    edit_pkg(res, |pkg| {
+fn patch_minimap(packer: &Packer, res: &mut Resource, maps: &[Map]) -> Result<()> {
+    edit_pkg(packer, res, |pkg| {
         let list = obj_at(
             &mut pkg.root,
             &["hud", "Contents", "minimap", "Contents", "tracks", "Contents"],
@@ -522,7 +505,14 @@ pub fn plan_lists(maps: &[MapUi], original: &dyn Fn(&str) -> PathBuf) -> Result<
     Ok((lists, notes))
 }
 
-pub fn build_ui(maps: &[MapUi], original: &dyn Fn(&str) -> PathBuf, cache: &Path) -> Result<UiBuild> {
+/// The map UI's archives for `maps`, compressed by `packer`. The texture arrays' surfaces are compressed
+/// together once every array is filled, one batch per level.
+pub fn build_ui(
+    maps: &[MapUi],
+    original: &dyn Fn(&str) -> PathBuf,
+    cache: &Path,
+    packer: &Packer,
+) -> Result<UiBuild> {
     let out = cache.join(stamp(maps, original)?);
     let (lists, notes) = plan_lists(maps, original)?;
     let mut build = UiBuild {
@@ -563,7 +553,7 @@ pub fn build_ui(maps: &[MapUi], original: &dyn Fn(&str) -> PathBuf, cache: &Path
         let mut overrides = load_one(&original(&ui_file("databases.erp")), OVERRIDES)?;
         let mut order: BTreeMap<&str, Vec<(usize, &Map)>> = BTreeMap::new();
         let mut listed: BTreeMap<&str, (usize, Option<usize>)> = BTreeMap::new();
-        edit_pkg(&mut overrides, |pkg| {
+        edit_pkg(packer, &mut overrides, |pkg| {
             for m in &loaded {
                 for (list, key) in ARRAY_SLOTS {
                     if !lists[m.code()].contains(*list) {
@@ -602,12 +592,13 @@ pub fn build_ui(maps: &[MapUi], original: &dyn Fn(&str) -> PathBuf, cache: &Path
             .insert(OVERRIDES.into(), overrides);
         for rel in ["databases.erp", "flow_race.erp"] {
             let mut mm = load_one(&original(&ui_file(rel)), MINIMAP)?;
-            patch_minimap(&mut mm, &loaded)?;
+            patch_minimap(packer, &mut mm, &loaded)?;
             edits.entry(ui_file(rel)).or_default().insert(MINIMAP.into(), mm);
         }
 
         let mut arrays: HashMap<&str, (Resource, Resource)> = HashMap::new();
         let mut pads = Vec::new();
+        let deferred = packer.clone().deferring(true);
         for (rel, ls) in &array_erps {
             for list in ls {
                 if !arrays.contains_key(list) {
@@ -644,13 +635,18 @@ pub fn build_ui(maps: &[MapUi], original: &dyn Fn(&str) -> PathBuf, cache: &Path
                         ));
                     }
                     put_u32(&mut head, 28, slices);
-                    set_fragment(&mut surf, 0, &head, 19)?;
-                    set_fragment(&mut surf, 1, &data, ARRAY_LEVEL)?;
+                    pack::set_fragment_at(&deferred, &mut surf, 0, &head, 19)?;
+                    pack::set_fragment_at(&deferred, &mut surf, 1, &data, ARRAY_LEVEL)?;
                     let mut v = view.fragments[0].data()?;
                     put_u32(&mut v, 0x14, slices);
-                    set_fragment(&mut view, 0, &v, 19)?;
+                    pack::set_fragment_at(&deferred, &mut view, 0, &v, 19)?;
                     arrays.insert(list, (surf, view));
                 }
+            }
+        }
+        pack::settle(packer, arrays.values_mut().flat_map(|(surf, view)| [surf, view]))?;
+        for (rel, ls) in &array_erps {
+            for list in ls {
                 let (surf, view) = &arrays[list];
                 let e = edits.entry(rel.clone()).or_default();
                 e.insert(surf.name.clone(), surf.clone());
@@ -661,7 +657,7 @@ pub fn build_ui(maps: &[MapUi], original: &dyn Fn(&str) -> PathBuf, cache: &Path
         let pers = original(&ui_file("persistent.erp"));
         let mut uidta = load_one(&pers, UIDTA)?;
         let mut pictures = Vec::new();
-        edit_pkg(&mut uidta, |pkg| {
+        edit_pkg(packer, &mut uidta, |pkg| {
             let groups = pkg
                 .root
                 .as_obj_mut()
@@ -710,7 +706,7 @@ pub fn build_ui(maps: &[MapUi], original: &dyn Fn(&str) -> PathBuf, cache: &Path
                                 .to_vec();
                             head.extend_from_slice(s.name.as_bytes());
                             head.push(0);
-                            set_fragment(&mut v, 0, &head, 19)?;
+                            pack::set_fragment_at(packer, &mut v, 0, &head, 19)?;
                             v.name = rid.clone();
                             pictures.push(s);
                             pictures.push(v);
