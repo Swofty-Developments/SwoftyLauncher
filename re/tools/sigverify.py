@@ -13,6 +13,7 @@
                                             code sites whose rip-relative operand or rel32 reaches RVA (the image's own section name)
   sigverify.py --dis ref|port RVA [LEN]     disassemble
   sigverify.py --twin RVA                   the port's address of the KB function at RVA, by a both-unique pattern
+                                            (at a call site when RVA is a protector thunk)
   sigverify.py --disp RVA LEN HEX[,HEX]     per image: instructions in [RVA, RVA+LEN) of the KB function and of
                                             its --twin that use one of these displacements
 
@@ -184,6 +185,12 @@ def follow(img, rva, hops=4):
     return rva
 
 
+def protector_thunk(img, rva):
+    """A jmp out of its own section to a body the protector relocated; the bytes after the jmp are per-build filler."""
+    s = img.section_of(rva)
+    return s is not None and img.readable(rva, 5) and img.mem[rva] == 0xE9 and not img.section_named(follow(img, rva), s.name)
+
+
 def classify(img, rva):
     s = img.section_of(rva)
     if s is None:
@@ -213,7 +220,7 @@ def same(ref, port, rt, pt, kind):
             sims.append(ratio(norm(ref, follow(ref, a), 0x40, True), norm(port, follow(port, b), 0x40, True)))
         ok = len(sims) >= 2 and sum(x >= 0.7 for x in sims) >= len(sims) - 1
         return ('same' if ok else 'DIFFERENT'), f'vtable, {len(sims)} slot(s) alike ' + ' '.join(f'{x:.2f}' for x in sims)
-    if kind in ('func', 'site') and ref.mem[rt] == 0xE9 and port.mem[pt] == 0xE9 and not ref.section_named(follow(ref, rt), ref.section_of(rt).name):
+    if kind in ('func', 'site') and protector_thunk(ref, rt) and port.mem[pt] == 0xE9:
         # A protector thunk: a jump out of the code section to the relocated body, then filler. The bodies are compared.
         a, b = norm(ref, follow(ref, rt), 0x60), norm(port, follow(port, pt), 0x60)
         r = ratio(a, b)
@@ -305,6 +312,9 @@ def make(ref, port, smap, rva, section='.xtls', back=0, maxlen=96):
 
 
 def twin(ref, port, smap, rva):
+    if protector_thunk(ref, rva):
+        from sigport import port_one
+        return port_one(ref, port, smap, 'twin', rva, ref.section_of(rva).name).get('port')
     for section in ('.xtls', '.data1'):
         s = ref.section_of(rva)
         if s is None or s.name != section:

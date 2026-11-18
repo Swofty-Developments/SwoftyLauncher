@@ -33,7 +33,7 @@ import argparse, json, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from sigverify import STEAM, md, norm, follow, classify, same, section_map, riprel_refs, make, resolve
+from sigverify import STEAM, md, norm, follow, classify, same, section_map, riprel_refs, make, resolve, protector_thunk
 from bindverify import Image, anchors, kb_twin
 from capstone.x86 import X86_GRP_CALL, X86_GRP_JUMP, X86_OP_IMM, X86_OP_MEM, X86_REG_RIP, X86_REG_RSP
 
@@ -84,7 +84,7 @@ def port_one(ref, port, smap, name, rva, code='.xtls'):
     section = ref.section_of(rva).name if ref.section_of(rva) else '?'
     kind = classify(ref, rva)
     tries = []
-    if kind in ('func', 'site') and section == code:
+    if kind in ('func', 'site') and section == code and not protector_thunk(ref, rva):
         text, a1, a2 = make(ref, port, smap, rva, code, 0, 160)
         if text and a1 == rva:
             tries.append({'pattern': text, 'kind': 'addr', 'insn': 0, 'anchor': 0, 'len': 0})
