@@ -669,7 +669,7 @@ fn a_rebuild_links_the_handling_and_ers_edits_of_a_put_car_archive_from_the_cach
         Record::new(&format!("{set}.TrackData_0._metadata_"), 2, "melbourne"),
         Record::new(&format!("{set}.TrackData_0.track"), 2, "melbourne"),
     ];
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let el = |name: &str, attrs: &[(&str, &str)], children: Vec<Element>| Element {
         kind: Kind::Element,
         pad: 0,
@@ -876,7 +876,7 @@ fn a_rebuild_takes_the_placement_handling_and_ers_fragments_from_the_frame_cache
         Record::new(&format!("{set}.TrackData_0._metadata_"), 2, "melbourne"),
         Record::new(&format!("{set}.TrackData_0.track"), 2, "melbourne"),
     ];
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let el = |name: &str, attrs: &[(&str, &str)], children: Vec<Element>| Element {
         kind: Kind::Element,
         pad: 0,
