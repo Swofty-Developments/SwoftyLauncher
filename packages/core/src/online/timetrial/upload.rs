@@ -607,7 +607,7 @@ mod tests {
             Some(&api as &dyn Boards),
             Some(&Stamp {
                 fingerprint: serde_json::json!({"digest": "d"}),
-                integrity: serde_json::json!({"state": "missing", "kind": "unreachable", "why": "timeout"}),
+                integrity: serde_json::json!({"state": "fetch_failed", "version": null, "source": null, "detail": "timeout"}),
             }),
             None,
             &mut |e| events.push(line(&e)),
@@ -625,9 +625,10 @@ mod tests {
                 let integrity = req.split(r#""integrity":"#).nth(1).unwrap_or_default();
                 let integrity = &integrity[..integrity.find('}').map_or(0, |end| end + 1)];
                 for part in [
-                    r#""state":"missing""#,
-                    r#""kind":"unreachable""#,
-                    r#""why":"timeout""#,
+                    r#""state":"fetch_failed""#,
+                    r#""version":null"#,
+                    r#""source":null"#,
+                    r#""detail":"timeout""#,
                 ] {
                     assert!(integrity.contains(part), "{req}");
                 }

@@ -42,6 +42,8 @@ pub struct Module {
     pub sha256: String,
     /// Why the server's copy could not be had, when this is the newest cached copy in its place.
     pub fallback: Option<String>,
+    /// Where the bytes came from this time.
+    pub source: Source,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -76,6 +78,7 @@ fn local_at(path: &Path) -> Result<Module, String> {
         dll: path.to_path_buf(),
         sha256: sha256_bytes(&bytes),
         fallback: None,
+        source: Source::Env,
     })
 }
 
@@ -115,6 +118,11 @@ fn ensure_retrying(
         dll: f.path,
         sha256: f.sha256,
         fallback: f.fallback,
+        source: match f.origin {
+            fetch::Origin::Server => Source::Server,
+            fetch::Origin::Cdn => Source::Cdn,
+            fetch::Origin::Cache => Source::Cache,
+        },
     })
 }
 
@@ -182,28 +190,54 @@ fn signed_message(offer: &Offer) -> Vec<u8> {
     message
 }
 
-/// What a session did about the integrity module. Each lap the session records carries it as the `integrity`
-/// field of its upload meta, so a lap that comes in unsealed says why.
+/// What the session did about the integrity module, as the `integrity` field of its laps' upload meta, in the
+/// server's terms: what happened, the version loaded or tried, where its bytes came from and free text for review.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(tag = "state", rename_all = "snake_case")]
-pub enum State {
-    /// The server's copy was placed.
-    Server { version: String },
-    /// The newest cached copy was placed because the server's could not be had, for the reason given.
-    Cached { version: String, why: String },
-    /// The local build [`LOCAL_ENV`] names was placed.
-    Local,
-    /// No module was placed.
-    Missing { kind: Kind, why: String },
+pub struct State {
+    pub state: Status,
+    pub version: Option<String>,
+    pub source: Option<Source>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub detail: Option<String>,
 }
 
-/// The longest reason a [`State`] or [`Notice`] carries.
-const WHY_MAX: usize = 240;
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Status {
+    /// The module was placed for the session.
+    Loaded,
+    /// The server has no module to offer.
+    NoOffer,
+    /// The offer or the file could not be had, and no cached copy still verified.
+    FetchFailed,
+    /// The offer's signature, or the file's size or sha256, did not verify.
+    BadOffer,
+    /// The server did not take the launcher's sign-in.
+    SignedOut,
+    /// The server refused it for another reason, in its words in `detail`.
+    Refused,
+}
+
+/// Where the bytes of the placed module came from; `env` is [`LOCAL_ENV`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Source {
+    Server,
+    Cdn,
+    Cache,
+    Env,
+}
+
+/// The longest reason a [`State`] or [`Notice`] carries, in characters.
+const WHY_MAX: usize = 200;
 
 fn short(text: &str) -> String {
     let text = text.trim();
     match text.char_indices().nth(WHY_MAX) {
-        Some((cut, _)) => format!("{}...", &text[..cut]),
+        Some(_) => {
+            let cut = text.char_indices().nth(WHY_MAX - 3).map_or(0, |(at, _)| at);
+            format!("{}...", &text[..cut])
+        }
         None => text.to_owned(),
     }
 }
@@ -212,19 +246,23 @@ impl State {
     /// The state of a session that asked for the module and got `found`, from [`local`] when `local`.
     pub fn of(found: &Result<Module, Unavailable>, local: bool) -> Self {
         match found {
-            Ok(_) if local => Self::Local,
-            Ok(m) => match &m.fallback {
-                Some(why) => Self::Cached {
-                    version: m.version.clone(),
-                    why: short(why),
-                },
-                None => Self::Server {
-                    version: m.version.clone(),
-                },
+            Ok(m) => Self {
+                state: Status::Loaded,
+                version: (!local).then(|| m.version.clone()),
+                source: Some(if local { Source::Env } else { m.source }),
+                detail: m.fallback.as_deref().map(short),
             },
-            Err(e) => Self::Missing {
-                kind: e.kind,
-                why: short(&e.why),
+            Err(e) => Self {
+                state: match (e.kind, e.status) {
+                    (Kind::Unreachable, _) => Status::FetchFailed,
+                    (Kind::Invalid, _) => Status::BadOffer,
+                    (Kind::Refused, 404) => Status::NoOffer,
+                    (Kind::Refused, 401) => Status::SignedOut,
+                    (Kind::Refused, _) => Status::Refused,
+                },
+                version: None,
+                source: None,
+                detail: Some(short(&e.why)),
             },
         }
     }
@@ -248,11 +286,11 @@ impl Notice {
         crate::read_json(&Self::path(data)).ok()
     }
 
-    /// Leave the note when `state` is [`State::Missing`]; clear it for any other state, and when the session
-    /// did not ask for the module (`None`).
-    pub fn keep(data: &Path, state: Option<&State>) -> crate::Result<()> {
+    /// Leave the note when the session placed no module, for the reason `missing`; clear it when it placed one
+    /// or did not ask for it (`None`).
+    pub fn keep(data: &Path, missing: Option<&Unavailable>) -> crate::Result<()> {
         let path = Self::path(data);
-        let Some(State::Missing { kind, why }) = state else {
+        let Some(Unavailable { kind, why, .. }) = missing else {
             return match std::fs::remove_file(&path) {
                 Err(e) if e.kind() != std::io::ErrorKind::NotFound => Err(crate::io_err(&path)(e)),
                 _ => Ok(()),
@@ -264,7 +302,7 @@ impl Notice {
         let notice = Self {
             at,
             kind: *kind,
-            why: why.clone(),
+            why: short(why),
         };
         crate::write_json_shared(&path, &notice)
     }
@@ -314,7 +352,7 @@ pub fn place(
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
-    use crate::online::modules::fetch::Source;
+    use crate::online::modules::fetch::Source as _;
     use ring::rand::SystemRandom;
     use ring::signature::{Ed25519KeyPair, KeyPair};
     use std::io::{Read, Write};
@@ -679,6 +717,7 @@ pub(crate) mod tests {
             dll: PathBuf::from("/data/timetrial/integrity/v1").join(DLL),
             sha256: String::new(),
             fallback: None,
+            source: Source::Server,
         };
         let mut loader = std::collections::BTreeMap::new();
         let mut plugins = vec!["addons/other/o.dll".to_owned()];
@@ -964,14 +1003,15 @@ pub(crate) mod tests {
             &Api::with_server(&never_answers(), "tok"),
             key.public_key().as_ref(),
         );
-        let state = State::of(&found, false);
-        let State::Missing { kind, why } = &state else {
-            panic!("{state:?}");
+        let Err(missing) = &found else {
+            panic!("{found:?}");
         };
-        assert_eq!(*kind, Kind::Unreachable);
+        assert_eq!(missing.kind, Kind::Unreachable);
+        let why = &missing.why;
         assert!(why.contains("couldn't reach") && why.contains("timeout"), "{why}");
+        assert_eq!(State::of(&found, false).state, Status::FetchFailed);
         assert_eq!(Notice::read(&d), None);
-        Notice::keep(&d, Some(&state)).unwrap();
+        Notice::keep(&d, Some(missing)).unwrap();
         let note = Notice::read(&d).unwrap();
         assert_eq!((note.kind, note.why.as_str()), (Kind::Unreachable, why.as_str()));
         let now = std::time::SystemTime::now()
@@ -979,58 +1019,117 @@ pub(crate) mod tests {
             .unwrap()
             .as_secs_f64();
         assert!(now - note.at < 60.0);
-        Notice::keep(&d, Some(&State::Server { version: "v1".into() })).unwrap();
-        assert_eq!(Notice::read(&d), None);
         Notice::keep(&d, None).unwrap();
+        assert_eq!(Notice::read(&d), None);
         std::fs::remove_dir_all(&d).ok();
     }
 
     #[test]
-    fn the_session_state_is_what_the_upload_meta_carries() {
-        let m = Module {
-            version: "v1".into(),
-            dll: PathBuf::from(DLL),
-            sha256: String::new(),
-            fallback: None,
+    fn the_upload_meta_says_where_the_module_came_from_in_the_servers_words() {
+        let key = pair();
+        let wire = |found: &Result<Module, Unavailable>, local: bool| {
+            serde_json::to_value(State::of(found, local)).unwrap()
         };
-        let cached = Module {
-            fallback: Some("couldn't reach the server".into()),
-            ..m.clone()
-        };
-        let cases = [
-            (
-                State::of(&Ok(m.clone()), false),
-                serde_json::json!({"state": "server", "version": "v1"}),
-            ),
-            (
-                State::of(&Ok(cached), false),
-                serde_json::json!({"state": "cached", "version": "v1", "why": "couldn't reach the server"}),
-            ),
-            (State::of(&Ok(m), true), serde_json::json!({"state": "local"})),
-            (
-                State::of(&Err(Unavailable::unreachable("timeout: global")), false),
-                serde_json::json!({"state": "missing", "kind": "unreachable", "why": "timeout: global"}),
-            ),
-            (
-                State::of(
-                    &Err(Unavailable::refused("no integrity module is published")),
-                    false,
-                ),
-                serde_json::json!({"state": "missing", "kind": "refused", "why": "no integrity module is published"}),
-            ),
-            (
-                State::of(&Err("the signature does not match the pinned key".into()), false),
-                serde_json::json!({"state": "missing", "kind": "invalid", "why": "the signature does not match the pinned key"}),
-            ),
+        let served = vec![
+            ("/v1/tt/integrity/file", "200 OK", BYTES.to_vec()),
+            ("/v1/tt/integrity", "200 OK", json(&offer(&key, "v1", BYTES))),
         ];
-        for (state, wire) in cases {
-            assert_eq!(serde_json::to_value(&state).unwrap(), wire);
-            assert_eq!(serde_json::from_value::<State>(wire).unwrap(), state);
+        let (got, d, _) = run("meta-server", &key, served.clone(), 2);
+        assert_eq!(
+            wire(&got, false),
+            serde_json::json!({"state": "loaded", "version": "v1", "source": "server"})
+        );
+        let (url, _, t) = serve(
+            vec![("/v1/tt/integrity", "200 OK", json(&offer(&key, "v1", BYTES)))],
+            1,
+        );
+        let again = ensure_with(&d, &Api::with_server(&url, "tok"), key.public_key().as_ref());
+        t.join().unwrap();
+        assert_eq!(
+            wire(&again, false),
+            serde_json::json!({"state": "loaded", "version": "v1", "source": "cache"})
+        );
+        let kept = offline(&d, &key);
+        let detail = wire(&kept, false)["detail"]
+            .as_str()
+            .unwrap_or_default()
+            .to_owned();
+        assert!(detail.contains("couldn't reach"), "{detail}");
+        assert_eq!(
+            wire(&kept, false),
+            serde_json::json!({"state": "loaded", "version": "v1", "source": "cache", "detail": detail})
+        );
+        std::fs::remove_dir_all(&d).ok();
+
+        let (link, cdn_t) = cdn(BYTES.to_vec());
+        let mut offered = offer(&key, "v2", BYTES);
+        offered["cdn_url"] = link.into();
+        let (got, d, _) = run(
+            "meta-cdn",
+            &key,
+            vec![("/v1/tt/integrity", "200 OK", json(&offered))],
+            1,
+        );
+        cdn_t.join().unwrap();
+        assert_eq!(
+            wire(&got, false),
+            serde_json::json!({"state": "loaded", "version": "v2", "source": "cdn"})
+        );
+        std::fs::remove_dir_all(&d).ok();
+
+        let local = d.with_extension("local.dll");
+        std::fs::write(&local, BYTES).unwrap();
+        let found = local_at(&local).map_err(Unavailable::from);
+        assert_eq!(
+            wire(&found, true),
+            serde_json::json!({"state": "loaded", "version": null, "source": "env"})
+        );
+        std::fs::remove_file(&local).ok();
+
+        for (name, status, body, state) in [
+            (
+                "meta-404",
+                "404 Not Found",
+                r#"{"error":"no integrity module is published"}"#,
+                "no_offer",
+            ),
+            (
+                "meta-401",
+                "401 Unauthorized",
+                r#"{"error":"sign in with Discord in the launcher first"}"#,
+                "signed_out",
+            ),
+            (
+                "meta-403",
+                "403 Forbidden",
+                r#"{"error":"banned","reason":"x"}"#,
+                "refused",
+            ),
+        ] {
+            let (got, d, _) = run(
+                name,
+                &key,
+                vec![("/v1/tt/integrity", status, body.as_bytes().to_vec())],
+                1,
+            );
+            let meta = wire(&got, false);
+            assert_eq!(
+                (meta["state"].as_str(), &meta["version"], &meta["source"]),
+                (Some(state), &Value::Null, &Value::Null),
+                "{meta}"
+            );
+            std::fs::remove_dir_all(&d).ok();
         }
-        let State::Missing { why, .. } = State::of(&Err("x".repeat(1000).into()), false) else {
-            unreachable!()
-        };
-        assert_eq!(why.chars().count(), WHY_MAX + 3);
+        assert_eq!(
+            wire(&Err(Unavailable::unreachable("timeout: global")), false),
+            serde_json::json!({"state": "fetch_failed", "version": null, "source": null, "detail": "timeout: global"})
+        );
+        assert_eq!(
+            wire(&Err("the signature does not match the pinned key".into()), false),
+            serde_json::json!({"state": "bad_offer", "version": null, "source": null, "detail": "the signature does not match the pinned key"})
+        );
+        let long = wire(&Err("x".repeat(1000).into()), false);
+        assert_eq!(long["detail"].as_str().map(|d| d.chars().count()), Some(200));
     }
 
     #[test]

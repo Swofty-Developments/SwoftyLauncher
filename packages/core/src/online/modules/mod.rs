@@ -91,6 +91,8 @@ impl Module {
 pub struct Unavailable {
     pub why: String,
     pub kind: Kind,
+    /// The status of the server's refusal; 0 when the server did not answer one.
+    pub status: u16,
 }
 
 /// What kept a signed file from the session.
@@ -110,6 +112,15 @@ impl Unavailable {
         Self {
             why: why.into(),
             kind: Kind::Invalid,
+            status: 0,
+        }
+    }
+
+    /// The server's refusal, in its own words.
+    pub(crate) fn answered(e: ApiError) -> Self {
+        Self {
+            status: e.status,
+            ..Self::refused(e.message)
         }
     }
 
@@ -331,9 +342,12 @@ impl fetch::Source for Server<'_> {
 
     fn refused(&self, e: ApiError) -> Unavailable {
         if e.status == 404 {
-            return Unavailable::refused("the server does not offer modules");
+            return Unavailable::answered(ApiError {
+                message: "the server does not offer modules".into(),
+                ..e
+            });
         }
-        Unavailable::refused(e.message)
+        Unavailable::answered(e)
     }
 
     fn check(&self, key: &[u8], offer: &Offer) -> Result<(), Unavailable> {

@@ -150,13 +150,13 @@ When the offer is missing, unreachable or fails a check and no cached copy can s
 Each lap's upload meta says what the session did about the module, under `integrity`:
 
 ```json
-{"state": "server", "version": "2026.11.10.1"}
-{"state": "cached", "version": "2026.11.10.1", "why": "couldn't reach https://..."}
-{"state": "local"}
-{"state": "missing", "kind": "unreachable", "why": "couldn't reach https://...: timeout: global"}
+{"state": "loaded", "version": "2026.11.10.1", "source": "cdn"}
+{"state": "loaded", "version": "2026.11.10.1", "source": "cache", "detail": "couldn't reach https://..."}
+{"state": "loaded", "version": null, "source": "env"}
+{"state": "fetch_failed", "version": null, "source": null, "detail": "couldn't reach https://...: timeout: global"}
 ```
 
-`kind` is `unreachable` (no answer and no cached copy), `refused` (the server said no, in its own words) or `invalid` (a check failed). A launcher that does not know leaves `integrity` out.
+`state` is `loaded`, `no_offer` (the server answered 404), `fetch_failed` (no answer and no cached copy), `bad_offer` (the signature, size or sha256 did not verify), `signed_out` (the server did not take the sign-in) or `refused` (any other refusal, in the server's words). `source` says where the bytes came from: `server`, `cdn`, `cache` or `env` (`SWOFTY_TT_INTEGRITY_DLL`). `detail` is at most 200 characters. A launcher that does not know leaves `integrity` out.
 
 At `laps.sealing` the module appends the `ATST` section: a length-prefixed JSON document and a 32-byte HMAC-SHA256 of it.
 

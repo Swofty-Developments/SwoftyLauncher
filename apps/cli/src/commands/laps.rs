@@ -332,10 +332,10 @@ static SESSION_INTEGRITY: std::sync::Mutex<Option<integrity::State>> = std::sync
 /// placed, and for the laps the session records. `core` is whether the build runs the core; one without it
 /// records no laps, so it asked for nothing.
 pub fn note_integrity(store: &Store, asked: Option<&Asked>, core: bool, out: &dyn Fn(&str)) {
-    let state = asked
-        .filter(|_| core)
-        .map(|(found, local)| integrity::State::of(found, *local));
-    if let Err(e) = integrity::Notice::keep(&store.root, state.as_ref()) {
+    let asked = asked.filter(|_| core);
+    let state = asked.map(|(found, local)| integrity::State::of(found, *local));
+    let missing = asked.and_then(|(found, _)| found.as_ref().err());
+    if let Err(e) = integrity::Notice::keep(&store.root, missing) {
         out(&format!(
             "integrity module: could not keep the note for the launcher: {e}"
         ));

@@ -52,7 +52,7 @@ pub(crate) trait Source {
     fn pick(&self, answer: Value) -> Result<Self::Offer, Unavailable>;
     /// Why the server's refusal to answer means there is no file, for an error that is not [`unreachable`].
     fn refused(&self, e: ApiError) -> Unavailable {
-        Unavailable::refused(e.message)
+        Unavailable::answered(e)
     }
     /// Everything about an offer that can be judged without the file, the signature included. It is also
     /// what a stored offer must pass for its cached copy to be used offline.
@@ -73,6 +73,15 @@ pub(crate) struct Fetched {
     pub path: PathBuf,
     pub sha256: String,
     pub fallback: Option<String>,
+    pub origin: Origin,
+}
+
+/// Where the bytes of a [`Fetched`] file came from this time.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Origin {
+    Server,
+    Cdn,
+    Cache,
 }
 
 /// How the offer and the download are asked for again: one more try after each `backoff` wait, while the time
@@ -189,7 +198,9 @@ pub(crate) fn ensure<S: Source>(
     source.check(key, &offer)?;
     let folder = base.join(offer.version());
     let path = folder.join(offer.file());
+    let mut origin = Origin::Cache;
     if !matches(&path, &offer) {
+        origin = Origin::Cdn;
         let bytes = match from_cdn(&offer) {
             Some(bytes) => bytes,
             None => match with_retry(
@@ -200,9 +211,12 @@ pub(crate) fn ensure<S: Source>(
                 out,
                 |t| source.download(api, &offer, t),
             ) {
-                Ok(bytes) => bytes,
+                Ok(bytes) => {
+                    origin = Origin::Server;
+                    bytes
+                }
                 Err(e) if unreachable(&e) => return offline(e),
-                Err(e) => return Err(Unavailable::refused(e.message)),
+                Err(e) => return Err(Unavailable::answered(e)),
             },
         };
         if bytes.len() as u64 != offer.size() {
@@ -230,6 +244,7 @@ pub(crate) fn ensure<S: Source>(
         path,
         sha256: offer.sha256().to_owned(),
         fallback: None,
+        origin,
     })
 }
 
@@ -269,6 +284,7 @@ pub(crate) fn cached<S: Source>(source: &S, base: &Path, key: &[u8]) -> Option<F
                         path,
                         sha256: offer.sha256().to_owned(),
                         fallback: None,
+                        origin: Origin::Cache,
                     },
                 )
             })
