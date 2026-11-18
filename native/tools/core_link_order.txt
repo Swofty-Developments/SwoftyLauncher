@@ -46,6 +46,8 @@ src/core/diagnostics/crash/symbolizer.cpp
 src/core/diagnostics/crash/capture.cpp
 src/core/diagnostics/crash/fatal_paths.cpp
 src/core/diagnostics/crash/report_sections.cpp
+src/core/diagnostics/crash/report_memory.cpp
+src/core/diagnostics/crash/report_process.cpp
 src/core/diagnostics/crash/report_writer.cpp
 src/core/diagnostics/crash/minidump.cpp
 src/core/diagnostics/crash/stall_report.cpp

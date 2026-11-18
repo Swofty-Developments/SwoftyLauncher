@@ -122,9 +122,11 @@ The crash handler in `diagnostics/crash/` is split by what runs when:
 | `crash.cpp` | `crash_attach` and `crash_game_hooks` (`crash.hpp`), the two subsystem entry points |
 | `capture.cpp` | the vectored handler, the top-level filter and the exit hooks, on fixed-size state that never allocates |
 | `fatal_paths.cpp` | the game's own fatal paths (`Ne_ReportMemoryError`, fast fails) |
-| `report_writer.cpp`, `report_sections.cpp` | the writer thread that turns one request into `crash-<time>.txt` |
+| `report_writer.cpp`, `report_sections.cpp` | the writer thread that turns one request into `crash-<time>.txt`, one step at a time |
+| `report_memory.cpp`, `report_process.cpp` | the sections about memory (the exception, the memory at the registers, the Ne heap) and about the process (modules, threads, loader.log) |
+| `report_text_logic.hpp` | the report text that reads no process state, which `test/report_text_test.cpp` pins |
 | `symbolizer.cpp`, `minidump.cpp`, `dred.cpp` | symbol names, the minidump and the D3D12 DRED data for the report |
-| `stall_report.cpp`, `stall_walk.cpp` | the load stall report |
+| `stall_report.cpp`, `stall_walk.cpp` | the load stall report (`stall_report.hpp`) |
 
 Code that runs inside a handler reads with `pages::readable_now` and does not allocate or lock. The crash files do not include `runtime.hpp`; the few runtime calls they make are declared at the top of each file.
 
