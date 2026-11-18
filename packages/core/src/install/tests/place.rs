@@ -3,6 +3,7 @@ use std::path::Path;
 
 use super::*;
 use crate::game_folder::placed::Placed;
+use crate::install::apply::{Copied, Linker, copy_report, refuse_drop_ins};
 use crate::platform::disk::Volume;
 
 const GVDB: &str = "game_package/gamedatabases/gamedatabases.2025.bin";
@@ -406,4 +407,100 @@ fn a_refused_plan_opens_no_journal_and_changes_nothing() {
         assert!(Journal::open(&f.data).unwrap().is_empty(), "{case}");
         assert!(Placed::load(&f.data).unwrap().get(FIRST).is_none(), "{case}");
     }
+}
+
+#[test]
+fn the_copy_report_names_how_the_files_were_placed() {
+    let c = |linked, placed, link_failure: Option<&str>, cached, cache_failure: Option<&str>| Copied {
+        linked,
+        from_cache: linked.min(1),
+        placed,
+        link_failure: link_failure.map(str::to_owned),
+        cached,
+        cache_failure: cache_failure.map(str::to_owned),
+    };
+    for (copied, copy_only, line) in [
+        (
+            c(0, 3, None, None, None),
+            true,
+            "installing: copy (SWOFTY_INSTALL_COPY=1); 0 file(s) linked, 3 copied",
+        ),
+        (
+            c(1, 3, Some("denied"), Some((1, 0)), None),
+            false,
+            "installing: copy (link cache link failed: denied); 1 file(s) linked, 2 copied",
+        ),
+        (
+            c(2, 3, None, Some((1, 4)), None),
+            false,
+            "installing: 2 linked (1 from the link cache: 1 copied into it, 4 reused), 1 copied",
+        ),
+        (
+            c(0, 3, None, None, Some("no room")),
+            false,
+            "installing: copy (link cache unavailable: no room); 0 file(s) linked, 3 copied",
+        ),
+        (
+            c(2, 3, Some("denied"), None, Some("no room")),
+            false,
+            "installing: copy (hard link failed: denied); 2 file(s) linked, 1 copied",
+        ),
+        (
+            c(0, 0, None, None, None),
+            false,
+            "installing: copy (no build output to link); 0 file(s) linked, 0 copied",
+        ),
+        (
+            c(3, 3, None, None, Some("no room")),
+            false,
+            "installing: hard links; 3 file(s) linked, 0 copied",
+        ),
+    ] {
+        assert_eq!(copy_report(&copied, copy_only), line, "{copied:?}");
+    }
+}
+
+#[test]
+fn the_linker_links_build_output_and_cached_copies_until_a_link_fails() {
+    let f = Fixture::new("linker");
+    let (outside, cached) = (f.loose("outside", "x"), f.loose("cached", "c"));
+    let mut linker = Linker {
+        via: BTreeMap::from([("in/cache.erp".to_owned(), cached)]),
+        built: f.built.clone(),
+        on: true,
+        from_cache: 0,
+        failure: None,
+    };
+    std::fs::create_dir_all(&f.game).unwrap();
+    let at = |name: &str| f.game.join(name);
+    assert!(!linker.link("outside.erp", &outside, &at("outside.erp"), false));
+    assert!(!at("outside.erp").exists() && linker.on);
+    assert!(linker.link("built.erp", &f.built("b", "b"), &at("built.erp"), false));
+    assert!(linker.link("in/cache.erp", &outside, &at("cache.erp"), false));
+    assert_eq!(std::fs::read_to_string(at("cache.erp")).unwrap(), "c");
+    assert_eq!(linker.from_cache, 1);
+    assert!(!linker.link("again.erp", &f.built("b", "b"), &at("built.erp"), false));
+    assert!(!linker.on && linker.failure.is_some());
+    assert!(!linker.link("later.erp", &f.built("l", "l"), &at("later.erp"), false));
+    assert!(!at("later.erp").exists());
+}
+
+#[test]
+fn any_upscaler_drop_in_in_a_plan_refuses_it() {
+    let f = Fixture::new("drop-ins");
+    let rel = crate::game_folder::stock::UPSCALER_DROP_INS[0];
+    for at in 0..3 {
+        let mut plan = f.plan();
+        plan.data.insert(GVDB.into(), f.built(GVDB, "db"));
+        let into = [&mut plan.data, &mut plan.added, &mut plan.loader];
+        into.into_iter()
+            .nth(at)
+            .unwrap()
+            .insert(rel.to_ascii_uppercase(), f.built(rel, "dll"));
+        let err = refuse_drop_ins(&plan).unwrap_err();
+        assert!(err.to_string().contains("upscaler drop-in"), "{err}");
+    }
+    let mut plan = f.plan();
+    plan.added.insert(format!("bin/{rel}"), f.built(rel, "dll"));
+    refuse_drop_ins(&plan).unwrap();
 }
