@@ -2825,7 +2825,6 @@
   "func:Ne_Presence_OnSubscribeResult": "V2853",
   "func:Ne_Property_ResolveBindingChain": "V8300",
   "func:Ne_Property_SetS32IfChanged": "V8015",
-  "func:Ne_Property_SetS64IfChanged": "V8016",
   "func:Ne_PtrList_RemoveLocked": "V7964",
   "func:Ne_Queue_EnqueueEventRecord": "V7531",
   "func:Ne_RbTree_EraseSubtree": "V8446",

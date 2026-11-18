@@ -55,6 +55,16 @@
    "verdict": "partial",
    "evidence": "decomp:own capstone disasm 0x140977b20-0x140977e0d,0x1442bc5b0-0x1442bc6e1,0x1442bc390-0x1442bc4c4,0x1442bc760-0x1442bc863,0x1453484a0-0x1453484cb,0x140972de0-0x1409730ce,0x141b85c40-0x141b85f2f,1.0.145 0x140977b70-0x140977e5d;xref:0x140977b2d,0x140977b54,0x140977b66,0x140977bf7,0x140977cba,0x140977d6e,0x140977dbb,0x140977def,0x1406a7517,0x1407d0af9,0x14099b99b,0x1442b1766,0x141ac0b4f",
    "notes": "V100063 Blind: partial. Confirmed: +0x26&1 -> ret 0 (0x140977b31); current via [P+0x58] vslot 0x38; force (r9b) or qword-differs gate, equal -> ret 1 (0x140977b57); 0x1442bc5b0 under +0x60&2; listener notify via 0x1442bc760; census row 772/481/5 jumps/1 thunk exact; caller 0x1407d07a0; S32 twin 0x140972de0. Imprecise: not plain S64. All 777 sites gate on type 0x146ca5550 and 701 pass then destroy a 24-byte weak object handle, so the compare is pointer identity (plain-qword twin 0x141b85c40). The 'unknown' object at rsp+0x60 is a 0x200-byte arena allocator for the old-value copy; the message is 0x40 bytes at rsp+0x20. Unclaimed: store via vslot 0x40, 0x1442bc390 post-hook, NaN guard/restore ret 0."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_Property_SetUIDBRefIfChanged",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140977b20-0x140977e0d,0x1442bc390-0x1442bc4c4,0x1442bc5b0-0x1442bc6e1,0x1442bc760-0x1442bc863,0x1453484a0-0x1453484cb,0x14083c960-0x14083ca17,0x1442ba4d0-0x1442ba540,0x1443a85f2-0x1443a8613,0x1439540a0-0x1439540dc,0x140972de0-0x140972e2c,0x141b85c40-0x141b85c79,0x148755470-0x1487554f0,1.0.145 0x140977b70-0x140977e5d;xref:0x140977b31,0x140977b54,0x140977cba,0x140977def,0x140977dbb,0x1406a7517,0x1407d0af9,0x1442b1766,0x1487554e0,0x1443a860c",
+   "notes": "V100064 Blind: agree. Own disasm 0x140977b20-0x140977e0d: bool f(P, const void *v, int r8d, bool force). P+0x26 bit0 -> 0; !force and equal first qword -> 1; P+0x60&2 hooks 0x1442bc5b0/0x1442bc390; old copy in stack arena only with listeners; store via V+0x40; float NaN guard (rollback -> 0 at 0x140977def, else 1.0f); 0x40-byte message to 0x1442bc760; returns 1. All 777 call/jump sites gate on type 0x146ca5550 (registered \"UIDBRef\", 0x18-byte value) with r8d=0; census row 772/481/.data1:33,.xtls:739/1 thunk/5 jumps matches a fresh run. 0x141b85c40s 7 callers gate on int64; 0x140972de0 compares 32 bits. 1.0.145 twin 0x140977b70, 170/170 equal. The S64 in the name misleads; the notes say so."
   }
  ],
  "proofs": []
