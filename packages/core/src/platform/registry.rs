@@ -636,6 +636,56 @@ mod tests {
         assert!(listings_agree(&format!("{here}{here}"), &here).is_err());
     }
 
+    /// The text of `key`'s value `name`, or why there is none: the value's type and data when it is not
+    /// text, every value the key holds when it has none of that name.
+    fn text_or_why(key: &Key, name: &str) -> Result<String, String> {
+        if let Some(text) = key.text(name) {
+            return Ok(text);
+        }
+        Err(match key.value(name) {
+            Some(data) => format!("{} has {name} as {data:?}", key.path),
+            None => format!(
+                "{} has no value named {name}; it holds {:?}",
+                key.path, key.values
+            ),
+        })
+    }
+
+    #[test]
+    fn a_value_reads_as_text_whatever_its_name_s_case_and_without_its_nuls() {
+        let le = |s: &str| -> Vec<u8> { s.encode_utf16().flat_map(u16::to_le_bytes).collect() };
+        let key = Key {
+            path: r"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\KnownDLLs".into(),
+            values: vec![
+                ("DllDirectory".into(), data(2, &le("%SystemRoot%\\system32\0"))),
+                ("KERNEL32".into(), data(1, &le("kernel32.dll\0\0"))),
+                ("user32".into(), data(1, &le("user32.dll"))),
+                ("gdi32".into(), data(1, &le("gdi32.dll\0left over"))),
+                ("List".into(), data(7, &le("a\0b\0\0"))),
+            ],
+            ..Key::default()
+        };
+        assert_eq!(text_or_why(&key, "kernel32").as_deref(), Ok("kernel32.dll"));
+        assert_eq!(key.text("Kernel32").as_deref(), Some("kernel32.dll"));
+        assert_eq!(
+            key.text("dlldirectory").as_deref(),
+            Some(r"%SystemRoot%\system32")
+        );
+        assert_eq!(key.text("USER32").as_deref(), Some("user32.dll"));
+        assert_eq!(key.text("Gdi32").as_deref(), Some("gdi32.dll"));
+        let list = text_or_why(&key, "list").unwrap_err();
+        assert!(
+            list.ends_with(r#"KnownDLLs has list as MultiSz(["a", "b"])"#),
+            "{list}"
+        );
+        let missing = text_or_why(&key, "ntdll").unwrap_err();
+        assert!(missing.contains("has no value named ntdll"), "{missing}");
+        assert!(
+            missing.contains(r#"("KERNEL32", Sz("kernel32.dll"))"#),
+            "{missing}"
+        );
+    }
+
     #[test]
     fn values_read_by_name_whatever_the_case_and_by_their_type() {
         let key = Key {
@@ -706,6 +756,7 @@ mod tests {
                 r"HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
                 "/s",
             ][..],
+            &[r"HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\KnownDLLs"][..],
         ] {
             let mut all = vec!["query"];
             all.extend_from_slice(args);
@@ -755,10 +806,13 @@ mod tests {
         )
         .unwrap()
         .unwrap();
-        assert!(
-            known
-                .text("kernel32")
-                .is_some_and(|t| t.eq_ignore_ascii_case("kernel32.dll"))
-        );
+        match text_or_why(&known, "kernel32") {
+            Ok(text) => assert!(
+                text.eq_ignore_ascii_case("kernel32.dll"),
+                "{} has kernel32 as {text:?}",
+                known.path
+            ),
+            Err(why) => panic!("{why}"),
+        }
     }
 }

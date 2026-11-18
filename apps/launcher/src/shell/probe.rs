@@ -1,9 +1,9 @@
 use crate::dialogs::crash::{CrashNeeds, Crashes};
 use crate::dialogs::game_edited::Edited;
 use crate::services::game::{self, Copies, Install, Owner, Probe};
+use crate::shell::host::reports_nothing;
 use crate::shell::notices::{Notification, Notify};
 use gpui_kit::*;
-use std::convert::Infallible;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 use swofty_core::game_folder::busy::Busy;
@@ -241,7 +241,7 @@ impl Shell {
 
     fn finish_launch(&mut self, probe: &Probe) {
         if let Some(failed) = self.launching.follow(&mut self.game, &self.store, probe) {
-            self.room_launch_ended(failed);
+            self.rooms.launch_ended(failed);
         }
     }
 }
@@ -257,7 +257,5 @@ impl Host<Crashes> for Shell {
         )
     }
 
-    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
-        match change {}
-    }
+    reports_nothing!();
 }

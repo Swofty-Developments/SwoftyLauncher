@@ -62,7 +62,6 @@ namespace guards = swofty_core::guards;
 namespace tl = runtime::theatre_list;
 
 uintptr_t no_slot = 0, no_slot_alt = 0;
-bool rows_offered = false;
 guards::LogFirst<tl::LOG_FIRST> skipped{"skips"}, moved{"moves"};
 
 void skip(SwoftyContext *c, uintptr_t exit_at)
@@ -129,13 +128,6 @@ uintptr_t walk_site(const char *step, const char *exit_at)
     return 0;
 }
 
-const char *state(const char *mixin, bool offered_it)
-{
-    if (!offered_it)
-        return "not offered";
-    return guards::install_state(runtime::core_mixins_active(mixin), "armed");
-}
-
 class TheatreListGuard final : public guards::Guard {
 public:
     TheatreListGuard() : Guard(guards::CoreSetId::theatre_list) {}
@@ -151,20 +143,26 @@ private:
         no_slot_alt = walk_site(STEP_ALT, NO_SLOT_ALT);
         if (no_slot_alt)
             out.push_back({MIXIN_ALT, {{STEP_ALT, SWOFTY_MIXIN_SITE, 100, (void *)&entry_step_alt, nullptr}}});
-        rows_offered = swofty::api->resolve(ROW_OFFSET) != 0;
-        if (rows_offered)
+        if (swofty::api->resolve(ROW_OFFSET))
             out.push_back({MIXIN_ROWS, {{ROW_OFFSET, SWOFTY_MIXIN_SITE, 100, (void *)&row_offset, nullptr}}});
         else
             swofty::log("[theatre] rows guard off: needs %s, which this build does not resolve", ROW_OFFSET);
     }
 
+    const char *state(const char *set) const
+    {
+        if (!offered_set(set))
+            return "not offered";
+        return guards::install_state(runtime::core_mixins_active(set), "armed");
+    }
+
     void settle() override
     {
-        if (!no_slot && !no_slot_alt && !rows_offered)
+        if (!offered_set(MIXIN) && !offered_set(MIXIN_ALT) && !offered_set(MIXIN_ROWS))
             return;
         swofty::log("[theatre] list guard: recent list %s, saved list %s, rows %s; a saved item whose owner is gone has no "
                     "save slot and the next item takes its row",
-                    state(MIXIN, no_slot), state(MIXIN_ALT, no_slot_alt), state(MIXIN_ROWS, rows_offered));
+                    state(MIXIN), state(MIXIN_ALT), state(MIXIN_ROWS));
     }
 };
 

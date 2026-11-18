@@ -10,7 +10,7 @@ use swofty_i18n::{tr, trf};
 
 use crate::services::library::Library;
 use crate::shell::Shell;
-use crate::shell::host::{Host, Hosted};
+use crate::shell::host::{Host, Hosted, reports_nothing};
 
 pub(crate) enum Load<T> {
     Idle,
@@ -559,9 +559,7 @@ impl Host<TtPage> for Shell {
         )
     }
 
-    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
-        match change {}
-    }
+    reports_nothing!();
 }
 
 #[cfg(test)]
