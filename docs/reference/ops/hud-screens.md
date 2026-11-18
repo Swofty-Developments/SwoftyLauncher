@@ -114,6 +114,9 @@ hud_track_position.osd_visibility_option.track_position
     <prefix>_sn1  v_<prefix>  visible = false   (the stock cap instance never shows the elements)
 ```
 
+`also.<the record's own screen>` takes only `hide`: those elements stay off the record's own screen
+(for one record that shows a short list on the HUD and the long one on the replay screen).
+
 `isHidden` on a scene element does not hide it in game, so every static hide here is a template node:
 `hidden: true` on an element, `also.<screen>.hide`, the cap's graphics and the editor copy.
 
