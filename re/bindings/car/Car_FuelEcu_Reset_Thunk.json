@@ -74,7 +74,7 @@
    "claimed": "L2",
    "verdict": "agree",
    "evidence": "decomp:own capstone disasm of the archived 1.0.141 exe (PE 1789118616) 0x14468e550 and body 0x1553fdf60-0x1553fe0a4;xref:0x145bfa888",
-   "notes": "V10775 Re-verified after V6754/V7252: the .data1 body is plain code in the archived exe, not a black box. Vtable 0x145bfa870 follows the TemperatureScaleLean/Standard/Rich/Max strings (Fuel ECU modes); its slot 3 (+0x18, abs at 0x145bfa888, the only reference) is 0x14468e550 = jmp 0x1553fdf60. The body takes rcx=ecu, edx=flags: copies mode [+0x128] (stride 0x10 from +0x28/+0x68/+0xa8/+0xe8) into the XOR pairs +0x130/+0x140/+0x150/+0x160, calls 0x144689a70 (car+0x530) and 0x1446a5130 (car+0x538), and on flags & 0x2000 repeats with mode 1 (Standard) and stores 1. Slot 3 is the reset slot: the Differential vtable 0x145bfa120 slot 3 (0x14467e010, body 0x1553d6f70) also gates on edx & 0x2000. Row, proto (ecu, flags) and body link hold."
+   "notes": "V20001 Re-verified after V6754/V7252: the .data1 body is plain code in the archived exe, not a black box. Vtable 0x145bfa870 follows the TemperatureScaleLean/Standard/Rich/Max strings (Fuel ECU modes); its slot 3 (+0x18, abs at 0x145bfa888, the only reference) is 0x14468e550 = jmp 0x1553fdf60. The body takes rcx=ecu, edx=flags: copies mode [+0x128] (stride 0x10 from +0x28/+0x68/+0xa8/+0xe8) into the XOR pairs +0x130/+0x140/+0x150/+0x160, calls 0x144689a70 (car+0x530) and 0x1446a5130 (car+0x538), and on flags & 0x2000 repeats with mode 1 (Standard) and stores 1. Slot 3 is the reset slot: the Differential vtable 0x145bfa120 slot 3 (0x14467e010, body 0x1553d6f70) also gates on edx & 0x2000. Row, proto (ecu, flags) and body link hold."
   }
  ],
  "proofs": []

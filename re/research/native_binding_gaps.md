@@ -6,10 +6,10 @@ Static only, on the KB exe (`d873a1c8`) and Steam 1.0.145 (`46009bd3`). The expo
 
 Native: `vehicles_entry` in `native/src/core/boxes/picker/time_trial.cpp`, armed by `tt_guard_commit` in `native/src/core/boxes/era_picker.cpp` ("a session with more vehicles than its table of 26 sets up the first 26 instead of writing past it"). It wraps `Sess_Setup_VehicleComponents`. When the session holds more than 26 vehicles, it sets the vehicle vector's end (module +0x30) to begin + 26 × 8 for the call. It puts the old end back afterwards, unless something changed it during the call.
 
-Record: `Sess_Setup_VehicleComponents` 0x142f45960, L2, exported as experimental on all three sets. Its newest verify row is V10782, an agree. On Steam 1.0.145 it is the same code at 0x142f47ef0 (`sigport.py --witness`: 539 of 539 instructions, with +0x28, +0x30, +0xb0 and +0x180 used at the same instructions).
+Record: `Sess_Setup_VehicleComponents` 0x142f45960, L2, exported as experimental on all three sets. Its newest verify row is V20008, an agree. On Steam 1.0.145 it is the same code at 0x142f47ef0 (`sigport.py --witness`: 539 of 539 instructions, with +0x28, +0x30, +0xb0 and +0x180 used at the same instructions).
 
 Proven:
-- The function takes the vehicle count as the byte ((end − begin) >> 3) & 0xff. It stores one component per vehicle in a 26-slot table at module +0xb0, with the count at +0x180. Nothing bounds the store at 0x142f45a09, so a 27th vehicle overwrites the count (V1603, V10782).
+- The function takes the vehicle count as the byte ((end − begin) >> 3) & 0xff. It stores one component per vehicle in a 26-slot table at module +0xb0, with the count at +0x180. Nothing bounds the store at 0x142f45a09, so a 27th vehicle overwrites the count (V1603, V20008).
 - Clamping end around the call is memory-safe inside this function. The other readers of the table, vtable slots 0x20 and 0x88, are bounded by +0x180 (V1603).
 - Shortening and restoring the vector cannot leak memory or free it twice. It is freed through begin only, by slot 0xc0 0x142f43500 and the destructor 0x142fe77f0, and no destructor runs per element (V2134).
 - The cost of the clamp: vehicles past 26 skip this function's per-vehicle setup. That setup covers the component 0x146ce8a00 config copy, the vehicle controller, +0x132 bit 2, +0x2580, +0x9f2c onwards, and 0x144632590 (V1603).

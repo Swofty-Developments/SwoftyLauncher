@@ -94,7 +94,7 @@
    "claimed": "L2",
    "verdict": "agree",
    "evidence": "decomp:own capstone disasm of the archived 1.0.141 exe (PE 1789118616) 0x142be98d0-0x142beb126;xref:0x1457cda18",
-   "notes": "V10779 Re-verified after V10486, whose differences are now in the notes: only reference abs 0x1457cda18 (vtable 0x1457cd950 +0xc8); args rcx=drs, rdx=tick ([rdx+8] double, [rdx+0x34], [rdx+0x36]); g = [0x14607a550] (0x142bea251), [[g+0xf48]+0x3f0a38] vs [g+0xfcc] at 0x142bea261-0x142bea271; button byte [[wing+0x88]+0x30] tested with 4 at 0x142bea189/0x142bea1ab; flags +0x47/+0x48 written at 0x142bea07b/0x142bea086; mov [r13+0x19ac],cl at 0x142bea69d; lap gate [wing+0x40] >= [[0x14607a548]+0x10] at 0x142beaaf6; message vtables 0x1457d4000 (0x142bead9a) and 0x1457d3ff0 (0x142beae08)."
+   "notes": "V20005 Re-verified after V10486, whose differences are now in the notes: only reference abs 0x1457cda18 (vtable 0x1457cd950 +0xc8); args rcx=drs, rdx=tick ([rdx+8] double, [rdx+0x34], [rdx+0x36]); g = [0x14607a550] (0x142bea251), [[g+0xf48]+0x3f0a38] vs [g+0xfcc] at 0x142bea261-0x142bea271; button byte [[wing+0x88]+0x30] tested with 4 at 0x142bea189/0x142bea1ab; flags +0x47/+0x48 written at 0x142bea07b/0x142bea086; mov [r13+0x19ac],cl at 0x142bea69d; lap gate [wing+0x40] >= [[0x14607a548]+0x10] at 0x142beaaf6; message vtables 0x1457d4000 (0x142bead9a) and 0x1457d3ff0 (0x142beae08)."
   }
  ],
  "proofs": []
