@@ -1,9 +1,9 @@
 //! Server-timed laps. At each timing line of a Time Trial lap (start, sector 1, sector 2, finish) the core
 //! writes a mark into the mailbox's [`DIR`] folder. [`Pump`] sends each mark to the server as a tick on a thread
-//! of its own, in the order they were made, and keeps the receipts the server answers per lap in
-//! `timetrial/ticks/`. A lap collected into the outbox takes its receipts with it ([`for_lap`]), so a queued
-//! upload carries them however late it goes. A mark that can't be sent while it is fresh is dropped: that lap is
-//! untimed and uploads as before.
+//! of its own, in the order they were made, each chained to the receipt of its lap's previous mark, and keeps the
+//! receipts per lap in `timetrial/ticks/`. A lap collected into the outbox takes its receipts with it
+//! ([`for_lap`]), so a queued upload carries them however late it goes. A mark that can't be sent in time is
+//! dropped with the rest of its lap's timing: that lap is untimed and uploads as before.
 
 use std::collections::{BTreeMap, VecDeque};
 use std::path::{Path, PathBuf};
@@ -22,15 +22,20 @@ use crate::online::server::api::{Api, ApiError};
 pub const DIR: &str = "ticks";
 const STORE_DIR: &str = "timetrial/ticks";
 const POLL_EVERY: Duration = Duration::from_millis(100);
-/// How long a mark is tried for. The server times a lap only by ticks sent within a second of their mark; a later
-/// one still proves the lap was driven in the session.
-const FRESH_MS: u64 = 30_000;
-const RETRY_MS: [u64; 4] = [250, 1_000, 2_000, 4_000];
+/// How long a mark waits to be sent while the server can't be reached.
+const GIVE_UP_MS: u64 = 600_000;
+/// How long after its lap's finish a mark the server answered with an error is tried again.
+const AFTER_END_MS: u64 = 60_000;
+/// The pauses before each try again; the last repeats. Ten minutes of them stay within the server's 50 attempts.
+const RETRY_MS: [u64; 7] = [500, 1_000, 2_000, 4_000, 8_000, 16_000, 30_000];
+const MAX_ATTEMPT: u32 = 50;
 /// The server's own limit is 12 ticks a minute per player.
 const PER_MINUTE: usize = 12;
 const MINUTE_MS: u64 = 60_000;
 const STORE_KEEP_MS: u64 = 7 * 24 * 3_600_000;
 const MARKS: [&str; 4] = ["start", "s1", "s2", "end"];
+const MAX_LAP: u32 = 100_000;
+const MAX_GAME_MS: u64 = 3_600_000;
 const MARK_MAX_BYTES: u64 = 4096;
 const RECEIPT_MAX: usize = 1024;
 const SENDS_PER_STEP: usize = 4;
@@ -60,8 +65,6 @@ struct Mark {
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct Store {
     pub nonce: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub last: Option<String>,
     #[serde(default)]
     pub laps: BTreeMap<u32, Lap>,
 }
@@ -94,31 +97,33 @@ impl Store {
     }
 }
 
-/// The receipts the upload of a lap carries as `meta.timing`, in mark order: the lap of session `nonce` with the
-/// session lap counter `lap_index`, or, from a lap file without one, the lap whose finish was at `time_ms`. Null when
-/// the lap has none.
+/// What the upload of a lap carries as `meta.timing`: the session lap counter and the receipts in mark order, for
+/// the lap of session `nonce` with the counter `lap_index`, or, from a lap file without one, the lap whose finish was
+/// at `time_ms`. Null when the lap has none.
 pub fn for_lap(data: &Path, nonce: Option<&str>, lap_index: Option<u32>, time_ms: u64) -> Value {
     let Some(store) = nonce.and_then(|n| Store::read(data, n)) else {
         return Value::Null;
     };
-    let lap = match lap_index {
-        Some(i) => store.laps.get(&i),
-        None => store.laps.values().find(|l| l.end_ms == Some(time_ms)),
+    let found = match lap_index {
+        Some(i) => store.laps.get_key_value(&i),
+        None => store.laps.iter().find(|(_, l)| l.end_ms == Some(time_ms)),
     };
-    let receipts: Vec<Value> = lap
-        .map(|l| {
-            MARKS
-                .iter()
-                .filter_map(|m| l.receipts.get(*m))
-                .map(|r| r.as_str().into())
-                .collect()
+    let Some((lap, receipts)) = found
+        .map(|(n, l)| {
+            (
+                *n,
+                MARKS
+                    .iter()
+                    .filter_map(|m| l.receipts.get(*m))
+                    .cloned()
+                    .collect::<Vec<_>>(),
+            )
         })
-        .unwrap_or_default();
-    if receipts.is_empty() {
-        Value::Null
-    } else {
-        Value::Array(receipts)
-    }
+        .filter(|(_, r)| !r.is_empty())
+    else {
+        return Value::Null;
+    };
+    json!({"lap": lap, "receipts": receipts})
 }
 
 /// The folders the core writes marks into, one in each mailbox.
@@ -149,29 +154,47 @@ fn read_mark(path: &Path) -> Option<Mark> {
         return None;
     }
     let mark: Mark = serde_json::from_slice(&std::fs::read(path).ok()?).ok()?;
-    MARKS.contains(&mark.mark.as_str()).then_some(mark)
+    (MARKS.contains(&mark.mark.as_str()) && mark.lap <= MAX_LAP && mark.game_ms <= MAX_GAME_MS)
+        .then_some(mark)
 }
 
 fn plausible(receipt: &str) -> bool {
-    receipt.starts_with("tk1.")
+    !receipt.is_empty()
         && receipt.len() <= RECEIPT_MAX
         && receipt
             .bytes()
             .all(|b| b.is_ascii_alphanumeric() || b"-_.=".contains(&b))
 }
 
-fn retryable(e: &ApiError) -> bool {
-    matches!(e.status, 0 | 408 | 429) || e.status >= 500
+/// The mark before `mark` in its lap, whose receipt a tick of `mark` carries as `prev`.
+fn previous(mark: &str) -> Option<&'static str> {
+    let at = MARKS.iter().position(|m| *m == mark)?;
+    at.checked_sub(1).map(|i| MARKS[i])
 }
 
-/// The pump's state between polls: the mark being tried, its attempts, the ticks sent in the last minute and the
-/// session's receipts.
+#[derive(Debug, Clone, Copy)]
+struct Try {
+    attempt: u32,
+    next: u64,
+    answered: bool,
+}
+
+enum Outcome {
+    Kept,
+    Again { wait: u64, answered: bool },
+    DropLap,
+    StopSession,
+}
+
+/// The pump's state between polls: the tries of the marks waiting, the ticks sent in the last minute, the
+/// session's receipts and the session the server will not time.
 pub(crate) struct Sender {
     data: PathBuf,
     folders: Vec<PathBuf>,
-    tries: BTreeMap<PathBuf, (u32, u64)>,
+    tries: BTreeMap<PathBuf, Try>,
     sent: VecDeque<u64>,
     store: Option<Store>,
+    stopped: Option<String>,
 }
 
 impl Sender {
@@ -182,6 +205,7 @@ impl Sender {
             tries: BTreeMap::new(),
             sent: VecDeque::new(),
             store: None,
+            stopped: None,
         }
     }
 
@@ -231,8 +255,26 @@ impl Sender {
         self.tries.remove(path);
     }
 
+    fn session(&mut self, nonce: &str) -> &mut Store {
+        if self.store.as_ref().is_none_or(|s| s.nonce != nonce) {
+            self.store = Some(Store::read(&self.data, nonce).unwrap_or_else(|| Store {
+                nonce: nonce.to_owned(),
+                ..Store::default()
+            }));
+        }
+        self.store.as_mut().expect("store")
+    }
+
+    fn keep(&mut self, say: &dyn Fn(&str)) {
+        if let Some(store) = &self.store
+            && let Err(e) = store.write(&self.data)
+        {
+            say(&format!("timing: the receipts could not be kept: {e}"));
+        }
+    }
+
     /// One poll: send the marks that are due, oldest first, while the session `nonce` is known. A mark waits
-    /// behind the one before it, so the receipts chain in the order the marks were made.
+    /// behind the one before it, and goes only with the receipt of its lap's previous mark in hand.
     pub(crate) fn step(&mut self, server: &dyn Ticks, nonce: Option<&str>, now_ms: u64, say: &dyn Fn(&str)) {
         while self
             .sent
@@ -241,37 +283,67 @@ impl Sender {
         {
             self.sent.pop_front();
         }
+        let marks = self.marks();
         let mut sends = 0;
-        for (path, mark) in self.marks() {
+        for (path, mark) in &marks {
             let Some(mark) = mark else {
-                self.drop_mark(&path);
+                self.drop_mark(path);
                 continue;
             };
+            if nonce.is_some() && nonce == self.stopped.as_deref() {
+                self.drop_mark(path);
+                continue;
+            }
             let age = now_ms.saturating_sub(mark.at_ms);
-            if age > FRESH_MS {
+            let tried = self.tries.get(path).copied();
+            let lap_end = marks
+                .iter()
+                .filter_map(|(_, m)| m.as_ref())
+                .find(|m| m.lap == mark.lap && m.mark == "end")
+                .map(|m| m.at_ms);
+            let past_end =
+                tried.is_some_and(|t| t.answered) && lap_end.is_some_and(|end| now_ms > end + AFTER_END_MS);
+            if age > GIVE_UP_MS || past_end || tried.is_some_and(|t| t.attempt > MAX_ATTEMPT) {
                 say(&format!(
                     "timing: lap {} {} not sent within {} s; that lap is untimed",
                     mark.lap,
                     mark.mark,
-                    FRESH_MS / 1000
+                    if past_end {
+                        (now_ms - mark.at_ms) / 1000
+                    } else {
+                        GIVE_UP_MS / 1000
+                    }
                 ));
-                self.drop_mark(&path);
+                self.drop_mark(path);
+                if let Some(nonce) = nonce {
+                    self.session(nonce).laps.remove(&mark.lap);
+                    self.keep(say);
+                }
                 continue;
             }
             let Some(nonce) = nonce else {
                 return;
             };
-            let (attempt, next) = self.tries.get(&path).copied().unwrap_or((1, 0));
+            let Try { attempt, next, .. } = tried.unwrap_or(Try {
+                attempt: 1,
+                next: 0,
+                answered: false,
+            });
             if now_ms < next || self.sent.len() >= PER_MINUTE || sends >= SENDS_PER_STEP {
                 return;
             }
-            let mut store = match self.store.take() {
-                Some(s) if s.nonce == nonce => s,
-                _ => Store::read(&self.data, nonce).unwrap_or_else(|| Store {
-                    nonce: nonce.to_owned(),
-                    ..Store::default()
-                }),
-            };
+            let store = self.session(nonce);
+            let prev = previous(&mark.mark).map(|before| {
+                store
+                    .laps
+                    .get(&mark.lap)
+                    .and_then(|l| l.receipts.get(before))
+                    .cloned()
+            });
+            if prev == Some(None) {
+                self.drop_mark(path);
+                continue;
+            }
             let mut body = json!({
                 "lap": mark.lap,
                 "mark": mark.mark,
@@ -279,56 +351,75 @@ impl Sender {
                 "since_ms": age,
                 "attempt": attempt,
             });
-            if let Some(prev) = &store.last {
-                body["prev"] = prev.as_str().into();
+            if let Some(Some(prev)) = prev {
+                body["prev"] = prev.into();
             }
             self.sent.push_back(now_ms);
             sends += 1;
-            let answer = server.tick(nonce, &body);
-            let wait = match answer {
+            let what = format!("timing: lap {} {}", mark.lap, mark.mark);
+            let outcome = match server.tick(nonce, &body) {
                 Ok(receipt) if plausible(&receipt) => {
-                    let lap = store.laps.entry(mark.lap).or_default();
-                    lap.receipts.insert(mark.mark.clone(), receipt.clone());
+                    let lap = self.session(nonce).laps.entry(mark.lap).or_default();
+                    lap.receipts.insert(mark.mark.clone(), receipt);
                     if mark.mark == "end" {
                         lap.end_ms = Some(mark.game_ms);
                     }
-                    store.last = Some(receipt);
-                    if let Err(e) = store.write(&self.data) {
-                        say(&format!("timing: the receipts could not be kept: {e}"));
-                    }
-                    None
+                    Outcome::Kept
                 }
                 Ok(_) => {
                     say(&format!(
-                        "timing: lap {} {}: the server's receipt is not one",
-                        mark.lap, mark.mark
+                        "{what}: the server's receipt is not one; that lap is untimed"
                     ));
-                    None
+                    Outcome::DropLap
                 }
-                Err(e) if retryable(&e) => {
+                Err(e) if e.status == 404 || e.status == 401 => {
+                    say(&format!(
+                        "{what}: the server does not time this session ({e}); its laps are untimed"
+                    ));
+                    Outcome::StopSession
+                }
+                Err(e) if matches!(e.status, 0 | 408 | 429) || e.status >= 500 => {
                     if attempt == 1 {
-                        say(&format!(
-                            "timing: lap {} {} not sent ({e}); trying again",
-                            mark.lap, mark.mark
-                        ));
+                        say(&format!("{what} not sent ({e}); trying again"));
                     }
-                    Some(RETRY_MS[(attempt as usize - 1).min(RETRY_MS.len() - 1)])
+                    let backoff = RETRY_MS[(attempt as usize - 1).min(RETRY_MS.len() - 1)];
+                    Outcome::Again {
+                        wait: e
+                            .retry_after
+                            .map_or(backoff, |s| s.saturating_mul(1000).max(backoff)),
+                        answered: e.status != 0,
+                    }
                 }
                 Err(e) => {
-                    say(&format!(
-                        "timing: lap {} {} refused ({e}); that lap is untimed",
-                        mark.lap, mark.mark
-                    ));
-                    None
+                    say(&format!("{what} refused ({e}); that lap is untimed"));
+                    Outcome::DropLap
                 }
             };
-            self.store = Some(store);
-            match wait {
-                Some(wait) => {
-                    self.tries.insert(path, (attempt + 1, now_ms + wait));
+            match outcome {
+                Outcome::Kept => {
+                    self.keep(say);
+                    self.drop_mark(path);
+                }
+                Outcome::Again { wait, answered } => {
+                    self.tries.insert(
+                        path.clone(),
+                        Try {
+                            attempt: attempt + 1,
+                            next: now_ms + wait,
+                            answered,
+                        },
+                    );
                     return;
                 }
-                None => self.drop_mark(&path),
+                Outcome::DropLap => {
+                    self.drop_mark(path);
+                    self.session(nonce).laps.remove(&mark.lap);
+                    self.keep(say);
+                }
+                Outcome::StopSession => {
+                    self.drop_mark(path);
+                    self.stopped = Some(nonce.to_owned());
+                }
             }
         }
     }
@@ -447,50 +538,75 @@ mod tests {
         format!("tk1.cGF5bG9hZA{n}.bWFj")
     }
 
+    fn status(code: u16, retry_after: Option<u64>) -> ApiError {
+        ApiError {
+            status: code,
+            message: format!("status {code}"),
+            retry_after,
+        }
+    }
+
+    fn timing(lap: u32, receipts: &[String]) -> Value {
+        json!({"lap": lap, "receipts": receipts})
+    }
+
+    fn all(n: u32) -> Vec<String> {
+        (1..=n).map(receipt).collect()
+    }
+
     #[test]
     fn the_marks_of_a_lap_go_out_in_order_chained_and_its_receipts_are_kept_for_the_upload() {
         let (data, game) = temp("order");
-        let fake = Fake::new((1..=4).map(|n| Ok(receipt(n))).collect());
+        let fake = Fake::new((1..=5).map(|n| Ok(receipt(n))).collect());
         let mut sender = Sender::new(&data, folders(&data, &game));
-        for (seq, (which, game_ms, at)) in [
-            ("start", 0, 1_000_000),
-            ("s1", 28_411, 1_028_400),
-            ("s2", 59_000, 1_059_000),
-            ("end", 91_234, 1_091_230),
+        for (seq, (lap, which, game_ms, at)) in [
+            (3, "start", 0, 1_000_000),
+            (3, "s1", 28_411, 1_028_400),
+            (3, "s2", 59_000, 1_059_000),
+            (3, "end", 91_234, 1_091_230),
+            (4, "start", 0, 1_091_231),
         ]
         .into_iter()
         .enumerate()
         {
-            mark(&data, seq as u64 + 1, 3, which, game_ms, at);
+            mark(&data, seq as u64 + 1, lap, which, game_ms, at);
             sender.step(&fake, Some("nonce-a"), at + 12, &|_| {});
         }
         let seen = fake.seen.borrow();
-        assert_eq!(seen.len(), 4);
+        assert_eq!(seen.len(), 5);
         assert!(seen.iter().all(|(n, _)| n == "nonce-a"));
         let marks: Vec<&str> = seen.iter().map(|(_, b)| b["mark"].as_str().unwrap()).collect();
-        assert_eq!(marks, ["start", "s1", "s2", "end"]);
+        assert_eq!(marks, ["start", "s1", "s2", "end", "start"]);
         assert_eq!(
             seen[1].1,
             json!({"lap": 3, "mark": "s1", "game_ms": 28_411, "since_ms": 12, "attempt": 1, "prev": receipt(1)})
         );
         assert!(seen[0].1.get("prev").is_none());
         assert_eq!(seen[3].1["prev"], receipt(3).as_str());
+        assert!(
+            seen[4].1.get("prev").is_none(),
+            "a lap's start chains to nothing: {}",
+            seen[4].1
+        );
         assert!(!pending(&data, &game));
 
-        let all: Vec<Value> = (1..=4).map(|n| receipt(n).into()).collect();
         assert_eq!(
             for_lap(&data, Some("nonce-a"), Some(3), 91_234),
-            Value::Array(all.clone())
+            timing(3, &all(4))
         );
-        assert_eq!(for_lap(&data, Some("nonce-a"), None, 91_234), Value::Array(all));
+        assert_eq!(for_lap(&data, Some("nonce-a"), None, 91_234), timing(3, &all(4)));
         assert_eq!(for_lap(&data, Some("nonce-a"), None, 91_235), Value::Null);
-        assert_eq!(for_lap(&data, Some("nonce-a"), Some(4), 91_234), Value::Null);
+        assert_eq!(
+            for_lap(&data, Some("nonce-a"), Some(4), 91_234),
+            timing(4, &[receipt(5)])
+        );
+        assert_eq!(for_lap(&data, Some("nonce-a"), Some(5), 91_234), Value::Null);
         assert_eq!(for_lap(&data, Some("nonce-b"), Some(3), 91_234), Value::Null);
         assert_eq!(for_lap(&data, None, Some(3), 91_234), Value::Null);
     }
 
     #[test]
-    fn a_lap_driven_offline_drops_its_marks_once_they_are_stale_and_is_untimed() {
+    fn a_lap_driven_offline_keeps_its_marks_for_ten_minutes_and_sends_them_when_back_online() {
         let (data, game) = temp("offline");
         lap_marks(&data, 1, 1_000_000);
         let fake = Fake::new(Vec::new());
@@ -498,33 +614,70 @@ mod tests {
         let lines = RefCell::new(Vec::new());
         let say = |l: &str| lines.borrow_mut().push(l.to_owned());
         let mut now = 1_000_010;
-        while pending(&data, &game) && now < 1_200_000 {
+        let mut sent_at = Vec::new();
+        while now < 1_300_000 {
+            let before = fake.seen.borrow().len();
+            sender.step(&fake, Some("n"), now, &say);
+            if fake.seen.borrow().len() > before {
+                sent_at.push(now);
+            }
+            now += 100;
+        }
+        assert!(
+            pending(&data, &game),
+            "five minutes offline: the marks still wait"
+        );
+        {
+            let seen = fake.seen.borrow();
+            assert!(
+                seen.iter().all(|(_, b)| b["mark"] == "start"),
+                "a mark waits behind the one before it"
+            );
+            let attempts: Vec<u64> = seen.iter().map(|(_, b)| b["attempt"].as_u64().unwrap()).collect();
+            assert_eq!(&attempts[..5], [1, 2, 3, 4, 5]);
+        }
+        let gaps: Vec<u64> = sent_at.windows(2).map(|w| w[1] - w[0]).collect();
+        assert_eq!(
+            &gaps[..4],
+            [500, 1_000, 2_000, 4_000],
+            "backing off 0.5, 1, 2 and 4 s"
+        );
+        *fake.replies.borrow_mut() = (1..=4).map(|n| Ok(receipt(n))).collect();
+        while pending(&data, &game) && now < 1_400_000 {
             sender.step(&fake, Some("n"), now, &say);
             now += 100;
         }
-        assert!(!pending(&data, &game));
-        let seen = fake.seen.borrow();
-        let firsts: Vec<u64> = seen
-            .iter()
-            .take_while(|(_, b)| b["mark"] == "start")
-            .map(|(_, b)| b["attempt"].as_u64().unwrap())
-            .collect();
+        {
+            let seen = fake.seen.borrow();
+            let back = &seen[seen.len() - 4..];
+            assert_eq!(back[3].1["mark"], "end");
+            assert!(
+                back[3].1["since_ms"].as_u64().unwrap() > 200_000,
+                "the real lateness is sent"
+            );
+        }
+        assert_eq!(for_lap(&data, Some("n"), Some(1), 91_234), timing(1, &all(4)));
         assert_eq!(
-            &firsts[..4],
-            [1, 2, 3, 4],
-            "a mark is tried again with its attempt counted"
-        );
-        assert!(seen.len() <= PER_MINUTE, "the retries keep to the limit");
-        assert_eq!(for_lap(&data, Some("n"), Some(1), 91_234), Value::Null);
-        let lines = lines.borrow();
-        assert_eq!(
-            lines[0],
+            lines.borrow()[0],
             "timing: lap 1 start not sent (couldn't reach the server); trying again"
         );
+
+        lap_marks(&data, 2, 2_000_000);
+        let mut now = 2_000_010;
+        while pending(&data, &game) && now < 2_700_000 {
+            sender.step(&fake, Some("n"), now, &say);
+            now += 1_000;
+        }
+        assert!(
+            !pending(&data, &game) && now > 2_600_000,
+            "given up past ten minutes"
+        );
+        assert_eq!(for_lap(&data, Some("n"), Some(2), 91_234), Value::Null);
         assert!(
             lines
+                .borrow()
                 .iter()
-                .any(|l| l == "timing: lap 1 end not sent within 30 s; that lap is untimed")
+                .any(|l| l == "timing: lap 2 start not sent within 600 s; that lap is untimed")
         );
     }
 
@@ -532,40 +685,106 @@ mod tests {
     fn a_retried_tick_says_its_attempt_and_how_stale_it_is() {
         let (data, game) = temp("retry");
         mark(&data, 1, 2, "start", 0, 5_000);
-        let busy = ApiError {
-            status: 503,
-            message: "busy".into(),
-            retry_after: None,
-        };
-        let fake = Fake::new(vec![Err(busy), Ok(receipt(1))]);
+        let fake = Fake::new(vec![Err(status(503, None)), Ok(receipt(1))]);
         let mut sender = Sender::new(&data, folders(&data, &game));
         sender.step(&fake, Some("n"), 5_020, &|_| {});
-        sender.step(&fake, Some("n"), 5_100, &|_| {});
-        assert_eq!(fake.seen.borrow().len(), 1, "the retry waits its pause");
         sender.step(&fake, Some("n"), 5_300, &|_| {});
+        assert_eq!(fake.seen.borrow().len(), 1, "the retry waits its pause");
+        sender.step(&fake, Some("n"), 5_520, &|_| {});
         let seen = fake.seen.borrow();
         assert_eq!(
             (seen[1].1["attempt"].as_u64(), seen[1].1["since_ms"].as_u64()),
-            (Some(2), Some(300))
+            (Some(2), Some(520))
         );
         assert!(!pending(&data, &game));
     }
 
     #[test]
-    fn a_server_without_ticks_refuses_them_and_the_marks_go_at_once() {
-        let (data, game) = temp("old-server");
-        lap_marks(&data, 1, 92_000);
-        let gone = || ApiError {
-            status: 404,
-            message: "not found".into(),
-            retry_after: None,
-        };
-        let fake = Fake::new((0..4).map(|_| Err(gone())).collect());
+    fn a_throttled_tick_waits_as_long_as_the_server_asks() {
+        let (data, game) = temp("retry-after");
+        mark(&data, 1, 2, "start", 0, 5_000);
+        let fake = Fake::new(vec![Err(status(429, Some(7))), Ok(receipt(1))]);
         let mut sender = Sender::new(&data, folders(&data, &game));
-        sender.step(&fake, Some("n"), 92_010, &|_| {});
-        assert_eq!(fake.seen.borrow().len(), 4);
+        sender.step(&fake, Some("n"), 5_000, &|_| {});
+        sender.step(&fake, Some("n"), 11_900, &|_| {});
+        assert_eq!(fake.seen.borrow().len(), 1);
+        sender.step(&fake, Some("n"), 12_000, &|_| {});
+        assert_eq!(fake.seen.borrow().len(), 2);
         assert!(!pending(&data, &game));
-        assert_eq!(for_lap(&data, Some("n"), Some(1), 91_234), Value::Null);
+    }
+
+    #[test]
+    fn a_server_error_is_tried_again_until_a_minute_after_the_lap_ends() {
+        let (data, game) = temp("lap-end");
+        lap_marks(&data, 1, 1_000);
+        let fake = Fake::new((0..100).map(|_| Err(status(502, None))).collect());
+        let mut sender = Sender::new(&data, folders(&data, &game));
+        let mut now = 1_010;
+        while pending(&data, &game) && now < 200_000 {
+            sender.step(&fake, Some("n"), now, &|_| {});
+            now += 100;
+        }
+        assert!(!pending(&data, &game));
+        assert!((61_000..62_200).contains(&now), "{now}");
+    }
+
+    #[test]
+    fn an_out_of_order_or_bad_tick_drops_that_laps_timing_and_the_next_lap_still_goes() {
+        for code in [400, 409] {
+            let (data, game) = temp(&format!("drop-{code}"));
+            lap_marks(&data, 1, 1_000);
+            lap_marks(&data, 2, 1_010);
+            let mut replies = vec![Ok(receipt(1)), Err(status(code, None))];
+            replies.extend((2..=5).map(|n| Ok(receipt(n))));
+            let fake = Fake::new(replies);
+            let mut sender = Sender::new(&data, folders(&data, &game));
+            sender.step(&fake, Some("n"), 1_020, &|_| {});
+            sender.step(&fake, Some("n"), 1_120, &|_| {});
+            let seen = fake.seen.borrow();
+            let sent: Vec<(u64, &str)> = seen
+                .iter()
+                .map(|(_, b)| (b["lap"].as_u64().unwrap(), b["mark"].as_str().unwrap()))
+                .collect();
+            assert_eq!(
+                sent,
+                [
+                    (1, "start"),
+                    (1, "s1"),
+                    (2, "start"),
+                    (2, "s1"),
+                    (2, "s2"),
+                    (2, "end")
+                ],
+                "{code}"
+            );
+            assert!(!pending(&data, &game));
+            assert_eq!(for_lap(&data, Some("n"), Some(1), 91_234), Value::Null, "{code}");
+            assert_eq!(
+                for_lap(&data, Some("n"), Some(2), 91_234)["receipts"]
+                    .as_array()
+                    .map(Vec::len),
+                Some(4)
+            );
+        }
+    }
+
+    #[test]
+    fn a_session_the_server_does_not_time_stops_ticking() {
+        for code in [404, 401] {
+            let (data, game) = temp(&format!("stop-{code}"));
+            lap_marks(&data, 1, 92_000);
+            let fake = Fake::new(vec![Err(status(code, None)), Ok(receipt(1))]);
+            let mut sender = Sender::new(&data, folders(&data, &game));
+            sender.step(&fake, Some("n"), 92_010, &|_| {});
+            lap_marks(&data, 2, 92_100);
+            sender.step(&fake, Some("n"), 92_110, &|_| {});
+            assert_eq!(fake.seen.borrow().len(), 1, "{code}");
+            assert!(!pending(&data, &game));
+            assert_eq!(for_lap(&data, Some("n"), Some(1), 91_234), Value::Null);
+            lap_marks(&data, 3, 92_200);
+            sender.step(&fake, Some("next"), 92_210, &|_| {});
+            assert_eq!(fake.seen.borrow()[1].0, "next", "a new session ticks again");
+        }
     }
 
     #[test]
@@ -578,19 +797,25 @@ mod tests {
         let mut sender = Sender::new(&data, folders(&data, &game));
         sender.step(&fake, None, 92_000, &|_| {});
         assert!(fake.seen.borrow().is_empty() && pending(&data, &game));
+        let mut sent = Vec::new();
         let mut now = 92_000;
-        while pending(&data, &game) && now < 200_000 {
+        while pending(&data, &game) && now < 300_000 {
+            let before = fake.seen.borrow().len();
             sender.step(&fake, Some("n"), now, &|_| {});
+            sent.extend(std::iter::repeat_n(now, fake.seen.borrow().len() - before));
             now += 100;
         }
-        assert_eq!(fake.seen.borrow().len(), PER_MINUTE);
+        assert_eq!(sent.len(), 16);
+        assert!(
+            sent.iter()
+                .all(|t| sent.iter().filter(|u| (*t..*t + MINUTE_MS).contains(u)).count() <= PER_MINUTE)
+        );
         assert_eq!(
-            for_lap(&data, Some("n"), Some(2), 91_234)
+            for_lap(&data, Some("n"), Some(3), 91_234)["receipts"]
                 .as_array()
                 .map(Vec::len),
             Some(4)
         );
-        assert_eq!(for_lap(&data, Some("n"), Some(3), 91_234), Value::Null);
     }
 
     #[test]
@@ -608,15 +833,29 @@ mod tests {
         std::fs::write(dir.join("4-4.json.tmp"), b"{}").unwrap();
         mark(&data, 5, 1, "start", 0, 10);
         mark(&data, 6, 1, "s1", 100, 20);
+        mark(&data, 7, 2, "start", 0, 21);
+        mark(&data, 8, 3, "start", 0, 22);
         let fake = Fake::new(vec![
             Ok("<script>".into()),
             Ok(format!("tk1.{}", "a".repeat(2000))),
+            Ok("tk2.opaque.mac".into()),
         ]);
         let mut sender = Sender::new(&data, folders(&data, &game));
         sender.step(&fake, Some("n"), 30, &|_| {});
-        assert_eq!(fake.seen.borrow().len(), 2);
+        let seen = fake.seen.borrow();
+        let sent: Vec<u64> = seen.iter().map(|(_, b)| b["lap"].as_u64().unwrap()).collect();
+        assert_eq!(
+            sent,
+            [1, 2, 3],
+            "a lap whose start got no receipt sends nothing more"
+        );
         assert!(!pending(&data, &game));
         assert_eq!(for_lap(&data, Some("n"), Some(1), 0), Value::Null);
+        assert_eq!(for_lap(&data, Some("n"), Some(2), 0), Value::Null);
+        assert_eq!(
+            for_lap(&data, Some("n"), Some(3), 0),
+            timing(3, &["tk2.opaque.mac".to_owned()])
+        );
         sender.clean(30);
         assert!(std::fs::read_dir(&dir).unwrap().next().is_none());
     }

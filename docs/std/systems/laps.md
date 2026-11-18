@@ -170,7 +170,7 @@ json = { "v": 1, "module": "2026.11.10.1", "nonce": "...", "body_sha256": "...",
 
 ## Server-timed laps
 
-At each timing line of a lap (the start line, sector 1, sector 2 and the finish) the Time Trial plugin calls the lap host's `mark` with the lap's `lap_index`, the line and the game's lap clock there. The core stamps the moment and writes one file per mark into `tt/ticks/` of the launcher's data folder (`swofty/tt/ticks/` when it can't write there):
+At each timing line of a lap (the start line, sector 1, sector 2 and the finish) the Time Trial plugin calls the lap host's `mark` with the game run's lap counter, the line and the game's lap clock there. The counter is 0 for the first lap timed and one more for each lap started, and is the lap file's `lap_index`. The core stamps the moment and writes one file per mark into `tt/ticks/` of the launcher's data folder (`swofty/tt/ticks/` when it can't write there):
 
 ```json
 {"seq": 12, "lap": 3, "mark": "s1", "game_ms": 28411, "at_ms": 1795000123456}
@@ -179,20 +179,27 @@ At each timing line of a lap (the start line, sector 1, sector 2 and the finish)
 While the game runs, the launcher sends each mark, in the order they were made, to `POST /v1/tt/sessions/{nonce}/ticks` on a thread of its own:
 
 ```json
-{"lap": 3, "mark": "s1", "game_ms": 28411, "since_ms": 12, "attempt": 1, "prev": "<the receipt of the previous tick>"}
+{"lap": 3, "mark": "s1", "game_ms": 28411, "since_ms": 12, "attempt": 1, "prev": "<the receipt of lap 3's start>"}
 ```
 
-The server answers with a receipt, `{"receipt": "tk1...."}`. The launcher keeps a session's receipts under `timetrial/ticks/` in its data folder. When a lap is collected into the outbox it takes the receipts of its `lap_index` with it, and its upload meta carries them in mark order:
+`prev` is the receipt of the same lap's previous mark, and is left out at `start`. A mark goes only once that receipt is in hand. The server answers with a receipt, `{"receipt": "tk1...."}`, which the launcher keeps as it is under `timetrial/ticks/` in its data folder. When a lap is collected into the outbox it takes the receipts of its `lap_index` with it, and its upload meta carries them in mark order:
 
 ```json
-"timing": ["tk1....", "tk1....", "tk1....", "tk1...."]
+"timing": {"lap": 3, "receipts": ["tk1....", "tk1....", "tk1....", "tk1...."]}
 ```
 
-A mark is sent again after a server error or no answer, and dropped once it is 30 seconds old or when the server refuses it. A lap driven offline has no receipts and uploads without `timing`, as do laps from launchers or plugins without timing marks. The launcher sends at most 12 ticks a minute. A new lap waits up to 5 seconds for marks still being sent. The run log says when a mark couldn't be sent:
+| Answer | The launcher |
+|---|---|
+| no answer, 408 or a server error | sends the mark again after 0.5, 1, 2, 4, 8 and 16 s, then every 30 s, with `attempt` and `since_ms` updated |
+| 429 | sends it again after the server's `Retry-After` |
+| 400, 409 or another refusal | drops that lap's timing |
+| 404 or 401 | stops ticking for the session |
+
+A mark the server can't be reached for is kept for 10 minutes; one the server answered with an error is tried until a minute after its lap's finish. Then that lap's timing is dropped. A lap without receipts uploads without `timing`, as do laps from launchers or plugins without timing marks. The launcher sends at most 12 ticks a minute. A new lap waits up to 5 seconds for marks still being sent. The run log says when a mark couldn't be sent:
 
 ```
 timing: lap 3 s1 not sent (couldn't reach https://...); trying again
-timing: lap 3 end not sent within 30 s; that lap is untimed
+timing: lap 3 end not sent within 600 s; that lap is untimed
 ```
 
 ## Session challenge

@@ -723,12 +723,12 @@ mod tests {
         let queued = Queue::new(&data).list(Folder::Outbox);
         assert_eq!(
             queued[0].waiting.as_ref().map(|w| w.timing.clone()),
-            Some(serde_json::json!([
+            Some(serde_json::json!({"lap": 4, "receipts": [
                 "tk1.cw.bQ",
                 "tk1.czE.bQ",
                 "tk1.czI.bQ",
                 "tk1.ZQ.bQ"
-            ]))
+            ]}))
         );
         assert_eq!(
             queued[1].waiting.as_ref().map(|w| w.timing.clone()),
@@ -755,7 +755,9 @@ mod tests {
         let uploads = &seen[5..];
         assert!(uploads.iter().all(|u| u.starts_with("POST /v1/tt/laps ")));
         assert!(
-            uploads[0].contains(r#""timing":["tk1.cw.bQ","tk1.czE.bQ","tk1.czI.bQ","tk1.ZQ.bQ"]"#),
+            uploads[0].contains(
+                r#""timing":{"lap":4,"receipts":["tk1.cw.bQ","tk1.czE.bQ","tk1.czI.bQ","tk1.ZQ.bQ"]}"#
+            ),
             "{}",
             uploads[0]
         );
