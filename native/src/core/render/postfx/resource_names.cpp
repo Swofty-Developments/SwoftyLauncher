@@ -10,7 +10,7 @@
 #include <cwchar>
 #include <cwctype>
 
-namespace postfx {
+namespace render::postfx {
 
 namespace {
 

@@ -4,7 +4,7 @@
 
 #include <swofty/mixin.hpp>
 
-namespace postfx {
+namespace render::postfx {
 
 ID3D12Resource *DepthCopy::for_source(ID3D12Resource *src, const D3D12_RESOURCE_DESC &d, const GpuContext &gpu,
                                       RetireQueue &retired, unsigned frame_count)
@@ -80,9 +80,9 @@ void DepthCopy::record(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESO
         to[1].Transition.pResource = back[1].Transition.pResource = dst;
         to[1].Transition.StateBefore = back[1].Transition.StateAfter = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
         to[1].Transition.StateAfter = back[1].Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-        render::d3d12::barrier_original(list, 2u, to);
+        d3d12::barrier_original(list, 2u, to);
         list->CopyResource(dst, src);
-        render::d3d12::barrier_original(list, 2u, back);
+        d3d12::barrier_original(list, 2u, back);
         copied_at.store(frame_count, std::memory_order_relaxed);
         return;
     }

@@ -83,7 +83,7 @@ s.paper_white;       // SWOFTY_OVERLAY_NITS, 350 by default
 
 ## How a post-process pass is recorded
 
-`postfx::Pipeline` (`render/postfx/pipeline.hpp`) owns every part under one recursive lock. Its `PassRecorder` records a frame's passes into one of `FRAMES` slots, in one of two places:
+`render::postfx::Pipeline` (`render/postfx/pipeline.hpp`) owns every part under one recursive lock. Its `PassRecorder` records a frame's passes into one of `FRAMES` slots, in one of two places:
 
 - In the game's list. The barrier hook (`ListPlacement`) marks what each list does with the tonemap output, the back buffers, the HUD-less copy and the depth buffer, and records the passes at the HUD-less step.
 - Between the game's lists. Where no list had such a step, the submission hook or Present records them into the slot's own list and submits it on the game's queue.

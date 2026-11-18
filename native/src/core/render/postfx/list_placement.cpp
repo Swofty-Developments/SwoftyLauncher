@@ -11,7 +11,7 @@
 #include <cstdio>
 #include <cstring>
 
-namespace postfx {
+namespace render::postfx {
 
 ListPlacement::BackUse &ListPlacement::back_use(ID3D12Resource *b)
 {
@@ -336,7 +336,7 @@ ListPlacement::BackUse *ListPlacement::waiting_back()
 // that closed a HUD-less step the picture's list left open, and a fence signal after any list the passes were
 // recorded into, so their slot is known done. A list that draws into the game's next back buffer closes the
 // passes' frame while the game's own frames do (postfx::FrameClock).
-void ListPlacement::on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, render::d3d12::ExecPlan &plan)
+void ListPlacement::on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, d3d12::ExecPlan &plan)
 {
     static const uint32_t probe = perf::probe("core", "postfx ExecuteCommandLists");
     if (!lists || !n || pipeline.broken)

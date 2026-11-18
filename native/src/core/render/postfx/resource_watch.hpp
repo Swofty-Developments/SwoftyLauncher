@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-namespace postfx {
+namespace render::postfx {
 
 // The resources the barrier hook watches, read without the lock. Writers hold the lock; readers only
 // load. A key keeps its slot and erase only clears its bits, so lookups never walk over tombstones.
