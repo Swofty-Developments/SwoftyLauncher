@@ -56,6 +56,36 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/1434c3520.c;xref:0x1434be69e,0x1434c3656",
    "notes": "V8552 re-decompiled with car-a: lVar5 = *(mgr + box*8 + 0x7f8) with box a uint and no bound; slot 0 then calls bounded thunk 0x1434c01a0 (param_3<0x20) and creates the handle via FUN_1445f32a0; 40 slots = 0x938-0x7f8; returns iVar4 != 2"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_PitLane_ProjectBoxPose",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1434c3520-0x1434c4276,0x1503fecf0-0x1503fefdb,0x1434c5c90-0x1434c68fe,0x140679dd0-0x14067a031,0x1445041c0-0x1445047b1,0x1434be460-0x1434be744,0x1434c03c0-0x1434c05f9,0x1434ca550-0x1434ca990,0x1434b83e0-0x1434bc53b,1.0.145 0x1434c5aa0-0x1434c67f6,1.0.145 0x14feb9670-0x14feb96a0;xref:0x1434c3653,0x1434c3656,0x1434c36a6,0x1434c36f2,0x1434c4202,0x1434c4205,0x1434be69e,0x1434c0493,0x1434c0405,0x1434b9199,0x1434b92c6,0x1434ca71b,0x1434ca85e,0x1434c2039,0x1503fecfd",
+   "notes": "V100034 Blind: proto bool(mgr,out,mtx,u32 box,u32 flags) confirmed: 4 regs + stack dword (only bits 0,2 used); al = status of 0x1434c5c90 != 2 (cmp 0x1434c4202, setne 0x1434c4205). Cache [mgr+0x7f8+box*8] read 0x1434c3656, filled on miss 0x1434c36a6, unbounded (0x1434c01a0 bounds >31). Wrong: two callers, not one: 0x1434be69e and 0x1434c0493 (case 4 of 0x145845cc8, box signed <=23); not 40 slots: init zeroes 0x7f8..0x8b7 (24), +0x8b8.. hold tuning handles (0x1434ca85e); 99 reads in-object mgr+0xb10, no fault at 0x1434c3656; only -1 (mgr+0x8000007f0) faults there. UpdateMovement calls at 0x1434b9199 (state 10), 0x1434b92c6 (state 11); 0x1434b919e is a return address. 1.0.145 twin 0x1434c5aa0 820/820."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_PitLane_ProjectBoxPose",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1434c3520-0x1434c4276,0x1503fecf0-0x1503fef17,0x1434c5c90-0x1434c68fe,0x1434be460-0x1434be744,0x1434c03c0-0x1434c05f9,0x1434b83e0-0x1434bc53b,0x1434c72f0-0x1434c835f,0x1434ca550-0x1434cb2fc,0x1434b5110-0x1434b59ab,0x1434b59b0-0x1434b6113,0x1445f32a0-0x1445f3628,0x140679340-0x14067940c,0x140679dd0-0x14067a031,0x14063bc80-0x14063bd98,0x1445041c0-0x1445047b1,1.0.145 0x1434c5aa0-0x1434c67f6,1.0.145 0x1434c2940-0x1434c2b30,1.0.145 0x1434c09e0-0x1434c0c30;xref:0x1434be69e,0x1434c0493,0x1434be685,0x1434c0405,0x1434c3656,0x1434c36a6,0x1434c36f2,0x1434c4202,0x1434ca71b,0x1434ca85e,0x1434b51cc,0x1434b5b6a,0x14063bc89,0x1503fecfd",
+   "notes": "V100035 Blind: partial. Proto, both callers (0x1434be69e passes [slot+0xe0] unchecked; 0x1434c0493 mode 4 after signed jg 0x17 at 0x1434c0405), unbounded cache [mgr+box*8+0x7f8] at 0x1434c3656/0x1434c36a6, -1 -> mgr+0x8000007f0, false only when 0x1434c5c90 returns 2 with out untouched, 0x1434ca550 zeroing 0x7f8..0x8b7 and tuning handles from 0x8b8 (0x1434ca85e) all match. Wrong: 0xb10 is not in the per-car records, which are 27 16-byte {allocator, record*} entries at 0x930..0xadf (loop 0x1434b51cc); 0xb10 is a subsystem pointer set at 0x1434b5b6a. Imprecise: the cache holds the 0x1445f32a0 zone pointer, which is only hashed as a key (0x14063bc89), not a spline handle."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_PitLane_ProjectBoxPose",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434c3520-0x1434c4276,0x1503fecf0-0x1503fef17,0x1434c5c90-0x1434c68fe,0x1445f32a0-0x1445f3628,0x140679340-0x14067940c,0x14063bc80-0x14063bd98,0x1434be460-0x1434be744,0x1434c03c0-0x1434c05f9,0x1434b5110-0x1434b59ab,0x1434c72f0-0x1434c835f,0x1434ca550-0x1434cb2fc,1.0.145 0x1434c5aa0-0x1434c67f6;xref:0x1434be69e,0x1434c0493,0x1434c0405,0x1434c3656,0x1434c36a6,0x1434c4202,0x14063bc89,0x1434b51cc,0x1434b56bc,0x1434b5b6a,0x1434ca71b,0x1434b9199,0x1434b92c6",
+   "notes": "V100036 Blind: agree. Own disasm: bool(mgr,out,mtx,u32 box,u32 flags), flags bits 0/2 only, mtx+0x30 only. Cache [mgr+0x7f8+box*8] read 0x1434c3656, filled on null 0x1434c36a6 (null stored too), no bound. Value = 0x1445f32a0 0x140-B cell at box pos, only FNV-1a hashed (0x14063bc89), never dereferenced. 0x1434ca550 zeroes 0x790..0x8b7, handles 0x8b8..0x920, 27 slots 0x930..0xadf (0x1434b51cc). Callers 0x1434be69e unchecked (states 10/11) and 0x1434c0493 (signed jg 0x17). 99 -> mgr+0xb10, -1 -> mgr+0x8000007f0. False only on proj==2 (0x1434c4202). -1 cause is game meaning; formula gives -1 only for g=0. 1.0.145 twin 0x1434c5aa0 820/820."
   }
  ],
  "proofs": []

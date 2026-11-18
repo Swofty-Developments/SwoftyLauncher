@@ -2054,7 +2054,6 @@
   "func:Game_PitBoxCarActor_Update": "V2860",
   "func:Game_PitCrewActor_Update": "V2823",
   "func:Game_PitDriveThrough_OnNoAnimFadeOut": "V2692",
-  "func:Game_PitLane_ProjectBoxPose": "V8552",
   "func:Game_PitLane_PutVehicleInPitBox": "V6034",
   "func:Game_PitstopCutScene_Initialise": "V2808",
   "func:Game_PlatformAuthorisationTask_OnStart": "V3312",
