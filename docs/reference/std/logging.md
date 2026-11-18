@@ -304,7 +304,7 @@ The third line has the whole process's CPU use and the CPU use of the threads sw
 
 To name a core RVA, build the same commit with `native/build.sh` after removing `-s` from `STATIC`, then run `llvm-symbolizer --obj=swofty_core.dll 0x<0x180000000 + RVA>`. The code layout does not change without `-s`. Frames are counted from the frame index the game passes to NVIDIA Streamline, and from the flow-state ticks while the game does not update it, as on the pause screen.
 
-`swofty/perf.log` has six sections:
+`swofty/perf.log` has seven sections:
 
 ```text
 == Summary
@@ -315,6 +315,20 @@ swofty time: 86.7 ms in total, 0.718 ms/s (0.072% of one core); game threads 0.7
 swofty per frame: max 6.12 ms; 20 frame(s) over 1 ms, 1 over 4 ms
 worst call: 3.19 ms, core postfx SetName
 game process cpu: 1.29 cores on average since the core attached (user 1.19, kernel 0.10)
+# the frame pacing, present, GPU, CPU and display lines of the session so far (see Frame pacing below)
+pacing: 81204 frame(s) 116 fps; frame times p50 8.62 ms, p99 14.12, p99.9 16.88, max 61.0 ms; ...
+presents: 81190 (115.3/s, 1.00 per game frame); intervals p50 8.62 ms, ...
+gpu 0: core 2380-2490 MHz (max 2599), ... (since the core attached)
+cpu: system load 30-41% (average 36%), ... (since the core attached)
+display: the game's window is on \\.\DISPLAY1 (2560x1440 at 144 Hz), ...
+verdicts: 14 minute(s): 12 smooth in frame times, 2 stutter, 0 judder; 14 GPU bound, 0 CPU bound; 0 display mismatch; 0 background load
+newest verdict: smooth in frame times; GPU bound (3D engine 97% busy)
+
+== Pacing (last 2 minute(s), one row a minute, local time at its end)
+# the last 30 minutes, one row each: frame and present times, the time inside Present, the GPU and the busiest core
+time       fps  p50 ms  p99 ms p99.9 ms  max ms  uneven spikes pres p99  in pres  gpu MHz  gpu C 3D busy cpu max  verdict
+21:14:00   117    8.38   10.12    14.88    21.4    0.8%      0    10.38     0.21     2440     66     97%     74%  smooth, GPU bound
+21:15:00   116    8.62   14.12    16.88    61.0    2.1%      2    14.12     0.23     2435     66     97%     76%  stutter, GPU bound
 
 == Addons
 # calls, own time, time per second and slowest call for swofty_core and each addon
@@ -339,6 +353,61 @@ core                         game log (Ne_Log_Thunk)                            
 at          took ms   frames   slow   worst ms  swofty ms  what
 00:00:06        280       27      1         96       2.84  screen persistent; screen audio_themes; screen tutorials_masked  [core postfx SetName 1.22 ms, core ui screen loader handler 0.66 ms, core postfx ResourceBarrier 0.48 ms]
 ```
+
+### Frame pacing
+
+After the three lines above, the core logs six more every minute:
+
+```text
+[perf] last 60 s: pacing: 6900 frame(s) 116 fps; frame times p50 8.62 ms, p99 14.12, p99.9 16.88, max 61.0 ms; 2.1% uneven (over 20% and 1 ms off the previous one), change p99 7.12 ms; 2 over 2x the median, 1 over 50 ms, 0 over 250 ms; 2 spike(s) over 2x the running average: 21:14:07 61.0 ms (average 8.5) during "screen garage", 21:14:25 38.0 ms (average 8.6)
+[perf] last 60 s: presents: 6900 (115.0/s, 1.00 per game frame); intervals p50 8.62 ms, p99 14.12, p99.9 16.88, max 61.0 ms, 2.1% uneven (over 20% and 1 ms off the previous one), change p99 7.12 ms, 2 over 2x the median; inside Present average 0.23 ms, max 0.28 ms; sync interval 0 (VSync off) in 100%, tearing flag in 100%
+[perf] last 60 s: gpu 0: core 2380-2490 MHz (max 2599), memory 2249 MHz, 64-67 C, power 88-92%; 3D engine busy 96-98% (average 97%), the game 96%, other processes 1% (most dwm.exe)
+[perf] last 60 s: cpu: system load 30-41% (average 36%), busiest core 70-81% (average 76%); reported clocks 4700 MHz of 4700, limit 4700 MHz; busiest game thread 0.71 cores (tid 8812)
+[perf] last 60 s: other processes: 0.62 cores in total; busiest chrome.exe 0.21, discord.exe 0.08; overlay, capture and monitoring tools running: discord.exe, radeonsoftware.exe; overlay modules in the game: discordhook64.dll
+[perf] last 60 s: verdict: stutter (1 frame(s) over 50 ms, 2 spike(s) over 2x the running average); GPU bound (3D engine 97% busy); display mismatch (VSync off at 116 presents/s on a 144 Hz display: tearing and uneven motion unless FreeSync or G-Sync is on)
+```
+
+`pacing` has the game's frame times from the frame index. A frame is uneven when it is over 20% and over 1 ms longer or shorter than the frame before it. `change p99` is the 99th percentile of that difference. A spike is a frame over twice the running average of the frames before it and over 4 ms above it; the line shows the five longest with their local time and the screen or flow state they fell in. Frames over 250 ms, such as loading screens and the pause screen, are left out of the uneven share, the change, the spikes and the running average, and count under `over 250 ms` instead of `over 50 ms`.
+
+`presents` counts the `Present` and `Present1` calls on the game's swapchain, timed in the core's Present hook: their intervals, with the same measures as `pacing`, the time the call took (with VSync on, the wait for a free back buffer shows here), the sync interval the game passed and the share of presents with the tearing flag. Presents to other swapchains, occluded presents and failed presents, with the last error code, are counted at the end. `per game frame` above 1 means the game presents more often than its frame index advances.
+
+`gpu N` is the GPU the game's swapchain runs on, sampled every 5 seconds. The clocks, temperature, power and fan come from the graphics driver; a driver that gives none logs one `[perf] gpu N: the driver gives no ...` line and the minute line says `clocks and sensors unavailable`. The 3D engine use comes from the Windows GPU Engine performance counters, split into the game and the other processes, with the busiest other process. `[perf] gpu engine use:` says once how it is sampled; a counter read over 250 ms moves sampling to every 30 seconds, and one over 2 seconds turns it off.
+
+`cpu` has the load of the whole system and of its busiest core, sampled every 5 seconds, the clocks Windows reports with their limit (a limit under the maximum is throttling), and the busiest thread that swofty code did not start.
+
+`other processes` has the CPU use of the other processes by executable name, the overlay, capture, monitoring and RGB tools in a known list that are running, and the overlay DLLs in the game process, such as RivaTuner, Discord, Steam, OBS, NVIDIA and ReShade hooks. `[perf] overlay module in the game: <name>` is logged once per module.
+
+`verdict` sums up the minute:
+
+| Verdict | When |
+|---|---|
+| `stutter` | a frame between 50 and 250 ms, or 6 or more spikes a minute |
+| `judder` | 10% or more of the frames, or of the present intervals, uneven |
+| `smooth in frame times` | neither of the above |
+| `GPU bound` | the 3D engine 95% or more busy |
+| `CPU bound` | not GPU bound, and the busiest game thread at 0.9 cores or more |
+| `display mismatch` | presents under 95% of the refresh rate divided by the sync interval (the refresh rate itself with VSync off) |
+| `background load` | other processes at 1 core or more, or 10% or more of the 3D engine |
+| `too few frames to judge` | under 30 frames in the minute |
+
+A minute can be smooth in frame times and still look choppy: `display mismatch` and the `presents` line cover what happens after the game's frame. The core cannot see whether FreeSync or G-Sync is on, so `display mismatch` with VSync off is only tearing and uneven motion without them.
+
+When the game's window moves to another display, changes mode, or its swapchain changes, one line describes it:
+
+```text
+[perf] display: the game's window is on \\.\DISPLAY1 (2560x1440 at 144 Hz), covering it without a border (borderless or exclusive fullscreen); swapchain 2560x1440 format 24, 3 buffers, flip discard, windowed, tearing allowed, frame latency waitable
+```
+
+At start, after the `[system] gpu` and `[system] ram` lines, the core logs each display, each GPU's driver model and scheduling, the Windows settings that change frame pacing, and the display settings in the game's `hardware_settings_config.xml`:
+
+```text
+[system] display 0: \\.\DISPLAY1 (Generic PnP Monitor) 2560x1440 at 144 Hz, primary
+[system] gpu 0: WDDM 3.1, hardware-accelerated GPU scheduling on (supported), tearing (variable refresh) presents supported
+[system] windows: power plan Balanced, power mode Best performance; game mode on; Game Bar recording off, background capture off; hardware-accelerated GPU scheduling setting on; DirectX graphics settings SwapEffectUpgradeEnable=1; game exe compatibility flags none; process priority normal, affinity 16 of 16 logical processors; timer resolution 1.00 ms (15.62 to 0.50)
+[system] game display settings: resolution(width=2560 height=1440 refreshRate=144 fullscreen=false) vsync(enabled=false) framelimit(value=0) nvidiareflex(mode=1)
+```
+
+Process names are executable names only; no line has a path or a user name.
 
 ### Timing your own work
 
