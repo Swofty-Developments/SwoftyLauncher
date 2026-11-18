@@ -33,7 +33,7 @@ struct Tonemap {
     D3D12_RESOURCE_DESC desc;
 };
 
-using com::release;
+using render::com::release;
 
 class Grader {
 public:
@@ -50,7 +50,7 @@ private:
 
     std::recursive_mutex lock;
     std::vector<Tonemap> tonemaps;
-    grade::Lut look;
+    render::grade::Lut look;
     float strength = 1;
     std::string addon;
     std::wstring settings_path;
@@ -214,11 +214,11 @@ void Grader::take_readback(ID3D12GraphicsCommandList *list, const Tonemap &t)
     for (size_t i = 0; i < fresh.size(); i += 8) {
         uint16_t h[4];
         memcpy(h, fresh.data() + i, 8);
-        float rgb[3] = {grade::unpack_half(h[0]), grade::unpack_half(h[1]), grade::unpack_half(h[2])};
+        float rgb[3] = {render::grade::unpack_half(h[0]), render::grade::unpack_half(h[1]), render::grade::unpack_half(h[2])};
         peak = std::max({peak, rgb[0], rgb[1], rgb[2]});
-        grade::apply(look, strength, rgb);
+        render::grade::apply(look, strength, rgb);
         for (int c = 0; c < 3; c++)
-            h[c] = grade::pack_half(rgb[c]);
+            h[c] = render::grade::pack_half(rgb[c]);
         memcpy(graded.data() + i, h, 8);
     }
     if (!(peak > 0))
@@ -376,7 +376,7 @@ void Grader::setup()
         return;
     }
     std::string why;
-    if (!grade::unpack(runtime::read_file(runtime::under_swofty(rel)), look, why)) {
+    if (!render::grade::unpack(runtime::read_file(runtime::under_swofty(rel)), look, why)) {
         swofty::log("[shaders] %s is unusable: %s; the game's colours stay", rel.c_str(), why.c_str());
         return;
     }

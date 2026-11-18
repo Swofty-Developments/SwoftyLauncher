@@ -19,7 +19,7 @@
 // instance list builds no instances. A build with a null destination, scratch or update source is
 // not sent, and postbuild info with a null destination is dropped.
 
-namespace runtime::rtas_guard {
+namespace render::rtas_guard {
 
 enum GeoType : int { kTriangles = 0, kAabbs = 1 };
 enum Level : int { kTop = 0, kBottom = 1 };
