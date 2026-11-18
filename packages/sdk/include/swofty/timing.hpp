@@ -36,7 +36,8 @@
 namespace swofty::timing {
 
 constexpr int max_cars = 24;
-constexpr int max_rows = 22;
+constexpr int max_rows = 24;
+constexpr int default_rows = 22;
 
 // result status numbering of the game: 2 running, 3 finished, 4 dnf, 5 disqualified, 6 not classified, 7 retired.
 enum Status : uint8_t { unknown = 0, inactive = 1, running = 2, finished = 3, dnf = 4, dsq = 5, nc = 6, retired = 7 };
@@ -327,7 +328,7 @@ private:
 };
 
 // The standard tower leaves (Halo's contract, v5): globals under prefix, 24 car-to-row ints (cVV_row) and
-// max_rows rows of rNN_{on,vid,pos,p1,up,dn,gap,gna,tyre,tS..tW,tna,pit,pen,out,me,code,badge,bdg,cVV}. Declared
+// rows (default_rows, at most max_rows) rows of rNN_{on,vid,pos,p1,up,dn,gap,gna,tyre,tS..tW,tna,pit,pen,out,me,code,badge,bdg,cVV}. Declared
 // once; publish() sets them from a Tower and each row goes out as one atomic group.
 class TowerLeaves {
 public:
@@ -338,7 +339,7 @@ public:
         hud::OneHot car;
     };
 
-    explicit TowerLeaves(hud::Leaves &leaves, int rows = max_rows, int cars = max_cars)
+    explicit TowerLeaves(hud::Leaves &leaves, int rows = default_rows, int cars = max_cars)
         : L(leaves), nrows_(std::min(rows, max_rows)), ncars_(std::min(cars, max_cars))
     {
         on = L.boolean("on");
