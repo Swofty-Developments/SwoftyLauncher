@@ -736,7 +736,7 @@ static void test_payloads()
     payloads::vtf_read(fire, swofty::cars::live::Car(7), "F1WingDamage", "DamageScale", nullptr, value);
     expect(value == 0.5f, "car.vtf.read: a before handler reads the section and changes the value");
 
-    static uint32_t pit_seen[3], stop_seen[2];
+    static uint32_t pit_seen[3], stop_seen[2], tyres_seen[2];
     static float hit_seen;
     t.attach("a", "session.pit", SWOFTY_PHASE_AFTER, 0, "",
              [](void *, SwoftyHookCall *c) {
@@ -752,6 +752,13 @@ static void test_payloads()
                  return 0;
              },
              nullptr, &tok);
+    t.attach("a", "session.pit_stop.tyres", SWOFTY_PHASE_AFTER, 0, "",
+             [](void *, SwoftyHookCall *c) {
+                 auto &e = *static_cast<const swofty::sessions::events::PitStopTyres *>(c->payload);
+                 tyres_seen[0] = e.car, tyres_seen[1] = e.kept;
+                 return 0;
+             },
+             nullptr, &tok);
     t.attach("a", "car.damage", SWOFTY_PHASE_AFTER, 0, "",
              [](void *, SwoftyHookCall *c) {
                  auto &e = *static_cast<const swofty::cars::events::Damage *>(c->payload);
@@ -761,9 +768,13 @@ static void test_payloads()
              nullptr, &tok);
     payloads::pit(fire, 5, 7, 14);
     payloads::pit_stop(fire, 5, 2);
+    payloads::pit_stop_tyres(fire, 5, true);
     payloads::damage(fire, swofty::cars::live::Car(5), 1, 0.25f);
     expect(pit_seen[0] == 5 && pit_seen[1] == 7 && pit_seen[2] == 14, "session.pit: the car and both statuses");
     expect(stop_seen[0] == 5 && stop_seen[1] == 2, "session.pit_stop: the car and its stop count");
+    expect(tyres_seen[0] == 5 && tyres_seen[1] == 1, "session.pit_stop.tyres: the car and whether the set was kept");
+    payloads::pit_stop_tyres(fire, 6, false);
+    expect(tyres_seen[0] == 6 && tyres_seen[1] == 0, "session.pit_stop.tyres: a change that fitted new tyres");
     expect(hit_seen == 0.25f, "car.damage: the wing side and the damage the hit added");
 
     std::vector<std::string> parts;

@@ -52,7 +52,17 @@ bool on_flow_thread()
 }
 
 std::unique_ptr<session_points::MidPoint> g_built, g_setup;
-std::unique_ptr<GamePoint> g_reset, g_replay, g_wing, g_hit, g_pit;
+std::unique_ptr<GamePoint> g_reset, g_replay, g_wing, g_hit, g_pit, g_pit_tyres;
+
+// Set to 0 by the pit stop tyres detour around the game's change; race_tyres_keep sets it to 1 when it keeps the set.
+thread_local int t_tyres_kept = -1;
+
+// Game_PitLane_ApplyPitstopTyres (void(mgr, u8 car)) is equal over the whole function on both 1.0.145 builds
+// (re/tools/sigport.py --witness; re/bindings/game/Game_PitLane_ApplyPitstopTyres.json V110006).
+namespace bp = runtime::build_proof;
+constexpr bp::Proof PIT_TYRES{"Game_PitLane_ApplyPitstopTyres (mgr, car)",
+                              bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145) | bp::bit(bp::Build::ea_1_0_145)};
+constexpr bp::Gate PIT_TYRES_POINT{"session.pit_stop.tyres", &PIT_TYRES};
 
 // The KB rows the live levers rest on. A row is ready once it has an independent agree verify row (re/PROTOCOL.md
 // section 5); the others stay off and log "<field> off: needs <row>". Flip a row here after the lead's verify agent
@@ -84,6 +94,7 @@ constexpr Row ROWS[] = {
     {"Car_Register_DetachablePart_Thunk", true},
     {"Car_FrontWing_OnCollision", true},
     {"Game_Pitlane_SetVehicleStatus", true},
+    {"Game_PitLane_ApplyPitstopTyres", true},
     {"Game_Get_ModelNodeId", true},
     {"PitStopInstance.car", false},
     {"Car_FuelEcu_SetMode_Thunk", true},
@@ -254,6 +265,15 @@ void d_pit_status(void *lane, uint8_t vehicle, uint32_t status)
     events::session_pit(vehicle, before, after);
     if (stops_after != stops_before)
         events::session_pit_stop(vehicle, stops_after);
+}
+
+void d_pit_tyres(void *mgr, uint8_t vehicle)
+{
+    t_tyres_kept = 0;
+    g_pit_tyres->original<void>(mgr, vehicle);
+    bool kept = t_tyres_kept > 0;
+    t_tyres_kept = -1;
+    events::session_pit_stop_tyres(vehicle, kept);
 }
 
 std::string session_type()
@@ -607,6 +627,8 @@ bool race_tyres_keep(uintptr_t tyre_component, bool pit_stop_call)
     else
         swofty::log("[tyres] vehicle %u pit stop in the race: tyres kept (box rule race_tyre_change false)%s", unsigned(vehicle),
                     witnessed ? "" : "; this build has no witness for the puncture state, so a punctured tyre stays fitted");
+    if (pick == apply::content::TyreChange::kept && t_tyres_kept == 0)
+        t_tyres_kept = 1;
     return pick == apply::content::TyreChange::kept;
 }
 
@@ -631,6 +653,10 @@ void declare_car_points(Table &t)
                                         reinterpret_cast<void *>(&d_pit_status), game_ops());
     t.declare_game("session.pit", SWOFTY_POINT_NOTIFY, swofty::sessions::events::Pit::version, g_pit.get());
     t.declare_game("session.pit_stop", SWOFTY_POINT_NOTIFY, swofty::sessions::events::PitStop::version, g_pit.get());
+    g_pit_tyres = std::make_unique<GamePoint>("session.pit_stop.tyres", "Game_PitLane_ApplyPitstopTyres",
+                                              reinterpret_cast<void *>(&d_pit_tyres), game_ops());
+    t.declare_game("session.pit_stop.tyres", SWOFTY_POINT_NOTIFY, swofty::sessions::events::PitStopTyres::version,
+                   g_pit_tyres.get());
     g_setup = std::make_unique<session_points::MidPoint>("car.setup.applied", "site_Car_SetupTuningApplied", &m_setup,
                                                          game_ops());
     t.declare_game("car.setup.applied", SWOFTY_POINT_NOTIFY, swofty::cars::events::SetupApplied::version, g_setup.get());
@@ -651,6 +677,10 @@ void arm_car_points()
     if (row_ready("Game_Pitlane_SetVehicleStatus")) {
         g_pit->keep(true);
         g_pit->install(false, "the core");
+    }
+    if (row_ready("Game_PitLane_ApplyPitstopTyres") && runtime::holds(PIT_TYRES_POINT)) {
+        g_pit_tyres->keep(true);
+        g_pit_tyres->install(false, "the core");
     }
     if (row_ready("site_Car_SetupTuningApplied")) {
         g_setup->keep(true);

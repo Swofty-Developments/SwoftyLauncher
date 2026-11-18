@@ -61,6 +61,7 @@ static_assert(declared<ca::PartsRegister>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<ca::Damage>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::sessions::events::Pit>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::sessions::events::PitStop>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::sessions::events::PitStopTyres>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<ca::ControllersRebuilt>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::ai::events::ControllerUpdate>(SWOFTY_POINT_CANCEL));
 static_assert(declared<swofty::sessions::events::PlayerControl>(SWOFTY_POINT_CANCEL));
@@ -155,6 +156,8 @@ bool session_pit(uint32_t car, uint32_t previous, uint32_t status)
 }
 
 bool session_pit_stop(uint32_t car, uint32_t stops) { return payloads::pit_stop(fire_core, car, stops); }
+
+bool session_pit_stop_tyres(uint32_t car, bool kept) { return payloads::pit_stop_tyres(fire_core, car, kept); }
 
 bool session_lap(uint32_t car)
 {

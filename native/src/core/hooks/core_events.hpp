@@ -83,6 +83,7 @@ bool audio_bundle_resolve(int32_t car, const char *vehicle, const char *switch_n
 bool car_damage(const swofty::cars::live::Car &car, uint32_t part, float amount);
 bool session_pit(uint32_t car, uint32_t previous, uint32_t status);
 bool session_pit_stop(uint32_t car, uint32_t stops);
+bool session_pit_stop_tyres(uint32_t car, bool kept);
 bool session_lap(uint32_t car);
 bool session_flag(swofty::race_control::events::Flag &payload);
 bool session_safety_car(swofty::race_control::events::SafetyCar &payload);
