@@ -967,12 +967,6 @@
    "anchor": 7,
    "expect": ""
   },
-  "site_FeHome_AfterCareerCall": {
-   "pattern": "45 8D 67 01 4C 89 F1 44 89 E2 E8 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? EB 10",
-   "note": "The pattern is the EA 1.0.145 code of this function, found by whole-function comparison with the Steam 1.0.145 and EA 1.0.141 builds; the loader's own jump patches in the decrypted dump are wildcarded.",
-   "anchor": 15,
-   "expect": ""
-  },
   "site_Game_CareerEventsSequencerFirstRecord": {
    "pattern": "48 8B 84 24 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 4C 89 E9 E8 ?? ?? ?? ?? 48 8B 4C 24 38",
    "note": "The pattern is the EA 1.0.145 code of this function, found by whole-function comparison with the Steam 1.0.145 and EA 1.0.141 builds; the loader's own jump patches in the decrypted dump are wildcarded.",
