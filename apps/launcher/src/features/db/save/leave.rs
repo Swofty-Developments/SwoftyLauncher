@@ -90,7 +90,7 @@ impl Shell {
                             window.close_dialog(cx);
                             s2.update(cx, |s, cx| {
                                 if bound {
-                                    s.db_save_bound(Some(t2.clone()), window, cx);
+                                    Db::save_bound(s, Some(t2.clone()), window, cx);
                                 } else {
                                     s.db_save_as(Some(t2.clone()), window, cx);
                                 }

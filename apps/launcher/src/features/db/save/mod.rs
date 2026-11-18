@@ -15,8 +15,9 @@ use swofty_core::store::Store;
 use swofty_i18n::{tr, trf, trn};
 
 use super::{Then, guarded, text};
-use crate::features::db::Db;
+use crate::features::db::{Db, DbChange};
 use crate::shell::Shell;
+use crate::shell::host::Host;
 use crate::ui::Field;
 use crate::ui::theme::palette;
 
@@ -127,7 +128,7 @@ impl Shell {
     /// The header's Save (an addon) or Save as Addon (a new draft).
     pub(crate) fn db_save(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if self.db.draft.addon.is_some() {
-            self.db_save_bound(None, window, cx);
+            Db::save_bound(self, None, window, cx);
         } else {
             self.db_save_as(None, window, cx);
         }
@@ -249,37 +250,8 @@ impl Shell {
         true
     }
 
-    fn db_save_bound(&mut self, then: Option<Then>, window: &mut Window, cx: &mut Context<Self>) -> bool {
-        let Some(catalog) = self.db.catalog().cloned() else {
-            return false;
-        };
-        if let Some(e) = self.db.addon_error.clone() {
-            crate::app::app_log::action("db editor: save").failed(&e);
-            window.notify(Notification::error(e).title(tr("Could not save")), cx);
-            return false;
-        }
-        let name = self.db.draft_name();
-        let store = self.store.clone();
-        let draft = &mut self.db.draft;
-        match guarded(|| draft.save_addon(&store, &catalog).map_err(text)) {
-            Ok(pkg) => {
-                window.notify(Notification::success(trf!("Saved {name}", name = name)), cx);
-                self.db_after_save(pkg.id, then, cx);
-                true
-            }
-            Err(e) => {
-                crate::app::app_log::action("db editor: save").failed(&e);
-                window.notify(
-                    Notification::error(e).title(trf!("Could not save {name}", name = name)),
-                    cx,
-                );
-                false
-            }
-        }
-    }
-
     // A saved draft is cleared; the addon shows on Addons unless the save was on the way elsewhere.
-    fn db_after_save(&mut self, id: String, then: Option<Then>, cx: &mut Context<Self>) {
+    pub(crate) fn db_after_save(&mut self, id: String, then: Option<Then>, cx: &mut Context<Self>) {
         self.db.addon_error = None;
         self.db.seen = None;
         Db::persist(self, cx);
@@ -289,6 +261,44 @@ impl Shell {
             None => {
                 Db::changed(self, None, false, cx);
                 self.show_addon(&id, cx);
+            }
+        }
+    }
+}
+
+impl Db {
+    /// Saves the draft into the addon it edits. False when it could not be saved, which a notice says.
+    pub(crate) fn save_bound<H: Host<Self>>(
+        host: &mut H,
+        then: Option<Then>,
+        window: &mut Window,
+        cx: &mut Context<H>,
+    ) -> bool {
+        let (db, needs) = host.split();
+        let Some(catalog) = db.catalog().cloned() else {
+            return false;
+        };
+        if let Some(e) = db.addon_error.clone() {
+            crate::app::app_log::action("db editor: save").failed(&e);
+            window.notify(Notification::error(e).title(tr("Could not save")), cx);
+            return false;
+        }
+        let name = db.draft_name();
+        let store = needs.store;
+        let draft = &mut db.draft;
+        match guarded(|| draft.save_addon(store, &catalog).map_err(text)) {
+            Ok(pkg) => {
+                window.notify(Notification::success(trf!("Saved {name}", name = name)), cx);
+                host.changed(DbChange::Saved { id: pkg.id, then }, cx);
+                true
+            }
+            Err(e) => {
+                crate::app::app_log::action("db editor: save").failed(&e);
+                window.notify(
+                    Notification::error(e).title(trf!("Could not save {name}", name = name)),
+                    cx,
+                );
+                false
             }
         }
     }

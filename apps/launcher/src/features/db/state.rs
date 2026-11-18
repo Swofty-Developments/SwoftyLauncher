@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::convert::Infallible;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
@@ -16,7 +15,7 @@ use swofty_core::dbedit::{
 use super::fields::Slots;
 use crate::services::game::Install;
 use crate::shell::Shell;
-use crate::shell::host::{Host, Hosted, PromptHost, Prompted, reports_nothing};
+use crate::shell::host::{Host, Hosted, PromptHost, Prompted};
 use swofty_core::store::Store;
 use swofty_i18n::trf;
 
@@ -312,9 +311,15 @@ pub(crate) struct DbNeeds<'a> {
     pub(crate) install: Option<&'a Install>,
 }
 
+/// What the DB Editor's work reports to the shell.
+pub(crate) enum DbChange {
+    /// The draft was saved into `id`: the library is read again, then `then` runs or Addons shows the addon.
+    Saved { id: String, then: Option<Then> },
+}
+
 impl Hosted for Db {
     type Needs<'a> = DbNeeds<'a>;
-    type Change = Infallible;
+    type Change = DbChange;
 }
 
 /// What the DB Editor's work hands the shell to open in the window.
@@ -350,5 +355,9 @@ impl Host<Db> for Shell {
         )
     }
 
-    reports_nothing!();
+    fn changed(&mut self, change: DbChange, cx: &mut Context<Self>) {
+        match change {
+            DbChange::Saved { id, then } => self.db_after_save(id, then, cx),
+        }
+    }
 }
