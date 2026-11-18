@@ -1001,6 +1001,8 @@ inline constexpr address<"Game_PitLane_EnterControlRelease"> Game_PitLane_EnterC
 inline constexpr address<"Game_PitLane_EnterLimitZone"> Game_PitLane_EnterLimitZone{}; // L2 experimental
 inline constexpr address<"Game_PitLane_ExitControlRelease"> Game_PitLane_ExitControlRelease{}; // L2 experimental
 inline constexpr address<"Game_PitLane_ExitLimitZone"> Game_PitLane_ExitLimitZone{}; // L2 experimental
+inline constexpr address<"Game_PitLane_GetDistanceToBox"> Game_PitLane_GetDistanceToBox{}; // L2 experimental
+inline constexpr address<"Game_PitLane_GetGaragePose_Thunk"> Game_PitLane_GetGaragePose_Thunk{}; // L2 experimental
 inline constexpr address<"Game_PitLane_HandleEnterPitBox"> Game_PitLane_HandleEnterPitBox{}; // L2 experimental
 inline constexpr address<"Game_PitLane_HoldInGarage"> Game_PitLane_HoldInGarage{}; // L2 experimental
 inline constexpr address<"Game_PitLane_HoldInPitBox"> Game_PitLane_HoldInPitBox{}; // L2 experimental
@@ -1016,6 +1018,8 @@ inline constexpr address<"Game_PitLane_ResetCarToTrack"> Game_PitLane_ResetCarTo
 inline constexpr address<"Game_PitLane_SetCrewReady"> Game_PitLane_SetCrewReady{}; // L2 experimental
 inline constexpr address<"Game_PitLane_SetDoPracticePitStop"> Game_PitLane_SetDoPracticePitStop{}; // L2 experimental
 inline constexpr address<"Game_PitLane_SetDoPracticePitStop_2"> Game_PitLane_SetDoPracticePitStop_2{}; // L2 experimental
+using Game_PitLane_UpdateMovement_t = void(void *mgr, float dt);
+inline constexpr fn<"Game_PitLane_UpdateMovement", Game_PitLane_UpdateMovement_t> Game_PitLane_UpdateMovement{}; // L2 experimental
 inline constexpr address<"Game_PitLane_VehicleEntering"> Game_PitLane_VehicleEntering{}; // L2 experimental
 inline constexpr address<"Game_PitLane_VehicleEnteringInternal"> Game_PitLane_VehicleEnteringInternal{}; // L2 experimental
 inline constexpr address<"Game_PitLane_VehicleExiting"> Game_PitLane_VehicleExiting{}; // L2 experimental
@@ -1104,6 +1108,8 @@ using Game_Read_StoryForcedTitleUpdateValueSetting_t = bool(void *ctx);
 inline constexpr fn<"Game_Read_StoryForcedTitleUpdateValueSetting", Game_Read_StoryForcedTitleUpdateValueSetting_t> Game_Read_StoryForcedTitleUpdateValueSetting{}; // L2 experimental
 using Game_Read_TrackInfoConfig_t = void(void *self);
 inline constexpr fn<"Game_Read_TrackInfoConfig", Game_Read_TrackInfoConfig_t> Game_Read_TrackInfoConfig{}; // L2 experimental
+using Game_Read_TrackLayerRow_t = void *(void *row, void *reader);
+inline constexpr fn<"Game_Read_TrackLayerRow", Game_Read_TrackLayerRow_t> Game_Read_TrackLayerRow{}; // L2 experimental
 using Game_Read_UIMovieBuildSetting_t = uint64_t(void *self);
 inline constexpr fn<"Game_Read_UIMovieBuildSetting", Game_Read_UIMovieBuildSetting_t> Game_Read_UIMovieBuildSetting{}; // L2 experimental
 using Game_Refresh_PerformanceComparison_t = void(void *comparison);
@@ -1182,8 +1188,6 @@ inline constexpr address<"Game_SessionResults_PopulateTable"> Game_SessionResult
 inline constexpr address<"Game_SessionResults_ReleaseThumbnails"> Game_SessionResults_ReleaseThumbnails{}; // L2 experimental
 inline constexpr address<"Game_SessionSettings_Reset"> Game_SessionSettings_Reset{}; // L2 experimental
 inline constexpr address<"Game_SessionSettings_SetSessionId"> Game_SessionSettings_SetSessionId{}; // L2 experimental
-using Game_SessionStateTalkingPoints_ParseParams_Thunk_t = uint64_t(void *state, void *params);
-inline constexpr fn<"Game_SessionStateTalkingPoints_ParseParams_Thunk", Game_SessionStateTalkingPoints_ParseParams_Thunk_t> Game_SessionStateTalkingPoints_ParseParams_Thunk{}; // L2 experimental, SessionStateTalkingPoints
 inline constexpr address<"Game_SessionState_EnableOnDemandTextureStreaming"> Game_SessionState_EnableOnDemandTextureStreaming{}; // L2 experimental
 inline constexpr address<"Game_SessionStatsTracker_OnPlayerDroppedIn"> Game_SessionStatsTracker_OnPlayerDroppedIn{}; // L2 experimental
 inline constexpr address<"Game_SessionStatsTracker_ResetForSession"> Game_SessionStatsTracker_ResetForSession{}; // L2 experimental
