@@ -114,7 +114,7 @@ def main():
     g.lines.append('')
     g.rule('cc', '$cc $flags -MD -MF $out.d -c $in -o $out', 'CC $in', depfile=True)
     g.rule('cxx', '$cxx $flags -MD -MF $out.d -c $in -o $out', 'CXX $in', depfile=True)
-    g.rule('cxx_core', 'sh tools/cxx_init.sh $out.init $cxx $flags -MD -MF $out.d -c $in -o $out', 'CXX $in', depfile=True)
+    g.rule('cxx_core', 'sh tools/cxx_init.sh $out.init $in $cxx $flags -MD -MF $out.d -c $in -o $out', 'CXX $in', depfile=True)
     g.rule('init_check', 'python3 tools/init_check.py --allow tools/init_allow.txt $flags $in', 'CHECK static initializers')
     g.rule('link_c', '$cc $flags -shared -o $out $in $strip', 'LINK $out')
     g.rule('link_cxx', '$cxx $flags -shared -o $out $in $strip', 'LINK $out')
