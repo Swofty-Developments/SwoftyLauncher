@@ -57,6 +57,36 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/1438c80e0.c;decomp:re/decomp/140bde3e0.c;xref:0x140bde4e4",
    "notes": "V0305 Independent: rcx ws, edx seed, r8d weekend (stored first to +0x1f18); +0x1f14 non-zero -> +0x1f10 = forced else seed; 0x144619cf0(TOD, base+weekend*10) when *(ws+0x1d98) set; *(0x145f8d6c0)+0x174 = base, +0x178 = weekend; only caller 0x140bde4e4 (no .data1 calls, no pointer refs besides .pdata)."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Sess_GameWeatherSystem_UpdateRandomSeed",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1438ad990-0x1438b0644,0x1438c80e0-0x1438c82d3,0x151a29d70-0x151a29fc8,0x140bde3e0-0x140bde50c,0x151a2e630-0x151a2e713,0x151a2dcb0-0x151a2df14,0x15523f8a0-0x15523f9f5,0x1407ed300-0x1407ed3d0,1.0.145 0x1438aff20-0x1438b2bd4,1.0.145 0x1438ca670-0x1438ca863,1.0.145 0x15125f4a0-0x15125f6f8,1.0.145 0x140bdee90-0x140bdefbc;xref:0x1438afa84,0x1438b2014,0x1438c8157,0x1438ca6e7,0x151a29e37,0x15125f567,0x1438b1330,0x1438b38c0,0x140bde4e4,0x1407ed38f,0x1438b0038",
+   "notes": "V20035 Blind: partial. Confirmed: proto (rcx ws, edx seed, r8d weekend, void); +0x1f18=weekend 0x1438c80ec; non-zero +0x1f14 replaces m_randSeed +0x1f10 (0x1438c8157); TimeOfDaySystem::updateRandomSeed 0x144619cf0 gets base+10*weekend (called twice, 0x1438c81d0/0x1438c8221); +0x174/+0x178; sole caller 0x140bde4e4 and its +0x1f02/04/08 stores; only game writer is the ctor's zero vmovups 0x1438afa84 (1.0.145 0x1438b2014); computed-pointer, sub-object, +0x20 base and whole-object paths scanned too, none. Wrong: 0x151a29d70 is not a protector copy of this function but generateNewBaseRandomSeed (thunk 0x1438b1330, QPC ms seed); it also treats 0 as no forced seed."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Sess_GameWeatherSystem_UpdateRandomSeed",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1438c80e0-0x1438c82d3,0x15523f8a0-0x15523fbb3,0x140bde3e0-0x140bde50c,0x1438ad990-0x1438b0644,0x1407ed333-0x1407ed3c6,0x151a29d70-0x151a29fc8,0x1438b1330-0x1438b1335,0x1438b09d0-0x1438b0cf6,0x1438b7e90-0x1438b7f40,1.0.145 0x1438ca670-0x1438ca863,1.0.145 0x1438aff20-0x1438b2bd4,1.0.145 0x15125f4a0-0x15125f6f8,1.0.145 0x1438b38c0-0x1438b38c5,1.0.145 0x1407ed3c8-0x1407ed400;xref:0x140bde4e5,0x1438c8157,0x1438c8161,0x1438c8169,0x1438c81d0,0x1438c8221,0x1438afa84,0x1438adb6c,0x1407ed38f,0x1407ed3ab,0x151a29e37,0x1438b0cc6,0x1438b7ede,0x140bde4f0,1.0.145 0x1438ca6e7,1.0.145 0x1438b2014,1.0.145 0x15125f567,1.0.145 0x140bdef95",
+   "notes": "V20036 Blind: partial. Proto, field/call claims, TOD called twice with one value (0x1438c81d0/0x1438c8221), g+0x174/+0x178 (stored only if different), sole caller 0x140bde4e4 and its +0x1f02/04/08 stores, and the +0x1f14 census hold on both builds: only writer is the ctor zero store 0x1438afa84 (xmm6=0 at 0x1438adb6c); readers 0x1438c8157 and 0x151a29e37 (thunk 0x1438b1330, callers 0x1438b0cc6/0x1438b7ede); 1.0.145 0x1438b2014/0x1438ca6e7/0x15125f567, 126/126 and 1350/1350. Imprecise: 0x1438ad990 is the constructor (vtables 0x145883440, +0x20 0x145883570, right after the 0x31b0 alloc), not an init; the virtual init is slot +0x10 0x1438b09d0."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Sess_GameWeatherSystem_UpdateRandomSeed",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1438c80e0-0x1438c82d3,0x140bde3e0-0x140bde50c,0x1407ed33a-0x1407ed3c1,0x1438ad990-0x1438b0644,0x1438b09d0-0x1438b12ac,0x151a29d70-0x151a29fc8,0x15523f8a0-0x15523f900,1.0.145 0x1438ca670-0x1438ca863,1.0.145 0x1438aff20-0x1438b2bd4,1.0.145 0x1438b2f60-0x1438b383c,1.0.145 0x15125f4a0-0x15125f6f8;xref:0x140bde4e4,0x1438c8157,0x1438c8161,0x1438c8169,0x1438c81d0,0x1438c8221,0x1438c81ea,0x1438c81fe,0x1407ed38f,0x1407ed3ab,0x1438afa84,0x1438adb6c,0x1438b0cc6,0x151a29e37,0x1438b1330,0x1438b7ede,0x1438b2014,0x1438ca6e7,0x15125f567,0x1438b38c0",
+   "notes": "V20037 Blind: agree. Own disasm: void(ws rcx, u32 seed edx, u32 weekend r8d). 0x1438c80ec ws+0x1f18=weekend; 0x1438c8157 non-zero ws+0x1f14 replaces seed in ws+0x1f10; 0x144619cf0([ws+0x1d98], base+10*weekend) twice (0x1438c81d0, 0x1438c8221) when non-null; [0x145f8d6c0]+0x174/+0x178 written only if different. One caller 0x140bde4e4 in 0x140bde3e0 (seed comp+0x2c4), which then writes ws+0x1f02/04/08. ws: 0x31b0 alloc 0x1407ed38f, ctor 0x1438ad990, init slot +0x10 0x1438b09d0. Only +0x1f14 writer is the ctor zero store 0x1438afa84; readers 0x1438c8157 and 0x151a29e37 (thunk 0x1438b1330). 1.0.145: 0x1438ca670 126/126, ctor 0x1438aff20 1350/1350, sites 0x1438b2014/0x1438ca6e7/0x15125f567."
   }
  ],
  "proofs": []
