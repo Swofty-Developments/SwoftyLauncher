@@ -3,11 +3,35 @@
 use std::collections::HashMap;
 use std::path::Path;
 
-use swofty_formats::erp::{Entry, ErpFile, Packer, Resource};
+use swofty_formats::erp::{ErpFile, Packer, Resource};
 
 use super::Patch;
 use super::node::err;
+use crate::erp::{Archive, Slot};
 use crate::{Result, io_err};
+
+/// How the UI build writes its archives: the packer that compresses their changed fragments and, when there
+/// is one, the archive cache that keeps each archive for the next build that writes it the same.
+#[derive(Clone, Copy)]
+pub struct ArchiveWriter<'a> {
+    packer: &'a Packer,
+    cache: Option<&'a Path>,
+}
+
+impl<'a> ArchiveWriter<'a> {
+    pub fn new(packer: &'a Packer) -> Self {
+        Self { packer, cache: None }
+    }
+
+    /// The writer linking from the archive cache in `dir` each archive an earlier build wrote the same, and
+    /// keeping there each one it writes.
+    pub fn cached(self, dir: &'a Path) -> Self {
+        Self {
+            cache: Some(dir),
+            ..self
+        }
+    }
+}
 
 pub(super) fn read_frag(path: &Path, name: &str, index: usize) -> Result<Vec<u8>> {
     let file = ErpFile::open(path)?;
@@ -19,9 +43,14 @@ pub(super) fn read_frag(path: &Path, name: &str, index: usize) -> Result<Vec<u8>
         .data()?)
 }
 
-pub(super) fn write_erp(src: &Path, dst: &Path, patches: Vec<(&str, Patch)>, packer: &Packer) -> Result<()> {
+pub(super) fn write_erp(
+    src: &Path,
+    dst: &Path,
+    patches: Vec<(&str, Patch)>,
+    archives: &ArchiveWriter,
+) -> Result<()> {
     let patches = patches.into_iter().map(|(name, f)| (name, 0, f)).collect();
-    write_archive(src, dst, patches, Vec::new(), packer)
+    write_archive(src, dst, patches, Vec::new(), archives)
 }
 
 pub(super) type Added = (String, &'static str, Vec<Vec<u8>>);
@@ -31,21 +60,22 @@ pub(super) fn write_archive(
     dst: &Path,
     patches: Vec<(&str, usize, Patch)>,
     added: Vec<Added>,
-    packer: &Packer,
+    archives: &ArchiveWriter,
 ) -> Result<()> {
-    write_archive_copying(src, dst, patches, added, Vec::new(), packer)
+    write_archive_copying(src, dst, patches, added, Vec::new(), archives)
 }
 
 /// [`write_archive`], also appending `copied`, resources of another archive kept byte for byte, under names `src`
-/// doesn't have.
+/// doesn't have. An archive the archive cache has from an earlier build is linked instead of written again.
 pub(super) fn write_archive_copying(
     src: &Path,
     dst: &Path,
     patches: Vec<(&str, usize, Patch)>,
     added: Vec<Added>,
     copied: Vec<Resource>,
-    packer: &Packer,
+    archives: &ArchiveWriter,
 ) -> Result<()> {
+    let packer = archives.packer;
     let file = ErpFile::open(src)?;
     if let Some(r) = copied
         .iter()
@@ -87,25 +117,33 @@ pub(super) fn write_archive_copying(
             true => {
                 owned.insert(name, res);
             }
-            false => extra.push(Entry::Owned(res)),
+            false => extra.push(res),
         }
     }
-    let mut entries: Vec<Entry> = file
+    let slots: Vec<Slot> = file
         .erp
         .resources
         .iter()
-        .map(|r| match owned.remove(&r.name) {
-            Some(new) => Entry::Owned(new),
-            None => Entry::Copy(r),
+        .enumerate()
+        .map(|(i, r)| match owned.remove(&r.name) {
+            Some(new) => Slot::Owned(new),
+            None => Slot::Stock(i),
         })
+        .chain(extra.into_iter().chain(copied).map(Slot::Owned))
         .collect();
-    entries.extend(extra);
-    entries.extend(copied.into_iter().map(Entry::Owned));
+    let archive = Archive::new(file, slots);
     let dir = dst.parent().expect("has parent");
     std::fs::create_dir_all(dir).map_err(io_err(dir))?;
+    let entry = archives.cache.and_then(|c| archive.cache_entry(c));
+    if entry.as_ref().is_some_and(|e| e.link_to(dst)) {
+        return Ok(());
+    }
     #[cfg(test)]
     WRITTEN.with(|w| w.borrow_mut().push(dst.to_owned()));
-    file.write(entries, dst)?;
+    archive.write_to(dst)?;
+    if let Some(e) = entry {
+        e.keep(dst);
+    }
     Ok(())
 }
 

@@ -3,9 +3,7 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use swofty_formats::erp::Packer;
-
-use super::archives::{Added, read_frag, write_archive};
+use super::archives::{Added, ArchiveWriter, read_frag, write_archive};
 use super::check::ArchiveUi;
 use super::{Patch, Writer, ui_file};
 use super::{car_category, check, era};
@@ -27,7 +25,7 @@ pub(super) fn picker_rows(
     out: &Path,
     lines: &mut Vec<String>,
     warnings: &mut Vec<String>,
-    packer: &Packer,
+    archives: &ArchiveWriter,
 ) -> Result<Vec<&'static str>> {
     if !split {
         lines.push(
@@ -36,7 +34,7 @@ pub(super) fn picker_rows(
         );
     }
     let which = if split { Rows::Both } else { Rows::Cars };
-    rows(which, input, writer, out, lines, warnings, packer)
+    rows(which, input, writer, out, lines, warnings, archives)
 }
 
 /// The era picker rows alone.
@@ -47,9 +45,9 @@ pub(super) fn era_rows(
     out: &Path,
     lines: &mut Vec<String>,
     warnings: &mut Vec<String>,
-    packer: &Packer,
+    archives: &ArchiveWriter,
 ) -> Result<Vec<&'static str>> {
-    rows(Rows::Era, input, writer, out, lines, warnings, packer)
+    rows(Rows::Era, input, writer, out, lines, warnings, archives)
 }
 
 /// The Car Category boxes alone.
@@ -60,9 +58,9 @@ pub(super) fn car_category_boxes(
     out: &Path,
     lines: &mut Vec<String>,
     warnings: &mut Vec<String>,
-    packer: &Packer,
+    archives: &ArchiveWriter,
 ) -> Result<Vec<&'static str>> {
-    rows(Rows::Cars, input, writer, out, lines, warnings, packer)
+    rows(Rows::Cars, input, writer, out, lines, warnings, archives)
 }
 
 /// Which of the two edits a [`rows`] call makes.
@@ -81,7 +79,7 @@ fn rows(
     out: &Path,
     lines: &mut Vec<String>,
     warnings: &mut Vec<String>,
-    packer: &Packer,
+    archives: &ArchiveWriter,
 ) -> Result<Vec<&'static str>> {
     let (eras, added) = match which {
         Rows::Cars => (Vec::new(), Vec::new()),
@@ -94,18 +92,18 @@ fn rows(
     };
     let era_rels: Vec<&'static str> = eras.iter().map(|(rel, _)| *rel).collect();
     let car_rels: Vec<&'static str> = cars.iter().map(|(rel, _)| *rel).collect();
-    let mut archives: Vec<(&'static str, Vec<Edit>, Vec<Added>)> = eras
+    let mut per_archive: Vec<(&'static str, Vec<Edit>, Vec<Added>)> = eras
         .into_iter()
         .map(|(rel, edits)| (rel, edits, added.clone()))
         .collect();
     for (rel, edits) in cars {
-        match archives.iter_mut().find(|(r, ..)| *r == rel) {
+        match per_archive.iter_mut().find(|(r, ..)| *r == rel) {
             Some((_, have, _)) => have.extend(edits),
-            None => archives.push((rel, edits, Vec::new())),
+            None => per_archive.push((rel, edits, Vec::new())),
         }
     }
-    let written: Vec<&'static str> = archives.iter().map(|(rel, ..)| *rel).collect();
-    for (rel, edits, added) in archives {
+    let written: Vec<&'static str> = per_archive.iter().map(|(rel, ..)| *rel).collect();
+    for (rel, edits, added) in per_archive {
         let patches: Vec<(&str, usize, Patch)> = edits
             .into_iter()
             .map(|(res, index, data)| (res, index, Box::new(move |_: &[u8]| Ok(data)) as Patch))
@@ -115,7 +113,7 @@ fn rows(
             &out.join(ui_file(rel)),
             patches,
             added,
-            packer,
+            archives,
         )?;
     }
     check_rows(input, out, &era_rels, &car_rels)?;

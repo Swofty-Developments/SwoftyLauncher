@@ -1,3 +1,4 @@
+pub mod archive_entry;
 pub mod link;
 
 use std::collections::BTreeMap;
@@ -87,7 +88,7 @@ pub fn mark_used(entry: &Path) {
 }
 
 /// Prunes the archive cache in `dir` to the entries used within `max_age`, most recently used first up to
-/// `max_bytes`. An entry is the files under one key, its archive and the record and use mark beside it, last
+/// `max_bytes`. An entry is the files under one key, its archive and the records and use mark beside it, last
 /// used when the newest of them was written or marked; the entries removed.
 pub fn prune_archives(dir: &Path, max_age: std::time::Duration, max_bytes: u64) -> usize {
     let mut entries: BTreeMap<PathBuf, (std::time::SystemTime, u64, Vec<PathBuf>)> = BTreeMap::new();

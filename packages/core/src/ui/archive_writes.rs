@@ -4,11 +4,10 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
-use swofty_formats::erp::Packer;
 use swofty_formats::pkg::Node;
 
 use super::addon_screens::{Routing, Targets};
-use super::archives::{read_frag, write_archive, write_erp};
+use super::archives::{ArchiveWriter, read_frag, write_archive, write_erp};
 use super::menu_rows::{career_row, customisation_built, main_menu_rows};
 use super::pages::{ADJUST_TOOLTIP, Screens};
 use super::{
@@ -44,7 +43,7 @@ pub(super) fn write_persistent(
     targets: &Targets,
     setups: &[patch::SetupRoutes],
     mfd: bool,
-    packer: &Packer,
+    archives: &ArchiveWriter,
 ) -> Result<Persistent> {
     let (src_p, dst_p) = at;
     let routes_out = std::cell::RefCell::new(Vec::new());
@@ -139,7 +138,7 @@ pub(super) fn write_persistent(
                 vec![rows::row_scene(&read_frag(flow_options, rows::O_BLOCK, 0)?)?],
             ),
         ],
-        packer,
+        archives,
     )?;
     Ok(Persistent {
         routes: routes_out.into_inner(),
@@ -205,7 +204,7 @@ pub(super) fn route_problems(
 pub(super) fn write_databases(
     at: &(PathBuf, PathBuf),
     state: Vec<(String, Node)>,
-    packer: &Packer,
+    archives: &ArchiveWriter,
 ) -> Result<()> {
     write_erp(
         &at.0,
@@ -215,13 +214,17 @@ pub(super) fn write_databases(
             (UI_DATA, Box::new(move |d| patch::ui_data(d, state))),
             (OVERRIDES, Box::new(icons::overrides)),
         ],
-        packer,
+        archives,
     )
 }
 
 /// Writes flow_persistent.erp: the online messages, the HUD messages and the popup gate, refused when
 /// the gate would change the game's own popups.
-pub(super) fn write_flow_persistent(at: &(PathBuf, PathBuf), lang: bool, packer: &Packer) -> Result<()> {
+pub(super) fn write_flow_persistent(
+    at: &(PathBuf, PathBuf),
+    lang: bool,
+    archives: &ArchiveWriter,
+) -> Result<()> {
     write_erp(
         &at.0,
         &at.1,
@@ -243,7 +246,7 @@ pub(super) fn write_flow_persistent(at: &(PathBuf, PathBuf), lang: bool, packer:
                 }),
             ),
         ],
-        packer,
+        archives,
     )
 }
 
@@ -261,7 +264,7 @@ pub(super) fn write_frontend(
     at: &(PathBuf, PathBuf),
     writer: &Writer,
     show_panel: bool,
-    packer: &Packer,
+    archives: &ArchiveWriter,
 ) -> Result<Frontend> {
     let (src_h, dst_h) = at;
     let (mut career_lines, mut career_warnings) = (Vec::new(), Vec::new());
@@ -305,7 +308,7 @@ pub(super) fn write_frontend(
             Box::new(move |_| Ok(templates)),
         ));
     }
-    write_archive(src_h, dst_h, frontend, Vec::new(), packer)?;
+    write_archive(src_h, dst_h, frontend, Vec::new(), archives)?;
     career_lines.extend(home_lines);
     career_warnings.extend(home_warnings);
     Ok(Frontend {
@@ -316,18 +319,18 @@ pub(super) fn write_frontend(
 }
 
 /// Writes the leaderboard container with the leaderboard glyphs.
-pub(super) fn write_leaderboard(at: &(PathBuf, PathBuf), packer: &Packer) -> Result<()> {
+pub(super) fn write_leaderboard(at: &(PathBuf, PathBuf), archives: &ArchiveWriter) -> Result<()> {
     write_erp(
         &at.0,
         &at.1,
         vec![(LEADERBOARD_UI, Box::new(patch::leaderboard_glyphs))],
-        packer,
+        archives,
     )
 }
 
 /// Writes the player card archive with its strip hidden, unless the strip has a binding the build can't
 /// read.
-pub(super) fn write_playercard(at: &(PathBuf, PathBuf), packer: &Packer) -> Result<()> {
+pub(super) fn write_playercard(at: &(PathBuf, PathBuf), archives: &ArchiveWriter) -> Result<()> {
     write_archive(
         &at.0,
         &at.1,
@@ -340,7 +343,7 @@ pub(super) fn write_playercard(at: &(PathBuf, PathBuf), packer: &Packer) -> Resu
             }),
         )],
         Vec::new(),
-        packer,
+        archives,
     )
 }
 
@@ -389,7 +392,7 @@ pub(super) fn write_mfd_templates(
     out: &Path,
     mfd_rows: &[MfdRow],
     build: &mut MenuBuild,
-    packer: &Packer,
+    archives: &ArchiveWriter,
 ) -> Result<()> {
     let rows = mfd_page_rows(mfd_rows);
     for rel in mfd::TEMPLATE_ERPS {
@@ -398,7 +401,7 @@ pub(super) fn write_mfd_templates(
             &src,
             &dst,
             vec![(mfd::TEMPLATES, Box::new(|d| mfd::templates(d, &rows)))],
-            packer,
+            archives,
         )?;
         build.erps.insert(ui_file(rel), dst);
     }

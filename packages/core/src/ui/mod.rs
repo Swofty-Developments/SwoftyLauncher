@@ -18,7 +18,7 @@ pub mod rows;
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use swofty_formats::erp::{ErpFile, Packer};
+use swofty_formats::erp::ErpFile;
 
 use crate::addons::settings::{SessionScreen, SessionSettings};
 use crate::{Error, Result};
@@ -40,6 +40,7 @@ use archive_writes::{
     check_setup_routes, register, route_problems, write_databases, write_flags, write_flow_persistent,
     write_frontend, write_leaderboard, write_mfd_templates, write_persistent, write_playercard,
 };
+pub use archives::ArchiveWriter;
 use archives::read_frag;
 use menu_rows::hub_tabs;
 use picker_rows::picker_rows;
@@ -123,7 +124,7 @@ pub fn build(
     writer: &Writer,
     out: &Path,
     lang: bool,
-    packer: &Packer,
+    archives: &ArchiveWriter,
 ) -> Result<MenuBuild> {
     let flow_options = input(&ui_file("flow_options.erp"));
     let flow_frontend = input(&ui_file("flow_frontend.erp"));
@@ -153,7 +154,7 @@ pub fn build(
         &targets,
         &setups,
         !mfd_rows.is_empty(),
-        packer,
+        archives,
     )?;
     check_setup_routes(&setups, &persistent.placed)?;
     problems.extend(route_problems(&persistent, &routing, &targets, &setups)?);
@@ -164,11 +165,11 @@ pub fn build(
         )));
     }
 
-    write_databases(&erp("databases.erp"), state, packer)?;
-    write_flow_persistent(&erp("flow_persistent.erp"), lang, packer)?;
-    let frontend = write_frontend(&erp("flow_frontend.erp"), writer, show_panel, packer)?;
-    write_leaderboard(&erp(LEADERBOARD_ARCHIVE), packer)?;
-    write_playercard(&erp(home_rows::PLAYERCARD_ARCHIVE), packer)?;
+    write_databases(&erp("databases.erp"), state, archives)?;
+    write_flow_persistent(&erp("flow_persistent.erp"), lang, archives)?;
+    let frontend = write_frontend(&erp("flow_frontend.erp"), writer, show_panel, archives)?;
+    write_leaderboard(&erp(LEADERBOARD_ARCHIVE), archives)?;
+    write_playercard(&erp(home_rows::PLAYERCARD_ARCHIVE), archives)?;
 
     let mut build = MenuBuild::default();
     build
@@ -179,7 +180,7 @@ pub fn build(
     build.warnings.extend(frontend.warnings);
     write_flags(out, &mut build, persistent, frontend.rows_built)?;
     if !mfd_rows.is_empty() {
-        write_mfd_templates(input, out, &mfd_rows, &mut build, packer)?;
+        write_mfd_templates(input, out, &mfd_rows, &mut build, archives)?;
     }
     let eras = picker_rows(
         season_picker_split(settings),
@@ -188,7 +189,7 @@ pub fn build(
         out,
         &mut build.lines,
         &mut build.warnings,
-        packer,
+        archives,
     )?;
     let hubs = hub_tabs(
         settings,
@@ -197,7 +198,7 @@ pub fn build(
         out,
         &mut build.lines,
         &mut build.warnings,
-        packer,
+        archives,
     )?;
     if lang {
         build.strings = popup.strings();
