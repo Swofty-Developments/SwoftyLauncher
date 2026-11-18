@@ -24,6 +24,8 @@ The weather system has no header in 1.6.0 (`swofty/systems/weather.hpp` ships la
 
 The core applies a forecast at `session.weather.setup`, the moment Career Mode Editor's weather module also uses.
 
+Career Mode Editor's weather plan wins over an addon's forecast. In a career where Career Mode Editor plans a session's weather or pins its seed, its datasets and seed replace the forecast and seed `session.weather.setup` handlers set. An addon's forecast applies to the sessions and datasets Career Mode Editor has no plan for.
+
 <template #example>
 <Example root="swofty-sdk" code-file="include/swofty/systems/weather.hpp">
 <template #code>
@@ -207,4 +209,5 @@ weather::script(sessions::Session::practice_1, std::array{ weather::Slot{ Kind::
 - **Unknown:** the track wetness and drying model, and how rain intensity changes grip.
 - **The front-end scene loader** rebuilds dataset 0 as clear (0x1428c1ce0).
 - **A forced seed persists in saves.**
+- **Career Mode Editor** wraps `Sess_GameWeatherSystem_SetupSession` at priority 0 and the core at -100, so Career Mode Editor runs first: it pushes its seed before the core's handlers and rebuilds its planned datasets after the game's build.
 - **Rain quality settings** (`rainBeads`, `rainSplashes`, `rainHigh`, `trackHeatHaze`) are graphics settings, see [Graphics](./graphics).

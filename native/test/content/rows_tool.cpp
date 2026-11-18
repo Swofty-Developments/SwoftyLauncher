@@ -35,6 +35,7 @@ static std::string hex16(uint64_t k)
 int main(int argc, char **argv)
 {
     std::string regs, gvdb_path, out_path, edits_path, summary_path, room_text;
+    bool box_worlds = false;
     std::vector<std::pair<std::string, std::string>> files;
     for (int i = 1; i < argc; i++) {
         std::string a = argv[i];
@@ -51,6 +52,8 @@ int main(int argc, char **argv)
             summary_path = next();
         else if (a == "--room")
             room_text = next();
+        else if (a == "--box-worlds")
+            box_worlds = true;
         else if (i + 1 < argc) {
             files.push_back({a, argv[i + 1]});
             i++;
@@ -58,7 +61,7 @@ int main(int argc, char **argv)
     }
     if (regs.empty() || gvdb_path.empty() || out_path.empty() || files.empty()) {
         std::cerr << "usage: rows_tool --registries DIR --db GVDB --out OUT.json [--edits assets.json] [--summary S.json] "
-                     "[--room N] <addon> <data file>...\n";
+                     "[--room N] [--box-worlds] <addon> <data file>...\n";
         return 2;
     }
     content::gvdb::File file;
@@ -118,6 +121,7 @@ int main(int argc, char **argv)
     }
 
     content::Expansion plan(base);
+    plan.box_worlds = box_worlds;
     content::expand(st, plan, content::planning_ids());
 
     auto text = [&](const std::string &path) -> std::optional<std::string> {
@@ -161,6 +165,7 @@ int main(int argc, char **argv)
         return r.id;
     };
     auto boot_ptr = std::make_unique<content::Expansion>(base);
+    boot_ptr->box_worlds = box_worlds;
     content::expand(st, *boot_ptr, stat, adm.skip);
     for (;;) {
         content::Admission again = content::readmit(st.order(), boot_ptr->addon_fresh, adm, room);
@@ -168,6 +173,7 @@ int main(int argc, char **argv)
             break;
         adm = std::move(again);
         boot_ptr = std::make_unique<content::Expansion>(base);
+        boot_ptr->box_worlds = box_worlds;
         content::expand(st, *boot_ptr, stat, adm.skip);
     }
     content::Expansion &boot = *boot_ptr;
