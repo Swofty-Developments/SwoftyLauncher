@@ -75,9 +75,10 @@ pub(super) fn put_files(
     };
     let (mut replaced, mut added, mut handling) = (0, 0, 0);
     let addon_dir = |id: &str| store.addons_dir().join(id);
+    let targets = handling::AddonTargets::new(handling_maps, &addon_dir);
     for (_, (rel, mut src, origin)) in put {
         let lower = rel.to_ascii_lowercase();
-        let group = handling::for_source(handling_maps, &addon_dir, &src);
+        let group = targets.for_source(&src);
         if !group.is_empty() && !over.contains(&lower) {
             let out = built.overlay.join("handling").join(&rel);
             let mut lines = Vec::new();
