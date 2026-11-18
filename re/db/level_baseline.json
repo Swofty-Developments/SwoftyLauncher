@@ -2356,7 +2356,6 @@
   "func:Ne_ConfigDict_FindStringIndex": "V8470",
   "func:Ne_ConfigValue_ReadInt": "V3609",
   "func:Ne_Config_GetFloatOrDefault": "V4071",
-  "func:Ne_Config_GetString": "V3624",
   "func:Ne_Config_ReadSize": "V3476",
   "func:Ne_Container_AbortNoReturn_142b52980": "V8098",
   "func:Ne_Container_AbortNoReturn_142cc4e50": "V8100",
