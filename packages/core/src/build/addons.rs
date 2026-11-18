@@ -7,12 +7,13 @@ use super::registry::added_tables;
 use super::run::Run;
 use crate::addons::builtin::{CORE_DB, CORE_ID, core_db_ops};
 use crate::addons::registry::{Host, Registry};
+use crate::asset::Features;
 use crate::asset::{AssetOp, FileKind, Op, OpFile, Origin, Root, Source};
 use crate::content::runtime_assets::Runtime;
 use crate::launcher::BuildCx;
 use crate::manifest::AddonManifest;
 use crate::multiplayer::fingerprint::{self, OutputBuilder};
-use crate::planner::{Features, Planner};
+use crate::planner::Planner;
 use crate::stdlib::manifest::RegistryManifest;
 use crate::{Error, Result, io_err};
 

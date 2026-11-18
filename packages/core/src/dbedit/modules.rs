@@ -7,7 +7,7 @@ use super::calendar;
 use super::catalog::plain;
 use super::driver_manager::{self, Driver};
 use super::{Catalog, Edits, NodeId, rows};
-use crate::game_db::heads::ProfileHead;
+use crate::launcher::ProfileHead;
 use crate::ops::first_segment;
 use crate::tracks::PlanTrack;
 use crate::{Error, Result};

@@ -132,10 +132,10 @@ def default_type(path, line):
 
 
 def find_decl(unit, name):
-    word = re.compile(rf'(?<![\w.>]){re.escape(name)}\s*(\{{|\(|=|;|\[)')
+    decl = re.compile(rf'\s*(?:(?:static|inline|const|constinit|thread_local)\s+)*[\w:<>, ]*[\w>]\s*[*&]*\s*'
+                      rf'{re.escape(name)}\s*(\{{|\(|=|;|\[)')
     for n, text in enumerate(source_lines(unit), 1):
-        if word.search(text) and not re.match(r'\s*(//|#|return\b|if\b|for\b|while\b)', text) and \
-                re.match(r'\s*(static\s+|inline\s+|const\s+|constinit\s+)*[\w:<>, *&]+\s', text):
+        if decl.match(text) and not re.match(r'\s*(return|if|for|while|else|case)\b', text):
             return n, text.strip()
     return 0, ''
 

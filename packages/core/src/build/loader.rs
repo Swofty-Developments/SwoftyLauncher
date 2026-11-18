@@ -6,10 +6,11 @@ use super::inputs::Inputs;
 use super::{ADDONS_DIR, Built, Pipeline};
 use crate::addons::builtin::{CORE_ID, LOADER_ENV, loader_dir, loader_files};
 use crate::addons::settings::{SessionSettings, SessionUi, screen_file, screens};
+use crate::asset::Kind;
 use crate::asset::{AssetOp, LangOp, Op, Origin};
 use crate::install::LOADER_DIR;
 use crate::manifest::AddonManifest;
-use crate::planner::{Kind, Route, Target};
+use crate::planner::{Route, Target};
 use crate::stdlib::deps::Std;
 use crate::store::Store;
 use crate::{Error, Result, io_err};
@@ -96,6 +97,7 @@ pub fn build_menus(
     original: &dyn Fn(&str) -> PathBuf,
     writer: &crate::ui::Writer,
     lang: bool,
+    packer: &swofty_formats::erp::Packer,
 ) -> Result<Vec<(String, String)>> {
     let input = |rel: &str| built.plan.data.get(rel).cloned().unwrap_or_else(|| original(rel));
     let writer = |erp: &str, res: &str| {
@@ -106,7 +108,7 @@ pub fn build_menus(
             .then(|| writer(erp, res))
             .flatten()
     };
-    let menus = crate::ui::build(session, &input, &writer, &built.overlay, lang)?;
+    let menus = crate::ui::build(session, &input, &writer, &built.overlay, lang, packer)?;
     built.lines.push(format!(
         "ui: ADDON SETTINGS with {} screen(s) under {LOADER_DIR}/ui, {} game archive(s) patched",
         menus.session.len(),
@@ -156,6 +158,7 @@ impl Pipeline<'_, '_> {
         edits: &DbEdits,
         std16: &BTreeMap<String, Std>,
     ) -> Result<()> {
+        let packer = self.eager_packer();
         let run = self.run;
         let store = run.store;
         let Self {
@@ -190,7 +193,7 @@ impl Pipeline<'_, '_> {
                         ];
                         planner.last_writer(&targets).map(|o| name(&o.to_string()))
                     };
-                    for (key, value) in build_menus(built, session, &resolve, &writer, lang)? {
+                    for (key, value) in build_menus(built, session, &resolve, &writer, lang, &packer)? {
                         planner.push(Op {
                             op: AssetOp::Lang(LangOp::Set {
                                 language: "*".into(),

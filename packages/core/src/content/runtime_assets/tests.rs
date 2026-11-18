@@ -221,7 +221,8 @@ fn writes_assets_json_in_the_core_schema() {
 
 #[test]
 fn a_default_applies_before_every_set_and_never_conflicts() {
-    use crate::planner::{Features, Planner};
+    use crate::asset::Features;
+    use crate::planner::Planner;
     let out = std::env::temp_dir().join(format!("swofty-runtime-default-{}", std::process::id()));
     std::fs::remove_dir_all(&out).ok();
     let features = Features {

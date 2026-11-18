@@ -15,8 +15,6 @@ pub mod toast;
 pub mod upload;
 pub mod watch;
 
-pub use crate::online::server::{api, integrity};
-
 use std::path::{Path, PathBuf};
 
 use crate::session::Config;

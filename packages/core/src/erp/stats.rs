@@ -24,7 +24,7 @@ pub fn stale_stats_in(file: &ErpFile) -> Result<Vec<String>> {
 // of those whose stats cannot be rewritten.
 pub type ArchiveRepair = (Vec<(usize, Resource)>, Vec<String>);
 
-pub fn repair_stats_in(file: &ErpFile) -> Result<ArchiveRepair> {
+pub fn repair_stats_in(file: &ErpFile, packer: &Packer) -> Result<ArchiveRepair> {
     let (mut fixed, mut broken) = (Vec::new(), Vec::new());
     for (i, r) in file
         .erp
@@ -34,7 +34,7 @@ pub fn repair_stats_in(file: &ErpFile) -> Result<ArchiveRepair> {
         .filter(|(_, r)| r.has_stats())
     {
         let mut res = file.load(r)?;
-        match pack::repair_stats(&Packer::default(), &mut res) {
+        match pack::repair_stats(packer, &mut res) {
             Ok(true) => fixed.push((i, res)),
             Ok(false) => {}
             Err(_) => broken.push(r.name.clone()),

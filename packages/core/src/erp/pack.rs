@@ -1,7 +1,8 @@
 //! Every fragment the launcher changes in an archive is compressed here: the archive build's edits, the
-//! map UI's surfaces, the placed tracks and the ERS and handling edits. The archive build and the map UI
-//! take the build's [`Packer`]; a deferring one leaves the zstd fragments pending, and the archive's write
-//! compresses them together.
+//! map UI's surfaces, the placed tracks, the ERS and handling edits, the composed HUD and the addon
+//! settings menus. Each takes the build's [`Packer`], which reuses the frames earlier builds compressed;
+//! the archive build's defers, leaving the zstd fragments pending until the archive's write compresses
+//! them together.
 
 use swofty_formats::erp::{Packer, Resource};
 
@@ -58,4 +59,61 @@ pub(crate) fn settle<'r>(
     resources: impl IntoIterator<Item = &'r mut Resource>,
 ) -> Result<usize> {
     Ok(packer.settle(resources.into_iter().flat_map(|r| r.fragments.iter_mut()))?)
+}
+
+/// Marks the frames in a frame cache, so a test can tell the frames a later build takes from it.
+#[cfg(test)]
+pub(crate) mod frame_cache {
+    use std::path::Path;
+
+    use swofty_formats::erp::{Erp, Fragment, Resource, ZSTD, compress, kind};
+
+    /// An empty skippable zstd frame. A decoder skips it, so a cached frame with it appended still
+    /// decodes to its data and the cache serves it, and the fragment a build takes from the cache ends
+    /// with it.
+    const MARK: [u8; 8] = [0x50, 0x2a, 0x4d, 0x18, 0, 0, 0, 0];
+
+    /// Appends [`MARK`] to every frame cached in `dir`, returning how many there are.
+    pub(crate) fn mark(dir: &Path) -> usize {
+        let mut n = 0;
+        for shard in std::fs::read_dir(dir).into_iter().flatten().flatten() {
+            for frame in std::fs::read_dir(shard.path()).into_iter().flatten().flatten() {
+                let mut raw = std::fs::read(frame.path()).unwrap();
+                raw.extend_from_slice(&MARK);
+                std::fs::write(frame.path(), raw).unwrap();
+                n += 1;
+            }
+        }
+        n
+    }
+
+    /// Whether a fragment's compressed bytes came from a cache [`mark`] marked.
+    pub(crate) fn marked(raw: &[u8]) -> bool {
+        raw.ends_with(&MARK)
+    }
+
+    /// How many fragments of an archive came from a cache [`mark`] marked.
+    pub(crate) fn marked_in(archive: &[u8]) -> usize {
+        Erp::parse(archive)
+            .unwrap()
+            .resources
+            .iter()
+            .flat_map(|r| &r.fragments)
+            .filter(|f| f.raw().is_some_and(marked))
+            .count()
+    }
+
+    /// A resource of `kind` with one zstd fragment holding `data`.
+    pub(crate) fn zstd_resource(name: &str, of: &str, data: &[u8]) -> Resource {
+        let fragment = Fragment::new(*b"temp", data.len() as u64, 0x10, ZSTD, compress(data).unwrap());
+        let mut r = Resource {
+            name: name.into(),
+            kind: kind(of).unwrap(),
+            unk: vec![0; 4],
+            fragments: vec![fragment],
+            hash: [0; 16],
+        };
+        r.hash = r.content_hash().unwrap();
+        r
+    }
 }

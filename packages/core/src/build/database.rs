@@ -12,11 +12,12 @@ use crate::activation::grid::grid_size;
 use crate::activation::place::{AiTeam, ai_teams, layer_worlds, slot_asset_group, slot_asset_root};
 use crate::activation::ui::{Lists, plan_lists};
 use crate::addons::builtin::CORE_ID;
+use crate::asset::Kind;
 use crate::content::runtime_assets::{db_edits, runtime_loaded_estimate, runtime_record_room};
 use crate::dbedit::driver_manager;
 use crate::game_db::owned::Added;
 use crate::multiplayer::fingerprint;
-use crate::planner::{Kind, Route, kept_lists_line, stock_removals_line, track_removals_line};
+use crate::planner::{Route, kept_lists_line, stock_removals_line, track_removals_line};
 use crate::{Error, Result, io_err};
 
 /// What editing the game database leaves for the later stages.
@@ -121,6 +122,7 @@ impl Pipeline<'_, '_> {
         let grid = grid_size(&db.db);
         let worlds = layer_worlds(&db.db);
         self.write_database(db, staged, &recorded.row_adders, inputs.room_asked)?;
+        let packer = self.eager_packer();
         fitted.place(
             self.run,
             &worlds,
@@ -129,6 +131,7 @@ impl Pipeline<'_, '_> {
             &mut self.planner,
             &mut self.built,
             &mut self.caches,
+            &packer,
         )?;
         Ok(edits)
     }

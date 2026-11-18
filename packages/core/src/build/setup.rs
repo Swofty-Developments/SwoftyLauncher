@@ -9,8 +9,9 @@ use super::run::Run;
 use super::{Built, source_dir};
 use crate::Result;
 use crate::addons::builtin::{CORE_ID, loader_dir};
+use crate::asset::Features;
 use crate::asset::{Origin, Source};
-use crate::planner::{Features, MipmapNames, OverlayNames, Planner, load_features};
+use crate::planner::{MipmapNames, OverlayNames, Planner, load_features};
 use crate::session::Config;
 
 /// What a build reads before any addon's ops: the in-game loader and its features, the launcher's
