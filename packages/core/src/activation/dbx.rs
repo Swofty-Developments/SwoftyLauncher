@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use swofty_formats::gvdb::{Gvdb, Record};
 use swofty_formats::hash::{fnv1a64, fnv1a64_from};
 
@@ -31,28 +29,25 @@ pub fn sub_count(row: u64, name: &str) -> u64 {
 
 pub struct Db<'a> {
     pub db: &'a mut Gvdb,
-    pos: HashMap<u64, usize>,
     pub added: usize,
     pub changed: usize,
 }
 
 impl<'a> Db<'a> {
     pub fn new(db: &'a mut Gvdb) -> Self {
-        let pos = db.records.iter().enumerate().map(|(i, r)| (r.key, i)).collect();
         Self {
             db,
-            pos,
             added: 0,
             changed: 0,
         }
     }
 
     pub fn get(&self, key: u64) -> Option<&Record> {
-        self.pos.get(&key).map(|&i| &self.db.records[i])
+        self.db.get_key(key)
     }
 
     pub fn has(&self, key: u64) -> bool {
-        self.pos.contains_key(&key)
+        self.db.position(key).is_some()
     }
 
     pub fn text(&self, key: u64) -> Option<String> {
@@ -64,17 +59,15 @@ impl<'a> Db<'a> {
     }
 
     pub fn put(&mut self, key: u64, tag: u8, value: &[u8]) {
-        match self.pos.get(&key) {
-            Some(&i) => {
-                let r = &mut self.db.records[i];
-                if r.value != value || r.tag != tag {
-                    r.value = value.to_vec();
-                    r.tag = tag;
+        match self.db.records.value_mut(key) {
+            Some((was, now)) => {
+                if now.as_slice() != value || *was != tag {
+                    *now = value.to_vec();
+                    *was = tag;
                     self.changed += 1;
                 }
             }
             None => {
-                self.pos.insert(key, self.db.records.len());
                 self.db.records.push(Record {
                     key,
                     tag,
@@ -113,5 +106,24 @@ impl<'a> Db<'a> {
         (0..self.count(count).unwrap_or(0))
             .map(|i| row(table, i))
             .collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn reads_and_writes_the_first_record_of_a_key_as_the_database_does() {
+        let path = "t.r_0.a";
+        let mut gvdb = Gvdb::new(vec![Record::new(path, 4, "first"), Record::new(path, 4, "later")]);
+        let mut db = Db::new(&mut gvdb);
+        assert_eq!(db.text(fnv1a64(path)).as_deref(), Some("first"));
+        db.put(fnv1a64(path), 4, b"put");
+        db.put(fnv1a64("t.r_0.b"), 0, b"1");
+        assert_eq!((db.changed, db.added), (1, 1));
+        assert_eq!(gvdb.get_text(path).as_deref(), Some("put"));
+        assert_eq!(gvdb.records[1].text(), "later");
+        assert_eq!(gvdb.get_text("t.r_0.b").as_deref(), Some("1"));
     }
 }

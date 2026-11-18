@@ -295,6 +295,50 @@ static void ea_backend(const fs::path &tmp)
     fs::remove_all(tmp / "saves");
 }
 
+static void ea_test_run(const fs::path &tmp)
+{
+    expect(ss::run_ea_title_dir("Z:\\h\\test-runs\\r1\\saves") == "Z:\\h\\test-runs\\r1\\saves\\ea",
+           "ea test run: the title folder is the run's saves\\ea");
+    expect(ss::run_ea_title_dir("Z:\\h\\test-runs\\r1\\saves\\") == "Z:\\h\\test-runs\\r1\\saves\\ea",
+           "ea test run: a trailing separator is dropped");
+    expect(ss::run_ea_title_dir("/h/test-runs/r1/saves") == "/h/test-runs/r1/saves/ea", "ea test run: the folder keeps its separator");
+    expect(ss::run_ea_title_dir("Z:\\h\\..\\r1\\saves").empty(), "ea test run: a parent step is refused");
+    expect(ss::run_ea_title_dir("saves").empty(), "ea test run: a bare folder name is refused");
+    expect(ss::run_ea_title_dir("").empty(), "ea test run: no folder is refused");
+    expect(ss::run_ea_title_dir("Z:\\" + std::string(300, 'a') + "\\saves").empty(),
+           "ea test run: a folder longer than the device's buffer is refused");
+
+    fs::path profile = tmp / "ea-run" / "saves" / "ea" / "profile";
+    fs::remove_all(tmp / "ea-run");
+    fs::create_directories(profile);
+    ss::FolderStamp empty = ss::stamp_of(profile);
+    expect(empty.files == 0 && empty.bytes == 0, "ea save: an empty profile folder stamps as empty");
+    expect(ss::stamp_of(tmp / "ea-run" / "missing").files == 0, "ea save: a missing folder stamps as empty without throwing");
+    auto data = noise(4096, 9);
+    FILE *f = fopen((profile / "NXDSMWW.BWW").string().c_str(), "wb");
+    fwrite(data.data(), 1, data.size(), f);
+    fclose(f);
+    ss::FolderStamp one = ss::stamp_of(profile);
+    expect(one.files == 1 && one.bytes == 4096 && !(one == empty), "ea save: a written file changes the stamp");
+    fs::create_directories(profile / "sub");
+    expect(ss::stamp_of(profile) == one, "ea save: a folder inside the profile folder is not a save file");
+    fs::remove_all(tmp / "ea-run");
+
+    ss::SaveSettle w;
+    w.start(empty, 1000);
+    expect(w.observe(empty, 1500) == 0, "ea save: no change, no save");
+    expect(w.observe(one, 2000) == 0, "ea save: a change starts a save but does not end it");
+    ss::FolderStamp grown = one;
+    grown.bytes += 100;
+    expect(w.observe(grown, 2600) == 0, "ea save: a file still growing keeps the save open");
+    expect(w.observe(grown, 3599) == 0, "ea save: under the settle time the save is still open");
+    expect(w.observe(grown, 3600) == 1, "ea save: unchanged for the settle time ends the save");
+    expect(w.observe(grown, 9000) == 1, "ea save: a settled folder counts its save once");
+    ss::FolderStamp later = grown;
+    later.newest += 1;
+    expect(w.observe(later, 9100) == 1 && w.observe(later, 10100) == 2, "ea save: the next save counts again");
+}
+
 int main(int argc, char **argv)
 {
     fs::path tmp = argc > 1 ? fs::path(argv[1]) : fs::temp_directory_path() / "save_sandbox_test";
@@ -306,6 +350,7 @@ int main(int argc, char **argv)
     launcher();
     launcher_store(tmp);
     ea_backend(tmp);
+    ea_test_run(tmp);
     printf("%s (%d failure(s))\n", fails ? "SOME FAILED" : "ALL PASSED", fails);
     return fails ? 1 : 0;
 }

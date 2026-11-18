@@ -84,6 +84,28 @@ pub(super) fn package_ops(store: &Store, id: &str) -> Result<(OpFile, Vec<String
     Ok((file, driver_manager::picks(&edits)))
 }
 
+/// Drops the ops [`AssetOp::refusal`] refuses from an addon's op file `at`, each with a warning naming the addon, the
+/// file and the entry.
+pub(super) fn refuse_placements(id: &str, at: &str, ops: &mut Vec<AssetOp>, warnings: &mut Vec<String>) {
+    refuse_by(id, at, ops, |op| op, warnings);
+}
+
+pub(super) fn refuse_by<T>(
+    id: &str,
+    at: &str,
+    ops: &mut Vec<T>,
+    op: impl Fn(&T) -> &AssetOp,
+    warnings: &mut Vec<String>,
+) {
+    ops.retain(|o| match op(o).refusal() {
+        Some(why) => {
+            warnings.push(format!("{id}: {at}: refused {why}"));
+            false
+        }
+        None => true,
+    });
+}
+
 pub(super) fn unbuilt<'a>(ops: impl IntoIterator<Item = &'a AssetOp>) -> Option<&'static str> {
     ops.into_iter().find_map(|op| match op {
         AssetOp::Erp(op) => unsupported(op),

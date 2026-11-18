@@ -311,3 +311,19 @@ fn each_database_file_counts_the_owned_rows_once_after_the_first() {
     assert_eq!(got, [("a", 1..2), ("b", 2..3), ("c", 3..4)]);
     assert_eq!(counted, 4, "one count before the first file and one after each");
 }
+
+#[test]
+fn restoring_a_later_addon_s_records_puts_a_removed_one_back_and_overwrites_the_others_in_place() {
+    use swofty_formats::gvdb::Record;
+    let rec = |path: &str, v: &str| Record::new(path, 4, v);
+    let guarded = vec![(1, rec("t.r_0.b", "later b")), (3, rec("t.r_0.c", "later c"))];
+    let mut db = Gvdb::new(vec![
+        rec("t.r_0.a", "a"),
+        rec("t.r_0.x", "x"),
+        rec("t.r_0.c", "c"),
+    ]);
+    crate::planner::db::restore_later_records(&mut db, guarded);
+    let texts: Vec<String> = db.records.iter().map(|r| r.text().into_owned()).collect();
+    assert_eq!(texts, ["a", "later b", "x", "later c"]);
+    assert_eq!(db.get_text("t.r_0.x").as_deref(), Some("x"));
+}

@@ -438,7 +438,8 @@ def check_record(record, knowledge, relpath=None):
             errs.append(f'verify.tsv already has rows about {key[0]} {key[1]}; a new record cannot inherit them')
     for i, v in enumerate(record.verify):
         errs += [f'verify[{i}]: {e}' for e in kb.validate_row('verify', v)]
-        if (v['kind'], v['item']) not in ((vkind, record.name), (vkind, row['addr']), ('sig', sig['id'])):
+        if (v['kind'], v['item']) not in ((vkind, record.name), (vkind, row['addr']), ('sig', sig['id'])) and not (
+                v['kind'] == vkind and v['item'].startswith('retired:')):
             errs.append(f'verify[{i}] must be about {vkind} {record.name} or sig {sig["id"]}')
         if v['verdict'] == 'agree' and v['verifier'] == record.author:
             errs.append(f'verify[{i}]: the author cannot verify their own binding (PROTOCOL.md §5)')

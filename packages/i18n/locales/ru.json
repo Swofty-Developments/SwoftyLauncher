@@ -1333,5 +1333,11 @@
   "Too many tracks": "Слишком много трасс",
   "Left out: the game holds {room} tracks": "Исключено: в игре помещается {room} трасс",
   "{shown} and {more} more": "{shown} и ещё {more}",
-  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["В игре помещается {room} трасс, поэтому {count} трасса не попадает в эту сборку: {list}. Выключите часть аддонов трасс, чтобы играть на ней.", "В игре помещается {room} трасс, поэтому {count} трассы не попадают в эту сборку: {list}. Выключите часть аддонов трасс, чтобы играть на них.", "В игре помещается {room} трасс, поэтому {count} трасс не попадают в эту сборку: {list}. Выключите часть аддонов трасс, чтобы играть на них."]
+  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["В игре помещается {room} трасс, поэтому {count} трасса не попадает в эту сборку: {list}. Выключите часть аддонов трасс, чтобы играть на ней.", "В игре помещается {room} трасс, поэтому {count} трассы не попадают в эту сборку: {list}. Выключите часть аддонов трасс, чтобы играть на них.", "В игре помещается {room} трасс, поэтому {count} трасс не попадают в эту сборку: {list}. Выключите часть аддонов трасс, чтобы играть на них."],
+  "The launcher couldn't reach Swofty's server in time.": "Лаунчер не смог вовремя связаться с сервером Swofty.",
+  "Swofty's server didn't offer it to you.": "Сервер Swofty не предложил его вам.",
+  "The download failed its safety check.": "Загрузка не прошла проверку безопасности.",
+  "Time Trial laps you drive this session won't be sealed, so they won't rank on the boards. Everything else works as usual. To try again, close the game and press Play.": "Круги заезда на время в этой сессии не будут запечатаны, поэтому не попадут в таблицы лидеров. Всё остальное работает как обычно. Чтобы попробовать снова, закройте игру и нажмите «Играть».",
+  "Details: {why}": "Подробности: {why}",
+  "The Time Trial integrity module didn't load": "Модуль проверки целостности для заезда на время не загрузился"
 }

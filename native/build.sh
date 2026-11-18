@@ -27,6 +27,11 @@ OUT=build${VARIANT:+/$VARIANT}
 SDK=../packages/sdk/include
 . tools/pin.sh
 mkdir -p build "$OUT"
+# One build at a time per build directory: two ninjas writing one deps log damage it (tools/ninja_deps.py).
+if command -v flock >/dev/null; then
+    exec 9>"$OUT/.build.lock"
+    flock -n 9 || { echo "build.sh: another build holds $OUT; waiting for it" >&2 && flock 9; }
+fi
 rm -rf "$DIST"
 mkdir -p "$DIST/swofty/addons/core"
 python3 tools/supported_builds.py ../packages/core/src/build_support.rs "$OUT/supported_builds.h.new"
@@ -67,6 +72,7 @@ ORDER=()
 python3 tools/build_graph.py --builddir "$OUT" --out "$OUT/build.ninja" --sdk "$SDK" \
     --cc "zig cc -target x86_64-windows-gnu" --cxx "zig c++ -target x86_64-windows-gnu -std=c++23" \
     "${DEFS[@]/#/--define=}" --game-include "${GAME_INCLUDE:-}" "${ORDER[@]}"
+python3 tools/ninja_deps.py "$OUT/.ninja_deps" build.sh
 "${PIN[@]}" ninja -f "$OUT/build.ninja" -j "${NINJA_JOBS:-$SWOFTY_JOBS}"
 
 cp "$OUT/version.dll" "$DIST/version.dll"

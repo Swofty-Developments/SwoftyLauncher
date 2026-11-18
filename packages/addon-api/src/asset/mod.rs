@@ -106,6 +106,14 @@ pub enum ItemOp {
 }
 
 impl AssetOp {
+    /// Why the op is refused at validation ([`ErpOp::refusal`]).
+    pub fn refusal(&self) -> Option<String> {
+        match self {
+            AssetOp::Erp(op) => op.refusal(),
+            _ => None,
+        }
+    }
+
     pub fn kind(&self) -> Option<Kind> {
         match self {
             AssetOp::Group(_) => Some(Kind::Group),

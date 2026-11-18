@@ -424,6 +424,84 @@ inline std::string ea_title_dir(std::string_view remote, std::string_view profil
     return out.size() < EA_TITLE_CAP ? out : std::string();
 }
 
+// The title folder the EA device is pointed at in a test run: `<run>/saves/ea`, beside the run's `remote`, whose
+// `profile` folder is the profile save. The folder keeps the separator the run folder uses.
+inline std::string run_ea_title_dir(std::string_view saves)
+{
+    if (saves.empty() || saves.size() > 400 || !utf8_path(saves))
+        return {};
+    std::string p(saves);
+    while (!p.empty() && (p.back() == '\\' || p.back() == '/'))
+        p.pop_back();
+    auto parts = split_path(p);
+    if (parts.size() < 2)
+        return {};
+    for (size_t i = 0; i < parts.size(); i++)
+        if (parts[i] == "." || parts[i] == ".." || (i > 0 && parts[i].find(':') != std::string::npos))
+            return {};
+    size_t cut = p.find_last_of("\\/");
+    std::string out = p + p[cut] + EA_DIR_NAME;
+    return out.size() < EA_TITLE_CAP ? out : std::string();
+}
+
+// The EA device writes the profile save in place, so a save shows as a change of the profile folder's files.
+struct FolderStamp {
+    uint32_t files = 0;
+    uint64_t bytes = 0;
+    int64_t newest = 0;
+    bool operator==(const FolderStamp &) const = default;
+};
+
+inline FolderStamp stamp_of(const std::filesystem::path &dir)
+{
+    FolderStamp s;
+    std::error_code ec;
+    std::filesystem::directory_iterator it(dir, ec), end;
+    for (; !ec && it != end; it.increment(ec)) {
+        std::error_code fe;
+        if (!it->is_regular_file(fe) || fe)
+            continue;
+        uint64_t n = it->file_size(fe);
+        auto t = it->last_write_time(fe);
+        if (fe)
+            continue;
+        s.files++;
+        s.bytes += n;
+        s.newest = std::max<int64_t>(s.newest, t.time_since_epoch().count());
+    }
+    return s;
+}
+
+// A save ends once the profile folder changed and then stayed the same for SETTLE_MS; each such save counts once.
+constexpr uint64_t SETTLE_MS = 1000;
+
+struct SaveSettle {
+    FolderStamp seen;
+    uint64_t since = 0;
+    bool open = false;
+    uint32_t saves = 0;
+
+    void start(const FolderStamp &s, uint64_t now)
+    {
+        seen = s;
+        since = now;
+        open = false;
+    }
+
+    uint32_t observe(const FolderStamp &s, uint64_t now)
+    {
+        if (!(s == seen)) {
+            seen = s;
+            since = now;
+            open = true;
+        } else if (open && now - since >= SETTLE_MS) {
+            open = false;
+            saves++;
+        }
+        return saves;
+    }
+};
+
 // What the core reads from the save device at Ne_SaveSystem2Win_Start, before it changes anything.
 struct Device {
     bool readable = false;

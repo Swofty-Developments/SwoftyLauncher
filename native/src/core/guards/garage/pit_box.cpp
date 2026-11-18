@@ -16,13 +16,17 @@
 //
 // Game_PitLane_UpdateMovement keeps a car that sits in its garage aligned to its pit box through
 // Game_PitLane_ProjectBoxPose(mgr, out, mtx, box, flags), where box is the +0xe0 of the car's pit lane record. The
-// function caches one spline handle per box at [mgr + 0x7f8 + box * 8], 40 slots up to the per-car records at
-// mgr + 0x938, with no bound on box. A garage holds two cars; a third car (Classic Career seats more than two cars
-// to a team) has no box, its +0xe0 is -1, and the read at 0x1434c3656 faults ("reading mgr + 0x800000000 + 0x7f0").
-// Garage crew guard (#613) already keeps that car out of the crew spawn; the pit lane then reaches it in the
-// hold-in-garage states 10 and 11.
+// function caches one spline handle per box at [mgr + 0x7f8 + box * 8], with no bound on box. The cache has 24 slots:
+// Game_PitLane_GenerateSplines (0x1434ca550) zeroes only +0x7f8..+0x8b7 and keeps tuning parameter handles from
+// +0x8b8 ("box_entry_distance_multiplier" and others), and Game_Pitlane_ApplyVehicleResetState (0x1434c03c0) checks
+// the box as signed <= 0x17 before its call. A box from 24 to 39 reads a tuning handle as its spline hint, and on a
+// null one the miss path writes a spline handle there (0x1434c36a6); the box 99 reads into the per-car records at
+// mgr + 0x938. A garage holds two cars; a third car (Classic Career seats more than two cars to a team) has no box,
+// its +0xe0 is -1, and the read at 0x1434c3656 faults ("reading mgr + 0x800000000 + 0x7f0"). Garage crew guard
+// (#613) already keeps that car out of the crew spawn; the pit lane then reaches it in the hold-in-garage states 10
+// and 11 (Game_PitLane_UpdateMovement calls at 0x1434b9199 and 0x1434b92c6, through 0x1434be460).
 //
-// At site_Game_PitLane_BoxSlotRead the guard looks at the box (edi). A box of 40 or more sends the function to its
+// At site_Game_PitLane_BoxSlotRead the guard looks at the box (edi). A box of 24 or more sends the function to its
 // shared epilogue with edi = 2, the value its own failed projection leaves there, so it returns false having written
 // nothing and the caller leaves the car where it is.
 //

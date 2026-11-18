@@ -64,6 +64,20 @@ const runtime::Sig SIG_GAME_ROOT{"game.root_14601db08",
                                  "48 8B 05 ?? ?? ?? ?? 48 8B 40 60 48 8B 88 D0 09 00 00 FF 15 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 "
                                  "8B 40 60",
                                  0x601db08, runtime::Sig::riprel, 0, 3, 7};
+// The builds the setup's offsets are checked on: VERIFIED_LAYOUT's, and EA App 1.0.145 by sigport.py --witness on its
+// dump with the core's patches put back (re/research/ea-1-0-145.md). There Apply (0x141125e80), Game_GameModes_FindByName
+// and SetCurrentGameMode (the modes' +0x58, +0x60, +0x38, +0x260, +0x278), the per-team vehicle table 0x1407dfda0
+// ([[E+0xf80]+0x58]+0x2c8), the components lookup 0x14290fbe0 (+0x238, +0x240), Sess_TimeTrialMode_FillDescriptor and
+// the hot load (+0x298, +0x2be to +0x2c8, the records' +0x58, +0x5c) and the player's seat 0x141abda00 (+0x140, +0x198,
+// +0x1a0, +0x20, the 0xc0 stride, +0x68, +0x6c) are the same. The setter and the current track are protector-relocated
+// bodies: aligned, their uses of +0x2b0, +0xf58, +0x28, +0x30 and +0x78 are equal, and each differing instruction is a
+// constant the protector computes from its own globals, to the same value on both builds (the setter's 0 at +0xe10 too).
+namespace bp = runtime::build_proof;
+constexpr bp::Proof SETUP_LAYOUT{"the Time Trial setup's layout (the game modes, the Time Trial entity's +0x2b0, +0xe10, "
+                                 "+0xe18, +0xf58, +0xf80, its components +0x238, the hot load +0x298, the player's entrant "
+                                 "selection)",
+                                 bp::proofs::VERIFIED_LAYOUT.builds | bp::bit(bp::Build::ea_1_0_145)};
+constexpr bp::Gate TT_SETUP{"the Time Trial setup", &SETUP_LAYOUT};
 constexpr uintptr_t MODES_BEGIN = 0x58, MODES_END = 0x60, MODES_ENTRY_MODE = 0x38, MODE_ENTITY = 0x260, MODE_NAME = 0x278;
 constexpr uintptr_t ENTITY_MODE = 0xf08, ENTITY_TRACKS = 0xf58, ENTITY_TEAMS = 0xf80, ENTITY_SETUP_MODE = 0x2b0,
                     ENTITY_ENTRANT_SETUP = 0xe10, ENTITY_LIST = 0xe18;
@@ -92,7 +106,7 @@ const Game &game()
 {
     static const Game g = [] {
         Game r;
-        if (!runtime::verified_build()) {
+        if (!runtime::proven(TT_SETUP)) {
             swofty::log("[direct] Time Trial setup off: its struct offsets are checked on the Steam and EA builds and this "
                         "F1_25.exe is another build");
             return r;

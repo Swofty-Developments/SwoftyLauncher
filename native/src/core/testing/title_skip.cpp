@@ -25,9 +25,11 @@ namespace {
 // Vm_NodeSet_Bool the same 171, and Vm_SyncPoint_IsComplete's body the same node checks (+0x80, +0xa0, vt+0x20, +0x58, holder
 // +8 / +0x10 / +0x38) on the same empty handle and bool type (re/tools/sigport.py --compare, sigverify.py --disp). The sync
 // point is found from the update's call to it: its thunk's filler differs per build.
-// EA App 1.0.145 (static proof only, not a verified build): the update is the same 213 instructions and Vm_NodeSet_Bool
-// the same 171 (sigport.py --witness on its decrypted dump), and the sync point's body uses +0x80, +0xa0, vt+0x20, +0x58
-// and the holder's +8 / +0x10 / +0x38 at the same instructions.
+// EA App 1.0.145 (not in VERIFIED_LAYOUT): on its decrypted dump with the core's patches put back from the live run's
+// loader.log (sigverify.py --restore), the update is the same 213 instructions, every StateIntro field above at the
+// same place, and Vm_NodeSet_Bool the same 171. The sync point's protector-relocated body is aligned 68 of 69 with
+// +0x80, +0xa0, vt+0x20, +0x58 and the holder's +8 / +0x10 / +0x38 in equal instructions; the other one is the
+// protector's xor with its own global, on ecx (dead there) on the KB build and into the global on EA.
 const runtime::Sig SIG_INTRO_UPDATE{"fe_flow.state_intro_on_update", "41 57 41 56 56 57 53 48 83 EC 70 48 89 D6 48 89 CF 48 8B 89 F8 0B 00 00", 0x36da4d0};
 const runtime::Sig SIG_NODE_SET_BOOL{"vm.node_set_bool", "41 56 56 57 55 53 48 81 EC 20 03 00 00 F6 41 26 01 0F 85 ?? ?? ?? ?? 44 89 CB 44 89 C7 49 89 D6 48 89 CE 48 8B 49 58 48 8B 01 FF 50 38 84 DB 75 0E 0F B6 08", 0x973e20};
 const runtime::Sig SIG_SYNC_COMPLETE{"vm.sync_point_is_complete", "48 8D 8F D0 0C 00 00 E8 ?? ?? ?? ?? 84 C0", 0x42626c0,
@@ -121,10 +123,11 @@ constexpr size_t PM_PRIMARY = 0x198, PM_LEAD = 0x1b0, PM_CANDIDATE = 0x1d0, PM_S
 
 namespace bp = runtime::build_proof;
 
-// Written on every build the title helper runs on.
+// Written only with SWOFTY_DIRECT_SIGNIN=1, and not checked on EA App 1.0.145.
 constexpr bp::Proof SIGNIN_STATE{"the player manager's sign-in state at +0x1f0", bp::proofs::VERIFIED_LAYOUT.builds};
 constexpr bp::Gate SIGNIN_WRITE{"SWOFTY_DIRECT_SIGNIN", &SIGNIN_STATE};
-constexpr bp::Proof STATE_INTRO{"StateIntro's state layout (+0xcd0, +0xef3, +0xef4)", bp::proofs::VERIFIED_LAYOUT.builds};
+constexpr bp::Proof STATE_INTRO{"StateIntro's state layout (+0xcd0, +0xef3, +0xef4)",
+                               bp::proofs::VERIFIED_LAYOUT.builds | bp::bit(bp::Build::ea_1_0_145)};
 constexpr bp::Gate TITLE_HELPER{"the title helper", &STATE_INTRO};
 
 uint8_t *player_manager(uint8_t *state)

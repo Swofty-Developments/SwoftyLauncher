@@ -93,6 +93,7 @@ UNITS = [
     Unit('heap_sizes', 'Heap size table unit test'),
     Unit('hud_leaves', 'HUD leaf table unit test'),
     Unit('hud_osd', 'HUD runtime headers test'),
+    Unit('lap_marks', 'Lap timing marks and lap host table unit test'),
     Unit('leaderboard_guard', 'Leaderboard guard unit test'),
     Unit('live_car', 'Live car signal mapping unit test'),
     Unit('load_stall', 'Load-stall watchdog trigger unit test'),
@@ -104,6 +105,7 @@ UNITS = [
     Unit('myteam_vehicle_keep', 'My Team vehicle keep unit test'),
     Unit('perf_logic', 'Profiler minute summary unit test'),
     Unit('pit_box', 'Pit box guard unit test'),
+    Unit('pit_garage_state', 'Pit garage state guard unit test'),
     Unit('pit_slots', 'Pit slot guard unit test'),
     Unit('placed_record', 'placed record bound unit test'),
     Unit('guard_lines', 'Site guard log lines test',
@@ -228,6 +230,7 @@ CONTENT = [
     Program('appliers.windows.o', [Objects(['src/core/apply/content/appliers.cpp'], CONTENT_WINDOWS, WINDOWS)], 'obj'),
     Program('logos.windows.o', [Objects(['src/core/apply/content/logos.cpp'], CONTENT_WINDOWS, WINDOWS)], 'obj'),
     Program('bc7_test', [Objects(['test/content/bc7_test.cpp'], CONTENT_FLAGS + ['-ffp-contract=off'])]),
+    Program('gvdb_file_test', [Objects(['test/content/gvdb_file_test.cpp'], CONTENT_FLAGS)]),
     Program('logo_cache_test', [Objects(['test/content/logo_cache_test.cpp'], CONTENT_FLAGS)]),
     Program('logo_build_test', [Objects(['test/content/logo_build_test.cpp'], CONTENT_FLAGS + ['-ffp-contract=off', '-Ithird_party/zstd']), ZSTD]),
     Program('garage_test', [Objects(['test/content/garage_test.cpp'], CONTENT_FLAGS + ['-ffp-contract=off', '-Ithird_party/zstd']), ZSTD]),
@@ -391,5 +394,7 @@ SCRIPTS = [
            ['python3', '-I', 'native/tools/patch_sites.py', '--check']),
     Script('patch_sites_tool', 'Patch site list and patches.json on a fixture tree and a synthetic exe',
            ['python3', '-I', 'native/test/patch_sites_test.py']),
+    Script('ninja_deps', 'Ninja deps log check (damage from two writers, removal, incremental again)',
+           ['python3', '-I', 'native/test/ninja_deps_test.py']),
 ]
 

@@ -70,6 +70,7 @@ pub fn apply_edits(db: &mut Gvdb, assets_json: &[u8]) {
     let Ok(assets) = serde_json::from_slice::<Assets>(assets_json) else {
         return;
     };
+    // Last match: the game loads a key's last record over its first (Gdb_HashMap_Insert updates in place).
     let mut at: HashMap<u64, usize> = db.records.iter().enumerate().map(|(i, r)| (r.key, i)).collect();
     for e in assets.db_edits {
         let Ok(key) = u64::from_str_radix(&e.hash, 16) else {

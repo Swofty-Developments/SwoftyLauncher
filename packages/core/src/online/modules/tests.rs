@@ -573,7 +573,7 @@ fn the_pinned_key_does_not_accept_a_test_signature() {
         vec![(LIST, "200 OK", listing(&[offer_of(&key, "1.0", 1, BYTES)]))],
         1,
     );
-    let e = ensure(&d, &Api::with_server(&url, "tok"), NAME, WINDOWS, 1).unwrap_err();
+    let e = ensure(&d, &Api::with_server(&url, "tok"), NAME, WINDOWS, 1, &|_| {}).unwrap_err();
     t.join().unwrap();
     assert!(e.why.contains("pinned key"));
 }
