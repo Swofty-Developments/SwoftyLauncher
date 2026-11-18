@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/14029b020.c;xref:0x14023c600,0x140278970",
-  "notes": "Builds a std::exception-like object (vtable 0x145612dd0, message 'unknown') and throws it via 0x14029b050 (no return). Callers: cutscene command runner and cutscene component inits (crew, press, in-car idle)."
+  "notes": "Builds a std::exception-like object (vtable 0x145612dd0, message 'unknown') and throws it via 0x14029b050 (no return). Callers: cutscene command runner and cutscene component inits (crew, press, in-car idle). Callers: census steam 0x29b020."
  },
  "signature": {
   "id": "core.std_throw_exception",

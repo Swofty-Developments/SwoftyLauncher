@@ -1,11 +1,10 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use swofty_formats::gvdb::Gvdb;
-
+use super::Built;
+use super::originals::Shipped;
 use super::run::Run;
-use super::{Built, GVDB, original, stock_max_ids};
 use crate::addons::settings::OnAddons;
-use crate::install::{Game, Plan};
+use crate::install::Plan;
 use crate::manifest::{AddonManifest, OptionType};
 use crate::profile::Profile;
 use crate::profile::conflicts::Report;
@@ -33,8 +32,8 @@ impl Start {
     pub fn read(
         store: &Store,
         profile: &str,
-        game: &Game,
         addons: &BTreeMap<String, AddonManifest>,
+        shipped: &Shipped,
     ) -> Result<Self> {
         let mut p = store.profile(profile)?;
         let mut skipped = Vec::new();
@@ -57,7 +56,7 @@ impl Start {
         }
         skipped.extend(trackless_options(
             store,
-            game,
+            shipped,
             &p,
             &resolved.order,
             addons,
@@ -125,7 +124,7 @@ pub(super) fn report(run: Run) -> Report {
 /// says so: the game won't start with a race weekend at a track it has no row for.
 pub(super) fn trackless_options(
     store: &Store,
-    game: &Game,
+    shipped: &Shipped,
     p: &Profile,
     order: &[String],
     addons: &BTreeMap<String, AddonManifest>,
@@ -141,13 +140,10 @@ pub(super) fn trackless_options(
     if gated.is_empty() {
         return Vec::new();
     }
-    let Ok(shipped) = std::fs::read(original(&store.root, game, GVDB)).map(|d| Gvdb::parse(&d)) else {
+    let Some(shipped) = shipped.get() else {
         return Vec::new();
     };
-    let Ok(shipped) = shipped else {
-        return Vec::new();
-    };
-    let stock = crate::tracks::Schedule::of(&shipped);
+    let stock = crate::tracks::Schedule::of(shipped);
     let held = stock.held(store, order, addons);
     let mut found = Vec::new();
     for m in gated {
@@ -181,12 +177,11 @@ pub(super) fn trackless_options(
 }
 
 /// The warnings about careers in the profile's saves that the addons on can't load or own.
-pub(super) fn career_warnings(run: Run) -> Vec<String> {
+pub(super) fn career_warnings(run: Run, shipped: &Shipped) -> Vec<String> {
     let mut out = Vec::new();
     let index = crate::stdlib::careers::data_path(&run.store.root);
     let mut careers = crate::stdlib::careers::read(&index);
-    let stock_max =
-        crate::stdlib::careers::stock_max_for(&careers, || stock_max_ids(&run.store.root, run.game));
+    let stock_max = crate::stdlib::careers::stock_max_for(&careers, || shipped.max_ids());
     let played: BTreeSet<String> = crate::stdlib::careers::in_save_of(&careers, &run.store.root, run.profile)
         .into_iter()
         .map(|c| c.career.clone())

@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140241c80.c;xref:0x14023ec6c,0x1402481d3",
-  "notes": "Applies driver part visibility mask (param_4 bits: 0 AllowLogos, 1 RacingSuit, 2 Gloves, 3 Boots, 4 Helmet, 5 HansDevice, 6 Balaclava, 7 TeamCap, 8 HairOtherwiseCap, then Head/Firstperson/Careerhub/Gendered/RaceCrewSuit) to model parts cap_x/hair_x/head_x/body_x/gloves_x/visor_x/helmet_/boots_x/balaclava_x...; logs CUTSCENE_DRIVER_PART_OPTIONS. 4 callers incl. 0x140c7b430. Addon: show/hide helmet/cap etc. in cutscenes. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3117)"
+  "notes": "Applies driver part visibility mask (param_4 bits: 0 AllowLogos, 1 RacingSuit, 2 Gloves, 3 Boots, 4 Helmet, 5 HansDevice, 6 Balaclava, 7 TeamCap, 8 HairOtherwiseCap, then Head/Firstperson/Careerhub/Gendered/RaceCrewSuit) to model parts cap_x/hair_x/head_x/body_x/gloves_x/visor_x/helmet_/boots_x/balaclava_x...; logs CUTSCENE_DRIVER_PART_OPTIONS. Callers: census steam 0x241c80, among them 0x140c7b430. Addon: show/hide helmet/cap etc. in cutscenes. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3117)"
  },
  "signature": {
   "id": "game.cut_scene_script_apply_driver_part_options",

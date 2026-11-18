@@ -31,6 +31,24 @@ if GAMEDB=$(python3 content/stock_gamedb.py 2>"$OUT/stock_gamedb.why"); then
         swofty.f2012 content/wear/f2012.json
     "$OUT/rows_tool" --registries ../../packages/sdk/std/registries --db "$GAMEDB" --out "$OUT/drs_edits.json" --summary "$OUT/drs_summary.json" \
         test.drs content/drs/drs.json
+    CS=()
+    for y in 2016 2017 2018 2019 2020 2021 2022 2023 2024; do
+        CS+=("swofty.classic-seasons-$y" "content/classic-seasons/classic-seasons-$y/registry/content.json")
+    done
+    for how in here worker; do
+        "$OUT/rows_tool" --registries ../../packages/sdk/std/registries --db "$GAMEDB" --plan "$how" \
+            --out "$OUT/plan_${how}_edits.json" --summary "$OUT/plan_${how}_summary.json" "${CS[@]}" >/dev/null 2>&1 || true
+    done
+    cmp "$OUT/plan_here_edits.json" "$OUT/plan_worker_edits.json"
+    python3 - "$OUT/plan_here_summary.json" "$OUT/plan_worker_summary.json" "$OUT/plan_here_edits.json" <<'EOF'
+import json, sys
+here, worker = (json.load(open(p)) for p in sys.argv[1:3])
+edits = len(json.load(open(sys.argv[3]))["db_edits"])
+assert not here["plan_off_thread"] and worker["plan_off_thread"], (here["plan_off_thread"], worker["plan_off_thread"])
+assert here["plan_fresh"] == worker["plan_fresh"] and here["staged_records"] == worker["staged_records"], "plans differ"
+assert edits > 50000, edits
+print("Classic Seasons on the game database: the plan counted on a worker and on this thread give the same %d database edit(s)" % edits)
+EOF
     python3 - "$OUT/drs_summary.json" <<'EOF'
 import json, sys
 s = json.load(open(sys.argv[1]))

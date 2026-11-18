@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/143cfc8f0.c;xref:0x140184cb0,0x1401d3140",
-  "notes": "(ushort *table, const u32 *hash): index of a 32-bit node/bone hash in a model node table: linear scan of table+8 (count table[0]) or robin-hood map at table+0x50 (FNV-1a of 4 bytes); returns index or -1. Callers: Car_Model_BindCockpitNodes, cutscene driver part options, pelvis height modifier, frontend driver parts."
+  "notes": "(ushort *table, const u32 *hash): index of a 32-bit node/bone hash in a model node table: linear scan of table+8 (count table[0]) or robin-hood map at table+0x50 (FNV-1a of 4 bytes); returns index or -1. Callers: Car_Model_BindCockpitNodes, cutscene driver part options, pelvis height modifier, frontend driver parts. Callers: census steam 0x3cfc8f0."
  },
  "signature": {
   "id": "core.node_table_find_index_by_hash",

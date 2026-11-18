@@ -969,7 +969,7 @@ pub(crate) mod tests {
                 records.push(Record::new(&format!("entrants.drivers.driver_{i}.{f}"), tag, v));
             }
         }
-        Gvdb { records }.to_bytes()
+        Gvdb::new(records).to_bytes()
     }
 
     #[test]

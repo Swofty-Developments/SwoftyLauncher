@@ -157,7 +157,7 @@ fn rebuilding_a_profile_never_rewrites_a_file_a_session_has_linked() {
         records.push(Record::new(&format!("{row}._metadata_"), 4, *label));
         records.push(Record::new(&format!("{row}.stat_id"), 0, (100 + i).to_string()));
     }
-    let stock = Gvdb { records }.to_bytes();
+    let stock = Gvdb::new(records).to_bytes();
     std::fs::write(dir.join(GVDB), &stock).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
@@ -225,7 +225,7 @@ fn a_cached_output_changed_in_place_to_the_same_size_is_rebuilt() {
         records.push(Record::new(&format!("{row}._metadata_"), 4, *label));
         records.push(Record::new(&format!("{row}.stat_id"), 0, (100 + i).to_string()));
     }
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir: dir.clone(),
@@ -305,7 +305,7 @@ fn reuses_an_unchanged_build_until_an_input_or_the_game_folder_changes() {
         let mut records = vec![Record::new("entrants.teams._team_instancecount_", 0, "1")];
         records.push(Record::new("entrants.teams.team_0._metadata_", 4, "mclaren_26"));
         records.push(Record::new("entrants.teams.team_0.stat_id", 0, label));
-        Gvdb { records }.to_bytes()
+        Gvdb::new(records).to_bytes()
     };
     std::fs::write(dir.join(GVDB), db("100")).unwrap();
     let game = Game {
@@ -409,7 +409,7 @@ pub(super) fn reuse_fixture(name: &str) -> (std::path::PathBuf, Store, Game) {
         Record::new("entrants.teams.team_0._metadata_", 4, "mclaren_26"),
         Record::new("entrants.teams.team_0.stat_id", 0, "100"),
     ];
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir,
@@ -554,7 +554,7 @@ fn a_cancelled_build_stops_and_the_next_one_starts_fresh() {
         Record::new("entrants.teams.team_0._metadata_", 4, "mclaren_26"),
         Record::new("entrants.teams.team_0.stat_id", 0, "100"),
     ];
-    std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
     let game = Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir: dir.clone(),

@@ -9,7 +9,7 @@
   "subsystem": "session",
   "proto": "-",
   "evidence": "decomp:re/decomp/142d6d3b0.c;xref:0x142d6cfd9,0x142d6d593",
-  "notes": "(introState) -> bool: true when skip flag +0xdc6 set or track/mode allows the video to end; checks session mode object (+0xca0->+0x88->+0x260) type, flags +0xdc2/+0xdc3, mode byte +0xe35 and controller +0xdb8 byte +0x126. Callers: Sess_IntroVideo_OnStateEnter, Sess_IntroVideo_OnVideoDoneFadeIn."
+  "notes": "(introState) -> bool: true when skip flag +0xdc6 set or track/mode allows the video to end; checks session mode object (+0xca0->+0x88->+0x260) type, flags +0xdc2/+0xdc3, mode byte +0xe35 and controller +0xdb8 byte +0x126. Callers: Sess_IntroVideo_OnStateEnter, Sess_IntroVideo_OnVideoDoneFadeIn. Callers: census steam 0x2d6d3b0."
  },
  "signature": {
   "id": "session.intro_video_can_finish",

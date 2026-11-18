@@ -1696,7 +1696,7 @@ mod tests {
             records.push(Record::new(&format!("{row}.worldAssetGroup"), 4, group.as_str()));
             records.push(Record::new(&format!("{row}.worldEri"), 4, eri.as_str()));
         }
-        let worlds = layer_worlds(&Gvdb { records });
+        let worlds = layer_worlds(&Gvdb::new(records));
         assert_eq!(worlds, [LayerWorld::new(MOD_GROUP, MOD_ERI).unwrap()]);
         let registered = "asset_groups/mod_environment_package/tracks/monaco/wep/monaco_x.assetgroup";
         assert!(missing_worlds(&worlds, "monaco", |g| g == registered).is_empty());
@@ -1760,15 +1760,13 @@ mod tests {
             "TrackLayer",
             &[layer("x", "m_a"), layer("y", "m_b"), layer("z", "m_a,missing")],
         );
-        let worlds = layer_worlds(&Gvdb {
-            records: records.clone(),
-        });
+        let worlds = layer_worlds(&Gvdb::new(records.clone()));
         assert_eq!(worlds.len(), 1);
         assert_eq!(worlds[0].cars, 26);
         assert_eq!(room_for(&worlds, 22), 26);
         assert_eq!(room_for(&worlds, 28), 28);
         assert_eq!(room_for(&[], 22), 22);
-        let mut db = Gvdb { records };
+        let mut db = Gvdb::new(records);
         db.set(
             &format!("{TRACK_LAYERS}.TrackLayer_1.game_setup_modes"),
             "m_c",
