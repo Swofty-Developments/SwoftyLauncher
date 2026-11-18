@@ -49,8 +49,8 @@ int main()
         CHECK(port.table && port.drs && port.wheels && port.wetness);
         CHECK(!port.surface && !port.orient && !port.angvel);
         live_car::Fields ea145 = live_car::fields_of(bp::Build::ea_1_0_145);
-        CHECK(ea145.wheels && ea145.wetness);
-        CHECK(!ea145.table && !ea145.drs && !ea145.surface && !ea145.orient && !ea145.angvel);
+        CHECK(ea145.wheels && ea145.wetness && ea145.table && ea145.drs);
+        CHECK(!ea145.surface && !ea145.orient && !ea145.angvel);
     }
 
     if (failures)
