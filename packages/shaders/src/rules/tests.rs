@@ -16,7 +16,6 @@ fn instance(set: &[(usize, f32)]) -> ActiveInstance {
     }
 }
 
-#[allow(clippy::too_many_arguments)]
 fn rule(name: &str, priority: i32, order: u32, when: Value, timing: [f64; 5], set: Value) -> Value {
     let [min_ms, hold_ms, for_ms, fade_in_ms, fade_out_ms] = timing;
     json!({
