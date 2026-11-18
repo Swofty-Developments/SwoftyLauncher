@@ -329,7 +329,10 @@ fn epic_items_find_overcooked_2_by_its_exe() {
     t.file("Manifests/D.txt", &item(&oc2, "Overcooked2.exe"));
     t.file("Manifests/E.item", "not json");
     let manifests = [t.0.join("Manifests")];
-    assert_eq!(epic_installs(&manifests, "Overcooked2.exe"), [oc2.clone()]);
+    assert_eq!(
+        epic_installs(&manifests, "Overcooked2.exe"),
+        std::slice::from_ref(&oc2)
+    );
     let config = Config::default();
     assert_eq!(
         def(GameId::Overcooked2).find(&probe(&config, &[], &manifests)),
