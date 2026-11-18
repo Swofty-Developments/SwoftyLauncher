@@ -729,6 +729,8 @@ int main(int argc, char **argv)
         id_clash_tests(argv[1]);
     if (argc > 1)
         virtual_list_tests(argv[1]);
+    if (argc > 1)
+        late_write_tests(argv[1]);
     std::printf("%s\n", failures ? "FAILED" : "all passed");
     return failures ? 1 : 0;
 }
