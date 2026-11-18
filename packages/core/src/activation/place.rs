@@ -351,16 +351,26 @@ fn ai_stand_in(file: &ErpFile, res: &Resource, code: &str, team: &AiTeam) -> Res
         _ => rest.to_owned(),
     };
     let mut res = file.load(res)?;
-    if let Some(data) = res.fragments.first().map(|f| f.data()).transpose()?
-        && is_pkg(&data)
-    {
-        let mut pkg = Pkg::parse(&data)?;
-        if rename_strings(&mut pkg.root, &team.from, &team.team) > 0 {
-            set_data(&mut res, 0, &pkg.to_bytes()?)?;
+    if let Some(data) = renamed_pkg(&res, team) {
+        let mut copy = res.clone();
+        if set_data(&mut copy, 0, &data).is_ok() {
+            res = copy;
         }
     }
     res.name = format!("{dst}{rest}");
     Ok(res)
+}
+
+fn renamed_pkg(res: &Resource, team: &AiTeam) -> Option<Vec<u8>> {
+    let data = res.fragments.first()?.data().ok()?;
+    if !is_pkg(&data) {
+        return None;
+    }
+    let mut pkg = Pkg::parse(&data).ok()?;
+    if rename_strings(&mut pkg.root, &team.from, &team.team) == 0 {
+        return None;
+    }
+    pkg.to_bytes().ok()
 }
 
 fn set_data(res: &mut Resource, index: usize, data: &[u8]) -> Result<()> {
@@ -1101,6 +1111,13 @@ mod tests {
         }
     }
 
+    fn unreadable_pkg() -> Vec<u8> {
+        let mut data = b"!pkgAITP".to_vec();
+        data.extend([0x10, 0, 0, 0x80, 0x20, 0, 0, 0x80]);
+        data.extend(b"!xyz lotus");
+        data
+    }
+
     fn place_with_ai(name: &str, teams: &[&str]) -> (Placement, ErpFile) {
         use swofty_formats::erp::Fragment;
         use swofty_formats::pkg::{Obj, Val};
@@ -1142,6 +1159,11 @@ mod tests {
                 wear.to_bytes().unwrap(),
             ));
             ai.push(resource(format!("{at}{team}.vp_times"), "VPTimes", vec![7, 7, 7]));
+            ai.push(resource(
+                format!("{at}{team}.thpd"),
+                "AIThrottle",
+                unreadable_pkg(),
+            ));
         }
         let path = dir.join(&pkg.erp);
         let base = ErpFile::open(&path).unwrap();
@@ -1185,6 +1207,11 @@ mod tests {
             .load(placed.erp.find(&format!("{t}/cater/cater.vp_times")).unwrap())
             .unwrap();
         assert_eq!(times.fragments[0].data().unwrap(), [7, 7, 7]);
+        let throttle = placed
+            .load(placed.erp.find(&format!("{t}/cater/cater.thpd")).unwrap())
+            .unwrap();
+        assert!(Pkg::parse(&unreadable_pkg()).is_err());
+        assert_eq!(throttle.fragments[0].data().unwrap(), unreadable_pkg());
         assert!(placed.erp.find(&format!("{t}/lotus/lotus.tyre_wear")).is_ok());
         let group = lotus_and_cater().group("testring");
         assert_eq!(

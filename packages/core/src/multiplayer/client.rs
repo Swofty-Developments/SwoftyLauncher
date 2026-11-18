@@ -2,6 +2,7 @@
 //! back. Every function here does nothing, or returns the reason, while the module isn't loaded.
 
 use std::collections::{BTreeMap, HashMap};
+use std::hash::{DefaultHasher, Hash, Hasher};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Condvar, Mutex, MutexGuard};
@@ -26,6 +27,10 @@ pub const MODULE_ABI: u32 = 1;
 /// The environment variable that carries [`launch_env`] to the process that starts the game, as a JSON
 /// list of `[name, value]` pairs.
 pub const LAUNCH_ENV: &str = "SWOFTY_SESSION_ENV";
+/// How long a failed load stands for the same sign-in before the server is asked again: [`RETRY_SOON`] for a
+/// load asked for directly, [`RETRY_LATER`] for one started in the background.
+const RETRY_SOON: Duration = Duration::from_secs(30);
+const RETRY_LATER: Duration = Duration::from_secs(15 * 60);
 
 /// The session log and what a session saves beside it, under the data folder.
 pub const LOG_FILE: &str = "state/multiplayer.log";
@@ -41,7 +46,26 @@ enum State {
     Idle,
     Loading,
     Loaded(Arc<Library>),
-    Failed(String),
+    Failed(Failure),
+}
+
+struct Failure {
+    why: String,
+    at: Instant,
+    token: u64,
+}
+
+impl Failure {
+    /// Whether this failure still answers a load for `token` at `now`, without asking the server.
+    fn stands(&self, token: u64, wait: Duration, now: Instant) -> bool {
+        self.token == token && now.saturating_duration_since(self.at) < wait
+    }
+}
+
+fn token_key(token: Option<&str>) -> u64 {
+    let mut h = DefaultHasher::new();
+    token.hash(&mut h);
+    h.finish()
 }
 
 static STATE: Mutex<State> = Mutex::new(State::Idle);
@@ -69,7 +93,7 @@ pub fn is_loaded() -> bool {
 /// Why the last [`load`] failed, as the sentence to show; `None` when it succeeded or never ran.
 pub fn unavailable() -> Option<String> {
     match &*lock(&STATE) {
-        State::Failed(why) => Some(why.clone()),
+        State::Failed(f) => Some(f.why.clone()),
         _ => None,
     }
 }
@@ -93,14 +117,19 @@ fn answer(request: &Value) -> Result<Value, String> {
 
 /// Makes the session module ready: fetched and verified (or the cached copy), then loaded once for this
 /// process. `token` is the signed-in session, when there is one. The error is the sentence to show. A load
-/// another thread already runs is waited for instead of started twice; nothing else waits on a load.
+/// another thread already runs is waited for instead of started twice; nothing else waits on a load. A load
+/// that failed less than [`RETRY_SOON`] ago with the same `token` is answered with that failure.
 pub fn load(data: &Path, token: Option<&str>) -> Result<(), Unavailable> {
+    let key = token_key(token);
     {
         let mut state = lock(&STATE);
         loop {
             match &*state {
                 State::Loaded(_) => return Ok(()),
                 State::Loading => state = CHANGED.wait(state).unwrap_or_else(|e| e.into_inner()),
+                State::Failed(f) if f.stands(key, RETRY_SOON, Instant::now()) => {
+                    return Err(Unavailable::from(f.why.clone()));
+                }
                 State::Idle | State::Failed(_) => break,
             }
         }
@@ -117,7 +146,11 @@ pub fn load(data: &Path, token: Option<&str>) -> Result<(), Unavailable> {
             Ok(())
         }
         Err(e) => {
-            *state = State::Failed(e.why.clone());
+            *state = State::Failed(Failure {
+                why: e.why.clone(),
+                at: Instant::now(),
+                token: key,
+            });
             Err(e)
         }
     };
@@ -144,10 +177,13 @@ fn open(data: &Path, token: Option<&str>) -> Result<Library, Unavailable> {
     Library::open(&module, MODULE_ABI, &config, hooks).map_err(Unavailable::from)
 }
 
-/// Starts [`load`] on its own thread unless the module is loaded or a load is running. Returns at once.
+/// Starts [`load`] on its own thread unless the module is loaded, a load is running, or a load with the same
+/// `token` failed less than [`RETRY_LATER`] ago. Returns at once.
 pub fn load_in_background(data: &Path, token: &str) {
-    if matches!(&*lock(&STATE), State::Loaded(_) | State::Loading) {
-        return;
+    match &*lock(&STATE) {
+        State::Loaded(_) | State::Loading => return,
+        State::Failed(f) if f.stands(token_key(Some(token)), RETRY_LATER, Instant::now()) => return,
+        State::Idle | State::Failed(_) => {}
     }
     let (data, token) = (data.to_path_buf(), token.to_owned());
     std::thread::Builder::new()
@@ -158,6 +194,15 @@ pub fn load_in_background(data: &Path, token: &str) {
             }
         })
         .ok();
+}
+
+/// Forgets a failed load, so the next one asks the server whatever the wait: for an account that just gained
+/// access.
+pub fn forget_failure() {
+    let mut state = lock(&STATE);
+    if matches!(&*state, State::Failed(_)) {
+        *state = State::Idle;
+    }
 }
 
 /// Waits up to `limit` for a load that is running now; returns at once when none is.
@@ -556,6 +601,24 @@ impl Drop for Session {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_failed_load_stands_for_its_sign_in_until_the_wait_is_over() {
+        let at = Instant::now();
+        let failed = Failure {
+            why: "needs the beta role".into(),
+            at,
+            token: token_key(Some("one")),
+        };
+        let one = token_key(Some("one"));
+        assert!(failed.stands(one, RETRY_LATER, at + Duration::from_secs(10)));
+        assert!(failed.stands(one, RETRY_SOON, at + Duration::from_secs(29)));
+        assert!(!failed.stands(one, RETRY_SOON, at + RETRY_SOON));
+        assert!(!failed.stands(one, RETRY_LATER, at + RETRY_LATER));
+        assert!(!failed.stands(token_key(Some("two")), RETRY_LATER, at));
+        assert!(!failed.stands(token_key(None), RETRY_LATER, at));
+        assert!(RETRY_LATER >= Duration::from_secs(600));
+    }
 
     #[test]
     fn the_local_document_carries_the_read_paths_the_fingerprint_leaves_out() {

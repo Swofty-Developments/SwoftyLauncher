@@ -624,6 +624,10 @@ pub struct HudElement {
     pub stock: Option<StockMode>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub stock_parts: Vec<String>,
+    /// A dial record's own switch: the record shows while the leaf is on and, with stock `hide`,
+    /// the dial's stock parts show while it is off. A variant without a switch inherits it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub switch: Option<Bind>,
     #[serde(default, rename = "box", skip_serializing_if = "Option::is_none")]
     pub rect: Option<[f64; 4]>,
     /// Where the root lands, in record units `v` down from the dial centre. Absent: the bottom of
@@ -791,10 +795,22 @@ impl HudElement {
         for e in &self.elements {
             no_placement(e)?;
         }
+        if self.switch.is_some() {
+            if self.screen.is_some() || self.scene_target().is_some() {
+                return Err(err(
+                    "switch is for a dial record; a screen record takes show and a scene target is not switched",
+                ));
+            }
+            if self.stock == Some(StockMode::Park) {
+                return Err(err(
+                    "stock park is not switched (it moves the dial's stock parts for good); a record with a switch takes keep or hide",
+                ));
+            }
+        }
         for name in self.variants.keys() {
             let what = |e: Error| err(format!("variant {name}: {e}"));
             let v = &self.variants[name];
-            if v.stock == Some(StockMode::Park) && v.switch.is_some() {
+            if v.stock == Some(StockMode::Park) && (v.switch.is_some() || self.switch.is_some()) {
                 return Err(err(format!(
                     "variant {name}: stock park is not switched (it moves the dial's stock parts for good); a variant with a switch takes keep or hide"
                 )));

@@ -19,8 +19,8 @@
 // CarLive+0x530..+0x5e0. Every offset below is a KB field (re/db/structs/{CarLive,CarSteering,CarGearBox,
 // CarDifferential,CarTurbo,CarEngine,CarFuelTank,CarDamageFrontWing,CarDamageSuspension,CarObfFloat}.h, each
 // exported by bindgen: L2 with an agree verify row, or L3), and "obf" fields are CarObfFloat pairs: the float's
-// bits XOR the key 8 bytes on. The offsets are the KB build's, so car_live.cpp hands over no table on any
-// other exe. Ops<Tag> keeps the state per tag so the host test runs the same code on fake cars.
+// bits XOR the key 8 bytes on. The offsets are the KB build's; car_live.cpp hands over the table only on a build in
+// CAR_BUILDS. Ops<Tag> keeps the state per tag so the host test runs the same code on fake cars.
 
 namespace swofty_core::hooks::car_live {
 
@@ -34,6 +34,31 @@ constexpr uintptr_t ENGINE = 0x530, STEERING = 0x560, GEARBOX = 0x538,
 constexpr uintptr_t FUEL_ECU_MODE = 0x128;
 constexpr uintptr_t MODE_AVAIL_FUEL = 0x28, MODE_AVAIL_STRIDE = 0x20;
 constexpr uint32_t MODE_AVAIL_CARS = 26;
+
+// The builds the live car operations run on: the KB build, and the builds re/tools/carlivecmp.py checked against it
+// (re/research/car-live-1-0-145.md): every field, system slot, VTF key, called and hooked function and mid-hook site
+// above is the same there. mode_avail_rva is g_Game_EngineModeAvail, the one address that moves; size_of_image 0
+// takes the KB build's stamp with any image above 0x6000000, as runtime::same_build() does.
+struct CarBuild {
+    uint32_t pe_timestamp, size_of_image;
+    const char *name;
+    uintptr_t mode_avail_rva;
+};
+
+inline constexpr CarBuild CAR_BUILDS[] = {
+    {1789118616u, 0, "Steam KB", 0x606ec28},
+    {1794312636u, 0x18434000u, "Steam 26566308", 0x6070c28},
+    {1794315435u, 0x1615e000u, "EA 1.0.145", 0x61a7968},
+};
+
+constexpr const CarBuild *car_build_for(uint32_t pe_timestamp, uint32_t size_of_image)
+{
+    for (const CarBuild &b : CAR_BUILDS)
+        if (b.pe_timestamp == pe_timestamp &&
+            (b.size_of_image ? b.size_of_image == size_of_image : size_of_image > 0x6000000u))
+            return &b;
+    return nullptr;
+}
 
 // cell: a per-car AI driver config float, int or curve behind a game database cell (ai_racecraft.hpp); vslot is its
 // index in ai_racecraft::DRIVER.
@@ -325,7 +350,7 @@ struct Env {
     std::function<void(uintptr_t gearbox, uint32_t flags)> gearbox_reset;
     std::function<void(uintptr_t chassis, uint32_t flags)> chassis_reset;
     std::function<void(uintptr_t fuel_ecu, int mode)> fuel_set_mode;
-    // The address of the object g_EngineModeAvail points at (0x14606ec28 in the KB build), or 0.
+    // The address of the object g_Game_EngineModeAvail points at (CarBuild::mode_avail_rva), or 0.
     std::function<uintptr_t()> mode_avail;
     std::function<uintptr_t(uint32_t index, uintptr_t car)> tyre_component;
     std::function<void(uintptr_t tyre_component)> tyre_refit;

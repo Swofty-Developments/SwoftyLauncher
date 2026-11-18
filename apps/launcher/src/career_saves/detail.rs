@@ -9,6 +9,8 @@ use swofty_core::vault::{self, Location, Snapshot, Vault};
 pub(super) struct Detail {
     pub(super) held: Option<Vec<String>>,
     pub(super) diff: Option<Diff>,
+    pub(super) newest: Option<String>,
+    pub(super) missing: usize,
 }
 
 type Stamp = Option<(u64, std::time::SystemTime)>;
@@ -78,10 +80,22 @@ pub(super) fn details(
                     })
                     .collect()
             });
+            let newest = index
+                .as_ref()
+                .and_then(|i| vault::careers::newest(i))
+                .map(|b| b.name);
+            let missing = index
+                .as_ref()
+                .map_or(0, |i| vault::careers::marked_missing(i).len());
             let diff = index
                 .filter(|_| !now.is_empty())
                 .map(|i| vault::careers::diff(now, &i));
-            let detail = Detail { held, diff };
+            let detail = Detail {
+                held,
+                diff,
+                newest,
+                missing,
+            };
             if let Ok(mut c) = cache.lock() {
                 c.0.insert(path, (key, detail.clone()));
             }

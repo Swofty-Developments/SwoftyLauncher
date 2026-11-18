@@ -89,6 +89,8 @@ pub(super) fn build_saves_untimed(
                     snap,
                     held: d.held,
                     diff: d.diff,
+                    newest: d.newest,
+                    missing: d.missing,
                 })
                 .collect();
             (versions, v.dir.clone(), v.usage(), v.policy.cap_bytes)

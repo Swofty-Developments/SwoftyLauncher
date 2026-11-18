@@ -3,7 +3,8 @@
 //! `GET /v1/modules` lists, per module name, the newest version that speaks the abi the launcher asks for.
 //! [`ensure`] keeps a verified copy under `<data>/modules/<name>/<platform>/<version>/` and hands out a
 //! [`Module`] only after the file's size, sha256 and Ed25519 signature check out against the key pinned in
-//! [`crate::timetrial::integrity`]. Every failure is an [`Unavailable`] with one sentence for the log or the
+//! [`crate::timetrial::integrity`]. The file comes from the offer's `cdn_url` when it has one and that copy
+//! verifies, else from the server. Every failure is an [`Unavailable`] with one sentence for the log or the
 //! page; the launcher goes on without the module.
 
 pub mod library;
@@ -23,6 +24,8 @@ use crate::timetrial::integrity::{PUBLIC_KEY, decode, valid_version};
 const SIGNED_PREFIX: &str = "swofty-module-v1";
 const MAX_SIZE: u64 = 64 * 1024 * 1024;
 const DOWNLOAD_TIMEOUT: Duration = Duration::from_secs(120);
+const CDN_TIMEOUT: Duration = Duration::from_secs(60);
+const CDN_CONNECT_TIMEOUT: Duration = Duration::from_secs(5);
 const KEEP: usize = 2;
 const OFFER_FILE: &str = "offer.json";
 const ENV_PREFIX: &str = "SWOFTY_MODULE_";
@@ -125,6 +128,9 @@ struct Offer {
     size: u64,
     signature: String,
     file: String,
+    /// Where the same bytes are served without the sign-in; the size, sha256 and signature are checked the same.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    cdn_url: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -178,7 +184,7 @@ fn local_at(name: &str, path: &Path) -> Result<Module, Unavailable> {
 
 /// The verified module `name` for `platform` that speaks `abi`: the local build when [`local_env`] names
 /// one, else the cached copy when it has the hash the server offers, else a download. When the server can't
-/// be reached, the newest cached copy of that abi that still verifies.
+/// be reached or the download is refused as busy, the newest cached copy of that abi that still verifies.
 pub fn ensure(data: &Path, api: &Api, name: &str, platform: &str, abi: u32) -> Result<Module, Unavailable> {
     if let Some(found) = local(name) {
         return found;
@@ -231,9 +237,16 @@ fn ensure_with(
         sha256: offer.sha256.clone(),
     };
     if !matches(&path, &offer) {
-        let bytes = api
-            .module_file(name, platform, &offer.version, offer.size, DOWNLOAD_TIMEOUT)
-            .map_err(|e| e.message)?;
+        let bytes = match from_cdn(&offer) {
+            Some(bytes) => bytes,
+            None => match api.module_file(name, platform, &offer.version, offer.size, DOWNLOAD_TIMEOUT) {
+                Ok(bytes) => bytes,
+                Err(e) if unreachable(&e) => {
+                    return cached(data, name, platform, abi, key).ok_or(Unavailable::new(e.message));
+                }
+                Err(e) => return Err(e.message.into()),
+            },
+        };
         if bytes.len() as u64 != offer.size {
             return Err(format!(
                 "the download is {} bytes, the offer says {}",
@@ -260,6 +273,34 @@ fn ensure_with(
 /// Whether the server gave no answer about the module, as opposed to refusing it.
 fn unreachable(e: &ApiError) -> bool {
     matches!(e.status, 0 | 408 | 429) || e.status >= 500
+}
+
+/// The offered file from its `cdn_url`, when the offer has one the launcher follows and the bytes there have
+/// the offered size and sha256. No sign-in is sent. `None` sends the launcher to the server instead.
+fn from_cdn(offer: &Offer) -> Option<Vec<u8>> {
+    let url = offer.cdn_url.as_deref().filter(|url| cdn_link(url))?;
+    let mut response = ureq::get(url)
+        .header("User-Agent", "swofty-launcher")
+        .header("Accept-Encoding", "identity")
+        .config()
+        .timeout_global(Some(CDN_TIMEOUT))
+        .timeout_connect(Some(CDN_CONNECT_TIMEOUT))
+        .max_redirects(0)
+        .build()
+        .call()
+        .ok()?;
+    let bytes = response
+        .body_mut()
+        .with_config()
+        .limit(offer.size + 1)
+        .read_to_vec()
+        .ok()?;
+    (bytes.len() as u64 == offer.size && sha256_bytes(&bytes) == offer.sha256).then_some(bytes)
+}
+
+/// A CDN link the launcher follows: https, or plain http on this machine.
+fn cdn_link(url: &str) -> bool {
+    url.starts_with("https://") || (url.starts_with("http://") && crate::http::bearer_allowed(url))
 }
 
 /// The newest cached version of `abi` whose stored offer and file still verify.

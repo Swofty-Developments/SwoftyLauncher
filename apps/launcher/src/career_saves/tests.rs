@@ -321,9 +321,18 @@ fn mode_names_read_like_the_game() {
 
 #[test]
 fn versions_and_places_read_short() {
-    use super::{careers_held, season_round};
+    use super::{careers_held_line, season_round};
     use swofty_core::vault::careers::listing;
-    assert_eq!(careers_held(&vec![String::new(); 10]), "10 careers");
+    assert_eq!(careers_held_line(10, None, 0), "10 careers");
+    assert_eq!(
+        careers_held_line(1, Some("Vettel"), 0),
+        "1 career, newest: Vettel"
+    );
+    assert_eq!(
+        careers_held_line(3, Some("Vettel"), 2),
+        "3 careers, newest: Vettel, 2 marked missing"
+    );
+    assert_eq!(careers_held_line(0, None, 0), "0 careers");
     let l = listing(
         &swofty_core::stdlib::careers::parse(
             r#"{"careers":[{"career":"f1_career_2026","slot":"0","slot_season":1,"slot_weekend":2}]}"#,

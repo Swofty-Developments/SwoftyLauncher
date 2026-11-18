@@ -23,6 +23,23 @@ pub fn slot_url(base: &str, unit: &str, placement: &str, background: [u8; 3], de
     )
 }
 
+/// `url` with the user's hashed email in its fragment, which the page hands to
+/// RevIQ. The fragment never reaches the server. Anything but a SHA-256 hex
+/// digest is left out.
+pub fn with_uid(url: String, uid: Option<&str>) -> String {
+    match uid {
+        Some(uid)
+            if uid.len() == 64
+                && uid
+                    .bytes()
+                    .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)) =>
+        {
+            format!("{url}#e={uid}")
+        }
+        _ => url,
+    }
+}
+
 /// The page that runs RevIQ's consent form full size, with `background`
 /// behind it. `reopen` opens the form again over a stored answer.
 pub fn consent_url(base: &str, background: [u8; 3], reopen: bool, dev: bool) -> String {
@@ -83,6 +100,17 @@ mod tests {
             slot_url("https://ads.swofty.net", "video", "video", [0, 0, 0], true),
             "https://ads.swofty.net/app/video?bg=000000&p=video&dev=1"
         );
+    }
+
+    #[test]
+    fn only_a_sha256_digest_goes_in_the_fragment() {
+        let digest = "0123456789abcdef".repeat(4);
+        let url = "https://ads.swofty.net/app/right-rail-1?bg=000000&p=home".to_owned();
+        assert_eq!(with_uid(url.clone(), Some(&digest)), format!("{url}#e={digest}"));
+        assert_eq!(with_uid(url.clone(), None), url);
+        assert_eq!(with_uid(url.clone(), Some("ABC")), url);
+        assert_eq!(with_uid(url.clone(), Some(&digest.to_uppercase())), url);
+        assert_eq!(with_uid(url.clone(), Some("someone@example.com")), url);
     }
 
     #[test]
