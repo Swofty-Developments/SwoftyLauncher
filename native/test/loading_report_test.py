@@ -138,6 +138,18 @@ class Report(unittest.TestCase):
         self.assertEqual(ld['grid_thumbnails'], 2)
         self.assertEqual(r['regressions'], [])
 
+    def test_talking_points_end_at_their_own_exit(self):
+        t0 = 40.0
+        text = boot() + race_load(t0, 2.0, 6.0) + ''.join([
+            flow(t0 + 30.0, 'TalkingPoints'),
+            flow(t0 + 30.05, 'TalkingPoints', 'Entering', 'Updating'),
+            flow(t0 + 30.1, 'TalkingPoints', 'Updating', 'Exiting'),
+            flow(t0 + 30.1, 'SnapshotTarget'),
+            flow(t0 + 35.0, 'BeginGameplay'),
+        ])
+        ld = lr.analyse(write_run(self.root, 'tp', text, env='loading_skip_talking_points'))['loads'][0]
+        self.assertAlmostEqual(ld['talking_points_s'], 0.1, places=3)
+
     def test_ab_medians_and_difference(self):
         runs = []
         for i, (video, rundown) in enumerate([(2.0, 6.0), (2.2, 6.4), (1.8, 5.8)]):
