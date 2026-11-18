@@ -919,6 +919,43 @@ pub(crate) mod tests {
     }
 
     #[test]
+    fn a_cdn_copy_that_does_not_match_the_signed_hash_falls_back_to_the_servers_download() {
+        let key = pair();
+        let mut tampered = BYTES.to_vec();
+        tampered[0] ^= 1;
+        for (name, link, cdn_t) in [
+            ("cdn-tampered", cdn(tampered)),
+            ("cdn-short", cdn(BYTES[..BYTES.len() - 1].to_vec())),
+        ]
+        .map(|(name, (link, t))| (name, link, Some(t)))
+        .into_iter()
+        .chain([(
+            "cdn-down",
+            "http://127.0.0.1:1/cdn/swofty_integrity.dll".to_owned(),
+            None,
+        )]) {
+            let mut offered = offer(&key, "v1", BYTES);
+            offered["cdn_url"] = link.into();
+            let routes = vec![
+                ("/v1/tt/integrity/file", "200 OK", BYTES.to_vec()),
+                ("/v1/tt/integrity", "200 OK", json(&offered)),
+            ];
+            let (got, d, seen) = run(name, &key, routes, 2);
+            let m = got.unwrap_or_else(|e| panic!("{name}: {e:?}"));
+            assert_eq!(std::fs::read(&m.dll).unwrap(), BYTES, "{name}");
+            assert_eq!(
+                seen,
+                ["/v1/tt/integrity", "/v1/tt/integrity/file?version=v1"],
+                "{name}"
+            );
+            if let Some(t) = cdn_t {
+                t.join().unwrap();
+            }
+            std::fs::remove_dir_all(&d).ok();
+        }
+    }
+
+    #[test]
     fn an_offer_that_times_out_with_nothing_cached_leaves_the_note_for_the_launcher() {
         let key = pair();
         let d = data("timeout-empty");
