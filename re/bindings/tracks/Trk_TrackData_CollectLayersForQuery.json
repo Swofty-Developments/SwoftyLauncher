@@ -8,8 +8,8 @@
   "level": "L2",
   "subsystem": "tracks",
   "proto": "void Trk_TrackData_CollectLayersForQuery(void *track_data_system, const uint8_t *query, void *out_list)",
-  "evidence": "decomp:own disasm KB 0x142e60550-0x142e605ec, 1.0.145 0x142e62ae0 the same 41/41;xref:0x1407a1384",
-  "notes": "Appends every track_data.track_layers row of the TrackDataSystem (+0x1e0..+0x1e8, stride 0x28) whose +0x0 mode mask, +0x4 season mask and +0x8 weekend format mask hold the query's bits to out_list (8-byte row pointers, u64 count at +0x100, room for 32, no bound check). Query bytes: [0] mode stat id, [1] mode used, [2] season stat id, [3] season used, [4] format bit, [5] format used; a criterion whose used byte is 0 is skipped. Mode or season >= 32 calls the bitset range failure 0x1411c04f0, format >= 2 calls 0x1402bedf0. Every matching row is added, not only the first. Only caller Game_GameMode_AddTrackLayerWorlds (0x1407a1384)."
+  "evidence": "decomp:own disasm KB 0x142e60550-0x142e605ec, 1.0.145 0x142e62ae0 the same 41/41;xref:0x1407a1383",
+  "notes": "Appends every track_data.track_layers row of the TrackDataSystem (+0x1e0..+0x1e8, stride 0x28) whose +0x0 mode mask, +0x4 season mask and +0x8 weekend format mask hold the query's bits to out_list (8-byte row pointers, u64 count at +0x100, room for 32, no bound check). Query bytes: [0] mode stat id, [1] mode used, [2] season stat id, [3] season used, [4] format bit, [5] format used; a criterion whose used byte is 0 is skipped. Mode or season >= 32 calls the bitset range failure 0x1411c04f0, format >= 2 calls 0x1402bedf0. Every matching row is added, not only the first. Only caller Game_GameMode_AddTrackLayerWorlds (0x1407a1383)."
  },
  "signature": {
   "id": "tracks.track_data_collect_layers_for_query",
