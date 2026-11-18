@@ -8,7 +8,7 @@ use swofty_core::quarantine;
 use swofty_core::recovery::{self, Blocked};
 use swofty_core::session::SessionRecord;
 
-use super::dialogs::{show_launch_failed, show_mods_blocked};
+use super::dialogs::{launch_headline, show_launch_failed, show_mods_blocked};
 use super::{Page, Shell};
 use swofty_i18n::{tr, trf, trn};
 
@@ -131,7 +131,7 @@ impl Shell {
             .filter(|f| f.at > self.seen.launch_failed)
         {
             self.seen.launch_failed = f.at;
-            self.notice = Some(f.headline().to_owned());
+            self.notice = Some(launch_headline(f));
             show_launch_failed(f, window, cx);
         }
     }
@@ -178,7 +178,7 @@ impl Shell {
                         .launch_failed
                         .as_ref()
                         .filter(|f| f.at >= launch.at)
-                        .map(|f| f.headline().to_owned());
+                        .map(launch_headline);
                     self.notice = Some(match &self.blocked {
                         _ if refused => {
                             tr("an antivirus removed mod files, so F1 25 was not started").to_owned()

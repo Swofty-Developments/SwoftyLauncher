@@ -27,6 +27,59 @@ pub(crate) fn text(dir: &Path, source: Source, windows: bool) -> String {
     )
 }
 
+pub(crate) fn run_as_admin_title() -> &'static str {
+    tr("A program is set to run as administrator")
+}
+
+/// [`compat::RunAsAdmin::headline`] in the launcher's language.
+pub(crate) fn run_as_admin_headline(r: &compat::RunAsAdmin) -> String {
+    match r.names().as_slice() {
+        [name] => trf!(
+            "Windows won't start {name}: it is set to run as administrator",
+            name = name
+        ),
+        names => trf!(
+            "Windows won't start {names}: they are set to run as administrator",
+            names = names.join(", ")
+        ),
+    }
+}
+
+/// [`compat::RunAsAdmin::text`] in the launcher's language, a paragraph each
+/// for what Windows refuses, why running as administrator doesn't help, and
+/// what to untick.
+pub(crate) fn run_as_admin_text(r: &compat::RunAsAdmin) -> String {
+    let (names, paths) = (r.names(), r.paths());
+    let (what, fix) = match (names.as_slice(), paths.as_slice()) {
+        ([name], [path]) => (
+            trf!(
+                "{name} is set to run as administrator, so Windows won't start it for an EA app session (error 740).",
+                name = name
+            ),
+            trf!(
+                "Right-click {path}, open Properties > Compatibility and untick \"Run this program as an administrator\", also under \"Change settings for all users\". Then press Play again.",
+                path = path
+            ),
+        ),
+        _ => (
+            trf!(
+                "These files are set to run as administrator, so Windows won't start them for an EA app session (error 740):\n{paths}",
+                paths = paths.join("\n")
+            ),
+            tr("For each one, right-click it, open Properties > Compatibility and untick \"Run this program as an administrator\", also under \"Change settings for all users\". Then press Play again.").to_owned(),
+        ),
+    };
+    let note = r.game.then(|| {
+        tr("The EA app starts F1 25 without administrator rights, so running Swofty Launcher as administrator doesn't help.")
+            .to_owned()
+    });
+    std::iter::once(what)
+        .chain(note)
+        .chain([fix])
+        .collect::<Vec<_>>()
+        .join("\n\n")
+}
+
 impl Shell {
     /// The game folder is one this launcher can't write in: say so and offer
     /// to restart as administrator, on Windows.
@@ -144,9 +197,35 @@ fn elevated_started(started: Result<compat::Elevated, String>, window: &mut Wind
 
 #[cfg(test)]
 mod tests {
-    use super::text;
-    use std::path::Path;
+    use super::{run_as_admin_headline, run_as_admin_text, text};
+    use std::path::{Path, PathBuf};
+    use swofty_core::compat::RunAsAdmin;
     use swofty_core::install::Source;
+
+    #[test]
+    fn run_as_admin_says_what_the_cli_says_a_paragraph_at_a_time() {
+        let game = RunAsAdmin::new([PathBuf::from(r"D:\Games\F1 25\F1_25.exe")], true);
+        let shown = run_as_admin_text(&game);
+        assert_eq!(shown.split("\n\n").count(), 3, "{shown}");
+        assert_eq!(shown.replace("\n\n", " "), game.text());
+        assert_eq!(run_as_admin_headline(&game), game.headline());
+        let ea = RunAsAdmin::new(
+            [
+                PathBuf::from(r"C:\EA Desktop\EALauncher.exe"),
+                PathBuf::from(r"C:\EA Desktop\EADesktop.exe"),
+            ],
+            false,
+        );
+        let shown = run_as_admin_text(&ea);
+        assert!(
+            shown.contains(
+                "(error 740):\nC:\\EA Desktop\\EALauncher.exe\nC:\\EA Desktop\\EADesktop.exe\n\nFor each one"
+            ),
+            "{shown}"
+        );
+        assert!(!shown.contains("Swofty Launcher as administrator"), "{shown}");
+        assert_eq!(run_as_admin_headline(&ea), ea.headline());
+    }
 
     #[test]
     fn names_the_folder_and_both_ways_out() {

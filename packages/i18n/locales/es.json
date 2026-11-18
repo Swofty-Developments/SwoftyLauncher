@@ -1352,5 +1352,13 @@
   "This import has the same id as {name} in the Addon Browser; it is kept separate.": "Esta importación tiene el mismo id que {name} en el Explorador de complementos; se mantiene aparte.",
   "This import asked for the id {asked}, which {name} in the Addon Browser has; it is kept separate as {id}.": "Esta importación pidió el id {asked}, que tiene {name} en el Explorador de complementos; se mantiene aparte como {id}.",
   "{v} is available. You skipped it in the play bar; update it from its Addon Browser page.": "{v} está disponible. La omitiste en la barra de Jugar; actualízala desde su página del Explorador de complementos.",
-  "Kept separate": "Se mantiene aparte"
+  "Kept separate": "Se mantiene aparte",
+  "A program is set to run as administrator": "Un programa está configurado para ejecutarse como administrador",
+  "Windows won't start {name}: it is set to run as administrator": "Windows no iniciará {name}: está configurado para ejecutarse como administrador",
+  "Windows won't start {names}: they are set to run as administrator": "Windows no iniciará {names}: están configurados para ejecutarse como administrador",
+  "{name} is set to run as administrator, so Windows won't start it for an EA app session (error 740).": "{name} está configurado para ejecutarse como administrador, así que Windows no lo iniciará en una sesión de la EA app (error 740).",
+  "Right-click {path}, open Properties > Compatibility and untick \"Run this program as an administrator\", also under \"Change settings for all users\". Then press Play again.": "Haz clic derecho en {path}, abre Propiedades > Compatibilidad y desmarca “Ejecutar este programa como administrador”, también en “Cambiar la configuración para todos los usuarios”. Después pulsa Jugar de nuevo.",
+  "These files are set to run as administrator, so Windows won't start them for an EA app session (error 740):\n{paths}": "Estos archivos están configurados para ejecutarse como administrador, así que Windows no los iniciará en una sesión de la EA app (error 740):\n{paths}",
+  "For each one, right-click it, open Properties > Compatibility and untick \"Run this program as an administrator\", also under \"Change settings for all users\". Then press Play again.": "Haz clic derecho en cada uno, abre Propiedades > Compatibilidad y desmarca “Ejecutar este programa como administrador”, también en “Cambiar la configuración para todos los usuarios”. Después pulsa Jugar de nuevo.",
+  "The EA app starts F1 25 without administrator rights, so running Swofty Launcher as administrator doesn't help.": "La EA app inicia F1 25 sin permisos de administrador, así que ejecutar Swofty Launcher como administrador no sirve de nada."
 }

@@ -1352,5 +1352,13 @@
   "This import has the same id as {name} in the Addon Browser; it is kept separate.": "此导入与插件浏览器中的 {name} ID 相同；它会单独保留。",
   "This import asked for the id {asked}, which {name} in the Addon Browser has; it is kept separate as {id}.": "此导入请求的 ID {asked} 已被插件浏览器中的 {name} 使用；它以 {id} 单独保留。",
   "{v} is available. You skipped it in the play bar; update it from its Addon Browser page.": "{v} 已推出。你在游戏栏中跳过了它；请在它的插件浏览器页面中更新。",
-  "Kept separate": "单独保留"
+  "Kept separate": "单独保留",
+  "A program is set to run as administrator": "有程序被设置为以管理员身份运行",
+  "Windows won't start {name}: it is set to run as administrator": "Windows 不会启动 {name}：它被设置为以管理员身份运行",
+  "Windows won't start {names}: they are set to run as administrator": "Windows 不会启动 {names}：它们被设置为以管理员身份运行",
+  "{name} is set to run as administrator, so Windows won't start it for an EA app session (error 740).": "{name} 被设置为以管理员身份运行，因此 Windows 不会为 EA app 会话启动它（错误 740）。",
+  "Right-click {path}, open Properties > Compatibility and untick \"Run this program as an administrator\", also under \"Change settings for all users\". Then press Play again.": "右键单击 {path}，打开“属性”>“兼容性”，取消勾选“以管理员身份运行此程序”，并在“更改所有用户的设置”中同样取消勾选。然后再次点击“开始游戏”。",
+  "These files are set to run as administrator, so Windows won't start them for an EA app session (error 740):\n{paths}": "以下文件被设置为以管理员身份运行，因此 Windows 不会为 EA app 会话启动它们（错误 740）：\n{paths}",
+  "For each one, right-click it, open Properties > Compatibility and untick \"Run this program as an administrator\", also under \"Change settings for all users\". Then press Play again.": "逐个右键单击这些文件，打开“属性”>“兼容性”，取消勾选“以管理员身份运行此程序”，并在“更改所有用户的设置”中同样取消勾选。然后再次点击“开始游戏”。",
+  "The EA app starts F1 25 without administrator rights, so running Swofty Launcher as administrator doesn't help.": "EA app 会在没有管理员权限的情况下启动 F1 25，因此以管理员身份运行 Swofty Launcher 没有帮助。"
 }

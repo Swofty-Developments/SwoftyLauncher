@@ -1442,5 +1442,13 @@
   "This import has the same id as {name} in the Addon Browser; it is kept separate.": "이 가져온 애드온은 Addon Browser의 {name}와(과) ID가 같습니다. 별도로 유지됩니다.",
   "This import asked for the id {asked}, which {name} in the Addon Browser has; it is kept separate as {id}.": "이 가져온 애드온은 Addon Browser의 {name}이(가) 사용하는 ID {asked}을(를) 요청했습니다. {id}(으)로 별도 유지됩니다.",
   "{v} is available. You skipped it in the play bar; update it from its Addon Browser page.": "{v}을(를) 사용할 수 있습니다. 플레이 바에서 건너뛰었으니 Addon Browser 페이지에서 업데이트하세요.",
-  "Kept separate": "별도로 유지됨"
+  "Kept separate": "별도로 유지됨",
+  "A program is set to run as administrator": "관리자 권한으로 실행하도록 설정된 프로그램이 있습니다",
+  "Windows won't start {name}: it is set to run as administrator": "Windows가 {name}을(를) 시작하지 않습니다: 관리자 권한으로 실행하도록 설정되어 있습니다",
+  "Windows won't start {names}: they are set to run as administrator": "Windows가 {names}을(를) 시작하지 않습니다: 관리자 권한으로 실행하도록 설정되어 있습니다",
+  "{name} is set to run as administrator, so Windows won't start it for an EA app session (error 740).": "{name}이(가) 관리자 권한으로 실행하도록 설정되어 있어 Windows가 EA app 세션에서 이를 시작하지 않습니다(오류 740).",
+  "Right-click {path}, open Properties > Compatibility and untick \"Run this program as an administrator\", also under \"Change settings for all users\". Then press Play again.": "{path}을(를) 마우스 오른쪽 버튼으로 클릭하고 속성 > 호환성을 연 다음 “관리자 권한으로 이 프로그램 실행”의 선택을 해제하세요. “모든 사용자에 대한 설정 변경”에서도 해제하세요. 그런 다음 플레이를 다시 누르세요.",
+  "These files are set to run as administrator, so Windows won't start them for an EA app session (error 740):\n{paths}": "다음 파일들이 관리자 권한으로 실행하도록 설정되어 있어 Windows가 EA app 세션에서 이를 시작하지 않습니다(오류 740):\n{paths}",
+  "For each one, right-click it, open Properties > Compatibility and untick \"Run this program as an administrator\", also under \"Change settings for all users\". Then press Play again.": "각 파일을 마우스 오른쪽 버튼으로 클릭하고 속성 > 호환성을 연 다음 “관리자 권한으로 이 프로그램 실행”의 선택을 해제하세요. “모든 사용자에 대한 설정 변경”에서도 해제하세요. 그런 다음 플레이를 다시 누르세요.",
+  "The EA app starts F1 25 without administrator rights, so running Swofty Launcher as administrator doesn't help.": "EA app은 관리자 권한 없이 F1 25를 시작하므로 Swofty Launcher를 관리자 권한으로 실행해도 소용없습니다."
 }

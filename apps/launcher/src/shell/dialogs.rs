@@ -104,7 +104,13 @@ pub(super) fn show_mods_blocked(
 /// A launch that failed without a crash: F1 25 was already running, or the
 /// game closed itself as it started. The dialog says why and what to do.
 pub(super) fn show_launch_failed(f: &launch::Failure, window: &mut Window, cx: &mut App) {
-    let (title, text) = (f.title(), f.text());
+    let (title, text) = match &f.cause {
+        launch::Cause::RunAsAdmin(r) => (
+            crate::admin_needed::run_as_admin_title(),
+            crate::admin_needed::run_as_admin_text(r),
+        ),
+        _ => (f.title(), f.text()),
+    };
     window.open_alert_dialog(cx, move |alert, _, _| {
         alert
             .width(px(560.))
@@ -112,6 +118,14 @@ pub(super) fn show_launch_failed(f: &launch::Failure, window: &mut Window, cx: &
             .description(text.clone())
             .ok_text(tr("OK"))
     });
+}
+
+/// The play bar's line for a launch that failed without a crash.
+pub(super) fn launch_headline(f: &launch::Failure) -> String {
+    match &f.cause {
+        launch::Cause::RunAsAdmin(r) => crate::admin_needed::run_as_admin_headline(r),
+        _ => f.headline(),
+    }
 }
 
 pub(crate) fn offline_terms(p: Palette) -> impl IntoElement {

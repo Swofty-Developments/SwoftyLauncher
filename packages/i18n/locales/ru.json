@@ -1352,5 +1352,13 @@
   "This import has the same id as {name} in the Addon Browser; it is kept separate.": "У этого импорта тот же id, что и у {name} в каталоге аддонов; он хранится отдельно.",
   "This import asked for the id {asked}, which {name} in the Addon Browser has; it is kept separate as {id}.": "Этот импорт запросил id {asked}, который есть у {name} в каталоге аддонов; он хранится отдельно как {id}.",
   "{v} is available. You skipped it in the play bar; update it from its Addon Browser page.": "Доступна версия {v}. Вы пропустили её на панели запуска; обновите её на её странице в каталоге аддонов.",
-  "Kept separate": "Хранится отдельно"
+  "Kept separate": "Хранится отдельно",
+  "A program is set to run as administrator": "Программа настроена на запуск от имени администратора",
+  "Windows won't start {name}: it is set to run as administrator": "Windows не запустит {name}: программа настроена на запуск от имени администратора",
+  "Windows won't start {names}: they are set to run as administrator": "Windows не запустит {names}: эти программы настроены на запуск от имени администратора",
+  "{name} is set to run as administrator, so Windows won't start it for an EA app session (error 740).": "{name} настроен на запуск от имени администратора, поэтому Windows не запустит его для сеанса через приложение EA (ошибка 740).",
+  "Right-click {path}, open Properties > Compatibility and untick \"Run this program as an administrator\", also under \"Change settings for all users\". Then press Play again.": "Щёлкните правой кнопкой мыши по {path}, откройте «Свойства» > «Совместимость» и снимите флажок «Запускать эту программу от имени администратора», а также в разделе «Изменить параметры для всех пользователей». Затем снова нажмите «Играть».",
+  "These files are set to run as administrator, so Windows won't start them for an EA app session (error 740):\n{paths}": "Эти файлы настроены на запуск от имени администратора, поэтому Windows не запустит их для сеанса через приложение EA (ошибка 740):\n{paths}",
+  "For each one, right-click it, open Properties > Compatibility and untick \"Run this program as an administrator\", also under \"Change settings for all users\". Then press Play again.": "Щёлкните правой кнопкой мыши по каждому из них, откройте «Свойства» > «Совместимость» и снимите флажок «Запускать эту программу от имени администратора», а также в разделе «Изменить параметры для всех пользователей». Затем снова нажмите «Играть».",
+  "The EA app starts F1 25 without administrator rights, so running Swofty Launcher as administrator doesn't help.": "Приложение EA запускает F1 25 без прав администратора, поэтому запуск Swofty Launcher от имени администратора не поможет."
 }
