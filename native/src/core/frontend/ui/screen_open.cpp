@@ -9,14 +9,8 @@
 #include "core/diagnostics/perf.hpp"
 #include "core/frontend/main_menu.hpp"
 #include "core/frontend/ui/screen_loader.hpp"
+#include "core/runtime/runtime.hpp"
 #include "core/services/lap_host.hpp"
-
-namespace runtime {
-void load_stall_screen(const char *name);
-void session_host_screen(const char *name);
-void testagent_screen(const char *name);
-void direct_start_screen(const char *name);
-}
 
 namespace ui {
 
