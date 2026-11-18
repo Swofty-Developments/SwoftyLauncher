@@ -179,6 +179,12 @@ def ratio(a, b):
     return difflib.SequenceMatcher(None, a, b, autojunk=False).ratio() if a and b else 0.0
 
 
+def aligned(a, b, least=1):
+    """{index in a: index in b} for the entries of a that difflib matches into b, in matching runs of at least `least`."""
+    sm = difflib.SequenceMatcher(None, a, b, autojunk=False)
+    return {i + k: j + k for i, j, n in sm.get_matching_blocks() if n >= least for k in range(n)}
+
+
 def follow(img, rva, hops=4):
     while hops and img.readable(rva, 5) and img.mem[rva] == 0xE9:
         rva, hops = rva + 5 + img.i32(rva + 1), hops - 1
