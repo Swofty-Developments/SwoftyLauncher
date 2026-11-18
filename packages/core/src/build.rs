@@ -1878,6 +1878,10 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 .map_or("database", |id| addons.get(id).map_or(id, |m| m.name.as_str()));
             built.warnings.push(u.line(by));
         }
+        let added_heads = crate::heads::registry_heads(&store.addons_dir(), &resolved.order, &std16);
+        for h in crate::heads::wear_stand_ins(&mut db, &shipped_db, &added_heads) {
+            built.lines.push(h.line());
+        }
         for k in crate::livery_kits::keep_kits(&mut db) {
             let by = planner
                 .record_writer(k.key)

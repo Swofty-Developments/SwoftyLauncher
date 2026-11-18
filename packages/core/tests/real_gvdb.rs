@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
+use swofty_core::heads;
 use swofty_core::livery_kits;
 use swofty_core::manifest::AddonManifest;
 use swofty_core::ops::{DbOps, apply_db_ops};
@@ -131,6 +132,43 @@ fn a_special_livery_of_an_unknown_team_kit_is_emptied_against_the_real_database(
             .as_deref(),
         Some("2026-mclaren")
     );
+}
+
+#[test]
+fn the_games_headless_driver_wears_the_stand_in_against_the_real_database() {
+    let Some(dir) = std::env::var_os("F1_25_DIR").map(PathBuf::from) else {
+        eprintln!("F1_25_DIR is not set; skipping");
+        return;
+    };
+    let Ok(data) = std::fs::read(dir.join("game_package/gamedatabases/gamedatabases.2025.bin")) else {
+        eprintln!("no gamedatabases.2025.bin under F1_25_DIR; skipping");
+        return;
+    };
+    let shipped = Gvdb::parse(&data).unwrap();
+    let mut db = shipped.clone();
+    let found = heads::wear_stand_ins(&mut db, &shipped, &std::collections::BTreeSet::new());
+    assert_eq!(
+        found,
+        [heads::Headless {
+            row: "nico_rosberg".into(),
+            head: "nico_rosberg".into(),
+            worn: heads::STAND_IN.into(),
+        }]
+    );
+    let rosberg = (0..db.instance_count("entrants.drivers", "driver").unwrap())
+        .find(|i| {
+            db.get_text(&format!("entrants.drivers.driver_{i}._metadata_"))
+                .as_deref()
+                == Some("nico_rosberg")
+        })
+        .unwrap();
+    assert_eq!(
+        db.get_text(&format!("entrants.drivers.driver_{rosberg}.head"))
+            .as_deref(),
+        Some(heads::STAND_IN)
+    );
+    assert!(heads::labels(&db).contains(heads::STAND_IN));
+    assert_eq!(db.records.len(), shipped.records.len());
 }
 
 #[test]
