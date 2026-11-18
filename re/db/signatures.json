@@ -1623,6 +1623,54 @@
    "used_by": [
     "native/src/core/frontend/swofty_core.cpp"
    ]
+  },
+  {
+   "id": "game.read_track_layer_row",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE C6 44 24 20 00",
+   "match": "0x142e587e0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142e587e0",
+   "kind": "func_start",
+   "names": [
+    "Game_Read_TrackLayerRow"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-18",
+     "by": "re-bindings",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.track_layer_build_extra_world_desc",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 02 00 00 4C 89 C7",
+   "match": "0x142e57e90",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142e57e90",
+   "kind": "func_start",
+   "names": [
+    "Game_TrackLayer_BuildExtraWorldDesc"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-18",
+     "by": "re-bindings",
+     "how": "static"
+    }
+   ],
+   "used_by": []
   }
  ]
 }
