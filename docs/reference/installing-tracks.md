@@ -18,7 +18,7 @@ A track is installed by a `track.add` operation: at each build, activation clone
 }
 ```
 
-`source` is a folder in the addon that holds an unpacked [track package](/reference/mods/tracks): `manifest.json`, the track's `.erp`, `mipmaps/` and `ui/`. The Simplified Importer writes this file into every track addon it makes, `mod.<code>`. A data addon can list `track.add` in an `assets` file too ([A track with its own name](/reference/data/track-names)).
+`source` is a folder in the addon that holds an unpacked [track package](/reference/mods/tracks): `manifest.json`, the track's `.erp`, `mipmaps/` and `ui/`. The Simplified Importer writes this file into every track addon it makes ([The addon's id](/reference/mods/tracks#the-addon-s-id)). A data addon can list `track.add` in an `assets` file too ([A track with its own name](/reference/data/track-names)).
 
 ```sh
 swofty build

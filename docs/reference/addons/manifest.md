@@ -118,7 +118,7 @@ swofty: invalid manifest: yourname.my-addon: option ai_offset: a slider has at m
 ```
 
 - **`schema_version`** (integer): `1`.
-- **`id`** (string): a lowercase dotted id with at least two parts, each part `[a-z0-9_-]`, such as `author.my-addon`. The first part is the namespace. The `swofty.` prefix is reserved. The `dbedit.` prefix is kept for addons the DB Editor saves, and the launcher refuses to install any other addon with it.
+- **`id`** (string): a lowercase dotted id with at least two parts, each part `[a-z0-9_-]`, such as `author.my-addon`. The first part is the namespace. The `swofty.` prefix is reserved. The `dbedit.` prefix is kept for addons the DB Editor saves, and the launcher refuses to install any other addon with it. The `imported-mod.` prefix is kept for imports ([The addon's id](/reference/mods/tracks#the-addon-s-id)), and the launcher refuses an Addon Browser download with it.
   - On [publish.f1.swofty.net](./publishing#publish), a new addon's namespace must be yours: your Discord username (lowercase, without `.` and other characters outside `a-z0-9_-`), or a team or brand name you claim by publishing the first addon in it, up to 3 besides your username. Nobody else can publish new addons in a namespace you own. `swofty`, `mod`, `local`, `core`, `std` and `dbedit` take no new addons. Addons published before namespaces keep their ids, and new versions of them publish as before.
 - **`name`** (string): the display name.
 - **`version`** (string): semver, such as `1.0.0`.
