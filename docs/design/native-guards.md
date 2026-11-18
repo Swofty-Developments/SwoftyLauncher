@@ -210,7 +210,9 @@ guards::read_catching_faults(address, &out, sizeof out, nullptr);   // a copy th
 ```
 
 `read_if_readable`, `write_if_readable` and `read_catching_faults` (`guards/memory.hpp`) have the signature the logic
-headers take for memory access. `write_if_readable` asks whether the bytes are readable, not whether they're writable.
+headers take for memory access. `write_if_readable` asks whether the bytes are readable, not whether they're writable:
+a readable page that isn't writable faults in its copy. Its one caller, `ai_line_set`'s repair, writes into the game's
+AI build records on its heap. Code that may write anywhere else asks `runtime::writable_in_region` instead.
 
 ## What the tests guarantee
 
