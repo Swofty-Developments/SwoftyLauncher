@@ -13,7 +13,8 @@
 // from its spec in the guard sources, through the same functions the guards log with (core/guards/lines.hpp), and
 // compares them with guard_lines/expected.txt: the lines the guards logged before they became specs
 // (guard_lines/extract.py writes it from the sources before each change), and guard_lines/added.txt: the lines of the
-// guards written as specs from the start, by hand.
+// guards written as specs from the start, by hand. Every guard source's own swofty::log formats, in source order, are
+// pinned in guard_lines/logged.txt.
 
 namespace lines = swofty_core::guards::lines;
 
@@ -282,11 +283,55 @@ std::map<std::string, Expected> expected_lines(const std::filesystem::path &path
     return out;
 }
 
+// Every swofty::log call's format in one source, in source order: its adjacent string literals, or "(expr) <text>" for
+// a format that is not a literal. A newline or tab in a literal reads as \n or \t, as logged.txt holds it.
+std::vector<std::string> log_formats(const std::string &t)
+{
+    std::vector<std::string> out;
+    const std::string mark = "swofty::log(";
+    for (size_t at = t.find(mark); at != std::string::npos; at = t.find(mark, at + 1)) {
+        size_t arg = at + mark.size();
+        bool ok;
+        std::string text = literals(t, arg, ok), shown;
+        if (!ok) {
+            size_t from = skip_space(t, at + mark.size()), end = t.find_first_of(",)", from);
+            text = "(expr) " + t.substr(from, end - from);
+        }
+        for (char c : text)
+            shown += c == '\n' ? std::string("\\n") : c == '\t' ? std::string("\\t") : std::string(1, c);
+        out.push_back(shown);
+    }
+    return out;
+}
+
+// The `[log <source>]` sections of logged.txt, each source named relative to the guards folder.
+std::map<std::string, std::vector<std::string>> logged_lines(const std::filesystem::path &path)
+{
+    std::map<std::string, std::vector<std::string>> out;
+    std::ifstream in(path);
+    std::string line, source;
+    while (std::getline(in, line)) {
+        if (line.empty() || line.front() == '#')
+            continue;
+        if (line.rfind("[log ", 0) == 0 && line.back() == ']') {
+            source = line.substr(5, line.size() - 6);
+            expect(!out.count(source), source + " has one section in logged.txt");
+            out[source];
+            continue;
+        }
+        expect(!source.empty(), "logged.txt line outside a section: " + line);
+        if (!source.empty())
+            out[source].push_back(line);
+    }
+    return out;
+}
+
 int main(int argc, char **argv)
 {
     std::filesystem::path guards = argc > 1 ? argv[1] : "../src/core/guards";
     std::filesystem::path expected_path = argc > 2 ? argv[2] : "guard_lines/expected.txt";
     std::filesystem::path added_path = argc > 3 ? argv[3] : "guard_lines/added.txt";
+    std::filesystem::path logged_path = argc > 4 ? argv[4] : "guard_lines/logged.txt";
     auto expected = expected_lines(expected_path, false);
     auto expected_hooks = expected_lines(expected_path, true);
     for (bool hooks : {false, true})
@@ -296,10 +341,14 @@ int main(int argc, char **argv)
             into[stem] = e;
         }
     std::map<std::string, Spec> specs, hook_specs;
+    std::map<std::string, std::vector<std::string>> logs;
     for (auto &entry : std::filesystem::recursive_directory_iterator(guards))
         if (entry.path().extension() == ".cpp") {
             specs_in(entry.path(), specs);
             hook_specs_in(entry.path(), hook_specs);
+            auto formats = log_formats(read(entry.path()));
+            if (!formats.empty())
+                logs[entry.path().lexically_relative(guards).generic_string()] = formats;
         }
 
     expect(!expected.empty(), "expected.txt lists guards");
@@ -350,9 +399,24 @@ int main(int argc, char **argv)
     for (auto &[stem, s] : hook_specs)
         expect(expected_hooks.count(stem), stem + " (" + s.file + ") has its lines in expected.txt or added.txt");
 
+    auto logged = logged_lines(logged_path);
+    for (auto &[source, want] : logged) {
+        auto it = logs.find(source);
+        std::vector<std::string> got = it == logs.end() ? std::vector<std::string>() : it->second;
+        if (got == want)
+            continue;
+        std::string shown = "[log " + source + "]";
+        for (auto &f : got)
+            shown += "\n  " + f;
+        expect(false, source + " logs other formats than logged.txt pins; it logs:\n  " + shown);
+    }
+    for (auto &[source, formats] : logs)
+        expect(logged.count(source), source + " has its " + std::to_string(formats.size()) + " log formats in logged.txt");
+
     if (failures)
         return 1;
-    std::printf("guard lines: %zu SiteGuards and %zu MidHookSpec guards log the lines pinned for them\n", expected.size(),
-                expected_hooks.size());
+    std::printf("guard lines: %zu SiteGuards and %zu MidHookSpec guards log the lines pinned for them; %zu guard sources "
+                "log the formats pinned for them\n",
+                expected.size(), expected_hooks.size(), logged.size());
     return 0;
 }

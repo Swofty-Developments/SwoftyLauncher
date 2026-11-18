@@ -1,0 +1,5 @@
+{
+ "schema": 1,
+ "note": "Bindings taken out of the addon API on purpose after their newest verify row became a partial or disagree. Keys are \"<func|global>:<name>\". mode deprecated keeps the binding exporting for one release, marked deprecated in the headers and in bindings.json; mode dropped stops exporting it and lists it in the \"dropped\" array of every bindings set. A binding is dropped without a deprecation release only when it crashes or corrupts state (harm: \"crash\" or \"corrupts state\"). since is the release the mode ships in, covers the V-id of the newest verify row (any newer row ends the entry), reason what is wrong with it, replacement an optional binding to use instead, and deprecated, on a dropped entry, the release that deprecated it. Only the repository owner approves a change to this file, and the release notes of each release list every entry whose since is that release.",
+ "entries": {}
+}

@@ -293,6 +293,7 @@ class KbLint:
                           + ', '.join(f'{r["verifier"]} {r["kind"]} {r["item"]}' for r in rows)
                           + '): two branches handed out the same id; renumber the rows that are not on main past the '
                             'highest id')
+        self.E += kb.verify_range_errors(t['verify_ranges'], t['verify'])
         last = {}
         for r in t['verify']:
             last[(r['kind'], r['item'])] = r['verdict']

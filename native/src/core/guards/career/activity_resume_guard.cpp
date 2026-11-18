@@ -1,5 +1,5 @@
 #include "core/guards/guard.hpp"
-#include "core/runtime/hook_errors.hpp"
+#include "core/runtime/loader/hook_install.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/guards/career/activity_resume_logic.hpp"
 
@@ -68,13 +68,10 @@ void skip(safetyhook::Context &c)
 
 bool arm(safetyhook::MidHook &slot, const runtime::Sig &s, uintptr_t at)
 {
-    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), skip);
-    if (!h) {
-        swofty::log("[career] activity resume guard: %s: the hook failed: %s", s.what, runtime::hook_error(h.error()).c_str());
-        return false;
-    }
-    slot = std::move(*h);
-    return true;
+    runtime::loader::Installed r = runtime::loader::install(slot, at, s.what, skip);
+    if (!r)
+        swofty::log("[career] activity resume guard: %s: the hook failed: %s", s.what, r.error.c_str());
+    return bool(r);
 }
 
 void setup()
