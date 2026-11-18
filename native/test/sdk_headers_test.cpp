@@ -490,6 +490,7 @@ static void schemas()
     CHECK(hs.find("\"ffb_scale\"") != std::string::npos && hs.find("\"tyre_physics_group\"") != std::string::npos);
     CHECK(hs.find("\"slipstream\"") != std::string::npos && hs.find("\"hardware\"") != std::string::npos);
     CHECK(hs.find("\"mode\":{\"type\":\"string\",\"enum\":[\"off\",\"lag_spoof\",\"full\"]") != std::string::npos);
+    CHECK(hs.find("\"op\":{\"type\":\"string\",\"enum\":[\"=\",\"+\",\"-\",\"*\"]}") != std::string::npos);
     CHECK(hs.find("\"chassis_com_z\":{\"type\":\"object\"") != std::string::npos);
     CHECK(v.find("\"drs_capable\":{\"type\":[\"boolean\",\"null\"]") != std::string::npos);
     CHECK(v.find("\"x-ref\":\"power.supplier\"") != std::string::npos && v.find("\"tyre_group\"") != std::string::npos);
