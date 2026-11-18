@@ -3709,7 +3709,6 @@
   "global:site_Game_GarageCrew_SceneTest": "V8626",
   "global:site_Game_GarageSetups_EntryStep": "V8611",
   "global:site_Game_GarageSetups_NotFound": "V8612",
-  "global:site_Game_PitLane_BoxSlotRead": "V8550",
   "global:site_Game_PitStops_CrewTemplateRead": "V8623",
   "global:site_Game_TheatreList_EntryStep": "V8965",
   "global:site_Game_TheatreList_NoSlot": "V8966",
