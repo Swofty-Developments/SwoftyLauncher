@@ -11,7 +11,7 @@ use serde_json::Value;
 
 use super::bridge::Pump;
 use super::game_replay;
-use super::queue::{Event, Folder, Limits, Queue, Report, unix_now};
+use super::queue::{Event, Folder, Limits, Queue, Report, Stamp, unix_now};
 use super::toast;
 use super::{laps_dirs, token, write_session_keys};
 use crate::online::server::api::{Api, Boards, Nonce};
@@ -126,14 +126,14 @@ pub fn sweep(
     data: &Path,
     game: Option<&Path>,
     api: Option<&dyn Boards>,
-    fingerprint: Option<&Value>,
+    stamp: Option<&Stamp>,
     deadline: Option<Instant>,
     on: &mut dyn FnMut(Event),
 ) -> Report {
     let queue = Queue::new(data);
     if let Some(game) = game {
         for laps in laps_dirs(data, game) {
-            queue.collect(&laps, fingerprint).ok();
+            queue.collect(&laps, stamp).ok();
         }
     }
     let now = unix_now();
@@ -141,7 +141,7 @@ pub fn sweep(
     match api {
         Some(api) => queue.drain(
             api,
-            fingerprint.unwrap_or(&Value::Null),
+            stamp.map_or(&Value::Null, |s| &s.fingerprint),
             Limits {
                 now,
                 deadline,
@@ -206,6 +206,7 @@ pub struct Watcher {
     game: PathBuf,
     config: Config,
     fingerprint: Arc<dyn Fn() -> Option<Value> + Send + Sync>,
+    integrity: Value,
     say: Arc<dyn Fn(&str) + Send + Sync>,
 }
 
@@ -213,12 +214,14 @@ impl Watcher {
     /// With In-game leaderboards on and a sign-in, the bridge's mailbox pump runs beside it.
     /// With Time Trial boards off or nobody signed in, the laps are still collected into the outbox and
     /// nothing leaves the machine. With `retry_nonce` the session nonce the start could not get is asked
-    /// for again on a thread of its own.
+    /// for again on a thread of its own. Each lap is kept with `integrity`, what the session did about the
+    /// integrity module, for its upload meta.
     pub fn start(
         data: &Path,
         game: &Path,
         config: &Config,
         retry_nonce: bool,
+        integrity: Value,
         fingerprint: impl Fn() -> Option<Value> + Send + Sync + 'static,
         say: impl Fn(&str) + Send + Sync + 'static,
     ) -> Self {
@@ -240,10 +243,11 @@ impl Watcher {
             game: game.to_owned(),
             config: config.clone(),
             fingerprint: Arc::new(fingerprint),
+            integrity,
             say,
         };
         let (stop, data, game, config) = (w.stop.clone(), w.data.clone(), w.game.clone(), w.config.clone());
-        let (fingerprint, say) = (w.fingerprint.clone(), w.say.clone());
+        let (fingerprint, integrity, say) = (w.fingerprint.clone(), w.integrity.clone(), w.say.clone());
         w.thread = std::thread::Builder::new()
             .name("tt-laps".into())
             .spawn(move || {
@@ -256,7 +260,11 @@ impl Watcher {
                     }
                     if laps || has_outbox(&data) {
                         let print = cached.get_or_insert_with(|| fingerprint()).clone();
-                        pass(&data, &game, &config, print.as_ref(), None, &*say);
+                        let stamp = Stamp {
+                            fingerprint: print.unwrap_or(Value::Null),
+                            integrity: integrity.clone(),
+                        };
+                        pass(&data, &game, &config, Some(&stamp), None, &*say);
                         if laps {
                             replays(&data, &game, &config, &|| stop.load(Ordering::Relaxed), &*say);
                         }
@@ -307,14 +315,15 @@ impl Watcher {
         if let Some(t) = self.thread.take() {
             t.join().ok();
         }
-        let print = has_laps(&self.data, &self.game)
-            .then(|| (self.fingerprint)())
-            .flatten();
+        let stamp = has_laps(&self.data, &self.game).then(|| Stamp {
+            fingerprint: (self.fingerprint)().unwrap_or(Value::Null),
+            integrity: self.integrity.clone(),
+        });
         pass(
             &self.data,
             &self.game,
             &self.config,
-            print.as_ref(),
+            stamp.as_ref(),
             Some(Instant::now() + FINAL_SWEEP),
             &*self.say,
         );
@@ -366,7 +375,7 @@ fn pass(
     data: &Path,
     game: &Path,
     config: &Config,
-    fingerprint: Option<&Value>,
+    stamp: Option<&Stamp>,
     deadline: Option<Instant>,
     say: &dyn Fn(&str),
 ) {
@@ -379,7 +388,7 @@ fn pass(
         data,
         Some(game),
         api.as_ref().map(|a| a as &dyn Boards),
-        fingerprint,
+        stamp,
         deadline,
         &mut |e| {
             say(&line(&e));
@@ -576,7 +585,10 @@ mod tests {
             &data,
             Some(&game),
             Some(&api as &dyn Boards),
-            Some(&serde_json::json!({"digest": "d"})),
+            Some(&Stamp {
+                fingerprint: serde_json::json!({"digest": "d"}),
+                integrity: serde_json::json!({"state": "missing", "kind": "unreachable", "why": "timeout"}),
+            }),
             None,
             &mut |e| events.push(line(&e)),
         );
@@ -590,6 +602,15 @@ mod tests {
                 assert!(req.to_ascii_lowercase().contains("authorization: bearer tok"));
                 assert!(req.contains(&format!(r#""launcher":"{}""#, env!("CARGO_PKG_VERSION"))));
                 assert!(req.contains(r#""fingerprint":{"digest":"d"}"#), "{req}");
+                let integrity = req.split(r#""integrity":"#).nth(1).unwrap_or_default();
+                let integrity = &integrity[..integrity.find('}').map_or(0, |end| end + 1)];
+                for part in [
+                    r#""state":"missing""#,
+                    r#""kind":"unreachable""#,
+                    r#""why":"timeout""#,
+                ] {
+                    assert!(integrity.contains(part), "{req}");
+                }
                 assert!(req.contains(r#""gzip":true"#));
                 if req.contains(r#""session":"n-game""#) {
                     "n-game"

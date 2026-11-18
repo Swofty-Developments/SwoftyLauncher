@@ -86,6 +86,10 @@ pub struct Meta {
     pub os: String,
     pub session: Option<String>,
     pub fingerprint: Value,
+    /// What the session did about the integrity module, so a lap that comes in unsealed says why. Left out
+    /// when unknown, as older launchers do.
+    #[serde(skip_serializing_if = "Value::is_null")]
+    pub integrity: Value,
 }
 
 impl Meta {
@@ -95,7 +99,12 @@ impl Meta {
             os: if cfg!(windows) { "windows" } else { "linux" }.to_owned(),
             session,
             fingerprint,
+            integrity: Value::Null,
         }
+    }
+
+    pub fn with_integrity(self, integrity: Value) -> Self {
+        Self { integrity, ..self }
     }
 }
 

@@ -289,37 +289,65 @@ pub fn begin(
         return None;
     }
     let (s, p, identity) = (store.clone(), profile.to_owned(), g.identity.clone());
+    let integrity = session_integrity()
+        .and_then(|state| serde_json::to_value(state).ok())
+        .unwrap_or(Value::Null);
     Some(Watcher::start(
         &store.root,
         &g.dir,
         config,
         nonce.is_none(),
+        integrity,
         move || fingerprint(&s, &p, &identity),
         |line| say("laps", line),
     ))
 }
 
-/// The verified integrity module for a session when Time Trial boards is on and the player is signed in.
-/// Any trouble is one log line and the session goes on without it.
-pub fn integrity(store: &Store, out: &dyn Fn(&str)) -> Option<Module> {
+/// What a session asked for of the integrity module: what the fetch came to, and whether it was the local build.
+pub type Asked = (Result<Module, integrity::Unavailable>, bool);
+
+/// The verified integrity module for a session when Time Trial boards is on and the player is signed in, or
+/// `None` when the session does not ask for it. Any trouble is one log line and the session goes on without it.
+pub fn integrity(store: &Store, out: &dyn Fn(&str)) -> Option<Asked> {
     let token = token(&store.root, &store.config())?;
-    let found = match integrity::local() {
+    let asked = match integrity::local() {
         Some(local) => {
             out(&format!(
                 "integrity module: {} is set; the local build is placed unsigned and the server's module is not used",
                 integrity::LOCAL_ENV
             ));
-            local
+            (local, true)
         }
-        None => integrity::ensure(&store.root, &Api::new(&token), out),
+        None => (integrity::ensure(&store.root, &Api::new(&token), out), false),
     };
-    match found {
-        Ok(m) => Some(m),
-        Err(why) => {
-            out(&format!("integrity module: not loaded for this session: {why}"));
-            None
-        }
+    if let Err(why) = &asked.0 {
+        out(&format!("integrity module: not loaded for this session: {why}"));
     }
+    Some(asked)
+}
+
+static SESSION_INTEGRITY: std::sync::Mutex<Option<integrity::State>> = std::sync::Mutex::new(None);
+
+/// Keep what this session did about the integrity module: as the note the launcher shows at Play when none was
+/// placed, and for the laps the session records. `core` is whether the build runs the core; one without it
+/// records no laps, so it asked for nothing.
+pub fn note_integrity(store: &Store, asked: Option<&Asked>, core: bool, out: &dyn Fn(&str)) {
+    let state = asked
+        .filter(|_| core)
+        .map(|(found, local)| integrity::State::of(found, *local));
+    if let Err(e) = integrity::Notice::keep(&store.root, state.as_ref()) {
+        out(&format!(
+            "integrity module: could not keep the note for the launcher: {e}"
+        ));
+    }
+    *SESSION_INTEGRITY.lock().unwrap_or_else(|e| e.into_inner()) = state;
+}
+
+fn session_integrity() -> Option<integrity::State> {
+    SESSION_INTEGRITY
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+        .clone()
 }
 
 pub fn end(watcher: Option<Watcher>, game: &std::path::Path) {

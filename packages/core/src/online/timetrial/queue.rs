@@ -26,12 +26,25 @@ pub struct Waiting {
     /// The addon set the lap was recorded with, taken when the lap was collected.
     #[serde(default, skip_serializing_if = "Value::is_null")]
     pub fingerprint: Value,
+    /// What the session did about the integrity module, taken when the lap was collected.
+    #[serde(default, skip_serializing_if = "Value::is_null")]
+    pub integrity: Value,
     #[serde(default)]
     pub attempts: u32,
     #[serde(default)]
     pub next_try: u64,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub last_error: Option<String>,
+}
+
+/// What the laps a session records are kept with when they are collected, for their upload meta.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct Stamp {
+    /// The addon set the laps were recorded with.
+    pub fingerprint: Value,
+    /// What the session did about the integrity module, as
+    /// [`State`](crate::online::server::integrity::State) writes it.
+    pub integrity: Value,
 }
 
 /// What the sidecar of a lap in `sent` or `rejected` holds.
@@ -156,9 +169,9 @@ impl Queue {
         self.root.join(folder.name())
     }
 
-    /// Move every `.swlap` in the game's lap folder into the outbox, with `fingerprint` as what the
-    /// laps were recorded with. Returns how many moved.
-    pub fn collect(&self, laps: &Path, fingerprint: Option<&Value>) -> std::io::Result<usize> {
+    /// Move every `.swlap` in the game's lap folder into the outbox, kept with `stamp`. Returns how many
+    /// moved.
+    pub fn collect(&self, laps: &Path, stamp: Option<&Stamp>) -> std::io::Result<usize> {
         let Ok(read) = std::fs::read_dir(laps) else {
             return Ok(0);
         };
@@ -175,9 +188,10 @@ impl Queue {
             if move_file(&from, &to).is_err() {
                 continue;
             }
-            if let Some(fp) = fingerprint {
+            if let Some(stamp) = stamp {
                 let waiting = Waiting {
-                    fingerprint: fp.clone(),
+                    fingerprint: stamp.fingerprint.clone(),
+                    integrity: stamp.integrity.clone(),
                     ..Waiting::default()
                 };
                 write_json(&to.with_extension("json"), &waiting)?;
@@ -287,7 +301,7 @@ impl Queue {
             } else {
                 waiting.fingerprint.clone()
             };
-            let meta = Meta::new(header.nonce.clone(), fingerprint);
+            let meta = Meta::new(header.nonce.clone(), fingerprint).with_integrity(waiting.integrity.clone());
             match api.upload(&bytes, &meta) {
                 Ok(answer) => {
                     let mut done = Done::of(Some(&header), limits.now);
@@ -528,7 +542,11 @@ mod tests {
         lap(&laps, "20261110T041011-2.swlap", 92000);
         lap(&laps, "20261110T041011-1.swlap", 91000);
         std::fs::write(laps.join("half.swlap.tmp"), b"x").unwrap();
-        assert_eq!(q.collect(&laps, Some(&json!({"digest": "d"}))).unwrap(), 2);
+        let stamp = Stamp {
+            fingerprint: json!({"digest": "d"}),
+            integrity: json!({"state": "server", "version": "v1"}),
+        };
+        assert_eq!(q.collect(&laps, Some(&stamp)).unwrap(), 2);
         assert!(laps.join("half.swlap.tmp").exists());
         assert!(!laps.join("20261110T041011-1.swlap").exists());
 
@@ -544,6 +562,10 @@ mod tests {
             .collect();
         assert_eq!(times, [91000, 92000]);
         assert_eq!(api.seen.borrow()[0].fingerprint, json!({"digest": "d"}));
+        assert_eq!(
+            api.seen.borrow()[1].integrity,
+            json!({"state": "server", "version": "v1"})
+        );
         assert!(q.list(Folder::Outbox).is_empty());
         let sent = q.list(Folder::Sent);
         assert_eq!(sent.len(), 2);

@@ -182,6 +182,94 @@ fn signed_message(offer: &Offer) -> Vec<u8> {
     message
 }
 
+/// What a session did about the integrity module. Each lap the session records carries it as the `integrity`
+/// field of its upload meta, so a lap that comes in unsealed says why.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "state", rename_all = "snake_case")]
+pub enum State {
+    /// The server's copy was placed.
+    Server { version: String },
+    /// The newest cached copy was placed because the server's could not be had, for the reason given.
+    Cached { version: String, why: String },
+    /// The local build [`LOCAL_ENV`] names was placed.
+    Local,
+    /// No module was placed.
+    Missing { kind: Kind, why: String },
+}
+
+/// The longest reason a [`State`] or [`Notice`] carries.
+const WHY_MAX: usize = 240;
+
+fn short(text: &str) -> String {
+    let text = text.trim();
+    match text.char_indices().nth(WHY_MAX) {
+        Some((cut, _)) => format!("{}...", &text[..cut]),
+        None => text.to_owned(),
+    }
+}
+
+impl State {
+    /// The state of a session that asked for the module and got `found`, from [`local`] when `local`.
+    pub fn of(found: &Result<Module, Unavailable>, local: bool) -> Self {
+        match found {
+            Ok(_) if local => Self::Local,
+            Ok(m) => match &m.fallback {
+                Some(why) => Self::Cached {
+                    version: m.version.clone(),
+                    why: short(why),
+                },
+                None => Self::Server {
+                    version: m.version.clone(),
+                },
+            },
+            Err(e) => Self::Missing {
+                kind: e.kind,
+                why: short(&e.why),
+            },
+        }
+    }
+}
+
+/// The note a session that placed no module leaves in the data folder. The launcher shows it once, as a
+/// dialog, when a Play leaves a newer one than it has shown.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Notice {
+    pub at: f64,
+    pub kind: Kind,
+    pub why: String,
+}
+
+impl Notice {
+    pub fn path(data: &Path) -> PathBuf {
+        data.join("state").join("integrity-missing.json")
+    }
+
+    pub fn read(data: &Path) -> Option<Self> {
+        crate::read_json(&Self::path(data)).ok()
+    }
+
+    /// Leave the note when `state` is [`State::Missing`]; clear it for any other state, and when the session
+    /// did not ask for the module (`None`).
+    pub fn keep(data: &Path, state: Option<&State>) -> crate::Result<()> {
+        let path = Self::path(data);
+        let Some(State::Missing { kind, why }) = state else {
+            return match std::fs::remove_file(&path) {
+                Err(e) if e.kind() != std::io::ErrorKind::NotFound => Err(crate::io_err(&path)(e)),
+                _ => Ok(()),
+            };
+        };
+        let at = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_or(0.0, |d| d.as_secs_f64());
+        let notice = Self {
+            at,
+            kind: *kind,
+            why: why.clone(),
+        };
+        crate::write_json_shared(&path, &notice)
+    }
+}
+
 /// A version becomes a folder name, so it is plain characters only.
 pub fn valid_version(v: &str) -> bool {
     (1..=32).contains(&v.len())
@@ -828,6 +916,84 @@ pub(crate) mod tests {
         assert!(asked.starts_with("GET /cdn/swofty_integrity.dll "), "{asked}");
         assert!(!asked.to_ascii_lowercase().contains("authorization"));
         std::fs::remove_dir_all(&d).ok();
+    }
+
+    #[test]
+    fn an_offer_that_times_out_with_nothing_cached_leaves_the_note_for_the_launcher() {
+        let key = pair();
+        let d = data("timeout-empty");
+        let found = ensure_with(
+            &d,
+            &Api::with_server(&never_answers(), "tok"),
+            key.public_key().as_ref(),
+        );
+        let state = State::of(&found, false);
+        let State::Missing { kind, why } = &state else {
+            panic!("{state:?}");
+        };
+        assert_eq!(*kind, Kind::Unreachable);
+        assert!(why.contains("couldn't reach") && why.contains("timeout"), "{why}");
+        assert_eq!(Notice::read(&d), None);
+        Notice::keep(&d, Some(&state)).unwrap();
+        let note = Notice::read(&d).unwrap();
+        assert_eq!((note.kind, note.why.as_str()), (Kind::Unreachable, why.as_str()));
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_secs_f64();
+        assert!(now - note.at < 60.0);
+        Notice::keep(&d, Some(&State::Server { version: "v1".into() })).unwrap();
+        assert_eq!(Notice::read(&d), None);
+        Notice::keep(&d, None).unwrap();
+        std::fs::remove_dir_all(&d).ok();
+    }
+
+    #[test]
+    fn the_session_state_is_what_the_upload_meta_carries() {
+        let m = Module {
+            version: "v1".into(),
+            dll: PathBuf::from(DLL),
+            sha256: String::new(),
+            fallback: None,
+        };
+        let cached = Module {
+            fallback: Some("couldn't reach the server".into()),
+            ..m.clone()
+        };
+        let cases = [
+            (
+                State::of(&Ok(m.clone()), false),
+                serde_json::json!({"state": "server", "version": "v1"}),
+            ),
+            (
+                State::of(&Ok(cached), false),
+                serde_json::json!({"state": "cached", "version": "v1", "why": "couldn't reach the server"}),
+            ),
+            (State::of(&Ok(m), true), serde_json::json!({"state": "local"})),
+            (
+                State::of(&Err(Unavailable::unreachable("timeout: global")), false),
+                serde_json::json!({"state": "missing", "kind": "unreachable", "why": "timeout: global"}),
+            ),
+            (
+                State::of(
+                    &Err(Unavailable::refused("no integrity module is published")),
+                    false,
+                ),
+                serde_json::json!({"state": "missing", "kind": "refused", "why": "no integrity module is published"}),
+            ),
+            (
+                State::of(&Err("the signature does not match the pinned key".into()), false),
+                serde_json::json!({"state": "missing", "kind": "invalid", "why": "the signature does not match the pinned key"}),
+            ),
+        ];
+        for (state, wire) in cases {
+            assert_eq!(serde_json::to_value(&state).unwrap(), wire);
+            assert_eq!(serde_json::from_value::<State>(wire).unwrap(), state);
+        }
+        let State::Missing { why, .. } = State::of(&Err("x".repeat(1000).into()), false) else {
+            unreachable!()
+        };
+        assert_eq!(why.chars().count(), WHY_MAX + 3);
     }
 
     #[test]

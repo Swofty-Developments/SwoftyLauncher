@@ -10,10 +10,11 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::diagnostics::launch;
 use swofty_core::diagnostics::quarantine;
+use swofty_core::online::server::integrity;
 use swofty_core::saves::{self, SavesWarning};
 
 use super::Shell;
-use swofty_i18n::tr;
+use swofty_i18n::{tr, trf};
 
 pub(super) fn section_label(title: &'static str, p: Palette) -> impl IntoElement {
     div()
@@ -109,6 +110,29 @@ pub(super) fn show_launch_failed(f: &launch::Failure, window: &mut Window, cx: &
         alert
             .width(px(560.))
             .title(title)
+            .description(text.clone())
+            .ok_text(tr("OK"))
+    });
+}
+
+/// A Play whose session could not load the integrity module: the game still starts, but its Time Trial laps
+/// carry no seal and do not rank.
+pub(super) fn show_integrity_missing(n: &integrity::Notice, window: &mut Window, cx: &mut App) {
+    let cause = match n.kind {
+        integrity::Kind::Unreachable => tr("The launcher couldn't reach Swofty's server in time."),
+        integrity::Kind::Refused => tr("Swofty's server didn't offer it to you."),
+        integrity::Kind::Invalid => tr("The download failed its safety check."),
+    };
+    let text = [
+        cause.to_owned(),
+        tr("Time Trial laps you drive this session won't be sealed, so they won't rank on the boards. Everything else works as usual. To try again, close the game and press Play.").to_owned(),
+        trf!("Details: {why}", why = n.why),
+    ]
+    .join("\n\n");
+    window.open_alert_dialog(cx, move |alert, _, _| {
+        alert
+            .width(px(560.))
+            .title(tr("The Time Trial integrity module didn't load"))
             .description(text.clone())
             .ok_text(tr("OK"))
     });
