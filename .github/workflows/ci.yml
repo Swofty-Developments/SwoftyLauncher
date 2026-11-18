@@ -448,21 +448,44 @@ jobs:
         run: |
           echo "$(nproc) CPUs:$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2)"
 
-      # The EC2 runner has a 150 GB root volume and Wine baked in. The hosted fallback has about 14 GB free,
-      # which the Wine prefixes of the parallel tests fill, so it drops the preinstalled toolchains it never
-      # uses, and it installs Wine and Xvfb. Only the Wine tests need either, so both run in the background
-      # while the build does, and the step before the tests waits for them.
-      - name: Start freeing disk space and installing Wine and Xvfb
+      # The hosted runners' archive mirror has served the 248 MB of Wine packages at anywhere from 24 MB/s down to
+      # under 1 MB/s (4 min 13 s), so the cache keeps them; apt takes the ones that still match its index and
+      # downloads the rest.
+      - name: Restore the Wine packages
+        id: wine-debs
+        if: matrix.part != 'host' && runner.environment == 'github-hosted'
+        uses: actions/cache/restore@v6
+        with:
+          path: ${{ runner.temp }}/wine-debs
+          key: wine-debs-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: wine-debs-${{ runner.os }}-
+
+      # The EC2 runner has Wine baked in. A hosted runner installs Wine and Xvfb in the background while the build
+      # runs, and the step before the tests waits for them; each line of the install log starts with its time.
+      # Hosted runners have a 145 GB disk with about 68 GB free; one with under 40 GB free first drops the
+      # preinstalled toolchains the job never uses, which the Wine prefixes of the parallel tests would fill.
+      # The man-db trigger, which rebuilds the manual page index after the install, is turned off.
+      - name: Start installing Wine and Xvfb
         if: matrix.part != 'host'
         run: |
           (
             set +e
-            if [ "$RUNNER_ENVIRONMENT" = github-hosted ]; then
-              sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/.ghcup
-            fi
-            sudo dpkg --add-architecture i386 && .github/runners/apt-install.sh wine64 wine xvfb
-            echo $? > "$RUNNER_TEMP/wine-install.status"
-          ) > "$RUNNER_TEMP/wine-install.log" 2>&1 &
+            {
+              free=$(df --output=avail -BG / | tail -1 | tr -dc 0-9)
+              echo "${free} GB free"
+              if [ "$RUNNER_ENVIRONMENT" = github-hosted ] && [ "$free" -lt 40 ]; then
+                sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/.ghcup
+                echo "removed the unused toolchains"
+              fi
+              sudo rm -f /var/lib/man-db/auto-update
+              echo 'APT::Keep-Downloaded-Packages "true";' | sudo tee /etc/apt/apt.conf.d/99keep-packages > /dev/null
+              if [ -d "$RUNNER_TEMP/wine-debs" ]; then
+                sudo cp "$RUNNER_TEMP"/wine-debs/*.deb /var/cache/apt/archives/ && echo "$(find "$RUNNER_TEMP/wine-debs" -name '*.deb' | wc -l) cached packages"
+              fi
+              sudo dpkg --add-architecture i386 && .github/runners/apt-install.sh wine64 wine xvfb
+            } 2>&1 | while IFS= read -r line; do printf '%(%T)T %s\n' -1 "$line"; done > "$RUNNER_TEMP/wine-install.log"
+            echo "${PIPESTATUS[0]}" > "$RUNNER_TEMP/wine-install.status"
+          ) &
 
       # The binding generator, capture and verifier tests use only the standard library.
       - name: RE tools unit tests
@@ -580,13 +603,51 @@ jobs:
           fi
           command -v wineserver
 
+      # The packages this install used replace the cached set when they differ from it.
+      - name: Collect the Wine packages
+        id: wine-debs-new
+        if: steps.wine-debs.outcome == 'success'
+        run: |
+          dir=$RUNNER_TEMP/wine-debs
+          old=$({ find "$dir" -name '*.deb' -printf '%f\n' 2>/dev/null || true; } | sort | sha256sum | cut -c1-16)
+          rm -rf "$dir"
+          mkdir -p "$dir"
+          cp /var/cache/apt/archives/*.deb "$dir/" 2>/dev/null || true
+          count=$(find "$dir" -name '*.deb' | wc -l)
+          new=$(find "$dir" -name '*.deb' -printf '%f\n' | sort | sha256sum | cut -c1-16)
+          echo "$count packages, $(du -sm "$dir" | cut -f1) MB"
+          echo "key=$new" >> "$GITHUB_OUTPUT"
+          if [ "$count" -gt 0 ] && [ "$new" != "$old" ]; then echo "save=true" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Save the Wine packages
+        id: wine-debs-save
+        if: steps.wine-debs-new.outputs.save == 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ runner.temp }}/wine-debs
+          key: wine-debs-${{ runner.os }}-${{ steps.wine-debs-new.outputs.key }}
+
+      - name: Remove this branch's older Wine package caches
+        if: steps.wine-debs-save.outcome == 'success'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          KEEP: wine-debs-${{ runner.os }}-${{ steps.wine-debs-new.outputs.key }}
+        run: |
+          gh cache list --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF" --key "wine-debs-$RUNNER_OS-" --limit 100 \
+            --json id,key --jq '.[] | select(.key != env.KEEP) | .id' | while read -r id; do
+            gh cache delete "$id" --repo "$GITHUB_REPOSITORY" && echo "removed cache $id"
+          done
+
       # This part's tests side by side; on EC2 that is every host test, the templates build, the Any Team
       # Transfers build and every Wine test. Each test's output is in its own group in the log, and the step
-      # fails on any failing test.
+      # fails on any failing test. The hosted Wine part has the runner's 4 CPUs to itself and runs 4 Wine tests
+      # at a time, where run_tests.sh would run 2.
       - name: Native tests
         id: native-tests
         env:
           PART: ${{ matrix.part }}
+          NATIVE_WINE_JOBS: ${{ matrix.part == 'wine' && '4' || '' }}
         run: |
           df -h / "$RUNNER_TEMP"
           trap 'df -h / "$RUNNER_TEMP"' EXIT
