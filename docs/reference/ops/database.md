@@ -212,6 +212,22 @@ When an addon's ops rename one of the stock lists, remove it, lower `_entrant_li
 warning: My Mod: renames or removes the entrant list(s) f2_2026; F2 menus may crash with it
 ```
 
+### Track layer overrides
+
+A row of `content_sets.content_set_N.track_layer_override_N` names two track layers (`track_data.track_layers`) by label: after the track database loads, the game copies the `override` layer's world onto the `target` layer, for every game setup mode. The game checks neither label. After every addon's ops, the build drops each override row whose `target` or `override` names no track layer row, moves the rows after it down and lowers the count, with one line per row:
+
+```jsonc
+// the classic world on the f1 layer becomes my_layer's, but no track layer row is labelled my_layer
+{ "op": "set", "select": "content_sets.content_set[_metadata_=2025].track_layer_override_0",
+  "field": "override", "value": "my_layer" }
+```
+
+```text
+content set 2025: dropped track_layer_override track_layer_override (override my_layer names no track_data.track_layers row; the game reads past the end of the layer table there)
+```
+
+Add the layer row before the override row names it. The keys past the new count stay in the database, where the game ignores them. A content set or layer table the build cannot read is left as it is, and the build goes on.
+
 ### remove-row
 
 ```json

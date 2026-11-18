@@ -223,6 +223,9 @@ impl Pipeline<'_, '_> {
         built
             .lines
             .extend(crate::game_db::virtual_lists::settle(&mut db.db, &db.stock));
+        built
+            .lines
+            .extend(crate::game_db::track_layer_overrides::drop_missing(&mut db.db));
         built.lines.extend(crate::game_db::rnd_budget::report(&db.db));
         let mut applied = Applied {
             added,
