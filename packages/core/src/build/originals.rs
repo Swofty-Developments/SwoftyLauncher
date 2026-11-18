@@ -51,11 +51,46 @@ pub fn original(data: &Path, game: &Game, rel: &str) -> PathBuf {
 /// The highest stat id the stock game database gives each team, vehicle and driver table
 /// (`row_ids::stock_max_ids`). Empty when the database can't be read.
 pub fn stock_max_ids(data: &Path, game: &Game) -> BTreeMap<String, i64> {
-    std::fs::read(original(data, game, GVDB))
-        .ok()
-        .and_then(|b| Gvdb::parse(&b).ok())
-        .map(|db| crate::row_ids::stock_max_ids(&db))
-        .unwrap_or_default()
+    Shipped::new(data, game).max_ids()
+}
+
+#[cfg(test)]
+thread_local! {
+    pub(super) static SHIPPED_READS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
+/// The game's own database, read and parsed on first use, so the checks of one
+/// build share a parse; none when it can't be read.
+pub(super) struct Shipped<'a> {
+    data: &'a Path,
+    game: &'a Game,
+    db: std::cell::OnceCell<Option<Gvdb>>,
+}
+
+impl<'a> Shipped<'a> {
+    pub(super) fn new(data: &'a Path, game: &'a Game) -> Self {
+        Self {
+            data,
+            game,
+            db: std::cell::OnceCell::new(),
+        }
+    }
+
+    pub(super) fn get(&self) -> Option<&Gvdb> {
+        self.db
+            .get_or_init(|| {
+                #[cfg(test)]
+                SHIPPED_READS.with(|n| n.set(n.get() + 1));
+                std::fs::read(original(self.data, self.game, GVDB))
+                    .ok()
+                    .and_then(|b| Gvdb::parse(&b).ok())
+            })
+            .as_ref()
+    }
+
+    pub(super) fn max_ids(&self) -> BTreeMap<String, i64> {
+        self.get().map(crate::row_ids::stock_max_ids).unwrap_or_default()
+    }
 }
 
 /// Stops a build whose record of original game files names backups that are
