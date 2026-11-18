@@ -15,6 +15,7 @@ use crate::platform::{ClientNote, ClientReady, ClientStart, LaunchPlatform};
 use crate::{GAME_EXE, STEAM_APP_ID};
 use vdf::Vdf;
 
+pub(crate) use library::isolated_root;
 pub use library::{
     drive_roots, find_app, find_app_in, find_game, find_game_in, in_steam_library, libraries,
     registered_roots, root_of_game, root_of_game_in, steam_roots,

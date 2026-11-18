@@ -1,4 +1,4 @@
-pub use swofty_addon::{GAME_ID, asset, builder, launcher, manifest, ops, view};
+pub use swofty_addon::{GAME_ID, asset, builder, game, launcher, manifest, ops, view};
 
 pub mod activation;
 pub mod addons;
@@ -13,6 +13,7 @@ pub mod diagnostics;
 pub mod erp;
 pub mod game_db;
 pub mod game_folder;
+pub mod games;
 pub mod hud;
 pub mod install;
 pub mod loader_check;
@@ -32,7 +33,7 @@ pub mod ui;
 pub mod updates;
 
 pub const STEAM_APP_ID: u32 = 3_059_520;
-pub const GAME_EXE: &str = "F1_25.exe";
+pub const GAME_EXE: &str = swofty_addon::game::F1_25.exe();
 pub const IMAGE_BASE: u64 = 0x1_4000_0000;
 
 #[derive(Debug, thiserror::Error)]

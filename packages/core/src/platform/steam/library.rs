@@ -10,7 +10,7 @@ use super::{GameInstall, read_vdf};
 
 /// An explicit isolation root suppresses registry, default-location and drive scans.
 /// This is useful for sandboxed tools and tests that must never inspect host saves.
-pub(super) fn isolated_root() -> Option<PathBuf> {
+pub(crate) fn isolated_root() -> Option<PathBuf> {
     std::env::var_os("SWOFTY_STEAM_ROOT_ONLY").map(PathBuf::from)
 }
 
