@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TrackLayer_BuildExtraWorldDesc",
+ "table": "functions",
+ "author": "re-bindings",
+ "row": {
+  "addr": "0x142e57e90",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e57e90.c;xref:0x1407a13c9",
+  "notes": "Builds the extra-world descriptor of a track layer: template context with token FILENAME, expands the layer's worldAssetGroup (+0x18) and worldEri (+0x20) values (0x140234f30), names it extraWorld_track_layer_<statId> (0x1457ed34d). So the world archive of a layer is '[FILENAME]'-templated DB data."
+ },
+ "signature": {
+  "id": "game.track_layer_build_extra_world_desc",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 02 00 00 4C 89 C7",
+  "match": "0x142e57e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e57e90",
+  "kind": "func_start",
+  "names": [
+   "Game_TrackLayer_BuildExtraWorldDesc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-18",
+    "by": "re-bindings",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-17",
+   "verifier": "trkerp-verify",
+   "kind": "func",
+   "item": "Game_TrackLayer_BuildExtraWorldDesc",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x142e57e90-0x142e587e0;xref:none checked beyond function body",
+   "notes": "V11005 FILENAME=[rdx+0x78]; expands row+0x18 (worldAssetGroup) and row+0x20 (worldEri) via 0x140234f30; extraWorld_track_layer_%u with row+0xc statId"
+  }
+ ],
+ "proofs": []
+}

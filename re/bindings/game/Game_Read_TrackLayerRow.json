@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_TrackLayerRow",
+ "table": "functions",
+ "author": "re-bindings",
+ "row": {
+  "addr": "0x142e587e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e587e0.c;xref:0x142e5bd03,0x142e5bdc4",
+  "notes": "Reads one track_data.track_layers row (TrackLayer): base reader 0x142a0ddb0, statId byte -> +0xc, row name -> +0x10, field slot pointers worldAssetGroup -> +0x18, worldEri -> +0x20 (Gdb_Get_FieldInt slot pointers, read later). Callers in Sess_Load_TrackDatabase 0x142e58f20. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested)."
+ },
+ "signature": {
+  "id": "game.read_track_layer_row",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE C6 44 24 20 00",
+  "match": "0x142e587e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e587e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_TrackLayerRow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-18",
+    "by": "re-bindings",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-17",
+   "verifier": "trkerp-verify",
+   "kind": "func",
+   "item": "Game_Read_TrackLayerRow",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x142e587e0-0x142e58980;xref:callers 0x142e5bd03,0x142e5bdc4 (in 0x142e58f20)",
+   "notes": "V11003 statId byte -> +0xc; +0x10 = XOR-deobfuscated string from 0x1445a3900 (row key); worldAssetGroup field -> +0x18; worldEri field -> +0x20"
+  }
+ ],
+ "proofs": []
+}
