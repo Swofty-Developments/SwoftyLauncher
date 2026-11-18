@@ -8,15 +8,16 @@ use crate::platform::run_as_admin::{parse_reg_query, reg_dword};
 use super::{ACTIVE_PROCESS_KEY, STEAM_KEY, Signal, State, Status, login_stamp, signed_in_since};
 
 pub trait Registry {
-    /// `reg query <key>` output, or None when it cannot run.
+    /// What `reg query <key>` prints, or None when the key cannot be read.
     fn query(&self, key: &str) -> Option<String>;
 }
 
-pub struct RegExe;
+/// This computer's registry, read in process ([`crate::platform::registry`]).
+pub struct LocalRegistry;
 
-impl Registry for RegExe {
+impl Registry for LocalRegistry {
     fn query(&self, key: &str) -> Option<String> {
-        crate::platform::run_as_admin::windows_tool("reg", &["query", key])
+        crate::platform::registry::reg_query(&[key])
     }
 }
 
