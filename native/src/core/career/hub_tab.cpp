@@ -7,6 +7,7 @@
 #include "core/registry/older.hpp"
 #include "core/frontend/ui_vm.hpp"
 #include "core/runtime/loader/core_rank.hpp"
+#include "core/runtime/loader/hook_install.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/game.hpp>
@@ -420,6 +421,7 @@ void load()
 
 void setup()
 {
+    using runtime::loader::install;
     load();
     if (tabs.empty())
         return;
@@ -443,43 +445,23 @@ void setup()
     bool laptop = a_tab_ctor && a_push && a_page_ctor && a_add_page && end && gate;
     bool team_hq = a_push && a_page_ctor && a_tq_ctor && a_tq_vt0 && a_tq_vt260 && a_tq_vt268 && a_tq_init && a_tq_push &&
                    a_tq_vehicle && tq_end && tq_rnd;
-    if (laptop) {
-        auto e = safetyhook::MidHook::create(reinterpret_cast<void *>(end), tabs_end);
-        auto g = safetyhook::MidHook::create(reinterpret_cast<void *>(gate), rnd_gate);
-        if (e && g) {
-            h_end = std::move(*e);
-            h_rnd = std::move(*g);
-        } else
-            laptop = false;
+    if (laptop && !(install(h_end, end, S_TABS_END.what, tabs_end) && install(h_rnd, gate, S_RND_GATE.what, rnd_gate))) {
+        h_end = {};
+        laptop = false;
     }
-    if (team_hq) {
-        auto e = safetyhook::MidHook::create(reinterpret_cast<void *>(tq_end), team_hq_end);
-        auto g = safetyhook::MidHook::create(reinterpret_cast<void *>(tq_rnd), team_hq_rnd);
-        if (e && g) {
-            h_tq_end = std::move(*e);
-            h_tq_rnd = std::move(*g);
-        } else
-            team_hq = false;
+    if (team_hq &&
+        !(install(h_tq_end, tq_end, S_TQ_END.what, team_hq_end) && install(h_tq_rnd, tq_rnd, S_TQ_RND.what, team_hq_rnd))) {
+        h_tq_end = {};
+        team_hq = false;
     }
-    if (laptop && a_set_visible && laptop_reg) {
-        auto r = safetyhook::MidHook::create(reinterpret_cast<void *>(laptop_reg), laptop_registered);
-        if (r) {
-            h_laptop_registered = std::move(*r);
-            laptop_flag = true;
-        }
-    }
-    if (team_hq && a_set_visible && tq_registered) {
-        auto r = safetyhook::MidHook::create(reinterpret_cast<void *>(tq_registered), team_hq_registered);
-        if (r) {
-            h_tq_registered = std::move(*r);
-            team_hq_flag = true;
-        }
-    }
-    if (team_hq_flag && tq_show_all) {
-        auto r = safetyhook::MidHook::create(reinterpret_cast<void *>(tq_show_all), team_hq_show_all);
-        if (r)
-            h_tq_show_all = std::move(*r);
-    }
+    if (laptop && a_set_visible && laptop_reg &&
+        install(h_laptop_registered, laptop_reg, S_LAPTOP_REGISTERED.what, laptop_registered))
+        laptop_flag = true;
+    if (team_hq && a_set_visible && tq_registered &&
+        install(h_tq_registered, tq_registered, S_TQ_REGISTERED.what, team_hq_registered))
+        team_hq_flag = true;
+    if (team_hq_flag && tq_show_all)
+        install(h_tq_show_all, tq_show_all, S_TQ_SHOW_ALL.what, team_hq_show_all);
     swofty::log("[hub] builders: Driver Career Team HQ (team_hq_container) %s, laptop (laptop_container) %s",
                 team_hq ? "hooked" : "NOT hooked", laptop ? "hooked" : "NOT hooked");
     swofty::log("[hub] R&D tab: Team HQ %s, laptop %s", team_hq_flag ? "follows hide_rnd live" : "left out at the next entry",
