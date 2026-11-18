@@ -109,6 +109,33 @@ void car_category_commit()
 
 The career contents and their tile route, the car category boxes, the box grid and the save splice keep their hook state this way. `native/test/hook_set_test.cpp` pins the bind step's reason, `needs <ids>, which this build does not resolve`.
 
+A set whose parts addons ask for one by one keeps a `loader::MixinPart` per part: the mixin's name and label, wanted, its `MixinGate`, live and whether its late registration was logged. The career wizard's five controls and the character refs and voices are parts:
+
+```cpp
+runtime::loader::MixinPart ref{REF_MIXIN, "ref"}, voice{VOICE_MIXIN, "voice"};
+
+std::vector<CoreMixins> characters_mixins()
+{
+    std::vector<CoreMixins> out;
+    if (ref.offer()) // wanted, and offered for the first time
+        out.push_back({REF_MIXIN, {/* ... */}});
+    return out;
+}
+
+void characters_commit()
+{
+    bool any = false;
+    for (runtime::loader::MixinPart *p : {&ref, &voice})
+        any |= p->settle([p] { return core_mixins_active(p->name); });
+    if (any)
+        swofty::log("[characters] setup: character refs %s, voices %s", ref.state(), voice.state()); // armed, off, not used
+}
+```
+
+`usable(core_mixins_closed())` answers whether an addon's entry can still take effect, and `first_late()` is true once, for the line a registration after the last commit logs.
+
+Two hooks stay outside these objects. `diagnostics/tyre_models.cpp` keeps a `MixinGate` and its one original: a `HookSet` holds its reason as a `std::string`, whose exit-time destructor adds the unit to the exit section of `tools/core_init_order.txt`. `diagnostics/crash/dred.cpp` places its D3D12CreateDevice hook with `safetyhook::InlineHook::create` in the crash handler's attach step (`crash_attach`), on d3d12.dll's export from `GetProcAddress` with no signature or build gate; it logs through the crash log's own line function, and its line says only `hooked` or `NOT hooked`.
+
 A safetyhook mid hook or inline hook goes on through `loader::install` (`runtime/loader/hook_install.hpp`). Given a `HookSite` it checks the site's build gate, finds its signature and places the hook; given an address it only places the hook:
 
 ```cpp
@@ -191,6 +218,53 @@ loader::api->log(perf::STEP_LINE, steps.lap_ms(), "attach subsystems");   // [pe
 
 Attach-time lines go through the loader's `api->log`, because `swofty::log` has no API until the settings subsystem has attached. An addon init slower than `SLOW_ADDON_INIT_MS` adds a `[perf] slow addon init` line beside its step.
 
+## The boot plan
+
+The boot plan counts the new database keys every boot applier adds, before the game loads its database. The `gamedb` subsystem starts it at the ready stage, and the count of the content rows runs on a worker while the stage goes on (`apply/scheduler.cpp`):
+
+```cpp
+moments::start_boot_plan();          // scheduler().start_plan(true), or start_plan(false) with SWOFTY_PLAN_SYNC=1
+if (edits.empty() && !moments::boot_may_work())
+    without_database("not_needed", "");
+// ...
+scheduler().planned_keys();          // in reserve_target: the first reader waits for the worker
+```
+
+`start_plan` runs on the calling thread:
+
+- Every boot applier's `prepare`: the stock teams and constructors, the venues and the track seeds.
+- Every count that writes the store: the tracks' `database_keys`, which declares the record tracks' data variants.
+- The hook test. When no `counts_off_thread()` applier `may_count`, those appliers count on this thread too, and `boot_may_work()` is the counted plan's `boot_work()`. While a worker counts, `boot_may_work()` is true, and the database load is hooked. The content rows `may_count` only when a row registry holds an addon record, which makes boot work in any case.
+
+The `counts_off_thread()` appliers then count on a worker. These are the content rows, whose `database_keys` expands every content record against the game database file and only reads the store. Every reader of the plan waits for the worker first: `planned_keys`, `boot_work`, `run_boot` and `plan_boot`. At that wait the store's `generation()` is compared with its value when the worker started. If the store changed, the waiting thread forgets the worker's count and counts again. The content expansion reads no track registry, so it counts the same before and after the tracks' variants.
+
+The plan logs these step lines:
+
+```text
+[perf] step 12.0 ms: boot plan prepare (24)
+[perf] step 30.1 ms: boot plan counts on this thread (3)
+[perf] step 1210.4 ms: boot plan count off the thread (21)
+[perf] step 0.2 ms: boot plan wait for the count off the thread
+[perf] step 1301.7 ms: boot plan on this thread (24)              (SWOFTY_PLAN_SYNC=1)
+[perf] step 1190.3 ms: boot plan count again on this thread (21)  (the store changed during the count)
+```
+
+`native/test/apply/apply_test.cpp` covers the scheduler side. `native/test/run_content_test.sh` compares the database edits from both paths over Classic Seasons on the game database.
+
+### Registry writes after the register pass
+
+`SwoftyCoreRegisterDone` ends the register pass (`Store::end_register`). On a boot registry, `add`, `variant`, `provide` and `layer` are refused as `late` after that. These calls are still accepted on a boot registry and change what the boot plan and the boot apply read:
+
+| Call | Effect on a boot registry |
+|---|---|
+| `clear_layer` | drops an addon's layer |
+| `tag_add` | adds a record to a tag a layer targets |
+| `protect` | protects fields from other addons' layers |
+| `invalidate` | makes a dynamic provider's records read again |
+| `declare` | a newer minor replaces the registry's schema |
+
+A call made after the plan's wait changes the boot apply but not the plan. The plan's counts size the value map and admit addons for room, so the boot can then lay out a different number of keys than the plan counted. A call that lands before the wait moves the store's generation, and the plan is counted again. `native/test/content/rows_test_plan.cpp` shows the current behaviour: `clear_layer` on `team.identity` after the register pass is accepted and changes the expansion. To close the gap, these calls would be refused as `late` on boot registries after the register pass. Addons would see that change.
+
 ## The crash handler
 
 The crash handler in `diagnostics/crash/` is split by what runs when:
@@ -233,7 +307,7 @@ swofty::log("%s", logic::hitch_line(ms, h.during, swofty_ms, h.top).c_str());
 
 ## Career namespaces
 
-Code in `core/career/` is in `career::`. The entry points `runtime/runtime.hpp` declares stay in `runtime`, and `career.cpp`, `career_saves.cpp`, `career_start.cpp` and `career_wizard.cpp` define them over unnamed-namespace state:
+Code in `core/career/` is in `career::`. The entry points `runtime/runtime.hpp` declares stay in `runtime`: `career.cpp`, `career_saves.cpp` and `career_start.cpp` define them over unnamed-namespace state, and `career_wizard.cpp` over `career::wizard`:
 
 | Namespace | Files |
 |---|---|
@@ -241,7 +315,8 @@ Code in `core/career/` is in `career::`. The entry points `runtime/runtime.hpp` 
 | `career::game` | `career_entity.hpp`, `career_entity.cpp`: the championship entity, its components and entrants |
 | `career::content` | `career_content_logic.hpp`, `content_state.hpp`, `career_content.cpp`, `content_*.cpp` |
 | `career::characters` | `characters_logic.hpp`, `characters_state.hpp`, `characters.cpp`, `characters_hooks.cpp` |
-| `career::hub` | `hub_state.hpp`, `hub_tab.cpp`, `hub_rnd.cpp` |
+| `career::hub` | `hub_state.hpp`, `hub_tab.cpp`, `hub_team_hq.cpp`, `hub_rnd.cpp` |
+| `career::wizard` | `wizard_state.hpp`, `career_wizard.cpp`, `wizard_hooks.cpp` |
 | `career::saves`, `career::start`, `career::ui` | `career_saves_logic.hpp`, `career_start.hpp`, `career_ui.hpp` |
 | `career::save_data`, `career::save_splice` | `save_data.hpp`, `save_data.cpp`, `save_splice_logic.hpp`, `save_splice.cpp` |
 | `career::save_diag`, `career::save_heap` | `save_diag_logic.hpp`, `save_heap_logic.hpp` |
@@ -278,7 +353,8 @@ These units keep their state in the first file listed; the other files hold code
 | `career/save_data.cpp`, `save_data.hpp` | the game's save-data objects: the root, a child's bag and its encoding, the string table, slot managers |
 | `career/snapshots/snapshots.cpp` | the snapshots entry, the save and career moments and the reads |
 | `career/snapshots/freeze.cpp`, `book_cache.hpp` | `Book::freeze`, `season_start` and `career_created` |
-| `career/hub_tab.cpp`, `hub_state.hpp` | the hub tabs, their options and `SwoftyCoreHub` |
+| `career/hub_tab.cpp`, `hub_state.hpp` | the hub tabs and their options, the page, the laptop builder, setup and `SwoftyCoreHub` |
+| `career/hub_team_hq.cpp` | the Driver Career Team HQ builder |
 | `career/hub_rnd.cpp` | the R&D tab's visibility on Team HQ and the laptop, and `hub_tick` |
 | `career/career_content.cpp`, `content_state.hpp` | the content registry and its core sets |
 | `career/content_hooks.cpp` | the router, gate and slot predicate wraps and `bind_all` |
@@ -292,6 +368,8 @@ These units keep their state in the first file listed; the other files hold code
 | `runtime/loader/binding_resolve.cpp` | resolving a binding by address, pattern or anchor, deferral and the retry passes |
 | `runtime/settings.cpp` | settings.json's addon options, the settings API, the MFD rows and the commands |
 | `runtime/settings_logic.hpp` | the option model, the requests.json text and an option's value (`test/settings_logic_test.cpp`) |
+| `career/career_wizard.cpp`, `wizard_state.hpp` | the wizard entries and their records, the parts, the `SwoftyCareerWizard` table, the core sets and the tile routes |
+| `career/wizard_hooks.cpp` | the start in F1, step and option, confirm route and driver tab wraps and sites |
 | `career/characters.cpp`, `characters_state.hpp` | the character entries, the active group, the strings and the `SwoftyCharacters` table |
 | `career/characters_hooks.cpp` | the character ref and voice wraps and the character list's rebuild |
 | `career/characters_logic.hpp` | which swap and mute act in the active group (`test/characters_logic_test.cpp`) |

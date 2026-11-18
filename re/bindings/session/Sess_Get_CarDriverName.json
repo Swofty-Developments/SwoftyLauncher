@@ -9,7 +9,7 @@
   "subsystem": "session",
   "proto": "-",
   "evidence": "decomp:re/decomp/142f28c10.c;xref:0x142f55040,0x143565bc0",
-  "notes": "(sess, byte carIdx): display name string of the car's driver (default empty 0x145612762): cached participant +0xa0+idx*8 (participant [+0x18]+0x58 +0xe8 = car index), human online players from session player list (+0x2e0 stride 0x88, name +200). Callers: Sess_Misconduct_OnCarToCarCollision, Sess_PenaltyLog_Print, Sess_Misconduct_RemoveWatchedIncident."
+  "notes": "(sess, byte carIdx): display name string of the car's driver (default empty 0x145612762): cached participant +0xa0+idx*8 (participant [+0x18]+0x58 +0xe8 = car index), human online players from session player list (+0x2e0 stride 0x88, name +200). Callers: Sess_Misconduct_OnCarToCarCollision, Sess_PenaltyLog_Print, Sess_Misconduct_RemoveWatchedIncident. Callers: census steam 0x2f28c10."
  },
  "signature": {
   "id": "session.get_car_driver_name",

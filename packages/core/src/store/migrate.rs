@@ -15,25 +15,57 @@ use crate::{Error, Result, io_err};
 impl Store {
     pub fn migrate(&self) -> Result<Vec<String>> {
         let mut notes = Vec::new();
-        if let Some(target) = crate::data::paths::dangling_link(&self.root) {
-            return Err(Error::Other(format!(
-                "the data folder {} links to {}, which is missing. Reconnect that drive or restore the folder; the launcher will not start a new data folder in its place",
-                self.root.display(),
-                target.display()
-            )));
-        }
+        self.refuse_dangling_root()?;
         if !self.root.is_dir() {
             return Ok(notes);
         }
         notes.extend(self.finish_swaps());
-        let config: Result<Config> = match crate::load_json(&self.config_path()) {
-            Ok(crate::Loaded::Found(c)) => Ok(c),
-            Ok(crate::Loaded::Missing | crate::Loaded::Damaged(_)) => Ok(Config::default()),
-            Err(e) => Err(e),
-        };
+        let config = self.read_config();
         if config.as_ref().is_ok_and(|c| c.data_version >= DATA_VERSION) {
             return Ok(notes);
         }
+        notes.extend(self.move_legacy_addons()?);
+        let from = config.as_ref().map_or(0, |c| c.data_version);
+        notes.extend(self.migrate_builtins(from)?);
+        let backfilled = self.backfill(&config, from, &mut notes);
+        match config {
+            Ok(_) if !backfilled => {}
+            Ok(mut config) => {
+                config.data_version = DATA_VERSION;
+                self.save_config(&config)?;
+            }
+            Err(e) => notes.push(format!("data_version not recorded: {e}")),
+        }
+        Ok(notes)
+    }
+
+    /// Refuses a data folder that is a link to a folder that is gone, so a
+    /// drive that is not connected never gets a new, empty data folder.
+    pub(super) fn refuse_dangling_root(&self) -> Result<()> {
+        match crate::data::paths::dangling_link(&self.root) {
+            Some(target) => Err(Error::Other(format!(
+                "the data folder {} links to {}, which is missing. Reconnect that drive or restore the folder; the launcher will not start a new data folder in its place",
+                self.root.display(),
+                target.display()
+            ))),
+            None => Ok(()),
+        }
+    }
+
+    /// The launcher config as a migration reads it: the defaults when it is
+    /// missing or damaged, and an error when it can't be read.
+    pub(super) fn read_config(&self) -> Result<Config> {
+        match crate::load_json(&self.config_path()) {
+            Ok(crate::Loaded::Found(c)) => Ok(c),
+            Ok(crate::Loaded::Missing | crate::Loaded::Damaged(_)) => Ok(Config::default()),
+            Err(e) => Err(e),
+        }
+    }
+
+    /// Moves an older launcher's addons folder into place: whole when there
+    /// is no addons folder yet, else each addon this one doesn't have.
+    pub(super) fn move_legacy_addons(&self) -> Result<Vec<String>> {
+        let mut notes = Vec::new();
         let old = self.root.join(LEGACY_ADDONS_DIR);
         let new = self.addons_dir();
         if old.is_dir() && !new.exists() {
@@ -63,7 +95,12 @@ impl Store {
                 notes.push(format!("removed the empty {}", old.display()));
             }
         }
-        let from = config.as_ref().map_or(0, |c| c.data_version);
+        Ok(notes)
+    }
+
+    /// Runs each built-in addon's own migration from data version `from`.
+    pub(super) fn migrate_builtins(&self, from: u32) -> Result<Vec<String>> {
+        let mut notes = Vec::new();
         for b in self.builtins.iter() {
             let id = &b.addon.manifest().id;
             match b.addon.migrate(&self.root, from) {
@@ -71,7 +108,14 @@ impl Store {
                 Err(e) => return Err(Error::Other(format!("migrating {id}: {e}"))),
             }
         }
-        let backfilled = match config
+        Ok(notes)
+    }
+
+    /// Lists in each profile the installed addons it lacks, when the config
+    /// was read. Whether that is done; a failure is warned about and noted,
+    /// and the next start tries again.
+    pub(super) fn backfill(&self, config: &Result<Config>, from: u32, notes: &mut Vec<String>) -> bool {
+        match config
             .as_ref()
             .map_or(Ok(Vec::new()), |_| self.backfill_profile_addons(from))
         {
@@ -85,16 +129,7 @@ impl Store {
                 notes.push(text);
                 false
             }
-        };
-        match config {
-            Ok(_) if !backfilled => {}
-            Ok(mut config) => {
-                config.data_version = DATA_VERSION;
-                self.save_config(&config)?;
-            }
-            Err(e) => notes.push(format!("data_version not recorded: {e}")),
         }
-        Ok(notes)
     }
 
     /// Data version 4: a profile lists every installed addon, as the Addons page showed

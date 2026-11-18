@@ -7,7 +7,7 @@ description: The game's lifecycle as events, from boot to the chequered flag, ea
 
 An **event** is a moment in the game's lifecycle: a career's season starts, a session loads, a car makes a pit stop. Your addon subscribes to the moments it cares about, filtered to the content it cares about, and the core calls your handler with a **context**: the mode, the content being played and the addon that provides it, the career, the season and round, the weekend, the session, the player, every participant, and each one's registry records.
 
-For example, F1 1990 caps the rain chance of every race in its own career with one `before` handler on `session.weather.setup`, scoped to its career. In every other career and in Grand Prix, the handler is never called.
+For example, F1 1990 scripts every race of its own career to start dry and end in rain with one `before` handler on `session.weather.setup`, scoped to its career. In every other career and in Grand Prix, the handler is never called.
 
 ## Events in full
 
@@ -41,7 +41,7 @@ SWOFTY_ON_LOAD
 
     // before: change what the game is about to use
     events::on<weather::events::Setup>().in(k1990).when(events::session_type({ events::SessionType::race }))
-        .before([](weather::events::Setup &w, const events::Context &) { w.rain_chance = std::min(w.rain_chance, 30u); });
+        .before([](weather::events::Setup &w, const events::Context &) { weather::script(w, weather::Dataset::race, f1990::late_rain); });
 
     // replace: stand in for the game; return true when handled
     events::on<sessions::events::GroupResult>().in(k1990).replace([](sessions::events::GroupResult &g, const events::Context &ctx) {
@@ -186,9 +186,11 @@ driver.ratings.read / driver.number.assign / driver.head.resolve
 team.logo.resolve / team.name.resolve
                                  swofty/systems/teams.hpp    teams::events
 wearable.catalogue.build         swofty/systems/wearables.hpp wearables::events::CatalogueBuild
+session.weather.setup            swofty/systems/weather.hpp  weather::events::Setup
+car.tyre.damage                  swofty/systems/tyre_damage.hpp tyre_damage::events::Damage
 ```
 
-`ai.controller.update` and `car.controllers.rebuilt` need the in-game checks T145 and T144. `session.lap` fires from the core's ERS new-lap site (see [Sessions](/std/systems/sessions#a-cars-lap)). `session.flag`, `session.safety_car.deploy`, `session.red_flag`, `session.sector` and `session.car.status` fire from the live state's frame tick while the `telemetry` feature is on (see [Race control](/reference/std/race-control)). `car.built` and `car.reset` fire once per built or re-read car on the next frame (see [Car physics](/std/systems/car-physics#changing-a-car-live)); `car.vtf.read` and `car.upgrades.fit` are not fired yet. `car.parts.register`, `car.damage`, `session.pit` and `session.pit_stop` fire from the game ([Car physics](/std/systems/car-physics#events)). `session.end` and `session.unload` fire from the flow hook: `session.end` when the session state exits (or on a restart), `session.unload` when unloading begins (see [Events reference](/reference/std/events)). `game.pause` and `game.resume` fire when the game's pause reason mask goes from 0 to non-zero and back to 0 (see [Events reference](/reference/std/events#pause-and-resume)), and `on_frame` keeps running in the pause menu ([Pausing](/std/systems/failures#pausing)). The other points in the tree (`session.state.enter`, `session.weather.setup`, `session.results.finalise`, `career.season.process` and the rest of the session group) are the design for later headers; addons made for 1.5 and earlier subscribe to some of these moments by shorter names, which still work: see [Compatibility](/std/compatibility#events).
+`ai.controller.update` and `car.controllers.rebuilt` need the in-game checks T145 and T144. `session.lap` fires from the core's ERS new-lap site (see [Sessions](/std/systems/sessions#a-cars-lap)). `session.flag`, `session.safety_car.deploy`, `session.red_flag`, `session.sector` and `session.car.status` fire from the live state's frame tick while the `telemetry` feature is on (see [Race control](/reference/std/race-control)). `car.tyre.damage` fires from the same tick (see [Tyre damage](/reference/std/tyre-damage)). `car.built` and `car.reset` fire once per built or re-read car on the next frame (see [Car physics](/std/systems/car-physics#changing-a-car-live)); `car.vtf.read` and `car.upgrades.fit` are not fired yet. `car.parts.register`, `car.damage`, `session.pit` and `session.pit_stop` fire from the game ([Car physics](/std/systems/car-physics#events)). `session.end` and `session.unload` fire from the flow hook: `session.end` when the session state exits (or on a restart), `session.unload` when unloading begins (see [Events reference](/reference/std/events)). `game.pause` and `game.resume` fire when the game's pause reason mask goes from 0 to non-zero and back to 0 (see [Events reference](/reference/std/events#pause-and-resume)), and `on_frame` keeps running in the pause menu ([Pausing](/std/systems/failures#pausing)). `session.weather.setup` fires from the core's weather setup wrap with `SWOFTY_WEATHER_CHAIN=1` on the KB build and Steam 1.0.145 (see [Weather](/std/systems/weather#the-setup-event)). The other points in the tree (`session.state.enter`, `session.results.finalise`, `career.season.process` and the rest of the session group) are the design for later headers; addons made for 1.5 and earlier subscribe to some of these moments by shorter names, which still work: see [Compatibility](/std/compatibility#events).
 
 **Every start has one end.** The core keeps a lifecycle stack. If the player quits from the pause menu, the core fires the missing ends itself, with `reason = abandoned`:
 

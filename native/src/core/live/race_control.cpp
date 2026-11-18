@@ -1,4 +1,5 @@
 #include "core/live/race_control.hpp"
+#include "core/live/tyre_damage.hpp"
 
 #include "core/hooks/core_events.hpp"
 #include "core/runtime/runtime.hpp"
@@ -20,8 +21,12 @@ namespace rc = swofty::race_control;
 
 constexpr unsigned LINES = 200;
 
+namespace tdl = swofty_core::live::tyre_damage;
+namespace td = swofty::tyre_damage;
+
 struct State {
     rcl::Tracker tracker;
+    tdl::Tracker tyres;
     lv::Snapshot read{};
     unsigned lines = 0;
     int8_t events = -1;
@@ -89,6 +94,15 @@ void fire(rcl::Moments &m)
         ev::session_sector(e);
 }
 
+void fire_tyres(std::vector<td::events::Damage> &m)
+{
+    for (auto &e : m) {
+        line("vehicle %u %s tyre %s (was %s), deflation %.2f, lap %d", e.car, td::name(e.wheel), td::name(e.state),
+             td::name(e.previous), e.deflation, e.lap);
+        swofty_core::hooks::events::car_tyre_damage(e);
+    }
+}
+
 }
 
 namespace runtime {
@@ -102,6 +116,7 @@ void race_control_tick(const lv::Snapshot &published)
     const lv::Snapshot *s = lv::snap_read(&published, &g.read) ? &g.read : nullptr;
     uint64_t before = g.tracker.sessions();
     rcl::Moments m = g.tracker.step(s);
+    std::vector<td::events::Damage> tyres = g.tyres.step(s);
     if (!g.tracker.primed())
         return;
     if (g.tracker.sessions() != before) {
@@ -110,6 +125,8 @@ void race_control_tick(const lv::Snapshot &published)
     }
     if (!m.empty())
         fire(m);
+    if (!tyres.empty())
+        fire_tyres(tyres);
 }
 
 }

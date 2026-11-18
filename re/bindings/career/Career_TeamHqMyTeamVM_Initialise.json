@@ -9,7 +9,7 @@
   "subsystem": "career",
   "proto": "-",
   "evidence": "decomp:re/decomp/1423278c0.c;xref:0x14577fa20",
-  "notes": "TeamHQMyTeamCareerViewModel vtable 0x14577f9f0 slot +0x30 (My Team variant of Career_TeamHqAdvanceVM_Initialise): engineering top-level enter/exit, my_team_research_project_started, my_team_welcome_to_team_hq tutorial, plus the same Team HQ timeline bus subscriptions. Addon: My Team mode HQ entry point. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3091)"
+  "notes": "TeamHQMyTeamCareerViewModel vtable 0x14577f9f0 slot +0x30 (My Team variant of Career_TeamHqAdvanceVM_Initialise): engineering top-level enter/exit, my_team_research_project_started, my_team_welcome_to_team_hq tutorial, plus the same Team HQ timeline bus subscriptions. Addon: My Team mode HQ entry point. Callers: census steam 0x23278c0. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3091)"
  },
  "signature": {
   "id": "career.team_hq_my_team_v_m_initialise",

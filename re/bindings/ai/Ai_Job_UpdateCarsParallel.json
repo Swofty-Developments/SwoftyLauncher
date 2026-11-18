@@ -9,7 +9,7 @@
   "subsystem": "ai",
   "proto": "-",
   "evidence": "decomp:re/decomp/14063e370.c;xref:0x1405ee51b",
-  "notes": "Parallel-for worker (address taken by lea in 0x1405ee110): atomically increments index param_1[0] and processes items while index <= param_1[6]; 3.2k-line per-car AI update using Game_TrackSpace_FindVolume, Game_VehicleProgressSystem_GetLapProgress, Game_TrackSpace_GetDistanceAtPos, formation-lap checks and tyre compound lookups. Addon: central AI per-car update; hooking it gives a per-car tick for all AI cars. | #587: L2 by lead-authorised promotion for lane owner ai-re (independent agree V2865)"
+  "notes": "Parallel-for worker (address taken by lea in 0x1405ee110): atomically increments index param_1[0] and processes items while index <= param_1[6]; 3.2k-line per-car AI update using Game_TrackSpace_FindVolume, Game_VehicleProgressSystem_GetLapProgress, Game_TrackSpace_GetDistanceAtPos, formation-lap checks and tyre compound lookups. Addon: central AI per-car update; hooking it gives a per-car tick for all AI cars. Callers: census steam 0x63e370. | #587: L2 by lead-authorised promotion for lane owner ai-re (independent agree V2865)"
  },
  "signature": {
   "id": "ai.job_update_cars_parallel",

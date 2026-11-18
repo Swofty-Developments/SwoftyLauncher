@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141a79ee0.c;xref:0x141a771de",
-  "notes": "Called from Game_F1WorldActivityContainer_AddTabs: sets entry point 0 (0x146066c74) and fires the UI route 'home' (Vm_Fire_Route on [this+0x28]). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2449)"
+  "notes": "Called from Game_F1WorldActivityContainer_AddTabs: sets entry point 0 (0x146066c74) and fires the UI route 'home' (Vm_Fire_Route on [this+0x28]). Callers: census steam 0x1a79ee0. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2449)"
  },
  "signature": {
   "id": "game.f1_world_activity_container_go_home",
