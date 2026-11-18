@@ -1,7 +1,7 @@
 use std::cell::Cell;
 use std::rc::Rc;
 
-use crate::shell::notices::{Notification, Notify};
+use crate::shell::notices::{self, Notification, Notify};
 use crate::ui::scale::{Hit, px};
 use gpui_kit::component::button::Button;
 use gpui_kit::component::input::{Input, InputState};
@@ -15,9 +15,9 @@ use swofty_core::store::Store;
 use swofty_i18n::{tr, trf, trn};
 
 use super::{Then, guarded, text};
-use crate::features::db::{Db, DbChange, DbPrompt};
+use crate::features::db::{Db, DbChange};
 use crate::shell::Shell;
-use crate::shell::host::{Host, PromptHost};
+use crate::shell::host::Host;
 use crate::ui::Field;
 use crate::ui::theme::palette;
 
@@ -38,6 +38,18 @@ pub(crate) fn default_author(store: &Store, last: Option<&str>) -> String {
         .map(|p| p.author)
         .find(|a| a != package::DEFAULT_AUTHOR && !a.trim().is_empty())
         .unwrap_or_default()
+}
+
+/// The notice for a draft saved as a new addon, and the profile it was turned on in.
+pub(super) fn saved_new_text(name: &str, turned_on_in: Option<&str>) -> String {
+    match turned_on_in {
+        Some(profile) => trf!(
+            "Saved {name} and turned it on in {profile}",
+            name = name,
+            profile = profile
+        ),
+        None => trf!("Saved {name}", name = name),
+    }
 }
 
 fn category_label(c: Option<Category>) -> &'static str {
@@ -219,24 +231,12 @@ impl Shell {
         id: String,
         details: &Details,
         then: Option<Then>,
-        window: &mut Window,
         cx: &mut Context<Self>,
     ) {
         let profile = self.library.profile.name.clone();
         let on = !self.vanilla() && self.db_turn_on(&id).is_ok();
-        let name = &details.name;
-        window.notify(
-            Notification::success(if on {
-                trf!(
-                    "Saved {name} and turned it on in {profile}",
-                    name = name,
-                    profile = profile
-                )
-            } else {
-                trf!("Saved {name}", name = name)
-            }),
-            cx,
-        );
+        let text = saved_new_text(&details.name, on.then_some(profile.as_str()));
+        notices::post(Notification::success(text), cx);
         self.db_after_save(id, then, cx);
     }
 
@@ -257,7 +257,7 @@ impl Shell {
 
 impl Db {
     /// Saves the draft as a new addon. False when it could not be saved, which a notice says.
-    pub(crate) fn save_new<H: PromptHost<Self>>(
+    pub(crate) fn save_new<H: Host<Self>>(
         host: &mut H,
         details: Details,
         then: Option<Then>,
@@ -278,12 +278,12 @@ impl Db {
                 return false;
             }
         };
-        let saved = DbPrompt::SavedNew {
+        let saved = DbChange::SavedNew {
             id: pkg.id,
             details,
             then,
         };
-        host.prompt(saved, window, cx);
+        host.changed(saved, cx);
         true
     }
 

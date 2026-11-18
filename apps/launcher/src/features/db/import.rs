@@ -1,13 +1,13 @@
 use std::path::Path;
 
-use crate::shell::notices::{Notification, Notify};
+use crate::shell::notices::{self, Notification, Notify};
 use gpui_kit::*;
 use swofty_core::dbedit::ImportReport;
 use swofty_core::dbedit::package::{self, Imported, Incoming};
 use swofty_i18n::{tr, trf};
 
 use super::{Then, debug_path, guarded, text};
-use crate::features::db::{Db, DbPrompt};
+use crate::features::db::{Db, DbChange, DbPrompt};
 use crate::shell::Shell;
 use crate::shell::host::PromptHost;
 
@@ -76,7 +76,7 @@ impl Db {
         cx: &mut Context<H>,
     ) {
         match result {
-            Ok(Incoming::Addon(done)) => host.prompt(DbPrompt::AddonImported(done), window, cx),
+            Ok(Incoming::Addon(done)) => host.changed(DbChange::Imported(done), cx),
             Ok(Incoming::Changes { name, edits, report }) => {
                 let then = Then::Load {
                     file,
@@ -101,22 +101,13 @@ impl Db {
 
 impl Shell {
     /// Turns the imported addon on in this profile, says so, and shows it on Addons.
-    pub(crate) fn db_addon_imported(&mut self, done: Imported, window: &mut Window, cx: &mut Context<Self>) {
-        let mut body = report_text(&done.report);
-        if let Some(from) = &done.renamed_from {
-            body.push_str(&trf!(
-                "\n{from} was already installed; this copy is {id}",
-                from = from,
-                id = done.package.id
-            ));
-        }
+    pub(crate) fn db_addon_imported(&mut self, done: Imported, cx: &mut Context<Self>) {
         let id = done.package.id.clone();
         let profile = self.library.profile.name.clone();
-        if !self.vanilla() && self.db_turn_on(&id).is_ok() {
-            body.push_str(&trf!("\nTurned on in {profile}", profile = profile));
-        }
+        let on = !self.vanilla() && self.db_turn_on(&id).is_ok();
+        let body = imported_text(&done, on.then_some(profile.as_str()));
         let title = trf!("Imported {name}", name = done.package.name);
-        window.notify(Notification::success(body).title(title), cx);
+        notices::post(Notification::success(body).title(title), cx);
         self.reload(cx);
         self.show_addon(&id, cx);
     }
@@ -141,6 +132,22 @@ impl Shell {
         Db::changed(self, Some(key), true, cx);
         Ok(())
     }
+}
+
+/// The notice body for an imported addon, and the profile it was turned on in.
+pub(super) fn imported_text(done: &Imported, turned_on_in: Option<&str>) -> String {
+    let mut body = report_text(&done.report);
+    if let Some(from) = &done.renamed_from {
+        body.push_str(&trf!(
+            "\n{from} was already installed; this copy is {id}",
+            from = from,
+            id = done.package.id
+        ));
+    }
+    if let Some(profile) = turned_on_in {
+        body.push_str(&trf!("\nTurned on in {profile}", profile = profile));
+    }
+    body
 }
 
 pub(super) fn report_text(r: &ImportReport) -> String {

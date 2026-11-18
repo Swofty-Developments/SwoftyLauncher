@@ -1,7 +1,10 @@
+use swofty_core::dbedit::ImportReport;
 use swofty_core::dbedit::draft::Written;
-use swofty_core::dbedit::package::PackageInfo;
+use swofty_core::dbedit::package::{Imported, PackageInfo};
 
 use super::draft::DraftBook;
+use super::import::imported_text;
+use super::save::saved_new_text;
 use super::state::Autosave;
 
 fn changed() -> Autosave {
@@ -131,4 +134,39 @@ fn a_save_drops_the_read_error_and_reads_the_addon_again() {
     assert!(book.addon_error.is_none());
     assert!(book.seen.is_none());
     assert_eq!(book.draft_name(), "Faster pits");
+}
+
+#[test]
+fn a_new_addons_notice_names_the_profile_it_was_turned_on_in() {
+    assert_eq!(
+        saved_new_text("Faster pits", Some("Main")),
+        "Saved Faster pits and turned it on in Main"
+    );
+    assert_eq!(saved_new_text("Faster pits", None), "Saved Faster pits");
+}
+
+#[test]
+fn an_imported_addons_notice_reports_the_import_a_rename_and_the_profile() {
+    let done = Imported {
+        package: installed("swofty-db-a-2", "Faster pits"),
+        report: ImportReport {
+            format: "package",
+            imported: 3,
+            unchanged: 1,
+            skipped: Vec::new(),
+        },
+        renamed_from: Some("swofty-db-a".into()),
+    };
+    assert_eq!(
+        imported_text(&done, Some("Main")),
+        "DB Editor addon\n3 imported · 1 unchanged\nswofty-db-a was already installed; this copy is swofty-db-a-2\nTurned on in Main"
+    );
+    let first = Imported {
+        renamed_from: None,
+        ..done
+    };
+    assert_eq!(
+        imported_text(&first, None),
+        "DB Editor addon\n3 imported · 1 unchanged"
+    );
 }

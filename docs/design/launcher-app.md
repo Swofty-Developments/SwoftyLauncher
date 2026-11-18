@@ -141,7 +141,7 @@ These states run on the pattern:
 | `SupportPage` | goal, supporters, checkout, claim, save | `features/support/state.rs` | `SupportPage` |
 | `TtPage` | barred list, catalogue, runs, moderation, searches | `features/time_trial/state.rs` | `TtPage` |
 | `Browser` | catalog fetch, star sync, addon details, publisher profiles, the install queue | `features/browser/state.rs` | `Feed`, `riders`, `installed_version` |
-| `Db` | draft autosave, "Also changed by", game database, module views, search, unnamed keys, importing a file, sharing the addon, exporting game files, saving the draft; `DbChange::Saved` has the shell read the library again, and `DbPrompt` hands it a new or imported addon to turn on and leaving the draft | `features/db/state.rs`, `Db::import` in `features/db/import.rs`, `Db::export_addon`, `Db::export_game_files_to`, `Db::save_bound` and `Db::save_new` in `features/db/save/` | `Autosave`, `DraftBook` (the draft and the DB Editor addons, `features/db/draft.rs`) |
+| `Db` | draft autosave, "Also changed by", game database, module views, search, unnamed keys, importing a file, sharing the addon, exporting game files, saving the draft; `DbChange` hands the shell a saved, new or imported addon to turn on and show, and `DbPrompt` hands it leaving the draft | `features/db/state.rs`, `Db::import` in `features/db/import.rs`, `Db::export_addon`, `Db::export_game_files_to`, `Db::save_bound` and `Db::save_new` in `features/db/save/` | `Autosave`, `DraftBook` (the draft and the DB Editor addons, `features/db/draft.rs`) |
 | `AddonsPage` | the conflict check | `features/addons/conflicts.rs` | `Conflicts` |
 | `Multiplayer` (the Online page) | game status, room list, addon digest, avatars, opening and joining a room, the page's tick, starting the room's game through Play, the room's game watch, closing the game for a room | `features/multiplayer/state.rs`; `Multiplayer::tick`, `launch` and `close_game` in `features/multiplayer/actions.rs` | `Lobby`, `starting`, `RoomGame` (`features/multiplayer/room_game.rs`) |
 | `Online` (the time trial boards) | overview, seasons, boards, profiles, rankings, avatars and art, adding a lap's replay to the game | `features/online/mod.rs` | `Online` |
@@ -209,7 +209,13 @@ if let Some(played) = step.played() {
 }
 ```
 
-The DB Editor's `DbPrompt` works the same way: an import or a new addon hands the shell the addon to turn on in the profile, and a draft that has to be left hands it the Save / Discard dialog.
+The DB Editor's `DbPrompt` works the same way: a draft that has to be left hands the shell the Save / Discard dialog. What needs no dialog goes through `changed` instead, and a `changed` that has a notice to show posts it with `notices::post`, which needs no window:
+
+```rust
+DbChange::Imported(done) => self.db_addon_imported(done, cx),
+
+notices::post(Notification::success(body).title(title), cx);
+```
 
 `Press::of` decides what a press comes to before the checks run, and `Step::of` turns the checks' gate and verdict into the one thing Play does next. The tests in `shell/play.rs` pin each result of both.
 

@@ -154,12 +154,17 @@ pub(crate) trait Notify {
 
 impl Notify for Window {
     fn notify(&mut self, note: impl Into<Notification>, cx: &mut App) {
-        let note = note.into();
-        cx.update_global(|n: &mut Notices, _| {
-            n.add(note, Instant::now());
-        });
-        cx.refresh_windows();
+        post(note, cx);
     }
+}
+
+/// Adds a notice from work that has no window at hand, such as a state's `changed` on the shell.
+pub(crate) fn post(note: impl Into<Notification>, cx: &mut App) {
+    let note = note.into();
+    cx.update_global(|n: &mut Notices, _| {
+        n.add(note, Instant::now());
+    });
+    cx.refresh_windows();
 }
 
 impl From<String> for Notification {

@@ -307,6 +307,14 @@ pub(crate) struct DbNeeds<'a> {
 pub(crate) enum DbChange {
     /// The draft was saved into `id`: the library is read again, then `then` runs or Addons shows the addon.
     Saved { id: String, then: Option<Then> },
+    /// The draft was saved as the new addon `id`: turn it on, say so, then what follows a save.
+    SavedNew {
+        id: String,
+        details: Details,
+        then: Option<Then>,
+    },
+    /// An import installed an addon: turn it on, say so and show it on Addons.
+    Imported(Imported),
 }
 
 impl Hosted for Db {
@@ -316,16 +324,8 @@ impl Hosted for Db {
 
 /// What the DB Editor's work hands the shell to open in the window.
 pub(crate) enum DbPrompt {
-    /// An import installed an addon: turn it on, say so and show it on Addons.
-    AddonImported(Imported),
     /// Leave the draft for `Then`, asking first when it has unsaved changes.
     Leave(Then),
-    /// The draft was saved as the new addon `id`: turn it on, say so, then what follows a save.
-    SavedNew {
-        id: String,
-        details: Details,
-        then: Option<Then>,
-    },
 }
 
 impl Prompted for Db {
@@ -335,9 +335,7 @@ impl Prompted for Db {
 impl PromptHost<Db> for Shell {
     fn prompt(&mut self, prompt: DbPrompt, window: &mut Window, cx: &mut Context<Self>) {
         match prompt {
-            DbPrompt::AddonImported(done) => self.db_addon_imported(done, window, cx),
             DbPrompt::Leave(then) => self.db_leave(then, window, cx),
-            DbPrompt::SavedNew { id, details, then } => self.db_saved_new(id, &details, then, window, cx),
         }
     }
 }
@@ -357,6 +355,8 @@ impl Host<Db> for Shell {
     fn changed(&mut self, change: DbChange, cx: &mut Context<Self>) {
         match change {
             DbChange::Saved { id, then } => self.db_after_save(id, then, cx),
+            DbChange::SavedNew { id, details, then } => self.db_saved_new(id, &details, then, cx),
+            DbChange::Imported(done) => self.db_addon_imported(done, cx),
         }
     }
 }
