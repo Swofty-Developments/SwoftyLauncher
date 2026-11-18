@@ -21,7 +21,8 @@ def image_bytes():
     """A synthetic image with each kind of reference to T:
     .xtls   A (0x1200): calls at 0x1200 and 0x1210, a jcc at 0x1220, a call to THUNK at 0x1230, a lea at 0x1240
             B (0x1300, a second chained .pdata chunk at 0x1380): a tail jmp at 0x1310, a call at 0x1390
-            a leaf adapter outside .pdata ending in a jmp at 0x1403, the bare jmp thunk THUNK after int3 padding
+            a leaf adapter outside .pdata ending in a jmp at 0x1403, the bare jmp thunk THUNK after int3 padding,
+            a wrapper whose closing jmp lands on a 16-byte boundary (0x1600) and a thunk right after another (0x1705)
     .data1  (writable code) a call outside .pdata at 0x2010, the nop5+jmp thunk DATA1_THUNK after a junk byte,
             calls to its entry (0x2200) and to its jmp (0x2210), the thunk CHAINED_THUNK that jumps to DATA1_THUNK
             and a call to it at 0x2400
@@ -33,7 +34,9 @@ def image_bytes():
                 (0x300, b'\x48\x83\xec\x28' + b'\x90' * 12), (0x310, rel(b'\xe9', 0x1310, T)),
                 (0x390, rel(b'\xe8', 0x1390, T)),
                 (0x400, b'\x4d\x63\xc0' + rel(b'\xe9', 0x1403, T)),
-                (0x500, rel(b'\xe9', THUNK, T)))
+                (0x500, rel(b'\xe9', THUNK, T)),
+                (0x5fa, b'\x48\x89\xc2\x4d\x63\xc1' + rel(b'\xe9', 0x1600, T)),
+                (0x700, rel(b'\xe9', 0x1700, 0x1180) + rel(b'\xe9', 0x1705, T)))
     data1 = page((0x010, rel(b'\xe8', 0x2010, T)),
                  (0x0ff, b'\x11\x0f\x1f\x44\x00\x00' + rel(b'\xe9', 0x2105, T)),
                  (0x200, rel(b'\xe8', 0x2200, DATA1_THUNK)), (0x210, rel(b'\xe8', 0x2210, DATA1_THUNK + 5)),
@@ -65,16 +68,16 @@ class Image(unittest.TestCase):
 class Counts(Image):
     def test_each_kind_of_reference_lands_in_its_column(self):
         self.assertEqual(census.Census(self.img, [T]).row(T), {
-            'rva': '0x1100', 'calls': 4, 'callers': 3, 'sections': '.data1:1,.xtls:3', 'thunks': 3, 'thunk_calls': 4,
-            'thunk_callers': 4, 'jumps': 3, 'lea': 1, 'pointers': 2})
+            'rva': '0x1100', 'calls': 4, 'callers': 3, 'sections': '.data1:1,.xtls:3', 'thunks': 4, 'thunk_calls': 4,
+            'thunk_callers': 4, 'jumps': 4, 'lea': 1, 'pointers': 2})
 
     def test_the_sites_behind_the_counts(self):
         d = census.Census(self.img, [T]).detail(T)
         self.assertEqual([s for s, _ in d['calls']], [0x1200, 0x1210, 0x1390, 0x2010])
-        self.assertEqual(d['thunks'], [THUNK, DATA1_THUNK, CHAINED_THUNK])
+        self.assertEqual(d['thunks'], [THUNK, 0x1705, DATA1_THUNK, CHAINED_THUNK])
         self.assertEqual(d['thunk_calls'], [(0x1230, THUNK), (0x2200, DATA1_THUNK), (0x2210, DATA1_THUNK + 5),
                                             (0x2400, CHAINED_THUNK)])
-        self.assertEqual([s for s, _ in d['jumps']], [0x1220, 0x1310, 0x1403])
+        self.assertEqual([s for s, _ in d['jumps']], [0x1220, 0x1310, 0x1403, 0x1600])
         self.assertEqual(d['lea'], [(0x1240, T)])
         self.assertEqual(d['pointers'], [(0x3000, T), (0x3010, THUNK)])
 
@@ -97,6 +100,8 @@ class Counts(Image):
         f = census.Functions(self.img)
         self.assertIsNone(census.thunk_entry(self.img, f, 0x1403))
         self.assertIsNone(census.thunk_entry(self.img, f, 0x1310))
+        self.assertIsNone(census.thunk_entry(self.img, f, 0x1600))
+        self.assertEqual(census.thunk_entry(self.img, f, 0x1705), 0x1705)
         self.assertEqual(census.thunk_entry(self.img, f, THUNK), THUNK)
         self.assertEqual(census.thunk_entry(self.img, f, 0x2105), DATA1_THUNK)
 
@@ -195,8 +200,8 @@ class Stored(Image):
         with contextlib.redirect_stdout(out):
             census.main(['show', 'test', hex(BASE + T), '--image', self.path, '--sites'])
         text = out.getvalue()
-        self.assertIn('census test 0x1100 (VA 0x140001100): 4 calls from 3 functions (.data1 1, .xtls 3); 3 thunks '
-                      'with 4 calls from 4 functions; 3 jumps; 1 lea; 2 pointers', text)
+        self.assertIn('census test 0x1100 (VA 0x140001100): 4 calls from 3 functions (.data1 1, .xtls 3); 4 thunks '
+                      'with 4 calls from 4 functions; 4 jumps; 1 lea; 2 pointers', text)
         self.assertIn('  thunk_call 0x140002210 .data1 outside .pdata via 0x140002105', text)
         self.assertIn('  call 0x140001390 .xtls in 0x140001300', text)
 

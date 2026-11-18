@@ -17,8 +17,8 @@ disassemble. For an address it counts:
                  the function's first entry; a call outside every entry is a caller of its own
   sections       the calls per section
   thunks         stubs whose first instruction is an E9 to the address or to one of its thunks: the jmp sits outside
-                 every .pdata entry or at the start of one, and only nops, int3 padding or a 16-byte boundary come
-                 before it; the stub's entry is its first nop, or the jmp
+                 every .pdata entry or at the start of one, after nops, int3 padding, a ret on a 16-byte boundary
+                 or another such stub; the stub's entry is its first nop, or the jmp
   thunk_calls    E8 rel32 to a thunk's entry or to its jmp, and thunk_callers the functions they sit in
   jumps          E9 and 0F 8x rel32 to the address or a thunk that do not start a thunk
   lea            48/4C 8D RIP-relative loads of the address or a thunk
@@ -140,7 +140,7 @@ def pointers(img, want):
     return out
 
 
-def thunk_entry(img, funcs, j):
+def thunk_entry(img, funcs, j, depth=0):
     """The entry of the stub whose first instruction is the E9 at j, or None when the jmp ends other code."""
     mem, e = img.mem, j
     for _ in range(8):
@@ -154,7 +154,11 @@ def thunk_entry(img, funcs, j):
         return b if e <= b <= j else None
     if e != j:
         return e
-    return j if j % 16 == 0 or (j and mem[j - 1] == 0xcc) else None
+    if j and mem[j - 1] == 0xcc or j % 16 == 0 and mem[j - 1] == 0xc3:
+        return j
+    if j >= 5 and mem[j - 5] == 0xe9 and depth < 8 and thunk_entry(img, funcs, j - 5, depth + 1) is not None:
+        return j
+    return None
 
 
 class Census:
