@@ -134,7 +134,7 @@ impl Shell {
             return self.addon_update_button(p, cx);
         }
         let vr = self.launch_mode().is_vr();
-        let starting = self.mp_starting_label();
+        let starting = self.room_starting_label();
         let (icon, label, bg, fg, enabled) = match state {
             PlayState::Ready | PlayState::Crashed(_) if starting.is_some() => (
                 IconName::LoaderCircle,
@@ -263,10 +263,10 @@ impl Shell {
             state,
             PlayState::Ready | PlayState::Running | PlayState::Crashed(_)
         );
-        if !ready || !self.mp_can_play_room() {
+        if !ready || !self.room_can_play() {
             return None;
         }
-        let host = self.mp_viewed_room()?.host.name.clone();
+        let host = self.room_viewed()?.host.name.clone();
         Some(
             div()
                 .id("play-room")
@@ -298,7 +298,7 @@ impl Shell {
                         .font_weight(FontWeight::SEMIBOLD)
                         .child(trf!("Play {host}'s Lobby", host = host)),
                 )
-                .on_click(cx.listener(|this, _, window, cx| this.mp_view_play(window, cx)))
+                .on_click(cx.listener(|this, _, window, cx| this.room_view_play(window, cx)))
                 .into_any_element(),
         )
     }

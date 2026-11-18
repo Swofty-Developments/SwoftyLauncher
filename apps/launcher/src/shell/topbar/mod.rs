@@ -192,8 +192,8 @@ impl Shell {
             && self.root_focus.is_focused(window)
             && plain
             && (matches!(key, "down" | "right" | "enter" | "escape" | "backspace")
-                || (matches!(key, "up" | "left") && self.online_has_cursor()))
-            && self.online_key(key, cx)
+                || (matches!(key, "up" | "left") && self.online.has_cursor()))
+            && crate::features::online::Online::key(self, key, cx)
         {
             cx.stop_propagation();
             return;

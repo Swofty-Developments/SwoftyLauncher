@@ -134,6 +134,12 @@ These states run on the pattern:
 | `Db` | draft autosave, "Also changed by", game database, module views, search, unnamed keys | `features/db/state.rs` | `Autosave` |
 | `AddonsPage` | the conflict check | `features/addons/conflicts.rs` | `Conflicts` |
 | `Multiplayer` (the Online page) | game status, room list, addon digest, avatars, opening and joining a room | `features/multiplayer/state.rs` | `Lobby`, `starting` |
+| `Online` (the time trial boards) | overview, seasons, boards, profiles, rankings, avatars and art, adding a lap's replay to the game | `features/online/mod.rs` | `Online` |
+| `Updates` | the update check, installing a missing managed addon, running an update plan, its progress and the restart | `features/update.rs` | `Updates`, `holds_updates` |
+| `SavesPage` | building the careers view and the saves banner | `features/career_saves/refresh.rs` | `SavesPage` |
+| `Settings` | measuring the data folder | `features/settings/usage.rs` | `Settings` |
+| `News` | checking the news feed | `features/news/state.rs` | `News` |
+| `AddonViews` | building addon section views, refreshing stale ones, ticking the open section | `features/sections/mod.rs` | `AddonViews` |
 
 A page's toasts go into a `toasts` list on its state, and `shell/render.rs` shows them. A state reports what other features follow through its `Change`: the browser reports `Installed`, and the shell reads the library again, and `TurnOn`, and the shell adds the "Turn on" action to the notice.
 
@@ -152,13 +158,14 @@ assert_eq!(tt.barred_in(&library.read()).len(), 1);
 | On `Shell` | Files | What it needs |
 |---|---|---|
 | Rendering every page, bar and dialog | `render.rs`, `features/*/page.rs`, `shell/play_bar/`, `shell/topbar/` | Pages read several states. gpui listeners are `Context<Shell>` closures. |
-| Play and the launch | `shell/play.rs`, `shell/play_dialogs.rs`, `shell/launch_alerts.rs` | About ten states, and the window for its prompts. |
-| Starting a room's game, the game watch, closing the game | `features/multiplayer/actions.rs` (`mp_room_launch`, `mp_watch_game`, `mp_close_game`) | `play_for`, `Launching`, the game copies, the window. A host for them carries Play's own needs. |
+| Play, the launch, and starting an update from the play bar | `shell/play.rs`, `shell/play_dialogs.rs`, `shell/launch_alerts.rs`, `start_updates` in `features/update.rs` | About ten states, and the window for its prompts. |
+| Starting a room's game, the game watch, closing the game | `features/multiplayer/actions.rs` (`room_launch`, `room_watch_game`, `room_close_game`) | `play_for`, `Launching`, the game copies, the window. A host for them carries Play's own needs. |
 | Reading the library again, profiles, turning addons on and off | `shell/reload.rs`, `shell/profile_panel.rs`, `shell/profile_edit.rs`, `features/addons/` | Every feature follows the library. |
+| Startup | `shell/startup.rs` | Builds every state and starts each watch and poll loop. |
 | The probe tick | `shell/probe.rs` | Hands its result to the game, shader, database and notice states. |
 | DB Editor save, import and export | `features/db/save/`, `features/db/import.rs` | File pickers, the Save / Discard dialog and the window for notices. An import that installs an addon turns it on, reads the library again and shows it on Addons. |
-| Window flows | `dialogs/data_move.rs`, `dialogs/found_data.rs`, `dialogs/setup.rs`, `dialogs/send_logs.rs`, `features/onboarding/` | A dialog open in the window. |
-| Background work not yet on a host | `features/update.rs`, `features/online/` (the boards), `features/news/`, `features/career_saves/`, `features/sections/`, `features/settings/usage.rs`, `features/tools.rs`, `features/importer.rs`, `features/ads/` | Each is a candidate for the pattern. |
+| Window flows | `dialogs/data_move.rs`, `dialogs/found_data.rs`, `dialogs/setup.rs`, `dialogs/send_logs.rs`, `features/onboarding/`, `features/career_saves/actions.rs`, clearing logs and the cache in `features/settings/usage.rs`, a section's startup, sends and intake in `features/sections/`, `features/importer.rs` | A dialog open in the window. |
+| Tasks tied to rendering | `features/tools.rs`, `features/ads/` | The Tools row's glide and settle, the ad video's skip timer and opening an ad slot from its canvas. |
 | The shaders page | `features/shaders/` | Its own entity, `ShadersView`. |
 
 ## When to use an entity instead

@@ -167,10 +167,10 @@ impl Shell {
     }
 
     pub(crate) fn play(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let room = self.mp_take_held();
+        let room = self.room_take_held();
         let is_room = room.is_some();
         if !self.play_for(room, window, cx) && is_room {
-            self.mp_room_launch_result(false);
+            self.room_launch_result(false);
         }
     }
 
@@ -229,7 +229,7 @@ impl Shell {
                 }
                 let played = s.play_checked(checked, room, steam_saves_once, window, cx);
                 if is_room && played != Played::Asking {
-                    s.mp_room_launch_result(played == Played::Started);
+                    s.room_launch_result(played == Played::Started);
                 }
                 cx.notify();
             })
@@ -340,7 +340,7 @@ impl Shell {
 
     fn asking(&mut self, room: Option<crate::features::multiplayer::RoomLaunch>) -> Played {
         if let Some(room) = room {
-            self.mp_hold_room(room);
+            self.room_hold(room);
         }
         Played::Asking
     }

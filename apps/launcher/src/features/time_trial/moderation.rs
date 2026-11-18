@@ -509,7 +509,7 @@ impl Shell {
                 )
         };
         panel = panel.child(buttons);
-        if let Some((ok, text)) = self.online_replay_notice(lap) {
+        if let Some((ok, text)) = self.online.replay_notice(lap) {
             panel = panel.child(
                 div()
                     .text_size(px(12.))

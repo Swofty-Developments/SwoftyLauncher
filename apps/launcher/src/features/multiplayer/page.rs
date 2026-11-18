@@ -11,12 +11,12 @@ use crate::ui::theme::Palette;
 
 impl Shell {
     pub(crate) fn multiplayer_page(&mut self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        let in_room = self.mp_page.session.is_some();
-        match self.mp_page.state.clone() {
-            Some(state) if in_room => self.mp_room(&state, p, cx),
-            _ => match self.mp_viewed_room().cloned() {
-                Some(room) => self.mp_room_view(&room, p, cx),
-                None => self.mp_lobby(p, cx),
+        let in_room = self.rooms.session.is_some();
+        match self.rooms.state.clone() {
+            Some(state) if in_room => self.room(&state, p, cx),
+            _ => match self.room_viewed().cloned() {
+                Some(room) => self.room_view(&room, p, cx),
+                None => self.room_lobby(p, cx),
             },
         }
     }
@@ -32,7 +32,7 @@ impl Shell {
                     .size(px(15.))
                     .text_color(p.text_placeholder),
             )
-            .child(self.mp_game_state().text())
+            .child(self.room_game_state().text())
     }
 
     pub(super) fn section_head(&self, title: impl Into<SharedString>, p: Palette) -> Div {
@@ -43,7 +43,7 @@ impl Shell {
             .child(label(title, p))
     }
 
-    pub(super) fn mp_card(&self, p: Palette) -> Div {
+    pub(super) fn room_card(&self, p: Palette) -> Div {
         v_flex()
             .p(px(16.))
             .gap(px(12.))
@@ -52,7 +52,7 @@ impl Shell {
             .border_color(p.border)
     }
 
-    pub(super) fn mp_enabled_addons(&self) -> HashSet<String> {
+    pub(super) fn room_enabled_addons(&self) -> HashSet<String> {
         self.library
             .profile
             .addons

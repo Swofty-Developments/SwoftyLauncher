@@ -1,6 +1,6 @@
 use super::model::*;
 use super::widgets::*;
-use super::{Load, Target};
+use super::{Load, Online, Target};
 use crate::shell::Shell;
 use crate::ui::scale::px;
 use crate::ui::theme::{Palette, ScrollArea};
@@ -166,7 +166,7 @@ impl Shell {
                     .text_color(p.text_muted)
                     .hover(move |s| s.bg(p.hover).text_color(p.text))
                     .child(tr("All seasons"))
-                    .on_click(cx.listener(|this, _, _, cx| this.online_jump(1, cx))),
+                    .on_click(cx.listener(|this, _, _, cx| Online::jump(this, 1, cx))),
             )
             .child(
                 div()
@@ -200,7 +200,7 @@ impl Shell {
                     .child(self.season_icon(&r.id, cover.as_ref(), 28., p))
                     .child(div().flex_1().min_w_0().truncate().child(r.name.clone()))
                     .on_click(cx.listener(move |this, _, _, cx| {
-                        this.online_open_recent(id.clone(), name.clone(), cx)
+                        Online::open_recent(this, id.clone(), name.clone(), cx)
                     }))
             }))
             .into_any_element()

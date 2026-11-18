@@ -1,4 +1,5 @@
 use std::collections::{HashMap, HashSet};
+use std::convert::Infallible;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
@@ -16,8 +17,9 @@ use swofty_core::view::{self, Art, Effect, Event, Tone, View};
 use swofty_i18n::trf;
 
 use crate::services::game::Install;
-use crate::services::library::SectionItem;
+use crate::services::library::{Library, SectionItem};
 use crate::shell::Shell;
+use crate::shell::host::{self as shell_host, Hosted};
 use crate::ui::theme::Palette;
 use crate::ui::{badge, monogram};
 
@@ -32,6 +34,10 @@ pub(crate) struct AddonViews {
     pub(crate) generations: HashMap<String, u64>,
     pub(crate) busy: HashSet<String>,
     pub(crate) open_row: Option<String>,
+    /// A tick of the open section is running.
+    ticking: bool,
+    /// Live polls so far; every fourth one also ticks the open section.
+    polls: u64,
 }
 
 pub(crate) type Shared = Arc<Mutex<Option<(f32, String)>>>;
@@ -148,25 +154,63 @@ fn file_name(path: &Path) -> String {
     )
 }
 
-impl Shell {
-    pub(crate) fn refresh_views(&mut self, cx: &mut Context<Self>) {
-        self.fetch_views(None, cx);
+pub(crate) struct ViewsNeeds<'a> {
+    pub(crate) store: &'a Store,
+    pub(crate) library: &'a Library,
+    /// The game copy the panels read, when one is found.
+    pub(crate) install: Option<Install>,
+    /// The game folders are known, so helper sections can load before they open.
+    pub(crate) detected: bool,
+    /// The section open on screen.
+    pub(crate) open: Option<usize>,
+}
+
+impl Hosted for AddonViews {
+    type Needs<'a> = ViewsNeeds<'a>;
+    type Change = Infallible;
+}
+
+impl shell_host::Host<AddonViews> for Shell {
+    fn split(&mut self) -> (&mut AddonViews, ViewsNeeds<'_>) {
+        let open = self.open_section();
+        let install = self.game.panel_install();
+        (
+            &mut self.addon_views,
+            ViewsNeeds {
+                store: &self.store,
+                library: &self.library,
+                install,
+                detected: self.game.detected,
+                open,
+            },
+        )
     }
 
-    pub(crate) fn fetch_views(&mut self, only: Option<usize>, cx: &mut Context<Self>) {
-        let store = self.store.clone();
-        let library = &self.library;
+    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
+        match change {}
+    }
+}
+
+impl AddonViews {
+    pub(crate) fn refresh<H: shell_host::Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        Self::fetch(host, None, cx);
+    }
+
+    pub(crate) fn fetch<H: shell_host::Host<Self>>(host: &mut H, only: Option<usize>, cx: &mut Context<H>) {
+        let (views, needs) = host.split();
+        let store = needs.store.clone();
+        let library = needs.library;
         let registry = library.registry.clone();
         let profile = library.profile.clone();
-        let install = self.game.panel_install();
-        let open = self.open_section();
+        let install = needs.install;
+        let open = needs.open;
         let keys: HashSet<String> = library.sections.iter().map(section_key).collect();
-        if self.addon_views.profile != profile.name {
-            self.addon_views.profile = profile.name.clone();
-            self.addon_views.views.clear();
+        if views.profile != profile.name {
+            views.profile = profile.name.clone();
+            views.views.clear();
         }
-        self.addon_views.views.retain(|k, _| keys.contains(k));
-        let prefetch = self.game.detected;
+        views.views.retain(|k, _| keys.contains(k));
+        let prefetch = needs.detected;
         let sections: Vec<(String, String, bool)> = library
             .sections
             .iter()
@@ -177,15 +221,15 @@ impl Shell {
             })
             .map(|(_, s)| {
                 let key = section_key(s);
-                let cached = self.addon_views.views.contains_key(&key);
+                let cached = views.views.contains_key(&key);
                 (s.addon.clone(), s.spec.id.clone(), cached)
             })
             .collect();
         if sections.is_empty() {
             return;
         }
-        self.addon_views.generation += 1;
-        let generation = self.addon_views.generation;
+        views.generation += 1;
+        let generation = views.generation;
         cx.spawn(async move |this, cx| {
             let views: Vec<(String, Result<View, String>)> = cx
                 .background_executor()
@@ -198,7 +242,7 @@ impl Shell {
                                 .get(&addon)
                                 .ok_or_else(|| trf!("{addon} is gone", addon = addon))
                                 .and_then(|e| {
-                                    let host = host(&store, &addon, &profile, game.as_ref())?;
+                                    let host = self::host(&store, &addon, &profile, game.as_ref())?;
                                     let view = match (&e.plugin, cached) {
                                         (Some(plugin), true) => {
                                             let view = plugin.try_view(&host.cx(), &section);
@@ -220,18 +264,8 @@ impl Shell {
                         .collect()
                 })
                 .await;
-            this.update(cx, |s, cx| {
-                for (key, view) in views {
-                    if s.addon_views
-                        .generations
-                        .get(&key)
-                        .is_some_and(|g| *g > generation)
-                    {
-                        continue;
-                    }
-                    s.addon_views.generations.insert(key.clone(), generation);
-                    s.addon_views.views.insert(key, view.map(Arc::new));
-                }
+            this.update(cx, |host, cx| {
+                host.split().0.took_views(generation, views);
                 cx.notify();
             })
             .ok();
@@ -239,23 +273,26 @@ impl Shell {
         .detach();
     }
 
-    pub(crate) fn live_poll(&mut self, cx: &mut Context<Self>) {
-        self.live_n += 1;
-        self.refresh_stale(cx);
-        if self.live_n.is_multiple_of(4) {
-            self.tick(cx);
+    pub(crate) fn live_poll<H: shell_host::Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let views = host.split().0;
+        views.polls += 1;
+        let ticks = views.polls.is_multiple_of(4);
+        Self::refresh_stale(host, cx);
+        if ticks {
+            Self::tick(host, cx);
         }
     }
 
-    fn refresh_stale(&mut self, cx: &mut Context<Self>) {
-        let open = self.open_section();
+    fn refresh_stale<H: shell_host::Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (views, needs) = host.split();
+        let (open, library) = (needs.open, needs.library);
         let mut due = Vec::new();
         let mut seen = HashSet::new();
-        for s in &self.library.sections {
+        for s in &library.sections {
             if !seen.insert(s.addon.clone()) {
                 continue;
             }
-            let Some(plugin) = self.library.registry.get(&s.addon).and_then(|e| e.plugin.clone()) else {
+            let Some(plugin) = library.registry.get(&s.addon).and_then(|e| e.plugin.clone()) else {
                 continue;
             };
             if plugin.busy() {
@@ -264,43 +301,49 @@ impl Shell {
             let Some(stale) = plugin.take_stale() else {
                 continue;
             };
-            for (i, t) in self.library.sections.iter().enumerate() {
-                let shown = open == Some(i) || self.addon_views.views.contains_key(&section_key(t));
+            for (i, t) in library.sections.iter().enumerate() {
+                let shown = open == Some(i) || views.views.contains_key(&section_key(t));
                 if t.addon == s.addon && shown && stale.covers(&t.spec.id) {
                     due.push(i);
                 }
             }
         }
         for i in due {
-            self.fetch_views(Some(i), cx);
+            Self::fetch(host, Some(i), cx);
         }
     }
 
-    fn tick(&mut self, cx: &mut Context<Self>) {
-        let Some(i) = self.open_section() else {
+    fn tick<H: shell_host::Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (views, needs) = host.split();
+        let Some(i) = needs.open else {
             return;
         };
-        let Some(s) = self.library.sections.get(i) else {
+        let Some(s) = needs.library.sections.get(i) else {
             return;
         };
-        let ticks = matches!(self.addon_views.views.get(&section_key(s)), Some(Ok(v)) if v.tick);
-        let Some(plugin) = self.library.registry.get(&s.addon).and_then(|e| e.plugin.clone()) else {
+        let ticks = matches!(views.views.get(&section_key(s)), Some(Ok(v)) if v.tick);
+        let Some(plugin) = needs
+            .library
+            .registry
+            .get(&s.addon)
+            .and_then(|e| e.plugin.clone())
+        else {
             return;
         };
-        if !ticks || self.ticking || !plugin.running() {
+        if !ticks || views.ticking || !plugin.running() {
             return;
         }
-        self.ticking = true;
-        let store = self.store.clone();
-        let profile = self.library.profile.clone();
-        let install = self.game.panel_install();
+        views.ticking = true;
+        let store = needs.store.clone();
+        let profile = needs.library.profile.clone();
+        let install = needs.install;
         let (addon, section) = (s.addon.clone(), s.spec.id.clone());
         cx.spawn(async move |this, cx| {
             let failed = cx
                 .background_executor()
                 .spawn(async move {
                     let game = game(&store, install.as_ref());
-                    let Ok(host) = host(&store, &addon, &profile, game.as_ref()) else {
+                    let Ok(host) = self::host(&store, &addon, &profile, game.as_ref()) else {
                         return false;
                     };
                     if let Some(Err(e)) = plugin.try_tick(&host.cx(), &section) {
@@ -309,18 +352,31 @@ impl Shell {
                     plugin.failure().is_some()
                 })
                 .await;
-            this.update(cx, |s, cx| {
-                s.ticking = false;
+            this.update(cx, |host, cx| {
+                host.split().0.ticking = false;
                 if failed {
-                    s.fetch_views(Some(i), cx);
+                    Self::fetch(host, Some(i), cx);
                 }
-                s.refresh_stale(cx);
+                Self::refresh_stale(host, cx);
             })
             .ok();
         })
         .detach();
     }
 
+    /// Takes built views, skipping any a newer fetch has already replaced.
+    pub(crate) fn took_views(&mut self, generation: u64, views: Vec<(String, Result<View, String>)>) {
+        for (key, view) in views {
+            if self.generations.get(&key).is_some_and(|g| *g > generation) {
+                continue;
+            }
+            self.generations.insert(key.clone(), generation);
+            self.views.insert(key, view.map(Arc::new));
+        }
+    }
+}
+
+impl Shell {
     /// Sends `startup` to the first section of each addon that asks for it.
     pub(crate) fn run_startup(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let mut seen = std::collections::BTreeSet::new();
@@ -421,5 +477,21 @@ impl Shell {
                 cx.notify();
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::AddonViews;
+    use core::prelude::v1::test;
+
+    #[test]
+    fn an_older_fetch_does_not_replace_a_newer_view() {
+        let mut views = AddonViews::default();
+        views.took_views(2, vec![("t.addon/main".into(), Err("new".into()))]);
+        views.took_views(1, vec![("t.addon/main".into(), Err("old".into()))]);
+        assert!(matches!(views.views.get("t.addon/main"), Some(Err(e)) if e == "new"));
+        views.took_views(3, vec![("t.addon/main".into(), Err("newer".into()))]);
+        assert!(matches!(views.views.get("t.addon/main"), Some(Err(e)) if e == "newer"));
     }
 }

@@ -131,7 +131,7 @@ impl Shell {
         }
         let running = self.developer.running;
         let has_folder = self.developer.folder.is_some();
-        let blocked = run_blocked(&self.play_state()).or(self.mp_starting_label());
+        let blocked = run_blocked(&self.play_state()).or(self.room_starting_label());
         let folder = self
             .developer
             .folder

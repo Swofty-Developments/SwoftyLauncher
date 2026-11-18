@@ -120,7 +120,7 @@ impl Shell {
                     .label(tr("Use launcher saves"))
                     .on_click(cx.listener(|this, _, window, cx| {
                         this.set_launcher_saves(true, window, cx);
-                        this.refresh_saves_in_background(cx);
+                        super::SavesPage::refresh(this, cx);
                     })),
             )
         });
@@ -153,7 +153,7 @@ impl Shell {
                         .label(tr("Play with your Steam saves"))
                         .on_click(cx.listener(|this, _, window, cx| {
                             this.set_launcher_saves(false, window, cx);
-                            this.refresh_saves_in_background(cx);
+                            super::SavesPage::refresh(this, cx);
                         })),
                 )
             })

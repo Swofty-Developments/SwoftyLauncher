@@ -1,6 +1,6 @@
 use super::model::*;
 use super::widgets::*;
-use super::{Load, Target};
+use super::{Load, Online, Target};
 use crate::shell::Shell;
 use crate::ui::format::lap_time;
 use crate::ui::scale::Hit;
@@ -61,7 +61,7 @@ impl Shell {
                 self.season_row(s, idx, p, cx)
             })
             .collect();
-        self.online_rank_ensure("all", cx);
+        Online::rank_ensure(self, "all", cx);
         let ranking = self.rank_column("all", tr("GLOBAL RANKING"), &mut items, p, cx);
         self.online.items = items;
         let left_width = self.layout.content_width - 56. - if wide { 20. + RIGHT_W } else { 0. };
@@ -154,11 +154,9 @@ impl Shell {
                     .size(px(16.))
                     .text_color(p.text_placeholder),
             )
-            .on_click(
-                cx.listener(move |this, _, _, cx| {
-                    this.online_go(Target::Season(id.clone(), name.clone()), cx)
-                }),
-            )
+            .on_click(cx.listener(move |this, _, _, cx| {
+                Online::go(this, Target::Season(id.clone(), name.clone()), cx)
+            }))
             .into_any_element()
     }
 
@@ -241,7 +239,7 @@ impl Shell {
                         cx.processor(move |this, range: std::ops::Range<usize>, _, cx| {
                             let feed = this.online.feeds.get(&key).cloned().unwrap_or_default();
                             if let Some(off) = feed.wants_more(3 + range.end * CHUNK + 3) {
-                                this.online_rank_load(&key, off, cx);
+                                Online::rank_load(this, &key, off, cx);
                             }
                             let me_id = this.online.me.as_ref().map(|m| m.driver.id.clone());
                             range
@@ -391,7 +389,9 @@ impl Shell {
                     .font_weight(FontWeight::BOLD)
                     .child(score_text(r.points)),
             )
-            .on_click(cx.listener(move |this, _, _, cx| this.online_go(Target::Profile(driver.clone()), cx)))
+            .on_click(
+                cx.listener(move |this, _, _, cx| Online::go(this, Target::Profile(driver.clone()), cx)),
+            )
             .into_any_element()
     }
 
@@ -441,7 +441,9 @@ impl Shell {
                     .font_weight(FontWeight::SEMIBOLD)
                     .child(score_text(r.points)),
             )
-            .on_click(cx.listener(move |this, _, _, cx| this.online_go(Target::Profile(driver.clone()), cx)))
+            .on_click(
+                cx.listener(move |this, _, _, cx| Online::go(this, Target::Profile(driver.clone()), cx)),
+            )
             .into_any_element()
     }
 
@@ -558,7 +560,7 @@ impl Shell {
                     .text_color(p.text_placeholder),
             )
             .on_click(cx.listener(move |this, _, _, cx| {
-                this.online_go(Target::Board(Box::new(card.clone()), label.clone()), cx)
+                Online::go(this, Target::Board(Box::new(card.clone()), label.clone()), cx)
             }))
             .into_any_element()
     }
