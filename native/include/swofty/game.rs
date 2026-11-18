@@ -12083,6 +12083,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_Read_PhysicsWorldConfig: Binding = Binding {
+        id: "Game_Read_PhysicsWorldConfig",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Read_QualifyingConfig: Binding = Binding {
         id: "Game_Read_QualifyingConfig",
         kind: "func",
@@ -15043,11 +15048,6 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
-    pub const Ne_MoverCollision_CreateResource: Binding = Binding {
-        id: "Ne_MoverCollision_CreateResource",
-        kind: "func",
-        status: Status::Experimental,
-    };
     pub const Ne_NameRegistry_FindId: Binding = Binding {
         id: "Ne_NameRegistry_FindId",
         kind: "func",
@@ -17293,6 +17293,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Render_Draw_ComputeInstanceLodScale: Binding = Binding {
+        id: "Render_Draw_ComputeInstanceLodScale",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Render_Gfx2Buffer_Construct: Binding = Binding {
         id: "Render_Gfx2Buffer_Construct",
         kind: "func",
@@ -17320,6 +17325,11 @@ pub mod bindings {
     };
     pub const Render_LightListResource_Create: Binding = Binding {
         id: "Render_LightListResource_Create",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_Material_CountResourceSlots: Binding = Binding {
+        id: "Render_Material_CountResourceSlots",
         kind: "func",
         status: Status::Experimental,
     };
