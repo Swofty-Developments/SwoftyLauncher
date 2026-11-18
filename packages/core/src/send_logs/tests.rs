@@ -1469,6 +1469,31 @@ fn names_a_program_windows_blocked() {
 }
 
 #[test]
+fn names_the_programs_set_to_run_as_administrator() {
+    let root = tmp("run-as-admin");
+    let (store, game) = fake_data(&root);
+    let r = crate::compat::RunAsAdmin::new([std::path::PathBuf::from(r"D:\Games\F1 25\F1_25.exe")], true);
+    crate::launch::Failure::new(crate::launch::Cause::RunAsAdmin(r))
+        .write(&store.root)
+        .unwrap();
+    let summary = summary_of(&Bundle::collect_with(
+        &store,
+        &report(&game),
+        Limits::default(),
+        "x",
+    ));
+    assert!(
+        summary.contains(
+            "\n  last launch: A program is set to run as administrator (Windows won't start F1_25.exe: it is \
+             set to run as administrator)\n  set to run as administrator (os error 740): D:\\Games\\F1 \
+             25\\F1_25.exe\n"
+        ),
+        "{summary}"
+    );
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
 fn sends_the_newest_addon_logs() {
     let root = tmp("addon-logs");
     let (store, game) = fake_data(&root);

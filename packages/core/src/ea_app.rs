@@ -424,6 +424,17 @@ impl Handoff {
         }
     }
 
+    /// The program the hand-off runs, when it is an exe rather than a shell
+    /// command line.
+    pub fn program(&self) -> Option<PathBuf> {
+        match self {
+            Self::Program(words) if words[0].to_ascii_lowercase().ends_with(".exe") => {
+                Some(PathBuf::from(&words[0]))
+            }
+            _ => None,
+        }
+    }
+
     /// The command that hands over `url`. The EA app it may start is the
     /// one that starts F1 25, so the launcher's [`COMPAT_LAYER`] stays out.
     pub fn command(&self, url: &str) -> Command {
@@ -838,6 +849,14 @@ mod tests {
         );
         assert_eq!(split_handler(r"C:\a.exe.d\b.exe %1"), [r"C:\a.exe.d\b.exe", "%1"]);
         assert_eq!(split_handler("open %1"), ["open", "%1"]);
+        assert_eq!(
+            h.program(),
+            Some(PathBuf::from(
+                r"C:\Program Files\Electronic Arts\EA Desktop\EA Desktop\EALauncher.exe"
+            ))
+        );
+        assert_eq!(Handoff::Program(vec!["open.bat".into()]).program(), None);
+        assert_eq!(Handoff::Shell("/games/ea-app.sh {url}".into()).program(), None);
     }
 
     #[test]

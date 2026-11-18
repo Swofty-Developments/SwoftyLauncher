@@ -635,6 +635,12 @@ impl Bundle {
                     b.code
                 ));
             }
+            if let crate::launch::Cause::RunAsAdmin(r) = &f.cause {
+                s.push_str(&format!(
+                    "  set to run as administrator (os error 740): {}\n",
+                    r.paths().join(", ")
+                ));
+            }
         }
         if loader.is_empty() {
             s.push_str("  No loader log was found\n");
