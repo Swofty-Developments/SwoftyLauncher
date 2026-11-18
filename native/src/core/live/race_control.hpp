@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <string_view>
 #include <vector>
 
 #include "core/live/live_snapshot.hpp"
@@ -17,6 +18,14 @@
 namespace swofty_core::live::race_control {
 
 namespace rc = swofty::race_control;
+
+// The points race control fires. They fire only while the live state is on, so the hooks table reports them live
+// only then (hooks.cpp h_live).
+inline bool fires(std::string_view point)
+{
+    return point == rc::events::Flag::point || point == rc::events::SafetyCar::point || point == rc::events::RedFlag::point ||
+           point == rc::events::Sector::point || point == rc::events::CarStatus::point;
+}
 
 struct Moments {
     std::vector<rc::events::RedFlag> red_flags;
@@ -214,6 +223,7 @@ private:
 
 namespace runtime {
 
-void race_control_tick(const swofty_core::live::Snapshot *s);
+// Once per live tick, on the flow thread: reads the live state's published snapshot and fires what changed.
+void race_control_tick(const swofty_core::live::Snapshot &published);
 
 }

@@ -296,8 +296,18 @@ static void test_sdk_reads()
     fake.uninstall();
 }
 
+static void test_points()
+{
+    expect(rcl::fires("session.flag") && rcl::fires("session.safety_car.deploy") && rcl::fires("session.red_flag") &&
+               rcl::fires("session.sector") && rcl::fires("session.car.status"),
+           "the five race control points read the live state");
+    expect(!rcl::fires("session.lap") && !rcl::fires("session.penalty.issue") && !rcl::fires("flag") && !rcl::fires(""),
+           "no other point is gated on the live state");
+}
+
 int main()
 {
+    test_points();
     test_first_read_is_silent();
     test_flags();
     test_safety_car();

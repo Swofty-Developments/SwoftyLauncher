@@ -441,8 +441,7 @@ void live_tick(double now)
             g_events.erase(g_events.begin(), g_events.end() - 256);
         publish();
     }
-    static lv::Snapshot rc;
-    race_control_tick(lv::snap_read(&g_snap, &rc) ? &rc : nullptr);
+    race_control_tick(g_snap);
 }
 
 bool live_memory_verified()
