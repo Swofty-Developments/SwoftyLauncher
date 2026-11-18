@@ -178,7 +178,7 @@ fn menu() -> Pkg {
                 Node::Val(Val::raw(*b"ui64", [i, 1, 2, 3, 4, 5, 6, 7])),
             ),
             (Val::str("flags"), Node::Val(Val::raw(*b"ui16", [i, 0]))),
-            (Val::str("visible"), Node::Val(Val::bool(i % 2 == 0))),
+            (Val::str("visible"), Node::Val(Val::bool(i.is_multiple_of(2)))),
             (Val::str("bounds"), Node::Val(Val::raw(*b"bbox", [i; 32]))),
             (Val::str("xform"), Node::Val(Val::raw(*b"mat4", [i; 64]))),
             (Val::str("tint"), Node::Val(Val::raw(*b"ui08", [i]))),
