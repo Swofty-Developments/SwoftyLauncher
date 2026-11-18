@@ -11,8 +11,8 @@ use gpui_kit::*;
 use swofty_i18n::tr;
 
 use super::fit::{self, Account};
+use super::overflow::Link;
 use super::{BAR_HEIGHT, Popover, SUB_HEIGHT, filled_icon};
-use crate::shell::overflow::Link;
 use crate::shell::tabs::{Row, Tab};
 use crate::shell::{Page, Shell};
 

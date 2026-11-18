@@ -1,5 +1,6 @@
 mod bar;
 mod fit;
+mod overflow;
 mod popovers;
 
 use gpui_kit::assets::IconName;
@@ -8,9 +9,9 @@ use std::collections::HashMap;
 use std::sync::{Arc, LazyLock, Mutex};
 use swofty_i18n::trn;
 
-use crate::shell::overflow::{Link, split_overflow};
 use crate::shell::tabs::{ACTIONS, Action, Cursor, Key, Row, Step, Tab};
 use crate::shell::{Page, Shell};
+use overflow::{Link, split_overflow};
 
 pub(crate) const BAR_HEIGHT: f32 = 68.;
 pub(crate) const SUB_HEIGHT: f32 = 40.;
