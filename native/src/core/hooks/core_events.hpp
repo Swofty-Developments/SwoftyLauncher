@@ -25,6 +25,13 @@ struct BundleResolve;
 namespace swofty::laps::events {
 struct Sealing;
 }
+namespace swofty::race_control::events {
+struct Flag;
+struct SafetyCar;
+struct RedFlag;
+struct Sector;
+struct CarStatus;
+}
 namespace swofty::career::events {
 struct AddActivity;
 struct StandingsRebuild;
@@ -71,6 +78,11 @@ bool car_damage(const swofty::cars::live::Car &car, uint32_t part, float amount)
 bool session_pit(uint32_t car, uint32_t previous, uint32_t status);
 bool session_pit_stop(uint32_t car, uint32_t stops);
 bool session_lap(uint32_t car);
+bool session_flag(swofty::race_control::events::Flag &payload);
+bool session_safety_car(swofty::race_control::events::SafetyCar &payload);
+bool session_red_flag(swofty::race_control::events::RedFlag &payload);
+bool session_sector(swofty::race_control::events::Sector &payload);
+bool session_car_status(swofty::race_control::events::CarStatus &payload);
 bool laps_sealing(swofty::laps::events::Sealing &payload);
 bool laps_recorded(const char *path, int32_t time_ms, int32_t valid);
 

@@ -4,6 +4,7 @@
 #include "core/live/live_state.hpp"
 #include "core/live/live_telemetry_fill.hpp"
 #include "core/live/live_turns.hpp"
+#include "core/live/race_control.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/telemetry/telemetry_feed.hpp"
 
@@ -440,6 +441,8 @@ void live_tick(double now)
             g_events.erase(g_events.begin(), g_events.end() - 256);
         publish();
     }
+    static lv::Snapshot rc;
+    race_control_tick(lv::snap_read(&g_snap, &rc) ? &rc : nullptr);
 }
 
 bool live_memory_verified()
