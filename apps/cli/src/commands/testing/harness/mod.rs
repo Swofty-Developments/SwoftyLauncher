@@ -17,6 +17,8 @@ use swofty_core::testsuite::report::{BatchReport, Report, Status, TestReport};
 use crate::commands::testing::launcher::Launcher;
 
 pub(crate) use sandboxes::BatchResults;
+#[cfg(test)]
+pub(crate) use sandboxes::career_mode;
 
 pub(crate) struct Times {
     pub start: Duration,
@@ -80,6 +82,19 @@ pub(crate) fn read(path: &Path) -> Option<String> {
     std::fs::read(path)
         .ok()
         .map(|b| String::from_utf8_lossy(&b).into_owned())
+}
+
+pub(crate) fn until_polled(limit: Duration, poll: Duration, mut done: impl FnMut() -> bool) -> bool {
+    let start = Instant::now();
+    loop {
+        if done() {
+            return true;
+        }
+        if start.elapsed() >= limit {
+            return false;
+        }
+        std::thread::sleep(poll);
+    }
 }
 
 /// The live loader.log once this session's game has replaced the last one.

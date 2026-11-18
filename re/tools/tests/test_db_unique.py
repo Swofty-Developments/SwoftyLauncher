@@ -33,6 +33,9 @@ class UniqueKeys(unittest.TestCase):
                 {"notes": f"V{kb.SHARED_VERIFY_IDS_UP_TO} d"}, {"notes": "V20002 e"}, {"notes": "-"}]
         self.assertEqual(sorted(kb.colliding_verify_ids(rows)), [20001])
 
+    def test_verify_ranges_do_not_overlap_and_hold_every_ranged_id(self):
+        self.assertEqual(kb.verify_range_errors(kb.read_table("verify_ranges")[0], kb.read_table("verify")[0]), [])
+
     def test_binding_records_pass_the_static_checks(self):
         import binding
         self.assertEqual(binding_record.Store.get().errors, [])
@@ -96,3 +99,153 @@ class SubsystemsMemo(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def granted(first, last, owner):
+    return {"first": str(first), "last": str(last), "owner": owner, "granted": "2026-11-18", "notes": "-"}
+
+
+def row(n, verifier, item="X"):
+    return {"notes": f"V{n} note", "verifier": verifier, "kind": "func", "item": item}
+
+
+class VerifyRanges(unittest.TestCase):
+    """Verify ids come from ranges granted on the trunk, one owner per range, so two lanes cannot hand out one id."""
+
+    A, B = 100000, 110000
+    RANGES = [granted(A, A + 9999, "lane-a"), granted(B, B + 9999, "lane-b")]
+
+    def test_the_first_id_of_an_owner_is_the_start_of_its_range(self):
+        self.assertEqual(kb.next_verify_id("lane-a", [row(20030, "old")], self.RANGES), self.A)
+
+    def test_ids_continue_after_the_highest_in_the_range_whatever_wrote_it(self):
+        rows = [row(self.A + 4, "lane-a"), row(self.A + 7, "lane-a-blind"), row(self.B + 50, "lane-b")]
+        self.assertEqual(kb.next_verify_id("lane-a", rows, self.RANGES), self.A + 8)
+        self.assertEqual(kb.next_verify_id("lane-b-blind", rows, self.RANGES), self.B + 51)
+
+    def test_two_lanes_on_two_branches_get_different_ids_from_the_same_trunk(self):
+        trunk = [row(self.A, "lane-a"), row(self.B, "lane-b")]
+        self.assertNotEqual(kb.next_verify_id("lane-a", trunk, self.RANGES), kb.next_verify_id("lane-b", trunk, self.RANGES))
+
+    def test_the_owner_is_the_longest_name_up_to_a_dash(self):
+        ranges = self.RANGES + [granted(120000, 129999, "lane-a-w2")]
+        self.assertEqual(kb.range_owner("lane-a-w2-blind", ranges), "lane-a-w2")
+        self.assertEqual(kb.range_owner("lane-a-blind", ranges), "lane-a")
+        self.assertEqual(kb.range_owner("lane-a", ranges), "lane-a")
+        self.assertIsNone(kb.range_owner("lane-ab", ranges))
+
+    def test_a_full_range_moves_on_to_the_owners_next_range(self):
+        ranges = [granted(self.A, self.A + 1, "lane-a"), granted(self.B, self.B + 9, "lane-a")]
+        rows = [row(self.A, "lane-a"), row(self.A + 1, "lane-a")]
+        self.assertEqual(kb.next_verify_id("lane-a", rows, ranges), self.B)
+
+    def test_a_verifier_without_a_range_or_with_full_ranges_is_refused(self):
+        with self.assertRaisesRegex(SystemExit, "no verify id range"):
+            kb.next_verify_id("other", [], self.RANGES)
+        with self.assertRaisesRegex(SystemExit, "used up"):
+            kb.next_verify_id("lane-a", [row(self.A, "x"), row(self.A + 1, "x")], [granted(self.A, self.A + 1, "lane-a")])
+
+    def test_overlapping_ranges_are_an_error(self):
+        errs = kb.verify_range_errors([granted(self.A, self.A + 9999, "lane-a"), granted(self.A + 5000, self.A + 5999, "lane-b")], [])
+        self.assertEqual(len(errs), 1)
+        self.assertIn("overlap", errs[0])
+
+    def test_an_id_outside_its_owners_ranges_is_an_error(self):
+        rows = [row(self.B + 1, "lane-a", "Wrong"), row(self.A + 1, "lane-a", "Right"), row(self.A + 2, "nobody", "None"),
+                row(20031, "legacy", "Old")]
+        errs = kb.verify_range_errors(self.RANGES, rows)
+        self.assertEqual([("Wrong" in e, "None" in e) for e in errs], [(True, False), (False, True)])
+
+    def test_a_range_row_is_checked(self):
+        self.assertEqual(kb.validate_row("verify_ranges", granted(self.A, self.A + 9, "lane-a")), [])
+        self.assertTrue(kb.validate_row("verify_ranges", granted(20000, 20009, "lane-a")))
+        self.assertTrue(kb.validate_row("verify_ranges", granted(self.A + 9, self.A, "lane-a")))
+        self.assertTrue(kb.validate_row("verify_ranges", granted(self.A, self.A + 9, "two words")))
+
+    def test_grant_range_appends_the_next_aligned_block(self):
+        import tempfile
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as d:
+            with open(os.path.join(d, "verify_ranges.tsv"), "w") as f:
+                f.write("first\tlast\towner\tgranted\tnotes\n100000\t109999\tlane-a\t2026-11-18\t-\n")
+            args = type("A", (), {"owner": "lane-b", "size": 10000, "notes": None, "agent": "lead"})()
+            with mock.patch.object(kb, "DB", d), mock.patch.object(kb, "LOCK", os.path.join(d, ".lock")), \
+                    mock.patch.object(kb, "JOURNAL", os.path.join(d, "changes.log")), \
+                    mock.patch("sys.stdout"):
+                kb.cmd_grant_range(args)
+                rows, errs = kb.read_table("verify_ranges")
+        self.assertEqual(errs, [])
+        self.assertEqual([(r["first"], r["last"], r["owner"]) for r in rows],
+                         [("100000", "109999", "lane-a"), ("110000", "119999", "lane-b")])
+
+    def test_an_id_another_verifier_wrote_inside_the_range_is_never_handed_out(self):
+        rows = [row(self.A + 2, "lane-a"), row(self.A + 5, "lane-b"), row(self.A + 6, "legacy")]
+        self.assertEqual(kb.next_verify_id("lane-a-blind", rows, self.RANGES), self.A + 7)
+
+
+class LaneRanges(unittest.TestCase):
+    """The ranges granted on the trunk keep every lane's ids apart: no id the allocator hands out is already in
+    verify.tsv or a record, and two lanes writing rows on their own branches from the same trunk never share one."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.ranges = kb.read_table("verify_ranges")[0]
+        cls.rows = kb.read_table("verify")[0]
+        cls.owners = sorted({r["owner"] for r in cls.ranges})
+
+    def ids_in_files(self):
+        import json
+        ids = set()
+        with open(os.path.join(kb.DB, "verify.tsv")) as f:
+            for line in f:
+                cols = line.rstrip("\n").split("\t")
+                n = kb.verify_id({"notes": cols[-1]})
+                if n is not None:
+                    ids.add(n)
+        for root, _, files in os.walk(os.path.join(kb.ROOT, "re", "bindings")):
+            for name in files:
+                if name.endswith(".json"):
+                    with open(os.path.join(root, name)) as f:
+                        ids |= {n for v in json.load(f).get("verify", []) if (n := kb.verify_id(v)) is not None}
+        return ids
+
+    def test_the_lanes_have_their_ranges(self):
+        for owner in ("re-bindings", "std-libs", "native-guards", "port-live", "load-game"):
+            self.assertIn(owner, self.owners)
+        self.assertGreaterEqual(len(self.owners), 6)
+        self.assertEqual(kb.verify_range_errors(self.ranges, self.rows), [])
+
+    def test_no_owner_starts_another_owners_name(self):
+        for a in self.owners:
+            for b in self.owners:
+                if a != b:
+                    self.assertFalse(b.startswith(a + "-"), f"{b} draws from {a}'s range")
+
+    def test_the_next_id_of_every_lane_is_in_no_row_of_the_checkout(self):
+        taken = self.ids_in_files()
+        self.assertTrue(taken)
+        for owner in self.owners:
+            for verifier in (owner, owner + "-blind"):
+                n = kb.next_verify_id(verifier, self.rows, self.ranges)
+                self.assertNotIn(n, taken, verifier)
+                mine = [x for x in taken if any(int(g["first"]) <= x <= int(g["last"])
+                                                for g in self.ranges if g["owner"] == owner)]
+                self.assertGreater(n, max(mine, default=0), verifier)
+
+    def test_two_lanes_on_two_branches_never_hand_out_the_same_id(self):
+        handed = {}
+        for owner in self.owners:
+            branch = list(self.rows)
+            got = []
+            for i in range(25):
+                n = kb.next_verify_id(owner if i % 2 else owner + "-blind", branch, self.ranges)
+                got.append(n)
+                branch.append(row(n, owner))
+            self.assertEqual(len(set(got)), len(got), owner)
+            handed[owner] = set(got)
+        taken = {n for r in self.rows if (n := kb.verify_id(r)) is not None}
+        for a in self.owners:
+            self.assertFalse(handed[a] & taken, a)
+            for b in self.owners:
+                if a < b:
+                    self.assertFalse(handed[a] & handed[b], f"{a} and {b}")

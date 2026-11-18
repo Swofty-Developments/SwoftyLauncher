@@ -123,11 +123,6 @@ pub struct CarVtfAsset {
 }
 
 #[repr(C)]
-pub struct CarWheel {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
 pub struct CarWheelProxies {
     _opaque: [u8; 0],
 }
@@ -1215,6 +1210,16 @@ pub struct CarTurbo {
 }
 const _: () = assert!(core::mem::offset_of!(CarTurbo, car) == 0x8);
 const _: () = assert!(core::mem::offset_of!(CarTurbo, max_boost) == 0x2d8);
+
+#[repr(C)]
+pub struct CarWheel {
+    _pad_0x0: [u8; 0x20],
+    pub tyre_flags: u8,
+    _pad_0x21: [u8; 0x77],
+    pub deflation: f32,
+}
+const _: () = assert!(core::mem::offset_of!(CarWheel, tyre_flags) == 0x20);
+const _: () = assert!(core::mem::offset_of!(CarWheel, deflation) == 0x98);
 
 #[repr(C)]
 pub struct CareerBankComponent {
@@ -2480,9 +2485,12 @@ const _: () = assert!(core::mem::offset_of!(PitLaneTrack, vehicle_slots) == 0x93
 
 #[repr(C)]
 pub struct PitLaneVehicle {
-    _pad_0x0: [u8; 0x103],
+    _pad_0x0: [u8; 0xe0],
+    pub garage_index: i32,
+    _pad_0xe4: [u8; 0x1f],
     pub in_lane: u8,
 }
+const _: () = assert!(core::mem::offset_of!(PitLaneVehicle, garage_index) == 0xe0);
 const _: () = assert!(core::mem::offset_of!(PitLaneVehicle, in_lane) == 0x103);
 
 #[repr(C)]
@@ -3473,7 +3481,9 @@ const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, total_b) == 0x
 
 #[repr(C)]
 pub struct VehicleTyreComponent {
-    _pad_0x0: [u8; 0x9bc0],
+    _pad_0x0: [u8; 0x20],
+    pub physics: *mut CarPhysicsRecord,
+    _pad_0x28: [u8; 0x9b98],
     pub compound_class: *mut c_void,
     _pad_0x9bc8: [u8; 0x8],
     pub slots: [TyreSlot; 5],
@@ -3484,6 +3494,7 @@ pub struct VehicleTyreComponent {
     pub set_begin: *mut u8,
     pub set_end: *mut u8,
 }
+const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, physics) == 0x20);
 const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, compound_class) == 0x9bc0);
 const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, slots) == 0x9bd0);
 const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, slot_count) == 0x9c48);
@@ -3773,6 +3784,8 @@ pub type Car_Register_DetachablePart_Thunk_t = unsafe extern "C" fn(
 pub type Car_Reset_LastFittedUpgrade_t = unsafe extern "C" fn(inst: *mut c_void);
 pub type Car_SuspensionDamage_OnCollision_t =
     unsafe extern "C" fn(susp_damage: *mut c_void, contact: *mut c_void);
+pub type Car_Tyre_ChangeToNextCompound_t =
+    unsafe extern "C" fn(tyre_component: *mut c_void, pit_stop: u8) -> u64;
 pub type Car_Tyre_CheckCompoundClassRule_t = unsafe extern "C" fn(set: *const c_void) -> bool;
 pub type Car_Tyre_IsCompoundAllowed_t = unsafe extern "C" fn(set: *const c_void) -> bool;
 pub type Car_Tyre_SetWearFactor_t =
@@ -4195,6 +4208,8 @@ pub type FeTile_Build_List_t = unsafe extern "C" fn(
     sub_kind: u8,
     a7: u32,
 );
+pub type FeTile_CareerDefaultItem_Populate_t =
+    unsafe extern "C" fn(item: *mut HomeItem, node: *mut c_void, a7: u32);
 pub type FeTile_CareerDlcItem_Populate_t =
     unsafe extern "C" fn(item: *mut HomeItem, node: *mut c_void, a7: u32);
 pub type FeTile_Check_EntrantListUsable_t =
@@ -4340,8 +4355,7 @@ pub type Game_FullRaceReplaySystem_Init_t = unsafe extern "C" fn(
 ) -> c_int;
 pub type Game_Game_HandleInterruptEvent_t =
     unsafe extern "C" fn(game: *mut c_void, event: *const c_void) -> u64;
-pub type Game_Game_SetCurrentGameMode_t =
-    unsafe extern "C" fn(mode_context: *mut c_void, mode: *mut c_void) -> u64;
+pub type Game_Game_SetCurrentGameMode_t = unsafe extern "C" fn(mode_context: *mut c_void, mode: *mut c_void);
 pub type Game_Get_ModelNodeId_t = unsafe extern "C" fn(name: *const c_char) -> u32;
 pub type Game_GridRundown_ShouldPlay_t = unsafe extern "C" fn(
     variant: u8,
@@ -4402,6 +4416,11 @@ pub type Game_PauseAvailabilityVM_OnActivate_t = unsafe extern "C" fn(vm: *mut c
 pub type Game_PhotoMode_InitDependencies_t =
     unsafe extern "C" fn(self_: *mut c_void, serviceProvider: *mut c_void) -> c_int;
 pub type Game_PitLane_ApplyPitstopTyres_t = unsafe extern "C" fn(mgr: *mut c_void, car: u8);
+pub type Game_PitLane_AssignGarageIndices_t = unsafe extern "C" fn(pit_lane_manager: *mut c_void);
+pub type Game_PitLane_GetDistanceToBox_t =
+    unsafe extern "C" fn(pit_lane_manager: *mut c_void, vehicle: u8) -> f32;
+pub type Game_PitLane_GetGaragePose_Thunk_t =
+    unsafe extern "C" fn(pit_system: *mut c_void, out_matrix: *mut f32, garage: u32) -> *mut f32;
 pub type Game_PitLane_MoveDownSpline_t = unsafe extern "C" fn(
     pitlane: *mut c_void,
     car: u8,
@@ -4751,7 +4770,7 @@ pub type Sess_TyreAllocation_OnSessionStart_t = unsafe extern "C" fn(component: 
 pub type Sess_TyreClass_FromName_t =
     unsafe extern "C" fn(classes: *mut c_void, name: *const c_void, check_weekend_format: u8) -> *mut c_void;
 pub type Sess_Tyre_ShowFittedSet_t =
-    unsafe extern "C" fn(tyre_component: *mut c_void, apply_set: u8, show: u8, models: u32, force: u16);
+    unsafe extern "C" fn(tyre_component: *mut c_void, apply_set: u8, show: u8, with_wing: u8, force: u16);
 pub type Sess_Tyres_ClosestAvailableCompound_t = unsafe extern "C" fn(
     tyre_rules: *mut c_void,
     vehicle: u8,
@@ -5617,6 +5636,11 @@ pub mod bindings {
     };
     pub const Car_TyreSystem_PitstopComplete: Binding = Binding {
         id: "Car_TyreSystem_PitstopComplete",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Tyre_ChangeToNextCompound: Binding = Binding {
+        id: "Car_Tyre_ChangeToNextCompound",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8424,6 +8448,11 @@ pub mod bindings {
         id: "FeTile_Build_List",
         kind: "func",
         status: Status::Stable,
+    };
+    pub const FeTile_CareerDefaultItem_Populate: Binding = Binding {
+        id: "FeTile_CareerDefaultItem_Populate",
+        kind: "func",
+        status: Status::Experimental,
     };
     pub const FeTile_CareerDlcItem_Populate: Binding = Binding {
         id: "FeTile_CareerDlcItem_Populate",

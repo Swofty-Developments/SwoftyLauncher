@@ -9,7 +9,7 @@
   "subsystem": "car",
   "proto": "void Car_Tyre_SetWearFactor(void *tyre_component, bool apply_set, uint16_t force)",
   "evidence": "decomp:re/decomp/142ea2300.c;xref:0x142e946b7,0x142ea2da4;kb:subsystems/car.md#chassis",
-  "notes": "TyreComponent method, rcx = tyre component. Picks the fitted set's class entry (list at +0x9bd0, 0x18 stride, matched on [+0x9c98]-0x6c), sets the per-wheel wear factor (log PITSTOP_TYRES 'Wear factor set to %f on vehicle %d', vehicle = [[tc+0x20]+0x58]+0xe8). It returns early when [tc+0x20] is null. Then for each of the 4 wheels formats '%s_%s%c' (0x1457ef36f) from [[[[tc+0x20]+0x58]+0x558]+0x128] (Chassis TyrePhysicsGroup string object +0x118: +0x08 capacity, +0x10 buffer, filled by 0x1446506e0), a code from the class entry and 'f'/'r', lowercases it, finds it in the global compound map ([[[0x1460806d8]+0x50]+0x138], find 0x144776d00) and passes it to 0x155436e70 (through the .xtls thunk 0x1446b18e0) with a reset flag: force's low byte when force > 0xff, otherwise whether the fitted set changed (the class at +0x9950 or the set index at +0x9954; all five call sites of 0x142ea2a90 (two in .xtls, three in .data1 bodies at 0x14f42980c, 0x14f43a69e and 0x14f43c037) pass force 0, so that path takes this test). With apply_set it uses the set at [+0x9c98]-0x70 instead when the allocation at +0x9c68 is null or the fitted class or index is out of range in it (class < 0 or >= [alloc+0xd8], an empty class list, or index >= the set count). 0x155436e70 rebinds the wheel's compound when the flag is set or the compound changed, and a set flag also resets the temperatures at +0x64/+0x68/+0x6c. apply_set != 0: then 0x142e88840 applies the fitted set of the weekend allocation (+0x9c68). Callers: Car_Tyre_ChangeToNextCompound call 0x142e946b7 with (tc, 1, 0x101); tail jump 0x142ea2da4 from 0x142ea2a90. f1_1990_brand.dll calls it with (tc, true, 0x101) after rewriting the group string."
+  "notes": "TyreComponent method, rcx = tyre component. It applies the fitted set's compound to the car; setting the wear factor is one of its steps. It rebuilds the class list at +0x9bd0 through 0x142e9e6c0 when +0x9c58 is null or +0x9c50 differs from +0x9bc0, then picks the fitted set's class entry (0x18 stride, matched on [+0x9c98]-0x6c; when no entry matches, the option 4 entry if that value is >= 3 unsigned, else option 1). Wear factor: 1.0 when the matched value is >= 5, otherwise 0.5 * ([[w0+8]+0x630] + [[w3+8]+0x630]) * [tc+0x98e0+i*4] (w0/w3 = [[veh+0x580]+0x70/+0x88], veh = [[tc+0x20]+0x58]; i = the matched value, the fallback option, or -1 when neither is listed), and 1.0 when that is negative. It writes the factor to +0x80 and [tc+0x98f4] to +0x84 of all four wheels [[veh+0x580]+0x70..+0x88], with the log PITSTOP_TYRES 'Wear factor set to %f on vehicle %d' (vehicle = [veh+0xe8]) when that channel is on; a null [tc+0x20] or veh skips those writes. It then computes the reset flag (force's low byte when force > 0xff, otherwise whether the fitted class at +0x9950 or the set index at +0x9954 changed), stores the new class and index at +0x9950/+0x9954 (one qword store, which also zeroes +0x9955..+0x9957), and only then returns early when [tc+0x20] is null (0x142ea25f1). Then for each of the 4 wheels it formats '%s_%s%c' (0x1457ef36f) from [[[[tc+0x20]+0x58]+0x558]+0x128] (Chassis TyrePhysicsGroup string object +0x118: +0x08 capacity, +0x10 buffer, filled by 0x1446506e0), a code from the class entry and 'f'/'r', lowercases it, finds it in the global compound map ([[[0x1460806d8]+0x50]+0x138], find 0x144776d00) and, when the map value it finds is non-null, passes that value with the reset flag to 0x155436e70 (through the .xtls thunk 0x1446b18e0, rcx = wheel+8). All five call sites of 0x142ea2a90 pass force 0, so that path takes the changed test. With apply_set it uses the set at [+0x9c98]-0x70 instead when the allocation at +0x9c68 is null or the fitted class or index is out of range in it (class < 0 or >= [alloc+0xd8], an empty class list, or index >= the set count). 0x155436e70 rebinds the wheel's compound when the flag is set or the compound changed, and a set flag also resets the temperatures at wheel+0x6c/+0x70/+0x74 (it takes rcx = wheel+8, 0x142ea2630, and stores its +0x64/+0x68/+0x6c). When no class entry matches, the entry stays null and i is -1, so with [tc+0x20] set the wheel loop faults on that null entry (0x142ea26b5, 0x142ea27c1); with [tc+0x20] set and veh null it faults at 0x142ea264e. apply_set != 0: then 0x142e88840 applies the fitted set of the weekend allocation (+0x9c68). Last it posts an event through 0x1439876c0 (0x142ea2a60) carrying [veh+0xe8] and the set index +0x9954. Callers: Car_Tyre_ChangeToNextCompound call 0x142e946b7 with (tc, 1, 0x101); tail jump 0x142ea2da4 from 0x142ea2a90. f1_1990_brand.dll calls it with (tc, true, 0x101) after rewriting the group string. 1.0.145 twin 0x142ea4890, 427/427 instructions the same."
  },
  "signature": {
   "id": "car.tyre_set_wear_factor",
@@ -125,6 +125,36 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/142ea2300.c;xref:0x142e946b7",
    "notes": "V5541 body, strings and callees match name/description"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Car_Tyre_SetWearFactor",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142ea2300-0x142ea2a82,0x142e94040-0x142e946cf,0x142ea2a90-0x142ea2e26,0x155436e70-0x15543713b,0x155333a50-0x155333c45,0x1553bbbc0-0x1553bbc10,1.0.145 0x142ea4890-0x142ea5012;xref:0x142e946b7,0x142ea2da4,0x142ea25bc,0x142ea25e3,0x142ea25f1,0x142ea2500,0x142ea251c,0x142ea2637,0x142ea29ab,0x142ea2a13,0x142ea2a60,0x155656779",
+   "notes": "V100024 Blind: partial. Proto (rcx tc, dl apply_set, r8w force as optional<bool>; void) and every checkable note claim match KB 0x142ea2300 (1.0.145 twin 0x142ea4890, 427/427 same). The name is narrow: it takes no factor. It derives one (1.0 for class>=5, else 0.5*(w0+w3 [[w+8]+0x630])*[tc+0x98e0+idx*4], <0 -> 1.0), writes it to wheel+0x80 and [tc+0x98f4] to +0x84, stores class/index at +0x9950 before the null-owner return (0x142ea25f1), rebinds the 4 wheel tyre assets, runs 0x142e88840 when apply_set, and posts tyre_compound_changed (0x142ea2a60). It is an apply-fitted-compound routine; SetWearFactor names one step."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Car_Tyre_SetWearFactor",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142ea2300-0x142ea2a82,0x142e9e6c0-0x142e9ec5b,0x155436e70-0x15543713b,0x142e94040-0x142e946cf,0x142ea2a90-0x142ea2e26,0x1553bbbc0-0x1553bbc10,0x144676460-0x144676540,0x155333a50-0x155333ab0,1.0.145 0x142ea4890-0x142ea5012;xref:0x142e946b7,0x142ea2da4,0x142ea2327,0x142ea2393,0x142ea23dc,0x142ea245c,0x142ea2484,0x142ea25b6,0x142ea25e3,0x142ea25f1,0x142ea2630,0x142ea29ab,0x142ea2a60,0x1554370e5,0x15543711b",
+   "notes": "V100025 Blind: partial. Proto holds (void; rcx this; dl bool; r8w word whose low byte is kept when it is >0xff, else the changed test at 0x142ea25b6), and so does every body claim: pick 0x142ea2380/2393 (fallback u32>=3 gives 4, else 1); 1.0 on a direct hit >=5 signed (0x142ea23dc); 0.5*(w0+w3 +0x630)*[+0x98e0+4i] (0x142ea2451/245c); negative gives 1.0 (0x142ea2484); +0x9950 store 0x142ea25e3 before the return 0x142ea25f1; callers 0x142e946b7 (tc,1,0x101) and tail jmp 0x142ea2da4, 5 upstream sites pass 0; 1.0.145 0x142ea4890 427/427. Imprecise: 0x155436e70 gets rcx = wheel+8, so the temps are wheel+0x6c/0x70/0x74. Unclaimed: no match with [tc+0x20] set faults at 0x142ea26b5."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Car_Tyre_SetWearFactor",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142ea2300-0x142ea2a82,0x142e9e6c0-0x142e9ec5b,0x14f463120-0x14f4632a5,0x155436e70-0x15543713b,0x142e88840-0x142e88c2a,0x1439876c0-0x143987801,0x14847a000-0x14847a18a,0x144776d00-0x144776e46,0x1401009f0-0x140100bda,0x155333a50-0x155333c45,1.0.145 0x142ea4890-0x142ea5012;xref:0x142e946b7,0x142ea2da4,0x142ea23df,0x142ea2459,0x142ea247f,0x142ea251c,0x142ea25e3,0x142ea25f1,0x142ea26b5,0x142ea27c1,0x142ea264e,0x142ea2630,0x142ea2a13,0x142ea2a60",
+   "notes": "V100026 Blind: own disasm agrees. Table refresh via 0x142e9e6c0; dword match on [+0x9c98]-0x6c, fallback 4/1 (setae); w=1.0 if matched>=5 signed, else 0.5*(w0+w3 @+0x630)*[+0x98e0+i*4], i=-1 reads +0x98dc; w<0 -> 1.0 (NaN passes). Float stores +0x80/+0x84 on 4 wheels, then qword +0x9950, then early ret 0x142ea25f1. Loop faults on null entry 0x142ea26b5/27c1, veh null 0x142ea264e. force is optional<bool> (word>0xff keeps low byte). 0x155436e70 also writes wheel+0xa8..+0xcc. +0x118 group string layout confirmed, [veh+0x558] link not traced. 1.0.145 0x142ea4890 427/427."
   }
  ],
  "proofs": []

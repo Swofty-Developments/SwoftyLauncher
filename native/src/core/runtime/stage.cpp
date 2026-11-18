@@ -23,9 +23,9 @@ const Feature FEATURES[] = {{"group", true},    {"erp", true},        {"db", tru
                             {"storage", true},  {"overlay", false},   {"telemetry", false},
                             {"shaders", false}, {"career", true},     {"popup", true},
                             {"postfx", false},  {"registry_rows", true}, {"lap_rec", true},
-                            {"loading_skip_minimum_time", false}, {"loading_skip_session_intro_video", false},
-                            {"loading_skip_grid_rundown", false}, {"loading_skip_talking_points", false},
-                            {"loading_log_settings", false}};
+                            {"loading_skip_minimum_time", true}, {"loading_skip_session_transition", true},
+                            {"loading_skip_session_intro_video", false}, {"loading_skip_grid_rundown", false},
+                            {"loading_skip_talking_points", false}, {"loading_log_settings", false}};
 
 std::once_flag config_once;
 json::Value config_doc;

@@ -1548,3 +1548,79 @@ fn a_removed_addon_whose_files_are_still_in_use_is_gone_and_deleted_on_the_next_
     assert!(!dest.exists());
     std::fs::remove_dir_all(&root).ok();
 }
+
+#[test]
+fn migrate_notes_say_what_moved_what_stayed_and_why() {
+    let root = tmp("migrate-notes");
+    let store = Store::new(&root);
+    let (old, new) = (root.join("mods"), root.join("addons"));
+    write_addon(&new.join("a.one"), "a.one");
+    write_addon(&old.join("one-copy"), "a.one");
+    write_addon(&old.join("a.two"), "a.two");
+    std::fs::create_dir_all(old.join("stray")).unwrap();
+    std::fs::write(store.config_path(), r#"{"data_version":4}"#).unwrap();
+    assert!(store.migrate().unwrap().is_empty());
+    std::fs::write(store.config_path(), r#"{"data_version":3}"#).unwrap();
+    let notes = store.migrate().unwrap();
+    assert_eq!(
+        notes[..3],
+        [
+            format!(
+                "moved {} to {}",
+                old.join("a.two").display(),
+                new.join("a.two").display()
+            ),
+            format!(
+                "kept {}: {} already has a.one",
+                old.join("one-copy").display(),
+                new.display()
+            ),
+            format!(
+                "kept {}: no addon id in its {MANIFEST_FILE}",
+                old.join("stray").display()
+            ),
+        ]
+    );
+    assert_eq!(store.config().data_version, DATA_VERSION);
+    std::fs::remove_dir_all(old.join("one-copy")).unwrap();
+    std::fs::remove_dir_all(old.join("stray")).unwrap();
+    std::fs::write(store.config_path(), r#"{"data_version":3}"#).unwrap();
+    let notes = store.migrate().unwrap();
+    assert_eq!(notes, [format!("removed the empty {}", old.display())]);
+    assert!(!old.exists());
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn a_backfill_that_cannot_list_the_profiles_is_retried_and_records_no_data_version() {
+    let (root, store) = v3_store("backfill-retry", &["a.one"]);
+    std::fs::write(store.profiles_dir(), "not a folder").unwrap();
+    let notes = store.migrate().unwrap();
+    assert_eq!(notes.len(), 1, "{notes:?}");
+    assert!(
+        notes[0].starts_with("couldn't list installed addons in the profiles, will retry: "),
+        "{notes:?}"
+    );
+    assert_eq!(store.config().data_version, 3);
+    std::fs::remove_file(store.profiles_dir()).unwrap();
+    store.migrate().unwrap();
+    assert_eq!(store.config().data_version, DATA_VERSION);
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[cfg(unix)]
+#[test]
+fn a_data_folder_linked_to_a_missing_folder_is_never_started_over() {
+    let dir = tmp("migrate-dangling");
+    let (root, target) = (dir.join("data"), dir.join("gone/data"));
+    std::os::unix::fs::symlink(&target, &root).unwrap();
+    let err = Store::new(&root).migrate().unwrap_err().to_string();
+    let want = format!(
+        "the data folder {} links to {}, which is missing. Reconnect that drive or restore the folder; the launcher will not start a new data folder in its place",
+        root.display(),
+        target.display()
+    );
+    assert_eq!(err, want);
+    assert!(!target.exists());
+    std::fs::remove_dir_all(&dir).ok();
+}

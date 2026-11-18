@@ -36,6 +36,7 @@ TABLES = {
     'strings_anchors': (['id', 'addr', 'enc', 'text', 'refs', 'funcs', 'level', 'notes'], ('id',)),
     'subsystems': (['id', 'prefix', 'owner', 'status', 'description'], ('id',)),
     'verify': (['date', 'verifier', 'kind', 'item', 'claimed', 'verdict', 'evidence', 'notes'], None),
+    'verify_ranges': (['first', 'last', 'owner', 'granted', 'notes'], ('first',)),
 }
 LEVELS = ('L0', 'L1', 'L2', 'L3')
 TOKEN_KINDS = ('decomp', 'xref', 'str', 'imm', 'pat', 'doc', 'kb', 'trace', 'sig')
@@ -287,6 +288,15 @@ def validate_row(table, r, subs=None):
             errs.append('subsystem id must be snake_case')
         if not re.match(r'^[A-Z][A-Za-z0-9]*$', r['prefix']):
             errs.append('prefix must be PascalCase')
+    elif table == 'verify_ranges':
+        if not (re.match(r'^[1-9][0-9]*$', r['first']) and re.match(r'^[1-9][0-9]*$', r['last'])):
+            errs.append('first and last must be decimal verify ids')
+        elif int(r['first']) < RANGED_VERIFY_IDS_FROM or int(r['last']) < int(r['first']):
+            errs.append(f'a range runs from first to last, both at or above {RANGED_VERIFY_IDS_FROM}')
+        if not OWNER_RE.match(r['owner']):
+            errs.append(f'owner {r["owner"]!r} must be a verifier name or the start of one')
+        if not re.match(r'^\d{4}-\d{2}-\d{2}$', r['granted']):
+            errs.append(f'granted {r["granted"]!r} must be a date')
     elif table == 'verify':
         if r['verdict'] not in ('agree', 'disagree', 'partial'):
             errs.append(f'verdict {r["verdict"]!r}')
@@ -510,6 +520,96 @@ def colliding_verify_ids(rows):
     return {n: rs for n, rs in out.items() if len(rs) > 1}
 
 
+RANGED_VERIFY_IDS_FROM = 100000
+RANGE_SIZE = 10000
+OWNER_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$')
+
+
+def verify_id(r):
+    m = re.match(r'V(\d+) ', r.get('notes') or '')
+    return int(m.group(1)) if m else None
+
+
+def range_owner(verifier, ranges):
+    """The owner whose ranges a verifier's ids come from: the longest owner that is the verifier's name or the start
+    of it up to a '-' (re-bindings owns re-bindings and re-bindings-blind)."""
+    owners = {r['owner'] for r in ranges if verifier == r['owner'] or verifier.startswith(r['owner'] + '-')}
+    return max(owners, key=len) if owners else None
+
+
+def next_verify_id(verifier, rows, ranges):
+    """The next free id in the ranges of the verifier's owner. Ranges are granted on the trunk and never overlap, so
+    rows written on different branches by different owners cannot get the same id. `rows` are every verify row of
+    the checkout, verify.tsv's and the records'; the id handed out lies above every id of theirs in its range, whoever
+    wrote it, so it is never one of theirs."""
+    owner = range_owner(verifier, ranges)
+    if not owner:
+        raise SystemExit(f'refused: {verifier} has no verify id range in re/db/verify_ranges.tsv; a lead grants one '
+                         f'on the trunk with kb.py --agent LEAD grant-range OWNER')
+    taken = {n for x in rows if (n := verify_id(x)) is not None}
+    for g in sorted((x for x in ranges if x['owner'] == owner), key=lambda x: int(x['first'])):
+        first, last = int(g['first']), int(g['last'])
+        used = [n for n in taken if first <= n <= last]
+        n = max(used) + 1 if used else first
+        if n <= last:
+            return n
+    raise SystemExit(f'refused: the verify id ranges of {owner} are used up; a lead grants another on the trunk')
+
+
+def verify_range_errors(ranges, rows):
+    """Overlapping ranges, and ids at or above RANGED_VERIFY_IDS_FROM outside every range of their verifier's
+    owner."""
+    errs = []
+    spans = sorted((int(r['first']), int(r['last']), r['owner']) for r in ranges
+                   if not validate_row('verify_ranges', r))
+    for (f1, l1, o1), (f2, l2, o2) in zip(spans, spans[1:]):
+        if f2 <= l1:
+            errs.append(f'verify_ranges: {o1} {f1}..{l1} and {o2} {f2}..{l2} overlap; grant ranges on the trunk only')
+    for r in rows:
+        n = verify_id(r)
+        if n is None or n < RANGED_VERIFY_IDS_FROM:
+            continue
+        owner = range_owner(r['verifier'], ranges)
+        if not any(x['owner'] == owner and int(x['first']) <= n <= int(x['last']) for x in ranges):
+            errs.append(f'verify: V{n} by {r["verifier"]} ({r["kind"]} {r["item"]}) lies outside every range of '
+                        f'{owner or "its owner, which has none"} in verify_ranges.tsv')
+    return errs
+
+
+def cmd_grant_range(a):
+    if not OWNER_RE.match(a.owner):
+        raise SystemExit(f'refused: owner {a.owner!r} must be a verifier name or the start of one')
+    with locked():
+        rows, errs = read_table('verify_ranges')
+        if errs:
+            raise SystemExit('\n'.join(errs))
+        top = max([RANGED_VERIFY_IDS_FROM - 1, *(int(r['last']) for r in rows)])
+        first = (top // a.size + 1) * a.size
+        r = {'first': str(first), 'last': str(first + a.size - 1), 'owner': a.owner,
+             'granted': datetime.date.today().isoformat(), 'notes': a.notes or '-'}
+        e = validate_row('verify_ranges', r) + uniqueness('verify_ranges', rows, r)
+        if e:
+            raise SystemExit('refused:\n  ' + '\n  '.join(e))
+        rows.append(r)
+        write_table('verify_ranges', rows)
+        journal(a.agent, 'add', 'verify_ranges', r['first'], None, r)
+    print(f'granted V{r["first"]}..V{r["last"]} to {a.owner}; commit it on the trunk before the lane writes verify rows')
+
+
+def struct_level(kind, item):
+    """The level a field or struct row claims: the field's level or the struct's size level in re/db/structs, which
+    the export gate compares with the level at export time; '-' when the struct file has no such item."""
+    from kb_lint import parse_struct
+    sname, _, fname = item.partition('.')
+    path = os.path.join(DB, 'structs', sname + '.h')
+    if not os.path.isfile(path) or (kind == 'field') != bool(fname):
+        return '-'
+    s = parse_struct(path)
+    if kind == 'struct':
+        return s['size_level'] or '-'
+    return next((f['level'] for f in s['fields'] if f['name'] == fname), '-')
+
+
 def cmd_verify(a):
     table = {'func': 'functions', 'global': 'globals', 'db_key': 'db_keys', 'anchor': 'strings_anchors'}.get(a.kind)
     claimed = '-'
@@ -522,6 +622,8 @@ def cmd_verify(a):
         who = raiser(table, '|'.join(row_key(table, r) or ()))
         if who == a.agent:
             raise SystemExit(f'refused: {a.agent} raised this item to {claimed}; verification must come from another agent')
+    elif a.kind in ('field', 'struct'):
+        claimed = struct_level(a.kind, a.item)
     r = {'date': datetime.date.today().isoformat(), 'verifier': a.agent, 'kind': a.kind, 'item': a.item, 'claimed': claimed,
          'verdict': a.verdict, 'evidence': a.evidence, 'notes': a.notes or '-'}
     e = validate_row('verify', r)
@@ -529,8 +631,7 @@ def cmd_verify(a):
         raise SystemExit('refused:\n  ' + '\n  '.join(e))
     with locked():
         rows, _ = read_table('verify')
-        taken = [int(m.group(1)) for x in rows if (m := re.match(r'V(\d+) ', x['notes']))]
-        n = max([len(rows), *taken]) + 1
+        n = next_verify_id(a.agent, rows, read_table('verify_ranges')[0])
         r['notes'] = f'V{n:04d} ' + r['notes']
         import binding_record
         rec = binding_record.Store.get().by_item(a.item)
@@ -656,12 +757,13 @@ def main():
     p = sp.add_parser('import'); p.add_argument('file'); p.add_argument('table', choices=['functions', 'globals'])
     p = sp.add_parser('export'); p.add_argument('dir')
     sp.add_parser('function-names')
+    p = sp.add_parser('grant-range'); p.add_argument('owner'); p.add_argument('--size', type=int, default=RANGE_SIZE); p.add_argument('--notes')
     a = ap.parse_args()
     if a.cmd not in ('get', 'find', 'export', 'function-names') and not a.agent:
         raise SystemExit('--agent NAME (or RE_AGENT) is required for writes')
     {'add': cmd_add, 'set': cmd_set, 'get': cmd_get, 'find': cmd_find, 'claim': cmd_claim,
      'release': lambda x: cmd_claim(x, True), 'note': cmd_note, 'verify': cmd_verify, 'test-new': cmd_test_new,
-     'import': cmd_import, 'export': cmd_export,
+     'import': cmd_import, 'export': cmd_export, 'grant-range': cmd_grant_range,
      'function-names': lambda a: print('function_names.tsv ' + ('rewritten' if write_function_names() else 'unchanged'))}[a.cmd](a)
 
 

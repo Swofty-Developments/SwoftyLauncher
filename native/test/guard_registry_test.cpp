@@ -67,6 +67,7 @@ const std::vector<std::string> OFFERED = {
     "tile_list_select",
     "session_enter",
     "ai_line_set",
+    "weather_chain",
 };
 
 const std::vector<std::string> SETTLED = {
@@ -118,6 +119,7 @@ const std::vector<std::string> SETTLED = {
     "tile_list_select",
     "session_enter",
     "ai_line_set",
+    "weather_chain",
 };
 
 // The order 1.9.63 armed the hook guards in, each from its own SWOFTY_ON_LOAD entry, as the armed lines of a 1.9.63

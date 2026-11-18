@@ -109,6 +109,33 @@ void car_category_commit()
 
 The career contents and their tile route, the car category boxes, the box grid and the save splice keep their hook state this way. `native/test/hook_set_test.cpp` pins the bind step's reason, `needs <ids>, which this build does not resolve`.
 
+A set whose parts addons ask for one by one keeps a `loader::MixinPart` per part: the mixin's name and label, wanted, its `MixinGate`, live and whether its late registration was logged. The career wizard's five controls and the character refs and voices are parts:
+
+```cpp
+runtime::loader::MixinPart ref{REF_MIXIN, "ref"}, voice{VOICE_MIXIN, "voice"};
+
+std::vector<CoreMixins> characters_mixins()
+{
+    std::vector<CoreMixins> out;
+    if (ref.offer()) // wanted, and offered for the first time
+        out.push_back({REF_MIXIN, {/* ... */}});
+    return out;
+}
+
+void characters_commit()
+{
+    bool any = false;
+    for (runtime::loader::MixinPart *p : {&ref, &voice})
+        any |= p->settle([p] { return core_mixins_active(p->name); });
+    if (any)
+        swofty::log("[characters] setup: character refs %s, voices %s", ref.state(), voice.state()); // armed, off, not used
+}
+```
+
+`usable(core_mixins_closed())` answers whether an addon's entry can still take effect, and `first_late()` is true once, for the line a registration after the last commit logs.
+
+Two hooks stay outside these objects. `diagnostics/tyre_models.cpp` keeps a `MixinGate` and its one original: a `HookSet` holds its reason as a `std::string`, whose exit-time destructor adds the unit to the exit section of `tools/core_init_order.txt`. `diagnostics/crash/dred.cpp` places its D3D12CreateDevice hook with `safetyhook::InlineHook::create` in the crash handler's attach step (`crash_attach`), on d3d12.dll's export from `GetProcAddress` with no signature or build gate; it logs through the crash log's own line function, and its line says only `hooked` or `NOT hooked`.
+
 A safetyhook mid hook or inline hook goes on through `loader::install` (`runtime/loader/hook_install.hpp`). Given a `HookSite` it checks the site's build gate, finds its signature and places the hook; given an address it only places the hook:
 
 ```cpp
@@ -233,7 +260,7 @@ swofty::log("%s", logic::hitch_line(ms, h.during, swofty_ms, h.top).c_str());
 
 ## Career namespaces
 
-Code in `core/career/` is in `career::`. The entry points `runtime/runtime.hpp` declares stay in `runtime`, and `career.cpp`, `career_saves.cpp`, `career_start.cpp` and `career_wizard.cpp` define them over unnamed-namespace state:
+Code in `core/career/` is in `career::`. The entry points `runtime/runtime.hpp` declares stay in `runtime`: `career.cpp`, `career_saves.cpp` and `career_start.cpp` define them over unnamed-namespace state, and `career_wizard.cpp` over `career::wizard`:
 
 | Namespace | Files |
 |---|---|
@@ -241,7 +268,8 @@ Code in `core/career/` is in `career::`. The entry points `runtime/runtime.hpp` 
 | `career::game` | `career_entity.hpp`, `career_entity.cpp`: the championship entity, its components and entrants |
 | `career::content` | `career_content_logic.hpp`, `content_state.hpp`, `career_content.cpp`, `content_*.cpp` |
 | `career::characters` | `characters_logic.hpp`, `characters_state.hpp`, `characters.cpp`, `characters_hooks.cpp` |
-| `career::hub` | `hub_state.hpp`, `hub_tab.cpp`, `hub_rnd.cpp` |
+| `career::hub` | `hub_state.hpp`, `hub_tab.cpp`, `hub_team_hq.cpp`, `hub_rnd.cpp` |
+| `career::wizard` | `wizard_state.hpp`, `career_wizard.cpp`, `wizard_hooks.cpp` |
 | `career::saves`, `career::start`, `career::ui` | `career_saves_logic.hpp`, `career_start.hpp`, `career_ui.hpp` |
 | `career::save_data`, `career::save_splice` | `save_data.hpp`, `save_data.cpp`, `save_splice_logic.hpp`, `save_splice.cpp` |
 | `career::save_diag`, `career::save_heap` | `save_diag_logic.hpp`, `save_heap_logic.hpp` |
@@ -278,7 +306,8 @@ These units keep their state in the first file listed; the other files hold code
 | `career/save_data.cpp`, `save_data.hpp` | the game's save-data objects: the root, a child's bag and its encoding, the string table, slot managers |
 | `career/snapshots/snapshots.cpp` | the snapshots entry, the save and career moments and the reads |
 | `career/snapshots/freeze.cpp`, `book_cache.hpp` | `Book::freeze`, `season_start` and `career_created` |
-| `career/hub_tab.cpp`, `hub_state.hpp` | the hub tabs, their options and `SwoftyCoreHub` |
+| `career/hub_tab.cpp`, `hub_state.hpp` | the hub tabs and their options, the page, the laptop builder, setup and `SwoftyCoreHub` |
+| `career/hub_team_hq.cpp` | the Driver Career Team HQ builder |
 | `career/hub_rnd.cpp` | the R&D tab's visibility on Team HQ and the laptop, and `hub_tick` |
 | `career/career_content.cpp`, `content_state.hpp` | the content registry and its core sets |
 | `career/content_hooks.cpp` | the router, gate and slot predicate wraps and `bind_all` |
@@ -292,6 +321,8 @@ These units keep their state in the first file listed; the other files hold code
 | `runtime/loader/binding_resolve.cpp` | resolving a binding by address, pattern or anchor, deferral and the retry passes |
 | `runtime/settings.cpp` | settings.json's addon options, the settings API, the MFD rows and the commands |
 | `runtime/settings_logic.hpp` | the option model, the requests.json text and an option's value (`test/settings_logic_test.cpp`) |
+| `career/career_wizard.cpp`, `wizard_state.hpp` | the wizard entries and their records, the parts, the `SwoftyCareerWizard` table, the core sets and the tile routes |
+| `career/wizard_hooks.cpp` | the start in F1, step and option, confirm route and driver tab wraps and sites |
 | `career/characters.cpp`, `characters_state.hpp` | the character entries, the active group, the strings and the `SwoftyCharacters` table |
 | `career/characters_hooks.cpp` | the character ref and voice wraps and the character list's rebuild |
 | `career/characters_logic.hpp` | which swap and mute act in the active group (`test/characters_logic_test.cpp`) |

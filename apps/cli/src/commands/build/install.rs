@@ -173,15 +173,15 @@ fn install_checked(
         r => return Ok(not_stock(store, g, r)?),
     };
     if found.iter().any(|c| !c.owned) {
-        return Err(crate::recover::blocked(store, g, &found));
+        return Err(crate::session_lock::blocked(store, g, &found));
     }
     let cleared = inst.clear(&found)?;
-    crate::recover::announce(store, g, &cleared, out);
-    crate::recover::record_cleared(store, &cleared);
+    crate::session_lock::announce(store, g, &cleared, out);
+    crate::session_lock::record_cleared(store, &cleared);
     let built = timed_build(store, profile, g, integrity.as_ref(), &plugins)?;
     report(profile, &built);
     match swofty_core::diagnostics::phases::time("play.install", || inst.apply(&built.plan)) {
-        Err(swofty_core::Error::Leftovers(found)) => Err(crate::recover::blocked(store, g, &found)),
+        Err(swofty_core::Error::Leftovers(found)) => Err(crate::session_lock::blocked(store, g, &found)),
         r => Ok(not_stock(store, g, r)?),
     }
 }

@@ -1,5 +1,6 @@
 // Host-native unit test for a core mixin set's shared state (native/src/core/runtime/loader/hook_set.hpp): the bind
-// step's resolution and its reason, an original's slot and call, and turning the hooks off.
+// step's resolution and its reason, an original's slot and call, turning the hooks off, and a set's separately wanted
+// parts.
 // Built and run by native/test/run_tests.sh hook_set.
 
 #include "core/runtime/loader/hook_set.hpp"
@@ -21,6 +22,7 @@ static int g_fail;
 
 using runtime::loader::Binding;
 using runtime::loader::HookSet;
+using runtime::loader::MixinPart;
 using runtime::loader::Original;
 
 static uintptr_t fake_resolve(const char *id)
@@ -77,6 +79,31 @@ static void turn_off()
     CHECK(hooks.off() && hooks.why() == "the hooks did not install");
 }
 
+static void mixin_part()
+{
+    MixinPart idle{"idle mixin", "idle"}, used{"used mixin", "used"}, failed{"failed mixin", "failed"};
+    CHECK(!idle.offer() && !idle.gate.offered());
+    CHECK(idle.usable(false) && !idle.usable(true));
+    CHECK(!idle.settle([] { return true; }) && !idle.live);
+    CHECK(std::strcmp(idle.state(), "not used") == 0);
+
+    used.wanted = true;
+    CHECK(used.offer() && !used.offer());
+    int asked = 0;
+    CHECK(used.settle([&] { return ++asked, true; }));
+    CHECK(!used.settle([&] { return ++asked, false; }));
+    CHECK(asked == 1 && used.live && used.usable(true));
+    CHECK(std::strcmp(used.state(), "armed") == 0);
+
+    failed.wanted = true;
+    CHECK(failed.offer());
+    CHECK(failed.settle([] { return false; }));
+    CHECK(!failed.live && !failed.usable(false));
+    CHECK(std::strcmp(failed.state(), "off") == 0);
+
+    CHECK(failed.first_late() && !failed.first_late());
+}
+
 int main()
 {
     SwoftyApi api{};
@@ -85,6 +112,7 @@ int main()
     bind_step();
     original();
     turn_off();
+    mixin_part();
     if (g_fail) {
         std::printf("%d check(s) failed\n", g_fail);
         return 1;
