@@ -210,6 +210,15 @@ struct PitStop {                               // the game counts a pit stop for
     uint32_t car;                              // vehicle index in the session
     uint32_t stops;                            // the car's stop count after it
 };
+
+struct PitStopTyres {                          // the crew fits a car's tyres at a pit stop (notify)
+    static constexpr const char *point = "session.pit_stop.tyres";
+    static constexpr uint32_t version = 1;
+    uint32_t size, payload_version;
+    uint32_t car;                              // vehicle index in the session
+    uint8_t kept;                              // 1: the box rule race_tyre_change false kept the fitted set
+    uint8_t reserved[3];
+};
 // a car's garage and pit box: swofty/systems/pitlane.hpp (Pit lane)
 
 // payloads on the Events page
