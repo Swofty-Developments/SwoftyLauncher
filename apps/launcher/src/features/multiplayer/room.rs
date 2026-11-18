@@ -259,6 +259,13 @@ impl Shell {
                                     .filter(|_| !m.leaving)
                                     .map(|h| div().text_size(px(13.)).text_color(p.text_muted).child(h)),
                             )
+                            .children(
+                                st.problem
+                                    .as_ref()
+                                    .and_then(|problem| problem.detail.clone())
+                                    .filter(|_| !m.leaving)
+                                    .map(|d| div().text_size(px(13.)).text_color(p.text_muted).child(d)),
+                            )
                             .children(reopen.is_some().then(|| {
                                 div()
                                     .text_size(px(13.))

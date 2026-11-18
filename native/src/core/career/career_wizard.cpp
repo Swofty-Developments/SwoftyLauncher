@@ -1,4 +1,5 @@
 #include "core/career/career_ui.hpp"
+#include "core/guards/skips.hpp"
 #include "core/registry/older.hpp"
 #include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/loader/mixin_gate.hpp"
@@ -111,7 +112,7 @@ std::string last_tile;
 std::atomic<uintptr_t> hidden_header{0};
 std::atomic<uint64_t> hidden_tabs{0};
 std::atomic<bool> any{false};
-std::atomic<uint32_t> logged[8];
+constinit swofty_core::guards::LogFirst<6> note_lines[8];
 
 struct Part {
     const char *name;
@@ -131,7 +132,7 @@ const char *intern(const std::string &s)
 
 void note(int which, const char *fmt, const char *a = "", const char *b = "", const char *c = "")
 {
-    if (logged[which]++ < 6)
+    if (note_lines[which].note())
         swofty::log(fmt, a, b, c);
 }
 
@@ -451,7 +452,7 @@ const SwoftyCareerWizard *wizard_table()
     return &table;
 }
 
-std::vector<CoreMixins> wizard_mixins()
+static std::vector<CoreMixins> wizard_mixins()
 {
     std::vector<CoreMixins> out;
     if (!enabled("career", nullptr))
@@ -480,7 +481,7 @@ std::vector<CoreMixins> wizard_mixins()
     return out;
 }
 
-void wizard_commit()
+static void wizard_commit()
 {
     bool any = false;
     for (int i = 0; i < 5; i++) {

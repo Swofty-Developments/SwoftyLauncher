@@ -640,7 +640,7 @@ bool test_run_live()
     return t && ss::still_armed(runtime::read_file(t->dir + L"\\" + runtime::wide(ss::RUN_FILE), 1 << 16), t->token);
 }
 
-std::vector<CoreMixins> save_sandbox_mixins()
+static std::vector<CoreMixins> save_sandbox_mixins()
 {
     std::vector<CoreMixins> out;
     if (offered)
@@ -671,7 +671,7 @@ std::vector<CoreMixins> save_sandbox_mixins()
     return out;
 }
 
-void save_sandbox_commit()
+static void save_sandbox_commit()
 {
     if (!offered || settled || mode != Mode::on)
         return;

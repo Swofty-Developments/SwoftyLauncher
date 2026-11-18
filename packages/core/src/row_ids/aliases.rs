@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::Result;
 
-use super::{ALIAS_TABLES, ALIASES_VERSION, Store, addon_of};
+use super::{ALIAS_TABLES, ALIASES_VERSION, Store, addon_of, pool};
 
 /// `swofty/id_aliases.json`: for each of `teams`, `vehicles` and `drivers`, the ids added rows had
 /// before (1.6.10 and 1.6.11 hashed ids, ids before 1.6.10) mapped to the id they have now. The core
@@ -54,7 +54,10 @@ impl Store {
             for &old in olds {
                 if old == now
                     || self.by_id.get(table).is_some_and(|ids| ids.contains_key(&old))
-                    || self.pinned.get(table).is_some_and(|ids| ids.contains_key(&old))
+                    || self
+                        .pinned
+                        .get(pool(table))
+                        .is_some_and(|ids| ids.contains_key(&old))
                 {
                     continue;
                 }

@@ -144,6 +144,9 @@ pub struct Config {
     pub home_video: bool,
     #[serde(default = "on", skip_serializing_if = "is_on")]
     pub use_profiles: bool,
+    /// Offer Addon Browser updates for installed addons that are off as well; off unless turned on.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub update_off_addons: bool,
 }
 
 fn on() -> bool {
@@ -206,7 +209,7 @@ pub fn clamp_ui_scale(percent: u16) -> u16 {
 }
 
 /// The version of the welcome wizard. Raise it to show the wizard once more to everyone.
-pub const ONBOARDING_VERSION: u32 = 1;
+pub const ONBOARDING_VERSION: u32 = 2;
 
 impl Config {
     /// Whether the welcome wizard is due: never seen, or an older version.

@@ -81,7 +81,7 @@ A game update moves struct offsets, so code that reads or writes a struct field 
 namespace bp = runtime::build_proof;
 
 constexpr bp::Proof SESSION_LAPS{"the session settings' laps layout (+0xdf0, +0xdf8)",
-                                 bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145)};
+                                 bp::proofs::VERIFIED_LAYOUT.builds};   // or bp::bit(bp::Build::kb) | ...
 constexpr bp::Gate RACE_LAPS{"the direct start's race laps", &SESSION_LAPS};   // testing/direct_start.cpp
 
 if (!runtime::holds(RACE_LAPS))   // logs once: "[build] the direct start's race laps off on <exe>: <proof> is proven on <builds> only"
@@ -130,14 +130,18 @@ Code that runs inside a handler reads with `pages::readable_now` and does not al
 
 ## The profiler
 
-`diagnostics/perf.hpp` is the profiler's API (`perf::Scope`, `perf::Pause`, `mark`, `frame_claim`). Its state is one `Profiler` object in `perf.cpp`; the parts with state of their own are in `diagnostics/perf/`:
+`diagnostics/perf.hpp` is the profiler's API (`perf::Scope`, `perf::Pause`, `mark`, `frame_claim`). Its state is one `Profiler` object (`perf/profiler.hpp`), defined in `perf.cpp`; its members are defined by concept in `diagnostics/perf/`, next to the parts with state of their own:
 
 | File | Holds |
 |---|---|
-| `perf.cpp` | `Profiler`: the probe names and per-thread counters, frames, hitches, slow calls, the timeline, `perf.log` and the minute lines |
+| `perf.cpp` | the `Profiler` object, its calibration, `attach`, `start` and `flush` |
+| `perf/profiler.hpp` | `Profiler`: the probe names and per-thread counters, the frame clock and histograms, the hitch, slow call and timeline rings |
+| `perf/probes.cpp` | probes, `enter` and `leave`, the per-thread counters, slow calls, `owner_of` and the `SwoftyPerf*` exports |
+| `perf/frames.cpp` | frames from the frame token and the flow ticks, the histograms, hitches, `frame_claim` and the timeline marks |
+| `perf/report.cpp` | `perf.log`, the minute lines and the crash report's probe text |
 | `perf/vq.cpp` | the VirtualQuery calls from swofty modules and the process's CPU use per thread |
 | `perf/sysmem.cpp` | RAM, commit, the game's working set and each adapter's VRAM |
-| `perf/counters.hpp` | the relaxed counters and `ms_of`, which both use |
+| `perf/counters.hpp` | the relaxed counters and `ms_of`, which they all use |
 | `perf_logic.hpp` | the text of every `[perf]` line, which `test/perf_logic_test.cpp` pins |
 
 A new `[perf]` line is a function in `perf_logic.hpp` with a case in the test:

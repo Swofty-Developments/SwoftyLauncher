@@ -1,4 +1,5 @@
 #include "core/guards/guard.hpp"
+#include "core/guards/memory.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -64,21 +65,13 @@ uintptr_t no_slot = 0, no_slot_alt = 0;
 bool rows_offered = false;
 guards::LogFirst<tl::LOG_FIRST> skipped{"skips"}, moved{"moves"};
 
-bool read_memory(uint64_t address, void *out, size_t n, void *)
-{
-    if (!swofty::mem::readable(address, n))
-        return false;
-    memcpy(out, reinterpret_cast<const void *>(address), n);
-    return true;
-}
-
 void skip(SwoftyContext *c, uintptr_t exit_at)
 {
     tl::Exit exit;
     bool usable;
     {
         swofty::mem::Trust trust(runtime::HEAP_TRUST_MS);
-        usable = tl::entry_step(c->r9, exit_at, read_memory, nullptr, &exit);
+        usable = tl::entry_step(c->r9, exit_at, guards::read_if_readable, nullptr, &exit);
     }
     if (usable)
         return;
@@ -105,7 +98,7 @@ void row_offset(SwoftyContext *c)
     uint64_t end = 0;
     {
         swofty::mem::Trust trust(runtime::HEAP_TRUST_MS);
-        if (!read_memory(c->r13 + tl::ROWS_END_AT, &end, sizeof end, nullptr))
+        if (!guards::read_if_readable(c->r13 + tl::ROWS_END_AT, &end, sizeof end, nullptr))
             return;
     }
     uint64_t index = tl::row_index(c->rdi, c->rbx, end);

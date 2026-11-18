@@ -86,11 +86,11 @@ fn an_addon_that_does_not_apply_to_an_old_game_leads_with_the_update() {
     assert_eq!(
         format!("{:#}", outdated_with(failed(), Some("1.0.136.6820"), &names)),
         format!(
-            "Classic Seasons needs F1 25 1.0.141.7865, the latest update. Your F1 25 is 1.0.136.6820. \
+            "Classic Seasons needs F1 25 1.0.145.2472, the latest update. Your F1 25 is 1.0.136.6820. \
              Update F1 25 in Steam or the EA app, then press Play again.\n({APPLY_FAILED})"
         )
     );
-    for version in [Some("1.0.141.7865"), None, Some("")] {
+    for version in [Some("1.0.145.2472"), None, Some("")] {
         assert_eq!(
             format!("{:#}", outdated_with(failed(), version, &names)),
             APPLY_FAILED,

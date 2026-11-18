@@ -1,3 +1,4 @@
+#include "core/hud/hardware_settings.hpp"
 #include "core/render/d3d12/hooking.hpp"
 #include "core/render/d3d12_hooks.hpp"
 #include "core/render/rtas_guard_logic.hpp"
@@ -19,6 +20,7 @@ namespace rg = runtime::rtas_guard;
 
 constexpr size_t BUILD_RTAS_SLOT = 72;
 constexpr int RTAS_DETAILED = 8;
+constexpr uint32_t RTAS_NAMED = 800;
 
 using RtasDesc = D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC;
 using GeoDesc = D3D12_RAYTRACING_GEOMETRY_DESC;
@@ -57,8 +59,11 @@ class RtasGuard {
 public:
     bool arm();
     void build(ID3D12GraphicsCommandList4 *l, const RtasDesc *desc, UINT posts, const PostDesc *post);
+    std::string recent_text(const std::vector<runtime::dred::BuildStop> &stops);
 
 private:
+    rg::Entry entry_of(const void *list, const RtasDesc &desc, bool top);
+    void name_build(const rg::Entry &e, uint64_t nth, const RtasDesc &desc);
     void log_hole(uint64_t nth, const RtasDesc &desc, const rg::Call &c, rg::Act a);
     void log_bad_posts(uint64_t nth, const RtasDesc &desc, UINT posts, size_t kept);
     void log_faulty(uint64_t nth, const RtasDesc &desc, const std::vector<rg::Geo> &geos, const rg::Plan &plan);
@@ -67,8 +72,11 @@ private:
     rg::Mode mode = rg::Mode::on;
     std::mutex lock;
     rg::Book book;
+    rg::Trace named{RTAS_NAMED};
+    std::atomic<bool> named_full{false};
+    rg::ByList<64, 32> recent;
     std::atomic<size_t> tracked{0};
-    std::atomic<uint64_t> builds{0}, faulty{0}, holes{0}, bad_posts{0};
+    std::atomic<uint64_t> builds{0}, faulty{0}, holes{0}, bad_posts{0}, all{0};
     uint64_t trace_builds = 0;
     int state = 0;
 };
@@ -137,6 +145,62 @@ void RtasGuard::log_faulty(uint64_t nth, const RtasDesc &desc, const std::vector
                 (unsigned long long)g.indices, what);
 }
 
+rg::Entry RtasGuard::entry_of(const void *list, const RtasDesc &desc, bool top)
+{
+    const auto &in = desc.Inputs;
+    rg::Entry e;
+    e.seq = all.fetch_add(1, std::memory_order_relaxed);
+    e.frame = frames_presented();
+    e.list = reinterpret_cast<uint64_t>(list);
+    e.dest = desc.DestAccelerationStructureData;
+    e.flags = unsigned(in.Flags);
+    e.count = in.NumDescs;
+    e.top = top;
+    if (top)
+        return e;
+    for (UINT i = 0; i < in.NumDescs && i < UINT(rg::kBriefGeos); i++) {
+        const GeoDesc &g = geo_at(in, i);
+        rg::Brief &b = e.geo[i];
+        b.flags = unsigned(g.Flags);
+        if (g.Type == D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES) {
+            const auto &t = g.Triangles;
+            b.vertices = t.VertexCount;
+            b.indices = t.IndexCount;
+            b.stride = uint32_t(t.VertexBuffer.StrideInBytes);
+            b.vertex_format = int(t.VertexFormat);
+            b.index_format = int(t.IndexFormat);
+            b.transform = t.Transform3x4 != 0;
+        } else {
+            b.type = rg::kAabbs;
+            b.aabbs = uint32_t(g.AABBs.AABBCount);
+        }
+    }
+    return e;
+}
+
+void RtasGuard::name_build(const rg::Entry &e, uint64_t nth, const RtasDesc &desc)
+{
+    const auto &in = desc.Inputs;
+    rg::Shape shape;
+    for (UINT i = 0; i < in.NumDescs; i++)
+        shape.add(geo_of(geo_at(in, i)));
+    bool want, full;
+    {
+        std::lock_guard<std::mutex> g(lock);
+        want = named.want(shape.hash);
+        full = named.full();
+    }
+    if (full)
+        named_full.store(true, std::memory_order_relaxed);
+    if (!want)
+        return;
+    swofty::log("[gfx] rtas build %llu%s on list 0x%llx into 0x%llx (flags 0x%x), %u geometries:%s", (unsigned long long)nth,
+                (e.flags & D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE) ? " (update)" : "",
+                (unsigned long long)e.list, (unsigned long long)e.dest, e.flags, e.count, rg::geometry_text(e).c_str());
+    if (full)
+        swofty::log("[gfx] rtas build log: %u shapes named; later ones are not", RTAS_NAMED);
+}
+
 void RtasGuard::build(ID3D12GraphicsCommandList4 *l, const RtasDesc *desc, UINT posts, const PostDesc *post)
 {
     if (!desc) {
@@ -151,6 +215,11 @@ void RtasGuard::build(ID3D12GraphicsCommandList4 *l, const RtasDesc *desc, UINT 
                   top ? desc->Inputs.InstanceDescs : 0,
                   desc->Inputs.NumDescs,
                   (desc->Inputs.Flags & D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE) != 0};
+    rg::Entry entry = entry_of(l, *desc, top);
+    {
+        std::lock_guard<std::mutex> g(lock);
+        recent.push(entry);
+    }
     rg::Act a = rg::act(call);
     if (a != rg::Act::send) {
         log_hole(holes.fetch_add(1, std::memory_order_relaxed) + 1, *desc, call, a);
@@ -209,6 +278,8 @@ void RtasGuard::build(ID3D12GraphicsCommandList4 *l, const RtasDesc *desc, UINT 
         }
         swofty::log("%s", line);
     }
+    if (!named_full.load(std::memory_order_relaxed))
+        name_build(entry, nth, *desc);
     bool any = false;
     for (UINT i = 0; i < in.NumDescs && !any; i++)
         any = rg::fault(geo_of(geo_at(in, i))) != rg::Fault::none;
@@ -265,6 +336,9 @@ bool RtasGuard::arm()
     char trace[16] = {};
     if (GetEnvironmentVariableA("SWOFTY_RTAS_TRACE", trace, sizeof trace))
         trace_builds = strtoull(trace, nullptr, 10);
+    std::wstring settings = hardware_settings::path();
+    std::string rt = settings.empty() ? std::string() : rg::rt_options(runtime::read_file(settings, 1 << 20));
+    swofty::log("[gfx] the game's hardware settings have ray tracing options: %s", rt.empty() ? "none found" : rt.c_str());
     if (mode == rg::Mode::off) {
         swofty::log("[gfx] rtas guard is off (SWOFTY_RTAS_GUARD=0)");
         return false;
@@ -296,9 +370,23 @@ bool RtasGuard::arm()
     return ok;
 }
 
+std::string RtasGuard::recent_text(const std::vector<runtime::dred::BuildStop> &stops)
+{
+    std::vector<rg::ByList<64, 32>::Kept> lists;
+    uint64_t pushed;
+    {
+        std::unique_lock<std::mutex> g(lock, std::try_to_lock);
+        lists = recent.newest_lists_first();
+        pushed = recent.pushed();
+    }
+    return rg::recent_section(lists, pushed, 12, rg::stopped_lines(lists, stops));
+}
+
 }
 
 bool arm_rtas_guard() { return guard.arm(); }
+
+std::string rtas_recent_text(const std::vector<runtime::dred::BuildStop> &stops) { return guard.recent_text(stops); }
 
 }
 

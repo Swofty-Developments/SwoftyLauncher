@@ -48,6 +48,10 @@ pub struct Me {
     /// Launcher Support and addon creators. Servers without it leave it false.
     #[serde(default)]
     pub ad_free: bool,
+    /// RevIQ's hash of the user's Discord email, for ad matching. Only users
+    /// who see ads and signed in with the email scope have one.
+    #[serde(default)]
+    pub ad_uid: Option<String>,
 }
 
 impl Me {

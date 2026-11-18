@@ -1,5 +1,5 @@
-// Host test of the era picker's log caps (core/boxes/picker/log_caps.hpp): each session-load and Time Trial budget
-// line is logged for its first loads only, with no tail, and the Time Trial list line keeps its text.
+// Host test of the era picker's log caps (core/boxes/picker/log_caps.hpp): each session-load, Time Trial budget and era
+// select line is logged for its first loads or presses only, with no tail, and the Time Trial list line keeps its text.
 
 #include "core/boxes/picker/log_caps.hpp"
 
@@ -29,6 +29,7 @@ int main()
 {
     static constinit ep::SessionLines s;
     static constinit ep::BudgetLines b;
+    static constinit ep::PickerLines p;
     expect(logged(s.career_remap, 20) == 6, "the career id remap line logs 6 times");
     expect(logged(s.front_end_leave, 20) == 6, "the front end leave line logs 6 times");
     expect(logged(s.driver_career, 20) == 6, "the Driver Career load line logs 6 times");
@@ -39,6 +40,11 @@ int main()
     expect(logged(b.empty_override, 20) == 6, "the empty override line logs 6 times");
     expect(logged(b.pool_capped, 20) == 6, "the capped pool line logs 6 times");
     expect(logged(b.budget, 40) == 18, "the budget line logs 18 times");
+    expect(logged(p.renarrow, 20) == 6, "the narrowed-again line logs 6 times");
+    expect(logged(p.builds, 20) == 6, "the era select build line logs 6 times");
+    expect(logged(p.narrow, 20) == 6, "the narrow line logs 6 times");
+    expect(logged(p.refused, 20) == 6, "the refused press line logs 6 times");
+    expect(logged(p.detached, 20) == 6, "the detached row line logs 6 times");
     expect(s.time_trial_list.count() == 40, "a cap counts the calls past it");
 
     ep::Cap<ep::LOG_FIRST * 2> list;

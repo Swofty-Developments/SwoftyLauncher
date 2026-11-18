@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14463adc0.c;xref:0x145bf7d10",
-  "notes": "Module slot 4 of vt 0x145bf7cf0 (3 = Game_Read_VehicleConfig): RACING_VEHICLE_DEFAULT / ASSETS and RACING_CARS pools, 'car_handling' job queue, surface materials (Car_Parse_SurfaceMaterial), Car_Deformation_ReservePool, subscribes r_part_detached (scrape/particle effects). Addon: car_handling queue and part-detach message. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3251)"
+  "notes": "Module slot 4 of vt 0x145bf7cf0 (3 = Game_Read_VehicleConfig): RACING_VEHICLE_DEFAULT / ASSETS and RACING_CARS pools, 'car_handling' job queue, surface materials (Car_Parse_SurfaceMaterial), Car_Deformation_ReservePool, subscribes r_part_detached (scrape/particle effects). Addon: car_handling queue and part-detach message. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3251) | engine-re 2026-11-17 track round C (surface): registers the MECHANICS extension on the physics material library ([[self+0xe8]+0x30], 0x14463b7a0..): parse/copy callbacks Car_Parse_SurfaceMaterial, data at material + (library size + 0x50), library entry size grows by 0x80, extension index -> self+0x128 (-1 when the registry is locked byte +0x18 or full). Every track material therefore gets a MECHANICS block only if the MATERIALS source lists one. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested)"
  },
  "signature": {
   "id": "game.racing_vehicles_initialise",
@@ -45,6 +45,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/4463adc0.c;xref:None",
    "notes": "V3251 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkps-verify",
+   "kind": "func",
+   "item": "Game_RacingVehicles_Initialise",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14463adc0.c;xref:0x14463b762",
+   "notes": "V11212 Registry = [self+0xe8]+0x30 stored at self+0x120; if not locked and room: entry {offset=size+0x50, fn 0x14463d0d0 x2}, size+=0x80, index -> self+0x128 else -1."
   }
  ],
  "proofs": []

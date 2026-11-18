@@ -567,7 +567,7 @@ void saved_entry(SwoftyContext *c)
 
 namespace runtime {
 
-std::vector<CoreMixins> save_splice_mixins()
+static std::vector<CoreMixins> save_splice_mixins()
 {
     std::vector<CoreMixins> out;
     if (mixin_gate.offered() || !code_ready())
@@ -614,7 +614,7 @@ std::vector<CoreMixins> save_splice_mixins()
     return out;
 }
 
-void save_splice_commit()
+static void save_splice_commit()
 {
     career_saves_start();
     if (!layout::SLOT_DETAILS)

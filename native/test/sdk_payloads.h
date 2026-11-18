@@ -111,6 +111,39 @@ typedef struct SwoftyEvLap {
     SwoftyEvCar car;
 } SwoftyEvLap;
 
+typedef struct SwoftyEvRaceFlag {
+    uint32_t size, payload_version;
+    uint8_t flag, previous;
+    uint8_t yellow_sectors, previous_yellow_sectors;
+    int32_t lap;
+} SwoftyEvRaceFlag;
+
+typedef struct SwoftyEvSafetyCar {
+    uint32_t size, payload_version;
+    uint8_t deployment, previous;
+    int32_t lap;
+} SwoftyEvSafetyCar;
+
+typedef struct SwoftyEvRedFlag {
+    uint32_t size, payload_version;
+    uint8_t state, previous;
+    int32_t lap;
+} SwoftyEvRedFlag;
+
+typedef struct SwoftyEvSector {
+    uint32_t size, payload_version;
+    uint32_t car;
+    uint8_t sector, previous;
+    int32_t lap;
+} SwoftyEvSector;
+
+typedef struct SwoftyEvCarStatus {
+    uint32_t size, payload_version;
+    uint32_t car;
+    uint8_t status, previous;
+    int32_t lap;
+} SwoftyEvCarStatus;
+
 typedef struct SwoftyEvControllersRebuilt {
     uint32_t size, payload_version;
     SwoftyEvCar car;
@@ -226,6 +259,11 @@ typedef struct SwoftyEvCatalogueBuild {
     X(SwoftyEvControllerUpdate, ai, ControllerUpdate, 24)                                                      \
     X(SwoftyEvPlayerControl, sessions, PlayerControl, 40)                                                      \
     X(SwoftyEvLap, sessions, Lap, 24)                                                                          \
+    X(SwoftyEvRaceFlag, race_control, Flag, 16)                                                               \
+    X(SwoftyEvSafetyCar, race_control, SafetyCar, 16)                                                          \
+    X(SwoftyEvRedFlag, race_control, RedFlag, 16)                                                              \
+    X(SwoftyEvSector, race_control, Sector, 20)                                                                \
+    X(SwoftyEvCarStatus, race_control, CarStatus, 20)                                                          \
     X(SwoftyEvControllersRebuilt, cars, ControllersRebuilt, 32)                                                \
     X(SwoftyEvHudVisible, spectator, HudVisible, 32)                                                           \
     X(SwoftyEvLapsRecorded, laps, Recorded, 24)                                                                \
@@ -289,6 +327,25 @@ typedef struct SwoftyEvCatalogueBuild {
     X(SwoftyEvPlayerControl, sessions, PlayerControl, to, 28)                                                  \
     X(SwoftyEvPlayerControl, sessions, PlayerControl, reason, 32)                                              \
     X(SwoftyEvLap, sessions, Lap, car, 8)                                                                      \
+    X(SwoftyEvRaceFlag, race_control, Flag, flag, 8)                                                          \
+    X(SwoftyEvRaceFlag, race_control, Flag, previous, 9)                                                      \
+    X(SwoftyEvRaceFlag, race_control, Flag, yellow_sectors, 10)                                               \
+    X(SwoftyEvRaceFlag, race_control, Flag, previous_yellow_sectors, 11)                                      \
+    X(SwoftyEvRaceFlag, race_control, Flag, lap, 12)                                                          \
+    X(SwoftyEvSafetyCar, race_control, SafetyCar, deployment, 8)                                              \
+    X(SwoftyEvSafetyCar, race_control, SafetyCar, previous, 9)                                                \
+    X(SwoftyEvSafetyCar, race_control, SafetyCar, lap, 12)                                                    \
+    X(SwoftyEvRedFlag, race_control, RedFlag, state, 8)                                                       \
+    X(SwoftyEvRedFlag, race_control, RedFlag, previous, 9)                                                    \
+    X(SwoftyEvRedFlag, race_control, RedFlag, lap, 12)                                                        \
+    X(SwoftyEvSector, race_control, Sector, car, 8)                                                           \
+    X(SwoftyEvSector, race_control, Sector, sector, 12)                                                       \
+    X(SwoftyEvSector, race_control, Sector, previous, 13)                                                     \
+    X(SwoftyEvSector, race_control, Sector, lap, 16)                                                          \
+    X(SwoftyEvCarStatus, race_control, CarStatus, car, 8)                                                     \
+    X(SwoftyEvCarStatus, race_control, CarStatus, status, 12)                                                 \
+    X(SwoftyEvCarStatus, race_control, CarStatus, previous, 13)                                               \
+    X(SwoftyEvCarStatus, race_control, CarStatus, lap, 16)                                                    \
     X(SwoftyEvControllersRebuilt, cars, ControllersRebuilt, car, 8)                                            \
     X(SwoftyEvControllersRebuilt, cars, ControllersRebuilt, reason, 24)                                        \
     X(SwoftyEvHudVisible, spectator, HudVisible, following, 8)                                                 \

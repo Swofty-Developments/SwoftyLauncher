@@ -1,4 +1,5 @@
 #include "core/career/career_ui.hpp"
+#include "core/guards/skips.hpp"
 #include "core/registry/older.hpp"
 #include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/loader/mixin_gate.hpp"
@@ -131,7 +132,9 @@ void store_record(const std::string &addon, const std::string &group)
     rebuild_effective();
 }
 std::atomic<bool> any_swap{false}, any_mute{false};
-std::atomic<uint32_t> builds_logged, stand_ins, missing_logged, muted_lines, shared_logged;
+std::atomic<uint32_t> stand_ins, muted_lines;
+constinit swofty_core::guards::LogFirst<4> missing_lines;
+constinit swofty_core::guards::LogFirst<8> build_lines, shared_lines;
 struct Part {
     const char *name, *label;
     std::atomic<bool> wanted{false};
@@ -208,7 +211,7 @@ void *build_ref(void *out, const uint8_t *character, void *node)
                 stand_ins++;
                 return orig_build(out, stand_in, node);
             }
-            if (missing_logged++ < 4)
+            if (missing_lines.note())
                 swofty::log("[characters] no '%s' row in the character list; '%s' keeps its own ref", want.c_str(),
                             name_of(character).c_str());
         }
@@ -221,7 +224,7 @@ int64_t list_loaded(void *ctx, const void *message)
     uintptr_t vector = 0;
     if (message && mem::read(reinterpret_cast<uintptr_t>(message) + 0x10, vector) && vector)
         vector_seen = reinterpret_cast<const void *>(vector);
-    if (builds_logged++ < 8) {
+    if (build_lines.note()) {
         std::string group;
         {
             std::lock_guard<std::mutex> g(lock);
@@ -270,7 +273,7 @@ void post_line(void *speech, void *line, uint8_t retrigger)
                 std::lock_guard<std::mutex> g(lock);
                 shared = muted_emitters.count(reinterpret_cast<void *>(emitter)) != 0;
             }
-            if (shared && shared_logged++ < 8)
+            if (shared && shared_lines.note())
                 swofty::log("[characters] emitter %p, muted earlier, also speaks %s; that line is silent too",
                             (void *)emitter, speaker ? speaker : "(unknown)");
         }
@@ -570,7 +573,7 @@ const SwoftyCharacters *characters_table()
     return &table;
 }
 
-std::vector<CoreMixins> characters_mixins()
+static std::vector<CoreMixins> characters_mixins()
 {
     std::vector<CoreMixins> out;
     if (!enabled("career", nullptr))
@@ -587,7 +590,7 @@ std::vector<CoreMixins> characters_mixins()
     return out;
 }
 
-void characters_commit()
+static void characters_commit()
 {
     bool any = false;
     for (Part *p : {&ref, &voice})

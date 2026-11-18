@@ -24,6 +24,14 @@ pub(crate) struct Sandbox {
     pub(crate) live_before: Option<BTreeMap<String, (u64, Option<SystemTime>)>>,
 }
 
+/// What `close_sandbox` marks: the batch's report, its tests' reports and
+/// which of those tests ran.
+pub(crate) struct BatchResults<'r> {
+    pub(crate) br: &'r mut BatchReport,
+    pub(crate) reports: &'r mut [TestReport],
+    pub(crate) runnable: &'r [usize],
+}
+
 /// The benchmark XML staged in the game folder for one batch, and removed
 /// when the batch ends.
 pub(crate) struct Staged {
@@ -125,17 +133,19 @@ impl Harness<'_> {
     /// After the batch: keep its addon storage in the run folder for a
     /// capture, check the core armed the sandbox and the player's save folder
     /// did not change, and retire the run token.
-    #[allow(clippy::too_many_arguments)]
     pub(crate) fn close_sandbox(
         &self,
         s: Sandbox,
         run: Option<&RunDir>,
         b: &Batch,
         profile: &str,
-        br: &mut BatchReport,
-        reports: &mut [TestReport],
-        runnable: &[usize],
+        results: BatchResults<'_>,
     ) {
+        let BatchResults {
+            br,
+            reports,
+            runnable,
+        } = results;
         let data = &self.store.root;
         let Some(run) = run else { return };
         for id in &s.storage_ids {

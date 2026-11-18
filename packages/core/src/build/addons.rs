@@ -209,6 +209,9 @@ impl Gather<'_, '_, '_> {
         }
         let ops: Vec<AssetOp> = batch.ops.iter().map(|op| op.op.clone()).collect();
         self.hash.sources(run.store, id, &ops)?;
+        for line in &batch.lines {
+            out.line(line);
+        }
         self.built
             .lines
             .extend(batch.lines.iter().map(|l| format!("{id}: {l}")));

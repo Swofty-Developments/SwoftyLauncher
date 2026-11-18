@@ -8,7 +8,7 @@ use swofty_core::saves::vault::restore::Running;
 use swofty_core::saves::vault::{self};
 use swofty_i18n::{tr, trf};
 
-use super::labels::{careers_held, short_block, steam_save_missing_text, version_label};
+use super::labels::{careers_held_line, short_block, steam_save_missing_text, version_label};
 use super::list::{list_box, placeholder};
 use super::state::{SavesView, Version};
 use crate::shell::Shell;
@@ -81,7 +81,10 @@ impl Shell {
         let (pin_id, pin_source) = (id.clone(), source);
         let ask_id = id.clone();
         let full = vault::human(s.at);
-        let held = v.held.as_ref().map(|h| careers_held(h));
+        let held = v
+            .held
+            .as_ref()
+            .map(|h| careers_held_line(h.len(), v.newest.as_deref(), v.missing));
         v_flex()
             .w_full()
             .child(

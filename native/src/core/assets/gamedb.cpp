@@ -13,6 +13,7 @@
 #include <swofty/mixin.hpp>
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <cerrno>
 #include <cstring>
@@ -35,6 +36,19 @@ const runtime::Sig S_GLOBAL{"g_Gdb_Database", "56 57 55 53 49 B8 25 23 22 84 E4 
 const runtime::Sig S_RESERVE{"site_Gdb_ReserveTarget",
                              "48 89 8C 24 88 00 00 00 48 0F 47 C8 B8 08 00 00 00 49 B9 5C 8F C2 F5 28 5C 8F 02",
                              0x45a0a11, runtime::Sig::addr, 0, 0xc, 0};
+// The int, float and bool record classes' vtables, each loaded where its record constructor stores it beside the value
+// at +8 (re/tools/sigport.py: one match on the KB build and on Steam 26566308, every vtable slot the same code).
+const runtime::Sig S_VT_INT{"vt_Gdb_IntRecord", "48 8D 0D ?? ?? ?? ?? 48 89 08 89 70 08", 0x5bee788, runtime::Sig::riprel, 0,
+                            3, 7};
+const runtime::Sig S_VT_FLOAT{"vt_Gdb_FloatRecord", "48 8D 0D ?? ?? ?? ?? 48 89 08 C5 FA 11 70 08 E9", 0x5bee798,
+                              runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig S_VT_BOOL{"vt_Gdb_BoolRecord", "48 8D 0D ?? ?? ?? ?? 48 89 08 C6 40 08 01 49 89 07 EB 86", 0x56e6518,
+                             runtime::Sig::riprel, 0, 3, 7};
+
+namespace bp = runtime::build_proof;
+constexpr bp::Proof RECORD_CLASSES{"the int, float and bool record classes (value at +0x8)",
+                                   bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145)};
+constexpr bp::Gate LATE_EDITS{"late game database edits", &RECORD_CLASSES};
 
 constexpr size_t DB_MAP = 0xa8, DB_LOADED = 0xf0, DB_ALLOC = 0x8;
 constexpr const char *PROBE_PREFIX = "swofty.class_probe.t";
@@ -430,12 +444,30 @@ void apply(uint8_t *db, const char *when)
                 t.overwrote, t.created, t.retyped, t.skipped, (unsigned long long)before, (unsigned long long)map.count());
 }
 
+// The rvas of the int, float and bool record classes' vtables on the running exe, indexed by tag; 0 where not found.
+std::array<uintptr_t, 6> late_classes()
+{
+    std::array<uintptr_t, 6> vt{};
+    if (!runtime::holds(LATE_EDITS))
+        return vt;
+    if (runtime::same_build()) {
+        vt[0] = KB_VT[0], vt[1] = KB_VT[1], vt[5] = KB_VT[5];
+        return vt;
+    }
+    const std::pair<int, const runtime::Sig *> sigs[] = {{0, &S_VT_INT}, {1, &S_VT_FLOAT}, {5, &S_VT_BOOL}};
+    for (auto [tag, sig] : sigs)
+        if (uintptr_t at = runtime::find(*sig, "gamedb"))
+            vt[tag] = at - base;
+    return vt;
+}
+
 void late_inplace(uint8_t *db)
 {
     if (done.exchange(true))
         return;
     runtime::Robin map{db + DB_MAP};
-    if (!map.sane() || !runtime::same_build()) {
+    const std::array<uintptr_t, 6> classes = map.sane() ? late_classes() : std::array<uintptr_t, 6>{};
+    if (!map.sane() || !classes[0] || !classes[1] || !classes[5]) {
         swofty::log("[assets] gamedb: the database was built before addons loaded and %s; no edit applied",
                     map.sane() ? "this exe is not the analysed build (record classes unknown)" : "its map looks wrong");
         return;
@@ -448,8 +480,8 @@ void late_inplace(uint8_t *db)
         int tag = e.tag;
         uintptr_t vt = v ? reinterpret_cast<uintptr_t>(vt_of(v)) - base : 0;
         if (tag < 0)
-            tag = vt == KB_VT[0] ? 0 : vt == KB_VT[1] ? 1 : vt == KB_VT[5] ? 5 : -1;
-        if (!v || (tag != 0 && tag != 1 && tag != 5) || vt != KB_VT[tag]) {
+            tag = vt == classes[0] ? 0 : vt == classes[1] ? 1 : vt == classes[5] ? 5 : -1;
+        if (!v || (tag != 0 && tag != 1 && tag != 5) || vt != classes[tag]) {
             swofty::log("[assets] gamedb: %s skipped late: %s", label(e).c_str(),
                         !v ? "the key does not exist" : "not an existing int, float or bool record of that type");
             skipped++;

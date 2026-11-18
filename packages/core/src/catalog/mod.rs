@@ -564,7 +564,10 @@ pub fn log(root: &Path, line: &str) {
         && let Ok(text) = std::fs::read_to_string(&path)
     {
         let keep = text.len() / 2;
-        let cut = text[keep..].find('\n').map_or(text.len(), |i| keep + i + 1);
+        let cut = text.as_bytes()[keep..]
+            .iter()
+            .position(|&b| b == b'\n')
+            .map_or(text.len(), |i| keep + i + 1);
         std::fs::write(&path, &text[cut..]).ok();
     }
     if let Some(dir) = path.parent() {
@@ -1027,6 +1030,26 @@ mod tests {
 
     fn sha256_hex(data: &[u8]) -> String {
         Sha256::digest(data).iter().map(|b| format!("{b:02x}")).collect()
+    }
+
+    #[test]
+    fn a_full_log_halves_at_a_line_even_when_the_middle_is_inside_a_character() {
+        let root = scratch("log-half");
+        let path = root.join(LOG_FILE);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        let line = "Synced stars \u{b7} 0 starred\n";
+        let mut text = line.repeat(LOG_LIMIT as usize / line.len() + 2);
+        while text.is_char_boundary(text.len() / 2) {
+            text.insert(0, 'x');
+        }
+        assert!(!text.is_char_boundary(text.len() / 2));
+        std::fs::write(&path, &text).unwrap();
+        log(&root, "after");
+        let kept = std::fs::read_to_string(&path).unwrap();
+        assert!(kept.len() < text.len() / 2 + line.len() + 64);
+        assert!(kept.starts_with("Synced stars"));
+        assert!(kept.trim_end().ends_with(" after"));
+        std::fs::remove_dir_all(&root).ok();
     }
 
     fn scratch(name: &str) -> PathBuf {

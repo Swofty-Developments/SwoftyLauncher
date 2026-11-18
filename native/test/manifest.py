@@ -74,6 +74,7 @@ UNITS = [
     Unit('direct_start_tt', 'Direct start Time Trial unit test'),
     Unit('dred', 'GPU device removal report unit test'),
     Unit('ers_newlap', 'ERS new-lap site unit test'),
+    Unit('ers_mode', 'ERS mode guard offset unit test'),
     Unit('estimate_laptime', 'Estimate lap time guard unit test'),
     Unit('fe_tile_guard', 'Front-end tile list guard unit test'),
     Unit('game_message_log', 'Stock game message log unit test'),
@@ -100,7 +101,7 @@ UNITS = [
     Unit('pit_box', 'Pit box guard unit test'),
     Unit('pit_slots', 'Pit slot guard unit test'),
     Unit('placed_record', 'placed record bound unit test'),
-    Unit('guard_lines', 'Site guard log lines test', args=['../src/core/guards', 'guard_lines/expected.txt'],
+    Unit('guard_lines', 'Site guard log lines test', args=['../src/core/guards', 'guard_lines/expected.txt', 'guard_lines/added.txt'],
          inputs=['src/core/guards/**/*.cpp']),
     Unit('guard_registry', 'Core mixin-set registry order test', args=['../src/core'],
          inputs=['tools/core_link_order.txt', 'src/core/**/*.cpp']),
@@ -113,6 +114,7 @@ UNITS = [
     Unit('game_settings', 'Game setting override table unit test'),
     Unit('player_name', 'Player name sanitising unit test'),
     Unit('postfx', 'Post-process pass logic unit test'),
+    Unit('race_control', 'Race control events unit test', 'zig'),
     Unit('race_retirement', 'Race retirement driver guard unit test'),
     Unit('red_flag_recompute', 'Red flag recompute guard unit test'),
     Unit('replay_grid', 'Replay recorder grid guard unit test'),
@@ -366,5 +368,7 @@ SCRIPTS = [
     Script('loading_report', 'Loading report on synthetic loader.log runs', ['python3', '-I', 'native/test/loading_report_test.py']),
     Script('sigverify', 'Core signatures on the KB build and Steam 1.0.145 (skipped without both executables)',
            ['python3', '-I', 'native/test/sigverify_test.py']),
+    Script('init_check', 'Static initializer check: run order, inline variables and hook guard arming',
+           ['python3', '-I', 'native/test/init_check_test.py']),
 ]
 

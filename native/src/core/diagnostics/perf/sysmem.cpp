@@ -37,7 +37,8 @@ template <typename F> void walk_adapters(bool boot, F each)
         return;
     HMODULE dxgi = LoadLibraryW(L"dxgi.dll");
     using CreateFn = HRESULT(WINAPI *)(REFIID, void **);
-    auto create = dxgi ? reinterpret_cast<CreateFn>(reinterpret_cast<void *>(GetProcAddress(dxgi, "CreateDXGIFactory1"))) : nullptr;
+    auto create =
+        dxgi ? reinterpret_cast<CreateFn>(reinterpret_cast<void *>(GetProcAddress(dxgi, "CreateDXGIFactory1"))) : nullptr;
     IDXGIFactory1 *factory = nullptr;
     if (!create || FAILED(create(__uuidof(IDXGIFactory1), reinterpret_cast<void **>(&factory))) || !factory) {
         adapters_refused = true;
@@ -60,8 +61,9 @@ template <typename F> void walk_adapters(bool boot, F each)
             std::string driver;
             if (SUCCEEDED(a->CheckInterfaceSupport(__uuidof(IDXGIDevice), &ver)))
                 driver = logic::driver_text(uint64_t(ver.QuadPart));
-            swofty::log("%s", logic::gpu_boot_line(i, narrow(d.Description), d.VendorId, d.DeviceId, driver, d.DedicatedVideoMemory,
-                                                   d.DedicatedSystemMemory, d.SharedSystemMemory, software)
+            swofty::log("%s", logic::gpu_boot_line(i, narrow(d.Description), d.VendorId, d.DeviceId, driver,
+                                                   d.DedicatedVideoMemory, d.DedicatedSystemMemory, d.SharedSystemMemory,
+                                                   software)
                                   .c_str());
         }
         IDXGIAdapter3 *a3 = nullptr;

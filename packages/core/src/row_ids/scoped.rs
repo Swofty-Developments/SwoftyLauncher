@@ -2,7 +2,7 @@ use std::cell::RefCell;
 
 use crate::ops::{Claimed, IdFrom, RowIds};
 
-use super::{REGISTRY_TABLES, Store, UNHELD_REGISTRIES, addon_of};
+use super::{REGISTRY_TABLES, Store, UNHELD_REGISTRIES, addon_of, pool};
 
 /// The store as one addon's build sees it.
 pub struct Scoped<'a> {
@@ -42,7 +42,7 @@ impl RowIds for Scoped<'_> {
             .and_then(|ids| ids.get(&id))
             .is_some_and(|k| k != key)
             || s.pinned
-                .get(&table)
+                .get(pool(&table))
                 .and_then(|ids| ids.get(&id))
                 .is_some_and(|record| {
                     s.pin_holds(record)
@@ -79,7 +79,7 @@ impl RowIds for Scoped<'_> {
         let table = format!("{table}.{row}");
         let spare: Vec<(i64, String)> = {
             let s = self.store.borrow();
-            let pinned = s.pinned.get(&table);
+            let pinned = s.pinned.get(pool(&table));
             let mut spare: Vec<(i64, String)> = s
                 .by_id
                 .get(&table)

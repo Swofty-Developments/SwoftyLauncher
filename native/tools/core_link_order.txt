@@ -1,10 +1,11 @@
-# The order swofty_core.dll links its objects in, which is also the order the C++ runtime runs their static
-# initializers. It is the order of the single zig command the core was built with up to 1.9: the separately
-# compiled objects first, then the core sources in the order that command listed them. build_graph.py links a
-# source missing from this list after the listed ones, sorted by path, and stops when a listed file is gone.
-# tools/core_init_order.txt holds what this order decides (the units with static objects, the SDK mixin list,
-# the on-load sequence and the binding uses), and the build fails when it changes or a unit with static objects is
-# not listed here.
+# The order swofty_core.dll links its objects in. The C++ runtime runs their static initializers in the reverse of
+# it (lld lays out .ctors in link order and the mingw runtime calls the list from its end), and the destructors they
+# register at exit in it. It is the order of the single zig command the core was built with up to 1.9: the
+# separately compiled objects first, then the core sources in the order that command listed them. build_graph.py
+# links a source missing from this list after the listed ones, sorted by path, and stops when a listed file is gone.
+# tools/core_init_order.txt holds what this order decides (the units with static constructors, the inline variables
+# they initialize, the units with destructors, the SDK mixin list, the on-load sequence and the binding uses), and
+# the build fails when it changes or a unit with static objects is not listed here.
 src/core/diagnostics/crash/stall_walk.cpp
 src/core/hooks/guard.cpp
 third_party/safetyhook/safetyhook.cpp
@@ -104,6 +105,9 @@ src/core/runtime/sdk.cpp
 src/core/diagnostics/perf.cpp
 src/core/diagnostics/perf/vq.cpp
 src/core/diagnostics/perf/sysmem.cpp
+src/core/diagnostics/perf/probes.cpp
+src/core/diagnostics/perf/frames.cpp
+src/core/diagnostics/perf/report.cpp
 src/core/assets/lang_override.cpp
 src/core/career/characters.cpp
 src/core/career/career_wizard.cpp
@@ -193,3 +197,4 @@ src/core/guards/ai/ai_line_set_guard.cpp
 src/core/hud/room_cover.cpp
 src/core/assets/entitlements.cpp
 src/core/live/live_state.cpp
+src/core/loading/game_settings.cpp

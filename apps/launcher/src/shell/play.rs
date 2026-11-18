@@ -27,6 +27,15 @@ pub(crate) struct Launching {
     pub(crate) steam_saves_once: bool,
 }
 
+/// What a Play press came to once its checks passed or stopped it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Played {
+    Started,
+    Stopped,
+    /// A prompt is open whose Play presses Play again; a room launch waits on it.
+    Asking,
+}
+
 impl Launching {
     /// Follows a running launch through one probe. Once the launch is over it is cleared and the
     /// result says why it failed, or `None` inside when the game started.
@@ -158,7 +167,11 @@ impl Shell {
     }
 
     pub(crate) fn play(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        self.play_for(None, window, cx);
+        let room = self.mp_take_held();
+        let is_room = room.is_some();
+        if !self.play_for(room, window, cx) && is_room {
+            self.mp_room_launch_result(false);
+        }
     }
 
     /// Play, or Play for a room: armed to go straight to the room's lobby, with the host's row ids for the
@@ -214,9 +227,9 @@ impl Shell {
                 if !s.launching.play_pending.finish(generation) {
                     return;
                 }
-                let started = s.play_checked(checked, room, steam_saves_once, window, cx);
-                if is_room {
-                    s.mp_room_launch_result(started);
+                let played = s.play_checked(checked, room, steam_saves_once, window, cx);
+                if is_room && played != Played::Asking {
+                    s.mp_room_launch_result(played == Played::Started);
                 }
                 cx.notify();
             })
@@ -233,30 +246,30 @@ impl Shell {
         steam_saves_once: bool,
         window: &mut Window,
         cx: &mut Context<Self>,
-    ) -> bool {
+    ) -> Played {
         crate::app::app_log::note(&checked.timings.line());
         let stale = self.library.profile.name != checked.profile
             || self.game.install.as_ref().map(|i| &i.dir) != Some(&checked.game);
         let Some(install) = self.game.install.clone().filter(|_| !stale) else {
             crate::app::app_log::note("[play] dropped: the profile or game copy changed during the checks");
-            return false;
+            return Played::Stopped;
         };
         let gate = checked.gate;
         if gate.write_blocked {
             self.show_admin_needed(&install, window, cx);
-            return false;
+            return Played::Stopped;
         }
         if !gate.setup_done {
             self.open_setup(window, cx);
-            return false;
+            return Played::Stopped;
         }
         if !gate.offline_accepted {
             self.confirm_offline_play(window, cx);
-            return false;
+            return self.asking(room);
         }
         if gate.first_launch {
             self.first_launch_notice(window, cx);
-            return false;
+            return self.asking(room);
         }
         self.launching.notice = None;
         self.game.blocked = None;
@@ -271,11 +284,11 @@ impl Shell {
             play_checks::Verdict::Go => {}
             play_checks::Verdict::Stop(stop) => {
                 self.launching.notice = Some(stop);
-                return false;
+                return Played::Stopped;
             }
             play_checks::Verdict::Confirm(text) => {
                 self.confirm_missing_rows(text, window, cx);
-                return false;
+                return self.asking(room);
             }
         }
         if let Some(d) = swofty_core::diagnostics::known_problems::outdated_exe(install.version().as_deref())
@@ -310,7 +323,7 @@ impl Shell {
         ) {
             Ok(l) => {
                 self.launching.launch = Some(l);
-                true
+                Played::Started
             }
             Err(e) => {
                 self.seen.launch_failed = game::now_secs();
@@ -320,9 +333,16 @@ impl Shell {
                         .autohide(false),
                     cx,
                 );
-                false
+                Played::Stopped
             }
         }
+    }
+
+    fn asking(&mut self, room: Option<crate::features::multiplayer::RoomLaunch>) -> Played {
+        if let Some(room) = room {
+            self.mp_hold_room(room);
+        }
+        Played::Asking
     }
 
     pub(crate) fn saves_refused(&self) -> Option<&SessionRecord> {

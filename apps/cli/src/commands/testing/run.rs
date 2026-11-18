@@ -37,16 +37,17 @@ pub(crate) fn run_command(store: &Store, a: RunArgs) -> Result<ExitCode> {
         false
     } else {
         let ids: Vec<String> = suites.iter().map(|s| s.id.clone()).collect();
-        match run_with_game(
+        let suite_bases = bases(&suites);
+        let run = GameRun {
             store,
-            &a,
-            &plan,
-            &run_id,
-            &ids,
-            &bases(&suites),
-            &out,
-            &mut report,
-        ) {
+            args: &a,
+            plan: &plan,
+            run_id: &run_id,
+            suites: &ids,
+            bases: &suite_bases,
+            out: &out,
+        };
+        match run_with_game(run, &mut report) {
             Ok(()) => false,
             Err(Stop::Busy(why)) => {
                 report.errors.push(why);
@@ -87,17 +88,26 @@ pub(crate) enum Stop {
 
 pub(crate) const MIN_FREE: u64 = 1 << 30;
 
-#[allow(clippy::too_many_arguments)]
-fn run_with_game(
-    store: &Store,
-    a: &RunArgs,
-    plan: &Plan,
-    run_id: &str,
-    suites: &[String],
-    bases: &BTreeMap<String, PathBuf>,
-    out: &Path,
-    report: &mut Report,
-) -> std::result::Result<(), Stop> {
+struct GameRun<'a> {
+    store: &'a Store,
+    args: &'a RunArgs,
+    plan: &'a Plan,
+    run_id: &'a str,
+    suites: &'a [String],
+    bases: &'a BTreeMap<String, PathBuf>,
+    out: &'a Path,
+}
+
+fn run_with_game(run: GameRun<'_>, report: &mut Report) -> std::result::Result<(), Stop> {
+    let GameRun {
+        store,
+        args: a,
+        plan,
+        run_id,
+        suites,
+        bases,
+        out,
+    } = run;
     let g = crate::commands::build::game(store, a.game.clone()).map_err(|e| Stop::Infra(format!("{e:#}")))?;
     crate::commands::build::supported(&g).ok();
     report.game_build = swofty_core::exe_version::read(&g.dir.join(swofty_core::GAME_EXE));

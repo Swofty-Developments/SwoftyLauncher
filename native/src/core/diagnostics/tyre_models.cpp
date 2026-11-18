@@ -201,7 +201,7 @@ void on_start(void *c)
 
 namespace runtime {
 
-std::vector<CoreMixins> tyre_models_mixins()
+static std::vector<CoreMixins> tyre_models_mixins()
 {
     std::vector<CoreMixins> out;
     if (mixin_gate.offered() || !code_ready())
@@ -222,7 +222,7 @@ std::vector<CoreMixins> tyre_models_mixins()
     return out;
 }
 
-void tyre_models_commit()
+static void tyre_models_commit()
 {
     if (!wanted || !mixin_gate.settle())
         return;

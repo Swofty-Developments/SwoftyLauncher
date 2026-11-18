@@ -9,7 +9,7 @@
   "subsystem": "session",
   "proto": "void(ScCondition*, float dt)",
   "evidence": "decomp:ghidra-headless-2026-10-25;decomp:re/decomp/1436373d0.c;xref:0x145853e80",
-  "notes": "SC logic condition update (slot 2): shifts the 2-byte results per SC entry (prev = cur, cur = 0), then car bitmask +0x40 of cars whose distance +0x74 is inside [g 0x145f96ab0, g 0x145f96ab4]; holds while none."
+  "notes": "SC logic condition update (slot 2): shifts the 2-byte results per SC entry (prev = cur, cur = 0), then car bitmask +0x40 of cars whose distance +0x74 is inside [g 0x145f96ab0, g 0x145f96ab4]; holds while none.  | engine-re track RE round B2 2026-11-17 (static): the range [g 0x145f96ab0, g 0x145f96ab4] is Start/End of the first safety_car_main markup item (type 13), set by Sess_ScCond_PitAreaClear_Init_Body 0x150979070; without that item both are 0."
  },
  "signature": {
   "id": "session.sc_cond_pit_area_clear_update",

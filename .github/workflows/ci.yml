@@ -510,6 +510,16 @@ jobs:
           key: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-${{ hashFiles('native/**', 'addons/*/native/**', 'templates/**/native/**', 'packages/sdk/include/**') }}
           restore-keys: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-
 
+      # The restored cache holds what every main commit this month wrote to it. Its files start out last read in
+      # 2000, and each one the build or the tests read gets a new access time (relatime), so the step before the
+      # save can keep only those.
+      - name: Mark the restored Zig cache unread
+        run: |
+          mkdir -p native/build/zig-cache
+          find native/build/zig-cache -type f -exec touch -a -d 2000-01-01 {} +
+          touch "$RUNNER_TEMP/zig-cache.mark"
+          echo "$(find native/build/zig-cache -type f | wc -l) files, $(du -sm native/build/zig-cache | cut -f1) MB restored"
+
       # The project's objects come from ccache instead (.github/actions/ccache). Each part keeps a cache of its
       # own, named after the run that saved it, and starts from the newest of its own or, on a pull request, of
       # main's; ccache itself checks every compiler's size and date and every input's contents.
@@ -612,6 +622,32 @@ jobs:
             gh cache delete "$id" --repo "$GITHUB_REPOSITORY" && echo "removed cache $id"
           done
 
+      # On main on EC2, once every test has run, the files the run neither read nor wrote leave the cache before it
+      # is saved. A file system that does not record reads would lose every restored file, so a test read guards it.
+      - name: Zig cache files this run used
+        if: ${{ !cancelled() }}
+        env:
+          PART: ${{ matrix.part }}
+          TESTS: ${{ steps.native-tests.outcome }}
+        run: |
+          cache=native/build/zig-cache mark=$RUNNER_TEMP/zig-cache.mark
+          [ -f "$mark" ] || exit 0
+          used=$(find "$cache" -type f -anewer "$mark" -printf '%s\n' | awk '{ s += $1 } END { print int(s / 1048576) }')
+          unused=$(find "$cache" -type f ! -anewer "$mark" -printf '%s\n' | awk '{ s += $1 } END { print int(s / 1048576) }')
+          echo "used or written $used MB, unused $unused MB"
+          [ "$GITHUB_REF" = refs/heads/main ] && [ "$PART" = all ] || exit 0
+          [ "$TESTS" = success ] || [ "$TESTS" = failure ] || exit 0
+          probe=$(find "$cache" -type f ! -anewer "$mark" -print -quit)
+          [ -n "$probe" ] || exit 0
+          cat "$probe" > /dev/null
+          if [ -z "$(find "$probe" -anewer "$mark")" ]; then
+            echo "::warning::this file system does not record reads, so the Zig cache keeps every file"
+            exit 0
+          fi
+          find "$cache" -type f ! -anewer "$mark" -delete
+          find "$cache" -mindepth 1 -type d -empty -delete
+          echo "kept $(du -sm "$cache" | cut -f1) MB"
+
       # Saved after the tests, which compile their fixtures into the same cache. On the hosted split the host
       # part saves it and the Wine part only reads it.
       - name: Save the Zig cache
@@ -623,8 +659,8 @@ jobs:
             native/build/zig-cache
           key: ${{ steps.zig-cache.outputs.cache-primary-key }}
 
-      # Each saved Zig cache is about 3 GB and holds everything the one before it did, so only the newest is kept;
-      # several of them push the Rust caches out of the repository's cache space.
+      # Only the newest saved Zig cache is kept; several of them push the Rust caches out of the repository's
+      # cache space.
       - name: Remove the older Zig caches
         if: steps.zig-save.outcome == 'success'
         continue-on-error: true

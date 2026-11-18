@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "void Game_Vfx_BuildWheelParamRecord(void *car, ...)",
   "evidence": "doc:re/db/subsystems/game.md",
-  "notes": "Builds one 0x140-byte VFX parameter record per wheel; 0x143b21800 uploads 46 slots via 0x143381a90 (table +0xf05f8): slot 0x29 = record+0x124 = wheel+0x28c (marble_04 input), slot 0x0c = record+0xb0 = wheel+0x3dc (agent marbles, static) | findings from PR #471 by vogtmarcel07-cloud"
+  "notes": "Builds one 0x140-byte VFX parameter record per wheel; 0x143b21800 uploads 46 slots via 0x143381a90 (table +0xf05f8): slot 0x29 = record+0x124 = wheel+0x28c (marble_04 input), slot 0x0c = record+0xb0 = wheel+0x3dc (agent marbles, static) | findings from PR #471 by vogtmarcel07-cloud | engine-re 2026-11-17 track round C: compares wheel material codes ASTR BUMP CON* DDT* DDT+ DDTC DEFA DRT+ GRS* HDG+ LATO LATT MDG* METL MKNG PDT+ RDT+ RMBL RMBO SDT+ WALL (VFX class per wheel: dust, grass, gravel, kerb)."
  },
  "signature": {
   "id": "game.vfx_build_wheel_param_record",

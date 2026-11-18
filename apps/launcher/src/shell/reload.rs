@@ -46,6 +46,7 @@ impl Shell {
         self.prefs.use_profiles = config.use_profiles;
         self.prefs.time_trial_ingame = config.time_trial_ingame;
         self.prefs.home_video = config.home_video;
+        self.prefs.update_off_addons = config.update_off_addons;
         self.prefs.vr_profiles = config.vr_profiles;
         self.prefs.start_store = config.launch.start_store;
         self.prefs.update_check = config.updates.check;

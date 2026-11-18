@@ -1,6 +1,5 @@
 #include "core/guards/ai/ai_curves_logic.hpp"
-#include "core/guards/guard.hpp"
-#include "core/runtime/hook_errors.hpp"
+#include "core/guards/mid_hook.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -60,29 +59,26 @@ void skip(safetyhook::Context &c)
                     "Prix from before its addon moved the vehicle ids); the AI builds with the first team's curves");
 }
 
-void setup()
+uintptr_t site()
 {
-    char v[16] = {};
-    if (guards::env_off("SWOFTY_AI_CURVES_GUARD", v)) {
-        swofty::log("[ai] team curves guard off (SWOFTY_AI_CURVES_GUARD=%s)", v);
-        return;
-    }
     uintptr_t read = runtime::find(S_READ, "ai", "ai");
     exit_at = runtime::find(S_EXIT, "ai", "ai");
     if (!read || !exit_at) {
         swofty::log("[ai] team curves guard: not hooked: %s%s", read ? "" : "vehicle read ", exit_at ? "" : "loop exit");
-        return;
+        return 0;
     }
-    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(read), skip);
-    if (!h) {
-        swofty::log("[ai] team curves guard: the hook failed: %s", runtime::hook_error(h.error()).c_str());
-        return;
-    }
-    h_read = std::move(*h);
-    swofty::log("[ai] team curves guard armed: a player whose vehicle is not in the vehicle table no longer faults the AI "
-                "build");
+    return read;
 }
+
+const guards::MidHookSpec spec{
+    .name = "[ai] team curves guard",
+    .env = "SWOFTY_AI_CURVES_GUARD",
+    .site = site,
+    .destination = skip,
+    .hook = h_read,
+    .armed = "a player whose vehicle is not in the vehicle table no longer faults the AI build",
+};
 
 }
 
-SWOFTY_HOOK_GUARD(ai_curves, "ai team curves guard", setup)
+SWOFTY_MID_HOOK_GUARD(ai_curves, "ai team curves guard", spec)
