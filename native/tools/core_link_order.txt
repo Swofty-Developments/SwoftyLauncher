@@ -125,6 +125,7 @@ src/core/assets/lang_override.cpp
 src/core/career/characters.cpp
 src/core/career/characters_hooks.cpp
 src/core/career/career_wizard.cpp
+src/core/career/wizard_hooks.cpp
 src/core/boxes/era_picker.cpp
 src/core/boxes/car_category.cpp
 src/core/boxes/box_options.cpp

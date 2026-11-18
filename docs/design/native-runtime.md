@@ -260,7 +260,7 @@ swofty::log("%s", logic::hitch_line(ms, h.during, swofty_ms, h.top).c_str());
 
 ## Career namespaces
 
-Code in `core/career/` is in `career::`. The entry points `runtime/runtime.hpp` declares stay in `runtime`, and `career.cpp`, `career_saves.cpp`, `career_start.cpp` and `career_wizard.cpp` define them over unnamed-namespace state:
+Code in `core/career/` is in `career::`. The entry points `runtime/runtime.hpp` declares stay in `runtime`: `career.cpp`, `career_saves.cpp` and `career_start.cpp` define them over unnamed-namespace state, and `career_wizard.cpp` over `career::wizard`:
 
 | Namespace | Files |
 |---|---|
@@ -269,6 +269,7 @@ Code in `core/career/` is in `career::`. The entry points `runtime/runtime.hpp` 
 | `career::content` | `career_content_logic.hpp`, `content_state.hpp`, `career_content.cpp`, `content_*.cpp` |
 | `career::characters` | `characters_logic.hpp`, `characters_state.hpp`, `characters.cpp`, `characters_hooks.cpp` |
 | `career::hub` | `hub_state.hpp`, `hub_tab.cpp`, `hub_team_hq.cpp`, `hub_rnd.cpp` |
+| `career::wizard` | `wizard_state.hpp`, `career_wizard.cpp`, `wizard_hooks.cpp` |
 | `career::saves`, `career::start`, `career::ui` | `career_saves_logic.hpp`, `career_start.hpp`, `career_ui.hpp` |
 | `career::save_data`, `career::save_splice` | `save_data.hpp`, `save_data.cpp`, `save_splice_logic.hpp`, `save_splice.cpp` |
 | `career::save_diag`, `career::save_heap` | `save_diag_logic.hpp`, `save_heap_logic.hpp` |
@@ -320,6 +321,8 @@ These units keep their state in the first file listed; the other files hold code
 | `runtime/loader/binding_resolve.cpp` | resolving a binding by address, pattern or anchor, deferral and the retry passes |
 | `runtime/settings.cpp` | settings.json's addon options, the settings API, the MFD rows and the commands |
 | `runtime/settings_logic.hpp` | the option model, the requests.json text and an option's value (`test/settings_logic_test.cpp`) |
+| `career/career_wizard.cpp`, `wizard_state.hpp` | the wizard entries and their records, the parts, the `SwoftyCareerWizard` table, the core sets and the tile routes |
+| `career/wizard_hooks.cpp` | the start in F1, step and option, confirm route and driver tab wraps and sites |
 | `career/characters.cpp`, `characters_state.hpp` | the character entries, the active group, the strings and the `SwoftyCharacters` table |
 | `career/characters_hooks.cpp` | the character ref and voice wraps and the character list's rebuild |
 | `career/characters_logic.hpp` | which swap and mute act in the active group (`test/characters_logic_test.cpp`) |
