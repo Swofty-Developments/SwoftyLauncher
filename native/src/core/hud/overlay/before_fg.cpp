@@ -45,7 +45,7 @@ void BeforeFrameGen::drop()
     pending_ready.store(false);
 }
 
-void BeforeFrameGen::keep(IDXGISwapChain3 *sc, const hud::Frame &frame, const DXGI_SWAP_CHAIN_DESC &desc, UINT color_space,
+void BeforeFrameGen::keep(IDXGISwapChain3 *sc, const hud::drawlist::Frame &frame, const DXGI_SWAP_CHAIN_DESC &desc, UINT color_space,
                           ULONGLONG now)
 {
     std::lock_guard<std::mutex> g(lock);

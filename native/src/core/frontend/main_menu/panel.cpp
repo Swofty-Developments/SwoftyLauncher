@@ -84,7 +84,7 @@ std::string host_path(const std::string &p)
     return p;
 }
 
-void fade_panel(hud::Frame &f, float x, float y, float w, float h, float fade_left, float fade_right, float k)
+void fade_panel(hud::drawlist::Frame &f, float x, float y, float w, float h, float fade_left, float fade_right, float k)
 {
     const int slices = 48;
     auto smooth = [](float t) {
@@ -98,60 +98,60 @@ void fade_panel(hud::Frame &f, float x, float y, float w, float h, float fade_le
         uint32_t fill = 0x0b0d1200u | uint32_t(a * 0xe4);
         uint32_t line = 0xffffff00u | uint32_t(a * 0x50);
         float sx = x + t0 * w, sw = (t1 - t0) * w + 0.6f;
-        hud::rect(f, sx, y, sw, h, fill);
-        hud::rect(f, sx, y, sw, 1.3f * k, line);
-        hud::rect(f, sx, y + h - 1.3f * k, sw, 1.3f * k, line);
+        hud::drawlist::rect(f, sx, y, sw, h, fill);
+        hud::drawlist::rect(f, sx, y, sw, 1.3f * k, line);
+        hud::drawlist::rect(f, sx, y + h - 1.3f * k, sw, 1.3f * k, line);
     }
 }
 
-void key_glyph(hud::Frame &f, float x, float y, float h, float k, const std::string &key, bool pad_style)
+void key_glyph(hud::drawlist::Frame &f, float x, float y, float h, float k, const std::string &key, bool pad_style)
 {
-    hud::TextStyle st;
+    hud::drawlist::TextStyle st;
     st.px = h * 0.62f;
     st.rgba = 0xf3f5f9ffu;
     float w = 0, hh = 0;
-    hud::measure(st, key, &w, &hh);
+    hud::drawlist::measure(st, key, &w, &hh);
     float bw = pad_style ? std::max(h * 1.5f, w + 18 * k) : std::max(h, w + 14 * k);
     float radius = pad_style ? h * 0.5f : 6 * k;
-    hud::rect_rounded(f, x, y, bw, h, radius, 0xffffff1cu);
-    hud::rect_rounded_outline(f, x, y, bw, h, radius, 1.4f * k, 0xf3f5f9d8u);
-    hud::text(f, x + (bw - w) * 0.5f, y + (h - st.px) * 0.5f, st, key);
+    hud::drawlist::rect_rounded(f, x, y, bw, h, radius, 0xffffff1cu);
+    hud::drawlist::rect_rounded_outline(f, x, y, bw, h, radius, 1.4f * k, 0xf3f5f9d8u);
+    hud::drawlist::text(f, x + (bw - w) * 0.5f, y + (h - st.px) * 0.5f, st, key);
 }
 
-void image_rounded(hud::Frame &f, int slot, float x, float y, float w, float h, float r, float u0, float v0, float u1, float v1)
+void image_rounded(hud::drawlist::Frame &f, int slot, float x, float y, float w, float h, float r, float u0, float v0, float u1, float v1)
 {
-    if (slot < 0 || w <= 0 || h <= 0 || hud::clipped_out(f))
+    if (slot < 0 || w <= 0 || h <= 0 || hud::drawlist::clipped_out(f))
         return;
-    std::vector<hud::Pt> pts;
-    hud::rounded_local(pts, x, y, w, h, r, f.xform.scale());
-    if (pts.size() < 3 || !hud::reserve(f, pts.size() * 3, slot + 1))
+    std::vector<hud::drawlist::Pt> pts;
+    hud::drawlist::rounded_local(pts, x, y, w, h, r, f.xform.scale());
+    if (pts.size() < 3 || !hud::drawlist::reserve(f, pts.size() * 3, slot + 1))
         return;
-    uint32_t col = hud::pack(0xffffffff, f.opacity);
-    auto uv = [&](const hud::Pt &p, float *u, float *v) {
+    uint32_t col = hud::drawlist::pack(0xffffffff, f.opacity);
+    auto uv = [&](const hud::drawlist::Pt &p, float *u, float *v) {
         *u = u0 + (p.x - x) / w * (u1 - u0);
         *v = v0 + (p.y - y) / h * (v1 - v0);
     };
-    hud::Pt c{x + w * 0.5f, y + h * 0.5f};
+    hud::drawlist::Pt c{x + w * 0.5f, y + h * 0.5f};
     for (size_t i = 0; i < pts.size(); i++) {
-        const hud::Pt &a = pts[i], &b = pts[(i + 1) % pts.size()];
+        const hud::drawlist::Pt &a = pts[i], &b = pts[(i + 1) % pts.size()];
         float cu, cv, au, av, bu, bv;
         uv(c, &cu, &cv);
         uv(a, &au, &av);
         uv(b, &bu, &bv);
-        hud::vtx(f, c.x, c.y, col, cu, cv, hud::IMAGE);
-        hud::vtx(f, a.x, a.y, col, au, av, hud::IMAGE);
-        hud::vtx(f, b.x, b.y, col, bu, bv, hud::IMAGE);
+        hud::drawlist::vtx(f, c.x, c.y, col, cu, cv, hud::drawlist::IMAGE);
+        hud::drawlist::vtx(f, a.x, a.y, col, au, av, hud::drawlist::IMAGE);
+        hud::drawlist::vtx(f, b.x, b.y, col, bu, bv, hud::drawlist::IMAGE);
     }
 }
 
-std::vector<std::string> wrap_title(const hud::TextStyle &style, const std::string &title, float max_w, size_t max_lines)
+std::vector<std::string> wrap_title(const hud::drawlist::TextStyle &style, const std::string &title, float max_w, size_t max_lines)
 {
     std::vector<std::string> lines;
     std::string line;
     size_t i = 0;
     auto width = [&](const std::string &t) {
         float w = 0, h = 0;
-        hud::measure(style, t, &w, &h);
+        hud::drawlist::measure(style, t, &w, &h);
         return w;
     };
     while (i < title.size() && lines.size() < max_lines) {
@@ -380,7 +380,7 @@ void Panel::poll_bind()
         open_video(p->s);
 }
 
-void Panel::paint(hud::Frame &f, uint64_t now)
+void Panel::paint(hud::drawlist::Frame &f, uint64_t now)
 {
     (void)now;
     if (!std::exchange(told_first, true))
@@ -407,7 +407,7 @@ void Panel::paint(hud::Frame &f, uint64_t now)
     size_t verts_before = f.verts.size();
     LARGE_INTEGER t0, t1, freq;
     QueryPerformanceCounter(&t0);
-    hud::reset_state(f);
+    hud::drawlist::reset_state(f);
     uint64_t shown_for = GetTickCount64() - menu.home_opened_at.load();
     float fade = shown_for < PANEL_DELAY_MS ? 0.0f : std::min(1.0f, float(shown_for - PANEL_DELAY_MS) / float(PANEL_FADE_MS));
     if (fade <= 0.0f)
@@ -422,12 +422,12 @@ void Panel::paint(hud::Frame &f, uint64_t now)
     auto anchor = logic::scene_to_px(logic::CARD_RIGHT_X, logic::CARD_BOTTOM_Y, W, H);
     const float right = anchor.x;
     {
-        hud::TextStyle name_style;
+        hud::drawlist::TextStyle name_style;
         name_style.px = 26 * k;
         name_style.rgba = 0xf3f5f9ffu;
         std::string who = p->s.signed_in ? (p->s.name.empty() ? std::string("Discord") : p->s.name) : std::string("Not signed in");
         float tmp = 0, nw = 0;
-        hud::measure(name_style, who, &nw, &tmp);
+        hud::drawlist::measure(name_style, who, &nw, &tmp);
         nw = nw * 1.06f + 4 * k;
         float avatar = 44 * k, pad = 10 * k, gap = 12 * k;
         float block_h = name_style.px * 1.3f;
@@ -439,43 +439,43 @@ void Panel::paint(hud::Frame &f, uint64_t now)
         if (p->avatar_slot >= 0) {
             image_rounded(f, p->avatar_slot, ax, ay, avatar, avatar, avatar * 0.5f, 0, 0, 1, 1);
         } else if (p->s.signed_in) {
-            hud::rect_rounded(f, ax, ay, avatar, avatar, avatar * 0.5f, 0x5865f2ffu);
-            hud::TextStyle initial;
+            hud::drawlist::rect_rounded(f, ax, ay, avatar, avatar, avatar * 0.5f, 0x5865f2ffu);
+            hud::drawlist::TextStyle initial;
             initial.px = 24 * k;
             initial.rgba = 0xffffffffu;
             std::string letter = p->s.name.empty() ? "D" : p->s.name.substr(0, 1);
             float lw = 0;
-            hud::measure(initial, letter, &lw, &tmp);
-            hud::text(f, ax + (avatar - lw) * 0.5f, ay + (avatar - initial.px) * 0.5f, initial, letter);
+            hud::drawlist::measure(initial, letter, &lw, &tmp);
+            hud::drawlist::text(f, ax + (avatar - lw) * 0.5f, ay + (avatar - initial.px) * 0.5f, initial, letter);
         } else {
-            hud::rect_rounded(f, ax, ay, avatar, avatar, avatar * 0.5f, 0x3a3f4bffu);
-            hud::rect_rounded(f, ax + avatar * 0.34f, ay + avatar * 0.18f, avatar * 0.32f, avatar * 0.32f, avatar * 0.16f, 0xb9bfcdffu);
-            hud::rect_rounded(f, ax + avatar * 0.2f, ay + avatar * 0.56f, avatar * 0.6f, avatar * 0.26f, avatar * 0.13f, 0xb9bfcdffu);
+            hud::drawlist::rect_rounded(f, ax, ay, avatar, avatar, avatar * 0.5f, 0x3a3f4bffu);
+            hud::drawlist::rect_rounded(f, ax + avatar * 0.34f, ay + avatar * 0.18f, avatar * 0.32f, avatar * 0.32f, avatar * 0.16f, 0xb9bfcdffu);
+            hud::drawlist::rect_rounded(f, ax + avatar * 0.2f, ay + avatar * 0.56f, avatar * 0.6f, avatar * 0.26f, avatar * 0.13f, 0xb9bfcdffu);
         }
         float bx = ax + avatar + gap, by = py + (ph - block_h) * 0.5f;
-        hud::rect_rounded(f, bx, by, 3 * k, block_h, 1.5f * k, 0xe10600ffu);
-        hud::text(f, bx + 12 * k, by + (block_h - name_style.px) * 0.5f, name_style, who);
+        hud::drawlist::rect_rounded(f, bx, by, 3 * k, block_h, 1.5f * k, 0xe10600ffu);
+        hud::drawlist::text(f, bx + 12 * k, by + (block_h - name_style.px) * 0.5f, name_style, who);
     }
     if (p->video_slot >= 0 && p->video_w && p->video_h) {
-        hud::TextStyle cap_style;
+        hud::drawlist::TextStyle cap_style;
         cap_style.px = 16 * k;
         cap_style.rgba = 0xa9afbfffu;
         cap_style.tracking = 16 * k * 0.12f;
-        hud::TextStyle title_style;
+        hud::drawlist::TextStyle title_style;
         title_style.px = 24 * k;
         title_style.rgba = 0xf3f5f9ffu;
-        hud::TextStyle watch_style;
+        hud::drawlist::TextStyle watch_style;
         watch_style.px = 20 * k;
         watch_style.rgba = 0xd5d9e3ffu;
         const std::string caption = "LATEST VIDEO";
         const bool pad_dev = bind.on_pad();
         const std::string key = logic::button_name(pad_dev);
         float tmp_h = 0, cap_w = 0, watch_w = 0, key_w = 0;
-        hud::TextStyle key_probe;
+        hud::drawlist::TextStyle key_probe;
         key_probe.px = 26 * k * 0.62f;
-        hud::measure(cap_style, caption, &cap_w, &tmp_h);
-        hud::measure(watch_style, "Watch", &watch_w, &tmp_h);
-        hud::measure(key_probe, key, &key_w, &tmp_h);
+        hud::drawlist::measure(cap_style, caption, &cap_w, &tmp_h);
+        hud::drawlist::measure(watch_style, "Watch", &watch_w, &tmp_h);
+        hud::drawlist::measure(key_probe, key, &key_w, &tmp_h);
         const float row_h = 26 * k;
         const float glyph_w = pad_dev ? std::max(row_h * 1.5f, key_w + 18 * k) : std::max(row_h, key_w + 14 * k);
         auto plan0 = logic::plan_card(k, 0);
@@ -483,7 +483,7 @@ void Panel::paint(hud::Frame &f, uint64_t now)
         float title_w = 0;
         for (auto &line : title_lines) {
             float w = 0;
-            hud::measure(title_style, line, &w, &tmp_h);
+            hud::drawlist::measure(title_style, line, &w, &tmp_h);
             title_w = std::max(title_w, w);
         }
         float text_w = std::max({cap_w, title_w, glyph_w + 10 * k + watch_w}) * 1.06f + 4 * k;
@@ -494,16 +494,16 @@ void Panel::paint(hud::Frame &f, uint64_t now)
         float cap_h = cap_style.px * 1.25f, title_h = title_style.px * 1.2f * float(title_lines.size());
         float block_h = cap_h + 6 * k + title_h + 8 * k + row_h;
         float ty = cy + (card.height - block_h) * 0.5f;
-        hud::rect_rounded(f, cx + card.pad, ty, 3 * k, block_h, 1.5f * k, 0xe10600ffu);
-        hud::text(f, tx, ty, cap_style, caption);
+        hud::drawlist::rect_rounded(f, cx + card.pad, ty, 3 * k, block_h, 1.5f * k, 0xe10600ffu);
+        hud::drawlist::text(f, tx, ty, cap_style, caption);
         float yy = ty + cap_h + 6 * k;
         for (auto &line : title_lines) {
-            hud::text(f, tx, yy, title_style, line);
+            hud::drawlist::text(f, tx, yy, title_style, line);
             yy += title_style.px * 1.2f;
         }
         yy += 8 * k;
         key_glyph(f, tx, yy, row_h, k, key, pad_dev);
-        hud::text(f, tx + glyph_w + 10 * k, yy + (row_h - watch_style.px) * 0.5f, watch_style, "Watch");
+        hud::drawlist::text(f, tx + glyph_w + 10 * k, yy + (row_h - watch_style.px) * 0.5f, watch_style, "Watch");
         float want = card.thumb_w / card.thumb_h, have = float(p->video_w) / float(p->video_h);
         float v0 = 0, v1 = 1, u0 = 0, u1 = 1;
         if (have < want) {

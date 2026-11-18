@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace hud {
+namespace hud::drawlist {
 
 // ----- registry ---------------------------------------------------------------------------------
 

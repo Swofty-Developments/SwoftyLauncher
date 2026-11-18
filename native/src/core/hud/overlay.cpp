@@ -83,7 +83,7 @@ void Overlay::flush_stats(ULONGLONG now)
 }
 
 void Overlay::draw_target(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const Renderer::Target &t,
-                          const std::vector<Vertex> &verts, const std::vector<hud::Batch> &batches, UINT color_space,
+                          const std::vector<Vertex> &verts, const std::vector<hud::drawlist::Batch> &batches, UINT color_space,
                           ULONGLONG now)
 {
     static const uint32_t probe = perf::probe("core", "overlay record");
@@ -108,15 +108,15 @@ void Overlay::draw_target(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const Rend
     }
 }
 
-hud::Frame &Overlay::build_frame(const std::vector<hud::Paintsub> &subs, UINT width, UINT height, ULONGLONG now)
+hud::drawlist::Frame &Overlay::build_frame(const std::vector<hud::drawlist::Paintsub> &subs, UINT width, UINT height, ULONGLONG now)
 {
     static const uint32_t paint_probe = perf::probe("core", "overlay paint callbacks");
     // Not a member: the frame's text cache (std::unordered_map) has no constexpr constructor and the overlay is constinit.
-    static hud::Frame frame;
+    static hud::drawlist::Frame frame;
     {
         perf::Scope painting(paint_probe);
         input.frame(subs, float(width), float(height), now);
-        hud::build(subs, frame, float(width), float(height), settings().off);
+        hud::drawlist::build(subs, frame, float(width), float(height), settings().off);
         input.draw_cursor(frame);
         hud::room_cover::paint(frame, now);
         frontend::main_menu::paint(frame, now);
@@ -127,15 +127,15 @@ hud::Frame &Overlay::build_frame(const std::vector<hud::Paintsub> &subs, UINT wi
         dropped_told = true;
         swofty::log("[overlay] a frame's paint callbacks drew more than %u vertices; %u primitive(s) past that were "
                     "dropped",
-                    hud::MAX_VERTS, frame.dropped);
+                    hud::drawlist::MAX_VERTS, frame.dropped);
     }
     return frame;
 }
 
-void Overlay::paint_frame(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const std::vector<hud::Paintsub> &subs,
+void Overlay::paint_frame(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const std::vector<hud::drawlist::Paintsub> &subs,
                           const DXGI_SWAP_CHAIN_DESC &desc, ULONGLONG now, UINT color_space)
 {
-    hud::Frame &frame = build_frame(subs, desc.BufferDesc.Width, desc.BufferDesc.Height, now);
+    hud::drawlist::Frame &frame = build_frame(subs, desc.BufferDesc.Width, desc.BufferDesc.Height, now);
     if (frame.verts.empty())
         return;
     ID3D12Resource *buf = nullptr;
@@ -157,7 +157,7 @@ void Overlay::draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known
         return;
     static const uint32_t probe = perf::probe("core", "overlay present");
     perf::Scope timed(probe);
-    std::vector<hud::Paintsub> subs;
+    std::vector<hud::drawlist::Paintsub> subs;
     if (implemented) {
         std::lock_guard<std::mutex> g(reg_lock);
         subs = reg.subs();
@@ -237,7 +237,7 @@ void Overlay::draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known
         before_fg.set_active(true);
         bool addons = !subs.empty() && !settings().killed("paint");
         if (addons || cover || menu || barred) {
-            hud::Frame &frame = build_frame(addons ? subs : std::vector<hud::Paintsub>(), desc.BufferDesc.Width,
+            hud::drawlist::Frame &frame = build_frame(addons ? subs : std::vector<hud::drawlist::Paintsub>(), desc.BufferDesc.Width,
                                             desc.BufferDesc.Height, now);
             before_fg.keep(sc, frame, desc, color_space, now);
         } else {
@@ -288,7 +288,7 @@ void Overlay::draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known
     }
     bool addons = !subs.empty() && !settings().killed("paint");
     if (addons || cover || menu || barred)
-        paint_frame(sc, c.queue, addons ? subs : std::vector<hud::Paintsub>(), desc, now, color_space);
+        paint_frame(sc, c.queue, addons ? subs : std::vector<hud::drawlist::Paintsub>(), desc, now, color_space);
     if (capture.on && !settings().killed("capture"))
         capture.step(renderer, sc, c.queue, desc, now);
 }

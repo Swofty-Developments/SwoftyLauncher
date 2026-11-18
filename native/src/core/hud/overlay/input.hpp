@@ -21,8 +21,8 @@ constexpr ULONGLONG FOCUS_TIMEOUT_MS = 2000;
 class Input {
 public:
     void hook_window(HWND wnd);
-    void frame(const std::vector<hud::Paintsub> &subs, float fb_w, float fb_h, ULONGLONG now);
-    void draw_cursor(hud::Frame &f);
+    void frame(const std::vector<hud::drawlist::Paintsub> &subs, float fb_w, float fb_h, ULONGLONG now);
+    void draw_cursor(hud::drawlist::Frame &f);
     void view(const std::string &owner, SwoftyInput &full);
     bool take_focus(const std::string &who, bool on, std::string &before);
     bool window_hooked() const { return game_wnd.load() != nullptr; }

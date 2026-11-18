@@ -12,8 +12,8 @@
 namespace hud::overlay {
 
 struct Pending {
-    std::vector<Vertex> verts;
-    std::vector<hud::Batch> batches;
+    std::vector<hud::drawlist::Vertex> verts;
+    std::vector<hud::drawlist::Batch> batches;
     IDXGISwapChain3 *sc = nullptr;
     UINT color_space = 0, width = 0, height = 0;
     ULONGLONG built = 0;
@@ -32,7 +32,7 @@ constexpr size_t BACK_BUFFERS_MAX = 16, PRESENTING_MAX = 64;
 class BeforeFrameGen {
 public:
     void subscribe();
-    void keep(IDXGISwapChain3 *sc, const hud::Frame &frame, const DXGI_SWAP_CHAIN_DESC &desc, UINT color_space,
+    void keep(IDXGISwapChain3 *sc, const hud::drawlist::Frame &frame, const DXGI_SWAP_CHAIN_DESC &desc, UINT color_space,
               ULONGLONG now);
     void drop();
     void set_active(bool on) { active.store(on); }

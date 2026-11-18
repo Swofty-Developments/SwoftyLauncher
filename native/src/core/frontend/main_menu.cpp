@@ -180,7 +180,7 @@ void command(void *, uint32_t command_hash, uint32_t focused_hash)
                 r == 0 ? "queued" : "refused");
 }
 
-void paint(hud::Frame &f, uint64_t now) { menu.panel.paint(f, now); }
+void paint(hud::drawlist::Frame &f, uint64_t now) { menu.panel.paint(f, now); }
 
 }
 
