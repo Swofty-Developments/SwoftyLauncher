@@ -9,7 +9,7 @@
 // datasets an addon scripted, then Career Mode Editor's rebuild of the datasets it planned. Career Mode Editor's plan
 // wins over an addon's forecast, and the forecast applies where Career Mode Editor has no plan.
 //
-// The seed: GameWeatherSystem.forced_seed (ws+0x1f14) is 0 unless an addon wrote it; the game's init zeroes it and
+// The seed: GameWeatherSystem.forced_seed (ws+0x1f14) is 0 unless an addon wrote it; the constructor zeroes it and
 // never sets it (re/bindings/session/Sess_GameWeatherSystem_UpdateRandomSeed.json). A non-zero value at the core's
 // entry is a seed forced above the core, and the core keeps it. With nothing forced, a handler's seed is forced for
 // this build and released after it (set back to 0 and propagated with Sess_WeatherComponent_SetSystemRandomSeed, as
