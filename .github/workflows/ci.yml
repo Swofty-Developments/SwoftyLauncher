@@ -746,17 +746,27 @@ jobs:
           key: ${{ steps.zig-cache.outputs.cache-primary-key }}
 
       # Only the newest saved Zig cache is kept; several of them push the Rust caches out of the repository's
-      # cache space.
-      - name: Remove the older Zig caches
-        if: steps.zig-save.outcome == 'success'
+      # cache space. So are no caches under the keys only the workflow before 1.10.0 wrote, which nothing
+      # restores now: its debug build of the workspace, its installer build and its release builds.
+      - name: Remove the older Zig caches and the old workflow's caches
+        if: ${{ !cancelled() && github.ref == 'refs/heads/main' && matrix.part != 'wine' }}
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
+          ZIG_SAVED: ${{ steps.zig-save.outcome }}
           KEEP: ${{ steps.zig-cache.outputs.cache-primary-key }}
         run: |
-          gh cache list --repo "$GITHUB_REPOSITORY" --ref refs/heads/main --key "zig-$RUNNER_OS-" --limit 100 \
-            --json id,key --jq '.[] | select(.key != env.KEEP) | .id' | while read -r id; do
-            gh cache delete "$id" --repo "$GITHUB_REPOSITORY" && echo "removed cache $id"
+          if [ "$ZIG_SAVED" = success ]; then
+            gh cache list --repo "$GITHUB_REPOSITORY" --ref refs/heads/main --key "zig-$RUNNER_OS-" --limit 100 \
+              --json id,key --jq '.[] | select(.key != env.KEEP) | .id' | while read -r id; do
+              gh cache delete "$id" --repo "$GITHUB_REPOSITORY" && echo "removed cache $id"
+            done
+          fi
+          for prefix in v0-rust-workspace-debug- v0-rust-installer-release- v0-rust-release-; do
+            gh cache list --repo "$GITHUB_REPOSITORY" --key "$prefix" --limit 100 --json id,key,ref \
+              --jq '.[] | "\(.id) \(.key) \(.ref)"' | while read -r id key ref; do
+              gh cache delete "$id" --repo "$GITHUB_REPOSITORY" && echo "removed cache $key on $ref"
+            done
           done
 
   # Every push to main also builds the release binaries: the run keeps the release cache warm, and a tag on

@@ -82,6 +82,10 @@ the root `[profile]` sections adds its own test caches (1.8 GB), so main and two
 1 GB (`CCACHE_MAXSIZE`). In CI the templates' Zig cache folders link to the native one, which saves their libc++
 and MinGW builds once. Clippy, the Linux installer and the release builds keep no Rust cache.
 
+Main's native job also deletes, on every branch, the caches under the keys only the workflow before 1.10.0
+wrote: `v0-rust-workspace-debug-`, `v0-rust-installer-release-` and `v0-rust-release-` (1.75 GB on main in
+November 2026).
+
 ## First run of the bindings workflow
 
 `bindings.yml` runs on `pull_request_target`, which uses main's copy of the workflow, so it first runs once it
