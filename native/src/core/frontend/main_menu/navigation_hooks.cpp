@@ -17,7 +17,6 @@ namespace frontend::main_menu {
 namespace {
 
 using namespace swofty::game;
-namespace logic = ::frontend::main_menu;
 
 std::string ne_text(NeStr *s)
 {
@@ -68,12 +67,12 @@ void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4) { menu.navig
 
 uint64_t Navigation::container_command(void *container, NeStr **message, void *third)
 {
-    if (menu.patched.load() && message && *message && back_mode() == logic::Back::route && !off("SWOFTY_MAIN_MENU_PICKERBACK")) {
-        logic::Mode m = logic::Mode(nav.mode.load());
-        if (m == logic::Mode::time_trial && ne_text(*message) == "entrant_goto_select" &&
-            nav.expect.load() == int(logic::Expect::none)) {
+    if (menu.patched.load() && message && *message && back_mode() == Back::route && !off("SWOFTY_MAIN_MENU_PICKERBACK")) {
+        Mode m = Mode(nav.mode.load());
+        if (m == Mode::time_trial && ne_text(*message) == "entrant_goto_select" &&
+            nav.expect.load() == int(Expect::none)) {
             swofty::log("[main-menu] nav: picker Back intercepted (container command entrant_goto_select, which would select the default tab; the %s picker's Back leaves for the main menu at once)",
-                        logic::return_command(m));
+                        return_command(m));
             leave_picker_to_home("picker Back");
             return 0;
         }
@@ -84,7 +83,7 @@ uint64_t Navigation::container_command(void *container, NeStr **message, void *t
         swofty::log("[main-menu] chain: activity container view model %p seen", container);
     }
     container_third = third;
-    if (nav.expect.load() != int(logic::Expect::none) || chain.step == Step::wait_container || nav.mode.load() != int(logic::Mode::none))
+    if (nav.expect.load() != int(Expect::none) || chain.step == Step::wait_container || nav.mode.load() != int(Mode::none))
         swofty::log("[main-menu] nav: container command '%s'", message && *message ? ne_text(*message).c_str() : "");
     return h_container.call<uint64_t>(container, message, third);
 }
@@ -151,19 +150,19 @@ NeStr **Navigation::migrated(void *cmd, NeStr **out, void *node)
     }
     if (r && runtime::readable(r, sizeof(void *)))
         result = ne_text(*r);
-    bool failed = logic::migrate_failed(result);
+    bool failed = migrate_failed(result);
     if (!failed && !flow.empty())
         set_flow(flow);
-    if (!failed && logic::customisation_disarms(flow) && menu.customisation_armed.exchange(false))
+    if (!failed && customisation_disarms(flow) && menu.customisation_armed.exchange(false))
         swofty::log("[main-menu] back: the %s was entered after the Customisation card press without its Back; the Customisation screen's Back is the game's again", flow.c_str());
-    if (!failed && flow == logic::F1_WORLD_FLOW) {
+    if (!failed && flow == F1_WORLD_FLOW) {
         bool pending = false;
         {
             std::lock_guard<std::mutex> g(chain_lock);
             if (chain.step != Step::wait_container && nav.return_armed.exchange(false)) {
                 chain = {};
                 chain.step = Step::wait_container;
-                chain.command = logic::return_command(logic::Mode(nav.mode.load()));
+                chain.command = return_command(Mode(nav.mode.load()));
                 chain.started = chain.container_at = GetTickCount64();
                 chain.handover = true;
                 container_vm = nullptr;
@@ -174,7 +173,7 @@ NeStr **Navigation::migrated(void *cmd, NeStr **out, void *node)
         if (pending)
             cover_up("the container is about to open");
     }
-    if (logic::migrate_logged(failed, flow, before))
+    if (migrate_logged(failed, flow, before))
         swofty::log("[main-menu] nav: Migrate command: flow '%s' entry '%s' -> %s%s%s; the flow the game last accepted is now %s", flow.c_str(),
                     entry.empty() ? "(none)" : entry.c_str(), failed ? "FAILED: " : "accepted", failed ? result.c_str() : "", "", get_flow().c_str());
     return r;
@@ -188,7 +187,7 @@ bool Navigation::fire_in_group(const char *group, const char *route, const char 
         return false;
     }
     uint8_t *scratch = route_events.fire;
-    *reinterpret_cast<uint32_t *>(scratch + 0x250) = logic::djb2(group);
+    *reinterpret_cast<uint32_t *>(scratch + 0x250) = djb2(group);
     NeStr *name = nullptr;
     Ne_Make_StrFromCStr(&name, route, 0, 0);
     swofty::log("[main-menu] nav: firing route '%s' in group %s (%s); flow now %s", route, group, why, get_flow().c_str());
@@ -207,30 +206,30 @@ void Navigation::route_fired(void *router, void *vm, NeStr **name, uint64_t a4)
         if (!vm || !swofty::mem::read(reinterpret_cast<uintptr_t>(vm) + 0x250, gid))
             gid = 0;
     }
-    if (menu.home_open.load() && gid == logic::djb2("fe_home") && logic::hides_panel(text)) {
+    if (menu.home_open.load() && gid == djb2("fe_home") && hides_panel(text)) {
         std::lock_guard<std::mutex> g(menu.view_lock);
         menu.home_view.left();
         menu.home_open = false;
         swofty::log("[main-menu] panel hidden: route %s fired from the home screen", text);
     }
     if (menu.patched.load()) {
-        if (gid == logic::djb2("f1_world_activity_container") || gid == logic::djb2("fe_showroom") || gid == logic::djb2("grand_prix_continue") ||
-            gid == logic::djb2(logic::CUSTOMISATION_GROUP))
+        if (gid == djb2("f1_world_activity_container") || gid == djb2("fe_showroom") || gid == djb2("grand_prix_continue") ||
+            gid == djb2(CUSTOMISATION_GROUP))
             swofty::log("[main-menu] nav: route '%s' fired in group 0x%08x (%s)", text, gid,
-                        gid == logic::djb2("fe_showroom")           ? "fe_showroom"
-                        : gid == logic::djb2("grand_prix_continue") ? "grand_prix_continue"
-                        : gid == logic::djb2(logic::CUSTOMISATION_GROUP) ? logic::CUSTOMISATION_GROUP
+                        gid == djb2("fe_showroom")           ? "fe_showroom"
+                        : gid == djb2("grand_prix_continue") ? "grand_prix_continue"
+                        : gid == djb2(CUSTOMISATION_GROUP) ? CUSTOMISATION_GROUP
                                                                     : "f1_world_activity_container");
-        if (logic::saves_back_leaves_home(back_mode(), gid, text, logic::Mode(nav.mode.load()))) {
+        if (saves_back_leaves_home(back_mode(), gid, text, Mode(nav.mode.load()))) {
             saves_tabs_at = 0;
             saves_back_at = GetTickCount64();
             swofty::log("[main-menu] back: the saves list's Back (route back) migrates to the activity container as the game's own; the core leaves the container for the main menu once its tabs exist");
         }
-        const char *to = logic::back_replacement(back_mode(), gid, text);
-        if (!to && (to = logic::customisation_back(back_mode(), menu.customisation_armed.load(), gid, text))) {
+        const char *to = back_replacement(back_mode(), gid, text);
+        if (!to && (to = customisation_back(back_mode(), menu.customisation_armed.load(), gid, text))) {
             menu.customisation_armed = false;
             swofty::log("[main-menu] back: the Customisation screen was entered from the main menu card; its Back (route %s in %s) returns to the main menu",
-                        text, logic::CUSTOMISATION_GROUP);
+                        text, CUSTOMISATION_GROUP);
         }
         if (to) {
             clear_entry_point("Back");
@@ -240,9 +239,9 @@ void Navigation::route_fired(void *router, void *vm, NeStr **name, uint64_t a4)
                 swap_reported = false;
             }
             swap_at = GetTickCount64();
-            if (std::strcmp(to, logic::HOME_BACK_ROUTE) != 0)
+            if (std::strcmp(to, HOME_BACK_ROUTE) != 0)
                 reset_transition_state(to);
-            expect_screen(logic::Expect::home, "Back");
+            expect_screen(Expect::home, "Back");
             nav.return_armed = false;
             swofty::log("[main-menu] back: the game's handler fired route %s from its own view model (group 0x%08x); it is replaced by %s in the same group, so the F1 World hub is never opened",
                         text, gid, to);
