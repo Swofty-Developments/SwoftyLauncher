@@ -24,6 +24,7 @@
 #include "core/hooks/race_fuel_rules.hpp"
 #include "core/frontend/view_state.hpp"
 #include "core/hooks/session_points.hpp"
+#include "core/runtime/loader/core_rank.hpp"
 
 // The live car operations on the running game (car_live.hpp): g_Sess_VehicleTable and g_Sess_VehicleCount
 // resolve once the code is ready, memory reads and writes are checked (swofty::mem), writes run only on the
@@ -735,6 +736,8 @@ extern "C" __declspec(dllexport) const SwoftyCarOps *SwoftyCoreCarOps(void)
 {
     return &swofty_core::hooks::Ops::table;
 }
+
+SWOFTY_CORE_RANK(car_live)
 
 SWOFTY_ON_LOAD
 {

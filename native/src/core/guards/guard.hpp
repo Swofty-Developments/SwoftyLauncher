@@ -4,6 +4,7 @@
 #include "core/guards/on_demand.hpp"
 #include "core/guards/order.hpp"
 #include "core/guards/skips.hpp"
+#include "core/runtime/loader/core_rank.hpp"
 #include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/loader/mixin_gate.hpp"
 #include "core/runtime/runtime.hpp"
@@ -139,6 +140,7 @@ void arm_next_hook_guard();
 }
 
 #define SWOFTY_HOOK_GUARD(id, what, setup)                                                                                       \
+    SWOFTY_CORE_RANK(id)                                                                                                         \
     namespace {                                                                                                                  \
     const ::swofty_core::guards::HookGuard hook_guard{::swofty_core::guards::HookGuardId::id, what, setup};                      \
     }                                                                                                                            \

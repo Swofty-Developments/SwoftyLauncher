@@ -16,6 +16,7 @@
 #include <swofty/mixin.hpp>
 
 #include "core/apply/moments.hpp"
+#include "core/runtime/loader/core_rank.hpp"
 
 #include <atomic>
 #include <algorithm>
@@ -367,6 +368,8 @@ void player_name_session()
 }
 
 }
+
+SWOFTY_CORE_RANK(player_name)
 
 SWOFTY_ON_LOAD
 {
