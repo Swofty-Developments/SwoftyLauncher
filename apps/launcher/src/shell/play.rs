@@ -157,6 +157,60 @@ impl Launching {
 /// How long Play waits for a session module load that is already running.
 const SESSION_MODULE_WAIT: std::time::Duration = std::time::Duration::from_millis(1500);
 
+/// What the Play checks' result comes to, in the order Play takes it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum Step {
+    /// The profile or the game copy changed while the checks ran.
+    Dropped,
+    AdminNeeded,
+    Setup,
+    ConfirmOffline,
+    FirstLaunch,
+    Stop(String),
+    ConfirmRows(String),
+    Launch,
+}
+
+impl Step {
+    pub(crate) fn of(stale: bool, gate: play_checks::Gate, verdict: play_checks::Verdict) -> Self {
+        if stale {
+            return Self::Dropped;
+        }
+        if gate.write_blocked {
+            return Self::AdminNeeded;
+        }
+        if !gate.setup_done {
+            return Self::Setup;
+        }
+        if !gate.offline_accepted {
+            return Self::ConfirmOffline;
+        }
+        if gate.first_launch {
+            return Self::FirstLaunch;
+        }
+        match verdict {
+            play_checks::Verdict::Go => Self::Launch,
+            play_checks::Verdict::Stop(stop) => Self::Stop(stop),
+            play_checks::Verdict::Confirm(text) => Self::ConfirmRows(text),
+        }
+    }
+
+    /// What Play came to when this step ends it; none for a launch, which says once it starts.
+    pub(crate) fn played(&self) -> Option<Played> {
+        match self {
+            Self::Dropped | Self::AdminNeeded | Self::Setup | Self::Stop(_) => Some(Played::Stopped),
+            Self::ConfirmOffline | Self::FirstLaunch | Self::ConfirmRows(_) => Some(Played::Asking),
+            Self::Launch => None,
+        }
+    }
+
+    /// Past the gate: the last launch's notice, blocked files and crash are cleared and the checks'
+    /// notes shown.
+    pub(crate) fn clears(&self) -> bool {
+        matches!(self, Self::Stop(_) | Self::ConfirmRows(_) | Self::Launch)
+    }
+}
+
 impl Shell {
     pub(crate) fn play_state(&self) -> PlayState {
         self.launching.play_state(
@@ -250,46 +304,36 @@ impl Shell {
         crate::app::app_log::note(&checked.timings.line());
         let stale = self.library.profile.name != checked.profile
             || self.game.install.as_ref().map(|i| &i.dir) != Some(&checked.game);
-        let Some(install) = self.game.install.clone().filter(|_| !stale) else {
+        let step = Step::of(stale, checked.gate, checked.verdict);
+        let Some(install) = self.game.install.clone().filter(|_| step != Step::Dropped) else {
             crate::app::app_log::note("[play] dropped: the profile or game copy changed during the checks");
             return Played::Stopped;
         };
-        let gate = checked.gate;
-        if gate.write_blocked {
-            self.show_admin_needed(&install, window, cx);
-            return Played::Stopped;
-        }
-        if !gate.setup_done {
-            self.open_setup(window, cx);
-            return Played::Stopped;
-        }
-        if !gate.offline_accepted {
-            self.confirm_offline_play(window, cx);
-            return self.asking(room);
-        }
-        if gate.first_launch {
-            self.first_launch_notice(window, cx);
-            return self.asking(room);
-        }
-        self.launching.notice = None;
-        self.game.blocked = None;
-        self.launching.game_edited = None;
-        Blocked::clear(&self.store.root).ok();
-        self.seen.blocked = game::blocked_at(&self.store.root).unwrap_or(0.0);
-        self.crashes.dismissed = self.game.session.as_ref().map(|s| s.dir.clone());
-        for note in &checked.notes {
-            window.notify(note_notification(note), cx);
-        }
-        match checked.verdict {
-            play_checks::Verdict::Go => {}
-            play_checks::Verdict::Stop(stop) => {
-                self.launching.notice = Some(stop);
-                return Played::Stopped;
+        if step.clears() {
+            self.launching.notice = None;
+            self.game.blocked = None;
+            self.launching.game_edited = None;
+            Blocked::clear(&self.store.root).ok();
+            self.seen.blocked = game::blocked_at(&self.store.root).unwrap_or(0.0);
+            self.crashes.dismissed = self.game.session.as_ref().map(|s| s.dir.clone());
+            for note in &checked.notes {
+                window.notify(note_notification(note), cx);
             }
-            play_checks::Verdict::Confirm(text) => {
-                self.confirm_missing_rows(text, window, cx);
-                return self.asking(room);
-            }
+        }
+        let played = step.played();
+        match step {
+            Step::AdminNeeded => self.show_admin_needed(&install, window, cx),
+            Step::Setup => self.open_setup(window, cx),
+            Step::ConfirmOffline => self.confirm_offline_play(window, cx),
+            Step::FirstLaunch => self.first_launch_notice(window, cx),
+            Step::Stop(stop) => self.launching.notice = Some(stop),
+            Step::ConfirmRows(text) => self.confirm_missing_rows(text, window, cx),
+            Step::Dropped | Step::Launch => {}
+        }
+        match played {
+            Some(Played::Asking) => return self.asking(room),
+            Some(played) => return played,
+            None => {}
         }
         if let Some(d) = swofty_core::diagnostics::known_problems::outdated_exe(install.version().as_deref())
         {
@@ -395,8 +439,9 @@ mod tests {
 
     use swofty_core::install::Source;
 
-    use super::Launching;
+    use super::{Launching, Played, Step};
     use crate::services::game::{Copies, Install, Owner};
+    use crate::services::play_checks::{Gate, Verdict};
     use crate::shell::PlayState;
     use crate::shell::probe::GameWatch;
 
@@ -488,5 +533,94 @@ mod tests {
         assert!(launching.cancel_settled(true, false));
         assert!(!launching.cancelling);
         assert!(!launching.cancel_settled(true, false));
+    }
+
+    const PASSED: Gate = Gate {
+        write_blocked: false,
+        setup_done: true,
+        offline_accepted: true,
+        first_launch: false,
+    };
+
+    #[test]
+    fn checks_that_pass_launch_the_game() {
+        let step = Step::of(false, PASSED, Verdict::Go);
+        assert_eq!(step, Step::Launch);
+        assert_eq!(step.played(), None);
+        assert!(step.clears());
+    }
+
+    #[test]
+    fn a_profile_or_copy_changed_during_the_checks_drops_the_press() {
+        let blocked = Gate {
+            write_blocked: true,
+            ..PASSED
+        };
+        let step = Step::of(true, blocked, Verdict::Go);
+        assert_eq!(step, Step::Dropped);
+        assert_eq!(step.played(), Some(Played::Stopped));
+        assert!(!step.clears());
+    }
+
+    #[test]
+    fn a_folder_it_cannot_write_asks_for_admin_before_anything_else() {
+        let gate = Gate {
+            write_blocked: true,
+            setup_done: false,
+            offline_accepted: false,
+            first_launch: true,
+        };
+        let step = Step::of(false, gate, Verdict::Stop("no".into()));
+        assert_eq!(step, Step::AdminNeeded);
+        assert_eq!(step.played(), Some(Played::Stopped));
+        assert!(!step.clears());
+    }
+
+    #[test]
+    fn unfinished_setup_opens_setup_and_stops() {
+        let gate = Gate {
+            setup_done: false,
+            offline_accepted: false,
+            ..PASSED
+        };
+        let step = Step::of(false, gate, Verdict::Go);
+        assert_eq!(step, Step::Setup);
+        assert_eq!(step.played(), Some(Played::Stopped));
+        assert!(!step.clears());
+    }
+
+    #[test]
+    fn the_offline_terms_and_the_first_launch_notice_ask_and_hold_a_room() {
+        let offline = Gate {
+            offline_accepted: false,
+            first_launch: true,
+            ..PASSED
+        };
+        assert_eq!(Step::of(false, offline, Verdict::Go), Step::ConfirmOffline);
+        let first = Gate {
+            first_launch: true,
+            ..PASSED
+        };
+        assert_eq!(Step::of(false, first, Verdict::Go), Step::FirstLaunch);
+        for step in [Step::ConfirmOffline, Step::FirstLaunch] {
+            assert_eq!(step.played(), Some(Played::Asking));
+            assert!(!step.clears());
+        }
+    }
+
+    #[test]
+    fn a_stop_verdict_shows_its_reason_on_the_play_bar() {
+        let step = Step::of(false, PASSED, Verdict::Stop("a mod is broken".into()));
+        assert_eq!(step, Step::Stop("a mod is broken".into()));
+        assert_eq!(step.played(), Some(Played::Stopped));
+        assert!(step.clears());
+    }
+
+    #[test]
+    fn missing_rows_ask_before_launching() {
+        let step = Step::of(false, PASSED, Verdict::Confirm("2 rows are missing".into()));
+        assert_eq!(step, Step::ConfirmRows("2 rows are missing".into()));
+        assert_eq!(step.played(), Some(Played::Asking));
+        assert!(step.clears());
     }
 }
