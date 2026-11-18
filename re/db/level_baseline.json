@@ -2914,7 +2914,6 @@
   "func:Ne_SequenceInstance_Construct": "V2844",
   "func:Ne_SequenceResource_CreateResource": "V1996",
   "func:Ne_Sequence_Deserialize": "V4051",
-  "func:Ne_Set_FixedString": "V4150",
   "func:Ne_Settings_BindNamedEntries": "V3603",
   "func:Ne_SharedPtr_CopyAssign": "V8151",
   "func:Ne_SharedPtr_MoveAssign": "V3468",
