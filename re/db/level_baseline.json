@@ -3029,7 +3029,6 @@
   "func:Ne_UnorderedMap_RehashBuckets": "V8239",
   "func:Ne_UnorderedMap_Rehash_Gfx2Buffer": "V8256",
   "func:Ne_UnorderedMap_Rehash_Gfx2DeferredCommand": "V8261",
-  "func:Ne_UserId_Equals": "V7635",
   "func:Ne_UserId_ToDisplayString": "V7637",
   "func:Ne_Variant_FormatToString": "V8389",
   "func:Ne_Vector16_InsertGrow": "V8295",
