@@ -384,5 +384,7 @@ SCRIPTS = [
            ['python3', '-I', 'native/test/sigverify_test.py']),
     Script('init_check', 'Static initializer check: run order, inline variables and hook guard arming',
            ['python3', '-I', 'native/test/init_check_test.py']),
+    Script('ninja_deps', 'Ninja deps log check (damage from two writers, removal, incremental again)',
+           ['python3', '-I', 'native/test/ninja_deps_test.py']),
 ]
 

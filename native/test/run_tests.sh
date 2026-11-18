@@ -11,6 +11,11 @@ NEEDS="zig ninja c++"
 . test/lib/env.sh
 export ZIG_GLOBAL_CACHE_DIR=$PWD/build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/build/zig-cache SWOFTY_TEST_GRAPH=1
 mkdir -p build/test
+if command -v flock >/dev/null; then
+    exec 9>build/test/.build.lock
+    flock -n 9 || { echo "run_tests.sh: another test run holds build/test; waiting for it" >&2 && flock 9; }
+fi
+python3 tools/ninja_deps.py build/test/.ninja_deps run_tests.sh
 JOBS=${NATIVE_TEST_JOBS:-$SWOFTY_JOBS}
 WINE_JOBS=${NATIVE_WINE_JOBS:-$((JOBS / 2 < 2 ? 2 : JOBS / 2 > 8 ? 8 : JOBS / 2))}
 python3 tools/test_graph.py --builddir build/test --out build/test/build.ninja --jobs "$JOBS" --wine-jobs "$WINE_JOBS"
