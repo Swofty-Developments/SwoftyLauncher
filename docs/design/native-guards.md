@@ -114,9 +114,11 @@ A hook guard that installs several hooks, or has failure lines of its own, write
 as a `HookGuard` with `SWOFTY_HOOK_GUARD(id, what, setup)` instead (`guards/career/rnd_suppliers_guard.cpp`).
 
 Both macros add one SDK on-load entry that arms the next hook guard in `HookGuardId` order (`guards/order.hpp`). The
-k-th entry the SDK runs arms the k-th hook guard. A new hook guard takes the `HookGuardId` slot that matches where its
-source links: the sources `native/tools/core_link_order.txt` lists, in its order, then the rest sorted by path. Add
-its name to `HOOKED` in `native/test/guard_registry_test.cpp` at the same slot. Pin a `MidHookSpec` guard's off,
+k-th entry the SDK runs arms the k-th hook guard. On-load entries run in reverse link order: lld lays the DLL's static
+constructors out in link order (the sources `native/tools/core_link_order.txt` lists, in its order, then the rest
+sorted by path), the mingw crt calls them from the last, and the SDK lists each on-load entry as it's constructed. A
+new hook guard takes the `HookGuardId` slot that matches where its source falls in that reverse order, and its name
+goes in `HOOKED` in `native/test/guard_registry_test.cpp` at the same slot. Pin a `MidHookSpec` guard's off,
 failed and armed lines in `added.txt` under `[hook <id>]`.
 
 ## Guard
@@ -216,8 +218,8 @@ The guard tests run on the host (`native/test/run_tests.sh guard_registry guard_
 read the guard sources. They don't load the game.
 
 - `guard_registry`: every core set registers exactly once, under its id, somewhere under `native/src/core`. The offer
-  order and the commit order match the order the sets had before the registry. Every hook guard registers once, and
-  the hook guards' sources link in `HookGuardId` order.
+  order and the commit order match 1.9.63's. Every hook guard registers once, and the hook guards' on-load entries
+  run (in reverse link order) in `HookGuardId` order, which is the order 1.9.63 armed them in.
 - `guard_lines`: every `SiteGuard` spec (and each of its parts) and every `MidHookSpec` renders, through
   `guards/lines.hpp`, exactly the lines pinned for it. `expected.txt` holds the lines the guards logged before they
   became specs, written by `guard_lines/extract.py` from the older sources. `added.txt` holds the lines of guards

@@ -128,8 +128,8 @@ private:
 };
 
 // Arms the next registered hook guard in HookGuardId order. Each hook guard adds one SDK on-load entry that calls it
-// (SWOFTY_HOOK_GUARD), so the core still registers one on-load mixin per hook guard and the order the guards arm in
-// does not depend on which translation unit's entry the SDK lists first.
+// (SWOFTY_HOOK_GUARD), so the core still registers one on-load mixin per hook guard, in the same place in the on-load
+// sequence, and the order the guards arm in is HookGuardId's whichever hook guard's entry the SDK runs first.
 void arm_next_hook_guard();
 
 }

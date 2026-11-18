@@ -15,7 +15,8 @@ namespace guards = swofty_core::guards;
 namespace loader = runtime::loader;
 
 // The core mixin sets in the order offer_core_sets and settle_core_sets in runtime/manager.cpp listed them on
-// v1.10.0 (9d21d3a9b) before the registry took them over.
+// v1.10.0 (9d21d3a9b) before the registry took them over: 1.9.63's lists (native/src/core/manager.cpp), which do not
+// depend on link order, with v1.10.0's loading set after audio_queue.
 const std::vector<std::string> OFFERED = {
     "save_sandbox",
     "career_content",
@@ -119,19 +120,21 @@ const std::vector<std::string> SETTLED = {
     "ai_line_set",
 };
 
-// The guards that armed themselves from their own SWOFTY_ON_LOAD entries before the registry, in the order the
-// SDK listed those entries: the link order of their sources in tools/core_link_order.txt on v1.10.0 (f5c9b97f7).
+// The order 1.9.63 armed the hook guards in, each from its own SWOFTY_ON_LOAD entry, as the armed lines of a 1.9.63
+// session's loader.log show it. The SDK lists on-load entries in the order they are constructed, and the core's static
+// constructors run in reverse link order: lld lays __CTOR_LIST__ out in link order and the mingw crt calls it from the
+// last entry (gccmain.c __do_global_ctors). So 1.9.63 armed them in the reverse of its build.sh link order.
 const std::vector<std::string> HOOKED = {
-    "activity_resume",
-    "sequencer_records",
-    "race_retirement",
-    "teammate_pairs",
-    "setup_vm",
-    "teamhq_track",
-    "ai_curves",
-    "replay_read",
-    "rnd_suppliers",
     "gp_weekend_track",
+    "rnd_suppliers",
+    "replay_read",
+    "ai_curves",
+    "teamhq_track",
+    "setup_vm",
+    "teammate_pairs",
+    "race_retirement",
+    "sequencer_records",
+    "activity_resume",
 };
 
 int failures = 0;
@@ -220,24 +223,27 @@ int main(int argc, char **argv)
     for (auto &name : OFFERED)
         expect(registrations[name] == 1, name + " registers once (found " + std::to_string(registrations[name]) + ")");
 
-    // Every hook guard registers once, and their sources link in HookGuardId order: the k-th on-load entry the SDK runs
-    // from a hook guard's source arms the k-th hook guard, which is the guard that source declares.
+    // Every hook guard registers once, and their sources' on-load entries run in HookGuardId order: the k-th on-load
+    // entry the SDK runs from a hook guard's source arms the k-th hook guard, which is the guard that source declares.
+    // The entries run in reverse link order.
     expect(guards::HOOK_GUARD_COUNT == HOOKED.size(), "the registry holds " + std::to_string(HOOKED.size()) + " hook guards");
     for (size_t i = 0; i < HOOKED.size() && i < guards::HOOK_GUARD_COUNT; i++)
         expect(guards::hook_guard_name(guards::HookGuardId(i)) == HOOKED[i],
                "hook guard slot " + std::to_string(i) + " is " + HOOKED[i]);
-    std::vector<std::string> linked;
-    for (auto &path : link_order(core)) {
+    std::vector<std::string> run;
+    auto linked = link_order(core);
+    for (auto it = linked.rbegin(); it != linked.rend(); ++it) {
+        const std::filesystem::path &path = *it;
         std::string text = read(path);
         expect(!text.empty(), path.string() + " is readable");
         for (auto &name : HOOKED) {
             size_t n = count(text, "SWOFTY_HOOK_GUARD(" + name) + count(text, "SWOFTY_MID_HOOK_GUARD(" + name);
             if (n)
-                linked.push_back(name);
+                run.push_back(name);
             expect(n <= 1, name + " registers once in " + path.string());
         }
     }
-    expect(linked == HOOKED, "the hook guards' sources link in HookGuardId order, each once");
+    expect(run == HOOKED, "the hook guards' on-load entries run (in reverse link order) in HookGuardId order, each once");
 
     if (failures)
         return 1;
