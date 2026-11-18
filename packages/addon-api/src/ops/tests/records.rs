@@ -51,6 +51,29 @@ fn put_and_remove_records_by_path_and_hash() {
 }
 
 #[test]
+fn a_record_removed_and_put_back_in_one_file_reads_as_the_record_put_back() {
+    let mut db = db();
+    let count = db.records.len();
+    let code = "entrants.teams.team_1.display_name_code";
+    let json = format!(
+        r#"{{"schema_version":1,"ops":[
+            {{"op":"remove-record","key":"{code}","allow_stock_removal":true}},
+            {{"op":"put-record","key":"{code}","type":2,"value":"4d434c"}},
+            {{"op":"set","select":"entrants.teams.team_0","field":"display_name_code","value_from":"{code}"}},
+            {{"op":"put-record","key":"{code}","type":2,"value":"414243"}}]}}"#
+    );
+    let stock: HashSet<u64> = db.records.iter().map(|r| r.key).collect();
+    apply_db_ops(&mut db, &ops(&json), &stock).unwrap();
+    assert_eq!(
+        db.get_text("entrants.teams.team_0.display_name_code").as_deref(),
+        Some("MCL")
+    );
+    assert_eq!(db.get_text(code).as_deref(), Some("ABC"));
+    assert_eq!(db.records.len(), count);
+    assert_eq!(db.records.iter().filter(|r| r.key == fnv1a64(code)).count(), 1);
+}
+
+#[test]
 fn remove_record_twice_is_idempotent() {
     let key = "entrants.teams.team_1.stat_id";
     let json = format!(

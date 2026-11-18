@@ -2,7 +2,7 @@ mod records;
 
 use std::collections::{HashMap, HashSet};
 
-pub use self::records::Records;
+pub use self::records::{RecordMut, Records};
 use crate::bytes::Reader;
 use crate::hash::fnv1a64;
 use crate::{Error, Result};
@@ -451,6 +451,30 @@ mod tests {
         for (i, r) in db.records.iter().enumerate() {
             assert!(db.position(r.key).is_some_and(|at| at <= i));
         }
+        assert_eq!(built() - start, 1);
+    }
+
+    #[test]
+    fn a_record_lent_out_by_place_changes_its_tag_and_value_and_keeps_the_index() {
+        let mut db = sample();
+        let start = built();
+        db.records.index_keys();
+        db.records.index_keys();
+        assert_eq!(built() - start, 1);
+        let corners = "tracks.Track_3.numberOfCorners";
+        let i = db.position(fnv1a64(corners)).unwrap();
+        let mut r = db.records.at_mut(i);
+        assert_eq!(r.replace_value(b"16".to_vec()), b"15");
+        r.set_tag(2);
+        db.records
+            .at_mut(0)
+            .set(Record::new("tracks.Track_3.instanceName", 4, "sakhir"));
+        assert_eq!(db.get_text(corners).as_deref(), Some("16"));
+        assert_eq!(db.get(corners).map(|r| r.tag), Some(2));
+        assert_eq!(
+            db.get_text("tracks.Track_3.instanceName").as_deref(),
+            Some("sakhir")
+        );
         assert_eq!(built() - start, 1);
     }
 
