@@ -121,7 +121,7 @@ impl Browser {
             return;
         }
         let id = id.to_owned();
-        let dir = avatar_dir(needs.root);
+        let dir = avatar_dir(&needs.store.root);
         let known: BTreeSet<String> = b.avatars.keys().cloned().collect();
         let started = Instant::now();
         cx.spawn(async move |this, cx| {
@@ -139,7 +139,7 @@ impl Browser {
                 .await;
             this.update(cx, |host, cx| {
                 let (b, needs) = host.split();
-                b.take_profile(needs.root, id, result, faces, started.elapsed());
+                b.take_profile(&needs.store.root, id, result, faces, started.elapsed());
                 cx.notify();
             })
             .ok();

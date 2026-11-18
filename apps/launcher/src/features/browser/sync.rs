@@ -129,7 +129,7 @@ impl Browser {
         if !b.feed.begin_fetch() {
             return;
         }
-        let root = needs.root.to_path_buf();
+        let root = needs.store.root.clone();
         let shown = b.addons.clone();
         let known = b.icons.keys().chain(b.avatars.keys()).cloned().collect();
         let started = Instant::now();
@@ -140,7 +140,7 @@ impl Browser {
                 .await;
             this.update(cx, |host, cx| {
                 let (b, needs) = host.split();
-                b.take_fetched(needs.root, fetched, started.elapsed());
+                b.take_fetched(&needs.store.root, fetched, started.elapsed());
                 b.sync_updates(needs.library);
                 Self::sync_stars(host, cx);
                 cx.notify();
@@ -210,7 +210,7 @@ impl Browser {
                 .await;
             this.update(cx, |host, cx| {
                 let (b, needs) = host.split();
-                if b.take_synced(needs.root, &sent, result, started.elapsed()) {
+                if b.take_synced(&needs.store.root, &sent, result, started.elapsed()) {
                     Self::sync_stars(host, cx);
                 }
                 cx.notify();
@@ -267,7 +267,7 @@ impl Browser {
 
     pub(super) fn toggle_star<H: Host<Self>>(host: &mut H, id: &str, cx: &mut Context<H>) {
         let (b, needs) = host.split();
-        let ticket = b.star(needs.root, id);
+        let ticket = b.star(&needs.store.root, id);
         cx.spawn(async move |this, cx| {
             cx.background_executor().timer(STAR_DELAY).await;
             this.update(cx, |host, cx| {
@@ -355,7 +355,7 @@ impl Browser {
                 .await;
             this.update(cx, |host, cx| {
                 let (b, needs) = host.split();
-                b.take_details(needs.root, id, result, started.elapsed());
+                b.take_details(&needs.store.root, id, result, started.elapsed());
                 cx.notify();
             })
             .ok();
@@ -411,11 +411,7 @@ impl Shell {
     }
 
     pub(super) fn installed_version(&self, id: &str) -> Option<semver::Version> {
-        self.library
-            .addons
-            .iter()
-            .find(|m| m.manifest.id == id)
-            .map(|m| m.manifest.version.clone())
+        installed_version(&self.library, id)
     }
 
     pub(super) fn open_details(&mut self, id: &str, cx: &mut Context<Self>) {
