@@ -164,6 +164,8 @@ site_Sess_PitEntryDecision   L2     not exported       1  -                 an a
 
 The newest row is the latest by date over the binding's name and its address together, so a later `partial` or `disagree` takes an exported binding out of the next build until someone verifies it again. A binding the core's own code needs can stay exported through `re/db/export_exceptions.json`, which names the row it overrides and the reason; that file always needs review.
 
+An exported binding is part of the addon API, so the set main exports must not shrink. A pull request whose record change leaves an exported binding unexported fails the check. `binding.py exports` runs the bindgen of the commit where the branch leaves main, and the checkout's, and lists every binding main exports that the checkout does not; `binding.py doctor` runs it too. After a newer `partial` row, the binding exports again once the notes carry its corrections and someone who did not write them adds an `agree` row.
+
 A second contributor re-derives the binding from the code alone (PROTOCOL.md §5), proves it on their own exe and adds the agree row:
 
 ```sh
