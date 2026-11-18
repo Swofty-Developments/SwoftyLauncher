@@ -539,7 +539,9 @@ def range_owner(verifier, ranges):
 
 def next_verify_id(verifier, rows, ranges):
     """The next free id in the ranges of the verifier's owner. Ranges are granted on the trunk and never overlap, so
-    rows written on different branches by different owners cannot get the same id."""
+    rows written on different branches by different owners cannot get the same id. `rows` are every verify row of
+    the checkout, verify.tsv's and the records'; the id handed out lies above every id of theirs in its range, whoever
+    wrote it, so it is never one of theirs."""
     owner = range_owner(verifier, ranges)
     if not owner:
         raise SystemExit(f'refused: {verifier} has no verify id range in re/db/verify_ranges.tsv; a lead grants one '
