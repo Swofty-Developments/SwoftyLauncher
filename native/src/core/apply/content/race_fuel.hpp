@@ -105,9 +105,10 @@ inline FuelRules fuel_rules_pick(const std::string &entrant_list,
 // the tyre damage monitor's Car_Puncture_Add 0x14464e200, every clear through Car_Puncture_Remove 0x14464e3a0); bit 0 a
 // burst, set only while bit 1 is (the tyre update 0x1446b5720 once the deflation +0x98 reaches 2.0, or 0x144656f80); bits
 // 2 and 3 are pending hits. The pit stop's own change resets every wheel (0x142ea2300 -> 0x142e88840 -> the tyre reset
-// 0x1446b6d10 with flag 0x1000: bit 0 cleared, a puncture removed, +0x88..+0x98 zeroed) and then adds a puncture back
-// only where the fitted set has one, so the flags are read before the game's change runs (Game_PitLane_ApplyPitstopTyres
-// calls Car_Tyre_ChangeToNextCompound first, and 0x142ea2300 is its last call). Dword +0x208 of the TyreComponent's
+// 0x1446b6d10 with flags 0x1002, reset bit 0x1000: bit 0 cleared, a puncture removed, {0, 0, 1.0, 0} stored at
+// +0x88..+0x94 and 0 at +0x98) and then adds a puncture back only where the fitted set has one, so the flags are read
+// before the game's change runs (Game_PitLane_ApplyPitstopTyres calls Car_Tyre_ChangeToNextCompound first, and
+// 0x142ea2300 is its last call). Dword +0x208 of the TyreComponent's
 // tyre records is the tyre model's visibility mask (m_tyreModelVisibility, set per shown part by setTyreVisibility
 // 0x142e83130), not a damage state.
 constexpr uint64_t TYRE_PHYSICS = 0x20, PHYSICS_CAR = 0x58, CAR_SUSPENSION = 0x580, WHEEL_TYRE_FLAGS = 0x20;
