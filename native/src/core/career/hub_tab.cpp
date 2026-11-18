@@ -1,3 +1,5 @@
+#include "core/career/hub_tab.hpp"
+
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/settings.hpp"
 #include "core/registry/older.hpp"
@@ -71,9 +73,6 @@
 // again while hide_rnd is on, and the flow tick re-hides it about twice a second while Team HQ stays open,
 // which covers any other path that rewrites header_states. A hide_rnd(false) is never undone: both only act
 // while it is on.
-
-bool settings_state(const std::string &addon, const std::string &option, size_t &current,
-                    std::vector<std::string> *texts, std::vector<std::string> *commands, std::vector<std::string> *values);
 
 namespace {
 

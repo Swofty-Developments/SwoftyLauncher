@@ -12,6 +12,12 @@ constexpr size_t MODULE_VEHICLES_BEGIN = 0x28;
 constexpr size_t MODULE_VEHICLES_END = 0x30;
 constexpr size_t MODULE_MODE_CONTEXT = 0x80;
 
+namespace {
+
+constinit BudgetLines lines;
+
+}
+
 std::string session_list(uintptr_t ctx)
 {
     uintptr_t holder = 0, setup = 0, list = 0, gsm = 0, gsm_holder = 0, gsm_name = 0;
@@ -200,8 +206,7 @@ uint8_t *resolved_esm(uintptr_t setup, uint8_t *esm)
         !mem::readable(reinterpret_cast<void *>(meta), count))
         return esm;
     auto o = logic::override_for(id, reinterpret_cast<const uint8_t *>(slots), reinterpret_cast<const uint8_t *>(meta), count);
-    static uint32_t logged_null;
-    if (o.found && !o.to && logged_null++ < LOG_FIRST)
+    if (o.found && !o.to && lines.empty_override.note())
         swofty::log("[era] the Time Trial's override row for entrant setup mode %u is empty: the game leaves that mode "
                     "out, so the budget does too",
                     unsigned(id));
@@ -221,8 +226,7 @@ std::vector<uint32_t> pool_refs(uint32_t pools)
             !mem::read(pool + 0x10, end))
             continue;
         auto got = logic::pool_refs_from(begin, end, [](uintptr_t a, auto &v) { return mem::read(a, v); });
-        static uint32_t logged_cap;
-        if (got.capped && logged_cap++ < LOG_FIRST)
+        if (got.capped && lines.pool_capped.note())
             swofty::log("[era] entrants system pool +0x%zx holds more than %zu vehicle slots; the Time Trial budget counts "
                         "the first %zu",
                         off, logic::MAX_POOL, logic::MAX_POOL);
@@ -233,7 +237,6 @@ std::vector<uint32_t> pool_refs(uint32_t pools)
 
 void time_trial_budget(void *mode, uintptr_t setup)
 {
-    static uint32_t logged;
     uintptr_t selected = 0;
     uint8_t board = 0;
     if (!mem::read(setup + SELECTED_LIST, selected) || !selected || !leaderboard_of(reinterpret_cast<void *>(selected), board))
@@ -308,7 +311,7 @@ void time_trial_budget(void *mode, uintptr_t setup)
                     "so those lists stay offered",
                     unrecorded, std::size(picker.narrowed));
     time_trial_guard.budget = int64_t(budget.cars + logic::TT_OWN_ENTRIES);
-    if (logged++ < LOG_FIRST * 3)
+    if (lines.budget.note())
         swofty::log("[era] %s", logic::time_trial_budget_line(lists, budget, board).c_str());
 }
 

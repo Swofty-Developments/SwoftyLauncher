@@ -375,3 +375,95 @@ fn a_merge_that_does_not_fit_a_grown_array_is_refused_and_leaves_it_whole() {
     assert_eq!((slices, count, said), (vec![0, 1, 2, 3, 5, 6], 6, Some(6)));
     std::fs::remove_dir_all(&root).ok();
 }
+
+fn zstd_shaped(mut r: Resource) -> Resource {
+    for f in &mut r.fragments {
+        let data = f.data().unwrap();
+        *f = Fragment::new(f.name, data.len() as u64, f.flags, ZSTD, compress(&data).unwrap());
+    }
+    r.hash = r.content_hash().unwrap();
+    r
+}
+
+#[test]
+fn deferred_compression_writes_the_archives_an_eager_build_writes() {
+    let (root, game, addon) = grown_game("deferred");
+    let noisy = |seed: u8| -> [u8; 4] { [seed, seed.wrapping_mul(37), seed ^ 0x5a, 0xff - seed] };
+    let stock: Vec<[u8; 4]> = (0..4).map(noisy).collect();
+    std::fs::write(
+        game.join(UI),
+        texture_erp(vec![zstd_shaped(array(2, &stock)), zstd_shaped(view_res(4))]),
+    )
+    .unwrap();
+    let mut grown = stock.clone();
+    grown[1] = noisy(9);
+    for (name, slices) in [
+        ("grow.erp", vec![noisy(5), noisy(6)]),
+        ("logo.erp", grown),
+        ("short.erp", vec![noisy(8), stock[1]]),
+    ] {
+        std::fs::write(
+            addon.join(name),
+            texture_erp(vec![zstd_shaped(array(2, &slices))]),
+        )
+        .unwrap();
+    }
+    let original = |rel: &str| game.join(rel);
+    let resolve = |s: &Source| Ok(s.resolve(&addon)?);
+    let grow = ErpOp::AppendSlices {
+        erp: UI.into(),
+        resource: LOGOS.into(),
+        source: Source::addon("grow.erp"),
+    };
+    let built = |packer: Packer| {
+        let mut b = ErpBuild::new(&original).with_packer(packer);
+        b.apply_for(&grow, "a", &resolve).unwrap();
+        b.apply_for(&merge_op(UI, "logo.erp"), "b", &resolve).unwrap();
+        b.apply_for(&merge_op(UI, "short.erp"), "c", &resolve).unwrap();
+        b
+    };
+    let seen = |b: &ErpBuild| {
+        b.resources()
+            .map(|(rel, r, _, origin)| (rel.to_owned(), r.name.clone(), r.hash, data(r), origin.to_owned()))
+            .collect::<Vec<_>>()
+    };
+    let pending = |b: &ErpBuild| {
+        b.resources()
+            .flat_map(|(_, r, _, _)| &r.fragments)
+            .filter(|f| f.pending().is_some())
+            .count()
+    };
+    let (eager, deferred) = (built(Packer::default()), built(Packer::default().deferring(true)));
+    let expected = seen(&eager);
+    assert_eq!(seen(&deferred), expected);
+    assert_eq!(image_and_view(&deferred).0, vec![8, 9, 2, 3, 5, 6]);
+    assert_eq!((pending(&eager), pending(&deferred)), (0, 3));
+
+    let cache = root.join("archives");
+    let zstd = root.join("zstd");
+    let out = |name: &str| root.join(name);
+    eager.write(&out("eager")).unwrap();
+    let (written, reused) = deferred
+        .write_cached(&out("deferred"), Some(&cache), &|| Ok(()))
+        .unwrap();
+    assert_eq!((written, reused), (vec![UI.to_owned()], 0));
+    let cached = built(Packer::cached(&zstd).deferring(true));
+    assert_eq!(seen(&cached), expected);
+    let (_, reused) = cached
+        .write_cached(&out("cached"), Some(&cache), &|| Ok(()))
+        .unwrap();
+    assert_eq!(reused, 1);
+    let cached_eager = built(Packer::cached(&zstd));
+    cached_eager.write(&out("cached-eager")).unwrap();
+    let bytes = std::fs::read(out("eager").join(UI)).unwrap();
+    for name in ["deferred", "cached", "cached-eager"] {
+        assert!(std::fs::read(out(name).join(UI)).unwrap() == bytes, "{name}");
+    }
+    let back = ErpFile::open(&out("deferred").join(UI)).unwrap();
+    for r in &back.erp.resources {
+        let r = back.load(r).unwrap();
+        assert!(r.fragments.iter().all(|f| f.compression == ZSTD && f.is_zstd()));
+        assert_eq!(r.hash, r.content_hash().unwrap());
+    }
+    std::fs::remove_dir_all(&root).ok();
+}

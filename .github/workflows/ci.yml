@@ -418,8 +418,12 @@ jobs:
       - name: Template data files
         run: python3 tools/std/templates.py --no-build
 
+  # On a 32-core EC2 runner one job runs every native test. On 4-core hosted runners two jobs split them, one
+  # for the host tests and one for the Wine tests, each with its own CPUs. Both build the loader themselves:
+  # sharing one build through an artifact would start the Wine job's own setup only after the other job's
+  # setup and build.
   native:
-    name: Native loader and Wine test
+    name: Native ${{ matrix.part == 'host' && 'loader and host tests' || matrix.part == 'wine' && 'loader and Wine tests' || 'loader and Wine test' }}
     needs: [changes, ec2]
     if: needs.changes.outputs.native == 'true'
     runs-on: ${{ needs.ec2.outputs.native }}
@@ -427,14 +431,24 @@ jobs:
     permissions:
       contents: read
       actions: write
+    strategy:
+      fail-fast: false
+      matrix:
+        part: ${{ fromJSON(needs.ec2.outputs.native == 'ubuntu-latest' && '["host", "wine"]' || '["all"]') }}
     steps:
       - uses: actions/checkout@v7
+
+      # Hosted runners of one label differ in speed (the same build took 193 s and 380 s), so the log names the CPU.
+      - name: Runner CPU
+        run: |
+          echo "$(nproc) CPUs:$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2)"
 
       # The EC2 runner has a 150 GB root volume and Wine baked in. The hosted fallback has about 14 GB free,
       # which the Wine prefixes of the parallel tests fill, so it drops the preinstalled toolchains it never
       # uses, and it installs Wine and Xvfb. Only the Wine tests need either, so both run in the background
       # while the build does, and the step before the tests waits for them.
       - name: Start freeing disk space and installing Wine and Xvfb
+        if: matrix.part != 'host'
         run: |
           (
             set +e
@@ -447,11 +461,13 @@ jobs:
 
       # The binding generator, capture and verifier tests use only the standard library.
       - name: RE tools unit tests
+        if: matrix.part != 'wine'
         run: python3 -m unittest discover -s re/tools/tests
 
       # The native tests run side by side, and the stock xvfb-run -a can give two calls started together the
       # same display. This one takes the next display number from a counter under a lock.
       - name: Give every xvfb-run its own display
+        if: matrix.part != 'host'
         run: |
           mkdir -p "$RUNNER_TEMP/bin"
           echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
@@ -484,6 +500,7 @@ jobs:
         id: zig-period
         run: echo "month=$(date -u +%Y-%m)" >> "$GITHUB_OUTPUT"
 
+      # The Zig cache holds Zig's own libc, libc++, MinGW and compiler-rt builds, not the project's objects.
       - name: Restore the Zig cache
         id: zig-cache
         uses: actions/cache/restore@v6
@@ -492,6 +509,24 @@ jobs:
             native/build/zig-cache
           key: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-${{ hashFiles('native/**', 'addons/*/native/**', 'templates/**/native/**', 'packages/sdk/include/**') }}
           restore-keys: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-
+
+      # The project's objects come from ccache instead (.github/actions/ccache). Each part keeps a cache of its
+      # own, named after the run that saved it, and starts from the newest of its own or, on a pull request, of
+      # main's; ccache itself checks every compiler's size and date and every input's contents.
+      - name: Ccache
+        uses: ./.github/actions/ccache
+        with:
+          dir: ${{ runner.temp }}/ccache
+
+      - name: Restore ccache
+        id: ccache
+        uses: actions/cache/restore@v6
+        with:
+          path: ${{ runner.temp }}/ccache
+          key: ccache-${{ runner.os }}-zig0.16.0-${{ matrix.part }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            ccache-${{ runner.os }}-zig0.16.0-${{ matrix.part }}-
+            ccache-${{ runner.os }}-zig0.16.0-all-
 
       - name: Ninja
         uses: ./.github/actions/ninja
@@ -509,10 +544,13 @@ jobs:
           done
 
       - name: Build version.dll and swofty_core.dll
-        run: native/build.sh
+        run: |
+          touch "$RUNNER_TEMP/ccache.mark"
+          native/build.sh
 
       # Ubuntu installs wineserver beside Wine's libraries rather than on PATH, where the Wine test looks for it.
       - name: Disk space, Wine and Xvfb
+        if: matrix.part != 'host'
         timeout-minutes: 10
         run: |
           while [ ! -f "$RUNNER_TEMP/wine-install.status" ]; do sleep 2; done
@@ -527,22 +565,58 @@ jobs:
           fi
           command -v wineserver
 
-      # Every host and Wine test, the templates build and the Any Team Transfers build, side by side; each
-      # test's output is in its own group in the log, and the step fails on any failing test. On a hosted
-      # runner's 4 cores run_tests.sh would run 2 Wine tests at a time, and 930 s of Wine tests then made up
-      # the whole 479 s step; before the Wine pool, 4 at a time ran 1173 s of them in about 330 s.
+      # This part's tests side by side; on EC2 that is every host test, the templates build, the Any Team
+      # Transfers build and every Wine test. Each test's output is in its own group in the log, and the step
+      # fails on any failing test.
       - name: Native tests
+        id: native-tests
         env:
-          NATIVE_WINE_JOBS: ${{ runner.environment == 'github-hosted' && '4' || '' }}
+          PART: ${{ matrix.part }}
         run: |
           df -h / "$RUNNER_TEMP"
           trap 'df -h / "$RUNNER_TEMP"' EXIT
-          native/test/run_ci_tests.sh
+          if [ "$PART" = all ]; then native/test/run_ci_tests.sh; else native/test/run_ci_tests.sh "$PART"; fi
 
-      # Saved after the tests, which compile their fixtures into the same cache.
+      # Once the tests have run, the objects this run did not use leave the cache, so it holds one build of the
+      # tree and does not grow.
+      - name: Ccache use
+        if: ${{ !cancelled() }}
+        env:
+          TESTS: ${{ steps.native-tests.outcome }}
+        run: |
+          ccache --show-stats
+          if [ "$TESTS" = success ] || [ "$TESTS" = failure ]; then
+            ccache --evict-older-than "$(( $(date +%s) - $(stat -c %Y "$RUNNER_TEMP/ccache.mark") + 60 ))s"
+          fi
+          du -sh "$CCACHE_DIR"
+
+      # Main's cache serves every pull request; a pull request's own serves its next push.
+      - name: Save ccache
+        id: ccache-save
+        if: ${{ !cancelled() && steps.ccache.outcome == 'success' }}
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ runner.temp }}/ccache
+          key: ${{ steps.ccache.outputs.cache-primary-key }}
+
+      - name: Remove this branch's older ccache caches
+        if: steps.ccache-save.outcome == 'success'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          KEEP: ${{ steps.ccache.outputs.cache-primary-key }}
+          PREFIX: ccache-${{ runner.os }}-zig0.16.0-${{ matrix.part }}-
+        run: |
+          gh cache list --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF" --key "$PREFIX" --limit 100 \
+            --json id,key --jq '.[] | select(.key != env.KEEP) | .id' | while read -r id; do
+            gh cache delete "$id" --repo "$GITHUB_REPOSITORY" && echo "removed cache $id"
+          done
+
+      # Saved after the tests, which compile their fixtures into the same cache. On the hosted split the host
+      # part saves it and the Wine part only reads it.
       - name: Save the Zig cache
         id: zig-save
-        if: github.ref == 'refs/heads/main' && steps.zig-cache.outputs.cache-hit != 'true'
+        if: github.ref == 'refs/heads/main' && matrix.part != 'wine' && steps.zig-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6
         with:
           path: |

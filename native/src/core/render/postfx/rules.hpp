@@ -43,6 +43,7 @@ private:
     void live_trace_tick(ULONGLONG now, const std::wstring &swofty_root);
     bool live_trace_on(ULONGLONG now) const;
     void live_trace_line(ULONGLONG now, const live_car::LiveCar &c);
+    bool player_car(int64_t index);
 
     RuleEngine engine;
     std::vector<RuleLog> rule_log;
@@ -55,6 +56,8 @@ private:
     bool live_ok = false;
     ULONGLONG live_trace_checked = 0, live_trace_until = 0, live_trace_line_at = 0;
     int live_trace_surface[4] = {-2, -2, -2, -2};
+    uintptr_t car_table = 0, car_count = 0;
+    bool car_tried = false;
     Feed feeds[4] = {{this, S_SESSION_START}, {this, S_RACE_START}, {this, S_SESSION_LAP}, {this, S_SESSION_END}};
 };
 

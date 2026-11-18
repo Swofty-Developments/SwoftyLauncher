@@ -1181,6 +1181,8 @@ inline constexpr address<"Game_SessionResults_PopulateTable"> Game_SessionResult
 inline constexpr address<"Game_SessionResults_ReleaseThumbnails"> Game_SessionResults_ReleaseThumbnails{}; // L2 experimental
 inline constexpr address<"Game_SessionSettings_Reset"> Game_SessionSettings_Reset{}; // L2 experimental
 inline constexpr address<"Game_SessionSettings_SetSessionId"> Game_SessionSettings_SetSessionId{}; // L2 experimental
+using Game_SessionStateTalkingPoints_ParseParams_Thunk_t = uint64_t(void *state, void *params);
+inline constexpr fn<"Game_SessionStateTalkingPoints_ParseParams_Thunk", Game_SessionStateTalkingPoints_ParseParams_Thunk_t> Game_SessionStateTalkingPoints_ParseParams_Thunk{}; // L2 experimental, SessionStateTalkingPoints
 inline constexpr address<"Game_SessionState_EnableOnDemandTextureStreaming"> Game_SessionState_EnableOnDemandTextureStreaming{}; // L2 experimental
 inline constexpr address<"Game_SessionStatsTracker_OnPlayerDroppedIn"> Game_SessionStatsTracker_OnPlayerDroppedIn{}; // L2 experimental
 inline constexpr address<"Game_SessionStatsTracker_ResetForSession"> Game_SessionStatsTracker_ResetForSession{}; // L2 experimental

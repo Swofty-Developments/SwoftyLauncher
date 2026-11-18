@@ -233,18 +233,11 @@ void TimeTrialName::setup()
     auto gate = swofty::json::parse(runtime::read_file(runtime::swofty_root() + L"tt.json", size_t(1) << 20));
     char v[8] = {};
     bool off = GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME", v, sizeof v) && !strcmp(v, "0");
-    if (!gate.is_object() || !gate["tt_bridge"].as_bool(false) || off)
-        return;
-    if (!runtime::holds(name_copies::NAME_BRIDGE))
+    if (!gate.is_object() || !gate["tt_bridge"].as_bool(false) || off || !runtime::holds(name_copies::TT_NAME))
         return;
     uintptr_t at = runtime::find(S_NAME, "boards", "boards");
     if (!at) {
         swofty::log("[boards] player name: off, needs %s (byte signature matched nothing unique)", S_NAME.what);
-        return;
-    }
-    runtime::ui_registry::Layout lay;
-    if (!name_copies::registry_layout(lay)) {
-        swofty::log("[boards] player name: off, the UI registry node classes are not found on this exe");
         return;
     }
     auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&lookup_hook));
@@ -306,9 +299,8 @@ void TimeTrialName::pin_tick()
         why = "the presence id was not read yet (no board request has passed the gate)";
     if (why.empty() && stock.empty() && swofty::game::g_Vm_Registry.address()) {
         namespace ur = runtime::ui_registry;
-        uint64_t reg = uint64_t(*swofty::game::g_Vm_Registry);
-        ur::Layout lay;
-        name_copies::registry_layout(lay);
+        uint64_t base = swofty::api->module_base(), reg = uint64_t(*swofty::game::g_Vm_Registry);
+        ur::Layout lay = name_copies::registry_layout(runtime::running_build(), base);
         std::vector<ur::Hit> all;
         ur::Stats st;
         auto rd = [](uint64_t at, void *out, size_t n) { return name_copies::registry_read(at, out, n); };

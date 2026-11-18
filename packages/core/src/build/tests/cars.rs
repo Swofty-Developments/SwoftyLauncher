@@ -79,19 +79,12 @@ fn put_targets_take_the_games_spelling_and_the_ers_pass_builds_on_the_addons_fil
                 name: uri.into(),
                 kind: swofty_formats::erp::kind("VTF").unwrap(),
                 unk: vec![0; 4],
-                fragments: vec![Fragment {
-                    name: *b"temp",
-                    offset: 0,
-                    size: data.len() as u64,
-                    flags: 0x10,
-                    compression: STORED,
-                    packed: data.len() as u64,
-                    raw: data,
-                }],
+                fragments: vec![Fragment::new(*b"temp", data.len() as u64, 0x10, STORED, data)],
                 hash: [0; 16],
             }],
         }
         .to_bytes()
+        .unwrap()
     };
     let team = "2025_asset_groups/f1_2026_vehicle_package/teams/mclaren/wep/mclaren.erp";
     std::fs::create_dir_all(dir.join(team).parent().unwrap()).unwrap();
@@ -226,19 +219,12 @@ fn an_overlay_with_a_handling_file_never_loads_as_it_is() {
                 name: name.into(),
                 kind: swofty_formats::erp::kind(kind).unwrap(),
                 unk: vec![0; 4],
-                fragments: vec![Fragment {
-                    name: *b"temp",
-                    offset: 0,
-                    size: 4,
-                    flags: 0x10,
-                    compression: STORED,
-                    packed: 4,
-                    raw: b"data".to_vec(),
-                }],
+                fragments: vec![Fragment::new(*b"temp", 4, 0x10, STORED, b"data".to_vec())],
                 hash: [0; 16],
             }],
         }
         .to_bytes()
+        .unwrap()
     };
     let dir = std::env::temp_dir().join(format!("swofty-carries-handling-{}", std::process::id()));
     std::fs::remove_dir_all(&dir).ok();
@@ -350,19 +336,12 @@ fn track_ers_settings_survive_an_addon_that_writes_the_handling_file() {
                 name: uri.into(),
                 kind: swofty_formats::erp::kind("VTF").unwrap(),
                 unk: vec![0; 4],
-                fragments: vec![Fragment {
-                    name: *b"temp",
-                    offset: 0,
-                    size: data.len() as u64,
-                    flags: 0x10,
-                    compression: STORED,
-                    packed: data.len() as u64,
-                    raw: data,
-                }],
+                fragments: vec![Fragment::new(*b"temp", data.len() as u64, 0x10, STORED, data)],
                 hash: [0; 16],
             }],
         }
         .to_bytes()
+        .unwrap()
     };
     let team = "2025_asset_groups/f1_2026_vehicle_package/teams/mclaren/wep/mclaren.erp";
     std::fs::create_dir_all(dir.join(team).parent().unwrap()).unwrap();
@@ -549,19 +528,12 @@ fn a_handling_record_changes_the_stock_team_archive_and_an_addons_own() {
                 name: uri.into(),
                 kind: swofty_formats::erp::kind("VTF").unwrap(),
                 unk: vec![0; 4],
-                fragments: vec![Fragment {
-                    name: *b"temp",
-                    offset: 0,
-                    size: data.len() as u64,
-                    flags: 0x10,
-                    compression: STORED,
-                    packed: data.len() as u64,
-                    raw: data,
-                }],
+                fragments: vec![Fragment::new(*b"temp", data.len() as u64, 0x10, STORED, data)],
                 hash: [0; 16],
             }],
         }
         .to_bytes()
+        .unwrap()
     };
     let team = "2025_asset_groups/f1_2026_vehicle_package/teams/mclaren/wep/mclaren.erp";
     std::fs::create_dir_all(dir.join(team).parent().unwrap()).unwrap();

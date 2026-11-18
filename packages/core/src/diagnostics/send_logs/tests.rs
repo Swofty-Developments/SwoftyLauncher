@@ -2309,3 +2309,31 @@ fn the_bundle_keeps_its_file_names_and_their_order() {
     );
     std::fs::remove_dir_all(&root).ok();
 }
+
+#[test]
+fn names_the_addon_that_held_up_the_start() {
+    let root = tmp("slowinit");
+    let (store, game) = fake_data(&root);
+    put(
+        &store.sessions_dir().join("20261114-203050/loader.log"),
+        "2026-11-14 20:30:54.598 [38576] addon offline_quiet.dll: loading D:\\SteamLibrary\\steamapps\\common\\F1 25\\swofty\\addons\\twilight.offline-quiet\\native\\offline_quiet.dll\n\
+         2026-11-14 20:30:54.600 [38576] addon offline_quiet.dll: loaded at 00007ffb032e0000, calling SwoftyAddonInit (API v9)\n\
+         2026-11-14 20:31:04.612 [38576] [perf] step 10012.0 ms: addon init offline_quiet.dll\n\
+         2026-11-14 20:31:04.612 [38576] [perf] slow addon init 10012 ms: offline_quiet.dll\n\
+         2026-11-14 20:31:04.612 [38576] addon offline_quiet.dll: SwoftyAddonInit returned 1 (ok)\n",
+    );
+    let summary = summary_of(&Bundle::collect_with(
+        &store,
+        &report(&game),
+        Limits::default(),
+        "x",
+    ));
+    let perf = &summary[summary.find("\nPerformance\n").unwrap()..summary.find("\nAddons\n").unwrap()];
+    assert!(
+        perf.ends_with(
+            "\n  start: twilight.offline-quiet held up F1 25's start by 10 seconds (sessions/20261114-203050)\n"
+        ),
+        "{perf}"
+    );
+    std::fs::remove_dir_all(&root).ok();
+}

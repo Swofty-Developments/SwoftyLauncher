@@ -4487,6 +4487,8 @@ pub type Game_Scene_UpdateInstanceTransformsBatch_t =
 pub type Game_SeasonLength_ApplyPreset_t = unsafe extern "C" fn(component: *mut c_void, preset: u8);
 pub type Game_SeasonLength_PushCalendarEntry_t =
     unsafe extern "C" fn(calendar: *mut c_void, entry: *const c_void) -> u64;
+pub type Game_SessionStateTalkingPoints_ParseParams_Thunk_t =
+    unsafe extern "C" fn(state: *mut c_void, params: *mut c_void) -> u64;
 pub type Game_Set_VehicleController_Thunk_t =
     unsafe extern "C" fn(system: *mut c_void, vehicle: u64, ai: u32, flag: i32);
 pub type Game_SpeechSystem_PostLine_t =
@@ -12527,6 +12529,11 @@ pub mod bindings {
     };
     pub const Game_SessionSettings_SetSessionId: Binding = Binding {
         id: "Game_SessionSettings_SetSessionId",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SessionStateTalkingPoints_ParseParams_Thunk: Binding = Binding {
+        id: "Game_SessionStateTalkingPoints_ParseParams_Thunk",
         kind: "func",
         status: Status::Experimental,
     };

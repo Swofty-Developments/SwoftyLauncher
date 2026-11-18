@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/boxes/picker/log_caps.hpp"
 #include "core/runtime/loader/mixin_gate.hpp"
 #include "core/runtime/log_changed.hpp"
 
@@ -33,7 +34,6 @@ using swofty::game::Vm_Set_NodeRef_t;
 
 constexpr const char *MIXIN = "swofty_core.dll (era picker)";
 constexpr const char *SPLIT_OPTION = "split_season_picker";
-constexpr uint32_t LOG_FIRST = 6;
 
 constexpr size_t MODE_NAME = 0x278;
 constexpr size_t VM_ROOT = 0x10;

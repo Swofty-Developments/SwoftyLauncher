@@ -128,6 +128,24 @@ The crash handler in `diagnostics/crash/` is split by what runs when:
 
 Code that runs inside a handler reads with `pages::readable_now` and does not allocate or lock. The crash files do not include `runtime.hpp`; the few runtime calls they make are declared at the top of each file.
 
+## The profiler
+
+`diagnostics/perf.hpp` is the profiler's API (`perf::Scope`, `perf::Pause`, `mark`, `frame_claim`). Its state is one `Profiler` object in `perf.cpp`; the parts with state of their own are in `diagnostics/perf/`:
+
+| File | Holds |
+|---|---|
+| `perf.cpp` | `Profiler`: the probe names and per-thread counters, frames, hitches, slow calls, the timeline, `perf.log` and the minute lines |
+| `perf/vq.cpp` | the VirtualQuery calls from swofty modules and the process's CPU use per thread |
+| `perf/sysmem.cpp` | RAM, commit, the game's working set and each adapter's VRAM |
+| `perf/counters.hpp` | the relaxed counters and `ms_of`, which both use |
+| `perf_logic.hpp` | the text of every `[perf]` line, which `test/perf_logic_test.cpp` pins |
+
+A new `[perf]` line is a function in `perf_logic.hpp` with a case in the test:
+
+```cpp
+swofty::log("%s", logic::hitch_line(ms, h.during, swofty_ms, h.top).c_str());
+```
+
 ## Career operations
 
 The career operations (`SwoftyCareerOps`, standard library 1.6) are in `career/ops/`. A batch of entrant writes is planned by pure headers and run by the executor:

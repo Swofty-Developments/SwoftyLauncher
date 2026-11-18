@@ -98,9 +98,13 @@ def prove(rec, exe_path, by, exe=None):
              'sigcheck': sigcheck_result(rec, exe_path, is_kb),
              'digest': br.resolution_digest(rec.signature, exe['sha256'])}
     ok = r['result'] == 'resolved' and not proof['sigcheck'].startswith('failed')
-    if ok and is_kb and (proof['result']['match'], proof['result']['target']) != (rec.signature['match'],
-                                                                                    rec.signature['target']):
+    s = rec.signature
+    if ok and is_kb and (proof['result']['match'], proof['result']['target']) != (s['match'], s['target']):
         ok = False
+    if ok and s.get('made_on') and exe['sha256'].startswith(s['made_on']) and \
+            (proof['result']['match'], proof['result']['target']) != (s['made_on_match'], s['made_on_target']):
+        return proof, False, (f'it resolves to match {proof["result"]["match"]} target {proof["result"]["target"]}, '
+                              f'not to {s["made_on_match"]} {s["made_on_target"]} where it was made')
     return proof, ok, r.get('reason', '')
 
 
@@ -108,34 +112,71 @@ NEEDS_MODULES = ('binding.py new needs Python 3.10+ with pefile, numpy and capst
                  'python3 -m pip install pefile numpy capstone')
 
 
-def describe_build(sha):
-    """'the Steam build 26566308 (F1 25 1.0.145.2472)' for a build in re/db/builds, else None."""
+def build_name(want):
+    """The re/db/builds overlay name of a build that is not the KB build, else None."""
+    kb_sha = kb.load_signatures()['build']['sha256']
     bdir = os.path.join(kb.DB, 'builds')
     for f in sorted(os.listdir(bdir)):
         if f.endswith('.json'):
             with open(os.path.join(bdir, f)) as fh:
-                doc = json.load(fh)
-            if doc['build']['sha256'] == sha:
-                first = doc.get('note', '').split('. ')[0].rstrip('.')
-                return f'{f[:-5]} ({first})' if first else f[:-5]
+                sha = json.load(fh)['build']['sha256']
+            if sha == want and sha != kb_sha:
+                return f[:-5]
     return None
 
 
-def kb_exe_or_exit(path, cmd):
-    need_exe(path, cmd)
+def port_exe_or_exit(path, exe, cmd):
+    """The overlay name of the exe's build when it is a supported build other than the KB build."""
+    name = build_name(exe['sha256'])
+    if name:
+        return name
     kb_build = kb.load_signatures()['build']
-    exe = exe_identity(path)
-    if exe['sha256'] == kb_build['sha256']:
-        return exe
-    what = describe_build(exe['sha256'])
     raise SystemExit(
-        f'binding.py {cmd}: {path} is ' + (f'the build {what}' if what else
-                                           f'an unknown build (sha256 {exe["sha256"][:16]}, size {exe["size"]})') +
-        f'.\n  Records hold KB-build addresses, so binding.py {cmd} runs on the KB build only: Steam F1 25 1.0.141.7865 '
-        f'(build 25251167), F1_25.exe of {kb_build["size"]} bytes, PE timestamp {kb_build["pe_timestamp"]}, sha256 '
-        f'{kb_build["sha256"][:16]}.\n  Every build in re/db/builds can prove a record that exists (binding.py verify). '
-        f'Without the KB build, open an issue or a pull request with the address on your build and your evidence, and '
-        f'a maintainer makes the record.')
+        f'binding.py {cmd}: {path} is an unknown build (sha256 {exe["sha256"][:16]}, size {exe["size"]}, PE timestamp '
+        f'{exe["pe_timestamp"]}).\n  binding.py {cmd} runs on the KB build (Steam F1 25 1.0.141.7865, '
+        f'{kb_build["size"]} bytes) or on a build in re/db/builds, such as the current Steam build. Update the game '
+        f'through Steam, or open an issue with the address and your evidence.')
+
+
+def to_kb(sig, path, build, exe):
+    """The signature made on another build, with its KB addresses taken from the bindings around each address
+    (bindverify.kb_twin) and the made-on fields recording where it matched and how the twin was found."""
+    import bindverify
+    img = bindverify.Image(path)
+    marks = bindverify.anchors(img, build)
+    with open(os.path.join(kb.DB, 'builds', build + '.json')) as f:
+        smap = json.load(f).get('sections', {})
+    out, texts, shift = dict(sig), [], None
+    for k in ('target', 'match', 'func_start'):
+        if not sig.get(k):
+            continue
+        va = int(sig[k], 16)
+        kb_rva, why = bindverify.kb_twin(img, build, va - IMAGE_BASE, marks)
+        if kb_rva is None:
+            raise SystemExit(f'binding.py new: nothing written, the {k} 0x{va:x} has no KB twin: {why}.\n  fix: pick '
+                             f'an address between two bindings that moved by the same amount, or ask a maintainer '
+                             f'with the KB build to make the record')
+        out[k] = hex(kb_rva + IMAGE_BASE)
+        if k == 'target':
+            shift = why.get('shift')
+        if k == 'target' or why.get('shift') is None or why['shift'] != shift:
+            texts.append(f'the {k} 0x{va:x} is KB {out[k]}: {why["text"]}')
+    inverse = {v: k for k, v in smap.items()}
+    out['section'] = inverse.get(sig['section'], sig['section'])
+    out['made_on'] = exe['sha256'][:16]
+    out['made_on_match'], out['made_on_target'] = sig['match'], sig['target']
+    twin = f'made on {build}; ' + '; '.join(texts)
+    ref = os.environ.get('SWOFTY_KB_EXE', '')
+    if ref and os.path.isfile(ref):
+        import sigport
+        ok, detail = sigport.check_twin(img, bindverify.Image(ref), smap, int(sig['target'], 16) - IMAGE_BASE,
+                                        int(out['target'], 16) - IMAGE_BASE)
+        if not ok:
+            raise SystemExit(f'binding.py new: nothing written, the KB exe in SWOFTY_KB_EXE disagrees with the twin '
+                             f'{out["target"]}: {detail}')
+        twin += f'; checked on the KB exe: {detail}'
+    out['twin'] = twin
+    return out
 
 
 def call_candidate(img, path, va):
@@ -172,7 +213,9 @@ def cmd_new(a):
         raise SystemExit(f'binding.py new: {a.va} is below the image base; pass the virtual address, '
                          f'0x{va + IMAGE_BASE:x} if {a.va} is an offset from the base')
     sub = a.subsystem or sitereg_subsystem(a.name)
-    exe = kb_exe_or_exit(a.exe, 'new')
+    need_exe(a.exe, 'new')
+    exe = exe_identity(a.exe)
+    port = None if exe['sha256'] == kb.load_signatures()['build']['sha256'] else port_exe_or_exit(a.exe, exe, 'new')
     img = sigcheck.Image(a.exe)
     kind = {'func': 'func_start', 'site': 'mid', 'data': 'data'}[a.kind]
     via_call = None
@@ -207,8 +250,10 @@ def cmd_new(a):
     if a.data1_reason:
         sig['data1_reason'] = a.data1_reason
     sig['names'] = [a.name]
-    sig['verified'] = [{'build': kb.load_signatures()['build']['sha256'][:16], 'date': today(), 'by': a.author,
-                        'how': 'static'}]
+    sig['verified'] = [{'build': exe['sha256'][:16], 'date': today(), 'by': a.author, 'how': 'static'}]
+    if port:
+        sig = to_kb(sig, a.exe, port, exe)
+        print(f'binding.py new: {sig["twin"]}')
     sig['used_by'] = a.used_by
     sig = {k: v for k, v in sig.items() if v is not None}
     table = 'functions' if a.kind == 'func' else 'globals'
@@ -635,17 +680,22 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sp = ap.add_subparsers(dest='cmd', required=True, metavar='command')
     exe_help = 'your F1_25.exe'
-    p = sp.add_parser('new', help='make a record and prove it on the KB build',
+    p = sp.add_parser('new', help='make a record and prove it on your exe',
                       description='Write re/bindings/<subsystem>/NAME.json: the row, a signature made from the bytes '
-                                  'at VA, and a proof that the core resolves it on your exe. Nothing is written when '
-                                  'a check fails. Needs pefile, numpy and capstone (re/tools/py has them).')
+                                  'at VA, and a proof that the core resolves it on your exe. Your exe is the current '
+                                  'Steam build or any build in re/db/builds. Records hold addresses on the KB build '
+                                  '(Steam 1.0.141.7865); on another build the KB addresses come from the bindings on '
+                                  'either side, which must have moved by the same amount, and the record keeps where '
+                                  'it was made and how its KB twin was found. Nothing is written when a check fails. '
+                                  'Needs pefile, numpy and capstone (re/tools/py has them).')
     p.add_argument('name', help='the binding name, <Prefix>_<Verb>_<Noun> for a function or g_/k_/vt_/site_<Prefix>_'
                                 '<Noun> for a global (re/PROTOCOL.md §3); the prefix picks the subsystem')
-    p.add_argument('va', help='its virtual address on the KB build, for example 0x142ea5a50')
+    p.add_argument('va', help='its virtual address on your exe, for example 0x142ea5a50')
     p.add_argument('--kind', required=True, choices=('func', 'site', 'data'),
                    help='func: a function you wrap; site: an instruction you run code at; data: a global')
     p.add_argument('--author', required=True, help='your GitHub login, the account that opens the pull request')
-    p.add_argument('--exe', required=True, help=exe_help + ' of the KB build (Steam 1.0.141.7865)')
+    p.add_argument('--exe', required=True, help=exe_help + ': the current Steam build or another build in re/db/builds; '
+                                                         'VA and every address option are on this exe')
     p.add_argument('--evidence', required=True,
                    help='kind:value tokens joined by ;, for example "decomp:own disasm 0x142ea5a50-0x142ea5adf;'
                         'xref:0x142ea5763"; L2 needs decomp: and xref:')

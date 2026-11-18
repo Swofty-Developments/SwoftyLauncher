@@ -91,10 +91,9 @@ uint64_t Navigation::container_command(void *container, NeStr **message, void *t
 
 void Navigation::raise_command(void *vm, const char *command, const char *where)
 {
-    static uint8_t zero[0x100];
     NeStr *name = nullptr;
     Ne_Make_StrFromCStr(&name, command, 0, 0);
-    void *third = container_third.load() ? container_third.load() : zero;
+    void *third = container_third.load() ? container_third.load() : route_events.third;
     swofty::log("[main-menu] nav: raising '%s' on the activity container %p (%s) at frame %llu (container opened at frame %llu)", command, vm, where,
                 (unsigned long long)frame_no.load(), (unsigned long long)open_frame.load());
     uint64_t r = h_container ? h_container.call<uint64_t>(vm, &name, third) : 0;
@@ -188,7 +187,7 @@ bool Navigation::fire_in_group(const char *group, const char *route, const char 
         swofty::log("[main-menu] nav: route '%s' in group %s (%s) not fired: no router captured yet", route, group, why);
         return false;
     }
-    static uint8_t scratch[0x400];
+    uint8_t *scratch = route_events.fire;
     *reinterpret_cast<uint32_t *>(scratch + 0x250) = logic::djb2(group);
     NeStr *name = nullptr;
     Ne_Make_StrFromCStr(&name, route, 0, 0);

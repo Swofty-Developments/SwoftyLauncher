@@ -37,9 +37,40 @@ namespace {
 
 namespace ta = testagent;
 
+// Each offset is read by the same instruction on the KB build and on Steam 1.0.145: in a function whose body is
+// the same on both (re/tools/sigport.py --witness, at the KB RVA), or where it says so, at its readers aligned by
+// re/tools/layoutcmp.py. Cars: the system slots +0x530..+0x5a8
+// 0x473c2e0; mass +0x150 0x4676d40; fuel flow and mass +0x100, +0x108 0x468edb0; max torque and limiter
+// +0x2518, +0x2528 0x4687d60; rotation rate +0x2538 0x46878d0; throttle +0x2574 0x46e2290 (whose only change is
+// the ERS mode); gear +0x680 0x46a4c20; ERS energy +0x19f0 0x46d1210; drag +0x19e8 0x46dceb0; is_ai +0x124
+// 0x46dc4b0; fuel capacity +0x98, brake bias +0x21d8, fuel mode +0x128 and vehicle id +0xe8 at their readers
+// (layoutcmp.py). The ERS mode moved to +0x1a6c on 1.0.145 (its reset store,
+// re/research/live-steam-26566308.md). Tiles: fe_career's list +0x2c8 (slot 12 0x1b2d230), the home list +0x358 and
+// router +0x28 (0x1bb17f0), TileList +0x78, +0x80, Tile +0xd0 and item +0x10 (the populate loop 0x173df80,
+// get_action 0x1725620). Resume screens: cards +0x328 and 0x540 each, busy +0x1380 (0x1a1eb80, 0x1a0a210) and the
+// handler's node +0x12f0 (0x1a0b280). Team HQ: +0x620 and +0x6e0 (onCommandRaised 0x22c3540), +0x758 and +0x759
+// (0x22c6860), the clock [+0x6e0]+0x2b0 (0x22c9e40). The game manager's system map +0x30 (0x336830, 0x361670) and
+// its entries +0x18, +0x20 (the find 0x30ffd0).
+namespace bp = runtime::build_proof;
+constexpr uint32_t KB_AND_1_0_145 = bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145);
+constexpr bp::Proof CAR_LAYOUT{"CarLive's system slots (+0x530..+0x5a8), +0xe8, +0x124 and the agent's car fields",
+                               KB_AND_1_0_145};
+constexpr bp::Gate CAR_READS{"the test agent's car fields", &CAR_LAYOUT};
+constexpr bp::Proof TILE_LAYOUT{"the tile screens' lists (+0x2c8, home +0x358, router +0x28; TileList +0x78, +0x80; "
+                                "Tile +0xd0; item +0x10)",
+                                KB_AND_1_0_145};
+constexpr bp::Gate TILE_SCREENS{"the test agent's tile commands", &TILE_LAYOUT};
+constexpr bp::Proof CARD_LAYOUT{"the resume screens' cards (+0x328, 0x540 each), +0x1380 and +0x12f0", KB_AND_1_0_145};
+constexpr bp::Gate RESUME_CARDS{"the test agent's continue command", &CARD_LAYOUT};
+constexpr bp::Proof HQ_LAYOUT{"Team HQ's advance view model (+0x620, +0x758, +0x759, the clock [+0x6e0]+0x2b0)",
+                              KB_AND_1_0_145};
+constexpr bp::Gate HQ_ADVANCE{"the test agent's Team HQ advance", &HQ_LAYOUT};
+constexpr bp::Proof SYSTEM_MAP{"the game manager's system map (+0x30; entries +0x18, control bytes +0x20)", KB_AND_1_0_145};
+constexpr bp::Gate SAVE_NOW{"the test agent's save now", &SYSTEM_MAP};
+
 // The game addresses the agent uses, each resolved by its signature in re/db/signatures.json when the
-// agent arms; a build where one does not match only loses the commands that need it. Struct layouts
-// below are the KB build's, so the commands that read them also check runtime::same_build().
+// agent arms; a build where one does not match only loses the commands that need it. The struct layouts
+// the commands read are gated on the builds they were checked on (the proofs above).
 const runtime::Sig SIG_FE_CAREER_VT{"game.fe_career_view_model", "48 8D 05 ?? ?? ?? ?? 49 89 07 48 8D 05 ?? ?? ?? ?? 49 89 87 60 02 00 00 48 8D 05 ?? ?? ?? ?? 49 89 87 68 02 00 00 48 8D 05 ?? ?? ?? ?? 49 89 87 98 02 00 00 66 41 C7 87 A8 03 00 00 00 01", 0x57385b0, runtime::Sig::riprel, 0, 3, 7};
 const runtime::Sig SIG_CAREER_ITEM_VT{"fe_tiles.career_kind_item", "48 8D 05 ?? ?? ?? ?? 48 89 06 48 8D 8E 78 01 00 00", 0x5703eb0, runtime::Sig::riprel, 0, 3, 7};
 const runtime::Sig SIG_CONTINUE_HANDLE{"game.career_continue_handle_command", "56 48 83 EC 20 48 8B 02 48 85 C0 74 38", 0x1a1db90};
@@ -358,15 +389,16 @@ void controller_setup()
 }
 
 
-// Cars: g_Sess_VehicleTable (0x146ce86e0, L2, no signature) holds a CarLive per vehicle id, so it is
-// read only on the build the KB describes. The field table is the KB's L3 rows (re/db/structs/Car*.h);
-// "obf" fields are CarObfFloat pairs: the float's bits XOR the key 8 bytes on.
+// Cars: g_Sess_VehicleTable (0x146ce86e0, L2) holds a CarLive per vehicle id, read on the builds CAR_LAYOUT
+// names. The field table is the KB's L3 rows (re/db/structs/Car*.h), with a field's 1.0.145 offset where it
+// moved there; "obf" fields are CarObfFloat pairs: the float's bits XOR the key 8 bytes on.
 constexpr size_t CAR_VEHICLE_ID = 0xe8, CAR_IS_AI = 0x124;
 enum class Ty { f32, obf, u32, i32, u8 };
 struct Field {
     const char *system, *field;
     size_t sys_off, off;
     Ty ty;
+    size_t off_1_0_145 = 0;
 };
 constexpr Field FIELDS[] = {
     {"chassis", "mass", 0x558, 0x150, Ty::f32},
@@ -380,7 +412,7 @@ constexpr Field FIELDS[] = {
     {"gearbox", "gear_index", 0x538, 0x680, Ty::u32},
     {"brake_ecu", "brake_bias", 0x550, 0x21d8, Ty::f32},
     {"ers", "energy", 0x5a8, 0x19f0, Ty::f32},
-    {"ers", "ers_mode", 0x5a8, 0x1a68, Ty::i32},
+    {"ers", "ers_mode", 0x5a8, 0x1a68, Ty::i32, 0x1a6c},
     {"fuel_ecu", "fuel_mode", 0x548, 0x128, Ty::i32},
     {"f1_aero", "total_drag", 0x570, 0x19e8, Ty::f32},
 };
@@ -392,8 +424,8 @@ const char *ty_name(Ty t)
 
 std::string car_unbound()
 {
-    if (!runtime::same_build())
-        return "the car field offsets are the KB build's and this is not that build";
+    if (!runtime::holds(CAR_READS))
+        return "the car field offsets are not proven on this build";
     if (!ga.vehicle_table || !ga.vehicle_count)
         return "g_Sess_VehicleTable or g_Sess_VehicleCount did not resolve on this build";
     return {};
@@ -465,12 +497,13 @@ uint8_t *field_at(const std::string &path, const Field **out, std::string &why)
     if (!car)
         return nullptr;
     uint8_t *sys = *reinterpret_cast<uint8_t **>(car + f->sys_off);
-    if (!sys || !runtime::readable(sys + f->off, 16)) {
+    size_t off = f->off_1_0_145 && runtime::running_build() == bp::Build::steam_1_0_145 ? f->off_1_0_145 : f->off;
+    if (!sys || !runtime::readable(sys + off, 16)) {
         why = "car " + std::to_string(idx) + " has no " + p.system;
         return nullptr;
     }
     *out = f;
-    return sys + f->off;
+    return sys + off;
 }
 
 std::string value_json(const uint8_t *at, Ty t)
@@ -964,8 +997,8 @@ std::string nestr_text(const swofty::game::NeStr *s)
 
 ta::Outcome InGame::career_tile(const std::string &mode)
 {
-    if (!runtime::same_build())
-        return ta::Outcome::unavailable("the career tile's item layout is the KB build's and this is not that build");
+    if (!runtime::holds(TILE_SCREENS))
+        return ta::Outcome::unavailable("the career tile's item layout is not proven on this build");
     if (!route_why.empty())
         return ta::Outcome::unavailable(route_why);
     if (!ga.fe_career_vt || !ga.career_item_vt)
@@ -1048,8 +1081,8 @@ uint64_t continue_detour(void *vm, swofty::game::NeStr **cmd, void *value)
 
 void continue_setup()
 {
-    if (!runtime::same_build()) {
-        continue_why = "the resume screens' card layout is the KB build's and this is not that build";
+    if (!runtime::holds(RESUME_CARDS)) {
+        continue_why = "the resume screens' card layout is not proven on this build";
         return;
     }
     if (!ga.continue_handle || !ga.continue_driver_vt || !ga.continue_my_team_vt || !ga.node_set_bool) {
@@ -1151,8 +1184,8 @@ uint64_t hq_cmd_detour(void *vm, swofty::game::NeStr **cmd, void *data)
 
 void hq_setup()
 {
-    if (!runtime::same_build()) {
-        hq_why = "Team HQ's advance view model layout is the KB build's and this is not that build";
+    if (!runtime::holds(HQ_ADVANCE)) {
+        hq_why = "Team HQ's advance view model layout is not proven on this build";
         return;
     }
     if (!ga.hq_update || !ga.hq_command || !ga.hq_vt) {
@@ -1262,8 +1295,8 @@ uint32_t save_writes_before;
 
 ta::Outcome InGame::save_now()
 {
-    if (!runtime::same_build())
-        return ta::Outcome::unavailable("the game manager's layout is the KB build's and this is not that build");
+    if (!runtime::holds(SAVE_NOW))
+        return ta::Outcome::unavailable("the game manager's system map is not proven on this build");
     if (!ga.save_request || !ga.game_manager || !ga.save_key)
         return ta::Outcome::unavailable("Game_SaveMgr_RequestProfileSave_Thunk or the game manager did not resolve on "
                                         "this build");
@@ -1349,8 +1382,8 @@ uint8_t *screen_list(void *&vm)
 
 ta::Outcome InGame::tile_select(const std::string &id)
 {
-    if (!runtime::same_build())
-        return ta::Outcome::unavailable("the tile list layout is the KB build's and this is not that build");
+    if (!runtime::holds(TILE_SCREENS))
+        return ta::Outcome::unavailable("the tile list layout is not proven on this build");
     if (!route_why.empty())
         return ta::Outcome::unavailable(route_why);
     void *vm = nullptr;

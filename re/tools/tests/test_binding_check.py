@@ -407,6 +407,63 @@ class CiCommand(Base):
             shutil.rmtree(tmp)
 
 
+class MadeOn(Classify):
+    PORT = 'steam-26566308'
+
+    def port_sha(self):
+        return next(sha for sha, name in self.knowledge.builds.items() if name == self.PORT)
+
+    def made_on(self, drop=(), **change):
+        d = as_new(self.doc, proof=False)
+        s, sha = d['signature'], self.port_sha()
+        s.update(made_on=sha[:16], made_on_match=hex(int(s['match'], 16) + 0x2590),
+                 made_on_target=hex(int(s['target'], 16) + 0x2590),
+                 twin='made on steam-26566308; the target is KB 0x1436a3b83: both neighbours sit 0x2590 above',
+                 verified=[{'build': sha[:16], 'date': '2026-11-17', 'by': AUTHOR, 'how': 'static'}])
+        s.update(change)
+        for k in drop:
+            s.pop(k)
+        p = make_proof(d, AUTHOR, sha)
+        p['result'].update(match=s.get('made_on_match', s['match']), target=s.get('made_on_target', s['target']))
+        d['proofs'] = [p]
+        return d
+
+    def classify_doc(self, d):
+        return self.run_classify([('re/bindings/' + SAMPLE, None, raw(d))])
+
+    def test_a_record_made_on_the_current_build_merges_itself(self):
+        out = self.classify_doc(self.made_on())
+        self.assertEqual((out['verdict'], out['errors'], out['notes']), ('auto', [], []))
+
+    def test_its_proof_there_must_land_where_it_was_made(self):
+        d = self.made_on()
+        d['proofs'][0]['result']['target'] = '0x140001000'
+        out = self.classify_doc(d)
+        self.assertEqual(out['verdict'], 'fail')
+        self.assertTrue(any('on the build the record was made on' in e for e in out['errors']), out['errors'])
+
+    def test_the_made_on_fields_come_together(self):
+        out = self.classify_doc(self.made_on(drop=('twin',)))
+        self.assertEqual(out['verdict'], 'fail')
+        self.assertTrue(any('signature.twin missing' in e for e in out['errors']), out['errors'])
+
+    def test_made_on_names_a_build_other_than_the_kb_build(self):
+        kb_sha = self.knowledge.build['sha256'][:16]
+        out = self.classify_doc(self.made_on(made_on=kb_sha))
+        self.assertTrue(any('other than the KB build' in e for e in out['errors']), out['errors'])
+
+    def test_without_made_on_the_kb_build_must_be_verified(self):
+        out = self.classify_doc(self.made_on(drop=('made_on', 'made_on_match', 'made_on_target', 'twin')))
+        self.assertTrue(any('signature.verified needs an entry for the KB build' in e for e in out['errors']),
+                        out['errors'])
+
+    def test_every_made_on_error_has_a_fix(self):
+        d = self.made_on(made_on_target='0x140001000')
+        d['proofs'][0]['result']['target'] = '0x140001000'
+        for e in self.classify_doc(d)['errors'] + self.classify_doc(self.made_on(drop=('twin',)))['errors']:
+            self.assertIsNotNone(bc.fix_for(e), e)
+
+
 class Fixes(Classify):
     def messages(self, out):
         return out['errors'] + out['notes']
@@ -638,15 +695,37 @@ class NewOnTheKbBuild(unittest.TestCase):
         self.assertEqual(start + int(sig['resolve']['insn'], 16), site)
         self.assertEqual(img.read(site, 1), b'\xe8')
 
-    def test_another_build_is_named(self):
+
+
+class NewOnAnotherBuild(unittest.TestCase):
+    def test_an_unknown_build_is_refused_with_the_builds_that_work(self):
         import binding
-        exe = os.environ.get('SWOFTY_STEAM_145_EXE')
-        if not exe:
-            self.skipTest('set SWOFTY_STEAM_145_EXE to the Steam 1.0.145 F1_25.exe')
         with self.assertRaises(SystemExit) as e:
-            binding.kb_exe_or_exit(exe, 'new')
-        self.assertIn('steam-26566308', str(e.exception))
+            binding.port_exe_or_exit('F1_25.exe', {'sha256': 'f' * 64, 'size': 1, 'pe_timestamp': 2}, 'new')
         self.assertIn('1.0.141.7865', str(e.exception))
+        self.assertIn('re/db/builds', str(e.exception))
+
+    def test_only_builds_other_than_the_kb_build_are_ports(self):
+        import binding, kb
+        self.assertIsNone(binding.build_name(kb.load_signatures()['build']['sha256']))
+        sha = next(sha for sha, name in bc.Knowledge().builds.items() if name == 'steam-26566308')
+        self.assertEqual(binding.build_name(sha), 'steam-26566308')
+
+    @unittest.skipUnless(os.environ.get('SWOFTY_STEAM_145_EXE'), 'set SWOFTY_STEAM_145_EXE to the Steam 1.0.145 exe')
+    def test_the_current_build_maps_an_address_to_its_kb_twin(self):
+        import binding, sigcheck
+        exe = os.environ['SWOFTY_STEAM_145_EXE']
+        ident = binding.exe_identity(exe)
+        self.assertEqual(binding.port_exe_or_exit(exe, ident, 'new'), 'steam-26566308')
+        sig = sigcheck.make(sigcheck.Image(exe), 0x142e91ae0, 'func_start')
+        with mock.patch.dict(os.environ, {'SWOFTY_KB_EXE': os.environ.get('SWOFTY_STEAM_EXE', '')}):
+            out = binding.to_kb(sig, exe, 'steam-26566308', ident)
+        self.assertEqual((out['target'], out['match'], out['section']), ('0x142e8f550', '0x142e8f550', '.xtls'))
+        self.assertEqual((out['made_on'], out['made_on_match'], out['made_on_target']),
+                         (ident['sha256'][:16], '0x142e91ae0', '0x142e91ae0'))
+        self.assertIn('0x2590', out['twin'])
+        if os.environ.get('SWOFTY_STEAM_EXE'):
+            self.assertIn('checked on the KB exe: same', out['twin'])
 
 
 class CiLint(Base):

@@ -49,7 +49,7 @@ fn resource_report(ours: &Path, theirs: &Path, skip: &[&str]) -> String {
             continue;
         }
         for (i, (fx, fy)) in x.fragments.iter().zip(&y.fragments).enumerate() {
-            if fx.raw != fy.raw {
+            if fx.raw() != fy.raw() {
                 let (dx, dy) = (fx.data().unwrap(), fy.data().unwrap());
                 let what = if dx == dy {
                     "same data, different compression".to_owned()
@@ -159,7 +159,13 @@ fn menus_and_a_map_patch_one_databases_erp() {
         dir: &dir,
         asset_group: track_group("bahrain24", "bahrain24"),
     }];
-    let map_ui = build_ui(&maps, &resolve, &out.join("cache")).unwrap();
+    let map_ui = build_ui(
+        &maps,
+        &resolve,
+        &out.join("cache"),
+        &swofty_formats::erp::Packer::default(),
+    )
+    .unwrap();
     let rel = "2025_asset_groups/ui_package/databases.erp";
     assert!(map_ui.replaced.contains_key(rel));
     let mut built = Built {
@@ -1282,7 +1288,13 @@ fn the_mfd_page_and_a_map_patch_share_flow_race_and_persistent() {
         dir: &dir,
         asset_group: track_group("bahrain24", "bahrain24"),
     }];
-    let map_ui = build_ui(&maps, &resolve, &out.join("cache")).unwrap();
+    let map_ui = build_ui(
+        &maps,
+        &resolve,
+        &out.join("cache"),
+        &swofty_formats::erp::Packer::default(),
+    )
+    .unwrap();
     let race = format!("{}/flow_race.erp", swofty_core::ui::UI);
     let persistent = format!("{}/persistent.erp", swofty_core::ui::UI);
     assert!(map_ui.replaced.contains_key(&race) && map_ui.replaced.contains_key(&persistent));

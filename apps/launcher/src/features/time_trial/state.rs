@@ -567,9 +567,11 @@ impl Host<TtPage> for Shell {
 #[cfg(test)]
 mod tests {
     use swofty_core::online::timetrial::api::ApiError;
+    use swofty_core::online::timetrial::barred::Barred;
     use swofty_core::online::timetrial::boards::Run;
 
     use super::{Load, RunBoard, TtPage};
+    use crate::services::test_library::TestLibrary;
 
     fn error(message: &str) -> ApiError {
         ApiError {
@@ -728,5 +730,35 @@ mod tests {
         assert!(matches!(tt.rows, Load::Loading));
         assert!(tt.take_rows(new, Err(error("gone"))));
         assert!(matches!(&tt.rows, Load::Failed(m) if m == "gone"));
+    }
+
+    fn barred(id: &str, below: Option<&str>) -> Barred {
+        Barred {
+            id: id.to_owned(),
+            name: String::new(),
+            reason: String::new(),
+            below: below.map(str::to_owned),
+        }
+    }
+
+    #[test]
+    fn the_barred_notice_names_addons_on_in_the_profile_below_their_fixed_version() {
+        let library = TestLibrary::new("tt-barred")
+            .addon("t.old", "1.0.0")
+            .addon("t.fixed", "2.0.0")
+            .addon("t.off", "1.0.0")
+            .profile("Main", &["t.old", "t.fixed"]);
+        let mut tt = page();
+        tt.barred = vec![
+            barred("t.old", Some("2.0.0")),
+            barred("t.fixed", Some("2.0.0")),
+            barred("t.off", None),
+        ];
+        let ids: Vec<&str> = tt
+            .barred_in(&library.read())
+            .iter()
+            .map(|b| b.id.as_str())
+            .collect();
+        assert_eq!(ids, ["t.old"]);
     }
 }

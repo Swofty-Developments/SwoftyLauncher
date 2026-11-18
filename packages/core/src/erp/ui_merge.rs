@@ -83,6 +83,7 @@ impl ErpBuild<'_> {
         origin: &str,
         before: Option<Vec<u8>>,
     ) -> Result<()> {
+        let packer = self.packer.clone();
         let Some(theirs_bytes) = self.fragment_zero(erp, resource)? else {
             return Ok(());
         };
@@ -109,7 +110,8 @@ impl ErpBuild<'_> {
                 .map_err(|e| fail(format!("{erp}: {resource}: {e}")))?;
             let target = self.erp(erp)?;
             let i = target.find(erp, resource)?;
-            pack::set_fragment(target.owned(i)?, 0, &bytes).map_err(|e| fail(format!("{erp}: {e}")))?;
+            pack::set_fragment(&packer, target.owned(i)?, 0, &bytes)
+                .map_err(|e| fail(format!("{erp}: {e}")))?;
             let conflicts = merged
                 .conflicts
                 .iter()

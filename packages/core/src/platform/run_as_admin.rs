@@ -137,7 +137,10 @@ fn listings() -> Vec<(String, bool)> {
         .into_iter()
         .filter_map(|(hive, all_users)| {
             let key = format!(r"{hive}\{LAYERS_KEY}");
-            Some((windows_tool("reg", &["query", &key, "/reg:64"])?, all_users))
+            Some((
+                crate::platform::registry::reg_query(&[&key, "/reg:64"])?,
+                all_users,
+            ))
         })
         .collect()
 }

@@ -713,20 +713,13 @@ mod tests {
                     name,
                     kind: swofty_formats::erp::kind("WEP").unwrap(),
                     unk: vec![0; 4],
-                    fragments: vec![Fragment {
-                        name: *b"temp",
-                        offset: 0,
-                        size: data.len() as u64,
-                        flags: 0x10,
-                        compression: STORED,
-                        packed: data.len() as u64,
-                        raw: data,
-                    }],
+                    fragments: vec![Fragment::new(*b"temp", data.len() as u64, 0x10, STORED, data)],
                     hash: [0; 16],
                 })
                 .collect(),
         }
         .to_bytes()
+        .unwrap()
     }
 
     fn worlds(code: &str, variants: &[&str]) -> Vec<(String, Vec<u8>)> {

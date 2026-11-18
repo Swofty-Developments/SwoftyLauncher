@@ -1,7 +1,7 @@
 use std::process::ExitCode;
 
 use anyhow::Result;
-use swofty_core::steam_client;
+use swofty_core::platform::steam;
 use swofty_core::store::Store;
 
 use crate::commands::{Execute, Invocation};
@@ -31,12 +31,12 @@ fn check(store: &Store, start: bool) -> Result<ExitCode> {
         bring_up_steam(store, None)?;
         return Ok(ExitCode::SUCCESS);
     }
-    let status = steam_client::status();
+    let status = steam::client::status();
     say("steam", &format!("detected: {status}"));
-    if let Some(g) = swofty_core::steam::find_game() {
+    if let Some(g) = steam::find_game() {
         say(
             "steam",
-            &match swofty_core::steam::busy(&g) {
+            &match steam::busy(&g) {
                 Some(state) => format!("F1 25: Steam is {state} its files"),
                 None => "F1 25: Steam isn't changing its files".to_owned(),
             },

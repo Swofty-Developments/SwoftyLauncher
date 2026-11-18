@@ -76,15 +76,7 @@ fn typed_erp(kind: &str, resources: &[(&str, Vec<u8>)]) -> Vec<u8> {
                 name: (*name).into(),
                 kind: erp::kind(kind).unwrap(),
                 unk: vec![0; 6],
-                fragments: vec![Fragment {
-                    name: *b"temp",
-                    offset: 0,
-                    size: body.len() as u64,
-                    flags: 0,
-                    compression: ZSTD,
-                    packed: packed.len() as u64,
-                    raw: packed,
-                }],
+                fragments: vec![Fragment::new(*b"temp", body.len() as u64, 0, ZSTD, packed)],
                 hash: [0; 16],
             };
             res.hash = res.content_hash().unwrap();
@@ -97,6 +89,7 @@ fn typed_erp(kind: &str, resources: &[(&str, Vec<u8>)]) -> Vec<u8> {
         resources,
     }
     .to_bytes()
+    .unwrap()
 }
 
 fn spline(gates: &str) -> swofty_formats::bxml::Document {
@@ -123,17 +116,17 @@ fn spline(gates: &str) -> swofty_formats::bxml::Document {
 }
 
 fn surface(name: &str, head: &[u8], pixels: &[u8]) -> Resource {
-    let fragment = |compression: u8, data: &[u8]| Fragment {
-        name: *b"temp",
-        offset: 0,
-        size: data.len() as u64,
-        flags: 0x10,
-        compression,
-        packed: 0,
-        raw: match compression {
-            ZSTD => compress(data).unwrap(),
-            _ => data.to_vec(),
-        },
+    let fragment = |compression: u8, data: &[u8]| {
+        Fragment::new(
+            *b"temp",
+            data.len() as u64,
+            0x10,
+            compression,
+            match compression {
+                ZSTD => compress(data).unwrap(),
+                _ => data.to_vec(),
+            },
+        )
     };
     let mut res = Resource {
         name: name.into(),
@@ -142,9 +135,6 @@ fn surface(name: &str, head: &[u8], pixels: &[u8]) -> Resource {
         fragments: vec![fragment(ZSTD, head), fragment(STORED, pixels)],
         hash: [0; 16],
     };
-    for f in &mut res.fragments {
-        f.packed = f.raw.len() as u64;
-    }
     res.hash = res.content_hash().unwrap();
     res
 }
@@ -159,6 +149,7 @@ fn archive(resources: Vec<Resource>) -> Vec<u8> {
         resources,
     }
     .to_bytes()
+    .unwrap()
 }
 
 fn data(res: &Resource) -> Vec<Vec<u8>> {
@@ -204,15 +195,7 @@ fn array(width: u32, slices: &[[u8; 4]]) -> Resource {
     head[12..16].copy_from_slice(&width.to_le_bytes());
     head[16..20].copy_from_slice(&2u32.to_le_bytes());
     head[28..32].copy_from_slice(&(slices.len() as u32).to_le_bytes());
-    let fragment = |data: Vec<u8>| Fragment {
-        name: *b"temp",
-        offset: 0,
-        size: data.len() as u64,
-        flags: 0x10,
-        compression: STORED,
-        packed: data.len() as u64,
-        raw: data,
-    };
+    let fragment = |data: Vec<u8>| Fragment::new(*b"temp", data.len() as u64, 0x10, STORED, data);
     let mut r = Resource {
         name: LOGOS.into(),
         kind: erp::kind("GfxSurfaceRes").unwrap(),
@@ -234,6 +217,7 @@ fn texture_erp(resources: Vec<Resource>) -> Vec<u8> {
         resources,
     }
     .to_bytes()
+    .unwrap()
 }
 
 fn slices_in(r: &Resource) -> Vec<u8> {
@@ -282,15 +266,7 @@ fn view_res(count: u32) -> Resource {
         name: LOGOS.strip_suffix(".image").unwrap().into(),
         kind: erp::kind("GfxSurfaceRes").unwrap(),
         unk: vec![0; 4],
-        fragments: vec![Fragment {
-            name: *b"temp",
-            offset: 0,
-            size: v.len() as u64,
-            flags: 0x10,
-            compression: STORED,
-            packed: v.len() as u64,
-            raw: v,
-        }],
+        fragments: vec![Fragment::new(*b"temp", v.len() as u64, 0x10, STORED, v)],
         hash: [0; 16],
     };
     r.hash = r.content_hash().unwrap();
