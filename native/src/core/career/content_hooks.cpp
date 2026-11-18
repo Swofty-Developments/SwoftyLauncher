@@ -24,7 +24,7 @@
 // stock false for that content's mode championship becomes the predicate's own data group check
 // (career_content_logic.hpp). Questions for any other data group keep the game's answer.
 
-namespace career_content {
+namespace career::content {
 
 namespace {
 

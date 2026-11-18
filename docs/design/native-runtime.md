@@ -153,6 +153,21 @@ A new `[perf]` line is a function in `perf_logic.hpp` with a case in the test:
 swofty::log("%s", logic::hitch_line(ms, h.during, swofty_ms, h.top).c_str());
 ```
 
+## Career namespaces
+
+Code in `core/career/` is in `career::`. The entry points `runtime/runtime.hpp` declares stay in `runtime`, and `career.cpp`, `career_saves.cpp`, `career_start.cpp` and `career_wizard.cpp` define them over unnamed-namespace state:
+
+| Namespace | Files |
+|---|---|
+| `career::state` | `career_state.hpp`: the flow-state and Team HQ tracking without the game |
+| `career::game` | `career_entity.hpp`, `career_entity.cpp`: the championship entity, its components and entrants |
+| `career::content` | `career_content_logic.hpp`, `content_state.hpp`, `career_content.cpp`, `content_*.cpp` |
+| `career::characters` | `characters_logic.hpp`, `characters_state.hpp`, `characters.cpp`, `characters_hooks.cpp` |
+| `career::hub` | `hub_state.hpp`, `hub_tab.cpp`, `hub_rnd.cpp` |
+| `career::saves`, `career::start`, `career::ui` | `career_saves_logic.hpp`, `career_start.hpp`, `career_ui.hpp` |
+| `career::save_data`, `career::save_splice` | `save_data.hpp`, `save_data.cpp`, `save_splice_logic.hpp`, `save_splice.cpp` |
+| `career::save_diag`, `career::save_heap` | `save_diag_logic.hpp`, `save_heap_logic.hpp` |
+
 ## Career operations
 
 The career operations (`SwoftyCareerOps`, standard library 1.6) are in `career/ops/`. A batch of entrant writes is planned by pure headers and run by the executor:

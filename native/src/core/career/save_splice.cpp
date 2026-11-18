@@ -57,19 +57,19 @@
 //
 // SWOFTY_SAVE_SPLICE=0 turns it off.
 
-namespace save_data {
+namespace career::save_data {
 
 Bindings b;
 
 }
 
-using namespace save_data;
+using namespace career::save_data;
 
 namespace {
 
 namespace mem = swofty::mem;
 namespace g = swofty::game;
-namespace sp = runtime::save_splice;
+namespace sp = career::save_splice;
 namespace layout = runtime::layout;
 
 constexpr const char *MIXIN = "swofty_core.dll (save splice)";
@@ -93,7 +93,7 @@ uint32_t loads = 0;
 // this store like any unclaimed container. The game never claims it, so a load keeps it and a save
 // writes it back; the hooks hand its body to the snapshots at each root load and take a new one at
 // each profile save. ----
-runtime::save_splice::EntryHooks entry_hooks;
+career::save_splice::EntryHooks entry_hooks;
 bool entry_put = false;
 // ---- end W4 ----
 
@@ -109,7 +109,7 @@ struct SpliceHooks : runtime::loader::HookSet<> {
 };
 
 constinit SpliceHooks hooks;
-namespace cs = runtime::career_saves;
+namespace cs = career::saves;
 std::vector<cs::SlotRead> slot_reads;
 struct Manager {
     uintptr_t iface = 0, vtable = 0;
@@ -135,10 +135,10 @@ void log_load(const std::vector<cs::SlotRead> &reads, const std::vector<Manager>
     uintptr_t image = reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr));
     size_t at = 0;
     for (size_t m = 0; m < seen.size(); m++) {
-        swofty::log("[saves] %s", runtime::save_diag::manager_line(n, m, seen[m].count, seen[m].vtable - image).c_str());
+        swofty::log("[saves] %s", career::save_diag::manager_line(n, m, seen[m].count, seen[m].vtable - image).c_str());
         for (size_t i = 0; i < seen[m].count && at < reads.size(); i++, at++)
             swofty::log("[saves] %s",
-                        runtime::save_diag::slot_line(n, m, i, reads[at],
+                        career::save_diag::slot_line(n, m, i, reads[at],
                                                       runtime::career_saves_id_for_slot(cs::slot_key(reads[at].id, reads[at].guid)))
                             .c_str());
     }
@@ -184,7 +184,7 @@ int *deserialise_entry(void *self, int *result, void *bag, uint8_t reset_on_erro
                             "bytes); the next profile save writes them back",
                             loads, store.size(), (unsigned long long)store.total());
             for (auto &k : store.kept())
-                swofty::log("[saves] %s", runtime::save_diag::kept_line(loads, k.name, k.body.size()).c_str());
+                swofty::log("[saves] %s", career::save_diag::kept_line(loads, k.name, k.body.size()).c_str());
             for (auto &k : store.kept())
                 if (k.name == sp::ENTRY_NAME)
                     entry = k.body, has_entry = true;
@@ -313,7 +313,7 @@ void count_entry(SwoftyContext *c)
         uint64_t bytes = 0;
         for (size_t i : picked)
             bytes += store.kept()[i].body.size();
-        swofty::log("%s", runtime::save_heap::session_line(heap_bytes, raised, picked.size(), bytes).c_str());
+        swofty::log("%s", career::save_heap::session_line(heap_bytes, raised, picked.size(), bytes).c_str());
     }
     *reinterpret_cast<uint64_t *>(c->rsp + FRAME_COUNT) =
         owed.bump(reinterpret_cast<const void *>(c->r12), count, std::move(picked));
@@ -480,8 +480,10 @@ static void save_splice_commit()
 
 static loader::FunctionSet save_splice_core_set{loader::CoreSetId::save_splice, save_splice_mixins, save_splice_commit};
 
+}
+
 // ---- W4 career snapshots ----
-namespace save_splice {
+namespace career::save_splice {
 
 void set_entry_hooks(const EntryHooks &h) { entry_hooks = h; }
 
@@ -504,7 +506,6 @@ std::string entry_blocked()
     }
 }
 
-}
 // ---- end W4 ----
 
 }

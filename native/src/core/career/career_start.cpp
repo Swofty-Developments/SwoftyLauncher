@@ -23,7 +23,7 @@
 
 namespace {
 
-namespace cs = runtime::career_start;
+namespace cs = career::start;
 
 const runtime::Sig S_RUN_ROUTE{"Vm_Run_Route",
                                "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 4C 89 "

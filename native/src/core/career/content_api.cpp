@@ -9,7 +9,7 @@
 #include <mutex>
 #include <string>
 
-namespace career_content {
+namespace career::content {
 
 namespace {
 
@@ -123,7 +123,7 @@ const SwoftyCareerContent table = {api_available, api_add, api_info, api_data_gr
 
 }
 
-using namespace career_content;
+using namespace career::content;
 
 extern "C" __declspec(dllexport) const SwoftyCareerContent *SwoftyCoreCareerContent(void)
 {

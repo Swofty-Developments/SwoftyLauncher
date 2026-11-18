@@ -16,9 +16,8 @@
 // What the career contents' registry (career_content.cpp), game hooks (content_hooks.cpp), addon table
 // (content_api.cpp) and tiles and Addons row (content_tiles.cpp) share: the content slots and the lookups over
 // them, the addresses bind_all() resolves, the hooks' originals and the last pressed tile's data group.
-namespace career_content {
+namespace career::content {
 
-namespace content = runtime::content;
 namespace mem = swofty::mem;
 using swofty::game::Action;
 using swofty::game::HomeItem;

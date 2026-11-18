@@ -42,7 +42,7 @@ namespace {
 
 namespace reg = swofty_core::registry;
 namespace snap = swofty_core::snapshots;
-namespace sp = runtime::save_splice;
+namespace sp = career::save_splice;
 namespace hk = swofty_core::hooks;
 
 namespace g = swofty::game;

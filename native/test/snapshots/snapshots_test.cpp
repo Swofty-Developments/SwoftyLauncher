@@ -20,7 +20,7 @@
 namespace snap = swofty_core::snapshots;
 namespace fmt = swofty_core::snapshots::format;
 namespace reg = swofty_core::registry;
-namespace sp = runtime::save_splice;
+namespace sp = career::save_splice;
 namespace sn = swofty_core::snapshots::seasons;
 using swofty::json::Value;
 

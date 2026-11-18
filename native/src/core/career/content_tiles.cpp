@@ -40,7 +40,7 @@
 // addon_tile_button_default, the UI build's copy laid out in addon_stacker_items. They are numbered
 // after the stock tiles (button_3, ...).
 
-namespace career_content {
+namespace career::content {
 
 
 namespace {

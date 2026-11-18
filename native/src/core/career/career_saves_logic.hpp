@@ -10,7 +10,7 @@
 
 #include <swofty/json.hpp>
 
-namespace runtime::career_saves {
+namespace career::saves {
 
 using swofty::json::Value;
 

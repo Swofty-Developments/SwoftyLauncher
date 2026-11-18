@@ -45,7 +45,7 @@
 // value (the current state's text) / description, again after every change of one of its options. The
 // tab's title is the lng key lng_swofty_hub_<name>, set to the title in capitals.
 
-namespace hub {
+namespace career::hub {
 
 namespace {
 
@@ -534,14 +534,14 @@ void note(const char *fmt, const char *a, const char *b, const char *c)
 
 void hub_option_changed(const std::string &addon, const std::string &option)
 {
-    if (!hub::live.load())
+    if (!career::hub::live.load())
         return;
-    for (auto &t : hub::tabs) {
+    for (auto &t : career::hub::tabs) {
         if (t.addon != addon)
             continue;
         for (auto &o : t.options)
             if (o.id == option) {
-                hub::publish(t);
+                career::hub::publish(t);
                 break;
             }
     }
@@ -549,12 +549,12 @@ void hub_option_changed(const std::string &addon, const std::string &option)
 
 extern "C" __declspec(dllexport) const SwoftyHub *SwoftyCoreHub(void)
 {
-    return &hub::hub_table;
+    return &career::hub::hub_table;
 }
 
 SWOFTY_CORE_RANK(hub_tab)
 
 SWOFTY_ON_LOAD
 {
-    runtime::when_code_ready("hub tabs: laptop builder hooks", hub::setup);
+    runtime::when_code_ready("hub tabs: laptop builder hooks", career::hub::setup);
 }

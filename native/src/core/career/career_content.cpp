@@ -27,7 +27,7 @@
 // them, and a build where one of them, the router or a binding the handlers call does not resolve
 // turns every content off with a log line.
 
-namespace career_content {
+namespace career::content {
 
 Slot slots[content::MAX_CONTENTS];
 Bound b{};
@@ -303,7 +303,7 @@ void shown_from_records()
 
 }
 
-using namespace career_content;
+using namespace career::content;
 
 namespace runtime {
 
