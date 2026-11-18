@@ -1,3 +1,4 @@
+use std::fmt::Write;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
@@ -154,7 +155,9 @@ fn track_limit_note(
     let identity = match swofty_core::baseline::Identity::detect_cached(&store.root, game, build_id) {
         Ok(identity) => identity,
         Err(e) => {
-            let line = format!(
+            let mut line = String::new();
+            let _ = write!(
+                line,
                 "[play] track limit: the game's version could not be read ({e}), so no check ran ({} ms)",
                 started.elapsed().as_millis()
             );
@@ -173,7 +176,9 @@ fn track_limit_note(
     let check = match check {
         Ok(check) => check,
         Err(e) => {
-            let line = format!(
+            let mut line = String::new();
+            let _ = write!(
+                line,
                 "[play] track limit: the check failed after {} ms (identity {} ms, check {} ms): {e}",
                 started.elapsed().as_millis(),
                 identified.as_millis(),
@@ -199,35 +204,51 @@ pub(crate) struct LimitTimes {
     pub record: Duration,
 }
 
+struct Tracks(usize);
+
+impl std::fmt::Display for Tracks {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.0 {
+            1 => write!(f, "1 track"),
+            n => write!(f, "{n} tracks"),
+        }
+    }
+}
+
+struct LeftOut(usize);
+
+impl std::fmt::Display for LeftOut {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.0 {
+            0 => write!(f, "none left out"),
+            n => write!(f, "{} left out", Tracks(n)),
+        }
+    }
+}
+
 pub(crate) fn limit_line(check: &swofty_core::build::TrackLimitCheck, t: &LimitTimes) -> String {
     use swofty_core::tracks::{FILL_FROM, TRACK_LIST_ROOM};
-    let added = match check.added {
-        1 => "1 track".to_owned(),
-        n => format!("{n} tracks"),
-    };
-    let prep = format!(
-        "identity {} ms, counting {} ms",
-        t.identity.as_millis(),
-        check.counting.as_millis()
-    );
+    let added = Tracks(check.added);
+    let identity = t.identity.as_millis();
+    let counting = check.counting.as_millis();
+    let mut line = String::new();
     if !check.built() {
-        return format!(
+        let _ = write!(
+            line,
             "[play] track limit: the on addons add {added}, under the {FILL_FROM} that can fill the game's track lists \
-             ({TRACK_LIST_ROOM} tracks), so no check build ran ({} ms: {prep}, record {} ms)",
+             ({TRACK_LIST_ROOM} tracks), so no check build ran ({} ms: identity {identity} ms, counting {counting} ms, \
+             record {} ms)",
             t.total.as_millis(),
             t.record.as_millis()
         );
+        return line;
     }
     let steps: Vec<String> = check
         .steps
         .iter()
         .map(|(name, d)| format!("{name} {} ms", d.as_millis()))
         .collect();
-    let left_out = match check.limit.as_ref().map_or(0, |l| l.names.len()) {
-        0 => "none left out".to_owned(),
-        1 => "1 track left out".to_owned(),
-        n => format!("{n} tracks left out"),
-    };
+    let left_out = LeftOut(check.limit.as_ref().map_or(0, |l| l.names.len()));
     let reuse = match (check.reused, check.saved) {
         (true, _) => "the check restored the saved build of these addons, so nothing was built again",
         (false, true) => {
@@ -237,14 +258,16 @@ pub(crate) fn limit_line(check: &swofty_core::build::TrackLimitCheck, t: &LimitT
             "the check build is not saved (it gave added rows ids a check does not keep), so Play builds again"
         }
     };
-    format!(
+    let _ = write!(
+        line,
         "[play] track limit: the on addons add {added}, at least the {FILL_FROM} that can fill the game's track lists \
-         ({TRACK_LIST_ROOM} tracks), so the check planned the whole build to find the tracks left out: {} ms ({prep}; \
-         check build: {}; record {} ms); {left_out}; {reuse}",
+         ({TRACK_LIST_ROOM} tracks), so the check planned the whole build to find the tracks left out: {} ms (identity \
+         {identity} ms, counting {counting} ms; check build: {}; record {} ms); {left_out}; {reuse}",
         t.total.as_millis(),
         steps.join(", "),
         t.record.as_millis()
-    )
+    );
+    line
 }
 
 pub(crate) fn limit_text(room: usize, names: &[String]) -> String {
