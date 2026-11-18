@@ -4,6 +4,7 @@ use swofty_formats::erp::{Packer, Resource};
 
 use super::checks::is_handling;
 use super::{Archive, ErpBuild, fail, pack, served_at_runtime};
+use crate::cache::archive_entry::ArchiveEntry;
 use crate::content::runtime_assets::{foreign_argument, layout_change};
 use crate::{Error, Result};
 
@@ -47,31 +48,21 @@ impl ArchiveWrite {
         }
     }
 
-    /// Where the cache keeps this archive, under a key taken before any pending fragment is compressed.
-    fn entry(&self) -> Option<PathBuf> {
-        let dir = self.cache.as_deref()?;
-        let key = self.archive.key()?;
-        Some(dir.join(&key[..2]).join(format!("{key}.erp")))
+    fn entry(&self) -> Option<ArchiveEntry> {
+        self.archive.cache_entry(self.cache.as_deref()?)
     }
 
     /// Links the archive from the cache `entry` an earlier build wrote and marks the entry used, leaving
     /// the archive's write time as it was; true when it did. Without hard links nothing is cached.
-    fn link(&self, entry: Option<&Path>) -> Result<bool> {
+    fn link(&self, entry: Option<&ArchiveEntry>) -> Result<bool> {
         if let Some(dir) = self.path.parent() {
             std::fs::create_dir_all(dir).map_err(crate::io_err(dir))?;
         }
-        let Some(c) = entry.filter(|c| c.is_file()) else {
-            return Ok(false);
-        };
-        if std::fs::hard_link(c, &self.path).is_err() {
-            return Ok(false);
-        }
-        crate::cache::mark_used(c);
-        Ok(true)
+        Ok(entry.is_some_and(|e| e.link_to(&self.path)))
     }
 
-    /// Writes the archive, its fragments compressed, and links it into the cache at `entry`.
-    fn write(self, entry: Option<PathBuf>) -> Result<()> {
+    /// Writes the archive, its fragments compressed, and keeps it in the cache at `entry`.
+    fn write(self, entry: Option<ArchiveEntry>) -> Result<()> {
         let Self {
             rel, archive, path, ..
         } = self;
@@ -79,11 +70,8 @@ impl ArchiveWrite {
             swofty_formats::Error::IoAt { .. } => Error::Formats(e),
             e => fail(format!("{rel}: {e}")),
         })?;
-        if let Some(c) = entry {
-            if let Some(dir) = c.parent() {
-                std::fs::create_dir_all(dir).ok();
-            }
-            std::fs::hard_link(&path, &c).ok();
+        if let Some(e) = entry {
+            e.keep(&path);
         }
         Ok(())
     }
@@ -103,7 +91,7 @@ fn run_all<'r>(
     for write in writes {
         cancel()?;
         let entry = write.entry();
-        let linked = write.link(entry.as_deref())?;
+        let linked = write.link(entry.as_ref())?;
         runs.push((write, entry, linked));
     }
     let mut owned: Vec<&mut Resource> = runs

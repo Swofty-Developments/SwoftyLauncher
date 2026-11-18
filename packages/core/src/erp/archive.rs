@@ -4,6 +4,7 @@ use std::path::Path;
 use swofty_formats::erp::{Entry, ErpFile, Resource};
 
 use super::fail;
+use crate::cache::archive_entry::ArchiveEntry;
 use crate::{Error, Result};
 
 /// The version of the cache key's layout, raised whenever what [`Archive::key`] hashes changes, so an
@@ -80,6 +81,12 @@ impl Archive {
             }
         }
         Some(h.finalize().iter().map(|b| format!("{b:02x}")).collect())
+    }
+
+    /// Where the archive cache in `dir` keeps this archive, under a key taken before any pending fragment
+    /// is compressed.
+    pub(crate) fn cache_entry(&self, dir: &Path) -> Option<ArchiveEntry> {
+        Some(ArchiveEntry::at(dir, &self.key()?))
     }
 
     /// Writes the archive to `dst`, its pending fragments compressed.
