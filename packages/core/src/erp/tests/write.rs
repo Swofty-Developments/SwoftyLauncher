@@ -118,6 +118,100 @@ fn a_runtime_route_build_links_the_archives_it_builds_into_the_game_files_unchan
 }
 
 #[test]
+fn the_built_in_archives_and_the_runtime_overlay_compress_together() {
+    let root = std::env::temp_dir().join(format!("swofty-erp-built-in-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let (game, addon) = (root.join("game"), root.join("addon"));
+    let shader = "shader_package_2025/object_flag.nefx2.sm51.erp";
+    let resized = "2025_asset_groups/ui_package/screens.erp";
+    let served = "2025_asset_groups/ui_package/persistent.erp";
+    let res = "eaid://ui_package/screens/a.ui";
+    let noise = |seed: u8, len: u32| -> Vec<u8> {
+        (0..len)
+            .map(|i| ((i % 251) as u8 ^ (i / 1021) as u8).wrapping_add(seed))
+            .collect()
+    };
+    let stock = |r: &Resource| {
+        let mut r = r.clone();
+        for f in &mut r.fragments {
+            let data = f.data().unwrap();
+            *f = Fragment::new(f.name, data.len() as u64, f.flags, ZSTD, compress(&data).unwrap());
+        }
+        r.hash = r.content_hash().unwrap();
+        r
+    };
+    let plain = Resource {
+        name: res.into(),
+        kind: erp::kind("UIDF").unwrap(),
+        unk: vec![0; 4],
+        fragments: vec![Fragment::new(*b"temp", 8 << 10, 0x10, STORED, noise(1, 8 << 10))],
+        hash: [0; 16],
+    };
+    for rel in [shader, resized, served] {
+        let path = game.join(rel);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(path, archive(vec![stock(&plain)])).unwrap();
+    }
+    std::fs::create_dir_all(addon.join("raw")).unwrap();
+    std::fs::write(addon.join("raw/shader.bin"), noise(2, 8 << 10)).unwrap();
+    std::fs::write(addon.join("raw/longer.bin"), noise(3, 9 << 10)).unwrap();
+    std::fs::write(addon.join("raw/same.bin"), noise(4, 8 << 10)).unwrap();
+    let replace = |erp: &str, src: &str| {
+        format!(
+            r#"{{"op":"replace-resource","erp":"{erp}","resource":"{res}","fragment":0,"source":"raw/{src}"}}"#
+        )
+    };
+    let ops = erp_ops(&format!(
+        r#"{{"schema_version":1,"ops":[{},{},{}]}}"#,
+        replace(shader, "shader.bin"),
+        replace(resized, "longer.bin"),
+        replace(served, "same.bin")
+    ));
+    let original = |rel: &str| game.join(rel);
+    let left_data = |b: &ErpBuild| -> Vec<(String, Vec<u8>)> {
+        b.resources()
+            .map(|(rel, r, _, _)| (rel.to_owned(), r.fragments[0].raw().unwrap().to_vec()))
+            .collect()
+    };
+
+    let mut eager = ErpBuild::new(&original);
+    apply(&mut eager, &ops, &addon).unwrap();
+    let eager_out = root.join("eager");
+    assert_eq!(eager.take_outside(&eager_out, None).unwrap().0, [shader]);
+    assert_eq!(eager.take_resized(&eager_out, None).unwrap().0[0].erp, resized);
+    let expected = left_data(&eager);
+
+    let mut b = ErpBuild::new(&original).with_packer(Packer::default().deferring(true));
+    apply(&mut b, &ops, &addon).unwrap();
+    let out = root.join("together");
+    let built = b.take_built_in(&out, None, &|| Ok(())).unwrap();
+    assert_eq!(built.outside, [shader]);
+    assert_eq!(
+        built.resized.iter().map(|r| r.erp.as_str()).collect::<Vec<_>>(),
+        [resized]
+    );
+    assert_eq!(built.reused, 0);
+    assert_eq!(
+        b.settle().unwrap(),
+        0,
+        "the runtime overlay's fragments were compressed with the archives"
+    );
+    assert_eq!(left_data(&b), expected);
+    assert_eq!(
+        expected.iter().map(|(rel, _)| rel.as_str()).collect::<Vec<_>>(),
+        [served]
+    );
+    for rel in [shader, resized] {
+        assert_eq!(
+            std::fs::read(out.join(rel)).unwrap(),
+            std::fs::read(eager_out.join(rel)).unwrap(),
+            "{rel}"
+        );
+    }
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
 fn an_unchanged_archive_is_linked_from_the_cache() {
     let root = std::env::temp_dir().join(format!("swofty-erpcache-{}", std::process::id()));
     std::fs::remove_dir_all(&root).ok();

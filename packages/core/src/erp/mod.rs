@@ -37,7 +37,7 @@ pub use self::stats::{
     ArchiveRepair, StatsRepair, repair_stats_in, repaired_note, stale_stats_in, unrepairable_message,
 };
 pub use self::ui_merge::{UiConflict, UiMerge};
-pub use self::write::Resized;
+pub use self::write::{BuiltIn, Resized};
 
 const SCENE: &str = "UILayout";
 const ASSET_GROUPS: &str = "2025_asset_groups";

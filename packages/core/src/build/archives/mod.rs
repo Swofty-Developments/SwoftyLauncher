@@ -420,13 +420,16 @@ impl Pipeline<'_, '_> {
             stage_erps(built, staged, written)?;
             return Ok(resized);
         }
-        let (outside, outside_reused) = erps.take_outside(&built.overlay, Some(&archives))?;
+        let crate::erpbuild::BuiltIn {
+            outside,
+            resized,
+            reused,
+        } = erps.take_built_in(&built.overlay, Some(&archives), &|| run.cancel())?;
         for rel in &outside {
             built.lines.push(format!(
                 "erp: {rel} built into the game files; the in-game loader patches only archives under 2025_asset_groups"
             ));
         }
-        let (resized, resized_reused) = erps.take_resized(&built.overlay, Some(&archives))?;
         for r in &resized {
             let (uri, why) = &r.resources[0];
             built.lines.push(format!(
@@ -436,7 +439,6 @@ impl Pipeline<'_, '_> {
             ));
         }
         let built_in: Vec<String> = resized.iter().map(|r| r.erp.clone()).chain(outside).collect();
-        let reused = outside_reused + resized_reused;
         if reused > 0 {
             built.lines.push(format!(
                 "erp: {reused} of the {} archive(s) built into the game files unchanged since an earlier build, linked from the cache",
@@ -450,7 +452,6 @@ impl Pipeline<'_, '_> {
                 prebuilt.len()
             ));
         }
-        erps.settle()?;
         let notes = runtime.resources(erps.resources(), &ranks, &prebuilt, &built.overlay)?;
         built.warnings.extend(notes);
         stage_erps(built, staged, built_in)?;
