@@ -14,6 +14,7 @@ init
   src/core/loading/game_settings.cpp
   src/core/live/live_state.cpp
   src/core/hud/room_cover.cpp
+  src/core/weather/setup.cpp
   src/core/guards/ai/ai_line_set_guard.cpp
   src/core/diagnostics/session_job_probe.cpp
   src/core/guards/session/session_enter.cpp
@@ -81,6 +82,7 @@ init
   src/core/career/save_splice.cpp
   src/core/boxes/box_grid.cpp
   src/core/boxes/car_category.cpp
+  src/core/boxes/picker/time_trial.cpp
   src/core/boxes/era_picker.cpp
   src/core/career/career_wizard.cpp
   src/core/career/characters.cpp
@@ -211,6 +213,7 @@ exit
   src/core/guards/session/quali_tyres_guard.cpp
   src/core/guards/session/teammate_pairs_guard.cpp
   src/core/guards/frontend/setup_vm_guard.cpp
+  src/core/guards/engine/heap_sizes.cpp
   src/core/diagnostics/net_trace.cpp
   src/core/telemetry/udp_ids.cpp
   src/core/assets/assets.cpp
@@ -244,6 +247,7 @@ exit
   src/core/career/characters.cpp
   src/core/career/career_wizard.cpp
   src/core/boxes/era_picker.cpp
+  src/core/boxes/picker/time_trial.cpp
   src/core/boxes/car_category.cpp
   src/core/boxes/box_grid.cpp
   src/core/career/save_splice.cpp
@@ -273,6 +277,7 @@ exit
   src/core/hooks/hooks.cpp
   src/core/hooks/core_events.cpp
   src/core/services/lap_host.cpp
+  src/core/guards/frontend/leaderboard_guard.cpp
   src/core/career/ops/career_ops.cpp
   src/core/registry/table.cpp
   src/core/registry/core.cpp
@@ -306,6 +311,8 @@ exit
   src/core/guards/session/thrustmaster_lcd.cpp
   src/core/guards/session/estimate_laptime_guard.cpp
   src/core/guards/garage/garage_setup.cpp
+  src/core/guards/frontend/theatre_list.cpp
+  src/core/guards/frontend/tile_list_select_guard.cpp
   src/core/guards/session/session_enter.cpp
   src/core/diagnostics/session_job_probe.cpp
   src/core/guards/ai/ai_line_set_guard.cpp

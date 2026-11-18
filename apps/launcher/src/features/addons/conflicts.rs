@@ -6,7 +6,7 @@ use super::AddonsPage;
 use crate::services::game::Install;
 use crate::services::library::AddonItem;
 use crate::shell::Shell;
-use crate::shell::host::{Host, Hosted};
+use crate::shell::host::{Host, Hosted, reports_nothing};
 use crate::ui::format::{ago_since, title_case};
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;
@@ -477,9 +477,7 @@ impl Host<AddonsPage> for Shell {
         )
     }
 
-    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
-        match change {}
-    }
+    reports_nothing!();
 }
 
 impl AddonsPage {

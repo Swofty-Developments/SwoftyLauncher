@@ -1,5 +1,5 @@
 #include "core/runtime/loader/core_sets.hpp"
-#include "core/runtime/loader/mixin_gate.hpp"
+#include "core/runtime/loader/hook_set.hpp"
 #include "core/guards/skips.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/resolve.hpp"
@@ -57,19 +57,19 @@
 //
 // SWOFTY_SAVE_SPLICE=0 turns it off.
 
-namespace save_data {
+namespace career::save_data {
 
 Bindings b;
 
 }
 
-using namespace save_data;
+using namespace career::save_data;
 
 namespace {
 
 namespace mem = swofty::mem;
 namespace g = swofty::game;
-namespace sp = runtime::save_splice;
+namespace sp = career::save_splice;
 namespace layout = runtime::layout;
 
 constexpr const char *MIXIN = "swofty_core.dll (save splice)";
@@ -84,10 +84,7 @@ constexpr size_t FRAME_BAG_TYPE = 0x58;
 constexpr size_t FRAME_COUNT = 0x90;
 constexpr int WRITE_FAILED = 0x58;
 
-runtime::loader::MixinGate mixin_gate;
 constinit swofty_core::guards::LogFirst<1> pool_line;
-bool live = false;
-std::mutex lock;
 sp::Store store;
 sp::Owed owed;
 uint32_t loads = 0;
@@ -96,19 +93,23 @@ uint32_t loads = 0;
 // this store like any unclaimed container. The game never claims it, so a load keeps it and a save
 // writes it back; the hooks hand its body to the snapshots at each root load and take a new one at
 // each profile save. ----
-runtime::save_splice::EntryHooks entry_hooks;
+career::save_splice::EntryHooks entry_hooks;
 bool entry_put = false;
 // ---- end W4 ----
 
 using Write_t = int (*)(void *stream, const void *data, uint64_t size);
 using WriteLength_t = int (*)(void *stream, uint32_t length);
-using Deserialise_t = int *(*)(void *self, int *result, void *bag, uint8_t reset_on_error, uint64_t groups);
+using Deserialise_t = int *(void *self, int *result, void *bag, uint8_t reset_on_error, uint64_t groups);
+using SlotsLoad_t = int(void *iface, void *bag, void *ctx);
 
-Deserialise_t deserialise_orig = nullptr;
+// The save splice set: the root container's deserialise and, when this build has it, the slot managers' load.
+struct SpliceHooks : runtime::loader::HookSet<> {
+    runtime::loader::Original<Deserialise_t> deserialise_container;
+    runtime::loader::Original<SlotsLoad_t> load_slot_manager;
+};
 
-using SlotsLoad_t = int (*)(void *iface, void *bag, void *ctx);
-SlotsLoad_t slots_orig = nullptr;
-namespace cs = runtime::career_saves;
+constinit SpliceHooks hooks;
+namespace cs = career::saves;
 std::vector<cs::SlotRead> slot_reads;
 struct Manager {
     uintptr_t iface = 0, vtable = 0;
@@ -121,23 +122,23 @@ void log_load(const std::vector<cs::SlotRead> &reads, const std::vector<Manager>
 {
     unsigned n;
     {
-        std::lock_guard<std::mutex> g(lock);
+        std::lock_guard<std::mutex> g(hooks.lock);
         n = loads;
     }
     std::string file = runtime::save_sandbox_file();
     swofty::log("[saves] profile load %u: %s from %s; %s", n, ok ? "read" : "FAILED to read", runtime::save_sandbox_source().c_str(),
                 file.empty() ? "save file not observed (Steam reads it natively)" : file.c_str());
-    if (!slots_orig) {
+    if (!hooks.load_slot_manager) {
         swofty::log("[saves] profile load %u: career slots are not read on this build", n);
         return;
     }
     uintptr_t image = reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr));
     size_t at = 0;
     for (size_t m = 0; m < seen.size(); m++) {
-        swofty::log("[saves] %s", runtime::save_diag::manager_line(n, m, seen[m].count, seen[m].vtable - image).c_str());
+        swofty::log("[saves] %s", career::save_diag::manager_line(n, m, seen[m].count, seen[m].vtable - image).c_str());
         for (size_t i = 0; i < seen[m].count && at < reads.size(); i++, at++)
             swofty::log("[saves] %s",
-                        runtime::save_diag::slot_line(n, m, i, reads[at],
+                        career::save_diag::slot_line(n, m, i, reads[at],
                                                       runtime::career_saves_id_for_slot(cs::slot_key(reads[at].id, reads[at].guid)))
                             .c_str());
     }
@@ -149,7 +150,7 @@ int *deserialise_entry(void *self, int *result, void *bag, uint8_t reset_on_erro
 {
     bool root = is_root(reinterpret_cast<uintptr_t>(self));
     if (root) {
-        std::lock_guard<std::mutex> g(lock);
+        std::lock_guard<std::mutex> g(hooks.lock);
         store.begin_load();
         ++loads;
         slot_reads.clear();
@@ -157,16 +158,16 @@ int *deserialise_entry(void *self, int *result, void *bag, uint8_t reset_on_erro
         slots_clean = true;
         in_root_load = true;
     }
-    int *r = deserialise_orig(self, result, bag, reset_on_error, groups);
+    int *r = hooks.deserialise_container(self, result, bag, reset_on_error, groups);
     if (root) {
         std::vector<cs::SlotRead> reads;
         bool report;
         std::vector<Manager> seen;
         {
-            std::lock_guard<std::mutex> g(lock);
+            std::lock_guard<std::mutex> g(hooks.lock);
             in_root_load = false;
             seen = managers;
-            report = slots_orig && slots_clean && r && *r == 0;
+            report = hooks.load_slot_manager && slots_clean && r && *r == 0;
             reads.swap(slot_reads);
         }
         if (report)
@@ -177,18 +178,18 @@ int *deserialise_entry(void *self, int *result, void *bag, uint8_t reset_on_erro
         std::vector<uint8_t> entry;
         bool has_entry = false;
         {
-            std::lock_guard<std::mutex> g(lock);
+            std::lock_guard<std::mutex> g(hooks.lock);
             if (store.size())
                 swofty::log("[saves] profile load %u: kept %zu save container(s) no loaded game mode claims (%llu "
                             "bytes); the next profile save writes them back",
                             loads, store.size(), (unsigned long long)store.total());
             for (auto &k : store.kept())
-                swofty::log("[saves] %s", runtime::save_diag::kept_line(loads, k.name, k.body.size()).c_str());
+                swofty::log("[saves] %s", career::save_diag::kept_line(loads, k.name, k.body.size()).c_str());
             for (auto &k : store.kept())
                 if (k.name == sp::ENTRY_NAME)
                     entry = k.body, has_entry = true;
         }
-        if (live && entry_hooks.loaded)
+        if (hooks.live() && entry_hooks.loaded)
             entry_hooks.loaded(has_entry ? &entry : nullptr);
     }
     return r;
@@ -196,11 +197,11 @@ int *deserialise_entry(void *self, int *result, void *bag, uint8_t reset_on_erro
 
 int slots_entry(void *iface, void *bag, void *ctx)
 {
-    int rc = slots_orig(iface, bag, ctx);
+    int rc = hooks.load_slot_manager(iface, bag, ctx);
     std::vector<cs::SlotRead> reads;
     uintptr_t base = reinterpret_cast<uintptr_t>(iface), vt = 0;
     bool clean = rc == 0 && read_manager(base, reads) && mem::read(base, vt);
-    std::lock_guard<std::mutex> g(lock);
+    std::lock_guard<std::mutex> g(hooks.lock);
     if (in_root_load) {
         if (clean) {
             managers.push_back({base, vt, reads.size()});
@@ -214,7 +215,7 @@ int slots_entry(void *iface, void *bag, void *ctx)
 
 void unclaimed_entry(SwoftyContext *c)
 {
-    if (!live || !is_root(c->rdi))
+    if (!hooks.live() || !is_root(c->rdi))
         return;
     uintptr_t slot = 0;
     void *prop = nullptr;
@@ -234,7 +235,7 @@ void unclaimed_entry(SwoftyContext *c)
         }
     }
     ok = ok && encode(bag, bytes, why);
-    std::lock_guard<std::mutex> g(lock);
+    std::lock_guard<std::mutex> g(hooks.lock);
     if (!ok) {
         swofty::log("[saves] profile load %u: could not keep the unclaimed save container %s (hash %016llx): %s; the "
                     "game drops it",
@@ -266,13 +267,13 @@ void slot_selected(SwoftyContext *c)
 void count_entry(SwoftyContext *c)
 {
     uintptr_t self = 0;
-    if (!live || !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self))
+    if (!hooks.live() || !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self))
         return;
     runtime::career_saves_saving();
     // W4: the career snapshots' new swofty_registry body, when they changed since the last write.
     std::vector<uint8_t> entry;
     bool has_entry = entry_hooks.saving && entry_hooks.saving(entry);
-    std::lock_guard<std::mutex> g(lock);
+    std::lock_guard<std::mutex> g(hooks.lock);
     owed.take(nullptr);
     if (entry_put && entry_hooks.written)
         entry_hooks.written(false);
@@ -312,7 +313,7 @@ void count_entry(SwoftyContext *c)
         uint64_t bytes = 0;
         for (size_t i : picked)
             bytes += store.kept()[i].body.size();
-        swofty::log("%s", runtime::save_heap::session_line(heap_bytes, raised, picked.size(), bytes).c_str());
+        swofty::log("%s", career::save_heap::session_line(heap_bytes, raised, picked.size(), bytes).c_str());
     }
     *reinterpret_cast<uint64_t *>(c->rsp + FRAME_COUNT) =
         owed.bump(reinterpret_cast<const void *>(c->r12), count, std::move(picked));
@@ -351,9 +352,9 @@ int write_kept(void *stream, uint32_t bag_type, const std::vector<size_t> &picke
 void children_entry(SwoftyContext *c)
 {
     uintptr_t self = 0;
-    if (!live || !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self))
+    if (!hooks.live() || !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self))
         return;
-    std::lock_guard<std::mutex> g(lock);
+    std::lock_guard<std::mutex> g(hooks.lock);
     std::vector<size_t> picked = owed.take(reinterpret_cast<const void *>(c->r12));
     if (picked.empty())
         return;
@@ -388,12 +389,12 @@ void saved_entry(SwoftyContext *c)
 {
     uintptr_t self = 0;
     int result = 1;
-    if (!live || !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self) || !mem::read(c->r12, result) || result)
+    if (!hooks.live() || !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self) || !mem::read(c->r12, result) || result)
         return;
     std::vector<cs::SlotRead> reads;
     std::vector<Manager> known;
     {
-        std::lock_guard<std::mutex> g(lock);
+        std::lock_guard<std::mutex> g(hooks.lock);
         known = managers;
     }
     bool clean = !known.empty();
@@ -414,9 +415,9 @@ namespace runtime {
 static std::vector<CoreMixins> save_splice_mixins()
 {
     std::vector<CoreMixins> out;
-    if (mixin_gate.offered() || !code_ready())
+    if (hooks.gate.offered() || !code_ready())
         return out;
-    mixin_gate.offer();
+    hooks.gate.offer();
     // W4b: the career id's save slot, whether or not the splice runs.
     out.push_back({SLOT_MIXIN, {{"site_Game_SaveSlot_Selected", SWOFTY_MIXIN_SITE, 100, (void *)&slot_selected, nullptr}}});
     char v[16] = {};
@@ -429,23 +430,23 @@ static std::vector<CoreMixins> save_splice_mixins()
         swofty::log("[saves] save splice off: this core was built without the save stream and property layouts");
         return out;
     }
-    std::string missing;
-    b.root_vt = runtime::resolve_or_note("vt_Game_SaveDataRootContainer", missing);
-    b.write_bag = runtime::resolve_or_note("Game_SaveData_WriteBag", missing);
-    b.lookup = runtime::resolve_or_note("Ne_StringTable_Lookup", missing);
-    b.codec_vt = runtime::resolve_or_note("k_Ne_BagCodecVtbl", missing);
-    b.counting_vt = runtime::resolve_or_note("k_Ne_CountingStreamVtbl", missing);
-    b.memory_vt = runtime::resolve_or_note("k_Ne_MemWriteStreamVtbl", missing);
-    b.table = runtime::resolve_or_note("g_Ne_StringTable", missing);
-    b.bag_type = runtime::resolve_or_note("k_Ne_PropertyType_Bag", missing);
-    b.done = runtime::resolve_or_note("site_Game_SaveData_ContainersDone", missing);
-    if (!missing.empty()) {
-        swofty::log("[saves] save splice off: needs %s, which this build does not resolve", missing.c_str());
+    std::string why;
+    if (!SpliceHooks::bind({{"vt_Game_SaveDataRootContainer", &b.root_vt},
+                            {"Game_SaveData_WriteBag", &b.write_bag},
+                            {"Ne_StringTable_Lookup", &b.lookup},
+                            {"k_Ne_BagCodecVtbl", &b.codec_vt},
+                            {"k_Ne_CountingStreamVtbl", &b.counting_vt},
+                            {"k_Ne_MemWriteStreamVtbl", &b.memory_vt},
+                            {"g_Ne_StringTable", &b.table},
+                            {"k_Ne_PropertyType_Bag", &b.bag_type},
+                            {"site_Game_SaveData_ContainersDone", &b.done}},
+                           why)) {
+        swofty::log("[saves] save splice off: %s", why.c_str());
         return out;
     }
     out.push_back({MIXIN,
                    {{"Game_SaveData_DeserialiseContainer", SWOFTY_MIXIN_WRAP, 100, (void *)&deserialise_entry,
-                     (void **)&deserialise_orig},
+                     hooks.deserialise_container.slot()},
                     {"site_Game_SaveData_UnclaimedChild", SWOFTY_MIXIN_SITE, 100, (void *)&unclaimed_entry, nullptr},
                     {"site_Game_SaveData_ContainersCount", SWOFTY_MIXIN_SITE, 100, (void *)&count_entry, nullptr},
                     {"site_Game_SaveData_ContainersChildren", SWOFTY_MIXIN_SITE, 100, (void *)&children_entry,
@@ -453,7 +454,7 @@ static std::vector<CoreMixins> save_splice_mixins()
     if (swofty::api->resolve("Game_SaveSlotManager_Deserialise"))
         out.push_back({SLOTS_MIXIN,
                        {{"Game_SaveSlotManager_Deserialise", SWOFTY_MIXIN_WRAP, 100, (void *)&slots_entry,
-                         (void **)&slots_orig}}});
+                         hooks.load_slot_manager.slot()}}});
     out.push_back({SAVED_MIXIN, {{"site_Game_SaveData_ContainersDone", SWOFTY_MIXIN_SITE, 100, (void *)&saved_entry, nullptr}}});
     return out;
 }
@@ -465,27 +466,30 @@ static void save_splice_commit()
         swofty::log("[saves] career list details off: needs SaveSlotInfo.game_setup_mode, info_season, info_weekend, "
                     "info_team, info_driver, info_vehicle, info_date and type_flags (a verify agree row each); the "
                     "list still holds every save slot's key");
-    if (!b.done || !mixin_gate.settle()) {
+    if (!b.done || !hooks.gate.settle()) {
         snapshots_start(false);
         return;
     }
-    live = core_mixins_active(MIXIN);
+    if (core_mixins_active(MIXIN))
+        hooks.set_live();
     swofty::log("[saves] save splice %s",
-                loader::install_state(live, "armed: save containers no loaded game mode claims are kept through each profile "
+                loader::install_state(hooks.live(), "armed: save containers no loaded game mode claims are kept through each profile "
                                             "load and save"));
-    snapshots_start(live);
+    snapshots_start(hooks.live());
 }
 
 static loader::FunctionSet save_splice_core_set{loader::CoreSetId::save_splice, save_splice_mixins, save_splice_commit};
 
+}
+
 // ---- W4 career snapshots ----
-namespace save_splice {
+namespace career::save_splice {
 
 void set_entry_hooks(const EntryHooks &h) { entry_hooks = h; }
 
 std::string entry_blocked()
 {
-    if (!live)
+    if (!hooks.live())
         return "the save splice is not armed";
     if constexpr (layout::SAVE_SPLICE) {
         auto bag_id = reinterpret_cast<Id_t>(
@@ -502,7 +506,6 @@ std::string entry_blocked()
     }
 }
 
-}
 // ---- end W4 ----
 
 }

@@ -74,6 +74,8 @@ PHASES = [
 ]
 SESSION_NODES = ['SessionEnter', 'IntroVideo', 'IntroCameras', 'TalkingPoints', 'GridRundownType', 'GridRunDown',
                  'F1Swipe', 'PreRace', 'PostLoadReadyMonitor', 'BeginGameplay', 'InGame']
+# A stage ends at its node's own Exiting line when the log has one, else at the first of the nodes listed after it.
+# TalkingPoints leaves by skipped, snapshot or next, and the snapshot link leads to none of the nodes listed.
 STAGES = [
     ('intro_video', 'IntroVideo', ('IntroLockFrameRate', 'IntroCamerasLockFrameRate', 'IntroCameras', 'GridRundownType',
                                    'TalkingPoints', 'BeginGameplay')),
@@ -93,10 +95,13 @@ WANTED = re.compile(r'^\[loading\] game setting overrides wanted: (.*?) \(\d+ ge
 LOG_FEATURE = 'loading_log_settings'
 FEATURE_SETTINGS = {
     'loading_skip_minimum_time': 'Game.IgnoreMinimumLoadingTime',
+    'loading_skip_session_transition': 'Game.IgnoreMinimumLoadingTime',
     'loading_skip_session_intro_video': 'Game.SkipIntroVideo',
     'loading_skip_grid_rundown': 'Game.SkipGridRundown',
     'loading_skip_talking_points': 'Game.SkipTalkingPoints',
 }
+# Read only between two sessions of a weekend, which a run need not reach.
+BETWEEN_SESSIONS = {'loading_skip_session_transition'}
 REGRESSIONS = [
     ('crash', re.compile(r'^\[crash\] #\d+ (?!first-chance)')),
     ('crash', re.compile(r'^\[crash\] TerminateProcess')),
@@ -204,7 +209,7 @@ def analyse(path, label=None):
 
 def new_load(t, how):
     return {'start': t, 'start_by': how, 'name': None, 'load_exit': None, 'session_enter': None, 'session_live': None,
-            'track_request': None, 'fade_in': None, 'nodes': {}, 'thumbnails': [], 'complete': False}
+            'track_request': None, 'fade_in': None, 'nodes': {}, 'exits': {}, 'thumbnails': [], 'complete': False}
 
 
 def cut_loads(lines):
@@ -235,6 +240,8 @@ def cut_loads(lines):
             cur['complete'] = True
         elif name and m.group(2) == 'None' and cur['session_enter'] is not None:
             cur['nodes'].setdefault(name, t)
+        elif name and m.group(3) == 'Exiting' and cur['session_enter'] is not None:
+            cur['exits'].setdefault(name, t)
         s = TEST_SESSION.match(msg) if not ch else None
         if s and cur['name'] is None:
             cur['name'] = ' '.join(x for x in s.groups() if x)
@@ -265,6 +272,8 @@ def derive(ld):
     for key, node, after in STAGES:
         t0 = n.get(node)
         later = [n[a] for a in after if a in n and t0 is not None and n[a] >= t0]
+        if t0 is not None and ld['exits'].get(node, -1.0) >= t0:
+            later.append(ld['exits'][node])
         ld[key + '_s'] = round(min(later) - t0, 3) if later else None
     ld['grid_thumbnails'] = sum(1 for x in ld['thumbnails'] if x['reason'] == 3)
 
@@ -285,7 +294,7 @@ def loading_times(lines):
 def check(run):
     armed = set() if run['arm'] == 'off' else set(run['arm'].split(','))
     for feature, setting in FEATURE_SETTINGS.items():
-        if feature in armed and feature not in run['applied']:
+        if feature in armed and feature not in run['applied'] and run['loads'] and feature not in BETWEEN_SESSIONS:
             run['regressions'].append({'kind': 'flag not applied', 't': None,
                                        'line': f'{feature} is armed but the game never read {setting}'})
         if feature not in armed and feature in run['applied']:

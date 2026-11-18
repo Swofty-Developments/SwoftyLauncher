@@ -44,6 +44,12 @@ SwoftyMod splits the era picker of **Grand Prix** and **Time Trial** into two ro
 
 Some addons, such as imported season mods, replace this menu with their own copy. When SwoftyMod can't edit that copy, the menu stays as the addon made it, without the Addons row, while the addon is on. The build shows a warning that names the addon.
 
+## Loading waits
+
+The game holds a track's loading screen, the story hub's loading screen and the change from one session to the next for at least 3 seconds. SwoftyMod skips that minimum, so each one ends as soon as its loading is done. A load that takes longer than 3 seconds takes as long as before.
+
+To keep the waits, turn off **Shorter loading waits** in SwoftyMod's settings. It applies the next time you press **Play**.
+
 ## Next
 
 - [Addons](/using/addons#change-its-settings): the same settings in the launcher.

@@ -63,7 +63,7 @@ struct Overlay {
     void device_lost(HRESULT present_hr);
     void draw_target(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const Renderer::Target &t, const std::vector<Vertex> &verts,
                      const std::vector<hud::drawlist::Batch> &batches, UINT color_space, ULONGLONG now);
-    void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *);
+    void draw_frame(IDXGISwapChain3 *sc, const render::d3d12::Swapchain *known, void *);
     void presented(IDXGISwapChain3 *, HRESULT hr);
     bool arm_for_unread_queue(IDXGISwapChain3 *sc, void *caller);
 

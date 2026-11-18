@@ -19,7 +19,7 @@
 //
 // The game carries the payload as a property bag: bag.hpp.
 
-namespace swofty_core::snapshots::format {
+namespace career::snapshots::format {
 
 constexpr uint16_t ENTRY_MAJOR = 1, ENTRY_MINOR = 0;
 constexpr const char *ENTRY_NAME = "swofty_registry";

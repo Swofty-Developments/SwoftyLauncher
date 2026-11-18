@@ -1,5 +1,11 @@
+import hashlib
 import os
+import shutil
+import subprocess
 import sys
+import tempfile
+import time
+import types
 import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools'))
@@ -181,6 +187,55 @@ class FindDecl(unittest.TestCase):
 
     def test_a_name_that_is_never_declared_is_not_found(self):
         self.assertEqual(ic.find_decl('unit.cpp', 'name'), (0, ''))
+
+
+class ChangedDuringBuild(unittest.TestCase):
+    def setUp(self):
+        self.native, self.root = ic.NATIVE, tempfile.mkdtemp()
+        ic.NATIVE = self.root
+        self.write('src/a.cpp', 'int a = f();\n')
+        self.write('src/a.hpp', 'int f();\n')
+
+    def tearDown(self):
+        ic.NATIVE = self.native
+        shutil.rmtree(self.root)
+
+    def write(self, path, text):
+        os.makedirs(os.path.dirname(os.path.join(self.root, path)), exist_ok=True)
+        with open(os.path.join(self.root, path), 'w') as f:
+            f.write(text)
+
+    def unit(self, compiled, built, paths=()):
+        entries = [ic.Entry(p, 1, 'constructor', 'int a = f();', '') for p in ('src/a.cpp',) + tuple(paths)]
+        return types.SimpleNamespace(name='src/a.cpp', compiled=compiled, built=built, entries=entries)
+
+    def test_a_source_as_it_was_compiled_has_not_changed(self):
+        u = self.unit(ic.source_hash('src/a.cpp'), time.time() + 60, ['src/a.hpp'])
+        self.assertEqual(ic.changed_during_build(u), [])
+
+    def test_a_source_edited_after_its_compile_started_changed(self):
+        u = self.unit(ic.source_hash('src/a.cpp'), time.time() + 60)
+        self.write('src/a.cpp', 'int b;\nint a = f();\n')
+        self.assertEqual(ic.changed_during_build(u), ['src/a.cpp'])
+
+    def test_a_header_with_an_entry_that_is_newer_than_the_report_changed(self):
+        built = os.path.getmtime(os.path.join(self.root, 'src/a.hpp')) - 60
+        self.assertEqual(ic.changed_during_build(self.unit(ic.source_hash('src/a.cpp'), built, ['src/a.hpp'])),
+                         ['src/a.hpp'])
+
+    def test_a_report_without_a_hash_does_not_judge_its_source(self):
+        u = self.unit(None, time.time() + 60)
+        self.write('src/a.cpp', 'int b;\n')
+        self.assertEqual(ic.changed_during_build(u), [])
+
+    def test_the_compile_wrapper_records_the_hash_of_the_source_before_it_compiles(self):
+        report = os.path.join(self.root, 'a.o.init')
+        source = os.path.join(self.root, 'src/a.cpp')
+        wrapper = os.path.join(self.native, 'tools/cxx_init.sh')
+        subprocess.run(['sh', wrapper, report, source, 'sh', '-c', f'printf "int c;\\n" >> {source}'], check=True)
+        self.assertEqual(ic.compiled_hash(report), hashlib.sha256(b'int a = f();\n').hexdigest())
+        self.assertEqual(ic.changed_during_build(self.unit(ic.compiled_hash(report), os.path.getmtime(report))),
+                         ['src/a.cpp'])
 
 
 class Expansion(unittest.TestCase):

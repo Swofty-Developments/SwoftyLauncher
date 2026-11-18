@@ -20,7 +20,7 @@
 #include <string_view>
 #include <vector>
 
-namespace career_ops::fuel {
+namespace career::ops::fuel {
 
 constexpr uintptr_t kEntityTrackData = 0xf58;
 constexpr uintptr_t kSetsBegin = 0x68;

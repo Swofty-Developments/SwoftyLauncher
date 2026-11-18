@@ -264,10 +264,15 @@ int main(int argc, char **argv)
             return e;
         };
         auto key_of = [&](const lb::Env &e, std::shared_ptr<const std::string> db) {
+            auto size_of = [&](const std::string &rel) -> uint64_t { return rel == lb::DATABASES ? db->size() : fs::file_size(game / rel); };
             lc::Env stamp{
-                [&](const std::string &rel, uint64_t &size, uint64_t &time) {
-                    size = rel == lb::DATABASES ? db->size() : fs::file_size(game / rel);
-                    time = 1;
+                [&](const std::string &rel, uint64_t &size) {
+                    size = size_of(rel);
+                    return true;
+                },
+                [&](const std::string &rel, lc::Seen &now) {
+                    now.size = size_of(rel);
+                    now.time = now.changed = now.id = now.links = 1;
                     return true;
                 },
                 [&](const std::string &rel, uint64_t &hash) {
@@ -279,6 +284,7 @@ int main(int argc, char **argv)
                         return true;
                     }, hash);
                 },
+                [] { return uint64_t(0); },
             };
             return lc::key_archives(7, list, res.read, stamp, {}).key;
         };

@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-namespace postfx {
+namespace render::postfx {
 
 // A pass's descriptor table: t0 the picture, t1 depth, t2..t9 its inputs, t10 its data (DATA_AT), u0 its
 // output (TABLE - 1). DATA_MAX bytes of data at most a pass, DATA_ALIGN apart in a slot's upload buffer.

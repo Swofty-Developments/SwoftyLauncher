@@ -2,7 +2,7 @@
 
 #include <swofty/mixin.hpp>
 
-namespace postfx {
+namespace render::postfx {
 
 void FrameReport::note_idle(bool killed, bool shaders_off, bool hud_reads, unsigned frame_count,
                             const std::string &toggle_key)

@@ -1,6 +1,7 @@
 #include "core/loading/game_settings_logic.hpp"
 #include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -21,7 +22,78 @@
 namespace {
 
 namespace gs = runtime::game_settings;
+namespace bp = runtime::build_proof;
 using gs::Type;
+
+// The readers of Game.IgnoreMinimumLoadingTime the on-by-default rows answer, each told by the getter's return address
+// (the instruction after its call of Ne_Get_SettingBool 0x143a43b90). Each one takes the elapsed seconds since its state
+// started (now minus its QPC stamp, over the frequency), reads the setting into a stack byte with default 0, and holds
+// its state while the elapsed time is below 3.0 s, or below 0.0 s with the setting on. Only the test after the call reads
+// that byte; the function's later uses of the slot write it first.
+// sigport.py --witness finds each function the same on the builds its proof names, with the offsets below at the same
+// instructions, and the site pattern matches once on each (sigverify.py).
+//   track load: Sess_Loader_RequestTrackLoad 0x142da7870 (Steam 1.0.145 0x142da9e00), stamp +0xea0, frequency +0xeb0;
+//     725 of 725 instructions on Steam 1.0.145, the EA App KB build and EA App 1.0.145. Past the minimum it sets +0xe92
+//     and goes on to its track request through +0xca0.
+//   session transition: Sess_SessionTransition_OnStateUpdate 0x1436f9890 (0x1436fbe20), stamp +0xd98, frequency +0xda8;
+//     89 of 89 on all three. Past the minimum it calls 0x1442627a0 on its +0xc80 member.
+//   story hub: Sess_StoryHub_OnStateEnter 0x1436fb5e0 (0x1436fdb70), stamp +0xe20, frequency +0xe30; 664 of 664 on
+//     all three (the EA App builds' 10 rip-relative vmovupd stores differ only in their displacement). Past the minimum
+//     it sets +0xd40 and goes on through +0xc80.
+constexpr uint32_t ALL_BUILDS =
+    bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145) | bp::bit(bp::Build::ea) | bp::bit(bp::Build::ea_1_0_145);
+constexpr bp::Proof TRACK_LOAD_READ{"the track load's minimum time read (+0xea0, +0xeb0, +0xe92)", ALL_BUILDS};
+constexpr bp::Proof TRANSITION_READ{"the session transition's minimum time read (+0xd98, +0xda8, +0xc80)", ALL_BUILDS};
+constexpr bp::Proof STORY_HUB_READ{"the story hub's minimum time read (+0xe20, +0xe30, +0xd40)", ALL_BUILDS};
+
+constexpr runtime::Sig SIG_TRACK_LOAD_READ{
+    "session.track_load_minimum_read",
+    "80 7C 24 30 00 0F 84 ?? ?? ?? ?? C5 F9 57 C0 C5 F9 2E C6 0F 86 ?? ?? ?? ?? E9 ?? ?? ?? ?? C6 86 92 0E 00 00 01", 0x2da7921};
+constexpr runtime::Sig SIG_TRANSITION_READ{"session.transition_minimum_read", "80 7C 24 26 00 0F 84 ?? ?? ?? ?? C5 F9 57 C0",
+                                           0x36f9904};
+constexpr runtime::Sig SIG_STORY_HUB_READ{
+    "session.story_hub_minimum_read",
+    "80 7C 24 30 00 0F 84 ?? ?? ?? ?? C5 F9 57 C0 C5 F9 2E C6 0F 86 ?? ?? ?? ?? E9 ?? ?? ?? ?? C6 86 40 0D 00 00 01", 0x36fb66c};
+
+struct ReaderSite {
+    bp::Gate gate;
+    const runtime::Sig *sig;
+};
+
+constexpr std::array<ReaderSite, gs::READERS> READER_SITES{{
+    {{"the track load minimum skip", &TRACK_LOAD_READ}, &SIG_TRACK_LOAD_READ},
+    {{"the session transition skip", &TRANSITION_READ}, &SIG_TRANSITION_READ},
+    {{"the story hub minimum skip", &STORY_HUB_READ}, &SIG_STORY_HUB_READ},
+}};
+
+std::array<std::atomic<const void *>, gs::READERS> reader_at{};
+std::atomic<uintptr_t> image_lo{0}, image_hi{0};
+std::atomic<bool> told_foreign{false};
+
+// A read of a reader row's setting whose caller is outside the game: another wrap of the getter runs before the core's,
+// so the return address names that wrap, not the reader, and the reader rows answer nothing. Logged once.
+void foreign_caller(const char *name, const void *ret)
+{
+    auto at = reinterpret_cast<uintptr_t>(ret);
+    uintptr_t lo = image_lo.load(std::memory_order_relaxed);
+    if (!lo || (at >= lo && at < image_hi.load(std::memory_order_relaxed)) || told_foreign.load(std::memory_order_relaxed))
+        return;
+    if (!name || std::strcmp(name, "Game.IgnoreMinimumLoadingTime") || told_foreign.exchange(true))
+        return;
+    std::string dll;
+    settings_addon(ret, dll);
+    swofty::log("[loading] %s read through %s, which wraps Ne_Get_SettingBool before the core does: the core cannot tell "
+                "which loading screen asks, so the minimum time skips answer nothing this session",
+                name, dll.empty() ? "an unknown module" : dll.c_str());
+}
+
+int reader_of(const void *ret)
+{
+    for (int i = 0; i < gs::READERS; i++)
+        if (ret && reader_at[i].load(std::memory_order_relaxed) == ret)
+            return i;
+    return gs::READERS;
+}
 
 constexpr const char *MIXIN = "swofty_core.dll (game setting overrides)";
 constexpr const char *ENV = "SWOFTY_LOADING_FEATURES";
@@ -91,10 +163,14 @@ template <Type K> void log_read(const char *name, Value<K> v, uint64_t status, b
 
 template <Type K> uint64_t get(void *node, const char *name, Value<K> *out, Value<K> def)
 {
+    const void *ret = __builtin_return_address(0);
     uint64_t r = orig<K>(node, name, out, def);
     if (!out)
         return r;
-    const gs::Override *row = gs::match(name, armed[size_t(K)].load(std::memory_order_relaxed));
+    const uint32_t rows = armed[size_t(K)].load(std::memory_order_relaxed);
+    const gs::Override *row = gs::match(name, rows, reader_of(ret));
+    if (!row && rows && K == Type::boolean)
+        foreign_caller(name, ret);
     if (row) {
         Value<K> was = *out;
         if constexpr (sizeof(Value<K>) == 1)
@@ -121,6 +197,40 @@ template <Type K> void offer(std::vector<SwoftyMixin> &list, std::string &missin
         return;
     }
     list.push_back({Getter<K>::target, SWOFTY_MIXIN_WRAP, 100, (void *)&get<K>, (void **)&orig<K>});
+}
+
+gs::Toggle player_toggle()
+{
+    SwoftySettingValue v{};
+    if (!::settings_get(gs::PLAYER_OPTION, SWOFTY_SETTING_TOGGLE, &v))
+        return gs::Toggle::unset;
+    return v.toggle ? gs::Toggle::on : gs::Toggle::off;
+}
+
+// Resolves the readers of `row` its proofs cover, and says in `missing` which are left out and why; false when none is
+// left.
+bool resolve_readers(const gs::Override &row, std::string &missing)
+{
+    int found = 0;
+    for (int i = 0; i < gs::READERS; i++) {
+        if (!(row.readers >> i & 1))
+            continue;
+        const ReaderSite &site = READER_SITES[size_t(i)];
+        const char *fault = !runtime::holds(site.gate) ? " is not proven on this build" : nullptr;
+        uintptr_t at = fault ? 0 : runtime::find(*site.sig, site.gate.feature, "loading");
+        if (!at) {
+            missing += std::string(missing.empty() ? "" : "; ") + site.gate.feature + (fault ? fault : " did not resolve");
+            continue;
+        }
+        reader_at[size_t(i)].store(reinterpret_cast<const void *>(at));
+        found++;
+        if (!image_lo.load()) {
+            uintptr_t base = swofty::api->module_base();
+            image_hi.store(base + runtime::running_exe().size_of_image);
+            image_lo.store(base);
+        }
+    }
+    return found > 0;
 }
 
 std::string feature_list(uint32_t rows, uint32_t from_env, bool log)
@@ -152,10 +262,23 @@ static std::vector<CoreMixins> loading_mixins()
     DWORD n = GetEnvironmentVariableA(ENV, env, sizeof env);
     bool log = false;
     uint32_t from_env = n && n < sizeof env ? gs::parse_list(env, &log) : 0;
-    uint32_t rows = from_env;
-    for (size_t i = 0; i < gs::OVERRIDES.size(); i++)
-        if (!(rows >> i & 1) && enabled(gs::OVERRIDES[i].feature, nullptr))
-            rows |= gs::rows_of(gs::OVERRIDES[i].feature);
+    gs::Toggle player = player_toggle();
+    uint32_t rows = 0;
+    for (size_t i = 0; i < gs::OVERRIDES.size(); i++) {
+        const gs::Override &row = gs::OVERRIDES[i];
+        gs::State st = gs::feature_state(row.feature, player, from_env >> i & 1, enabled(row.feature, nullptr));
+        std::string missing;
+        if (st.on && row.readers && !resolve_readers(row, missing))
+            st = {false, "off"};
+        if (st.on)
+            rows |= 1u << i;
+        if (gs::on_by_default(row.feature))
+            swofty::log("[loading] %s %s%s%s", row.feature, st.why,
+                        missing.empty() ? ""
+                        : st.on         ? ", except "
+                                        : ": ",
+                        missing.c_str());
+    }
     log = log || enabled(gs::LOG_FEATURE, nullptr);
     if (!rows && !log)
         return out;

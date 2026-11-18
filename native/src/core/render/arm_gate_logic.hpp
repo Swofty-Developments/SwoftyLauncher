@@ -21,7 +21,7 @@
 // folder or the game's D3D12 folder (the D3D12 and DXGI runtimes and the driver, whose threads the worker's device
 // may wait for). Any other caller is the game or a module it loaded, and waits.
 
-namespace d3d12hooks::arm_gate {
+namespace render::d3d12::arm_gate {
 
 inline constexpr const char *SYNC_ENV = "SWOFTY_ARM_SYNC";
 inline constexpr std::chrono::milliseconds WAIT_CAP{30000};

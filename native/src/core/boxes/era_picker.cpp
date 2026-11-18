@@ -276,12 +276,15 @@ void era_press(const char *entrant_list)
                 !ours ? "no box named" : host ? "the Time Trial mode is narrowed to it" : "the current mode is not Time Trial; nothing narrowed");
 }
 
+static bool entrant_cap_armed = false;
+
 static std::vector<CoreMixins> tt_guard_mixins()
 {
     std::vector<CoreMixins> out;
     if (vehicle_guard.gate.offered() || !code_ready())
         return out;
     vehicle_guard.gate.offer();
+    entrant_cap_armed = install_entrant_cap();
     if (!swofty::api->resolve(VEHICLE_FN)) {
         swofty::log("[era] session vehicle guard off: needs %s, which this build does not resolve", VEHICLE_FN);
     } else {
@@ -353,6 +356,10 @@ static void tt_guard_commit()
 {
     if (!vehicle_guard.gate.settle())
         return;
+    if (entrant_cap_armed)
+        swofty::log("[era] Time Trial entrant cap armed: a Time Trial session holds at most %zu entrants when the game "
+                    "builds its participants, leaving out the lists' cars past that",
+                    logic::TT_TABLE);
     if (vehicle_guard.bound)
         swofty::log("[era] session vehicle guard %s",
                     loader::install_state(core_mixins_active(VEHICLE_MIXIN),

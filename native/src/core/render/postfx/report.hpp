@@ -9,7 +9,7 @@
 
 #include <string>
 
-namespace postfx {
+namespace render::postfx {
 
 // What the passes did, frame by frame: the counts behind the periodic stat line, the line when they stop and
 // when they run again, and the per-frame trace (SWOFTY_POSTFX_TRACE, swofty/postfx.trace).

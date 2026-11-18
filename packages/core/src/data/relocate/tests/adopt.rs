@@ -85,7 +85,7 @@ fn adopt_rolls_back_when_the_link_cannot_be_made() {
         link: |_, _| Err(std::io::Error::from(ErrorKind::PermissionDenied)),
         ..SAME_VOLUME
     };
-    let err = recover(&default, &failing).unwrap().unwrap_err();
+    let err = recover_trying(&default, &failing, 2).unwrap().unwrap_err();
     assert!(err.to_string().contains("Could not point"), "{err}");
     assert!(!journal_left(&default));
     assert_eq!(read(&default.join("config.json")), "{\"fresh\":true}");
@@ -231,6 +231,6 @@ fn a_failed_link_never_removes_the_found_folder() {
         link: |_, _| Err(std::io::Error::from(ErrorKind::PermissionDenied)),
         ..OTHER_DRIVE
     };
-    recover(&default, &failing).unwrap().unwrap_err();
+    recover_trying(&default, &failing, 2).unwrap().unwrap_err();
     data_found_intact(&found);
 }

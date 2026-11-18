@@ -1,3 +1,5 @@
+#include "core/hud/toast.hpp"
+
 #include "core/runtime/runtime.hpp"
 #include "core/services/lap_host.hpp"
 #include "core/hud/toast_logic.hpp"
@@ -99,13 +101,9 @@ void LapToasts::tick()
 
 }
 
-}
-
-namespace runtime::toast {
-
 void tick()
 {
-    hud::toast::toasts.tick();
+    toasts.tick();
 }
 
 }

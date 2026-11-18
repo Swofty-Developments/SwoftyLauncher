@@ -431,7 +431,7 @@ Renderer::Outcome Renderer::render(const Target &t, ID3D12CommandQueue *q, const
     if (FAILED(l->Close()))
         return broken;
     ID3D12CommandList *lists[] = {l};
-    d3d12hooks::exec_original(q, 1, lists);
+    render::d3d12::exec_original(q, 1, lists);
     q->Signal(fence, ++fence_val);
     s.done_at = fence_val;
     next = (next + 1) % SLOTS;

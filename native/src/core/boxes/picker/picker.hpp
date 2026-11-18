@@ -180,6 +180,9 @@ struct VehicleGuard {
 
 extern VehicleGuard vehicle_guard;
 
+// Holds a Time Trial session's entrants to the vehicle table before the game builds its participants (time_trial.cpp).
+bool install_entrant_cap();
+
 struct TimeTrialGuard {
     uint32_t trace_lines = 0;
     std::atomic<int64_t> budget{-1};

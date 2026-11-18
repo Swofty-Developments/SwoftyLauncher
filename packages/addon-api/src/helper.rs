@@ -13,6 +13,8 @@ pub use crate::run_helper::{claim_word, run_helper};
 pub const API_VERSION: u32 = 1;
 /// Optional support for the data-only native Chart view block.
 pub const VIEW_CHART: &str = "view.chart";
+/// Listed from launcher 1.10: the launcher may answer a `build` with an earlier reply that lists its `reads`.
+pub const BUILD_READS: &str = "build.reads";
 pub const RESTART: &str = "swofty.restart";
 // The host calls a launcher lists in hello's host_calls when it answers them.
 pub const ADDON_CALLS: [&str; 4] = ["addons", "install_addon", "set_addon_enabled", "remove_addon"];
@@ -146,6 +148,10 @@ pub struct Built {
     // Field names for add-row, keyed `<table>.<row>` as in an op file's `fields`.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub fields: BTreeMap<String, Vec<String>>,
+    // The absolute paths of every file and folder the build read; a launcher that lists build.reads
+    // answers the next build with this reply while none of them changed.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reads: Option<Vec<PathBuf>>,
 }
 
 #[cfg(test)]
@@ -383,6 +389,28 @@ mod tests {
         ], "fields": {"t.r": ["a", "b"]}}))
         .unwrap();
         assert_eq!(built.fields["t.r"], ["a", "b"]);
+        assert_eq!(
+            built.reads, None,
+            "a reply without reads is answered on every build"
+        );
+        let built: Built =
+            serde_json::from_value(json!({"ops": [], "reads": ["/s/addons/a/db", "/s/gone"]})).unwrap();
+        assert_eq!(
+            built.reads,
+            Some(vec![PathBuf::from("/s/addons/a/db"), PathBuf::from("/s/gone")])
+        );
+        let empty: Built = serde_json::from_value(json!({"ops": [], "reads": []})).unwrap();
+        assert_eq!(
+            empty.reads,
+            Some(Vec::new()),
+            "an empty list still lets the reply be reused"
+        );
+        assert!(
+            serde_json::to_value(Built::default())
+                .unwrap()
+                .get("reads")
+                .is_none()
+        );
         assert!(
             serde_json::to_value(Built::default())
                 .unwrap()

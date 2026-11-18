@@ -18,11 +18,19 @@
 #include <cstdint>
 #include <cstring>
 #include <span>
+#include <string_view>
 
 namespace runtime::game_settings {
 
 enum class Type : uint8_t { boolean, u32, i32, f32 };
 inline constexpr size_t TYPES = 4;
+
+// The callers of Game.IgnoreMinimumLoadingTime the core tells apart, by the getter's return address (game_settings.cpp
+// resolves each and gates it on its proof). StateLoadSession's own reader (KB 0x150f50f89, in .data1) has no pattern
+// unique on both builds, so it keeps the game's answer; 1 of 268 field loads on 1.0.145 left that state within 3.2 s.
+enum Reader : uint8_t { TRACK_LOAD, SESSION_TRANSITION, STORY_HUB, READERS };
+
+constexpr uint8_t reader_bit(Reader r) { return uint8_t(1u << r); }
 
 struct Override {
     const char *feature;
@@ -30,6 +38,7 @@ struct Override {
     Type type;
     uint32_t bits;
     const char *effect;
+    uint8_t readers = 0;
 };
 
 using Table = std::span<const Override>;
@@ -40,28 +49,68 @@ constexpr uint32_t of_f32(float v) { return std::bit_cast<uint32_t>(v); }
 
 constexpr uint32_t of_i32(int32_t v) { return std::bit_cast<uint32_t>(v); }
 
-// Game.IgnoreMinimumLoadingTime: Sess_SessionTransition_OnStateUpdate (0x1436f9890), Sess_Loader_RequestTrackLoad
-// (0x142da7870) and Sess_StoryHub_OnStateEnter (0x1436fb5e0) each hold their state until 3.0 s have passed since it
-// started, or 0.0 s with the setting on.
+// Game.IgnoreMinimumLoadingTime: Sess_Loader_RequestTrackLoad (0x142da7870) and Sess_StoryHub_OnStateEnter
+// (0x1436fb5e0) hold their loading screen, and Sess_SessionTransition_OnStateUpdate (0x1436f9890) its transition, until
+// 3.0 s have passed since the state started, or 0.0 s with the setting on. The first two answer for
+// loading_skip_minimum_time and the third for loading_skip_session_transition.
 // Game.SkipIntroVideo: Sess_IntroVideo_ParseParams (0x142d6cc30) copies it to SessionStateIntroVideo+0xdc6, which
 // lets Sess_IntroVideo_CanFinish (0x142d6d3b0) end the video before a session at once.
 // Game.SkipGridRundown: Game_GridRundown_ShouldPlay (0x140ac6b30) returns false before any other test, so
 // Sess_Loader_RequestLoadThumbnails (0x142d4d040) neither enters loader step 0x1e, asks the thumbnail system for the
 // grid render (reason 3) nor queues the 32 grid slots' thumbnails, and the rundown does not play.
 // Game.SkipTalkingPoints: SessionStateTalkingPoints' parse params (0x142d94e20, a jump to its body 0x14eb3abf0) stores
-// +0xea1 = 1 with it on, so its enter (0x142d94f30) generates no broadcast sequence and its update takes the state's own
-// `skipped` link on the first frame. The reader record (re/bindings/game/Game_SessionStateTalkingPoints_ParseParams_Thunk.json)
-// has its author's proof only and still needs a second contributor's agree row.
-inline constexpr std::array<Override, 4> OVERRIDES{{
+// +0xea1 = 1 with it on (or with Game.ecaEnabled off). Its enter (0x142d94f30) ORs +0xea1 into +0xea0, which it also sets
+// when the mode is not a GameModeChampionship or has no component 0x14605b108, and with +0xea0 set it generates no
+// broadcast sequence. Its update (0x142d95b90) then returns the `skipped` link on every update while +0xea0 is set and
+// neither +0xea3 nor bit 1 of +0xcc9 is, or `snapshot` in its place when the mode is a GameModeChampionship with component
+// 0x146062fc0 and byte [[[0x146075a78]+0x20]+0xd8]+6 is 0. The reader record
+// (re/bindings/game/Game_SessionStateTalkingPoints_ParseParams_Thunk.json) holds the blind-verified notes.
+inline constexpr std::array<Override, 5> OVERRIDES{{
     {"loading_skip_minimum_time", "Game.IgnoreMinimumLoadingTime", Type::boolean, of_bool(true),
-     "the 3 s minimum of the session transition, track load and story hub loading screens is dropped"},
+     "the 3 s minimum of the track load and story hub loading screens is dropped",
+     reader_bit(TRACK_LOAD) | reader_bit(STORY_HUB)},
+    {"loading_skip_session_transition", "Game.IgnoreMinimumLoadingTime", Type::boolean, of_bool(true),
+     "the session transition's 3 s wait is dropped", reader_bit(SESSION_TRANSITION)},
     {"loading_skip_session_intro_video", "Game.SkipIntroVideo", Type::boolean, of_bool(true),
      "the intro video before a session may end as soon as it starts"},
     {"loading_skip_grid_rundown", "Game.SkipGridRundown", Type::boolean, of_bool(true),
      "the race load queues no grid rundown thumbnails and the rundown does not play"},
     {"loading_skip_talking_points", "Game.SkipTalkingPoints", Type::boolean, of_bool(true),
-     "the talking points before a race or practice session take their skipped link at once"},
+     "the talking points before a race or practice session generate no broadcast sequence and leave by their skipped "
+     "link, or snapshot in a championship mode, on their next update"},
 }};
+
+// The features on for every player since 1.10, stable in runtime/stage.cpp's feature list. SwoftyMod's PLAYER_OPTION
+// toggle turned off keeps both off, over SWOFTY_LOADING_FEATURES and the features list; the other rows stay
+// experimental.
+inline constexpr std::array<const char *, 2> ON_BY_DEFAULT{"loading_skip_minimum_time", "loading_skip_session_transition"};
+inline constexpr char PLAYER_OPTION[] = "shorter_loading_waits";
+
+enum class Toggle : uint8_t { unset, off, on };
+
+struct State {
+    bool on;
+    const char *why;
+};
+
+constexpr bool on_by_default(const char *feature)
+{
+    for (const char *f : ON_BY_DEFAULT)
+        if (feature && std::string_view(f) == feature)
+            return true;
+    return false;
+}
+
+constexpr State feature_state(const char *feature, Toggle player, bool from_env, bool listed)
+{
+    if (on_by_default(feature))
+        return player == Toggle::off ? State{false, "off: settings"} : State{true, "on by default since 1.10"};
+    if (from_env)
+        return {true, "on: SWOFTY_LOADING_FEATURES"};
+    if (listed)
+        return {true, "on: features"};
+    return {false, "off: experimental"};
+}
 
 // Not an override: every distinct name and value the wrapped getters return is logged once (and again when it
 // changes), so a run shows what system/config.xml sets, which the static read cannot see inside game.dat.
@@ -96,17 +145,21 @@ constexpr uint32_t rows_typed(uint32_t rows, Type type, Table t = OVERRIDES)
     return bits;
 }
 
-// The armed row whose setting is `name` among `rows` (already narrowed to one getter's type), or nullptr. Every read
-// of that getter passes through here; with no armed row it returns at once.
-inline const Override *match(const char *name, uint32_t rows, Table t = OVERRIDES)
+// The armed row whose setting is `name` among `rows` (already narrowed to one getter's type), or nullptr. A row with
+// readers answers only the read whose caller is one of them (`reader`, or READERS for any other caller). Every read of
+// that getter passes through here; with no armed row it returns at once.
+inline const Override *match(const char *name, uint32_t rows, Table t = OVERRIDES, int reader = READERS)
 {
     if (!rows || !name)
         return nullptr;
     for (size_t i = 0; i < t.size(); i++)
-        if ((rows >> i & 1) && name[0] == t[i].setting[0] && std::strcmp(name, t[i].setting) == 0)
+        if ((rows >> i & 1) && name[0] == t[i].setting[0] && std::strcmp(name, t[i].setting) == 0 &&
+            (!t[i].readers || (reader >= 0 && reader < READERS && (t[i].readers >> reader & 1))))
             return &t[i];
     return nullptr;
 }
+
+inline const Override *match(const char *name, uint32_t rows, int reader) { return match(name, rows, OVERRIDES, reader); }
 
 inline size_t index_of(const Override *row, Table t = OVERRIDES) { return row ? size_t(row - t.data()) : t.size(); }
 

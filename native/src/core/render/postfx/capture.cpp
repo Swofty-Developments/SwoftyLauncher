@@ -10,7 +10,7 @@
 #include <cstring>
 #include <vector>
 
-namespace postfx {
+namespace render::postfx {
 
 namespace {
 

@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <string>
 
-namespace rg = runtime::rtas_guard;
+namespace rg = render::rtas_guard;
 
 int fails;
 

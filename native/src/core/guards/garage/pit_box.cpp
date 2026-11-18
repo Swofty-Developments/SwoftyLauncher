@@ -48,14 +48,12 @@ namespace guards = swofty_core::guards;
 namespace pb = runtime::pit_box;
 
 uintptr_t pose_false = 0;
-bool wanted = false;
 pb::Seen seen{"repairs"};
 
 constexpr const char *TYRE_MIXIN = "swofty_core.dll (race tyre change rule)";
 constexpr const char *TYRE_CHANGE = "Car_Tyre_ChangeToNextCompound";
 using ChangeFn = uint64_t(void *tyre_component, char pit_stop);
 ChangeFn *orig_change = nullptr;
-bool tyre_wanted = false;
 
 uint64_t change_entry(void *tyre_component, char pit_stop)
 {
@@ -90,10 +88,8 @@ private:
             swofty::log("[pit] race tyre change rule off (SWOFTY_RACE_TYRE_RULE=%s)", tv);
         else if (!swofty::api->resolve(TYRE_CHANGE))
             swofty::log("[pit] race tyre change rule off: this build does not resolve %s", TYRE_CHANGE);
-        else {
-            tyre_wanted = true;
+        else
             out.push_back({TYRE_MIXIN, {{TYRE_CHANGE, SWOFTY_MIXIN_WRAP, 100, (void *)&change_entry, (void **)&orig_change}}});
-        }
         char v[16] = {};
         if (guards::env_off("SWOFTY_PIT_BOX_GUARD", v)) {
             swofty::log("[pit] box guard off (SWOFTY_PIT_BOX_GUARD=%s)", v);
@@ -105,17 +101,16 @@ private:
             swofty::log("[pit] box guard off: needs %s and %s, which this build does not resolve", READ, FALSE_);
             return;
         }
-        wanted = true;
         out.push_back({MIXIN, {{READ, SWOFTY_MIXIN_SITE, 100, (void *)&box_read, nullptr}}});
     }
 
     void settle() override
     {
-        if (tyre_wanted)
+        if (offered_set(TYRE_MIXIN))
             swofty::log("[pit] race tyre change rule %s",
                         guards::install_state(runtime::core_mixins_active(TYRE_MIXIN),
                                               "armed: a box with race_tyre_change false keeps its tyres at race stops"));
-        if (!wanted)
+        if (!offered_set(MIXIN))
             return;
         swofty::log("[pit] box guard %s", guards::install_state(runtime::core_mixins_active(MIXIN),
                                                                 "armed: a garage car without a pit box is left where it is"));
