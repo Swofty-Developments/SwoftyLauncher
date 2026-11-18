@@ -13,8 +13,8 @@ use swofty_core::store::Store;
 use swofty_i18n::tr;
 
 use super::model::{exit_leaves, exit_notice};
-use crate::shell::Shell;
 use crate::shell::host::{Host, Hosted, reports_nothing};
+use crate::shell::{Page, Shell};
 
 pub(super) const TICK: Duration = Duration::from_millis(500);
 pub(super) const GAME_EVERY: Duration = Duration::from_secs(2);
@@ -303,6 +303,8 @@ pub(crate) struct OnlineNeeds<'a> {
     pub(crate) running: bool,
     /// A launch, a build or a restore of the game folder is running.
     pub(crate) busy: bool,
+    /// The online page is open and the account may use it.
+    pub(crate) shown: bool,
     pub(crate) token: Option<&'a str>,
 }
 
@@ -323,6 +325,7 @@ impl Host<Multiplayer> for Shell {
                 busy: self.launching.launch.is_some()
                     || self.game.build.is_some()
                     || self.launching.restoring,
+                shown: self.navigation.page == Page::Multiplayer && self.account.allowed(),
                 token: self.account.session.as_ref().map(|m| m.token.as_str()),
             },
         )

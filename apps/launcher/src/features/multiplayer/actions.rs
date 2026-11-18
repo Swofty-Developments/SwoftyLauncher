@@ -24,74 +24,12 @@ impl Shell {
         cx.spawn_in(window, async move |this, cx| {
             loop {
                 cx.background_executor().timer(TICK).await;
-                if this
-                    .update_in(cx, |s, window, cx| s.room_tick(window, cx))
-                    .is_err()
-                {
+                if this.update_in(cx, Multiplayer::tick).is_err() {
                     break;
                 }
             }
         })
         .detach();
-    }
-
-    pub(super) fn room_tick(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        Multiplayer::launch(self, window, cx);
-        if !window.has_active_dialog(cx) && self.rooms.drop_held() {
-            cx.notify();
-        }
-        let busy = self.launching.launch.is_some() || self.game.build.is_some() || self.launching.restoring;
-        if self.rooms.watch_game(!self.game.processes.is_empty(), busy) {
-            cx.notify();
-        }
-        let m = &mut self.rooms;
-        if m.leaving && m.session.as_ref().is_none_or(Session::is_finished) {
-            m.finish_leaving();
-            cx.notify();
-        }
-        if self.navigation.page != Page::Multiplayer || !self.account.allowed() {
-            self.rooms.visible = false;
-            return;
-        }
-        let now = Instant::now();
-        let m = &mut self.rooms;
-        if !m.visible {
-            m.visible = true;
-            m.lobby.refresh();
-        }
-        let refused = refusal(m.refused.clone(), diag::is_loaded(), diag::unavailable());
-        if refused != m.refused {
-            if refused.is_none() {
-                m.lobby.rooms_at = None;
-            }
-            m.refused = refused;
-            cx.notify();
-        }
-        if let Some(session) = &m.session {
-            let state = session.state();
-            if m.state.as_ref() != Some(&state) {
-                m.state = Some(state);
-                cx.notify();
-            }
-        }
-        if m.copied
-            .is_some_and(|at| now.duration_since(at) > Duration::from_secs(2))
-        {
-            m.copied = None;
-            cx.notify();
-        }
-        if m.session.is_none() && m.lobby.game_due(now) {
-            Multiplayer::poll_game(self, cx);
-        }
-        let m = &self.rooms;
-        if m.session.is_none() && m.lobby.rooms_due(now) {
-            Multiplayer::poll_rooms(self, cx);
-        }
-        let m = &self.rooms;
-        if m.session.is_none() && m.lobby.digest_due() {
-            Multiplayer::read_digest(self, cx);
-        }
-        Multiplayer::load_shown_faces(self, cx);
     }
 
     pub(super) fn room_close_game(&mut self, window: &mut Window, cx: &mut Context<Self>) -> bool {
@@ -445,6 +383,69 @@ impl Multiplayer {
         })
         .detach();
         cx.notify();
+    }
+
+    /// The online page's tick: the room's launch and game watch, leaving, and the page's polls while it
+    /// shows.
+    pub(super) fn tick<H: Host<Self> + PlayHost>(host: &mut H, window: &mut Window, cx: &mut Context<H>) {
+        Self::launch(host, window, cx);
+        let dialog = window.has_active_dialog(cx);
+        let (m, needs) = <H as Host<Self>>::split(host);
+        let mut changed = !dialog && m.drop_held();
+        changed |= m.watch_game(needs.running, needs.busy);
+        if m.leaving && m.session.as_ref().is_none_or(Session::is_finished) {
+            m.finish_leaving();
+            changed = true;
+        }
+        if !needs.shown {
+            m.visible = false;
+            if changed {
+                cx.notify();
+            }
+            return;
+        }
+        let now = Instant::now();
+        if !m.visible {
+            m.visible = true;
+            m.lobby.refresh();
+        }
+        let refused = refusal(m.refused.clone(), diag::is_loaded(), diag::unavailable());
+        if refused != m.refused {
+            if refused.is_none() {
+                m.lobby.rooms_at = None;
+            }
+            m.refused = refused;
+            changed = true;
+        }
+        if let Some(session) = &m.session {
+            let state = session.state();
+            if m.state.as_ref() != Some(&state) {
+                m.state = Some(state);
+                changed = true;
+            }
+        }
+        if m.copied
+            .is_some_and(|at| now.duration_since(at) > Duration::from_secs(2))
+        {
+            m.copied = None;
+            changed = true;
+        }
+        if changed {
+            cx.notify();
+        }
+        let m = <H as Host<Self>>::split(host).0;
+        if m.session.is_none() && m.lobby.game_due(now) {
+            Self::poll_game(host, cx);
+        }
+        let m = <H as Host<Self>>::split(host).0;
+        if m.session.is_none() && m.lobby.rooms_due(now) {
+            Self::poll_rooms(host, cx);
+        }
+        let m = <H as Host<Self>>::split(host).0;
+        if m.session.is_none() && m.lobby.digest_due() {
+            Self::read_digest(host, cx);
+        }
+        Self::load_shown_faces(host, cx);
     }
 
     /// Starts F1 25 for the room when the session asks, the game is closed and the launcher has put the
