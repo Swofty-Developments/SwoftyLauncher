@@ -1,5 +1,6 @@
 #include "core/guards/garage/garage_crew_logic.hpp"
 #include "core/guards/guard.hpp"
+#include "core/guards/memory.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -79,14 +80,6 @@ struct Log {
     uint32_t garage;
 };
 
-bool read_memory(uint64_t address, void *out, size_t n, void *)
-{
-    if (!runtime::readable(reinterpret_cast<const void *>(address), n))
-        return false;
-    std::memcpy(out, reinterpret_cast<const void *>(address), n);
-    return true;
-}
-
 void log_dropped(void *ctx, uint64_t record, uint32_t slot, gc::Drop why)
 {
     uint32_t garage = static_cast<Log *>(ctx)->garage;
@@ -126,10 +119,10 @@ void spawn_vector(SwoftyContext *c)
     if (n > MAX_ENTRIES)
         return;
     uint64_t session = 0;
-    bool known = gc::session_of(c->rsp, read_memory, nullptr, &session);
+    bool known = gc::session_of(c->rsp, guards::read_if_readable, nullptr, &session);
     Log log{uint32_t(c->rbp)};
-    size_t kept = gc::compact(reinterpret_cast<uint8_t *>(begin), n, session, known, read_memory, nullptr, log_dropped,
-                              &log);
+    size_t kept =
+        gc::compact(reinterpret_cast<uint8_t *>(begin), n, session, known, guards::read_if_readable, nullptr, log_dropped, &log);
     if (kept != n)
         c->r13 = begin + kept * gc::ENTRY_SIZE;
 }
@@ -140,14 +133,15 @@ void setup_template(SwoftyContext *c)
         return;
     uint64_t begin = 0;
     uint8_t flag = 0;
-    if (!read_memory(c->rsp + gc::SETUP_VECTOR_BEGIN, &begin, sizeof begin, nullptr) ||
-        !read_memory(c->rsp + gc::SETUP_FLAG, &flag, sizeof flag, nullptr))
+    if (!guards::read_if_readable(c->rsp + gc::SETUP_VECTOR_BEGIN, &begin, sizeof begin, nullptr) ||
+        !guards::read_if_readable(c->rsp + gc::SETUP_FLAG, &flag, sizeof flag, nullptr))
         return;
     if (setup_seen.first(c->r14)) {
         uint64_t record = 0;
         uint16_t team = 0xffff;
         uint8_t number = 0;
-        if (gc::user_pointer(begin) && read_memory(begin, &record, sizeof record, nullptr) && gc::user_pointer(record)) {
+        if (gc::user_pointer(begin) && guards::read_if_readable(begin, &record, sizeof record, nullptr) &&
+            gc::user_pointer(record)) {
             mem::read(record + gc::REC_TEAM, team);
             mem::read(record + REC_CAR_NUMBER, number);
         }

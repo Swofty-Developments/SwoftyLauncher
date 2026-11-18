@@ -101,6 +101,7 @@ units
   src/core/registry/table.cpp  exit
   src/core/registry/core.cpp  exit
   src/core/career/snapshots/runtime.cpp  exit
+  src/core/guards/tracks/track_acclim.cpp  exit
   src/core/guards/frontend/gp_continue_guard.cpp  exit
   src/core/guards/tracks/gp_weekend_track_guard.cpp  init exit
   src/core/guards/tracks/track_list_guard.cpp  exit
@@ -144,16 +145,16 @@ mixins
   src/core/frontend/player_name.cpp  SWOFTY_ON_LOAD
   src/core/guards/career/activity_resume_guard.cpp  SWOFTY_HOOK_GUARD(activity_resume)
   src/core/guards/career/sequencer_records_guard.cpp  SWOFTY_HOOK_GUARD(sequencer_records)
-  src/core/guards/session/race_retirement_guard.cpp  SWOFTY_HOOK_GUARD(race_retirement)
-  src/core/guards/session/teammate_pairs_guard.cpp  SWOFTY_HOOK_GUARD(teammate_pairs)
+  src/core/guards/session/race_retirement_guard.cpp  SWOFTY_MID_HOOK_GUARD(race_retirement)
+  src/core/guards/session/teammate_pairs_guard.cpp  SWOFTY_MID_HOOK_GUARD(teammate_pairs)
   src/core/guards/frontend/setup_vm_guard.cpp  SWOFTY_HOOK_GUARD(setup_vm)
   src/core/guards/career/teamhq_track_guard.cpp  SWOFTY_HOOK_GUARD(teamhq_track)
-  src/core/guards/ai/ai_curves_guard.cpp  SWOFTY_HOOK_GUARD(ai_curves)
+  src/core/guards/ai/ai_curves_guard.cpp  SWOFTY_MID_HOOK_GUARD(ai_curves)
   src/core/guards/session/replay_grid_guard.cpp  SWOFTY_HOOK_GUARD(replay_read)
   src/core/guards/career/rnd_suppliers_guard.cpp  SWOFTY_HOOK_GUARD(rnd_suppliers)
   src/core/career/hub_tab.cpp  SWOFTY_ON_LOAD
   src/core/career/ops/career_ops.cpp  SWOFTY_ON_LOAD
-  src/core/guards/tracks/gp_weekend_track_guard.cpp  SWOFTY_HOOK_GUARD(gp_weekend_track)
+  src/core/guards/tracks/gp_weekend_track_guard.cpp  SWOFTY_MID_HOOK_GUARD(gp_weekend_track)
   src/core/hooks/session_points.cpp  SWOFTY_ON_LOAD
   src/core/hooks/car_live.cpp  SWOFTY_ON_LOAD
   src/core/diagnostics/session_job_probe.cpp  SWOFTY_ON_LOAD
@@ -162,18 +163,18 @@ on-load
   src/core/frontend/ui.cpp  SWOFTY_ON_LOAD
   src/core/assets/items.cpp  SWOFTY_ON_LOAD
   src/core/frontend/player_name.cpp  SWOFTY_ON_LOAD
-  src/core/guards/career/activity_resume_guard.cpp  SWOFTY_HOOK_GUARD(activity_resume), arms activity_resume
-  src/core/guards/career/sequencer_records_guard.cpp  SWOFTY_HOOK_GUARD(sequencer_records), arms sequencer_records
-  src/core/guards/session/race_retirement_guard.cpp  SWOFTY_HOOK_GUARD(race_retirement), arms race_retirement
-  src/core/guards/session/teammate_pairs_guard.cpp  SWOFTY_HOOK_GUARD(teammate_pairs), arms teammate_pairs
-  src/core/guards/frontend/setup_vm_guard.cpp  SWOFTY_HOOK_GUARD(setup_vm), arms setup_vm
-  src/core/guards/career/teamhq_track_guard.cpp  SWOFTY_HOOK_GUARD(teamhq_track), arms teamhq_track
-  src/core/guards/ai/ai_curves_guard.cpp  SWOFTY_HOOK_GUARD(ai_curves), arms ai_curves
-  src/core/guards/session/replay_grid_guard.cpp  SWOFTY_HOOK_GUARD(replay_read), arms replay_read
-  src/core/guards/career/rnd_suppliers_guard.cpp  SWOFTY_HOOK_GUARD(rnd_suppliers), arms rnd_suppliers
+  src/core/guards/career/activity_resume_guard.cpp  SWOFTY_HOOK_GUARD(activity_resume), arms gp_weekend_track
+  src/core/guards/career/sequencer_records_guard.cpp  SWOFTY_HOOK_GUARD(sequencer_records), arms rnd_suppliers
+  src/core/guards/session/race_retirement_guard.cpp  SWOFTY_MID_HOOK_GUARD(race_retirement)
+  src/core/guards/session/teammate_pairs_guard.cpp  SWOFTY_MID_HOOK_GUARD(teammate_pairs)
+  src/core/guards/frontend/setup_vm_guard.cpp  SWOFTY_HOOK_GUARD(setup_vm), arms replay_read
+  src/core/guards/career/teamhq_track_guard.cpp  SWOFTY_HOOK_GUARD(teamhq_track), arms ai_curves
+  src/core/guards/ai/ai_curves_guard.cpp  SWOFTY_MID_HOOK_GUARD(ai_curves)
+  src/core/guards/session/replay_grid_guard.cpp  SWOFTY_HOOK_GUARD(replay_read), arms teamhq_track
+  src/core/guards/career/rnd_suppliers_guard.cpp  SWOFTY_HOOK_GUARD(rnd_suppliers), arms setup_vm
   src/core/career/hub_tab.cpp  SWOFTY_ON_LOAD
   src/core/career/ops/career_ops.cpp  SWOFTY_ON_LOAD
-  src/core/guards/tracks/gp_weekend_track_guard.cpp  SWOFTY_HOOK_GUARD(gp_weekend_track), arms gp_weekend_track
+  src/core/guards/tracks/gp_weekend_track_guard.cpp  SWOFTY_MID_HOOK_GUARD(gp_weekend_track)
   src/core/hooks/session_points.cpp  SWOFTY_ON_LOAD
   src/core/hooks/car_live.cpp  SWOFTY_ON_LOAD
   src/core/diagnostics/session_job_probe.cpp  SWOFTY_ON_LOAD

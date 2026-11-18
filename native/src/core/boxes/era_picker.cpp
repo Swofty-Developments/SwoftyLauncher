@@ -276,7 +276,7 @@ void era_press(const char *entrant_list)
                 !ours ? "no box named" : host ? "the Time Trial mode is narrowed to it" : "the current mode is not Time Trial; nothing narrowed");
 }
 
-std::vector<CoreMixins> tt_guard_mixins()
+static std::vector<CoreMixins> tt_guard_mixins()
 {
     std::vector<CoreMixins> out;
     if (vehicle_guard.gate.offered() || !code_ready())
@@ -317,7 +317,7 @@ std::vector<CoreMixins> tt_guard_mixins()
     return out;
 }
 
-std::vector<CoreMixins> career_alias_mixins()
+static std::vector<CoreMixins> career_alias_mixins()
 {
     std::vector<CoreMixins> out;
     if (alias_guard.gate.offered() || !code_ready())
@@ -336,7 +336,7 @@ std::vector<CoreMixins> career_alias_mixins()
     return out;
 }
 
-void career_alias_commit()
+static void career_alias_commit()
 {
     if (!alias_guard.gate.settle())
         return;
@@ -349,7 +349,7 @@ void career_alias_commit()
 
 static loader::FunctionSet career_alias_core_set{loader::CoreSetId::career_alias, career_alias_mixins, career_alias_commit};
 
-void tt_guard_commit()
+static void tt_guard_commit()
 {
     if (!vehicle_guard.gate.settle())
         return;
@@ -377,7 +377,7 @@ void tt_guard_commit()
 
 static loader::FunctionSet tt_guard_core_set{loader::CoreSetId::tt_guard, tt_guard_mixins, tt_guard_commit};
 
-std::vector<CoreMixins> era_mixins()
+static std::vector<CoreMixins> era_mixins()
 {
     std::vector<CoreMixins> out;
     if (picker.gate.offered() || split_off() || picker.off || !code_ready())
@@ -404,7 +404,7 @@ std::vector<CoreMixins> era_mixins()
     return out;
 }
 
-void era_commit()
+static void era_commit()
 {
     if (picker.off || !picker.gate.settle())
         return;

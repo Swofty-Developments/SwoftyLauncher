@@ -497,7 +497,7 @@ bool car_category_choose(const std::string &value, std::string &why)
     return true;
 }
 
-std::vector<CoreMixins> car_category_mixins()
+static std::vector<CoreMixins> car_category_mixins()
 {
     std::vector<CoreMixins> out;
     if (mixin_gate.offered() || off || !code_ready() || era_boxes().empty())
@@ -521,7 +521,7 @@ std::vector<CoreMixins> car_category_mixins()
     return out;
 }
 
-void car_category_commit()
+static void car_category_commit()
 {
     if (off || !mixin_gate.settle())
         return;

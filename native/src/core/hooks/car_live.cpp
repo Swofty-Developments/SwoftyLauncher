@@ -686,7 +686,7 @@ void ai_grip(SwoftyContext *c)
 
 namespace runtime {
 
-std::vector<CoreMixins> car_levers_mixins()
+static std::vector<CoreMixins> car_levers_mixins()
 {
     std::vector<CoreMixins> out;
     if (g_levers_offered || !code_ready() || !holds(swofty_core::hooks::car_proofs::LEVERS))
@@ -715,7 +715,7 @@ std::vector<CoreMixins> car_levers_mixins()
     return out;
 }
 
-void car_levers_commit()
+static void car_levers_commit()
 {
     if (g_levers_offered)
         swofty::log("[cars] car levers %s", core_mixins_active(LEVERS) ? "armed" : "did not install (see the [core] lines)");
