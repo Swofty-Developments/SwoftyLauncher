@@ -26,6 +26,12 @@ inputs:
 runs:
   using: composite
   steps:
+    # Build and test times follow the runner's CPU model, which differs between runners of one label.
+    - name: Runner CPU
+      shell: bash
+      run: |
+        echo "$(nproc) CPUs:$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2)"
+
     - uses: actions-rust-lang/setup-rust-toolchain@v2
       with:
         cache: false
