@@ -229,6 +229,7 @@ CONTENT = [
     Program('appliers.windows.o', [Objects(['src/core/apply/content/appliers.cpp'], CONTENT_WINDOWS, WINDOWS)], 'obj'),
     Program('logos.windows.o', [Objects(['src/core/apply/content/logos.cpp'], CONTENT_WINDOWS, WINDOWS)], 'obj'),
     Program('bc7_test', [Objects(['test/content/bc7_test.cpp'], CONTENT_FLAGS + ['-ffp-contract=off'])]),
+    Program('gvdb_file_test', [Objects(['test/content/gvdb_file_test.cpp'], CONTENT_FLAGS)]),
     Program('logo_cache_test', [Objects(['test/content/logo_cache_test.cpp'], CONTENT_FLAGS)]),
     Program('logo_build_test', [Objects(['test/content/logo_build_test.cpp'], CONTENT_FLAGS + ['-ffp-contract=off', '-Ithird_party/zstd']), ZSTD]),
     Program('garage_test', [Objects(['test/content/garage_test.cpp'], CONTENT_FLAGS + ['-ffp-contract=off', '-Ithird_party/zstd']), ZSTD]),
