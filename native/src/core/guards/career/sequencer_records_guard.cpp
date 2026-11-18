@@ -1,5 +1,5 @@
 #include "core/guards/guard.hpp"
-#include "core/runtime/hook_errors.hpp"
+#include "core/runtime/loader/hook_install.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/guards/career/sequencer_records_logic.hpp"
 
@@ -183,13 +183,10 @@ bool arm(const char *what, const char *site, const char *join, safetyhook::MidHo
         swofty::log("[career] %s off: needs %s and %s, which this build does not resolve", what, site, join);
         return false;
     }
-    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), fn);
-    if (!h) {
-        swofty::log("[career] %s: the hook failed: %s", what, runtime::hook_error(h.error()).c_str());
-        return false;
-    }
-    hook = std::move(*h);
-    return true;
+    runtime::loader::Installed r = runtime::loader::install(hook, at, site, fn);
+    if (!r)
+        swofty::log("[career] %s: the hook failed: %s", what, r.error.c_str());
+    return bool(r);
 }
 
 void setup()

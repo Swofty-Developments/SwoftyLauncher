@@ -2,9 +2,11 @@
 # Threat model and settings: docs/reference/addons/bindings.md.
 #
 # Pull requests come from forks and are untrusted. Nothing here runs code from the pull request:
-# - validate checks out the BASE branch, reads the PR's record files as git blobs into a scratch folder and
-#   runs the base branch's re/tools/binding.py over them as data, including kb_lint's structural rules over the
-#   base plus those records. Its token is read-only and it uses no secrets.
+# - validate checks out the BASE branch, reads the PR's record files (and its re/db/level_baseline.json, which may
+#   only shrink, and its re/db/export_drops.json) as git blobs into a scratch folder and runs the base branch's
+#   re/tools/binding.py over them as data, including kb_lint's structural rules over the base plus those records.
+#   A change to re/db/export_drops.json fails validate until the repository owner has approved the PR's head commit
+#   (or opened the PR); re-run validate after approving. Its token is read-only and it uses no secrets.
 # - automerge never checks anything out. It lists the PR's files from the API itself, requires every one to be a
 #   record, and enables auto-merge pinned to the head commit that validate checked.
 name: bindings
@@ -64,13 +66,14 @@ jobs:
           path_re = re.compile(r'^re/bindings/[a-z][a-z0-9_]{0,31}/[A-Za-z][A-Za-z0-9_]{1,63}\.json$')
           for f in json.load(open(files)):
               p = f['filename']
-              if not path_re.match(p) or f['status'] not in ('added', 'modified'):
+              baseline = p in ('re/db/level_baseline.json', 're/db/export_drops.json')
+              if not (path_re.match(p) or baseline) or f['status'] not in ('added', 'modified'):
                   continue
               tree = subprocess.run(['git', 'ls-tree', sha, '--', p], capture_output=True, text=True, check=True).stdout.split()
               if len(tree) < 3 or tree[0] != '100644' or tree[1] != 'blob':
                   continue
               size = int(subprocess.run(['git', 'cat-file', '-s', tree[2]], capture_output=True, text=True, check=True).stdout)
-              if size > 64 * 1024:
+              if size > (4 << 20 if baseline else 64 * 1024):
                   continue
               data = subprocess.run(['git', 'cat-file', 'blob', tree[2]], capture_output=True, check=True).stdout
               os.makedirs(os.path.join(out, os.path.dirname(p)), exist_ok=True)
@@ -90,6 +93,8 @@ jobs:
           case "$verdict" in auto|review|fail) ;; *) verdict=fail ;; esac
           echo "verdict=$verdict" >> "$GITHUB_OUTPUT"
           echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+          owner=$(jq -r 'if .owner_review == true then "true" else "false" end' "$RUNNER_TEMP/result.json")
+          echo "owner_review=$owner" >> "$GITHUB_OUTPUT"
           {
             echo "### Binding check: $verdict"
             jq -r '(.summary // ((.errors | map("error: " + .)) + .notes))[] | if startswith("  fix: ") then "  " + . else "- " + . end' "$RUNNER_TEMP/result.json"
@@ -97,6 +102,29 @@ jobs:
             echo "Run \`python3 re/tools/binding.py doctor\` in your checkout for the same check before you push."
           } >> "$GITHUB_STEP_SUMMARY"
           exit $code
+
+      - name: Require the repository owner's approval for a change to the export drops
+        if: steps.check.outputs.owner_review == 'true'
+        env:
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          if [ "$AUTHOR" = "$OWNER" ]; then
+            echo "the repository owner opened this pull request"
+            exit 0
+          fi
+          decisive='.[] | select(.user.login == env.OWNER)
+            | select(.state == "APPROVED" or .state == "CHANGES_REQUESTED" or .state == "DISMISSED")
+            | [.state, .commit_id] | @tsv'
+          last=$(gh api --paginate "repos/${REPO}/pulls/${PR}/reviews" --jq "$decisive" | tail -n 1)
+          if [ "$last" = "$(printf 'APPROVED\t%s' "$HEAD_SHA")" ]; then
+            echo "the repository owner approved ${HEAD_SHA}"
+            exit 0
+          fi
+          echo "re/db/export_drops.json changes the addon API: only ${OWNER} approves it."
+          echo "Approve the head commit ${HEAD_SHA}, then re-run this job."
+          echo "- re/db/export_drops.json: waiting for ${OWNER} to approve ${HEAD_SHA}; re-run validate after that" \
+            >> "$GITHUB_STEP_SUMMARY"
+          exit 1
 
   automerge:
     needs: validate

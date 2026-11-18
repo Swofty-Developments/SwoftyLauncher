@@ -9,7 +9,7 @@ use super::wine_override::add_override;
 use super::{Conflict, Installer, Plan};
 use crate::diagnostics::phases;
 use crate::game_folder::baseline::{Baseline, FileRecord, Hashes, Objects, sha256_bytes, sha256_file};
-use crate::game_folder::journal::{Journal, Op};
+use crate::game_folder::journal::{Entry, Journal, Op};
 use crate::game_folder::placed::{self, Placed};
 use crate::{Error, Result, addons::storage as addon_storage, io_err, with_retry};
 
@@ -190,24 +190,40 @@ impl<'a> Installer<'a> {
         stash: bool,
     ) -> Result<()> {
         crate::now_doing("checking the game files");
-        if let Some(rel) = plan
-            .data
-            .keys()
-            .chain(plan.added.keys())
-            .chain(plan.loader.keys())
-            .find(|rel| crate::game_folder::stock::is_upscaler_drop_in(rel))
-        {
-            return Err(Error::Resolve(format!(
-                "{rel} is an upscaler drop-in file and stays as the player put it; no addon or profile can replace it"
-            )));
-        }
+        refuse_drop_ins(plan)?;
         let objects = self.objects();
         let mut baseline = loaded.clone();
         let mut placed = Placed::load(self.data)?;
-        let mut after = BTreeMap::new();
-        for (rel, src) in plan.data.iter().chain(&plan.added).chain(&plan.loader) {
-            after.insert(rel.as_str(), hashes.sha256(src)?);
+        let after = hashed(plan, hashes)?;
+        self.put_back_missing(plan, &baseline, &objects)?;
+        let (mut conflicts, unproven) =
+            self.check_replacements(plan, hashes, &mut baseline, &objects, &placed, &after)?;
+        self.check_unproven(&mut baseline, &unproven)?;
+        if baseline != loaded {
+            baseline.save(self.data)?;
         }
+        conflicts.extend(self.check_new_files(plan, hashes, &baseline, &placed, &after)?);
+        if !conflicts.is_empty() {
+            return Err(Error::Leftovers(conflicts));
+        }
+        let (mut j, registry) = self.open_journal(plan, &baseline, &objects, &mut placed, &after)?;
+        let sources = sources(plan);
+        crate::now_doing("copying the mods into the game folder");
+        let copied = self.copy_entries(&mut j, &sources, stash, hashes, registry.as_ref())?;
+        (self.out)(&copy_report(&copied, self.copy_only));
+        self.put_back_storage(plan, &sources)?;
+        if !plan.loader.is_empty() {
+            for line in crate::stdlib::state::migrate(self.data, &self.game.dir)? {
+                (self.out)(&line);
+            }
+        }
+        j.commit()
+    }
+
+    /// Puts back each game file `plan` replaces that is missing from the game
+    /// folder from its backed-up original. Refuses the plan, before putting
+    /// any back, when one of them has none.
+    pub(super) fn put_back_missing(&self, plan: &Plan, baseline: &Baseline, objects: &Objects) -> Result<()> {
         let (mut backed_up, mut missing) = (Vec::new(), Vec::new());
         for rel in plan.data.keys() {
             if std::fs::symlink_metadata(self.path(rel)).is_ok() {
@@ -230,6 +246,22 @@ impl<'a> Installer<'a> {
                 "{rel} was missing from the game folder; put back its backed-up original"
             ));
         }
+        Ok(())
+    }
+
+    /// Checks each game file `plan` replaces against its recorded original,
+    /// recording it when it has none and re-recording one Steam proves the
+    /// record stale. Returns the files in the way and the ones with no
+    /// original that may be recorded; stops at a file that is not Steam's.
+    pub(super) fn check_replacements(
+        &self,
+        plan: &Plan,
+        hashes: &mut Hashes,
+        baseline: &mut Baseline,
+        objects: &Objects,
+        placed: &Placed,
+        after: &BTreeMap<&str, String>,
+    ) -> Result<(Vec<Conflict>, Vec<String>)> {
         let mut conflicts = Vec::new();
         let mut unproven = Vec::new();
         for rel in plan.data.keys() {
@@ -246,13 +278,11 @@ impl<'a> Installer<'a> {
                 });
                 continue;
             }
-            if !baseline.files.contains_key(rel) && !self.may_record(&baseline, &objects, &placed, rel)? {
+            if !baseline.files.contains_key(rel) && !self.may_record(baseline, objects, placed, rel)? {
                 unproven.push(rel.clone());
                 continue;
             }
-            let rec = baseline
-                .record(&objects, &self.game.dir, rel, self.depot)?
-                .clone();
+            let rec = baseline.record(objects, &self.game.dir, rel, self.depot)?.clone();
             let now = hashes.sha256(&path)?;
             if now != rec.sha256 {
                 let owned = placed.wrote(rel, &now) || after[rel.as_str()] == now;
@@ -295,32 +325,50 @@ impl<'a> Installer<'a> {
                 });
             }
         }
-        if !unproven.is_empty() {
-            let rebuilt = baseline.rebuild.is_some();
-            if let Some(r) = baseline.rebuild.as_mut() {
-                r.told_to_verify = true;
-            }
-            baseline.save(self.data)?;
-            let first = &unproven[0];
-            let more = match unproven.len() {
-                1 => String::new(),
-                n => format!(" (and {} more)", n - 1),
-            };
-            return Err(Error::Other(if rebuilt {
-                format!(
-                    "{}. {first}{more} could not be checked against a backed-up original; nothing in the game folder was changed",
-                    crate::game_folder::baseline::DAMAGED
-                )
-            } else {
-                format!(
-                    "{}. {first}{more} still holds a file swofty wrote, and no original is on record for it; nothing in the game folder was changed",
-                    crate::game_folder::baseline::DAMAGED
-                )
-            }));
+        Ok((conflicts, unproven))
+    }
+
+    /// Refuses the plan when a file it replaces has no original that may be
+    /// recorded, after saving the baseline so a rebuild tells the player to
+    /// verify the game files.
+    pub(super) fn check_unproven(&self, baseline: &mut Baseline, unproven: &[String]) -> Result<()> {
+        if unproven.is_empty() {
+            return Ok(());
         }
-        if baseline != loaded {
-            baseline.save(self.data)?;
+        let rebuilt = baseline.rebuild.is_some();
+        if let Some(r) = baseline.rebuild.as_mut() {
+            r.told_to_verify = true;
         }
+        baseline.save(self.data)?;
+        let first = &unproven[0];
+        let more = match unproven.len() {
+            1 => String::new(),
+            n => format!(" (and {} more)", n - 1),
+        };
+        Err(Error::Other(if rebuilt {
+            format!(
+                "{}. {first}{more} could not be checked against a backed-up original; nothing in the game folder was changed",
+                crate::game_folder::baseline::DAMAGED
+            )
+        } else {
+            format!(
+                "{}. {first}{more} still holds a file swofty wrote, and no original is on record for it; nothing in the game folder was changed",
+                crate::game_folder::baseline::DAMAGED
+            )
+        }))
+    }
+
+    /// The files `plan` adds that are already in the game folder, each owned
+    /// when it holds what the launcher wrote or is about to write there.
+    pub(super) fn check_new_files(
+        &self,
+        plan: &Plan,
+        hashes: &mut Hashes,
+        baseline: &Baseline,
+        placed: &Placed,
+        after: &BTreeMap<&str, String>,
+    ) -> Result<Vec<Conflict>> {
+        let mut conflicts = Vec::new();
         for rel in plan.added.keys().chain(plan.loader.keys()) {
             let path = self.path(rel);
             if std::fs::symlink_metadata(&path).is_err() {
@@ -337,9 +385,20 @@ impl<'a> Installer<'a> {
                 replaced: false,
             });
         }
-        if !conflicts.is_empty() {
-            return Err(Error::Leftovers(conflicts));
-        }
+        Ok(conflicts)
+    }
+
+    /// Opens the journal of `plan`'s install with every step pending, after
+    /// recording what it places and the user.reg it edits. Returns the
+    /// journal and that user.reg with its text before and after the override.
+    pub(super) fn open_journal(
+        &self,
+        plan: &Plan,
+        baseline: &Baseline,
+        objects: &Objects,
+        placed: &mut Placed,
+        after: &BTreeMap<&str, String>,
+    ) -> Result<(Journal, Option<RegistryEdit<'a>>)> {
         let mut j = Journal::create(
             self.data,
             &plan.profile,
@@ -353,7 +412,34 @@ impl<'a> Installer<'a> {
         for rel in plan.added.keys().chain(plan.loader.keys()) {
             placed.insert(rel, after[rel.as_str()].clone(), false);
         }
-        let registry = match &self.game.user_reg {
+        let registry = self.registry_edit(plan, placed)?;
+        if let Some((_, name, _, _)) = &registry {
+            placed.registry = Some(name.clone());
+        }
+        placed.save(self.data)?;
+        let mut steps = self.steps(plan, baseline, after);
+        let registry = match registry {
+            Some((reg, name, text, out)) => {
+                let (before, now) = (objects.put_file(reg)?, sha256_bytes(out.as_bytes()));
+                steps.push((Op::RegistryOverride, name, Some(before), Some(now)));
+                Some((reg, text, out))
+            }
+            None => None,
+        };
+        j.begin_all(steps)?;
+        Ok((j, registry))
+    }
+
+    /// The user.reg `plan` overrides, its name in the journal, and its text
+    /// now and with the override; one that has the override already counts
+    /// only when the launcher put it there.
+    pub(super) fn registry_edit(
+        &self,
+        plan: &Plan,
+        placed: &Placed,
+    ) -> Result<Option<(&'a PathBuf, String, String, String)>> {
+        let game = self.game;
+        Ok(match &game.user_reg {
             Some(reg) if plan.registry_override => {
                 let text = std::fs::read_to_string(reg).map_err(io_err(reg))?;
                 let name = reg.display().to_string();
@@ -364,11 +450,17 @@ impl<'a> Installer<'a> {
                 }
             }
             _ => None,
-        };
-        if let Some((_, name, _, _)) = &registry {
-            placed.registry = Some(name.clone());
-        }
-        placed.save(self.data)?;
+        })
+    }
+
+    /// The journal steps that place `plan`'s files: each replacement, then
+    /// each new file after the folders it needs that are not there yet.
+    pub(super) fn steps(
+        &self,
+        plan: &Plan,
+        baseline: &Baseline,
+        after: &BTreeMap<&str, String>,
+    ) -> Vec<Step> {
         let mut steps = Vec::new();
         for rel in plan.data.keys() {
             let before = baseline.files[rel].sha256.clone();
@@ -393,150 +485,141 @@ impl<'a> Installer<'a> {
                 Some(after[rel.as_str()].clone()),
             ));
         }
-        let registry = match registry {
-            Some((reg, name, text, out)) => {
-                let (before, now) = (objects.put_file(reg)?, sha256_bytes(out.as_bytes()));
-                steps.push((Op::RegistryOverride, name, Some(before), Some(now)));
-                Some((reg, text, out))
-            }
-            None => None,
-        };
-        j.begin_all(steps)?;
-        let sources: BTreeMap<&str, &PathBuf> = plan
-            .data
-            .iter()
-            .chain(&plan.added)
-            .chain(&plan.loader)
-            .map(|(rel, src)| (rel.as_str(), src))
-            .collect();
-        crate::now_doing("copying the mods into the game folder");
-        let (mut n, mut copied, mut told) = (0, 0, std::time::Instant::now());
+        steps
+    }
+
+    /// Carries out each pending step of `j` in order, linking the files it
+    /// can and copying the rest, and marks each done.
+    pub(super) fn copy_entries(
+        &self,
+        j: &mut Journal,
+        sources: &BTreeMap<&str, &PathBuf>,
+        stash: bool,
+        hashes: &mut Hashes,
+        registry: Option<&RegistryEdit<'a>>,
+    ) -> Result<Copied> {
+        let (mut n, mut told) = (0, std::time::Instant::now());
         let built = crate::store::overlay_root(self.data);
-        let mut linking = !self.copy_only;
-        let (mut linked, mut linked_cache, mut link_failure) = (0usize, 0usize, None::<String>);
         let LinkCache {
             via,
             synced: cached,
             failure: cache_failure,
-        } = if linking {
-            self.link_cache(&built, &j.entries, &sources)
-        } else {
+        } = if self.copy_only {
             LinkCache::default()
+        } else {
+            self.link_cache(&built, &j.entries, sources)
         };
+        let mut linker = Linker {
+            via,
+            built,
+            on: !self.copy_only,
+            from_cache: 0,
+            failure: None,
+        };
+        let (mut linked, mut placed) = (0, 0);
         for i in 0..j.entries.len() {
             self.step(&mut n)?;
             let e = &j.entries[i];
-            let path = self.path(&e.path);
-            let mut link = |src: &Path, replacing: bool| -> bool {
-                let cache = via.get(e.path.as_str());
-                if !linking || (cache.is_none() && !src.starts_with(&built)) {
-                    return false;
-                }
-                let from_cache = cache.is_some();
-                let src = cache.map_or(src, |p| p.as_path());
-                let made = if replacing {
-                    link_replacing(src, &path)
-                } else {
-                    std::fs::hard_link(src, &path)
-                };
-                match made {
-                    Ok(()) => {
-                        linked_cache += usize::from(from_cache);
-                        true
-                    }
-                    Err(err) => {
-                        link_failure = Some(err.to_string());
-                        linking = false;
-                        false
-                    }
-                }
-            };
-            match e.op {
-                Op::ReplaceFile => {
-                    let src = sources[e.path.as_str()];
-                    let before = e.before.as_deref().expect("replace-file has before");
-                    let stashed = stash && self.stash(&path, before, hashes);
-                    if link(src, true) {
-                        linked += 1;
-                        hashes.wrote(src, e.after.as_deref().expect("a placed file has after"));
-                    } else if let Err(err) = copy_replacing(src, &path) {
-                        if stashed {
-                            self.unstash(before, &path, hashes);
-                        }
-                        return Err(crate::diagnostics::quarantine::copy_error(&e.path, &path, err));
-                    } else {
-                        crate::clear_readonly(&path);
-                    }
-                }
-                Op::CreateDir => std::fs::create_dir(&path).map_err(io_err(&path))?,
-                // Windows refused the file as a threat. The entry stays pending, so
-                // the rollback clears whatever was left, and the check before the
-                // game starts finds the file missing and refuses the launch with
-                // the antivirus report instead of a bare copy error here.
-                Op::CreateFile => {
-                    let src = sources[e.path.as_str()];
-                    if link(src, false) {
-                        linked += 1;
-                        hashes.wrote(src, e.after.as_deref().expect("a placed file has after"));
-                    } else {
-                        match copy_replacing(src, &path) {
-                            Err(err) if crate::diagnostics::quarantine::is_virus_error(&err) => continue,
-                            r => {
-                                r.map_err(io_err(&path))?;
-                                crate::clear_readonly(&path);
-                            }
-                        }
-                    }
-                }
-                Op::RegistryOverride => {
-                    if let Some((reg, text, out)) = &registry
-                        && out != text
-                    {
-                        std::fs::write(reg, out).map_err(io_err(*reg))?;
-                    }
-                }
+            let put = self.put_entry(e, sources, &mut linker, stash, hashes, registry)?;
+            match put {
+                Put::Refused => continue,
+                Put::Linked => linked += 1,
+                Put::Copied | Put::Made => {}
             }
-            if matches!(e.op, Op::ReplaceFile | Op::CreateFile) {
+            if matches!(put, Put::Linked | Put::Copied) {
+                let path = self.path(&e.path);
                 hashes.wrote(&path, e.after.as_deref().expect("a placed file has after"));
-                copied += 1;
+                placed += 1;
             }
             j.done(i)?;
-            (self.progress)(copied, sources.len());
+            (self.progress)(placed, sources.len());
             if told.elapsed() >= PROGRESS_EVERY {
                 (self.out)(&format!(
-                    "installing: {copied} of {} file(s) copied",
+                    "installing: {placed} of {} file(s) copied",
                     sources.len()
                 ));
                 told = std::time::Instant::now();
             }
         }
-        let mode = match (&link_failure, self.copy_only) {
-            (_, true) => "copy (SWOFTY_INSTALL_COPY=1)".to_owned(),
-            (Some(why), _) if cached.is_some() => format!("copy (link cache link failed: {why})"),
-            (None, _) if cached.is_some() => {
-                let (made, kept) = cached.unwrap_or_default();
-                (self.out)(&format!(
-                    "installing: {linked} linked ({linked_cache} from the link cache: {made} copied into it, {kept} reused), {} copied",
-                    copied - linked
-                ));
-                String::new()
+        Ok(Copied {
+            linked,
+            from_cache: linker.from_cache,
+            placed,
+            link_failure: linker.failure,
+            cached,
+            cache_failure,
+        })
+    }
+
+    /// Carries out one journal step. A replaced original moved aside goes
+    /// back at once when its replacement can't be copied.
+    pub(super) fn put_entry(
+        &self,
+        e: &Entry,
+        sources: &BTreeMap<&str, &PathBuf>,
+        linker: &mut Linker,
+        stash: bool,
+        hashes: &mut Hashes,
+        registry: Option<&RegistryEdit<'a>>,
+    ) -> Result<Put> {
+        let path = &self.path(&e.path);
+        Ok(match e.op {
+            Op::ReplaceFile => {
+                let src = sources[e.path.as_str()];
+                let before = e.before.as_deref().expect("replace-file has before");
+                let stashed = stash && self.stash(path, before, hashes);
+                if linker.link(&e.path, src, path, true) {
+                    hashes.wrote(src, e.after.as_deref().expect("a placed file has after"));
+                    Put::Linked
+                } else if let Err(err) = copy_replacing(src, path) {
+                    if stashed {
+                        self.unstash(before, path, hashes);
+                    }
+                    return Err(crate::diagnostics::quarantine::copy_error(&e.path, path, err));
+                } else {
+                    crate::clear_readonly(path);
+                    Put::Copied
+                }
             }
-            (None, _) if linked == 0 && cache_failure.is_some() => {
-                format!(
-                    "copy (link cache unavailable: {})",
-                    cache_failure.as_deref().unwrap_or_default()
-                )
+            Op::CreateDir => {
+                std::fs::create_dir(path).map_err(io_err(path))?;
+                Put::Made
             }
-            (Some(why), _) => format!("copy (hard link failed: {why})"),
-            (None, _) if linked == 0 => "copy (no build output to link)".to_owned(),
-            (None, _) => "hard links".to_owned(),
-        };
-        if !mode.is_empty() {
-            (self.out)(&format!(
-                "installing: {mode}; {linked} file(s) linked, {} copied",
-                copied - linked
-            ));
-        }
+            // Windows refused the file as a threat. The entry stays pending, so
+            // the rollback clears whatever was left, and the check before the
+            // game starts finds the file missing and refuses the launch with
+            // the antivirus report instead of a bare copy error here.
+            Op::CreateFile => {
+                let src = sources[e.path.as_str()];
+                if linker.link(&e.path, src, path, false) {
+                    hashes.wrote(src, e.after.as_deref().expect("a placed file has after"));
+                    Put::Linked
+                } else {
+                    match copy_replacing(src, path) {
+                        Err(err) if crate::diagnostics::quarantine::is_virus_error(&err) => Put::Refused,
+                        r => {
+                            r.map_err(io_err(path))?;
+                            crate::clear_readonly(path);
+                            Put::Copied
+                        }
+                    }
+                }
+            }
+            Op::RegistryOverride => {
+                if let Some((reg, text, out)) = registry
+                    && out != text
+                {
+                    std::fs::write(reg, out).map_err(io_err(*reg))?;
+                }
+                Put::Made
+            }
+        })
+    }
+
+    /// Loads the storage of each addon `sources` places for the plan's
+    /// profile, and puts the files it kept there back in the game folder,
+    /// except the ones the plan places.
+    pub(super) fn put_back_storage(&self, plan: &Plan, sources: &BTreeMap<&str, &PathBuf>) -> Result<()> {
         let planned: BTreeSet<String> = sources.keys().map(|rel| placed::key(rel)).collect();
         for id in addon_storage::ids(sources.keys().copied()) {
             addon_storage::load_profile(self.data, &id, &plan.profile)?;
@@ -549,12 +632,7 @@ impl<'a> Installer<'a> {
                 ));
             }
         }
-        if !plan.loader.is_empty() {
-            for line in crate::stdlib::state::migrate(self.data, &self.game.dir)? {
-                (self.out)(&line);
-            }
-        }
-        j.commit()
+        Ok(())
     }
 
     /// Brings the link cache on the game's drive up to date for the files
@@ -616,4 +694,139 @@ impl<'a> Installer<'a> {
             }
         }
     }
+}
+
+/// One journal step: what it does, to which game path, and the file's hash
+/// before and after.
+pub(super) type Step = (Op, String, Option<String>, Option<String>);
+
+/// The user.reg an install overrides, with its text before and after.
+pub(super) type RegistryEdit<'a> = (&'a PathBuf, String, String);
+
+/// What carrying out a journal step did.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub(super) enum Put {
+    /// The file is a link to its build output or its copy in the link cache.
+    Linked,
+    /// The file is a copy.
+    Copied,
+    /// A folder or the prefix override.
+    Made,
+    /// Windows refused the file as a threat; the step stays pending.
+    Refused,
+}
+
+/// Links placed files from the link cache or the build output until a link
+/// fails, and counts the ones from the cache.
+pub(super) struct Linker {
+    pub(super) via: BTreeMap<String, PathBuf>,
+    pub(super) built: PathBuf,
+    pub(super) on: bool,
+    pub(super) from_cache: usize,
+    pub(super) failure: Option<String>,
+}
+
+impl Linker {
+    /// Whether `path` is now a link to the cached copy of `rel`, or else to
+    /// `src` in the build output. False when neither may be linked, or when
+    /// the link failed, which ends linking.
+    pub(super) fn link(&mut self, rel: &str, src: &Path, path: &Path, replacing: bool) -> bool {
+        let cache = self.via.get(rel);
+        if !self.on || (cache.is_none() && !src.starts_with(&self.built)) {
+            return false;
+        }
+        let from_cache = cache.is_some();
+        let src = cache.map_or(src, |p| p.as_path());
+        let made = if replacing {
+            link_replacing(src, path)
+        } else {
+            std::fs::hard_link(src, path)
+        };
+        match made {
+            Ok(()) => {
+                self.from_cache += usize::from(from_cache);
+                true
+            }
+            Err(err) => {
+                self.failure = Some(err.to_string());
+                self.on = false;
+                false
+            }
+        }
+    }
+}
+
+/// What copying an install's files did: the files linked, of them the ones
+/// from the link cache, the files placed in all, why linking stopped, and
+/// what the link cache sync copied and reused or why there is no cache.
+#[derive(Debug, Default, Clone, PartialEq)]
+pub(super) struct Copied {
+    pub(super) linked: usize,
+    pub(super) from_cache: usize,
+    pub(super) placed: usize,
+    pub(super) link_failure: Option<String>,
+    pub(super) cached: Option<(usize, usize)>,
+    pub(super) cache_failure: Option<String>,
+}
+
+/// The line an install logs on how it placed its files.
+pub(super) fn copy_report(c: &Copied, copy_only: bool) -> String {
+    let (linked, copied) = (c.linked, c.placed - c.linked);
+    let mode = match (&c.link_failure, copy_only) {
+        (_, true) => "copy (SWOFTY_INSTALL_COPY=1)".to_owned(),
+        (Some(why), _) if c.cached.is_some() => format!("copy (link cache link failed: {why})"),
+        (None, _) if c.cached.is_some() => {
+            let (made, kept) = c.cached.unwrap_or_default();
+            return format!(
+                "installing: {linked} linked ({} from the link cache: {made} copied into it, {kept} reused), {copied} copied",
+                c.from_cache
+            );
+        }
+        (None, _) if linked == 0 && c.cache_failure.is_some() => {
+            format!(
+                "copy (link cache unavailable: {})",
+                c.cache_failure.as_deref().unwrap_or_default()
+            )
+        }
+        (Some(why), _) => format!("copy (hard link failed: {why})"),
+        (None, _) if linked == 0 => "copy (no build output to link)".to_owned(),
+        (None, _) => "hard links".to_owned(),
+    };
+    format!("installing: {mode}; {linked} file(s) linked, {copied} copied")
+}
+
+/// Refuses a plan that would replace an upscaler drop-in the player put in
+/// the game folder.
+pub(super) fn refuse_drop_ins(plan: &Plan) -> Result<()> {
+    match plan
+        .data
+        .keys()
+        .chain(plan.added.keys())
+        .chain(plan.loader.keys())
+        .find(|rel| crate::game_folder::stock::is_upscaler_drop_in(rel))
+    {
+        Some(rel) => Err(Error::Resolve(format!(
+            "{rel} is an upscaler drop-in file and stays as the player put it; no addon or profile can replace it"
+        ))),
+        None => Ok(()),
+    }
+}
+
+/// The hash of each file `plan` places, by game path.
+pub(super) fn hashed<'p>(plan: &'p Plan, hashes: &mut Hashes) -> Result<BTreeMap<&'p str, String>> {
+    let mut after = BTreeMap::new();
+    for (rel, src) in plan.data.iter().chain(&plan.added).chain(&plan.loader) {
+        after.insert(rel.as_str(), hashes.sha256(src)?);
+    }
+    Ok(after)
+}
+
+/// The source of each file `plan` places, by game path.
+pub(super) fn sources(plan: &Plan) -> BTreeMap<&str, &PathBuf> {
+    plan.data
+        .iter()
+        .chain(&plan.added)
+        .chain(&plan.loader)
+        .map(|(rel, src)| (rel.as_str(), src))
+        .collect()
 }

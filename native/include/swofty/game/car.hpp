@@ -452,6 +452,15 @@ struct CarTurbo {
 static_assert(offsetof(CarTurbo, car) == 0x8);
 static_assert(offsetof(CarTurbo, max_boost) == 0x2d8);
 
+struct CarWheel {
+    uint8_t _pad_0x0[0x20];
+    uint8_t tyre_flags; // L2 experimental
+    uint8_t _pad_0x21[0x77];
+    float deflation; // L2 experimental
+};
+static_assert(offsetof(CarWheel, tyre_flags) == 0x20);
+static_assert(offsetof(CarWheel, deflation) == 0x98);
+
 inline constexpr address<"Car_Assets_CreateSystemForPerformanceMode"> Car_Assets_CreateSystemForPerformanceMode{}; // L3 stable
 inline constexpr address<"Car_BrakeEcu_ApplyBias"> Car_BrakeEcu_ApplyBias{}; // L2 experimental
 inline constexpr address<"Car_Build_VtfComponents"> Car_Build_VtfComponents{}; // L2 experimental
@@ -500,6 +509,8 @@ inline constexpr address<"Car_Tuning_SetChassisZCom"> Car_Tuning_SetChassisZCom{
 inline constexpr address<"Car_Tuning_SetEngineBrakingAndRadiator"> Car_Tuning_SetEngineBrakingAndRadiator{}; // L2 experimental
 inline constexpr address<"Car_Tuning_SetFinalDrive"> Car_Tuning_SetFinalDrive{}; // L2 experimental
 inline constexpr address<"Car_TyreSystem_PitstopComplete"> Car_TyreSystem_PitstopComplete{}; // L2 experimental
+using Car_Tyre_ChangeToNextCompound_t = uint64_t(void *tyre_component, uint8_t pit_stop);
+inline constexpr fn<"Car_Tyre_ChangeToNextCompound", Car_Tyre_ChangeToNextCompound_t> Car_Tyre_ChangeToNextCompound{}; // L2 experimental
 using Car_Tyre_CheckCompoundClassRule_t = bool(const void *set);
 inline constexpr fn<"Car_Tyre_CheckCompoundClassRule", Car_Tyre_CheckCompoundClassRule_t> Car_Tyre_CheckCompoundClassRule{}; // L2 experimental
 inline constexpr address<"Car_Tyre_ComputeGripMultiplier"> Car_Tyre_ComputeGripMultiplier{}; // L2 experimental

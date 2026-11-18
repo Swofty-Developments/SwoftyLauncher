@@ -1,0 +1,15 @@
+{
+  "content.package": {
+    "f1_2005": {
+      "$comment": "2005: one set of tyres per race, so pit stops keep the fitted tyres unless one is punctured; mandatory_tyre_change false drops the two dry compounds rule, which a car that keeps its tyres cannot meet",
+      "entrant_list": "f1_2005",
+      "season": 2005,
+      "rules": {
+        "refuelling": true,
+        "race_fuel_kg": 75,
+        "race_tyre_change": false,
+        "mandatory_tyre_change": false
+      }
+    }
+  }
+}

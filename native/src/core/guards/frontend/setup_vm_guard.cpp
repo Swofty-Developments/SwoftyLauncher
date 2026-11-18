@@ -1,5 +1,5 @@
 #include "core/guards/guard.hpp"
-#include "core/runtime/hook_errors.hpp"
+#include "core/runtime/loader/hook_install.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/guards/frontend/setup_vm_logic.hpp"
 
@@ -81,13 +81,13 @@ bool arm(size_t n, const runtime::Sig &s, void (*fn)(safetyhook::Context &))
         swofty::log("[setups] car guard: %s: no jne after the compare", s.what);
         return false;
     }
-    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), fn);
-    if (!h) {
-        swofty::log("[setups] car guard: %s: the hook failed: %s", s.what, runtime::hook_error(h.error()).c_str());
+    skip_to[n] = to;
+    runtime::loader::Installed r = runtime::loader::install(hooks[n], at, s.what, fn);
+    if (!r) {
+        skip_to[n] = 0;
+        swofty::log("[setups] car guard: %s: the hook failed: %s", s.what, r.error.c_str());
         return false;
     }
-    skip_to[n] = to;
-    hooks[n] = std::move(*h);
     return true;
 }
 

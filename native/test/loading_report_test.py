@@ -90,7 +90,7 @@ def write_run(root, name, text, env=None, end=None):
 ON = 'loading_skip_minimum_time,loading_skip_session_intro_video,loading_skip_grid_rundown,loading_skip_talking_points'
 APPLIED = ''.join(
     line(30.0, f'[loading] {s} read by the game (it had 0, status 0): answered 1 for the {f} feature, so it is skipped')
-    for f, s in lr.FEATURE_SETTINGS.items())
+    for f, s in lr.FEATURE_SETTINGS.items() if f in ON.split(','))
 
 
 class Names(unittest.TestCase):
@@ -176,9 +176,26 @@ class Report(unittest.TestCase):
                          'loading_log_settings (2 getter(s))') + boot()
         r = lr.analyse(write_run(self.root, 'batch', text))
         self.assertEqual(r['arm'], 'loading_skip_minimum_time')
-        self.assertEqual([g['kind'] for g in r['regressions']], ['flag not applied'])
+        self.assertEqual(r['regressions'], [], 'a run with no load has nothing to read the setting')
         r = lr.analyse(os.path.join(self.root, 'batch'), label='off')
         self.assertEqual(r['arm'], 'off')
+        r = lr.analyse(write_run(self.root, 'loaded', text + race_load(40.0, 2.0, 6.0)))
+        self.assertEqual([g['kind'] for g in r['regressions']], ['flag not applied'])
+
+    def test_the_default_arm_needs_no_session_transition(self):
+        wanted = line(0.1, '[loading] game setting overrides wanted: loading_skip_minimum_time, '
+                           'loading_skip_session_transition (1 getter(s))')
+        minimum = line(41.0, '[loading] Game.IgnoreMinimumLoadingTime read by the game (it had 0 (0x0), status 0): '
+                             'answered 1 (0x1) for the loading_skip_minimum_time feature, so the 3 s minimum is dropped')
+        transition = line(60.0, '[loading] Game.IgnoreMinimumLoadingTime read by the game (it had 0 (0x0), status 0): '
+                                'answered 1 (0x1) for the loading_skip_session_transition feature, so it is dropped')
+        r = lr.analyse(write_run(self.root, 'default', wanted + boot() + race_load(40.0, 2.0, 6.0) + minimum))
+        self.assertEqual(r['arm'], 'loading_skip_minimum_time,loading_skip_session_transition')
+        self.assertEqual(r['regressions'], [])
+        self.assertEqual(sorted(r['applied']), ['loading_skip_minimum_time'])
+        r = lr.analyse(write_run(self.root, 'opted_out', boot() + race_load(40.0, 2.0, 6.0) + transition))
+        self.assertEqual(r['arm'], 'off')
+        self.assertEqual([g['kind'] for g in r['regressions']], ['flag applied in the off arm'])
 
     def test_regressions(self):
         text = boot() + race_load(40.0, 2.0, 6.0) + flow(80.0, 'StateLoadSession') + line(

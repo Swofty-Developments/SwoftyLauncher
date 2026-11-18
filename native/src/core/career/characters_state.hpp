@@ -6,7 +6,7 @@
 #include <set>
 #include <string>
 
-#include "core/runtime/loader/mixin_gate.hpp"
+#include "core/runtime/loader/hook_set.hpp"
 
 // What the character overrides' entries and API (characters.cpp) and their game hooks (characters_hooks.cpp) share.
 namespace career::characters {
@@ -15,13 +15,6 @@ using BuildRef = void *(void *out, const uint8_t *character, void *node);
 using ListLoaded = int64_t(void *ctx, const void *message);
 using PostLine = void(void *speech, void *line, uint8_t retrigger);
 
-struct Part {
-    const char *name, *label;
-    std::atomic<bool> wanted{false};
-    runtime::loader::MixinGate gate{};
-    std::atomic<bool> live{false}, late_logged{false};
-};
-
 extern BuildRef *orig_build;
 extern ListLoaded *orig_loaded;
 extern PostLine *orig_post;
@@ -29,7 +22,7 @@ extern std::mutex lock;
 extern std::string active;
 extern std::set<void *> muted_emitters;
 extern std::atomic<bool> any_swap, any_mute;
-extern Part ref;
+extern runtime::loader::MixinPart ref;
 
 // The active group's replacement for a character and its muted speakers (characters.cpp).
 std::string replacement_for(const std::string &character);
