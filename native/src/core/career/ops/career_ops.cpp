@@ -414,16 +414,16 @@ int api_team_stat(const char *ref, uint32_t *out)
     return SWOFTY_ASSET_OK;
 }
 
-int api_current_round(int32_t *season_index, int32_t *round, int32_t *rounds)
+// The loaded career's current season: the Season at the Championship's season_index. LATE off the flow thread, with
+// no career entity or while it is busy, and while the championship or the season entry doesn't check out;
+// UNAVAILABLE when the championship's or the season's vtable doesn't bind.
+int current_season(uintptr_t &season, uint32_t &season_index)
 {
-    if (!season_index || !round || !rounds)
-        return SWOFTY_ASSET_INVALID;
     if (!on_flow_thread())
         return SWOFTY_ASSET_LATE;
     uintptr_t e = entity();
-    uintptr_t champ_vt = bind("vt_Career_Championship"), season_vt = bind("vt_Career_Season"),
-              weekend_vt = bind("vt_Career_Weekend");
-    if (!champ_vt || !season_vt || !weekend_vt)
+    uintptr_t champ_vt = bind("vt_Career_Championship"), season_vt = bind("vt_Career_Season");
+    if (!champ_vt || !season_vt)
         return SWOFTY_ASSET_UNAVAILABLE;
     if (!e)
         return SWOFTY_ASSET_LATE;
@@ -442,8 +442,26 @@ int api_current_round(int32_t *season_index, int32_t *round, int32_t *rounds)
     if (!mem::read(b + champ.season_index * sizeof entry, entry) || !entry.season ||
         rdv<uintptr_t>(reinterpret_cast<uintptr_t>(entry.season)) != season_vt)
         return SWOFTY_ASSET_LATE;
+    season = reinterpret_cast<uintptr_t>(entry.season);
+    season_index = static_cast<uint32_t>(champ.season_index);
+    return SWOFTY_ASSET_OK;
+}
+
+int api_current_round(int32_t *season_index, int32_t *round, int32_t *rounds)
+{
+    if (!season_index || !round || !rounds)
+        return SWOFTY_ASSET_INVALID;
+    if (!on_flow_thread())
+        return SWOFTY_ASSET_LATE;
+    uintptr_t weekend_vt = bind("vt_Career_Weekend");
+    if (!weekend_vt)
+        return SWOFTY_ASSET_UNAVAILABLE;
+    uintptr_t at = 0;
+    uint32_t index = 0;
+    if (int r = current_season(at, index); r != SWOFTY_ASSET_OK)
+        return r;
     g::Season season{};
-    if (!mem::read(reinterpret_cast<uintptr_t>(entry.season), season))
+    if (!mem::read(at, season))
         return SWOFTY_ASSET_LATE;
     auto wb = reinterpret_cast<uintptr_t>(season.weekends_begin), we = reinterpret_cast<uintptr_t>(season.weekends_end);
     size_t weekends = wb && we > wb && !((we - wb) % sizeof(void *)) ? (we - wb) / sizeof(void *) : 0;
@@ -454,7 +472,7 @@ int api_current_round(int32_t *season_index, int32_t *round, int32_t *rounds)
         if (!w || rdv<uintptr_t>(w) != weekend_vt)
             return SWOFTY_ASSET_LATE;
     }
-    *season_index = static_cast<int32_t>(champ.season_index);
+    *season_index = static_cast<int32_t>(index);
     *round = static_cast<int32_t>(season.current_weekend) + 1;
     *rounds = static_cast<int32_t>(weekends);
     return SWOFTY_ASSET_OK;
