@@ -3161,7 +3161,6 @@
   "func:Sess_GarageState_OnStateExit": "V2713",
   "func:Sess_GarageState_RefreshHudVisibility": "V2714",
   "func:Sess_Garage_HasPendingName": "V3363",
-  "func:Sess_Get_CarDriverName": "V3710",
   "func:Sess_Get_CurrentContentSetName": "V9338",
   "func:Sess_Get_VehicleTrackFactor": "V7592",
   "func:Sess_HumanController_Update": "V4059",
