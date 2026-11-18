@@ -236,6 +236,7 @@ impl Shell {
             .flex_1()
             .min_w_0()
             .gap(px(16.))
+            .children(self.browser_gallery(a, p, cx))
             .children(self.trend_chart(a, p))
             .child(detail_about(a, &mono, p));
         let body = v_flex()

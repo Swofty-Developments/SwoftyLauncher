@@ -374,6 +374,7 @@ impl Shell {
                             detail,
                             took,
                         );
+                        s.load_media(&a, cx);
                         s.browser.details.insert(id, a);
                     }
                     Err(e) => s.record(

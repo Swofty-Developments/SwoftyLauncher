@@ -1423,5 +1423,13 @@
   "Too many tracks": "Pistas demais",
   "Left out: the game holds {room} tracks": "Deixada de fora: o jogo comporta {room} pistas",
   "{shown} and {more} more": "{shown} e mais {more}",
-  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["O jogo comporta {room} pistas, então {count} pista fica de fora desta compilação: {list}. Desative alguns complementos de pistas para jogá-la.", "O jogo comporta {room} pistas, então {count} pistas ficam de fora desta compilação: {list}. Desative alguns complementos de pistas para jogá-las.", "O jogo comporta {room} pistas, então {count} pistas ficam de fora desta compilação: {list}. Desative alguns complementos de pistas para jogá-las."]
+  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["O jogo comporta {room} pistas, então {count} pista fica de fora desta compilação: {list}. Desative alguns complementos de pistas para jogá-la.", "O jogo comporta {room} pistas, então {count} pistas ficam de fora desta compilação: {list}. Desative alguns complementos de pistas para jogá-las.", "O jogo comporta {room} pistas, então {count} pistas ficam de fora desta compilação: {list}. Desative alguns complementos de pistas para jogá-las."],
+  "MEDIA": "MÍDIA",
+  "Picture": "Imagem",
+  "Video": "Vídeo",
+  "Video link": "Link de vídeo",
+  "Open the full picture in your browser": "Abrir a imagem inteira no navegador",
+  "Play the video in your browser": "Reproduzir o vídeo no navegador",
+  "Watch on {site}": "Assistir no {site}",
+  "Watch in your browser": "Assistir no navegador"
 }

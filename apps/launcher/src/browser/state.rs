@@ -69,6 +69,8 @@ pub(crate) struct Browser {
     pub(super) profile_failed: HashMap<String, String>,
     pub(super) author_sort: Sort,
     pub(super) avatars: HashMap<String, Arc<Image>>,
+    pub(super) media: HashMap<String, Arc<Image>>,
+    pub(super) media_pick: HashMap<String, usize>,
     pub(super) _search: Subscription,
 }
 
@@ -139,6 +141,8 @@ impl Browser {
             profile_failed: HashMap::new(),
             author_sort: Sort::Stars,
             avatars: HashMap::new(),
+            media: HashMap::new(),
+            media_pick: HashMap::new(),
             _search: changed,
         }
     }

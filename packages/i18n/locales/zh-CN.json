@@ -1333,5 +1333,13 @@
   "Too many tracks": "赛道过多",
   "Left out: the game holds {room} tracks": "已排除：游戏最多容纳 {room} 条赛道",
   "{shown} and {more} more": "{shown} 等另外 {more} 条",
-  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["游戏最多容纳 {room} 条赛道，因此 {count} 条赛道被排除在此次构建之外：{list}。关闭一些赛道插件即可游玩。"]
+  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["游戏最多容纳 {room} 条赛道，因此 {count} 条赛道被排除在此次构建之外：{list}。关闭一些赛道插件即可游玩。"],
+  "MEDIA": "媒体",
+  "Picture": "图片",
+  "Video": "视频",
+  "Video link": "视频链接",
+  "Open the full picture in your browser": "在浏览器中打开完整图片",
+  "Play the video in your browser": "在浏览器中播放视频",
+  "Watch on {site}": "在 {site} 上观看",
+  "Watch in your browser": "在浏览器中观看"
 }

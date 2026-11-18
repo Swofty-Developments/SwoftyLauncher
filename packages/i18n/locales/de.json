@@ -1423,5 +1423,13 @@
   "Too many tracks": "Zu viele Strecken",
   "Left out: the game holds {room} tracks": "Ausgelassen: Das Spiel fasst {room} Strecken",
   "{shown} and {more} more": "{shown} und {more} weitere",
-  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["Das Spiel fasst {room} Strecken, daher fällt {count} Strecke aus diesem Build heraus: {list}. Schalte einige Strecken-Addons aus, um sie zu fahren.", "Das Spiel fasst {room} Strecken, daher fallen {count} Strecken aus diesem Build heraus: {list}. Schalte einige Strecken-Addons aus, um sie zu fahren."]
+  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["Das Spiel fasst {room} Strecken, daher fällt {count} Strecke aus diesem Build heraus: {list}. Schalte einige Strecken-Addons aus, um sie zu fahren.", "Das Spiel fasst {room} Strecken, daher fallen {count} Strecken aus diesem Build heraus: {list}. Schalte einige Strecken-Addons aus, um sie zu fahren."],
+  "MEDIA": "MEDIEN",
+  "Picture": "Bild",
+  "Video": "Video",
+  "Video link": "Videolink",
+  "Open the full picture in your browser": "Das ganze Bild im Browser öffnen",
+  "Play the video in your browser": "Das Video im Browser abspielen",
+  "Watch on {site}": "Auf {site} ansehen",
+  "Watch in your browser": "Im Browser ansehen"
 }

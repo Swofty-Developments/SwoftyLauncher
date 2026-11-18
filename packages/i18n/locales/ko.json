@@ -1423,5 +1423,13 @@
   "Too many tracks": "트랙이 너무 많습니다",
   "Left out: the game holds {room} tracks": "제외됨: 게임은 트랙 {room}개를 담습니다",
   "{shown} and {more} more": "{shown} 외 {more}개",
-  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["게임은 트랙 {room}개를 담으므로 트랙 {count}개가 이 빌드에서 제외됩니다: {list}. 트랙 애드온 일부를 끄면 플레이할 수 있습니다."]
+  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["게임은 트랙 {room}개를 담으므로 트랙 {count}개가 이 빌드에서 제외됩니다: {list}. 트랙 애드온 일부를 끄면 플레이할 수 있습니다."],
+  "MEDIA": "미디어",
+  "Picture": "사진",
+  "Video": "동영상",
+  "Video link": "동영상 링크",
+  "Open the full picture in your browser": "브라우저에서 전체 사진 열기",
+  "Play the video in your browser": "브라우저에서 동영상 재생",
+  "Watch on {site}": "{site}에서 보기",
+  "Watch in your browser": "브라우저에서 보기"
 }

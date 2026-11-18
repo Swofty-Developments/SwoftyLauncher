@@ -1333,5 +1333,13 @@
   "Too many tracks": "Demasiados circuitos",
   "Left out: the game holds {room} tracks": "Excluido: el juego admite {room} circuitos",
   "{shown} and {more} more": "{shown} y {more} más",
-  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["El juego admite {room} circuitos, así que {count} circuito queda fuera de esta compilación: {list}. Desactiva algunos complementos de circuitos para jugarlo.", "El juego admite {room} circuitos, así que {count} circuitos quedan fuera de esta compilación: {list}. Desactiva algunos complementos de circuitos para jugarlos."]
+  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["El juego admite {room} circuitos, así que {count} circuito queda fuera de esta compilación: {list}. Desactiva algunos complementos de circuitos para jugarlo.", "El juego admite {room} circuitos, así que {count} circuitos quedan fuera de esta compilación: {list}. Desactiva algunos complementos de circuitos para jugarlos."],
+  "MEDIA": "MULTIMEDIA",
+  "Picture": "Imagen",
+  "Video": "Vídeo",
+  "Video link": "Enlace de vídeo",
+  "Open the full picture in your browser": "Abrir la imagen completa en el navegador",
+  "Play the video in your browser": "Reproducir el vídeo en el navegador",
+  "Watch on {site}": "Ver en {site}",
+  "Watch in your browser": "Ver en el navegador"
 }

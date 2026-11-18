@@ -1333,5 +1333,13 @@
   "Too many tracks": "Слишком много трасс",
   "Left out: the game holds {room} tracks": "Исключено: в игре помещается {room} трасс",
   "{shown} and {more} more": "{shown} и ещё {more}",
-  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["В игре помещается {room} трасс, поэтому {count} трасса не попадает в эту сборку: {list}. Выключите часть аддонов трасс, чтобы играть на ней.", "В игре помещается {room} трасс, поэтому {count} трассы не попадают в эту сборку: {list}. Выключите часть аддонов трасс, чтобы играть на них.", "В игре помещается {room} трасс, поэтому {count} трасс не попадают в эту сборку: {list}. Выключите часть аддонов трасс, чтобы играть на них."]
+  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["В игре помещается {room} трасс, поэтому {count} трасса не попадает в эту сборку: {list}. Выключите часть аддонов трасс, чтобы играть на ней.", "В игре помещается {room} трасс, поэтому {count} трассы не попадают в эту сборку: {list}. Выключите часть аддонов трасс, чтобы играть на них.", "В игре помещается {room} трасс, поэтому {count} трасс не попадают в эту сборку: {list}. Выключите часть аддонов трасс, чтобы играть на них."],
+  "MEDIA": "МЕДИА",
+  "Picture": "Изображение",
+  "Video": "Видео",
+  "Video link": "Ссылка на видео",
+  "Open the full picture in your browser": "Открыть изображение целиком в браузере",
+  "Play the video in your browser": "Воспроизвести видео в браузере",
+  "Watch on {site}": "Смотреть на {site}",
+  "Watch in your browser": "Смотреть в браузере"
 }
