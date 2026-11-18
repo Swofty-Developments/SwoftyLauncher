@@ -931,7 +931,6 @@
   "func:Car_Deformation_ReservePool": "V2312",
   "func:Car_DetachablePart_Update": "V6736",
   "func:Car_Differential_Reset_Thunk": "V6747",
-  "func:Car_Engine_ComputeDerived_Thunk": "V3907",
   "func:Car_FrontWing_OnCollision": "V6732",
   "func:Car_FuelTank_StepBurn": "V6806",
   "func:Car_Load_Vtf": "V6633",
