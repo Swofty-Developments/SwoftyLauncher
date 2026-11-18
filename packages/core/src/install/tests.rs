@@ -455,3 +455,5 @@ fn a_plan_is_vanilla_only_with_nothing_to_place_and_no_override() {
         assert!(!plan.is_vanilla(), "{plan:?}");
     }
 }
+
+mod place;
