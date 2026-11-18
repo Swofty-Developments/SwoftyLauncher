@@ -1874,7 +1874,6 @@
   "func:Game_GameSessionUI_Shutdown": "V2601",
   "func:Game_Game_HandleInterruptEvent": "V9352",
   "func:Game_Game_OnRetireLocalPlayersMessage": "V2478",
-  "func:Game_Game_SetCurrentGameMode": "V4306",
   "func:Game_GarageCrewInstance_PlayOverlaySequence": "V2819",
   "func:Game_GarageCrewInstance_PlaySequence": "V2818",
   "func:Game_GarageModule_Initialise": "V3176",
