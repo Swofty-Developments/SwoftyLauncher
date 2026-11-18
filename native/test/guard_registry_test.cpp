@@ -123,8 +123,10 @@ const std::vector<std::string> SETTLED = {
 // The order 1.9.63 armed the hook guards in, each from its own SWOFTY_ON_LOAD entry, as the armed lines of a 1.9.63
 // session's loader.log show it. The SDK lists on-load entries in the order they are constructed, and the core's static
 // constructors run in reverse link order: lld lays __CTOR_LIST__ out in link order and the mingw crt calls it from the
-// last entry (gccmain.c __do_global_ctors). So 1.9.63 armed them in the reverse of its build.sh link order.
+// last entry (gccmain.c __do_global_ctors). So 1.9.63 armed them in the reverse of its build.sh link order. A hook
+// guard added since links after the listed sources (tools/core_link_order.txt), so it arms first.
 const std::vector<std::string> HOOKED = {
+    "pit_garage_state",
     "gp_weekend_track",
     "rnd_suppliers",
     "replay_read",

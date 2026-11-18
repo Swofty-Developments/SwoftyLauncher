@@ -220,6 +220,13 @@
 [pit] race tyre change rule %s
 [pit] box guard %s
 
+[log garage/pit_garage_state.cpp]
+[pit] garage state guard: a car with no garage (slot %llu at %s) left the pit lane's garage state alone
+[pit] garage state guard: %s: the hook failed: %s
+[pit] garage state guard off (SWOFTY_PIT_GARAGE_STATE_GUARD=%s)
+[pit] garage state guard armed at %u of %u stores: a car without a garage leaves the pit lane's garage state alone instead of faulting
+[pit] garage state guard: not hooked
+
 [log garage/pit_slots.cpp]
 [pit] guard: vehicle %u has no race slot, %s car in the pit strategy check; %s%s
 
