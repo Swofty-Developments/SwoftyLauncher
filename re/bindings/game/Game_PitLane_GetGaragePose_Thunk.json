@@ -76,6 +76,16 @@
    "verdict": "agree",
    "evidence": "decomp:own capstone disasm 0x1434c01a0-0x1434c01a5,0x1503fecf0-0x1503fef17,0x142f62580-0x142f629e0,0x140136690-0x1401367b3,1.0.145 0x1434c2720-0x1434c2725,1.0.145 0x14feb9670-0x14feb9892;xref:0x1503fed01,0x1503fed0d,0x1503fed1a,0x1503fed33,0x1503feded,0x1503fee97,0x1503fedb4,0x1434bbd7b,0x1434be1ac,0x1434c35ab,0x1434c366e",
    "notes": "V100010 Blind: own capstone disasm of KB thunk 0x1434c01a0 (E9) -> body 0x1503fecf0-0x1503fef17 and 1.0.145 0x14feb9670-0x14feb9892 confirms every checkable claim: rcx obj, rdx 64-B vmovaps out, r8d cmp 0x1f/ja 0x1503fed01, rax=out 0x1503feded; [[rcx+8]+0x638+i*8] -> 0x142f62580 twice (0x1503fed1a/0x1503fed33), copy slot+0x20; null re-read -> identity 0x146095c90 (guard 0x146095cd0); i>31 or first null -> 0x1460fb0b0 (guard 0x1460fb0f0) = I x T via 0x140136690, row3 (0,-9000,0,1) from 0x145843020. 4 E8 callers, none reads rax. 1.0.145: 58/58 to ret, 96 of 100 vs 99 whole, diffs only in S1 init. Game meaning, EA, Ghidra, history unchecked."
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "std-libs",
+   "kind": "func",
+   "item": "Game_PitLane_GetGaragePose_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm of the thunks' bodies, KB 0x1503fecf0, Steam 1.0.145 0x14feb9670 (thunk 0x1434c2720), difflib aligned",
+   "notes": "V110009 1.0.145 witness, Steam only: the Steam 1.0.145 thunk 0x1434c2720 jumps to 0x14feb9670, and 97 of the body's 101 instructions align equal to the KB body; the rest are protector loads (a byte load against a word load and an xor of a protector global; a stack offset computed from a protector global against lea rcx, [rsp + 0x60]). EA 1.0.145: the thunk 0x1434b3450 jumps to 0x14ee21b50, which does not decode as the KB body in the dump (3 of 101 align), so it is not witnessed there."
   }
  ],
  "proofs": [
