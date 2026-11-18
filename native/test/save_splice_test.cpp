@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-namespace sp = runtime::save_splice;
+namespace sp = career::save_splice;
 
 static int fails;
 
@@ -136,7 +136,7 @@ static bool read_bag(In &in, Bag &out)
     return in.ok;
 }
 
-static std::unique_ptr<Bag> career(const std::string &tag, int slots)
+static std::unique_ptr<Bag> career_bag(const std::string &tag, int slots)
 {
     auto mode = std::make_unique<Bag>();
     mode->blobs.emplace_back("uid", std::vector<uint8_t>{1, 2, 3, 4});
@@ -187,10 +187,10 @@ static bool read_block(const std::vector<uint8_t> &bytes, Bag &out)
 
 int main()
 {
-    auto stock26 = career("s", 3);
-    auto stock24 = career("t", 1);
-    auto progressive = career("p", 2);
-    auto f1990 = career("n", 1);
+    auto stock26 = career_bag("s", 3);
+    auto stock24 = career_bag("t", 1);
+    auto progressive = career_bag("p", 2);
+    auto f1990 = career_bag("n", 1);
 
     sp::Store store;
     store.begin_load();
@@ -228,7 +228,7 @@ int main()
     expect(owed.take(&other).empty(), "a different save never pays another save's owed count");
     expect(!owed.pending(), "the mismatch clears the owed count");
 
-    auto late = career("l", 1);
+    auto late = career_bag("l", 1);
     auto dup = containers_block({{"driver_career_26", stock26.get()}, {"driver_career_1990", late.get()}}, store, owed,
                                 &result, true);
     Bag got_dup;

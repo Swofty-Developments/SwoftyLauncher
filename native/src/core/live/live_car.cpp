@@ -177,7 +177,7 @@ void read_surface(uintptr_t car, LiveCar &out)
             game[i] = id;
         }
     }
-    postfx::wheels_contract_order(game, out.surface);
+    render::postfx::wheels_contract_order(game, out.surface);
     out.has_surface = true;
     if (wettest >= 0) {
         out.wheel_wetness = wettest > 1 ? 1 : wettest;

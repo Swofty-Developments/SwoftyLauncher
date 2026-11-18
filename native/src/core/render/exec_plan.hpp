@@ -5,7 +5,7 @@
 #include <utility>
 #include <vector>
 
-namespace d3d12hooks {
+namespace render::d3d12 {
 
 // What the subscribers of one ExecuteCommandLists call want done around the game's lists. Steps after the
 // same list run in subscription order; a plan with no steps costs no allocation.

@@ -9,7 +9,7 @@
 // the host. A number is 1..99 and free when no other row of the championship holds it; with swap the row
 // holding it takes the driver's old number instead, which needs the driver to have one.
 
-namespace career_ops::numbers {
+namespace career::ops::numbers {
 
 constexpr uint8_t kNone = 0xff;
 

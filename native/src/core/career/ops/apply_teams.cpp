@@ -14,7 +14,7 @@
 #include "core/career/ops/lineup.hpp"
 #include "core/career/ops/tables.hpp"
 
-namespace career_ops::live {
+namespace career::ops::live {
 
 std::vector<std::string> slot_rows_of(const std::vector<uint32_t> &slot_teams)
 {
@@ -40,7 +40,7 @@ StartState take_start(const std::string &group)
 
 int start_teams(const json::Value &s, Report &rep, std::string &head, std::string &summary)
 {
-    namespace ct = career_ops::teams;
+    namespace ct = career::ops::teams;
     std::string group = s["data_group"].str();
     int year = number(s["year"], 0);
     head = "apply_teams " + std::to_string(year) + " (start, " + (group.empty() ? "no data group" : group) + ")";
@@ -131,7 +131,7 @@ int start_teams(const json::Value &s, Report &rep, std::string &head, std::strin
 
 int api_apply_teams(SwoftyText request, char *out, size_t cap, size_t *len)
 {
-    namespace ct = career_ops::teams;
+    namespace ct = career::ops::teams;
     Report rep;
     std::string summary, head = "apply_teams";
     int r = SWOFTY_ASSET_OK;
@@ -229,7 +229,7 @@ int api_apply_teams(SwoftyText request, char *out, size_t cap, size_t *len)
             summary = "no career entity or its entrant rows are unreadable";
             r = SWOFTY_ASSET_LATE;
         } else {
-            career_ops::plan::Input in;
+            career::ops::plan::Input in;
             in.data_group = group;
             in.have_slots = true;
             in.slot_teams = slot_teams;
@@ -240,7 +240,7 @@ int api_apply_teams(SwoftyText request, char *out, size_t cap, size_t *len)
                 if (a.car >= 0)
                     car_of_team[static_cast<int>(slot_teams[static_cast<size_t>(a.slot - 1)])] = a.car;
                 auto cs = std::find_if(cur.slots.begin(), cur.slots.end(), [&](const ct::SlotIn &x) { return x.slot == a.slot; });
-                career_ops::plan::Team team;
+                career::ops::plan::Team team;
                 team.slot = a.slot;
                 for (size_t k = 0; k < static_cast<size_t>(ct::kSeats); ++k) {
                     team.refs[k] = cs->seats[k];
@@ -248,7 +248,7 @@ int api_apply_teams(SwoftyText request, char *out, size_t cap, size_t *len)
                 }
                 in.teams.push_back(team);
             }
-            career_ops::plan::Plan p = career_ops::plan::plan(in, plan_rows(rows));
+            career::ops::plan::Plan p = career::ops::plan::plan(in, plan_rows(rows));
             std::vector<ct::SeatRow> seat_rows;
             for (auto &x : plan_rows(rows))
                 seat_rows.push_back({stat_of(x.driver), x.team, x.position, x.car, x.human});
@@ -270,14 +270,14 @@ int api_apply_teams(SwoftyText request, char *out, size_t cap, size_t *len)
             if (r == SWOFTY_ASSET_OK) {
                 if (l.player_team < 0)
                     l.player_team = p.player_team;
-                std::vector<career_ops::plan::Given> given;
+                std::vector<career::ops::plan::Given> given;
                 for (auto &m : l.moves)
                     given.push_back({m.driver, m.team, m.seat});
                 for (auto &m : l.repositions)
                     for (auto &x : plan_rows(rows))
-                        if (career_ops::plan::stat_of(x.driver) == m.driver && x.car)
+                        if (career::ops::plan::stat_of(x.driver) == m.driver && x.car)
                             given.push_back({m.driver, x.team, m.seat});
-                career_ops::plan::defer_to(p, given);
+                career::ops::plan::defer_to(p, given);
                 for (auto &m : p.moves) {
                     auto c = car_of_team.find(m.team);
                     l.moves.push_back({m.driver, m.team, m.seat, c == car_of_team.end() ? -1 : c->second, -1, -1});

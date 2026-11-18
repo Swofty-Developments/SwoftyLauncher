@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string_view>
 
-namespace postfx {
+namespace render::postfx {
 
 enum SignalKind : uint8_t { SK_BOOL, SK_NAME, SK_NUMBER, SK_EVENT };
 

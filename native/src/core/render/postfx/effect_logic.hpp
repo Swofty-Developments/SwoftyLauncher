@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace postfx {
+namespace render::postfx {
 
 inline constexpr int IN_NONE = -1, IN_ORIGINAL = -2, IN_PREVIOUS = -3;
 inline constexpr size_t MAX_INPUTS = 8, SLOTS = 32;
