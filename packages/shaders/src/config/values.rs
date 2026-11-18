@@ -1,6 +1,5 @@
-use crate::config::{
-    Elem, LineCtx, Lit, RawEntry, RawError, RawInline, RawValue, StrElem, bare_key, skip_ws,
-};
+use crate::config::{Elem, LineCtx, Lit, RawEntry, RawError, RawInline, RawValue, StrElem, bare_key};
+use crate::text::skip_ws;
 
 pub(super) fn digits(s: &str) -> Option<&str> {
     let mut prev_us = true;
