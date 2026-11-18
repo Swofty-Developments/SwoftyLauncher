@@ -2,8 +2,8 @@ use std::path::{Path, PathBuf};
 
 use anyhow::{Result, anyhow};
 use swofty_core::install::Source;
+use swofty_core::platform::steam::client as steam_client;
 use swofty_core::platform::{ClientNote, ClientStart, Steam};
-use swofty_core::steam_client;
 use swofty_core::store::Store;
 
 use crate::console::output::say;

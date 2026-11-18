@@ -13,7 +13,6 @@ use serde::Deserialize;
 
 use crate::{Error, Result};
 
-pub use crate::session::UpdateConfig;
 pub use download::{
     check_download, download, download_or, download_release, mirror_url, parse_sums, verifiable,
 };

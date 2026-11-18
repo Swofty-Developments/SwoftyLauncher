@@ -1,8 +1,8 @@
 use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::*;
+use swofty_core::online::server::api::{Api, ApiError};
 use swofty_core::online::server::sign_in::Session;
 use swofty_core::online::server::support::{BIO_MAX, Claimed, Goal, Kind, Me, Supporter, dollars_to_cents};
-use swofty_core::online::timetrial::api::{Api, ApiError};
 use swofty_i18n::tr;
 
 use crate::features::time_trial::Load;
@@ -388,8 +388,8 @@ fn load<T>(got: Result<T, ApiError>) -> Load<T> {
 
 #[cfg(test)]
 mod tests {
+    use swofty_core::online::server::api::ApiError;
     use swofty_core::online::server::support::{Kind, Supporter};
-    use swofty_core::online::timetrial::api::ApiError;
 
     use super::{Load, SupportPage, checkout_cents};
 

@@ -498,7 +498,7 @@ impl Shell {
             self.account
                 .session
                 .as_ref()
-                .map(|s| swofty_core::online::timetrial::api::Api::new(&s.token)),
+                .map(|s| swofty_core::online::server::api::Api::new(&s.token)),
             self.game.install.as_ref(),
         ) else {
             return;
