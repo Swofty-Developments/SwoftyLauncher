@@ -127,6 +127,7 @@ src/core/career/characters_hooks.cpp
 src/core/career/career_wizard.cpp
 src/core/career/wizard_hooks.cpp
 src/core/boxes/era_picker.cpp
+src/core/boxes/picker/time_trial.cpp
 src/core/boxes/car_category.cpp
 src/core/boxes/box_options.cpp
 src/core/boxes/box_grid.cpp

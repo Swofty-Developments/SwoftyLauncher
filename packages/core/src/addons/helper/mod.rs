@@ -2,6 +2,7 @@ mod addon;
 mod host_calls;
 mod pool;
 mod protocol;
+mod reads;
 
 #[cfg(all(test, unix))]
 mod tests;
@@ -28,6 +29,7 @@ use host_calls::{host_call, host_calls};
 use protocol::{JsonResult, Live, Run, reply_range, send};
 
 pub use pool::{Helpers, Pause};
+pub use reads::HookRun;
 
 type Result<T> = swofty_addon::Result<T>;
 
@@ -57,6 +59,7 @@ pub struct HelperAddon {
     summaries: Mutex<HashMap<String, Option<Summary>>>,
     stale: Arc<Mutex<Option<Stale>>>,
     paused: Arc<AtomicUsize>,
+    settled: Duration,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -110,11 +113,18 @@ impl HelperAddon {
             summaries: Mutex::new(HashMap::new()),
             stale: Arc::default(),
             paused: Arc::default(),
+            settled: reads::SETTLED,
         })
     }
 
     pub fn with_timeouts(mut self, timeouts: Timeouts) -> Self {
         self.timeouts = timeouts;
+        self
+    }
+
+    #[cfg(all(test, unix))]
+    fn settled_after(mut self, settled: Duration) -> Self {
+        self.settled = settled;
         self
     }
 
@@ -217,11 +227,24 @@ impl HelperAddon {
 
     fn call_with<T: DeserializeOwned>(
         &self,
+        run: MutexGuard<'_, Run>,
+        cx: &Cx,
+        call: Call,
+        wait: Duration,
+        progress: Option<&dyn Progress>,
+    ) -> Result<T> {
+        self.call_asking(run, cx, call, wait, progress, None)
+    }
+
+    /// [`Self::call_with`], keeping in `asked` each host call the helper sends while it answers.
+    fn call_asking<T: DeserializeOwned>(
+        &self,
         mut run: MutexGuard<'_, Run>,
         cx: &Cx,
         call: Call,
         wait: Duration,
         progress: Option<&dyn Progress>,
+        asked: Option<&mut Vec<reads::Asked>>,
     ) -> Result<T> {
         if let Run::Dead(e) = &*run {
             return Err(swofty_addon::Error::Other(e.clone()));
@@ -238,7 +261,7 @@ impl HelperAddon {
         let Run::Live(live) = &mut *run else {
             unreachable!("started above");
         };
-        let exchange = self.exchange(live, cx, call, wait, progress);
+        let exchange = self.exchange(live, cx, call, wait, progress, asked);
         match exchange {
             Ok(Ok(value)) => serde_json::from_str(value.get())
                 .map_err(|e| self.fail(&mut run, format!("sent a bad result: {e}"))),
@@ -356,18 +379,9 @@ impl HelperAddon {
             next: 0,
             profile: cx.profile.clone(),
         };
-        let hello = Call::Hello(Hello {
-            api: API_VERSION,
-            addon: cx.addon.to_owned(),
-            data_dir: cx.data_dir.to_path_buf(),
-            cache_dir: cx.cache_dir.to_path_buf(),
-            profile: cx.profile.clone(),
-            launcher: Some(env!("CARGO_PKG_VERSION").into()),
-            host_calls: host_calls(cx),
-            capabilities: vec![swofty_addon::helper::VIEW_CHART.into()],
-        });
+        let hello = Call::Hello(hello(cx));
         let welcome = self
-            .exchange(&mut live, cx, hello, self.timeouts.quick, None)?
+            .exchange(&mut live, cx, hello, self.timeouts.quick, None, None)?
             .map_err(|e| format!("refused hello: {e}"))?;
         let welcome: Welcome =
             serde_json::from_str(welcome.get()).map_err(|e| format!("sent a bad hello: {e}"))?;
@@ -387,6 +401,7 @@ impl HelperAddon {
         call: Call,
         wait: Duration,
         progress: Option<&dyn Progress>,
+        mut asked: Option<&mut Vec<reads::Asked>>,
     ) -> std::result::Result<std::result::Result<JsonResult, String>, String> {
         if live.profile != *cx.profile && !matches!(call, Call::Hello(_)) {
             live.profile = cx.profile.clone();
@@ -456,7 +471,15 @@ impl HelperAddon {
                     i.section,
                 ),
                 Incoming::Call(Request { id: Some(host), call }) => {
-                    let reply = match host_call(cx, call) {
+                    let kept = asked.is_some().then(|| call.clone());
+                    let answer = host_call(cx, call);
+                    if let (Some(asked), Some(call)) = (asked.as_deref_mut(), kept) {
+                        asked.push(reads::Asked {
+                            call,
+                            answer: answer.clone(),
+                        });
+                    }
+                    let reply = match answer {
                         Ok(result) => Reply::Ok { id: host, result },
                         Err(error) => Reply::Err { id: host, error },
                     };
@@ -488,6 +511,23 @@ impl HelperAddon {
             footer: None,
             tick: false,
         }
+    }
+}
+
+/// The hello a session for `cx` starts with.
+fn hello(cx: &Cx) -> Hello {
+    Hello {
+        api: API_VERSION,
+        addon: cx.addon.to_owned(),
+        data_dir: cx.data_dir.to_path_buf(),
+        cache_dir: cx.cache_dir.to_path_buf(),
+        profile: cx.profile.clone(),
+        launcher: Some(env!("CARGO_PKG_VERSION").into()),
+        host_calls: host_calls(cx),
+        capabilities: vec![
+            swofty_addon::helper::VIEW_CHART.into(),
+            swofty_addon::helper::BUILD_READS.into(),
+        ],
     }
 }
 

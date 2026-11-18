@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace runtime::srv_clamp {
+namespace render::srv_clamp {
 
 constexpr uint32_t kAll = 0xffffffffu;
 

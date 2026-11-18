@@ -3,7 +3,7 @@
 
 #include <atomic>
 
-namespace d3d12hooks {
+namespace render::d3d12 {
 
 template <class Fn> struct Subs {
     Fn fns[16] = {};

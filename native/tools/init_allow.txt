@@ -130,5 +130,5 @@ src/core/hud/toast.cpp: LapToasts toasts;
 src/core/render/d3d12/rtas_guard.cpp: RtasGuard guard;
 src/core/render/d3d12/srv_clamp.cpp: SrvReports reports;
 src/core/render/grade.cpp: Grader grader;
-src/core/render/postfx.cpp: postfx::Pipeline pipeline;
+src/core/render/postfx.cpp: Pipeline pipeline;
 src/core/telemetry/udp_ids.cpp: ids::Map map;

@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace postfx {
+namespace render::postfx {
 
 enum CondOp : uint8_t { OP_TRUE, OP_IS, OP_ABOVE, OP_BELOW, OP_BETWEEN, OP_EVENT };
 

@@ -65,6 +65,7 @@ class Script:
 
 # Built with the host C++ compiler, or with zig for x86_64-linux-musl where the compiler is zig.
 UNITS = [
+    Unit('abi_layout', 'Live car ABI layout unit test'),
     Unit('activity_resume', 'Activity resume guard unit test'),
     Unit('ai_corner', 'AI brake line guard unit test'),
     Unit('ai_curves', 'AI team curves guard unit test'),
@@ -144,8 +145,10 @@ UNITS = [
     Unit('tile_list_select', 'Tile list select guard unit test'),
     Unit('timing_live', 'Live to timing tower adapter test'),
     Unit('toast', 'Lap toast message and state machine unit test'),
+    Unit('track_acclim', 'Track acclimatisation guard decision unit test'),
     Unit('track_list_guard', 'Career calendar track list guard unit test'),
     Unit('track_record', 'Round track record guard unit test'),
+    Unit('track_select', 'Track select guard confirm decision unit test'),
     Unit('build_proof', 'Per-build proof gates unit test'),
     Unit('mixin_gate', 'Core mixin set gate and commit lines unit test'),
     Unit('core_rank', 'Core mixin list rank order unit test'),
@@ -155,6 +158,7 @@ UNITS = [
     Unit('tyre_slots', 'Tyre slot guard unit test'),
     Unit('ui_registry_walk', 'UI registry walk unit test'),
     Unit('watchdog_grace', 'Boot watchdog grace unit test'),
+    Unit('weather_chain', 'Weather setup chain order rules unit test'),
     Unit('events_dispatch', 'Events dispatcher unit test', 'zig'),
     Unit('session_lifecycle', 'Session lifecycle kind unit test', 'zig'),
     Unit('career_state', 'Career and flow-state tracking unit test', 'zig'),

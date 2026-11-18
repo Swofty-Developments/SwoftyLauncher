@@ -56,7 +56,7 @@ std::span<const Subsystem> probe_block(std::span<const Subsystem> all, size_t op
 
 void run_block(std::span<const Subsystem> block, Start point, const char *suffix)
 {
-    std::optional<d3d12hooks::ProbeScope> probe;
+    std::optional<render::d3d12::ProbeScope> probe;
     for (const Subsystem &s : block) {
         if (s.start != point)
             continue;
@@ -101,7 +101,7 @@ void Runtime::start(Start point)
         i += block.size() - 1;
         perf::Stopwatch step;
         bool early = runtime::load_stage() == "early" && !runtime::window_reached();
-        if (point == Start::ready && d3d12hooks::arm_on_worker(ready_block_on_worker, early))
+        if (point == Start::ready && render::d3d12::arm_on_worker(ready_block_on_worker, early))
             loader::api->log(perf::STEP_LINE, step.total_ms(),
                              (std::string("subsystems ") + block.front().name + " to " + block.back().name + ON_WORKER +
                               ", scheduled")

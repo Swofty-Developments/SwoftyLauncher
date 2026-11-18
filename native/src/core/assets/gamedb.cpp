@@ -37,7 +37,8 @@ const runtime::Sig S_RESERVE{"site_Gdb_ReserveTarget",
                              "48 89 8C 24 88 00 00 00 48 0F 47 C8 B8 08 00 00 00 49 B9 5C 8F C2 F5 28 5C 8F 02",
                              0x45a0a11, runtime::Sig::addr, 0, 0xc, 0};
 // The int, float and bool record classes' vtables, each loaded where its record constructor stores it beside the value
-// at +8 (re/tools/sigport.py: one match on the KB build and on Steam 26566308, every vtable slot the same code).
+// at +8 (re/tools/sigport.py: one match on the KB build and on both 1.0.145 builds, every vtable slot the same code;
+// re/research/ea-1-0-145.md).
 const runtime::Sig S_VT_INT{"vt_Gdb_IntRecord", "48 8D 0D ?? ?? ?? ?? 48 89 08 89 70 08", 0x5bee788, runtime::Sig::riprel, 0,
                             3, 7};
 const runtime::Sig S_VT_FLOAT{"vt_Gdb_FloatRecord", "48 8D 0D ?? ?? ?? ?? 48 89 08 C5 FA 11 70 08 E9", 0x5bee798,
@@ -47,7 +48,8 @@ const runtime::Sig S_VT_BOOL{"vt_Gdb_BoolRecord", "48 8D 0D ?? ?? ?? ?? 48 89 08
 
 namespace bp = runtime::build_proof;
 constexpr bp::Proof RECORD_CLASSES{"the int, float and bool record classes (value at +0x8)",
-                                   bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145)};
+                                   bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145) |
+                                       bp::bit(bp::Build::ea_1_0_145)};
 constexpr bp::Gate LATE_EDITS{"late game database edits", &RECORD_CLASSES};
 
 constexpr size_t DB_MAP = 0xa8, DB_LOADED = 0xf0, DB_ALLOC = 0x8;

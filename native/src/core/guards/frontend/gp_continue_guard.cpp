@@ -158,7 +158,7 @@ private:
 
     void settle() override
     {
-        if (!(car_bound || warning_bound))
+        if (!offered_set(MIXIN))
             return;
         if (!runtime::core_mixins_active(MIXIN))
             swofty::log("[gp] continue F1 World car guard %s", guards::NOT_INSTALLED);

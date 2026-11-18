@@ -1092,6 +1092,40 @@ int main()
         expect(era::vehicles_end_within_table(b, b + 26 * 8) == b + 26 * 8 && era::vehicles_end_within_table(b, b + 25 * 8) == b + 25 * 8,
                "26 vehicles or fewer are handed over as they are");
 
+        {
+            std::vector<bool> fixed(28, false);
+            fixed[0] = fixed[1] = fixed[27] = true;
+            auto keep = era::table_entrants(fixed);
+            bool firsts = keep.size() == 26 && keep.back() == 27;
+            for (size_t i = 0; firsts && i + 1 < keep.size(); ++i)
+                firsts = keep[i] == i;
+            expect(firsts, "28 entrants (2 human first, the fill's own record last) keep the first 25 and the last, leaving "
+                           "out the 2 list cars before the last");
+            std::vector<bool> human(30, false);
+            human[29] = true;
+            keep = era::table_entrants(human);
+            expect(keep.size() == 26 && keep.back() == 29 && keep[24] == 24,
+                   "a fixed entrant past the table's room is kept, and the others give way for it (25 AI, then it)");
+            human.assign(26, false);
+            expect(era::table_entrants(human).size() == 26, "26 entrants or fewer are all kept");
+            human.assign(27, true);
+            expect(era::table_entrants(human).size() == 27, "human entrants are never left out");
+
+            constexpr size_t N = 30;
+            std::vector<uint8_t> records(N * era::ENTRANT_RECORD);
+            for (size_t i = 0; i < N; ++i)
+                std::memset(records.data() + i * era::ENTRANT_RECORD, int(i + 1), era::ENTRANT_RECORD);
+            uint8_t *end = era::keep_entrants(records.data(), keep);
+            bool moved = end == records.data() + 26 * era::ENTRANT_RECORD && records[25 * era::ENTRANT_RECORD] == 30 &&
+                         records[25 * era::ENTRANT_RECORD + era::ENTRANT_RECORD - 1] == 30 &&
+                         records[24 * era::ENTRANT_RECORD] == 25;
+            expect(moved, "the kept records move to the front in their order and the end follows the last of them");
+            std::string line = era::entrant_cap_line(30, 26, 1);
+            expect(line.find("selected 30 entrants for a vehicle table of 26; it keeps 26 (1 human) and leaves 4 of the lists' "
+                             "cars out") != std::string::npos,
+                   "the cap's line names the entrants, the table and what is left out (" + line + ")");
+        }
+
         auto refs = [](uint32_t first, size_t n) {
             std::vector<uint32_t> r;
             for (size_t i = 0; i < n; ++i)

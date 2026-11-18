@@ -42,9 +42,12 @@ protected:
     virtual void build(std::vector<runtime::CoreMixins> &out) = 0;
     // Logs what installed.
     virtual void settle() = 0;
+    // True once build() has added the mixin set named `set` to the guard's offer.
+    bool offered_set(const char *set) const;
 
 private:
     MixinGate gate_;
+    std::vector<const char *> offered_;
 };
 
 // A binding a guard's handlers need the address of, resolved before the guard's sites.
@@ -103,15 +106,11 @@ protected:
     // Adds optional mixins to the set before it is offered.
     virtual void extend(runtime::CoreMixins &) {}
 
-    bool wanted() const { return wanted_; }
-
 private:
     void build(std::vector<runtime::CoreMixins> &out) override;
     void settle() override;
 
     SiteGuardSpec spec_;
-    bool wanted_ = false;
-    std::vector<bool> parts_offered_;
 };
 
 // A guard that hooks game code through safetyhook itself: its setup runs once the game code is ready

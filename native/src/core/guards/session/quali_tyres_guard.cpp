@@ -59,7 +59,7 @@ Closest *orig_closest = nullptr;
 std::atomic<uint8_t> g_mask{0};
 const uint32_t *g_session = nullptr;
 guards::LogFirst<LOG_FIRST> refused{"refusals"};
-bool wanted = false;
+std::atomic<bool> wanted{false};
 std::mutex line_mu;
 std::string last_line;
 
@@ -148,27 +148,28 @@ private:
             return;
         }
         g_session = reinterpret_cast<const uint32_t *>(session);
-        wanted = true;
         if (swofty::api->resolve(ALLOWED))
             out.push_back({MIXIN_ALLOWED, {{ALLOWED, SWOFTY_MIXIN_WRAP, 100, (void *)&allowed, (void **)&orig_allowed}}});
         if (swofty::api->resolve(CLASS_RULE))
             out.push_back({MIXIN_CLASS, {{CLASS_RULE, SWOFTY_MIXIN_WRAP, 100, (void *)&class_rule, (void **)&orig_class}}});
         if (swofty::api->resolve(CLOSEST))
             out.push_back({MIXIN_CLOSEST, {{CLOSEST, SWOFTY_MIXIN_WRAP, 100, (void *)&closest, (void **)&orig_closest}}});
-        if (out.empty()) {
-            wanted = false;
+        wanted = !out.empty();
+        if (!wanted)
             swofty::log("[tyres] qualifying tyre hooks off: this build resolves none of %s, %s, %s", ALLOWED, CLASS_RULE, CLOSEST);
-        }
+    }
+
+    static const char *state(const char *set)
+    {
+        return guards::install_state(runtime::core_mixins_active(set), "armed", "not installed");
     }
 
     void settle() override
     {
         if (!wanted)
             return;
-        swofty::log("[tyres] qualifying tyre hooks: set usable %s, session tag check %s, set choice %s",
-                    runtime::core_mixins_active(MIXIN_ALLOWED) ? "armed" : "not installed",
-                    runtime::core_mixins_active(MIXIN_CLASS) ? "armed" : "not installed",
-                    runtime::core_mixins_active(MIXIN_CLOSEST) ? "armed" : "not installed");
+        swofty::log("[tyres] qualifying tyre hooks: set usable %s, session tag check %s, set choice %s", state(MIXIN_ALLOWED),
+                    state(MIXIN_CLASS), state(MIXIN_CLOSEST));
     }
 };
 

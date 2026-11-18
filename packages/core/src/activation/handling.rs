@@ -1601,26 +1601,112 @@ pub fn sources(
     out
 }
 
-pub fn for_source<'a>(
-    maps: &'a [HandlingMap],
-    addon_dir: &dyn Fn(&str) -> PathBuf,
-    src: &Path,
-) -> Vec<&'a HandlingMap> {
-    let same = |a: &Path, b: &Path| {
-        a == b || matches!((std::fs::canonicalize(a), std::fs::canonicalize(b)), (Ok(x), Ok(y)) if x == y)
-    };
-    maps.iter()
-        .filter(|m| match &m.target {
-            Target::Addon { addon, path } => same(&addon_dir(addon).join(path), src),
-            Target::Stock(_) => false,
-        })
-        .collect()
+/// The handling maps that target an addon's file, each target resolved once, to match against every file
+/// a build puts.
+pub struct AddonTargets<'a> {
+    targets: Vec<(&'a HandlingMap, PathBuf, Option<PathBuf>)>,
+}
+
+impl<'a> AddonTargets<'a> {
+    pub fn new(maps: &'a [HandlingMap], addon_dir: &dyn Fn(&str) -> PathBuf) -> Self {
+        let targets = maps
+            .iter()
+            .filter_map(|m| match &m.target {
+                Target::Addon { addon, path } => {
+                    let at = addon_dir(addon).join(path);
+                    let real = resolved(&at);
+                    Some((m, at, real))
+                }
+                Target::Stock(_) => None,
+            })
+            .collect();
+        Self { targets }
+    }
+
+    /// The maps whose target is `src`, by path or by the file both paths resolve to.
+    pub fn for_source(&self, src: &Path) -> Vec<&'a HandlingMap> {
+        let mut real: Option<Option<PathBuf>> = None;
+        self.targets
+            .iter()
+            .filter(|(_, at, at_real)| {
+                at == src
+                    || at_real.is_some()
+                        && real.get_or_insert_with(|| resolved(src)).as_ref() == at_real.as_ref()
+            })
+            .map(|(m, ..)| *m)
+            .collect()
+    }
+}
+
+#[cfg(test)]
+thread_local! {
+    static RESOLVED: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
+fn resolved(path: &Path) -> Option<PathBuf> {
+    #[cfg(test)]
+    RESOLVED.with(|n| n.set(n.get() + 1));
+    std::fs::canonicalize(path).ok()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[cfg(unix)]
+    #[test]
+    fn the_put_files_match_their_addon_targets_resolving_each_path_once() {
+        let dir = std::env::temp_dir().join(format!("swofty-handling-targets-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        let real = dir.join("store/a/cars");
+        std::fs::create_dir_all(&real).unwrap();
+        for n in ["x", "y"].into_iter().chain((0..20).map(|_| "other")).enumerate() {
+            std::fs::write(real.join(format!("{}-{}.erp", n.1, n.0)), b"erp").unwrap();
+        }
+        std::os::unix::fs::symlink(dir.join("store"), dir.join("link")).unwrap();
+        let map = |path: &str| HandlingMap {
+            id: path.to_owned(),
+            target: Target::Addon {
+                addon: "a".into(),
+                path: path.into(),
+            },
+            plan: Plan::default(),
+            resources: None,
+            base: None,
+        };
+        let maps = vec![
+            map("cars/x-0.erp"),
+            map("cars/y-1.erp"),
+            HandlingMap {
+                target: Target::Stock("cars/x-0.erp".into()),
+                ..map("stock")
+            },
+        ];
+        let addon_dir = |id: &str| dir.join("link").join(id);
+        let mut sources = vec![real.join("x-0.erp"), dir.join("link/a/cars/y-1.erp")];
+        sources.extend((2..22).map(|n| real.join(format!("other-{n}.erp"))));
+        RESOLVED.with(|n| n.set(0));
+        let targets = AddonTargets::new(&maps, &addon_dir);
+        let found: Vec<Vec<&str>> = sources
+            .iter()
+            .map(|s| targets.for_source(s).iter().map(|m| m.id.as_str()).collect())
+            .collect();
+        let resolved = RESOLVED.with(|n| n.get());
+        std::fs::remove_dir_all(&dir).ok();
+        assert_eq!(
+            found[0],
+            ["cars/x-0.erp"],
+            "a source matches the target it resolves to"
+        );
+        assert_eq!(found[1], ["cars/y-1.erp"], "a source matches the target it is");
+        assert!(found[2..].iter().all(|f| f.is_empty()), "{found:?}");
+        assert!(
+            resolved <= 2 + sources.len(),
+            "{resolved} paths resolved for 2 addon targets and {} sources",
+            sources.len()
+        );
+    }
 
     #[test]
     fn a_second_handling_edit_takes_its_frames_from_the_cache() {
