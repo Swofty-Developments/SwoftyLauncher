@@ -7,9 +7,9 @@
   "addr": "0x1407d07a0",
   "level": "L2",
   "subsystem": "game",
-  "proto": "uint64_t Game_Game_SetCurrentGameMode(void *mode_context, void *mode)",
+  "proto": "void Game_Game_SetCurrentGameMode(void *mode_context, void *mode)",
   "evidence": "pat:log-message-method;decomp:re/decomp/1407d07a0.c;xref:0x1407cab26,0x1407d2135,0x140ba53d5,0x141725ddf,0x141726031,0x141726358,0x141726496,0x1417264d8",
-  "notes": "logged method name setCurrentGameMode (class from the log channel); log channel GAME: 'setCurrentGameMode(%s -> %s)' save-v2 (L2): logs *(old+0x278) as the old mode's name, stores the new mode at context+0x88 and looks it up by *(new+0x278) in context+0x198. g_Game_Manager +0xc0 -> +0x88 -> +0x260 is read the same way at 0x14024974f..0x14024976b, so the mode name at a session load is [[[g_Game_Manager]+0xc0]+0x88]+0x278."
+  "notes": "logged method name setCurrentGameMode (class from the log channel); log channel GAME: 'setCurrentGameMode(%s -> %s)', logged only when the GAME channel is on, with *(old+0x278) and *(new+0x278) as the mode names (\"none\" for a null mode). save-v2 (L2): returns at once when the new mode is already [context+0x88]; otherwise it deactivates the old mode, stores the new mode at context+0x88 (0x1407d0897, again at 0x1407d0b10), looks it up by *(new+0x278) in context+0x198 when it is not null, activates it and sends MessageGameModeChanged through 0x1439876c0. mode may be null: 43 of the 104 call sites pass 0 to clear it. It returns 0 on every path (0x1407d0dc2) and no caller reads the result. The same chain shape, g_Game_Manager +0xc0 -> +0x88 -> +0x260, is read at 0x14024974f..0x14024976b; it suggests that the mode name at a session load is [[[g_Game_Manager]+0xc0]+0x88]+0x278, but that rests on field shape only: no code passes [g_Game_Manager]+0xc0 to this function. 1.0.145 twin 0x1407d07e0, 380/380 instructions equal."
  },
  "signature": {
   "id": "game.game_set_current_game_mode",
