@@ -598,6 +598,46 @@ def verify(image, doc, exe_size=None):
     return Resolver(img, doc, exe_size).run()
 
 
+def anchors(port, build):
+    """[(port RVA, KB RVA, binding id, port section)] for every binding that resolves on the port image, sorted."""
+    kb_rva = {b['id']: int(b['rva'], 16) for b in gen_set(kb_name())['bindings']}
+    doc = gen_set(build)
+    out = []
+    for b, r in zip(doc['bindings'], verify(port, doc)):
+        if r['target'] is not None and b['id'] in kb_rva and port.section_of(r['target']) is not None:
+            out.append((r['target'], kb_rva[b['id']], b['id'], port.section_of(r['target']).name))
+    return sorted(out)
+
+
+def kb_name():
+    import bindgen, kb
+    return bindgen.load_overlays(kb.load_signatures()['build'])[0]
+
+
+def kb_twin(port, build, rva, marks=None):
+    """(KB RVA, evidence) for a port RVA from the shift of the bindings on either side of it, or (None, why)."""
+    marks = anchors(port, build) if marks is None else marks
+    sec = port.section_of(rva)
+    if sec is None:
+        return None, f'{rva:#x} is in no section of the port image'
+    same = [m for m in marks if m[3] == sec.name]
+    at = next((m for m in same if m[0] == rva), None)
+    if at:
+        return at[1], {'how': 'binding', 'text': f'{at[2]} is bound here on both builds'}
+    below = [m for m in same if m[0] < rva]
+    above = [m for m in same if m[0] > rva]
+    if not below or not above:
+        return None, f'no binding {"below" if not below else "above"} {rva:#x} in {sec.name} to take the shift from'
+    lo, hi = below[-1], above[0]
+    dl, dh = lo[0] - lo[1], hi[0] - hi[1]
+    if dl != dh:
+        return None, (f'the bindings around {rva:#x} moved by different amounts ({lo[2]} by {dl:#x}, {hi[2]} by '
+                      f'{dh:#x}), so code changed between them')
+    return rva - dl, {'how': 'neighbours', 'shift': dl, 'below': lo[2], 'above': hi[2],
+                      'text': f'{lo[2]} ({lo[0]:#x}) and {hi[2]} ({hi[0]:#x}) on either side both sit {dl:#x} '
+                              f'{"above" if dl >= 0 else "below"} their KB addresses'}
+
+
 def rx(v):
     return '-' if v is None else f'{v:#x}'
 

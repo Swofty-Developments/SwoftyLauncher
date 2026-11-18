@@ -149,6 +149,18 @@ class BuildSet(unittest.TestCase):
         self.assertNotIn('func_rva', doc['bindings'][2]['string_anchor'])
         self.assertEqual(doc['bindings'][2]['string_anchor']['func_offset'], '0x10')
 
+    def test_a_binding_made_on_another_build_hints_only_that_builds_set(self):
+        made = [dict(copy.deepcopy(BINDINGS[0]), made_on={'build': 'b' * 16, 'match': '0x4400'})]
+        kb_doc = bindgen.build_set(overlay(), made, True)
+        port = bindgen.build_set(overlay('b' * 64, 2), made, False)
+        other = bindgen.build_set(overlay('c' * 64, 3), made, False)
+        hinted = bindgen.build_set(overlay('b' * 64, 2, hints={'Fn_A': {'match': '0x4800'}}), made, False)
+        self.assertEqual(kb_doc['bindings'][0]['match'], BINDINGS[0]['match'])
+        self.assertEqual(port['bindings'][0]['match'], '0x4400')
+        self.assertNotIn('match', other['bindings'][0])
+        self.assertEqual(hinted['bindings'][0]['match'], '0x4800')
+        self.assertFalse(any('made_on' in d['bindings'][0] for d in (kb_doc, port, other, hinted)))
+
     def test_func_rva_hint_needs_an_anchor(self):
         with self.assertRaises(SystemExit):
             bindgen.build_set(overlay('b' * 64, 2, hints={'Fn_A': {'func_rva': '0x1'}}), BINDINGS, False)
