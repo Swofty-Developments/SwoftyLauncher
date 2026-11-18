@@ -160,6 +160,40 @@ impl Launching {
 /// How long Play waits for a session module load that is already running.
 const SESSION_MODULE_WAIT: std::time::Duration = std::time::Duration::from_millis(1500);
 
+/// What a press of Play comes to before the checks run.
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) enum Press {
+    /// The data folder is moving, a press is already being checked, or there is no game copy.
+    Ignored,
+    EaAppWarn,
+    WaitForConflicts,
+    EaMoved(Moved),
+    Check(Install),
+}
+
+impl Press {
+    pub(crate) fn of(
+        busy: bool,
+        install: Option<&Install>,
+        checking_addons: bool,
+        ea_app_warn_due: impl FnOnce() -> bool,
+    ) -> Self {
+        let Some(install) = install.filter(|_| !busy) else {
+            return Self::Ignored;
+        };
+        if install.source == Source::EaApp && ea_app_warn_due() {
+            return Self::EaAppWarn;
+        }
+        if checking_addons {
+            return Self::WaitForConflicts;
+        }
+        match &install.moved {
+            Some(moved) => Self::EaMoved(moved.clone()),
+            None => Self::Check(install.clone()),
+        }
+    }
+}
+
 /// What the Play checks' result comes to, in the order Play takes it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum Step {
@@ -316,25 +350,29 @@ impl Launching {
         cx: &mut Context<H>,
     ) -> bool {
         let (launching, needs) = host.split();
-        if needs.locked || launching.play_pending.is_active() {
-            return false;
-        }
-        let Some(install) = needs.game.install.clone() else {
-            return false;
+        let busy = needs.locked || launching.play_pending.is_active();
+        let store = needs.store;
+        let press = Press::of(busy, needs.game.install.as_ref(), needs.checking_addons, || {
+            crate::dialogs::ea_app::warn_due(store)
+        });
+        let install = match press {
+            Press::Ignored => return false,
+            Press::EaAppWarn => {
+                host.prompt(Prompt::EaAppWarn, window, cx);
+                return false;
+            }
+            Press::WaitForConflicts => {
+                let wait = Notification::info(tr("Play when the conflict check finishes."));
+                host.prompt(Prompt::Notice(wait), window, cx);
+                return false;
+            }
+            Press::EaMoved(moved) => {
+                host.prompt(Prompt::EaMoved(moved), window, cx);
+                return false;
+            }
+            Press::Check(install) => install,
         };
-        if install.source == Source::EaApp && crate::dialogs::ea_app::warn_due(needs.store) {
-            host.prompt(Prompt::EaAppWarn, window, cx);
-            return false;
-        }
-        if needs.checking_addons {
-            let wait = Notification::info(tr("Play when the conflict check finishes."));
-            host.prompt(Prompt::Notice(wait), window, cx);
-            return false;
-        }
-        if let Some(moved) = install.moved.clone() {
-            host.prompt(Prompt::EaMoved(moved), window, cx);
-            return false;
-        }
+        let (launching, needs) = host.split();
         let Some(generation) = launching.play_pending.begin() else {
             return false;
         };
@@ -538,11 +576,12 @@ mod tests {
 
     use swofty_core::install::Source;
 
-    use super::{Launching, Played, Step};
+    use super::{Launching, Played, Press, Step};
     use crate::services::game::{Copies, Install, Owner};
     use crate::services::play_checks::{Gate, Verdict};
     use crate::shell::PlayState;
     use crate::shell::probe::GameWatch;
+    use swofty_core::platform::ea_app::Moved;
 
     fn install(dir: &str) -> Install {
         Install {
@@ -721,5 +760,54 @@ mod tests {
         assert_eq!(step, Step::ConfirmRows("2 rows are missing".into()));
         assert_eq!(step.played(), Some(Played::Asking));
         assert!(step.clears());
+    }
+
+    fn ea_app(moved: Option<Moved>) -> Install {
+        Install {
+            source: Source::EaApp,
+            moved,
+            ..install("ea")
+        }
+    }
+
+    #[test]
+    fn a_press_while_busy_or_without_a_game_copy_is_ignored() {
+        let steam = install("a");
+        assert_eq!(Press::of(true, Some(&steam), false, || true), Press::Ignored);
+        assert_eq!(Press::of(false, None, false, || true), Press::Ignored);
+        assert_eq!(
+            Press::of(false, Some(&steam), false, || true),
+            Press::Check(steam)
+        );
+    }
+
+    #[test]
+    fn an_ea_app_copy_warns_once_before_the_checks() {
+        let ea = ea_app(None);
+        assert_eq!(Press::of(false, Some(&ea), true, || true), Press::EaAppWarn);
+        assert_eq!(Press::of(false, Some(&ea), false, || false), Press::Check(ea));
+    }
+
+    #[test]
+    fn a_running_conflict_check_holds_the_press() {
+        let steam = install("a");
+        assert_eq!(
+            Press::of(false, Some(&steam), true, || true),
+            Press::WaitForConflicts
+        );
+    }
+
+    #[test]
+    fn a_moved_ea_app_copy_shows_where_it_went() {
+        let moved = Moved {
+            dir: PathBuf::from("new"),
+            recorded: PathBuf::from("old"),
+            there: false,
+        };
+        let ea = ea_app(Some(moved.clone()));
+        assert_eq!(
+            Press::of(false, Some(&ea), false, || false),
+            Press::EaMoved(moved)
+        );
     }
 }

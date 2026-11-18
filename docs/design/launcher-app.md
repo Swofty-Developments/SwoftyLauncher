@@ -150,7 +150,7 @@ These states run on the pattern:
 | `Settings` | measuring the data folder | `features/settings/usage.rs` | `Settings` |
 | `News` | checking the news feed | `features/news/state.rs` | `News` |
 | `AddonViews` | building addon section views, refreshing stale ones, ticking the open section | `features/sections/mod.rs` | `AddonViews` |
-| `Launching` | Play: the checks, their outcome, the launch | `shell/play.rs` | `Launching`, `Step` |
+| `Launching` | Play: the press, the checks, their outcome, the launch | `shell/play.rs` | `Launching`, `Press`, `Step` |
 
 A page's toasts go into a `toasts` list on its state, and `shell/render.rs` shows them. A state reports what other features follow through its `Change`: the browser reports `Installed`, and the shell reads the library again, and `TurnOn`, and the shell adds the "Turn on" action to the notice.
 
@@ -198,7 +198,7 @@ if let Some(played) = step.played() {
 }
 ```
 
-`Step::of` turns the checks' gate and verdict into the one thing Play does next, and the tests in `shell/play.rs` pin each result.
+`Press::of` decides what a press comes to before the checks run, and `Step::of` turns the checks' gate and verdict into the one thing Play does next. The tests in `shell/play.rs` pin each result of both.
 
 ## When to use an entity instead
 
