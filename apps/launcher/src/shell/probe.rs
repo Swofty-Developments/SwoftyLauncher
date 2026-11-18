@@ -231,7 +231,7 @@ impl Shell {
             if merged {
                 self.reload(cx);
             } else if changed {
-                self.refresh_views(cx);
+                crate::features::sections::AddonViews::refresh(self, cx);
                 self.db_profile_changed(cx);
             }
         } else if merged {
