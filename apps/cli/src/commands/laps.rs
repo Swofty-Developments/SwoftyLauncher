@@ -311,7 +311,7 @@ pub fn integrity(store: &Store, out: &dyn Fn(&str)) -> Option<Module> {
             ));
             local
         }
-        None => integrity::ensure(&store.root, &Api::new(&token)),
+        None => integrity::ensure(&store.root, &Api::new(&token), out),
     };
     match found {
         Ok(m) => Some(m),

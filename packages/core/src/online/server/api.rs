@@ -178,9 +178,10 @@ impl Api {
         self.send("POST", "/v1/tt/game/f1os", Some(body), GAME_TIMEOUT)
     }
 
-    /// What the server offers as the integrity module: its version, size, hash and signature.
-    pub fn integrity(&self) -> Result<Value, ApiError> {
-        let bytes = self.get("/v1/tt/integrity", CALL_TIMEOUT, 64 * 1024)?;
+    /// What the server offers as the integrity module: its version, size, hash and signature. `timeout` is
+    /// capped at the usual call timeout.
+    pub fn integrity(&self, timeout: Duration) -> Result<Value, ApiError> {
+        let bytes = self.get("/v1/tt/integrity", timeout.min(CALL_TIMEOUT), 64 * 1024)?;
         serde_json::from_slice(&bytes).map_err(|e| ApiError {
             status: 200,
             message: format!("the server's answer to GET /v1/tt/integrity is not valid: {e}"),
@@ -198,13 +199,18 @@ impl Api {
     }
 
     /// What the server offers of the modules `asked` for (`name`, `abi`) on `platform`: the ones this sign-in
-    /// may download and, for the others, why not.
-    pub fn modules(&self, platform: &str, asked: &[(&str, u32)]) -> Result<Value, ApiError> {
+    /// may download and, for the others, why not. `timeout` is capped at the usual call timeout.
+    pub fn modules(
+        &self,
+        platform: &str,
+        asked: &[(&str, u32)],
+        timeout: Duration,
+    ) -> Result<Value, ApiError> {
         let mut path = format!("/v1/modules?platform={platform}");
         for (name, abi) in asked {
             path.push_str(&format!("&abi.{name}={abi}"));
         }
-        let bytes = self.get(&path, CALL_TIMEOUT, 256 * 1024)?;
+        let bytes = self.get(&path, timeout.min(CALL_TIMEOUT), 256 * 1024)?;
         serde_json::from_slice(&bytes).map_err(|e| ApiError {
             status: 200,
             message: format!("the server's answer to GET /v1/modules is not valid: {e}"),

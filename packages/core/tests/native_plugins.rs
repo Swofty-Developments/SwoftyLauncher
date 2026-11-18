@@ -198,6 +198,7 @@ fn the_integrity_module_is_placed_for_a_session_and_rolled_back_with_it() {
         version: "v1".into(),
         dll: cached,
         sha256: String::new(),
+        fallback: None,
     };
     let mut plan = f.plan("on");
     let mut session = f.store.session_settings("on").unwrap();

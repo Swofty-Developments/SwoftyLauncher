@@ -7,6 +7,7 @@
 //! copy verifies, else from the server. Every failure is an [`Unavailable`] with one sentence for the log or
 //! the page; the launcher goes on without the module.
 
+pub mod fetch;
 pub mod library;
 
 use std::collections::BTreeMap;
@@ -14,9 +15,12 @@ use std::fmt;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-use ring::signature::{ED25519, UnparsedPublicKey};
 use serde::{Deserialize, Serialize};
 
+use self::fetch::OFFER_FILE;
+pub use self::fetch::Retry;
+#[cfg(test)]
+use self::fetch::cdn_link;
 use crate::game_folder::baseline::sha256_bytes;
 use crate::online::server::api::{Api, ApiError};
 use crate::online::server::integrity::{PUBLIC_KEY, decode, valid_version};
@@ -24,10 +28,6 @@ use crate::online::server::integrity::{PUBLIC_KEY, decode, valid_version};
 const SIGNED_PREFIX: &str = "swofty-module-v1";
 const MAX_SIZE: u64 = 64 * 1024 * 1024;
 const DOWNLOAD_TIMEOUT: Duration = Duration::from_secs(120);
-const CDN_TIMEOUT: Duration = Duration::from_secs(60);
-const CDN_CONNECT_TIMEOUT: Duration = Duration::from_secs(5);
-const KEEP: usize = 2;
-const OFFER_FILE: &str = "offer.json";
 const ENV_PREFIX: &str = "SWOFTY_MODULE_";
 /// The version of a module [`local`] names.
 pub const LOCAL_VERSION: &str = "local";
@@ -90,11 +90,41 @@ impl Module {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Unavailable {
     pub why: String,
+    pub kind: Kind,
+}
+
+/// What kept a signed file from the session.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Kind {
+    /// The server could not be reached or was busy, and no cached copy still verified.
+    Unreachable,
+    /// The server answered that there is none for this player.
+    Refused,
+    /// The offer or the file failed a check, or the copy could not be stored.
+    Invalid,
 }
 
 impl Unavailable {
     fn new(why: impl Into<String>) -> Self {
-        Self { why: why.into() }
+        Self {
+            why: why.into(),
+            kind: Kind::Invalid,
+        }
+    }
+
+    pub(crate) fn refused(why: impl Into<String>) -> Self {
+        Self {
+            kind: Kind::Refused,
+            ..Self::new(why)
+        }
+    }
+
+    pub(crate) fn unreachable(why: impl Into<String>) -> Self {
+        Self {
+            kind: Kind::Unreachable,
+            ..Self::new(why)
+        }
     }
 }
 
@@ -108,7 +138,7 @@ impl std::error::Error for Unavailable {}
 
 impl From<String> for Unavailable {
     fn from(why: String) -> Self {
-        Self { why }
+        Self::new(why)
     }
 }
 
@@ -185,14 +215,24 @@ fn local_at(name: &str, path: &Path) -> Result<Module, Unavailable> {
 /// The verified module `name` for `platform` that speaks `abi`: the local build when [`local_env`] names
 /// one, else the cached copy when it has the hash the server offers, else a download. When the server can't
 /// be reached or the download is refused as busy, the newest cached copy of that abi that still verifies.
-pub fn ensure(data: &Path, api: &Api, name: &str, platform: &str, abi: u32) -> Result<Module, Unavailable> {
+/// The listing and the download are asked for again as [`Retry::default`] allows; `out` gets a line for each
+/// try again and for a cached copy used in place of the server's.
+pub fn ensure(
+    data: &Path,
+    api: &Api,
+    name: &str,
+    platform: &str,
+    abi: u32,
+    out: &dyn Fn(&str),
+) -> Result<Module, Unavailable> {
     if let Some(found) = local(name) {
         return found;
     }
     let key = decode(PUBLIC_KEY).ok_or("the pinned module key is not valid base64")?;
-    ensure_with(data, api, name, platform, abi, &key)
+    ensure_retrying(data, api, name, platform, abi, &key, &Retry::default(), out)
 }
 
+#[cfg(test)]
 fn ensure_with(
     data: &Path,
     api: &Api,
@@ -201,150 +241,115 @@ fn ensure_with(
     abi: u32,
     key: &[u8],
 ) -> Result<Module, Unavailable> {
+    ensure_retrying(data, api, name, platform, abi, key, &Retry::none(), &|_| {})
+}
+
+#[allow(clippy::too_many_arguments)]
+fn ensure_retrying(
+    data: &Path,
+    api: &Api,
+    name: &str,
+    platform: &str,
+    abi: u32,
+    key: &[u8],
+    retry: &Retry,
+    out: &dyn Fn(&str),
+) -> Result<Module, Unavailable> {
     if !valid_name(name) || !valid_name(platform) {
         return Err("the module name is not a plain name".into());
     }
-    let listing = match api.modules(platform, &[(name, abi)]) {
-        Ok(v) => v,
-        Err(e) if unreachable(&e) => {
-            return cached(data, name, platform, abi, key).ok_or(Unavailable::new(e.message));
-        }
-        Err(e) if e.status == 404 => return Err("the server does not offer modules".into()),
-        Err(e) => return Err(e.message.into()),
-    };
-    let listing: Listing =
-        serde_json::from_value(listing).map_err(|e| format!("the module listing is not valid: {e}"))?;
-    let Some(offer) = listing.modules.into_iter().find(|m| m.name == name) else {
-        return Err(listing
-            .refused
-            .into_iter()
-            .find(|r| r.name == name && !r.why.trim().is_empty())
-            .map_or_else(
-                || Unavailable::new("the server did not offer it"),
-                |r| Unavailable::new(r.why.trim()),
-            ));
-    };
-    if offer.platform != platform || offer.abi != abi {
-        return Err("the offer is for another platform or abi".into());
+    let source = Server { name, platform, abi };
+    let f = fetch::ensure(data, api, &source, key, retry, &format!("module {name}"), out)?;
+    if let Some(why) = &f.fallback {
+        out(&format!(
+            "module {name}: the server's copy could not be had ({why}); using the cached copy {}, verified offline",
+            f.version
+        ));
     }
-    check(key, &offer)?;
-    let folder = dir(data, name, platform).join(&offer.version);
-    let path = folder.join(&offer.file);
-    let module = Module {
+    Ok(Module {
         name: name.to_owned(),
-        version: offer.version.clone(),
-        path: path.clone(),
-        sha256: offer.sha256.clone(),
-    };
-    if !matches(&path, &offer) {
-        let bytes = match from_cdn(&offer) {
-            Some(bytes) => bytes,
-            None => match api.module_file(name, platform, &offer.version, offer.size, DOWNLOAD_TIMEOUT) {
-                Ok(bytes) => bytes,
-                Err(e) if unreachable(&e) => {
-                    return cached(data, name, platform, abi, key).ok_or(Unavailable::new(e.message));
-                }
-                Err(e) => return Err(e.message.into()),
-            },
+        version: f.version,
+        path: f.path,
+        sha256: f.sha256,
+    })
+}
+
+/// One server module, as [`fetch`] asks for it.
+struct Server<'a> {
+    name: &'a str,
+    platform: &'a str,
+    abi: u32,
+}
+
+impl fetch::Signed for Offer {
+    fn version(&self) -> &str {
+        &self.version
+    }
+    fn sha256(&self) -> &str {
+        &self.sha256
+    }
+    fn size(&self) -> u64 {
+        self.size
+    }
+    fn file(&self) -> &str {
+        &self.file
+    }
+    fn cdn_url(&self) -> Option<&str> {
+        self.cdn_url.as_deref()
+    }
+}
+
+impl fetch::Source for Server<'_> {
+    type Offer = Offer;
+
+    fn base(&self, data: &Path) -> PathBuf {
+        dir(data, self.name, self.platform)
+    }
+
+    fn ask(&self, api: &Api, timeout: Duration) -> Result<serde_json::Value, ApiError> {
+        api.modules(self.platform, &[(self.name, self.abi)], timeout)
+    }
+
+    fn pick(&self, answer: serde_json::Value) -> Result<Offer, Unavailable> {
+        let listing: Listing =
+            serde_json::from_value(answer).map_err(|e| format!("the module listing is not valid: {e}"))?;
+        let Some(offer) = listing.modules.into_iter().find(|m| m.name == self.name) else {
+            return Err(listing
+                .refused
+                .into_iter()
+                .find(|r| r.name == self.name && !r.why.trim().is_empty())
+                .map_or_else(
+                    || Unavailable::refused("the server did not offer it"),
+                    |r| Unavailable::refused(r.why.trim()),
+                ));
         };
-        if bytes.len() as u64 != offer.size {
-            return Err(format!(
-                "the download is {} bytes, the offer says {}",
-                bytes.len(),
-                offer.size
-            )
-            .into());
+        if offer.platform != self.platform || offer.abi != self.abi {
+            return Err("the offer is for another platform or abi".into());
         }
-        if sha256_bytes(&bytes) != offer.sha256 {
-            return Err("the download does not have the offered sha256".into());
+        Ok(offer)
+    }
+
+    fn refused(&self, e: ApiError) -> Unavailable {
+        if e.status == 404 {
+            return Unavailable::refused("the server does not offer modules");
         }
-        store(&folder, &offer.file, &bytes).map_err(|e| format!("storing the module: {e}"))?;
+        Unavailable::refused(e.message)
     }
-    let noted = serde_json::to_vec_pretty(&offer)
-        .map_err(std::io::Error::other)
-        .and_then(|doc| store(&folder, OFFER_FILE, &doc));
-    if let Err(e) = noted {
-        return Err(format!("storing the module: {e}").into());
+
+    fn check(&self, key: &[u8], offer: &Offer) -> Result<(), Unavailable> {
+        if offer.name != self.name || offer.platform != self.platform || offer.abi != self.abi {
+            return Err("the offer is for another module, platform or abi".into());
+        }
+        check(key, offer)
     }
-    prune(&dir(data, name, platform), &offer.version);
-    Ok(module)
-}
 
-/// Whether the server gave no answer about the module, as opposed to refusing it.
-fn unreachable(e: &ApiError) -> bool {
-    matches!(e.status, 0 | 408 | 429) || e.status >= 500
-}
+    fn download(&self, api: &Api, offer: &Offer, timeout: Duration) -> Result<Vec<u8>, ApiError> {
+        api.module_file(self.name, self.platform, &offer.version, offer.size, timeout)
+    }
 
-/// The offered file from its `cdn_url`, when the offer has one the launcher follows and the bytes there have
-/// the offered size and sha256. No sign-in is sent. `None` sends the launcher to the server instead.
-fn from_cdn(offer: &Offer) -> Option<Vec<u8>> {
-    let url = offer.cdn_url.as_deref().filter(|url| cdn_link(url))?;
-    let mut response = ureq::get(url)
-        .header("User-Agent", "swofty-launcher")
-        .header("Accept-Encoding", "identity")
-        .config()
-        .timeout_global(Some(CDN_TIMEOUT))
-        .timeout_connect(Some(CDN_CONNECT_TIMEOUT))
-        .max_redirects(0)
-        .build()
-        .call()
-        .ok()?;
-    let bytes = response
-        .body_mut()
-        .with_config()
-        .limit(offer.size + 1)
-        .read_to_vec()
-        .ok()?;
-    (bytes.len() as u64 == offer.size && sha256_bytes(&bytes) == offer.sha256).then_some(bytes)
-}
-
-/// A CDN link the launcher follows: https, or plain http on this machine.
-fn cdn_link(url: &str) -> bool {
-    url.starts_with("https://")
-        || (url.starts_with("http://") && crate::online::server::http::bearer_allowed(url))
-}
-
-/// The newest cached version of `abi` whose stored offer and file still verify.
-fn cached(data: &Path, name: &str, platform: &str, abi: u32, key: &[u8]) -> Option<Module> {
-    let base = dir(data, name, platform);
-    let mut found: Vec<(Vec<u64>, Module)> = std::fs::read_dir(&base)
-        .ok()?
-        .flatten()
-        .filter_map(|entry| {
-            let folder = entry.path();
-            let offer: Offer = serde_json::from_slice(&std::fs::read(folder.join(OFFER_FILE)).ok()?).ok()?;
-            let same = offer.name == name
-                && offer.platform == platform
-                && offer.abi == abi
-                && entry.file_name().to_str() == Some(offer.version.as_str());
-            if !same || check(key, &offer).is_err() {
-                return None;
-            }
-            let path = folder.join(&offer.file);
-            matches(&path, &offer).then(|| {
-                (
-                    order(&offer.version),
-                    Module {
-                        name: name.to_owned(),
-                        version: offer.version,
-                        path,
-                        sha256: offer.sha256,
-                    },
-                )
-            })
-        })
-        .collect();
-    found.sort_by(|a, b| a.0.cmp(&b.0).then_with(|| a.1.version.cmp(&b.1.version)));
-    found.pop().map(|(_, m)| m)
-}
-
-/// A dotted version as numbers, so `1.10` sorts after `1.9`.
-fn order(version: &str) -> Vec<u64> {
-    version.split('.').map(|part| part.parse().unwrap_or(0)).collect()
-}
-
-fn matches(path: &Path, offer: &Offer) -> bool {
-    std::fs::read(path).is_ok_and(|b| b.len() as u64 == offer.size && sha256_bytes(&b) == offer.sha256)
+    fn download_timeout(&self) -> Duration {
+        DOWNLOAD_TIMEOUT
+    }
 }
 
 /// Everything about an offer that can be judged without the file: its fields are plain and its signature
@@ -359,21 +364,8 @@ fn check(key: &[u8], offer: &Offer) -> Result<(), Unavailable> {
     if !valid_version(&offer.file) || offer.file == OFFER_FILE {
         return Err("the offered file name is not a plain file name".into());
     }
-    if offer.sha256.len() != 64
-        || !offer
-            .sha256
-            .bytes()
-            .all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
-    {
-        return Err("the offered hash is not a lowercase sha256".into());
-    }
-    if offer.size == 0 || offer.size > MAX_SIZE {
-        return Err(format!("the offered size of {} bytes is out of range", offer.size).into());
-    }
-    let signature = decode(&offer.signature).ok_or("the signature is not valid base64")?;
-    UnparsedPublicKey::new(&ED25519, key)
-        .verify(&signed_message(offer), &signature)
-        .map_err(|_| "the signature does not match the pinned key".into())
+    fetch::plain(&offer.version, &offer.sha256, offer.size, MAX_SIZE)?;
+    fetch::signed_by(key, &signed_message(offer), &offer.signature)
 }
 
 fn signed_message(offer: &Offer) -> Vec<u8> {
@@ -396,36 +388,6 @@ fn valid_name(name: &str) -> bool {
         && name
             .bytes()
             .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || matches!(b, b'-' | b'_'))
-}
-
-fn store(folder: &Path, file: &str, bytes: &[u8]) -> std::io::Result<()> {
-    std::fs::create_dir_all(folder)?;
-    let tmp = folder.join(format!("{file}.{}.tmp", std::process::id()));
-    let done = std::fs::write(&tmp, bytes).and_then(|()| std::fs::rename(&tmp, folder.join(file)));
-    if done.is_err() {
-        std::fs::remove_file(&tmp).ok();
-    }
-    done
-}
-
-/// Keep `current` and the newest other version; the rest go.
-fn prune(base: &Path, current: &str) {
-    let Ok(entries) = std::fs::read_dir(base) else {
-        return;
-    };
-    let mut others: Vec<(std::time::SystemTime, PathBuf)> = entries
-        .flatten()
-        .filter(|e| {
-            e.file_name()
-                .to_str()
-                .is_some_and(|n| valid_version(n) && n != current)
-        })
-        .filter_map(|e| Some((e.metadata().ok()?.modified().ok()?, e.path())))
-        .collect();
-    others.sort_by_key(|o| std::cmp::Reverse(o.0));
-    for (_, path) in others.into_iter().skip(KEEP - 1) {
-        std::fs::remove_dir_all(path).ok();
-    }
 }
 
 /// Add `module` to a build's placed files and plugin list so the loader loads it as the addon `id`.
