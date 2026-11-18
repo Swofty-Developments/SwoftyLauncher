@@ -42,7 +42,7 @@ use archive_writes::{
 };
 use archives::read_frag;
 use menu_rows::hub_tabs;
-use picker_rows::{car_category_boxes, era_rows};
+use picker_rows::picker_rows;
 use toggles::{core_version, panel_shown, season_picker_split};
 
 pub const UI: &str = "2025_asset_groups/ui_package";
@@ -181,28 +181,15 @@ pub fn build(
     if !mfd_rows.is_empty() {
         write_mfd_templates(input, out, &mfd_rows, &mut build, packer)?;
     }
-    let mut eras = if season_picker_split(settings) {
-        era_rows(input, writer, out, &mut build.lines, &mut build.warnings, packer)?
-    } else {
-        build.lines.push(
-            "ui: the season picker keeps the game's single row (SwoftyMod's Split the season picker is off)"
-                .into(),
-        );
-        Vec::new()
-    };
-    for rel in car_category_boxes(
+    let eras = picker_rows(
+        season_picker_split(settings),
         input,
         writer,
         out,
-        &eras,
         &mut build.lines,
         &mut build.warnings,
         packer,
-    )? {
-        if !eras.contains(&rel) {
-            eras.push(rel);
-        }
-    }
+    )?;
     let hubs = hub_tabs(
         settings,
         input,

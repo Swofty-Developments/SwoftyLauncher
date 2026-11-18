@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 
 use super::Built;
 use super::buildhash::BuildHash;
+use super::hooks::{self, Hooks};
 use super::op_files::{core_intro, package_ops, refuse_by, refuse_placements, render_file, unbuilt};
 use super::registry::added_tables;
 use super::run::Run;
@@ -10,7 +11,6 @@ use crate::addons::registry::{Host, Registry};
 use crate::asset::Features;
 use crate::asset::{AssetOp, FileKind, Op, OpFile, Origin, Root, Source};
 use crate::content::runtime_assets::Runtime;
-use crate::launcher::BuildCx;
 use crate::manifest::AddonManifest;
 use crate::online::multiplayer::fingerprint::{self, OutputBuilder};
 use crate::planner::Planner;
@@ -34,6 +34,8 @@ pub(super) struct Gathered {
 pub(super) struct Gather<'a, 'm, 'p> {
     pub run: Run<'a>,
     pub registry: &'a Registry,
+    /// The build hooks started before the build read its inputs.
+    pub hooks: &'m mut Hooks,
     pub features: &'a Features,
     /// The DB Editor packages on, by id, with their names.
     pub packages: &'a BTreeMap<String, String>,
@@ -191,29 +193,18 @@ impl Gather<'_, '_, '_> {
         let Some(entry) = self.registry.get(id).filter(|e| !e.declared) else {
             return Ok(());
         };
-        let host = Host::new(run.store, id, run.settings, Some(run.game))?.read_only(run.checking);
-        let options = m
-            .options
-            .iter()
-            .map(|o| (o.id.clone(), run.on.value(run.settings, m, o)))
-            .collect();
-        let cx = BuildCx {
-            cx: host.cx(),
-            options: &options,
-            features: self.features,
+        let reply = match self.hooks.take(id, self.features) {
+            Some(reply) => reply,
+            None => {
+                let host = Host::new(run.store, id, run.settings, Some(run.game))?.read_only(run.checking);
+                let kept = super::inputs::hook_reply_path(run.store, run.profile, id);
+                hooks::call(entry, &host, &hooks::options(run, id), self.features, &kept, id)
+            }
         };
-        let batch = match &entry.plugin {
-            Some(plugin) => plugin
-                .build_kept(&cx, &super::inputs::hook_reply_path(run.store, run.profile, id))
-                .map(|(batch, ran)| {
-                    if let Some(ran) = ran {
-                        crate::diagnostics::phases::note(format!("hook {id} {ran}"));
-                    }
-                    batch
-                }),
-            None => entry.addon.build(&cx),
+        let (batch, ran) = reply?;
+        if let Some(ran) = ran {
+            crate::diagnostics::phases::note(format!("hook {id} {ran}"));
         }
-        .map_err(|e| Error::Other(format!("building {id}: {e}")))?;
         self.hash.json(&batch.ops);
         if !batch.fields.is_empty() {
             self.hash.json(&batch.fields);

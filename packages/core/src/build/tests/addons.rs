@@ -706,3 +706,145 @@ fn an_addon_op_with_a_placement_id_past_the_games_32_is_refused_by_name() {
         ]
     );
 }
+
+/// How a [`Timed`] hook ends.
+#[derive(Clone, Copy)]
+enum Ends {
+    Answers,
+    Fails(&'static str),
+    Panics,
+}
+
+/// A build hook that takes `sleep` to answer and notes when it ran.
+struct Timed {
+    manifest: AddonManifest,
+    sleep: std::time::Duration,
+    ran: Arc<std::sync::Mutex<Vec<(String, std::time::Instant, std::time::Instant)>>>,
+    ends: Ends,
+}
+
+impl Addon for Timed {
+    fn manifest(&self) -> &AddonManifest {
+        &self.manifest
+    }
+
+    fn build(&self, cx: &BuildCx) -> swofty_addon::Result<AssetBatch> {
+        let start = std::time::Instant::now();
+        std::thread::sleep(self.sleep);
+        self.ran
+            .lock()
+            .unwrap()
+            .push((cx.cx.addon.to_owned(), start, std::time::Instant::now()));
+        match self.ends {
+            Ends::Answers => Ok(AssetBatch {
+                lines: vec![format!("{} answered", cx.cx.addon)],
+                ..AssetBatch::default()
+            }),
+            Ends::Fails(why) => Err(swofty_addon::Error::Other(why.into())),
+            Ends::Panics => panic!("{} gave up", cx.cx.addon),
+        }
+    }
+}
+
+type Ran = Arc<std::sync::Mutex<Vec<(String, std::time::Instant, std::time::Instant)>>>;
+
+fn timed_store(name: &str, hooks: &[(&str, u64, Ends)]) -> (PathBuf, Store, Game, Ran) {
+    let root = std::env::temp_dir().join(format!("swofty-build-hooks-{name}-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let dir = root.join("game");
+    std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+    std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
+    let game = Game {
+        identity: Identity::detect(&dir, Some(1)).unwrap(),
+        dir,
+        user_reg: None,
+    };
+    let ran: Ran = Arc::default();
+    let builtins = hooks
+        .iter()
+        .map(|(id, ms, ends)| Builtin {
+            addon: Arc::new(Timed {
+                manifest: AddonManifest::parse(&format!(
+                    r#"{{ "schema_version": 1, "id": "{id}", "name": "{id}", "version": "1.0.0", "author": "t",
+                         "compat": {{ "game": "f1_25" }} }}"#
+                ))
+                .unwrap(),
+                sleep: std::time::Duration::from_millis(*ms),
+                ran: ran.clone(),
+                ends: *ends,
+            }),
+            locked: false,
+            default_on: true,
+        })
+        .collect();
+    let store = Store::new(root.join("data")).with_builtins(builtins);
+    (root, store, game, ran)
+}
+
+#[test]
+fn build_hooks_run_side_by_side_and_their_replies_join_in_load_order() {
+    if loader_dir().is_some() {
+        return;
+    }
+    let (root, store, game, ran) =
+        timed_store("order", &[("t.a", 400, Ends::Answers), ("t.b", 0, Ends::Answers)]);
+    let built = build(&store, "default", &game).unwrap();
+    assert_eq!(built.order, [CORE_ID, "t.a", "t.b"]);
+    let at = |line: &str| built.lines.iter().position(|l| l == line);
+    let (a, b) = (at("t.a: t.a answered"), at("t.b: t.b answered"));
+    assert!(a.is_some() && a < b, "{:?}", built.lines);
+    let ran = ran.lock().unwrap().clone();
+    let when = |id: &str| {
+        ran.iter()
+            .find(|(r, ..)| r == id)
+            .map(|(_, start, end)| (*start, *end))
+            .unwrap()
+    };
+    let ((_, a_end), (b_start, _)) = (when("t.a"), when("t.b"));
+    assert!(b_start < a_end, "t.b's hook waited for t.a's to answer");
+    std::fs::remove_dir_all(&root).ok();
+    let (root, store, game, _) =
+        timed_store("order", &[("t.a", 0, Ends::Answers), ("t.b", 400, Ends::Answers)]);
+    let again = build(&store, "default", &game).unwrap();
+    assert_eq!(
+        again.buildhash, built.buildhash,
+        "which hook answers first changes nothing"
+    );
+    assert_eq!(again.lines, built.lines);
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn a_build_hook_that_fails_fails_the_build_with_its_error() {
+    if loader_dir().is_some() {
+        return;
+    }
+    let (root, store, game, _) = timed_store(
+        "fails",
+        &[
+            ("t.a", 0, Ends::Fails("the helper timed out")),
+            ("t.b", 200, Ends::Answers),
+        ],
+    );
+    let e = build(&store, "default", &game).unwrap_err();
+    assert_eq!(e.to_string(), "building t.a: the helper timed out");
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn a_build_hook_that_panics_panics_the_build() {
+    if loader_dir().is_some() {
+        return;
+    }
+    let (root, store, game, _) =
+        timed_store("panics", &[("t.a", 100, Ends::Panics), ("t.b", 0, Ends::Answers)]);
+    let panic = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| build(&store, "default", &game)))
+        .expect_err("the build panics");
+    let message = panic
+        .downcast_ref::<String>()
+        .cloned()
+        .or_else(|| panic.downcast_ref::<&str>().map(|s| (*s).to_owned()));
+    assert_eq!(message.as_deref(), Some("t.a gave up"));
+    std::fs::remove_dir_all(&root).ok();
+}
