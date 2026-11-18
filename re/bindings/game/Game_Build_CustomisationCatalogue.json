@@ -64,7 +64,7 @@
    "claimed": "L2",
    "verdict": "agree",
    "evidence": "decomp:own capstone disasm of the archived 1.0.141 exe (PE 1789118616) 0x1414059c0-0x14141c43c, 0x1413eb540-0x1413eb582;xref:0x1456e37a0,0x1413eb576,0x1414078f2",
-   "notes": "V10778 Re-verified after V4800: there is no direct call, but the \"called from Sess_Apply_ContentAvailability\" claim holds through a virtual call. 0x1414059c0 is slot 6 (+0x30, abs 0x1456e37a0, its only reference) of vtable 0x1456e3770, which follows the string CustomisationSystem; Sess_Apply_ContentAvailability loops over the system vector [[[ctx+0x20]+0x18]+8..+0x10] with call [rax+0x30] at 0x1413eb576, whose return address 0x1413eb579 is the B26 backtrace frame. colour_%u_default lea at 0x1414078cf (0x1456e2fc1), Gdb_Get_FieldInt 0x1445a2cf0 at 0x1414078f2, mov rax,[rax] / mov eax,[rax+8] with no null check, stored to item+0x58; SE item vtable 0x1456e6010 (lea 0x141416a5f); result at this+0x140/+0x148."
+   "notes": "V20004 Re-verified after V4800: there is no direct call, but the \"called from Sess_Apply_ContentAvailability\" claim holds through a virtual call. 0x1414059c0 is slot 6 (+0x30, abs 0x1456e37a0, its only reference) of vtable 0x1456e3770, which follows the string CustomisationSystem; Sess_Apply_ContentAvailability loops over the system vector [[[ctx+0x20]+0x18]+8..+0x10] with call [rax+0x30] at 0x1413eb576, whose return address 0x1413eb579 is the B26 backtrace frame. colour_%u_default lea at 0x1414078cf (0x1456e2fc1), Gdb_Get_FieldInt 0x1445a2cf0 at 0x1414078f2, mov rax,[rax] / mov eax,[rax+8] with no null check, stored to item+0x58; SE item vtable 0x1456e6010 (lea 0x141416a5f); result at this+0x140/+0x148."
   }
  ],
  "proofs": []

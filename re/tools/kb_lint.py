@@ -288,6 +288,11 @@ class KbLint:
             if r['kind'] != 'db_key' and (r['kind'], r['item']) not in items and not r['item'].startswith('retired:'):
                 self.E.append(f'verify.tsv:{r["_line"]}: {r["kind"]} {r["item"]} not found (rename the item to '
                               f'retired:{r["item"]} if it was renamed, retargeted or never added)')
+        for n, rows in sorted(kb.colliding_verify_ids(t['verify']).items()):
+            self.E.append(f'verify: V{n} names {len(rows)} rows ('
+                          + ', '.join(f'{r["verifier"]} {r["kind"]} {r["item"]}' for r in rows)
+                          + '): two branches handed out the same id; renumber the rows that are not on main past the '
+                            'highest id')
         last = {}
         for r in t['verify']:
             last[(r['kind'], r['item'])] = r['verdict']

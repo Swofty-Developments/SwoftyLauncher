@@ -1,0 +1,90 @@
+{
+ "schema": 1,
+ "name": "Sess_VehiclePlacementRequest_Register",
+ "table": "functions",
+ "author": "re-bindings",
+ "row": {
+  "addr": "0x142f60c80",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f60c80.c;decomp:own disasm 1.0.145 0x142f63210 the same 273/273;xref:0x1457fa558;xref:0x140fa8933",
+  "notes": "engine-re 2026-11-17 track round C (static): request component activate (vtable pointer 0x1457fa558, one direct call 0x140fa8933). Stores the request into the placement table of g_Sess_VehiclePlacementSystem [0x146095c88]: entry = placement + 0x38 + type*0x100 + slot*8 (0x142f60d5c..0x142f60d72; type byte +0x1c, slot movsxd +0x18 with NO bound: an Id above 32 writes into the next type's row, a pit (type 8) Id above 32 runs into the placement system's own fields from +0x938). A type-0 (GridSlot) request also creates the 5 derived requests (types 1..5, byte table read at 0x142f60e79, loop to 5 at 0x142f60e6f) for the same slot, so the race grid (type 5) follows the GridSlot markers. 32 slots per type: grid slots and garages scale to 32 by markers. | re-bindings 2026-11-18: Steam 1.0.145 (sigport --witness): 0x142f63210, 273/273 equal, with +0x38, +0x1c and +0x18 at the same instructions."
+ },
+ "signature": {
+  "id": "session.vehicle_placement_request_register",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 78 29 BC 24 B0 00 00 00 C5 78 29 B4 24 A0 00 00 00 C5 78 29 AC 24 90 00 00 00 C5 78 29 A4 24 80 00 00 00 C5 78 29 5C 24 70 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 CE 48 8B 41 08",
+  "match": "0x142f60c80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f60c80",
+  "kind": "func_start",
+  "names": [
+   "Sess_VehiclePlacementRequest_Register"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-18",
+    "by": "re-bindings",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-17",
+   "verifier": "trkps-verify",
+   "kind": "func",
+   "item": "Sess_VehiclePlacementRequest_Register",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f60c80.c;xref:0x142f60d72",
+   "notes": "V11201 0x142f60d55..d72: rdi=[0x146095c88], rcx=rdi+0x38+type<<8, store [rcx+movsxd(+0x18)*8], no bound check. Type 0: 5 iterations over byte table 0x145801da4 = {5,1,2,3,4}; derived request allocated only if that slot is null (else reused), type-2 (randomoffset) gets random jitter when slot!=0."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f60c80",
+    "target": "0x142f60c80"
+   },
+   "sigcheck": "passed",
+   "digest": "84b9ba49de3bb6650ca238749f15571b0a8812b03e5b948f344fc5652f85f3ed"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f63210",
+    "target": "0x142f63210"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "091eef437572f8d27e58ec6657ff52ac42d41b5a05795db56e406b3e712b0486"
+  }
+ ]
+}

@@ -252,6 +252,72 @@ class EaDump(unittest.TestCase):
 
 
 
+HOOK_SPAN = 0x10000000
+
+
+def hooked_at(img, rva):
+    """A jmp from rva into memory past the image end, where a dump taken with the core running holds its hooks."""
+    if not img.readable(rva, 5) or img.mem[rva] != 0xE9:
+        return False
+    return img.size <= rva + 5 + img.i32(rva + 1) < img.size + HOOK_SPAN
+
+
+def same_code(a, b):
+    """Equal bytes, except the rel32 of a call or jmp that both hold at the same place."""
+    i = 0
+    while i < len(a):
+        if a[i] != b[i]:
+            return False
+        i += 5 if a[i] in (0xE8, 0xE9) and i + 5 <= len(a) else 1
+    return True
+
+
+def why_it_differs(img, ref, b, r, rr):
+    """Why a binding that compare() flags still lands on the reference build's code, or None."""
+    t, rt = r['target'], rr['target']
+    m = r['match'] if r['match'] is not None else t
+    spots = {t, m} | set(range(m, m + len(b['pattern'].split())))
+    if img.readable(t, 5) and img.mem[t] == 0xE8:
+        spots.add(t + 5 + img.i32(t + 1))
+    if any(hooked_at(img, s) for s in spots):
+        return 'a live hook of the core'
+    call = ref.readable(rt, 5) and ref.mem[rt] == 0xE8
+    if same_code(img.read(t - 12, 12), ref.read(rt - 12, 12)) or \
+            (img.read(t + 5, 11) == ref.read(rt + 5, 11) if call else img.read(t, 16) == ref.read(rt, 16)):
+        return 'the same code at the target'
+    return None
+
+
+@unittest.skipUnless(os.environ.get('SWOFTY_EA_145_DUMP'), 'set SWOFTY_EA_145_DUMP to a decrypted EA 1.0.145 image dump')
+class Ea145Dump(unittest.TestCase):
+    """The EA 1.0.145 dump was taken with the core running, so some code holds its hooks."""
+
+    def test_every_binding_resolves_by_hint_and_by_scan(self):
+        img = bindverify.Image(os.environ['SWOFTY_EA_145_DUMP'])
+        d = bindverify.gen_set_for(img)
+        self.assertTrue(img.flat)
+        self.assertEqual(d['build']['pe_timestamp'], img.stamp)
+        hinted = {b['id'] for b in d['bindings'] if b.get('match')}
+        for kb_first, method in ((True, 'hint'), (False, 'scan')):
+            res = bindverify.Resolver(img, d, d['build']['size'], kb_first=kb_first).run()
+            bad = [(r['id'], r['result'], r['reason']) for r in res
+                   if r['result'] != 'unresolvable' and not resolves(r, method, hinted)]
+            self.assertEqual(bad, [], method)
+
+    @unittest.skipUnless(os.environ.get('SWOFTY_STEAM_145_EXE'), 'set SWOFTY_STEAM_145_EXE to compare with Steam 1.0.145')
+    def test_every_binding_lands_on_the_steam_1_0_145_code(self):
+        ea = bindverify.Image(os.environ['SWOFTY_EA_145_DUMP'])
+        d = bindverify.gen_set_for(ea)
+        steam = bindverify.Image(os.environ['SWOFTY_STEAM_145_EXE'])
+        sd = bindverify.gen_set_for(steam)
+        er, sr = bindverify.verify(ea, d), bindverify.verify(steam, sd)
+        mine = {b['id']: (b, r) for b, r in zip(d['bindings'], er)}
+        ref = {b['id']: r for b, r in zip(sd['bindings'], sr)}
+        odd = [(i, why) for i, why in bindverify.compare(steam, sd, sr, ea, d, er)
+               if i not in SAME_FUNCTION_DIFFERENT_BYTES and why_it_differs(ea, steam, *mine[i], ref[i]) is None]
+        self.assertEqual(odd, [])
+
+
 class FakeSection:
     def __init__(self, name):
         self.name = name

@@ -66,7 +66,7 @@
    "claimed": "L2",
    "verdict": "agree",
    "evidence": "decomp:own capstone disasm of the archived 1.0.141 exe (PE 1789118616) 0x142f45960-0x142f46206;xref:0x1457f82e8,0x14080c546",
-   "notes": "V10782 Re-verified; the newest partial V2134 judged the native 26-vehicle clamp in era_picker.cpp (it found the clamp unsafe for the AI job), not this row. Only reference abs 0x1457f82e8 = VehicleSystem vtable 0x1457f8290 +0x58, called by call [rax+0x58] at 0x14080c546; rcx=module only (native hook type void(void*) matches); count = ((end-begin)>>3)&0xff from +0x28/+0x30; +0x180 zeroed then table store mov [rsi+rcx*8+0xb0] at 0x142f45a09 with no bound, so slot 26 is the count; +0x2e9 (0x142f45c49) writes [rdx+0x3e4], +0x305 (0x142f45c65) reads [r10+0xe8]; config lea [rsi+0x190]; component ids 0x146ce8a00/0x146ce8b00; mode context [[+0x88]+0x260]+0x2b0 at 0x142f45d86/0x142f45d91; +0x132, +0x2580, +0x9f2c writes."
+   "notes": "V20008 Re-verified; the newest partial V2134 judged the native 26-vehicle clamp in era_picker.cpp (it found the clamp unsafe for the AI job), not this row. Only reference abs 0x1457f82e8 = VehicleSystem vtable 0x1457f8290 +0x58, called by call [rax+0x58] at 0x14080c546; rcx=module only (native hook type void(void*) matches); count = ((end-begin)>>3)&0xff from +0x28/+0x30; +0x180 zeroed then table store mov [rsi+rcx*8+0xb0] at 0x142f45a09 with no bound, so slot 26 is the count; +0x2e9 (0x142f45c49) writes [rdx+0x3e4], +0x305 (0x142f45c65) reads [r10+0xe8]; config lea [rsi+0x190]; component ids 0x146ce8a00/0x146ce8b00; mode context [[+0x88]+0x260]+0x2b0 at 0x142f45d86/0x142f45d91; +0x132, +0x2580, +0x9f2c writes."
   }
  ],
  "proofs": []

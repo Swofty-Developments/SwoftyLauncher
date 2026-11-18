@@ -49,11 +49,16 @@ EXCEPTIONS = os.path.join(kb.DB, 'export_exceptions.json')
 EXCEPTION_KEYS = {'kind', 'covers', 'reason'}
 
 
+def read_text(path):
+    with open(path) as f:
+        return f.read()
+
+
 def load_exceptions(path=EXCEPTIONS):
     """{(kind, name): entry} from export_exceptions.json; a malformed file stops the build instead of exporting more."""
     if not os.path.exists(path):
         return {}
-    doc = json.load(open(path))
+    doc = json.loads(read_text(path))
     if doc.get('schema') != 1 or not isinstance(doc.get('exceptions'), dict):
         raise SystemExit(f'bindgen: {path}: needs "schema": 1 and an "exceptions" object')
     out = {}
@@ -81,7 +86,7 @@ class Gate:
         tdir = os.path.join(kb.RE, 'tests')
         for f in os.listdir(tdir):
             if re.match(r'^T\d{3}\.md$', f):
-                m = re.search(r'^- Verdict:\s*(\S+)', open(os.path.join(tdir, f)).read(), re.M)
+                m = re.search(r'^- Verdict:\s*(\S+)', read_text(os.path.join(tdir, f)), re.M)
                 if m and m.group(1).lower().startswith('pass'):
                     self.passed.add(f[:4])
 
@@ -197,7 +202,7 @@ def load(gate=None):
     build = sigdoc['build']
     sigs = {s['id']: s for s in sigdoc['signatures']}
     apath = os.path.join(kb.DB, 'anchors.json')
-    anchors = json.load(open(apath))['anchors'] if os.path.exists(apath) else {}
+    anchors = json.loads(read_text(apath))['anchors'] if os.path.exists(apath) else {}
     funcs, _ = kb.read_table('functions')
     globs, _ = kb.read_table('globals')
     skipped = {}
@@ -696,12 +701,13 @@ def main():
     for p, text in outputs.items():
         if a.check and p in built and not os.path.isdir(os.path.dirname(p)):
             continue
-        old = open(p).read() if os.path.exists(p) else None
+        old = read_text(p) if os.path.exists(p) else None
         if old != text:
             stale.append(p)
             if not a.check:
                 os.makedirs(os.path.dirname(p), exist_ok=True)
-                open(p, 'w').write(text)
+                with open(p, 'w') as f:
+                    f.write(text)
     gdir = os.path.join(a.include, 'game')
     for f in sorted(os.listdir(gdir)) if os.path.isdir(gdir) else []:
         p = os.path.join(gdir, f)

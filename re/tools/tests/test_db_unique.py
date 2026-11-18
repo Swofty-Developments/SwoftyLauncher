@@ -25,6 +25,14 @@ class UniqueKeys(unittest.TestCase):
         dup = sorted(k for k, n in collections.Counter(r["name"] for r in rows).items() if n > 1)
         self.assertEqual(dup, [], f"{len(dup)} name(s) appear more than once, e.g. {dup[:5]}")
 
+    def test_verify_ids_name_one_row_each(self):
+        self.assertEqual(kb.colliding_verify_ids(kb.read_table("verify")[0]), {})
+
+    def test_a_verify_id_on_two_rows_is_a_collision_above_the_shared_bound(self):
+        rows = [{"notes": "V20001 a"}, {"notes": "V20001 b"}, {"notes": f"V{kb.SHARED_VERIFY_IDS_UP_TO} c"},
+                {"notes": f"V{kb.SHARED_VERIFY_IDS_UP_TO} d"}, {"notes": "V20002 e"}, {"notes": "-"}]
+        self.assertEqual(sorted(kb.colliding_verify_ids(rows)), [20001])
+
     def test_binding_records_pass_the_static_checks(self):
         import binding
         self.assertEqual(binding_record.Store.get().errors, [])

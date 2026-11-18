@@ -1,0 +1,83 @@
+{
+ "schema": 1,
+ "name": "Trk_TrackData_CollectLayersForQuery",
+ "table": "functions",
+ "author": "re-bindings",
+ "row": {
+  "addr": "0x142e60550",
+  "level": "L2",
+  "subsystem": "tracks",
+  "proto": "void Trk_TrackData_CollectLayersForQuery(void *track_data_system, const uint8_t *query, void *out_list)",
+  "evidence": "decomp:own disasm KB 0x142e60550-0x142e605ec, 1.0.145 0x142e62ae0 the same 41/41;xref:0x1407a1383",
+  "notes": "Appends every track_data.track_layers row of the TrackDataSystem (+0x1e0..+0x1e8, stride 0x28) whose +0x0 mode mask, +0x4 season mask and +0x8 weekend format mask hold the query's bits to out_list (8-byte row pointers, u64 count at +0x100, room for 32, no bound check). Query bytes: [0] mode stat id, [1] mode used, [2] season stat id, [3] season used, [4] format bit, [5] format used; a criterion whose used byte is 0 is skipped. Mode or season >= 32 calls the bitset range failure 0x1411c04f0, format >= 2 calls 0x1402bedf0. Every matching row is added, not only the first. Only caller Game_GameMode_AddTrackLayerWorlds (0x1407a1383)."
+ },
+ "signature": {
+  "id": "tracks.track_data_collect_layers_for_query",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 48 8B 81 E0 01 00 00 48 8B 89 E8 01 00 00",
+  "match": "0x142e60550",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e60550",
+  "kind": "func_start",
+  "names": [
+   "Trk_TrackData_CollectLayersForQuery"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-18",
+    "by": "re-bindings",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142e62ae0",
+  "made_on_target": "0x142e62ae0",
+  "twin": "made on steam-26566308; the target 0x142e62ae0 is KB 0x142e60550: Sess_Collect_AvailableTracks (0x2e601b0) and Game_TrackData_GetTrack (0x2e63390) on either side both sit 0x2590 above their KB addresses; checked on the KB exe: same: entry 0x60 alike 1.00"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142e62ae0",
+    "target": "0x142e62ae0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ae9afd29c81d4b1585708206d5ab0c106feaa8d5f5bca438313d0239fcc457d0"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142e60550",
+    "target": "0x142e60550"
+   },
+   "sigcheck": "passed",
+   "digest": "512a52a8e82756942eb332fa892526dfb6d921a7c6bf951c1d6a0aa4f562afa8"
+  }
+ ]
+}

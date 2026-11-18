@@ -64,7 +64,7 @@
    "claimed": "L2",
    "verdict": "agree",
    "evidence": "decomp:own capstone disasm of the archived 1.0.141 exe (PE 1789118616) 0x1446b7240-0x1446b7390;xref:0x1446df89a,0x1446df8ce,0x1446df901,0x1446df949",
-   "notes": "V10777 Re-verified after V4142: the wetness term reads [arg+0x84] / 0.2 (constant at 0x1453ca848) as the notes now say, not wheel+0x8c. Everything else holds: ai = car+0x124 == 1 picks +0x638/+0x63c and +0x640/+0x644, RotRate +0x648, wheel = g_Sess_VehicleTable (0x146ce86e0)[car+0xe8]->+0x580->[+0x70+[arg+0xc8]*8], |+0x188| vs sqrt(+0x3a8^2+0x3ac^2)/[t+0x1c], floor +0x64c, returns xmm0. The four call sites are the only references, each behind cmp [car+0x9f40],7 / jl and stored to +0x830/+0x834/+0x838/+0x83c (1.0 when skipped). The row has no proto; the code is float(void *tyre_state_plus_8)."
+   "notes": "V20003 Re-verified after V4142: the wetness term reads [arg+0x84] / 0.2 (constant at 0x1453ca848) as the notes now say, not wheel+0x8c. Everything else holds: ai = car+0x124 == 1 picks +0x638/+0x63c and +0x640/+0x644, RotRate +0x648, wheel = g_Sess_VehicleTable (0x146ce86e0)[car+0xe8]->+0x580->[+0x70+[arg+0xc8]*8], |+0x188| vs sqrt(+0x3a8^2+0x3ac^2)/[t+0x1c], floor +0x64c, returns xmm0. The four call sites are the only references, each behind cmp [car+0x9f40],7 / jl and stored to +0x830/+0x834/+0x838/+0x83c (1.0 when skipped). The row has no proto; the code is float(void *tyre_state_plus_8)."
   }
  ],
  "proofs": []

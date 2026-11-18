@@ -219,6 +219,7 @@ struct TrackDataRecord;
 struct TrackDataSet;
 struct TrackDataSystem;
 struct TrackDataTrack;
+struct TrackLayer;
 struct TyreSlot;
 struct TyreSystem;
 struct UiLayoutStep;

@@ -201,6 +201,12 @@ def load_kb_names():
     return names
 
 
+def verified_here(sig, kb_build):
+    made_on = sig.get('made_on')
+    return any(v.get('build', '') and (kb_build.startswith(v['build']) or v['build'] == made_on)
+               for v in sig.get('verified') or ())
+
+
 def check(img, sig, kb_build, names, same_build):
     errs, info = [], {}
     sid = sig.get('id', '?')
@@ -263,7 +269,7 @@ def check(img, sig, kb_build, names, same_build):
         errs.append(f'unknown kind {kind!r}')
     if not sig.get('verified'):
         errs.append('no verified[] entry')
-    elif not any(v.get('build', '') and kb_build.startswith(v['build']) for v in sig['verified']):
+    elif not verified_here(sig, kb_build):
         errs.append(f'verified[] has no entry for the KB build {kb_build[:16]}')
     if same_build:
         for n in sig.get('names', []):
