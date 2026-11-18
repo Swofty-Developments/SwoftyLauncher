@@ -134,7 +134,7 @@ def mention_edits(files, review):
             if new != line:
                 prose = Path(rel).suffix in TEXT_EXT or line.lstrip().startswith(COMMENT)
                 if not prose:
-                    review.append(f"{rel}:{n}: {line.strip()}")
+                    review.append(f"{rel}:{n}: {new.strip()}")
             out.append(new)
         changed = "".join(out)
         if changed != text:
