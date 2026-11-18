@@ -3171,7 +3171,6 @@
   "func:Sess_InGame_SubscribeMessages": "V3616",
   "func:Sess_InGame_UnsubscribeMessages": "V3618",
   "func:Sess_Init_TyreComponentSet": "V7563",
-  "func:Sess_IntroVideo_CanFinish": "V3620",
   "func:Sess_IntroVideo_OnVideoDoneFadeIn": "V2716",
   "func:Sess_IntroVideo_ParseParams": "V9315",
   "func:Sess_IntroVideo_PushAllocRequest": "V3469",
