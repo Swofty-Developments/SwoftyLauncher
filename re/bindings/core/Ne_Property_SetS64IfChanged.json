@@ -45,6 +45,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/140977b20.c;xref:0x1407d0af9",
    "notes": "V8016 name and concrete claims match decomp"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_Property_SetS64IfChanged",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x140977b20-0x140977e0d,0x1442bc5b0-0x1442bc6e1,0x1442bc390-0x1442bc4c4,0x1442bc760-0x1442bc863,0x1453484a0-0x1453484cb,0x140972de0-0x1409730ce,0x141b85c40-0x141b85f2f,1.0.145 0x140977b70-0x140977e5d;xref:0x140977b2d,0x140977b54,0x140977b66,0x140977bf7,0x140977cba,0x140977d6e,0x140977dbb,0x140977def,0x1406a7517,0x1407d0af9,0x14099b99b,0x1442b1766,0x141ac0b4f",
+   "notes": "V100063 Blind: partial. Confirmed: +0x26&1 -> ret 0 (0x140977b31); current via [P+0x58] vslot 0x38; force (r9b) or qword-differs gate, equal -> ret 1 (0x140977b57); 0x1442bc5b0 under +0x60&2; listener notify via 0x1442bc760; census row 772/481/5 jumps/1 thunk exact; caller 0x1407d07a0; S32 twin 0x140972de0. Imprecise: not plain S64. All 777 sites gate on type 0x146ca5550 and 701 pass then destroy a 24-byte weak object handle, so the compare is pointer identity (plain-qword twin 0x141b85c40). The 'unknown' object at rsp+0x60 is a 0x200-byte arena allocator for the old-value copy; the message is 0x40 bytes at rsp+0x20. Unclaimed: store via vslot 0x40, 0x1442bc390 post-hook, NaN guard/restore ret 0."
   }
  ],
  "proofs": []
