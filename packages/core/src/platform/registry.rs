@@ -551,6 +551,91 @@ mod tests {
         assert_eq!(utf16(&[0x41, 0, 0x42]), "A");
     }
 
+    /// The keys two `reg query` listings of the same key hold, compared value by value as the parsers see
+    /// them. reg.exe writes text in the console's code page, which may not hold every character, and
+    /// writes a near letter or a `?` for one it lacks (`®` as `r`). So a key path, value name or value
+    /// outside ASCII on either side only has to be there on both and read in process without U+FFFD;
+    /// the rest have to match.
+    fn listings_agree(here: &str, tool: &str) -> Result<usize, String> {
+        use crate::platform::ea_app::reg_tree;
+        let blocks = |out: &str| -> Vec<(String, Vec<(String, String)>)> {
+            reg_tree(out)
+                .into_iter()
+                .map(|(path, values)| (path, parse_reg_query(&values)))
+                .filter(|(_, values)| !values.is_empty())
+                .collect()
+        };
+        let (here, tool) = (blocks(here), blocks(tool));
+        if here.len() != tool.len() {
+            return Err(format!(
+                "{} keys in process, {} from reg.exe",
+                here.len(),
+                tool.len()
+            ));
+        }
+        let agree = |ours: &str, theirs: &str, same: fn(&str, &str) -> bool| match ours.is_ascii()
+            && theirs.is_ascii()
+        {
+            true => same(ours, theirs),
+            false => !ours.contains('\u{FFFD}'),
+        };
+        for ((path, values), (tool_path, tool_values)) in here.iter().zip(&tool) {
+            if !agree(path, tool_path, |a, b| a.eq_ignore_ascii_case(b)) {
+                return Err(format!("{path} in process, {tool_path} from reg.exe"));
+            }
+            if values.len() != tool_values.len() {
+                return Err(format!(
+                    "{path}: {values:?} in process, {tool_values:?} from reg.exe"
+                ));
+            }
+            for ((name, data), (tool_name, tool_data)) in values.iter().zip(tool_values) {
+                if !agree(name, tool_name, |a, b| a == b) || !agree(data, tool_data, |a, b| a == b) {
+                    return Err(format!(
+                        "{path}: {name} = {data:?} in process, {tool_name} = {tool_data:?} from reg.exe"
+                    ));
+                }
+            }
+        }
+        Ok(here.len())
+    }
+
+    #[test]
+    fn listings_agree_where_reg_exe_writes_a_letter_its_code_page_lacks_another_way() {
+        let key = r"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+        let listing = |id: &str, publisher: &str, version: &str| {
+            format!(
+                "\r\n{key}\\{id}\r\n    DisplayVersion    REG_SZ    {version}\r\n    Publisher    REG_SZ    \
+                 {publisher}\r\n    DisplayName    REG_SZ    Azure Cosmos DB Emulator\r\n\r\n"
+            )
+        };
+        let id = "{CB0238CA-3B36-47AB-86FD-D60F4C47607A}";
+        let here = listing(id, "Microsoft® Corporation", "2.14.28");
+        assert_eq!(
+            listings_agree(&here, &listing(id, "Microsoftr Corporation", "2.14.28")),
+            Ok(1)
+        );
+        assert_eq!(
+            listings_agree(&here, &listing(id, "Microsoft? Corporation", "2.14.28")),
+            Ok(1)
+        );
+        assert_eq!(listings_agree(&here, &here), Ok(1));
+        assert_eq!(
+            listings_agree(&listing("F1® 25", "EA", "1"), &listing("F1r 25", "EA", "1")),
+            Ok(1)
+        );
+
+        assert!(listings_agree(&here, &listing(id, "Microsoftr Corporation", "2.14.29")).is_err());
+        assert!(listings_agree(&listing("{A}", "EA", "1"), &listing("{B}", "EA", "1")).is_err());
+        let replaced = listing(id, "Microsoft\u{FFFD} Corporation", "2.14.28");
+        assert!(listings_agree(&replaced, &listing(id, "Microsoft? Corporation", "2.14.28")).is_err());
+        let without = format!(
+            "\r\n{key}\\{id}\r\n    DisplayVersion    REG_SZ    2.14.28\r\n    DisplayName    REG_SZ    \
+             Azure Cosmos DB Emulator\r\n\r\n"
+        );
+        assert!(listings_agree(&without, &listing(id, "Microsoftr Corporation", "2.14.28")).is_err());
+        assert!(listings_agree(&format!("{here}{here}"), &here).is_err());
+    }
+
     #[test]
     fn values_read_by_name_whatever_the_case_and_by_their_type() {
         let key = Key {
@@ -608,19 +693,10 @@ mod tests {
         assert_eq!(hive(r"HKXX\a"), None);
     }
 
-    /// The in-process read and reg.exe agree on keys every Windows has, value by value as the parsers
-    /// see them. Values with characters outside ASCII are left out: reg.exe writes them in the console's
-    /// code page, which may not hold them.
+    /// The in-process read and reg.exe agree on keys every Windows has, as [`listings_agree`] holds them.
     #[cfg(windows)]
     #[test]
     fn the_in_process_read_agrees_with_reg_exe() {
-        use crate::platform::ea_app::reg_tree;
-        let ascii = |pairs: Vec<(String, String)>| -> Vec<(String, String)> {
-            pairs
-                .into_iter()
-                .filter(|(n, d)| n.is_ascii() && d.is_ascii())
-                .collect()
-        };
         for args in [
             &[r"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion"][..],
             &[r"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "/reg:64"][..],
@@ -640,16 +716,10 @@ mod tests {
             let here = reg_query(args).unwrap_or_default();
             let here_took = start.elapsed();
             eprintln!("reg query {args:?}: reg.exe {tool_took:?}, in process {here_took:?}");
-            let blocks = |out: &str| -> Vec<(String, Vec<(String, String)>)> {
-                reg_tree(out)
-                    .into_iter()
-                    .filter(|(h, _)| h.is_ascii())
-                    .map(|(h, v)| (h.to_ascii_lowercase(), ascii(parse_reg_query(&v))))
-                    .filter(|(_, v)| !v.is_empty())
-                    .collect()
-            };
-            assert!(!blocks(&here).is_empty(), "{args:?}");
-            assert_eq!(blocks(&here), blocks(&tool), "{args:?}");
+            match listings_agree(&here, &tool) {
+                Ok(keys) => assert!(keys > 0, "{args:?}"),
+                Err(e) => panic!("{args:?}: {e}"),
+            }
             for line in tool.lines().filter(|l| l.contains("    REG_DWORD    ")) {
                 let name = line.trim_start().split("    ").next().unwrap_or_default();
                 assert_eq!(reg_dword(&here, name), reg_dword(&tool, name), "{args:?} {name}");
