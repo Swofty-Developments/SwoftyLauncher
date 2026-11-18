@@ -45,6 +45,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/14029b020.c;xref:0x14023e4f2",
    "notes": "V3517 builds object with vtable 0x145612dd0 and msg 'unknown' (0x145612763), calls FUN_14029b050 then int3; 404 callers incl. RunCommand and crew/press/idle Initialise"
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_Std_ThrowException",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x14029b020-0x14029b047,0x14029b050-0x14029b08b,0x14029b090-0x14029b183,0x145349d58-0x145349d9f,1.0.145 0x14029b020-0x14029b08b,1.0.145 0x14029b140-0x14029b16c,1.0.145 0x14534c718-0x14534c75f;xref:0x14029b024,0x14029b030,0x14029b041,0x14029b058,0x14029b06f,0x14029b085,0x14029b140,0x14029b150,0x145349d70,0x140232eeb,0x14023e4f2,0x14027b1c5",
+   "notes": "V100066 Blind: partial. Confirmed: no args, no return; builds stack object {vptr 0x145612dd0, \"unknown\"} (0x14029b024-37), calls 0x14029b050 once; census 404/404 (.xtls 380, .data1 24, 0 thunks/jumps/lea/ptrs) matches own scan; xrefs 0x14023c600/0x140278970 are callers. Imprecise: vtable is bad_optional_access (what() 0x14029b140 returns \"Bad optional access\", ignores \"unknown\"), so this is std::_Throw_bad_optional_access, cold path of optional::value(). 0x14029b050 is exception::_Raise with exceptions off: handler 0x145fb8718 (never set), _Doraise, _invoke_watson 0x145349d58 = fast-fail/TerminateProcess, not a catchable throw. Callers span many subsystems, not only cutscene. 1.0.145 twin identical."
   }
  ],
  "proofs": []
