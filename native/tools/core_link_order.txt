@@ -117,6 +117,7 @@ src/core/diagnostics/perf/frames.cpp
 src/core/diagnostics/perf/report.cpp
 src/core/assets/lang_override.cpp
 src/core/career/characters.cpp
+src/core/career/characters_hooks.cpp
 src/core/career/career_wizard.cpp
 src/core/boxes/era_picker.cpp
 src/core/boxes/car_category.cpp
