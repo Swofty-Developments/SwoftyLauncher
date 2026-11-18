@@ -142,7 +142,7 @@ std::string feature_list(uint32_t rows, uint32_t from_env, bool log)
 
 namespace runtime {
 
-std::vector<CoreMixins> loading_mixins()
+static std::vector<CoreMixins> loading_mixins()
 {
     std::vector<CoreMixins> out;
     if (offered || !code_ready())
@@ -179,7 +179,7 @@ std::vector<CoreMixins> loading_mixins()
     return out;
 }
 
-void loading_commit()
+static void loading_commit()
 {
     if (!offered || settled)
         return;

@@ -1,5 +1,7 @@
 #include "core/guards/guard.hpp"
 #include "core/guards/lines.hpp"
+#include "core/guards/mid_hook.hpp"
+#include "core/runtime/hook_errors.hpp"
 
 #include <windows.h>
 
@@ -77,24 +79,43 @@ void SiteGuard::build(std::vector<runtime::CoreMixins> &out)
     }
     if (!resolve(spec_.keeps, spec_.needs)) {
         swofty::log("%s", lines::unresolved(spec_.name, spec_.needs).c_str());
-        return;
+    } else if (admit()) {
+        wanted_ = true;
+        runtime::CoreMixins set{spec_.set, spec_.mixins};
+        extend(set);
+        out.push_back(std::move(set));
     }
-    if (!admit())
-        return;
-    wanted_ = true;
-    runtime::CoreMixins set{spec_.set, spec_.mixins};
-    extend(set);
-    out.push_back(std::move(set));
+    parts_offered_.assign(spec_.parts.size(), false);
+    for (size_t i = 0; i < spec_.parts.size(); i++) {
+        const SitePart &part = spec_.parts[i];
+        if (!resolve(part.keeps, part.needs)) {
+            swofty::log("%s", lines::unresolved(part.name, part.needs).c_str());
+            continue;
+        }
+        parts_offered_[i] = true;
+        out.push_back({part.set, part.mixins});
+    }
+}
+
+namespace {
+
+void settled(const char *set, const char *name, const char *armed)
+{
+    if (runtime::core_mixins_active(set))
+        swofty::log("%s", lines::armed(name, armed).c_str());
+    else
+        swofty::log("%s", lines::not_installed(name).c_str());
+}
+
 }
 
 void SiteGuard::settle()
 {
-    if (!wanted_ && !spec_.settles_when_off)
-        return;
-    if (runtime::core_mixins_active(spec_.set))
-        swofty::log("%s", lines::armed(spec_.name, spec_.armed).c_str());
-    else
-        swofty::log("%s", lines::not_installed(spec_.name).c_str());
+    if (wanted_ || spec_.settles_when_off)
+        settled(spec_.set, spec_.name, spec_.armed);
+    for (size_t i = 0; i < parts_offered_.size(); i++)
+        if (parts_offered_[i])
+            settled(spec_.parts[i].set, spec_.parts[i].name, spec_.parts[i].armed);
 }
 
 HookGuard::HookGuard(HookGuardId id, const char *what, void (*setup)()) : id_(id), what_(what), setup_(setup)
@@ -112,6 +133,25 @@ void arm_next_hook_guard()
             guard->arm();
             return;
         }
+}
+
+void install_mid_hook(const MidHookSpec &spec)
+{
+    char v[16] = {};
+    if (env_off(spec.env, v, spec.off_value)) {
+        swofty::log("%s", lines::off(spec.name, spec.env, v).c_str());
+        return;
+    }
+    uintptr_t at = spec.site();
+    if (!at)
+        return;
+    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), spec.destination);
+    if (!h) {
+        swofty::log("%s", lines::hook_failed(spec.name, spec.failed_at, runtime::hook_error(h.error())).c_str());
+        return;
+    }
+    spec.hook = std::move(*h);
+    swofty::log("%s", lines::armed(spec.name, spec.armed).c_str());
 }
 
 }

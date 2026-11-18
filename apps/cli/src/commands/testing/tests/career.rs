@@ -11,7 +11,7 @@ use swofty_core::testsuite::report::Status;
 use swofty_core::testsuite::sandbox;
 use swofty_core::testsuite::suite::{self, Selector};
 
-use crate::commands::testing::harness::Harness;
+use crate::commands::testing::harness::{BatchResults, Harness};
 use crate::commands::testing::preflight::{batch_fixture, check_sandbox};
 use crate::commands::testing::shell::career_mode;
 
@@ -166,7 +166,17 @@ fn a_career_batch_runs_in_its_own_sandbox_and_fails_closed_on_any_doubt() {
     br.started_game = true;
     let mut reports = Harness::blank(b, 1).1;
     reports[0].status = Status::Pass;
-    h.close_sandbox(sb, Some(&a.run), b, "test-r9-1", &mut br, &mut reports, &[0]);
+    h.close_sandbox(
+        sb,
+        Some(&a.run),
+        b,
+        "test-r9-1",
+        BatchResults {
+            br: &mut br,
+            reports: &mut reports,
+            runnable: &[0],
+        },
+    );
     h.close_run(Some(a), &mut br);
     assert_eq!(
         br.error.as_deref(),
@@ -198,7 +208,17 @@ fn a_career_batch_runs_in_its_own_sandbox_and_fails_closed_on_any_doubt() {
     .unwrap();
     let mut br = Harness::blank(b, 2).0;
     let mut reports = Harness::blank(b, 2).1;
-    h.close_sandbox(sb, Some(&a.run), b, "test-r9-2", &mut br, &mut reports, &[0]);
+    h.close_sandbox(
+        sb,
+        Some(&a.run),
+        b,
+        "test-r9-2",
+        BatchResults {
+            br: &mut br,
+            reports: &mut reports,
+            runnable: &[0],
+        },
+    );
     assert_eq!(
         br.error.as_deref(),
         Some("the save sandbox did not arm: Ne_SaveSystem2Win_Start does not resolve on this build")
@@ -210,7 +230,17 @@ fn a_career_batch_runs_in_its_own_sandbox_and_fails_closed_on_any_doubt() {
     let mut br = Harness::blank(b, 3).0;
     let mut reports = Harness::blank(b, 3).1;
     reports[0].status = Status::Pass;
-    h.close_sandbox(sb, Some(&a.run), b, "test-r9-3", &mut br, &mut reports, &[0]);
+    h.close_sandbox(
+        sb,
+        Some(&a.run),
+        b,
+        "test-r9-3",
+        BatchResults {
+            br: &mut br,
+            reports: &mut reports,
+            runnable: &[0],
+        },
+    );
     assert_eq!(
         br.error, None,
         "an armed sandbox and an unchanged live folder pass"
@@ -227,7 +257,17 @@ fn a_career_batch_runs_in_its_own_sandbox_and_fails_closed_on_any_doubt() {
     std::fs::write(live.join(fixture::PROFILE_FILES[1]), [2u8; 417]).unwrap();
     let mut br = Harness::blank(b, 4).0;
     let mut reports = Harness::blank(b, 4).1;
-    h.close_sandbox(sb, Some(&a.run), b, "test-r9-4", &mut br, &mut reports, &[0]);
+    h.close_sandbox(
+        sb,
+        Some(&a.run),
+        b,
+        "test-r9-4",
+        BatchResults {
+            br: &mut br,
+            reports: &mut reports,
+            runnable: &[0],
+        },
+    );
     let why = br.error.unwrap();
     assert!(
         why.starts_with("THE PLAYER'S STEAM SAVE FOLDER CHANGED")

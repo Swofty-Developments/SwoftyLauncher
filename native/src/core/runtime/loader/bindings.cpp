@@ -159,6 +159,16 @@ std::unordered_map<std::string, size_t> BindingSet::section_uses() const
     return uses;
 }
 
+std::vector<std::pair<uint32_t, std::string>> BindingSet::resolved_functions() const
+{
+    std::vector<std::pair<uint32_t, std::string>> out;
+    for (auto &b : bindings_)
+        if (b.resolved && b.addr && b.kind == "func")
+            out.emplace_back(uint32_t(image().rva(b.addr)), b.id);
+    std::sort(out.begin(), out.end());
+    return out;
+}
+
 void BindingSet::log_loaded(const json::Value &doc) const
 {
     size_t anchored = 0, durable = 0, legacy = 0, unresolvable = 0;

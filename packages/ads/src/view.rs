@@ -12,6 +12,8 @@ use std::time::{Duration, Instant};
 use wry::dpi::{PhysicalPosition, PhysicalSize};
 use wry::{NewWindowResponse, PageLoadEvent, Rect, WebContext, WebViewBuilder};
 
+use crate::Consent;
+
 pub use wry;
 
 /// A standard Chrome user agent for WebKitGTK, whose own reads as Safari on
@@ -35,12 +37,14 @@ pub fn rect(x: i32, y: i32, width: u32, height: u32) -> Rect {
 /// frame leaves `home`'s origin, so the owner can load `home` again: WebKitGTK
 /// asks the same navigation question for iframes, so on Linux a navigation
 /// can't be refused up front without refusing the ads themselves.
+/// `consent` hears what the consent page reports.
 pub fn builder<'a>(
     context: &'a mut WebContext,
     home: &str,
     bounds: Rect,
     background: [u8; 3],
     strayed: Rc<Cell<bool>>,
+    consent: impl Fn(Consent) + 'static,
 ) -> WebViewBuilder<'a> {
     let last = Cell::new(None::<Instant>);
     let [r, g, b] = background;
@@ -50,6 +54,10 @@ pub fn builder<'a>(
         .with_initialization_script_for_main_only(CLICKS, false)
         .with_ipc_handler(move |request| {
             let url = request.body();
+            if let Some(state) = Consent::from_page(url) {
+                consent(state);
+                return;
+            }
             if !crate::openable(url) {
                 return;
             }

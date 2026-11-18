@@ -1,4 +1,5 @@
 #include "core/guards/guard.hpp"
+#include "core/guards/memory.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -63,26 +64,18 @@ bool push_offered = false;
 guards::LogFirst<ts::LOG_FIRST> skipped{"skips"};
 guards::LogFirst<ts::LOG_FIRST> push_skipped{"skips"};
 
-bool read_memory(uint64_t address, void *out, size_t n, void *)
-{
-    if (!swofty::mem::readable(address, n))
-        return false;
-    memcpy(out, reinterpret_cast<const void *>(address), n);
-    return true;
-}
-
 void child_step(SwoftyContext *c)
 {
     ts::Child child;
     ts::Position at;
     {
         swofty::mem::Trust trust(runtime::HEAP_TRUST_MS);
-        child = ts::check_child(c->r15, read_memory, nullptr);
+        child = ts::check_child(c->r15, guards::read_if_readable, nullptr);
         if (child == ts::Child::Usable)
             return;
         uint64_t widget = 0, begin = 0;
-        if (read_memory(c->rsp + ts::WIDGET_AT_RSP, &widget, sizeof widget, nullptr) && ts::user_pointer(widget) &&
-            read_memory(widget + ts::CHILDREN_BEGIN_AT, &begin, sizeof begin, nullptr))
+        if (guards::read_if_readable(c->rsp + ts::WIDGET_AT_RSP, &widget, sizeof widget, nullptr) && ts::user_pointer(widget) &&
+            guards::read_if_readable(widget + ts::CHILDREN_BEGIN_AT, &begin, sizeof begin, nullptr))
             at = ts::position(c->r15, c->r12, begin);
     }
     c->rip = next_child;
@@ -108,12 +101,12 @@ void push_child_selection(void *widget, void *child)
     uint64_t vtable = 0;
     {
         swofty::mem::Trust trust(runtime::HEAP_TRUST_MS);
-        list = ts::check_tile(w, read_memory, nullptr);
-        tile = list == ts::Child::Usable ? ts::check_tile(t, read_memory, nullptr) : ts::Child::Usable;
+        list = ts::check_tile(w, guards::read_if_readable, nullptr);
+        tile = list == ts::Child::Usable ? ts::check_tile(t, guards::read_if_readable, nullptr) : ts::Child::Usable;
         if (list != ts::Child::Usable || tile != ts::Child::Usable) {
-            at = ts::find_child(w, t, read_memory, nullptr);
+            at = ts::find_child(w, t, guards::read_if_readable, nullptr);
             if (ts::user_pointer(t))
-                read_memory(t, &vtable, sizeof vtable, nullptr);
+                guards::read_if_readable(t, &vtable, sizeof vtable, nullptr);
         }
     }
     if (list == ts::Child::Usable && tile == ts::Child::Usable) {

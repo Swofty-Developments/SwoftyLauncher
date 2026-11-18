@@ -397,7 +397,7 @@ impl Addon for Rewriter {
     }
 }
 
-fn reuse_fixture(name: &str) -> (std::path::PathBuf, Store, Game) {
+pub(super) fn reuse_fixture(name: &str) -> (std::path::PathBuf, Store, Game) {
     use swofty_formats::gvdb::Record;
     let root = std::env::temp_dir().join(format!("swofty-build-{name}-{}", std::process::id()));
     std::fs::remove_dir_all(&root).ok();

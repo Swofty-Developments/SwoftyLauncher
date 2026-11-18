@@ -4,9 +4,11 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 
+#include "core/diagnostics/crash/dred_logic.hpp"
 #include "core/render/exec_plan.hpp"
 
 #include <string>
+#include <vector>
 
 // The core's one set of D3D12 / DXGI hooks. Features subscribe instead of hooking the same entry points
 // themselves. Subscribe before arming; callbacks run on the game's thread inside the hooked call.
@@ -57,6 +59,10 @@ bool arm_swapchain();
 bool arm_device();
 bool arm_srv_clamp();
 bool arm_rtas_guard();
+
+// The newest ray tracing builds, for a crash report, led by the build each unfinished command list stopped on;
+// empty before the game builds any.
+std::string rtas_recent_text(const std::vector<runtime::dred::BuildStop> &stops);
 
 // While one is alive, every probe that reads vtables (arm_device, arm_swapchain, arm_list_state, arm_srv_clamp,
 // arm_rtas_guard) shares one throwaway device: creating a D3D12 device takes about half a second on the main

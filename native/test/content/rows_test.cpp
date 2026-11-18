@@ -713,6 +713,8 @@ int main(int argc, char **argv)
     if (argc > 1)
         twelve_team_tests(argv[1]);
     if (argc > 1)
+        short_list_tests(argv[1]);
+    if (argc > 1)
         stock_only_tests(argv[1]);
     if (argc > 1)
         twelve_slot_tests(argv[1]);

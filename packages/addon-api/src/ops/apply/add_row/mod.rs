@@ -1,4 +1,5 @@
 mod stat_id;
+mod unlock;
 
 use std::collections::BTreeMap;
 
@@ -6,13 +7,14 @@ use swofty_formats::gvdb::{Record, instance_count_path};
 use swofty_formats::hash::fnv1a64;
 
 use self::stat_id::{StatIdPicker, added_holder};
+use self::unlock::{UnlockRow, unlock_stat_id};
 use crate::ops::apply::walk::{Walk, walk};
 use crate::ops::apply::{AddedRow, Cx};
 use crate::ops::db_ops::{CopyMode, StatIdMode};
 use crate::ops::field_names::{FieldNames, row_shape};
 use crate::ops::game_db::Db;
 use crate::ops::resolve::{Base, Row, resolve_path, resolve_row};
-use crate::ops::stat_ids::{MovedStatId, stat_id_ceiling, stat_id_field, virtual_lists};
+use crate::ops::stat_ids::{MovedStatId, stat_id_ceiling, stat_id_field, unlock_list, virtual_lists};
 use crate::{Error, Result};
 
 pub fn add_row_name<'a>(table: &str, from: &'a str) -> Option<&'a str> {
@@ -183,7 +185,9 @@ pub(crate) fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddR
     let stat_key = dst.field("stat_id");
     let indexed = || db.stat_ids(names, &path, row, n).indexed();
     let top_level = row_shape(&dst_path).matches("_N").count() == 1;
+    let unlock = unlock_list(&path);
     let fresh = match (stat_id, set.contains_key("stat_id")) {
+        _ if unlock.is_some() => false,
         (_, true) | (Some(StatIdMode::Keep), _) => false,
         (Some(StatIdMode::Fresh), false) => true,
         (None, false) => {
@@ -243,7 +247,7 @@ pub(crate) fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddR
             format!("is above {}, the highest the game reads", c.max),
         )),
         // Stock scenarios share statId 14, but the core keeps an id pool for them.
-        (Some(old), _) if top_level && (field != "stat_id" || indexed()) => {
+        (Some(old), _) if top_level && unlock.is_none() && (field != "stat_id" || indexed()) => {
             added_holder(db, names, &path, row, n, old)
                 .map(|holder| {
                     let label = db.text(fnv1a64(format!("{holder}._metadata_")));
@@ -284,6 +288,19 @@ pub(crate) fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddR
             holder_label,
             record,
         });
+    }
+    if let Some(list) = unlock {
+        let unlock_row = UnlockRow {
+            list,
+            folder: &path,
+            kind: row,
+            dst: &dst,
+            dst_path: &dst_path,
+            what: &what,
+            set,
+            stat_id,
+        };
+        unlock_stat_id(db, names, cx, &unlock_row, &mut rows)?;
     }
     cx.report
         .lines

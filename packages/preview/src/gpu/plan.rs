@@ -294,11 +294,11 @@ fn pass_uniforms(
 pub(super) struct Plan {
     pub(super) current: Picture,
     pub(super) uniform_writes: Vec<(u64, [u32; UNIFORM_DWORDS])>,
-    pub(super) bind_groups: Vec<(usize, usize, wgpu::BindGroup, u32, u32)>,
-    pub(super) steps: Vec<Step>,
+    bind_groups: Vec<(usize, usize, wgpu::BindGroup, u32, u32)>,
+    steps: Vec<Step>,
 }
 
-pub(super) enum Step {
+enum Step {
     Mips(usize, String),
     Shadow(usize, String),
     Pass(usize),

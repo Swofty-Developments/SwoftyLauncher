@@ -129,9 +129,9 @@ Every row above carries an id (`statId`, `id`, `sponsor_id`). Saved liveries sto
 
 - **Never reuse an id another addon uses.** Two addons that each took "highest stock id + 1" gave the same `DecalSet.id` to Pirelli and Toyota. The game then showed one addon's decal in place of the other's.
 - **Never change an id once the addon is in use**, or placed decals turn into other decals in saved careers.
-- Unlock-item `statId`s must be unique within each unlock list (`unlockable_item_list_<n>`, across all its folders), not just within one folder.
+- Unlock-item `statId`s must be unique within each unlock list (`unlockable_item_list_<n>`, across all its folders), not just within one folder. Leave `statId` out of the unlock rows' `add-row` (rows 4 and 5): the launcher gives each one a free id, the same at every build, and moves a `statId` you set that the game or an addon earlier in the load order already holds ([Unlock items](/reference/ops/database#unlock-items)). An addon that already ships unlock `statId`s can keep them; leaving them out in an update gives those rows a new id once.
 
-Until the launcher allocates these ids, keep each addon's ids fixed once it ships, and pick new ones that avoid both the game's ids and those of every installed addon. The [sponsor registry proposal](/design/sponsor-registry) moves that job into the core.
+The launcher doesn't allocate the other ids (`DecalSet.id`, the sponsor's and the reward's `statId`, `sponsor_id`) yet. Keep each addon's ids fixed once it ships, and pick new ones that avoid both the game's ids and those of every installed addon. The [sponsor registry proposal](/design/sponsor-registry) moves that job into the core.
 
 ## Clone every field
 

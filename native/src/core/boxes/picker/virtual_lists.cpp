@@ -137,7 +137,7 @@ void narrow(void *mode, const char *list)
             return;
         if (!row.empty() && filled.host != hit) {
             bool ok = fill_virtual(hit, row);
-            if (virtual_lists.logged_virtual++ < LOG_FIRST)
+            if (virtual_lists.virtual_lines.note())
                 swofty::log("[era] %s pressed: virtual list %s %s %s", list, row.c_str(),
                             ok ? "read into" : "could not be read into", VIRTUAL_HOST);
             if (!ok)
@@ -157,7 +157,7 @@ void narrow(void *mode, const char *list)
         memcpy(n.lists, lists, size_t(count) * sizeof(void *));
         lists[0] = hit;
         ref<int64_t>(setup, LIST_COUNT) = 1;
-        if (picker.logged_narrow++ < LOG_FIRST)
+        if (picker.lines.narrow.note())
             swofty::log("[era] %s offers only %s (of %lld lists)", logic::HOST, list, (long long)count);
     });
     apply_drs(mode, list);

@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use crate::asset::Op;
 pub use crate::asset::{Features, Kind};
-use crate::ops::{MovedStatId, stat_id_ceiling};
+use crate::ops::{MovedStatId, stat_id_ceiling, unlock_list};
 
 /// The build warning for `n` removals of stock records that addon `name` asked for.
 pub fn stock_removals_line(name: &str, n: usize) -> String {
@@ -45,6 +45,12 @@ pub fn moved_stat_id_line(addon: &str, holder: Option<&str>, m: &MovedStatId) ->
     let field = m.field;
     let advice = match field {
         "stat_id" => "leave stat_id out of add-row",
+        _ if stat_row(&m.row)
+            .rsplit_once('.')
+            .is_some_and(|(t, _)| unlock_list(t).is_some()) =>
+        {
+            "leave statId out of add-row"
+        }
         _ => "give the row a statId no other addon uses",
     };
     format!(

@@ -102,7 +102,7 @@ void vehicles_entry(void *module)
     uintptr_t within = logic::vehicles_end_within_table(begin, end);
     if (within == end)
         return vehicle_guard.orig(module);
-    if (vehicle_guard.logged++ < LOG_FIRST)
+    if (vehicle_guard.lines.note())
         swofty::log("[era] the session holds %zu vehicles and its vehicle table %zu; setting up the first %zu (the "
                     "session's %s)",
                     logic::session_vehicles(begin, end), logic::TT_TABLE, logic::TT_TABLE,
@@ -139,7 +139,7 @@ bool keep_time_trial_lists(void *mode)
                 std::find(time_trial_guard.kept_out.begin(), time_trial_guard.kept_out.end(), info[i].name) != time_trial_guard.kept_out.end())
                 continue;
             time_trial_guard.kept_out.push_back(info[i].name);
-            if (time_trial_guard.logged_kept++ < LOG_FIRST * 4)
+            if (time_trial_guard.kept_lines.note())
                 swofty::log("[era] %s keeps %s out of Time Trial while a stock box is picked: it holds %lld cars; Time "
                             "Trial holds at most %zu (the game adds %zu cars of its own to a table of %zu)%s",
                             logic::HOST, info[i].name.c_str(), (long long)info[i].cars, logic::TT_MAX_CARS,
