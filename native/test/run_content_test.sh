@@ -20,6 +20,7 @@ python3 content/check_logo_build.py content/bc7 "$OUT/logo_out"
 "$OUT/vehicle_tower_test"
 "$OUT/package_id_test"
 "$OUT/id_pool_test"
+"$OUT/box_world_test"
 "$OUT/wear_test" ../../packages/sdk/std/registries
 python3 content/check_lowering.py "$OUT/lower_tool"
 python3 content/check_wide_default.py "$OUT/lower_tool"
