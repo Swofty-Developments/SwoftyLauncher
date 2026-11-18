@@ -16229,8 +16229,17 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    #[deprecated(
+        since = "1.10.0",
+        note = "deprecated in 1.10.0, removed in the next release: renamed: every caller sets a UIDBRef weak object reference through it and the compare is object identity, not a numeric S64 compare; use Ne_Property_SetUIDBRefIfChanged"
+    )]
     pub const Ne_Property_SetS64IfChanged: Binding = Binding {
         id: "Ne_Property_SetS64IfChanged",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Property_SetUIDBRefIfChanged: Binding = Binding {
+        id: "Ne_Property_SetUIDBRefIfChanged",
         kind: "func",
         status: Status::Experimental,
     };

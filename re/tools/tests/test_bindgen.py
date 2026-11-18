@@ -409,6 +409,67 @@ class ExportDrops(unittest.TestCase):
         self.assertEqual(rust.count(f'#[deprecated(since = "1.10.0", note = "{text}")]'), 2)
 
 
+class RenamedBindings(unittest.TestCase):
+    KEY = ('func', 'Sess_Old')
+    ROWS = [vrow('2026-10-30', 'func', '0x140001000', 'agree', 'V1'),
+            vrow('2026-11-18', 'func', 'retired:Sess_Old', 'partial', 'V4'),
+            vrow('2026-11-19', 'func', 'Sess_New', 'agree', 'V5')]
+
+    def gate(self, drops, rows=None):
+        return bindgen.Gate(rows=self.ROWS if rows is None else rows, exceptions={}, baseline={}, drops=drops)
+
+    def aliases(self, gate, bindings, funcs=({'name': 'Sess_New'},)):
+        skipped = []
+        return bindgen.aliases(gate, list(funcs), [], bindings, skipped.append), skipped
+
+    def test_the_old_name_exports_as_a_deprecated_alias_of_its_replacement(self):
+        e = drop(replacement='Sess_New')
+        g = self.gate({self.KEY: e})
+        new = binding('Sess_New', proto='void *Sess_New(void *a, int b)')
+        out, skipped = self.aliases(g, [new])
+        self.assertEqual(skipped, [])
+        self.assertEqual(out, [dict(new, id='Sess_Old', proto='void *Sess_Old(void *a, int b)', alias='Sess_New',
+                                    evidence='deprecated:V4', deprecated=bindgen.drop_doc(e))])
+        self.assertEqual(g.deprecated, {self.KEY: e})
+
+    def test_the_entry_must_cover_the_newest_retired_row(self):
+        for rows, e in ((self.ROWS, drop(replacement='Sess_New', covers='V3')),
+                        (self.ROWS + [vrow('2026-11-20', 'func', 'retired:Sess_Old', 'partial', 'V6')],
+                         drop(replacement='Sess_New')),
+                        (self.ROWS[:1], drop(replacement='Sess_New'))):
+            g = self.gate({self.KEY: e}, rows)
+            out, skipped = self.aliases(g, [binding('Sess_New')])
+            self.assertEqual((out, g.deprecated, g.dropped), ([], {}, {}))
+            self.assertEqual(len(skipped), 1)
+
+    def test_no_alias_without_an_exported_replacement_of_the_same_kind(self):
+        for e, bindings in ((drop(replacement='Sess_New'), []), (drop(), [binding('Sess_New')]),
+                            (drop(replacement='Sess_New'), [binding('Sess_New', kind='data')])):
+            g = self.gate({self.KEY: e})
+            out, skipped = self.aliases(g, bindings)
+            self.assertEqual((out, g.deprecated), ([], {}))
+            self.assertEqual(len(skipped), 1)
+
+    def test_a_dropped_old_name_is_listed_and_not_exported(self):
+        e = drop('dropped', since='1.10.1', deprecated='1.10.0', replacement='Sess_New')
+        g = self.gate({self.KEY: e})
+        out, _ = self.aliases(g, [binding('Sess_New')])
+        self.assertEqual((out, g.dropped), ([], {self.KEY: e}))
+
+    def test_an_entry_over_a_record_is_left_to_the_record(self):
+        g = self.gate({('func', 'Sess_New'): drop()})
+        self.assertEqual(self.aliases(g, [binding('Sess_New')]), ([], []))
+
+    def test_an_alias_takes_its_replacements_overlay_entries(self):
+        alias = binding('Sess_Old', alias='Sess_New', deprecated=bindgen.drop_doc(drop(replacement='Sess_New')))
+        o = overlay('b' * 64, 2, hints={'Sess_New': {'match': '0x2000'}}, unresolvable={'Sess_New': 'gone'})
+        doc = bindgen.build_set(o, [binding('Sess_New'), alias], False)
+        a, n = doc['bindings'][1], doc['bindings'][0]
+        self.assertNotIn('alias', a)
+        self.assertEqual((a['match'], a['status'], a['reason']), (n['match'], 'unresolvable', 'gone'))
+        self.assertEqual(bindgen.unknown_ids(o, [binding('Sess_New'), alias]), [])
+
+
 class StructLevels(unittest.TestCase):
     def test_field_and_struct_rows_claim_the_struct_files_levels(self):
         import kb_lint

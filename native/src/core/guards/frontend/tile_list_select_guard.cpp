@@ -23,7 +23,7 @@
 // data-context type. A child with no component array faults reading 0 at F1_25.exe+0x3838fe8 (fn + 0x258).
 // Choose Driver hits it on the F2 drivers tab: the tile list respawns its tiles, raises children_triggered (0x20f2f60a),
 // and the view model's slot-10 handler (0x141a5df70 + 0xa4, EA 0x141a58460) sets selected_driver (vm + 0x298) to
-// drivers[vm + 0x430] through Ne_Property_SetS64IfChanged, which runs the walk while one of the tiles has no components.
+// drivers[vm + 0x430] through Ne_Property_SetUIDBRefIfChanged, which runs the walk while one of the tiles has no components.
 // Eight reports, Steam and EA, with More Driver Models, Driver Manager, Progressive's cards or the Classic Seasons wizard.
 //
 // site_Game_TileListSelect_ChildStep is the head of the walk (mov rdi,[r15]; mov r14,[rdi+0x30]), r15 the cursor into

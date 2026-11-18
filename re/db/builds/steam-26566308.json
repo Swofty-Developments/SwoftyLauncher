@@ -7341,7 +7341,7 @@
   "Ne_Property_SetS32IfChanged": {
    "match": "0x972e30"
   },
-  "Ne_Property_SetS64IfChanged": {
+  "Ne_Property_SetUIDBRefIfChanged": {
    "match": "0x977b70"
   },
   "Ne_PtrList_RemoveLocked": {
