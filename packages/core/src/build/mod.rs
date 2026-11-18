@@ -130,6 +130,14 @@ struct Pipeline<'a, 'p> {
     packer: swofty_formats::erp::Packer,
 }
 
+impl Pipeline<'_, '_> {
+    /// The build's packer compressing as it goes, for the archives written straight to disk instead of
+    /// through the archive build.
+    fn eager_packer(&self) -> swofty_formats::erp::Packer {
+        self.packer.clone().deferring(false)
+    }
+}
+
 /// A `checking` build gives addon build hooks a host that lists addons but
 /// cannot install, remove, turn on or move them.
 pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool) -> Result<Built> {

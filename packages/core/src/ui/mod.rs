@@ -18,7 +18,7 @@ pub mod rows;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::{Path, PathBuf};
 
-use swofty_formats::erp::{Entry, ErpFile, Resource};
+use swofty_formats::erp::{Entry, ErpFile, Packer, Resource};
 use swofty_formats::pkg::Node;
 
 use crate::addons::builtin::CORE_ID;
@@ -98,9 +98,9 @@ fn read_frag(path: &Path, name: &str, index: usize) -> Result<Vec<u8>> {
         .data()?)
 }
 
-fn write_erp(src: &Path, dst: &Path, patches: Vec<(&str, Patch)>) -> Result<()> {
+fn write_erp(src: &Path, dst: &Path, patches: Vec<(&str, Patch)>, packer: &Packer) -> Result<()> {
     let patches = patches.into_iter().map(|(name, f)| (name, 0, f)).collect();
-    write_archive(src, dst, patches, Vec::new())
+    write_archive(src, dst, patches, Vec::new(), packer)
 }
 
 type Added = (String, &'static str, Vec<Vec<u8>>);
@@ -110,8 +110,9 @@ fn write_archive(
     dst: &Path,
     patches: Vec<(&str, usize, Patch)>,
     added: Vec<Added>,
+    packer: &Packer,
 ) -> Result<()> {
-    write_archive_copying(src, dst, patches, added, Vec::new())
+    write_archive_copying(src, dst, patches, added, Vec::new(), packer)
 }
 
 /// [`write_archive`], also appending `copied`, resources of another archive kept byte for byte, under names `src`
@@ -122,6 +123,7 @@ fn write_archive_copying(
     patches: Vec<(&str, usize, Patch)>,
     added: Vec<Added>,
     copied: Vec<Resource>,
+    packer: &Packer,
 ) -> Result<()> {
     let file = ErpFile::open(src)?;
     if let Some(r) = copied
@@ -141,8 +143,8 @@ fn write_archive_copying(
             .get(index)
             .ok_or_else(|| err(format!("{name} has no fragment {index}")))?;
         let data = f(&frag.data()?)?;
-        res.set_fragment(index, &data)?;
-        res.repair_stats()?;
+        res.set_fragment_with(packer, index, &data)?;
+        res.repair_stats_with(packer)?;
         owned.insert(name.to_owned(), res);
     }
     let mut extra = Vec::new();
@@ -159,7 +161,7 @@ fn write_archive_copying(
                     src.display()
                 ))
             })?;
-        let res = Resource::like(&name, like, &data)?;
+        let res = Resource::like_with(packer, &name, like, &data)?;
         match file.erp.resources.iter().any(|r| r.name == name) {
             true => {
                 owned.insert(name, res);
@@ -283,6 +285,7 @@ pub fn build(
     writer: &Writer,
     out: &Path,
     lang: bool,
+    packer: &Packer,
 ) -> Result<MenuBuild> {
     let flow_options = input(&ui_file("flow_options.erp"));
     let flow_frontend = input(&ui_file("flow_frontend.erp"));
@@ -520,6 +523,7 @@ pub fn build(
                 vec![rows::row_scene(&read_frag(&flow_options, rows::O_BLOCK, 0)?)?],
             ),
         ],
+        packer,
     )?;
     for s in &setups {
         for id in [
@@ -573,6 +577,7 @@ pub fn build(
             (UI_DATA, Box::new(move |d| patch::ui_data(d, state))),
             (OVERRIDES, Box::new(icons::overrides)),
         ],
+        packer,
     )?;
     let (src_f, dst_f) = erp("flow_persistent.erp");
     write_erp(
@@ -596,6 +601,7 @@ pub fn build(
                 }),
             ),
         ],
+        packer,
     )?;
     let (src_h, dst_h) = erp("flow_frontend.erp");
     let (mut career_lines, mut career_warnings) = (Vec::new(), Vec::new());
@@ -639,13 +645,14 @@ pub fn build(
             Box::new(move |_| Ok(templates)),
         ));
     }
-    write_archive(&src_h, &dst_h, frontend, Vec::new())?;
+    write_archive(&src_h, &dst_h, frontend, Vec::new(), packer)?;
 
     let (src_l, dst_l) = erp(LEADERBOARD_ARCHIVE);
     write_erp(
         &src_l,
         &dst_l,
         vec![(LEADERBOARD_UI, Box::new(patch::leaderboard_glyphs))],
+        packer,
     )?;
 
     let (src_c, dst_c) = erp(home_rows::PLAYERCARD_ARCHIVE);
@@ -661,6 +668,7 @@ pub fn build(
             }),
         )],
         Vec::new(),
+        packer,
     )?;
 
     let mut build = MenuBuild::default();
@@ -716,6 +724,7 @@ pub fn build(
                 &src,
                 &dst,
                 vec![(mfd::TEMPLATES, Box::new(|d| mfd::templates(d, &rows)))],
+                packer,
             )?;
             build.erps.insert(ui_file(rel), dst);
         }
@@ -732,7 +741,7 @@ pub fn build(
         ));
     }
     let mut eras = if season_picker_split(settings) {
-        era_rows(input, writer, out, &mut build.lines, &mut build.warnings)?
+        era_rows(input, writer, out, &mut build.lines, &mut build.warnings, packer)?
     } else {
         build.lines.push(
             "ui: the season picker keeps the game's single row (SwoftyMod's Split the season picker is off)"
@@ -740,7 +749,15 @@ pub fn build(
         );
         Vec::new()
     };
-    for rel in car_category_boxes(input, writer, out, &eras, &mut build.lines, &mut build.warnings)? {
+    for rel in car_category_boxes(
+        input,
+        writer,
+        out,
+        &eras,
+        &mut build.lines,
+        &mut build.warnings,
+        packer,
+    )? {
         if !eras.contains(&rel) {
             eras.push(rel);
         }
@@ -752,6 +769,7 @@ pub fn build(
         out,
         &mut build.lines,
         &mut build.warnings,
+        packer,
     )?;
     if lang {
         build.strings = popup.strings();
@@ -912,6 +930,7 @@ fn hub_tabs(
     out: &Path,
     lines: &mut Vec<String>,
     warnings: &mut Vec<String>,
+    packer: &Packer,
 ) -> Result<Vec<&'static str>> {
     let mut pages = Vec::new();
     for m in settings.addons.iter().filter(|m| m.enabled) {
@@ -982,6 +1001,7 @@ fn hub_tabs(
             vec![(hub::UI, hub::UI_FRAGMENT, Box::new(move |_| Ok(ui)))],
             Vec::new(),
             plan.add,
+            packer,
         )?;
         written.push(rel);
     }
@@ -1020,6 +1040,7 @@ fn era_rows(
     out: &Path,
     lines: &mut Vec<String>,
     warnings: &mut Vec<String>,
+    packer: &Packer,
 ) -> Result<Vec<&'static str>> {
     let world = input(&ui_file(era::ARCHIVES[0]));
     let title = read_frag(&world, era::TITLE_SCENE, 0)?;
@@ -1078,6 +1099,7 @@ fn era_rows(
                 (era::SCENE, 0, Box::new(move |_| Ok(scene))),
             ],
             added.clone(),
+            packer,
         )?;
         written.push(rel);
     }
@@ -1116,6 +1138,7 @@ fn car_category_boxes(
     eras: &[&'static str],
     lines: &mut Vec<String>,
     warnings: &mut Vec<String>,
+    packer: &Packer,
 ) -> Result<Vec<&'static str>> {
     let mut written = Vec::new();
     for rel in car_category::ARCHIVES {
@@ -1168,6 +1191,7 @@ fn car_category_boxes(
                 (car_category::SCENE, 0, Box::new(move |_| Ok(scene))),
             ],
             Vec::new(),
+            packer,
         )?;
         swofty_formats::erp::replace(&tmp, &dst).map_err(io_err(&dst))?;
         written.push(rel);
@@ -1203,6 +1227,58 @@ fn car_category_boxes(
 mod tests {
 
     #[test]
+    fn a_second_menu_build_takes_its_frames_from_the_cache() {
+        use crate::erp::pack::frame_cache;
+        use swofty_formats::erp::{Erp, HEADER_LEN, MAGIC};
+        let dir = std::env::temp_dir().join(format!("swofty-ui-frames-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(&dir).unwrap();
+        let screen: Vec<u8> = (0..24u32 << 10)
+            .map(|i| (i % 251) as u8 ^ (i / 1021) as u8)
+            .collect();
+        let added: Vec<u8> = screen.iter().rev().copied().collect();
+        let mut header = [0u8; HEADER_LEN];
+        header[..4].copy_from_slice(MAGIC);
+        header[4..8].copy_from_slice(&3u32.to_le_bytes());
+        let src = dir.join("src.erp");
+        let ui = "eaid://ui_package/screens/a.ui";
+        let archive = Erp {
+            header,
+            version: 3,
+            resources: vec![frame_cache::zstd_resource(ui, "UIDF", &screen)],
+        }
+        .to_bytes()
+        .unwrap();
+        std::fs::write(&src, archive).unwrap();
+        let packer = Packer::cached(dir.join("zstd"));
+        let write = |dst: &Path| {
+            let patch: Patch = Box::new(|d: &[u8]| Ok([d, b"edited"].concat()));
+            let new = (
+                "eaid://ui_package/screens/b.ui".to_owned(),
+                "UIDF",
+                vec![added.clone()],
+            );
+            write_archive(&src, dst, vec![(ui, 0, patch)], vec![new], &packer).unwrap();
+            std::fs::read(dst).unwrap()
+        };
+        let first = write(&dir.join("first/a.erp"));
+        assert_eq!(frame_cache::marked_in(&first), 0);
+        assert_eq!(frame_cache::mark(&dir.join("zstd")), 2);
+        let second = write(&dir.join("second/a.erp"));
+        assert_eq!(frame_cache::marked_in(&second), 2);
+        let data = |bytes: &[u8]| -> Vec<Vec<u8>> {
+            let erp = Erp::parse(bytes).unwrap();
+            erp.resources
+                .iter()
+                .map(|r| r.fragments[0].data().unwrap())
+                .collect()
+        };
+        assert_eq!(data(&second), data(&first));
+        assert_eq!(data(&first), [[&screen[..], b"edited"].concat(), added]);
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
     #[ignore = "needs SWOFTY_STOCK_GAME, a stock F1 25 folder"]
     fn the_car_category_screen_gets_its_addon_boxes_within_the_loader_rules() {
         let stock = std::path::PathBuf::from(std::env::var_os("SWOFTY_STOCK_GAME").expect("set"));
@@ -1210,7 +1286,16 @@ mod tests {
         std::fs::remove_dir_all(&out).ok();
         let input = |rel: &str| stock.join(rel);
         let (mut lines, mut warnings) = (Vec::new(), Vec::new());
-        let written = car_category_boxes(&input, &|_, _| None, &out, &[], &mut lines, &mut warnings).unwrap();
+        let written = car_category_boxes(
+            &input,
+            &|_, _| None,
+            &out,
+            &[],
+            &mut lines,
+            &mut warnings,
+            &Packer::default(),
+        )
+        .unwrap();
         assert_eq!(written, car_category::ARCHIVES, "{warnings:?}");
         assert!(warnings.is_empty(), "{warnings:?}");
         for rel in car_category::ARCHIVES {
@@ -1236,6 +1321,7 @@ mod tests {
             &[],
             &mut Vec::new(),
             &mut Vec::new(),
+            &Packer::default(),
         )
         .unwrap();
         assert!(again.is_empty(), "boxes are added once");
@@ -1267,6 +1353,7 @@ mod tests {
                 ),
             ],
             Vec::new(),
+            &Packer::default(),
         )
         .unwrap();
         let name = ui_file(career_select::ARCHIVE);
@@ -1304,6 +1391,7 @@ mod tests {
                 ),
             ],
             Vec::new(),
+            &Packer::default(),
         )
         .unwrap();
         let name = ui_file(home_rows::ARCHIVE);
@@ -1329,6 +1417,7 @@ mod tests {
             &dst,
             vec![(home_rows::PLAYERCARD, 0, Box::new(move |_| Ok(out)))],
             Vec::new(),
+            &Packer::default(),
         )
         .unwrap();
         let name = ui_file(home_rows::PLAYERCARD_ARCHIVE);
@@ -1363,6 +1452,7 @@ mod tests {
                 (FLOWS, 0, Box::new(move |_| Ok(flows_out))),
             ],
             Vec::new(),
+            &Packer::default(),
         )
         .unwrap();
         let name = ui_file("persistent.erp");
@@ -1467,6 +1557,7 @@ mod tests {
             &dst,
             vec![(FRONTEND_TRANSITION, 0, Box::new(move |_| Ok(out)))],
             Vec::new(),
+            &Packer::default(),
         )
         .unwrap();
         let name = ui_file("flow_frontend.erp");
@@ -1612,7 +1703,7 @@ mod tests {
         let settings = setup_settings();
         let out = std::env::temp_dir().join(format!("swofty-career-setup-{}", std::process::id()));
         std::fs::remove_dir_all(&out).ok();
-        let built = build(&settings, &input, &|_, _| None, &out, false).unwrap();
+        let built = build(&settings, &input, &|_, _| None, &out, false, &Packer::default()).unwrap();
         assert!(
             built
                 .screens
@@ -1727,7 +1818,15 @@ mod tests {
         }
         assert!(after[&home]["back"].contains("AutoFocus"));
 
-        let stock_built = build(&setup_settings_without(), &input, &|_, _| None, &out, false).unwrap();
+        let stock_built = build(
+            &setup_settings_without(),
+            &input,
+            &|_, _| None,
+            &out,
+            false,
+            &Packer::default(),
+        )
+        .unwrap();
         assert!(!stock_built.lines.iter().any(|l| l.contains("career setup")));
         assert_eq!(
             read_frag(&src_p, WIZARD_ROUTES, 0).unwrap(),
@@ -1757,7 +1856,16 @@ mod tests {
         let out = std::env::temp_dir().join(format!("swofty-hub-tab-{}", std::process::id()));
         std::fs::remove_dir_all(&out).ok();
         let (mut lines, mut warnings) = (Vec::new(), Vec::new());
-        let written = hub_tabs(&settings, &input, &|_, _| None, &out, &mut lines, &mut warnings).unwrap();
+        let written = hub_tabs(
+            &settings,
+            &input,
+            &|_, _| None,
+            &out,
+            &mut lines,
+            &mut warnings,
+            &Packer::default(),
+        )
+        .unwrap();
         assert_eq!(written, hub::ARCHIVES);
         assert!(warnings.is_empty(), "{warnings:?}");
         assert_eq!(lines.len(), 3, "{lines:?}");
@@ -1946,6 +2054,7 @@ mod tests {
             &out,
             &mut Vec::new(),
             &mut Vec::new(),
+            &Packer::default(),
         )
         .unwrap();
         assert!(none.is_empty());
@@ -2046,7 +2155,15 @@ mod tests {
         let out = root.join("out");
         let from_mod = |_: &str, res: &str| (res == era::UI).then(|| MOD.to_owned());
         let (mut lines, mut warnings) = (Vec::new(), Vec::new());
-        let written = era_rows(&input, &from_mod, &out, &mut lines, &mut warnings).unwrap();
+        let written = era_rows(
+            &input,
+            &from_mod,
+            &out,
+            &mut lines,
+            &mut warnings,
+            &Packer::default(),
+        )
+        .unwrap();
         assert!(written.is_empty());
         assert!(!out.exists(), "nothing is written");
         assert!(lines.is_empty(), "{lines:?}");
@@ -2064,14 +2181,30 @@ mod tests {
         }
 
         let stock = |_: &str, _: &str| None;
-        let e = era_rows(&input, &stock, &out, &mut Vec::new(), &mut Vec::new()).unwrap_err();
+        let e = era_rows(
+            &input,
+            &stock,
+            &out,
+            &mut Vec::new(),
+            &mut Vec::new(),
+            &Packer::default(),
+        )
+        .unwrap_err();
         assert!(e.to_string().contains(&why), "{e}");
 
         let world_only = |erp: &str, res: &str| {
             (erp.ends_with(era::ARCHIVES[0]) && res == era::UI).then(|| MOD.to_owned())
         };
         let mut warnings = Vec::new();
-        let e = era_rows(&input, &world_only, &out, &mut Vec::new(), &mut warnings).unwrap_err();
+        let e = era_rows(
+            &input,
+            &world_only,
+            &out,
+            &mut Vec::new(),
+            &mut warnings,
+            &Packer::default(),
+        )
+        .unwrap_err();
         assert!(e.to_string().contains(&why), "{e}");
         assert_eq!(warnings.len(), 1, "{warnings:?}");
         assert!(warnings[0].contains(era::ARCHIVES[0]), "{warnings:?}");
@@ -2090,7 +2223,15 @@ mod tests {
         let out = root.join("out");
         let from_mod = |_: &str, _: &str| Some(MOD.to_owned());
         let mut warnings = Vec::new();
-        let written = era_rows(&input, &from_mod, &out, &mut Vec::new(), &mut warnings).unwrap();
+        let written = era_rows(
+            &input,
+            &from_mod,
+            &out,
+            &mut Vec::new(),
+            &mut warnings,
+            &Packer::default(),
+        )
+        .unwrap();
         assert!(written.is_empty());
         assert_eq!(warnings.len(), 2, "{warnings:?}");
         assert!(
@@ -2098,7 +2239,15 @@ mod tests {
             "{warnings:?}"
         );
         let stock = |_: &str, _: &str| None;
-        let e = era_rows(&input, &stock, &out, &mut Vec::new(), &mut Vec::new()).unwrap_err();
+        let e = era_rows(
+            &input,
+            &stock,
+            &out,
+            &mut Vec::new(),
+            &mut Vec::new(),
+            &Packer::default(),
+        )
+        .unwrap_err();
         assert!(e.to_string().contains("time_trial_select not found"), "{e}");
         std::fs::remove_dir_all(&root).ok();
     }
@@ -2125,6 +2274,7 @@ mod tests {
             &root.join("out"),
             &mut Vec::new(),
             &mut warnings,
+            &Packer::default(),
         )
         .unwrap_err();
         assert!(e.to_string().contains(era::SCENE), "{e}");

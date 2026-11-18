@@ -113,6 +113,7 @@ impl Pipeline<'_, '_> {
         let grid = grid_size(&db.db);
         let worlds = layer_worlds(&db.db);
         self.write_database(db, staged, &row_adders, inputs.room_asked)?;
+        let packer = self.eager_packer();
         fitted.place(
             self.run,
             &worlds,
@@ -120,6 +121,7 @@ impl Pipeline<'_, '_> {
             &mut self.planner,
             &mut self.built,
             &mut self.caches,
+            &packer,
         )?;
         Ok(edits)
     }

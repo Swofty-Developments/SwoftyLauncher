@@ -143,6 +143,7 @@ impl Pipeline<'_, '_> {
     fn compose_hud(&mut self, inputs: &Inputs, bases: &Bases, erp_ops: &[Op]) -> Result<Vec<Op>> {
         let run = self.run;
         let (store, game) = (run.store, run.game);
+        let packer = self.eager_packer();
         let Self { built, session, .. } = self;
         let hud_inputs = &inputs.hud_inputs;
         let stock = crate::hud::GameStock::with_baseline(&game.dir, &store.root)
@@ -165,6 +166,7 @@ impl Pipeline<'_, '_> {
                 baseline: &resolve,
                 puts: &put_names,
                 name: &name,
+                packer: &packer,
             },
             erp_ops,
             hud_inputs,
@@ -322,11 +324,12 @@ impl Pipeline<'_, '_> {
     ) -> Result<()> {
         let run = self.run;
         let name = |origin: &str| run.origin_name(origin);
+        let packer = self.packer.clone();
         let Self { planner, built, .. } = self;
         built.warnings.extend(erps.wheel_warnings());
         if !ers_maps.is_empty() {
             let edited = erps.edit_written(|rel, r| match ers::in_teams(rel) && r.kind() == "VTF" {
-                true => ers::edit_vtf(r, ers_maps),
+                true => ers::edit_vtf(r, ers_maps, &packer),
                 false => Ok(None),
             })?;
             if edited > 0 {
