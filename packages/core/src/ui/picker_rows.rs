@@ -14,6 +14,9 @@ use crate::{Error, Result};
 /// A fragment an edit rewrites: its resource, its index and the bytes it gets.
 type Edit = (&'static str, usize, Vec<u8>);
 
+/// The fragments an edit rewrites, by archive.
+type Edits = Vec<(&'static str, Vec<Edit>)>;
+
 /// The era picker's Built In and Addons rows, while `split` (SwoftyMod's Split the season picker) is on, and the
 /// Car Category screen's addon boxes, with the archives they wrote. The two edit different resources, so each archive
 /// is written once, from `input`, with the edits of both.
@@ -139,7 +142,7 @@ fn era_edits(
     writer: &Writer,
     lines: &mut Vec<String>,
     warnings: &mut Vec<String>,
-) -> Result<(Vec<(&'static str, Vec<Edit>)>, Vec<Added>)> {
+) -> Result<(Edits, Vec<Added>)> {
     let world = input(&ui_file(era::ARCHIVES[0]));
     let title = read_frag(&world, era::TITLE_SCENE, 0)?;
     let mut added = Vec::new();
@@ -202,7 +205,7 @@ fn car_category_edits(
     writer: &Writer,
     lines: &mut Vec<String>,
     warnings: &mut Vec<String>,
-) -> Vec<(&'static str, Vec<Edit>)> {
+) -> Edits {
     let mut edits = Vec::new();
     for rel in car_category::ARCHIVES {
         let src = input(&ui_file(rel));
@@ -272,29 +275,33 @@ fn check_rows(
         }
         ui
     };
-    let views: [(&[&'static str], &dyn Fn(&&'static str) -> ArchiveUi, &str); 2] = [
-        (eras, &era_view, "the era picker rows"),
-        (cars, &|rel| edited[rel].clone(), "the Car Category addon boxes"),
-    ];
-    for (rels, view, what) in views {
-        if rels.is_empty() {
-            continue;
-        }
-        let after: Vec<ArchiveUi> = rels.iter().map(view).collect();
-        let before: Vec<ArchiveUi> = rels.iter().map(|rel| stock[rel].clone()).collect();
-        let report = check::archives(
-            &after,
-            &before,
-            crate::ui::catalog::stock(),
-            crate::ui::catalog::engine(),
-        )?;
-        if !report.hard.is_empty() {
-            let found: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
-            return Err(Error::Other(format!(
-                "{what} break the game's UI loader rules: {}",
-                found.join("; ")
-            )));
-        }
+    let before =
+        |rels: &[&'static str]| -> Vec<ArchiveUi> { rels.iter().map(|rel| stock[rel].clone()).collect() };
+    if !eras.is_empty() {
+        let after: Vec<ArchiveUi> = eras.iter().map(era_view).collect();
+        loader_rules(&after, &before(eras), "the era picker rows")?;
+    }
+    if !cars.is_empty() {
+        let after: Vec<ArchiveUi> = cars.iter().map(|rel| edited[rel].clone()).collect();
+        loader_rules(&after, &before(cars), "the Car Category addon boxes")?;
     }
     Ok(())
+}
+
+/// Fails with the rules `after` breaks, which `what` made of `before`.
+fn loader_rules(after: &[ArchiveUi], before: &[ArchiveUi], what: &str) -> Result<()> {
+    let report = check::archives(
+        after,
+        before,
+        crate::ui::catalog::stock(),
+        crate::ui::catalog::engine(),
+    )?;
+    if report.hard.is_empty() {
+        return Ok(());
+    }
+    let found: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
+    Err(Error::Other(format!(
+        "{what} break the game's UI loader rules: {}",
+        found.join("; ")
+    )))
 }
