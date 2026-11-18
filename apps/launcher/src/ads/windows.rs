@@ -2,7 +2,7 @@
 //! sits over its rectangle. A child window can't be used: GPUI draws through a
 //! topmost DirectComposition target, which covers child windows.
 
-use super::{Area, Unit};
+use super::{Area, Skip, Unit};
 use gpui_kit::Window;
 use raw_window_handle::{HandleError, HasWindowHandle, RawWindowHandle, Win32WindowHandle, WindowHandle};
 use std::cell::{Cell, RefCell};
@@ -69,20 +69,21 @@ pub(super) struct View {
 }
 
 impl Backend {
-    pub(super) fn start(window: &Window, data: &Path) -> Option<Self> {
-        let RawWindowHandle::Win32(handle) = HasWindowHandle::window_handle(window).ok()?.as_raw() else {
-            return None;
+    pub(super) fn start(window: &Window, data: &Path) -> Result<Self, Skip> {
+        let handle = HasWindowHandle::window_handle(window).map_err(|_| Skip::Quiet)?;
+        let RawWindowHandle::Win32(handle) = handle.as_raw() else {
+            return Err(Skip::Quiet);
         };
         if let Err(e) = wry::webview_version() {
             crate::app_log::note(&format!("no ad slots: WebView2 isn't available: {e}"));
-            return None;
+            return Err(Skip::Quiet);
         }
         let data = data.join("ads");
         if let Err(e) = profile(&data) {
             crate::app_log::note(&format!("no ad slots: {e:#}"));
-            return None;
+            return Err(Skip::Unwritable);
         }
-        Some(Self {
+        Ok(Self {
             owner: handle.hwnd.get(),
             data,
             views: HashMap::new(),

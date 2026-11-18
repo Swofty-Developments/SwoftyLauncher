@@ -15,6 +15,9 @@ use std::path::Path;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 use swofty_ads::Consent;
+use swofty_i18n::tr;
+
+use crate::notices::Notification;
 
 /// How long the game runs before the slots close. A game that stops sooner,
 /// such as one that crashes as it starts, leaves them as they were.
@@ -80,6 +83,34 @@ impl Unit {
             Self::Consent => size(px(680.), px(420.)),
         }
     }
+}
+
+/// Why a backend shows no slots.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Skip {
+    /// Nothing the player can change: no WebView2, no X11 window, no helper.
+    Quiet,
+    /// The folder the slots keep their profile in can't be written.
+    Unwritable,
+}
+
+/// What the player is told when the slots were skipped: only that Windows
+/// won't let the launcher write their profile folder.
+fn notice(skip: Skip, windows: bool) -> Option<Notification> {
+    if !windows || skip != Skip::Unwritable {
+        return None;
+    }
+    Some(
+        Notification::warning(tr(
+            "The launcher can't write its ad folder. Close it and open it again as administrator.",
+        ))
+        .title(tr("Ad folder can't be written"))
+        .autohide(false)
+        .action(
+            tr("Restart as administrator"),
+            crate::admin_needed::restart_elevated,
+        ),
+    )
 }
 
 /// A slot's rectangle in physical pixels inside the window.
@@ -207,6 +238,7 @@ impl Host {
 #[derive(Default)]
 pub(crate) struct Ads {
     host: Option<Rc<RefCell<Host>>>,
+    notice: Option<Notification>,
 }
 
 impl Ads {
@@ -215,8 +247,14 @@ impl Ads {
         let Some(base) = base_url() else {
             return Self::default();
         };
-        let Some(backend) = Backend::start(window, data) else {
-            return Self::default();
+        let backend = match Backend::start(window, data) {
+            Ok(backend) => backend,
+            Err(skip) => {
+                return Self {
+                    host: None,
+                    notice: notice(skip, cfg!(windows)),
+                };
+            }
         };
         crate::app_log::step("ad slots ready");
         let host = Rc::new(RefCell::new(Host {
@@ -229,7 +267,15 @@ impl Ads {
             game_since: None,
             consent: None,
         }));
-        Self { host: Some(host) }
+        Self {
+            host: Some(host),
+            notice: None,
+        }
+    }
+
+    /// What to tell the player about the slots, once.
+    pub(crate) fn take_notice(&mut self) -> Option<Notification> {
+        self.notice.take()
     }
 
     /// Off while paused, so pages lay out as if there were no ads.
@@ -462,7 +508,8 @@ fn rgb_of(colour: Hsla) -> [u8; 3] {
 
 #[cfg(test)]
 mod tests {
-    use super::{Area, inside, rgb_of, writable};
+    use super::{Ads, Area, Skip, inside, notice, rgb_of, writable};
+    use crate::notices::Kind;
     use gpui_kit::{Bounds, Rgba, point, px, size};
 
     #[test]
@@ -526,6 +573,23 @@ mod tests {
             assert!(child.is_err());
             assert!(itself.is_err());
         }
+    }
+
+    #[test]
+    fn only_an_unwritable_profile_on_windows_is_told_and_only_once() {
+        assert!(notice(Skip::Quiet, true).is_none());
+        assert!(notice(Skip::Unwritable, false).is_none());
+        let told = notice(Skip::Unwritable, true).unwrap();
+        assert_eq!(told.kind, Kind::Warning);
+        assert!(told.sticky);
+        assert!(told.message.contains("administrator"));
+        let mut ads = Ads {
+            host: None,
+            notice: Some(told),
+        };
+        assert!(ads.take_notice().is_some());
+        assert!(ads.take_notice().is_none());
+        assert!(Ads::default().take_notice().is_none());
     }
 
     #[test]
