@@ -98,7 +98,11 @@ impl Harness<'_> {
                 std::fs::remove_dir_all(&d).map_err(|e| format!("{}: {e}", d.display()))?;
             }
         }
-        let copied = f.install(&run.remote(), &|id| addon_storage::profile_dir(data, id, profile))?;
+        let storage = |id: &str| addon_storage::profile_dir(data, id, profile);
+        let copied = match sandbox::ea_copy(self.game) {
+            true => f.install_ea(&run.ea_title(), &storage)?,
+            false => f.install(&run.remote(), &storage)?,
+        };
         let installed = self.store.addons().map_err(|e| e.to_string())?;
         let addons: BTreeMap<String, String> = b
             .addons
@@ -169,7 +173,12 @@ impl Harness<'_> {
             let changed = sandbox::changed(before, &sandbox::listing(dir));
             if !changed.is_empty() {
                 why = Some(format!(
-                    "THE PLAYER'S STEAM SAVE FOLDER CHANGED during a sandboxed run ({}): {}",
+                    "THE PLAYER'S {} SAVE FOLDER CHANGED during a sandboxed run ({}): {}",
+                    if sandbox::ea_copy(self.game) {
+                        "EA"
+                    } else {
+                        "STEAM"
+                    },
                     dir.display(),
                     changed.join(", ")
                 ));

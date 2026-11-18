@@ -227,6 +227,14 @@ pub fn load(dir: &Path) -> Result<Fixture, String> {
     })
 }
 
+/// The EA layout's name for a save file of the Steam layout:
+/// `savegame@<save>#<file>` is `<save>/<file>` in the EA title folder.
+pub fn ea_name(steam: &str) -> Option<String> {
+    let (save, file) = steam.strip_prefix("savegame@")?.split_once('#')?;
+    let plain = |s: &str| !s.is_empty() && !s.starts_with('.') && !s.contains(['/', '\\', '#', ':']);
+    (plain(save) && plain(file)).then(|| format!("{save}/{file}"))
+}
+
 fn copy(from: &Path, to: &Path) -> Result<(), String> {
     if let Some(d) = to.parent() {
         std::fs::create_dir_all(d).map_err(|e| format!("{}: {e}", d.display()))?;
@@ -257,15 +265,32 @@ impl Fixture {
     /// addon's storage into the folder `storage(id)` names. Returns what was
     /// copied, for the report.
     pub fn install(&self, remote: &Path, storage: &dyn Fn(&str) -> PathBuf) -> Result<Vec<String>, String> {
-        let stray: Vec<String> = std::fs::read_dir(remote)
-            .map_err(|e| format!("{}: {e}", remote.display()))?
-            .flatten()
-            .map(|e| e.file_name().to_string_lossy().into_owned())
-            .collect();
+        self.install_into(remote, &|name| Ok(name.to_owned()), storage)
+    }
+
+    /// [`Self::install`] for the EA copy: the save files go into the run's
+    /// empty EA title folder by their EA names ([`ea_name`]).
+    pub fn install_ea(&self, title: &Path, storage: &dyn Fn(&str) -> PathBuf) -> Result<Vec<String>, String> {
+        self.install_into(
+            title,
+            &|name| ea_name(name).ok_or_else(|| format!("{name} has no name in the EA save layout")),
+            storage,
+        )
+    }
+
+    fn install_into(
+        &self,
+        saves: &Path,
+        name_of: &dyn Fn(&str) -> Result<String, String>,
+        storage: &dyn Fn(&str) -> PathBuf,
+    ) -> Result<Vec<String>, String> {
+        let mut stray = Vec::new();
+        let name = saves.file_name().unwrap_or_default().to_string_lossy();
+        files_under(saves.parent().unwrap_or(saves), &name, &mut stray)?;
         if !stray.is_empty() {
             return Err(format!(
                 "the sandbox {} is not empty: {}",
-                remote.display(),
+                saves.display(),
                 stray.join(", ")
             ));
         }
@@ -273,7 +298,7 @@ impl Fixture {
         for rel in self.manifest.files.keys() {
             let from = self.dir.join(rel);
             if let Some(name) = rel.strip_prefix(&format!("{SAVE_DIR}/")) {
-                copy(&from, &remote.join(name))?;
+                copy(&from, &saves.join(name_of(name)?))?;
             } else if let Some(rest) = rel.strip_prefix(&format!("{STORAGE_DIR}/")) {
                 let (id, file) = rest
                     .split_once('/')

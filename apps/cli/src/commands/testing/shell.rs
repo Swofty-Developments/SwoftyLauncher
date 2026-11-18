@@ -113,8 +113,8 @@ fn shell_session(store: &Store, game: &Path, a: &ShellArgs, run_id: &str) -> Res
     };
     let live_saves = exe_sha
         .as_ref()
-        .and_then(|_| swofty_core::platform::steam::find_game())
-        .and_then(|i| swofty_core::platform::steam::save_dir(&i.steam_root));
+        .and_then(|_| swofty_core::install::Game::locate(&store.root, game.to_path_buf()).ok())
+        .and_then(|g| sandbox::live_saves(&g));
     let launch_json = store.root.join("state/launch.json");
     let saved = std::fs::read(&launch_json).ok();
     let profile = format!("test-{run_id}");
