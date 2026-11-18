@@ -1,13 +1,15 @@
 #pragma once
 
 #include <algorithm>
+#include <cstdarg>
 #include <cstdint>
 #include <cstdio>
 #include <string>
 #include <vector>
 
-// Formatting and aggregation for the once-a-minute [perf] lines in loader.log (perf.cpp): VirtualQuery calls made from
-// swofty modules, the process's CPU use and the busiest probes with their call rates.
+// Formatting and aggregation for the [perf] lines in loader.log (perf.cpp): the profiler's state at attach, slow calls,
+// hitches, and once a minute the frames, VirtualQuery calls made from swofty modules, the process's CPU use and the
+// busiest probes with their call rates.
 
 namespace perf::logic {
 
@@ -58,6 +60,20 @@ inline std::string grouped(uint64_t n)
             out += ',';
         out += d[i];
     }
+    return out;
+}
+
+[[gnu::format(printf, 1, 2)]] inline std::string printf_line(const char *f, ...)
+{
+    va_list ap, again;
+    va_start(ap, f);
+    va_copy(again, ap);
+    int n = std::vsnprintf(nullptr, 0, f, ap);
+    va_end(ap);
+    std::string out(n > 0 ? size_t(n) : 0, '\0');
+    if (n > 0)
+        std::vsnprintf(out.data(), out.size() + 1, f, again);
+    va_end(again);
     return out;
 }
 
@@ -209,6 +225,80 @@ inline std::string busiest(std::vector<Busy> v, double secs, size_t n)
         out += (out.empty() ? "" : ", ") + v[i].what + " " + fmt("%.3f ms/s", secs > 0 ? v[i].ms / secs : 0) + " " +
                fmt("%.1f calls/s", secs > 0 ? double(v[i].calls) / secs : 0);
     return out;
+}
+
+inline std::string profiler_off_line(bool frame_index)
+{
+    return printf_line("[perf] profiler off (SWOFTY_PROFILE=0); frames from %s",
+                       frame_index ? "the game's frame index" : "the flow-state ticks");
+}
+
+inline std::string profiler_on_line(double mhz, double hitch_ms, double slow_call_ms, bool frame_index, unsigned report_secs)
+{
+    return printf_line("[perf] profiler on:%.0f MHz timestamp counter, hitches over %.0f ms, slow calls over %.0f ms, frames "
+                       "from %s; report in swofty\\perf.log every %u s",
+                       mhz, hitch_ms, slow_call_ms,
+                       frame_index ? "the game's frame index (Streamline frame tokens)"
+                                   : "the flow-state ticks (no Streamline import)",
+                       report_secs);
+}
+
+inline std::string vq_core_line(int slots, bool thread_starts_tracked)
+{
+    return printf_line("[perf] VirtualQuery accounting on in core (%d import slot(s)); thread starts %s", slots,
+                       thread_starts_tracked ? "tracked through _beginthreadex" : "from start addresses only");
+}
+
+inline std::string vq_modules_line(const std::string &added)
+{
+    return printf_line("[perf] VirtualQuery accounting on in %s; import slot(s) in brackets", added.c_str());
+}
+
+// The n-th slow call of a probe (from 0) is logged when it is one of the first five or every 100th after.
+inline bool slow_call_logged(uint32_t n)
+{
+    return n < 5 || n % 100 == 0;
+}
+
+inline std::string slow_call_line(const std::string &owner, const std::string &what, double ms, bool background,
+                                  unsigned long thread, const std::string &during, uint32_t n)
+{
+    return printf_line("[perf] slow call: %s %s took %.1f ms on %sthread %lu during \"%s\"%s", owner.c_str(), what.c_str(), ms,
+                       background ? "background " : "", thread, during.c_str(),
+                       n == 4 ? " (further ones are logged every 100th)" : "");
+}
+
+// A hitch is logged (outside SWOFTY_PERF=1) when swofty took at least 1 ms or a tenth of the frame.
+inline bool heavy_hitch(double ms, double swofty_ms)
+{
+    return swofty_ms >= 1.0 || swofty_ms >= ms * 0.1;
+}
+
+inline std::string hitch_line(double ms, const std::string &during, double swofty_ms, const std::string &top)
+{
+    return printf_line("[perf] hitch: %.0f ms frame during \"%s\"; swofty %.2f ms in it%s%s%s", ms, during.c_str(), swofty_ms,
+                       top.empty() ? "" : " (", top.c_str(), top.empty() ? "" : ")");
+}
+
+// One minute of frames: the frame time median and 99th percentile from the histogram, swofty's time on the game threads,
+// the busiest probes and the worst single call (worst names its probe, empty when no call was timed).
+struct FrameMinute {
+    double secs = 0;
+    uint64_t frames = 0;
+    double p50 = 0, p99 = 0;
+    uint32_t over50 = 0;
+    double swofty_ms = 0, worst_ms = 0;
+    std::string busiest, worst;
+};
+
+inline std::string frame_line(const FrameMinute &m)
+{
+    return printf_line("[perf] last %.0f s: %llu frame(s) (%.0f fps, p99 %.1f ms, %u over 50 ms); swofty %.3f ms/s on game "
+                       "threads%s%s%s; worst call %.2f ms%s%s%s",
+                       m.secs, (unsigned long long)m.frames, m.p50 > 0 ? 1000 / m.p50 : 0, m.p99, m.over50,
+                       m.secs > 0 ? m.swofty_ms / m.secs : 0, m.busiest.empty() ? "" : " (", m.busiest.c_str(),
+                       m.busiest.empty() ? "" : ")", m.worst_ms, m.worst.empty() ? "" : " (", m.worst.c_str(),
+                       m.worst.empty() ? "" : ")");
 }
 
 inline size_t site_slot(uintptr_t at, unsigned bits)

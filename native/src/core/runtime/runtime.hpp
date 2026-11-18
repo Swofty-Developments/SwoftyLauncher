@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "core/boxes/era/box.hpp"
 #include "core/runtime/build.hpp"
 #include "core/runtime/files.hpp"
 #include "core/runtime/hashing.hpp"
@@ -71,6 +72,8 @@ const SwoftyCharacters *characters_table();
 const SwoftyCareerWizard *wizard_table();
 void lang_override_setup();
 const json::Value &sdk();
+// Ends the addon asset registrations; false when they were already closed.
+bool close_asset_registrations();
 void ready();
 void assets_setup();
 void resources_setup();
@@ -138,6 +141,8 @@ void entitlements_tick();
 void entitlements_flow(uint32_t hash, uint32_t to);
 void hub_tick();
 const SwoftyEra *era_table();
+// The era boxes the addons registered, in picker order.
+std::vector<era::Box> era_boxes();
 const SwoftyRegistry *registry_table();
 int registry_write_reports();
 swofty_core::registry::Store &older_store();

@@ -10,9 +10,6 @@
 
 #include <mutex>
 
-bool settings_state(const std::string &addon, const std::string &option, size_t &current, std::vector<std::string> *texts,
-                    std::vector<std::string> *commands, std::vector<std::string> *values);
-
 namespace {
 
 namespace reg = swofty_core::registry;

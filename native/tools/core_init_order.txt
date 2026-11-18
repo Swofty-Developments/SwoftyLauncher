@@ -63,6 +63,7 @@ units
   src/core/diagnostics/log_csv.cpp  exit
   src/core/runtime/sdk.cpp  exit
   src/core/diagnostics/perf.cpp  exit
+  src/core/diagnostics/perf/vq.cpp  exit
   src/core/assets/lang_override.cpp  exit
   src/core/career/characters.cpp  exit
   src/core/career/career_wizard.cpp  init exit

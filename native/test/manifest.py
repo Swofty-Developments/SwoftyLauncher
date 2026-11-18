@@ -141,6 +141,7 @@ UNITS = [
     Unit('track_record', 'Round track record guard unit test'),
     Unit('build_proof', 'Per-build proof gates unit test'),
     Unit('mixin_gate', 'Core mixin set gate and commit lines unit test'),
+    Unit('picker_log_caps', 'Era picker log caps unit test'),
     Unit('tt_loaded', 'Time Trial loaded list board and team label unit test'),
     Unit('tyre_models', 'Tyre model check unit test'),
     Unit('tyre_slots', 'Tyre slot guard unit test'),
