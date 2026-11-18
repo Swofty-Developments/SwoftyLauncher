@@ -5,11 +5,15 @@
 #include "core/apply/scheduler.hpp"
 #include "core/registry/table.hpp"
 
+#include <chrono>
+#include <condition_variable>
 #include <cstdio>
 #include <fstream>
 #include <map>
+#include <mutex>
 #include <sstream>
 #include <string>
+#include <thread>
 #include <tuple>
 #include <vector>
 
@@ -744,6 +748,235 @@ void test_file_route_boot()
     ap::clear_appliers();
 }
 
+struct Gate {
+    std::mutex mu;
+    std::condition_variable cv;
+    bool entered = false, open = false;
+
+    void enter()
+    {
+        std::unique_lock l(mu);
+        entered = true;
+        cv.notify_all();
+        cv.wait_for(l, std::chrono::seconds(10), [&] { return open; });
+    }
+    bool wait_entered()
+    {
+        std::unique_lock l(mu);
+        return cv.wait_for(l, std::chrono::seconds(10), [&] { return entered; });
+    }
+    void release()
+    {
+        {
+            std::lock_guard l(mu);
+            open = true;
+        }
+        cv.notify_all();
+    }
+};
+
+struct ReadKeys : ap::Applier {
+    std::string name;
+    bool may = true;
+    Gate *gate = nullptr;
+    std::thread::id counted_on;
+    int counted = 0, forgot = 0;
+
+    explicit ReadKeys(std::string n) : name(std::move(n)) {}
+    const char *registry() const override { return name.c_str(); }
+    reg::Applies applies() const override { return reg::Applies::boot; }
+    bool counts_off_thread() const override { return true; }
+    bool may_count(reg::Store &) override { return may; }
+    void forget_count() override { forgot++; }
+    std::size_t database_keys(reg::Store &st) override
+    {
+        counted_on = std::this_thread::get_id();
+        counted++;
+        if (gate)
+            gate->enter();
+        std::size_t n = 0;
+        for (auto &id : st.list(name, "")) {
+            reg::Record r = st.get(name, id);
+            if (r.status == reg::Status::ok && r.value["keys"].is_int())
+                n += std::size_t(r.value["keys"].as_int());
+        }
+        return n;
+    }
+};
+
+struct WriteKeys : ap::Applier {
+    std::string name;
+    std::size_t keys;
+    std::thread::id counted_on;
+
+    WriteKeys(std::string n, std::size_t k) : name(std::move(n)), keys(k) {}
+    const char *registry() const override { return name.c_str(); }
+    reg::Applies applies() const override { return reg::Applies::boot; }
+    std::size_t database_keys(reg::Store &st) override
+    {
+        counted_on = std::this_thread::get_id();
+        st.add_base(name, "made_while_counting", Value::object({{"keys", Value(0)}}));
+        return keys;
+    }
+};
+
+reg::Store &plan_store(bool layer)
+{
+    reg::reset_store();
+    reg::Store &st = reg::store();
+    st.set_order({"mod.a", "mod.b"});
+    declare(st, "t.rows", reg::Applies::boot);
+    declare(st, "t.made", reg::Applies::boot);
+    std::string id;
+    st.add("mod.a", "t.rows", "x", Value::object({{"keys", Value(5)}}), &id);
+    st.add("mod.b", "t.rows", "y", Value::object({{"keys", Value(7)}}), &id);
+    if (layer) {
+        reg::LayerSpec L;
+        L.addon = "mod.b";
+        L.registry = "t.rows";
+        L.id = "mod.a/x";
+        L.change.patch = Value::object({{"keys", Value(50)}});
+        uint32_t handle = 0;
+        st.layer(L, &handle);
+    }
+    st.end_register();
+    return st;
+}
+
+std::vector<std::string> plan_lines()
+{
+    std::vector<std::string> out;
+    for (auto &l : logs)
+        if (l.rfind("[apply] t.", 0) == 0 || l.rfind("[apply] boot plan:", 0) == 0)
+            out.push_back(l);
+    return out;
+}
+
+void test_plan_off_thread()
+{
+    std::thread::id main = std::this_thread::get_id();
+
+    reg::Store &a = plan_store(false);
+    ap::clear_appliers();
+    ap::make<ReadKeys>("t.rows");
+    ap::make<WriteKeys>("t.made", 2);
+    ap::Scheduler on(a);
+    on.set_log([](const std::string &l) { logs.push_back(l); });
+    logs.clear();
+    std::size_t here = on.plan_boot();
+    std::vector<std::string> here_lines = plan_lines();
+    bool here_work = on.boot_work();
+
+    reg::Store &b = plan_store(false);
+    ap::clear_appliers();
+    auto &rows = ap::make<ReadKeys>("t.rows");
+    auto &made = ap::make<WriteKeys>("t.made", 2);
+    Gate gate;
+    rows.gate = &gate;
+    ap::Scheduler off(b);
+    off.set_log([](const std::string &l) { logs.push_back(l); });
+    logs.clear();
+    off.start_plan(true);
+    check(gate.wait_entered() && made.counted_on == main && rows.counted_on != main,
+          "the applier that writes the store counts on the calling thread; the read-only one counts on a worker");
+    check(off.boot_may_work() && plan_lines().empty(),
+          "while the worker counts, the hook test already says the boot has work, and no plan line is logged yet");
+    gate.release();
+    std::size_t there = off.planned_keys();
+    check(there == here && here == 14 && off.boot_work() == here_work,
+          "the plan counted off the thread sums to what the plan on one thread counts (" + std::to_string(here) + ")");
+    check(plan_lines() == here_lines, "and it logs the same plan lines in the same order: " + joined(plan_lines()));
+    check(logged("ms: boot plan count off the thread (1)") && logged("ms: boot plan wait for the count off the thread") &&
+              logged("ms: boot plan counts on this thread (1)") && logged("ms: boot plan prepare (2)"),
+          "step lines for the prepare, the counts on this thread, the worker and the wait");
+    check(rows.counted == 1 && rows.forgot == 0 && !logged("counted again"), "an unchanged store is not counted again");
+
+    reg::Store &c = plan_store(true);
+    ap::clear_appliers();
+    auto &guarded = ap::make<ReadKeys>("t.rows");
+    ap::make<WriteKeys>("t.made", 0);
+    Gate held;
+    guarded.gate = &held;
+    ap::Scheduler moved(c);
+    moved.set_log([](const std::string &l) { logs.push_back(l); });
+    logs.clear();
+    moved.start_plan(true);
+    bool in_count = held.wait_entered();
+    int cleared = c.clear_layer("mod.b", "t.rows", "mod.a/x", reg::Scope::global);
+    held.release();
+    std::size_t recounted = moved.planned_keys();
+    check(in_count && cleared == SWOFTY_ASSET_OK && recounted == 12 && guarded.forgot == 1 && guarded.counted == 2 &&
+              guarded.counted_on == main &&
+              logged("[apply] boot plan: the registry changed after the count off the thread started; counted again on "
+                     "this thread"),
+          "a store write while the worker counts (a clear_layer after the register pass) is seen at the wait: the plan is "
+          "counted again on the waiting thread, over the changed store (" + std::to_string(recounted) + ")");
+
+    reg::reset_store();
+    reg::Store &bare = reg::store();
+    declare(bare, "t.rows", reg::Applies::boot);
+    declare(bare, "t.made", reg::Applies::boot);
+    bare.end_register();
+    ap::clear_appliers();
+    auto &none = ap::make<ReadKeys>("t.rows");
+    none.may = false;
+    ap::make<WriteKeys>("t.made", 0);
+    ap::Scheduler idle(bare);
+    idle.set_log([](const std::string &l) { logs.push_back(l); });
+    logs.clear();
+    idle.start_plan(true);
+    check(!idle.boot_may_work() && none.counted == 1 && none.counted_on == main && !idle.boot_work() &&
+              logged("ms: boot plan counts on this thread, none can count a key (1)"),
+          "with no addon content and no applier that may count a key, the hook test says no boot work, and nothing "
+          "counts on a worker");
+
+    reg::reset_store();
+    reg::Store &older = reg::store();
+    declare(older, "t.rows", reg::Applies::boot);
+    declare(older, "t.made", reg::Applies::boot);
+    older.end_register();
+    ap::clear_appliers();
+    auto &quiet = ap::make<ReadKeys>("t.rows");
+    quiet.may = false;
+    ap::make<WriteKeys>("t.made", 3);
+    ap::Scheduler counted(older);
+    counted.start_plan(true);
+    check(counted.boot_may_work() && counted.boot_work() && counted.planned_keys() == 3 && quiet.counted_on == main,
+          "keys counted on this thread with no addon content (the tracks made for 1.5 in older-tracks.json) make the "
+          "hook test say boot work");
+
+    reg::reset_store();
+    reg::Store &stock = reg::store();
+    declare(stock, "t.rows", reg::Applies::boot);
+    declare(stock, "t.made", reg::Applies::boot);
+    stock.add_base("t.rows", "stock", Value::object({{"keys", Value(4)}}));
+    stock.end_register();
+    ap::clear_appliers();
+    auto &base = ap::make<ReadKeys>("t.rows");
+    Gate wait;
+    base.gate = &wait;
+    ap::make<WriteKeys>("t.made", 0);
+    ap::Scheduler maybe(stock);
+    maybe.start_plan(true);
+    bool counting = wait.wait_entered();
+    bool early = maybe.boot_may_work();
+    wait.release();
+    bool work = maybe.boot_work();
+    check(counting && early && work && maybe.planned_keys() == 4,
+          "an off-thread applier that may count makes the hook test say boot work before its count ends, even with no "
+          "addon content");
+
+    reg::Store &sync = plan_store(false);
+    ap::clear_appliers();
+    auto &first = ap::make<ReadKeys>("t.rows");
+    auto &second = ap::make<WriteKeys>("t.made", 2);
+    ap::Scheduler one(sync);
+    one.start_plan(false);
+    check(first.counted_on == main && second.counted_on == main && one.boot_may_work() && one.planned_keys() == 14,
+          "start_plan(false), the SWOFTY_PLAN_SYNC=1 path, counts every applier on the calling thread");
+    ap::clear_appliers();
+}
+
 int main(int argc, char **argv)
 {
     std::string dir = argc > 1 ? argv[1] : ".";
@@ -756,6 +989,7 @@ int main(int argc, char **argv)
     test_facts();
     test_stat_id_and_reports(dir);
     test_file_route_boot();
+    test_plan_off_thread();
     std::printf("apply: %d check(s), %d failure(s)\n", checks, failures);
     return failures ? 1 : 0;
 }

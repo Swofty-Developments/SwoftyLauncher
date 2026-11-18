@@ -778,8 +778,8 @@ void reserve_setup()
 void setup()
 {
     read_config();
-    swofty_core::apply::moments::boot_plan();
-    if (edits.empty() && !swofty_core::apply::moments::boot_work()) {
+    swofty_core::apply::moments::start_boot_plan();
+    if (edits.empty() && !swofty_core::apply::moments::boot_may_work()) {
         without_database("not_needed", "");
         return;
     }
