@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/14029b020.c;xref:0x14023c600,0x140278970",
-  "notes": "Builds a std::exception-like object (vtable 0x145612dd0, message 'unknown') and throws it via 0x14029b050 (no return). Callers: cutscene command runner and cutscene component inits (crew, press, in-car idle). Callers: census steam 0x29b020."
+  "notes": "std::_Throw_bad_optional_access, the cold path of std::optional::value(); the name is to become Ne_Std_ThrowBadOptionalAccess. No arguments, no return. Builds a stack std::bad_optional_access {vptr 0x145612dd0, message 'unknown'} (0x14029b024-0x14029b037); its what() 0x14029b140 returns 'Bad optional access' and ignores the message. Raises it once through Ne_Std_FatalExceptionTerminate 0x14029b050, exception::_Raise built with C++ exceptions off: the optional hook at 0x145fb8718, then _invoke_watson 0x145349d58, a fast fail. Nothing can catch it: reaching it ends the process. Callers span many subsystems (the cutscene command runner and component inits, the time trial reference board and others). Callers: census steam 0x29b020."
  },
  "signature": {
   "id": "core.std_throw_exception",
