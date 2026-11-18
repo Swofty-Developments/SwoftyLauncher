@@ -6,7 +6,7 @@
 
 #include "core/runtime/json.hpp"
 
-namespace runtime::room_cover {
+namespace hud::room_cover {
 
 constexpr uint64_t FADE_MS = 300;
 constexpr uint64_t CAP_MS = 150000;

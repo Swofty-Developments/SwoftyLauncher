@@ -457,8 +457,8 @@ void frame(double, void *)
         Ops::unlock_tick();
         Ops::racecraft_tick();
     }
-    const view::State view_now = view::current();
-    const bool in_replay = view_now.valid && (view_now.flags & view::REPLAY);
+    const frontend::view::State view_now = frontend::view::current();
+    const bool in_replay = view_now.valid && (view_now.flags & frontend::view::REPLAY);
     if (Ops::resume_due(in_replay)) {
         uint32_t n = 0;
         if (Ops::op_count(&n) == SWOFTY_ASSET_OK) {

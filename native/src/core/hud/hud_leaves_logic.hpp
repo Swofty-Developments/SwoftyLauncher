@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace runtime::hud_leaves {
+namespace hud::leaves {
 
 enum Type : uint32_t { TEXT = 0, BOOL = 1, INT = 2 };
 

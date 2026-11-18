@@ -6,7 +6,7 @@
 
 #include <cstdio>
 
-namespace hl = runtime::hud_leaves;
+namespace hl = hud::leaves;
 
 static int g_fail;
 

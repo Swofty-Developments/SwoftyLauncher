@@ -57,14 +57,14 @@
 // the recovery of a screen that did not open off; SWOFTY_MAIN_MENU_STATEFIX=0 leaves #ui_menu_data.frontend_transition_state
 // alone when leaving the container; SWOFTY_MAIN_MENU_MIGRATELOG=0 leaves the Migrate command unhooked.
 
-namespace runtime::main_menu {
+namespace frontend::main_menu {
 
 MainMenu menu;
 
 namespace {
 
 using namespace swofty::game;
-namespace logic = ::runtime::main_menu;
+namespace logic = ::frontend::main_menu;
 
 }
 
@@ -188,7 +188,7 @@ namespace runtime {
 
 bool main_menu_account(std::string &name)
 {
-    return main_menu::menu.panel.account(name);
+    return frontend::main_menu::menu.panel.account(name);
 }
 
 }

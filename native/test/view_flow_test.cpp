@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <string>
 
-using namespace view_flow;
+using namespace frontend::view_flow;
 
 static int fails;
 

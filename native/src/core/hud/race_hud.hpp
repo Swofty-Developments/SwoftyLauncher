@@ -12,7 +12,7 @@
 // The race HUD's sets and registered leaves behind the SwoftyCoreHud export (swofty/hud.hpp, swofty/hud_leaves.hpp):
 // writes into the game's hud_* view model leaves, queued from any thread and applied on the flow tick. Its toasts go
 // through the popup message system (frontend/popup.cpp).
-namespace race_hud {
+namespace hud::race_hud {
 
 struct Set {
     std::string path, text, by;
@@ -27,12 +27,12 @@ struct RaceHud {
     void read_switches();
     void tick();
 
-    // The popup message system's queue lock (popup::messages.queue_lock), which the set queue shares.
+    // The popup message system's queue lock (frontend::popup::messages.queue_lock), which the set queue shares.
     std::mutex &queue_lock;
     std::deque<Set> sets;
     std::atomic<size_t> sets_pending{0};
     std::atomic<uint32_t> sets_dropped{0};
-    runtime::hud_leaves::Table leaf_table;
+    hud::leaves::Table leaf_table;
     // The first 16 applied sets and unresolved leaves are logged, and the first leaf registration.
     std::atomic<int> sets_told{0}, leaves_told{0};
     std::atomic<bool> leaves_logged{false};

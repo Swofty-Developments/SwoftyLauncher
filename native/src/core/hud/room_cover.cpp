@@ -10,7 +10,7 @@
 #include <cmath>
 #include <mutex>
 
-namespace runtime::room_cover {
+namespace hud::room_cover {
 
 namespace {
 
@@ -156,9 +156,9 @@ bool CoverScreen::setup()
     DWORD n = GetEnvironmentVariableA("SWOFTY_DIRECT_START", env, sizeof env);
     std::string value = n && n < sizeof env ? std::string(env) : std::string(), text;
     if (value.empty())
-        text = read_file(swofty_root() + L"direct_start.json", size_t(1) << 16);
+        text = runtime::read_file(runtime::swofty_root() + L"direct_start.json", size_t(1) << 16);
     else if (value[0] == '@')
-        text = read_file(wide(value.c_str() + 1), size_t(1) << 16);
+        text = runtime::read_file(runtime::wide(value.c_str() + 1), size_t(1) << 16);
     Kind k = request_kind(value, text);
     if (k == Kind::none)
         return false;
@@ -182,10 +182,10 @@ void CoverScreen::paint(hud::Frame &f, uint64_t now)
     if (now - polled_at >= 100) {
         polled_at = now;
         if (kind == Kind::session) {
-            int sig = direct_start_cover_signal();
+            int sig = runtime::direct_start_cover_signal();
             last = sig < 0 ? Signal::failed : sig > 0 ? Signal::shown : Signal::waiting;
         } else {
-            int sig = session_host_cover_signal();
+            int sig = runtime::session_host_cover_signal();
             last = sig < 0 ? Signal::failed : sig > 0 ? Signal::shown : Signal::waiting;
         }
     }

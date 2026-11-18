@@ -383,7 +383,7 @@ void Grader::setup()
     const json::Value &st = s["strength"];
     strength = st.type == json::Value::Num ? std::clamp(float(st.n), 0.0f, 1.0f) : 1.0f;
     addon = s["addon"].str("an addon");
-    settings_path = hardware_settings::path();
+    settings_path = hud::hardware_settings::path();
     d3d12hooks::on_setname([](ID3D12Object *o, LPCWSTR name) { grader.on_setname(o, name); });
     d3d12hooks::on_barrier([](ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers) {
         return grader.on_barrier(list, n, barriers);

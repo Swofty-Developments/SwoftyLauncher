@@ -6,7 +6,7 @@
 #include <map>
 #include <mutex>
 
-namespace runtime::main_menu {
+namespace frontend::main_menu {
 
 using Add_t = void (*)(swofty::game::TileList *, uint8_t);
 using Populate_t = void (*)(swofty::game::HomeItem *, void *, uint32_t);

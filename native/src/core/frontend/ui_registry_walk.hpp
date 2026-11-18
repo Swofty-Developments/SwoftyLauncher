@@ -31,7 +31,7 @@
 // kinds are told apart by the vtable pointer alone; anything else (reference nodes, int and bool leaves, unknown classes) is
 // counted and skipped.
 
-namespace runtime::ui_registry {
+namespace frontend::ui_registry {
 
 struct Layout {
     uint64_t object_vt = 0, list_vt = 0, string_leaf_vt = 0, string_binding_vt = 0;
@@ -231,6 +231,6 @@ size_t find_string(Read &read, uint64_t registry, const Layout &lay, const std::
     return hits.size();
 }
 
-using name_hash::djb2;
+using frontend::name_hash::djb2;
 
 }

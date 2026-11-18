@@ -132,7 +132,7 @@ uintptr_t lea_target(uintptr_t insn)
     return insn + 7 + *reinterpret_cast<const int32_t *>(insn + 3);
 }
 
-using name_hash::djb2;
+using frontend::name_hash::djb2;
 
 ViewModel *owner(void *native)
 {
@@ -271,7 +271,7 @@ bool VmHost::write(void *reg, void *parent, const char *leaf, int type, const vo
 {
     switch (type) {
     case 0:
-        vm::set_string(reg, parent, leaf, static_cast<const char *>(value));
+        frontend::vm::set_string(reg, parent, leaf, static_cast<const char *>(value));
         return true;
     case 1: {
         uint8_t v = *static_cast<const int32_t *>(value) != 0;
@@ -369,7 +369,7 @@ bool VmHost::init(uintptr_t module_base, const std::wstring &swofty_dir)
     if (call && a_setint != base + 0xd38fd0)
         swofty::log("[ui] view models: Vm_Set_Int resolved to base+0x%llx (KB build has base+0xd38fd0)",
                     (unsigned long long)(a_setint - base));
-    addon_page::load(swofty_dir + L"settings.json");
+    frontend::addon_page::load(swofty_dir + L"settings.json");
     swofty::log("[ui] view models: %s (register base+0x%llx, path base+0x%llx, set_int base+0x%llx, vtables "
                 "base+0x%llx/0x%llx/0x%llx, ui system %p, %zu factory(ies), %zu addon(s) from settings.json)",
                 is_ready ? "ready" : "off", (unsigned long long)(a_regvm ? a_regvm - base : 0),
@@ -377,7 +377,7 @@ bool VmHost::init(uintptr_t module_base, const std::wstring &swofty_dir)
                 (unsigned long long)(transition_vt ? transition_vt - base : 0),
                 (unsigned long long)(helper_vt ? helper_vt - base : 0),
                 (unsigned long long)(handle_vt ? handle_vt - base : 0), static_cast<void *>(ui_system),
-                factories.size(), addon_page::count());
+                factories.size(), frontend::addon_page::count());
     return is_ready;
 }
 

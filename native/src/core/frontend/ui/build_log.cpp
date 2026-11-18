@@ -9,7 +9,7 @@
 #include "core/diagnostics/perf.hpp"
 #include "core/frontend/ui/screen_loader.hpp"
 
-namespace ui {
+namespace frontend::ui {
 
 namespace {
 

@@ -11,7 +11,7 @@
 
 #include "core/frontend/game_message_log_logic.hpp"
 
-namespace popup {
+namespace frontend::popup {
 
 struct FixedId {
     const void *vt;
@@ -76,7 +76,7 @@ struct MessageSystem {
     std::deque<Toast> toasts;
     std::atomic<bool> toast_missing{false};
     std::mutex game_messages_lock;
-    runtime::game_message_log::Seen game_messages;
+    frontend::game_message_log::Seen game_messages;
     unsigned toast_test_every = 0;
     uint64_t toast_test_next = 0;
     unsigned toast_test_count = 0;

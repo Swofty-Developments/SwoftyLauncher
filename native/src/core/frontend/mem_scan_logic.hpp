@@ -9,7 +9,7 @@
 // Pure helpers of the read-only copy scan (player_name.cpp): where a NUL-terminated name sits in a buffer, whether the bytes
 // around it are a refcounted VM string record (i16 refcount at +4, 20-bit length in the u32 at +6, characters from +9), and
 // which aligned qwords of a buffer point at one of a set of addresses.
-namespace runtime::mem_scan {
+namespace frontend::mem_scan {
 
 inline void find_all(const uint8_t *buf, size_t n, const std::string &needle, std::vector<size_t> &out, size_t cap)
 {

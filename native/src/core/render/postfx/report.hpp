@@ -31,7 +31,7 @@ public:
         unsigned runs = 0, ran = 0, live = 0;
         std::string skipped;
         ID3D12Resource *back = nullptr;
-        view::State view;
+        frontend::view::State view;
     };
 
     Stats stats;

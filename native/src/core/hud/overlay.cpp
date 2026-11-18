@@ -118,8 +118,8 @@ hud::Frame &Overlay::build_frame(const std::vector<hud::Paintsub> &subs, UINT wi
         input.frame(subs, float(width), float(height), now);
         hud::build(subs, frame, float(width), float(height), settings().off);
         input.draw_cursor(frame);
-        runtime::room_cover::paint(frame, now);
-        runtime::main_menu::paint(frame, now);
+        hud::room_cover::paint(frame, now);
+        frontend::main_menu::paint(frame, now);
         runtime::lap_host::notice_paint(frame, now);
     }
     flush_stats(now);
@@ -162,8 +162,8 @@ void Overlay::draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known
         std::lock_guard<std::mutex> g(reg_lock);
         subs = reg.subs();
     }
-    bool cover = runtime::room_cover::active();
-    bool menu = runtime::main_menu::drawing();
+    bool cover = hud::room_cover::active();
+    bool menu = frontend::main_menu::drawing();
     bool barred = runtime::lap_host::notice_drawing();
     if (menu) {
         if (!std::exchange(menu_frame_told, true))
@@ -399,8 +399,8 @@ void Overlay::setup()
     }
     capture.setup();
     bool on = settings().gate;
-    bool cover = runtime::room_cover::setup();
-    bool menu = runtime::main_menu::wants_overlay();
+    bool cover = hud::room_cover::setup();
+    bool menu = frontend::main_menu::wants_overlay();
     bool barred = runtime::lap_host::notice_wanted();
     hud::guard::ArmReasons reasons{on, capture.on, cover, menu || barred};
     if (!reasons.any()) {

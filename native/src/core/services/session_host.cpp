@@ -140,12 +140,12 @@ void api_direct_start_setup(SwoftySessionSetupFn fn, void *user)
 void api_cover_step(const char *what, float fraction, float ceiling)
 {
     if (what)
-        runtime::room_cover::step(what, fraction, ceiling);
+        hud::room_cover::step(what, fraction, ceiling);
 }
 
 int api_cover_state(char *label, size_t cap, int *percent)
 {
-    auto s = runtime::room_cover::snapshot();
+    auto s = hud::room_cover::snapshot();
     if (!s.active)
         return 0;
     copy(label, cap, s.label);

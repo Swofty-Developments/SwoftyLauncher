@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <cstring>
 
-namespace pn = runtime::player_name;
+namespace pn = frontend::player_name;
 
 static int failed = 0;
 static void expect(bool ok, const char *what)

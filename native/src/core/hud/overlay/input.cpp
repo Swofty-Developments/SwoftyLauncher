@@ -86,13 +86,13 @@ LRESULT CALLBACK Input::proc(HWND w, UINT msg, WPARAM wp, LPARAM lp)
         block = held;
         break;
     case WM_CHAR:
-        text_entry::state.chr(GetTickCount64());
+        hud::text_entry::state.chr(GetTickCount64());
         e = {Ev::chr, in.utf16.push(uint32_t(wp)), 0, 0};
         record = e.a != 0;
         block = held;
         break;
     case WM_KEYDOWN:
-        text_entry::state.key(uint32_t(wp) & 0xff, GetTickCount64());
+        hud::text_entry::state.key(uint32_t(wp) & 0xff, GetTickCount64());
         e = {Ev::key_down, uint32_t(wp) & 0xff, 0, 0};
         block = held;
         break;

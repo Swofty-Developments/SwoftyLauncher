@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <map>
 
-using namespace runtime::ui_registry;
+using namespace frontend::ui_registry;
 
 namespace {
 

@@ -512,7 +512,7 @@ void load_exit(uint8_t *state)
     bool done = runtime::title::complete_sync(state + LOAD_SYNC, "StateLoadSession's sync point (+0xcd0)");
     load_sync_done = done;
     if (done)
-        runtime::room_cover::step("Starting the session", 0.85f, 0.9f);
+        hud::room_cover::step("Starting the session", 0.85f, 0.9f);
     swofty::log("[direct] StateLoadSession exiting for %llu ms: its sync point is %s",
                 (unsigned long long)(now - load_exiting_at), done ? "complete" : "still not complete");
 }
@@ -629,7 +629,7 @@ void link_mid(safetyhook::Context &c)
         int id = testagent::session_id_of(request["session"].str());
         bool race = id >= 15 && id <= 17;
         race_session = race && request["mode"].str() != "time_trial";
-        runtime::room_cover::step(race ? "Lining up on the grid" : "Opening the garage", 0.9f, 0.97f);
+        hud::room_cover::step(race ? "Lining up on the grid" : "Opening the garage", 0.9f, 0.97f);
     }
     if (session_at.load())
         note_fade();
@@ -665,7 +665,7 @@ void link_mid(safetyhook::Context &c)
                         std::string track = request["track"].str();
                         static std::string what;
                         what = track.empty() ? "Loading the session" : "Loading " + track;
-                        runtime::room_cover::step(what.c_str(), 0.58f, 0.82f);
+                        hud::room_cover::step(what.c_str(), 0.58f, 0.82f);
                         if (request["mode"].str() != "time_trial")
                             choose_session(modes_seen.load(), "load");
                     }
@@ -1505,7 +1505,7 @@ void direct_start_profile_loaded(bool ok)
         swofty::log("[direct] the profile load failed; the start waits for the next one");
         return;
     }
-    runtime::room_cover::step("Profile loaded", 0.4f, 0.54f);
+    hud::room_cover::step("Profile loaded", 0.4f, 0.54f);
     driver.profile_loaded();
     note_phase();
 }
@@ -1521,7 +1521,7 @@ void direct_start_tick()
         ds::Setup r = set_up_target(why);
         driver.setup_result(r, why);
         if (r == ds::Setup::done && driver.target.name == "session")
-            runtime::room_cover::step("Weekend ready", 0.5f, 0.56f);
+            hud::room_cover::step("Weekend ready", 0.5f, 0.56f);
     }
     // A session keeps the virtual pad plugged in, idle: the game bound the player to it at the title, and letting
     // go of the claim would stop the session on CONTROLLER DISCONNECTED.

@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-namespace view {
+namespace frontend::view {
 
 enum class PauseEdge { none, paused, resumed };
 

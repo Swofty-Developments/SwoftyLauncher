@@ -166,7 +166,7 @@ void RuleDriver::live_frame(ULONGLONG now, const std::wstring &swofty_root)
     }
 }
 
-void RuleDriver::frame(const view::State &v, ULONGLONG now, const ActiveSpec &active, const Plan &plan,
+void RuleDriver::frame(const frontend::view::State &v, ULONGLONG now, const ActiveSpec &active, const Plan &plan,
                        std::vector<RenderPass> &passes)
 {
     if (!engine.rules())
@@ -179,12 +179,12 @@ void RuleDriver::frame(const view::State &v, ULONGLONG now, const ActiveSpec &ac
     Signals sig;
     if (v.valid && v.kind >= 1 && v.kind <= 6)
         sig.set(S_VIEW_CAMERA, v.kind - 1);
-    sig.set(S_VIEW_REPLAY, (v.flags & view::REPLAY) != 0);
-    sig.set(S_VIEW_PAUSED, (v.flags & view::PAUSED) != 0);
-    sig.set(S_VIEW_PHOTO, (v.flags & view::PHOTO) != 0);
+    sig.set(S_VIEW_REPLAY, (v.flags & frontend::view::REPLAY) != 0);
+    sig.set(S_VIEW_PAUSED, (v.flags & frontend::view::PAUSED) != 0);
+    sig.set(S_VIEW_PHOTO, (v.flags & frontend::view::PHOTO) != 0);
     sig.set(S_VIEW_MENU, !in_session.load(std::memory_order_relaxed));
-    sig.set(S_VIEW_CUTSCENE, (v.flags & view::CUTSCENE) != 0);
-    sig.set(S_VIEW_SPECTATING, (v.flags & view::SPECTATING) != 0);
+    sig.set(S_VIEW_CUTSCENE, (v.flags & frontend::view::CUTSCENE) != 0);
+    sig.set(S_VIEW_SPECTATING, (v.flags & frontend::view::SPECTATING) != 0);
     if (live_ok && reads_car) {
         const live_car::LiveCar &c = live_now;
         if (c.has_speed)
