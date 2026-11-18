@@ -13,8 +13,9 @@ use swofty_i18n::{tr, trf};
 
 use super::model::*;
 use super::state::*;
+use crate::shell::Launching;
 use crate::shell::host::Host;
-use crate::shell::{Launching, PlayHost};
+use crate::shell::host::PromptHost;
 use crate::shell::{Page, Shell};
 use crate::ui::monogram;
 use crate::ui::theme::Palette;
@@ -361,7 +362,11 @@ impl Multiplayer {
 
     /// The online page's tick: the room's launch and game watch, leaving, and the page's polls while it
     /// shows.
-    pub(super) fn tick<H: Host<Self> + PlayHost>(host: &mut H, window: &mut Window, cx: &mut Context<H>) {
+    pub(super) fn tick<H: Host<Self> + PromptHost<Launching>>(
+        host: &mut H,
+        window: &mut Window,
+        cx: &mut Context<H>,
+    ) {
         Self::launch(host, window, cx);
         let dialog = window.has_active_dialog(cx);
         let (m, needs) = <H as Host<Self>>::split(host);
@@ -451,7 +456,11 @@ impl Multiplayer {
 
     /// Starts F1 25 for the room when the session asks, the game is closed and the launcher has put the
     /// game folder back.
-    pub(super) fn launch<H: Host<Self> + PlayHost>(host: &mut H, window: &mut Window, cx: &mut Context<H>) {
+    pub(super) fn launch<H: Host<Self> + PromptHost<Launching>>(
+        host: &mut H,
+        window: &mut Window,
+        cx: &mut Context<H>,
+    ) {
         let (m, needs) = <H as Host<Self>>::split(host);
         let Some(session) = &m.session else {
             return;

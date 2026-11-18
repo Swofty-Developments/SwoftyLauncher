@@ -180,13 +180,25 @@ assert_eq!(tt.barred_in(&library.read()).len(), 1);
 
 ## A host that opens prompts
 
-Play stops on a prompt: the setup dialog, the offline terms, the missing rows, a notice. `Launching` reaches them through `PlayHost`, a `Host` that also opens prompts in the window:
+Play stops on a prompt: the setup dialog, the offline terms, the missing rows, a notice. A state whose work opens prompts names them as its `Prompt` type, and the shell opens them through `PromptHost` in `shell/host.rs`:
 
 ```rust
-pub(crate) trait PlayHost: Host<Launching> {
-    fn prompt(&mut self, prompt: Prompt, window: &mut Window, cx: &mut Context<Self>);
+pub(crate) trait Prompted: Hosted {
+    type Prompt;
 }
 
+pub(crate) trait PromptHost<T: Prompted>: Host<T> {
+    fn prompt(&mut self, prompt: T::Prompt, window: &mut Window, cx: &mut Context<Self>);
+}
+
+impl Prompted for Launching {
+    type Prompt = Prompt;
+}
+
+pub(crate) fn play_for<H: PromptHost<Launching>>(host: &mut H, /* … */) -> bool
+```
+
+```rust
 let step = Step::of(stale, checked.gate, checked.verdict);
 // …
 if let Some(played) = step.played() {
