@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/career/career_content_logic.hpp"
+#include "core/runtime/loader/hook_set.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>
@@ -57,12 +58,20 @@ struct Bound {
 
 extern Slot slots[content::MAX_CONTENTS];
 extern Bound b;
-extern std::mutex lock;
-extern std::atomic<bool> live, off;
-extern Command *command_orig;
-extern Route *route_orig;
-extern Gate *gate_orig;
-extern Predicate *predicate_orig;
+// The career content set: the driver-career gate, the save-slot predicate and the content select command.
+struct ContentHooks : runtime::loader::HookSet<> {
+    runtime::loader::Original<Gate> driver_gate;
+    runtime::loader::Original<Predicate> slot_predicate;
+    runtime::loader::Original<Command> select_command;
+};
+
+// The career tile route set, shared with the career wizard library.
+struct RouteHooks : runtime::loader::HookSet<> {
+    runtime::loader::Original<Route> route_item;
+};
+
+extern ContentHooks hooks;
+extern RouteHooks route;
 extern std::mutex pressed_lock;
 extern std::string pressed_group;
 extern bool pressed_any;

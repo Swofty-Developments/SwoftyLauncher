@@ -42,7 +42,6 @@
 
 namespace career_content {
 
-Command *command_orig;
 
 namespace {
 
@@ -372,7 +371,7 @@ void command_entry(void *vm, void *cmd, void *data)
     auto *name = cmd ? *static_cast<const uint32_t *const *>(cmd) : nullptr;
     uint32_t stock_hash = name && mem::readable(name, 4) ? content::stock_command(*name) : 0;
     if (!stock_hash)
-        return command_orig(vm, cmd, data);
+        return hooks.select_command(vm, cmd, data);
     Row r;
     {
         std::lock_guard<std::mutex> g(row_lock);
@@ -404,7 +403,7 @@ void command_entry(void *vm, void *cmd, void *data)
     auto *begin = list->items_begin;
     set_buttons(list, r.addon);
     list->items_begin = begin + r.stock;
-    command_orig(vm, &fake_cmd, data);
+    hooks.select_command(vm, &fake_cmd, data);
     set_buttons(list, buttons);
     list->items_begin = begin;
 }
