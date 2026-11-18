@@ -3,11 +3,14 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cstring>
 #include <mutex>
 #include <string>
 #include <vector>
 
 #include "core/career/ops/seat_plan.hpp"
+#include "core/career/standings_read.hpp"
+#include "core/runtime/build.hpp"
 #include "core/career/ops/stats.hpp"
 #include "core/apply/content/teams.hpp"
 #include "core/registry/table.hpp"
@@ -478,6 +481,54 @@ int api_current_round(int32_t *season_index, int32_t *round, int32_t *rounds)
     return SWOFTY_ASSET_OK;
 }
 
+namespace bp = runtime::build_proof;
+namespace cs = career::standings;
+
+// The standings read (standings_read.hpp) walks the season standings' table (+0x40), points (+0x20) and results
+// (+0xd0). STANDINGS_LAYOUT (core/guards/career/standings_drop.cpp) proves the table, the points and the season walk on
+// both 1.0.145 builds. The results +0xd0/+0xd8 and their 0x10-byte records (the position +4, the status +0xc) are used
+// by the same instructions in the points recompute (KB 0x13cdff0) and the results writer (KB 0x13cd970), each equal
+// over the whole function on Steam 1.0.145 and EA 1.0.145 (re/tools/sigport.py --witness; re/db/verify.tsv V110002
+// to V110005).
+constexpr bp::Proof STANDINGS_READ{"the season standings' table, points and results (+0x40, +0x20, +0xd0, results of "
+                                   "0x10 bytes)",
+                                   bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145) |
+                                       bp::bit(bp::Build::ea_1_0_145)};
+constexpr bp::Gate STANDINGS{"the standings read", &STANDINGS_READ};
+
+static_assert(offsetof(g::Season, standings_vtable) == cs::sd::SEASON_STANDINGS);
+static_assert(offsetof(g::F1SeasonStandings, points_begin) == cs::sd::POINTS_ROUNDS);
+static_assert(offsetof(g::F1SeasonStandings, results_begin) == cs::RESULTS_ROUNDS);
+static_assert(offsetof(g::F1SeasonStandings, results_end) == cs::RESULTS_ROUNDS + 8);
+static_assert(sizeof(g::StandingsRound) == cs::sd::ROUND_SIZE && offsetof(g::StandingsRound, sessions_begin) == 8);
+static_assert(sizeof(g::StandingsSession) == cs::sd::SESSION_SIZE && offsetof(g::StandingsSession, records_begin) == 8 &&
+              offsetof(g::StandingsSession, session_id) == cs::sd::SESSION_ID);
+static_assert(sizeof(g::StandingsPoints) == cs::sd::RECORD_SIZE);
+static_assert(sizeof(g::StandingsResult) == cs::RESULT_SIZE && offsetof(g::StandingsResult, position) == cs::RESULT_POSITION &&
+              offsetof(g::StandingsResult, status) == cs::RESULT_STATUS);
+
+bool read_game(uint64_t at, void *out, size_t n, void *)
+{
+    if (!mem::readable(static_cast<uintptr_t>(at), n))
+        return false;
+    std::memcpy(out, reinterpret_cast<const void *>(at), n);
+    return true;
+}
+
+int api_standings(char *out, size_t cap, size_t *len)
+{
+    if (!runtime::holds(STANDINGS))
+        return SWOFTY_ASSET_UNAVAILABLE;
+    uintptr_t season = 0;
+    uint32_t index = 0;
+    if (int r = current_season(season, index); r != SWOFTY_ASSET_OK)
+        return r;
+    cs::Standings s;
+    if (!cs::read(season + cs::sd::SEASON_STANDINGS, read_game, nullptr, s))
+        return SWOFTY_ASSET_LATE;
+    return put(cs::json(s, index), out, cap, len);
+}
+
 int api_set_dropped_scores(const char *data_group, uint32_t best)
 {
     if (!data_group || !*data_group || best > 64)
@@ -488,7 +539,7 @@ int api_set_dropped_scores(const char *data_group, uint32_t best)
 const SwoftyCareerOps g_table = {
     SWOFTY_CAREER_OPS_VERSION, api_available,  api_driver_stat, api_set_slots, api_apply_lineup, api_set_driver_ratings,
     api_swap_drivers,          api_report_season, api_apply_teams, api_set_seat,  api_set_car_number, api_set_track_fuel,
-    api_set_logo, api_set_look, api_current_round, api_team_stat, api_set_dropped_scores,
+    api_set_logo, api_set_look, api_current_round, api_team_stat, api_set_dropped_scores, api_standings,
 };
 
 void setup()

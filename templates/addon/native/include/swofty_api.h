@@ -962,8 +962,16 @@ typedef struct SwoftyServices {
    set_dropped_scores(data_group, best): while the loaded career is filed under data_group, the drivers'
    championship counts each driver's best `best` results (0 counts every result): the cumulative totals, and so
    the order, use the counted sum of the best per-round totals; the constructors' championship and the
-   per-session points stay gross. */
-#define SWOFTY_CAREER_OPS_VERSION 7
+   per-session points stay gross.
+   Table version 8 adds standings: the loaded career's current season's drivers' championship as JSON,
+   {"season": season_index, "rounds": n, "drivers": [{"driver": driver stat, "position": 1-based, "points": total,
+   "rounds": [{"points": that round's points, "finishes": [{"session": id, "position": 1-based, "status": n}]}]}]},
+   the drivers in the game's order (the order and the totals of its standings table, dropped scores included).
+   A round's points add up its sessions' points; its finishes are the driver's result in each of its results
+   sessions, with the game's status (points score at 0 and 1). Call it on the flow thread; SWOFTY_ASSET_LATE
+   when no career is loaded (also while it is busy), SWOFTY_ASSET_UNAVAILABLE on a build the read is not proven
+   on, SWOFTY_TOO_SMALL with *len set to the size when cap is too small. */
+#define SWOFTY_CAREER_OPS_VERSION 8
 enum { SWOFTY_REFUSED = 5 };
 enum { SWOFTY_NUMBER_SWAP = 1 };
 
@@ -985,6 +993,7 @@ typedef struct SwoftyCareerOps {
     int (*current_round)(int32_t *season_index, int32_t *round, int32_t *rounds);
     int (*team_stat)(const char *team_ref, uint32_t *out);
     int (*set_dropped_scores)(const char *data_group, uint32_t best);
+    int (*standings)(char *json, size_t cap, size_t *len);
 } SwoftyCareerOps;
 
 /* Career saves (standard library 1.7.0, experimental), from the core export SwoftyCoreCareerSaves; not a
