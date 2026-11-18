@@ -85,6 +85,16 @@
    "verdict": "partial",
    "evidence": "decomp:own capstone disasm 0x1434bf980-0x1434bfc00, 0x1434cb760-0x1434cb8a0, 0x1434cb0a0-0x1434cb160, 0x1434bc540-0x1434bc6a0, 0x1439876c0-0x143987800, 0x1434cb300-0x1434cb470, 0x143251c60-0x143251d00, 0x1434d1bc0-0x1434d1c60, 0x150472ac0-0x150472b80, 0x150449670-0x1504496b8;xref:0x1434bf9fa,0x1434bfa2a,0x1434bfa03,0x1434bfa1c,0x1434bfaec,0x1434bfb01,0x1434bfb83,0x1434bfb9c,0x1434cb804,0x1434cb81f,0x1434cb832,0x1434cb0db,0x142f73540,0x1434bcf85,0x1434d1490,0x150472acc,0x1504496a6,0x1434cb34b,0x1434d1e3c",
    "notes": "V20014 Blind: own capstone read of 0x1434bf980-0x1434bfbfe and every rel32 site of it and of 0x1434bc540 in .xtls and executable .data1, derived before reading the notes. Confirmed: PITLANE log, 5 refs, id>0x1a return, InGarage(9) guard and mode test, already-OnTrack exit 0x1434bfaec, 0x1434bc540(this,id,1) at 0x1434bfb01, MessageCarExitedPitLane (vtable 0x145845968) via 0x1439876c0, the 4 const-1 sites, 1/9 at 0x1434cb3d5, computed 0x143251cc9, delegate 0x1434cb7f0 for type 0x11 plr_pit_trgr. Wrong: 40 call sites; .xtls has 41 calls + jmp 0x1434d1e4f (status [rsi+0x14]), .data1 7 more, two passing 1: 0x150472ad2 (stub 0x1434d1490: status 1 + same message, 5 callers) and 0x1504496ac (stub 0x1434cf430, all cars, from 0x1434cb34b)."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_PitLane_VehicleExiting",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434bf980-0x1434bfc00, 0x1434bc540-0x1434bc640, 0x1434cb000-0x1434cb200, 0x1434cb300-0x1434cb470, 0x1434cb760-0x1434cb8d0, 0x1434bceb0-0x1434bcfa0, 0x142f73440-0x142f73560, 0x1434bff40-0x1434c0080, 0x143251c60-0x143251cf0, 0x150472ac0-0x150472bed, 0x150449670-0x150449780, 0x1434e4a00-0x1434e4b80, 0x1434cf7c0-0x1434cfa00;xref:0x1434bf9fa,0x1434bfa03,0x1434bfa1c,0x1434bfa2a,0x1434bfaf0,0x1434bfb01,0x1434bfb6e,0x1434bfb83,0x1434bfb9c,0x142f73540,0x1434bcf85,0x1434cb804,0x1434cb81f,0x1434cb832,0x1434cb0db,0x1434c004a,0x14293fcd4,0x14294125a,0x142d59d70,0x1434d1490,0x150472acc,0x1434cb34b,0x1434cf430,0x1434cb402,0x143251cc6",
+   "notes": "V20017 Blind: own capstone read of 0x1434bf980-0x1434bfbff plus E8/E9/0F8x rel32 scans of .xtls and .data1, derived before reading the notes. Confirmed: exactly 5 refs (calls 0x142f73540, 0x1434bcf85; je 0x1434cb804, jmp 0x1434cb81f/0x1434cb832 in callback 0x1434cb7f0, registered for markup id 0x11 = plr_pit_trgr, dl=0xff on miss); id>0x1a returns; type guard 1..14/0x12/0xf..0x11+bit3 with flag +0x1cb keeps status 9; PITLANE log; status!=1 -> 0x1434bc540(this,id,1) at 0x1434bfb01, conditional 0x14389cc90, MessageCarExitedPitLane vptr 0x145845968, byte +0x10 via 0x1439876c0. All 6 listed constant-1 setter sites, stubs 0x1434d1490/0x1434cf430, 1-or-9 at 0x1434cb3d5, r12d at 0x143251cc9 match. Names unchecked."
   }
  ],
  "proofs": []
