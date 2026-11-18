@@ -16,6 +16,7 @@
 #include "core/diagnostics/crash/process.hpp"
 #include "core/diagnostics/crash/report_writer.hpp"
 #include "core/diagnostics/crash/stall_order_logic.hpp"
+#include "core/diagnostics/crash/stall_report.hpp"
 #include "core/diagnostics/crash/stall_walk.hpp"
 #include "core/diagnostics/crash/symbolizer.hpp"
 #include "core/runtime/loader/introspection.hpp"
