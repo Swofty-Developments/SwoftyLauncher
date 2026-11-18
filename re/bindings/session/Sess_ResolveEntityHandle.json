@@ -9,7 +9,7 @@
   "subsystem": "session",
   "proto": "-",
   "evidence": "xref:0x14022de4a,0x14022e4a7,0x140231629,0x1402316ba,0x140231bb3,0x1402340fc,0x14023ac38,0x14023ae98+187;doc:research/grid24-cap.md#2;decomp:re/decomp/14243fd10.c",
-  "notes": "called with (ctx, e+0x5c) cs-verify: resolves a handle (kind u8 < 3, index u16) through table ctx+0x328+kind*0x10 (16-byte entries, pointer at +8); in caller 0x14379dd00 the handle is at +0x58; vehicle only plausible Callers: census steam 0x243fd10."
+  "notes": "Resolves a 4-byte entity handle: rcx ctx, rdx -> handle {u8 kind at +0, u16 index at +2}. 0x14243fd10 is a jmp thunk to the body at .data1 0x14ca67b00. kind must be <= 2 (ePreLoaded, eUserDefined, eNetworkReplicated, names at 0x145612e60). [ctx+0x328+kind*0x10] points to a vector header whose 16-byte entries run [hdr+8]..[hdr+0x10]; the result is the qword at entry+8 (0x14ca67b42). A null header or kind > 2 returns 0 and logs \"Vehicle with stat id %s not found\" on ENTRANTS_SYSTEM (id formatted \"%s %u\" from kind name and index) only when the byte at 0x14604bac4 is 1 and that channel is enabled; with kind > 2 that log reads the name past the 3-entry table. An index at or past the entry count returns 0 with no log (0x14ca67b38). Most call sites pass e+0x5c; 0x14379dd00 passes rsi+0x58 (0x14379ddad). Callers: census steam 0x243fd10."
  },
  "signature": {
   "id": "session.find_vehicle",
