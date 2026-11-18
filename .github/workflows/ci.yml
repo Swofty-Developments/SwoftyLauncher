@@ -641,11 +641,13 @@ jobs:
 
       # This part's tests side by side; on EC2 that is every host test, the templates build, the Any Team
       # Transfers build and every Wine test. Each test's output is in its own group in the log, and the step
-      # fails on any failing test.
+      # fails on any failing test. The hosted Wine part has the runner's 4 CPUs to itself and runs 4 Wine tests
+      # at a time, where run_tests.sh would run 2.
       - name: Native tests
         id: native-tests
         env:
           PART: ${{ matrix.part }}
+          NATIVE_WINE_JOBS: ${{ matrix.part == 'wine' && '4' || '' }}
         run: |
           df -h / "$RUNNER_TEMP"
           trap 'df -h / "$RUNNER_TEMP"' EXIT
