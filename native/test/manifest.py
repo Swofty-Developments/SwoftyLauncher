@@ -108,6 +108,7 @@ UNITS = [
     Unit('game_settings', 'Game setting override table unit test'),
     Unit('player_name', 'Player name sanitising unit test'),
     Unit('postfx', 'Post-process pass logic unit test'),
+    Unit('race_control', 'Race control events unit test', 'zig'),
     Unit('race_retirement', 'Race retirement driver guard unit test'),
     Unit('red_flag_recompute', 'Red flag recompute guard unit test'),
     Unit('replay_grid', 'Replay recorder grid guard unit test'),

@@ -3,6 +3,7 @@
 #include <swofty/systems/cars.hpp>
 #include <swofty/systems/content.hpp>
 #include <swofty/systems/laps.hpp>
+#include <swofty/systems/race_control.hpp>
 #include <swofty/systems/sessions.hpp>
 #include <swofty/systems/sounds.hpp>
 #include <swofty/systems/spectator.hpp>
@@ -62,6 +63,11 @@ static_assert(declared<ca::ControllersRebuilt>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::ai::events::ControllerUpdate>(SWOFTY_POINT_CANCEL));
 static_assert(declared<swofty::sessions::events::PlayerControl>(SWOFTY_POINT_CANCEL));
 static_assert(declared<swofty::sessions::events::Lap>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::race_control::events::Flag>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::race_control::events::SafetyCar>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::race_control::events::RedFlag>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::race_control::events::Sector>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::race_control::events::CarStatus>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::laps::events::Sealing>(SWOFTY_POINT_MODIFY));
 static_assert(declared<swofty::laps::events::Recorded>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::spectator::events::HudVisible>(SWOFTY_POINT_MODIFY));
@@ -152,6 +158,12 @@ bool session_lap(uint32_t car)
     e.car = swofty::cars::live::Car(car);
     return fire(e);
 }
+
+bool session_flag(swofty::race_control::events::Flag &payload) { return fire(payload); }
+bool session_safety_car(swofty::race_control::events::SafetyCar &payload) { return fire(payload); }
+bool session_red_flag(swofty::race_control::events::RedFlag &payload) { return fire(payload); }
+bool session_sector(swofty::race_control::events::Sector &payload) { return fire(payload); }
+bool session_car_status(swofty::race_control::events::CarStatus &payload) { return fire(payload); }
 
 bool laps_sealing(swofty::laps::events::Sealing &payload) { return fire(payload); }
 
