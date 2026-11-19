@@ -18,14 +18,16 @@ static void expect(bool ok, const std::string &what)
 
 static void table_layout()
 {
-    expect(SWOFTY_LAP_HOST_VERSION == 2, "the lap host table is version 2");
+    expect(SWOFTY_LAP_HOST_VERSION == 3, "the lap host table is version 3");
     expect(offsetof(SwoftyLapHost, attach) == 8 && offsetof(SwoftyLapHost, sealing) == 8 + 34 * sizeof(void *) &&
                offsetof(SwoftyLapHost, name_tick) == 8 + 38 * sizeof(void *),
            "the version 1 fields keep their offsets");
     expect(SWOFTY_LAP_HOST_V1_SIZE == 8 + 39 * sizeof(void *), "a version 1 table ends where mark begins");
-    expect(offsetof(SwoftyLapHost, mark) == SWOFTY_LAP_HOST_V1_SIZE &&
-               sizeof(SwoftyLapHost) == SWOFTY_LAP_HOST_V1_SIZE + sizeof(void *),
-           "mark is the one field version 2 adds, at the end");
+    expect(offsetof(SwoftyLapHost, mark) == SWOFTY_LAP_HOST_V1_SIZE && SWOFTY_LAP_HOST_V2_SIZE == SWOFTY_LAP_HOST_V1_SIZE + sizeof(void *),
+           "mark is the one field version 2 adds");
+    expect(offsetof(SwoftyLapHost, core_version) == SWOFTY_LAP_HOST_V2_SIZE &&
+               sizeof(SwoftyLapHost) == SWOFTY_LAP_HOST_V2_SIZE + sizeof(void *),
+           "core_version is the one field version 3 adds, at the end");
 }
 
 static void marks()

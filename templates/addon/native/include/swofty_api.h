@@ -1652,10 +1652,13 @@ typedef struct SwoftyLapHost {
     void (*notice)(const char *text);
     void (*name_tick)(int probe);
     int (*mark)(int32_t lap, int32_t which, int32_t game_ms);
+    /* Version 3: the core's own version (the launcher's, such as "1.10.0"), for the lap file header. */
+    const char *(*core_version)(void);
 } SwoftyLapHost;
 
-#define SWOFTY_LAP_HOST_VERSION 2
+#define SWOFTY_LAP_HOST_VERSION 3
 #define SWOFTY_LAP_HOST_V1_SIZE offsetof(SwoftyLapHost, mark)
+#define SWOFTY_LAP_HOST_V2_SIZE offsetof(SwoftyLapHost, core_version)
 #define SWOFTY_LAP_CAR_SPEED 1u
 #define SWOFTY_LAP_CAR_PEDALS 2u
 #define SWOFTY_LAP_CAR_STEER 4u
