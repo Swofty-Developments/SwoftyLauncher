@@ -93,6 +93,17 @@ class Synthetic(unittest.TestCase):
         r = self.run_one(img, binding('Fn', match='0x1100', expect='E8'))
         self.assertEqual((r['result'], r['method'], r['reason']), ('unresolved', '-', 'expect bytes differ'))
 
+    def test_a_live_verdict_stands_in_for_expect_bytes_under_the_cores_hook(self):
+        img = self.image(pe({'.xtls': (0x1000, CODE, page((0x100, FUNC)))}))
+        b = binding('Fn', match='0x1100', expect='E8')
+        line = '[bind] id=Fn build=ea pass=init result=resolved method=scan matches=1 rva=0x1100 match=0x1100 verified=yes'
+        proven = bindverify.live_verified([line, 'unrelated'])
+        self.assertEqual(proven, {'Fn': 0x1100})
+        self.assertEqual(bindverify.Resolver(img, doc(b)).run()[0]['reason'], 'expect bytes differ')
+        self.assertEqual(bindverify.Resolver(img, doc(b), live_verified=proven).run()[0]['result'], 'resolved')
+        other = {'Fn': 0x1200}
+        self.assertEqual(bindverify.Resolver(img, doc(b), live_verified=other).run()[0]['result'], 'unresolved')
+
     def test_rel32_and_riprel(self):
         call = b'\xE8' + struct.pack('<i', 0x400 - 0x105) + FUNC
         lea = b'\x48\x8D\x05' + struct.pack('<i', 0x2010 - 0x1207) + FUNC
