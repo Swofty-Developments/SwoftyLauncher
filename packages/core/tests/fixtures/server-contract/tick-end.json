@@ -1,5 +1,5 @@
 {
-  "about": "The end timing mark of lap 0, sent as it is made, chained to the receipt of the lap's previous mark.",
+  "about": "The end timing mark of lap 1, sent as it is made, chained to the receipt of the lap's previous mark.",
   "answer": {
     "body": {
       "receipt": "tk1.ZW5k.bWFj"
@@ -11,7 +11,7 @@
       "json": {
         "attempt": 1,
         "game_ms": 91234,
-        "lap": 0,
+        "lap": 1,
         "mark": "end",
         "prev": "tk1.czI.bWFj",
         "since_ms": 11

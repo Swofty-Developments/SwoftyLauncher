@@ -3,8 +3,9 @@
 //! headers and body, and the stub's answer that the next request builds on. The token, the multipart boundary, the
 //! host and the length are left out, the launcher's version and OS are `<launcher>` and `<os>`, and the stub's
 //! signatures, made with a key of the test's own, are `<signature>`. The server's tests replay the files against its
-//! handlers. A request that changes shape fails here until its fixture is written
-//! again with `SWOFTY_CONTRACT_WRITE=1`.
+//! handlers. `SHA256SUMS` beside them lists each file's sha256, and the server's copy pins the sha256 of that list,
+//! so a copy that is not the launcher's fails there. A request that changes shape fails here until its fixture is
+//! written again with `SWOFTY_CONTRACT_WRITE=1`.
 
 use std::collections::BTreeMap;
 use std::io::{Read, Write};
@@ -24,6 +25,10 @@ const TOKEN: &str = "contract-token";
 const NONCE: &str = "5e5510b0c0de5e5510b0c0de5e5510b0";
 const BUILD: &str = "46009bd3c0de46009bd3c0de46009bd3c0de46009bd3c0de46009bd3c0de4600";
 const WRITE_ENV: &str = "SWOFTY_CONTRACT_WRITE";
+const SUMS: &str = "SHA256SUMS";
+const TIMED_ID: &str = "2949b7d7eaf78422";
+const UNTIMED_ID: &str = "7d0c2a91be55f013";
+const TIMED_MS: u64 = 91_234;
 
 fn fixtures() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/server-contract")
@@ -344,7 +349,7 @@ fn ticks(out: &mut Recorded, data: &Path, game: &Path) {
     ];
     for (seq, (mark, at, game_ms, late)) in marks.into_iter().enumerate() {
         let at = t0 + at;
-        let body = json!({"seq": seq + 1, "lap": 0, "mark": mark, "game_ms": game_ms, "at_ms": at});
+        let body = json!({"seq": seq + 1, "lap": 1, "mark": mark, "game_ms": game_ms, "at_ms": at});
         std::fs::write(folder.join(format!("{at}-{}.json", seq + 1)), body.to_string()).unwrap();
         sender.step(&api, Some(NONCE), at + late, &|_| {});
         if mark == "s1" {
@@ -355,7 +360,7 @@ fn ticks(out: &mut Recorded, data: &Path, game: &Path) {
     let seen = s.requests();
     let about = |mark: &str| {
         format!(
-            "The {mark} timing mark of lap 0, sent as it is made, chained to the receipt of the lap's previous mark."
+            "The {mark} timing mark of lap 1, sent as it is made, chained to the receipt of the lap's previous mark."
         )
     };
     out.add("tick-start", &about("start"), &seen[0], &replies[0]);
@@ -425,11 +430,15 @@ fn module(source: integrity::Source) -> integrity::Module {
 fn uploads(out: &mut Recorded, data: &Path, game: &Path) {
     let laps = timetrial::laps_dirs(data, game)[0].clone();
     std::fs::create_dir_all(&laps).unwrap();
-    let ranked = json_reply(
+    let timed = json_reply(
         "200 OK",
-        &json!({"id": "l1", "status": "accepted", "rank": 3, "total": 40}),
+        &json!({"id": TIMED_ID, "status": "accepted", "rank": 3, "total": 40, "best": true}),
     );
-    let s = stub(vec![ranked.clone(), ranked.clone()]);
+    let untimed = json_reply(
+        "200 OK",
+        &json!({"id": UNTIMED_ID, "status": "accepted", "rank": 5, "total": 40, "best": false}),
+    );
+    let s = stub(vec![timed.clone(), untimed.clone()]);
     let api = Api::with_server(&s.url, TOKEN);
     let sweep = |name: &str, time_ms: u64, lap_index: u32, state: integrity::State| {
         std::fs::write(laps.join(name), lap(time_ms, lap_index)).unwrap();
@@ -449,14 +458,14 @@ fn uploads(out: &mut Recorded, data: &Path, game: &Path) {
     };
     sweep(
         "20261118T000001-1.swlap",
-        91_234,
-        0,
+        TIMED_MS,
+        1,
         integrity::State::of(&Ok(module(integrity::Source::Cdn)), false),
     );
     sweep(
         "20261118T000002-1.swlap",
         90_870,
-        1,
+        3,
         integrity::State::of(
             &Err(integrity::Unavailable::unreachable(
                 "couldn't reach the server: timeout: global",
@@ -467,15 +476,16 @@ fn uploads(out: &mut Recorded, data: &Path, game: &Path) {
     let seen = s.requests();
     out.add(
         "lap-upload-timed",
-        "A sealed lap's upload: the module came from the CDN, and the lap carries the receipts of its four timing marks.",
+        "A sealed lap's upload: the module came from the CDN, and lap 1 carries the receipts of its four timing marks.",
         &seen[0],
-        &ranked,
+        &timed,
     );
     out.add(
         "lap-upload-untimed",
-        "A lap from a session that placed no integrity module, driven with no timing marks sent: no timing.",
+        "A lap from a session that placed no integrity module, driven with no timing marks sent: no timing. It is lap 3: \
+         the plugin discarded lap 2, which keeps its number, so lap numbers have gaps.",
         &seen[1],
-        &ranked,
+        &untimed,
     );
 }
 
@@ -544,14 +554,159 @@ fn offers(out: &mut Recorded) {
     );
 }
 
+fn lap_meta(id: &str) -> Value {
+    json!({
+        "id": id,
+        "time_ms": TIMED_MS,
+        "board": {"content": "game/f1_2025", "track": "bahrain", "weather": "dry"},
+        "user": {"id": "1", "name": "driver one"},
+        "car": {"team": "mclaren"},
+        "game_replay": {"setup": {"mode": "tt", "box": "f1_2025", "track": "bahrain", "team": "mclaren", "lap_ms": TIMED_MS, "tail_ms": 1500}},
+    })
+}
+
+fn replays(out: &mut Recorded, data: &Path, game: &Path) {
+    let replay: Vec<u8> = b"FRR1"
+        .iter()
+        .copied()
+        .chain((0..8188u32).map(|i| i as u8))
+        .collect();
+    let setup = lap_meta(TIMED_ID)["game_replay"]["setup"].clone();
+    let dir = timetrial::game_replay::dir(game);
+    std::fs::create_dir_all(&dir).unwrap();
+    let now = timetrial::queue::unix_now();
+    let file = dir.join(format!("pb_{}_{TIMED_MS}.replay", now - 5));
+    std::fs::write(&file, &replay).unwrap();
+    std::fs::write(file.with_extension("json"), setup.to_string()).unwrap();
+    let stored = json_reply("200 OK", &json!({"ok": true}));
+    let s = stub(vec![stored.clone()]);
+    let api = Api::with_server(&s.url, TOKEN);
+    let queue = timetrial::queue::Queue::new(data);
+    let r = timetrial::game_replay::send(
+        &queue,
+        &timetrial::game_replay::dirs(data, game),
+        &api,
+        now + 10,
+        &|| false,
+        &mut |_| {},
+    );
+    assert_eq!(r.uploaded, 1);
+    let seen = s.requests();
+    out.add(
+        "game-replay-put",
+        "The game's replay of the driver's best lap, uploaded once the server has taken the lap, with its setup.",
+        &seen[0],
+        &stored,
+    );
+
+    let meta = json_reply("200 OK", &lap_meta(TIMED_ID));
+    let file: Reply = (
+        "200 OK",
+        vec![("Content-Type", "application/octet-stream".to_owned())],
+        replay.clone(),
+    );
+    let s = stub(vec![meta.clone(), file.clone()]);
+    timetrial::game_replay::add(&Api::with_server(&s.url, TOKEN), data, TIMED_ID).unwrap();
+    let seen = s.requests();
+    out.add(
+        "lap-read",
+        "A lap's details, read before its game replay or its lap file is fetched.",
+        &seen[0],
+        &meta,
+    );
+    out.add(
+        "game-replay-get",
+        "A lap's game replay, fetched to watch it in the game.",
+        &seen[1],
+        &file,
+    );
+
+    let lap_file: Reply = (
+        "200 OK",
+        vec![("Content-Type", "application/octet-stream".to_owned())],
+        lap(TIMED_MS, 1),
+    );
+    let s = stub(vec![meta.clone(), lap_file.clone()]);
+    timetrial::watch::request(&Api::with_server(&s.url, TOKEN), game, TIMED_ID).unwrap();
+    let seen = s.requests();
+    assert_eq!(
+        out.0.iter().find(|(n, _)| n == "lap-read").unwrap().1["request"],
+        shape(&seen[0])
+    );
+    out.add(
+        "lap-file-get",
+        "A lap's file, fetched to race it as a ghost.",
+        &seen[1],
+        &lap_file,
+    );
+}
+
+fn boards(out: &mut Recorded) {
+    let catalog = json_reply(
+        "200 OK",
+        &json!({"rows": [{"content": "game/f1_2025", "name": "F1 25", "tracks": [{"track": "bahrain", "weather": "dry", "laps": 40}]}]}),
+    );
+    let board = json_reply(
+        "200 OK",
+        &json!({"rows": [{"rank": 1, "lap_id": TIMED_ID, "time_ms": TIMED_MS, "driver": {"id": "1", "name": "driver one"}}]}),
+    );
+    let barred = json_reply("200 OK", &json!({"addons": []}));
+    let s = stub(vec![catalog.clone(), board.clone(), barred.clone()]);
+    let api = Api::with_server(&s.url, TOKEN);
+    assert_eq!(api.catalog().unwrap().len(), 1);
+    assert_eq!(
+        api.board("game/f1_2025", "bahrain", "dry", Some("driver one"))
+            .unwrap()
+            .len(),
+        1
+    );
+    timetrial::barred::fetch(&s.url).unwrap();
+    let seen = s.requests();
+    out.add("boards", "The list of Time Trial boards.", &seen[0], &catalog);
+    out.add(
+        "board",
+        "One board, searched for a driver's name.",
+        &seen[1],
+        &board,
+    );
+    out.add(
+        "barred",
+        "The addons barred from the boards, read without the sign-in.",
+        &seen[2],
+        &barred,
+    );
+}
+
 fn record() -> Recorded {
     let mut out = Recorded(Vec::new());
     sessions(&mut out);
     let (data, game) = temp("laps");
     ticks(&mut out, &data, &game);
     uploads(&mut out, &data, &game);
+    replays(&mut out, &data, &game);
+    boards(&mut out);
     offers(&mut out);
     out
+}
+
+fn text(doc: &Value) -> String {
+    serde_json::to_string_pretty(doc).unwrap() + "\n"
+}
+
+/// `<sha256>  <file>` for each fixture, in name order: what the server's copy is checked against.
+fn sums(recorded: &Recorded) -> String {
+    let mut lines: Vec<String> = recorded
+        .0
+        .iter()
+        .map(|(name, doc)| {
+            format!(
+                "{}  {name}.json\n",
+                crate::game_folder::baseline::sha256_bytes(text(doc).as_bytes())
+            )
+        })
+        .collect();
+    lines.sort_by(|a, b| a[66..].cmp(&b[66..]));
+    lines.concat()
 }
 
 #[test]
@@ -566,9 +721,9 @@ fn every_request_to_the_server_matches_its_contract_fixture() {
             }
         }
         for (name, doc) in &recorded.0 {
-            let text = serde_json::to_string_pretty(doc).unwrap() + "\n";
-            std::fs::write(dir.join(format!("{name}.json")), text).unwrap();
+            std::fs::write(dir.join(format!("{name}.json")), text(doc)).unwrap();
         }
+        std::fs::write(dir.join(SUMS), sums(&recorded)).unwrap();
     }
     let mut wrong = Vec::new();
     for (name, doc) in &recorded.0 {
@@ -584,6 +739,11 @@ fn every_request_to_the_server_matches_its_contract_fixture() {
                 kept.map_or("nothing".into(), |k| serde_json::to_string_pretty(&k).unwrap())
             ));
         }
+    }
+    if std::fs::read_to_string(dir.join(SUMS)).ok().as_deref() != Some(sums(&recorded).as_str()) {
+        wrong.push(format!(
+            "{SUMS}: it is not the sha256 of each fixture as the launcher writes it"
+        ));
     }
     let names: Vec<String> = recorded.0.iter().map(|(n, _)| format!("{n}.json")).collect();
     for entry in std::fs::read_dir(&dir).into_iter().flatten().flatten() {

@@ -1,0 +1,19 @@
+{
+  "about": "The addons barred from the boards, read without the sign-in.",
+  "answer": {
+    "body": {
+      "addons": []
+    },
+    "status": 200
+  },
+  "request": {
+    "body": null,
+    "headers": {
+      "accept": "*/*",
+      "accept-encoding": "identity",
+      "user-agent": "swofty-launcher"
+    },
+    "method": "GET",
+    "path": "/v1/tt/barred"
+  }
+}
