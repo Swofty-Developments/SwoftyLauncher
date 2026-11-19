@@ -2,7 +2,9 @@ use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::*;
 use swofty_core::online::server::api::{Api, ApiError};
 use swofty_core::online::server::sign_in::Session;
-use swofty_core::online::server::support::{BIO_MAX, Claimed, Goal, Kind, Me, Supporter, dollars_to_cents};
+use swofty_core::online::server::support::{
+    BIO_MAX, Claimed, Kind, Me, Preview, Supporter, dollars_to_cents,
+};
 use swofty_i18n::tr;
 
 use crate::features::time_trial::Load;
@@ -17,9 +19,9 @@ pub(super) struct Inputs {
     _subs: Vec<Subscription>,
 }
 
-pub(crate) struct SupportPage {
-    pub goal: Load<Goal>,
+pub(crate) struct StorePage {
     pub supporters: Load<Vec<Supporter>>,
+    pub previews: Vec<Preview>,
     pub me: Load<Me>,
     pub(super) inputs: Option<Inputs>,
     pub bio_synced: bool,
@@ -30,11 +32,11 @@ pub(crate) struct SupportPage {
     pub claim_open: bool,
 }
 
-impl Default for SupportPage {
+impl Default for StorePage {
     fn default() -> Self {
         Self {
-            goal: Load::Idle,
             supporters: Load::Idle,
+            previews: Vec::new(),
             me: Load::Idle,
             inputs: None,
             bio_synced: false,
@@ -47,12 +49,12 @@ impl Default for SupportPage {
     }
 }
 
-/// What the support page borrows from the shell: who is signed in.
-pub(crate) struct SupportNeeds<'a> {
+/// What the store page borrows from the shell: who is signed in.
+pub(crate) struct StoreNeeds<'a> {
     pub(crate) session: Option<&'a Session>,
 }
 
-impl SupportNeeds<'_> {
+impl StoreNeeds<'_> {
     fn api(&self) -> Api {
         Api::new(self.session.map(|s| s.token.as_str()).unwrap_or_default())
     }
@@ -62,18 +64,18 @@ impl SupportNeeds<'_> {
     }
 }
 
-/// What the shell follows when the support page loads.
-pub(crate) enum SupportChange {
-    /// The supporters' avatars to fetch.
-    Faces(Vec<String>),
+/// What the shell follows when the store page loads.
+pub(crate) enum StoreChange {
+    /// The supporters' avatars and the previews' pictures to fetch.
+    Images(Vec<String>),
 }
 
-impl Hosted for SupportPage {
-    type Needs<'a> = SupportNeeds<'a>;
-    type Change = SupportChange;
+impl Hosted for StorePage {
+    type Needs<'a> = StoreNeeds<'a>;
+    type Change = StoreChange;
 }
 
-impl SupportPage {
+impl StorePage {
     pub(super) fn inputs<H: Host<Self>>(
         host: &mut H,
         window: &mut Window,
@@ -163,19 +165,19 @@ impl SupportPage {
         page.reloading(signed_in);
         cx.notify();
         cx.spawn(async move |this, cx| {
-            let (goal, supporters, me) = cx
+            let (supporters, previews, me) = cx
                 .background_executor()
                 .spawn(async move {
                     (
-                        api.support_goal(),
                         api.support_supporters(),
+                        api.support_previews(),
                         signed_in.then(|| api.support_me()),
                     )
                 })
                 .await;
             this.update(cx, |host, cx| {
-                let faces = host.split().0.take_reload(goal, supporters, me);
-                host.changed(SupportChange::Faces(faces), cx);
+                let images = host.split().0.take_reload(supporters, previews, me);
+                host.changed(StoreChange::Images(images), cx);
                 cx.notify();
             })
             .ok();
@@ -268,7 +270,7 @@ impl SupportPage {
     }
 
     fn needs_load(&self, signed_in: bool) -> bool {
-        matches!(self.goal, Load::Idle | Load::Failed(_))
+        matches!(self.supporters, Load::Idle | Load::Failed(_))
             || (signed_in && matches!(self.me, Load::Idle | Load::Failed(_)))
     }
 
@@ -283,31 +285,32 @@ impl SupportPage {
     }
 
     fn reloading(&mut self, signed_in: bool) {
-        self.goal = Load::Loading;
         self.supporters = Load::Loading;
         self.me = if signed_in { Load::Loading } else { Load::Idle };
     }
 
-    /// Takes a reload's results, and gives back the supporters' avatar links.
+    /// Takes a reload's results, and gives back the supporters' avatar links and the previews' pictures.
+    /// Previews that fail to load, as on servers from before them, are left out.
     fn take_reload(
         &mut self,
-        goal: Result<Goal, ApiError>,
         supporters: Result<Vec<Supporter>, ApiError>,
+        previews: Result<Vec<Preview>, ApiError>,
         me: Option<Result<Me, ApiError>>,
     ) -> Vec<String> {
-        let faces = supporters
+        self.previews = previews.unwrap_or_default();
+        let images = supporters
             .iter()
             .flatten()
             .filter_map(|x| x.display.avatar_url.clone())
+            .chain(self.previews.iter().filter_map(|p| p.image.clone()))
             .collect();
-        self.goal = load(goal);
         self.supporters = load(supporters);
         self.me = me.map(load).unwrap_or(Load::Idle);
         if let Load::Ready(me) = &self.me {
             self.mode = me.display_mode.clone().unwrap_or_else(|| "discord".into());
         }
         self.bio_synced = false;
-        faces
+        images
     }
 
     /// Starts a change that needs a signed-in user, unless one is already running.
@@ -352,20 +355,20 @@ impl SupportPage {
     }
 }
 
-impl Host<SupportPage> for Shell {
-    fn split(&mut self) -> (&mut SupportPage, SupportNeeds<'_>) {
+impl Host<StorePage> for Shell {
+    fn split(&mut self) -> (&mut StorePage, StoreNeeds<'_>) {
         (
-            &mut self.support,
-            SupportNeeds {
+            &mut self.store_page,
+            StoreNeeds {
                 session: self.account.session.as_ref(),
             },
         )
     }
 
-    fn changed(&mut self, change: SupportChange, cx: &mut Context<Self>) {
+    fn changed(&mut self, change: StoreChange, cx: &mut Context<Self>) {
         match change {
-            SupportChange::Faces(faces) => {
-                crate::features::multiplayer::Multiplayer::load_faces(self, faces, cx)
+            StoreChange::Images(images) => {
+                crate::features::multiplayer::Multiplayer::load_faces(self, images, cx)
             }
         }
     }
@@ -389,9 +392,9 @@ fn load<T>(got: Result<T, ApiError>) -> Load<T> {
 #[cfg(test)]
 mod tests {
     use swofty_core::online::server::api::ApiError;
-    use swofty_core::online::server::support::{Kind, Supporter};
+    use swofty_core::online::server::support::{Kind, Preview, Supporter};
 
-    use super::{Load, SupportPage, checkout_cents};
+    use super::{Load, StorePage, checkout_cents};
 
     fn error(message: &str) -> ApiError {
         ApiError {
@@ -409,6 +412,20 @@ mod tests {
         .unwrap()
     }
 
+    fn preview(id: &str, image: Option<&str>) -> Preview {
+        serde_json::from_value(serde_json::json!({
+            "id": id,
+            "title": "F1 2011",
+            "summary": "Early beta testing",
+            "highlights": ["KERS"],
+            "image": image,
+            "addons": [],
+            "posted": 1_763_480_000u64,
+            "link": null,
+        }))
+        .unwrap()
+    }
+
     #[test]
     fn a_one_time_gift_needs_an_amount_and_a_subscription_none() {
         assert!(checkout_cents(Kind::OneTime, None).is_err());
@@ -418,8 +435,8 @@ mod tests {
     }
 
     #[test]
-    fn the_page_loads_until_its_goal_and_the_users_status_are_in() {
-        let mut page = SupportPage::default();
+    fn the_page_loads_until_its_supporters_and_the_users_status_are_in() {
+        let mut page = StorePage::default();
         assert!(page.needs_load(false));
         page.reloading(false);
         assert!(!page.needs_load(false));
@@ -431,7 +448,7 @@ mod tests {
 
     #[test]
     fn signing_out_forgets_the_status_and_signing_in_fetches_it_once() {
-        let mut page = SupportPage::default();
+        let mut page = StorePage::default();
         assert!(page.follow_sign_in(true));
         page.me = Load::Loading;
         assert!(!page.follow_sign_in(true));
@@ -442,26 +459,49 @@ mod tests {
     }
 
     #[test]
-    fn a_reload_shows_its_results_and_hands_back_the_avatars_to_fetch() {
-        let mut page = SupportPage {
+    fn a_reload_shows_its_results_and_hands_back_the_pictures_to_fetch() {
+        let mut page = StorePage {
             bio_synced: true,
             ..Default::default()
         };
-        let faces = page.take_reload(
-            Err(error("goal down")),
+        let images = page.take_reload(
             Ok(vec![supporter(Some("https://a/1.png")), supporter(None)]),
+            Ok(vec![
+                preview("swofty-2011", Some("https://a/2011.png")),
+                preview("bare", None),
+            ]),
             None,
         );
-        assert_eq!(faces, vec!["https://a/1.png".to_owned()]);
-        assert!(matches!(&page.goal, Load::Failed(m) if m == "goal down"));
+        assert_eq!(images, ["https://a/1.png", "https://a/2011.png"]);
         assert!(matches!(&page.supporters, Load::Ready(s) if s.len() == 2));
+        assert_eq!(page.previews.len(), 2);
         assert!(matches!(page.me, Load::Idle));
         assert!(!page.bio_synced);
+        page.take_reload(Err(error("supporters down")), Ok(Vec::new()), None);
+        assert!(matches!(&page.supporters, Load::Failed(m) if m == "supporters down"));
+    }
+
+    #[test]
+    fn previews_show_what_the_server_sent_and_hide_when_it_has_none_or_fails() {
+        let mut page = StorePage::default();
+        page.take_reload(Ok(Vec::new()), Ok(vec![preview("swofty-2011", None)]), None);
+        assert_eq!(page.previews[0].id, "swofty-2011");
+        let not_found = ApiError {
+            status: 404,
+            ..error("not found")
+        };
+        page.take_reload(Ok(Vec::new()), Err(not_found), None);
+        assert!(page.previews.is_empty());
+        page.take_reload(Ok(Vec::new()), Ok(vec![preview("swofty-2011", None)]), None);
+        page.take_reload(Ok(Vec::new()), Err(error("down")), None);
+        assert!(page.previews.is_empty());
+        page.take_reload(Ok(Vec::new()), Ok(Vec::new()), None);
+        assert!(page.previews.is_empty());
     }
 
     #[test]
     fn a_change_waits_for_sign_in_and_for_the_last_one_to_finish() {
-        let mut page = SupportPage::default();
+        let mut page = StorePage::default();
         assert!(!page.begin(false));
         page.notice = Some((false, "old".to_owned()));
         assert!(page.begin(true));
@@ -471,7 +511,7 @@ mod tests {
 
     #[test]
     fn a_saved_bio_reloads_and_a_failed_one_says_why() {
-        let mut page = SupportPage {
+        let mut page = StorePage {
             busy: true,
             ..Default::default()
         };

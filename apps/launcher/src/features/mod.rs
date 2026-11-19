@@ -13,7 +13,7 @@ pub(crate) mod online;
 pub(crate) mod sections;
 pub(crate) mod settings;
 pub(crate) mod shaders;
-pub(crate) mod support;
+pub(crate) mod store;
 pub(crate) mod time_trial;
 pub(crate) mod tools;
 pub(crate) mod update;

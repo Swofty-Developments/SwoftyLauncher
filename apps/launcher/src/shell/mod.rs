@@ -62,7 +62,7 @@ pub struct Shell {
     pub(crate) addons: crate::features::addons::AddonsPage,
     pub(crate) saves: crate::features::career_saves::SavesPage,
     pub(crate) tt: crate::features::time_trial::TtPage,
-    pub(crate) support: crate::features::support::SupportPage,
+    pub(crate) store_page: crate::features::store::StorePage,
     pub(crate) db: crate::features::db::Db,
     pub(crate) news: crate::features::news::News,
     pub(crate) news_scroll: crate::features::news::NewsScroll,
