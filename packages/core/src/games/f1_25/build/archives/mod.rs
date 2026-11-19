@@ -89,7 +89,9 @@ impl Pipeline<'_, '_> {
             run,
         };
         if !inputs.hud_inputs.is_empty() {
-            let ops = self.compose_hud(inputs, &bases, &erp_ops)?;
+            let ops = crate::diagnostics::phases::time_part("build.apply.hud", || {
+                self.compose_hud(inputs, &bases, &erp_ops)
+            })?;
             erp_ops.extend(ops);
         }
         let mut archives = Archives {
@@ -113,11 +115,20 @@ impl Pipeline<'_, '_> {
         for (erp, resource) in menu_kept.keys() {
             erps.keep(erp, resource);
         }
-        let applied = self.apply_erp_ops(&mut erps, &erp_ops, &puts, &base)?;
-        self.check_archives(&mut erps, &erp_ops, inputs, ers_maps, menu_kept)?;
+        let applied = crate::diagnostics::phases::time_part("build.apply.ops", || {
+            self.apply_erp_ops(&mut erps, &erp_ops, &puts, &base)
+        })?;
+        crate::diagnostics::phases::time_part("build.apply.checks", || {
+            self.check_archives(&mut erps, &erp_ops, inputs, ers_maps, menu_kept)
+        })?;
         archives.mipmaps = erps.take_mipmaps();
-        let resized = self.write_archives(erps, &bases.staged, applied)?;
-        self.built.warnings.extend(stock_holders(&run.game.dir, &resized));
+        let resized = crate::diagnostics::phases::time_part("build.apply.write", || {
+            self.write_archives(erps, &bases.staged, applied)
+        })?;
+        self.built.warnings.extend(crate::diagnostics::phases::time_part(
+            "build.apply.stock_holders",
+            || stock_holders(&run.game.dir, &resized),
+        ));
         archives.built_over = self.built_over(&puts, &bases.staged);
         Ok(archives)
     }
@@ -327,7 +338,10 @@ impl Pipeline<'_, '_> {
         let name = |origin: &str| run.origin_name(origin);
         let packer = self.run.packer.clone();
         let Self { planner, built, .. } = self;
-        built.warnings.extend(erps.wheel_warnings());
+        built.warnings.extend(crate::diagnostics::phases::time_part(
+            "build.check.wheels",
+            || erps.wheel_warnings(),
+        ));
         if !ers_maps.is_empty() {
             let edited = erps.edit_written(|rel, r| match ers::in_teams(rel) && r.kind() == "VTF" {
                 true => ers::edit_vtf(r, ers_maps, &packer),
@@ -360,20 +374,22 @@ impl Pipeline<'_, '_> {
         for n in erps.take_notes() {
             built.lines.push(format!("erp: {n}"));
         }
-        for w in erps.check_ui(&name)? {
+        for w in crate::diagnostics::phases::time_part("build.check.ui", || erps.check_ui(&name))? {
             built.warnings.push(format!("ui: {w}"));
         }
-        for line in erps.cohere_arrays()? {
+        for line in crate::diagnostics::phases::time_part("build.check.arrays", || erps.cohere_arrays())? {
             built.lines.push(format!("erp: {line}"));
         }
-        for (severity, w) in erps.check_textures(&name) {
+        for (severity, w) in
+            crate::diagnostics::phases::time_part("build.check.textures", || erps.check_textures(&name))
+        {
             let kind = match severity {
                 crate::content::texture_check::Severity::Invalid => "texture the game's renderer may reject",
                 _ => "texture",
             };
             built.warnings.push(format!("{kind}: {w}"));
         }
-        let stats = erps.repair_stats();
+        let stats = crate::diagnostics::phases::time_part("build.check.stats", || erps.repair_stats());
         if let Some((origin, files)) = by_origin(&stats.broken).first() {
             let who = name(origin);
             let fix = format!("Turn {who} off in this profile.");

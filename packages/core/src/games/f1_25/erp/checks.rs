@@ -127,17 +127,24 @@ impl ErpBuild<'_> {
         if edited.is_empty() {
             return Ok(Vec::new());
         }
-        let report = crate::ui::check::archives(
-            &edited,
-            &stock,
-            crate::ui::catalog::stock(),
-            crate::ui::catalog::engine(),
-        )
+        let report = crate::diagnostics::phases::time_part("build.check.ui.report", || {
+            crate::ui::check::archives(
+                &edited,
+                &stock,
+                crate::ui::catalog::stock(),
+                crate::ui::catalog::engine(),
+            )
+        })
         .map_err(|e| fail(format!("checking UI edits: {e}")))?;
         let by = |f: &Finding| {
             self.writers
                 .iter()
-                .find(|((erp, res), _)| f.at.starts_with(&format!("{erp}: {res}: ")))
+                .find(|((erp, res), _)| {
+                    f.at.strip_prefix(erp.as_str())
+                        .and_then(|r| r.strip_prefix(": "))
+                        .and_then(|r| r.strip_prefix(res.as_str()))
+                        .is_some_and(|r| r.starts_with(": "))
+                })
                 .map_or_else(|| "the game's own copy".to_owned(), |(_, origin)| name(origin))
         };
         let (renamed, hard): (Vec<Finding>, Vec<Finding>) =

@@ -117,11 +117,16 @@ impl Pipeline<'_, '_> {
     fn edit_database_rows(&mut self, inputs: &Inputs, std16: &BTreeMap<String, Std>) -> Result<DbEdits> {
         let fitted = &inputs.tracks;
         let store = self.run.store;
-        let ui_lists = track_ui_lists(self.run, fitted)?;
-        let mut db = Database::read(&inputs.db_src)?;
+        let ui_lists = crate::diagnostics::phases::time_part("build.database.ui_lists", || {
+            track_ui_lists(self.run, fitted)
+        })?;
+        let mut db =
+            crate::diagnostics::phases::time_part("build.database.read", || Database::read(&inputs.db_src))?;
         let row_ids_lock = crate::row_ids::lock(&store.root)?;
         let mut row_ids = self.row_ids(inputs)?;
-        let tracks = self.add_tracks(&mut db.db, fitted, &ui_lists, &mut row_ids)?;
+        let tracks = crate::diagnostics::phases::time_part("build.database.tracks", || {
+            self.add_tracks(&mut db.db, fitted, &ui_lists, &mut row_ids)
+        })?;
         let tracked = db.added_keys();
         let track_changes = match fitted.is_empty() {
             true => Vec::new(),
@@ -129,17 +134,27 @@ impl Pipeline<'_, '_> {
         };
         let staged =
             (self.planner.route(Kind::Db) == Route::Runtime && self.planner.has_db()).then(|| db.db.clone());
-        let applied = self.apply_db_ops(&mut db, &tracked, row_ids)?;
+        let applied = crate::diagnostics::phases::time_part("build.database.ops", || {
+            self.apply_db_ops(&mut db, &tracked, row_ids)
+        })?;
         drop(row_ids_lock);
-        self.keep_what_the_game_needs(&mut db, &track_changes, inputs, std16)?;
+        crate::diagnostics::phases::time_part("build.database.keep", || {
+            self.keep_what_the_game_needs(&mut db, &track_changes, inputs, std16)
+        })?;
         let mut edits = self.take_db_reports();
         edits.id_aliases = applied.id_aliases;
         edits.row_ids_unsaved = applied.row_ids_unsaved;
-        let recorded = self.record_rows(&mut db, &applied.added, &tracks, inputs, &mut edits);
+        let recorded = crate::diagnostics::phases::time_part("build.database.record", || {
+            self.record_rows(&mut db, &applied.added, &tracks, inputs, &mut edits)
+        });
         let grid = grid_size(&db.db);
         let worlds = layer_worlds(&db.db);
-        self.write_database(db, staged, &recorded.row_adders, inputs.room_asked)?;
-        self.place_tracks(fitted, &worlds, &recorded.ai_teams, grid)?;
+        crate::diagnostics::phases::time_part("build.database.write", || {
+            self.write_database(db, staged, &recorded.row_adders, inputs.room_asked)
+        })?;
+        crate::diagnostics::phases::time_part("build.database.place", || {
+            self.place_tracks(fitted, &worlds, &recorded.ai_teams, grid)
+        })?;
         Ok(edits)
     }
 
