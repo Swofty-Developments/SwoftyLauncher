@@ -11,10 +11,14 @@ use swofty_core::build::{GVDB, build};
 use swofty_core::hud::{self, GameStock, Stock, dials};
 use swofty_core::install::Game;
 use swofty_core::store::Store;
-use swofty_core::ui::node::{NodeExt, ObjExt, clone_node, edit, find_path, root_obj};
+use swofty_core::ui::node::{
+    CHILDREN, NodeExt, ObjExt, clone_node, edit, find_path, fix_ids, group_node, hidden, node_at_mut,
+    root_obj,
+};
 use swofty_formats::erp::{Erp, ErpFile};
 use swofty_formats::gvdb::Gvdb;
 use swofty_formats::pkg::Pkg;
+use swofty_formats::uipre::{KEY_VISIBLE, Uipre, element_id};
 
 const FLOW_RACE: &str = "2025_asset_groups/ui_package/flow_race.erp";
 const MARKER: &str = "planked_brake_panel";
@@ -969,4 +973,112 @@ fn a_record_level_switch_scopes_the_dial_and_gives_the_stock_parts_back_by_defau
         }
     }
     std::fs::remove_dir_all(dir).ok();
+}
+
+const STANDINGS: &str = "hud_track_position.osd_visibility_option.track_position";
+
+fn screen_record() -> serde_json::Value {
+    serde_json::json!({
+        "screen": "standings",
+        "show": { "view_model": "view_model_data.hud_t_show" },
+        "elements": [
+            { "kind": "text", "id": "lap", "style": "OSD_24_bold", "align": "left", "box": 40,
+              "cap_height": 9.5, "at": [10, 14], "value": { "view_model": "view_model_data.hud_t_lap" } }
+        ],
+        "editor": { "preview": { "view_model_data.hud_t_lap": "10" } }
+    })
+}
+
+impl Fixture {
+    fn screen_addon(&self, id: &str) {
+        let hud = serde_json::json!({ "hud.element": { "tower": screen_record() } });
+        self.install(
+            id,
+            serde_json::json!({ "operations": { "hud": ["hud.json"] } }),
+            vec![("hud.json", hud.to_string().into_bytes())],
+        );
+    }
+
+    fn replacing(&self, id: &str, real: &Path, resource: &str, change: &dyn Fn(Vec<u8>) -> Vec<u8>) {
+        let originals = GameStock::with_baseline(real, &Store::open_default().root).unwrap();
+        let stock = ErpFile::open(&originals.original(FLOW_RACE)).unwrap();
+        let res = stock.erp.find(resource).unwrap();
+        let bytes = stock.load(res).unwrap().fragments[0].data().unwrap();
+        let ops = serde_json::json!({ "schema_version": 1, "ops": [
+            { "op": "erp.replace-resource", "erp": FLOW_RACE, "resource": resource, "source": "copy.bin" }
+        ] });
+        self.install(
+            id,
+            serde_json::json!({ "operations": { "assets": ["ops.json"] } }),
+            vec![
+                ("ops.json", ops.to_string().into_bytes()),
+                ("copy.bin", change(bytes)),
+            ],
+        );
+    }
+}
+
+#[test]
+fn a_board_another_addon_hides_in_the_editor_preview_still_takes_a_screen_record() {
+    let Some(game) = real() else { return };
+    let f = Fixture::new("preview-hidden", &game);
+    f.replacing("a.preview", &game, hud::screens::STACKED_UIPRE, &|bytes| {
+        let mut p = Uipre::parse(&bytes).unwrap();
+        p.set_visible(hud::screens::STACKED_MASK, false).unwrap();
+        p.to_bytes().unwrap()
+    });
+    f.screen_addon("s.tower");
+    let built = build(&f.store, "default", &f.game).unwrap();
+    assert!(
+        built
+            .lines
+            .iter()
+            .any(|l| l.contains("a.preview") && l.contains("on top of that change")),
+        "{:#?}",
+        built.lines
+    );
+    let archive = f
+        .store
+        .addon_cache_dir("s.tower")
+        .join("hud/hud_screen_scene.erp");
+    let erp = Erp::parse(&std::fs::read(archive).unwrap()).unwrap();
+    let res = erp.find(hud::screens::STACKED_UIPRE).unwrap();
+    let p = Uipre::parse(&res.fragments[0].data().unwrap()).unwrap();
+    let mask = element_id(hud::screens::STACKED_MASK);
+    assert_eq!(p.element_ids().iter().filter(|i| **i == mask).count(), 1);
+    assert_eq!(p.setters(mask).len(), 1);
+    assert!(
+        p.setter_at(&["s_tower_host", "s_tower_pv"], KEY_VISIBLE)
+            .is_some()
+    );
+}
+
+#[test]
+fn another_addons_own_tower_on_the_board_stops_the_build_naming_both() {
+    let Some(game) = real() else { return };
+    let f = Fixture::new("two-towers", &game);
+    f.replacing("b.tower", &game, dials::TEMPLATE, &|bytes| {
+        edit(&bytes, |p| {
+            let at = find_path(&p.root, STANDINGS)?;
+            let target = node_at_mut(&mut p.root, &at)?;
+            let mut grp = group_node("tt_ctl", vec![], &[], vec![hidden("tt_mask", &["mask"])]);
+            fix_ids(&mut grp, Some(STANDINGS));
+            target.slot_mut(CHILDREN)?.push(grp);
+            Ok(())
+        })
+        .unwrap()
+    });
+    f.screen_addon("s.tower");
+    let err = build(&f.store, "default", &f.game).unwrap_err().to_string();
+    assert!(
+        err.contains(
+            "the HUD elements do not compose: b.tower and s.tower both replace the Track Position list"
+        ),
+        "{err}"
+    );
+    assert!(
+        err.contains("turn b.tower or s.tower off in this profile"),
+        "{err}"
+    );
+    assert!(err.contains(&format!("{STANDINGS}.tt_ctl.tt_mask")), "{err}");
 }

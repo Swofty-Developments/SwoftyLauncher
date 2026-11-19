@@ -21,7 +21,7 @@ use super::stock_edit::{self, Restyle, StockNodes};
 use super::template::{self, StockTags, Usage};
 use super::textures::{self, Res};
 use super::units::{self, TexFacts};
-use super::{Input, Stock, art_bounds, editor, first, walk};
+use super::{Input, Stock, art_bounds, conflict, editor, first, walk};
 use crate::ui::idf;
 use crate::ui::node::{self, NodeExt, ObjExt};
 use crate::{Error, Result};
@@ -542,6 +542,109 @@ fn template_of_path(path: &str) -> &'static str {
     }
 }
 
+/// Stops with a [`conflict::Conflict`] when another addon's copy of a template already shows and hides
+/// what a record takes over: the stock board a screen masks (that addon replaces the same board), or
+/// an element a record's `stock_nodes` or `restyle` hides. Nodes of the game's own template are left to
+/// the checks of `stock_edit`.
+fn claims(stock: &dyn Stock, recs: &[Rec], race: &Pkg, spectator: &Pkg) -> Result<()> {
+    let original = |erp: &str, name: &str| -> Result<Pkg> {
+        Ok(Pkg::parse(&first(stock.game_copy(erp, name)?, name)?)?)
+    };
+    let race_original = original(dials::STOCK_ERP, dials::TEMPLATE)?;
+    let mut spec_original: Option<Pkg> = None;
+    let mut spec = || -> Result<Pkg> {
+        if spec_original.is_none() {
+            spec_original = Some(original(dials::STOCK_ERP, dials::SPECTATOR)?);
+        }
+        Ok(spec_original.clone().expect("set above"))
+    };
+    let mut seen = BTreeSet::new();
+    for t in recs.iter().flat_map(|r| &r.targets) {
+        let f = &t.facts;
+        if !seen.insert(f.key.clone()) {
+            continue;
+        }
+        let replay;
+        let (live, orig, resource): (&Pkg, Pkg, &str) = match template_of_path(&f.parent_ui) {
+            "spectator" => (spectator, spec()?, dials::SPECTATOR),
+            "replay" => {
+                replay = Pkg::parse(&first(stock.read(&f.template_erp, &f.template)?, &f.template)?)?;
+                (
+                    &replay,
+                    original(&f.template_erp, &f.template)?,
+                    f.template.as_str(),
+                )
+            }
+            _ => (race, race_original.clone(), dials::TEMPLATE),
+        };
+        if let Some((node, chain)) = conflict::board_fights(&live.root, &orig.root, &f.parent_ui, &f.masks)?
+            .into_iter()
+            .next()
+        {
+            let ours = conflict::addons_of(
+                recs.iter()
+                    .filter(|r| r.targets.iter().any(|x| x.facts.key == f.key))
+                    .map(|r| r.input.addon.as_str()),
+            );
+            return Err(conflict::by(
+                conflict::Conflict::error(
+                    resource,
+                    conflict::Kind::Board {
+                        screen: f.key.clone(),
+                        element: chain,
+                        node,
+                    },
+                ),
+                &ours,
+            ));
+        }
+    }
+    for r in recs {
+        let ours = [r.input.addon.clone()];
+        let mut hides: Vec<(String, Vec<String>, String)> = r
+            .stock_nodes
+            .iter()
+            .map(|s| {
+                (
+                    s.template.clone(),
+                    s.hide.clone(),
+                    s.scene.clone().unwrap_or_else(|| s.template.clone()),
+                )
+            })
+            .collect();
+        for rs in &r.restyles {
+            for parent in &rs.template_parents {
+                hides.push((parent.clone(), rs.hide.clone(), rs.scene.clone()));
+            }
+        }
+        for (under, hide, scene) in hides {
+            let (live, orig, resource): (&Pkg, Pkg, &str) = match template_of_path(&under) {
+                "spectator" => (spectator, spec()?, dials::SPECTATOR),
+                "replay" => continue,
+                _ => (race, race_original.clone(), dials::TEMPLATE),
+            };
+            for (rel, element) in stock_edit::visible_fights(&live.root, &under, &hide)? {
+                let node = conflict::full_path(&under, &rel);
+                if conflict::has_node(&orig, &node) {
+                    continue;
+                }
+                return Err(conflict::by(
+                    conflict::Conflict::error(
+                        resource,
+                        conflict::Kind::Shown {
+                            element,
+                            scene: scene.clone(),
+                            node,
+                        },
+                    ),
+                    &ours,
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
 /// Composes every `screen` record of `inputs` into the race template, the spectator template and
 /// the archives of [`Out`].
 #[allow(clippy::too_many_arguments)]
@@ -593,6 +696,7 @@ pub fn compose_screens(
     let read_from = |erp: &str, name: &str| first(stock.read(erp, name)?, name);
     let race_read = |name: &str| read_from(screens::FLOW_RACE, name);
     let race_tags = StockTags::race(&race_stock.root);
+    claims(stock, &recs, race_stock, spec_stock)?;
 
     let cap_bytes = race_read(screens::CAP)?;
     let mut cap = Builder::new(&CAP_FACTS, &cap_bytes, mods, bar, Some(om_xm))?;
@@ -771,6 +875,7 @@ pub fn compose_screens(
         let uipre = race_read(screens::STACKED_UIPRE)?;
         let hide = vec![screens::STACKED_MASK.to_owned()];
         let mut instances = Vec::new();
+        let mut addons = Vec::new();
         for (ri, r) in recs.iter().enumerate() {
             if !r.targets.iter().any(|t| t.facts.key == "standings") {
                 continue;
@@ -797,8 +902,10 @@ pub fn compose_screens(
                 pv.root,
                 pv.pv_texts.len()
             ));
+            addons.push(r.input.addon.as_str());
         }
-        let new = editor::uipre_in(&uipre, screens::STACKED, &hide, &instances)?;
+        let new = editor::uipre_in(&uipre, screens::STACKED, &hide, &instances)
+            .map_err(|e| conflict::by(e, &conflict::addons_of(addons)))?;
         out.scene
             .push((screens::STACKED_UIPRE.to_owned(), "UIPR", vec![new]));
     }

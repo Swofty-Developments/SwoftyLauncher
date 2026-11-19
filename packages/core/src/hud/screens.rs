@@ -302,6 +302,16 @@ pub fn spectator() -> ScreenFacts {
 
 pub const PRESETS: [&str; 3] = ["standings", "replay", "spectator"];
 
+/// What the player calls the stock board a screen record replaces.
+pub fn board_of(key: &str) -> String {
+    match key {
+        "standings" => "the Track Position list".into(),
+        "replay" => "the drivers list of the replay screen".into(),
+        "spectator" => "the spectator timing tower".into(),
+        k => format!("the {k} screen"),
+    }
+}
+
 pub fn preset(key: &str) -> Option<ScreenFacts> {
     match key {
         "standings" => Some(standings()),

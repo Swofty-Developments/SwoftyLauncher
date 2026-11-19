@@ -7,7 +7,10 @@ use std::path::PathBuf;
 
 use swofty_addon::asset::{AssetOp, Op, Origin};
 use swofty_addon::ops::ErpOp;
+use swofty_formats::erp::ErpFile;
+use swofty_formats::pkg::Pkg;
 
+use super::conflict::{self, Conflict};
 use super::{Input, Layered, Output, Stock, TemplateBase, compose_with, dials, screen_build, screens};
 use crate::erpbuild::ErpBuild;
 use crate::store::Store;
@@ -40,10 +43,15 @@ pub const SCREEN_ERPS: [&str; 4] = [
     "2025_asset_groups/ui_package/flow_options.erp",
 ];
 
-fn touched(op: &ErpOp, written: &BTreeSet<&str>, source: &dyn Fn() -> Option<PathBuf>) -> bool {
+/// The resources the composer writes that `op` changes; empty when it changes none of them.
+fn touched(op: &ErpOp, written: &BTreeSet<&str>, source: &dyn Fn() -> Option<PathBuf>) -> Vec<String> {
     let ours = |erps: &[&str]| {
         erps.iter()
             .any(|e| dials::SCENE_ERPS.contains(e) || SCREEN_ERPS.contains(e))
+    };
+    let one = |erp: &str, name: &str| match ours(&[erp]) && written.contains(name) {
+        true => vec![name.to_owned()],
+        false => Vec::new(),
     };
     match op {
         ErpOp::PutResource {
@@ -57,20 +65,118 @@ fn touched(op: &ErpOp, written: &BTreeSet<&str>, source: &dyn Fn() -> Option<Pat
             resource,
             rename,
             ..
-        } => ours(&[erp]) && written.contains(rename.as_deref().unwrap_or(resource)),
+        } => one(erp, rename.as_deref().unwrap_or(resource)),
         ErpOp::ReplaceResource { erp, resource, .. }
         | ErpOp::RemoveResource { erp, resource }
         | ErpOp::AddResource { erp, resource, .. }
-        | ErpOp::PatchPkg { erp, resource, .. } => ours(&[erp]) && written.contains(resource.as_str()),
+        | ErpOp::PatchPkg { erp, resource, .. } => one(erp, resource),
         ErpOp::Overlay { erps, .. } => {
             let erps: Vec<&str> = erps.iter().map(String::as_str).collect();
-            ours(&erps)
-                && source()
-                    .and_then(|p| crate::erpbuild::overlay_names(&p).ok())
-                    .is_some_and(|names| names.iter().any(|n| written.contains(n.as_str())))
+            if !ours(&erps) {
+                return Vec::new();
+            }
+            source()
+                .and_then(|p| crate::erpbuild::overlay_names(&p).ok())
+                .map(|names| {
+                    names
+                        .into_iter()
+                        .filter(|n| written.contains(n.as_str()))
+                        .collect()
+                })
+                .unwrap_or_default()
         }
-        _ => false,
+        _ => Vec::new(),
     }
+}
+
+fn and_list(names: &[String]) -> String {
+    match names {
+        [] => String::new(),
+        [one] => one.clone(),
+        [rest @ .., last] => format!("{} and {last}", rest.join(", ")),
+    }
+}
+
+fn or_list(names: &[String]) -> String {
+    match names {
+        [] => String::new(),
+        [one] => one.clone(),
+        [rest @ .., last] => format!("{} or {last}", rest.join(", ")),
+    }
+}
+
+/// One archive change of another addon that the composer builds on.
+struct Change<'a> {
+    resource: String,
+    who: String,
+    op: &'a ErpOp,
+    addon: &'a str,
+}
+
+/// The copy of `resource` an archive change carries, when it carries it whole.
+fn copy_of(cx: &Context, c: &Change, resource: &str) -> Option<Pkg> {
+    let resolve = |s: &swofty_addon::asset::Source| {
+        s.resolve(&crate::build::source_dir(cx.store, c.addon, s.root))
+            .ok()
+    };
+    let from_archive = |path: PathBuf| -> Option<Vec<u8>> {
+        let file = ErpFile::open(&path).ok()?;
+        let res = file.erp.find(resource).ok()?;
+        file.load(res).ok()?.fragments.first()?.data().ok()
+    };
+    let bytes = match c.op {
+        ErpOp::Overlay { source, .. } | ErpOp::PutResource { source, .. } => from_archive(resolve(source)?)?,
+        ErpOp::ReplaceResource {
+            source, fragment: 0, ..
+        } => std::fs::read(resolve(source)?).ok()?,
+        _ => return None,
+    };
+    Pkg::parse(&bytes).ok()
+}
+
+/// The names of the addons whose archive changes put the other claim of `c` there: the ones whose
+/// copy of the resource holds the conflict's template node, or else every addon that changed it.
+fn theirs(cx: &Context, c: &Conflict, changes: &[Change], ours: &[String]) -> Vec<String> {
+    let on: Vec<&Change> = changes
+        .iter()
+        .filter(|ch| ch.resource == c.resource && !ours.contains(&ch.who))
+        .collect();
+    let holding: Vec<&Change> = match c.node() {
+        Some(path) => on
+            .iter()
+            .copied()
+            .filter(|ch| copy_of(cx, ch, &c.resource).is_some_and(|p| conflict::has_node(&p, path)))
+            .collect(),
+        None => Vec::new(),
+    };
+    let pick = if holding.is_empty() { on } else { holding };
+    conflict::addons_of(pick.iter().map(|ch| ch.who.as_str()))
+}
+
+/// The refusal of a [`Conflict`], naming the addons whose records claim the part and the addons whose
+/// archive changes put the other claim there.
+fn conflict_text(cx: &Context, c: &Conflict, changes: &[Change]) -> String {
+    let ours: Vec<String> = c.addons.iter().map(|a| (cx.name)(a)).collect();
+    let ours = match ours.is_empty() {
+        true => vec!["the composed HUD".to_owned()],
+        false => ours,
+    };
+    let theirs = theirs(cx, c, changes, &ours);
+    if theirs.is_empty() {
+        return format!(
+            "the HUD elements do not compose: {}; turn {} off in this profile and use Send Logs ({})",
+            c.text(&and_list(&ours), "another addon"),
+            or_list(&ours),
+            c.detail("another addon")
+        );
+    }
+    let both: Vec<String> = theirs.iter().chain(&ours).cloned().collect();
+    format!(
+        "the HUD elements do not compose: {}; turn {} off in this profile ({})",
+        c.text(&and_list(&ours), &and_list(&theirs)),
+        or_list(&both),
+        c.detail(&and_list(&theirs))
+    )
 }
 
 /// Composes `inputs` for a build: the archive changes in `erp_ops` that touch what the composer writes
@@ -114,6 +220,7 @@ pub fn compose_in_build(
             "{rel} is replaced whole by an addon; the composed overlay starts from that archive's resources"
         ));
     }
+    let mut changes: Vec<Change> = Vec::new();
     for op in erp_ops {
         let AssetOp::Erp(e) = &op.op else { continue };
         let origin = op.origin.to_string();
@@ -124,14 +231,25 @@ pub fn compose_in_build(
             ErpOp::Overlay { source, .. } => resolve(source).ok(),
             _ => None,
         };
-        if !touched(e, &written, &path) {
+        let names = touched(e, &written, &path);
+        if names.is_empty() {
             continue;
         }
         match scratch.apply_for(e, &origin, &resolve) {
-            Ok(()) => lines.push(format!(
-                "{} changes a resource the composer writes; the composed overlay is built on top of that change",
-                (cx.name)(&origin)
-            )),
+            Ok(()) => {
+                for resource in names {
+                    changes.push(Change {
+                        resource,
+                        who: (cx.name)(&op.origin.addon),
+                        op: e,
+                        addon: &op.origin.addon,
+                    });
+                }
+                lines.push(format!(
+                    "{} changes a resource the composer writes; the composed overlay is built on top of that change",
+                    (cx.name)(&origin)
+                ))
+            }
             Err(err) => warnings.push(format!(
                 "{}: its change to a HUD resource cannot be applied under {}'s composed HUD ({err}); the composed overlay replaces that resource with a copy of the game's own",
                 (cx.name)(&origin),
@@ -143,8 +261,10 @@ pub fn compose_in_build(
         inner: cx.stock,
         build: &scratch,
     };
-    let output = compose_with(&layered, inputs, template)
-        .map_err(|e| Error::Other(format!("the HUD elements do not compose: {e}")))?;
+    let output = compose_with(&layered, inputs, template).map_err(|e| match e {
+        Error::HudConflict(c) => Error::Other(conflict_text(cx, &c, &changes)),
+        e => Error::Other(format!("the HUD elements do not compose: {e}")),
+    })?;
     let left = super::check::uncovered(&layered, &output.archives)?;
     if !left.is_empty() {
         return Err(Error::Other(format!(
@@ -189,4 +309,188 @@ pub fn compose_in_build(
         lines,
         warnings,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use swofty_addon::asset::{Root, Source};
+    use swofty_formats::pkg::{Node, Obj, Val};
+
+    use super::*;
+    use crate::hud::GameStock;
+    use crate::hud::conflict::{Kind, Setting};
+    use crate::ui::node;
+
+    const HALO: &str = "nick.f1-2026-halo";
+    const PLANKED: &str = "d.planked";
+    const TOWER: &str = "pablo.tv-timing-tower";
+    const PARENT: &str = "hud_track_position.osd_visibility_option.track_position";
+
+    fn name(id: &str) -> String {
+        match id {
+            HALO => "Project Halo".into(),
+            PLANKED => "Planked".into(),
+            TOWER => "TV Timing Tower".into(),
+            other => other.into(),
+        }
+    }
+
+    fn template(extra: Vec<Node>) -> Vec<u8> {
+        let t = node::group_node(
+            "hud_track_position",
+            vec![],
+            &[],
+            vec![node::group_node(
+                "osd_visibility_option",
+                vec![],
+                &[],
+                vec![node::group_node("track_position", vec![], &[], extra)],
+            )],
+        );
+        Pkg {
+            name: *b"UIDF",
+            root: Node::Obj(Obj::new(vec![(Val::str("Templates"), node::arr(vec![t]))])),
+            vca: vec![],
+            layout: None,
+        }
+        .to_bytes()
+        .unwrap()
+    }
+
+    fn replace(path: &str) -> ErpOp {
+        ErpOp::ReplaceResource {
+            erp: screens::FLOW_RACE.into(),
+            resource: dials::TEMPLATE.into(),
+            fragment: 0,
+            source: Source {
+                root: Root::Addon,
+                path: path.into(),
+            },
+        }
+    }
+
+    fn text(store: &Store, c: &Conflict, changes: &[Change]) -> String {
+        let stock = GameStock::new(store.root.join("game"));
+        let base = |rel: &str| store.root.join(rel);
+        let cx = Context {
+            store,
+            stock: &stock,
+            base: &base,
+            baseline: &base,
+            puts: &[],
+            name: &name,
+        };
+        conflict_text(&cx, c, changes)
+    }
+
+    fn store(tag: &str) -> Store {
+        let root = std::env::temp_dir().join(format!("swofty-hud-conflict-{tag}-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        Store::new(root)
+    }
+
+    #[test]
+    fn a_preview_conflict_names_both_addons_and_what_to_turn_off() {
+        let s = store("preview");
+        let op = replace("uipre.bin");
+        let changes = [Change {
+            resource: screens::STACKED_UIPRE.into(),
+            who: name(HALO),
+            op: &op,
+            addon: HALO,
+        }];
+        let c = Conflict {
+            resource: screens::STACKED_UIPRE.into(),
+            addons: vec![TOWER.into()],
+            kind: Kind::Preview {
+                element: "mask".into(),
+                have: Setting::Visible(true),
+                want: Setting::Visible(false),
+            },
+        };
+        assert_eq!(
+            text(&s, &c, &changes),
+            "the HUD elements do not compose: Project Halo and TV Timing Tower set the HUD editor preview of the Track Position list differently: Project Halo shows mask, TV Timing Tower hides mask; turn Project Halo or TV Timing Tower off in this profile (driver_position_table_stacked.uipre from Project Halo)"
+        );
+        std::fs::remove_dir_all(&s.root).ok();
+    }
+
+    #[test]
+    fn a_board_conflict_names_the_addon_whose_copy_holds_the_node() {
+        let s = store("board");
+        let halo = s.addons_dir().join(HALO).join("t.ui");
+        let planked = s.addons_dir().join(PLANKED).join("t.ui");
+        for (p, extra) in [
+            (
+                &halo,
+                vec![node::group_node(
+                    "tt_ctl",
+                    vec![],
+                    &[],
+                    vec![node::hidden("tt_mask", &["mask"])],
+                )],
+            ),
+            (&planked, vec![]),
+        ] {
+            std::fs::create_dir_all(p.parent().unwrap()).unwrap();
+            std::fs::write(p, template(extra)).unwrap();
+        }
+        let op = replace("t.ui");
+        let changes = [
+            Change {
+                resource: dials::TEMPLATE.into(),
+                who: name(PLANKED),
+                op: &op,
+                addon: PLANKED,
+            },
+            Change {
+                resource: dials::TEMPLATE.into(),
+                who: name(HALO),
+                op: &op,
+                addon: HALO,
+            },
+        ];
+        let c = Conflict {
+            resource: dials::TEMPLATE.into(),
+            addons: vec![TOWER.into()],
+            kind: Kind::Board {
+                screen: "standings".into(),
+                element: "mask".into(),
+                node: format!("{PARENT}.tt_ctl.tt_mask"),
+            },
+        };
+        assert_eq!(
+            text(&s, &c, &changes),
+            format!(
+                "the HUD elements do not compose: Project Halo and TV Timing Tower both replace the Track Position list, and only one of them can switch the game's own list off; turn Project Halo or TV Timing Tower off in this profile (Project Halo's template node {PARENT}.tt_ctl.tt_mask already shows and hides mask)"
+            )
+        );
+        std::fs::remove_dir_all(&s.root).ok();
+    }
+
+    #[test]
+    fn a_conflict_with_no_known_other_side_asks_for_logs() {
+        let s = store("unknown");
+        let c = Conflict {
+            resource: screens::STACKED_UIPRE.into(),
+            addons: vec![TOWER.into()],
+            kind: Kind::Preview {
+                element: "mask".into(),
+                have: Setting::Visible(true),
+                want: Setting::Visible(false),
+            },
+        };
+        assert_eq!(
+            text(&s, &c, &[]),
+            "the HUD elements do not compose: another addon and TV Timing Tower set the HUD editor preview of the Track Position list differently: another addon shows mask, TV Timing Tower hides mask; turn TV Timing Tower off in this profile and use Send Logs (driver_position_table_stacked.uipre from another addon)"
+        );
+    }
+
+    #[test]
+    fn lists_read_as_english() {
+        let v = |a: &[&str]| a.iter().map(|s| (*s).to_owned()).collect::<Vec<_>>();
+        assert_eq!(and_list(&v(&["A"])), "A");
+        assert_eq!(and_list(&v(&["A", "B", "C"])), "A, B and C");
+        assert_eq!(or_list(&v(&["A", "B"])), "A or B");
+    }
 }

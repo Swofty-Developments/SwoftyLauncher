@@ -10,6 +10,7 @@
 //! nyannoying (https://github.com/nyannoying1337/f1-25-project-halo).
 
 pub mod check;
+pub mod conflict;
 pub mod dials;
 pub mod editor;
 pub mod geom;
@@ -60,6 +61,10 @@ pub trait Stock {
     /// For each of `names`, every stock archive of its asset group that carries it, sorted. The game
     /// loads a resource from whichever of them reads it first, so a composed resource goes to all.
     fn carriers(&self, names: &[&str]) -> Result<BTreeMap<String, Vec<String>>>;
+    /// The game's own copy of a resource, before any other addon's change to it.
+    fn game_copy(&self, erp: &str, resource: &str) -> Result<Vec<Vec<u8>>> {
+        self.read(erp, resource)
+    }
 }
 
 /// The stock archives of a game folder.
@@ -270,6 +275,10 @@ impl Stock for Layered<'_> {
 
     fn carriers(&self, names: &[&str]) -> Result<BTreeMap<String, Vec<String>>> {
         self.inner.carriers(names)
+    }
+
+    fn game_copy(&self, erp: &str, resource: &str) -> Result<Vec<Vec<u8>>> {
+        self.inner.game_copy(erp, resource)
     }
 }
 
@@ -791,7 +800,9 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
     }
     if !preview_plans.is_empty() {
         let stock_uipre = first(stock.read(dials::STOCK_ERP, f125.uipre)?, f125.uipre)?;
-        let new = editor::uipre(&stock_uipre, f125.scene, &preview_hides, &pv_texts)?;
+        let addons = conflict::addons_of(preview_plans.iter().map(|(i, _)| inputs[*i].addon.as_str()));
+        let new = editor::uipre(&stock_uipre, f125.scene, &preview_hides, &pv_texts)
+            .map_err(|e| conflict::by(e, &addons))?;
         scene_resources.push((f125.uipre.to_owned(), "UIPR", vec![new]));
     }
     let mut targets: BTreeMap<(String, String), Vec<usize>> = BTreeMap::new();
