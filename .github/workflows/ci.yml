@@ -203,6 +203,20 @@ jobs:
 
       - run: cargo fmt --all --check
 
+  # The native C and C++ sources against native/.clang-format, with the clang-format release that formatted them.
+  native-format:
+    name: Native format
+    needs: changes
+    if: needs.changes.outputs.native == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - run: pipx install clang-format==21.1.8
+
+      - run: native/tools/format_check.sh
+
   # Clippy runs beside the tests rather than before them, on hosted runners even for main and without a Rust
   # cache: it is never the longest job (four to five minutes from cold).
   clippy:
