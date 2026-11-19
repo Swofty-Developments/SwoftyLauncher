@@ -919,7 +919,7 @@ fn resume_needs_label_an_addon_mode_with_its_addon() {
     ]
     .into_iter()
     .collect();
-    let out = resume_needs(&list, &[], &installed);
+    let out = resume_needs(&list, &[], &installed, None);
     assert_eq!(out[0].mode_label, "");
     assert_eq!(out[1].mode_label, "F1 1990");
     assert_eq!(out[2].mode_label, installed["x.other"].name);
@@ -949,7 +949,7 @@ fn resume_needs_say_what_is_off_missing_or_another_version() {
     .map(|(k, v)| (k.to_owned(), v))
     .collect();
     let order = vec!["a.on".to_owned(), "a.old".to_owned()];
-    let out = resume_needs(&list, &order, &installed);
+    let out = resume_needs(&list, &order, &installed, None);
     assert_eq!(out.len(), 2);
     assert_eq!(out[0].key, "67cdf241e227f68c");
     let by = |id: &str| out[0].addons.iter().find(|a| a.id == id).unwrap();
@@ -960,4 +960,105 @@ fn resume_needs_say_what_is_off_missing_or_another_version() {
     assert_eq!(out[0].addons.len(), 4);
     assert_eq!(out[1].key, "7");
     assert!(out[1].addons.is_empty());
+}
+
+fn ids(teams: &[i64], vehicles: &[i64], drivers: &[i64]) -> RowSet {
+    RowSet {
+        teams: teams.iter().copied().collect(),
+        vehicles: vehicles.iter().copied().collect(),
+        drivers: drivers.iter().copied().collect(),
+        aliases: Default::default(),
+    }
+}
+
+fn named(id: &str, name: &str) -> (String, AddonManifest) {
+    let mut m = manifest(id, "1.0.0");
+    m.name = name.into();
+    (id.to_owned(), m)
+}
+
+#[test]
+fn a_career_whose_team_and_car_rows_the_build_lacks_says_which_addon_made_them() {
+    let list = parse(
+        r#"[{"career":"driver_career_1990:a","slot":"7","mode":"driver_career","content":"f1_career_1990",
+              "team_raw":503,"vehicle_raw":510,"driver_raw":61,
+              "addons":[{"id":"x.f1990","why":"career content f1_career_1990"}]},
+            {"career":"driver_career:b","slot":"6","mode":"driver_career","team_raw":513,"vehicle_raw":520,"driver_raw":240,
+              "addons":[{"id":"x.f1990","why":"the career's team, car or driver"}]},
+            {"career":"driver_career:c","slot":"5","mode":"driver_career","team_raw":646,"vehicle_raw":695,"driver_raw":105,
+              "addons":[{"id":"x.f1990","why":"the career's team, car or driver"}]},
+            {"career":"driver_career:d","slot":"4","mode":"driver_career","team_raw":513,"vehicle_raw":16383,"driver_raw":16386,"addons":[]},
+            {"career":"my_team:e","slot":"3","mode":"my_team","team_raw":16384,"vehicle_raw":16384,"driver_raw":197,"addons":[]}]"#,
+    );
+    let installed: BTreeMap<String, AddonManifest> = [named("x.f1990", "F1 1990")].into_iter().collect();
+    let rows = ids(&[646, 7], &[695, 9], &[105, 61, 197]);
+    let out = resume_needs(&list, &[], &installed, Some(&rows));
+    let gap = |i: usize| out[i].missing_rows.clone();
+    assert_eq!(
+        gap(0),
+        Some(MissingRows {
+            addon: "F1 1990".into(),
+            tables: vec!["team".into(), "vehicle".into()]
+        })
+    );
+    assert_eq!(gap(0).unwrap().text(), "Missing rows from F1 1990");
+    assert_eq!(gap(1).unwrap().addon, "F1 1990");
+    assert_eq!(gap(1).unwrap().tables, ["team", "vehicle", "driver"]);
+    assert_eq!(gap(2), None, "rows the build has are not missing");
+    let unknown = gap(3).unwrap();
+    assert_eq!(unknown.addon, "");
+    assert_eq!(unknown.text(), "Missing rows: team");
+    assert_eq!(
+        gap(4),
+        None,
+        "the game's own placeholder ids are never rows to find"
+    );
+    assert!(
+        resume_needs(&list, &[], &installed, None)
+            .iter()
+            .all(|n| n.missing_rows.is_none())
+    );
+}
+
+#[test]
+fn a_content_career_is_labelled_by_its_addon_though_its_mode_is_driver_career() {
+    let list = parse(
+        r#"[{"career":"driver_career_1990:a","slot":"7","mode":"driver_career","content":"f1_career_1990",
+              "addons":[{"id":"x.f1990","why":"career content f1_career_1990"}]}]"#,
+    );
+    let installed: BTreeMap<String, AddonManifest> = [named("x.f1990", "F1 1990")].into_iter().collect();
+    assert_eq!(
+        resume_needs(&list, &[], &installed, None)[0].mode_label,
+        "F1 1990"
+    );
+}
+
+#[test]
+fn a_saved_id_the_build_aliases_to_a_row_is_not_missing() {
+    let list = parse(
+        r#"[{"career":"driver_career_1990:a","slot":"7","mode":"driver_career","content":"f1_career_1990",
+              "team_raw":503,"vehicle_raw":510,"driver_raw":61,
+              "addons":[{"id":"x.f1990","why":"career content f1_career_1990"}]}]"#,
+    );
+    let installed: BTreeMap<String, AddonManifest> = [named("x.f1990", "F1 1990")].into_iter().collect();
+    let mut rows = ids(&[644], &[], &[61]);
+    rows.aliases.tables.insert("teams".into(), [(503, 644)].into());
+    rows.aliases.tables.insert("vehicles".into(), [(510, 700)].into());
+    assert_eq!(rows.resolve("team_raw", 503), Some(644));
+    assert_eq!(rows.resolve("team_raw", 644), Some(644));
+    assert_eq!(
+        rows.resolve("vehicle_raw", 510),
+        None,
+        "an alias to a row the build lacks resolves to nothing"
+    );
+    let gap = resume_needs(&list, &[], &installed, Some(&rows))[0]
+        .missing_rows
+        .clone()
+        .unwrap();
+    assert_eq!(gap.tables, ["vehicle"]);
+    rows.vehicles.insert(700);
+    assert_eq!(
+        resume_needs(&list, &[], &installed, Some(&rows))[0].missing_rows,
+        None
+    );
 }

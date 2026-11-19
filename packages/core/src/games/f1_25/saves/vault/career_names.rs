@@ -6,16 +6,47 @@ use swofty_formats::gvdb::Gvdb;
 use super::careers::Listed;
 use crate::dbedit::Catalog;
 use crate::install::Game;
+use crate::row_ids::IdAliases;
+use crate::stdlib::careers::RowSet;
 use crate::store::Store;
 
 const TEAMS: (&str, &str) = ("entrants.teams", "team");
 const DRIVERS: (&str, &str) = ("entrants.drivers", "driver");
+const VEHICLES: (&str, &str) = ("entrants.vehicles", "vehicle");
 const ID_BITS: i64 = 0x3fff;
 
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct Names {
     teams: HashMap<i64, String>,
     drivers: HashMap<i64, String>,
+    colours: HashMap<i64, u32>,
+    rows: RowSet,
+}
+
+fn stat_ids(db: &Gvdb, (container, row): (&str, &str)) -> std::collections::BTreeSet<i64> {
+    (0..db.instance_count(container, row).unwrap_or(0))
+        .filter_map(|i| {
+            db.get_text(&format!("{container}.{row}_{i}.stat_id"))
+                .and_then(|t| t.trim().parse::<i64>().ok())
+        })
+        .collect()
+}
+
+fn team_colours(db: &Gvdb) -> HashMap<i64, u32> {
+    let mut out = HashMap::new();
+    for i in 0..db.instance_count(TEAMS.0, TEAMS.1).unwrap_or(0) {
+        let path = format!("{}.{}_{i}", TEAMS.0, TEAMS.1);
+        let id = db
+            .get_text(&format!("{path}.stat_id"))
+            .and_then(|t| t.trim().parse::<i64>().ok());
+        let argb = db
+            .get_text(&format!("{path}.ui_team_colour"))
+            .and_then(|t| t.trim().parse::<i32>().ok());
+        if let (Some(id), Some(argb)) = (id, argb) {
+            out.entry(id).or_insert(argb as u32 & 0x00ff_ffff);
+        }
+    }
+    out
 }
 
 fn table(cat: &Catalog, db: &Gvdb, (container, row): (&str, &str)) -> HashMap<i64, String> {
@@ -113,10 +144,60 @@ impl Names {
         if let Some(english) = english {
             let _ = cat.set_lang(english);
         }
+        let rows = RowSet {
+            teams: stat_ids(&db, TEAMS),
+            vehicles: stat_ids(&db, VEHICLES),
+            drivers: stat_ids(&db, DRIVERS),
+            aliases: IdAliases::default(),
+        };
         Self {
             teams: table(&cat, &db, TEAMS),
             drivers: table(&cat, &db, DRIVERS),
+            colours: team_colours(&db),
+            rows,
         }
+    }
+
+    /// The names of the database a build wrote in `build` (its `game_package` database and runtime edits, else
+    /// the game's own database), with the build's id `aliases`.
+    pub fn of_build(store: &Store, game: &Game, build: &Path, aliases: IdAliases) -> Option<Self> {
+        let db_path = build.join(crate::build::GVDB);
+        let path = match db_path.is_file() {
+            true => db_path,
+            false => crate::dbedit::stock_database(store, game).ok()?,
+        };
+        let mut db = Gvdb::parse(&std::fs::read(&path).ok()?).ok()?;
+        if let Ok(edits) = std::fs::read(build.join(crate::content::runtime_assets::ASSETS_FILE)) {
+            apply_edits(&mut db, &edits);
+        }
+        let english =
+            crate::game_folder::baseline::original_lang(&store.root, &game.dir, &game.identity, "eng").ok();
+        let english = english.and_then(|p| std::fs::read(p).ok());
+        let mut names = Self::from_db(db, english.as_deref());
+        names.rows.aliases = aliases;
+        Some(names)
+    }
+
+    pub fn with_aliases(mut self, aliases: IdAliases) -> Self {
+        self.rows.aliases = aliases;
+        self
+    }
+
+    pub fn rows(&self) -> &RowSet {
+        &self.rows
+    }
+
+    /// The team a save's id names in the build, through its aliases, with its UI colour (RGB).
+    pub fn team_named(&self, raw: i64) -> Option<(String, Option<u32>)> {
+        let id = self.rows.resolve("team_raw", raw)?;
+        let name = self.teams.get(&id)?.clone();
+        Some((name, self.colours.get(&id).copied()))
+    }
+
+    /// The driver a save's id names in the build, through its aliases.
+    pub fn driver_named(&self, raw: i64) -> Option<String> {
+        let id = self.rows.resolve("driver_raw", raw)?;
+        self.drivers.get(&id).cloned()
     }
 
     pub fn load(store: &Store, game: &Game, profile: Option<&str>) -> Option<Self> {

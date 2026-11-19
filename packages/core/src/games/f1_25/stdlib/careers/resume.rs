@@ -1,10 +1,11 @@
 //! What each career needs, as the in-game Resume Career list reads it from the session settings.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Serialize};
 
-use super::{Career, is_guess};
+use super::rows::{PLACEHOLDER_IDS, SAVE_IDS};
+use super::{Career, OWN_WHY, is_guess};
 use crate::manifest::AddonManifest;
 use crate::stdlib::range::Range;
 
@@ -17,6 +18,55 @@ pub struct ResumeNeed {
     pub at_version: bool,
 }
 
+/// The team, car and driver rows the database a career will load into holds, by stat id.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct RowSet {
+    pub teams: BTreeSet<i64>,
+    pub vehicles: BTreeSet<i64>,
+    pub drivers: BTreeSet<i64>,
+    /// The build's id aliases (`swofty/id_aliases.json`): the ids rows had before, by `teams`, `vehicles`
+    /// and `drivers`, mapped to the ids they have now.
+    pub aliases: crate::row_ids::IdAliases,
+}
+
+impl RowSet {
+    fn of(&self, field: &str) -> (&BTreeSet<i64>, &'static str) {
+        match field {
+            "team_raw" => (&self.teams, "teams"),
+            "vehicle_raw" => (&self.vehicles, "vehicles"),
+            _ => (&self.drivers, "drivers"),
+        }
+    }
+
+    /// The id a save's `id` of `field` (`team_raw`, `vehicle_raw`, `driver_raw`) names in the build: itself
+    /// when a row has it, else the id its alias gives when a row has that. `None` when no row does.
+    pub fn resolve(&self, field: &str, id: i64) -> Option<i64> {
+        let (rows, table) = self.of(field);
+        if rows.contains(&id) {
+            return Some(id);
+        }
+        let now = *self.aliases.tables.get(table)?.get(&id)?;
+        rows.contains(&now).then_some(now)
+    }
+}
+
+/// Rows a career's save slot names that the database it would load into lacks: the addon that provided them
+/// when the career was made (its name, empty when none is recorded) and which of team, car and driver.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct MissingRows {
+    pub addon: String,
+    pub tables: Vec<String>,
+}
+
+impl MissingRows {
+    pub fn text(&self) -> String {
+        match self.addon.is_empty() {
+            false => format!("Missing rows from {}", self.addon),
+            true => format!("Missing rows: {}", self.tables.join(", ")),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct CareerNeeds {
     pub key: String,
@@ -24,31 +74,77 @@ pub struct CareerNeeds {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub mode_label: String,
     pub addons: Vec<ResumeNeed>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub missing_rows: Option<MissingRows>,
 }
 
 const STOCK_MODES: [&str; 3] = ["", "driver_career", "my_team"];
 
-/// What the in game list calls a career's mode: nothing for the two stock modes (the core names them from the
-/// save), else the name of the addon that owns the mode, the one recorded with a `career content` or
-/// `its career mode` reason, or the first addon the career needs.
-fn mode_label(c: &Career, installed: &BTreeMap<String, AddonManifest>) -> String {
-    if STOCK_MODES.contains(&c.field("mode").unwrap_or("")) {
-        return String::new();
-    }
+fn addon_name(id: &str, installed: &BTreeMap<String, AddonManifest>) -> String {
+    installed.get(id).map_or(id.to_owned(), |m| m.name.clone())
+}
+
+/// The addon that owns the career's mode: the one recorded with a `career content` or `its career mode`
+/// reason, else the first addon the career needs.
+fn mode_owner<'a>(c: &'a Career) -> Option<&'a super::CareerAddon> {
     let owns = |a: &&super::CareerAddon| {
         a.why
             .as_deref()
             .is_some_and(|w| w.starts_with("career content") || w.starts_with("its career mode"))
     };
-    let owner = c
-        .addons
+    c.addons
         .iter()
         .filter(|a| !is_guess(a))
         .find(owns)
-        .or_else(|| c.addons.iter().find(|a| !is_guess(a)));
-    owner
-        .map(|a| installed.get(&a.id).map_or(a.id.clone(), |m| m.name.clone()))
+        .or_else(|| c.addons.iter().find(|a| !is_guess(a)))
+}
+
+/// Whether the career is one of an addon's own modes: its mode names one, or it carries addon content.
+fn addon_mode(c: &Career) -> bool {
+    !STOCK_MODES.contains(&c.field("mode").unwrap_or("")) || c.field("content").is_some()
+}
+
+/// What the in game list calls a career's mode: nothing for the two stock modes (the core names them from the
+/// save), else the name of the addon that owns the mode.
+fn mode_label(c: &Career, installed: &BTreeMap<String, AddonManifest>) -> String {
+    if !addon_mode(c) {
+        return String::new();
+    }
+    mode_owner(c)
+        .map(|a| addon_name(&a.id, installed))
         .unwrap_or_default()
+}
+
+/// The rows of the career's save slot that `rows` lacks. Ids from the placeholder up are the game's own
+/// (no team, my team) and are never checked.
+fn lacked(c: &Career, rows: &RowSet) -> Vec<String> {
+    SAVE_IDS
+        .iter()
+        .filter_map(|(field, table)| {
+            let id = c.extra.get(*field).and_then(serde_json::Value::as_i64)?;
+            let named = (0..PLACEHOLDER_IDS).contains(&id) && rows.resolve(field, id).is_none();
+            named.then(|| table.rsplit('.').next().unwrap_or(table).to_owned())
+        })
+        .collect()
+}
+
+fn missing_rows(
+    c: &Career,
+    rows: Option<&RowSet>,
+    installed: &BTreeMap<String, AddonManifest>,
+) -> Option<MissingRows> {
+    let tables = lacked(c, rows?);
+    if tables.is_empty() {
+        return None;
+    }
+    let owner = c
+        .addons
+        .iter()
+        .find(|a| a.why.as_deref() == Some(OWN_WHY))
+        .or_else(|| mode_owner(c).filter(|_| addon_mode(c)))
+        .map(|a| addon_name(&a.id, installed))
+        .unwrap_or_default();
+    Some(MissingRows { addon: owner, tables })
 }
 
 fn at_version(a: &super::CareerAddon, installed: &AddonManifest) -> bool {
@@ -63,11 +159,13 @@ fn at_version(a: &super::CareerAddon, installed: &AddonManifest) -> bool {
 
 /// One entry per career the save slots back, keyed by the save slot key the core sees; the addons are the
 /// ones the career needs, each with whether profile `order` has it on and at the version the career was
-/// made with. An addon recorded only because it was on is not a need.
+/// made with. An addon recorded only because it was on is not a need. With `rows`, the database the career
+/// would load into, a career whose team, car or driver row it lacks says so in `missing_rows`.
 pub fn resume_needs(
     list: &[Career],
     order: &[String],
     installed: &BTreeMap<String, AddonManifest>,
+    rows: Option<&RowSet>,
 ) -> Vec<CareerNeeds> {
     list.iter()
         .filter(|c| !c.is_gone() && c.in_slots())
@@ -99,6 +197,7 @@ pub fn resume_needs(
                 career: c.career.clone(),
                 mode_label: mode_label(c, installed),
                 addons,
+                missing_rows: missing_rows(c, rows, installed),
             })
         })
         .collect()

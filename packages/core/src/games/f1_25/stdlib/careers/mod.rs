@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 mod index_file;
+mod list;
 mod play;
 mod record;
 mod resume;
@@ -22,9 +23,10 @@ mod rows;
 pub use index_file::{
     data_path, keep, kept_ids, migrate, parse, read, rename_profile, replace_profile, sync,
 };
+pub use list::{ResumeRow, date_text, resume_list_for, resume_rows, wanted as resume_list_wanted};
 pub use play::{in_save_of, missing, needing, play_line, stop_line, unowned_line};
 pub use record::{lost_cars, record_cars, record_session};
-pub use resume::{CareerNeeds, ResumeNeed, resume_needs};
+pub use resume::{CareerNeeds, MissingRows, ResumeNeed, RowSet, resume_needs};
 pub use rows::{Played, drop_former_owners, settle_rows, stock_max_for};
 
 pub const GAME_PATH: &str = "swofty/careers/index.json";

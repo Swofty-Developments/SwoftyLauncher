@@ -42,6 +42,10 @@ pub struct SessionSettings {
     /// What each career in the save slots needs and whether this session has it: the in-game Resume Career list gates on it.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub resume_needs: Vec<crate::stdlib::careers::CareerNeeds>,
+    /// The rows of the in-game Resume Career list screen, newest first; the core maps a pressed row's index to
+    /// its save slot by `key`. Empty unless the list screen is on (`SWOFTY_RESUME_LIST=1`).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub resume_list: Vec<crate::stdlib::careers::ResumeRow>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -330,6 +334,7 @@ impl SessionSettings {
             launcher_saves: None,
             plain_saves: None,
             resume_needs: Vec::new(),
+            resume_list: Vec::new(),
         };
         out.check_commands()?;
         Ok(out)
