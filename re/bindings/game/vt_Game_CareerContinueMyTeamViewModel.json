@@ -6,9 +6,9 @@
  "row": {
   "addr": "0x145726670",
   "type": "vtable[28]",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "evidence": "decomp:re/decomp/141a1db90.c;xref:0x14164a4f9,0x1457266c0",
+  "evidence": "decomp:own disasm 0x14164a4d0-0x14164a52a (factory 0x141649f80: lea rax,[rip+0x40dc173] at 0x14164a4f6 resolves to this vtable and is stored at [r12], the new view model);decomp:own disasm 0x141a1db90 (slot 10 at +0x50, djb2 seed 0x1505) and 0x141a1eb80 (slot 24 at +0xc0, imul 0x540 card stride, busy byte 0x1380);xref:0x14164a4f6,0x14164a4fd,0x1457266c0;imm:0x1505,0x540,0x1380",
   "notes": "ts-v1: CareerContinueMyTeamViewModel (resume screen, My Team); slot 10 = Game_CareerContinue_HandleCommand, slot 24 = PressSlot (read from the exe)"
  },
  "signature": {
@@ -40,5 +40,44 @@
   ]
  },
  "verify": [],
- "proofs": []
+ "proofs": [
+  {
+   "by": "swofty",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14164bae6",
+    "target": "0x1457287a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d314ab2555304d87ef8ce3915b5fdf3c938cf9728794f9c5bbb1495143410f1a"
+  },
+  {
+   "by": "swofty",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14164a4f6",
+    "target": "0x145726670"
+   },
+   "sigcheck": "passed",
+   "digest": "de339db35db69f426a5c3769070921e5ad1d875c19668412501f31827946547c"
+  }
+ ]
 }
