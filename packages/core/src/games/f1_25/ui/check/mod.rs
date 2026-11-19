@@ -20,6 +20,32 @@ pub use loader::loader_findings;
 pub use props::{dropped_props, runtime_bindings};
 pub use stock::{against_stock, scene_against_stock};
 
+const PARSED_KEPT: usize = 8;
+
+thread_local! {
+    static PARSED: std::cell::RefCell<Vec<(Vec<u8>, std::rc::Rc<Pkg>)>> = const { std::cell::RefCell::new(Vec::new()) };
+}
+
+/// `data` parsed. A file the checks read again, as each of them parses what it checks, and one several
+/// archives carry, is parsed once while it is among the last [`PARSED_KEPT`] read.
+pub(super) fn parsed(data: &[u8]) -> swofty_formats::Result<std::rc::Rc<Pkg>> {
+    PARSED.with(|kept| {
+        let mut kept = kept.borrow_mut();
+        if let Some(at) = kept.iter().position(|(d, _)| d == data) {
+            let hit = kept.remove(at);
+            let pkg = hit.1.clone();
+            kept.push(hit);
+            return Ok(pkg);
+        }
+        let pkg = std::rc::Rc::new(Pkg::parse(data)?);
+        if kept.len() >= PARSED_KEPT {
+            kept.remove(0);
+        }
+        kept.push((data.to_vec(), pkg.clone()));
+        Ok(pkg)
+    })
+}
+
 #[derive(Clone, Copy)]
 pub struct UiInput<'a> {
     pub resource: &'a str,
@@ -56,7 +82,7 @@ pub fn ui_edit(input: &UiInput, scenes: &Scenes, cat: &Catalog, engine: &Engine)
 
 pub fn scene_edit(resource: &str, data: &[u8], cat: &Catalog) -> crate::Result<Report> {
     let mut report = Report::default();
-    let p = Pkg::parse(data)?;
+    let p = parsed(data)?;
     let format = "format: the game finds a scene by its componentId, md5-64 of its eaid path, and an element by its leaf name through nodeidlookup";
     for m in idf::xref_mismatches(&p)? {
         let (at, msg) = m.split_once(": ").unwrap_or((&m, ""));

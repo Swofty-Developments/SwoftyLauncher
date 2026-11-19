@@ -4,7 +4,7 @@
 use std::collections::BTreeSet;
 
 use swofty_formats::hash::djb2;
-use swofty_formats::pkg::{Node, Pkg};
+use swofty_formats::pkg::Node;
 
 use super::findings::Finding;
 use super::flows::str_of;
@@ -30,7 +30,7 @@ pub(super) fn u32_at(o: &swofty_formats::pkg::Obj, key: &str) -> Option<u32> {
 }
 
 pub fn integrity(data: &[u8]) -> crate::Result<(usize, usize, Vec<String>)> {
-    let p = Pkg::parse(data)?;
+    let p = super::parsed(data)?;
     let root = p.root.o()?;
     let mut nodes = Vec::new();
     for key in ["Screens", "Templates"] {
@@ -96,7 +96,7 @@ pub fn integrity(data: &[u8]) -> crate::Result<(usize, usize, Vec<String>)> {
 }
 
 pub(super) fn integrity_findings(data: &[u8], frag: &str) -> crate::Result<Vec<Finding>> {
-    let p = Pkg::parse(data)?;
+    let p = super::parsed(data)?;
     let root = p.root.o()?;
     let tops: BTreeSet<&str> = ["Screens", "Templates"]
         .iter()

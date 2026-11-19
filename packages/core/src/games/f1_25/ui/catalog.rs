@@ -311,7 +311,7 @@ pub fn element_type(e: &Node) -> String {
         .unwrap_or_else(|| "?".into())
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Scene {
     pub elements: Vec<(String, String, Option<u64>, String)>,
     pub by_name: HashMap<String, Vec<usize>>,
@@ -328,6 +328,13 @@ type Hit<'a> = (&'a str, Option<u64>, &'a str, u64);
 
 impl Scenes {
     pub fn add(&mut self, data: &[u8]) -> crate::Result<()> {
+        self.scenes.extend(Self::parse(data)?);
+        Ok(())
+    }
+
+    /// The scenes the layout package `data` holds, in the order it lists them.
+    pub fn parse(data: &[u8]) -> crate::Result<Vec<(u64, Scene)>> {
+        let mut found = Vec::new();
         let p = Pkg::parse(data)?;
         for entry in idf::scenes(&p)? {
             let (Some(sid), Some(root)) = (
@@ -363,9 +370,9 @@ impl Scenes {
                         .collect()
                 })
                 .unwrap_or_default();
-            self.scenes.insert(sid, sc);
+            found.push((sid, sc));
         }
-        Ok(())
+        Ok(found)
     }
 
     fn hits(&self, sid: u64, name: &str, prefix: &str) -> Vec<Hit<'_>> {
