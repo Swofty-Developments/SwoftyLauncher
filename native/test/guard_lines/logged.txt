@@ -84,9 +84,10 @@
 [career] resume gate off (SWOFTY_RESUME_GATE=%s)
 [career] resume gate off: needs %s and %s, which this build does not resolve
 [career] resume gate off: the resume cards' layout is not proven on this build
-[career] resume screen: SWOFTY_RESUME_LIST=1 and no SWOFTY_RESUME_LIST_PROBE slot id; the list screen is used, not the probe
+[career] resume screen: the list screen is on and there is no SWOFTY_RESUME_LIST_PROBE slot id; the list screen is used, not the probe
 [career] resume screen: the direct slot load is not proven on this build; not probed
 [career] resume screen: probe armed: the first stock resume screen to open loads slot id %llu through card 0
+[career] resume screen: SWOFTY_RESUME_LIST=0: the list screen is off
 [career] resume screen: armed; Resume Career opens the list screen when the content select hooks are live
 [career] resume screen: not armed (the gate or the direct load is not available on this build)
 [career] resume gate %s; a career that needs add-ons this profile lacks asks before it loads (%s)

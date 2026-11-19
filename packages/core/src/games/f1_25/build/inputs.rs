@@ -52,6 +52,20 @@ pub(super) struct Inputs {
     pub saved_from: (usize, usize),
 }
 
+pub(super) fn stamp_resume_list(hash: &mut BuildHash, data: &std::path::Path, wanted: bool) -> Result<()> {
+    if !wanted {
+        hash.update("resume list|off;");
+        return Ok(());
+    }
+    let careers = crate::stdlib::careers::data_path(data);
+    let stamp = match careers.is_file() {
+        true => sha256_file(&careers)?,
+        false => "absent".to_owned(),
+    };
+    hash.update(format!("resume list|{stamp};"));
+    Ok(())
+}
+
 impl Inputs {
     /// Reads every addon's ops into the planner and the rest of what the build reads, and names the
     /// build by the digest of it all.
@@ -174,6 +188,11 @@ impl Inputs {
                 let meta = std::fs::metadata(&p).map_err(io_err(&p))?;
                 hash.update(format!("{rel}|{}|{:?}", meta.len(), meta.modified().ok()));
             }
+            stamp_resume_list(
+                &mut hash,
+                &store.root,
+                crate::stdlib::careers::resume_list_wanted(),
+            )?;
         }
         let db_src = run.original(GVDB);
         hash.update(sha256_file(&db_src)?);

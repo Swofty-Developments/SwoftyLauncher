@@ -91,7 +91,7 @@ const rg::Table &needs_locked()
         table_read = true;
         table = rg::parse(runtime::settings_json_text());
         swofty::log("[career] resume gate: %s", table.present ? "the launcher gave the careers' add-on needs"
-                                                                : "the launcher gave no career needs; no career is gated");
+                                                              : "the launcher gave no career needs; no career is gated");
     }
     return table;
 }
@@ -444,11 +444,12 @@ private:
         make_str = swofty::api->resolve(MAKE_STR);
         char on[16] = {}, slot[32] = {};
         bool probe_list_on = false;
-        if (GetEnvironmentVariableA("SWOFTY_RESUME_LIST", on, sizeof on) && !strcmp(on, "1")) {
+        if (!(GetEnvironmentVariableA("SWOFTY_RESUME_LIST", on, sizeof on) && !strcmp(on, "0"))) {
             probe_list_on = true;
-            if (!GetEnvironmentVariableA("SWOFTY_RESUME_LIST_PROBE", slot, sizeof slot) || !(probe_slot = strtoull(slot, nullptr, 10)))
-                swofty::log("[career] resume screen: SWOFTY_RESUME_LIST=1 and no SWOFTY_RESUME_LIST_PROBE slot id; the list "
-                            "screen is used, not the probe");
+            if (!GetEnvironmentVariableA("SWOFTY_RESUME_LIST_PROBE", slot, sizeof slot) ||
+                !(probe_slot = strtoull(slot, nullptr, 10)))
+                swofty::log("[career] resume screen: the list screen is on and there is no SWOFTY_RESUME_LIST_PROBE slot id; "
+                            "the list screen is used, not the probe");
             else if (!runtime::holds(PRESS_SLOT_GATE))
                 swofty::log("[career] resume screen: the direct slot load is not proven on this build; not probed");
             else {
@@ -460,21 +461,23 @@ private:
                             "through card 0",
                             (unsigned long long)probe_slot);
             }
-        }
+        } else
+            swofty::log("[career] resume screen: SWOFTY_RESUME_LIST=0: the list screen is off");
         list_on = probe_list_on && !probe_armed && make_str && runtime::holds(PRESS_SLOT_GATE);
         confirm_on = make_str && runtime::holds(CONFIRM_GATE);
-        out.push_back({MIXIN,
-                       {{DRIVER_VT, SWOFTY_MIXIN_WITH_ARG(SWOFTY_MIXIN_VTABLE, 10), 100, (void *)&driver_entry,
-                         (void **)&orig_driver},
-                        {MY_TEAM_VT, SWOFTY_MIXIN_WITH_ARG(SWOFTY_MIXIN_VTABLE, 10), 100, (void *)&my_team_entry,
-                         (void **)&orig_my_team}}});
+        out.push_back(
+            {MIXIN,
+             {{DRIVER_VT, SWOFTY_MIXIN_WITH_ARG(SWOFTY_MIXIN_VTABLE, 10), 100, (void *)&driver_entry, (void **)&orig_driver},
+              {MY_TEAM_VT, SWOFTY_MIXIN_WITH_ARG(SWOFTY_MIXIN_VTABLE, 10), 100, (void *)&my_team_entry,
+               (void **)&orig_my_team}}});
     }
 
     void settle() override
     {
         if (list_on && offered_set(MIXIN) && runtime::core_mixins_active(MIXIN)) {
             career::resume_list::set_armed(true);
-            swofty::log("[career] resume screen: armed; Resume Career opens the list screen when the content select hooks are live");
+            swofty::log(
+                "[career] resume screen: armed; Resume Career opens the list screen when the content select hooks are live");
         } else if (career::resume_list::wanted())
             swofty::log("[career] resume screen: not armed (the gate or the direct load is not available on this build)");
         if (offered_set(MIXIN))
