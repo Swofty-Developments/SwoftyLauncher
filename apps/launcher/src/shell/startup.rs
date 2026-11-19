@@ -198,7 +198,7 @@ impl Shell {
             reload_generation: 0,
             slow_logged: false,
             update_check,
-            updates: crate::update::Updates::new(),
+            updates: crate::update::Updates::started(),
             blocks: crate::blocks::Blocks::default(),
             content_width: 900.,
             short: false,
