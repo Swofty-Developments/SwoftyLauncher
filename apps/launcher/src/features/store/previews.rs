@@ -9,7 +9,7 @@ use super::parts::*;
 use crate::shell::Shell;
 use crate::ui::discord;
 use crate::ui::scale::px;
-use crate::ui::theme::Palette;
+use crate::ui::theme::{Palette, ScrollArea};
 
 /// Only links to the web open; anything else from the server is ignored.
 fn web_link(link: Option<&str>) -> Option<String> {
@@ -19,42 +19,51 @@ fn web_link(link: Option<&str>) -> Option<String> {
 }
 
 impl Shell {
-    pub(super) fn store_previews(&self, width: f32, p: Palette) -> Option<AnyElement> {
+    /// The Supporter+ previews beside the tiers, scrolling inside their own panel. None when there are none.
+    pub(super) fn store_previews(&self, p: Palette) -> Option<AnyElement> {
         let previews = &self.store_page.previews;
         if previews.is_empty() {
             return None;
         }
-        let wide = width >= SIDE_BY_SIDE;
+        let cards: Vec<AnyElement> = previews
+            .iter()
+            .enumerate()
+            .map(|(i, x)| self.preview_card(i, x, p))
+            .collect();
         Some(
             v_flex()
-                .gap(px(18.))
-                .child(section_head(
+                .flex_1()
+                .min_w_0()
+                .gap(px(10.))
+                .child(panel_head(
                     IconName::Sparkles,
-                    tr("Supporter+ previews"),
+                    hue(PLUS_NAME),
+                    tr("Early access"),
                     tr("Addons Supporter+ members can test before anyone else"),
-                    None,
                     p,
                 ))
-                .children(
-                    previews
-                        .iter()
-                        .enumerate()
-                        .map(|(i, x)| self.preview_card(i, x, wide, p)),
+                .child(
+                    div().relative().flex_1().min_h_0().child(
+                        div().absolute().top_0().left_0().size_full().child(
+                            div()
+                                .size_full()
+                                .scroll_y("store-previews")
+                                .child(v_flex().gap(px(10.)).pr(px(4.)).children(cards)),
+                        ),
+                    ),
                 )
                 .into_any_element(),
         )
     }
 
-    fn preview_card(&self, i: usize, x: &Preview, wide: bool, p: Palette) -> AnyElement {
+    fn preview_card(&self, i: usize, x: &Preview, p: Palette) -> AnyElement {
         let picture = x.image.as_deref().and_then(|u| self.fetched_image(u));
         let art = div()
             .relative()
             .overflow_hidden()
             .flex_shrink_0()
-            .map(|d| match wide {
-                true => d.w(px(340.)).min_h(px(240.)),
-                false => d.w_full().h(px(190.)),
-            })
+            .w(px(160.))
+            .min_h(px(120.))
             .map(|d| match picture {
                 Some(image) => d.child(
                     img(image)
@@ -68,27 +77,27 @@ impl Shell {
                     .flex()
                     .items_center()
                     .justify_center()
-                    .p(px(28.))
+                    .p(px(12.))
                     .bg(diagonal())
                     .child(
                         Icon::new(IconName::Sparkles)
                             .absolute()
-                            .right(px(-28.))
-                            .bottom(px(-28.))
-                            .size(px(160.))
+                            .right(px(-14.))
+                            .bottom(px(-14.))
+                            .size(px(80.))
                             .text_color(hue(WHITE).opacity(0.14)),
                     )
                     .child(
                         div()
-                            .text_size(px(36.))
-                            .line_height(px(40.))
+                            .text_size(px(20.))
+                            .line_height(px(24.))
                             .font_weight(FontWeight::EXTRA_BOLD)
                             .text_color(hue(WHITE))
                             .text_center()
                             .child(x.title.clone()),
                     ),
             })
-            .child(div().absolute().top(px(14.)).left(px(14.)).child(badge(
+            .child(div().absolute().top(px(8.)).left(px(8.)).child(badge(
                 SharedString::from(format!("store-preview-glint-{i}")),
                 true,
             )));
@@ -96,83 +105,80 @@ impl Shell {
         let highlights = (!x.highlights.is_empty()).then(|| {
             div()
                 .grid()
-                .grid_cols(if wide { 2 } else { 1 })
-                .gap_x(px(20.))
-                .gap_y(px(10.))
-                .pt(px(4.))
+                .grid_cols(2)
+                .gap_x(px(12.))
+                .gap_y(px(4.))
                 .children(x.highlights.iter().map(|h| {
                     h_flex()
                         .min_w_0()
-                        .gap(px(10.))
+                        .gap(px(6.))
+                        .child(
+                            Icon::new(IconName::Check)
+                                .size(px(13.))
+                                .flex_shrink_0()
+                                .text_color(hue(PLUS_NAME)),
+                        )
                         .child(
                             div()
-                                .size(px(22.))
-                                .flex_shrink_0()
-                                .flex()
-                                .items_center()
-                                .justify_center()
-                                .rounded_full()
-                                .bg(hue(PLUS_NAME).opacity(0.18))
-                                .child(
-                                    Icon::new(IconName::Check)
-                                        .size(px(13.))
-                                        .text_color(hue(PLUS_NAME)),
-                                ),
+                                .flex_1()
+                                .min_w_0()
+                                .truncate()
+                                .text_size(px(12.))
+                                .child(h.clone()),
                         )
-                        .child(div().flex_1().min_w_0().text_size(px(14.)).child(h.clone()))
                 }))
         });
         let link = web_link(x.link.as_deref()).map(|url| {
-            h_flex().pt(px(8.)).child(discord::link_button(
+            h_flex().pt(px(2.)).child(discord::link_button(
                 SharedString::from(format!("store-preview-link-{i}")),
                 tr("View in Discord"),
                 url,
-                40.,
-                16.,
+                30.,
+                12.,
             ))
         });
         let content = v_flex()
             .flex_1()
             .min_w_0()
-            .p(px(26.))
-            .gap(px(12.))
+            .p(px(12.))
+            .gap(px(6.))
             .child(
                 h_flex()
-                    .gap(px(10.))
-                    .child(chip(
-                        tr("Early access"),
-                        hue(PLUS_NAME).opacity(0.16),
-                        hue(PLUS_NAME),
-                    ))
-                    .children(
-                        posted.map(|d| div().text_size(px(12.)).text_color(p.text_placeholder).child(d)),
-                    ),
-            )
-            .child(
-                div()
-                    .text_size(px(24.))
-                    .line_height(px(30.))
-                    .font_weight(FontWeight::BOLD)
-                    .child(x.title.clone()),
+                    .gap(px(8.))
+                    .child(
+                        div()
+                            .flex_1()
+                            .min_w_0()
+                            .truncate()
+                            .text_size(px(15.))
+                            .font_weight(FontWeight::BOLD)
+                            .child(x.title.clone()),
+                    )
+                    .children(posted.map(|d| {
+                        div()
+                            .flex_shrink_0()
+                            .text_size(px(11.))
+                            .text_color(p.text_placeholder)
+                            .child(d)
+                    })),
             )
             .when(!x.summary.trim().is_empty(), |d| {
                 d.child(
                     div()
-                        .text_size(px(15.))
-                        .line_height(px(21.))
+                        .text_size(px(12.))
+                        .line_height(px(17.))
                         .text_color(p.text_muted)
+                        .line_clamp(2)
                         .child(x.summary.clone()),
                 )
             })
             .children(highlights)
             .child(div().flex_1())
             .children(link);
-        let card = match wide {
-            true => h_flex().items_stretch(),
-            false => v_flex(),
-        };
-        card.w_full()
-            .rounded(px(16.))
+        h_flex()
+            .items_stretch()
+            .w_full()
+            .rounded(px(12.))
             .overflow_hidden()
             .border_1()
             .border_color(hue(PURPLE).opacity(0.4))

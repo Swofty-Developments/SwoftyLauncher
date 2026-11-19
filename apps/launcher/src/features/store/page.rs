@@ -13,29 +13,24 @@ use super::parts::*;
 use crate::features::time_trial::Load;
 use crate::shell::Shell;
 use crate::ui::scale::px;
-use crate::ui::theme::{Palette, ScrollArea};
+use crate::ui::theme::Palette;
 use crate::ui::tokens::space::GUTTER;
+
+/// The share of the page's height the tiers and early access row starts from; it grows when the tiers need more.
+const TOP_SHARE: f32 = 0.55;
+const ROW_GAP: f32 = 16.;
 
 fn perk_row(icon: IconName, text: SharedString, accent: Hsla) -> Div {
     h_flex()
-        .gap(px(14.))
-        .child(
-            div()
-                .size(px(34.))
-                .flex_shrink_0()
-                .flex()
-                .items_center()
-                .justify_center()
-                .rounded_full()
-                .bg(accent.opacity(0.16))
-                .child(Icon::new(icon).size(px(17.)).text_color(accent)),
-        )
+        .items_start()
+        .gap(px(10.))
+        .child(Icon::new(icon).size(px(18.)).flex_shrink_0().text_color(accent))
         .child(
             div()
                 .flex_1()
                 .min_w_0()
-                .text_size(px(16.))
-                .line_height(px(22.))
+                .text_size(px(13.))
+                .line_height(px(18.))
                 .child(text),
         )
 }
@@ -55,173 +50,103 @@ impl Shell {
             bio.update(cx, |s, cx| s.set_value(text, window, cx));
             self.store_page.bio_synced = true;
         }
-        let width = self.layout.content_width.min(MAX_WIDTH);
-        let modal = self
+        let claim = self
             .store_page
             .claim_open
             .then(|| self.store_claim_modal(email, payment, p, cx));
-        let note = self
+        let listing = self
             .store_page
-            .notice
-            .as_ref()
-            .filter(|_| !self.store_page.claim_open)
-            .map(|(ok, text)| notice(*ok, text.clone(), p));
-        let body = v_flex()
-            .w_full()
-            .max_w(px(MAX_WIDTH))
-            .gap(px(44.))
-            .child(self.store_hero(p, cx))
-            .child(
-                v_flex()
-                    .gap(px(16.))
-                    .child(self.store_tiers(width, p, cx))
-                    .child(self.store_onetime(amount, width, p, cx))
-                    .children(note),
-            )
-            .children(self.store_previews(width, p))
-            .child(self.store_supporters(bio, width, p, cx));
+            .listing_open
+            .then(|| self.store_listing_modal(bio, p, cx))
+            .flatten();
+        let tiers = self.store_tiers(amount, p, cx);
+        let top = h_flex()
+            .flex_basis(relative(TOP_SHARE))
+            .flex_shrink_0()
+            .items_stretch()
+            .gap(px(ROW_GAP))
+            .child(tiers)
+            .children(self.store_previews(p));
         v_flex()
             .relative()
             .size_full()
             .child(
-                div().flex_1().min_h_0().scroll_y("store-page").child(
-                    h_flex()
-                        .w_full()
-                        .items_start()
-                        .justify_center()
-                        .px(px(GUTTER))
-                        .pt(px(20.))
-                        .pb(px(44.))
-                        .child(body),
-                ),
+                v_flex()
+                    .size_full()
+                    .px(px(GUTTER))
+                    .pt(px(12.))
+                    .pb(px(16.))
+                    .gap(px(ROW_GAP))
+                    .child(top)
+                    .child(self.store_supporters(p, cx)),
             )
-            .children(modal)
+            .children(claim)
+            .children(listing)
             .into_any_element()
     }
 
-    fn store_hero(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+    /// The signed-in supporter's tier and time left, or what to do to subscribe, then the page's actions.
+    fn store_status(&self, p: Palette, cx: &mut Context<Self>) -> Div {
         let refresh = Button::new("store-refresh")
             .ghost()
+            .small()
             .icon(IconName::RefreshCw)
             .on_click(cx.listener(|this, _, _, cx| StorePage::reload(this, cx)));
         let claim = Button::new("store-claim-open")
-            .outline()
+            .ghost()
+            .small()
             .label(tr("Claim previous donation"))
             .on_click(cx.listener(|this, _, _, cx| {
                 this.store_page.claim_open = true;
                 this.store_page.notice = None;
                 cx.notify();
             }));
-        let error = self
-            .library
-            .error
-            .clone()
-            .map(|e| div().text_size(px(13.)).text_color(p.error).child(e));
-        div()
-            .relative()
-            .overflow_hidden()
-            .w_full()
-            .rounded(px(18.))
-            .border_1()
-            .border_color(hue(HOT_PINK).opacity(0.3))
-            .bg(linear_gradient(
-                115.,
-                linear_color_stop(tinted(p, HOT_PINK, 0.2), 0.),
-                linear_color_stop(tinted(p, PURPLE, 0.12), 1.),
-            ))
-            .child(
-                Icon::new(IconName::ShoppingBag)
-                    .absolute()
-                    .top(px(-36.))
-                    .right(px(160.))
-                    .size(px(210.))
-                    .text_color(hue(WHITE).opacity(0.04)),
-            )
-            .child(
-                h_flex()
-                    .relative()
-                    .flex_wrap()
-                    .gap(px(24.))
-                    .px(px(32.))
-                    .py(px(30.))
-                    .child(
-                        h_flex()
-                            .flex_1()
-                            .min_w(px(280.))
-                            .gap(px(20.))
-                            .child(icon_tile(IconName::ShoppingBag, 64., diagonal()))
-                            .child(
-                                v_flex()
-                                    .flex_1()
-                                    .min_w_0()
-                                    .gap(px(6.))
-                                    .child(
-                                        div()
-                                            .text_size(px(34.))
-                                            .line_height(px(38.))
-                                            .font_weight(FontWeight::EXTRA_BOLD)
-                                            .child(tr("Store")),
-                                    )
-                                    .child(
-                                        div()
-                                            .text_size(px(15.))
-                                            .text_color(p.text_muted)
-                                            .child(tr("Keep Swofty Launcher free and open source")),
-                                    )
-                                    .children(self.store_status(p))
-                                    .children(error),
-                            ),
-                    )
-                    .child(h_flex().gap(px(8.)).child(claim).child(refresh)),
-            )
-            .into_any_element()
-    }
-
-    /// The signed-in supporter's tier and time left, or what to do to subscribe when signed out.
-    fn store_status(&self, p: Palette) -> Option<AnyElement> {
-        if self.account.session.is_none() {
-            return Some(
+        let status: Option<AnyElement> = match &self.store_page.me {
+            _ if self.account.session.is_none() => Some(
                 muted(tr("Sign in with Discord to subscribe."), p)
-                    .pt(px(6.))
+                    .text_size(px(12.))
                     .into_any_element(),
-            );
-        }
-        let Load::Ready(me) = &self.store_page.me else {
-            return None;
-        };
-        if !me.active {
-            return None;
-        }
-        let plus = me.tier.as_deref() == Some("supporter_plus");
-        let when = me.expires_at.as_ref().map(format_date).unwrap_or_default();
-        Some(
-            h_flex()
-                .pt(px(8.))
-                .child(
+            ),
+            Load::Ready(me) if me.active => {
+                let plus = me.tier.as_deref() == Some("supporter_plus");
+                let when = me.expires_at.as_ref().map(format_date).unwrap_or_default();
+                Some(
                     h_flex()
-                        .gap(px(10.))
-                        .pl(px(6.))
-                        .pr(px(14.))
-                        .py(px(5.))
-                        .rounded_full()
-                        .bg(hue(WHITE).opacity(0.06))
+                        .flex_shrink_0()
+                        .gap(px(8.))
                         .child(badge("store-me-glint", plus))
                         .child(
                             div()
-                                .text_size(px(14.))
+                                .text_size(px(12.))
                                 .font_weight(FontWeight::SEMIBOLD)
                                 .child(trf!(
                                     "{months} months left (expires {date})",
                                     months = me.months_left.unwrap_or(0),
                                     date = when
                                 )),
-                        ),
+                        )
+                        .into_any_element(),
                 )
-                .into_any_element(),
-        )
+            }
+            _ => None,
+        };
+        let note = self
+            .store_page
+            .notice
+            .as_ref()
+            .filter(|_| !self.store_page.claim_open && !self.store_page.listing_open)
+            .map(|(ok, text)| notice(*ok, text.clone(), p).text_size(px(12.)).truncate());
+        h_flex()
+            .flex_shrink_0()
+            .h(px(28.))
+            .gap(px(10.))
+            .children(status)
+            .child(div().flex_1().min_w_0().children(note))
+            .child(claim)
+            .child(refresh)
     }
 
-    fn store_tiers(&self, width: f32, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+    fn store_tiers(&self, amount: Entity<InputState>, p: Palette, cx: &mut Context<Self>) -> Div {
         let current = match &self.store_page.me {
             Load::Ready(me) if me.active => me.tier.as_deref(),
             _ => None,
@@ -259,24 +184,27 @@ impl Shell {
                     )
                 }),
         );
-        let cards = [
-            self.tier_card(Kind::Supporter, "$5", basic, current == Some("supporter"), p, cx),
-            self.tier_card(
+        let cards = div()
+            .flex_1()
+            .grid()
+            .grid_cols(2)
+            .gap(px(12.))
+            .child(self.tier_card(Kind::Supporter, "$5", basic, current == Some("supporter"), p, cx))
+            .child(self.tier_card(
                 Kind::SupporterPlus,
                 "$20",
                 plus,
                 current == Some("supporter_plus"),
                 p,
                 cx,
-            ),
-        ];
-        div()
-            .w_full()
-            .grid()
-            .grid_cols(if width >= SIDE_BY_SIDE { 2 } else { 1 })
-            .gap(px(20.))
-            .children(cards)
-            .into_any_element()
+            ));
+        v_flex()
+            .flex_1()
+            .min_w_0()
+            .gap(px(10.))
+            .child(self.store_status(p, cx))
+            .child(cards)
+            .child(self.store_onetime(amount, p, cx))
     }
 
     fn tier_card(
@@ -290,84 +218,71 @@ impl Shell {
     ) -> AnyElement {
         let plus = kind == Kind::SupporterPlus;
         let accent = hue(if plus { PLUS_NAME } else { PINK });
-        let tagline = if plus {
-            tr("Everything in Supporter, plus early access to addons in testing")
-        } else {
-            tr("Ad-free launcher and the supporter channels in Discord")
-        };
         let head = h_flex()
-            .gap(px(14.))
-            .child(icon_tile(
-                if plus { IconName::Crown } else { IconName::Heart },
-                46.,
-                if plus { diagonal() } else { hue(PINK).into() },
-            ))
+            .h(px(22.))
+            .gap(px(8.))
+            .child(
+                Icon::new(if plus { IconName::Crown } else { IconName::Heart })
+                    .size(px(16.))
+                    .text_color(accent),
+            )
             .child(
                 div()
                     .flex_1()
                     .min_w_0()
                     .truncate()
-                    .text_size(px(22.))
-                    .font_weight(FontWeight::EXTRA_BOLD)
+                    .text_size(px(16.))
+                    .font_weight(FontWeight::BOLD)
                     .text_color(accent)
                     .child(tier_name(if plus { "supporter_plus" } else { "supporter" })),
             )
-            .child(
-                h_flex()
-                    .gap(px(6.))
-                    .when(current, |d| {
-                        d.child(chip(tr("Your tier"), hue(GREEN).opacity(0.16), hue(GREEN)))
-                    })
-                    .when(plus, |d| {
-                        d.child(chip(tr("Early access"), gradient(), hue(WHITE)))
-                    }),
-            );
+            .when(current, |d| {
+                d.child(chip(tr("Your tier"), hue(GREEN).opacity(0.16), hue(GREEN)))
+            });
         let price = h_flex()
             .items_end()
-            .gap(px(6.))
-            .pt(px(24.))
+            .gap(px(5.))
+            .pt(px(4.))
             .child(
                 div()
-                    .text_size(px(50.))
-                    .line_height(px(52.))
+                    .text_size(px(26.))
+                    .line_height(px(30.))
                     .font_weight(FontWeight::EXTRA_BOLD)
                     .child(price),
             )
             .child(
                 div()
-                    .pb(px(8.))
-                    .text_size(px(17.))
+                    .pb(px(4.))
+                    .text_size(px(13.))
                     .text_color(p.text_muted)
                     .child(tr("/ month")),
             );
         let card = v_flex()
             .flex_1()
-            .p(px(30.))
+            .p(px(14.))
             .map(|d| match plus {
-                true => d.rounded(px(16.)).bg(linear_gradient(
+                true => d.rounded(px(10.)).bg(linear_gradient(
                     180.,
                     linear_color_stop(tinted(p, PURPLE, 0.18), 0.),
                     linear_color_stop(p.surface, 0.75),
                 )),
-                false => d.rounded(px(18.)).border_1().border_color(p.border).bg(p.surface),
+                false => d.rounded(px(12.)).border_1().border_color(p.border).bg(p.surface),
             })
             .child(head)
             .child(price)
-            .child(muted(tagline, p).text_size(px(14.)).pt(px(6.)))
-            .child(div().my(px(24.)).h(px(1.)).w_full().bg(p.border_variant))
+            .child(div().my(px(8.)).h(px(1.)).w_full().bg(p.border_variant))
             .child(
                 v_flex()
-                    .gap(px(16.))
+                    .gap(px(6.))
                     .children(perks.into_iter().map(|(icon, text)| perk_row(icon, text, accent))),
             )
-            .child(div().flex_1().min_h(px(28.)))
+            .child(div().flex_1().min_h(px(10.)))
             .child(self.subscribe_button(kind, cx));
         match plus {
             true => v_flex()
                 .p(px(2.))
-                .rounded(px(18.))
+                .rounded(px(12.))
                 .bg(diagonal())
-                .shadow_lg()
                 .child(card)
                 .into_any_element(),
             false => v_flex().child(card).into_any_element(),
@@ -386,15 +301,16 @@ impl Shell {
             })
             .relative()
             .overflow_hidden()
+            .flex_shrink_0()
             .flex()
             .items_center()
             .justify_center()
-            .gap(px(10.))
-            .h(px(52.))
+            .gap(px(8.))
+            .h(px(34.))
             .w_full()
-            .rounded(px(12.))
-            .text_size(px(16.))
-            .font_weight(FontWeight::EXTRA_BOLD)
+            .rounded(px(8.))
+            .text_size(px(14.))
+            .font_weight(FontWeight::BOLD)
             .text_color(hue(WHITE))
             .map(|d| match plus {
                 true => d
@@ -407,7 +323,7 @@ impl Shell {
             .child(tr("Subscribe"))
             .child(
                 Icon::new(IconName::ArrowRight)
-                    .size(px(18.))
+                    .size(px(15.))
                     .text_color(hue(WHITE)),
             )
             .on_click(cx.listener(move |this, _, _, cx| {
@@ -421,13 +337,7 @@ impl Shell {
             }))
     }
 
-    fn store_onetime(
-        &self,
-        amount: Entity<InputState>,
-        width: f32,
-        p: Palette,
-        cx: &mut Context<Self>,
-    ) -> AnyElement {
+    fn store_onetime(&self, amount: Entity<InputState>, p: Palette, cx: &mut Context<Self>) -> Div {
         let busy = self.store_page.busy;
         let typed = amount.read(cx).value().to_string();
         let donate = div()
@@ -435,12 +345,12 @@ impl Shell {
             .flex()
             .flex_shrink_0()
             .items_center()
-            .h(px(36.))
-            .px(px(18.))
-            .rounded(px(10.))
+            .h(px(26.))
+            .px(px(12.))
+            .rounded(px(6.))
             .bg(rgb(YELLOW))
             .text_color(rgb(0x1a1400))
-            .text_size(px(14.))
+            .text_size(px(12.))
             .font_weight(FontWeight::BOLD)
             .when(busy, |d| d.opacity(0.6))
             .when(!busy, |d| d.cursor_pointer().hover(|d| d.opacity(0.9)))
@@ -448,44 +358,39 @@ impl Shell {
             .on_click(cx.listener(move |this, _, _, cx| {
                 StorePage::checkout(this, Kind::OneTime, Some(typed.clone()), cx)
             }));
-        let form = h_flex()
+        h_flex()
+            .flex_shrink_0()
+            .h(px(40.))
+            .px(px(12.))
             .gap(px(10.))
+            .rounded(px(10.))
+            .border_1()
+            .border_color(p.border_variant)
+            .bg(p.surface)
+            .child(Icon::new(IconName::Gift).size(px(16.)).text_color(rgb(YELLOW)))
             .child(
-                div().w(px(150.)).child(
+                div()
+                    .flex_shrink_0()
+                    .text_size(px(13.))
+                    .font_weight(FontWeight::SEMIBOLD)
+                    .child(tr("One-time donation")),
+            )
+            .child(
+                div()
+                    .flex_1()
+                    .min_w_0()
+                    .truncate()
+                    .text_size(px(12.))
+                    .text_color(p.text_muted)
+                    .child(tr("Converts to whole months of a tier")),
+            )
+            .child(
+                div().w(px(100.)).flex_shrink_0().child(
                     Input::new(&amount)
                         .small()
                         .prefix(div().text_color(p.text_muted).child("$")),
                 ),
             )
-            .child(donate);
-        let about = h_flex()
-            .flex_1()
-            .min_w_0()
-            .gap(px(14.))
-            .child(icon_tile(IconName::Gift, 40., hue(YELLOW).opacity(0.18)))
-            .child(
-                v_flex()
-                    .flex_1()
-                    .min_w_0()
-                    .gap(px(2.))
-                    .child(
-                        div()
-                            .text_size(px(15.))
-                            .font_weight(FontWeight::SEMIBOLD)
-                            .child(tr("One-time donation")),
-                    )
-                    .child(muted(tr("Converts to whole months of a tier"), p)),
-            );
-        let row = match width >= SIDE_BY_SIDE {
-            true => h_flex().gap(px(16.)).child(about).child(form),
-            false => v_flex().gap(px(12.)).child(about).child(form),
-        };
-        row.px(px(20.))
-            .py(px(14.))
-            .rounded(px(14.))
-            .border_1()
-            .border_color(p.border_variant)
-            .bg(p.surface)
-            .into_any_element()
+            .child(donate)
     }
 }

@@ -30,6 +30,7 @@ pub(crate) struct StorePage {
     pub notice: Option<(bool, String)>,
     pub claimed: Option<Claimed>,
     pub claim_open: bool,
+    pub listing_open: bool,
 }
 
 impl Default for StorePage {
@@ -45,6 +46,7 @@ impl Default for StorePage {
             notice: None,
             claimed: None,
             claim_open: false,
+            listing_open: false,
         }
     }
 }

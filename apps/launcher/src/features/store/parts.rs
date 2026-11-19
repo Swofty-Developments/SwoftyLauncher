@@ -1,5 +1,5 @@
 use gpui_kit::assets::IconName;
-use gpui_kit::component::{Icon, h_flex, v_flex};
+use gpui_kit::component::{Icon, h_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::time::Duration;
@@ -8,10 +8,6 @@ use swofty_core::online::server::support::tier_name;
 use crate::ui::scale::px;
 use crate::ui::theme::Palette;
 
-/// The widest the page's content grows, so the cards keep their shape on big screens.
-pub(super) const MAX_WIDTH: f32 = 1180.;
-/// Below this width the tier cards stack and the previews put their picture on top.
-pub(super) const SIDE_BY_SIDE: f32 = 720.;
 pub(super) const YELLOW: u32 = 0xffc933;
 pub(super) const PINK: u32 = 0xff5fa2;
 pub(super) const HOT_PINK: u32 = 0xff2d95;
@@ -57,18 +53,6 @@ pub(super) fn notice(ok: bool, text: String, p: Palette) -> Div {
         .text_size(px(13.))
         .text_color(if ok { hue(GREEN) } else { p.error })
         .child(text)
-}
-
-pub(super) fn icon_tile(icon: IconName, size: f32, bg: impl Into<Fill>) -> Div {
-    div()
-        .size(px(size))
-        .flex_shrink_0()
-        .flex()
-        .items_center()
-        .justify_center()
-        .rounded(px(size * 0.28))
-        .bg(bg)
-        .child(Icon::new(icon).size(px(size * 0.48)).text_color(hue(WHITE)))
 }
 
 pub(super) fn chip(label: &'static str, bg: impl Into<Fill>, color: Hsla) -> Div {
@@ -123,42 +107,33 @@ pub(super) fn badge(id: impl Into<ElementId>, plus: bool) -> Div {
         .child(tier_name(if plus { "supporter_plus" } else { "supporter" }))
 }
 
-pub(super) fn section_head(
+/// A panel's title row: an icon, the title and a muted line, with room after them for the caller's parts.
+pub(super) fn panel_head(
     icon: IconName,
+    color: Hsla,
     title: &'static str,
     subtitle: &'static str,
-    count: Option<usize>,
     p: Palette,
 ) -> Div {
     h_flex()
-        .gap(px(14.))
-        .child(icon_tile(icon, 44., diagonal()))
+        .flex_shrink_0()
+        .h(px(28.))
+        .gap(px(8.))
+        .child(Icon::new(icon).size(px(16.)).text_color(color))
         .child(
-            v_flex()
+            div()
+                .flex_shrink_0()
+                .text_size(px(15.))
+                .font_weight(FontWeight::SEMIBOLD)
+                .child(title),
+        )
+        .child(
+            div()
                 .flex_1()
                 .min_w_0()
-                .gap(px(2.))
-                .child(
-                    h_flex()
-                        .gap(px(10.))
-                        .child(
-                            div()
-                                .text_size(px(22.))
-                                .font_weight(FontWeight::BOLD)
-                                .child(title),
-                        )
-                        .children(count.map(|n| {
-                            div()
-                                .px(px(9.))
-                                .py(px(1.))
-                                .rounded_full()
-                                .bg(p.elevated)
-                                .text_size(px(12.))
-                                .font_weight(FontWeight::SEMIBOLD)
-                                .text_color(p.text_muted)
-                                .child(n.to_string())
-                        })),
-                )
-                .child(div().text_size(px(14.)).text_color(p.text_muted).child(subtitle)),
+                .truncate()
+                .text_size(px(12.))
+                .text_color(p.text_muted)
+                .child(subtitle),
         )
 }
