@@ -25,6 +25,8 @@ ROOT = os.path.dirname(NATIVE)
 LIST = os.path.join(NATIVE, 'tools', 'patch_sites.txt')
 RECORDS = os.path.join(ROOT, 're', 'bindings')
 RE_TOOLS = os.path.join(ROOT, 're', 'tools')
+sys.path.insert(0, RE_TOOLS)
+import sigdecl  # noqa: E402
 SCHEMA = 1
 MODULE = 'swofty.core'
 HOOK_LENGTH = 32
@@ -54,12 +56,6 @@ MACRO_TARGET = {'WRAP': 0, 'WRAP_PRIORITY': 1, 'OVERWRITE': 1, 'VTABLE': 0, 'VTA
 MACRO_WRITE = {'WRAP': 'inline', 'WRAP_PRIORITY': 'inline', 'OVERWRITE': 'inline', 'VTABLE': 'vtable',
                'VTABLE_PRIORITY': 'vtable', 'REDIRECT': 'call', 'SITE': 'mid', 'SITE_PRIORITY': 'mid', 'PATCH': 'bytes'}
 
-SIG_DECL = re.compile(r'(?:const|constexpr)\s+(?:runtime::)?(?P<type>Sig|Target)\s+(?P<name>[A-Z_][A-Z0-9_]*)\s*\{')
-STRING_CONST = re.compile(r'(?:constexpr|const)\s+(?:static\s+)?(?:const\s+)?char\s*(?:const\s*)?(?:\*\s*(?:const\s+)?'
-                          r'(?P<p>\w+)|\s(?P<a>\w+)\[\])\s*=\s*"(?P<v>[^"]*)"')
-INT_DECL = re.compile(r'(?:constexpr|const)\s+(?:static\s+)?(?:std::)?(?:u?int\d+_t|size_t|uintptr_t|unsigned|int|long)\s+'
-                      r'[A-Z_][A-Z0-9_]*\s*=[^;]*;')
-INT_PART = re.compile(r'([A-Z_][A-Z0-9_]*)\s*=\s*(0x[0-9A-Fa-f]+|\d+)\b')
 LAYOUTS = {
     'Sig': ('what', 'pattern', 'rva', 'kind', 'insn', 'anchor', 'len', 'section'),
     'core/assets/assets.cpp:Target': ('what', 'pattern', 'rva', 'kind', 'insn', 'anchor', 'len'),
@@ -100,44 +96,6 @@ def line_of(text, at):
     return text.count('\n', 0, at) + 1
 
 
-def split_top(body):
-    parts, depth, cur, quote = [], 0, '', False
-    for i, c in enumerate(body):
-        if c == '"' and (i == 0 or body[i - 1] != '\\'):
-            quote = not quote
-        if not quote:
-            if c in '({[':
-                depth += 1
-            elif c in ')}]':
-                depth -= 1
-            elif c == ',' and depth == 0:
-                parts.append(cur.strip())
-                cur = ''
-                continue
-        cur += c
-    if cur.strip():
-        parts.append(cur.strip())
-    return parts
-
-
-def braced(text, at):
-    depth = 0
-    for i in range(at, len(text)):
-        if text[i] == '{':
-            depth += 1
-        elif text[i] == '}':
-            depth -= 1
-            if depth == 0:
-                return text[at + 1:i]
-    raise Fail(f'unclosed brace at offset {at}')
-
-
-def literal(v):
-    if not re.fullmatch(r'(\s*"(?:[^"\\]|\\.)*"\s*)+', v):
-        return None
-    return ''.join(re.findall(r'"((?:[^"\\]|\\.)*)"', v))
-
-
 def includes(path):
     return [i for i in re.findall(r'#include "([^"]+)"', read(path)) if os.path.isfile(os.path.join(SRC, i))]
 
@@ -149,35 +107,31 @@ def near(path):
 def int_consts(path):
     out = {}
     for p in near(path):
-        for d in INT_DECL.finditer(read(p)):
-            for n, v in INT_PART.findall(d.group(0)):
-                out.setdefault(n, int(v, 0))
+        for n, v in sigdecl.int_consts(read(p)).items():
+            out.setdefault(n, v)
     return out
 
 
 def string_consts(path):
     out = {}
     for p in near(path):
-        for m in STRING_CONST.finditer(read(p)):
-            out.setdefault(m['p'] or m['a'], m['v'])
+        for n, v in sigdecl.string_consts(read(p)).items():
+            out.setdefault(n, v)
     return out
 
 
 def number(v, consts):
-    v = v.strip()
-    if re.fullmatch(r'0x[0-9A-Fa-f]+|\d+', v):
-        return int(v, 0)
-    if v in consts:
-        return consts[v]
-    raise Fail(f'"{v}" is not a number or a constant this tool reads')
+    try:
+        return sigdecl.int_arg(v, consts)
+    except ValueError:
+        raise Fail(f'"{v.strip()}" is not a number or a constant this tool reads') from None
 
 
 def string_pattern(path, name):
-    for p in near(path):
-        m = re.search(r'\b%s\s*=\s*((?:\s*"[^"]*")+)' % re.escape(name), read(p))
-        if m:
-            return literal(m.group(1))
-    raise Fail(f'{path}: no string constant {name}')
+    s = string_consts(path).get(name)
+    if s is None:
+        raise Fail(f'{path}: no string constant {name}')
+    return s
 
 
 _sigs = {}
@@ -186,29 +140,25 @@ _sigs = {}
 def signatures(path):
     if path in _sigs:
         return _sigs[path]
-    text, consts, out = read(path), int_consts(path), {}
-    for m in SIG_DECL.finditer(text):
-        layout = LAYOUTS.get(m['type']) or LAYOUTS.get(f'{path}:{m["type"]}')
+    out = {}
+    try:
+        decls = list(sigdecl.declarations(read(path), ('Sig', 'Target')))
+    except ValueError as err:
+        raise Fail(f'{path}: {err}') from None
+    for kind, name, line, args in decls:
+        layout = LAYOUTS.get(kind) or LAYOUTS.get(f'{path}:{kind}')
         if not layout:
             continue
-        values = split_top(braced(text, m.end() - 1))
-        s = {'what': None, 'pattern': None, 'rva': 0, 'kind': 'addr', 'insn': 0, 'anchor': 0, 'len': 0,
-             'section': '.xtls', 'decl': f'{path}:{line_of(text, m.start())}'}
+        decl = f'{path}:{line}'
         try:
-            for field, v in zip(layout, values):
-                if field in ('what', 'pattern', 'section'):
-                    s[field] = literal(v)
-                    if s[field] is None and re.fullmatch(r'[A-Za-z_]\w*', v):
-                        s[field] = string_pattern(path, v)
-                elif field == 'kind':
-                    s['kind'] = v.split('::')[-1]
-                else:
-                    s[field] = number(v, consts)
-            if not s['what'] or not s['pattern'] or s['kind'] not in ('addr', 'rel32', 'riprel'):
-                raise Fail('its fields are not literals and constants this tool reads')
-        except Fail as err:
-            s = {'error': f'{s["decl"]}: {m["name"]}: {err}'}
-        out[m['name']] = s
+            s = dict(sigdecl.fields(args, layout, string_consts(path), int_consts(path)), decl=decl)
+            if not s.get('what') or not s.get('pattern'):
+                raise ValueError('it has no what or no pattern')
+            if s['kind'] not in ('addr', 'rel32', 'riprel'):
+                raise ValueError(f'kind {s["kind"]} is not addr, rel32 or riprel')
+        except ValueError as err:
+            s = {'error': f'{decl}: {name}: {err}'}
+        out[name] = s
     _sigs[path] = out
     return out
 
@@ -406,14 +356,14 @@ def mixin_sites(ids):
         consts = string_consts(path)
         for m in MIXIN_ENTRY.finditer(text):
             t = m['target']
-            name = literal(t) if t.startswith('"') else consts.get(t.split('::')[-1])
+            name = sigdecl.literal(t) if t.startswith('"') else consts.get(t.split('::')[-1])
             if name is None:
                 raise Fail(f'{path}:{line_of(text, m.start())}: mixin target {t} is not a string this tool reads')
             kind = m['kind'] or m['akind']
             length = number(m['arg'], int_consts(path)) if kind == 'PATCH' else None
             out.append(site(path, KINDS[kind], 'binding', name, name, length))
         for m in MACRO.finditer(text):
-            args = split_top(m.group(2))
+            args = sigdecl.split_args(m.group(2))
             idx = MACRO_TARGET[m.group(1)]
             if len(args) <= idx:
                 continue
@@ -534,7 +484,6 @@ class Images:
         self.by_stamp, self._resolvers = {}, {}
         if not paths:
             return
-        sys.path.insert(0, RE_TOOLS)
         import bindverify
         from capstone import Cs, CS_ARCH_X86, CS_MODE_64
         self.bv, self.cs = bindverify, Cs(CS_ARCH_X86, CS_MODE_64)

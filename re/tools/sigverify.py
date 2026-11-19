@@ -39,6 +39,7 @@ import numpy as np
 from capstone import Cs, CS_ARCH_X86, CS_MODE_64
 from capstone.x86 import X86_OP_MEM, X86_REG_RIP, X86_GRP_JUMP, X86_GRP_CALL, X86_OP_IMM
 from bindverify import Image, SCN_EXECUTE
+import sigdecl
 
 STEAM = '/mnt/gaming/SteamLibrary/steamapps/common/F1 25/F1_25.exe'
 EA = '/mnt/gaming/EAApp/ai-fix/dumps/F1_25.1789128892.110548.mem'
@@ -63,60 +64,17 @@ md = Cs(CS_ARCH_X86, CS_MODE_64)
 md.detail = True
 
 
-def strip_comments(text):
-    return re.sub(r'//[^\n]*', '', re.sub(r'/\*.*?\*/', '', text, flags=re.S))
-
-
-def split_args(body):
-    out, cur, depth, quoted = [], '', 0, False
-    for ch in body:
-        if ch == '"':
-            quoted = not quoted
-        if not quoted and ch in '({':
-            depth += 1
-        if not quoted and ch in ')}':
-            depth -= 1
-        if ch == ',' and not quoted and depth == 0:
-            out.append(cur.strip())
-            cur = ''
-        else:
-            cur += ch
-    if cur.strip():
-        out.append(cur.strip())
-    return out
-
-
-def int_arg(text, names=None):
-    """An integer argument: a literal, a constant the file declares, or a sum of literals and casts such as
-    `uintptr_t(0) - 0x31c`."""
-    if names and text.strip() in names:
-        return names[text.strip()]
-    expr = re.sub(r'\b(?:uintptr_t|size_t|uint32_t|int32_t|int)\s*\(\s*([^()]*)\s*\)', r'\1', text)
-    terms = re.findall(r'\s*([+-]?)\s*(0[xX][0-9a-fA-F]+|\d+)[uUlL]*', expr)
-    if not terms or re.sub(r'\s|[+-]|0[xX][0-9a-fA-F]+[uUlL]*|\d+[uUlL]*', '', expr):
-        raise ValueError(f'not an integer expression: {text}')
-    return sum(-int(v, 0) if sign == '-' else int(v, 0) for sign, v in terms)
-
-
 def parse_sigs(path):
-    text = strip_comments(open(path).read())
-    consts = {m.group(1): ''.join(re.findall(r'"([^"]*)"', m.group(2)))
-              for m in re.finditer(r'constexpr\s+const\s+char\s*\*\s*(\w+)\s*=\s*((?:"[^"]*"\s*)+);', text)}
-    int_decl = r'constexpr\s+(?:uintptr_t|size_t|uint32_t|uint64_t|int)\s+(\w+)\s*=\s*(0[xX][0-9a-fA-F]+|\d+)[uUlL]*\s*;'
-    ints = {m.group(1): int(m.group(2), 0) for m in re.finditer(int_decl, text)}
+    with open(path) as f:
+        text = f.read()
+    strings, ints = sigdecl.string_consts(text), sigdecl.int_consts(text)
     sigs = []
-    for m in re.finditer(r'\bSig\s+(\w+)\s*\{(.*?)\}\s*;', text, flags=re.S):
-        a = split_args(m.group(2))
-        if len(a) < 3 or not a[0].startswith('"'):
-            continue
-        pat = ''.join(re.findall(r'"([^"]*)"', a[1])) if '"' in a[1] else consts.get(a[1])
-        if pat is None:
-            raise SystemExit(f'{path}: {m.group(1)}: pattern {a[1]} is not a literal or a known constant')
-        num = lambda i: int_arg(a[i], ints) if len(a) > i else 0
-        kind = a[3].split('::')[-1] if len(a) > 3 else 'addr'
-        sigs.append({'name': m.group(1), 'what': a[0].strip('"'), 'pattern': ' '.join(pat.split()), 'rva': int_arg(a[2], ints),
-                     'kind': kind, 'insn': num(4), 'anchor': num(5), 'len': num(6),
-                     'section': a[7].strip('"') if len(a) > 7 else '.xtls', 'file': os.path.basename(path)})
+    for _, name, _, args in sigdecl.declarations(text):
+        try:
+            v = sigdecl.fields(args, strings=strings, ints=ints)
+        except ValueError as err:
+            raise SystemExit(f'{path}: {name}: {err}')
+        sigs.append({'name': name, **{k: v[k] for k in sigdecl.SIG_LAYOUT}, 'file': os.path.basename(path)})
     return sigs
 
 
