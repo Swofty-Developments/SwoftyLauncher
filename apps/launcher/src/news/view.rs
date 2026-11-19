@@ -1,5 +1,5 @@
 use super::feed::{Post, format_date};
-use super::markdown::{Block, SITE, Span, safe_url};
+use super::markdown::{Align, Block, SITE, Span, Table, safe_url};
 use super::state::{NewsPane, NewsRow, STACK_BELOW, StackedRow};
 use crate::pages::GUTTER;
 use crate::scale::{Hit, px};
@@ -125,6 +125,7 @@ pub(super) fn block_view(
         (Some(Block::Heading(..)), _) => 8.,
         (Some(Block::Item { .. }), Block::Item { .. }) => 8.,
         (_, Block::Rule) | (Some(Block::Rule), _) => 22.,
+        (_, Block::Table(_) | Block::Columns(_)) | (Some(Block::Table(_) | Block::Columns(_)), _) => 16.,
         _ => 12.,
     };
     let el = match block {
@@ -190,8 +191,95 @@ pub(super) fn block_view(
             .child(code.clone())
             .into_any_element(),
         Block::Rule => div().h(px(1.)).bg(p.border_variant).into_any_element(),
+        Block::Table(table) => table_view(&id, table, p, mono),
+        Block::Columns(columns) => div()
+            .flex()
+            .flex_wrap()
+            .items_start()
+            .gap_x(px(COLUMN_GAP))
+            .gap_y(px(16.))
+            .children(columns.iter().enumerate().map(|(c, blocks)| {
+                v_flex().flex_1().min_w(px(COLUMN_MIN)).children(blocks_view(
+                    &format!("{id}-c{c}"),
+                    blocks,
+                    p,
+                    mono,
+                ))
+            }))
+            .into_any_element(),
     };
     div().pt(px(top)).child(el).into_any_element()
+}
+
+const COLUMN_MIN: f32 = 220.;
+
+const COLUMN_GAP: f32 = 24.;
+
+const CELL_CHAR: f32 = 8.5;
+
+const CELL_PADDING: f32 = 25.;
+
+const CELL_MIN: f32 = 32.;
+
+const CELL_MAX: f32 = 180.;
+
+const CELL_RADIUS: f32 = 6.;
+
+fn table_view(id: &str, table: &Table, p: Palette, mono: &SharedString) -> AnyElement {
+    let width = table.align.len();
+    let min_width: f32 = table
+        .longest_words()
+        .iter()
+        .map(|&chars| (chars as f32 * CELL_CHAR + CELL_PADDING).clamp(CELL_MIN, CELL_MAX))
+        .sum();
+    let last = table.rows.len();
+    let rows = std::iter::once(&table.head).chain(&table.rows);
+    let cells = rows.enumerate().flat_map(|(r, row)| {
+        row.iter()
+            .zip(&table.align)
+            .enumerate()
+            .map(move |(c, (spans, align))| {
+                let (head, left, right) = (r == 0, c == 0, c + 1 == width);
+                div()
+                    .min_w_0()
+                    .px(px(12.))
+                    .py(px(7.))
+                    .border_color(p.border_variant)
+                    .border_r_1()
+                    .border_b_1()
+                    .when(head, |d| d.border_t_1())
+                    .when(left, |d| d.border_l_1())
+                    .when(head && left, |d| d.rounded_tl(px(CELL_RADIUS)))
+                    .when(head && right, |d| d.rounded_tr(px(CELL_RADIUS)))
+                    .when(r == last && left, |d| d.rounded_bl(px(CELL_RADIUS)))
+                    .when(r == last && right, |d| d.rounded_br(px(CELL_RADIUS)))
+                    .when(head, |d| {
+                        d.bg(p.elevated.opacity(0.55))
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .text_color(p.text)
+                    })
+                    .when(!head && r % 2 == 0, |d| d.bg(p.hover.opacity(0.35)))
+                    .map(|d| match align {
+                        Align::Center => d.text_center(),
+                        Align::Right => d.text_right(),
+                        Align::Left | Align::None => d,
+                    })
+                    .child(rich(format!("{id}-{r}-{c}"), spans, p, mono))
+            })
+    });
+    div()
+        .id(SharedString::from(format!("{id}-table")))
+        .flex()
+        .overflow_x_scroll()
+        .restrict_scroll_to_axis()
+        .child(
+            div()
+                .grid()
+                .grid_cols_max_content(width as u16)
+                .min_w(px(min_width))
+                .children(cells),
+        )
+        .into_any_element()
 }
 
 pub(super) fn changelog_header(count: usize, p: Palette) -> Div {
