@@ -23,7 +23,9 @@ pub struct Held {
 }
 
 fn scene_ids(data: &[u8]) -> Option<Vec<u64>> {
-    let pkg = Pkg::parse(data).ok()?;
+    let pkg = swofty_formats::pkg::is_pkg(data)
+        .then(|| Pkg::parse(data).ok())
+        .flatten()?;
     let list = pkg.root.as_obj()?.get("scenelist")?.as_arr()?;
     let ids: Vec<u64> = list
         .items

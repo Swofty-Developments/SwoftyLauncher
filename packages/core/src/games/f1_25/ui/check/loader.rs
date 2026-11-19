@@ -3,7 +3,7 @@
 
 use std::collections::BTreeSet;
 
-use swofty_formats::pkg::{Node, Pkg};
+use swofty_formats::pkg::Node;
 
 use super::findings::Finding;
 use super::flows::str_of;
@@ -223,7 +223,7 @@ impl Loader<'_> {
 }
 
 pub(super) fn root_names(data: &[u8]) -> crate::Result<Vec<(String, String)>> {
-    let p = Pkg::parse(data)?;
+    let p = super::parsed(data)?;
     let root = p.root.o()?;
     let mut out = Vec::new();
     for key in ["Screens", "Templates"] {
@@ -249,7 +249,7 @@ pub fn loader_findings(
     cat: &Catalog,
     engine: &Engine,
 ) -> crate::Result<Vec<Finding>> {
-    let p = Pkg::parse(data)?;
+    let p = super::parsed(data)?;
     let root = p.root.o()?;
     let mut l = Loader {
         engine,

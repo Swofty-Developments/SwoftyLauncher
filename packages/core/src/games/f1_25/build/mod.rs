@@ -228,9 +228,13 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     run.cancel()?;
     std::fs::remove_dir_all(&pipeline.built.overlay).ok();
     crate::now_doing("editing the game database");
-    let edits = pipeline.edit_database(&inputs, &std16)?;
-    let menu_kept = pipeline.track_menus(&inputs)?;
-    let ers_maps = pipeline.car_archives(&inputs)?;
+    let edits = crate::diagnostics::phases::time_part("build.database.edit", || {
+        pipeline.edit_database(&inputs, &std16)
+    })?;
+    let menu_kept =
+        crate::diagnostics::phases::time_part("build.database.menus", || pipeline.track_menus(&inputs))?;
+    let ers_maps =
+        crate::diagnostics::phases::time_part("build.database.cars", || pipeline.car_archives(&inputs))?;
     let archives = pipeline.apply_archives(&inputs, &ers_maps, &menu_kept)?;
     run.cancel()?;
     crate::now_doing("placing files");

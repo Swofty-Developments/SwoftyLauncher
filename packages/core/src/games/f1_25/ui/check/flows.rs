@@ -76,7 +76,7 @@ pub(super) fn binds_view_model(scr: &Node) -> bool {
 pub fn screens(files: &[(String, Vec<u8>)], view_models: &[String]) -> crate::Result<Vec<String>> {
     let mut out = Vec::new();
     for (name, data) in files {
-        let p = Pkg::parse(data)?;
+        let p = super::parsed(data)?;
         for scr in p.root.o()?.at("Screens")?.a()? {
             walk(scr, "", &mut out);
             let vm = view_models.contains(name);
@@ -101,7 +101,7 @@ pub(super) struct Flow {
 }
 
 pub(super) fn flows(data: &[u8]) -> crate::Result<BTreeMap<String, Flow>> {
-    let p = Pkg::parse(data)?;
+    let p = super::parsed(data)?;
     let mut out = BTreeMap::new();
     for f in p.root.o()?.at("Flows")?.a()? {
         let erp = f
@@ -179,7 +179,7 @@ pub fn route_files(
     let fl = flows(flows_ui)?;
     let parsed = routes
         .iter()
-        .map(|r| Pkg::parse(r))
+        .map(|r| super::parsed(r))
         .collect::<std::result::Result<Vec<_>, _>>()?;
     let mut groups: BTreeMap<String, BTreeMap<String, &Node>> = BTreeMap::new();
     for p in &parsed {
@@ -299,7 +299,7 @@ pub(super) fn kids(n: &Node) -> Vec<&str> {
 }
 
 pub fn stock_kept(stock: &[u8], patched: &[u8], prefix: &str) -> crate::Result<Vec<String>> {
-    let (a, b) = (Pkg::parse(stock)?, Pkg::parse(patched)?);
+    let (a, b) = (super::parsed(stock)?, super::parsed(patched)?);
     let (old, new) = (tree(&a)?, tree(&b)?);
     let sent: BTreeSet<Signal> = old.values().flat_map(|n| signals(n)).collect();
     let mut out = Vec::new();

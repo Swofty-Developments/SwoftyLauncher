@@ -3,7 +3,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use swofty_formats::pkg::{Node, Pkg};
+use swofty_formats::pkg::Node;
 
 use super::findings::Finding;
 use super::integrity::integrity_walk;
@@ -33,7 +33,7 @@ pub(super) fn vm_keys(n: &Node, out: &mut BTreeSet<String>) {
 }
 
 pub(super) fn roots(data: &[u8]) -> crate::Result<BTreeMap<String, BTreeSet<String>>> {
-    let p = Pkg::parse(data)?;
+    let p = super::parsed(data)?;
     let root = p.root.o()?;
     let mut out = BTreeMap::new();
     for key in ["Screens", "Templates"] {
@@ -54,7 +54,7 @@ pub(super) fn roots(data: &[u8]) -> crate::Result<BTreeMap<String, BTreeSet<Stri
 }
 
 pub(super) fn prop_index(data: &[u8]) -> crate::Result<BTreeMap<String, (String, BTreeSet<String>)>> {
-    let p = Pkg::parse(data)?;
+    let p = super::parsed(data)?;
     let mut nodes = Vec::new();
     for key in ["Screens", "Templates"] {
         for top in p

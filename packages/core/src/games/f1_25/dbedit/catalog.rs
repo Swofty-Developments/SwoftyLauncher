@@ -593,20 +593,25 @@ impl Catalog {
     pub fn open(store: &Store, game: &Game) -> Result<Arc<Self>> {
         static CACHE: Mutex<Option<(String, Arc<Catalog>)>> = Mutex::new(None);
         let path = super::stock_database(store, game)?;
-        let bytes = std::fs::read(&path).map_err(io_err(&path))?;
-        let id = crate::game_folder::baseline::sha256_bytes(&bytes)[..16].to_owned();
+        let bytes = crate::diagnostics::phases::time_part("build.catalog.read", || std::fs::read(&path))
+            .map_err(io_err(&path))?;
+        let id = crate::diagnostics::phases::time_part("build.catalog.hash", || {
+            crate::game_folder::baseline::sha256_bytes(&bytes)[..16].to_owned()
+        });
         let mut cache = CACHE.lock().unwrap_or_else(|e| e.into_inner());
         if let Some((have, cat)) = cache.as_ref()
             && *have == id
         {
             return Ok(cat.clone());
         }
-        let mut cat = Catalog::load(&bytes)?;
+        let gvdb = crate::diagnostics::phases::time_part("build.catalog.parse", || Gvdb::parse(&bytes))?;
+        let mut cat =
+            crate::diagnostics::phases::time_part("build.catalog.walk", || Self::from_gvdb(gvdb, id.clone()));
         if let Ok(p) =
             crate::game_folder::baseline::original_lang(&store.root, &game.dir, &game.identity, "eng")
             && let Ok(english) = std::fs::read(&p)
         {
-            cat.set_lang(&english)?;
+            crate::diagnostics::phases::time_part("build.catalog.lang", || cat.set_lang(&english))?;
         }
         let cat = Arc::new(cat);
         *cache = Some((id, cat.clone()));

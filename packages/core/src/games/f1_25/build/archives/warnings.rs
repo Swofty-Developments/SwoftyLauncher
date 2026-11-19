@@ -85,14 +85,16 @@ pub(in crate::games::f1_25::build) fn stock_holders(game_dir: &Path, resized: &[
         let mut files = Vec::new();
         crate::erp::erp_files(&game_dir.join(&root), &root, &mut files);
         files.sort();
+        let names: Vec<(&str, crate::erp::IndexName)> = uris
+            .iter()
+            .map(|uri| (*uri, crate::erp::IndexName::new(uri)))
+            .collect();
         for rel in files {
             let Some(index) = crate::erp::index_of(&game_dir.join(&rel)) else {
                 continue;
             };
-            for uri in &uris {
-                if crate::erp::index_holds(&index, uri)
-                    && !written.contains(&(rel.to_ascii_lowercase(), *uri))
-                {
+            for (uri, name) in &names {
+                if name.in_index(&index) && !written.contains(&(rel.to_ascii_lowercase(), *uri)) {
                     out.push(format!(
                         "erp: {uri} is resized, but {rel} also carries it and keeps the stock copy; replace it there too, or the game may show either one"
                     ));

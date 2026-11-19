@@ -13,6 +13,7 @@ use crate::{Error, Result};
 
 pub use file::{Entry, ErpFile, replace};
 pub use fragment::Fragment;
+pub use frame_cache::{FrameStats, frame_stats};
 pub use packer::{Packer, compress, compress_at, compress_many, work};
 pub use resource::{Resource, check_name, kind};
 

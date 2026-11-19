@@ -3,7 +3,7 @@
 
 use std::collections::BTreeMap;
 
-use swofty_formats::pkg::{Node, Pkg};
+use swofty_formats::pkg::Node;
 
 use super::findings::Finding;
 use super::flows::str_of;
@@ -351,7 +351,7 @@ pub(super) fn index_types(n: &Node, path: &str, out: &mut BTreeMap<String, Strin
 }
 
 pub fn against_stock(data: &[u8], cat: &Catalog, scenes: &Scenes) -> crate::Result<Vec<Finding>> {
-    let p = Pkg::parse(data)?;
+    let p = super::parsed(data)?;
     let root = p.root.o()?;
     let mut out = Vec::new();
     for (key, role) in [("Screens", "screen_root"), ("Templates", "template_root")] {
@@ -379,7 +379,7 @@ pub fn against_stock(data: &[u8], cat: &Catalog, scenes: &Scenes) -> crate::Resu
 }
 
 pub fn scene_against_stock(data: &[u8], cat: &Catalog) -> crate::Result<Vec<Finding>> {
-    let p = Pkg::parse(data)?;
+    let p = super::parsed(data)?;
     let mut out = Vec::new();
     for entry in idf::scenes(&p)? {
         let Some(root) = entry.as_obj().and_then(|o| o.get("scene")) else {

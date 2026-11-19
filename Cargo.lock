@@ -7822,6 +7822,7 @@ dependencies = [
  "libc",
  "libloading",
  "md-5 0.11.0",
+ "memchr",
  "png 0.18.1",
  "rars",
  "regex",

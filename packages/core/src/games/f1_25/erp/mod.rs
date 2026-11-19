@@ -28,7 +28,8 @@ use self::apply::SourceKey;
 pub(crate) use self::archive::{Archive, Slot};
 pub use self::checks::texture_findings_in;
 pub use self::index::{
-    erp_files, group_dir, index_holds, index_of, mipmap_names, mipmap_path, overlay_names, served_at_runtime,
+    IndexName, erp_files, group_dir, index_holds, index_of, mipmap_names, mipmap_path, overlay_names,
+    served_at_runtime,
 };
 pub use self::ops::{addon_of, contested_ui, reads, unsupported, writes};
 pub use self::slices::SliceMerge;

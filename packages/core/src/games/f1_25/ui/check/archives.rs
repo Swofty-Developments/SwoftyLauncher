@@ -3,13 +3,13 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use swofty_formats::pkg::{Node, Pkg};
+use swofty_formats::pkg::Node;
 
 use super::findings::{Finding, Report};
 use super::flows::str_of;
 use super::stock::{layout_groups, node_scene};
 use super::{UiInput, scene_edit, ui_edit};
-use crate::ui::catalog::{Catalog, Engine, Scenes};
+use crate::ui::catalog::{Catalog, Engine, Scene, Scenes};
 use crate::ui::node::*;
 
 #[derive(Debug, Clone, Default)]
@@ -41,13 +41,33 @@ impl ArchiveUi {
         })
     }
 
-    fn scenes(&self) -> Scenes {
-        let mut s = Scenes::default();
-        for (kind, frags) in self.resources.values() {
+    fn scene_parts(&self) -> BTreeMap<&str, Vec<(u64, Scene)>> {
+        let mut parts = BTreeMap::new();
+        for (name, (kind, frags)) in &self.resources {
             if kind == "UILayout"
                 && let Some(f) = frags.first()
             {
-                s.add(f).ok();
+                parts.insert(name.as_str(), Scenes::parse(f).unwrap_or_default());
+            }
+        }
+        parts
+    }
+
+    /// The scenes of this archive, taking from `stock_parts`, the parts of `stock`, those of each layout
+    /// this archive carries as `stock` does.
+    fn scenes_beside(&self, stock: &Self, stock_parts: &BTreeMap<&str, Vec<(u64, Scene)>>) -> Scenes {
+        let mut s = Scenes::default();
+        for (name, (kind, frags)) in &self.resources {
+            let Some(f) = frags.first().filter(|_| kind == "UILayout") else {
+                continue;
+            };
+            let same = stock
+                .resources
+                .get(name)
+                .is_some_and(|(k, g)| k == kind && g.first() == Some(f));
+            match stock_parts.get(name.as_str()).filter(|_| same) {
+                Some(parts) => s.scenes.extend(parts.iter().cloned()),
+                None => s.scenes.extend(Scenes::parse(f).unwrap_or_default()),
             }
         }
         s
@@ -86,7 +106,7 @@ pub(super) fn bindings(data: &[u8]) -> crate::Result<Vec<Binding>> {
             walk(c, &here, own.or(ctx), out);
         }
     }
-    let p = Pkg::parse(data)?;
+    let p = super::parsed(data)?;
     let mut out = Vec::new();
     for key in ["Screens", "Templates"] {
         for t in p
@@ -106,7 +126,7 @@ pub(super) fn bindings(data: &[u8]) -> crate::Result<Vec<Binding>> {
 }
 
 pub(super) fn roots_scenes(data: &[u8]) -> crate::Result<Vec<(String, u64)>> {
-    let p = Pkg::parse(data)?;
+    let p = super::parsed(data)?;
     let mut out = Vec::new();
     for key in ["Screens", "Templates"] {
         for t in p
@@ -245,7 +265,11 @@ pub fn archives(
         if changed.is_empty() {
             continue;
         }
-        let (scenes, before) = (a.scenes(), s.scenes());
+        let stock_parts = s.scene_parts();
+        let scenes = a.scenes_beside(s, &stock_parts);
+        let before = Scenes {
+            scenes: stock_parts.into_values().flatten().collect(),
+        };
         for (name, kind, frags) in changed {
             let base = s.resources.get(name).map(|(_, f)| f);
             for (i, data) in frags.iter().enumerate() {
