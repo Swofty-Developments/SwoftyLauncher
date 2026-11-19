@@ -258,6 +258,12 @@ public:
         return c ? std::string(c->operator[]("career").as_string()) : std::string();
     }
 
+    std::string content_for_slot(std::string_view key)
+    {
+        Value *c = find_by_tail(key);
+        return c ? std::string(c->operator[]("content").as_string()) : std::string();
+    }
+
     Value *find_by_tail(std::string_view key)
     {
         for (Value &c : careers_)

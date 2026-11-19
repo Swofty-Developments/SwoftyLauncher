@@ -169,6 +169,7 @@ bool save_sandbox_armed();
 std::string save_sandbox_source();
 std::string save_sandbox_file();
 std::string career_saves_id_for_slot(const std::string &key);
+std::string career_saves_content_for_slot(const std::string &key);
 std::string career_saves_slot_key(uint64_t slot_id, bool my_team);
 std::vector<career::saves::SlotRead> career_listed_slots();
 // Saves that reached the save device: FileWrite calls the Steam proxy served, or on the EA copy the profile saves

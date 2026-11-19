@@ -1,4 +1,5 @@
 #include "core/runtime/loader/hook_install.hpp"
+#include "core/career/resume_list.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/settings.hpp"
 
@@ -105,6 +106,7 @@ void run_route_hook(void *ui, void *node, void *name, void *group, int32_t flags
         if (route_name(name, text)) {
             if (runtime::wizard_route_running(text, name))
                 route_name(name, text);
+            career::resume_list::route_ran(text);
             r = cs::classify(text);
             runtime::testagent_route_ran(text);
         }

@@ -415,6 +415,13 @@ std::string career_saves_id_for_slot(const std::string &key)
     return index_.career_for_slot(key);
 }
 
+std::string career_saves_content_for_slot(const std::string &key)
+{
+    std::lock_guard<std::mutex> g(mu);
+    read_index_locked();
+    return index_.content_for_slot(key);
+}
+
 void career_saves_saved()
 {
     {

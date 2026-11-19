@@ -86,6 +86,14 @@ Slot *by_mode(const void *championship)
 
 }
 
+std::string suffix_of_group(const std::string &group)
+{
+    for (size_t i = 0; i < used(); i++)
+        if (slots[i].desc.data_group == group)
+            return slots[i].desc.suffix;
+    return {};
+}
+
 namespace {
 
 void redirect_resume(Action *out)
@@ -96,6 +104,11 @@ void redirect_resume(Action *out)
     if (!route || !rl::armed() || !rl::continue_route_of(route, my_team))
         return;
     size_t n = rl::rows();
+    if (rl::new_career_requested()) {
+        swofty::log("[career] resume screen: route %s opens the stock continue screen: New Career was chosen on the list screen",
+                    route);
+        return;
+    }
     if (!rl::redirects(true, n, route, my_team)) {
         swofty::log("[career] resume screen: settings.json lists no row for the list screen; the stock Resume Career screen "
                     "opens for route %s",

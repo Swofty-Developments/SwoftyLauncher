@@ -12,7 +12,7 @@ struct Target {
     Selection sel;
     bool my_team = false, ask = false;
     size_t row = 0;
-    std::string body;
+    std::string body, group, suffix;
 };
 
 bool wanted();
@@ -22,5 +22,7 @@ size_t rows();
 bool pressed(size_t index);
 bool target_set();
 bool take_target(bool my_team, Target &t);
+void route_ran(const std::string &route);
+bool new_career_requested();
 
 }

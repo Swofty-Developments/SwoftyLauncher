@@ -21,6 +21,8 @@ constexpr const char *SETTINGS_KEY = "resume_list";
 constexpr const char *COMMAND_PREFIX = "swofty_resume:";
 constexpr const char *LIST_ROUTE = "swofty_resume_list";
 constexpr uint64_t TARGET_LIFE_MS = 15000;
+constexpr const char *NEW_CAREER_ROUTE = "swofty_new_career";
+constexpr uint64_t NEW_CAREER_LIFE_MS = 60000;
 
 struct Entry {
     size_t index = 0;
@@ -106,6 +108,11 @@ inline bool continue_route_of(std::string_view route, bool &my_team)
 inline bool redirects(bool armed, size_t entries, std::string_view route, bool &my_team)
 {
     return armed && entries > 0 && continue_route_of(route, my_team);
+}
+
+inline bool redirects(bool armed, size_t entries, std::string_view route, bool &my_team, bool new_career)
+{
+    return !new_career && redirects(armed, entries, route, my_team);
 }
 
 enum class Action { Load, Ask };
