@@ -23,15 +23,6 @@ pub struct Marker {
     pub retired: bool,
 }
 
-#[derive(Debug, Clone, Deserialize)]
-struct OldNotice {
-    backup: String,
-    #[serde(default)]
-    absent: Vec<String>,
-    before: u64,
-    after: u64,
-}
-
 pub fn marker_path(data: &Path) -> PathBuf {
     Vault::root(data).join(MARKER)
 }
@@ -79,28 +70,7 @@ pub fn migrate(data: &Path) -> Result<Vec<String>> {
         }
     }
     crate::write_json(&marker_path(data), &m)?;
-    let old_notice = data.join(backup::NOTICE);
-    if let Some(n) = std::fs::read(&old_notice)
-        .ok()
-        .and_then(|d| serde_json::from_slice::<OldNotice>(&d).ok())
-        && let Some((source, id)) = m.backups.get(&n.backup).and_then(|s| s.split_once('/'))
-    {
-        let kept_at = Vault::open(data, source)
-            .and_then(|v| v.find(id))
-            .map_or(0, |s| s.at);
-        Notice {
-            kind: NoticeKind::Shrank,
-            source: source.to_owned(),
-            snapshot: id.to_owned(),
-            kept_at,
-            before: n.before,
-            after: n.after,
-            absent: n.absent,
-            at: super::now(),
-        }
-        .write(data)?;
-        std::fs::remove_file(&old_notice).ok();
-    }
+    std::fs::remove_file(data.join(backup::NOTICE)).ok();
     Ok(notes)
 }
 

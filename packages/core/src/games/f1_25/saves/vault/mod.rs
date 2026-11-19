@@ -6,7 +6,7 @@
 //! career-vault/steam-843502855/
 //!   blobs/<sha256>                  one per distinct file content, stored as-is
 //!   snapshots/<stamp>-<reason>.json what the save held then (Snapshot)
-//!   events.jsonl                    snapshot / unchanged / changed-outside / shrank / restored / pruned
+//!   events.jsonl                    snapshot / unchanged / changed-outside / restored / pruned
 //! ```
 
 pub mod career_names;
@@ -37,10 +37,6 @@ use crate::{Error, Result, io_err};
 
 pub const DIR: &str = "career-vault";
 pub const DEFAULT_CAP_MB: u64 = 500;
-/// A save at least this much smaller than the version before it is worth a
-/// hint. Size alone never says a career is gone: ordinary play moves the file
-/// by more, and a dropped container can be smaller.
-pub const SHRINK_HINT: u64 = 24 * 1024;
 const NOTICE: &str = "state/vault-notice.json";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -246,7 +242,6 @@ pub enum EventKind {
     SessionStart,
     SessionEnd,
     ChangedOutside,
-    Shrank,
     Pinned,
     Unpinned,
     CareersMissing,
@@ -301,17 +296,11 @@ impl Event {
     }
 }
 
-/// A save smaller or changed since a snapshot the vault holds.
+/// A save that changed since a snapshot the vault holds.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Change {
     pub from: Snapshot,
     pub to: Snapshot,
-}
-
-impl Change {
-    pub fn shrank(&self) -> bool {
-        self.to.total() + SHRINK_HINT <= self.from.total()
-    }
 }
 
 /// What a check found besides the snapshot it took.
@@ -319,71 +308,63 @@ impl Change {
 pub struct Checked {
     pub taken: Taken,
     pub outside: Option<Change>,
-    pub shrank: Option<Change>,
     pub notice: Option<Notice>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum NoticeKind {
-    ChangedOutside,
-    Shrank,
+    Lost,
 }
 
-/// The Addons page notice: a weak hint, never a claim that careers are gone.
+/// The Addons page notice: containers or careers the last good save generation of the plain store had and
+/// the newest generation lacks.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Notice {
     pub kind: NoticeKind,
     pub source: String,
+    /// The vault snapshot a launcher session left last; empty when the vault has none.
     pub snapshot: String,
     pub kept_at: i64,
-    pub before: u64,
-    pub after: u64,
-    #[serde(default)]
-    pub absent: Vec<String>,
+    /// The plain store generation that still holds what is missing.
+    pub generation: u64,
+    pub containers: Vec<String>,
+    pub names: Vec<String>,
     pub at: i64,
 }
 
 impl Notice {
-    /// The notice's first sentence: what changed and which version the
-    /// vault kept.
+    /// The notice's first sentence: what is missing and which generation holds it.
     pub fn headline(&self) -> String {
-        let when = human(self.kept_at);
-        let smaller = self.before.saturating_sub(self.after).div_ceil(1024);
-        match self.kind {
-            NoticeKind::ChangedOutside => format!(
-                "Your F1 25 save changed outside a launcher session (a Steam or EA app launch) and is {smaller} KB \
-                 smaller than before. The career vault kept the version from {when}"
+        let list = self.names.join("; ");
+        match self.names.len() {
+            1 => format!(
+                "{list} is in the last save a launcher session wrote but not in the save the game read since. The \
+                 launcher's plain store keeps it in generation {}",
+                self.generation
             ),
-            NoticeKind::Shrank => format!(
-                "Your F1 25 save got {smaller} KB smaller in a session without {}. The career vault kept the \
-                 version from before that session, {when}",
-                self.absent.join(", ")
+            _ => format!(
+                "{list} are in the last save a launcher session wrote but not in the save the game read since. The \
+                 launcher's plain store keeps them in generation {}",
+                self.generation
             ),
         }
     }
 
     pub fn text(&self) -> String {
-        if self.source.starts_with("launcher-") {
-            return format!(
-                "{}: {}. If a career is missing, restore it with `swofty saves restore {} --source {}` while F1 25 is \
-                 closed",
-                self.headline(),
-                self.snapshot,
-                self.snapshot,
-                self.source
-            );
-        }
+        let source = match self.source.starts_with("launcher-") {
+            true => format!(" --source {}", self.source),
+            false => String::new(),
+        };
+        let restore = self
+            .containers
+            .iter()
+            .map(|c| format!("`swofty saves restore-career {c}{source}`"))
+            .collect::<Vec<_>>()
+            .join(", ");
         format!(
-            "{}: {}. If a career is missing, restore it with `swofty saves restore {}` while F1 25 and {} are \
-             closed",
-            self.headline(),
-            self.snapshot,
-            self.snapshot,
-            match self.source.starts_with("ea-") {
-                true => "the EA app",
-                false => "Steam",
-            }
+            "{}. Put it back with {restore}; the game applies it at the next Play",
+            self.headline()
         )
     }
 
@@ -1030,7 +1011,6 @@ impl Vault {
         let mut out = Checked {
             taken,
             outside: None,
-            shrank: None,
             notice: None,
         };
         if let (Taken::New(new), Some(prev), false) = (&out.taken, prev, unfinished) {
@@ -1041,30 +1021,11 @@ impl Vault {
             };
             let mut e = Event::new(now, EventKind::ChangedOutside).snapshot(&new.id);
             e.from = Some(change.from.id.clone());
-            e.before = Some(change.from.total());
-            e.after = Some(new.total());
             e.detail = Some(trigger.found().to_owned());
             self.log(&e);
-            if change.shrank() {
-                let mut e = e.clone();
-                e.kind = EventKind::Shrank;
-                self.log(&e);
-                let n = Notice {
-                    kind: NoticeKind::ChangedOutside,
-                    source: self.source.clone(),
-                    snapshot: change.from.id.clone(),
-                    kept_at: change.from.at,
-                    before: change.from.total(),
-                    after: new.total(),
-                    absent: Vec::new(),
-                    at: now,
-                };
-                n.write(&self.data)?;
-                out.notice = Some(n);
-                out.shrank = Some(change.clone());
-            }
             out.outside = Some(change);
         }
+        out.notice = self.note_loss(now)?;
         self.prune_locked(now)?;
         Ok(out)
     }
@@ -1079,60 +1040,35 @@ impl Vault {
         Ok(c)
     }
 
-    /// After a launcher session, once the game exited and the rollback ran:
-    /// snapshot, and hint at a save that got smaller in a session that left
-    /// out an addon affecting saves.
-    pub fn after_session(
-        &self,
-        loc: &Location,
-        meta: Meta,
-        before: Option<&Snapshot>,
-        now: i64,
-    ) -> Result<Checked> {
+    /// After a launcher session, once the game exited and the rollback ran: snapshot, and raise a notice for
+    /// what the plain store's newest generation lacks of the last good save generation.
+    pub fn after_session(&self, loc: &Location, meta: Meta, now: i64) -> Result<Checked> {
         let _lock = self.lock()?;
-        let absent = meta.absent.clone();
         let session = meta.session_id.clone();
         let taken = self.snapshot_locked(loc, meta, now)?;
         let mut e = Event::new(now, EventKind::SessionEnd);
         e.snapshot = taken.snapshot().map(|s| s.id.clone());
         e.detail = session;
         self.log(&e);
-        let mut out = Checked {
+        let notice = self.note_loss(now)?;
+        self.prune_locked(now)?;
+        Ok(Checked {
             taken,
             outside: None,
-            shrank: None,
-            notice: None,
-        };
-        if let (Taken::New(new), Some(before)) = (&out.taken, before) {
-            let change = Change {
-                from: before.clone(),
-                to: new.clone(),
-            };
-            if change.shrank() {
-                let mut e = Event::new(now, EventKind::Shrank).snapshot(&new.id);
-                e.from = Some(before.id.clone());
-                e.before = Some(before.total());
-                e.after = Some(new.total());
-                self.log(&e);
-                if !absent.is_empty() {
-                    let n = Notice {
-                        kind: NoticeKind::Shrank,
-                        source: self.source.clone(),
-                        snapshot: before.id.clone(),
-                        kept_at: before.at,
-                        before: before.total(),
-                        after: new.total(),
-                        absent,
-                        at: now,
-                    };
-                    n.write(&self.data)?;
-                    out.notice = Some(n);
-                }
-                out.shrank = Some(change);
+            notice,
+        })
+    }
+
+    fn note_loss(&self, now: i64) -> Result<Option<Notice>> {
+        let Some(loss) = self.probable_loss() else {
+            if Notice::read(&self.data).is_some_and(|n| n.source == self.source) {
+                Notice::clear(&self.data);
             }
-        }
-        self.prune_locked(now)?;
-        Ok(out)
+            return Ok(None);
+        };
+        let notice = loss.notice(now);
+        notice.write(&self.data)?;
+        Ok(Some(notice))
     }
 
     /// The core's career index as it is now, stored beside the snapshot that

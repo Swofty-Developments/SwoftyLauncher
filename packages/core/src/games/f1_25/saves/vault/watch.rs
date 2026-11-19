@@ -10,12 +10,7 @@ use super::{Checked, Location, Meta, Reason, Taken, Vault, migrate, now};
 pub fn describe(c: &Checked) -> Vec<String> {
     let mut out = Vec::new();
     match &c.taken {
-        Taken::New(s) => out.push(format!(
-            "saves: snapshot {} ({}, {} bytes)",
-            s.id,
-            s.reason.text(),
-            s.total()
-        )),
+        Taken::New(s) => out.push(format!("saves: snapshot {} ({})", s.id, s.reason.text())),
         Taken::Unchanged(s) => out.push(format!(
             "saves: the profile save is unchanged since snapshot {}",
             s.id
@@ -24,11 +19,8 @@ pub fn describe(c: &Checked) -> Vec<String> {
     }
     if let Some(ch) = &c.outside {
         out.push(format!(
-            "saves: the profile save changed outside the launcher since snapshot {} ({} -> {} bytes); that \
-             snapshot is pinned",
-            ch.from.id,
-            ch.from.total(),
-            ch.to.total()
+            "saves: the profile save changed outside the launcher since snapshot {}; that snapshot is pinned",
+            ch.from.id
         ));
     }
     if let Some(n) = &c.notice {

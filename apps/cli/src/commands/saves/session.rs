@@ -213,10 +213,7 @@ pub fn after_session(before: Option<Before>) {
     let mut meta = b.meta;
     meta.reason = Reason::AfterSession;
     meta.pin = None;
-    match b
-        .vault
-        .after_session(&b.loc, meta, b.snapshot.as_ref(), vault::now())
-    {
+    match b.vault.after_session(&b.loc, meta, vault::now()) {
         Ok(c) => {
             if let Some(n) = &c.notice {
                 say("warning", &format!("saves: {}", n.text()));
