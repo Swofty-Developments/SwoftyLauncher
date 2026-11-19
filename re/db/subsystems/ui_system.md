@@ -845,4 +845,69 @@ Tools (`/mnt/work/VSC/F1ModManager/tools/`, mirrored in the `modlist` worktree `
   binding/route path is L2 (static); `vm.md`/`fe_home.md` flag `Vm_Fire_Route` + label rendering as
   needing a trace test.
 
+## 11. Layout-tree walk limits and the 8 MiB package offsets {#tree-limits}
+
+Engine-re round H1, 2026-11-19. All static, KB build d873a1c8 (the 8 MiB sites also on Steam
+1.0.145 / 26566308). Nothing here is runtime-confirmed; T300 asks the runtime part.
+
+### 11.1 One registered root = one flattened tree
+- `Ui_EngineModule_Update` (0x1444a3060, slot 9 of `vt_Ui_EngineModule` 0x14560c1a0) calls
+  `Ui_LayoutTrees_WalkAll(module+0x80, frame)` (0x144167460) each frame.
+- The walker holds a vector of root items at +0x20..+0x28. Each item has its root node at +0x10
+  and a tree id at +0x39 (0..14, 0xf = none; ids in use at walker+0x78[id], buffers at
+  walker+0x88[id]). So at most 15 flattened trees exist at once.
+- `WalkAll` walks the heaviest item on its own thread and the others in parallel through the job
+  `Ui_LayoutTrees_WalkJob` (0x144344970). Each job call walks one whole item:
+  `Ui_LayoutTree_Walk` (0x144167620). Nothing splits a tree per board or per subtree.
+- On a dirty root (root+0x173 bit 0) the walk re-flattens: `Ui_LayoutTree_CountSlots`
+  (0x14416ac00, u32, no clamp) -> alloc count*16 -> `Ui_LayoutTree_FlattenNode(root, buf, 0, -1)`
+  (0x14416ac60), which visits every child in node+0x178, hidden or not.
+
+### 11.2 Slot format and where the 16-bit index lives
+| site | what |
+|---|---|
+| 0x14416ad22 | parent index stored in slot q0 bits 49..63 (15 bits, root = 0x7fff); no reader found in 0x144100000-0x144400000 |
+| 0x14416af3e, 0x14416af47 | the three in-slot child words set to 0x7fff |
+| 0x14416af94 | extra child slots of a node with >= 4 children filled with 0xff |
+| 0x14416af9f | child count stored as u8 (slot+9): more than 255 children truncate |
+| 0x14416afca | child index stored as u16 (`mov word [slot+i*2+0xa], r14w`): index 65536 becomes 0 |
+| 0x144167cd5, 0x14416818d, 0x144169f58 | the walk reads child indices as u16 |
+| 0x144169e44 / 0x144169e56, 0x144169f51 / 0x144169f60, 0x14416817a | walk stack entries: u16 state + u16 slot index |
+| 0x144169e35, 0x144169f43 -> 0x14416aacd | stack full (256 entries) -> `Ne_FatalAbort` |
+| 0x14416696b | `Ui_LayoutTrees_RemoveRoot` (0x144166780) walks the same u16 child words |
+
+The 65,536-slot limit is per tree, and the u16 is in the slot format, the walk stack and the
+removal walk. A hook would have to replace the flatten, the walk and the removal together.
+
+### 11.3 What a composed screen record costs (Swofty `hud` screens)
+Swofty grows ONE host scene (`driver_position_bottom_cap.idf`) with every record's live root and
+its `_pv` editor copy, then each screen gets one `<prefix>_host` eXRef per record that names it,
+and every eXRef instance holds its own node copy of the whole grown cap (a node has one parent
++0x1a0 and one slot +0x1a8, so an instance cannot share nodes). The stock standings table already
+instances the cap once (`bottom_cap`, Swofty checks its fileRef is the cap). The replay and
+spectator presets clone a stock eXRef that names another scene and retarget it, so the cloned
+element itself is no stock cap instance; whether those other scenes nest a cap eXRef inside was
+not checked (T300 measures the real count).
+
+    slots(tree) = other(tree) + k * cap,   k = sum over boards b in the tree of (s_b + R_b)
+    cap = cap_stock + sum over ALL records r of (live_r + pv_r)
+    s_b = stock cap instances on b (standings 1; replay / spectator 0 unless nested), R_b = records whose screen or also names b
+
+With every record on all three boards and all three in one tree: k = 1 + 3R (the requester's
+3 x (1 + R) is safe by 2). The cost is quadratic in R because cap holds every record.
+`walk.rs` (HOST_INSTANCES = 2, own record only) is right only for one record on one board.
+
+### 11.4 `!pkg` references
+- A chunk ref is `0x80 << 24 | offset`. The loader tests bit 31 (set = unresolved file offset)
+  and reads `base + (ref & 0x7fffff)`: `Vm_Open_Pkg` 0x143927752 (header `!vca`),
+  `Vm_Pkg_ResolveValueTables` 0x14392731a / 0x14392735a (table refs), `Vm_Pkg_ResolveObjectChunk`
+  0x14392f883 / 0x14392fc60 (`!idi` values). Steam 1.0.145: 0x143929ce2, 0x1439298aa,
+  0x1439298ea, 0x143931e13, 0x1439321f0.
+- After resolving, the slot holds a positive delta (bit 31 clear), which is why a second open
+  returns at once. Bits 24..30 of a scalar ref are the value-table index; for chunk refs they are
+  0 and bit 23 is dropped.
+- There is one base pointer per package (ctx+0) and no second slot or chain. Content past 8 MiB
+  can only go into another resource that the first one names by eaid path (another `.idf` behind
+  an eXRef, another `.ui` template).
+
 ## Inbox
