@@ -1079,6 +1079,81 @@ fn the_resume_list_screen_has_a_row_per_career_that_raises_its_index() {
     };
     assert_eq!(screen, pages::RESUME_SCREEN);
     check_resume_nodes(&bytes, &rows);
+    check_row_nodes(&bytes);
+}
+
+fn tint_of(n: &Node) -> Option<Vec<u8>> {
+    use swofty_formats::pkg::Value;
+    match &n
+        .props()
+        .ok()?
+        .get("colourOverride")?
+        .as_obj()?
+        .get("value")?
+        .as_val()?
+        .value
+    {
+        Value::Raw(b) => Some(b.clone()),
+        Value::Str(_) => None,
+    }
+}
+
+fn visible_of(n: &Node) -> Option<bool> {
+    n.props()
+        .ok()?
+        .get("visible")?
+        .as_obj()?
+        .get("value")?
+        .as_val()
+        .and_then(|v| match &v.value {
+            swofty_formats::pkg::Value::Raw(b) => b.first().map(|b| *b == 1),
+            swofty_formats::pkg::Value::Str(_) => None,
+        })
+}
+
+fn check_row_nodes(bytes: &[u8]) {
+    let p = Pkg::parse(bytes).unwrap();
+    let scr = p.root.o().unwrap().at("Screens").unwrap().a().unwrap()[0].clone();
+    let row = |name: &str| scr.child(name).unwrap();
+    for name in ["row_0", "row_1", "row_2", "row_new"] {
+        let r = row(name);
+        for c in career_row::COLUMNS {
+            assert!(r.child(c.name).is_ok(), "{name} has no {} column", c.name);
+        }
+    }
+    assert_eq!(
+        tint_of(row("row_0").child("indicator").unwrap()),
+        Some(vec![0xff, 0x88, 0x00, 0xff])
+    );
+    assert_eq!(visible_of(row("row_0").child("indicator").unwrap()), Some(true));
+    assert_eq!(
+        visible_of(row("row_new").child("indicator").unwrap()),
+        Some(false)
+    );
+    assert_eq!(
+        tint_of(row("row_0").child("status").unwrap()),
+        Some(pages::status_colour("ready").to_vec())
+    );
+    assert_eq!(
+        tint_of(row("row_1").child("status").unwrap()),
+        Some(pages::status_colour("missing").to_vec())
+    );
+    assert_eq!(
+        tint_of(row("row_2").child("status").unwrap()),
+        Some(pages::status_colour("version").to_vec())
+    );
+    assert_eq!(tint_of(row("row_new").child("status").unwrap()), None);
+}
+
+#[test]
+fn a_team_colour_from_the_database_is_the_rgb_a_node_tints_with() {
+    assert_eq!(pages::colour_rgb(0x00ff_8800), [0xff, 0x88, 0x00, 0xff]);
+    assert_eq!(pages::colour_rgb(16746240), [0xff, 0x87, 0x00, 0xff]);
+    let argb: i32 = -16723266;
+    assert_eq!(
+        pages::colour_rgb(argb as u32 & 0x00ff_ffff),
+        [0x00, 0xd2, 0xbe, 0xff]
+    );
 }
 
 fn check_resume_nodes(bytes: &[u8], rows: &[crate::stdlib::careers::ResumeRow]) {
@@ -1086,7 +1161,9 @@ fn check_resume_nodes(bytes: &[u8], rows: &[crate::stdlib::careers::ResumeRow]) 
     let scr = p.root.o().unwrap().at("Screens").unwrap().a().unwrap()[0].clone();
     assert_eq!(scr.name(), pages::RESUME_SCREEN);
     let text = String::from_utf8_lossy(bytes).into_owned();
-    assert!(text.contains("RESUME CAREER"));
+    assert!(text.contains("CAREER") && !text.contains("RESUME CAREER"));
+    assert!(kids_named(&scr, "row_new"), "the New Career row");
+    assert!(text.contains(pages::NEW_CAREER_ROUTE) && text.contains("NEW CAREER"));
     for r in rows {
         let kids: Vec<&str> = scr
             .slot(node::CHILDREN)
@@ -1097,15 +1174,27 @@ fn check_resume_nodes(bytes: &[u8], rows: &[crate::stdlib::careers::ResumeRow]) 
             .collect();
         assert!(kids.contains(&pages::row_name(r.index).as_str()), "{kids:?}");
         assert!(text.contains(&pages::row_command(r.index)), "row {}", r.index);
-        assert!(text.contains(&r.status), "{}", r.status);
         assert!(text.contains(&r.driver), "{}", r.driver);
+        assert!(text.contains(&r.team), "{}", r.team);
     }
     assert!(text.contains(pages::CONTINUE_DRIVER) && text.contains(pages::CONTINUE_MY_TEAM));
-    assert!(text.contains("Last played 19/11/2026") && text.contains("Season 2 · Race 4"));
+    assert!(text.contains("Last played 19/11/2026") && text.contains("Season 2, Race 4"));
+    assert!(!text.contains('\u{b7}'), "the font has no middle dot");
 }
 
-fn assert_resolved_references(data: &[u8], input: &dyn Fn(&str) -> PathBuf) {
+fn kids_named(scr: &Node, name: &str) -> bool {
+    scr.slot(node::CHILDREN)
+        .unwrap()
+        .iter()
+        .any(|c| c.is_node() && c.name() == name)
+}
+
+fn assert_resolved_references(data: &[u8], input: &dyn Fn(&str) -> PathBuf, built: &[PathBuf]) {
     let mut have = BTreeSet::new();
+    for path in built {
+        let f = ErpFile::open(path).unwrap();
+        have.extend(f.erp.resources.iter().map(|r| r.name.clone()));
+    }
     for rel in ["flow_options.erp", "persistent.erp", "flow_persistent.erp"] {
         let f = ErpFile::open(&input(&ui_file(rel))).unwrap();
         have.extend(f.erp.resources.iter().map(|r| r.name.clone()));
@@ -1126,6 +1215,7 @@ fn the_resume_list_builds_within_the_loader_rules_and_routes_in_and_out() {
     let input = stock_input();
     let mut settings = setup_settings_without();
     settings.resume_list = resume_rows();
+    settings.resume_list_on = true;
     let out = std::env::temp_dir().join(format!("swofty-resume-list-{}", std::process::id()));
     std::fs::remove_dir_all(&out).ok();
     let built = build(
@@ -1141,7 +1231,7 @@ fn the_resume_list_builds_within_the_loader_rules_and_routes_in_and_out() {
         built
             .lines
             .iter()
-            .any(|l| l.contains("Resume Career list screen swofty_resume_list has 3 row(s)")),
+            .any(|l| l.contains("Career list screen swofty_resume_list has 3 career row(s)")),
         "{:?}",
         built.lines
     );
@@ -1157,7 +1247,7 @@ fn the_resume_list_builds_within_the_loader_rules_and_routes_in_and_out() {
     let name = pages::RESUME_SCREEN;
     let data = std::fs::read(&built.screens[&format!("{UI_DIR}/{name}.ui")]).unwrap();
     check_resume_nodes(&data, &settings.resume_list);
-    assert_resolved_references(&data, &input);
+    assert_resolved_references(&data, &input, &[out.join(ui_file("persistent.erp"))]);
     let session: BTreeMap<&str, bool> = built
         .session
         .iter()
@@ -1180,9 +1270,26 @@ fn the_resume_list_builds_within_the_loader_rules_and_routes_in_and_out() {
     let (before, after) = (groupings(&src_p, ROUTES), groupings(&dst_p, ROUTES));
     for (gid, routes) in &before {
         for (rid, r) in routes {
+            if (gid.as_str(), rid.as_str()) == ("fe_home", "career") {
+                continue;
+            }
             assert_eq!(after[gid].get(rid), Some(r), "{gid}.{rid} changed");
         }
     }
+    for (gid, rid) in &[("fe_home", "career")] {
+        let changed = after[*gid][*rid].clone();
+        assert_ne!(
+            before[*gid].get(*rid),
+            Some(&changed),
+            "{gid}.{rid} still opens the Career menu"
+        );
+        assert!(
+            changed.contains(name) && changed.contains("options_flow"),
+            "{changed}"
+        );
+        assert!(!changed.contains("fe_career"), "{changed}");
+    }
+    let career = before["fe_home"]["career"].clone();
     for gid in ["fe_career", "fe_career_dlc_select"] {
         let entry = &after[gid][pages::RESUME_ROUTE];
         for want in [name, "options_flow", "Migrate", "Customisation"] {
@@ -1199,13 +1306,40 @@ fn the_resume_list_builds_within_the_loader_rules_and_routes_in_and_out() {
             "open",
             "open_no_input",
             "solo_career_continue_driver",
-            "solo_career_continue_my_team"
+            "solo_career_continue_my_team",
+            "swofty_new_career"
         ]
     );
     assert!(after[name]["solo_career_continue_driver"].contains("career_continue_driver"));
     assert!(after[name]["solo_career_continue_my_team"].contains("career_continue_my_team"));
     assert!(after[name]["solo_career_continue_driver"].contains("frontend_flow"));
-    assert!(after[name]["back"].contains("fe_career"));
+    assert!(after[name]["back"].contains("fe_home") && !after[name]["back"].contains("fe_career"));
+    assert!(after[name][pages::NEW_CAREER_ROUTE].contains("fe_career") && career.contains("fe_career"));
+    for (id, stock) in [
+        ("solo_career_continue_driver", "solo_career_continue_driver"),
+        ("solo_career_continue_my_team", "solo_career_continue_my_team"),
+    ] {
+        let want = &before["fe_career"][stock];
+        let got = &after[name][id];
+        for step in [
+            "Wait",
+            "StartStandardWipe",
+            "InputState",
+            "TriggerSubRoute",
+            "Migrate",
+        ] {
+            let in_stock = want.matches(&format!("Str(\"{step}\")")).count();
+            let here = got.matches(&format!("Str(\"{step}\")")).count();
+            assert!(here >= in_stock && here > 0, "{id}: {step}: {got}");
+        }
+        for kept in [
+            "tran_pre_wipe_dly_gen",
+            "ui_wipes/ui_wipe_standard_in.bk2",
+            "tran_wipe_stndrd_in_dly_c",
+        ] {
+            assert!(got.contains(kept), "{id}: {kept}");
+        }
+    }
 
     let none = build(
         &setup_settings_without(),
@@ -1219,6 +1353,155 @@ fn the_resume_list_builds_within_the_loader_rules_and_routes_in_and_out() {
     assert!(!none.lines.iter().any(|l| l.contains("Resume Career list")));
     assert!(!none.screens.keys().any(|k| k.contains(name)));
     assert!(!groupings(&out.join(&persistent), ROUTES).contains_key(name));
+    std::fs::remove_dir_all(&out).ok();
+}
+
+#[test]
+fn the_row_columns_sit_inside_the_row_without_touching() {
+    use career_row::{Align, COLUMNS};
+    let mut spans: Vec<(f64, f64, &str)> = COLUMNS
+        .iter()
+        .map(|c| match c.align {
+            Align::Start => (c.x, c.x + c.width, c.name),
+            Align::End => (c.x - c.width, c.x, c.name),
+        })
+        .collect();
+    spans.sort_by(|a, b| a.0.total_cmp(&b.0));
+    assert!(spans[0].0 >= 0.2 && spans.last().unwrap().1 <= 11.0, "{spans:?}");
+    for w in spans.windows(2) {
+        assert!(w[0].1 <= w[1].0, "{} runs into {}: {spans:?}", w[0].2, w[1].2);
+    }
+    assert_eq!(
+        spans.last().unwrap().2,
+        "status",
+        "the status is the far right column"
+    );
+    assert!(COLUMNS.iter().all(|c| c.chars >= 8));
+}
+
+#[test]
+#[ignore = "needs SWOFTY_STOCK_DATA, the launcher data folder that holds the game's baseline"]
+fn the_career_row_scene_is_the_stock_row_with_a_text_per_column() {
+    let input = stock_input();
+    let flow_options = input(&ui_file("flow_options.erp"));
+    let bytes = career_row::row_scene(&read_frag(&flow_options, career_row::STOCK, 0).unwrap()).unwrap();
+    let p = Pkg::parse(&bytes).unwrap();
+    let root = idf::scenes(&p).unwrap()[0].o().unwrap().at("scene").unwrap();
+    let all = idf::elements(root);
+    let names: Vec<&str> = all.iter().skip(1).map(|(p, _)| p.as_str()).collect();
+    assert_eq!(
+        names,
+        ["tl", "br", "base", "driver", "team", "badge", "place", "status"]
+    );
+    let base = idf::find(root, "base").unwrap();
+    assert_eq!(idf::param_str(base, "fileRef"), Some(career_row::STOCK));
+    assert_eq!(idf::xref(base), Some(idf::scene_id(career_row::STOCK)));
+    for c in career_row::COLUMNS {
+        let e = idf::find(root, c.name).unwrap();
+        assert_eq!(idf::param_str(e, "style"), Some(c.style));
+        assert_eq!(
+            idf::param_str(e, "wrapping"),
+            Some("none"),
+            "{}: no shrinking",
+            c.name
+        );
+        assert!(
+            e.as_obj()
+                .unwrap()
+                .get("anims")
+                .and_then(Node::as_arr)
+                .is_none_or(|a| a.items.is_empty())
+        );
+    }
+    assert_eq!(
+        idf::param_str(idf::find(root, "status").unwrap(), "halign"),
+        Some("right")
+    );
+    assert_eq!(
+        idf::param_str(idf::find(root, "driver").unwrap(), "halign"),
+        Some("start")
+    );
+    let stock = read_frag(&flow_options, career_row::STOCK, 0).unwrap();
+    let flow_frontend = input(&ui_file("flow_frontend.erp"));
+    let src = Sources::parse(
+        &read_frag(&flow_options, CONTAINER, 1).unwrap(),
+        &read_frag(&flow_frontend, FE_CAREER, 0).unwrap(),
+        &read_frag(&flow_frontend, FE_HOME, 0).unwrap(),
+        &read_frag(&flow_options, CONTAINER, 0).unwrap(),
+    )
+    .unwrap();
+    let (_, page) = pages::build_resume_page(&src, &resume_rows()).unwrap();
+    assert_eq!(
+        career_row::layout_problems(&page, &bytes, &stock).unwrap(),
+        Vec::<String>::new()
+    );
+    let unbound = career_row::layout_problems(&page, &stock, &stock).unwrap();
+    assert!(
+        unbound.iter().any(|p| p.starts_with("row_0.driver "))
+            && unbound.iter().any(|p| p.starts_with("row_new.status ")),
+        "{unbound:?}"
+    );
+    let report = check::scene_edit(career_row::SCENE, &bytes, catalog::stock()).unwrap();
+    let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
+    assert!(hard.is_empty(), "{hard:?}");
+}
+
+#[test]
+#[ignore = "needs SWOFTY_STOCK_DATA, the launcher data folder that holds the game's baseline"]
+fn with_no_careers_the_list_holds_the_new_career_row_alone() {
+    let input = stock_input();
+    let mut settings = setup_settings_without();
+    settings.resume_list_on = true;
+    let out = std::env::temp_dir().join(format!("swofty-resume-empty-{}", std::process::id()));
+    std::fs::remove_dir_all(&out).ok();
+    let built = build(
+        &settings,
+        &input,
+        &|_, _| None,
+        &out,
+        false,
+        &ArchiveWriter::new(&Packer::default()),
+    )
+    .unwrap();
+    let name = pages::RESUME_SCREEN;
+    let data = std::fs::read(&built.screens[&format!("{UI_DIR}/{name}.ui")]).unwrap();
+    let p = Pkg::parse(&data).unwrap();
+    let scr = p.root.o().unwrap().at("Screens").unwrap().a().unwrap()[0].clone();
+    let rows: Vec<&str> = scr
+        .slot(node::CHILDREN)
+        .unwrap()
+        .iter()
+        .filter(|c| c.is_node() && c.name().starts_with("row_"))
+        .map(|c| c.name())
+        .collect();
+    assert_eq!(rows, ["row_new"]);
+    let text = String::from_utf8_lossy(&data).into_owned();
+    assert!(text.contains("No careers yet") && text.contains(pages::NEW_CAREER_ROUTE));
+    assert_resolved_references(&data, &input, &[out.join(ui_file("persistent.erp"))]);
+    let persistent = ui_file("persistent.erp");
+    let report = check::archive_files(&[(
+        persistent.as_str(),
+        input(&persistent).as_path(),
+        out.join(&persistent).as_path(),
+    )])
+    .unwrap();
+    let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
+    assert!(hard.is_empty(), "{hard:?}");
+    let after = groupings(&out.join(&persistent), ROUTES);
+    assert!(after.contains_key(name) && after["fe_home"]["career"].contains(name));
+    let off = build(
+        &setup_settings_without(),
+        &input,
+        &|_, _| None,
+        &out,
+        false,
+        &ArchiveWriter::new(&Packer::default()),
+    )
+    .unwrap();
+    assert!(
+        !off.screens.keys().any(|k| k.contains(name)),
+        "the list is off without the flag"
+    );
     std::fs::remove_dir_all(&out).ok();
 }
 

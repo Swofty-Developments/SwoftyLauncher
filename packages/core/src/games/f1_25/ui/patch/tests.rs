@@ -1399,3 +1399,288 @@ fn a_career_setup_gets_an_entry_route_a_page_pair_and_a_way_back_from_the_wizard
     let e = setup_routes(&bare, &[setup()], &mut Placed::default()).unwrap_err();
     assert!(e.to_string().contains(SETUP_ENTRY_SOURCE), "{e}");
 }
+
+fn stock_continue(to: &str) -> Node {
+    route(
+        &format!(
+            "solo_career_continue_{}",
+            if to == "career_continue_driver" {
+                "driver"
+            } else {
+                "my_team"
+            }
+        ),
+        vec![
+            route_cmd(
+                "Wait",
+                1,
+                &[("Time", "0"), ("DilationCurve", "tran_pre_wipe_dly_gen")],
+                None,
+            ),
+            route_cmd(
+                "StartStandardWipe",
+                2,
+                &[("Video", "ui_wipes/ui_wipe_standard_in.bk2")],
+                Some("1"),
+            ),
+            route_cmd(
+                "Wait",
+                3,
+                &[("Time", "0"), ("DilationCurve", "tran_wipe_stndrd_in_dly_c")],
+                None,
+            ),
+            route_cmd("InputState", 4, &[], Some("2")),
+            route_cmd(
+                "TriggerSubRoute",
+                5,
+                &[("SubRoute", "close"), ("Target", "fe_career"), ("To", to)],
+                Some("3"),
+            ),
+            route_cmd(
+                "TriggerSubRoute",
+                6,
+                &[
+                    ("SubRoute", "open_no_input"),
+                    ("Target", to),
+                    ("From", "fe_career"),
+                    ("Message", ""),
+                ],
+                Some("5"),
+            ),
+        ],
+        "4,6",
+        1,
+        Some(to),
+    )
+}
+
+fn stock_resume_routes() -> Vec<u8> {
+    let career = route(
+        "career",
+        vec![
+            route_cmd(
+                "TriggerSubRoute",
+                1,
+                &[("SubRoute", "close"), ("Target", "fe_home"), ("To", "fe_career")],
+                None,
+            ),
+            route_cmd(
+                "TriggerSubRoute",
+                2,
+                &[
+                    ("SubRoute", "open"),
+                    ("Target", "fe_career"),
+                    ("From", "fe_home"),
+                    ("Message", ""),
+                ],
+                Some("1"),
+            ),
+        ],
+        "2",
+        1,
+        Some("fe_career"),
+    );
+    let options = route(
+        "options",
+        vec![
+            route_cmd(
+                "Wait",
+                1,
+                &[("Time", "0"), ("DilationCurve", "tran_pre_wipe_dly_gen")],
+                None,
+            ),
+            route_cmd(
+                "TriggerSubRoute",
+                2,
+                &[
+                    ("SubRoute", "close"),
+                    ("Target", "fe_home"),
+                    ("To", "settings_container"),
+                ],
+                Some("1"),
+            ),
+            route_cmd(
+                "Migrate",
+                3,
+                &[("Flow", "options_flow"), ("SkipActivator", "true")],
+                Some("2"),
+            ),
+            route_cmd(
+                "TriggerSubRoute",
+                4,
+                &[
+                    ("SubRoute", "open_no_input"),
+                    ("Target", "settings_container"),
+                    ("From", "fe_home"),
+                    ("Message", ""),
+                ],
+                Some("3"),
+            ),
+        ],
+        "4",
+        1,
+        Some("settings_container"),
+    );
+    pkg_of(vec![
+        route_group("fe_home", vec![career, options]),
+        route_group(
+            "fe_career",
+            vec![
+                stock_continue("career_continue_driver"),
+                stock_continue("career_continue_my_team"),
+            ],
+        ),
+        route_group(
+            "fe_career_dlc_select",
+            vec![stock_continue("career_continue_driver")],
+        ),
+    ])
+}
+
+fn resumed() -> (Pkg, Pkg, Vec<String>) {
+    let stock = stock_resume_routes();
+    let mut placed = Vec::new();
+    let out = resume_routes(
+        &stock,
+        &ResumeRoutes {
+            frontend_flow: "frontend_flow".into(),
+        },
+        &mut placed,
+    )
+    .unwrap();
+    (Pkg::parse(&stock).unwrap(), Pkg::parse(&out).unwrap(), placed)
+}
+
+#[test]
+fn the_list_continues_with_every_command_of_the_stock_continue_route_retargeted() {
+    let (before, after, _) = resumed();
+    let list = crate::ui::pages::RESUME_SCREEN;
+    for (id, to) in [
+        ("solo_career_continue_driver", "career_continue_driver"),
+        ("solo_career_continue_my_team", "career_continue_my_team"),
+    ] {
+        let stock = command_attrs(route_in(&before, "fe_career", id));
+        let here = command_attrs(route_in(&after, list, id));
+        let kinds: Vec<&str> = here.iter().map(|(k, _)| k.as_str()).collect();
+        assert_eq!(
+            kinds,
+            [
+                "Wait",
+                "StartStandardWipe",
+                "Wait",
+                "InputState",
+                "TriggerSubRoute",
+                "TriggerSubRoute",
+                "Migrate"
+            ]
+        );
+        let retargeted: Vec<_> = stock
+            .into_iter()
+            .map(|(k, a)| {
+                let a = a
+                    .into_iter()
+                    .map(|(n, v)| (n, if v == "fe_career" { list.to_owned() } else { v }))
+                    .collect();
+                (k, a)
+            })
+            .collect();
+        assert_eq!(&here[..6], &retargeted[..], "{id}");
+        assert_eq!(
+            here[6].1,
+            pairs(&[("Flow", "frontend_flow"), ("SkipActivator", "true")])
+        );
+        let s = steps(route_in(&after, list, id));
+        assert!(
+            s[5].ends_with(" 7") && s[6].ends_with(" 5"),
+            "open follows the move, the move the close: {s:?}"
+        );
+        assert!(
+            s[4].contains(&format!("close {list}")) && s[5].contains(&format!("open_no_input {to}")),
+            "{s:?}"
+        );
+    }
+}
+
+#[test]
+fn the_career_tile_opens_the_list_and_the_list_reaches_the_career_menu_and_the_home() {
+    let (before, after, placed) = resumed();
+    let list = crate::ui::pages::RESUME_SCREEN;
+    let career = route_in(&after, "fe_home", "career");
+    assert_ne!(
+        command_attrs(career),
+        command_attrs(route_in(&before, "fe_home", "career"))
+    );
+    let kinds: Vec<_> = command_attrs(career);
+    assert!(
+        kinds
+            .iter()
+            .any(|(k, a)| k == "Migrate" && a.contains(&("Flow".to_owned(), "options_flow".to_owned())))
+    );
+    assert!(
+        kinds
+            .iter()
+            .any(|(_, a)| a.contains(&("Target".to_owned(), list.to_owned())))
+    );
+    assert!(!kinds.iter().any(|(_, a)| a.iter().any(|(_, v)| v == "fe_career")));
+    assert_eq!(route_ids_of(&after, "fe_home"), ["options", "career"]);
+
+    let new_career = command_attrs(route_in(&after, list, crate::ui::pages::NEW_CAREER_ROUTE));
+    let kinds: Vec<&str> = new_career.iter().map(|(k, _)| k.as_str()).collect();
+    assert_eq!(kinds, ["TriggerSubRoute", "Migrate", "TriggerSubRoute"]);
+    assert_eq!(
+        new_career[0].1,
+        pairs(&[("SubRoute", "close"), ("Target", list), ("To", "fe_career")])
+    );
+    assert_eq!(
+        new_career[2].1,
+        pairs(&[
+            ("SubRoute", "open"),
+            ("Target", "fe_career"),
+            ("From", list),
+            ("Message", "")
+        ]),
+        "the same open step the main menu's Career route had"
+    );
+    let back = command_attrs(route_in(&after, list, "back"));
+    assert!(
+        back.iter()
+            .any(|(_, a)| a.contains(&("Target".to_owned(), "fe_home".to_owned())))
+    );
+    assert!(!back.iter().any(|(_, a)| a.iter().any(|(_, v)| v == "fe_career")));
+    assert_eq!(
+        placed,
+        [
+            "fe_home.career".to_owned(),
+            format!("fe_career.{}", crate::ui::pages::RESUME_ROUTE),
+            format!("fe_career_dlc_select.{}", crate::ui::pages::RESUME_ROUTE)
+        ]
+    );
+}
+
+#[test]
+fn resume_routes_fail_when_the_main_menu_has_no_career_route() {
+    let mut p = Pkg::parse(&stock_resume_routes()).unwrap();
+    let gs = root_obj(&mut p)
+        .unwrap()
+        .at_mut("RouteGroupings")
+        .unwrap()
+        .a_mut()
+        .unwrap();
+    let home = gs.iter_mut().find(|g| id_of(g) == Some("fe_home")).unwrap();
+    home.o_mut()
+        .unwrap()
+        .at_mut("Routes")
+        .unwrap()
+        .a_mut()
+        .unwrap()
+        .retain(|r| id_of(r) != Some("career"));
+    let e = resume_routes(
+        &p.to_bytes().unwrap(),
+        &ResumeRoutes {
+            frontend_flow: "frontend_flow".into(),
+        },
+        &mut Vec::new(),
+    )
+    .unwrap_err();
+    assert!(e.to_string().contains("career"), "{e}");
+}

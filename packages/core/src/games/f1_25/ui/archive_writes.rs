@@ -14,7 +14,7 @@ use super::{
     ANCHOR, CUSTOMISATION_ROUTES, ERPS, F1_WORLD_ROUTES, FE_HOME, FLOW, FLOWS, FRONTEND_TRANSITION,
     GAME_ROUTES, HUD_MESSAGES, LEADERBOARD_UI, MESSAGES, MenuBuild, MfdRow, OPTIONS_FLOW, OVERRIDES,
     PERSISTENT_UI, Patch, REGIONS, ROUTES, TOOLTIPS, UI_DATA, WIZARD_ROUTES, Writer, car_category,
-    career_select, check, era, home_rows, icons, mfd, mfd_page_rows, patch, rows, ui_file,
+    career_row, career_select, check, era, home_rows, icons, mfd, mfd_page_rows, patch, rows, ui_file,
 };
 use crate::addons::settings::{SessionScreen, UI_DIR, screen_file};
 use crate::{Error, Result, io_err};
@@ -131,21 +131,27 @@ pub(super) fn write_persistent(
         &read_frag(flow_options, &format!("{}.image", icons::STOCK), 0)?,
     )?;
     let persistent = persistent.into_iter().map(|(name, f)| (name, 0, f)).collect();
-    write_archive(
-        src_p,
-        dst_p,
-        persistent,
-        vec![
-            (view.0, era::SRV_KIND, view.1),
-            (surface.0, era::SURFACE_KIND, surface.1),
-            (
-                rows::O_ROW.to_owned(),
-                "UILayout",
-                vec![rows::row_scene(&read_frag(flow_options, rows::O_BLOCK, 0)?)?],
-            ),
-        ],
-        archives,
-    )?;
+    let mut added = vec![
+        (view.0, era::SRV_KIND, view.1),
+        (surface.0, era::SURFACE_KIND, surface.1),
+        (
+            rows::O_ROW.to_owned(),
+            "UILayout",
+            vec![rows::row_scene(&read_frag(flow_options, rows::O_BLOCK, 0)?)?],
+        ),
+    ];
+    if resume.is_some() {
+        added.push((
+            career_row::SCENE.to_owned(),
+            "UILayout",
+            vec![career_row::row_scene(&read_frag(
+                flow_options,
+                career_row::STOCK,
+                0,
+            )?)?],
+        ));
+    }
+    write_archive(src_p, dst_p, persistent, added, archives)?;
     Ok(Persistent {
         routes: routes_out.into_inner(),
         game_routes: game_routes_out.into_inner(),

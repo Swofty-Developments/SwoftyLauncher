@@ -7,10 +7,12 @@ use swofty_formats::pkg::{Node, Val};
 
 use super::options::{literal_tooltips, settings_state_matrix};
 use super::page::{scroll_rows, vm_page_bind};
-use super::text::{fit, fit_to, tagged};
-use super::{PAGE_LAYOUT, Sources, TAG_STYLE};
+use super::text::fit;
+use super::tiles::set_component;
+use super::{PAGE_LAYOUT, Sources};
 use crate::Result;
 use crate::stdlib::careers::{ResumeRow, date_text};
+use crate::ui::career_row;
 use crate::ui::node::*;
 
 pub const RESUME_SCREEN: &str = "swofty_resume_list";
@@ -62,8 +64,11 @@ fn who(r: &ResumeRow) -> &str {
         .map_or("", |s| s.as_str())
 }
 
-fn label(r: &ResumeRow) -> String {
-    fit_to(who(r).to_owned(), 150)
+fn clip(s: &str, chars: usize) -> String {
+    match s.chars().count() > chars {
+        true => format!("{}...", s.chars().take(chars - 3).collect::<String>().trim_end()),
+        false => s.to_owned(),
+    }
 }
 
 fn place(r: &ResumeRow) -> String {
@@ -71,6 +76,26 @@ fn place(r: &ResumeRow) -> String {
         (Some(s), Some(race)) => format!("Season {s}, Race {race}"),
         (Some(s), None) => format!("Season {s}"),
         _ => String::new(),
+    }
+}
+
+fn short_place(r: &ResumeRow) -> String {
+    let full = place(r);
+    match (full.chars().count() > career_row::PLACE.chars, r.season, r.race) {
+        (true, Some(s), Some(race)) => format!("S{s}, R{race}"),
+        _ => full,
+    }
+}
+
+fn short_badge(r: &ResumeRow) -> &str {
+    r.badge.strip_suffix(" Career").unwrap_or(&r.badge)
+}
+
+fn short_status(severity: &str) -> &'static str {
+    match severity {
+        crate::stdlib::careers::SEVERITY_READY => "Ready",
+        crate::stdlib::careers::SEVERITY_VERSION => "Version",
+        _ => "Missing",
     }
 }
 
@@ -102,22 +127,74 @@ fn tint(n: &mut Node, colour: [u8; 4]) -> Result<()> {
     )
 }
 
-fn rgb(c: u32) -> [u8; 4] {
+/// A signed ARGB colour from the game database as the opaque RGB a node tints with.
+pub fn colour_rgb(c: u32) -> [u8; 4] {
     [(c >> 16) as u8, (c >> 8) as u8, c as u8, 0xff]
 }
 
-fn base_row(src: &Sources, name: &str, label: &str, value: &str) -> Result<Node> {
+const STOCK_PARTS: [&str; 7] = [
+    "anim_open_and_pulse",
+    "anim",
+    "content_holder",
+    "value",
+    "label",
+    "indicator",
+    "button_icon",
+];
+
+fn through_base(n: &mut Node) -> Result<()> {
+    let steps: Vec<String> = n
+        .slot(LAYOUT)?
+        .first()
+        .and_then(Node::as_arr)
+        .map(|g| {
+            g.items
+                .iter()
+                .filter_map(|b| Some(b.as_obj()?.get("debugName")?.as_val()?.as_str()?.to_owned()))
+                .collect()
+        })
+        .unwrap_or_default();
+    if steps.is_empty() {
+        return Ok(());
+    }
+    let mut path = vec![career_row::BASE];
+    path.extend(steps.iter().map(String::as_str));
+    n.a_mut()?[LAYOUT] = layout_path(&path);
+    Ok(())
+}
+
+fn column(row: &mut Node, parent: &str, c: &career_row::Column, text: &str) -> Result<Node> {
+    let mut n = clone_node(row.child("label")?, parent, c.name)?;
+    n.a_mut()?[LAYOUT] = layout_path(&[c.name]);
+    literal_label(&mut n, text)?;
+    Ok(n)
+}
+
+fn base_row(src: &Sources, name: &str, texts: [&str; 5], status: Option<[u8; 4]>) -> Result<Node> {
     let mut t = instance(
         src.t("settings_edit_button_text")?,
         RESUME_SCREEN,
         name,
-        &[("label", label), ("value", &fit(value.to_owned()))],
+        &[("label", ""), ("value", "")],
         false,
     )?;
+    set_component(&mut t, career_row::SCENE)?;
     t.slot_mut(CHILDREN)?
         .retain(|c| !matches!(c.name(), "button_pressed" | "reset"));
+    for part in STOCK_PARTS {
+        through_base(t.child_mut(part)?)?;
+    }
     set_bool(t.child_mut("indicator")?, "visible", false)?;
     set_bool(t.child_mut("button_icon")?, "visible", false)?;
+    let parent = format!("{RESUME_SCREEN}.{name}");
+    let mut added = Vec::new();
+    for (c, text) in career_row::COLUMNS.iter().zip(texts) {
+        added.push(column(&mut t, &parent, c, text)?);
+    }
+    if let Some(colour) = status {
+        tint(&mut added[4], colour)?;
+    }
+    t.slot_mut(CHILDREN)?.extend(added);
     Ok(t)
 }
 
@@ -142,7 +219,7 @@ fn focused(title: &str, body: &str) -> Node {
 }
 
 fn new_career_row(src: &Sources) -> Result<Node> {
-    let mut t = base_row(src, NEW_ROW, "NEW CAREER", "")?;
+    let mut t = base_row(src, NEW_ROW, ["NEW CAREER", "", "", "", ""], None)?;
     add_events(
         &mut t,
         vec![
@@ -170,9 +247,25 @@ fn new_career_row(src: &Sources) -> Result<Node> {
 
 fn row_node(src: &Sources, r: &ResumeRow) -> Result<Node> {
     let sname = RESUME_SCREEN;
-    let mut t = base_row(src, &row_name(r.index), &label(r), &r.status)?;
+    let first = clip(who(r), career_row::DRIVER.chars);
+    let team = match r.team.as_str() {
+        t if t == first || t == who(r) => String::new(),
+        t => clip(t, career_row::TEAM.chars),
+    };
+    let badge = match short_badge(r) {
+        b if b == first || b == who(r) => String::new(),
+        b => clip(b, career_row::BADGE.chars),
+    };
+    let texts = [
+        first.as_str(),
+        team.as_str(),
+        badge.as_str(),
+        &clip(&short_place(r), career_row::PLACE.chars),
+        short_status(&r.severity),
+    ];
+    let mut t = base_row(src, &row_name(r.index), texts, Some(status_colour(&r.severity)))?;
     if let Some(c) = r.colour {
-        tint(t.child_mut("button_icon")?, rgb(c))?;
+        tint(t.child_mut("indicator")?, colour_rgb(c))?;
     }
     let cmd = row_command(r.index);
     add_events(

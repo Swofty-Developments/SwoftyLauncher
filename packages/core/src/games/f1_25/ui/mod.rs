@@ -1,4 +1,5 @@
 pub mod car_category;
+pub mod career_row;
 pub mod career_select;
 pub mod catalog;
 pub mod check;
