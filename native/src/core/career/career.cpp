@@ -134,6 +134,7 @@ void publish(const career::state::Edges &e, const SwoftyCareerState &s)
     if (e.hub == 1) {
         perf::mark("career", "hub entered");
         swofty::log("[career] career.hub entered (mode %s)", mode_name(s.mode));
+        runtime::hub_calendar_team_hq();
         fire(SWOFTY_EVENT_CAREER_HUB, 1, s.mode, &s);
     }
 }
