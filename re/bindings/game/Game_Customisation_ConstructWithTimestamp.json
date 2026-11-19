@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1413ffe80.c;xref:0x140fee912",
-  "notes": "Initialises a request/promise-like object (vtable 0x145612f80, QueryPerformanceCounter + base _DAT_1461089f8 -> deadline at +0x100, fields zeroed), may throw via Ne_Std_ThrowException. 41 call sites incl Game_Read_DevSessionDataContractEntrantsConfig. Hypothesis. vp0-verify partial"
+  "notes": "Initialises a request/promise-like object (vtable 0x145612f80, QueryPerformanceCounter + base _DAT_1461089f8 -> deadline at +0x100, fields zeroed), may throw via Ne_Std_ThrowBadOptionalAccess. 41 call sites incl Game_Read_DevSessionDataContractEntrantsConfig. Hypothesis. vp0-verify partial"
  },
  "signature": {
   "id": "game.request_construct_with_deadline",

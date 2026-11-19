@@ -25,7 +25,7 @@ mod tests;
 
 pub use self::apply::Held;
 use self::apply::SourceKey;
-use self::archive::{Archive, Slot};
+pub(crate) use self::archive::{Archive, Slot};
 pub use self::checks::texture_findings_in;
 pub use self::index::{
     erp_files, group_dir, index_holds, index_of, mipmap_names, mipmap_path, overlay_names, served_at_runtime,

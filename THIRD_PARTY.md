@@ -92,6 +92,8 @@ attribution requirement applies to this work and to every work based on it:
 
 ## bcdec and bcdec_rs
 
+The native Live image service also uses `native/third_party/bcdec/bcdec.h`, pinned to commit `80859ed3b7afb1c527a2a99d70c61457bea72d0c`, under the bcdec MIT licence reproduced below and in `native/third_party/bcdec/LICENSE.txt`.
+
 Swofty UI's BC7 texture decoder, `tools/swofty-ui/static/bc7.js`, is a JavaScript port of bcdec_rs 0.2.0 from <https://github.com/ScanMountGoat/image_dds>, which is itself a port of bcdec by Sergii Kudlai, <https://github.com/iOrange/bcdec>. bcdec_rs is MIT-licensed. bcdec is available under the MIT licence or the Unlicense; Swofty UI uses it under the MIT licence.
 
 ```

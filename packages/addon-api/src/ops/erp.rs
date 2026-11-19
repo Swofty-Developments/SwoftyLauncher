@@ -5,6 +5,21 @@ use serde::{Deserialize, Serialize};
 use crate::asset::Source;
 use crate::ops::pkg::PkgEdit;
 
+impl ErpOp {
+    /// Why the op is refused: a `patch-pkg` edit that [`PkgEdit::refusal`] refuses, named with its archive and resource.
+    pub fn refusal(&self) -> Option<String> {
+        match self {
+            ErpOp::PatchPkg {
+                erp, resource, edits, ..
+            } => edits
+                .iter()
+                .find_map(PkgEdit::refusal)
+                .map(|why| format!("{erp} {resource}: {why}")),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "op", rename_all = "kebab-case", deny_unknown_fields)]
 pub enum ErpOp {

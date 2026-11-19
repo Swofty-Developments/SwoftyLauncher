@@ -475,7 +475,7 @@ mod tests {
         );
         write_session(&game, &[]).unwrap();
         assert!(!game.join(SESSION_FILE).exists());
-        super::super::write_session_keys(&game, Some("n"), false).unwrap();
+        super::super::write_session_keys(&game, Some(&super::super::tests::nonce("n")), false).unwrap();
         write_session(&game, &[barred("a.b", "A", None)]).unwrap();
         super::super::clear_session_keys(&game);
         assert_eq!(read(), json!({"tt_barred": [{"id": "a.b", "name": "A"}]}));

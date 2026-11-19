@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <limits>
 
-namespace runtime::garage_placement {
+namespace garage {
 
 using Address = std::uintptr_t;
 using Matrix = std::array<float, 16>; // row-major game matrix; translation in row 3
@@ -128,4 +128,4 @@ bool central_crew(Read&& read, const Owner& owner, const CrewIds& ids, CentralCr
     return true;
 }
 
-} // namespace runtime::garage_placement
+} // namespace garage

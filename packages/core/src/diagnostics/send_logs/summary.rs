@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use super::collect::{Sources, files_under};
 use super::crashes::{CrashFound, crash_excerpt};
 use super::files::{file_name, modified, read_ends, read_head};
-use super::system::{hardware, system_lines};
+use super::system::{hardware, smoothness_lines, system_lines};
 use super::{
     Bundle, LAUNCH_LOGS, LOADER_HEAD, OVERLAY_READ, PERF_LINES, PERF_READ, Report, has_session, perf,
     readable, size,
@@ -297,6 +297,12 @@ impl Bundle {
                     b.code
                 ));
             }
+            if let crate::diagnostics::launch::Cause::RunAsAdmin(r) = &f.cause {
+                s.push_str(&format!(
+                    "  set to run as administrator (os error 740): {}\n",
+                    r.paths().join(", ")
+                ));
+            }
         }
         if loader.is_empty() {
             s.push_str("  No loader log was found\n");
@@ -321,6 +327,11 @@ impl Bundle {
         }
         s.push_str("\nGraphics and memory\n");
         for l in system_lines(&logs) {
+            s.push_str(&l);
+            s.push('\n');
+        }
+        s.push_str("\nSmoothness\n");
+        for l in smoothness_lines(&logs) {
             s.push_str(&l);
             s.push('\n');
         }

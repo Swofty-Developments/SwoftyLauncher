@@ -25,11 +25,22 @@ namespace blackbox {
 void note(const char *, const char *, const char *) {}
 }
 
+namespace hud::hardware_settings {
+std::wstring path()
+{
+    return L"";
+}
+}
+
 namespace runtime {
 const std::wstring &swofty_root()
 {
     static const std::wstring root = L".\\";
     return root;
+}
+std::string read_file(const std::wstring &, size_t)
+{
+    return "";
 }
 }
 

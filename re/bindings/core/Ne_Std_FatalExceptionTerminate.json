@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/14029b050.c;xref:0x14029b041",
-  "notes": "Calls the optional global exception hook (0x145fb8718), the exception's virtual +0x10, then fatal int3 trap. 10 callers incl. Ne_Std_ThrowException, Ne_Std_ThrowBadArrayNewLength."
+  "notes": "Calls the optional global exception hook (0x145fb8718), the exception's virtual +0x10, then fatal int3 trap. 10 callers incl. Ne_Std_ThrowBadOptionalAccess, Ne_Std_ThrowBadArrayNewLength."
  },
  "signature": {
   "id": "core.std_fatal_exception_terminate",

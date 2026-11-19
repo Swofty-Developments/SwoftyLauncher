@@ -461,6 +461,91 @@ inline std::optional<RoundPosition> current_round()
     return RoundPosition{index, round, rounds};
 }
 
+// One driver's result in one of a round's results sessions: the session's id, his finishing position (1-based) and
+// the game's result status (points score at 0 and 1).
+struct StandingsFinish {
+    uint32_t session = 0;
+    int position = 0;
+    uint32_t status = 0;
+};
+
+// One round of a driver's season: the points its sessions gave him and his finish in each results session.
+struct StandingsRound {
+    int points = 0;
+    std::vector<StandingsFinish> finishes;
+};
+
+// One driver of the drivers' championship: his driver stat id (driver_stat), his place (1-based), his total and
+// his rounds in calendar order.
+struct StandingsDriver {
+    uint32_t driver_stat = 0;
+    int position = 0;
+    int points = 0;
+    std::vector<StandingsRound> rounds;
+
+    // The points of round `round` (1-based); 0 for a round he has no points in or past the rounds read.
+    int points_in(int round) const
+    {
+        return round >= 1 && size_t(round) <= rounds.size() ? rounds[size_t(round) - 1].points : 0;
+    }
+};
+
+// The drivers' championship of the loaded career's current season: season_index as current_round gives it, the
+// rounds that have points or results, and the drivers in the game's order with the game's totals (the dropped
+// scores rule included).
+struct Standings {
+    int season_index = 0;
+    int rounds = 0;
+    std::vector<StandingsDriver> drivers;
+
+    const StandingsDriver *find(uint32_t driver_stat) const
+    {
+        for (const StandingsDriver &d : drivers)
+            if (d.driver_stat == driver_stat)
+                return &d;
+        return nullptr;
+    }
+};
+
+// The loaded career's standings, or nothing while no career is loaded or it is busy, on a build the read is not
+// proven on and on a core without the call (table version 8). Call it on the flow thread (an event handler or a
+// frame callback).
+inline std::optional<Standings> standings()
+{
+    auto t = detail::live_ops();
+    if (!t || t->version < 8 || !t->standings)
+        return std::nullopt;
+    std::string text = detail::grow([&](char *out, size_t cap, size_t *len) { return t->standings(out, cap, len); });
+    if (text.empty())
+        return std::nullopt;
+    json::Value v = json::parse(text);
+    const json::Array *drivers = v["drivers"].if_array();
+    if (!drivers)
+        return std::nullopt;
+    Standings s;
+    s.season_index = static_cast<int>(v["season"].as_int());
+    s.rounds = static_cast<int>(v["rounds"].as_int());
+    for (const json::Value &d : *drivers) {
+        StandingsDriver driver;
+        driver.driver_stat = static_cast<uint32_t>(d["driver"].as_int());
+        driver.position = static_cast<int>(d["position"].as_int());
+        driver.points = static_cast<int>(d["points"].as_int());
+        if (const json::Array *rounds = d["rounds"].if_array())
+            for (const json::Value &r : *rounds) {
+                StandingsRound round;
+                round.points = static_cast<int>(r["points"].as_int());
+                if (const json::Array *finishes = r["finishes"].if_array())
+                    for (const json::Value &f : *finishes)
+                        round.finishes.push_back({static_cast<uint32_t>(f["session"].as_int()),
+                                                  static_cast<int>(f["position"].as_int()),
+                                                  static_cast<uint32_t>(f["status"].as_int())});
+                driver.rounds.push_back(std::move(round));
+            }
+        s.drivers.push_back(std::move(driver));
+    }
+    return s;
+}
+
 // The season's seats as they are at `round`: every listed team keeps its slot and gets the drivers its `changes`
 // with round <= `round` leave on its seats. In the order of round, slot and seat: replace puts `in` on the seat
 // for the rest of the season; swap puts `in` on the seat and gives his old seat to the seat's previous driver;

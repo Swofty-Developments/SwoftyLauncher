@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 #pragma once
 #include "core/garage/garage_members.hpp"
-namespace runtime::garage_placement::vehicle {
+namespace garage::vehicle {
 using Result = swofty::garage_placement::Result;
 struct Pose { Address scene{}; Matrix scene_world{}, car_world{}; };
 enum class Step { verify, active, restore, rollback };
@@ -97,4 +97,4 @@ inline Verification verify(Change &c,const Matrix *observed,uint64_t now)
     if (++c.observations<2 || now-c.since<2000) return Verification::wait;
     return c.step==Step::verify ? Verification::revert : Verification::failed;
 }
-} // namespace runtime::garage_placement::vehicle
+} // namespace garage::vehicle

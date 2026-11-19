@@ -98,6 +98,8 @@ src/core/render/d3d12/hooking.cpp
 src/core/render/d3d12/swapchains.cpp
 src/core/render/d3d12/arm_gate.cpp
 src/core/render/grade.cpp
+src/core/render/badges/badge_images.cpp
+src/core/render/badges/trace.cpp
 src/core/render/postfx.cpp
 src/core/live/live_car.cpp
 src/core/frontend/view_state.cpp
@@ -121,6 +123,7 @@ src/core/diagnostics/perf/sysmem.cpp
 src/core/diagnostics/perf/probes.cpp
 src/core/diagnostics/perf/frames.cpp
 src/core/diagnostics/perf/report.cpp
+src/core/diagnostics/perf/system.cpp
 src/core/assets/lang_override.cpp
 src/core/career/characters.cpp
 src/core/career/characters_hooks.cpp
@@ -147,7 +150,9 @@ src/core/guards/cars/ers_mode.cpp
 src/core/guards/career/standings_guard.cpp
 src/core/guards/career/standings_drop.cpp
 src/core/guards/career/teamhq_track_guard.cpp
+src/core/guards/career/calendar_track_guard.cpp
 src/core/guards/ai/ai_corner_guard.cpp
+src/core/guards/ai/ai_ers_guard.cpp
 src/core/guards/ai/ai_curves_guard.cpp
 src/core/guards/engine/placed_record.cpp
 src/core/guards/session/replay_grid_guard.cpp
@@ -223,3 +228,4 @@ src/core/assets/entitlements.cpp
 src/core/live/live_state.cpp
 src/core/loading/game_settings.cpp
 src/core/assets/db_first_read.cpp
+src/core/guards/garage/pit_garage_state.cpp

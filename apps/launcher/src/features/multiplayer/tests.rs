@@ -8,8 +8,9 @@ use swofty_core::online::multiplayer::types::{
 
 use super::model::starting;
 use super::model::{
-    GameState, RoomStatus, Start, Tone, addon_checks, card_addons, content_check, content_word, exit_leaves,
-    exit_notice, joined, member_word, missing, refusal, refusal_text, restart_ok_text, room_meta,
+    GameState, OwnPrint, RoomStatus, Start, Tone, addon_checks, card_addons, content_check, content_word,
+    exit_leaves, exit_notice, extra_addons, joined, member_word, missing, refusal, refusal_text,
+    restart_ok_text, room_meta,
 };
 use super::state::{Lobby, unasked};
 use swofty_core::online::multiplayer::types::RoomContent;
@@ -135,23 +136,104 @@ fn names_where_the_game_is() {
     assert_eq!(GameState::of(true, None), GameState::Busy);
 }
 
+fn own(digest: &str, addons: &[(&str, &str)]) -> OwnPrint {
+    OwnPrint {
+        digest: digest.into(),
+        addons: addons.iter().map(|(id, name)| addon(id, name)).collect(),
+    }
+}
+
+fn ids(addons: &[(&str, &str)]) -> HashSet<String> {
+    addons.iter().map(|(id, _)| (*id).to_owned()).collect()
+}
+
 #[test]
 fn gives_each_room_one_status() {
+    let all = [
+        ("a.tracks", "Okayama"),
+        ("b.cars", "2026 Cars"),
+        ("c.hud", "Timing HUD"),
+    ];
+    let on = ids(&all);
+    let of = |room: &RoomSummary, mine: &str| RoomStatus::of(room, &on, Some(&own(mine, &all)));
+    assert_eq!(of(&room(8, 8, Some("sha256:a")), "sha256:a"), RoomStatus::Full);
     assert_eq!(
-        RoomStatus::of(&room(8, 8, Some("sha256:a")), Some("sha256:a")),
-        RoomStatus::Full
-    );
-    assert_eq!(
-        RoomStatus::of(&room(3, 8, Some("sha256:ABC")), Some("sha256:abc")),
+        of(&room(3, 8, Some("sha256:ABC")), "sha256:abc"),
         RoomStatus::Match
     );
     assert_eq!(
-        RoomStatus::of(&room(3, 8, Some("sha256:a")), Some("sha256:b")),
+        of(&room(3, 8, Some("sha256:a")), "sha256:b"),
+        RoomStatus::Match,
+        "every listed addon on, the rest a room launch takes from the host"
+    );
+    let without_cars = ids(&[("a.tracks", "Okayama"), ("c.hud", "Timing HUD")]);
+    assert_eq!(
+        RoomStatus::of(
+            &room(3, 8, Some("sha256:a")),
+            &without_cars,
+            Some(&own("sha256:b", &all))
+        ),
         RoomStatus::Differ
     );
+    assert_eq!(of(&room(3, 8, None), "sha256:b"), RoomStatus::Unknown);
     assert_eq!(
-        RoomStatus::of(&room(3, 8, None), Some("sha256:b")),
+        RoomStatus::of(&room(3, 8, Some("sha256:a")), &on, None),
         RoomStatus::Unknown
+    );
+    let mut unlisted = room(3, 8, Some("sha256:a"));
+    unlisted.addons = None;
+    assert_eq!(of(&unlisted, "sha256:b"), RoomStatus::Differ);
+    assert_eq!(of(&unlisted, "sha256:a"), RoomStatus::Match);
+}
+
+#[test]
+fn a_room_differs_in_its_list_only_where_its_view_shows_a_difference() {
+    let hosts = [
+        ("kizi.ai-driver-behaviour", "AI Driver Behaviour"),
+        ("swofty.core", "SwoftyMod"),
+        ("swofty.lap1-ai", "Lap 1 Realistic AI"),
+        ("swofty.swofty-seasons-2011", "SWOFTY 2011"),
+        ("swofty.swofty-seasons-2011-real", "SWOFTY 2011 Real Liveries"),
+        ("teamsimplified.mods", "Simplified for Swofty"),
+    ];
+    let mut room = room(1, 8, Some("sha256:dde0b6530ef0753d"));
+    room.addons = Some(RoomAddons {
+        count: hosts.len() as u32,
+        tracks: Vec::new(),
+        list: hosts.iter().map(|(id, name)| addon(id, name)).collect(),
+    });
+    let mine = own("sha256:b860077ab11537ec", &hosts);
+    assert_eq!(
+        RoomStatus::of(&room, &ids(&hosts), Some(&mine)),
+        RoomStatus::Match
+    );
+    assert!(extra_addons(&room, &mine).is_empty());
+
+    let mut with_hud = hosts.to_vec();
+    with_hud.push(("player.telemetry-hud", "Telemetry HUD"));
+    let mine = own("sha256:43f821ef51b134cf", &with_hud);
+    assert_eq!(
+        RoomStatus::of(&room, &ids(&with_hud), Some(&mine)),
+        RoomStatus::Differ
+    );
+    assert_eq!(extra_addons(&room, &mine), ["Telemetry HUD"]);
+
+    let mut capped = room.clone();
+    capped.addons.as_mut().unwrap().count += 1;
+    assert!(
+        extra_addons(&capped, &mine).is_empty(),
+        "a list the server cut short says nothing of extra addons"
+    );
+    assert_eq!(
+        RoomStatus::of(&capped, &ids(&with_hud), Some(&mine)),
+        RoomStatus::Match
+    );
+
+    let without_season = ids(&hosts[..3]);
+    let mine = own("sha256:43f821ef51b134cf", &hosts);
+    assert_eq!(
+        RoomStatus::of(&room, &without_season, Some(&mine)),
+        RoomStatus::Differ
     );
 }
 
@@ -318,12 +400,12 @@ fn a_shown_page_polls_the_game_rooms_and_addons_at_once() {
     let mut lobby = Lobby {
         game_at: Some(now),
         rooms_at: Some(now),
-        digest: Some("abc".into()),
+        print: Some(own("abc", &[])),
         ..Lobby::default()
     };
-    assert!(!lobby.game_due(now) && !lobby.rooms_due(now) && !lobby.digest_due());
+    assert!(!lobby.game_due(now) && !lobby.rooms_due(now) && !lobby.print_due());
     lobby.refresh();
-    assert!(lobby.game_due(now) && lobby.rooms_due(now) && lobby.digest_due());
+    assert!(lobby.game_due(now) && lobby.rooms_due(now) && lobby.print_due());
 }
 
 #[test]
@@ -332,10 +414,10 @@ fn a_poll_already_running_is_not_due_again() {
     let lobby = Lobby {
         game_polling: true,
         rooms_polling: true,
-        digest_busy: true,
+        print_busy: true,
         ..Lobby::default()
     };
-    assert!(!lobby.game_due(now) && !lobby.rooms_due(now) && !lobby.digest_due());
+    assert!(!lobby.game_due(now) && !lobby.rooms_due(now) && !lobby.print_due());
 }
 
 #[test]
@@ -366,15 +448,15 @@ fn a_failed_room_list_keeps_the_rooms_shown_and_says_why() {
 }
 
 #[test]
-fn a_digest_that_does_not_read_is_asked_for_again() {
+fn a_print_that_does_not_read_is_asked_for_again() {
     let mut lobby = Lobby {
-        digest_busy: true,
+        print_busy: true,
         ..Lobby::default()
     };
-    lobby.took_digest(Err("no game".into()));
-    assert!(lobby.digest_due());
-    lobby.took_digest(Ok("abc".into()));
-    assert!(!lobby.digest_due());
+    lobby.took_print(Err("no game".into()));
+    assert!(lobby.print_due());
+    lobby.took_print(Ok(own("abc", &[])));
+    assert!(!lobby.print_due());
 }
 
 #[test]

@@ -300,7 +300,7 @@ impl Host<Account> for Shell {
     }
 
     fn changed(&mut self, change: AccountChange, cx: &mut Context<Self>) {
-        crate::features::support::SupportPage::sync(self, cx);
+        crate::features::store::StorePage::sync(self, cx);
         if matches!(change, AccountChange::Left) {
             self.room_leave(cx);
         }

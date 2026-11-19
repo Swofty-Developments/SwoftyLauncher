@@ -134,6 +134,7 @@ fn with_edits(gvdb: &mut Gvdb, assets: &[u8]) -> usize {
     let Ok(parsed) = serde_json::from_slice::<RuntimeAssets>(assets) else {
         return 0;
     };
+    // Last match: the game loads a key's last record over its first (Gdb_HashMap_Insert updates in place).
     let mut at: HashMap<u64, usize> = gvdb.records.iter().enumerate().map(|(i, r)| (r.key, i)).collect();
     let mut applied = 0;
     for e in parsed.db_edits {
@@ -160,6 +161,7 @@ fn with_edits(gvdb: &mut Gvdb, assets: &[u8]) -> usize {
     applied
 }
 
+// Last match: the game loads a key's last record over its first (Gdb_HashMap_Insert updates in place).
 struct Keyed<'a>(HashMap<u64, &'a Record>);
 
 impl<'a> Keyed<'a> {

@@ -154,19 +154,23 @@ fn install_checked(
         progress,
         ..Installer::new(&store.root, g)
     };
-    let integrity = session
+    let asked = session
         .then(|| {
             swofty_core::diagnostics::phases::time("play.fetch.integrity", || {
                 crate::commands::laps::integrity(store, out)
             })
         })
         .flatten();
+    let integrity = asked.as_ref().and_then(|(found, _)| found.as_ref().ok());
     let plugins = if session {
         swofty_core::diagnostics::phases::time("play.fetch.modules", || server_plugins(store, out))
     } else {
         Vec::new()
     };
-    let built = timed_build(store, profile, g, integrity.as_ref(), &plugins)?;
+    let built = timed_build(store, profile, g, integrity, &plugins)?;
+    if session {
+        crate::commands::laps::note_integrity(store, asked.as_ref(), !built.plan.loader.is_empty(), out);
+    }
     report(profile, &built);
     let found = match swofty_core::diagnostics::phases::time("play.install", || inst.apply(&built.plan)) {
         Err(swofty_core::Error::Leftovers(found)) => found,
@@ -178,7 +182,7 @@ fn install_checked(
     let cleared = inst.clear(&found)?;
     crate::session_lock::announce(store, g, &cleared, out);
     crate::session_lock::record_cleared(store, &cleared);
-    let built = timed_build(store, profile, g, integrity.as_ref(), &plugins)?;
+    let built = timed_build(store, profile, g, integrity, &plugins)?;
     report(profile, &built);
     match swofty_core::diagnostics::phases::time("play.install", || inst.apply(&built.plan)) {
         Err(swofty_core::Error::Leftovers(found)) => Err(crate::session_lock::blocked(store, g, &found)),

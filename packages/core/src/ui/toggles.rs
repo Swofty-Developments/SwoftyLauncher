@@ -24,12 +24,3 @@ pub(super) fn core_toggle(settings: &SessionSettings, id: &str) -> bool {
         .and_then(|o| o.states.get(o.current))
         .is_none_or(|s| s.value != serde_json::Value::Bool(false))
 }
-
-pub(super) fn core_version(settings: &SessionSettings) -> String {
-    settings
-        .addons
-        .iter()
-        .find(|m| m.id == CORE_ID)
-        .map(|m| m.version.clone())
-        .unwrap_or_else(|| crate::addons::builtin::core_manifest().version.to_string())
-}

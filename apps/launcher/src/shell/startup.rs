@@ -95,7 +95,10 @@ impl Shell {
         let mp = Self::start_account(&store, cx);
         Self::watch_multiplayer(window, cx);
         let root = store.root.clone();
-        let ads = crate::features::ads::Ads::start(window, &root);
+        let mut ads = crate::features::ads::Ads::start(window, &root);
+        if let Some(note) = ads.take_notice() {
+            window.notify(note, cx);
+        }
         let window_moved = cx.observe_window_bounds(window, |this, _, _| this.ads.moved());
         let mut shell = Self {
             library,
@@ -109,6 +112,7 @@ impl Shell {
             requests: None,
             console: None,
             developer: Default::default(),
+            consent_check: false,
             reload_generation: 0,
             slow_logged: false,
             updates: crate::features::update::Updates::new(),
@@ -118,7 +122,7 @@ impl Shell {
             addons: crate::features::addons::AddonsPage::new(window, cx),
             saves: crate::features::career_saves::SavesPage::default(),
             tt: crate::features::time_trial::TtPage::default(),
-            support: crate::features::support::SupportPage::default(),
+            store_page: crate::features::store::StorePage::default(),
             db: crate::features::db::Db::new(cx),
             news,
             news_scroll: Default::default(),
@@ -173,7 +177,7 @@ impl Shell {
             Ok("online") => shell.open_page(Page::Online, cx),
             Ok("browser") => shell.open_page(Page::Browser, cx),
             Ok("settings") => shell.open_page(Page::Settings, cx),
-            Ok("support") => shell.open_page(Page::Support, cx),
+            Ok("donate" | "store" | "support") => shell.open_page(Page::Store, cx),
             Ok("moderation") => shell.open_page(Page::Moderation, cx),
             Ok(page) if page.starts_with("section:") => {
                 let section = page.trim_start_matches("section:");

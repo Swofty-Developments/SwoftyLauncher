@@ -177,6 +177,7 @@ impl Pipeline<'_, '_> {
     pub(super) fn reuse(mut self, saved: Saved, mut inputs: Inputs) -> Result<Built> {
         let run = self.run;
         saved.restore(&mut self.built)?;
+        self.built.reused = true;
         self.built.report.order = run.settings.enabled().map(str::to_owned).collect();
         crate::write_json(
             &crate::profile::conflicts::path(run.store, run.profile),

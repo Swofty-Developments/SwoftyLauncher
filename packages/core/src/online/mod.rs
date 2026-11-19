@@ -5,3 +5,6 @@ pub mod modules;
 pub mod multiplayer;
 pub mod server;
 pub mod timetrial;
+
+#[cfg(test)]
+mod contract;

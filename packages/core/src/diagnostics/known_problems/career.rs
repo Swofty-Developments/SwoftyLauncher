@@ -29,6 +29,20 @@ pub(super) const RETIREMENT_READ: &str = "reading 0x1f0";
 /// The fault in the weekend list builder of the Team HQ screens: the read of the node of a round's track record.
 pub(super) const WEEKENDS_TRACK_NODE: &str = "Career_Weekends_BuildResultNodes+0x4da";
 
+/// The fault in the session loader's weekend set-up when the current season of the career's current championship has
+/// no weekend at its current round: the read of the null weekend's session list (`mov r12, [r15+0x250]`), by name and
+/// as the Steam 1.0.145 frame writes it unnamed.
+pub(super) const NO_WEEKEND_LOAD: [&str; 2] = [
+    "Sess_WeekendManager_PrepareTrackLoad+0x11b",
+    " fn base+0x240b9b0+0x11b",
+];
+pub(super) const NO_WEEKEND_READ: &str = "reading 0x250";
+/// Custom Calendar, whose picker (F9) replaces the career's calendar when it imports its rounds into the game's track
+/// select screen, and the line it logs for that import.
+pub(super) const CUSTOM_CALENDAR: &str = "majorpayne8779.progressive-season-screen";
+pub(super) const CALENDAR_IMPORT: &str = "[Progressive season] Imported ";
+/// F2 Revamp, whose career starts in the F2 championship.
+pub(super) const F2_REVAMP: &str = "miguelvf3.f2-revamp";
 /// The game function that reads a car's racing line, which a car with no line of its own faults in.
 pub(super) const LINE_CACHE: &str = "Ai_LineCache_UpdateIfChanged+";
 
@@ -181,6 +195,47 @@ pub(super) fn retirement_driver_crash(f: &Fatal) -> bool {
 pub(super) fn weekends_track_crash(f: &Fatal) -> bool {
     f.module.as_deref() == Some("f1_25.exe")
         && f.frames.first().is_some_and(|l| l.contains(WEEKENDS_TRACK_NODE))
+}
+
+/// Whether F1 25 faulted loading the first session of a career whose current season has no weekend, after Custom
+/// Calendar's picker imported the career's rounds: the nearest frame is in [`NO_WEEKEND_LOAD`], the fault read
+/// [`NO_WEEKEND_READ`] and the loader logged [`CALENDAR_IMPORT`] before the crash.
+pub(super) fn imported_calendar_crash(e: &Evidence, f: &Fatal) -> bool {
+    let at = f.module.as_deref() == Some("f1_25.exe")
+        && f.frames
+            .first()
+            .is_some_and(|l| NO_WEEKEND_LOAD.iter().any(|site| l.contains(site)))
+        && f.record.iter().any(|l| l.trim_end().ends_with(NO_WEEKEND_READ));
+    let end = crash_time(e, f);
+    at && e
+        .loader
+        .lines()
+        .any(|l| l.contains(CALENDAR_IMPORT) && end.is_none_or(|end| stamp(l).is_none_or(|t| t <= end)))
+}
+
+pub(super) fn imported_calendar_empty_season(e: &Evidence) -> Diagnosis {
+    let picker = name(e, CUSTOM_CALENDAR);
+    let career = match e.enabled.iter().any(|id| id == F2_REVAMP) {
+        true => format!(" into {}'s career, which starts in F2", name(e, F2_REVAMP)),
+        false => String::new(),
+    };
+    Diagnosis {
+        id: "imported_calendar_empty_season",
+        title: format!("{picker}'s imported calendar left your career without a first round"),
+        what: format!(
+            "F1 25 crashed loading the first session of your new career: the career's first season has no rounds. \
+             Its calendar was imported with the {picker} picker (F9){career}, and that import left the first season \
+             empty."
+        ),
+        steps: vec![
+            format!(
+                "Start the career again and choose its season on the game's own screens, without the {picker} picker \
+                 (F9). The career you just started has no first round, so it can't be played."
+            ),
+            format!("Or turn off {picker} in your profile before you start the career."),
+            "Press Play again.".to_owned(),
+        ],
+    }
 }
 
 pub(super) fn weekends_track_record_bad_index() -> Diagnosis {
