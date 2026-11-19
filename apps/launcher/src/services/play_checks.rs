@@ -1,6 +1,8 @@
+use std::fmt::Write;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
+use swofty_core::addons::files::Damaged;
 use swofty_core::data::space::Room;
 use swofty_core::store::Store;
 use swofty_i18n::{fill, tr, trf, trn};
@@ -87,6 +89,10 @@ pub(crate) struct Checked {
     pub verdict: Verdict,
     pub room: Room,
     pub timings: Timings,
+    /// Lines for the app log after the timings line.
+    pub lines: Vec<String>,
+    /// On addons whose files are not what their install wrote.
+    pub damaged: Vec<Damaged>,
 }
 
 pub(crate) fn run(inputs: Inputs) -> Checked {
@@ -105,21 +111,41 @@ pub(crate) fn run(inputs: Inputs) -> Checked {
         first_launch: swofty_core::game_folder::setup::first_launch(&store.root),
     });
     let mut notes = Vec::new();
+    let mut lines = Vec::new();
+    let mut damaged = Vec::new();
     let verdict = match (
         timings.time("profile", || store.profile(&profile)),
         timings.time("addons", || store.addons()),
     ) {
         (Ok(p), Ok(installed)) => {
-            let catalog = timings.time("catalog", || {
-                swofty_core::catalog::cached(&store.root).unwrap_or_default()
-            });
-            timings.time("lonely", || {
-                notes.extend(lonely(&store, &p, &installed, &catalog))
-            });
-            timings.time("track limit", || {
-                notes.extend(track_limit_note(&store, &game, build_id, &p))
-            });
-            registry(&store, &game, &p, &installed, anyway, &mut notes, &mut timings)
+            if !p.is_vanilla() {
+                damaged = timings.time("files", || {
+                    swofty_core::addons::files::damaged(&store, p.enabled(), &installed)
+                });
+                for d in &damaged {
+                    for text in d.lines() {
+                        let mut line = String::new();
+                        let _ = write!(line, "[play] files: {} {text}", d.id);
+                        lines.push(line);
+                    }
+                }
+            }
+            if let Some(stop) = damaged_stop(&damaged) {
+                Verdict::Stop(stop)
+            } else {
+                let catalog = timings.time("catalog", || {
+                    swofty_core::catalog::cached(&store.root).unwrap_or_default()
+                });
+                timings.time("lonely", || {
+                    notes.extend(lonely(&store, &p, &installed, &catalog))
+                });
+                timings.time("track limit", || {
+                    let (note, line) = track_limit_note(&store, &game, build_id, &p);
+                    notes.extend(note);
+                    lines.extend(line);
+                });
+                registry(&store, &game, &p, &installed, anyway, &mut notes, &mut timings)
+            }
         }
         _ => Verdict::Go,
     };
@@ -132,6 +158,29 @@ pub(crate) fn run(inputs: Inputs) -> Checked {
         verdict,
         room,
         timings,
+        lines,
+        damaged,
+    }
+}
+
+/// What stops Play when the build would fail on a damaged addon.
+pub(crate) fn damaged_stop(damaged: &[Damaged]) -> Option<String> {
+    let stopping: Vec<&Damaged> = damaged.iter().filter(|d| d.stops_play()).collect();
+    match stopping.as_slice() {
+        [] => None,
+        [one] => Some(trf!(
+            "{name} is damaged: {files}. Reinstall it, then press Play.",
+            name = one.name,
+            files = one.summary()
+        )),
+        many => Some(trf!(
+            "{names} are damaged. Reinstall them, then press Play.",
+            names = many
+                .iter()
+                .map(|d| d.name.as_str())
+                .collect::<Vec<_>>()
+                .join(", ")
+        )),
     }
 }
 
@@ -140,20 +189,128 @@ fn track_limit_note(
     game: &std::path::Path,
     build_id: Option<u64>,
     profile: &swofty_core::profile::Profile,
-) -> Option<Note> {
+) -> (Option<Note>, Option<String>) {
     if profile.is_vanilla() {
-        return None;
+        return (None, None);
     }
+    let started = Instant::now();
     let identity =
-        swofty_core::game_folder::baseline::Identity::detect_cached(&store.root, game, build_id).ok()?;
+        match swofty_core::game_folder::baseline::Identity::detect_cached(&store.root, game, build_id) {
+            Ok(identity) => identity,
+            Err(e) => {
+                let mut line = String::new();
+                let _ = write!(
+                    line,
+                    "[play] track limit: the game's version could not be read ({e}), so no check ran ({} ms)",
+                    started.elapsed().as_millis()
+                );
+                return (None, Some(line));
+            }
+        };
+    let identified = started.elapsed();
     let game = swofty_core::install::Game {
         dir: game.to_path_buf(),
         user_reg: None,
         identity,
     };
-    let limit = swofty_core::build::track_limit(store, &profile.name, &game).ok()?;
-    swofty_core::tracks::record_track_limit(&store.root, &profile.name, limit.as_ref()).ok();
-    limit.as_ref().map(limit_note)
+    let checked = Instant::now();
+    let check = swofty_core::build::track_limit(store, &profile.name, &game);
+    let checking = checked.elapsed();
+    let check = match check {
+        Ok(check) => check,
+        Err(e) => {
+            let mut line = String::new();
+            let _ = write!(
+                line,
+                "[play] track limit: the check failed after {} ms (identity {} ms, check {} ms): {e}",
+                started.elapsed().as_millis(),
+                identified.as_millis(),
+                checking.as_millis()
+            );
+            return (None, Some(line));
+        }
+    };
+    let recorded = Instant::now();
+    swofty_core::tracks::record_track_limit(&store.root, &profile.name, check.limit.as_ref()).ok();
+    let parts = LimitTimes {
+        total: started.elapsed(),
+        identity: identified,
+        record: recorded.elapsed(),
+    };
+    let line = limit_line(&check, &parts);
+    (check.limit.as_ref().map(limit_note), Some(line))
+}
+
+pub(crate) struct LimitTimes {
+    pub total: Duration,
+    pub identity: Duration,
+    pub record: Duration,
+}
+
+struct Tracks(usize);
+
+impl std::fmt::Display for Tracks {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.0 {
+            1 => write!(f, "1 track"),
+            n => write!(f, "{n} tracks"),
+        }
+    }
+}
+
+struct LeftOut(usize);
+
+impl std::fmt::Display for LeftOut {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.0 {
+            0 => write!(f, "none left out"),
+            n => write!(f, "{} left out", Tracks(n)),
+        }
+    }
+}
+
+pub(crate) fn limit_line(check: &swofty_core::build::TrackLimitCheck, t: &LimitTimes) -> String {
+    use swofty_core::tracks::{FILL_FROM, TRACK_LIST_ROOM};
+    let added = Tracks(check.added);
+    let identity = t.identity.as_millis();
+    let counting = check.counting.as_millis();
+    let mut line = String::new();
+    if !check.built() {
+        let _ = write!(
+            line,
+            "[play] track limit: the on addons add {added}, under the {FILL_FROM} that can fill the game's track lists \
+             ({TRACK_LIST_ROOM} tracks), so no check build ran ({} ms: identity {identity} ms, counting {counting} ms, \
+             record {} ms)",
+            t.total.as_millis(),
+            t.record.as_millis()
+        );
+        return line;
+    }
+    let steps: Vec<String> = check
+        .steps
+        .iter()
+        .map(|(name, d)| format!("{name} {} ms", d.as_millis()))
+        .collect();
+    let left_out = LeftOut(check.limit.as_ref().map_or(0, |l| l.names.len()));
+    let reuse = match (check.reused, check.saved) {
+        (true, _) => "the check restored the saved build of these addons, so nothing was built again",
+        (false, true) => {
+            "the check build is saved, so Play restores it unless the addons or game files change first"
+        }
+        (false, false) => {
+            "the check build is not saved (it gave added rows ids a check does not keep), so Play builds again"
+        }
+    };
+    let _ = write!(
+        line,
+        "[play] track limit: the on addons add {added}, at least the {FILL_FROM} that can fill the game's track lists \
+         ({TRACK_LIST_ROOM} tracks), so the check planned the whole build to find the tracks left out: {} ms (identity \
+         {identity} ms, counting {counting} ms; check build: {}; record {} ms); {left_out}; {reuse}",
+        t.total.as_millis(),
+        steps.join(", "),
+        t.record.as_millis()
+    );
+    line
 }
 
 pub(crate) fn limit_text(room: usize, names: &[String]) -> String {
@@ -477,6 +634,75 @@ mod tests {
         );
     }
 
+    fn limit_times() -> LimitTimes {
+        LimitTimes {
+            total: Duration::from_millis(155_812),
+            identity: Duration::from_millis(3),
+            record: Duration::from_millis(1),
+        }
+    }
+
+    #[test]
+    fn limit_line_without_a_check_build_says_why() {
+        let check = swofty_core::build::TrackLimitCheck {
+            added: 5,
+            counting: Duration::from_millis(28),
+            ..Default::default()
+        };
+        let t = LimitTimes {
+            total: Duration::from_millis(32),
+            ..limit_times()
+        };
+        assert_eq!(
+            limit_line(&check, &t),
+            "[play] track limit: the on addons add 5 tracks, under the 22 that can fill the game's track lists (64 \
+             tracks), so no check build ran (32 ms: identity 3 ms, counting 28 ms, record 1 ms)"
+        );
+    }
+
+    #[test]
+    fn limit_line_lists_the_check_builds_steps_and_whether_play_reuses_it() {
+        let step = |n: &str, ms: u64| (n.to_owned(), Duration::from_millis(ms));
+        let mut check = swofty_core::build::TrackLimitCheck {
+            added: 31,
+            counting: Duration::from_millis(8),
+            steps: vec![
+                step("resolving the addons", 40),
+                step("reading the addons", 2100),
+                step("editing the game database", 150_000),
+                step("placing files", 3000),
+                step("saving the build", 600),
+            ],
+            limit: Some(swofty_core::tracks::TrackLimit {
+                room: 64,
+                stock: 43,
+                names: vec!["Mugello".into(), "Kyalami".into()],
+                addons: vec!["mod.mugello".into(), "mod.kyalami".into()],
+            }),
+            saved: true,
+            ..Default::default()
+        };
+        assert_eq!(
+            limit_line(&check, &limit_times()),
+            "[play] track limit: the on addons add 31 tracks, at least the 22 that can fill the game's track lists \
+             (64 tracks), so the check planned the whole build to find the tracks left out: 155812 ms (identity 3 ms, \
+             counting 8 ms; check build: resolving the addons 40 ms, reading the addons 2100 ms, editing the game \
+             database 150000 ms, placing files 3000 ms, saving the build 600 ms; record 1 ms); 2 tracks left out; the \
+             check build is saved, so Play restores it unless the addons or game files change first"
+        );
+        check.saved = false;
+        check.limit = None;
+        let line = limit_line(&check, &limit_times());
+        assert!(
+            line.contains("; none left out; the check build is not saved"),
+            "{line}"
+        );
+        assert!(line.ends_with("so Play builds again"), "{line}");
+        check.reused = true;
+        check.saved = true;
+        assert!(limit_line(&check, &limit_times()).ends_with("so nothing was built again"));
+    }
+
     #[test]
     fn timings_record_in_order() {
         let mut t = Timings::default();
@@ -508,5 +734,123 @@ mod tests {
         assert!(!p.finish(old));
         assert!(p.is_active());
         assert!(p.finish(new));
+    }
+
+    fn damaged(id: &str, stops: bool) -> Damaged {
+        use swofty_core::addons::files::{Damage, Problem};
+        Damaged {
+            id: id.into(),
+            name: format!("Liveries {id}"),
+            damage: vec![Damage {
+                path: "assets/lang.json".into(),
+                problem: Problem::Empty,
+                stops,
+            }],
+        }
+    }
+
+    #[test]
+    fn a_damaged_file_the_build_reads_stops_play_with_the_addon_named() {
+        assert_eq!(damaged_stop(&[damaged("a", false)]), None);
+        assert_eq!(
+            damaged_stop(&[damaged("a", true), damaged("b", false)]).unwrap(),
+            "Liveries a is damaged: assets/lang.json is empty. Reinstall it, then press Play."
+        );
+        assert_eq!(
+            damaged_stop(&[damaged("a", true), damaged("b", true)]).unwrap(),
+            "Liveries a, Liveries b are damaged. Reinstall them, then press Play."
+        );
+    }
+
+    #[test]
+    fn play_stops_before_the_build_on_an_on_addon_with_an_empty_op_file() {
+        let root = std::env::temp_dir().join(format!("swofty-play-damaged-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let src = root.join("src");
+        std::fs::create_dir_all(src.join("assets")).unwrap();
+        std::fs::write(
+            src.join("swofty.json"),
+            r#"{"schema_version":1,"id":"a.real","name":"Real Liveries","version":"1.1.7","author":"a",
+                "operations":{"assets":["assets/lang.json"]}}"#,
+        )
+        .unwrap();
+        std::fs::write(src.join("assets/lang.json"), r#"{"schema_version":1,"ops":[]}"#).unwrap();
+        let store = Store::new(root.join("data"));
+        store.create_profile("p", None).unwrap();
+        store.install_addon(&src).unwrap();
+        store
+            .update_profile("p", |p| p.set_enabled("a.real", true))
+            .unwrap();
+        let inputs = || Inputs {
+            store: store.clone(),
+            profile: "p".into(),
+            game: root.join("game"),
+            build_id: None,
+            anyway: false,
+        };
+        assert!(run(inputs()).damaged.is_empty());
+
+        std::fs::write(store.addons_dir().join("a.real/assets/lang.json"), b"").unwrap();
+        let checked = run(inputs());
+        assert_eq!(checked.damaged.len(), 1);
+        assert_eq!(
+            checked.verdict,
+            Verdict::Stop(
+                "Real Liveries is damaged: assets/lang.json is empty. Reinstall it, then press Play.".into()
+            )
+        );
+        assert!(
+            checked
+                .lines
+                .contains(&"[play] files: a.real assets/lang.json is empty".to_owned()),
+            "{:?}",
+            checked.lines
+        );
+        assert!(checked.timings.line().contains("files "));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn play_goes_on_for_an_addon_without_a_file_list_that_has_an_empty_placeholder_archive() {
+        let root = std::env::temp_dir().join(format!("swofty-play-placeholder-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let src = root.join("src");
+        std::fs::create_dir_all(src.join("erp")).unwrap();
+        std::fs::write(
+            src.join("swofty.json"),
+            r#"{"schema_version":1,"id":"a.season","name":"Season","version":"1.0.10","author":"a",
+                "operations":{"erp":["erp/frontend.json"]}}"#,
+        )
+        .unwrap();
+        std::fs::write(src.join("erp/frontend.json"), r#"{"schema_version":1,"ops":[]}"#).unwrap();
+        let store = Store::new(root.join("data"));
+        store.create_profile("p", None).unwrap();
+        store.install_addon(&src).unwrap();
+        store
+            .update_profile("p", |p| p.set_enabled("a.season", true))
+            .unwrap();
+        let dir = store.addons_dir().join("a.season");
+        std::fs::remove_file(dir.join(swofty_core::addons::files::INDEX_FILE)).unwrap();
+        std::fs::write(dir.join("erp/placeholder.erp"), b"").unwrap();
+        let checked = run(Inputs {
+            store: store.clone(),
+            profile: "p".into(),
+            game: root.join("game"),
+            build_id: None,
+            anyway: false,
+        });
+        assert!(
+            !matches!(checked.verdict, Verdict::Stop(_)),
+            "{:?}",
+            checked.verdict
+        );
+        assert!(
+            checked
+                .lines
+                .contains(&"[play] files: a.season warning: erp/placeholder.erp is empty".to_owned()),
+            "{:?}",
+            checked.lines
+        );
+        std::fs::remove_dir_all(&root).ok();
     }
 }

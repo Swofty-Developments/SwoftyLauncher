@@ -16,12 +16,16 @@ use swofty_core::platform::process::{GameProcess, game_processes, stop_process};
 use swofty_core::platform::steam::client as steam_client;
 use swofty_core::store::Store;
 
-use self::setup::{desktop_opener, handoff};
-use self::stub::{NoGame, antivirus, check_stub, no_game, removed_after_link, restage, stub_block};
+use self::setup::{desktop_opener, handoff, handoff_failed};
+use self::stub::{
+    NoGame, antivirus, check_stub, no_game, refused_after_link, removed_after_link, restage, stub_block,
+};
 use crate::console::output::say;
 use crate::signals::{StopPhase, ending, session_stop};
 use crate::stores::steam::StageFile;
-pub use setup::{StoreStart, check_recorded, dll_setting, stages_offline, store_start};
+pub use setup::{
+    StoreStart, check_elevation, check_recorded, dll_setting, refused_program, stages_offline, store_start,
+};
 pub use stub::note_stub_blocked;
 
 // The EA app syncs cloud saves before it starts the game, which took about
@@ -79,7 +83,13 @@ fn wait_for_game(
         {
             *handoff = None;
             if !exit.success() {
-                say("ea app", &format!("the hand-off command exited with {exit}"));
+                say(
+                    "ea app",
+                    &format!(
+                        "the hand-off command exited with {exit}{}",
+                        handoff_hint(exit.code())
+                    ),
+                );
                 return Ok(None);
             }
         }
@@ -90,6 +100,22 @@ fn wait_for_game(
             return Ok(None);
         }
         std::thread::sleep(Duration::from_millis(500));
+    }
+}
+
+/// What a shell's exit code says about the launch.ea_launch_command setting
+/// when it could not start the program the setting names.
+fn handoff_hint(code: Option<i32>) -> &'static str {
+    match code {
+        Some(127) if cfg!(not(windows)) => {
+            "; the shell found no program at the path launch.ea_launch_command starts (see ea_handoff.log in the \
+             session folder): check the path, and put quotes around a path that has spaces"
+        }
+        Some(126) if cfg!(not(windows)) => {
+            "; the shell could not run the program launch.ea_launch_command starts (see ea_handoff.log in the \
+             session folder): check that it is a program and may be run"
+        }
+        _ => "",
     }
 }
 
@@ -123,21 +149,26 @@ pub fn start(store: &Store, game: &Path, args: &[String], session: &Path, before
     c.stdin(Stdio::null()).stdout(log.try_clone()?).stderr(log);
     #[cfg(unix)]
     std::os::unix::process::CommandExt::process_group(&mut c, 0);
+    let mut removed = removed_after_link(store, game);
+    let mut elevation = refused_after_link(store, game);
+    let mut stop = || -> Result<()> {
+        removed()?;
+        elevation()
+    };
     let mut handoff = match c.spawn() {
         Ok(child) => Some(child),
         Err(e) => {
             say("ea app", &format!("could not run {h}: {e}"));
-            None
+            return Err(handoff_failed(store, &c, &h, &e));
         }
     };
-    let mut removed = removed_after_link(store, game);
     let pid = match wait_for_game(
         game,
         before,
         HANDOFF_TIMEOUT,
         &mut handoff,
         Some(&mut tracker),
-        &mut removed,
+        &mut stop,
     )? {
         Some(pid) => pid,
         None => {
@@ -167,7 +198,7 @@ pub fn start(store: &Store, game: &Path, args: &[String], session: &Path, before
                 PRESS_PLAY_TIMEOUT,
                 &mut None,
                 Some(&mut tracker),
-                &mut removed,
+                &mut stop,
             )?
             .ok_or_else(|| {
                 anyhow!(
@@ -200,6 +231,7 @@ pub fn launch_installed(store: &Store, g: &Game, vr: bool, opted_out: bool) -> R
         let lock = crate::session_lock::lock(store, &out)?;
         crate::session_lock::stale(store, &lock, g, Scope::All, &out)?;
     }
+    check_elevation(store, &g.dir, false)?;
     crate::stores::client::ensure_client(store, Source::EaApp, &g.dir, opted_out)?;
     let args: Vec<String> = if vr { vec!["-vr".into()] } else { Vec::new() };
     let url = ea_app::install_url(&g.dir, &args).map_err(|e| anyhow!(e))?;
@@ -221,7 +253,7 @@ pub fn launch_installed(store: &Store, g: &Game, vr: bool, opted_out: bool) -> R
     c.stdin(Stdio::null()).stdout(log.try_clone()?).stderr(log);
     #[cfg(unix)]
     std::os::unix::process::CommandExt::process_group(&mut c, 0);
-    let mut child = Some(c.spawn().map_err(|e| anyhow!("could not run {h}: {e}"))?);
+    let mut child = Some(c.spawn().map_err(|e| handoff_failed(store, &c, &h, &e))?);
     let pid = wait_for_game(
         &g.dir,
         &[],

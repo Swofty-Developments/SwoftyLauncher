@@ -18,7 +18,7 @@ A track is installed by a `track.add` operation: at each build, activation clone
 }
 ```
 
-`source` is a folder in the addon that holds an unpacked [track package](/reference/mods/tracks): `manifest.json`, the track's `.erp`, `mipmaps/` and `ui/`. The Simplified Importer writes this file into every track addon it makes, `mod.<code>`. A data addon can list `track.add` in an `assets` file too ([A track with its own name](/reference/data/track-names)).
+`source` is a folder in the addon that holds an unpacked [track package](/reference/mods/tracks): `manifest.json`, the track's `.erp`, `mipmaps/` and `ui/`. The Simplified Importer writes this file into every track addon it makes ([The addon's id](/reference/mods/tracks#the-addon-s-id)). A data addon can list `track.add` in an `assets` file too ([A track with its own name](/reference/data/track-names)).
 
 ```sh
 swofty build
@@ -79,13 +79,22 @@ The build also fills gaps in the archive:
   ```
 
   A resource the build can't read as a `!pkg` document is copied as it is. A track with no AI data for the donor gets none for the team either, and the build notes it.
+- For each team of an addon's own AI folder, when no addon supplies that team's group at the track, it copies the archive's stock `ai/f1_2025_vehicle_package/<team>/` resources as `ai/<folder>/<team>/`. An addon's own folder is an `ai_package_folder` that the built database's vehicle packages name and the game's own database doesn't, such as SWOFTY 2012's `sw_2012_vehicle_package`. Its teams are the rows of `ai.asset_data.<folder>`. A team whose row an `add-row` copies from another team takes that team's stock data, and a team with no stock folder at the track (SWOFTY 2012's `cater`, `marus` and `hrt12`) takes Lotus's, with `lotus` in them changed to the team's name. Without them the season's cars have no AI data at the track. The build log has one line per folder:
+
+  ```text
+  hockenheim: AI data for 12 teams of sw_2012_vehicle_package stands in with the track's f1_2025_vehicle_package data of the team of the same name; cater, hrt12, marus with lotus's
+  ```
 - It points texture mip paths at `environment_package/tracks/<code>/mipmaps/<file>` and adds the files from the package's `mipmaps/` there.
 - It gives every route of the AI racing line (`<code>_ai_track.aispline`) a change of passing space. F1 25 sorts each gate of a route into space on the left, on the right or on both sides from its white lines and the stock `ai_track_config.space_lines` settings, and crashes when an AI car drives a route without a single change, such as a pit lane drawn at one width. On such a route the build moves one white line at a gate no other route uses.
 - It makes room for the most cars the track can field if that is more than the `f1_26_myteam` world (with the common world) has grid slots, garages or pit boxes. The count is the larger of the built database's `f1_2026` grid list and the highest `max_entrants` among the entrant setup modes of the game setup modes of the track layer rows whose world the track's archive lacks (values below 1 are ignored). The layer holding the last grid slot gets copies of the last slot, garage, in-garage spot and pit box. Each copy goes one row or bay beyond the two before it. Without two slots, garages or boxes to work out the spacing from, the build warns you that a Grand Prix there with that many cars crashes.
 
 ## The database
 
-- **`tracks.Track_<n>`**: for a new code, `copy_slot` clones the slot track's row with a new `statId`. If the code already has a row (`bahrain24`), it keeps it. Your `track_overrides` apply here.
+- **`tracks.Track_<n>`**: for a new code, `copy_slot` clones the slot track's row with a new `statId`. If the code already has a row (`bahrain24`), it keeps it. Your `track_overrides` apply here. The clone carries `ai_track_difficulties` for the game's own AI folders. For each addon's own AI folder the row lacks, the build copies the row's `f1_2025_vehicle_package` values:
+
+  ```text
+  hockenheim: AI difficulty for sw_2012_vehicle_package stands in with the track's f1_2025_vehicle_package
+  ```
 - **`tracks.track_resource.TrackResource_<n>`**: the track's resource row is cloned as `swofty_<code>`. On the natural route, its group fields use the 2019 template values with `[FILENAME]` = `<code>`: `iblAssetGroupsRoot` is `asset_groups/environment_package/tracks/<code>/probes/` and `iblKey` is `key_2019.assetgroup`. `trackMapAssetGroup` names the main group. On the slot route, every asset group points to the track's slot. The track row's `track_resource` names the cloned row.
 - **Per-track tables** (per-race DNFs, pit lane splines and slide settings, practice programmes for 2025 and 2026, tyre wear and tyre wear scales, specialist objectives, track trivia, replay hero shots): if your code has no row, it gets a clone of the slot track's row, or the base track's when the slot has none. A new code always needs the per-race DNF row: the game reads it without checking that it exists.
 - **`<datasets>.TrackDataSet_<i>.TrackData_<j>`**: `copy_from_track`, or `copy_slot` when the package has no `copy_from_track`, clones the base track's row and its sub-tables in every dataset that has it; for a new code, the copy is the dataset's last row. The copy's `_metadata_`, `track` and `TrackNameData_0.file_name` become the code. `track_data.game_setup.TrackDataSet[_metadata_=f1_2026].TrackData[_metadata_=<code>]` selects the copy in the `f1_2026` dataset. Your `overrides` apply here, limited to their `datasets`.

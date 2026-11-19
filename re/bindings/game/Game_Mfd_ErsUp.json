@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141534290",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "int Game_Mfd_ErsUp(void *mfd_car_settings_vm)",
-  "evidence": "doc:re/db/subsystems/game.md",
-  "notes": "Assist int[0x1a] ers_mode clamped (vfunc+0x268 id 0x1a) != 0 -> return (0x1415342dc); next mode by order table 0x1456f9428 {0,1,3,2} with bit in mask [vm+0xa80] -> Controls+0x08; Down = 0x141534490 (fuel-mix ERS round, static; bytes verified) | findings from PR #474 by vogtmarcel07-cloud"
+  "evidence": "doc:re/db/subsystems/game.md;decomp:re/decomp/141534290.c;xref:0x142a8ec04",
+  "notes": "Assist int[0x1a] ers_mode clamped (vfunc+0x268 id 0x1a) != 0 -> return (0x1415342dc); next mode by order table 0x1456f9428 {0,1,3,2} with bit in mask [vm+0xa80] -> Controls+0x08; Down = 0x141534490 (fuel-mix ERS round, static; bytes verified) | findings from PR #474 by vogtmarcel07-cloud | engine-re E1 2026-11-18: only caller Game_GameMfdSystem_Update 0x142a8e070 on action 'ERS Mode Up' (handle 0x146078d38); Controls+0x08 is InputRecord+0x08 of the human controller (vfunc +0x18 getter), which Sess_ControllerSystem_ApplyRecord copies to ERS+0x1a68 when EngineModeAvail allows the mode. Returns without change when assist ers_mode (auto) is on or no mode bit is set in [vm+0xa80], so on a car without ERS modes the button press is consumed with no effect. | raised by engine-re with --force 2026-11-18 at user request (lane owner review requested)"
  },
  "signature": {
   "id": "game.mfd_ers_up",

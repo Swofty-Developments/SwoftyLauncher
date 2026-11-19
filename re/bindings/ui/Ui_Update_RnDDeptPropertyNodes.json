@@ -9,7 +9,7 @@
   "subsystem": "ui",
   "proto": "uint64_t Update(void *vm)",
   "evidence": "decomp:re/decomp/141812930.c;xref:0x141c48222;xref:0x141c4ab4d;xref:0x141c5ebdb",
-  "notes": "myteam-g2: Sets S64 properties if changed (Ne_Property_SetS64IfChanged) from vm+0x30/0x50/0x58/0x68 values for the RnD dept view. UI only."
+  "notes": "myteam-g2: Sets S64 properties if changed (Ne_Property_SetUIDBRefIfChanged) from vm+0x30/0x50/0x58/0x68 values for the RnD dept view. UI only."
  },
  "signature": {
   "id": "ui.update_rn_ddept_property_nodes",

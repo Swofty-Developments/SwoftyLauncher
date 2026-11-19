@@ -53,6 +53,17 @@ From 1.3.1, **Play** on an [EA app copy](/using/game-copies) runs in this order:
 
 When F1 25 hasn't started 5 minutes after the link, the launcher opens the EA app and the status line reads **Press Play on F1 25 in the EA app**. Pressing **Play** there starts the modded session. After 10 more minutes without the game, the launch stops and the game folder rolls back. The `[ea app]` line after the link says whether offline play's file is still in place. When the EA app took it out to repair F1 25, the status line reads **The EA app is repairing F1 25** instead, and F1 25 starts without mods after the repair.
 
+### Programs set to run as administrator
+
+The EA app runs without administrator rights, and Windows won't start a program set to **Run this program as an administrator** for it (error 740). Before the launcher starts the EA app or changes the game folder, it reads that setting for you and for all users, under `HKEY_CURRENT_USER` and `HKEY_LOCAL_MACHINE` in `Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers`. The launch stops there with **A program is set to run as administrator** when one of these is set:
+
+- the program that hands the EA app the launch link, usually `EALauncher.exe`, while the launcher runs without administrator rights. The message also names `EADesktop.exe` and `EALauncher.exe` wherever they are set.
+- `F1_25.exe` or offline play's `EAAntiCheat.GameServiceLauncher.exe` in the game folder, for a modded session, while the EA app runs without administrator rights. Running the launcher as administrator doesn't change that, and the message says so.
+
+The message names each file, with what to untick: right-click the file, open **Properties > Compatibility**, untick **Run this program as an administrator**, and untick it under **Change settings for all users** too. Then select **Play** again.
+
+When Windows refuses a start the check didn't see, the launch stops at once with the same message: when the launch link's hand-off or the EA app itself fails with error 740, or when offline play's session launcher logs `CreateProcessW failed, error 740` after the link. The launcher doesn't wait the 5 and 10 minutes for F1 25 then. The game folder rolls back and the session's lock is freed before the message shows, so the next **Play** starts straight away.
+
 When the EA app repairs F1 25 before it starts the game, the repair puts EA's `EAAntiCheat.GameServiceLauncher.exe` over offline play's file, and F1 25 starts without mods. Once F1 25 has started, the launcher puts offline play's file back, keeps EA's file as the backup the roll-back restores, and opens **The EA app repaired F1 25**. Close F1 25 and select **Play** in the launcher again. An EA app that asks to repair F1 25 on every **Play** checks that file on that PC, and modded play doesn't start through it; the vanilla profile still plays.
 
 | | Running | Launch link handed to |
@@ -62,12 +73,14 @@ When the EA app repairs F1 25 before it starts the game, the repair puts EA's `E
 
 On Windows, `ea_launch_command` replaces the handler when it's set. The EA app registers the handler with an unquoted path, and the launcher runs everything up to `.exe` as the program.
 
-When the EA app doesn't come up, the launch stops with one of these messages:
+When the EA app doesn't come up or the launch link doesn't reach it, the launch stops with one of these messages:
 
 | Message | What to do |
 |---|---|
 | `the EA app didn't start within 90 s; open the EA app and press Play again` | Open the EA app yourself, then select **Play** again |
 | `could not start the EA app (...); open the EA app and press Play again` | Open the EA app yourself, then select **Play** again |
+| `could not run <program> to hand the launch link to the EA app (...); open the EA app and press Play again` | Open the EA app yourself, then select **Play** again |
+| `EALauncher.exe is set to run as administrator, so Windows won't start it for an EA app session (error 740). ...` | Untick **Run this program as an administrator** on each file the message names; see [Programs set to run as administrator](#programs-set-to-run-as-administrator) |
 | `the EA app is closed and starting it is turned off ...` | Open the EA app, or turn **Start the EA app automatically** back on |
 | `the EA app was not found on this computer ...` | Install or repair the EA app |
 | `... Swofty starts it through the EA app with the launch.ea_launch_command setting ...` | Set `ea_launch_command` on Linux |
@@ -157,7 +170,7 @@ Without the wrapper in the launch option, the launcher's **Play** and `swofty ru
 
 Select **Play** in the launcher or run `swofty run`. If Steam is closed, it [starts first](#steam). To follow the logs in the launcher, select the arrow next to **Play** and choose **Play with console**.
 
-Modded sessions don't start while `F1_25.exe` is set to **Run this program as an administrator** and the launcher runs normally: Windows won't start the game unelevated (error 740), and the launch stops with a message naming the setting. To fix it, right-click `F1_25.exe` in the game folder, open **Properties > Compatibility** and untick the box, or untick it under **Change settings for all users** when it's set for all users. You can also run the launcher as administrator. `swofty doctor` shows the setting in its `run as admin` row.
+On a Steam copy, modded sessions don't start while `F1_25.exe` is set to **Run this program as an administrator** and the launcher runs normally: Windows won't start the game unelevated (error 740), and the launch stops with a message naming the setting. To fix it, right-click `F1_25.exe` in the game folder, open **Properties > Compatibility** and untick the box, or untick it under **Change settings for all users** when it's set for all users. You can also run the launcher as administrator. On an EA app copy, the EA app starts F1 25, and running the launcher as administrator doesn't help: untick the setting. See [Programs set to run as administrator](#programs-set-to-run-as-administrator). `swofty doctor` shows the setting in its `run as admin` row.
 
 The launcher doesn't pass its `__COMPAT_LAYER`, the variable Windows uses to hand compatibility settings on to the programs a program starts, to F1 25, to the offline play session launcher, or to the EA app when it starts the EA app. The launch log says `environment: not passing the Windows compatibility layer __COMPAT_LAYER=<layers> to the game` when it drops one. A `__COMPAT_LAYER` under `"env"` in `"launch"` in `$DATA/config.json` is still passed. Each session's `env.txt` lists the environment the launcher starts the game with.
 

@@ -60,11 +60,11 @@ impl Shell {
     pub(crate) fn ads_allowed(&self) -> bool {
         self.ads.on()
             && (self.account.session.is_none()
-                || matches!(&self.support.me, Load::Ready(me) if me.sees_ads()))
+                || matches!(&self.store_page.me, Load::Ready(me) if me.sees_ads()))
     }
 
     fn ad_uid(&self) -> Option<&str> {
-        match &self.support.me {
+        match &self.store_page.me {
             Load::Ready(me) => me.ad_uid.as_deref(),
             _ => None,
         }

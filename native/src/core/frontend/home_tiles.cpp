@@ -173,6 +173,7 @@ SWOFTY_WRAP(FeHome_Handle_Command, uint64_t, FEHomeViewModel *vm, NeStr **cmd)
 SWOFTY_ON_LOAD
 {
     runtime::when_code_ready("core: F1 THE MOVIE home tile", hide_movie_tile);
+    runtime::when_code_ready("core: Braking Point home tile", hide_story_tile);
 }
 
 }

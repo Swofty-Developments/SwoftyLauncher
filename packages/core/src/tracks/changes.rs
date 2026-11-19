@@ -22,14 +22,11 @@ pub(crate) fn changed_records(db: &Gvdb, shipped: &Gvdb) -> Vec<Record> {
 /// value again, and a list an op rewrote otherwise gets back the entries the
 /// tracks added to it. Returns the keys put back.
 pub(crate) fn keep_changes(db: &mut Gvdb, shipped: &Gvdb, changed: &[Record]) -> Vec<u64> {
-    let at: HashMap<u64, usize> = db.records.iter().enumerate().map(|(i, r)| (r.key, i)).collect();
-    let stock: HashMap<u64, &Record> = shipped.records.iter().map(|r| (r.key, r)).collect();
     let mut kept = Vec::new();
     for ours in changed {
-        let (Some(&i), Some(stock)) = (at.get(&ours.key), stock.get(&ours.key)) else {
+        let (Some(now), Some(stock)) = (db.get_key(ours.key), shipped.get_key(ours.key)) else {
             continue;
         };
-        let now = &db.records[i];
         let value = if now.value == ours.value {
             None
         } else if now.value == stock.value {
@@ -39,8 +36,10 @@ pub(crate) fn keep_changes(db: &mut Gvdb, shipped: &Gvdb, changed: &[Record]) ->
         } else {
             None
         };
-        if let Some(value) = value {
-            db.records[i].value = value;
+        if let Some(value) = value
+            && let Some((_, now)) = db.records.value_mut(ours.key)
+        {
+            *now = value;
             kept.push(ours.key);
         }
     }

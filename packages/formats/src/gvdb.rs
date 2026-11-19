@@ -2,7 +2,7 @@ mod records;
 
 use std::collections::{HashMap, HashSet};
 
-pub use self::records::Records;
+pub use self::records::{RecordMut, Records};
 use crate::bytes::Reader;
 use crate::hash::fnv1a64;
 use crate::{Error, Result};
@@ -431,6 +431,50 @@ mod tests {
         assert!(db.remove(name).is_some());
         assert_eq!(db.get(name), None);
         assert_eq!(db.records.len(), 2);
+        assert_eq!(built() - start, 1);
+    }
+
+    #[test]
+    fn inserting_a_record_shifts_the_index_and_the_first_record_of_its_key_stays_first() {
+        let mut db = sample();
+        let name = "tracks.Track_3.instanceName";
+        let start = built();
+        index(&db);
+        db.records.insert(1, Record::new(name, 4, "sakhir"));
+        assert_eq!(db.get_text(name).as_deref(), Some("bahrain"));
+        db.records.insert(0, Record::new(name, 4, "first"));
+        assert_eq!(db.get_text(name).as_deref(), Some("first"));
+        assert_eq!(db.position(fnv1a64("tracks._Track_instancecount_")), Some(5));
+        db.records
+            .insert(6, Record::new("tracks.Track_4.instanceName", 4, "imola"));
+        assert_eq!(db.position(fnv1a64("tracks.Track_4.instanceName")), Some(6));
+        for (i, r) in db.records.iter().enumerate() {
+            assert!(db.position(r.key).is_some_and(|at| at <= i));
+        }
+        assert_eq!(built() - start, 1);
+    }
+
+    #[test]
+    fn a_record_lent_out_by_place_changes_its_tag_and_value_and_keeps_the_index() {
+        let mut db = sample();
+        let start = built();
+        db.records.index_keys();
+        db.records.index_keys();
+        assert_eq!(built() - start, 1);
+        let corners = "tracks.Track_3.numberOfCorners";
+        let i = db.position(fnv1a64(corners)).unwrap();
+        let mut r = db.records.at_mut(i);
+        assert_eq!(r.replace_value(b"16".to_vec()), b"15");
+        r.set_tag(2);
+        db.records
+            .at_mut(0)
+            .set(Record::new("tracks.Track_3.instanceName", 4, "sakhir"));
+        assert_eq!(db.get_text(corners).as_deref(), Some("16"));
+        assert_eq!(db.get(corners).map(|r| r.tag), Some(2));
+        assert_eq!(
+            db.get_text("tracks.Track_3.instanceName").as_deref(),
+            Some("sakhir")
+        );
         assert_eq!(built() - start, 1);
     }
 

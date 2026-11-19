@@ -20,7 +20,9 @@ static void expect(bool ok, const char *what)
 int main()
 {
     expect(pb::box_usable(0), "box 0 has a spline slot");
-    expect(pb::box_usable(39), "the last of the 40 slots is usable");
+    expect(pb::box_usable(23), "the last of the 24 slots is usable");
+    expect(!pb::box_usable(24), "box 24 is past the slot array, where the tuning parameter handles start");
+    expect(!pb::box_usable(39), "box 39 is past the slot array");
     expect(!pb::box_usable(40), "box 40 is past the slot array");
     expect(!pb::box_usable(99), "the no-box value 99 is not usable");
     expect(!pb::box_usable(uint32_t(-1)), "a third car's box of -1 is not usable");

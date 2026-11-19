@@ -206,6 +206,59 @@ constexpr bp::Gate LEVERS{"live car levers", &CAR_LEVERS, LEVER_BINDINGS};   // 
 
 An exe the table does not list holds no proof, so gated code stays off on a game update until its layout is checked again with `re/tools/sigport.py --compare` and `re/tools/sigverify.py --disp`. Adding a build is one row in `KNOWN` and one `Build` value. `same_build()` (the KB build) and `verified_build()` (`proofs::VERIFIED_LAYOUT`) read the same table. `native/test/build_proof_test.cpp` covers the KB build, Steam 1.0.145 and an unknown build.
 
+## Deprecated and dropped bindings
+
+A `bindings.json` entry can carry `"deprecated": {"since", "reason", "replacement"?}`, and the set a top-level `"dropped": [{"id", "since", "reason", "replacement"?}]`. `runtime/loader/binding_policy.hpp` reads both when the set loads, and `BindingSet::note_use` answers each resolve. The set logs its counts at load when either is not 0, and an id its line on its first resolve:
+
+```text
+[core] bindings.json: 2 binding(s) deprecated, 1 dropped
+[bind] id=Game_Old deprecated since=1.10.0 replacement=Game_New reason="split in two by the 1.0.145 patch"
+[bind] id=Game_Gone dropped since=1.10.0 replacement=- reason="the game no longer has it"
+```
+
+- A deprecated id still resolves. A dropped id resolves to 0, like an id the set does not list, and an addon with a mixin on it is dropped with `needs <id>, which <file> drops`.
+- `since` and `replacement` are printable ASCII without a space, `"` or `\`. `reason` is printable ASCII, 1 to 300 characters, without `"` or `\`.
+- A malformed entry logs one `[core] <file>: ...` line at load and is left out: its binding resolves with no notice, or nothing is dropped. A `dropped` id the set still lists is malformed.
+- `native/test/binding_policy_test.cpp` covers each line and the malformed entries.
+
+## Code the core patches
+
+The server's memory challenges hash regions of the game's code and read-only data, so they skip every byte the core writes there. `native/build.sh` writes `swofty/addons/core/patches.json` next to `symbols.tsv`, with each site per supported build:
+
+```json
+{"schema": 1, "module": "swofty.core", "version": "1.10.0", "hook_length": 32, "jump_span": 14,
+ "builds": [{"exe_sha256": "d873...", "pe_timestamp": 1789118616, "exe_size": 408063872, "distribution": "Steam",
+             "packed": false, "set": "bindings.json", "resolved_here": false}],
+ "sites": [{"build": "d873...", "owner": "core/frontend/home_tiles.cpp", "name": "FeHome_Handle_Command",
+            "source": "binding", "write": "inline", "rva": 29047840, "length": 32, "exact": false},
+           {"build": "d873...", "owner": "core/frontend/hidden_tiles.cpp", "name": "S_LAN_TILE", "source": "signature",
+            "write": "bytes", "rva": null, "pattern": "4C 8D 05 ?? ...", "section": ".xtls", "anchor": 17,
+            "resolve": "addr", "length": 9, "exact": true}]}
+```
+
+- `write` is `inline` or `mid` (a safetyhook jump over whole instructions), `bytes`, `call` (a call's rel32), `vtable` (8 bytes a slot) or `import` (an import address table slot).
+- `length` counts the bytes written from `rva`. A hook's span is the whole instructions covering `jump_span` bytes. Without the exe it is `hook_length` and `exact` is false.
+- A binding site takes its rva from the build's set: the KB build's `rva`, or `match + anchor` for an address binding with a `match`.
+- A signature site (`runtime::Sig` and the `Target` structs with its layout) and every other binding site are left for a tool that holds the exe, with `rva` null:
+
+```text
+hit  = the one match of pattern in section ("*" is every executable section)
+site = hit + anchor                         resolve "addr"
+site = hit + next + int32 at (hit + anchor) resolve "rel32" or "riprel"
+```
+
+- An import row carries `"import": "<dll>!<function>"`, either part `*` for any. A binding row may carry the binding's `match` and `string_anchor`.
+- `SWOFTY_STEAM_EXE` resolves that build's sites on the exe and decodes each hook's instructions, through `re/tools/py`. `re/tools/py native/tools/patch_sites.py --resolve patches.json --image <exe> --sets <folder of bindings*.json> --out <file>` does the same for a written file: each row of the exe's build gets its rva and decoded length, or an `unresolved` reason.
+- Addon mixins are not in the file. The core installs them per session.
+
+`native/tools/patch_sites.py` reads the core's mixin tables, the SDK mixin macros, the binding sets and `native/tools/patch_sites.txt`. The list names the targets of every other line in `native/src` that writes code: a safetyhook create, a gated install, a `VirtualProtect` that grants write access, a patch set write and a `WriteProcessMemory`, plus the callers its `helper` patterns match. `python3 native/tools/patch_sites.py --check` (the `patch_sites` host test) fails on a line it does not list, on an entry whose line is gone, on a target that is not a signature or a binding, and on a mixin kind used outside an entry it reads. The build refuses to write the file on the same failures. A new hook adds its line to the list with its write and targets:
+
+```text
+core/frontend/mfd.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(update), reinterpret_cast<void *>(&update_hook)); => inline sig S_UPDATE
+```
+
+`native/test/patch_sites_test.py` covers the check and the file on a fixture tree, two sets and a synthetic exe.
+
 ## Step lines
 
 A boot or a load logs each phase as one stable line that the launcher's tools read (`diagnostics/steps.hpp`):
@@ -337,6 +390,18 @@ The career operations (`SwoftyCareerOps`, standard library 1.6) are in `career/o
 | `*_plan.hpp`, `driver_rows.hpp`, `fuel_logic.hpp` | the pure planners the host tests run (`run_career_ops_test.sh`) |
 
 An operation runs on the flow thread (`flow_tid`) or before the first frame, and resolves its bindings once through `bind`.
+
+## Garage namespaces
+
+Code in `core/garage/` is in `garage::`. `garage_placement.cpp` defines `garage_placement_reset`, which `runtime/runtime.hpp` declares, and its core set in `runtime`, over `garage::edits`:
+
+| Namespace | Files |
+|---|---|
+| `garage` | `garage_owner.hpp`, `garage_car_pose.hpp`, `garage_central.hpp` (with `crew_detail`), `garage_rig.hpp` (with `rig_detail`) |
+| `garage::edits` | `garage_edits.hpp`, `garage_placement.cpp`, `garage_crew_edits.cpp`, `garage_member_edits.cpp`, `garage_car_edits.cpp` |
+| `garage::members`, `garage::vehicle` | `garage_members.hpp`, `garage_vehicle.hpp` |
+| `garage::crew_pose` | `garage_crew_pose.hpp` |
+| `garage::steam_26566308` | `steam_26566308.hpp`: the authored pits of Steam build 26566308 |
 
 ## Units split across files
 

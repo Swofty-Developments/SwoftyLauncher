@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/runtime/json.hpp"
+#include "core/runtime/loader/binding_policy.hpp"
 
 #include <cstdint>
 #include <string>
@@ -48,6 +49,8 @@ public:
     void plan_kb_addresses(long long kb_size, long long exe_size);
 
     Binding *find(const std::string &id);
+    // Logs the drop policy's [bind] line on the first use of a deprecated or dropped id; true when the set drops it.
+    bool note_use(const std::string &id);
     void attempt(Binding &b, bool final);
     void attempt_unresolved();
     void retry_deferred(bool final);
@@ -90,6 +93,7 @@ private:
 
     std::vector<Binding> bindings_;
     std::unordered_map<std::string, size_t> index_;
+    BindingPolicy policy_;
     std::string file_ = "bindings.json";
     std::unordered_map<std::string, ScanHit> scans_;
     std::unordered_map<std::string, uintptr_t> anchor_funcs_;

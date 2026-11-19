@@ -84,6 +84,10 @@ static void stock_rows(Db &db)
            {{"_metadata_", "2025-sauber_driver"}, {"available", "False"}, {"badge", ""}, {"car_livery", ""},
             {"gloves", "2025-sauber"}, {"helmet", "2025-sauber_driver"}, {"linked_driver_stat_id", "jarno_opmeer"},
             {"podium_emote", ""}, {"pose", ""}, {"stat_id", "365"}, {"suit", "2025-sauber"}, {"victory_vo", ""}});
+    db.put("entrants.nationality._nationality_instancecount_", 0, "4");
+    const char *nations[] = {"default", "netherlands", "finland", "great_britain"};
+    for (int i = 0; i < 4; i++)
+        db.row("entrants.nationality.nationality_" + std::to_string(i), {{"_metadata_", nations[i]}});
     db.put("entrants.drivers._driver_instancecount_", 0, "2");
     db.row("entrants.drivers.driver_0",
            {{"_metadata_", "jarno_opmeer"}, {"first_name", "lng_a"}, {"last_name", "lng_b"}, {"full_name", "lng_c"},
@@ -428,7 +432,7 @@ static const char *NAME_RECORDS = R"j({
                "look": "mod.f2012/ida_look" },
     "standard": { "donor": "game/lance_stroll",
                   "names": { "first": { "literal": "Sam" }, "last": { "literal": "Öhl" }, "full": { "literal": "Sam Öhl" }, "code": "OHL" },
-                  "look": "mod.f2012/ida_look" }
+                  "nationality": "russia", "look": "mod.f2012/ida_look" }
   }
 })j";
 
@@ -477,6 +481,11 @@ static void literal_name_tests(const std::string &regs)
               written(e, standard + ".last_name_standard") == "lng_swofty_driver_standard_last" &&
               has_text("lng_swofty_driver_standard_last", "Öhl"),
           "a literal last name also replaces the donor's standard last name");
+    bool told_nation = false;
+    for (auto &l : x.lines["driver.identity"])
+        told_nation |= l.ends_with("; nationality russia is not an entrants.nationality row, default used");
+    check(written(e, standard + ".nationality") == "default" && told_nation,
+          "a nationality with no entrants.nationality row becomes default, and the line says so");
     check(texts.size() == 6, "only the literal names become texts");
 }
 

@@ -6,6 +6,7 @@ use swofty_formats::gvdb::Gvdb;
 use super::addons::{Gather, Gathered, experimental_features};
 use super::buildhash::BuildHash;
 use super::digests::Digests;
+use super::hooks::Hooks;
 use super::registry::replaced_operations;
 use super::run::Run;
 use super::setup::Setup;
@@ -58,6 +59,7 @@ impl Inputs {
         run: Run<'a>,
         setup: &'p Setup<'a>,
         registry: &Registry,
+        hooks: &mut Hooks,
         std16: &mut BTreeMap<String, Std>,
         lent: bool,
         mut built: Built,
@@ -74,6 +76,7 @@ impl Inputs {
         let mut gathered = Gather {
             run,
             registry,
+            hooks,
             features: &setup.features,
             packages: &setup.packages,
             replaced: &replaced,

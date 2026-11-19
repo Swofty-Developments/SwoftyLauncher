@@ -38,7 +38,42 @@ class NativeTables(unittest.TestCase):
             self.assertTrue(os.path.exists(os.path.join(buildport.ROOT, p['file'])), p)
 
     def test_the_verified_layout_reaches_its_callers(self):
-        self.assertTrue(self.proofs['VERIFIED_LAYOUT']['features'])
+        v = self.proofs['VERIFIED_LAYOUT']
+        self.assertTrue(v['features'])
+        derived = [p for p in self.proofs.values() if 'VERIFIED_LAYOUT' in p['derived_from']]
+        self.assertIn('SIGNIN_STATE', {p['name'] for p in derived})
+        for p in derived:
+            for f in p['features']:
+                if ' (through ' not in f:
+                    self.assertIn(f'{f} (through {p["name"]})', v['features'])
+
+    def test_a_proof_built_from_another_proofs_builds_carries_its_features_back(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            base, user = os.path.join(d, 'base.hpp'), os.path.join(d, 'user.cpp')
+            with open(base, 'w') as f:
+                f.write('namespace proofs {\ninline constexpr Proof BASE{"the base layout", bit(Build::kb)};\n}\n')
+            with open(user, 'w') as f:
+                f.write('constexpr uint32_t BOTH = bp::proofs::BASE.builds | bp::bit(bp::Build::steam_1_0_145);\n'
+                        'constexpr bp::Proof ONE{"one field", bp::proofs::BASE.builds};\n'
+                        'constexpr bp::Gate G1{"feature one", &ONE};\n'
+                        'constexpr bp::Proof TWO{"two fields", BOTH};\n'
+                        'constexpr bp::Gate G2{"feature two", &TWO};\n'
+                        'constexpr bp::Proof THREE{"three fields", ONE.builds | bp::bit(bp::Build::ea)};\n'
+                        'constexpr bp::Gate G3{"feature three", &THREE};\n'
+                        'constexpr bp::Proof OWN{"its own", bp::bit(bp::Build::ea)};\n'
+                        'constexpr bp::Gate G4{"feature four", &OWN};\n')
+            got = {p['name']: p for p in buildport.proofs(self.order, [base, user])}
+        self.assertEqual(got['TWO']['builds'], ['kb', 'steam_1_0_145'])
+        self.assertEqual(got['THREE']['builds'], ['kb', 'ea'])
+        self.assertEqual(got['ONE']['derived_from'], ['BASE'])
+        self.assertEqual(got['TWO']['derived_from'], ['BASE'], 'through the constant BOTH')
+        self.assertEqual(got['THREE']['derived_from'], ['ONE', 'BASE'])
+        self.assertEqual(got['OWN']['derived_from'], [])
+        self.assertEqual(sorted(got['BASE']['features']),
+                         ['feature one (through ONE)', 'feature three (through THREE)', 'feature two (through TWO)'])
+        self.assertEqual(got['ONE']['features'], ['feature one', 'feature three (through THREE)'])
+        self.assertEqual(got['OWN']['features'], ['feature four'])
 
     def test_every_live_build_holds_known_groups(self):
         groups = set(self.live['groups'])

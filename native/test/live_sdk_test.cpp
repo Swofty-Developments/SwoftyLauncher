@@ -1,6 +1,7 @@
 #include <swofty/fake_live.hpp>
 
 #include <cstdio>
+#include <cstddef>
 
 static int failures;
 #define CHECK(c)                                                                                                       \
@@ -12,6 +13,54 @@ static int failures;
     } while (0)
 
 namespace live = swofty::live;
+
+static int image_getter_calls;
+static const SwoftyLiveImages test_images = {1, nullptr, nullptr, nullptr, nullptr};
+static const SwoftyLiveImages *image_getter()
+{
+    ++image_getter_calls;
+    return &test_images;
+}
+
+static void image_table_versions()
+{
+    SwoftyLive table{};
+    table.images = image_getter;
+    for (uint32_t version : {1u, 2u, 3u}) {
+        table.version = version;
+        live::detail::set_table(&table);
+        CHECK(!live::images() && image_getter_calls == 0);
+    }
+    table.version = 4;
+    CHECK(live::images() == &test_images && image_getter_calls == 1);
+    table.images = nullptr;
+    CHECK(!live::images() && image_getter_calls == 1);
+    live::detail::set_table(nullptr);
+}
+
+static void tyre_table_versions()
+{
+    swofty::fake::Live fake;
+    auto &car = fake.add_car(0, 1);
+    car.have |= SWOFTY_LIVE_HAVE_TYRE;
+    fake.set_tyre_icon_texture(0, "#overrides.tyre_allocation.key_icons.Soft");
+    fake.install();
+    for (uint32_t version : {1u, 2u, 3u, 4u}) {
+        fake.set_table_version(version);
+        CHECK(!live::tyre_icon_texture(0));
+    }
+    fake.set_table_version(5);
+    CHECK(live::tyre_icon_texture(0) == std::string("#overrides.tyre_allocation.key_icons.Soft"));
+    CHECK(!live::tyre_icon_texture(1) && !live::tyre_icon_texture(40));
+    car.have &= ~SWOFTY_LIVE_HAVE_TYRE;
+    CHECK(!live::tyre_icon_texture(0));
+    // A real v4 allocation ends at images: the wrapper must not read its tail.
+    struct V4 { uint32_t version; unsigned char tail[offsetof(SwoftyLive, tyre_icon_texture) - sizeof(uint32_t)]; } old{};
+    old.version = 4;
+    live::detail::set_table(reinterpret_cast<const SwoftyLive *>(&old));
+    CHECK(!live::tyre_icon_texture(0));
+    live::detail::set_table(nullptr);
+}
 
 static SwoftyLiveTurn turn(int number, float apex)
 {
@@ -27,6 +76,8 @@ static SwoftyLiveTurn turn(int number, float apex)
 
 int main()
 {
+    image_table_versions();
+    tyre_table_versions();
     CHECK(!live::available() && !live::session() && !live::car(0) && !live::subject() && live::order().ids.empty());
 
     {

@@ -118,6 +118,11 @@ impl Shell {
         }
     }
 
+    /// A picture fetched with [`Multiplayer::load_faces`], once it is in.
+    pub(crate) fn fetched_image(&self, url: &str) -> Option<Arc<Image>> {
+        self.rooms.faces.get(url).cloned()
+    }
+
     pub(super) fn room_game_state(&self) -> GameState {
         let status = match &self.rooms.state {
             Some(state) if self.rooms.session.is_some() => state.game.as_ref(),
@@ -280,20 +285,20 @@ impl Multiplayer {
         .detach();
     }
 
-    pub(super) fn read_digest<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+    pub(super) fn read_print<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
         let (m, needs) = host.split();
         let Some(dir) = needs.game_dir.map(Path::to_path_buf) else {
             return;
         };
         let (store, profile) = (needs.store.clone(), needs.profile.to_owned());
-        m.lobby.digest_busy = true;
+        m.lobby.print_busy = true;
         cx.spawn(async move |this, cx| {
-            let digest = cx
+            let print = cx
                 .background_executor()
-                .spawn(async move { read_local(&store, &profile, &dir).map(|l| l.digest()) })
+                .spawn(async move { read_local(&store, &profile, &dir).map(|l| OwnPrint::of(&l)) })
                 .await;
             this.update(cx, |host, cx| {
-                host.split().0.lobby.took_digest(digest);
+                host.split().0.lobby.took_print(print);
                 cx.notify();
             })
             .ok();
@@ -421,8 +426,8 @@ impl Multiplayer {
             Self::poll_rooms(host, cx);
         }
         let m = <H as Host<Self>>::split(host).0;
-        if m.session.is_none() && m.lobby.digest_due() {
-            Self::read_digest(host, cx);
+        if m.session.is_none() && m.lobby.print_due() {
+            Self::read_print(host, cx);
         }
         Self::load_shown_faces(host, cx);
     }

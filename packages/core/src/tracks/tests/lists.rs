@@ -139,3 +139,18 @@ fn the_full_lists_notice_names_the_tracks_left_out() {
             .contains(": T0, T1, T2, T3, T4, T5, T6, T7 and 2 more. Turn")
     );
 }
+
+#[test]
+fn a_track_row_label_held_twice_is_read_from_its_first_record() {
+    let db = Gvdb::new(vec![
+        Record::new("tracks._Track_instancecount_", 0, "1"),
+        rec("tracks.Track_0._metadata_", "first"),
+        rec("tracks.Track_0._metadata_", "later"),
+        Record::new("track_data.game_setup._TrackDataSet_instancecount_", 0, "1"),
+        Record::new(&format!("{TRACK_DATA}_0._TrackData_instancecount_"), 0, "1"),
+        rec(&format!("{TRACK_DATA}_0.TrackData_0.track"), "first"),
+    ]);
+    let listed = ListedTracks::of(&db);
+    assert!(listed.lists("first"));
+    assert!(!listed.lists("later"));
+}

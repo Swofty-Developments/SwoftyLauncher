@@ -42,8 +42,8 @@ impl Shell {
         if page == Page::Moderation {
             crate::features::time_trial::TtPage::open(self, cx);
         }
-        if page == Page::Support {
-            crate::features::support::SupportPage::open(self, cx);
+        if page == Page::Store {
+            crate::features::store::StorePage::open(self, cx);
         }
         if let Some(i) = self.open_section().filter(|i| !self.section_loaded(*i)) {
             crate::features::sections::AddonViews::fetch(self, Some(i), cx);

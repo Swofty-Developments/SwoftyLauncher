@@ -166,25 +166,42 @@ void driver_career_load(uintptr_t ctx)
         swofty::log("[era] Driver Career load: %s", pick.line.c_str());
 }
 
-void grand_prix_load(uintptr_t ctx)
+// The list a session of another game mode loads, and in `what` that mode's name and "session".
+std::string other_mode_list(uintptr_t ctx, std::string &what)
+{
+    uintptr_t holder = 0, setup = 0, list = 0, name = 0;
+    if (!mem::read(ctx + MODE_SETUP, holder) || !holder)
+        return {};
+    std::string mode;
+    if (mem::read(holder + MODE_NAME, name) && name)
+        mem::c_string(name, mode, 64);
+    what = (mode.empty() ? std::string("unknown") : mode) + " session";
+    if (!mem::read(holder + SETUP_MODES, setup) || !setup || !mem::read(setup + SELECTED_LIST, list) || !list)
+        return {};
+    const char *n = name_of(reinterpret_cast<void *>(list), LIST_NAME);
+    return n ? std::string(n) : std::string();
+}
+
+std::string grand_prix_load(uintptr_t ctx, std::string &what)
 {
     swofty_core::apply::moments::grand_prix_track_check();
     auto [mode, track] = swofty_core::apply::moments::session_mode_track();
     if (mode == "driver_career") {
         driver_career_load(ctx);
-        return;
+        return {};
     }
     if (mode != "grand_prix")
-        return;
+        return runtime::tt_loaded::follows_list(mode) ? other_mode_list(ctx, what) : std::string();
     std::string track_why = logic::track_missing(swofty_core::apply::tracks::base(), track);
     uintptr_t holder = 0, setup = 0, entrant_setup = 0, list = 0, begin = 0, end = 0, gsm = 0, gsm_holder = 0, gsm_name = 0;
     if (!mem::read(ctx + MODE_SETUP, holder) || !holder || !mem::read(holder + SETUP_MODES, setup) || !setup ||
         !mem::read(setup + SELECTED_LIST, list)) {
         if (!track_why.empty())
             stop_session_load(logic::continue_stop(track_why, {}, false));
-        return;
+        return {};
     }
     logic::ContinuePick pick;
+    std::string chosen;
     bool empty = !list && mem::read(setup + SETUP_ENTRANT_SETUP, entrant_setup) && entrant_setup;
     if (empty) {
         std::string setup_mode;
@@ -212,6 +229,7 @@ void grand_prix_load(uintptr_t ctx)
         }
         if (pick.index >= 0 && track_why.empty()) {
             ref<void *>(reinterpret_cast<void *>(setup), SELECTED_LIST) = ptrs[size_t(pick.index)];
+            chosen = cars[size_t(pick.index)].name;
             if (lines.grand_prix.note())
                 swofty::log("[era] Grand Prix load: %s", pick.line.c_str());
             std::string grid = continue_grid.raise(reinterpret_cast<uint8_t *>(entrant_setup), cars[size_t(pick.index)].cars);
@@ -220,15 +238,21 @@ void grand_prix_load(uintptr_t ctx)
         }
     }
     std::string why = logic::continue_stop(track_why, pick, empty);
-    if (!why.empty())
+    if (!why.empty()) {
         stop_session_load(why);
+        return {};
+    }
+    if (chosen.empty() && list)
+        if (const char *n = name_of(reinterpret_cast<void *>(list), LIST_NAME))
+            chosen = n;
+    return chosen;
 }
 
 // What a session load saw of a Time Trial: the list the session loads once the 24-car guard has chosen.
 struct LoadSeen {
     bool time_trial = false;
     uintptr_t ctx = 0;
-    std::string setup_mode, list, virtual_label, pressed;
+    std::string setup_mode, list, virtual_label, pressed, what = "Grand Prix";
 };
 
 void set_unlisted(const std::string &list)
@@ -237,13 +261,37 @@ void set_unlisted(const std::string &list)
     unlisted.list = list;
 }
 
-// Makes the box of the loaded list the active content when it is not: tt_loaded_logic.hpp. Runs without held_lock,
-// like a press, before the session load's own appliers read the content.
+// Makes the box of the loaded list the active content when it is not, in a Time Trial, in a Grand Prix
+// (follow_grand_prix: a Continue presses no box) and in another mode's session (a LAN session's box comes from the
+// host): tt_loaded_logic.hpp. Runs without held_lock, like a press, before the session load's own appliers read the
+// content.
+void follow_grand_prix(const LoadSeen &seen)
+{
+    namespace tl = runtime::tt_loaded;
+    if (seen.list.empty())
+        return;
+    std::vector<tl::BoxLists> lists;
+    {
+        std::lock_guard<std::mutex> g(picker.lock);
+        for (const auto &box : picker.boxes)
+            lists.push_back({box.entrant_list, box.time_trial});
+    }
+    tl::Loaded loaded = tl::loaded_box(lists, seen.list, {}, logic::HOST, VIRTUAL_HOST, seen.virtual_label);
+    auto &scheduler = swofty_core::apply::scheduler();
+    std::string package = loaded.kind == tl::Kind::box ? scheduler.find_package(loaded.box) : std::string();
+    tl::Follow f = tl::follow_grand_prix(loaded, package, scheduler.active(), seen.what);
+    if (f.action != tl::Action::follow)
+        return;
+    swofty::log("%s", f.line.c_str());
+    swofty_core::apply::moments::box_picked(f.box.c_str(), reinterpret_cast<const void *>(seen.ctx));
+}
+
 void follow_loaded_list(const LoadSeen &seen)
 {
     namespace tl = runtime::tt_loaded;
     if (!seen.time_trial) {
         set_unlisted({});
+        follow_grand_prix(seen);
         return;
     }
     std::vector<tl::BoxLists> lists;
@@ -275,7 +323,9 @@ void session_load_held(LoadSeen &seen)
         return;
     if (!time_trial(reinterpret_cast<void *>(ctx))) {
         leave_front_end(ctx);
-        grand_prix_load(ctx);
+        seen.ctx = ctx;
+        seen.list = grand_prix_load(ctx, seen.what);
+        seen.virtual_label = filled.label;
         return;
     }
     seen.time_trial = true;

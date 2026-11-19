@@ -258,7 +258,7 @@ fn online_messages_show_language_strings_and_others_stay_stock() {
     let strings = Popup::for_version("1.2.3").strings();
     assert_eq!(
         strings[0],
-        (POPUP_TITLE.to_owned(), "Swofty Mod v1.2.3".to_owned())
+        (POPUP_TITLE.to_owned(), "Swofty Launcher v1.2.3".to_owned())
     );
     assert_eq!(strings[1].0, POPUP_BODY);
     assert!(strings[1].1.contains("New in v1.2.3"));

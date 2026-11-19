@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/1449e1690.c;xref:0x14026e6ed,0x14026e6f9",
-  "notes": "(msg): builds std exception object (0x1449e1950) and throws via _CxxThrowException 0x145328f64 with ThrowInfo 0x145f6be00; noreturn. 527 call sites (Ne_Std_ThrowException, Ne_String_Reserve, Sess_LapTimes_ReportSplit, ...)."
+  "notes": "(msg): builds std exception object (0x1449e1950) and throws via _CxxThrowException 0x145328f64 with ThrowInfo 0x145f6be00; noreturn. 527 call sites (Ne_Std_ThrowBadOptionalAccess, Ne_String_Reserve, Sess_LapTimes_ReportSplit, ...)."
  },
  "signature": {
   "id": "core.std_throw_std_exception",

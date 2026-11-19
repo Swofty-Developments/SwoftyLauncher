@@ -10,7 +10,7 @@
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
-use std::time::UNIX_EPOCH;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use crate::game_folder::stock::{Depots, sha1_file};
 use crate::install::Source;
@@ -116,40 +116,55 @@ fn hashed_path(data: &Path) -> PathBuf {
     data.join("state/ownership-files.json")
 }
 
-fn hashed_key(path: &Path, sha1: &[u8; 20]) -> Option<String> {
+/// A file modified this recently may be written again within the same tick of
+/// the file system's clock and keep its size and modified time, so a match on
+/// it is not remembered.
+const SETTLED: Duration = Duration::from_secs(2);
+
+fn hashed_key(path: &Path, sha1: &[u8; 20], started: SystemTime) -> Option<String> {
     let meta = std::fs::metadata(path).ok()?;
-    let modified = meta.modified().ok()?.duration_since(UNIX_EPOCH).ok()?.as_nanos();
+    let modified = meta.modified().ok()?;
+    started
+        .duration_since(modified)
+        .ok()
+        .filter(|age| *age >= SETTLED)?;
+    let modified = modified.duration_since(UNIX_EPOCH).ok()?.as_nanos();
     let steam: String = sha1.iter().map(|b| format!("{b:02x}")).collect();
     Some(format!("{}|{modified}|{steam}", meta.len()))
 }
 
 /// The [`OWNERSHIP_FILES`] in the game folder that are not the copy Steam
 /// installed, by size and SHA-1. A file that matched before and has kept its
-/// size and modified time is not hashed again.
+/// size and modified time is not hashed again; a match on a file modified
+/// less than [`SETTLED`] before the check is not remembered.
 pub fn changed_files(data: &Path, dir: &Path, depots: &Depots) -> Result<Vec<String>> {
     let path = hashed_path(data);
     let mut hashed: BTreeMap<String, String> = read_json(&path).unwrap_or_default();
     let mut changed = Vec::new();
-    let mut learned = false;
+    let mut dirty = false;
+    let started = SystemTime::now();
     for rel in OWNERSHIP_FILES {
         let Some(e) = depots.get(rel) else { continue };
         let live = dir.join(rel);
-        let key = hashed_key(&live, &e.sha1);
+        let key = hashed_key(&live, &e.sha1, started);
         if key.is_some() && hashed.get(*rel) == key.as_ref() {
             continue;
         }
         let size = std::fs::metadata(&live).ok().map(|m| m.len());
         if size == Some(e.size) && sha1_file(&live)? == e.sha1 {
-            if let Some(key) = key {
-                hashed.insert((*rel).to_owned(), key);
-                learned = true;
+            match key {
+                Some(key) => {
+                    hashed.insert((*rel).to_owned(), key);
+                    dirty = true;
+                }
+                None => dirty |= hashed.remove(*rel).is_some(),
             }
             continue;
         }
         hashed.remove(*rel);
         changed.push((*rel).to_owned());
     }
-    if learned || !changed.is_empty() {
+    if dirty || !changed.is_empty() {
         write_json(&path, &hashed)?;
     }
     Ok(changed)
@@ -288,21 +303,48 @@ mod tests {
         std::fs::remove_dir_all(&root).ok();
     }
 
+    fn set_modified(path: &Path, at: SystemTime) {
+        std::fs::File::options()
+            .write(true)
+            .open(path)
+            .unwrap()
+            .set_modified(at)
+            .unwrap();
+    }
+
+    fn remembered(data: &Path) -> BTreeMap<String, String> {
+        read_json(&hashed_path(data)).unwrap_or_default()
+    }
+
     #[test]
     fn a_same_size_swap_is_caught_after_a_match_was_remembered() {
         let root = scratch("cache");
         let data = root.join("data");
         let dir = steam_copy(&root);
-        assert!(changed_files(&data, &dir, &depots()).unwrap().is_empty());
         let api = dir.join(STEAM_API);
+        let installed = SystemTime::now() - Duration::from_secs(60);
+        set_modified(&dir.join(GAME_EXE), installed);
+        set_modified(&api, installed);
+        assert!(changed_files(&data, &dir, &depots()).unwrap().is_empty());
+        assert!(remembered(&data).contains_key(STEAM_API));
         let modified = std::fs::metadata(&api).unwrap().modified().unwrap();
         std::fs::write(&api, b"MZ steam ap!").unwrap();
-        std::fs::File::options()
-            .write(true)
-            .open(&api)
-            .unwrap()
-            .set_modified(modified + std::time::Duration::from_secs(1))
-            .unwrap();
+        set_modified(&api, modified + Duration::from_secs(1));
+        assert_eq!(changed_files(&data, &dir, &depots()).unwrap(), [STEAM_API]);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_same_size_swap_in_the_clock_tick_of_a_fresh_match_is_caught() {
+        let root = scratch("tick");
+        let data = root.join("data");
+        let dir = steam_copy(&root);
+        let api = dir.join(STEAM_API);
+        assert!(changed_files(&data, &dir, &depots()).unwrap().is_empty());
+        assert!(!remembered(&data).contains_key(STEAM_API));
+        let modified = std::fs::metadata(&api).unwrap().modified().unwrap();
+        std::fs::write(&api, b"MZ emulator!").unwrap();
+        set_modified(&api, modified);
         assert_eq!(changed_files(&data, &dir, &depots()).unwrap(), [STEAM_API]);
         std::fs::remove_dir_all(&root).ok();
     }

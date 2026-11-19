@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use anyhow::Result;
+use swofty_core::saves::vault::Layout;
 use swofty_core::store::Store;
 use swofty_core::testsuite::fixture;
 use swofty_core::testsuite::sandbox::{self, RunDir};
@@ -89,12 +90,58 @@ pub(crate) fn careers(specs: &[String]) -> std::result::Result<Vec<fixture::Care
         .collect()
 }
 
-/// The saves under a folder given to `--from`: the folder itself when it
-/// holds the profile save, else its `remote/`.
-fn remote_in(dir: &Path) -> PathBuf {
+/// The saves under a folder given to `--from`: an EA title folder (it holds
+/// `profile/`) or the folder holding one as `ea/`, else the folder itself
+/// when it holds the Steam profile save, else its `remote/`.
+fn saves_in(dir: &Path) -> (PathBuf, Layout) {
+    let ea_profile = fixture::ea_name(fixture::PROFILE_FILES[0]).expect("a profile file has an EA name");
+    if dir.join(&ea_profile).is_file() {
+        return (dir.to_path_buf(), Layout::Ea);
+    }
+    if dir.join(sandbox::EA).join(&ea_profile).is_file() {
+        return (dir.join(sandbox::EA), Layout::Ea);
+    }
     match dir.join(fixture::PROFILE_FILES[0]).is_file() {
-        true => dir.to_path_buf(),
-        false => dir.join(sandbox::REMOTE),
+        true => (dir.to_path_buf(), Layout::Steam),
+        false => (dir.join(sandbox::REMOTE), Layout::Steam),
+    }
+}
+
+/// `dir` is the live save folder `live` or a folder holding it.
+fn holds_live(dir: &Path, live: &Path) -> bool {
+    matches!((dir.canonicalize(), live.canonicalize()), (Ok(x), Ok(y)) if x == y || y.starts_with(&x))
+}
+
+/// A file in `dir` or in one of its folders.
+fn holds_files(dir: &Path) -> bool {
+    std::fs::read_dir(dir).into_iter().flatten().flatten().any(|e| {
+        e.file_type().is_ok_and(|t| t.is_file())
+            || std::fs::read_dir(e.path())
+                .into_iter()
+                .flatten()
+                .flatten()
+                .any(|f| f.file_type().is_ok_and(|t| t.is_file()))
+    })
+}
+
+/// Which of a run's sandboxes holds its saves: the EA title folder when the
+/// game wrote there, else Steam's `remote`.
+fn run_saves(store: &Store, run: &RunDir) -> std::result::Result<(PathBuf, Layout), String> {
+    match (holds_files(&run.remote()), holds_files(&run.ea_title())) {
+        (true, true) => Err(format!(
+            "test run {} holds Steam saves ({}) and EA app saves ({}); capture one of them with --from",
+            run.id,
+            run.remote().display(),
+            run.ea_title().display()
+        )),
+        (false, true) => Ok((run.ea_title(), Layout::Ea)),
+        (true, false) => Ok((run.remote(), Layout::Steam)),
+        (false, false) => Ok(
+            match crate::commands::build::game(store, None).is_ok_and(|g| sandbox::ea_copy(&g.dir)) {
+                true => (run.ea_title(), Layout::Ea),
+                false => (run.remote(), Layout::Steam),
+            },
+        ),
     }
 }
 
@@ -102,19 +149,28 @@ pub(crate) fn capture_command(store: &Store, a: CaptureArgs) -> Result<ExitCode>
     let dest = store_dir(store, &a.store);
     let mut addons: BTreeMap<String, String> = BTreeMap::new();
     let mut exe = fixture::Exe::default();
-    let (remote, storage, source) = match &a.from {
+    let ((saves, layout), storage, source) = match &a.from {
         Some(dir) => {
             if let Some(live) = swofty_core::platform::steam::find_game()
                 .and_then(|i| swofty_core::platform::steam::save_dir(&i.steam_root))
-                && let (Ok(x), Ok(y)) = (dir.canonicalize(), live.canonicalize())
-                && (x == y || y.starts_with(&x))
+                && holds_live(dir, &live)
             {
                 return Ok(infra(format!(
                     "{} is the player's live Steam save folder; capture from a copy of it, never the live folder",
                     dir.display()
                 )));
             }
-            (remote_in(dir), Vec::new(), format!("folder {}", dir.display()))
+            if let Ok(g) = crate::commands::build::game(store, None)
+                && sandbox::ea_copy(&g.dir)
+                && let Some(live) = sandbox::live_saves(&g)
+                && holds_live(dir, &live)
+            {
+                return Ok(infra(format!(
+                    "{} is the player's live EA app save folder; capture from a copy of it, never the live folder",
+                    dir.display()
+                )));
+            }
+            (saves_in(dir), Vec::new(), format!("folder {}", dir.display()))
         }
         None => {
             let run = match &a.run {
@@ -144,7 +200,11 @@ pub(crate) fn capture_command(store: &Store, a: CaptureArgs) -> Result<ExitCode>
                 .flatten()
                 .map(|e| (e.file_name().to_string_lossy().into_owned(), e.path()))
                 .collect();
-            (run.remote(), storage, format!("test run {}", run.id))
+            let saves = match run_saves(store, &run) {
+                Ok(s) => s,
+                Err(e) => return Ok(infra(e)),
+            };
+            (saves, storage, format!("test run {}", run.id))
         }
     };
     for spec in &a.addons {
@@ -181,7 +241,11 @@ pub(crate) fn capture_command(store: &Store, a: CaptureArgs) -> Result<ExitCode>
     if let Err(e) = std::fs::create_dir_all(&dest) {
         return Ok(infra(format!("{}: {e}", dest.display())));
     }
-    match fixture::capture(&a.name, &dest, &remote, &storage, meta) {
+    let captured = match layout {
+        Layout::Ea | Layout::LauncherEa => fixture::capture_ea(&a.name, &dest, &saves, &storage, meta),
+        Layout::Steam | Layout::Launcher => fixture::capture(&a.name, &dest, &saves, &storage, meta),
+    };
+    match captured {
         Ok(f) => {
             println!(
                 "fixture {} captured: {} file(s) in {}",

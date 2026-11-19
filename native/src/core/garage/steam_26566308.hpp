@@ -5,7 +5,7 @@
 #include <swofty/garage_placement.hpp>
 #include <string_view>
 
-namespace runtime::garage_placement::steam_26566308 {
+namespace garage::steam_26566308 {
 namespace sdk = swofty::garage_placement;
 inline bool supported(std::string_view distribution, std::string_view sha)
 {
@@ -65,4 +65,4 @@ bool owns(Read &&read, const Owner &o)
            read(o.instance + 0xc8, crew) && crew == o.crew_scene &&
            read(o.instance + 0x1a8, car) && car == o.car_actor;
 }
-} // namespace runtime::garage_placement::steam_26566308
+} // namespace garage::steam_26566308

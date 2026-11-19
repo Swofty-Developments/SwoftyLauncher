@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/1441165b0.c;xref:0x14039cac6,0x14039d30b",
-  "notes": "Twin of Ne_InputMapper_IsActionPressed testing the other edge byte (+0xd4) via 0x143aa0f80 (released/held). Callers: Car_Visual_UpdateRenderState."
+  "notes": "Twin of Ne_InputMapper_IsActionPressed testing the other edge byte (+0xd4) via 0x143aa0f80 (released/held). Callers: Car_Visual_UpdateRenderState. | engine-re E1 2026-11-18 (static): used as the held/down state, not only a release edge: Game_TelemetryUdp_UpdateButtons 0x142cf8850 builds the BUTN mask of currently held buttons from it (sent only when the mask changes), and Sess_HumanController_Update uses it for Handbrake (bit6) and the Overtake bit22. Owner review of the name requested."
  },
  "signature": {
   "id": "core.input_mapper_is_action_released",

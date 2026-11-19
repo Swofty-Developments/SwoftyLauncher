@@ -17,6 +17,8 @@
                                   fail the record rules stay (named ones are an error unless --skip-unfit)
   binding.py ci --files FILES.json --head DIR --author LOGIN --out RESULT.json
                                   the pull request check (.github/workflows/bindings.yml)
+  binding.py rename OLD NEW       maintainer: rename a record (its file, name, overlay entries and function_names.tsv),
+                                  retiring the verify rows about OLD; export_drops.json keeps OLD for a release
   binding.py port --exe NEW.exe [--json OUT]
                                   maintainer: what a game update leaves off in the core (bindings by hint and by scan,
                                   layout proofs and live groups with no evidence for it) and the step for each
@@ -976,6 +978,70 @@ def cmd_drops(a):
     return 1 if bad else 0
 
 
+def cmd_rename(a, root=None, db=None):
+    """Rename a record in place. The verify rows about the old name become retired:<old> (PROTOCOL.md §5), so they
+    stay with the record and cannot back another binding of that name; the rows about the address carry over. A
+    deprecated export_drops.json entry for the old name, covering the newest of those retired rows, keeps the old
+    name exporting for one release as an alias of the new one."""
+    import bindgen
+    root, db = root or br.RECORDS, db or kb.DB
+    store = br.Store.get(root)
+    rec = next((r for r in store.records if r.name == a.old), None)
+    if rec is None:
+        raise SystemExit(f'binding.py rename: no record is named {a.old}')
+    if not re.match(r'^[A-Za-z][A-Za-z0-9_]{1,63}$', a.new) or a.new == a.old:
+        raise SystemExit(f'binding.py rename: {a.new} is not a new record name')
+    real = os.path.abspath(db) == os.path.abspath(kb.DB)
+    taken = {r.name for r in store.records} | {r['name'] for t in ('functions', 'globals') for r in kb.read_tsv(t)[0]}
+    if a.new in taken:
+        raise SystemExit(f'binding.py rename: {a.new} is already in the knowledge base')
+    vkind = 'func' if rec.table == 'functions' else 'global'
+    if (vkind, a.old) in bindgen.load_exceptions():
+        raise SystemExit(f'binding.py rename: re/db/export_exceptions.json lists {a.old}; settle that entry first')
+    retired = 'retired:' + a.old
+    old_path = os.path.join(root, rec.relpath)
+    rec.doc['name'] = a.new
+    rec.signature['names'] = [a.new]
+    n = 0
+    for v in rec.verify:
+        if (v['kind'], v['item']) == (vkind, a.old):
+            v['item'], n = retired, n + 1
+    rec.relpath = br.relpath_for(rec.subsystem, a.new)
+    rec.save(root)
+    os.remove(old_path)
+    base = kb.read_tsv('verify')[0] if real else []
+    if any((r['kind'], r['item']) == (vkind, a.old) for r in base):
+        for r in base:
+            if (r['kind'], r['item']) == (vkind, a.old):
+                r['item'], n = retired, n + 1
+        kb.write_table('verify', base)
+    builds = os.path.join(db, 'builds')
+    for f in sorted(os.listdir(builds)) if os.path.isdir(builds) else ():
+        path = os.path.join(builds, f)
+        if not f.endswith('.json'):
+            continue
+        with open(path, encoding='utf-8') as fh:
+            doc = json.load(fh)
+        changed = False
+        for k in ('overrides', 'hints', 'unresolvable'):
+            part = doc.get(k)
+            if isinstance(part, dict) and a.old in part:
+                part[a.new] = part.pop(a.old)
+                doc[k] = dict(sorted(part.items()))
+                changed = True
+        if changed:
+            with open(path, 'w', encoding='utf-8') as fh:
+                fh.write(json.dumps(doc, indent=1, ensure_ascii=False) + '\n')
+            print(f'binding.py rename: renamed the entry in re/db/builds/{f}')
+    br.Store.forget()
+    if real:
+        kb.write_function_names()
+    print(f'binding.py rename: {a.old} is now re/bindings/{rec.relpath}; {n} verify row(s) retired as {retired}')
+    print(f'next: a deprecated {DROPS_PATH} entry "{vkind}:{a.old}" covering the newest retired row, with replacement '
+          f'{a.new}; move core and the notes that name {a.old} to {a.new}')
+    return 0
+
+
 def remove_lines(path, keep):
     with open(path) as f:
         lines = f.read().split('\n')
@@ -1279,6 +1345,9 @@ def main(argv=None):
     p.add_argument('--head', required=True, help='a folder with the pull request\'s copies of its record files')
     p.add_argument('--author', required=True, help='the pull request author\'s login')
     p.add_argument('--out', required=True, help='where to write the result JSON')
+    p = sp.add_parser('rename', help='maintainer: rename a record and retire the verify rows about its old name')
+    p.add_argument('old', help='the record\'s current name')
+    p.add_argument('new', help='its new name')
     p = sp.add_parser('port', help='maintainer: what a game update leaves off in the core, and what to do for each',
                       description='Resolves the bindings set the core would pick on the exe with the core\'s rules '
                                   '(the build\'s overlay with its hints, or bindings.json by scan), then reads the '
@@ -1291,7 +1360,7 @@ def main(argv=None):
     a = ap.parse_args(argv)
     return {'new': cmd_new, 'doctor': cmd_doctor, 'verify': cmd_verify, 'agree': cmd_agree, 'check': cmd_check,
             'status': cmd_status, 'unfold': cmd_unfold, 'ci': cmd_ci, 'port': cmd_port, 'exports': cmd_exports,
-            'baseline': cmd_baseline, 'drops': cmd_drops}[a.cmd](a) or 0
+            'baseline': cmd_baseline, 'drops': cmd_drops, 'rename': cmd_rename}[a.cmd](a) or 0
 
 
 if __name__ == '__main__':

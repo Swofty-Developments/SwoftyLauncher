@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 #include "core/garage/garage_edits.hpp"
 
-namespace runtime::garage_placement::edits {
+namespace garage::edits {
 
 namespace {
 
@@ -100,8 +100,8 @@ bool actor_pelvis(Address actor, sdk::Position &out)
         std::memcpy(dst, reinterpret_cast<const void *>(p), n);
         return true;
     };
-    runtime::garage_crew_pose::Position absolute{};
-    if (!runtime::garage_crew_pose::read_pelvis(read, nullptr, actor, node("Bip01"), find_node, absolute))
+    garage::crew_pose::Position absolute{};
+    if (!garage::crew_pose::read_pelvis(read, nullptr, actor, node("Bip01"), find_node, absolute))
         return false;
     out = {absolute.x, absolute.y, absolute.z};
     return true;

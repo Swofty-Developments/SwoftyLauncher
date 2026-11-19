@@ -296,6 +296,86 @@ const WEEKENDS: &str = "\
 2026-11-15 16:15:41.341 [ 9736] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+0x181b87a .xtls Career_Weekends_BuildResultNodes+0x4da reached the top-level filter; passing it to the game's filter
 ";
 
+const NO_WEEKEND: &str = "\
+2026-11-17 10:25:53.419 [ 2100] [Progressive season] Imported 12 rounds into the Career picker.
+2026-11-17 10:25:53.773 [ 2100] [Progressive season] Advancing imported calendar.
+2026-11-17 10:25:53.773 [ 2100] [Free Calendar] Confirmed 12 selected rounds.
+2026-11-17 10:31:07.402 [ 1500] [view] pause reason bit 0 cleared, mask 00000000
+2026-11-17 10:31:07.453 [ 1500] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 1500, 412 s after load, at F1_25.exe+0x240bacb .tls$ fn base+0x240b9b0+0x11b
+2026-11-17 10:31:07.453 [ 1500] [crash]   reading 0x250
+2026-11-17 10:31:07.453 [ 1500] [crash]   r12=0000000001000000 r13=0000000002000000 r14=0000000000000000 r15=0000000000000000
+2026-11-17 10:31:07.454 [ 1500] [crash]   stack:
+2026-11-17 10:31:07.454 [ 1500] [crash]   #0  F1_25.exe+0x240bacb .tls$ fn base+0x240b9b0+0x11b
+2026-11-17 10:31:07.454 [ 1500] [crash]   #1  F1_25.exe+0x2da9fb1 .tls$ fn base+0x2da9e00+0x1b1
+2026-11-17 10:31:07.456 [ 1500] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+0x240bacb .tls$ fn base+0x240b9b0+0x11b reached the top-level filter; passing it to the game's filter
+";
+
+#[test]
+fn a_first_session_without_a_weekend_after_a_calendar_import_names_the_picker() {
+    let mut e = with_names(
+        ev(NO_WEEKEND, &[]),
+        &[(CUSTOM_CALENDAR, "Custom Calendar"), (F2_REVAMP, "F2 Revamp")],
+    );
+    e.enabled = vec![CUSTOM_CALENDAR.to_owned(), F2_REVAMP.to_owned()];
+    let d = diagnose(&e).unwrap();
+    assert_eq!(d.id, "imported_calendar_empty_season");
+    assert_eq!(
+        d.title,
+        "Custom Calendar's imported calendar left your career without a first round"
+    );
+    assert!(
+        d.what.contains("F2 Revamp's career, which starts in F2"),
+        "{}",
+        d.what
+    );
+    assert!(
+        d.steps[0].contains("without the Custom Calendar picker (F9)"),
+        "{}",
+        d.steps[0]
+    );
+
+    e.enabled = vec![CUSTOM_CALENDAR.to_owned()];
+    let d = diagnose(&e).unwrap();
+    assert_eq!(d.id, "imported_calendar_empty_season");
+    assert!(!d.what.contains("F2 Revamp"), "{}", d.what);
+
+    let named = NO_WEEKEND.replace(
+        " fn base+0x240b9b0+0x11b",
+        " Sess_WeekendManager_PrepareTrackLoad+0x11b",
+    );
+    assert_eq!(
+        diagnose(&ev(&named, &[])).map(|d| d.id),
+        Some("imported_calendar_empty_season"),
+        "the frame by name"
+    );
+    let no_import = NO_WEEKEND.replace(
+        "[Progressive season] Imported 12",
+        "[Progressive season] Accepted 12",
+    );
+    assert_eq!(diagnose(&ev(&no_import, &[])).map(|d| d.id), None, "no import");
+    let late = format!(
+        "{NO_WEEKEND}2026-11-17 10:40:00.000 [ 2100] [Progressive season] Imported 3 rounds into the Career picker.\n"
+    );
+    let late = late.replacen(
+        "[Progressive season] Imported 12",
+        "[Progressive season] Accepted 12",
+        1,
+    );
+    assert_eq!(
+        diagnose(&ev(&late, &[])).map(|d| d.id),
+        None,
+        "an import after the crash"
+    );
+    let other = NO_WEEKEND.replace("+0x240b9b0+0x11b", "+0x240b9b0+0x1d2");
+    assert_eq!(
+        diagnose(&ev(&other, &[])).map(|d| d.id),
+        None,
+        "another offset of the function"
+    );
+    let read = NO_WEEKEND.replace("reading 0x250", "reading 0x268");
+    assert_eq!(diagnose(&ev(&read, &[])).map(|d| d.id), None, "another read");
+}
+
 #[test]
 fn a_crash_reading_a_round_s_track_node_names_no_addon() {
     let mut e = with_names(ev(WEEKENDS, &[]), &[("progressive.career", "Progressive Career")]);

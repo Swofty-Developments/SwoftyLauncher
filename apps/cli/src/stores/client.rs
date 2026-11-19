@@ -16,6 +16,8 @@ pub(crate) struct Notes<L: FnMut(&str, &str)> {
     stage_path: PathBuf,
     stage: Option<StageFile>,
     log: L,
+    /// The program Windows refused to start with error 740.
+    refused: Option<PathBuf>,
 }
 
 impl<L: FnMut(&str, &str)> Notes<L> {
@@ -28,6 +30,7 @@ impl<L: FnMut(&str, &str)> Notes<L> {
             stage_path: root.join(steam_client::STAGE_FILE),
             stage: None,
             log,
+            refused: None,
         }
     }
 
@@ -38,6 +41,7 @@ impl<L: FnMut(&str, &str)> Notes<L> {
                 .stage
                 .get_or_insert_with(|| StageFile(self.stage_path.clone()))
                 .set(text),
+            ClientNote::RunAsAdmin(program) => self.refused = Some(program),
         }
     }
 }
@@ -55,10 +59,14 @@ pub(crate) fn ensure_client(store: &Store, source: Source, game: &Path, opted_ou
         ea_command: config.launch.ea_launch_command.as_deref(),
     };
     let mut notes = Notes::new(&store.root, platform.source(), say);
-    platform
-        .ensure_client(start, &mut |n| notes.note(n))
-        .map_err(|e| anyhow!(e))?;
-    Ok(())
+    let ready = platform.ensure_client(start, &mut |n| notes.note(n));
+    let refused = notes.refused.take();
+    drop(notes);
+    match (ready, refused) {
+        (Ok(_), _) => Ok(()),
+        (Err(_), Some(program)) => Err(crate::stores::ea::refused_program(store, &program)),
+        (Err(e), None) => Err(anyhow!(e)),
+    }
 }
 
 #[cfg(test)]

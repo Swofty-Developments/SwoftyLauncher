@@ -9,8 +9,8 @@ use super::inputs::Inputs;
 use super::run::Run;
 use super::{Built, GVDB, Pipeline, original, source_dir};
 use crate::activation::place::{
-    AiTeam, LayerWorld, PlaceInput, SLOTS, missing_worlds, place, room_for, slot_asset_group, slot_file,
-    track_group,
+    AiTeam, LayerWorld, PlaceInput, SLOTS, ai_alias_lines, missing_worlds, place, room_for, slot_asset_group,
+    slot_file, track_group,
 };
 use crate::activation::ui::{Kept, MapUi, build_ui, plan_lists};
 use crate::asset::Kind;
@@ -279,11 +279,8 @@ impl Pipeline<'_, '_> {
                     .lines
                     .push(format!("{}: world {alias} stands in with {to}", pkg.track_code));
             }
-            for (team, to) in &placement.ai_aliases {
-                built.lines.push(format!(
-                    "{}: AI data for {team} stands in with the track's {to}",
-                    pkg.track_code
-                ));
+            for line in ai_alias_lines(&placement.ai_aliases) {
+                built.lines.push(format!("{}: {line}", pkg.track_code));
             }
             if !placement.repaired.is_empty() {
                 built.lines.push(format!(

@@ -243,6 +243,18 @@ A variant may set its own `stock` (and `stock_parts`) over the record's (schema 
 
 The f2 dial template then binds `v_stock_holder_central` and the other parts to the leaf negated, so the stock gear, rev and speed readouts show while the leaf is off and give way to the record while it is on; the f1_26 dial keeps its parts. `park` moves a dial's parts for good, so the check refuses it on a variant with a `switch`; a variant without one may park. The variant's `stock_parts` must be parts of its own dial.
 
+A record can carry the `switch` itself (schema `1.4`), so a plain dial record (no variants, no fake base dial) is scoped to a session the addon decides. A variant without its own `switch` inherits the record's; one with its own keeps it. A record that shows on the f1_25 dial only while the addon's leaf is on, and gives the stock parts back while it is off or absent:
+
+```jsonc
+"onboard": {
+  "dial": "f1_25",
+  "stock": "hide",
+  "switch": { "view_model": "view_model_data.hud_x_dial", "default": false }
+}
+```
+
+The switch's `default` (a bool, `true` when absent) is the state while the leaf has not been written: the record's root starts with it and every `v_stock_<part>` with its inverse. With `"default": false` the stock dial shows from the first frame and keeps showing if the addon's native code never runs. `switch` is for dial records: the check refuses it on a screen record (use `show`), on a scene target, and with `stock: park`.
+
 A variant's `add` entries go last at the top level unless one names its place: `before` or `after` an element of the base, or `replace` for one it stands in for. An id the variant removes or replaces is free inside that variant, so a swapped part keeps its id and its spot in the draw order. A variant also carries `decisions` of its own, built for its dial only and after the record's; they may show the variant's own `add` elements, and each dial still needs exactly one stock `MVCD` on the value (`drs_pit_state` has one in the f1_25 and f2 dials). Here the 2025 dial swaps the energy group under the bars and adds a two-state pill the 2026 dial has no value for:
 
 ```jsonc

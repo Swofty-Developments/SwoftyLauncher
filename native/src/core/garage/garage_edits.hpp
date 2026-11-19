@@ -17,9 +17,9 @@
 // A garage bay's live placement edits (garage_placement.cpp tracks the bays and runs the visits), shared with the
 // crew edits (garage_crew_edits.cpp), the mechanic edits (garage_member_edits.cpp) and the parked car edits
 // (garage_car_edits.cpp).
-namespace runtime::garage_placement::edits {
+namespace garage::edits {
 
-namespace backend = runtime::garage_placement::steam_26566308;
+namespace backend = garage::steam_26566308;
 namespace sdk = swofty::garage_placement;
 using R = sdk::Result;
 using Play = uint64_t (*)(void *, const char *, int32_t, float, float);
@@ -29,7 +29,7 @@ using Node = uint32_t (*)(const char *);
 
 extern Refresh refresh;
 extern Node node;
-extern runtime::garage_crew_pose::FindNode find_node;
+extern garage::crew_pose::FindNode find_node;
 extern std::atomic<unsigned> active_edits;
 
 inline constexpr auto read_value = [](Address at, auto &out) { return swofty::mem::read(at, out); };

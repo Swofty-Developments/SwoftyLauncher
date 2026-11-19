@@ -120,9 +120,11 @@ To list the addon in the [Addon Browser](/using/addon-browser), publish the addo
 
 Creators with the [Addon Creator role](/using/addon-browser#publish-your-own) publish at [publish.f1.swofty.net](https://publish.f1.swofty.net):
 
+- **Id:** a new addon's id starts with one of your namespaces ([`id`](./manifest#identity)). The site lists them above the upload box. The preview refuses any other id before the upload, with your namespaces and a suggested id.
 - **Confirmation:** a required checkbox confirms that everything in the addon is your own work. **Publish** turns on once it's ticked.
 - **Changelog:** Markdown, shown when the launcher offers the version. You can't edit it once the version is approved, so put a correction in the next version's changelog.
-- **Description:** Markdown, and the preview shows it as the launcher does. Images don't show there, so link a picture instead.
+- **Description:** Markdown, and the preview shows it as the launcher does. Images don't show there; add pictures to the gallery instead.
+- **Gallery:** pictures, videos and YouTube, Vimeo or Streamable links, shown on the addon's page in the launcher. See [Gallery](/using/addon-browser#gallery).
 - **Review:** the version shows **Pending review**, and Swofty sends a Discord message when it's reviewed.
 - **Yank:** **Stop offering this version to players** yanks a version, and **Unyank** undoes it. It's the only action on a version.
 

@@ -166,6 +166,12 @@ export default defineConfigWithTheme<DocsThemeConfig>({
           {
             text: "Releases",
             items: [
+              { text: "1.9.80", link: "/releases/1.9.80" },
+              { text: "1.9.79", link: "/releases/1.9.79" },
+              { text: "1.9.78", link: "/releases/1.9.78" },
+              { text: "1.9.77", link: "/releases/1.9.77" },
+              { text: "1.9.76", link: "/releases/1.9.76" },
+              { text: "1.9.75", link: "/releases/1.9.75" },
               { text: "1.9.74", link: "/releases/1.9.74" },
               { text: "1.9.73", link: "/releases/1.9.73" },
               { text: "1.9.72", link: "/releases/1.9.72" },
@@ -679,6 +685,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
                       { text: "Tyre damage", link: "/reference/std/tyre-damage", icon: "file" },
                       { text: "Race control", link: "/reference/std/race-control", icon: "file" },
                       { text: "Weather setup", link: "/reference/std/weather", icon: "file" },
+                      { text: "Standings", link: "/reference/std/standings", icon: "file" },
                       { text: "Database", link: "/reference/std/db", icon: "file" },
                       { text: "Storage", link: "/reference/std/storage", icon: "file" },
                       { text: "Career", link: "/reference/std/career", icon: "file" },

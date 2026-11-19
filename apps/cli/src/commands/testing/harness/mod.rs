@@ -69,8 +69,9 @@ pub(crate) struct Harness<'a> {
     pub bases: BTreeMap<String, PathBuf>,
     /// The game exe's sha256 when a batch needs the save sandbox.
     pub exe_sha: Option<String>,
-    /// The player's Steam save folder: a sandboxed batch compares its
-    /// listing (names, sizes, times; never contents) before and after.
+    /// The player's own save folder (Steam's, or the EA copy's profile
+    /// folder): a sandboxed batch compares its listing (names, sizes, times;
+    /// never contents) before and after.
     pub live_saves: Option<PathBuf>,
 }
 

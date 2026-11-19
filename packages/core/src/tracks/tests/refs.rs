@@ -124,3 +124,16 @@ fn missing_track_lines_name_the_addon_that_set_it_and_the_one_to_turn_on() {
          Editor; the game won't start like this"
     );
 }
+
+#[test]
+fn a_track_list_held_twice_is_read_and_fixed_in_its_first_record() {
+    let shipped = db();
+    let mut built = shipped.clone();
+    let path = "content_sets.content_set_0.available_tracks_0.tracks";
+    built.set(path, "bahrain24,gone", None).unwrap();
+    built.records.push(rec(path, "bahrain24"));
+    let missing = keep_track_refs(&mut built, &shipped, &[], &[]);
+    let got: Vec<(&str, &MissingFix)> = missing.iter().map(|m| (m.track.as_str(), &m.fix)).collect();
+    assert_eq!(got, [("gone", &MissingFix::Dropped)]);
+    assert_eq!(built.get_text(path).as_deref(), Some("bahrain24"));
+}

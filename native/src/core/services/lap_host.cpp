@@ -469,12 +469,18 @@ int mark(int32_t lap, int32_t which, int32_t game_ms)
     return 1;
 }
 
+#ifndef SWOFTY_CORE_VERSION
+#define SWOFTY_CORE_VERSION ""
+#endif
+
+const char *core_version() { return SWOFTY_CORE_VERSION; }
+
 const SwoftyLapHost table = {sizeof(SwoftyLapHost), SWOFTY_LAP_HOST_VERSION, attach, add_hooks, hooks_active, host_when_code_ready, host_code_ready,
                              build, build_sha, feature, host_swofty_root, host_files_root, host_session_kind, mode_kind, session_mode,
                              session_content, content_title, player_label, view_flags, game_manager, host_flow_link_listen, time_trial_track,
                              time_trial_list, time_trial_team, time_trial_team_of, time_trial_track_stat, time_trial_setup,
                              time_trial_setup_reset, press_list, session_unlisted, track, content_ids, car, motion, car_state, player_car,
-                             sealing, recorded, copy, notice, name_tick, mark};
+                             sealing, recorded, copy, notice, name_tick, mark, core_version};
 
 const SwoftyLapClient *live()
 {
