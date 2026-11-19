@@ -6,9 +6,9 @@
  "row": {
   "addr": "0x1457264a0",
   "type": "vtable[28]",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "evidence": "decomp:re/decomp/141a1db90.c;xref:0x14164a1d0,0x1457264f0",
+  "evidence": "decomp:own capstone disasm of factory 0x141649f80 tail 0x14164a1b0-0x14164a2f4 on KB 1.0.141 (lea rax at 0x14164a1cd = 0x1457264a0 stored at r12) and own vtable dump slot 10 +0x50 HandleCommand KB 0x141a1db90 and slot 24 +0xc0 PressSlot KB 0x141a1eb80;xref:0x14164a1cd,0x14164a1d4,0x1457264f0;imm:0x1505,0x540,0x1380;pat:Steam 1.0.145 vtable 0x1457285d0 found by the same signature and its slot 24 PressSlot 0x141a20360 = KB+0x17e0",
   "notes": "ts-v1: CareerContinueDriverViewModel (resume screen, Driver Career); slot 10 = Game_CareerContinue_HandleCommand, slot 24 = PressSlot (read from the exe); built by the screen factory 0x141649f80"
  },
  "signature": {
