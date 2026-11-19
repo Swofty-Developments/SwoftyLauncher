@@ -416,6 +416,13 @@ int main(int argc, char **argv)
               "an archive's arrays are the images and views it changes; an overlay is keyed by its lower-case game path");
     }
 
+    {
+        std::string line = ld::unwritable_line("swofty/addons/swofty.logos/", 5);
+        check(line == "team.logo: the game can't create files in swofty/addons/swofty.logos/ (error 5), so no team logo is built this session",
+              "a cache folder the game can't create files in is named with its Windows error, in the line the launcher's known "
+              "problem reads: " + line);
+    }
+
     std::printf("logo deliver: %d check(s), %d failure(s)\n", checks, failures);
     return failures ? 1 : 0;
 }

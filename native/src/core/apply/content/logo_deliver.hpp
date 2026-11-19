@@ -36,6 +36,15 @@ inline std::set<std::string> arrays_of(const erpfile::Changes &changes, const st
     return out;
 }
 
+// The line the core logs when the game can't create files in `dir`, the folder the build writes its archives in, and
+// no earlier build of the same inputs is there to reuse. The launcher's known problem logos_not_built
+// (packages/core/src/known_problems.rs) reads it.
+inline std::string unwritable_line(const std::string &dir, unsigned long error)
+{
+    return "team.logo: the game can't create files in " + dir + " (error " + std::to_string(error) +
+           "), so no team logo is built this session";
+}
+
 struct Failed {
     std::string rel, why;
 };

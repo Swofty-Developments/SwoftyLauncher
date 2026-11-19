@@ -63,6 +63,9 @@ const std::wstring &state_root();
 // data folder (state_root), or swofty\ when the core can't write there. The game can't create files in swofty\ of an
 // EA app copy under Program Files.
 const std::wstring &files_root();
+// 0 when the game can create files in `dir` (a folder path ending in a backslash, made if it is missing), else the
+// Win32 error. The probe file (storage_logic::PROBE) is not kept.
+uint32_t write_refusal(const std::wstring &dir);
 bool enabled(const char *feature, const char *what);
 std::string load_stage();
 // The running exe's PE TimeDateStamp and SizeOfImage.

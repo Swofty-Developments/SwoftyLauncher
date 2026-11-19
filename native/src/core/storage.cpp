@@ -88,19 +88,6 @@ void make_dirs(const std::wstring &full, size_t from)
         CreateDirectoryW(full.substr(0, i).c_str(), nullptr);
 }
 
-DWORD game_refuses(const std::wstring &dir)
-{
-    make_dirs(dir, runtime::swofty_root().size());
-    HANDLE h = CreateFileW((dir + runtime::wide(sl::PROBE)).c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS,
-                           FILE_ATTRIBUTE_TEMPORARY | FILE_ATTRIBUTE_HIDDEN | FILE_FLAG_DELETE_ON_CLOSE, nullptr);
-    if (h == INVALID_HANDLE_VALUE) {
-        DWORD e = GetLastError();
-        return e ? e : ERROR_ACCESS_DENIED;
-    }
-    CloseHandle(h);
-    return 0;
-}
-
 std::wstring data_folder()
 {
     wchar_t buf[MAX_PATH * 2];
@@ -121,7 +108,7 @@ const Root &root_of(const std::string &id)
         Root r;
         r.game = runtime::swofty_root() + L"addons\\" + runtime::wide(id) + L"\\";
         std::string shown = where(id, "") + "/";
-        DWORD e = game_refuses(r.game);
+        DWORD e = runtime::write_refusal(r.game);
         if (!e) {
             swofty::log("[storage] %s: files in %s", id.c_str(), shown.c_str());
         } else if (std::wstring folder = data_folder(); folder.empty()) {
