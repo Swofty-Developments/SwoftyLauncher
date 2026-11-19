@@ -10536,6 +10536,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap: Binding = Binding {
+        id: "Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_GameModes_BuildMode: Binding = Binding {
         id: "Game_GameModes_BuildMode",
         kind: "func",

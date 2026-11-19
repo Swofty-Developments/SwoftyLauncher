@@ -733,6 +733,7 @@ inline constexpr address<"Game_FuelDynamicObjective_Activate"> Game_FuelDynamicO
 inline constexpr address<"Game_FuelDynamicObjective_Activate_2"> Game_FuelDynamicObjective_Activate_2{}; // L2 experimental
 using Game_FullRaceReplaySystem_Init_t = int(void *self, void *serviceProvider, void *componentMap);
 inline constexpr fn<"Game_FullRaceReplaySystem_Init", Game_FullRaceReplaySystem_Init_t> Game_FullRaceReplaySystem_Init{}; // L2 experimental
+inline constexpr address<"Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap"> Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap{}; // L2 experimental, GameInputModule::applyRebindableGameplayActionsToActionMap
 inline constexpr address<"Game_GameModes_BuildMode"> Game_GameModes_BuildMode{}; // L2 experimental
 inline constexpr address<"Game_GameReplaySystem_SubscribeRewindTutorial"> Game_GameReplaySystem_SubscribeRewindTutorial{}; // L2 experimental
 inline constexpr address<"Game_GameSessionConfig_Destroy"> Game_GameSessionConfig_Destroy{}; // L2 experimental
