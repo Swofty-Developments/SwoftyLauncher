@@ -56,6 +56,25 @@
    },
    "sigcheck": "passed",
    "digest": "fa9c09396884132738f9004259602d0ce95b02ca66b344dd7302d290371fc0de"
+  },
+  {
+   "by": "swofty",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a11013",
+    "target": "0x141a11013"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "09a63b7ac32ba962a4a064135825063f88f123c1825027008617e8605caaa745"
   }
  ]
 }

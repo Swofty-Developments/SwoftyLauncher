@@ -40,5 +40,44 @@
   ]
  },
  "verify": [],
- "proofs": []
+ "proofs": [
+  {
+   "by": "swofty",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14164a4f6",
+    "target": "0x145726670"
+   },
+   "sigcheck": "passed",
+   "digest": "de339db35db69f426a5c3769070921e5ad1d875c19668412501f31827946547c"
+  },
+  {
+   "by": "swofty",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14164bae6",
+    "target": "0x1457287a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d314ab2555304d87ef8ce3915b5fdf3c938cf9728794f9c5bbb1495143410f1a"
+  }
+ ]
 }

@@ -60,5 +60,44 @@
    "notes": "V1145 EA overlay: the pattern matches EA .rdata once at 0x1a09c74, and the target 0x141a09c9c holds E8 2F 65 DA FE, a call to 0x1407b01d0 (instruction-identical to Steam Vm_Holder_SetCStr 0x1407b10c0) with rdx = lng_homescreen_driver_career. EA FillSlot 0x141a09c50 is instruction-identical to Steam 0x141a0f760 (1115 insns, site at +0x4c in both: rbx = slot info, rdi = vm, esi = movzx r8b, rcx = vm + 0x3b8 + slot * 0x540), and the vm+0x1370 readers next to it are identical too."
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "swofty",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a0f784",
+    "target": "0x141a0f7ac"
+   },
+   "sigcheck": "passed",
+   "digest": "bfd5b40e3fa76bd8e9d4b8321d0f0c35eea139140220a0cd8d40869fef148a6c"
+  },
+  {
+   "by": "swofty",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a10f64",
+    "target": "0x141a10f8c"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4354653810535c5ecaa37025c6e265e806e0d05d6d557ff0772a8cb74b23bf30"
+  }
+ ]
 }
