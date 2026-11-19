@@ -235,6 +235,11 @@ pub(crate) fn copy_tree(from: &Path, to: &Path) -> std::io::Result<()> {
             copy_tree(&src, &dst)?;
         } else {
             std::fs::copy(&src, &dst)?;
+            let modified = e.metadata()?.modified()?;
+            std::fs::File::options()
+                .write(true)
+                .open(&dst)?
+                .set_modified(modified)?;
         }
     }
     Ok(())
