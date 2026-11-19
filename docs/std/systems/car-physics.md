@@ -528,7 +528,8 @@ The record's `vtf` names the archive. Every VTF in it is changed, or only the on
 
 - `stock`: the game's archive. The build ships a changed copy.
 - A path in your addon: the archive your `file.put` op puts in the game folder. The build changes the copy it puts.
-- A record that names no `vtf` changes nothing and the build warns.
+- A path in your addon that a livery record names as its `archive`: the build changes the copy the core routes to the cars that wear it. See [A livery's archive](#a-livery-s-archive).
+- A record that names no `vtf` changes nothing and the build warns. So does a record whose path no `file.put` op puts and no livery names.
 
 Layers apply in load order as a merge patch: `"extends"` on your own records, a key with a `/` for a layer on another addon's record, and `"$select"` entries with `ids`, `where` and `when`. `when` reads the addon's options at build, so an option changes the file at the next Play. `tag` and `in` entries are skipped at build. Layers written in native code run in game, after the build, and don't reach the file.
 
@@ -543,11 +544,42 @@ An addon whose records name team files in their own package (`eaid://sw_2013_veh
 - The base car takes each value most of the package's records share, so equal performance drives one car of the season.
 - Every `-carmodel.layer` in the records' archives that has a `vtfAsset` and no `baseVtfAsset` gets `baseVtfAsset` set to that base.
 
-An addon that ships no base, such as a livery pack for a season, uses the base of the addon that ships it. A record that names the base file itself sets it; the build leaves it as the record sets it.
+An addon that ships no base, such as a livery pack for a season, uses the base of the addon that ships one. Its livery archives get `baseVtfAsset` the same way. A record that names the base file itself sets it; the build leaves it as the record sets it.
 
 ```text
 handling swofty.swofty-seasons-2013/sw_2013_vehicle_package equal performance -> fom_car.vtf: 31 change(s)
 handling mclaren-carmodel.layer: CarPhysics2/baseVtfAsset: eaid://sw_2013_vehicle_package/teams/fom_car/handling/fom_car.vtf, so equal performance drives the season's base car
+```
+
+### A livery's archive
+
+A livery record's `archive` replaces the whole car archive in game, its handling file and car layer included. The build changes the copy the core routes:
+
+- The archive gets the handling of the vehicle that wears it: the records its `handling` names, applied to the archive's VTFs, with the base car from [Equal performance](#equal-performance).
+- When the livery's addon has records whose `vtf` names the archive, the build applies those instead.
+- A livery worn by vehicles with different handling keeps the handling it ships with, and the build log says so.
+- A livery added in native code isn't seen by the build and keeps the handling it ships with.
+
+The changed copy is kept in the launcher's cache and is made again when the archive or the handling changes.
+
+```json
+// SWOFTY 2012 Real Liveries, registry/handling.json
+{
+  "vehicle.handling": {
+    "v8_real_redbull": {
+      "extends": "swofty.swofty-seasons-2012/v8_mclaren",
+      "vtf": { "erp": "cars/redbull.erp", "resources": ["eaid://sw_2012_vehicle_package/teams/mclaren/handling/mclaren.vtf"] }
+    }
+  }
+}
+```
+
+```text
+handling: livery swofty.swofty-seasons-2012-real/redbull (swofty.swofty-seasons-2012-real/cars/redbull.erp) gets the handling of swofty.swofty-seasons-2012-real/v8_real_redbull
+handling swofty.swofty-seasons-2012-real/v8_real_redbull -> mclaren.vtf: 16 change(s)
+handling mclaren.vtf: GearBox: 7 gears, ratios past the top gear 0, 0 shift-speed multiple(s) past it removed
+handling mclaren-carmodel.layer: CarPhysics2/baseVtfAsset: eaid://sw_2012_vehicle_package/teams/fom_car/handling/fom_car.vtf, so equal performance drives the season's base car
+handling: 12 livery archive(s) take the handling of the car that wears them (12 edited, 0 from the cache, 270 ms)
 ```
 
 ### Typed sections
