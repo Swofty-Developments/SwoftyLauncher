@@ -273,3 +273,19 @@ fn the_active_slot_and_per_slot_counts() {
         )]
     );
 }
+
+#[test]
+fn chained_aliases_are_refused() {
+    assert_eq!(maps().refusal(), None);
+    let mut chained = maps();
+    chained.teams.insert(644, 700);
+    assert!(chained.refusal().unwrap().contains("teams aliases chain"));
+    let live = BTreeMap::from([("drivers", std::collections::BTreeSet::from([235u16]))]);
+    assert!(
+        maps()
+            .refusal_with_live(&live)
+            .unwrap()
+            .contains("drivers alias for earlier id 235")
+    );
+    assert_eq!(maps().refusal_with_live(&BTreeMap::new()), None);
+}

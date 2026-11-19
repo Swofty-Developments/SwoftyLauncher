@@ -65,6 +65,47 @@ impl IdMaps {
         self.teams.is_empty() && self.vehicles.is_empty() && self.drivers.is_empty()
     }
 
+    /// Why these maps are not safe to apply, if they are not: an id that is both an earlier id and a
+    /// target (a chain would map a row twice), or a target equal to an earlier id of another entry.
+    pub fn refusal(&self) -> Option<String> {
+        for (table, map) in [
+            ("teams", &self.teams),
+            ("vehicles", &self.vehicles),
+            ("drivers", &self.drivers),
+        ] {
+            if let Some((from, to)) = map.iter().find(|(_, to)| map.contains_key(to)) {
+                return Some(format!(
+                    "the {table} aliases chain: {from} maps to {to}, which is itself an earlier id"
+                ));
+            }
+        }
+        None
+    }
+
+    /// A refusal for earlier ids that are rows in the build (`live` holds the build's ids per table), which
+    /// would map a live row away.
+    pub fn refusal_with_live(
+        &self,
+        live: &BTreeMap<&'static str, std::collections::BTreeSet<u16>>,
+    ) -> Option<String> {
+        if let Some(r) = self.refusal() {
+            return Some(r);
+        }
+        for (table, map) in [
+            ("teams", &self.teams),
+            ("vehicles", &self.vehicles),
+            ("drivers", &self.drivers),
+        ] {
+            let Some(rows) = live.get(table) else { continue };
+            if let Some(id) = map.keys().find(|id| rows.contains(id)) {
+                return Some(format!(
+                    "the {table} alias for earlier id {id} names an id that is a row in this build"
+                ));
+            }
+        }
+        None
+    }
+
     fn map(&self, kind: Kind) -> &BTreeMap<u16, u16> {
         match kind {
             Kind::Team => &self.teams,

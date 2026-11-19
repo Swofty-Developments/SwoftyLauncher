@@ -93,6 +93,17 @@ pub enum SavesCommand {
         #[arg(long, help = SOURCE_HELP)]
         source: Option<String>,
     },
+    #[command(
+        about = "Map the row ids that moved (swofty/id_aliases.json) in the careers of a plain store; --dry-run only reports"
+    )]
+    RemapIds {
+        #[arg(long, help = "The plain root: the folder that holds CURRENT and generations/")]
+        plain: std::path::PathBuf,
+        #[arg(long, help = "The build's id_aliases.json")]
+        aliases: std::path::PathBuf,
+        #[arg(long, help = "Report what would be mapped and write nothing")]
+        dry_run: bool,
+    },
     #[command(about = "Keep a snapshot: retention never removes it")]
     Pin {
         #[arg(help = "The snapshot, as `swofty saves list` prints it")]
@@ -207,6 +218,11 @@ pub fn command(store: &Store, cmd: SavesCommand) -> Result<ExitCode> {
             generation,
             source,
         } => restore_career(store, &mode, generation, source.as_deref())?,
+        SavesCommand::RemapIds {
+            plain,
+            aliases,
+            dry_run,
+        } => plain::remap_ids(&plain, &aliases, dry_run)?,
         SavesCommand::Backup => backup(store)?,
         SavesCommand::Restore { snapshot, source } => restore_snapshot(store, &snapshot, source.as_deref())?,
         SavesCommand::Cap { mb: None } => println!(

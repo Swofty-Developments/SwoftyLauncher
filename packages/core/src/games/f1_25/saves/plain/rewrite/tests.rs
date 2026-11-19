@@ -235,3 +235,114 @@ fn no_aliases_no_generation() {
     assert_eq!(p.current(), Some(5));
     std::fs::remove_dir_all(&d).ok();
 }
+
+#[test]
+fn requests_carry_the_hash_of_the_container_they_were_made_from() {
+    let d = dir("base");
+    let p = store(&d, &old_parts(), Event::Save, 1000);
+    let before = p.manifest(5).unwrap();
+    let r = wrote(p.rewrite_for_aliases(&maps(), None, 2000).unwrap());
+    for q in &r.requests {
+        assert_eq!(
+            q.base_sha256.as_deref(),
+            Some(before.container(&q.container).unwrap().sha256.as_str())
+        );
+        let now = p.manifest(6).unwrap();
+        assert_ne!(
+            now.container(&q.container).unwrap().sha256,
+            before.container(&q.container).unwrap().sha256
+        );
+    }
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_generation_checked_once_is_not_decoded_again() {
+    let d = dir("marker");
+    let clean = vec![
+        (GM, career(645, 362)),
+        (SLOT, slot_component(7, vec![slot(7, 645, 362)])),
+    ];
+    let p = store(&d, &clean, Event::Save, 1000);
+    assert_eq!(
+        p.rewrite_for_aliases(&maps(), None, 2000).unwrap(),
+        Outcome::Nothing
+    );
+    assert!(p.root.join("remap-checked.json").is_file());
+    let gm = p.bag_path(5, p.manifest(5).unwrap().container(GM).unwrap());
+    let len = std::fs::metadata(&gm).unwrap().len() as usize;
+    std::fs::write(&gm, vec![0xffu8; len]).unwrap();
+    assert_eq!(
+        p.rewrite_for_aliases(&maps(), None, 2001).unwrap(),
+        Outcome::Nothing
+    );
+    let mut other = maps();
+    other.drivers.insert(1, 2);
+    assert!(p.rewrite_for_aliases(&other, None, 2002).is_err());
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn chained_aliases_write_nothing() {
+    let d = dir("chain");
+    let p = store(&d, &old_parts(), Event::Save, 1000);
+    let mut chained = maps();
+    chained.teams.insert(644, 700);
+    let o = p.rewrite_for_aliases(&chained, None, 2000).unwrap();
+    assert!(matches!(o, Outcome::Refused(why) if why.contains("teams aliases chain")));
+    assert_eq!(p.current(), Some(5));
+    assert!(p.pending().is_empty());
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_dry_run_reports_the_careers_and_writes_nothing() {
+    let d = dir("dry");
+    let p = store(&d, &old_parts(), Event::Save, 1000);
+    let aliases = crate::row_ids::IdAliases {
+        version: 1,
+        tables: BTreeMap::from([("teams".to_owned(), (502i64..=514).map(|t| (t, t + 142)).collect())]),
+    };
+    let lines = dry_run(&p.root, &aliases).unwrap();
+    assert_eq!(lines.len(), 2);
+    assert!(lines[1].contains("career 7") && lines[1].contains("mapped 3 team, 0 vehicle, 0 driver"));
+    assert_eq!(p.current(), Some(5));
+    assert!(!p.root.join("remap-checked.json").exists() && p.pending().is_empty());
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_mode_with_only_earlier_driver_ids_is_left_alone() {
+    let d = dir("stockmode");
+    let parts = vec![
+        ("gm_driver_career_26", career(478, 235)),
+        (
+            "driver_career_26_SaveSlotGameModeComponent",
+            slot_component(1, vec![slot(1, 478, 235)]),
+        ),
+        (GM, career(503, 235)),
+        (SLOT, slot_component(7, vec![slot(7, 503, 235)])),
+    ];
+    let p = store(&d, &parts, Event::Save, 1000);
+    let r = wrote(p.rewrite_for_aliases(&maps(), None, 2000).unwrap());
+    let names: Vec<_> = r.requests.iter().map(|q| q.container.as_str()).collect();
+    assert_eq!(names, [SLOT, GM]);
+    assert!(r.careers.iter().all(|c| c.mode == "driver_career_1990"));
+    let lines = dry_run(
+        &p.root,
+        &crate::row_ids::IdAliases {
+            version: 1,
+            tables: BTreeMap::from([
+                ("teams".to_owned(), BTreeMap::from([(503i64, 645i64)])),
+                ("drivers".to_owned(), BTreeMap::from([(235, 362)])),
+            ]),
+        },
+    )
+    .unwrap();
+    assert!(
+        lines.iter().any(
+            |l| l.contains("mode driver_career_26: earlier driver or vehicle ids but no earlier team id")
+        )
+    );
+    std::fs::remove_dir_all(&d).ok();
+}
