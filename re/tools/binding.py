@@ -1294,7 +1294,7 @@ def main(argv=None):
     p.add_argument('--match-from', metavar='VA', help='start the pattern at this earlier instruction when the bytes at '
                                                       'the address are not unique')
     p.add_argument('--expect-len', type=int, metavar='N', help='site: how many bytes at the address to expect '
-                                                               '(default: whole instructions covering 5 bytes)')
+                                                               '(default: just the opcode of a call or jump, else whole instructions covering 5 bytes)')
     p.add_argument('--func-start', metavar='VA', help='a .data1 site: the start of its function when .pdata lacks it')
     p.add_argument('--data1-reason', help='a .data1 site: why no .xtls site works (re/PROTOCOL.md §2)')
     p.add_argument('--used-by', action='append', default=[], metavar='PATH', help='code that uses the binding')

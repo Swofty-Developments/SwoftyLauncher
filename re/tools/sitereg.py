@@ -64,6 +64,8 @@ def anchored_candidate(img, va, start, kind):
 
 
 def expect_bytes(img, va, n):
+    if n is None and img.read(va, 1) in (b'\xe8', b'\xe9'):
+        n = 1
     if n is None:
         from capstone import Cs, CS_ARCH_X86, CS_MODE_64
         md = Cs(CS_ARCH_X86, CS_MODE_64)
