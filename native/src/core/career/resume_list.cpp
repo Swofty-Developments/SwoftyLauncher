@@ -105,14 +105,23 @@ bool pressed(size_t index)
     target_on = true;
     target_at = GetTickCount64();
     std::string group = e->group.empty() ? runtime::career_saves_content_for_slot(e->key) : e->group;
+    Action act = press(*e);
     target_ = {sel,
                e->my_team,
-               press(*e) == Action::Ask,
+               act == Action::Ask,
                index,
-               dialog_text(*e),
+               act == Action::Refuse ? refuse_text(*e) : dialog_text(*e),
                group,
                suffix_for(group, career::content::suffix_of_group(group)),
                e->game_mode};
+    target_.refuse = act == Action::Refuse;
+    if (target_.refuse) {
+        swofty::log("[career] resume screen: row %zu (%s, key %s) is slot id %llu guid %016llx; it cannot load (%s); the %s "
+                    "continue screen shows why and goes back",
+                    index, e->my_team ? "My Team" : "Driver Career", e->key.c_str(), (unsigned long long)sel.id,
+                    (unsigned long long)sel.guid, e->status.c_str(), e->my_team ? "My Team" : "Driver Career");
+        return true;
+    }
     swofty::log("[career] resume screen: row %zu (%s, key %s) is slot id %llu guid %016llx, %s%s%s; the %s continue screen "
                 "loads it next",
                 index, e->my_team ? "My Team" : "Driver Career", e->key.c_str(), (unsigned long long)sel.id,

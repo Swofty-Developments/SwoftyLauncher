@@ -30,6 +30,8 @@ struct Entry {
     size_t index = 0;
     std::string key, status;
     bool my_team = false, ready = true;
+    // False when the build lacks the career's own team, car or driver row: the game crashes loading it.
+    bool loadable = true;
     std::string group, game_mode;
 };
 
@@ -54,6 +56,7 @@ inline std::vector<Entry> parse(std::string_view text)
         r.key = e["key"].s;
         r.my_team = e["mode"].str() == std::string("my_team");
         r.ready = e["ready"].type == json::Value::Bool && e["ready"].b;
+        r.loadable = e["loadable"].type != json::Value::Bool || e["loadable"].b;
         r.status = e["status"].str();
         r.group = e["group"].str();
         r.game_mode = e["game_mode"].str();
@@ -120,13 +123,26 @@ inline bool redirects(bool armed, size_t entries, std::string_view route, bool &
     return !new_career && redirects(armed, entries, route, my_team);
 }
 
-enum class Action { Load, Ask };
+enum class Action { Load, Ask, Refuse };
 
-inline Action press(const Entry &e) { return e.ready ? Action::Load : Action::Ask; }
+inline Action press(const Entry &e)
+{
+    if (!e.loadable)
+        return Action::Refuse;
+    return e.ready ? Action::Load : Action::Ask;
+}
 
 inline std::string dialog_text(const Entry &e)
 {
     return "This career needs something this profile does not have: " + e.status + ". Loading it anyway can break it.";
+}
+
+constexpr const char *REFUSE_TITLE = "Career can't load";
+
+inline std::string refuse_text(const Entry &e)
+{
+    return "This career's team, car or driver is not in this profile's add-ons (" + e.status +
+           "). Turn on the add-on build it was made with to load it.";
 }
 
 inline bool setup_after_press(std::string_view flow, uint64_t press_at, uint64_t now)

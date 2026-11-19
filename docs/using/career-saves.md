@@ -54,6 +54,7 @@ John BENNETT       wefew                    F1® 2026 My Team    Season 1, Race 
   - `Made with another version of <addon>`: the addon is on, at a different version from the one the career was saved with.
 - A ready row loads the career.
 - A row that is not ready opens **Add-ons do not match** with **Load Anyway** and **Back**. **Load Anyway** loads the career. **Back** returns to the list.
+- A `Missing rows from <addon>` row does not load: the database lacks the career's own team, car or driver. Pressing it shows **Career can't load** and returns to the list. Turn on the addon build the career was made with to load it.
 - **New Career** opens the game's Career menu.
 - With no careers, the list shows **New Career** and `No careers yet`.
 

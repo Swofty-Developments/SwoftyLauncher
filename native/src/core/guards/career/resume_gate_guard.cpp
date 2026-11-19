@@ -519,6 +519,12 @@ void load_target(Handle *orig, bool my_team, void *vm)
     uintptr_t fn = 0;
     if (!make_str || !press_slot_shaped(vm, fn, "resume screen", false))
         return;
+    if (t.refuse) {
+        swofty::log("[career] resume screen: row %zu: not loaded, Back is taken: %s", t.row, t.body.c_str());
+        go_back(orig, vm);
+        runtime::popup_show(rl::REFUSE_TITLE, t.body, "swofty_core");
+        return;
+    }
     rl::Facts f;
     f.row = t.row;
     f.target = t.sel.id;

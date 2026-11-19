@@ -28,6 +28,10 @@ pub struct ResumeRow {
     #[serde(default)]
     pub game_mode: String,
     pub ready: bool,
+    /// False when the build lacks the career's own team, car or driver row: the game crashes loading it, so the
+    /// press shows a notice and loads nothing (no Load Anyway).
+    #[serde(default = "loadable_default")]
+    pub loadable: bool,
     /// `ready`, `missing` (an addon or rows the build lacks) or `version` (made with another addon version).
     pub severity: String,
     pub status: String,
@@ -53,6 +57,10 @@ pub struct RowAddon {
 }
 
 /// Whether the Resume Career list screen is on: always, unless `SWOFTY_RESUME_LIST=0`.
+fn loadable_default() -> bool {
+    true
+}
+
 pub fn wanted() -> bool {
     wanted_from(std::env::var("SWOFTY_RESUME_LIST").ok().as_deref())
 }
@@ -329,6 +337,7 @@ pub fn resume_rows(
                 group: group_of(&c.mode),
                 game_mode: c.mode.clone(),
                 ready: severity == READY,
+                loadable: n.is_none_or(|n| n.missing_rows.is_none()),
                 severity: severity.into(),
                 status,
                 badge,
@@ -611,6 +620,14 @@ mod tests {
         assert_eq!(rows[0].addons[1].state, "Version 1");
         assert_eq!(rows[1].badge, "F1 1990 Driver Career");
         assert_eq!(rows[1].status, "Missing rows from F1 1990");
+        assert!(
+            !rows[1].loadable,
+            "a career whose own rows the build lacks does not load"
+        );
+        assert!(
+            rows[0].loadable && rows[2].loadable && rows[3].loadable,
+            "an addon that is off or at another version still offers Load Anyway"
+        );
         assert_eq!(rows[1].team, "", "a team the build lacks has no name");
         assert!(rows[2].ready && rows[2].status == "Ready" && rows[2].addons.is_empty());
         assert_eq!(rows[2].badge, "2026 Driver Career");
