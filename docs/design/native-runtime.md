@@ -223,7 +223,7 @@ A `bindings.json` entry can carry `"deprecated": {"since", "reason", "replacemen
 
 ## Code the core patches
 
-The server's memory challenges hash regions of the game's code and read-only data, so they skip every byte the core writes there. `native/build.sh` writes `swofty/addons/core/patches.json` next to `symbols.tsv`, with each site per supported build:
+The server's memory challenges hash regions of the game's code and read-only data, so they skip every byte the core writes there. `native/build.sh` writes `native/release/swofty-core-<version>-patches.json`, outside the game folder and not in player installs. The release workflow attaches it to the GitHub release as `swofty-core-<version>-patches.json`, so the server fetches it by core version. Each site per supported build:
 
 ```json
 {"schema": 1, "module": "swofty.core", "version": "1.10.0", "hook_length": 32, "jump_span": 14,

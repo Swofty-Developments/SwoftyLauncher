@@ -64,6 +64,11 @@ jobs:
           path: |
             native/dist/
 
+      - uses: actions/upload-artifact@v7
+        with:
+          name: core-patches
+          path: native/release/
+
   # The binaries come from main's CI run for the tagged commit (release-binaries.yml, called by ci.yml), which
   # the maintainer waits for before tagging: this job waits for that run while it is still going and takes its
   # binaries when it passed. Without such a run it leaves the run id empty, and the binaries job builds them.
@@ -262,7 +267,7 @@ jobs:
 
   publish:
     name: Publish the release
-    needs: [linux, windows, gate]
+    needs: [native, linux, windows, gate]
     if: ${{ !cancelled() && !inputs.dry-run && needs.linux.result == 'success' && needs.windows.result == 'success' && needs.gate.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
@@ -283,6 +288,11 @@ jobs:
           name: windows
           path: artefacts
 
+      - uses: actions/download-artifact@v8
+        with:
+          name: core-patches
+          path: artefacts
+
       - name: Checksums
         working-directory: artefacts
         run: sha256sum swofty-launcher-* > SHA256SUMS
@@ -292,6 +302,7 @@ jobs:
           tag_name: ${{ env.TAG }}
           files: |
             artefacts/swofty-launcher-*
+            artefacts/swofty-core-*-patches.json
             artefacts/SHA256SUMS
 
       # The launcher and the installer download from cdn.swofty.net and fall back to GitHub, so a GitHub outage

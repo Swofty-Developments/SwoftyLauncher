@@ -10,7 +10,7 @@ The in-game half of Swofty Launcher for F1 25. `native/build.sh` writes it to `n
 | `swofty/addons/core/bindings.json` | `re/tools/bindgen.py` | Game functions, data and call sites that plugins can bind to, with their signatures. |
 | `swofty/addons/core/symbols.tsv` | `re/tools/bindgen.py` | Function names by address, for crash reports. |
 | `swofty/addons/core/log_channels.tsv` | `src/gamelog/log_channels.tsv` | The engine's log channels, for the game log filter. |
-| `swofty/addons/core/patches.json` | `tools/patch_sites.py` | Every byte the core writes in the exe on each supported build, for the server's memory challenges. |
+| `native/release/swofty-core-<version>-patches.json` (release asset, not in the install) | `tools/patch_sites.py` | Every byte the core writes in the exe on each supported build, for the server's memory challenges. |
 | `swofty/addons/core/features.json` | `FEATURES` in `src/core/runtime/stage.cpp` | The runtime asset features of this core, each `stable` or `experimental`. |
 
 Everything logs to `<game>/swofty/loader.log`, or to `%LOCALAPPDATA%\Swofty\state\loader-fallback.log` when the game can't create that file. Plugins get the C ABI in `packages/sdk/include/swofty_api.h` and the C++ helpers in `packages/sdk/include/swofty/mixin.hpp`. The generated game headers are in `include/swofty/game/`.
