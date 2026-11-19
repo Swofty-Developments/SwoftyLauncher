@@ -132,6 +132,9 @@ static void list_rows()
     auto labelled = career::resume_list::rows(m1990, modes);
     expect(labelled[0].detail == "F1 1990 - Season 1, Race 2" && labelled[0].mode == "F1 1990",
            "an addon mode row carries the launcher's mode label");
+    auto sel = career::resume_list::selection_of(rows[0]);
+    expect(sel.id == 6 && sel.guid == 0x67cdf241e227f68cULL, "a row hands the registry its slot id and guid");
+    expect(cs::slot_key(sel.id, sel.guid) == rows[0].key, "the hand-off names the slot the row's key names");
     std::vector<cs::SlotRead> tie{slot(3, 0, "B", 0, 5, 0, 0), slot(2, 0, "A", 0, 5, 0, 0)};
     auto tied = career::resume_list::rows(tie, t);
     expect(tied[0].id == 2 && tied[1].id == 3, "equal dates order by slot id");

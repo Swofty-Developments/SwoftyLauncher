@@ -32,6 +32,10 @@ namespace career::saves {
 struct SlotRead;
 }
 
+namespace career::resume_list {
+struct Row;
+}
+
 namespace runtime {
 
 // The text of swofty/settings.json as the launcher wrote it (empty when absent).
@@ -166,6 +170,7 @@ std::string save_sandbox_source();
 std::string save_sandbox_file();
 std::string career_saves_id_for_slot(const std::string &key);
 std::string career_saves_slot_key(uint64_t slot_id, bool my_team);
+std::vector<career::resume_list::Row> career_resume_rows();
 // Saves that reached the save device: FileWrite calls the Steam proxy served, or on the EA copy the profile saves
 // written in place (save_sandbox_logic.hpp SaveSettle). save_sandbox_writes_what() names them for a log line.
 uint32_t save_sandbox_writes();

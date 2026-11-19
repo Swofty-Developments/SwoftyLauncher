@@ -1,4 +1,5 @@
 #include "core/career/content_state.hpp"
+#include "core/career/resume_list.hpp"
 #include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/runtime.hpp"
 
@@ -30,6 +31,7 @@
 namespace career::content {
 
 Slot slots[content::MAX_CONTENTS];
+Slot resume_slots[MAX_RESUME];
 Bound b{};
 constinit ContentHooks hooks;
 constinit RouteHooks route;
@@ -262,6 +264,9 @@ Slot *by_vtable(const void *item)
     for (size_t i = 0; vt && i < used(); i++)
         if (slots[i].vt == vt)
             return &slots[i];
+    for (size_t i = 0; vt && i < MAX_RESUME; i++)
+        if (resume_slots[i].vt == vt)
+            return &resume_slots[i];
     return nullptr;
 }
 
@@ -315,7 +320,7 @@ static std::vector<CoreMixins> career_content_mixins()
 {
     std::vector<CoreMixins> out;
     from_records();
-    if (hooks.gate.offered() || !used() || hooks.off() || !code_ready())
+    if (hooks.gate.offered() || !(used() || career::resume_list::wanted()) || hooks.off() || !code_ready())
         return out;
     hooks.gate.offer();
     std::string why;

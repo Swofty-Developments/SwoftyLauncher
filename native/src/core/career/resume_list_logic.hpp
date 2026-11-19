@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <string_view>
 #include <string>
 #include <vector>
 
@@ -12,7 +13,7 @@ namespace career::resume_list {
 
 struct Row {
     std::string key, name, mode, detail, status;
-    uint64_t id = 0, date = 0;
+    uint64_t id = 0, guid = 0, date = 0;
     bool my_team = false, ready = true;
 };
 
@@ -39,6 +40,7 @@ inline std::vector<Row> rows(const std::vector<career::saves::SlotRead> &slots, 
         Row r;
         r.key = career::saves::slot_key(s.id, s.guid);
         r.id = s.id;
+        r.guid = s.guid;
         r.date = s.date;
         r.my_team = !!(s.flags & career::saves::FLAG_MY_TEAM);
         const resume_gate::Entry *e = resume_gate::find(t, r.key);
@@ -54,6 +56,34 @@ inline std::vector<Row> rows(const std::vector<career::saves::SlotRead> &slots, 
     });
     return out;
 }
+
+inline const char *continue_route(bool my_team) { return my_team ? "solo_career_continue_my_team" : "solo_career_continue_driver"; }
+
+inline const char *list_route(bool my_team) { return my_team ? "career_dlc_select_my_team" : "career_dlc_select_driver"; }
+
+inline bool continue_route_of(std::string_view route, bool &my_team)
+{
+    if (route == "solo_career_continue_driver")
+        my_team = false;
+    else if (route == "solo_career_continue_my_team")
+        my_team = true;
+    else
+        return false;
+    return true;
+}
+
+inline bool redirects(bool armed, bool target_set, size_t rows, std::string_view route, bool &my_team)
+{
+    return armed && !target_set && rows > 0 && continue_route_of(route, my_team);
+}
+
+inline std::string description(const Row &r) { return r.status.empty() ? r.detail : r.detail + " - " + r.status; }
+
+struct Selection {
+    uint64_t id = 0, guid = 0;
+};
+
+inline Selection selection_of(const Row &r) { return {r.id, r.guid}; }
 
 enum class Action { Load, Ask };
 
