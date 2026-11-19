@@ -1563,9 +1563,10 @@ typedef SwoftyAddonInitFn SwoftyModInitFn;
    from the module's in-session tick (probe 1: its probe step).
    Table version 2 adds mark at the end: a timing line of the player's Time Trial lap, for server-timed laps. lap is
    the game run's lap counter, 0 for the first lap timed and one more for each lap started (0 to 100000), and the
-   lap_index of the lap file the lap ends in; which 0 the start line, 1 sector 1, 2 sector 2, 3 the finish; game_ms
-   the game's lap clock at the line (0 at the start, at most an hour). Call it at the line, on the flow thread, and
-   the finish before the lap's file is written. The core stamps the moment and hands it to the launcher, which sends it
+   lap_index of the lap file the lap ends in; which 0 the start line, 1 sector 1, 2 sector 2, 3 the finish, and for
+   pause n of the lap (1 to 4) 2n+2 as the game pauses and 2n+3 as it resumes; game_ms the game's lap clock at the
+   line or the pause (0 at the start, at most an hour). Call it at the line or the pause, on the flow thread, and the
+   finish before the lap's file is written. A core before 1.10.0 refuses the pause marks. The core stamps the moment and hands it to the launcher, which sends it
    off the game's threads; 1 queued, 0 refused. A module takes a table of at least SWOFTY_LAP_HOST_V1_SIZE bytes and
    calls mark only on version 2 or later. */
 typedef struct SwoftyLapClient {

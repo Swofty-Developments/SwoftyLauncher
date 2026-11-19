@@ -33,10 +33,15 @@ static void table_layout()
 static void marks()
 {
     expect(std::string(m::name(0)) == "start" && std::string(m::name(1)) == "s1" && std::string(m::name(2)) == "s2" &&
-               std::string(m::name(3)) == "end" && std::string(m::name(4)).empty() && std::string(m::name(-1)).empty(),
+               std::string(m::name(3)) == "end" && std::string(m::name(-1)).empty(),
            "the four timing lines have their wire names");
-    expect(m::valid(0, 0, 0) && m::valid(7, 3, 91234) && m::valid(m::MAX_LAP, 3, m::MAX_GAME_MS), "a lap's marks are taken");
-    expect(!m::valid(-1, 1, 10) && !m::valid(m::MAX_LAP + 1, 1, 10) && !m::valid(1, 4, 10) && !m::valid(1, -1, 10) &&
+    expect(std::string(m::name(4)) == "p1" && std::string(m::name(5)) == "r1" && std::string(m::name(10)) == "p4" &&
+               std::string(m::name(11)) == "r4" && std::string(m::name(12)).empty(),
+           "pause n is 2n+2 and its resume 2n+3, up to four pauses a lap");
+    expect(m::valid(0, 0, 0) && m::valid(7, 3, 91234) && m::valid(m::MAX_LAP, 3, m::MAX_GAME_MS) && m::valid(1, 4, 49830) &&
+               m::valid(1, 11, 77937),
+           "a lap's marks are taken");
+    expect(!m::valid(-1, 1, 10) && !m::valid(m::MAX_LAP + 1, 1, 10) && !m::valid(1, 12, 10) && !m::valid(1, -1, 10) &&
                !m::valid(1, 1, -5) && !m::valid(1, 3, m::MAX_GAME_MS + 1),
            "a lap past the server's counter range, an unknown line, a negative clock or a lap over an hour is refused");
 
@@ -49,7 +54,7 @@ static void queue()
 {
     m::Queue q;
     expect(q.push(1, 0, 0, 100) && q.push(1, 1, 30000, 130000), "marks queue in order");
-    expect(!q.push(1, 9, 0, 140000) && q.marks.size() == 2, "a refused mark is not queued");
+    expect(!q.push(1, 12, 0, 140000) && q.marks.size() == 2, "a refused mark is not queued");
     expect(q.marks[0].seq == 1 && q.marks[1].seq == 2 && q.marks[1].which == 1 && q.marks[1].at_ms == 130000,
            "each mark gets the next sequence number");
     for (int i = 0; i < 40; i++)
