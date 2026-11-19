@@ -8104,7 +8104,7 @@
   "Ne_Property_SetS32IfChanged": {
    "match": "0x9718d0"
   },
-  "Ne_Property_SetS64IfChanged": {
+  "Ne_Property_SetUIDBRefIfChanged": {
    "match": "0x976530"
   },
   "Ne_PtrList_RemoveLocked": {
@@ -8434,11 +8434,11 @@
   "Ne_Std_ThrowBadFunctionCall": {
    "match": "0x4ad774c"
   },
+  "Ne_Std_ThrowBadOptionalAccess": {
+   "match": "0x29b7b0"
+  },
   "Ne_Std_ThrowDequeTooLong": {
    "match": "0x34e30cd"
-  },
-  "Ne_Std_ThrowException": {
-   "match": "0x29b7b0"
   },
   "Ne_Std_ThrowExceptionNoReturn": {
    "match": "0x1b0ade"
