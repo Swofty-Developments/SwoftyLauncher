@@ -66,8 +66,15 @@ pub enum Block {
     Stats(Vec<Fact>),
     Facts(Vec<Fact>),
     Label(String),
-    Text { text: String, tone: Tone },
-    Names { label: String, items: Vec<String> },
+    Text {
+        text: String,
+        #[serde(default)]
+        tone: Tone,
+    },
+    Names {
+        label: String,
+        items: Vec<String>,
+    },
     Table(Table),
     Buttons(Vec<Button>),
     Hero(Hero),
@@ -1296,6 +1303,29 @@ mod tests {
         assert_eq!(with.menu.len(), 1);
         assert_eq!(with.menu[0].style, Style::Danger);
         assert!(matches!(with.menu[0].kind, ButtonKind::Confirm { .. }));
+    }
+
+    #[test]
+    fn a_text_block_without_a_tone_is_neutral() {
+        let view: View = serde_json::from_str(
+            r#"{"body":{"blocks":[{"label":"LEGACY CAREER"},
+                {"text":{"text":"Start-year tiles are under Settings > Legacy Career."}},
+                {"label":"PHYSICS"},
+                {"text":{"text":"Racecraft isn't installed or is too old.","tone":"warn"}}]},
+                "subtitle":"Everything for the CRL packs in one place"}"#,
+        )
+        .unwrap();
+        let Body::Blocks(blocks) = &view.body else {
+            panic!("blocks");
+        };
+        assert_eq!(
+            blocks[1],
+            Block::Text {
+                text: "Start-year tiles are under Settings > Legacy Career.".into(),
+                tone: Tone::Neutral,
+            }
+        );
+        assert!(matches!(blocks[3], Block::Text { tone: Tone::Warn, .. }));
     }
 
     #[test]

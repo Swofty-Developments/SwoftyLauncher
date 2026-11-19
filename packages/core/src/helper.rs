@@ -1437,6 +1437,51 @@ read -r l
     }
 
     #[test]
+    fn a_page_with_toneless_text_keeps_the_helper_running_for_the_build() {
+        let root = tmp("toneless");
+        let dir = root.join("addon");
+        addon(
+            &dir,
+            r#"
+read -r l; echo '{"id":0,"result":{"api":1}}'
+read -r l; echo '{"id":1,"result":{"body":{"blocks":[{"label":"LEGACY CAREER"},{"text":{"text":"Start-year tiles are under Settings."}}]},"subtitle":"s"}}'
+read -r l; echo '{"id":2,"result":{"ops":[],"lines":["built"]}}'
+read -r l
+"#,
+        );
+        let h = helper(&dir);
+        let state = Memory::default();
+        let p = profile("default");
+        let (data, cache) = (root.join("data"), root.join("cache"));
+        std::fs::create_dir_all(&cache).unwrap();
+        let cx = Cx::new("t.helper", &p, &data, &cache, None, &state);
+        let view = h.view(&cx, "items").unwrap();
+        assert!(view.notices.is_empty(), "{:?}", view.notices);
+        let Body::Blocks(blocks) = &view.body else {
+            panic!("blocks");
+        };
+        assert!(matches!(
+            blocks[1],
+            swofty_addon::view::Block::Text {
+                tone: Tone::Neutral,
+                ..
+            }
+        ));
+        assert!(h.failure().is_none());
+        let options = BTreeMap::new();
+        let batch = h
+            .build(&BuildCx {
+                cx: Cx::new("t.helper", &p, &data, &cache, None, &state),
+                options: &options,
+                features: &Features::default(),
+            })
+            .unwrap();
+        assert_eq!(batch.lines, ["built"]);
+        h.stop();
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
     fn contains_hangs_crashes_and_bad_helpers() {
         let root = tmp("failures");
         let hello = r#"read -r l; echo '{"id":0,"result":{"api":1}}'"#;
