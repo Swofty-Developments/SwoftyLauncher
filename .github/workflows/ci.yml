@@ -459,6 +459,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
+      - run: python3 -m pip install capstone==5.0.5
       - run: python3 -m unittest discover -s re/tools/tests
 
   # On a 32-core EC2 runner one job runs every native test. On 4-core hosted runners two jobs split them, one
