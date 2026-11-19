@@ -1041,6 +1041,7 @@ fn resume_rows() -> Vec<crate::stdlib::careers::ResumeRow> {
         season: Some(2),
         race: Some(4),
         played: Some(1_795_093_120),
+        addons: Vec::new(),
     };
     vec![
         row(0, "driver", "Nigel Mansell", "ready", "Ready"),

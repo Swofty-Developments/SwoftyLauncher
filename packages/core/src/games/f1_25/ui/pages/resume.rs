@@ -21,9 +21,13 @@ pub const RESUME_ROUTE: &str = "swofty_resume_list";
 pub const CONTINUE_DRIVER: &str = "solo_career_continue_driver";
 pub const CONTINUE_MY_TEAM: &str = "solo_career_continue_my_team";
 
+/// The route of the New Career row: the Career menu the Career tile opened before the list took its place.
+pub const NEW_CAREER_ROUTE: &str = "swofty_new_career";
+
 pub const COMMAND_PREFIX: &str = "swofty_resume:";
 
-const TITLE: &str = "RESUME CAREER";
+const TITLE: &str = "CAREER";
+const NEW_ROW: &str = "row_new";
 const READY: [u8; 4] = [0x2e, 0xcc, 0x71, 0xff];
 const MISSING: [u8; 4] = [0xe7, 0x4c, 0x3c, 0xff];
 const VERSION: [u8; 4] = [0xf5, 0xa6, 0x23, 0xff];
@@ -51,17 +55,20 @@ fn continue_route(r: &ResumeRow) -> &'static str {
     }
 }
 
+fn who(r: &ResumeRow) -> &str {
+    [&r.driver, &r.team, &r.badge]
+        .into_iter()
+        .find(|s| !s.is_empty())
+        .map_or("", |s| s.as_str())
+}
+
 fn label(r: &ResumeRow) -> String {
-    let who = match r.team.is_empty() {
-        true => r.driver.clone(),
-        false => format!("{}, {}", r.driver, r.team),
-    };
-    tagged(&fit_to(who, 150), &r.badge.to_uppercase(), TAG_STYLE)
+    fit_to(who(r).to_owned(), 150)
 }
 
 fn place(r: &ResumeRow) -> String {
     match (r.season, r.race) {
-        (Some(s), Some(race)) => format!("Season {s} · Race {race}"),
+        (Some(s), Some(race)) => format!("Season {s}, Race {race}"),
         (Some(s), None) => format!("Season {s}"),
         _ => String::new(),
     }
@@ -69,7 +76,7 @@ fn place(r: &ResumeRow) -> String {
 
 fn details(r: &ResumeRow) -> String {
     let mut lines = vec![r.badge.clone()];
-    if !r.team.is_empty() {
+    if !r.team.is_empty() && r.team != who(r) {
         lines.push(r.team.clone());
     }
     let place = place(r);
@@ -80,6 +87,9 @@ fn details(r: &ResumeRow) -> String {
         lines.push(format!("Last played {}", date_text(at)));
     }
     lines.push(r.status.clone());
+    for a in &r.addons {
+        lines.push(format!("{}: {}", a.name, a.state));
+    }
     fit(lines.join("\n"))
 }
 
@@ -96,43 +106,79 @@ fn rgb(c: u32) -> [u8; 4] {
     [(c >> 16) as u8, (c >> 8) as u8, c as u8, 0xff]
 }
 
-fn row_node(src: &Sources, r: &ResumeRow) -> Result<Node> {
-    let sname = RESUME_SCREEN;
+fn base_row(src: &Sources, name: &str, label: &str, value: &str) -> Result<Node> {
     let mut t = instance(
         src.t("settings_edit_button_text")?,
-        sname,
-        &row_name(r.index),
-        &[("label", &label(r)), ("value", &fit(r.status.clone()))],
+        RESUME_SCREEN,
+        name,
+        &[("label", label), ("value", &fit(value.to_owned()))],
         false,
     )?;
     t.slot_mut(CHILDREN)?
         .retain(|c| !matches!(c.name(), "button_pressed" | "reset"));
     set_bool(t.child_mut("indicator")?, "visible", false)?;
+    set_bool(t.child_mut("button_icon")?, "visible", false)?;
+    Ok(t)
+}
+
+fn focused(title: &str, body: &str) -> Node {
+    event(
+        "focused",
+        vec![
+            sig_with(
+                &format!("{RESUME_SCREEN}.description.set.title"),
+                "setText",
+                "focused",
+                &[("text", fit(title.to_uppercase()).as_str().into())],
+            ),
+            sig_with(
+                &format!("{RESUME_SCREEN}.description.set.body"),
+                "setText",
+                "focused",
+                &[("text", body.into())],
+            ),
+        ],
+    )
+}
+
+fn new_career_row(src: &Sources) -> Result<Node> {
+    let mut t = base_row(src, NEW_ROW, "NEW CAREER", "")?;
+    add_events(
+        &mut t,
+        vec![
+            focused("New career", "Start a new Driver Career or My Team."),
+            event(
+                "pressed",
+                vec![
+                    sig(
+                        &format!("{RESUME_SCREEN}.audio_theme_trigger"),
+                        "confirm",
+                        "pressed",
+                    ),
+                    sig_with(
+                        &format!("{RESUME_SCREEN}.Action"),
+                        "route",
+                        "pressed",
+                        &[("key", NEW_CAREER_ROUTE.into())],
+                    ),
+                ],
+            ),
+        ],
+    )?;
+    Ok(t)
+}
+
+fn row_node(src: &Sources, r: &ResumeRow) -> Result<Node> {
+    let sname = RESUME_SCREEN;
+    let mut t = base_row(src, &row_name(r.index), &label(r), &r.status)?;
     if let Some(c) = r.colour {
-        tint(t.child_mut("indicator")?, rgb(c))?;
+        tint(t.child_mut("button_icon")?, rgb(c))?;
     }
-    tint(t.child_mut("button_icon")?, status_colour(&r.severity))?;
     let cmd = row_command(r.index);
     add_events(
         &mut t,
         vec![
-            event(
-                "focused",
-                vec![
-                    sig_with(
-                        &format!("{sname}.description.set.title"),
-                        "setText",
-                        "focused",
-                        &[("text", fit(r.driver.to_uppercase()).as_str().into())],
-                    ),
-                    sig_with(
-                        &format!("{sname}.description.set.body"),
-                        "setText",
-                        "focused",
-                        &[("text", details(r).as_str().into())],
-                    ),
-                ],
-            ),
+            focused(who(r), &details(r)),
             event(
                 "pressed",
                 vec![
@@ -151,10 +197,9 @@ fn row_node(src: &Sources, r: &ResumeRow) -> Result<Node> {
     Ok(t)
 }
 
-/// The list screen for `rows`, which must be in index order and not empty.
+/// The Career list screen: the New Career row, then `rows`, which must be in index order.
 pub fn build_resume_page(src: &Sources, rows: &[ResumeRow]) -> Result<(String, Vec<u8>)> {
     let sname = RESUME_SCREEN;
-    let first = rows.first().ok_or_else(|| err("the resume list has no rows"))?;
     let scr = src.screen(sname, PAGE_LAYOUT)?;
     let fr = src.frame(sname)?;
     let mut kids = vec![
@@ -162,7 +207,11 @@ pub fn build_resume_page(src: &Sources, rows: &[ResumeRow]) -> Result<(String, V
         hidden("hide_filter", &["filter"]),
         hidden("hide_scroll_bar", &["scroll_bar"]),
     ];
-    let body = format!("{} career{}", rows.len(), if rows.len() == 1 { "" } else { "s" });
+    let body = match rows.len() {
+        0 => "No careers yet".to_owned(),
+        1 => "1 career".to_owned(),
+        n => format!("{n} careers"),
+    };
     let mut about = instance(
         src.t("settings_edit_description_category")?,
         sname,
@@ -187,20 +236,21 @@ pub fn build_resume_page(src: &Sources, rows: &[ResumeRow]) -> Result<(String, V
         &format!("{sname}.description"),
         "set",
         &[
-            ("title", &fit(first.driver.to_uppercase())),
-            ("body", &details(first)),
+            ("title", "NEW CAREER"),
+            ("body", "Start a new Driver Career or My Team."),
         ],
         true,
     )?);
     kids.extend([about, panel]);
-    let mut rows_at = Vec::new();
+    let mut rows_at = vec![kids.len()];
+    kids.push(new_career_row(src)?);
     for r in rows {
         rows_at.push(kids.len());
         kids.push(row_node(src, r)?);
     }
     chain_focus(sname, &mut kids, &rows_at)?;
     scroll_rows(sname, &mut kids, &rows_at)?;
-    let mut done = finish(scr, fr, kids, &row_name(first.index))?;
+    let mut done = finish(scr, fr, kids, NEW_ROW)?;
     vm_page_bind(&mut done)?;
     settings_state_matrix(src, &mut done)?;
     literal_tooltips(&mut done)?;
