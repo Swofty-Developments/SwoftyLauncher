@@ -217,6 +217,7 @@ namespace mem = swofty::mem;
 constexpr size_t MODE_NAME = 0x278;
 constexpr size_t SESSION_STRIDE = 0xa0;
 constexpr uint64_t MAX_SEASONS = 64, MAX_ROUNDS = 64, MAX_SESSIONS = 32;
+constexpr uint32_t SESSION_COMPLETE = 2;
 
 std::mutex once_mu;
 std::set<std::string> said;
@@ -297,6 +298,7 @@ struct Weekend {
     uint32_t session = 0;
     bool sprint = false;
     int track = -1;
+    uint32_t round = 0, rounds = 0, progress = 0, current = 0, sessions = 0, complete = 0;
 };
 
 bool weekend(uintptr_t holder, Weekend &out)
@@ -325,6 +327,9 @@ bool weekend(uintptr_t holder, Weekend &out)
         wi >= (we - wb) / 8 || !rd(wb + wi * 8, wk) || !vtable_is(wk, "vt_Career_Weekend"))
         return false;
     out.at = wk;
+    out.round = wi + 1;
+    out.rounds = uint32_t((we - wb) / 8);
+    rd(wk + offsetof(g::Weekend, progress_state), out.progress);
     uint8_t track = 0xff;
     if (rd(wk + offsetof(g::Weekend, track_stat_id), track) && track != 0xff)
         out.track = track;
@@ -333,11 +338,15 @@ bool weekend(uintptr_t holder, Weekend &out)
         return true;
     std::vector<uint32_t> ids;
     for (uintptr_t at = xb; at < xe; at += SESSION_STRIDE) {
-        uint32_t id = 0;
+        uint32_t id = 0, completion = 0;
         if (rd(at + offsetof(g::Session, session_id), id))
             ids.push_back(id);
+        if (rd(at + offsetof(g::Session, completion), completion) && completion == SESSION_COMPLETE)
+            out.complete++;
     }
     out.sprint = facts::sprint_weekend(ids);
+    out.current = xi;
+    out.sessions = uint32_t((xe - xb) / SESSION_STRIDE);
     if (xi < ids.size())
         out.session = ids[xi];
     return true;
@@ -467,17 +476,22 @@ void prime_track_rows(const char *when)
     read_track_rows(when);
 }
 
-std::string track_id(int stat_id)
+std::vector<facts::TrackRecord> track_records()
 {
-    if (stat_id < 0)
-        return {};
     std::vector<facts::TrackRecord> records;
     for (auto &id : reg::store().list("track", "")) {
         reg::Record r = reg::store().get("track", id);
         if (r.status == reg::Status::ok && r.value["stat_id"].is_int())
             records.push_back({id, r.value["stat_id"].as_int()});
     }
-    std::string id = facts::track_of(stat_id, track_label(stat_id), records);
+    return records;
+}
+
+std::string track_id(int stat_id)
+{
+    if (stat_id < 0)
+        return {};
+    std::string id = facts::track_of(stat_id, track_label(stat_id), track_records());
     if (id.empty())
         once("track stat id " + std::to_string(stat_id) + " has no tracks row or track record; its track addon is off or not installed, and a saved Grand Prix or career that races it crashes at the session load");
     return id;
@@ -751,6 +765,23 @@ std::pair<std::string, std::string> session_mode_track()
     attach();
     SessionFacts f = game::at_session_load();
     return {f.mode, f.track};
+}
+
+bool career_weekend(CareerWeekend &out)
+{
+    uintptr_t holder = game::holder_of(game::current_context());
+    game::Weekend w;
+    if (!holder || !game::weekend(holder, w))
+        return false;
+    out.round = w.round;
+    out.rounds = w.rounds;
+    out.progress = w.progress;
+    out.current = w.current;
+    out.sessions = w.sessions;
+    out.complete = w.complete;
+    out.session = facts::session_of(w.session, w.sprint).session;
+    out.track = w.track < 0 ? std::string() : facts::track_of(w.track, game::cached_track_label(w.track), game::track_records());
+    return true;
 }
 
 std::string current_mode(const char *where)

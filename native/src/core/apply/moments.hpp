@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
@@ -28,6 +29,15 @@ void box_picked(const char *entrant_list);
 void box_picked(const char *entrant_list, const void *mode_context);
 void session_load(const char *source);
 std::pair<std::string, std::string> session_mode_track();
+// The current championship weekend of the loaded game mode, read live: round and rounds 1-based, the weekend's
+// progress state (0 not started, 1 in progress, 2 complete), the current session's index, the session count and how
+// many sessions are complete, the current session's name and the track (the tracks table only once it was read in
+// this run). False when the chain does not read.
+struct CareerWeekend {
+    uint32_t round = 0, rounds = 0, progress = 0, current = 0, sessions = 0, complete = 0;
+    std::string session, track;
+};
+bool career_weekend(CareerWeekend &out);
 // The kind of game mode the game is in: kept by a watch on its own thread (started by mode_watch) and by every session load.
 facts::ModeKind mode_kind();
 void mode_watch();
