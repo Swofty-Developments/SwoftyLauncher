@@ -245,7 +245,7 @@ fn online_messages_show_language_strings_and_others_stay_stock() {
         assert_eq!(o.at("options").unwrap().a().unwrap().len(), 1);
     }
     let plain = by_id(&messages(&messages_file(), false).unwrap());
-    assert_eq!(plain.len(), stock.len() + 1);
+    assert_eq!(plain.len(), stock.len() + 2);
     for ((id, m), (_, before)) in plain.iter().zip(&stock) {
         let (o, b) = (m.o().unwrap(), before.o().unwrap());
         assert_eq!(o.str_at("title").unwrap(), b.str_at("title").unwrap(), "{id}");
