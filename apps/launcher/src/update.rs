@@ -84,7 +84,7 @@ impl Updates {
     /// itself.
     pub fn started() -> Self {
         let u = Self::new();
-        crate::app_log::scrubbed(&copy_line(&std::env::current_exe(), &u.copy));
+        crate::app_log::scrubbed(&updater::copy_line(&std::env::current_exe(), &u.copy));
         u
     }
 
@@ -146,31 +146,8 @@ fn log_change(part: Part, before: &Option<String>, after: &Option<String>) {
         && let Some(e) = after
     {
         eprintln!("swofty-launcher: {} update check: {e}", part.name());
-        crate::app_log::scrubbed(&format!("update: {} update check: {e}", part.name()));
+        crate::app_log::note(&format!("update: {} update check: {e}", part.name()));
     }
-}
-
-fn copy_line(exe: &std::io::Result<std::path::PathBuf>, copy: &Result<Install, String>) -> String {
-    let exe = match exe {
-        Ok(path) => path.display().to_string(),
-        Err(e) => format!("the launcher (its path does not read: {e})"),
-    };
-    match copy {
-        Ok(_) => format!("update: {exe} can update itself"),
-        Err(reason) => format!("update: {exe} can't update itself: {reason}"),
-    }
-}
-
-fn blocked_line(version: &Version, reason: &str) -> String {
-    format!("update: Swofty Launcher {version} is available, and this copy can't install it: {reason}")
-}
-
-fn installed_line(done: &[(Part, Version)]) -> String {
-    let parts: Vec<String> = done
-        .iter()
-        .map(|(part, v)| format!("{} {v}", part.name()))
-        .collect();
-    format!("update: installed {}; restarting", parts.join(", "))
 }
 
 fn blocked_text(version: &Version, reason: &str) -> String {
@@ -264,7 +241,7 @@ impl Shell {
         }
         let blocked = u
             .blocked_notice()
-            .map(|(version, _, reason)| (blocked_line(&version, reason), version));
+            .map(|(version, _, reason)| (updater::blocked_line(&version, reason), version));
         if let Some((line, version)) = blocked
             && u.blocked_logged.as_ref() != Some(&version)
         {
@@ -404,7 +381,7 @@ impl Shell {
             crate::app_log::action("update").failed(e);
         }
         if ran.launcher().is_some() || (u.restarts && ran.restart()) {
-            crate::app_log::note(&installed_line(&ran.done));
+            crate::app_log::note(&updater::installed_line(&ran.done));
             u.phase = Phase::Restarting;
             u.restarting = ran.done.clone();
             let launcher = ran.launcher().map(|v| format!("v{v}"));
@@ -465,8 +442,7 @@ impl Shell {
         let mut command = match exe {
             Ok(exe) => std::process::Command::new(exe),
             Err(e) => {
-                crate::app_log::action("update")
-                    .failed(format!("could not find the launcher to restart: {e}"));
+                crate::app_log::note(&format!("update: could not find the launcher to restart: {e}"));
                 self.updates.phase = Phase::Failed(trf!(
                     "Updated, but could not restart: {e}. Close and reopen the launcher.",
                     e = e
@@ -481,26 +457,15 @@ impl Shell {
             None => command.env_remove(updater::UPDATED_ENV),
         };
         let program = Path::new(command.get_program()).to_path_buf();
-        match command.spawn() {
-            Ok(child) => {
-                crate::app_log::scrubbed(&format!(
-                    "update: started {} (pid {}) to restart",
-                    program.display(),
-                    child.id()
-                ));
-                cx.quit()
-            }
+        let spawned = command.spawn();
+        crate::app_log::scrubbed(&updater::restart_line(
+            &program,
+            spawned.as_ref().map(std::process::Child::id),
+        ));
+        match spawned {
+            Ok(_) => cx.quit(),
             Err(e) => {
-                let block = Block::of(&program, &e);
-                crate::app_log::action("update").failed(format!(
-                    "could not restart {}: {e}{}",
-                    program.display(),
-                    block
-                        .as_ref()
-                        .map(|b| format!("; {}", b.headline()))
-                        .unwrap_or_default()
-                ));
-                self.updates.phase = Phase::Failed(match block {
+                self.updates.phase = Phase::Failed(match Block::of(&program, &e) {
                     Some(b) => trf!("Updated, but could not restart: {e}", e = b.text()),
                     None => trf!(
                         "Updated, but could not restart: {e}. Close and reopen the launcher.",
@@ -804,52 +769,6 @@ mod tests {
         assert!(u.runs_from_release());
         u.copy = Err("this copy does not run from a release folder".into());
         assert!(!u.runs_from_release());
-    }
-
-    #[test]
-    fn the_log_says_whether_the_running_copy_can_update_itself() {
-        let exe = Ok(std::path::PathBuf::from(r"C:\Swofty\bin\swofty-launcher.exe"));
-        let ok = Install {
-            root: r"C:\Swofty".into(),
-        };
-        assert_eq!(
-            copy_line(&exe, &Ok(ok)),
-            r"update: C:\Swofty\bin\swofty-launcher.exe can update itself"
-        );
-        assert_eq!(
-            copy_line(&exe, &Err("no write access to C:\\Swofty\\bin".into())),
-            r"update: C:\Swofty\bin\swofty-launcher.exe can't update itself: no write access to C:\Swofty\bin"
-        );
-        let unread = Err(std::io::Error::other("gone"));
-        assert_eq!(
-            copy_line(&unread, &Err(NOT_RELEASE_FOLDER.into())),
-            "update: the launcher (its path does not read: gone) can't update itself: does not run from a release \
-             folder"
-        );
-    }
-
-    #[test]
-    fn the_log_names_a_blocked_update_and_what_was_installed() {
-        let u = blocked();
-        let (version, _, reason) = u.blocked_notice().unwrap();
-        assert_eq!(
-            blocked_line(&version, reason),
-            format!(
-                "update: Swofty Launcher 999.0.0 is available, and this copy can't install it: {}",
-                update::DATA_IN_INSTALL
-            )
-        );
-        assert_eq!(
-            installed_line(&[
-                (Part::Launcher, Version::new(1, 9, 81)),
-                (Part::Addon, Version::new(0, 6, 2))
-            ]),
-            format!(
-                "update: installed {} 1.9.81, {} 0.6.2; restarting",
-                Part::Launcher.name(),
-                Part::Addon.name()
-            )
-        );
     }
 
     #[test]
