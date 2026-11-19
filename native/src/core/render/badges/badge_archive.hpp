@@ -9,6 +9,7 @@
 #pragma warning(pop)
 #endif
 #include "core/render/badges/badge_image_data.hpp"
+#include "core/render/badges/live_image_reference.hpp"
 #include <filesystem>
 #include <windows.h>
 #include <map>
@@ -25,7 +26,7 @@
 #pragma warning(pop)
 #endif
 
-// Core-side interpretation of Live team_badge_texture references. No UI or
+// Core-side interpretation of Live badge and tyre texture references. No UI or
 // table policy. Reads existing archives only, following the active router.
 namespace badge_images::archive
 {
@@ -319,8 +320,10 @@ struct Surface
 
 struct Catalogue
 {
+    live_image_reference::Catalogue descriptor;
     std::map<std::string, int> indices;
     Surface surface;
+    explicit Catalogue(live_image_reference::Catalogue d = live_image_reference::BADGES) : descriptor(d) {}
     bool load(Resources &resources)
     {
         std::vector<std::string> fragments;
@@ -329,18 +332,53 @@ struct Catalogue
         uidb::Pkg pkg;
         if (!pkg.read(fragments[0]))
             return false;
-        const auto *node = &pkg.root;
-        for (const char *key :
-             {"overrides", "Contents", "osd", "Contents", "timing_tower", "Contents", "team_badges_hud", "Contents"})
-        {
-            if (node->kind != uidb::Node::object)
+        return load(pkg.root, [&](const std::string &name, std::vector<std::string> &parts) {
+            return resources.read(name, parts);
+        });
+    }
+    template <class Read> bool load(const uidb::Node &root, Read read)
+    {
+        indices.clear();
+        surface = Surface{};
+        auto child = [](const uidb::Node *node, const std::string &key) -> const uidb::Node * {
+            if (!node || node->kind != uidb::Node::object)
+                return nullptr;
+            const uidb::Node *found = nullptr;
+            for (auto &[k, value] : node->items)
+                if (k.value == key) {
+                    if (found)
+                        return nullptr;
+                    found = &value;
+                }
+            return found;
+        };
+        const uidb::Node *node = &root;
+        const std::string path = descriptor.path;
+        size_t begin = 0;
+        while (begin < path.size()) {
+            auto end = path.find('.', begin);
+            node = child(node, path.substr(begin, end == path.npos ? end : end - begin));
+            if (!node)
                 return false;
-            auto it =
-                std::find_if(node->items.begin(), node->items.end(), [&](auto &p) { return p.first.value == key; });
-            if (it == node->items.end())
-                return false;
-            node = &it->second;
+            if (end == path.npos)
+                break;
+            node = child(node, "Contents");
+            begin = end + 1;
         }
+        const auto *array = child(node, "TextureArrayName");
+        // Follow the effective UIDB's array URI, including mod replacements.
+        // Restrict archive reads to bounded UI texture arrays, never disk paths.
+        if (!array || array->kind != uidb::Node::value || array->val.type != "stri")
+            return false;
+        const auto &uri = array->val.value;
+        if (uri.size() > 240 || !uri.starts_with("ui_package/art/texture_arrays/") ||
+            !uri.ends_with(".texarray") || uri.find("..") != uri.npos ||
+            uri.find_first_of(":\\#") != uri.npos ||
+            std::any_of(uri.begin(), uri.end(), [](unsigned char c) { return c < 32 || c > 126; }))
+            return false;
+        node = child(node, "Contents");
+        if (!node)
+            return false;
         if (node->kind != uidb::Node::array || node->list.size() > 4096)
             return false;
         for (size_t index = 0; index < node->list.size(); index++)
@@ -356,13 +394,18 @@ struct Catalogue
                         it->second = -1;
                 }
         }
-        return resources.read(ARRAY, fragments) && surface.load(fragments);
+        std::vector<std::string> fragments;
+        // A catalogue may expose only part of an array. Preserve the badge
+        // reader's per-reference availability: decode() bounds-checks the
+        // requested index, so an unused/missing slice cannot hide valid rows.
+        return read("eaid://" + uri + ".image", fragments) && surface.load(fragments);
     }
     bool decode(const std::string &reference, Pixels &out) const
     {
-        if (!reference.starts_with(PREFIX))
+        const auto prefix = live_image_reference::prefix(descriptor);
+        if (!reference.starts_with(prefix))
             return false;
-        auto it = indices.find(reference.substr(std::strlen(PREFIX)));
+        auto it = indices.find(reference.substr(prefix.size()));
         return it != indices.end() && it->second >= 0 && surface.decode(size_t(it->second), out);
     }
 };

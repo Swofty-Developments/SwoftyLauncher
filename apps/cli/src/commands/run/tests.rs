@@ -283,3 +283,39 @@ fn waits_for_a_steam_wrapper_to_finish_rolling_back_before_recovering() {
     holder.wait().unwrap();
     assert!(m.vanilla());
 }
+
+#[test]
+fn a_roll_back_that_left_locked_files_never_says_the_files_are_back() {
+    use super::launch::{UNFINISHED, settled};
+    use super::wrapper::rolled_back;
+    use swofty_core::game_folder::recovery::Recovered;
+    let locked = Recovered {
+        problems: vec!["offline play staging: offline-play restore could not finish cleanly".into()],
+        ..Recovered::default()
+    };
+    assert_eq!(settled(&locked, true), Some(UNFINISHED));
+    assert_eq!(settled(&locked, false), Some(UNFINISHED));
+    let partly = Recovered {
+        swept: vec!["removed swofty/addons/core/swofty_core.dll".into()],
+        ..locked.clone()
+    };
+    assert!(partly.recovered());
+    assert_eq!(settled(&partly, true), Some(UNFINISHED));
+
+    assert_eq!(
+        settled(&Recovered::default(), true),
+        Some("session over: its game files are rolled back")
+    );
+    assert_eq!(settled(&Recovered::default(), false), None);
+    let recovered = Recovered {
+        offline: true,
+        ..Recovered::default()
+    };
+    assert_eq!(settled(&recovered, true), None);
+
+    assert_eq!(rolled_back(false), "rolled the profile's game files back");
+    assert_eq!(
+        rolled_back(true),
+        "rolled the profile's game files back, but not the offline play files above"
+    );
+}

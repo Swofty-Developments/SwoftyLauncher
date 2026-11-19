@@ -7,7 +7,7 @@ use super::Store;
 use super::config::warn;
 use super::profiles::{load_profile, profile_write};
 use super::scan::Unreadable;
-use super::swap::{STAGING_PREFIX, delete_addon_dir, swap_in};
+use super::swap::{SCRATCH_PREFIX, STAGING_PREFIX, Scratch, delete_addon_dir, swap_in_held, swap_lock_for};
 use crate::manifest::{AddonManifest, MANIFEST_FILE};
 use crate::profile;
 use crate::{Error, Result, io_err};
@@ -51,16 +51,14 @@ impl Store {
         if !src.is_file() {
             return vec![self.install_addon_for(src, &launcher)];
         }
-        let scratch = self.scratch_dir();
-        let installed = match self.unpacked_addons(src, &scratch) {
+        let scratch = Scratch::new(&self.addons_dir());
+        match self.unpacked_addons(src, &scratch.dir) {
             Ok(found) => found
                 .iter()
                 .map(|addon| self.install_addon_for(addon, &launcher))
                 .collect(),
             Err(e) => vec![Err(e)],
-        };
-        std::fs::remove_dir_all(&scratch).ok();
-        installed
+        }
     }
 
     pub fn install_addon_for(&self, src: &Path, launcher: &semver::Version) -> Result<AddonManifest> {
@@ -121,9 +119,9 @@ impl Store {
         from: InstallFrom,
     ) -> Result<AddonManifest> {
         if src.is_file() {
-            let scratch = self.scratch_dir();
-            let result = self
-                .unpacked_addons(src, &scratch)
+            let scratch = Scratch::new(&self.addons_dir());
+            return self
+                .unpacked_addons(src, &scratch.dir)
                 .and_then(|found| match found.as_slice() {
                     [one] => self.install_addon_target(one, launcher, profile, from),
                     many => Err(Error::Other(format!(
@@ -132,8 +130,6 @@ impl Store {
                         many.len()
                     ))),
                 });
-            std::fs::remove_dir_all(&scratch).ok();
-            return result;
         }
         let src = &crate::addons::import::addon_root(src).unwrap_or_else(|| src.to_path_buf());
         if src.join(crate::dbedit::package::MARKER).is_file() {
@@ -197,6 +193,8 @@ impl Store {
         let dest = self.addons_dir().join(&id);
         let fresh = !dest.exists();
         self.helpers.forget(&id);
+        std::fs::create_dir_all(self.addons_dir()).map_err(io_err(self.addons_dir()))?;
+        let _lock = swap_lock_for(&dest, &m.name)?;
         let staging = self.addons_dir().join(format!("{STAGING_PREFIX}{id}"));
         if staging.exists() {
             std::fs::remove_dir_all(&staging).map_err(io_err(&staging))?;
@@ -215,7 +213,12 @@ impl Store {
                 }
             }
         }
-        swap_in(
+        if let Err(e) = crate::addons::files::seal(&staging) {
+            std::fs::remove_dir_all(&staging).ok();
+            let verb = if fresh { "install" } else { "update" };
+            return Err(Error::Other(format!("Couldn't {verb} {}: {e}", m.name)));
+        }
+        swap_in_held(
             &staging,
             &dest,
             &m.name,
@@ -266,13 +269,7 @@ impl Store {
         path.strip_prefix(self.addons_dir())
             .ok()
             .and_then(|rest| rest.components().next())
-            .is_some_and(|c| c.as_os_str().to_string_lossy().starts_with(".importing-"))
-    }
-
-    pub(super) fn scratch_dir(&self) -> PathBuf {
-        static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
-        let n = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        self.addons_dir().join(format!(".importing-{n}"))
+            .is_some_and(|c| c.as_os_str().to_string_lossy().starts_with(SCRATCH_PREFIX))
     }
 
     pub(super) fn unpacked_addons(&self, archive: &Path, scratch: &Path) -> Result<Vec<PathBuf>> {

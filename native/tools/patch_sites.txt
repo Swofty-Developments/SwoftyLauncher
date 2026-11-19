@@ -34,6 +34,7 @@ helper ^\s*make\(\w+, [A-Z][A-Z0-9_]*,
 helper \bguards::MidHookSpec\s+\w+\s*\{
 helper ^\s*hook_fast_fail_path\(\s*"
 helper \bruntime::write_slot\(
+helper \bruntime::import_write\b
 helper core/frontend/hidden_tiles.cpp \boverwrite\(S_
 helper core/assets/overlay.cpp \bhook\(h_
 helper core/events/events.cpp = mid\(S_
@@ -81,8 +82,8 @@ core/diagnostics/crash/fatal_paths.cpp: hook_fast_fail_path("the CRT invalid-par
 core/diagnostics/crash/fatal_paths.cpp: hook_fast_fail_path("the CRT abort path", RVA_INVALID_PARAMETER_ABORT, PATTERN_INVALID_PARAMETER_ABORT, game_paths.abort_fn, => mid prologue RVA_INVALID_PARAMETER_ABORT PATTERN_INVALID_PARAMETER_ABORT
 core/diagnostics/net_trace.cpp: if (!runtime::write_slot(s.slot, h.detour)) { => import ws2_32.dll!*
 core/diagnostics/net_trace.cpp: auto made = safetyhook::InlineHook::create(h.target, h.detour, safetyhook::InlineHook::StartDisabled); => outside ws2_32
-core/diagnostics/perf/frames.cpp: if (!VirtualProtect(&iat->u1.Function, sizeof(void *), PAGE_READWRITE, &old)) => import sl.interposer.dll!slGetNewFrameToken
-core/diagnostics/perf/vq.cpp: if (!VirtualProtect(&iat[k].u1.Function, sizeof(void *), PAGE_READWRITE, &old)) => import *!VirtualQuery *!_beginthreadex
+core/diagnostics/perf/frames.cpp: if (!runtime::write_slot(reinterpret_cast<ULONG_PTR *>(e.slot), repl)) => import sl.interposer.dll!slGetNewFrameToken
+core/diagnostics/perf/vq.cpp: p.write = runtime::import_write; => import *!VirtualQuery *!_beginthreadex
 core/diagnostics/perf/vq.cpp: void install() => none
 core/diagnostics/perf/vq.hpp: void install(); => none
 core/diagnostics/session_job_probe.cpp: if (auto r = runtime::loader::install(hook, at, FUNC, on_entry); !r) { => mid binding FUNC

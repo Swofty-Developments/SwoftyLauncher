@@ -4,6 +4,7 @@
 #include "core/diagnostics/perf/profiler.hpp"
 #include "core/diagnostics/perf/system.hpp"
 #include "core/diagnostics/perf_logic.hpp"
+#include "core/runtime/imports.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -102,32 +103,29 @@ int Profiler::frame_token(void **token, const uint32_t *index)
 
 bool Profiler::hook_import(const char *dll, const char *fn, void *repl, void **orig)
 {
-    auto base = reinterpret_cast<uint8_t *>(GetModuleHandleW(nullptr));
-    auto nt = reinterpret_cast<IMAGE_NT_HEADERS *>(base + reinterpret_cast<IMAGE_DOS_HEADER *>(base)->e_lfanew);
-    auto &dir = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
-    if (!dir.VirtualAddress)
+    pe_imports it;
+    pe_import e, first{};
+    if (!pe_imports_open(&it, uintptr_t(GetModuleHandleW(nullptr)), dll, runtime::import_readable, nullptr))
         return false;
-    for (auto *d = reinterpret_cast<IMAGE_IMPORT_DESCRIPTOR *>(base + dir.VirtualAddress); d->Name; d++) {
-        if (_stricmp(reinterpret_cast<const char *>(base + d->Name), dll) || !d->OriginalFirstThunk)
+    int skipped = 0;
+    bool done = false;
+    for (int r; !done && (r = pe_imports_next(&it, &e)) != PE_IMPORT_END;) {
+        if (r == PE_IMPORT_SKIP) {
+            if (!skipped++)
+                first = e;
             continue;
-        auto *names_ = reinterpret_cast<IMAGE_THUNK_DATA *>(base + d->OriginalFirstThunk);
-        auto *iat = reinterpret_cast<IMAGE_THUNK_DATA *>(base + d->FirstThunk);
-        for (; names_->u1.AddressOfData; names_++, iat++) {
-            if (IMAGE_SNAP_BY_ORDINAL(names_->u1.Ordinal))
-                continue;
-            auto *by = reinterpret_cast<IMAGE_IMPORT_BY_NAME *>(base + names_->u1.AddressOfData);
-            if (strcmp(reinterpret_cast<const char *>(by->Name), fn))
-                continue;
-            DWORD old;
-            if (!VirtualProtect(&iat->u1.Function, sizeof(void *), PAGE_READWRITE, &old))
-                return false;
-            *orig = reinterpret_cast<void *>(iat->u1.Function);
-            iat->u1.Function = reinterpret_cast<ULONG_PTR>(repl);
-            VirtualProtect(&iat->u1.Function, sizeof(void *), old, &old);
-            return true;
         }
+        if (e.kind != PE_IMPORT_BY_NAME || strcmp(e.name, fn))
+            continue;
+        void *was = reinterpret_cast<void *>(*e.slot);
+        if (!runtime::write_slot(reinterpret_cast<ULONG_PTR *>(e.slot), repl))
+            break;
+        *orig = was;
+        done = true;
     }
-    return false;
+    if (skipped)
+        vq::note_import_skip("game exe", first, skipped);
+    return done;
 }
 
 void Profiler::flow_tick()

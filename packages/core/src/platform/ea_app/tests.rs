@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use super::handoff::*;
@@ -216,6 +216,101 @@ fn a_shell_setting_gets_the_link_quoted() {
     assert_eq!(open.get_program(), "sh");
     assert_eq!(args, ["-c", "/games/ea-app.sh wine start "]);
     assert!(opener(&Handoff::Program(vec!["open.bat".into()])).is_none());
+}
+
+fn on_disk<'a>(paths: &'a [&'a str]) -> impl Fn(&Path) -> bool + 'a {
+    move |p: &Path| paths.iter().any(|q| Path::new(q) == p)
+}
+
+#[test]
+fn an_unquoted_proton_path_with_spaces_is_quoted() {
+    let disk = [
+        "/home/me/.local/share/Steam/steamapps/common/Proton - Experimental/proton",
+        "/home/me/.local/share/Steam/steamapps/compatdata/my prefix",
+    ];
+    let line = "STEAM_COMPAT_DATA_PATH=/home/me/.local/share/Steam/steamapps/compatdata/my prefix \
+                /home/me/.local/share/Steam/steamapps/common/Proton - Experimental/proton run {url}";
+    assert_eq!(
+        quote_spaced_paths(line, &on_disk(&disk)),
+        "STEAM_COMPAT_DATA_PATH='/home/me/.local/share/Steam/steamapps/compatdata/my prefix' \
+         '/home/me/.local/share/Steam/steamapps/common/Proton - Experimental/proton' run {url}"
+    );
+    let args = "/opt/ea app.sh wine /games/EA Desktop/EALauncher.exe {url}";
+    assert_eq!(
+        quote_spaced_paths(
+            args,
+            &on_disk(&["/opt/ea app.sh", "/games/EA Desktop/EALauncher.exe"])
+        ),
+        "'/opt/ea app.sh' wine '/games/EA Desktop/EALauncher.exe' {url}"
+    );
+}
+
+#[test]
+fn a_line_that_runs_as_written_is_left_alone() {
+    let disk = ["/games/ea-app.sh", "/games/Proton - Experimental/proton"];
+    for line in [
+        "/games/ea-app.sh wine start {url}",
+        "'/games/Proton - Experimental/proton' run {url}",
+        "\"/games/Proton - Experimental/proton\" run {url}",
+        "u={url}; L='C:\\Program Files\\EA Desktop\\EALauncher.exe'; exec /games/ea-app.sh wine \"$L\" \"$u\"",
+        "/missing/Proton - Experimental/proton run {url}",
+        "~/Proton - Experimental/proton run {url}",
+        "printf %s {url} > '/tmp/got url'",
+        "/games/ea-app.sh  wine  start {url}",
+    ] {
+        assert_eq!(quote_spaced_paths(line, &on_disk(&disk)), line);
+    }
+    assert_eq!(
+        quote_spaced_paths(
+            "/games/Proton - Experimental/proton run {url} ; /games/Proton - Experimental/proton",
+            &on_disk(&disk)
+        ),
+        "'/games/Proton - Experimental/proton' run {url} ; /games/Proton - Experimental/proton",
+        "nothing from the first shell syntax on is touched"
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn the_setting_runs_a_proton_path_with_spaces_written_without_quotes() {
+    use std::os::unix::fs::PermissionsExt;
+    let root = std::env::temp_dir().join(format!("swofty-ea-spaced-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let proton = root.join("steamapps/common/Proton - Experimental/proton");
+    let compat = root.join("steamapps/compatdata/my prefix");
+    std::fs::create_dir_all(proton.parent().unwrap()).unwrap();
+    std::fs::create_dir_all(&compat).unwrap();
+    let got = root.join("got.txt");
+    std::fs::write(
+        &proton,
+        format!(
+            "#!/bin/sh\nprintf '%s|%s|%s' \"$STEAM_COMPAT_DATA_PATH\" \"$1\" \"$2\" > '{}'\n",
+            got.display()
+        ),
+    )
+    .unwrap();
+    std::fs::set_permissions(&proton, std::fs::Permissions::from_mode(0o755)).unwrap();
+    let setting = format!(
+        "STEAM_COMPAT_DATA_PATH={} {} run {{url}}",
+        compat.display(),
+        proton.display()
+    );
+    let h = Handoff::from_setting(&setting).unwrap();
+    let url = "origin2://game/launch?offerIds=1&autoDownload=1";
+    let mut status = h.command(url).status().unwrap();
+    for _ in 0..20 {
+        if status.code() != Some(126) {
+            break;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(50));
+        status = h.command(url).status().unwrap();
+    }
+    assert!(status.success(), "{h}: {status}");
+    assert_eq!(
+        std::fs::read_to_string(&got).unwrap(),
+        format!("{}|run|{url}", compat.display())
+    );
+    std::fs::remove_dir_all(&root).ok();
 }
 
 #[test]

@@ -77,6 +77,26 @@
    "verdict": "agree",
    "evidence": "decomp:own capstone disasm 0x142e94040-0x142e946cf,0x142e83130-0x142e83993,0x14f43e230-0x14f43e3f7,0x14f3c6a80-0x14f3c6cd3,0x142e96390-0x142e96a12,0x142e96a20-0x142e96f2e,0x142e9e6c0-0x142e9ec5b,0x14f463120-0x14f4632a4,0x142e9eda0-0x142e9fe3f,0x14f486470-0x14f48655c,0x1434bdd60-0x1434bdf3f,0x1403c8cf0-0x1403c8e48,1.0.145 0x142e965d0-0x142e96c5f;xref:0x1434bdd9f,0x1403c8dd3,0x1434bde3f,0x142e941eb,0x142e94176,0x142e9421d,0x142e94280,0x142e944ad,0x142e944b8,0x142e946bc",
    "notes": "V100008 Blind: agree. Own disasm 0x142e94040-0x142e946cf: rcx this, bl bool (0x142e941eb/0x142e94219), one exit xor eax,eax 0x142e946bc (rax all zero). Next set = id [+0x9c70] in 0x18-byte list +0x9bd0 (count +0x9c48), fallback id>=3?4:1 (0x142e9412e), double miss -> id -1, null ptrs. Compares +0x9938/+0x9940/+0x9948 (not +0x993c); dl=1 -> 0x142e96390, else stores +0x9938..+0x9948. ORs +0x208&0x1f, clears k=0..4, final record via [[+0x9c98]-0x6c] -> entry+0x10 byte -> [[+0x9bc0]+0x1d8]. Callers 0x1434bdd9f (dl=1, pitstopComplete next at 0x1434bde3f) and 0x1403c8dd3 (dl=0), rax unused. 1.0.145 0x142e965d0 406/406. Fallback rescan at 0x142e94490 has no bound."
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "steam-bindings-verify",
+   "kind": "func",
+   "item": "Car_Tyre_ChangeToNextCompound",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142e94040-0x142e946cf (.pdata, unwind 0x145eef728, 406 insns);decomp:own capstone disasm steam-26566308 0x142e965d0-0x142e96c5f (406 insns, 0 differences after normalising rip and call targets);xref:0x1403c8dd3,0x1434bdd9f;xref:steam-26566308 0x1403c8e13,0x1434c031f;pat:own disp32 scan of every section incl .data1 and .trace plus abs64 and rva32 scans, only other hit is the .pdata entry;pat:signature 1 hit in KB .xtls at 0x142e94040 (sigcheck OK) and 1 hit in steam .tls$ at 0x142e965d0, none in other sections",
+   "notes": "V11427 Core claim holds on both builds. KB: .pdata 0x142e94040-0x142e946cf, one ret at 0x142e946ce, xor eax,eax at 0x142e946bc (returns 0 with rax fully zero; both callers ignore it, so uint64_t is safe but the true width is unknown). Args: rcx->rsi tyre component, edx->ebx only ever tested as bl (bool); r8/r9 are written before any read, so 2 args. Rebuilds the compound list +0x9bd0 through 0x142e9e6c0 when stale, looks up +0x9c70 (stride 0x18, count +0x9c48; falls back to id 1 or 4, else id -1 and null ptrs), compares with current +0x9938/+0x9940/+0x9948; on a difference bl=1 calls 0x142e96390 and bl=0 stores +0x9938/+0x993c/+0x9940/+0x9948; then 0x142ea1d30, 0x142e9eda0(rsi+0x9c60, rsi+0x9c70, eax) when +0x9c70 != -1, wheel loops from +0x30 stride 0xde0 count +0x98d0, and 0x142ea2300(rsi, dl=1, r8w=0x101). Callers: 0x1403c8dd3 (xor edx,edx) in 0x1403c8cf0 and 0x1434bdd9f (mov dl,1) in 0x1434bdd60, both jmp on without reading eax; no rip-relative, abs64 or table references. Steam 26566308: pattern matches once in .tls$ at 0x142e965d0 = .pdata start (0x142e965d0-0x142e96c5f), code identical after normalisation (callees +0x2590, strings +0x2140 with the same text), callers 0x1403c8e13 (edx 0) and 0x1434c031f (dl 1), nothing else. WRONG in notes: 'when it differs from the current one ... it logs the PITLANE CHANGEOVER line'. PITLANE CHANGEOVER (%p = the component) is logged at entry (0x142e940ad) on every call when the PITSTOP_TYRES channel is enabled, before the lookup; the line logged in the differs branch (0x142e941f9) is 'MOX/Tyres: changeToNextCompound() new type %d is not the same as next type '%s' (from %d)' with r8d = old +0x9938, r9 = name of the found entry, stack arg = found id."
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "steam-bindings-verify",
+   "kind": "func",
+   "item": "Car_Tyre_ChangeToNextCompound",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142e94040-0x142e946cf (.pdata, 406 insns, log calls at 0x142e940be on entry and 0x142e94214 on the differ path);decomp:own capstone disasm steam-26566308 0x142e965d0-0x142e96c5f (0 differences after normalisation);xref:0x1403c8dd3,0x1434bdd9f;xref:steam-26566308 0x1403c8e13,0x1434c031f;pat:own disp32 scan of every section plus abs64 and rva32 scans, only other hit is the .pdata entry",
+   "notes": "V11430 Re-check of the row as rewritten after V11427. Every statement now matches my own disassembly: PITLANE CHANGEOVER logged on entry (0x142e940ad, channel PITSTOP_TYRES); lookup of +0x9c70 in +0x9bd0 stride 0x18 with the class 1/4 fallback (1 when the queued id < 3, else 4); MOX/Tyres line at 0x142e941f9 only on the differ path; bl=0 stores +0x9938/+0x993c/+0x9940/+0x9948, bl=1 calls 0x142e96390; then 0x142ea1d30, 0x142e9eda0 when +0x9c70 != -1, wheel loops +0x30 stride 0xde0 count +0x98d0, 0x142ea2300(rsi,1,0x101); returns 0 via xor eax,eax 0x142e946bc and one ret. Two arguments (rcx, edx as bl), 2 rel32 callers 0x1403c8dd3 (edx 0) and 0x1434bdd9f (dl 1) that ignore the result, no pointer references. Steam 26566308: sig 1 hit in .tls$ at 0x142e965d0 = .pdata start, 406 identical instructions, callers 0x1403c8e13 and 0x1434c031f. Only caveat, not an error: uint64_t is safe because rax is fully zeroed, but the true return width is not observable."
   }
  ],
  "proofs": [

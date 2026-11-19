@@ -9,7 +9,10 @@ use super::tracks::Tracks;
 use super::{GVDB, Pipeline};
 use crate::activation::db::{Registry, TrackHost, activate_with};
 use crate::activation::grid::grid_size;
-use crate::activation::place::{AiTeam, ai_teams, layer_worlds, slot_asset_group, slot_asset_root};
+use crate::activation::place::{
+    AiTeam, STOCK_AI, ai_teams, difficulty_stand_ins, layer_worlds, own_ai_folders, slot_asset_group,
+    slot_asset_root,
+};
 use crate::activation::ui::{Lists, plan_lists};
 use crate::addons::builtin::CORE_ID;
 use crate::asset::Kind;
@@ -123,7 +126,7 @@ impl Pipeline<'_, '_> {
         let mut edits = self.take_db_reports();
         edits.id_aliases = applied.id_aliases;
         edits.row_ids_unsaved = applied.row_ids_unsaved;
-        let recorded = self.record_rows(&db, &applied.added, &tracks, inputs, &mut edits);
+        let recorded = self.record_rows(&mut db, &applied.added, &tracks, inputs, &mut edits);
         let grid = grid_size(&db.db);
         let worlds = layer_worlds(&db.db);
         self.write_database(db, staged, &recorded.row_adders, inputs.room_asked)?;
@@ -373,7 +376,7 @@ impl Pipeline<'_, '_> {
     /// the driver picks name and the items they add to a career, and the AI teams they copy from another.
     fn record_rows(
         &mut self,
-        db: &Database,
+        db: &mut Database,
         added: &[Added],
         tracks: &TrackRows,
         inputs: &Inputs,
@@ -392,7 +395,24 @@ impl Pipeline<'_, '_> {
         }
         let row_adders = crate::stdlib::room::row_adders(copies.iter().map(|c| c.addon.as_str()), CORE_ID);
         built.row_ids = added_row_ids(&db.db, &copies);
-        let ai_teams = ai_teams(&db.db, copies.iter().map(|c| (c.from.as_str(), c.row.as_str())));
+        let ai_teams = ai_teams(
+            &db.db,
+            &db.shipped_db,
+            copies.iter().map(|c| (c.from.as_str(), c.row.as_str())),
+        );
+        let fitted = &inputs.tracks;
+        let row_codes: Vec<&str> = fitted
+            .kept
+            .iter()
+            .filter(|(_, _, o)| !fitted.recorded.contains(&o.addon))
+            .map(|(_, p, _)| p.track_code.as_str())
+            .collect();
+        let own_ai = own_ai_folders(&db.db, &db.shipped_db);
+        for (code, folder) in difficulty_stand_ins(&mut db.db, &own_ai, &row_codes) {
+            built.lines.push(format!(
+                "{code}: AI difficulty for {folder} stands in with the track's {STOCK_AI}"
+            ));
+        }
         for (addon, code, id) in &tracks.ids {
             built
                 .row_ids

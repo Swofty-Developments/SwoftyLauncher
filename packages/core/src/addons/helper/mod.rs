@@ -8,13 +8,13 @@ mod reads;
 mod tests;
 
 use std::collections::{BTreeSet, HashMap};
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::mpsc::{RecvTimeoutError, channel};
 use std::sync::{Arc, Mutex, MutexGuard, TryLockError};
-use std::time::Duration;
+use std::time::{Duration, Instant, SystemTime};
 
 use serde::de::DeserializeOwned;
 use serde_json::Value;
@@ -39,6 +39,7 @@ pub const LOG_FILE: &str = "helper.log";
 pub struct Timeouts {
     pub quick: Duration,
     pub long: Duration,
+    pub start: Duration,
 }
 
 impl Default for Timeouts {
@@ -46,7 +47,58 @@ impl Default for Timeouts {
         Self {
             quick: Duration::from_secs(5),
             long: Duration::from_secs(300),
+            start: Duration::from_secs(60),
         }
+    }
+}
+
+enum Fault {
+    Silent,
+    Broke(String),
+}
+
+impl From<String> for Fault {
+    fn from(e: String) -> Self {
+        Self::Broke(e)
+    }
+}
+
+impl Fault {
+    fn text(self, wait: Duration) -> String {
+        match self {
+            Self::Silent => format!("did not answer within {} s", wait.as_secs_f32()),
+            Self::Broke(e) => e,
+        }
+    }
+}
+
+struct StartLog(Option<std::fs::File>);
+
+impl StartLog {
+    fn create(path: &Path) -> Self {
+        Self(std::fs::File::create(path).ok())
+    }
+
+    fn stderr(&self) -> Stdio {
+        self.0
+            .as_ref()
+            .and_then(|f| f.try_clone().ok())
+            .map_or_else(Stdio::null, Stdio::from)
+    }
+
+    fn note(&self, text: &str) {
+        let Some(mut file) = self.0.as_ref() else {
+            return;
+        };
+        let secs = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .map_or(0, |d| d.as_secs() as i64);
+        writeln!(
+            file,
+            "{} launcher: {text}",
+            crate::diagnostics::send_logs::utc_stamp(secs)
+        )
+        .ok();
     }
 }
 
@@ -134,6 +186,15 @@ impl HelperAddon {
 
     pub fn running(&self) -> bool {
         matches!(*self.lock(), Run::Live(_))
+    }
+
+    /// Running and idle, answered without waiting for a call or a start in progress.
+    pub fn ready(&self) -> bool {
+        match self.run.try_lock() {
+            Ok(run) => matches!(*run, Run::Live(_)),
+            Err(TryLockError::Poisoned(e)) => matches!(*e.into_inner(), Run::Live(_)),
+            Err(TryLockError::WouldBlock) => false,
+        }
     }
 
     pub fn failure(&self) -> Option<String> {
@@ -328,6 +389,15 @@ impl HelperAddon {
         )
     }
 
+    fn still_starting(&self) -> String {
+        format!(
+            "was still starting after {} s: an antivirus may be scanning it. Allow {} in your antivirus, then \
+             press Restart",
+            self.timeouts.start.as_secs_f32(),
+            self.dir.display()
+        )
+    }
+
     fn start(&self, cx: &Cx) -> std::result::Result<Live, String> {
         let rel = self
             .spec
@@ -338,22 +408,32 @@ impl HelperAddon {
             std::io::ErrorKind::NotFound if self.dir.is_dir() => self.removed(rel),
             _ => format!("could not start {}: {e}", program.display()),
         })?;
-        let log = std::fs::File::create(cx.cache_dir.join(LOG_FILE)).map(Stdio::from);
+        let log = StartLog::create(&cx.cache_dir.join(LOG_FILE));
         let mut command = Command::new(&program);
         command
             .current_dir(&self.dir)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
-            .stderr(log.unwrap_or_else(|_| Stdio::null()));
+            .stderr(log.stderr());
         #[cfg(windows)]
         {
             use std::os::windows::process::CommandExt;
             command.creation_flags(0x0800_0000);
         }
-        let mut child = command.spawn().map_err(|e| match Block::of(&program, &e) {
-            Some(b) => format!("could not start: {}", b.text()),
-            None => format!("could not start {}: {e}", program.display()),
+        log.note(&format!("starting {rel}"));
+        let spawned = Instant::now();
+        let mut child = command.spawn().map_err(|e| {
+            log.note(&format!("could not start: {e}"));
+            match Block::of(&program, &e) {
+                Some(b) => format!("could not start: {}", b.text()),
+                None => format!("could not start {}: {e}", program.display()),
+            }
         })?;
+        let pid = child.id();
+        log.note(&format!(
+            "pid {pid} started in {} ms",
+            spawned.elapsed().as_millis()
+        ));
         let (stdin, stdout) = match (child.stdin.take(), child.stdout.take()) {
             (Some(i), Some(o)) => (i, o),
             _ => return Err("has no pipes".into()),
@@ -379,9 +459,48 @@ impl HelperAddon {
             next: 0,
             profile: cx.profile.clone(),
         };
+        let shook = self.handshake(&mut live, cx, &log, pid);
+        let after = spawned.elapsed().as_secs_f32();
+        match &shook {
+            Ok(()) => log.note(&format!("pid {pid} said hello after {after:.1} s")),
+            Err(e) => log.note(&format!("pid {pid} {e} ({after:.1} s after it started)")),
+        }
+        shook.map(|()| live)
+    }
+
+    fn handshake(
+        &self,
+        live: &mut Live,
+        cx: &Cx,
+        log: &StartLog,
+        pid: u32,
+    ) -> std::result::Result<(), String> {
         let hello = Call::Hello(hello(cx));
-        let welcome = self
-            .exchange(&mut live, cx, hello, self.timeouts.quick, None, None)?
+        let id = self.request(live, cx, hello)?;
+        let first = self.timeouts.quick.min(self.timeouts.start);
+        let answer = match self.answer(live, cx, id, first, None, None) {
+            Err(Fault::Silent) => {
+                log.note(&format!(
+                    "pid {pid} has not said hello after {} s, waiting up to {} s",
+                    first.as_secs_f32(),
+                    self.timeouts.start.as_secs_f32()
+                ));
+                self.answer(
+                    live,
+                    cx,
+                    id,
+                    self.timeouts.start.saturating_sub(first),
+                    None,
+                    None,
+                )
+            }
+            answer => answer,
+        };
+        let welcome = answer
+            .map_err(|e| match e {
+                Fault::Silent => self.still_starting(),
+                Fault::Broke(e) => e,
+            })?
             .map_err(|e| format!("refused hello: {e}"))?;
         let welcome: Welcome =
             serde_json::from_str(welcome.get()).map_err(|e| format!("sent a bad hello: {e}"))?;
@@ -391,7 +510,7 @@ impl HelperAddon {
                 welcome.api
             ));
         }
-        Ok(live)
+        Ok(())
     }
 
     fn exchange(
@@ -401,8 +520,14 @@ impl HelperAddon {
         call: Call,
         wait: Duration,
         progress: Option<&dyn Progress>,
-        mut asked: Option<&mut Vec<reads::Asked>>,
+        asked: Option<&mut Vec<reads::Asked>>,
     ) -> std::result::Result<std::result::Result<JsonResult, String>, String> {
+        let id = self.request(live, cx, call)?;
+        self.answer(live, cx, id, wait, progress, asked)
+            .map_err(|e| e.text(wait))
+    }
+
+    fn request(&self, live: &mut Live, cx: &Cx, call: Call) -> std::result::Result<u64, String> {
         if live.profile != *cx.profile && !matches!(call, Call::Hello(_)) {
             live.profile = cx.profile.clone();
             send(
@@ -416,18 +541,28 @@ impl HelperAddon {
         let id = live.next;
         live.next += 1;
         send(live, &Request { id: Some(id), call })?;
+        Ok(id)
+    }
+
+    fn answer(
+        &self,
+        live: &mut Live,
+        cx: &Cx,
+        id: u64,
+        wait: Duration,
+        progress: Option<&dyn Progress>,
+        mut asked: Option<&mut Vec<reads::Asked>>,
+    ) -> std::result::Result<std::result::Result<JsonResult, String>, Fault> {
         loop {
             let line = match live.lines.recv_timeout(wait) {
                 Ok(line) => line,
-                Err(RecvTimeoutError::Timeout) => {
-                    return Err(format!("did not answer within {} s", wait.as_secs_f32()));
-                }
+                Err(RecvTimeoutError::Timeout) => return Err(Fault::Silent),
                 Err(RecvTimeoutError::Disconnected) => {
                     let status = live
                         .child
                         .wait()
                         .map_or_else(|e| e.to_string(), |s| s.to_string());
-                    return Err(format!("stopped ({status})"));
+                    return Err(Fault::Broke(format!("stopped ({status})")));
                 }
             };
             if line.trim().is_empty() {
@@ -435,7 +570,7 @@ impl HelperAddon {
             }
             if let Some((got, range)) = reply_range(&line) {
                 if got != id {
-                    return Err("answered a request it was not sent".into());
+                    return Err(Fault::Broke("answered a request it was not sent".into()));
                 }
                 return Ok(Ok(JsonResult { line, range }));
             }
@@ -448,7 +583,7 @@ impl HelperAddon {
                     return Ok(Ok(JsonResult { line, range }));
                 }
                 Incoming::Reply(Reply::Err { id: got, error }) if got == id => return Ok(Err(error)),
-                Incoming::Reply(_) => return Err("answered a request it was not sent".into()),
+                Incoming::Reply(_) => return Err(Fault::Broke("answered a request it was not sent".into())),
                 Incoming::Call(Request {
                     id: None,
                     call: HostCall::Progress { done, text },
@@ -486,7 +621,7 @@ impl HelperAddon {
                     send(live, &reply)?;
                 }
                 Incoming::Call(Request { id: None, .. }) => {
-                    return Err("sent a host call without an id".into());
+                    return Err(Fault::Broke("sent a host call without an id".into()));
                 }
             }
         }

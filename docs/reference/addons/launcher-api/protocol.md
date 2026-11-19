@@ -149,10 +149,12 @@ $DATA/cache/addons/<id>/helper.log      stderr, replaced each time the plugin st
 ## Time limits
 
 ```text
-hello, view, tick, summary          5 seconds
+hello                               60 seconds
+view, tick, summary                 5 seconds
 event, import, build, command       300 seconds
 ```
 
+- A plugin that has not answered `hello` within 60 seconds of starting is stopped and fails with `<name> was still starting after 60 s`, and `helper.log` records its start time, process id and time to `hello`.
 - Each message your plugin sends resets the wait, except `invalidate`.
 - Until you return an effect, the control that fired the event shows busy.
 
@@ -164,6 +166,7 @@ A crash, a hang or malformed output stops the plugin without taking the launcher
 Example Launcher Addon has no helper for macos
 Example Launcher Addon could not start /home/you/.local/share/swofty/addons/example.launcher-addon/bin/example-helper: No such file or directory (os error 2)
 Example Launcher Addon speaks launcher API 2; this launcher speaks 1
+Example Launcher Addon was still starting after 60 s: an antivirus may be scanning it. Allow /home/you/.local/share/swofty/addons/example.launcher-addon in your antivirus, then press Restart
 Example Launcher Addon did not answer within 5 s
 Example Launcher Addon stopped (exit status: 3)
 Example Launcher Addon sent a bad message: expected value at line 1 column 1
@@ -175,7 +178,7 @@ Example Launcher Addon sent a host call without an id
 That covers a plugin that:
 
 - does not start, or has no `program` for this OS;
-- does not answer `hello`, `view`, `tick` or `summary` within 5 seconds, or any other call within 300 seconds;
+- does not answer `hello` within 60 seconds, `view`, `tick` or `summary` within 5 seconds, or any other call within 300 seconds;
 - exits or closes stdout;
 - writes a line that is not a message, replies to an `id` it was not sent, or returns a result of the wrong shape.
 

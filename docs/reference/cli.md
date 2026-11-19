@@ -116,6 +116,7 @@ See [Restoring the game](/using/profiles-and-restoring).
 | `swofty addons enable <id>` | Enable an addon |
 | `swofty addons disable <id> [--yes]` | Disable an addon; SwoftyMod cannot be disabled |
 | `swofty addons remove <id> [--yes]` | Delete an installed addon and take it out of every profile; built-in addons cannot be removed |
+| `swofty addons verify [<id>]` | Read every file of the installed addons, or of one, against the sizes and CRC-32s its install wrote, list the damaged files and exit with status 1 if any would stop **Play** |
 
 For an addon whose manifest sets [`saves.affects`](/reference/addons/manifest#saves), `disable` (when the addon is on) and `remove` print `Warning: <name> (<id>) has affected your saves. Careers you played with it may not load without it.`, then the addon's message, and ask `[y/N]`. `--yes` (`-y`) skips the question. When stdin is not a terminal, the command needs `--yes`; without it, nothing changes and the command exits with status 1.
 

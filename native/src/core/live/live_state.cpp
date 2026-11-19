@@ -4,6 +4,7 @@
 #include "core/live/live_state.hpp"
 #include "core/live/live_telemetry_fill.hpp"
 #include "core/live/live_turns.hpp"
+#include "core/live/live_tyre_images.hpp"
 #include "core/live/race_control.hpp"
 #include "core/runtime/build.hpp"
 #include "core/runtime/runtime.hpp"
@@ -371,6 +372,20 @@ int live_team_badge_texture(uint32_t vehicle, char *path, uint32_t cap)
     return g_live->read_team_badge_texture(vehicle, path, cap) ? SWOFTY_ASSET_OK : SWOFTY_ASSET_UNAVAILABLE;
 }
 
+int live_tyre_icon_texture(uint32_t vehicle, char *path, uint32_t cap)
+{
+    if (!path || cap < 2 || vehicle >= SWOFTY_LIVE_MAX_CARS)
+        return SWOFTY_ASSET_INVALID;
+    path[0] = 0;
+    SwoftyLiveCar car{};
+    const int status = live_car(vehicle, &car);
+    if (status != SWOFTY_ASSET_OK)
+        return status;
+    if (!(car.have & SWOFTY_LIVE_HAVE_TYRE))
+        return SWOFTY_ASSET_UNAVAILABLE;
+    return lv::tyre_images::reference(runtime::db_table(), car.tyre_visual, path, cap);
+}
+
 int live_seq(uint64_t *frame)
 {
     if (!g_on)
@@ -384,7 +399,7 @@ int live_seq(uint64_t *frame)
 
 const SwoftyLive table = {SWOFTY_LIVE_VERSION, live_available,   live_session,    live_car, live_subject,
                           live_turn,           live_track_turns, live_team_badge, live_seq, live_driver_name,
-                          live_team_badge_texture, badge_images::api};
+                          live_team_badge_texture, badge_images::api, live_tyre_icon_texture};
 
 }
 

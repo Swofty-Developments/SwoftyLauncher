@@ -84,8 +84,15 @@ pub enum Block {
     Stats(Vec<Fact>),
     Facts(Vec<Fact>),
     Label(String),
-    Text { text: String, tone: Tone },
-    Names { label: String, items: Vec<String> },
+    Text {
+        text: String,
+        #[serde(default)]
+        tone: Tone,
+    },
+    Names {
+        label: String,
+        items: Vec<String>,
+    },
     Table(Table),
     Buttons(Vec<Button>),
     Hero(Hero),

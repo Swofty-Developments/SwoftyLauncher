@@ -296,3 +296,22 @@ fn a_session_launcher_windows_refuses_with_740_ends_the_wait_at_once() {
     assert!(!store.root.join(steam_client::STAGE_FILE).exists());
     std::fs::remove_dir_all(&root).ok();
 }
+
+#[cfg(unix)]
+#[test]
+fn a_hand_off_whose_program_is_not_found_names_the_setting_and_the_quotes() {
+    let status = std::process::Command::new("sh")
+        .args(["-c", "/nowhere/Proton - Experimental/proton run x"])
+        .stderr(std::process::Stdio::null())
+        .status()
+        .unwrap();
+    let hint = handoff_hint(status.code());
+    assert!(hint.contains("launch.ea_launch_command"), "{hint}");
+    assert!(
+        hint.contains("put quotes around a path that has spaces"),
+        "{hint}"
+    );
+    assert!(handoff_hint(Some(126)).contains("could not run"));
+    assert_eq!(handoff_hint(Some(1)), "");
+    assert_eq!(handoff_hint(None), "");
+}

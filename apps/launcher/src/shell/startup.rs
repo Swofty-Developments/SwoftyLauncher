@@ -95,7 +95,10 @@ impl Shell {
         let mp = Self::start_account(&store, cx);
         Self::watch_multiplayer(window, cx);
         let root = store.root.clone();
-        let ads = crate::features::ads::Ads::start(window, &root);
+        let mut ads = crate::features::ads::Ads::start(window, &root);
+        if let Some(note) = ads.take_notice() {
+            window.notify(note, cx);
+        }
         let window_moved = cx.observe_window_bounds(window, |this, _, _| this.ads.moved());
         let mut shell = Self {
             library,

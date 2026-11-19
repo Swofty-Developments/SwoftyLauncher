@@ -125,6 +125,20 @@ int main()
                tl::Action::follow,
            "the virtual host list follows the box it holds");
 
+    // A LAN session (online_custom, mode unknown) takes its box from the host, never from a press.
+    expect(tl::follows_list("unknown") && tl::follows_list("split_screen"), "a LAN session and split screen follow their list");
+    expect(!tl::follows_list("grand_prix") && !tl::follows_list("time_trial") && !tl::follows_list("driver_career") &&
+               !tl::follows_list("my_team"),
+           "a Grand Prix, a Time Trial and a career read their list their own way");
+    f = tl::follow_grand_prix(tl::loaded_box(boxes, "sw_f1_2015", "", HOST, VHOST, ""), SW15, "stock content",
+                              "online_custom session");
+    expect(f.action == tl::Action::follow && f.box == "sw_f1_2015" &&
+               f.line == "[apply] online_custom session content follows the loaded list: " + std::string(SW15) +
+                             " (box sw_f1_2015; active was stock content)",
+           "a LAN session on a box's list makes its package the active content");
+    expect(tl::follow_grand_prix(gp, SW15, "career abc", "online_custom session").action == tl::Action::keep,
+           "a LAN session never replaces a career's activation");
+
     // The lap's team label.
     tl::TeamPick p = tl::team_pick("sw15_mercedes", true, team(596), true, team(596), "");
     expect(p.label == "sw15_mercedes" && p.from == tl::TeamFrom::selection && !p.stale, "the selection stands when the lap stats name the same team");

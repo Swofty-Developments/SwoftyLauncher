@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 
 use crate::game_folder::journal::Journal;
-use crate::game_folder::recovery::{Restored, SESSION_HELD, SessionLock};
+use crate::game_folder::recovery::Restored;
 use crate::install::{Game, Source};
 use crate::{Error, Result, read_json, with_retry, write_json};
 
@@ -82,9 +82,12 @@ pub struct Reset {
 /// verifying the game files puts back the rest. A copy no store can verify
 /// keeps its record and the error is returned.
 pub fn reset(data: &Path, game: &Game, other_mods: bool) -> Result<Reset> {
-    let Some(lock) = SessionLock::try_acquire(data)? else {
-        return Err(Error::Other(SESSION_HELD.into()));
-    };
+    let running = || crate::platform::process::game_running_in(&game.dir);
+    let lock = crate::game_folder::recovery::wait_for_lock(
+        data,
+        crate::game_folder::recovery::Wait::NONE,
+        &running,
+    )?;
     let first = match crate::game_folder::recovery::restore_locked(&lock, data, game) {
         Err(e) if Source::detect(&game.dir) == Source::Unknown => return Err(e),
         r => r,
@@ -134,12 +137,13 @@ pub fn reset(data: &Path, game: &Game, other_mods: bool) -> Result<Reset> {
 }
 
 /// Whether the launch checks this copy's game files against its store's own
-/// list: a Steam copy whose depot manifests can be read. Such a copy skips
-/// the verify when the player says no other mods are in the folder.
+/// list: a Steam copy whose depot manifests can be read with their file
+/// names. Such a copy skips the verify when the player says no other mods
+/// are in the folder.
 pub fn store_checks(game_dir: &Path) -> bool {
     crate::platform::steam::find_game()
         .filter(|i| crate::game_folder::copies::same_dir(&i.dir, game_dir))
-        .is_some_and(|i| crate::game_folder::stock::Depots::load(&i).is_ok())
+        .is_some_and(|i| crate::game_folder::stock::Depots::load(&i).is_ok_and(|d| d.names_known()))
 }
 
 /// The first launch after the setup builds every addon again and backs up the
@@ -185,6 +189,7 @@ pub fn finish(data: &Path) -> Result<Setup> {
 mod tests {
     use super::*;
     use crate::game_folder::baseline::Identity;
+    use crate::game_folder::recovery::SessionLock;
 
     fn temp(name: &str) -> PathBuf {
         let d = std::env::temp_dir().join(format!("swofty-setup-{name}-{}", std::process::id()));

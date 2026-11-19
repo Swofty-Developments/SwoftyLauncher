@@ -184,7 +184,8 @@ impl Browser {
     ) {
         let (b, needs) = host.split();
         let id = addon.id.as_str();
-        let updating = installed_version(needs.library, id).is_some();
+        let from = installed_version(needs.library, id);
+        let updating = from.is_some();
         b.failed.remove(id);
         b.refused.remove(id);
         let job = Job::new(version.size);
@@ -208,6 +209,8 @@ impl Browser {
                 version.url
             ),
         );
+        let pending =
+            catalog::pending::Pending::begin(needs.store, &addon.id, &version.version, from.as_ref());
         let store = needs.store.clone();
         let catalog_now = b.addons.clone();
         let started = Instant::now();
@@ -235,6 +238,7 @@ impl Browser {
                     in_batch: false,
                 };
                 let turn_on = b.took_install(&needs.store.root, finished, result, &tracked);
+                pending.end();
                 host.changed(BrowserChange::Installed, cx);
                 if let Some((id, note)) = turn_on {
                     host.changed(BrowserChange::TurnOn { id, note }, cx);

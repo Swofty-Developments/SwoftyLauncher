@@ -15,9 +15,10 @@
 #include <fstream>
 #include <iterator>
 #include <filesystem>
+#include "tyre_image_service_tests.hpp"
 
 using Microsoft::WRL::ComPtr;
-namespace d3d12hooks {
+namespace render::d3d12 {
 BarrierObserverFn observer;
 ExecFn exec;
 ResetFn reset;
@@ -61,6 +62,8 @@ int main(int argc, char **argv)
 {
     setvbuf(stdout, nullptr, _IONBF, 0);
     using namespace badge_images;
+    if (argc == 2 && std::strcmp(argv[1], "--tyres") == 0)
+        return tyre_image_service_tests::run(badge_images::api());
     assert(data::reference("eaid://ui_package/art/textures/render_badge_ePreLoaded 7.image") == "eaid://ui_package/art/textures/render_badge_ePreLoaded 7");
     assert(!data::reference("render_badge_ePreLoaded 7wrong"));
     assert(!data::reference("render_badge_eNetworkReplicated 16383"));
@@ -119,7 +122,7 @@ int main(int argc, char **argv)
             assert(SUCCEEDED(texture->SetPrivateData(guid, unsigned(narrow.size()), narrow.data())));
         } else {
             assert(SUCCEEDED(texture->SetName(name)));
-            if (!real) d3d12hooks::setname(texture.Get(), name);
+            if (!real) render::d3d12::setname(texture.Get(), name);
         }
         D3D12_DESCRIPTOR_HEAP_DESC hd{}; hd.NumDescriptors = 1; hd.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
         ComPtr<ID3D12DescriptorHeap> rtv;
@@ -130,14 +133,14 @@ int main(int argc, char **argv)
         D3D12_RESOURCE_BARRIER step{};
         step.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
         step.Transition = {texture.Get(), subresource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE};
-        if (!real) d3d12hooks::observer(list.Get(), 1, &step);
+        if (!real) render::d3d12::observer(list.Get(), 1, &step);
         list->ResourceBarrier(1, &step);
         assert(SUCCEEDED(list->Close()));
         if (retire) api->clear();
         if (discard) {
             assert(SUCCEEDED(allocator->Reset()));
             assert(SUCCEEDED(list->Reset(allocator.Get(), nullptr)));
-            if (!real) d3d12hooks::reset(list.Get());
+            if (!real) render::d3d12::reset(list.Get());
             assert(SUCCEEDED(list->Close()));
         }
         uint8_t pixels[data::PIXELS]{};
@@ -148,9 +151,9 @@ int main(int argc, char **argv)
         const auto before_submit=api->image(reference.c_str(), pixels, sizeof pixels, &w, &h, &image_rev);
         assert(before_submit == SWOFTY_ASSET_UNAVAILABLE || (reference.ends_with("default.tga") && before_submit == SWOFTY_ASSET_LATE));
         ID3D12CommandList *lists[] = {list.Get()};
-        d3d12hooks::ExecPlan plan;
-        if (!real) d3d12hooks::exec(queue.Get(), 1, lists, plan);
-        d3d12hooks::run_plan(plan, queue.Get(), 1, lists, [](auto *q, UINT n, auto *const *ls) { q->ExecuteCommandLists(n, ls); });
+        render::d3d12::ExecPlan plan;
+        if (!real) render::d3d12::exec(queue.Get(), 1, lists, plan);
+        render::d3d12::run_plan(plan, queue.Get(), 1, lists, [](auto *q, UINT n, auto *const *ls) { q->ExecuteCommandLists(n, ls); });
         assert(SUCCEEDED(queue->Signal(completed.Get(), ++submission)));
         const auto deadline = GetTickCount64() + 5000;
         while (completed->GetCompletedValue() < submission && GetTickCount64() < deadline) Sleep(1);
@@ -178,7 +181,7 @@ int main(int argc, char **argv)
             assert(SUCCEEDED(device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &desc,
                 D3D12_RESOURCE_STATE_RENDER_TARGET, nullptr, IID_PPV_ARGS(&replacement))));
             assert(SUCCEEDED(replacement->SetName(name)));
-            d3d12hooks::setname(replacement.Get(), name);
+            render::d3d12::setname(replacement.Get(), name);
             assert(api->image(reference.c_str(), pixels, sizeof pixels, &w, &h, &image_rev) == SWOFTY_ASSET_UNAVAILABLE);
             std::puts("PASS: completed resource-owned badge survives session unload; replacement cannot reuse old pixels");
         }
@@ -201,10 +204,10 @@ int main(int argc, char **argv)
         D3D12_HEAP_PROPERTIES heap{}; heap.Type = D3D12_HEAP_TYPE_DEFAULT;
         assert(SUCCEEDED(device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_COPY_DEST,
                                                         nullptr, IID_PPV_ARGS(&texture))));
-        for (unsigned i = 0; i < 40; ++i) d3d12hooks::setname(texture.Get(), L"ingredient_badge.image");
+        for (unsigned i = 0; i < 40; ++i) render::d3d12::setname(texture.Get(), L"ingredient_badge.image");
         const wchar_t *name = L"eaid://ui_package/art/textures/render_badge_eUserDefined 17.image";
         assert(SUCCEEDED(texture->SetName(name)));
-        d3d12hooks::setname(texture.Get(), name);
+        render::d3d12::setname(texture.Get(), name);
         assert(std::any_of(traces.begin(), traces.end(), [](const auto &s) {
             return s.find("eUserDefined 17.image") != std::string::npos && s.find("recognised=yes") != std::string::npos;
         }));
@@ -215,7 +218,7 @@ int main(int argc, char **argv)
         D3D12_RESOURCE_BARRIER step{};
         step.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
         step.Transition = {texture.Get(), 0, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE};
-        d3d12hooks::observer(list.Get(), 1, &step);
+        render::d3d12::observer(list.Get(), 1, &step);
         list->ResourceBarrier(1, &step);
         assert(SUCCEEDED(list->Close()));
         uint8_t pixels[data::PIXELS]{}; uint32_t w = 0, h = 0; uint64_t rev = 0;
@@ -240,7 +243,7 @@ int main(int argc, char **argv)
         assert(SUCCEEDED(device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&target))));
         const wchar_t *name = L"eaid://ui_package/art/textures/render_badge_eUserDefined 1.image";
         assert(SUCCEEDED(target->SetName(name)));
-        if (!real) d3d12hooks::setname(target.Get(), name);
+        if (!real) render::d3d12::setname(target.Get(), name);
         const unsigned pitch = (width * 4 + 255) & ~255u;
         const UINT64 offset = 512, bytes = offset + UINT64(pitch) * height;
         D3D12_RESOURCE_DESC buffer{}; buffer.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER; buffer.Width = bytes;
@@ -265,33 +268,33 @@ int main(int argc, char **argv)
             assert(SUCCEEDED(device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&intermediate))));
             D3D12_TEXTURE_COPY_LOCATION temporary = dst; temporary.pResource = intermediate.Get();
             list->CopyTextureRegion(&temporary, 0, 0, 0, &src, nullptr);
-            if (!real) d3d12hooks::texture_copy(list.Get(), &temporary, 0, 0, 0, &src, nullptr);
+            if (!real) render::d3d12::texture_copy(list.Get(), &temporary, 0, 0, 0, &src, nullptr);
             D3D12_RESOURCE_BARRIER step{}; step.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
             step.Transition = {intermediate.Get(), 0, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COPY_SOURCE};
-            if (!real) d3d12hooks::observer(list.Get(), 1, &step);
+            if (!real) render::d3d12::observer(list.Get(), 1, &step);
             list->ResourceBarrier(1, &step);
             list->CopyResource(target.Get(), intermediate.Get());
             src = temporary;
-            if (!real) d3d12hooks::texture_copy(list.Get(), &dst, 0, 0, 0, &src, nullptr);
+            if (!real) render::d3d12::texture_copy(list.Get(), &dst, 0, 0, 0, &src, nullptr);
         } else {
             // No ResourceBarrier for the named target: this reproduces the
             // real game's missing-barrier path using implicit promotion.
             list->CopyTextureRegion(&dst, 0, 0, 0, &src, nullptr);
-            if (!real) d3d12hooks::texture_copy(list.Get(), &dst, 0, 0, 0, &src, nullptr);
+            if (!real) render::d3d12::texture_copy(list.Get(), &dst, 0, 0, 0, &src, nullptr);
         }
         assert(SUCCEEDED(list->Close()));
         if (retire) api->clear();
         if (discard) {
             assert(SUCCEEDED(allocator->Reset())); assert(SUCCEEDED(list->Reset(allocator.Get(), nullptr)));
-            if (!real) d3d12hooks::reset(list.Get());
+            if (!real) render::d3d12::reset(list.Get());
             assert(SUCCEEDED(list->Close()));
         }
         uint8_t pixels[data::PIXELS]{}; uint32_t w = 0, h = 0; uint64_t rev = 0;
         constexpr const char *reference = "eaid://ui_package/art/textures/render_badge_eUserDefined 1";
         assert(api->image(reference, pixels, sizeof pixels, &w, &h, &rev) == SWOFTY_ASSET_UNAVAILABLE);
-        ID3D12CommandList *lists[] = {list.Get()}; d3d12hooks::ExecPlan plan;
-        if (!real) d3d12hooks::exec(upload_queue.Get(), 1, lists, plan);
-        d3d12hooks::run_plan(plan, upload_queue.Get(), 1, lists, [](auto *q, UINT n, auto *const *ls) { q->ExecuteCommandLists(n, ls); });
+        ID3D12CommandList *lists[] = {list.Get()}; render::d3d12::ExecPlan plan;
+        if (!real) render::d3d12::exec(upload_queue.Get(), 1, lists, plan);
+        render::d3d12::run_plan(plan, upload_queue.Get(), 1, lists, [](auto *q, UINT n, auto *const *ls) { q->ExecuteCommandLists(n, ls); });
         assert(SUCCEEDED(upload_queue->Signal(completed.Get(), ++submission)));
         const auto deadline = GetTickCount64() + 5000;
         while (completed->GetCompletedValue() < submission && GetTickCount64() < deadline) Sleep(1);

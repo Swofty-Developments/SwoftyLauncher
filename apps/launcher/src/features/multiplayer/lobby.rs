@@ -157,7 +157,7 @@ impl Shell {
         p: Palette,
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let status = RoomStatus::of(room, self.rooms.lobby.digest.as_deref());
+        let status = RoomStatus::of(room, &self.room_enabled_addons(), self.rooms.lobby.print.as_ref());
         let code = room.code.clone();
         let names = card_addons(room);
         h_flex()

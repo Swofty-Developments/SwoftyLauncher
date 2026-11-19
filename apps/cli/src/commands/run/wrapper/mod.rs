@@ -269,28 +269,42 @@ pub(crate) struct Session<'a> {
     pub(crate) _lock: SessionLock,
 }
 
+/// What the wrapper says once the profile's files are back, which is not the
+/// whole game folder while offline play's files stayed locked.
+pub(super) fn rolled_back(offline_left: bool) -> &'static str {
+    if offline_left {
+        "rolled the profile's game files back, but not the offline play files above"
+    } else {
+        "rolled the profile's game files back"
+    }
+}
+
 impl Drop for Session<'_> {
     fn drop(&mut self) {
-        match swofty_core::offline::restore_pending(&self.store.root, &self.game.dir) {
+        let offline_left = match swofty_core::offline::restore_pending(&self.store.root, &self.game.dir) {
             Ok(Some(notes)) => {
                 for note in notes {
                     info(&format!("offline play: {note}"));
                 }
                 info("offline play: the game folder is back to vanilla");
+                false
             }
-            Ok(None) => {}
-            Err(e) => info(&format!(
-                "offline play restore failed{}, run swofty restore: {e:#}",
-                still_running(&self.game.dir)
-            )),
-        }
+            Ok(None) => false,
+            Err(e) => {
+                info(&format!(
+                    "offline play restore failed{}; the next swofty run or launcher start retries it, or run swofty restore: {e:#}",
+                    still_running(&self.game.dir)
+                ));
+                true
+            }
+        };
         let inst = Installer::new(&self.store.root, self.game);
         let rolled_back = swofty_core::diagnostics::phases::time("rollback.total", || inst.roll_back(false));
         crate::commands::build::print_phases();
         match rolled_back {
             Ok(done) => {
                 if !done.is_empty() {
-                    info("rolled the profile's game files back");
+                    info(self::rolled_back(offline_left));
                 }
                 for d in done.iter().flat_map(|r| &r.drift) {
                     info(&format!("rollback: {d}"));

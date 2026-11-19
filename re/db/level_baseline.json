@@ -3158,7 +3158,6 @@
   "func:Sess_Get_CarDriverName": "V3710",
   "func:Sess_Get_CurrentContentSetName": "V9338",
   "func:Sess_Get_VehicleTrackFactor": "V7592",
-  "func:Sess_HumanController_Update": "V4059",
   "func:Sess_InGameRace_OnStateExit": "V2709",
   "func:Sess_InGameRace_Update": "V2710",
   "func:Sess_InGame_OnStateExitHideHud": "V2702",
