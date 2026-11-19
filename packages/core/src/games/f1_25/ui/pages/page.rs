@@ -265,6 +265,10 @@ pub(super) fn bind_label(n: &mut Node, path: &str) -> Result<()> {
     Ok(())
 }
 
+pub(super) fn vm_page_bind(scr: &mut Node) -> Result<()> {
+    set_prop(scr, "allowVMBinding", prop(boolv(true), None))
+}
+
 pub(super) fn vm_page(scr: &mut Node, e: &Entry) -> Result<()> {
     let sname = scr.name().to_owned();
     set_prop(scr, "allowVMBinding", prop(boolv(true), None))?;

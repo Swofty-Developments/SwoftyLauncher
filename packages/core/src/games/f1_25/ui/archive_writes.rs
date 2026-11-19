@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 
 use swofty_formats::pkg::Node;
 
-use super::addon_screens::{Routing, Targets};
+use super::addon_screens::{Resume, Routing, Targets};
 use super::archives::{ArchiveWriter, read_frag, write_archive, write_erp};
 use super::menu_rows::{career_row, customisation_built, main_menu_rows};
 use super::pages::{ADJUST_TOOLTIP, Screens};
@@ -42,6 +42,7 @@ pub(super) fn write_persistent(
     routing: &Routing,
     targets: &Targets,
     setups: &[patch::SetupRoutes],
+    resume: Option<&Resume>,
     mfd: bool,
     archives: &ArchiveWriter,
 ) -> Result<Persistent> {
@@ -67,6 +68,10 @@ pub(super) fn write_persistent(
                     &f1_world,
                 )?;
                 let b = patch::setup_routes(&b, setups, &mut placed.borrow_mut())?;
+                let b = match resume {
+                    Some(r) => patch::resume_routes(&b, &r.routes, &mut placed.borrow_mut().routes)?,
+                    None => b,
+                };
                 *routes_out.borrow_mut() = b.clone();
                 Ok(b)
             }),
@@ -170,12 +175,28 @@ pub(super) fn check_setup_routes(setups: &[patch::SetupRoutes], placed: &patch::
     Ok(())
 }
 
+/// Refuses a resume list whose entry route found no stock route group to go into.
+pub(super) fn check_resume_routes(resume: Option<&Resume>, placed: &patch::Placed) -> Result<()> {
+    if resume.is_none() {
+        return Ok(());
+    }
+    let ours = |r: &&String| r.ends_with(&format!(".{}", crate::ui::pages::RESUME_ROUTE));
+    if placed.routes.iter().filter(ours).count() == 0 {
+        return Err(Error::Other(format!(
+            "the Resume Career list: the game's routes have none of {} for its entry route",
+            patch::ENTRY_GROUPS.join(", ")
+        )));
+    }
+    Ok(())
+}
+
 /// What the route check finds wrong in the routes and flows persistent.erp now has.
 pub(super) fn route_problems(
     p: &Persistent,
     routing: &Routing,
     targets: &Targets,
     setups: &[patch::SetupRoutes],
+    resume: Option<&Resume>,
 ) -> Result<Vec<String>> {
     let registered: BTreeMap<String, String> = routing
         .listed
@@ -186,6 +207,15 @@ pub(super) fn route_problems(
         .iter()
         .flat_map(|s| [s.back.clone(), s.next.clone()])
         .chain(p.placed.screens.iter().cloned())
+        .chain(resume.iter().flat_map(|_| {
+            [
+                "fe_career",
+                "fe_career_dlc_select",
+                patch::RESUME_CONTINUE_SCREEN,
+                "career_continue_my_team",
+            ]
+            .map(str::to_owned)
+        }))
         .collect();
     let mut route_files: Vec<&[u8]> = vec![&p.routes, &p.game_routes];
     if !p.wizard_routes.is_empty() {

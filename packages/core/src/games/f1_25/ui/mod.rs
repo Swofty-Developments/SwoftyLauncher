@@ -34,11 +34,14 @@ mod menu_rows;
 mod picker_rows;
 mod toggles;
 
-use addon_screens::{Routing, Targets, career_setups, options_pages, screen_problems, ui_state};
+use addon_screens::{
+    Routing, Targets, career_setups, options_pages, resume_screen, screen_problems, ui_state,
+};
 pub use addons_page::{MfdRow, mfd_page_rows, mfd_rows};
 use archive_writes::{
-    check_setup_routes, register, route_problems, write_databases, write_flags, write_flow_persistent,
-    write_frontend, write_leaderboard, write_mfd_templates, write_persistent, write_playercard,
+    check_resume_routes, check_setup_routes, register, route_problems, write_databases, write_flags,
+    write_flow_persistent, write_frontend, write_leaderboard, write_mfd_templates, write_persistent,
+    write_playercard,
 };
 pub use archives::ArchiveWriter;
 use archives::read_frag;
@@ -138,9 +141,10 @@ pub fn build(
     let mut built = pages::build_all(&src, &TILES, &flow)?;
     let generated = options_pages(settings, &src, &flow, &mut built)?;
     let (setups, setup_lines) = career_setups(input, &src, &flow, &mut built)?;
+    let resume = resume_screen(settings, input, &src, &mut built)?;
     let routing = Routing::of(settings, &built, &generated, &setups);
     let mut problems = screen_problems(&built)?;
-    let targets = Targets::of(&flow, &setups);
+    let targets = Targets::of(&flow, &setups, resume.as_ref());
     let mfd_rows = mfd_rows(settings);
     let state = ui_state(&flow, &mfd_rows)?;
     let popup = Popup::for_version(env!("CARGO_PKG_VERSION"));
@@ -153,11 +157,19 @@ pub fn build(
         &routing,
         &targets,
         &setups,
+        resume.as_ref(),
         !mfd_rows.is_empty(),
         archives,
     )?;
     check_setup_routes(&setups, &persistent.placed)?;
-    problems.extend(route_problems(&persistent, &routing, &targets, &setups)?);
+    check_resume_routes(resume.as_ref(), &persistent.placed)?;
+    problems.extend(route_problems(
+        &persistent,
+        &routing,
+        &targets,
+        &setups,
+        resume.as_ref(),
+    )?);
     if !problems.is_empty() {
         return Err(Error::Other(format!(
             "ADDON SETTINGS failed its checks:\n  {}",
@@ -176,6 +188,9 @@ pub fn build(
         .lines
         .push("ui: the player card strip hides while the main menu is up".to_owned());
     build.lines.extend(setup_lines);
+    if let Some(r) = &resume {
+        build.lines.push(r.line.clone());
+    }
     build.lines.extend(frontend.lines);
     build.warnings.extend(frontend.warnings);
     write_flags(out, &mut build, persistent, frontend.rows_built)?;

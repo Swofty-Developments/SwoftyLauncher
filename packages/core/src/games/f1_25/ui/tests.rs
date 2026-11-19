@@ -1012,6 +1012,190 @@ fn a_hub_tab_page_builds_within_the_loader_rules() {
     std::fs::remove_dir_all(&out).ok();
 }
 
+fn resume_rows() -> Vec<crate::stdlib::careers::ResumeRow> {
+    use crate::stdlib::careers::ResumeRow;
+    let row = |index: usize, mode: &str, driver: &str, severity: &str, status: &str| ResumeRow {
+        index,
+        mode: mode.into(),
+        key: format!("slot{index}"),
+        ready: severity == "ready",
+        severity: severity.into(),
+        status: status.into(),
+        badge: if mode == "my_team" {
+            "My Team"
+        } else {
+            "Driver Career"
+        }
+        .into(),
+        driver: driver.into(),
+        team: "Williams Renault".into(),
+        colour: Some(0x00ff_8800),
+        season: Some(2),
+        race: Some(4),
+        played: Some(1_795_093_120),
+    };
+    vec![
+        row(0, "driver", "Nigel Mansell", "ready", "Ready"),
+        row(1, "my_team", "Team Save", "missing", "Missing: F1 1990"),
+        row(
+            2,
+            "driver",
+            "Ayrton Senna",
+            "version",
+            "Made with another version of F1 1990",
+        ),
+    ]
+}
+
+#[test]
+fn the_resume_list_screen_has_a_row_per_career_that_raises_its_index() {
+    let rows = resume_rows();
+    let (screen, bytes) = {
+        let Some(dir) = std::env::var_os("SWOFTY_STOCK_DATA") else {
+            eprintln!("SWOFTY_STOCK_DATA is not set; skipping");
+            return;
+        };
+        let _ = dir;
+        let input = stock_input();
+        let flow_options = input(&ui_file("flow_options.erp"));
+        let flow_frontend = input(&ui_file("flow_frontend.erp"));
+        let src = Sources::parse(
+            &read_frag(&flow_options, CONTAINER, 1).unwrap(),
+            &read_frag(&flow_frontend, FE_CAREER, 0).unwrap(),
+            &read_frag(&flow_frontend, FE_HOME, 0).unwrap(),
+            &read_frag(&flow_options, CONTAINER, 0).unwrap(),
+        )
+        .unwrap();
+        pages::build_resume_page(&src, &rows).unwrap()
+    };
+    assert_eq!(screen, pages::RESUME_SCREEN);
+    check_resume_nodes(&bytes, &rows);
+}
+
+fn check_resume_nodes(bytes: &[u8], rows: &[crate::stdlib::careers::ResumeRow]) {
+    let p = Pkg::parse(bytes).unwrap();
+    let scr = p.root.o().unwrap().at("Screens").unwrap().a().unwrap()[0].clone();
+    assert_eq!(scr.name(), pages::RESUME_SCREEN);
+    let text = String::from_utf8_lossy(bytes).into_owned();
+    assert!(text.contains("RESUME CAREER"));
+    for r in rows {
+        let kids: Vec<&str> = scr
+            .slot(node::CHILDREN)
+            .unwrap()
+            .iter()
+            .filter(|c| c.is_node())
+            .map(|c| c.name())
+            .collect();
+        assert!(kids.contains(&pages::row_name(r.index).as_str()), "{kids:?}");
+        assert!(text.contains(&pages::row_command(r.index)), "row {}", r.index);
+        assert!(text.contains(&r.status), "{}", r.status);
+        assert!(text.contains(&r.driver), "{}", r.driver);
+    }
+    assert!(text.contains(pages::CONTINUE_DRIVER) && text.contains(pages::CONTINUE_MY_TEAM));
+    assert!(text.contains("Last played 19/11/2026") && text.contains("Season 2 · Race 4"));
+}
+
+#[test]
+#[ignore = "needs SWOFTY_STOCK_DATA, the launcher data folder that holds the game's baseline"]
+fn the_resume_list_builds_within_the_loader_rules_and_routes_in_and_out() {
+    let input = stock_input();
+    let mut settings = setup_settings_without();
+    settings.resume_list = resume_rows();
+    let out = std::env::temp_dir().join(format!("swofty-resume-list-{}", std::process::id()));
+    std::fs::remove_dir_all(&out).ok();
+    let built = build(
+        &settings,
+        &input,
+        &|_, _| None,
+        &out,
+        false,
+        &ArchiveWriter::new(&Packer::default()),
+    )
+    .unwrap();
+    assert!(
+        built
+            .lines
+            .iter()
+            .any(|l| l.contains("Resume Career list screen swofty_resume_list has 3 row(s)")),
+        "{:?}",
+        built.lines
+    );
+    let persistent = ui_file("persistent.erp");
+    let report = check::archive_files(&[(
+        persistent.as_str(),
+        input(&persistent).as_path(),
+        out.join(&persistent).as_path(),
+    )])
+    .unwrap();
+    let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
+    assert!(hard.is_empty(), "{hard:?}");
+    let name = pages::RESUME_SCREEN;
+    let data = std::fs::read(&built.screens[&format!("{UI_DIR}/{name}.ui")]).unwrap();
+    check_resume_nodes(&data, &settings.resume_list);
+    let session: BTreeMap<&str, bool> = built
+        .session
+        .iter()
+        .map(|s| (s.name.as_str(), s.view_model))
+        .collect();
+    assert_eq!(session.get(name), Some(&true));
+
+    let options = input(&ui_file("flow_options.erp"));
+    let stock = check::ArchiveUi::read("flow_options.erp", &options).unwrap();
+    let mut edited = check::ArchiveUi::read("flow_options.erp", &options).unwrap();
+    edited.resources.insert(
+        format!("eaid://ui_package/screens/{name}.ui"),
+        ("UIDF".to_owned(), vec![data]),
+    );
+    let report = check::archives(&[edited], &[stock], catalog::stock(), catalog::engine()).unwrap();
+    let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
+    assert!(hard.is_empty(), "{hard:?}");
+
+    let (src_p, dst_p) = (input(&persistent), out.join(&persistent));
+    let (before, after) = (groupings(&src_p, ROUTES), groupings(&dst_p, ROUTES));
+    for (gid, routes) in &before {
+        for (rid, r) in routes {
+            assert_eq!(after[gid].get(rid), Some(r), "{gid}.{rid} changed");
+        }
+    }
+    for gid in ["fe_career", "fe_career_dlc_select"] {
+        let entry = &after[gid][pages::RESUME_ROUTE];
+        for want in [name, "options_flow", "Migrate", "Customisation"] {
+            assert!(entry.contains(want), "{gid}: {want}: {entry}");
+        }
+        assert!(!entry.contains("career_continue_driver"), "{entry}");
+    }
+    let ids: Vec<&str> = after[name].keys().map(String::as_str).collect();
+    assert_eq!(
+        ids,
+        [
+            "back",
+            "close",
+            "open",
+            "open_no_input",
+            "solo_career_continue_driver",
+            "solo_career_continue_my_team"
+        ]
+    );
+    assert!(after[name]["solo_career_continue_driver"].contains("career_continue_driver"));
+    assert!(after[name]["solo_career_continue_my_team"].contains("career_continue_my_team"));
+    assert!(after[name]["solo_career_continue_driver"].contains("frontend_flow"));
+    assert!(after[name]["back"].contains("fe_career"));
+
+    let none = build(
+        &setup_settings_without(),
+        &input,
+        &|_, _| None,
+        &out,
+        false,
+        &ArchiveWriter::new(&Packer::default()),
+    )
+    .unwrap();
+    assert!(!none.lines.iter().any(|l| l.contains("Resume Career list")));
+    assert!(!none.screens.keys().any(|k| k.contains(name)));
+    assert!(!groupings(&out.join(&persistent), ROUTES).contains_key(name));
+    std::fs::remove_dir_all(&out).ok();
+}
+
 fn setup_settings_without() -> SessionSettings {
     let mut s = setup_settings();
     s.addons[0].career_setup = None;
