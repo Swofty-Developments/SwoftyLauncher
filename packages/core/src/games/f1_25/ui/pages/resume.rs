@@ -78,6 +78,11 @@ fn text_width(s: &str) -> f64 {
 
 const DOTS: &str = "...";
 
+/// Scene units per glyph width unit at a 1 pt style: the row font measured in game is 10.3 to 11.5 px per unit at
+/// 17 pt and 11.1 at 19 pt, with 100 px to a scene unit; the scale takes the widest, so a cut row never reaches the
+/// next column.
+const UNITS_PER_GLYPH_PT: f64 = 0.0066;
+
 fn budget(c: &career_row::Column) -> f64 {
     let size: f64 = c
         .style
@@ -85,7 +90,7 @@ fn budget(c: &career_row::Column) -> f64 {
         .next()
         .and_then(|n| n.parse().ok())
         .unwrap_or(17.0);
-    c.width * 8.75 * 17.0 / size
+    c.width / (UNITS_PER_GLYPH_PT * size)
 }
 
 fn clip_col(s: &str, c: &career_row::Column) -> String {
@@ -112,7 +117,7 @@ fn place(r: &ResumeRow) -> String {
 
 fn short_place(r: &ResumeRow) -> String {
     let full = place(r);
-    match (full.chars().count() > career_row::PLACE.chars, r.season, r.race) {
+    match (text_width(&full) > budget(&career_row::PLACE), r.season, r.race) {
         (true, Some(s), Some(race)) => format!("S{s}, R{race}"),
         _ => full,
     }
@@ -391,10 +396,25 @@ mod tests {
         );
         assert_eq!(
             clip_col("McLaren Mastercard Formula 1 Team", t),
-            "McLaren Mastercard Formula..."
+            "McLaren Mastercard..."
         );
         assert_eq!(clip_col("McLaren Formula 1 Team", t), "McLaren Formula 1 Team");
         assert_eq!(clip_col("Williams Renault", t), "Williams Renault");
+    }
+
+    #[test]
+    fn driver_names_and_places_seen_in_game_stay_whole() {
+        for name in [
+            "Riccardo PATRESE",
+            "Andrea DE CESARIS",
+            "Jacob NARDELLA",
+            "George RUSSELL",
+        ] {
+            assert_eq!(clip_col(name, &career_row::DRIVER), name);
+        }
+        for place in ["Season 8, Race 12", "Season 10, Race 24"] {
+            assert_eq!(clip_col(place, &career_row::PLACE), place);
+        }
     }
 
     #[test]

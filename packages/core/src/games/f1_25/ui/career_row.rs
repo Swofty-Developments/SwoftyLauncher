@@ -39,20 +39,20 @@ pub struct Column {
 pub const DRIVER: Column = Column {
     name: "driver",
     x: 0.3,
-    width: 2.2,
+    width: 2.5,
     style: "19_regular",
     align: Align::Start,
     y: -0.05,
-    chars: 17,
+    chars: 19,
 };
 pub const TEAM: Column = Column {
     name: "team",
-    x: 2.6,
-    width: 3.2,
+    x: 2.85,
+    width: 3.05,
     style: "17_regular",
     align: Align::Start,
     y: -0.045,
-    chars: 30,
+    chars: 29,
 };
 pub const BADGE: Column = Column {
     name: "badge",
@@ -66,16 +66,16 @@ pub const BADGE: Column = Column {
 pub const PLACE: Column = Column {
     name: "place",
     x: 7.9,
-    width: 1.7,
+    width: 1.95,
     style: "17_regular",
     align: Align::Start,
     y: -0.045,
-    chars: 16,
+    chars: 19,
 };
 pub const STATUS: Column = Column {
     name: "status",
     x: 10.85,
-    width: 1.15,
+    width: 1.0,
     style: "17_bold",
     align: Align::End,
     y: -0.045,
