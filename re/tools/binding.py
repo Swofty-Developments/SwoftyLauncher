@@ -351,6 +351,10 @@ def check_paths(paths):
             continue
         errs += [f're/bindings/{rec.relpath}: {e}' for e in bc.check_record(rec, knowledge.without(rec),
                                                                              're/bindings/' + rec.relpath)]
+    if not paths:
+        import bindgen
+        retired = bc.retired_names(kb.read_table('verify')[0], knowledge.names, bindgen.load_drops())
+        errs += bc.overlay_name_errors(retired, os.path.join(kb.DB, 'builds'))
     return errs
 
 

@@ -116,6 +116,12 @@ FIXES = [(re.compile(p), t) for p, t in (
     (r'more than \d+ files', 'split the records over several pull requests'),
     (r'changes no binding record', 'add or change a file under re/bindings/<subsystem>/<Name>.json'),
     (r'kb_lint: ', 'python3 re/tools/kb_lint.py --structural prints the whole report'),
+    (r'keyed by a retired name, so it binds nothing: (\S+) was renamed to (\S+)',
+     'rename the entry\'s key from {0} to {1}; binding.py rename moved the entries that existed when it ran, so an '
+     'entry a branch added after the rename is moved by hand'),
+    (r'keyed by a retired name, so it binds nothing: (\S+) was renamed$',
+     'rename the entry\'s key from {0} to the binding\'s current name, the record whose verify rows hold '
+     'retired:{0}'),
 )]
 
 
@@ -235,6 +241,40 @@ class Knowledge:
 
 MAX_ANCHOR = 0x100
 MAX_EXPECT = 16
+OVERLAY_PARTS = ('overrides', 'hints', 'unresolvable')
+
+
+def retired_names(rows, current, drops):
+    """{old name: its new name, or None when no record or drops entry names it} for every retired:<old> verify row
+    whose old name no binding holds now."""
+    out = {}
+    for v in rows:
+        old = v['item'][len('retired:'):] if v['item'].startswith('retired:') else None
+        if not old or old in current:
+            continue
+        rec = v.get('_record')
+        new = os.path.basename(rec)[:-len('.json')] if rec else (drops.get((v['kind'], old)) or {}).get('replacement')
+        if new or old not in out:
+            out[old] = new
+    return out
+
+
+def overlay_name_errors(retired, bdir):
+    """Overlay entries still keyed by a retired name. The core looks an entry up by the binding's current name, so
+    an entry under the old one binds nothing; a branch that adds one after binding.py rename moved the rest leaves
+    it behind."""
+    errs = []
+    for f in sorted(os.listdir(bdir)) if os.path.isdir(bdir) else ():
+        if not f.endswith('.json'):
+            continue
+        with open(os.path.join(bdir, f), encoding='utf-8') as fh:
+            doc = json.load(fh)
+        for part in OVERLAY_PARTS:
+            for key in sorted(k for k in (doc.get(part) or {}) if k in retired):
+                new = retired[key]
+                errs.append(f're/db/builds/{f}: {part} entry {key} is keyed by a retired name, so it binds nothing: '
+                            + (f'{key} was renamed to {new}' if new else f'{key} was renamed'))
+    return errs
 
 
 def pattern_errors(text):

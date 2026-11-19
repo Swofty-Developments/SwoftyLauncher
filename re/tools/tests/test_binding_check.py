@@ -460,6 +460,33 @@ class Renames(Base):
                 self.rename(old, new)
         self.assertTrue(os.path.exists(os.path.join(self.root, SAMPLE)))
 
+    def overlay_errors(self, rows, current, drops=None):
+        return bc.overlay_name_errors(bc.retired_names(rows, current, drops or {}), os.path.join(self.db, 'builds'))
+
+    def test_an_overlay_entry_left_under_a_retired_name_fails_the_check(self):
+        rows = [dict(self.row('retired:' + self.OLD), _record=f'session/{self.NEW}.json')]
+        errs = self.overlay_errors(rows, {self.NEW, 'site_A', 'site_Z'})
+        self.assertEqual(len(errs), 1)
+        self.assertTrue(errs[0].startswith(f're/db/builds/port.json: hints entry {self.OLD} '), errs)
+        self.assertIn(f'renamed to {self.NEW}', errs[0])
+        self.assertIn(f'from {self.OLD} to {self.NEW}', bc.fix_for(errs[0]))
+
+    def test_a_retired_row_without_a_record_takes_the_new_name_from_the_drops_entry(self):
+        drops = {('global', self.OLD): {'mode': 'deprecated', 'replacement': self.NEW}}
+        self.assertIn(f'renamed to {self.NEW}', self.overlay_errors([self.row('retired:' + self.OLD)], set(), drops)[0])
+        self.assertTrue(self.overlay_errors([self.row('retired:' + self.OLD)], set())[0].endswith('was renamed'))
+
+    def test_moved_entries_and_reused_names_pass(self):
+        rows = [dict(self.row('retired:' + self.OLD), _record=f'session/{self.NEW}.json')]
+        self.assertEqual(self.overlay_errors(rows, {self.OLD}), [])
+        self.rename(self.OLD, self.NEW)
+        self.assertEqual(self.overlay_errors(rows, {self.NEW}), [])
+
+    def test_the_repository_overlays_hold_no_retired_name(self):
+        import bindgen, kb
+        retired = bc.retired_names(kb.read_table('verify')[0], bc.Knowledge().names, bindgen.load_drops())
+        self.assertEqual(bc.overlay_name_errors(retired, os.path.join(kb.DB, 'builds')), [])
+
 
 class HandCallerCounts(Base):
     def classify_notes(self, old_notes, new_notes, census_build='steam'):
