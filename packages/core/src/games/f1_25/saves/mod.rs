@@ -6,6 +6,7 @@ pub mod bag;
 pub mod codec;
 pub mod launcher;
 pub mod plain;
+pub mod remap;
 pub mod stall;
 pub mod vault;
 pub mod warning;
