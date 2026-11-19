@@ -1,5 +1,5 @@
 use gpui_kit::assets::IconName;
-use gpui_kit::component::button::{Button, ButtonVariants};
+use gpui_kit::component::button::Button;
 use gpui_kit::component::input::{Input, InputState};
 use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
@@ -21,6 +21,7 @@ const TIERS_MAX: f32 = 1120.;
 const CHIP_ROW: f32 = 20.;
 const ACTION_W: f32 = 220.;
 const ACTION_H: f32 = 34.;
+const FIGURE_H: f32 = 48.;
 
 fn perk_row(icon: IconName, text: &'static str, hot: bool, accent: Hsla, p: Palette) -> Div {
     h_flex()
@@ -52,15 +53,13 @@ fn perk_row(icon: IconName, text: &'static str, hot: bool, accent: Hsla, p: Pale
         )
 }
 
-/// The top of a store column: its chip row, icon and name, big figure with its unit, and one muted line.
+/// The top of a store column: its chip row, icon and name, a figure row of fixed height, and one muted line.
 fn column_head(
     chips: Div,
     icon: IconName,
     name: impl Into<SharedString>,
     accent: Hsla,
-    figure: &'static str,
-    figure_color: Hsla,
-    unit: &'static str,
+    figure: impl IntoElement,
     tagline: &'static str,
     p: Palette,
 ) -> Div {
@@ -69,7 +68,7 @@ fn column_head(
         .child(chips.h(px(CHIP_ROW)).justify_center().gap(px(6.)))
         .child(
             h_flex()
-                .mt(px(6.))
+                .mt(px(10.))
                 .gap(px(6.))
                 .child(Icon::new(icon).size(px(15.)).text_color(accent))
                 .child(
@@ -82,32 +81,44 @@ fn column_head(
         )
         .child(
             h_flex()
-                .items_end()
-                .gap(px(4.))
-                .child(
-                    div()
-                        .text_size(px(40.))
-                        .line_height(px(42.))
-                        .font_weight(FontWeight::EXTRA_BOLD)
-                        .text_color(figure_color)
-                        .child(figure),
-                )
-                .child(
-                    div()
-                        .pb(px(7.))
-                        .text_size(px(13.))
-                        .text_color(p.text_muted)
-                        .child(unit),
-                ),
+                .mt(px(8.))
+                .h(px(FIGURE_H))
+                .w_full()
+                .justify_center()
+                .items_center()
+                .child(figure),
         )
         .child(
             div()
+                .mt(px(6.))
                 .max_w(px(280.))
                 .text_center()
                 .text_size(px(12.))
                 .line_height(px(16.))
                 .text_color(p.text_muted)
                 .child(tagline),
+        )
+}
+
+/// A tier's price: the amount large, its period small beside it.
+fn price(amount: &'static str, color: Hsla, p: Palette) -> Div {
+    h_flex()
+        .items_end()
+        .gap(px(4.))
+        .child(
+            div()
+                .text_size(px(40.))
+                .line_height(px(42.))
+                .font_weight(FontWeight::EXTRA_BOLD)
+                .text_color(color)
+                .child(amount),
+        )
+        .child(
+            div()
+                .pb(px(7.))
+                .text_size(px(13.))
+                .text_color(p.text_muted)
+                .child(tr("/ month")),
         )
 }
 
@@ -198,8 +209,8 @@ impl Shell {
                 StorePage::checkout(this, Kind::OneTime, Some(typed.clone()), cx)
             }));
         let claim = Button::new("store-claim-open")
-            .ghost()
-            .small()
+            .outline()
+            .icon(IconName::ReceiptText)
             .label(tr("Claim previous donation"))
             .on_click(cx.listener(|this, _, _, cx| {
                 this.store_page.claim_open = true;
@@ -264,9 +275,11 @@ impl Shell {
                 IconName::Gift,
                 tr("One-time donation"),
                 hue(YELLOW),
-                tr("Any"),
-                p.text,
-                tr("amount, once"),
+                div().w(px(ACTION_W)).child(
+                    Input::new(&amount)
+                        .large()
+                        .prefix(div().text_color(p.text_muted).child("$")),
+                ),
                 tr("Converts to whole months of a tier"),
                 p,
             ))
@@ -275,19 +288,14 @@ impl Shell {
                     .flex_grow_1()
                     .w_full()
                     .max_w(px(ACTION_W))
-                    .mt(px(14.))
+                    .mt(px(20.))
                     .items_center()
-                    .child(
-                        div()
-                            .w_full()
-                            .child(Input::new(&amount).prefix(div().text_color(p.text_muted).child("$"))),
-                    )
-                    .child(div().mt(px(6.)).child(claim))
+                    .child(claim)
                     .children(status.map(|s| s.mt(px(10.))))
                     .children(edit.map(|e| div().mt(px(8.)).child(e)))
                     .children(note.map(|n| n.mt(px(10.)))),
             )
-            .child(donate.mt(px(16.)))
+            .child(donate.mt(px(22.)))
     }
 
     fn store_tiers(&self, amount: Entity<InputState>, p: Palette, cx: &mut Context<Self>) -> Div {
@@ -349,7 +357,7 @@ impl Shell {
         cx: &mut Context<Self>,
     ) -> Div {
         let plus = kind == Kind::SupporterPlus;
-        let (price, tagline) = match plus {
+        let (amount, tagline) = match plus {
             true => ("$20", tr("Play new addons before anyone else")),
             false => ("$5", tr("Back the launcher and lose the ads")),
         };
@@ -371,9 +379,7 @@ impl Shell {
                 if plus { IconName::Crown } else { IconName::Heart },
                 tier_name(if plus { "supporter_plus" } else { "supporter" }),
                 accent,
-                price,
-                if plus { accent } else { p.text },
-                tr("/ month"),
+                price(amount, if plus { accent } else { p.text }, p),
                 tagline,
                 p,
             ))
@@ -381,15 +387,15 @@ impl Shell {
                 v_flex()
                     .flex_grow_1()
                     .max_w_full()
-                    .mt(px(14.))
-                    .gap(px(8.))
+                    .mt(px(20.))
+                    .gap(px(10.))
                     .children(
                         perks
                             .into_iter()
                             .map(|(icon, text, hot)| perk_row(icon, text, hot, accent, p)),
                     ),
             )
-            .child(self.subscribe_button(kind, cx).mt(px(16.)))
+            .child(self.subscribe_button(kind, cx).mt(px(22.)))
     }
 
     fn subscribe_button(&self, kind: Kind, cx: &mut Context<Self>) -> Stateful<Div> {
