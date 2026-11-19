@@ -113,6 +113,11 @@ struct Frozen {
 };
 using SnapshotSource = std::function<Frozen(const std::string &registry, const std::string &id, const Context &ctx)>;
 
+struct LayerOp {
+    LayerSpec spec;
+    bool clear = false;
+};
+
 class Store {
 public:
     Store();
@@ -152,6 +157,7 @@ public:
     int provide_fn(const std::string &addon, const std::string &registry, SwoftyProvideFn fn, SwoftyListFn list, void *user);
     int invalidate(const std::string &registry, const std::string *id);
     int layer(const LayerSpec &spec, uint32_t *handle);
+    int layer_batch(const std::string &addon, const std::string &registry, const std::vector<LayerOp> &ops);
     int layer_in(const std::string &addon, uint32_t handle, const Value &selectors);
     int clear_layer(const std::string &addon, const std::string &registry, const std::string &id, Scope scope);
     int tag_add(const std::string &addon, const std::string &registry, const std::string &tag, const std::string &id);

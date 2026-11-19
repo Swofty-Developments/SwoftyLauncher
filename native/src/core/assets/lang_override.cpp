@@ -9,6 +9,7 @@
 #include <atomic>
 #include <map>
 #include <mutex>
+#include <set>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -150,12 +151,14 @@ bool raw_of(const std::string &id, const swofty::json::Value &rec, Raw &out)
     return true;
 }
 
-std::vector<Raw> gather(const std::string *only)
+using KeySet = std::unordered_set<std::string, Hash, Eq>;
+
+std::vector<Raw> gather(const KeySet *only)
 {
     auto &st = runtime::older_store();
     std::vector<Raw> out;
     for (auto &id : older::string_ids(st)) {
-        if (only && older::key_of(id) != *only)
+        if (only && !only->count(std::string_view(older::key_of(id))))
             continue;
         Raw r;
         if (raw_of(id, older::effective(st, older::STRING, id), r))
@@ -164,12 +167,13 @@ std::vector<Raw> gather(const std::string *only)
     return out;
 }
 
-size_t install(std::vector<Raw> raws, const std::string *only)
+size_t install(std::vector<Raw> raws, const KeySet *only)
 {
     size_t scoped = 0;
     AcquireSRWLockExclusive(&g_lock);
     if (only)
-        g_map.erase(*only);
+        for (auto &k : *only)
+            g_map.erase(k);
     else
         g_map.clear();
     for (auto &r : raws) {
@@ -193,7 +197,9 @@ size_t install(std::vector<Raw> raws, const std::string *only)
     return scoped;
 }
 
-void refresh_key(const std::string &key) { install(gather(&key), &key); }
+void refresh_keys(const KeySet &keys) { install(gather(&keys), &keys); }
+
+void refresh_key(const std::string &key) { refresh_keys(KeySet{key}); }
 
 size_t refresh_all(size_t *scoped = nullptr)
 {
@@ -217,6 +223,34 @@ void put_layer(const std::string &addon, const std::string &key)
         return;
     }
     older::string_layer(st, addon, key, k->second);
+}
+
+void flush_keys(const std::map<std::string, std::set<std::string>> &changed, KeySet all)
+{
+    auto &st = runtime::older_store();
+    for (auto &[addon, keys] : changed) {
+        std::vector<std::pair<std::string, swofty::json::Value>> texts;
+        texts.reserve(keys.size());
+        auto a = g_layers.find(addon);
+        for (auto &key : keys) {
+            all.insert(key);
+            swofty::json::Value v;
+            if (a != g_layers.end()) {
+                auto k = a->second.find(key);
+                if (k != a->second.end()) {
+                    if (k->second.is_object() && k->second.size())
+                        v = k->second;
+                    else
+                        a->second.erase(k);
+                }
+            }
+            texts.emplace_back(key, std::move(v));
+        }
+        if (a != g_layers.end())
+            older::string_layers(st, addon, texts);
+    }
+    if (!all.empty())
+        refresh_keys(all);
 }
 
 const char *find_hook(void *set, const char *key, int32_t mode)
@@ -399,4 +433,49 @@ const SwoftyLang table = {lang_available, lang_override_set, lang_override_clear
 
 const SwoftyLang *runtime::lang_table() { return &table; }
 
-void runtime::lang_override_setup() { setup_once(); }
+size_t runtime::lang_batch(const std::vector<runtime::LangOp> &ops)
+{
+    setup_once();
+    if (ops.empty())
+        return 0;
+    if (!g_on || !g_find_at)
+        return ops.size();
+    bool any_set = false;
+    for (auto &o : ops)
+        any_set = any_set || (!o.clear && !o.key.empty() && o.text);
+    if (any_set && !ensure_find_hook())
+        return ops.size();
+    std::string addon = runtime::older_addon(__builtin_return_address(0));
+    size_t failed = 0;
+    std::lock_guard<std::mutex> g(g_shim);
+    std::map<std::string, std::set<std::string>> changed;
+    KeySet keys_seen;
+    for (auto &o : ops) {
+        if (o.key.empty() || (!o.clear && !o.text)) {
+            failed++;
+            continue;
+        }
+        keys_seen.insert(o.key);
+        const char *language = o.language.c_str();
+        if (o.clear) {
+            for (auto &[owner, keys] : g_layers) {
+                auto k = keys.find(o.key);
+                if (k == keys.end())
+                    continue;
+                if (all_languages(language))
+                    k->second = swofty::json::Value();
+                else
+                    k->second.erase(lower(language));
+                changed[owner].insert(o.key);
+            }
+            continue;
+        }
+        swofty::json::Value &t = g_layers[addon][o.key];
+        if (!t.is_object())
+            t = swofty::json::Value::object();
+        t[all_languages(language) ? std::string("*") : lower(language)] = o.text;
+        changed[addon].insert(o.key);
+    }
+    flush_keys(changed, std::move(keys_seen));
+    return failed;
+}

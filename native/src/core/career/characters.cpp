@@ -6,6 +6,7 @@
 #include "core/runtime/loader/mixin_gate.hpp"
 
 #include <atomic>
+#include <chrono>
 #include <mutex>
 #include <set>
 #include <string>
@@ -140,13 +141,17 @@ void apply_strings(const std::string &group)
                         group.c_str());
         return;
     }
-    size_t failed = 0;
+    std::vector<runtime::LangOp> ops;
+    ops.reserve(drop.size() + set.size());
     for (auto &[language, key] : drop)
-        failed += lg->override_clear(language.c_str(), key.c_str()) != SWOFTY_ASSET_OK;
+        ops.push_back({true, language, key, nullptr});
     for (auto &t : set)
-        failed += lg->override_set(t.language.c_str(), t.key.c_str(), t.text.c_str()) != SWOFTY_ASSET_OK;
-    swofty::log("[characters] strings: cleared %zu, set %zu for '%s' (%zu failed)", drop.size(), set.size(), group.c_str(),
-                failed);
+        ops.push_back({false, t.language, t.key, t.text.c_str()});
+    auto began = std::chrono::steady_clock::now();
+    size_t failed = runtime::lang_batch(ops);
+    double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - began).count();
+    swofty::log("[characters] strings: cleared %zu, set %zu for '%s' (%zu failed) in %.1f ms", drop.size(), set.size(),
+                group.c_str(), failed, ms);
 }
 
 bool group_used(const std::string &group) { return career::characters::group_in(eswaps, group); }

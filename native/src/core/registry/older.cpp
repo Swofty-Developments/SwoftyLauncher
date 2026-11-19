@@ -391,6 +391,29 @@ int string_layer(Store &st, const std::string &addon, const std::string &key, co
     return st.layer(spec, &handle);
 }
 
+int string_layers(Store &st, const std::string &addon, const std::vector<std::pair<std::string, Value>> &texts)
+{
+    std::vector<LayerOp> ops;
+    ops.reserve(texts.size());
+    for (auto &[key, text] : texts) {
+        string_keys_seen().insert(key);
+        LayerOp op;
+        op.spec.addon = addon;
+        op.spec.registry = STRING;
+        op.spec.id = "game/" + key;
+        op.spec.scope = Scope::global;
+        if (!text.is_object() || !text.size())
+            op.clear = true;
+        else {
+            op.spec.change.is_patch = true;
+            op.spec.change.patch = Value::object({{"text", text}});
+            op.spec.source = "lang::set";
+        }
+        ops.push_back(std::move(op));
+    }
+    return st.layer_batch(addon, STRING, ops);
+}
+
 std::vector<std::pair<std::string, std::string>> string_texts(const Value &rec)
 {
     std::vector<std::pair<std::string, std::string>> out;

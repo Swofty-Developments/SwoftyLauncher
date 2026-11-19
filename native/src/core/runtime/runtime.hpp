@@ -79,6 +79,14 @@ std::wstring storage_write_path(const std::string &id, const std::string &path);
 const SwoftyCareer *career_table();
 const SwoftyPopup *popup_table();
 const SwoftyLang *lang_table();
+struct LangOp {
+    bool clear = false;
+    std::string language, key;
+    const char *text = nullptr;
+};
+// Applies the string overrides in order for the calling addon in one pass (one lock, one registry update, one refresh of
+// the changed keys), leaving the same state as the matching override_set and override_clear calls; returns how many failed.
+size_t lang_batch(const std::vector<LangOp> &ops);
 const SwoftyCharacters *characters_table();
 const SwoftyCareerWizard *wizard_table();
 void lang_override_setup();
