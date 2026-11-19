@@ -1,0 +1,30 @@
+{
+  "about": "The p1 mark of lap 1, as the game pauses, chained to the receipt of the lap's start; the game's lap clock stands still, and a pause that can't be sent is dropped alone.",
+  "answer": {
+    "body": {
+      "receipt": "tk1.cDE.bWFj"
+    },
+    "status": 200
+  },
+  "request": {
+    "body": {
+      "json": {
+        "attempt": 1,
+        "game_ms": 38200,
+        "lap": 1,
+        "mark": "p1",
+        "prev": "tk1.c3RhcnQ.bWFj",
+        "since_ms": 8
+      }
+    },
+    "headers": {
+      "accept": "*/*",
+      "accept-encoding": "gzip",
+      "authorization": "Bearer <token>",
+      "content-type": "application/json",
+      "user-agent": "swofty-launcher"
+    },
+    "method": "POST",
+    "path": "/v1/tt/sessions/5e5510b0c0de5e5510b0c0de5e5510b0/ticks"
+  }
+}

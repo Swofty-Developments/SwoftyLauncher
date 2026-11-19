@@ -336,7 +336,15 @@ fn ticks(out: &mut Recorded, data: &Path, game: &Path) {
     std::fs::create_dir_all(&folder).unwrap();
     let ok = |mark: &str| json_reply("200 OK", &json!({ "receipt": receipt(mark) }));
     let busy = json_reply("503 Service Unavailable", &json!({"error": "the server is busy"}));
-    let replies = vec![ok("start"), busy.clone(), ok("s1"), ok("s2"), ok("end")];
+    let replies = vec![
+        ok("start"),
+        busy.clone(),
+        ok("s1"),
+        ok("p1"),
+        ok("r1"),
+        ok("s2"),
+        ok("end"),
+    ];
     let s = stub(replies.clone());
     let api = Api::with_server(&s.url, TOKEN);
     let mut sender = ticks::Sender::new(data, ticks::folders(data, game));
@@ -344,6 +352,8 @@ fn ticks(out: &mut Recorded, data: &Path, game: &Path) {
     let marks = [
         ("start", 0u64, 0u64, 12u64),
         ("s1", 30_000, 28_411, 9),
+        ("p1", 40_000, 38_200, 8),
+        ("r1", 46_000, 38_200, 10),
         ("s2", 61_000, 59_020, 7),
         ("end", 91_234, 91_234, 11),
     ];
@@ -371,13 +381,26 @@ fn ticks(out: &mut Recorded, data: &Path, game: &Path) {
         &seen[2],
         &replies[2],
     );
-    out.add("tick-s2", &about("s2"), &seen[3], &replies[3]);
-    out.add("tick-end", &about("end"), &seen[4], &replies[4]);
+    out.add(
+        "tick-p1",
+        "The p1 mark of lap 1, as the game pauses, chained to the receipt of the lap's start; the game's lap clock stands still, and a pause that can't be sent is dropped alone.",
+        &seen[3],
+        &replies[3],
+    );
+    out.add(
+        "tick-r1",
+        "The r1 mark of lap 1, as the game resumes, chained to the receipt of the p1 mark.",
+        &seen[4],
+        &replies[4],
+    );
+    out.add("tick-s2", &about("s2"), &seen[5], &replies[5]);
+    out.add("tick-end", &about("end"), &seen[6], &replies[6]);
 }
 
 fn lap(time_ms: u64, lap_index: u32) -> Vec<u8> {
     let header = json!({
         "format": 1,
+        "core": "1.10.0",
         "nonce": NONCE,
         "board": {"content": "game/f1_2025", "track": "bahrain", "weather": "dry"},
         "lap": {"time_ms": time_ms, "valid": true, "sectors_ms": [28_411, 30_609, 32_214], "lap_index": lap_index},
