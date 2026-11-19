@@ -240,13 +240,13 @@ fn year_of(mode: &str) -> Option<u32> {
         .filter(|y| (y.to_string().len() == 2 && *y < 100) || (1900..2100).contains(y))
 }
 
-const DEFAULT_GROUP: &str = "f1_career_2026";
-
+/// The game's data group for a career mode with a year in its name; empty for a mode without one (an addon's own
+/// content), whose group the core takes from the careers index.
 pub fn group_of(mode: &str) -> String {
     match year_of(mode) {
         Some(y) if y < 100 => format!("f1_career_20{y:02}"),
         Some(y) => format!("f1_career_{y}"),
-        None => DEFAULT_GROUP.to_owned(),
+        None => String::new(),
     }
 }
 
@@ -720,6 +720,7 @@ mod tests {
         assert_eq!(group_of("driver_career_1990"), "f1_career_1990");
         assert_eq!(group_of("driver_career_25"), "f1_career_2025");
         assert_eq!(group_of("my_team_career_26"), "f1_career_2026");
+        assert_eq!(group_of("driver_career_progressive"), "");
         let list = vec![
             saved(
                 "driver_career_1990",
@@ -736,13 +737,11 @@ mod tests {
         ];
         let names = Names::from_db(db(), Some(&english()));
         let rows = resume_rows(&list, &Created::default(), &[], &names);
-        assert!(
-            rows.iter()
-                .all(|r| !r.group.is_empty() && !r.game_mode.is_empty())
-        );
+        assert!(rows.iter().all(|r| !r.game_mode.is_empty()));
         let by = |mode: &str| rows.iter().find(|r| r.game_mode == mode).unwrap();
         assert_eq!(by("driver_career_1990").group, "f1_career_1990");
         assert_eq!(by("my_team_career_26").group, "f1_career_2026");
+        assert_eq!(by("driver_career_progressive").group, "");
         let json = serde_json::to_value(by("driver_career_1990")).unwrap();
         assert_eq!(json["group"], "f1_career_1990");
         assert_eq!(json["game_mode"], "driver_career_1990");
