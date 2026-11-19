@@ -377,6 +377,26 @@ Two limits:
 
 A compose error (an unknown game value, a missing sprite, a prefix two records share) stops the build with `the HUD elements do not compose: <reason>`.
 
+## When another addon claims the same part
+
+The editor `.uipre` the composer writes starts from the copy step 2 leaves. A setter that copy already has with the same value is kept once: an addon that ships its own copy of `driver_position_table_stacked.uipre` with `mask` hidden (Project Halo does) and a screen record that hides `mask` too compose, and the file lists `mask` once. Element names the composer adds carry the record's prefix, so they never meet another addon's.
+
+Three claims stop the build, naming the addons on both sides and the addons to turn off:
+
+| claim | when |
+|---|---|
+| the editor preview | the copy already sets one of the composer's setters to another value (shows what the composer hides, another text in a label) |
+| the board | a node under a screen's parent that the game's template has not got already shows and hides the stock board the screen masks (`mask` on the standings): another addon replaces the same board |
+| a stock part | a node the game's template has not got already shows and hides an element a record's `stock_nodes` or `restyle` hides |
+
+Two template nodes that show and hide one element fight: one board takes one addon's tower. Project Halo's timing tower (`tt_ctl.tt_mask` on `mask`) and TV Timing Tower's record stop the build with:
+
+```text
+the HUD elements do not compose: Project Halo and TV Timing Tower both replace the Track Position list, and only one of them can switch the game's own list off; turn Project Halo or TV Timing Tower off in this profile (Project Halo's template node hud_track_position.osd_visibility_option.track_position.tt_ctl.tt_mask already shows and hides mask)
+```
+
+The other side is the addon whose archive change put the node or setter there. When no addon's change holds it, the refusal says "another addon" and asks for Send Logs.
+
 ## Rules the composer keeps
 
 - `isHidden` on an element does not hide it in game or in the editor; only a template node's `visible` does. A root hidden by default has a `visible` node, and the spectator HUD gets its own groups.

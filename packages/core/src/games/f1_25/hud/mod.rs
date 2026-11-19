@@ -10,6 +10,7 @@
 //! nyannoying (https://github.com/nyannoying1337/f1-25-project-halo).
 
 pub mod check;
+pub mod conflict;
 pub mod dials;
 pub mod editor;
 pub mod geom;

@@ -223,6 +223,34 @@ impl Uipre {
         Ok(())
     }
 
+    /// The value of setter `key` of the element at `path` (see [`Self::set_at`]), when the file has it.
+    pub fn setter_at(&self, path: &[&str], key: u32) -> Option<&Val> {
+        let (last, inner) = path.split_last()?;
+        let mut els = self.elements();
+        for name in inner {
+            let id = element_id(name);
+            els = &els
+                .iter()
+                .find(|e| id_of(e) == Some(id))?
+                .as_obj()?
+                .get("Elements")?
+                .as_arr()?
+                .items;
+        }
+        let id = element_id(last);
+        els.iter()
+            .find(|e| id_of(e) == Some(id))?
+            .as_obj()?
+            .get("Setters")?
+            .as_arr()?
+            .items
+            .iter()
+            .filter_map(Node::as_obj)
+            .find(|s| s.get("Key").and_then(Node::as_val).and_then(Val::as_u32) == Some(key))?
+            .get("Value")?
+            .as_val()
+    }
+
     /// Shows or hides the element at `path` (see [`Self::set_at`]).
     pub fn set_visible_at(&mut self, path: &[&str], visible: bool) -> Result<()> {
         self.set_at(path, KEY_VISIBLE, Val::bool(visible))
@@ -322,6 +350,27 @@ mod tests {
         let back = Uipre::parse(&p.to_bytes().unwrap()).unwrap();
         assert_eq!(back.element_ids_in("host").len(), 3);
         assert!(p.set_at(&[], KEY_TEXT, Val::str("x")).is_err());
+    }
+
+    #[test]
+    fn a_setter_is_read_at_its_path() {
+        let mut p = Uipre::parse(&empty()).unwrap();
+        p.set_visible("mask", false).unwrap();
+        p.set_text_at(&["host", "pos"], "10").unwrap();
+        let back = Uipre::parse(&p.to_bytes().unwrap()).unwrap();
+        let hidden = back.setter_at(&["mask"], KEY_VISIBLE).unwrap();
+        assert_eq!(
+            (hidden.ty, &hidden.value),
+            (*b"bool", &crate::pkg::Value::Raw(vec![0]))
+        );
+        assert!(back.setter_at(&["mask"], KEY_TEXT).is_none());
+        assert_eq!(
+            back.setter_at(&["host", "pos"], KEY_TEXT).and_then(Val::as_str),
+            Some("10")
+        );
+        assert!(back.setter_at(&["pos"], KEY_TEXT).is_none());
+        assert!(back.setter_at(&["host", "lap"], KEY_TEXT).is_none());
+        assert!(back.setter_at(&[], KEY_TEXT).is_none());
     }
 
     #[test]

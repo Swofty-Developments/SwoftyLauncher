@@ -22,6 +22,10 @@ pub trait Stock {
     /// For each of `names`, every stock archive of its asset group that carries it, sorted. The game
     /// loads a resource from whichever of them reads it first, so a composed resource goes to all.
     fn carriers(&self, names: &[&str]) -> Result<BTreeMap<String, Vec<String>>>;
+    /// The game's own copy of a resource, before any other addon's change to it.
+    fn game_copy(&self, erp: &str, resource: &str) -> Result<Vec<Vec<u8>>> {
+        self.read(erp, resource)
+    }
 }
 
 /// The stock archives of a game folder.
@@ -232,5 +236,9 @@ impl Stock for Layered<'_> {
 
     fn carriers(&self, names: &[&str]) -> Result<BTreeMap<String, Vec<String>>> {
         self.inner.carriers(names)
+    }
+
+    fn game_copy(&self, erp: &str, resource: &str) -> Result<Vec<Vec<u8>>> {
+        self.inner.game_copy(erp, resource)
     }
 }

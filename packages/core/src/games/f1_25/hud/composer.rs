@@ -1,6 +1,7 @@
 //! Composing the records of every addon into the overlay archives, one scene growth, template pass and string
 //! table per dial.
 
+use super::conflict;
 use super::dials::DialFacts;
 use super::inputs::prefix_for;
 use super::model::{Dial, StockMode};
@@ -311,7 +312,9 @@ pub fn compose_with(
     }
     if !preview_plans.is_empty() {
         let stock_uipre = first(stock.read(dials::STOCK_ERP, f125.uipre)?, f125.uipre)?;
-        let new = editor::uipre(&stock_uipre, f125.scene, &preview_hides, &pv_texts)?;
+        let addons = conflict::addons_of(preview_plans.iter().map(|(i, _)| inputs[*i].addon.as_str()));
+        let new = editor::uipre(&stock_uipre, f125.scene, &preview_hides, &pv_texts)
+            .map_err(|e| conflict::by(e, &addons))?;
         scene_resources.push((f125.uipre.to_owned(), "UIPR", vec![new]));
     }
     let mut targets: BTreeMap<(String, String), Vec<usize>> = BTreeMap::new();
