@@ -555,6 +555,59 @@ mod tests {
     }
 
     #[test]
+    fn a_discarded_lap_leaves_a_gap_in_the_numbers_and_the_laps_around_it_keep_their_own_receipts() {
+        let (data, game) = temp("gap");
+        let fake = Fake::new((1..=10).map(|n| Ok(receipt(n))).collect());
+        let mut sender = Sender::new(&data, folders(&data, &game));
+        for (seq, (lap, which, game_ms, at)) in [
+            (1, "start", 0, 2_000_000),
+            (1, "s1", 28_411, 2_028_400),
+            (1, "s2", 59_000, 2_059_000),
+            (1, "end", 91_234, 2_091_230),
+            (2, "start", 0, 2_091_231),
+            (2, "s1", 29_100, 2_120_330),
+            (3, "start", 0, 2_300_000),
+            (3, "s1", 28_200, 2_328_200),
+            (3, "s2", 58_700, 2_358_700),
+            (3, "end", 90_512, 2_390_512),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            mark(&data, seq as u64 + 1, lap, which, game_ms, at);
+            sender.step(&fake, Some("nonce-g"), at + 10, &|_| {});
+        }
+        let seen = fake.seen.borrow();
+        let sent: Vec<(u64, &str)> = seen
+            .iter()
+            .map(|(_, b)| (b["lap"].as_u64().unwrap(), b["mark"].as_str().unwrap()))
+            .collect();
+        assert_eq!(sent.len(), 10, "{sent:?}");
+        assert!(
+            seen[6].1.get("prev").is_none(),
+            "lap 3 starts its own chain: {}",
+            seen[6].1
+        );
+        assert_eq!(seen[7].1["prev"], receipt(7).as_str());
+        assert!(!pending(&data, &game));
+
+        let r = |n: std::ops::RangeInclusive<u32>| n.map(receipt).collect::<Vec<_>>();
+        assert_eq!(
+            for_lap(&data, Some("nonce-g"), Some(1), 91_234),
+            timing(1, &r(1..=4))
+        );
+        assert_eq!(
+            for_lap(&data, Some("nonce-g"), Some(3), 90_512),
+            timing(3, &r(7..=10))
+        );
+        assert_eq!(
+            for_lap(&data, Some("nonce-g"), None, 90_512),
+            timing(3, &r(7..=10)),
+            "a lap file without a number finds its lap by the finish"
+        );
+    }
+
+    #[test]
     fn the_marks_of_a_lap_go_out_in_order_chained_and_its_receipts_are_kept_for_the_upload() {
         let (data, game) = temp("order");
         let fake = Fake::new((1..=5).map(|n| Ok(receipt(n))).collect());
