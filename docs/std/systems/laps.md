@@ -170,7 +170,7 @@ json = { "v": 1, "module": "2026.11.10.1", "nonce": "...", "body_sha256": "...",
 
 ## Server-timed laps
 
-At each timing line of a lap (the start line, sector 1, sector 2 and the finish) the Time Trial plugin calls the lap host's `mark` with the game run's lap counter, the line and the game's lap clock there. The counter is 0 for the first lap timed and one more for each lap started, and is the lap file's `lap_index`. The core stamps the moment and writes one file per mark into `tt/ticks/` of the launcher's data folder (`swofty/tt/ticks/` when it can't write there):
+At each timing line of a lap (the start line, sector 1, sector 2 and the finish) the Time Trial plugin calls the lap host's `mark` with the lap's number, the line and the game's lap clock there. The plugin numbers each lap at its start line: 1 for the first lap and one more for each lap started. A discarded lap keeps its number, so the `lap_index` of the lap files has gaps after a discard. The number is the lap file's `lap_index`. The core stamps the moment and writes one file per mark into `tt/ticks/` of the launcher's data folder (`swofty/tt/ticks/` when it can't write there):
 
 ```json
 {"seq": 12, "lap": 3, "mark": "s1", "game_ms": 28411, "at_ms": 1795000123456}
