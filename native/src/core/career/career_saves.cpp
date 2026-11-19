@@ -8,6 +8,7 @@
 #include <mutex>
 #include <set>
 #include <string>
+#include <vector>
 
 #include <swofty/mixin.hpp>
 
@@ -42,6 +43,7 @@ cs::Index index_;
 bool index_read = false;
 std::string current_id;
 std::set<std::string> present;
+std::vector<cs::SlotRead> listed_slots;
 std::string last_error;
 std::string session_id = std::to_string(
     std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
@@ -369,6 +371,8 @@ void career_saves_listed(const std::vector<career::saves::SlotRead> &slots, bool
     {
         std::lock_guard<std::mutex> g(mu);
         read_index_locked();
+        if (!slots.empty())
+            listed_slots = slots;
         cs::ListContext ctx;
         ctx.session = session_id;
         ctx.current = current_id;
@@ -390,6 +394,12 @@ void career_saves_listed(const std::vector<career::saves::SlotRead> &slots, bool
     }
     if (!r.missing.empty())
         hk::events::career_missing();
+}
+
+std::string career_saves_slot_key(uint64_t slot_id, bool my_team)
+{
+    std::lock_guard<std::mutex> g(mu);
+    return cs::slot_key_of(listed_slots, slot_id, my_team);
 }
 
 std::string career_saves_id_for_slot(const std::string &key)

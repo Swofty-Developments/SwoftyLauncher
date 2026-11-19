@@ -16,6 +16,7 @@ use serde_json::Value;
 mod index_file;
 mod play;
 mod record;
+mod resume;
 mod rows;
 
 pub use index_file::{
@@ -23,6 +24,7 @@ pub use index_file::{
 };
 pub use play::{in_save_of, missing, needing, play_line, stop_line, unowned_line};
 pub use record::{lost_cars, record_cars, record_session};
+pub use resume::{CareerNeeds, ResumeNeed, resume_needs};
 pub use rows::{Played, drop_former_owners, settle_rows, stock_max_for};
 
 pub const GAME_PATH: &str = "swofty/careers/index.json";

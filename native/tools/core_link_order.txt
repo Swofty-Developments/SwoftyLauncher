@@ -230,3 +230,4 @@ src/core/live/live_state.cpp
 src/core/loading/game_settings.cpp
 src/core/assets/db_first_read.cpp
 src/core/guards/garage/pit_garage_state.cpp
+src/core/guards/career/resume_gate_guard.cpp

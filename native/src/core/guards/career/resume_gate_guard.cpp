@@ -1,0 +1,301 @@
+#include "core/guards/guard.hpp"
+#include "core/runtime/build.hpp"
+#include "core/runtime/build_proof.hpp"
+#include "core/runtime/runtime.hpp"
+
+#include <swofty/mem.hpp>
+#include <swofty/mixin.hpp>
+
+#include <cstdint>
+#include <mutex>
+#include <string>
+#include <vector>
+
+#include "core/career/career_saves_logic.hpp"
+#include "core/career/resume_gate_logic.hpp"
+
+// Resume Career gate (re/db/globals.tsv vt_Game_CareerContinueDriverViewModel and vt_Game_CareerContinueMyTeamViewModel,
+// slot 10 = Game_CareerContinue_HandleCommand, 0x141a1db90 on the KB build).
+//
+// The launcher writes resume_needs into settings.json: for each career its save slot key (the slot guid as 16 hex digits,
+// else the slot id; the key the core's career index keeps as `slot`) and the add-ons the career needs, each with
+// whether this profile has it on and at the version the career was made with. A press on a resume card
+// (slot_pressed, data = the card index 0..2, cards at vm+0x328 + i*0x540 with has_save at +0 and the slot id at +8) names
+// the card's save slot; the slot's key is found from the save slots the core listed at the last profile load or save.
+// A career whose add-ons are all on loads as the game does. One that needs an add-on this profile lacks does not load on
+// the press: the core raises the swofty_confirm message (the launcher's UI patch adds it, options load_anyway and back)
+// naming the add-ons. The message's response callback is {fn, ctx} passed to Ui_Message_Construct (r9), as the stock
+// purchase confirm does (0x1419e3d02..0x1419e3ccc on the KB build, the same instructions at 0x1419e54e2 on Steam 1.0.145);
+// fn(ctx, void **answer) runs when an option is chosen and *answer points at a string object whose text is at +9, the
+// chosen option's response (the stock handler 0x1419e3ff0 compares it with "yes"). load_anyway runs the game's own
+// slot_pressed for that card; back does nothing. Where the confirm cannot be raised (no message in the UI build, a build
+// the callback was not proven on) the first press raises the OK message and a second press of the same card loads it.
+// Leaving the screen, opening it again and Back reset the pending press.
+//
+// Each Driver Career card's title (site_Game_CareerContinue_DriverSlotTitle, rbx = slot info, esi = card) becomes
+// "DRIVER CAREER - ALL ADD-ONS ON" or "... - NEEDS: A, B" through a runtime string override. A career the launcher gave no needs for, a card whose
+// slot is not listed and a settings.json with no resume_needs are never gated.
+//
+// The cards' layout was checked on the KB build, Steam 1.0.145 and EA 1.0.145 (the test agent reads the same fields).
+// SWOFTY_RESUME_GATE=0 turns the gate off.
+
+namespace {
+
+constexpr const char *MIXIN = "swofty_core.dll (resume gate)";
+constexpr const char *TITLE_MIXIN = "swofty_core.dll (resume card status)";
+constexpr const char *DRIVER_VT = "vt_Game_CareerContinueDriverViewModel";
+constexpr const char *MY_TEAM_VT = "vt_Game_CareerContinueMyTeamViewModel";
+constexpr const char *TITLE_SITE = "site_Game_CareerContinue_DriverSlotTitle";
+constexpr const char *MAKE_STR = "Ne_Make_StrFromCStr";
+constexpr uintptr_t CARDS = 0x328, CARD_SIZE = 0x540, CARD_COUNT = 3;
+
+namespace bp = runtime::build_proof;
+namespace guards = swofty_core::guards;
+namespace rg = career::resume_gate;
+namespace cs = career::saves;
+namespace mem = swofty::mem;
+
+constexpr uint32_t PROVEN = bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145) | bp::bit(bp::Build::ea_1_0_145);
+constexpr bp::Proof CARD_LAYOUT{"the resume screens' cards (+0x328, 0x540 each; has_save +0, slot id +8)", PROVEN};
+constexpr bp::Gate CARD_GATE{"the resume gate's card reads", &CARD_LAYOUT};
+constexpr bp::Proof CONFIRM_CALLBACK{"the message response callback ({fn, ctx} at Ui_Message_Construct's r9; fn(ctx, answer**), "
+                                     "answer text at +9)",
+                                     PROVEN};
+constexpr bp::Gate CONFIRM_GATE{"the resume gate's confirm message", &CONFIRM_CALLBACK};
+constexpr bp::Proof TITLE_REGS{"the resume card title site (rbx = slot info, esi = card, rdx = key)", PROVEN};
+constexpr bp::Gate TITLE_GATE{"the resume card status", &TITLE_REGS};
+
+using Handle = uint64_t(void *vm, void *cmd, void *value);
+using MakeStr = uint32_t(void **out, const char *text, uint32_t flags, uintptr_t len);
+Handle *orig_driver = nullptr, *orig_my_team = nullptr;
+uintptr_t make_str = 0;
+bool confirm_on = false;
+
+std::mutex lock;
+rg::Table table;
+bool table_read = false;
+rg::State state;
+int logged = 0;
+
+struct Pending {
+    void *vm = nullptr;
+    Handle *orig = nullptr;
+    uint8_t card = 0;
+    std::string key, prompt;
+    bool open = false;
+} pending;
+
+char title_keys[CARD_COUNT][40];
+
+const rg::Table &needs_locked()
+{
+    if (!table_read) {
+        table_read = true;
+        table = rg::parse(runtime::settings_json_text());
+        swofty::log("[career] resume gate: %s", table.present ? "the launcher gave the careers' add-on needs"
+                                                                : "the launcher gave no career needs; no career is gated");
+    }
+    return table;
+}
+
+bool card_slot(void *vm, void *value, uint8_t &card, uint32_t &slot)
+{
+    auto base = reinterpret_cast<uintptr_t>(vm);
+    if (!value || !mem::read(reinterpret_cast<uintptr_t>(value) + 8, card) || card >= CARD_COUNT)
+        return false;
+    uintptr_t entry = base + CARDS + card * CARD_SIZE;
+    uint8_t has_save = 0;
+    return mem::read(entry, has_save) && has_save && mem::read(entry + 8, slot);
+}
+
+uint32_t command_hash(void *cmd)
+{
+    uintptr_t str = 0;
+    uint32_t hash = 0;
+    if (!cmd || !mem::read(reinterpret_cast<uintptr_t>(cmd), str) || !str || !mem::read(str, hash))
+        return 0;
+    return hash;
+}
+
+void press_card(Handle *orig, void *vm, uint8_t card)
+{
+    struct alignas(8) Value {
+        uint32_t type, pad;
+        uint64_t data, zero;
+    } v{4, 0, uint64_t(card), 0};
+    void *cmd = nullptr;
+    reinterpret_cast<MakeStr *>(make_str)(&cmd, "slot_pressed", 0, 0);
+    orig(vm, &cmd, &v);
+    reinterpret_cast<MakeStr *>(make_str)(&cmd, nullptr, 0, 0);
+}
+
+void answered(void *, void **answer)
+{
+    std::string text;
+    uintptr_t str = 0;
+    if (answer && mem::read(reinterpret_cast<uintptr_t>(answer), str) && str)
+        mem::c_string(str + 9, text, 32);
+    Pending p;
+    {
+        std::lock_guard<std::mutex> g(lock);
+        p = pending;
+        pending.open = false;
+    }
+    swofty::log("[career] resume gate: the confirm was answered \"%s\"", text.c_str());
+    if (p.open && p.vm && rg::loads(text))
+        press_card(p.orig, p.vm, p.card);
+}
+
+void confirm_failed(void *)
+{
+    std::string prompt;
+    {
+        std::lock_guard<std::mutex> g(lock);
+        if (!pending.open)
+            return;
+        pending.open = false;
+        state.armed = pending.key;
+        prompt = pending.prompt;
+    }
+    swofty::log("[career] resume gate: the confirm message did not show; the press-twice prompt is used");
+    runtime::popup_show("Add-ons do not match", prompt, "swofty_core");
+}
+
+void set_labels()
+{
+    static bool done = false;
+    if (done)
+        return;
+    done = true;
+    const SwoftyLang *l = runtime::lang_table();
+    l->override_set(nullptr, "lng_swofty_load_anyway", "Load Anyway");
+    l->override_set(nullptr, "lng_swofty_back", "Back");
+}
+
+uint64_t entry(Handle *orig, bool my_team, void *vm, void *cmd, void *value)
+{
+    uint32_t hash = command_hash(cmd);
+    if (hash == rg::CMD_TRANSITION_IN || hash == rg::CMD_BACK_PRESSED) {
+        std::lock_guard<std::mutex> g(lock);
+        rg::screen_changed(state);
+        pending.open = false;
+    } else if (hash == rg::CMD_SLOT_PRESSED) {
+        uint32_t slot = 0;
+        uint8_t card = 0;
+        if (card_slot(vm, value, card, slot)) {
+            std::string key = runtime::career_saves_slot_key(slot, my_team);
+            std::string title = "Add-ons do not match", body, prompt;
+            bool block = false, ask = false;
+            {
+                std::lock_guard<std::mutex> g(lock);
+                const rg::Entry *e = rg::find(needs_locked(), key);
+                block = !pending.open && rg::press(e, key, state) == rg::Verdict::Block;
+                if (pending.open)
+                    return 0;
+                if (logged++ < 20)
+                    swofty::log("[career] resume gate: slot %u key %s: %s%s", slot, key.empty() ? "(not listed)" : key.c_str(),
+                                e ? rg::status_line(e).c_str() : "no needs given", block ? "; held for the prompt" : "");
+                if (block) {
+                    body = rg::dialog_text(*e);
+                    prompt = rg::prompt_text(*e);
+                    ask = confirm_on;
+                    if (ask) {
+                        state.armed.clear();
+                        pending = {vm, orig, card, key, prompt, true};
+                    }
+                }
+            }
+            if (block) {
+                if (ask) {
+                    set_labels();
+                    if (runtime::popup_confirm(title, body, reinterpret_cast<void *>(&answered), nullptr, confirm_failed,
+                                               "swofty_core") != SWOFTY_ASSET_OK) {
+                        std::lock_guard<std::mutex> g(lock);
+                        pending.open = false;
+                        state.armed = key;
+                        ask = false;
+                    }
+                }
+                if (!ask)
+                    runtime::popup_show(title, prompt, "swofty_core");
+                return 0;
+            }
+        }
+    }
+    return orig(vm, cmd, value);
+}
+
+uint64_t driver_entry(void *vm, void *cmd, void *value) { return entry(orig_driver, false, vm, cmd, value); }
+uint64_t my_team_entry(void *vm, void *cmd, void *value) { return entry(orig_my_team, true, vm, cmd, value); }
+
+void title_site(SwoftyContext *c)
+{
+    uint8_t card = uint8_t(c->rsi);
+    uint64_t id = 0, guid = 0;
+    std::string current;
+    if (card >= CARD_COUNT || !mem::read(c->rbx, id) || !mem::read(c->rbx + 8, guid) ||
+        !mem::c_string(c->rdx, current, 64) || current != rg::STOCK_TITLE_KEY)
+        return;
+    std::string text;
+    {
+        std::lock_guard<std::mutex> g(lock);
+        const rg::Entry *e = rg::find(needs_locked(), cs::slot_key(id, guid));
+        if (!e)
+            return;
+        text = rg::card_title("DRIVER CAREER", *e);
+    }
+    snprintf(title_keys[card], sizeof title_keys[card], "lng_swofty_resume_title_%u", unsigned(card));
+    if (runtime::lang_table()->override_set(nullptr, title_keys[card], text.c_str()) == SWOFTY_ASSET_OK)
+        c->rdx = reinterpret_cast<uintptr_t>(title_keys[card]);
+}
+
+class ResumeGateGuard final : public guards::Guard {
+public:
+    ResumeGateGuard() : Guard(guards::CoreSetId::resume_gate) {}
+
+private:
+    bool titled = false;
+
+    void build(std::vector<runtime::CoreMixins> &out) override
+    {
+        char v[16] = {};
+        if (guards::env_off("SWOFTY_RESUME_GATE", v)) {
+            swofty::log("[career] resume gate off (SWOFTY_RESUME_GATE=%s)", v);
+            return;
+        }
+        if (!swofty::api->resolve(DRIVER_VT) || !swofty::api->resolve(MY_TEAM_VT)) {
+            swofty::log("[career] resume gate off: needs %s and %s, which this build does not resolve", DRIVER_VT, MY_TEAM_VT);
+            return;
+        }
+        if (!runtime::holds(CARD_GATE)) {
+            swofty::log("[career] resume gate off: the resume cards' layout is not proven on this build");
+            return;
+        }
+        make_str = swofty::api->resolve(MAKE_STR);
+        confirm_on = make_str && runtime::holds(CONFIRM_GATE);
+        out.push_back({MIXIN,
+                       {{DRIVER_VT, SWOFTY_MIXIN_WITH_ARG(SWOFTY_MIXIN_VTABLE, 10), 100, (void *)&driver_entry,
+                         (void **)&orig_driver},
+                        {MY_TEAM_VT, SWOFTY_MIXIN_WITH_ARG(SWOFTY_MIXIN_VTABLE, 10), 100, (void *)&my_team_entry,
+                         (void **)&orig_my_team}}});
+        if (swofty::api->resolve(TITLE_SITE) && runtime::holds(TITLE_GATE)) {
+            titled = true;
+            out.push_back({TITLE_MIXIN, {{TITLE_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&title_site, nullptr}}});
+        }
+    }
+
+    void settle() override
+    {
+        if (offered_set(MIXIN))
+            swofty::log("[career] resume gate %s; a career that needs add-ons this profile lacks asks before it loads (%s)",
+                        guards::install_state(runtime::core_mixins_active(MIXIN), "armed"),
+                        confirm_on ? "Load Anyway / Back" : "press twice");
+        if (titled && offered_set(TITLE_MIXIN))
+            swofty::log("[career] resume card status %s; Driver Career cards show their add-on status",
+                        guards::install_state(runtime::core_mixins_active(TITLE_MIXIN), "armed"));
+    }
+};
+
+ResumeGateGuard guard;
+
+}

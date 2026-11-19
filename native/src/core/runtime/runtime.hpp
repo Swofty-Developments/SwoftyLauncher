@@ -129,6 +129,8 @@ bool typing(const char *what);
 void mfd_setup();
 void mfd_tick();
 int popup_show(const std::string &title, const std::string &body, const std::string &by);
+int popup_confirm(const std::string &title, const std::string &body, void *fn, void *ctx, void (*failed)(void *),
+                  const std::string &by);
 int hud_toast(const std::string &text, const std::string &detail, float seconds, const std::string &by,
               const std::string &icon = {});
 const SwoftyCareerContent *career_content_table();
@@ -163,6 +165,7 @@ bool save_sandbox_armed();
 std::string save_sandbox_source();
 std::string save_sandbox_file();
 std::string career_saves_id_for_slot(const std::string &key);
+std::string career_saves_slot_key(uint64_t slot_id, bool my_team);
 // Saves that reached the save device: FileWrite calls the Steam proxy served, or on the EA copy the profile saves
 // written in place (save_sandbox_logic.hpp SaveSettle). save_sandbox_writes_what() names them for a log line.
 uint32_t save_sandbox_writes();

@@ -15,7 +15,7 @@ pub use f1_world::{
 };
 pub use home::{OFFLINE_TEXT, OFFLINE_TEXT_PATH, Popup, fe_home, hide_panel, offline_panel, popup_seen};
 pub use leaderboard::{FRIENDS_TAB_LABEL, FRIENDS_TAB_TEXT, leaderboard_glyphs};
-pub use messages::{MESSAGE_ID, TOAST_PREFIX, TOAST_SECONDS, hud_messages, messages};
+pub use messages::{CONFIRM_ID, MESSAGE_ID, TOAST_PREFIX, TOAST_SECONDS, hud_messages, messages};
 pub use persistent::persistent_gate;
 pub use routes::{anchor_routes, has_route, route_groups, routes, screen_route_groups};
 pub use screens::{flow_entries, regions, ui_data};

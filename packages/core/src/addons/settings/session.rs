@@ -39,6 +39,9 @@ pub struct SessionSettings {
     /// The plain store the core writes the profile's save containers to and reads put-backs from.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub plain_saves: Option<SessionPlainSaves>,
+    /// What each career in the save slots needs and whether this session has it: the in-game Resume Career list gates on it.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub resume_needs: Vec<crate::stdlib::careers::CareerNeeds>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -326,6 +329,7 @@ impl SessionSettings {
             plugins: Vec::new(),
             launcher_saves: None,
             plain_saves: None,
+            resume_needs: Vec::new(),
         };
         out.check_commands()?;
         Ok(out)

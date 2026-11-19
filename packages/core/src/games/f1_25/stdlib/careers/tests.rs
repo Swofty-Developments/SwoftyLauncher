@@ -902,3 +902,39 @@ fn migrating_moves_the_old_files_once_and_the_newer_ids_win() {
     assert!(!legacy_path(&game, IDS).exists());
     std::fs::remove_dir_all(&root).ok();
 }
+
+#[test]
+fn resume_needs_say_what_is_off_missing_or_another_version() {
+    let list = parse(&format!(
+        r#"[{{"career":"c1","slot":"67cdf241e227f68c","addons":[
+            {{"id":"a.on","version":"1.0.0","need":"^1.0.0"}},
+            {{"id":"a.off","version":"1.0.0"}},
+            {{"id":"a.old","version":"1.0.0","need":"^1.0.0"}},
+            {{"id":"a.gone","version":"1.0.0"}},
+            {{"id":"a.guess","why":"{ROWS_WHY}"}}]}},
+          {{"career":"c2","slot":"7","addons":[]}},
+          {{"career":"c3","addons":[{{"id":"a.on"}}]}},
+          {{"career":"c4","slot":"9","status":"deleted","addons":[{{"id":"a.on"}}]}}]"#
+    ));
+    let installed: BTreeMap<String, AddonManifest> = [
+        ("a.on", manifest("a.on", "1.2.0")),
+        ("a.off", manifest("a.off", "1.0.0")),
+        ("a.old", manifest("a.old", "2.0.0")),
+        ("a.guess", manifest("a.guess", "1.0.0")),
+    ]
+    .into_iter()
+    .map(|(k, v)| (k.to_owned(), v))
+    .collect();
+    let order = vec!["a.on".to_owned(), "a.old".to_owned()];
+    let out = resume_needs(&list, &order, &installed);
+    assert_eq!(out.len(), 2);
+    assert_eq!(out[0].key, "67cdf241e227f68c");
+    let by = |id: &str| out[0].addons.iter().find(|a| a.id == id).unwrap();
+    assert!(by("a.on").on && by("a.on").at_version);
+    assert!(!by("a.off").on && by("a.off").at_version);
+    assert!(by("a.old").on && !by("a.old").at_version);
+    assert!(!by("a.gone").on && by("a.gone").name == "a.gone");
+    assert_eq!(out[0].addons.len(), 4);
+    assert_eq!(out[1].key, "7");
+    assert!(out[1].addons.is_empty());
+}

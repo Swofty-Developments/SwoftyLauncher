@@ -231,8 +231,8 @@ fn by_id(data: &[u8]) -> Vec<(String, Node)> {
 fn online_messages_show_language_strings_and_others_stay_stock() {
     let stock = by_id(&messages_file());
     let ours = by_id(&messages(&messages_file(), true).unwrap());
-    assert_eq!(ours.len(), stock.len() + 1);
-    assert_eq!(ours.last().unwrap().0, MESSAGE_ID);
+    assert_eq!(ours.len(), stock.len() + 2);
+    assert_eq!(ours.last().unwrap().0, CONFIRM_ID);
     for ((id, m), (_, before)) in ours.iter().zip(&stock) {
         let o = m.o().unwrap();
         if !ONLINE_MESSAGES.contains(&id.as_str()) {
@@ -245,7 +245,7 @@ fn online_messages_show_language_strings_and_others_stay_stock() {
         assert_eq!(o.at("options").unwrap().a().unwrap().len(), 1);
     }
     let plain = by_id(&messages(&messages_file(), false).unwrap());
-    assert_eq!(plain.len(), stock.len() + 1);
+    assert_eq!(plain.len(), stock.len() + 2);
     for ((id, m), (_, before)) in plain.iter().zip(&stock) {
         let (o, b) = (m.o().unwrap(), before.o().unwrap());
         assert_eq!(o.str_at("title").unwrap(), b.str_at("title").unwrap(), "{id}");
@@ -302,6 +302,20 @@ fn the_runtime_message_reads_its_text_from_two_attributes() {
     assert_eq!(options[0].o().unwrap().str_at("response").unwrap(), "ok");
     let twice = by_id(&messages(&messages(&messages_file(), false).unwrap(), false).unwrap());
     assert_eq!(twice.iter().filter(|(id, _)| id == MESSAGE_ID).count(), 1);
+}
+
+#[test]
+fn the_confirm_message_offers_load_anyway_and_back() {
+    let ours = by_id(&messages(&messages_file(), false).unwrap());
+    let (_, m) = ours.iter().find(|(id, _)| id == CONFIRM_ID).unwrap();
+    let options = m.o().unwrap().at("options").unwrap().a().unwrap();
+    let responses: Vec<&str> = options
+        .iter()
+        .map(|o| o.o().unwrap().str_at("response").unwrap())
+        .collect();
+    assert_eq!(responses, ["load_anyway", "back"]);
+    let twice = by_id(&messages(&messages(&messages_file(), false).unwrap(), false).unwrap());
+    assert_eq!(twice.iter().filter(|(id, _)| id == CONFIRM_ID).count(), 1);
 }
 
 fn hud_message(id: &str) -> Node {

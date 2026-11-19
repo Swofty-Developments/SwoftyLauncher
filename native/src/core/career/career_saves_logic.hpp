@@ -59,6 +59,14 @@ inline std::string slot_key(uint64_t id, uint64_t guid)
     return b;
 }
 
+inline std::string slot_key_of(const std::vector<SlotRead> &slots, uint64_t id, bool my_team)
+{
+    for (const SlotRead &s : slots)
+        if (s.id == id && s.details && !!(s.flags & FLAG_MY_TEAM) == my_team)
+            return slot_key(s.id, s.guid);
+    return {};
+}
+
 inline std::string id_tail(std::string_view id)
 {
     size_t cut = id.rfind(':');
