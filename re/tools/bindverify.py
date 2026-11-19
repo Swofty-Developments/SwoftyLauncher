@@ -20,7 +20,7 @@ scan (exactly one hit), then the string anchor; apply_match checks the resolve s
 A packed set also applies attempt(): pages that read encrypted defer the binding.
 Exit status 0 only when every binding that is not marked unresolvable resolves.
 """
-import argparse, json, math, mmap, os, struct, sys
+import argparse, json, math, mmap, os, re, struct, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -323,6 +323,21 @@ def num(v, default):
         return 0
 
 
+LIVE_BIND = re.compile(r'\[bind\] id=(\S+) .*? result=resolved .*? match=0x([0-9a-f]+) verified=yes')
+
+
+def live_verified(log_lines):
+    """{binding id: match} for each binding the live run resolved with its expect checked on the clean exe, before the
+    core patched it. A dump taken with the core running holds the core's hook over the expect bytes of a hooked site, so
+    the dump cannot repeat that check; the log's verdict for the same match stands in for it."""
+    out = {}
+    for line in log_lines:
+        m = LIVE_BIND.search(line)
+        if m:
+            out[m.group(1)] = int(m.group(2), 16)
+    return out
+
+
 class Binding:
     def __init__(self, j):
         res = j.get('resolve') or {}
@@ -340,8 +355,9 @@ class Binding:
 
 
 class Resolver:
-    def __init__(self, img, doc, exe_size=None, kb_first=True):
+    def __init__(self, img, doc, exe_size=None, kb_first=True, live_verified=None):
         self.img = img
+        self.live_verified = live_verified or {}
         b = doc['build']
         self.same_build = num(b.get('pe_timestamp'), 0) == img.stamp
         set_size = num(b.get('size'), -1)
@@ -373,7 +389,9 @@ class Resolver:
             target = i + b.len + img.i32(at)
         elif b.rkind != 'addr':
             return None, 'unknown resolve kind'
-        if b.expect and (not img.readable(at, len(b.expect)) or list(img.mem[at:at + len(b.expect)]) != b.expect):
+        proven_live = self.live_verified.get(b.id) == match
+        if (b.expect and not proven_live
+                and (not img.readable(at, len(b.expect)) or list(img.mem[at:at + len(b.expect)]) != b.expect)):
             return None, 'expect bytes differ'
         code = b.kind in CODE_KINDS
         own = img.section_of(target)
@@ -731,16 +749,19 @@ def main(argv=None):
         ap.error('--write-hints needs --build')
     doc = json.load(open(a.set)) if a.set else gen_set(a.build)
     img = Image(a.image)
+    proven = {}
     if a.restore:
         import sigverify
         with open(a.restore, errors='replace') as f:
             sites, nbytes = sigverify.restore(img, f)
         print(f'restore: {sites} patched site(s), {nbytes} byte(s) put back from {a.restore}')
+        with open(a.restore, errors='replace') as f:
+            proven = live_verified(f)
     if a.write_hints:
         a.scan = True
     if a.exe_size is None and not img.flat:
         a.exe_size = os.path.getsize(a.image)
-    res = Resolver(img, doc, a.exe_size, kb_first=not a.scan)
+    res = Resolver(img, doc, a.exe_size, kb_first=not a.scan, live_verified=proven)
     results = res.run()
     cov = coverage(results)
     if a.json:
