@@ -217,6 +217,13 @@ bool game_object(const void *obj)
     return obj && mem::read(reinterpret_cast<uintptr_t>(obj), vt) && mem::in_image(vt);
 }
 
+bool bag_object(const void *bag)
+{
+    uintptr_t allocator = 0;
+    return bag && mem::read(reinterpret_cast<uintptr_t>(bag), allocator) &&
+           game_object(reinterpret_cast<const void *>(allocator));
+}
+
 template bool child_names<>(uintptr_t begin, uintptr_t end, std::vector<std::string> &out);
 
 }

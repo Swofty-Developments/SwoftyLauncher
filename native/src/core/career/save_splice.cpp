@@ -172,8 +172,8 @@ bool read_into_bag(void *bag, const std::vector<uint8_t> &bytes, std::string &wh
 {
     if (!bs::whole_bag(bytes.data(), bytes.size()))
         return why = "the stored bytes are not one whole bag", false;
-    if (!career::save_data::game_object(bag))
-        return why = "the target bag is not a game object", false;
+    if (!career::save_data::bag_object(bag))
+        return why = "the target bag has no game allocator", false;
     uintptr_t fn = 0;
     if (!b.codec_vt || !mem::read(b.codec_vt + 0x10, fn) || !mem::in_image(fn))
         return why = "the bag reader is not readable", false;
@@ -308,8 +308,9 @@ void capture_child(void *self, void *bag, uint8_t reset_on_error, uint64_t group
     }
     if (!registered_capture_on() || !plain::enabled() || !bag_proven())
         return;
-    if (!career::save_data::game_object(bag)) {
-        swofty::log("[saves] plain store: the bag of %s is not readable; it is left out of this load's generation", name.c_str());
+    if (!career::save_data::bag_object(bag)) {
+        swofty::log("[saves] plain store: the bag of %s has no game allocator; it is left out of this load's generation",
+                    name.c_str());
         return;
     }
     if (!encode(bag, bytes, why)) {
