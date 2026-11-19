@@ -263,6 +263,13 @@ typedef struct SwoftyEvTyreDamage {
     int32_t lap;
 } SwoftyEvTyreDamage;
 
+typedef struct SwoftyEvPitStopTyres {
+    uint32_t size, payload_version;
+    uint32_t car;
+    uint8_t kept;
+    uint8_t reserved[3];
+} SwoftyEvPitStopTyres;
+
 /* X(C struct, C++ namespace, C++ struct, size) */
 #define SWOFTY_EV_PAYLOADS(X)                                                                                   \
     X(SwoftyEvShell, career, Created, 8)                                                                       \
@@ -302,7 +309,8 @@ typedef struct SwoftyEvTyreDamage {
     X(SwoftyEvHeadResolve, drivers, HeadResolve, 40)                                                           \
     X(SwoftyEvCatalogueBuild, wearables, CatalogueBuild, 24)                                                   \
     X(SwoftyEvWeatherSetup, weather, Setup, 800)                                                               \
-    X(SwoftyEvTyreDamage, tyre_damage, Damage, 24)
+    X(SwoftyEvTyreDamage, tyre_damage, Damage, 24)                                                             \
+    X(SwoftyEvPitStopTyres, sessions, PitStopTyres, 16)
 
 /* X(C struct, C++ namespace, C++ struct, field, offset) */
 #define SWOFTY_EV_FIELDS(X)                                                                                     \
@@ -433,6 +441,8 @@ typedef struct SwoftyEvTyreDamage {
     X(SwoftyEvTyreDamage, tyre_damage, Damage, state, 13)                                                      \
     X(SwoftyEvTyreDamage, tyre_damage, Damage, previous, 14)                                                   \
     X(SwoftyEvTyreDamage, tyre_damage, Damage, deflation, 16)                                                  \
-    X(SwoftyEvTyreDamage, tyre_damage, Damage, lap, 20)
+    X(SwoftyEvTyreDamage, tyre_damage, Damage, lap, 20)                                                        \
+    X(SwoftyEvPitStopTyres, sessions, PitStopTyres, car, 8)                                                    \
+    X(SwoftyEvPitStopTyres, sessions, PitStopTyres, kept, 12)
 
 #endif

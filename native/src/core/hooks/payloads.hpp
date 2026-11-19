@@ -123,6 +123,14 @@ template <class Fire> bool pit_stop(Fire &&fire, uint32_t car, uint32_t stops)
     return fire(e);
 }
 
+template <class Fire> bool pit_stop_tyres(Fire &&fire, uint32_t car, bool kept)
+{
+    swofty::sessions::events::PitStopTyres e{};
+    e.car = car;
+    e.kept = kept ? 1 : 0;
+    return fire(e);
+}
+
 struct SoundSlot {
     std::string id;
     swofty::sounds::events::BundleResolve *payload;

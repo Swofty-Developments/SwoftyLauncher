@@ -85,6 +85,7 @@ inline constexpr Event EVENTS[] = {
     {"session.lap", N, "swofty::sessions::events::Lap", 1, true, Fired::yes, SWOFTY_EVENT_LAP},
     {"session.pit", N, "swofty::sessions::events::Pit", 1, false, Fired::game, nullptr},
     {"session.pit_stop", N, "swofty::sessions::events::PitStop", 1, false, Fired::game, nullptr},
+    {"session.pit_stop.tyres", N, "swofty::sessions::events::PitStopTyres", 1, false, Fired::game, nullptr},
     {"session.flag", N, "swofty::race_control::events::Flag", 1, false, Fired::yes, SWOFTY_EVENT_FLAG},
     {"session.safety_car.deploy", N, "swofty::race_control::events::SafetyCar", 1, false, Fired::yes, nullptr},
     {"session.red_flag", N, "swofty::race_control::events::RedFlag", 1, false, Fired::yes, nullptr},

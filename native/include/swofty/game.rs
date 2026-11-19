@@ -1948,7 +1948,10 @@ pub struct F1SeasonStandings {
     _pad_0x8: [u8; 0x18],
     pub points_begin: *mut StandingsRound,
     pub points_end: *mut StandingsRound,
-    _pad_0x30: [u8; 0x78],
+    _pad_0x30: [u8; 0x10],
+    pub table_begin: *mut StandingsRound,
+    pub table_end: *mut StandingsRound,
+    _pad_0x50: [u8; 0x58],
     pub extra_points_begin: *mut StandingsPoints,
     pub extra_points_end: *mut StandingsPoints,
     _pad_0xb8: [u8; 0x18],
@@ -1958,6 +1961,8 @@ pub struct F1SeasonStandings {
 const _: () = assert!(core::mem::offset_of!(F1SeasonStandings, vtable) == 0x0);
 const _: () = assert!(core::mem::offset_of!(F1SeasonStandings, points_begin) == 0x20);
 const _: () = assert!(core::mem::offset_of!(F1SeasonStandings, points_end) == 0x28);
+const _: () = assert!(core::mem::offset_of!(F1SeasonStandings, table_begin) == 0x40);
+const _: () = assert!(core::mem::offset_of!(F1SeasonStandings, table_end) == 0x48);
 const _: () = assert!(core::mem::offset_of!(F1SeasonStandings, extra_points_begin) == 0xa8);
 const _: () = assert!(core::mem::offset_of!(F1SeasonStandings, extra_points_end) == 0xb0);
 const _: () = assert!(core::mem::offset_of!(F1SeasonStandings, results_begin) == 0xd0);
@@ -2942,6 +2947,15 @@ const _: () = assert!(core::mem::offset_of!(StandingsSession, records_begin) == 
 const _: () = assert!(core::mem::offset_of!(StandingsSession, records_end) == 0x10);
 const _: () = assert!(core::mem::offset_of!(StandingsSession, session_id) == 0x20);
 const _: () = assert!(core::mem::size_of::<StandingsSession>() == 0x28);
+
+#[repr(C)]
+pub struct StandingsTableEntry {
+    pub key: u32,
+    pub total: i32,
+}
+const _: () = assert!(core::mem::offset_of!(StandingsTableEntry, key) == 0x0);
+const _: () = assert!(core::mem::offset_of!(StandingsTableEntry, total) == 0x4);
+const _: () = assert!(core::mem::size_of::<StandingsTableEntry>() == 0x8);
 
 #[repr(C)]
 pub struct StatInfo {

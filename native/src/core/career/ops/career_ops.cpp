@@ -504,6 +504,11 @@ static_assert(sizeof(g::StandingsRound) == cs::sd::ROUND_SIZE && offsetof(g::Sta
 static_assert(sizeof(g::StandingsSession) == cs::sd::SESSION_SIZE && offsetof(g::StandingsSession, records_begin) == 8 &&
               offsetof(g::StandingsSession, session_id) == cs::sd::SESSION_ID);
 static_assert(sizeof(g::StandingsPoints) == cs::sd::RECORD_SIZE);
+static_assert(offsetof(g::F1SeasonStandings, table_begin) == cs::sd::TABLE_ROUNDS);
+static_assert(offsetof(g::F1SeasonStandings, table_end) == cs::sd::TABLE_ROUNDS + 8);
+static_assert(sizeof(g::StandingsTableEntry) == cs::sd::RECORD_SIZE && sizeof(cs::sd::Record) == cs::sd::RECORD_SIZE &&
+              offsetof(g::StandingsTableEntry, key) == offsetof(cs::sd::Record, key) &&
+              offsetof(g::StandingsTableEntry, total) == offsetof(cs::sd::Record, points));
 static_assert(sizeof(g::StandingsResult) == cs::RESULT_SIZE && offsetof(g::StandingsResult, position) == cs::RESULT_POSITION &&
               offsetof(g::StandingsResult, status) == cs::RESULT_STATUS);
 

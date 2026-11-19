@@ -133,6 +133,17 @@ struct PitStop {
     uint32_t stops;
 };
 
+// A car's pit crew has fitted its tyres at a pit stop (notify), after the game's change (Game_PitLane_ApplyPitstopTyres).
+// kept is 1 when the box rule race_tyre_change false kept the fitted set for this stop.
+struct PitStopTyres {
+    static constexpr const char *point = "session.pit_stop.tyres";
+    static constexpr uint32_t version = 1;
+    uint32_t size, payload_version;
+    uint32_t car;
+    uint8_t kept;
+    uint8_t reserved[3];
+};
+
 }
 
 }
