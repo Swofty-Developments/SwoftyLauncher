@@ -1,9 +1,8 @@
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, HashSet};
 use std::ops::Range;
 
 use serde::{Deserialize, Serialize};
 use swofty_formats::gvdb::{Gvdb, instance_count_path};
-use swofty_formats::hash::fnv1a64;
 
 use crate::addons::settings::djb2;
 
@@ -98,15 +97,11 @@ thread_local! {
 pub fn counts(db: &Gvdb) -> Counts {
     #[cfg(test)]
     COUNTED.with(|n| n.set(n.get() + 1));
-    let mut index = HashMap::with_capacity(db.records.len());
-    for r in &db.records {
-        index.entry(r.key).or_insert(r);
-    }
-    let count = |path: String| -> Option<usize> { index.get(&fnv1a64(path))?.text().trim().parse().ok() };
+    let count = |path: String| -> Option<usize> { db.get(&path)?.text().trim().parse().ok() };
     let rows = |table: &str, row: &str| {
         count(instance_count_path(table, row)).unwrap_or_else(|| {
             (0..)
-                .take_while(|i| index.contains_key(&fnv1a64(format!("{table}.{row}_{i}._metadata_"))))
+                .take_while(|i| db.get(&format!("{table}.{row}_{i}._metadata_")).is_some())
                 .count()
         })
     };
@@ -388,6 +383,25 @@ mod tests {
         assert_eq!(stock_collisions(&base, &keys), keys);
         let fresh = HashSet::from([item_key("eSELivery", "other")]);
         assert!(stock_collisions(&base, &fresh).is_empty());
+    }
+
+    #[test]
+    fn counts_read_the_first_record_of_a_key_and_count_unnumbered_folders_by_their_rows() {
+        let mut db = pristine();
+        let row = "unlockable_se_livery";
+        let first = format!("{UNLOCK_LISTS}0.folder_0");
+        db.records
+            .push(Record::new(&format!("{first}._metadata_"), 4, "a"));
+        db.records
+            .push(Record::new(&format!("{first}._{row}_instancecount_"), 0, "2"));
+        db.records
+            .push(Record::new(&format!("{FOLDER}._{row}_instancecount_"), 0, "9"));
+        let got = counts(&db);
+        assert_eq!(
+            got,
+            Counts::from([((first, row), 2), ((FOLDER.to_owned(), row), 1)]),
+            "list 0 has no folder count, so its one folder row is counted; folder 23 keeps its first count"
+        );
     }
 
     #[test]

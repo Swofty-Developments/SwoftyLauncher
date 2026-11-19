@@ -107,6 +107,15 @@ impl Pipeline<'_, '_> {
         if fitted.is_empty() && !self.planner.has_db() && inputs.room_asked.is_none() {
             return Ok(DbEdits::default());
         }
+        let (store, game) = (self.run.store, self.run.game);
+        std::thread::scope(|scope| {
+            scope.spawn(|| crate::dbedit::Catalog::open(store, game).map(drop));
+            self.edit_database_rows(inputs, std16)
+        })
+    }
+
+    fn edit_database_rows(&mut self, inputs: &Inputs, std16: &BTreeMap<String, Std>) -> Result<DbEdits> {
+        let fitted = &inputs.tracks;
         let store = self.run.store;
         let ui_lists = track_ui_lists(self.run, fitted)?;
         let mut db = Database::read(&inputs.db_src)?;

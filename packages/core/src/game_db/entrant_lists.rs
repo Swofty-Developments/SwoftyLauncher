@@ -1,4 +1,4 @@
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeSet, HashSet};
 
 use swofty_formats::gvdb::{Gvdb, instance_count_path};
 use swofty_formats::hash::fnv1a64;
@@ -24,26 +24,18 @@ pub struct Before {
     refs: Vec<Option<Vec<String>>>,
 }
 
-fn index(db: &Gvdb) -> HashMap<u64, usize> {
-    let mut at = HashMap::with_capacity(db.records.len());
-    for (i, r) in db.records.iter().enumerate() {
-        at.entry(r.key).or_insert(i);
-    }
-    at
+fn text(db: &Gvdb, path: &str) -> Option<String> {
+    db.get(path).map(|r| r.text().into_owned())
 }
 
-fn text(db: &Gvdb, at: &HashMap<u64, usize>, path: &str) -> Option<String> {
-    at.get(&fnv1a64(path)).map(|&i| db.records[i].text().into_owned())
-}
-
-fn count(db: &Gvdb, at: &HashMap<u64, usize>, container: &str, row: &str) -> usize {
-    text(db, at, &instance_count_path(container, row))
+fn count(db: &Gvdb, container: &str, row: &str) -> usize {
+    text(db, &instance_count_path(container, row))
         .and_then(|t| t.trim().parse().ok())
         .unwrap_or(0)
 }
 
-fn name(db: &Gvdb, at: &HashMap<u64, usize>, i: usize) -> Option<String> {
-    text(db, at, &format!("{TABLE}.{ROW}_{i}._metadata_"))
+fn name(db: &Gvdb, i: usize) -> Option<String> {
+    text(db, &format!("{TABLE}.{ROW}_{i}._metadata_"))
 }
 
 fn items(value: &str) -> Vec<String> {
@@ -61,25 +53,24 @@ fn in_scope(path: &str) -> bool {
 
 impl StockLists {
     pub fn new(stock: &Gvdb) -> Self {
-        let at = index(stock);
-        let names = (0..count(stock, &at, TABLE, ROW))
-            .filter_map(|i| name(stock, &at, i))
+        let names = (0..count(stock, TABLE, ROW))
+            .filter_map(|i| name(stock, i))
             .collect();
         let mut refs = Vec::new();
-        for i in 0..count(stock, &at, "content_sets", "content_set") {
+        for i in 0..count(stock, "content_sets", "content_set") {
             let set = format!("content_sets.content_set_{i}");
-            for j in 0..count(stock, &at, &set, "available_entrant_lists") {
+            for j in 0..count(stock, &set, "available_entrant_lists") {
                 refs.push(format!("{set}.available_entrant_lists_{j}.entrant_lists"));
             }
         }
-        for i in 0..count(stock, &at, "entrants.entrant_setup_modes", "entrant_setup_mode") {
+        for i in 0..count(stock, "entrants.entrant_setup_modes", "entrant_setup_mode") {
             for field in ["entrant_lists", "selectable_entrant_lists"] {
                 refs.push(format!(
                     "entrants.entrant_setup_modes.entrant_setup_mode_{i}.{field}"
                 ));
             }
         }
-        refs.retain(|p| at.contains_key(&fnv1a64(p)));
+        refs.retain(|p| stock.get(p).is_some());
         let mut watched: HashSet<u64> = refs.iter().map(fnv1a64).collect();
         watched.insert(fnv1a64(instance_count_path(TABLE, ROW)));
         for i in 0..MAX_ROWS {
@@ -106,27 +97,21 @@ impl StockLists {
     }
 
     pub fn before(&self, db: &Gvdb) -> Before {
-        let at = index(db);
-        let count = count(db, &at, TABLE, ROW);
+        let count = count(db, TABLE, ROW);
         Before {
             count,
-            names: (0..count).filter_map(|i| name(db, &at, i)).collect(),
-            refs: self
-                .refs
-                .iter()
-                .map(|p| text(db, &at, p).map(|v| items(&v)))
-                .collect(),
+            names: (0..count).filter_map(|i| name(db, i)).collect(),
+            refs: self.refs.iter().map(|p| text(db, p).map(|v| items(&v))).collect(),
         }
     }
 
     /// The game's entrant lists one addon's ops renamed or removed, the rows a count it lowered hides
     /// and the list names it took out of content sets and entrant setup modes. `db` is left as the addon made it.
     pub fn missing(&self, db: &Gvdb, before: &Before) -> Vec<String> {
-        let at = index(db);
-        let had = count(db, &at, TABLE, ROW);
-        let shown: HashSet<String> = (0..had).filter_map(|i| name(db, &at, i)).collect();
+        let had = count(db, TABLE, ROW);
+        let shown: HashSet<String> = (0..had).filter_map(|i| name(db, i)).collect();
         let n = had.max(before.count);
-        let names: HashSet<String> = (0..n).filter_map(|i| name(db, &at, i)).collect();
+        let names: HashSet<String> = (0..n).filter_map(|i| name(db, i)).collect();
         let mut gone: BTreeSet<String> = before
             .names
             .iter()
@@ -134,10 +119,10 @@ impl StockLists {
             .cloned()
             .collect();
         for (path, was) in self.refs.iter().zip(&before.refs) {
-            let (Some(was), Some(&i)) = (was, at.get(&fnv1a64(path))) else {
+            let (Some(was), Some(now)) = (was, db.get(path)) else {
                 continue;
             };
-            let now = items(&db.records[i].text());
+            let now = items(&now.text());
             gone.extend(
                 was.iter()
                     .filter(|l| !now.contains(l) && self.names.contains(*l) && names.contains(*l))
@@ -269,5 +254,21 @@ mod tests {
         )
         .unwrap();
         assert!(lists.missing(&db, &before).is_empty());
+    }
+
+    #[test]
+    fn reads_the_first_record_of_a_key_as_the_ops_do() {
+        let stock = stock();
+        let lists = StockLists::new(&stock);
+        let mut db = stock.clone();
+        let before = lists.before(&db);
+        let modes = "entrants.entrant_setup_modes.entrant_setup_mode_0.entrant_lists";
+        db.records.push(rec(modes, 13, "f2_2025"));
+        assert!(
+            lists.missing(&db, &before).is_empty(),
+            "a later record of the key is not read"
+        );
+        db.set(modes, "f2_2025", None).unwrap();
+        assert_eq!(lists.missing(&db, &before), ["f2_2026"]);
     }
 }
