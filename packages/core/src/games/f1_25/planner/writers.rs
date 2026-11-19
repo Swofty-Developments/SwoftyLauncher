@@ -303,3 +303,13 @@ impl<'a> Planner<'a> {
             .collect()
     }
 }
+
+impl Planner<'_> {
+    pub fn pending_lang(&self) -> impl Iterator<Item = &Op> {
+        self.planned
+            .runtime
+            .iter()
+            .chain(self.files.iter())
+            .filter(|op| matches!(op.op, AssetOp::Lang(_)))
+    }
+}

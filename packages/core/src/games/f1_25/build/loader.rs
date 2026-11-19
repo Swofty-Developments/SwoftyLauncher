@@ -150,6 +150,36 @@ pub fn build_menus(
     Ok(menus.strings)
 }
 
+fn pending_english(store: &Store, planner: &crate::planner::Planner) -> Option<swofty_formats::lng::Lng> {
+    let mut out = swofty_formats::lng::Lng::default();
+    for op in planner.pending_lang() {
+        let AssetOp::Lang(lang) = &op.op else { continue };
+        match lang {
+            LangOp::Set { language, key, value } if matches!(language.as_str(), "*" | "eng") => {
+                out.entries.retain(|e| e.key != *key);
+                out.entries.push(swofty_formats::lng::Entry {
+                    key: key.clone(),
+                    value: value.clone(),
+                });
+            }
+            LangOp::Table { language, source } if matches!(language.as_str(), "*" | "eng") => {
+                let dir = super::source_dir(store, &op.origin.addon, source.root);
+                let read = source
+                    .resolve(&dir)
+                    .ok()
+                    .and_then(|p| std::fs::read(p).ok())
+                    .and_then(|b| swofty_formats::lng::Lng::parse(&b).ok());
+                for e in read.into_iter().flat_map(|l| l.entries) {
+                    out.entries.retain(|x| x.key != e.key);
+                    out.entries.push(e);
+                }
+            }
+            _ => {}
+        }
+    }
+    (!out.entries.is_empty()).then_some(out)
+}
+
 impl Pipeline<'_, '_> {
     /// Places the in-game loader's files and what the build hands it: the launcher's menus, addon screens
     /// and plugins, the telemetry and row id maps and the registry index.
@@ -187,13 +217,29 @@ impl Pipeline<'_, '_> {
                 ));
                 if menus && crate::stdlib::careers::resume_list_wanted() {
                     let aliases = edits.id_aliases.clone();
-                    match crate::stdlib::careers::resume_list_for(store, run.game, run.profile, &built.overlay, order.as_slice(), aliases) {
+                    let pending = pending_english(store, planner);
+                    match crate::stdlib::careers::resume_list_for(
+                        store,
+                        run.game,
+                        run.profile,
+                        &built.overlay,
+                        order.as_slice(),
+                        aliases,
+                        pending.as_ref(),
+                    ) {
                         Some((needs, rows)) => {
                             built.lines.push(format!(
                                 "ui: the Resume Career list screen has {} career(s); {} need something this build lacks",
                                 rows.len(),
                                 rows.iter().filter(|r| !r.ready).count()
                             ));
+                            for r in rows.iter().filter(|r| r.driver.is_empty() || r.team.is_empty()) {
+                                built.warnings.push(format!(
+                                    "ui: career {} on the Career list has no {} name; its saved ids name no row in this build",
+                                    r.key,
+                                    if r.driver.is_empty() { "driver" } else { "team" }
+                                ));
+                            }
                             session.resume_needs = needs;
                             session.resume_list = rows;
                             session.resume_list_on = true;
