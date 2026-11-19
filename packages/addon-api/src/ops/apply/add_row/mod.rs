@@ -313,7 +313,7 @@ pub(crate) fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddR
     let before = db.generation;
     for r in rows {
         match db.get_mut(r.key) {
-            Some(old) => *old = r,
+            Some(mut old) => old.set(r),
             None => db.push(r),
         }
     }
@@ -321,10 +321,9 @@ pub(crate) fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddR
         from: src_path.clone(),
         row: dst_path.clone(),
     });
-    let count = db
-        .get_mut(fnv1a64(&count_path))
-        .expect("instance_count read it above");
-    count.value = (n + 1).to_string().into_bytes();
+    db.get_mut(fnv1a64(&count_path))
+        .expect("instance_count read it above")
+        .set_value((n + 1).to_string().into_bytes());
     db.row_added(names, &path, row, n, &dst_path, before);
     db.added_rows.insert(dst_path);
     Ok(())

@@ -177,12 +177,12 @@ fn edit_list(db: &mut Db, select: &str, field: &str, edit: impl FnOnce(&mut Vec<
         true => resolve_path(db, &format!("{select}.{field}"))?.key(""),
         false => resolve_row(db, select)?.field(field),
     };
-    let r = db
+    let mut r = db
         .get_mut(key)
         .ok_or_else(|| Error::Resolve(format!("{select}.{field}: no such key")))?;
     let mut items: Vec<String> = list_items(&r.text()).map(String::from).collect();
     edit(&mut items);
-    r.value = items.join(",").into_bytes();
+    r.set_value(items.join(",").into_bytes());
     Ok(())
 }
 
@@ -215,7 +215,7 @@ pub(crate) fn apply(db: &mut Db, op: &DbOp, names: &dyn FieldNames, cx: &mut Cx)
             };
             let value = value.into_bytes();
             let was = match db.get_mut(key) {
-                Some(r) => Some(std::mem::replace(&mut r.value, value.clone())),
+                Some(mut r) => Some(r.replace_value(value.clone())),
                 None if *create => {
                     let tag =
                         tag.ok_or_else(|| Error::Resolve(format!("{select}.{field}: create needs type")))?;
@@ -274,9 +274,9 @@ pub(crate) fn apply(db: &mut Db, op: &DbOp, names: &dyn FieldNames, cx: &mut Cx)
             let value = hex_bytes(key, value)?;
             let k = resolve_key(db, key)?;
             let was = match db.get_mut(k) {
-                Some(r) => {
-                    r.tag = *tag;
-                    Some(std::mem::replace(&mut r.value, value.clone()))
+                Some(mut r) => {
+                    r.set_tag(*tag);
+                    Some(r.replace_value(value.clone()))
                 }
                 None => {
                     db.push(Record {
@@ -298,7 +298,7 @@ pub(crate) fn apply(db: &mut Db, op: &DbOp, names: &dyn FieldNames, cx: &mut Cx)
             }
             let value = labels.join(",").into_bytes();
             match db.get_mut(key) {
-                Some(r) => r.value = value,
+                Some(mut r) => r.set_value(value),
                 None => db.push(Record {
                     key,
                     tag: VIRTUAL_LISTS_TAG,

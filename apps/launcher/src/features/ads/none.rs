@@ -1,6 +1,6 @@
 //! No ad slots on other systems.
 
-use super::{Area, Unit};
+use super::{Area, Skip, Unit};
 use gpui_kit::Window;
 use std::path::Path;
 
@@ -17,8 +17,8 @@ pub(super) enum View {}
 pub(super) enum Backend {}
 
 impl Backend {
-    pub(super) fn start(_: &Window, _: &Path) -> Option<Self> {
-        None
+    pub(super) fn start(_: &Window, _: &Path) -> Result<Self, Skip> {
+        Err(Skip::Quiet)
     }
 
     pub(super) fn show(&mut self, _: Unit, _: &str, _: Area, _: f32) -> Option<Opener> {

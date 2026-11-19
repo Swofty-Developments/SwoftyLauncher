@@ -806,7 +806,12 @@ mod tests {
         )
         .unwrap()
         .unwrap();
-        match text_or_why(&known, "kernel32") {
+        let name = if known.value("*kernel32").is_some() {
+            "*kernel32"
+        } else {
+            "kernel32"
+        };
+        match text_or_why(&known, name) {
             Ok(text) => assert!(
                 text.eq_ignore_ascii_case("kernel32.dll"),
                 "{} has kernel32 as {text:?}",

@@ -168,8 +168,19 @@ impl fmt::Debug for Api {
     }
 }
 
+#[cfg(test)]
+thread_local! {
+    /// The server [`Api::new`] calls on this thread instead of the configured one, for tests of the code that
+    /// makes its own [`Api`].
+    pub(crate) static TEST_SERVER: std::cell::RefCell<Option<String>> = const { std::cell::RefCell::new(None) };
+}
+
 impl Api {
     pub fn new(token: &str) -> Self {
+        #[cfg(test)]
+        if let Some(server) = TEST_SERVER.with(|s| s.borrow().clone()) {
+            return Self::with_server(&server, token);
+        }
         Self::with_server(&crate::catalog::base_url(), token)
     }
 

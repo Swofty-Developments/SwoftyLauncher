@@ -51,6 +51,8 @@ pub struct Shell {
     pub(crate) requests: Option<SystemTime>,
     pub(crate) console: Option<AnyWindowHandle>,
     pub(crate) developer: crate::features::developer::Developer,
+    /// The check at start for an unanswered ad consent form is running.
+    pub(crate) consent_check: bool,
     reload_generation: u64,
     slow_logged: bool,
     pub(crate) updates: crate::features::update::Updates,
@@ -60,7 +62,7 @@ pub struct Shell {
     pub(crate) addons: crate::features::addons::AddonsPage,
     pub(crate) saves: crate::features::career_saves::SavesPage,
     pub(crate) tt: crate::features::time_trial::TtPage,
-    pub(crate) support: crate::features::support::SupportPage,
+    pub(crate) store_page: crate::features::store::StorePage,
     pub(crate) db: crate::features::db::Db,
     pub(crate) news: crate::features::news::News,
     pub(crate) news_scroll: crate::features::news::NewsScroll,

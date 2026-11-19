@@ -37,15 +37,15 @@ pub(crate) trait Host<T: Hosted>: Sized + 'static {
 
 Its async methods are generic over `H: Host<Self>`. They reach their own state and its `Needs` and nothing else, spawn in `Context<H>`, and write back through `host.split()` after the await. The state changes themselves are plain `&mut self` methods with unit tests.
 
-The support page (`features/support/state.rs`) is the worked example:
+The store page (`features/store/state.rs`) is the worked example:
 
 ```rust
-impl Hosted for SupportPage {
-    type Needs<'a> = SupportNeeds<'a>;  // { session: Option<&'a Session> }
-    type Change = SupportChange;        // Faces(Vec<String>)
+impl Hosted for StorePage {
+    type Needs<'a> = StoreNeeds<'a>;  // { session: Option<&'a Session> }
+    type Change = StoreChange;        // Images(Vec<String>)
 }
 
-impl SupportPage {
+impl StorePage {
     pub(super) fn save<H: Host<Self>>(host: &mut H, bio: String, cx: &mut Context<H>) {
         let (page, needs) = host.split();
         if !page.begin(needs.signed_in()) {
@@ -66,25 +66,25 @@ impl SupportPage {
     }
 }
 
-impl Host<SupportPage> for Shell {
-    fn split(&mut self) -> (&mut SupportPage, SupportNeeds<'_>) {
-        (&mut self.support, SupportNeeds { session: self.account.session.as_ref() })
+impl Host<StorePage> for Shell {
+    fn split(&mut self) -> (&mut StorePage, StoreNeeds<'_>) {
+        (&mut self.store_page, StoreNeeds { session: self.account.session.as_ref() })
     }
 
-    fn changed(&mut self, change: SupportChange, cx: &mut Context<Self>) {
+    fn changed(&mut self, change: StoreChange, cx: &mut Context<Self>) {
         match change {
-            SupportChange::Faces(faces) => Multiplayer::load_faces(self, faces, cx),
+            StoreChange::Images(images) => Multiplayer::load_faces(self, images, cx),
         }
     }
 }
 ```
 
-A page calls it with the shell as the host: `SupportPage::save(this, typed.clone(), cx)`. The test drives the plain change:
+A page calls it with the shell as the host: `StorePage::save(this, typed.clone(), cx)`. The test drives the plain change:
 
 ```rust
 #[test]
 fn a_saved_bio_reloads_and_a_failed_one_says_why() {
-    let mut page = SupportPage { busy: true, ..Default::default() };
+    let mut page = StorePage { busy: true, ..Default::default() };
     assert!(page.take_saved(Ok(())));
     page.busy = true;
     assert!(!page.take_saved(Err(error("too long"))));
@@ -138,7 +138,7 @@ These states run on the pattern:
 |---|---|---|---|
 | `Account` | sign in and out, session checks, avatar | `shell/account.rs` | `Account` |
 | `Crashes` | the crash watch | `shell/probe.rs` | `Crashes` |
-| `SupportPage` | goal, supporters, checkout, claim, save | `features/support/state.rs` | `SupportPage` |
+| `StorePage` | supporters, previews, checkout, claim, save | `features/store/state.rs` | `StorePage` |
 | `TtPage` | barred list, catalogue, runs, moderation, searches | `features/time_trial/state.rs` | `TtPage` |
 | `Browser` | catalog fetch, star sync, addon details, publisher profiles, the install queue | `features/browser/state.rs` | `Feed`, `riders`, `installed_version` |
 | `Db` | draft autosave, "Also changed by", game database, module views, search, unnamed keys, importing a file, sharing the addon, exporting game files, saving the draft; `DbChange` hands the shell a saved, new or imported addon to turn on and show, and `DbPrompt` hands it leaving the draft | `features/db/state.rs`, `Db::import` in `features/db/import.rs`, `Db::export_addon`, `Db::export_game_files_to`, `Db::save_bound` and `Db::save_new` in `features/db/save/` | `Autosave`, `DraftBook` (the draft and the DB Editor addons, `features/db/draft.rs`) |

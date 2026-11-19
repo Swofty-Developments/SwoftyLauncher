@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142b77fa0.c;doc:re/db/subsystems/game.md",
-  "notes": "en-verify claim 4: static init building a separate SC event table near 0x146077878 (SC_Deploy, SC_InThisLap, SC_Returned, VSC_Deploy, VSC_Returned); SC_Returned / VSC_Returned have no event in speechEvents.bin (silent); does not copy 0x1457bacf0"
+  "notes": "en-verify claim 4: static init building a separate SC event table near 0x146077878 (SC_Deploy, SC_InThisLap, SC_Returned, VSC_Deploy, VSC_Returned); SC_Returned / VSC_Returned have no event in speechEvents.bin (silent); does not copy 0x1457bacf0 | engine-re E1 2026-11-18: this static init also registers the GameMFDSystem type (0x1457bd410) and interns the 33 MFD action handles g_Game_MfdActionHandles 0x146078c90 (0x142b7afcb..0x142b7b3c7: MFD Button, Open Tab One..Six, Fuel Mix, Brake Bias, Differential, Engine Braking, ERS Mode Up/Down, MFD Menu, Brake Migration)."
  },
  "signature": {
   "id": "game.engineer_init_sc_event_table",

@@ -3,9 +3,9 @@
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 
-use swofty_formats::erp::{ErpFile, Packer};
+use swofty_formats::erp::ErpFile;
 
-use super::archives::{read_frag, write_archive_copying};
+use super::archives::{ArchiveWriter, read_frag, write_archive_copying};
 use super::node::err;
 use super::{Writer, ui_file};
 use super::{career_select, check, home_rows, hub, patch};
@@ -136,7 +136,7 @@ pub(super) fn hub_tabs(
     out: &Path,
     lines: &mut Vec<String>,
     warnings: &mut Vec<String>,
-    packer: &Packer,
+    archives: &ArchiveWriter,
 ) -> Result<Vec<&'static str>> {
     let mut pages = Vec::new();
     for m in settings.addons.iter().filter(|m| m.enabled) {
@@ -207,7 +207,7 @@ pub(super) fn hub_tabs(
             vec![(hub::UI, hub::UI_FRAGMENT, Box::new(move |_| Ok(ui)))],
             Vec::new(),
             plan.add,
-            packer,
+            archives,
         )?;
         written.push(rel);
     }

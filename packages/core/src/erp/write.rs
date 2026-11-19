@@ -1,16 +1,12 @@
 use std::path::{Path, PathBuf};
 
-use swofty_formats::erp::{Entry, Packer, Resource};
+use swofty_formats::erp::{Packer, Resource};
 
 use super::checks::is_handling;
-use super::{Archive, ErpBuild, Slot, fail, pack, served_at_runtime};
+use super::{Archive, ErpBuild, fail, pack, served_at_runtime};
+use crate::cache::archive_entry::ArchiveEntry;
 use crate::content::runtime_assets::{foreign_argument, layout_change};
 use crate::{Error, Result};
-
-/// The version of the cache key's layout, raised whenever what [`ArchiveWrite::key`] hashes changes, so
-/// an archive cached under an older layout is never taken for one written now. 2: a fragment hashes as
-/// stored or as pending.
-const KEY_VERSION: u32 = 2;
 
 pub(super) const HANDLING_WHY: &str =
     "a car handling file is read from the game file, as a hand copy puts it";
@@ -52,109 +48,30 @@ impl ArchiveWrite {
         }
     }
 
-    /// A hash of everything that decides the archive's bytes: the key's layout, the build pipeline,
-    /// the source archive (path, size and modified time) and every slot, stock by index and owned by
-    /// all of its fields and fragments: stored bytes, or the data and level of a pending compression.
-    fn key(&self) -> Option<String> {
-        use sha2::{Digest, Sha256};
-        let a = &self.archive;
-        let meta = std::fs::metadata(&a.file.path).ok()?;
-        let mut h = Sha256::new();
-        let mut field = |b: &[u8]| {
-            h.update((b.len() as u64).to_le_bytes());
-            h.update(b);
-        };
-        field(&KEY_VERSION.to_le_bytes());
-        field(env!("SWOFTY_PIPELINE").as_bytes());
-        field(self.rel.as_bytes());
-        field(a.file.path.to_string_lossy().as_bytes());
-        field(&meta.len().to_le_bytes());
-        field(format!("{:?}", meta.modified().ok()?).as_bytes());
-        field(&a.file.erp.header);
-        field(&a.file.erp.version.to_le_bytes());
-        for slot in &a.slots {
-            match slot {
-                Slot::Stock(i) => {
-                    field(b"stock");
-                    field(&(*i as u64).to_le_bytes());
-                }
-                Slot::Owned(r) => {
-                    field(b"owned");
-                    field(r.name.as_bytes());
-                    field(&r.kind);
-                    field(&r.unk);
-                    field(&r.hash);
-                    for f in &r.fragments {
-                        field(&f.name);
-                        field(&f.offset.to_le_bytes());
-                        field(&f.size.to_le_bytes());
-                        field(&f.flags.to_le_bytes());
-                        field(&[f.compression]);
-                        match f.pending() {
-                            Some((data, level)) => {
-                                field(b"pending");
-                                field(&level.to_le_bytes());
-                                field(data);
-                            }
-                            None => {
-                                field(b"stored");
-                                field(&f.packed().unwrap_or_default().to_le_bytes());
-                                field(f.raw().unwrap_or_default());
-                            }
-                        }
-                    }
-                    field(b"end");
-                }
-            }
-        }
-        Some(h.finalize().iter().map(|b| format!("{b:02x}")).collect())
-    }
-
-    /// Where the cache keeps this archive, under a key taken before any pending fragment is compressed.
-    fn entry(&self) -> Option<PathBuf> {
-        let dir = self.cache.as_deref()?;
-        let key = self.key()?;
-        Some(dir.join(&key[..2]).join(format!("{key}.erp")))
+    fn entry(&self) -> Option<ArchiveEntry> {
+        self.archive.cache_entry(self.cache.as_deref()?)
     }
 
     /// Links the archive from the cache `entry` an earlier build wrote and marks the entry used, leaving
     /// the archive's write time as it was; true when it did. Without hard links nothing is cached.
-    fn link(&self, entry: Option<&Path>) -> Result<bool> {
+    fn link(&self, entry: Option<&ArchiveEntry>) -> Result<bool> {
         if let Some(dir) = self.path.parent() {
             std::fs::create_dir_all(dir).map_err(crate::io_err(dir))?;
         }
-        let Some(c) = entry.filter(|c| c.is_file()) else {
-            return Ok(false);
-        };
-        if std::fs::hard_link(c, &self.path).is_err() {
-            return Ok(false);
-        }
-        crate::cache::mark_used(c);
-        Ok(true)
+        Ok(entry.is_some_and(|e| e.link_to(&self.path)))
     }
 
-    /// Writes the archive, its fragments compressed, and links it into the cache at `entry`.
-    fn write(self, entry: Option<PathBuf>) -> Result<()> {
+    /// Writes the archive, its fragments compressed, and keeps it in the cache at `entry`.
+    fn write(self, entry: Option<ArchiveEntry>) -> Result<()> {
         let Self {
             rel, archive, path, ..
         } = self;
-        let Archive { file, slots } = archive;
-        let entries = slots
-            .into_iter()
-            .map(|s| match s {
-                Slot::Stock(i) => Entry::Copy(&file.erp.resources[i]),
-                Slot::Owned(r) => Entry::Owned(r),
-            })
-            .collect();
-        file.write(entries, &path).map_err(|e| match e {
+        archive.write_to(&path).map_err(|e| match e {
             swofty_formats::Error::IoAt { .. } => Error::Formats(e),
             e => fail(format!("{rel}: {e}")),
         })?;
-        if let Some(c) = entry {
-            if let Some(dir) = c.parent() {
-                std::fs::create_dir_all(dir).ok();
-            }
-            std::fs::hard_link(&path, &c).ok();
+        if let Some(e) = entry {
+            e.keep(&path);
         }
         Ok(())
     }
@@ -174,7 +91,7 @@ fn run_all<'r>(
     for write in writes {
         cancel()?;
         let entry = write.entry();
-        let linked = write.link(entry.as_deref())?;
+        let linked = write.link(entry.as_ref())?;
         runs.push((write, entry, linked));
     }
     let mut owned: Vec<&mut Resource> = runs

@@ -1,7 +1,9 @@
 #pragma once
 
 #include "core/diagnostics/perf/counters.hpp"
+#include "core/diagnostics/perf/pacing_logic.hpp"
 #include "core/diagnostics/perf/vq.hpp"
+#include "core/diagnostics/perf_logic.hpp"
 
 #include <windows.h>
 
@@ -24,9 +26,11 @@ constexpr size_t LOCALS = 256;
 constexpr size_t HITCHES = 64;
 constexpr size_t SLOW_CALLS = 32;
 constexpr size_t TIMELINE = 160;
-constexpr int BUCKETS = 581;
-constexpr DWORD WRITE_MS = 15000;
-constexpr int LINE_EVERY = 4;
+constexpr int BUCKETS = pace::BUCKETS;
+constexpr DWORD SAMPLE_MS = 5000, WRITE_MS = 15000;
+constexpr unsigned WRITE_EVERY = WRITE_MS / SAMPLE_MS, LINE_EVERY = 60000 / SAMPLE_MS;
+constexpr size_t ROWS = 30;
+constexpr int SPIKES_SHOWN = 5;
 constexpr double MERGE_MS = 100;
 constexpr double PRESENT_GAP_MS = 250;
 constexpr double CLAIM_MS = 33;
@@ -101,7 +105,18 @@ struct Profiler {
     std::atomic<bool> claiming{false};
 
     SRWLOCK frame_lock = SRWLOCK_INIT;
-    uint32_t hist[BUCKETS], minute_hist[BUCKETS];
+    pace::Pace session_pace, minute_pace;
+
+    SRWLOCK present_lock = SRWLOCK_INIT;
+    pace::Presents session_presents, minute_presents;
+    void *main_chain;
+    uint64_t main_seen, prev_present, chain_learned;
+
+    std::mutex pace_lock;
+    std::deque<pace::Row> pace_rows;
+    pace::Tally tally;
+    std::string last_verdict;
+    ULARGE_INTEGER wall0;
     uint64_t frames, slow33, slow50, slow100, slow250, frames_over_1ms, frames_over_4ms, frame_ticks_max, swofty_frame_max;
     uint64_t seg_frames, seg_slow, seg_worst, seg_t0;
 
@@ -175,9 +190,6 @@ struct Profiler {
     uint64_t top_ticks(int game = -1);
     std::string top_list(const std::vector<std::pair<uint64_t, uint32_t>> &in, size_t n, double floor_ms);
 
-    int bucket(double ms);
-    double bucket_ms(int b);
-    double percentile(const uint32_t *h, double p);
     void hitch(uint64_t ended, double ms, double swofty_ms);
     void frame(uint64_t now, bool present);
     int frame_token(void **token, const uint32_t *index);
@@ -185,15 +197,20 @@ struct Profiler {
     void flow_tick();
     bool frame_claim();
     void frame_release();
+    void presented(void *swapchain, unsigned sync, unsigned flags, long hr, uint64_t entry, uint64_t before, uint64_t after);
     void mark(const char *kind, const std::string &what);
 
     std::string fixed(std::string s, size_t w);
     std::string clock_text(double s);
+    std::string wall_text(double at);
+    std::string during_at(double at);
+    std::vector<pace::SpikeRow> spike_rows(const pace::Pace &p, size_t n);
     Totals totals();
     double process_cores(double secs, double *user, double *kernel);
     void line(std::string &out, const char *fmt, ...);
     std::string report(const char *why);
     void write_report(const char *why);
+    void pace_lines(double secs, const pace::Pace &mp, const pace::Presents &pp, uint64_t df, const logic::CpuMinute &pc);
     void minute_line(Minute &last);
     DWORD write_loop();
     size_t crash_text(char *out, size_t cap, const uint32_t *open, int depth);

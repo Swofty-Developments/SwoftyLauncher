@@ -2,8 +2,8 @@ use super::evidence::Evidence;
 use super::wording::{list, name};
 use super::{Crash, Diagnosis};
 
-/// Imported Sepang, the heaviest imported track.
-pub(super) const SEPANG: &str = "mod.bahrain24";
+/// Imported Sepang, the heaviest imported track: the track code of its package.
+pub(super) const SEPANG: &str = "bahrain24";
 
 /// The fatal engine heap error the game ended with: its code and message.
 pub(super) fn heap_error(e: &Evidence) -> Option<(u32, String)> {
@@ -96,9 +96,14 @@ pub(super) fn replay_state() -> Diagnosis {
     }
 }
 
+/// Whether `id` is an import of Sepang, under any id the launcher installs one as.
+fn is_sepang(id: &str) -> bool {
+    id.split_once('.').is_some_and(|(_, name)| name == SEPANG)
+}
+
 pub(super) fn game_heap(e: &Evidence) -> Diagnosis {
     let mut tracks: Vec<&String> = e.tracks.iter().collect();
-    tracks.sort_by_key(|id| id.as_str() != SEPANG);
+    tracks.sort_by_key(|id| !is_sepang(id));
     let tracks: Vec<String> = tracks.iter().map(|id| name(e, id)).collect();
     let mut heavy = tracks.clone();
     let years_on = classic_years(e);
@@ -122,7 +127,7 @@ pub(super) fn game_heap(e: &Evidence) -> Diagnosis {
     }
     let mut steps = Vec::new();
     if let Some(first) = tracks.first() {
-        let one = tracks.len() == 1 || e.tracks.iter().any(|t| t == SEPANG);
+        let one = tracks.len() == 1 || e.tracks.iter().any(|t| is_sepang(t));
         let (which, at) = match one {
             true => (first.clone(), first.clone()),
             false => (list(&tracks), "one of them".to_owned()),

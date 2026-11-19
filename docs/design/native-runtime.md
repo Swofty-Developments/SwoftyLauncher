@@ -221,6 +221,44 @@ A `bindings.json` entry can carry `"deprecated": {"since", "reason", "replacemen
 - A malformed entry logs one `[core] <file>: ...` line at load and is left out: its binding resolves with no notice, or nothing is dropped. A `dropped` id the set still lists is malformed.
 - `native/test/binding_policy_test.cpp` covers each line and the malformed entries.
 
+## Code the core patches
+
+The server's memory challenges hash regions of the game's code and read-only data, so they skip every byte the core writes there. `native/build.sh` writes `swofty/addons/core/patches.json` next to `symbols.tsv`, with each site per supported build:
+
+```json
+{"schema": 1, "module": "swofty.core", "version": "1.10.0", "hook_length": 32, "jump_span": 14,
+ "builds": [{"exe_sha256": "d873...", "pe_timestamp": 1789118616, "exe_size": 408063872, "distribution": "Steam",
+             "packed": false, "set": "bindings.json", "resolved_here": false}],
+ "sites": [{"build": "d873...", "owner": "core/frontend/home_tiles.cpp", "name": "FeHome_Handle_Command",
+            "source": "binding", "write": "inline", "rva": 29047840, "length": 32, "exact": false},
+           {"build": "d873...", "owner": "core/frontend/hidden_tiles.cpp", "name": "S_LAN_TILE", "source": "signature",
+            "write": "bytes", "rva": null, "pattern": "4C 8D 05 ?? ...", "section": ".xtls", "anchor": 17,
+            "resolve": "addr", "length": 9, "exact": true}]}
+```
+
+- `write` is `inline` or `mid` (a safetyhook jump over whole instructions), `bytes`, `call` (a call's rel32), `vtable` (8 bytes a slot) or `import` (an import address table slot).
+- `length` counts the bytes written from `rva`. A hook's span is the whole instructions covering `jump_span` bytes. Without the exe it is `hook_length` and `exact` is false.
+- A binding site takes its rva from the build's set: the KB build's `rva`, or `match + anchor` for an address binding with a `match`.
+- A signature site (`runtime::Sig` and the `Target` structs with its layout) and every other binding site are left for a tool that holds the exe, with `rva` null:
+
+```text
+hit  = the one match of pattern in section ("*" is every executable section)
+site = hit + anchor                         resolve "addr"
+site = hit + next + int32 at (hit + anchor) resolve "rel32" or "riprel"
+```
+
+- An import row carries `"import": "<dll>!<function>"`, either part `*` for any. A binding row may carry the binding's `match` and `string_anchor`.
+- `SWOFTY_STEAM_EXE` resolves that build's sites on the exe and decodes each hook's instructions, through `re/tools/py`. `re/tools/py native/tools/patch_sites.py --resolve patches.json --image <exe> --sets <folder of bindings*.json> --out <file>` does the same for a written file: each row of the exe's build gets its rva and decoded length, or an `unresolved` reason.
+- Addon mixins are not in the file. The core installs them per session.
+
+`native/tools/patch_sites.py` reads the core's mixin tables, the SDK mixin macros, the binding sets and `native/tools/patch_sites.txt`. The list names the targets of every other line in `native/src` that writes code: a safetyhook create, a gated install, a `VirtualProtect` that grants write access, a patch set write and a `WriteProcessMemory`, plus the callers its `helper` patterns match. `python3 native/tools/patch_sites.py --check` (the `patch_sites` host test) fails on a line it does not list, on an entry whose line is gone, on a target that is not a signature or a binding, and on a mixin kind used outside an entry it reads. The build refuses to write the file on the same failures. A new hook adds its line to the list with its write and targets:
+
+```text
+core/frontend/mfd.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(update), reinterpret_cast<void *>(&update_hook)); => inline sig S_UPDATE
+```
+
+`native/test/patch_sites_test.py` covers the check and the file on a fixture tree, two sets and a synthetic exe.
+
 ## Step lines
 
 A boot or a load logs each phase as one stable line that the launcher's tools read (`diagnostics/steps.hpp`):

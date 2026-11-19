@@ -4,6 +4,7 @@
 #include "core/frontend/main_menu.hpp"
 #include "core/hud/toast.hpp"
 #include "core/services/lap_host.hpp"
+#include "core/render/badges/badge_images.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
@@ -426,6 +427,7 @@ void session_emit(const session_life::Emit &e)
         events_fire(SWOFTY_EVENT_SESSION_END, e.reason, 0, nullptr);
     }
     if (e.unload) {
+        badge_images::session_unloaded();
         swofty::log("[events] session.unload (StateUnloadSession entering)");
         events_fire(SWOFTY_EVENT_SESSION_UNLOAD, 0, 0, nullptr);
         runtime::hud_rebuilt();

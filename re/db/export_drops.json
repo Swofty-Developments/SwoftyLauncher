@@ -15,6 +15,12 @@
    "covers": "V100066",
    "reason": "renamed: it is std::_Throw_bad_optional_access, which only raises std::bad_optional_access and ends the process in a fast fail",
    "replacement": "Ne_Std_ThrowBadOptionalAccess"
+  },
+  "func:Game_PitStopActionObserver_SetTransitionSequence": {
+   "mode": "deprecated",
+   "since": "1.10.0",
+   "covers": "V11611",
+   "reason": "its notes' exe claim is wrong: the only refuel strings are parts of the EnsureFuelLoad race objective names, and there is no fuelling string"
   }
  }
 }

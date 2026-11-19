@@ -2,9 +2,12 @@
 //! Swofty registry, fetched and saved so the last catalog shows offline, and
 //! downloads checked against the size and SHA-256 the registry lists.
 
+pub mod media;
+pub mod pending;
 pub mod publishers;
 pub mod requires;
 pub mod search;
+pub mod source;
 pub mod stars;
 
 use std::io::{Read, Write};
@@ -87,6 +90,13 @@ pub struct Addon {
     pub latest: Option<Version>,
     #[serde(default)]
     pub versions: Vec<Version>,
+    /// The pictures, videos and video links on the addon's page, in order.
+    #[serde(
+        default,
+        deserialize_with = "media::listed",
+        skip_serializing_if = "Vec::is_empty"
+    )]
+    pub media: Vec<media::Media>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
@@ -294,12 +304,13 @@ pub fn updates<'a>(
         .collect()
 }
 
-/// [`updates`] for the addons in `store`, leaving out the ones the launcher ships.
+/// [`updates`] for the addons in `store`, leaving out the ones the launcher ships and the imports
+/// ([`source::takes_updates`]).
 pub fn store_updates(store: &Store, catalog: &[Addon], launcher: &semver::Version) -> Result<Vec<Update>> {
     let addons = store.addons()?;
-    let installed = addons
-        .values()
-        .filter(|m| !store.is_builtin(&m.id) && !crate::updates::managed::is_managed(&m.id));
+    let installed = addons.values().filter(|m| {
+        !store.is_builtin(&m.id) && !crate::updates::managed::is_managed(&m.id) && source::takes_updates(m)
+    });
     Ok(updates(installed, catalog, launcher))
 }
 
@@ -848,6 +859,7 @@ mod tests {
             updated_at: String::new(),
             latest: versions.first().cloned(),
             versions,
+            media: Vec::new(),
         }
     }
 

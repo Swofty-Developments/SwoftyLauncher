@@ -820,6 +820,15 @@ static void early_wait_mode(void)
     GetEnvironmentVariableA("SWOFTY_SLOW_DONE", done, sizeof done);
     printf("      CreateMutexW returned after %lu ms, slow mod done='%s'\n", (unsigned long)waited, done);
     expect(mx && !strcmp(done, "1"), "earlywait: CreateMutexW('Codemasters F1 25') returned only after the other thread's load finished");
+    char tid[16] = {0};
+    GetEnvironmentVariableA("SWOFTY_SLOW_THREAD", tid, sizeof tid);
+    DWORD loader = strtoul(tid, NULL, 10);
+    HANDLE th = loader && loader != GetCurrentThreadId() ? OpenThread(SYNCHRONIZE, FALSE, loader) : NULL;
+    DWORD exited = th ? WaitForSingleObject(th, 10000) : WAIT_OBJECT_0;
+    if (th)
+        CloseHandle(th);
+    expect(loader && loader != GetCurrentThreadId() && exited == WAIT_OBJECT_0,
+           "earlywait: the loading thread finishes the window stage and exits before the game does");
     printf("%s (%d failure(s))\n", fails ? "FAILED" : "ALL PASSED", fails);
     ExitProcess(fails != 0);
 }

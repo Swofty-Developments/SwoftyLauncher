@@ -816,29 +816,40 @@ fn a_rebuild_links_the_handling_and_ers_edits_of_a_put_car_archive_from_the_cach
     assert_eq!(first.plan.data[team], first.overlay.join("ers").join(team));
     let before = stages(&first);
     let cache = store.root.join("cache").join(crate::cache::ARCHIVES_DIR);
-    let mut kept = 0;
-    for sub in std::fs::read_dir(&cache).into_iter().flatten().flatten() {
-        for entry in std::fs::read_dir(sub.path()).into_iter().flatten().flatten() {
-            if entry.path().extension().is_some_and(|e| e == "erp") {
-                let mut f = std::fs::File::options().append(true).open(entry.path()).unwrap();
-                std::io::Write::write_all(&mut f, b"KEPT").unwrap();
-                kept += 1;
-            }
-        }
-    }
-    assert!(kept >= 2, "{kept} archive(s) in the cache");
+    let kept = crate::cache::archive_entry::kept_archives(&cache);
+    assert!(kept.len() >= 2, "{} archive(s) in the cache", kept.len());
+    let used = || kept.iter().filter(|k| k.with_extension("used").is_file()).count();
+    assert_eq!(used(), 0);
     std::fs::remove_dir_all(&first.overlay).unwrap();
 
     let second = build(&store, "default", &game).unwrap();
     assert_eq!(edits(&second), lines);
     assert_eq!(second.plan.data[team], second.overlay.join("ers").join(team));
-    let after = stages(&second);
-    for (stage, (before, after)) in ["handling", "ers"].iter().zip(before.iter().zip(&after)) {
+    assert_eq!(stages(&second), before);
+    assert_eq!(used(), kept.len(), "the rebuild links every edit the cache keeps");
+    #[cfg(unix)]
+    for stage in ["handling", "ers"] {
+        use std::os::unix::fs::MetadataExt;
+        let inode = |p: &std::path::Path| std::fs::metadata(p).unwrap().ino();
+        let out = inode(&second.overlay.join(stage).join(team));
         assert!(
-            after[..] == [&before[..], b"KEPT"].concat()[..],
+            kept.iter().any(|k| inode(k) == out),
             "the {stage} edit of the put archive is not the one the cache keeps"
         );
     }
+
+    for k in &kept {
+        let mut f = std::fs::File::options().append(true).open(k).unwrap();
+        std::io::Write::write_all(&mut f, b"KEPT").unwrap();
+    }
+    std::fs::remove_dir_all(&second.overlay).unwrap();
+    let third = build(&store, "default", &game).unwrap();
+    assert_eq!(edits(&third), lines);
+    assert_eq!(
+        stages(&third),
+        before,
+        "an edit whose cached bytes changed is made again, not linked"
+    );
     std::fs::remove_dir_all(&root).ok();
 }
 

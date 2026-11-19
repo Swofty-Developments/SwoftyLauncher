@@ -13,7 +13,10 @@ use crate::shell::Shell;
 /// Whether a board shows its track's download button for where the addon stands: until it is
 /// installed, and only when this launcher can install a version of it.
 pub(super) fn offers_track(offer: &Offer) -> bool {
-    !matches!(offer, Offer::Installed(_) | Offer::Update(..) | Offer::TooOld)
+    !matches!(
+        offer,
+        Offer::Installed(_) | Offer::Update(..) | Offer::UpdateHere(..) | Offer::Separate(_) | Offer::TooOld
+    )
 }
 
 /// A byline as a track list shows it: `by Twilight Sparkle`, with the addon's id after it when that is

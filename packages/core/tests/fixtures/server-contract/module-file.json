@@ -1,0 +1,20 @@
+{
+  "about": "The Time Trial game module's file.",
+  "answer": {
+    "body": {
+      "bytes": 18
+    },
+    "status": 200
+  },
+  "request": {
+    "body": null,
+    "headers": {
+      "accept": "*/*",
+      "accept-encoding": "identity",
+      "authorization": "Bearer <token>",
+      "user-agent": "swofty-launcher"
+    },
+    "method": "GET",
+    "path": "/v1/modules/file?name=tt-game&platform=windows-x86_64&version=2026.11.18.2"
+  }
+}
