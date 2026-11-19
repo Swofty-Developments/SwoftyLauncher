@@ -28,8 +28,8 @@ std::string registry_of_table(const std::string &table)
     for (auto &[name, registry] : ROW_TABLES)
         if (table == name)
             return registry;
-    if (table.rfind("unlockable_content.unlockable_items.unlockable_item_list_", 0) == 0 &&
-        table.size() > 16 && table.compare(table.size() - 16, 16, ".unlockable_item") == 0)
+    if (table.rfind("unlockable_content.unlockable_items.unlockable_item_list_", 0) == 0 && table.size() > 16 &&
+        table.compare(table.size() - 16, 16, ".unlockable_item") == 0)
         return "livery.unlock";
     return {};
 }
