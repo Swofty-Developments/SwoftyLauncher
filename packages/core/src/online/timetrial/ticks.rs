@@ -606,7 +606,7 @@ mod tests {
 
     #[test]
     fn a_discarded_lap_leaves_a_gap_in_the_numbers_and_the_laps_around_it_keep_their_own_receipts() {
-        let (data, game) = temp("gap");
+        let (data, game) = temp("gap-discarded");
         let fake = Fake::new((1..=10).map(|n| Ok(receipt(n))).collect());
         let mut sender = Sender::new(&data, folders(&data, &game));
         for (seq, (lap, which, game_ms, at)) in [
