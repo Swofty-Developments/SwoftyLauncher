@@ -16,7 +16,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(HERE, "..", ".."))
-DEFAULT_MODULES = os.path.join(ROOT, "packages", "core", "src", "dbedit", "modules.json")
+DEFAULT_MODULES = os.path.join(ROOT, "packages", "core", "src", "games", "f1_25", "dbedit", "modules.json")
 
 _spec = importlib.util.spec_from_file_location("gamedb_rw", os.path.join(HERE, "..", "gamedb.py"))
 gamedb = importlib.util.module_from_spec(_spec)

@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SOURCE = HERE.parents[4] / "packages" / "core" / "src" / "activation" / "track_tables.json"
+SOURCE = HERE.parents[4] / "packages" / "core" / "src" / "games" / "f1_25" / "activation" / "track_tables.json"
 
 
 def render():

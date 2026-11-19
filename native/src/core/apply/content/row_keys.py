@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SOURCE = HERE.parents[4] / "packages" / "core" / "src" / "activation" / "row_keys.txt.gz"
+SOURCE = HERE.parents[4] / "packages" / "core" / "src" / "games" / "f1_25" / "activation" / "row_keys.txt.gz"
 ROOTS = ["audio.audio_bundle_settings.audio_bundle_settings_N", "car_setup.presets.vehicle_package_setups_N",
          "drs.drs_allowed_lap.drs_allowed_lap_group_N",
          "entrants.entrant_lists.entrant_list_N", "entrants.entrant_lists.entrants.entrant_N",
