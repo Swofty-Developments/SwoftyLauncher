@@ -1,3 +1,4 @@
+#include "core/guards/garage/cutscene_team_logic.hpp"
 #include "core/guards/garage/garage_crew_logic.hpp"
 #include "core/guards/guard.hpp"
 #include "core/guards/memory.hpp"
@@ -12,6 +13,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <mutex>
+#include <utility>
 #include <vector>
 
 // Garage crew guard (re/db/globals.tsv site_Game_GarageCrew_SpawnVector).
@@ -48,6 +51,15 @@
 // movzx esi, [rdi + 0xe0] above the test at 0x14038ba27, so the null scene faults at +0x2d30. At
 // site_Game_GarageCrew_SceneRead the guard sets esi = 0 and continues at site_Game_GarageCrew_SceneTest, which takes
 // the game's own null path.
+//
+// The garage cutscene states (driver getting ready, crew working on the car, driver in the car and the others in
+// CUTSCENES below) read the team's record from the key they hold at [this + 0x31a]: after the 0x3fff0000 test they take
+// the record at [[[session + 0x290] + set * 0x10 + 0x2c8] + 8][team * 0x10 + 8] and read its label at +0x18 with no
+// null test. A team the game has not loaded a team record for (a 1990 team in a career: its rows are not available
+// until a list names them) makes the cutscene's Initialise fault reading 0x18 (Game_DriverGettingReady01_Initialise
+// +0xe60, 1.10 dev). At each of those reads the guard looks at rax, the record: when it is null the cutscene takes the
+// game's own no-team path, the je of the 0x3fff0000 test found in the bytes before the site, as if the key held the
+// sentinel. The cutscene then shows no team; the rest of the garage is untouched.
 //
 // SWOFTY_GARAGE_CREW_GUARD=0 turns it off.
 
@@ -174,6 +186,93 @@ void scene_read(SwoftyContext *c)
     c->rip = scene_test;
 }
 
+constexpr const char *CUTSCENES[][2] = {
+    {"site_Game_CrewWorkingOnCar_TeamRecord", "CrewWorkingOnCar"},
+    {"site_Game_SwapTyres_TeamRecord", "SwapTyres"},
+    {"site_Game_DriverSatInCar06_TeamRecord", "DriverSatInCar06"},
+    {"site_Game_GettingReadyToRace_TeamRecordA", "GettingReadyToRace"},
+    {"site_Game_GettingReadyToRace_TeamRecordB", "GettingReadyToRace"},
+    {"site_Game_GettingReadyToRaceIdle01_TeamRecord", "GettingReadyToRaceIdle01"},
+    {"site_Game_DriverInCarIdle03_TeamRecordA", "DriverInCarIdle03"},
+    {"site_Game_DriverInCarIdle03_TeamRecordB", "DriverInCarIdle03"},
+    {"site_Game_DriverInCarIdle02_TeamRecord", "DriverInCarIdle02"},
+    {"site_Game_DriverInCarIdle04_TeamRecord", "DriverInCarIdle04"},
+    {"site_Game_DriverInCarIdle05_TeamRecordA", "DriverInCarIdle05"},
+    {"site_Game_DriverInCarIdle05_TeamRecordB", "DriverInCarIdle05"},
+    {"site_Game_DriverGettingReady01_TeamRecord", "DriverGettingReady01"},
+    {"site_Game_DriverGettingWeighed01_TeamRecordA", "DriverGettingWeighed01"},
+    {"site_Game_DriverGettingWeighed01_TeamRecordB", "DriverGettingWeighed01"},
+    {"site_Game_DriverTalkToEngineer01_TeamRecordA", "DriverTalkToEngineer01"},
+    {"site_Game_DriverTalkToEngineer01_TeamRecordB", "DriverTalkToEngineer01"},
+    {"site_Game_DriverTalksToCrew01_TeamRecord", "DriverTalksToCrew01"},
+    {"site_Game_CutsceneAt354530_TeamRecord", "the state at 0x140354530"},
+};
+constexpr size_t CUTSCENE_COUNT = sizeof CUTSCENES / sizeof CUTSCENES[0];
+
+uintptr_t cutscene_resume[CUTSCENE_COUNT];
+std::mutex cutscene_mu;
+runtime::cutscene_team::Seen cutscene_seen;
+
+template <size_t N> void cutscene_team(SwoftyContext *c)
+{
+    if (!runtime::cutscene_team::record_missing(c->rax))
+        return;
+    uintptr_t target = cutscene_resume[N];
+    if (!target)
+        return;
+    uint32_t team = runtime::cutscene_team::team_of(c->rcx);
+    bool say;
+    {
+        std::lock_guard g(cutscene_mu);
+        say = cutscene_seen.first(uint32_t(N), team);
+    }
+    if (say)
+        swofty::log("[garage] cutscene %s: team %u has no team record; showing no team", CUTSCENES[N][1], unsigned(team));
+    c->rip = target;
+}
+
+const SwoftyMixin CUTSCENE_MIXINS[CUTSCENE_COUNT] = {
+    {"site_Game_CrewWorkingOnCar_TeamRecord", SWOFTY_MIXIN_SITE, 100, (void *)&cutscene_team<0>, nullptr},
+    {"site_Game_SwapTyres_TeamRecord", SWOFTY_MIXIN_SITE, 100, (void *)&cutscene_team<1>, nullptr},
+    {"site_Game_DriverSatInCar06_TeamRecord", SWOFTY_MIXIN_SITE, 100, (void *)&cutscene_team<2>, nullptr},
+    {"site_Game_GettingReadyToRace_TeamRecordA", SWOFTY_MIXIN_SITE, 100, (void *)&cutscene_team<3>, nullptr},
+    {"site_Game_GettingReadyToRace_TeamRecordB", SWOFTY_MIXIN_SITE, 100, (void *)&cutscene_team<4>, nullptr},
+    {"site_Game_GettingReadyToRaceIdle01_TeamRecord", SWOFTY_MIXIN_SITE, 100, (void *)&cutscene_team<5>, nullptr},
+    {"site_Game_DriverInCarIdle03_TeamRecordA", SWOFTY_MIXIN_SITE, 100, (void *)&cutscene_team<6>, nullptr},
+    {"site_Game_DriverInCarIdle03_TeamRecordB", SWOFTY_MIXIN_SITE, 100, (void *)&cutscene_team<7>, nullptr},
+    {"site_Game_DriverInCarIdle02_TeamRecord", SWOFTY_MIXIN_SITE, 100, (void *)&cutscene_team<8>, nullptr},
+    {"site_Game_DriverInCarIdle04_TeamRecord", SWOFTY_MIXIN_SITE, 100, (void *)&cutscene_team<9>, nullptr},
+    {"site_Game_DriverInCarIdle05_TeamRecordA", SWOFTY_MIXIN_SITE, 100, (void *)&cutscene_team<10>, nullptr},
+    {"site_Game_DriverInCarIdle05_TeamRecordB", SWOFTY_MIXIN_SITE, 100, (void *)&cutscene_team<11>, nullptr},
+    {"site_Game_DriverGettingReady01_TeamRecord", SWOFTY_MIXIN_SITE, 100, (void *)&cutscene_team<12>, nullptr},
+    {"site_Game_DriverGettingWeighed01_TeamRecordA", SWOFTY_MIXIN_SITE, 100, (void *)&cutscene_team<13>, nullptr},
+    {"site_Game_DriverGettingWeighed01_TeamRecordB", SWOFTY_MIXIN_SITE, 100, (void *)&cutscene_team<14>, nullptr},
+    {"site_Game_DriverTalkToEngineer01_TeamRecordA", SWOFTY_MIXIN_SITE, 100, (void *)&cutscene_team<15>, nullptr},
+    {"site_Game_DriverTalkToEngineer01_TeamRecordB", SWOFTY_MIXIN_SITE, 100, (void *)&cutscene_team<16>, nullptr},
+    {"site_Game_DriverTalksToCrew01_TeamRecord", SWOFTY_MIXIN_SITE, 100, (void *)&cutscene_team<17>, nullptr},
+    {"site_Game_CutsceneAt354530_TeamRecord", SWOFTY_MIXIN_SITE, 100, (void *)&cutscene_team<18>, nullptr},
+};
+
+void arm_cutscenes(runtime::CoreMixins &set)
+{
+    size_t armed = 0;
+    for (size_t n = 0; n < CUTSCENE_COUNT; n++) {
+        uintptr_t at = swofty::api->resolve(CUTSCENE_MIXINS[n].target);
+        uint8_t code[runtime::cutscene_team::LOOKBACK] = {};
+        if (!at || !guards::read_if_readable(at - sizeof code, code, sizeof code, nullptr))
+            continue;
+        cutscene_resume[n] = runtime::cutscene_team::no_team_target(code, sizeof code, at - sizeof code, at);
+        if (!cutscene_resume[n])
+            continue;
+        set.mixins.push_back(CUTSCENE_MIXINS[n]);
+        armed++;
+    }
+    if (armed != CUTSCENE_COUNT)
+        swofty::log("[garage] cutscene team guard: %u of %u cutscene sites resolve with a no-team path on this build; the "
+                    "rest keep the game's lookup",
+                    unsigned(armed), unsigned(CUTSCENE_COUNT));
+}
+
 class CrewGuard final : public guards::SiteGuard {
 public:
     CrewGuard()
@@ -198,6 +297,7 @@ private:
         else
             swofty::log("[garage] pit stops crew guard off: needs %s and %s, which this build does not resolve", SETUP_SITE,
                         SETUP_SKIP);
+        arm_cutscenes(set);
         scene_test = swofty::api->resolve(SCENE_TEST);
         if (scene_test && swofty::api->resolve(SCENE_SITE))
             set.mixins.push_back({SCENE_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&scene_read, nullptr});

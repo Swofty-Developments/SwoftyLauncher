@@ -234,6 +234,8 @@
 [garage] garage %u has no cars with a crew template; its pit stops crew is not set up
 [garage] garage %u: team %u car #%u has no pit stops crew template; its pit stops crew is not set up, the car still races
 [garage] the garage crew scene is missing for this track (garage crew scene 0x%llx, vehicle scene 0x%llx, equipment scene 0x%llx); no garage crew is shown%s
+[garage] cutscene %s: team %u has no team record; showing no team
+[garage] cutscene team guard: %u of %u cutscene sites resolve with a no-team path on this build; the rest keep the game's lookup
 [garage] pit stops crew guard off: needs %s and %s, which this build does not resolve
 [garage] crew scene guard off: needs %s and %s, which this build does not resolve
 
