@@ -291,6 +291,7 @@ std::vector<CoreMixins> watchdog_grace_mixins();
 void watchdog_grace_commit();
 void watchdog_flow(uint32_t hash, uint32_t to, const char *name);
 void hub_calendar_flow(uint32_t hash, uint32_t to);
+void hub_calendar_team_hq();
 void hub_calendar_added(void *calendar, const void *activity, uint32_t day);
 void load_stall_flow(uint32_t hash, uint32_t to, const char *name);
 void session_job_probe_flow(uint32_t to, const char *name);

@@ -12,6 +12,11 @@
 // 0x1456d0b20 (RaceWeekend stays, PressInterview 2, EndSeason 3, every other type Team HQ). No such activity is
 // Team HQ too, and a season that is over answers 3 without the walk. The collector also drops one activity class by
 // RTTI, which the core can't tell apart, so each item carries its vtable.
+//
+// A career session enters SessionStateCareerHub right after StateSession enters and leaves it in the same
+// millisecond, healthy or not. The tell of the stuck-weekend crash is StateSession itself ending within FAST_END_MS of
+// its start after the hub opened; SessionWatch reports that. A weekend whose progress state is past not started with
+// no session complete is one the game saved as started without a session run (never_ran).
 
 namespace runtime::hub_calendar {
 
@@ -25,8 +30,15 @@ constexpr uint32_t djb2(const char *s)
 
 constexpr uint32_t HUB = djb2("SessionStateCareerHub");
 static_assert(HUB == 0x42843edbu, "state name hashing drifted");
+constexpr uint32_t SESSION = djb2("StateSession");
+static_assert(SESSION == 0x1505f42au, "state name hashing drifted");
+constexpr uint32_t UNLOAD = djb2("StateUnloadSession");
+static_assert(UNLOAD == 0xd432de2du, "state name hashing drifted");
 
-constexpr uint64_t AT_ONCE_MS = 1000;
+constexpr uint64_t FAST_END_MS = 2000;
+constexpr uint32_t WEEKEND_NOT_STARTED = 0;
+constexpr uint32_t WEEKEND_IN_PROGRESS = 1;
+constexpr uint32_t WEEKEND_COMPLETE = 2;
 constexpr uint32_t MINUTES_PER_DAY = 1440;
 constexpr size_t MAX_ITEMS = 512;
 constexpr uint64_t SLOT_SIZE = 16;
@@ -191,28 +203,74 @@ inline std::string describe(const Decision &d, const std::vector<Item> &today, b
     return s + b;
 }
 
-// When the hub opened, so its exit can tell it left at once.
-class Watch {
+// One session from StateSession entering to its end: ended() reports a session whose career hub opened and that
+// ended within FAST_END_MS of its start, with the milliseconds from the start to the end and to the hub.
+class SessionWatch {
 public:
-    void entered(uint64_t now)
+    void started(uint64_t now)
     {
-        at_ = now;
+        start_ = now;
         open_ = true;
+        hub_ = false;
     }
 
-    bool left(uint64_t now, uint64_t &ms)
+    void hub(uint64_t now)
+    {
+        if (!open_ || hub_)
+            return;
+        hub_ = true;
+        hub_at_ = now;
+    }
+
+    bool ended(uint64_t now, uint64_t &ms, uint64_t &hub_ms)
     {
         if (!open_)
             return false;
         open_ = false;
-        ms = now >= at_ ? now - at_ : 0;
-        return ms < AT_ONCE_MS;
+        ms = now >= start_ ? now - start_ : 0;
+        hub_ms = hub_at_ >= start_ ? hub_at_ - start_ : 0;
+        return hub_ && ms < FAST_END_MS;
     }
 
 private:
-    uint64_t at_ = 0;
-    bool open_ = false;
+    uint64_t start_ = 0, hub_at_ = 0;
+    bool open_ = false, hub_ = false;
 };
+
+// The current championship weekend as the core reads it (moments::career_weekend).
+struct Weekend {
+    uint32_t round = 0, rounds = 0, progress = 0, current = 0, sessions = 0, complete = 0;
+    std::string session, track;
+};
+
+inline bool never_ran(const Weekend &w)
+{
+    return w.sessions && w.progress != WEEKEND_NOT_STARTED && w.complete == 0;
+}
+
+inline std::string progress_name(uint32_t p)
+{
+    if (p == WEEKEND_NOT_STARTED)
+        return "not started";
+    if (p == WEEKEND_IN_PROGRESS)
+        return "in progress";
+    if (p == WEEKEND_COMPLETE)
+        return "complete";
+    return "progress state " + std::to_string(p);
+}
+
+inline std::string describe(const Weekend &w)
+{
+    auto n = [](uint32_t v) { return std::to_string(v); };
+    std::string s = "round " + n(w.round) + "/" + n(w.rounds) + ", weekend " + progress_name(w.progress);
+    if (w.sessions)
+        s += ", current session " + n(w.current + 1) + " of " + n(w.sessions) + " (" +
+             (w.session.empty() ? "unknown" : w.session) + "), " + n(w.complete) + " of " + n(w.sessions) +
+             " sessions complete";
+    else
+        s += ", its sessions do not read";
+    return s + ", track " + (w.track.empty() ? "unknown" : w.track);
+}
 
 // One line per added activity of the logged types, not one per identical repeat (the daily tick adds the contract
 // event to every calendar).

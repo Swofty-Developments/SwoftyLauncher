@@ -8,15 +8,19 @@
 #include <string>
 #include <vector>
 
+#include "apply/moments.hpp"
 #include "hub_calendar_logic.hpp"
 
 // Career hub calendar diagnostic (hub_calendar_logic.hpp). When SessionStateCareerHub enters, the core logs the
-// human's calendar activities running today and what the game's calendar check makes of them; when the hub leaves
-// within AT_ONCE_MS it logs them again under "[career] hub left at once". career.calendar.add_activity reports each
-// contract event or secret meeting added, with its day and today. Reads only, every one guarded: the ScheduleComponent
-// (current season, season over, seasons), the season's driver calendars, their activities and definitions through
-// KB structs (L2), and the clock through CareerTimeComponent.current_minutes. A build whose game headers lack a field
-// logs that the calendar is not readable.
+// human's calendar activities running today and what the game's calendar check makes of them. When StateSession ends
+// within FAST_END_MS of entering after the hub opened, it logs "[career] session ended <N> ms after start" with the
+// current weekend and the calendar again. At career.hub (Team HQ) entered it logs the current weekend, as "[career]
+// weekend already started, session never ran" when the weekend is past not started with no session complete.
+// career.calendar.add_activity reports each contract event or secret meeting added, with its day and today. Reads
+// only, every one guarded: the ScheduleComponent (current season, season over, seasons), the season's driver
+// calendars, their activities and definitions through KB structs (L2), the clock through
+// CareerTimeComponent.current_minutes, and the weekend through moments::career_weekend. A build whose game headers lack
+// a field logs that the calendar is not readable.
 
 namespace swofty::game {
 struct ActivityDef;
@@ -37,7 +41,7 @@ constexpr size_t MAX_SEASONS = 64;
 constexpr size_t MAX_CALENDARS = 256;
 
 std::mutex lock;
-hc::Watch watch;
+hc::SessionWatch watch;
 hc::AddLog adds;
 
 bool read_raw(uint64_t at, void *out, size_t n, void *)
@@ -176,27 +180,37 @@ std::string decision(const Snapshot &s)
     return hc::describe(hc::decide(s.today, s.season_over), s.today, s.season_over);
 }
 
+std::string calendar(const Snapshot &s)
+{
+    if (!s.stop.empty() && s.today.empty())
+        return "the calendar is not readable (" + s.stop + ")";
+    return summary(s) + "; the calendar check reads: " + decision(s);
+}
+
 void opened()
 {
     Snapshot s = snapshot();
-    if (!s.stop.empty() && s.today.empty()) {
-        swofty::log("[career] hub opened: the calendar is not readable (%s)", s.stop.c_str());
-        return;
-    }
-    swofty::log("[career] hub opened: %s; the calendar check reads: %s", summary(s).c_str(), decision(s).c_str());
+    swofty::log("[career] hub opened: %s", calendar(s).c_str());
     log_items(s);
 }
 
-void left(uint64_t ms)
+bool current_weekend(hc::Weekend &w)
 {
+    swofty_core::apply::moments::CareerWeekend m;
+    if (!swofty_core::apply::moments::career_weekend(m))
+        return false;
+    w = {m.round, m.rounds, m.progress, m.current, m.sessions, m.complete, m.session, m.track};
+    return true;
+}
+
+void ended(uint64_t ms, uint64_t hub_ms, const char *how)
+{
+    hc::Weekend w;
+    std::string weekend = current_weekend(w) ? hc::describe(w) : "the current weekend is not readable";
     Snapshot s = snapshot();
-    if (!s.stop.empty() && s.today.empty()) {
-        swofty::log("[career] hub left at once: %llu ms after it opened; the calendar is not readable (%s)",
-                    static_cast<unsigned long long>(ms), s.stop.c_str());
-        return;
-    }
-    swofty::log("[career] hub left at once: %llu ms after it opened; %s; the calendar check reads: %s",
-                static_cast<unsigned long long>(ms), summary(s).c_str(), decision(s).c_str());
+    swofty::log("[career] session ended %llu ms after start (%s; the career hub opened %llu ms after start): %s; %s",
+                static_cast<unsigned long long>(ms), how, static_cast<unsigned long long>(hub_ms), weekend.c_str(),
+                calendar(s).c_str());
     log_items(s);
 }
 
@@ -224,21 +238,38 @@ namespace runtime {
 
 void hub_calendar_flow(uint32_t hash, uint32_t to)
 {
-    if (hash != hc::HUB || (to != SWOFTY_FLOW_ENTERING && to != SWOFTY_FLOW_EXITING && to != SWOFTY_FLOW_NONE))
+    bool start = hash == hc::SESSION && to == SWOFTY_FLOW_ENTERING;
+    bool hub = hash == hc::HUB && to == SWOFTY_FLOW_ENTERING;
+    bool exited = hash == hc::SESSION && (to == SWOFTY_FLOW_EXITING || to == SWOFTY_FLOW_NONE);
+    bool unload = hash == hc::UNLOAD && to == SWOFTY_FLOW_ENTERING;
+    if (!start && !hub && !exited && !unload)
         return;
-    uint64_t now = GetTickCount64(), ms = 0;
-    bool at_once = false;
+    uint64_t now = GetTickCount64(), ms = 0, hub_ms = 0;
+    bool fast = false;
     {
         std::lock_guard<std::mutex> g(lock);
-        if (to == SWOFTY_FLOW_ENTERING)
-            watch.entered(now);
+        if (start)
+            watch.started(now);
+        else if (hub)
+            watch.hub(now);
         else
-            at_once = watch.left(now, ms);
+            fast = watch.ended(now, ms, hub_ms);
     }
-    if (to == SWOFTY_FLOW_ENTERING)
+    if (hub)
         opened();
-    else if (at_once)
-        left(ms);
+    else if (fast)
+        ended(ms, hub_ms, exited ? "StateSession exited" : "StateUnloadSession began first");
+}
+
+void hub_calendar_team_hq()
+{
+    hc::Weekend w;
+    if (!current_weekend(w))
+        swofty::log("[career] Team HQ weekend: the current weekend is not readable");
+    else if (hc::never_ran(w))
+        swofty::log("[career] weekend already started, session never ran: %s", hc::describe(w).c_str());
+    else
+        swofty::log("[career] Team HQ weekend: %s", hc::describe(w).c_str());
 }
 
 void hub_calendar_added(void *calendar, const void *activity, uint32_t day)

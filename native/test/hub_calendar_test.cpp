@@ -177,17 +177,78 @@ static void lines()
     expect(hc::HUB == 0x42843edbu, "the hub state's flow hash");
 }
 
-static void watch_and_adds()
+static void session_watch()
 {
-    hc::Watch w;
-    uint64_t ms = 0;
-    expect(!w.left(100, ms), "leaving without an entry reports nothing");
-    w.entered(1000);
-    expect(w.left(1400, ms) && ms == 400, "leaving 400 ms after the entry is at once");
-    expect(!w.left(1500, ms), "one exit per entry");
-    w.entered(2000);
-    expect(!w.left(3000, ms) && ms == 1000, "leaving after AT_ONCE_MS is not at once");
+    expect(hc::SESSION == 0x1505f42au && hc::UNLOAD == 0xd432de2du, "the session and unload states' flow hashes");
+    hc::SessionWatch w;
+    uint64_t ms = 0, hub = 0;
+    expect(!w.ended(100, ms, hub), "an end without a start reports nothing");
 
+    w.started(15055002280ull);
+    w.hub(15055002825ull);
+    expect(w.ended(15055002870ull, ms, hub) && ms == 590 && hub == 545,
+           "MorisGrimes' P1: the hub opened 545 ms in and the session ended 590 ms after start");
+    expect(!w.ended(15055002900ull, ms, hub), "one end per start");
+
+    w.started(1000);
+    w.hub(1000);
+    expect(!w.ended(400000, ms, hub) && ms == 399000, "a healthy session that ran for minutes is not reported");
+
+    w.started(5000);
+    w.hub(5000);
+    expect(!w.ended(5000 + hc::FAST_END_MS, ms, hub), "an end at FAST_END_MS is not reported");
+
+    w.started(9000);
+    expect(!w.ended(9300, ms, hub), "a session without the career hub (Grand Prix, Time Trial) is not reported");
+
+    w.hub(9400);
+    w.started(10000);
+    expect(!w.ended(10100, ms, hub), "a hub entry outside the session does not arm the next one");
+
+    w.started(20000);
+    w.hub(20100);
+    w.hub(20900);
+    expect(w.ended(21000, ms, hub) && hub == 100, "the first hub entry of the session counts");
+
+    w.started(30000);
+    w.hub(30200);
+    w.started(30500);
+    expect(!w.ended(30600, ms, hub), "a restart starts the session over without its hub");
+}
+
+static void weekends()
+{
+    hc::Weekend stuck{4, 17, hc::WEEKEND_IN_PROGRESS, 0, 7, 0, "practice_1", "game/silverstone"};
+    expect(hc::never_ran(stuck), "a weekend in progress with no session complete never ran");
+    expect(hc::describe(stuck) == "round 4/17, weekend in progress, current session 1 of 7 (practice_1), 0 of 7 sessions "
+                                  "complete, track game/silverstone",
+           "the stuck weekend's line: " + hc::describe(stuck));
+
+    hc::Weekend next{5, 17, hc::WEEKEND_NOT_STARTED, 0, 7, 0, "practice_1", "game/hungaroring"};
+    expect(!hc::never_ran(next), "a weekend not started yet is not stuck");
+
+    hc::Weekend done{3, 17, hc::WEEKEND_COMPLETE, 6, 7, 7, "race", "game/austria"};
+    expect(!hc::never_ran(done), "a complete weekend is not stuck");
+    expect(hc::describe(done) == "round 3/17, weekend complete, current session 7 of 7 (race), 7 of 7 sessions complete, "
+                                 "track game/austria",
+           "a complete weekend's line: " + hc::describe(done));
+
+    hc::Weekend mid{4, 17, hc::WEEKEND_IN_PROGRESS, 1, 7, 1, "practice_2", ""};
+    expect(!hc::never_ran(mid), "a weekend with a session complete ran");
+    expect(hc::describe(mid).find("track unknown") != std::string::npos, "a track not read says unknown");
+
+    hc::Weekend odd{1, 1, 7, 0, 2, 0, "", ""};
+    expect(hc::never_ran(odd) && hc::progress_name(7) == "progress state 7",
+           "an unknown progress state with nothing complete counts as started and names its value");
+
+    hc::Weekend unread{1, 1, hc::WEEKEND_IN_PROGRESS, 0, 0, 0, "", ""};
+    expect(!hc::never_ran(unread), "a weekend whose sessions do not read is not called stuck");
+    expect(hc::describe(unread) == "round 1/1, weekend in progress, its sessions do not read, track unknown",
+           "an unread session list: " + hc::describe(unread));
+}
+
+static void adds()
+{
     expect(hc::logs_add(hc::SECRET_MEETING) && hc::logs_add(hc::CONTRACT_EVENT) && !hc::logs_add(hc::RACE_WEEKEND),
            "secret meetings and contract events are logged, other adds are not");
     hc::AddLog a;
@@ -204,7 +265,9 @@ int main()
     states_and_edges();
     unreadable();
     lines();
-    watch_and_adds();
+    session_watch();
+    weekends();
+    adds();
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;
 }
