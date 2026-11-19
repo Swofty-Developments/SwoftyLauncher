@@ -1,1 +1,2 @@
 # One line per "site_*" name, or live-state table name, that native/src/core resolves by name (swofty::api->resolve) while the generated headers do not export it: the guard that needs it logs "off ... does not resolve". Format: name, tab, reason.
+site_Game_CareerContinue_MyTeamSlotTitle	one contributor so far (re/tools/binding.py agree by a second login exports it); the My Team resume card status stays off until then
