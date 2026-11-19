@@ -25,6 +25,7 @@
 #include "core/career/career_saves_logic.hpp"
 #include "core/career/save_diag_logic.hpp"
 #include "core/career/save_heap_logic.hpp"
+#include "core/runtime/build.hpp"
 #include "core/runtime/layout.hpp"
 #include "core/career/save_splice_logic.hpp"
 #include "core/career/save_data.hpp"
@@ -141,6 +142,18 @@ std::vector<std::string> registered_now;
 bool registered_now_ok = false;
 std::vector<Captured> saved_caps;
 bool saved_caps_ok = false;
+
+// The bag stream and root child table layouts the plain store reads and writes through (the root's child table at +0x160,
+// each node's name at +0x10 and child at +0x58, the bag reader's use of stream slots +0x28/+0x30/+0x38 and bag+0, the save
+// stream's write slots +0x48/+0x50) were compared instruction by instruction on the KB build and on Steam 1.0.145 and are
+// identical there. The EA builds are packed and were not read, so the registered capture, the save capture and the registered
+// put-back stay off on them.
+constexpr runtime::build_proof::Proof BAG_LAYOUT{"the save root's child table and bag stream layouts",
+                                                 runtime::build_proof::bit(runtime::build_proof::Build::kb) |
+                                                     runtime::build_proof::bit(runtime::build_proof::Build::steam_1_0_145)};
+constexpr runtime::build_proof::Gate BAG_GATE{"the plain store's registered containers", &BAG_LAYOUT};
+
+bool bag_proven() { return runtime::holds(BAG_GATE); }
 
 bool env_on(const char *name)
 {
@@ -293,7 +306,7 @@ void capture_child(void *self, void *bag, uint8_t reset_on_error, uint64_t group
         current_child = name;
         child_info[name] = {self, bag, reset_on_error, groups};
     }
-    if (!registered_capture_on() || !plain::enabled())
+    if (!registered_capture_on() || !plain::enabled() || !bag_proven())
         return;
     if (!career::save_data::game_object(bag)) {
         swofty::log("[saves] plain store: the bag of %s is not readable; it is left out of this load's generation", name.c_str());
@@ -387,7 +400,7 @@ std::string captured_sha(const std::string &name)
 // or it is not there), when it holds careers an absent half can only join when the present half is the one in that generation.
 void fix_registered(void *root, void *root_bag, uint8_t reset_on_error, uint64_t groups)
 {
-    if (!env_on("SWOFTY_PLAIN_PUTBACK"))
+    if (!env_on("SWOFTY_PLAIN_PUTBACK") || !bag_proven())
         return;
     std::map<std::string, std::vector<std::string>> groups_of;
     auto key_of = [](const std::string &n) {
@@ -947,7 +960,7 @@ void children_entry(SwoftyContext *c)
     auto rip = c->rip;
     children_inner(c);
     uintptr_t self = 0;
-    if (c->rip != rip || !hooks.live() || !plain::enabled() || !env_on("SWOFTY_PLAIN_SAVE_CAPTURE") ||
+    if (c->rip != rip || !hooks.live() || !plain::enabled() || !env_on("SWOFTY_PLAIN_SAVE_CAPTURE") || !bag_proven() ||
         !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self))
         return;
     void *stream = nullptr;
