@@ -283,6 +283,12 @@ pub fn tyres(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Opt
     unplaced_tyres(&evidence(session, game, store))
 }
 
+/// Why `session`, which ended without a crash, ran without its addons' team
+/// logos, when its log says the game could not write them.
+pub fn logos(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Option<Diagnosis> {
+    unbuilt_logos(&evidence(session, game, store))
+}
+
 fn evidence(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Evidence {
     let addons = store.addons().unwrap_or_default();
     let names = addons
@@ -1574,6 +1580,44 @@ pub fn unplaced_tyres(e: &Evidence) -> Option<Diagnosis> {
     })
 }
 
+/// The start of the line the core logs when the game can't create files in
+/// the team logo cache (`apply/content/logo_deliver.hpp`).
+const LOGOS_UNWRITABLE: &str = "team.logo: the game can't create files in ";
+
+/// The folder the team logo build could not write in and the Windows error,
+/// from the core's line.
+fn logos_unwritable(loader: &str) -> Option<(String, String)> {
+    loader.lines().find_map(|l| {
+        let rest = &l[l.find(LOGOS_UNWRITABLE)? + LOGOS_UNWRITABLE.len()..];
+        let (dir, rest) = rest.split_once(" (error ")?;
+        let (code, _) = rest.split_once(')')?;
+        Some((dir.trim_end_matches('/').to_owned(), code.to_owned()))
+    })
+}
+
+/// A session whose team logos were never built: the game could not create
+/// files in the folder the core builds them in.
+pub fn unbuilt_logos(e: &Evidence) -> Option<Diagnosis> {
+    let (dir, code) = logos_unwritable(&e.loader)?;
+    let dir = dir.replace('/', "\\");
+    Some(Diagnosis {
+        id: "logos_not_built",
+        title: "Your addons' team logos were not built".to_owned(),
+        what: format!(
+            "F1 25 could not create files in {dir} in its game folder (error {code}), so the team logos and \
+             badges your addons add were missing in this session. Everything else in your addons loaded."
+        ),
+        steps: vec![
+            "Close F1 25, run Swofty Launcher as administrator and press Play: the launcher lets F1 25 \
+             write in that folder before it starts."
+                .to_owned(),
+            "If the logos are still missing, press Send Logs so the launcher's lines about that folder \
+             reach support."
+                .to_owned(),
+        ],
+    })
+}
+
 /// F1 25's Insufficient Storage dialog: the drive it names, and the MiB free
 /// and needed there.
 fn low_disk(loader: &str) -> Option<(String, u64, u64)> {
@@ -2651,6 +2695,42 @@ mod tests {
         let log = "2026-11-03 10:00:10.000 [1] [tyres] car 25 (team 9, AI): fitted tyres were never placed on the wheels (3 of 3 x)\n";
         let d = unplaced_tyres(&ev(log, &[])).unwrap();
         assert!(d.what.contains("1 car(s) (cars 25)"), "{}", d.what);
+    }
+
+    const LOGOS_LOG: &str = "\
+2026-11-17 19:04:28.900 [19524] [apply] team.logo: 33 input archive(s) (389 MB) hashed in 266 ms
+2026-11-17 19:04:28.928 [19524] [apply] team.logo: the game can't create files in swofty/addons/swofty.logos/ (error 5), so no team logo is built this session
+2026-11-17 19:04:28.928 [19524] [apply] team.identity boot:   team.logo: the game can't create files in swofty/addons/swofty.logos/ (error 5), so no team logo is built this session
+2026-11-17 19:04:30.548 [19524] [apply] team.logo read: 12 applied, 0 put back, 0 refused
+";
+
+    #[test]
+    fn logos_the_game_could_not_write_name_the_folder_and_the_error() {
+        let d = unbuilt_logos(&ev(LOGOS_LOG, &[])).expect("the logo line is recognised");
+        assert_eq!(d.id, "logos_not_built");
+        assert!(
+            d.what
+                .contains(r"swofty\addons\swofty.logos in its game folder (error 5)"),
+            "{}",
+            d.what
+        );
+        assert!(d.steps[0].contains("administrator"), "{:?}", d.steps);
+        assert_eq!(
+            logos_unwritable(LOGOS_LOG),
+            Some(("swofty/addons/swofty.logos".to_owned(), "5".to_owned()))
+        );
+    }
+
+    #[test]
+    fn built_or_cached_logos_are_not_a_problem() {
+        for log in [
+            "2026-11-17 19:04:28.928 [1] [apply] team.logo: 713 slice(s) built into 34 archive(s) in 8183 ms\n",
+            "2026-11-17 19:04:28.928 [1] [apply] team.logo: 34 cached archive(s) of 0123456789abcdef reused\n",
+            "2026-11-17 19:04:28.928 [1] [apply] team.logo: 2025_asset_groups/ui_package/flow_race.erp could not be rewritten\n",
+            "",
+        ] {
+            assert!(unbuilt_logos(&ev(log, &[])).is_none(), "{log}");
+        }
     }
 
     #[test]

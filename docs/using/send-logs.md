@@ -43,6 +43,12 @@ When a game session ends in a crash, the launcher opens a full-window **F1 25 cr
 
 Under Wine or Proton, the graphics driver, graphics memory and Windows memory checks are skipped.
 
+A session that ended without a crash opens the same screen for a known problem too. Among them:
+
+| Cause | What the launcher looks for |
+|---|---|
+| Your addons' team logos were not built | `team.logo: the game can't create files in swofty/addons/swofty.logos/ (error N)`: F1 25 couldn't write the team logo archives, and the logos and badges addons add were missing. The screen names the folder and the Windows error. `state/wrapper-run.log` gets a `[warning] known problem logos_not_built: ...` line |
+
 A game that stopped itself with exit code `0xc0000409`, `0xc0000602` or `0xc0000417` (a fast-fail) shows as a crash. The screen and the **Crash** section of `summary.txt` say it in one sentence, with the last lines of the session's `loader.log` when no crash report was written:
 
 ```text

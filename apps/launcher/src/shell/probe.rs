@@ -238,6 +238,13 @@ impl Shell {
                                             game_dir.as_deref(),
                                             &store,
                                         )
+                                    })
+                                    .or_else(|| {
+                                        swofty_core::known_problems::logos(
+                                            &session,
+                                            game_dir.as_deref(),
+                                            &store,
+                                        )
                                     });
                             return (Ok(String::new()), stall);
                         }

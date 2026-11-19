@@ -1219,6 +1219,7 @@ fn note_known_problem(store: &Store, game: &Path, dir: &Path, crashed: bool) {
     if !crashed {
         if let Some(d) = swofty_core::known_problems::stall(&record, Some(game), store)
             .or_else(|| swofty_core::known_problems::tyres(&record, Some(game), store))
+            .or_else(|| swofty_core::known_problems::logos(&record, Some(game), store))
         {
             say("warning", &format!("known problem {}: {}", d.id, d.title));
         }
