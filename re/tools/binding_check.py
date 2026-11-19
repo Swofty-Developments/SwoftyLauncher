@@ -30,6 +30,8 @@ CODE_EXTS = ('.c', '.cc', '.cpp', '.h', '.hpp', '.inc', '.rs', '.py', '.json', '
 NEW = 'make the record again with binding.py new, which writes every signature field and the proof'
 VERIFY = 'prove it again: re/tools/py re/tools/binding.py verify {name} --exe <your F1_25.exe> --by <your GitHub login>'
 FIXES = [(re.compile(p), t) for p, t in (
+    (r'whole E9 rel32 at the site the core hooks',
+     'put the game\'s bytes back first (bindverify.py --restore LOG, or the Steam exe) and wildcard the rel32'),
     (r'invalid JSON|not valid JSON|duplicate key|a record is a JSON object|the limit is|not UTF-8|nests too deeply|'
      r'not a regular file|unknown key|^\S+: \S+ missing$|'
      r'is not a signature field|is not a (functions|globals) column|must be a one-line string',
@@ -360,6 +362,10 @@ def signature_errors(sig, row, table, name, kb_build):
                 errs.append('signature.resolve riprel needs len covering the disp32')
             if pat[anchor:anchor + 4] != [None] * 4 and len(pat) >= anchor + 4:
                 errs.append('signature.pattern must wildcard the disp32')
+    if sig['kind'] == 'mid' and not errs and anchor + 5 <= len(pat) and pat[anchor] == 0xE9 \
+            and None not in pat[anchor + 1:anchor + 5]:
+        errs.append('signature.pattern fixes a whole E9 rel32 at the site the core hooks; that is the core\'s own '
+                    'patch, so the pattern was read from a dump with the core running')
     if sig.get('expect') is not None and not errs:
         try:
             want = parse_pattern(sig['expect'])

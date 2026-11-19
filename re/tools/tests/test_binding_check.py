@@ -260,6 +260,26 @@ class EngineBoundaries(Base):
             s['expect'] = 'E8 ??'
         self.assertIn('signature.expect must be 1 to 16 concrete bytes', self.signature_errors(m))
 
+    def mid_site_with(self, bytes_at_anchor):
+        def m(s):
+            s['kind'] = 'mid'
+            s['resolve'] = {'kind': 'addr'}
+            s['anchor'] = '0x4'
+            s['target'] = hex(int(s['match'], 16) + 4)
+            s['pattern'] = '48 89 5C 24 ' + bytes_at_anchor + ' 48 8B D9 33 C0 C3'
+            s.pop('expect', None)
+        return m
+
+    def test_a_mid_site_pattern_may_not_hold_the_cores_own_jump(self):
+        errs = self.signature_errors(self.mid_site_with('E9 82 20 A2 14'))
+        hit = [e for e in errs if 'whole E9 rel32 at the site the core hooks' in e]
+        self.assertEqual(len(hit), 1, errs)
+        self.assertIn('wildcard the rel32', bc.fix_for(hit[0]))
+
+    def test_a_mid_site_pattern_with_the_game_jump_wildcarded_passes(self):
+        self.assertEqual(self.signature_errors(self.mid_site_with('E9 ?? ?? ?? ??')), [])
+        self.assertEqual(self.signature_errors(self.mid_site_with('F6 46 05 04 74')), [])
+
     def with_existing_pattern(self):
         k = bc.Knowledge.__new__(bc.Knowledge)
         k.__dict__ = dict(self.fresh.__dict__)
