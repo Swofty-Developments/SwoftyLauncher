@@ -21,6 +21,12 @@ pub struct ResumeRow {
     pub mode: String,
     /// The save slot key the core finds the slot by.
     pub key: String,
+    /// The data group the game's wizard holds for the career's content: `f1_career_1990`, `f1_career_2025`.
+    #[serde(default)]
+    pub group: String,
+    /// The save's container mode the row came from: `driver_career_1990`, `my_team_career_26`.
+    #[serde(default)]
+    pub game_mode: String,
     pub ready: bool,
     /// `ready`, `missing` (an addon or rows the build lacks) or `version` (made with another addon version).
     pub severity: String,
@@ -227,13 +233,26 @@ fn key_of(s: &Slot) -> String {
     }
 }
 
-/// The content a career mode belongs to: the game's own name for its year, else the addon's label, else the year.
-fn content_of(mode: &str, label: &str, names: &Names) -> String {
-    let year = mode
-        .rsplit('_')
+fn year_of(mode: &str) -> Option<u32> {
+    mode.rsplit('_')
         .next()
         .and_then(|y| y.parse::<u32>().ok())
-        .filter(|y| (y.to_string().len() == 2 && *y < 100) || (1900..2100).contains(y));
+        .filter(|y| (y.to_string().len() == 2 && *y < 100) || (1900..2100).contains(y))
+}
+
+const DEFAULT_GROUP: &str = "f1_career_2026";
+
+pub fn group_of(mode: &str) -> String {
+    match year_of(mode) {
+        Some(y) if y < 100 => format!("f1_career_20{y:02}"),
+        Some(y) => format!("f1_career_{y}"),
+        None => DEFAULT_GROUP.to_owned(),
+    }
+}
+
+/// The content a career mode belongs to: the game's own name for its year, else the addon's label, else the year.
+fn content_of(mode: &str, label: &str, names: &Names) -> String {
+    let year = year_of(mode);
     if let Some(name) = year.and_then(|y| names.content_name(y)) {
         return name.to_owned();
     }
@@ -307,6 +326,8 @@ pub fn resume_rows(
                 index: 0,
                 mode: if my_team { "my_team" } else { "driver" }.into(),
                 key,
+                group: group_of(&c.mode),
+                game_mode: c.mode.clone(),
                 ready: severity == READY,
                 severity: severity.into(),
                 status,
@@ -692,6 +713,39 @@ mod tests {
         assert_eq!(rows[0].team, "Team");
         assert_eq!(rows[0].colour, Some(0x0000_00ff));
         assert_eq!(rows[1].team, "");
+    }
+
+    #[test]
+    fn every_row_names_its_container_mode_and_content_group() {
+        assert_eq!(group_of("driver_career_1990"), "f1_career_1990");
+        assert_eq!(group_of("driver_career_25"), "f1_career_2025");
+        assert_eq!(group_of("my_team_career_26"), "f1_career_2026");
+        let list = vec![
+            saved(
+                "driver_career_1990",
+                slot(1, "0x00000000000000aa", 645, 61, 0, 0, 2),
+            ),
+            saved(
+                "my_team_career_26",
+                slot(2, "0x00000000000000bb", 646, 61, 0, 0, 1),
+            ),
+            saved(
+                "driver_career_progressive",
+                slot(3, "0x00000000000000cc", 646, 61, 0, 0, 3),
+            ),
+        ];
+        let names = Names::from_db(db(), Some(&english()));
+        let rows = resume_rows(&list, &Created::default(), &[], &names);
+        assert!(
+            rows.iter()
+                .all(|r| !r.group.is_empty() && !r.game_mode.is_empty())
+        );
+        let by = |mode: &str| rows.iter().find(|r| r.game_mode == mode).unwrap();
+        assert_eq!(by("driver_career_1990").group, "f1_career_1990");
+        assert_eq!(by("my_team_career_26").group, "f1_career_2026");
+        let json = serde_json::to_value(by("driver_career_1990")).unwrap();
+        assert_eq!(json["group"], "f1_career_1990");
+        assert_eq!(json["game_mode"], "driver_career_1990");
     }
 
     #[test]
