@@ -912,29 +912,25 @@ pub struct TrackLimitCheck {
     pub limit: Option<crate::tracks::TrackLimit>,
     /// How long reading the profile and counting its tracks took.
     pub counting: std::time::Duration,
-    /// The check build's steps, folded by [`crate::fold_steps`]; empty when too few tracks are on for it to run.
-    pub steps: Vec<crate::Step>,
-    /// The check build restored a saved build with the same hash.
-    pub reused: bool,
-    /// The check build is saved, so a build of the same addons and game files restores it.
-    pub saved: bool,
+    /// Whether the tracks were fitted to the game's track lists: false when too few are on to fill them.
+    pub fitted: bool,
+    /// How long reading the tracks' op files and fitting them to the lists took.
+    pub fitting: std::time::Duration,
 }
 
-impl TrackLimitCheck {
-    /// Whether a check build ran.
-    pub fn built(&self) -> bool {
-        !self.steps.is_empty()
-    }
-}
-
-/// A `checking` build gives addon build hooks a host that lists addons but
-/// cannot install, remove, turn on or move them.
-/// The track addons `profile` would lose to the game's full track lists, found by planning the build
-/// without installing it; none, and no build, when too few tracks are on to fill them.
-pub fn track_limit(store: &Store, profile: &str, game: &Game) -> Result<TrackLimitCheck> {
+/// The track addons `profile` would lose to the game's full track lists: the tracks the on addons' op files and
+/// track records add, fitted to the lists the way a build fits them, without planning or placing the rest of the
+/// build and without starting any addon's program. `std16` is [`crate::stdlib::deps::read_all`] of the installed
+/// addons. None, and no fitting, when too few tracks are on to fill the lists.
+pub fn track_limit(
+    store: &Store,
+    profile: &str,
+    game: &Game,
+    std16: &BTreeMap<String, crate::stdlib::deps::Std>,
+) -> Result<TrackLimitCheck> {
     let started = std::time::Instant::now();
     let addons = store.registry()?.manifests();
-    let p = store.profile(profile)?;
+    let AsBuilt { profile: p, .. } = as_built(store, profile, &addons)?;
     let order = resolve(&p, &addons)?.order;
     let mut check = TrackLimitCheck {
         added: crate::tracks::added_count(store, &order, &addons),
@@ -944,18 +940,71 @@ pub fn track_limit(store: &Store, profile: &str, game: &Game) -> Result<TrackLim
     if !crate::tracks::may_fill_track_lists(check.added) {
         return Ok(check);
     }
-    let (built, steps) = crate::timed_steps("resolving the addons", || build_as(store, profile, game, true));
-    let built = built?;
-    check.steps = crate::fold_steps(steps, 3);
-    check.reused = built.reused;
-    check.saved = built.overlay.join(SAVED_FILE).is_file();
-    check.limit = built.track_limit;
+    let fitting = std::time::Instant::now();
+    if let Some(stop) = crate::stdlib::deps::for_order(profile, &order, &addons, std16).stop_text() {
+        return Err(Error::Dependencies(stop));
+    }
+    let mut on = OnAddons::new(order.iter().filter_map(|id| addons.get(id)));
+    trackless_options(store, game, &p, &order, &addons, &mut on);
+    let ops = track_ops(store, &p, &on, &order, &addons, std16)?;
+    let fit = fit_tracks(store, game, &addons, &order, std16, ops)?;
+    check.fitted = true;
+    check.limit = fit.limit;
+    check.fitting = fitting.elapsed();
     Ok(check)
 }
 
-pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool) -> Result<Built> {
-    let registry = store.registry()?;
-    let addons = registry.manifests();
+/// The `track.add` ops of the addons of `order`, from their asset op files as a build renders them, in load order.
+/// Tracks an addon's program adds when a build runs it are not among them.
+fn track_ops(
+    store: &Store,
+    p: &Profile,
+    on: &OnAddons,
+    order: &[String],
+    addons: &BTreeMap<String, AddonManifest>,
+    std16: &BTreeMap<String, crate::stdlib::deps::Std>,
+) -> Result<Vec<Op>> {
+    let replaced = replaced_operations(std16, loader_dir().as_deref());
+    let mut ops = Vec::new();
+    for id in order {
+        let Some(m) = addons.get(id) else {
+            continue;
+        };
+        let dir = store.addons_dir().join(id);
+        for rel in &m.operations.assets {
+            if replaced.get(id.as_str()).is_some_and(|r| r.replaces(rel)) {
+                continue;
+            }
+            let file = read_op_file(&dir.join(rel), FileKind::Assets, m, p, on)?;
+            ops.extend(
+                file.ops
+                    .into_iter()
+                    .filter(|op| matches!(op, AssetOp::Track(_)))
+                    .map(|op| Op {
+                        op,
+                        origin: Origin {
+                            addon: id.clone(),
+                            item: None,
+                        },
+                    }),
+            );
+        }
+    }
+    Ok(ops)
+}
+
+/// A profile as a build reads it.
+struct AsBuilt {
+    profile: Profile,
+    /// A line for each on addon left out because its manifest no longer reads.
+    skipped: Vec<String>,
+    /// The lent load order and option values, with how many of each the profile took.
+    lent: Option<((usize, usize), crate::row_ids::Overrides)>,
+}
+
+/// `profile` with each on addon whose manifest no longer reads turned off, and with the lent load order and option
+/// values when some are lent.
+fn as_built(store: &Store, profile: &str, addons: &BTreeMap<String, AddonManifest>) -> Result<AsBuilt> {
     let mut p = store.profile(profile)?;
     let mut skipped = Vec::new();
     for u in store.unreadable_addons() {
@@ -964,7 +1013,131 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             skipped.push(format!("{} is left out: it {}", u.name, u.reason));
         }
     }
-    let lent_settings = crate::row_ids::lent().map(|o| (p.lend(&o), o));
+    let lent = crate::row_ids::lent().map(|o| (p.lend(&o), o));
+    Ok(AsBuilt {
+        profile: p,
+        skipped,
+        lent,
+    })
+}
+
+/// The build's track packages, fitted to the game's track lists.
+struct FittedTracks {
+    /// The packages the build adds.
+    tracks: Vec<crate::tracks::BuildTrack>,
+    /// The packages the build leaves out, and why.
+    left_out: Vec<(Origin, Unusable)>,
+    /// The addons whose track records the core adds in game.
+    recorded: BTreeSet<String>,
+    /// The code and name of each track the full lists leave out that no kept package adds.
+    dropped: Vec<(String, String)>,
+    /// The build's notice for the tracks the full lists leave out.
+    warning: Option<String>,
+    limit: Option<crate::tracks::TrackLimit>,
+}
+
+/// The packages `ops` and the track records of `order` add, with the tracks past the game's track lists' room
+/// left out, as a build and its track check both fit them.
+fn fit_tracks(
+    store: &Store,
+    game: &Game,
+    addons: &BTreeMap<String, AddonManifest>,
+    order: &[String],
+    std16: &BTreeMap<String, crate::stdlib::deps::Std>,
+    ops: Vec<Op>,
+) -> Result<FittedTracks> {
+    let (mut tracks, mut left_out) = track_packages(store, ops)?;
+    let recorded = crate::tracks::with_records(order, std16);
+    let (more, unusable) = crate::tracks::record_packages(store, order, std16, &tracks);
+    tracks.extend(more);
+    left_out.extend(unusable);
+    let mut fitted = FittedTracks {
+        tracks,
+        left_out,
+        recorded,
+        dropped: Vec::new(),
+        warning: None,
+        limit: None,
+    };
+    if !crate::tracks::may_fill_track_lists(fitted.tracks.len()) {
+        return Ok(fitted);
+    }
+    let listed = listed_tracks(&original(&store.root, game, GVDB))?;
+    let tracks = std::mem::take(&mut fitted.tracks);
+    let (kept, full) = crate::tracks::fit_track_lists(&listed, tracks, &fitted.recorded);
+    fitted.tracks = kept;
+    let names: Vec<String> = full
+        .iter()
+        .map(|((_, pkg, origin), _)| {
+            let addon = addons
+                .get(&origin.addon)
+                .map_or(origin.addon.as_str(), |m| m.name.as_str());
+            match pkg.display_name() == addon {
+                true => addon.to_owned(),
+                false => format!("{} ({addon})", pkg.display_name()),
+            }
+        })
+        .collect();
+    for (((_, pkg, _), _), name) in full.iter().zip(&names) {
+        if !fitted
+            .tracks
+            .iter()
+            .any(|(_, p, _)| p.track_code == pkg.track_code)
+        {
+            fitted.dropped.push((pkg.track_code.clone(), name.clone()));
+        }
+    }
+    fitted.warning = crate::tracks::track_lists_full_warning(&listed, &names);
+    fitted.limit = crate::tracks::TrackLimit::new(
+        &listed,
+        names,
+        full.iter()
+            .map(|((_, _, origin), _)| origin.addon.clone())
+            .collect(),
+    );
+    fitted
+        .left_out
+        .extend(full.into_iter().map(|((_, _, origin), why)| (origin, why)));
+    Ok(fitted)
+}
+
+/// The tracks the game database at `path` puts in the game's track lists, kept while the file's size and time
+/// stay the same: the shipped database is the same for every build and check until the game updates.
+fn listed_tracks(path: &Path) -> Result<crate::tracks::ListedTracks> {
+    type Cached = (
+        PathBuf,
+        u64,
+        Option<std::time::SystemTime>,
+        crate::tracks::ListedTracks,
+    );
+    static CACHE: std::sync::Mutex<Option<Cached>> = std::sync::Mutex::new(None);
+    let meta = std::fs::metadata(path).map_err(io_err(path))?;
+    let (len, modified) = (meta.len(), meta.modified().ok());
+    let mut cache = CACHE.lock().unwrap_or_else(|e| e.into_inner());
+    if let Some((at, l, m, listed)) = cache.as_ref()
+        && at == path
+        && *l == len
+        && *m == modified
+        && modified.is_some()
+    {
+        return Ok(listed.clone());
+    }
+    let shipped = Gvdb::parse(&std::fs::read(path).map_err(io_err(path))?)?;
+    let listed = crate::tracks::ListedTracks::of(&shipped);
+    *cache = Some((path.to_owned(), len, modified, listed.clone()));
+    Ok(listed)
+}
+
+/// A `checking` build gives addon build hooks a host that lists addons but
+/// cannot install, remove, turn on or move them.
+pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool) -> Result<Built> {
+    let registry = store.registry()?;
+    let addons = registry.manifests();
+    let AsBuilt {
+        profile: p,
+        mut skipped,
+        lent: lent_settings,
+    } = as_built(store, profile, &addons)?;
     let resolved = resolve(&p, &addons)?;
     let mut on = OnAddons::new(resolved.order.iter().filter_map(|id| addons.get(id)));
     let mut std16 = match p.is_vanilla() {
@@ -1516,46 +1689,26 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             planner.push(op);
         }
     }
-    let (mut tracks, mut left_out) = track_packages(store, planner.take_tracks())?;
-    let recorded = crate::tracks::with_records(&resolved.order, &std16);
-    let (more, unusable) = crate::tracks::record_packages(store, &resolved.order, &std16, &tracks);
-    tracks.extend(more);
-    left_out.extend(unusable);
-    if crate::tracks::may_fill_track_lists(tracks.len()) {
-        let path = original(&store.root, game, GVDB);
-        let shipped = Gvdb::parse(&std::fs::read(&path).map_err(io_err(&path))?)?;
-        let listed = crate::tracks::ListedTracks::of(&shipped);
-        let (kept, full) = crate::tracks::fit_track_lists(&listed, tracks, &recorded);
-        tracks = kept;
-        let names: Vec<String> = full
-            .iter()
-            .map(|((_, pkg, origin), _)| {
-                let addon = addons
-                    .get(&origin.addon)
-                    .map_or(origin.addon.as_str(), |m| m.name.as_str());
-                match pkg.display_name() == addon {
-                    true => addon.to_owned(),
-                    false => format!("{} ({addon})", pkg.display_name()),
-                }
-            })
-            .collect();
-        for (((_, pkg, _), _), name) in full.iter().zip(&names) {
-            if !tracks.iter().any(|(_, p, _)| p.track_code == pkg.track_code) {
-                planner.leave_out_track(&pkg.track_code, name);
-            }
-        }
-        built
-            .warnings
-            .extend(crate::tracks::track_lists_full_warning(&listed, &names));
-        built.track_limit = crate::tracks::TrackLimit::new(
-            &listed,
-            names.clone(),
-            full.iter()
-                .map(|((_, _, origin), _)| origin.addon.clone())
-                .collect(),
-        );
-        left_out.extend(full.into_iter().map(|((_, _, origin), why)| (origin, why)));
+    let FittedTracks {
+        tracks,
+        left_out,
+        recorded,
+        dropped,
+        warning,
+        limit,
+    } = fit_tracks(
+        store,
+        game,
+        &addons,
+        &resolved.order,
+        &std16,
+        planner.take_tracks(),
+    )?;
+    for (code, name) in &dropped {
+        planner.leave_out_track(code, name);
     }
+    built.warnings.extend(warning);
+    built.track_limit = limit;
     crate::tracks::keep_track_folders(store, &tracks, &mut std16);
     for (origin, why) in &left_out {
         let name = addons
@@ -9768,6 +9921,173 @@ mod tests {
             e.contains("applying t.other: track_data.game_setup.TrackDataSet[_metadata_=f1].TrackData[track=nowhere]: no row matches"),
             "{e}"
         );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    // A game whose database lists `stock` tracks with TrackData, and madrid.
+    fn track_room_game(root: &Path, stock: usize) -> Game {
+        use swofty_formats::gvdb::Record;
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        let codes: Vec<String> = (0..stock)
+            .map(|i| format!("stock_{i:02}"))
+            .chain(["madrid".to_owned()])
+            .collect();
+        let mut records = vec![
+            Record::new("tracks._Track_instancecount_", 0, codes.len().to_string()),
+            Record::new("track_data.game_setup._TrackDataSet_instancecount_", 0, "1"),
+            Record::new("track_data.game_setup.TrackDataSet_0._metadata_", 2, "f1"),
+            Record::new(
+                "track_data.game_setup.TrackDataSet_0._TrackData_instancecount_",
+                0,
+                codes.len().to_string(),
+            ),
+        ];
+        for (i, code) in codes.iter().enumerate() {
+            records.push(Record::new(
+                &format!("tracks.Track_{i}._metadata_"),
+                2,
+                code.as_str(),
+            ));
+            records.push(Record::new(
+                &format!("track_data.game_setup.TrackDataSet_0.TrackData_{i}.track"),
+                2,
+                code.as_str(),
+            ));
+        }
+        std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+        Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir,
+            user_reg: None,
+        }
+    }
+
+    // Installs and turns on a track addon `mod.<code>`; `launcher` goes into its manifest as is.
+    fn track_room_addon(store: &Store, root: &Path, code: &str, launcher: &str) {
+        let id = format!("mod.{code}");
+        let src = root.join("src").join(&id);
+        std::fs::create_dir_all(src.join("track")).unwrap();
+        std::fs::write(
+            src.join("swofty.json"),
+            format!(
+                r#"{{ "schema_version": 1, "id": "{id}", "name": "{code}", "version": "1.0.0", "author": "t",
+                     "compat": {{ "game": "f1_25" }}, "operations": {{ "assets": ["ops.json"] }}{launcher} }}"#
+            ),
+        )
+        .unwrap();
+        std::fs::write(
+            src.join("ops.json"),
+            r#"{ "schema_version": 1, "ops": [{"op":"track.add","source":"track"}] }"#,
+        )
+        .unwrap();
+        std::fs::write(
+            src.join("track/manifest.json"),
+            format!(
+                r#"{{ "track_code": "{code}", "track_name": "{code}", "erp": "{code}.erp",
+                     "activation": {{ "copy_from_track": "stock_00" }} }}"#
+            ),
+        )
+        .unwrap();
+        store.install_addon(&src).unwrap();
+        store
+            .update_profile("default", |p| p.set_enabled(&id, true))
+            .unwrap();
+    }
+
+    #[test]
+    fn the_track_check_fits_34_tracks_like_the_build_without_building() {
+        if loader_dir().is_some() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("swofty-build-track-check-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let game = track_room_game(&root, 64);
+        let store = Store::new(root.join("data"));
+        let codes: Vec<String> = (0..34).map(|i| format!("added_{i:02}")).collect();
+        for code in &codes {
+            track_room_addon(&store, &root, code, "");
+        }
+        let all = crate::stdlib::deps::read_all(&store, &store.addons().unwrap());
+        let started = std::time::Instant::now();
+        let check = track_limit(&store, "default", &game, &all).unwrap();
+        let took = started.elapsed();
+        assert_eq!(check.added, 34);
+        assert!(check.fitted);
+        let limit = check.limit.clone().expect("no room for added tracks");
+        assert_eq!(limit.names, codes);
+        assert_eq!(limit.stock, 64);
+        assert!(
+            !store.overlays_dir("default").exists(),
+            "the check built the profile"
+        );
+        assert!(
+            !crate::conflicts::path(&store, "default").exists(),
+            "the check wrote a build report"
+        );
+        assert!(took < std::time::Duration::from_secs(10), "{took:?}");
+
+        let built = build(&store, "default", &game).unwrap();
+        assert_eq!(built.track_limit, check.limit);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn the_track_check_under_the_fill_mark_reads_no_database() {
+        let root = std::env::temp_dir().join(format!("swofty-build-track-check-few-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let game = track_room_game(&root, 43);
+        let store = Store::new(root.join("data"));
+        for i in 0..21 {
+            track_room_addon(&store, &root, &format!("added_{i:02}"), "");
+        }
+        std::fs::remove_file(game.dir.join(GVDB)).unwrap();
+        let all = crate::stdlib::deps::read_all(&store, &store.addons().unwrap());
+        let check = track_limit(&store, "default", &game, &all).unwrap();
+        assert_eq!(check.added, 21);
+        assert!(!check.fitted);
+        assert_eq!(check.limit, None);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn the_track_check_never_starts_an_addon_program_and_still_finds_the_limit() {
+        let root =
+            std::env::temp_dir().join(format!("swofty-build-track-check-helper-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let game = track_room_game(&root, 43);
+        let store = Store::new(root.join("data"));
+        let hung = r#", "launcher": { "program": { "linux": "bin/helper", "macos": "bin/helper" },
+                       "sections": [{ "id": "items", "title": "Items", "icon": "package" }], "build": true }"#;
+        let codes: Vec<String> = (0..28).map(|i| format!("added_{i:02}")).collect();
+        for (i, code) in codes.iter().enumerate() {
+            track_room_addon(&store, &root, code, if i == 3 { hung } else { "" });
+        }
+        let started_mark = root.join("helper-started");
+        let program = store.addons_dir().join("mod.added_03").join("bin/helper");
+        std::fs::create_dir_all(program.parent().unwrap()).unwrap();
+        std::fs::write(
+            &program,
+            format!("#!/bin/sh\ntouch '{}'\nsleep 30\n", started_mark.display()),
+        )
+        .unwrap();
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&program, std::fs::Permissions::from_mode(0o755)).unwrap();
+        }
+        assert!(store.registry().unwrap().get("mod.added_03").unwrap().helper);
+        let all = crate::stdlib::deps::read_all(&store, &store.addons().unwrap());
+        let started = std::time::Instant::now();
+        let check = track_limit(&store, "default", &game, &all).unwrap();
+        let took = started.elapsed();
+        assert!(took < std::time::Duration::from_secs(5), "{took:?}");
+        assert!(!started_mark.exists(), "the check started the addon's program");
+        assert_eq!(check.added, 28);
+        let limit = check.limit.expect("7 tracks past the room for 21");
+        assert_eq!(limit.names, codes[21..].to_vec());
+        assert_eq!(limit.addons.len(), 7);
         std::fs::remove_dir_all(&root).ok();
     }
 
