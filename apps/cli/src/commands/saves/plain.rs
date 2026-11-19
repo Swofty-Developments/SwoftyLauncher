@@ -95,7 +95,12 @@ pub(super) fn restore_career(
     Ok(())
 }
 
-pub(super) fn remap_ids(plain: &std::path::Path, aliases: &std::path::Path, dry_run: bool) -> Result<()> {
+pub(super) fn remap_ids(
+    plain: &std::path::Path,
+    aliases: &std::path::Path,
+    dry_run: bool,
+    save: Option<&std::path::Path>,
+) -> Result<()> {
     let aliases: swofty_core::row_ids::IdAliases = serde_json::from_slice(&std::fs::read(aliases)?)?;
     let lines = match dry_run {
         true => swofty_core::saves::plain::rewrite::dry_run(plain, &aliases)?,
@@ -114,6 +119,13 @@ pub(super) fn remap_ids(plain: &std::path::Path, aliases: &std::path::Path, dry_
     };
     for l in lines {
         println!("{l}");
+    }
+    if let (Some(path), true) = (save, dry_run) {
+        let maps = swofty_core::saves::remap::IdMaps::from_aliases(&aliases);
+        let file = swofty_core::saves::plain::rewrite::SaveFile { path, snapshot: None };
+        for l in swofty_core::saves::plain::rewrite::map_save_file(file, &maps, false).lines {
+            println!("{l}");
+        }
     }
     Ok(())
 }

@@ -80,7 +80,12 @@ fn fnv(name: &str) -> String {
 
 fn store(d: &std::path::Path, parts: &[(&str, Bag)], event: Event, written: i64) -> Plain {
     let p = Plain::at(d.join("plain"));
-    let gd = p.generation_dir(5);
+    put_generation(&p, 5, parts, event, written);
+    p
+}
+
+fn put_generation(p: &Plain, n: u64, parts: &[(&str, Bag)], event: Event, written: i64) {
+    let gd = p.generation_dir(n);
     std::fs::create_dir_all(gd.join("containers")).unwrap();
     let mut containers = Vec::new();
     for (name, tree) in parts {
@@ -100,7 +105,7 @@ fn store(d: &std::path::Path, parts: &[(&str, Bag)], event: Event, written: i64)
     }
     let m = Manifest {
         schema: super::super::SCHEMA,
-        generation: 5,
+        generation: n,
         event,
         written_at: written,
         core_version: "1.10.0".into(),
@@ -111,8 +116,7 @@ fn store(d: &std::path::Path, parts: &[(&str, Bag)], event: Event, written: i64)
         containers,
     };
     std::fs::write(gd.join("manifest.json"), serde_json::to_vec(&m).unwrap()).unwrap();
-    std::fs::write(p.root.join("CURRENT"), "5").unwrap();
-    p
+    std::fs::write(p.root.join("CURRENT"), n.to_string()).unwrap();
 }
 
 fn old_parts() -> Vec<(&'static str, Bag)> {
@@ -343,6 +347,225 @@ fn a_mode_with_only_earlier_driver_ids_is_left_alone() {
         lines.iter().any(
             |l| l.contains("mode driver_career_26: earlier driver or vehicle ids but no earlier team id")
         )
+    );
+    std::fs::remove_dir_all(&d).ok();
+}
+
+fn aliases() -> crate::row_ids::IdAliases {
+    crate::row_ids::IdAliases {
+        version: 1,
+        tables: BTreeMap::from([
+            ("teams".to_owned(), (502i64..=514).map(|t| (t, t + 142)).collect()),
+            ("vehicles".to_owned(), BTreeMap::from([(509, 693)])),
+            ("drivers".to_owned(), BTreeMap::from([(235, 362)])),
+        ]),
+    }
+}
+
+#[test]
+fn generations_after_a_rewrite_are_in_the_current_numbering_and_never_mapped_again() {
+    let d = dir("later");
+    let p = store(&d, &old_parts(), Event::Save, 1000);
+    wrote(p.rewrite_for_aliases(&maps(), None, 2000).unwrap());
+    assert_eq!(p.pending().len(), 2);
+    for n in [7, 8] {
+        put_generation(&p, n, &old_parts(), Event::Save, 3000 + n as i64);
+        assert_eq!(
+            p.rewrite_for_aliases(&maps(), None, 4000).unwrap(),
+            Outcome::Nothing
+        );
+        assert_eq!(p.current(), Some(n));
+    }
+    assert_eq!(p.pending().len(), 2);
+    assert!(p.manifest(9).is_none());
+    assert!(prepare_lines(&d, &aliases()).is_empty());
+    assert_eq!(p.current(), Some(8));
+    let mut other = aliases();
+    other.tables.get_mut("drivers").unwrap().insert(1, 2);
+    assert_eq!(prepare_lines(&d, &other).len(), 2);
+    assert_eq!(p.current(), Some(9));
+    std::fs::remove_dir_all(&d).ok();
+}
+
+fn prepare_lines(d: &std::path::Path, a: &crate::row_ids::IdAliases) -> Vec<String> {
+    let plain_root = d.join("plain");
+    let maps = IdMaps::from_aliases(a);
+    match Plain::at(plain_root)
+        .rewrite_for_aliases(&maps, None, 5000)
+        .unwrap()
+    {
+        Outcome::Wrote(r) => r.careers.iter().map(CareerMapped::line).collect(),
+        _ => Vec::new(),
+    }
+}
+
+fn stream() -> Vec<u8> {
+    let mut containers = Bag::new();
+    containers.push(GM, Value::Bag(career(503, 235)));
+    containers.push(
+        SLOT,
+        Value::Bag(slot_component(
+            7,
+            vec![slot(6, 513, 18), slot(7, 503, 235), slot(8, 646, 61)],
+        )),
+    );
+    containers.push(STOCK, Value::Bag(options()));
+    containers.push(
+        "driver_career_26_SaveSlotGameModeComponent",
+        Value::Bag(slot_component(1, vec![slot(1, 478, 235)])),
+    );
+    let mut root = Bag::new();
+    root.push("save_game", Value::Bag(containers));
+    encode(&root).unwrap()
+}
+
+fn save_file(d: &std::path::Path) -> PathBuf {
+    let iv = [7u8; 16];
+    let path = d.join("savegame@profile#NXDSMWW.BWW");
+    std::fs::write(&path, crate::saves::codec::encode_data(&stream(), iv, 3).unwrap()).unwrap();
+    path
+}
+
+fn file_stream(path: &std::path::Path) -> Bag {
+    decode(
+        &crate::saves::codec::decode_data(&std::fs::read(path).unwrap())
+            .unwrap()
+            .stream,
+    )
+    .unwrap()
+}
+
+#[test]
+fn a_store_with_no_generation_maps_the_launcher_save_file_once() {
+    let d = dir("file");
+    let path = save_file(&d);
+    let before = std::fs::metadata(&path).unwrap().modified().unwrap();
+    let iv = crate::saves::codec::decode_data(&std::fs::read(&path).unwrap())
+        .unwrap()
+        .iv;
+    let save = SaveFile {
+        path: &path,
+        snapshot: Some("20261120-snap"),
+    };
+    let lines = prepare_play(&d, "p", true, &aliases(), 9000, Some(save));
+    assert_eq!(
+        lines,
+        [
+            "[saves] the plain store has no generation yet; mapping the launcher save file",
+            "[saves] mode driver_career_26: earlier driver or vehicle ids but no earlier team id; left alone",
+            "[saves] career 6 (driver_career_1990): mapped 2 team, 0 vehicle, 0 driver id(s) in the save file (the vault snapshot before it is 20261120-snap)",
+            "[saves] career 7 (driver_career_1990): mapped 3 team, 0 vehicle, 2 driver id(s) in the save file (the vault snapshot before it is 20261120-snap)",
+        ]
+    );
+    assert_eq!(std::fs::metadata(&path).unwrap().modified().unwrap(), before);
+    assert_eq!(
+        crate::saves::codec::decode_data(&std::fs::read(&path).unwrap())
+            .unwrap()
+            .iv,
+        iv
+    );
+    assert!(!path.with_extension("remap.tmp").exists());
+    let mut expected = decode(&stream()).unwrap();
+    let Some(Value::Bag(c)) = expected.entries[0..1].first_mut().map(|e| &mut e.value) else {
+        panic!()
+    };
+    let mut mapped = 0;
+    for e in &mut c.entries {
+        if let Value::Bag(b) = &mut e.value
+            && (e.key.0 == GM.as_bytes() || e.key.0 == SLOT.as_bytes())
+        {
+            mapped += crate::saves::remap::remap_container(b, &IdMaps::from_aliases(&aliases())).total();
+        }
+    }
+    assert!(mapped > 0);
+    assert_eq!(file_stream(&path), expected);
+
+    let root = crate::saves::plain::root_of_profile(&d, "p");
+    assert!(root.join("remap-checked.json").is_file());
+    let bytes = std::fs::read(&path).unwrap();
+    assert!(prepare_play(&d, "p", true, &aliases(), 9001, Some(save)).is_empty());
+    assert_eq!(std::fs::read(&path).unwrap(), bytes);
+
+    let plain = Plain::at(root);
+    put_generation(&plain, 1, &old_parts(), Event::Save, 9500);
+    assert!(prepare_play(&d, "p", true, &aliases(), 9600, Some(save)).is_empty());
+    assert_eq!(std::fs::read(&path).unwrap(), bytes);
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_save_the_game_outran_the_store_maps_the_file_and_marks_the_store() {
+    let d = dir("outran");
+    let path = save_file(&d);
+    let plain = Plain::at(crate::saves::plain::root_of_profile(&d, "p"));
+    put_generation(&plain, 5, &old_parts(), Event::Save, 1);
+    let save = SaveFile {
+        path: &path,
+        snapshot: None,
+    };
+    let lines = prepare_play(&d, "p", true, &aliases(), 9000, Some(save));
+    assert!(lines[0].starts_with(
+        "[saves] careers in plain generation 5 hold earlier row ids but the game saved after it"
+    ));
+    assert!(
+        lines
+            .iter()
+            .any(|l| l.starts_with("[saves] career 7 (driver_career_1990): mapped 3 team"))
+    );
+    assert_eq!(plain.current(), Some(5));
+    assert!(plain.already_checked(5, &IdMaps::from_aliases(&aliases())));
+    assert!(prepare_play(&d, "p", true, &aliases(), 9001, Some(save)).is_empty());
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn an_unreadable_file_is_left_alone_and_tried_again() {
+    let d = dir("nofile");
+    let path = d.join("missing.BWW");
+    let save = SaveFile {
+        path: &path,
+        snapshot: None,
+    };
+    let lines = prepare_play(&d, "p", true, &aliases(), 9000, Some(save));
+    assert!(lines[1].starts_with("[saves] launcher save file left alone: "));
+    assert!(
+        !crate::saves::plain::root_of_profile(&d, "p")
+            .join("remap-checked.json")
+            .exists()
+    );
+    let none = prepare_play(&d, "p", true, &aliases(), 9000, None);
+    assert_eq!(
+        none,
+        ["[saves] the plain store has no generation yet; not mapped"]
+    );
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_save_file_with_this_builds_ids_is_not_written() {
+    let d = dir("cleanfile");
+    let path = d.join("savegame@profile#NXDSMWW.BWW");
+    let mut containers = Bag::new();
+    containers.push(GM, Value::Bag(career(645, 362)));
+    let mut root = Bag::new();
+    root.push("save_game", Value::Bag(containers));
+    std::fs::write(
+        &path,
+        crate::saves::codec::encode_data(&encode(&root).unwrap(), [1u8; 16], 3).unwrap(),
+    )
+    .unwrap();
+    let bytes = std::fs::read(&path).unwrap();
+    let save = SaveFile {
+        path: &path,
+        snapshot: None,
+    };
+    let lines = prepare_play(&d, "p", true, &aliases(), 9000, Some(save));
+    assert!(lines.last().unwrap().contains("left alone"));
+    assert_eq!(std::fs::read(&path).unwrap(), bytes);
+    assert!(
+        crate::saves::plain::root_of_profile(&d, "p")
+            .join("remap-checked.json")
+            .is_file()
     );
     std::fs::remove_dir_all(&d).ok();
 }

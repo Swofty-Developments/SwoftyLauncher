@@ -103,6 +103,11 @@ pub enum SavesCommand {
         aliases: std::path::PathBuf,
         #[arg(long, help = "Report what would be mapped and write nothing")]
         dry_run: bool,
+        #[arg(
+            long,
+            help = "Also report what mapping this save data file (NXDSMWW.BWW) would do; --dry-run only"
+        )]
+        save: Option<std::path::PathBuf>,
     },
     #[command(about = "Keep a snapshot: retention never removes it")]
     Pin {
@@ -222,7 +227,8 @@ pub fn command(store: &Store, cmd: SavesCommand) -> Result<ExitCode> {
             plain,
             aliases,
             dry_run,
-        } => plain::remap_ids(&plain, &aliases, dry_run)?,
+            save,
+        } => plain::remap_ids(&plain, &aliases, dry_run, save.as_deref())?,
         SavesCommand::Backup => backup(store)?,
         SavesCommand::Restore { snapshot, source } => restore_snapshot(store, &snapshot, source.as_deref())?,
         SavesCommand::Cap { mb: None } => println!(
