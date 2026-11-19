@@ -75,6 +75,14 @@ bool db_list_stat(const std::string &label, int64_t &out, void *)
 
 }
 
+int64_t mode_stat_of(const std::string &save)
+{
+    if (save.empty() || !runtime::db_table()->available())
+        return -1;
+    content::Db db{db_text, db_integer, db_list_stat, nullptr};
+    return content::mode_stat_id(db, save);
+}
+
 void resolve(Slot &s, bool now, bool building)
 {
     if (s.resolved || s.state != SWOFTY_CAREER_CONTENT_LIVE || !runtime::db_table()->available())

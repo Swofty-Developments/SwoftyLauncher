@@ -29,7 +29,8 @@ struct Facts {
     Card card0;
     uint64_t target = 0;
     bool listed = false, mode_found = false;
-    std::string want_group, wizard_group;
+    int64_t mode_stat = -1, want_stat = -1;
+    std::string want_group, wizard_group, game_mode;
 };
 
 inline bool stock_group(std::string_view group) { return group == STOCK_GROUP_25 || group == STOCK_GROUP_26; }
@@ -43,12 +44,7 @@ inline std::string suffix_for(std::string_view group, std::string_view content_s
     return std::string(content_suffix);
 }
 
-inline bool group_ok(std::string_view want, std::string_view current)
-{
-    if (want.empty())
-        return stock_group(current);
-    return current == want;
-}
+inline bool group_ok(std::string_view want, std::string_view current) { return !want.empty() && current == want; }
 
 inline bool group_needs_write(std::string_view want, std::string_view current) { return !want.empty() && want != current; }
 
@@ -73,11 +69,20 @@ inline std::string busy_reason(const Facts &f)
 
 inline std::string wizard_reason(const Facts &f)
 {
+    if (f.want_group.empty())
+        return "the career's data group is unknown (the row and the careers index have none)";
+    if (f.game_mode.empty())
+        return "the row names no game mode";
     if (!group_ok(f.want_group, f.wizard_group))
-        return "the wizard data group is " + group_text(f.wizard_group) + ", the career's is " +
-               (f.want_group.empty() ? std::string("a stock group") : group_text(f.want_group));
+        return "the wizard data group is " + group_text(f.wizard_group) + ", the career's is " + group_text(f.want_group);
     if (!f.mode_found)
         return "no game mode matches the wizard data group " + group_text(f.wizard_group);
+    if (f.want_stat < 0)
+        return "the row's game mode " + f.game_mode + " is not in the game's data";
+    if (f.mode_stat != f.want_stat)
+        return "the wizard resolves game mode statId " + std::to_string(f.mode_stat) + " for group " +
+               group_text(f.wizard_group) + ", the row's career is " + f.game_mode + " (statId " + std::to_string(f.want_stat) +
+               ")";
     return {};
 }
 

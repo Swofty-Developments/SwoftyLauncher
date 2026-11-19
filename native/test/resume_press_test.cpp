@@ -21,6 +21,8 @@ static rl::Facts good()
     f.target = 7;
     f.listed = true;
     f.mode_found = true;
+    f.game_mode = "driver_career_1990";
+    f.mode_stat = f.want_stat = 81;
     f.want_group = "f1_career_1990";
     f.wizard_group = "f1_career_1990";
     f.stock[0] = {true, true, 7};
@@ -35,8 +37,8 @@ static void groups()
     expect(rl::group_ok("f1_career_1990", "f1_career_1990"), "a matching content group is ok");
     expect(!rl::group_ok("f1_career_1990", "f1_career_2026"), "the stock tile's group is not the content career's");
     expect(!rl::group_ok("f1_career_1990", ""), "an empty wizard group is not the content career's");
-    expect(rl::group_ok("", "f1_career_2025") && rl::group_ok("", "f1_career_2026"), "an unknown career keeps a stock group");
-    expect(!rl::group_ok("", "f1_career_1990") && !rl::group_ok("", ""), "an unknown career refuses a content or empty group");
+    expect(!rl::group_ok("", "f1_career_2025") && !rl::group_ok("", "f1_career_2026") && !rl::group_ok("", ""),
+           "an unknown group is never ok, not even under a stock group");
     expect(rl::group_needs_write("f1_career_1990", "f1_career_2026"), "a differing group is written");
     expect(!rl::group_needs_write("f1_career_1990", "f1_career_1990"), "a matching group is left alone");
     expect(!rl::group_needs_write("", "f1_career_2026"), "an unknown career never writes the group");
@@ -101,9 +103,26 @@ static void press()
     f = good();
     f.want_group.clear();
     f.wizard_group = "f1_career_2025";
-    expect(rl::press_refusal(f).empty(), "an F1 25 career with no recorded group presses under the stock group");
-    f.wizard_group = "f1_career_1990";
-    expect(!rl::press_refusal(f).empty(), "an unrecorded career is refused under a content group");
+    expect(rl::press_refusal(f).find("unknown") != std::string::npos, "a career with no group is refused under a stock group");
+    f = good();
+    f.game_mode.clear();
+    expect(rl::press_refusal(f).find("no game mode") != std::string::npos, "a row with no game mode is refused");
+    f = good();
+    f.wizard_group = "f1_career_2025";
+    f.want_group = "f1_career_2025";
+    f.mode_stat = 70;
+    r = rl::press_refusal(f);
+    expect(r.find("resolves game mode statId 70 for group f1_career_2025") != std::string::npos &&
+               r.find("driver_career_1990 (statId 81)") != std::string::npos,
+           "a group whose mode differs from the row's game mode is refused naming both");
+    f = good();
+    f.want_stat = -1;
+    expect(rl::press_refusal(f).find("not in the game's data") != std::string::npos, "an unresolvable game mode is refused");
+    f = good();
+    f.want_group = f.wizard_group = "f1_career_2025";
+    f.game_mode = "driver_career_25";
+    f.mode_stat = f.want_stat = 70;
+    expect(rl::press_refusal(f).empty(), "a stock career with its own group and mode passes");
 }
 
 static void new_career()

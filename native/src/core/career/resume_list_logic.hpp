@@ -30,6 +30,7 @@ struct Entry {
     size_t index = 0;
     std::string key, status;
     bool my_team = false, ready = true;
+    std::string group, game_mode;
 };
 
 struct Selection {
@@ -54,6 +55,8 @@ inline std::vector<Entry> parse(std::string_view text)
         r.my_team = e["mode"].str() == std::string("my_team");
         r.ready = e["ready"].type == json::Value::Bool && e["ready"].b;
         r.status = e["status"].str();
+        r.group = e["group"].str();
+        r.game_mode = e["game_mode"].str();
         out.push_back(std::move(r));
     }
     return out;

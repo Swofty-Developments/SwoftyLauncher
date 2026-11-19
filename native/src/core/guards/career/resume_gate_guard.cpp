@@ -18,6 +18,7 @@
 
 #include "core/career/career_saves_logic.hpp"
 #include "core/career/resume_gate_logic.hpp"
+#include "core/career/content_state.hpp"
 #include "core/career/resume_list.hpp"
 #include "core/career/resume_press_logic.hpp"
 
@@ -217,7 +218,8 @@ bool press_slot_shaped(void *vm, uintptr_t &fn, const char *who, bool check_busy
 namespace rl = career::resume_list;
 
 constexpr uintptr_t VM_WIZARD = 0x1370, WIZARD_GROUP = 0x128, WIZARD_SUFFIX = 0x140, WIZARD_SUFFIX_CAP = 0x148,
-                    WIZARD_SUFFIX_CHARS = 0x150, CARD_PENDING = 0x1368, CARD_MODE = 0x53c, MODE_SLOT = 33 * 8;
+                    WIZARD_SUFFIX_CHARS = 0x150, CARD_PENDING = 0x1368, CARD_MODE = 0x53c, MODE_STAT_ID = 0x2a8,
+                    MODE_SLOT = 33 * 8;
 constexpr uint8_t MODE_HEAD[] = {0x56, 0x57, 0x48, 0x83, 0xEC, 0x68, 0x80, 0xFA, 0x01, 0x74, 0x2E,
                                  0x0F, 0xB6, 0xC2, 0x85, 0xC0, 0x0F, 0x85, 0x88, 0x00, 0x00, 0x00};
 const runtime::Sig SIG_SET_DATA_GROUP{"game.career_wizard_set_data_group",
@@ -335,13 +337,25 @@ bool mode_shaped(void *vm, uintptr_t &fn)
     return true;
 }
 
-bool mode_found(void *vm)
+void *mode_entity(void *vm)
 {
     uintptr_t fn = 0;
     uint8_t kind = 0;
     if (!mode_shaped(vm, fn) || !mem::read(reinterpret_cast<uintptr_t>(vm) + CARDS + CARD_MODE, kind))
-        return false;
-    return reinterpret_cast<ModeOf *>(fn)(vm, kind) != nullptr;
+        return nullptr;
+    return reinterpret_cast<ModeOf *>(fn)(vm, kind);
+}
+
+void read_mode(void *vm, const rl::Target &t, rl::Facts &f)
+{
+    void *e = mode_entity(vm);
+    f.game_mode = t.game_mode;
+    f.mode_found = e != nullptr;
+    f.mode_stat = -1;
+    uint32_t stat = 0;
+    if (e && mem::read(reinterpret_cast<uintptr_t>(e) + MODE_STAT_ID, stat))
+        f.mode_stat = stat;
+    f.want_stat = career::content::mode_stat_of(t.game_mode);
 }
 
 rl::Card read_card(void *vm, size_t i)
@@ -427,7 +441,7 @@ void press_selected(void *vm, bool my_team, const rl::Target &t)
     f.listed = true;
     read_screen(vm, f);
     match_wizard(vm, t, f);
-    f.mode_found = mode_found(vm);
+    read_mode(vm, t, f);
     std::string why = rl::press_refusal(f);
     if (!why.empty()) {
         refuse(t.row, why);
@@ -519,7 +533,7 @@ void load_target(Handle *orig, bool my_team, void *vm)
         why = rl::busy_reason(f);
     if (why.empty()) {
         match_wizard(vm, t, f);
-        f.mode_found = mode_found(vm);
+        read_mode(vm, t, f);
         why = rl::wizard_reason(f);
     }
     if (!why.empty()) {

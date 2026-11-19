@@ -82,6 +82,7 @@ void resolve_all(bool now, bool building = false);
 bool ready(const Slot &s);
 Slot *by_vtable(const void *item);
 std::string suffix_of_group(const std::string &group);
+int64_t mode_stat_of(const std::string &save);
 void shown_from_records();
 void resolve(Slot &s, bool now, bool building = false);
 int add_slot(const content::Desc &desc, const std::string &who, const std::string &addon, const std::string *record);
