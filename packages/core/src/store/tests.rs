@@ -910,6 +910,27 @@ fn a_session_on_launcher_saves_hands_the_core_the_profiles_plain_root() {
 }
 
 #[test]
+fn a_session_on_the_copys_own_save_names_its_plain_root_once_the_launcher_found_the_copy() {
+    let root = tmp("plain-copy");
+    let store = Store::new(&root);
+    assert!(
+        store
+            .session_settings(DEFAULT_PROFILE)
+            .unwrap()
+            .plain_saves
+            .is_none()
+    );
+    crate::saves::plain::remember_copy_source(&root, "steam-843502855");
+    let plain = store
+        .session_settings(DEFAULT_PROFILE)
+        .unwrap()
+        .plain_saves
+        .unwrap();
+    assert!(plain.root.ends_with("plain/steam-843502855") || plain.root.ends_with("plain\\steam-843502855"));
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
 fn manages_profiles() {
     let root = tmp("profiles");
     let store = Store::new(&root);

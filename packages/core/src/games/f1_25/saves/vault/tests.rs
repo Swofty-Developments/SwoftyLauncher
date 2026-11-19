@@ -239,7 +239,7 @@ fn a_session_that_never_ended_is_not_outside() {
 #[test]
 fn a_session_without_an_addon_raises_a_notice_only_for_a_career_the_plain_store_lost() {
     use crate::saves::plain::Plain;
-    use crate::saves::plain::fixture::{Gen, career_gen, current, write};
+    use crate::saves::plain::fixture::{Gen, career_gen, current, pair, write};
     let root = tmp("lostsession");
     let loc = steam(&root, "9", &[1u8; 90_000]);
     let v = vault(&root, &loc);
@@ -263,7 +263,7 @@ fn a_session_without_an_addon_raises_a_notice_only_for_a_career_the_plain_store_
             n: 2,
             event: "load",
             session: None,
-            containers: vec![("driver_career", "game", vec![("0x01", "Stock")])],
+            containers: pair("driver_career", "game", vec![("0x01", "Stock")]),
         },
     );
     current(&plain, 2);
@@ -271,7 +271,7 @@ fn a_session_without_an_addon_raises_a_notice_only_for_a_career_the_plain_store_
     let n = v.after_session(&loc, meta, T0 + 120).unwrap().notice.unwrap();
     assert_eq!(n.kind, NoticeKind::Lost);
     assert_eq!(n.generation, 1);
-    assert_eq!(n.containers, ["driver_career_progressive"]);
+    assert_eq!(n.modes, ["driver_career_progressive"]);
 }
 
 #[test]
@@ -407,7 +407,8 @@ fn the_ea_copy_has_its_own_vault() {
             snapshot: s.id.clone(),
             kept_at: T0,
             generation: 3,
-            containers: vec!["driver_career_progressive".into()],
+            containers: vec!["gm_driver_career_progressive".into()],
+            modes: vec!["driver_career_progressive".into()],
             names: vec!["Jacob".into()],
             at: T0,
         }

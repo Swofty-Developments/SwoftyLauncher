@@ -4,11 +4,11 @@ use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
 use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::saves::vault::careers::State as CareerState;
+use swofty_core::saves::vault::careers::{State as CareerState, mode_label};
 use swofty_i18n::{tr, trf};
 
 use super::labels::listed_later;
-use super::plain::PlainCareer;
+use super::plain::{PlainCareer, PlainMode};
 use super::state::{Entry, Imported, SavesView};
 use crate::shell::Shell;
 use crate::ui::format::ago_since as ago;
@@ -28,10 +28,18 @@ impl Shell {
         let plain = view.plain.as_ref().filter(|v| !v.careers.is_empty());
         let rows: Vec<AnyElement> = match (plain, &view.imported, view.entries.is_empty()) {
             (Some(v), _, _) => v
-                .careers
+                .modes
                 .iter()
-                .enumerate()
-                .map(|(i, c)| self.plain_row(&v.source, i, c, p, cx))
+                .filter(|m| v.careers.iter().any(|c| c.mode == m.mode))
+                .flat_map(|m| {
+                    let header = self.mode_header(&v.source, m, p, cx);
+                    let rows = v
+                        .careers
+                        .iter()
+                        .filter(|c| c.mode == m.mode)
+                        .map(|c| self.plain_row(c, p));
+                    std::iter::once(header).chain(rows).collect::<Vec<_>>()
+                })
                 .collect(),
             (None, Some(i), true) => vec![self.imported_row(i, p)],
             (None, None, true) => vec![placeholder(
@@ -56,36 +64,29 @@ impl Shell {
             .children(notes)
     }
 
-    pub(super) fn plain_row(
-        &self,
-        source: &str,
-        index: usize,
-        c: &PlainCareer,
-        p: Palette,
-        cx: &mut Context<Self>,
-    ) -> AnyElement {
-        let chip = c
+    fn mode_header(&self, source: &str, m: &PlainMode, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+        let chip = m
             .waiting
             .then(|| Pill::new(tr("Restore waits for Play")).tone(Tone::Warning));
-        let restore = (!c.older.is_empty()).then(|| {
+        let restore = (!m.older.is_empty()).then(|| {
             let shell = cx.entity().downgrade();
-            let older = c.older.clone();
-            let (source, container) = (source.to_owned(), c.container.clone());
-            Button::new(SharedString::from(format!("plain-restore-{index}")))
+            let older = m.older.clone();
+            let (source, mode) = (source.to_owned(), m.mode.clone());
+            Button::new(SharedString::from(format!("plain-restore-{mode}")))
                 .ghost()
                 .tap_sm()
                 .label(tr("Restore"))
                 .dropdown_caret(true)
                 .dropdown_menu_with_anchor(Anchor::TopRight, move |mut menu, _, _| {
                     for o in &older {
-                        let (shell, source, container, generation) =
-                            (shell.clone(), source.clone(), container.clone(), o.generation);
+                        let (shell, source, mode, generation) =
+                            (shell.clone(), source.clone(), mode.clone(), o.generation);
                         menu = menu.item(
                             PopupMenuItem::new(trf!("From {when}", when = ago(o.at as f64))).on_click(
                                 move |_, window, cx| {
                                     shell
                                         .update(cx, |s, cx| {
-                                            s.restore_container(&source, &container, generation, window, cx)
+                                            s.restore_mode(&source, &mode, generation, window, cx)
                                         })
                                         .ok();
                                 },
@@ -95,6 +96,28 @@ impl Shell {
                     menu
                 })
         });
+        h_flex()
+            .min_h(px(40.))
+            .px(px(12.))
+            .py(px(6.))
+            .gap(px(10.))
+            .items_center()
+            .child(
+                div()
+                    .flex_1()
+                    .min_w_0()
+                    .truncate()
+                    .text_size(px(13.))
+                    .font_weight(FontWeight::MEDIUM)
+                    .text_color(p.text_muted)
+                    .child(mode_label(Some(&m.mode))),
+            )
+            .children(chip)
+            .children(restore)
+            .into_any_element()
+    }
+
+    pub(super) fn plain_row(&self, c: &PlainCareer, p: Palette) -> AnyElement {
         h_flex()
             .min_h(px(52.))
             .px(px(12.))
@@ -133,14 +156,6 @@ impl Shell {
                     .text_size(px(12.))
                     .text_color(p.text_placeholder)
                     .child(ago(c.last_played as f64)),
-            )
-            .child(
-                h_flex()
-                    .w(px(CHIP_W))
-                    .flex_shrink_0()
-                    .justify_end()
-                    .children(chip)
-                    .children(restore),
             )
             .into_any_element()
     }

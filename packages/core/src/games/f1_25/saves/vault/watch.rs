@@ -40,6 +40,7 @@ pub fn at_launcher_start(data: &Path) -> Vec<String> {
     let Some(loc) = Location::active(data) else {
         return notes;
     };
+    crate::saves::plain::remember_copy_source(data, &loc.source);
     match Vault::of(data, &loc).and_then(|v| v.check(&loc, Meta::new(Reason::LauncherStart), now())) {
         Ok(c) => notes.extend(describe(&c)),
         Err(e) => notes.push(format!("saves: could not snapshot the profile save: {e}")),

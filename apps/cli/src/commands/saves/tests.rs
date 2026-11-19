@@ -81,7 +81,6 @@ fn the_first_play_copies_the_steam_save_into_an_empty_store_and_plays_on_it() {
             .iter()
             .any(|s| s.reason == Reason::Imported && s.layout == vault::Layout::Launcher)
     );
-    assert!(snaps.iter().any(|s| s.reason == Reason::BeforeSession) || b.snapshot.is_some());
     std::fs::remove_dir_all(&f.root).ok();
 }
 

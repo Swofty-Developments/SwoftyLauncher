@@ -1,5 +1,5 @@
 use anyhow::{Result, bail};
-use swofty_core::saves::plain::Plain;
+use swofty_core::saves::plain::{Plain, mode_of};
 use swofty_core::saves::vault;
 use swofty_core::store::Store;
 
@@ -30,7 +30,7 @@ pub(super) fn careers_in_plain(store: &Store, source: Option<&str>) -> Result<()
     for row in plain.careers() {
         println!(
             "{}\t{}\t{}\t{}",
-            row.container,
+            row.mode,
             row.slot.guid,
             row.slot.name,
             vault::human(row.slot.last_played)
@@ -63,29 +63,34 @@ pub(super) fn careers_in_plain(store: &Store, source: Option<&str>) -> Result<()
 
 pub(super) fn restore_career(
     store: &Store,
-    container: &str,
+    mode: &str,
     generation: Option<u64>,
     source: Option<&str>,
 ) -> Result<()> {
     let plain = plain_of(store, source)?;
+    let mode = mode_of(mode);
     let generation = match generation {
         Some(g) => g,
         None => match plain
             .generations()
             .iter()
-            .find(|m| m.is_session_save() && m.container(container).is_some())
+            .find(|m| m.is_session_save() && m.halves(&mode).next().is_some())
         {
             Some(m) => m.generation,
             None => bail!(
-                "no saved generation in {} holds {container}",
+                "no saved generation in {} holds mode {mode}",
                 plain.root.display()
             ),
         },
     };
-    let r = plain.restore_container(generation, container, vault::now())?;
+    let asked = plain.restore_mode(generation, &mode, vault::now())?;
     println!(
-        "asked the core to restore {container} from generation {generation} at the next Play ({}); `swofty saves plain` shows its answer afterwards",
-        r.id
+        "asked the core to restore {} from generation {generation} at the next Play; `swofty saves plain` shows its answer afterwards",
+        asked
+            .iter()
+            .map(|r| r.container.as_str())
+            .collect::<Vec<_>>()
+            .join(" and ")
     );
     Ok(())
 }

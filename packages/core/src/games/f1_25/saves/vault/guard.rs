@@ -41,6 +41,7 @@ impl Loss {
             kept_at: self.at,
             generation: self.plain.good,
             containers: self.containers(),
+            modes: self.plain.modes(),
             names: self.names(),
             at: now,
         }
@@ -113,7 +114,7 @@ pub const STEAM_SAVE_WARNING: &str = "This profile's addon careers live in your 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::saves::plain::fixture::{Gen, career_gen, current, write};
+    use crate::saves::plain::fixture::{Gen, career_gen, current, pair, write};
     use crate::saves::vault::{Layout, Location, Meta, Snapshot, Taken};
     use crate::stdlib::careers::parse;
 
@@ -178,7 +179,7 @@ mod tests {
                 n: 2,
                 event: "load",
                 session: None,
-                containers: vec![("driver_career", "game", vec![("0x01", "Stock")])],
+                containers: pair("driver_career", "game", vec![("0x01", "Stock")]),
             },
         );
         current(&w.plain, 2);
@@ -196,7 +197,8 @@ mod tests {
         take(&w, Reason::ForeignExit, 2_000);
         let loss = w.vault.probable_loss().unwrap();
         assert_eq!(loss.generation(), 1);
-        assert_eq!(loss.containers(), ["driver_career_progressive"]);
+        assert_eq!(loss.plain.modes(), ["driver_career_progressive"]);
+        assert_eq!(loss.containers().len(), 2);
         assert_eq!(loss.names(), ["Jacob, season 2, round 5"]);
         assert!(loss.snapshot.is_some());
         std::fs::remove_dir_all(&w.data).ok();
@@ -235,7 +237,8 @@ mod tests {
             .unwrap();
         let n = c.notice.unwrap();
         assert_eq!(n.kind, NoticeKind::Lost);
-        assert_eq!(n.containers, ["driver_career_progressive"]);
+        assert_eq!(n.modes, ["driver_career_progressive"]);
+        assert_eq!(n.containers.len(), 2);
         assert!(n.text().contains("generation 1"), "{}", n.text());
         assert!(
             n.text().contains("restore-career driver_career_progressive"),
@@ -245,7 +248,8 @@ mod tests {
         assert_eq!(Notice::read(&w.data).unwrap(), n);
 
         let mut put = career_gen(3, "load", None, &[("0x0a", "Jacob")]);
-        put.containers[1].1 = "injected";
+        put.containers[2].1 = "injected";
+        put.containers[3].1 = "injected";
         write(&w.plain, &put);
         current(&w.plain, 3);
         let c = w

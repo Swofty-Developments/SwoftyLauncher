@@ -205,25 +205,29 @@ impl Shell {
         cx.notify();
     }
 
-    pub(crate) fn restore_container(
+    pub(crate) fn restore_mode(
         &mut self,
         source: &str,
-        container: &str,
+        mode: &str,
         generation: u64,
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
         let root = self.store.root.clone();
         let plain = swofty_core::saves::plain::Plain::of_source(&root, source);
-        let note = match plain.restore_container(generation, container, vault::now()) {
-            Ok(r) => {
+        let note = match plain.restore_mode(generation, mode, vault::now()) {
+            Ok(asked) => {
                 crate::app::app_log::note(&format!(
-                    "saves: asked the core to restore {container} from generation {generation} at the next Play ({})",
-                    r.id
+                    "saves: asked the core to restore {} from generation {generation} at the next Play",
+                    asked
+                        .iter()
+                        .map(|r| r.container.as_str())
+                        .collect::<Vec<_>>()
+                        .join(" and ")
                 ));
                 Notification::success(trf!(
-                    "{container} comes back from the saved copy the next time you press Play.",
-                    container = container
+                    "{mode} comes back from the saved copy the next time you press Play.",
+                    mode = swofty_core::saves::vault::careers::mode_label(Some(mode))
                 ))
             }
             Err(e) => {

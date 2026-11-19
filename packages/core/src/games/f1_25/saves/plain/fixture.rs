@@ -1,10 +1,12 @@
 use super::*;
 
+pub(crate) type FixtureContainer<'a> = (&'a str, &'a str, Vec<(&'a str, &'a str)>);
+
 pub(crate) struct Gen<'a> {
     pub n: u64,
     pub event: &'a str,
     pub session: Option<&'a str>,
-    pub containers: Vec<(&'a str, &'a str, Vec<(&'a str, &'a str)>)>,
+    pub containers: Vec<FixtureContainer<'a>>,
 }
 
 pub(crate) fn fnv(name: &str) -> String {
@@ -47,19 +49,34 @@ pub(crate) fn current(p: &Plain, n: u64) {
     std::fs::write(p.root.join(CURRENT), n.to_string()).unwrap();
 }
 
+pub(crate) fn pair<'a>(
+    mode: &str,
+    source: &'a str,
+    slots: Vec<(&'a str, &'a str)>,
+) -> Vec<FixtureContainer<'a>> {
+    let leak = |s: String| -> &'a str { Box::leak(s.into_boxed_str()) };
+    vec![
+        (leak(format!("gm_{mode}")), source, slots),
+        (
+            leak(format!("{mode}_SaveSlotGameModeComponent")),
+            source,
+            Vec::new(),
+        ),
+    ]
+}
+
 pub(crate) fn career_gen<'a>(
     n: u64,
     event: &'a str,
     session: Option<&'a str>,
     careers: &[(&'a str, &'a str)],
 ) -> Gen<'a> {
+    let mut containers = pair("driver_career", "game", vec![("0x01", "Stock")]);
+    containers.extend(pair("driver_career_progressive", "kept", careers.to_vec()));
     Gen {
         n,
         event,
         session,
-        containers: vec![
-            ("driver_career", "game", vec![("0x01", "Stock")]),
-            ("driver_career_progressive", "kept", careers.to_vec()),
-        ],
+        containers,
     }
 }

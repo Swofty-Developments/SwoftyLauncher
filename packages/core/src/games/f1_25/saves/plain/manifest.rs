@@ -58,9 +58,25 @@ pub struct Container {
     pub source: Source,
     #[serde(default)]
     pub slots: Vec<Slot>,
+    #[serde(default)]
+    pub pair: Option<String>,
+}
+
+pub const SLOT_SUFFIX: &str = "_SaveSlotGameModeComponent";
+
+/// The mode a container belongs to: `gm_<mode>` and `<mode>_SaveSlotGameModeComponent` are its two halves.
+pub fn mode_of(name: &str) -> String {
+    name.strip_prefix("gm_")
+        .or_else(|| name.strip_suffix(SLOT_SUFFIX))
+        .unwrap_or(name)
+        .to_owned()
 }
 
 impl Container {
+    pub fn mode(&self) -> String {
+        self.pair.clone().unwrap_or_else(|| mode_of(&self.name))
+    }
+
     pub fn file(&self) -> String {
         format!("{}.bag", self.fnv64)
     }
@@ -95,6 +111,21 @@ pub struct Manifest {
 }
 
 impl Manifest {
+    pub fn halves<'a>(&'a self, mode: &'a str) -> impl Iterator<Item = &'a Container> + 'a {
+        self.containers.iter().filter(move |c| c.mode() == mode)
+    }
+
+    pub fn modes(&self) -> Vec<String> {
+        let mut out: Vec<String> = Vec::new();
+        for c in &self.containers {
+            let m = c.mode();
+            if !out.contains(&m) {
+                out.push(m);
+            }
+        }
+        out
+    }
+
     pub fn container(&self, name: &str) -> Option<&Container> {
         self.containers.iter().find(|c| c.name == name)
     }

@@ -1,6 +1,9 @@
 use std::path::PathBuf;
 
 use super::fixture::*;
+
+const GM: &str = "gm_driver_career_progressive";
+const SLOT: &str = "driver_career_progressive_SaveSlotGameModeComponent";
 use super::*;
 use crate::saves::vault::restore::Running;
 
@@ -20,7 +23,7 @@ fn a_generation_newer_than_current_or_torn_is_ignored() {
     write(&p, &career_gen(3, "save", Some("s1"), &[("0x0a", "Jacob")]));
     current(&p, 2);
     assert_eq!(p.newest().unwrap().generation, 2);
-    std::fs::remove_file(p.bag_path(2, &p.manifest(2).unwrap().containers[1])).unwrap();
+    std::fs::remove_file(p.bag_path(2, &p.manifest(2).unwrap().containers[2])).unwrap();
     assert_eq!(p.newest().unwrap().generation, 1);
     std::fs::write(p.generation_dir(1).join("manifest.json"), "{ not json").unwrap();
     assert!(p.newest().is_none());
@@ -51,7 +54,7 @@ fn careers_come_from_the_newest_generation_slots() {
     assert_eq!(rows.len(), 3);
     assert!(
         rows.iter()
-            .any(|r| r.container == "driver_career_progressive" && r.slot.name == "Ada")
+            .any(|r| r.mode == "driver_career_progressive" && r.slot.name == "Ada")
     );
     std::fs::remove_dir_all(&d).ok();
 }
@@ -67,20 +70,32 @@ fn a_load_that_lacks_a_container_the_last_save_had_is_a_loss() {
             n: 2,
             event: "load",
             session: None,
-            containers: vec![("driver_career", "game", vec![("0x01", "Stock")])],
+            containers: pair("driver_career", "game", vec![("0x01", "Stock")]),
         },
     );
     current(&p, 2);
     let loss = p.loss(&[]).unwrap();
     assert_eq!((loss.good, loss.newest), (1, 2));
-    assert_eq!(loss.containers(), ["driver_career_progressive"]);
+    assert_eq!(loss.modes(), ["driver_career_progressive"]);
+    assert_eq!(
+        loss.containers(),
+        [GM, SLOT],
+        "both halves of the mode go back together"
+    );
     assert_eq!(loss.names(), ["Jacob, season 2, round 5"]);
     assert!(
-        p.loss(&[PutBack {
-            name: "driver_career_progressive".into(),
-            careers: 1,
-            generation: 1
-        }])
+        p.loss(&[
+            PutBack {
+                name: GM.into(),
+                careers: 1,
+                generation: 1
+            },
+            PutBack {
+                name: SLOT.into(),
+                careers: 0,
+                generation: 1
+            }
+        ])
         .is_none()
     );
     std::fs::remove_dir_all(&d).ok();
@@ -96,7 +111,8 @@ fn a_put_back_container_and_a_deleted_career_are_not_lost() {
     assert!(p.loss(&[]).is_none());
 
     let mut injected = career_gen(3, "load", None, &[("0x0a", "Jacob")]);
-    injected.containers[1].1 = "injected";
+    injected.containers[2].1 = "injected";
+    injected.containers[3].1 = "injected";
     write(&p, &injected);
     current(&p, 3);
     assert!(p.loss(&[]).is_none());
@@ -156,8 +172,10 @@ fn pruning_keeps_the_newest_pinned_and_each_sessions_last_save() {
     }
     current(&p, 9);
     p.pin(1, "restore").unwrap();
-    let mut running = Running::default();
-    running.game = true;
+    let running = Running {
+        game: true,
+        ..Running::default()
+    };
     assert!(
         p.prune(&d, Keep { newest: 2 }, running)
             .unwrap()
@@ -177,17 +195,25 @@ fn a_restore_request_pins_the_generation_and_replaces_the_pending_one() {
     let p = Plain::at(d.join("plain"));
     write(&p, &career_gen(1, "save", Some("s1"), &[("0x0a", "Jacob")]));
     current(&p, 1);
-    let r = p.restore_container(1, "driver_career_progressive", 50).unwrap();
-    assert!(r.replace);
-    assert_eq!(p.pending(), [r.clone()]);
+    let r = p.restore_mode(1, "driver_career_progressive", 50).unwrap();
+    assert_eq!(r.len(), 2);
+    assert!(r.iter().all(|x| x.replace && x.generation == 1));
+    assert_eq!(
+        r.iter().map(|x| x.container.as_str()).collect::<Vec<_>>(),
+        [GM, SLOT]
+    );
+    assert_eq!(p.pending(), r);
     assert_eq!(p.pins().get(&1).unwrap(), &["restore"]);
-    assert!(p.restore_container(1, "nope", 51).is_err());
-    assert!(p.restore_container(7, "driver_career", 51).is_err());
+    assert!(p.restore_mode(1, "nope", 51).is_err());
+    assert!(p.restore_mode(7, "driver_career", 51).is_err());
+    let half = p.restore_mode(1, SLOT, 52).unwrap();
+    assert_eq!(half.len(), 2, "naming either half restores the mode");
     let v: serde_json::Value =
         serde_json::from_slice(&std::fs::read(p.root.join("inject.json")).unwrap()).unwrap();
     assert_eq!(v["schema"], 1);
     assert_eq!(v["requests"][0]["replace"], true);
     assert_eq!(v["requests"][0]["generation"], 1);
+    assert_eq!(v["requests"][1]["container"], SLOT);
     std::fs::write(
         p.root.join("injected.json"),
         r#"{"schema":1,"results":[{"id":"r1","ok":true,"detail":"d"}]}"#,
@@ -206,4 +232,49 @@ fn roots_follow_the_contract() {
     );
     assert_eq!(root_of_source(data, "steam-123"), data.join("plain/steam-123"));
     assert_eq!(root_of_source(data, "ea-me"), data.join("plain/ea-me"));
+}
+
+#[test]
+fn a_mode_with_one_half_missing_is_lost_and_the_mode_comes_from_the_name_or_the_pair_field() {
+    assert_eq!(mode_of("gm_driver_career"), "driver_career");
+    assert_eq!(
+        mode_of("driver_career_SaveSlotGameModeComponent"),
+        "driver_career"
+    );
+    assert_eq!(mode_of("swofty_registry"), "swofty_registry");
+    let d = dir("half");
+    let p = Plain::at(d.join("plain"));
+    write(&p, &career_gen(1, "save", Some("s1"), &[("0x0a", "Jacob")]));
+    let mut load = career_gen(2, "load", None, &[("0x0a", "Jacob")]);
+    load.containers.remove(3);
+    write(&p, &load);
+    current(&p, 2);
+    let loss = p.loss(&[]).unwrap();
+    assert_eq!(loss.items.len(), 1);
+    assert!(!loss.items[0].whole);
+    assert_eq!(loss.items[0].mode, "driver_career_progressive");
+    assert_eq!(loss.containers(), [GM, SLOT]);
+
+    let manifest = p.manifest(1).unwrap();
+    let mut with_pair = manifest.containers[2].clone();
+    with_pair.pair = Some("other".into());
+    assert_eq!(with_pair.mode(), "other");
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_career_guid_missing_from_either_half_of_a_mode_is_lost() {
+    let d = dir("guid");
+    let p = Plain::at(d.join("plain"));
+    write(
+        &p,
+        &career_gen(1, "save", Some("s1"), &[("0x0a", "Jacob"), ("0x0b", "Ada")]),
+    );
+    write(&p, &career_gen(2, "load", None, &[("0x0a", "Jacob")]));
+    current(&p, 2);
+    let loss = p.loss(&[]).unwrap();
+    assert_eq!(loss.items[0].careers.len(), 1);
+    assert_eq!(loss.items[0].careers[0].guid, "0x0b");
+    assert!(p.careers().iter().all(|r| !r.mode.is_empty()));
+    std::fs::remove_dir_all(&d).ok();
 }

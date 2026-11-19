@@ -26,7 +26,10 @@ pub fn put_backs(log: &str) -> Vec<PutBack> {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Lost {
-    pub container: String,
+    pub mode: String,
+    /// The mode's containers in the good generation, which a restore puts back together.
+    pub containers: Vec<String>,
+    /// No container of the mode is left in the newest generation.
     pub whole: bool,
     pub careers: Vec<LostCareer>,
 }
@@ -52,7 +55,7 @@ impl Loss {
         self.items
             .iter()
             .flat_map(|i| match i.careers.is_empty() {
-                true => vec![i.container.clone()],
+                true => vec![i.mode.clone()],
                 false => i
                     .careers
                     .iter()
@@ -65,8 +68,12 @@ impl Loss {
             .collect()
     }
 
+    pub fn modes(&self) -> Vec<String> {
+        self.items.iter().map(|i| i.mode.clone()).collect()
+    }
+
     pub fn containers(&self) -> Vec<String> {
-        self.items.iter().map(|i| i.container.clone()).collect()
+        self.items.iter().flat_map(|i| i.containers.clone()).collect()
     }
 
     pub fn key(&self) -> String {
@@ -74,38 +81,38 @@ impl Loss {
     }
 }
 
-fn lost_in(good: &Container, newest: Option<&Container>) -> Option<Lost> {
-    let careers = |only_missing_from: Option<&Container>| -> Vec<LostCareer> {
-        good.slots
-            .iter()
-            .filter(|s| match only_missing_from {
-                Some(n) => !n.slots.iter().any(|t| t.guid == s.guid),
-                None => true,
-            })
-            .map(|s| LostCareer {
-                guid: s.guid.clone(),
-                name: s.name.clone(),
-                season: s.season,
-                round: s.round,
-            })
-            .collect()
-    };
-    match newest {
-        None => Some(Lost {
-            container: good.name.clone(),
-            whole: true,
-            careers: careers(None),
-        }),
-        Some(n) if n.source == Source::Injected => None,
-        Some(n) => {
-            let missing = careers(Some(n));
-            (!missing.is_empty() && !good.slots.is_empty()).then(|| Lost {
-                container: good.name.clone(),
-                whole: false,
-                careers: missing,
-            })
-        }
+fn halves<'a>(m: &'a Manifest, mode: &'a str) -> Vec<&'a Container> {
+    m.halves(mode).collect()
+}
+
+fn lost_mode(good: &Manifest, newest: &Manifest, mode: &str) -> Option<Lost> {
+    let was = halves(good, mode);
+    let now = halves(newest, mode);
+    if now.iter().any(|c| c.source == Source::Injected) && now.len() >= was.len() {
+        return None;
     }
+    let missing_half = was.iter().any(|g| !now.iter().any(|n| n.same(g)));
+    let careers: Vec<LostCareer> = was
+        .iter()
+        .flat_map(|c| c.slots.iter())
+        .filter(|s| !now.iter().any(|n| n.slots.iter().any(|t| t.guid == s.guid)))
+        .fold(Vec::new(), |mut out: Vec<LostCareer>, s| {
+            if !out.iter().any(|c| c.guid == s.guid) {
+                out.push(LostCareer {
+                    guid: s.guid.clone(),
+                    name: s.name.clone(),
+                    season: s.season,
+                    round: s.round,
+                });
+            }
+            out
+        });
+    (missing_half || !careers.is_empty()).then(|| Lost {
+        mode: mode.to_owned(),
+        containers: was.iter().map(|c| c.name.clone()).collect(),
+        whole: now.is_empty(),
+        careers,
+    })
 }
 
 impl Plain {
@@ -128,12 +135,16 @@ impl Plain {
 
     pub fn loss_between(&self, good: &Manifest, newest: &Manifest, put_back: &[PutBack]) -> Option<Loss> {
         let items: Vec<Lost> = good
-            .containers
-            .iter()
-            .filter(|g| !put_back.iter().any(|p| p.name == g.name))
-            .filter_map(|g| lost_in(g, newest.containers.iter().find(|n| n.same(g))))
+            .modes()
+            .into_iter()
+            .filter(|mode| {
+                !good
+                    .halves(mode)
+                    .all(|c| put_back.iter().any(|p| p.name == c.name))
+            })
+            .filter_map(|mode| lost_mode(good, newest, &mode))
             .collect();
-        (!items.is_empty()).then(|| Loss {
+        (!items.is_empty()).then_some(Loss {
             good: good.generation,
             newest: newest.generation,
             at: good.written_at,

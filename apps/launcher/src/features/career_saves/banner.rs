@@ -22,7 +22,7 @@ impl Shell {
             shown.source.clone(),
             shown.snapshot,
             shown.generation,
-            shown.containers,
+            shown.modes,
         );
         let dismiss_source = shown.source;
         let dismiss_sha = shown.sha256;
@@ -36,8 +36,8 @@ impl Shell {
                         .label(tr("Restore"))
                         .on_click(cx.listener(move |this, _, window, cx| match kind {
                             Kind::Lost => {
-                                for c in &restore.3 {
-                                    this.restore_container(&restore.0, c, restore.2, window, cx);
+                                for mode in &restore.3 {
+                                    this.restore_mode(&restore.0, mode, restore.2, window, cx);
                                 }
                             }
                             Kind::Dropped | Kind::Stalled => {

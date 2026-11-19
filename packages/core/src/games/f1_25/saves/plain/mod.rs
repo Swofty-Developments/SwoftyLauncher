@@ -24,7 +24,7 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 pub use loss::{Loss, Lost, PutBack, put_backs};
-pub use manifest::{Container, Event, Manifest, SCHEMA, Slot, Source};
+pub use manifest::{Container, Event, Manifest, SCHEMA, Slot, Source, mode_of};
 pub use prune::{Keep, Pruned, prune_all_held};
 
 use crate::{Result, io_err};
@@ -54,11 +54,31 @@ pub fn root_of_source(data: &Path, source: &str) -> PathBuf {
     root_of_copy(data, source)
 }
 
-/// The plain root a session of `profile` writes, which `settings.json` hands the core.
+const COPY_SOURCE: &str = "state/save-source";
+
+/// Note the vault source of the save the active copy uses, which the launcher finds at start and before Play,
+/// so the settings of a session on the copy's own save name its plain root without looking for the copy.
+pub fn remember_copy_source(data: &Path, source: &str) {
+    let path = data.join(COPY_SOURCE);
+    if std::fs::read_to_string(&path).is_ok_and(|s| s.trim() == source) {
+        return;
+    }
+    if let Some(dir) = path.parent() {
+        std::fs::create_dir_all(dir).ok();
+    }
+    std::fs::write(&path, source).ok();
+}
+
+/// The plain root a session of `profile` writes, which `settings.json` hands the core. A session on the copy's
+/// own save has none until the launcher has found the copy's save once.
 pub fn root_of_session(data: &Path, profile: &str, on_launcher_saves: bool) -> Option<PathBuf> {
     match on_launcher_saves {
         true => Some(root_of_profile(data, profile)),
-        false => super::vault::Location::active(data).map(|l| root_of_copy(data, &l.source)),
+        false => {
+            let source = std::fs::read_to_string(data.join(COPY_SOURCE)).ok()?;
+            let source = source.trim();
+            (!source.is_empty()).then(|| root_of_copy(data, source))
+        }
     }
 }
 
@@ -69,6 +89,7 @@ pub struct Plain {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CareerRow {
+    pub mode: String,
     pub container: String,
     pub registered: bool,
     pub source: Source,
@@ -155,6 +176,7 @@ impl Plain {
             .iter()
             .flat_map(|c| {
                 c.slots.iter().map(|s| CareerRow {
+                    mode: c.mode(),
                     container: c.name.clone(),
                     registered: c.registered,
                     source: c.source,
@@ -164,7 +186,11 @@ impl Plain {
                 })
             })
             .collect();
-        out.sort_by(|a, b| b.slot.last_played.cmp(&a.slot.last_played));
+        out.sort_by(|a, b| {
+            a.mode
+                .cmp(&b.mode)
+                .then(b.slot.last_played.cmp(&a.slot.last_played))
+        });
         out
     }
 
@@ -198,19 +224,27 @@ impl Plain {
         inject::answers(&self.root)
     }
 
-    pub fn restore_container(&self, generation: u64, container: &str, now: i64) -> Result<inject::Request> {
+    /// Ask the core to put a mode back from `generation`: both halves, `gm_<mode>` and
+    /// `<mode>_SaveSlotGameModeComponent`, in one request each from the same generation. `mode` may also be
+    /// the name of either half.
+    pub fn restore_mode(&self, generation: u64, mode: &str, now: i64) -> Result<Vec<inject::Request>> {
+        let mode = mode_of(mode);
         let m = self.manifest(generation).ok_or_else(|| {
             crate::Error::Other(format!(
                 "generation {generation} is not complete in the plain store"
             ))
         })?;
-        if m.container(container).is_none() {
+        let names: Vec<String> = m.halves(&mode).map(|c| c.name.clone()).collect();
+        if names.is_empty() {
             return Err(crate::Error::Other(format!(
-                "generation {generation} has no container {container}"
+                "generation {generation} has no containers of mode {mode}"
             )));
         }
         self.pin(generation, "restore")?;
-        inject::ask(&self.root, generation, container, true, now)
+        names
+            .iter()
+            .map(|n| inject::ask(&self.root, generation, n, true, now))
+            .collect()
     }
 }
 

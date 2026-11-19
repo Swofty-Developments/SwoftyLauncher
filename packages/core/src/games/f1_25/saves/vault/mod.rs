@@ -329,6 +329,9 @@ pub struct Notice {
     /// The plain store generation that still holds what is missing.
     pub generation: u64,
     pub containers: Vec<String>,
+    /// The modes those containers belong to; a restore puts both halves of each back.
+    #[serde(default)]
+    pub modes: Vec<String>,
     pub names: Vec<String>,
     pub at: i64,
 }
@@ -357,7 +360,7 @@ impl Notice {
             false => String::new(),
         };
         let restore = self
-            .containers
+            .modes
             .iter()
             .map(|c| format!("`swofty saves restore-career {c}{source}`"))
             .collect::<Vec<_>>()

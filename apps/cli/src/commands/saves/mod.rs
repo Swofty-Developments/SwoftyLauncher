@@ -72,11 +72,11 @@ pub enum SavesCommand {
         source: Option<String>,
     },
     #[command(
-        about = "Ask the core to put one container, with its careers, back from the plain copy at the next Play"
+        about = "Ask the core to put one mode, both its containers, back from the plain copy at the next Play"
     )]
     RestoreCareer {
-        #[arg(help = "The container, as `swofty saves plain` prints it")]
-        container: String,
+        #[arg(help = "The mode, as `swofty saves plain` prints it, or the name of either of its containers")]
+        mode: String,
         #[arg(
             long,
             help = "The generation to restore from (default: the newest save that has it)"
@@ -194,10 +194,10 @@ pub fn command(store: &Store, cmd: SavesCommand) -> Result<ExitCode> {
         SavesCommand::Unpin { snapshot, source } => pin_snapshot(store, &snapshot, source.as_deref(), false)?,
         SavesCommand::Plain { source } => careers_in_plain(store, source.as_deref())?,
         SavesCommand::RestoreCareer {
-            container,
+            mode,
             generation,
             source,
-        } => restore_career(store, &container, generation, source.as_deref())?,
+        } => restore_career(store, &mode, generation, source.as_deref())?,
         SavesCommand::Backup => backup(store)?,
         SavesCommand::Restore { snapshot, source } => restore_snapshot(store, &snapshot, source.as_deref())?,
         SavesCommand::Cap { mb: None } => println!(

@@ -47,6 +47,32 @@ pub fn ea_dir(data: &Path, profile: &str) -> PathBuf {
     root(data).join(profile).join(EA_DIR)
 }
 
+/// The `launcher_saves` and `plain_saves` of a session's settings: the profile's launcher store when it
+/// plays on launcher saves, and the plain root the core writes its containers to.
+pub fn session_saves(
+    data: &Path,
+    profile: &str,
+    launcher_saves: bool,
+    vanilla: bool,
+) -> (
+    Option<crate::addons::settings::SessionSaves>,
+    Option<crate::addons::settings::SessionPlainSaves>,
+) {
+    let redirect = launcher_saves && !steam_save_pending(data, profile);
+    let saves = redirect.then(|| crate::addons::settings::SessionSaves {
+        profile: profile.to_owned(),
+        remote: crate::data::paths::game_folder_view(&remote_dir(data, profile)),
+    });
+    let plain = (!vanilla)
+        .then(|| super::plain::root_of_session(data, profile, redirect))
+        .flatten()
+        .map(|root| crate::addons::settings::SessionPlainSaves {
+            root: crate::data::paths::game_folder_view(&root),
+            schema: super::plain::SCHEMA,
+        });
+    (saves, plain)
+}
+
 pub fn location(data: &Path, profile: &str) -> Location {
     Location::launcher(data, profile)
 }

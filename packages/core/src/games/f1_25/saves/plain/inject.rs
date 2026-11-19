@@ -53,7 +53,7 @@ pub fn ask(root: &Path, generation: u64, container: &str, replace: bool, now: i6
     }
     requests.retain(|r| r.container != container);
     let request = Request {
-        id: format!("r{now}-{}", requests.len() + 1),
+        id: format!("r{now}-{container}"),
         generation,
         container: container.to_owned(),
         replace,

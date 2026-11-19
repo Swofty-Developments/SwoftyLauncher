@@ -315,12 +315,12 @@ fn the_banner_names_a_career_the_newest_generation_lacks_and_offers_its_containe
             names,
             source,
             generation,
-            containers,
+            modes,
             ..
         })) => {
             assert_eq!(names, ["Progressive 2016, season 2016, round 7"]);
             assert_eq!(generation, 1);
-            assert_eq!(containers, ["driver_career_progressive"]);
+            assert_eq!(modes, ["driver_career_progressive"]);
             assert_eq!(source, loc.source);
         }
         _ => panic!("expected a lost banner"),
@@ -344,43 +344,48 @@ fn a_smaller_save_alone_raises_no_banner() {
 }
 
 #[test]
-fn the_page_lists_careers_from_the_newest_generation_with_older_versions_to_restore() {
+fn the_page_groups_careers_by_mode_and_restores_both_halves_from_one_generation() {
     let d = std::env::temp_dir().join(format!("swofty-launcher-saves-plain-{}", std::process::id()));
     std::fs::remove_dir_all(&d).ok();
     let root = d.join("saves").join("p").join("plain");
-    write_generation(
-        &root,
-        1,
-        "save",
-        Some("s1"),
-        &[("driver_career_progressive", "kept", &[("0x0a", "Old")])],
-    );
+    let halves = |who: Slots<'static>| -> Vec<(&'static str, &'static str, Slots<'static>)> {
+        vec![
+            ("gm_driver_career_progressive", "kept", who),
+            ("driver_career_progressive_SaveSlotGameModeComponent", "kept", &[]),
+            ("gm_driver_career", "game", &[("0x01", "Stock")]),
+            ("driver_career_SaveSlotGameModeComponent", "game", &[]),
+        ]
+    };
+    write_generation(&root, 1, "save", Some("s1"), &halves(&[("0x0a", "Old")]));
     write_generation(
         &root,
         2,
         "save",
         Some("s1"),
-        &[(
-            "driver_career_progressive",
-            "kept",
-            &[("0x0a", "Jacob"), ("0x0b", "Ada")],
-        )],
+        &halves(&[("0x0a", "Jacob"), ("0x0b", "Ada")]),
     );
     let view = super::plain::build_plain(&d, "launcher-p").unwrap();
     assert_eq!(view.generation, 2);
-    assert_eq!(view.careers.len(), 2);
+    assert_eq!(view.careers.len(), 3);
+    let modes: Vec<&str> = view.modes.iter().map(|m| m.mode.as_str()).collect();
+    assert_eq!(modes, ["driver_career_progressive", "driver_career"]);
+    let progressive = &view.modes[0];
+    assert_eq!(progressive.containers.len(), 2);
+    assert_eq!(progressive.older.len(), 1);
+    assert_eq!(progressive.older[0].generation, 1);
+    assert!(view.modes[1].older.is_empty(), "the stock mode never changed");
     let jacob = view.careers.iter().find(|c| c.name == "Jacob").unwrap();
-    assert_eq!(jacob.container, "driver_career_progressive");
-    assert_eq!(jacob.older.len(), 1);
-    assert_eq!(jacob.older[0].generation, 1);
+    assert_eq!(jacob.mode, "driver_career_progressive");
     assert!(!jacob.waiting);
 
     let plain = swofty_core::saves::plain::Plain::of_source(&d, "launcher-p");
-    plain
-        .restore_container(1, "driver_career_progressive", 5)
+    let asked = plain
+        .restore_mode(progressive.older[0].generation, "driver_career_progressive", 5)
         .unwrap();
+    assert_eq!(asked.len(), 2);
+    assert!(asked.iter().all(|r| r.generation == 1));
     let view = super::plain::build_plain(&d, "launcher-p").unwrap();
-    assert!(view.careers.iter().all(|c| c.waiting));
+    assert!(view.modes[0].waiting && !view.modes[1].waiting);
     assert!(view.waiting_line().is_some());
     std::fs::write(
         root.join("injected.json"),

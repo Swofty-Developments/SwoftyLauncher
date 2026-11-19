@@ -307,36 +307,91 @@ $ swofty saves versions
 
 `swofty saves pin <snapshot>` adds the pin `pinned`; `unpin` removes only that pin. Pins from a backup, a restore or a missing career stay.
 
-### Addon careers on the Steam save
+### The plain store
 
-A profile with **Use launcher saves** off keeps its careers in the Steam save. An F1 25 started from Steam without the launcher runs without the profile's addons and drops the career containers no loaded game mode claims (`gm_driver_career_progressive`) when it saves; Steam Cloud then uploads that save. The profile save is encrypted, so the launcher reads the signs in the vault instead of the containers.
+The core writes the launcher's own copy of every save container from inside the game, as plain data: not encrypted, not compressed. The launcher reads it and never writes a generation. `settings.json` hands the core the root:
+
+```json
+"plain_saves": { "root": "C:\\Users\\you\\AppData\\Local\\Swofty\\saves\\default\\plain", "schema": 1 }
+```
+
+```text
+<plain root>/
+  CURRENT                         the newest complete generation, decimal text
+  generations/000000000041/
+    manifest.json                 event, session, containers with their slots
+    containers/<fnv64>.bag        one root container's bytes as the game's bag writer emits them
+  inject.json                     launcher requests for the core
+  injected.json                   the core's answers
+  pins.json                       generations the launcher keeps
+```
+
+The root is `$DATA/saves/<profile>/plain/` for a session on launcher saves and `$DATA/plain/<vault source>/` (`steam-<id3>`, `ea-<user>`) for a session on the copy's own save. A profile without `plain_saves` in its settings writes and injects nothing.
+
+The core writes a generation after every profile load the game finishes (`event: "load"`) and after every profile save the game reports done (`event: "save"`). `packages/core/src/games/f1_25/saves/plain/` reads it:
+
+```rust
+let plain = Plain::of_source(&data, "launcher-default");
+let newest = plain.newest();      // Option<Manifest>, never newer than CURRENT
+let careers = plain.careers();    // one row per slot of the newest generation
+```
+
+A generation counts when it is not newer than `CURRENT`, its manifest parses, and every container file it lists is there with the length the manifest states. A torn or partial generation is skipped, and the next older complete one stands in.
+
+The launcher prunes generations at launcher start, never while F1 25 runs or a session holds the lock. It keeps the newest 60, `CURRENT`, every generation in `pins.json` (a restore request pins its generation) and the newest `save` generation of each session.
+
+### Careers the newest generation lacks
+
+A profile with **Use launcher saves** off keeps its careers in the Steam save. An F1 25 started from Steam without the launcher runs without the profile's addons and drops the career containers no loaded game mode claims (`gm_driver_career_progressive`) when it saves; Steam Cloud then uploads that save.
+
+Every mode is two root containers, `gm_<mode>` and `<mode>_SaveSlotGameModeComponent`, and the launcher treats them as one unit. A manifest entry names its mode in `pair`; without it the launcher strips a leading `gm_` or a trailing `_SaveSlotGameModeComponent`. The launcher decides what is lost by identity: the mode, then the career's slot guid. A mode or career is lost when the last good save generation has it and the newest generation lacks it; a mode with one half missing is lost. The last good save generation is the newest `save` generation a session with the core wrote. Only a `load` generation newer than it can show a loss, because a career missing from a later `save` was deleted in a session with the core, and deletions stick. A container the core put back at load is in the newest generation with `source: "injected"`, and a container named in a `[saves] put back <name>: <k> career(s) from generation <g>` line of the newest session's loader log is not lost. No byte total takes part.
 
 ```rust
 // packages/core/src/games/f1_25/saves/vault/guard.rs
-let loss = vault.probable_loss();   // Option<Loss { snapshot, at, careers, .. }>
+let loss = vault.probable_loss();   // Option<Loss { snapshot, at, plain, .. }>
 ```
 
-`probable_loss` returns the addon careers (`careers::is_addon`: the career lists addons, or its mode is not Driver Career or My Team) of the newest `after-session`, `before-session` or `restored` snapshot when all of these hold:
-
-- the career index stored with that snapshot lists them;
-- a `changed-outside` or `foreign-exit` snapshot is newer than every launcher snapshot or unchanged check;
-- the newest snapshot is smaller than that version;
-- the careers table does not already call them missing, and the player has not dismissed it for that version.
-
-The launcher checks at its start and when F1 25 closes outside it. The Saves page and the Addons page show the careers, the date of that version and **Restore**; the play bar shows the same line with **Restore** and **Open Career saves**. Restore is `vault::restore::restore` of that snapshot, which keeps the save it replaces as `before-restore`. A session the launcher starts afterwards clears the notice, and the career index decides from then on (`missing-since:` above).
-
-Every launcher session on the Steam save writes `before-session` and `after-session` snapshots to the Steam vault (`steam-<id3>`), whatever the profile's launcher saves setting:
+The launcher checks at its start, before Play, when F1 25 closes outside it and after a session. The Career Saves page and the Addons page show the careers, the date of that generation and **Restore**; the play bar shows the same line with **Restore** and **Open Career saves**. **Restore** asks the core to put the lost containers back (below). **Dismiss** hides the banner for that pair of generations. `swofty run` prints the same notice:
 
 ```text
-$ swofty saves versions
-20261101-231502-after-session  after Play, profile progressive, 0.9 MB, Steam Cloud: synced, 2 career(s)
+[warning] saves: Progressive 2016, season 2016, round 7 is in the last save a launcher session wrote but not in the save the game read since. The launcher's plain store keeps it in generation 41. Put it back with `swofty saves restore-career driver_career_progressive`; the game applies it at the next Play
 ```
+
+The vault's encrypted whole-file snapshots stay as the backstop: every launcher session on the Steam save writes `before-session` and `after-session` snapshots to the Steam vault (`steam-<id3>`), whatever the profile's launcher saves setting, and `swofty saves restore` puts a whole save back.
 
 With launcher saves off and an addon career in the index, the Saves page shows a warning, and **Use launcher saves** when the profile's launcher store is empty:
 
 ```rust
 guard::steam_save_warning(vanilla, profile.launcher_saves, &careers::addon_careers(&index, Some("progressive")))
 ```
+
+### Restore one career
+
+The Career Saves page lists the careers of the newest generation grouped by mode: name, season and round, last played time, and where each lives (`In the game's save`, `Kept by the launcher` for a container the game's modes don't claim, `Put back by the launcher`). **Restore** on a mode lists up to six earlier versions of it, newest first; choosing one writes `inject.json` with a request for each of the mode's two containers from that generation and pins it:
+
+```json
+{"schema":1,"requests":[
+  {"id":"r1795000000-gm_driver_career_progressive","generation":37,"container":"gm_driver_career_progressive","replace":true},
+  {"id":"r1795000000-driver_career_progressive_SaveSlotGameModeComponent","generation":37,"container":"driver_career_progressive_SaveSlotGameModeComponent","replace":true}
+]}
+```
+
+At the next profile load the core applies each request, writes `injected.json` and deletes `inject.json`. The row shows **Restore waits for Play** until then, and the page shows the core's answer afterwards:
+
+```json
+{"schema":1,"results":[{"id":"r1795000000-gm_driver_career_progressive","ok":true,"detail":"1 career(s) from generation 37"}]}
+```
+
+The command line does the same:
+
+```text
+$ swofty saves plain
+generation 41 (save at 2026-11-19 10:02 UTC), 2 container(s)
+driver_career_progressive	0x0123456789abcdef	Jacob Nardella	2026-11-19 10:02 UTC
+$ swofty saves restore-career driver_career_progressive --generation 37
+```
+
+The whole-save restore (`swofty saves restore`, and **Restore** on a version in the list) stays as the fallback: it needs F1 25 and Steam (or the EA app) closed, and replaces every container.
 
 ### Steam Cloud status
 
@@ -349,26 +404,19 @@ The status compares each file's SHA-1 with the `sha` Steam recorded in `userdata
 
 ### A save changed outside the launcher
 
-Playing from Steam or the EA app runs F1 25 without the launcher, and a session without an addon's code drops that addon's careers when the game saves. The vault notices the next time it looks at the Steam save: it no longer matches the newest snapshot, and no launcher session explains it. It then takes a `changed-outside` snapshot, pins the snapshot from before the change and logs the event:
+Playing from Steam or the EA app runs F1 25 without the launcher. The vault notices the next time it looks at the Steam save: it no longer matches the newest snapshot, and no launcher session explains it. It then takes a `changed-outside` snapshot, pins the snapshot from before the change and logs the event:
 
 ```json
-{"at":1793448044,"kind":"changed-outside","snapshot":"20261031-120044-changed-outside","from":"20261030-221500-after-session","before":961752,"after":640728,"detail":"found when the launcher started"}
-{"at":1793448044,"kind":"shrank","snapshot":"20261031-120044-changed-outside","from":"20261030-221500-after-session","before":961752,"after":640728,"detail":"found when the launcher started"}
+{"at":1793448044,"kind":"changed-outside","snapshot":"20261031-120044-changed-outside","from":"20261030-221500-after-session","detail":"found when the launcher started"}
 ```
 
-When the save is also at least 24 KB smaller, the [Saves](/using/career-saves) page and the Addons page show a notice with **Review the restore** and **Dismiss**, and `swofty run` prints it:
-
-```text
-[warning] saves: Your F1 25 save changed outside a launcher session (a Steam or EA app launch) and is 314 KB smaller than before. The career vault kept the version from 2026-10-30 22:15 UTC: 20261030-221500-after-session. If a career is missing, restore it with `swofty saves restore 20261030-221500-after-session` while F1 25 and Steam are closed
-```
-
-A save that got 24 KB smaller in a launcher session that left out an addon with `saves.affects` gets the same kind of notice. Size alone doesn't show that a career is gone: ordinary play moves the file by more than that, and the notice only says which version the vault kept.
+The change alone raises no notice. The file's size decides nothing: a notice comes from [the plain store](#careers-the-newest-generation-lacks) when a container or career is missing.
 
 ### A save that stalls at load
 
 A profile save last played with addon content that is off now (a career, livery or item from an addon the profile or Vanilla leaves out) can keep F1 25 on Loading... after Press any button: the spinner turns and team radio plays, and the main menu never comes. It does the same from Steam or the EA app without the launcher, through Verify and reinstalls, because the save is the cause.
 
-The save is encrypted, so the launcher learns such a save from its sessions. A session stalled on the save when the core logged a profile load and perf.log ends on `screen splash_transition` for 120 s or more (99 in 100 menu loads take under 82 s), with no addon known to stall the boot on. Two such sessions on the same save, or one of 15 minutes, make it a stalling save, keyed by the SHA-256 of `savegame@profile#NXDSMWW.BWW` from the session's `before-session` snapshot. A save that any session got past the boot screens with, or that the game wrote during the session, never counts. `$DATA/state/stalled-saves.json` keeps what was learned and moved:
+The save is encrypted, so the launcher learns such a save from its sessions. A session stalled on the save when the core logged a profile load and perf.log ends on `screen splash_transition` for 120 s or more (99 in 100 menu loads take under 82 s), with no addon known to stall the boot on. Two such sessions on the same save, or one of 15 minutes, make it a stalling save, keyed by the SHA-256 of `savegame@profile#NXDSMWW.BWW` from the session's `before-session` snapshot. A save that any session got past the boot screens with, or that the game wrote during the session, never counts. `$DATA/state/stalled-saves.json` keeps what was learned and offered:
 
 ```json
 {
@@ -376,18 +424,18 @@ The save is encrypted, so the launcher learns such a save from its sessions. A s
     { "sha256": "9f1c…", "size": 932920, "sessions": ["20261104-023037", "20261104-023146"], "secs": 162, "profile": "colorgrading-testing", "found_at": 1793770000 }
   ],
   "moved": [
-    { "source": "launcher-colorgrading-testing", "sha256": "9f1c…", "kept": "20261104-023003-imported-profile", "restored": "20261101-123709-after-session", "at": 1793770000 }
+    { "source": "launcher-colorgrading-testing", "sha256": "9f1c…", "kept": "20261104-023003-manual", "offer": "20261101-123709-after-session", "dismissed": false, "at": 1793770000 }
   ]
 }
 ```
 
-At launcher start and before every Play, `save_stall::sweep` looks at every profile's launcher saves and the Steam or EA app save of the copy Play uses. A stalling save goes into the career vault pinned `stalled-at-load`, and the newest snapshot that isn't a stalling save goes back in its place: the folder's own vault first, then the Steam (or EA) vault for a launcher store. With no such snapshot, a launcher store or EA save is left empty, so F1 25 starts a new profile save; a Steam save stays, since Steam Cloud would download it again. A Steam save waits until Steam is closed, an EA save until the EA app is. Each move is one line:
+At launcher start and before every Play, `stall::sweep` looks at every profile's launcher saves and the Steam or EA app save of the copy Play uses. It never swaps or empties a save. A stalling save gets a snapshot pinned `stalled-at-load`, and the newest snapshot of the same vault that isn't a stalling save becomes the offer. The Career Saves page shows a banner with **Restore** and **Dismiss**; the player decides. **Restore** is the whole-save restore of the offered snapshot, which keeps the save it replaces as `before-restore`. **Dismiss** leaves the save as it is. With no earlier snapshot the banner says so and offers no restore. Each find is one line:
 
 ```text
-saves: the profile save in C:\Users\you\AppData\Local\Swofty\saves\colorgrading-testing\remote kept F1 25 on Loading... after Press any button; the career vault keeps it as snapshot 20261104-023003-imported-profile and the version from 2026-11-01 12:37 UTC (20261101-123709-after-session) is back in its place
+saves: the profile save in C:\Users\you\AppData\Local\Swofty\saves\colorgrading-testing\remote kept F1 25 on Loading... after Press any button; the career vault keeps a pinned snapshot of it (20261104-023003-manual) and the Career Saves page offers the version from 2026-11-01 12:37 UTC (20261101-123709-after-session); the save is left as it is
 ```
 
-A save moved out of a folder is not moved out of it again, so restoring it with `swofty saves restore <snapshot> --source <source>` once its addons are back sticks. Import, Copy careers to… and Export to Steam refuse a stalling save:
+A save the sweep found once is not flagged again. Import, Copy careers to… and Export to Steam refuse a stalling save:
 
 ```text
 swofty: the profile save in /home/you/.local/share/Steam/userdata/843502855/3059520/remote kept F1 25 on Loading... after Press any button, so the launcher does not copy it; the career vault keeps it to restore once the addons it was saved with are back

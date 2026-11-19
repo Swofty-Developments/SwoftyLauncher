@@ -269,11 +269,10 @@ impl Shell {
                             },
                         )));
                 }
-                if let Some((names, source, generation, containers, at)) =
-                    self.saves.banner.as_ref().and_then(|b| b.lost())
-                {
-                    let names = names.join("; ");
-                    let (source, containers) = (source.to_owned(), containers.to_vec());
+                if let Some(lost) = self.saves.banner.as_ref().and_then(|b| b.lost()) {
+                    let names = lost.names().join("; ");
+                    let (source, modes) = (lost.source().to_owned(), lost.modes().to_vec());
+                    let (generation, at) = (lost.generation(), lost.kept_at());
                     return row
                         .child(dot(p.warning))
                         .child(div().min_w_0().truncate().child(trf!(
@@ -283,8 +282,8 @@ impl Shell {
                         )))
                         .child(link("career-restore", tr("Restore"), p).on_click(cx.listener(
                             move |this, _, window, cx| {
-                                for c in &containers {
-                                    this.restore_container(&source, c, generation, window, cx);
+                                for mode in &modes {
+                                    this.restore_mode(&source, mode, generation, window, cx);
                                 }
                             },
                         )))

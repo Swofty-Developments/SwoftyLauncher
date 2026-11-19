@@ -14,7 +14,29 @@ pub(crate) struct Missing {
     pub(super) kept_at: i64,
     pub(super) names: Vec<String>,
     pub(super) generation: u64,
-    pub(super) containers: Vec<String>,
+    pub(super) modes: Vec<String>,
+}
+
+impl Missing {
+    pub(crate) fn names(&self) -> &[String] {
+        &self.names
+    }
+
+    pub(crate) fn source(&self) -> &str {
+        &self.source
+    }
+
+    pub(crate) fn generation(&self) -> u64 {
+        self.generation
+    }
+
+    pub(crate) fn modes(&self) -> &[String] {
+        &self.modes
+    }
+
+    pub(crate) fn kept_at(&self) -> i64 {
+        self.kept_at
+    }
 }
 
 pub(crate) struct Stalled {
@@ -38,7 +60,7 @@ pub(super) struct Shown {
     pub(super) snapshot: String,
     pub(super) kind: Kind,
     pub(super) generation: u64,
-    pub(super) containers: Vec<String>,
+    pub(super) modes: Vec<String>,
     pub(super) sha256: String,
     pub(super) restorable: bool,
 }
@@ -51,9 +73,9 @@ pub(super) enum Kind {
 }
 
 impl Banner {
-    pub(crate) fn lost(&self) -> Option<(&[String], &str, u64, &[String], i64)> {
+    pub(crate) fn lost(&self) -> Option<&Missing> {
         match self {
-            Self::Lost(m) => Some((&m.names, &m.source, m.generation, &m.containers, m.kept_at)),
+            Self::Lost(m) => Some(m),
             _ => None,
         }
     }
@@ -77,7 +99,7 @@ impl Banner {
                 snapshot: m.snapshot.clone(),
                 kind: Kind::Dropped,
                 generation: 0,
-                containers: Vec::new(),
+                modes: Vec::new(),
                 sha256: String::new(),
                 restorable: true,
             },
@@ -94,7 +116,7 @@ impl Banner {
                 snapshot: m.snapshot.clone(),
                 kind: Kind::Lost,
                 generation: m.generation,
-                containers: m.containers.clone(),
+                modes: m.modes.clone(),
                 sha256: String::new(),
                 restorable: true,
             },
@@ -124,7 +146,7 @@ impl Banner {
                 snapshot: s.snapshot.clone().unwrap_or_default(),
                 kind: Kind::Stalled,
                 generation: 0,
-                containers: Vec::new(),
+                modes: Vec::new(),
                 sha256: s.sha256.clone(),
                 restorable: s.snapshot.is_some(),
             },
@@ -158,7 +180,7 @@ pub(super) fn banner_from(root: &Path, source: String, profile: String) -> Optio
             kept_at: newest.last_seen_at,
             names: shown.iter().map(|r| row_name(r)).collect(),
             generation: 0,
-            containers: Vec::new(),
+            modes: Vec::new(),
         }));
     }
     if let Some(loss) = v.probable_loss() {
@@ -169,7 +191,7 @@ pub(super) fn banner_from(root: &Path, source: String, profile: String) -> Optio
             kept_at: loss.at,
             names: loss.names(),
             generation: loss.generation(),
-            containers: loss.containers(),
+            modes: loss.plain.modes(),
         }));
     }
     stall::offers(root)
