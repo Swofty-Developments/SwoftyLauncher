@@ -90,3 +90,79 @@ fn real_sample_decodes_and_reseals_identically() {
     assert_eq!(decoded.stream[..8], 1u64.to_le_bytes());
     assert_eq!(seal_frame(&decoded.frame, decoded.iv), file);
 }
+
+#[test]
+fn pair_is_self_consistent() {
+    let (data, index) = write_pair(
+        &synthetic_stream(5000),
+        IV,
+        3,
+        "Save System 2 Demo - Display Name",
+        PROFILE_NAME_HASH,
+        99,
+    )
+    .unwrap();
+    assert!(decode_data(&data).is_ok());
+    assert_eq!(index.len(), INDEX_LEN);
+    let plain = decrypt_index(&index).unwrap();
+    let stored = u32::from_le_bytes(plain[0x180..0x184].try_into().unwrap());
+    assert_eq!(index_checksum(&plain).unwrap(), stored);
+    assert_eq!(&plain[..4], &[b'S', 0, b'a', 0]);
+    assert_eq!(&plain[0x184..0x188], &1u32.to_le_bytes());
+}
+
+#[test]
+fn checksum_ignores_its_own_field_and_catches_edits() {
+    let mut plain = index_plain("x", PROFILE_NAME_HASH, 1);
+    let sum = index_checksum(&plain).unwrap();
+    plain[0x180] ^= 0xff;
+    assert_eq!(index_checksum(&plain).unwrap(), sum);
+    plain[0x50] ^= 1;
+    assert_ne!(index_checksum(&plain).unwrap(), sum);
+}
+
+#[test]
+fn real_indexes_have_matching_checksums() {
+    let Some(dir) = std::env::var_os("SWOFTY_SAVE_COPIES") else {
+        return;
+    };
+    let mut seen = 0;
+    let mut stack = vec![std::path::PathBuf::from(dir)];
+    while let Some(dir) = stack.pop() {
+        for entry in std::fs::read_dir(dir).unwrap() {
+            let path = entry.unwrap().path();
+            if path.is_dir() {
+                stack.push(path);
+            } else if path
+                .file_name()
+                .is_some_and(|n| n.to_string_lossy().ends_with("#QKRHMYXE"))
+            {
+                let index = std::fs::read(&path).unwrap();
+                let plain = decrypt_index(&index).unwrap();
+                let stored = u32::from_le_bytes(plain[0x180..0x184].try_into().unwrap());
+                assert_eq!(index_checksum(&plain).unwrap(), stored, "{path:?}");
+                let data_path = path.with_file_name(
+                    path.file_name()
+                        .unwrap()
+                        .to_string_lossy()
+                        .replace("QKRHMYXE", "NXDSMWW.BWW"),
+                );
+                let data = decode_data(&std::fs::read(data_path).unwrap()).unwrap();
+                let (_, rebuilt) = write_pair(
+                    &data.stream,
+                    data.iv,
+                    3,
+                    "Save System 2 Demo - Display Name",
+                    PROFILE_NAME_HASH,
+                    1,
+                )
+                .unwrap();
+                let rebuilt = decrypt_index(&rebuilt).unwrap();
+                let sum = u32::from_le_bytes(rebuilt[0x180..0x184].try_into().unwrap());
+                assert_eq!(index_checksum(&rebuilt).unwrap(), sum);
+                seen += 1;
+            }
+        }
+    }
+    assert!(seen > 0);
+}
