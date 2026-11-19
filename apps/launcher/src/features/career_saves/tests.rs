@@ -252,7 +252,7 @@ fn write_generation(
             let bytes = format!("{name}-{n}");
             std::fs::write(gd.join("containers").join(format!("{}.bag", fnv(name))), &bytes).unwrap();
             serde_json::json!({
-                "name": name, "fnv64": fnv(name), "type_id": 1, "bytes": bytes.len(), "sha256": bytes,
+                "name": name, "fnv64": fnv(name), "type_id": 1, "bytes": bytes.len(), "sha256": format!("{name}:{}", slots.iter().map(|s| s.1).collect::<Vec<_>>().join(",")),
                 "registered": false, "source": source,
                 "slots": slots.iter().enumerate().map(|(i, (guid, who))| serde_json::json!({
                     "slot": i, "guid": guid, "name": who, "season": 2016, "round": 7, "last_played": 1_000 + i
