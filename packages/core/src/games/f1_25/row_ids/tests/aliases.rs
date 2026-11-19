@@ -65,3 +65,47 @@ fn an_old_id_a_registry_record_pins_gives_no_alias() {
     assert_eq!(aliases.tables["vehicles"].get(&509), None);
     assert_eq!(aliases.tables["vehicles"].get(&600), Some(&725));
 }
+
+#[test]
+fn an_old_id_pinned_by_an_addon_outside_the_build_still_gives_an_alias() {
+    let mut store = Store::default();
+    let team = key("swofty.f1-1990", TEAMS, "mclaren_1990");
+    store.insert(team.clone(), 644);
+    store.building(["swofty.f1-1990".to_owned()]);
+    store.claimed.insert(team.clone());
+    store.aliases.entry(team).or_default().insert(502);
+    let pins = store.pinned.entry("entrants.teams.team".to_owned()).or_default();
+    pins.insert(502, "swofty.swofty-seasons-2022/sw22_haas".to_owned());
+    let aliases = store.id_aliases();
+    assert_eq!(aliases.tables["teams"][&502], 644);
+}
+
+#[test]
+fn an_old_id_pinned_by_an_addon_in_the_build_gives_no_alias() {
+    let mut store = Store::default();
+    let team = key("swofty.f1-1990", TEAMS, "mclaren_1990");
+    store.insert(team.clone(), 644);
+    store.building([
+        "swofty.f1-1990".to_owned(),
+        "swofty.swofty-seasons-2022".to_owned(),
+    ]);
+    store.claimed.insert(team.clone());
+    store.aliases.entry(team).or_default().insert(502);
+    let pins = store.pinned.entry("entrants.teams.team".to_owned()).or_default();
+    pins.insert(502, "swofty.swofty-seasons-2022/sw22_haas".to_owned());
+    assert!(store.id_aliases().is_empty());
+}
+
+#[test]
+fn two_rows_moved_from_one_old_id_to_different_ids_give_no_alias() {
+    let mut store = Store::default();
+    let a = key("a", TEAMS, "a1");
+    let b = key("b", TEAMS, "b1");
+    store.insert(a.clone(), 644);
+    store.insert(b.clone(), 645);
+    store.building(["a".to_owned(), "b".to_owned()]);
+    store.claimed.extend([a.clone(), b.clone()]);
+    store.aliases.entry(a).or_default().insert(502);
+    store.aliases.entry(b).or_default().insert(502);
+    assert!(store.id_aliases().is_empty());
+}

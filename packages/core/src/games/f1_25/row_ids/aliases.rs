@@ -33,10 +33,18 @@ impl IdAliases {
 }
 
 impl Store {
+    fn pinned_in_build(&self, table: &str, id: i64) -> bool {
+        self.pinned
+            .get(pool(table))
+            .and_then(|ids| ids.get(&id))
+            .is_some_and(|record| self.building.is_empty() || self.building.contains(addon_of(record)))
+    }
+
     /// The ids rows had before the ones they keep, by the tables saves hold them of; see [`IdAliases`].
     /// Only rows this build's database edits added give aliases: a kept row of an addon that now adds it
     /// through the core's registry has the id its registry record pins, not the one kept here. An old id
-    /// a registry record pins is a live row's id, so it maps nowhere.
+    /// a registry record of an addon in this build pins is a live row's id, so it maps nowhere; a record of an
+    /// addon the build leaves out holds no row here and does not block the alias.
     pub fn id_aliases(&self) -> IdAliases {
         let mut out = IdAliases::default();
         let mut seen: HashMap<(&str, i64), Option<i64>> = HashMap::new();
@@ -54,10 +62,7 @@ impl Store {
             for &old in olds {
                 if old == now
                     || self.by_id.get(table).is_some_and(|ids| ids.contains_key(&old))
-                    || self
-                        .pinned
-                        .get(pool(table))
-                        .is_some_and(|ids| ids.contains_key(&old))
+                    || self.pinned_in_build(table, old)
                 {
                     continue;
                 }
