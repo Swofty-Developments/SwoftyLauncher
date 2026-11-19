@@ -46,6 +46,9 @@ constexpr const char *TITLE_MIXIN = "swofty_core.dll (resume card status)";
 constexpr const char *DRIVER_VT = "vt_Game_CareerContinueDriverViewModel";
 constexpr const char *MY_TEAM_VT = "vt_Game_CareerContinueMyTeamViewModel";
 constexpr const char *TITLE_SITE = "site_Game_CareerContinue_DriverSlotTitle";
+constexpr const char *TEAM_TITLE_MIXIN = "swofty_core.dll (resume my team card status)";
+constexpr const char *TEAM_TITLE_SITE = "site_Game_CareerContinue_MyTeamSlotTitle";
+constexpr const char *TEAM_STOCK_KEY = "lng_homescreen_my_team_career";
 constexpr const char *MAKE_STR = "Ne_Make_StrFromCStr";
 constexpr uintptr_t CARDS = 0x328, CARD_SIZE = 0x540, CARD_COUNT = 3;
 
@@ -85,7 +88,7 @@ struct Pending {
     bool open = false;
 } pending;
 
-char title_keys[CARD_COUNT][40];
+char title_keys[2][CARD_COUNT][40];
 
 const rg::Table &needs_locked()
 {
@@ -228,13 +231,13 @@ uint64_t entry(Handle *orig, bool my_team, void *vm, void *cmd, void *value)
 uint64_t driver_entry(void *vm, void *cmd, void *value) { return entry(orig_driver, false, vm, cmd, value); }
 uint64_t my_team_entry(void *vm, void *cmd, void *value) { return entry(orig_my_team, true, vm, cmd, value); }
 
-void title_site(SwoftyContext *c)
+void title(SwoftyContext *c, bool my_team)
 {
     uint8_t card = uint8_t(c->rsi);
     uint64_t id = 0, guid = 0;
     std::string current;
     if (card >= CARD_COUNT || !mem::read(c->rbx, id) || !mem::read(c->rbx + 8, guid) ||
-        !mem::c_string(c->rdx, current, 64) || current != rg::STOCK_TITLE_KEY)
+        !mem::c_string(c->rdx, current, 64) || current != (my_team ? TEAM_STOCK_KEY : rg::STOCK_TITLE_KEY))
         return;
     std::string text;
     {
@@ -242,19 +245,23 @@ void title_site(SwoftyContext *c)
         const rg::Entry *e = rg::find(needs_locked(), cs::slot_key(id, guid));
         if (!e)
             return;
-        text = rg::card_title("DRIVER CAREER", *e);
+        text = rg::card_title(my_team ? "MY TEAM" : "DRIVER CAREER", *e);
     }
-    snprintf(title_keys[card], sizeof title_keys[card], "lng_swofty_resume_title_%u", unsigned(card));
-    if (runtime::lang_table()->override_set(nullptr, title_keys[card], text.c_str()) == SWOFTY_ASSET_OK)
-        c->rdx = reinterpret_cast<uintptr_t>(title_keys[card]);
+    char *key = title_keys[my_team][card];
+    snprintf(key, sizeof title_keys[0][0], "lng_swofty_resume_%s_%u", my_team ? "team" : "title", unsigned(card));
+    if (runtime::lang_table()->override_set(nullptr, key, text.c_str()) == SWOFTY_ASSET_OK)
+        c->rdx = reinterpret_cast<uintptr_t>(key);
 }
+
+void title_site(SwoftyContext *c) { title(c, false); }
+void team_title_site(SwoftyContext *c) { title(c, true); }
 
 class ResumeGateGuard final : public guards::Guard {
 public:
     ResumeGateGuard() : Guard(guards::CoreSetId::resume_gate) {}
 
 private:
-    bool titled = false;
+    bool titled = false, team_titled = false;
 
     void build(std::vector<runtime::CoreMixins> &out) override
     {
@@ -282,6 +289,11 @@ private:
             titled = true;
             out.push_back({TITLE_MIXIN, {{TITLE_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&title_site, nullptr}}});
         }
+        if (swofty::api->resolve(TEAM_TITLE_SITE) && runtime::holds(TITLE_GATE)) {
+            team_titled = true;
+            out.push_back(
+                {TEAM_TITLE_MIXIN, {{TEAM_TITLE_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&team_title_site, nullptr}}});
+        }
     }
 
     void settle() override
@@ -293,6 +305,9 @@ private:
         if (titled && offered_set(TITLE_MIXIN))
             swofty::log("[career] resume card status %s; Driver Career cards show their add-on status",
                         guards::install_state(runtime::core_mixins_active(TITLE_MIXIN), "armed"));
+        if (team_titled && offered_set(TEAM_TITLE_MIXIN))
+            swofty::log("[career] resume My Team card status %s; My Team cards show their add-on status",
+                        guards::install_state(runtime::core_mixins_active(TEAM_TITLE_MIXIN), "armed"));
     }
 };
 
