@@ -19,18 +19,25 @@ use crate::ui::tokens::space::GUTTER;
 /// The share of the page's height the tiers and early access row starts from; it grows when the tiers need more.
 const TOP_SHARE: f32 = 0.55;
 const ROW_GAP: f32 = 16.;
+const TIERS_MAX: f32 = 860.;
 
-fn perk_row(icon: IconName, text: SharedString, accent: Hsla) -> Div {
+fn perk_row(text: &'static str, accent: Hsla, p: Palette) -> Div {
     h_flex()
         .items_start()
-        .gap(px(10.))
-        .child(Icon::new(icon).size(px(18.)).flex_shrink_0().text_color(accent))
+        .gap(px(8.))
+        .child(
+            Icon::new(IconName::Check)
+                .size(px(14.))
+                .mt(px(2.))
+                .flex_shrink_0()
+                .text_color(accent),
+        )
         .child(
             div()
-                .flex_1()
                 .min_w_0()
                 .text_size(px(13.))
                 .line_height(px(18.))
+                .text_color(p.text)
                 .child(text),
         )
 }
@@ -138,10 +145,12 @@ impl Shell {
             .map(|(ok, text)| notice(*ok, text.clone(), p).text_size(px(12.)).truncate());
         h_flex()
             .flex_shrink_0()
-            .h(px(28.))
+            .max_w_full()
+            .h(px(26.))
+            .justify_center()
             .gap(px(10.))
             .children(status)
-            .child(div().flex_1().min_w_0().children(note))
+            .children(note.map(|n| n.min_w_0().max_w(px(360.))))
             .child(claim)
             .child(refresh)
     }
@@ -151,48 +160,23 @@ impl Shell {
             Load::Ready(me) if me.active => me.tier.as_deref(),
             _ => None,
         };
-        let basic: Vec<(IconName, SharedString)> = vec![
-            (IconName::Ban, tr("No ads in the launcher").into()),
-            (IconName::Eye, tr("Access to #f1-supporter-leaks").into()),
-            (
-                IconName::MessageCircle,
-                tr("The #f1-supporter-general chat").into(),
-            ),
-            (
-                IconName::Sticker,
-                tr("Discord embed links and external emoji permissions").into(),
-            ),
-            (
-                IconName::Heart,
-                tr("Supporting a free and open-source launcher").into(),
-            ),
+        let basic = vec![
+            tr("No ads in the launcher"),
+            tr("Access to #f1-supporter-leaks"),
+            tr("The #f1-supporter-general chat"),
+            tr("Discord embed links and external emoji permissions"),
+            tr("Supporting a free and open-source launcher"),
         ];
-        let mut plus: Vec<(IconName, SharedString)> = vec![
-            (IconName::BadgeCheck, tr("All of Supporter").into()),
-            (IconName::FlaskConical, tr("Access to private betatesting").into()),
-        ];
-        plus.extend(
-            self.store_page
-                .previews
-                .iter()
-                .filter(|x| !x.title.trim().is_empty())
-                .take(3)
-                .map(|x| {
-                    (
-                        IconName::Sparkles,
-                        trf!("Early access to {title}", title = x.title.trim()).into(),
-                    )
-                }),
-        );
-        let cards = div()
+        let plus = vec![tr("All of Supporter"), tr("Access to private betatesting")];
+        let columns = h_flex()
             .flex_1()
-            .grid()
-            .grid_cols(2)
-            .gap(px(12.))
-            .child(self.tier_card(Kind::Supporter, "$5", basic, current == Some("supporter"), p, cx))
-            .child(self.tier_card(
+            .w_full()
+            .max_w(px(TIERS_MAX))
+            .items_stretch()
+            .child(self.tier_column(Kind::Supporter, basic, current == Some("supporter"), p, cx))
+            .child(div().flex_shrink_0().w(px(1.)).my(px(10.)).bg(p.border_variant))
+            .child(self.tier_column(
                 Kind::SupporterPlus,
-                "$20",
                 plus,
                 current == Some("supporter_plus"),
                 p,
@@ -201,92 +185,96 @@ impl Shell {
         v_flex()
             .flex_1()
             .min_w_0()
+            .items_center()
             .gap(px(10.))
             .child(self.store_status(p, cx))
-            .child(cards)
+            .child(columns)
             .child(self.store_onetime(amount, p, cx))
     }
 
-    fn tier_card(
+    /// One tier as a centred column: its name, price, pitch and perks over its Subscribe button.
+    fn tier_column(
         &self,
         kind: Kind,
-        price: &'static str,
-        perks: Vec<(IconName, SharedString)>,
+        perks: Vec<&'static str>,
         current: bool,
         p: Palette,
         cx: &mut Context<Self>,
-    ) -> AnyElement {
+    ) -> Div {
         let plus = kind == Kind::SupporterPlus;
+        let (price, tagline) = match plus {
+            true => ("$20", tr("Play new addons before anyone else")),
+            false => ("$5", tr("Back the launcher and lose the ads")),
+        };
         let accent = hue(if plus { PLUS_NAME } else { PINK });
-        let head = h_flex()
-            .h(px(22.))
-            .gap(px(8.))
+        let chips = h_flex()
+            .h(px(20.))
+            .justify_center()
+            .gap(px(6.))
+            .when(plus, |d| {
+                d.child(chip(tr("Early access"), gradient(), hue(WHITE)))
+            })
+            .when(current, |d| {
+                d.child(chip(tr("Your tier"), hue(GREEN).opacity(0.16), hue(GREEN)))
+            });
+        let name = h_flex()
+            .gap(px(6.))
             .child(
                 Icon::new(if plus { IconName::Crown } else { IconName::Heart })
-                    .size(px(16.))
+                    .size(px(15.))
                     .text_color(accent),
             )
             .child(
                 div()
-                    .flex_1()
-                    .min_w_0()
-                    .truncate()
-                    .text_size(px(16.))
+                    .text_size(px(15.))
                     .font_weight(FontWeight::BOLD)
                     .text_color(accent)
                     .child(tier_name(if plus { "supporter_plus" } else { "supporter" })),
-            )
-            .when(current, |d| {
-                d.child(chip(tr("Your tier"), hue(GREEN).opacity(0.16), hue(GREEN)))
-            });
+            );
         let price = h_flex()
             .items_end()
-            .gap(px(5.))
-            .pt(px(4.))
+            .gap(px(4.))
             .child(
                 div()
-                    .text_size(px(26.))
-                    .line_height(px(30.))
+                    .text_size(px(40.))
+                    .line_height(px(42.))
                     .font_weight(FontWeight::EXTRA_BOLD)
+                    .when(plus, |d| d.text_color(accent))
                     .child(price),
             )
             .child(
                 div()
-                    .pb(px(4.))
+                    .pb(px(7.))
                     .text_size(px(13.))
                     .text_color(p.text_muted)
                     .child(tr("/ month")),
             );
-        let card = v_flex()
+        v_flex()
             .flex_1()
-            .p(px(14.))
-            .map(|d| match plus {
-                true => d.rounded(px(10.)).bg(linear_gradient(
-                    180.,
-                    linear_color_stop(tinted(p, PURPLE, 0.18), 0.),
-                    linear_color_stop(p.surface, 0.75),
-                )),
-                false => d.rounded(px(12.)).border_1().border_color(p.border).bg(p.surface),
-            })
-            .child(head)
+            .min_w_0()
+            .items_center()
+            .px(px(20.))
+            .child(chips)
+            .child(name.mt(px(6.)))
             .child(price)
-            .child(div().my(px(8.)).h(px(1.)).w_full().bg(p.border_variant))
+            .child(
+                div()
+                    .max_w(px(280.))
+                    .text_center()
+                    .text_size(px(12.))
+                    .line_height(px(16.))
+                    .text_color(p.text_muted)
+                    .child(tagline),
+            )
             .child(
                 v_flex()
-                    .gap(px(6.))
-                    .children(perks.into_iter().map(|(icon, text)| perk_row(icon, text, accent))),
+                    .max_w_full()
+                    .mt(px(12.))
+                    .gap(px(5.))
+                    .children(perks.into_iter().map(|text| perk_row(text, accent, p))),
             )
-            .child(div().flex_1().min_h(px(10.)))
-            .child(self.subscribe_button(kind, cx));
-        match plus {
-            true => v_flex()
-                .p(px(2.))
-                .rounded(px(12.))
-                .bg(diagonal())
-                .child(card)
-                .into_any_element(),
-            false => v_flex().child(card).into_any_element(),
-        }
+            .child(div().flex_1().min_h(px(12.)))
+            .child(self.subscribe_button(kind, cx))
     }
 
     fn subscribe_button(&self, kind: Kind, cx: &mut Context<Self>) -> Stateful<Div> {
@@ -308,6 +296,7 @@ impl Shell {
             .gap(px(8.))
             .h(px(34.))
             .w_full()
+            .max_w(px(220.))
             .rounded(px(8.))
             .text_size(px(14.))
             .font_weight(FontWeight::BOLD)
@@ -360,14 +349,16 @@ impl Shell {
             }));
         h_flex()
             .flex_shrink_0()
-            .h(px(40.))
-            .px(px(12.))
+            .max_w_full()
+            .h(px(30.))
+            .justify_center()
             .gap(px(10.))
-            .rounded(px(10.))
-            .border_1()
-            .border_color(p.border_variant)
-            .bg(p.surface)
-            .child(Icon::new(IconName::Gift).size(px(16.)).text_color(rgb(YELLOW)))
+            .child(
+                Icon::new(IconName::Gift)
+                    .size(px(15.))
+                    .flex_shrink_0()
+                    .text_color(rgb(YELLOW)),
+            )
             .child(
                 div()
                     .flex_shrink_0()
@@ -377,7 +368,6 @@ impl Shell {
             )
             .child(
                 div()
-                    .flex_1()
                     .min_w_0()
                     .truncate()
                     .text_size(px(12.))
@@ -385,7 +375,7 @@ impl Shell {
                     .child(tr("Converts to whole months of a tier")),
             )
             .child(
-                div().w(px(100.)).flex_shrink_0().child(
+                div().w(px(96.)).flex_shrink_0().child(
                     Input::new(&amount)
                         .small()
                         .prefix(div().text_color(p.text_muted).child("$")),

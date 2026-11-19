@@ -77,6 +77,9 @@ pub struct Preview {
     pub highlights: Vec<String>,
     #[serde(default)]
     pub image: Option<String>,
+    /// The addon's square icon. Servers from before it leave it out.
+    #[serde(default)]
+    pub icon: Option<String>,
     #[serde(default)]
     pub addons: Vec<String>,
     /// When it was posted, in unix seconds.
@@ -266,7 +269,8 @@ mod tests {
                 "highlights":["F1 2011 physics","KERS"],"image":null,
                 "addons":["swofty.swofty-seasons-2011","swofty.swofty-seasons-2011-real"],
                 "posted":1763480000,"link":"https://discord.com/channels/1/2/3","pinned":true},
-                {"id":"bare","title":"Bare","summary":"","highlights":[],"image":"https://i/a.png","link":null}],
+                {"id":"bare","title":"Bare","summary":"","highlights":[],"image":"https://i/a.png","link":null,
+                "icon":"https://api.f1.swofty.net/v1/support/previews/bare/icon"}],
                 "next":null}"#,
         )
         .unwrap();
@@ -281,6 +285,11 @@ mod tests {
         assert_eq!(full.link.as_deref(), Some("https://discord.com/channels/1/2/3"));
         assert!(bare.highlights.is_empty() && bare.link.is_none() && bare.posted.is_none());
         assert_eq!(bare.image.as_deref(), Some("https://i/a.png"));
+        assert_eq!(full.icon, None);
+        assert_eq!(
+            bare.icon.as_deref(),
+            Some("https://api.f1.swofty.net/v1/support/previews/bare/icon")
+        );
     }
 
     #[test]

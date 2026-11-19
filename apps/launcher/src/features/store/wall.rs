@@ -4,7 +4,7 @@ use gpui_kit::component::input::{Input, InputState};
 use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::online::server::support::{BIO_MAX, Supporter};
+use swofty_core::online::server::support::{BIO_MAX, Supporter, tier_name};
 use swofty_i18n::tr;
 
 use super::StorePage;
@@ -32,6 +32,29 @@ fn empty_note(text: String, p: Palette) -> AnyElement {
         .text_color(p.text_muted)
         .child(text)
         .into_any_element()
+}
+
+/// A quiet rule naming one tier's group on the wall and how many are in it.
+fn group_label(plus: bool, count: usize, p: Palette) -> Div {
+    h_flex()
+        .h(px(16.))
+        .gap(px(8.))
+        .child(
+            div()
+                .flex_shrink_0()
+                .text_size(px(11.))
+                .font_weight(FontWeight::BOLD)
+                .text_color(hue(if plus { PLUS_NAME } else { PINK }))
+                .child(tier_name(if plus { "supporter_plus" } else { "supporter" }).to_uppercase()),
+        )
+        .child(
+            div()
+                .flex_shrink_0()
+                .text_size(px(11.))
+                .text_color(p.text_placeholder)
+                .child(count.to_string()),
+        )
+        .child(div().flex_1().h(px(1.)).bg(p.border_variant))
 }
 
 impl Shell {
@@ -63,14 +86,26 @@ impl Shell {
             Load::Ready(s) => {
                 let width = self.layout.content_width;
                 let cols = ((width + GAP) / (SUPPORTER_MIN + GAP)).floor().max(1.) as u16;
-                div()
-                    .w_full()
-                    .grid()
-                    .grid_cols(cols)
-                    .gap(px(GAP))
-                    .pr(px(4.))
-                    .children(s.iter().enumerate().map(|(i, x)| self.supporter_card(i, x, p)))
-                    .into_any_element()
+                let grid = |from: usize, group: &[Supporter]| {
+                    div().w_full().grid().grid_cols(cols).gap(px(GAP)).children(
+                        group
+                            .iter()
+                            .enumerate()
+                            .map(|(i, x)| self.supporter_card(from + i, x, p)),
+                    )
+                };
+                let split = s.partition_point(Supporter::plus);
+                match split == 0 || split == s.len() {
+                    true => grid(0, s).pr(px(4.)).into_any_element(),
+                    false => v_flex()
+                        .pr(px(4.))
+                        .gap(px(8.))
+                        .child(group_label(true, split, p))
+                        .child(grid(0, &s[..split]))
+                        .child(group_label(false, s.len() - split, p).mt(px(8.)))
+                        .child(grid(split, &s[split..]))
+                        .into_any_element(),
+                }
             }
         };
         let head = panel_head(

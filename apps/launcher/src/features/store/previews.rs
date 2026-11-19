@@ -1,8 +1,7 @@
 use gpui_kit::assets::IconName;
 use gpui_kit::component::{Icon, h_flex, v_flex};
-use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::online::server::support::{Preview, format_date};
+use swofty_core::online::server::support::{Preview, format_date, tier_name};
 use swofty_i18n::tr;
 
 use super::parts::*;
@@ -10,6 +9,9 @@ use crate::shell::Shell;
 use crate::ui::discord;
 use crate::ui::scale::px;
 use crate::ui::theme::{Palette, ScrollArea};
+
+const RAIL: f32 = 280.;
+const ICON: f32 = 40.;
 
 /// Only links to the web open; anything else from the server is ignored.
 fn web_link(link: Option<&str>) -> Option<String> {
@@ -19,36 +21,59 @@ fn web_link(link: Option<&str>) -> Option<String> {
 }
 
 impl Shell {
-    /// The Supporter+ previews beside the tiers, scrolling inside their own panel. None when there are none.
+    /// The early access rail beside the tiers, scrolling inside its own height. None when there are no previews.
     pub(super) fn store_previews(&self, p: Palette) -> Option<AnyElement> {
         let previews = &self.store_page.previews;
         if previews.is_empty() {
             return None;
         }
-        let cards: Vec<AnyElement> = previews
+        let rows: Vec<AnyElement> = previews
             .iter()
             .enumerate()
-            .map(|(i, x)| self.preview_card(i, x, p))
+            .map(|(i, x)| self.preview_row(i, x, p))
             .collect();
+        let head = h_flex()
+            .flex_shrink_0()
+            .h(px(26.))
+            .gap(px(8.))
+            .child(
+                Icon::new(IconName::Sparkles)
+                    .size(px(14.))
+                    .text_color(hue(PLUS_NAME)),
+            )
+            .child(
+                div()
+                    .flex_1()
+                    .min_w_0()
+                    .truncate()
+                    .text_size(px(14.))
+                    .font_weight(FontWeight::SEMIBOLD)
+                    .child(tr("Early access")),
+            )
+            .child(
+                div()
+                    .flex_shrink_0()
+                    .text_size(px(11.))
+                    .font_weight(FontWeight::BOLD)
+                    .text_color(hue(PLUS_NAME))
+                    .child(tier_name("supporter_plus")),
+            );
         Some(
             v_flex()
-                .flex_1()
-                .min_w_0()
-                .gap(px(10.))
-                .child(panel_head(
-                    IconName::Sparkles,
-                    hue(PLUS_NAME),
-                    tr("Early access"),
-                    tr("Addons Supporter+ members can test before anyone else"),
-                    p,
-                ))
+                .w(px(RAIL))
+                .flex_shrink_0()
+                .pl(px(16.))
+                .gap(px(12.))
+                .border_l_1()
+                .border_color(p.border_variant)
+                .child(head)
                 .child(
                     div().relative().flex_1().min_h_0().child(
                         div().absolute().top_0().left_0().size_full().child(
                             div()
                                 .size_full()
                                 .scroll_y("store-previews")
-                                .child(v_flex().gap(px(10.)).pr(px(4.)).children(cards)),
+                                .child(v_flex().gap(px(16.)).pr(px(6.)).children(rows)),
                         ),
                     ),
                 )
@@ -56,135 +81,106 @@ impl Shell {
         )
     }
 
-    fn preview_card(&self, i: usize, x: &Preview, p: Palette) -> AnyElement {
-        let picture = x.image.as_deref().and_then(|u| self.fetched_image(u));
-        let art = div()
-            .relative()
-            .overflow_hidden()
+    /// The preview's addon icon: its own, else the catalog's for its first addon, else a lettered tile.
+    fn preview_icon(&self, x: &Preview, p: Palette) -> Div {
+        if let Some(image) = x.icon.as_deref().and_then(|u| self.fetched_image(u)) {
+            return div()
+                .size(px(ICON))
+                .flex_shrink_0()
+                .rounded(px(ICON * 0.22))
+                .overflow_hidden()
+                .child(img(image).size_full().object_fit(ObjectFit::Cover));
+        }
+        if let Some(icon) = x.addons.first().and_then(|id| self.catalog_icon_of(id, ICON, p)) {
+            return icon;
+        }
+        let letter: String = x
+            .title
+            .trim()
+            .chars()
+            .take(1)
+            .flat_map(char::to_uppercase)
+            .collect();
+        div()
+            .size(px(ICON))
             .flex_shrink_0()
-            .w(px(160.))
-            .min_h(px(120.))
-            .map(|d| match picture {
-                Some(image) => d.child(
-                    img(image)
-                        .absolute()
-                        .top_0()
-                        .left_0()
-                        .size_full()
-                        .object_fit(ObjectFit::Cover),
-                ),
-                None => d
-                    .flex()
-                    .items_center()
-                    .justify_center()
-                    .p(px(12.))
-                    .bg(diagonal())
-                    .child(
-                        Icon::new(IconName::Sparkles)
-                            .absolute()
-                            .right(px(-14.))
-                            .bottom(px(-14.))
-                            .size(px(80.))
-                            .text_color(hue(WHITE).opacity(0.14)),
-                    )
-                    .child(
-                        div()
-                            .text_size(px(20.))
-                            .line_height(px(24.))
-                            .font_weight(FontWeight::EXTRA_BOLD)
-                            .text_color(hue(WHITE))
-                            .text_center()
-                            .child(x.title.clone()),
-                    ),
-            })
-            .child(div().absolute().top(px(8.)).left(px(8.)).child(badge(
-                SharedString::from(format!("store-preview-glint-{i}")),
-                true,
-            )));
+            .flex()
+            .items_center()
+            .justify_center()
+            .rounded(px(ICON * 0.22))
+            .bg(diagonal())
+            .text_size(px(17.))
+            .font_weight(FontWeight::EXTRA_BOLD)
+            .text_color(hue(WHITE))
+            .child(letter)
+    }
+
+    fn preview_row(&self, i: usize, x: &Preview, p: Palette) -> AnyElement {
         let posted = x.posted.map(|at| format_date(&serde_json::Value::from(at)));
-        let highlights = (!x.highlights.is_empty()).then(|| {
-            div()
-                .grid()
-                .grid_cols(2)
-                .gap_x(px(12.))
-                .gap_y(px(4.))
-                .children(x.highlights.iter().map(|h| {
-                    h_flex()
-                        .min_w_0()
-                        .gap(px(6.))
-                        .child(
-                            Icon::new(IconName::Check)
-                                .size(px(13.))
-                                .flex_shrink_0()
-                                .text_color(hue(PLUS_NAME)),
-                        )
-                        .child(
-                            div()
-                                .flex_1()
-                                .min_w_0()
-                                .truncate()
-                                .text_size(px(12.))
-                                .child(h.clone()),
-                        )
-                }))
-        });
+        let highlights: Vec<&str> = x
+            .highlights
+            .iter()
+            .map(|h| h.trim())
+            .filter(|h| !h.is_empty())
+            .take(3)
+            .collect();
+        let line = match highlights.is_empty() {
+            false => Some(highlights.join(" · ")),
+            true => Some(x.summary.trim().to_owned()).filter(|s| !s.is_empty()),
+        };
         let link = web_link(x.link.as_deref()).map(|url| {
-            h_flex().pt(px(2.)).child(discord::link_button(
-                SharedString::from(format!("store-preview-link-{i}")),
-                tr("View in Discord"),
-                url,
-                30.,
-                12.,
-            ))
+            h_flex().pt(px(4.)).child(
+                discord::link_button(
+                    SharedString::from(format!("store-preview-link-{i}")),
+                    tr("View in Discord"),
+                    url,
+                    22.,
+                    8.,
+                )
+                .gap(px(6.))
+                .rounded(px(6.))
+                .text_size(px(11.)),
+            )
         });
-        let content = v_flex()
-            .flex_1()
-            .min_w_0()
-            .p(px(12.))
-            .gap(px(6.))
+        h_flex()
+            .items_start()
+            .gap(px(10.))
+            .child(self.preview_icon(x, p))
             .child(
-                h_flex()
-                    .gap(px(8.))
+                v_flex()
+                    .flex_1()
+                    .min_w_0()
+                    .gap(px(2.))
                     .child(
+                        h_flex()
+                            .gap(px(6.))
+                            .child(
+                                div()
+                                    .flex_1()
+                                    .min_w_0()
+                                    .truncate()
+                                    .text_size(px(13.))
+                                    .font_weight(FontWeight::BOLD)
+                                    .child(x.title.clone()),
+                            )
+                            .children(posted.map(|d| {
+                                div()
+                                    .flex_shrink_0()
+                                    .text_size(px(11.))
+                                    .text_color(p.text_placeholder)
+                                    .child(d)
+                            })),
+                    )
+                    .children(line.map(|l| {
                         div()
-                            .flex_1()
                             .min_w_0()
                             .truncate()
-                            .text_size(px(15.))
-                            .font_weight(FontWeight::BOLD)
-                            .child(x.title.clone()),
-                    )
-                    .children(posted.map(|d| {
-                        div()
-                            .flex_shrink_0()
-                            .text_size(px(11.))
-                            .text_color(p.text_placeholder)
-                            .child(d)
-                    })),
+                            .text_size(px(12.))
+                            .text_color(p.text_muted)
+                            .child(l)
+                    }))
+                    .children(link),
             )
-            .when(!x.summary.trim().is_empty(), |d| {
-                d.child(
-                    div()
-                        .text_size(px(12.))
-                        .line_height(px(17.))
-                        .text_color(p.text_muted)
-                        .line_clamp(2)
-                        .child(x.summary.clone()),
-                )
-            })
-            .children(highlights)
-            .child(div().flex_1())
-            .children(link);
-        h_flex()
-            .items_stretch()
-            .w_full()
-            .rounded(px(12.))
-            .overflow_hidden()
-            .border_1()
-            .border_color(hue(PURPLE).opacity(0.4))
-            .bg(tinted(p, PURPLE, 0.05))
-            .child(art)
-            .child(content)
             .into_any_element()
     }
 }

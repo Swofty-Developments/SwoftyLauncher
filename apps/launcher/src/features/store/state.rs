@@ -300,11 +300,15 @@ impl StorePage {
         me: Option<Result<Me, ApiError>>,
     ) -> Vec<String> {
         self.previews = previews.unwrap_or_default();
+        let supporters = supporters.map(|mut all| {
+            all.sort_by_key(|x| !x.plus());
+            all
+        });
         let images = supporters
             .iter()
             .flatten()
             .filter_map(|x| x.display.avatar_url.clone())
-            .chain(self.previews.iter().filter_map(|p| p.image.clone()))
+            .chain(self.previews.iter().filter_map(|p| p.icon.clone()))
             .collect();
         self.supporters = load(supporters);
         self.me = me.map(load).unwrap_or(Load::Idle);
@@ -414,6 +418,14 @@ mod tests {
         .unwrap()
     }
 
+    fn member(tier: &str, name: &str) -> Supporter {
+        serde_json::from_value(serde_json::json!({
+            "tier": tier,
+            "display": { "name": name },
+        }))
+        .unwrap()
+    }
+
     fn preview(id: &str, image: Option<&str>) -> Preview {
         serde_json::from_value(serde_json::json!({
             "id": id,
@@ -421,6 +433,7 @@ mod tests {
             "summary": "Early beta testing",
             "highlights": ["KERS"],
             "image": image,
+            "icon": image.map(|x| x.replace(".png", "-icon.png")),
             "addons": [],
             "posted": 1_763_480_000u64,
             "link": null,
@@ -474,13 +487,33 @@ mod tests {
             ]),
             None,
         );
-        assert_eq!(images, ["https://a/1.png", "https://a/2011.png"]);
+        assert_eq!(images, ["https://a/1.png", "https://a/2011-icon.png"]);
         assert!(matches!(&page.supporters, Load::Ready(s) if s.len() == 2));
         assert_eq!(page.previews.len(), 2);
         assert!(matches!(page.me, Load::Idle));
         assert!(!page.bio_synced);
         page.take_reload(Err(error("supporters down")), Ok(Vec::new()), None);
         assert!(matches!(&page.supporters, Load::Failed(m) if m == "supporters down"));
+    }
+
+    #[test]
+    fn supporter_plus_members_are_listed_first_in_the_order_the_server_sent() {
+        let mut page = StorePage::default();
+        page.take_reload(
+            Ok(vec![
+                member("supporter", "Ann"),
+                member("supporter_plus", "Bo"),
+                member("supporter", "Cy"),
+                member("supporter_plus", "Di"),
+            ]),
+            Ok(Vec::new()),
+            None,
+        );
+        let Load::Ready(all) = &page.supporters else {
+            panic!("the supporters did not load");
+        };
+        let names: Vec<_> = all.iter().filter_map(|x| x.display.name.as_deref()).collect();
+        assert_eq!(names, ["Bo", "Di", "Ann", "Cy"]);
     }
 
     #[test]
