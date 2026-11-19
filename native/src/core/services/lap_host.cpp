@@ -111,9 +111,12 @@ int host_code_ready()
     return code_ready();
 }
 
+// Bit 1: the lap module's signatures and bindings match once and are the same code. On EA App 1.0.145 its 59
+// signatures and 24 bindings were checked on the dump with the core's patches put back, and the 57 functions they sit in
+// compared whole (ported_build()).
 uint32_t build()
 {
-    return (same_build() ? 1u : 0u) | (verified_build() ? 2u : 0u);
+    return (same_build() ? 1u : 0u) | (ported_build() ? 2u : 0u);
 }
 
 const char *build_sha()

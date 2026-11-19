@@ -108,7 +108,8 @@ bool node_value(void *node)
 // The player manager (NePlayerManager, [[state+0xc88]+0x140]): +0x198 the primary player, which the title's
 // press makes (sign-in state +0x1f0: 1 or 4 starts the platform sign-in, 3 completes it), +0x1b0 the lead local
 // player, a player's +0x1c0 platform user handle and +0x1c8 flags (bit 0 user set, bit 1 logged in). Logged as it
-// changes; with SWOFTY_DIRECT_SIGNIN=1 the title's first update starts the sign-in itself.
+// changes; with SWOFTY_DIRECT_SIGNIN=1 the title's first update starts the sign-in itself, on a verified build only:
+// the sign-in state was not compared on EA App 1.0.145.
 constexpr size_t PM_PRIMARY = 0x198, PM_LEAD = 0x1b0, PM_CANDIDATE = 0x1d0, PM_SIGNIN = 0x1f0, PL_USER = 0x1c0,
                  PL_FLAGS = 0x1c8;
 
@@ -147,7 +148,7 @@ void player_probe(uint8_t *state)
     }
     char env[8] = {};
     if (!signin_tried && signin == 0 && !primary && GetEnvironmentVariableA("SWOFTY_DIRECT_SIGNIN", env, sizeof env) &&
-        env[0] == '1') {
+        env[0] == '1' && runtime::verified_build()) {
         signin_tried = true;
         *reinterpret_cast<uint32_t *>(m + PM_SIGNIN) = 1;
         swofty::log("[title] SWOFTY_DIRECT_SIGNIN: player manager sign-in state set to 1");
@@ -212,7 +213,7 @@ void title_setup()
     ga.intro_vt = runtime::find(SIG_INTRO_VT, "title", "title");
     ga.bool_type = runtime::find(SIG_BOOL_TYPE, "title", "title");
     ga.empty_node = runtime::find(SIG_EMPTY_NODE, "title", "title");
-    if (!runtime::verified_build()) {
+    if (!runtime::ported_build()) {
         title_why = "StateIntro's state layout (+0xcd0, +0xef3, +0xef4) is not verified on this build";
         return;
     }

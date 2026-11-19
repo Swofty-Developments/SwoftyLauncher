@@ -97,7 +97,7 @@ const Game &game()
 {
     static const Game g = [] {
         Game r;
-        if (!runtime::verified_build()) {
+        if (!runtime::ported_build()) {
             swofty::log("[direct] Time Trial setup off: its struct offsets are checked on the Steam and EA builds and this "
                         "F1_25.exe is another build");
             return r;

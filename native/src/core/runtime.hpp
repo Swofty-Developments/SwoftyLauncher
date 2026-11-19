@@ -71,9 +71,19 @@ struct ImageId {
 };
 ImageId image_id();
 bool same_build();
-// The builds whose struct layouts were checked against the signatures' functions (re/tools/sigverify.py): the Steam KB build and
-// the EA App link of the same version. Code that finds every address by signature gates on this instead of same_build().
+// The builds whose struct layouts were checked against the signatures' functions (re/tools/sigverify.py): the Steam KB
+// build, the EA App link of the same version and Steam 1.0.145 (build_logic.hpp). Code that finds every address by
+// signature gates on this or ported_build() instead of same_build().
 bool verified_build();
+// verified_build()'s builds and EA App 1.0.145 (PE timestamp 1794315435, SizeOfImage 0x1615e000). EA App 1.0.145 is not
+// a verified build: one signature shows a car setup VM struct that differs there (+0x7e68 to +0x7e6a are +0x7e60 to
+// +0x7e62). The code that gates on this was compared with the KB build's on the EA App 1.0.145 dump, with the core's
+// patches put back from a live run's scan log: each of its signatures and bindings matches once at the same code, and
+// each offset it reads is used at the same instruction (re/tools/sigverify.py --restore, sigport.py --witness,
+// layoutcmp.py; re/research/ea-1-0-145.md on the v1.10.0 branch). That code is the lap module's signatures and
+// bindings, the live car table and DRS, the postfx rules' player car, the Time Trial setup, the direct start and the
+// title helper.
+bool ported_build();
 // [g_Game_Manager]'s entrants system displacement on the running build (game_manager_layout.hpp): +0x290 on Steam, +0x260 on EA.
 uintptr_t manager_entrants_system();
 

@@ -130,6 +130,8 @@ module tt-game: not loaded for this session: none published
 
 Without the plugin no lap is recorded and the in-game boards are off.
 
+The plugin records laps and runs the in-game boards on Steam F1 25 1.0.141 and 1.0.145.2472 and on the EA app's 1.0.141 and 1.0.145. On any other build of the game, a game update included, `loader.log` says `[boards] off: ...` and, in a Time Trial, `[laps] NO LAP IS RECORDED IN THIS SESSION: ...`.
+
 ## The integrity module
 
 The launcher loads one more native addon for a session in which Time Trial boards is on and the player is signed in with Discord: `swofty.integrity`, a closed-source DLL that Swofty's server publishes. The launcher fetches it from `GET /v1/tt/integrity`, checks its size and sha256, and checks an Ed25519 signature over `swofty-tt-integrity-v1\0 || version || \0 || sha256` against the public key pinned in the launcher. A copy that passes is kept under `timetrial/integrity/<version>/` in the launcher's data folder, the newest two versions. The session places it as `swofty/addons/swofty.integrity/swofty_integrity.dll` and lists it in `swofty/settings.json` under `plugins`, and the session's rollback removes it with every other placed file.

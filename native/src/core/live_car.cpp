@@ -43,7 +43,7 @@ int last_player = -1;
 void resolve()
 {
     resolved = true;
-    fields = fields_of(runtime::same_build(), runtime::verified_build());
+    fields = fields_of(runtime::same_build(), runtime::ported_build());
     if (!fields.table) {
         swofty::log("[shaders] live car signals are unavailable: this is not a build the car offsets are checked on");
         return;

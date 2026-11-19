@@ -4,8 +4,13 @@
 // and steering fields are the std live layouts (live/live_layout.hpp), compared against the EA App build's code
 // (docs/reference/std/live.md), and CarLive.suspension, CarSuspension.wheels and CarF1Aero.wing_open_fraction were
 // compared with re/tools/layoutcmp.py against the EA dump (same instruction, same displacement), so they read on every
-// verified build. The per-wheel block (surface, wheel wetness, spin, slip), the chassis basis and angular velocity have
-// no KB xref to compare, and the track wetness singleton is a hard-coded Steam RVA, so they read on the KB build only.
+// verified build. On EA App 1.0.145 the vehicle table's car fields (CarLive +0x124, inputs +0x188, +0x190, +0x224,
+// engine, gearbox, chassis, steering, suspension and aero pointers, the gear index, engine rates, chassis g and body,
+// body position and velocity, steering angle and lock) and the aero's wing_open_fraction +0x19a8 are read at the KB
+// displacements by code that is the same there (layoutcmp.py, sigport.py --witness), so they read on every ported build
+// (runtime::ported_build()) too. The per-wheel block (surface, wheel wetness, spin, slip), the chassis basis and
+// angular velocity have no KB xref to compare, and the track wetness singleton is a hard-coded Steam RVA, so they read
+// on the KB build only.
 
 namespace live_car {
 
@@ -19,11 +24,11 @@ struct Fields {
     bool drs = false;
 };
 
-constexpr Fields fields_of(bool same_build, bool verified_build)
+constexpr Fields fields_of(bool same_build, bool ported_build)
 {
     Fields f;
-    f.table = f.drs = verified_build;
-    f.wetness = f.surface = f.orient = f.angvel = f.wheels = same_build && verified_build;
+    f.table = f.drs = ported_build;
+    f.wetness = f.surface = f.orient = f.angvel = f.wheels = same_build && ported_build;
     return f;
 }
 

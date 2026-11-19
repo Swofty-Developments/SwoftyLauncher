@@ -3,6 +3,7 @@
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
+#include "build_logic.hpp"
 #include "game_manager_layout.hpp"
 #include "state_logic.hpp"
 
@@ -210,15 +211,20 @@ ImageId image_id()
 
 bool same_build()
 {
-    ImageId id = image_id();
-    return id.stamp == 1789118616u && id.size > 0x6000000;
+    auto [stamp, size] = image_id();
+    return build::kb(stamp, size);
 }
 
 bool verified_build()
 {
     auto [stamp, size] = image_id();
-    return (stamp == 1789118616u && size > 0x6000000) || (stamp == 1789128892u && size == 0x155dc000) ||
-           (stamp == 1794312636u && size == 0x18434000);
+    return build::verified(stamp, size);
+}
+
+bool ported_build()
+{
+    auto [stamp, size] = image_id();
+    return build::ported(stamp, size);
 }
 
 uintptr_t manager_entrants_system()

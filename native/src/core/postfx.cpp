@@ -2900,7 +2900,7 @@ bool player_car(int64_t index)
     static bool tried = false;
     if (!tried) {
         tried = true;
-        if (runtime::verified_build() && swofty::api) {
+        if (runtime::ported_build() && swofty::api) {
             table = swofty::api->resolve("g_Sess_VehicleTable");
             count = swofty::api->resolve("g_Sess_VehicleCount");
         }
