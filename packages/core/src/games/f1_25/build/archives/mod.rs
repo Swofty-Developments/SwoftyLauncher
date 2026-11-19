@@ -453,6 +453,7 @@ impl Pipeline<'_, '_> {
                 prebuilt.len()
             ));
         }
+        crate::now_doing("collecting the runtime resources");
         let notes = runtime.resources(erps.resources(), &ranks, &prebuilt, &built.overlay)?;
         built.warnings.extend(notes);
         stage_erps(built, staged, built_in)?;

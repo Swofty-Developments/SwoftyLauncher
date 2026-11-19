@@ -79,6 +79,8 @@ fn step_phase(step: &str) -> &'static str {
         "reading the addons" => "build.inputs",
         "editing the game database" => "build.database",
         "placing files" => "build.place_files",
+        "compressing the changed fragments" => "build.compress",
+        "collecting the runtime resources" => "build.runtime",
         "saving the build" => "build.save",
         "checking the game files" => "install.check",
         "copying the mods to the game drive" => "install.link_cache",
@@ -145,6 +147,8 @@ mod tests {
         for step in [
             "reading the addons",
             "editing the game database",
+            "compressing the changed fragments",
+            "collecting the runtime resources",
             "placing files",
             "saving the build",
             "checking the game files",
