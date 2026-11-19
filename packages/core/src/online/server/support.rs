@@ -1,5 +1,5 @@
-//! Support: the donation goal, the supporters, the Supporter+ previews and the signed-in user's own support,
-//! from the launcher's server.
+//! Support: the supporters, the Supporter+ previews and the signed-in user's own support, from the launcher's
+//! server.
 
 use serde::Deserialize;
 use serde_json::{Value, json};
@@ -9,27 +9,6 @@ use crate::online::timetrial::boards::Rows;
 
 pub const BIO_MAX: usize = 140;
 pub const FALLBACK_URL: &str = "https://donate.swofty.net/";
-
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
-pub struct Goal {
-    #[serde(default)]
-    pub goal_cents: u64,
-    #[serde(default)]
-    pub raised_cents: u64,
-    #[serde(default)]
-    pub since: String,
-    #[serde(default)]
-    pub costs: Vec<String>,
-}
-
-impl Goal {
-    pub fn fraction(&self) -> f32 {
-        match self.goal_cents {
-            0 => 0.,
-            g => (self.raised_cents as f32 / g as f32).clamp(0., 1.),
-        }
-    }
-}
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct Me {
@@ -186,10 +165,6 @@ pub fn dollars_to_cents(text: &str) -> Option<u64> {
 }
 
 impl Api {
-    pub fn support_goal(&self) -> Result<Goal, ApiError> {
-        self.get_json("/v1/support/goal")
-    }
-
     pub fn support_me(&self) -> Result<Me, ApiError> {
         self.get_json("/v1/support/me")
     }
@@ -282,25 +257,6 @@ mod tests {
         let rows = rows.into_vec();
         assert!(rows[0].plus() && rows[0].display.anonymous);
         assert_eq!(rows[1].display.name.as_deref(), Some("X"));
-    }
-
-    #[test]
-    fn the_goal_fills_up_to_full() {
-        let g = Goal {
-            goal_cents: 50_000,
-            raised_cents: 12_500,
-            since: String::new(),
-            costs: Vec::new(),
-        };
-        assert_eq!(g.fraction(), 0.25);
-        assert_eq!(
-            Goal {
-                raised_cents: 90_000,
-                ..g
-            }
-            .fraction(),
-            1.
-        );
     }
 
     #[test]
