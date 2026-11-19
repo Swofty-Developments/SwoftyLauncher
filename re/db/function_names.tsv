@@ -7623,7 +7623,9 @@ addr	name
 0x143932a40	Gdb_Write_ReflectedFieldA
 0x143933320	Ne_Bag_ReadValue
 0x1439340c0	Game_SaveData_WriteBag
+0x143934410	Ne_BagCodec_WriteList
 0x143934620	Ne_BagCodec_ReadBag
+0x143935010	Ne_BagCodec_ReadList
 0x143935a40	Ne_Save_ReserveNodeBuffer
 0x143935ac0	Gdb_Get_ReflectedTypeInfo
 0x14393a770	Ne_SaveObject_ReserveChildSlot_14393a770
@@ -9758,6 +9760,7 @@ addr	name
 0x145378b60	Ne_Crt_Memset
 0x14537eff0	Prot_WinVerifyTrust_Thunk
 0x1473d0fa0	Ui_NoyearCustomMyTeam_Thunk_Body
+0x1474fbd30	Game_Cutscene_ResolveTeamStatId
 0x147db8390	Game_PitStopActionObserver_GetLongestStopSequenceLength_Body
 0x147de5cd0	Game_PitstopSystem_FindShowPitstopZone_Body
 0x148014a90	Game_AiSplineDataResource_Load_Body
