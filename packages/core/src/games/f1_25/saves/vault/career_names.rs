@@ -14,12 +14,14 @@ const TEAMS: (&str, &str) = ("entrants.teams", "team");
 const DRIVERS: (&str, &str) = ("entrants.drivers", "driver");
 const VEHICLES: (&str, &str) = ("entrants.vehicles", "vehicle");
 const ID_BITS: i64 = 0x3fff;
+const CONTENT_KEYS: [(u32, &str); 3] = [(25, "lng_f1_25"), (26, "lng_f1_2026"), (1990, "lng_f1_1990")];
 
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct Names {
     teams: HashMap<i64, String>,
     drivers: HashMap<i64, String>,
     colours: HashMap<i64, u32>,
+    content: HashMap<u32, String>,
     rows: RowSet,
 }
 
@@ -138,6 +140,26 @@ fn file_key(p: &Path) -> (std::path::PathBuf, Option<std::time::SystemTime>, u64
     )
 }
 
+const BUILD_LANG: [&str; 2] = ["swofty/assets/lang/all.lng", "swofty/assets/lang/eng.lng"];
+
+/// `english` with the text the addons of `build` add to the game's English table (the all-languages table, then
+/// the English one), so the names of rows an addon adds resolve.
+pub(crate) fn with_build_lang(english: Option<Vec<u8>>, build: &Path) -> Option<Vec<u8>> {
+    let extra: Vec<swofty_formats::lng::Lng> = BUILD_LANG
+        .iter()
+        .filter_map(|rel| std::fs::read(build.join(rel)).ok())
+        .filter_map(|b| swofty_formats::lng::Lng::parse(&b).ok())
+        .collect();
+    if extra.is_empty() {
+        return english;
+    }
+    let mut lng = swofty_formats::lng::Lng::parse(&english?).ok()?;
+    for e in extra {
+        lng.entries.extend(e.entries);
+    }
+    Some(lng.to_bytes())
+}
+
 impl Names {
     pub fn from_db(db: Gvdb, english: Option<&[u8]>) -> Self {
         let mut cat = Catalog::from_gvdb(db.clone(), String::new());
@@ -150,12 +172,27 @@ impl Names {
             drivers: stat_ids(&db, DRIVERS),
             aliases: IdAliases::default(),
         };
+        let content = english
+            .and_then(|b| swofty_formats::lng::Lng::parse(b).ok())
+            .map(|lng| {
+                CONTENT_KEYS
+                    .iter()
+                    .filter_map(|(year, key)| Some((*year, lng.get(key)?.to_owned())))
+                    .collect()
+            })
+            .unwrap_or_default();
         Self {
             teams: table(&cat, &db, TEAMS),
             drivers: table(&cat, &db, DRIVERS),
             colours: team_colours(&db),
+            content,
             rows,
         }
+    }
+
+    /// The game's own name of the content a career mode's year (`25`, `26`, `1990`) belongs to.
+    pub fn content_name(&self, year: u32) -> Option<&str> {
+        self.content.get(&year).map(String::as_str)
     }
 
     /// The names of the database a build wrote in `build` (its `game_package` database and runtime edits, else
@@ -173,6 +210,7 @@ impl Names {
         let english =
             crate::game_folder::baseline::original_lang(&store.root, &game.dir, &game.identity, "eng").ok();
         let english = english.and_then(|p| std::fs::read(p).ok());
+        let english = with_build_lang(english, build);
         let mut names = Self::from_db(db, english.as_deref());
         names.rows.aliases = aliases;
         Some(names)

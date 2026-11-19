@@ -196,6 +196,7 @@ impl Pipeline<'_, '_> {
                             ));
                             session.resume_needs = needs;
                             session.resume_list = rows;
+                            session.resume_list_on = true;
                         }
                         None => built
                             .warnings

@@ -115,6 +115,17 @@ pub struct Created {
 
 const ENTRANTS: &str = "entrants_system";
 const HIDDEN: u32 = 0x41;
+const NO_ID: u32 = 0x3fff;
+
+fn has_id(id: Option<u32>) -> bool {
+    id.is_some_and(|i| i & NO_ID != NO_ID)
+}
+
+/// A slot the stock continue screens offer: a played, visible slot with a driver and a team. A slot without them
+/// (a custom season's, or one never started as a career) is not a career.
+fn is_career(s: &Slot) -> bool {
+    s.last_played != 0 && s.flags & HIDDEN == 0 && has_id(s.driver) && has_id(s.team)
+}
 
 fn career_mode(mode: &str) -> bool {
     mode.starts_with("driver_career") || mode.starts_with("my_team_career")
@@ -193,13 +204,10 @@ pub fn save_careers(plain: &Plain) -> (Vec<SaveCareer>, Created) {
         .iter()
         .filter(|c| career_mode(&c.mode()))
         .flat_map(|c| {
-            c.slots
-                .iter()
-                .filter(|s| s.last_played != 0 && s.flags & HIDDEN == 0)
-                .map(|s| SaveCareer {
-                    mode: c.mode(),
-                    slot: s.clone(),
-                })
+            c.slots.iter().filter(|s| is_career(s)).map(|s| SaveCareer {
+                mode: c.mode(),
+                slot: s.clone(),
+            })
         })
         .collect();
     let created = m
@@ -219,15 +227,23 @@ fn key_of(s: &Slot) -> String {
     }
 }
 
-/// The content a career mode belongs to: its year for the game's own modes, the addon's label otherwise.
-fn content_of(mode: &str, label: &str) -> String {
+/// The content a career mode belongs to: the game's own name for its year, else the addon's label, else the year.
+fn content_of(mode: &str, label: &str, names: &Names) -> String {
+    let year = mode
+        .rsplit('_')
+        .next()
+        .and_then(|y| y.parse::<u32>().ok())
+        .filter(|y| (y.to_string().len() == 2 && *y < 100) || (1900..2100).contains(y));
+    if let Some(name) = year.and_then(|y| names.content_name(y)) {
+        return name.to_owned();
+    }
     if !label.is_empty() {
         return label.to_owned();
     }
-    let year = mode.rsplit('_').next().unwrap_or_default();
-    match year.len() == 2 && year.bytes().all(|b| b.is_ascii_digit()) {
-        true => format!("20{year}"),
-        false => String::new(),
+    match year {
+        Some(y) if y < 100 => format!("20{y:02}"),
+        Some(y) => y.to_string(),
+        None => String::new(),
     }
 }
 
@@ -247,7 +263,7 @@ pub fn resume_rows(
             let n = needs.iter().find(|n| n.key == key);
             let my_team = c.mode.starts_with("my_team");
             let word = if my_team { "My Team" } else { "Driver Career" };
-            let content = content_of(&c.mode, n.map_or("", |n| n.mode_label.as_str()));
+            let content = content_of(&c.mode, n.map_or("", |n| n.mode_label.as_str()), names);
             let badge = if content.is_empty() {
                 word.to_owned()
             } else {
@@ -322,6 +338,13 @@ fn plain_of(data: &std::path::Path, profile: &str) -> Plain {
         Some(root) => Plain::at(root),
         None => own,
     }
+}
+
+/// What the list shows of the profile's save, as text a build hash takes in: each career slot and the names the
+/// player made.
+pub fn save_state(data: &std::path::Path, profile: &str) -> String {
+    let (saved, created) = save_careers(&plain_of(data, profile));
+    format!("{saved:?}{created:?}")
 }
 
 /// The needs and rows of the list for the profile `order` loads: the careers in the profile's save, named from the
@@ -675,5 +698,133 @@ mod tests {
         assert_eq!(date_text(0), "01/01/1970");
         assert_eq!(date_text(1_795_093_120), "19/11/2026");
         assert_eq!(date_text(951_782_400), "29/02/2000");
+    }
+
+    fn english_with_content() -> Vec<u8> {
+        let e = |k: &str, v: &str| swofty_formats::lng::Entry {
+            key: k.into(),
+            value: v.into(),
+        };
+        swofty_formats::lng::Lng {
+            entries: vec![
+                e("lng_nigel", "Nigel"),
+                e("lng_mansell", "Mansell"),
+                e("lng_team", "Team"),
+                e("lng_f1_25", "F1\u{ae} 2025"),
+                e("lng_f1_2026", "F1\u{ae} 2026"),
+                e("lng_f1_1990", "F1 1990"),
+            ],
+        }
+        .to_bytes()
+    }
+
+    #[test]
+    fn a_badge_is_the_games_own_name_of_the_content_and_the_mode() {
+        let list = vec![
+            saved("driver_career_25", slot(1, "0x00000000000000a1", 7, 61, 0, 0, 4)),
+            saved("my_team_career_26", slot(2, "0x00000000000000a2", 7, 61, 0, 0, 3)),
+            saved(
+                "driver_career_1990",
+                slot(3, "0x00000000000000a3", 7, 61, 0, 0, 2),
+            ),
+            saved(
+                "driver_career_progressive",
+                slot(4, "0x00000000000000a4", 7, 61, 0, 0, 1),
+            ),
+        ];
+        let names = Names::from_db(db(), Some(&english_with_content()));
+        let rows = resume_rows(&list, &Created::default(), &[], &names);
+        let badges: Vec<&str> = rows.iter().map(|r| r.badge.as_str()).collect();
+        assert_eq!(
+            badges,
+            [
+                "F1\u{ae} 2025 Driver Career",
+                "F1\u{ae} 2026 My Team",
+                "F1 1990 Driver Career",
+                "Driver Career"
+            ]
+        );
+    }
+
+    #[test]
+    fn the_names_an_addon_adds_to_the_language_table_resolve_in_a_build() {
+        let dir = std::env::temp_dir().join(format!("swofty-names-lang-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        let lang = dir.join("swofty/assets/lang");
+        std::fs::create_dir_all(&lang).unwrap();
+        let e = |k: &str, v: &str| swofty_formats::lng::Entry {
+            key: k.into(),
+            value: v.into(),
+        };
+        std::fs::write(
+            lang.join("all.lng"),
+            swofty_formats::lng::Lng {
+                entries: vec![e("lng_team", "Addon Team")],
+            }
+            .to_bytes(),
+        )
+        .unwrap();
+        let merged = crate::saves::vault::career_names::with_build_lang(Some(english()), &dir).unwrap();
+        let names = Names::from_db(db(), Some(&merged));
+        assert_eq!(names.team_named(646).unwrap().0, "Addon Team");
+        assert_eq!(
+            names.driver_named(61).unwrap(),
+            "Nigel Mansell",
+            "the game's own text stays"
+        );
+        let same =
+            crate::saves::vault::career_names::with_build_lang(Some(english()), &dir.join("none")).unwrap();
+        assert_eq!(same, english());
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn the_list_state_of_a_save_changes_with_its_careers() {
+        use crate::saves::plain::fixture::{Gen, current, pair, write};
+        let root = std::env::temp_dir().join(format!("swofty-resume-state-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let p = Plain::at(crate::saves::plain::root_of_profile(&root, "default"));
+        let state = || save_state(&root, "default");
+        let empty = state();
+        let generation = |n: u64, slots: Vec<(&str, &str)>| {
+            write(
+                &p,
+                &Gen {
+                    n,
+                    event: "load",
+                    session: Some("s"),
+                    containers: pair("driver_career_26", "game", slots),
+                },
+            );
+            current(&p, n);
+        };
+        generation(1, vec![("0x00000000000000aa", "Career Save 1")]);
+        let one = state();
+        assert_ne!(one, empty);
+        generation(
+            2,
+            vec![
+                ("0x00000000000000aa", "Career Save 1"),
+                ("0x00000000000000bb", "Career Save 2"),
+            ],
+        );
+        assert_ne!(state(), one);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_slot_without_a_driver_and_team_is_not_a_career_the_stock_screen_would_list() {
+        let mut none = slot(5, "0x00000000000000e5", 16383, 16383, 0, 0, 9);
+        let mut no_team = slot(6, "0x00000000000000e6", 7, 61, 0, 0, 9);
+        no_team.team = None;
+        let mut no_driver = slot(7, "0x00000000000000e7", 7, 61, 0, 0, 9);
+        no_driver.driver = None;
+        let real = slot(8, "0x00000000000000e8", 7, 61, 0, 0, 9);
+        none.name = "Career Save 1".into();
+        assert!(!is_career(&none) && !is_career(&no_team) && !is_career(&no_driver));
+        assert!(is_career(&real));
+        let mut idle = real.clone();
+        idle.last_played = 0;
+        assert!(!is_career(&idle));
     }
 }

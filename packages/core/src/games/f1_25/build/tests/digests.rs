@@ -199,7 +199,7 @@ fn the_careers_file_and_the_list_state_are_part_of_the_build_hash() {
     let root = scratch("resume-list");
     let hash = |wanted: bool| {
         let mut h = BuildHash::new();
-        stamp_resume_list(&mut h, &root, wanted).unwrap();
+        stamp_resume_list(&mut h, &root, "default", wanted).unwrap();
         h.finish()
     };
     let absent = hash(true);

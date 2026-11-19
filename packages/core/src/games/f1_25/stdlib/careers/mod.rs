@@ -25,7 +25,7 @@ pub use index_file::{
 };
 pub use list::{
     READY as SEVERITY_READY, ResumeRow, RowAddon, VERSION as SEVERITY_VERSION, date_text, resume_list_for,
-    resume_rows, wanted as resume_list_wanted,
+    resume_rows, save_state, wanted as resume_list_wanted,
 };
 pub use play::{in_save_of, missing, needing, play_line, stop_line, unowned_line};
 pub use record::{lost_cars, record_cars, record_session};

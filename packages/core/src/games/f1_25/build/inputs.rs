@@ -54,7 +54,12 @@ pub(super) struct Inputs {
     pub saved_from: (usize, usize),
 }
 
-pub(super) fn stamp_resume_list(hash: &mut BuildHash, data: &std::path::Path, wanted: bool) -> Result<()> {
+pub(super) fn stamp_resume_list(
+    hash: &mut BuildHash,
+    data: &std::path::Path,
+    profile: &str,
+    wanted: bool,
+) -> Result<()> {
     if !wanted {
         hash.update("resume list|off;");
         return Ok(());
@@ -64,7 +69,10 @@ pub(super) fn stamp_resume_list(hash: &mut BuildHash, data: &std::path::Path, wa
         true => sha256_file(&careers)?,
         false => "absent".to_owned(),
     };
-    hash.update(format!("resume list|{stamp};"));
+    hash.update(format!(
+        "resume list|{stamp}|{};",
+        crate::stdlib::careers::save_state(data, profile)
+    ));
     Ok(())
 }
 
@@ -197,6 +205,7 @@ impl Inputs {
             stamp_resume_list(
                 &mut hash,
                 &store.root,
+                profile,
                 crate::stdlib::careers::resume_list_wanted(),
             )?;
         }
