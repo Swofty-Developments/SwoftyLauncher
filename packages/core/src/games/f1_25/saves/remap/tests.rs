@@ -275,6 +275,52 @@ fn the_active_slot_and_per_slot_counts() {
 }
 
 #[test]
+fn a_slot_without_an_earlier_team_id_keeps_its_driver_ids() {
+    let mut slots = Bag::new();
+    let mut data = Bag::new();
+    let mut list = List::new();
+    list.items = vec![
+        bag(vec![
+            ("slot_id", Value::U64(7)),
+            ("info_team", Value::U16(502)),
+            ("info_driver", Value::U16(235)),
+        ]),
+        bag(vec![
+            ("slot_id", Value::U64(8)),
+            ("info_team", Value::U16(646)),
+            ("info_driver", Value::U16(235)),
+        ]),
+    ];
+    data.push("slots", Value::List(list));
+    slots.push("data", Value::Bag(data));
+    let (per, held) = remap_slots_gated(&mut slots, &maps());
+    assert_eq!(
+        per,
+        vec![(
+            7,
+            Remapped {
+                teams: 1,
+                vehicles: 0,
+                drivers: 1
+            }
+        )]
+    );
+    assert_eq!(held, vec![8]);
+    let Some(Value::Bag(data)) = slots.get("data") else {
+        panic!()
+    };
+    let Some(Value::List(list)) = data.get("slots") else {
+        panic!()
+    };
+    let driver = |i: usize| match &list.items[i] {
+        Value::Bag(b) => b.get("info_driver").cloned(),
+        _ => None,
+    };
+    assert_eq!(driver(0), Some(Value::U16(362)));
+    assert_eq!(driver(1), Some(Value::U16(235)));
+}
+
+#[test]
 fn chained_aliases_are_refused() {
     assert_eq!(maps().refusal(), None);
     let mut chained = maps();

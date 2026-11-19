@@ -273,16 +273,23 @@ pub fn active_slot(slot_component: &Bag) -> Option<u64> {
 }
 
 /// What mapping the slot component's slots would change, per slot id, and the slots with nothing to change
-/// left out. The slots are the careers' own records: a slot that holds no earlier id is untouched.
+/// left out. The slots are the careers' own records: a slot that holds no earlier team id is in the current
+/// numbering and untouched, since its other earlier ids are live rows of this build.
 pub fn remap_slots(slot_component: &mut Bag, maps: &IdMaps) -> Vec<(u64, Remapped)> {
+    remap_slots_gated(slot_component, maps).0
+}
+
+/// [`remap_slots`], with the ids of the slots that hold earlier driver or vehicle ids but no earlier team id.
+pub fn remap_slots_gated(slot_component: &mut Bag, maps: &IdMaps) -> (Vec<(u64, Remapped)>, Vec<u64>) {
     let mut out = Vec::new();
+    let mut held = Vec::new();
     let Some(Value::Bag(data)) = slot_component
         .entries
         .iter_mut()
         .find(|e| e.key.0 == b"data")
         .map(|e| &mut e.value)
     else {
-        return out;
+        return (out, held);
     };
     let Some(Value::List(slots)) = data
         .entries
@@ -290,7 +297,7 @@ pub fn remap_slots(slot_component: &mut Bag, maps: &IdMaps) -> Vec<(u64, Remappe
         .find(|e| e.key.0 == b"slots")
         .map(|e| &mut e.value)
     else {
-        return out;
+        return (out, held);
     };
     for slot in &mut slots.items {
         let Value::Bag(bag) = slot else { continue };
@@ -298,12 +305,16 @@ pub fn remap_slots(slot_component: &mut Bag, maps: &IdMaps) -> Vec<(u64, Remappe
             Some(Value::U64(id)) => *id,
             _ => continue,
         };
-        let done = remap_container(bag, maps);
-        if done.total() > 0 {
+        let mut mapped = bag.clone();
+        let done = remap_container(&mut mapped, maps);
+        if done.teams > 0 {
+            *bag = mapped;
             out.push((id, done));
+        } else if done.total() > 0 {
+            held.push(id);
         }
     }
-    out
+    (out, held)
 }
 
 pub fn remap_root(root: &mut Bag, maps: &IdMaps) -> Remapped {

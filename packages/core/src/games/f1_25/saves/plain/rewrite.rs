@@ -72,8 +72,8 @@ pub struct Planned {
     pub manifest: Manifest,
     pub changed: BTreeMap<String, Changed>,
     pub careers: Vec<CareerMapped>,
-    /// Modes that hold earlier driver or vehicle ids but no earlier team id, which are left alone: those ids may
-    /// be stock rows of another roster.
+    /// Career containers and slots (`<mode> career <slot id>`) that hold earlier driver or vehicle ids but no
+    /// earlier team id, which are left alone: they are in the current numbering.
     pub skipped: Vec<String>,
 }
 
@@ -91,51 +91,40 @@ pub struct CareerPass {
     pub skipped: Vec<String>,
 }
 
-/// Maps `maps` in the career containers `parts` (name and decoded tree). A mode is mapped only if it holds an
-/// earlier team id: its other earlier ids may be rows of another roster.
+/// Maps `maps` in the career containers `parts` (name and decoded tree). A career container, and each slot of a
+/// slot component, is mapped only if it holds an earlier team id: without one it is in the current numbering and
+/// its other earlier ids are live rows of this build.
 pub fn career_pass(parts: Vec<(String, bag::Bag)>, maps: &IdMaps) -> CareerPass {
     let mut changed: BTreeMap<String, bag::Bag> = BTreeMap::new();
     let mut gm_counts: BTreeMap<String, Remapped> = BTreeMap::new();
     let mut slot_counts: BTreeMap<String, Vec<(u64, Remapped)>> = BTreeMap::new();
     let mut active: BTreeMap<String, u64> = BTreeMap::new();
+    let mut skipped = Vec::new();
     for (name, mut tree) in parts {
         let mode = mode_of(&name);
         if name.ends_with(super::manifest::SLOT_SUFFIX) {
             if let Some(id) = remap::active_slot(&tree) {
                 active.insert(mode.clone(), id);
             }
-            let slots = remap::remap_slots(&mut tree, maps);
+            let (slots, held) = remap::remap_slots_gated(&mut tree, maps);
+            skipped.extend(held.iter().map(|id| format!("{mode} career {id}")));
             if slots.is_empty() {
                 continue;
             }
             slot_counts.insert(mode, slots);
         } else {
-            let done = remap::remap_container(&mut tree, maps);
-            if done.total() == 0 {
+            let mut mapped = tree.clone();
+            let done = remap::remap_container(&mut mapped, maps);
+            if done.teams == 0 {
+                if done.total() > 0 {
+                    skipped.push(mode);
+                }
                 continue;
             }
+            tree = mapped;
             gm_counts.insert(mode, done);
         }
         changed.insert(name, tree);
-    }
-    let mut skipped = Vec::new();
-    let modes: std::collections::BTreeSet<String> =
-        gm_counts.keys().chain(slot_counts.keys()).cloned().collect();
-    for mode in modes {
-        let teams = gm_counts.get(&mode).map_or(0, |c| c.teams)
-            + slot_counts
-                .get(&mode)
-                .into_iter()
-                .flatten()
-                .map(|(_, c)| c.teams)
-                .sum::<usize>();
-        if teams > 0 {
-            continue;
-        }
-        gm_counts.remove(&mode);
-        slot_counts.remove(&mode);
-        changed.retain(|name, _| mode_of(name) != mode);
-        skipped.push(mode);
     }
     let careers = Plain::career_lines(&gm_counts, &slot_counts, &active);
     CareerPass {

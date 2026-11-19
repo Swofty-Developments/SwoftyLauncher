@@ -452,7 +452,7 @@ fn a_store_with_no_generation_maps_the_launcher_save_file_once() {
         lines,
         [
             "[saves] the plain store has no generation yet; mapping the launcher save file",
-            "[saves] mode driver_career_26: earlier driver or vehicle ids but no earlier team id; left alone",
+            "[saves] mode driver_career_26 career 1: earlier driver or vehicle ids but no earlier team id; left alone",
             "[saves] career 6 (driver_career_1990): mapped 2 team, 0 vehicle, 0 driver id(s) in the save file (the vault snapshot before it is 20261120-snap)",
             "[saves] career 7 (driver_career_1990): mapped 3 team, 0 vehicle, 2 driver id(s) in the save file (the vault snapshot before it is 20261120-snap)",
         ]
