@@ -123,9 +123,11 @@ pub(crate) fn run(inputs: Inputs) -> Checked {
                     swofty_core::addon_files::damaged(&store, p.enabled(), &installed)
                 });
                 for d in &damaged {
-                    let mut line = String::new();
-                    let _ = write!(line, "[play] files: {} {}", d.id, d.summary());
-                    lines.push(line);
+                    for text in d.lines() {
+                        let mut line = String::new();
+                        let _ = write!(line, "[play] files: {} {text}", d.id);
+                        lines.push(line);
+                    }
                 }
             }
             if let Some(stop) = damaged_stop(&damaged) {
@@ -731,7 +733,7 @@ mod tests {
         assert!(p.finish(new));
     }
 
-    fn damaged(id: &str, read_by_build: bool) -> Damaged {
+    fn damaged(id: &str, stops: bool) -> Damaged {
         use swofty_core::addon_files::{Damage, Problem};
         Damaged {
             id: id.into(),
@@ -739,7 +741,7 @@ mod tests {
             damage: vec![Damage {
                 path: "assets/lang.json".into(),
                 problem: Problem::Empty,
-                read_by_build,
+                stops,
             }],
         }
     }
@@ -802,6 +804,50 @@ mod tests {
             checked.lines
         );
         assert!(checked.timings.line().contains("files "));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn play_goes_on_for_an_addon_without_a_file_list_that_has_an_empty_placeholder_archive() {
+        let root = std::env::temp_dir().join(format!("swofty-play-placeholder-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let src = root.join("src");
+        std::fs::create_dir_all(src.join("erp")).unwrap();
+        std::fs::write(
+            src.join("swofty.json"),
+            r#"{"schema_version":1,"id":"a.season","name":"Season","version":"1.0.10","author":"a",
+                "operations":{"erp":["erp/frontend.json"]}}"#,
+        )
+        .unwrap();
+        std::fs::write(src.join("erp/frontend.json"), r#"{"schema_version":1,"ops":[]}"#).unwrap();
+        let store = Store::new(root.join("data"));
+        store.create_profile("p", None).unwrap();
+        store.install_addon(&src).unwrap();
+        store
+            .update_profile("p", |p| p.set_enabled("a.season", true))
+            .unwrap();
+        let dir = store.addons_dir().join("a.season");
+        std::fs::remove_file(dir.join(swofty_core::addon_files::INDEX_FILE)).unwrap();
+        std::fs::write(dir.join("erp/placeholder.erp"), b"").unwrap();
+        let checked = run(Inputs {
+            store: store.clone(),
+            profile: "p".into(),
+            game: root.join("game"),
+            build_id: None,
+            anyway: false,
+        });
+        assert!(
+            !matches!(checked.verdict, Verdict::Stop(_)),
+            "{:?}",
+            checked.verdict
+        );
+        assert!(
+            checked
+                .lines
+                .contains(&"[play] files: a.season warning: erp/placeholder.erp is empty".to_owned()),
+            "{:?}",
+            checked.lines
+        );
         std::fs::remove_dir_all(&root).ok();
     }
 }

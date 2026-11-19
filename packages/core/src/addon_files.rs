@@ -1,14 +1,22 @@
-//! The list of files an install writes into an addon's folder, with each file's size and
-//! CRC-32, and the checks that compare the folder with it. Play checks sizes and the first
-//! bytes of the files the build and the game load; Verify reads every file.
+//! The list of files an install writes into an addon's folder, with each file's size, CRC-32,
+//! first bytes and write time, and the checks that compare the folder with it. Play stats the
+//! files and reads the first bytes of the ones the build and the game load; Verify reads every
+//! file.
+//!
+//! A file that differs from the list and was not written since stops Play when the build or
+//! the game loads it. An addon installed before installs wrote lists, and a listed file written
+//! since its install, stop Play only for a file its manifest names that is missing, or one the
+//! build reads that is empty or holds only zeros; anything else they show is a log line.
 
-use std::collections::BTreeMap;
-use std::fs::{File, OpenOptions};
+use std::collections::{BTreeMap, BTreeSet};
+use std::fs::{File, Metadata, OpenOptions};
 use std::io::Read;
 use std::path::Path;
+use std::time::UNIX_EPOCH;
 
 use serde::{Deserialize, Serialize};
 
+use crate::asset::FileKind;
 use crate::manifest::AddonManifest;
 use crate::store::Store;
 use crate::{Error, Result, io_err};
@@ -16,21 +24,35 @@ use crate::{Error, Result, io_err};
 /// The file list, in the addon's folder. Only installs write it.
 pub const INDEX_FILE: &str = ".swofty-files.json";
 const SCHEMA: u32 = 1;
-/// How much of an op file the size check reads to tell JSON from zeros or blanks.
+/// How much of a file the checks read to tell content from zeros or blanks.
 const PEEK: usize = 4096;
+/// How many first bytes the list keeps of each file.
+const HEAD: usize = 8;
 const ERP_MAGIC: &[u8; 4] = b"ERPK";
 const DLL_MAGIC: &[u8; 2] = b"MZ";
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+/// A file's size and CRC-32.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Entry {
     pub size: u64,
     pub crc32: u32,
 }
 
+/// A file as its install wrote it.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Listed {
+    pub size: u64,
+    pub crc32: u32,
+    /// The first bytes, in hex.
+    pub head: String,
+    /// The last write, in nanoseconds since the Unix epoch; 0 when the file system has none.
+    pub modified: u64,
+}
+
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Index {
     pub schema: u32,
-    pub files: BTreeMap<String, Entry>,
+    pub files: BTreeMap<String, Listed>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -38,19 +60,20 @@ pub enum Problem {
     Missing,
     Empty,
     Size { listed: u64, found: u64 },
+    Zeros,
     Blank,
+    Head,
     Magic { expected: &'static str },
     Content,
 }
 
-/// A file of an installed addon that is not what the install wrote. `read_by_build` marks
-/// the op files the build parses and the archives and plugins it places, which fail the
-/// build or the game when damaged.
+/// A file of an installed addon that is damaged or looks it. `stops` marks damage the build or
+/// the game fails on; the rest is logged.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Damage {
     pub path: String,
     pub problem: Problem,
-    pub read_by_build: bool,
+    pub stops: bool,
 }
 
 impl Damage {
@@ -62,7 +85,9 @@ impl Damage {
             Problem::Size { listed, found } => {
                 format!("{path} is {found} bytes; the install wrote {listed}")
             }
-            Problem::Blank => format!("{path} holds no JSON, only zeros or blanks"),
+            Problem::Zeros => format!("{path} holds only zeros"),
+            Problem::Blank => format!("{path} holds only blanks"),
+            Problem::Head => format!("{path} does not start with the bytes the install wrote"),
             Problem::Magic { expected } => format!("{path} does not start with {expected}"),
             Problem::Content => format!("{path} differs from the file the install wrote"),
         }
@@ -78,26 +103,36 @@ pub struct Damaged {
 }
 
 impl Damaged {
-    /// True when the build would fail on it.
+    /// True when the build or the game would fail on it.
     pub fn stops_play(&self) -> bool {
-        self.damage.iter().any(|d| d.read_by_build)
+        self.damage.iter().any(|d| d.stops)
     }
 
-    /// The first damaged files, build-read ones first.
+    /// The first files that stop Play.
     pub fn summary(&self) -> String {
         const SHOWN: usize = 3;
-        let mut damage: Vec<&Damage> = self.damage.iter().collect();
-        damage.sort_by_key(|d| !d.read_by_build);
-        let mut text = damage
+        let stopping: Vec<&Damage> = self.damage.iter().filter(|d| d.stops).collect();
+        let mut text = stopping
             .iter()
             .take(SHOWN)
             .map(|d| d.line())
             .collect::<Vec<_>>()
             .join(", ");
-        if damage.len() > SHOWN {
-            text.push_str(&format!(" and {} more", damage.len() - SHOWN));
+        if stopping.len() > SHOWN {
+            text.push_str(&format!(" and {} more", stopping.len() - SHOWN));
         }
         text
+    }
+
+    /// Every damaged file, the ones that don't stop Play marked as warnings.
+    pub fn lines(&self) -> Vec<String> {
+        self.damage
+            .iter()
+            .map(|d| match d.stops {
+                true => d.line(),
+                false => format!("warning: {}", d.line()),
+            })
+            .collect()
     }
 }
 
@@ -122,7 +157,7 @@ pub fn seal(dir: &Path) -> Result<Index> {
             if !kind.is_file() || rel == INDEX_FILE {
                 continue;
             }
-            index.files.insert(rel, settle(&path)?);
+            index.files.insert(rel, settled(&path)?);
             #[cfg(test)]
             tests::after_file();
         }
@@ -165,9 +200,16 @@ fn open(path: &Path) -> std::io::Result<(File, bool)> {
 
 /// Flushes the file at `path` to disk and reads it back: its size and CRC-32.
 pub(crate) fn settle(path: &Path) -> Result<Entry> {
+    settled(path).map(|l| Entry {
+        size: l.size,
+        crc32: l.crc32,
+    })
+}
+
+fn settled(path: &Path) -> Result<Listed> {
     let (mut file, writable) = open(path).map_err(io_err(path))?;
     let listed = file.metadata().map_err(io_err(path))?.len();
-    let entry = digest(&mut file).map_err(io_err(path))?;
+    let (entry, head) = digest(&mut file).map_err(io_err(path))?;
     if entry.size != listed {
         return Err(Error::Other(format!(
             "{}: read {} bytes, the file is {listed}",
@@ -178,25 +220,55 @@ pub(crate) fn settle(path: &Path) -> Result<Entry> {
     if writable {
         file.sync_all().ok();
     }
-    Ok(entry)
+    let meta = file.metadata().map_err(io_err(path))?;
+    Ok(Listed {
+        size: entry.size,
+        crc32: entry.crc32,
+        head: crate::baseline::hex(&head),
+        modified: modified(&meta),
+    })
 }
 
-fn digest(r: &mut impl Read) -> std::io::Result<Entry> {
+fn digest(r: &mut impl Read) -> std::io::Result<(Entry, Vec<u8>)> {
     let mut crc = flate2::Crc::new();
     let mut buf = vec![0u8; 1 << 16];
+    let mut head = Vec::with_capacity(HEAD);
     let mut size = 0u64;
     loop {
         let n = r.read(&mut buf)?;
         if n == 0 {
             break;
         }
+        let want = HEAD.saturating_sub(head.len()).min(n);
+        head.extend_from_slice(&buf[..want]);
         crc.update(&buf[..n]);
         size += n as u64;
     }
-    Ok(Entry {
-        size,
-        crc32: crc.sum(),
-    })
+    Ok((
+        Entry {
+            size,
+            crc32: crc.sum(),
+        },
+        head,
+    ))
+}
+
+fn modified(meta: &Metadata) -> u64 {
+    meta.modified()
+        .ok()
+        .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
+        .map_or(0, |d| u64::try_from(d.as_nanos()).unwrap_or(u64::MAX))
+}
+
+/// Up to `len` first bytes of the file at `path`.
+fn first_bytes(path: &Path, len: usize) -> Option<Vec<u8>> {
+    let mut head = Vec::with_capacity(len);
+    File::open(path)
+        .ok()?
+        .take(len as u64)
+        .read_to_end(&mut head)
+        .ok()?;
+    Some(head)
 }
 
 pub fn read_index(dir: &Path) -> Option<Index> {
@@ -205,17 +277,8 @@ pub fn read_index(dir: &Path) -> Option<Index> {
         .filter(|i| i.schema == SCHEMA)
 }
 
-fn op_files(m: &AddonManifest) -> Vec<String> {
-    let mut out: Vec<String> = m
-        .operations
-        .op_files()
-        .map(|(_, rel)| rel.to_owned())
-        .chain(m.operations.hud.iter().cloned())
-        .map(|rel| rel.trim_start_matches("./").replace('\\', "/"))
-        .collect();
-    out.sort();
-    out.dedup();
-    out
+fn normal(rel: &str) -> String {
+    rel.trim_start_matches("./").replace('\\', "/")
 }
 
 /// The first bytes the file of `rel` must start with, for the kinds the build and the game
@@ -227,13 +290,6 @@ fn magic(rel: &str) -> Option<(&'static [u8], &'static str)> {
         "dll" => Some((DLL_MAGIC, "MZ")),
         _ => None,
     }
-}
-
-fn starts_with(path: &Path, magic: &[u8]) -> bool {
-    let mut head = vec![0u8; magic.len()];
-    File::open(path)
-        .and_then(|mut f| f.read_exact(&mut head))
-        .is_ok_and(|()| head == magic)
 }
 
 /// Every file under `dir` but the file list, relative with `/`.
@@ -257,109 +313,154 @@ fn walk(dir: &Path) -> Vec<String> {
     out
 }
 
-fn blank(path: &Path, len: u64) -> bool {
-    let Ok(mut file) = File::open(path) else {
-        return false;
-    };
-    let mut head = vec![0u8; PEEK.min(len as usize)];
-    if file.read_exact(&mut head).is_err() {
-        return false;
+/// The files of an addon its manifest names for the build and the game to read.
+struct Reads {
+    /// Op files the build parses. A DB Editor addon's database op file is left out: the build
+    /// makes its ops from its edits.
+    ops: BTreeSet<String>,
+    plugins: BTreeSet<String>,
+    /// True when the addon has ERP op files, which place its ERP archives.
+    erp: bool,
+}
+
+impl Reads {
+    fn of(dir: &Path, m: &AddonManifest) -> Self {
+        let edits = dir.join(crate::dbedit::package::MARKER).is_file();
+        let mut erp = false;
+        let ops = m
+            .operations
+            .op_files()
+            .filter(|(kind, _)| !(edits && *kind == FileKind::Database))
+            .inspect(|(kind, _)| erp |= *kind == FileKind::Erp)
+            .map(|(_, rel)| normal(rel))
+            .chain(m.operations.hud.iter().map(|rel| normal(rel)))
+            .collect();
+        let plugins = m.operations.native.iter().map(|n| normal(&n.dll)).collect();
+        Self { ops, plugins, erp }
     }
-    match head.iter().find(|b| !b.is_ascii_whitespace()) {
-        Some(0) => true,
-        Some(_) => false,
-        None => len as usize <= PEEK,
+
+    fn named(&self, rel: &str) -> bool {
+        self.ops.contains(rel) || self.plugins.contains(rel)
+    }
+
+    fn loads(&self, rel: &str) -> bool {
+        self.named(rel) || magic(rel).is_some()
     }
 }
 
-/// The damage a stat of each file finds in the addon folder `dir`: files the install listed
-/// that are missing or not their listed size, op files that are missing, empty or blank, and
-/// ERP archives and plugins that are empty or don't start as one. An addon installed before
-/// installs wrote file lists has the files in its folder checked.
+/// What a look at the file of `rel` alone finds, with no list to compare it with, and whether
+/// that stops Play.
+fn sniff(dir: &Path, rel: &str, reads: &Reads) -> Option<(Problem, bool)> {
+    let named = reads.named(rel);
+    let kind = magic(rel);
+    if !named && kind.is_none() {
+        return None;
+    }
+    let path = dir.join(rel);
+    let Ok(meta) = std::fs::metadata(&path) else {
+        return named.then_some((Problem::Missing, true));
+    };
+    if meta.len() == 0 {
+        return Some((Problem::Empty, named));
+    }
+    let head = first_bytes(&path, PEEK)?;
+    if head.iter().all(|b| *b == 0) {
+        let archive = kind.is_some_and(|(_, expected)| expected == "ERPK");
+        return Some((Problem::Zeros, named || archive && reads.erp));
+    }
+    if reads.ops.contains(rel) && meta.len() <= PEEK as u64 && head.iter().all(u8::is_ascii_whitespace) {
+        return Some((Problem::Blank, false));
+    }
+    match kind {
+        Some((bytes, expected)) if !head.starts_with(bytes) => Some((Problem::Magic { expected }, false)),
+        _ => None,
+    }
+}
+
+/// The damage a stat of each file finds in the addon folder `dir`, with the first bytes of the
+/// files the build and the game load. See the module docs for what stops Play.
 pub fn check(dir: &Path, m: &AddonManifest) -> Vec<Damage> {
-    let ops = op_files(m);
-    let plugins: Vec<String> = m
-        .operations
-        .native
-        .iter()
-        .map(|n| n.dll.trim_start_matches("./").replace('\\', "/"))
-        .collect();
-    let loaded = |rel: &str| ops.iter().any(|o| o == rel) || magic(rel).is_some();
+    let reads = Reads::of(dir, m);
     let mut found: BTreeMap<String, Damage> = BTreeMap::new();
-    let mut note = |path: &str, problem: Problem| {
-        found.entry(path.to_owned()).or_insert(Damage {
-            path: path.to_owned(),
+    let mut note = |rel: &str, problem: Problem, stops: bool| {
+        found.entry(rel.to_owned()).or_insert(Damage {
+            path: rel.to_owned(),
             problem,
-            read_by_build: loaded(path),
+            stops,
         });
     };
-    let index = read_index(dir);
-    let mut files = match &index {
-        Some(index) => index.files.keys().cloned().collect(),
-        None => walk(dir),
-    };
-    if let Some(index) = &index {
-        for (rel, entry) in &index.files {
-            match std::fs::metadata(dir.join(rel)) {
-                Err(_) => note(rel, Problem::Missing),
-                Ok(meta) if meta.len() == entry.size => {}
-                Ok(meta) if meta.len() == 0 => note(rel, Problem::Empty),
-                Ok(meta) => note(
-                    rel,
-                    Problem::Size {
-                        listed: entry.size,
-                        found: meta.len(),
-                    },
-                ),
+    let mut unlisted: BTreeSet<String> = reads.ops.iter().chain(&reads.plugins).cloned().collect();
+    match read_index(dir) {
+        Some(index) => {
+            unlisted.retain(|rel| !index.files.contains_key(rel));
+            for (rel, listed) in &index.files {
+                let path = dir.join(rel);
+                let Ok(meta) = std::fs::metadata(&path) else {
+                    note(rel, Problem::Missing, reads.loads(rel));
+                    continue;
+                };
+                if listed.modified == 0 || modified(&meta) != listed.modified {
+                    unlisted.insert(rel.clone());
+                    continue;
+                }
+                let found = meta.len();
+                let problem = if found != listed.size {
+                    match found {
+                        0 => Problem::Empty,
+                        _ => Problem::Size {
+                            listed: listed.size,
+                            found,
+                        },
+                    }
+                } else if reads.loads(rel)
+                    && found > 0
+                    && first_bytes(&path, HEAD).is_none_or(|h| crate::baseline::hex(&h) != listed.head)
+                {
+                    Problem::Head
+                } else {
+                    continue;
+                };
+                note(rel, problem, reads.loads(rel));
             }
         }
+        None => unlisted.extend(walk(dir).into_iter().filter(|rel| magic(rel).is_some())),
     }
-    for rel in &ops {
-        let path = dir.join(rel);
-        match std::fs::metadata(&path) {
-            Err(_) => note(rel, Problem::Missing),
-            Ok(meta) if meta.len() == 0 => note(rel, Problem::Empty),
-            Ok(meta) if blank(&path, meta.len()) => note(rel, Problem::Blank),
-            Ok(_) => {}
-        }
-    }
-    files.extend(plugins);
-    files.sort();
-    files.dedup();
-    for rel in &files {
-        let Some((bytes, expected)) = magic(rel) else {
-            continue;
-        };
-        let path = dir.join(rel);
-        match std::fs::metadata(&path) {
-            Err(_) => note(rel, Problem::Missing),
-            Ok(meta) if meta.len() == 0 => note(rel, Problem::Empty),
-            Ok(_) if !starts_with(&path, bytes) => note(rel, Problem::Magic { expected }),
-            Ok(_) => {}
+    for rel in &unlisted {
+        if let Some((problem, stops)) = sniff(dir, rel, &reads) {
+            note(rel, problem, stops);
         }
     }
     found.into_values().collect()
 }
 
-/// [`check`], then the CRC-32 of every listed file whose size matches.
+/// [`check`], then the CRC-32 of every listed file not written since its install whose size
+/// matches.
 pub fn verify(dir: &Path, m: &AddonManifest) -> Vec<Damage> {
     let mut damage = check(dir, m);
     let Some(index) = read_index(dir) else {
         return damage;
     };
-    let ops = op_files(m);
-    for (rel, entry) in &index.files {
+    let reads = Reads::of(dir, m);
+    for (rel, listed) in &index.files {
         if damage.iter().any(|d| d.path == *rel) {
             continue;
         }
-        let same = File::open(dir.join(rel))
-            .and_then(|mut f| digest(&mut f))
-            .is_ok_and(|e| e == *entry);
+        let path = dir.join(rel);
+        let Ok(mut file) = File::open(&path) else {
+            continue;
+        };
+        let rewritten = file
+            .metadata()
+            .is_ok_and(|meta| listed.modified == 0 || modified(&meta) != listed.modified);
+        if rewritten {
+            continue;
+        }
+        let same = digest(&mut file).is_ok_and(|(e, _)| e.size == listed.size && e.crc32 == listed.crc32);
         if !same {
             damage.push(Damage {
                 path: rel.clone(),
                 problem: Problem::Content,
-                read_by_build: ops.iter().any(|o| o == rel) || magic(rel).is_some(),
+                stops: reads.loads(rel),
             });
         }
     }
@@ -426,16 +527,27 @@ pub(crate) mod tests {
         dir
     }
 
-    fn manifest(assets: &[&str]) -> AddonManifest {
+    fn manifest(operations: serde_json::Value) -> AddonManifest {
         let doc = serde_json::json!({
             "schema_version": 1,
             "id": "a.real",
             "name": "Real Liveries",
             "version": "1.1.7",
             "author": "a",
-            "operations": { "assets": assets },
+            "operations": operations,
         });
         serde_json::from_value(doc).unwrap()
+    }
+
+    fn lang() -> AddonManifest {
+        manifest(serde_json::json!({ "assets": ["assets/lang.json"] }))
+    }
+
+    fn season() -> AddonManifest {
+        manifest(serde_json::json!({
+            "erp": ["erp/frontend.json"],
+            "native": [{ "dll": "native/season.dll" }],
+        }))
     }
 
     fn addon(name: &str) -> std::path::PathBuf {
@@ -447,167 +559,284 @@ pub(crate) mod tests {
         dir
     }
 
+    fn season_addon(name: &str) -> std::path::PathBuf {
+        let dir = tmp(name);
+        std::fs::create_dir_all(dir.join("erp/frontend")).unwrap();
+        std::fs::create_dir_all(dir.join("native")).unwrap();
+        std::fs::write(dir.join("swofty.json"), "{}").unwrap();
+        std::fs::write(dir.join("erp/frontend.json"), br#"{"ops":[]}"#).unwrap();
+        std::fs::write(dir.join("erp/frontend/drivers.erpk"), erp(711)).unwrap();
+        std::fs::write(dir.join("native/season.dll"), b"MZ\x90\x00").unwrap();
+        dir
+    }
+
     fn erp(len: usize) -> Vec<u8> {
         let mut data = vec![7u8; len];
         data[..4].copy_from_slice(ERP_MAGIC);
         data
     }
 
+    /// Writes `bytes` over the file at `path` and puts its write time back, as a disk that
+    /// loses or garbles data does.
+    fn corrupt(path: &Path, bytes: &[u8]) {
+        let was = std::fs::metadata(path).unwrap().modified().unwrap();
+        std::fs::write(path, bytes).unwrap();
+        File::options()
+            .write(true)
+            .open(path)
+            .unwrap()
+            .set_modified(was)
+            .unwrap();
+    }
+
+    /// Writes `bytes` over the file at `path` a moment after it was last written, as a tool
+    /// that changes an installed addon's file does.
+    fn rewrite(path: &Path, bytes: &[u8]) {
+        let was = std::fs::metadata(path).unwrap().modified().unwrap();
+        std::fs::write(path, bytes).unwrap();
+        let later = was + std::time::Duration::from_secs(2);
+        File::options()
+            .write(true)
+            .open(path)
+            .unwrap()
+            .set_modified(later)
+            .unwrap();
+    }
+
+    fn damage(path: &str, problem: Problem, stops: bool) -> Damage {
+        Damage {
+            path: path.into(),
+            problem,
+            stops,
+        }
+    }
+
     #[test]
-    fn a_sealed_folder_checks_clean_and_lists_every_file_with_its_crc() {
+    fn a_sealed_folder_checks_clean_and_lists_every_file_with_its_crc_head_and_write_time() {
         let dir = addon("clean");
         let index = seal(&dir).unwrap();
         assert_eq!(
             index.files.keys().collect::<Vec<_>>(),
             ["assets/cars.erp", "assets/lang.json", "swofty.json"]
         );
-        assert_eq!(index.files["assets/cars.erp"].size, 70_000);
+        let cars = &index.files["assets/cars.erp"];
+        assert_eq!(cars.size, 70_000);
+        assert_eq!(cars.head, "4552504b07070707");
+        assert_ne!(cars.modified, 0);
+        assert_eq!(index.files["swofty.json"].head, "7b7d");
         assert_eq!(read_index(&dir), Some(index));
-        let m = manifest(&["assets/lang.json"]);
-        assert_eq!(check(&dir, &m), []);
-        assert_eq!(verify(&dir, &m), []);
+        assert_eq!(check(&dir, &lang()), []);
+        assert_eq!(verify(&dir, &lang()), []);
         std::fs::remove_dir_all(&dir).ok();
     }
 
     #[test]
-    fn an_empty_op_file_is_damage_the_build_reads_with_or_without_a_file_list() {
+    fn an_empty_op_file_stops_play_with_or_without_a_file_list() {
         let dir = addon("empty-lang");
-        let m = manifest(&["assets/lang.json"]);
         std::fs::write(dir.join("assets/lang.json"), b"").unwrap();
-        let damage = check(&dir, &m);
-        assert_eq!(
-            damage,
-            [Damage {
-                path: "assets/lang.json".into(),
-                problem: Problem::Empty,
-                read_by_build: true,
-            }]
-        );
-        assert_eq!(damage[0].line(), "assets/lang.json is empty");
+        let found = check(&dir, &lang());
+        assert_eq!(found, [damage("assets/lang.json", Problem::Empty, true)]);
+        assert_eq!(found[0].line(), "assets/lang.json is empty");
 
         std::fs::write(dir.join("assets/lang.json"), br#"{"ops":[]}"#).unwrap();
         seal(&dir).unwrap();
-        std::fs::write(dir.join("assets/lang.json"), b"").unwrap();
-        assert_eq!(check(&dir, &m)[0].problem, Problem::Empty);
-        assert!(check(&dir, &m)[0].read_by_build);
-        std::fs::remove_dir_all(&dir).ok();
-    }
-
-    #[test]
-    fn an_op_file_of_zeros_or_blanks_is_damage() {
-        let dir = addon("zeros");
-        let m = manifest(&["assets/lang.json"]);
-        std::fs::write(dir.join("assets/lang.json"), [0u8; 274]).unwrap();
-        assert_eq!(check(&dir, &m)[0].problem, Problem::Blank);
-        std::fs::write(dir.join("assets/lang.json"), b"  \r\n ").unwrap();
-        assert_eq!(check(&dir, &m)[0].problem, Problem::Blank);
-        std::fs::write(dir.join("assets/lang.json"), b"\n {\"ops\": []}").unwrap();
-        assert_eq!(check(&dir, &m), []);
-        std::fs::remove_file(dir.join("assets/lang.json")).unwrap();
-        assert_eq!(check(&dir, &m)[0].problem, Problem::Missing);
-        std::fs::remove_dir_all(&dir).ok();
-    }
-
-    #[test]
-    fn listed_files_with_another_size_or_missing_are_damage_the_build_may_not_read() {
-        let dir = addon("sizes");
-        let m = manifest(&["assets/lang.json"]);
-        std::fs::write(dir.join("readme.txt"), "hello").unwrap();
-        seal(&dir).unwrap();
-        std::fs::write(dir.join("readme.txt"), "hi").unwrap();
-        let damage = check(&dir, &m);
+        corrupt(&dir.join("assets/lang.json"), b"");
         assert_eq!(
-            damage,
-            [Damage {
-                path: "readme.txt".into(),
-                problem: Problem::Size { listed: 5, found: 2 },
-                read_by_build: false,
-            }]
+            check(&dir, &lang()),
+            [damage("assets/lang.json", Problem::Empty, true)]
         );
+        rewrite(&dir.join("assets/lang.json"), b"");
+        assert_eq!(
+            check(&dir, &lang()),
+            [damage("assets/lang.json", Problem::Empty, true)]
+        );
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn without_a_file_list_an_op_file_of_zeros_stops_play_and_one_of_blanks_is_logged() {
+        let dir = addon("zeros");
+        let path = dir.join("assets/lang.json");
+        std::fs::write(&path, [0u8; 274]).unwrap();
+        assert_eq!(
+            check(&dir, &lang()),
+            [damage("assets/lang.json", Problem::Zeros, true)]
+        );
+        std::fs::write(&path, b"  \r\n ").unwrap();
+        let found = check(&dir, &lang());
+        assert_eq!(found, [damage("assets/lang.json", Problem::Blank, false)]);
         let d = Damaged {
             id: "a.real".into(),
             name: "Real Liveries".into(),
-            damage,
+            damage: found,
         };
         assert!(!d.stops_play());
-        std::fs::write(dir.join("assets/cars.erp"), erp(100)).unwrap();
-        let damage = check(&dir, &m);
-        assert_eq!(damage[0].path, "assets/cars.erp");
+        assert_eq!(d.lines(), ["warning: assets/lang.json holds only blanks"]);
+        std::fs::write(&path, b"\n {\"ops\": []}").unwrap();
+        assert_eq!(check(&dir, &lang()), []);
+        std::fs::remove_file(&path).unwrap();
         assert_eq!(
-            damage[0].problem,
-            Problem::Size {
-                listed: 70_000,
-                found: 100,
-            }
+            check(&dir, &lang()),
+            [damage("assets/lang.json", Problem::Missing, true)]
         );
-        assert!(damage[0].read_by_build);
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn a_listed_file_that_changed_without_a_write_stops_play_when_the_build_or_game_loads_it() {
+        let dir = addon("sizes");
+        std::fs::write(dir.join("readme.txt"), "hello").unwrap();
+        seal(&dir).unwrap();
+        corrupt(&dir.join("readme.txt"), b"hi");
+        let found = check(&dir, &lang());
+        assert_eq!(
+            found,
+            [damage("readme.txt", Problem::Size { listed: 5, found: 2 }, false)]
+        );
+
+        corrupt(&dir.join("assets/cars.erp"), &erp(100));
+        assert_eq!(
+            check(&dir, &lang())[0],
+            damage(
+                "assets/cars.erp",
+                Problem::Size {
+                    listed: 70_000,
+                    found: 100,
+                },
+                true
+            )
+        );
+        let mut same_size = vec![0u8; 70_000];
+        same_size[..4].copy_from_slice(b"ERPX");
+        corrupt(&dir.join("assets/cars.erp"), &same_size);
+        assert_eq!(
+            check(&dir, &lang())[0],
+            damage("assets/cars.erp", Problem::Head, true)
+        );
         std::fs::remove_file(dir.join("assets/cars.erp")).unwrap();
-        assert_eq!(check(&dir, &m)[0].problem, Problem::Missing);
+        assert_eq!(
+            check(&dir, &lang())[0],
+            damage("assets/cars.erp", Problem::Missing, true)
+        );
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn a_listed_file_written_since_its_install_is_only_checked_as_an_unlisted_one() {
+        let dir = addon("rewritten");
+        std::fs::write(dir.join("readme.txt"), "hello").unwrap();
+        seal(&dir).unwrap();
+        rewrite(&dir.join("readme.txt"), b"hi");
+        rewrite(&dir.join("assets/lang.json"), br#"{"ops":[{"op":"x"}]}"#);
+        rewrite(&dir.join("assets/cars.erp"), b"");
+        assert_eq!(
+            check(&dir, &lang()),
+            [damage("assets/cars.erp", Problem::Empty, false)]
+        );
+        assert_eq!(
+            verify(&dir, &lang()),
+            [damage("assets/cars.erp", Problem::Empty, false)]
+        );
         std::fs::remove_dir_all(&dir).ok();
     }
 
     #[test]
     fn verify_reads_every_file_and_finds_a_change_of_the_same_size() {
         let dir = addon("verify");
-        let m = manifest(&["assets/lang.json"]);
         seal(&dir).unwrap();
         let mut changed = erp(70_000);
         changed[69_999] = 8;
-        std::fs::write(dir.join("assets/cars.erp"), changed).unwrap();
-        assert_eq!(check(&dir, &m), []);
-        let damage = verify(&dir, &m);
-        assert_eq!(damage.len(), 1);
-        assert_eq!(damage[0].problem, Problem::Content);
-        assert_eq!(damage[0].path, "assets/cars.erp");
+        corrupt(&dir.join("assets/cars.erp"), &changed);
+        assert_eq!(check(&dir, &lang()), []);
+        assert_eq!(
+            verify(&dir, &lang()),
+            [damage("assets/cars.erp", Problem::Content, true)]
+        );
         std::fs::remove_dir_all(&dir).ok();
     }
 
     #[test]
-    fn an_archive_or_plugin_that_does_not_start_as_one_is_damage_the_build_reads() {
-        let dir = addon("magic");
-        let doc = serde_json::json!({
-            "schema_version": 1, "id": "a.season", "name": "Season", "version": "1.0.10", "author": "a",
-            "operations": {
-                "erp": ["erp/frontend.json"],
-                "native": [{ "dll": "native/season.dll" }],
-            },
-        });
-        let m: AddonManifest = serde_json::from_value(doc).unwrap();
-        std::fs::create_dir_all(dir.join("erp/frontend")).unwrap();
-        std::fs::create_dir_all(dir.join("native")).unwrap();
-        std::fs::write(dir.join("erp/frontend.json"), br#"{"ops":[]}"#).unwrap();
-        std::fs::write(dir.join("erp/frontend/drivers.erpk"), erp(711)).unwrap();
-        std::fs::write(dir.join("native/season.dll"), b"MZ\x90\x00").unwrap();
+    fn without_a_file_list_a_zeroed_archive_or_plugin_stops_play_and_odd_bytes_are_logged() {
+        let dir = season_addon("magic");
+        let m = season();
         assert_eq!(check(&dir, &m), []);
 
         std::fs::write(dir.join("erp/frontend/drivers.erpk"), [0u8; 711]).unwrap();
-        let damage = check(&dir, &m);
-        assert_eq!(
-            damage,
-            [Damage {
-                path: "erp/frontend/drivers.erpk".into(),
-                problem: Problem::Magic { expected: "ERPK" },
-                read_by_build: true,
-            }]
-        );
-        assert_eq!(
-            damage[0].line(),
-            "erp/frontend/drivers.erpk does not start with ERPK"
-        );
+        let found = check(&dir, &m);
+        assert_eq!(found, [damage("erp/frontend/drivers.erpk", Problem::Zeros, true)]);
+        assert_eq!(found[0].line(), "erp/frontend/drivers.erpk holds only zeros");
 
-        seal(&dir).unwrap();
+        std::fs::write(dir.join("erp/frontend/drivers.erpk"), b"PK\x03\x04rest").unwrap();
+        std::fs::write(dir.join("native/season.dll"), b"\x7fELF").unwrap();
         assert_eq!(
             check(&dir, &m),
-            damage,
-            "a file list of the same size still sniffs"
+            [
+                damage(
+                    "erp/frontend/drivers.erpk",
+                    Problem::Magic { expected: "ERPK" },
+                    false
+                ),
+                damage("native/season.dll", Problem::Magic { expected: "MZ" }, false),
+            ]
         );
-        std::fs::write(dir.join("erp/frontend/drivers.erpk"), b"").unwrap();
+
         std::fs::write(dir.join("native/season.dll"), [0u8; 4]).unwrap();
-        let damage = check(&dir, &m);
-        assert_eq!(damage.len(), 2);
-        assert_eq!(damage[0].problem, Problem::Empty);
-        assert_eq!(damage[1].problem, Problem::Magic { expected: "MZ" });
-        assert!(damage.iter().all(|d| d.read_by_build));
+        assert_eq!(
+            check(&dir, &m)[1],
+            damage("native/season.dll", Problem::Zeros, true)
+        );
+        std::fs::remove_file(dir.join("native/season.dll")).unwrap();
+        assert_eq!(
+            check(&dir, &m)[1],
+            damage("native/season.dll", Problem::Missing, true)
+        );
+
+        let no_erp_ops = manifest(serde_json::json!({}));
+        std::fs::write(dir.join("erp/frontend/drivers.erpk"), [0u8; 711]).unwrap();
+        assert_eq!(
+            check(&dir, &no_erp_ops),
+            [damage("erp/frontend/drivers.erpk", Problem::Zeros, false)]
+        );
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn without_a_file_list_an_empty_placeholder_archive_is_logged_and_does_not_stop_play() {
+        let dir = season_addon("placeholder");
+        std::fs::write(dir.join("erp/frontend/placeholder.erp"), b"").unwrap();
+        let found = check(&dir, &season());
+        assert_eq!(
+            found,
+            [damage("erp/frontend/placeholder.erp", Problem::Empty, false)]
+        );
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn with_a_file_list_a_zeroed_archive_stops_play_and_one_installed_empty_does_not() {
+        let dir = season_addon("listed-magic");
+        std::fs::write(dir.join("erp/frontend/placeholder.erp"), b"").unwrap();
+        seal(&dir).unwrap();
+        assert_eq!(check(&dir, &season()), []);
+        corrupt(&dir.join("erp/frontend/drivers.erpk"), &[0u8; 711]);
+        let found = check(&dir, &season());
+        assert_eq!(found, [damage("erp/frontend/drivers.erpk", Problem::Head, true)]);
+        assert_eq!(
+            found[0].line(),
+            "erp/frontend/drivers.erpk does not start with the bytes the install wrote"
+        );
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn a_db_editor_addons_database_op_file_is_not_one_the_build_reads() {
+        let dir = tmp("dbedit");
+        std::fs::write(dir.join(crate::dbedit::package::MARKER), b"{}").unwrap();
+        std::fs::write(dir.join("database.json"), b"").unwrap();
+        let m = manifest(serde_json::json!({ "database": ["database.json"] }));
+        assert_eq!(check(&dir, &m), []);
+        std::fs::remove_file(dir.join(crate::dbedit::package::MARKER)).unwrap();
+        assert_eq!(check(&dir, &m), [damage("database.json", Problem::Empty, true)]);
         std::fs::remove_dir_all(&dir).ok();
     }
 
@@ -629,25 +858,25 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn the_summary_names_build_read_files_first() {
-        let damage = vec![
-            Damage {
-                path: "b.erp".into(),
-                problem: Problem::Missing,
-                read_by_build: false,
-            },
-            Damage {
-                path: "assets/lang.json".into(),
-                problem: Problem::Empty,
-                read_by_build: true,
-            },
-        ];
+    fn the_summary_names_only_files_that_stop_play() {
         let d = Damaged {
             id: "a".into(),
             name: "A".into(),
-            damage,
+            damage: vec![
+                damage("b.erp", Problem::Empty, false),
+                damage("assets/lang.json", Problem::Empty, true),
+                damage("c.json", Problem::Missing, true),
+            ],
         };
         assert!(d.stops_play());
-        assert_eq!(d.summary(), "assets/lang.json is empty, b.erp is missing");
+        assert_eq!(d.summary(), "assets/lang.json is empty, c.json is missing");
+        assert_eq!(
+            d.lines(),
+            [
+                "warning: b.erp is empty",
+                "assets/lang.json is empty",
+                "c.json is missing"
+            ]
+        );
     }
 }

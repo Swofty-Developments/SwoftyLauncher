@@ -772,19 +772,21 @@ fn verify(store: &Store, only: Option<&str>) -> Result<()> {
             continue;
         }
         let damage = addon_files::verify(&dir, m);
-        if damage.is_empty() {
+        let stops = damage.iter().any(|d| d.stops);
+        if !stops {
             let unlisted = addon_files::read_index(&dir).is_none();
             let note = if unlisted {
-                " (installed without a file list: op files checked)"
+                " (installed without a file list: the files its manifest names, archives and plugins checked)"
             } else {
                 ""
             };
             println!("{id:32} ok{note}");
-            continue;
+        } else {
+            damaged += 1;
         }
-        damaged += 1;
         for d in damage {
-            println!("{id:32} {}", d.line());
+            let warning = if d.stops { "" } else { "warning: " };
+            println!("{id:32} {warning}{}", d.line());
         }
     }
     if damaged > 0 {

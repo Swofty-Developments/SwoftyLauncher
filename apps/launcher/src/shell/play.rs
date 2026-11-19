@@ -186,7 +186,7 @@ impl Shell {
         for note in &checked.notes {
             window.notify(note_notification(note), cx);
         }
-        for damaged in &checked.damaged {
+        for damaged in checked.damaged.iter().filter(|d| d.stops_play()) {
             let note = self.damaged_notification(damaged, cx);
             window.notify(note, cx);
         }
@@ -247,8 +247,8 @@ impl Shell {
         }
     }
 
-    /// What Play shows for an addon with damaged files, with a Reinstall button when the
-    /// Addon Browser offers it.
+    /// What Play shows for an addon with damaged files that stop it, with a Reinstall button
+    /// when the Addon Browser offers it.
     fn damaged_notification(&self, d: &Damaged, cx: &mut Context<Self>) -> Notification {
         let offered = self
             .browser
@@ -265,12 +265,9 @@ impl Shell {
                 files = d.summary()
             )
         };
-        let note = match d.stops_play() {
-            true => Notification::error(body),
-            false => Notification::warning(body),
-        }
-        .title(trf!("{name} is damaged", name = d.name))
-        .autohide(false);
+        let note = Notification::error(body)
+            .title(trf!("{name} is damaged", name = d.name))
+            .autohide(false);
         if !offered {
             return note;
         }
