@@ -31,6 +31,38 @@ Versions use 2.7 MB of 500 MB · Change · Open folder
 - A save that was imported or copied in, with no careers listed yet, shows one row: `Imported Steam save · careers listed after you play this profile once`.
 - A career has a chip only when it is **Missing** or **Deleted in game**.
 
+## Resume Career
+
+**Resume Career** in the Career menu, and on a content tile such as F1 1990, opens a list of every career in the save, newest first. The list is on by default.
+
+```text
+RESUME CAREER                                         3 careers
+
+Max VERSTAPPEN, Red Bull        PROGRESSIVE 2016      Ready
+Lando NORRIS, McLaren           DRIVER CAREER         Missing: Sochi Autodrom
+My Team Save 1                  MY TEAM               Made with another version of Tyres & Thermal
+```
+
+- A row names the driver and team, with a tag for the career's mode.
+- Focus a row to see its team, `Season 2 · Race 4`, `Last played 18/11/2026` and status on the right.
+- A career with no recorded driver shows its save slot's name.
+- A row's status is one of:
+  - `Ready`: the profile has every addon the career needs.
+  - `Missing: <addon>`: the addon is off or not installed.
+  - `Made with another version of <addon>`: the addon is on, at a different version from the one the career was saved with.
+  - `Missing rows from <addon>`: the profile's database lacks rows the career uses.
+- A status shows at most two reasons, then `and N more`.
+- A ready row loads the career.
+- A row that is not ready opens **Add-ons do not match** with **Load Anyway** and **Back**. **Load Anyway** loads the career. **Back** returns to the list.
+
+The list shows the careers the launcher recorded in your earlier sessions.
+
+To use the game's own Resume Career screen instead, start the game with `SWOFTY_RESUME_LIST=0` in its environment.
+
+## Careers saved under earlier addon ids
+
+When an addon's team, driver or car rows get new ids, the build writes `swofty/id_aliases.json` with the earlier ids mapped to the current ones. A career saved under the earlier ids loads with its teams, drivers and cars.
+
 ## Versions
 
 Each version is one line: why it was kept (Before Play, After Play, Imported from Steam, Copied from another profile, Launcher start, Changed outside the launcher, Before restore, Restored, Old backup), how long ago (hover for the date), its size, **Pin** and **Restore**.
