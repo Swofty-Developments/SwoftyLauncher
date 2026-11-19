@@ -321,7 +321,7 @@ pub struct Scene {
 
 #[derive(Debug, Default)]
 pub struct Scenes {
-    pub scenes: HashMap<u64, Scene>,
+    pub scenes: HashMap<u64, std::sync::Arc<Scene>>,
 }
 
 type Hit<'a> = (&'a str, Option<u64>, &'a str, u64);
@@ -333,7 +333,7 @@ impl Scenes {
     }
 
     /// The scenes the layout package `data` holds, in the order it lists them.
-    pub fn parse(data: &[u8]) -> crate::Result<Vec<(u64, Scene)>> {
+    pub fn parse(data: &[u8]) -> crate::Result<Vec<(u64, std::sync::Arc<Scene>)>> {
         let mut found = Vec::new();
         let p = Pkg::parse(data)?;
         for entry in idf::scenes(&p)? {
@@ -370,7 +370,7 @@ impl Scenes {
                         .collect()
                 })
                 .unwrap_or_default();
-            found.push((sid, sc));
+            found.push((sid, std::sync::Arc::new(sc)));
         }
         Ok(found)
     }

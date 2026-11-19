@@ -41,38 +41,25 @@ impl ArchiveUi {
         })
     }
 
-    fn scene_parts(&self) -> BTreeMap<&str, Vec<(u64, Scene)>> {
-        let mut parts = BTreeMap::new();
-        for (name, (kind, frags)) in &self.resources {
+    /// The scenes of the layouts this archive holds, each distinct layout parsed once across the archives
+    /// `memo` has seen.
+    fn scenes<'a>(&'a self, memo: &mut LayoutMemo<'a>) -> Scenes {
+        let mut s = Scenes::default();
+        for (kind, frags) in self.resources.values() {
             if kind == "UILayout"
                 && let Some(f) = frags.first()
             {
-                parts.insert(name.as_str(), Scenes::parse(f).unwrap_or_default());
-            }
-        }
-        parts
-    }
-
-    /// The scenes of this archive, taking from `stock_parts`, the parts of `stock`, those of each layout
-    /// this archive carries as `stock` does.
-    fn scenes_beside(&self, stock: &Self, stock_parts: &BTreeMap<&str, Vec<(u64, Scene)>>) -> Scenes {
-        let mut s = Scenes::default();
-        for (name, (kind, frags)) in &self.resources {
-            let Some(f) = frags.first().filter(|_| kind == "UILayout") else {
-                continue;
-            };
-            let same = stock
-                .resources
-                .get(name)
-                .is_some_and(|(k, g)| k == kind && g.first() == Some(f));
-            match stock_parts.get(name.as_str()).filter(|_| same) {
-                Some(parts) => s.scenes.extend(parts.iter().cloned()),
-                None => s.scenes.extend(Scenes::parse(f).unwrap_or_default()),
+                let parsed = memo
+                    .entry(f.as_slice())
+                    .or_insert_with(|| Scenes::parse(f).unwrap_or_default());
+                s.scenes.extend(parsed.iter().cloned());
             }
         }
         s
     }
 }
+
+type LayoutMemo<'a> = std::collections::HashMap<&'a [u8], Vec<(u64, std::sync::Arc<Scene>)>>;
 
 pub(super) type Binding = (String, Option<u64>, Vec<u32>, Vec<String>);
 
@@ -254,6 +241,7 @@ pub fn archives(
 ) -> crate::Result<Report> {
     let mut report = Report::default();
     let empty = ArchiveUi::default();
+    let mut layouts = LayoutMemo::new();
     for a in edited {
         let s = stock.iter().find(|s| s.archive == a.archive).unwrap_or(&empty);
         let changed: Vec<(&String, &String, &Vec<Vec<u8>>)> = a
@@ -265,11 +253,7 @@ pub fn archives(
         if changed.is_empty() {
             continue;
         }
-        let stock_parts = s.scene_parts();
-        let scenes = a.scenes_beside(s, &stock_parts);
-        let before = Scenes {
-            scenes: stock_parts.into_values().flatten().collect(),
-        };
+        let (scenes, before) = (a.scenes(&mut layouts), s.scenes(&mut layouts));
         for (name, kind, frags) in changed {
             let base = s.resources.get(name).map(|(_, f)| f);
             for (i, data) in frags.iter().enumerate() {
