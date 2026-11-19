@@ -33,35 +33,47 @@ Versions use 2.7 MB of 500 MB · Change · Open folder
 
 ## Resume Career
 
-**Resume Career** in the Career menu, and on a content tile such as F1 1990, opens a list of every career in the save, newest first. The list is on by default.
+**Career** on the main menu opens a list of your careers, newest first, with **New Career** at the top. The list is on by default.
 
 ```text
-RESUME CAREER                                         3 careers
+CAREER                                                                    10 careers
 
-Max VERSTAPPEN, Red Bull        PROGRESSIVE 2016      Ready
-Lando NORRIS, McLaren           DRIVER CAREER         Missing: Sochi Autodrom
-My Team Save 1                  MY TEAM               Made with another version of Tyres & Thermal
+NEW CAREER
+Nigel MANSELL      Ferrari                  F1 1990 Driver      Season 1, Race 1      Ready
+Lando NORRIS       McLaren Mastercard...    F1® 2026 Driver     Season 1, Race 1      Ready
+John BENNETT       wefew                    F1® 2026 My Team    Season 1, Race 1      Missing
 ```
 
-- A row names the driver and team, with a tag for the career's mode.
-- Focus a row to see its team, `Season 2 · Race 4`, `Last played 18/11/2026` and status on the right.
-- A career with no recorded driver shows its save slot's name.
+- A row shows the driver, the team, the content and mode, the season and race, and the status on the right.
+- The strip on the left of a row is the team's colour.
+- Focus a row to see its team, season and race, when it was last played and what it needs.
+- The list shows the saves that have a driver and a team. A save slot the game would not offer to continue is not listed.
 - A row's status is one of:
   - `Ready`: the profile has every addon the career needs.
-  - `Missing: <addon>`: the addon is off or not installed.
+  - `Missing`: an addon is off or not installed (`Missing: <addon>`), or the profile's database lacks rows the career uses (`Missing rows from <addon>`).
   - `Made with another version of <addon>`: the addon is on, at a different version from the one the career was saved with.
-  - `Missing rows from <addon>`: the profile's database lacks rows the career uses.
-- A status shows at most two reasons, then `and N more`.
 - A ready row loads the career.
 - A row that is not ready opens **Add-ons do not match** with **Load Anyway** and **Back**. **Load Anyway** loads the career. **Back** returns to the list.
+- **New Career** opens the game's Career menu.
+- With no careers, the list shows **New Career** and `No careers yet`.
 
-The list shows the careers the launcher recorded in your earlier sessions.
-
-To use the game's own Resume Career screen instead, start the game with `SWOFTY_RESUME_LIST=0` in its environment.
+To use the game's own Career menu and Resume Career screens instead, start the game with `SWOFTY_RESUME_LIST=0` in its environment.
 
 ## Careers saved under earlier addon ids
 
 When an addon's team, driver or car rows get new ids, the build writes `swofty/id_aliases.json` with the earlier ids mapped to the current ones. A career saved under the earlier ids loads with its teams, drivers and cars.
+
+- At **Play** the launcher maps such a career to the current ids once, after the vault snapshot it takes before Play.
+- With a plain copy of the career, it writes a new plain copy with the current ids, and the core puts it in place when the game loads the save.
+- With no plain copy yet, or one older than the save, it maps the launcher's save file itself.
+- A career is mapped only in a mode whose saved teams use the earlier ids. A save the game writes after that is not mapped again.
+- A save file it cannot read or write is left as it is and tried again at the next **Play**.
+
+```text
+$ swofty saves remap-ids --plain <profile saves>/plain --aliases <game>/swofty/id_aliases.json --dry-run
+```
+
+`--dry-run` reports what would be mapped in each career and writes nothing.
 
 ## Versions
 
