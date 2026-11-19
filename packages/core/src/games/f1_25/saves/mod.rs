@@ -3,6 +3,7 @@
 
 pub mod backup;
 pub mod bag;
+pub mod codec;
 pub mod launcher;
 pub mod stall;
 pub mod vault;

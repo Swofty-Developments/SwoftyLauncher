@@ -7817,6 +7817,7 @@ dependencies = [
 name = "swofty-core"
 version = "1.10.0"
 dependencies = [
+ "aes 0.9.4",
  "flate2",
  "libc",
  "libloading",
@@ -7838,6 +7839,7 @@ dependencies = [
  "thiserror 2.0.21",
  "ureq",
  "zip",
+ "zstd",
 ]
 
 [[package]]
