@@ -115,7 +115,7 @@ impl Shell {
             consent_check: false,
             reload_generation: 0,
             slow_logged: false,
-            updates: crate::features::update::Updates::new(),
+            updates: crate::features::update::Updates::started(),
             blocks: crate::blocks::Blocks::default(),
             painted: Instant::now(),
             dock: crate::shell::download_dock::Dock::default(),

@@ -90,7 +90,7 @@ fn note_known_problem(store: &Store, game: &Path, dir: &Path, crashed: bool) {
 }
 
 pub(super) const EA_UNREAD: &str =
-    "the EA app started F1 25, so the session has no handle on the game to read its exit code";
+    "the session could not read the exit code of the F1 25 the EA app started; the [ea app] lines say why";
 
 /// Why an exit status carries no code.
 pub(crate) fn why_no_code(status: ExitStatus) -> String {

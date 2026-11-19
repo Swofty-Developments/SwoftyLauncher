@@ -11,7 +11,7 @@ use super::*;
 use crate::launcher::Progress;
 use crate::updates::managed;
 use crate::updates::release::{self, Failure, Release};
-use crate::updates::release::{Asset, SUMS_FILE};
+use crate::updates::release::{Asset, Install, SUMS_FILE};
 use crate::{Error, Result};
 
 fn v(s: &str) -> Version {
@@ -603,6 +603,65 @@ fn a_failed_launcher_still_updates_a_compatible_importer() {
         |_, r, _, _| Ok(r.version().unwrap()),
     );
     assert!(addon_only.restart(), "an importer-only update restarts too");
+}
+
+#[test]
+fn the_log_says_whether_the_running_copy_can_update_itself() {
+    let exe = Ok(std::path::PathBuf::from(r"C:\Swofty\bin\swofty-launcher.exe"));
+    let ok = Install {
+        root: r"C:\Swofty".into(),
+    };
+    assert_eq!(
+        copy_line(&exe, &Ok(ok)),
+        r"update: C:\Swofty\bin\swofty-launcher.exe can update itself"
+    );
+    assert_eq!(
+        copy_line(&exe, &Err(r"no write access to C:\Swofty\bin".into())),
+        r"update: C:\Swofty\bin\swofty-launcher.exe can't update itself: no write access to C:\Swofty\bin"
+    );
+    let unread = Err(std::io::Error::other("gone"));
+    assert_eq!(
+        copy_line(
+            &unread,
+            &Err("this copy does not run from a release folder".into())
+        ),
+        "update: the launcher (its path does not read: gone) can't update itself: this copy does not run from \
+         a release folder"
+    );
+}
+
+#[test]
+fn the_log_names_a_blocked_update_what_was_installed_and_the_restart() {
+    assert_eq!(
+        blocked_line(&v("1.9.81"), "no write access to bin"),
+        "update: Swofty Launcher 1.9.81 is available, and this copy can't install it: no write access to bin"
+    );
+    assert_eq!(
+        installed_line(&[(Part::Launcher, v("1.9.81")), (Part::Addon, v("0.6.2"))]),
+        format!(
+            "update: installed Swofty Launcher 1.9.81, {} 0.6.2; restarting",
+            Part::Addon.name()
+        )
+    );
+    let exe = std::path::Path::new(r"C:\Swofty\bin\swofty-launcher.exe");
+    assert_eq!(
+        restart_line(exe, Ok(4242)),
+        r"update: started C:\Swofty\bin\swofty-launcher.exe (pid 4242) to restart"
+    );
+    let missing = std::io::Error::from_raw_os_error(2);
+    assert_eq!(
+        restart_line(exe, Err(&missing)),
+        format!(r"update: could not restart C:\Swofty\bin\swofty-launcher.exe: {missing}")
+    );
+    let blocked = std::io::Error::from_raw_os_error(4551);
+    let line = restart_line(exe, Err(&blocked));
+    match crate::platform::app_control::Block::of(exe, &blocked) {
+        Some(b) => assert!(line.ends_with(&format!("; {}", b.headline())), "{line}"),
+        None => assert_eq!(
+            line,
+            format!(r"update: could not restart C:\Swofty\bin\swofty-launcher.exe: {blocked}")
+        ),
+    }
 }
 
 #[test]

@@ -31,6 +31,8 @@ use crate::{Result, io_err};
 pub(super) struct Inputs {
     pub tracks: Tracks,
     pub handling_maps: Vec<HandlingMap>,
+    /// The livery archives, which wear the handling of the car they are for.
+    pub liveries: Vec<handling::Livery>,
     /// The menu lists the track records' pictures go in.
     pub record_ui: Lists,
     /// What the build made of each addon, for its fingerprint.
@@ -147,7 +149,11 @@ impl Inputs {
         fitted.hash(&mut hash)?;
         let resolve = |rel: &str| run.original(rel);
         let addon_dir = |id: &str| run.addon_dir(id);
-        let (handling_maps, handling_notes) = {
+        let handling::Read {
+            maps: handling_maps,
+            notes: handling_notes,
+            liveries,
+        } = {
             let dirs: Vec<(String, PathBuf)> =
                 run.order.iter().map(|id| (id.clone(), addon_dir(id))).collect();
             let options = |addon: &str, name: &str| {
@@ -257,6 +263,7 @@ impl Inputs {
         let inputs = Self {
             tracks: fitted,
             handling_maps,
+            liveries,
             record_ui,
             outputs,
             driver_picks,

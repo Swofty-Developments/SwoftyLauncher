@@ -23,10 +23,11 @@ pub(super) fn put_files(
     ops: Vec<Op>,
     built_over: &BTreeSet<String>,
     car_maps: (&[ErsMap], &[HandlingMap]),
-) -> Result<()> {
+) -> Result<BTreeSet<String>> {
     let (store, game) = (run.store, run.game);
     let packer = &run.eager_packer();
     let (ers_maps, handling_maps) = car_maps;
+    let mut reached = BTreeSet::new();
     let baseline = Baseline::load_or_new(&store.root, &game.identity).ok();
     let mut spelling: BTreeMap<String, String> = BTreeMap::new();
     for rel in built.plan.data.keys().chain(built.plan.added.keys()) {
@@ -67,7 +68,7 @@ pub(super) fn put_files(
         put.insert(key, (real, src, Some(op.origin)));
     }
     if put.is_empty() {
-        return Ok(());
+        return Ok(reached);
     }
     let over: BTreeSet<String> = built_over.iter().map(|r| r.to_ascii_lowercase()).collect();
     let stock = |rel: &str| {
@@ -81,6 +82,7 @@ pub(super) fn put_files(
     for (_, (rel, mut src, origin)) in put {
         let lower = rel.to_ascii_lowercase();
         let group = targets.for_source(&src);
+        reached.extend(group.iter().map(|m| m.id.clone()));
         let mut key = identity(&src);
         if !group.is_empty() && !over.contains(&lower) {
             let out = built.overlay.join("handling").join(&rel);
@@ -156,7 +158,25 @@ pub(super) fn put_files(
             .lines
             .push(format!("mipmaps: {mips} mip file(s) go in the game folder"));
     }
-    Ok(())
+    Ok(reached)
+}
+
+pub(super) fn unshipped(
+    maps: &[HandlingMap],
+    reached: &BTreeSet<String>,
+    liveries: &[handling::Livery],
+) -> Vec<String> {
+    maps.iter()
+        .filter(|m| !reached.contains(&m.id) && !liveries.iter().any(|l| l.names(&m.target)))
+        .filter_map(|m| match &m.target {
+            handling::Target::Addon { addon, path } => Some(format!(
+                "handling: {}: {path} in {addon} isn't put in the game folder by a file.put op and isn't a livery's \
+                 archive; nothing applied",
+                m.id
+            )),
+            handling::Target::Stock(_) => None,
+        })
+        .collect()
 }
 
 impl Pipeline<'_, '_> {
@@ -171,14 +191,18 @@ impl Pipeline<'_, '_> {
             mipmaps,
             built_over,
         } = archives;
-        put_files(
+        let put = put_files(
             &mut self.built,
             self.run,
             mipmaps,
             file_ops,
             &built_over,
             (ers_maps, &inputs.handling_maps),
-        )
+        )?;
+        self.built
+            .warnings
+            .extend(unshipped(&inputs.handling_maps, &put, &inputs.liveries));
+        Ok(())
     }
 }
 

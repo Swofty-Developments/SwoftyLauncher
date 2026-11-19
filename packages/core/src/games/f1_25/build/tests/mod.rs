@@ -4,9 +4,11 @@ use sha2::{Digest, Sha256};
 
 use super::archives::{kept_menus_line, stray_asset_groups};
 use super::failure::{game_refused_text, loader_missing};
+use super::files::unshipped;
 use super::registry::{added_tables, early_stage_line, registering_addons};
 use super::saved::built_files;
 use super::*;
+use crate::activation::handling::{self, HandlingMap};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 

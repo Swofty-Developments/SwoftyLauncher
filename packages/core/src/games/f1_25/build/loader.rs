@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 use super::database::DbEdits;
 use super::inputs::Inputs;
 use super::{ADDONS_DIR, Built, Pipeline};
+use crate::activation::handling;
 use crate::addons::builtin::{CORE_ID, LOADER_ENV, loader_dir, loader_files};
 use crate::addons::settings::{SessionSettings, SessionUi, screen_file, screens};
 use crate::asset::Kind;
@@ -167,6 +168,7 @@ impl Pipeline<'_, '_> {
             planner,
             built,
             session,
+            caches,
             ..
         } = self;
         let (udp_ids, id_aliases) = (&edits.udp_ids, &edits.id_aliases);
@@ -309,10 +311,33 @@ impl Pipeline<'_, '_> {
                     let index = built.overlay.join("registry-index.json");
                     std::fs::create_dir_all(&built.overlay).map_err(io_err(&built.overlay))?;
                     std::fs::write(&index, placed.index.to_json()).map_err(io_err(&index))?;
+                    let addon_dir = |id: &str| run.addon_dir(id);
+                    let worn = handling::build_liveries(
+                        &inputs.liveries,
+                        &inputs.handling_maps,
+                        &addon_dir,
+                        &store.root.join("cache").join(crate::cache::LIVERIES_DIR),
+                        &packer,
+                    );
+                    caches.extend(worn.dirs.iter().cloned());
+                    for line in worn.lines.iter().cloned() {
+                        match line.strip_prefix(crate::activation::wheel_check::WARNING_PREFIX) {
+                            Some(w) => built.warnings.push(w.to_owned()),
+                            None => built.lines.push(line),
+                        }
+                    }
+                    built.warnings.extend(worn.warnings.iter().cloned());
+                    let addons_at = format!("{LOADER_DIR}/{ADDONS_DIR}/");
                     for (rel, src) in placed
                         .files
                         .iter()
-                        .map(|(r, s)| (r.clone(), s.clone()))
+                        .map(|(r, s)| {
+                            let edited = r
+                                .strip_prefix(&addons_at)
+                                .and_then(|at| at.split_once('/'))
+                                .and_then(|(addon, file)| worn.file(addon, file));
+                            (r.clone(), edited.unwrap_or(s).clone())
+                        })
                         .chain([(crate::stdlib::index::PATH.to_owned(), index)])
                     {
                         match built.plan.loader.insert(rel.clone(), src.clone()) {
