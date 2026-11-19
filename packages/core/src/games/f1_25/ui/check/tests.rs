@@ -692,3 +692,27 @@ fn broken_hashes_are_hard_and_signals_leaving_the_file_are_not() {
         "{report:#?}"
     );
 }
+
+#[test]
+fn a_data_setter_needs_its_target_bound() {
+    let bound = node(
+        "ok",
+        "UIDS",
+        vec![("target", obj(vec![("value", s("")), ("dbentry", s("#a.b"))]))],
+        vec![],
+        &[],
+        &[],
+    );
+    let literal = node(
+        "bad",
+        "UIDS",
+        vec![("target", obj(vec![("value", s(""))]))],
+        vec![],
+        &[],
+        &[],
+    );
+    let files = vec![("page".to_owned(), screen_with(vec![bound, literal], false))];
+    let out = screens(&files, &[]).unwrap();
+    assert_eq!(out.len(), 1, "{out:?}");
+    assert!(out[0].starts_with("page.bad [UIDS]"));
+}

@@ -105,6 +105,8 @@ fn row_node(src: &Sources, r: &ResumeRow) -> Result<Node> {
         &[("label", &label(r)), ("value", &fit(r.status.clone()))],
         false,
     )?;
+    t.slot_mut(CHILDREN)?
+        .retain(|c| !matches!(c.name(), "button_pressed" | "reset"));
     set_bool(t.child_mut("indicator")?, "visible", false)?;
     if let Some(c) = r.colour {
         tint(t.child_mut("indicator")?, rgb(c))?;

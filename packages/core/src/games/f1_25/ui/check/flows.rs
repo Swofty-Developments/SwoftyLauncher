@@ -36,6 +36,17 @@ pub(super) fn walk(n: &Node, path: &str, out: &mut Vec<String>) {
             )),
         }
     }
+    if kind == "UIDS" {
+        let bound = props
+            .get("target")
+            .and_then(Node::as_obj)
+            .and_then(|d| str_of(d, "dbentry"));
+        if bound.is_none_or(str::is_empty) {
+            out.push(format!(
+                "{here} [{kind}]: a data setter needs its target bound (target.dbentry); stock templates that leave it literal are never instantiated and the game fails the whole screen"
+            ));
+        }
+    }
     if props.get("allowVMBinding").is_some() && !path.is_empty() {
         out.push(format!("{here} [{kind}]: only a screen may set allowVMBinding"));
     }

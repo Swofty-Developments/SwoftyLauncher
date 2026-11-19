@@ -981,7 +981,15 @@ fn a_hub_tab_page_builds_within_the_loader_rules() {
             .iter()
             .filter(|c| c.is_node())
             .filter_map(|c| {
-                let step = c.slot(node::LAYOUT).ok()?.first()?.a().ok()?.last()?.o().ok()?;
+                let step = c
+                    .slot(node::COMPONENT)
+                    .ok()?
+                    .first()?
+                    .a()
+                    .ok()?
+                    .last()?
+                    .o()
+                    .ok()?;
                 let at = idf::find(scene, step.str_at("debugName").ok()?)?;
                 Some((c.name(), shown(c), at))
             })
@@ -1095,6 +1103,22 @@ fn check_resume_nodes(bytes: &[u8], rows: &[crate::stdlib::careers::ResumeRow]) 
     assert!(text.contains("Last played 19/11/2026") && text.contains("Season 2 · Race 4"));
 }
 
+fn assert_resolved_references(data: &[u8], input: &dyn Fn(&str) -> PathBuf) {
+    let mut have = BTreeSet::new();
+    for rel in ["flow_options.erp", "persistent.erp", "flow_persistent.erp"] {
+        let f = ErpFile::open(&input(&ui_file(rel))).unwrap();
+        have.extend(f.erp.resources.iter().map(|r| r.name.clone()));
+    }
+    let unresolved: Vec<String> = hub::references(data)
+        .into_iter()
+        .filter(|r| r.starts_with("eaid://ui_package/") && !hub::resolves(&have, r))
+        .collect();
+    assert!(
+        unresolved.is_empty(),
+        "the page references resources flow_options lacks: {unresolved:?}"
+    );
+}
+
 #[test]
 #[ignore = "needs SWOFTY_STOCK_DATA, the launcher data folder that holds the game's baseline"]
 fn the_resume_list_builds_within_the_loader_rules_and_routes_in_and_out() {
@@ -1132,6 +1156,7 @@ fn the_resume_list_builds_within_the_loader_rules_and_routes_in_and_out() {
     let name = pages::RESUME_SCREEN;
     let data = std::fs::read(&built.screens[&format!("{UI_DIR}/{name}.ui")]).unwrap();
     check_resume_nodes(&data, &settings.resume_list);
+    assert_resolved_references(&data, &input);
     let session: BTreeMap<&str, bool> = built
         .session
         .iter()
