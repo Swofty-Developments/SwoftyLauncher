@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use serde_json::{Value, json};
 
 use crate::manifest::AddonManifest;
-use crate::session::{LOADER_FALLBACK, LOADER_LOG, PERF_LOG};
+use crate::session::{LOADER_FALLBACK, LOADER_LOG, PERF_FALLBACK, PERF_LOG};
 use crate::store::Store;
 use crate::{Error, GAME_EXE, Result};
 
@@ -380,7 +380,7 @@ impl Bundle {
                 }
                 c.file(format!("game/{name}"), &live, None);
                 if name == "perf.log" {
-                    live_perf = Some(live);
+                    live_perf = Some((format!("game/{name}"), live));
                 } else {
                     loader.extend(loader_line(&format!("game/{name}"), &live));
                 }
@@ -434,6 +434,15 @@ impl Bundle {
             .is_some_and(|d| same_contents(&fallback, &d.join("loader.log")))
         {
             loader.extend(loader_line(LOADER_FALLBACK, &fallback));
+        }
+        let perf_fallback = store.root.join(PERF_FALLBACK);
+        if live_perf.is_none()
+            && perf_fallback.is_file()
+            && !sessions
+                .first()
+                .is_some_and(|d| same_contents(&perf_fallback, &d.join("perf.log")))
+        {
+            live_perf = Some((PERF_FALLBACK.to_owned(), perf_fallback));
         }
         for (id, log) in helper_logs(store) {
             c.file(format!("addons/{id}/{}", crate::helper::LOG_FILE), &log, None);
@@ -1082,11 +1091,15 @@ fn saves_lines(logs: &[(String, PathBuf)]) -> Vec<String> {
     out
 }
 
-fn newest_perf(live: Option<PathBuf>, sessions: &[PathBuf]) -> Option<(String, PathBuf)> {
+/// The performance report the summary reads: the newest session's copy, unless the running game's report (in
+/// the game folder, or in the data folder when the game folder refuses it) is newer.
+fn newest_perf(live: Option<(String, PathBuf)>, sessions: &[PathBuf]) -> Option<(String, PathBuf)> {
     let kept = sessions.iter().map(|d| d.join("perf.log")).find(|p| p.is_file());
     match (live, kept) {
-        (Some(live), Some(kept)) if modified(&live) <= modified(&kept) => Some((session_label(&kept), kept)),
-        (Some(live), _) => Some(("game/perf.log".into(), live)),
+        (Some((_, live)), Some(kept)) if modified(&live) <= modified(&kept) => {
+            Some((session_label(&kept), kept))
+        }
+        (Some(live), _) => Some(live),
         (None, Some(kept)) => Some((session_label(&kept), kept)),
         (None, None) => None,
     }

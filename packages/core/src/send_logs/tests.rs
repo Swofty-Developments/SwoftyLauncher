@@ -1009,6 +1009,30 @@ fn leaves_out_live_logs_the_newest_session_already_kept() {
 }
 
 #[test]
+fn reads_the_performance_report_from_the_data_folder_when_the_game_folder_refused_it() {
+    let root = tmp("perf-fallback");
+    let (store, game) = fake_data(&root);
+    put(&store.root.join(crate::session::PERF_FALLBACK), PERF);
+    let bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "x");
+    assert!(!bundle.entries.iter().any(|e| e.path == "game/perf.log"));
+    let zip = bundle.zip().unwrap();
+    assert_eq!(entry(&zip, "state/perf-fallback.log"), PERF);
+    let summary = summary_of(&bundle);
+    assert!(
+        summary.contains("\n\nPerformance\nFrom state/perf-fallback.log\n"),
+        "{summary}"
+    );
+
+    put(&game.join("swofty/perf.log"), PERF);
+    let bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "x");
+    assert!(
+        summary_of(&bundle).contains("\n\nPerformance\nFrom game/perf.log\n"),
+        "the game folder's report comes first"
+    );
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
 fn says_when_there_is_no_launch_or_game_session() {
     let root = tmp("nosession");
     let store = Store::new(root.join("data"));

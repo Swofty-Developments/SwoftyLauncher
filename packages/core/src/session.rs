@@ -15,6 +15,8 @@ pub const LOADER_LOG: &str = "swofty/loader.log";
 pub const LOADER_FALLBACK: &str = "state/loader-fallback.log";
 pub const LOADER_MARK: &str = "loader_mark.json";
 pub const PERF_LOG: &str = "swofty/perf.log";
+/// Where in the data folder the core writes its performance report when the game folder refuses `PERF_LOG`.
+pub const PERF_FALLBACK: &str = "state/perf-fallback.log";
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Session {
@@ -916,6 +918,27 @@ pub fn written_since(path: &Path, since: SystemTime) -> bool {
     std::fs::metadata(path)
         .and_then(|m| m.modified())
         .is_ok_and(|t| t >= since)
+}
+
+/// Keep the logs the game wrote this session in the session folder `dir`: the loader log and the performance
+/// report as `loader.log` and `perf.log`, from the game folder or, when the game folder refused them, from
+/// their fallbacks in the data folder (which a session starts without), and the crash and load-stall reports
+/// the core left in the data folder.
+pub fn keep_game_logs(data: &Path, game: &Path, dir: &Path, before: Option<&LogMark>, launched: SystemTime) {
+    crate::crash_report::keep_fallback(data, &dir.join("game-logs"), launched);
+    let loader = game.join(LOADER_LOG);
+    let fallback = data.join(LOADER_FALLBACK);
+    if LogMark::replaced(&loader, before) {
+        std::fs::copy(&loader, dir.join("loader.log")).ok();
+    } else if fallback.is_file() {
+        std::fs::copy(fallback, dir.join("loader.log")).ok();
+    }
+    if let Some(perf) = [game.join(PERF_LOG), data.join(PERF_FALLBACK)]
+        .into_iter()
+        .find(|p| written_since(p, launched))
+    {
+        std::fs::copy(perf, dir.join("perf.log")).ok();
+    }
 }
 
 pub fn parse_cpu_list(spec: &str) -> Option<Vec<usize>> {
