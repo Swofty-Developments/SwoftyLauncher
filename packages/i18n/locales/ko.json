@@ -1458,5 +1458,20 @@
   "Right-click {path}, open Properties > Compatibility and untick \"Run this program as an administrator\", also under \"Change settings for all users\". Then press Play again.": "{path}을(를) 마우스 오른쪽 버튼으로 클릭하고 속성 > 호환성을 연 다음 “관리자 권한으로 이 프로그램 실행”의 선택을 해제하세요. “모든 사용자에 대한 설정 변경”에서도 해제하세요. 그런 다음 플레이를 다시 누르세요.",
   "These files are set to run as administrator, so Windows won't start them for an EA app session (error 740):\n{paths}": "다음 파일들이 관리자 권한으로 실행하도록 설정되어 있어 Windows가 EA app 세션에서 이를 시작하지 않습니다(오류 740):\n{paths}",
   "For each one, right-click it, open Properties > Compatibility and untick \"Run this program as an administrator\", also under \"Change settings for all users\". Then press Play again.": "각 파일을 마우스 오른쪽 버튼으로 클릭하고 속성 > 호환성을 연 다음 “관리자 권한으로 이 프로그램 실행”의 선택을 해제하세요. “모든 사용자에 대한 설정 변경”에서도 해제하세요. 그런 다음 플레이를 다시 누르세요.",
-  "The EA app starts F1 25 without administrator rights, so running Swofty Launcher as administrator doesn't help.": "EA app은 관리자 권한 없이 F1 25를 시작하므로 Swofty Launcher를 관리자 권한으로 실행해도 소용없습니다."
+  "The EA app starts F1 25 without administrator rights, so running Swofty Launcher as administrator doesn't help.": "EA app은 관리자 권한 없이 F1 25를 시작하므로 Swofty Launcher를 관리자 권한으로 실행해도 소용없습니다.",
+  "Restore waits for Play": "플레이할 때 복원됨",
+  "A restore is waiting. The game applies it the next time you press Play.": "복원이 대기 중입니다. 게임이 다음에 플레이를 누를 때 적용합니다.",
+  "{mode} comes back from the saved copy the next time you press Play.": "다음에 플레이를 누르면 {mode}이(가) 보관된 사본에서 돌아옵니다.",
+  "The career was not restored: {error}": "커리어를 복원하지 못했습니다: {error}",
+  "Careers missing from the save the game read: {names}. Saved copy: {at}": "게임이 읽은 세이브에 없는 커리어: {names}. 보관된 사본: {at}",
+  "{count} career is in the last save a launcher session wrote but not in the save the game read since: {names}. The launcher's saved copy from {when} still has it. Restore puts it back the next time you press Play.": ["런처 세션이 마지막으로 기록한 세이브에는 있지만 이후 게임이 읽은 세이브에는 없는 커리어가 {count}개 있습니다: {names}. {when}의 런처 보관 사본에는 아직 남아 있습니다. 복원을 누르면 다음에 플레이를 누를 때 되돌려 놓습니다."],
+  "{whose} kept F1 25 on Loading... after Press any button in {count} session(s). The launcher left it as it is and kept a copy. The version from {when} loaded before; Restore puts it back, and the save as it is stays in Versions.": ["{whose}: F1 25가 {count}번의 세션에서 '아무 버튼이나 누르세요' 이후 '로딩 중...' 화면에 멈췄습니다. 런처는 세이브를 그대로 두고 사본을 보관했습니다. {when}의 버전은 이전에 정상적으로 불러와졌으며, 복원을 누르면 그 버전을 되돌리고 현재 상태의 세이브는 버전 목록에 남습니다."],
+  "{whose} kept F1 25 on Loading... after Press any button in {count} session(s). The launcher left it as it is and kept a copy, and holds no earlier version to restore.": ["{whose}: F1 25가 {count}번의 세션에서 '아무 버튼이나 누르세요' 이후 '로딩 중...' 화면에 멈췄습니다. 런처는 세이브를 그대로 두고 사본을 보관했으며, 복원할 이전 버전은 없습니다."],
+  "The save of profile {profile}": "프로필 {profile}의 세이브",
+  "From {when}": "{when} 버전",
+  "In the game's save · {container}": "게임 세이브 · {container}",
+  "Kept by the launcher · {container}": "런처가 보관 중 · {container}",
+  "Put back by the launcher · {container}": "런처가 되돌려 놓음 · {container}",
+  "The game applied the last restore: {detail}": "게임이 마지막 복원을 적용했습니다: {detail}",
+  "The game could not apply the last restore: {detail}": "게임이 마지막 복원을 적용하지 못했습니다: {detail}"
 }
