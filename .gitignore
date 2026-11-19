@@ -22,6 +22,8 @@ docs/.vitepress/cache/
 native/build/
 native/dist/
 native/dist-*/
+native/release/
+native/release-*/
 re/decomp/
 re/ghidra/*
 !re/ghidra/scripts/

@@ -22,6 +22,7 @@ CORE_VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' ../Cargo.toml | head -1)
 DEFS+=(-DSWOFTY_CORE_VERSION="\"$CORE_VERSION\"")
 DEFS+=(-DSWOFTY_MEM_SHARED)
 DIST=dist${VARIANT:+-$VARIANT}
+RELEASE=release${VARIANT:+-$VARIANT}
 OUT=build${VARIANT:+/$VARIANT}
 
 SDK=../packages/sdk/include
@@ -48,14 +49,17 @@ if [[ -n ${SWOFTY_EA_DUMP:-} ]]; then
     python3 ../re/tools/bindverify.py --set "$DIST/swofty/addons/core/bindings.ea.json" --image "$SWOFTY_EA_DUMP" \
         ${SWOFTY_STEAM_EXE:+--compare "$SWOFTY_STEAM_EXE"}
 fi
-# patches.json lists every byte core writes in the exe on each supported build (tools/patch_sites.txt); the server's
-# code challenges skip them. With a Steam exe at hand, the sites of its build are resolved on it and each hook's
-# instructions decoded, with re/tools/py's capstone.
+# swofty-core-<version>-patches.json lists every byte core writes in the exe on each supported build
+# (tools/patch_sites.txt); the server's code challenges skip them. It is a release asset in $RELEASE, outside the game
+# folder. With a Steam exe at hand, the sites of its build are resolved on it and each hook's instructions decoded, with
+# re/tools/py's capstone.
+rm -rf "$RELEASE"
+mkdir -p "$RELEASE"
 PATCH_PY=python3
 if [[ -n ${SWOFTY_STEAM_EXE:-} ]]; then
     PATCH_PY=../re/tools/py
 fi
-"$PATCH_PY" tools/patch_sites.py --sets "$DIST/swofty/addons/core" --out "$DIST/swofty/addons/core/patches.json" \
+"$PATCH_PY" tools/patch_sites.py --sets "$DIST/swofty/addons/core" --out "$RELEASE/swofty-core-$CORE_VERSION-patches.json" \
     --core-version "$CORE_VERSION" ${SWOFTY_STEAM_EXE:+--image "$SWOFTY_STEAM_EXE"}
 python3 - src/core/runtime/stage.cpp "$DIST/swofty/addons/core/features.json" <<'EOF'
 import json, re, sys
@@ -87,4 +91,4 @@ for f in "$DIST/version.dll" "$DIST/swofty/addons/core/swofty_core.dll" "$DIST/s
     md5sum "$f"
 done
 md5sum "$DIST"/swofty/addons/core/bindings*.json "$DIST/swofty/addons/core/symbols.tsv" "$DIST/swofty/addons/core/log_channels.tsv" \
-    "$DIST/swofty/addons/core/features.json" "$DIST/swofty/addons/core/patches.json"
+    "$DIST/swofty/addons/core/features.json" "$RELEASE/swofty-core-$CORE_VERSION-patches.json"
