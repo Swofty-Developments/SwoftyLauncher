@@ -11751,11 +11751,6 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
-    pub const Game_PitStopActionObserver_SetTransitionSequence: Binding = Binding {
-        id: "Game_PitStopActionObserver_SetTransitionSequence",
-        kind: "func",
-        status: Status::Experimental,
-    };
     pub const Game_PitStopInstance_PlaySequence: Binding = Binding {
         id: "Game_PitStopInstance_PlaySequence",
         kind: "func",
