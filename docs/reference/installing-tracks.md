@@ -60,6 +60,8 @@ Tracks from track records take their places first: the core adds their rows in g
 
 Play shows the same count and the first four names as a warning titled **Too many tracks**, and the Addons page marks each addon that loses a track with **Left out: the game holds 64 tracks**. The check runs when Play is pressed, so the marker follows the last Play.
 
+The check fits the tracks of the on addons' op files and track records the way a build fits them, without building the profile or starting any addon's program. A track that an addon's program adds while the profile builds counts in the build's notice only.
+
 A change from any addon to a row of a left-out track is skipped, and the rest of the profile still loads:
 
 ```text
