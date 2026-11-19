@@ -5,7 +5,7 @@
   "addons/import.rs": 1,
   "addons/imported.rs": 1,
   "addons/registry.rs": 4,
-  "addons/settings/session.rs": 2,
+  "addons/settings/session.rs": 4,
   "addons/storage.rs": 1,
   "cache/mod.rs": 1,
   "catalog/media.rs": 1,

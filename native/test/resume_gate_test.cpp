@@ -117,22 +117,26 @@ static void list_rows()
         {"index":2,"mode":"driver","key":"","ready":true,"status":"Ready"},
         {"mode":"driver","key":"9","ready":true}]})");
     expect(es.size() == 2, "entries without a key or an index are dropped");
-    expect(es[0].index == 0 && !es[0].my_team && !es[0].ready && es[0].status == "Missing: Beta", "a not-ready driver entry parses");
+    expect(es[0].index == 0 && !es[0].my_team && !es[0].ready && es[0].status == "Missing: Beta",
+           "a not-ready driver entry parses");
     expect(es[1].my_team && es[1].ready, "a ready My Team entry parses");
     expect(rl::parse("").empty() && rl::parse("{}").empty() && rl::parse("nonsense").empty(), "no block gives no entries");
     expect(rl::find(es, 1) == &es[1] && !rl::find(es, 5), "an entry is found by its index");
 
     size_t i = 99;
     expect(rl::command_index("swofty_resume:12", i) && i == 12, "a row command names its index");
-    expect(!rl::command_index("swofty_resume:", i) && !rl::command_index("swofty_resume:1x", i) && !rl::command_index("slot_pressed", i),
+    expect(!rl::command_index("swofty_resume:", i) && !rl::command_index("swofty_resume:1x", i) &&
+               !rl::command_index("slot_pressed", i),
            "other commands are not row commands");
 
     std::vector<cs::SlotRead> slots{slot(7, 0, "Mine", cs::FLAG_MY_TEAM, 50, 1, 4), slot(7, 0, "Solo7", 0, 40, 1, 4),
                                     slot(6, 0x67cdf241e227f68cULL, "Solo", 0, 90, 2, cs::NO_INDEX),
                                     slot(8, 0, "Hidden", cs::FLAG_HIDDEN, 99, 0, 0)};
     rl::Selection sel;
-    expect(rl::select(slots, es[0], sel) && sel.id == 6 && sel.guid == 0x67cdf241e227f68cULL, "a guid key maps to its slot id and guid");
-    expect(rl::select(slots, es[1], sel) && sel.id == 7 && sel.guid == 0, "the My Team entry maps to the My Team slot, not the Driver one");
+    expect(rl::select(slots, es[0], sel) && sel.id == 6 && sel.guid == 0x67cdf241e227f68cULL,
+           "a guid key maps to its slot id and guid");
+    expect(rl::select(slots, es[1], sel) && sel.id == 7 && sel.guid == 0,
+           "the My Team entry maps to the My Team slot, not the Driver one");
     rl::Entry hidden{3, "8", "", false, true};
     expect(!rl::select(slots, hidden, sel), "a hidden slot is never selected");
     rl::Entry gone{4, "55", "", false, true};
@@ -147,7 +151,8 @@ static void list_rows()
 
     expect(rl::press(es[0]) == rl::Action::Ask && rl::press(es[1]) == rl::Action::Load, "not-ready rows ask, ready rows load");
     expect(rl::dialog_text(es[0]).find("Missing: Beta") != std::string::npos, "the dialog names the status");
-    expect(!rl::expired(1000, 1000 + rl::TARGET_LIFE_MS) && rl::expired(1000, 1001 + rl::TARGET_LIFE_MS), "a target expires after its life");
+    expect(!rl::expired(1000, 1000 + rl::TARGET_LIFE_MS) && rl::expired(1000, 1001 + rl::TARGET_LIFE_MS),
+           "a target expires after its life");
 }
 
 int main()

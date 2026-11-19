@@ -202,3 +202,11 @@ pub fn resume_needs(
         })
         .collect()
 }
+
+pub fn session_needs(
+    data: &std::path::Path,
+    order: &[String],
+    installed: &BTreeMap<String, AddonManifest>,
+) -> Vec<CareerNeeds> {
+    resume_needs(&super::read(&super::data_path(data)), order, installed, None)
+}

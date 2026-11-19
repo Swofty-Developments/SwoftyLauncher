@@ -87,7 +87,10 @@ inline bool select(const std::vector<career::saves::SlotRead> &slots, const Entr
     return false;
 }
 
-inline const char *continue_route(bool my_team) { return my_team ? "solo_career_continue_my_team" : "solo_career_continue_driver"; }
+inline const char *continue_route(bool my_team)
+{
+    return my_team ? "solo_career_continue_my_team" : "solo_career_continue_driver";
+}
 
 inline bool continue_route_of(std::string_view route, bool &my_team)
 {
