@@ -54,6 +54,18 @@ inline std::string generation_name(uint64_t n)
     return b;
 }
 
+// Every game mode is stored as a pair of root containers, gm_<mode> and <mode>_SaveSlotGameModeComponent. The mode's name,
+// or empty for a container that is not half of a pair.
+inline std::string pair_of(const std::string &name)
+{
+    constexpr std::string_view slot = "_SaveSlotGameModeComponent";
+    if (name.size() > slot.size() && name.compare(name.size() - slot.size(), slot.size(), slot) == 0)
+        return name.substr(0, name.size() - slot.size());
+    if (name.size() > 3 && name.compare(0, 3, "gm_") == 0)
+        return name.substr(3);
+    return {};
+}
+
 inline std::string container_file(const std::string &name) { return hex16(sp::fnv1a64(name.c_str())) + ".bag"; }
 
 // ---- SHA-256 ----
@@ -250,7 +262,8 @@ inline std::string manifest_json(uint64_t generation, const Header &h, const std
         t += std::string(i ? "," : "") + "\n    {\"name\": \"" + esc(b.name) + "\", \"fnv64\": \"" +
              hex16(sp::fnv1a64(b.name.c_str())) + "\", \"type_id\": " + std::to_string(BAG_TYPE) +
              ", \"bytes\": " + std::to_string(bytes.size()) + ", \"sha256\": \"" + Sha256::of(bytes.data(), bytes.size()) +
-             "\", \"registered\": " + (b.registered ? "true" : "false") + ", \"source\": \"" + esc(b.source) + "\"" +
+             "\", \"pair\": " + (pair_of(b.name).empty() ? std::string("null") : "\"" + esc(pair_of(b.name)) + "\"") +
+             ", \"registered\": " + (b.registered ? "true" : "false") + ", \"source\": \"" + esc(b.source) + "\"" +
              (b.as_of.empty() ? "" : ", \"as_of\": \"" + esc(b.as_of) + "\"") + ", \"slots\": [";
         for (size_t k = 0; k < b.slots.size(); k++) {
             const Slot &s = b.slots[k];
@@ -454,17 +467,44 @@ struct Pick {
     uint64_t generation = 0;
 };
 
-// Rule 2: the containers of that save generation the tree the game just loaded lacks, matched by name. A container the tree
-// has is never replaced, and what the newest save generation does not hold (a deletion, or a container that never was) is not
-// brought back from an older one.
-inline std::vector<Pick> put_back(const Manifest &newest, const std::set<std::string> &tree)
+struct Skip {
+    std::string name, reason;
+};
+
+struct PutBack {
+    std::vector<Pick> picks;
+    std::vector<Skip> skipped;
+};
+
+// Rule 2: the containers of that save generation the tree the game just loaded lacks, matched by name. `tree` maps each
+// container the tree holds to the SHA-256 of its bytes ("" when they are not known). A container the tree has is never
+// replaced, and what the newest save generation does not hold (a deletion, or a container that never was) is not brought
+// back from an older one. The halves of a mode's pair come back together or not at all: when one half is absent and the
+// other is present, the absent one comes back only if the present one is byte for byte the one in that generation.
+inline PutBack put_back(const Manifest &newest, const std::map<std::string, std::string> &tree)
 {
-    std::vector<Pick> out;
+    PutBack out;
     std::set<std::string> taken;
     for (const Entry &e : newest.containers) {
         if (tree.count(e.name) || !taken.insert(e.name).second)
             continue;
-        out.push_back({e, newest.generation});
+        std::string pair = pair_of(e.name);
+        if (!pair.empty()) {
+            const Entry *bad = nullptr;
+            for (const Entry &o : newest.containers) {
+                if (o.name == e.name || pair_of(o.name) != pair)
+                    continue;
+                auto it = tree.find(o.name);
+                if (it != tree.end() && (it->second.empty() || it->second != o.sha256))
+                    bad = &o;
+            }
+            if (bad) {
+                out.skipped.push_back({e.name, "its pair half " + bad->name + " in the loaded save differs from generation " +
+                                                   std::to_string(newest.generation) + "'s"});
+                continue;
+            }
+        }
+        out.picks.push_back({e, newest.generation});
     }
     return out;
 }
@@ -518,8 +558,7 @@ struct Decision {
 };
 
 // One request against the loaded tree. An absent container is added. A held container is replaced only with replace:true
-// and only when it is a kept one: a registered mode's container is read by the game's own mode, and this core cannot
-// swap that in, so the request fails with the reason.
+// whether it is a kept one or a registered mode's (the core reads the bag over before the mode reads it).
 inline Decision decide(const Request &q, Held held, bool source_ok)
 {
     Decision d;
@@ -543,8 +582,9 @@ inline Decision decide(const Request &q, Held held, bool source_ok)
         d.result.ok = true;
         d.result.detail = "replaced the kept " + q.container + " with generation " + std::to_string(q.generation);
     } else {
-        d.result.detail =
-            q.container + " belongs to a registered game mode; this core cannot replace a registered container at load";
+        d.action = Action::replace;
+        d.result.ok = true;
+        d.result.detail = "replaced the loaded " + q.container + " with generation " + std::to_string(q.generation);
     }
     return d;
 }

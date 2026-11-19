@@ -25,6 +25,7 @@ struct Config {
     bool on = false;
     fs::path root;
     std::string profile, session, root_text;
+    std::vector<std::string> addons;
 };
 
 std::mutex write_lock;
@@ -46,6 +47,10 @@ const Config &config()
         json::Value doc;
         if (json::parse(runtime::settings_json_text(), doc))
             c.profile = doc["launcher_saves"]["profile"].str();
+        if (doc["addons"].type == json::Value::Arr)
+            for (const json::Value &a : doc["addons"].a)
+                if (a["enabled"].type == json::Value::Bool && a["enabled"].b && a["id"].type == json::Value::Str)
+                    c.addons.push_back(a["id"].s);
         c.session = std::to_string(
             std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
         swofty::log("[saves] plain store on: %s", s.root.c_str());
@@ -62,6 +67,7 @@ Header header_for(const Config &c, const char *event)
     h.exe_sha256 = runtime::build_exe_sha();
     h.profile = c.profile;
     h.session = c.session;
+    h.loaded_addons = c.addons;
     h.written_at = int64_t(time(nullptr));
     return h;
 }
@@ -70,59 +76,154 @@ Header header_for(const Config &c, const char *event)
 
 bool enabled() { return config().on; }
 
-std::vector<Added> at_load(const std::set<std::string> &registered, const std::set<std::string> &kept)
+Plan make_plan()
 {
-    std::vector<Added> out;
+    Plan p;
     const Config &c = config();
     if (!c.on)
-        return out;
+        return p;
+    p.on = true;
     Root root(c.root);
-    std::set<std::string> tree = registered;
+    p.newest = newest_core_save(root);
+    std::error_code ec;
+    if (fs::is_regular_file(root.path() / INJECT, ec)) {
+        p.had_inject_file = true;
+        p.requests = parse_requests(read_text(root.path() / INJECT, size_t(1) << 20));
+        p.handled.assign(p.requests.size(), false);
+    }
+    return p;
+}
+
+const Entry *newest_entry(const Plan &plan, const std::string &name)
+{
+    if (!plan.newest)
+        return nullptr;
+    for (const Entry &e : plan.newest->containers)
+        if (e.name == name)
+            return &e;
+    return nullptr;
+}
+
+std::optional<std::vector<uint8_t>> fetch_newest(const Plan &plan, const Entry &entry)
+{
+    if (!plan.newest)
+        return std::nullopt;
+    return read_container(Root(config().root), plan.newest->generation, entry);
+}
+
+int request_for(const Plan &plan, const std::string &name)
+{
+    for (size_t i = 0; i < plan.requests.size(); i++)
+        if (plan.requests[i].container == name && !plan.handled[i])
+            return int(i);
+    return -1;
+}
+
+std::optional<std::vector<uint8_t>> fetch_request(const Plan &plan, int index)
+{
+    const Request &q = plan.requests[size_t(index)];
+    Root root(config().root);
+    if (auto m = read_generation(root, q.generation))
+        for (const Entry &e : m->containers)
+            if (e.name == q.container)
+                return read_container(root, q.generation, e);
+    return std::nullopt;
+}
+
+void request_done(Plan &plan, int index, bool ok, const std::string &detail)
+{
+    plan.handled[size_t(index)] = true;
+    plan.results.push_back({plan.requests[size_t(index)].id, ok, detail});
+    swofty::log("[saves] inject request %s%s: %s", plan.requests[size_t(index)].id.c_str(), ok ? "" : " refused", detail.c_str());
+}
+
+std::optional<std::vector<Part>> fetch_group(uint64_t generation, const std::string &name)
+{
+    Root root(config().root);
+    auto m = read_generation(root, generation);
+    if (!m)
+        return std::nullopt;
+    std::string pair = pair_of(name);
+    std::vector<Part> out;
+    bool found = false;
+    for (const Entry &e : m->containers) {
+        if (e.name != name && (pair.empty() || pair_of(e.name) != pair))
+            continue;
+        auto bytes = read_container(root, generation, e);
+        if (!bytes)
+            return std::nullopt;
+        found |= e.name == name;
+        out.push_back({e.name, e.sha256, e.careers, std::move(*bytes)});
+    }
+    if (!found)
+        return std::nullopt;
+    return out;
+}
+
+std::vector<Added> at_load(Plan &plan, const std::map<std::string, std::string> &registered,
+                           const std::map<std::string, std::string> &kept)
+{
+    std::vector<Added> out;
+    if (!plan.on)
+        return out;
+    Root root(config().root);
+    std::map<std::string, std::string> tree = registered;
     tree.insert(kept.begin(), kept.end());
     std::set<std::string> added_now;
-    if (auto newest = newest_core_save(root)) {
-        for (const Pick &p : put_back(*newest, tree)) {
+    if (plan.newest) {
+        PutBack pb = put_back(*plan.newest, tree);
+        for (const Skip &k : pb.skipped)
+            swofty::log("[saves] did not put back %s: %s", k.name.c_str(), k.reason.c_str());
+        for (const Pick &p : pb.picks) {
             auto bytes = read_container(root, p.generation, p.entry);
             if (!bytes) {
                 swofty::log("[saves] could not put back %s: generation %llu has no intact copy of it", p.entry.name.c_str(),
                             (unsigned long long)p.generation);
                 continue;
             }
-            swofty::log("%s", put_back_line(p.entry.name, p.entry.careers, p.generation).c_str());
-            out.push_back({p.entry.name, std::move(*bytes), false, false});
+            out.push_back({p.entry.name, std::move(*bytes), false, false, p.entry.careers, p.generation});
             added_now.insert(p.entry.name);
         }
     }
-    std::error_code ec;
-    if (!fs::is_regular_file(root.path() / INJECT, ec))
-        return out;
-    std::vector<Request> requests = parse_requests(read_text(root.path() / INJECT, size_t(1) << 20));
-    std::vector<Result> results;
-    for (const Request &q : requests) {
+    for (size_t i = 0; i < plan.requests.size(); i++) {
+        if (plan.handled[i])
+            continue;
+        const Request &q = plan.requests[i];
+        auto group = fetch_group(q.generation, q.container);
         Held held = registered.count(q.container)                               ? Held::registered
                     : (kept.count(q.container) || added_now.count(q.container)) ? Held::kept
                                                                                 : Held::none;
-        std::optional<std::vector<uint8_t>> bytes;
-        if (auto m = read_generation(root, q.generation))
-            for (const Entry &e : m->containers)
-                if (e.name == q.container) {
-                    bytes = read_container(root, q.generation, e);
+        Decision d = decide(q, held, bool(group));
+        plan.handled[i] = true;
+        if (d.action != Action::none) {
+            for (const Part &part : *group) {
+                if (part.name == q.container)
+                    continue;
+                Held h = registered.count(part.name)                             ? Held::registered
+                         : (kept.count(part.name) || added_now.count(part.name)) ? Held::kept
+                                                                                 : Held::none;
+                if (h == Held::registered && !q.replace) {
+                    d = decide(Request{q.id, part.name, q.generation, false}, h, true);
                     break;
                 }
-        Decision d = decide(q, held, bool(bytes));
-        results.push_back(d.result);
+            }
+        }
+        plan.results.push_back(d.result);
+        swofty::log("[saves] inject request %s%s: %s", q.id.c_str(), d.result.ok ? "" : " refused", d.result.detail.c_str());
         if (d.action == Action::none)
             continue;
-        if (d.action == Action::replace || held == Held::kept)
-            out.erase(std::remove_if(out.begin(), out.end(), [&](const Added &a) { return a.name == q.container; }), out.end());
-        out.push_back({q.container, std::move(*bytes), d.action == Action::replace, true});
-        added_now.insert(q.container);
-        swofty::log("[saves] inject request %s: %s", q.id.c_str(), d.result.detail.c_str());
+        for (Part &part : *group) {
+            Held h = registered.count(part.name)                             ? Held::registered
+                     : (kept.count(part.name) || added_now.count(part.name)) ? Held::kept
+                                                                             : Held::none;
+            if (h == Held::none || q.replace || part.name == q.container) {
+                out.erase(std::remove_if(out.begin(), out.end(), [&](const Added &a) { return a.name == part.name; }), out.end());
+                out.push_back({part.name, std::move(part.bytes), q.replace && h != Held::none, true, 0, q.generation});
+                added_now.insert(part.name);
+            }
+        }
     }
-    for (const Result &r : results)
-        if (!r.ok)
-            swofty::log("[saves] inject request %s refused: %s", r.id.c_str(), r.detail.c_str());
-    if (!answer(root, results))
+    if (plan.had_inject_file && !answer(root, plan.results))
         swofty::log("[saves] could not write injected.json; inject.json is left for the next load");
     return out;
 }

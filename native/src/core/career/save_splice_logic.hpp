@@ -94,6 +94,16 @@ public:
         return Add::kept;
     }
 
+    void remove(const std::string &name)
+    {
+        for (size_t i = 0; i < kept_.size(); i++)
+            if (kept_[i].name == name) {
+                total_ -= kept_[i].body.size();
+                kept_.erase(kept_.begin() + long(i));
+                return;
+            }
+    }
+
     const std::vector<Kept> &kept() const { return kept_; }
     size_t size() const { return kept_.size(); }
     uint64_t total() const { return total_; }

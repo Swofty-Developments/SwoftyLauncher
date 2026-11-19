@@ -192,6 +192,25 @@ bool container_name(uintptr_t self, std::string &out)
     }
 }
 
+uintptr_t registered_child(uintptr_t root, const std::string &name)
+{
+    constexpr size_t TABLE_BEGIN = 0x160, TABLE_END = 0x168, NODE_NAME = 0x10, NODE_CHILD = 0x58;
+    uintptr_t begin = 0, end = 0;
+    if (!root || !mem::read(root + TABLE_BEGIN, begin) || !mem::read(root + TABLE_END, end) || begin > end ||
+        (end - begin) / 8 > MAX_CHILDREN * 4 || (begin & 7))
+        return 0;
+    for (uintptr_t at = begin; at < end; at += 8) {
+        uintptr_t node = 0, name_ptr = 0, child = 0;
+        std::string n, cn;
+        if (!mem::read(at, node) || node < 0x10000 || !mem::read(node + NODE_NAME, name_ptr) || !name_ptr ||
+            !mem::c_string(name_ptr, n, 64) || n != name || !mem::read(node + NODE_CHILD, child) || !child ||
+            !container_name(child, cn) || cn != name || !game_object(reinterpret_cast<const void *>(child)))
+            continue;
+        return child;
+    }
+    return 0;
+}
+
 bool game_object(const void *obj)
 {
     uintptr_t vt = 0;
