@@ -165,7 +165,8 @@ impl Shell {
         cx: &mut Context<Self>,
     ) {
         let id = addon.id.as_str();
-        let updating = self.installed_version(id).is_some();
+        let from = self.installed_version(id);
+        let updating = from.is_some();
         self.browser.failed.remove(id);
         self.browser.refused.remove(id);
         let job = Job::new(version.size);
@@ -195,6 +196,8 @@ impl Shell {
                 version.url
             ),
         );
+        let pending =
+            catalog::pending::Pending::begin(&self.store, &addon.id, &version.version, from.as_ref());
         let store = self.store.clone();
         let catalog_now = self.browser.addons.clone();
         let started = Instant::now();
@@ -235,6 +238,7 @@ impl Shell {
                     Ok(done) => s.install_succeeded(&finished, &done, cx),
                     Err(e) => s.install_failed(&finished, e, cx),
                 }
+                pending.end();
                 if in_batch {
                     let error = s.browser.failed.get(&addon.id).cloned().unwrap_or_default();
                     s.browser

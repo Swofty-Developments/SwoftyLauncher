@@ -2,6 +2,7 @@ use std::fmt::Write;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
+use swofty_core::addon_files::Damaged;
 use swofty_core::data_usage::Room;
 use swofty_core::store::Store;
 use swofty_i18n::{fill, tr, trf, trn};
@@ -90,6 +91,8 @@ pub(crate) struct Checked {
     pub timings: Timings,
     /// Lines for the app log after the timings line.
     pub lines: Vec<String>,
+    /// On addons whose files are not what their install wrote.
+    pub damaged: Vec<Damaged>,
 }
 
 pub(crate) fn run(inputs: Inputs) -> Checked {
@@ -109,23 +112,38 @@ pub(crate) fn run(inputs: Inputs) -> Checked {
     });
     let mut notes = Vec::new();
     let mut lines = Vec::new();
+    let mut damaged = Vec::new();
     let verdict = match (
         timings.time("profile", || store.profile(&profile)),
         timings.time("addons", || store.addons()),
     ) {
         (Ok(p), Ok(installed)) => {
-            let catalog = timings.time("catalog", || {
-                swofty_core::catalog::cached(&store.root).unwrap_or_default()
-            });
-            timings.time("lonely", || {
-                notes.extend(lonely(&store, &p, &installed, &catalog))
-            });
-            timings.time("track limit", || {
-                let (note, line) = track_limit_note(&store, &game, build_id, &p);
-                notes.extend(note);
-                lines.extend(line);
-            });
-            registry(&store, &game, &p, &installed, anyway, &mut notes, &mut timings)
+            if !p.is_vanilla() {
+                damaged = timings.time("files", || {
+                    swofty_core::addon_files::damaged(&store, p.enabled(), &installed)
+                });
+                for d in &damaged {
+                    let mut line = String::new();
+                    let _ = write!(line, "[play] files: {} {}", d.id, d.summary());
+                    lines.push(line);
+                }
+            }
+            if let Some(stop) = damaged_stop(&damaged) {
+                Verdict::Stop(stop)
+            } else {
+                let catalog = timings.time("catalog", || {
+                    swofty_core::catalog::cached(&store.root).unwrap_or_default()
+                });
+                timings.time("lonely", || {
+                    notes.extend(lonely(&store, &p, &installed, &catalog))
+                });
+                timings.time("track limit", || {
+                    let (note, line) = track_limit_note(&store, &game, build_id, &p);
+                    notes.extend(note);
+                    lines.extend(line);
+                });
+                registry(&store, &game, &p, &installed, anyway, &mut notes, &mut timings)
+            }
         }
         _ => Verdict::Go,
     };
@@ -139,6 +157,28 @@ pub(crate) fn run(inputs: Inputs) -> Checked {
         room,
         timings,
         lines,
+        damaged,
+    }
+}
+
+/// What stops Play when the build would fail on a damaged addon.
+pub(crate) fn damaged_stop(damaged: &[Damaged]) -> Option<String> {
+    let stopping: Vec<&Damaged> = damaged.iter().filter(|d| d.stops_play()).collect();
+    match stopping.as_slice() {
+        [] => None,
+        [one] => Some(trf!(
+            "{name} is damaged: {files}. Reinstall it, then press Play.",
+            name = one.name,
+            files = one.summary()
+        )),
+        many => Some(trf!(
+            "{names} are damaged. Reinstall them, then press Play.",
+            names = many
+                .iter()
+                .map(|d| d.name.as_str())
+                .collect::<Vec<_>>()
+                .join(", ")
+        )),
     }
 }
 
@@ -689,5 +729,79 @@ mod tests {
         assert!(!p.finish(old));
         assert!(p.is_active());
         assert!(p.finish(new));
+    }
+
+    fn damaged(id: &str, read_by_build: bool) -> Damaged {
+        use swofty_core::addon_files::{Damage, Problem};
+        Damaged {
+            id: id.into(),
+            name: format!("Liveries {id}"),
+            damage: vec![Damage {
+                path: "assets/lang.json".into(),
+                problem: Problem::Empty,
+                read_by_build,
+            }],
+        }
+    }
+
+    #[test]
+    fn a_damaged_file_the_build_reads_stops_play_with_the_addon_named() {
+        assert_eq!(damaged_stop(&[damaged("a", false)]), None);
+        assert_eq!(
+            damaged_stop(&[damaged("a", true), damaged("b", false)]).unwrap(),
+            "Liveries a is damaged: assets/lang.json is empty. Reinstall it, then press Play."
+        );
+        assert_eq!(
+            damaged_stop(&[damaged("a", true), damaged("b", true)]).unwrap(),
+            "Liveries a, Liveries b are damaged. Reinstall them, then press Play."
+        );
+    }
+
+    #[test]
+    fn play_stops_before_the_build_on_an_on_addon_with_an_empty_op_file() {
+        let root = std::env::temp_dir().join(format!("swofty-play-damaged-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let src = root.join("src");
+        std::fs::create_dir_all(src.join("assets")).unwrap();
+        std::fs::write(
+            src.join("swofty.json"),
+            r#"{"schema_version":1,"id":"a.real","name":"Real Liveries","version":"1.1.7","author":"a",
+                "operations":{"assets":["assets/lang.json"]}}"#,
+        )
+        .unwrap();
+        std::fs::write(src.join("assets/lang.json"), r#"{"schema_version":1,"ops":[]}"#).unwrap();
+        let store = Store::new(root.join("data"));
+        store.create_profile("p", None).unwrap();
+        store.install_addon(&src).unwrap();
+        store
+            .update_profile("p", |p| p.set_enabled("a.real", true))
+            .unwrap();
+        let inputs = || Inputs {
+            store: store.clone(),
+            profile: "p".into(),
+            game: root.join("game"),
+            build_id: None,
+            anyway: false,
+        };
+        assert!(run(inputs()).damaged.is_empty());
+
+        std::fs::write(store.addons_dir().join("a.real/assets/lang.json"), b"").unwrap();
+        let checked = run(inputs());
+        assert_eq!(checked.damaged.len(), 1);
+        assert_eq!(
+            checked.verdict,
+            Verdict::Stop(
+                "Real Liveries is damaged: assets/lang.json is empty. Reinstall it, then press Play.".into()
+            )
+        );
+        assert!(
+            checked
+                .lines
+                .contains(&"[play] files: a.real assets/lang.json is empty".to_owned()),
+            "{:?}",
+            checked.lines
+        );
+        assert!(checked.timings.line().contains("files "));
+        std::fs::remove_dir_all(&root).ok();
     }
 }

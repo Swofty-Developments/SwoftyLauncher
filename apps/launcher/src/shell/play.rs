@@ -3,6 +3,7 @@ use crate::notices::{Notification, Notify};
 use crate::play_checks;
 use gpui_kit::*;
 use std::path::PathBuf;
+use swofty_core::addon_files::Damaged;
 use swofty_core::install::Source;
 use swofty_core::recovery::Blocked;
 use swofty_core::session::{LaunchMode, SessionRecord};
@@ -185,6 +186,10 @@ impl Shell {
         for note in &checked.notes {
             window.notify(note_notification(note), cx);
         }
+        for damaged in &checked.damaged {
+            let note = self.damaged_notification(damaged, cx);
+            window.notify(note, cx);
+        }
         match checked.verdict {
             play_checks::Verdict::Go => {}
             play_checks::Verdict::Stop(stop) => {
@@ -240,6 +245,39 @@ impl Shell {
                 Played::Stopped
             }
         }
+    }
+
+    /// What Play shows for an addon with damaged files, with a Reinstall button when the
+    /// Addon Browser offers it.
+    fn damaged_notification(&self, d: &Damaged, cx: &mut Context<Self>) -> Notification {
+        let offered = self
+            .browser
+            .find(&d.id)
+            .is_some_and(|a| a.offered(&swofty_core::update::current_version()).is_some());
+        let body = if offered {
+            trf!(
+                "{files}. Reinstall it to put its files back.",
+                files = d.summary()
+            )
+        } else {
+            trf!(
+                "{files}. Install it again from the file you installed it from.",
+                files = d.summary()
+            )
+        };
+        let note = match d.stops_play() {
+            true => Notification::error(body),
+            false => Notification::warning(body),
+        }
+        .title(trf!("{name} is damaged", name = d.name))
+        .autohide(false);
+        if !offered {
+            return note;
+        }
+        let (shell, id) = (cx.entity().downgrade(), d.id.clone());
+        note.action(tr("Reinstall"), move |_, cx| {
+            shell.update(cx, |s, cx| s.install_from_catalog(&id, cx)).ok();
+        })
     }
 
     fn asking(&mut self, room: Option<crate::multiplayer::RoomLaunch>) -> Played {
