@@ -18,7 +18,7 @@ use swofty_core::process::{
     stop_process,
 };
 use swofty_core::quarantine::{self, Attach, AttachWatch, Stage};
-use swofty_core::recovery::{Scope, SessionLock};
+use swofty_core::recovery::{Recovered, Scope, SessionLock};
 use swofty_core::session::{
     Config, DEFAULT_WINEDEBUG, LOADER_FALLBACK, LOADER_LOG, LOADER_MARK, LaunchMode, LaunchRequest, LogMark,
     PERF_LOG, RUNTIME_LIBS_DIR, STOP_FILE, SessionEnd, SessionRecord, game_args, is_compat_layer,
@@ -363,17 +363,42 @@ fn settle(store: &Store, g: &Game, wrapper: &mut Wrapper, mut relay: Option<&mut
         std::thread::sleep(Duration::from_millis(250));
     };
     match swofty_core::recovery::recover(&lock, &store.root, g, Scope::All) {
-        Ok(r) if r.recovered() => {
-            say("info", "the wrapper ended without rolling the session back");
-            crate::recover::announce(store, g, &r.lines(), &info);
-        }
         Ok(r) => {
-            r.lines().iter().for_each(|l| info(l));
-            if ended {
-                info("session over: its game files are rolled back");
+            if r.recovered() {
+                say("info", "the wrapper ended without rolling the session back");
+                crate::recover::announce(store, g, &r.lines(), &info);
+            } else {
+                r.lines().iter().for_each(|l| info(l));
+            }
+            if let Some(line) = settled(&r, ended) {
+                info(line);
             }
         }
         Err(e) => info(&format!("rollback failed, run swofty restore: {e:#}")),
+    }
+}
+
+const UNFINISHED: &str = "not every game file is back yet; the next swofty run or launcher start retries it, or run swofty restore";
+
+/// The last line of the roll back after a session. One that left a file in
+/// the game folder never ends on the line that says the files are back.
+fn settled(r: &Recovered, ended: bool) -> Option<&'static str> {
+    if !r.complete() {
+        Some(UNFINISHED)
+    } else if ended && !r.recovered() {
+        Some("session over: its game files are rolled back")
+    } else {
+        None
+    }
+}
+
+/// What the wrapper says once the profile's files are back, which is not the
+/// whole game folder while offline play's files stayed locked.
+fn rolled_back(offline_left: bool) -> &'static str {
+    if offline_left {
+        "rolled the profile's game files back, but not the offline play files above"
+    } else {
+        "rolled the profile's game files back"
     }
 }
 
@@ -669,24 +694,28 @@ struct Session<'a> {
 
 impl Drop for Session<'_> {
     fn drop(&mut self) {
-        match swofty_core::offline::restore_pending(&self.store.root, &self.game.dir) {
+        let offline_left = match swofty_core::offline::restore_pending(&self.store.root, &self.game.dir) {
             Ok(Some(notes)) => {
                 for note in notes {
                     info(&format!("offline play: {note}"));
                 }
                 info("offline play: the game folder is back to vanilla");
+                false
             }
-            Ok(None) => {}
-            Err(e) => info(&format!(
-                "offline play restore failed{}, run swofty restore: {e:#}",
-                still_running(&self.game.dir)
-            )),
-        }
+            Ok(None) => false,
+            Err(e) => {
+                info(&format!(
+                    "offline play restore failed{}; the next swofty run or launcher start retries it, or run swofty restore: {e:#}",
+                    still_running(&self.game.dir)
+                ));
+                true
+            }
+        };
         let inst = Installer::new(&self.store.root, self.game);
         match inst.roll_back(false) {
             Ok(done) => {
                 if !done.is_empty() {
-                    info("rolled the profile's game files back");
+                    info(rolled_back(offline_left));
                 }
                 for d in done.iter().flat_map(|r| &r.drift) {
                     info(&format!("rollback: {d}"));
@@ -3040,5 +3069,38 @@ mod tests {
             ["[info] rolled the profile's game files back", "swofty: oops"]
         );
         std::fs::remove_dir_all(log.ancestors().nth(2).unwrap()).ok();
+    }
+
+    #[test]
+    fn a_roll_back_that_left_locked_files_never_says_the_files_are_back() {
+        let locked = Recovered {
+            problems: vec!["offline play staging: offline-play restore could not finish cleanly".into()],
+            ..Recovered::default()
+        };
+        assert_eq!(settled(&locked, true), Some(UNFINISHED));
+        assert_eq!(settled(&locked, false), Some(UNFINISHED));
+        let partly = Recovered {
+            swept: vec!["removed swofty/addons/core/swofty_core.dll".into()],
+            ..locked.clone()
+        };
+        assert!(partly.recovered());
+        assert_eq!(settled(&partly, true), Some(UNFINISHED));
+
+        assert_eq!(
+            settled(&Recovered::default(), true),
+            Some("session over: its game files are rolled back")
+        );
+        assert_eq!(settled(&Recovered::default(), false), None);
+        let recovered = Recovered {
+            offline: true,
+            ..Recovered::default()
+        };
+        assert_eq!(settled(&recovered, true), None);
+
+        assert_eq!(rolled_back(false), "rolled the profile's game files back");
+        assert_eq!(
+            rolled_back(true),
+            "rolled the profile's game files back, but not the offline play files above"
+        );
     }
 }

@@ -315,11 +315,23 @@ pub fn recover_stale(store: &Store) -> Result<Vec<String>, String> {
     Ok(r.lines())
 }
 
-/// The Restore game folder button: what `swofty restore` does.
+/// How long Restore game folder waits for a Play that still holds the game
+/// folder: its build, or its start or roll back with F1 25 closed.
+const RESTORE_WAIT: recovery::Wait = recovery::Wait {
+    build: Duration::from_secs(15 * 60),
+    other: Duration::from_secs(120),
+};
+
+/// The Restore game folder button: what `swofty restore` does, once a Play
+/// that still holds the game folder lets go of it.
 pub fn restore(store: &Store, dir: PathBuf) -> Result<String, String> {
-    let _helpers = store.helpers().pause();
     let g = Game::locate(&store.root, dir).map_err(|e| e.to_string())?;
-    let done = recovery::restore(&store.root, &g).map_err(|e| e.to_string())?;
+    let running = || swofty_core::process::game_running_in(&g.dir);
+    let lock = recovery::wait_for_lock(&store.root, RESTORE_WAIT, &running).map_err(|e| e.to_string())?;
+    let helpers = store.helpers().pause();
+    let done = recovery::restore_locked(&lock, &store.root, &g).map_err(|e| e.to_string())?;
+    drop(helpers);
+    drop(lock);
     if !done.left.is_empty() {
         let left: Vec<String> = done.left.iter().map(ToString::to_string).collect();
         return Err(trf!(
