@@ -1,10 +1,12 @@
 use gpui_kit::assets::IconName;
 use gpui_kit::component::{Icon, h_flex, v_flex};
+use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::online::server::support::{Preview, format_date, tier_name};
 use swofty_i18n::tr;
 
 use super::parts::*;
+use crate::features::time_trial::Load;
 use crate::shell::Shell;
 use crate::ui::discord;
 use crate::ui::scale::px;
@@ -21,16 +23,18 @@ fn web_link(link: Option<&str>) -> Option<String> {
 }
 
 impl Shell {
-    /// The early access rail beside the tiers, scrolling inside its own height. None when there are no previews.
+    /// The early access rail beside the tiers, shown to everyone and scrolling inside its own height.
+    /// Only a Supporter+ can follow a preview's link. None when there are no previews.
     pub(super) fn store_previews(&self, p: Palette) -> Option<AnyElement> {
         let previews = &self.store_page.previews;
         if previews.is_empty() {
             return None;
         }
+        let plus = matches!(&self.store_page.me, Load::Ready(me) if me.active && me.tier.as_deref() == Some("supporter_plus"));
         let rows: Vec<AnyElement> = previews
             .iter()
             .enumerate()
-            .map(|(i, x)| self.preview_row(i, x, p))
+            .map(|(i, x)| self.preview_row(i, x, plus, p))
             .collect();
         let head = h_flex()
             .flex_shrink_0()
@@ -115,7 +119,7 @@ impl Shell {
             .child(letter)
     }
 
-    fn preview_row(&self, i: usize, x: &Preview, p: Palette) -> AnyElement {
+    fn preview_row(&self, i: usize, x: &Preview, plus: bool, p: Palette) -> AnyElement {
         let posted = x.posted.map(|at| format_date(&serde_json::Value::from(at)));
         let highlights: Vec<&str> = x
             .highlights
@@ -128,19 +132,30 @@ impl Shell {
             false => Some(highlights.join(" · ")),
             true => Some(x.summary.trim().to_owned()).filter(|s| !s.is_empty()),
         };
+        let id = SharedString::from(format!("store-preview-link-{i}"));
         let link = web_link(x.link.as_deref()).map(|url| {
-            h_flex().pt(px(4.)).child(
-                discord::link_button(
-                    SharedString::from(format!("store-preview-link-{i}")),
-                    tr("View in Discord"),
-                    url,
-                    22.,
-                    8.,
-                )
-                .gap(px(6.))
-                .rounded(px(6.))
-                .text_size(px(11.)),
-            )
+            let button = match plus {
+                true => discord::link_button(id, tr("View in Discord"), url, 22., 8.),
+                false => discord::locked_button(id, tr("View in Discord"), 22., 8.),
+            };
+            v_flex()
+                .items_start()
+                .pt(px(4.))
+                .gap(px(4.))
+                .child(button.gap(px(6.)).rounded(px(6.)).text_size(px(11.)))
+                .when(!plus, |d| {
+                    d.child(
+                        h_flex()
+                            .gap(px(4.))
+                            .child(Icon::new(IconName::Lock).size(px(11.)).text_color(hue(PLUS_NAME)))
+                            .child(
+                                div()
+                                    .text_size(px(11.))
+                                    .text_color(hue(PLUS_NAME))
+                                    .child(tr("You must be Supporter+ to install")),
+                            ),
+                    )
+                })
         });
         h_flex()
             .items_start()

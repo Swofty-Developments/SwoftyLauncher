@@ -69,6 +69,30 @@ pub(crate) fn link_button(
         .on_click(move |_, _, cx| cx.open_url(&url))
 }
 
+/// The link button greyed out and inert, for a link the viewer may not follow yet.
+pub(crate) fn locked_button(
+    id: impl Into<ElementId>,
+    label: impl Into<SharedString>,
+    height: f32,
+    padding: f32,
+) -> Stateful<Div> {
+    let faint = hsla(0., 0., 1., 0.55);
+    h_flex()
+        .id(id)
+        .h(px(height))
+        .px(px(padding))
+        .gap(px(8.))
+        .items_center()
+        .rounded(px(8.))
+        .cursor_not_allowed()
+        .bg(hsla(0., 0., 0.5, 0.22))
+        .text_size(px(14.))
+        .font_weight(FontWeight::SEMIBOLD)
+        .text_color(faint)
+        .child(svg().data(LOGO).size(px(16.)).text_color(faint))
+        .child(label.into())
+}
+
 /// The Discord invite at the top of the News page, shorter in `compact` windows.
 pub(crate) fn banner(
     compact: bool,

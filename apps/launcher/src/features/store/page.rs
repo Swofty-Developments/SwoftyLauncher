@@ -17,16 +17,23 @@ use crate::ui::theme::Palette;
 use crate::ui::tokens::space::GUTTER;
 
 const ROW_GAP: f32 = 16.;
-const TIERS_MAX: f32 = 1040.;
-const ACCOUNT: f32 = 230.;
+const TIERS_MAX: f32 = 1120.;
 const CHIP_ROW: f32 = 20.;
-/// How far below the top the tier names sit, under their chip row; the donation column starts level with them.
-const NAME_TOP: f32 = 26.;
+const ACTION_W: f32 = 220.;
+const ACTION_H: f32 = 34.;
 
-fn perk_row(icon: IconName, text: &'static str, accent: Hsla, p: Palette) -> Div {
+fn perk_row(icon: IconName, text: &'static str, hot: bool, accent: Hsla, p: Palette) -> Div {
     h_flex()
         .items_start()
         .gap(px(10.))
+        .when(hot, |d| {
+            d.mx(px(-8.))
+                .px(px(8.))
+                .py(px(3.))
+                .my(px(-3.))
+                .rounded(px(6.))
+                .bg(accent.opacity(0.16))
+        })
         .child(
             Icon::new(icon)
                 .size(px(16.))
@@ -39,9 +46,88 @@ fn perk_row(icon: IconName, text: &'static str, accent: Hsla, p: Palette) -> Div
                 .min_w_0()
                 .text_size(px(14.))
                 .line_height(px(20.))
-                .text_color(p.text)
+                .text_color(if hot { accent } else { p.text })
+                .when(hot, |d| d.font_weight(FontWeight::BOLD))
                 .child(text),
         )
+}
+
+/// The top of a store column: its chip row, icon and name, big figure with its unit, and one muted line.
+fn column_head(
+    chips: Div,
+    icon: IconName,
+    name: impl Into<SharedString>,
+    accent: Hsla,
+    figure: &'static str,
+    figure_color: Hsla,
+    unit: &'static str,
+    tagline: &'static str,
+    p: Palette,
+) -> Div {
+    v_flex()
+        .items_center()
+        .child(chips.h(px(CHIP_ROW)).justify_center().gap(px(6.)))
+        .child(
+            h_flex()
+                .mt(px(6.))
+                .gap(px(6.))
+                .child(Icon::new(icon).size(px(15.)).text_color(accent))
+                .child(
+                    div()
+                        .text_size(px(15.))
+                        .font_weight(FontWeight::BOLD)
+                        .text_color(accent)
+                        .child(name.into()),
+                ),
+        )
+        .child(
+            h_flex()
+                .items_end()
+                .gap(px(4.))
+                .child(
+                    div()
+                        .text_size(px(40.))
+                        .line_height(px(42.))
+                        .font_weight(FontWeight::EXTRA_BOLD)
+                        .text_color(figure_color)
+                        .child(figure),
+                )
+                .child(
+                    div()
+                        .pb(px(7.))
+                        .text_size(px(13.))
+                        .text_color(p.text_muted)
+                        .child(unit),
+                ),
+        )
+        .child(
+            div()
+                .max_w(px(280.))
+                .text_center()
+                .text_size(px(12.))
+                .line_height(px(16.))
+                .text_color(p.text_muted)
+                .child(tagline),
+        )
+}
+
+/// A column's main button: full width up to the action size, pinned under the column's content.
+fn action(id: &'static str) -> Stateful<Div> {
+    div()
+        .id(id)
+        .relative()
+        .overflow_hidden()
+        .flex_shrink_0()
+        .flex()
+        .items_center()
+        .justify_center()
+        .gap(px(8.))
+        .h(px(ACTION_H))
+        .w_full()
+        .max_w(px(ACTION_W))
+        .rounded(px(8.))
+        .text_size(px(14.))
+        .font_weight(FontWeight::BOLD)
 }
 
 impl Shell {
@@ -93,25 +179,21 @@ impl Shell {
             .into_any_element()
     }
 
-    /// The quiet column left of the tiers: a one-time gift, claiming an earlier one, and the supporter's own status.
+    /// The donation column: a one-time gift of any amount, claiming an earlier one, and the supporter's own status.
     fn store_account(&self, amount: Entity<InputState>, p: Palette, cx: &mut Context<Self>) -> Div {
         let busy = self.store_page.busy;
         let typed = amount.read(cx).value().to_string();
-        let donate = div()
-            .id("store-onetime")
-            .flex()
-            .flex_shrink_0()
-            .items_center()
-            .h(px(28.))
-            .px(px(12.))
-            .rounded(px(6.))
+        let donate = action("store-onetime")
             .bg(rgb(YELLOW))
             .text_color(rgb(0x1a1400))
-            .text_size(px(12.))
-            .font_weight(FontWeight::BOLD)
             .when(busy, |d| d.opacity(0.6))
             .when(!busy, |d| d.cursor_pointer().hover(|d| d.opacity(0.9)))
             .child(tr("Donate"))
+            .child(
+                Icon::new(IconName::ArrowRight)
+                    .size(px(15.))
+                    .text_color(rgb(0x1a1400)),
+            )
             .on_click(cx.listener(move |this, _, _, cx| {
                 StorePage::checkout(this, Kind::OneTime, Some(typed.clone()), cx)
             }));
@@ -173,46 +255,39 @@ impl Shell {
             .filter(|_| !self.store_page.claim_open && !self.store_page.listing_open)
             .map(|(ok, text)| notice(*ok, text.clone(), p).text_size(px(12.)).text_center());
         v_flex()
-            .w(px(ACCOUNT))
-            .flex_shrink_0()
+            .flex_1()
+            .min_w_0()
             .items_center()
-            .px(px(16.))
-            .pt(px(NAME_TOP))
+            .px(px(20.))
+            .child(column_head(
+                h_flex(),
+                IconName::Gift,
+                tr("One-time donation"),
+                hue(YELLOW),
+                tr("Any"),
+                p.text,
+                tr("amount, once"),
+                tr("Converts to whole months of a tier"),
+                p,
+            ))
             .child(
-                h_flex()
-                    .gap(px(6.))
-                    .child(Icon::new(IconName::Gift).size(px(15.)).text_color(rgb(YELLOW)))
+                v_flex()
+                    .flex_grow_1()
+                    .w_full()
+                    .max_w(px(ACTION_W))
+                    .mt(px(14.))
+                    .items_center()
                     .child(
                         div()
-                            .text_size(px(14.))
-                            .font_weight(FontWeight::SEMIBOLD)
-                            .child(tr("One-time donation")),
-                    ),
-            )
-            .child(
-                muted(tr("Converts to whole months of a tier"), p)
-                    .mt(px(4.))
-                    .text_size(px(12.))
-                    .line_height(px(16.))
-                    .text_center(),
-            )
-            .child(
-                h_flex()
-                    .mt(px(12.))
-                    .gap(px(8.))
-                    .child(
-                        div().w(px(96.)).flex_shrink_0().child(
-                            Input::new(&amount)
-                                .small()
-                                .prefix(div().text_color(p.text_muted).child("$")),
-                        ),
+                            .w_full()
+                            .child(Input::new(&amount).prefix(div().text_color(p.text_muted).child("$"))),
                     )
-                    .child(donate),
+                    .child(div().mt(px(6.)).child(claim))
+                    .children(status.map(|s| s.mt(px(10.))))
+                    .children(edit.map(|e| div().mt(px(8.)).child(e)))
+                    .children(note.map(|n| n.mt(px(10.)))),
             )
-            .child(div().mt(px(6.)).child(claim))
-            .children(status.map(|s| s.mt(px(16.))))
-            .children(edit.map(|e| div().mt(px(8.)).child(e)))
-            .children(note.map(|n| n.mt(px(10.))))
+            .child(donate.mt(px(16.)))
     }
 
     fn store_tiers(&self, amount: Entity<InputState>, p: Palette, cx: &mut Context<Self>) -> Div {
@@ -221,19 +296,28 @@ impl Shell {
             _ => None,
         };
         let basic = vec![
-            (IconName::MegaphoneOff, tr("No ads in the launcher")),
-            (IconName::KeyRound, tr("Access to #f1-supporter-leaks")),
-            (IconName::MessageCircle, tr("The #f1-supporter-general chat")),
+            (IconName::MegaphoneOff, tr("No ads in the launcher"), false),
+            (IconName::KeyRound, tr("Access to #f1-supporter-leaks"), false),
+            (
+                IconName::MessageCircle,
+                tr("The #f1-supporter-general chat"),
+                false,
+            ),
             (
                 IconName::Link,
                 tr("Discord embed links and external emoji permissions"),
+                false,
             ),
-            (IconName::Code, tr("Supporting a free and open-source launcher")),
+            (
+                IconName::Code,
+                tr("Supporting a free and open-source launcher"),
+                false,
+            ),
         ];
         let plus = vec![
-            (IconName::Layers, tr("All of Supporter")),
-            (IconName::Rocket, tr("Early access to addons in testing")),
-            (IconName::Beaker, tr("Access to private betatesting")),
+            (IconName::Layers, tr("All of Supporter"), false),
+            (IconName::Rocket, tr("Early access to addons in testing"), true),
+            (IconName::Beaker, tr("Access to private betatesting"), false),
         ];
         let divider = || div().flex_shrink_0().w(px(1.)).my(px(8.)).bg(p.border_variant);
         v_flex().flex_1().min_w_0().items_center().child(
@@ -255,11 +339,11 @@ impl Shell {
         )
     }
 
-    /// One tier as a centred column: its name, price, pitch and perks over its Subscribe button.
+    /// One tier as a centred column: its head and perks over its Subscribe button, which sits level with its neighbours'.
     fn tier_column(
         &self,
         kind: Kind,
-        perks: Vec<(IconName, &'static str)>,
+        perks: Vec<(IconName, &'static str, bool)>,
         current: bool,
         p: Palette,
         cx: &mut Context<Self>,
@@ -271,70 +355,39 @@ impl Shell {
         };
         let accent = hue(if plus { PLUS_NAME } else { PINK });
         let chips = h_flex()
-            .h(px(CHIP_ROW))
-            .justify_center()
-            .gap(px(6.))
             .when(plus, |d| {
                 d.child(chip(tr("Early access"), gradient(), hue(WHITE)))
             })
             .when(current, |d| {
                 d.child(chip(tr("Your tier"), hue(GREEN).opacity(0.16), hue(GREEN)))
             });
-        let name = h_flex()
-            .gap(px(6.))
-            .child(
-                Icon::new(if plus { IconName::Crown } else { IconName::Heart })
-                    .size(px(15.))
-                    .text_color(accent),
-            )
-            .child(
-                div()
-                    .text_size(px(15.))
-                    .font_weight(FontWeight::BOLD)
-                    .text_color(accent)
-                    .child(tier_name(if plus { "supporter_plus" } else { "supporter" })),
-            );
-        let price = h_flex()
-            .items_end()
-            .gap(px(4.))
-            .child(
-                div()
-                    .text_size(px(40.))
-                    .line_height(px(42.))
-                    .font_weight(FontWeight::EXTRA_BOLD)
-                    .when(plus, |d| d.text_color(accent))
-                    .child(price),
-            )
-            .child(
-                div()
-                    .pb(px(7.))
-                    .text_size(px(13.))
-                    .text_color(p.text_muted)
-                    .child(tr("/ month")),
-            );
         v_flex()
             .flex_1()
             .min_w_0()
             .items_center()
             .px(px(20.))
-            .child(chips)
-            .child(name.mt(px(NAME_TOP - CHIP_ROW)))
-            .child(price)
+            .child(column_head(
+                chips,
+                if plus { IconName::Crown } else { IconName::Heart },
+                tier_name(if plus { "supporter_plus" } else { "supporter" }),
+                accent,
+                price,
+                if plus { accent } else { p.text },
+                tr("/ month"),
+                tagline,
+                p,
+            ))
             .child(
-                div()
-                    .max_w(px(280.))
-                    .text_center()
-                    .text_size(px(12.))
-                    .line_height(px(16.))
-                    .text_color(p.text_muted)
-                    .child(tagline),
-            )
-            .child(
-                v_flex().max_w_full().mt(px(14.)).gap(px(8.)).children(
-                    perks
-                        .into_iter()
-                        .map(|(icon, text)| perk_row(icon, text, accent, p)),
-                ),
+                v_flex()
+                    .flex_grow_1()
+                    .max_w_full()
+                    .mt(px(14.))
+                    .gap(px(8.))
+                    .children(
+                        perks
+                            .into_iter()
+                            .map(|(icon, text, hot)| perk_row(icon, text, hot, accent, p)),
+                    ),
             )
             .child(self.subscribe_button(kind, cx).mt(px(16.)))
     }
@@ -343,48 +396,33 @@ impl Shell {
         let plus = kind == Kind::SupporterPlus;
         let busy = self.store_page.busy;
         let signed_in = self.account.session.is_some();
-        div()
-            .id(if plus {
-                "store-subscribe-plus"
+        action(if plus {
+            "store-subscribe-plus"
+        } else {
+            "store-subscribe"
+        })
+        .text_color(hue(WHITE))
+        .map(|d| match plus {
+            true => d
+                .bg(gradient())
+                .child(glint("store-plus-glint", Duration::from_millis(2600))),
+            false => d.bg(rgb(PINK)),
+        })
+        .when(busy, |d| d.opacity(0.6))
+        .when(!busy, |d| d.cursor_pointer().hover(|d| d.opacity(0.9)))
+        .child(tr("Subscribe"))
+        .child(
+            Icon::new(IconName::ArrowRight)
+                .size(px(15.))
+                .text_color(hue(WHITE)),
+        )
+        .on_click(cx.listener(move |this, _, _, cx| {
+            if signed_in {
+                StorePage::checkout(this, kind, None, cx);
             } else {
-                "store-subscribe"
-            })
-            .relative()
-            .overflow_hidden()
-            .flex_shrink_0()
-            .flex()
-            .items_center()
-            .justify_center()
-            .gap(px(8.))
-            .h(px(34.))
-            .w_full()
-            .max_w(px(220.))
-            .rounded(px(8.))
-            .text_size(px(14.))
-            .font_weight(FontWeight::BOLD)
-            .text_color(hue(WHITE))
-            .map(|d| match plus {
-                true => d
-                    .bg(gradient())
-                    .child(glint("store-plus-glint", Duration::from_millis(2600))),
-                false => d.bg(rgb(PINK)),
-            })
-            .when(busy, |d| d.opacity(0.6))
-            .when(!busy, |d| d.cursor_pointer().hover(|d| d.opacity(0.9)))
-            .child(tr("Subscribe"))
-            .child(
-                Icon::new(IconName::ArrowRight)
-                    .size(px(15.))
-                    .text_color(hue(WHITE)),
-            )
-            .on_click(cx.listener(move |this, _, _, cx| {
-                if signed_in {
-                    StorePage::checkout(this, kind, None, cx);
-                } else {
-                    this.store_page.notice =
-                        Some((false, tr("Sign in with Discord to subscribe.").to_owned()));
-                    cx.notify();
-                }
-            }))
+                this.store_page.notice = Some((false, tr("Sign in with Discord to subscribe.").to_owned()));
+                cx.notify();
+            }
+        }))
     }
 }
