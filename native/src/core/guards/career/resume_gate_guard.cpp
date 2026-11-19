@@ -179,7 +179,7 @@ void set_labels()
     l->override_set(nullptr, "lng_swofty_back", "Back");
 }
 
-constexpr uintptr_t PRESS_SLOT_VT = 24 * 8, CARD_BUSY = 0x1380;
+constexpr uintptr_t PRESS_SLOT_VT = 24 * 8, CARD_BUSY = 0x1380, CARD_SELECTED = 0x1369;
 constexpr uint8_t PRESS_SLOT_HEAD[] = {0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41, 0x54, 0x56, 0x57,
                                        0x55, 0x53, 0x48, 0x81, 0xEC, 0x58, 0x01, 0x00, 0x00};
 constexpr uint8_t PRESS_SLOT_IMUL[] = {0x4C, 0x69, 0xF0, 0x40, 0x05, 0x00, 0x00};
@@ -227,6 +227,8 @@ void probe(void *vm)
     auto *slot = reinterpret_cast<volatile uint64_t *>(card + 8);
     *slot = probe_slot;
     *has_save = 1;
+    *reinterpret_cast<volatile uint8_t *>(card + 1) = 1;
+    *reinterpret_cast<volatile uint8_t *>(base + CARD_SELECTED) = 0;
     swofty::log("[career] resume list: probe: card 0 slot id %llu rewritten to %llu; calling PressSlot (base+0x%llx) on vm %p",
                 (unsigned long long)was, (unsigned long long)probe_slot,
                 (unsigned long long)(fn - reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr))), vm);

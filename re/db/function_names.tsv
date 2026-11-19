@@ -7623,7 +7623,9 @@ addr	name
 0x143932a40	Gdb_Write_ReflectedFieldA
 0x143933320	Ne_Bag_ReadValue
 0x1439340c0	Game_SaveData_WriteBag
+0x143934410	Ne_BagCodec_WriteList
 0x143934620	Ne_BagCodec_ReadBag
+0x143935010	Ne_BagCodec_ReadList
 0x143935a40	Ne_Save_ReserveNodeBuffer
 0x143935ac0	Gdb_Get_ReflectedTypeInfo
 0x14393a770	Ne_SaveObject_ReserveChildSlot_14393a770
