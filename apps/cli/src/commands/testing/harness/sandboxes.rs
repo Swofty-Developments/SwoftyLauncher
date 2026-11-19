@@ -226,7 +226,7 @@ pub(crate) fn career_mode(f: &Fixture, slot: Option<u64>) -> Option<String> {
     }
 }
 
-fn copy_tree(from: &Path, to: &Path) -> std::io::Result<()> {
+pub(crate) fn copy_tree(from: &Path, to: &Path) -> std::io::Result<()> {
     std::fs::create_dir_all(to)?;
     for e in std::fs::read_dir(from)? {
         let e = e?;

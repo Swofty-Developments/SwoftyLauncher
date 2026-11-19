@@ -207,7 +207,8 @@ impl Harness<'_> {
     }
 
     /// The shell's profile as a copy of `base`: the same addons in the same order, on or off as there, with the
-    /// same settings, so the build applies what `swofty --profile <base> run --apply` applies; `extra` are
+    /// same settings and a copy of its saves folder (launcher saves and plain store), so the build applies what
+    /// `swofty --profile <base> run --apply` applies and the game loads the careers `base` plays; `extra` are
     /// switched on as well.
     pub(crate) fn profile_from(&self, base: &str, name: &str, extra: &[String]) -> Result<()> {
         if !self.store.profile_names()?.iter().any(|n| n == base) {
@@ -223,6 +224,15 @@ impl Harness<'_> {
             p.set_enabled(id, true)?;
         }
         self.store.save_profile(&p)?;
+        let (from, to) = (self.store.saves_dir(base), self.store.saves_dir(name));
+        if from.is_dir() && !to.exists() {
+            sandboxes::copy_tree(&from, &to)
+                .map_err(|e| anyhow::anyhow!("copying {} to {}: {e}", from.display(), to.display()))?;
+            crate::commands::testing::say(&format!(
+                "saves: a copy of {base}'s saves folder ({})",
+                to.display()
+            ));
+        }
         Ok(())
     }
 }
