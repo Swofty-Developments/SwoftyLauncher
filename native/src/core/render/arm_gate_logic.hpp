@@ -164,6 +164,7 @@ private:
 // block itself, as before the gate.
 template <class Platform> Choice begin(Inputs in, Gate &gate, Platform &p)
 {
+    in.hooked = true;
     Choice c = choose(in);
     if (c.worker) {
         in.hooked = p.hook();
