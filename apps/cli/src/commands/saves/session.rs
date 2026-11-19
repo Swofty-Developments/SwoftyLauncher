@@ -4,18 +4,15 @@ use swofty_core::install::Game;
 use swofty_core::saves::backup as save_backup;
 use swofty_core::saves::launcher as launcher_saves;
 use swofty_core::saves::vault::restore::Running;
-use swofty_core::saves::vault::{
-    self, Checked, Location, Meta, Notice, Reason, Snapshot, Vault, migrate, watch,
-};
+use swofty_core::saves::vault::{self, Checked, Location, Meta, Notice, Reason, Vault, migrate, watch};
 use swofty_core::store::Store;
 
 use crate::console::output::say;
 
-/// The snapshot a session's after-session check compares with.
+/// What a session's after-session snapshot needs from its start.
 pub struct Before {
     pub(super) vault: Vault,
     pub(super) loc: Location,
-    pub(super) snapshot: Option<Snapshot>,
     pub(super) meta: Meta,
     pub(super) steam: Option<std::path::PathBuf>,
 }
@@ -65,6 +62,9 @@ pub(super) fn before_session_at(
     }
     for line in swofty_core::saves::stall::sweep(store, game_loc.as_ref(), Running::now(), vault::now()) {
         say("warning", &line);
+    }
+    if let Some(l) = game_loc.as_ref().filter(|l| !l.layout.is_launcher()) {
+        swofty_core::saves::plain::remember_copy_source(&store.root, &l.source);
     }
     let p = store.profile(profile);
     let launcher = game_loc.as_ref().and_then(|l| {
@@ -174,7 +174,6 @@ pub(super) fn before_session_at(
     Some(Before {
         vault,
         loc,
-        snapshot,
         meta,
         steam,
     })
@@ -213,10 +212,7 @@ pub fn after_session(before: Option<Before>) {
     let mut meta = b.meta;
     meta.reason = Reason::AfterSession;
     meta.pin = None;
-    match b
-        .vault
-        .after_session(&b.loc, meta, b.snapshot.as_ref(), vault::now())
-    {
+    match b.vault.after_session(&b.loc, meta, vault::now()) {
         Ok(c) => {
             if let Some(n) = &c.notice {
                 say("warning", &format!("saves: {}", n.text()));

@@ -227,10 +227,48 @@ fn data(name: &str) -> PathBuf {
     d
 }
 
-#[test]
-fn the_banner_names_an_addon_career_a_start_outside_the_launcher_probably_removed() {
-    let d = std::env::temp_dir().join(format!("swofty-launcher-saves-lost-{}", std::process::id()));
-    std::fs::remove_dir_all(&d).ok();
+type Slots<'a> = &'a [(&'a str, &'a str)];
+
+fn write_generation(
+    root: &std::path::Path,
+    n: u64,
+    event: &str,
+    session: Option<&str>,
+    containers: &[(&str, &str, Slots)],
+) {
+    let fnv = |name: &str| {
+        let mut h: u64 = 0xcbf29ce484222325;
+        for b in name.bytes() {
+            h ^= u64::from(b);
+            h = h.wrapping_mul(0x100000001b3);
+        }
+        format!("{h:016x}")
+    };
+    let gd = root.join("generations").join(format!("{n:012}"));
+    std::fs::create_dir_all(gd.join("containers")).unwrap();
+    let list: Vec<serde_json::Value> = containers
+        .iter()
+        .map(|(name, source, slots)| {
+            let bytes = format!("{name}-{n}");
+            std::fs::write(gd.join("containers").join(format!("{}.bag", fnv(name))), &bytes).unwrap();
+            serde_json::json!({
+                "name": name, "fnv64": fnv(name), "type_id": 1, "bytes": bytes.len(), "sha256": format!("{name}:{}", slots.iter().map(|s| s.1).collect::<Vec<_>>().join(",")),
+                "registered": false, "source": source,
+                "slots": slots.iter().enumerate().map(|(i, (guid, who))| serde_json::json!({
+                    "slot": i, "guid": guid, "name": who, "season": 2016, "round": 7, "last_played": 1_000 + i
+                })).collect::<Vec<_>>()
+            })
+        })
+        .collect();
+    let manifest = serde_json::json!({
+        "schema": 1, "generation": n, "event": event, "written_at": 1_000 + n, "session": session,
+        "containers": list
+    });
+    std::fs::write(gd.join("manifest.json"), manifest.to_string()).unwrap();
+    std::fs::write(root.join("CURRENT"), n.to_string()).unwrap();
+}
+
+fn steam_source(d: &std::path::Path) -> vault::Location {
     let remote = d
         .join("steam")
         .join("userdata")
@@ -239,33 +277,128 @@ fn the_banner_names_an_addon_career_a_start_outside_the_launcher_probably_remove
         .join("remote");
     std::fs::create_dir_all(&remote).unwrap();
     std::fs::write(remote.join("savegame@profile#NXDSMWW.BWW"), vec![1u8; 4000]).unwrap();
-    let index = swofty_core::stdlib::careers::data_path(&d);
-    std::fs::create_dir_all(index.parent().unwrap()).unwrap();
-    std::fs::write(
-        &index,
-        r#"{"careers":[{"career":"progressive:7f","slot":"7f","status":"present","mode":"progressive","label":"Progressive 2016","addons":[{"id":"swofty.progressive"}]}]}"#,
-    )
-    .unwrap();
-    let loc = vault::Location::steam(&remote).unwrap();
+    vault::Location::steam(&remote).unwrap()
+}
+
+#[test]
+fn the_banner_names_a_career_the_newest_generation_lacks_and_offers_its_container() {
+    let d = std::env::temp_dir().join(format!("swofty-launcher-saves-lost-{}", std::process::id()));
+    std::fs::remove_dir_all(&d).ok();
+    let loc = steam_source(&d);
     let v = Vault::of(&d, &loc).unwrap();
-    let meta = |r| vault::Meta::new(r);
-    v.snapshot(&loc, meta(vault::Reason::AfterSession), 1_000)
+    v.snapshot(&loc, vault::Meta::new(vault::Reason::AfterSession), 1_000)
         .unwrap();
-    std::fs::write(remote.join("savegame@profile#NXDSMWW.BWW"), vec![2u8; 900]).unwrap();
-    v.snapshot(&loc, meta(vault::Reason::ForeignExit), 2_000).unwrap();
+    let plain = d.join("plain").join(&loc.source);
+    write_generation(
+        &plain,
+        1,
+        "save",
+        Some("s1"),
+        &[
+            ("driver_career", "game", &[("0x01", "Stock")]),
+            (
+                "driver_career_progressive",
+                "kept",
+                &[("0x0a", "Progressive 2016")],
+            ),
+        ],
+    );
+    write_generation(
+        &plain,
+        2,
+        "load",
+        None,
+        &[("driver_career", "game", &[("0x01", "Stock")])],
+    );
     match banner_from(&d, loc.source.clone(), "p".into()) {
         Some(Banner::Lost(Missing {
             names,
-            kept_at,
             source,
+            generation,
+            modes,
             ..
         })) => {
-            assert_eq!(names, ["Progressive 2016"]);
-            assert_eq!(kept_at, 1_000);
+            assert_eq!(names, ["Progressive 2016, season 2016, round 7"]);
+            assert_eq!(generation, 1);
+            assert_eq!(modes, ["driver_career_progressive"]);
             assert_eq!(source, loc.source);
         }
         _ => panic!("expected a lost banner"),
     }
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_smaller_save_alone_raises_no_banner() {
+    let d = std::env::temp_dir().join(format!("swofty-launcher-saves-small-{}", std::process::id()));
+    std::fs::remove_dir_all(&d).ok();
+    let loc = steam_source(&d);
+    let v = Vault::of(&d, &loc).unwrap();
+    v.snapshot(&loc, vault::Meta::new(vault::Reason::AfterSession), 1_000)
+        .unwrap();
+    std::fs::write(loc.dir.join("savegame@profile#NXDSMWW.BWW"), vec![2u8; 10]).unwrap();
+    v.snapshot(&loc, vault::Meta::new(vault::Reason::ForeignExit), 2_000)
+        .unwrap();
+    assert!(banner_from(&d, loc.source.clone(), "p".into()).is_none());
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn the_page_groups_careers_by_mode_and_restores_both_halves_from_one_generation() {
+    let d = std::env::temp_dir().join(format!("swofty-launcher-saves-plain-{}", std::process::id()));
+    std::fs::remove_dir_all(&d).ok();
+    let root = d.join("saves").join("p").join("plain");
+    let halves = |who: Slots<'static>| -> Vec<(&'static str, &'static str, Slots<'static>)> {
+        vec![
+            ("gm_driver_career_progressive", "kept", who),
+            ("driver_career_progressive_SaveSlotGameModeComponent", "kept", &[]),
+            ("gm_driver_career", "game", &[("0x01", "Stock")]),
+            ("driver_career_SaveSlotGameModeComponent", "game", &[]),
+        ]
+    };
+    write_generation(&root, 1, "save", Some("s1"), &halves(&[("0x0a", "Old")]));
+    write_generation(
+        &root,
+        2,
+        "save",
+        Some("s1"),
+        &halves(&[("0x0a", "Jacob"), ("0x0b", "Ada")]),
+    );
+    let view = super::plain::build_plain(&d, "launcher-p").unwrap();
+    assert_eq!(view.generation, 2);
+    assert_eq!(view.careers.len(), 3);
+    let modes: Vec<&str> = view.modes.iter().map(|m| m.mode.as_str()).collect();
+    assert_eq!(modes, ["driver_career_progressive", "driver_career"]);
+    let progressive = &view.modes[0];
+    assert_eq!(progressive.containers.len(), 2);
+    assert_eq!(progressive.older.len(), 1);
+    assert_eq!(progressive.older[0].generation, 1);
+    assert!(view.modes[1].older.is_empty(), "the stock mode never changed");
+    let jacob = view.careers.iter().find(|c| c.name == "Jacob").unwrap();
+    assert_eq!(jacob.mode, "driver_career_progressive");
+    assert!(!jacob.waiting);
+
+    let plain = swofty_core::saves::plain::Plain::of_source(&d, "launcher-p");
+    let asked = plain
+        .restore_mode(progressive.older[0].generation, "driver_career_progressive", 5)
+        .unwrap();
+    assert_eq!(asked.len(), 2);
+    assert!(asked.iter().all(|r| r.generation == 1));
+    let view = super::plain::build_plain(&d, "launcher-p").unwrap();
+    assert!(view.modes[0].waiting && !view.modes[1].waiting);
+    assert!(view.waiting_line().is_some());
+    std::fs::write(
+        root.join("injected.json"),
+        r#"{"schema":1,"results":[{"id":"r1","ok":true,"detail":"1 career(s)"}]}"#,
+    )
+    .unwrap();
+    assert!(
+        super::plain::build_plain(&d, "launcher-p")
+            .unwrap()
+            .answer_line()
+            .unwrap()
+            .contains("1 career(s)")
+    );
     std::fs::remove_dir_all(&d).ok();
 }
 

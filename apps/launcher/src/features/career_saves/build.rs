@@ -11,6 +11,7 @@ use swofty_i18n::tr;
 
 use super::detail::{DETAILS, details, saves_print};
 use super::labels::{imported_from, season_round};
+use super::plain::build_plain;
 use super::state::{Built, Entry, Imported, SavesPage, SavesView, Version};
 use super::steam::{awaiting_import, steam_save_missing};
 
@@ -65,6 +66,7 @@ pub(super) fn build_saves_untimed(
     let vault = loc.as_ref().and_then(|l| Vault::of(&root, l).ok());
     let game = crate::features::sections::game(store, install);
     let entries = card_careers(&root, store, game.as_ref(), &name);
+    let plain = loc.as_ref().and_then(|l| build_plain(&root, &l.source));
     let snaps = vault.as_ref().and_then(|v| v.list().ok()).unwrap_or_default();
     let has_save = loc.as_ref().is_some_and(launcher_saves::has_files);
     let imported = (has_save && entries.is_empty() && (vanilla || own_store)).then(|| match vanilla {
@@ -134,6 +136,7 @@ pub(super) fn build_saves_untimed(
         profile: name,
         loc,
         entries,
+        plain,
         imported,
         has_save,
         others,

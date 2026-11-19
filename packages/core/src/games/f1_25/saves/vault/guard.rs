@@ -1,33 +1,50 @@
-//! The guard against losing an addon career to a game that does not know its mode. F1 25 started
-//! without the addons (Steam's Play button, with the game folder rolled back) drops the career
-//! containers no loaded game mode claims when it saves, and Steam Cloud uploads that save. The
-//! profile save is encrypted, so the launcher cannot list its containers; it reads the signs
-//! instead: the newest save a launcher session left held addon careers in its career index, an F1 25
-//! the launcher did not start has saved since, and the save is smaller than it was.
+//! The guard against losing a career to a game that does not know its mode. F1 25 started without the
+//! addons (Steam's Play button, with the game folder rolled back) drops the career containers no loaded game
+//! mode claims when it saves, and Steam Cloud uploads that save. The launcher reads the plain store the core
+//! writes from inside the game: a container or career identity (container name, then slot guid) that the
+//! last good save generation had and the newest generation lacks is lost. Careers the core put back at load
+//! are not. No byte total decides anything.
 
-use super::careers::{self, Brief};
-use super::{EventKind, Reason, Vault};
+use super::{Notice, NoticeKind, Reason, Vault};
+use crate::saves::plain::{self, Plain};
 
 const DISMISSED: &str = "loss-dismissed";
 
-/// Addon careers a save probably lost, and the version that still holds them.
+/// Containers and careers the newest plain generation lacks, and the vault snapshot a launcher session left
+/// last.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Loss {
     pub source: String,
-    pub snapshot: String,
+    pub snapshot: Option<String>,
     pub at: i64,
-    pub careers: Vec<Brief>,
+    pub plain: plain::Loss,
 }
 
 impl Loss {
+    pub fn generation(&self) -> u64 {
+        self.plain.good
+    }
+
     pub fn names(&self) -> Vec<String> {
-        self.careers
-            .iter()
-            .map(|b| match &b.place {
-                Some(p) => format!("{}, {p}", b.name),
-                None => b.name.clone(),
-            })
-            .collect()
+        self.plain.names()
+    }
+
+    pub fn containers(&self) -> Vec<String> {
+        self.plain.containers()
+    }
+
+    pub fn notice(&self, now: i64) -> Notice {
+        Notice {
+            kind: NoticeKind::Lost,
+            source: self.source.clone(),
+            snapshot: self.snapshot.clone().unwrap_or_default(),
+            kept_at: self.at,
+            generation: self.plain.good,
+            containers: self.containers(),
+            modes: self.plain.modes(),
+            names: self.names(),
+            at: now,
+        }
     }
 }
 
@@ -35,48 +52,41 @@ fn left_by_launcher(r: Reason) -> bool {
     matches!(r, Reason::AfterSession | Reason::BeforeSession | Reason::Restored)
 }
 
-fn left_outside(r: Reason) -> bool {
-    matches!(r, Reason::ChangedOutside | Reason::ForeignExit)
+/// The `[saves] put back` lines of the newest session's loader log.
+fn put_back_log(data: &std::path::Path) -> Vec<plain::PutBack> {
+    let sessions = crate::store::Store::new(data.to_path_buf()).sessions_dir();
+    let Ok(read) = std::fs::read_dir(&sessions) else {
+        return Vec::new();
+    };
+    let mut dirs: Vec<std::path::PathBuf> = read.flatten().map(|e| e.path()).filter(|p| p.is_dir()).collect();
+    dirs.sort();
+    let Some(newest) = dirs.last() else {
+        return Vec::new();
+    };
+    ["loader.log", "game-logs/loader.log"]
+        .iter()
+        .filter_map(|rel| std::fs::read_to_string(newest.join(rel)).ok())
+        .flat_map(|text| plain::put_backs(&text))
+        .collect()
 }
 
 impl Vault {
     pub fn probable_loss(&self) -> Option<Loss> {
-        let snaps = self.list().ok()?;
-        let newest = snaps.first()?;
-        let last = snaps.iter().position(|s| left_by_launcher(s.reason))?;
-        let good = &snaps[last];
-        let touched = self
-            .events()
-            .iter()
-            .filter(|e| matches!(e.kind, EventKind::Snapshot | EventKind::Unchanged))
-            .filter(|e| e.reason.is_some_and(left_by_launcher))
-            .map(|e| e.at)
-            .max()
-            .unwrap_or(good.at);
-        if !snaps.iter().any(|s| left_outside(s.reason) && s.at > touched) {
+        let found = Plain::of_source(&self.data, &self.source).loss(&put_back_log(&self.data))?;
+        if std::fs::read_to_string(self.dir.join(DISMISSED)).is_ok_and(|d| d.trim() == found.key()) {
             return None;
         }
-        if newest.total() >= good.total() {
-            return None;
-        }
-        if std::fs::read_to_string(self.dir.join(DISMISSED)).is_ok_and(|d| d.trim() == good.id) {
-            return None;
-        }
-        let held = careers::addon_careers(&self.index_of(good)?, None);
-        let known = self.careers();
-        let careers: Vec<Brief> = held
+        let snapshot = self
+            .list()
+            .ok()?
             .into_iter()
-            .filter(|b| {
-                known
-                    .find(&b.career)
-                    .is_none_or(|r| !r.status.is_missing() && r.status != careers::Status::Archived)
-            })
-            .collect();
-        (!careers.is_empty()).then(|| Loss {
+            .find(|s| left_by_launcher(s.reason))
+            .map(|s| s.id);
+        Some(Loss {
             source: self.source.clone(),
-            snapshot: good.id.clone(),
-            at: good.at,
-            careers,
+            snapshot,
+            at: found.at,
+            plain: found,
         })
     }
 
@@ -86,20 +96,25 @@ impl Vault {
             return Ok(());
         };
         let path = self.dir.join(DISMISSED);
-        std::fs::write(&path, loss.snapshot).map_err(crate::io_err(&path))
+        std::fs::write(&path, loss.plain.key()).map_err(crate::io_err(&path))
     }
 }
 
 /// Whether a profile's Saves page warns that its addon careers live in the Steam save.
-pub fn steam_save_warning(vanilla: bool, launcher_saves: bool, addon_careers: &[Brief]) -> bool {
+pub fn steam_save_warning(
+    vanilla: bool,
+    launcher_saves: bool,
+    addon_careers: &[super::careers::Brief],
+) -> bool {
     !vanilla && !launcher_saves && !addon_careers.is_empty()
 }
 
-pub const STEAM_SAVE_WARNING: &str = "This profile's addon careers live in your Steam save. Starting F1 25 from Steam without the launcher can remove them. Launcher saves keep them out of Steam's reach.";
+pub const STEAM_SAVE_WARNING: &str = "This profile's addon careers live in your Steam save. Starting F1 25 from Steam without the launcher can remove them. A Play from the launcher puts back the careers its plain copy holds; launcher saves keep them out of Steam's reach.";
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::saves::plain::fixture::{Gen, career_gen, current, pair, write};
     use crate::saves::vault::{Layout, Location, Meta, Snapshot, Taken};
     use crate::stdlib::careers::parse;
 
@@ -108,12 +123,6 @@ mod tests {
         std::fs::remove_dir_all(&d).ok();
         std::fs::create_dir_all(&d).unwrap();
         d
-    }
-
-    fn write_index(data: &std::path::Path, json: &str) {
-        let file = crate::stdlib::careers::data_path(data);
-        std::fs::create_dir_all(file.parent().unwrap()).unwrap();
-        std::fs::write(file, json).unwrap();
     }
 
     const WITH: &str = r#"{"careers":[
@@ -125,6 +134,7 @@ mod tests {
         data: std::path::PathBuf,
         loc: Location,
         vault: Vault,
+        plain: Plain,
     }
 
     fn world(name: &str) -> World {
@@ -141,15 +151,13 @@ mod tests {
         let loc = Location::steam(&remote).unwrap();
         assert_eq!(loc.layout, Layout::Steam);
         let vault = Vault::of(&data, &loc).unwrap();
-        World { data, loc, vault }
-    }
-
-    fn save(w: &World, bytes: usize) {
-        std::fs::write(
-            w.loc.dir.join("savegame@profile#NXDSMWW.BWW"),
-            vec![(bytes % 251) as u8; bytes],
-        )
-        .unwrap();
+        let plain = Plain::of_source(&data, &loc.source);
+        World {
+            data,
+            loc,
+            vault,
+            plain,
+        }
     }
 
     fn take(w: &World, reason: Reason, at: i64) -> Snapshot {
@@ -159,116 +167,148 @@ mod tests {
         }
     }
 
+    fn rewrite(w: &World, byte: u8) {
+        std::fs::write(w.loc.dir.join("savegame@profile#NXDSMWW.BWW"), vec![byte; 4000]).unwrap();
+    }
+
+    fn lost_after_a_stock_play(w: &World) {
+        write(&w.plain, &career_gen(1, "save", Some("s1"), &[("0x0a", "Jacob")]));
+        write(
+            &w.plain,
+            &Gen {
+                n: 2,
+                event: "load",
+                session: None,
+                containers: pair("driver_career", "game", vec![("0x01", "Stock")]),
+            },
+        );
+        current(&w.plain, 2);
+    }
+
     #[test]
-    fn a_save_that_shrank_after_a_foreign_run_loses_the_addon_career_of_the_last_session() {
+    fn a_container_the_newest_generation_lacks_is_lost_whatever_the_file_sizes_do() {
         let w = world("lost");
-        write_index(&w.data, WITH);
-        let good = take(&w, Reason::AfterSession, 1_000);
+        take(&w, Reason::AfterSession, 1_000);
+        write(&w.plain, &career_gen(1, "save", Some("s1"), &[("0x0a", "Jacob")]));
+        current(&w.plain, 1);
         assert!(w.vault.probable_loss().is_none());
-        save(&w, 3000);
+        lost_after_a_stock_play(&w);
+        rewrite(&w, 5);
         take(&w, Reason::ForeignExit, 2_000);
         let loss = w.vault.probable_loss().unwrap();
-        assert_eq!(loss.snapshot, good.id);
-        assert_eq!(loss.at, 1_000);
-        assert_eq!(loss.names(), ["Progressive 2016, season 2016, round 7"]);
+        assert_eq!(loss.generation(), 1);
+        assert_eq!(loss.plain.modes(), ["driver_career_progressive"]);
+        assert_eq!(loss.containers().len(), 2);
+        assert_eq!(loss.names(), ["Jacob, season 2, round 5"]);
+        assert!(loss.snapshot.is_some());
         std::fs::remove_dir_all(&w.data).ok();
     }
 
     #[test]
-    fn a_launcher_start_that_finds_a_smaller_save_counts_as_outside() {
-        let w = world("start");
-        write_index(&w.data, WITH);
+    fn a_bigger_or_smaller_save_alone_loses_nothing() {
+        let w = world("sizes");
+        write(&w.plain, &career_gen(1, "save", Some("s1"), &[("0x0a", "Jacob")]));
+        write(&w.plain, &career_gen(2, "load", None, &[("0x0a", "Jacob")]));
+        current(&w.plain, 2);
         take(&w, Reason::AfterSession, 1_000);
-        save(&w, 100);
+        std::fs::write(w.loc.dir.join("savegame@profile#NXDSMWW.BWW"), vec![3u8; 100]).unwrap();
         w.vault
             .check(&w.loc, Meta::new(Reason::LauncherStart), 2_000)
             .unwrap();
-        assert_eq!(w.vault.probable_loss().unwrap().careers.len(), 1);
+        assert!(w.vault.probable_loss().is_none());
+        std::fs::write(w.loc.dir.join("savegame@profile#NXDSMWW.BWW"), vec![3u8; 90_000]).unwrap();
+        let c = w
+            .vault
+            .check(&w.loc, Meta::new(Reason::LauncherStart), 3_000)
+            .unwrap();
+        assert!(c.notice.is_none() && w.vault.probable_loss().is_none());
         std::fs::remove_dir_all(&w.data).ok();
     }
 
     #[test]
-    fn nothing_is_lost_without_addon_careers_a_foreign_run_or_a_smaller_save() {
-        let w = world("quiet");
-        write_index(
-            &w.data,
-            r#"{"careers":[{"career":"driver_career:a1","slot":"a1","status":"present","mode":"driver_career"}]}"#,
-        );
+    fn a_check_raises_the_notice_and_a_put_back_clears_it() {
+        let w = world("notice");
         take(&w, Reason::AfterSession, 1_000);
-        save(&w, 3000);
-        take(&w, Reason::ForeignExit, 2_000);
-        assert!(w.vault.probable_loss().is_none());
+        lost_after_a_stock_play(&w);
+        rewrite(&w, 5);
+        let c = w
+            .vault
+            .check(&w.loc, Meta::new(Reason::LauncherStart), 2_000)
+            .unwrap();
+        let n = c.notice.unwrap();
+        assert_eq!(n.kind, NoticeKind::Lost);
+        assert_eq!(n.modes, ["driver_career_progressive"]);
+        assert_eq!(n.containers.len(), 2);
+        assert!(n.text().contains("generation 1"), "{}", n.text());
+        assert!(
+            n.text().contains("restore-career driver_career_progressive"),
+            "{}",
+            n.text()
+        );
+        assert_eq!(Notice::read(&w.data).unwrap(), n);
 
-        let w2 = world("grew");
-        write_index(&w2.data, WITH);
-        take(&w2, Reason::AfterSession, 1_000);
-        save(&w2, 5000);
-        take(&w2, Reason::ForeignExit, 2_000);
-        assert!(w2.vault.probable_loss().is_none());
-
-        let w3 = world("inside");
-        write_index(&w3.data, WITH);
-        take(&w3, Reason::BeforeSession, 1_000);
-        save(&w3, 3000);
-        take(&w3, Reason::AfterSession, 2_000);
-        assert!(w3.vault.probable_loss().is_none());
-        for w in [w, w2, w3] {
-            std::fs::remove_dir_all(&w.data).ok();
-        }
+        let mut put = career_gen(3, "load", None, &[("0x0a", "Jacob")]);
+        put.containers[2].1 = "injected";
+        put.containers[3].1 = "injected";
+        write(&w.plain, &put);
+        current(&w.plain, 3);
+        let c = w
+            .vault
+            .check(&w.loc, Meta::new(Reason::LauncherStart), 3_000)
+            .unwrap();
+        assert!(c.notice.is_none());
+        assert!(Notice::read(&w.data).is_none());
+        std::fs::remove_dir_all(&w.data).ok();
     }
 
     #[test]
-    fn a_restore_or_a_later_session_clears_it_and_a_dismissal_holds() {
-        let w = world("clear");
-        write_index(&w.data, WITH);
+    fn a_dismissal_holds_until_the_loss_changes() {
+        let w = world("dismiss");
         take(&w, Reason::AfterSession, 1_000);
-        save(&w, 3000);
-        take(&w, Reason::ForeignExit, 2_000);
+        lost_after_a_stock_play(&w);
         assert!(w.vault.probable_loss().is_some());
         w.vault.dismiss_loss().unwrap();
         assert!(w.vault.probable_loss().is_none());
-        save(&w, 2000);
-        take(&w, Reason::ForeignExit, 2_500);
-        assert!(w.vault.probable_loss().is_none());
-        take(&w, Reason::AfterSession, 3_000);
-        assert!(w.vault.probable_loss().is_none());
-        std::fs::remove_dir_all(&w.data).ok();
-
-        let w = world("session");
-        write_index(&w.data, WITH);
-        take(&w, Reason::AfterSession, 1_000);
-        save(&w, 3000);
-        take(&w, Reason::ForeignExit, 2_000);
-        assert!(w.vault.probable_loss().is_some());
-        take(&w, Reason::BeforeSession, 3_000);
-        assert!(w.vault.probable_loss().is_none());
+        write(
+            &w.plain,
+            &career_gen(3, "save", Some("s2"), &[("0x0a", "Jacob"), ("0x0b", "Ada")]),
+        );
+        write(
+            &w.plain,
+            &Gen {
+                n: 4,
+                event: "load",
+                session: None,
+                containers: vec![],
+            },
+        );
+        current(&w.plain, 4);
+        assert!(
+            w.vault.probable_loss().is_some(),
+            "a new loss is not the dismissed one"
+        );
         std::fs::remove_dir_all(&w.data).ok();
     }
 
     #[test]
-    fn a_career_the_table_already_calls_missing_is_not_named_twice() {
-        let w = world("known");
-        write_index(&w.data, WITH);
-        take(&w, Reason::AfterSession, 1_000);
-        save(&w, 3000);
-        write_index(
-            &w.data,
-            r#"{"careers":[{"career":"driver_career:a1","slot":"a1","status":"present","mode":"driver_career"}]}"#,
-        );
-        take(&w, Reason::ForeignExit, 2_000);
-        assert!(w.vault.careers().missing().next().is_some());
+    fn a_session_save_without_a_career_is_a_deletion_not_a_loss() {
+        let w = world("deleted");
+        write(&w.plain, &career_gen(1, "save", Some("s1"), &[("0x0a", "Jacob")]));
+        write(&w.plain, &career_gen(2, "save", Some("s2"), &[]));
+        write(&w.plain, &career_gen(3, "load", None, &[]));
+        current(&w.plain, 3);
         assert!(w.vault.probable_loss().is_none());
         std::fs::remove_dir_all(&w.data).ok();
     }
 
     #[test]
     fn the_warning_needs_launcher_saves_off_and_an_addon_career() {
-        let held = careers::addon_careers(&parse(WITH), None);
+        let held = super::super::careers::addon_careers(&parse(WITH), None);
         assert_eq!(held.len(), 1);
         assert!(steam_save_warning(false, false, &held));
         assert!(!steam_save_warning(false, true, &held));
         assert!(!steam_save_warning(true, false, &held));
         assert!(!steam_save_warning(false, false, &[]));
-        assert!(careers::addon_careers(&parse(WITH), Some("other")).len() == 1);
+        assert!(super::super::careers::addon_careers(&parse(WITH), Some("other")).len() == 1);
     }
 }

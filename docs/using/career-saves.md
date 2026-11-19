@@ -87,9 +87,9 @@ Each profile now has its own save, starting from a copy of your Steam save. Play
 
 ## When careers go missing
 
-A banner at the top of the page, and on the **Addons** page, names the missing careers, the profile whose save they went missing from, and the time they were last in the save. **Review the restore** opens that profile's versions with the panel for that version. **Dismiss** hides the banner until the next career goes missing.
+A banner at the top of the page, and on the **Addons** page, names the missing careers, the profile whose save they went missing from, and the time they were last in the save. **Restore** asks the game to put them back the next time you press Play. **Review the restore** opens that profile's versions with the panel for that version. **Dismiss** hides the banner until the next career goes missing. A career counts as missing when the last save a launcher session wrote has it and the save the game read since does not; the size of the save file is not looked at.
 
-When the launcher has no career index to compare, a save that changed outside a launcher session and got smaller shows the older notice, worded as a change in the save, never as lost careers.
+A save that keeps F1 25 on Loading... after Press any button gets a banner with **Restore** of the last version that loaded and **Dismiss**. The launcher changes nothing until you choose.
 
 ## From a terminal
 

@@ -84,7 +84,7 @@ fn session(store: &Store, loc: &Location, stamp: &str, perf: &str, at: i64) {
     meta.session_id = Some(id.clone());
     v.before_session(loc, meta.clone(), at).unwrap();
     meta.reason = Reason::AfterSession;
-    v.after_session(loc, meta, None, at + 200).unwrap();
+    v.after_session(loc, meta, at + 200).unwrap();
     let dir = store.sessions_dir().join(stamp);
     std::fs::create_dir_all(&dir).unwrap();
     std::fs::write(dir.join("request_id"), format!("{id}\n")).unwrap();
@@ -200,7 +200,7 @@ fn a_save_that_ever_loaded_is_never_learned_and_is_forgotten() {
 }
 
 #[test]
-fn the_sweep_moves_a_stalled_store_save_aside_and_puts_back_the_last_good_one() {
+fn the_sweep_pins_a_stalled_store_save_and_offers_the_last_good_one_without_touching_it() {
     let root = tmp("sweep");
     let s = store(&root, &["colorgrading-testing"]);
     let loc = crate::saves::launcher::location(&s.root, "colorgrading-testing");
@@ -220,8 +220,8 @@ fn the_sweep_moves_a_stalled_store_save_aside_and_puts_back_the_last_good_one() 
         "{}",
         lines[1]
     );
-    assert!(lines[1].contains("is back in its place"), "{}", lines[1]);
-    assert_eq!(data_of(&loc), good, "the version that loaded is back");
+    assert!(lines[1].contains("the save is left as it is"), "{}", lines[1]);
+    assert_eq!(data_of(&loc), bad, "the sweep never swaps the live save");
 
     let ledger = Ledger::read(&s.root);
     assert_eq!(ledger.saves[0].sha256, sha(&bad));
@@ -236,19 +236,30 @@ fn the_sweep_moves_a_stalled_store_save_aside_and_puts_back_the_last_good_one() 
         "the vault keeps the stalled save"
     );
 
+    let found = super::offers(&s.root);
+    assert_eq!(found.len(), 1);
+    assert_eq!(found[0].source, loc.source);
+    assert_eq!(found[0].kept.as_deref(), Some(kept.as_str()));
+    let good_snap = v.find(found[0].snapshot.as_ref().unwrap()).unwrap();
+    assert_eq!(data_entry(&good_snap).unwrap().sha256, sha(&good));
+
     assert!(
         sweep(&s, None, Running::default(), T0 + 5 * 86_400).is_empty(),
-        "nothing left to do"
+        "nothing more to do"
     );
-    put(&loc, &bad);
+    assert_eq!(data_of(&loc), bad);
+
+    crate::saves::vault::restore::restore(&v, &good_snap.id, &loc, Running::default(), T0 + 6 * 86_400)
+        .unwrap();
+    assert_eq!(data_of(&loc), good, "the player's restore puts the version back");
     assert!(
-        sweep(&s, None, Running::default(), T0 + 5 * 86_400).is_empty(),
-        "a save the player put back on purpose stays"
+        super::offers(&s.root).is_empty(),
+        "a restored save has no offer left"
     );
 }
 
 #[test]
-fn the_same_bytes_in_the_steam_save_go_too_once_steam_is_closed() {
+fn the_same_bytes_in_the_steam_save_are_flagged_too_and_stay_while_steam_runs() {
     let root = tmp("steam");
     let s = store(&root, &["colorgrading-testing"]);
     let good = [3u8; 7_151];
@@ -269,26 +280,19 @@ fn the_same_bytes_in_the_steam_save_go_too_once_steam_is_closed() {
         ..Running::default()
     };
     let lines = sweep(&s, Some(&steam), running, T0 + 1_000);
+    assert_eq!(lines.len(), 3, "{lines:?}");
+    assert_eq!(data_of(&steam), bad);
+    assert_eq!(data_of(&loc), bad);
     assert!(
         lines
             .iter()
-            .any(|l| l.contains("moved aside once nothing holds it") && l.contains("Steam is running")),
-        "{lines:?}"
+            .all(|l| !l.contains("moved aside") && !l.contains("is back in its place"))
     );
-    assert_eq!(data_of(&steam), bad, "Steam running: the save waits");
-    assert_eq!(
-        data_of(&loc),
-        good,
-        "the profile store takes the Steam save's older version"
-    );
-
-    let lines = sweep(&s, Some(&steam), Running::default(), T0 + 2_000);
-    assert_eq!(lines.len(), 1, "{lines:?}");
-    assert_eq!(data_of(&steam), good);
+    assert_eq!(Ledger::read(&s.root).moved.len(), 2);
 }
 
 #[test]
-fn with_no_other_version_a_store_is_emptied_and_a_steam_save_stays() {
+fn with_no_other_version_nothing_is_offered_and_a_dismissal_holds() {
     let root = tmp("empty");
     let s = store(&root, &["colorgrading-testing"]);
     let bad = [9u8; 9_329];
@@ -299,25 +303,23 @@ fn with_no_other_version_a_store_is_emptied_and_a_steam_save_stays() {
     session(&s, &loc, "20261104-023146", STALLED_PERF, T0 + 400);
 
     let lines = sweep(&s, Some(&steam), Running::default(), T0 + 1_000);
-    assert_eq!(lines.len(), 3, "{lines:?}");
     assert!(
-        lines[1].contains("F1 25 starts a new profile save"),
-        "{}",
-        lines[1]
+        lines
+            .iter()
+            .any(|l| l.contains("holds no earlier version to offer")),
+        "{lines:?}"
     );
     assert!(
-        lines[1].contains("--source launcher-colorgrading-testing"),
-        "{}",
-        lines[1]
-    );
-    assert!(!crate::saves::launcher::has_files(&loc));
-    assert!(
-        lines[2].contains("Steam Cloud would bring it back, so it stays"),
-        "{}",
-        lines[2]
+        crate::saves::launcher::has_files(&loc),
+        "the store is never emptied"
     );
     assert_eq!(data_of(&steam), bad);
 
+    let found = offers(&s.root);
+    assert!(found.iter().all(|o| o.snapshot.is_none()));
+    let first = &found[0];
+    dismiss(&s.root, &first.source, &first.sha256).unwrap();
+    assert!(offers(&s.root).iter().all(|o| o.source != first.source));
     let kept = Ledger::read(&s.root).moved[0].kept.clone().unwrap();
     let snap = Vault::of(&s.root, &loc).unwrap().find(&kept).unwrap();
     assert!(snap.pinned.iter().any(|p| p == PIN));

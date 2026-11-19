@@ -56,6 +56,9 @@ pub fn vault_at_start(store: &Store) {
     {
         crate::app::app_log::note(&l);
     }
+    for l in swofty_core::saves::plain::prune_all_held(&store.root) {
+        crate::app::app_log::note(&l);
+    }
     import_first_start(store);
     BANNER_STALE.store(true, Ordering::Relaxed);
 }

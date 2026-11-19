@@ -110,13 +110,8 @@ impl Store {
                 .or(a.track.then_some(swofty_addon::manifest::Category::Tracks));
             a.folder = folders.place(&a.id, builtin, category).map(|k| folders.name(&k));
         }
-        let redirect = p.launcher_saves && !crate::saves::launcher::steam_save_pending(&self.root, &p.name);
-        s.launcher_saves = redirect.then(|| settings::SessionSaves {
-            profile: p.name.clone(),
-            remote: crate::data::paths::game_folder_view(&crate::saves::launcher::remote_dir(
-                &self.root, &p.name,
-            )),
-        });
+        (s.launcher_saves, s.plain_saves) =
+            crate::saves::launcher::session_saves(&self.root, &p.name, p.launcher_saves, p.is_vanilla());
         s.addons
             .retain(|a| a.id == CORE_ID || !self.is_builtin(&a.id) || !a.options.is_empty());
         Ok(s)

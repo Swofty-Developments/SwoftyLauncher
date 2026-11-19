@@ -174,7 +174,7 @@ fn retention_keeps_pins_and_the_cap() {
 }
 
 #[test]
-fn finds_a_save_changed_outside_the_launcher() {
+fn finds_a_save_changed_outside_the_launcher_without_judging_its_size() {
     let root = tmp("outside");
     let loc = steam(&root, "7", &[1u8; 90_000]);
     let v = vault(&root, &loc);
@@ -184,7 +184,7 @@ fn finds_a_save_changed_outside_the_launcher() {
         .unwrap()
         .taken);
     let after = v
-        .after_session(&loc, Meta::new(Reason::AfterSession), Some(&before), T0 + 600)
+        .after_session(&loc, Meta::new(Reason::AfterSession), T0 + 600)
         .unwrap();
     assert_eq!(after.taken, Taken::Unchanged(before.clone()));
     let quiet = v.check(&loc, Meta::new(Reason::LauncherStart), T0 + 700).unwrap();
@@ -197,24 +197,15 @@ fn finds_a_save_changed_outside_the_launcher() {
     assert_eq!(ch.to.reason, Reason::ChangedOutside);
     assert_eq!(ch.to.note.as_deref(), Some("found when the launcher started"));
     assert!(ch.from.pinned.contains(&"before-outside-change".to_owned()));
-    assert!(small.notice.is_none(), "1 KB smaller is ordinary play");
+    assert!(small.notice.is_none());
     assert!(Notice::read(&data).is_none());
 
-    std::fs::write(loc.dir.join(DATA), [4u8; 40_000]).unwrap();
-    let shrunk = v.check(&loc, Meta::new(Reason::BeforeSession), T0 + 900).unwrap();
-    let n = shrunk.notice.unwrap();
-    assert_eq!(n.kind, NoticeKind::ChangedOutside);
-    assert_eq!(n.snapshot, ch.to.id);
-    assert_eq!(Notice::read(&data), Some(n.clone()));
-    let text = n.text();
-    assert!(text.contains("changed outside a launcher session"), "{text}");
-    assert!(
-        text.contains(&format!("swofty saves restore {}", ch.to.id)),
-        "{text}"
-    );
-    assert!(!text.contains("gone") && !text.contains("lost"), "{text}");
-    let k = kinds(&v);
-    assert!(k.contains(&EventKind::ChangedOutside) && k.contains(&EventKind::Shrank));
+    std::fs::write(loc.dir.join(DATA), [4u8; 400]).unwrap();
+    let smaller = v.check(&loc, Meta::new(Reason::BeforeSession), T0 + 900).unwrap();
+    assert!(smaller.outside.is_some());
+    assert!(smaller.notice.is_none(), "a much smaller save is not a loss");
+    assert!(Notice::read(&data).is_none());
+    assert!(kinds(&v).contains(&EventKind::ChangedOutside));
 }
 
 #[test]
@@ -246,38 +237,41 @@ fn a_session_that_never_ended_is_not_outside() {
 }
 
 #[test]
-fn hints_at_a_session_shrink_only_with_an_addon_left_out() {
-    let root = tmp("shrink");
+fn a_session_without_an_addon_raises_a_notice_only_for_a_career_the_plain_store_lost() {
+    use crate::saves::plain::Plain;
+    use crate::saves::plain::fixture::{Gen, career_gen, current, pair, write};
+    let root = tmp("lostsession");
     let loc = steam(&root, "9", &[1u8; 90_000]);
     let v = vault(&root, &loc);
-    let before = new(v
-        .before_session(&loc, Meta::new(Reason::BeforeSession), T0)
-        .unwrap()
-        .taken);
-    std::fs::write(loc.dir.join(DATA), [2u8; 20_000]).unwrap();
-    let c = v
-        .after_session(&loc, Meta::new(Reason::AfterSession), Some(&before), T0 + 60)
-        .unwrap();
-    assert!(c.shrank.is_some() && c.notice.is_none());
+    let plain = Plain::of_source(&root.join("data"), &loc.source);
+    write(&plain, &career_gen(1, "save", Some("s1"), &[("0x0a", "Jacob")]));
+    current(&plain, 1);
     let mut meta = Meta::new(Reason::BeforeSession);
     meta.absent = vec!["swofty.progressive".into()];
-    std::fs::write(loc.dir.join(DATA), [1u8; 90_000]).unwrap();
-    let before = new(v.before_session(&loc, meta.clone(), T0 + 180).unwrap().taken);
-    assert_eq!(
-        before.reason,
-        Reason::ChangedOutside,
-        "the save changed since the last snapshot"
-    );
-    std::fs::write(loc.dir.join(DATA), [3u8; 20_000]).unwrap();
+    v.before_session(&loc, meta.clone(), T0).unwrap();
+    std::fs::write(loc.dir.join(DATA), [2u8; 80_000]).unwrap();
     meta.reason = Reason::AfterSession;
-    let n = v
-        .after_session(&loc, meta, Some(&before), T0 + 240)
-        .unwrap()
-        .notice
-        .unwrap();
-    assert_eq!(n.kind, NoticeKind::Shrank);
-    assert_eq!(n.snapshot, before.id);
-    assert!(n.text().contains("in a session without swofty.progressive"));
+    let quiet = v.after_session(&loc, meta.clone(), T0 + 60).unwrap();
+    assert!(
+        quiet.notice.is_none(),
+        "a different save with every career still there"
+    );
+
+    write(
+        &plain,
+        &Gen {
+            n: 2,
+            event: "load",
+            session: None,
+            containers: pair("driver_career", "game", vec![("0x01", "Stock")]),
+        },
+    );
+    current(&plain, 2);
+    std::fs::write(loc.dir.join(DATA), [3u8; 90_000]).unwrap();
+    let n = v.after_session(&loc, meta, T0 + 120).unwrap().notice.unwrap();
+    assert_eq!(n.kind, NoticeKind::Lost);
+    assert_eq!(n.generation, 1);
+    assert_eq!(n.modes, ["driver_career_progressive"]);
 }
 
 #[test]
@@ -337,8 +331,6 @@ fn restore_writes_the_files_and_leaves_remotecache_alone() {
     let cache = loc.remotecache().unwrap();
     let cache_before = std::fs::read(&cache).unwrap();
     let cache_time = std::fs::metadata(&cache).unwrap().modified().unwrap();
-    assert!(Notice::read(&data).is_some());
-
     let r = restore(&v, &good.id, &loc, Running::default(), T0 + 120).unwrap();
     assert_eq!(std::fs::read(loc.dir.join(DATA)).unwrap(), [1u8; 90_000]);
     assert_eq!(std::fs::read(loc.dir.join(INDEX)).unwrap(), [7u8; 416]);
@@ -410,17 +402,18 @@ fn the_ea_copy_has_its_own_vault() {
     assert_eq!(std::fs::read(profile.join("NXDSMWW.BWW")).unwrap(), [5u8; 5000]);
     assert!(
         Notice {
-            kind: NoticeKind::ChangedOutside,
+            kind: NoticeKind::Lost,
             source: loc.source.clone(),
             snapshot: s.id.clone(),
             kept_at: T0,
-            before: 9000,
-            after: 10,
-            absent: Vec::new(),
+            generation: 3,
+            containers: vec!["gm_driver_career_progressive".into()],
+            modes: vec!["driver_career_progressive".into()],
+            names: vec!["Jacob".into()],
             at: T0,
         }
         .text()
-        .contains("the EA app are closed")
+        .contains("`swofty saves restore-career driver_career_progressive`")
     );
 }
 
@@ -463,8 +456,7 @@ fn migrates_save_backups_and_retires_them_at_the_first_prune() {
     assert_eq!(s.absent_addons, ["swofty.progressive"]);
     assert_eq!(s.files[0].sha256, old.manifest.files[0].sha256);
     assert_eq!(s.files[0].name, "profile/NXDSMWW.BWW");
-    let n = Notice::read(&data).unwrap();
-    assert_eq!((n.kind, n.snapshot.as_str()), (NoticeKind::Shrank, s.id.as_str()));
+    assert!(Notice::read(&data).is_none(), "the old size notice is dropped");
     assert!(!data.join(crate::saves::backup::NOTICE).exists());
     assert!(data.join("save-backups").is_dir(), "kept until the first prune");
 

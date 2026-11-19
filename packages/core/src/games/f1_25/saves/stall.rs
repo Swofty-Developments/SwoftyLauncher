@@ -10,10 +10,11 @@
 //! $DATA/state/stalled-saves.json   the saves learned so far and where the launcher moved them from
 //! ```
 //!
-//! Before Play and at launcher start, [`sweep`] moves a learned save out of every save folder the launcher
-//! knows (each profile's launcher saves, and the Steam or EA app save of the copy Play uses) into the career
-//! vault, pinned [`PIN`], and puts back the newest version the vault holds that is not a learned one. The
-//! launcher's copies between saves ([`refuse`]) never copy a learned save.
+//! Before Play and at launcher start, [`sweep`] finds a learned save in every save folder the launcher knows
+//! (each profile's launcher saves, and the Steam or EA app save of the copy Play uses), keeps a snapshot of it
+//! pinned [`PIN`], and records an [`Offer`] to restore the newest version the vault holds that is not a
+//! learned one. The Career Saves page shows the offer. The sweep never swaps or empties a save; the player
+//! decides. The launcher's copies between saves ([`refuse`]) never copy a learned save.
 
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
@@ -21,7 +22,7 @@ use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 
 use crate::game_folder::baseline::sha256_file;
-use crate::saves::vault::restore::{Running, blocker, restore_held};
+use crate::saves::vault::restore::Running;
 use crate::saves::vault::{EventKind, Layout, Location, Meta, Reason, Snapshot, Taken, Vault};
 use crate::session::SessionRecord;
 use crate::store::Store;
@@ -80,7 +81,7 @@ pub struct Stalled {
     pub found_at: i64,
 }
 
-/// A save the sweep moved out of a save folder.
+/// A learned save the sweep found in a save folder.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Moved {
     pub source: String,
@@ -88,9 +89,14 @@ pub struct Moved {
     /// The snapshot that holds the moved save.
     #[serde(default)]
     pub kept: Option<String>,
-    /// The snapshot put back in its place.
+    /// The snapshot put back in its place; set once the player restores.
     #[serde(default)]
     pub restored: Option<String>,
+    /// The snapshot of the same vault the page offers to restore.
+    #[serde(default)]
+    pub offer: Option<String>,
+    #[serde(default)]
+    pub dismissed: bool,
     pub at: i64,
 }
 
@@ -322,7 +328,7 @@ pub fn learn(ledger: &mut Ledger, seen: &[Seen], now: i64) -> Vec<String> {
             None => {
                 out.push(format!(
                     "saves: the profile save {} ({} bytes) kept F1 25 on Loading... after Press any button in {} session(s) ({}), up to {} s; \
-                     the launcher no longer copies it and moves it out of every save folder before Play",
+                     the launcher no longer copies it and offers a restore on the Career Saves page",
                     short(sha),
                     first.size,
                     sessions.len(),
@@ -414,10 +420,25 @@ fn newest_good(data: &Path, loc: &Location, ledger: &Ledger) -> Option<(Vault, S
     None
 }
 
-/// Move a learned save out of `loc`: the vault keeps it pinned [`PIN`], and the newest good version goes back
-/// in. Without one, a launcher store or an EA save is left empty, so the game starts a new profile save; a
-/// Steam save stays, since Steam Cloud would bring it back. The caller holds the session lock.
-fn repair(data: &Path, loc: &Location, ledger: &mut Ledger, running: Running, now: i64) -> Option<String> {
+/// A learned save in a save folder and the version the player can restore in its place.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Offer {
+    /// The vault source of the save folder holding the learned save.
+    pub source: String,
+    pub sha256: String,
+    pub profile: Option<String>,
+    pub secs: u64,
+    pub sessions: usize,
+    /// The snapshot that keeps the learned save, pinned [`PIN`].
+    pub kept: Option<String>,
+    /// The snapshot of the same vault that goes back on a restore.
+    pub snapshot: Option<String>,
+    pub snapshot_at: Option<i64>,
+}
+
+/// Pin a snapshot of the learned save in `loc` and record an offer. Nothing in the save folder changes.
+/// The caller holds the session lock.
+fn flag(data: &Path, loc: &Location, ledger: &mut Ledger, now: i64) -> Option<String> {
     let sha = stalled_in(ledger, loc)?;
     if ledger.moved_from(&loc.source, &sha) {
         return None;
@@ -426,89 +447,105 @@ fn repair(data: &Path, loc: &Location, ledger: &mut Ledger, running: Running, no
         "saves: the profile save in {} kept F1 25 on Loading... after Press any button",
         loc.dir.display()
     );
-    if let Some(why) = blocker(loc.layout, running) {
-        return Some(format!("{what}; it is moved aside once nothing holds it: {why}"));
-    }
-    let line = match newest_good(data, loc, ledger) {
-        Some((from, good)) => {
-            let into = match Vault::of(data, loc) {
-                Ok(v) => v,
-                Err(e) => return Some(format!("{what}; the career vault could not be opened: {e}")),
-            };
-            match restore_held(&from, &good.id, loc, &into, now) {
-                Ok(r) => {
-                    let kept = r.before.clone();
-                    if let Some(k) = &kept {
-                        into.pin(k, PIN, now).ok();
-                    }
-                    ledger.moved.push(Moved {
-                        source: loc.source.clone(),
-                        sha256: sha,
-                        kept: kept.clone(),
-                        restored: Some(good.id.clone()),
-                        at: now,
-                    });
-                    format!(
-                        "{what}; the career vault keeps it as snapshot {} and the version from {} ({}) is back in its place",
-                        kept.as_deref().unwrap_or("?"),
-                        crate::saves::vault::human(good.at),
-                        good.id
-                    )
-                }
-                Err(e) => format!("{what}; putting back {} failed: {e}", good.id),
+    let vault = match Vault::of(data, loc) {
+        Ok(v) => v,
+        Err(e) => return Some(format!("{what}; the career vault could not be opened: {e}")),
+    };
+    let kept = match vault.snapshot(
+        loc,
+        Meta::new(Reason::Manual)
+            .pin(PIN)
+            .note("kept F1 25 on Loading... after Press any button"),
+        now,
+    ) {
+        Ok(Taken::New(s) | Taken::Unchanged(s)) => {
+            if !s.pinned.iter().any(|p| p == PIN) {
+                vault.pin(&s.id, PIN, now).ok();
             }
+            Some(s.id)
         }
-        None => move_out(data, loc, ledger, sha, &what, now),
+        Ok(Taken::NoSave) => return None,
+        Err(e) => {
+            return Some(format!(
+                "{what}; the career vault could not keep a snapshot of it: {e}"
+            ));
+        }
     };
-    Some(line)
-}
-
-fn move_out(data: &Path, loc: &Location, ledger: &mut Ledger, sha: String, what: &str, now: i64) -> String {
-    if loc.layout == Layout::Steam {
-        ledger.moved.push(Moved {
-            source: loc.source.clone(),
-            sha256: sha,
-            kept: None,
-            restored: None,
-            at: now,
-        });
-        return format!(
-            "{what}; the career vault has no other version of it, and Steam Cloud would bring it back, so it stays"
-        );
-    }
-    let kept = Vault::of(data, loc).and_then(|v| {
-        v.snapshot(
-            loc,
-            Meta::new(Reason::BeforeRestore)
-                .pin(PIN)
-                .note("kept F1 25 on Loading... after Press any button; moved out of the save folder"),
-            now,
-        )
-    });
-    let kept = match kept {
-        Ok(Taken::New(s) | Taken::Unchanged(s)) => s.id,
-        Ok(Taken::NoSave) => return format!("{what}; it is gone already"),
-        Err(e) => return format!("{what}; the career vault could not keep it, so it stays: {e}"),
-    };
-    let files = loc.files().unwrap_or_default();
-    if let Some(f) = files.iter().find(|f| std::fs::remove_file(&f.path).is_err()) {
-        return format!(
-            "{what}; the career vault keeps it as snapshot {kept}, but {} could not be removed",
-            f.path.display()
-        );
-    }
+    let offer = newest_good(data, loc, ledger)
+        .filter(|(v, _)| v.source == vault.source)
+        .map(|(_, s)| s);
     ledger.moved.push(Moved {
         source: loc.source.clone(),
         sha256: sha,
-        kept: Some(kept.clone()),
+        kept: kept.clone(),
         restored: None,
+        offer: offer.as_ref().map(|s| s.id.clone()),
+        dismissed: false,
         at: now,
     });
-    format!(
-        "{what}; the career vault keeps it as snapshot {kept} and holds no other version, so F1 25 starts a new profile save; \
-         `swofty saves restore {kept} --source {}` puts it back",
-        loc.source
-    )
+    Some(match offer {
+        Some(good) => format!(
+            "{what}; the career vault keeps a pinned snapshot of it ({}) and the Career Saves page offers the \
+             version from {} ({}); the save is left as it is",
+            kept.as_deref().unwrap_or("?"),
+            crate::saves::vault::human(good.at),
+            good.id
+        ),
+        None => format!(
+            "{what}; the career vault keeps a pinned snapshot of it ({}) and holds no earlier version to offer; the \
+             save is left as it is",
+            kept.as_deref().unwrap_or("?")
+        ),
+    })
+}
+
+/// The learned saves still in their save folder that the player has not dismissed.
+pub fn offers(data: &Path) -> Vec<Offer> {
+    let ledger = Ledger::read(data);
+    let active = Location::active(data);
+    ledger
+        .moved
+        .iter()
+        .filter(|m| !m.dismissed && m.restored.is_none())
+        .filter_map(|m| {
+            let loc = Location::of_source(data, &m.source)
+                .or_else(|| active.clone().filter(|l| l.source == m.source))?;
+            (stalled_in(&ledger, &loc).as_deref() == Some(m.sha256.as_str())).then_some(())?;
+            let known = ledger.stalled(&m.sha256)?;
+            let snapshot = m.offer.as_ref().and_then(|id| {
+                let v = Vault::of(data, &loc).ok()?;
+                v.find(id).ok()
+            });
+            Some(Offer {
+                source: m.source.clone(),
+                sha256: m.sha256.clone(),
+                profile: known.profile.clone(),
+                secs: known.secs,
+                sessions: known.sessions.len(),
+                kept: m.kept.clone(),
+                snapshot_at: snapshot.as_ref().map(|s| s.at),
+                snapshot: snapshot.map(|s| s.id),
+            })
+        })
+        .collect()
+}
+
+/// Leave a learned save as it is: the page stops offering to restore it.
+pub fn dismiss(data: &Path, source: &str, sha256: &str) -> Result<()> {
+    let mut ledger = Ledger::read(data);
+    let mut changed = false;
+    for m in ledger
+        .moved
+        .iter_mut()
+        .filter(|m| m.source == source && m.sha256 == sha256 && !m.dismissed)
+    {
+        m.dismissed = true;
+        changed = true;
+    }
+    match changed {
+        true => ledger.write(data),
+        false => Ok(()),
+    }
 }
 
 /// The save folders a sweep looks at: every profile's launcher saves and `game`, the save of the copy
@@ -528,14 +565,14 @@ fn locations(store: &Store, game: Option<&Location>) -> Vec<Location> {
 
 /// Learn from the newest sessions, then move every learned save out of the save folders. Returns the lines
 /// to log. The caller holds the session lock.
-pub fn sweep(store: &Store, game: Option<&Location>, running: Running, now: i64) -> Vec<String> {
+pub fn sweep(store: &Store, game: Option<&Location>, _running: Running, now: i64) -> Vec<String> {
     let data = &store.root;
     let mut ledger = Ledger::read(data);
     let before = ledger.clone();
     let mut out = learn(&mut ledger, &seen(store), now);
     if !ledger.saves.is_empty() {
         for loc in locations(store, game) {
-            out.extend(repair(data, &loc, &mut ledger, running, now));
+            out.extend(flag(data, &loc, &mut ledger, now));
         }
     }
     if ledger != before

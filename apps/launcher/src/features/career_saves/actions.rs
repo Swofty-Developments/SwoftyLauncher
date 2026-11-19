@@ -205,6 +205,41 @@ impl Shell {
         cx.notify();
     }
 
+    pub(crate) fn restore_mode(
+        &mut self,
+        source: &str,
+        mode: &str,
+        generation: u64,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let root = self.store.root.clone();
+        let plain = swofty_core::saves::plain::Plain::of_source(&root, source);
+        let note = match plain.restore_mode(generation, mode, vault::now()) {
+            Ok(asked) => {
+                crate::app::app_log::note(&format!(
+                    "saves: asked the core to restore {} from generation {generation} at the next Play",
+                    asked
+                        .iter()
+                        .map(|r| r.container.as_str())
+                        .collect::<Vec<_>>()
+                        .join(" and ")
+                ));
+                Notification::success(trf!(
+                    "{mode} comes back from the saved copy the next time you press Play.",
+                    mode = swofty_core::saves::vault::careers::mode_label(Some(mode))
+                ))
+            }
+            Err(e) => {
+                crate::app::app_log::action("restore a career").failed(&e);
+                Notification::warning(trf!("The career was not restored: {error}", error = e))
+            }
+        };
+        window.notify(note, cx);
+        super::SavesPage::refresh(self, cx);
+        cx.notify();
+    }
+
     pub(super) fn pin_version(&mut self, source: &str, id: &str, pinned: bool, cx: &mut Context<Self>) {
         let root = self.store.root.clone();
         let done = Vault::open(&root, source).and_then(|v| match pinned {

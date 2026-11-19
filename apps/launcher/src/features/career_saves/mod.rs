@@ -8,6 +8,7 @@ mod labels;
 mod list;
 mod page;
 mod panel;
+mod plain;
 mod refresh;
 mod state;
 mod steam;
