@@ -1026,6 +1026,8 @@ fn resume_rows() -> Vec<crate::stdlib::careers::ResumeRow> {
         index,
         mode: mode.into(),
         key: format!("slot{index}"),
+        group: "f1_career_2026".into(),
+        game_mode: "driver_career_26".into(),
         ready: severity == "ready",
         severity: severity.into(),
         status: status.into(),

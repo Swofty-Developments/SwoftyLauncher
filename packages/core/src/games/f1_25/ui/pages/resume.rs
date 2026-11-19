@@ -61,11 +61,45 @@ fn who(r: &ResumeRow) -> &str {
     &r.driver
 }
 
-fn clip(s: &str, chars: usize) -> String {
-    match s.chars().count() > chars {
-        true => format!("{}...", s.chars().take(chars - 3).collect::<String>().trim_end()),
-        false => s.to_owned(),
+fn glyph_width(c: char) -> f64 {
+    match c {
+        'M' | 'W' => 1.7,
+        c if c.is_uppercase() => 1.35,
+        ' ' => 0.55,
+        'i' | 'l' | 'j' | '.' | '\'' | 't' | 'f' | '1' | ',' => 0.5,
+        c if c.is_ascii_digit() => 1.1,
+        _ => 1.0,
     }
+}
+
+fn text_width(s: &str) -> f64 {
+    s.chars().map(glyph_width).sum()
+}
+
+const DOTS: &str = "...";
+
+fn budget(c: &career_row::Column) -> f64 {
+    let size: f64 = c
+        .style
+        .split('_')
+        .next()
+        .and_then(|n| n.parse().ok())
+        .unwrap_or(17.0);
+    c.width * 8.75 * 17.0 / size
+}
+
+fn clip_col(s: &str, c: &career_row::Column) -> String {
+    let room = budget(c) - text_width(DOTS);
+    if text_width(s) <= budget(c) {
+        return s.to_owned();
+    }
+    let mut words: Vec<&str> = s.split(' ').collect();
+    while words.len() > 1 && text_width(&words.join(" ")) > room {
+        words.pop();
+    }
+    let mut cut = words.join(" ");
+    while text_width(&cut) > room && cut.pop().is_some() {}
+    format!("{}{DOTS}", cut.trim_end())
 }
 
 fn place(r: &ResumeRow) -> String {
@@ -244,20 +278,20 @@ fn new_career_row(src: &Sources) -> Result<Node> {
 
 fn row_node(src: &Sources, r: &ResumeRow) -> Result<Node> {
     let sname = RESUME_SCREEN;
-    let first = clip(who(r), career_row::DRIVER.chars);
+    let first = clip_col(who(r), &career_row::DRIVER);
     let team = match r.team.as_str() {
         t if t == first || t == who(r) => String::new(),
-        t => clip(t, career_row::TEAM.chars),
+        t => clip_col(t, &career_row::TEAM),
     };
     let badge = match short_badge(r) {
         b if b == first || b == who(r) => String::new(),
-        b => clip(b, career_row::BADGE.chars),
+        b => clip_col(b, &career_row::BADGE),
     };
     let texts = [
         first.as_str(),
         team.as_str(),
         badge.as_str(),
-        &clip(&short_place(r), career_row::PLACE.chars),
+        &clip_col(&short_place(r), &career_row::PLACE),
         short_status(&r.severity),
     ];
     let mut t = base_row(src, &row_name(r.index), texts, Some(status_colour(&r.severity)))?;
@@ -342,4 +376,30 @@ pub fn build_resume_page(src: &Sources, rows: &[ResumeRow]) -> Result<(String, V
     settings_state_matrix(src, &mut done)?;
     literal_tooltips(&mut done)?;
     Ok((sname.to_owned(), ui_bytes(vec![done])?))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn long_team_names_are_cut_at_a_word_by_their_drawn_width() {
+        let t = &career_row::TEAM;
+        assert_eq!(
+            clip_col("Mercedes-AMG PETRONAS Formula One Team", t),
+            "Mercedes-AMG PETRONAS..."
+        );
+        assert_eq!(
+            clip_col("McLaren Mastercard Formula 1 Team", t),
+            "McLaren Mastercard Formula..."
+        );
+        assert_eq!(clip_col("McLaren Formula 1 Team", t), "McLaren Formula 1 Team");
+        assert_eq!(clip_col("Williams Renault", t), "Williams Renault");
+    }
+
+    #[test]
+    fn one_unbroken_word_is_cut_inside_the_column() {
+        let cut = clip_col("Wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", &career_row::TEAM);
+        assert!(cut.ends_with(DOTS) && text_width(&cut) <= budget(&career_row::TEAM));
+    }
 }
