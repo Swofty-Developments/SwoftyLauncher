@@ -30,14 +30,7 @@ pub const PROCESS: &str = "EADesktop.exe";
 pub const LAUNCHER_EXE: &str = "EALauncher.exe";
 
 /// The game's own installerdata.xml names the first key as its install check.
-pub const INSTALL_KEYS: &[&str] = &[
-    r"HKLM\SOFTWARE\Codemasters\F1_25",
-    r"HKLM\SOFTWARE\WOW6432Node\Codemasters\F1_25",
-    r"HKLM\SOFTWARE\EA Games\F1 25",
-    r"HKLM\SOFTWARE\WOW6432Node\EA Games\F1 25",
-    r"HKLM\SOFTWARE\EA Sports\F1 25",
-    r"HKLM\SOFTWARE\WOW6432Node\EA Sports\F1 25",
-];
+pub const INSTALL_KEYS: &[&str] = swofty_addon::game::F1_25_EA_KEYS;
 pub const UNINSTALL_KEYS: &[&str] = &[
     r"HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
     r"HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall",

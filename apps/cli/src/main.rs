@@ -107,6 +107,7 @@ impl Execute for Command {
             Command::Logs(args) => args.execute(invocation),
             Command::Doctor => doctor::doctor(&invocation.store),
             Command::Game(cmd) => cmd.execute(invocation),
+            Command::Games(args) => args.execute(invocation),
             Command::Saves(cmd) => cmd.execute(invocation),
             Command::Laps(cmd) => cmd.execute(invocation),
             Command::Steam(args) => args.execute(invocation),

@@ -10,7 +10,7 @@ use super::{GameInstall, read_vdf};
 
 /// An explicit isolation root suppresses registry, default-location and drive scans.
 /// This is useful for sandboxed tools and tests that must never inspect host saves.
-pub(super) fn isolated_root() -> Option<PathBuf> {
+pub(crate) fn isolated_root() -> Option<PathBuf> {
     std::env::var_os("SWOFTY_STEAM_ROOT_ONLY").map(PathBuf::from)
 }
 
@@ -149,20 +149,32 @@ pub fn libraries(steam_root: &Path) -> Vec<PathBuf> {
 }
 
 pub fn find_game() -> Option<GameInstall> {
-    steam_roots().into_iter().find_map(|root| find_game_in(&root))
+    find_app(STEAM_APP_ID)
 }
 
 pub fn find_game_in(steam_root: &Path) -> Option<GameInstall> {
+    find_app_in(steam_root, STEAM_APP_ID)
+}
+
+/// The first install of the Steam app `app_id` in any Steam root's libraries.
+pub fn find_app(app_id: u32) -> Option<GameInstall> {
+    steam_roots()
+        .into_iter()
+        .find_map(|root| find_app_in(&root, app_id))
+}
+
+/// The first library of `steam_root` whose `appmanifest_<app_id>.acf` names an install folder.
+pub fn find_app_in(steam_root: &Path, app_id: u32) -> Option<GameInstall> {
     libraries(steam_root).into_iter().find_map(|lib| {
         let steamapps = lib.join("steamapps");
-        let acf = read_vdf(&steamapps.join(format!("appmanifest_{STEAM_APP_ID}.acf")))?;
+        let acf = read_vdf(&steamapps.join(format!("appmanifest_{app_id}.acf")))?;
         let state = acf.get("AppState")?;
         let dir = steamapps.join("common").join(state.get("installdir")?.str()?);
         let build_id = state
             .get("buildid")
             .and_then(Vdf::str)
             .and_then(|b| b.parse().ok());
-        let compat = steamapps.join("compatdata").join(STEAM_APP_ID.to_string());
+        let compat = steamapps.join("compatdata").join(app_id.to_string());
         Some(GameInstall {
             steam_root: steam_root.to_path_buf(),
             library: lib.clone(),
