@@ -71,12 +71,16 @@
 [career] resume screen: %s: the view model's vtable slot 24 does not read; nothing was done
 [career] resume screen: %s: vtable slot 24 (base+0x%llx) is not PressSlot's code on this build; nothing was done
 [career] resume screen: %s: the screen is busy (vm+0x1380 = %u); nothing was done
+[career] resume screen: row %zu: the wizard data group was %s, set to %s (suffix %s)
 [career] resume screen: probe: card 0 slot id %llu rewritten to %llu; calling PressSlot (base+0x%llx) on vm %p
 [career] resume screen: probe: PressSlot returned; pending action vm+0x1368 = %u (2 means the career loads when the screen finishes its transition out)
-[career] resume screen: row %zu: calling PressSlot (base+0x%llx) on the %s continue screen
+[career] resume screen: row %zu: not pressed: %s
+[career] resume screen: row %zu: calling PressSlot (base+0x%llx) on the %s continue screen, wizard data group %s
 [career] resume screen: row %zu: PressSlot returned; pending action vm+0x1368 = %u (2 means the career loads when the screen finishes its transition out)
+[career] resume screen: row %zu: the screen did not take the career (pending %u); it stays open
 [career] resume screen: row %zu: the confirm was answered "%s"
 [career] resume screen: row %zu: the confirm message did not show; Back is taken and nothing loads
+[career] resume screen: row %zu: slot id %llu is not one of the %zu cards the continue screen listed; the core's save slot list has it
 [career] resume screen: row %zu: card 0 slot id %llu rewritten to %llu on the %s continue screen
 [career] resume screen: row %zu: the Load Anyway / Back confirm could not be raised; Back is taken
 [career] resume screen: row %zu: asking Load Anyway / Back (%s)
