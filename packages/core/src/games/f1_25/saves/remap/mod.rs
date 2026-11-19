@@ -100,6 +100,10 @@ const DRIVER_KEYS: &[&str] = &[
     "previous_player",
 ];
 
+const TEAM_BUFFERS: &[&str] = &["packed_other_team_stat_ids"];
+
+const DRIVER_BUFFERS: &[&str] = &["packed_driver_stat_ids", "packed_other_driver_stat_ids"];
+
 const DRIVER_STAT_LISTS: &[&str] = &[
     "press_interviews_harsh_answers_given",
     "race_penalty_history",
@@ -147,6 +151,24 @@ fn mapped(value: &mut Value, map: &BTreeMap<u16, u16>) -> bool {
     }
 }
 
+fn mapped_buffer(value: &mut Value, map: &BTreeMap<u16, u16>) -> usize {
+    let Value::Bffr(bytes) = value else {
+        return 0;
+    };
+    if bytes.0.len() % 2 != 0 {
+        return 0;
+    }
+    let mut n = 0;
+    for lane in bytes.0.chunks_exact_mut(2) {
+        let id = u16::from_le_bytes([lane[0], lane[1]]);
+        if let Some(&to) = map.get(&id) {
+            lane.copy_from_slice(&to.to_le_bytes());
+            n += 1;
+        }
+    }
+    n
+}
+
 fn walk(value: &mut Value, key: Option<&str>, list: Option<&str>, maps: &IdMaps, out: &mut Remapped) {
     match value {
         Value::Bag(bag) => {
@@ -162,6 +184,13 @@ fn walk(value: &mut Value, key: Option<&str>, list: Option<&str>, maps: &IdMaps,
             }
         }
         leaf => {
+            if let Some(k) = key {
+                if TEAM_BUFFERS.contains(&k) {
+                    out.teams += mapped_buffer(leaf, &maps.teams);
+                } else if DRIVER_BUFFERS.contains(&k) {
+                    out.drivers += mapped_buffer(leaf, &maps.drivers);
+                }
+            }
             let Some(kind) = key.and_then(|k| kind_of(k, list)) else {
                 return;
             };
@@ -186,6 +215,52 @@ pub fn remap_container(container: &mut Bag, maps: &IdMaps) -> Remapped {
     for entry in &mut container.entries {
         let name = String::from_utf8_lossy(&entry.key.0).into_owned();
         walk(&mut entry.value, Some(&name), None, maps, &mut out);
+    }
+    out
+}
+
+/// The slot id a `<mode>_SaveSlotGameModeComponent` names as the active career, whose body is the one
+/// `gm_<mode>` container the profile save holds.
+pub fn active_slot(slot_component: &Bag) -> Option<u64> {
+    match slot_component.get("data")? {
+        Value::Bag(data) => match data.get("active_slot_id")? {
+            Value::U64(id) => Some(*id),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+/// What mapping the slot component's slots would change, per slot id, and the slots with nothing to change
+/// left out. The slots are the careers' own records: a slot that holds no earlier id is untouched.
+pub fn remap_slots(slot_component: &mut Bag, maps: &IdMaps) -> Vec<(u64, Remapped)> {
+    let mut out = Vec::new();
+    let Some(Value::Bag(data)) = slot_component
+        .entries
+        .iter_mut()
+        .find(|e| e.key.0 == b"data")
+        .map(|e| &mut e.value)
+    else {
+        return out;
+    };
+    let Some(Value::List(slots)) = data
+        .entries
+        .iter_mut()
+        .find(|e| e.key.0 == b"slots")
+        .map(|e| &mut e.value)
+    else {
+        return out;
+    };
+    for slot in &mut slots.items {
+        let Value::Bag(bag) = slot else { continue };
+        let id = match bag.get("slot_id") {
+            Some(Value::U64(id)) => *id,
+            _ => continue,
+        };
+        let done = remap_container(bag, maps);
+        if done.total() > 0 {
+            out.push((id, done));
+        }
     }
     out
 }

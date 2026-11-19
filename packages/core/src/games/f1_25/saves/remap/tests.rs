@@ -218,3 +218,58 @@ fn maps_come_from_the_alias_file_tables() {
     assert_eq!(m.vehicles, BTreeMap::from([(509, 693)]));
     assert!(m.drivers.is_empty());
 }
+
+#[test]
+fn maps_the_driver_and_team_id_buffers_lane_by_lane() {
+    use crate::games::f1_25::saves::bag::Hex;
+    let lanes = |ids: &[u16]| Value::Bffr(Hex(ids.iter().flat_map(|i| i.to_le_bytes()).collect()));
+    let mut c = bag(vec![
+        ("packed_driver_stat_ids", lanes(&[235, 0x3fff, 61, 235])),
+        ("packed_other_driver_stat_ids", lanes(&[0x3fff, 0x3fff])),
+        ("packed_other_team_stat_ids", lanes(&[502, 0x3fff])),
+        ("activity_stat_id_buffer", lanes(&[235, 502])),
+    ]);
+    let Value::Bag(b) = &mut c else { unreachable!() };
+    let done = remap_container(b, &maps());
+    assert_eq!(
+        done,
+        Remapped {
+            teams: 1,
+            vehicles: 0,
+            drivers: 2
+        }
+    );
+    assert_eq!(
+        find(&c, &["packed_driver_stat_ids"]),
+        &lanes(&[362, 0x3fff, 61, 362])
+    );
+    assert_eq!(find(&c, &["packed_other_team_stat_ids"]), &lanes(&[644, 0x3fff]));
+    assert_eq!(find(&c, &["activity_stat_id_buffer"]), &lanes(&[235, 502]));
+}
+
+#[test]
+fn the_active_slot_and_per_slot_counts() {
+    let mut slots = Bag::new();
+    let mut data = Bag::new();
+    let mut list = List::new();
+    list.items = vec![
+        bag(vec![("slot_id", Value::U64(6)), ("info_team", Value::U16(502))]),
+        bag(vec![("slot_id", Value::U64(8)), ("info_team", Value::U16(646))]),
+    ];
+    data.push("slots", Value::List(list));
+    data.push("active_slot_id", Value::U64(6));
+    slots.push("data", Value::Bag(data));
+    assert_eq!(active_slot(&slots), Some(6));
+    let per = remap_slots(&mut slots, &maps());
+    assert_eq!(
+        per,
+        vec![(
+            6,
+            Remapped {
+                teams: 1,
+                vehicles: 0,
+                drivers: 0
+            }
+        )]
+    );
+}

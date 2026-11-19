@@ -19,6 +19,7 @@ pub mod inject;
 mod loss;
 mod manifest;
 mod prune;
+pub mod rewrite;
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
