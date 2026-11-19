@@ -242,6 +242,21 @@ void test_game_after_worker()
            "a game that reaches its device after the worker is done does not wait");
 }
 
+void test_arm_inputs()
+{
+    ag::Gate gate;
+    Trace trace;
+    FakePlatform platform;
+    the_gate = &gate, the_trace = &trace, the_platform = &platform;
+    platform.body = [&] { ag::run_worker(gate, block, platform); };
+    ag::Inputs in;
+    in.early = true;
+    ag::Choice c = ag::begin(in, gate, platform);
+    expect(c.worker && platform.hooked == 1 && platform.made == 1,
+           "inputs that have not hooked yet, as the arm passes them, reach the hook step and start the worker");
+    platform.worker.join();
+}
+
 void test_cap()
 {
     ag::Gate gate;
@@ -301,6 +316,7 @@ int main()
     test_system_module();
     test_gate_waits();
     test_game_after_worker();
+    test_arm_inputs();
     test_cap();
     test_fallback();
     if (fails) {
