@@ -1,8 +1,8 @@
 //! A database's records in file order, with an index of the first record of
 //! each key. The first [`SCANS`] lookups scan the records, and the next one
 //! builds the index, which costs about as much as those scans. `push` and
-//! `extend` keep the index and `remove` shifts it; any other change through
-//! `&mut` drops it and starts the count of scans again.
+//! `extend` keep the index and `insert` and `remove` shift it; any other change
+//! through `&mut` drops it and starts the count of scans again.
 
 use std::collections::HashMap;
 use std::hash::{BuildHasherDefault, Hasher};
@@ -71,6 +71,16 @@ impl Records {
         self.index().get(&key).copied()
     }
 
+    /// Builds the index now, for a reader about to look up many keys.
+    pub fn index_keys(&self) {
+        self.index();
+    }
+
+    /// The record at `i`, to change its tag or value.
+    pub fn at_mut(&mut self, i: usize) -> RecordMut<'_> {
+        RecordMut(&mut self.list[i])
+    }
+
     /// The index, when a lookup has built it.
     pub(super) fn built(&self) -> Option<&HashMap<u64, usize, impl std::hash::BuildHasher>> {
         self.index.get()
@@ -103,6 +113,20 @@ impl Records {
         self.list.push(r);
     }
 
+    /// Puts `r` at `i`, before the record there.
+    pub fn insert(&mut self, i: usize, r: Record) {
+        if let Some(index) = self.index.get_mut() {
+            for at in index.values_mut() {
+                if *at >= i {
+                    *at += 1;
+                }
+            }
+            let at = index.entry(r.key).or_insert(i);
+            *at = (*at).min(i);
+        }
+        self.list.insert(i, r);
+    }
+
     pub fn remove(&mut self, i: usize) -> Record {
         let r = self.list.remove(i);
         if let Some(index) = self.index.get_mut() {
@@ -123,6 +147,38 @@ impl Records {
 
     pub fn into_vec(self) -> Vec<Record> {
         self.list
+    }
+}
+
+/// A record of [`Records`] lent out to change its tag or value; its key stays.
+pub struct RecordMut<'a>(&'a mut Record);
+
+impl RecordMut<'_> {
+    pub fn set_tag(&mut self, tag: u8) {
+        self.0.tag = tag;
+    }
+
+    pub fn set_value(&mut self, value: Vec<u8>) {
+        self.0.value = value;
+    }
+
+    /// Sets the value and returns the one it had.
+    pub fn replace_value(&mut self, value: Vec<u8>) -> Vec<u8> {
+        std::mem::replace(&mut self.0.value, value)
+    }
+
+    /// Takes the tag and value of `r`, a record of the same key.
+    pub fn set(&mut self, r: Record) {
+        debug_assert_eq!(r.key, self.0.key);
+        (self.0.tag, self.0.value) = (r.tag, r.value);
+    }
+}
+
+impl Deref for RecordMut<'_> {
+    type Target = Record;
+
+    fn deref(&self) -> &Record {
+        self.0
     }
 }
 

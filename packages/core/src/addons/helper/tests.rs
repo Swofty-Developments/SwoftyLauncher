@@ -89,6 +89,7 @@ fn helper_waiting(dir: &Path, wait: Duration) -> HelperAddon {
     HelperAddon::new(manifest, dir).unwrap().with_timeouts(Timeouts {
         quick: wait,
         long: wait,
+        start: wait,
     })
 }
 
@@ -562,6 +563,7 @@ read -r l
     let h = Arc::new(HelperAddon::new(manifest, &dir).unwrap().with_timeouts(Timeouts {
         quick: Duration::from_secs(2),
         long: Duration::from_secs(5),
+        start: PATIENT,
     }));
     let (data, cache) = (root.join("data"), root.join("cache"));
     std::fs::create_dir_all(&cache).unwrap();
@@ -589,6 +591,51 @@ read -r l
     assert!(asked.elapsed() < Duration::from_millis(200));
     assert_eq!(busy.join().unwrap(), Effect::None);
     assert_eq!(h.try_view(&cx, "items").unwrap().unwrap().subtitle, "t");
+    h.stop();
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn a_page_with_toneless_text_keeps_the_helper_running_for_the_build() {
+    let root = tmp("toneless");
+    let dir = root.join("addon");
+    addon(
+        &dir,
+        r#"
+read -r l; echo '{"id":0,"result":{"api":1}}'
+read -r l; echo '{"id":1,"result":{"body":{"blocks":[{"label":"LEGACY CAREER"},{"text":{"text":"Start-year tiles are under Settings."}}]},"subtitle":"s"}}'
+read -r l; echo '{"id":2,"result":{"ops":[],"lines":["built"]}}'
+read -r l
+"#,
+    );
+    let h = helper(&dir);
+    let state = Memory::default();
+    let p = profile("default");
+    let (data, cache) = (root.join("data"), root.join("cache"));
+    std::fs::create_dir_all(&cache).unwrap();
+    let cx = Cx::new("t.helper", &p, &data, &cache, None, &state);
+    let view = h.view(&cx, "items").unwrap();
+    assert!(view.notices.is_empty(), "{:?}", view.notices);
+    let Body::Blocks(blocks) = &view.body else {
+        panic!("blocks");
+    };
+    assert!(matches!(
+        blocks[1],
+        swofty_addon::view::Block::Text {
+            tone: Tone::Neutral,
+            ..
+        }
+    ));
+    assert!(h.failure().is_none());
+    let options = BTreeMap::new();
+    let batch = h
+        .build(&BuildCx {
+            cx: Cx::new("t.helper", &p, &data, &cache, None, &state),
+            options: &options,
+            features: &Features::default(),
+        })
+        .unwrap();
+    assert_eq!(batch.lines, ["built"]);
     h.stop();
     std::fs::remove_dir_all(&root).ok();
 }
@@ -1004,4 +1051,144 @@ fn a_build_reply_is_not_kept_without_reads_after_a_change_it_made_or_one_too_rec
         assert_eq!(starts(&r.root), 2, "case {i}");
         std::fs::remove_dir_all(&r.root).ok();
     }
+}
+
+fn timed(dir: &Path, quick: Duration, start: Duration) -> HelperAddon {
+    let manifest = AddonManifest::load(dir).unwrap();
+    HelperAddon::new(manifest, dir).unwrap().with_timeouts(Timeouts {
+        quick,
+        long: PATIENT,
+        start,
+    })
+}
+
+fn start_notes(cache: &Path) -> Vec<String> {
+    std::fs::read_to_string(cache.join(LOG_FILE))
+        .unwrap()
+        .lines()
+        .filter_map(|l| l.split_once(" launcher: ").map(|(_, note)| note.to_owned()))
+        .collect()
+}
+
+fn started_pid(notes: &[String]) -> String {
+    assert_eq!(notes[0], "starting bin/helper", "{notes:?}");
+    let (pid, _) = notes[1]
+        .strip_prefix("pid ")
+        .and_then(|n| n.split_once(" started in "))
+        .unwrap_or_else(|| panic!("{notes:?}"));
+    pid.to_owned()
+}
+
+#[test]
+fn the_first_hello_waits_a_minute_and_quick_calls_five_seconds() {
+    let t = Timeouts::default();
+    assert_eq!(t.quick, Duration::from_secs(5));
+    assert_eq!(t.start, Duration::from_secs(60));
+    assert_eq!(t.long, Duration::from_secs(300));
+}
+
+#[test]
+fn a_slow_first_hello_gets_the_start_deadline_and_later_calls_stay_quick() {
+    let root = tmp("slow-hello");
+    let dir = root.join("addon");
+    addon(
+        &dir,
+        r#"sleep 2
+read -r l; echo '{"id":0,"result":{"api":1}}'
+read -r l; echo '{"id":1,"result":"none"}'
+read -r l; exec sleep 30
+"#,
+    );
+    let h = Arc::new(timed(&dir, HUNG, PATIENT));
+    let (data, cache) = (root.join("data"), root.join("cache"));
+    std::fs::create_dir_all(&cache).unwrap();
+    let state = Memory::default();
+    let p = profile("default");
+    let cx = Cx::new("t.helper", &p, &data, &cache, None, &state);
+    let asked = Instant::now();
+    let starting = {
+        let (h, data, cache) = (h.clone(), data.clone(), cache.clone());
+        std::thread::spawn(move || {
+            let state = Memory::default();
+            let p = profile("default");
+            let cx = Cx::new("t.helper", &p, &data, &cache, None, &state);
+            h.event(&cx, "items", Event::Click { id: "x".into() })
+        })
+    };
+    while !h.busy() && !starting.is_finished() {
+        std::thread::yield_now();
+    }
+    let peeked = Instant::now();
+    assert!(
+        h.try_view(&cx, "items").is_none(),
+        "a view never waits for a starting helper"
+    );
+    assert!(!h.ready());
+    assert!(peeked.elapsed() < Duration::from_millis(200));
+    assert_eq!(starting.join().unwrap().unwrap(), Effect::None);
+    assert!(asked.elapsed() >= Duration::from_secs(2), "{:?}", asked.elapsed());
+    assert!(h.ready() && h.failure().is_none());
+
+    let asked = Instant::now();
+    let view = h.view(&cx, "items").unwrap();
+    assert_eq!(view.notices[0].text, "Helper did not answer within 0.5 s");
+    assert!(asked.elapsed() < Duration::from_secs(10), "{:?}", asked.elapsed());
+
+    let notes = start_notes(&cache);
+    let pid = started_pid(&notes);
+    assert_eq!(
+        notes[2],
+        format!("pid {pid} has not said hello after 0.5 s, waiting up to 60 s")
+    );
+    let after: f32 = notes[3]
+        .strip_prefix(&format!("pid {pid} said hello after "))
+        .and_then(|n| n.strip_suffix(" s"))
+        .unwrap_or_else(|| panic!("{notes:?}"))
+        .parse()
+        .unwrap();
+    assert!(after >= 2.0, "{notes:?}");
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn a_helper_that_never_says_hello_fails_at_the_start_deadline_naming_the_antivirus() {
+    let root = tmp("no-hello");
+    let dir = root.join("addon");
+    addon(&dir, "echo $$ > pid\nexec sleep 30\n");
+    let h = timed(&dir, HUNG, Duration::from_secs(2));
+    let (data, cache) = (root.join("data"), root.join("cache"));
+    std::fs::create_dir_all(&cache).unwrap();
+    let state = Memory::default();
+    let p = profile("default");
+    let cx = Cx::new("t.helper", &p, &data, &cache, None, &state);
+    let asked = Instant::now();
+    let view = h.view(&cx, "items").unwrap();
+    assert!(asked.elapsed() >= Duration::from_secs(2), "{:?}", asked.elapsed());
+    let failure = format!(
+        "was still starting after 2 s: an antivirus may be scanning it. Allow {} in your antivirus, then press \
+         Restart",
+        dir.display()
+    );
+    assert_eq!(view.notices[0].text, format!("Helper {failure}"));
+    assert_eq!(view.notices[0].action.as_ref().unwrap().id, RESTART);
+    assert!(!h.running() && h.failure().is_some());
+
+    let notes = start_notes(&cache);
+    let pid = started_pid(&notes);
+    assert_eq!(std::fs::read_to_string(dir.join("pid")).unwrap().trim(), pid);
+    let alive = Command::new("kill")
+        .args(["-0", &pid])
+        .stderr(Stdio::null())
+        .status()
+        .unwrap();
+    assert!(!alive.success(), "the silent helper still runs");
+    assert_eq!(
+        notes[2],
+        format!("pid {pid} has not said hello after 0.5 s, waiting up to 2 s")
+    );
+    assert!(
+        notes[3].starts_with(&format!("pid {pid} {failure} (")),
+        "{notes:?}"
+    );
+    std::fs::remove_dir_all(&root).ok();
 }

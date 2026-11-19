@@ -175,6 +175,59 @@ fn refuses_to_start_the_game_when_an_antivirus_took_a_placed_dll() {
 }
 
 #[test]
+fn a_game_windows_starts_only_as_administrator_rolls_back_and_frees_the_lock_at_once() {
+    if !swofty_core::platform::process::game_processes().is_empty() {
+        return;
+    }
+    let m = Modded::new("ea-740");
+    let installer = m.game.dir.join(swofty_core::platform::ea_app::MARKER);
+    std::fs::create_dir_all(installer.parent().unwrap()).unwrap();
+    std::fs::write(
+        &installer,
+        "<contentIDs><contentID>16425845</contentID></contentIDs>",
+    )
+    .unwrap();
+    let log = m.game.dir.join(swofty_core::session::LOADER_LOG);
+    let mut config = m.store.config();
+    config.launch.ea_launch_command = Some(format!(
+        ": {{url}}; printf '%s\\n' '10:06:01.380 [stub] [offline] CreateProcessW failed, error 740 \
+         (ERROR_ELEVATION_REQUIRED)' >> '{}'",
+        log.display()
+    ));
+    m.store.save_config(&config).unwrap();
+    let session_dir = m.root.join("session");
+    std::fs::create_dir_all(&session_dir).unwrap();
+    let session = Session {
+        store: &m.store,
+        game: &m.game,
+        request_id: "ea-740".into(),
+        _lock: SessionLock::try_acquire(&m.store.root).unwrap().unwrap(),
+    };
+    let since = Instant::now();
+    let result =
+        crate::stores::ea::start(&m.store, &m.game.dir, &[], &session_dir, &[]).map(|_| ExitCode::SUCCESS);
+    let err = finish(session, result).unwrap_err();
+    assert!(since.elapsed() < Duration::from_secs(15), "{:?}", since.elapsed());
+    let refused = swofty_core::platform::run_as_admin::game_refused_in(&[], &m.game.dir);
+    assert_eq!(err.to_string(), refused.text());
+    assert_eq!(
+        swofty_core::diagnostics::launch::Failure::read(&m.store.root).map(|f| f.cause),
+        Some(swofty_core::diagnostics::launch::Cause::RunAsAdmin(refused))
+    );
+    assert!(
+        SessionLock::try_acquire(&m.store.root).unwrap().is_some(),
+        "the session lock is still held"
+    );
+    assert!(m.vanilla());
+    assert!(
+        !m.store
+            .root
+            .join(swofty_core::platform::steam::client::STAGE_FILE)
+            .exists()
+    );
+}
+
+#[test]
 fn rolls_back_a_session_whose_wrapper_was_killed_after_the_game_exited() {
     let m = Modded::new("killed");
     assert!(!m.vanilla());
@@ -229,4 +282,40 @@ fn waits_for_a_steam_wrapper_to_finish_rolling_back_before_recovering() {
     );
     holder.wait().unwrap();
     assert!(m.vanilla());
+}
+
+#[test]
+fn a_roll_back_that_left_locked_files_never_says_the_files_are_back() {
+    use super::launch::{UNFINISHED, settled};
+    use super::wrapper::rolled_back;
+    use swofty_core::game_folder::recovery::Recovered;
+    let locked = Recovered {
+        problems: vec!["offline play staging: offline-play restore could not finish cleanly".into()],
+        ..Recovered::default()
+    };
+    assert_eq!(settled(&locked, true), Some(UNFINISHED));
+    assert_eq!(settled(&locked, false), Some(UNFINISHED));
+    let partly = Recovered {
+        swept: vec!["removed swofty/addons/core/swofty_core.dll".into()],
+        ..locked.clone()
+    };
+    assert!(partly.recovered());
+    assert_eq!(settled(&partly, true), Some(UNFINISHED));
+
+    assert_eq!(
+        settled(&Recovered::default(), true),
+        Some("session over: its game files are rolled back")
+    );
+    assert_eq!(settled(&Recovered::default(), false), None);
+    let recovered = Recovered {
+        offline: true,
+        ..Recovered::default()
+    };
+    assert_eq!(settled(&recovered, true), None);
+
+    assert_eq!(rolled_back(false), "rolled the profile's game files back");
+    assert_eq!(
+        rolled_back(true),
+        "rolled the profile's game files back, but not the offline play files above"
+    );
 }

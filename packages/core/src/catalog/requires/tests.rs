@@ -64,6 +64,7 @@ fn addon(id: &str, versions: Vec<Version>) -> Addon {
         updated_at: String::new(),
         latest: versions.first().cloned(),
         versions,
+        media: Vec::new(),
     }
 }
 

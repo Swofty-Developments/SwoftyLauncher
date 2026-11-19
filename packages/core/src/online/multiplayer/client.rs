@@ -164,7 +164,7 @@ pub fn load(data: &Path, token: Option<&str>) -> Result<(), Unavailable> {
 
 fn open(data: &Path, token: Option<&str>) -> Result<Library, Unavailable> {
     let api = Api::new(token.unwrap_or_default());
-    let module = modules::ensure(data, &api, MODULE, modules::platform(), MODULE_ABI)?;
+    let module = modules::ensure(data, &api, MODULE, modules::platform(), MODULE_ABI, &|_| {})?;
     let config = json!({
         "data": data,
         "server": api.server(),

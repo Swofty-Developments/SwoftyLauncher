@@ -427,8 +427,13 @@ inline void lower_identity(const std::string &id, const Value &rec, const Lookup
     }
     if (n["code"].is_string() && !n["code"].as_string().empty())
         set["initials"] = n["code"];
-    if (rec["nationality"].is_string() && !rec["nationality"].as_string().empty())
-        set["nationality"] = rec["nationality"];
+    std::string unknown_nationality;
+    if (rec["nationality"].is_string() && !rec["nationality"].as_string().empty()) {
+        std::string want(rec["nationality"].as_string()), got = nationality_of(read, want);
+        if (got != want)
+            unknown_nationality = want;
+        set["nationality"] = got;
+    }
     if (rec["number"].is_int() && rec["number"].as_int() > 0)
         set["car_number"] = std::to_string(rec["number"].as_int());
     if (rec["head"].is_string() && !rec["head"].as_string().empty())
@@ -457,6 +462,8 @@ inline void lower_identity(const std::string &id, const Value &rec, const Lookup
         for (auto &t : tags)
             line += " " + t;
     }
+    if (!unknown_nationality.empty())
+        line += "; nationality " + unknown_nationality + " is not an entrants.nationality row, " + DEFAULT_NATIONALITY + " used";
     if (rec["pools"].is_array() && rec["pools"].size())
         line += "; pools are not applied (the driver pool tables are not mapped)";
     plan.lines.push_back(line);

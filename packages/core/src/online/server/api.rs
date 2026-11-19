@@ -10,6 +10,8 @@ use serde_json::Value;
 use crate::online::server::http::{self, Field};
 
 const CALL_TIMEOUT: Duration = Duration::from_secs(4);
+/// A timing mark is only worth its stamp while it is fresh, so it does not wait long for an answer.
+const TICK_TIMEOUT: Duration = Duration::from_secs(2);
 const GAME_TIMEOUT: Duration = Duration::from_secs(5);
 const BOARD_TIMEOUT: Duration = Duration::from_secs(15);
 const UPLOAD_TIMEOUT: Duration = Duration::from_secs(60);
@@ -86,6 +88,14 @@ pub struct Meta {
     pub os: String,
     pub session: Option<String>,
     pub fingerprint: Value,
+    /// What the session did about the integrity module, so a lap that comes in unsealed says why. Left out
+    /// when unknown, as older launchers do.
+    #[serde(skip_serializing_if = "Value::is_null")]
+    pub integrity: Value,
+    /// The server's receipts for the lap's timing marks, so the server can time the lap itself. Left out when
+    /// the lap has none: driven offline, or by a launcher or module without them.
+    #[serde(skip_serializing_if = "Value::is_null")]
+    pub timing: Value,
 }
 
 impl Meta {
@@ -95,7 +105,17 @@ impl Meta {
             os: if cfg!(windows) { "windows" } else { "linux" }.to_owned(),
             session,
             fingerprint,
+            integrity: Value::Null,
+            timing: Value::Null,
         }
+    }
+
+    pub fn with_integrity(self, integrity: Value) -> Self {
+        Self { integrity, ..self }
+    }
+
+    pub fn with_timing(self, timing: Value) -> Self {
+        Self { timing, ..self }
     }
 }
 
@@ -122,6 +142,10 @@ pub struct Nonce {
     pub nonce: String,
     #[serde(default)]
     pub expires: u64,
+    /// What the server asks the integrity module to prove about the game's image at each lap end, when it sends
+    /// a challenge. Older servers don't.
+    #[serde(default)]
+    pub challenge: Option<Value>,
 }
 
 /// What the queue needs of the server, so the queue's logic can run against a fake.
@@ -144,8 +168,19 @@ impl fmt::Debug for Api {
     }
 }
 
+#[cfg(test)]
+thread_local! {
+    /// The server [`Api::new`] calls on this thread instead of the configured one, for tests of the code that
+    /// makes its own [`Api`].
+    pub(crate) static TEST_SERVER: std::cell::RefCell<Option<String>> = const { std::cell::RefCell::new(None) };
+}
+
 impl Api {
     pub fn new(token: &str) -> Self {
+        #[cfg(test)]
+        if let Some(server) = TEST_SERVER.with(|s| s.borrow().clone()) {
+            return Self::with_server(&server, token);
+        }
         Self::with_server(&crate::catalog::base_url(), token)
     }
 
@@ -168,8 +203,29 @@ impl Api {
     }
 
     /// A nonce that ties the laps of one game session together.
-    pub fn sessions(&self) -> Result<Nonce, ApiError> {
-        self.send("POST", "/v1/tt/sessions", None, CALL_TIMEOUT)
+    /// Ask for the session nonce. With `game_build`, the sha256 of the game's exe, the server can set the session a
+    /// challenge for the integrity module; without it, or with something that is not such a hash, the request has
+    /// no body, as older launchers send it.
+    pub fn sessions(&self, game_build: Option<&str>) -> Result<Nonce, ApiError> {
+        let body = game_build
+            .filter(|b| b.len() == 64 && b.bytes().all(|c| matches!(c, b'0'..=b'9' | b'a'..=b'f')))
+            .map(|b| {
+                let doc = serde_json::json!({ "game_build": b });
+                ("application/json".to_owned(), doc.to_string().into_bytes())
+            });
+        self.send("POST", "/v1/tt/sessions", body, CALL_TIMEOUT)
+    }
+
+    /// Send one timing mark of a Time Trial lap for the session `nonce`; the answer is the server's receipt.
+    pub fn tick(&self, nonce: &str, mark: &Value) -> Result<String, ApiError> {
+        #[derive(Deserialize)]
+        struct Receipt {
+            receipt: String,
+        }
+        let body = ("application/json".to_owned(), mark.to_string().into_bytes());
+        let path = format!("/v1/tt/sessions/{nonce}/ticks");
+        let answer: Receipt = self.send("POST", &path, Some(body), TICK_TIMEOUT)?;
+        Ok(answer.receipt)
     }
 
     /// One in-game request of the bridge: `{status, body}` as the server built it for the game.
@@ -178,9 +234,10 @@ impl Api {
         self.send("POST", "/v1/tt/game/f1os", Some(body), GAME_TIMEOUT)
     }
 
-    /// What the server offers as the integrity module: its version, size, hash and signature.
-    pub fn integrity(&self) -> Result<Value, ApiError> {
-        let bytes = self.get("/v1/tt/integrity", CALL_TIMEOUT, 64 * 1024)?;
+    /// What the server offers as the integrity module: its version, size, hash and signature. `timeout` is
+    /// capped at the usual call timeout.
+    pub fn integrity(&self, timeout: Duration) -> Result<Value, ApiError> {
+        let bytes = self.get("/v1/tt/integrity", timeout.min(CALL_TIMEOUT), 64 * 1024)?;
         serde_json::from_slice(&bytes).map_err(|e| ApiError {
             status: 200,
             message: format!("the server's answer to GET /v1/tt/integrity is not valid: {e}"),
@@ -198,13 +255,18 @@ impl Api {
     }
 
     /// What the server offers of the modules `asked` for (`name`, `abi`) on `platform`: the ones this sign-in
-    /// may download and, for the others, why not.
-    pub fn modules(&self, platform: &str, asked: &[(&str, u32)]) -> Result<Value, ApiError> {
+    /// may download and, for the others, why not. `timeout` is capped at the usual call timeout.
+    pub fn modules(
+        &self,
+        platform: &str,
+        asked: &[(&str, u32)],
+        timeout: Duration,
+    ) -> Result<Value, ApiError> {
         let mut path = format!("/v1/modules?platform={platform}");
         for (name, abi) in asked {
             path.push_str(&format!("&abi.{name}={abi}"));
         }
-        let bytes = self.get(&path, CALL_TIMEOUT, 256 * 1024)?;
+        let bytes = self.get(&path, timeout.min(CALL_TIMEOUT), 256 * 1024)?;
         serde_json::from_slice(&bytes).map_err(|e| ApiError {
             status: 200,
             message: format!("the server's answer to GET /v1/modules is not valid: {e}"),
@@ -466,10 +528,12 @@ pub(in crate::online) mod tests {
 
     #[test]
     fn refuses_a_token_over_plain_http() {
-        let e = Api::with_server("http://10.0.0.5:1", "t").sessions().unwrap_err();
+        let e = Api::with_server("http://10.0.0.5:1", "t")
+            .sessions(None)
+            .unwrap_err();
         assert!(e.message.contains("plain http"));
         let e = Api::with_server("http://127.0.0.1:1", "t")
-            .sessions()
+            .sessions(None)
             .unwrap_err();
         assert!(e.message.contains("couldn't reach"));
     }
@@ -564,9 +628,34 @@ pub(in crate::online) mod tests {
     }
 
     #[test]
+    fn a_session_request_names_the_game_build_and_an_unknown_build_sends_none() {
+        let build = "0123456789abcdef".repeat(4);
+        let (url, t) = serve("200 OK", r#"{"nonce":"n1","expires":9}"#);
+        let n = Api::with_server(&url, "tok").sessions(Some(&build)).unwrap();
+        assert_eq!(n.nonce, "n1");
+        let req = String::from_utf8(t.join().unwrap()).unwrap();
+        let body = &req[req.find("\r\n\r\n").unwrap() + 4..];
+        assert_eq!(
+            serde_json::from_str::<Value>(body).unwrap(),
+            serde_json::json!({ "game_build": build })
+        );
+        assert!(
+            req.to_ascii_lowercase()
+                .contains("content-type: application/json")
+        );
+        let upper = "AB".repeat(32);
+        for odd in [None, Some("exe-1234"), Some(upper.as_str())] {
+            let (url, t) = serve("200 OK", r#"{"nonce":"n2"}"#);
+            Api::with_server(&url, "tok").sessions(odd).unwrap();
+            let req = String::from_utf8(t.join().unwrap()).unwrap();
+            assert!(req.ends_with("\r\n\r\n"), "{odd:?}: {req}");
+        }
+    }
+
+    #[test]
     fn asks_for_a_session_nonce_and_reads_a_refusal() {
         let (url, t) = serve("200 OK", r#"{"nonce":"abcd","expires":99}"#);
-        let n = Api::with_server(&url, "tok").sessions().unwrap();
+        let n = Api::with_server(&url, "tok").sessions(None).unwrap();
         assert_eq!((n.nonce.as_str(), n.expires), ("abcd", 99));
         t.join().unwrap();
         let (url, t) = serve("429 Too Many Requests", r#"{"error":"slow down"}"#);

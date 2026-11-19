@@ -91,6 +91,7 @@ impl LastDb {
             .as_ref()
             .and_then(|p| Gvdb::parse(&std::fs::read(p).ok()?).ok())
             .map(|db| {
+                // Last match: the game loads a key's last record over its first (Gdb_HashMap_Insert updates in place).
                 let index = db.records.iter().enumerate().map(|(i, r)| (r.key, i)).collect();
                 (db, index)
             });

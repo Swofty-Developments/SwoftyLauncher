@@ -99,7 +99,14 @@ pub(super) fn server_plugins(store: &Store, out: &dyn Fn(&str)) -> Vec<(Plugin, 
         .into_iter()
         .chain(SESSION_ENV.load(Ordering::Relaxed).then_some(modules::MP_GAME));
     for plugin in wanted {
-        match modules::ensure(&store.root, &api, plugin.name, modules::GAME_PLATFORM, plugin.abi) {
+        match modules::ensure(
+            &store.root,
+            &api,
+            plugin.name,
+            modules::GAME_PLATFORM,
+            plugin.abi,
+            out,
+        ) {
             Ok(m) => {
                 if m.is_local() {
                     out(&format!(

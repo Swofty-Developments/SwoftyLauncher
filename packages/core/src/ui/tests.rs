@@ -30,7 +30,14 @@ fn a_second_menu_build_takes_its_frames_from_the_cache() {
             "UIDF",
             vec![added.clone()],
         );
-        write_archive(&src, dst, vec![(ui, 0, patch)], vec![new], &packer).unwrap();
+        write_archive(
+            &src,
+            dst,
+            vec![(ui, 0, patch)],
+            vec![new],
+            &ArchiveWriter::new(&packer),
+        )
+        .unwrap();
         std::fs::read(dst).unwrap()
     };
     let first = write(&dir.join("first/a.erp"));
@@ -62,10 +69,9 @@ fn the_car_category_screen_gets_its_addon_boxes_within_the_loader_rules() {
         &input,
         &|_, _| None,
         &out,
-        &[],
         &mut lines,
         &mut warnings,
-        &Packer::default(),
+        &ArchiveWriter::new(&Packer::default()),
     )
     .unwrap();
     assert_eq!(written, car_category::ARCHIVES, "{warnings:?}");
@@ -90,13 +96,178 @@ fn the_car_category_screen_gets_its_addon_boxes_within_the_loader_rules() {
         &|rel: &str| out.join(rel),
         &|_, _| None,
         &out,
-        &[],
         &mut Vec::new(),
         &mut Vec::new(),
-        &Packer::default(),
+        &ArchiveWriter::new(&Packer::default()),
     )
     .unwrap();
     assert!(again.is_empty(), "boxes are added once");
+    std::fs::remove_dir_all(&out).ok();
+}
+
+#[test]
+#[ignore = "needs SWOFTY_STOCK_GAME, a stock F1 25 folder"]
+fn the_era_rows_and_car_category_boxes_write_each_archive_once() {
+    let stock = std::path::PathBuf::from(std::env::var_os("SWOFTY_STOCK_GAME").expect("set"));
+    let out = std::env::temp_dir().join(format!("swofty-picker-rows-{}", std::process::id()));
+    std::fs::remove_dir_all(&out).ok();
+    let input = |rel: &str| stock.join(rel);
+    let (mut lines, mut warnings) = (Vec::new(), Vec::new());
+    WRITTEN.with(|w| w.borrow_mut().clear());
+    let written = picker_rows(
+        true,
+        &input,
+        &|_, _| None,
+        &out,
+        &mut lines,
+        &mut warnings,
+        &ArchiveWriter::new(&Packer::default()),
+    )
+    .unwrap();
+    let wrote = WRITTEN.with(|w| w.take());
+    let all = [era::ARCHIVES[0], era::ARCHIVES[1], car_category::ARCHIVES[1]];
+    assert_eq!(written, all, "{warnings:?}");
+    assert!(warnings.is_empty(), "{warnings:?}");
+    assert_eq!(
+        lines,
+        [
+            "ui: the Grand Prix and Time Trial era picker gets Built In and Addons rows in 2 archive(s)"
+                .to_owned(),
+            format!(
+                "ui: the Car Category screen gets {} addon box slot(s) in 2 archive(s)",
+                car_category::SLOTS
+            ),
+        ]
+    );
+    let world = input(&ui_file(era::ARCHIVES[0]));
+    let title = read_frag(&world, era::TITLE_SCENE, 0).unwrap();
+    for rel in all {
+        let before = Erp::parse(&std::fs::read(input(&ui_file(rel))).unwrap()).unwrap();
+        let after = Erp::parse(&std::fs::read(out.join(ui_file(rel))).unwrap()).unwrap();
+        let mut edited: BTreeMap<&str, (usize, Vec<u8>)> = BTreeMap::new();
+        let frag = |name: &str, i: usize| before.find(name).unwrap().fragments[i].data().unwrap();
+        if era::ARCHIVES.contains(&rel) {
+            let ui = era::build_ui(&frag(era::UI, era::UI_FRAGMENT)).unwrap();
+            let scene = era::build_scene(&frag(era::SCENE, 0), &title).unwrap();
+            edited.insert(era::UI, (era::UI_FRAGMENT, ui));
+            edited.insert(era::SCENE, (0, scene));
+        }
+        if car_category::ARCHIVES.contains(&rel) {
+            let ui = car_category::build_ui(&frag(car_category::UI, car_category::UI_FRAGMENT)).unwrap();
+            let scene = car_category::build_scene(&frag(car_category::SCENE, 0)).unwrap();
+            edited.insert(car_category::UI, (car_category::UI_FRAGMENT, ui));
+            edited.insert(car_category::SCENE, (0, scene));
+        }
+        let added = if era::ROW_FADE && era::ARCHIVES.contains(&rel) {
+            2
+        } else {
+            0
+        };
+        assert_eq!(after.resources.len(), before.resources.len() + added, "{rel}");
+        for (old, new) in before.resources.iter().zip(&after.resources) {
+            assert_eq!(new.name, old.name, "{rel}");
+            assert_eq!(new.fragments.len(), old.fragments.len(), "{rel}: {}", old.name);
+            for (i, (a, b)) in old.fragments.iter().zip(&new.fragments).enumerate() {
+                match edited.get(old.name.as_str()) {
+                    Some((at, data)) if *at == i => {
+                        assert!(b.data().unwrap() == *data, "{rel}: {} {i}", old.name)
+                    }
+                    Some(_) => assert!(b.data().unwrap() == a.data().unwrap(), "{rel}: {} {i}", old.name),
+                    None => assert!(
+                        b.raw().unwrap() == a.raw().unwrap(),
+                        "{rel}: {} {i} is not copied as it is",
+                        old.name
+                    ),
+                }
+            }
+        }
+        if added > 0 {
+            let fade = era::fade(
+                &read_frag(&world, era::FADE_SOURCE, 0).unwrap(),
+                &read_frag(&world, &format!("{}.image", era::FADE_SOURCE), 0).unwrap(),
+                era::FADE,
+            )
+            .unwrap();
+            let tail = &after.resources[before.resources.len()..];
+            assert_eq!(tail[0].name, era::FADE);
+            assert_eq!(tail[1].name, format!("{}.image", era::FADE));
+            assert!(tail[0].fragments[0].data().unwrap() == fade[0]);
+            let image: Vec<Vec<u8>> = tail[1].fragments.iter().map(|f| f.data().unwrap()).collect();
+            assert!(image == fade[1..]);
+        }
+    }
+    let mut wrote = wrote;
+    wrote.sort();
+    let mut want: Vec<PathBuf> = all.iter().map(|rel| out.join(ui_file(rel))).collect();
+    want.sort();
+    assert_eq!(
+        wrote, want,
+        "each archive is written once, straight to where it goes"
+    );
+    let mut fade = Vec::new();
+    if era::ROW_FADE {
+        let made = era::fade(
+            &read_frag(&world, era::FADE_SOURCE, 0).unwrap(),
+            &read_frag(&world, &format!("{}.image", era::FADE_SOURCE), 0).unwrap(),
+            era::FADE,
+        )
+        .unwrap();
+        fade.push((era::FADE.to_owned(), era::SRV_KIND, vec![made[0].clone()]));
+        fade.push((
+            format!("{}.image", era::FADE),
+            era::SURFACE_KIND,
+            made[1..].to_vec(),
+        ));
+    }
+    for rel in all {
+        let stock_at = input(&ui_file(rel));
+        let frag = |name: &str, i: usize| read_frag(&stock_at, name, i).unwrap();
+        let mut at = stock_at.clone();
+        if era::ARCHIVES.contains(&rel) {
+            let ui = era::build_ui(&frag(era::UI, era::UI_FRAGMENT)).unwrap();
+            let scene = era::build_scene(&frag(era::SCENE, 0), &title).unwrap();
+            let next = out.join("two-passes/era").join(ui_file(rel));
+            let patches: Vec<(&str, usize, Patch)> = vec![
+                (era::UI, era::UI_FRAGMENT, Box::new(move |_| Ok(ui))),
+                (era::SCENE, 0, Box::new(move |_| Ok(scene))),
+            ];
+            write_archive(
+                &at,
+                &next,
+                patches,
+                fade.clone(),
+                &ArchiveWriter::new(&Packer::default()),
+            )
+            .unwrap();
+            at = next;
+        }
+        if car_category::ARCHIVES.contains(&rel) {
+            let ui = car_category::build_ui(&frag(car_category::UI, car_category::UI_FRAGMENT)).unwrap();
+            let scene = car_category::build_scene(&frag(car_category::SCENE, 0)).unwrap();
+            let next = out.join("two-passes/cars").join(ui_file(rel));
+            let patches: Vec<(&str, usize, Patch)> = vec![
+                (
+                    car_category::UI,
+                    car_category::UI_FRAGMENT,
+                    Box::new(move |_| Ok(ui)),
+                ),
+                (car_category::SCENE, 0, Box::new(move |_| Ok(scene))),
+            ];
+            write_archive(
+                &at,
+                &next,
+                patches,
+                Vec::new(),
+                &ArchiveWriter::new(&Packer::default()),
+            )
+            .unwrap();
+            at = next;
+        }
+        assert!(
+            std::fs::read(&at).unwrap() == std::fs::read(out.join(ui_file(rel))).unwrap(),
+            "{rel} is not byte for byte what the era picker's and then the Car Category's own pass write"
+        );
+    }
     std::fs::remove_dir_all(&out).ok();
 }
 
@@ -125,7 +296,7 @@ fn the_career_content_select_gets_its_rows_within_the_loader_rules() {
             ),
         ],
         Vec::new(),
-        &Packer::default(),
+        &ArchiveWriter::new(&Packer::default()),
     )
     .unwrap();
     let name = ui_file(career_select::ARCHIVE);
@@ -163,7 +334,7 @@ fn the_main_menu_gets_its_rows_within_the_loader_rules() {
             ),
         ],
         Vec::new(),
-        &Packer::default(),
+        &ArchiveWriter::new(&Packer::default()),
     )
     .unwrap();
     let name = ui_file(home_rows::ARCHIVE);
@@ -189,7 +360,7 @@ fn the_player_card_strip_binds_its_visibility_within_the_loader_rules() {
         &dst,
         vec![(home_rows::PLAYERCARD, 0, Box::new(move |_| Ok(out)))],
         Vec::new(),
-        &Packer::default(),
+        &ArchiveWriter::new(&Packer::default()),
     )
     .unwrap();
     let name = ui_file(home_rows::PLAYERCARD_ARCHIVE);
@@ -224,7 +395,7 @@ fn the_main_menu_navigation_routes_and_entries_are_added_within_the_loader_rules
             (FLOWS, 0, Box::new(move |_| Ok(flows_out))),
         ],
         Vec::new(),
-        &Packer::default(),
+        &ArchiveWriter::new(&Packer::default()),
     )
     .unwrap();
     let name = ui_file("persistent.erp");
@@ -329,7 +500,7 @@ fn the_session_end_hand_over_lands_on_the_activity_container_within_the_loader_r
         &dst,
         vec![(FRONTEND_TRANSITION, 0, Box::new(move |_| Ok(out)))],
         Vec::new(),
-        &Packer::default(),
+        &ArchiveWriter::new(&Packer::default()),
     )
     .unwrap();
     let name = ui_file("flow_frontend.erp");
@@ -475,7 +646,15 @@ fn a_career_setup_page_builds_within_the_loader_rules() {
     let settings = setup_settings();
     let out = std::env::temp_dir().join(format!("swofty-career-setup-{}", std::process::id()));
     std::fs::remove_dir_all(&out).ok();
-    let built = build(&settings, &input, &|_, _| None, &out, false, &Packer::default()).unwrap();
+    let built = build(
+        &settings,
+        &input,
+        &|_, _| None,
+        &out,
+        false,
+        &ArchiveWriter::new(&Packer::default()),
+    )
+    .unwrap();
     assert!(
         built
             .screens
@@ -596,7 +775,7 @@ fn a_career_setup_page_builds_within_the_loader_rules() {
         &|_, _| None,
         &out,
         false,
-        &Packer::default(),
+        &ArchiveWriter::new(&Packer::default()),
     )
     .unwrap();
     assert!(!stock_built.lines.iter().any(|l| l.contains("career setup")));
@@ -635,7 +814,7 @@ fn a_hub_tab_page_builds_within_the_loader_rules() {
         &out,
         &mut lines,
         &mut warnings,
-        &Packer::default(),
+        &ArchiveWriter::new(&Packer::default()),
     )
     .unwrap();
     assert_eq!(written, hub::ARCHIVES);
@@ -826,7 +1005,7 @@ fn a_hub_tab_page_builds_within_the_loader_rules() {
         &out,
         &mut Vec::new(),
         &mut Vec::new(),
-        &Packer::default(),
+        &ArchiveWriter::new(&Packer::default()),
     )
     .unwrap();
     assert!(none.is_empty());
@@ -852,6 +1031,126 @@ use super::picker_rows::*;
 use super::toggles::*;
 use super::*;
 use crate::addons::builtin::CORE_ID;
+const CACHED_SCREEN: &str = "eaid://ui_package/screens/a.ui";
+
+fn one_screen_archive(path: &Path, screen: &[u8]) {
+    use crate::erp::pack::frame_cache;
+    use swofty_formats::erp::{Erp, HEADER_LEN, MAGIC};
+    let mut header = [0u8; HEADER_LEN];
+    header[..4].copy_from_slice(MAGIC);
+    header[4..8].copy_from_slice(&3u32.to_le_bytes());
+    let archive = Erp {
+        header,
+        version: 3,
+        resources: vec![frame_cache::zstd_resource(CACHED_SCREEN, "UIDF", screen)],
+    }
+    .to_bytes()
+    .unwrap();
+    std::fs::write(path, archive).unwrap();
+}
+
+fn screen_bytes(seed: u8, len: u32) -> Vec<u8> {
+    (0..len)
+        .map(|i| ((i % 251) as u8 ^ (i / 1021) as u8).wrapping_add(seed))
+        .collect()
+}
+
+fn cached_write(src: &Path, dst: &Path, tail: &'static [u8], archives: &ArchiveWriter) -> Vec<u8> {
+    let patch: Patch = Box::new(move |d: &[u8]| Ok([d, tail].concat()));
+    write_archive(src, dst, vec![(CACHED_SCREEN, 0, patch)], Vec::new(), archives).unwrap();
+    std::fs::read(dst).unwrap()
+}
+
+fn real_writes() -> Vec<PathBuf> {
+    archives::WRITTEN.with(|w| w.borrow().clone())
+}
+
+#[test]
+fn a_second_ui_archive_write_the_same_links_the_first_from_the_archive_cache() {
+    use crate::cache::archive_entry::kept_archives;
+    let dir = std::env::temp_dir().join(format!("swofty-ui-archive-cache-{}", std::process::id()));
+    std::fs::remove_dir_all(&dir).ok();
+    std::fs::create_dir_all(&dir).unwrap();
+    let src = dir.join("src.erp");
+    one_screen_archive(&src, &screen_bytes(1, 24 << 10));
+    let (packer, cache) = (Packer::default(), dir.join("archives"));
+    let archives = ArchiveWriter::new(&packer).cached(&cache);
+    let first = cached_write(&src, &dir.join("first/a.erp"), b"edited", &archives);
+    let second = cached_write(&src, &dir.join("second/a.erp"), b"edited", &archives);
+    assert_eq!(second, first);
+    assert_eq!(
+        real_writes(),
+        [dir.join("first/a.erp")],
+        "the second write is a link"
+    );
+    let kept = kept_archives(&cache);
+    assert_eq!(kept.len(), 1);
+    assert_eq!(std::fs::read(&kept[0]).unwrap(), first);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+        let inode = |p: &Path| std::fs::metadata(p).unwrap().ino();
+        assert_eq!(inode(&dir.join("second/a.erp")), inode(&kept[0]));
+    }
+    let uncached = cached_write(
+        &src,
+        &dir.join("uncached/a.erp"),
+        b"edited",
+        &ArchiveWriter::new(&packer),
+    );
+    assert_eq!(uncached, first, "the cache changes no byte");
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+#[test]
+fn a_changed_patch_or_source_makes_a_new_ui_archive_cache_entry() {
+    use crate::cache::archive_entry::kept_archives;
+    let dir = std::env::temp_dir().join(format!("swofty-ui-archive-cache-new-{}", std::process::id()));
+    std::fs::remove_dir_all(&dir).ok();
+    std::fs::create_dir_all(&dir).unwrap();
+    let src = dir.join("src.erp");
+    one_screen_archive(&src, &screen_bytes(1, 24 << 10));
+    let (packer, cache) = (Packer::default(), dir.join("archives"));
+    let archives = ArchiveWriter::new(&packer).cached(&cache);
+    let first = cached_write(&src, &dir.join("one/a.erp"), b"edited", &archives);
+    let other_patch = cached_write(&src, &dir.join("two/a.erp"), b"edited again", &archives);
+    assert_ne!(other_patch, first);
+    assert_eq!(real_writes().len(), 2, "another patch is written");
+    assert_eq!(kept_archives(&cache).len(), 2);
+    one_screen_archive(&src, &screen_bytes(2, 25 << 10));
+    let other_source = cached_write(&src, &dir.join("three/a.erp"), b"edited", &archives);
+    assert_ne!(other_source, first);
+    assert_eq!(real_writes().len(), 3, "another source is written");
+    assert_eq!(kept_archives(&cache).len(), 3);
+    let again = cached_write(&src, &dir.join("four/a.erp"), b"edited", &archives);
+    assert_eq!(again, other_source);
+    assert_eq!(real_writes().len(), 3, "and then linked");
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+#[test]
+fn a_ui_archive_cache_entry_whose_bytes_changed_is_never_linked() {
+    use crate::cache::archive_entry::{change_a_byte_in_place, kept_archives};
+    let dir = std::env::temp_dir().join(format!("swofty-ui-archive-cache-changed-{}", std::process::id()));
+    std::fs::remove_dir_all(&dir).ok();
+    std::fs::create_dir_all(&dir).unwrap();
+    let src = dir.join("src.erp");
+    one_screen_archive(&src, &screen_bytes(1, 24 << 10));
+    let (packer, cache) = (Packer::default(), dir.join("archives"));
+    let archives = ArchiveWriter::new(&packer).cached(&cache);
+    let first = cached_write(&src, &dir.join("one/a.erp"), b"edited", &archives);
+    let kept = kept_archives(&cache);
+    assert_eq!(kept.len(), 1);
+    change_a_byte_in_place(&kept[0]);
+    let second = cached_write(&src, &dir.join("two/a.erp"), b"edited", &archives);
+    assert_eq!(real_writes().len(), 2, "the changed archive is not linked");
+    assert_eq!(second, first);
+    let third = cached_write(&src, &dir.join("three/a.erp"), b"edited", &archives);
+    assert_eq!(real_writes().len(), 2, "the archive written again is");
+    assert_eq!(third, first);
+    std::fs::remove_dir_all(&dir).ok();
+}
+
 use crate::addons::settings::{SessionSettings, UI_DIR};
 use node::{NodeExt, ObjExt, arr, node, obj, s};
 
@@ -945,7 +1244,7 @@ fn an_addon_era_picker_that_cannot_be_read_is_left_as_it_is() {
         &out,
         &mut lines,
         &mut warnings,
-        &Packer::default(),
+        &ArchiveWriter::new(&Packer::default()),
     )
     .unwrap();
     assert!(written.is_empty());
@@ -971,7 +1270,7 @@ fn an_addon_era_picker_that_cannot_be_read_is_left_as_it_is() {
         &out,
         &mut Vec::new(),
         &mut Vec::new(),
-        &Packer::default(),
+        &ArchiveWriter::new(&Packer::default()),
     )
     .unwrap_err();
     assert!(e.to_string().contains(&why), "{e}");
@@ -985,7 +1284,7 @@ fn an_addon_era_picker_that_cannot_be_read_is_left_as_it_is() {
         &out,
         &mut Vec::new(),
         &mut warnings,
-        &Packer::default(),
+        &ArchiveWriter::new(&Packer::default()),
     )
     .unwrap_err();
     assert!(e.to_string().contains(&why), "{e}");
@@ -1012,7 +1311,7 @@ fn an_addon_era_picker_without_the_stock_templates_is_left_as_it_is() {
         &out,
         &mut Vec::new(),
         &mut warnings,
-        &Packer::default(),
+        &ArchiveWriter::new(&Packer::default()),
     )
     .unwrap();
     assert!(written.is_empty());
@@ -1028,7 +1327,7 @@ fn an_addon_era_picker_without_the_stock_templates_is_left_as_it_is() {
         &out,
         &mut Vec::new(),
         &mut Vec::new(),
-        &Packer::default(),
+        &ArchiveWriter::new(&Packer::default()),
     )
     .unwrap_err();
     assert!(e.to_string().contains("time_trial_select not found"), "{e}");
@@ -1057,7 +1356,7 @@ fn a_missing_era_picker_resource_stays_an_error() {
         &root.join("out"),
         &mut Vec::new(),
         &mut warnings,
-        &Packer::default(),
+        &ArchiveWriter::new(&Packer::default()),
     )
     .unwrap_err();
     assert!(e.to_string().contains(era::SCENE), "{e}");

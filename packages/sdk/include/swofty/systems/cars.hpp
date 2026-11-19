@@ -282,6 +282,10 @@ struct UpgradeChange {
     float value = 0;
 };
 SWOFTY_RECORD(UpgradeChange, section, key, op, value)
+[[maybe_unused]] inline std::string_view swofty_field_schema(const UpgradeChange *, std::string_view field)
+{
+    return field == "op" ? R"({"type":"string","enum":["=","+","-","*"]})" : std::string_view{};
+}
 
 struct RadUpgrade {
     std::string name;

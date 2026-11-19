@@ -20,6 +20,13 @@ impl Shell {
         let listed = room.addons.as_ref().filter(|a| !a.list.is_empty());
         let checks = listed.map(|a| addon_checks(&a.list, &on)).unwrap_or_default();
         let lacking = missing(&checks);
+        let extra = self
+            .rooms
+            .lobby
+            .print
+            .as_ref()
+            .map(|mine| extra_addons(room, mine))
+            .unwrap_or_default();
         let subtitle = room_meta(room);
         let actions = h_flex().gap(px(8.)).items_center().child(
             Button::new("mp-view-back")
@@ -30,8 +37,14 @@ impl Shell {
         );
         let summary = if checks.is_empty() {
             tr("The host's launcher hasn't listed its addons.").to_owned()
-        } else if lacking == 0 {
+        } else if lacking == 0 && extra.is_empty() {
             tr("You have every addon the host has on.").to_owned()
+        } else if lacking == 0 {
+            trn(
+                extra.len(),
+                "You have {count} addon on that the host doesn't have.",
+                "You have {count} addons on that the host doesn't have.",
+            )
         } else {
             fill(
                 &trn(
@@ -77,6 +90,32 @@ impl Shell {
                     )
                     .into_any_element()
             })
+            .chain(extra.iter().enumerate().map(|(i, name)| {
+                h_flex()
+                    .px(px(16.))
+                    .py(px(10.))
+                    .gap(px(12.))
+                    .items_center()
+                    .when(i > 0 || !checks.is_empty(), |d| {
+                        d.border_t_1().border_color(p.border_variant)
+                    })
+                    .child(Icon::new(IconName::X).size(px(16.)).text_color(p.error))
+                    .child(
+                        div()
+                            .flex_1()
+                            .min_w_0()
+                            .truncate()
+                            .text_size(px(14.))
+                            .child(name.clone()),
+                    )
+                    .child(
+                        div()
+                            .text_size(px(13.))
+                            .text_color(p.text_muted)
+                            .child(tr("The host doesn't have it")),
+                    )
+                    .into_any_element()
+            }))
             .collect();
         v_flex()
             .size_full()

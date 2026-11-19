@@ -1,0 +1,22 @@
+{
+  "about": "The session nonce asked for when the launcher does not know the game build, as 1.9.x launchers always ask.",
+  "answer": {
+    "body": {
+      "expires": 1795010000,
+      "nonce": "5e5510b0c0de5e5510b0c0de5e5510b0"
+    },
+    "status": 200
+  },
+  "request": {
+    "body": null,
+    "headers": {
+      "accept": "*/*",
+      "accept-encoding": "gzip",
+      "authorization": "Bearer <token>",
+      "content-type": "application/json",
+      "user-agent": "swofty-launcher"
+    },
+    "method": "POST",
+    "path": "/v1/tt/sessions"
+  }
+}

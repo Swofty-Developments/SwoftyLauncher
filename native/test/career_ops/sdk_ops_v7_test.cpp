@@ -60,9 +60,9 @@ static int apply_lineup(SwoftyText request, char *out, size_t cap, size_t *len)
 }
 
 static const SwoftyCareerOps kOps6 = {6,       available, nullptr, set_slots, apply_lineup, nullptr, nullptr, nullptr,
-                                      nullptr, nullptr,   nullptr, nullptr,   nullptr,      nullptr, nullptr, nullptr, nullptr};
+                                      nullptr, nullptr,   nullptr, nullptr,   nullptr,      nullptr, nullptr, nullptr, nullptr, nullptr};
 static const SwoftyCareerOps kOps7 = {7,       available, nullptr, set_slots, apply_lineup, nullptr, nullptr, nullptr,
-                                      nullptr, nullptr,   nullptr, nullptr,   nullptr,      nullptr, current_round, team_stat, nullptr};
+                                      nullptr, nullptr,   nullptr, nullptr,   nullptr,      nullptr, current_round, team_stat, nullptr, nullptr};
 
 static Ref<drivers::Identity> D(const char *name) { return Ref<drivers::Identity>(std::string("game/") + name); }
 

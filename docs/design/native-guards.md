@@ -121,6 +121,10 @@ new hook guard takes the `HookGuardId` slot that matches where its source falls 
 goes in `HOOKED` in `native/test/guard_registry_test.cpp` at the same slot. Pin a `MidHookSpec` guard's off,
 failed and armed lines in `added.txt` under `[hook <id>]`.
 
+Every guard source's `swofty::log` formats are pinned in `native/test/guard_lines/logged.txt`, in source order under
+`[log <path>]`, and `guard_lines` fails when a source logs other formats or a source that logs has no section. A change
+to a guard's log text changes its section in the same commit.
+
 Both macros also name the guard's `CoreRank` (`native/src/core/runtime/loader/core_rank.hpp`) under its `HookGuardId`
 name, so a new hook guard adds that name to `CoreRank` too, where its on-load entry runs among the other registering
 units (the `explicit` section of `native/tools/core_init_order.txt`); the core build fails on a missing name, and
@@ -242,3 +246,20 @@ read the guard sources. They don't load the game.
 
 What they don't cover: whether a site still matches the running game build. The core checks that at load, through the
 bindings and `runtime::find`, and the guard logs its needs or not-hooked line.
+
+## Sites checked and left unguarded
+
+- `Sess_VehiclePlacement_PlaceOnSlot` (0x142f343d0, callers: census steam 0x2f343d0) bounds the slot (unsigned, at
+  most 31) but not the type, which indexes the [9][32] request table at placement + 0x38. Every game call passes a
+  constant type: 3, 5, 6 or 7 (0x142a3c7b2 picks 5 or 6). The core never calls it. The box grid's wrap
+  (`core/boxes/box_grid.cpp`) passes the game's type through and acts on type 5 only. The launcher's world extension
+  (`packages/core/src/activation/grid.rs`, `extend`) clones a world's own GridSlot, PitGarage, F1Garage and PitBox
+  entries and sets only their id, so each added request keeps the type of the entry it copies. No std library code
+  reaches the placement system.
+- `Sess_VehiclePlacementRequest_Register` (0x142f60c80) stores the request at table[type][slot] from its +0x1c and
+  +0x18 (slot = `VehPlacement.Id - 1`) with no bound. The ids the world extension adds stop at the Time Trial grid's
+  entrant count (`entrants.entrant_lists.entrant_list_34`, 26 in the game data) for GridSlot and PitGarage, and at
+  half of it for F1Garage and PitBox. `extend` refuses a count that needs an id past 32 and writes no entry
+  (`refuses_more_cars_than_the_game_has_placement_slots`). The build refuses an addon's `patch-pkg` edit that sets
+  `overrides.VehPlacement.Id` or `overrides.F1Garage.id` outside 1 to 32 (`PkgEdit::refusal`), with a warning that
+  names the addon, the op file and the entry, and skips that op.

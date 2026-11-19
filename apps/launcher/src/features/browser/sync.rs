@@ -307,7 +307,7 @@ impl Browser {
         let installed = library
             .addons
             .iter()
-            .filter(|a| a.source != Source::Builtin)
+            .filter(|a| !matches!(a.source, Source::Builtin | Source::Importer))
             .map(|a| &a.manifest);
         self.updates = catalog::updates(installed, &self.addons, &current_version());
     }
@@ -355,7 +355,10 @@ impl Browser {
                 .await;
             this.update(cx, |host, cx| {
                 let (b, needs) = host.split();
-                b.take_details(&needs.store.root, id, result, started.elapsed());
+                b.take_details(&needs.store.root, id.clone(), result, started.elapsed());
+                if let Some(a) = host.split().0.details.get(&id).cloned() {
+                    Browser::load_media(host, &a, cx);
+                }
                 cx.notify();
             })
             .ok();

@@ -25,13 +25,13 @@ pub struct Popup {
 impl Popup {
     pub fn for_version(version: &str) -> Self {
         Self {
-            title: format!("Swofty Mod v{version}"),
+            title: format!("Swofty Launcher v{version}"),
             body: format!(
                 "Online services are off while mods are loaded, so multiplayer is unavailable.\n\n\
                  New in v{version}:\n\
-                 - ADDON SETTINGS on the home screen (F9 / R3)\n\
-                 - Addon settings page listing installed addons\n\
-                 - Launcher panel on the home screen"
+                 - Shorter loading screens\n\
+                 - Stronger Time Trial lap checks for fairer leaderboards\n\
+                 - New standard libraries for addon makers"
             ),
         }
     }

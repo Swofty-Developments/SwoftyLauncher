@@ -118,6 +118,8 @@ void SiteGuard::settle()
 {
     if (offered_set(spec_.set) || spec_.settles_when_off)
         settled(spec_.set, spec_.name, spec_.armed);
+    if (spec_.on_armed && offered_set(spec_.set) && runtime::core_mixins_active(spec_.set))
+        spec_.on_armed();
     for (const SitePart &part : spec_.parts)
         if (offered_set(part.set))
             settled(part.set, part.name, part.armed);

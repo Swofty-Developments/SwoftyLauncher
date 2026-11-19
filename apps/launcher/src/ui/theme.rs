@@ -26,7 +26,7 @@ pub struct Palette {
     pub tab_library: Hsla,
     pub tab_discover: Hsla,
     pub tab_trial: Hsla,
-    pub tab_support: Hsla,
+    pub tab_store: Hsla,
 }
 
 impl Global for Palette {}
@@ -60,7 +60,7 @@ impl Palette {
             tab_library: hex(0xf4b942),
             tab_discover: hex(0x4fd1b4),
             tab_trial: hex(0xf27b6b),
-            tab_support: hex(0xe64980),
+            tab_store: hex(0xe64980),
         }
     }
 }

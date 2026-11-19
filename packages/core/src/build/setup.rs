@@ -34,6 +34,15 @@ pub(super) fn packed_dir(store: &Store) -> PathBuf {
     store.root.join("cache").join(crate::cache::PACKED_DIR)
 }
 
+/// The features the in-game loader the build uses turns on, none without one.
+pub(super) fn loader_features() -> Result<Features> {
+    features_of(loader_dir().as_deref())
+}
+
+fn features_of(loader: Option<&Path>) -> Result<Features> {
+    Ok(loader.map(load_features).transpose()?.unwrap_or_default())
+}
+
 impl<'a> Setup<'a> {
     pub fn read(run: Run<'a>, built: &mut Built) -> Result<Self> {
         let store = run.store;
@@ -45,11 +54,7 @@ impl<'a> Setup<'a> {
         built
             .lines
             .push(loader_line(exe_dir.as_deref(), loader.as_deref()));
-        let features = loader
-            .as_deref()
-            .map(load_features)
-            .transpose()?
-            .unwrap_or_default();
+        let features = features_of(loader.as_deref())?;
         let packages = run
             .order
             .iter()

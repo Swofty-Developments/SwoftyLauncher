@@ -7,7 +7,7 @@ use super::Store;
 use super::config::warn;
 use super::profiles::{load_profile, profile_write};
 use super::scan::Unreadable;
-use super::swap::{STAGING_PREFIX, delete_addon_dir, swap_in};
+use super::swap::{SCRATCH_PREFIX, STAGING_PREFIX, Scratch, delete_addon_dir, swap_in_held, swap_lock_for};
 use crate::manifest::{AddonManifest, MANIFEST_FILE};
 use crate::profile;
 use crate::{Error, Result, io_err};
@@ -15,8 +15,10 @@ use crate::{Error, Result, io_err};
 /// Where an addon being installed came from, which decides what it may be.
 #[derive(Debug, Clone, Copy)]
 pub(super) enum InstallFrom<'a> {
-    /// A file the player chose, or one a helper asked to install.
+    /// A file the player chose.
     Other,
+    /// A folder the helper of the addon with this id asked to install.
+    Helper(&'a str),
     /// A download the catalog lists as this id and version.
     Catalog(&'a str, &'a semver::Version),
     /// A release of the addon the launcher manages.
@@ -49,16 +51,14 @@ impl Store {
         if !src.is_file() {
             return vec![self.install_addon_for(src, &launcher)];
         }
-        let scratch = self.scratch_dir();
-        let installed = match self.unpacked_addons(src, &scratch) {
+        let scratch = Scratch::new(&self.addons_dir());
+        match self.unpacked_addons(src, &scratch.dir) {
             Ok(found) => found
                 .iter()
                 .map(|addon| self.install_addon_for(addon, &launcher))
                 .collect(),
             Err(e) => vec![Err(e)],
-        };
-        std::fs::remove_dir_all(&scratch).ok();
-        installed
+        }
     }
 
     pub fn install_addon_for(&self, src: &Path, launcher: &semver::Version) -> Result<AddonManifest> {
@@ -72,6 +72,17 @@ impl Store {
             &crate::updates::release::current_version(),
             Some(profile),
             InstallFrom::Other,
+        )
+    }
+
+    /// Install a folder the helper of the addon `helper` made. An addon the Simplified Importer
+    /// made may be installed under another id ([`crate::addons::imported::install_id`]).
+    pub(crate) fn install_addon_by(&self, src: &Path, helper: &str) -> Result<AddonManifest> {
+        self.install_addon_target(
+            src,
+            &crate::updates::release::current_version(),
+            None,
+            InstallFrom::Helper(helper),
         )
     }
 
@@ -108,9 +119,9 @@ impl Store {
         from: InstallFrom,
     ) -> Result<AddonManifest> {
         if src.is_file() {
-            let scratch = self.scratch_dir();
-            let result = self
-                .unpacked_addons(src, &scratch)
+            let scratch = Scratch::new(&self.addons_dir());
+            return self
+                .unpacked_addons(src, &scratch.dir)
                 .and_then(|found| match found.as_slice() {
                     [one] => self.install_addon_target(one, launcher, profile, from),
                     many => Err(Error::Other(format!(
@@ -119,8 +130,6 @@ impl Store {
                         many.len()
                     ))),
                 });
-            std::fs::remove_dir_all(&scratch).ok();
-            return result;
         }
         let src = &crate::addons::import::addon_root(src).unwrap_or_else(|| src.to_path_buf());
         if src.join(crate::dbedit::package::MARKER).is_file() {
@@ -130,7 +139,7 @@ impl Store {
                 p.manifest
             });
         }
-        let m = AddonManifest::load(src).map_err(|e| {
+        let mut m = AddonManifest::load(src).map_err(|e| {
             let u = Unreadable::of(src, &e, launcher);
             if u.newer {
                 Error::Other(u.line())
@@ -149,6 +158,15 @@ impl Store {
                 m.id, m.version
             )));
         }
+        if matches!(from, InstallFrom::Catalog(..)) {
+            crate::addons::imported::refuse_listed(self, &m)?;
+        }
+        let id = match from {
+            InstallFrom::Helper(helper) if crate::addons::imported::made_by(helper, &m) => {
+                crate::addons::imported::install_id(self, src, &m)?
+            }
+            _ => m.id.clone(),
+        };
         if crate::updates::managed::is_managed(&m.id) && !matches!(from, InstallFrom::ManagedRelease) {
             return Err(Error::Other(format!(
                 "{} is managed by the launcher, which installs and updates it itself",
@@ -171,11 +189,13 @@ impl Store {
         if let Some(why) = crate::profile::resolver::launcher_refusal(&m, launcher) {
             return Err(Error::Other(why));
         }
-        crate::game_folder::busy::refuse_change(&self.root, &m.id, &m.name)?;
-        let dest = self.addons_dir().join(&m.id);
+        crate::game_folder::busy::refuse_change(&self.root, &id, &m.name)?;
+        let dest = self.addons_dir().join(&id);
         let fresh = !dest.exists();
-        self.helpers.forget(&m.id);
-        let staging = self.addons_dir().join(format!("{STAGING_PREFIX}{}", m.id));
+        self.helpers.forget(&id);
+        std::fs::create_dir_all(self.addons_dir()).map_err(io_err(self.addons_dir()))?;
+        let _lock = swap_lock_for(&dest, &m.name)?;
+        let staging = self.addons_dir().join(format!("{STAGING_PREFIX}{id}"));
         if staging.exists() {
             std::fs::remove_dir_all(&staging).map_err(io_err(&staging))?;
         }
@@ -184,7 +204,21 @@ impl Store {
             std::fs::remove_dir_all(&staging).ok();
             return Err(e);
         }
-        swap_in(
+        if id != m.id {
+            match crate::addons::imported::rename(&staging, &id) {
+                Ok(renamed) => m = renamed,
+                Err(e) => {
+                    std::fs::remove_dir_all(&staging).ok();
+                    return Err(e);
+                }
+            }
+        }
+        if let Err(e) = crate::addons::files::seal(&staging) {
+            std::fs::remove_dir_all(&staging).ok();
+            let verb = if fresh { "install" } else { "update" };
+            return Err(Error::Other(format!("Couldn't {verb} {}: {e}", m.name)));
+        }
+        swap_in_held(
             &staging,
             &dest,
             &m.name,
@@ -235,13 +269,7 @@ impl Store {
         path.strip_prefix(self.addons_dir())
             .ok()
             .and_then(|rest| rest.components().next())
-            .is_some_and(|c| c.as_os_str().to_string_lossy().starts_with(".importing-"))
-    }
-
-    pub(super) fn scratch_dir(&self) -> PathBuf {
-        static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
-        let n = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        self.addons_dir().join(format!(".importing-{n}"))
+            .is_some_and(|c| c.as_os_str().to_string_lossy().starts_with(SCRATCH_PREFIX))
     }
 
     pub(super) fn unpacked_addons(&self, archive: &Path, scratch: &Path) -> Result<Vec<PathBuf>> {

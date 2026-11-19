@@ -8,6 +8,7 @@
 #include "core/runtime/loader/host_api.hpp"
 #include "core/runtime/loader/image.hpp"
 #include "core/runtime/loader/mixins.hpp"
+#include "core/runtime/loader/resolve_locks.hpp"
 #include "core/runtime/loader/scanner.hpp"
 #include "core/runtime/scan_cache.hpp"
 
@@ -137,6 +138,7 @@ json::Value BindingSet::load(const std::wstring &dir, long long running_stamp)
         index_[b.id] = bindings_.size();
         bindings_.push_back(std::move(b));
     }
+    policy_ = BindingPolicy::read(doc);
     same_build_ = doc["build"]["pe_timestamp"].num() == running_stamp;
     std::string dist = doc["build"]["distribution"].str();
     for (auto &c : dist)
@@ -181,6 +183,10 @@ void BindingSet::log_loaded(const json::Value &doc) const
     if (unresolvable)
         api->log("[core] %s: %zu binding(s) are marked unresolvable on this build and are skipped", file_.c_str(),
                  unresolvable);
+    if (std::string counts = policy_.load_line(file_); !counts.empty())
+        api->log("%s", counts.c_str());
+    for (auto &m : policy_.malformed())
+        api->log("[core] %s: %s", file_.c_str(), m.c_str());
 }
 
 void BindingSet::plan_kb_addresses(long long kb_size, long long exe_size)
@@ -204,6 +210,14 @@ Binding *BindingSet::find(const std::string &id)
 {
     auto it = index_.find(id);
     return it == index_.end() ? nullptr : &bindings_[it->second];
+}
+
+bool BindingSet::note_use(const std::string &id)
+{
+    std::lock_guard<std::recursive_mutex> g(resolve_lock());
+    if (std::string line = policy_.use(id); !line.empty())
+        api->log("%s", line.c_str());
+    return policy_.dropped(id);
 }
 
 std::string BindingSet::sample_deferred_sections()

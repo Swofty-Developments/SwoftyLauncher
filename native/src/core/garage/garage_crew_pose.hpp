@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <limits>
 
-namespace runtime::garage_crew_pose {
+namespace garage::crew_pose {
 
 using Read = bool (*)(std::uint64_t address, void *out, std::size_t bytes, void *user);
 using FindNode = std::int32_t (*)(const void *node_table, const std::uint32_t *name_id);
@@ -83,4 +83,4 @@ inline bool read_pelvis(Read read, void *user, std::uint64_t actor, std::uint32_
     out = result;
     return true;
 }
-} // namespace runtime::garage_crew_pose
+} // namespace garage::crew_pose

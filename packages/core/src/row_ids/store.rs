@@ -1,4 +1,4 @@
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeSet, HashSet};
 use std::path::Path;
 
 use serde_json::Value;
@@ -198,11 +198,10 @@ impl Store {
                 }
             }
         }
-        let index: HashMap<u64, usize> = db.records.iter().enumerate().map(|(i, r)| (r.key, i)).collect();
         for (table, row) in tables {
-            let count = index
-                .get(&fnv1a64(instance_count_path(&table, &row)))
-                .and_then(|&i| db.records[i].text().trim().parse::<usize>().ok())
+            let count = db
+                .get(&instance_count_path(&table, &row))
+                .and_then(|r| r.text().trim().parse::<usize>().ok())
                 .unwrap_or(0);
             let stock_rows = (0..count)
                 .take_while(|i| stock.contains(&fnv1a64(format!("{table}.{row}_{i}._metadata_"))))

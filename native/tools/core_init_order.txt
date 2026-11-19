@@ -11,6 +11,7 @@
 # reads it, under each unit's rank; the build fails unless it is the order of the mixins and on-load sections. After
 # an intended change, copy native/build/init-order.txt here.
 init
+  src/core/guards/garage/pit_garage_state.cpp
   src/core/assets/db_first_read.cpp
   src/core/loading/game_settings.cpp
   src/core/live/live_state.cpp
@@ -68,7 +69,9 @@ init
   src/core/guards/session/replay_grid_guard.cpp
   src/core/guards/engine/placed_record.cpp
   src/core/guards/ai/ai_curves_guard.cpp
+  src/core/guards/ai/ai_ers_guard.cpp
   src/core/guards/ai/ai_corner_guard.cpp
+  src/core/guards/career/calendar_track_guard.cpp
   src/core/guards/career/teamhq_track_guard.cpp
   src/core/guards/career/standings_drop.cpp
   src/core/guards/career/standings_guard.cpp
@@ -88,6 +91,7 @@ init
   src/core/career/career_wizard.cpp
   src/core/career/characters.cpp
   src/core/assets/lang_override.cpp
+  src/core/diagnostics/perf/system.cpp
   src/core/diagnostics/perf/vq.cpp
   src/core/diagnostics/perf.cpp
   src/core/runtime/sdk.cpp
@@ -102,6 +106,7 @@ init
   src/core/telemetry/telemetry.cpp
   src/core/frontend/view_state.cpp
   src/core/render/postfx.cpp
+  src/core/render/badges/badge_images.cpp
   src/core/render/grade.cpp
   src/core/render/d3d12/arm_gate.cpp
   src/core/render/d3d12/rtas_guard.cpp
@@ -230,6 +235,7 @@ exit
   src/core/render/d3d12/rtas_guard.cpp
   src/core/render/d3d12/arm_gate.cpp
   src/core/render/grade.cpp
+  src/core/render/badges/badge_images.cpp
   src/core/render/postfx.cpp
   src/core/frontend/view_state.cpp
   src/core/telemetry/telemetry.cpp
@@ -244,6 +250,7 @@ exit
   src/core/runtime/sdk.cpp
   src/core/diagnostics/perf.cpp
   src/core/diagnostics/perf/vq.cpp
+  src/core/diagnostics/perf/system.cpp
   src/core/assets/lang_override.cpp
   src/core/career/characters.cpp
   src/core/career/career_wizard.cpp
@@ -263,7 +270,9 @@ exit
   src/core/guards/career/standings_guard.cpp
   src/core/guards/career/standings_drop.cpp
   src/core/guards/career/teamhq_track_guard.cpp
+  src/core/guards/career/calendar_track_guard.cpp
   src/core/guards/ai/ai_corner_guard.cpp
+  src/core/guards/ai/ai_ers_guard.cpp
   src/core/guards/ai/ai_curves_guard.cpp
   src/core/guards/engine/placed_record.cpp
   src/core/guards/session/replay_grid_guard.cpp
@@ -320,16 +329,20 @@ exit
   src/core/hud/room_cover.cpp
   src/core/live/live_state.cpp
   src/core/assets/db_first_read.cpp
+  src/core/guards/garage/pit_garage_state.cpp
 mixins
+  src/core/guards/garage/pit_garage_state.cpp  SWOFTY_HOOK_GUARD(pit_garage_state)
   src/core/diagnostics/session_job_probe.cpp  SWOFTY_ON_LOAD
   src/core/hooks/car_live.cpp  SWOFTY_ON_LOAD
   src/core/hooks/session_points.cpp  SWOFTY_ON_LOAD
-  src/core/guards/tracks/gp_weekend_track_guard.cpp  SWOFTY_MID_HOOK_GUARD(gp_weekend_track)
+  src/core/guards/tracks/gp_weekend_track_guard.cpp  SWOFTY_HOOK_GUARD(gp_weekend_track)
   src/core/career/ops/career_ops.cpp  SWOFTY_ON_LOAD
   src/core/career/hub_tab.cpp  SWOFTY_ON_LOAD
   src/core/guards/career/rnd_suppliers_guard.cpp  SWOFTY_HOOK_GUARD(rnd_suppliers)
   src/core/guards/session/replay_grid_guard.cpp  SWOFTY_HOOK_GUARD(replay_read)
   src/core/guards/ai/ai_curves_guard.cpp  SWOFTY_MID_HOOK_GUARD(ai_curves)
+  src/core/guards/ai/ai_ers_guard.cpp  SWOFTY_MID_HOOK_GUARD(ai_ers)
+  src/core/guards/career/calendar_track_guard.cpp  SWOFTY_MID_HOOK_GUARD(calendar_track)
   src/core/guards/career/teamhq_track_guard.cpp  SWOFTY_HOOK_GUARD(teamhq_track)
   src/core/guards/frontend/setup_vm_guard.cpp  SWOFTY_HOOK_GUARD(setup_vm)
   src/core/guards/session/teammate_pairs_guard.cpp  SWOFTY_MID_HOOK_GUARD(teammate_pairs)
@@ -343,15 +356,18 @@ mixins
   src/core/frontend/home_tiles.cpp  SWOFTY_WRAP(FeHome_Handle_Command)
   src/core/frontend/home_tiles.cpp  SWOFTY_ON_LOAD
 on-load
+  src/core/guards/garage/pit_garage_state.cpp  SWOFTY_HOOK_GUARD(pit_garage_state), arms pit_garage_state
   src/core/diagnostics/session_job_probe.cpp  SWOFTY_ON_LOAD
   src/core/hooks/car_live.cpp  SWOFTY_ON_LOAD
   src/core/hooks/session_points.cpp  SWOFTY_ON_LOAD
-  src/core/guards/tracks/gp_weekend_track_guard.cpp  SWOFTY_MID_HOOK_GUARD(gp_weekend_track), arms gp_weekend_track
+  src/core/guards/tracks/gp_weekend_track_guard.cpp  SWOFTY_HOOK_GUARD(gp_weekend_track), arms gp_weekend_track
   src/core/career/ops/career_ops.cpp  SWOFTY_ON_LOAD
   src/core/career/hub_tab.cpp  SWOFTY_ON_LOAD
   src/core/guards/career/rnd_suppliers_guard.cpp  SWOFTY_HOOK_GUARD(rnd_suppliers), arms rnd_suppliers
   src/core/guards/session/replay_grid_guard.cpp  SWOFTY_HOOK_GUARD(replay_read), arms replay_read
   src/core/guards/ai/ai_curves_guard.cpp  SWOFTY_MID_HOOK_GUARD(ai_curves), arms ai_curves
+  src/core/guards/ai/ai_ers_guard.cpp  SWOFTY_MID_HOOK_GUARD(ai_ers), arms ai_ers
+  src/core/guards/career/calendar_track_guard.cpp  SWOFTY_MID_HOOK_GUARD(calendar_track), arms calendar_track
   src/core/guards/career/teamhq_track_guard.cpp  SWOFTY_HOOK_GUARD(teamhq_track), arms teamhq_track
   src/core/guards/frontend/setup_vm_guard.cpp  SWOFTY_HOOK_GUARD(setup_vm), arms setup_vm
   src/core/guards/session/teammate_pairs_guard.cpp  SWOFTY_MID_HOOK_GUARD(teammate_pairs), arms teammate_pairs
@@ -366,15 +382,18 @@ bindings
   src/core/assets/entitlements.cpp
   src/core/frontend/home_tiles.cpp
 explicit
+  pit_garage_state  src/core/guards/garage/pit_garage_state.cpp  SWOFTY_HOOK_GUARD(pit_garage_state), arms pit_garage_state
   session_job_probe  src/core/diagnostics/session_job_probe.cpp  SWOFTY_ON_LOAD
   car_live  src/core/hooks/car_live.cpp  SWOFTY_ON_LOAD
   session_points  src/core/hooks/session_points.cpp  SWOFTY_ON_LOAD
-  gp_weekend_track  src/core/guards/tracks/gp_weekend_track_guard.cpp  SWOFTY_MID_HOOK_GUARD(gp_weekend_track), arms gp_weekend_track
+  gp_weekend_track  src/core/guards/tracks/gp_weekend_track_guard.cpp  SWOFTY_HOOK_GUARD(gp_weekend_track), arms gp_weekend_track
   career_ops  src/core/career/ops/career_ops.cpp  SWOFTY_ON_LOAD
   hub_tab  src/core/career/hub_tab.cpp  SWOFTY_ON_LOAD
   rnd_suppliers  src/core/guards/career/rnd_suppliers_guard.cpp  SWOFTY_HOOK_GUARD(rnd_suppliers), arms rnd_suppliers
   replay_read  src/core/guards/session/replay_grid_guard.cpp  SWOFTY_HOOK_GUARD(replay_read), arms replay_read
   ai_curves  src/core/guards/ai/ai_curves_guard.cpp  SWOFTY_MID_HOOK_GUARD(ai_curves), arms ai_curves
+  ai_ers  src/core/guards/ai/ai_ers_guard.cpp  SWOFTY_MID_HOOK_GUARD(ai_ers), arms ai_ers
+  calendar_track  src/core/guards/career/calendar_track_guard.cpp  SWOFTY_MID_HOOK_GUARD(calendar_track), arms calendar_track
   teamhq_track  src/core/guards/career/teamhq_track_guard.cpp  SWOFTY_HOOK_GUARD(teamhq_track), arms teamhq_track
   setup_vm  src/core/guards/frontend/setup_vm_guard.cpp  SWOFTY_HOOK_GUARD(setup_vm), arms setup_vm
   teammate_pairs  src/core/guards/session/teammate_pairs_guard.cpp  SWOFTY_MID_HOOK_GUARD(teammate_pairs), arms teammate_pairs

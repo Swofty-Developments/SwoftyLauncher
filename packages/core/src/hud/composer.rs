@@ -72,13 +72,13 @@ pub fn compose_with(
         live.push(Expanded {
             input: i,
             rec: input.record.clone(),
-            switch: None,
+            switch: input.record.switch.clone(),
         });
         for (name, v) in &input.record.variants {
             live.push(Expanded {
                 input: i,
                 rec: input.record.with_variant(name)?,
-                switch: v.switch.clone(),
+                switch: v.switch.clone().or_else(|| input.record.switch.clone()),
             });
         }
     }
@@ -176,6 +176,12 @@ pub fn compose_with(
                 .as_ref()
                 .map(|s| template::resolve(s, template::Usage::Visible, "variant switch"))
                 .transpose()?;
+            let on = e
+                .switch
+                .as_ref()
+                .and_then(|b| b.default.as_ref())
+                .and_then(serde_json::Value::as_bool)
+                .unwrap_or(true);
             if plan.root_hidden || sw.is_some() {
                 plan.vis.insert(
                     0,
@@ -184,7 +190,7 @@ pub fn compose_with(
                         element: plan.root.clone(),
                         db: sw.as_ref().map(|s| s.db.clone()),
                         negate: sw.as_ref().is_some_and(|s| s.negate),
-                        default: true,
+                        default: on,
                     },
                 );
             }
@@ -195,7 +201,7 @@ pub fn compose_with(
                         element: part.clone(),
                         db: sw.as_ref().map(|s| s.db.clone()),
                         negate: sw.as_ref().is_some_and(|s| !s.negate),
-                        default: false,
+                        default: !on,
                     });
                 }
                 if dial == Dial::F125 {

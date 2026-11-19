@@ -123,28 +123,35 @@ uintptr_t root_global = 0, despawn_main_scene = 0;
 
 // The builds the driver runs on: every build whose struct layouts were checked against the signatures' functions
 // (bp::proofs::VERIFIED_LAYOUT; the KB build, Steam 26566308 and the EA App KB build also by sigport.py --witness, each
-// function cited beside the offsets it backs). On the EA App KB build every cited function is the same except the game
-// manager's reader 0x14022d920, which loads the entrants system from +0x260 there (runtime::manager_entrants_system()),
-// and StateLoadSession's +0xcd0 is witnessed at its constructor 0x1437b57d0.
-// EA App 1.0.145 (not in VERIFIED_LAYOUT; static proof only, no run): the same witnesses on its decrypted dump find every
-// cited offset at the same instructions, with the game manager's entrants system at +0x260 as on the EA App KB build. The
-// flow machine (0x14441b290 there) and the track select confirm (0x141c02d80) open with a jump the loader patched in,
-// so they are compared in place past it (2415 of 2416 and 1318 of 1318 instructions).
+// function cited beside the offsets it backs), and EA App 1.0.145. On the EA App KB build every cited function is the
+// same except the game manager's reader 0x14022d920, which loads the entrants system from +0x260 there
+// (runtime::manager_entrants_system()), and StateLoadSession's +0xcd0 is witnessed at its constructor 0x1437b57d0.
+// EA App 1.0.145 is not in VERIFIED_LAYOUT (a car setup struct differs there). Its decrypted dump, with the core's
+// patches put back from the live run's loader.log (sigverify.py --restore), has every cited function the same, the
+// flow machine and the track select confirm included, and the entrants system at +0x260 as on the EA App KB build.
+// StateLoadSession's exit 0x1436e0e40 is a protector-relocated body: aligned, its uses of +0xcd0 are equal and each
+// differing instruction is a constant the protector computes from its own globals, to the same value on both builds
+// (re/research/ea-1-0-145.md).
 namespace bp = runtime::build_proof;
-constexpr uint32_t VERIFIED_BUILDS = bp::proofs::VERIFIED_LAYOUT.builds;
+constexpr uint32_t DRIVER_BUILDS = bp::proofs::VERIFIED_LAYOUT.builds | bp::bit(bp::Build::ea_1_0_145);
 constexpr bp::Proof SESSION_DRIVER{"the session driver's layout (the Grand Prix entity +0x1030, +0xf08, +0xf58, +0xe18, "
                                    "+0x2e0, +0x2b0, +0x2d8, +0x2f8; entrants 0x88 with +0x48, +0x4b; the weekend chain "
                                    "+0x88, +0x260, +0x1058, +0x548, +0x560, +0x288, +0x2a0, +0x220, +0x238, +0x278; "
                                    "StateLoadSession +0xcd0; the fade owner +0xa0, +0x7b8, +0x7bc; the front end scene "
                                    "+0xd20, +0x40, +0x1048)",
-                                   VERIFIED_BUILDS};
+                                   DRIVER_BUILDS};
 constexpr bp::Gate DIRECT_START{"the direct start", &SESSION_DRIVER};
-constexpr bp::Proof FTUE_QUEUE{"StateFTUE's interrupt queue (+0xbf8, its front +0x30, the kind at +0x10)", VERIFIED_BUILDS};
+constexpr bp::Proof FTUE_QUEUE{"StateFTUE's interrupt queue (+0xbf8, its front +0x30, the kind at +0x10)", DRIVER_BUILDS};
 constexpr bp::Gate FTUE_EXIT{"the direct start's StateFTUE exit", &FTUE_QUEUE};
 constexpr bp::Proof FLOW_STATES{"the flow states' layout (+0xb0, +0xb8, +0xc0, +0xaf0, +0xb30, +0xbd8, +0xc10) and the "
                                 "link's stack slot (+0x40)",
-                                VERIFIED_BUILDS};
+                                DRIVER_BUILDS};
 constexpr bp::Gate FLOW_LINK{"the direct start's flow link", &FLOW_STATES};
+// The game modes for a session without a direct start (the Time Trial setup, the lap host): [g_Game_Manager]+0xc0, as
+// 0x14024bd50 reads it, and SetCurrentGameMode (0x1407d07a0) on them. On EA App 1.0.145 the reader is the same but
+// for its entrants system at +0x260, and SetCurrentGameMode is the same 380 instructions.
+constexpr bp::Proof GAME_MODES{"the game manager's game modes (+0xc0)", DRIVER_BUILDS};
+constexpr bp::Gate MODES_CONTEXT{"the game modes without a direct start", &GAME_MODES};
 
 constexpr uintptr_t MANAGER_MODES = 0xc0, ENTITY_REGISTRY = 0x1030, ENTITY_MODE = 0xf08;
 
@@ -723,9 +730,9 @@ constinit void (*time_trial_screen)(const char *name) = nullptr;
 // The race's laps: Game_ChampionshipGameMode_BuildSessionSettings (0x1407b7b90, the championship modes' slot) fills
 // the session's SessionSettings (sessionId +4) and stores the laps at +0xdf0 XOR +0xdf8; for a race session the core
 // writes the requested laps over it after the game's own value. On Steam 26566308 the function is the same 1358
-// instructions with the laps at the same +0xdf0 / +0xdf8 (re/tools/sigport.py --compare, sigverify.py --disp).
-constexpr runtime::build_proof::Proof SESSION_LAPS{"the session settings' laps layout (+0xdf0, +0xdf8)",
-                                                   runtime::build_proof::proofs::VERIFIED_LAYOUT.builds};
+// instructions with the laps at the same +0xdf0 / +0xdf8 (re/tools/sigport.py --compare, sigverify.py --disp), and on
+// EA App 1.0.145 too (sigport.py --witness on the restored dump).
+constexpr runtime::build_proof::Proof SESSION_LAPS{"the session settings' laps layout (+0xdf0, +0xdf8)", DRIVER_BUILDS};
 constexpr runtime::build_proof::Gate RACE_LAPS{"the direct start's race laps", &SESSION_LAPS};
 safetyhook::InlineHook h_settings;
 
@@ -1398,7 +1405,7 @@ uintptr_t direct_start_set_mode()
     static std::atomic<uintptr_t> found{0};
     static std::atomic<bool> tried{false};
     if (!tried.exchange(true)) {
-        found = runtime::verified_build() ? runtime::find(SIG_SET_MODE, "SetCurrentGameMode", "direct") : 0;
+        found = runtime::proven(MODES_CONTEXT) ? runtime::find(SIG_SET_MODE, "SetCurrentGameMode", "direct") : 0;
         swofty::log("[direct] SetCurrentGameMode for a session without a direct start: %s", found.load() ? "resolved" : "not resolved");
     }
     return found.load();
@@ -1411,7 +1418,7 @@ DirectStartContext direct_start_context()
     static std::atomic<uintptr_t> manager{0};
     static std::atomic<bool> tried{false};
     if (!manager.load() && !tried.exchange(true)) {
-        manager = runtime::verified_build() ? runtime::find(SIG_GAME_MANAGER, "game manager", "direct") : 0;
+        manager = runtime::proven(MODES_CONTEXT) ? runtime::find(SIG_GAME_MANAGER, "game manager", "direct") : 0;
         swofty::log("[direct] game manager for a session without a direct start: %s", manager.load() ? "resolved" : "not resolved");
     }
     DirectStartContext c;

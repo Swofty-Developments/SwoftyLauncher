@@ -7,7 +7,7 @@
 
 namespace runtime::pit_box {
 
-constexpr uint32_t BOX_SLOTS = 40;
+constexpr uint32_t BOX_SLOTS = 24;
 constexpr uint32_t REGISTRY_SLOTS = 26;
 constexpr size_t LOG_FIRST = 8;
 

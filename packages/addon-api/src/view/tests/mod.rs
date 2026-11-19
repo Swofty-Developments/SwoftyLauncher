@@ -22,6 +22,29 @@ fn a_row_menu_is_optional_in_json() {
 }
 
 #[test]
+fn a_text_block_without_a_tone_is_neutral() {
+    let view: View = serde_json::from_str(
+        r#"{"body":{"blocks":[{"label":"LEGACY CAREER"},
+            {"text":{"text":"Start-year tiles are under Settings > Legacy Career."}},
+            {"label":"PHYSICS"},
+            {"text":{"text":"Racecraft isn't installed or is too old.","tone":"warn"}}]},
+            "subtitle":"Everything for the CRL packs in one place"}"#,
+    )
+    .unwrap();
+    let Body::Blocks(blocks) = &view.body else {
+        panic!("blocks");
+    };
+    assert_eq!(
+        blocks[1],
+        Block::Text {
+            text: "Start-year tiles are under Settings > Legacy Career.".into(),
+            tone: Tone::Neutral,
+        }
+    );
+    assert!(matches!(blocks[3], Block::Text { tone: Tone::Warn, .. }));
+}
+
+#[test]
 fn views_round_trip_through_json() {
     let view = View {
         subtitle: "1 in library".into(),

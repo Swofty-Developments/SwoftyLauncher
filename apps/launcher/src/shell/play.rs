@@ -5,6 +5,7 @@ use crate::services::play_checks;
 use crate::shell::notices::{Notification, Notify};
 use gpui_kit::*;
 use std::path::PathBuf;
+use swofty_core::addons::files::Damaged;
 use swofty_core::diagnostics::quarantine;
 use swofty_core::game_folder::recovery::Blocked;
 use swofty_core::install::Source;
@@ -67,7 +68,7 @@ impl Launching {
                 .launch_failed
                 .as_ref()
                 .filter(|f| f.at >= launch.at)
-                .map(|f| f.headline().to_owned());
+                .map(super::launch_alerts::launch_headline);
             self.notice = Some(match &game.blocked {
                 _ if refused => tr("an antivirus removed mod files, so F1 25 was not started").to_owned(),
                 _ if not_stock.is_some() => not_stock.unwrap_or_default(),
@@ -258,6 +259,7 @@ pub(crate) enum Prompt {
     FirstLaunch,
     ConfirmRows(String),
     Notice(Notification),
+    Damaged(Damaged),
 }
 
 pub(crate) struct PlayNeeds<'a> {
@@ -334,6 +336,10 @@ impl PromptHost<Launching> for Shell {
             Prompt::FirstLaunch => self.first_launch_notice(window, cx),
             Prompt::ConfirmRows(text) => self.confirm_missing_rows(text, window, cx),
             Prompt::Notice(note) => window.notify(note, cx),
+            Prompt::Damaged(d) => {
+                let note = self.damaged_notification(&d, cx);
+                window.notify(note, cx);
+            }
         }
     }
 }
@@ -416,6 +422,9 @@ impl Launching {
         cx: &mut Context<H>,
     ) -> Played {
         crate::app::app_log::note(&checked.timings.line());
+        for line in &checked.lines {
+            crate::app::app_log::note(line);
+        }
         let (launching, needs) = host.split();
         let stale = needs.profile != checked.profile
             || needs.game.install.as_ref().map(|i| &i.dir) != Some(&checked.game);
@@ -424,16 +433,16 @@ impl Launching {
             crate::app::app_log::note("[play] dropped: the profile or game copy changed during the checks");
             return Played::Stopped;
         };
-        let notes = if step.clears() {
+        let (notes, damaged) = if step.clears() {
             launching.notice = None;
             launching.game_edited = None;
             needs.game.blocked = None;
             Blocked::clear(&needs.store.root).ok();
             needs.seen.blocked = game::blocked_at(&needs.store.root).unwrap_or(0.0);
             *needs.dismissed = needs.game.session.as_ref().map(|s| s.dir.clone());
-            checked.notes
+            (checked.notes, checked.damaged)
         } else {
-            Vec::new()
+            (Vec::new(), Vec::new())
         };
         let played = step.played();
         let prompt = match step {
@@ -450,6 +459,9 @@ impl Launching {
         };
         for note in &notes {
             host.prompt(Prompt::Notice(note_notification(note)), window, cx);
+        }
+        for d in damaged.into_iter().filter(Damaged::stops_play) {
+            host.prompt(Prompt::Damaged(d), window, cx);
         }
         if let Some(played) = played {
             if let Some(prompt) = prompt {
@@ -520,6 +532,38 @@ impl Launching {
 }
 
 impl Shell {
+    /// What Play shows for an addon with damaged files that stop it, with a Reinstall button
+    /// when the Addon Browser offers it.
+    fn damaged_notification(&self, d: &Damaged, cx: &mut Context<Self>) -> Notification {
+        let offered = self.browser.find(&d.id).is_some_and(|a| {
+            a.offered(&swofty_core::updates::release::current_version())
+                .is_some()
+        });
+        let body = if offered {
+            trf!(
+                "{files}. Reinstall it to put its files back.",
+                files = d.summary()
+            )
+        } else {
+            trf!(
+                "{files}. Install it again from the file you installed it from.",
+                files = d.summary()
+            )
+        };
+        let note = Notification::error(body)
+            .title(trf!("{name} is damaged", name = d.name))
+            .autohide(false);
+        if !offered {
+            return note;
+        }
+        let (shell, id) = (cx.entity().downgrade(), d.id.clone());
+        note.action(tr("Reinstall"), move |_, cx| {
+            shell
+                .update(cx, |s, cx| crate::features::browser::Browser::install(s, &id, cx))
+                .ok();
+        })
+    }
+
     pub(crate) fn play_state(&self) -> PlayState {
         self.launching.play_state(
             &self.game,

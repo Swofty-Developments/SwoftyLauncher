@@ -51,3 +51,81 @@ fn pkg_patch_parses_design_example() {
         .unwrap();
     assert_eq!(p.edits.len(), 2);
 }
+
+fn patch(edits: &str) -> ErpOp {
+    serde_json::from_str(&format!(
+        r#"{{"op":"patch-pkg","erp":"a.erp","resource":"eaid://x.layer","edits":{edits}}}"#
+    ))
+    .unwrap()
+}
+
+#[test]
+fn placement_ids_past_the_games_32_or_at_0_are_refused() {
+    let clone = |key: &str, id: &str| {
+        let n = id.trim_matches('"');
+        patch(&format!(
+            r#"[{{"op":"clone-entry","at":"instances","src":"[name=y$PitBox12]","as":"x$PitBox{n}","set":{{"{key}":{id}}}}}]"#
+        ))
+    };
+    for key in ["overrides.VehPlacement.Id", "overrides.F1Garage.id"] {
+        for id in ["1", "32", "\"25\""] {
+            assert_eq!(clone(key, id).refusal(), None, "{key} {id}");
+        }
+        for id in ["0", "33", "-1", "4294967295", "\"40\""] {
+            let why = clone(key, id).refusal().unwrap_or_else(|| panic!("{key} {id}"));
+            assert!(
+                why.starts_with("a.erp eaid://x.layer: clone-entry x$PitBox"),
+                "{why}"
+            );
+            assert!(why.contains(&format!("{key} {}", id.trim_matches('"'))), "{why}");
+            assert!(
+                why.ends_with("is outside 1..=32, the vehicle placements the game holds per kind"),
+                "{why}"
+            );
+        }
+    }
+    let set = |path: &str, value: &str| {
+        patch(&format!(
+            r#"[{{"op":"set-value","path":"{path}","value":{value}}}]"#
+        ))
+        .refusal()
+    };
+    assert_eq!(
+        set("instances[name=v$GridSlot3].overrides.VehPlacement.Id", "3"),
+        None
+    );
+    assert_eq!(
+        set("instances[name=v$GridSlot3].overrides.VehPlacement.Id", "33").as_deref(),
+        Some(
+            "a.erp eaid://x.layer: set-value instances[name=v$GridSlot3].overrides.VehPlacement.Id: \
+             overrides.VehPlacement.Id 33 is outside 1..=32, the vehicle placements the game holds per kind"
+        )
+    );
+    assert!(set("instances[name=v$F1Garage3].overrides.F1Garage.id", "0").is_some());
+    assert_eq!(
+        set(
+            "instances[name=v$GridSlot3].overrides.WorldObject.transform",
+            "[0]"
+        ),
+        None
+    );
+    let mixed = patch(
+        r#"[{"op":"clone-entry","at":"instances","src":"[name=y$GridSlot22]","as":"x$GridSlot23","set":{"overrides.VehPlacement.Id":23}},
+            {"op":"clone-entry","at":"instances","src":"[name=y$GridSlot22]","as":"x$GridSlot40","set":{"overrides.VehPlacement.Id":40}}]"#,
+    );
+    assert!(
+        mixed
+            .refusal()
+            .unwrap()
+            .contains("clone-entry x$GridSlot40: overrides.VehPlacement.Id 40")
+    );
+    let other = OpFile::from_value(
+        serde_json::from_str(
+            r#"{"schema_version":1,"ops":[{"op":"remove-resource","erp":"a.erp","resource":"r"}]}"#,
+        )
+        .unwrap(),
+        FileKind::Erp,
+    )
+    .unwrap();
+    assert!(other.ops.iter().all(|op| op.refusal().is_none()));
+}

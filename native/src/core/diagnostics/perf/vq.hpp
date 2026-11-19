@@ -2,6 +2,8 @@
 
 #include <windows.h>
 
+#include "pe_imports.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -42,6 +44,8 @@ void install();
 bool enabled();
 // Hooks the import slots of swofty modules (and the game exe) loaded since the last scan.
 void scan();
+// Logs the first import entry a Profiler import walk skipped as corrupt (pe_imports.h), once per process.
+void note_import_skip(const char *module, const pe_import &first, int skipped);
 logic::VqMinute minute(Last &last, double secs);
 logic::CpuMinute cpu(Cpu &st, double secs);
 

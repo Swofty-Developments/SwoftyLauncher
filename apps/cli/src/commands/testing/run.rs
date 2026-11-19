@@ -115,8 +115,7 @@ fn run_with_game(run: GameRun<'_>, report: &mut Report) -> std::result::Result<(
     let exe_sha = sandbox_preflight(store, &g, plan, bases).map_err(Stop::Infra)?;
     let live_saves = exe_sha
         .as_ref()
-        .and_then(|_| swofty_core::platform::steam::find_game())
-        .and_then(|i| swofty_core::platform::steam::save_dir(&i.steam_root));
+        .and_then(|_| swofty_core::testsuite::sandbox::live_saves(&g));
     let dir = a.lock.clone().unwrap_or_else(|| lock::default_path(&store.root));
     let owner = lock::owner_line(run_id, suites, &hh_mm());
     let lock = take_lock(&dir, &owner, a.wait)?;
