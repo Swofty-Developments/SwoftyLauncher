@@ -2,6 +2,7 @@
 // save slot key join (career_saves_logic.hpp slot_key_of). Built and run by native/test/run_tests.sh resume_gate.
 #include "core/career/career_saves_logic.hpp"
 #include "core/career/resume_gate_logic.hpp"
+#include "core/career/resume_list_logic.hpp"
 
 #include <cstdio>
 
@@ -38,14 +39,14 @@ static void table_and_status()
     expect(e && rg::unmet(*e).size() == 3, "off, another version and not installed are each unmet");
     expect(e && rg::unmet(*e)[0] == "Beta" && rg::unmet(*e)[1] == "Gamma 2.0.0" && rg::unmet(*e)[2] == "a.gone",
            "an add-on is named; one on at another version carries the installed version; one unknown by name uses its id");
-    expect(rg::status_line(e) == "Needs: Beta, Gamma 2.0.0, a.gone", "the status line lists the unmet add-ons");
-    expect(rg::status_line(rg::find(t, "7")) == "All add-ons on", "a career with everything on says so");
-    expect(rg::status_line(rg::find(t, "9")) == "All add-ons on", "a career with no add-ons says so");
+    expect(rg::status_line(e) == "Missing: Beta, Gamma 2.0.0, a.gone", "the status line lists the unmet add-ons");
+    expect(rg::status_line(rg::find(t, "7")) == "All addons ready", "a career with everything on says so");
+    expect(rg::status_line(rg::find(t, "9")) == "All addons ready", "a career with no add-ons says so");
     expect(rg::status_line(nullptr).empty(), "a career with no data has no status");
     rg::Entry many;
     for (int i = 0; i < 6; i++)
         many.needs.push_back({"x" + std::to_string(i), "N" + std::to_string(i), "", false, true});
-    expect(rg::status_line(&many) == "Needs: N0, N1, N2, N3 and 2 more", "a long list is cut with a count");
+    expect(rg::status_line(&many) == "Missing: N0, N1, N2, N3 and 2 more", "a long list is cut with a count");
     expect(rg::prompt_text(*e).find("Beta, Gamma 2.0.0, a.gone") != std::string::npos, "the prompt names the add-ons");
 }
 
@@ -76,8 +77,8 @@ static void dialog_and_title()
            "the dialog names the add-ons and does not tell the player to press again");
     expect(rg::loads("load_anyway") && !rg::loads("back") && !rg::loads("") && !rg::loads("yes"),
            "only the load_anyway answer loads");
-    expect(rg::card_title("DRIVER CAREER", *good) == "DRIVER CAREER - ALL ADD-ONS ON", "a card title carries the status");
-    expect(rg::card_title("DRIVER CAREER", *bad) == "DRIVER CAREER - NEEDS: BETA, GAMMA 2.0.0, A.GONE",
+    expect(rg::card_title("DRIVER CAREER", *good) == "DRIVER CAREER - ALL ADDONS READY", "a card title carries the status");
+    expect(rg::card_title("DRIVER CAREER", *bad) == "DRIVER CAREER - MISSING: BETA, GAMMA 2.0.0, A.GONE",
            "an unmet card title lists the add-ons in capitals");
 }
 
@@ -95,12 +96,49 @@ static void key_join()
     expect(cs::slot_key_of(slots, 1, false).empty(), "a slot whose details did not read has no key");
 }
 
+static cs::SlotRead slot(uint64_t id, uint64_t guid, const char *name, uint8_t flags, uint64_t date, uint32_t season,
+                         uint32_t weekend)
+{
+    cs::SlotRead s;
+    s.id = id;
+    s.guid = guid;
+    s.details = true;
+    s.name = name;
+    s.flags = flags;
+    s.date = date;
+    s.season = season;
+    s.weekend = weekend;
+    return s;
+}
+
+static void list_rows()
+{
+    rg::Table t = rg::parse(SETTINGS);
+    std::vector<cs::SlotRead> slots{slot(7, 0, "Mine", cs::FLAG_MY_TEAM, 50, 1, 4), slot(12, 0, "Old", 0, 10, 0, 0),
+                                    slot(6, 0x67cdf241e227f68cULL, "Solo", 0, 90, 2, cs::NO_INDEX),
+                                    slot(8, 0, "Hidden", cs::FLAG_HIDDEN, 99, 0, 0), slot(5, 0, "Undated", 0, 0, 0, 0)};
+    auto rows = career::resume_list::rows(slots, t);
+    expect(rows.size() == 3, "hidden and undated slots are not listed");
+    expect(rows[0].name == "Solo" && rows[1].name == "Mine" && rows[2].name == "Old", "rows are newest first");
+    expect(!rows[0].ready && rows[0].status.rfind("Missing: Beta", 0) == 0, "a row with missing add-ons says Missing");
+    expect(rows[1].ready && rows[1].status == "All addons ready", "a row with everything on is ready");
+    expect(rows[2].ready && rows[2].status.empty(), "a row with no data is ready and has no status");
+    expect(rows[1].detail == "My Team - Season 2, Race 5", "the detail line names mode, season and race");
+    expect(rows[0].detail == "Driver Career - Season 3", "an unknown race is left out");
+    expect(career::resume_list::press(rows[0]) == career::resume_list::Action::Ask, "a mismatched row asks first");
+    expect(career::resume_list::press(rows[1]) == career::resume_list::Action::Load, "a ready row loads at once");
+    std::vector<cs::SlotRead> tie{slot(3, 0, "B", 0, 5, 0, 0), slot(2, 0, "A", 0, 5, 0, 0)};
+    auto tied = career::resume_list::rows(tie, t);
+    expect(tied[0].id == 2 && tied[1].id == 3, "equal dates order by slot id");
+}
+
 int main()
 {
     table_and_status();
     press_state();
     key_join();
     dialog_and_title();
+    list_rows();
     printf("%s\n", fails ? "FAILED" : "all passed");
     return fails ? 1 : 0;
 }

@@ -96,7 +96,7 @@ inline std::string status_line(const Entry *e)
     if (!e)
         return {};
     std::vector<std::string> names = unmet(*e);
-    return names.empty() ? "All add-ons on" : "Needs: " + join(names);
+    return names.empty() ? "All addons ready" : "Missing: " + join(names);
 }
 
 inline std::string prompt_text(const Entry &e)
