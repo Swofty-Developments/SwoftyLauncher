@@ -3,6 +3,7 @@
 //! downloads checked against the size and SHA-256 the registry lists.
 
 pub mod media;
+pub mod pending;
 pub mod publishers;
 pub mod requires;
 pub mod search;

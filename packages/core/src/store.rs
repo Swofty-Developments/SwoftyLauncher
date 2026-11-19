@@ -1,5 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard};
 
 use swofty_addon::launcher::Builtin;
@@ -21,6 +22,8 @@ static PROFILE_WRITE: Mutex<()> = Mutex::new(());
 /// Where an addon's old copy waits to be deleted, next to the addons.
 const OLD_PREFIX: &str = ".old-";
 const STAGING_PREFIX: &str = ".installing-";
+/// Where an archive is unpacked before its addons are installed.
+const SCRATCH_PREFIX: &str = ".importing-";
 
 type Rename<'a> = &'a mut dyn FnMut(&Path, &Path) -> std::io::Result<()>;
 type Delete<'a> = &'a mut dyn FnMut(&Path) -> std::io::Result<()>;
@@ -79,16 +82,28 @@ impl SwapLock {
     }
 }
 
+/// The addon's [`SwapLock`]. A lock still held a moment after this process let it go, as a
+/// process starting a helper holds it until the helper runs, is waited out.
 fn swap_lock_for(dest: &Path, name: &str) -> Result<Option<SwapLock>> {
+    const DELAYS_MS: [u64; 3] = [10, 50, 150];
     let (Some(addons), Some(id)) = (dest.parent(), dest.file_name()) else {
         return Ok(None);
     };
-    match SwapLock::try_acquire(addons, &id.to_string_lossy()) {
-        Some(None) => Err(Error::Other(format!(
-            "Couldn't change {name}: another Swofty launcher is changing it right now"
-        ))),
-        Some(Some(lock)) => Ok(Some(lock)),
-        None => Ok(None),
+    let mut attempt = 0;
+    loop {
+        match SwapLock::try_acquire(addons, &id.to_string_lossy()) {
+            Some(None) if attempt < DELAYS_MS.len() => {
+                std::thread::sleep(std::time::Duration::from_millis(DELAYS_MS[attempt]));
+                attempt += 1;
+            }
+            Some(None) => {
+                return Err(Error::Other(format!(
+                    "Couldn't change {name}: another Swofty launcher is changing it right now"
+                )));
+            }
+            Some(Some(lock)) => return Ok(Some(lock)),
+            None => return Ok(None),
+        }
     }
 }
 
@@ -108,14 +123,20 @@ fn set_aside(dir: &Path, rename: Rename) -> std::io::Result<PathBuf> {
     Ok(aside)
 }
 
-/// Puts `staging` in place of `dest`. The installed copy is moved aside first
-/// and deleted last, so a failure at any step leaves it whole. An old copy that
-/// can't be deleted yet is deleted on the next start; one that can't be put
-/// back is put back then.
+/// [`swap_in_held`] under the addon's [`SwapLock`].
+#[cfg(test)]
 fn swap_in(staging: &Path, dest: &Path, name: &str, rename: Rename, delete: Delete) -> Result<()> {
+    let _lock = swap_lock_for(dest, name)?;
+    swap_in_held(staging, dest, name, rename, delete)
+}
+
+/// Puts `staging` in place of `dest` for a caller that holds the addon's
+/// [`SwapLock`]. The installed copy is moved aside first and deleted last, so a
+/// failure at any step leaves it whole. An old copy that can't be deleted yet is
+/// deleted on the next start; one that can't be put back is put back then.
+fn swap_in_held(staging: &Path, dest: &Path, name: &str, rename: Rename, delete: Delete) -> Result<()> {
     let verb = if dest.exists() { "update" } else { "install" };
     let what = format!("Couldn't {verb} {name}");
-    let _lock = swap_lock_for(dest, name)?;
     let aside = match dest.exists().then(|| set_aside(dest, &mut *rename)).transpose() {
         Ok(aside) => aside,
         Err(e) => {
@@ -146,6 +167,38 @@ fn delete_addon_dir(dir: &Path, name: &str, rename: Rename, delete: Delete) -> R
     let aside = set_aside(dir, rename).map_err(|e| not_done(&format!("Couldn't remove {name}"), &e))?;
     waiting_out_locks(|| delete(&aside)).ok();
     Ok(())
+}
+
+/// A folder an archive is unpacked into before its addons are installed, named for this
+/// process. Its lock tells a later start's cleanup that it is in use; dropping it deletes the
+/// folder and the lock.
+struct Scratch {
+    dir: PathBuf,
+    lock: Option<SwapLock>,
+}
+
+impl Scratch {
+    fn new(addons: &Path) -> Self {
+        static NEXT: AtomicUsize = AtomicUsize::new(0);
+        let n = NEXT.fetch_add(1, Ordering::Relaxed);
+        let name = format!("{SCRATCH_PREFIX}{}-{n}", std::process::id());
+        std::fs::create_dir_all(addons).ok();
+        let lock = SwapLock::try_acquire(addons, &name).flatten();
+        Self {
+            dir: addons.join(name),
+            lock,
+        }
+    }
+}
+
+impl Drop for Scratch {
+    fn drop(&mut self) {
+        std::fs::remove_dir_all(&self.dir).ok();
+        let held = self.lock.take().is_some();
+        if held && let (Some(addons), Some(name)) = (self.dir.parent(), self.dir.file_name()) {
+            std::fs::remove_file(swap_lock_path(addons, &name.to_string_lossy())).ok();
+        }
+    }
 }
 
 fn profile_write() -> MutexGuard<'static, ()> {
@@ -297,6 +350,8 @@ impl Store {
             return Ok(notes);
         }
         notes.extend(self.finish_swaps());
+        notes.extend(self.sweep_unfinished());
+        notes.extend(crate::catalog::pending::settle(self));
         let config: Result<Config> = match crate::load_json(&self.config_path()) {
             Ok(crate::Loaded::Found(c)) => Ok(c),
             Ok(crate::Loaded::Missing | crate::Loaded::Damaged(_)) => Ok(Config::default()),
@@ -487,6 +542,56 @@ impl Store {
         notes
     }
 
+    /// Deletes the unpack and staging folders of installs an earlier run left unfinished,
+    /// which leaves each addon at the version it had. A folder whose install is still running
+    /// in another launcher is left alone.
+    fn sweep_unfinished(&self) -> Vec<String> {
+        let addons = self.addons_dir();
+        let Ok(rd) = std::fs::read_dir(&addons) else {
+            return Vec::new();
+        };
+        let mut left: Vec<PathBuf> = rd
+            .flatten()
+            .map(|e| e.path())
+            .filter(|p| p.is_dir())
+            .filter(|p| {
+                p.file_name().is_some_and(|n| {
+                    let n = n.to_string_lossy();
+                    n.starts_with(SCRATCH_PREFIX) || n.starts_with(STAGING_PREFIX)
+                })
+            })
+            .collect();
+        left.sort();
+        let mut notes = Vec::new();
+        for dir in left {
+            let name = dir.file_name().unwrap_or_default().to_string_lossy().into_owned();
+            let staged = name.strip_prefix(STAGING_PREFIX);
+            let key = staged.unwrap_or(&name);
+            let guard = match SwapLock::try_acquire(&addons, key) {
+                Some(None) => continue,
+                guard => guard.flatten(),
+            };
+            if std::fs::remove_dir_all(&dir).is_err() {
+                continue;
+            }
+            notes.push(match staged {
+                Some(id) => {
+                    let kept = AddonManifest::load(&addons.join(id)).map_or_else(
+                        |_| "is not installed".to_owned(),
+                        |m| format!("stays at {}", m.version),
+                    );
+                    format!("deleted the unfinished install of {id}, which {kept}")
+                }
+                None => format!("deleted the unfinished unpack {name}"),
+            });
+            if staged.is_none() && guard.is_some() {
+                drop(guard);
+                std::fs::remove_file(swap_lock_path(&addons, key)).ok();
+            }
+        }
+        notes
+    }
+
     /// The installed addons this launcher can read. One it can't is left out with a warning;
     /// [`unreadable_addons`](Self::unreadable_addons) lists them.
     pub fn addons(&self) -> Result<BTreeMap<String, AddonManifest>> {
@@ -562,16 +667,14 @@ impl Store {
         if !src.is_file() {
             return vec![self.install_addon_for(src, &launcher)];
         }
-        let scratch = self.scratch_dir();
-        let installed = match self.unpacked_addons(src, &scratch) {
+        let scratch = Scratch::new(&self.addons_dir());
+        match self.unpacked_addons(src, &scratch.dir) {
             Ok(found) => found
                 .iter()
                 .map(|addon| self.install_addon_for(addon, &launcher))
                 .collect(),
             Err(e) => vec![Err(e)],
-        };
-        std::fs::remove_dir_all(&scratch).ok();
-        installed
+        }
     }
 
     pub fn install_addon_for(&self, src: &Path, launcher: &semver::Version) -> Result<AddonManifest> {
@@ -632,9 +735,9 @@ impl Store {
         from: InstallFrom,
     ) -> Result<AddonManifest> {
         if src.is_file() {
-            let scratch = self.scratch_dir();
-            let result = self
-                .unpacked_addons(src, &scratch)
+            let scratch = Scratch::new(&self.addons_dir());
+            return self
+                .unpacked_addons(src, &scratch.dir)
                 .and_then(|found| match found.as_slice() {
                     [one] => self.install_addon_target(one, launcher, profile, from),
                     many => Err(Error::Other(format!(
@@ -643,8 +746,6 @@ impl Store {
                         many.len()
                     ))),
                 });
-            std::fs::remove_dir_all(&scratch).ok();
-            return result;
         }
         let src = &crate::import::addon_root(src).unwrap_or_else(|| src.to_path_buf());
         if src.join(crate::dbedit::package::MARKER).is_file() {
@@ -708,6 +809,8 @@ impl Store {
         let dest = self.addons_dir().join(&id);
         let fresh = !dest.exists();
         self.helpers.forget(&id);
+        std::fs::create_dir_all(self.addons_dir()).map_err(io_err(self.addons_dir()))?;
+        let _lock = swap_lock_for(&dest, &m.name)?;
         let staging = self.addons_dir().join(format!("{STAGING_PREFIX}{id}"));
         if staging.exists() {
             std::fs::remove_dir_all(&staging).map_err(io_err(&staging))?;
@@ -726,7 +829,12 @@ impl Store {
                 }
             }
         }
-        swap_in(
+        if let Err(e) = crate::addon_files::seal(&staging) {
+            std::fs::remove_dir_all(&staging).ok();
+            let verb = if fresh { "install" } else { "update" };
+            return Err(Error::Other(format!("Couldn't {verb} {}: {e}", m.name)));
+        }
+        swap_in_held(
             &staging,
             &dest,
             &m.name,
@@ -777,13 +885,7 @@ impl Store {
         path.strip_prefix(self.addons_dir())
             .ok()
             .and_then(|rest| rest.components().next())
-            .is_some_and(|c| c.as_os_str().to_string_lossy().starts_with(".importing-"))
-    }
-
-    fn scratch_dir(&self) -> PathBuf {
-        static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
-        let n = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        self.addons_dir().join(format!(".importing-{n}"))
+            .is_some_and(|c| c.as_os_str().to_string_lossy().starts_with(SCRATCH_PREFIX))
     }
 
     // A package is one addon; any other archive holds whatever addons it has.
@@ -3021,6 +3123,145 @@ mod tests {
         store.migrate().unwrap();
         assert!(old_copies(&store).is_empty(), "{:?}", old_copies(&store));
         assert!(!dest.exists());
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    fn livery_zip(path: &Path, version: &str, lang: &[u8]) {
+        let mut z = zip::ZipWriter::new(std::fs::File::create(path).unwrap());
+        let opts = zip::write::SimpleFileOptions::default();
+        let manifest = manifest_json("a.livery").replace("1.0.0", version).replace(
+            r#""compat""#,
+            r#""operations":{"assets":["assets/lang.json"]},"compat""#,
+        );
+        z.start_file(MANIFEST_FILE, opts).unwrap();
+        std::io::Write::write_all(&mut z, manifest.as_bytes()).unwrap();
+        z.start_file("assets/lang.json", opts).unwrap();
+        std::io::Write::write_all(&mut z, lang).unwrap();
+        z.start_file("base/common.erp", opts).unwrap();
+        std::io::Write::write_all(&mut z, format!("ERPK{version}").as_bytes()).unwrap();
+        z.finish().unwrap();
+    }
+
+    fn leftovers(store: &Store) -> Vec<String> {
+        let mut out: Vec<String> = std::fs::read_dir(store.addons_dir())
+            .unwrap()
+            .flatten()
+            .map(|e| e.file_name().to_string_lossy().into_owned())
+            .filter(|n| n.starts_with('.') && !n.starts_with(".swap-a.livery"))
+            .collect();
+        out.sort();
+        out
+    }
+
+    const LANG: &[u8] = br#"{"schema_version":1,"ops":[]}"#;
+
+    #[test]
+    fn an_install_lists_its_files_and_leaves_no_unpack_folder_or_lock() {
+        let root = tmp("sealed-install");
+        let store = Store::new(root.join("data"));
+        let zip = root.join("livery.swoftyaddon");
+        livery_zip(&zip, "1.0.0", LANG);
+        let m = store.install_addon(&zip).unwrap();
+        let dir = store.addons_dir().join("a.livery");
+        let index = crate::addon_files::read_index(&dir).unwrap();
+        assert_eq!(
+            index.files.keys().collect::<Vec<_>>(),
+            ["assets/lang.json", "base/common.erp", MANIFEST_FILE]
+        );
+        assert_eq!(index.files["assets/lang.json"].size, LANG.len() as u64);
+        assert!(crate::addon_files::check(&dir, &m).is_empty());
+        assert!(leftovers(&store).is_empty(), "{:?}", leftovers(&store));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn an_update_killed_part_way_keeps_the_installed_copy_and_the_next_start_clears_it() {
+        let root = tmp("killed-update");
+        let store = Store::new(root.join("data"));
+        let zip = root.join("v1.swoftyaddon");
+        livery_zip(&zip, "1.0.0", LANG);
+        store.install_addon(&zip).unwrap();
+        let dest = store.addons_dir().join("a.livery");
+        livery_zip(&zip, "1.1.0", LANG);
+
+        crate::addon_files::tests::panic_after(1);
+        let killed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| store.install_addon(&zip)));
+        assert!(killed.is_err());
+        let staging = store.addons_dir().join(format!("{STAGING_PREFIX}a.livery"));
+        std::fs::write(staging.join("assets/lang.json"), b"").unwrap();
+        assert_eq!(store.addons().unwrap()["a.livery"].version.to_string(), "1.0.0");
+        assert_eq!(std::fs::read(dest.join("base/common.erp")).unwrap(), b"ERPK1.0.0");
+        assert_eq!(std::fs::read(dest.join("assets/lang.json")).unwrap(), LANG);
+        let m = &store.addons().unwrap()["a.livery"];
+        assert!(crate::addon_files::check(&dest, m).is_empty());
+
+        let scratch = store
+            .addons_dir()
+            .join(format!("{SCRATCH_PREFIX}{}-999999", std::process::id()));
+        std::fs::create_dir_all(scratch.join("assets")).unwrap();
+        std::fs::write(scratch.join(MANIFEST_FILE), b"{\"schema_vers").unwrap();
+
+        let notes = store.migrate().unwrap();
+        assert!(
+            notes
+                .iter()
+                .any(|n| n == "deleted the unfinished install of a.livery, which stays at 1.0.0"),
+            "{notes:?}"
+        );
+        assert!(
+            notes
+                .iter()
+                .any(|n| n.starts_with("deleted the unfinished unpack .importing-")),
+            "{notes:?}"
+        );
+        assert!(leftovers(&store).is_empty(), "{:?}", leftovers(&store));
+        assert_eq!(std::fs::read(dest.join("base/common.erp")).unwrap(), b"ERPK1.0.0");
+        assert_eq!(store.addons().unwrap().len(), 2, "core and the livery");
+
+        store.install_addon(&zip).unwrap();
+        assert_eq!(store.addons().unwrap()["a.livery"].version.to_string(), "1.1.0");
+        assert!(leftovers(&store).is_empty(), "{:?}", leftovers(&store));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_start_leaves_the_unpack_and_staging_folders_of_a_running_install_alone() {
+        let (root, store, _, staging) = installed_with_update("sweep-live");
+        let addons = store.addons_dir();
+        let scratch = Scratch::new(&addons);
+        std::fs::create_dir_all(&scratch.dir).unwrap();
+        let lock = SwapLock::try_acquire(&addons, "a.livery").unwrap().unwrap();
+        let notes = store.migrate().unwrap();
+        assert!(notes.iter().all(|n| !n.contains("unfinished")), "{notes:?}");
+        assert!(scratch.dir.is_dir() && staging.is_dir());
+        drop(lock);
+        let dir = scratch.dir.clone();
+        drop(scratch);
+        assert!(!dir.exists());
+        assert!(!swap_lock_path(&addons, &dir.file_name().unwrap().to_string_lossy()).exists());
+        store.migrate().unwrap();
+        assert!(!staging.exists());
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn an_install_of_an_addon_another_launcher_is_changing_is_refused_before_its_staging_is_touched() {
+        let (root, store, dest, staging) = installed_with_update("install-contended");
+        let lock = SwapLock::try_acquire(&store.addons_dir(), "a.livery")
+            .unwrap()
+            .unwrap();
+        let v3 = root.join("v3");
+        std::fs::create_dir_all(&v3).unwrap();
+        std::fs::write(
+            v3.join(MANIFEST_FILE),
+            manifest_json("a.livery").replace("1.0.0", "1.2.0"),
+        )
+        .unwrap();
+        let e = store.install_addon(&v3).unwrap_err().to_string();
+        assert!(e.contains("another Swofty launcher"), "{e}");
+        assert_eq!(std::fs::read(staging.join("base/common.erp")).unwrap(), b"v2");
+        assert_eq!(std::fs::read(dest.join("base/common.erp")).unwrap(), b"v1");
+        drop(lock);
         std::fs::remove_dir_all(&root).ok();
     }
 }

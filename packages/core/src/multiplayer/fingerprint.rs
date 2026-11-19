@@ -456,9 +456,13 @@ pub fn record_outputs(store: &Store, profile: &str, outputs: BTreeMap<String, Ou
 }
 
 /// SHA-256 over each file under `dir` as `path\0sha256\n`, paths relative with `/`, in order.
+/// The file list an install writes is left out.
 pub fn content_hash(dir: &Path, hashes: &mut Hashes) -> Result<String> {
     let mut h = Sha256::new();
-    for (rel, path) in loader_files(dir)? {
+    for (rel, path) in loader_files(dir)?
+        .into_iter()
+        .filter(|(rel, _)| rel != crate::addon_files::INDEX_FILE)
+    {
         h.update(format!("{rel}\0{}\n", hashes.sha256(&path)?));
     }
     Ok(hex(&h.finalize()))

@@ -310,9 +310,12 @@ pub fn extract_zip(zip_path: &Path, dest: &Path) -> Result<TrackPackage> {
     Ok(pkg)
 }
 
+/// Unpacks `zip_path` into `dest`, then flushes each file to disk and reads it back against
+/// the size and CRC-32 the archive lists.
 pub(crate) fn unzip(zip_path: &Path, dest: &Path, err: fn(String) -> Error) -> Result<()> {
     let file = std::fs::File::open(zip_path).map_err(io_err(zip_path))?;
     let mut zip = zip::ZipArchive::new(file)?;
+    let mut written = std::collections::BTreeMap::new();
     for i in 0..zip.len() {
         let mut entry = zip.by_index(i)?;
         let Some(rel) = entry.enclosed_name() else {
@@ -322,7 +325,7 @@ pub(crate) fn unzip(zip_path: &Path, dest: &Path, err: fn(String) -> Error) -> R
                 String::from_utf8_lossy(entry.name_raw())
             )));
         };
-        let out: PathBuf = dest.join(rel);
+        let out: PathBuf = dest.join(&rel);
         if entry.is_dir() {
             std::fs::create_dir_all(&out).map_err(io_err(&out))?;
             continue;
@@ -331,7 +334,34 @@ pub(crate) fn unzip(zip_path: &Path, dest: &Path, err: fn(String) -> Error) -> R
             std::fs::create_dir_all(dir).map_err(io_err(dir))?;
         }
         let mut f = std::fs::File::create(&out).map_err(io_err(&out))?;
-        std::io::copy(&mut entry, &mut f).map_err(io_err(&out))?;
+        let copied = std::io::copy(&mut entry, &mut f).map_err(io_err(&out))?;
+        if copied != entry.size() {
+            return Err(err(format!(
+                "{}: {} unpacked to {copied} bytes, the archive lists {}",
+                zip_path.display(),
+                rel.display(),
+                entry.size()
+            )));
+        }
+        let listed = crate::addon_files::Entry {
+            size: entry.size(),
+            crc32: entry.crc32(),
+        };
+        written.insert(out, (rel, listed));
+    }
+    for (out, (rel, listed)) in written {
+        let found = crate::addon_files::settle(&out)?;
+        if found != listed {
+            return Err(err(format!(
+                "{}: {} on disk is {} bytes with CRC-32 {:08x}, the archive lists {} bytes with {:08x}",
+                zip_path.display(),
+                rel.display(),
+                found.size,
+                found.crc32,
+                listed.size,
+                listed.crc32
+            )));
+        }
     }
     Ok(())
 }
