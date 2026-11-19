@@ -192,3 +192,29 @@ fn a_build_names_the_same_overlay_with_its_kept_digests_or_without_them() {
     );
     std::fs::remove_dir_all(&root).ok();
 }
+
+#[test]
+fn the_careers_file_and_the_list_state_are_part_of_the_build_hash() {
+    use super::super::inputs::stamp_resume_list;
+    let root = scratch("resume-list");
+    let hash = |wanted: bool| {
+        let mut h = BuildHash::new();
+        stamp_resume_list(&mut h, &root, wanted).unwrap();
+        h.finish()
+    };
+    let absent = hash(true);
+    assert_ne!(absent, hash(false));
+    let file = crate::stdlib::careers::data_path(&root);
+    std::fs::create_dir_all(file.parent().unwrap()).unwrap();
+    std::fs::write(&file, b"[]").unwrap();
+    let empty = hash(true);
+    assert_ne!(empty, absent);
+    assert_eq!(empty, hash(true));
+    std::fs::write(&file, b"[{}]").unwrap();
+    assert_ne!(hash(true), empty);
+    assert_eq!(hash(false), {
+        std::fs::remove_file(&file).unwrap();
+        hash(false)
+    });
+    std::fs::remove_dir_all(&root).ok();
+}
