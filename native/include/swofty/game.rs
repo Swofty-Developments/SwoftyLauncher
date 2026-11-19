@@ -22429,6 +22429,11 @@ pub mod bindings {
         kind: "call",
         status: Status::Experimental,
     };
+    pub const site_Game_CareerContinue_MyTeamSlotTitle: Binding = Binding {
+        id: "site_Game_CareerContinue_MyTeamSlotTitle",
+        kind: "call",
+        status: Status::Experimental,
+    };
     pub const site_Game_CareerEventsSequencerFirstRecord: Binding = Binding {
         id: "site_Game_CareerEventsSequencerFirstRecord",
         kind: "site",
@@ -23151,6 +23156,16 @@ pub mod bindings {
     };
     pub const vt_Career_Weekend: Binding = Binding {
         id: "vt_Career_Weekend",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Game_CareerContinueDriverViewModel: Binding = Binding {
+        id: "vt_Game_CareerContinueDriverViewModel",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Game_CareerContinueMyTeamViewModel: Binding = Binding {
+        id: "vt_Game_CareerContinueMyTeamViewModel",
         kind: "vtable",
         status: Status::Experimental,
     };

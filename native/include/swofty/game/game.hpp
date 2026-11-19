@@ -1405,6 +1405,7 @@ inline constexpr data<"k_Game_TrackListComponentDesc", void *> k_Game_TrackListC
 inline constexpr site<"site_Game_AcclimPenalty_Entry"> site_Game_AcclimPenalty_Entry{}; // L2 experimental
 inline constexpr site<"site_Game_AcclimPenalty_Return"> site_Game_AcclimPenalty_Return{}; // L2 experimental
 inline constexpr call<"site_Game_CareerContinue_DriverSlotTitle"> site_Game_CareerContinue_DriverSlotTitle{}; // L2 experimental
+inline constexpr call<"site_Game_CareerContinue_MyTeamSlotTitle"> site_Game_CareerContinue_MyTeamSlotTitle{}; // L2 experimental
 inline constexpr site<"site_Game_CareerEventsSequencerFirstRecord"> site_Game_CareerEventsSequencerFirstRecord{}; // L2 experimental
 inline constexpr site<"site_Game_CareerEventsSequencerPlayerDriver"> site_Game_CareerEventsSequencerPlayerDriver{}; // L2 experimental
 inline constexpr site<"site_Game_CareerEventsSequencerPlayerDriverJoin"> site_Game_CareerEventsSequencerPlayerDriverJoin{}; // L2 experimental
@@ -1458,6 +1459,8 @@ inline constexpr site<"site_Game_TimeTrial_SetReferenceListBoard"> site_Game_Tim
 inline constexpr site<"site_Game_TimeTrial_SetReferenceLogBoard"> site_Game_TimeTrial_SetReferenceLogBoard{}; // L2 experimental
 inline constexpr site<"site_Game_TimeTrial_SetReferenceLogDone"> site_Game_TimeTrial_SetReferenceLogDone{}; // L2 experimental
 inline constexpr site<"site_Game_TimeTrial_SetReferenceNoList"> site_Game_TimeTrial_SetReferenceNoList{}; // L2 experimental
+inline constexpr vtable<"vt_Game_CareerContinueDriverViewModel", 28> vt_Game_CareerContinueDriverViewModel{}; // L2 experimental
+inline constexpr vtable<"vt_Game_CareerContinueMyTeamViewModel", 28> vt_Game_CareerContinueMyTeamViewModel{}; // L2 experimental
 inline constexpr vtable<"vt_Game_CareerDLCSelectViewModel", 19> vt_Game_CareerDLCSelectViewModel{}; // L2 experimental
 inline constexpr vtable<"vt_Game_CareerWizardSettingsSelectViewModel", 19> vt_Game_CareerWizardSettingsSelectViewModel{}; // L2 experimental, CareerWizardSettingsSelectViewModel.
 inline constexpr vtable<"vt_Game_DriverCareerDriverSelectViewModel", 22> vt_Game_DriverCareerDriverSelectViewModel{}; // L2 experimental
