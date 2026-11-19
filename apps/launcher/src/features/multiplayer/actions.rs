@@ -118,6 +118,11 @@ impl Shell {
         }
     }
 
+    /// A picture fetched with [`Multiplayer::load_faces`], once it is in.
+    pub(crate) fn fetched_image(&self, url: &str) -> Option<Arc<Image>> {
+        self.rooms.faces.get(url).cloned()
+    }
+
     pub(super) fn room_game_state(&self) -> GameState {
         let status = match &self.rooms.state {
             Some(state) if self.rooms.session.is_some() => state.game.as_ref(),

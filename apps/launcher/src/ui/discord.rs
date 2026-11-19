@@ -39,6 +39,17 @@ pub(crate) fn invite_button(
     height: f32,
     padding: f32,
 ) -> Stateful<Div> {
+    link_button(id, label, INVITE.to_owned(), height, padding)
+}
+
+/// A button in Discord's colour that opens `url`.
+pub(crate) fn link_button(
+    id: impl Into<ElementId>,
+    label: impl Into<SharedString>,
+    url: String,
+    height: f32,
+    padding: f32,
+) -> Stateful<Div> {
     let white = hsla(0., 0., 1., 1.);
     h_flex()
         .id(id)
@@ -55,7 +66,7 @@ pub(crate) fn invite_button(
         .text_color(white)
         .child(svg().data(LOGO).size(px(16.)).text_color(white))
         .child(label.into())
-        .on_click(|_, _, cx| cx.open_url(INVITE))
+        .on_click(move |_, _, cx| cx.open_url(&url))
 }
 
 /// The Discord invite at the top of the News page, shorter in `compact` windows.
