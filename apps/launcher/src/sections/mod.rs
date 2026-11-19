@@ -157,7 +157,7 @@ impl Shell {
         }
         self.views.retain(|k, _| keys.contains(k));
         let prefetch = self.detected;
-        let sections: Vec<(String, String, bool)> = library
+        let sections: Vec<(String, String)> = library
             .sections
             .iter()
             .enumerate()
@@ -165,11 +165,7 @@ impl Shell {
             .filter(|(i, s)| {
                 open == Some(*i) || prefetch || !registry.get(&s.addon).is_some_and(|e| e.helper)
             })
-            .map(|(_, s)| {
-                let key = section_key(s);
-                let cached = self.views.contains_key(&key);
-                (s.addon.clone(), s.spec.id.clone(), cached)
-            })
+            .map(|(_, s)| (s.addon.clone(), s.spec.id.clone()))
             .collect();
         if sections.is_empty() {
             return;
@@ -183,21 +179,21 @@ impl Shell {
                     let game = game(&store, install.as_ref());
                     sections
                         .into_iter()
-                        .filter_map(|(addon, section, cached)| {
+                        .filter_map(|(addon, section)| {
                             let view = registry
                                 .get(&addon)
                                 .ok_or_else(|| trf!("{addon} is gone", addon = addon))
                                 .and_then(|e| {
                                     let host = host(&store, &addon, &profile, game.as_ref())?;
-                                    let view = match (&e.plugin, cached) {
-                                        (Some(plugin), true) => {
+                                    let view = match &e.plugin {
+                                        Some(plugin) => {
                                             let view = plugin.try_view(&host.cx(), &section);
                                             if view.is_none() {
                                                 plugin.mark_stale(Some(&section));
                                             }
                                             view
                                         }
-                                        _ => Some(e.addon.view(&host.cx(), &section)),
+                                        None => Some(e.addon.view(&host.cx(), &section)),
                                     };
                                     Ok(view.map(|v| v.map_err(|e| e.to_string())))
                                 });
@@ -273,7 +269,7 @@ impl Shell {
         let Some(plugin) = self.library.registry.get(&s.addon).and_then(|e| e.plugin.clone()) else {
             return;
         };
-        if !ticks || self.ticking || !plugin.running() {
+        if !ticks || self.ticking || !plugin.ready() {
             return;
         }
         self.ticking = true;
