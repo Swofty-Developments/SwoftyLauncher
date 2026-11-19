@@ -334,17 +334,23 @@ bool hash_file(const std::string &rel, uint64_t &hash)
     return ok;
 }
 
-bool write_copy(const std::wstring &path, const std::function<bool(const erpfile::Sink &, std::string &)> &emit, std::string &why)
+bool write_copy(const std::wstring &path, const std::function<bool(const erpfile::Sink &, std::string &)> &emit, std::string &why,
+                uint32_t *error = nullptr)
 {
     std::wstring tmp = path + L".tmp";
+    uint32_t last = 0;
     HANDLE out = CreateFileW(tmp.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (out == INVALID_HANDLE_VALUE)
+        last = GetLastError();
     bool ok = out != INVALID_HANDLE_VALUE && emit(
                                                  [&](const char *p, size_t n) {
                                                      DWORD put = 0;
                                                      while (n) {
                                                          DWORD want = DWORD(std::min<size_t>(n, size_t(1) << 24));
-                                                         if (!WriteFile(out, p, want, &put, nullptr) || !put)
+                                                         if (!WriteFile(out, p, want, &put, nullptr) || !put) {
+                                                             last = GetLastError();
                                                              return false;
+                                                         }
                                                          p += put;
                                                          n -= put;
                                                      }
@@ -353,9 +359,15 @@ bool write_copy(const std::wstring &path, const std::function<bool(const erpfile
                                                  why);
     if (out != INVALID_HANDLE_VALUE)
         CloseHandle(out);
-    if (ok && MoveFileExW(tmp.c_str(), path.c_str(), MOVEFILE_REPLACE_EXISTING))
+    if (ok && !MoveFileExW(tmp.c_str(), path.c_str(), MOVEFILE_REPLACE_EXISTING)) {
+        last = GetLastError();
+        ok = false;
+    }
+    if (ok)
         return true;
     DeleteFileW(tmp.c_str());
+    if (error)
+        *error = last;
     return false;
 }
 
@@ -506,9 +518,7 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
             keyed_files.insert(keyed_files.end(), it->second.begin(), it->second.end());
     }
     std::string dir = "addons/" + std::string(CACHE_ADDON) + "/";
-    std::wstring dirw = runtime::under_swofty("addons");
-    CreateDirectoryW(dirw.c_str(), nullptr);
-    CreateDirectoryW(runtime::under_swofty(dir).c_str(), nullptr);
+    uint32_t unwritable = runtime::write_refusal(runtime::under_swofty(dir));
     std::wstring stamps_path = runtime::under_swofty(dir + logo_cache::STAMPS);
     DeleteFileW(runtime::under_swofty(dir + logo_cache::OLD_STAMPS).c_str());
     std::string stamps_before = runtime::read_file(stamps_path, size_t(16) << 20);
@@ -543,6 +553,11 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
                 return GetFileAttributesW(runtime::under_swofty(dir + file).c_str()) != INVALID_FILE_ATTRIBUTES;
             },
             cached_built, routes, &sources);
+    if (routes.empty() && unwritable) {
+        report.lines.push_back(logo_deliver::unwritable_line("swofty/" + dir, unwritable));
+        report.refused += int(wants.size());
+        return;
+    }
     struct Built {
         std::vector<std::string> lines;
         int built = 0, refused = 0;
@@ -591,16 +606,18 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
             std::string file = "logos_" + id + "_" + flat(rel);
             uint64_t whole = 0;
             bool hashed = rel == logo_build::DATABASES && hash_file(rel, whole);
+            uint32_t error = 0;
             bool ok = write_copy(
                 runtime::under_swofty(dir + file),
                 [&](const erpfile::Sink &sink, std::string &w) {
                     erpfile::Archive arc;
                     return src && erpfile::open(*src, arc, w) && erpfile::rewrite(*src, arc, changes, sink, w);
                 },
-                why);
+                why, &error);
             a.arrays[rel] = logo_deliver::arrays_of(changes, logo_build::ARRAY_URI);
             if (!ok) {
-                made.lines.push_back("team.logo: " + rel + " could not be rewritten" + (why.empty() ? "" : ": " + why));
+                made.lines.push_back("team.logo: " + rel + " could not be rewritten" + (why.empty() ? "" : ": " + why) +
+                                     (error ? " (error " + std::to_string(error) + " on swofty/" + dir + file + ")" : ""));
                 made.refused++;
                 a.unwritten.push_back({rel, "it could not be rewritten" + (why.empty() ? "" : ": " + why)});
                 continue;

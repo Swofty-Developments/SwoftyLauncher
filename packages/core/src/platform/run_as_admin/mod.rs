@@ -29,7 +29,8 @@ pub(crate) use tools::windows_tool;
 #[cfg(windows)]
 pub(crate) use tools::windows_tool_within;
 pub use write_access::{
-    FIRST_WRITE, unwritable_dir, virtual_store, write_blocked_text, write_blocked_text_for, write_blocker,
+    CORE_CACHES, FIRST_WRITE, core_cache_dir, open_core_caches, unwritable_dir, virtual_store,
+    write_blocked_text, write_blocked_text_for, write_blocker,
 };
 
 pub const LAYERS_KEY: &str = r"Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers";

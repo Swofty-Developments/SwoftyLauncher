@@ -14,6 +14,7 @@ mod game_version;
 mod graphics;
 mod hang;
 mod hooks;
+mod logos;
 mod memory;
 mod package_ids;
 mod slow_init;
@@ -47,6 +48,7 @@ pub(crate) use evidence::read_perf;
 pub use game_version::{LATEST_GAME_VERSION, older_game, outdated_exe, outdated_game};
 use graphics::graphics_mods;
 use hang::{hang, hang_watchdog};
+pub use logos::unbuilt_logos;
 pub use package_ids::{PACKAGE_ID_MAX, PackageIds};
 pub(crate) use slow_init::slow_start;
 use stall::BOOT_STALL_SECS;
@@ -94,6 +96,12 @@ pub fn stall(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Opt
 /// tyres, when its log names them.
 pub fn tyres(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Option<Diagnosis> {
     unplaced_tyres(&evidence(session, game, store))
+}
+
+/// Why `session`, which ended without a crash, ran without its addons' team
+/// logos, when its log says the game could not write them.
+pub fn logos(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Option<Diagnosis> {
+    unbuilt_logos(&evidence(session, game, store))
 }
 
 /// The cause of a crash, from the first rule that recognises it. A crash no

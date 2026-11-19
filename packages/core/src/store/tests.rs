@@ -95,6 +95,11 @@ fn an_addon_in_a_running_build_is_not_replaced_or_removed() {
     assert!(store.addons_dir().join("t.used").join(MANIFEST_FILE).is_file());
     store.install_addon(&src.join("t.other")).unwrap();
     drop(lock);
+    drop(
+        crate::game_folder::recovery::SessionLock::wait(&root, std::time::Duration::from_secs(10))
+            .unwrap()
+            .expect("a forked child still holds the dropped lock"),
+    );
     store.install_addon(&src.join("t.used")).unwrap();
     store.remove_addon("t.used").unwrap();
     std::fs::remove_dir_all(&root).ok();

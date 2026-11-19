@@ -4,6 +4,8 @@
 use std::path::{Path, PathBuf};
 
 use super::elevation::elevated;
+#[cfg(windows)]
+use super::tools::windows_tool_within;
 
 /// The folder under the game folder a modded session writes in first.
 pub const FIRST_WRITE: &str = "2025_asset_groups/ui_package";
@@ -88,4 +90,103 @@ pub fn write_blocked_text_for(game: &Path, windows: bool) -> String {
             game.display()
         )
     }
+}
+
+/// The folders under the game folder the mod loader builds archives in at
+/// boot for the game's own file system to read, which reaches only files
+/// under the game folder: the team logo and the garage art caches.
+pub const CORE_CACHES: &[&str] = &["swofty/addons/swofty.logos", "swofty/addons/swofty.garage"];
+
+/// The Users group, by SID so the grant reads the same in every Windows
+/// language, gets Modify on a folder and everything made in it.
+#[cfg(windows)]
+const USERS_MODIFY: &str = "*S-1-5-32-545:(OI)(CI)M";
+
+/// Makes each of [`CORE_CACHES`] in `game` one F1 25 can create files in,
+/// when `game` is under Program Files and this process runs as
+/// administrator. F1 25 started by the EA app runs without administrator
+/// rights even then, and a folder the administrator copy makes under Program
+/// Files lets it only read. Returns a line for each folder that stays closed
+/// to the game.
+pub fn open_core_caches(game: &Path) -> Vec<String> {
+    if !cfg!(windows) || !in_program_files(game, &program_files_roots()) || !elevated() {
+        return Vec::new();
+    }
+    open_core_caches_with(game, grant_users_modify)
+}
+
+/// The Program Files folders of this Windows.
+fn program_files_roots() -> Vec<PathBuf> {
+    ["ProgramFiles", "ProgramFiles(x86)", "ProgramW6432"]
+        .iter()
+        .filter_map(std::env::var_os)
+        .map(PathBuf::from)
+        .collect()
+}
+
+/// Whether `dir` is one of `roots` or inside one, compared as Windows does:
+/// without case, either slash.
+pub(super) fn in_program_files(dir: &Path, roots: &[PathBuf]) -> bool {
+    let norm = |p: &Path| {
+        let mut s = p.to_string_lossy().replace('/', "\\").to_lowercase();
+        while s.ends_with('\\') {
+            s.pop();
+        }
+        s
+    };
+    let dir = norm(dir);
+    roots.iter().map(|r| norm(r)).any(|root| {
+        !root.is_empty()
+            && dir
+                .strip_prefix(&root)
+                .is_some_and(|rest| rest.is_empty() || rest.starts_with('\\'))
+    })
+}
+
+/// The folder `rel`, one of [`CORE_CACHES`], in `game`, with the separator
+/// of this system between its parts.
+pub fn core_cache_dir(game: &Path, rel: &str) -> PathBuf {
+    rel.split('/')
+        .fold(game.to_path_buf(), |dir, part| dir.join(part))
+}
+
+/// [`open_core_caches`] with the call that opens one folder to the game.
+pub(crate) fn open_core_caches_with(
+    game: &Path,
+    grant: impl Fn(&Path) -> std::result::Result<(), String>,
+) -> Vec<String> {
+    CORE_CACHES
+        .iter()
+        .filter_map(|rel| {
+            let dir = core_cache_dir(game, rel);
+            std::fs::create_dir_all(&dir)
+                .map_err(|e| e.to_string())
+                .and_then(|()| grant(&dir))
+                .err()
+                .map(|why| {
+                    format!(
+                        "core caches: F1 25 run without administrator rights can't create files in {rel}, \
+                         and the archives the mod loader builds there at boot stay out of the game: {why}"
+                    )
+                })
+        })
+        .collect()
+}
+
+#[cfg(windows)]
+pub(super) fn grant_users_modify(dir: &Path) -> std::result::Result<(), String> {
+    let path = dir
+        .to_str()
+        .ok_or_else(|| format!("{} is not a path icacls can be given", dir.display()))?;
+    windows_tool_within(
+        "icacls",
+        &[path, "/grant", USERS_MODIFY, "/Q"],
+        std::time::Duration::from_secs(30),
+    )
+    .map(drop)
+}
+
+#[cfg(not(windows))]
+fn grant_users_modify(_: &Path) -> std::result::Result<(), String> {
+    Ok(())
 }
