@@ -15,6 +15,8 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <map>
+#include <memory>
 #include <mutex>
 #include <set>
 #include <string>
@@ -26,6 +28,7 @@
 #include "core/runtime/layout.hpp"
 #include "core/career/save_splice_logic.hpp"
 #include "core/career/save_data.hpp"
+#include "core/career/plain_saves.hpp"
 
 // Save splice: keeps the save containers of absent addons through a profile save
 // (re/db/subsystems/game.md#save-containers, #save-splice).
@@ -114,9 +117,64 @@ std::vector<cs::SlotRead> slot_reads;
 struct Manager {
     uintptr_t iface = 0, vtable = 0;
     size_t count = 0;
+    std::string container;
 };
 std::vector<Manager> managers;
 bool in_root_load = false, slots_clean = true;
+
+// The plain store (plain_saves.cpp): what every root child of the last load held, so the store has registered
+// containers too. A registered child's bag is encoded from the recursive deserialise call the root's loop makes for it
+// (depth 2 below the root's own call). SWOFTY_PLAIN_REGISTERED=0 leaves registered children out.
+namespace plain = career::plain_saves;
+struct Captured {
+    std::string name;
+    std::shared_ptr<const std::vector<uint8_t>> bytes;
+};
+std::vector<Captured> captured;
+std::set<std::string> seen_children, injected_names;
+std::string current_child;
+thread_local int load_depth = 0;
+
+bool registered_capture_on()
+{
+    char v[8] = {};
+    DWORD n = GetEnvironmentVariableA("SWOFTY_PLAIN_REGISTERED", v, sizeof v);
+    return !(n && n < sizeof v && !strcmp(v, "0"));
+}
+
+plain::Slot plain_slot(const cs::SlotRead &r)
+{
+    plain::Slot s;
+    s.slot = r.id, s.guid = r.guid, s.name = r.name;
+    s.season = r.season == cs::NO_INDEX ? -1 : int64_t(r.season);
+    s.round = r.weekend == cs::NO_INDEX ? -1 : int64_t(r.weekend);
+    s.team = r.team, s.driver = r.driver, s.last_played = r.date, s.flags = r.flags;
+    return s;
+}
+
+std::vector<plain::Body> plain_bodies(bool at_save, const std::map<std::string, std::vector<plain::Slot>> &slots)
+{
+    std::vector<plain::Body> out;
+    auto slots_of = [&](const std::string &name) {
+        auto it = slots.find(name);
+        return it == slots.end() ? std::vector<plain::Slot>() : it->second;
+    };
+    for (const Captured &c : captured) {
+        plain::Body b;
+        b.name = c.name, b.bytes = c.bytes, b.registered = true, b.source = "game", b.slots = slots_of(c.name);
+        if (at_save)
+            b.as_of = "load";
+        out.push_back(std::move(b));
+    }
+    for (const sp::Kept &k : store.kept()) {
+        plain::Body b;
+        b.name = k.name, b.bytes = std::make_shared<const std::vector<uint8_t>>(k.body);
+        b.source = injected_names.count(k.name) ? "injected" : "kept";
+        b.slots = slots_of(k.name);
+        out.push_back(std::move(b));
+    }
+    return out;
+}
 
 void log_load(const std::vector<cs::SlotRead> &reads, const std::vector<Manager> &seen, bool ok)
 {
@@ -147,20 +205,81 @@ void log_load(const std::vector<cs::SlotRead> &reads, const std::vector<Manager>
         swofty::log("[saves] profile load %u: no save slot manager was read (no career containers in this save)", n);
 }
 
+void capture_child(void *self, void *bag)
+{
+    std::string name, why;
+    std::vector<uint8_t> bytes;
+    if (!career::save_data::container_name(reinterpret_cast<uintptr_t>(self), name) || !sp::name_ok(name))
+        return;
+    {
+        std::lock_guard<std::mutex> g(hooks.lock);
+        seen_children.insert(name);
+        current_child = name;
+    }
+    if (!registered_capture_on() || !plain::enabled())
+        return;
+    if (!career::save_data::game_object(bag)) {
+        swofty::log("[saves] plain store: the bag of %s is not readable; it is left out of this load's generation", name.c_str());
+        return;
+    }
+    if (!encode(bag, bytes, why)) {
+        swofty::log("[saves] plain store: could not capture %s: %s", name.c_str(), why.c_str());
+        return;
+    }
+    std::lock_guard<std::mutex> g(hooks.lock);
+    captured.push_back({name, std::make_shared<const std::vector<uint8_t>>(std::move(bytes))});
+}
+
 int *deserialise_entry(void *self, int *result, void *bag, uint8_t reset_on_error, uint64_t groups)
 {
     bool root = is_root(reinterpret_cast<uintptr_t>(self));
+    int depth = ++load_depth;
     if (root) {
         std::lock_guard<std::mutex> g(hooks.lock);
         store.begin_load();
         ++loads;
         slot_reads.clear();
         managers.clear();
+        captured.clear();
+        seen_children.clear();
+        injected_names.clear();
+        current_child.clear();
         slots_clean = true;
         in_root_load = true;
+    } else if (depth == 2) {
+        bool loading;
+        {
+            std::lock_guard<std::mutex> g(hooks.lock);
+            loading = in_root_load;
+        }
+        if (loading)
+            capture_child(self, bag);
     }
     int *r = hooks.deserialise_container(self, result, bag, reset_on_error, groups);
+    --load_depth;
     if (root) {
+        if (r && *r == 0 && plain::enabled()) {
+            std::set<std::string> registered, kept;
+            {
+                std::lock_guard<std::mutex> g(hooks.lock);
+                registered = seen_children;
+                for (auto &k : store.kept())
+                    kept.insert(k.name);
+            }
+            std::vector<plain::Added> added = plain::at_load(registered, kept);
+            std::lock_guard<std::mutex> g(hooks.lock);
+            for (auto &a : added) {
+                size_t size = a.bytes.size();
+                switch (store.add(a.name, std::move(a.bytes))) {
+                case sp::Add::kept:
+                case sp::Add::replaced:
+                    injected_names.insert(a.name);
+                    break;
+                default:
+                    swofty::log("[saves] could not put back %s (%zu bytes): the store is full", a.name.c_str(), size);
+                }
+            }
+        }
         std::vector<cs::SlotRead> reads;
         bool report;
         std::vector<Manager> seen;
@@ -192,6 +311,20 @@ int *deserialise_entry(void *self, int *result, void *bag, uint8_t reset_on_erro
         }
         if (hooks.live() && entry_hooks.loaded)
             entry_hooks.loaded(has_entry ? &entry : nullptr);
+        if (r && *r == 0 && plain::enabled()) {
+            std::map<std::string, std::vector<plain::Slot>> slots;
+            size_t at = 0;
+            for (const Manager &m : seen)
+                for (size_t i = 0; i < m.count && at < reads.size(); i++, at++)
+                    if (!m.container.empty() && cs::career_slot(reads[at]))
+                        slots[m.container].push_back(plain_slot(reads[at]));
+            std::vector<plain::Body> bodies;
+            {
+                std::lock_guard<std::mutex> g(hooks.lock);
+                bodies = plain_bodies(false, slots);
+            }
+            plain::write_async("load", std::move(bodies));
+        }
     }
     return r;
 }
@@ -205,7 +338,7 @@ int slots_entry(void *iface, void *bag, void *ctx)
     std::lock_guard<std::mutex> g(hooks.lock);
     if (in_root_load) {
         if (clean) {
-            managers.push_back({base, vt, reads.size()});
+            managers.push_back({base, vt, reads.size(), current_child});
             for (auto &r : reads)
                 slot_reads.push_back(std::move(r));
         } else
@@ -398,14 +531,30 @@ void saved_entry(SwoftyContext *c)
         known = managers;
     }
     bool clean = !known.empty();
+    std::map<std::string, std::vector<plain::Slot>> slots;
     for (const Manager &m : known) {
         uintptr_t vt = 0;
-        if (!mem::read(m.iface, vt) || vt != m.vtable || !read_manager(m.iface, reads))
+        std::vector<cs::SlotRead> own;
+        if (!mem::read(m.iface, vt) || vt != m.vtable || !read_manager(m.iface, own))
             clean = false;
+        else if (!m.container.empty())
+            for (const cs::SlotRead &r : own)
+                if (cs::career_slot(r))
+                    slots[m.container].push_back(plain_slot(r));
+        for (auto &r : own)
+            reads.push_back(std::move(r));
     }
     if (clean)
         runtime::career_saves_listed(reads, true, false);
     runtime::career_saves_saved();
+    if (plain::enabled()) {
+        std::vector<plain::Body> bodies;
+        {
+            std::lock_guard<std::mutex> g(hooks.lock);
+            bodies = plain_bodies(true, slots);
+        }
+        plain::write_async("save", std::move(bodies));
+    }
 }
 
 }

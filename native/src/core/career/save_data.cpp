@@ -180,6 +180,24 @@ template <class S> bool child_names(uintptr_t begin, uintptr_t end, std::vector<
     }
 }
 
+bool container_name(uintptr_t self, std::string &out)
+{
+    if constexpr (layout::named_container<g::SaveDataContainer>) {
+        uintptr_t name = 0;
+        return self && mem::read(self + offsetof(g::SaveDataContainer, name), name) && name && mem::c_string(name, out, 256) &&
+               !out.empty();
+    } else {
+        (void)self, (void)out;
+        return false;
+    }
+}
+
+bool game_object(const void *obj)
+{
+    uintptr_t vt = 0;
+    return obj && mem::read(reinterpret_cast<uintptr_t>(obj), vt) && mem::in_image(vt);
+}
+
 template bool child_names<>(uintptr_t begin, uintptr_t end, std::vector<std::string> &out);
 
 }

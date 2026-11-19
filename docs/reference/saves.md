@@ -134,6 +134,45 @@ The EA app copy's save device reads and writes plain files under `<title folder>
 
 If the save device is not the expected one, the session ends with exit code 93 before the game loads a save, as on Steam.
 
+## Native plain store
+
+With `plain_saves` in `settings.json`, the core writes the plain store of the profile save and puts missing containers back at load.
+
+```json
+{"plain_saves": {"root": "Z:\\data\\saves\\default\\plain", "schema": 1}}
+```
+
+Without the key the core writes and injects nothing. A key with another `schema`, no `root` or a `..` part in the root logs `[saves] plain store off: <why>` and leaves the store alone.
+
+The core writes a generation after each finished profile load (`event: "load"`, the tree after any injection) and after each finished profile save (`event: "save"`) on a worker thread, so a save never waits for it. A generation is `generations/<12 digits>/manifest.json` and `containers/<fnv64>.bag`, then `CURRENT`. Every file is written to a temporary name, flushed to disk, renamed, and its folder is flushed. `CURRENT` moves last. A generation number is above `CURRENT` and above every folder on disk, so a number is never reused. The core never deletes a generation.
+
+A `.bag` is one root container as `Game_SaveData_WriteBag` emits it. The load generation holds every root child the game matched to a mode (`source: "game"`, `registered: true`) and every container the splice kept (`source: "kept"`). The save generation holds the kept containers as written and the registered containers as they were loaded, marked `"as_of": "load"`: the core cannot encode a registered mode's container at save time. A container put back this session has `source: "injected"`. `slots` come from the slot managers the career list reads; the guid is `0x` and 16 hex digits.
+
+At load the core takes the newest `event: "save"` generation written by a session that had the core, and injects each of its containers the loaded tree lacks. The injected container joins the splice's kept set, so the next profile save writes it back. A container the tree has is never replaced. A container the newest save generation lacks is not restored from an older one, so a deletion stays. Each put-back logs one line.
+
+```text
+[saves] put back driver_career_progressive: 2 career(s) from generation 41
+[saves] could not put back driver_career_progressive: generation 41 has no intact copy of it
+[saves] plain store: wrote generation 42 (save, 9 container(s))
+[saves] plain store: the save generation was not written (<why>); the game's save is untouched
+[saves] plain store: could not capture <name>: <why>
+```
+
+A container is checked against the size and SHA-256 in its manifest before it is injected.
+
+`inject.json` asks for a restore at the next load: `{"schema":1,"requests":[{"id":"r1","generation":37,"container":"<name>","replace":true}]}`. The core adds an absent container from that generation, replaces a kept container when `replace` is true, and refuses a container of a registered mode. It writes `injected.json` (`{"schema":1,"results":[{"id":"r1","ok":true,"detail":"..."}]}`) before it deletes `inject.json`. Each request logs `[saves] inject request <id>: <detail>` or `[saves] inject request <id> refused: <why>`.
+
+`SWOFTY_PLAIN_REGISTERED=0` leaves the registered containers out of the generations.
+
+### Save sandbox writes
+
+A write through the launcher saves proxy is flushed to disk with its folder. The data file and the index are one pair: before a batch replaces a file, the old file is kept as `<name>.swofty-prev` and `batch.swofty-pending` names it. The pending record holds whether the data file and the index were both written. At the next mount or write batch a pair with both written is kept and the old copies go. A pair with only one of them goes back to the old files, and a file the batch created is removed.
+
+```text
+[saves] sandbox: a save write was cut off between its data file and its index; the previous pair is back (<files>)
+[saves] sandbox: a finished save pair was still marked pending; it is kept (<files>)
+```
+
 ## Save diagnostics
 
 Every session logs where the game's saves come from, also with launcher saves off. Every profile load logs the source, the save file and each career slot the game read:
