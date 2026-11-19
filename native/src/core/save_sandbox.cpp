@@ -560,12 +560,13 @@ void read_run()
     if (!r.ok)
         fail_closed(r.why + " (" + runtime::narrow(run_dir) + ")");
     run_info = r;
-    if (!r.sandbox) {
+    if (ss::run_saves(r) == ss::RunSaves::launcher) {
         mode = Mode::off;
         swofty::log("[test] test run %s: the test agent's only; no save sandbox (run.json names no saves), so the "
-                    "game uses the player's own saves and the agent refuses career load, advance and save now",
+                    "game plays on the session's saves as Play does and the agent refuses career load, advance and "
+                    "save now",
                     run_id.c_str());
-        return;
+        return read_launcher();
     }
     saves_dir = run_dir + L"\\" + runtime::wide(r.saves);
     std::wstring rem = saves_dir + L"\\" + runtime::wide(ss::REMOTE);
@@ -595,10 +596,10 @@ bool save_sandbox_launcher_mode()
 
 std::string save_sandbox_source()
 {
-    if (test_on)
-        return "test sandbox (run " + run_id + ")";
     if (launcher_on && mode == Mode::on)
         return "launcher saves (profile " + run_id + ", " + remote_a + ")";
+    if (test_on && mode == Mode::on)
+        return "test sandbox (run " + run_id + ")";
     return "Steam native";
 }
 

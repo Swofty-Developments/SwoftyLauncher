@@ -1506,12 +1506,13 @@ void watch()
     game = new InGame;
     runner = new ta::Runner(*game);
     armed = true;
+    std::string saves_off = "off (" + runtime::save_sandbox_source() + ")";
     swofty::log("[test] agent armed for run %s: %zu test DLL(s); route %s, pad %s, ai_drives_player %s, title %s; save "
                 "sandbox %s",
                 session.run.c_str(), dlls.size(), route_why.empty() ? "ok" : route_why.c_str(),
                 runtime::pad::why().empty() ? "ok" : runtime::pad::why().c_str(), controller_why.empty() ? "ok" : controller_why.c_str(),
                 runtime::title::why().empty() ? "ok" : runtime::title::why().c_str(),
-                runtime::save_sandbox_test_mode() ? "required" : "off (the player's own saves)");
+                runtime::save_sandbox_test_mode() ? "required" : saves_off.c_str());
     ta::Outcome h = game->hello();
     std::string hello = h.value;
     hello.insert(1, "\"event\":\"hello\",");

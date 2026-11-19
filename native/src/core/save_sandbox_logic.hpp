@@ -133,6 +133,12 @@ struct Run {
     std::vector<std::string> dlls;
 };
 
+// Where a test run's game saves go: the run's sandbox when run.json names saves, else the session's saves as at
+// Play (the profile's launcher saves when the session has them on), never Steam's saves behind the session's back.
+enum class RunSaves { sandbox, launcher };
+
+inline RunSaves run_saves(const Run &r) { return r.sandbox ? RunSaves::sandbox : RunSaves::launcher; }
+
 // A test DLL path in run.json: relative, inside the run's agent folder.
 inline bool valid_dll(std::string_view d)
 {

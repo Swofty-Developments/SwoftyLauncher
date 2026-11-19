@@ -64,6 +64,8 @@ static void run_token()
     auto a = ss::parse_run(agent, TOKEN);
     expect(a.ok && !a.sandbox && a.saves.empty() && a.agent_v == 1 && a.dlls.size() == 1 && a.dlls[0] == "dll/my.addon.dll",
            "a run without saves is the agent's only, with its test DLLs");
+    expect(ss::run_saves(r) == ss::RunSaves::sandbox && ss::run_saves(a) == ss::RunSaves::launcher,
+           "a run with saves plays on its sandbox; a run without plays on the session's launcher saves, not Steam's");
     for (const char *dll : {"../x.dll", "/x.dll", "\\x.dll", "C:x.dll", ""}) {
         std::string doc = std::string(R"({"schema":1,"run":"r","token":")") + TOKEN + R"(","agent":{"v":1,"dlls":[")" +
                           esc(dll) + "\"]}}";
