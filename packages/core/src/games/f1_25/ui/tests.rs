@@ -1276,12 +1276,12 @@ fn the_resume_list_builds_within_the_loader_rules_and_routes_in_and_out() {
             assert_eq!(after[gid].get(rid), Some(r), "{gid}.{rid} changed");
         }
     }
-    for (gid, rid) in &[("fe_home", "career")] {
-        let changed = after[*gid][*rid].clone();
+    {
+        let changed = after["fe_home"]["career"].clone();
         assert_ne!(
-            before[*gid].get(*rid),
+            before["fe_home"].get("career"),
             Some(&changed),
-            "{gid}.{rid} still opens the Career menu"
+            "fe_home.career still opens the Career menu"
         );
         assert!(
             changed.contains(name) && changed.contains("options_flow"),

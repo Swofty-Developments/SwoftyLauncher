@@ -86,8 +86,8 @@ pub const COLUMNS: [Column; 5] = [DRIVER, TEAM, BADGE, PLACE, STATUS];
 
 fn guid(name: &str) -> String {
     let (a, b) = (
-        swofty_formats::hash::djb2(&format!("swofty.career_row.{name}")),
-        swofty_formats::hash::djb2(&format!("{name}.swofty.career_row")),
+        swofty_formats::hash::djb2(format!("swofty.career_row.{name}")),
+        swofty_formats::hash::djb2(format!("{name}.swofty.career_row")),
     );
     format!(
         "{a:08x}-{:04x}-4{:03x}-8{:03x}-{b:08x}{:04x}",
