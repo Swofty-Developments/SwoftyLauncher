@@ -8,7 +8,7 @@ use std::time::Duration;
 use swofty_core::online::server::support::{BIO_MAX, Goal, Kind, Supporter, format_date, tier_name};
 use swofty_i18n::{tr, trf};
 
-use super::SupportPage;
+use super::StorePage;
 use crate::features::time_trial::Load;
 use crate::shell::Shell;
 use crate::ui::Overlay;
@@ -95,7 +95,7 @@ fn badge(id: impl Into<ElementId>, plus: bool) -> Div {
 }
 
 impl Shell {
-    pub(crate) fn support_page(
+    pub(crate) fn store_page(
         &mut self,
         p: Palette,
         window: &mut Window,
@@ -104,31 +104,31 @@ impl Shell {
         let refresh = Button::new("support-refresh")
             .ghost()
             .icon(IconName::ArrowRightLeft)
-            .on_click(cx.listener(|this, _, _, cx| SupportPage::reload(this, cx)));
+            .on_click(cx.listener(|this, _, _, cx| StorePage::reload(this, cx)));
         let claim = Button::new("support-claim-open")
             .outline()
             .label(tr("Claim previous donation"))
             .on_click(cx.listener(|this, _, _, cx| {
-                this.support.claim_open = true;
-                this.support.notice = None;
+                this.store_page.claim_open = true;
+                this.store_page.notice = None;
                 cx.notify();
             }));
-        let inputs = SupportPage::inputs(self, window, cx);
-        if !self.support.bio_synced
-            && let Load::Ready(me) = &self.support.me
+        let inputs = StorePage::inputs(self, window, cx);
+        if !self.store_page.bio_synced
+            && let Load::Ready(me) = &self.store_page.me
         {
             let bio = me.bio.clone().unwrap_or_default();
             inputs.0.update(cx, |s, cx| s.set_value(bio, window, cx));
-            self.support.bio_synced = true;
+            self.store_page.bio_synced = true;
         }
         let list = self.support_list(p);
         let modal = self
-            .support
+            .store_page
             .claim_open
             .then(|| self.support_claim_modal(inputs.2.clone(), inputs.3.clone(), p, cx));
         let main = self.support_main(inputs, p, cx);
         let header = self.header(
-            tr("Support"),
+            tr("Store"),
             tr("Keep Swofty Launcher free and open source").to_owned(),
             h_flex().gap(px(8.)).items_center().child(claim).child(refresh),
             p,
@@ -158,16 +158,16 @@ impl Shell {
         p: Palette,
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let busy = self.support.busy;
+        let busy = self.store_page.busy;
         let weak = cx.entity().downgrade();
         let (e, pay) = (email.clone(), payment.clone());
-        let notice = self.support.notice.as_ref().map(|(ok, text)| {
+        let notice = self.store_page.notice.as_ref().map(|(ok, text)| {
             div()
                 .text_size(px(13.))
                 .text_color(if *ok { rgb(0x4cc38a).into() } else { p.error })
                 .child(text.clone())
         });
-        let claimed = self.support.claimed.as_ref().map(|c| {
+        let claimed = self.store_page.claimed.as_ref().map(|c| {
             let when = c.expires_at.as_ref().map(format_date).unwrap_or_default();
             let mut line = trf!(
                 "You're {tier}: {months} months left (expires {date})",
@@ -207,8 +207,8 @@ impl Shell {
                             .ghost()
                             .label(tr("Close"))
                             .on_click(cx.listener(|this, _, _, cx| {
-                                this.support.claim_open = false;
-                                this.support.notice = None;
+                                this.store_page.claim_open = false;
+                                this.store_page.notice = None;
                                 cx.notify();
                             })),
                     )
@@ -221,11 +221,11 @@ impl Shell {
                             .on_click(cx.listener(move |this, _, _, cx| {
                                 let (a, b) = (e.read(cx).value().to_string(), pay.read(cx).value().to_string());
                                 if a.trim().is_empty() || b.trim().is_empty() {
-                                    this.support.notice =
+                                    this.store_page.notice =
                                         Some((false, tr("Enter both the email and the payment ID.").to_owned()));
                                     cx.notify();
                                 } else {
-                                    SupportPage::claim(this, a, b, cx);
+                                    StorePage::claim(this, a, b, cx);
                                 }
                             })),
                     ),
@@ -233,7 +233,7 @@ impl Shell {
         Overlay::new("support-claim-modal")
             .on_dismiss(move |_, cx| {
                 weak.update(cx, |this, cx| {
-                    this.support.claim_open = false;
+                    this.store_page.claim_open = false;
                     cx.notify();
                 })
                 .ok();
@@ -251,7 +251,7 @@ impl Shell {
                 .child(text)
                 .into_any_element()
         };
-        let supporters = match &self.support.supporters {
+        let supporters = match &self.store_page.supporters {
             Load::Idle | Load::Loading => return note(tr("Loading supporters…").to_owned()),
             Load::Failed(e) => return note(e.clone()),
             Load::Ready(s) if s.is_empty() => return note(tr("No supporters yet. Be the first.").to_owned()),
@@ -346,8 +346,8 @@ impl Shell {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let (bio, amount, _, _) = inputs;
-        let busy = self.support.busy;
-        let goal: AnyElement = match &self.support.goal {
+        let busy = self.store_page.busy;
+        let goal: AnyElement = match &self.store_page.goal {
             Load::Idle | Load::Loading => muted(tr("Loading the goal…"), p).into_any_element(),
             Load::Failed(e) => muted(e.clone(), p).into_any_element(),
             Load::Ready(g) => goal_body(g, p).into_any_element(),
@@ -371,7 +371,7 @@ impl Shell {
                     .when(!busy, |d| d.cursor_pointer().hover(|d| d.opacity(0.9)))
                     .child(tr("ONE TIME"))
                     .on_click(cx.listener(move |this, _, _, cx| {
-                        SupportPage::checkout(this, Kind::OneTime, Some(typed.clone()), cx)
+                        StorePage::checkout(this, Kind::OneTime, Some(typed.clone()), cx)
                     })),
             )
             .child(muted(tr("Converts to whole months of a tier"), p))
@@ -426,10 +426,10 @@ impl Shell {
             .child(onetime.w(px(280.)));
         let status = self.support_status(bio, p, cx);
         let notice = self
-            .support
+            .store_page
             .notice
             .as_ref()
-            .filter(|_| !self.support.claim_open)
+            .filter(|_| !self.store_page.claim_open)
             .map(|(ok, text)| {
                 div()
                     .text_size(px(13.))
@@ -499,9 +499,10 @@ impl Shell {
             )
             .on_click(cx.listener(move |this, _, _, cx| {
                 if signed_in {
-                    SupportPage::checkout(this, kind, None, cx);
+                    StorePage::checkout(this, kind, None, cx);
                 } else {
-                    this.support.notice = Some((false, tr("Sign in with Discord to subscribe.").to_owned()));
+                    this.store_page.notice =
+                        Some((false, tr("Sign in with Discord to subscribe.").to_owned()));
                     cx.notify();
                 }
             }))
@@ -514,7 +515,7 @@ impl Shell {
         p: Palette,
         cx: &mut Context<Self>,
     ) -> Option<AnyElement> {
-        let Load::Ready(me) = &self.support.me else {
+        let Load::Ready(me) = &self.store_page.me else {
             return None;
         };
         if !me.active {
@@ -526,15 +527,15 @@ impl Shell {
         let months = me.months_left.unwrap_or(0);
         let typed = bio.read(cx).value().to_string();
         let count = typed.chars().count();
-        let mode = self.support.mode.clone();
-        let busy = self.support.busy;
+        let mode = self.store_page.mode.clone();
+        let busy = self.store_page.busy;
         let choice = |id: &'static str, key: &'static str, label: &'static str, cx: &mut Context<Self>| {
             Button::new(id)
                 .small()
                 .when_else(mode == key, |b| b.primary(), |b| b.outline())
                 .label(label)
                 .on_click(cx.listener(move |this, _, _, cx| {
-                    this.support.mode = key.to_owned();
+                    this.store_page.mode = key.to_owned();
                     cx.notify();
                 }))
         };
@@ -575,7 +576,7 @@ impl Shell {
                             .label(tr("Save"))
                             .disabled(busy || count > BIO_MAX)
                             .on_click(
-                                cx.listener(move |this, _, _, cx| SupportPage::save(this, typed.clone(), cx)),
+                                cx.listener(move |this, _, _, cx| StorePage::save(this, typed.clone(), cx)),
                             ),
                     ),
                 )

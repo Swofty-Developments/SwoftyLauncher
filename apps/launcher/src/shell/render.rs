@@ -101,7 +101,7 @@ impl Render for Shell {
             Page::Multiplayer => self.multiplayer_page(p, cx),
             Page::Online => self.online_page(p, window, cx),
             Page::Moderation => self.time_trial_page(p, window, cx),
-            Page::Support => self.support_page(p, window, cx),
+            Page::Store => self.store_page(p, window, cx),
             Page::Settings => self.settings_page(p, cx),
             Page::Section(i) => self.section_page(i, p, cx),
         };

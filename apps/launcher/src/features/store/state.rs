@@ -17,7 +17,7 @@ pub(super) struct Inputs {
     _subs: Vec<Subscription>,
 }
 
-pub(crate) struct SupportPage {
+pub(crate) struct StorePage {
     pub goal: Load<Goal>,
     pub supporters: Load<Vec<Supporter>>,
     pub me: Load<Me>,
@@ -30,7 +30,7 @@ pub(crate) struct SupportPage {
     pub claim_open: bool,
 }
 
-impl Default for SupportPage {
+impl Default for StorePage {
     fn default() -> Self {
         Self {
             goal: Load::Idle,
@@ -47,12 +47,12 @@ impl Default for SupportPage {
     }
 }
 
-/// What the support page borrows from the shell: who is signed in.
-pub(crate) struct SupportNeeds<'a> {
+/// What the store page borrows from the shell: who is signed in.
+pub(crate) struct StoreNeeds<'a> {
     pub(crate) session: Option<&'a Session>,
 }
 
-impl SupportNeeds<'_> {
+impl StoreNeeds<'_> {
     fn api(&self) -> Api {
         Api::new(self.session.map(|s| s.token.as_str()).unwrap_or_default())
     }
@@ -62,18 +62,18 @@ impl SupportNeeds<'_> {
     }
 }
 
-/// What the shell follows when the support page loads.
-pub(crate) enum SupportChange {
+/// What the shell follows when the store page loads.
+pub(crate) enum StoreChange {
     /// The supporters' avatars to fetch.
     Faces(Vec<String>),
 }
 
-impl Hosted for SupportPage {
-    type Needs<'a> = SupportNeeds<'a>;
-    type Change = SupportChange;
+impl Hosted for StorePage {
+    type Needs<'a> = StoreNeeds<'a>;
+    type Change = StoreChange;
 }
 
-impl SupportPage {
+impl StorePage {
     pub(super) fn inputs<H: Host<Self>>(
         host: &mut H,
         window: &mut Window,
@@ -175,7 +175,7 @@ impl SupportPage {
                 .await;
             this.update(cx, |host, cx| {
                 let faces = host.split().0.take_reload(goal, supporters, me);
-                host.changed(SupportChange::Faces(faces), cx);
+                host.changed(StoreChange::Faces(faces), cx);
                 cx.notify();
             })
             .ok();
@@ -352,19 +352,19 @@ impl SupportPage {
     }
 }
 
-impl Host<SupportPage> for Shell {
-    fn split(&mut self) -> (&mut SupportPage, SupportNeeds<'_>) {
+impl Host<StorePage> for Shell {
+    fn split(&mut self) -> (&mut StorePage, StoreNeeds<'_>) {
         (
-            &mut self.support,
-            SupportNeeds {
+            &mut self.store_page,
+            StoreNeeds {
                 session: self.account.session.as_ref(),
             },
         )
     }
 
-    fn changed(&mut self, change: SupportChange, cx: &mut Context<Self>) {
+    fn changed(&mut self, change: StoreChange, cx: &mut Context<Self>) {
         match change {
-            SupportChange::Faces(faces) => {
+            StoreChange::Faces(faces) => {
                 crate::features::multiplayer::Multiplayer::load_faces(self, faces, cx)
             }
         }
@@ -391,7 +391,7 @@ mod tests {
     use swofty_core::online::server::api::ApiError;
     use swofty_core::online::server::support::{Kind, Supporter};
 
-    use super::{Load, SupportPage, checkout_cents};
+    use super::{Load, StorePage, checkout_cents};
 
     fn error(message: &str) -> ApiError {
         ApiError {
@@ -419,7 +419,7 @@ mod tests {
 
     #[test]
     fn the_page_loads_until_its_goal_and_the_users_status_are_in() {
-        let mut page = SupportPage::default();
+        let mut page = StorePage::default();
         assert!(page.needs_load(false));
         page.reloading(false);
         assert!(!page.needs_load(false));
@@ -431,7 +431,7 @@ mod tests {
 
     #[test]
     fn signing_out_forgets_the_status_and_signing_in_fetches_it_once() {
-        let mut page = SupportPage::default();
+        let mut page = StorePage::default();
         assert!(page.follow_sign_in(true));
         page.me = Load::Loading;
         assert!(!page.follow_sign_in(true));
@@ -443,7 +443,7 @@ mod tests {
 
     #[test]
     fn a_reload_shows_its_results_and_hands_back_the_avatars_to_fetch() {
-        let mut page = SupportPage {
+        let mut page = StorePage {
             bio_synced: true,
             ..Default::default()
         };
@@ -461,7 +461,7 @@ mod tests {
 
     #[test]
     fn a_change_waits_for_sign_in_and_for_the_last_one_to_finish() {
-        let mut page = SupportPage::default();
+        let mut page = StorePage::default();
         assert!(!page.begin(false));
         page.notice = Some((false, "old".to_owned()));
         assert!(page.begin(true));
@@ -471,7 +471,7 @@ mod tests {
 
     #[test]
     fn a_saved_bio_reloads_and_a_failed_one_says_why() {
-        let mut page = SupportPage {
+        let mut page = StorePage {
             busy: true,
             ..Default::default()
         };
