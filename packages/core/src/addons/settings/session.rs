@@ -36,6 +36,15 @@ pub struct SessionSettings {
     /// Present when the profile uses launcher saves: the core serves the game's profile save from `remote`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub launcher_saves: Option<SessionSaves>,
+    /// The plain store the core writes the profile's save containers to and reads put-backs from.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub plain_saves: Option<SessionPlainSaves>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct SessionPlainSaves {
+    pub root: String,
+    pub schema: u32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -316,6 +325,7 @@ impl SessionSettings {
             early_plugins,
             plugins: Vec::new(),
             launcher_saves: None,
+            plain_saves: None,
         };
         out.check_commands()?;
         Ok(out)

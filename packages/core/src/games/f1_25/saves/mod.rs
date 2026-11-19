@@ -3,6 +3,7 @@
 
 pub mod backup;
 pub mod launcher;
+pub mod plain;
 pub mod stall;
 pub mod vault;
 pub mod warning;

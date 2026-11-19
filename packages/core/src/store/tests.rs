@@ -831,6 +831,13 @@ fn leaves_builtins_without_options_out_of_addon_settings() {
             DEFAULT_PROFILE,
         )),
     });
+    expected.plain_saves = Some(settings::SessionPlainSaves {
+        root: crate::data::paths::game_folder_view(&crate::saves::plain::root_of_profile(
+            &plain.root,
+            DEFAULT_PROFILE,
+        )),
+        schema: 1,
+    });
     let plain_json = serde_json::to_vec(&plain.session_settings(DEFAULT_PROFILE).unwrap()).unwrap();
     assert_eq!(plain_json, serde_json::to_vec(&expected).unwrap());
 
@@ -879,6 +886,25 @@ fn a_profile_keeps_playing_on_the_steam_save_until_an_import_finds_one() {
             .unwrap()
             .launcher_saves
             .is_some()
+    );
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn a_session_on_launcher_saves_hands_the_core_the_profiles_plain_root() {
+    let root = tmp("plain-root");
+    let store = Store::new(&root);
+    let remote = crate::saves::launcher::remote_dir(&root, DEFAULT_PROFILE);
+    std::fs::create_dir_all(&remote).unwrap();
+    std::fs::write(remote.join("savegame@profile#X"), b"x").unwrap();
+    let s = store.session_settings(DEFAULT_PROFILE).unwrap();
+    let plain = s.plain_saves.unwrap();
+    assert_eq!(plain.schema, 1);
+    assert!(plain.root.ends_with("saves/default/plain") || plain.root.ends_with("saves\\default\\plain"));
+    assert!(
+        serde_json::to_string(&store.session_settings(DEFAULT_PROFILE).unwrap())
+            .unwrap()
+            .contains("\"plain_saves\"")
     );
     std::fs::remove_dir_all(&root).ok();
 }

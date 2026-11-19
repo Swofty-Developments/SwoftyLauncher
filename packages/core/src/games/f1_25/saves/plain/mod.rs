@@ -1,0 +1,220 @@
+//! The plain store: the launcher's copy of a profile's save containers, written by the core from inside
+//! the game as plain data and read here.
+//!
+//! ```text
+//! <plain root>/
+//!   CURRENT                         the newest complete generation, decimal text
+//!   generations/000000000041/
+//!     manifest.json
+//!     containers/<fnv64>.bag
+//!   inject.json                     launcher requests for the core
+//!   injected.json                   the core's answers
+//!   pins.json                       generations the launcher keeps (launcher-owned)
+//! ```
+//!
+//! A generation counts only when it is not newer than `CURRENT`, its manifest parses and every container
+//! file it lists is there with the length the manifest states. A torn or partial generation is skipped.
+
+pub mod inject;
+mod loss;
+mod manifest;
+mod prune;
+
+use std::collections::BTreeMap;
+use std::path::{Path, PathBuf};
+
+pub use loss::{Loss, Lost, PutBack, put_backs};
+pub use manifest::{Container, Event, Manifest, SCHEMA, Slot, Source};
+pub use prune::{Keep, Pruned};
+
+use crate::{Result, io_err};
+
+pub const DIR: &str = "plain";
+pub const CURRENT: &str = "CURRENT";
+pub const GENERATIONS: &str = "generations";
+const PINS: &str = "pins.json";
+
+pub fn root_of_profile(data: &Path, profile: &str) -> PathBuf {
+    crate::saves::launcher::root(data).join(profile).join(DIR)
+}
+
+pub fn root_of_copy(data: &Path, source: &str) -> PathBuf {
+    data.join(DIR).join(source)
+}
+
+/// The plain root of a vault source: `launcher-<profile>` keeps it beside the profile's launcher save,
+/// `steam-<id3>` and `ea-<user>` under `$DATA/plain/`.
+pub fn root_of_source(data: &Path, source: &str) -> PathBuf {
+    if let Some(p) = source
+        .strip_prefix("launcher-ea.")
+        .or_else(|| source.strip_prefix("launcher-"))
+    {
+        return root_of_profile(data, p);
+    }
+    root_of_copy(data, source)
+}
+
+/// The plain root a session of `profile` writes, which `settings.json` hands the core.
+pub fn root_of_session(data: &Path, profile: &str, on_launcher_saves: bool) -> Option<PathBuf> {
+    match on_launcher_saves {
+        true => Some(root_of_profile(data, profile)),
+        false => super::vault::Location::active(data).map(|l| root_of_copy(data, &l.source)),
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Plain {
+    pub root: PathBuf,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CareerRow {
+    pub container: String,
+    pub registered: bool,
+    pub source: Source,
+    pub slot: Slot,
+    pub generation: u64,
+    pub event: Event,
+}
+
+impl Plain {
+    pub fn at(root: impl Into<PathBuf>) -> Self {
+        Self { root: root.into() }
+    }
+
+    pub fn of_source(data: &Path, source: &str) -> Self {
+        Self::at(root_of_source(data, source))
+    }
+
+    pub fn current(&self) -> Option<u64> {
+        std::fs::read_to_string(self.root.join(CURRENT))
+            .ok()?
+            .trim()
+            .parse()
+            .ok()
+    }
+
+    pub fn generation_dir(&self, n: u64) -> PathBuf {
+        self.root.join(GENERATIONS).join(format!("{n:012}"))
+    }
+
+    pub fn bag_path(&self, n: u64, c: &Container) -> PathBuf {
+        self.generation_dir(n).join("containers").join(c.file())
+    }
+
+    fn numbers(&self) -> Vec<u64> {
+        let Ok(read) = std::fs::read_dir(self.root.join(GENERATIONS)) else {
+            return Vec::new();
+        };
+        let mut out: Vec<u64> = read
+            .flatten()
+            .filter(|e| e.path().is_dir())
+            .filter_map(|e| e.file_name().to_str()?.parse().ok())
+            .collect();
+        out.sort_unstable_by(|a, b| b.cmp(a));
+        out
+    }
+
+    pub fn manifest(&self, n: u64) -> Option<Manifest> {
+        let bytes = std::fs::read(self.generation_dir(n).join("manifest.json")).ok()?;
+        let m: Manifest = serde_json::from_slice(&bytes).ok()?;
+        (m.generation == n && m.schema == SCHEMA && self.complete(&m)).then_some(m)
+    }
+
+    fn complete(&self, m: &Manifest) -> bool {
+        m.containers.iter().all(|c| {
+            std::fs::metadata(self.bag_path(m.generation, c)).is_ok_and(|f| f.is_file() && f.len() == c.bytes)
+        })
+    }
+
+    pub fn generations(&self) -> Vec<Manifest> {
+        let Some(current) = self.current() else {
+            return Vec::new();
+        };
+        self.numbers()
+            .into_iter()
+            .filter(|n| *n <= current)
+            .filter_map(|n| self.manifest(n))
+            .collect()
+    }
+
+    pub fn newest(&self) -> Option<Manifest> {
+        let current = self.current()?;
+        self.numbers()
+            .into_iter()
+            .filter(|n| *n <= current)
+            .find_map(|n| self.manifest(n))
+    }
+
+    pub fn careers(&self) -> Vec<CareerRow> {
+        let Some(m) = self.newest() else {
+            return Vec::new();
+        };
+        let mut out: Vec<CareerRow> = m
+            .containers
+            .iter()
+            .flat_map(|c| {
+                c.slots.iter().map(|s| CareerRow {
+                    container: c.name.clone(),
+                    registered: c.registered,
+                    source: c.source,
+                    slot: s.clone(),
+                    generation: m.generation,
+                    event: m.event,
+                })
+            })
+            .collect();
+        out.sort_by(|a, b| b.slot.last_played.cmp(&a.slot.last_played));
+        out
+    }
+
+    pub fn pins(&self) -> BTreeMap<u64, Vec<String>> {
+        crate::read_json::<BTreeMap<String, Vec<String>>>(&self.root.join(PINS))
+            .map(|m| {
+                m.into_iter()
+                    .filter_map(|(k, v)| Some((k.parse().ok()?, v)))
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
+    pub fn pin(&self, n: u64, why: &str) -> Result<()> {
+        let mut pins = self.pins();
+        let whys = pins.entry(n).or_default();
+        if whys.iter().any(|w| w == why) {
+            return Ok(());
+        }
+        whys.push(why.to_owned());
+        std::fs::create_dir_all(&self.root).map_err(io_err(&self.root))?;
+        let out: BTreeMap<String, Vec<String>> = pins.into_iter().map(|(k, v)| (k.to_string(), v)).collect();
+        crate::write_json(&self.root.join(PINS), &out)
+    }
+
+    pub fn pending(&self) -> Vec<inject::Request> {
+        inject::pending(&self.root)
+    }
+
+    pub fn answers(&self) -> Vec<inject::Answer> {
+        inject::answers(&self.root)
+    }
+
+    pub fn restore_container(&self, generation: u64, container: &str, now: i64) -> Result<inject::Request> {
+        let m = self.manifest(generation).ok_or_else(|| {
+            crate::Error::Other(format!(
+                "generation {generation} is not complete in the plain store"
+            ))
+        })?;
+        if m.container(container).is_none() {
+            return Err(crate::Error::Other(format!(
+                "generation {generation} has no container {container}"
+            )));
+        }
+        self.pin(generation, "restore")?;
+        inject::ask(&self.root, generation, container, true, now)
+    }
+}
+
+#[cfg(test)]
+pub(crate) mod fixture;
+#[cfg(test)]
+mod tests;

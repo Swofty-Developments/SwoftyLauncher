@@ -117,6 +117,13 @@ impl Store {
                 &self.root, &p.name,
             )),
         });
+        s.plain_saves = (!p.is_vanilla())
+            .then(|| crate::saves::plain::root_of_session(&self.root, &p.name, redirect))
+            .flatten()
+            .map(|root| settings::SessionPlainSaves {
+                root: crate::data::paths::game_folder_view(&root),
+                schema: crate::saves::plain::SCHEMA,
+            });
         s.addons
             .retain(|a| a.id == CORE_ID || !self.is_builtin(&a.id) || !a.options.is_empty());
         Ok(s)
