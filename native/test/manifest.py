@@ -216,7 +216,7 @@ REGISTRY = [
     *[Program(test, [Objects([f'test/registry/{test}.cpp'] + extra, REGISTRY_FLAGS), REGISTRY_ENGINE])
       for test, extra in [('corpus_test', []), ('tolerant_edit_test', []), ('iterate_test', []), ('index_load_test', []),
                           ('declare_all_test', ['src/core/registry/older.cpp']), ('header_schemas_test', []), ('career_wait_test', []),
-                          ('older_test', ['src/core/registry/older.cpp']), ('career_scope_test', [])]],
+                          ('older_test', ['src/core/registry/older.cpp']), ('older_batch_test', ['src/core/registry/older.cpp']), ('career_scope_test', [])]],
     Program('store.windows.o', [Objects(['src/core/registry/store.cpp'], ['-Isrc', '-std=c++23', '-O2', '-Wall', '-Wextra', SDK], WINDOWS)], 'obj'),
     Program('pe_exports_test', [Objects(['test/registry/pe_exports_test.c'], ['-O2', '-Wall', '-Wextra', '-Isrc/loader'])]),
     Program('with_register.dll', [Objects(['test/registry/fixture_register.c'], ['-O2'], WINDOWS)], 'dll'),

@@ -54,8 +54,8 @@ core/assets/db_first_read.cpp: auto r = runtime::loader::install(hooks.lookup, l
 core/assets/gamedb.cpp: auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), reserve_target); => mid sig S_RESERVE
 core/assets/gamedb.cpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(load), reinterpret_cast<void *>(&load_hook)); => inline sig S_LOAD
 core/assets/items.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&owned_hook)); => inline sig T_OWNED
-core/assets/lang_override.cpp: size_t install(std::vector<Raw> raws, const std::string *only) => none
-core/assets/lang_override.cpp: void refresh_key(const std::string &key) { install(gather(&key), &key); } => none
+core/assets/lang_override.cpp: size_t install(std::vector<Raw> raws, const KeySet *only) => none
+core/assets/lang_override.cpp: void refresh_keys(const KeySet &keys) { install(gather(&keys), &keys); } => none
 core/assets/lang_override.cpp: size_t s = install(gather(nullptr), nullptr); => none
 core/assets/lang_override.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(g_find_at), reinterpret_cast<void *>(&find_hook)); => inline sig S_SET_FIND
 core/assets/lang_override.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&init_hook)); => inline sig S_MODULE_INIT

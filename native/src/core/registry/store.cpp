@@ -4,7 +4,9 @@
 #include <atomic>
 #include <cmath>
 #include <cstring>
+#include <set>
 #include <thread>
+#include <unordered_map>
 #include <tuple>
 
 namespace swofty_core::registry {
@@ -593,6 +595,8 @@ struct Store::Impl {
         }
         return ++seq;
     }
+
+    bool in_batch = false;
 
     bool registering_now() const { return forced_registering >= 0 ? forced_registering != 0 : registering; }
 
@@ -2139,7 +2143,7 @@ int Store::layer(const LayerSpec &spec, uint32_t *handle)
                              "layer from " + spec.addon + " has .in(), but " + spec.registry + " applies at boot; refused",
                              SWOFTY_ASSET_INVALID);
     }
-    if (!spec.selector)
+    if (!spec.selector && !d->in_batch)
         std::erase_if(r->layers, [&](const Layer &o) {
             return !o.spec.selector && o.spec.addon == spec.addon && o.spec.id == spec.id && o.spec.scope == spec.scope &&
                    o.owner == owner;
@@ -2147,11 +2151,79 @@ int Store::layer(const LayerSpec &spec, uint32_t *handle)
     r->layers.push_back(std::move(L));
     if (handle)
         *handle = r->layers.back().handle;
+    if (d->in_batch)
+        return SWOFTY_ASSET_OK;
     if (!d->registering_now())
         d->note("[registry] layer from " + spec.addon + " on " + spec.registry + (rid.empty() ? "" : " " + rid) +
                 " registered at run time; applies from the next read of that data");
     d->touch();
     return SWOFTY_ASSET_OK;
+}
+
+int Store::layer_batch(const std::string &addon, const std::string &registry, const std::vector<LayerOp> &ops)
+{
+    std::lock_guard g(d->mu);
+    Reg *r = d->reg(registry);
+    if (!r || tl_callback_depth || d->late_for(*r)) {
+        int result = SWOFTY_ASSET_OK;
+        for (auto &o : ops) {
+            if (o.clear) {
+                if (int rc = clear_layer(addon, registry, o.spec.id, o.spec.scope); rc != SWOFTY_ASSET_OK)
+                    result = rc;
+            } else if (int rc = layer(o.spec, nullptr); rc != SWOFTY_ASSET_OK)
+                result = rc;
+        }
+        return result;
+    }
+    std::unordered_map<std::string, size_t> last;
+    for (size_t i = 0; i < ops.size(); i++)
+        last[ops[i].spec.id] = i;
+    std::set<std::string> ids;
+    for (size_t i = 0; i < ops.size(); i++) {
+        auto &spec = ops[i].spec;
+        if (spec.selector || spec.scope != Scope::global)
+            continue;
+        ids.insert(spec.id);
+    }
+    if (!ids.empty())
+        std::erase_if(r->layers, [&](const Layer &o) {
+            return !o.spec.selector && o.spec.addon == addon && o.spec.scope == Scope::global && o.owner.empty() &&
+                   ids.count(o.spec.id);
+        });
+    d->in_batch = true;
+    int result = SWOFTY_ASSET_OK;
+    size_t touched = 0;
+    for (size_t i = 0; i < ops.size(); i++) {
+        auto &o = ops[i];
+        bool direct = !o.spec.selector && o.spec.scope == Scope::global;
+        if (direct && last[o.spec.id] != i) {
+            d->next_op(addon);
+            continue;
+        }
+        if (o.clear) {
+            d->next_op(addon);
+            if (!direct)
+                clear_layer(addon, registry, o.spec.id, o.spec.scope);
+            continue;
+        }
+        if (!direct) {
+            d->in_batch = false;
+            if (int rc = layer(o.spec, nullptr); rc != SWOFTY_ASSET_OK)
+                result = rc;
+            d->in_batch = true;
+            continue;
+        }
+        if (int rc = layer(o.spec, nullptr); rc != SWOFTY_ASSET_OK)
+            result = rc;
+        else
+            touched++;
+    }
+    d->in_batch = false;
+    d->touch();
+    if (touched && !d->registering_now())
+        d->note("[registry] " + std::to_string(touched) + " layer(s) from " + addon + " on " + registry +
+                " registered at run time; applies from the next read of that data");
+    return result;
 }
 
 int Store::layer_in(const std::string &addon, uint32_t handle, const Value &selectors)
