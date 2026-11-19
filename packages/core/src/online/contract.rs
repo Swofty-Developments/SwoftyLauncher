@@ -198,6 +198,10 @@ fn shape(raw: &[u8]) -> Value {
             }
             _ => value.to_owned(),
         };
+        let value = match serde_json::from_str::<Value>(&value) {
+            Ok(doc @ Value::Object(_)) => sorted(doc).to_string(),
+            _ => value,
+        };
         headers.insert(name, Value::String(value));
     }
     let body = if body.is_empty() {
@@ -210,6 +214,19 @@ fn shape(raw: &[u8]) -> Value {
         json!({ "bytes": body.len() })
     };
     json!({"method": method, "path": path, "headers": headers, "body": body})
+}
+
+/// The value with every object's keys in name order, whether or not serde_json keeps insertion order in this build.
+fn sorted(value: Value) -> Value {
+    match value {
+        Value::Object(map) => {
+            let mut pairs: Vec<(String, Value)> = map.into_iter().collect();
+            pairs.sort_by(|a, b| a.0.cmp(&b.0));
+            Value::Object(pairs.into_iter().map(|(k, v)| (k, sorted(v))).collect())
+        }
+        Value::Array(items) => Value::Array(items.into_iter().map(sorted).collect()),
+        other => other,
+    }
 }
 
 fn unsigned(value: &mut Value) {
@@ -247,7 +264,7 @@ struct Recorded(Vec<(String, Value)>);
 impl Recorded {
     fn add(&mut self, name: &str, about: &str, raw: &[u8], reply: &Reply) {
         assert!(!self.0.iter().any(|(n, _)| n == name), "{name} recorded twice");
-        let doc = json!({"about": about, "request": shape(raw), "answer": answer(reply)});
+        let doc = sorted(json!({"about": about, "request": shape(raw), "answer": answer(reply)}));
         self.0.push((name.to_owned(), doc));
     }
 }
