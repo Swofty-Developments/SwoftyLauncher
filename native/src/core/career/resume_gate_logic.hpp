@@ -21,7 +21,7 @@ struct Need {
 };
 
 struct Entry {
-    std::string key;
+    std::string key, mode_label;
     std::vector<Need> needs;
 };
 
@@ -45,6 +45,7 @@ inline Table parse(std::string_view text)
             continue;
         Entry entry;
         entry.key = e["key"].s;
+        entry.mode_label = e["mode_label"].str();
         for (const json::Value &n : e["addons"].a) {
             if (n["id"].type != json::Value::Str)
                 continue;

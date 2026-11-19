@@ -18,9 +18,9 @@ struct Row {
 
 inline const char *mode_label(bool my_team) { return my_team ? "My Team" : "Driver Career"; }
 
-inline std::string detail_line(const career::saves::SlotRead &s)
+inline std::string detail_line(const career::saves::SlotRead &s, const resume_gate::Entry *e = nullptr)
 {
-    std::string out = mode_label(!!(s.flags & career::saves::FLAG_MY_TEAM));
+    std::string out = e && !e->mode_label.empty() ? e->mode_label : mode_label(!!(s.flags & career::saves::FLAG_MY_TEAM));
     if (s.season != career::saves::NO_INDEX)
         out += " - Season " + std::to_string(s.season + 1);
     if (s.weekend != career::saves::NO_INDEX)
@@ -41,10 +41,10 @@ inline std::vector<Row> rows(const std::vector<career::saves::SlotRead> &slots, 
         r.id = s.id;
         r.date = s.date;
         r.my_team = !!(s.flags & career::saves::FLAG_MY_TEAM);
-        r.mode = mode_label(r.my_team);
-        r.name = s.name.empty() ? r.mode : s.name;
-        r.detail = detail_line(s);
         const resume_gate::Entry *e = resume_gate::find(t, r.key);
+        r.mode = e && !e->mode_label.empty() ? e->mode_label : mode_label(r.my_team);
+        r.name = s.name.empty() ? r.mode : s.name;
+        r.detail = detail_line(s, e);
         r.ready = !e || resume_gate::unmet(*e).empty();
         r.status = status_of(e);
         out.push_back(std::move(r));
