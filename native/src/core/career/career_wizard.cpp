@@ -68,10 +68,7 @@ void rebuild_effective()
     effective = std::move(out);
 }
 
-const char *intern(const std::string &s)
-{
-    return interned.insert(s).first->c_str();
-}
+const char *intern(const std::string &s) { return interned.insert(s).first->c_str(); }
 
 void note(int which, const char *fmt, const char *a, const char *b, const char *c)
 {
@@ -87,10 +84,7 @@ std::string read_cstr(uintptr_t p)
     return s;
 }
 
-std::string nestr(uintptr_t p)
-{
-    return p ? read_cstr(p + NESTR_CHARS) : std::string();
-}
+std::string nestr(uintptr_t p) { return p ? read_cstr(p + NESTR_CHARS) : std::string(); }
 
 std::string wizard_group(const void *wizard)
 {
@@ -133,10 +127,7 @@ runtime::loader::MixinPart parts[5] = {{START_MIXIN, "start in F1"},
                                        {CONFIRM_MIXIN, "confirm route"},
                                        {TABS_MIXIN, "driver tabs"}};
 
-bool part_live(int i)
-{
-    return i == ROUTE ? runtime::tile_route_state() == runtime::TileRoute::live : parts[i].live.load();
-}
+bool part_live(int i) { return i == ROUTE ? runtime::tile_route_state() == runtime::TileRoute::live : parts[i].live.load(); }
 
 bool part_usable(int i)
 {
@@ -163,8 +154,8 @@ int need(int i, bool want)
     return SWOFTY_ASSET_UNAVAILABLE;
 }
 
-int put(Kind kind, const char *group, std::string from, const char *to, uint32_t a, uint32_t b, bool on, HMODULE owner,
-        int part, const std::string &addon)
+int put(Kind kind, const char *group, std::string from, const char *to, uint32_t a, uint32_t b, bool on, HMODULE owner, int part,
+        const std::string &addon)
 {
     if (!cu::valid_name(group) || (to && *to && !cu::valid_name(to)))
         return SWOFTY_ASSET_INVALID;
@@ -255,18 +246,14 @@ int api_clear(const char *group)
     return SWOFTY_ASSET_OK;
 }
 
-const SwoftyCareerWizard table = {api_available,     api_group,         api_starts_in_f1,
-                                  api_tile_route,    api_replace_step,  api_force_option,
-                                  api_confirm_route, api_hide_driver_tab, api_clear};
+const SwoftyCareerWizard table = {api_available,    api_group,         api_starts_in_f1,    api_tile_route, api_replace_step,
+                                  api_force_option, api_confirm_route, api_hide_driver_tab, api_clear};
 
 }
 
 namespace runtime {
 
-const SwoftyCareerWizard *wizard_table()
-{
-    return &table;
-}
+const SwoftyCareerWizard *wizard_table() { return &table; }
 
 static std::vector<CoreMixins> wizard_mixins()
 {
@@ -274,23 +261,19 @@ static std::vector<CoreMixins> wizard_mixins()
     if (!enabled("career", nullptr))
         return out;
     if (parts[0].offer())
-        out.push_back(
-            {START_MIXIN,
-             {{"Game_CareerWizard_StartsInF1", SWOFTY_MIXIN_WRAP, 100, (void *)&starts_in_f1, (void **)&orig_starts}}});
+        out.push_back({START_MIXIN,
+                       {{"Game_CareerWizard_StartsInF1", SWOFTY_MIXIN_WRAP, 100, (void *)&starts_in_f1, (void **)&orig_starts}}});
     if (parts[2].offer())
         out.push_back(
-            {STEP_MIXIN,
-             {{"Game_CareerWizard_PushNextStep", SWOFTY_MIXIN_WRAP, 100, (void *)&push_step, (void **)&orig_push}}});
+            {STEP_MIXIN, {{"Game_CareerWizard_PushNextStep", SWOFTY_MIXIN_WRAP, 100, (void *)&push_step, (void **)&orig_push}}});
     if (parts[3].offer())
-        out.push_back(
-            {CONFIRM_MIXIN,
-             {{"site_Game_CareerWizardConfirm_NextRoute", SWOFTY_MIXIN_SITE, 100, (void *)&confirm_route, nullptr}}});
+        out.push_back({CONFIRM_MIXIN,
+                       {{"site_Game_CareerWizardConfirm_NextRoute", SWOFTY_MIXIN_SITE, 100, (void *)&confirm_route, nullptr}}});
     if (parts[4].offer())
-        out.push_back({TABS_MIXIN,
-                       {{"site_Game_DriverSelectHeader_BuildTabs", SWOFTY_MIXIN_REDIRECT, 100, (void *)&build_tabs,
-                         (void **)&orig_tabs},
-                        {"Game_DriverSelectHeader_SetTabState", SWOFTY_MIXIN_WRAP, 100, (void *)&tab_state,
-                         (void **)&orig_tab_state}}});
+        out.push_back(
+            {TABS_MIXIN,
+             {{"site_Game_DriverSelectHeader_BuildTabs", SWOFTY_MIXIN_REDIRECT, 100, (void *)&build_tabs, (void **)&orig_tabs},
+              {"Game_DriverSelectHeader_SetTabState", SWOFTY_MIXIN_WRAP, 100, (void *)&tab_state, (void **)&orig_tab_state}}});
     parts[ROUTE].offer();
     return out;
 }

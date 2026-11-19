@@ -62,7 +62,7 @@ enum class Add { kept, replaced, bad_name, empty, too_big, full };
 
 // The root containers no loaded mode claimed at the last profile load, by name.
 class Store {
-  public:
+public:
     void begin_load()
     {
         kept_.clear();
@@ -98,7 +98,7 @@ class Store {
     size_t size() const { return kept_.size(); }
     uint64_t total() const { return total_; }
 
-  private:
+private:
     std::vector<Kept> kept_;
     uint64_t total_ = 0;
 };
@@ -121,7 +121,7 @@ inline std::vector<size_t> pick(const std::vector<Kept> &kept, const std::vector
 // The save the count site bumped: the children site writes exactly those entries into the same save
 // (the same result pointer), or none when the count site did not bump this save.
 class Owed {
-  public:
+public:
     uint64_t bump(const void *result, uint64_t count, std::vector<size_t> picked)
     {
         result_ = result;
@@ -141,7 +141,7 @@ class Owed {
 
     bool pending() const { return !picked_.empty(); }
 
-  private:
+private:
     const void *result_ = nullptr;
     std::vector<size_t> picked_;
 };

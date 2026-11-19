@@ -39,10 +39,11 @@ inline std::string mib(uint64_t bytes)
 
 inline std::string pool_line(const Pool &p, uint64_t request)
 {
-    std::string s = "[saves] temp pool SAVE_PROPERTY_BAG_TEMP: size " + mib(p.size) + ", used " + mib(p.used()) +
-                    ", free " + mib(p.free_bytes()) + ", request " + std::to_string(request) + " bytes";
+    std::string s = "[saves] temp pool SAVE_PROPERTY_BAG_TEMP: size " + mib(p.size) + ", used " + mib(p.used()) + ", free " +
+                    mib(p.free_bytes()) + ", request " + std::to_string(request) + " bytes";
     if (request > p.free_bytes())
-        s += "; the request does not fit, the pool is " + mib(p.size) + " (the largest free block of SAVE_TEMP_ALLOC "
+        s += "; the request does not fit, the pool is " + mib(p.size) +
+             " (the largest free block of SAVE_TEMP_ALLOC "
              "when the save began)";
     return s;
 }
@@ -51,8 +52,7 @@ inline std::string session_line(uint64_t heap_bytes, bool raised, uint64_t kept_
 {
     return "[saves] temp pool: SAVE_TEMP_ALLOC is " + mib(heap_bytes) + (raised ? " (raised)" : " (stock)") +
            "; the profile save pool is its largest free block; this save writes back " + std::to_string(kept_count) +
-           " kept container(s), " + std::to_string(kept_bytes) +
-           " bytes, straight into the save stream (not the pool)";
+           " kept container(s), " + std::to_string(kept_bytes) + " bytes, straight into the save stream (not the pool)";
 }
 
 }

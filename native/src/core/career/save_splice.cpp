@@ -126,7 +126,8 @@ void log_load(const std::vector<cs::SlotRead> &reads, const std::vector<Manager>
         n = loads;
     }
     std::string file = runtime::save_sandbox_file();
-    swofty::log("[saves] profile load %u: %s from %s; %s", n, ok ? "read" : "FAILED to read", runtime::save_sandbox_source().c_str(),
+    swofty::log("[saves] profile load %u: %s from %s; %s", n, ok ? "read" : "FAILED to read",
+                runtime::save_sandbox_source().c_str(),
                 file.empty() ? "save file not observed (Steam reads it natively)" : file.c_str());
     if (!hooks.load_slot_manager) {
         swofty::log("[saves] profile load %u: career slots are not read on this build", n);
@@ -138,8 +139,8 @@ void log_load(const std::vector<cs::SlotRead> &reads, const std::vector<Manager>
         swofty::log("[saves] %s", career::save_diag::manager_line(n, m, seen[m].count, seen[m].vtable - image).c_str());
         for (size_t i = 0; i < seen[m].count && at < reads.size(); i++, at++)
             swofty::log("[saves] %s",
-                        career::save_diag::slot_line(n, m, i, reads[at],
-                                                      runtime::career_saves_id_for_slot(cs::slot_key(reads[at].id, reads[at].guid)))
+                        career::save_diag::slot_line(
+                            n, m, i, reads[at], runtime::career_saves_id_for_slot(cs::slot_key(reads[at].id, reads[at].guid)))
                             .c_str());
     }
     if (seen.empty())
@@ -246,8 +247,7 @@ void unclaimed_entry(SwoftyContext *c)
     switch (store.add(name, std::move(bytes))) {
     case sp::Add::kept:
     case sp::Add::replaced:
-        swofty::log("[saves] profile load %u: kept %s (%zu bytes), which no loaded game mode claims", loads, name.c_str(),
-                    size);
+        swofty::log("[saves] profile load %u: kept %s (%zu bytes), which no loaded game mode claims", loads, name.c_str(), size);
         break;
     default:
         swofty::log("[saves] profile load %u: could not keep %s (%zu bytes): the store is full; the game drops it", loads,
@@ -449,8 +449,7 @@ static std::vector<CoreMixins> save_splice_mixins()
                      hooks.deserialise_container.slot()},
                     {"site_Game_SaveData_UnclaimedChild", SWOFTY_MIXIN_SITE, 100, (void *)&unclaimed_entry, nullptr},
                     {"site_Game_SaveData_ContainersCount", SWOFTY_MIXIN_SITE, 100, (void *)&count_entry, nullptr},
-                    {"site_Game_SaveData_ContainersChildren", SWOFTY_MIXIN_SITE, 100, (void *)&children_entry,
-                     nullptr}}});
+                    {"site_Game_SaveData_ContainersChildren", SWOFTY_MIXIN_SITE, 100, (void *)&children_entry, nullptr}}});
     if (swofty::api->resolve("Game_SaveSlotManager_Deserialise"))
         out.push_back({SLOTS_MIXIN,
                        {{"Game_SaveSlotManager_Deserialise", SWOFTY_MIXIN_WRAP, 100, (void *)&slots_entry,
@@ -473,8 +472,9 @@ static void save_splice_commit()
     if (core_mixins_active(MIXIN))
         hooks.set_live();
     swofty::log("[saves] save splice %s",
-                loader::install_state(hooks.live(), "armed: save containers no loaded game mode claims are kept through each profile "
-                                            "load and save"));
+                loader::install_state(hooks.live(),
+                                      "armed: save containers no loaded game mode claims are kept through each profile "
+                                      "load and save"));
     snapshots_start(hooks.live());
 }
 
@@ -492,8 +492,7 @@ std::string entry_blocked()
     if (!hooks.live())
         return "the save splice is not armed";
     if constexpr (layout::SAVE_SPLICE) {
-        auto bag_id = reinterpret_cast<Id_t>(
-            method(reinterpret_cast<void *>(b.bag_type), offsetof(g::NePropertyTypeVtbl, id)));
+        auto bag_id = reinterpret_cast<Id_t>(method(reinterpret_cast<void *>(b.bag_type), offsetof(g::NePropertyTypeVtbl, id)));
         uint32_t id = bag_id ? uint32_t(bag_id(reinterpret_cast<void *>(b.bag_type))) : 0;
         if (id != ENTRY_BAG_TYPE) {
             char why[96];

@@ -4,12 +4,12 @@
 #include <cstddef>
 
 static int failures;
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            failures++;                                                                                                \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 namespace live = swofty::live;
@@ -55,7 +55,10 @@ static void tyre_table_versions()
     car.have &= ~SWOFTY_LIVE_HAVE_TYRE;
     CHECK(!live::tyre_icon_texture(0));
     // A real v4 allocation ends at images: the wrapper must not read its tail.
-    struct V4 { uint32_t version; unsigned char tail[offsetof(SwoftyLive, tyre_icon_texture) - sizeof(uint32_t)]; } old{};
+    struct V4 {
+        uint32_t version;
+        unsigned char tail[offsetof(SwoftyLive, tyre_icon_texture) - sizeof(uint32_t)];
+    } old{};
     old.version = 4;
     live::detail::set_table(reinterpret_cast<const SwoftyLive *>(&old));
     CHECK(!live::tyre_icon_texture(0));

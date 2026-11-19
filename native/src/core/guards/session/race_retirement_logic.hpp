@@ -19,10 +19,7 @@ constexpr size_t NAME_CHARS = 0x18;
 constexpr uint8_t NO_CAR = 0xff;
 constexpr size_t MAX_SAID = 512;
 
-inline bool skips(uint64_t driver_plus_8)
-{
-    return !driver_plus_8;
-}
+inline bool skips(uint64_t driver_plus_8) { return !driver_plus_8; }
 
 inline void empty_name(uint8_t *name, uint64_t vtable)
 {

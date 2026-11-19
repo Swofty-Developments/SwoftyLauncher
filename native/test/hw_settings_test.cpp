@@ -33,7 +33,8 @@ int main()
     p.size = 5120;
     p.attrs = 0x20 | hw::ATTR_RECALL_ON_DATA_ACCESS;
     std::string cloud = hw::line(p);
-    expect(cloud.find("onedrive=yes") != std::string::npos && cloud.find("cloud-only=yes (recall_on_data_access)") != std::string::npos &&
+    expect(cloud.find("onedrive=yes") != std::string::npos &&
+               cloud.find("cloud-only=yes (recall_on_data_access)") != std::string::npos &&
                cloud.find("size=5120") != std::string::npos && cloud.find("read test: skipped") != std::string::npos,
            "a cloud-only file is named and not read: " + cloud);
     p.attrs = 0x20;

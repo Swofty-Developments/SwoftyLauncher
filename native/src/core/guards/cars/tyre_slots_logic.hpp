@@ -28,15 +28,9 @@ struct Plan {
     int donor = -1;
 };
 
-inline uint32_t fallback(uint32_t option)
-{
-    return option >= 3 ? 4u : 1u;
-}
+inline uint32_t fallback(uint32_t option) { return option >= 3 ? 4u : 1u; }
 
-inline bool usable(const Slot &s)
-{
-    return s.physical && s.visual;
-}
+inline bool usable(const Slot &s) { return s.physical && s.visual; }
 
 inline int find(const Slot *slots, uint64_t count, uint32_t option)
 {

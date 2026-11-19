@@ -29,12 +29,18 @@ enum class Verdict { Hold, CapReached, NoFlow, TooOld, LockBusy, Shutdown };
 inline const char *verdict_name(Verdict v)
 {
     switch (v) {
-    case Verdict::Hold: return "held";
-    case Verdict::CapReached: return "cap reached";
-    case Verdict::NoFlow: return "no flow in Entering or Updating";
-    case Verdict::TooOld: return "newest flow too old";
-    case Verdict::LockBusy: return "flow table busy";
-    case Verdict::Shutdown: return "shutdown flag set";
+    case Verdict::Hold:
+        return "held";
+    case Verdict::CapReached:
+        return "cap reached";
+    case Verdict::NoFlow:
+        return "no flow in Entering or Updating";
+    case Verdict::TooOld:
+        return "newest flow too old";
+    case Verdict::LockBusy:
+        return "flow table busy";
+    case Verdict::Shutdown:
+        return "shutdown flag set";
     }
     return "?";
 }
@@ -155,15 +161,9 @@ public:
         return best;
     }
 
-    const Entering *allows(uint32_t elapsed_ms, uint64_t now) const
-    {
-        return elapsed_ms <= kCapMs ? newest(now) : nullptr;
-    }
+    const Entering *allows(uint32_t elapsed_ms, uint64_t now) const { return elapsed_ms <= kCapMs ? newest(now) : nullptr; }
 
-    Judgement judge(uint32_t elapsed_ms, uint64_t now) const
-    {
-        return runtime::watchdog_grace::judge(elapsed_ms, now, latest());
-    }
+    Judgement judge(uint32_t elapsed_ms, uint64_t now) const { return runtime::watchdog_grace::judge(elapsed_ms, now, latest()); }
 
     size_t open(uint64_t now) const
     {
@@ -180,9 +180,6 @@ private:
     Entering slots_[kSlots];
 };
 
-inline uint32_t bucket(uint32_t elapsed_ms)
-{
-    return elapsed_ms / kBucketMs;
-}
+inline uint32_t bucket(uint32_t elapsed_ms) { return elapsed_ms / kBucketMs; }
 
 }

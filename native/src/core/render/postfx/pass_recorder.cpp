@@ -23,7 +23,8 @@ bool PassRecorder::init(ID3D12Resource *res)
     for (auto &s : slots) {
         if (FAILED(pipeline.gpu.device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&s.fence))) ||
             FAILED(pipeline.gpu.device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&s.alloc))) ||
-            FAILED(pipeline.gpu.device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, s.alloc, nullptr, IID_PPV_ARGS(&s.list))))
+            FAILED(pipeline.gpu.device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, s.alloc, nullptr,
+                                                          IID_PPV_ARGS(&s.list))))
             return false;
         s.list->Close();
     }
@@ -42,8 +43,8 @@ bool PassRecorder::init(ID3D12Resource *res)
         HRESULT hr = pipeline.gpu.device->CreateComputePipelineState(&pd, IID_PPV_ARGS(&p.pso));
         if (FAILED(hr)) {
             p.off = true;
-            swofty::log("[postfx] %s's pass %s is off: its pipeline could not be made (0x%08lx)", p.addon.c_str(),
-                        p.name.c_str(), hr);
+            swofty::log("[postfx] %s's pass %s is off: its pipeline could not be made (0x%08lx)", p.addon.c_str(), p.name.c_str(),
+                        hr);
         } else
             swofty::log("[postfx] %s's pass %s is ready (%s, %zu bytes of DXIL)", p.addon.c_str(), p.name.c_str(),
                         p.shader.c_str(), p.dxil.size());
@@ -94,8 +95,8 @@ void PassRecorder::pack_data(Slot &s, const std::vector<int> &live, std::vector<
         bd.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
         ID3D12Resource *b = nullptr;
         void *at = nullptr;
-        if (FAILED(pipeline.gpu.device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &bd, D3D12_RESOURCE_STATE_GENERIC_READ,
-                                                   nullptr, IID_PPV_ARGS(&b))) ||
+        if (FAILED(pipeline.gpu.device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &bd,
+                                                                D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&b))) ||
             FAILED(b->Map(0, nullptr, &at))) {
             release(b);
             sizes.assign(live.size(), 0);
@@ -152,8 +153,8 @@ void PassRecorder::read_times(Slot &s)
         } else
             p.over = 0;
         if (pipeline.ran_total <= 4 * BUDGET_FRAMES)
-            swofty::log("[postfx] %s: %.3f ms of GPU time a frame on average, %.3f ms at most", pipeline.config.describe(p).c_str(), avg,
-                        p.ms_peak);
+            swofty::log("[postfx] %s: %.3f ms of GPU time a frame on average, %.3f ms at most",
+                        pipeline.config.describe(p).c_str(), avg, p.ms_peak);
         p.ms_sum = 0;
         p.ms_peak = 0;
         p.ms_frames = 0;
@@ -208,7 +209,8 @@ bool PassRecorder::record(const Where &w, int k)
     read_times(s);
     s.passes = 0;
     D3D12_RESOURCE_DESC d = w.back->GetDesc();
-    if (!pipeline.frame.heap || d.Width != pipeline.frame.desc.Width || d.Height != pipeline.frame.desc.Height || d.Format != pipeline.frame.desc.Format)
+    if (!pipeline.frame.heap || d.Width != pipeline.frame.desc.Width || d.Height != pipeline.frame.desc.Height ||
+        d.Format != pipeline.frame.desc.Format)
         if (!pipeline.frame.make_frame(d)) {
             pipeline.broken = true;
             return false;
@@ -254,7 +256,8 @@ bool PassRecorder::record(const Where &w, int k)
     pipeline.report.stats.prev_gap += had_previous && !has_previous;
     UINT pw = UINT(d.Width), ph = d.Height;
 
-    ClipRecorder::Entry *clip_entry = pipeline.clip.begin(pipeline.gpu, d, k, pipeline.frame.view, pipeline.retired, pipeline.frame_count);
+    ClipRecorder::Entry *clip_entry =
+        pipeline.clip.begin(pipeline.gpu, d, k, pipeline.frame.view, pipeline.retired, pipeline.frame_count);
     transition(l, w.back, w.back_state, D3D12_RESOURCE_STATE_COPY_SOURCE);
     transition(l, wk.orig, HOME, D3D12_RESOURCE_STATE_COPY_DEST);
     l->CopyResource(wk.orig, w.back);
@@ -281,7 +284,8 @@ bool PassRecorder::record(const Where &w, int k)
         pipeline.gpu.uav(r, t.format, pipeline.frame.cpu_at(pipeline.frame.cpu, at));
         transition(l, r, HOME, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
         const float zero[4] = {};
-        l->ClearUnorderedAccessViewFloat(pipeline.frame.gpu_at(pipeline.frame.heap, clear_at + at), pipeline.frame.cpu_at(pipeline.frame.cpu, at), r, zero, 0, nullptr);
+        l->ClearUnorderedAccessViewFloat(pipeline.frame.gpu_at(pipeline.frame.heap, clear_at + at),
+                                         pipeline.frame.cpu_at(pipeline.frame.cpu, at), r, zero, 0, nullptr);
         transition(l, r, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, HOME);
         if (t.levels() > 1)
             pipeline.frame.build_mips(l, r, t.format, t.w, t.h, t.levels(), k);
@@ -353,7 +357,8 @@ bool PassRecorder::record(const Where &w, int k)
         live_i++;
         ID3D12Resource *out = p.output < 0 ? wk.pic[next] : pipeline.frame.tex_of(size_t(p.output), k);
         DXGI_FORMAT of = p.output < 0 ? pipeline.frame.view : pipeline.config.textures[size_t(p.output)].format;
-        UINT ow = p.output < 0 ? pw : pipeline.config.textures[size_t(p.output)].w, oh = p.output < 0 ? ph : pipeline.config.textures[size_t(p.output)].h;
+        UINT ow = p.output < 0 ? pw : pipeline.config.textures[size_t(p.output)].w,
+             oh = p.output < 0 ? ph : pipeline.config.textures[size_t(p.output)].h;
         UINT at = (UINT(k) * MAX_PASSES + s.passes) * TABLE;
         auto *view = &s.views[s.passes * TABLE];
         auto put_srv = [&](UINT i, ID3D12Resource *r, DXGI_FORMAT f) {
@@ -367,7 +372,7 @@ bool PassRecorder::record(const Where &w, int k)
             ID3D12Resource *r = pipeline.frame.input_res(p.inputs[i], k, f);
             put_srv(2 + i, r, f);
         }
-        if (data_size) {  // written every frame: the bytes move within the buffer
+        if (data_size) { // written every frame: the bytes move within the buffer
             pipeline.gpu.data_srv(s.data, data_offset, data_size, pipeline.frame.cpu_at(pipeline.frame.heap, at + DATA_AT));
             view[DATA_AT] = {};
         } else if (postfx::rewrite(view[DATA_AT], static_cast<ID3D12Resource *>(nullptr), DXGI_FORMAT_UNKNOWN)) {
@@ -456,7 +461,7 @@ bool PassRecorder::record(const Where &w, int k)
 }
 
 bool PassRecorder::run_between(ID3D12CommandQueue *q, ID3D12Resource *back, D3D12_RESOURCE_STATES state, ID3D12Resource *hudless,
-                 D3D12_RESOURCE_STATES hudless_state, const char *path)
+                               D3D12_RESOURCE_STATES hudless_state, const char *path)
 {
     if (!pipeline.gpu.device && !init(back)) {
         pipeline.broken = true;
@@ -471,7 +476,8 @@ bool PassRecorder::run_between(ID3D12CommandQueue *q, ID3D12Resource *back, D3D1
         swofty::log("[postfx] could not record the passes' command list; post-processing is off");
         return false;
     }
-    Where w{s.list, false, back, state, hudless, hudless_state, pipeline.placement.depth_res, pipeline.placement.depth_state, path};
+    Where w{s.list, false, back, state, hudless, hudless_state, pipeline.placement.depth_res, pipeline.placement.depth_state,
+            path};
     bool made = record(w, k);
     if (FAILED(s.list->Close())) {
         pipeline.broken = true;

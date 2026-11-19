@@ -27,12 +27,12 @@
 
 namespace swofty_core::apply::content {
 
-inline constexpr const char *ROW_REGISTRIES[] = {"engine_sound",   "vehicle.package",     "vehicle",         "livery",
-                                                 "team.identity",  "team.pit_times",   "team.garage",
-                                                 "helmet",         "suit",                "gloves",          "driver.head",
-                                                 "driver.look",    "driver.person",       "driver.identity", "driver.stats",
-                                                 "wearable.season_set", "rules.drs",   "session.points", "content.package",
-                                                 "career.rnd.tree", "career.market"};
+inline constexpr const char *ROW_REGISTRIES[] = {"engine_sound",  "vehicle.package", "vehicle",         "livery",
+                                                 "team.identity", "team.pit_times",  "team.garage",     "helmet",
+                                                 "suit",          "gloves",          "driver.head",     "driver.look",
+                                                 "driver.person", "driver.identity", "driver.stats",    "wearable.season_set",
+                                                 "rules.drs",     "session.points",  "content.package", "career.rnd.tree",
+                                                 "career.market"};
 
 inline Lookup store_lookup(registry::Store &st, std::map<std::string, Value> &keep)
 {
@@ -52,8 +52,7 @@ inline Lookup store_lookup(registry::Store &st, std::map<std::string, Value> &ke
 inline std::vector<std::string> in_load_order(registry::Store &st, const std::string &reg)
 {
     std::vector<std::string> ids = st.list(reg, "");
-    ids.erase(std::remove_if(ids.begin(), ids.end(), [](const std::string &id) { return id.rfind("game/", 0) == 0; }),
-              ids.end());
+    ids.erase(std::remove_if(ids.begin(), ids.end(), [](const std::string &id) { return id.rfind("game/", 0) == 0; }), ids.end());
     std::vector<std::string> order = st.order();
     auto rank = [&](const std::string &id) {
         std::string owner = addon_of(id);
@@ -197,9 +196,9 @@ inline std::string row_label(const Lookup &lookup, std::string_view reg, const s
     if (reg == "content.package")
         return rec["entrant_list"].is_string() ? std::string(rec["entrant_list"].as_string()) : std::string();
     if (reg == "wearable.season_set")
-        return rec["team"].is_string() ? std::to_string(rec["season"].as_int()) + "-" +
-                                             label_of(lookup, "team.identity", rec["team"].as_string())
-                                       : std::string();
+        return rec["team"].is_string()
+                   ? std::to_string(rec["season"].as_int()) + "-" + label_of(lookup, "team.identity", rec["team"].as_string())
+                   : std::string();
     if (reg == "team.identity" || reg == "vehicle.package")
         return key_of(id);
     return record_label(lookup, std::string(reg).c_str(), id);
@@ -252,8 +251,8 @@ inline std::vector<Pin> pins(registry::Store &st)
 // operations') are held in the store. A record pinned on one of them, or kept on one in ids.json, for a row with
 // another label takes the next free id of its pool. The pins that land on nothing are placed first, so a moved
 // record never takes another record's pin. Returns the lines to log.
-inline std::vector<std::string> settle_ids(ids::Store &ids, registry::Store &st,
-                                           const std::map<std::string, PoolScan> &scans, const std::string &day)
+inline std::vector<std::string> settle_ids(ids::Store &ids, registry::Store &st, const std::map<std::string, PoolScan> &scans,
+                                           const std::string &day)
 {
     for (auto &[reg, scan] : scans)
         ids.hold(reg, scan.used);
@@ -270,8 +269,8 @@ inline std::vector<std::string> settle_ids(ids::Store &ids, registry::Store &st,
             lines.push_back(r.line);
     }
     for (auto &p : later) {
-        ids::Result r = p.stat_id >= 0 ? ids.pin(p.registry, p.id, p.stat_id, day, p.label)
-                                       : ids.recheck(p.registry, p.id, p.label, day);
+        ids::Result r =
+            p.stat_id >= 0 ? ids.pin(p.registry, p.id, p.stat_id, day, p.label) : ids.recheck(p.registry, p.id, p.label, day);
         if (!r.line.empty())
             lines.push_back(r.line);
     }
@@ -331,8 +330,8 @@ inline void settle_virtual_lists(Expansion &x, const StatIds &stat)
         if (auto id = stat_of(stat, "content.package", std::string("swofty.core/") + VIRTUAL_HOST_LIST, -1))
             set["stat_id"] = std::to_string(*id);
         std::size_t mark = e.mark();
-        std::string why = e.apply(add_row("entrants.entrant_lists",
-                                          std::string(LISTS) + "[_metadata_=" + x.virtual_lists.front() + "]", set));
+        std::string why =
+            e.apply(add_row("entrants.entrant_lists", std::string(LISTS) + "[_metadata_=" + x.virtual_lists.front() + "]", set));
         for (const char *field : {"entrant_lists", "selectable_entrant_lists"})
             if (why.empty())
                 why = e.apply(append_op(std::string(SETUP_ROW) + "[_metadata_=swofty_f1]", field, VIRTUAL_HOST_LIST));
@@ -464,13 +463,15 @@ inline void lower_seat_entrants(registry::Store &st, Expansion &x, const Lookup 
         for (auto &[group, seat] : groups) {
             std::string why_seat = "a seat of the added team " + seat->team + " in " + std::to_string(seat->year) + " slot " +
                                    std::to_string(seat->slot) + " of " + group;
-            std::string career = read("career.career_setup.CareerSetupDataGroup[_metadata_=" + group + "].ComCareerSetup_0.entrant_list")
-                                     .value_or(std::string());
+            std::string career =
+                read("career.career_setup.CareerSetupDataGroup[_metadata_=" + group + "].ComCareerSetup_0.entrant_list")
+                    .value_or(std::string());
             if (career.empty() && read(std::string(LISTS) + "[_metadata_=" + group + "]._metadata_"))
                 career = group;
             std::string pool, from_entrant;
-            std::string refs = career.empty() ? std::string()
-                                              : read(std::string(LISTS) + "[_metadata_=" + career + "].entrant_list_references").value_or("");
+            std::string refs =
+                career.empty() ? std::string()
+                               : read(std::string(LISTS) + "[_metadata_=" + career + "].entrant_list_references").value_or("");
             std::size_t at = 0;
             while (pool.empty() && at <= refs.size()) {
                 std::size_t comma = refs.find(',', at);
@@ -499,8 +500,10 @@ inline void lower_seat_entrants(registry::Store &st, Expansion &x, const Lookup 
                 continue;
             Plan plan;
             plan.owner = addon_of(driver_id);
-            std::string look = (*rec)["look"].is_string() ? label_of(lookup, "driver.look", (*rec)["look"].as_string()) : std::string();
-            std::string number = (*rec)["number"].is_int() && (*rec)["number"].as_int() > 0 ? std::to_string((*rec)["number"].as_int()) : "255";
+            std::string look =
+                (*rec)["look"].is_string() ? label_of(lookup, "driver.look", (*rec)["look"].as_string()) : std::string();
+            std::string number =
+                (*rec)["number"].is_int() && (*rec)["number"].as_int() > 0 ? std::to_string((*rec)["number"].as_int()) : "255";
             if (!read(std::string(ENTRANTS) + "[_metadata_=" + entrant + "]._metadata_"))
                 push_row(plan, "entrants.entrant_lists.entrants", std::string(ENTRANTS) + "[_metadata_=" + from_entrant + "]",
                          Value::object({{"_metadata_", entrant},
@@ -619,7 +622,8 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
             const Value *ident = lookup("team.identity", team);
             if (!ident)
                 continue;
-            const Value *logo = (*ident)["logo"].is_string() ? lookup("team.logo", std::string((*ident)["logo"].as_string())) : nullptr;
+            const Value *logo =
+                (*ident)["logo"].is_string() ? lookup("team.logo", std::string((*ident)["logo"].as_string())) : nullptr;
             TowerBadge badge = tower_badge(logo, label_of(lookup, "team.identity", team));
             if (!badge.key.empty())
                 vehicle_tower.emplace(std::string(entries[t]["vehicle"].as_string()), std::make_pair(team, badge.key));
@@ -651,8 +655,7 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
                     lower_vehicle_team(*rec, read, plan);
                 else
                     lower_vehicle_team(*rec, read, plan, linked->second.first, linked->second.second);
-            }
-            else if (r == "livery")
+            } else if (r == "livery")
                 lower_livery(id, *rec, worn[id], lookup, read, plan, stat, &slot);
             else if (r == "helmet" || r == "suit" || r == "gloves")
                 lower_item(item_kind(r), id, *rec, lookup, read, plan, stat, wear);
@@ -696,16 +699,14 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
                 x.engine.rollback(mark);
                 if (r == "vehicle.package")
                     dropped.insert(id);
-                if (r == "vehicle" || r == "team.identity" ||
-                    (r == "content.package" && !dropped_ref(*rec, &dropped).empty()))
+                if (r == "vehicle" || r == "team.identity" || (r == "content.package" && !dropped_ref(*rec, &dropped).empty()))
                     x.left_out[owner][r]++;
                 if (r == "vehicle" || r == "team.identity")
                     dropped.insert(drop_key(reg, id));
                 x.refused[reg]++;
-                lines.push_back(std::string(reg) + " " + id + ": not applied: " +
-                                (why.empty() ? (plan.lines.empty() ? std::string("it lowers to nothing")
-                                                                   : plan.lines.back())
-                                             : why));
+                lines.push_back(
+                    std::string(reg) + " " + id + ": not applied: " +
+                    (why.empty() ? (plan.lines.empty() ? std::string("it lowers to nothing") : plan.lines.back()) : why));
                 continue;
             }
             x.engine.commit();
@@ -745,8 +746,7 @@ struct Admission {
     std::vector<std::pair<std::string, std::size_t>> refused;
 };
 
-inline Admission admit(const std::vector<std::string> &order, const std::map<std::string, std::size_t> &fresh,
-                       uint64_t room)
+inline Admission admit(const std::vector<std::string> &order, const std::map<std::string, std::size_t> &fresh, uint64_t room)
 {
     Admission a;
     uint64_t left = room;

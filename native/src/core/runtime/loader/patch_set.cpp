@@ -92,10 +92,7 @@ void PatchSet::rollback()
     sites_used_ = mark_.sites;
 }
 
-void PatchSet::keep()
-{
-    mark_ = {written_.size(), stubs_.size(), mid_hooks_.size(), inline_hooks_.size(), sites_used_};
-}
+void PatchSet::keep() { mark_ = {written_.size(), stubs_.size(), mid_hooks_.size(), inline_hooks_.size(), sites_used_}; }
 
 bool PatchSet::chain_fits(size_t site, size_t handlers) const
 {
@@ -104,8 +101,8 @@ bool PatchSet::chain_fits(size_t site, size_t handlers) const
 
 void PatchSet::push_site(size_t site, const Handler &h)
 {
-    site_chains_[site].push_back(
-        {reinterpret_cast<void (*)(SwoftyContext *)>(h.m->handler), perf::probe(perf::owner_of(h.m->handler), "site " + h.m->target)});
+    site_chains_[site].push_back({reinterpret_cast<void (*)(SwoftyContext *)>(h.m->handler),
+                                  perf::probe(perf::owner_of(h.m->handler), "site " + h.m->target)});
 }
 
 void PatchSet::extend_site(size_t site, const std::vector<Handler> &handlers)

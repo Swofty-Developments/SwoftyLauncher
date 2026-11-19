@@ -19,15 +19,14 @@ static void stock_wide_rows(Db &db)
     db.put("entrants.entrant_lists.entrant_list_1.stat_id", 0, "111");
     db.put("entrants.entrant_lists.entrant_list_1._entrant_instancecount_", 0, "22");
     for (int i = 0; i < 22; i++)
-        row("entrants.entrant_lists.entrant_list_1.entrant_" + std::to_string(i),
-            {{"_metadata_", "e" + std::to_string(i)},
-             {"team", "t"},
-             {"vehicle", "v"},
-             {"entrant_reference", "r"},
-             {"team_position", std::to_string(i % 2)},
-             {"car_number", "1"},
-             {"driver", "d"},
-             {"driver_customisation", "c"}});
+        row("entrants.entrant_lists.entrant_list_1.entrant_" + std::to_string(i), {{"_metadata_", "e" + std::to_string(i)},
+                                                                                   {"team", "t"},
+                                                                                   {"vehicle", "v"},
+                                                                                   {"entrant_reference", "r"},
+                                                                                   {"team_position", std::to_string(i % 2)},
+                                                                                   {"car_number", "1"},
+                                                                                   {"driver", "d"},
+                                                                                   {"driver_customisation", "c"}});
     db.put("entrants.standings._standings_instancecount_", 0, "3");
     row("entrants.standings.standings_1", {{"_metadata_", "f1_teams_2026"}});
     db.put("entrants.standings.standings_1._team_reference_instancecount_", 0, "11");
@@ -44,8 +43,8 @@ static void stock_wide_rows(Db &db)
 
 static std::string twelve_team_package(const char *extra)
 {
-    static const char *keys[] = {"redbull", "mclaren", "ferrari", "mercedes", "lotus", "forceindia",
-                                 "sauber", "tororosso", "williams", "caterham", "hrt", "marussia"};
+    static const char *keys[] = {"redbull", "mclaren",   "ferrari",  "mercedes", "lotus", "forceindia",
+                                 "sauber",  "tororosso", "williams", "caterham", "hrt",   "marussia"};
     std::string teams;
     for (int t = 0; t < 12; t++) {
         std::string k = keys[t];
@@ -54,8 +53,10 @@ static std::string twelve_team_package(const char *extra)
                  R"({ "driver": "game/)" + k + R"(_b", "number": )" + std::to_string(2 * t + 2) + R"(, "look": null } ] })";
     }
     return R"({ "content.package": { "f1_2012": { "title": "lng_f2012", "entrant_list": "f2012", "season": 2012,
-        "teams": [ )" + teams + R"( ], "database": { "entrant_list": "f2012", "entrant_prefix": "f12-", "standings": "f2012_teams",
-        "content_sets": ["2025"] )" + extra + R"( } } } })";
+        "teams": [ )" +
+           teams + R"( ], "database": { "entrant_list": "f2012", "entrant_prefix": "f12-", "standings": "f2012_teams",
+        "content_sets": ["2025"] )" +
+           extra + R"( } } } })";
 }
 
 void twelve_team_tests(const std::string &regs)
@@ -74,7 +75,8 @@ void twelve_team_tests(const std::string &regs)
         std::string data = twelve_team_package(own_row ? R"(, "standings_from": "bdx_s5_teams")" : "");
         int r = registry::load_data_file("bydanix.f1-2012-season", "registry/content.json", data);
         st.end_register();
-        check(r == SWOFTY_ASSET_OK, std::string("a 12-team, 24-car package registers") + (own_row ? " (own standings_from)" : ""));
+        check(r == SWOFTY_ASSET_OK,
+              std::string("a 12-team, 24-car package registers") + (own_row ? " (own standings_from)" : ""));
         Db db;
         stock_wide_rows(db);
         content::Expansion x(db.base());
@@ -101,7 +103,8 @@ void twelve_team_tests(const std::string &regs)
         };
         bool added_line = false;
         for (auto &l : x.lines["content.package"])
-            added_line |= l.find("standings f2012_teams has 12 teams; f1_teams_2024 holds 2, the rest are added") != std::string::npos;
+            added_line |=
+                l.find("standings f2012_teams has 12 teams; f1_teams_2024 holds 2, the rest are added") != std::string::npos;
         if (!own_row) {
             check(refused == 0 && x.records["content.package"] == 1,
                   "with no standings_from, a 12-team package applies on the stock f1_teams_2024 row");
@@ -146,8 +149,8 @@ void short_list_tests(const std::string &regs)
         std::string schema = slurp(regs + "/" + name + "/1.0.json");
         t->declare(name, SwoftyText{schema.data(), schema.size()});
     }
-    static const char *keys[] = {"redbull", "mclaren", "ferrari", "mercedes", "lotus", "forceindia",
-                                 "sauber", "tororosso", "williams", "caterham", "hrt", "marussia"};
+    static const char *keys[] = {"redbull", "mclaren",   "ferrari",  "mercedes", "lotus", "forceindia",
+                                 "sauber",  "tororosso", "williams", "caterham", "hrt",   "marussia"};
     std::string teams;
     for (int i = 0; i < 12; i++) {
         std::string k = keys[i];
@@ -155,7 +158,9 @@ void short_list_tests(const std::string &regs)
                  R"({ "driver": "game/)" + k + R"(_a", "number": )" + std::to_string(i + 1) + R"(, "look": null } ] })";
     }
     std::string tt = R"({ "content.package": { "f1_2012_tt": { "title": "lng_f2012", "entrant_list": "f2012_tt", "season": 2012,
-        "teams": [ )" + teams + R"( ], "database": { "entrant_list": "f2012_tt", "entrant_prefix": "f12-", "standings": "f2012_tt_teams",
+        "teams": [ )" +
+                     teams +
+                     R"( ], "database": { "entrant_list": "f2012_tt", "entrant_prefix": "f12-", "standings": "f2012_tt_teams",
         "entrant_list_from": "f1_2026", "content_sets": ["2025"] } },
         "f1_2012_one": { "title": "lng_f2012", "entrant_list": "f2012_one", "season": 2012,
         "teams": [ { "key": "redbull", "vehicle": "game/redbull_2012", "drivers": [ { "driver": "game/redbull_a", "number": 1, "look": null } ] } ],
@@ -193,8 +198,7 @@ void short_list_tests(const std::string &regs)
     for (auto &l : x.lines["content.package"])
         line |= l.find("entrant list f2012_tt has 12 entrants; f1_2026 holds 22, the rest are left out") != std::string::npos;
     check(refused == 0 && x.records["content.package"] == 2, "both short packages apply");
-    check(!list.empty() && text(list + "._entrant_instancecount_") == "12" &&
-              text(list + ".entrant_11.team") == "marussia_2012",
+    check(!list.empty() && text(list + "._entrant_instancecount_") == "12" && text(list + ".entrant_11.team") == "marussia_2012",
           "a 12-car list copied from a 22-car one holds 12 entrants, not the source's last 10");
     check(text("entrants.entrant_lists.entrant_list_1._entrant_instancecount_") == "22",
           "the stock f1_2026 list keeps its 22 entrants");
@@ -240,13 +244,15 @@ void package_team_row_tests()
         return std::nullopt;
     };
     std::map<std::string, Value> vehicles = {{"mod.a/mercedes", Value::object({{"label", "cs16_mercedes"}})},
-                                                  {"mod.a/haas", Value::object({{"label", "cs16_haas"}})}};
+                                             {"mod.a/haas", Value::object({{"label", "cs16_haas"}})}};
     content::Lookup lookup = [&](const std::string &reg, const std::string &id) -> const Value * {
         auto it = vehicles.find(id);
         return reg == "vehicle" && it != vehicles.end() ? &it->second : nullptr;
     };
     auto team = [](const char *key, Value identity, const char *vehicle) {
-        return Value::object({{"key", key}, {"team", std::move(identity)}, {"vehicle", vehicle},
+        return Value::object({{"key", key},
+                              {"team", std::move(identity)},
+                              {"vehicle", vehicle},
                               {"drivers", Value::array({Value::object({{"driver", "game/d"}, {"number", 9}})})}});
     };
     content::ConstructorTeams constructors = {{"world", "mod.b/f1_world"}};
@@ -266,19 +272,19 @@ void package_team_row_tests()
     };
     std::string list = std::string(content::LISTS) + "[_metadata_=cs_f1_2016]";
 
-    content::Plan ok = lower(Value::array({team("mercedes", Value(), "mod.a/mercedes"),
-                                           team("f1_world", Value("mod.b/f1_world"), "game/world_car")}),
-                             read);
+    content::Plan ok = lower(
+        Value::array({team("mercedes", Value(), "mod.a/mercedes"), team("f1_world", Value("mod.b/f1_world"), "game/world_car")}),
+        read);
     check(!ok.refused && ok.ops.size() > 0, "a package whose team and car rows all exist applies");
-    check(field(ok, list + ".entrant_0", "team") == "cs16_mercedes" && field(ok, list + ".entrant_0", "vehicle") == "cs16_mercedes",
+    check(field(ok, list + ".entrant_0", "team") == "cs16_mercedes" &&
+              field(ok, list + ".entrant_0", "vehicle") == "cs16_mercedes",
           "a team with no team record names the row labelled like its car");
     check(field(ok, list + ".entrant_1", "team") == "f1_world" && field(ok, list + ".entrant_1", "vehicle") == "world_car" &&
               field(ok, list + ".entrant_1", "_metadata_") == "world_car_driver_01",
           "a team with a team record names that record's row, and its car stays its own");
 
-    content::Plan no_team = lower(Value::array({team("mercedes", Value(), "mod.a/mercedes"),
-                                                team("f1_world", Value(), "game/world_car")}),
-                                  read);
+    content::Plan no_team =
+        lower(Value::array({team("mercedes", Value(), "mod.a/mercedes"), team("f1_world", Value(), "game/world_car")}), read);
     bool said = false;
     for (auto &l : no_team.lines)
         said |= l.find("team f1_world names entrants.teams row world_car, which the game database lacks") != std::string::npos;
@@ -286,12 +292,14 @@ void package_team_row_tests()
           "a team whose row the game lacks refuses the whole package and says which row");
     check(lower(Value::array({team("x", Value("mod.b/beyond_count"), "game/world_car")}), read).refused == 1,
           "a team row past the table's instance count counts as missing");
-    content::Plan season = lower(Value::array({team("mercedes", Value(), "mod.a/mercedes"), team("haas", Value(), "mod.a/haas")}), read);
+    content::Plan season =
+        lower(Value::array({team("mercedes", Value(), "mod.a/mercedes"), team("haas", Value(), "mod.a/haas")}), read);
     bool expected = false;
     for (auto &l : season.lines)
-        expected |= l.find("team haas names entrants.teams row cs16_haas, which the game database does not hold yet") != std::string::npos;
-    check(!season.refused && season.ops.size() > 0 && expected &&
-              field(season, list + ".entrant_1", "team") == "cs16_haas" && field(season, list + ".entrant_1", "vehicle") == "cs16_haas",
+        expected |= l.find("team haas names entrants.teams row cs16_haas, which the game database does not hold yet") !=
+                    std::string::npos;
+    check(!season.refused && season.ops.size() > 0 && expected && field(season, list + ".entrant_1", "team") == "cs16_haas" &&
+              field(season, list + ".entrant_1", "vehicle") == "cs16_haas",
           "a Classic Seasons style package applies when its own car's team row is one its addon's database operations add");
     check(lower(Value::array({team("x", Value("mod.b/no_such_team"), "mod.a/haas")}), read).refused == 1,
           "a team record that names no row the game sees, with no row for its car either, refuses the package");
@@ -306,8 +314,8 @@ void package_team_row_tests()
     content::Plan fell = lower(Value::array({team("mercedes", Value("mod.b/no_row"), "mod.a/mercedes")}), read);
     bool noted = false;
     for (auto &l : fell.lines)
-        noted |= l.find("its team mod.b/no_row gives no entrants.teams row (no_row) the game sees; it uses its car's row cs16_mercedes") !=
-                 std::string::npos;
+        noted |= l.find("its team mod.b/no_row gives no entrants.teams row (no_row) the game sees; it uses its car's row "
+                        "cs16_mercedes") != std::string::npos;
     check(!fell.refused && field(fell, list + ".entrant_0", "team") == "cs16_mercedes" && noted,
           "a team record without a row falls back to its car's row, and says so");
     content::Read empty = [](const std::string &) -> std::optional<std::string> { return std::nullopt; };
@@ -321,9 +329,12 @@ void garage_tests()
         {std::string(content::VEHICLES) + "[_metadata_=cs20_lotus].vehicle_package", "cs_2020_lotus"},
         {std::string(content::VEHICLES) + "[_metadata_=cs20_mercedes].vehicle_package", "cs_2020_mercedes"},
         {std::string(content::VEHICLES) + "[_metadata_=renault_2025].vehicle_package", "f1_2025_renault"},
-        {std::string(content::PACKAGES) + "[_metadata_=cs_2020_lotus].resource_path", "cs_2020_vehicle_package/teams/lotus/wep/lotus"},
-        {std::string(content::PACKAGES) + "[_metadata_=cs_2020_mercedes].resource_path", "cs_2020_vehicle_package/teams/mercedes/wep/mercedes"},
-        {std::string(content::PACKAGES) + "[_metadata_=f1_2025_renault].resource_path", "f1_2025_vehicle_package/teams/renault/wep/renault"},
+        {std::string(content::PACKAGES) + "[_metadata_=cs_2020_lotus].resource_path",
+         "cs_2020_vehicle_package/teams/lotus/wep/lotus"},
+        {std::string(content::PACKAGES) + "[_metadata_=cs_2020_mercedes].resource_path",
+         "cs_2020_vehicle_package/teams/mercedes/wep/mercedes"},
+        {std::string(content::PACKAGES) + "[_metadata_=f1_2025_renault].resource_path",
+         "f1_2025_vehicle_package/teams/renault/wep/renault"},
     };
     content::Read read = [&](const std::string &p) -> std::optional<std::string> {
         auto it = db.find(p);
@@ -337,8 +348,10 @@ void garage_tests()
         {"vehicle|mod.a/mercedes", Value::object({{"label", "cs20_mercedes"}})},
         {"vehicle|mod.b/renault", Value::object({{"label", "renault_2025"}})},
         {"content.package|mod.a/f1_2020",
-         Value::object({{"teams", Value::array({team("lotus", "mod.a/lotus", ""), team("mercedes", "mod.a/mercedes", "mod.a/merc")})}})},
-        {"content.package|mod.b/f1_2025", Value::object({{"teams", Value::array({team("renault", "mod.b/renault", "game/renault")})}})}};
+         Value::object(
+             {{"teams", Value::array({team("lotus", "mod.a/lotus", ""), team("mercedes", "mod.a/mercedes", "mod.a/merc")})}})},
+        {"content.package|mod.b/f1_2025",
+         Value::object({{"teams", Value::array({team("renault", "mod.b/renault", "game/renault")})}})}};
     content::Lookup lookup = [&](const std::string &reg, const std::string &id) -> const Value * {
         auto it = recs.find(reg + "|" + id);
         return it == recs.end() ? nullptr : &it->second;
@@ -359,8 +372,10 @@ void garage_tests()
           "the folder gains a slash and root and srgb take their defaults");
     check(by_entry.garages[0].game_path == "2025_asset_groups/swofty_garage/mod_a_renault_2020.erp",
           "the archive has a game path of its own per record");
-    content::Plan by_team = lower(R"j({"package":"mod.a/f1_2020","team":"mod.a/merc","textures":"g","root":"eaid://x/","srgb":false})j");
-    check(by_team.garages.size() == 1 && by_team.garages[0].groups[0] == "asset_groups/cs_2020_vehicle_package/teams/mercedes/wep/mercedes.assetgroup" &&
+    content::Plan by_team =
+        lower(R"j({"package":"mod.a/f1_2020","team":"mod.a/merc","textures":"g","root":"eaid://x/","srgb":false})j");
+    check(by_team.garages.size() == 1 &&
+              by_team.garages[0].groups[0] == "asset_groups/cs_2020_vehicle_package/teams/mercedes/wep/mercedes.assetgroup" &&
               by_team.garages[0].root == "eaid://x/" && !by_team.garages[0].srgb,
           "a garage by team identity matches the package entry that names it");
     check(lower(R"j({"package":"mod.b/f1_2025","entry":"renault","textures":"g"})j").garages[0].groups[0] ==
@@ -371,8 +386,10 @@ void garage_tests()
     for (auto &g : other.garages[0].groups)
         leaks = leaks || g.find("f1_2025") != std::string::npos || g.find("mercedes") != std::string::npos;
     check(!leaks, "a box's garage names only the groups of its team's cars");
-    for (const char *bad : {R"j({"package":"mod.a/f1_2020","entry":"ferrari","textures":"g"})j", R"j({"package":"mod.a/nope","entry":"lotus","textures":"g"})j",
-                            R"j({"package":"mod.a/f1_2020","textures":"g"})j", R"j({"package":"mod.a/f1_2020","entry":"lotus"})j"}) {
+    for (const char *bad :
+         {R"j({"package":"mod.a/f1_2020","entry":"ferrari","textures":"g"})j",
+          R"j({"package":"mod.a/nope","entry":"lotus","textures":"g"})j", R"j({"package":"mod.a/f1_2020","textures":"g"})j",
+          R"j({"package":"mod.a/f1_2020","entry":"lotus"})j"}) {
         content::Plan p = lower(bad);
         check(p.garages.empty() && p.refused == 1, std::string("refused: ") + bad);
     }
@@ -389,8 +406,10 @@ void livery_tests()
     std::map<std::string, std::string> db = {
         {std::string(content::VEHICLES) + "[_metadata_=cs17_mercedes].vehicle_package", "cs_2017_mercedes"},
         {std::string(content::VEHICLES) + "[_metadata_=mercedes_2025].vehicle_package", "f1_2025_mercedes"},
-        {std::string(content::PACKAGES) + "[_metadata_=cs_2017_mercedes].resource_path", "cs_2017_vehicle_package/teams/mercedes/wep/mercedes"},
-        {std::string(content::PACKAGES) + "[_metadata_=f1_2025_mercedes].resource_path", "f1_2025_vehicle_package/teams/mercedes/wep/mercedes"},
+        {std::string(content::PACKAGES) + "[_metadata_=cs_2017_mercedes].resource_path",
+         "cs_2017_vehicle_package/teams/mercedes/wep/mercedes"},
+        {std::string(content::PACKAGES) + "[_metadata_=f1_2025_mercedes].resource_path",
+         "f1_2025_vehicle_package/teams/mercedes/wep/mercedes"},
         {std::string(content::SE_LIVERIES) + "._se_livery_instancecount_", "1"},
         {std::string(content::SE_LIVERIES) + ".se_livery_0.id", "9"},
         {std::string(content::SE_LIVERIES) + ".se_livery_0._metadata_", "mercedes_2025_bw"},
@@ -414,7 +433,8 @@ void livery_tests()
     content::Plan plan;
     Value look = Value::object({{"vehicle", "mod.a/car"}, {"archive", "cars/mercedes.erp"}, {"textures", "tex/"}});
     content::lower_livery("mod.a/look", look, {"mod.a/car"}, lookup, read, plan, stat);
-    check(plan.groups.size() == 1 && plan.groups[0].erp == "2025_asset_groups/cs_2017_vehicle_package/teams/mercedes/wep/mercedes.erp",
+    check(plan.groups.size() == 1 &&
+              plan.groups[0].erp == "2025_asset_groups/cs_2017_vehicle_package/teams/mercedes/wep/mercedes.erp",
           "a livery's archive is routed over the car's own wep archive");
     check(plan.groups[0].tmpl == "asset_groups/f1_2025_vehicle_package/teams/mercedes/wep/mercedes.assetgroup" &&
               plan.groups[0].common.size() == 2 &&
@@ -429,13 +449,18 @@ void livery_tests()
     check(none.groups.empty() && none.folders.empty(), "a livery no car wears applies nothing");
 
     content::Plan special;
-    Value sp = Value::object({{"vehicle", "mod.a/car"}, {"archive", "cars/mercedes.erp"}, {"special", true},
-                              {"suffix", "auto"}, {"picker_name", "lng_x"}, {"unlock", "owned"}});
+    Value sp = Value::object({{"vehicle", "mod.a/car"},
+                              {"archive", "cars/mercedes.erp"},
+                              {"special", true},
+                              {"suffix", "auto"},
+                              {"picker_name", "lng_x"},
+                              {"unlock", "owned"}});
     int slot = 0;
     content::lower_livery("mod.a/sp", sp, {}, lookup, read, special, stat, &slot);
     check(special.ops.size() == 2 && special.owned.size() == 1 && special.owned[0].label == "cs17_mercedes_sp",
           "a special livery adds its se_livery row and unlock row and is reported owned");
-    check(special.groups.size() == 1 && special.groups[0].erp == "2025_asset_groups/cs_2017_vehicle_package/teams/mercedes/wep/mercedes_lx01.erp",
+    check(special.groups.size() == 1 &&
+              special.groups[0].erp == "2025_asset_groups/cs_2017_vehicle_package/teams/mercedes/wep/mercedes_lx01.erp",
           "its archive takes the next wep slot");
     std::string ops = swofty::json::dump(special.ops);
     check(ops.find("\"wep_override\"") != std::string::npos && ops.find("_lx01") != std::string::npos &&

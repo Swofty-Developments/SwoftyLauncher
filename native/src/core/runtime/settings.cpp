@@ -137,8 +137,8 @@ void put_option(const std::string &addon, const Option &o)
 {
     if (addon.empty())
         return;
-    older::put(runtime::older_store(), addon, older::OPTION, o.id, older::option_record(type_names[o.type], option_states(o), o.current),
-               "settings.json options");
+    older::put(runtime::older_store(), addon, older::OPTION, o.id,
+               older::option_record(type_names[o.type], option_states(o), o.current), "settings.json options");
 }
 
 void add_command(const std::string &name, Command c)
@@ -229,10 +229,7 @@ std::string settings_text;
 }
 
 namespace runtime {
-const std::string &settings_json_text()
-{
-    return settings_text;
-}
+const std::string &settings_json_text() { return settings_text; }
 }
 
 void settings_attach(SwoftyApi *a, const std::wstring &dir)
@@ -245,8 +242,7 @@ void settings_attach(SwoftyApi *a, const std::wstring &dir)
     if (text.empty())
         return api->log("[settings] no settings.json; every addon setting keeps its code default");
     if (!json::parse(text, doc) || doc["schema"].num() != 1)
-        return api->log("[settings] %ls is unreadable or not schema 1; every addon setting keeps its code default",
-                        path.c_str());
+        return api->log("[settings] %ls is unreadable or not schema 1; every addon setting keeps its code default", path.c_str());
     profile = doc["profile"].str();
     std::string req = doc["requests"].str();
     requests = full(req.empty() ? dir + L"..\\..\\requests.json" : wide(req));
@@ -292,10 +288,7 @@ void settings_attach(SwoftyApi *a, const std::wstring &dir)
              profile.c_str(), addons.size(), count, commands.size(), requests.c_str());
 }
 
-size_t settings_mfd_rows()
-{
-    return mfd_rows.size();
-}
+size_t settings_mfd_rows() { return mfd_rows.size(); }
 
 bool settings_mfd_step(size_t row, int dir)
 {
@@ -342,8 +335,8 @@ int settings_get(const char *id, uint32_t type, SwoftySettingValue *out)
         api->log("[settings] %s (%s): no option %s in settings.json; the code default is used", w->dll.c_str(),
                  addons[w->addon].id.c_str(), id);
     else if (warn)
-        api->log("[settings] %s (%s): %s is a %s option, the code reads a %s; the code default is used",
-                 w->dll.c_str(), addons[w->addon].id.c_str(), id, type_names[o->type], want);
+        api->log("[settings] %s (%s): %s is a %s option, the code reads a %s; the code default is used", w->dll.c_str(),
+                 addons[w->addon].id.c_str(), id, type_names[o->type], want);
     return 0;
 }
 
@@ -361,8 +354,8 @@ int settings_watch(const char *id, SwoftySettingFn fn, void *user)
     return o != nullptr;
 }
 
-bool settings_state(const std::string &addon, const std::string &option, size_t &current,
-                    std::vector<std::string> *texts, std::vector<std::string> *commands, std::vector<std::string> *values)
+bool settings_state(const std::string &addon, const std::string &option, size_t &current, std::vector<std::string> *texts,
+                    std::vector<std::string> *commands, std::vector<std::string> *values)
 {
     AcquireSRWLockShared(&lock);
     bool found = false;

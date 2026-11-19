@@ -27,10 +27,7 @@ struct ImportSlot {
     char how[24];
 };
 
-inline int import_readable(uintptr_t at, size_t n, void *)
-{
-    return swofty::mem::readable(at, n);
-}
+inline int import_readable(uintptr_t at, size_t n, void *) { return swofty::mem::readable(at, n); }
 
 inline bool write_slot(ULONG_PTR *slot, void *value)
 {
@@ -47,8 +44,7 @@ inline int import_write(uint64_t *slot, const void *value, void *)
     return write_slot(reinterpret_cast<ULONG_PTR *>(slot), const_cast<void *>(value));
 }
 
-inline void log_import_skip(std::atomic<bool> &once, const char *tag, const char *module, const pe_import &e,
-                            int skipped)
+inline void log_import_skip(std::atomic<bool> &once, const char *tag, const char *module, const pe_import &e, int skipped)
 {
     if (once.exchange(true, std::memory_order_relaxed))
         return;

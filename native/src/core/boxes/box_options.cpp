@@ -95,10 +95,7 @@ int get_index(const void *option)
     return index;
 }
 
-void set_index(const void *option, int index)
-{
-    store::set_index(option, index);
-}
+void set_index(const void *option, int index) { store::set_index(option, index); }
 
 std::string joined(const std::vector<std::string> &names)
 {
@@ -144,7 +141,8 @@ std::string box_option_apply(size_t rule, const std::string &setting)
     forced[rule].force(option, index, get_index, set_index);
     int now = get_index(option);
     return "option " + std::string(name) + " index " + std::to_string(before) + " -> " + std::to_string(now) + " (" +
-           names[size_t(index)] + (stock ? ", stock value order" : "") + ")" + (now == index ? "" : "; the option did not take the index");
+           names[size_t(index)] + (stock ? ", stock value order" : "") + ")" +
+           (now == index ? "" : "; the option did not take the index");
 }
 
 int box_option_put_back(size_t rule)

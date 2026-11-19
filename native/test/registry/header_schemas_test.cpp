@@ -17,13 +17,13 @@ namespace fs = std::filesystem;
 namespace cars = swofty::cars;
 
 static int failures = 0;
-#define CHECK(c, ...)                                  \
-    do {                                               \
-        if (!(c)) {                                    \
-            std::printf("FAIL: " __VA_ARGS__);         \
-            std::printf("\n");                         \
-            failures++;                                \
-        }                                              \
+#define CHECK(c, ...)                                                                                                            \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL: " __VA_ARGS__);                                                                                   \
+            std::printf("\n");                                                                                                   \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 static std::string slurp(const fs::path &p)
@@ -138,10 +138,11 @@ static void store_records()
     const char *tmp = std::getenv("TMPDIR");
     fs::path dir = fs::path(tmp ? tmp : "/tmp") / "swofty-header-schemas-test";
     fs::remove_all(dir);
-    write(dir / "registry/index.json",
-          R"({"version":1,"profile":"default","order":["x.base","x.real"],"data":{"x.base":["registry/x.base/content.json"],"x.real":["registry/x.real/handling.json"]},"registry":{},"addons":{}})");
+    write(
+        dir / "registry/index.json",
+        R"({"version":1,"profile":"default","order":["x.base","x.real"],"data":{"x.base":["registry/x.base/content.json"],"x.real":["registry/x.real/handling.json"]},"registry":{},"addons":{}})");
     const std::pair<const char *, const char *> base[] = {{"v8_set", "\"=\""}, {"v8_add", "\"+\""}, {"v8_sub", "\"-\""},
-                                                          {"v8_mul", "\"*\""}, {"v8_int", "61"},     {"v8_div", "\"/\""}};
+                                                          {"v8_mul", "\"*\""}, {"v8_int", "61"},    {"v8_div", "\"/\""}};
     std::string content;
     for (auto &[key, op] : base)
         content += (content.empty() ? "{\"vehicle.handling\": {\"" : ", \"") + std::string(key) + "\": " + handling(op);
@@ -156,7 +157,8 @@ static void store_records()
         return store().declare(name, swofty::json::parse(schema), false, "") == 0;
     });
     IndexResult ix = load_index(dir.string());
-    CHECK(ix.found && ix.files == 2 && ix.failed == 0, "the handling fixture loads (%zu file(s), %zu failed)", ix.files, ix.failed);
+    CHECK(ix.found && ix.files == 2 && ix.failed == 0, "the handling fixture loads (%zu file(s), %zu failed)", ix.files,
+          ix.failed);
     store().end_register();
 
     const std::pair<const char *, char> ok[] = {
@@ -175,10 +177,9 @@ static void store_records()
     Record vtf = store().get("vehicle.handling", "x.real/v8_real");
     CHECK(vtf.value["vtf"]["erp"].as_string() == "cars/cater.erp", "the variant's own vtf wins over its base's");
 
-    const std::pair<const char *, const char *> bad[] = {
-        {"x.base/v8_int", "/rad_upgrades/0/changes/0/op"},
-        {"x.base/v8_div", "/rad_upgrades/0/changes/0/op"},
-        {"x.real/v8_real_int", "its base x.base/v8_int is invalid"}};
+    const std::pair<const char *, const char *> bad[] = {{"x.base/v8_int", "/rad_upgrades/0/changes/0/op"},
+                                                         {"x.base/v8_div", "/rad_upgrades/0/changes/0/op"},
+                                                         {"x.real/v8_real_int", "its base x.base/v8_int is invalid"}};
     for (auto &[id, why] : bad) {
         Record r = store().get("vehicle.handling", id);
         CHECK(r.status == Status::invalid && r.why.find(why) != std::string::npos, "vehicle.handling %s is invalid: %s (%s: %s)",

@@ -82,15 +82,9 @@ void skip(SwoftyContext *c, uintptr_t exit_at)
     swofty::log("[theatre] a saved item names an owner that is not in the current list, so it has no save slot%s", line.tail);
 }
 
-void entry_step(SwoftyContext *c)
-{
-    skip(c, no_slot);
-}
+void entry_step(SwoftyContext *c) { skip(c, no_slot); }
 
-void entry_step_alt(SwoftyContext *c)
-{
-    skip(c, no_slot_alt);
-}
+void entry_step_alt(SwoftyContext *c) { skip(c, no_slot_alt); }
 
 void row_offset(SwoftyContext *c)
 {

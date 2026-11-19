@@ -49,10 +49,7 @@ void copy(char *out, size_t cap, const std::string &text)
     out[n] = 0;
 }
 
-const wchar_t *api_root()
-{
-    return runtime::swofty_root().c_str();
-}
+const wchar_t *api_root() { return runtime::swofty_root().c_str(); }
 
 void api_on_ready(void (*fn)(void *), void *user)
 {
@@ -64,30 +61,15 @@ void api_on_ready(void (*fn)(void *), void *user)
     at_ready.set(fn, user);
 }
 
-void api_on_flow(void (*fn)(uint32_t, uint32_t, void *), void *user)
-{
-    flow.set(fn, user);
-}
+void api_on_flow(void (*fn)(uint32_t, uint32_t, void *), void *user) { flow.set(fn, user); }
 
-void api_on_screen(void (*fn)(const char *, void *), void *user)
-{
-    screen.set(fn, user);
-}
+void api_on_screen(void (*fn)(const char *, void *), void *user) { screen.set(fn, user); }
 
-void api_on_message(int (*fn)(const char *, void *, void *, void *), void *user)
-{
-    message.set(fn, user);
-}
+void api_on_message(int (*fn)(const char *, void *, void *, void *), void *user) { message.set(fn, user); }
 
-void api_on_home(void (*fn)(void *, void *), void *user)
-{
-    home.set(fn, user);
-}
+void api_on_home(void (*fn)(void *, void *), void *user) { home.set(fn, user); }
 
-void api_on_exit(void (*fn)(void *), void *user)
-{
-    at_exit.set(fn, user);
-}
+void api_on_exit(void (*fn)(void *), void *user) { at_exit.set(fn, user); }
 
 int api_pad_claim(int on)
 {
@@ -104,15 +86,9 @@ const char *api_pad_error()
     return runtime::pad::why().c_str();
 }
 
-void api_pad_set(uint16_t buttons, uint8_t lt, uint8_t rt)
-{
-    runtime::pad::set(buttons, lt, rt);
-}
+void api_pad_set(uint16_t buttons, uint8_t lt, uint8_t rt) { runtime::pad::set(buttons, lt, rt); }
 
-void api_pad_release()
-{
-    runtime::pad::release();
-}
+void api_pad_release() { runtime::pad::release(); }
 
 runtime::direct_start::Setup poll_setup(std::string &why)
 {
@@ -154,10 +130,7 @@ int api_cover_state(char *label, size_t cap, int *percent)
     return 1;
 }
 
-void api_cover_signal(SwoftySessionSignalFn fn, void *user)
-{
-    signal.set(fn, user);
-}
+void api_cover_signal(SwoftySessionSignalFn fn, void *user) { signal.set(fn, user); }
 
 int api_ui_set(const char *path, int type, const void *value)
 {
@@ -174,18 +147,30 @@ int api_car_category(const char *value, char *why, size_t cap)
 }
 
 const SwoftySessionHost g_table = {
-    sizeof(SwoftySessionHost), SWOFTY_SESSION_HOST_VERSION, api_root,        api_on_ready,    api_on_flow,
-    api_on_screen,             api_on_message,              api_on_home,     api_on_exit,     api_pad_claim,
-    api_pad_error,             api_pad_set,                 api_pad_release, api_direct_start_setup,
-    api_cover_step,            api_cover_state,             api_cover_signal, api_ui_set,     api_car_category,
+    sizeof(SwoftySessionHost),
+    SWOFTY_SESSION_HOST_VERSION,
+    api_root,
+    api_on_ready,
+    api_on_flow,
+    api_on_screen,
+    api_on_message,
+    api_on_home,
+    api_on_exit,
+    api_pad_claim,
+    api_pad_error,
+    api_pad_set,
+    api_pad_release,
+    api_direct_start_setup,
+    api_cover_step,
+    api_cover_state,
+    api_cover_signal,
+    api_ui_set,
+    api_car_category,
 };
 
 }
 
-extern "C" __declspec(dllexport) const SwoftySessionHost *SwoftyCoreSessionHost(void)
-{
-    return &g_table;
-}
+extern "C" __declspec(dllexport) const SwoftySessionHost *SwoftyCoreSessionHost(void) { return &g_table; }
 
 namespace runtime {
 

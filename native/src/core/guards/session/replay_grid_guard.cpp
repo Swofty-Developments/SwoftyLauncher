@@ -70,10 +70,7 @@ std::once_flag classes_once;
 bool classes_ok = false;
 safetyhook::MidHook h_full, h_delta;
 
-uint64_t &slot(SwoftyContext *c, uint32_t off)
-{
-    return *reinterpret_cast<uint64_t *>(c->rsp + off);
-}
+uint64_t &slot(SwoftyContext *c, uint32_t off) { return *reinterpret_cast<uint64_t *>(c->rsp + off); }
 
 std::string name_of(uint64_t p)
 {
@@ -134,7 +131,7 @@ void discover_classes()
             break;
         uintptr_t end = uintptr_t(m.BaseAddress) + m.RegionSize;
         bool ok = m.State == MEM_COMMIT && !(m.Protect & (PAGE_NOACCESS | PAGE_GUARD | PAGE_EXECUTE | PAGE_EXECUTE_READ |
-                                                         PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY));
+                                                          PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY));
         if (ok)
             for (uintptr_t p = (at + 7) & ~uintptr_t(7); p + 40 <= end; p += 8) {
                 rg::HolderClass k{};
@@ -241,9 +238,9 @@ void after_record(SwoftyContext *c)
     if (uint64_t grown = grow_holder(c, state)) {
         if (grown_tally.skipped.fetch_add(1, std::memory_order_relaxed) < 64) {
             std::string name = name_of(c->r13);
-            swofty::log("%s", (raised ? rg::grown_line(cars, name, state, cap, grown)
-                                      : rg::room_line(cars, name, state, limit, grown))
-                                  .c_str());
+            swofty::log("%s",
+                        (raised ? rg::grown_line(cars, name, state, cap, grown) : rg::room_line(cars, name, state, limit, grown))
+                            .c_str());
         }
         return;
     }
@@ -251,16 +248,19 @@ void after_record(SwoftyContext *c)
     emptied.add(recordable_of_entry(c));
     if (tally.first()) {
         std::string name = name_of(c->r13);
-        swofty::log("%s",
-                    (raised ? rg::line(cars, name, state, cap) : rg::room_line(cars, name, state, limit, 0)).c_str());
+        swofty::log("%s", (raised ? rg::line(cars, name, state, cap) : rg::room_line(cars, name, state, limit, 0)).c_str());
     }
 }
 
 constexpr uint32_t STORED_SIZE = 0xa8;
 
 const runtime::Sig S_FULL{"site_Ne_ReplayReadFullApply",
-                          "48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 49 8B 4C 24 10 48 8B 01 48 89 FA FF 50 38 E9", 0x45cdcc0,
-                          runtime::Sig::addr, 0, 11, 0};
+                          "48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 49 8B 4C 24 10 48 8B 01 48 89 FA FF 50 38 E9",
+                          0x45cdcc0,
+                          runtime::Sig::addr,
+                          0,
+                          11,
+                          0};
 constexpr uintptr_t FULL_SKIP = 14;
 const runtime::Sig S_DELTA{
     "site_Ne_ReplayReadDeltaApply",
@@ -333,6 +333,5 @@ guards::SiteGuard guard{guards::CoreSetId::replay_grid_guard,
                         }};
 
 }
-
 
 SWOFTY_HOOK_GUARD(replay_read, "replay read guard", setup_read)

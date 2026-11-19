@@ -88,10 +88,7 @@ private:
 // unloads.
 enum class Where { unknown, career, elsewhere };
 
-inline bool poll_reads(Where w)
-{
-    return w != Where::elsewhere;
-}
+inline bool poll_reads(Where w) { return w != Where::elsewhere; }
 
 struct Components {
     bool entity = false;
@@ -200,10 +197,7 @@ public:
         return false;
     }
 
-    bool flow_career() const
-    {
-        return flow_career_ || status(TeamHq) || status(TeamHqUpdate) || status(CareerHubUpdate);
-    }
+    bool flow_career() const { return flow_career_ || status(TeamHq) || status(TeamHqUpdate) || status(CareerHubUpdate); }
 
     bool loaded() const
     {
@@ -221,8 +215,7 @@ public:
 
     bool busy() const
     {
-        return status(TeamHqTimeAdvance) || status(TeamHqToSession) || status(TeamHqEndOfSeason) ||
-               status(TeamHqSeasonBreak);
+        return status(TeamHqTimeAdvance) || status(TeamHqToSession) || status(TeamHqEndOfSeason) || status(TeamHqSeasonBreak);
     }
 
     bool session() const { return status(Session) || status(LoadSession) || status(UnloadSession); }
@@ -237,8 +230,7 @@ public:
 
     bool hub() const
     {
-        return loaded() && mode() != SWOFTY_CAREER_NONE && status(TeamHqUpdate) == SWOFTY_FLOW_UPDATING && !busy() &&
-               !session();
+        return loaded() && mode() != SWOFTY_CAREER_NONE && status(TeamHqUpdate) == SWOFTY_FLOW_UPDATING && !busy() && !session();
     }
 
     void key(char (&out)[32]) const
@@ -263,7 +255,7 @@ public:
         s.has_player = loaded() && comp_.player;
         s.player_driver = s.has_player ? comp_.driver : 0;
         s.player_team = s.has_player ? comp_.team : 0;
-        s.components = !comp_seen_ ? SWOFTY_CAREER_COMPONENTS_UNSEEN
+        s.components = !comp_seen_    ? SWOFTY_CAREER_COMPONENTS_UNSEEN
                        : comp_broken_ ? SWOFTY_CAREER_COMPONENTS_FALLBACK
                                       : SWOFTY_CAREER_COMPONENTS_LIVE;
         s.component_mode = comp_.career ? comp_.mode : SWOFTY_CAREER_NONE;
@@ -284,8 +276,7 @@ public:
         Edges e;
         SwoftyCareerState s = state();
         bool live = s.loaded && s.mode != SWOFTY_CAREER_NONE;
-        bool changed = live && pub_loaded_ &&
-                       (s.mode != pub_mode_ || (s.key[0] && pub_key_[0] && strcmp(s.key, pub_key_)));
+        bool changed = live && pub_loaded_ && (s.mode != pub_mode_ || (s.key[0] && pub_key_[0] && strcmp(s.key, pub_key_)));
         if (pub_loaded_ && (!live || changed)) {
             if (pub_hub_) {
                 e.hub = 0;

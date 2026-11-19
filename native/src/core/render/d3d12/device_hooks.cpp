@@ -56,8 +56,8 @@ void STDMETHODCALLTYPE rtv_hook(ID3D12Device *d, ID3D12Resource *r, const D3D12_
         subscribers.rtvs.fns[i](r, at);
 }
 
-void STDMETHODCALLTYPE om_hook(ID3D12GraphicsCommandList *l, UINT n, const D3D12_CPU_DESCRIPTOR_HANDLE *rtv,
-                               BOOL single, const D3D12_CPU_DESCRIPTOR_HANDLE *dsv)
+void STDMETHODCALLTYPE om_hook(ID3D12GraphicsCommandList *l, UINT n, const D3D12_CPU_DESCRIPTOR_HANDLE *rtv, BOOL single,
+                               const D3D12_CPU_DESCRIPTOR_HANDLE *dsv)
 {
     for (int i = 0, k = subscribers.render_targets.n.load(); i < k; i++)
         subscribers.render_targets.fns[i](l, n, rtv, single);
@@ -71,8 +71,8 @@ HRESULT STDMETHODCALLTYPE setname_hook(ID3D12Object *o, LPCWSTR name)
     return hooks.setname.call<HRESULT>(o, name);
 }
 
-void STDMETHODCALLTYPE texture_copy_hook(ID3D12GraphicsCommandList *list, const D3D12_TEXTURE_COPY_LOCATION *dst, UINT x,
-                                         UINT y, UINT z, const D3D12_TEXTURE_COPY_LOCATION *src, const D3D12_BOX *box)
+void STDMETHODCALLTYPE texture_copy_hook(ID3D12GraphicsCommandList *list, const D3D12_TEXTURE_COPY_LOCATION *dst, UINT x, UINT y,
+                                         UINT z, const D3D12_TEXTURE_COPY_LOCATION *src, const D3D12_BOX *box)
 {
     hooks.texture_copy.call<void>(list, dst, x, y, z, src, box);
     for (int i = 0, n = subscribers.texture_copies.n.load(); i < n; ++i)
@@ -127,10 +127,7 @@ bool QueueWatch::recent_direct(DWORD tid, hud::arm_policy::ExecSeen &out)
     return e != nullptr;
 }
 
-bool exec_hooked()
-{
-    return bool(hooks.exec);
-}
+bool exec_hooked() { return bool(hooks.exec); }
 
 void exec_original(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists)
 {
@@ -171,8 +168,8 @@ bool arm_device()
         bd.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
         D3D12_COMMAND_QUEUE_DESC qd{};
         qd.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-        if (SUCCEEDED(dev->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &bd, D3D12_RESOURCE_STATE_GENERIC_READ,
-                                                   nullptr, IID_PPV_ARGS(&buffer))) &&
+        if (SUCCEEDED(dev->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &bd, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+                                                   IID_PPV_ARGS(&buffer))) &&
             SUCCEEDED(dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&alloc))) &&
             SUCCEEDED(dev->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, alloc, nullptr, IID_PPV_ARGS(&list))) &&
             SUCCEEDED(dev->CreateCommandQueue(&qd, IID_PPV_ARGS(&q))))
@@ -191,8 +188,9 @@ bool arm_device()
             swofty::log("[d3d12] texture copy observers: CopyTextureRegion %s, CopyResource %s",
                         hooks.texture_copy ? "armed" : "unavailable", hooks.resource_copy ? "armed" : "unavailable");
         }
-        if (ok && install(hooks.rtv, (*reinterpret_cast<void ***>(dev))[RTV_SLOT], reinterpret_cast<void *>(&rtv_hook),
-                          "ID3D12Device::CreateRenderTargetView") &&
+        if (ok &&
+            install(hooks.rtv, (*reinterpret_cast<void ***>(dev))[RTV_SLOT], reinterpret_cast<void *>(&rtv_hook),
+                    "ID3D12Device::CreateRenderTargetView") &&
             !install(hooks.om, (*reinterpret_cast<void ***>(list))[OM_SLOT], reinterpret_cast<void *>(&om_hook),
                      "ID3D12GraphicsCommandList::OMSetRenderTargets"))
             hooks.rtv = {};

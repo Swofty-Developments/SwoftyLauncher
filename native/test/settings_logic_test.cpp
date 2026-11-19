@@ -12,12 +12,12 @@ namespace sm = runtime::settings_model;
 
 static int g_fail;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            g_fail++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            g_fail++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
 static json::Value value(const char *text)

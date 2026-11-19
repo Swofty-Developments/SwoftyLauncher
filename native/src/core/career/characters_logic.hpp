@@ -38,9 +38,6 @@ template <class Swaps> bool group_in(const Swaps &swaps, const std::string &grou
     return false;
 }
 
-inline std::string language_of(const char *language)
-{
-    return !language || !*language ? "*" : language;
-}
+inline std::string language_of(const char *language) { return !language || !*language ? "*" : language; }
 
 }

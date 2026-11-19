@@ -108,8 +108,8 @@ CellRead db_cell_read()
     return [db](const std::string &table, const std::string &label, const std::string &field) -> std::optional<int64_t> {
         SwoftyDbCursor c{};
         SwoftyDbValue v{};
-        if (db->row(table.c_str(), label.c_str(), &c) != SWOFTY_ASSET_OK ||
-            db->cell(&c, field.c_str(), &v) != SWOFTY_ASSET_OK || v.tag == SWOFTY_DB_STRING || v.tag == SWOFTY_DB_FLOAT)
+        if (db->row(table.c_str(), label.c_str(), &c) != SWOFTY_ASSET_OK || db->cell(&c, field.c_str(), &v) != SWOFTY_ASSET_OK ||
+            v.tag == SWOFTY_DB_STRING || v.tag == SWOFTY_DB_FLOAT)
             return std::nullopt;
         return v.i;
     };
@@ -146,10 +146,7 @@ const Facts &facts()
     return f;
 }
 
-int setup_mode_stat(const std::string &setup_mode)
-{
-    return setup_mode_stat_of(db_cell_read(), setup_mode);
-}
+int setup_mode_stat(const std::string &setup_mode) { return setup_mode_stat_of(db_cell_read(), setup_mode); }
 
 BoxInfo box_info(registry::Store &store, const std::string &package, const std::string &entrant_list)
 {
@@ -167,8 +164,8 @@ BoxInfo box_info(registry::Store &store, const std::string &package, const std::
                     b.package.c_str(), b.setup_mode.c_str(), b.teams < 0 ? "unknown" : std::to_string(b.teams).c_str(),
                     b.cars < 0 ? "unknown" : std::to_string(b.cars).c_str());
         if (!b.unread.empty())
-            swofty::log("[tracks] box %s: not fully read (%s); the garage and grid rules assume the grid's size", b.package.c_str(),
-                        b.unread.c_str());
+            swofty::log("[tracks] box %s: not fully read (%s); the garage and grid rules assume the grid's size",
+                        b.package.c_str(), b.unread.c_str());
         return b;
     }
     registry::Record r = store.get("content.package", package);
@@ -246,10 +243,7 @@ Active active()
     return current;
 }
 
-Mode mode_named(std::string_view mode)
-{
-    return mode == "time_trial" ? Mode::time_trial : Mode::grand_prix;
-}
+Mode mode_named(std::string_view mode) { return mode == "time_trial" ? Mode::time_trial : Mode::grand_prix; }
 
 Decision guard_package(const std::string &package, const BaseTrack *track, Mode mode, std::string_view label)
 {

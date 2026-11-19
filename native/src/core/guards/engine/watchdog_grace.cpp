@@ -129,16 +129,17 @@ void kill_path(SwoftyContext *c)
 
 namespace guards = swofty_core::guards;
 
-guards::SiteGuard guard{guards::CoreSetId::watchdog_grace,
-                        {
-                            .set = MIXIN,
-                            .name = "[core] boot watchdog grace",
-                            .env = "SWOFTY_BOOT_WATCHDOG_GRACE",
-                            .keeps = {{KILL_SKIP, &kill_skip}},
-                            .needs = {KILL_PATH, KILL_SKIP},
-                            .mixins = {{KILL_PATH, SWOFTY_MIXIN_SITE, 100, (void *)&kill_path, nullptr}},
-                            .armed = "the game's watchdog kill is held for up to 180 s while a flow is in Entering or recently Updating",
-                        }};
+guards::SiteGuard guard{
+    guards::CoreSetId::watchdog_grace,
+    {
+        .set = MIXIN,
+        .name = "[core] boot watchdog grace",
+        .env = "SWOFTY_BOOT_WATCHDOG_GRACE",
+        .keeps = {{KILL_SKIP, &kill_skip}},
+        .needs = {KILL_PATH, KILL_SKIP},
+        .mixins = {{KILL_PATH, SWOFTY_MIXIN_SITE, 100, (void *)&kill_path, nullptr}},
+        .armed = "the game's watchdog kill is held for up to 180 s while a flow is in Entering or recently Updating",
+    }};
 
 }
 

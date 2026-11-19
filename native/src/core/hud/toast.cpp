@@ -78,7 +78,6 @@ void LapToasts::take(const std::wstring &dir)
     }
 }
 
-
 void LapToasts::tick()
 {
     if (!gate_on())
@@ -101,9 +100,6 @@ void LapToasts::tick()
 
 }
 
-void tick()
-{
-    toasts.tick();
-}
+void tick() { toasts.tick(); }
 
 }

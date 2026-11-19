@@ -49,10 +49,7 @@ namespace {
 
 Pipeline pipeline;
 
-void hook_setname(ID3D12Object *o, LPCWSTR name)
-{
-    pipeline.placement.on_setname(o, name);
-}
+void hook_setname(ID3D12Object *o, LPCWSTR name) { pipeline.placement.on_setname(o, name); }
 
 bool hook_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers)
 {
@@ -64,30 +61,18 @@ void hook_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, d
     pipeline.placement.on_exec(q, n, lists, plan);
 }
 
-void hook_present(IDXGISwapChain3 *sc, const d3d12::Swapchain *known, void *caller)
-{
-    pipeline.on_present(sc, known, caller);
-}
+void hook_present(IDXGISwapChain3 *sc, const d3d12::Swapchain *known, void *caller) { pipeline.on_present(sc, known, caller); }
 
-void hook_reset(ID3D12GraphicsCommandList *list)
-{
-    pipeline.placement.on_reset(list);
-}
+void hook_reset(ID3D12GraphicsCommandList *list) { pipeline.placement.on_reset(list); }
 
 void hook_render_targets(ID3D12GraphicsCommandList *list, UINT n, const D3D12_CPU_DESCRIPTOR_HANDLE *rtvs, BOOL single)
 {
     pipeline.placement.on_render_targets(list, n, rtvs, single);
 }
 
-void hook_create_rtv(ID3D12Resource *res, D3D12_CPU_DESCRIPTOR_HANDLE at)
-{
-    pipeline.placement.on_create_rtv(res, at);
-}
+void hook_create_rtv(ID3D12Resource *res, D3D12_CPU_DESCRIPTOR_HANDLE at) { pipeline.placement.on_create_rtv(res, at); }
 
-void hook_flow_frame(double dt, void *user)
-{
-    pipeline.flow_frame(dt, user);
-}
+void hook_flow_frame(double dt, void *user) { pipeline.flow_frame(dt, user); }
 
 }
 
@@ -108,14 +93,12 @@ bool Pipeline::killed_now()
     bool was = killed;
     killed = GetFileAttributesW(off_file.c_str()) != INVALID_FILE_ATTRIBUTES;
     if (killed != was)
-        swofty::log(killed ? "[postfx] swofty/postfx.off exists; every pass is off" : "[postfx] swofty/postfx.off is gone; passes run again");
+        swofty::log(killed ? "[postfx] swofty/postfx.off exists; every pass is off"
+                           : "[postfx] swofty/postfx.off is gone; passes run again");
     return killed;
 }
 
-void Pipeline::retire(std::vector<IUnknown *> objects)
-{
-    retired.retire(std::move(objects), frame_count);
-}
+void Pipeline::retire(std::vector<IUnknown *> objects) { retired.retire(std::move(objects), frame_count); }
 
 void Pipeline::subscribe_rule_events()
 {
@@ -231,7 +214,7 @@ void Pipeline::present_fallback(IDXGISwapChain3 *sc, const d3d12::Swapchain *kno
     if (own) {
         if (direct && own->place.presented(frame_count) &&
             recorder.run_between(known->queue, shown, D3D12_RESOURCE_STATE_PRESENT, nullptr, D3D12_RESOURCE_STATE_COMMON,
-                        "at Present"))
+                                 "at Present"))
             report.stats.at_present++;
     } else {
         D3D12_RESOURCE_DESC a = shown->GetDesc(), b = waiting->back->GetDesc();
@@ -250,7 +233,7 @@ void Pipeline::present_fallback(IDXGISwapChain3 *sc, const d3d12::Swapchain *kno
             postfx::shown_is_waiting(generating, report.trace.runs, frame_count, waiting->place.opened_at, same_shape) &&
             waiting->place.presented(frame_count) &&
             recorder.run_between(known->queue, shown, D3D12_RESOURCE_STATE_PRESENT, nullptr, D3D12_RESOURCE_STATE_COMMON,
-                        "at Present (the swapchain's copy)")) {
+                                 "at Present (the swapchain's copy)")) {
             report.stats.at_present++;
             report.stats.copied++;
         }
@@ -401,10 +384,7 @@ void Pipeline::setup()
 
 namespace runtime {
 
-void postfx_setup()
-{
-    render::postfx::pipeline.setup();
-}
+void postfx_setup() { render::postfx::pipeline.setup(); }
 
 }
 
@@ -476,9 +456,8 @@ extern "C" __declspec(dllexport) int SwoftyCorePostfxSetData(const char *addon_i
         for (const RenderPass &p : pipeline.config.passes)
             if (p.addon_id == addon_id && p.name == pass) {
                 known = true;
-                running = running ||
-                          (pipeline.device_armed && !pipeline.broken && !p.off && !p.ruled_off && p.on &&
-                           !pipeline.config.addon_off(p.addon_id));
+                running = running || (pipeline.device_armed && !pipeline.broken && !p.off && !p.ruled_off && p.on &&
+                                      !pipeline.config.addon_off(p.addon_id));
             }
     }
     if (!known)

@@ -27,11 +27,11 @@ inline constexpr const char *SYNC_ENV = "SWOFTY_ARM_SYNC";
 inline constexpr std::chrono::milliseconds WAIT_CAP{30000};
 
 struct Inputs {
-    std::string_view sync_env;  // SWOFTY_ARM_SYNC as read, empty when unset
-    std::string_view rival;     // an overlay that patches D3D12 entry points, in the process or running
-    bool early = false;         // the core loaded at the early stage and the window stage has not come
-    bool loader_lock = false;   // the stage holds the loader lock
-    bool hooked = false;        // every creation export the process has took its hook
+    std::string_view sync_env; // SWOFTY_ARM_SYNC as read, empty when unset
+    std::string_view rival;    // an overlay that patches D3D12 entry points, in the process or running
+    bool early = false;        // the core loaded at the early stage and the window stage has not come
+    bool loader_lock = false;  // the stage holds the loader lock
+    bool hooked = false;       // every creation export the process has took its hook
 };
 
 // Where the arm runs, and why it runs in the stage when it does.

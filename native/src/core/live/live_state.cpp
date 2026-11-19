@@ -69,9 +69,9 @@ bool env_on(const char *name)
     return GetEnvironmentVariableA(name, v, sizeof v) && v[0] && v[0] != '0';
 }
 
-constexpr lv::Group TELEMETRY_GROUPS[] = {lv::G_CAR_SYSTEMS, lv::G_ERS, lv::G_PROGRESS, lv::G_CLASS, lv::G_TIMING,
-                                          lv::G_PIT,        lv::G_PIT_LANE,  lv::G_PENALTIES, lv::G_TYRES, lv::G_FLAGS, lv::G_CONTROL,
-                                          lv::G_TRACK};
+constexpr lv::Group TELEMETRY_GROUPS[] = {lv::G_CAR_SYSTEMS, lv::G_ERS,   lv::G_PROGRESS, lv::G_CLASS,
+                                          lv::G_TIMING,      lv::G_PIT,   lv::G_PIT_LANE, lv::G_PENALTIES,
+                                          lv::G_TYRES,       lv::G_FLAGS, lv::G_CONTROL,  lv::G_TRACK};
 
 bool g_on;
 bool g_forced;
@@ -125,8 +125,8 @@ uintptr_t bus_alloc(uintptr_t allocator, uintptr_t fn, uintptr_t ctx)
         !kernel_copy(nullptr, vt + lv::bus::allocator_alloc, &call, sizeof call) || !call ||
         (g_sites.image_hi && (call < g_sites.image_lo || call >= g_sites.image_hi)))
         return 0;
-    void *p = reinterpret_cast<void *(*)(uintptr_t, size_t, size_t)>(call)(allocator, lv::bus::delegate_size,
-                                                                           lv::bus::delegate_align);
+    void *p =
+        reinterpret_cast<void *(*)(uintptr_t, size_t, size_t)>(call)(allocator, lv::bus::delegate_size, lv::bus::delegate_align);
     if (!p)
         return 0;
     auto *d = static_cast<uintptr_t *>(p);
@@ -254,15 +254,9 @@ void refresh_turns()
     g_official = g_turns.official;
 }
 
-int live_available()
-{
-    return g_on && g_valid.load(std::memory_order_acquire) ? 1 : 0;
-}
+int live_available() { return g_on && g_valid.load(std::memory_order_acquire) ? 1 : 0; }
 
-bool read_snapshot(lv::Snapshot &out)
-{
-    return g_on && lv::snap_read(&g_snap, &out) && out.valid;
-}
+bool read_snapshot(lv::Snapshot &out) { return g_on && lv::snap_read(&g_snap, &out) && out.valid; }
 
 int live_session(SwoftyLiveSession *out)
 {
@@ -397,16 +391,23 @@ int live_seq(uint64_t *frame)
     return SWOFTY_ASSET_OK;
 }
 
-const SwoftyLive table = {SWOFTY_LIVE_VERSION, live_available,   live_session,    live_car, live_subject,
-                          live_turn,           live_track_turns, live_team_badge, live_seq, live_driver_name,
-                          live_team_badge_texture, badge_images::api, live_tyre_icon_texture};
+const SwoftyLive table = {SWOFTY_LIVE_VERSION,
+                          live_available,
+                          live_session,
+                          live_car,
+                          live_subject,
+                          live_turn,
+                          live_track_turns,
+                          live_team_badge,
+                          live_seq,
+                          live_driver_name,
+                          live_team_badge_texture,
+                          badge_images::api,
+                          live_tyre_icon_texture};
 
 }
 
-extern "C" __declspec(dllexport) const SwoftyLive *SwoftyCoreLive(void)
-{
-    return &table;
-}
+extern "C" __declspec(dllexport) const SwoftyLive *SwoftyCoreLive(void) { return &table; }
 
 namespace runtime {
 
@@ -439,10 +440,7 @@ void live_setup()
                 g_verify ? ", cross-checking against UDP (SWOFTY_TELEMETRY_VERIFY)" : "");
 }
 
-bool live_on()
-{
-    return g_on;
-}
+bool live_on() { return g_on; }
 
 void live_tick(double now)
 {
@@ -474,20 +472,11 @@ bool live_memory_verified()
     return true;
 }
 
-bool live_collision_needs_udp()
-{
-    return !(g_on && g_gates[lv::G_BUS_EVENTS]);
-}
+bool live_collision_needs_udp() { return !(g_on && g_gates[lv::G_BUS_EVENTS]); }
 
-bool live_events_from_memory()
-{
-    return g_on && g_gates[lv::G_CLASS];
-}
+bool live_events_from_memory() { return g_on && g_gates[lv::G_CLASS]; }
 
-bool live_bus_armed()
-{
-    return g_bus_armed.load(std::memory_order_acquire);
-}
+bool live_bus_armed() { return g_bus_armed.load(std::memory_order_acquire); }
 
 uint32_t live_fill_feed(SwoftyTelemetryFeed &f)
 {
@@ -504,15 +493,9 @@ uint32_t live_fill_feed(SwoftyTelemetryFeed &f)
     return groups;
 }
 
-bool live_verify()
-{
-    return g_on && g_verify;
-}
+bool live_verify() { return g_on && g_verify; }
 
-const SwoftyTelemetryFeed &live_memory_view()
-{
-    return g_mem_view;
-}
+const SwoftyTelemetryFeed &live_memory_view() { return g_mem_view; }
 
 std::vector<LiveEvent> live_take_events()
 {

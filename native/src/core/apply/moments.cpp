@@ -51,10 +51,7 @@ std::wstring registry_root()
     return (state.empty() ? runtime::swofty_root() : state) + L"registry";
 }
 
-std::string registry_dir()
-{
-    return runtime::narrow(registry_root());
-}
+std::string registry_dir() { return runtime::narrow(registry_root()); }
 
 void make_registry_dir()
 {
@@ -80,10 +77,7 @@ bool write_file(const std::string &path, const std::string &text)
     return runtime::write_file(runtime::wide(path), text);
 }
 
-std::string read_file(const std::string &path)
-{
-    return runtime::read_file(runtime::wide(path), size_t(256) << 20);
-}
+std::string read_file(const std::string &path) { return runtime::read_file(runtime::wide(path), size_t(256) << 20); }
 
 void migrate_ids()
 {
@@ -209,7 +203,6 @@ void extend(Value &, Value &conflicts)
     conflicts["status"] = st;
 }
 
-
 namespace game {
 
 namespace g = swofty::game;
@@ -232,15 +225,9 @@ void once(const std::string &why)
     swofty::log("[apply] facts: %s (logged once)", why.c_str());
 }
 
-uintptr_t resolve(const char *id)
-{
-    return swofty::api ? swofty::api->resolve(id) : 0;
-}
+uintptr_t resolve(const char *id) { return swofty::api ? swofty::api->resolve(id) : 0; }
 
-template <class T> bool rd(uintptr_t p, T &out)
-{
-    return p && mem::read(p, out);
-}
+template <class T> bool rd(uintptr_t p, T &out) { return p && mem::read(p, out); }
 
 uintptr_t current_context()
 {
@@ -310,20 +297,17 @@ bool weekend(uintptr_t holder, Weekend &out)
         return false;
     }
     if (!rd(holder + offsetof(g::ChampionshipHolder, entity), entity) || !mem::object_like(entity) ||
-        !rd(entity + offsetof(g::CareerEntity, current_championship), champ) ||
-        !vtable_is(champ, "vt_Career_Championship"))
+        !rd(entity + offsetof(g::CareerEntity, current_championship), champ) || !vtable_is(champ, "vt_Career_Championship"))
         return false;
-    if (!rd(champ + offsetof(g::Championship, seasons_begin), sb) ||
-        !rd(champ + offsetof(g::Championship, seasons_end), se) ||
+    if (!rd(champ + offsetof(g::Championship, seasons_begin), sb) || !rd(champ + offsetof(g::Championship, seasons_end), se) ||
         !rd(champ + offsetof(g::Championship, season_index), si) || se < sb ||
-        (se - sb) / sizeof(g::ChampionshipSeasonEntry) > MAX_SEASONS ||
-        si >= (se - sb) / sizeof(g::ChampionshipSeasonEntry) ||
+        (se - sb) / sizeof(g::ChampionshipSeasonEntry) > MAX_SEASONS || si >= (se - sb) / sizeof(g::ChampionshipSeasonEntry) ||
         !rd(sb + si * sizeof(g::ChampionshipSeasonEntry) + offsetof(g::ChampionshipSeasonEntry, season), season) ||
         !vtable_is(season, "vt_Career_Season"))
         return false;
     if (!rd(season + offsetof(g::Season, weekends_begin), wb) || !rd(season + offsetof(g::Season, weekends_end), we) ||
-        !rd(season + offsetof(g::Season, current_weekend), wi) || we < wb || (we - wb) / 8 > MAX_ROUNDS ||
-        wi >= (we - wb) / 8 || !rd(wb + wi * 8, wk) || !vtable_is(wk, "vt_Career_Weekend"))
+        !rd(season + offsetof(g::Season, current_weekend), wi) || we < wb || (we - wb) / 8 > MAX_ROUNDS || wi >= (we - wb) / 8 ||
+        !rd(wb + wi * 8, wk) || !vtable_is(wk, "vt_Career_Weekend"))
         return false;
     out.at = wk;
     uint8_t track = 0xff;
@@ -367,7 +351,9 @@ void read_track_rows(const char *when)
     int r = !db || !db->available || !db->available() ? SWOFTY_ASSET_UNAVAILABLE : db->open("tracks", &cur);
     if (r != SWOFTY_ASSET_OK) {
         once(std::string("the tracks table is not readable at ") + when + " (" +
-             (r == SWOFTY_ASSET_LATE ? "its row count is 0" : r == SWOFTY_ASSET_INVALID ? "its keys are invalid" : "the database is not loaded") +
+             (r == SWOFTY_ASSET_LATE      ? "its row count is 0"
+              : r == SWOFTY_ASSET_INVALID ? "its keys are invalid"
+                                          : "the database is not loaded") +
              "); the track is left empty");
         return;
     }
@@ -480,7 +466,9 @@ std::string track_id(int stat_id)
     }
     std::string id = facts::track_of(stat_id, track_label(stat_id), records);
     if (id.empty())
-        once("track stat id " + std::to_string(stat_id) + " has no tracks row or track record; its track addon is off or not installed, and a saved Grand Prix or career that races it crashes at the session load");
+        once("track stat id " + std::to_string(stat_id) +
+             " has no tracks row or track record; its track addon is off or not installed, and a saved Grand Prix or career that "
+             "races it crashes at the session load");
     return id;
 }
 
@@ -594,10 +582,7 @@ void start_boot_plan()
     scheduler().start_plan(!sync);
 }
 
-bool boot_may_work()
-{
-    return scheduler().boot_may_work();
-}
+bool boot_may_work() { return scheduler().boot_may_work(); }
 
 void boot_ahead()
 {
@@ -648,8 +633,7 @@ void boot_without_database(room::Report report)
     for (auto &[addon, n] : refused) {
         status(addon, std::to_string(n) + " database record(s) not applied: " +
                           (report.reason.empty() ? std::string("the database was not reachable") : report.reason));
-        swofty::log("[registry] register: %s %zu database record(s) refused (late): %s", addon.c_str(), n,
-                    report.reason.c_str());
+        swofty::log("[registry] register: %s %zu database record(s) refused (late): %s", addon.c_str(), n, report.reason.c_str());
     }
     report.registry_planned = report.registry_asked = scheduler().planned_keys();
     save_ids();
@@ -688,10 +672,7 @@ void career_season(int year)
     scheduler().career_season(year);
 }
 
-void box_picked(const char *entrant_list)
-{
-    box_picked(entrant_list, nullptr);
-}
+void box_picked(const char *entrant_list) { box_picked(entrant_list, nullptr); }
 
 void box_picked(const char *entrant_list, const void *mode_context)
 {
@@ -770,10 +751,7 @@ void session_load(const char *source)
     report_queue.want(from);
 }
 
-facts::ModeKind mode_kind()
-{
-    return facts::ModeKind(mode_now.load(std::memory_order_relaxed));
-}
+facts::ModeKind mode_kind() { return facts::ModeKind(mode_now.load(std::memory_order_relaxed)); }
 
 void mode_watch()
 {
@@ -787,15 +765,9 @@ std::pair<std::string, std::string> session_mode_track()
     return {f.mode, f.track};
 }
 
-std::string current_mode(const char *where)
-{
-    return game::mode_of(game::current_context(), where);
-}
+std::string current_mode(const char *where) { return game::mode_of(game::current_context(), where); }
 
-std::string cached_track_label(int stat_id)
-{
-    return game::cached_track_label(stat_id);
-}
+std::string cached_track_label(int stat_id) { return game::cached_track_label(stat_id); }
 
 void grand_prix_track_check()
 {

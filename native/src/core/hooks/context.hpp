@@ -139,8 +139,21 @@ inline std::string summary(const Facts &f)
 // empty object matches everywhere, an unknown key makes compile() fail.
 class Selectors {
 public:
-    enum class Op { content, content_exact, owner, data_group, mode, session_type, track, year, setup_mode,
-                    vehicle_package, any, not_, all };
+    enum class Op {
+        content,
+        content_exact,
+        owner,
+        data_group,
+        mode,
+        session_type,
+        track,
+        year,
+        setup_mode,
+        vehicle_package,
+        any,
+        not_,
+        all
+    };
     struct Node {
         Op op = Op::all;
         std::vector<std::string> values;
@@ -212,10 +225,15 @@ private:
         n.op = Op::all;
         for (auto &[key, val] : *o) {
             Node k;
-            static const std::pair<const char *, Op> named[] = {
-                {"content", Op::content},     {"content_exact", Op::content_exact}, {"owner", Op::owner},
-                {"data_group", Op::data_group}, {"mode", Op::mode},                 {"session_type", Op::session_type},
-                {"track", Op::track},         {"setup_mode", Op::setup_mode},       {"vehicle_package", Op::vehicle_package}};
+            static const std::pair<const char *, Op> named[] = {{"content", Op::content},
+                                                                {"content_exact", Op::content_exact},
+                                                                {"owner", Op::owner},
+                                                                {"data_group", Op::data_group},
+                                                                {"mode", Op::mode},
+                                                                {"session_type", Op::session_type},
+                                                                {"track", Op::track},
+                                                                {"setup_mode", Op::setup_mode},
+                                                                {"vehicle_package", Op::vehicle_package}};
             bool known = false;
             for (auto &[name, op] : named)
                 if (key == name) {
@@ -283,10 +301,7 @@ private:
         return false;
     }
 
-    static bool any_of(const std::vector<std::string> &want, const std::string &v)
-    {
-        return !v.empty() && has(want, v);
-    }
+    static bool any_of(const std::vector<std::string> &want, const std::string &v) { return !v.empty() && has(want, v); }
 
     static bool eval(const Node &n, const Facts &f)
     {

@@ -97,7 +97,7 @@ void HookPool::dump_free_regions_near(uintptr_t target)
 const char *alloc_error(safetyhook::Allocator::Error e)
 {
     return e == safetyhook::Allocator::Error::NO_MEMORY_IN_RANGE ? "no free memory within 2 GB of the target"
-                                                                  : "VirtualAlloc failed";
+                                                                 : "VirtualAlloc failed";
 }
 
 std::string target_bytes(uintptr_t at)

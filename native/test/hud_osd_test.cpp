@@ -18,12 +18,12 @@
 
 static int g_fail;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            g_fail++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            g_fail++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
 namespace hud = swofty::hud;
@@ -234,10 +234,10 @@ static void test_csv_frontend()
     CHECK(csv.dropped() == 0);
 }
 
-#define TEST_OPTS(B, I, F, C)                                                                                         \
-    B(header, true)                                                                                                    \
-    I(rows, 5, 3, 22)                                                                                                  \
-    F(opacity, 1.0f, 0.0f, 1.0f)                                                                                       \
+#define TEST_OPTS(B, I, F, C)                                                                                                    \
+    B(header, true)                                                                                                              \
+    I(rows, 5, 3, 22)                                                                                                            \
+    F(opacity, 1.0f, 0.0f, 1.0f)                                                                                                 \
     C(mode, Mode, Mode::compact, "full", "compact", "top")
 enum class Mode { full, compact, top };
 SWOFTY_OPTIONS(TestOptions, TEST_OPTS);

@@ -15,10 +15,7 @@ enum class Site : uint8_t { eval_own, eval_list, rank_own, rank_list };
 
 using Log = swofty_core::guards::Say;
 
-inline bool usable(uintptr_t slot)
-{
-    return slot >= LOWEST_POINTER;
-}
+inline bool usable(uintptr_t slot) { return slot >= LOWEST_POINTER; }
 
 struct Seen {
     uint16_t keys[KEYS] = {};

@@ -30,10 +30,7 @@ struct Memory {
             bytes[a + i] = static_cast<const uint8_t *>(p)[i];
     }
 
-    void put64(uint64_t a, uint64_t v)
-    {
-        put(a, &v, 8);
-    }
+    void put64(uint64_t a, uint64_t v) { put(a, &v, 8); }
 };
 
 static bool read(uint64_t address, void *out, size_t n, void *user)
@@ -195,7 +192,8 @@ int main()
         Memory m = world({10, 20, 30});
         se::Memo memo;
         m.put64(MANAGER + se::GROUPS_BEGIN_AT, 0);
-        expect(!memo.decide(MANAGER, RSP, 25, 1000, read, &m).replace && memo.entries.empty(), "unreadable groups are not memoised");
+        expect(!memo.decide(MANAGER, RSP, 25, 1000, read, &m).replace && memo.entries.empty(),
+               "unreadable groups are not memoised");
         m.put64(MANAGER + se::GROUPS_BEGIN_AT, GROUPS);
         expect(memo.decide(MANAGER, RSP, 25, 1010, read, &m).replace, "the next lookup retries after a failed read");
     }

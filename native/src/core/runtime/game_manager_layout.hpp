@@ -21,10 +21,7 @@ constexpr uintptr_t tail_field(uintptr_t steam_offset, std::string_view distribu
     return distribution == "ea" && steam_offset >= EA_TAIL ? steam_offset - EA_SHIFT : steam_offset;
 }
 
-constexpr uintptr_t entrants_system(std::string_view distribution)
-{
-    return tail_field(ENTRANTS_SYSTEM, distribution);
-}
+constexpr uintptr_t entrants_system(std::string_view distribution) { return tail_field(ENTRANTS_SYSTEM, distribution); }
 
 static_assert(entrants_system("ea") == 0x260 && tail_field(0x2d0, "ea") == 0x2a0);
 

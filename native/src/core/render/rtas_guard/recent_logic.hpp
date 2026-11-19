@@ -31,8 +31,8 @@ struct Entry {
 
 inline bool same_format(const Brief &a, const Brief &b)
 {
-    return a.vertex_format == b.vertex_format && a.stride == b.stride && a.index_format == b.index_format &&
-           a.flags == b.flags && a.transform == b.transform;
+    return a.vertex_format == b.vertex_format && a.stride == b.stride && a.index_format == b.index_format && a.flags == b.flags &&
+           a.transform == b.transform;
 }
 
 // The geometries of a build: each one's counts, and its formats wherever they differ from the first triangle geometry's.
@@ -190,10 +190,12 @@ template <typename KeptList, typename Stops> std::string stopped_lines(const Kep
             continue;
         }
         const Entry &e = kept->builds[first + st.nth - 1];
-        std::snprintf(b, sizeof b, "  the GPU stopped on list 0x%llx's build #%u of %u: build %llu frame %llu %s%s into 0x%llx (flags 0x%x), %u %s:",
-                      (unsigned long long)st.list, st.nth, st.of, (unsigned long long)e.seq, (unsigned long long)e.frame,
-                      e.top ? "top-level" : "bottom-level", (e.flags & kPerformUpdate) ? " update" : "", (unsigned long long)e.dest,
-                      e.flags, e.count, e.top ? "instances" : "geometries");
+        std::snprintf(
+            b, sizeof b,
+            "  the GPU stopped on list 0x%llx's build #%u of %u: build %llu frame %llu %s%s into 0x%llx (flags 0x%x), %u %s:",
+            (unsigned long long)st.list, st.nth, st.of, (unsigned long long)e.seq, (unsigned long long)e.frame,
+            e.top ? "top-level" : "bottom-level", (e.flags & kPerformUpdate) ? " update" : "", (unsigned long long)e.dest,
+            e.flags, e.count, e.top ? "instances" : "geometries");
         s += b;
         if (!e.top)
             s += geometry_text(e);
@@ -231,10 +233,11 @@ std::string recent_section(const KeptList &lists, uint64_t pushed, size_t max_li
         for (size_t i = 0; i < k.builds.size(); i++) {
             const Entry &e = k.builds[i];
             bool unsure = cut && e.frame == k.builds.front().frame;
-            std::snprintf(b, sizeof b, "      build %llu frame %llu #%u%s %s%s into 0x%llx (flags 0x%x), %u %s:",
-                          (unsigned long long)e.seq, (unsigned long long)e.frame, nth[i], unsure ? "+" : "",
-                          e.top ? "top-level" : "bottom-level", (e.flags & kPerformUpdate) ? " update" : "",
-                          (unsigned long long)e.dest, e.flags, e.count, e.top ? "instances" : "geometries");
+            std::snprintf(b, sizeof b,
+                          "      build %llu frame %llu #%u%s %s%s into 0x%llx (flags 0x%x), %u %s:", (unsigned long long)e.seq,
+                          (unsigned long long)e.frame, nth[i], unsure ? "+" : "", e.top ? "top-level" : "bottom-level",
+                          (e.flags & kPerformUpdate) ? " update" : "", (unsigned long long)e.dest, e.flags, e.count,
+                          e.top ? "instances" : "geometries");
             s += b;
             if (!e.top)
                 s += geometry_text(e);

@@ -72,7 +72,9 @@ inline std::string rt_options(const std::string &xml)
             continue;
         std::string value = tag.substr(en + 9, end - en - 9);
         out += (out.empty() ? "" : ", ") + xml.substr(at + 4, name_end - at - 4) +
-               (value == "true" ? " on" : value == "false" ? " off" : " " + value);
+               (value == "true"    ? " on"
+                : value == "false" ? " off"
+                                   : " " + value);
     }
     return out;
 }

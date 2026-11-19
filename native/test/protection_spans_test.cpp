@@ -124,8 +124,7 @@ void capacity_bounds_the_table()
     for (uintptr_t i = 0; i < runtime::ProtectionSpans::capacity * 2; i++)
         spans.remember(0x10000 * (i + 1), 0x10000 * (i + 1) + 0x1000, true);
     check(spans.size() == runtime::ProtectionSpans::capacity, "the table stops growing at its capacity");
-    check(spans.lookup(0x10000 * (runtime::ProtectionSpans::capacity + 5), 1) ==
-              runtime::ProtectionSpans::Answer::unknown,
+    check(spans.lookup(0x10000 * (runtime::ProtectionSpans::capacity + 5), 1) == runtime::ProtectionSpans::Answer::unknown,
           "past capacity an address is asked again");
 }
 

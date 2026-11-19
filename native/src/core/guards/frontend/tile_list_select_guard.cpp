@@ -121,8 +121,8 @@ void push_child_selection(void *widget, void *child)
     else if (at.known)
         swofty::log("[tile-list] focused tile %llu of %llu (node 0x%llx, class 0x%llx) %s, so the list does not write it "
                     "to its selection%s",
-                    (unsigned long long)at.index, (unsigned long long)at.count, (unsigned long long)t,
-                    (unsigned long long)vtable, ts::why(tile), last);
+                    (unsigned long long)at.index, (unsigned long long)at.count, (unsigned long long)t, (unsigned long long)vtable,
+                    ts::why(tile), last);
     else
         swofty::log("[tile-list] the focused tile (node 0x%llx, class 0x%llx) %s and is not among the list's tiles, so the "
                     "list does not write it to its selection%s",

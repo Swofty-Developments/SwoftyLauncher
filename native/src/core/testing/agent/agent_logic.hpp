@@ -60,10 +60,14 @@ inline std::string num(double v)
 inline std::string dump(const json::Value &v)
 {
     switch (v.type) {
-    case json::Value::Null: return "null";
-    case json::Value::Bool: return v.b ? "true" : "false";
-    case json::Value::Num: return num(v.n);
-    case json::Value::Str: return esc(v.s);
+    case json::Value::Null:
+        return "null";
+    case json::Value::Bool:
+        return v.b ? "true" : "false";
+    case json::Value::Num:
+        return num(v.n);
+    case json::Value::Str:
+        return esc(v.s);
     case json::Value::Arr: {
         std::string o = "[";
         for (size_t i = 0; i < v.a.size(); i++)
@@ -136,11 +140,16 @@ enum class Status { ok, error, unavailable, timeout, pending };
 inline const char *status_name(Status s)
 {
     switch (s) {
-    case Status::ok: return "ok";
-    case Status::error: return "error";
-    case Status::unavailable: return "unavailable";
-    case Status::timeout: return "timeout";
-    default: return "pending";
+    case Status::ok:
+        return "ok";
+    case Status::error:
+        return "error";
+    case Status::unavailable:
+        return "unavailable";
+    case Status::timeout:
+        return "timeout";
+    default:
+        return "pending";
     }
 }
 
@@ -170,10 +179,9 @@ struct Button {
     uint16_t mask;
 };
 constexpr Button BUTTONS[] = {
-    {"up", 0x0001},    {"down", 0x0002},   {"left", 0x0004}, {"right", 0x0008}, {"start", 0x0010},
-    {"menu", 0x0010},  {"back", 0x0020},   {"view", 0x0020}, {"ls", 0x0040},    {"rs", 0x0080},
-    {"lb", 0x0100},    {"rb", 0x0200},     {"a", 0x1000},    {"b", 0x2000},     {"x", 0x4000},
-    {"y", 0x8000},
+    {"up", 0x0001},   {"down", 0x0002}, {"left", 0x0004}, {"right", 0x0008}, {"start", 0x0010}, {"menu", 0x0010},
+    {"back", 0x0020}, {"view", 0x0020}, {"ls", 0x0040},   {"rs", 0x0080},    {"lb", 0x0100},    {"rb", 0x0200},
+    {"a", 0x1000},    {"b", 0x2000},    {"x", 0x4000},    {"y", 0x8000},
 };
 constexpr uint16_t LT = 0xfffe, RT = 0xffff;
 
@@ -260,11 +268,25 @@ struct SessionPlan {
 
 // The game's session id names (k_Sess_SessionTypeNames, ids 0 to 18), which DevSessionDataContract.Game.session_id
 // takes.
-constexpr const char *SESSION_NAMES[19] = {"not_set",         "practice_1",       "practice_2",       "practice_3",
-                                           "practice_s",      "qualifying_1",     "qualifying_2",     "qualifying_3",
-                                           "qualifying_s",    "qualifying_o",     "sprint_shootout_1", "sprint_shootout_2",
-                                           "sprint_shootout_3", "sprint_shootout_s", "sprint_shootout_o", "race",
-                                           "race_2",          "race_3",           "time_trial"};
+constexpr const char *SESSION_NAMES[19] = {"not_set",
+                                           "practice_1",
+                                           "practice_2",
+                                           "practice_3",
+                                           "practice_s",
+                                           "qualifying_1",
+                                           "qualifying_2",
+                                           "qualifying_3",
+                                           "qualifying_s",
+                                           "qualifying_o",
+                                           "sprint_shootout_1",
+                                           "sprint_shootout_2",
+                                           "sprint_shootout_3",
+                                           "sprint_shootout_s",
+                                           "sprint_shootout_o",
+                                           "race",
+                                           "race_2",
+                                           "race_3",
+                                           "time_trial"};
 constexpr int SESSION_TIME_TRIAL = 18;
 
 inline int session_id_of(const std::string &name)
@@ -282,10 +304,7 @@ inline int session_id_of(const std::string &name)
     return -1;
 }
 
-inline bool weather_known(const std::string &w)
-{
-    return w == "clear" || w == "wet" || w == "rain";
-}
+inline bool weather_known(const std::string &w) { return w == "clear" || w == "wet" || w == "rain"; }
 
 // "" when the arguments make a session, else why not.
 inline std::string parse_session(const json::Value &a, SessionPlan &out)
@@ -306,7 +325,8 @@ inline std::string parse_session(const json::Value &a, SessionPlan &out)
         s = p.mode == "time_trial" ? "time_trial" : "race";
     p.session_id = session_id_of(s);
     if (p.session_id < 0)
-        return "session '" + s + "' is not a session name (practice1 to practice3, qualifying, race, race_2, sprint_shootout, "
+        return "session '" + s +
+               "' is not a session name (practice1 to practice3, qualifying, race, race_2, sprint_shootout, "
                "time_trial, or the game's own: practice_1, qualifying_o and so on)";
     p.session_name = SESSION_NAMES[p.session_id];
     p.session = s;
@@ -374,7 +394,6 @@ inline std::string session_unfilled(const SessionPlan &p)
         add("driver");
     return s;
 }
-
 
 // What the agent asks of the game. Each returns unavailable, with the reason, when its bindings
 // didn't resolve; pending from a *_poll means "not yet".
@@ -513,23 +532,33 @@ enum class CareerStep { title, route, tile, content, card, team_hq, advance, hub
 inline const char *career_step_name(CareerStep s)
 {
     switch (s) {
-    case CareerStep::title: return "the title screen's press";
-    case CareerStep::route: return "route career from the main menu";
-    case CareerStep::tile: return "the career tile's continue action";
-    case CareerStep::content: return "the content select's continue action";
-    case CareerStep::card: return "the resume card's press";
-    case CareerStep::team_hq: return "the career loading into Team HQ (StateTeamHQ)";
-    case CareerStep::advance: return "Team HQ's advance to the next event";
-    case CareerStep::hub: return "the weekend hub (StateSession)";
-    case CareerStep::session: return "the garage to the track";
-    default: return "done";
+    case CareerStep::title:
+        return "the title screen's press";
+    case CareerStep::route:
+        return "route career from the main menu";
+    case CareerStep::tile:
+        return "the career tile's continue action";
+    case CareerStep::content:
+        return "the content select's continue action";
+    case CareerStep::card:
+        return "the resume card's press";
+    case CareerStep::team_hq:
+        return "the career loading into Team HQ (StateTeamHQ)";
+    case CareerStep::advance:
+        return "Team HQ's advance to the next event";
+    case CareerStep::hub:
+        return "the weekend hub (StateSession)";
+    case CareerStep::session:
+        return "the garage to the track";
+    default:
+        return "done";
     }
 }
 
 struct CareerTimes {
-    uint64_t title = 90000, route = 60000, tile = 30000, card = 30000, team_hq = 180000, advance = 60000,
-             hub = 300000, session = 120000, retry = 500, title_pad_after = 3000, pad_hold = 250, pad_gap = 1750,
-             notice_after = 4000, route_settle = 5000;
+    uint64_t title = 90000, route = 60000, tile = 30000, card = 30000, team_hq = 180000, advance = 60000, hub = 300000,
+             session = 120000, retry = 500, title_pad_after = 3000, pad_hold = 250, pad_gap = 1750, notice_after = 4000,
+             route_settle = 5000;
 };
 
 constexpr const char *SCREEN_FRONTEND_TRANSITION = "frontend_transition";
@@ -537,16 +566,25 @@ constexpr const char *SCREEN_FRONTEND_TRANSITION = "frontend_transition";
 inline uint64_t career_limit(const CareerTimes &t, CareerStep s)
 {
     switch (s) {
-    case CareerStep::title: return t.title;
-    case CareerStep::route: return t.route;
+    case CareerStep::title:
+        return t.title;
+    case CareerStep::route:
+        return t.route;
     case CareerStep::tile:
-    case CareerStep::content: return t.tile;
-    case CareerStep::card: return t.card;
-    case CareerStep::team_hq: return t.team_hq;
-    case CareerStep::advance: return t.advance;
-    case CareerStep::hub: return t.hub;
-    case CareerStep::session: return t.session;
-    default: return 0;
+    case CareerStep::content:
+        return t.tile;
+    case CareerStep::card:
+        return t.card;
+    case CareerStep::team_hq:
+        return t.team_hq;
+    case CareerStep::advance:
+        return t.advance;
+    case CareerStep::hub:
+        return t.hub;
+    case CareerStep::session:
+        return t.session;
+    default:
+        return 0;
     }
 }
 
@@ -568,7 +606,7 @@ inline int skip_destination(const std::string &to)
 constexpr int SESSION_RACE = 15;
 
 class Runner {
-  public:
+public:
     explicit Runner(Game &g) : g_(g) {}
 
     void submit(Command c) { queue_.push_back(std::move(c)); }
@@ -603,7 +641,7 @@ class Runner {
         finish(o, now, out);
     }
 
-  private:
+private:
     Game &g_;
     std::deque<Command> queue_;
     Command cur_;
@@ -684,10 +722,7 @@ class Runner {
         return true;
     }
 
-    bool title_passed()
-    {
-        return g_.title_state() == "engaged" || fires_.seen("flow:" + std::string(FLOW_FRONTEND)) > 0;
-    }
+    bool title_passed() { return g_.title_state() == "engaged" || fires_.seen("flow:" + std::string(FLOW_FRONTEND)) > 0; }
 
     void title_begin(uint64_t now)
     {
@@ -815,9 +850,7 @@ class Runner {
                     break;
                 o = g_.career_tile(plan_.mode);
                 if (o.status == Status::ok) {
-                    step_to(o.value.find("career_dlc_select") != std::string::npos ? CareerStep::content
-                                                                                    : CareerStep::card,
-                            now);
+                    step_to(o.value.find("career_dlc_select") != std::string::npos ? CareerStep::content : CareerStep::card, now);
                     continue;
                 }
                 if (o.status == Status::error)
@@ -901,8 +934,8 @@ class Runner {
             pad_release();
             uint64_t secs = (now >= deadline_ ? deadline_ - started_ : lim) / 1000;
             return {Status::timeout, "null",
-                    std::string("career load: ") + career_step_name(cstep_) + " did not happen within " +
-                        std::to_string(secs) + " s" + (cwhy_.empty() ? "" : " (" + cwhy_ + ")")};
+                    std::string("career load: ") + career_step_name(cstep_) + " did not happen within " + std::to_string(secs) +
+                        " s" + (cwhy_.empty() ? "" : " (" + cwhy_ + ")")};
         }
         return Outcome::pending();
     }
@@ -926,16 +959,17 @@ class Runner {
             }
         } else if (fires_.seen("flow:" + std::string(FLOW_LOAD_SESSION)) > mark_) {
             g_.note("[test] session.start " + session_plan_.mode + " " + session_plan_.track);
-            return Outcome::ok("{\"event\":\"session.start\",\"mode\":" + esc(session_plan_.mode) + ",\"track\":" +
-                               esc(session_plan_.track) + ",\"session\":" + esc(session_plan_.session_name) +
+            return Outcome::ok("{\"event\":\"session.start\",\"mode\":" + esc(session_plan_.mode) +
+                               ",\"track\":" + esc(session_plan_.track) + ",\"session\":" + esc(session_plan_.session_name) +
                                ",\"set\":" + (session_value_.empty() ? "null" : session_value_) + "}");
         } else
             cwhy_ = "the flow is at " + g_.phase();
         if (now >= deadline_) {
             pad_release();
             return {Status::timeout, "null",
-                    std::string("session.start: ") + (session_sent_ ? "the load did not start" : "the main menu was not reached") +
-                        " within " + std::to_string((deadline_ - started_) / 1000) + " s (" + cwhy_ + ")"};
+                    std::string("session.start: ") +
+                        (session_sent_ ? "the load did not start" : "the main menu was not reached") + " within " +
+                        std::to_string((deadline_ - started_) / 1000) + " s (" + cwhy_ + ")"};
         }
         return Outcome::pending();
     }
@@ -955,8 +989,8 @@ class Runner {
             return o;
         cwhy_ = o.error;
         if (now >= deadline_)
-            return {Status::timeout, "null", "tile " + tile_id_ + ": not within " +
-                                                 std::to_string((deadline_ - started_) / 1000) + " s (" + cwhy_ + ")"};
+            return {Status::timeout, "null",
+                    "tile " + tile_id_ + ": not within " + std::to_string((deadline_ - started_) / 1000) + " s (" + cwhy_ + ")"};
         return Outcome::pending();
     }
 
@@ -1184,16 +1218,16 @@ class Runner {
             return session_poll(now);
         if (c == "title") {
             if (title_tick(now)) {
-                g_.note(title_presses_ ? "[test] title passed after " + std::to_string(title_presses_) +
-                                             " press(es) of the virtual pad's a"
-                                       : std::string("[test] title passed without input"));
+                g_.note(title_presses_
+                            ? "[test] title passed after " + std::to_string(title_presses_) + " press(es) of the virtual pad's a"
+                            : std::string("[test] title passed without input"));
                 return Outcome::ok(title_value());
             }
             if (now >= deadline_) {
                 pad_release();
                 return {Status::timeout, "null",
-                        "title: the title screen did not pass within " + std::to_string((deadline_ - started_) / 1000) +
-                            " s (" + cwhy_ + ")"};
+                        "title: the title screen did not pass within " + std::to_string((deadline_ - started_) / 1000) + " s (" +
+                            cwhy_ + ")"};
             }
             return Outcome::pending();
         }
@@ -1304,7 +1338,8 @@ class Runner {
             return Outcome::ok();
         }
         if (now >= deadline_) {
-            Outcome o{Status::timeout, "null", c + " " + want_ + ": not within " + std::to_string((deadline_ - started_) / 1000) + " s"};
+            Outcome o{Status::timeout, "null",
+                      c + " " + want_ + ": not within " + std::to_string((deadline_ - started_) / 1000) + " s"};
             if (c == "capture" || c == "run_test" || c == "advance" || c == "save")
                 o.error = c + ": not finished within " + std::to_string((deadline_ - started_) / 1000) + " s";
             return o;

@@ -8,15 +8,14 @@ namespace garage {
 // Read after Game_PitBoxCarActor_Update. The actor's own cached world pose takes
 // precedence. Uncached bones use model world, which differs from the actor
 // transform used to place a mechanic's animated pelvis.
-template<class Read>
-bool parked_car_world(Read&& read, const Owner& owner, Matrix& out)
+template <class Read> bool parked_car_world(Read &&read, const Owner &owner, Matrix &out)
 {
     const Address actor = owner.car_actor;
     Address model{};
     std::int32_t bone{};
     std::uint8_t cached{};
-    if (!actor || !read(actor + 0x228, model) || !model || !read(actor + 0x678, bone) ||
-        bone < 0 || bone >= 4096 || !read(actor + 0x660, cached))
+    if (!actor || !read(actor + 0x228, model) || !model || !read(actor + 0x678, bone) || bone < 0 || bone >= 4096 ||
+        !read(actor + 0x660, cached))
         return false;
 
     Matrix world{};
@@ -27,9 +26,9 @@ bool parked_car_world(Read&& read, const Owner& owner, Matrix& out)
         Address skeleton{}, cursor{}, flags{}, buffer{};
         std::uint8_t current{};
         std::uint64_t ready{};
-        if (!read(model + 0xd0, skeleton) || !skeleton || !read(skeleton + 0x58, cursor) || !cursor ||
-            !read(cursor, current) || current > 2 || !read(skeleton + 0x30 + sizeof(Address) * current, flags) ||
-            !flags || !read(flags + sizeof(ready) * (unsigned(bone) / 64), ready))
+        if (!read(model + 0xd0, skeleton) || !skeleton || !read(skeleton + 0x58, cursor) || !cursor || !read(cursor, current) ||
+            current > 2 || !read(skeleton + 0x30 + sizeof(Address) * current, flags) || !flags ||
+            !read(flags + sizeof(ready) * (unsigned(bone) / 64), ready))
             return false;
         const bool evaluated = ((ready >> (unsigned(bone) % 64)) & 1u) != 0;
         const unsigned selected = evaluated ? current : (current + 2u) % 3u;
@@ -50,8 +49,7 @@ bool parked_car_world(Read&& read, const Owner& owner, Matrix& out)
     for (float v : world)
         if (!std::isfinite(v))
             return false;
-    if (std::abs(world[3]) + std::abs(world[7]) + std::abs(world[11]) >= 0.001f ||
-        std::abs(world[15] - 1.f) >= 0.001f)
+    if (std::abs(world[3]) + std::abs(world[7]) + std::abs(world[11]) >= 0.001f || std::abs(world[15] - 1.f) >= 0.001f)
         return false;
     out = world;
     return true;

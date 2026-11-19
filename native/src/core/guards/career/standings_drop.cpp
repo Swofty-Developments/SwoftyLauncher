@@ -46,10 +46,14 @@ namespace sd = runtime::standings_drop;
 // The recompute is a protector thunk whose filler differs per build: it is found from a season loop's call
 // (0x140ae95a2, rcx = season + 0x2a8).
 const runtime::Sig S_RECOMPUTE{"Career_Recompute_SeasonStandings",
-                               "E8 ?? ?? ?? ?? 48 89 F9 31 D2 E8 ?? ?? ?? ?? 49 8B 8F 10 05 00 00", 0xb2fa60,
-                               runtime::Sig::rel32, 0, 1, 5};
-const runtime::Sig S_COMPARE{"Career_Compare_StandingsEntries", "41 56 56 57 53 48 81 EC 08 01 00 00 41 8B 40 04",
-                             0xb317a0, runtime::Sig::addr, 0, 0, 0};
+                               "E8 ?? ?? ?? ?? 48 89 F9 31 D2 E8 ?? ?? ?? ?? 49 8B 8F 10 05 00 00",
+                               0xb2fa60,
+                               runtime::Sig::rel32,
+                               0,
+                               1,
+                               5};
+const runtime::Sig S_COMPARE{
+    "Career_Compare_StandingsEntries", "41 56 56 57 53 48 81 EC 08 01 00 00 41 8B 40 04", 0xb317a0, runtime::Sig::addr, 0, 0, 0};
 
 // The layout above was checked on both 1.0.145 builds (EA 1.0.145: re/research/ea-1-0-145.md). Read by the same
 // instruction in a body that is the same on each build (re/tools/sigport.py --witness at the KB RVA): Season +0x2a8 and
@@ -116,8 +120,8 @@ void recount(uintptr_t standings, uint32_t best)
     sd::Recounted done = sd::recount_table(standings, points, best, guards::read_if_readable, nullptr, game_entries,
                                            compare && have_packed ? game_less : nullptr, &ctx);
     if (!logged_apply || done.changed) {
-        swofty::log("[career] dropped scores: best %u results count; %zu table session(s) recounted, %zu total(s) changed",
-                    best, done.sessions, done.changed);
+        swofty::log("[career] dropped scores: best %u results count; %zu table session(s) recounted, %zu total(s) changed", best,
+                    done.sessions, done.changed);
         logged_apply = true;
     }
 }
@@ -142,15 +146,13 @@ protected:
         }
         if (!runtime::holds(DROPPED_SCORES))
             return false;
-        uintptr_t recompute = runtime::find(S_RECOMPUTE, "career", "career"),
-                  cmp = runtime::find(S_COMPARE, "career", "career");
+        uintptr_t recompute = runtime::find(S_RECOMPUTE, "career", "career"), cmp = runtime::find(S_COMPARE, "career", "career");
         if (!recompute || !cmp) {
             swofty::log("[career] dropped scores: not hooked: %s%s", recompute ? "" : "recompute ", cmp ? "" : "compare");
             return false;
         }
         compare = reinterpret_cast<Compare_t *>(cmp);
-        auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(recompute),
-                                                reinterpret_cast<void *>(&recompute_hook));
+        auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(recompute), reinterpret_cast<void *>(&recompute_hook));
         if (!h) {
             swofty::log("[career] dropped scores: the hook failed");
             return false;
@@ -183,4 +185,3 @@ int standings_drop_set(const std::string &data_group, uint32_t best)
 }
 
 }
-

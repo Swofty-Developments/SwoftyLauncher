@@ -30,10 +30,7 @@ namespace {
 
 static_assert(sizeof(TileEntry) == 0x10);
 
-unsigned long long rva(uintptr_t a)
-{
-    return a - swofty::api->module_base();
-}
+unsigned long long rva(uintptr_t a) { return a - swofty::api->module_base(); }
 
 #ifdef SWOFTY_MOD_SETTINGS_ACTIVE
 
@@ -63,8 +60,8 @@ void mod_populate(HomeItem *item, void *node, uint32_t a7)
     Vm_Set_Bool(reg, parent, "title_localised", &no, 1);
     frontend::vm::set_string(reg, parent, "description", DESCRIPTION);
     Vm_Set_Bool(reg, parent, "description_localised", &no, 1);
-    swofty::log("[core] populate #%u item=%p node=%p a7=%u vm=%p: title='%s' description set, localised=false", call,
-                item, node, a7, vm_node, TITLE);
+    swofty::log("[core] populate #%u item=%p node=%p a7=%u vm=%p: title='%s' description set, localised=false", call, item, node,
+                a7, vm_node, TITLE);
     frontend::main_menu::style_settings(item);
 }
 
@@ -84,8 +81,8 @@ bool check()
     swofty::log("[core] swofty_core init, game base 0x%llx", (unsigned long long)swofty::api->module_base());
     swofty::log("[core] ADDON SETTINGS mixin: %s", SWOFTY_MOD_SETTINGS_MODE);
     if (site < builder || site - builder > 0x8000) {
-        swofty::log("[core] hook site 0x%llx is not inside the builder at 0x%llx; installing nothing",
-                    (unsigned long long)site, (unsigned long long)builder);
+        swofty::log("[core] hook site 0x%llx is not inside the builder at 0x%llx; installing nothing", (unsigned long long)site,
+                    (unsigned long long)builder);
         return false;
     }
     swofty::log("[core] builder base+0x%llx, hook site base+0x%llx", rva(builder), rva(site));
@@ -114,9 +111,8 @@ SWOFTY_SITE(site_FeHome_AfterCareerCall, swofty::Context &c)
 {
     unsigned call = ++tile.hook_calls;
     auto list = reinterpret_cast<TileList *>(c.r14);
-    swofty::log("[core] hook #%u: list(r14)=0x%llx r12=0x%llx r15=0x%llx rsi=0x%llx rip=0x%llx", call,
-                (unsigned long long)c.r14, (unsigned long long)c.r12, (unsigned long long)c.r15,
-                (unsigned long long)c.rsi, (unsigned long long)c.rip);
+    swofty::log("[core] hook #%u: list(r14)=0x%llx r12=0x%llx r15=0x%llx rsi=0x%llx rip=0x%llx", call, (unsigned long long)c.r14,
+                (unsigned long long)c.r12, (unsigned long long)c.r15, (unsigned long long)c.rsi, (unsigned long long)c.rip);
     size_t before = 0, after = 0;
     HomeItem *career = frontend::tile_list::last_item(list, &before);
     if (!career) {
@@ -137,7 +133,8 @@ SWOFTY_SITE(site_FeHome_AfterCareerCall, swofty::Context &c)
                     call, before, after, item, item ? static_cast<void *>(item->vtable) : nullptr, career_vt);
         return;
     }
-    void **vt = swofty::subclass(item, {{4, reinterpret_cast<void *>(mod_populate)}, {5, reinterpret_cast<void *>(mod_get_action)}});
+    void **vt =
+        swofty::subclass(item, {{4, reinterpret_cast<void *>(mod_populate)}, {5, reinterpret_cast<void *>(mod_get_action)}});
     if (vt != tile.mod_vt) {
         tile.mod_vt = vt;
         swofty::log("[core] hook #%u: built mod vtable %p from career vtable %p (slot 4 populate %p -> %p, slot 5 "

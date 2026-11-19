@@ -12,27 +12,15 @@ constexpr int LOG_FIRST = 4;
 
 using swofty_core::guards::Say;
 
-inline bool board_missing(uint64_t board)
-{
-    return board == 0;
-}
+inline bool board_missing(uint64_t board) { return board == 0; }
 
-inline bool tab_child_missing(uint64_t child)
-{
-    return child == 0;
-}
+inline bool tab_child_missing(uint64_t child) { return child == 0; }
 
-inline bool reference_board_missing(uint64_t board)
-{
-    return board == 0;
-}
+inline bool reference_board_missing(uint64_t board) { return board == 0; }
 
 constexpr uintptr_t LIST_BOARD_SET = 0xf0;
 
-inline bool reference_list_unboarded(uint8_t engaged)
-{
-    return engaged == 0;
-}
+inline bool reference_list_unboarded(uint8_t engaged) { return engaged == 0; }
 
 inline std::string reference_list_line(uint64_t presenter, const std::string &mode, const std::string &setup_mode,
                                        const std::string &list, int64_t cars)
@@ -46,9 +34,6 @@ inline std::string reference_list_line(uint64_t presenter, const std::string &mo
            " has no leaderboard; the reference is left unset instead of the game's bad optional access";
 }
 
-inline Say say(int occurrence)
-{
-    return swofty_core::guards::say(occurrence, LOG_FIRST);
-}
+inline Say say(int occurrence) { return swofty_core::guards::say(occurrence, LOG_FIRST); }
 
 }

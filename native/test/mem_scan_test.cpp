@@ -5,12 +5,12 @@
 using namespace frontend::mem_scan;
 
 static int failures = 0;
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            failures++;                                                                                                \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 int main()

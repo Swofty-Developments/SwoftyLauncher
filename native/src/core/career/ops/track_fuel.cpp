@@ -35,10 +35,7 @@ struct GameMem {
     bool c_string(uintptr_t at, std::string &out) { return swofty::mem::c_string(at, out, 64); }
 };
 
-bool writable(uintptr_t at, size_t n)
-{
-    return runtime::pages::read_write_span(at, n);
-}
+bool writable(uintptr_t at, size_t n) { return runtime::pages::read_write_span(at, n); }
 
 bool put(uintptr_t at, const void *src, size_t n)
 {
@@ -300,8 +297,8 @@ int set_track_fuel(const std::string &who, SwoftyText request, char *out, size_t
                 for (auto &jb : jobs)
                     summary += (summary.empty() ? "" : ", ") + jb.set + (has_burn ? "" : " from " + jb.from) + ": " +
                                std::to_string(jb.written) + " written, " + std::to_string(jb.unchanged) + " unchanged";
-                summary += "; " + std::to_string(o.failed) + " write(s) refused" + (o.melbourne.empty() ? "" : "; " + o.melbourne) +
-                           "; put back on career.unloaded";
+                summary += "; " + std::to_string(o.failed) + " write(s) refused" +
+                           (o.melbourne.empty() ? "" : "; " + o.melbourne) + "; put back on career.unloaded";
             }
         }
     }

@@ -9,8 +9,7 @@ namespace garage::steam_26566308 {
 namespace sdk = swofty::garage_placement;
 inline bool supported(std::string_view distribution, std::string_view sha)
 {
-    return distribution == "steam" &&
-           sha == "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389";
+    return distribution == "steam" && sha == "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389";
 }
 
 struct Bank {
@@ -37,8 +36,7 @@ inline bool authored(const sdk::Pit *pits, uint32_t count, uint32_t garage, Bank
     return true;
 }
 
-template<class Read>
-bool matches(Read &&read, const Owner &owner, const Bank &bank)
+template <class Read> bool matches(Read &&read, const Owner &owner, const Bank &bank)
 {
     for (unsigned i = 0; i < 32; ++i) {
         Matrix live{};
@@ -54,15 +52,12 @@ bool matches(Read &&read, const Owner &owner, const Bank &bank)
     return true;
 }
 
-template<class Read>
-bool owns(Read &&read, const Owner &o)
+template <class Read> bool owns(Read &&read, const Owner &o)
 {
     Address crew{}, car{}, bank{};
     uint32_t garage{};
-    return o.instance && o.module && o.crew_scene && o.car_actor && o.pit_bank && o.native_slot < 2 &&
-           o.garage < 32 && read(o.module + 0x60, bank) && bank == o.pit_bank &&
-           read(o.instance + 0x11c, garage) && garage == o.garage &&
-           read(o.instance + 0xc8, crew) && crew == o.crew_scene &&
-           read(o.instance + 0x1a8, car) && car == o.car_actor;
+    return o.instance && o.module && o.crew_scene && o.car_actor && o.pit_bank && o.native_slot < 2 && o.garage < 32 &&
+           read(o.module + 0x60, bank) && bank == o.pit_bank && read(o.instance + 0x11c, garage) && garage == o.garage &&
+           read(o.instance + 0xc8, crew) && crew == o.crew_scene && read(o.instance + 0x1a8, car) && car == o.car_actor;
 }
 } // namespace garage::steam_26566308

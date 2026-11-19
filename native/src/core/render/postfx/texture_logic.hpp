@@ -15,7 +15,7 @@ inline int format_of(std::string_view name)
         std::string_view name;
         int dxgi;
     };
-    static constexpr Named NAMED[] = {{"rgba8", 28}, {"rgba16f", 10}, {"rg16f", 34},      {"r16f", 54},
+    static constexpr Named NAMED[] = {{"rgba8", 28}, {"rgba16f", 10}, {"rg16f", 34},     {"r16f", 54},
                                       {"r32f", 41},  {"rgb10a2", 24}, {"r11g11b10f", 26}};
     for (auto &n : NAMED)
         if (n.name == name)
@@ -59,10 +59,7 @@ inline Size texture_size(double scale, uint32_t width, uint32_t height, uint32_t
     return {at(pic_w), at(pic_h)};
 }
 
-inline uint32_t groups(uint32_t size, uint32_t threads)
-{
-    return threads ? (size + threads - 1) / threads : 0;
-}
+inline uint32_t groups(uint32_t size, uint32_t threads) { return threads ? (size + threads - 1) / threads : 0; }
 
 // Scales an RGB24 picture to dw x dh by area-weighted averaging: every output pixel is the mean of the
 // source area it covers, partial pixels by their share.

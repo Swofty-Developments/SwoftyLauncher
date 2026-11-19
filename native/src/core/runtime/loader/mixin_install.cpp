@@ -107,17 +107,16 @@ bool MixinManager::drop_conflicts(const std::vector<Group> &groups, bool warn)
         } else if (!over.empty()) {
             bad.pop_back();
             if (warn && !(g.handlers.back().m->kind & SWOFTY_MIXIN_OVERWRITE))
-                api->log("[core] warning: an overwrite on %s hides the handlers below it: %s", target.c_str(),
-                         owners(g).c_str());
+                api->log("[core] warning: an overwrite on %s hides the handlers below it: %s", target.c_str(), owners(g).c_str());
         }
         for (size_t y = x + 1; y < groups.size(); y++) {
             auto &o = groups[y];
             bool data = g.kind == SWOFTY_MIXIN_VTABLE, odata = o.kind == SWOFTY_MIXIN_VTABLE;
             if (data != odata || g.addr >= o.addr + o.span || o.addr >= g.addr + g.span)
                 continue;
-            api->log("[core] conflict: %s %s at 0x%llx overlaps %s %s at 0x%llx: %s vs %s", kind_name(g.kind),
-                     target.c_str(), (unsigned long long)g.addr, kind_name(o.kind), o.handlers[0].m->target.c_str(),
-                     (unsigned long long)o.addr, owners(g).c_str(), owners(o).c_str());
+            api->log("[core] conflict: %s %s at 0x%llx overlaps %s %s at 0x%llx: %s vs %s", kind_name(g.kind), target.c_str(),
+                     (unsigned long long)g.addr, kind_name(o.kind), o.handlers[0].m->target.c_str(), (unsigned long long)o.addr,
+                     owners(g).c_str(), owners(o).c_str());
             bool gc = core_only(g), oc = core_only(o);
             for (auto *z : {&g, &o})
                 if (gc == oc || core_only(*z))

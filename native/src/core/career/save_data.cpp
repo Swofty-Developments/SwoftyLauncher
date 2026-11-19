@@ -32,8 +32,7 @@ constexpr size_t SLOTS_BEGIN = 0x250;
 constexpr size_t SLOTS_END = 0x258;
 constexpr size_t MAX_SLOTS = 4096;
 
-template <class S = g::SaveSlotInfo>
-bool read_slot(uintptr_t slot, cs::SlotRead &out)
+template <class S = g::SaveSlotInfo> bool read_slot(uintptr_t slot, cs::SlotRead &out)
 {
     if (!slot || !mem::read(slot, out.id) || !mem::read(slot + 8, out.guid))
         return false;
@@ -41,11 +40,9 @@ bool read_slot(uintptr_t slot, cs::SlotRead &out)
         bool ok = mem::read(slot + offsetof(S, game_setup_mode), out.setup_mode) &&
                   mem::read(slot + offsetof(S, info_season), out.season) &&
                   mem::read(slot + offsetof(S, info_weekend), out.weekend) &&
-                  mem::read(slot + offsetof(S, info_team), out.team) &&
-                  mem::read(slot + offsetof(S, info_driver), out.driver) &&
+                  mem::read(slot + offsetof(S, info_team), out.team) && mem::read(slot + offsetof(S, info_driver), out.driver) &&
                   mem::read(slot + offsetof(S, info_vehicle), out.vehicle) &&
-                  mem::read(slot + offsetof(S, info_date), out.date) &&
-                  mem::read(slot + offsetof(S, type_flags), out.flags);
+                  mem::read(slot + offsetof(S, info_date), out.date) && mem::read(slot + offsetof(S, type_flags), out.flags);
         out.details = ok;
         if constexpr (layout::slot_name<S>) {
             uintptr_t name = 0;
@@ -73,8 +70,7 @@ bool is_root(uintptr_t self)
     return b.root_vt && self && mem::read(self, vt) && vt == b.root_vt;
 }
 
-template <class PV, class TV>
-bool read_property(void *prop, uint64_t &hash, void *&bag, std::string &why)
+template <class PV, class TV> bool read_property(void *prop, uint64_t &hash, void *&bag, std::string &why)
 {
     if constexpr (layout::property<PV, TV>) {
         auto type_of = reinterpret_cast<Get_t>(method(prop, offsetof(PV, type)));
@@ -102,8 +98,7 @@ bool read_property(void *prop, uint64_t &hash, void *&bag, std::string &why)
 
 template bool read_property<>(void *prop, uint64_t &hash, void *&bag, std::string &why);
 
-template <class C, class CS, class MS, class SV>
-bool encode(void *bag, std::vector<uint8_t> &out, std::string &why)
+template <class C, class CS, class MS, class SV> bool encode(void *bag, std::vector<uint8_t> &out, std::string &why)
 {
     if constexpr (layout::save_streams<C, CS, MS, SV>) {
         static_assert(sizeof(CS) <= 0x30 && sizeof(MS) <= 0x28 && sizeof(C) <= 0x10);
@@ -130,9 +125,7 @@ bool encode(void *bag, std::vector<uint8_t> &out, std::string &why)
         if (int r = write_bag(c, bag))
             return why = "the write pass failed with code " + std::to_string(r), false;
         if (ms->position != size)
-            return why = "the write pass wrote " + std::to_string(ms->position) + " of " + std::to_string(size) +
-                         " bytes",
-                   false;
+            return why = "the write pass wrote " + std::to_string(ms->position) + " of " + std::to_string(size) + " bytes", false;
         return true;
     } else {
         (void)bag, (void)out;
@@ -176,8 +169,7 @@ template <class S> bool child_names(uintptr_t begin, uintptr_t end, std::vector<
         for (uintptr_t at = begin; at < end; at += 8) {
             uintptr_t child = 0, name = 0;
             std::string n;
-            if (!mem::read(at, child) || !mem::read(child + offsetof(S, name), name) ||
-                !mem::c_string(name, n, 256))
+            if (!mem::read(at, child) || !mem::read(child + offsetof(S, name), name) || !mem::c_string(name, n, 256))
                 return false;
             out.push_back(n);
         }

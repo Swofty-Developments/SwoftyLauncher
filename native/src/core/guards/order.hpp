@@ -31,19 +31,9 @@ enum class HookGuardId : uint8_t {
 constexpr size_t HOOK_GUARD_COUNT = size_t(HookGuardId::count);
 
 constexpr std::array<std::string_view, HOOK_GUARD_COUNT> HOOK_GUARD_NAMES = {
-    "pit_garage_state",
-    "gp_weekend_track",
-    "rnd_suppliers",
-    "replay_read",
-    "ai_curves",
-    "ai_ers",
-    "calendar_track",
-    "teamhq_track",
-    "setup_vm",
-    "teammate_pairs",
-    "race_retirement",
-    "sequencer_records",
-    "activity_resume",
+    "pit_garage_state", "gp_weekend_track",  "rnd_suppliers",   "replay_read", "ai_curves",
+    "ai_ers",           "calendar_track",    "teamhq_track",    "setup_vm",    "teammate_pairs",
+    "race_retirement",  "sequencer_records", "activity_resume",
 };
 
 constexpr std::string_view hook_guard_name(HookGuardId id) { return HOOK_GUARD_NAMES[size_t(id)]; }

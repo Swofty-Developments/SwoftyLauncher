@@ -86,15 +86,12 @@ void set_visible(const Target &t, bool visible)
                                                     visible ? 1 : 0);
 }
 
-Target target(const Bar &b)
-{
-    return {b.owner + b.model, b.rnd + 0x268};
-}
+Target target(const Bar &b) { return {b.owner + b.model, b.rnd + 0x268}; }
 
 bool still_open(const Bar &b)
 {
-    return b.owner && swofty::mem::object_like(b.owner) && at<uintptr_t>(b.owner) == b.owner_vt &&
-           rnd_tab(b, b.owner) == b.rnd && swofty::mem::object_like(b.rnd) && at<uintptr_t>(b.rnd) == b.rnd_vt;
+    return b.owner && swofty::mem::object_like(b.owner) && at<uintptr_t>(b.owner) == b.owner_vt && rnd_tab(b, b.owner) == b.rnd &&
+           swofty::mem::object_like(b.rnd) && at<uintptr_t>(b.rnd) == b.rnd_vt;
 }
 
 void registered(Bar &b, uintptr_t owner)
@@ -175,20 +172,11 @@ void team_hq_rnd(safetyhook::Context &c)
     note("[hub] Team HQ: the R&D tab is left out (hide_rnd)");
 }
 
-void team_hq_registered(safetyhook::Context &c)
-{
-    registered(team_hq_bar, at<uintptr_t>(c.rsp + 0x50));
-}
+void team_hq_registered(safetyhook::Context &c) { registered(team_hq_bar, at<uintptr_t>(c.rsp + 0x50)); }
 
-void laptop_registered(safetyhook::Context &c)
-{
-    registered(laptop_bar, c.rsi);
-}
+void laptop_registered(safetyhook::Context &c) { registered(laptop_bar, c.rsi); }
 
-void team_hq_show_all(safetyhook::Context &c)
-{
-    reassert(team_hq_bar, c.rsi, "Team HQ showed all its tabs, enable_navigation");
-}
+void team_hq_show_all(safetyhook::Context &c) { reassert(team_hq_bar, c.rsi, "Team HQ showed all its tabs, enable_navigation"); }
 
 void rnd_gate(safetyhook::Context &c)
 {
@@ -203,8 +191,7 @@ int api_hide_rnd(int on)
     if (hide.exchange(on != 0) != (on != 0)) {
         pending = true;
         swofty::log("[hub] R&D tab %s (hide_rnd %s)%s", on ? "hidden" : "shown", on ? "on" : "off",
-                    team_hq_flag || laptop_flag ? "; an open Team HQ follows on the next frame"
-                                                : " from the next Team HQ entry");
+                    team_hq_flag || laptop_flag ? "; an open Team HQ follows on the next frame" : " from the next Team HQ entry");
     }
     return SWOFTY_ASSET_OK;
 }

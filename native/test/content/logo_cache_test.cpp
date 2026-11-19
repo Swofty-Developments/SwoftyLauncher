@@ -42,10 +42,7 @@ struct Disk {
     int hashes = 0;
     std::function<void(const std::string &rel)> while_hashing;
 
-    void put(const std::string &rel, const std::string &bytes, uint64_t time)
-    {
-        files[rel] = {bytes, time, time, next_id++, 1};
-    }
+    void put(const std::string &rel, const std::string &bytes, uint64_t time) { files[rel] = {bytes, time, time, next_id++, 1}; }
 
     void write(const std::string &rel, const std::string &bytes, uint64_t time)
     {
@@ -157,10 +154,13 @@ int main()
     st["a/b.erp"].hashed = true;
     st["c.erp"].size = 1;
     st["c.erp"].time = 2;
-    auto back = lc::parse(lc::text(st) + "broken line\nx\t1\t2\n\t1\t2\t-\ny\tz\t2\t-\nw\t1\t2\t3\t4\t-\t-\nv\t1\t2\t3\t4\t5\t6\t-\nu\t-1\t2\t-\nt\t 1\t2\t-\ns\t1\t2\t99999999999999999999\t4\t1\t-\n");
+    auto back =
+        lc::parse(lc::text(st) +
+                  "broken line\nx\t1\t2\n\t1\t2\t-\ny\tz\t2\t-\nw\t1\t2\t3\t4\t-\t-\nv\t1\t2\t3\t4\t5\t6\t-\nu\t-1\t2\t-\nt\t "
+                  "1\t2\t-\ns\t1\t2\t99999999999999999999\t4\t1\t-\n");
     check(back.size() == 2 && back["a/b.erp"].hash == 0xabcdef && back["a/b.erp"].hashed && back["a/b.erp"].changed == 21 &&
-              back["a/b.erp"].id == 0x123456789ull && back["a/b.erp"].links == 2 && !back["c.erp"].hashed && back["c.erp"].size == 1 &&
-              back["c.erp"].time == 2,
+              back["a/b.erp"].id == 0x123456789ull && back["a/b.erp"].links == 2 && !back["c.erp"].hashed &&
+              back["c.erp"].size == 1 && back["c.erp"].time == 2,
           "stamps read back what they wrote and skip broken lines");
     check(lc::text(st).compare(0, std::strlen(lc::STAMPS_FORMAT) + 1, std::string(lc::STAMPS_FORMAT) + "\n") == 0,
           "stamps name their format on the first line");
@@ -179,7 +179,8 @@ int main()
               keyed.stamps.find("ui/stock.erp") == std::string::npos,
           "the stamps name the archives the build read and no other");
     Boot same = boot(disk, keyed.stamps);
-    check(same.key == keyed.key && same.hashed == 0 && disk.hashes == 2, "the next boot finds the built key without reading an archive");
+    check(same.key == keyed.key && same.hashed == 0 && disk.hashes == 2,
+          "the next boot finds the built key without reading an archive");
 
     disk.write("ui/common.erp", data, 200 * SECOND);
     disk.write(DATABASES, "database bytes", 200 * SECOND);
@@ -192,7 +193,8 @@ int main()
     disk.files["ui/common.erp"].links = 2;
     disk.files["ui/common.erp"].changed = 300 * SECOND;
     Boot linked = boot(disk, quiet.stamps);
-    check(linked.key == keyed.key && linked.hashed == 0, "linking an input into the game folder again moves only its change time and it is not read");
+    check(linked.key == keyed.key && linked.hashed == 0,
+          "linking an input into the game folder again moves only its change time and it is not read");
     disk.files["ui/common.erp"].links = 1;
     disk.files["ui/common.erp"].changed = 310 * SECOND;
     Boot unlinked = boot(disk, linked.stamps);
@@ -207,7 +209,8 @@ int main()
     uint64_t time = disk.files["ui/common.erp"].time;
     disk.put("ui/common.erp", data, time);
     Boot copied_back = boot(disk, in_place.stamps);
-    check(copied_back.key == keyed.key && copied_back.hashed == 1, "a copy put back with the old size and write time is read again");
+    check(copied_back.key == keyed.key && copied_back.hashed == 1,
+          "a copy put back with the old size and write time is read again");
     disk.put("ui/common.erp", flipped, time);
     disk.files["ui/common.erp"].changed = disk.files["ui/common.erp"].time;
     Boot restored = boot(disk, copied_back.stamps);
@@ -235,7 +238,8 @@ int main()
 
     disk.put("ui/stock.erp", "stock bytes, patched", 400 * SECOND);
     Boot updated = boot(disk, recopied.stamps);
-    check(updated.key != keyed.key && updated.hashed == 0, "a game update that resizes another archive changes the key without reading it");
+    check(updated.key != keyed.key && updated.hashed == 0,
+          "a game update that resizes another archive changes the key without reading it");
     disk.put("ui/stock.erp", "stock bytes", 50 * SECOND);
 
     disk.write(DATABASES, "database bytes!", 500 * SECOND);
@@ -271,7 +275,8 @@ int main()
     };
     Boot moving = boot(disk, settled_quiet.stamps);
     disk.while_hashing = nullptr;
-    check(moving.hashed == 1 && !lc::parse(moving.stamps)["ui/common.erp"].hashed, "a hash taken while the file changed is not kept");
+    check(moving.hashed == 1 && !lc::parse(moving.stamps)["ui/common.erp"].hashed,
+          "a hash taken while the file changed is not kept");
     Boot after_moving = boot(disk, moving.stamps);
     check(after_moving.key == keyed.key && after_moving.hashed == 1, "and the file is read again the next boot");
 
@@ -288,7 +293,8 @@ int main()
           "without stamps the inputs are read again after the build");
 
     Boot old = boot(disk, old_format(fresh_built.stamps));
-    check(old.key == fresh_built.key && old.hashed == 2, "stamps from before the change time was kept keep their inputs and are hashed again");
+    check(old.key == fresh_built.key && old.hashed == 2,
+          "stamps from before the change time was kept keep their inputs and are hashed again");
     Boot old_after = boot(disk, old.stamps);
     check(old_after.key == fresh_built.key && old_after.hashed == 0, "and are kept from then on");
 
@@ -328,7 +334,8 @@ int main()
     auto inputs = lc::inputs_of(before);
     inputs.insert(DATABASES);
     auto s2 = lc::key_archives(7, shuffled, inputs, again.env(), before);
-    check(s2.key == s1b.key, "a second session with every write time changed and the list in another order gets the first session's key");
+    check(s2.key == s1b.key,
+          "a second session with every write time changed and the list in another order gets the first session's key");
     check(s2.hashed == 3, "the second session hashes only the three inputs");
     auto s3 = lc::key_archives(7, shuffled, inputs, again.env(), s2.stamps);
     check(s3.key == s1b.key && s3.hashed == 0, "a third session reads nothing");

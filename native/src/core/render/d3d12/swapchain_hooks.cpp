@@ -42,8 +42,7 @@ HRESULT STDMETHODCALLTYPE create_hook(IDXGIFactory *f, IUnknown *dev, DXGI_SWAP_
 }
 
 HRESULT STDMETHODCALLTYPE create_hwnd_hook(IDXGIFactory2 *f, IUnknown *dev, HWND wnd, const DXGI_SWAP_CHAIN_DESC1 *d,
-                                           const DXGI_SWAP_CHAIN_FULLSCREEN_DESC *fs, IDXGIOutput *o,
-                                           IDXGISwapChain1 **out)
+                                           const DXGI_SWAP_CHAIN_FULLSCREEN_DESC *fs, IDXGIOutput *o, IDXGISwapChain1 **out)
 {
     creating++;
     HRESULT hr = hooks.create_hwnd.call<HRESULT>(f, dev, wnd, d, fs, o, out);
@@ -52,8 +51,8 @@ HRESULT STDMETHODCALLTYPE create_hwnd_hook(IDXGIFactory2 *f, IUnknown *dev, HWND
     return hr;
 }
 
-HRESULT STDMETHODCALLTYPE create_core_hook(IDXGIFactory2 *f, IUnknown *dev, IUnknown *wnd,
-                                           const DXGI_SWAP_CHAIN_DESC1 *d, IDXGIOutput *o, IDXGISwapChain1 **out)
+HRESULT STDMETHODCALLTYPE create_core_hook(IDXGIFactory2 *f, IUnknown *dev, IUnknown *wnd, const DXGI_SWAP_CHAIN_DESC1 *d,
+                                           IDXGIOutput *o, IDXGISwapChain1 **out)
 {
     creating++;
     HRESULT hr = hooks.create_core.call<HRESULT>(f, dev, wnd, d, o, out);
@@ -63,8 +62,8 @@ HRESULT STDMETHODCALLTYPE create_core_hook(IDXGIFactory2 *f, IUnknown *dev, IUnk
     return hr;
 }
 
-HRESULT STDMETHODCALLTYPE create_comp_hook(IDXGIFactory2 *f, IUnknown *dev, const DXGI_SWAP_CHAIN_DESC1 *d,
-                                           IDXGIOutput *o, IDXGISwapChain1 **out)
+HRESULT STDMETHODCALLTYPE create_comp_hook(IDXGIFactory2 *f, IUnknown *dev, const DXGI_SWAP_CHAIN_DESC1 *d, IDXGIOutput *o,
+                                           IDXGISwapChain1 **out)
 {
     creating++;
     HRESULT hr = hooks.create_comp.call<HRESULT>(f, dev, d, o, out);
@@ -126,18 +125,17 @@ void PresentLog::count(IDXGISwapChain3 *sc, void *caller, const char *how)
     if (!since)
         since = now;
     bool fresh = seen.size() < 32 &&
-                 std::none_of(seen.begin(), seen.end(), [&](const PresentSeen &p) {
-                     return p.sc == sc && p.caller == caller && p.tid == tid && p.how == how;
-                 });
+                 std::none_of(
+                     seen.begin(), seen.end(),
+                     [&](const PresentSeen &p) { return p.sc == sc && p.caller == caller && p.tid == tid && p.how == how; });
     if (fresh) {
         seen.push_back({sc, caller, tid, how});
         swofty::log("[d3d12] %s on swapchain %p from %s (%p) on thread %lu", how, static_cast<void *>(sc),
                     module_of(caller).c_str(), caller, tid);
     }
     if (now - since >= 60000) {
-        swofty::log("[d3d12] last %llu s: %u present(s), %.1f per second",
-                    static_cast<unsigned long long>((now - since) / 1000), presents,
-                    presents * 1000.0 / double(now - since));
+        swofty::log("[d3d12] last %llu s: %u present(s), %.1f per second", static_cast<unsigned long long>((now - since) / 1000),
+                    presents, presents * 1000.0 / double(now - since));
         since = now;
         presents = 0;
     }
@@ -180,13 +178,11 @@ HRESULT STDMETHODCALLTYPE present_hook(IDXGISwapChain3 *sc, UINT sync, UINT flag
                             [&] { return hooks.present.call<HRESULT>(sc, sync, flags); });
 }
 
-HRESULT STDMETHODCALLTYPE present1_hook(IDXGISwapChain3 *sc, UINT sync, UINT flags,
-                                        const DXGI_PRESENT_PARAMETERS *params)
+HRESULT STDMETHODCALLTYPE present1_hook(IDXGISwapChain3 *sc, UINT sync, UINT flags, const DXGI_PRESENT_PARAMETERS *params)
 {
     return dispatch_present(sc, sync, flags, __builtin_return_address(0), "Present1",
                             [&] { return hooks.present1.call<HRESULT>(sc, sync, flags, params); });
 }
-
 
 HRESULT STDMETHODCALLTYPE resize_hook(IDXGISwapChain3 *sc, UINT count, UINT w, UINT h, DXGI_FORMAT fmt, UINT flags)
 {
@@ -248,8 +244,7 @@ bool hook_factory(void **vt)
         snprintf(b, sizeof b, "%s%s (vt+0x%x)", list.empty() ? "" : ", ", w.what, unsigned(w.slot * 8));
         list += b;
     }
-    swofty::log("[d3d12] swapchain creation hooked on the DXGI factory (%s, in %s)", list.c_str(),
-                module_of(vt[15]).c_str());
+    swofty::log("[d3d12] swapchain creation hooked on the DXGI factory (%s, in %s)", list.c_str(), module_of(vt[15]).c_str());
     return true;
 }
 
@@ -257,10 +252,7 @@ using CreateFactoryFn = HRESULT(WINAPI *)(REFIID, void **);
 
 }
 
-bool learning(void *sc)
-{
-    return swapchains.learning(sc);
-}
+bool learning(void *sc) { return swapchains.learning(sc); }
 
 uint64_t frames_presented() { return present_log.frames(); }
 
@@ -280,8 +272,8 @@ bool arm_swapchain()
     wc.hInstance = GetModuleHandleW(nullptr);
     wc.lpszClassName = L"SwoftyD3D12Probe";
     RegisterClassExW(&wc);
-    HWND wnd = CreateWindowExW(0, wc.lpszClassName, L"", WS_OVERLAPPEDWINDOW, 0, 0, 64, 64, nullptr, nullptr,
-                               wc.hInstance, nullptr);
+    HWND wnd =
+        CreateWindowExW(0, wc.lpszClassName, L"", WS_OVERLAPPEDWINDOW, 0, 0, 64, 64, nullptr, nullptr, wc.hInstance, nullptr);
     if (!wnd) {
         swofty::log("[d3d12] could not make a probe window to read the swapchain vtable");
         UnregisterClassW(wc.lpszClassName, wc.hInstance);
@@ -320,12 +312,11 @@ bool arm_swapchain()
              install(hooks.present, sc_vt[8], reinterpret_cast<void *>(&present_hook), "IDXGISwapChain::Present");
         if (!ok)
             break;
-        bool present1 = sc_vt[22] != sc_vt[8] && install(hooks.present1, sc_vt[22], reinterpret_cast<void *>(&present1_hook),
-                                                         "IDXGISwapChain1::Present1");
+        bool present1 = sc_vt[22] != sc_vt[8] &&
+                        install(hooks.present1, sc_vt[22], reinterpret_cast<void *>(&present1_hook), "IDXGISwapChain1::Present1");
         install(hooks.resize, sc_vt[13], reinterpret_cast<void *>(&resize_hook), "IDXGISwapChain::ResizeBuffers");
         install(hooks.resize1, sc_vt[39], reinterpret_cast<void *>(&resize1_hook), "IDXGISwapChain3::ResizeBuffers1");
-        install(hooks.color_space, sc_vt[38], reinterpret_cast<void *>(&color_space_hook),
-                "IDXGISwapChain3::SetColorSpace1");
+        install(hooks.color_space, sc_vt[38], reinterpret_cast<void *>(&color_space_hook), "IDXGISwapChain3::SetColorSpace1");
         swofty::log("[d3d12] swapchain hooks armed in %s: Present (vt+0x40), %sResizeBuffers (vt+0x68), "
                     "SetColorSpace1 (vt+0x130), ResizeBuffers1 (vt+0x138); only swapchains created after this point "
                     "are known",

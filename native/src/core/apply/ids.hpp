@@ -62,8 +62,7 @@ public:
     Result allocate(const std::string &registry, const std::string &record, const std::string &today);
     Result pin(const std::string &registry, const std::string &record, int64_t id, const std::string &today,
                const std::string &label = {});
-    Result recheck(const std::string &registry, const std::string &record, const std::string &label,
-                   const std::string &today);
+    Result recheck(const std::string &registry, const std::string &record, const std::string &label, const std::string &today);
 
     CareerMap map_for_career(const std::string &career);
     std::vector<Clash> adopt(const std::string &career, const CareerMap &map, const std::string &today);

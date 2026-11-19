@@ -31,10 +31,7 @@ namespace swofty_core::apply::tracks {
 
 enum class Mode { grand_prix, time_trial };
 
-inline const char *mode_name(Mode m)
-{
-    return m == Mode::time_trial ? "time_trial" : "grand_prix";
-}
+inline const char *mode_name(Mode m) { return m == Mode::time_trial ? "time_trial" : "grand_prix"; }
 
 struct Car {
     std::string team, folder, asset;
@@ -203,9 +200,10 @@ struct Decision {
 inline Decision decide(const BaseTrack *track, const BoxInfo &box, Mode mode, const Fit &fit, std::string_view track_label)
 {
     Decision d;
-    std::string name = !track_label.empty() ? std::string(track_label) : track && !track->name.empty() ? track->name
-                                                                            : track ? track->code
-                                                                                    : std::string("this track");
+    std::string name = !track_label.empty()            ? std::string(track_label)
+                       : track && !track->name.empty() ? track->name
+                       : track                         ? track->code
+                                                       : std::string("this track");
     std::string boxname = box.title.empty() ? box.package : box.title;
     std::string where = "[tracks] guard: " + (track ? track->id : name) + " in " + box.package + " (" + mode_name(mode) + ")";
     if (!track) {
@@ -238,8 +236,8 @@ inline Decision decide(const BaseTrack *track, const BoxInfo &box, Mode mode, co
         d.body = boxname + " doesn't offer it.";
         break;
     case Rule::garages:
-        d.body = "Its pit lane holds " + std::to_string(fit.have) + " teams. " + boxname + " runs " +
-                 std::to_string(fit.need) + ".";
+        d.body =
+            "Its pit lane holds " + std::to_string(fit.have) + " teams. " + boxname + " runs " + std::to_string(fit.need) + ".";
         break;
     case Rule::none:
         d.body = fit.reason;
@@ -469,9 +467,9 @@ inline std::string list_setup_mode(const ListDb &db, const std::string &list, st
             continue;
         for (auto &mode : db_names(db_text(db.text, row + ".entrant_setup_modes"))) {
             auto j = db.row(DB_ENTRANT_MODES, mode);
-            if (!j || !facts_has(db_names(db_text(db.text, db_row_path(DB_ENTRANT_MODES, "entrant_setup_mode", *j) +
-                                                                ".entrant_lists")),
-                                 list))
+            if (!j ||
+                !facts_has(db_names(db_text(db.text, db_row_path(DB_ENTRANT_MODES, "entrant_setup_mode", *j) + ".entrant_lists")),
+                           list))
                 continue;
             if (mode != host)
                 return label;

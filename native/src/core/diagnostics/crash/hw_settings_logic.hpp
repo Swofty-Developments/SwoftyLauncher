@@ -26,10 +26,7 @@ inline std::string cloud_flags(uint32_t attrs)
     return out;
 }
 
-inline bool cloud_only(uint32_t attrs)
-{
-    return !cloud_flags(attrs).empty();
-}
+inline bool cloud_only(uint32_t attrs) { return !cloud_flags(attrs).empty(); }
 
 inline bool under_onedrive(const std::wstring &path)
 {

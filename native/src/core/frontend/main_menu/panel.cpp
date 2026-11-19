@@ -78,7 +78,6 @@ std::string host_path(const std::string &p)
     return p;
 }
 
-
 }
 
 bool BindSampler::pressed_edge(bool *on_pad)
@@ -137,7 +136,8 @@ void Panel::set_offline_text(long long online)
         return;
     if (ui_vm_set_path("ui_menu_data.swofty_offline_text", 0, text.c_str())) {
         offline_shown = online;
-        swofty::log("[main-menu] Launched with panel text set: %s", online_line(online).empty() ? "no online line" : online_line(online).c_str());
+        swofty::log("[main-menu] Launched with panel text set: %s",
+                    online_line(online).empty() ? "no online line" : online_line(online).c_str());
     } else {
         if (offline_fails++ % 60 == 0)
             swofty::log("[main-menu] could not set ui_menu_data.swofty_offline_text yet (try %d)", offline_fails);
@@ -189,7 +189,7 @@ bool Panel::account(std::string &name)
 bool Panel::due()
 {
     return panel_due(menu.patched.load(), menu.home_open.load() && !runtime::in_session_now(), state_loaded.load(),
-                            panel_disabled.load(), panel_prepared.load());
+                     panel_disabled.load(), panel_prepared.load());
 }
 
 void Panel::want_strip(int visible) { strip_wanted = visible; }
@@ -206,8 +206,9 @@ void Panel::home_tick()
         t3 = GetTickCount64();
     }
     if (t3 - t0 > 100 && (slow_ticks++ < 10 || slow_ticks % 50 == 0))
-        swofty::log("[main-menu] slow home tick: state read %llu ms, panel prepare %llu ms, video bind %llu ms", static_cast<unsigned long long>(t1 - t0),
-                    static_cast<unsigned long long>(t2 - t1), static_cast<unsigned long long>(t3 - t2));
+        swofty::log("[main-menu] slow home tick: state read %llu ms, panel prepare %llu ms, video bind %llu ms",
+                    static_cast<unsigned long long>(t1 - t0), static_cast<unsigned long long>(t2 - t1),
+                    static_cast<unsigned long long>(t3 - t2));
 }
 
 void Panel::sync_strip()
@@ -218,7 +219,8 @@ void Panel::sync_strip()
         bool ok = ui_vm_set_path("ui_menu_data.swofty_strip_visible", 1, &v);
         if (ok) {
             strip_set = want;
-            swofty::log("[main-menu] stock top-right strip %s (ui_menu_data.swofty_strip_visible = %d)", want ? "shown" : "hidden", want);
+            swofty::log("[main-menu] stock top-right strip %s (ui_menu_data.swofty_strip_visible = %d)",
+                        want ? "shown" : "hidden", want);
         } else if (strip_tries++ % 120 == 0) {
             swofty::log("[main-menu] could not set ui_menu_data.swofty_strip_visible yet (try %d)", strip_tries);
         }
@@ -276,6 +278,5 @@ void Panel::poll_bind()
     if (bind.poll(now))
         open_video(p->s);
 }
-
 
 }

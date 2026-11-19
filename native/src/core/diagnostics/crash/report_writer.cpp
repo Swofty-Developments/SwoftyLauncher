@@ -20,8 +20,8 @@ void local_stamp(char *b, size_t n, bool file_name)
 {
     SYSTEMTIME t;
     GetLocalTime(&t);
-    snprintf(b, n, file_name ? "%04u%02u%02u-%02u%02u%02u" : "%04u-%02u-%02u %02u:%02u:%02u.%03u", t.wYear, t.wMonth,
-             t.wDay, t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
+    snprintf(b, n, file_name ? "%04u%02u%02u-%02u%02u%02u" : "%04u-%02u-%02u %02u:%02u:%02u.%03u", t.wYear, t.wMonth, t.wDay,
+             t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
 }
 
 bool create_report(const std::wstring &dir, const char *stamp)
@@ -32,8 +32,8 @@ bool create_report(const std::wstring &dir, const char *stamp)
         MultiByteToWideChar(CP_UTF8, 0, report_writer.report_name, -1, wname, 64);
         swprintf(report_writer.report_path, MAX_PATH, L"%ls%ls.txt", dir.c_str(), wname);
         swprintf(report_writer.dump_path, MAX_PATH, L"%ls%ls.dmp", dir.c_str(), wname);
-        report_writer.out.file = CreateFileW(report_writer.report_path, GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL,
-                               nullptr);
+        report_writer.out.file = CreateFileW(report_writer.report_path, GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_NEW,
+                                             FILE_ATTRIBUTE_NORMAL, nullptr);
         if (report_writer.out.file != INVALID_HANDLE_VALUE)
             return true;
         if (GetLastError() != ERROR_FILE_EXISTS)
@@ -124,8 +124,8 @@ void write_report()
     }
     char w[512];
     where_into(w, sizeof w, report_writer.fault_ip, false);
-    report_writer.out.put("\n[%s is cut short: the writer hit %s (0x%08lx) at %s]\n", STEPS[step].name, code_name(report_writer.fault_code),
-            report_writer.fault_code, w);
+    report_writer.out.put("\n[%s is cut short: the writer hit %s (0x%08lx) at %s]\n", STEPS[step].name,
+                          code_name(report_writer.fault_code), report_writer.fault_code, w);
     report_writer.out.flush();
     cl("[crash] the crash report writer hit %s (0x%08lx) at %s in %s of %s; %s", code_name(report_writer.fault_code),
        report_writer.fault_code, w, STEPS[step].name, report_writer.report_where,

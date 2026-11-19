@@ -41,10 +41,7 @@ inline bool trace_flow(std::string_view state, int to)
 // The Time Trial cut stays through StateSession onStateExit and StateUnloadSession onStateEnter, whose loader keep
 // checks (0x1436f8340, 0x143709970 -> 0x142d48040) fill a temporary descriptor and compare it with the live one; it
 // comes off at StateUnloadSession Exiting.
-inline bool time_trial_cut_off(std::string_view state, int to)
-{
-    return state == "StateUnloadSession" && to == 3;
-}
+inline bool time_trial_cut_off(std::string_view state, int to) { return state == "StateUnloadSession" && to == 3; }
 
 inline int64_t participant_count(uintptr_t begin, uintptr_t end)
 {
@@ -80,10 +77,7 @@ inline std::string budget_mismatch(const SessionTrace &t)
            std::to_string(t.budget);
 }
 
-inline std::string count_text(int64_t n)
-{
-    return n < 0 ? std::string("-") : std::to_string(n);
-}
+inline std::string count_text(int64_t n) { return n < 0 ? std::string("-") : std::to_string(n); }
 
 inline std::string session_trace_line(const SessionTrace &t)
 {

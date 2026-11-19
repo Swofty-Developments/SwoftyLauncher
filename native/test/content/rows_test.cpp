@@ -61,8 +61,7 @@ void engine_tests()
     check(e.apply(op(R"({"op":"set","select":"t.rows.row_0","field":"nothing","value":"1"})")).find("no such key") !=
               std::string::npos,
           "set on a missing key fails");
-    check(e.apply(op(R"({"op":"put-record","key":"t.extra","type":2,"value":"6869"})")).empty() &&
-              written(e, "t.extra") == "hi",
+    check(e.apply(op(R"({"op":"put-record","key":"t.extra","type":2,"value":"6869"})")).empty() && written(e, "t.extra") == "hi",
           "put-record writes the hex value under the path");
     db.put("t.rows.row_9._metadata_", 4, "beta");
     rows::Engine twice(db.base(), keys);
@@ -72,17 +71,17 @@ void engine_tests()
     check(twice.apply(op(R"({"op":"set","select":"t.rows.row[_metadata_=alpha]","field":"speed","value":"1"})"))
                   .find("2 rows match") != std::string::npos,
           "two rows with the label fail");
-    check(rows::shape_of("a.b_12.c.d_3") == "a.b_N.c.d_N" && rows::shape_of("audio.x_2025.y") == "audio.x_N.y",
-          "row shapes");
+    check(rows::shape_of("a.b_12.c.d_3") == "a.b_N.c.d_N" && rows::shape_of("audio.x_2025.y") == "audio.x_N.y", "row shapes");
 
     rows::Engine guard(db.base(), keys);
     guard.attribute("a.x", "vehicle", "a.x/one");
     guard.apply(op(R"({"op":"put-record","key":"audio.car.sw.bundle","type":2,"value":"61"})"));
     guard.attribute("b.y", "vehicle", "b.y/two");
-    check(guard.apply(op(R"({"op":"put-record","key":"audio.car.sw.bundle","type":2,"value":"62"})")).find("a.x/one created it") !=
-                  std::string::npos &&
-              written(guard, "audio.car.sw.bundle") == "a",
-          "a record never writes a key another record created");
+    check(
+        guard.apply(op(R"({"op":"put-record","key":"audio.car.sw.bundle","type":2,"value":"62"})")).find("a.x/one created it") !=
+                std::string::npos &&
+            written(guard, "audio.car.sw.bundle") == "a",
+        "a record never writes a key another record created");
     check(guard.apply(op(R"({"op":"put-record","key":"t.list.items","type":13,"value":"62"})")).empty(),
           "keys the game holds stay shared");
 }
@@ -104,7 +103,9 @@ void room_hole_tests()
                 return;
             e->attribute(owner, "driver.identity");
             e->apply(op(("{\"op\":\"add-row\",\"table\":\"t.rows\",\"from\":\"t.rows.row[_metadata_=stock]\","
-                         "\"set\":{\"_metadata_\":\"" + label + "\"}}").c_str()));
+                         "\"set\":{\"_metadata_\":\"" +
+                         label + "\"}}")
+                            .c_str()));
             e->commit();
         };
         add(order[0], "sw15_driver");
@@ -129,7 +130,8 @@ void room_hole_tests()
     auto torn = holes(owned_by(*full, {order[0]}), db.base());
     check(per_addon.addons[0].admitted && !per_addon.addons[1].admitted && torn.size() == 1 && torn[0] == "t.rows.row_2",
           "refusing the later addon after layout leaves the count at 4 with row 2 never created (1121flatpunto45l's "
-          "crash): " + (torn.empty() ? std::string("none") : torn[0]));
+          "crash): " +
+              (torn.empty() ? std::string("none") : torn[0]));
     auto whole = rm::admit_whole(4, asks);
     check(!whole.admitted_keys && !whole.addons[0].admitted && holes(owned_by(*full, {}), db.base()).empty(),
           "past the room after layout, nothing is applied and the table keeps its own rows");
@@ -165,15 +167,14 @@ void stock_package_rows(Db &db)
     db.put("entrants.entrant_lists.entrant_list_0.stat_id", 0, "104");
     db.put("entrants.entrant_lists.entrant_list_0._entrant_instancecount_", 0, "2");
     for (int i = 0; i < 2; i++)
-        row("entrants.entrant_lists.entrant_list_0.entrant_" + std::to_string(i),
-            {{"_metadata_", "e"},
-             {"team", "t"},
-             {"vehicle", "v"},
-             {"entrant_reference", "r"},
-             {"team_position", "0"},
-             {"car_number", "1"},
-             {"driver", "d"},
-             {"driver_customisation", "c"}});
+        row("entrants.entrant_lists.entrant_list_0.entrant_" + std::to_string(i), {{"_metadata_", "e"},
+                                                                                   {"team", "t"},
+                                                                                   {"vehicle", "v"},
+                                                                                   {"entrant_reference", "r"},
+                                                                                   {"team_position", "0"},
+                                                                                   {"car_number", "1"},
+                                                                                   {"driver", "d"},
+                                                                                   {"driver_customisation", "c"}});
     db.put("game_setup.scenarios._scenario_instancecount_", 0, "1");
     row("game_setup.scenarios.scenario_0", {{"_metadata_", "f1"},
                                             {"display_name", "x"},
@@ -199,20 +200,25 @@ void stock_package_rows(Db &db)
     db.put("entrants.entrant_setup_modes.entrant_setup_mode_0.entrant_lists", 13, "f1_2025");
     db.put("entrants.entrant_setup_modes.entrant_setup_mode_0.selectable_entrant_lists", 13, "f1_2025");
     db.put("audio.audio_bundle_settings._audio_bundle_settings_instancecount_", 0, "1");
-    row("audio.audio_bundle_settings.audio_bundle_settings_0",
-        {{"_metadata_", "mercedes_2025"}, {"bundle_name", "mercedes_2025"}, {"era", "x"}, {"engine", "e"}, {"exhaust", "x"}, {"cabin", "c"}});
+    row("audio.audio_bundle_settings.audio_bundle_settings_0", {{"_metadata_", "mercedes_2025"},
+                                                                {"bundle_name", "mercedes_2025"},
+                                                                {"era", "x"},
+                                                                {"engine", "e"},
+                                                                {"exhaust", "x"},
+                                                                {"cabin", "c"}});
     for (auto &[f, v] : std::initializer_list<std::pair<const char *, const char *>>{
              {"_metadata_", "f1_m_mercedes"}, {"bundle_name", "mercedes_2025.bdl"}, {"engine_offset_x", "0.1"}})
         db.put(std::string("audio.audio_car_data.f1_m_mercedes.") + f, std::string_view(f) == "engine_offset_x" ? 1 : 2, v);
     db.put("entrants.vehicles._vehicle_instancecount_", 0, "1");
-    row("entrants.vehicles.vehicle_0", {{"_metadata_", "mercedes_2025"}, {"performance_tier", "0"}, {"tyre_wear_scale", "1"},
-                                          {"drs_capable", "True"}});
+    row("entrants.vehicles.vehicle_0",
+        {{"_metadata_", "mercedes_2025"}, {"performance_tier", "0"}, {"tyre_wear_scale", "1"}, {"drs_capable", "True"}});
     db.put("entrants.vehicles.vehicle_0.stat_id", 0, "508");
     db.put("content_sets._content_set_instancecount_", 0, "1");
     row("content_sets.content_set_0", {{"_metadata_", "2025"}});
     db.put("content_sets.content_set_0.available_entrant_lists_0.entrant_lists", 13, "f1_2025");
     db.put("leaderboards._leaderboard_descriptor_instancecount_", 0, "5");
-    const char *boards[5][3] = {{"f1", "0", "f1"}, {"classic", "1", "classic"}, {"f2", "3", "f2"}, {"f1_26", "2", "f1"}, {"f2_26", "5", "f2"}};
+    const char *boards[5][3] = {
+        {"f1", "0", "f1"}, {"classic", "1", "classic"}, {"f2", "3", "f2"}, {"f1_26", "2", "f1"}, {"f2_26", "5", "f2"}};
     for (int i = 0; i < 5; i++) {
         std::string at = "leaderboards.leaderboard_descriptor_" + std::to_string(i);
         row(at, {{"_metadata_", boards[i][0]}, {"default_ghost_folder", boards[i][2]}});
@@ -236,17 +242,19 @@ void leaderboard_tests(const std::string &regs)
         return std::string(R"({ "title": "lng_x", "entrant_list": ")") + list + R"(", "season": 2017, "stat_id": "auto", )" +
                leaderboard + R"("teams": [ { "key": "mercedes", "vehicle": null,
                  "drivers": [ { "driver": "game/lewis_hamilton", "number": 44, "look": null } ] } ],
-                 "database": { "entrant_list": ")" + list + R"(", "scenario_stat_id": null, "content_sets": ["2025"],
+                 "database": { "entrant_list": ")" +
+               list + R"(", "scenario_stat_id": null, "content_sets": ["2025"],
                  "looks": { "mercedes/lewis_hamilton": "x" } } })";
     };
     std::string json = "{ \"content.package\": {\n";
-    const std::pair<const char *, const char *> pkgs[] = {{"lb_one", nullptr},     {"lb_two", "box"},       {"lb_three", "addon"},
-                                                         {"lb_four", "addon"},    {"lb_five", "stock:classic"}, {"lb_six", "group:eight"},
-                                                         {"lb_seven", "group:eight"}};
+    const std::pair<const char *, const char *> pkgs[] = {
+        {"lb_one", nullptr},          {"lb_two", "box"},         {"lb_three", "addon"},      {"lb_four", "addon"},
+        {"lb_five", "stock:classic"}, {"lb_six", "group:eight"}, {"lb_seven", "group:eight"}};
     for (std::size_t i = 0; i < std::size(pkgs); i++)
         json += std::string(i ? ",\n" : "") + "\"p" + std::to_string(i) + "\": " + package(pkgs[i].first, pkgs[i].second);
     json += "} }";
-    check(registry::load_data_file("mod.lb", "registry/content.json", json) == SWOFTY_ASSET_OK, "the leaderboard packages register");
+    check(registry::load_data_file("mod.lb", "registry/content.json", json) == SWOFTY_ASSET_OK,
+          "the leaderboard packages register");
     st.end_register();
 
     struct Run {
@@ -321,9 +329,11 @@ void leaderboard_tests(const std::string &regs)
     check(board_of_list(first, "lb_three") == "swofty_addon_mod_lb" && board_of_list(first, "lb_four") == "swofty_addon_mod_lb" &&
               !row_of(first, "leaderboards", "leaderboard_descriptor", "swofty_addon_mod_lb").empty(),
           "\"addon\" shares one descriptor across the addon's packages");
-    check(board_of_list(first, "lb_six") == "swofty_group_mod_lb_eight" && board_of_list(first, "lb_seven") == "swofty_group_mod_lb_eight",
+    check(board_of_list(first, "lb_six") == "swofty_group_mod_lb_eight" &&
+              board_of_list(first, "lb_seven") == "swofty_group_mod_lb_eight",
           "\"group:<name>\" shares one among the packages that name it");
-    check(board_of_list(first, "lb_five") == "classic" && row_of(first, "leaderboards", "leaderboard_descriptor", "classic").empty(),
+    check(board_of_list(first, "lb_five") == "classic" &&
+              row_of(first, "leaderboards", "leaderboard_descriptor", "classic").empty(),
           "\"stock:classic\" keeps the game's descriptor and adds no row");
     check(count_boards(first) == 4 && first.writes["leaderboards._leaderboard_descriptor_instancecount_"] == "9",
           "one row per box, per addon group and per named group: 4 rows added, the count is 9");
@@ -453,8 +463,7 @@ void variant_tests(const std::string &regs)
     check(written(x.engine, base_sw + "_metadata_") == "f1_M_mercedes" &&
               written(x.engine, base_sw + "bundle_name") == "cs17_mercedes.bdl",
           "the base car's sound rows keep the base's sound");
-    check(written(x.engine, v10 + ".drs_capable") == "False" &&
-              written(x.engine, car + ".drs_capable") == "True",
+    check(written(x.engine, v10 + ".drs_capable") == "False" && written(x.engine, car + ".drs_capable") == "True",
           "a vehicle's drs_capable reaches its row; a row that names none keeps the donor's");
     check(written(x.engine, v10_sw + "_metadata_") == "esp_cs17_mercedes" &&
               written(x.engine, v10_sw + "bundle_name") == "v10_screamer.bdl" &&
@@ -466,15 +475,14 @@ void variant_tests(const std::string &regs)
           "a variant that inherits the label gets its key as its label and audio switch");
     int bundles = 0;
     for (int i = 0; i < 8; i++)
-        bundles += written(x.engine, "audio.audio_bundle_settings.audio_bundle_settings_" + std::to_string(i) +
-                                         "._metadata_") == "cs17_mercedes";
+        bundles += written(x.engine, "audio.audio_bundle_settings.audio_bundle_settings_" + std::to_string(i) + "._metadata_") ==
+                   "cs17_mercedes";
     check(bundles == 1 && !has_label("audio.audio_bundle_settings", "audio_bundle_settings", "v10_screamer").empty(),
           "an engine sound variant with its base's bundle adds no second row for it");
     int refused_rows = 0;
     for (auto &[k, n] : x.refused)
         refused_rows += n;
-    check(refused_rows == 0 && x.records["vehicle"] == 3 && x.records["engine_sound"] == 3,
-          "every base and variant applies");
+    check(refused_rows == 0 && x.records["vehicle"] == 3 && x.records["engine_sound"] == 3, "every base and variant applies");
     check(written(x.engine, "entrants.entrant_setup_modes.entrant_setup_mode_0.entrant_lists") ==
               "f1_2025,cs_f1_2017,esp_f1_2017_v10",
           "both lists join the setup mode, in load order");
@@ -485,8 +493,8 @@ void variant_tests(const std::string &regs)
     check(adm.skip.size() == 1 && adm.skip.count("mod.esp"), "past the room, the later addon is left out whole");
     content::Expansion y(db.base());
     content::expand(st, y, stat, {"swofty.classic-seasons-2017"});
-    check(y.records["content.package"] == 1 && written(y.engine, "entrants.entrant_lists.entrant_list_1._metadata_") ==
-                                                   "esp_f1_2017_v10",
+    check(y.records["content.package"] == 1 &&
+              written(y.engine, "entrants.entrant_lists.entrant_list_1._metadata_") == "esp_f1_2017_v10",
           "with the first addon left out, the next one's rows start at the table's next index");
 
     content::Expansion p(db.base());
@@ -645,8 +653,8 @@ static void selector_index_tests()
                 fresh + R"(","speed":")" + value + R"("}})";
             break;
         case 3:
-            o = R"({"op":"set","select":"t.rows.row[_metadata_=)" + label + R"(]","field":")" + (next() % 2 ? "speed" : "_metadata_") +
-                R"(","value":")" + (next() % 2 ? value : fresh) + R"("})";
+            o = R"({"op":"set","select":"t.rows.row[_metadata_=)" + label + R"(]","field":")" +
+                (next() % 2 ? "speed" : "_metadata_") + R"(","value":")" + (next() % 2 ? value : fresh) + R"("})";
             break;
         case 4:
             o = R"({"op":"add-row","table":"t.rows.row[_metadata_=)" + label + R"(]","from":"t.rows.row[_metadata_=)" + label +

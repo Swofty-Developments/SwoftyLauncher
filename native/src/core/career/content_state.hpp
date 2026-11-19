@@ -51,8 +51,8 @@ struct Slot {
 };
 
 struct Bound {
-    uintptr_t site, route, gate, predicate_vt, select_vt, add_tile, construct, populate_2026, populate_2025,
-        customisation, selected, setup_desc, make_str, set_string, vm_registry, list_child, set_bool;
+    uintptr_t site, route, gate, predicate_vt, select_vt, add_tile, construct, populate_2026, populate_2025, customisation,
+        selected, setup_desc, make_str, set_string, vm_registry, list_child, set_bool;
 };
 
 extern Slot slots[content::MAX_CONTENTS];
@@ -93,8 +93,7 @@ bool predicate_entry(void *self, void *championship);
 
 inline const char *nestr(const NeStr *s)
 {
-    return s && mem::readable(s, content::NESTR_CHARS + 1) ? reinterpret_cast<const char *>(s) + content::NESTR_CHARS
-                                                           : nullptr;
+    return s && mem::readable(s, content::NESTR_CHARS + 1) ? reinterpret_cast<const char *>(s) + content::NESTR_CHARS : nullptr;
 }
 
 void site_entry(SwoftyContext *c);

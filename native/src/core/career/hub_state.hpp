@@ -28,8 +28,8 @@ struct HubTab {
 constexpr size_t TAB_ALIGN = 0x10, PAGE_SIZE = 0x660;
 constexpr uint32_t PAGE_TYPE = 5;
 
-using TabCtor_t = void(void *tab, void *a2, void *a3, void *laptop, const char *content, const char *header,
-                       const char *name, const char *icon, uint8_t flag);
+using TabCtor_t = void(void *tab, void *a2, void *a3, void *laptop, const char *content, const char *header, const char *name,
+                       const char *icon, uint8_t flag);
 using Push_t = void(void *tabs, const uint32_t *key, void *owned);
 using PageCtor_t = void(void *page, void *a2, void *a3, void *owner, const char *content, const char *name, void *a7,
                         const char *a8, uint32_t page_type, uint8_t flag);

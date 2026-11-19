@@ -6,10 +6,7 @@
 
 namespace runtime::sequencer_records {
 
-inline bool skips(uint64_t first_match)
-{
-    return !first_match;
-}
+inline bool skips(uint64_t first_match) { return !first_match; }
 
 inline bool says(uint64_t first_match, bool &said)
 {
@@ -26,9 +23,6 @@ using driver_ref::miss_text;
 
 enum class Driver { team_mate, player };
 
-inline const char *who(Driver d)
-{
-    return d == Driver::player ? "the player's own driver" : "the team mate's driver";
-}
+inline const char *who(Driver d) { return d == Driver::player ? "the player's own driver" : "the team mate's driver"; }
 
 }

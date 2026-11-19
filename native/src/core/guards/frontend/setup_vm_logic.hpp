@@ -4,10 +4,7 @@
 
 namespace runtime::setup_vm {
 
-inline bool skips(uint64_t car)
-{
-    return car == 0;
-}
+inline bool skips(uint64_t car) { return car == 0; }
 
 inline uint64_t skip_target(uint64_t at, size_t cmp_len, const uint8_t *after)
 {

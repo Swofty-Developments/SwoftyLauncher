@@ -51,8 +51,7 @@ const Target T_SETINT_CALL{"Vm_Set_Int call in FeTile_ItemBase_Populate",
                            "74 04 48 89 59 10 48 89 58 28 66 F0 FF 40 24 48 8D 05 ?? ?? ?? ?? 48 89 44 24 30 48 8D 8F 00 01 "
                            "00 00",
                            0x1698223};
-const Target T_REGNODE{"Vm_Register_BindingNode", "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 49 89 D6",
-                       0x4284af0};
+const Target T_REGNODE{"Vm_Register_BindingNode", "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 49 89 D6", 0x4284af0};
 const Target T_VTABLES{"FrontendTransitionViewModel vtable stores",
                        "48 8D 05 ?? ?? ?? ?? 48 89 03 C5 C8 57 F6 C5 F8 11 73 10 48 C7 43 20 00 00 00 00 48 8D 05 ?? ?? ?? ?? "
                        "48 89 43 08 48 89 73 28 48 C7 43 30 00 00 00 00 48 8D 4B 38 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? "
@@ -136,20 +135,11 @@ uintptr_t lea_target(uintptr_t insn)
 
 using frontend::name_hash::djb2;
 
-ViewModel *owner(void *native)
-{
-    return native ? Host::slot(native) : nullptr;
-}
+ViewModel *owner(void *native) { return native ? Host::slot(native) : nullptr; }
 
-void *destroy(void *self, int)
-{
-    return self;
-}
+void *destroy(void *self, int) { return self; }
 
-uint64_t ret0(void *, ...)
-{
-    return 0;
-}
+uint64_t ret0(void *, ...) { return 0; }
 
 void on_message(void *, void *) {}
 
@@ -367,7 +357,7 @@ bool VmHost::init(uintptr_t module_base, const std::wstring &swofty_dir)
             ui_system = reinterpret_cast<void **>(regnode + 0x16 + 7 + *reinterpret_cast<const int32_t *>(insn + 3));
     }
     is_ready = a_regvm && a_fixstr && a_path && ui_system && Vm_Set_String.address() && Vm_Set_Bool.address() &&
-            g_Vm_Registry.address() && build_vtables();
+               g_Vm_Registry.address() && build_vtables();
     if (call && a_setint != base + 0xd38fd0)
         swofty::log("[ui] view models: Vm_Set_Int resolved to base+0x%llx (KB build has base+0xd38fd0)",
                     (unsigned long long)(a_setint - base));
@@ -377,9 +367,8 @@ bool VmHost::init(uintptr_t module_base, const std::wstring &swofty_dir)
                 is_ready ? "ready" : "off", (unsigned long long)(a_regvm ? a_regvm - base : 0),
                 (unsigned long long)(a_path ? a_path - base : 0), (unsigned long long)(a_setint ? a_setint - base : 0),
                 (unsigned long long)(transition_vt ? transition_vt - base : 0),
-                (unsigned long long)(helper_vt ? helper_vt - base : 0),
-                (unsigned long long)(handle_vt ? handle_vt - base : 0), static_cast<void *>(ui_system),
-                factories.size(), frontend::addon_page::count());
+                (unsigned long long)(helper_vt ? helper_vt - base : 0), (unsigned long long)(handle_vt ? handle_vt - base : 0),
+                static_cast<void *>(ui_system), factories.size(), frontend::addon_page::count());
     return is_ready;
 }
 
@@ -438,10 +427,7 @@ bool VmHost::attach(const std::string &screen)
 
 namespace swofty::ui {
 
-bool ViewModel::set_text(const char *prop, const char *utf8)
-{
-    return frontend::host.set(*this, prop, 0, utf8);
-}
+bool ViewModel::set_text(const char *prop, const char *utf8) { return frontend::host.set(*this, prop, 0, utf8); }
 
 bool ViewModel::set_bool(const char *prop, bool value)
 {
@@ -449,44 +435,23 @@ bool ViewModel::set_bool(const char *prop, bool value)
     return frontend::host.set(*this, prop, 1, &v);
 }
 
-bool ViewModel::set_int(const char *prop, int32_t value)
-{
-    return frontend::host.set(*this, prop, 2, &value);
-}
+bool ViewModel::set_int(const char *prop, int32_t value) { return frontend::host.set(*this, prop, 2, &value); }
 
-void register_view_model(const char *screen_prefix, Factory factory)
-{
-    frontend::host.add_factory(screen_prefix, factory);
-}
+void register_view_model(const char *screen_prefix, Factory factory) { frontend::host.add_factory(screen_prefix, factory); }
 
 }
 
 namespace frontend {
 
-bool ui_vm_init(uintptr_t module_base, const std::wstring &swofty_dir)
-{
-    return host.init(module_base, swofty_dir);
-}
+bool ui_vm_init(uintptr_t module_base, const std::wstring &swofty_dir) { return host.init(module_base, swofty_dir); }
 
-bool ui_vm_ready()
-{
-    return host.ready();
-}
+bool ui_vm_ready() { return host.ready(); }
 
-bool ui_vm_attach(const std::string &screen)
-{
-    return host.attach(screen);
-}
+bool ui_vm_attach(const std::string &screen) { return host.attach(screen); }
 
-bool ui_vm_set_path(const std::string &path, int type, const void *value)
-{
-    return host.set_path(path, type, value);
-}
+bool ui_vm_set_path(const std::string &path, int type, const void *value) { return host.set_path(path, type, value); }
 
-uintptr_t ui_vm_node_token(const std::string &path)
-{
-    return host.node_token(path);
-}
+uintptr_t ui_vm_node_token(const std::string &path) { return host.node_token(path); }
 
 uintptr_t ui_vm_epoch()
 {
@@ -499,9 +464,6 @@ uintptr_t ui_vm_epoch()
     return reinterpret_cast<uintptr_t>(reg) * 31u + reinterpret_cast<uintptr_t>(root);
 }
 
-void *ui_vm_message_system()
-{
-    return host.message_system();
-}
+void *ui_vm_message_system() { return host.message_system(); }
 
 }

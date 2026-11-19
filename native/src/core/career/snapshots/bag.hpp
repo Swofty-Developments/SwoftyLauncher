@@ -20,8 +20,7 @@ constexpr size_t MAX_PAYLOAD = 16u << 20;
 
 constexpr uint32_t fourcc(const char (&s)[5])
 {
-    return uint32_t(uint8_t(s[0])) | uint32_t(uint8_t(s[1])) << 8 | uint32_t(uint8_t(s[2])) << 16 |
-           uint32_t(uint8_t(s[3])) << 24;
+    return uint32_t(uint8_t(s[0])) | uint32_t(uint8_t(s[1])) << 8 | uint32_t(uint8_t(s[2])) << 16 | uint32_t(uint8_t(s[3])) << 24;
 }
 constexpr uint32_t TYPE_BAG = fourcc("pbag");
 constexpr uint32_t TYPE_DSTR = fourcc("dstr");
@@ -32,8 +31,8 @@ inline std::string base64(const Bytes &b)
     std::string out;
     out.reserve((b.size() + 2) / 3 * 4);
     for (size_t i = 0; i < b.size(); i += 3) {
-        uint32_t v = uint32_t(b[i]) << 16 | (i + 1 < b.size() ? uint32_t(b[i + 1]) << 8 : 0) |
-                     (i + 2 < b.size() ? uint32_t(b[i + 2]) : 0);
+        uint32_t v =
+            uint32_t(b[i]) << 16 | (i + 1 < b.size() ? uint32_t(b[i + 1]) << 8 : 0) | (i + 2 < b.size() ? uint32_t(b[i + 2]) : 0);
         out += A[v >> 18 & 63];
         out += A[v >> 12 & 63];
         out += i + 1 < b.size() ? A[v >> 6 & 63] : '=';
@@ -141,8 +140,7 @@ inline bool parse_bag(const Bytes &body, Bytes &payload, std::string &why)
         r.at += len;
         if (k == "format")
             format = v;
-        else if (k.size() == 4 && k[0] == 'd' && isdigit(uint8_t(k[1])) && isdigit(uint8_t(k[2])) &&
-                 isdigit(uint8_t(k[3])))
+        else if (k.size() == 4 && k[0] == 'd' && isdigit(uint8_t(k[1])) && isdigit(uint8_t(k[2])) && isdigit(uint8_t(k[3])))
             chunks[size_t(std::stoul(k.substr(1)))] = std::move(v);
         else
             return why = "entry " + k + " is not one this core writes", false;

@@ -46,8 +46,8 @@ inline Record classify(const uint8_t *head9, size_t text_len)
     return r;
 }
 
-inline void find_pointers(const uint8_t *buf, size_t n, uint64_t base, const std::vector<uint64_t> &targets, std::vector<std::pair<uint64_t, uint64_t>> &out,
-                          size_t cap)
+inline void find_pointers(const uint8_t *buf, size_t n, uint64_t base, const std::vector<uint64_t> &targets,
+                          std::vector<std::pair<uint64_t, uint64_t>> &out, size_t cap)
 {
     for (size_t i = 0; i + 8 <= n && out.size() < cap; i += 8) {
         uint64_t v;

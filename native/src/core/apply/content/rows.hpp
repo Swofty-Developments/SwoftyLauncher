@@ -116,10 +116,7 @@ inline std::string shape_of(std::string_view path)
     return out;
 }
 
-inline std::string count_path(const std::string &table, const std::string &row)
-{
-    return table + "._" + row + "_instancecount_";
-}
+inline std::string count_path(const std::string &table, const std::string &row) { return table + "._" + row + "_instancecount_"; }
 
 inline std::optional<int64_t> parse_int(std::string_view s)
 {
@@ -647,7 +644,12 @@ private:
             return key + ": value must be hex bytes";
         std::string text;
         for (std::size_t i = 0; i < hex.size(); i += 2) {
-            auto nib = [](char c) { return c >= '0' && c <= '9' ? c - '0' : c >= 'a' && c <= 'f' ? c - 'a' + 10 : c >= 'A' && c <= 'F' ? c - 'A' + 10 : -1; };
+            auto nib = [](char c) {
+                return c >= '0' && c <= '9'   ? c - '0'
+                       : c >= 'a' && c <= 'f' ? c - 'a' + 10
+                       : c >= 'A' && c <= 'F' ? c - 'A' + 10
+                                              : -1;
+            };
             int a = nib(hex[i]), b = nib(hex[i + 1]);
             if (a < 0 || b < 0)
                 return key + ": value must be hex bytes";
@@ -668,8 +670,7 @@ private:
         std::string r = from.substr(table.size() + 1);
         r = r.substr(0, r.find_first_of(".["));
         auto us = r.rfind('_');
-        if (us != std::string::npos && us + 1 < r.size() &&
-            r.find_first_not_of("0123456789", us + 1) == std::string::npos)
+        if (us != std::string::npos && us + 1 < r.size() && r.find_first_not_of("0123456789", us + 1) == std::string::npos)
             r = r.substr(0, us);
         return r;
     }
@@ -707,8 +708,8 @@ private:
                     rows++;
             }
             for (int64_t i = 0; i < rows; i++)
-                walk(container + "." + word + "_" + std::to_string(i), rel + head + word + "_" + std::to_string(i) + ".",
-                     keys, uncatalogued);
+                walk(container + "." + word + "_" + std::to_string(i), rel + head + word + "_" + std::to_string(i) + ".", keys,
+                     uncatalogued);
         }
     }
 
@@ -777,8 +778,8 @@ private:
                     if (r.path == dst + ".stat_id") {
                         std::string old = r.text;
                         r.text = std::to_string(*unique.rbegin() + 1);
-                        lines.push_back("add-row " + dst + " (from " + from + "): stat_id " + r.text +
-                                        " (the source's is " + old + ")");
+                        lines.push_back("add-row " + dst + " (from " + from + "): stat_id " + r.text + " (the source's is " +
+                                        old + ")");
                     }
         }
         auto cnt = get(gvdb::fnv64(count_path(*table, row)));

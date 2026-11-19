@@ -29,15 +29,22 @@ const char *route_name()
 // byte that differs (function + 0x31c: the lea/call displacements are wildcards, the short jump after them is not) and
 // the anchor walks back to the entry.
 const runtime::Sig S_MODE_BY_NAME{"Game_GameModes_FindByName",
-                                  "44 24 5E C6 00 00 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 E8 ?? ?? ?? ?? 48 C1 E0 03 48 03 46 58 48 3B 46 60 74 65 48 8B",
-                                  0x7d0de0, runtime::Sig::addr, 0, uintptr_t(0) - 0x31c};
+                                  "44 24 5E C6 00 00 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 E8 ?? ?? ?? ?? 48 C1 E0 "
+                                  "03 48 03 46 58 48 3B 46 60 74 65 48 8B",
+                                  0x7d0de0,
+                                  runtime::Sig::addr,
+                                  0,
+                                  uintptr_t(0) - 0x31c};
 const runtime::Sig S_GAME_MANAGER{"game.manager",
-                                  "48 8B B8 98 01 00 00 48 85 FF 0F 84 ?? ?? ?? ?? 48 8D 4C 24 70 E8 ?? ?? ?? ?? 48 8B 05", 0x604c2c8,
-                                  runtime::Sig::riprel, 26, 29, 7};
+                                  "48 8B B8 98 01 00 00 48 85 FF 0F 84 ?? ?? ?? ?? 48 8D 4C 24 70 E8 ?? ?? ?? ?? 48 8B 05",
+                                  0x604c2c8,
+                                  runtime::Sig::riprel,
+                                  26,
+                                  29,
+                                  7};
 
 // The championship modes the Grand Prix season probe asks, as name addresses in the KB image.
 constexpr uintptr_t GP_MODE_NAMES[] = {0x5734370, 0x573438c, 0x57343a8, 0x570a6b2, 0x570a6c9};
-
 
 }
 
@@ -47,7 +54,8 @@ bool Navigation::nav_flag()
     if (f < 0) {
         f = runtime::read_file(runtime::under_swofty("ui\\home_nav.flag"), 16).empty() ? 0 : 1;
         nav_flag_state = f;
-        swofty::log("[main-menu] nav: the launcher's Time Trial, Grand Prix and Back routes %s", f ? "are in this build" : "are not in this build; the old chain and the game's Back stay");
+        swofty::log("[main-menu] nav: the launcher's Time Trial, Grand Prix and Back routes %s",
+                    f ? "are in this build" : "are not in this build; the old chain and the game's Back stay");
     }
     return f == 1;
 }
@@ -124,7 +132,10 @@ void Navigation::expect_screen(Expect e, const char *why)
 {
     nav.expect = int(e);
     nav.expect_at = GetTickCount64();
-    swofty::log("[main-menu] nav: expecting %s (%s); flow now %s", e == Expect::home ? "fe_home" : e == Expect::saves ? "grand_prix_continue" : "f1_world_activity_container",
+    swofty::log("[main-menu] nav: expecting %s (%s); flow now %s",
+                e == Expect::home    ? "fe_home"
+                : e == Expect::saves ? "grand_prix_continue"
+                                     : "f1_world_activity_container",
                 why, get_flow().c_str());
 }
 
@@ -133,7 +144,8 @@ void Navigation::reset_transition_state(const char *why)
     if (off("SWOFTY_MAIN_MENU_STATEFIX"))
         return;
     bool ok = ui_vm_set_path("ui_menu_data.frontend_transition_state", 0, "main_menu");
-    swofty::log("[main-menu] nav: #ui_menu_data.frontend_transition_state set to main_menu before %s: %s", why, ok ? "done" : "could not be set");
+    swofty::log("[main-menu] nav: #ui_menu_data.frontend_transition_state set to main_menu before %s: %s", why,
+                ok ? "done" : "could not be set");
 }
 
 uint64_t Navigation::raise_delay_ms()
@@ -200,9 +212,10 @@ Action *Navigation::card_pressed(HomeItem *item, Action *out)
             container_vm = nullptr;
         }
         expect_screen(Expect::container, route);
-        swofty::log("[main-menu] chain: %s card pressed; route %s opens the activity container, then '%s' is raised on it (%s)", gp ? "Grand Prix" : "Time Trial", route,
-                    return_command(m),
-                    m == Mode::time_trial ? "the Time Trial picker" : "the container's own Grand Prix command: the saved seasons and New Grand Prix");
+        swofty::log("[main-menu] chain: %s card pressed; route %s opens the activity container, then '%s' is raised on it (%s)",
+                    gp ? "Grand Prix" : "Time Trial", route, return_command(m),
+                    m == Mode::time_trial ? "the Time Trial picker"
+                                          : "the container's own Grand Prix command: the saved seasons and New Grand Prix");
     } else {
         menu.via = 1;
         swofty::log("[main-menu] %s card pressed: route %s (the old chain)", id_of(item), route);
@@ -229,8 +242,8 @@ void Navigation::start_chain(bool time_trial)
     chain.command = return_command(m);
     chain.started = GetTickCount64();
     container_vm = nullptr;
-    swofty::log("[main-menu] chain: %s card pressed; route %s, then the activity container's %s command", time_trial ? "Time Trial" : "Grand Prix",
-                route_name(), chain.command);
+    swofty::log("[main-menu] chain: %s card pressed; route %s, then the activity container's %s command",
+                time_trial ? "Time Trial" : "Grand Prix", route_name(), chain.command);
 }
 
 void Navigation::recover(Expect e)
@@ -241,13 +254,17 @@ void Navigation::recover(Expect e)
         swofty::log("[main-menu] nav: the expected screen did not open but the main menu is up; nothing to recover");
         break;
     case Recovery::back_home_route:
-        swofty::log("[main-menu] nav: the expected screen did not open within 4 s and the %s flow is current; migrating back to the main menu so the player is never left without a screen", flow.c_str());
+        swofty::log("[main-menu] nav: the expected screen did not open within 4 s and the %s flow is current; migrating back to "
+                    "the main menu so the player is never left without a screen",
+                    flow.c_str());
         reset_transition_state("the recovery");
         if (fire_in_group("f1_world_activity_container", BACK_HOME_FROM_CONTAINER, "recovery"))
             expect_screen(Expect::home, "recovery");
         break;
     case Recovery::open_home:
-        swofty::log("[main-menu] nav: the expected screen did not open within 4 s in the %s flow; reopening the main menu screen so the player is never left without a screen", flow.c_str());
+        swofty::log("[main-menu] nav: the expected screen did not open within 4 s in the %s flow; reopening the main menu screen "
+                    "so the player is never left without a screen",
+                    flow.c_str());
         fire_in_group("fe_home", "open", "recovery");
         break;
     }
@@ -264,7 +281,8 @@ void Navigation::watch_cover()
     }
     if (now - cover_since.load() > 3000) {
         bool applied = applied_at.load() != 0;
-        swofty::log("[main-menu] nav: cover safety timeout after 3 s (command %s)", applied ? "was applied" : "was never applied");
+        swofty::log("[main-menu] nav: cover safety timeout after 3 s (command %s)",
+                    applied ? "was applied" : "was never applied");
         cover_down("(timeout)");
         if (!applied && !off("SWOFTY_MAIN_MENU_RECOVER"))
             recover(Expect::container);
@@ -281,7 +299,8 @@ void Navigation::watch()
     if (e != int(Expect::none) && now - nav.expect_at.load() > 4000 && !in_session) {
         nav.expect = int(Expect::none);
         if (off("SWOFTY_MAIN_MENU_RECOVER"))
-            swofty::log("[main-menu] nav: the expected screen did not open within 4 s; recovery is off (SWOFTY_MAIN_MENU_RECOVER=0)");
+            swofty::log(
+                "[main-menu] nav: the expected screen did not open within 4 s; recovery is off (SWOFTY_MAIN_MENU_RECOVER=0)");
         else
             recover(Expect(e));
     }
@@ -301,11 +320,13 @@ void Navigation::tick_chain()
             *reinterpret_cast<uint32_t *>(scratch + 0x250) = djb2("fe_home");
             NeStr *route = nullptr;
             Ne_Make_StrFromCStr(&route, "open", 0, 0);
-            swofty::log("[main-menu] chain: the activity container did not open within 3 s; reopening the main menu (route 'open' in group fe_home) so the player is never left without a screen");
+            swofty::log("[main-menu] chain: the activity container did not open within 3 s; reopening the main menu (route "
+                        "'open' in group fe_home) so the player is never left without a screen");
             h_fire.call<void>(router, scratch, &route, 0);
             Ne_Make_StrFromCStr(&route, nullptr, 0, 0);
         } else {
-            swofty::log("[main-menu] chain: the activity container did not open within 3 s and no router was captured to reopen the main menu");
+            swofty::log("[main-menu] chain: the activity container did not open within 3 s and no router was captured to reopen "
+                        "the main menu");
         }
         return;
     }
@@ -314,11 +335,13 @@ void Navigation::tick_chain()
         chain.step = Step::done;
         return;
     }
-    if (chain.step == Step::wait_container && chain.container_at && container_vm.load() &&
-        now - chain.container_at > 300 && now - container_vm_at.load() > raise_delay_ms()) {
+    if (chain.step == Step::wait_container && chain.container_at && container_vm.load() && now - chain.container_at > 300 &&
+        now - container_vm_at.load() > raise_delay_ms()) {
         const char *command = chain.command;
         chain.step = Step::done;
-        raise_command(container_vm.load(), command, chain.handover ? "the hand-over: the container is active, its own first command came" : "fallback: after its view model was seen");
+        raise_command(container_vm.load(), command,
+                      chain.handover ? "the hand-over: the container is active, its own first command came"
+                                     : "fallback: after its view model was seen");
         chain.step = Step::done;
     }
 }
@@ -335,10 +358,12 @@ void Navigation::session_enter()
     nav.mode = int(driven);
     const char *card = pressed == Mode::time_trial ? "Time Trial" : "Grand Prix";
     if (driven == Mode::none)
-        swofty::log("[main-menu] nav: the session that loaded (game mode %s) is not the %s the card opened, nor the other card's mode; the session-end hand-over raises no command",
+        swofty::log("[main-menu] nav: the session that loaded (game mode %s) is not the %s the card opened, nor the other card's "
+                    "mode; the session-end hand-over raises no command",
                     mode.c_str(), card);
     else
-        swofty::log("[main-menu] nav: the session that loaded is a %s (game mode %s), not the %s the card opened; the session-end hand-over raises '%s'",
+        swofty::log("[main-menu] nav: the session that loaded is a %s (game mode %s), not the %s the card opened; the "
+                    "session-end hand-over raises '%s'",
                     driven == Mode::time_trial ? "Time Trial" : "Grand Prix", mode.c_str(), card, return_command(driven));
 }
 
@@ -348,8 +373,7 @@ void Navigation::screen(const char *name)
         hub_at = GetTickCount64();
         swofty::log("[main-menu] back: the stock Back opened the F1 World hub; its own Back (route 'back') follows at once");
     }
-    if (uint64_t at = swap_at.load(); at && GetTickCount64() - at < 5000)
-    {
+    if (uint64_t at = swap_at.load(); at && GetTickCount64() - at < 5000) {
         swofty::log("[main-menu] back: screen %s opened %llu ms after the route swap", name,
                     (unsigned long long)(GetTickCount64() - at));
         std::lock_guard<std::mutex> g(swap_lock);
@@ -373,25 +397,35 @@ void Navigation::screen(const char *name)
                 chain.started = chain.container_at = now;
                 chain.handover = true;
                 container_vm = nullptr;
-                swofty::log("[main-menu] nav: session-end hand-over landed on the activity container (the F1 World hub was skipped); raising '%s' on it once it is active", chain.command);
+                swofty::log("[main-menu] nav: session-end hand-over landed on the activity container (the F1 World hub was "
+                            "skipped); raising '%s' on it once it is active",
+                            chain.command);
             }
         }
     }
-    if (!std::strcmp(name, "frontend_transition") && Mode(nav.mode.load()) != Mode::none && !off("SWOFTY_MAIN_MENU_RETURN") && entry_by_route()) {
+    if (!std::strcmp(name, "frontend_transition") && Mode(nav.mode.load()) != Mode::none && !off("SWOFTY_MAIN_MENU_RETURN") &&
+        entry_by_route()) {
         nav.return_armed = true;
         nav.return_at = GetTickCount64();
-        swofty::log("[main-menu] nav: session-end hand-over: the front end is back (frontend_transition) after a session that the %s card started; the activity container the hand-over lands on gets that card's command; armed until it opens or fe_home does",
+        swofty::log("[main-menu] nav: session-end hand-over: the front end is back (frontend_transition) after a session that "
+                    "the %s card started; the activity container the hand-over lands on gets that card's command; armed until it "
+                    "opens or fe_home does",
                     return_command(Mode(nav.mode.load())));
     }
     {
         Expect e = Expect(nav.expect.load());
-        bool container = !std::strcmp(name, "f1_world_activity_container"), saves = !std::strcmp(name, "grand_prix_continue"), home = !std::strcmp(name, "fe_home");
+        bool container = !std::strcmp(name, "f1_world_activity_container"), saves = !std::strcmp(name, "grand_prix_continue"),
+             home = !std::strcmp(name, "fe_home");
         if (e != Expect::none || nav.return_armed.load())
             swofty::log("[main-menu] nav: screen %s opened; flow now %s; expected %s", name, get_flow().c_str(),
-                        e == Expect::container ? "the activity container" : e == Expect::saves ? "the saves list" : e == Expect::home ? "fe_home" : "(nothing)");
+                        e == Expect::container ? "the activity container"
+                        : e == Expect::saves   ? "the saves list"
+                        : e == Expect::home    ? "fe_home"
+                                               : "(nothing)");
         if ((container && e == Expect::container) || (saves && e == Expect::saves) || (home && e == Expect::home)) {
             nav.expect = int(Expect::none);
-            swofty::log("[main-menu] nav: %s opened %llu ms after it was asked for", name, (unsigned long long)(GetTickCount64() - nav.expect_at.load()));
+            swofty::log("[main-menu] nav: %s opened %llu ms after it was asked for", name,
+                        (unsigned long long)(GetTickCount64() - nav.expect_at.load()));
         }
         if (home) {
             set_flow(FRONTEND_FLOW);

@@ -42,9 +42,8 @@ void Profiler::slow_call(uint32_t id, uint64_t own)
     SlowCall s{seconds_now(), ms, id, GetCurrentThreadId(), during()};
     uint32_t n = slow_logged[id - 1].fetch_add(1, rlx);
     if (logic::slow_call_logged(n))
-        swofty::log("%s", logic::slow_call_line(names[id - 1].owner, names[id - 1].what, ms, background_, s.thread,
-                                                s.during, n)
-                              .c_str());
+        swofty::log(
+            "%s", logic::slow_call_line(names[id - 1].owner, names[id - 1].what, ms, background_, s.thread, s.during, n).c_str());
     std::lock_guard<std::mutex> g(rings_lock);
     slow_calls.push_back(std::move(s));
     if (slow_calls.size() > SLOW_CALLS)
@@ -177,10 +176,7 @@ void Profiler::leave()
     account(o.id, own, own > o.child ? own - o.child : 0, top);
 }
 
-void Profiler::background()
-{
-    background_ = true;
-}
+void Profiler::background() { background_ = true; }
 
 int Profiler::open_probes(uint32_t *out, int max)
 {
@@ -192,10 +188,7 @@ int Profiler::open_probes(uint32_t *out, int max)
 
 }
 
-uint32_t probe(const std::string &owner, const std::string &what)
-{
-    return detail::profiler.probe(owner, what);
-}
+uint32_t probe(const std::string &owner, const std::string &what) { return detail::profiler.probe(owner, what); }
 
 std::string owner_of(const void *code)
 {
@@ -212,25 +205,13 @@ std::string owner_of(const void *code)
     return dll.empty() ? "unknown" : dll;
 }
 
-void enter(uint32_t id)
-{
-    detail::profiler.enter(id);
-}
+void enter(uint32_t id) { detail::profiler.enter(id); }
 
-void leave()
-{
-    detail::profiler.leave();
-}
+void leave() { detail::profiler.leave(); }
 
-void background()
-{
-    detail::profiler.background();
-}
+void background() { detail::profiler.background(); }
 
-int open_probes(uint32_t *out, int max)
-{
-    return detail::profiler.open_probes(out, max);
-}
+int open_probes(uint32_t *out, int max) { return detail::profiler.open_probes(out, max); }
 
 }
 

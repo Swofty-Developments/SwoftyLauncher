@@ -142,10 +142,7 @@ std::string caller(const void *from)
     return id.empty() ? (dll.empty() ? std::string("unknown module") : dll) : id;
 }
 
-std::string text(const char *s)
-{
-    return s ? s : "";
-}
+std::string text(const char *s) { return s ? s : ""; }
 
 // SwoftyMod's split_season_picker, read once settings.json has it: off turns the era picker off before any
 // box registers. Without the option (an older settings.json) the picker stays split.
@@ -178,8 +175,8 @@ int api_add_box(const SwoftyEraBox *desc)
 {
     std::string who = caller(__builtin_return_address(0));
     if (!desc || desc->size < BOX_TIME_TRIAL) {
-        swofty::log("[era] box from %s refused: no descriptor, or its size %u is below %zu", who.c_str(),
-                    desc ? desc->size : 0, BOX_TIME_TRIAL);
+        swofty::log("[era] box from %s refused: no descriptor, or its size %u is below %zu", who.c_str(), desc ? desc->size : 0,
+                    BOX_TIME_TRIAL);
         return SWOFTY_ASSET_INVALID;
     }
     split_off();
@@ -196,14 +193,16 @@ int api_add_box(const SwoftyEraBox *desc)
     }
     box.seq = picker.boxes.size();
     picker.boxes.push_back(box);
-    std::string state = picker.off ? "off: " + picker.off_why : picker.live ? "live from the next build of the picker" : "queued for the next mixin commit";
+    std::string state = picker.off    ? "off: " + picker.off_why
+                        : picker.live ? "live from the next build of the picker"
+                                      : "queued for the next mixin commit";
     std::string tt = box.time_trial.empty() ? std::string() : ", Time Trial list " + box.time_trial;
     if (box.only == logic::ONLY_GRAND_PRIX)
         tt += ", Grand Prix only";
     else if (box.only == logic::ONLY_TIME_TRIAL)
         tt += ", Time Trial only";
-    swofty::log("[era] box %s from %s registered (title %s, image %s, order %d%s): %s", box.entrant_list.c_str(),
-                who.c_str(), box.title.c_str(), logic::image_of(box).c_str(), box.order, tt.c_str(), state.c_str());
+    swofty::log("[era] box %s from %s registered (title %s, image %s, order %d%s): %s", box.entrant_list.c_str(), who.c_str(),
+                box.title.c_str(), logic::image_of(box).c_str(), box.order, tt.c_str(), state.c_str());
     return picker.off ? SWOFTY_ASSET_UNAVAILABLE : SWOFTY_ASSET_OK;
 }
 
@@ -233,19 +232,13 @@ constexpr const char *SETUP_LIST_FN = "Sess_Collect_GameModeSetupModes";
 
 using namespace era_picker;
 
-extern "C" __declspec(dllexport) const SwoftyEra *SwoftyCoreEra(void)
-{
-    return &table;
-}
+extern "C" __declspec(dllexport) const SwoftyEra *SwoftyCoreEra(void) { return &table; }
 
 extern "C" __declspec(dllexport) const uint32_t SwoftyCoreEraOnly = SWOFTY_API_ERA;
 
 namespace runtime {
 
-const SwoftyEra *era_table()
-{
-    return &table;
-}
+const SwoftyEra *era_table() { return &table; }
 
 std::vector<era::Box> era_boxes()
 {
@@ -272,8 +265,11 @@ void era_press(const char *entrant_list)
         ::narrow(host, entrant_list);
     picker.last_press = entrant_list ? entrant_list : "";
     picker.last_pick = ours ? picker.last_press : "";
-    swofty::log("[era] box %s counts as pressed (a replay names it): %s", picker.last_press.empty() ? "none" : picker.last_press.c_str(),
-                !ours ? "no box named" : host ? "the Time Trial mode is narrowed to it" : "the current mode is not Time Trial; nothing narrowed");
+    swofty::log("[era] box %s counts as pressed (a replay names it): %s",
+                picker.last_press.empty() ? "none" : picker.last_press.c_str(),
+                !ours  ? "no box named"
+                : host ? "the Time Trial mode is narrowed to it"
+                       : "the current mode is not Time Trial; nothing narrowed");
 }
 
 static bool entrant_cap_armed = false;
@@ -296,8 +292,9 @@ static std::vector<CoreMixins> tt_guard_mixins()
         swofty::log("[era] setup mode guard off: needs %s, which this build does not resolve", AVAILABILITY_FN);
     } else {
         availability_guard.bound = true;
-        out.push_back({AVAILABILITY_MIXIN,
-                       {{AVAILABILITY_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&availability_entry, (void **)&availability_guard.orig}}});
+        out.push_back(
+            {AVAILABILITY_MIXIN,
+             {{AVAILABILITY_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&availability_entry, (void **)&availability_guard.orig}}});
     }
     if (!swofty::api->resolve(SETUP_LIST_FN) || !swofty::api->resolve("g_Ne_DefaultAllocator")) {
         swofty::log("[era] era press setup mode list off: needs %s and g_Ne_DefaultAllocator, which this build does "
@@ -314,8 +311,9 @@ static std::vector<CoreMixins> tt_guard_mixins()
                     PARSE_LIST_FN);
     } else {
         virtual_lists.parse_list_bound = true;
-        out.push_back({PARSE_LIST_MIXIN,
-                       {{PARSE_LIST_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&parse_list_entry, (void **)&virtual_lists.parse_list_orig}}});
+        out.push_back(
+            {PARSE_LIST_MIXIN,
+             {{PARSE_LIST_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&parse_list_entry, (void **)&virtual_lists.parse_list_orig}}});
     }
     return out;
 }
@@ -334,8 +332,7 @@ static std::vector<CoreMixins> career_alias_mixins()
     }
     alias_guard.bound = true;
     out.push_back({CAREER_ALIAS_MIXIN,
-                   {{CAREER_ALIAS_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&entrant_vector_entry,
-                     (void **)&alias_guard.orig}}});
+                   {{CAREER_ALIAS_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&entrant_vector_entry, (void **)&alias_guard.orig}}});
     return out;
 }
 

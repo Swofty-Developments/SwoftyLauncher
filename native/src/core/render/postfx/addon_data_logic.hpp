@@ -50,7 +50,7 @@ public:
     bool set_early(const std::string &k, const void *data, size_t size)
     {
         if (size && !bytes_.count(k)) {
-            std::string_view addon(k.data(), k.find('\n') + 1);  // "<addon id>\n"
+            std::string_view addon(k.data(), k.find('\n') + 1); // "<addon id>\n"
             size_t n = 0;
             for (const auto &e : bytes_)
                 n += std::string_view(e.first).substr(0, addon.size()) == addon;

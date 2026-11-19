@@ -42,9 +42,14 @@ namespace {
 namespace mem = swofty::mem;
 namespace ct = runtime::calendar_track;
 
-const runtime::Sig S_CALENDAR_FILLED{"site_Career_ScheduleComponent_CalendarFilled",
-                                     "49 8D 9D A8 02 00 00 45 8B 85 28 04 00 00 4C 89 E9 48 89 DA E8 ?? ?? ?? ?? 49 8B BD 10 04 00 00",
-                                     0x126a23d, runtime::Sig::addr, 0, 0x19, 0};
+const runtime::Sig S_CALENDAR_FILLED{
+    "site_Career_ScheduleComponent_CalendarFilled",
+    "49 8D 9D A8 02 00 00 45 8B 85 28 04 00 00 4C 89 E9 48 89 DA E8 ?? ?? ?? ?? 49 8B BD 10 04 00 00",
+    0x126a23d,
+    runtime::Sig::addr,
+    0,
+    0x19,
+    0};
 
 constexpr size_t MAX_LINES = 24;
 
@@ -100,8 +105,7 @@ void filled(safetyhook::Context &c)
                     "(it is not in the game's content); the round is left out of the season",
                     i + 1, unsigned(r.event), unsigned(r.track));
     }
-    uintptr_t end = ct::compact(cal.begin, keep, read,
-                                [](uintptr_t at, uint64_t v) { *reinterpret_cast<uint64_t *>(at) = v; });
+    uintptr_t end = ct::compact(cal.begin, keep, read, [](uintptr_t at, uint64_t v) { *reinterpret_cast<uint64_t *>(at) = v; });
     if (!end) {
         swofty::log("[career] calendar track guard: the kept rounds could not be read; the calendar is left as it is");
         return;

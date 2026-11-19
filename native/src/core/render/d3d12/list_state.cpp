@@ -55,19 +55,16 @@ private:
 
 constinit ListStates lists;
 
-ListState *tracked(ID3D12GraphicsCommandList *l)
-{
-    return lists.tracked(l);
-}
+ListState *tracked(ID3D12GraphicsCommandList *l) { return lists.tracked(l); }
 
 ListState *ListStates::tracked(ID3D12GraphicsCommandList *l)
 {
     if (l == state_list)
         return state_of;
     std::lock_guard<std::mutex> g(lock);
-    auto it = std::lower_bound(states.begin(), states.end(), l,
-                               [](const std::pair<ID3D12GraphicsCommandList *, ListState *> &e,
-                                  ID3D12GraphicsCommandList *k) { return e.first < k; });
+    auto it = std::lower_bound(
+        states.begin(), states.end(), l,
+        [](const std::pair<ID3D12GraphicsCommandList *, ListState *> &e, ID3D12GraphicsCommandList *k) { return e.first < k; });
     if (it == states.end() || it->first != l)
         it = states.insert(it, {l, new ListState()});
     state_list = l;

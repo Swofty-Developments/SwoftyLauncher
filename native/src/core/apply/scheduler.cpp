@@ -33,14 +33,14 @@ std::vector<std::unique_ptr<Applier>> &list()
 
 std::string counts(const Report &r)
 {
-    return std::to_string(r.applied) + " applied, " + std::to_string(r.put_back) + " put back, " +
-           std::to_string(r.refused) + " refused";
+    return std::to_string(r.applied) + " applied, " + std::to_string(r.put_back) + " put back, " + std::to_string(r.refused) +
+           " refused";
 }
 
 std::string counts(const Totals &t)
 {
-    return std::to_string(t.applied) + " applied, " + std::to_string(t.put_back) + " put back, " +
-           std::to_string(t.refused) + " refused";
+    return std::to_string(t.applied) + " applied, " + std::to_string(t.put_back) + " put back, " + std::to_string(t.refused) +
+           " refused";
 }
 
 }
@@ -199,8 +199,8 @@ void Scheduler::publish(Lock &)
         facts_(ctx_);
 }
 
-Totals Scheduler::run(Moment m, Applies kind, const std::function<void(Applier &, Report &)> &call,
-                      std::vector<Applier *> *ran, bool reverse_order, const std::vector<Applier *> *only)
+Totals Scheduler::run(Moment m, Applies kind, const std::function<void(Applier &, Report &)> &call, std::vector<Applier *> *ran,
+                      bool reverse_order, const std::vector<Applier *> *only)
 {
     std::vector<Applier *> todo;
     if (only)
@@ -304,8 +304,8 @@ void Scheduler::start_plan(bool off_thread)
         for (Applier *a : todo)
             off->keys.push_back(a->database_keys(store_));
         off->done = true;
-        log(step_line(steps.lap_ms(), std::string("boot plan counts on this thread, ") + why + " (" +
-                                          std::to_string(todo.size()) + ")"));
+        log(step_line(steps.lap_ms(),
+                      std::string("boot plan counts on this thread, ") + why + " (" + std::to_string(todo.size()) + ")"));
         settle_locked(*off);
     };
     if (!counts) {
@@ -479,8 +479,7 @@ Totals Scheduler::run_boot()
     publish(g);
     boot_published_ = store_.generation();
     boot_from_ = boot_published_ == from + 1 && store_.context() == was ? from : boot_published_;
-    Totals t = run(Moment::boot, Applies::boot, [&](Applier &a, Report &r) { a.boot(store_, r); }, nullptr, false,
-                   nullptr);
+    Totals t = run(Moment::boot, Applies::boot, [&](Applier &a, Report &r) { a.boot(store_, r); }, nullptr, false, nullptr);
     log("[apply] boot: " + std::to_string(t.appliers) + " applier(s); " + counts(t) + " (" + summary(ctx_) + ")");
     if (!boot_summary_.empty()) {
         std::string line;
@@ -502,13 +501,33 @@ uint64_t Scheduler::boot_generation() const
 
 void Scheduler::log_unapplied()
 {
-    static const char *const READ_BY_CORE[] = {
-        "addon.option",   "career.character", "career.content",       "career.driver_ratings", "career.season",
-        "career.wizard",  "content.package",  "driver.head",          "driver.identity",       "driver.look",
-        "driver.person",  "driver.stats",     "engine_sound",         "era.box",               "gloves",
-        "helmet",         "hub.tab",          "lang.string",          "livery",                "suit",
-        "team.constructor", "team.identity",  "team.logo",            "team.pit_times",        "vehicle",
-        "vehicle.package", "wearable.season_set"};
+    static const char *const READ_BY_CORE[] = {"addon.option",
+                                               "career.character",
+                                               "career.content",
+                                               "career.driver_ratings",
+                                               "career.season",
+                                               "career.wizard",
+                                               "content.package",
+                                               "driver.head",
+                                               "driver.identity",
+                                               "driver.look",
+                                               "driver.person",
+                                               "driver.stats",
+                                               "engine_sound",
+                                               "era.box",
+                                               "gloves",
+                                               "helmet",
+                                               "hub.tab",
+                                               "lang.string",
+                                               "livery",
+                                               "suit",
+                                               "team.constructor",
+                                               "team.identity",
+                                               "team.logo",
+                                               "team.pit_times",
+                                               "vehicle",
+                                               "vehicle.package",
+                                               "wearable.season_set"};
     std::vector<std::string> names = store_.registries();
     std::sort(names.begin(), names.end());
     for (auto &name : names) {
@@ -554,8 +573,8 @@ Totals Scheduler::deactivate_locked(Lock &g, const std::string &why)
         return {};
     std::vector<Applier *> was;
     was.swap(activated_);
-    Totals t = run(Moment::deactivate, Applies::content, [&](Applier &a, Report &r) { a.deactivate(store_, r); }, nullptr,
-                   true, &was);
+    Totals t =
+        run(Moment::deactivate, Applies::content, [&](Applier &a, Report &r) { a.deactivate(store_, r); }, nullptr, true, &was);
     std::string label = active_label_;
     active_.clear();
     active_label_.clear();
@@ -564,8 +583,7 @@ Totals Scheduler::deactivate_locked(Lock &g, const std::string &why)
     ctx_.has_year = career_year_ != 0;
     ctx_.year = career_year_;
     publish(g);
-    log("[apply] put back: " + label + " ended (" + why + "); " + std::to_string(t.appliers) + " applier(s), " +
-        counts(t));
+    log("[apply] put back: " + label + " ended (" + why + "); " + std::to_string(t.appliers) + " applier(s), " + counts(t));
     return t;
 }
 
@@ -587,11 +605,12 @@ Totals Scheduler::activate_locked(Lock &g, const std::string &content, const std
         }
     }
     publish(g);
-    Totals t = run(Moment::activate, Applies::content,
-                   [&](Applier &a, Report &r) { a.activate(store_, ctx_, r); }, &activated_, false, nullptr);
+    Totals t = run(
+        Moment::activate, Applies::content, [&](Applier &a, Report &r) { a.activate(store_, ctx_, r); }, &activated_, false,
+        nullptr);
     t.put_back += put.put_back;
-    log("[apply] activate: " + label + " active (" + why + "); " + std::to_string(t.appliers) + " applier(s), " +
-        counts(t) + " (" + summary(ctx_) + ")");
+    log("[apply] activate: " + label + " active (" + why + "); " + std::to_string(t.appliers) + " applier(s), " + counts(t) +
+        " (" + summary(ctx_) + ")");
     return t;
 }
 
@@ -642,10 +661,7 @@ std::string Scheduler::facts_line() const
     return facts::line(ctx_.mode, ctx_.session_type, session_name_, ctx_.track);
 }
 
-void Scheduler::log_facts()
-{
-    log(facts_line());
-}
+void Scheduler::log_facts() { log(facts_line()); }
 
 Totals Scheduler::career_loaded(const std::string &career, const std::string &mode, const std::string &data_group)
 {
@@ -710,10 +726,10 @@ Totals Scheduler::session_load(const SessionFacts &f)
     session_name_ = f.session;
     publish(g);
     log_facts();
-    Totals t = run(Moment::session_load, Applies::session,
-                   [&](Applier &a, Report &r) { a.session_load(store_, ctx_, r); }, &sessioned_, false, nullptr);
-    log("[apply] session load: " + std::to_string(t.appliers) + " applier(s); " + counts(t) + " (" + summary(ctx_) +
-        ")");
+    Totals t = run(
+        Moment::session_load, Applies::session, [&](Applier &a, Report &r) { a.session_load(store_, ctx_, r); }, &sessioned_,
+        false, nullptr);
+    log("[apply] session load: " + std::to_string(t.appliers) + " applier(s); " + counts(t) + " (" + summary(ctx_) + ")");
     return t;
 }
 
@@ -723,8 +739,8 @@ Totals Scheduler::session_end_locked(Lock &g, const std::string &why)
         return {};
     std::vector<Applier *> was;
     was.swap(sessioned_);
-    Totals t = run(Moment::session_end, Applies::session, [&](Applier &a, Report &r) { a.session_end(store_, r); },
-                   nullptr, true, &was);
+    Totals t =
+        run(Moment::session_end, Applies::session, [&](Applier &a, Report &r) { a.session_end(store_, r); }, nullptr, true, &was);
     session_ = false;
     ctx_.session_type.clear();
     ctx_.track.clear();
@@ -748,8 +764,8 @@ Totals Scheduler::install_read()
         return {};
     read_ = true;
     publish(g);
-    Totals t = run(Moment::read, Applies::read, [&](Applier &a, Report &r) { a.install_read(store_, r); }, nullptr,
-                   false, nullptr);
+    Totals t =
+        run(Moment::read, Applies::read, [&](Applier &a, Report &r) { a.install_read(store_, r); }, nullptr, false, nullptr);
     log("[apply] read: " + std::to_string(t.appliers) + " read path(s) installed at the window stage; " + counts(t));
     return t;
 }

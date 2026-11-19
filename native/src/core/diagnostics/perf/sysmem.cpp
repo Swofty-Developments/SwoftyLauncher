@@ -61,10 +61,10 @@ template <typename F> void walk_adapters(bool boot, F each)
             std::string driver;
             if (SUCCEEDED(a->CheckInterfaceSupport(__uuidof(IDXGIDevice), &ver)))
                 driver = logic::driver_text(uint64_t(ver.QuadPart));
-            swofty::log("%s", logic::gpu_boot_line(i, narrow(d.Description), d.VendorId, d.DeviceId, driver,
-                                                   d.DedicatedVideoMemory, d.DedicatedSystemMemory, d.SharedSystemMemory,
-                                                   software)
-                                  .c_str());
+            swofty::log("%s",
+                        logic::gpu_boot_line(i, narrow(d.Description), d.VendorId, d.DeviceId, driver, d.DedicatedVideoMemory,
+                                             d.DedicatedSystemMemory, d.SharedSystemMemory, software)
+                            .c_str());
         }
         IDXGIAdapter3 *a3 = nullptr;
         if (!software && SUCCEEDED(a->QueryInterface(__uuidof(IDXGIAdapter3), reinterpret_cast<void **>(&a3))) && a3) {

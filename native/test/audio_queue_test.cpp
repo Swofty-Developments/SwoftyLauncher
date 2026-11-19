@@ -14,12 +14,12 @@ namespace aq = runtime::audio_queue;
 
 static int g_fail;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            g_fail++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            g_fail++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
 struct Queue {
@@ -72,10 +72,7 @@ struct Queue {
     }
 };
 
-static void *tag(uintptr_t v)
-{
-    return reinterpret_cast<void *>(v);
-}
+static void *tag(uintptr_t v) { return reinterpret_cast<void *>(v); }
 
 static size_t run(Queue &q, bool fix, std::vector<uint32_t> &ran)
 {

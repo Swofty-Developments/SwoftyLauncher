@@ -43,9 +43,8 @@ bool index_read = false;
 std::string current_id;
 std::set<std::string> present;
 std::string last_error;
-std::string session_id = std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(
-                                            std::chrono::system_clock::now().time_since_epoch())
-                                            .count());
+std::string session_id = std::to_string(
+    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 std::once_flag started;
 
 struct Described {
@@ -294,10 +293,7 @@ int api_need(const char *addon, const char *range, const char *why)
     return SWOFTY_ASSET_OK;
 }
 
-bool data_args(const char *career, const char *addon)
-{
-    return career && addon && cs::plain_id(career) && cs::addon_id(addon);
-}
+bool data_args(const char *career, const char *addon) { return career && addon && cs::plain_id(career) && cs::addon_id(addon); }
 
 int api_data_get(const char *career, const char *addon, char *json, size_t cap, size_t *len, uint32_t *version)
 {
@@ -338,9 +334,16 @@ int api_data_remove(const char *career, const char *addon)
     return SWOFTY_ASSET_OK;
 }
 
-const SwoftyCareerSaves table = {SWOFTY_CAREER_SAVES_VERSION, api_available, api_index,      api_current,
-                                 api_describe,                api_need,      api_data_get,   api_data_set,
-                                 api_data_remove,             api_missing};
+const SwoftyCareerSaves table = {SWOFTY_CAREER_SAVES_VERSION,
+                                 api_available,
+                                 api_index,
+                                 api_current,
+                                 api_describe,
+                                 api_need,
+                                 api_data_get,
+                                 api_data_set,
+                                 api_data_remove,
+                                 api_missing};
 
 }
 
@@ -411,7 +414,4 @@ void career_saves_saved()
 
 }
 
-extern "C" __declspec(dllexport) const SwoftyCareerSaves *SwoftyCoreCareerSaves(void)
-{
-    return &table;
-}
+extern "C" __declspec(dllexport) const SwoftyCareerSaves *SwoftyCoreCareerSaves(void) { return &table; }

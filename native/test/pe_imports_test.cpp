@@ -43,10 +43,7 @@ static void no_access(void *p, size_t n)
     swofty::mem::shared::invalidate();
 }
 
-static int readable(uintptr_t at, size_t n, void *)
-{
-    return swofty::mem::shared::readable(at, n);
-}
+static int readable(uintptr_t at, size_t n, void *) { return swofty::mem::shared::readable(at, n); }
 
 #else
 
@@ -58,10 +55,7 @@ static uint8_t *map_rw(size_t n)
     return p == MAP_FAILED ? nullptr : static_cast<uint8_t *>(p);
 }
 
-static void no_access(void *p, size_t n)
-{
-    mprotect(p, n, PROT_NONE);
-}
+static void no_access(void *p, size_t n) { mprotect(p, n, PROT_NONE); }
 
 static int readable(uintptr_t at, size_t n, void *)
 {
@@ -132,13 +126,9 @@ static Img image(uint32_t size, uint32_t guard, uint32_t dir)
     return m;
 }
 
-static const void *ptr(uint64_t v)
-{
-    return reinterpret_cast<const void *>(uintptr_t(v));
-}
+static const void *ptr(uint64_t v) { return reinterpret_cast<const void *>(uintptr_t(v)); }
 
-constexpr uint64_t VQ = 0x7ff812340010ull, VQ_BASE = 0x7ff812350020ull, OTHER = 0x7ff8aaaa0000ull,
-                   REPL = 0x1111222233334444ull;
+constexpr uint64_t VQ = 0x7ff812340010ull, VQ_BASE = 0x7ff812350020ull, OTHER = 0x7ff8aaaa0000ull, REPL = 0x1111222233334444ull;
 
 static void rewritten_entries()
 {
@@ -310,11 +300,9 @@ static void one_dll()
                e.slot_rva == 0x1C00,
            "WS2_32.dll matches ws2_32.dll and its named entry comes first");
     int r2 = pe_imports_next(&it, &e);
-    expect(r2 == PE_IMPORT_ENTRY && e.table == 1 && e.kind == PE_IMPORT_BY_ORDINAL && e.ordinal == 23,
-           "then its ordinal entry");
+    expect(r2 == PE_IMPORT_ENTRY && e.table == 1 && e.kind == PE_IMPORT_BY_ORDINAL && e.ordinal == 23, "then its ordinal entry");
     int r3 = pe_imports_next(&it, &e);
-    expect(r3 == PE_IMPORT_ENTRY && e.table == 2 && e.kind == PE_IMPORT_BY_ORDINAL && e.ordinal == 9 &&
-               e.slot_rva == 0x1E00,
+    expect(r3 == PE_IMPORT_ENTRY && e.table == 2 && e.kind == PE_IMPORT_BY_ORDINAL && e.ordinal == 9 && e.slot_rva == 0x1E00,
            "the second ws2_32 descriptor is table 2 and KERNEL32 is passed over");
     expect(pe_imports_next(&it, &e) == PE_IMPORT_END && it.table == 2, "two tables name the DLL");
 }

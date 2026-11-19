@@ -129,8 +129,8 @@ int main(int argc, char **argv)
             return 1;
         auto calls = export_of<uint64_t (*)()>(fake, "mem_fake_calls");
         common();
-        expect(calls && calls() == 0, !strcmp(mode, "v0") ? "a version 0 table is never called"
-                                                          : "a table with null functions is never called");
+        expect(calls && calls() == 0,
+               !strcmp(mode, "v0") ? "a version 0 table is never called" : "a table with null functions is never called");
     } else {
         printf("usage: mem_addon_test core|absent|v0|nullfn\n");
         return 2;

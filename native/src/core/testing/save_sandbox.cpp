@@ -127,8 +127,8 @@ void status(const char *state, const std::string &why)
 {
     if (status_w.empty())
         return;
-    std::string text = std::string("{\"schema\":1,\"run\":\"") + run_id + "\",\"state\":\"" + state + "\",\"pid\":" +
-                       std::to_string(GetCurrentProcessId()) + ",\"remote\":\"";
+    std::string text = std::string("{\"schema\":1,\"run\":\"") + run_id + "\",\"state\":\"" + state +
+                       "\",\"pid\":" + std::to_string(GetCurrentProcessId()) + ",\"remote\":\"";
     auto esc = [](const std::string &s) {
         std::string o;
         for (char c : s)
@@ -145,8 +145,8 @@ void status(const char *state, const std::string &why)
     for (int i = 0; i < 3; i++)
         swofty::log("[saves] %s FAILED: %s. The game quits now (exit code %u), before the title screen can load a "
                     "save (%s %s)%s",
-                    launcher_on ? "LAUNCHER SAVES" : "TEST SANDBOX", why.c_str(), code,
-                    launcher_on ? "profile" : "run", run_id.empty() ? "?" : run_id.c_str(),
+                    launcher_on ? "LAUNCHER SAVES" : "TEST SANDBOX", why.c_str(), code, launcher_on ? "profile" : "run",
+                    run_id.empty() ? "?" : run_id.c_str(),
                     launcher_on ? "; the launcher offers to play once with your Steam saves" : "");
     status("failed", why);
     TerminateProcess(GetCurrentProcess(), code);
@@ -157,14 +157,10 @@ void note(int slot, const char *what)
 {
     uint32_t n = ++calls[slot];
     if (n <= 3 || !ss::served(slot))
-        swofty::log("[saves] sandbox: %s%s%s (call %u)", ss::slot_name(slot), what && *what ? " " : "", what ? what : "",
-                    n);
+        swofty::log("[saves] sandbox: %s%s%s (call %u)", ss::slot_name(slot), what && *what ? " " : "", what ? what : "", n);
 }
 
-std::string named(const char *name)
-{
-    return name ? std::string(name) : std::string("(null)");
-}
+std::string named(const char *name) { return name ? std::string(name) : std::string("(null)"); }
 
 bool p_file_write(Proxy *, const char *name, const void *data, int32_t size)
 {
@@ -288,10 +284,7 @@ bool p_cloud_app(Proxy *)
     return true;
 }
 
-void p_set_cloud_app(Proxy *, bool on)
-{
-    note(ss::SetCloudEnabledForApp, on ? "true" : "false");
-}
+void p_set_cloud_app(Proxy *, bool on) { note(ss::SetCloudEnabledForApp, on ? "true" : "false"); }
 
 int32_t p_local_changes(Proxy *)
 {
@@ -455,8 +448,8 @@ void arm_ea_local(void *device)
     std::string title_a =
         launcher_on ? ss::ea_title_dir(remote_a_unix, run_id) : ss::run_ea_title_dir(runtime::narrow(saves_dir));
     if (title_a.empty())
-        fail_closed((launcher_on ? "the launcher saves folder " + remote_a_unix : "the test run's saves folder " +
-                                                                                     runtime::narrow(saves_dir)) +
+        fail_closed((launcher_on ? "the launcher saves folder " + remote_a_unix
+                                 : "the test run's saves folder " + runtime::narrow(saves_dir)) +
                     " has no EA title folder that fits the save device");
     std::wstring title = dos_path(title_a);
     if (title.size() >= ss::EA_TITLE_CAP)
@@ -510,8 +503,8 @@ int upload_entry(void *device, void *op, void *a3)
 {
     if (mode != Mode::on)
         return upload_orig(device, op, a3);
-    swofty::log("[saves] sandbox: the game's corrupt-save upload (#%u) is off in %s; nothing is zipped or uploaded",
-                ++uploads, launcher_on ? "a launcher saves session" : "a test run");
+    swofty::log("[saves] sandbox: the game's corrupt-save upload (#%u) is off in %s; nothing is zipped or uploaded", ++uploads,
+                launcher_on ? "a launcher saves session" : "a test run");
     return 0;
 }
 
@@ -604,15 +597,9 @@ void read_run()
 
 namespace runtime {
 
-bool save_sandbox_test_mode()
-{
-    return mode == Mode::on && !launcher_on;
-}
+bool save_sandbox_test_mode() { return mode == Mode::on && !launcher_on; }
 
-bool save_sandbox_launcher_mode()
-{
-    return mode == Mode::on && launcher_on;
-}
+bool save_sandbox_launcher_mode() { return mode == Mode::on && launcher_on; }
 
 std::string save_sandbox_source()
 {
@@ -629,10 +616,7 @@ std::string save_sandbox_file()
     return last_file;
 }
 
-bool save_sandbox_armed()
-{
-    return armed;
-}
+bool save_sandbox_armed() { return armed; }
 
 uint32_t save_sandbox_writes()
 {
@@ -697,7 +681,8 @@ static std::vector<CoreMixins> save_sandbox_mixins()
     if (ea) {
         ea_vtable_addr = swofty::api->resolve(EA_VTABLE_ID);
         if (!ea_vtable_addr)
-            fail_closed(std::string(EA_VTABLE_ID) + " does not resolve on this build (no verified binding for it in bindings.json)");
+            fail_closed(std::string(EA_VTABLE_ID) +
+                        " does not resolve on this build (no verified binding for it in bindings.json)");
     }
     CoreMixins m{MIXIN,
                  {{START, SWOFTY_MIXIN_WRAP, 1000, (void *)&start_entry, (void **)&start_orig},

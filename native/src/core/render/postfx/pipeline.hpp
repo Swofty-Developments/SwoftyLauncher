@@ -50,7 +50,7 @@ public:
     float frametime = 0;
     unsigned frame_count = 0, ran_total = 0;
     ULONGLONG trace_checked = 0;
-    std::atomic<bool> device_armed{false};  // the device hooks armed: passes can run at all
+    std::atomic<bool> device_armed{false}; // the device hooks armed: passes can run at all
 
     void setup();
     bool killed_now();

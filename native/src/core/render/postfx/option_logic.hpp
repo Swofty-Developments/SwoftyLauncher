@@ -26,9 +26,8 @@ inline int key_code(std::string_view key)
         std::string_view name;
         int vk;
     };
-    static constexpr Named NAMED[] = {{"Insert", 0x2D}, {"Home", 0x24},      {"End", 0x23},
-                                      {"Page Up", 0x21}, {"Page Down", 0x22}, {"Scroll Lock", 0x91},
-                                      {"Pause", 0x13}};
+    static constexpr Named NAMED[] = {{"Insert", 0x2D},    {"Home", 0x24},        {"End", 0x23},  {"Page Up", 0x21},
+                                      {"Page Down", 0x22}, {"Scroll Lock", 0x91}, {"Pause", 0x13}};
     for (auto &n : NAMED)
         if (n.name == key)
             return n.vk;

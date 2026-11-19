@@ -48,7 +48,8 @@ void apply_drs(void *mode, const char *list)
         box_rules.drs.swap(m, holder);
         modes++;
     });
-    box_rules.drs_log.say(holder && modes ? box.line : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
+    box_rules.drs_log.say(holder && modes ? box.line
+                                          : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
 }
 
 // Tyre warmers per box: the pressed box's rules.tyre_warmers goes into every swofty_f1 mode's has_tyre_warmers byte;
@@ -71,10 +72,7 @@ void apply_warmers(void *mode, const char *list)
 
 // Fuel rules per box: the pressed box's refuelling, race and qualifying fuel and parc ferme rule go to the per-frame fuel
 // plan (hooks/car_live.cpp); a stock box press or leaving the boxes hands over no rules.
-void apply_fuel(const char *list)
-{
-    swofty_core::hooks::race_fuel_rules(swofty_core::apply::content::fuel_rules_for_box(list));
-}
+void apply_fuel(const char *list) { swofty_core::hooks::race_fuel_rules(swofty_core::apply::content::fuel_rules_for_box(list)); }
 
 void clear_fuel() { swofty_core::hooks::race_fuel_rules({}); }
 
@@ -204,7 +202,7 @@ void apply_points(void *mode, const char *list)
         }
     });
     box_rules.points_log.say(sessions ? box.line + " on " + std::to_string(sessions) + " race session(s)"
-                        : box.line + "; not applied (no race session in a " + std::string(logic::HOST) + " mode)");
+                                      : box.line + "; not applied (no race session in a " + std::string(logic::HOST) + " mode)");
 }
 
 // Mandatory tyre change per box: the pressed box's rules.mandatory_tyre_change goes into every swofty_f1 mode's
@@ -232,9 +230,11 @@ void put_back_drs()
     if (size_t n = box_rules.drs.put_back())
         box_rules.drs_log.say(std::string(logic::HOST) + "'s DRS group put back on " + std::to_string(n) + " mode(s)");
     if (size_t n = box_rules.warmers.put_back())
-        box_rules.warmers_log.say(std::string(logic::HOST) + "'s tyre warmer setting put back on " + std::to_string(n) + " mode(s)");
+        box_rules.warmers_log.say(std::string(logic::HOST) + "'s tyre warmer setting put back on " + std::to_string(n) +
+                                  " mode(s)");
     if (size_t n = box_rules.tyre_change.put_back())
-        box_rules.tyre_change_log.say(std::string(logic::HOST) + "'s tyre regulations put back on " + std::to_string(n) + " mode(s)");
+        box_rules.tyre_change_log.say(std::string(logic::HOST) + "'s tyre regulations put back on " + std::to_string(n) +
+                                      " mode(s)");
     if (size_t n = box_rules.time_limits.put_back())
         box_rules.weekend_log.say(std::string(logic::HOST) + "'s race time limit put back on " + std::to_string(n) + " mode(s)");
     if (box_rules.weekends.put_back())

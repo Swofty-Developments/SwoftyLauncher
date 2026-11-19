@@ -16,10 +16,7 @@ struct Tracked {
     uint32_t group;
 };
 
-constexpr uint32_t djb2(const char *s)
-{
-    return career::state::djb2(s);
-}
+constexpr uint32_t djb2(const char *s) { return career::state::djb2(s); }
 
 constexpr Tracked TRACKED[] = {
     {djb2("StateSession"), G_SESSION},

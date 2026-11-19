@@ -75,8 +75,8 @@ reg::Context facts_context()
     if (auto f = hk::core().current(); f && f->career)
         ctx.data_group = f->career->data_group;
     char group[128] = {};
-    if (auto t = runtime::career_content_table(); ctx.data_group.empty() && t && t->data_group &&
-                                                  t->data_group(nullptr, group, sizeof group) == SWOFTY_ASSET_OK)
+    if (auto t = runtime::career_content_table();
+        ctx.data_group.empty() && t && t->data_group && t->data_group(nullptr, group, sizeof group) == SWOFTY_ASSET_OK)
         ctx.data_group = group;
     return ctx;
 }
@@ -116,8 +116,8 @@ std::string facts_career()
 std::string loaded_data_group()
 {
     char group[128] = {};
-    if (auto t = runtime::career_content_table(); t && t->data_group &&
-                                                  t->data_group(nullptr, group, sizeof group) == SWOFTY_ASSET_OK)
+    if (auto t = runtime::career_content_table();
+        t && t->data_group && t->data_group(nullptr, group, sizeof group) == SWOFTY_ASSET_OK)
         return group;
     return {};
 }
@@ -126,8 +126,7 @@ std::string slot_career_id(const std::string &data_group, unsigned mode, uint64_
 {
     std::string save;
     runtime::career_content_owner(data_group, &save);
-    return sn::career_id(sn::mode_part(save, data_group, mode == SWOFTY_CAREER_MY_TEAM ? "my_team" : "driver_career"),
-                         id, guid);
+    return sn::career_id(sn::mode_part(save, data_group, mode == SWOFTY_CAREER_MY_TEAM ? "my_team" : "driver_career"), id, guid);
 }
 
 bool current_slot(uintptr_t manager, uint64_t &id, uint64_t &guid)
@@ -288,7 +287,7 @@ snap::format::Freeze freeze_of(const std::string &data_group)
         reg::Record r = st.get("career.mode", id);
         if (r.status == reg::Status::ok && !data_group.empty() && r.value["data_group"].as_string() == data_group)
             return r.value["freeze"].as_string() == "at_creation" ? snap::format::Freeze::at_creation
-                                                                   : snap::format::Freeze::per_season;
+                                                                  : snap::format::Freeze::per_season;
     }
     return snap::format::Freeze::per_season;
 }
@@ -302,8 +301,8 @@ int on_loaded(void *, SwoftyHookCall *)
             legacy = committed_key;
     }
     if (!legacy.empty() && book().rename(legacy, career))
-        swofty::log("[registry] career %s: its swofty_registry entry was keyed %s; migrated to the save slot id",
-                    career.c_str(), legacy.c_str());
+        swofty::log("[registry] career %s: its swofty_registry entry was keyed %s; migrated to the save slot id", career.c_str(),
+                    legacy.c_str());
     book().career_loaded(career, facts_context());
     bool created;
     {
@@ -389,7 +388,8 @@ bool entry_saving(std::vector<uint8_t> &body)
 {
     refresh_slot();
     if (!book().saving(body)) {
-        swofty::log("[registry] swofty_registry: this profile save %s", loaded_has_entry
+        swofty::log("[registry] swofty_registry: this profile save %s",
+                    loaded_has_entry
                         ? ("writes back the entry it loaded (" + std::to_string(loaded_entry + 20) + " bytes)").c_str()
                         : "has no entry to write");
         return false;
@@ -468,11 +468,10 @@ void snapshots_start(bool splice_live)
         }
         if (splice_live)
             sp::set_entry_hooks({entry_loaded, entry_saving, entry_written});
-        swofty::log("[registry] career snapshots on: %s", writes ? "saved in swofty_registry through the save splice"
-                                                                 : ("not saved (" + blocked + ")").c_str());
+        swofty::log("[registry] career snapshots on: %s",
+                    writes ? "saved in swofty_registry through the save splice" : ("not saved (" + blocked + ")").c_str());
     });
 }
-
 
 void snapshots_slot_selected(uintptr_t manager, uint64_t slot_id, uint64_t slot_guid)
 {
@@ -496,15 +495,16 @@ std::string snapshots_career_loaded(const char *key, unsigned mode)
     committed_key = k;
     committed_mode = mode;
     committed_provisional = !have && k.empty();
-    committed_id = have ? slot_career_id(group, mode, id, guid)
-                   : committed_provisional
-                       ? sn::provisional_id(sn::mode_part(std::string(), group, mode == SWOFTY_CAREER_MY_TEAM ? "my_team" : "driver_career"),
-                                            ++provisional_count)
-                       : k;
+    committed_id =
+        have ? slot_career_id(group, mode, id, guid)
+        : committed_provisional
+            ? sn::provisional_id(sn::mode_part(std::string(), group, mode == SWOFTY_CAREER_MY_TEAM ? "my_team" : "driver_career"),
+                                 ++provisional_count)
+            : k;
     seen = false;
     if (have)
-        swofty::log("[registry] career id %s (save slot %llu, guid %016llx; the career tracker's key '%s')",
-                    committed_id.c_str(), (unsigned long long)id, (unsigned long long)guid, k.c_str());
+        swofty::log("[registry] career id %s (save slot %llu, guid %016llx; the career tracker's key '%s')", committed_id.c_str(),
+                    (unsigned long long)id, (unsigned long long)guid, k.c_str());
     else if (committed_provisional)
         swofty::log("[registry] career id %s: no save slot was selected before this load (a new career's slot is read "
                     "at its first save); the career runs under this provisional id until then, so career.season.start "

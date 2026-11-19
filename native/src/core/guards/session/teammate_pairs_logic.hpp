@@ -12,15 +12,9 @@ constexpr uint64_t MAX_BYTES = 0x800;
 constexpr uint64_t TEAM_ID = 0x28;
 constexpr size_t SEEN_TEAMS = 64;
 
-inline bool over(uint64_t bytes)
-{
-    return bytes > PAIR_BYTES && bytes <= MAX_BYTES && bytes % CAR_BYTES == 0;
-}
+inline bool over(uint64_t bytes) { return bytes > PAIR_BYTES && bytes <= MAX_BYTES && bytes % CAR_BYTES == 0; }
 
-inline uint64_t cars(uint64_t bytes)
-{
-    return bytes / CAR_BYTES;
-}
+inline uint64_t cars(uint64_t bytes) { return bytes / CAR_BYTES; }
 
 // The teams the guard has logged in the current session: each of the session's first SEEN_TEAMS distinct teams once.
 struct Seen {

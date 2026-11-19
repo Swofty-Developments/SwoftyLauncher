@@ -38,18 +38,35 @@ constexpr size_t SITES = 4;
 
 const runtime::Sig S_INIT{"site_Game_CarSetupVm_InitCarLoad",
                           "83 B8 40 9F 00 00 64 75 10 48 89 F1 E8 ?? ?? ?? ?? 48 89 F1 E8 ?? ?? ?? ?? C7 44 24 30 04 00 00 00",
-                          0xc1b92c, runtime::Sig::addr, 0, 0, 0};
+                          0xc1b92c,
+                          runtime::Sig::addr,
+                          0,
+                          0,
+                          0};
 const runtime::Sig S_VALUE_SET{"site_Game_CarSetupVm_ValueSetCarLoad",
                                "83 B8 40 9F 00 00 64 75 10 48 89 F1 E8 ?? ?? ?? ?? 48 89 F1 E8 ?? ?? ?? ?? 4C 8D AE D8 76 00 00",
-                               0xc1cbca, runtime::Sig::addr, 0, 0, 0};
-const runtime::Sig S_CHANGED_A{"site_Game_CarSetupVm_OnValueChangedCarLoadA", "48 8B 40 28 83 B8 40 9F 00 00 64 0F 85", 0xc1ed9f,
-                               runtime::Sig::addr, 0, 4, 0};
+                               0xc1cbca,
+                               runtime::Sig::addr,
+                               0,
+                               0,
+                               0};
+const runtime::Sig S_CHANGED_A{"site_Game_CarSetupVm_OnValueChangedCarLoadA",
+                               "48 8B 40 28 83 B8 40 9F 00 00 64 0F 85",
+                               0xc1ed9f,
+                               runtime::Sig::addr,
+                               0,
+                               4,
+                               0};
 // The game compares the view model's byte after the calls: +0x7e6a on the KB build, +0x7e62 on EA 1.0.145 (its fields from
 // +0x7e60 sit 8 bytes lower there). The guard doesn't read it; it reads only the car's +0x9f40, so the pattern leaves the
 // byte open (re/research/ea-1-0-145.md).
 const runtime::Sig S_CHANGED_B{"site_Game_CarSetupVm_OnValueChangedCarLoadB",
                                "83 B8 40 9F 00 00 64 75 10 48 89 F1 E8 ?? ?? ?? ?? 48 89 F1 E8 ?? ?? ?? ?? 80 BE ?? 7E 00 00 00",
-                               0xc1eeb7, runtime::Sig::addr, 0, 0, 0};
+                               0xc1eeb7,
+                               runtime::Sig::addr,
+                               0,
+                               0,
+                               0};
 
 uintptr_t skip_to[SITES];
 runtime::setup_vm::Once said;

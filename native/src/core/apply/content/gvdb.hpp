@@ -22,10 +22,7 @@ struct Record {
     std::string text;
 };
 
-inline uint64_t fnv64(std::string_view s)
-{
-    return ::runtime::fnv64(s.data(), s.size());
-}
+inline uint64_t fnv64(std::string_view s) { return ::runtime::fnv64(s.data(), s.size()); }
 
 inline constexpr char MASK[] = "tG5MYmBZEZZnrH7yg2qTC4qj42Jcq9";
 inline constexpr std::size_t MASK_LEN = sizeof MASK - 1, MASK_START = 10;
@@ -182,4 +179,3 @@ private:
 };
 
 }
-

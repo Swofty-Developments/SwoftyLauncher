@@ -102,10 +102,10 @@ void Runtime::start(Start point)
         perf::Stopwatch step;
         bool early = runtime::load_stage() == "early" && !runtime::window_reached();
         if (point == Start::ready && render::d3d12::arm_on_worker(ready_block_on_worker, early))
-            loader::api->log(perf::STEP_LINE, step.total_ms(),
-                             (std::string("subsystems ") + block.front().name + " to " + block.back().name + ON_WORKER +
-                              ", scheduled")
-                                 .c_str());
+            loader::api->log(
+                perf::STEP_LINE, step.total_ms(),
+                (std::string("subsystems ") + block.front().name + " to " + block.back().name + ON_WORKER + ", scheduled")
+                    .c_str());
         else
             run_block(block, point, "");
     }
@@ -157,8 +157,9 @@ int Runtime::attach(SwoftyApi *a)
     if (cs)
         memcpy(cname, cs->Name, 8);
     loader::api->log("[core] build %s: %s (%s); code section %s entropy %.2f, reads %s", set.build.tag.c_str(),
-             code().packed() ? "packed" : "not packed", said.type == json::Value::Bool ? "the set says so" : "measured at init",
-             cname, ce < 0 ? 0 : ce, CodeEncryption::reads(ce));
+                     code().packed() ? "packed" : "not packed",
+                     said.type == json::Value::Bool ? "the set says so" : "measured at init", cname, ce < 0 ? 0 : ce,
+                     CodeEncryption::reads(ce));
     loader::api->log(perf::STEP_LINE, steps.lap_ms(), "attach code entropy");
     {
         std::lock_guard<std::recursive_mutex> g(resolve_lock());
@@ -177,10 +178,7 @@ int Runtime::attach(SwoftyApi *a)
     return 1;
 }
 
-int Runtime::init_addon(const wchar_t *name, SwoftyAddonInitFn init)
-{
-    return mixins().init_addon(name, init);
-}
+int Runtime::init_addon(const wchar_t *name, SwoftyAddonInitFn init) { return mixins().init_addon(name, init); }
 
 int Runtime::commit_pass()
 {
@@ -207,9 +205,9 @@ int Runtime::commit_pass()
         when_code_ready(RUNTIME_SETUP, runtime::ready);
     size_t total = 0, active = mixins().active_from(from, &total);
     loader::api->log("[core] commit: %zu of %zu mixin addon(s) active; %zu wrap(s), %zu site(s), %zu vtable slot(s), %zu "
-             "redirect(s), %zu patch(es)",
-             active, total, count[SWOFTY_MIXIN_WRAP], count[SWOFTY_MIXIN_SITE], count[SWOFTY_MIXIN_VTABLE],
-             count[SWOFTY_MIXIN_REDIRECT], count[SWOFTY_MIXIN_PATCH]);
+                     "redirect(s), %zu patch(es)",
+                     active, total, count[SWOFTY_MIXIN_WRAP], count[SWOFTY_MIXIN_SITE], count[SWOFTY_MIXIN_VTABLE],
+                     count[SWOFTY_MIXIN_REDIRECT], count[SWOFTY_MIXIN_PATCH]);
     scanner().save();
     if (pending() && runtime::load_stage() != "early")
         start_retries();
@@ -251,11 +249,11 @@ size_t Runtime::run_code_tasks(const char *pass, bool final)
     for (auto &t : tasks) {
         if (!ok) {
             loader::api->log("[core] %s: not set up; %s still reads %s (entropy %.2f) at the last retry, so it fails closed",
-                     t.what.c_str(), scanner().game_code().c_str(), CodeEncryption::reads(e), e < 0 ? 0 : e);
+                             t.what.c_str(), scanner().game_code().c_str(), CodeEncryption::reads(e), e < 0 ? 0 : e);
             continue;
         }
         loader::api->log("[core] %s: %s reads decrypted (entropy %.2f) at the %s pass; setting it up now", t.what.c_str(),
-                 scanner().game_code().c_str(), e, pass);
+                         scanner().game_code().c_str(), e, pass);
         perf::Stopwatch step;
         t.fn();
         runtime::stage_catch_up();
@@ -294,14 +292,15 @@ void Runtime::late_pass(const char *pass, bool final)
         installed += k;
     if (after == before && !final && !installed && !setups && strcmp(pass, "window")) {
         loader::api->log("[core] %s pass: %zu binding(s) and %zu setup(s) still wait for their code to decrypt (%s)", pass, after,
-                 code_tasks_.size(), sampled.c_str());
+                         code_tasks_.size(), sampled.c_str());
         return;
     }
-    loader::api->log("[core] %s pass: %s; %zu binding(s) came out of deferral, %zu still deferred; installed %zu wrap(s), %zu site(s), "
-             "%zu vtable slot(s), %zu redirect(s), %zu patch(es)%s",
-             pass, sampled.c_str(), before - after, after, count[SWOFTY_MIXIN_WRAP], count[SWOFTY_MIXIN_SITE],
-             count[SWOFTY_MIXIN_VTABLE], count[SWOFTY_MIXIN_REDIRECT], count[SWOFTY_MIXIN_PATCH],
-             mixins().waiting(false) ? "; some addons still wait" : "");
+    loader::api->log(
+        "[core] %s pass: %s; %zu binding(s) came out of deferral, %zu still deferred; installed %zu wrap(s), %zu site(s), "
+        "%zu vtable slot(s), %zu redirect(s), %zu patch(es)%s",
+        pass, sampled.c_str(), before - after, after, count[SWOFTY_MIXIN_WRAP], count[SWOFTY_MIXIN_SITE],
+        count[SWOFTY_MIXIN_VTABLE], count[SWOFTY_MIXIN_REDIRECT], count[SWOFTY_MIXIN_PATCH],
+        mixins().waiting(false) ? "; some addons still wait" : "");
     set.report(pass);
     scanner().save();
 }
@@ -341,8 +340,8 @@ void Runtime::start_retries()
     if (InterlockedExchange(&retries_started_, 1))
         return;
     loader::api->log("[core] bindings: %zu binding(s) and %zu setup(s) still wait for their code to decrypt; retrying every %lu "
-             "ms, %d time(s), then they fail closed",
-             bindings().deferred_count(), code_tasks_.size(), (unsigned long)RETRY_MS, RETRIES);
+                     "ms, %d time(s), then they fail closed",
+                     bindings().deferred_count(), code_tasks_.size(), (unsigned long)RETRY_MS, RETRIES);
     if (HANDLE t = CreateThread(nullptr, 0, retry_worker, nullptr, 0, nullptr)) {
         CloseHandle(t);
     } else {
@@ -373,8 +372,8 @@ void Runtime::when_code_ready(const char *what, void (*fn)())
         if (code().packed() && !code_decrypted(e)) {
             code_tasks_.push_back({what, fn});
             loader::api->log("[core] %s waits: %s reads %s (entropy %.2f) on this packed build; it is set up once that code "
-                     "decrypts",
-                     what, scanner().game_code().c_str(), CodeEncryption::reads(e), e < 0 ? 0 : e);
+                             "decrypts",
+                             what, scanner().game_code().c_str(), CodeEncryption::reads(e), e < 0 ? 0 : e);
             return;
         }
     }
@@ -396,44 +395,23 @@ bool Runtime::code_ready()
     return code().plain_seen();
 }
 
-void when_code_ready(const char *what, void (*fn)())
-{
-    Runtime::instance().when_code_ready(what, fn);
-}
+void when_code_ready(const char *what, void (*fn)()) { Runtime::instance().when_code_ready(what, fn); }
 
-bool code_ready()
-{
-    return Runtime::instance().code_ready();
-}
+bool code_ready() { return Runtime::instance().code_ready(); }
 
-void ready()
-{
-    Runtime::instance().ready();
-}
+void ready() { Runtime::instance().ready(); }
 
-std::string build_distribution()
-{
-    return loader::bindings().build.tag;
-}
+std::string build_distribution() { return loader::bindings().build.tag; }
 
-std::string build_exe_sha()
-{
-    return loader::bindings().build.sha;
-}
+std::string build_exe_sha() { return loader::bindings().build.sha; }
 
 }
 
-extern "C" __declspec(dllexport) int SwoftyCoreAttach(SwoftyApi *a)
-{
-    return runtime::Runtime::instance().attach(a);
-}
+extern "C" __declspec(dllexport) int SwoftyCoreAttach(SwoftyApi *a) { return runtime::Runtime::instance().attach(a); }
 
 extern "C" __declspec(dllexport) int SwoftyCoreInit(const wchar_t *name, SwoftyAddonInitFn init)
 {
     return runtime::Runtime::instance().init_addon(name, init);
 }
 
-extern "C" __declspec(dllexport) int SwoftyCoreCommit(void)
-{
-    return runtime::Runtime::instance().commit();
-}
+extern "C" __declspec(dllexport) int SwoftyCoreCommit(void) { return runtime::Runtime::instance().commit(); }

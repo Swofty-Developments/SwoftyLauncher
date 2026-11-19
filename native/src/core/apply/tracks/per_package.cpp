@@ -86,9 +86,6 @@ private:
 
 }
 
-void register_per_package()
-{
-    make<PerPackage>();
-}
+void register_per_package() { make<PerPackage>(); }
 
 }

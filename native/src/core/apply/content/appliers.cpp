@@ -143,10 +143,7 @@ OlderEdits older_edits(const gvdb::File &file)
     return edits;
 }
 
-void read_edits(Database &d)
-{
-    d.edits = older_edits(d.file);
-}
+void read_edits(Database &d) { d.edits = older_edits(d.file); }
 
 Database &database()
 {
@@ -164,8 +161,8 @@ Database &database()
         return d;
     }
     read_edits(d);
-    swofty::log("[apply] content: read %zu record(s) from the game database file and %zu older addon edit(s)",
-                d.file.size(), d.edits.size());
+    swofty::log("[apply] content: read %zu record(s) from the game database file and %zu older addon edit(s)", d.file.size(),
+                d.edits.size());
     return d;
 }
 
@@ -204,9 +201,9 @@ void ensure_stock(Store &st)
         return r->text;
     };
     for (auto &c : CONSTRUCTOR_SEEDS)
-        st.add_base("team.constructor", c.key,
-                    Value::object({{"name", Value(std::string(c.name))}, {"country", Value(std::string(c.country))},
-                                   {"team", Value()}}));
+        st.add_base(
+            "team.constructor", c.key,
+            Value::object({{"name", Value(std::string(c.name))}, {"country", Value(std::string(c.country))}, {"team", Value()}}));
     std::size_t teams = 0;
     for (auto &t : stock_teams(read)) {
         st.add_base("team.identity", t.label, t.record);
@@ -536,7 +533,8 @@ void apply_liveries(Expansion &x, Report &report, const std::string &registry)
         if (!g.tmpl.empty())
             e.o.push_back({"template", str(g.tmpl)});
         int rc = runtime::group_add(e);
-        report.lines.push_back(registry + " " + g.id + ": asset group " + g.group + (rc == SWOFTY_ASSET_OK ? " registered" : " not registered"));
+        report.lines.push_back(registry + " " + g.id + ": asset group " + g.group +
+                               (rc == SWOFTY_ASSET_OK ? " registered" : " not registered"));
         if (rc != SWOFTY_ASSET_OK)
             report.refused++;
     }
@@ -567,7 +565,8 @@ void apply_liveries(Expansion &x, Report &report, const std::string &registry)
     }
     std::string summary;
     for (auto &[addon, n] : routed)
-        summary += (summary.empty() ? "" : ", ") + std::to_string(n) + (livery ? " livery file" : " archive") + (n == 1 ? "" : "s") + " redirected to " + addon;
+        summary += (summary.empty() ? "" : ", ") + std::to_string(n) + (livery ? " livery file" : " archive") +
+                   (n == 1 ? "" : "s") + " redirected to " + addon;
     if (!summary.empty())
         report.summary = report.summary.empty() ? summary : report.summary + "; " + summary;
 }
@@ -590,8 +589,8 @@ void apply_texts(Expansion &x, const char *registry, Report &report)
     for (auto &[tag, text] : texts) {
         if (lang->override_set("*", tag.c_str(), text.c_str()) == SWOFTY_ASSET_OK)
             set++;
-        else if (registry::older::string_layer(runtime::older_store(), "swofty.core", tag,
-                                               Value::object({{"*", Value(text)}})) == SWOFTY_ASSET_OK)
+        else if (registry::older::string_layer(runtime::older_store(), "swofty.core", tag, Value::object({{"*", Value(text)}})) ==
+                 SWOFTY_ASSET_OK)
             layered.push_back(tag);
         else
             failed.push_back(tag);
@@ -609,10 +608,11 @@ void apply_texts(Expansion &x, const char *registry, Report &report)
     if (!layered.empty())
         report.lines.push_back(std::string(registry) + ": " + std::to_string(layered.size()) + what +
                                " registered as lang.string layers from swofty.core; the lang override isn't up yet and "
-                               "reads them when it starts (" + list(layered) + ")");
+                               "reads them when it starts (" +
+                               list(layered) + ")");
     if (!failed.empty())
-        report.lines.push_back(std::string(registry) + ": " + std::to_string(failed.size()) + what + " not set (" +
-                               list(failed) + ")");
+        report.lines.push_back(std::string(registry) + ": " + std::to_string(failed.size()) + what + " not set (" + list(failed) +
+                               ")");
 }
 
 void apply_logos(Expansion &x, Report &report)
@@ -628,8 +628,8 @@ void apply_logos(Expansion &x, Report &report)
         swofty::log("[apply] %s", l.c_str());
     }
     report.refused += made.refused;
-    report.lines.push_back("team.logo: " + std::to_string(x.logos.size()) + " logo slot(s) planned, " + std::to_string(made.built) +
-                           " slice(s) built, " + std::to_string(made.refused) + " refused");
+    report.lines.push_back("team.logo: " + std::to_string(x.logos.size()) + " logo slot(s) planned, " +
+                           std::to_string(made.built) + " slice(s) built, " + std::to_string(made.refused) + " refused");
 }
 
 void apply_garages(Expansion &x, Report &report)
@@ -665,7 +665,8 @@ void apply_garages(Expansion &x, Report &report)
         std::sort(inputs.begin(), inputs.end(), [](const garage::Input &a, const garage::Input &b) { return a.rel < b.rel; });
         if (inputs.empty()) {
             report.refused++;
-            report.lines.push_back("team.garage " + g.id + ": " + g.folder + " holds no .dds or .png file in swofty/addons/" + g.addon + "/");
+            report.lines.push_back("team.garage " + g.id + ": " + g.folder + " holds no .dds or .png file in swofty/addons/" +
+                                   g.addon + "/");
             continue;
         }
         uint64_t key = 0xcbf29ce484222325ull;
@@ -716,15 +717,18 @@ void apply_garages(Expansion &x, Report &report)
         std::size_t attached = 0;
         for (auto &group : g.groups) {
             int rc = runtime::group_extend(group, g.game_path);
-            report.lines.push_back("team.garage " + g.id + ": " + group + (rc == SWOFTY_ASSET_OK ? " lists " + g.game_path : " not extended (the manifest is already parsed)"));
+            report.lines.push_back(
+                "team.garage " + g.id + ": " + group +
+                (rc == SWOFTY_ASSET_OK ? " lists " + g.game_path : " not extended (the manifest is already parsed)"));
             attached += rc == SWOFTY_ASSET_OK;
         }
         if (!attached)
             report.refused++;
-        report.lines.push_back("team.garage " + g.id + ": " + std::to_string(inputs.size()) + " texture file(s) of " + g.folder + " in " +
-                               file + " (" + std::to_string(have >> 20) + " MB, " + (reused ? "cached archive reused" : "built") + " in " +
-                               std::to_string(GetTickCount() - t0) + " ms), " + g.game_path + " -> swofty/addons/" + CACHE_ADDON + "/" + file +
-                               ", " + std::to_string(attached) + " of " + std::to_string(g.groups.size()) + " group(s) extended");
+        report.lines.push_back("team.garage " + g.id + ": " + std::to_string(inputs.size()) + " texture file(s) of " + g.folder +
+                               " in " + file + " (" + std::to_string(have >> 20) + " MB, " +
+                               (reused ? "cached archive reused" : "built") + " in " + std::to_string(GetTickCount() - t0) +
+                               " ms), " + g.game_path + " -> swofty/addons/" + CACHE_ADDON + "/" + file + ", " +
+                               std::to_string(attached) + " of " + std::to_string(g.groups.size()) + " group(s) extended");
     }
     WIN32_FIND_DATAW fd;
     HANDLE h = FindFirstFileW((runtime::under_swofty(dir) + L"garage_*").c_str(), &fd);
@@ -924,7 +928,9 @@ public:
                 const Value &v = (*rec)["images"][context];
                 if (v.is_string()) {
                     uint64_t size = 0;
-                    bool found = runtime::file_size(runtime::under_swofty("addons/" + addon_of(id) + "/" + std::string(v.as_string())), &size) && size;
+                    bool found = runtime::file_size(
+                                     runtime::under_swofty("addons/" + addon_of(id) + "/" + std::string(v.as_string())), &size) &&
+                                 size;
                     images++;
                     if (!found) {
                         bad++;
@@ -962,17 +968,20 @@ public:
         for (auto &b : plan.boxes) {
             if (!b.literal.empty() && lang)
                 lang->override_set("*", b.title.c_str(), b.literal.c_str());
-            SwoftyEraBox d{sizeof d, b.entrant_list.c_str(), b.title.c_str(), b.image.c_str(), b.order, b.time_trial.c_str(), b.only};
+            SwoftyEraBox d{sizeof d, b.entrant_list.c_str(), b.title.c_str(), b.image.c_str(),
+                           b.order,  b.time_trial.c_str(),   b.only};
             int rc = era ? era->add_box(&d) : SWOFTY_ASSET_UNAVAILABLE;
             if (rc == SWOFTY_ASSET_OK)
                 report.applied++;
             else
                 report.refused++;
-            report.lines.push_back("era.box " + b.id + ": " + b.entrant_list +
-                                   (b.time_trial.empty() ? std::string() : " (Time Trial " + b.time_trial + ")") +
-                                   (b.only == 1 ? " (Grand Prix only)" : b.only == 2 ? " (Time Trial only)" : "") +
-                                   (rc == SWOFTY_ASSET_OK ? " registered"
-                                                          : " not registered (a box for it exists or the picker is off)"));
+            report.lines.push_back(
+                "era.box " + b.id + ": " + b.entrant_list +
+                (b.time_trial.empty() ? std::string() : " (Time Trial " + b.time_trial + ")") +
+                (b.only == 1   ? " (Grand Prix only)"
+                 : b.only == 2 ? " (Time Trial only)"
+                               : "") +
+                (rc == SWOFTY_ASSET_OK ? " registered" : " not registered (a box for it exists or the picker is off)"));
         }
         for (auto &l : plan.lines)
             report.lines.push_back(l);

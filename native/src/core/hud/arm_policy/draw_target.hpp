@@ -21,10 +21,7 @@ inline bool presents_back_buffer(unsigned before, unsigned after, unsigned flags
     return before == STATE_RENDER_TARGET && after == STATE_PRESENT && !(flags & BARRIER_FLAG_BEGIN_ONLY);
 }
 
-inline unsigned state_after_draw(unsigned left_in)
-{
-    return left_in;
-}
+inline unsigned state_after_draw(unsigned left_in) { return left_in; }
 
 inline bool pending_fresh(uint64_t now_ms, uint64_t built_ms)
 {

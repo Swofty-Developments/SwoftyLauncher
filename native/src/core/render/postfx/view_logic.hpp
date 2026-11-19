@@ -9,7 +9,7 @@ enum View : uint32_t { UNKNOWN = 0, COCKPIT, TCAM, TCAM_OFFSET, CHASE_NEAR, CHAS
 enum Flag : uint32_t { PAUSED = 1, REPLAY = 2, PHOTO = 4, MENU = 8, CUTSCENE = 16, SPECTATING = 32 };
 
 inline constexpr std::string_view VIEW_NAMES[VIEWS] = {"unknown",    "cockpit",   "tcam", "tcam_offset",
-                                                      "chase_near", "chase_far", "other"};
+                                                       "chase_near", "chase_far", "other"};
 inline constexpr std::string_view FLAG_NAMES[] = {"paused", "replay", "photo", "menu", "cutscene", "spectating"};
 
 inline uint32_t view_bit(std::string_view name)
@@ -37,10 +37,7 @@ inline std::string flag_text(uint32_t flags)
     return out.empty() ? "-" : out;
 }
 
-inline std::string_view view_text(uint32_t kind)
-{
-    return kind < VIEWS ? VIEW_NAMES[kind] : "?";
-}
+inline std::string_view view_text(uint32_t kind) { return kind < VIEWS ? VIEW_NAMES[kind] : "?"; }
 
 struct When {
     uint32_t views = 0, skip = 0;

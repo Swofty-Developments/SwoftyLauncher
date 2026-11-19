@@ -51,7 +51,8 @@ void minidump(Request &r)
                            FILE_ATTRIBUTE_NORMAL, nullptr);
     report_writer.dump_file = f;
     if (f == INVALID_HANDLE_VALUE) {
-        snprintf(report_writer.dump_note, sizeof report_writer.dump_note, "not written: cannot create the file (error %lu)", GetLastError());
+        snprintf(report_writer.dump_note, sizeof report_writer.dump_note, "not written: cannot create the file (error %lu)",
+                 GetLastError());
         return;
     }
     EXCEPTION_RECORD rec{};
@@ -78,7 +79,7 @@ void minidump(Request &r)
     auto type = MINIDUMP_TYPE(MiniDumpWithThreadInfo | MiniDumpWithProcessThreadData | MiniDumpWithUnloadedModules |
                               MiniDumpWithFullMemoryInfo |
                               (report_writer.dump_mode == DUMP_FULL ? MiniDumpWithFullMemory | MiniDumpWithHandleData
-                                                      : MiniDumpWithIndirectlyReferencedMemory));
+                                                                    : MiniDumpWithIndirectlyReferencedMemory));
     DWORD t0 = GetTickCount();
     BOOL ok = report_writer.write_dump(GetCurrentProcess(), GetCurrentProcessId(), f, type, &ex, &streams, &cb);
     DWORD err = ok ? 0 : GetLastError();
@@ -94,7 +95,8 @@ void minidump(Request &r)
     char name[64];
     WideCharToMultiByte(CP_UTF8, 0, wcsrchr(report_writer.dump_path, L'\\') + 1, -1, name, sizeof name, nullptr, nullptr);
     snprintf(report_writer.dump_note, sizeof report_writer.dump_note, "%s, %.1f MB, %s, written in %.1f s%s", name,
-             double(size.QuadPart) / (1 << 20), report_writer.dump_mode == DUMP_FULL ? "all memory" : "thread stacks and registers",
+             double(size.QuadPart) / (1 << 20),
+             report_writer.dump_mode == DUMP_FULL ? "all memory" : "thread stacks and registers",
              double(GetTickCount() - t0) / 1000,
              budget.dropped ? fmt("; %d thread stack(s) left out past the %llu MB budget", budget.dropped,
                                   (unsigned long long)(DUMP_STACKS >> 20))

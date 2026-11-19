@@ -76,9 +76,9 @@ void on_heap_error(int code, const char *msg, bool is_fatal, void *heap)
         h.used = reinterpret_cast<Stat>(vt[0x70 / 8])(heap);
         h.largest = reinterpret_cast<Largest>(vt[0x80 / 8])(heap, 1);
         h.stats = true;
-    }
-    else if (heap && readable(h.heap, career::save_heap::kPoolFlags + 8) && !(h.heap & 7) &&
-             *reinterpret_cast<uintptr_t *>(h.heap) == process.exe_base + (career::save_heap::kPoolVtable - career::save_heap::kImageBase)) {
+    } else if (heap && readable(h.heap, career::save_heap::kPoolFlags + 8) && !(h.heap & 7) &&
+               *reinterpret_cast<uintptr_t *>(h.heap) ==
+                   process.exe_base + (career::save_heap::kPoolVtable - career::save_heap::kImageBase)) {
         const uint8_t *p = reinterpret_cast<const uint8_t *>(h.heap);
         auto &pi = h.pool_info;
         memcpy(&pi.start, p + career::save_heap::kPoolStart, 8);
@@ -93,8 +93,8 @@ void on_heap_error(int code, const char *msg, bool is_fatal, void *heap)
     char line[blackbox::TEXT];
     snprintf(line, sizeof line, "0x%x%s in '%s': %s", code, is_fatal ? " (fatal)" : "", h.name, h.msg);
     blackbox::note("heap", line);
-    cl("[crash] Ne heap error 0x%x (%s) on thread %lu: %s; heap %p '%s'%s", code, is_fatal ? "fatal" : "not fatal",
-       h.tid, h.msg, heap, h.name,
+    cl("[crash] Ne heap error 0x%x (%s) on thread %lu: %s; heap %p '%s'%s", code, is_fatal ? "fatal" : "not fatal", h.tid, h.msg,
+       heap, h.name,
        h.stats ? fmt(", capacity %llu, used %llu, free %llu, largest free %llu", (unsigned long long)h.capacity,
                      (unsigned long long)h.used, (unsigned long long)h.free_bytes, (unsigned long long)h.largest)
                      .c_str()
@@ -104,7 +104,9 @@ void on_heap_error(int code, const char *msg, bool is_fatal, void *heap)
         MEMORYSTATUSEX ms = {};
         ms.dwLength = sizeof ms;
         if (GlobalMemoryStatusEx(&ms))
-            cl("[crash] Ne heap error 0x58 (useAddressSpace: the commit of a heap block failed, error 0x58 is a Win32 error the game does not map, e.g. 1455 commit limit) in '%s': last Win32 error %lu, system commit limit %llu MiB, commit left %llu MiB, physical %llu of %llu MiB free, process address space left %llu MiB; heap %s",
+            cl("[crash] Ne heap error 0x58 (useAddressSpace: the commit of a heap block failed, error 0x58 is a Win32 error the "
+               "game does not map, e.g. 1455 commit limit) in '%s': last Win32 error %lu, system commit limit %llu MiB, commit "
+               "left %llu MiB, physical %llu of %llu MiB free, process address space left %llu MiB; heap %s",
                h.name, last, (unsigned long long)(ms.ullTotalPageFile >> 20), (unsigned long long)(ms.ullAvailPageFile >> 20),
                (unsigned long long)(ms.ullAvailPhys >> 20), (unsigned long long)(ms.ullTotalPhys >> 20),
                (unsigned long long)(ms.ullAvailVirtual >> 20),
@@ -128,10 +130,7 @@ int hooked_report_memory_error(int code, const char *msg, char is_fatal, char br
     return game_paths.heap_error_hook.unsafe_call<int>(code, msg, is_fatal, brk, a5, heap);
 }
 
-bool fast_fail_available()
-{
-    return IsProcessorFeaturePresent(PF_FASTFAIL_AVAILABLE) != 0;
-}
+bool fast_fail_available() { return IsProcessorFeaturePresent(PF_FASTFAIL_AVAILABLE) != 0; }
 
 void report_fast_fail(fast_fail::Source src, const fast_fail::Outcome &o, const CONTEXT &ctx, uintptr_t at_addr)
 {
@@ -173,20 +172,14 @@ void report_from_hook(fast_fail::Source src, safetyhook::Context &c, uintptr_t e
     report_fast_fail(src, fast_fail::outcome(src, fast_fail_available(), 0), ctx, caller);
 }
 
-void on_gs_failure(safetyhook::Context &c)
-{
-    report_from_hook(fast_fail::Source::GsFailure, c, game_paths.gs_failure_fn);
-}
+void on_gs_failure(safetyhook::Context &c) { report_from_hook(fast_fail::Source::GsFailure, c, game_paths.gs_failure_fn); }
 
 void on_invalid_parameter(safetyhook::Context &c)
 {
     report_from_hook(fast_fail::Source::InvalidParameter, c, game_paths.fast_fail_terminate_fn);
 }
 
-void on_abort(safetyhook::Context &c)
-{
-    report_from_hook(fast_fail::Source::Abort, c, game_paths.abort_fn);
-}
+void on_abort(safetyhook::Context &c) { report_from_hook(fast_fail::Source::Abort, c, game_paths.abort_fn); }
 
 void WINAPI hooked_raise_fail_fast(PEXCEPTION_RECORD rec, PCONTEXT given, DWORD flags)
 {
@@ -195,8 +188,8 @@ void WINAPI hooked_raise_fail_fast(PEXCEPTION_RECORD rec, PCONTEXT given, DWORD 
     if (given && readable(reinterpret_cast<uintptr_t>(given), sizeof(CONTEXT)) && given->Rip)
         memcpy(&ctx, given, sizeof ctx);
     uint32_t status = rec && readable(reinterpret_cast<uintptr_t>(rec), sizeof(DWORD)) ? rec->ExceptionCode : 0;
-    report_fast_fail(fast_fail::Source::RaiseFailFast, fast_fail::outcome(fast_fail::Source::RaiseFailFast, true, status),
-                     ctx, ctx.Rip);
+    report_fast_fail(fast_fail::Source::RaiseFailFast, fast_fail::outcome(fast_fail::Source::RaiseFailFast, true, status), ctx,
+                     ctx.Rip);
     game_paths.fail_fast_hook.unsafe_call<void>(rec, given, flags);
 }
 
@@ -225,7 +218,8 @@ uintptr_t scan_exe(const uint8_t *pat, size_t n, const fast_fail::Pattern *maske
     for (int i = 0; i < nt->FileHeader.NumberOfSections; i++, s++) {
         if (!(s->Characteristics & IMAGE_SCN_MEM_EXECUTE))
             continue;
-        uintptr_t start = process.exe_base + s->VirtualAddress, end = start + (s->Misc.VirtualSize ? s->Misc.VirtualSize : s->SizeOfRawData);
+        uintptr_t start = process.exe_base + s->VirtualAddress,
+                  end = start + (s->Misc.VirtualSize ? s->Misc.VirtualSize : s->SizeOfRawData);
         for (uintptr_t p = start; p < end;) {
             MEMORY_BASIC_INFORMATION m;
             if (!VirtualQuery(reinterpret_cast<void *>(p), &m, sizeof m))
@@ -257,7 +251,8 @@ bool in_exe_code(uintptr_t a, size_t n)
     auto nt = reinterpret_cast<const IMAGE_NT_HEADERS *>(process.exe_base + dos->e_lfanew);
     auto s = IMAGE_FIRST_SECTION(nt);
     for (int i = 0; i < nt->FileHeader.NumberOfSections; i++, s++) {
-        uintptr_t start = process.exe_base + s->VirtualAddress, end = start + (s->Misc.VirtualSize ? s->Misc.VirtualSize : s->SizeOfRawData);
+        uintptr_t start = process.exe_base + s->VirtualAddress,
+                  end = start + (s->Misc.VirtualSize ? s->Misc.VirtualSize : s->SizeOfRawData);
         if ((s->Characteristics & IMAGE_SCN_MEM_EXECUTE) && a >= start && a < end && n <= end - a)
             return true;
     }
@@ -316,10 +311,9 @@ void hook_heap_errors()
     if (h)
         game_paths.heap_error_hook = std::move(*h);
     cl("[crash] Ne_ReportMemoryError at base+0x%llx %s (%s); heap objects are recognised by %s",
-       (unsigned long long)(game_paths.report_memory_error - process.exe_base), h ? "hooked" : "NOT hooked",
-       how, game_paths.heap_error_fn ? "their error method at the KB address" : "the error method's prologue");
+       (unsigned long long)(game_paths.report_memory_error - process.exe_base), h ? "hooked" : "NOT hooked", how,
+       game_paths.heap_error_fn ? "their error method at the KB address" : "the error method's prologue");
 }
-
 
 uintptr_t find_fast_fail_path(const char *name, uint32_t rva, const char *pattern, const char *&how)
 {
@@ -352,8 +346,8 @@ void hook_fast_fail_path(const char *name, uint32_t rva, const char *pattern, ui
 
 void hook_fast_fails()
 {
-    hook_fast_fail_path("__report_gsfailure", RVA_REPORT_GS_FAILURE, PATTERN_REPORT_GS_FAILURE, game_paths.gs_failure_fn, game_paths.gs_hook,
-                        on_gs_failure);
+    hook_fast_fail_path("__report_gsfailure", RVA_REPORT_GS_FAILURE, PATTERN_REPORT_GS_FAILURE, game_paths.gs_failure_fn,
+                        game_paths.gs_hook, on_gs_failure);
     hook_fast_fail_path("the CRT invalid-parameter terminate path", RVA_FAST_FAIL_TERMINATE, PATTERN_FAST_FAIL_TERMINATE,
                         game_paths.fast_fail_terminate_fn, game_paths.invalid_parameter_hook, on_invalid_parameter);
     hook_fast_fail_path("the CRT abort path", RVA_INVALID_PARAMETER_ABORT, PATTERN_INVALID_PARAMETER_ABORT, game_paths.abort_fn,

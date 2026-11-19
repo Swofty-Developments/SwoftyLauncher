@@ -56,8 +56,9 @@ uint8_t *find_helper_mode(void *mode, const std::string &want, std::string &wher
     }
     size_t seen = 0;
     std::vector<std::string> labels;
-    uint8_t *m = logic::find_stored_mode(reinterpret_cast<const uint8_t *>(registry), want,
-                                         [](const void *p, size_t n) { return mem::readable(p, n); }, &seen, &labels);
+    uint8_t *m = logic::find_stored_mode(
+        reinterpret_cast<const uint8_t *>(registry), want, [](const void *p, size_t n) { return mem::readable(p, n); }, &seen,
+        &labels);
     if (m) {
         where = "the store of " + std::to_string(seen) + " parsed setup mode(s)";
         return m;
@@ -65,8 +66,8 @@ uint8_t *find_helper_mode(void *mode, const std::string &want, std::string &wher
     std::string all;
     for (auto &l : labels)
         all += (all.empty() ? "" : ", ") + l;
-    where = "the game mode's setup modes and the store of " + std::to_string(seen) + " parsed setup mode(s): " +
-            (all.empty() ? std::string("none") : all) +
+    where = "the game mode's setup modes and the store of " + std::to_string(seen) +
+            " parsed setup mode(s): " + (all.empty() ? std::string("none") : all) +
             "; the game parses only rows with available true (the core sets it on a content.package's weekend_mode row at boot)";
     return m;
 }

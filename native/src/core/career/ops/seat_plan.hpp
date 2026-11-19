@@ -22,10 +22,7 @@ namespace career::ops::seat {
 
 enum class Holder { none, swapped, released };
 
-inline const char *name(Holder h)
-{
-    return h == Holder::swapped ? "swapped" : h == Holder::released ? "released" : "none";
-}
+inline const char *name(Holder h) { return h == Holder::swapped ? "swapped" : h == Holder::released ? "released" : "none"; }
 
 struct Plan {
     std::string refusal;
@@ -38,10 +35,7 @@ struct Plan {
     int player_team = -1;
 };
 
-inline bool seated(const plan::Row &r)
-{
-    return r.car && r.team >= 0 && r.position >= 0;
-}
+inline bool seated(const plan::Row &r) { return r.car && r.team >= 0 && r.position >= 0; }
 
 inline Plan plan(const std::vector<plan::Row> &rows, uint32_t driver, int team, int seat)
 {

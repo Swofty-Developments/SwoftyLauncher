@@ -55,8 +55,8 @@ void grid_mean(const uint8_t *src, UINT pitch, UINT w, UINT h, DXGI_FORMAT f, do
     out[0] = r / n, out[1] = g / n, out[2] = bl / n, out[3] = sat / n;
 }
 
-void copy_to_readback(ID3D12GraphicsCommandList *l, ID3D12Resource *rb_res,
-                      const D3D12_PLACED_SUBRESOURCE_FOOTPRINT &footprint, ID3D12Resource *back)
+void copy_to_readback(ID3D12GraphicsCommandList *l, ID3D12Resource *rb_res, const D3D12_PLACED_SUBRESOURCE_FOOTPRINT &footprint,
+                      ID3D12Resource *back)
 {
     D3D12_TEXTURE_COPY_LOCATION rb{}, from{};
     rb.pResource = rb_res;
@@ -75,8 +75,7 @@ void PictureCapture::configure(const std::string &dir, const std::wstring &captu
     file = capture_file;
 }
 
-void PictureCapture::remake(const GpuContext &gpu, const D3D12_RESOURCE_DESC &d, RetireQueue &retired,
-                            unsigned frame_count)
+void PictureCapture::remake(const GpuContext &gpu, const D3D12_RESOURCE_DESC &d, RetireQueue &retired, unsigned frame_count)
 {
     if (dir_.empty() || pending)
         return;
@@ -106,8 +105,8 @@ void PictureCapture::land(const Slot *slots, const D3D12_RESOURCE_DESC &desc, DX
         D3D12_RANGE none{0, 0};
         rb[i]->Unmap(0, &none);
     }
-    swofty::log("[postfx] wrote the picture before and after the passes to %s\\postfx-%02u-{before,after}.ppm",
-                dir_.c_str(), captures);
+    swofty::log("[postfx] wrote the picture before and after the passes to %s\\postfx-%02u-{before,after}.ppm", dir_.c_str(),
+                captures);
     captures++;
 }
 
@@ -155,14 +154,13 @@ bool ClipRecorder::busy() const
     return left || std::any_of(std::begin(ring), std::end(ring), [](const Entry &e) { return e.pending; });
 }
 
-ClipRecorder::Entry *ClipRecorder::begin(const GpuContext &gpu, const D3D12_RESOURCE_DESC &d, int k,
-                                         DXGI_FORMAT view, RetireQueue &retired, unsigned frame_count)
+ClipRecorder::Entry *ClipRecorder::begin(const GpuContext &gpu, const D3D12_RESOURCE_DESC &d, int k, DXGI_FORMAT view,
+                                         RetireQueue &retired, unsigned frame_count)
 {
     if (!left)
         return nullptr;
     if (view != DXGI_FORMAT_R8G8B8A8_UNORM && view != DXGI_FORMAT_R10G10B10A2_UNORM) {
-        swofty::log("[shaders] clip: the picture has format %d, which the capture does not take; clip stopped",
-                    int(view));
+        swofty::log("[shaders] clip: the picture has format %d, which the capture does not take; clip stopped", int(view));
         left = 0;
         return nullptr;
     }
@@ -277,8 +275,8 @@ void BurstProbe::check_file(const std::wstring &swofty_root)
     }
 }
 
-void BurstProbe::record(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers,
-                        const GpuContext &gpu, const ResourceWatch &watched, unsigned frame_count)
+void BurstProbe::record(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers, const GpuContext &gpu,
+                        const ResourceWatch &watched, unsigned frame_count)
 {
     for (UINT i = 0; i < n; i++) {
         const D3D12_RESOURCE_BARRIER &b = barriers[i];

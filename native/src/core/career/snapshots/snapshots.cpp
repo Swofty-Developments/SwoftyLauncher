@@ -29,9 +29,8 @@ void Book::note(const std::string &s) const
 
 reg::SnapshotSource Book::source()
 {
-    return [this](const std::string &registry, const std::string &id, const reg::Context &ctx) {
-        return read(registry, id, ctx);
-    };
+    return
+        [this](const std::string &registry, const std::string &id, const reg::Context &ctx) { return read(registry, id, ctx); };
 }
 
 void Book::refresh()
@@ -87,10 +86,12 @@ void Book::loaded(const Bytes *body)
         note("[registry] swofty_registry: this profile save has none; each career starts its snapshots at its next "
              "season");
     else if (st == fmt::Decoded::newer)
-        note("[registry] swofty_registry: " + why + "; kept as is and written back unchanged, and careers read "
+        note("[registry] swofty_registry: " + why +
+             "; kept as is and written back unchanged, and careers read "
              "their registries live");
     else if (st == fmt::Decoded::corrupt)
-        note("[registry] swofty_registry: ignored (" + why + "); careers read their registries live, and the next "
+        note("[registry] swofty_registry: ignored (" + why +
+             "); careers read their registries live, and the next "
              "snapshot replaces it");
     else
         note("[registry] swofty_registry: read " + std::to_string(careers) + " career(s), " + std::to_string(seasons) +
@@ -121,8 +122,8 @@ bool Book::saving(Bytes &body)
     }
     Bytes payload = out.encode();
     if (payload.size() > fmt::ENTRY_CAP) {
-        note("[registry] swofty_registry: the entry's payload of " + kb(payload.size()) + " is past the " +
-             kb(fmt::ENTRY_CAP) + " cap; not written with this save");
+        note("[registry] swofty_registry: the entry's payload of " + kb(payload.size()) + " is past the " + kb(fmt::ENTRY_CAP) +
+             " cap; not written with this save");
         return false;
     }
     if (!fmt::bag_body(payload, body))
@@ -224,7 +225,8 @@ void Book::career_loaded(const std::string &id, reg::Context ctx)
         cache_->logged.clear();
         fmt::Career *c = entry_.career(id);
         if (!c) {
-            line = "[registry] career " + id + ": no snapshot in swofty_registry (a career from before 1.6, or a new "
+            line = "[registry] career " + id +
+                   ": no snapshot in swofty_registry (a career from before 1.6, or a new "
                    "one); it reads live and freezes from its next season";
         } else if (c->unreadable) {
             line = "[registry] career " + id + ": its snapshot is unreadable; kept as is, and it reads live";

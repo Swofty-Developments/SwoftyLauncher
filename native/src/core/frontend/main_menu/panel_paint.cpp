@@ -122,14 +122,16 @@ void Panel::paint(hud::drawlist::Frame &f, uint64_t now)
 {
     (void)now;
     if (!std::exchange(told_first, true))
-        swofty::log("[main-menu] panel: paint called on a %.0fx%.0f frame (patched %d, home open %d, state %d, prepared %d, disabled %d)",
-                    double(f.width), double(f.height), int(menu.patched.load()), int(menu.home_open.load()), int(state_loaded.load()),
-                    int(panel_prepared.load()), int(panel_disabled.load()));
+        swofty::log(
+            "[main-menu] panel: paint called on a %.0fx%.0f frame (patched %d, home open %d, state %d, prepared %d, disabled %d)",
+            double(f.width), double(f.height), int(menu.patched.load()), int(menu.home_open.load()), int(state_loaded.load()),
+            int(panel_prepared.load()), int(panel_disabled.load()));
     menu.navigation.paint_cover(f);
     if (!due()) {
         if (menu.home_open.load() && !std::exchange(told_blocked, true))
             swofty::log("[main-menu] panel: not due on an open home screen (patched %d, state %d, prepared %d, disabled %d)",
-                        int(menu.patched.load()), int(state_loaded.load()), int(panel_prepared.load()), int(panel_disabled.load()));
+                        int(menu.patched.load()), int(state_loaded.load()), int(panel_prepared.load()),
+                        int(panel_disabled.load()));
         return;
     }
     std::shared_ptr<const Prepared> p;
@@ -163,7 +165,8 @@ void Panel::paint(hud::drawlist::Frame &f, uint64_t now)
         hud::drawlist::TextStyle name_style;
         name_style.px = 26 * k;
         name_style.rgba = 0xf3f5f9ffu;
-        std::string who = p->s.signed_in ? (p->s.name.empty() ? std::string("Discord") : p->s.name) : std::string("Not signed in");
+        std::string who =
+            p->s.signed_in ? (p->s.name.empty() ? std::string("Discord") : p->s.name) : std::string("Not signed in");
         float tmp = 0, nw = 0;
         hud::drawlist::measure(name_style, who, &nw, &tmp);
         nw = nw * 1.06f + 4 * k;

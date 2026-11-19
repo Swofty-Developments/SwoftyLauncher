@@ -24,16 +24,10 @@ constexpr uint8_t PER_DRIVER_UNIQUE = 2;
 constexpr const char *DEPARTMENTS[] = {"aerodynamics", "chassis", "durability", "engine", "fake"};
 constexpr const char *SUPPLIER_ROW = "engine_supplier_upgrades";
 
-inline int trees(uint8_t mode)
-{
-    return mode == PER_DRIVER_UNIQUE ? 2 : 1;
-}
+inline int trees(uint8_t mode) { return mode == PER_DRIVER_UNIQUE ? 2 : 1; }
 
 // Instances one tree may hold so that neither the tree's own array nor a collector over all trees passes 384.
-inline int budget(uint8_t mode)
-{
-    return SLOTS / trees(mode);
-}
+inline int budget(uint8_t mode) { return SLOTS / trees(mode); }
 
 inline std::string_view trimmed(std::string_view s)
 {
@@ -78,10 +72,7 @@ inline std::string table_of(std::string_view row)
 
 // A vehicle key as Career_Add_TeamUpgrades gets it: (stat id & 0x3fff) << 16 | kind (Game_UpgradesComponent_Deserialise
 // builds it so at 0x14123fd44..0x14123fd5e).
-inline uint32_t vehicle_stat(uint32_t key)
-{
-    return (key >> 16) & 0x3fff;
-}
+inline uint32_t vehicle_stat(uint32_t key) { return (key >> 16) & 0x3fff; }
 
 struct Supplier {
     std::string row;
@@ -91,8 +82,8 @@ struct Supplier {
 
 struct Plan {
     std::vector<bool> load;
-    int used = 0;      // instances one tree gets: team rows plus the loaded suppliers' rows
-    bool over = false; // stock behaviour would have passed the budget
+    int used = 0;                 // instances one tree gets: team rows plus the loaded suppliers' rows
+    bool over = false;            // stock behaviour would have passed the budget
     bool short_of_chosen = false; // a chosen supplier did not fit even after every other supplier was left out
 };
 

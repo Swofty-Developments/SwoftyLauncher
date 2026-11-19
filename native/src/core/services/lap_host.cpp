@@ -90,10 +90,7 @@ int add_hooks(const char *name, const SwoftyMixin *mixins, size_t count)
     return 1;
 }
 
-int hooks_active(const char *name)
-{
-    return name && core_mixins_active(name);
-}
+int hooks_active(const char *name) { return name && core_mixins_active(name); }
 
 int host_when_code_ready(const char *what, void (*fn)(void))
 {
@@ -110,10 +107,7 @@ int host_when_code_ready(const char *what, void (*fn)(void))
     return 1;
 }
 
-int host_code_ready()
-{
-    return code_ready();
-}
+int host_code_ready() { return code_ready(); }
 
 namespace bp = build_proof;
 // Bit 1 of build(): the lap module's signatures and bindings match once and are the same code. On EA 1.0.145 they were
@@ -121,38 +115,19 @@ namespace bp = build_proof;
 // 59 signatures and 24 bindings, and the 57 functions they sit in compared whole (re/research/ea-1-0-145.md).
 constexpr bp::Proof LAP_MODULE_LAYOUT{"the lap module's signature functions' struct layouts",
                                       bp::proofs::VERIFIED_LAYOUT.builds | bp::bit(bp::Build::ea_1_0_145)};
-static_assert(bp::proven_on(LAP_MODULE_LAYOUT, bp::Build::ea_1_0_145) &&
-              !bp::proven_on(LAP_MODULE_LAYOUT, bp::Build::unknown));
+static_assert(bp::proven_on(LAP_MODULE_LAYOUT, bp::Build::ea_1_0_145) && !bp::proven_on(LAP_MODULE_LAYOUT, bp::Build::unknown));
 
-uint32_t build()
-{
-    return (same_build() ? 1u : 0u) | (bp::proven_on(LAP_MODULE_LAYOUT, running_build()) ? 2u : 0u);
-}
+uint32_t build() { return (same_build() ? 1u : 0u) | (bp::proven_on(LAP_MODULE_LAYOUT, running_build()) ? 2u : 0u); }
 
-const char *build_sha()
-{
-    return keep(build_exe_sha());
-}
+const char *build_sha() { return keep(build_exe_sha()); }
 
-int feature(const char *name)
-{
-    return name && enabled(name, nullptr);
-}
+int feature(const char *name) { return name && enabled(name, nullptr); }
 
-const char *host_swofty_root()
-{
-    return keep(narrow(swofty_root()));
-}
+const char *host_swofty_root() { return keep(narrow(swofty_root())); }
 
-const char *host_files_root()
-{
-    return keep(narrow(files_root()));
-}
+const char *host_files_root() { return keep(narrow(files_root())); }
 
-int host_session_kind()
-{
-    return session_kind();
-}
+int host_session_kind() { return session_kind(); }
 
 int mode_kind()
 {
@@ -162,10 +137,7 @@ int mode_kind()
     return int(swofty_core::apply::moments::mode_kind());
 }
 
-const char *session_mode()
-{
-    return keep(swofty_core::apply::moments::session_mode_track().first);
-}
+const char *session_mode() { return keep(swofty_core::apply::moments::session_mode_track().first); }
 
 const char *session_content()
 {
@@ -187,33 +159,24 @@ const char *player_label(uint32_t what)
     auto facts = swofty_core::hooks::core().current();
     if (!facts || !facts->player)
         return keep({});
-    return keep(what == 0 ? facts->player->team : what == 1 ? facts->player->vehicle : what == 2 ? facts->player->driver : std::string());
+    return keep(what == 0   ? facts->player->team
+                : what == 1 ? facts->player->vehicle
+                : what == 2 ? facts->player->driver
+                            : std::string());
 }
 
-uint32_t view_flags()
-{
-    return frontend::view::current().flags;
-}
+uint32_t view_flags() { return frontend::view::current().flags; }
 
-void *game_manager()
-{
-    return direct_start_context().game_manager;
-}
+void *game_manager() { return direct_start_context().game_manager; }
 
-int host_flow_link_listen(SwoftyLapFlowLinkFn listener)
-{
-    return listener && flow_link_listen(listener);
-}
+int host_flow_link_listen(SwoftyLapFlowLinkFn listener) { return listener && flow_link_listen(listener); }
 
 const char *time_trial_track(int session)
 {
     return keep(session ? direct_start::tt::session_track() : direct_start::tt::current_track());
 }
 
-const char *time_trial_list()
-{
-    return keep(direct_start::tt::player_list());
-}
+const char *time_trial_list() { return keep(direct_start::tt::player_list()); }
 
 int time_trial_team(uint32_t *ref, const char **label)
 {
@@ -227,15 +190,9 @@ int time_trial_team(uint32_t *ref, const char **label)
     return selected;
 }
 
-const char *time_trial_team_of(uint32_t ref)
-{
-    return keep(direct_start::tt::team_of(ref));
-}
+const char *time_trial_team_of(uint32_t ref) { return keep(direct_start::tt::team_of(ref)); }
 
-int time_trial_track_stat()
-{
-    return direct_start::tt::track_stat();
-}
+int time_trial_track_stat() { return direct_start::tt::track_stat(); }
 
 int time_trial_setup(const char *request, const char **why)
 {
@@ -251,10 +208,7 @@ int time_trial_setup(const char *request, const char **why)
     return s == direct_start::Setup::done ? 1 : s == direct_start::Setup::pending ? 0 : -1;
 }
 
-void time_trial_setup_reset()
-{
-    direct_start::tt::reset_for_replay();
-}
+void time_trial_setup_reset() { direct_start::tt::reset_for_replay(); }
 
 void press_list(const char *entrant_list)
 {
@@ -277,7 +231,8 @@ int track(uint32_t index, SwoftyLapTrack *out)
     if (!out || index >= base.tracks.size())
         return 0;
     const auto &t = base.tracks[index];
-    *out = {t.id.c_str(), t.code.c_str(), t.base.c_str(), t.addon.c_str(), t.name.c_str(), int32_t(t.stat_id), uint32_t(t.kind), t.time_trial ? 1u : 0u};
+    *out = {t.id.c_str(),   t.code.c_str(),     t.base.c_str(),   t.addon.c_str(),
+            t.name.c_str(), int32_t(t.stat_id), uint32_t(t.kind), t.time_trial ? 1u : 0u};
     return 1;
 }
 
@@ -299,8 +254,9 @@ int car(SwoftyLapCar *out)
     bool ok = live_car::read(c);
     SwoftyLapCar o{};
     o.size = sizeof o;
-    o.has = (c.has_speed ? SWOFTY_LAP_CAR_SPEED : 0) | (c.has_pedals ? SWOFTY_LAP_CAR_PEDALS : 0) | (c.has_steer ? SWOFTY_LAP_CAR_STEER : 0) |
-            (c.has_gear ? SWOFTY_LAP_CAR_GEAR : 0) | (c.has_rpm ? SWOFTY_LAP_CAR_RPM : 0) | (c.has_g ? SWOFTY_LAP_CAR_G : 0) |
+    o.has = (c.has_speed ? SWOFTY_LAP_CAR_SPEED : 0) | (c.has_pedals ? SWOFTY_LAP_CAR_PEDALS : 0) |
+            (c.has_steer ? SWOFTY_LAP_CAR_STEER : 0) | (c.has_gear ? SWOFTY_LAP_CAR_GEAR : 0) |
+            (c.has_rpm ? SWOFTY_LAP_CAR_RPM : 0) | (c.has_g ? SWOFTY_LAP_CAR_G : 0) |
             (c.has_surface ? SWOFTY_LAP_CAR_SURFACE : 0) | (c.has_wetness ? SWOFTY_LAP_CAR_WETNESS : 0) |
             (c.has_wheel_wetness ? SWOFTY_LAP_CAR_WHEEL_WETNESS : 0);
     o.wetness = c.wetness;
@@ -329,8 +285,9 @@ int motion(SwoftyLapMotion *out)
     bool ok = live_car::read_dynamics(d);
     SwoftyLapMotion o{};
     o.size = sizeof o;
-    o.has = (d.has_pos ? SWOFTY_LAP_MOTION_POS : 0) | (d.has_vel ? SWOFTY_LAP_MOTION_VEL : 0) | (d.has_angvel ? SWOFTY_LAP_MOTION_ANGVEL : 0) |
-            (d.has_orient ? SWOFTY_LAP_MOTION_ORIENT : 0) | (d.has_spin ? SWOFTY_LAP_MOTION_SPIN : 0) | (d.has_slip ? SWOFTY_LAP_MOTION_SLIP : 0) |
+    o.has = (d.has_pos ? SWOFTY_LAP_MOTION_POS : 0) | (d.has_vel ? SWOFTY_LAP_MOTION_VEL : 0) |
+            (d.has_angvel ? SWOFTY_LAP_MOTION_ANGVEL : 0) | (d.has_orient ? SWOFTY_LAP_MOTION_ORIENT : 0) |
+            (d.has_spin ? SWOFTY_LAP_MOTION_SPIN : 0) | (d.has_slip ? SWOFTY_LAP_MOTION_SLIP : 0) |
             (d.has_drs ? SWOFTY_LAP_MOTION_DRS : 0);
     std::memcpy(o.pos, d.pos, sizeof o.pos);
     std::memcpy(o.vel, d.vel, sizeof o.vel);
@@ -346,15 +303,9 @@ int motion(SwoftyLapMotion *out)
     return ok;
 }
 
-uint32_t car_state()
-{
-    return (live_car::available() ? 1u : 0u) | (live_car::kb_fields() ? 2u : 0u);
-}
+uint32_t car_state() { return (live_car::available() ? 1u : 0u) | (live_car::kb_fields() ? 2u : 0u); }
 
-uintptr_t player_car()
-{
-    return live_car::player_car();
-}
+uintptr_t player_car() { return live_car::player_car(); }
 
 int sealing(const char *path, int32_t time_ms, const uint8_t *body, uint32_t body_len, SwoftyLapSectionFn add_section, void *user)
 {
@@ -373,10 +324,7 @@ int recorded(const char *path, int32_t time_ms, int32_t valid)
     return swofty_core::hooks::events::laps_recorded(path, time_ms, valid);
 }
 
-int copy(void *to, const void *from, size_t n)
-{
-    return swofty_core::hooks::guard::copy_memory(to, from, n);
-}
+int copy(void *to, const void *from, size_t n) { return swofty_core::hooks::guard::copy_memory(to, from, n); }
 
 std::mutex notice_lock;
 std::string notice_text;
@@ -451,8 +399,9 @@ void marks_loop()
         if (lost)
             swofty::log("[lap-host] %llu timing mark(s) dropped: the writer fell behind", (unsigned long long)lost);
         if (!write_mark(m) && !std::exchange(warned, true))
-            swofty::log("[lap-host] a timing mark could not be written for the launcher (error %lu); this session's laps are untimed",
-                        GetLastError());
+            swofty::log(
+                "[lap-host] a timing mark could not be written for the launcher (error %lu); this session's laps are untimed",
+                GetLastError());
     }
 }
 
@@ -475,17 +424,51 @@ int mark(int32_t lap, int32_t which, int32_t game_ms)
 
 const char *core_version() { return SWOFTY_CORE_VERSION; }
 
-const SwoftyLapHost table = {sizeof(SwoftyLapHost), SWOFTY_LAP_HOST_VERSION, attach, add_hooks, hooks_active, host_when_code_ready, host_code_ready,
-                             build, build_sha, feature, host_swofty_root, host_files_root, host_session_kind, mode_kind, session_mode,
-                             session_content, content_title, player_label, view_flags, game_manager, host_flow_link_listen, time_trial_track,
-                             time_trial_list, time_trial_team, time_trial_team_of, time_trial_track_stat, time_trial_setup,
-                             time_trial_setup_reset, press_list, session_unlisted, track, content_ids, car, motion, car_state, player_car,
-                             sealing, recorded, copy, notice, name_tick, mark, core_version};
+const SwoftyLapHost table = {sizeof(SwoftyLapHost),
+                             SWOFTY_LAP_HOST_VERSION,
+                             attach,
+                             add_hooks,
+                             hooks_active,
+                             host_when_code_ready,
+                             host_code_ready,
+                             build,
+                             build_sha,
+                             feature,
+                             host_swofty_root,
+                             host_files_root,
+                             host_session_kind,
+                             mode_kind,
+                             session_mode,
+                             session_content,
+                             content_title,
+                             player_label,
+                             view_flags,
+                             game_manager,
+                             host_flow_link_listen,
+                             time_trial_track,
+                             time_trial_list,
+                             time_trial_team,
+                             time_trial_team_of,
+                             time_trial_track_stat,
+                             time_trial_setup,
+                             time_trial_setup_reset,
+                             press_list,
+                             session_unlisted,
+                             track,
+                             content_ids,
+                             car,
+                             motion,
+                             car_state,
+                             player_car,
+                             sealing,
+                             recorded,
+                             copy,
+                             notice,
+                             name_tick,
+                             mark,
+                             core_version};
 
-const SwoftyLapClient *live()
-{
-    return client.load(std::memory_order_acquire);
-}
+const SwoftyLapClient *live() { return client.load(std::memory_order_acquire); }
 
 }
 
@@ -553,10 +536,7 @@ bool notice_wanted()
     return c && c->notice_wanted && c->notice_wanted();
 }
 
-bool notice_drawing()
-{
-    return notice_on.load(std::memory_order_relaxed);
-}
+bool notice_drawing() { return notice_on.load(std::memory_order_relaxed); }
 
 void notice_paint(hud::drawlist::Frame &f, uint64_t)
 {
@@ -615,7 +595,4 @@ static loader::FunctionSet lap_host_core_set{loader::CoreSetId::lap_host, lap_ho
 
 }
 
-extern "C" __declspec(dllexport) const SwoftyLapHost *SwoftyCoreLapHost(void)
-{
-    return &runtime::lap_host::table;
-}
+extern "C" __declspec(dllexport) const SwoftyLapHost *SwoftyCoreLapHost(void) { return &runtime::lap_host::table; }

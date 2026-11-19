@@ -60,10 +60,7 @@ Settings Settings::read()
     return out;
 }
 
-bool Settings::killed(const char *what) const
-{
-    return kill_has(kill, "all") || kill_has(kill, what);
-}
+bool Settings::killed(const char *what) const { return kill_has(kill, "all") || kill_has(kill, what); }
 
 const Settings &settings()
 {
@@ -86,8 +83,8 @@ bool before_fg_wanted()
     else
         swofty::log("[overlay] at start the game's hardware settings (%s) have frame generation %s (frame_gen mode "
                     "%d, multi_frame_gen %d); drawing before frame generation is %s",
-                    path.empty() ? "path unknown" : runtime::narrow(path).c_str(), game.word(), game.mode,
-                    game.multi, want ? "on" : "off");
+                    path.empty() ? "path unknown" : runtime::narrow(path).c_str(), game.word(), game.mode, game.multi,
+                    want ? "on" : "off");
     return want;
 }
 
@@ -139,8 +136,11 @@ bool FgWatch::frame_gen_off(ULONGLONG now)
         told = true;
         swofty::log("[overlay] the game's hardware settings (%s) have frame generation %s (frame_gen mode %d, "
                     "multi_frame_gen %d)",
-                    runtime::narrow(path).c_str(), !setting.known ? "unknown" : off ? "off" : "on", setting.mode,
-                    setting.multi);
+                    runtime::narrow(path).c_str(),
+                    !setting.known ? "unknown"
+                    : off          ? "off"
+                                   : "on",
+                    setting.mode, setting.multi);
     } else if (!off) {
         swofty::log("[overlay] the game's hardware settings now have frame generation %s (frame_gen mode %d); the "
                     "overlay stops drawing for this session",
@@ -182,8 +182,8 @@ UINT OutputMode::pick(IDXGISwapChain3 *sc, DXGI_FORMAT fmt, UINT color_space)
             snprintf(why, sizeof why, "no SetColorSpace1 seen; the game's hdr mode is %d", game);
         else
             snprintf(why, sizeof why, "no SetColorSpace1 seen");
-        swofty::log("[overlay] swapchain %p output: %s, paper white %.0f nits (format %d, %s)",
-                    static_cast<void *>(sc), names[out], double(settings().paper_white), int(fmt), why);
+        swofty::log("[overlay] swapchain %p output: %s, paper white %.0f nits (format %d, %s)", static_cast<void *>(sc),
+                    names[out], double(settings().paper_white), int(fmt), why);
     }
     return out;
 }

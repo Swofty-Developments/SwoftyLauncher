@@ -108,13 +108,14 @@ inline Outcome deliver(Attempt first, const std::function<Attempt(const std::set
             sink.unroute();
         size_t before = out.dropped.size();
         if (a.cached)
-            out.lines.push_back("team.logo: the cached archives could not all be delivered (" + failed[0].rel + ": " + failed[0].why +
-                                "); built again");
+            out.lines.push_back("team.logo: the cached archives could not all be delivered (" + failed[0].rel + ": " +
+                                failed[0].why + "); built again");
         else
             for (auto &[array, f] : blamed()) {
                 out.dropped.insert(array);
                 out.lines.push_back("team.logo: " + array + " is left at its stock size in every archive this boot: " + f.rel +
-                                    " could not be delivered (" + f.why + "), and the game must read the array's image and view at the same size");
+                                    " could not be delivered (" + f.why +
+                                    "), and the game must read the array's image and view at the same size");
             }
         if (!a.cached && out.dropped.size() == before) {
             out.failed = std::move(failed);

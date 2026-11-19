@@ -20,10 +20,7 @@ struct PointsSession {
 
 using PointsRound = std::vector<PointsSession>;
 
-inline bool same_key(uint32_t a, uint32_t b)
-{
-    return (a & 0xffff00ffu) == (b & 0xffff00ffu);
-}
+inline bool same_key(uint32_t a, uint32_t b) { return (a & 0xffff00ffu) == (b & 0xffff00ffu); }
 
 inline int64_t best_sum(std::vector<int32_t> values, size_t best)
 {
@@ -34,8 +31,7 @@ inline int64_t best_sum(std::vector<int32_t> values, size_t best)
     return total;
 }
 
-inline int32_t counted_total(const std::vector<PointsRound> &rounds, size_t round, uint32_t session_id, uint32_t key,
-                             size_t best)
+inline int32_t counted_total(const std::vector<PointsRound> &rounds, size_t round, uint32_t session_id, uint32_t key, size_t best)
 {
     std::vector<int32_t> per_round;
     for (size_t j = 0; j <= round && j < rounds.size(); j++) {

@@ -136,8 +136,7 @@ void RtasGuard::log_faulty(uint64_t nth, const RtasDesc &desc, const std::vector
                 "has %s (%u vertices at 0x%llx, %u indices at 0x%llx); %s",
                 (unsigned long long)desc.DestAccelerationStructureData,
                 (desc.Inputs.Flags & D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE) ? " (update)" : "",
-                geos.size(), plan.faulty,
-                plan.kept_empty ? ", plus geometries emptied in the build it updates" : "", first,
+                geos.size(), plan.faulty, plan.kept_empty ? ", plus geometries emptied in the build it updates" : "", first,
                 rtas_guard::fault_name(rtas_guard::fault(g)), g.vertex_count, (unsigned long long)g.vertices, g.index_count,
                 (unsigned long long)g.indices, what);
 }
@@ -206,12 +205,12 @@ void RtasGuard::build(ID3D12GraphicsCommandList4 *l, const RtasDesc *desc, UINT 
     }
     bool top = desc->Inputs.Type == D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
     rtas_guard::Call call{top ? rtas_guard::kTop : rtas_guard::kBottom,
-                  desc->DestAccelerationStructureData,
-                  desc->ScratchAccelerationStructureData,
-                  desc->SourceAccelerationStructureData,
-                  top ? desc->Inputs.InstanceDescs : 0,
-                  desc->Inputs.NumDescs,
-                  (desc->Inputs.Flags & D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE) != 0};
+                          desc->DestAccelerationStructureData,
+                          desc->ScratchAccelerationStructureData,
+                          desc->SourceAccelerationStructureData,
+                          top ? desc->Inputs.InstanceDescs : 0,
+                          desc->Inputs.NumDescs,
+                          (desc->Inputs.Flags & D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE) != 0};
     rtas_guard::Entry entry = entry_of(l, *desc, top);
     {
         std::lock_guard<std::mutex> g(lock);
@@ -256,19 +255,19 @@ void RtasGuard::build(ID3D12GraphicsCommandList4 *l, const RtasDesc *desc, UINT 
     const auto &in = desc->Inputs;
     if (nth < trace_builds) {
         char line[1024];
-        int at = snprintf(line, sizeof line, "[gfx] rtas trace %llu: dest 0x%llx src 0x%llx scratch 0x%llx flags 0x%x, %u geometries:",
-                          (unsigned long long)nth, (unsigned long long)desc->DestAccelerationStructureData,
-                          (unsigned long long)desc->SourceAccelerationStructureData,
-                          (unsigned long long)desc->ScratchAccelerationStructureData, unsigned(in.Flags), in.NumDescs);
+        int at = snprintf(
+            line, sizeof line,
+            "[gfx] rtas trace %llu: dest 0x%llx src 0x%llx scratch 0x%llx flags 0x%x, %u geometries:", (unsigned long long)nth,
+            (unsigned long long)desc->DestAccelerationStructureData, (unsigned long long)desc->SourceAccelerationStructureData,
+            (unsigned long long)desc->ScratchAccelerationStructureData, unsigned(in.Flags), in.NumDescs);
         for (UINT i = 0; i < in.NumDescs && i < 6 && at > 0 && at < int(sizeof line) - 160; i++) {
             const GeoDesc &g = geo_at(in, i);
             if (g.Type == D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES)
                 at += snprintf(line + at, sizeof line - at, " [vb 0x%llx s%llu n%u f%d ib 0x%llx n%u f%d t 0x%llx fl%u]",
                                (unsigned long long)g.Triangles.VertexBuffer.StartAddress,
                                (unsigned long long)g.Triangles.VertexBuffer.StrideInBytes, g.Triangles.VertexCount,
-                               int(g.Triangles.VertexFormat), (unsigned long long)g.Triangles.IndexBuffer,
-                               g.Triangles.IndexCount, int(g.Triangles.IndexFormat),
-                               (unsigned long long)g.Triangles.Transform3x4, unsigned(g.Flags));
+                               int(g.Triangles.VertexFormat), (unsigned long long)g.Triangles.IndexBuffer, g.Triangles.IndexCount,
+                               int(g.Triangles.IndexFormat), (unsigned long long)g.Triangles.Transform3x4, unsigned(g.Flags));
             else
                 at += snprintf(line + at, sizeof line - at, " [aabb 0x%llx n%llu]",
                                (unsigned long long)g.AABBs.AABBs.StartAddress, (unsigned long long)g.AABBs.AABBCount);
@@ -288,7 +287,7 @@ void RtasGuard::build(ID3D12GraphicsCommandList4 *l, const RtasDesc *desc, UINT 
     for (UINT i = 0; i < in.NumDescs; i++)
         geos[i] = geo_of(geo_at(in, i));
     rtas_guard::Build b{desc->DestAccelerationStructureData, desc->SourceAccelerationStructureData,
-                (in.Flags & D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE) != 0};
+                        (in.Flags & D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE) != 0};
     rtas_guard::Plan plan;
     if (mode == rtas_guard::Mode::on) {
         std::lock_guard<std::mutex> g(lock);
@@ -387,9 +386,6 @@ std::string rtas_recent_text(const std::vector<runtime::dred::BuildStop> &stops)
 
 namespace runtime {
 
-void rtas_guard_setup()
-{
-    render::d3d12::arm_rtas_guard();
-}
+void rtas_guard_setup() { render::d3d12::arm_rtas_guard(); }
 
 }

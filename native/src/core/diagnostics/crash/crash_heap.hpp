@@ -32,10 +32,7 @@ struct Block {
     uintptr_t list_next() const { return next_rel ? header + intptr_t(next_rel) * 16 : 0; }
 };
 
-template <class R, class T> bool get(R &rd, uintptr_t a, T &out)
-{
-    return rd.read(a, &out, sizeof out);
-}
+template <class R, class T> bool get(R &rd, uintptr_t a, T &out) { return rd.read(a, &out, sizeof out); }
 
 template <class R> bool decode(R &rd, uintptr_t obj, Heap &h)
 {

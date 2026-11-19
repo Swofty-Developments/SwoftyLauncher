@@ -99,7 +99,10 @@ void first(int format, int id, const std::vector<ids::Change> &changes)
         what += (i ? ", " : "") + std::string(changes[i].driver ? "driver " : "team ") + std::to_string(changes[i].from) +
                 " -> " + std::to_string(changes[i].to);
     swofty::log("[udp] first telemetry packet rewritten: format %d, packet %d, %s model: %s", format, id,
-                map.model == ids::MODEL_2025 ? "2025" : map.model == ids::MODEL_2026 ? "2026" : "unknown", what.c_str());
+                map.model == ids::MODEL_2025   ? "2025"
+                : map.model == ids::MODEL_2026 ? "2026"
+                                               : "unknown",
+                what.c_str());
     SetLastError(err);
 }
 
@@ -112,8 +115,8 @@ void odd(const ids::Layout *l, int len)
     if (odd_sizes[slot].fetch_or(bit) & bit)
         return;
     DWORD err = GetLastError();
-    swofty::log("[udp] format %d packet %d is %d bytes, not the %d the id rewrite expects; left alone", l->format, l->id,
-                len, int(l->size));
+    swofty::log("[udp] format %d packet %d is %d bytes, not the %d the id rewrite expects; left alone", l->format, l->id, len,
+                int(l->size));
     SetLastError(err);
 }
 
@@ -196,8 +199,7 @@ void setup()
         std::string text = runtime::read_file(runtime::swofty_root() + L"udp_ids.json", size_t(4) << 20);
         std::string why;
         if (!text.empty() && !ids::load(text, map, why))
-            swofty::log("[udp] swofty\\udp_ids.json is unusable (%s); telemetry ids stay as the game sends them",
-                        why.c_str());
+            swofty::log("[udp] swofty\\udp_ids.json is unusable (%s); telemetry ids stay as the game sends them", why.c_str());
         else
             rewrite = !text.empty() && (map.any || !map.track_ids.empty());
         std::lock_guard g(track_mu);
@@ -258,10 +260,7 @@ void setup()
 
 namespace runtime {
 
-void udp_ids_setup()
-{
-    setup();
-}
+void udp_ids_setup() { setup(); }
 
 void udp_track(int64_t stat_id, const std::string &addon, const std::string &code)
 {

@@ -18,12 +18,12 @@ namespace sj = runtime::session_job_probe;
 
 static int g_fail;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            g_fail++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            g_fail++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
 static sj::Span span(uint64_t begin, int64_t bytes)

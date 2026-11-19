@@ -69,10 +69,7 @@ const char *kind_name(uint32_t k)
     return k < 7 ? names[k] : "?";
 }
 
-MixinManager &mixins()
-{
-    return manager;
-}
+MixinManager &mixins() { return manager; }
 
 bool MixinManager::declared(const Addon &addon, const SwoftyMixin &m) const
 {
@@ -108,8 +105,8 @@ int MixinManager::register_mixins(const SwoftyMixin *m, size_t n)
             return 0;
         }
         if (!on_load && have_session_ && !declared(*current_, m[i])) {
-            api->log("[core] addon %s: %s on %s is not declared in session.json; registration refused",
-                     current_->name.c_str(), kind_name(k), m[i].target);
+            api->log("[core] addon %s: %s on %s is not declared in session.json; registration refused", current_->name.c_str(),
+                     kind_name(k), m[i].target);
             return 0;
         }
         add.push_back({on_load ? "" : m[i].target, m[i].kind, m[i].priority, m[i].handler, m[i].orig});
@@ -148,8 +145,8 @@ void MixinManager::check_targets(size_t i)
         if (!m.addr)
             return drop(i, "needs %s, which does not resolve on this build", m.target.c_str());
         const std::string &bk = b->kind;
-        bool ok = k == SWOFTY_MIXIN_WRAP     ? bk == "func"
-                  : k == SWOFTY_MIXIN_VTABLE ? bk == "vtable"
+        bool ok = k == SWOFTY_MIXIN_WRAP       ? bk == "func"
+                  : k == SWOFTY_MIXIN_VTABLE   ? bk == "vtable"
                   : k == SWOFTY_MIXIN_REDIRECT ? bk == "call"
                                                : bk == "site" || bk == "call";
         if (!ok)
@@ -183,10 +180,7 @@ size_t MixinManager::offer_core_sets()
     return addons_.size() - before;
 }
 
-void MixinManager::settle_core_sets()
-{
-    loader::commit_core_sets();
-}
+void MixinManager::settle_core_sets() { loader::commit_core_sets(); }
 
 void MixinManager::run_on_load(size_t i)
 {
@@ -233,7 +227,8 @@ void MixinManager::reinit_deferred(bool final)
         drop_module(a.module);
         if (!a.hit_deferred || final) {
             a.reinit = nullptr;
-            drop(i, "SwoftyAddonInit returned 0 once its code %s", a.hit_deferred ? "still read encrypted at the last retry" : "decrypted");
+            drop(i, "SwoftyAddonInit returned 0 once its code %s",
+                 a.hit_deferred ? "still read encrypted at the last retry" : "decrypted");
         }
     }
 }
@@ -313,25 +308,12 @@ int MixinManager::init_addon(const wchar_t *name, SwoftyAddonInitFn init)
     return r;
 }
 
-Addon *current_addon()
-{
-    return manager.current();
-}
+Addon *current_addon() { return manager.current(); }
 
-const std::vector<uint8_t> *original_bytes_at(uintptr_t a, uintptr_t &start)
-{
-    return patches.original_bytes(a, start);
-}
+const std::vector<uint8_t> *original_bytes_at(uintptr_t a, uintptr_t &start) { return patches.original_bytes(a, start); }
 
-uintptr_t resolve_for_addon(const char *id)
-{
-    return manager.resolve(id);
-}
+uintptr_t resolve_for_addon(const char *id) { return manager.resolve(id); }
 
-int register_addon_mixins(const SwoftyMixin *m, size_t n)
-{
-    return manager.register_mixins(m, n);
-}
+int register_addon_mixins(const SwoftyMixin *m, size_t n) { return manager.register_mixins(m, n); }
 
 }
-

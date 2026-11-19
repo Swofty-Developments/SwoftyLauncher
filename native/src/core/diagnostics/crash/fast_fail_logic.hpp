@@ -29,30 +29,54 @@ struct Outcome {
 inline const char *code_name(uint32_t code)
 {
     switch (code) {
-    case 0: return "FAST_FAIL_LEGACY_GS_VIOLATION";
-    case 1: return "FAST_FAIL_VTGUARD_CHECK_FAILURE";
-    case 2: return "FAST_FAIL_STACK_COOKIE_CHECK_FAILURE";
-    case 3: return "FAST_FAIL_CORRUPT_LIST_ENTRY";
-    case 4: return "FAST_FAIL_INCORRECT_STACK";
-    case 5: return "FAST_FAIL_INVALID_ARG";
-    case 6: return "FAST_FAIL_GS_COOKIE_INIT";
-    case 7: return "FAST_FAIL_FATAL_APP_EXIT";
-    case 8: return "FAST_FAIL_RANGE_CHECK_FAILURE";
-    case 9: return "FAST_FAIL_UNSAFE_REGISTRY_ACCESS";
-    case 10: return "FAST_FAIL_GUARD_ICALL_CHECK_FAILURE";
-    case 11: return "FAST_FAIL_GUARD_WRITE_CHECK_FAILURE";
-    case 12: return "FAST_FAIL_INVALID_FIBER_SWITCH";
-    case 13: return "FAST_FAIL_INVALID_SET_OF_CONTEXT";
-    case 14: return "FAST_FAIL_INVALID_REFERENCE_COUNT";
-    case 18: return "FAST_FAIL_INVALID_JUMP_BUFFER";
-    case 19: return "FAST_FAIL_MRDATA_MODIFIED";
-    case 21: return "FAST_FAIL_INVALID_EXCEPTION_CHAIN";
-    case 22: return "FAST_FAIL_CRYPTO_LIBRARY";
-    case 28: return "FAST_FAIL_INVALID_BUFFER_ACCESS";
-    case 29: return "FAST_FAIL_INVALID_BALANCED_TREE";
-    case 35: return "FAST_FAIL_UNEXPECTED_HEAP_EXCEPTION";
-    case 37: return "FAST_FAIL_GUARD_JUMPTABLE";
-    case 38: return "FAST_FAIL_INVALID_LONGJUMP_TARGET";
+    case 0:
+        return "FAST_FAIL_LEGACY_GS_VIOLATION";
+    case 1:
+        return "FAST_FAIL_VTGUARD_CHECK_FAILURE";
+    case 2:
+        return "FAST_FAIL_STACK_COOKIE_CHECK_FAILURE";
+    case 3:
+        return "FAST_FAIL_CORRUPT_LIST_ENTRY";
+    case 4:
+        return "FAST_FAIL_INCORRECT_STACK";
+    case 5:
+        return "FAST_FAIL_INVALID_ARG";
+    case 6:
+        return "FAST_FAIL_GS_COOKIE_INIT";
+    case 7:
+        return "FAST_FAIL_FATAL_APP_EXIT";
+    case 8:
+        return "FAST_FAIL_RANGE_CHECK_FAILURE";
+    case 9:
+        return "FAST_FAIL_UNSAFE_REGISTRY_ACCESS";
+    case 10:
+        return "FAST_FAIL_GUARD_ICALL_CHECK_FAILURE";
+    case 11:
+        return "FAST_FAIL_GUARD_WRITE_CHECK_FAILURE";
+    case 12:
+        return "FAST_FAIL_INVALID_FIBER_SWITCH";
+    case 13:
+        return "FAST_FAIL_INVALID_SET_OF_CONTEXT";
+    case 14:
+        return "FAST_FAIL_INVALID_REFERENCE_COUNT";
+    case 18:
+        return "FAST_FAIL_INVALID_JUMP_BUFFER";
+    case 19:
+        return "FAST_FAIL_MRDATA_MODIFIED";
+    case 21:
+        return "FAST_FAIL_INVALID_EXCEPTION_CHAIN";
+    case 22:
+        return "FAST_FAIL_CRYPTO_LIBRARY";
+    case 28:
+        return "FAST_FAIL_INVALID_BUFFER_ACCESS";
+    case 29:
+        return "FAST_FAIL_INVALID_BALANCED_TREE";
+    case 35:
+        return "FAST_FAIL_UNEXPECTED_HEAP_EXCEPTION";
+    case 37:
+        return "FAST_FAIL_GUARD_JUMPTABLE";
+    case 38:
+        return "FAST_FAIL_INVALID_LONGJUMP_TARGET";
     }
     return "FAST_FAIL_UNKNOWN";
 }
@@ -60,10 +84,14 @@ inline const char *code_name(uint32_t code)
 inline const char *source_name(Source s)
 {
     switch (s) {
-    case Source::GsFailure: return "__report_gsfailure (a stack cookie check failed)";
-    case Source::InvalidParameter: return "the CRT's invalid-parameter terminate path";
-    case Source::Abort: return "abort() in the CRT";
-    case Source::RaiseFailFast: return "RaiseFailFastException";
+    case Source::GsFailure:
+        return "__report_gsfailure (a stack cookie check failed)";
+    case Source::InvalidParameter:
+        return "the CRT's invalid-parameter terminate path";
+    case Source::Abort:
+        return "abort() in the CRT";
+    case Source::RaiseFailFast:
+        return "RaiseFailFastException";
     }
     return "?";
 }
@@ -74,8 +102,7 @@ inline Outcome outcome(Source s, bool fast_fail_available, uint32_t raised_statu
     case Source::GsFailure:
         return {true, 2, kStackBufferOverrun};
     case Source::InvalidParameter:
-        return fast_fail_available ? Outcome{true, 5, kStackBufferOverrun}
-                                   : Outcome{false, 0, kInvalidCRuntimeParameter};
+        return fast_fail_available ? Outcome{true, 5, kStackBufferOverrun} : Outcome{false, 0, kInvalidCRuntimeParameter};
     case Source::Abort:
         return {true, 7, kStackBufferOverrun};
     case Source::RaiseFailFast:
@@ -86,16 +113,15 @@ inline Outcome outcome(Source s, bool fast_fail_available, uint32_t raised_statu
 
 inline bool is_fast_fail_status(uint32_t status)
 {
-    return status == kStackBufferOverrun || status == kFailFastException ||
-           status == kInvalidCRuntimeParameter;
+    return status == kStackBufferOverrun || status == kFailFastException || status == kInvalidCRuntimeParameter;
 }
 
 inline std::string reason(Source s, const Outcome &o, const std::string &at)
 {
     char b[512];
     if (o.has_code)
-        snprintf(b, sizeof b, "fast-fail %s (%u) from %s; the process would end with exit code 0x%08x; at ",
-                 code_name(o.code), o.code, source_name(s), o.exit_status);
+        snprintf(b, sizeof b, "fast-fail %s (%u) from %s; the process would end with exit code 0x%08x; at ", code_name(o.code),
+                 o.code, source_name(s), o.exit_status);
     else
         snprintf(b, sizeof b, "fast-fail from %s; the process would end with exit code 0x%08x; at ", source_name(s),
                  o.exit_status);

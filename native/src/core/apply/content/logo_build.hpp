@@ -75,10 +75,7 @@ inline std::string slice_name(const std::string &source, uint32_t width, uint32_
     return source + "-" + std::to_string(width) + "x" + std::to_string(height) + "-" + SLICE_ENCODER + ".slice";
 }
 
-inline std::string info_name(const std::string &source)
-{
-    return source + ".png";
-}
+inline std::string info_name(const std::string &source) { return source + ".png"; }
 
 inline std::string sealed(const std::string &bytes)
 {
@@ -285,7 +282,8 @@ struct Refusals {
     void flush(std::vector<std::string> &lines) const
     {
         for (auto &[reason, r] : by)
-            lines.push_back("team.logo: " + std::to_string(r.first) + " slot(s) refused: " + reason + " (first " + r.second + ")");
+            lines.push_back("team.logo: " + std::to_string(r.first) + " slot(s) refused: " + reason + " (first " + r.second +
+                            ")");
     }
 };
 
@@ -314,7 +312,8 @@ inline std::vector<std::string> array_layers(const Env &env, const std::string &
         std::string why;
         if (!src || !erpfile::open(*src, arc, why))
             continue;
-        if (std::any_of(arc.entries.begin(), arc.entries.end(), [&](const erpfile::Entry &e) { return e.name.compare(0, prefix, ARRAY_URI) == 0; }))
+        if (std::any_of(arc.entries.begin(), arc.entries.end(),
+                        [&](const erpfile::Entry &e) { return e.name.compare(0, prefix, ARRAY_URI) == 0; }))
             out.push_back(l);
     }
     return out;
@@ -330,7 +329,8 @@ inline bool databases_hash(const erpfile::Source &src, uint64_t &hash)
     if (!erpfile::open(src, arc, why))
         return false;
     size_t prefix = std::char_traits<char>::length(ARRAY_URI);
-    if (std::any_of(arc.entries.begin(), arc.entries.end(), [&](const erpfile::Entry &e) { return e.name.compare(0, prefix, ARRAY_URI) == 0; }))
+    if (std::any_of(arc.entries.begin(), arc.entries.end(),
+                    [&](const erpfile::Entry &e) { return e.name.compare(0, prefix, ARRAY_URI) == 0; }))
         return false;
     const erpfile::Entry *e = arc.find(OVERRIDES);
     if (e && !e->frags.empty() && !erpfile::fragment(src, arc, e->frags[0], data, why))
@@ -459,7 +459,8 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
     }
     uidb::Pkg pkg;
     if (!pkg.read(uidb_bytes)) {
-        refuse("overrides.uidb does not read: " + pkg.why, wants.empty() ? "" : wants[0].array + "/" + wants[0].key, int(wants.size()));
+        refuse("overrides.uidb does not read: " + pkg.why, wants.empty() ? "" : wants[0].array + "/" + wants[0].key,
+               int(wants.size()));
         return false;
     }
     std::vector<std::string> files = env.list();
@@ -620,19 +621,22 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
                 return;
             }
             if (c.shape.count < keys)
-                out.lines.push_back("team.logo: " + array + in + " lists " + std::to_string(keys) + " keys but its image holds " +
-                                    std::to_string(c.shape.count) + " slice(s): another addon replaced the whole array, so " +
-                                    std::to_string(keys - c.shape.count) + " key(s) from " + names[c.shape.count] +
-                                    " on have no image of their own; padded with blank slices so new logos land on their own keys");
+                out.lines.push_back(
+                    "team.logo: " + array + in + " lists " + std::to_string(keys) + " keys but its image holds " +
+                    std::to_string(c.shape.count) + " slice(s): another addon replaced the whole array, so " +
+                    std::to_string(keys - c.shape.count) + " key(s) from " + names[c.shape.count] +
+                    " on have no image of their own; padded with blank slices so new logos land on their own keys");
             else if (c.shape.count < names.size())
                 out.lines.push_back("team.logo: " + array + in + " holds " + std::to_string(c.shape.count) + " slice(s), " +
                                     std::to_string(names.size() - c.shape.count) +
-                                    " fewer than another archive's copy; padded with blank slices so new logos land on the same slice in every archive");
+                                    " fewer than another archive's copy; padded with blank slices so new logos land on the same "
+                                    "slice in every archive");
             if (c.shape.count < names.size()) {
                 auto [b, fresh] = blanks.try_emplace({c.shape.width, c.shape.height});
                 if (fresh)
-                    b->second = bc7::encode_logo(reinterpret_cast<const uint8_t *>(std::string(c.shape.slice_bytes() * 4, '\0').data()),
-                                                 int(c.shape.width), int(c.shape.height));
+                    b->second =
+                        bc7::encode_logo(reinterpret_cast<const uint8_t *>(std::string(c.shape.slice_bytes() * 4, '\0').data()),
+                                         int(c.shape.width), int(c.shape.height));
                 logo_array::pad(c.stock, c.shape, b->second, uint32_t(names.size()));
                 c.shape.count = uint32_t(names.size());
             }
@@ -646,9 +650,8 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
                 fill(c);
         std::vector<logo_array::Shape> shapes;
         for (auto &c : copies)
-            if (std::none_of(shapes.begin(), shapes.end(), [&](const logo_array::Shape &s) {
-                    return s.width == c.shape.width && s.height == c.shape.height;
-                }))
+            if (std::none_of(shapes.begin(), shapes.end(),
+                             [&](const logo_array::Shape &s) { return s.width == c.shape.width && s.height == c.shape.height; }))
                 shapes.push_back(c.shape);
         auto encode_start = std::chrono::steady_clock::now();
         std::vector<std::vector<Encoded>> encodes = encode_slices(list, shapes, env.slices, &out.slices);
@@ -708,8 +711,9 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
                         scaled = done.scaled;
                     }
                     if (scaled)
-                        out.lines.push_back("team.logo: " + w->key + " scaled " + std::to_string(w->width) + "x" + std::to_string(w->height) +
-                                            " -> " + std::to_string(shape.width) + "x" + std::to_string(shape.height) + " for " + array);
+                        out.lines.push_back("team.logo: " + w->key + " scaled " + std::to_string(w->width) + "x" +
+                                            std::to_string(w->height) + " -> " + std::to_string(shape.width) + "x" +
+                                            std::to_string(shape.height) + " for " + array);
                     slices[i] = e->second;
                 }
                 if (!ok) {
@@ -729,7 +733,8 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
             logo_array::Stock grown;
             if (!logo_array::grow(c.stock, c.add, grown, why)) {
                 if (copies.size() > 1)
-                    out.lines.push_back("team.logo: skipped " + array + " in " + where(c.carriers) + ": " + why + "; left as it is");
+                    out.lines.push_back("team.logo: skipped " + array + " in " + where(c.carriers) + ": " + why +
+                                        "; left as it is");
                 continue;
             }
             for (auto &rel : c.carriers) {
@@ -746,9 +751,12 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
             continue;
         }
         for (size_t at = 0; at < used.size(); at++)
-            out.lines.push_back("team.logo: " + array + " slice " + std::to_string(names.size() + at) + " = " + used[at]->key +
-                                (used[at]->donor.empty() ? " (its image)" : " (copy of " + used[at]->donor + ", slice " +
-                                 std::to_string(std::find(names.begin(), names.end(), used[at]->donor) - names.begin()) + ")"));
+            out.lines.push_back(
+                "team.logo: " + array + " slice " + std::to_string(names.size() + at) + " = " + used[at]->key +
+                (used[at]->donor.empty()
+                     ? " (its image)"
+                     : " (copy of " + used[at]->donor + ", slice " +
+                           std::to_string(std::find(names.begin(), names.end(), used[at]->donor) - names.begin()) + ")"));
         for (auto *w : used) {
             std::string e;
             if (!pkg.append_entry(*node, w->key, std::string(TEXTURE_PATH) + w->key + ".tif", e)) {
@@ -757,8 +765,9 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
         }
         uidb_changed = true;
         out.built += int(used.size());
-        out.lines.push_back("team.logo: " + array + " grows by " + std::to_string(used.size()) + " slice(s) in " + std::to_string(archives) +
-                            " archive(s)" + (grew > 1 ? " (" + std::to_string(grew) + " different copies)" : ""));
+        out.lines.push_back("team.logo: " + array + " grows by " + std::to_string(used.size()) + " slice(s) in " +
+                            std::to_string(archives) + " archive(s)" +
+                            (grew > 1 ? " (" + std::to_string(grew) + " different copies)" : ""));
     }
     if (uidb_changed) {
         std::string written = pkg.write();

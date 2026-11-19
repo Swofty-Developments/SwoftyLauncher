@@ -48,20 +48,28 @@ namespace {
 namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 
-const runtime::Sig S_RECORD_HANDLE{"site_Career_TeamHqAdvanceRecordHandle", "45 31 F6 48 8B 83 C0 02 00 00 48 8D 50 08",
-                                   0x19b44e8, runtime::Sig::addr, 0, 3, 0};
-const runtime::Sig S_RECORD_NODE{"site_Career_TeamHqAdvanceRecordNode", "E8 ?? ?? ?? ?? 48 8B 83 C0 02 00 00",
-                                 0x19b478d, runtime::Sig::addr, 0, 5, 0};
-const runtime::Sig S_TRACK_LOAD{"site_Career_TeamHqAdvanceTrackLoad", "E8 ?? ?? ?? ?? 49 8B 46 30 48 8D 48 08", 0x19b47ab,
-                                runtime::Sig::addr, 0, 5, 0};
+const runtime::Sig S_RECORD_HANDLE{
+    "site_Career_TeamHqAdvanceRecordHandle", "45 31 F6 48 8B 83 C0 02 00 00 48 8D 50 08", 0x19b44e8, runtime::Sig::addr, 0, 3, 0};
+const runtime::Sig S_RECORD_NODE{
+    "site_Career_TeamHqAdvanceRecordNode", "E8 ?? ?? ?? ?? 48 8B 83 C0 02 00 00", 0x19b478d, runtime::Sig::addr, 0, 5, 0};
+const runtime::Sig S_TRACK_LOAD{
+    "site_Career_TeamHqAdvanceTrackLoad", "E8 ?? ?? ?? ?? 49 8B 46 30 48 8D 48 08", 0x19b47ab, runtime::Sig::addr, 0, 5, 0};
 
 const runtime::Sig S_VM_RECORD_NODE{"site_Career_TeamHqAdvanceVMRecordNode",
                                     "48 8B 8F 58 0F 00 00 48 8B 49 28 48 C1 E0 04 48 8B 44 01 08 48 8B 80 C0 02 00 00",
-                                    0x22bf18d, runtime::Sig::addr, 0, 0x14, 0};
+                                    0x22bf18d,
+                                    runtime::Sig::addr,
+                                    0,
+                                    0x14,
+                                    0};
 
 const runtime::Sig S_MYTEAM_VM_RECORD_NODE{"site_Career_TeamHqMyTeamVMRecordNode",
                                            "48 8B 8B 58 0F 00 00 48 8B 49 28 48 C1 E0 04 48 8B 44 01 08 48 8B 80 C0 02 00 00",
-                                           0x23296cf, runtime::Sig::addr, 0, 0x14, 0};
+                                           0x23296cf,
+                                           runtime::Sig::addr,
+                                           0,
+                                           0x14,
+                                           0};
 
 constexpr size_t VM_EVENT_TRACK = 0xb0;
 constexpr size_t EVENT_TRACK = 0x18;
@@ -160,8 +168,7 @@ void track_load(safetyhook::Context &c)
         say(Load::track, c.rbx, c.r14, id);
 }
 
-uintptr_t arm(safetyhook::MidHook &slot, const runtime::Sig &s, void (*fn)(safetyhook::Context &), uintptr_t &next,
-              size_t len)
+uintptr_t arm(safetyhook::MidHook &slot, const runtime::Sig &s, void (*fn)(safetyhook::Context &), uintptr_t &next, size_t len)
 {
     uintptr_t at = runtime::find(s, "career", "career");
     if (!at)
@@ -191,8 +198,8 @@ void setup()
         swofty::log("[career] teamhq track guard armed: a Team HQ event whose track has no track data shows no track "
                     "instead of faulting");
     else
-        swofty::log("[career] teamhq track guard: not hooked: %s%s%s%s", track ? "" : "track load ", handle ? "" : "record handle ",
-                    node ? "" : "record node ", vm ? "" : "view model record node");
+        swofty::log("[career] teamhq track guard: not hooked: %s%s%s%s", track ? "" : "track load ",
+                    handle ? "" : "record handle ", node ? "" : "record node ", vm ? "" : "view model record node");
 }
 
 }

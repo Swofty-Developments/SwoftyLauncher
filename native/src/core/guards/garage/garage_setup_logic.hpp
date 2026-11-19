@@ -12,10 +12,7 @@ constexpr uint64_t INFO_AT = 0x260;
 constexpr uint64_t ID_AT = 0x2a8;
 constexpr int LOG_FIRST = 4;
 
-inline bool user_pointer(uint64_t p)
-{
-    return p >= USER_BASE && p < USER_END;
-}
+inline bool user_pointer(uint64_t p) { return p >= USER_BASE && p < USER_END; }
 
 using Read = bool (*)(uint64_t address, void *out, size_t n, void *user);
 

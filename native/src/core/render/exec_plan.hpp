@@ -36,8 +36,7 @@ void run_plan(BasicExecPlan<Queue> &plan, Queue *q, unsigned n, List *const *lis
     unsigned last = n ? n - 1 : 0;
     for (auto &e : plan.steps)
         e.index = std::min(e.index, last);
-    std::stable_sort(plan.steps.begin(), plan.steps.end(),
-                     [](const auto &a, const auto &b) { return a.index < b.index; });
+    std::stable_sort(plan.steps.begin(), plan.steps.end(), [](const auto &a, const auto &b) { return a.index < b.index; });
     unsigned start = 0;
     for (size_t s = 0; s < plan.steps.size();) {
         unsigned at = plan.steps[s].index;

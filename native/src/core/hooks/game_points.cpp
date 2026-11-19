@@ -58,8 +58,8 @@ bool driver_calendar(uintptr_t calendar, uint32_t &driver)
                       c->driver;
                   }) {
         const SwoftyCareer *career = runtime::career_table();
-        auto schedule = reinterpret_cast<uintptr_t>(career && career->component ? career->component("ScheduleComponent")
-                                                                                  : nullptr);
+        auto schedule =
+            reinterpret_cast<uintptr_t>(career && career->component ? career->component("ScheduleComponent") : nullptr);
         uintptr_t b = rd<uintptr_t>(schedule + offsetof(S, seasons_begin));
         uintptr_t e = rd<uintptr_t>(schedule + offsetof(S, seasons_end));
         if (!schedule || !b || e <= b || (e - b) % sizeof(Z) || (e - b) / sizeof(Z) > MAX_SEASONS)

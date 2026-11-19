@@ -46,8 +46,7 @@ template <class T> inline bool peek(const Readable &ok, const void *base, size_t
     return true;
 }
 
-inline bool level_is(const Readable &ok, const uint8_t *level, const std::vector<int32_t> &points, int32_t bonus,
-                     uint8_t rule)
+inline bool level_is(const Readable &ok, const uint8_t *level, const std::vector<int32_t> &points, int32_t bonus, uint8_t rule)
 {
     uint8_t r = 0;
     int32_t b = 0;
@@ -62,8 +61,7 @@ inline bool level_is(const Readable &ok, const uint8_t *level, const std::vector
 }
 
 // The parsed preset whose full and reduced points, fastest lap rule and bonus are the box's, or nullptr.
-inline const uint8_t *find_points_preset(const Readable &ok, const uint8_t *begin, const uint8_t *end,
-                                         const PointsWant &want)
+inline const uint8_t *find_points_preset(const Readable &ok, const uint8_t *begin, const uint8_t *end, const PointsWant &want)
 {
     if (!begin || end <= begin || size_t(end - begin) % PRESET_SIZE || size_t(end - begin) / PRESET_SIZE > PRESETS_MAX)
         return nullptr;
@@ -102,8 +100,7 @@ inline std::vector<uint64_t *> race_sessions(const Readable &ok, uint8_t *mode)
         for (uint8_t *s = sb; s < se; s += SESSION_SIZE) {
             uint32_t id = 0;
             uint64_t preset = 0;
-            if (peek(ok, s, SESSION_ID, id) && id >= SESSION_RACE && id <= SESSION_RACE_3 && peek(ok, s, 0, preset) &&
-                preset)
+            if (peek(ok, s, SESSION_ID, id) && id >= SESSION_RACE && id <= SESSION_RACE_3 && peek(ok, s, 0, preset) && preset)
                 out.push_back(reinterpret_cast<uint64_t *>(s));
         }
     }

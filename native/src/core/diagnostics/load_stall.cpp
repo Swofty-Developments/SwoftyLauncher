@@ -150,8 +150,7 @@ void load_stall_flow(uint32_t hash, uint32_t to, const char *name)
         return;
     test_thread.store(GetCurrentThreadId());
     swofty::log("[stall] test: SWOFTY_TEST_LOAD_STALL holds thread %lu in flow \"%s\" %s for %llu s",
-                (unsigned long)GetCurrentThreadId(), name, ls::status_name(to),
-                (unsigned long long)(test_hold_ms / 1000));
+                (unsigned long)GetCurrentThreadId(), name, ls::status_name(to), (unsigned long long)(test_hold_ms / 1000));
     load_stall_test_hold(test_hold_ms);
     test_thread.store(0);
     swofty::log("[stall] test: thread %lu released", (unsigned long)GetCurrentThreadId());
@@ -186,8 +185,7 @@ void load_stall_setup()
     wake = CreateEventW(nullptr, FALSE, FALSE, nullptr);
     if (env_number("SWOFTY_TEST_LOAD_STALL_REPORT", 0))
         test_report_done = CreateEventW(nullptr, TRUE, FALSE, nullptr);
-    HANDLE t = CreateThread(nullptr, 256 << 10, loop, nullptr, STACK_SIZE_PARAM_IS_A_RESERVATION | CREATE_SUSPENDED,
-                            nullptr);
+    HANDLE t = CreateThread(nullptr, 256 << 10, loop, nullptr, STACK_SIZE_PARAM_IS_A_RESERVATION | CREATE_SUSPENDED, nullptr);
     if (!t) {
         swofty::log("[stall] load-stall watchdog not started: CreateThread failed (error %lu)", GetLastError());
         return;

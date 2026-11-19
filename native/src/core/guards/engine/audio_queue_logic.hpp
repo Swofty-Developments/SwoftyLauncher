@@ -23,10 +23,7 @@ constexpr size_t kFlag = 0x28;
 constexpr size_t kTableBytes = kSlots * kStride;
 static_assert(kTableBytes == 1152);
 
-inline uint8_t *slot(uint8_t *table, size_t i)
-{
-    return table + i * kStride;
-}
+inline uint8_t *slot(uint8_t *table, size_t i) { return table + i * kStride; }
 
 inline bool stranded(const uint8_t *table)
 {

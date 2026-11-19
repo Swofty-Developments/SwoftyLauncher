@@ -17,10 +17,7 @@ namespace perf {
 
 extern std::atomic<bool> g_live;
 
-inline bool live()
-{
-    return g_live.load(std::memory_order_relaxed);
-}
+inline bool live() { return g_live.load(std::memory_order_relaxed); }
 
 uint32_t probe(const std::string &owner, const std::string &what);
 std::string owner_of(const void *code);
@@ -65,10 +62,7 @@ private:
     bool on_;
 };
 
-inline uint64_t stamp()
-{
-    return __builtin_ia32_rdtsc();
-}
+inline uint64_t stamp() { return __builtin_ia32_rdtsc(); }
 
 void presented(void *swapchain, unsigned sync, unsigned flags, long hr, uint64_t entry, uint64_t before, uint64_t after);
 void flow_tick();

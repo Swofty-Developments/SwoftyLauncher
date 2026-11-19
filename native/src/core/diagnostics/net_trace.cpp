@@ -89,10 +89,7 @@ void raw(const char *fmt, ...)
     ReleaseSRWLockExclusive(&lock);
 }
 
-uint16_t be16(uint16_t v)
-{
-    return uint16_t((v >> 8) | (v << 8));
-}
+uint16_t be16(uint16_t v) { return uint16_t((v >> 8) | (v << 8)); }
 
 std::string caller(void *ra)
 {
@@ -128,10 +125,7 @@ void probe(SOCKET s, SockInfo &k)
     }
 }
 
-uint64_t key(Call c, SOCKET s)
-{
-    return (uint64_t(c) << 56) ^ uint64_t(s);
-}
+uint64_t key(Call c, SOCKET s) { return (uint64_t(c) << 56) ^ uint64_t(s); }
 
 void trace_as(Call c, SOCKET s, const std::string *desc, void *ra, int ret, DWORD err, const char *fmt, va_list ap)
 {
@@ -231,9 +225,8 @@ std::string sock_desc(SOCKET s)
             e = k;
         ReleaseSRWLockExclusive(&lock);
     }
-    snprintf(b, sizeof b, "sock=0x%llx af=%d type=%d proto=%d local=%s peer=%s", (unsigned long long)s, k.family,
-             k.type, k.proto, addr(reinterpret_cast<sockaddr *>(&k.local)).c_str(),
-             addr(reinterpret_cast<sockaddr *>(&k.peer)).c_str());
+    snprintf(b, sizeof b, "sock=0x%llx af=%d type=%d proto=%d local=%s peer=%s", (unsigned long long)s, k.family, k.type, k.proto,
+             addr(reinterpret_cast<sockaddr *>(&k.local)).c_str(), addr(reinterpret_cast<sockaddr *>(&k.peer)).c_str());
     return b;
 }
 
@@ -425,8 +418,7 @@ void setup()
         return;
     }
     std::wstring path = runtime::swofty_root() + L"net-trace.log";
-    file = CreateFileW(path.c_str(), GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL,
-                       nullptr);
+    file = CreateFileW(path.c_str(), GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (file == INVALID_HANDLE_VALUE) {
         swofty::log("[net-trace] cannot create swofty\\net-trace.log (%lu); socket trace off", GetLastError());
         return;
@@ -474,9 +466,6 @@ void setup()
 
 namespace runtime {
 
-void net_trace_setup()
-{
-    net_trace::setup();
-}
+void net_trace_setup() { net_trace::setup(); }
 
 }

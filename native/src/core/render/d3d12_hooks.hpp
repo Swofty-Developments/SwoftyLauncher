@@ -38,7 +38,7 @@ using SetNameFn = void (*)(ID3D12Object *object, LPCWSTR name);
 // Runs after the game's copy is recorded. CopyResource supplies mip-zero
 // locations; subscribers must validate the resource dimensions themselves.
 using TextureCopyFn = void (*)(ID3D12GraphicsCommandList *, const D3D12_TEXTURE_COPY_LOCATION *, UINT, UINT, UINT,
-                              const D3D12_TEXTURE_COPY_LOCATION *, const D3D12_BOX *);
+                               const D3D12_TEXTURE_COPY_LOCATION *, const D3D12_BOX *);
 using ResetFn = void (*)(ID3D12GraphicsCommandList *list);
 using RenderTargetsFn = void (*)(ID3D12GraphicsCommandList *list, UINT n, const D3D12_CPU_DESCRIPTOR_HANDLE *rtvs,
                                  BOOL single_range);

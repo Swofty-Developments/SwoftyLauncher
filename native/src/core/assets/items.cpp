@@ -85,8 +85,8 @@ bool load_config()
         std::string k = j["key"].str(), addon = j.field("addon", "mod").str(), what = j["what"].str();
         uint32_t key = 0;
         if (!parse_key(k, &key) || addon.empty()) {
-            swofty::log("[items] skipping owned_items entry key '%s' addon '%s': needs a 0x hex key and an addon id",
-                        k.c_str(), addon.c_str());
+            swofty::log("[items] skipping owned_items entry key '%s' addon '%s': needs a 0x hex key and an addon id", k.c_str(),
+                        addon.c_str());
             continue;
         }
         bool dup = false;
@@ -150,8 +150,7 @@ void hook_owned()
         return;
     auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&owned_hook));
     if (!r) {
-        swofty::log("[items] ownership check hook at base+0x%llx failed; mod items stay locked",
-                    (unsigned long long)(at - base));
+        swofty::log("[items] ownership check hook at base+0x%llx failed; mod items stay locked", (unsigned long long)(at - base));
         return;
     }
     h_owned = std::move(*r);
@@ -189,7 +188,4 @@ void own_item(uint32_t key, const std::string &addon, const std::string &what)
 
 SWOFTY_CORE_RANK(items)
 
-SWOFTY_ON_LOAD
-{
-    runtime::when_code_ready("items: ownership check hook", items_load);
-}
+SWOFTY_ON_LOAD { runtime::when_code_ready("items: ownership check hook", items_load); }

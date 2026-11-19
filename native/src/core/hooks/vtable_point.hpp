@@ -45,24 +45,24 @@ public:
             if (ops_.game.conflict)
                 ops_.game.conflict(point_, by);
             return fail(State::yielded, "[hooks] " + point_ + " unavailable: " + by + " overwrites " + binding_ +
-                                            "; subscribers " + subscribers +
-                                            " not run (the launcher lists this as a conflict)");
+                                            "; subscribers " + subscribers + " not run (the launcher lists this as a conflict)");
         }
         void *current = *slot;
         if (ops_.in_image && !ops_.in_image(current))
-            return fail(State::yielded, "[hooks] " + point_ + " unavailable: slot " + std::to_string(slot_) + " of " +
-                                            binding_ + " no longer points into the game's code (something else wrote it); "
-                                            "subscribers " + subscribers + " not run");
+            return fail(State::yielded, "[hooks] " + point_ + " unavailable: slot " + std::to_string(slot_) + " of " + binding_ +
+                                            " no longer points into the game's code (something else wrote it); "
+                                            "subscribers " +
+                                            subscribers + " not run");
         if (!ops_.write_slot || !ops_.write_slot(slot, detour_))
-            return fail(State::failed, "[hooks] " + point_ + " unavailable: slot " + std::to_string(slot_) + " of " +
-                                           binding_ + " could not be written; subscribers " + subscribers + " not run");
+            return fail(State::failed, "[hooks] " + point_ + " unavailable: slot " + std::to_string(slot_) + " of " + binding_ +
+                                           " could not be written; subscribers " + subscribers + " not run");
         slot_addr_ = slot;
         original_ = current;
         live_ = true;
         state_ = State::live;
         installs_++;
-        log("[hooks] " + point_ + " live on slot " + std::to_string(slot_) + " of " + binding_ + (late ? " (installed late)" : " (window stage)") +
-            ": subscribers " + subscribers);
+        log("[hooks] " + point_ + " live on slot " + std::to_string(slot_) + " of " + binding_ +
+            (late ? " (installed late)" : " (window stage)") + ": subscribers " + subscribers);
         return true;
     }
 
@@ -75,8 +75,7 @@ public:
             ops_.write_slot(slot_addr_, original_);
         live_ = false;
         state_ = State::idle;
-        log("[hooks] " + point_ + " has no subscriber left; slot " + std::to_string(slot_) + " of " + binding_ +
-            " is put back");
+        log("[hooks] " + point_ + " has no subscriber left; slot " + std::to_string(slot_) + " of " + binding_ + " is put back");
     }
 
     bool installed() const override

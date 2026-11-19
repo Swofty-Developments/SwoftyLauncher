@@ -48,14 +48,10 @@ void ListPlacement::log_diag(ID3D12GraphicsCommandList *list, const Mark &m)
     }
 }
 
-
 // While the game reads the finished picture for its HUD (paused, panels over the race), that read is the one
 // place the passes run; without such reads they run at the HUD-less step or between the game's lists, and in
 // the frame after a read with none in it, between the game's lists or at Present (postfx::HudRead).
-bool ListPlacement::hud_reads()
-{
-    return hud_read.holds(pipeline.frame_count);
-}
+bool ListPlacement::hud_reads() { return hud_read.holds(pipeline.frame_count); }
 
 // A list's Mark, made when it has none; its side entry notes that it has one.
 ListPlacement::Mark &ListPlacement::mark_of(ID3D12GraphicsCommandList *list)
@@ -152,7 +148,8 @@ bool ListPlacement::on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3
     static const uint32_t marking = perf::probe("core", "postfx ResourceBarrier (watched)");
     perf::Scope m_scope(marking);
     if ((seen & W_DEPTH) && pipeline.gpu.device && pipeline.depth_copy.wanted(pipeline.frame_count))
-        pipeline.depth_copy.record(list, n, barriers, pipeline.gpu, pipeline.watched, pipeline.lock, pipeline.retired, pipeline.frame_count);
+        pipeline.depth_copy.record(list, n, barriers, pipeline.gpu, pipeline.watched, pipeline.lock, pipeline.retired,
+                                   pipeline.frame_count);
     if (!(seen & (W_TONEMAP | W_BACK | W_HUDLESS)) && mark_aside(list, n, barriers, seen & W_DEPTH))
         return false;
     std::lock_guard<std::recursive_mutex> g(pipeline.lock);
@@ -187,8 +184,9 @@ bool ListPlacement::on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3
     // off, and the picture's submission leaves the passes waiting for this frame's read or the fallbacks.
     if ((hudless || leaving) && state_armed && list->GetType() == D3D12_COMMAND_LIST_TYPE_DIRECT && !pipeline.killed_now() &&
         !pipeline.config.passes.empty()) {
-        PassRecorder::Where w{list, true, nullptr, D3D12_RESOURCE_STATE_RENDER_TARGET, hudless, hudless_now, nullptr,
-                D3D12_RESOURCE_STATE_COMMON, "in-list"};
+        PassRecorder::Where w{list,     true,        nullptr, D3D12_RESOURCE_STATE_RENDER_TARGET,
+                              hudless,  hudless_now, nullptr, D3D12_RESOURCE_STATE_COMMON,
+                              "in-list"};
         bool split_step = false, at_read = false;
         if (leaving && (!m || !m->left_rt) && !postfx::placed_lately(pipeline.frame_count, back_use(leaving).place.placed_at)) {
             BackUse &u = back_use(leaving);
@@ -200,8 +198,8 @@ bool ListPlacement::on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3
             w.depth_state = m && m->depth ? m->depth_state : u.depth_state;
             w.path = "in-list (HUD read)";
             at_read = true;
-        } else if (hudless && !hud_reads() && !moves_back && m && m->target &&
-                   m->state == D3D12_RESOURCE_STATE_RENDER_TARGET && m->slot < 0 && back_use(m->target).place.fresh) {
+        } else if (hudless && !hud_reads() && !moves_back && m && m->target && m->state == D3D12_RESOURCE_STATE_RENDER_TARGET &&
+                   m->slot < 0 && back_use(m->target).place.fresh) {
             w.back = m->target;
             w.depth = m->depth;
             w.depth_state = m->depth_state;
@@ -262,8 +260,7 @@ bool ListPlacement::on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3
             m->hudless = r;
             m->hudless_state = b.Transition.StateAfter;
             if ((b.Transition.StateBefore & D3D12_RESOURCE_STATE_UNORDERED_ACCESS) &&
-                !(b.Transition.StateAfter & D3D12_RESOURCE_STATE_UNORDERED_ACCESS) &&
-                b.Flags == D3D12_RESOURCE_BARRIER_FLAG_NONE)
+                !(b.Transition.StateAfter & D3D12_RESOURCE_STATE_UNORDERED_ACCESS) && b.Flags == D3D12_RESOURCE_BARRIER_FLAG_NONE)
                 m->closes = true;
             if ((b.Transition.StateAfter & D3D12_RESOURCE_STATE_UNORDERED_ACCESS) && m->target &&
                 m->state == D3D12_RESOURCE_STATE_RENDER_TARGET) {
@@ -288,8 +285,7 @@ bool ListPlacement::on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3
             (b.Transition.StateAfter & READ_STATES))
             m->tonemap = true;
         if (back) {
-            if (b.Transition.StateBefore == D3D12_RESOURCE_STATE_RENDER_TARGET &&
-                (b.Transition.StateAfter & READ_STATES))
+            if (b.Transition.StateBefore == D3D12_RESOURCE_STATE_RENDER_TARGET && (b.Transition.StateAfter & READ_STATES))
                 m->left_rt = true;
             m->target = r;
             m->state = b.Transition.StateAfter;
@@ -437,7 +433,9 @@ void ListPlacement::on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *co
                 order_left--;
                 swofty::log("[postfx] order: list %p of %u in this submission%s:%s%s", static_cast<void *>(lists[i]), n,
                             m.tonemap ? " (picture)" : "", m.order.c_str(),
-                            split != i ? "" : before ? " [BETWEEN before this list]" : " [BETWEEN after this list]");
+                            split != i ? ""
+                            : before   ? " [BETWEEN before this list]"
+                                       : " [BETWEEN after this list]");
             }
             unmark(gl);
         }
@@ -461,9 +459,9 @@ void ListPlacement::on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *co
         auto between = [this, res, state, hudless, hudless_state, after_close, before](ID3D12CommandQueue *queue) {
             std::lock_guard<std::recursive_mutex> g(pipeline.lock);
             if (pipeline.recorder.run_between(queue, res, state, hudless, hudless_state,
-                            before        ? "between (before the list that takes the back buffer to the HUD)"
-                            : after_close ? "between (after the list that closed the step)"
-                                          : "between")) {
+                                              before        ? "between (before the list that takes the back buffer to the HUD)"
+                                              : after_close ? "between (after the list that closed the step)"
+                                                            : "between")) {
                 pipeline.report.stats.between++;
                 pipeline.report.stats.after_close += after_close;
                 pipeline.report.stats.before_hud += before;

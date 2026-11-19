@@ -71,10 +71,7 @@ struct ListCars {
     int64_t cars = -1;
 };
 
-inline bool oversized(int64_t cars)
-{
-    return cars >= 0 && size_t(cars) > TT_MAX_CARS;
-}
+inline bool oversized(int64_t cars) { return cars >= 0 && size_t(cars) > TT_MAX_CARS; }
 
 inline std::vector<size_t> time_trial_keep(const std::vector<ListCars> &lists)
 {
@@ -107,10 +104,7 @@ constexpr size_t ENTRANT_VEHICLE = 0x5c;
 constexpr size_t TT_OWN_ENTRIES = 4;
 constexpr size_t TT_ROOM = TT_TABLE - TT_OWN_ENTRIES;
 
-inline bool vehicle_ref_set(uint32_t ref)
-{
-    return (ref >> 16) != 0x3fff;
-}
+inline bool vehicle_ref_set(uint32_t ref) { return (ref >> 16) != 0x3fff; }
 
 struct TtList {
     std::string name;
@@ -120,10 +114,7 @@ struct TtList {
 };
 
 // The fill dedupes vehicle refs by their byte +0 and u16 +2 (0x1424a1c20), so byte +1 is not part of the key.
-inline uint32_t ref_key(uint32_t ref)
-{
-    return ref & 0xffff00ffu;
-}
+inline uint32_t ref_key(uint32_t ref) { return ref & 0xffff00ffu; }
 
 // Entrant setup mode overrides (the game mode's EntrantSetupModeOverride rows): the fill gets each game setup mode's
 // entrant setup modes through EntrantsManager slot 0x1d8 (body 0x1485b5280), which copies gsm +0x10 (count +0x70)
@@ -188,16 +179,10 @@ template <class Read> PoolRefs pool_refs_from(uintptr_t begin, uintptr_t end, Re
     return out;
 }
 
-inline uint32_t vehicle_flags(uint32_t player, uint32_t second_player)
-{
-    return player | second_player;
-}
+inline uint32_t vehicle_flags(uint32_t player, uint32_t second_player) { return player | second_player; }
 
 // A cut is made only where the restore stack can record it, or where an entry for that mode already does.
-inline bool cut_recordable(size_t used, size_t capacity, bool known)
-{
-    return known || used < capacity;
-}
+inline bool cut_recordable(size_t used, size_t capacity, bool known) { return known || used < capacity; }
 
 struct TtBudget {
     std::vector<size_t> dropped;
@@ -350,17 +335,16 @@ inline int32_t time_trial_limit(int32_t max_entrants)
 inline std::string time_trial_swap(const std::string &list, int64_t cars, const std::string &setup_mode,
                                    const std::string &instead, int32_t limit_was)
 {
-    std::string why = "the Time Trial session's list " + list + " (setup mode " + setup_mode + ") holds " +
-                      std::to_string(cars) + " cars; Time Trial holds at most " + std::to_string(TT_MAX_CARS) +
-                      " (the game adds " + std::to_string(TT_EXTRA_CARS) + " cars of its own to a table of " +
-                      std::to_string(TT_TABLE) + ")";
+    std::string why = "the Time Trial session's list " + list + " (setup mode " + setup_mode + ") holds " + std::to_string(cars) +
+                      " cars; Time Trial holds at most " + std::to_string(TT_MAX_CARS) + " (the game adds " +
+                      std::to_string(TT_EXTRA_CARS) + " cars of its own to a table of " + std::to_string(TT_TABLE) + ")";
     if (!instead.empty())
         why += "; loading " + instead + " instead";
     else
         why += "; its entrant setup mode offers no list of at most " + std::to_string(TT_MAX_CARS) + " cars";
     if (limit_was)
-        why += "; the session draws at most " + std::to_string(TT_MAX_CARS) + " cars (max_entrants " +
-               std::to_string(limit_was) + " -> " + std::to_string(TT_MAX_CARS) + " until the session ends)";
+        why += "; the session draws at most " + std::to_string(TT_MAX_CARS) + " cars (max_entrants " + std::to_string(limit_was) +
+               " -> " + std::to_string(TT_MAX_CARS) + " until the session ends)";
     return why;
 }
 
@@ -373,15 +357,9 @@ constexpr size_t ESM_LISTS = 0x130;
 constexpr size_t ESM_LIST_COUNT = 0x230;
 constexpr size_t ESM_LIST_SLOTS = 32;
 
-inline void **esm_lists(uint8_t *esm)
-{
-    return reinterpret_cast<void **>(esm + ESM_LISTS);
-}
+inline void **esm_lists(uint8_t *esm) { return reinterpret_cast<void **>(esm + ESM_LISTS); }
 
-inline int64_t &esm_list_count(uint8_t *esm)
-{
-    return *reinterpret_cast<int64_t *>(esm + ESM_LIST_COUNT);
-}
+inline int64_t &esm_list_count(uint8_t *esm) { return *reinterpret_cast<int64_t *>(esm + ESM_LIST_COUNT); }
 
 struct ListCut {
     uint8_t *setup = nullptr;

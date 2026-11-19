@@ -32,10 +32,7 @@ inline float from_bits(uint32_t u)
     return f;
 }
 
-inline bool within(float v, float lo, float hi)
-{
-    return std::isfinite(v) && v >= lo && v <= hi;
-}
+inline bool within(float v, float lo, float hi) { return std::isfinite(v) && v >= lo && v <= hi; }
 
 template <class T> inline T field(const uint8_t *buf, uintptr_t lo, uintptr_t off)
 {
@@ -261,8 +258,7 @@ public:
                     uint64_t slot = 0;
                     uint32_t mode_id = 0;
                     if (!s_.my_team_saved_badge || !current_badge_slot(m_, b.game, s_.image_lo, s_.image_hi, slot) ||
-                        !m_.get(b.game + 0x2a8, mode_id) ||
-                        !assigned_badge(m_, customisation_system(), mode_id, slot, badge))
+                        !m_.get(b.game + 0x2a8, mode_id) || !assigned_badge(m_, customisation_system(), mode_id, slot, badge))
                         return false;
                 }
             }
@@ -298,8 +294,8 @@ public:
         for (size_t i = 0; i < pn && !participant; i++) {
             uintptr_t phys = 0, car = 0;
             uint8_t vid = 0xff;
-            if (parts[i] && m_.get(parts[i] + D::participant_physics, phys) && phys &&
-                m_.get(phys + D::physics_car, car) && car && m_.get(car + L::car::vehicle_id, vid) && vid == vehicle)
+            if (parts[i] && m_.get(parts[i] + D::participant_physics, phys) && phys && m_.get(phys + D::physics_car, car) &&
+                car && m_.get(car + L::car::vehicle_id, vid) && vid == vehicle)
                 participant = parts[i];
         }
         uint8_t flags = 0;
@@ -327,8 +323,8 @@ public:
             uintptr_t es = find(c_teams_, s_.key_team_tables), table = 0, vec[2], rec = 0;
             size_t count = 0, id = ref >> 16;
             if (!es || !m_.get(es + D::sets + (ref & 0xff) * D::set_stride, table) || !table ||
-                !m_.read(table + D::table_vec, vec, sizeof vec) || !vec_ok(vec[0], vec[1], 16, 0x10000, count) ||
-                id >= count || !m_.get(vec[0] + id * 16 + D::slot_record, rec) || !rec || !m_.get(rec + D::record_name, name))
+                !m_.read(table + D::table_vec, vec, sizeof vec) || !vec_ok(vec[0], vec[1], 16, 0x10000, count) || id >= count ||
+                !m_.get(vec[0] + id * 16 + D::slot_record, rec) || !rec || !m_.get(rec + D::record_name, name))
                 return false;
         }
         char buf[D::max_name];
@@ -475,7 +471,8 @@ private:
 
     void reset_timers()
     {
-        t_scan_ = t_ctrl_ = t_cls_ = t_prog_ = t_timing_ = t_pit_ = t_pen_ = t_tyre_ = t_flags_ = t_mode_ = t_track_ = t_cars_ = -1e9;
+        t_scan_ = t_ctrl_ = t_cls_ = t_prog_ = t_timing_ = t_pit_ = t_pen_ = t_tyre_ = t_flags_ = t_mode_ = t_track_ = t_cars_ =
+            -1e9;
     }
 
     bool due(double &t, double period)
@@ -567,8 +564,8 @@ private:
         uintptr_t gmc = find(c_mode_, s_.key_game_mode);
         uintptr_t mode = 0, game = 0, ev[2];
         if (!gmc || !m_.get(gmc + L::badge::mode, mode) || !mode || !m_.get(mode + L::badge::game, game) || !game ||
-            !m_.read(game + L::badge::entrants, ev, sizeof ev) || ev[1] <= ev[0] ||
-            (ev[1] - ev[0]) % L::badge::entrant_stride || (ev[1] - ev[0]) / L::badge::entrant_stride > 512)
+            !m_.read(game + L::badge::entrants, ev, sizeof ev) || ev[1] <= ev[0] || (ev[1] - ev[0]) % L::badge::entrant_stride ||
+            (ev[1] - ev[0]) / L::badge::entrant_stride > 512)
             return false;
         size_t n = (ev[1] - ev[0]) / L::badge::entrant_stride;
         for (size_t i = 0; i < n; i++) {
@@ -594,8 +591,8 @@ private:
             }
             uintptr_t tt = find(c_teams_, s_.key_team_tables), table = 0, vec[2], rec = 0;
             return tt && m_.get(tt + L::badge::tables + kind * 16, table) && table &&
-                   m_.read(table + L::badge::table_vec, vec, sizeof vec) && vec[1] > vec[0] &&
-                   index < (vec[1] - vec[0]) / 16 && m_.get(vec[0] + uintptr_t(index) * 16 + L::badge::slot_record, rec) && rec &&
+                   m_.read(table + L::badge::table_vec, vec, sizeof vec) && vec[1] > vec[0] && index < (vec[1] - vec[0]) / 16 &&
+                   m_.get(vec[0] + uintptr_t(index) * 16 + L::badge::slot_record, rec) && rec &&
                    m_.get(rec + L::badge::record_render, out.render) && m_.get(rec + L::badge::record_key, out.key) &&
                    (out.render || out.key);
         }
@@ -610,20 +607,24 @@ private:
             return 0;
         customisation_scan_ = now_;
         uintptr_t manager = 0, registry = 0, entries[2]{};
-        if (!m_.get(s_.game_manager, manager) || !manager ||
-            !m_.get(manager + L::registry::from_manager, registry) || !registry ||
-            !m_.read(registry + L::registry::slots, entries, sizeof entries)) return 0;
-        if (!entries[0] || (entries[0] & 7) || entries[1] <= entries[0] ||
-            (entries[1] - entries[0]) % 16 || (entries[1] - entries[0]) / 16 > L::registry::max_slots) return 0;
+        if (!m_.get(s_.game_manager, manager) || !manager || !m_.get(manager + L::registry::from_manager, registry) ||
+            !registry || !m_.read(registry + L::registry::slots, entries, sizeof entries))
+            return 0;
+        if (!entries[0] || (entries[0] & 7) || entries[1] <= entries[0] || (entries[1] - entries[0]) % 16 ||
+            (entries[1] - entries[0]) / 16 > L::registry::max_slots)
+            return 0;
         uintptr_t match = 0;
         for (size_t i = 0, count = (entries[1] - entries[0]) / 16; i < count; ++i) {
             uint8_t used = 0;
             uintptr_t key = 0, name_pointer = 0;
             char name[64]{};
             if (!m_.get(entries[1] + i, used) || !used || !m_.get(entries[0] + i * 16, key) || !key ||
-                !m_.get(key + 8, name_pointer) || !read_cstr(name_pointer, name, sizeof name)) continue;
-            if (std::strcmp(name, "playerCustomisationInfoSystem")) continue;
-            if (match) return 0;
+                !m_.get(key + 8, name_pointer) || !read_cstr(name_pointer, name, sizeof name))
+                continue;
+            if (std::strcmp(name, "playerCustomisationInfoSystem"))
+                continue;
+            if (match)
+                return 0;
             match = key;
         }
         customisation_key_ = match;
@@ -635,8 +636,8 @@ private:
         uintptr_t cached = c.value;
         c.value = 0;
         uintptr_t mgr = 0, reg = 0, sl[2] = {};
-        if (!key || !s_.game_manager || !m_.get(s_.game_manager, mgr) || !mgr ||
-            !m_.get(mgr + L::registry::from_manager, reg) || !reg || !m_.read(reg + L::registry::slots, sl, sizeof sl))
+        if (!key || !s_.game_manager || !m_.get(s_.game_manager, mgr) || !mgr || !m_.get(mgr + L::registry::from_manager, reg) ||
+            !reg || !m_.read(reg + L::registry::slots, sl, sizeof sl))
             return 0;
         uintptr_t base = sl[0], info = sl[1];
         if (!base || (base & 7) || info <= base || (info - base) % 16 || (info - base) / 16 > L::registry::max_slots)
@@ -751,14 +752,14 @@ private:
         ctrl_vid_ = -1;
         uintptr_t sys = 0, vt = 0, cv = 0, sets = 0;
         uint8_t built = 0;
-        if (!s_.controllers || !s_.vt_controllers || !m_.get(s_.controllers, sys) || !sys || (sys & 7) ||
-            !m_.get(sys, vt) || vt != s_.vt_controllers)
+        if (!s_.controllers || !s_.vt_controllers || !m_.get(s_.controllers, sys) || !sys || (sys & 7) || !m_.get(sys, vt) ||
+            vt != s_.vt_controllers)
             return;
         ctrl_hits_ = 0;
         uint32_t c[3];
         if (!m_.get(sys + L::controllers::built, built) || !built || !m_.get(sys + L::controllers::count_vec, cv) || !cv ||
-            (cv & 7) || !m_.read(cv + L::controllers::count_lo, c, sizeof c) ||
-            !m_.get(sys + L::controllers::sets, sets) || !sets || (sets & 7))
+            (cv & 7) || !m_.read(cv + L::controllers::count_lo, c, sizeof c) || !m_.get(sys + L::controllers::sets, sets) ||
+            !sets || (sets & 7))
             return;
         size_t n = uint8_t((c[2] - c[0]) >> 3);
         uintptr_t set[MAX_CARS];
@@ -875,8 +876,9 @@ private:
         size_t n = 0;
         uintptr_t ptr[MAX_ENTRIES];
         if (!s_.game_manager || !m_.get(s_.game_manager, mgr) || !mgr ||
-            !m_.get(mgr + (s_.progress_from_manager ? s_.progress_from_manager : L::progress::from_manager), sys) || !sys || !m_.read(sys + L::progress::vec_begin, v, sizeof v) ||
-            !vec_ok(v[0], v[1], 8, MAX_ENTRIES, n) || !n || !m_.read(v[0], ptr, n * 8))
+            !m_.get(mgr + (s_.progress_from_manager ? s_.progress_from_manager : L::progress::from_manager), sys) || !sys ||
+            !m_.read(sys + L::progress::vec_begin, v, sizeof v) || !vec_ok(v[0], v[1], 8, MAX_ENTRIES, n) || !n ||
+            !m_.read(v[0], ptr, n * 8))
             return;
         for (unsigned vid = 0; vid < MAX_CARS && vid < n; vid++) {
             if (!ref_of(vid))
@@ -947,8 +949,7 @@ private:
                 pit_lane_ok_[vid] = true;
                 if constexpr (L::HAS_GARAGE) {
                     int32_t garage = -1;
-                    if (m_.get(flags + L::pit::garage, garage) && garage >= 0 &&
-                        garage <= int32_t(L::pit::garage_safety_car)) {
+                    if (m_.get(flags + L::pit::garage, garage) && garage >= 0 && garage <= int32_t(L::pit::garage_safety_car)) {
                         garage_[vid] = uint8_t(garage);
                         garage_ok_[vid] = true;
                     }
@@ -1031,8 +1032,7 @@ private:
             uint8_t flags = 0;
             float deflation = 0;
             if (!wheels[w] || (wheels[w] & 7) || !m_.get(wheels[w] + D::flags, flags) ||
-                !m_.get(wheels[w] + D::deflation, deflation) || !(deflation == deflation) || deflation < 0 ||
-                deflation > 100)
+                !m_.get(wheels[w] + D::deflation, deflation) || !(deflation == deflation) || deflation < 0 || deflation > 100)
                 return;
             uint8_t st = flags & D::state_mask;
             t.state[w] = st == 2 || st == 3 ? st : 0;
@@ -1050,9 +1050,12 @@ private:
         auto F = [&](uintptr_t off) { return off - L::tyres::lo; };
         if (!V || (V & 7) || !m_.read(V + L::tyres::lo, b, sizeof b))
             return;
-        uint64_t version = field<uint64_t>(b, L::tyres::lo, L::tyres::version), count = field<uint64_t>(b, L::tyres::lo, L::tyres::count),
-                 built_for = field<uint64_t>(b, L::tyres::lo, L::tyres::built_for), built = field<uint64_t>(b, L::tyres::lo, L::tyres::built);
-        uintptr_t sb = field<uintptr_t>(b, L::tyres::lo, L::tyres::set_begin), se = field<uintptr_t>(b, L::tyres::lo, L::tyres::set_end);
+        uint64_t version = field<uint64_t>(b, L::tyres::lo, L::tyres::version),
+                 count = field<uint64_t>(b, L::tyres::lo, L::tyres::count),
+                 built_for = field<uint64_t>(b, L::tyres::lo, L::tyres::built_for),
+                 built = field<uint64_t>(b, L::tyres::lo, L::tyres::built);
+        uintptr_t sb = field<uintptr_t>(b, L::tyres::lo, L::tyres::set_begin),
+                  se = field<uintptr_t>(b, L::tyres::lo, L::tyres::set_end);
         if (!built || built_for != version)
             return;
         uint32_t id = 0;
@@ -1121,8 +1124,8 @@ private:
                 uintptr_t z = field<uintptr_t>(zbuf, 0, i * L::marshal::stride + L::marshal::zone);
                 uint8_t zb[0x18];
                 int32_t flag = -1;
-                if (!z || (z & 7) || !m_.read(z, zb, sizeof zb) ||
-                    (flag = field<int32_t>(zb, 0, L::marshal::zone_flag)) < 0 || flag > 4) {
+                if (!z || (z & 7) || !m_.read(z, zb, sizeof zb) || (flag = field<int32_t>(zb, 0, L::marshal::zone_flag)) < 0 ||
+                    flag > 4) {
                     ok = false;
                     break;
                 }
@@ -1181,8 +1184,8 @@ private:
         game_mode_ok_ = false;
         game_mode_ = 0;
         uintptr_t gmc = find(c_mode_, s_.key_game_mode), mode = 0, label = 0;
-        if (!gmc || !m_.get(gmc + L::mode::from_context, mode) || !mode || (mode & 7) ||
-            !m_.get(mode + L::mode::label, label) || !label)
+        if (!gmc || !m_.get(gmc + L::mode::from_context, mode) || !mode || (mode & 7) || !m_.get(mode + L::mode::label, label) ||
+            !label)
             return;
         char b[32];
         size_t n = 0;
@@ -1207,7 +1210,7 @@ private:
                 return;
         }
         game_mode_ok_ = true;
-        game_mode_ = !std::strcmp(b, "time_trial") ? SWOFTY_LIVE_MODE_TIME_TRIAL
+        game_mode_ = !std::strcmp(b, "time_trial")        ? SWOFTY_LIVE_MODE_TIME_TRIAL
                      : !std::strncmp(b, "grand_prix", 10) ? SWOFTY_LIVE_MODE_GRAND_PRIX
                                                           : SWOFTY_LIVE_MODE_UNKNOWN;
     }
@@ -1221,9 +1224,9 @@ private:
         type_ok_ = s_.session_type && m_.get(s_.session_type, type) && type <= 64;
         type_ = type_ok_ ? type : 0;
         uintptr_t w = 0, a = 0, t = 0, str = 0;
-        track_name_ok_ = g_[G_TRACK_NAME] && s_.track_world && m_.get(s_.track_world, w) && w && m_.get(w + L::track::world_to_a, a) && a &&
-                         m_.get(a + L::track::a_to_b, t) && t && m_.get(t + L::track::b_to_name, str) && str &&
-                         read_name(str);
+        track_name_ok_ = g_[G_TRACK_NAME] && s_.track_world && m_.get(s_.track_world, w) && w &&
+                         m_.get(w + L::track::world_to_a, a) && a && m_.get(a + L::track::a_to_b, t) && t &&
+                         m_.get(t + L::track::b_to_name, str) && str && read_name(str);
         if (!track_name_ok_)
             track_name_[0] = 0;
     }
@@ -1356,9 +1359,11 @@ private:
         uint8_t b[L::ers::live_hi - L::ers::live_lo];
         float cfg[2];
         if (m_.read(c.es + L::ers::live_lo, b, sizeof b)) {
-            float energy = field<float>(b, L::ers::live_lo, L::ers::energy), hk = field<float>(b, L::ers::live_lo, L::ers::harvest_k),
+            float energy = field<float>(b, L::ers::live_lo, L::ers::energy),
+                  hk = field<float>(b, L::ers::live_lo, L::ers::harvest_k),
                   hh = field<float>(b, L::ers::live_lo, L::ers::harvest_h), dp = field<float>(b, L::ers::live_lo, L::ers::deploy),
-                  hl = field<float>(b, L::ers::live_lo, L::ers::harvest_lap), dl = field<float>(b, L::ers::live_lo, L::ers::deploy_lap),
+                  hl = field<float>(b, L::ers::live_lo, L::ers::harvest_lap),
+                  dl = field<float>(b, L::ers::live_lo, L::ers::deploy_lap),
                   ll = field<float>(b, L::ers::live_lo, L::ers::lap_limit);
             int32_t mode = -1;
             if (s_.ers_mode && s_.ers_mode != L::ers::mode)
@@ -1491,7 +1496,8 @@ private:
             ses.have |= SWOFTY_LIVE_SHAVE_YELLOW;
         }
         if (red_raw_ != 0xff || zones_ok_) {
-            uint8_t red = red_raw_ == 1 || red_raw_ == 2 ? red_raw_ : uint8_t(zones_ok_ && zones_ > 0 && zones_red_ == zones_ ? 1 : 0);
+            uint8_t red =
+                red_raw_ == 1 || red_raw_ == 2 ? red_raw_ : uint8_t(zones_ok_ && zones_ > 0 && zones_red_ == zones_ ? 1 : 0);
             ses.red_flag = red;
             ses.have |= SWOFTY_LIVE_SHAVE_RED_FLAG;
         }

@@ -168,8 +168,7 @@ void tab_state(void *header, uint64_t tab, uint8_t content_visible, uint8_t enab
 {
     uintptr_t b = 0, e = 0;
     if (header && mem::read(reinterpret_cast<uintptr_t>(header) + HEADER_TABS, b) &&
-        mem::read(reinterpret_cast<uintptr_t>(header) + HEADER_TABS + 8, e) && b && e >= b &&
-        tab >= size_t(e - b) / TAB_ITEM) {
+        mem::read(reinterpret_cast<uintptr_t>(header) + HEADER_TABS + 8, e) && b && e >= b && tab >= size_t(e - b) / TAB_ITEM) {
         char a[24];
         snprintf(a, sizeof a, "%llu", (unsigned long long)tab);
         note(7, "[wizard] Choose Driver tab %s state skipped, past the header's tabs", a);

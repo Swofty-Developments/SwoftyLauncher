@@ -147,14 +147,10 @@ struct Layout {
 inline const Layout *layouts(size_t &n)
 {
     static const Layout table[] = {
-        {2024, 4, 1350, 60, 22, 1, 3, false, false},
-        {2025, 4, 1284, 57, 22, 1, 3, false, false},
-        {2026, 4, 1470, 60, 24, 1, 5, true, false},
-        {2024, 9, 1306, 58, 22, 0, 1, false, false},
-        {2025, 9, 954, 42, 22, 0, 1, false, false},
-        {2024, 14, 101, 24, 3, 0, 1, false, true},
-        {2025, 14, 101, 24, 3, 0, 1, false, true},
-        {2026, 9, 1062, 43, 24, 0, 1, true, false},
+        {2024, 4, 1350, 60, 22, 1, 3, false, false}, {2025, 4, 1284, 57, 22, 1, 3, false, false},
+        {2026, 4, 1470, 60, 24, 1, 5, true, false},  {2024, 9, 1306, 58, 22, 0, 1, false, false},
+        {2025, 9, 954, 42, 22, 0, 1, false, false},  {2024, 14, 101, 24, 3, 0, 1, false, true},
+        {2025, 14, 101, 24, 3, 0, 1, false, true},   {2026, 9, 1062, 43, 24, 0, 1, true, false},
         {2026, 14, 104, 25, 3, 0, 1, true, true},
     };
     n = sizeof table / sizeof *table;
@@ -194,10 +190,7 @@ inline const Layout *misfit(const uint8_t *p, size_t len)
     return other;
 }
 
-inline int to_2026_team(int stock)
-{
-    return stock >= 0 && stock <= STOCK_2025_LAST ? STOCK_2026_FIRST + stock : stock;
-}
+inline int to_2026_team(int stock) { return stock >= 0 && stock <= STOCK_2025_LAST ? STOCK_2026_FIRST + stock : stock; }
 
 inline void learn_model(const Map &m, const Layout &l, const uint8_t *p, size_t count, size_t first)
 {
@@ -282,10 +275,7 @@ constexpr uint8_t TRACK_PACKET_VERSION = 1;
 constexpr size_t TRACK_KEY = 64;
 constexpr size_t TRACK_PACKET_SIZE = HEADER + 4 + 1 + TRACK_KEY;
 
-inline uint32_t hashed_track_id(const std::string &key)
-{
-    return 0x80000000u | (::runtime::fnv32(key) & 0x7fffffffu);
-}
+inline uint32_t hashed_track_id(const std::string &key) { return 0x80000000u | (::runtime::fnv32(key) & 0x7fffffffu); }
 
 inline uint32_t swofty_track_id(const Map &m, const std::string &key)
 {

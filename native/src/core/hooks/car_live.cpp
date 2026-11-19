@@ -229,12 +229,10 @@ void d_wing_init(void *wing, char reset)
     g_wing->original<void>(wing, reset);
     uintptr_t car = 0;
     uint8_t id = 0;
-    if (reset || !mem::read(reinterpret_cast<uintptr_t>(wing) + WING_CAR, car) || !car ||
-        !mem::read(car + 0xe8, id))
+    if (reset || !mem::read(reinterpret_cast<uintptr_t>(wing) + WING_CAR, car) || !car || !mem::read(car + 0xe8, id))
         return;
-    events::car_parts_register(id, "", wing, [wing](const char *node, float at, bool debris) {
-        return add_part(wing, node, at, debris);
-    });
+    events::car_parts_register(id, "", wing,
+                               [wing](const char *node, float at, bool debris) { return add_part(wing, node, at, debris); });
 }
 
 void d_wing_hit(void *wing, void *contact)
@@ -391,7 +389,7 @@ apply::content::FuelRules g_fuel_rules;
 bool g_fuel_new = false;
 apply::content::FuelPlan g_fuel_plan;
 std::atomic<bool> g_tyres_kept{false};
-std::atomic<uint32_t> g_session_type{0};   // the live session type, read each frame while a box rule needs it
+std::atomic<uint32_t> g_session_type{0}; // the live session type, read each frame while a box rule needs it
 
 void fuel_tick()
 {
@@ -498,11 +496,21 @@ void frame(double, void *)
             Ops::apply_car(p.index);
         }
         switch (p.what) {
-        case Ops::What::built: events::car_built(car); break;
-        case Ops::What::reset: events::car_reset(car, false); break;
-        case Ops::What::replayed: events::car_upgrades_replayed(car, p.progress); break;
-        case Ops::What::setup: events::car_setup_applied(car); break;
-        case Ops::What::damage: events::car_damage(car, p.part, p.progress); break;
+        case Ops::What::built:
+            events::car_built(car);
+            break;
+        case Ops::What::reset:
+            events::car_reset(car, false);
+            break;
+        case Ops::What::replayed:
+            events::car_upgrades_replayed(car, p.progress);
+            break;
+        case Ops::What::setup:
+            events::car_setup_applied(car);
+            break;
+        case Ops::What::damage:
+            events::car_damage(car, p.part, p.progress);
+            break;
         }
     }
     mem::Trust trust(runtime::HEAP_TRUST_MS);
@@ -568,7 +576,8 @@ void setup()
             if (f.needs && !row_ready(f.needs) && g_logged.insert(std::string("off:") + f.needs).second)
                 swofty::log("[cars] %s off: needs %s", f.name, f.needs);
         swofty::log("[session] session.pit_stop stationary time and tyre change off: needs PitStopInstance.car");
-        swofty::log("[cars] refit_tyres off: needs Car_Tyre_SetWearFactor, CarChassis.tyre_physics_group and the car to tyre component path");
+        swofty::log("[cars] refit_tyres off: needs Car_Tyre_SetWearFactor, CarChassis.tyre_physics_group and the car to tyre "
+                    "component path");
         if (uintptr_t fn = swofty::api->resolve("Car_FuelEcu_SetMode_Thunk"))
             e.fuel_set_mode = [fn](uintptr_t ecu, int mode) {
                 reinterpret_cast<void (*)(void *, int)>(fn)(reinterpret_cast<void *>(ecu), mode);
@@ -636,29 +645,27 @@ void declare_car_points(Table &t)
 {
     g_built = std::make_unique<session_points::MidPoint>("car.built", "site_Car_LiveCarBuilt", &m_built, game_ops());
     t.declare_game("car.built", SWOFTY_POINT_NOTIFY, swofty::cars::events::Built::version, g_built.get());
-    g_reset = std::make_unique<GamePoint>("car.reset", "Car_Systems_Reset_Thunk", reinterpret_cast<void *>(&d_reset),
-                                          game_ops());
+    g_reset = std::make_unique<GamePoint>("car.reset", "Car_Systems_Reset_Thunk", reinterpret_cast<void *>(&d_reset), game_ops());
     t.declare_game("car.reset", SWOFTY_POINT_NOTIFY, swofty::cars::events::Reset::version, g_reset.get());
     g_replay = std::make_unique<GamePoint>("car.upgrades.replayed", "Car_Upgrades_ApplyToVehicle",
                                            reinterpret_cast<void *>(&d_replay), game_ops());
-    t.declare_game("car.upgrades.replayed", SWOFTY_POINT_NOTIFY, swofty::cars::events::UpgradesReplayed::version,
-                   g_replay.get());
+    t.declare_game("car.upgrades.replayed", SWOFTY_POINT_NOTIFY, swofty::cars::events::UpgradesReplayed::version, g_replay.get());
     g_wing = std::make_unique<GamePoint>("car.parts.register", "Car_FrontWing_Init", reinterpret_cast<void *>(&d_wing_init),
                                          game_ops());
     t.declare_game("car.parts.register", SWOFTY_POINT_NOTIFY, swofty::cars::events::PartsRegister::version, g_wing.get());
-    g_hit = std::make_unique<GamePoint>("car.damage", "Car_FrontWing_OnCollision", reinterpret_cast<void *>(&d_wing_hit),
-                                        game_ops());
+    g_hit =
+        std::make_unique<GamePoint>("car.damage", "Car_FrontWing_OnCollision", reinterpret_cast<void *>(&d_wing_hit), game_ops());
     t.declare_game("car.damage", SWOFTY_POINT_NOTIFY, swofty::cars::events::Damage::version, g_hit.get());
-    g_pit = std::make_unique<GamePoint>("session.pit", "Game_Pitlane_SetVehicleStatus",
-                                        reinterpret_cast<void *>(&d_pit_status), game_ops());
+    g_pit = std::make_unique<GamePoint>("session.pit", "Game_Pitlane_SetVehicleStatus", reinterpret_cast<void *>(&d_pit_status),
+                                        game_ops());
     t.declare_game("session.pit", SWOFTY_POINT_NOTIFY, swofty::sessions::events::Pit::version, g_pit.get());
     t.declare_game("session.pit_stop", SWOFTY_POINT_NOTIFY, swofty::sessions::events::PitStop::version, g_pit.get());
     g_pit_tyres = std::make_unique<GamePoint>("session.pit_stop.tyres", "Game_PitLane_ApplyPitstopTyres",
                                               reinterpret_cast<void *>(&d_pit_tyres), game_ops());
     t.declare_game("session.pit_stop.tyres", SWOFTY_POINT_NOTIFY, swofty::sessions::events::PitStopTyres::version,
                    g_pit_tyres.get());
-    g_setup = std::make_unique<session_points::MidPoint>("car.setup.applied", "site_Car_SetupTuningApplied", &m_setup,
-                                                         game_ops());
+    g_setup =
+        std::make_unique<session_points::MidPoint>("car.setup.applied", "site_Car_SetupTuningApplied", &m_setup, game_ops());
     t.declare_game("car.setup.applied", SWOFTY_POINT_NOTIFY, swofty::cars::events::SetupApplied::version, g_setup.get());
 }
 
@@ -705,10 +712,7 @@ void engine_torque(SwoftyContext *c)
     });
 }
 
-void ai_system_built(SwoftyContext *c)
-{
-    swofty_core::hooks::Ops::racecraft_pushed(c->rbx);
-}
+void ai_system_built(SwoftyContext *c) { swofty_core::hooks::Ops::racecraft_pushed(c->rbx); }
 
 void ai_grip(SwoftyContext *c)
 {
@@ -738,8 +742,8 @@ static std::vector<CoreMixins> car_levers_mixins()
     for (const char *row : swofty_core::hooks::car_live::RACECRAFT_ROWS)
         racecraft_rows = racecraft_rows && swofty_core::hooks::row_ready(row);
     if (racecraft_rows && swofty::api->resolve("site_Ai_BuildSystem_RecordPushed"))
-        out.push_back({RACECRAFT,
-                       {{"site_Ai_BuildSystem_RecordPushed", SWOFTY_MIXIN_SITE, 50, (void *)&ai_system_built, nullptr}}});
+        out.push_back(
+            {RACECRAFT, {{"site_Ai_BuildSystem_RecordPushed", SWOFTY_MIXIN_SITE, 50, (void *)&ai_system_built, nullptr}}});
     else
         swofty::log("[ai] ai.<group>.<key> fields off: need AiSystem.records_begin, AiCarRecord.vehicle_index and "
                     "driver_config and site_Ai_BuildSystem_RecordPushed");
@@ -758,14 +762,8 @@ static loader::FunctionSet car_levers_core_set{loader::CoreSetId::car_levers, ca
 
 }
 
-extern "C" __declspec(dllexport) const SwoftyCarOps *SwoftyCoreCarOps(void)
-{
-    return &swofty_core::hooks::Ops::table;
-}
+extern "C" __declspec(dllexport) const SwoftyCarOps *SwoftyCoreCarOps(void) { return &swofty_core::hooks::Ops::table; }
 
 SWOFTY_CORE_RANK(car_live)
 
-SWOFTY_ON_LOAD
-{
-    runtime::when_code_ready("live car operations", swofty_core::hooks::setup);
-}
+SWOFTY_ON_LOAD { runtime::when_code_ready("live car operations", swofty_core::hooks::setup); }

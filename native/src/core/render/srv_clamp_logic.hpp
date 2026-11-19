@@ -57,10 +57,7 @@ inline bool has_mips(int d)
            d == kTextureCube || d == kTextureCubeArray;
 }
 
-inline uint32_t cube_slices(uint32_t cubes)
-{
-    return cubes > kAll / 6 ? kAll : cubes * 6;
-}
+inline uint32_t cube_slices(uint32_t cubes) { return cubes > kAll / 6 ? kAll : cubes * 6; }
 
 inline Plan plan(const View &v, const Resource &r)
 {
@@ -98,9 +95,6 @@ inline Plan plan(const View &v, const Resource &r)
     return p;
 }
 
-inline bool enabled(const char *env)
-{
-    return env && env[0] == '1' && !env[1];
-}
+inline bool enabled(const char *env) { return env && env[0] == '1' && !env[1]; }
 
 }

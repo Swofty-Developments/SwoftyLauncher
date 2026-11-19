@@ -37,8 +37,7 @@ const runtime::Sig S_FLOW{"Vm_Update_FlowStateMachine",
                           "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 02 00 00 C5 F8 29 B4 24 40 02 00 00 C5 F9 28 F2",
                           0x4423ce0};
 const runtime::Sig S_SESSION_ENTER{"Game_GameModule_OnSessionEnter",
-                                   "41 57 41 56 41 54 56 57 53 48 81 EC 38 02 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01",
-                                   0x80c300};
+                                   "41 57 41 56 41 54 56 57 53 48 81 EC 38 02 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01", 0x80c300};
 const runtime::Sig S_RACE_STARTED{"Game_ChampionshipFormationLapComponent_OnRaceStarted",
                                   "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 53",
                                   0xb808a0};
@@ -214,10 +213,7 @@ void race_started_mid(safetyhook::Context &)
     swofty_core::hooks::bridge_legacy(SWOFTY_EVENT_RACE_START, 0, 0, nullptr);
 }
 
-int ev_available()
-{
-    return runtime::enabled("events", nullptr) && disp.phase() != runtime::ev::Phase::failed;
-}
+int ev_available() { return runtime::enabled("events", nullptr) && disp.phase() != runtime::ev::Phase::failed; }
 
 std::string outcome(int r, uint32_t token, bool queued)
 {
@@ -297,8 +293,8 @@ uintptr_t resolve(const runtime::Sig &s)
         return 0;
     }
     if (at - base != s.rva)
-        swofty::log("[events] %s resolved to base+0x%llx, KB build has base+0x%llx", s.what,
-                    (unsigned long long)(at - base), (unsigned long long)s.rva);
+        swofty::log("[events] %s resolved to base+0x%llx, KB build has base+0x%llx", s.what, (unsigned long long)(at - base),
+                    (unsigned long long)s.rva);
     return at;
 }
 
@@ -310,8 +306,7 @@ safetyhook::MidHook mid(const runtime::Sig &s, void (*fn)(safetyhook::Context &)
     auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), fn);
     if (!h) {
         swofty::log("[events] %s at base+0x%llx: the hook failed: %s", s.what,
-                    (unsigned long long)(at - swofty::api->module_base()),
-                    runtime::hook_error(h.error()).c_str());
+                    (unsigned long long)(at - swofty::api->module_base()), runtime::hook_error(h.error()).c_str());
         return {};
     }
     swofty::log("[events] %s hooked at base+0x%llx", s.what, (unsigned long long)(at - swofty::api->module_base()));
@@ -336,8 +331,8 @@ void report(const std::vector<runtime::ev::Queued> &held, bool live)
     if (live) {
         std::string list;
         for (auto &q : held)
-            list += (list.empty() ? "" : ", ") + std::string(q.name ? q.name : "on_frame") + " token " +
-                    std::to_string(q.token) + " (" + owner(q.token) + ")";
+            list += (list.empty() ? "" : ", ") + std::string(q.name ? q.name : "on_frame") + " token " + std::to_string(q.token) +
+                    " (" + owner(q.token) + ")";
         swofty::log("[events] %zu registration(s) queued before setup are armed: %s", held.size(), list.c_str());
         return;
     }
@@ -368,8 +363,8 @@ void setup()
     h_session_enter = mid(S_SESSION_ENTER, session_enter_mid);
     h_race_started = mid(S_RACE_STARTED, race_started_mid);
     swofty::log("[events] setup: %s; onFrame %s, session.start %s, race.start %s",
-                h_flow ? "live" : "flow tick did not resolve (onFrame will not fire on this build)",
-                h_flow ? "armed" : "off", h_session_enter ? "armed" : "off", h_race_started ? "armed" : "off");
+                h_flow ? "live" : "flow tick did not resolve (onFrame will not fire on this build)", h_flow ? "armed" : "off",
+                h_session_enter ? "armed" : "off", h_race_started ? "armed" : "off");
     report(disp.arm(bool(h_flow)), bool(h_flow));
 }
 
@@ -377,40 +372,19 @@ void setup()
 
 namespace runtime {
 
-const SwoftyEvents *events_table()
-{
-    return &table;
-}
+const SwoftyEvents *events_table() { return &table; }
 
-void frame_probe_name(const char *what)
-{
-    next_frame_probe = what;
-}
+void frame_probe_name(const char *what) { next_frame_probe = what; }
 
-bool events_flow_armed()
-{
-    return bool(h_flow);
-}
+bool events_flow_armed() { return bool(h_flow); }
 
-bool events_session_enter_armed()
-{
-    return bool(h_session_enter);
-}
+bool events_session_enter_armed() { return bool(h_session_enter); }
 
-void events_setup()
-{
-    setup();
-}
+void events_setup() { setup(); }
 
-int session_kind()
-{
-    return live_kind.load(std::memory_order_relaxed);
-}
+int session_kind() { return live_kind.load(std::memory_order_relaxed); }
 
-uint64_t session_serial()
-{
-    return live_serial.load(std::memory_order_relaxed);
-}
+uint64_t session_serial() { return live_serial.load(std::memory_order_relaxed); }
 
 void session_emit(const session_life::Emit &e)
 {
@@ -423,7 +397,7 @@ void session_emit(const session_life::Emit &e)
         lap_host::session_end();
         swofty::log("[events] session.end (%s)", e.reason == session_life::END_RESTART  ? "restart"
                                                  : e.reason == session_life::END_UNLOAD ? "ended as the unload began"
-                                                                                       : "StateSession exited");
+                                                                                        : "StateSession exited");
         events_fire(SWOFTY_EVENT_SESSION_END, e.reason, 0, nullptr);
     }
     if (e.unload) {
@@ -450,8 +424,9 @@ void session_flow(const char *known, int to)
             loaded.swap(session_loading);
         }
         if (loaded)
-            swofty::log(perf::STEP_LINE, loaded->total_ms(),
-                        ("session ready (StateLoadSession to StateSession, kind " + std::to_string(session_kind()) + ")").c_str());
+            swofty::log(
+                perf::STEP_LINE, loaded->total_ms(),
+                ("session ready (StateLoadSession to StateSession, kind " + std::to_string(session_kind()) + ")").c_str());
     }
     session_life::Emit e;
     bool exiting = to == 3 && !std::strcmp(known, "StateSession");

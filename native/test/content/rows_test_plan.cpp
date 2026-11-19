@@ -46,8 +46,9 @@ void late_write_tests(const std::string &regs)
         return rec ? std::optional<std::string>(rec->text) : std::nullopt;
     };
     for (auto &c : content::CONSTRUCTOR_SEEDS)
-        st.add_base("team.constructor", c.key,
-                    Value::object({{"name", Value(std::string(c.name))}, {"country", Value(std::string(c.country))}, {"team", Value()}}));
+        st.add_base(
+            "team.constructor", c.key,
+            Value::object({{"name", Value(std::string(c.name))}, {"country", Value(std::string(c.country))}, {"team", Value()}}));
     for (auto &s : content::stock_teams(read))
         st.add_base("team.identity", s.label, s.record);
     st.stock_loaded("team.identity", true);
@@ -64,7 +65,8 @@ void late_write_tests(const std::string &regs)
     std::string code = team_code(st, db);
     check(cleared == SWOFTY_ASSET_OK && st.generation() != before && code == "LTE",
           "today's behaviour, documented in docs/design/native-runtime.md: clear_layer on a boot registry after the register "
-          "pass is accepted, moves the store's generation and changes the expansion (" + code + ")");
+          "pass is accepted, moves the store's generation and changes the expansion (" +
+              code + ")");
 }
 
 namespace {
@@ -107,8 +109,9 @@ void ahead_tests(const std::string &regs)
         return rec ? std::optional<std::string>(rec->text) : std::nullopt;
     };
     for (auto &c : content::CONSTRUCTOR_SEEDS)
-        st.add_base("team.constructor", c.key,
-                    Value::object({{"name", Value(std::string(c.name))}, {"country", Value(std::string(c.country))}, {"team", Value()}}));
+        st.add_base(
+            "team.constructor", c.key,
+            Value::object({{"name", Value(std::string(c.name))}, {"country", Value(std::string(c.country))}, {"team", Value()}}));
     for (auto &s : content::stock_teams(read))
         st.add_base("team.identity", s.label, s.record);
     st.stock_loaded("team.identity", true);
@@ -142,9 +145,9 @@ void ahead_tests(const std::string &regs)
     apply::ids::Store live;
     auto a = make(live);
     std::string why = content::adopt_ahead(*a, now_of(*a), live);
-    check(a_ok == SWOFTY_ASSET_OK && b_ok == SWOFTY_ASSET_OK && why.empty() && !today_logs.empty() &&
-              a->logs == today_logs && a->lines == today_lines && live.dump() == today_ids.dump() &&
-              same_writes(a->boot->engine, today.engine) && !today.engine.writes().empty(),
+    check(a_ok == SWOFTY_ASSET_OK && b_ok == SWOFTY_ASSET_OK && why.empty() && !today_logs.empty() && a->logs == today_logs &&
+              a->lines == today_lines && live.dump() == today_ids.dump() && same_writes(a->boot->engine, today.engine) &&
+              !today.engine.writes().empty(),
           "the boot adopts the expansion made ahead: the same writes, stat ids, held lines (" +
               std::to_string(today_logs.size()) + ") and pool lines as the boot's own path (" + why + ")");
 
@@ -159,8 +162,7 @@ void ahead_tests(const std::string &regs)
              st.set_context(st.context());
              n.store_generation = st.generation();
          }},
-        {"the stat-id store moved", "the stat-id store changed",
-         [&](content::AheadNow &, apply::ids::Store &l) { l.saved(); }},
+        {"the stat-id store moved", "the stat-id store changed", [&](content::AheadNow &, apply::ids::Store &l) { l.saved(); }},
         {"SWOFTY_BOX_WORLDS differs", "SWOFTY_BOX_WORLDS is on at the boot",
          [&](content::AheadNow &n, apply::ids::Store &) { n.box_worlds = true; }},
         {"the date moved", "the date changed", [&](content::AheadNow &n, apply::ids::Store &) { n.day = "e"; }},

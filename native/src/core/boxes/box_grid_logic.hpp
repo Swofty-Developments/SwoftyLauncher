@@ -42,7 +42,7 @@ inline bool parse_scoring(const std::string &s, Scoring &out)
 
 struct Rule {
     Scoring qualifying = Scoring::best_lap;
-    std::vector<int> rows;   // cars per row, repeating; empty = the track's 2-wide grid
+    std::vector<int> rows; // cars per row, repeating; empty = the track's 2-wide grid
     bool rule_107 = false;
     // Whether the rule re-ranks the qualifying classification (rows don't: they move the grid slots).
     bool reranks() const { return qualifying != Scoring::best_lap || rule_107; }
@@ -61,10 +61,7 @@ inline std::string describe(const Rule &r)
     return s;
 }
 
-inline bool has_time(float t)
-{
-    return std::isfinite(t) && t > 0.f;
-}
+inline bool has_time(float t) { return std::isfinite(t) && t > 0.f; }
 
 // One driver of the weekend: the group key (EntrantRecord +0x50), the position the game gave it in the group-1
 // result, and its best lap of each qualifying-type session seen (0 or negative = no time in that session).
@@ -117,12 +114,12 @@ inline Score score_of(const Driver &d, Scoring s)
 enum class Class { ranked = 0, partial = 1, outside_107 = 2, no_time = 3 };
 
 struct Ranked {
-    std::vector<int32_t> positions;   // new group position per driver, in input order
+    std::vector<int32_t> positions; // new group position per driver, in input order
     std::vector<Score> scores;
     std::vector<Class> classes;
-    float pole = 0.f;                 // the best ranked time (0 = none)
-    float limit = 0.f;                // 107 % of pole when the rule is on (0 = off)
-    bool aggregate_one_session = false;   // aggregate asked, but no driver has two sessions: ranked as best_of
+    float pole = 0.f;                   // the best ranked time (0 = none)
+    float limit = 0.f;                  // 107 % of pole when the rule is on (0 = off)
+    bool aggregate_one_session = false; // aggregate asked, but no driver has two sessions: ranked as best_of
     bool changed = false;
 };
 
@@ -260,7 +257,6 @@ inline float row_offset(const RowSlot &s)
     float span = s.cars == 2 ? 1.f : 1.6f;
     return -span / 2.f + span * float(s.index) / float(s.cars - 1);
 }
-
 
 struct Vec3 {
     float x = 0.f, y = 0.f, z = 0.f;

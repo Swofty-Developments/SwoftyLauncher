@@ -32,8 +32,8 @@ struct Robin {
         if (!readable(s, 0x48))
             return false;
         uint64_t n = mask() + 1;
-        return n >= 8 && !(n & (n - 1)) && inc() >= 1 && inc() <= 0x20 && slots() && info() &&
-               readable(info(), 1) && readable(info() + buffer(), 1) && readable(slots(), 16) &&
+        return n >= 8 && !(n & (n - 1)) && inc() >= 1 && inc() <= 0x20 && slots() && info() && readable(info(), 1) &&
+               readable(info() + buffer(), 1) && readable(slots(), 16) &&
                readable(reinterpret_cast<uint8_t *>(slots()) + buffer() * 16 - 16, 16);
     }
 

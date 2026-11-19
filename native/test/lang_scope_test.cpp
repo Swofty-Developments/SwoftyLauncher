@@ -14,10 +14,7 @@ void expect(bool ok, const char *what)
     fails += !ok;
 }
 
-bool is(const char *got, const char *want)
-{
-    return want ? got && !std::strcmp(got, want) : !got;
-}
+bool is(const char *got, const char *want) { return want ? got && !std::strcmp(got, want) : !got; }
 
 ls::Variant variant(const char *all, const char *within_json)
 {

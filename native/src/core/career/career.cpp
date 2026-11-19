@@ -41,9 +41,9 @@ namespace {
 namespace g = swofty::game;
 namespace layout = runtime::layout;
 namespace mem = swofty::mem;
+using career::game::binding;
 using career::state::PollSchedule;
 using career::state::Tracker;
-using career::game::binding;
 
 constexpr const char *FLOW_MIXIN = "swofty_core.dll (flow states)";
 constexpr const char *TEAM_HQ_MIXIN = "swofty_core.dll (Team HQ answer)";
@@ -95,15 +95,9 @@ void perf_flow(uint32_t hash, uint32_t from, uint32_t to, const std::string &nam
     swofty::log("[perf] flow \"%s\" Entering -> %s took %.1f ms", name.c_str(), STATUS[to & 3], ms);
 }
 
-uint64_t now_ms()
-{
-    return GetTickCount64();
-}
+uint64_t now_ms() { return GetTickCount64(); }
 
-void fire(const char *event, int64_t a, int64_t b, const void *data)
-{
-    runtime::events_fire(event, a, b, data);
-}
+void fire(const char *event, int64_t a, int64_t b, const void *data) { runtime::events_fire(event, a, b, data); }
 
 const char *mode_name(uint32_t m)
 {
@@ -157,8 +151,7 @@ void settle_and_publish()
         publish(e, s);
 }
 
-template <class S = g::FlowState>
-bool read_state(uintptr_t at, uint32_t &hash, int32_t &status, uint64_t &size, uintptr_t &name)
+template <class S = g::FlowState> bool read_state(uintptr_t at, uint32_t &hash, int32_t &status, uint64_t &size, uintptr_t &name)
 {
     if constexpr (layout::flow_state<S>) {
         return mem::read(at + offsetof(S, name_hash), hash) && mem::read(at + offsetof(S, status), status) &&
@@ -174,8 +167,7 @@ bool state_name(uint32_t hash, uint64_t size, uintptr_t chars, std::string &out)
     if (size < 2 || size > 128 || !mem::readable(chars, size_t(size)))
         return false;
     out.assign(reinterpret_cast<const char *>(chars), size_t(size - 1));
-    if (out.find('\0') == std::string::npos && mem::printable_utf8(out) &&
-        career::state::djb2(out.c_str()) == hash)
+    if (out.find('\0') == std::string::npos && mem::printable_utf8(out) && career::state::djb2(out.c_str()) == hash)
         return true;
     uintptr_t key = binding("k_Gdb_StringXorKey");
     if (key && mem::readable(key, 4) &&
@@ -272,10 +264,7 @@ void on_team_hq(SwoftyContext *c)
     settle_and_publish();
 }
 
-int api_available()
-{
-    return (set_up ? armed.load() : bool(layout::FLOW)) && runtime::enabled("career", nullptr);
-}
+int api_available() { return (set_up ? armed.load() : bool(layout::FLOW)) && runtime::enabled("career", nullptr); }
 
 int api_state(SwoftyCareerState *out)
 {
@@ -339,8 +328,7 @@ void *api_component_by_desc(const void *desc)
     if (!runtime::enabled("career", nullptr) || !desc)
         return nullptr;
     uintptr_t e = career::game::entity();
-    return e ? reinterpret_cast<void *>(career::game::component_by_desc(e, reinterpret_cast<uintptr_t>(desc)))
-             : nullptr;
+    return e ? reinterpret_cast<void *>(career::game::component_by_desc(e, reinterpret_cast<uintptr_t>(desc))) : nullptr;
 }
 
 template <class H = g::GameMessageBusHolder, class B = g::NeMessageBus> int api_post(void *msg)
@@ -364,33 +352,21 @@ template <class H = g::GameMessageBusHolder, class B = g::NeMessageBus> int api_
     }
 }
 
-int api_post_msg(void *msg)
-{
-    return api_post(msg);
-}
+int api_post_msg(void *msg) { return api_post(msg); }
 
 int api_block(uint32_t mode, const char *title, const char *body)
 {
     return runtime::career_block(__builtin_return_address(0), mode, title, body);
 }
 
-int api_unblock(uint32_t mode)
-{
-    return runtime::career_unblock(__builtin_return_address(0), mode);
-}
+int api_unblock(uint32_t mode) { return runtime::career_unblock(__builtin_return_address(0), mode); }
 
-const SwoftyCareer table = {api_available, api_state,     api_flow,              api_flow_status, api_entity,
-                            api_component, api_component_by_desc, api_post_msg, api_block,      api_unblock};
+const SwoftyCareer table = {api_available,         api_state,    api_flow,  api_flow_status, api_entity, api_component,
+                            api_component_by_desc, api_post_msg, api_block, api_unblock};
 
-void flow_entry(SwoftyContext *c)
-{
-    on_flow(c);
-}
+void flow_entry(SwoftyContext *c) { on_flow(c); }
 
-void team_hq_entry(SwoftyContext *c)
-{
-    on_team_hq(c);
-}
+void team_hq_entry(SwoftyContext *c) { on_team_hq(c); }
 
 }
 
@@ -408,15 +384,9 @@ uintptr_t career::game::binding(const std::string &id)
 
 namespace runtime {
 
-bool in_session_now()
-{
-    return in_session.load(std::memory_order_relaxed);
-}
+bool in_session_now() { return in_session.load(std::memory_order_relaxed); }
 
-const SwoftyCareer *career_table()
-{
-    return &table;
-}
+const SwoftyCareer *career_table() { return &table; }
 
 std::vector<CoreMixins> career_mixins()
 {
@@ -430,8 +400,8 @@ std::vector<CoreMixins> career_mixins()
         return out;
     }
     out.push_back({FLOW_MIXIN, {{"site_FeFlow_SetStateStatus", SWOFTY_MIXIN_SITE, 100, (void *)&flow_entry, nullptr}}});
-    out.push_back({TEAM_HQ_MIXIN,
-                   {{"site_Career_TeamHqIsMyTeamResult", SWOFTY_MIXIN_SITE, 100, (void *)&team_hq_entry, nullptr}}});
+    out.push_back(
+        {TEAM_HQ_MIXIN, {{"site_Career_TeamHqIsMyTeamResult", SWOFTY_MIXIN_SITE, 100, (void *)&team_hq_entry, nullptr}}});
     return out;
 }
 
@@ -459,18 +429,18 @@ void career_tick()
     if (!armed || !layout::CAREER)
         return;
     uint64_t now = now_ms(), was = last_poll.load();
-    if (!schedule.due(now, was, in_session.load(std::memory_order_relaxed)) ||
-        !last_poll.compare_exchange_strong(was, now))
+    if (!schedule.due(now, was, in_session.load(std::memory_order_relaxed)) || !last_poll.compare_exchange_strong(was, now))
         return;
     namespace facts = swofty_core::apply::facts;
     facts::ModeKind kind = swofty_core::apply::moments::mode_kind();
-    career::state::Where where = kind == facts::ModeKind::career  ? career::state::Where::career
-                                   : kind == facts::ModeKind::unknown ? career::state::Where::unknown
-                                                                      : career::state::Where::elsewhere;
+    career::state::Where where = kind == facts::ModeKind::career    ? career::state::Where::career
+                                 : kind == facts::ModeKind::unknown ? career::state::Where::unknown
+                                                                    : career::state::Where::elsewhere;
     bool reads = career::state::poll_reads(where);
     static std::atomic<int> said{-1};
     if (said.exchange(reads) != int(reads))
-        swofty::log("[career] component poll %s (game mode %s)", reads ? "reads the game" : "off: no career can be loaded here, it reports none without a read",
+        swofty::log("[career] component poll %s (game mode %s)",
+                    reads ? "reads the game" : "off: no career can be loaded here, it reports none without a read",
                     facts::mode_kind_name(kind));
     career::state::Components c = reads ? career::game::poll() : career::state::Components{};
     {

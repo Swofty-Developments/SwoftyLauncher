@@ -44,10 +44,7 @@ inline int class_of_rva(const HolderClass *t, int n, uint64_t rva)
     return -1;
 }
 
-inline int class_of_rva(uint64_t rva)
-{
-    return class_of_rva(CLASSES, CLASS_COUNT, rva);
-}
+inline int class_of_rva(uint64_t rva) { return class_of_rva(CLASSES, CLASS_COUNT, rva); }
 
 inline int grown_class(const HolderClass *t, int n, int from, uint64_t state)
 {
@@ -65,15 +62,9 @@ inline int grown_class(const HolderClass *t, int n, int from, uint64_t state)
     return roomy >= 0 ? roomy : fit;
 }
 
-inline int grown_class(int from, uint64_t state)
-{
-    return grown_class(CLASSES, CLASS_COUNT, from, state);
-}
+inline int grown_class(int from, uint64_t state) { return grown_class(CLASSES, CLASS_COUNT, from, state); }
 
-inline bool skips_read(uint32_t stored_size, bool recorded_as_nothing)
-{
-    return stored_size == 0 && recorded_as_nothing;
-}
+inline bool skips_read(uint32_t stored_size, bool recorded_as_nothing) { return stored_size == 0 && recorded_as_nothing; }
 
 class Emptied {
     static constexpr size_t N = 512;
@@ -111,15 +102,9 @@ public:
 
 inline std::atomic<int64_t> session_vehicles{-1};
 
-inline uint64_t capacity_of(uint64_t raw)
-{
-    return raw & 0xffffffffull;
-}
+inline uint64_t capacity_of(uint64_t raw) { return raw & 0xffffffffull; }
 
-inline bool guards(int64_t cars)
-{
-    return cars < 0 || cars > STOCK_GRID_MAX;
-}
+inline bool guards(int64_t cars) { return cars < 0 || cars > STOCK_GRID_MAX; }
 
 inline bool outgrew(uint64_t pos, uint64_t base, uint64_t capacity)
 {
@@ -134,10 +119,7 @@ inline uint64_t room_of(uint64_t cur, uint64_t prev, uint64_t capacity)
 struct Tally {
     std::atomic<uint64_t> skipped{0};
 
-    bool first()
-    {
-        return skipped.fetch_add(1, std::memory_order_relaxed) == 0;
-    }
+    bool first() { return skipped.fetch_add(1, std::memory_order_relaxed) == 0; }
 };
 
 inline std::string grown_line(int64_t cars, const std::string &recordable, uint64_t state, uint64_t from, uint64_t to)
@@ -165,8 +147,7 @@ inline std::string line(int64_t cars, const std::string &recordable, uint64_t st
     snprintf(buf, sizeof buf,
              "[replay] session has %s cars, the recorder holds %zu; %s needs %llu bytes of replay state and its holder has "
              "%llu, so it is not recorded (replay and flashback lose its state; the session keeps all its cars)",
-             count, STOCK_CARS, name.c_str(), static_cast<unsigned long long>(state),
-             static_cast<unsigned long long>(capacity));
+             count, STOCK_CARS, name.c_str(), static_cast<unsigned long long>(state), static_cast<unsigned long long>(capacity));
     return buf;
 }
 

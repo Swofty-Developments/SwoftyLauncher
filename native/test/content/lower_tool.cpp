@@ -94,8 +94,7 @@ int main(int argc, char **argv)
         std::cout << "box " << b.id << ": " << b.entrant_list << " title " << b.title << " order " << b.order << "\n";
     for (auto &r : plan.redirects)
         std::cout << "redirect " << r.path << " -> " << r.addon << "/" << r.file << "\n";
-    std::cout << plan.ops.size() << " ops, about " << plan.keys << " new database keys, " << plan.refused
-              << " refused\n";
+    std::cout << plan.ops.size() << " ops, about " << plan.keys << " new database keys, " << plan.refused << " refused\n";
     Value out = Value::object({{"schema_version", 1}, {"fields", plan.fields}, {"ops", plan.ops}});
     std::ofstream(argv[3]) << swofty::json::dump(out, 1) << "\n";
     return plan.refused ? 1 : 0;

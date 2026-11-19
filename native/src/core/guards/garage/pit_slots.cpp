@@ -114,19 +114,19 @@ void rank_list_slot(SwoftyContext *c)
 
 namespace guards = swofty_core::guards;
 
-guards::SiteGuard guard{guards::CoreSetId::pit_slots,
-                        {
-                            .set = MIXIN,
-                            .name = "[pit] slot guard",
-                            .env = "SWOFTY_PIT_SLOT_GUARD",
-                            .keeps = {{EVAL_NEXT, &eval_next}, {EVAL_FALSE, &eval_false}, {RANK_NEXT, &rank_next}, {RANK_END, &rank_end}},
-                            .needs = {EVAL_OWN, EVAL_LIST, EVAL_NEXT, EVAL_FALSE, RANK_OWN, RANK_LIST, RANK_NEXT, RANK_END},
-                            .mixins = {
-                                        {EVAL_OWN, SWOFTY_MIXIN_SITE, 100, (void *)&eval_own_slot, nullptr},
-                                        {EVAL_LIST, SWOFTY_MIXIN_SITE, 100, (void *)&eval_list_slot, nullptr},
-                                        {RANK_OWN, SWOFTY_MIXIN_SITE, 100, (void *)&rank_own_slot, nullptr},
-                                        {RANK_LIST, SWOFTY_MIXIN_SITE, 100, (void *)&rank_list_slot, nullptr}},
-                            .armed = "a pit list car without a race slot is skipped, and a car without one makes no pit decision",
-                        }};
+guards::SiteGuard guard{
+    guards::CoreSetId::pit_slots,
+    {
+        .set = MIXIN,
+        .name = "[pit] slot guard",
+        .env = "SWOFTY_PIT_SLOT_GUARD",
+        .keeps = {{EVAL_NEXT, &eval_next}, {EVAL_FALSE, &eval_false}, {RANK_NEXT, &rank_next}, {RANK_END, &rank_end}},
+        .needs = {EVAL_OWN, EVAL_LIST, EVAL_NEXT, EVAL_FALSE, RANK_OWN, RANK_LIST, RANK_NEXT, RANK_END},
+        .mixins = {{EVAL_OWN, SWOFTY_MIXIN_SITE, 100, (void *)&eval_own_slot, nullptr},
+                   {EVAL_LIST, SWOFTY_MIXIN_SITE, 100, (void *)&eval_list_slot, nullptr},
+                   {RANK_OWN, SWOFTY_MIXIN_SITE, 100, (void *)&rank_own_slot, nullptr},
+                   {RANK_LIST, SWOFTY_MIXIN_SITE, 100, (void *)&rank_list_slot, nullptr}},
+        .armed = "a pit list car without a race slot is skipped, and a car without one makes no pit decision",
+    }};
 
 }

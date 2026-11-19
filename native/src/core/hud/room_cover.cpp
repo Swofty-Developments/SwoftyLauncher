@@ -123,7 +123,6 @@ void CoverScreen::draw(hud::drawlist::Frame &f, uint64_t now, float alpha)
     hud::drawlist::text(f, cx - nw * 0.5f, by + 40 * u, foot, note);
 }
 
-
 void CoverScreen::step(const char *what, float fraction, float ceiling)
 {
     std::lock_guard<std::mutex> g(lock);
@@ -209,34 +208,16 @@ void CoverScreen::paint(hud::drawlist::Frame &f, uint64_t now)
 
 }
 
-void step(const char *what, float fraction, float ceiling)
-{
-    screen.step(what, fraction, ceiling);
-}
+void step(const char *what, float fraction, float ceiling) { screen.step(what, fraction, ceiling); }
 
-Snapshot snapshot()
-{
-    return screen.snapshot();
-}
+Snapshot snapshot() { return screen.snapshot(); }
 
-void set_subtitle(const char *text)
-{
-    screen.set_subtitle(text);
-}
+void set_subtitle(const char *text) { screen.set_subtitle(text); }
 
-bool setup()
-{
-    return screen.setup();
-}
+bool setup() { return screen.setup(); }
 
-bool active()
-{
-    return screen.active();
-}
+bool active() { return screen.active(); }
 
-void paint(hud::drawlist::Frame &f, uint64_t now)
-{
-    screen.paint(f, now);
-}
+void paint(hud::drawlist::Frame &f, uint64_t now) { screen.paint(f, now); }
 
 }

@@ -40,10 +40,7 @@ Registry &registry()
     return r;
 }
 
-int s_available()
-{
-    return 1;
-}
+int s_available() { return 1; }
 
 int s_publish(const char *name, uint32_t version, const void *table, size_t size)
 {
@@ -59,10 +56,7 @@ const SwoftyServices services_table = {SWOFTY_SERVICES_VERSION, s_available, s_p
 
 }
 
-const SwoftyServices *table()
-{
-    return &services_table;
-}
+const SwoftyServices *table() { return &services_table; }
 
 void report_missing()
 {
@@ -72,7 +66,4 @@ void report_missing()
 
 }
 
-extern "C" __declspec(dllexport) const SwoftyServices *SwoftyCoreServices(void)
-{
-    return swofty_core::services::table();
-}
+extern "C" __declspec(dllexport) const SwoftyServices *SwoftyCoreServices(void) { return swofty_core::services::table(); }

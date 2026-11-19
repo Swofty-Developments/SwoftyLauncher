@@ -40,10 +40,7 @@ struct ContinuePick {
 struct IdAliases {
     std::map<uint16_t, uint16_t> teams, vehicles, drivers;
 
-    bool any() const
-    {
-        return !teams.empty() || !vehicles.empty() || !drivers.empty();
-    }
+    bool any() const { return !teams.empty() || !vehicles.empty() || !drivers.empty(); }
 };
 
 inline bool parse_aliases(const std::string &text, IdAliases &out)
@@ -87,8 +84,8 @@ inline bool saved_predates(const IdAliases &aliases, const std::vector<uint16_t>
     return false;
 }
 
-inline bool saved_predates(const IdAliases &aliases, const std::vector<uint16_t> &teams,
-                           const std::vector<uint16_t> &vehicles, const std::vector<uint16_t> &drivers)
+inline bool saved_predates(const IdAliases &aliases, const std::vector<uint16_t> &teams, const std::vector<uint16_t> &vehicles,
+                           const std::vector<uint16_t> &drivers)
 {
     if (saved_predates(aliases, teams))
         return true;
@@ -166,8 +163,7 @@ struct AliasedPick {
 };
 
 inline AliasedPick continue_list_aliased(const std::vector<ListTeams> &lists, const std::vector<uint16_t> &entrants,
-                                         const std::string &pressed, const std::string &setup_mode,
-                                         const IdAliases &aliases)
+                                         const std::string &pressed, const std::string &setup_mode, const IdAliases &aliases)
 {
     AliasedPick out;
     out.pick = continue_list(lists, entrants, pressed, setup_mode);

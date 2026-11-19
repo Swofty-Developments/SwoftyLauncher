@@ -94,26 +94,14 @@ void Profiler::flush(const char *why)
         SetEvent(wake);
 }
 
-double ms_of(uint64_t ticks)
-{
-    return profiler.ms_of(ticks);
-}
+double ms_of(uint64_t ticks) { return profiler.ms_of(ticks); }
 
 }
 
-void attach()
-{
-    detail::profiler.attach();
-}
+void attach() { detail::profiler.attach(); }
 
-void start()
-{
-    detail::profiler.start();
-}
+void start() { detail::profiler.start(); }
 
-void flush(const char *why)
-{
-    detail::profiler.flush(why);
-}
+void flush(const char *why) { detail::profiler.flush(why); }
 
 }

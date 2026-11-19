@@ -24,10 +24,7 @@ Caller caller(const void *from)
     return c;
 }
 
-std::string owner_of(const Caller &c)
-{
-    return c.id.empty() ? c.dll : c.id;
-}
+std::string owner_of(const Caller &c) { return c.id.empty() ? c.dll : c.id; }
 
 std::string addon_image(const Caller &c, const char *file, std::string &why)
 {
@@ -56,8 +53,7 @@ int ov_on_paint(SwoftyPaintFn fn, void *user, uint32_t *token)
 {
     Caller c = caller(__builtin_return_address(0));
     if (hud::drawlist::listed(settings().off, owner_of(c))) {
-        swofty::log("[overlay] api: %s on_paint -> unavailable (turned off for this addon in the launcher)",
-                    owner_of(c).c_str());
+        swofty::log("[overlay] api: %s on_paint -> unavailable (turned off for this addon in the launcher)", owner_of(c).c_str());
         return SWOFTY_ASSET_UNAVAILABLE;
     }
     if (!overlay.implemented || !settings().gate)
@@ -144,18 +140,14 @@ int ov_load_image(const char *id, const char *file)
         slot = overlay.reg.set_image(owner_of(c) + "\n" + id, w, h, std::move(px.rgba));
     }
     if (slot + 1 >= int(TEX_MAX)) {
-        swofty::log("[overlay] api: %s load_image %s -> invalid: the overlay holds at most %u images", who, id,
-                    TEX_MAX - 1);
+        swofty::log("[overlay] api: %s load_image %s -> invalid: the overlay holds at most %u images", who, id, TEX_MAX - 1);
         return SWOFTY_ASSET_INVALID;
     }
     swofty::log("[overlay] api: %s load_image %s (swofty/%s, %ux%u) -> ok (slot %d)", who, id, rel.c_str(), w, h, slot);
     return SWOFTY_ASSET_OK;
 }
 
-hud::drawlist::Frame *frame_of(SwoftyPaint *paint)
-{
-    return reinterpret_cast<hud::drawlist::Frame *>(paint);
-}
+hud::drawlist::Frame *frame_of(SwoftyPaint *paint) { return reinterpret_cast<hud::drawlist::Frame *>(paint); }
 
 struct Found {
     int slot = -1;
@@ -196,8 +188,7 @@ void ov_rect_rounded(SwoftyPaint *paint, float x, float y, float w, float h, flo
         hud::drawlist::rect_rounded(*frame_of(paint), x, y, w, h, radius, rgba);
 }
 
-void ov_rect_rounded_outline(SwoftyPaint *paint, float x, float y, float w, float h, float radius, float thickness,
-                             uint32_t rgba)
+void ov_rect_rounded_outline(SwoftyPaint *paint, float x, float y, float w, float h, float radius, float thickness, uint32_t rgba)
 {
     if (paint)
         hud::drawlist::rect_rounded_outline(*frame_of(paint), x, y, w, h, radius, thickness, rgba);
@@ -283,8 +274,8 @@ void ov_measure_styled(const SwoftyPaint *, const SwoftyTextStyle *style, const 
     hud::drawlist::measure(text_style(style), utf8 ? utf8 : "", width, height);
 }
 
-int ov_image_uv(SwoftyPaint *paint, const char *id, float x, float y, float w, float h, float u0, float v0, float u1,
-                float v1, uint32_t tint)
+int ov_image_uv(SwoftyPaint *paint, const char *id, float x, float y, float w, float h, float u0, float v0, float u1, float v1,
+                uint32_t tint)
 {
     if (!overlay.implemented || !settings().gate)
         return SWOFTY_ASSET_UNAVAILABLE;
@@ -296,8 +287,8 @@ int ov_image_uv(SwoftyPaint *paint, const char *id, float x, float y, float w, f
     return SWOFTY_ASSET_OK;
 }
 
-int ov_image_nine(SwoftyPaint *paint, const char *id, float x, float y, float w, float h, float left, float top,
-                  float right, float bottom, float scale, uint32_t tint)
+int ov_image_nine(SwoftyPaint *paint, const char *id, float x, float y, float w, float h, float left, float top, float right,
+                  float bottom, float scale, uint32_t tint)
 {
     if (!overlay.implemented || !settings().gate)
         return SWOFTY_ASSET_UNAVAILABLE;
@@ -440,17 +431,11 @@ const SwoftyOverlay table = {ov_available,
 
 using hud::overlay::overlay;
 
-extern "C" __declspec(dllexport) uint32_t SwoftyCoreOverlayVersion(void)
-{
-    return SWOFTY_OVERLAY_VERSION;
-}
+extern "C" __declspec(dllexport) uint32_t SwoftyCoreOverlayVersion(void) { return SWOFTY_OVERLAY_VERSION; }
 
 namespace runtime {
 
-const SwoftyOverlay *overlay_table()
-{
-    return &hud::overlay::table;
-}
+const SwoftyOverlay *overlay_table() { return &hud::overlay::table; }
 
 int overlay_image(const std::string &id, const std::string &path, uint32_t *width, uint32_t *height)
 {

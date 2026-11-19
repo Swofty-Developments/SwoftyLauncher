@@ -29,12 +29,10 @@
 
 namespace {
 
-const runtime::Sig S_SET_FIND{"Loc_LangSet_Find", "41 57 41 56 41 54 56 57 53 48 83 EC 28 44 89 C7 49 89 D6 48 89 CB",
-                              0x3acf800};
-const runtime::Sig S_MODULE_INIT{"Loc_LocaleModule_Init", "41 57 41 56 41 55 41 54 56 57 53 48 81 EC A0 03 00 00",
-                                 0x4435970};
-const runtime::Sig S_LANG_INFO{"g_Loc_LanguageInfo", "48 8D 0D ?? ?? ?? ?? 48 8B 5C 08 60", 0x62925e8,
-                               runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig S_SET_FIND{"Loc_LangSet_Find", "41 57 41 56 41 54 56 57 53 48 83 EC 28 44 89 C7 49 89 D6 48 89 CB", 0x3acf800};
+const runtime::Sig S_MODULE_INIT{"Loc_LocaleModule_Init", "41 57 41 56 41 55 41 54 56 57 53 48 81 EC A0 03 00 00", 0x4435970};
+const runtime::Sig S_LANG_INFO{
+    "g_Loc_LanguageInfo", "48 8D 0D ?? ?? ?? ?? 48 8B 5C 08 60", 0x62925e8, runtime::Sig::riprel, 0, 3, 7};
 
 constexpr uint32_t LANGS = 0x13;
 constexpr size_t MODULE_LANG = 0x160, MODULE_LISTENERS = 0x170, INFO_STRIDE = 0x100, INFO_CODE = 0x60;
@@ -91,10 +89,7 @@ std::string lower(std::string_view s)
     return out;
 }
 
-bool all_languages(const char *language)
-{
-    return !language || !*language || !strcmp(language, "*");
-}
+bool all_languages(const char *language) { return !language || !*language || !strcmp(language, "*"); }
 
 const char *current_code()
 {
@@ -198,10 +193,7 @@ size_t install(std::vector<Raw> raws, const std::string *only)
     return scoped;
 }
 
-void refresh_key(const std::string &key)
-{
-    install(gather(&key), &key);
-}
+void refresh_key(const std::string &key) { install(gather(&key), &key); }
 
 size_t refresh_all(size_t *scoped = nullptr)
 {
@@ -390,8 +382,7 @@ void setup()
     std::lock_guard<std::mutex> g(g_shim);
     size_t scoped = 0;
     if (size_t n = refresh_all(&scoped)) {
-        swofty::log("[lang] override: %zu string(s) from lang.string records, %zu of them only within their scope", n,
-                    scoped);
+        swofty::log("[lang] override: %zu string(s) from lang.string records, %zu of them only within their scope", n, scoped);
         ensure_find_hook();
     }
 }
@@ -402,17 +393,10 @@ void setup_once()
         std::call_once(g_setup_once, setup);
 }
 
-const SwoftyLang table = {lang_available, lang_override_set, lang_override_clear, lang_override_clear_all,
-                          lang_refresh};
+const SwoftyLang table = {lang_available, lang_override_set, lang_override_clear, lang_override_clear_all, lang_refresh};
 
 }
 
-const SwoftyLang *runtime::lang_table()
-{
-    return &table;
-}
+const SwoftyLang *runtime::lang_table() { return &table; }
 
-void runtime::lang_override_setup()
-{
-    setup_once();
-}
+void runtime::lang_override_setup() { setup_once(); }

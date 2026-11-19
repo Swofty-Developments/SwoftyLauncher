@@ -17,10 +17,10 @@ std::atomic<unsigned> dropped[3];
 
 LRESULT CALLBACK keep_focus_proc(HWND wnd, UINT msg, WPARAM wp, LPARAM lp)
 {
-    int kind = msg == WM_KILLFOCUS                                        ? 0
-               : msg == WM_ACTIVATE && LOWORD(wp) == WA_INACTIVE          ? 1
-               : msg == WM_ACTIVATEAPP && !wp                             ? 2
-                                                                          : -1;
+    int kind = msg == WM_KILLFOCUS                               ? 0
+               : msg == WM_ACTIVATE && LOWORD(wp) == WA_INACTIVE ? 1
+               : msg == WM_ACTIVATEAPP && !wp                    ? 2
+                                                                 : -1;
     if (kind >= 0) {
         static const char *names[] = {"WM_KILLFOCUS", "WM_ACTIVATE(WA_INACTIVE)", "WM_ACTIVATEAPP(FALSE)"};
         if (dropped[kind]++ == 0)

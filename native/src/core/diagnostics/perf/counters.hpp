@@ -11,15 +11,9 @@ namespace perf::detail {
 using U64 = std::atomic<uint64_t>;
 constexpr auto rlx = std::memory_order_relaxed;
 
-inline uint64_t tsc()
-{
-    return __builtin_ia32_rdtsc();
-}
+inline uint64_t tsc() { return __builtin_ia32_rdtsc(); }
 
-inline void add(U64 &a, uint64_t v)
-{
-    a.store(a.load(rlx) + v, rlx);
-}
+inline void add(U64 &a, uint64_t v) { a.store(a.load(rlx) + v, rlx); }
 
 inline void raise(U64 &a, uint64_t v)
 {

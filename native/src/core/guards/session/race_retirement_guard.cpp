@@ -88,8 +88,8 @@ void log_car(uintptr_t state, uint8_t car)
 
     uint8_t domain = 0;
     uint16_t id = 0;
-    bool ref = e == rr::Entrant::found && mem::read(found + ENTRANT_DRIVER_REF, domain) &&
-               mem::read(found + ENTRANT_DRIVER_REF + 2, id);
+    bool ref =
+        e == rr::Entrant::found && mem::read(found + ENTRANT_DRIVER_REF, domain) && mem::read(found + ENTRANT_DRIVER_REF + 2, id);
     {
         std::lock_guard<std::mutex> hold(said_lock);
         if (!said.first(rr::key(car, e, domain, id)))
@@ -132,8 +132,8 @@ uintptr_t site()
     uintptr_t join = swofty::api->resolve(SITE_JOIN);
     uintptr_t vtable = swofty::api->resolve(NAME_VTABLE);
     if (!at || !join || !vtable) {
-        swofty::log("[race] retirement driver guard off: needs %s, %s and %s, which this build does not resolve", SITE,
-                    SITE_JOIN, NAME_VTABLE);
+        swofty::log("[race] retirement driver guard off: needs %s, %s and %s, which this build does not resolve", SITE, SITE_JOIN,
+                    NAME_VTABLE);
         return 0;
     }
     if (join != at + JOIN_AFTER) {

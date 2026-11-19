@@ -89,8 +89,8 @@ public:
     // Starts a burst when its file appeared and none runs.
     void check_file(const std::wstring &swofty_root);
     // Copies the back buffer in a batch that hands it from render target to Present.
-    void record(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers,
-                const GpuContext &gpu, const ResourceWatch &watched, unsigned frame_count);
+    void record(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers, const GpuContext &gpu,
+                const ResourceWatch &watched, unsigned frame_count);
     void land(unsigned frame_count, DXGI_FORMAT view);
 
 private:

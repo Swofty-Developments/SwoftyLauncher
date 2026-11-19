@@ -28,21 +28,18 @@
 
 // Core-side interpretation of Live badge and tyre texture references. No UI or
 // table policy. Reads existing archives only, following the active router.
-namespace badge_images::archive
-{
+namespace badge_images::archive {
 namespace erp = swofty_core::apply::content::erpfile;
 namespace uidb = swofty_core::apply::content::uidb;
 inline constexpr const char *PREFIX = "#overrides.osd.timing_tower.team_badges_hud.";
 inline constexpr const char *DATABASE = "eaid://ui_package/databases/overrides.uidb";
 inline constexpr const char *ARRAY =
     "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.osd.timing_tower.team_badges_hud.texarray.image";
-struct Pixels
-{
+struct Pixels {
     unsigned width{}, height{};
     std::vector<uint8_t> rgba;
 };
-struct Env
-{
+struct Env {
     std::filesystem::path root;
     std::map<std::string, std::string> routes;
     std::vector<std::string> overlays;
@@ -52,8 +49,7 @@ inline bool safe(const std::string &s)
     if (s.empty() || s.front() == '/' || s.find_first_of(":\\") != s.npos || !s.ends_with(".erp"))
         return false;
     size_t at = 0;
-    while (at < s.size())
-    {
+    while (at < s.size()) {
         auto end = s.find('/', at);
         auto part = s.substr(at, end == s.npos ? s.size() - at : end - at);
         if (part.empty() || part == "." || part == ".." ||
@@ -65,8 +61,7 @@ inline bool safe(const std::string &s)
     }
     return true;
 }
-struct Open
-{
+struct Open {
     HANDLE file = INVALID_HANDLE_VALUE;
     erp::Source src;
     erp::Archive arc;
@@ -87,8 +82,7 @@ struct Open
         if (file == INVALID_HANDLE_VALUE || !GetFileSizeEx(file, &size) || size.QuadPart < 0)
             return false;
         src.size = uint64_t(size.QuadPart);
-        src.read = [this](uint64_t off, size_t n, char *out)
-        {
+        src.read = [this](uint64_t off, size_t n, char *out) {
             if (off > src.size || n > src.size - off)
                 return false;
             LARGE_INTEGER at{};
@@ -107,8 +101,7 @@ struct Open
         std::vector<std::string> result;
         if (entry->frags.size() > 8)
             return false;
-        for (auto &f : entry->frags)
-        {
+        for (auto &f : entry->frags) {
             if (f.size > (64u << 20) || f.packed > (64u << 20) || f.off > src.size || arc.data_off > src.size - f.off ||
                 f.packed > src.size - arc.data_off - f.off)
                 return false;
@@ -122,8 +115,7 @@ struct Open
     }
 };
 
-class Resources
-{
+class Resources {
     std::vector<std::unique_ptr<Open>> stock, overlays;
     std::unique_ptr<Open> boot;
     bool valid = true;
@@ -133,8 +125,7 @@ class Resources
             return {};
         auto target = rel;
         auto route = env.routes.find(rel);
-        if (route != env.routes.end())
-        {
+        if (route != env.routes.end()) {
             target = route->second;
             if (!safe(target) || !target.starts_with("swofty/"))
                 return {};
@@ -155,66 +146,51 @@ class Resources
         return file;
     }
 
-  public:
+public:
     std::string failure;
-    bool available() const
-    {
-        return valid;
-    }
-    size_t count() const
-    {
-        return stock.size();
-    }
+    bool available() const { return valid; }
+    size_t count() const { return stock.size(); }
     explicit Resources(const Env &env)
     {
         std::vector<std::string> paths;
         std::error_code ec;
         const auto folder = env.root / "2025_asset_groups/ui_package";
-        for (std::filesystem::recursive_directory_iterator it(folder, ec), end; !ec && it != end; it.increment(ec))
-        {
-            if (it.depth() > 4)
-            {
+        for (std::filesystem::recursive_directory_iterator it(folder, ec), end; !ec && it != end; it.increment(ec)) {
+            if (it.depth() > 4) {
                 it.disable_recursion_pending();
                 continue;
             }
             if (it->is_regular_file(ec) && it->path().extension() == ".erp")
                 paths.push_back(it->path().lexically_relative(env.root).generic_string());
-            if (paths.size() > 8192)
-            {
+            if (paths.size() > 8192) {
                 valid = false;
                 return;
             }
         }
-        if (ec)
-        {
+        if (ec) {
             valid = false;
             return;
         }
         std::sort(paths.begin(), paths.end());
-        for (auto &path : paths)
-        {
+        for (auto &path : paths) {
             auto f = open(env, path);
-            if (!f)
-            {
+            if (!f) {
                 failure = path;
                 valid = false;
                 return;
             }
             stock.push_back(std::move(f));
         }
-        for (auto &path : env.overlays)
-        {
+        for (auto &path : env.overlays) {
             auto f = open(env, path);
-            if (!f)
-            {
+            if (!f) {
                 valid = false;
                 return;
             }
             overlays.push_back(std::move(f));
         }
         const std::string bootpath = "2025_asset_groups/vfx_package/common.erp";
-        if (env.routes.contains(bootpath))
-        {
+        if (env.routes.contains(bootpath)) {
             boot = open(env, bootpath);
             if (!boot)
                 valid = false;
@@ -224,14 +200,12 @@ class Resources
     {
         if (!valid)
             return false;
-        for (auto it = overlays.rbegin(); it != overlays.rend(); ++it)
-        {
+        for (auto it = overlays.rbegin(); it != overlays.rend(); ++it) {
             if ((*it)->arc.find(name))
                 return (*it)->resource(name, result);
         }
         bool found = false;
-        for (auto &file : stock)
-        {
+        for (auto &file : stock) {
             if (!file->arc.find(name))
                 continue;
             std::vector<std::string> bytes;
@@ -248,8 +222,7 @@ class Resources
     }
 };
 
-struct Surface
-{
+struct Surface {
     unsigned format{}, width{}, height{}, layers{};
     size_t stride{}, block{};
     std::string bytes;
@@ -273,8 +246,7 @@ struct Surface
             return false;
         stride = 0;
         for (unsigned level = 0; level < levels; level++)
-            stride +=
-                size_t((std::max(1u, width >> level) + 3) / 4) * ((std::max(1u, height >> level) + 3) / 4) * block;
+            stride += size_t((std::max(1u, width >> level) + 3) / 4) * ((std::max(1u, height >> level) + 3) / 4) * block;
         if (stride * layers > (64u << 20) || fragments[1].size() != stride * layers)
             return false;
         bytes = fragments[1];
@@ -287,8 +259,7 @@ struct Surface
         std::vector<uint8_t> rgba(size_t(width) * height * 4);
         size_t offset = index * stride;
         for (unsigned y = 0; y < height; y += 4)
-            for (unsigned x = 0; x < width; x += 4)
-            {
+            for (unsigned x = 0; x < width; x += 4) {
                 alignas(16) uint8_t decoded[64]{};
                 auto src = bytes.data() + offset;
                 offset += block;
@@ -296,18 +267,15 @@ struct Surface
                     bcdec_bc1(src, decoded, 16);
                 else if (format == 55 || format == 57)
                     bcdec_bc3(src, decoded, 16);
-                else if (format == 65)
-                {
+                else if (format == 65) {
                     uint8_t rg[32]{};
                     bcdec_bc5(src, rg, 8);
-                    for (unsigned p = 0; p < 16; p++)
-                    {
+                    for (unsigned p = 0; p < 16; p++) {
                         decoded[p * 4] = rg[p * 2];
                         decoded[p * 4 + 1] = rg[p * 2 + 1];
                         decoded[p * 4 + 3] = 255;
                     }
-                }
-                else
+                } else
                     bcdec_bc7(src, decoded, 16);
                 for (unsigned by = 0; by < 4 && y + by < height; by++)
                     for (unsigned bx = 0; bx < 4 && x + bx < width; bx++)
@@ -318,8 +286,7 @@ struct Surface
     }
 };
 
-struct Catalogue
-{
+struct Catalogue {
     live_image_reference::Catalogue descriptor;
     std::map<std::string, int> indices;
     Surface surface;
@@ -332,9 +299,8 @@ struct Catalogue
         uidb::Pkg pkg;
         if (!pkg.read(fragments[0]))
             return false;
-        return load(pkg.root, [&](const std::string &name, std::vector<std::string> &parts) {
-            return resources.read(name, parts);
-        });
+        return load(pkg.root,
+                    [&](const std::string &name, std::vector<std::string> &parts) { return resources.read(name, parts); });
     }
     template <class Read> bool load(const uidb::Node &root, Read read)
     {
@@ -371,9 +337,8 @@ struct Catalogue
         if (!array || array->kind != uidb::Node::value || array->val.type != "stri")
             return false;
         const auto &uri = array->val.value;
-        if (uri.size() > 240 || !uri.starts_with("ui_package/art/texture_arrays/") ||
-            !uri.ends_with(".texarray") || uri.find("..") != uri.npos ||
-            uri.find_first_of(":\\#") != uri.npos ||
+        if (uri.size() > 240 || !uri.starts_with("ui_package/art/texture_arrays/") || !uri.ends_with(".texarray") ||
+            uri.find("..") != uri.npos || uri.find_first_of(":\\#") != uri.npos ||
             std::any_of(uri.begin(), uri.end(), [](unsigned char c) { return c < 32 || c > 126; }))
             return false;
         node = child(node, "Contents");
@@ -381,14 +346,12 @@ struct Catalogue
             return false;
         if (node->kind != uidb::Node::array || node->list.size() > 4096)
             return false;
-        for (size_t index = 0; index < node->list.size(); index++)
-        {
+        for (size_t index = 0; index < node->list.size(); index++) {
             auto &row = node->list[index];
             if (row.kind != uidb::Node::object)
                 continue;
             for (auto &[key, value] : row.items)
-                if (key.value == "Name" && value.kind == uidb::Node::value && value.val.type == "stri")
-                {
+                if (key.value == "Name" && value.kind == uidb::Node::value && value.val.type == "stri") {
                     auto [it, inserted] = indices.emplace(value.val.value, int(index));
                     if (!inserted)
                         it->second = -1;

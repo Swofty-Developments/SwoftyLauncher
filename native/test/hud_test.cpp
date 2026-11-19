@@ -23,14 +23,14 @@
 
 static int failures;
 
-#define CHECK(cond, msg)                                                                                                \
-    do {                                                                                                                \
-        if (cond) {                                                                                                     \
-            printf("ok  : %s\n", msg);                                                                                  \
-        } else {                                                                                                        \
-            printf("FAIL: %s\n", msg);                                                                                  \
-            failures++;                                                                                                 \
-        }                                                                                                               \
+#define CHECK(cond, msg)                                                                                                         \
+    do {                                                                                                                         \
+        if (cond) {                                                                                                              \
+            printf("ok  : %s\n", msg);                                                                                           \
+        } else {                                                                                                                 \
+            printf("FAIL: %s\n", msg);                                                                                           \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 struct Bounds {
@@ -47,10 +47,7 @@ static Bounds bounds(const hud::drawlist::Frame &f, size_t from = 0)
     return b;
 }
 
-static bool near(float a, float b, float eps = 1e-3f)
-{
-    return std::fabs(a - b) <= eps;
-}
+static bool near(float a, float b, float eps = 1e-3f) { return std::fabs(a - b) <= eps; }
 
 static hud::drawlist::Frame frame(float w = 1920, float h = 1080)
 {
@@ -398,7 +395,6 @@ static void test_cap()
           "primitives past the vertex cap are dropped and counted");
 }
 
-
 static void test_text_cache()
 {
     hud::drawlist::Frame f = frame();
@@ -427,8 +423,9 @@ static void test_input()
 {
     using namespace hud::input;
     Snapshot s;
-    std::vector<Event> ev = {{Ev::move, 0, 100, 50},  {Ev::down, SWOFTY_MOUSE_LEFT, 110, 60}, {Ev::wheel, 0, 1, 0},
-                             {Ev::wheel, 0, 1, 0},     {Ev::chr, 'a', 0, 0},                   {Ev::chr, 0x1b, 0, 0},
+    std::vector<Event> ev = {{Ev::move, 0, 100, 50},     {Ev::down, SWOFTY_MOUSE_LEFT, 110, 60},
+                             {Ev::wheel, 0, 1, 0},       {Ev::wheel, 0, 1, 0},
+                             {Ev::chr, 'a', 0, 0},       {Ev::chr, 0x1b, 0, 0},
                              {Ev::key_down, 0x77, 0, 0}, {Ev::key_down, 0x77, 0, 0}};
     fold(s, ev, 2, 2);
     CHECK(s.x == 220 && s.y == 120, "client positions scale to framebuffer pixels");
@@ -537,7 +534,8 @@ static void test_image_registry()
     CHECK(reg.find_image("missing") == -1, "find_image returns -1 for an unknown id");
     CHECK(reg.image_count() == 2, "two distinct images registered");
     int set = reg.set_image("logo", 2, 1, std::vector<uint8_t>(8, 255));
-    CHECK(set == 0 && reg.image(0)->width == 2 && reg.image(0)->generation == 1, "set_image keeps the slot and bumps the generation");
+    CHECK(set == 0 && reg.image(0)->width == 2 && reg.image(0)->generation == 1,
+          "set_image keeps the slot and bumps the generation");
     reg.set_image("logo", 2, 1, std::vector<uint8_t>(8, 0));
     CHECK(reg.image(0)->generation == 2, "reloading an id bumps it again so the renderer uploads it");
 }
@@ -580,7 +578,8 @@ static void raster(const hud::drawlist::Frame &f, const hud::img::Pixels &atlas,
             xx = std::clamp(xx, 0, int(atlas.width) - 1), yy = std::clamp(yy, 0, int(atlas.height) - 1);
             return atlas.rgba[size_t(yy) * atlas.width + size_t(xx)] / 255.0f;
         };
-        return (at(x0, y0) * (1 - fx) + at(x0 + 1, y0) * fx) * (1 - fy) + (at(x0, y0 + 1) * (1 - fx) + at(x0 + 1, y0 + 1) * fx) * fy;
+        return (at(x0, y0) * (1 - fx) + at(x0 + 1, y0) * fx) * (1 - fy) +
+               (at(x0, y0 + 1) * (1 - fx) + at(x0 + 1, y0 + 1) * fx) * fy;
     };
     for (const hud::drawlist::Batch &b : f.batches)
         for (uint32_t t = b.first; t + 2 < b.first + b.count; t += 3) {
@@ -617,7 +616,8 @@ static void raster(const hud::drawlist::Frame &f, const hud::img::Pixels &atlas,
                     uint32_t kind = a.mode & 0xff;
                     if (kind == hud::drawlist::SDF) {
                         float d = sample(u, v);
-                        float fw = std::max((std::fabs(dudx) + std::fabs(dudy)) * atlas.width / (2 * hud::font::SPREAD) * 2, 1e-5f);
+                        float fw =
+                            std::max((std::fabs(dudx) + std::fabs(dudy)) * atlas.width / (2 * hud::font::SPREAD) * 2, 1e-5f);
                         float e = 0.5f - float((a.mode >> 8) & 255) / 510.0f;
                         float h = fw * (0.5f + float((a.mode >> 16) & 255) / 16.0f);
                         float tt = std::clamp((d - (e - h)) / (2 * h), 0.0f, 1.0f);
@@ -781,16 +781,18 @@ static void test_guard()
     std::vector<ExecSeen> execs;
     CHECK(!present_queue_from_execs(execs, 7), "no queue has executed yet");
     execs = {{a, direct, 7, 100}, {b, direct, 9, 200}};
-    CHECK(present_queue_from_execs(execs, 7)->queue == a, "the direct queue on the presenting thread beats a newer one on another thread");
-    CHECK(present_queue_from_execs(execs, 5)->queue == b, "with no queue on the presenting thread the most recent direct queue wins");
+    CHECK(present_queue_from_execs(execs, 7)->queue == a,
+          "the direct queue on the presenting thread beats a newer one on another thread");
+    CHECK(present_queue_from_execs(execs, 5)->queue == b,
+          "with no queue on the presenting thread the most recent direct queue wins");
     execs = {{a, direct, 7, 100}, {c, direct, 7, 300}, {b, compute, 7, 400}, {d, copy, 7, 500}};
     CHECK(present_queue_from_execs(execs, 7)->queue == c, "the newest direct queue on the thread wins over an older one");
     execs = {{b, compute, 7, 400}, {d, copy, 7, 500}};
     CHECK(!present_queue_from_execs(execs, 7), "compute and copy queues are never the present queue");
 
-    std::vector<std::string> dlssg = {"F1_25.exe", "sl.interposer.dll", "VERSION.dll", "swofty_core.dll",
-                                      "sl.common.dll", "sl.dlss.dll", "nvngx_dlss.dll", "NVNGX_DLSSG.DLL",
-                                      "sl.dlss_g.dll", "sl.pcl.dll", "sl.reflex.dll", "dxgi.dll"};
+    std::vector<std::string> dlssg = {"F1_25.exe",     "sl.interposer.dll", "VERSION.dll",    "swofty_core.dll",
+                                      "sl.common.dll", "sl.dlss.dll",       "nvngx_dlss.dll", "NVNGX_DLSSG.DLL",
+                                      "sl.dlss_g.dll", "sl.pcl.dll",        "sl.reflex.dll",  "dxgi.dll"};
     OnDemandArm on = on_demand_arm(dlssg, "dxgi.dll", -1);
     CHECK(on.arms() && on.source == "nvngx_dlssg.dll, sl.dlss_g.dll, sl.interposer.dll" && on.refused.empty(),
           "DLSS Frame Generation through Streamline arms the device hooks for a swapchain dxgi.dll presents");
@@ -806,8 +808,9 @@ static void test_guard()
     on = on_demand_arm(dlssg, "dxgi.dll", 0);
     CHECK(!on.arms() && on.refused == "SWOFTY_OVERLAY_FG=0 / \"overlay_fg\": false",
           "SWOFTY_OVERLAY_FG=0 / \"overlay_fg\": false keeps the device hooks off");
-    std::vector<std::string> amd = {"F1_25.exe", "sl.interposer.dll", "amd_fidelityfx_dx12.dll",
-                                    "amd_fidelityfx_framegeneration_dx12.dll", "libxess_fg.dll", "dxgi.dll"};
+    std::vector<std::string> amd = {
+        "F1_25.exe",      "sl.interposer.dll", "amd_fidelityfx_dx12.dll", "amd_fidelityfx_framegeneration_dx12.dll",
+        "libxess_fg.dll", "dxgi.dll"};
     on = on_demand_arm(amd, "amd_fidelityfx_dx12.dll", -1);
     CHECK(!on.arms() && on.refused == "amd_fidelityfx_dx12.dll presents it (AMD's or Intel's frame generation)",
           "FidelityFX calling Present keeps the device hooks off");
@@ -820,9 +823,11 @@ static void test_guard()
           "with no NVIDIA module in the process the device hooks stay off");
 
     CHECK(unread_queue_step(false, false, false) == UnreadQueue::Arm, "the first unreadable queue asks to arm");
-    CHECK(unread_queue_step(false, true, false) == UnreadQueue::Refuse && unread_queue_step(false, true, true) == UnreadQueue::Refuse,
+    CHECK(unread_queue_step(false, true, false) == UnreadQueue::Refuse &&
+              unread_queue_step(false, true, true) == UnreadQueue::Refuse,
           "a swapchain is refused once the arming was asked and ExecuteCommandLists is still not hooked");
-    CHECK(unread_queue_step(true, false, false) == UnreadQueue::Wait && unread_queue_step(true, false, true) == UnreadQueue::Learn,
+    CHECK(unread_queue_step(true, false, false) == UnreadQueue::Wait &&
+              unread_queue_step(true, false, true) == UnreadQueue::Learn,
           "device hooks armed at start wait for, then learn, the queue without asking");
     CHECK(unread_queue_step(true, true, false) == UnreadQueue::Wait && unread_queue_step(true, true, true) == UnreadQueue::Learn,
           "device hooks armed on demand wait for, then learn, the queue");
@@ -948,15 +953,9 @@ void proxy_exec(void *self, unsigned n, void *const *lists)
     through_vtable(static_cast<Proxy *>(self)->base, n, unwrapped.data());
 }
 
-void other_hook(void *self, unsigned n, void *const *lists)
-{
-    native_exec(self, n, lists);
-}
+void other_hook(void *self, unsigned n, void *const *lists) { native_exec(self, n, lists); }
 
-const void *hooked()
-{
-    return reinterpret_cast<const void *>(&native_exec);
-}
+const void *hooked() { return reinterpret_cast<const void *>(&native_exec); }
 
 void exec_original(void *q, unsigned n, void *const *lists)
 {
@@ -1035,15 +1034,13 @@ static void test_png(const char *out)
     CHECK(to_rgb(Fmt::bgra8, bgra.data(), w * 4, w, h, rgb2) && rgb2 == rgb, "bgra8 converts to the same rgb");
     uint32_t v = 1023u | (512u << 10) | (3u << 30);
     std::vector<uint8_t> one;
-    CHECK(to_rgb(Fmt::rgb10a2, reinterpret_cast<uint8_t *>(&v), 4, 1, 1, one) && one[0] == 255 && one[1] == 128 &&
-              one[2] == 0,
+    CHECK(to_rgb(Fmt::rgb10a2, reinterpret_cast<uint8_t *>(&v), 4, 1, 1, one) && one[0] == 255 && one[1] == 128 && one[2] == 0,
           "r10g10b10a2 keeps the top 8 bits");
     uint16_t hf[4] = {0x3c00, 0x3800, 0x0000, 0x3c00};
-    CHECK(to_rgb(Fmt::rgba16f, reinterpret_cast<uint8_t *>(hf), 8, 1, 1, one) && one[0] == 255 && one[1] == 188 &&
-              one[2] == 0,
+    CHECK(to_rgb(Fmt::rgba16f, reinterpret_cast<uint8_t *>(hf), 8, 1, 1, one) && one[0] == 255 && one[1] == 188 && one[2] == 0,
           "scRGB half floats encode to sRGB");
-    CHECK(fmt_of(24) == Fmt::rgb10a2 && fmt_of(10) == Fmt::rgba16f && fmt_of(28) == Fmt::rgba8 &&
-              fmt_of(87) == Fmt::bgra8 && fmt_of(2) == Fmt::unknown,
+    CHECK(fmt_of(24) == Fmt::rgb10a2 && fmt_of(10) == Fmt::rgba16f && fmt_of(28) == Fmt::rgba8 && fmt_of(87) == Fmt::bgra8 &&
+              fmt_of(2) == Fmt::unknown,
           "swapchain formats map to converters");
     std::string png = encode_rgb(rgb.data(), w, h);
     CHECK(png.compare(0, 8, std::string("\x89PNG\r\n\x1a\n", 8)) == 0 && png.find("IHDR") == 12 &&
@@ -1169,12 +1166,12 @@ static void test_fg_barriers()
     CHECK(!presents_back_buffer(STATE_RENDER_TARGET, 0x80, 0), "render target to a shader read does not");
     CHECK(!presents_back_buffer(0x8, STATE_PRESENT, 0), "unordered access to present does not");
     CHECK(state_after_draw(STATE_PRESENT) == STATE_PRESENT, "the overlay leaves the buffer in the state the game left it");
-    CHECK(renderable_format(27) == 28 && renderable_format(90) == 87 && renderable_format(23) == 24 &&
-              renderable_format(9) == 10,
+    CHECK(renderable_format(27) == 28 && renderable_format(90) == 87 && renderable_format(23) == 24 && renderable_format(9) == 10,
           "typeless back buffer formats get their typed view");
     CHECK(renderable_format(24) == 24 && renderable_format(10) == 10 && renderable_format(87) == 87,
           "typed formats stay as they are");
-    CHECK(output_for(renderable_format(23), 12, -1) == HDR10_PQ && output_for(renderable_format(9), COLOR_SPACE_UNSET, -1) == SCRGB,
+    CHECK(output_for(renderable_format(23), 12, -1) == HDR10_PQ &&
+              output_for(renderable_format(9), COLOR_SPACE_UNSET, -1) == SCRGB,
           "output mode follows the typed format and the recorded colour space");
     CHECK(pending_fresh(1000, 1000) && pending_fresh(1250, 1000) && !pending_fresh(1251, 1000) && !pending_fresh(900, 1000),
           "a pending frame is used for a quarter of a second");

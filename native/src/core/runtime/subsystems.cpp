@@ -54,9 +54,6 @@ constexpr Subsystem SUBSYSTEMS[] = {
 
 }
 
-std::span<const Subsystem> subsystems()
-{
-    return SUBSYSTEMS;
-}
+std::span<const Subsystem> subsystems() { return SUBSYSTEMS; }
 
 }

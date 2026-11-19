@@ -89,9 +89,17 @@ enum class Screen { overlay, home, other };
 
 inline Screen classify_screen(const std::string &name)
 {
-    static const char *const overlays[] = {"persistent", "playercard", "render_badge", "theming_overlay_frontend",
-                                           "standard_wipe", "frontend_transition", "slice_bg_content_underlay",
-                                           "f1_life_driver_tags", "audio_themes", "fe_planes", "wipes",
+    static const char *const overlays[] = {"persistent",
+                                           "playercard",
+                                           "render_badge",
+                                           "theming_overlay_frontend",
+                                           "standard_wipe",
+                                           "frontend_transition",
+                                           "slice_bg_content_underlay",
+                                           "f1_life_driver_tags",
+                                           "audio_themes",
+                                           "fe_planes",
+                                           "wipes",
                                            "tutorials_masked"};
     if (name == "fe_home")
         return Screen::home;
@@ -277,10 +285,7 @@ inline std::string with_separators(long long n)
 
 constexpr const char *OFFLINE_TEXT = "Launched with Swofty Launcher";
 
-inline std::string online_line(long long n)
-{
-    return n <= 0 ? "" : with_separators(n) + " currently playing";
-}
+inline std::string online_line(long long n) { return n <= 0 ? "" : with_separators(n) + " currently playing"; }
 
 inline std::string offline_text(long long n)
 {
@@ -308,10 +313,7 @@ inline State parse_state(const std::string &text)
     return s;
 }
 
-inline std::string version_line(const State &s)
-{
-    return s.version.empty() ? "Swofty Launcher" : "Swofty Launcher " + s.version;
-}
+inline std::string version_line(const State &s) { return s.version.empty() ? "Swofty Launcher" : "Swofty Launcher " + s.version; }
 
 inline std::string discord_line(const State &s)
 {
@@ -324,10 +326,7 @@ inline bool has_avatar(const State &s) { return s.signed_in && !s.avatar.empty()
 
 inline bool has_video(const State &s) { return !s.video_url.empty() && !s.video_thumbnail.empty(); }
 
-inline std::string watch_line(const std::string &button)
-{
-    return "Press " + button + " to watch";
-}
+inline std::string watch_line(const std::string &button) { return "Press " + button + " to watch"; }
 
 inline bool panel_due(bool patched, bool home_open, bool loaded, bool disabled, bool prepared)
 {
@@ -341,12 +340,11 @@ inline bool time_trial_warning_due(const State &s, bool is_time_trial, bool alre
     return s.loaded && is_time_trial && !s.signed_in && !already_shown;
 }
 
-
 // A route fired from the home screen hides the panel, except the launcher's own that keep the screen (the Showroom's, Addon Settings').
 inline bool hides_panel(const std::string &route)
 {
-    return route.rfind("swofty_", 0) != 0 || route == TIME_TRIAL_ROUTE || route == GRAND_PRIX_ROUTE || route == GRAND_PRIX_SAVES_ROUTE ||
-           route == CUSTOMISATION_ROUTE;
+    return route.rfind("swofty_", 0) != 0 || route == TIME_TRIAL_ROUTE || route == GRAND_PRIX_ROUTE ||
+           route == GRAND_PRIX_SAVES_ROUTE || route == CUSTOMISATION_ROUTE;
 }
 
 }

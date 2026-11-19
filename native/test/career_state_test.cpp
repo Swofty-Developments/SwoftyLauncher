@@ -27,10 +27,7 @@ static void go(Tracker &t, const char *state, uint32_t from, uint32_t to, uint64
     t.flow(djb2(state), from, to, state, true, now);
 }
 
-static bool quiet(const Edges &e)
-{
-    return !e.loaded && !e.unloaded && e.hub < 0;
-}
+static bool quiet(const Edges &e) { return !e.loaded && !e.unloaded && e.hub < 0; }
 
 int main()
 {
@@ -63,8 +60,7 @@ int main()
         e = t.settle();
         expect(e.hub == 1 && !e.loaded, "StateTeamHQUpdate Updating: career.hub entered");
         t.team_hq_answer(false);
-        expect(quiet(t.settle()) && t.state().team_hq_mode == SWOFTY_CAREER_DRIVER &&
-                   t.mode() == SWOFTY_CAREER_DRIVER,
+        expect(quiet(t.settle()) && t.state().team_hq_mode == SWOFTY_CAREER_DRIVER && t.mode() == SWOFTY_CAREER_DRIVER,
                "Team HQ answers not My Team: still driver career, no churn");
 
         uint32_t st = 0;
@@ -109,7 +105,8 @@ int main()
         expect(t.settle().loaded, "a career loads from a read in career mode");
         t.components(poll_reads(Where::elsewhere) ? dc : Components{}, 200);
         Edges e = t.settle();
-        expect(e.unloaded && !e.loaded && !t.state().loaded, "in Time Trial the poll reports no career without a read: the career unloads");
+        expect(e.unloaded && !e.loaded && !t.state().loaded,
+               "in Time Trial the poll reports no career without a read: the career unloads");
         Tracker fresh;
         fresh.components(Components{}, 100);
         expect(quiet(fresh.settle()) && !fresh.state().loaded && fresh.state().components == SWOFTY_CAREER_COMPONENTS_UNSEEN,
@@ -169,8 +166,7 @@ int main()
         t.components(entity_only, 100);
         expect(!t.loaded(), "entity without a CareerComponent: not loaded while within the grace period");
         t.components(entity_only, 100 + career::state::COMPONENT_GRACE_MS + 1);
-        expect(t.loaded() && t.state().components == SWOFTY_CAREER_COMPONENTS_FALLBACK &&
-                   t.mode() == SWOFTY_CAREER_DRIVER,
+        expect(t.loaded() && t.state().components == SWOFTY_CAREER_COMPONENTS_FALLBACK && t.mode() == SWOFTY_CAREER_DRIVER,
                "components broken in Team HQ: fall back to the flow states and the Team HQ answer");
     }
 
@@ -183,11 +179,9 @@ int main()
         }
         uint32_t st;
         uint64_t age;
-        expect(t.status_of(djb2("StateX0"), st, age, 0) && !t.status_of(djb2("StateX300"), st, age, 0),
-               "state table is bounded");
+        expect(t.status_of(djb2("StateX0"), st, age, 0) && !t.status_of(djb2("StateX300"), st, age, 0), "state table is bounded");
         t.flow(djb2("StateTeamHQUpdate"), 0, 2, "StateTeamHQUpdate", true, 0);
-        expect(t.status(career::state::TeamHqUpdate) == SWOFTY_FLOW_NONE,
-               "a full table drops new states (documented limit)");
+        expect(t.status(career::state::TeamHqUpdate) == SWOFTY_FLOW_NONE, "a full table drops new states (documented limit)");
     }
 
     {

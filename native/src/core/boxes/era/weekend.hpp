@@ -20,8 +20,8 @@ namespace runtime::era {
 constexpr size_t MODE_OPTIONS_TAG = 0x00;
 constexpr size_t MODE_WEEKEND_OPTIONS = 0x190;
 constexpr size_t WEEKEND_OPTION_QWORDS = 5;
-inline constexpr size_t WEEKEND_SWAP_OFFSETS[WEEKEND_OPTION_QWORDS] = {MODE_OPTIONS_TAG, MODE_WEEKEND_OPTIONS, MODE_WEEKEND_OPTIONS + 8,
-                                                                       MODE_WEEKEND_OPTIONS + 16, MODE_WEEKEND_OPTIONS + 24};
+inline constexpr size_t WEEKEND_SWAP_OFFSETS[WEEKEND_OPTION_QWORDS] = {
+    MODE_OPTIONS_TAG, MODE_WEEKEND_OPTIONS, MODE_WEEKEND_OPTIONS + 8, MODE_WEEKEND_OPTIONS + 16, MODE_WEEKEND_OPTIONS + 24};
 
 class WeekendSwaps {
 public:

@@ -80,8 +80,8 @@ private:
     using Lock = std::unique_lock<std::recursive_mutex>;
 
     void publish(Lock &);
-    Totals run(Moment m, Applies kind, const std::function<void(Applier &, Report &)> &call,
-               std::vector<Applier *> *ran, bool reverse_order, const std::vector<Applier *> *only);
+    Totals run(Moment m, Applies kind, const std::function<void(Applier &, Report &)> &call, std::vector<Applier *> *ran,
+               bool reverse_order, const std::vector<Applier *> *only);
     struct OffThread;
 
     void log(const std::string &line);

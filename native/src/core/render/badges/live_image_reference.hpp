@@ -10,9 +10,9 @@ struct Catalogue {
 };
 inline constexpr Catalogue BADGES{"overrides.osd.timing_tower.team_badges_hud"};
 inline constexpr Catalogue TYRES[] = {{"overrides.tyre_allocation.key_icons"},
-                                     {"overrides.tyre_allocation.compound_icons"},
-                                     {"overrides.tyre_allocation.tyre_icons"},
-                                     {"overrides.tyres.tyres_small"}};
+                                      {"overrides.tyre_allocation.compound_icons"},
+                                      {"overrides.tyre_allocation.tyre_icons"},
+                                      {"overrides.tyres.tyres_small"}};
 
 inline std::string prefix(const Catalogue &c) { return "#" + std::string(c.path) + "."; }
 

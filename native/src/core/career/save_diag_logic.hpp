@@ -32,8 +32,8 @@ inline std::string utc(int64_t secs)
 inline std::string off_line(bool present, const std::string &profile, const std::string &why)
 {
     std::string head = present && !profile.empty() ? "launcher saves are off for profile " + profile
-                       : present                  ? std::string("launcher saves are off")
-                                                  : std::string("launcher saves are off (settings.json has no launcher_saves)");
+                       : present                   ? std::string("launcher saves are off")
+                                                   : std::string("launcher saves are off (settings.json has no launcher_saves)");
     std::string out = head + ": the game reads Steam's saves natively";
     if (!why.empty())
         out += " (" + why + ")";

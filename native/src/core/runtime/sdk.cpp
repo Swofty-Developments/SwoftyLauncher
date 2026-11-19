@@ -5,7 +5,6 @@
 
 #include <mutex>
 
-
 namespace {
 
 const char *const RESULTS[] = {"ok", "late", "unavailable", "invalid"};
@@ -78,10 +77,7 @@ int done(const Caller &c, const std::string &call, int r, const std::string &why
     return r;
 }
 
-bool text(const char *s)
-{
-    return s && *s;
-}
+bool text(const char *s) { return s && *s; }
 
 std::string addon_file(const Caller &c, const char *file, std::string &why)
 {
@@ -116,18 +112,12 @@ int submit(const Caller &c, const std::string &call, const char *feature, const 
     return done(c, call, r, r == SWOFTY_ASSET_LATE ? "its point has passed" : "");
 }
 
-int late_resource(const json::Value &)
-{
-    return SWOFTY_ASSET_LATE;
-}
+int late_resource(const json::Value &) { return SWOFTY_ASSET_LATE; }
 
-int api_available(const char *feature)
-{
-    return feature && runtime::enabled(feature, nullptr);
-}
+int api_available(const char *feature) { return feature && runtime::enabled(feature, nullptr); }
 
-int api_register_group(const char *group, const char *const *erps, size_t erp_count, const char *const *deps,
-                       size_t dep_count, const char *templ)
+int api_register_group(const char *group, const char *const *erps, size_t erp_count, const char *const *deps, size_t dep_count,
+                       const char *templ)
 {
     Caller c = caller(__builtin_return_address(0));
     std::string call = std::string("register_group ") + (group ? group : "(null)");
@@ -139,8 +129,7 @@ int api_register_group(const char *group, const char *const *erps, size_t erp_co
     return submit(c, call, "group", "asset_groups", std::move(e), runtime::group_add);
 }
 
-int api_put_resource(const char *uri, const SwoftyFragment *fragments, size_t count, const char *const *erps,
-                     size_t erp_count)
+int api_put_resource(const char *uri, const SwoftyFragment *fragments, size_t count, const char *const *erps, size_t erp_count)
 {
     Caller c = caller(__builtin_return_address(0));
     std::string call = std::string("put_resource ") + (uri ? uri : "(null)");
@@ -237,7 +226,7 @@ int api_overlay_file(const char *game_path, const char *file)
     return submit(c, call, "file", "overlay_files", std::move(e), runtime::file_add);
 }
 
-const SwoftyAssets table = {api_available, api_register_group, api_put_resource, api_db_set,
+const SwoftyAssets table = {api_available,  api_register_group, api_put_resource, api_db_set,
                             api_db_set_raw, api_lang_set,       api_lang_table,   api_overlay_file};
 
 }
@@ -250,10 +239,7 @@ const SwoftyAssets *assets_table()
     return &table;
 }
 
-const json::Value &sdk()
-{
-    return doc;
-}
+const json::Value &sdk() { return doc; }
 
 bool close_asset_registrations()
 {

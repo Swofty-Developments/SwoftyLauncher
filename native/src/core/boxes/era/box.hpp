@@ -90,10 +90,7 @@ inline std::string image_of(const Box &box)
     return box.image.empty() ? std::string(IMAGE_ARRAY) + "[" + box.entrant_list + "]" : box.image;
 }
 
-inline bool time_trial_mode(std::string_view label)
-{
-    return swofty_core::apply::facts::mode_of(label) == "time_trial";
-}
+inline bool time_trial_mode(std::string_view label) { return swofty_core::apply::facts::mode_of(label) == "time_trial"; }
 
 struct FrontEndLeave {
     bool restore = false, clear_selected = false, forget_pick = false;
@@ -114,9 +111,8 @@ inline const std::string &list_for(const Box &box, bool time_trial)
 
 inline std::vector<Box> ordered(std::vector<Box> boxes)
 {
-    std::stable_sort(boxes.begin(), boxes.end(), [](const Box &a, const Box &b) {
-        return a.order != b.order ? a.order < b.order : a.seq < b.seq;
-    });
+    std::stable_sort(boxes.begin(), boxes.end(),
+                     [](const Box &a, const Box &b) { return a.order != b.order ? a.order < b.order : a.seq < b.seq; });
     return boxes;
 }
 
@@ -152,8 +148,8 @@ inline std::string press_refusal(bool same_view_model, bool nodes, size_t vector
     if (!nodes || !boxes)
         return "the addon row has no boxes";
     if (vector_tiles < stock + boxes)
-        return "the tile vector holds " + std::to_string(vector_tiles) + " tiles, fewer than the " +
-               std::to_string(stock) + " stock and " + std::to_string(boxes) + " addon tiles of the last build";
+        return "the tile vector holds " + std::to_string(vector_tiles) + " tiles, fewer than the " + std::to_string(stock) +
+               " stock and " + std::to_string(boxes) + " addon tiles of the last build";
     return {};
 }
 

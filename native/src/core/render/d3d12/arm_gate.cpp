@@ -131,8 +131,8 @@ template <class Call> HRESULT gated(int which, void *caller, Call call)
         return call();
     if (p != arm_gate::Pass::open && p != arm_gate::Pass::waited && p != arm_gate::Pass::timed_out) {
         if (passes_told.fetch_add(1) < PASSES_TOLD)
-            swofty::log("[d3d12] %s from %s (thread %lu) while the D3D12 arm runs: %s", e.name,
-                        module_of(caller).c_str(), GetCurrentThreadId(), arm_gate::pass_name(p));
+            swofty::log("[d3d12] %s from %s (thread %lu) while the D3D12 arm runs: %s", e.name, module_of(caller).c_str(),
+                        GetCurrentThreadId(), arm_gate::pass_name(p));
         return call();
     }
     if (!e.first.exchange(false))
@@ -172,8 +172,7 @@ HRESULT WINAPI factory1_hook(REFIID riid, void **out)
 
 HRESULT WINAPI factory2_hook(UINT flags, REFIID riid, void **out)
 {
-    return gated(FACTORY2, __builtin_return_address(0),
-                 [&] { return hooks.factory2.original<Factory2Fn>()(flags, riid, out); });
+    return gated(FACTORY2, __builtin_return_address(0), [&] { return hooks.factory2.original<Factory2Fn>()(flags, riid, out); });
 }
 
 // Every export the process has takes its hook; D3D12CreateDevice and CreateDXGIFactory1, which the arm itself
@@ -267,10 +266,7 @@ bool Platform::make_thread(uint32_t &id)
 
 }
 
-void *creation_caller(void *ret)
-{
-    return gate_caller ? gate_caller : ret;
-}
+void *creation_caller(void *ret) { return gate_caller ? gate_caller : ret; }
 
 bool arm_on_worker(void (*block)(), bool early)
 {

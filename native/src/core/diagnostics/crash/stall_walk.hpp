@@ -22,7 +22,7 @@ struct Kept {
 using Lookup = PRUNTIME_FUNCTION (*)(DWORD64 pc, DWORD64 *base);
 using Readable = bool (*)(uintptr_t a, size_t n);
 
-int walk(CONTEXT *ctx, uintptr_t lo, uintptr_t hi, int max, Lookup lookup, Readable readable, uint64_t *rip,
-         uint64_t *rsp, bool *faulted, Kept *kept = nullptr);
+int walk(CONTEXT *ctx, uintptr_t lo, uintptr_t hi, int max, Lookup lookup, Readable readable, uint64_t *rip, uint64_t *rsp,
+         bool *faulted, Kept *kept = nullptr);
 
 }

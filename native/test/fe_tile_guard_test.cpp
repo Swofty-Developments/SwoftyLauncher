@@ -51,10 +51,7 @@ struct Fake {
         texts[chars] = name;
     }
 
-    void empty(uint64_t slot)
-    {
-        words[slot + ft::SLOT_RECORD] = 0;
-    }
+    void empty(uint64_t slot) { words[slot + ft::SLOT_RECORD] = 0; }
 };
 
 int main()

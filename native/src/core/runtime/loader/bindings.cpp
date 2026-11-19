@@ -181,8 +181,7 @@ void BindingSet::log_loaded(const json::Value &doc) const
         api->log("[core] %s: %zu binding(s) carry no pattern (legacy set format); they resolve by string anchor only",
                  file_.c_str(), legacy);
     if (unresolvable)
-        api->log("[core] %s: %zu binding(s) are marked unresolvable on this build and are skipped", file_.c_str(),
-                 unresolvable);
+        api->log("[core] %s: %zu binding(s) are marked unresolvable on this build and are skipped", file_.c_str(), unresolvable);
     if (std::string counts = policy_.load_line(file_); !counts.empty())
         api->log("%s", counts.c_str());
     for (auto &m : policy_.malformed())
@@ -274,9 +273,11 @@ void BindingSet::report(const char *pass)
                            " method=" + (ok ? t.method : "-") +
                            " matches=" + (b.deferred || t.matches < 0 ? "-" : std::to_string(t.matches)) +
                            " rva=" + (ok ? hex_rva((long long)image().rva(b.addr)) : "-") +
-                           " match=" + (b.deferred ? "-" : hex_rva(t.match)) +
-                           " verified=" + (b.deferred || t.verified < 0 ? "-" : t.verified ? "yes" : "no") + " reason=\"" +
-                           quoted(t.reason) + "\"";
+                           " match=" + (b.deferred ? "-" : hex_rva(t.match)) + " verified=" +
+                           (b.deferred || t.verified < 0 ? "-"
+                            : t.verified                 ? "yes"
+                                                         : "no") +
+                           " reason=\"" + quoted(t.reason) + "\"";
         if (!ok && !b.deferred)
             line += " site=" + hex_rva(t.site) + " site_bytes=\"" + (t.site >= 0 ? site_bytes(t.site) : "") + "\"";
         else

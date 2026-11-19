@@ -35,8 +35,7 @@ std::string srv_name(ID3D12Resource *r)
     UINT size = sizeof w - sizeof(wchar_t);
     char out[160] = {};
     if (SUCCEEDED(r->GetPrivateData(kNameW, &size, w)) && size >= sizeof(wchar_t)) {
-        int n = WideCharToMultiByte(CP_UTF8, 0, w, int(size / sizeof(wchar_t)), out, int(sizeof out) - 1, nullptr,
-                                    nullptr);
+        int n = WideCharToMultiByte(CP_UTF8, 0, w, int(size / sizeof(wchar_t)), out, int(sizeof out) - 1, nullptr, nullptr);
         if (n > 0)
             return std::string(out, strnlen(out, size_t(n)));
     }
@@ -48,8 +47,7 @@ std::string srv_name(ID3D12Resource *r)
 // One line for each clamped or skipped view, the first time it is made.
 class SrvReports {
 public:
-    void report(ID3D12Resource *r, const srv_clamp::View &v, const srv_clamp::Resource &res,
-                const srv_clamp::Plan &p);
+    void report(ID3D12Resource *r, const srv_clamp::View &v, const srv_clamp::Resource &res, const srv_clamp::Plan &p);
 
 private:
     std::mutex lock;
@@ -58,8 +56,7 @@ private:
 
 SrvReports reports;
 
-void SrvReports::report(ID3D12Resource *r, const srv_clamp::View &v, const srv_clamp::Resource &res,
-                        const srv_clamp::Plan &p)
+void SrvReports::report(ID3D12Resource *r, const srv_clamp::View &v, const srv_clamp::Resource &res, const srv_clamp::Plan &p)
 {
     using srv_clamp::Action;
     uint64_t key = (reinterpret_cast<uint64_t>(r) * 0x9e3779b97f4a7c15ull) ^ (uint64_t(v.slices) << 40) ^
@@ -74,15 +71,13 @@ void SrvReports::report(ID3D12Resource *r, const srv_clamp::View &v, const srv_c
         swofty::log("[gfx] srv: array view from slice %u on a %u-slice texture %s; skipped", v.first_slice, res.slices,
                     name.c_str());
     else if (p.slices_changed)
-        swofty::log("[gfx] srv: array view of %u slices on a %u-slice texture %s; clamped", v.slices, res.slices,
-                    name.c_str());
+        swofty::log("[gfx] srv: array view of %u slices on a %u-slice texture %s; clamped", v.slices, res.slices, name.c_str());
     else
-        swofty::log("[gfx] srv: view of mips %u+%u on a %u-mip texture %s; clamped", v.most_detailed_mip, v.mip_levels,
-                    res.mips, name.c_str());
+        swofty::log("[gfx] srv: view of mips %u+%u on a %u-mip texture %s; clamped", v.most_detailed_mip, v.mip_levels, res.mips,
+                    name.c_str());
 }
 
-void STDMETHODCALLTYPE srv_hook(ID3D12Device *dev, ID3D12Resource *r, const D3D12_SHADER_RESOURCE_VIEW_DESC *d,
-                                SIZE_T h)
+void STDMETHODCALLTYPE srv_hook(ID3D12Device *dev, ID3D12Resource *r, const D3D12_SHADER_RESOURCE_VIEW_DESC *d, SIZE_T h)
 {
     using namespace srv_clamp;
     if (!r || !d) {
@@ -229,9 +224,6 @@ bool arm_srv_clamp()
 
 namespace runtime {
 
-void srv_clamp_setup()
-{
-    render::d3d12::arm_srv_clamp();
-}
+void srv_clamp_setup() { render::d3d12::arm_srv_clamp(); }
 
 }

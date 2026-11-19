@@ -11,7 +11,7 @@ namespace runtime {
    answers later addresses in that region from it, exactly as a fresh VirtualQuery would while no protection
    changes. Only a pass that installs nothing may keep answers. */
 class ProtectionSpans {
-  public:
+public:
     enum class Answer { unknown, readable, refused };
 
     static constexpr size_t capacity = 512;
@@ -42,7 +42,7 @@ class ProtectionSpans {
 
     size_t size() const { return spans.size(); }
 
-  private:
+private:
     struct Span {
         uintptr_t lo, hi;
         bool readable;

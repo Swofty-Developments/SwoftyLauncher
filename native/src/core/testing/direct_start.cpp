@@ -49,16 +49,34 @@ namespace {
 namespace ds = runtime::direct_start;
 
 const runtime::Sig SIG_FLOW_LINK{"vm.flow_state_update_link",
-                                 "48 8B 07 48 8D 54 24 40 48 89 F9 C5 F9 28 D6 FF 50 20 8B 44 24 40 39 05", 0x4424c78,
-                                 runtime::Sig::addr, 0, 0x12};
-const runtime::Sig SIG_GAME_MANAGER{"game.manager", "48 8B B8 98 01 00 00 48 85 FF 0F 84 ?? ?? ?? ?? 48 8D 4C 24 70 E8 ?? ?? ?? ?? 48 8B 05", 0x604c2c8, runtime::Sig::riprel, 26, 29, 7};
-const runtime::Sig SIG_SET_MODE{"game.game_set_current_game_mode", "41 56 56 57 55 53 48 81 EC 80 00 00 00 48 8B 81 88 00 00 00", 0x7d07a0};
+                                 "48 8B 07 48 8D 54 24 40 48 89 F9 C5 F9 28 D6 FF 50 20 8B 44 24 40 39 05",
+                                 0x4424c78,
+                                 runtime::Sig::addr,
+                                 0,
+                                 0x12};
+const runtime::Sig SIG_GAME_MANAGER{"game.manager",
+                                    "48 8B B8 98 01 00 00 48 85 FF 0F 84 ?? ?? ?? ?? 48 8D 4C 24 70 E8 ?? ?? ?? ?? 48 8B 05",
+                                    0x604c2c8,
+                                    runtime::Sig::riprel,
+                                    26,
+                                    29,
+                                    7};
+const runtime::Sig SIG_SET_MODE{"game.game_set_current_game_mode", "41 56 56 57 55 53 48 81 EC 80 00 00 00 48 8B 81 88 00 00 00",
+                                0x7d07a0};
 const runtime::Sig SIG_MODE_BY_PREDICATE{"game.game_modes_find_by_predicate",
                                          "48 8D 54 24 28 E8 ?? ?? ?? ?? 48 85 C0 74 22 48 89 C7 48 8B 8E 08 03 00 00",
-                                         0x7d2280, runtime::Sig::rel32, 5, 6, 5};
+                                         0x7d2280,
+                                         runtime::Sig::rel32,
+                                         5,
+                                         6,
+                                         5};
 const runtime::Sig SIG_GP_PREDICATE{"game.grand_prix_mode_predicate",
                                     "48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 E8 ?? ?? ?? ?? 48 85 C0 74 22",
-                                    0x77cff0, runtime::Sig::riprel, 0, 3, 7};
+                                    0x77cff0,
+                                    runtime::Sig::riprel,
+                                    0,
+                                    3,
+                                    7};
 const runtime::Sig SIG_FTUE_EXIT{"game.state_ftue_on_state_exit",
                                  "56 48 83 EC 30 48 89 CE 48 8B 81 F8 0B 00 00 48 8B 48 18 48 8D 50 30 48 39 48 20 48 0F "
                                  "45 D1 83 7A 10 0E 0F 85 0D 02 00 00 48 8B 8E 88 0C 00 00 48 8B 41 40",
@@ -75,14 +93,27 @@ const runtime::Sig SIG_BUILD_SETTINGS{"game.championship_game_mode_build_session
 const runtime::Sig SIG_DESPAWN_MAIN_SCENE{"game.frontend_scene_manager_despawn_main_scene_1428d9a90",
                                           "56 57 53 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 66 B8 BD 00 00 00", 0x28d9a90};
 const runtime::Sig SIG_LIST_STAT_ID{"game.entrant_list_stat_id_thunk_1424286e0",
-                                    "E8 ?? ?? ?? ?? 41 89 C6 48 8D 4C 24 50 48 8D 15", 0x24286e0, runtime::Sig::rel32, 0, 1, 5};
+                                    "E8 ?? ?? ?? ?? 41 89 C6 48 8D 4C 24 50 48 8D 15",
+                                    0x24286e0,
+                                    runtime::Sig::rel32,
+                                    0,
+                                    1,
+                                    5};
 const runtime::Sig SIG_ROUNDS_CLEAR{"game.championship_rounds_clear_thunk_14420cd60",
                                     "E8 ?? ?? ?? ?? 48 8B 8E 70 02 00 00 48 8B 01 FF 90 88 00 00 00 48 85 C0 0F 84 ?? ?? ?? ?? "
                                     "48 89 C3",
-                                    0x420cd60, runtime::Sig::rel32, 0, 1, 5};
+                                    0x420cd60,
+                                    runtime::Sig::rel32,
+                                    0,
+                                    1,
+                                    5};
 const runtime::Sig SIG_ADD_TRACK{"game.championship_rounds_add_track_thunk_140b99450",
-                                 "E8 ?? ?? ?? ?? 48 83 C6 08 48 39 DE 75 EC 48 8B BC 24 70 01 00 00", 0xb99450,
-                                 runtime::Sig::rel32, 0, 1, 5};
+                                 "E8 ?? ?? ?? ?? 48 83 C6 08 48 39 DE 75 EC 48 8B BC 24 70 01 00 00",
+                                 0xb99450,
+                                 runtime::Sig::rel32,
+                                 0,
+                                 1,
+                                 5};
 const runtime::Sig SIG_BUILD_SEASON{"game.championship_build_season_141207290", "56 48 83 EC 20 48 89 CE BA 98 02 00 00",
                                     0x1207290};
 const runtime::Sig SIG_FILL_ENTRANTS{"sess.build_candidate_pool_142460230",
@@ -90,33 +121,60 @@ const runtime::Sig SIG_FILL_ENTRANTS{"sess.build_candidate_pool_142460230",
 const runtime::Sig SIG_WEEKEND_STRUCTURE{"sess.build_dev_weekend_structure_140b025f0",
                                          "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 44 89 CD 45 89 C6", 0xb025f0};
 const runtime::Sig SIG_WEEKEND_SERVICE{"game.weekend_service_component_14605ada0",
-                                       "48 8D 15 ?? ?? ?? ?? 41 B8 01 00 00 00 FF 50 10 48 85 C0 74 4B", 0x605ada0,
-                                       runtime::Sig::riprel, 0, 3, 7};
+                                       "48 8D 15 ?? ?? ?? ?? 41 B8 01 00 00 00 FF 50 10 48 85 C0 74 4B",
+                                       0x605ada0,
+                                       runtime::Sig::riprel,
+                                       0,
+                                       3,
+                                       7};
 const runtime::Sig SIG_ROUNDS_COMPONENT{"game.championship_rounds_component_14605ad40",
-                                        "48 8D 15 ?? ?? ?? ?? FF 50 10 48 89 83 50 05 00 00", 0x605ad40, runtime::Sig::riprel,
-                                        0, 3, 7};
-const runtime::Sig SIG_MESSAGE_BUS{"ne.message_bus_14618b3b8", "48 8B 05 ?? ?? ?? ?? 48 85 C0 74 30 48 8B 48 08", 0x618b3b8,
-                                   runtime::Sig::riprel, 0, 3, 7};
+                                        "48 8D 15 ?? ?? ?? ?? FF 50 10 48 89 83 50 05 00 00",
+                                        0x605ad40,
+                                        runtime::Sig::riprel,
+                                        0,
+                                        3,
+                                        7};
+const runtime::Sig SIG_MESSAGE_BUS{
+    "ne.message_bus_14618b3b8", "48 8B 05 ?? ?? ?? ?? 48 85 C0 74 30 48 8B 48 08", 0x618b3b8, runtime::Sig::riprel, 0, 3, 7};
 const runtime::Sig SIG_POST_BEGIN{"ne.post_entrants_document_opened_thunk_1424e2b90",
-                                  "E8 ?? ?? ?? ?? C6 86 F8 02 00 00 01 4C 89 F1", 0x24e2b90, runtime::Sig::rel32, 0, 1, 5};
-const runtime::Sig SIG_POST_END{"ne.post_entrants_document_closed_thunk_1424e2f00", "E8 ?? ?? ?? ?? C6 86 F8 02 00 00 00 85 FF",
-                                0x24e2f00, runtime::Sig::rel32, 0, 1, 5};
+                                  "E8 ?? ?? ?? ?? C6 86 F8 02 00 00 01 4C 89 F1",
+                                  0x24e2b90,
+                                  runtime::Sig::rel32,
+                                  0,
+                                  1,
+                                  5};
+const runtime::Sig SIG_POST_END{"ne.post_entrants_document_closed_thunk_1424e2f00",
+                                "E8 ?? ?? ?? ?? C6 86 F8 02 00 00 00 85 FF",
+                                0x24e2f00,
+                                runtime::Sig::rel32,
+                                0,
+                                1,
+                                5};
 const runtime::Sig SIG_VT_MSG_BEGIN{"game.vt_entrants_document_opened_14578d4e8",
-                                    "4C 8D 25 ?? ?? ?? ?? 4C 89 64 24 50 48 8B 48 08", 0x578d4e8, runtime::Sig::riprel, 0, 3, 7};
+                                    "4C 8D 25 ?? ?? ?? ?? 4C 89 64 24 50 48 8B 48 08",
+                                    0x578d4e8,
+                                    runtime::Sig::riprel,
+                                    0,
+                                    3,
+                                    7};
 // sigverify.py's slot comparison reads two slots past this vtable; its type getter (slot 1) names EntrantsDocumentClosed
 // on all three builds.
 const runtime::Sig SIG_VT_MSG_END{"game.vt_entrants_document_closed_14578d510",
-                                  "48 8D 0D ?? ?? ?? ?? 48 89 4C 24 38 4C 89 74 24 48", 0x578d510, runtime::Sig::riprel, 0, 3, 7};
+                                  "48 8D 0D ?? ?? ?? ?? 48 89 4C 24 38 4C 89 74 24 48",
+                                  0x578d510,
+                                  runtime::Sig::riprel,
+                                  0,
+                                  3,
+                                  7};
 
 struct GrandPrix {
     uintptr_t set_setup_mode = 0, list_stat_id = 0, rounds_clear = 0, add_track = 0, build_season = 0, fill_entrants = 0,
-              rounds_component = 0, weekend_structure = 0, weekend_service = 0, message_bus = 0, post_begin = 0,
-              post_end = 0, vt_msg_begin = 0, vt_msg_end = 0;
+              rounds_component = 0, weekend_structure = 0, weekend_service = 0, message_bus = 0, post_begin = 0, post_end = 0,
+              vt_msg_begin = 0, vt_msg_end = 0;
     bool resolved() const
     {
-        return set_setup_mode && list_stat_id && rounds_clear && add_track && build_season && fill_entrants &&
-               rounds_component && weekend_structure && weekend_service && message_bus && post_begin && post_end &&
-               vt_msg_begin && vt_msg_end;
+        return set_setup_mode && list_stat_id && rounds_clear && add_track && build_season && fill_entrants && rounds_component &&
+               weekend_structure && weekend_service && message_bus && post_begin && post_end && vt_msg_begin && vt_msg_end;
     }
 } gp;
 uintptr_t root_global = 0, despawn_main_scene = 0;
@@ -171,8 +229,7 @@ using SetMode_t = void(void *modes, void *mode);
 // A session request without a box or track gets the stock 2025 grid at Albert Park; it never continues a saved Grand
 // Prix, whose weekend may be one the session load can't take.
 constexpr const char *DEFAULT_BOX = "f1_2025", *DEFAULT_TRACK = "melbourne", *HOST_SETUP_MODE = "swofty_f1";
-constexpr uintptr_t ES_LISTS = 0x560, ENTITY_TRACKS = 0xf58,
-                    ENTITY_LIST = 0xe18, ENTITY_ENTRANTS = 0x2e0, ENTRANT_SIZE = 0x88;
+constexpr uintptr_t ES_LISTS = 0x560, ENTITY_TRACKS = 0xf58, ENTITY_LIST = 0xe18, ENTITY_ENTRANTS = 0x2e0, ENTRANT_SIZE = 0x88;
 
 struct Game {
     uintptr_t manager = 0, set_mode = 0, by_predicate = 0, gp_predicate = 0;
@@ -215,14 +272,12 @@ void note_phase()
     if (driver.phase == ds::Phase::failed)
         start_failed = true;
     if (driver.phase == ds::Phase::failed)
-        swofty::log("[direct] %s start failed: %s; the menu opens as usual", driver.target.name.c_str(),
-                    driver.why.c_str());
+        swofty::log("[direct] %s start failed: %s; the menu opens as usual", driver.target.name.c_str(), driver.why.c_str());
     else
         swofty::log("[direct] %s start: %s", driver.target.name.c_str(), ds::phase_name(driver.phase));
 }
 
-constexpr size_t STATE_STATUS = 0xb8, STATE_CHILDREN = 0xc0, STATE_LINKS = 0xaf0, STATE_LINK_COUNT = 0xb30,
-                 STATE_PARENT = 0xc10;
+constexpr size_t STATE_STATUS = 0xb8, STATE_CHILDREN = 0xc0, STATE_LINKS = 0xaf0, STATE_LINK_COUNT = 0xb30, STATE_PARENT = 0xc10;
 constexpr uint32_t STATE_APP = 0xe11edb87, STATE_SESSION = 0x1505f42a, STATE_LOAD_SESSION = 0x17e3cd0a;
 constexpr size_t LOAD_SYNC = 0xcd0;
 constexpr uint64_t LOAD_EXIT_WAIT_MS = 500;
@@ -329,10 +384,8 @@ uint8_t *flow_node(uint32_t want)
 bool frontend_main_scene(uint8_t *&mgr)
 {
     uint8_t *node = flow_node(STATE_FRONTEND);
-    mgr = node && runtime::readable(node, FRONTEND_SCENES + 8) ? *reinterpret_cast<uint8_t **>(node + FRONTEND_SCENES)
-                                                                : nullptr;
-    auto *scenes = mgr && runtime::readable(mgr, SCENES_MAIN + 8) ? *reinterpret_cast<uint8_t **>(mgr + SCENES_MAIN)
-                                                                  : nullptr;
+    mgr = node && runtime::readable(node, FRONTEND_SCENES + 8) ? *reinterpret_cast<uint8_t **>(node + FRONTEND_SCENES) : nullptr;
+    auto *scenes = mgr && runtime::readable(mgr, SCENES_MAIN + 8) ? *reinterpret_cast<uint8_t **>(mgr + SCENES_MAIN) : nullptr;
     return scenes && runtime::readable(scenes, MAIN_SPAWNED + 2) && (scenes[MAIN_SPAWNED] || scenes[MAIN_SPAWNED + 1]);
 }
 
@@ -367,8 +420,8 @@ bool env_flag(const char *name)
 }
 
 // The terrain count (a diagnostic) is read on the KB build only: no code on Steam 26566308 loads it from the code section.
-constexpr uintptr_t RVA_TERRAIN_COUNT = 0x6cb5d50, FTUE_EXIT_GATE = 0xc18, FTUE_INTERRUPT_SEEN = 0xc90,
-                    INTERRUPT_QUEUE = 0xbf8, INTERRUPT_EMPTY_FRONT = 0x30;
+constexpr uintptr_t RVA_TERRAIN_COUNT = 0x6cb5d50, FTUE_EXIT_GATE = 0xc18, FTUE_INTERRUPT_SEEN = 0xc90, INTERRUPT_QUEUE = 0xbf8,
+                    INTERRUPT_EMPTY_FRONT = 0x30;
 constexpr uint32_t INTERRUPT_EXIT = 0xe;
 const bool diag_on = env_flag("SWOFTY_DIRECT_DIAG");
 bool ftue_interrupt_on = true;
@@ -442,8 +495,8 @@ void diag_snapshot(const char *tag)
     }
     swofty::log("[direct] diag %s: scene %p flags 1048=%u 1049=%u 104b=%u set count=%llu cap=%zu occupied=%u flagged=%u "
                 "transition=%d obj790_50=%d ftue_gate=%d ftue_seen=%u terrain=%u",
-                tag, p.scenes, p.f48, p.f49, p.f4b, (unsigned long long)p.count, p.cap, p.occupied, p.flagged, trans,
-                o790, gate, seen, terrain_count());
+                tag, p.scenes, p.f48, p.f49, p.f4b, (unsigned long long)p.count, p.cap, p.occupied, p.flagged, trans, o790, gate,
+                seen, terrain_count());
 }
 
 void diag_start()
@@ -476,8 +529,8 @@ bool raise_ftue_interrupt(uint8_t *ftue)
         return false;
     }
     auto *type = reinterpret_cast<uint32_t *>(queue + INTERRUPT_EMPTY_FRONT + 0x10);
-    swofty::log("[direct] FTUE interrupt: queue %p begin %llx end %llx +28 %llx front type %u", queue,
-                (unsigned long long)begin, (unsigned long long)end, (unsigned long long)cap, *type);
+    swofty::log("[direct] FTUE interrupt: queue %p begin %llx end %llx +28 %llx front type %u", queue, (unsigned long long)begin,
+                (unsigned long long)end, (unsigned long long)cap, *type);
     if (begin != end || *type != 0) {
         swofty::log("[direct] FTUE interrupt: the queue is not empty; leaving by the link instead");
         return false;
@@ -534,10 +587,7 @@ size_t seen_count = 0;
 uint64_t chain_at = 0;
 std::string chain_last;
 
-std::string rva(const void *p)
-{
-    return runtime::code_where(reinterpret_cast<uintptr_t>(p));
-}
+std::string rva(const void *p) { return runtime::code_where(reinterpret_cast<uintptr_t>(p)); }
 
 void describe_state(uint8_t *state, uint32_t hash, uint32_t link)
 {
@@ -583,8 +633,8 @@ void describe_state(uint8_t *state, uint32_t hash, uint32_t link)
     }
     swofty::log("[direct] flow node %08x (%p, parent %08x, type %s): vt %s enter %s update %s exit %s; link now %08x; "
                 "links%s; children%s",
-                hash, state, ph, type.c_str(), rva(vt).c_str(), rva(vt[8]).c_str(), rva(vt[9]).c_str(),
-                rva(vt[10]).c_str(), link, links.c_str(), kids.c_str());
+                hash, state, ph, type.c_str(), rva(vt).c_str(), rva(vt[8]).c_str(), rva(vt[9]).c_str(), rva(vt[10]).c_str(), link,
+                links.c_str(), kids.c_str());
 }
 
 void log_chain()
@@ -633,8 +683,8 @@ void link_mid(safetyhook::Context &c)
     std::lock_guard<std::mutex> g(lock);
     if (hash == STATE_APP)
         flow_root = state;
-    if (hash == STATE_SESSION && *reinterpret_cast<uint8_t *>(state + STATE_STATUS) == 2 &&
-        session_frames.fetch_add(1) == 0 && driver.target.name == "session" && !fade_released) {
+    if (hash == STATE_SESSION && *reinterpret_cast<uint8_t *>(state + STATE_STATUS) == 2 && session_frames.fetch_add(1) == 0 &&
+        driver.target.name == "session" && !fade_released) {
         session_at = GetTickCount64();
         release_frontend_fade();
         if (request["mode"].str() != "time_trial")
@@ -692,11 +742,11 @@ void link_mid(safetyhook::Context &c)
         }
     }
     note_phase();
-    if (!ds::link_needed(driver.phase, driver.target.name == "session", session_screen.load(), session_at.load(), GetTickCount64(),
-                         SESSION_SCREEN_WAIT_MS, diag_on) &&
+    if (!ds::link_needed(driver.phase, driver.target.name == "session", session_screen.load(), session_at.load(),
+                         GetTickCount64(), SESSION_SCREEN_WAIT_MS, diag_on) &&
         link_live.exchange(false))
-        swofty::log("[direct] %s start: the flow link has nothing left to do (%s); it returns at once from now on", driver.target.name.c_str(),
-                    ds::phase_name(driver.phase));
+        swofty::log("[direct] %s start: the flow link has nothing left to do (%s); it returns at once from now on",
+                    driver.target.name.c_str(), ds::phase_name(driver.phase));
 }
 
 // The direct start and the flow link listeners share one hook on the flow link site, made by whichever asks first.
@@ -767,10 +817,7 @@ void fill_context()
     context.game_modes = modes;
 }
 
-template <class F> F *code(uintptr_t address)
-{
-    return reinterpret_cast<F *>(address);
-}
+template <class F> F *code(uintptr_t address) { return reinterpret_cast<F *>(address); }
 
 uint8_t *grand_prix_entity(void *modes)
 {
@@ -802,11 +849,10 @@ uint8_t *current_weekend(void *modes)
     uint8_t *holder = nullptr, *entity = nullptr, *champ = nullptr, *sb = nullptr, *se = nullptr, *season = nullptr,
             **wb = nullptr, **we = nullptr, *wk = nullptr;
     uint32_t si = 0, wi = 0;
-    if (!rd(modes, 0x88, holder) || !rd(holder, 0x260, entity) || !rd(entity, 0x1058, champ) ||
-        !rd(champ, 0x548, sb) || !rd(champ, 0x550, se) || !rd(champ, 0x560, si) || se <= sb ||
-        si >= size_t(se - sb) / 16 || !rd(sb, size_t(si) * 16 + 8, season) || !rd(season, 0x288, wb) ||
-        !rd(season, 0x290, we) || !rd(season, 0x2a0, wi) || we <= wb || wi >= size_t(we - wb) ||
-        !rd(wb, size_t(wi) * 8, wk) || !runtime::readable(wk, 0x280))
+    if (!rd(modes, 0x88, holder) || !rd(holder, 0x260, entity) || !rd(entity, 0x1058, champ) || !rd(champ, 0x548, sb) ||
+        !rd(champ, 0x550, se) || !rd(champ, 0x560, si) || se <= sb || si >= size_t(se - sb) / 16 ||
+        !rd(sb, size_t(si) * 16 + 8, season) || !rd(season, 0x288, wb) || !rd(season, 0x290, we) || !rd(season, 0x2a0, wi) ||
+        we <= wb || wi >= size_t(we - wb) || !rd(wb, size_t(wi) * 8, wk) || !runtime::readable(wk, 0x280))
         return nullptr;
     return wk;
 }
@@ -821,8 +867,7 @@ std::string weekend_text(uint8_t *wk)
         ids += (ids.empty() ? "" : " ") + std::string(id < 19 ? testagent::SESSION_NAMES[id] : "?");
     }
     char head[96];
-    snprintf(head, sizeof head, "weekend %p, track stat id %u, current session %u of: ", wk,
-             unsigned(wk[WK_TRACK]), cur);
+    snprintf(head, sizeof head, "weekend %p, track stat id %u, current session %u of: ", wk, unsigned(wk[WK_TRACK]), cur);
     return head + ids;
 }
 
@@ -832,8 +877,8 @@ bool set_weekend_track(void *modes, uint8_t id, const char *track_name, const ch
     if (!wk)
         return false;
     if (wk[WK_TRACK] != id) {
-        swofty::log("[direct] Grand Prix: the weekend's track stat id %u -> %u (%s) %s", unsigned(wk[WK_TRACK]),
-                    unsigned(id), track_name, when);
+        swofty::log("[direct] Grand Prix: the weekend's track stat id %u -> %u (%s) %s", unsigned(wk[WK_TRACK]), unsigned(id),
+                    track_name, when);
         wk[WK_TRACK] = id;
     }
     return true;
@@ -931,15 +976,15 @@ void weekend_structure(uint8_t *e, uint8_t *component)
     void *alloc = *reinterpret_cast<void **>(component + 0x210), *gsm = *reinterpret_cast<void **>(e + 0x2b0);
     void *svc = registry_call(e, 0x10, reinterpret_cast<void *>(gp.weekend_service), 1);
     if (!alloc || !gsm || !svc) {
-        swofty::log("[direct] Grand Prix: the weekend structure is not set (allocator %p, setup mode %p, service %p)",
-                    alloc, gsm, svc);
+        swofty::log("[direct] Grand Prix: the weekend structure is not set (allocator %p, setup mode %p, service %p)", alloc, gsm,
+                    svc);
         return;
     }
     alignas(16) uint8_t list[0x38] = {};
     *reinterpret_cast<void **>(list + 8) = alloc;
     *reinterpret_cast<void **>(list + 0x10) = alloc;
-    code<void(void *, void *, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t)>(
-        gp.weekend_structure)(list, gsm, t.practice, t.qualifying, t.race, 0, 1, 0, 0);
+    code<void(void *, void *, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t)>(gp.weekend_structure)(
+        list, gsm, t.practice, t.qualifying, t.race, 0, 1, 0, 0);
     auto **svt = *reinterpret_cast<void ***>(svc);
     reinterpret_cast<void (*)(void *, void *, int)>(svt[0x268 / 8])(svc, list, 1);
     auto *b = *reinterpret_cast<uint8_t **>(list + 0x18), *end = *reinterpret_cast<uint8_t **>(list + 0x20);
@@ -958,8 +1003,7 @@ void weekend_structure(uint8_t *e, uint8_t *component)
     if (b)
         reinterpret_cast<void (*)(void *, void *)>((*reinterpret_cast<void ***>(alloc))[0x38 / 8])(alloc, b);
     swofty::log("[direct] Grand Prix: weekend structure for %s: practice %llu, qualifying %llu, race %llu (%zu action(s))",
-                name.c_str(), (unsigned long long)t.practice, (unsigned long long)t.qualifying,
-                (unsigned long long)t.race, n);
+                name.c_str(), (unsigned long long)t.practice, (unsigned long long)t.qualifying, (unsigned long long)t.race, n);
 }
 
 // The player's seat, as Apply's drivers config (0x141129850) sets it: the first entrant of the requested team (and
@@ -1038,8 +1082,8 @@ void seat_player(uint8_t *e, void *mgr)
     swofty::log("[direct] Grand Prix: %zu entrant(s), %zu human: %s", n, humans, grid.c_str());
     if (!seat) {
         if (!team.empty() || !driver.empty())
-            swofty::log("[direct] Grand Prix: no entrant of team '%s' driver '%s'; the player takes the first seat",
-                        team.c_str(), driver.c_str());
+            swofty::log("[direct] Grand Prix: no entrant of team '%s' driver '%s'; the player takes the first seat", team.c_str(),
+                        driver.c_str());
         seat = begin[0];
         if (seat[0x4b] & 0x10) {
             swofty::log("[direct] Grand Prix: the first seat is already the player's (%s/%s)", team_of(seat).c_str(),
@@ -1049,8 +1093,10 @@ void seat_player(uint8_t *e, void *mgr)
     }
     alignas(16) uint8_t id[0x40] = {};
     void *users = mgr ? *reinterpret_cast<void **>(static_cast<uint8_t *>(mgr) + 0x140) : nullptr;
-    void *user = users && runtime::readable(users, 0x1c8) ? *reinterpret_cast<void **>(static_cast<uint8_t *>(users) + 0x1c0) : nullptr;
-    void *prof = user && runtime::readable(user, 0x1c8) ? *reinterpret_cast<void **>(static_cast<uint8_t *>(user) + 0x1c0) : nullptr;
+    void *user =
+        users && runtime::readable(users, 0x1c8) ? *reinterpret_cast<void **>(static_cast<uint8_t *>(users) + 0x1c0) : nullptr;
+    void *prof =
+        user && runtime::readable(user, 0x1c8) ? *reinterpret_cast<void **>(static_cast<uint8_t *>(user) + 0x1c0) : nullptr;
     if (!prof) {
         swofty::log("[direct] Grand Prix: no player profile for the identity block; the seat is not set");
         return;
@@ -1077,8 +1123,8 @@ void seat_player(uint8_t *e, void *mgr)
     if (mb)
         code<void(void *, void *)>(gp.post_end)(mb, msg);
     e[0x2f8] = 0;
-    swofty::log("[direct] Grand Prix: the player drives for %s as %s (seat %zu)", team_of(seat).c_str(),
-                driver_of(seat).c_str(), size_t(seat - begin[0]) / ENTRANT_SIZE);
+    swofty::log("[direct] Grand Prix: the player drives for %s as %s (seat %zu)", team_of(seat).c_str(), driver_of(seat).c_str(),
+                size_t(seat - begin[0]) / ENTRANT_SIZE);
 }
 
 ds::Setup new_grand_prix(std::string &why)
@@ -1178,7 +1224,9 @@ ds::Setup new_grand_prix(std::string &why)
             offering += (offering.empty() ? "" : ", ") + o.name;
     swofty::log("[direct] Grand Prix: setup mode %s for entrant list %s (%s; setup modes offering the list: %s)",
                 setup_name.c_str(), list_name.c_str(),
-                !requested_mode.empty() ? "requested" : offers[pick].offers ? "it offers the list" : "none offers the list",
+                !requested_mode.empty() ? "requested"
+                : offers[pick].offers   ? "it offers the list"
+                                        : "none offers the list",
                 offering.empty() ? "none" : offering.c_str());
     code<void(void *, void *, int)>(gp.set_setup_mode)(e, gsm, 0);
     swofty::log("[direct] Grand Prix: setup mode %s (%p) set on %p", setup_name.c_str(), gsm, e);
@@ -1298,8 +1346,7 @@ void direct_start_setup()
     else if (target == "room")
         t = ds::room_target();
     else {
-        swofty::log("[direct] swofty\\direct_start.json names no known target ('%s'); the game starts as usual",
-                    target.c_str());
+        swofty::log("[direct] swofty\\direct_start.json names no known target ('%s'); the game starts as usual", target.c_str());
         return;
     }
     game.manager = runtime::find(SIG_GAME_MANAGER, "game manager", "direct");
@@ -1307,8 +1354,8 @@ void direct_start_setup()
     game.by_predicate = runtime::find(SIG_MODE_BY_PREDICATE, "game mode lookup by predicate", "direct");
     game.gp_predicate = runtime::find(SIG_GP_PREDICATE, "Grand Prix mode predicate", "direct");
     if (game.set_mode) {
-        auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(game.set_mode),
-                                                reinterpret_cast<void *>(set_mode_detour));
+        auto h =
+            safetyhook::InlineHook::create(reinterpret_cast<void *>(game.set_mode), reinterpret_cast<void *>(set_mode_detour));
         if (h)
             h_set_mode = std::move(*h);
     }
@@ -1406,7 +1453,8 @@ uintptr_t direct_start_set_mode()
     static std::atomic<bool> tried{false};
     if (!tried.exchange(true)) {
         found = runtime::proven(MODES_CONTEXT) ? runtime::find(SIG_SET_MODE, "SetCurrentGameMode", "direct") : 0;
-        swofty::log("[direct] SetCurrentGameMode for a session without a direct start: %s", found.load() ? "resolved" : "not resolved");
+        swofty::log("[direct] SetCurrentGameMode for a session without a direct start: %s",
+                    found.load() ? "resolved" : "not resolved");
     }
     return found.load();
 }
@@ -1419,7 +1467,8 @@ DirectStartContext direct_start_context()
     static std::atomic<bool> tried{false};
     if (!manager.load() && !tried.exchange(true)) {
         manager = runtime::proven(MODES_CONTEXT) ? runtime::find(SIG_GAME_MANAGER, "game manager", "direct") : 0;
-        swofty::log("[direct] game manager for a session without a direct start: %s", manager.load() ? "resolved" : "not resolved");
+        swofty::log("[direct] game manager for a session without a direct start: %s",
+                    manager.load() ? "resolved" : "not resolved");
     }
     DirectStartContext c;
     if (!manager.load() || !runtime::readable(reinterpret_cast<void *>(manager.load()), 8))
@@ -1433,20 +1482,11 @@ DirectStartContext direct_start_context()
     return c;
 }
 
-void direct_start_register_room(DirectStartSetup setup)
-{
-    room_setup = setup;
-}
+void direct_start_register_room(DirectStartSetup setup) { room_setup = setup; }
 
-void direct_start_register_time_trial(DirectStartSetup setup)
-{
-    time_trial_setup = setup;
-}
+void direct_start_register_time_trial(DirectStartSetup setup) { time_trial_setup = setup; }
 
-std::string direct_start_request_text()
-{
-    return request_text;
-}
+std::string direct_start_request_text() { return request_text; }
 
 int direct_start_cover_signal()
 {
@@ -1473,20 +1513,11 @@ bool flow_link_listen(FlowLinkListener listener)
     return true;
 }
 
-void *direct_start_flow_root()
-{
-    return flow_root;
-}
+void *direct_start_flow_root() { return flow_root; }
 
-void direct_start_despawn_frontend_scene(const char *when)
-{
-    despawn_frontend_scene(when);
-}
+void direct_start_despawn_frontend_scene(const char *when) { despawn_frontend_scene(when); }
 
-void direct_start_register_time_trial_screen(void (*screen)(const char *name))
-{
-    time_trial_screen = screen;
-}
+void direct_start_register_time_trial_screen(void (*screen)(const char *name)) { time_trial_screen = screen; }
 
 void direct_start_screen(const char *name)
 {

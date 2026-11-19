@@ -22,8 +22,7 @@ ID3D12Resource *DepthCopy::for_source(ID3D12Resource *src, const D3D12_RESOURCE_
     heap.Type = D3D12_HEAP_TYPE_DEFAULT;
     ID3D12Resource *r = nullptr;
     if (FAILED(gpu.device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &cd,
-                                                   D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, nullptr,
-                                                   IID_PPV_ARGS(&r)))) {
+                                                   D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, nullptr, IID_PPV_ARGS(&r)))) {
         failed = true;
         swofty::log("[postfx] could not make a copy of the game's depth buffer (%llux%u, format %d); passes read "
                     "depth only where the game leaves it readable",
@@ -42,15 +41,14 @@ ID3D12Resource *DepthCopy::for_source(ID3D12Resource *src, const D3D12_RESOURCE_
     return r;
 }
 
-void DepthCopy::record(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers,
-                       const GpuContext &gpu, const ResourceWatch &watched, std::recursive_mutex &lock,
-                       RetireQueue &retired, const unsigned &frame_count)
+void DepthCopy::record(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers, const GpuContext &gpu,
+                       const ResourceWatch &watched, std::recursive_mutex &lock, RetireQueue &retired,
+                       const unsigned &frame_count)
 {
     for (UINT i = 0; i < n; i++) {
         const D3D12_RESOURCE_BARRIER &b = barriers[i];
         if (b.Type != D3D12_RESOURCE_BARRIER_TYPE_TRANSITION || !(watched.bits(b.Transition.pResource) & W_DEPTH) ||
-            b.Flags != D3D12_RESOURCE_BARRIER_FLAG_NONE ||
-            b.Transition.Subresource != D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES ||
+            b.Flags != D3D12_RESOURCE_BARRIER_FLAG_NONE || b.Transition.Subresource != D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES ||
             !(b.Transition.StateBefore & D3D12_RESOURCE_STATE_DEPTH_WRITE) ||
             (b.Transition.StateAfter & D3D12_RESOURCE_STATE_DEPTH_WRITE))
             continue;

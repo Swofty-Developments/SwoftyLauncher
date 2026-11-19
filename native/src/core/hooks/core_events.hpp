@@ -69,10 +69,8 @@ bool car_setup_applied(swofty::cars::events::SetupApplied &payload);
 bool car_parts_register(swofty::cars::events::PartsRegister &payload);
 bool audio_bundle_resolve(swofty::sounds::events::BundleResolve &payload);
 
-bool car_upgrades_fit(int32_t car, const char *vehicle, swofty::cars::Department department, float driver_stat,
-                      float &rating);
-bool car_vtf_read(const swofty::cars::live::Car &car, const char *section, const char *field, const char *upgrade,
-                  float &value);
+bool car_upgrades_fit(int32_t car, const char *vehicle, swofty::cars::Department department, float driver_stat, float &rating);
+bool car_vtf_read(const swofty::cars::live::Car &car, const char *section, const char *field, const char *upgrade, float &value);
 bool car_built(const swofty::cars::live::Car &car);
 bool car_reset(const swofty::cars::live::Car &car, bool upgrade);
 bool car_upgrades_replayed(const swofty::cars::live::Car &car, float progress);

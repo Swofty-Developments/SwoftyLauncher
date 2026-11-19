@@ -48,11 +48,9 @@ namespace mem = swofty::mem;
 namespace rs = runtime::rnd_suppliers;
 
 const runtime::Sig S_ADD{"Career_Add_TeamUpgrades",
-                         "41 57 41 56 41 55 41 54 56 57 55 53 B8 78 04 04 00 E8 ?? ?? ?? ?? 48 29 C4 44 89 44",
-                         0x123ca40};
+                         "41 57 41 56 41 55 41 54 56 57 55 53 B8 78 04 04 00 E8 ?? ?? ?? ?? 48 29 C4 44 89 44", 0x123ca40};
 const runtime::Sig S_LOAD{"Career_Load_UpgradeTreeNodes",
-                          "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 06 00 00 C5 78 29 84 24",
-                          0x353b030};
+                          "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 06 00 00 C5 78 29 84 24", 0x353b030};
 
 constexpr uintptr_t COMPONENT_MODE = 0x3e0; // UpgradesComponent: operating_mode, copied to model + 8 (0x14123cb06)
 constexpr uintptr_t KEY_PATH = 0x10;        // the loader's row key: char * of the joined path (0x14353b063)

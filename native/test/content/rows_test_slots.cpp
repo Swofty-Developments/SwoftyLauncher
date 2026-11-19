@@ -13,29 +13,34 @@ void twelve_slot_tests(const std::string &regs)
         std::string schema = slurp(regs + "/" + name + "/" + file);
         t->declare(name, SwoftyText{schema.data(), schema.size()});
     }
-    const char *teams[] = {"red_bull", "mclaren", "ferrari", "mercedes", "lotus", "force_india",
-                           "sauber", "toro_rosso", "williams", "caterham", "marussia", "hrt"};
+    const char *teams[] = {"red_bull", "mclaren",    "ferrari",  "mercedes", "lotus",    "force_india",
+                           "sauber",   "toro_rosso", "williams", "caterham", "marussia", "hrt"};
     std::string logos, identities, slots, stock_slots;
     for (int i = 0; i < 12; i++) {
         std::string n = teams[i], sep = i ? "," : "";
-        logos += sep + "\"" + n + "\": { \"images\": { \"team_select\": \"logos/" + n + "_ts.png\", \"hud\": \"logos/" + n + "_hud.png\" } }";
+        logos += sep + "\"" + n + "\": { \"images\": { \"team_select\": \"logos/" + n + "_ts.png\", \"hud\": \"logos/" + n +
+                 "_hud.png\" } }";
         identities += sep + "\"" + n + "\": { \"donor\": \"game/williams_26\", \"names\": { \"title\": { \"literal\": \"" + n +
-                      " 2012\" }, \"code\": \"T" + std::to_string(i) + "\" }, \"colours\": { \"menu\": \"#10203" + std::to_string(i % 10) +
-                      "\", \"primary\": \"#10203" + std::to_string(i % 10) + "\" }, \"livery_name\": \"c12_" + n + "\", \"logo\": \"" + by +
-                      "/" + n + "\", \"team_boss\": \"boss_" + n + "\", \"team_base\": { \"literal\": \"Base " + n + "\" } }";
+                      " 2012\" }, \"code\": \"T" + std::to_string(i) + "\" }, \"colours\": { \"menu\": \"#10203" +
+                      std::to_string(i % 10) + "\", \"primary\": \"#10203" + std::to_string(i % 10) +
+                      "\" }, \"livery_name\": \"c12_" + n + "\", \"logo\": \"" + by + "/" + n + "\", \"team_boss\": \"boss_" + n +
+                      "\", \"team_base\": { \"literal\": \"Base " + n + "\" } }";
         slots += sep + "{ \"slot\": " + std::to_string(i + 1) + ", \"team\": \"" + by + "/" + n + "\" }";
     }
     for (int i = 0; i < 11; i++)
-        stock_slots += std::string(i ? "," : "") + "{ \"slot\": " + std::to_string(i + 1) + ", \"team\": \"game/team26_" + std::to_string(i) + "\" }";
-    int r = registry::load_data_file(by, "registry/teams.json",
-                                     "{ \"team.logo\": {" + logos + "}, \"team.identity\": {" + identities + "}, \"career.season\": { \"2012\": { \"data_group\": \"" +
-                                         group + "\", \"year\": 2012, \"teams\": [" + slots + "] }, \"stock_2026\": { \"data_group\": \"f1_career_2026\", \"year\": 2026, \"teams\": [" +
-                                         stock_slots + "] } } }");
+        stock_slots += std::string(i ? "," : "") + "{ \"slot\": " + std::to_string(i + 1) + ", \"team\": \"game/team26_" +
+                       std::to_string(i) + "\" }";
+    int r = registry::load_data_file(
+        by, "registry/teams.json",
+        "{ \"team.logo\": {" + logos + "}, \"team.identity\": {" + identities +
+            "}, \"career.season\": { \"2012\": { \"data_group\": \"" + group + "\", \"year\": 2012, \"teams\": [" + slots +
+            "] }, \"stock_2026\": { \"data_group\": \"f1_career_2026\", \"year\": 2026, \"teams\": [" + stock_slots + "] } } }");
     st.end_register();
     Value zero("#00000000");
-    Value stock = Value::object({{"names", Value::object({{"title", Value::object({{"literal", Value("lng_stock")}})}})},
-                                 {"colours", Value::object({{"menu", zero}, {"primary", zero}, {"secondary", zero}, {"tertiary", zero}})},
-                                 {"livery_name", Value("x")}});
+    Value stock =
+        Value::object({{"names", Value::object({{"title", Value::object({{"literal", Value("lng_stock")}})}})},
+                       {"colours", Value::object({{"menu", zero}, {"primary", zero}, {"secondary", zero}, {"tertiary", zero}})},
+                       {"livery_name", Value("x")}});
     st.add_base("team.identity", "williams_26", stock);
     for (int i = 0; i < 12; i++)
         st.add_base("team.identity", "c12_slot_" + std::to_string(i), stock);
@@ -56,7 +61,8 @@ void twelve_slot_tests(const std::string &regs)
         physical.push_back("c12_slot_" + std::to_string(i));
     ct::anchor_rows(table, physical);
     ct::Plan plan = ct::plan_season(table, seasons[0]);
-    check(table.ok() && plan.ok() && plan.count(ct::Kind::dressed) == 12, "apply_teams plans all 12 slots dressed: " + ct::summary(plan));
+    check(table.ok() && plan.ok() && plan.count(ct::Kind::dressed) == 12,
+          "apply_teams plans all 12 slots dressed: " + ct::summary(plan));
 
     struct Rec {
         std::vector<uint8_t> bytes = std::vector<uint8_t>(0x768, 0);
@@ -103,8 +109,8 @@ void twelve_slot_tests(const std::string &regs)
     ct::dresser() = &content::dress_slot;
     int dressed = 0;
     for (auto &a : plan.actions)
-        dressed += a.kind == ct::Kind::dressed &&
-                   ct::dresser()(group.c_str(), a.slot, ct::identity_id(a.row).c_str(), ct::identity_id(a.team).c_str(), 700 + a.slot - 1);
+        dressed += a.kind == ct::Kind::dressed && ct::dresser()(group.c_str(), a.slot, ct::identity_id(a.row).c_str(),
+                                                                ct::identity_id(a.team).c_str(), 700 + a.slot - 1);
     bool all = dressed == 12;
     for (int i = 0; i < 12; i++) {
         Rec &rec = loaded[uint16_t(700 + i)];
@@ -113,22 +119,25 @@ void twelve_slot_tests(const std::string &regs)
                std::string(rec.bufs[4].c_str()) == std::string("Base ") + teams[i] &&
                rec.bytes[content::team_record::TEAM_BOSS] == 50 + i;
     }
-    check(all, "the 12 slot rows' loaded records wear the 12 teams' names, codes, bases and principals (" + std::to_string(dressed) + " dressed)");
+    check(all, "the 12 slot rows' loaded records wear the 12 teams' names, codes, bases and principals (" +
+                   std::to_string(dressed) + " dressed)");
     bool untouched = true;
     for (int i = 0; i < 11; i++)
-        untouched &= loaded[uint16_t(i)].bytes == loaded[uint16_t(i)].before && std::string(loaded[uint16_t(i)].bufs[0].c_str()) == "team26_" + std::to_string(i);
+        untouched &= loaded[uint16_t(i)].bytes == loaded[uint16_t(i)].before &&
+                     std::string(loaded[uint16_t(i)].bufs[0].c_str()) == "team26_" + std::to_string(i);
     check(untouched, "the f1_career_2026 rows' loaded records are untouched");
     content::Plan logo_plan;
     for (int i = 0; i < 12; i++) {
         auto logo = st.get("team.logo", by + "/" + teams[i]);
         Value v = logo.value;
-        content::lower_logo_images(teams[i], "williams_26", by + "/" + teams[i], logo.status == registry::Status::ok ? &v : nullptr,
-                                   teams[i], logo_plan);
+        content::lower_logo_images(teams[i], "williams_26", by + "/" + teams[i],
+                                   logo.status == registry::Status::ok ? &v : nullptr, teams[i], logo_plan);
     }
     int own_slices = 0;
     for (auto &l : logo_plan.logos)
         own_slices += l.array == std::string("team_logos.driver_career_2024_team_select") && !l.fallback && l.key == l.team;
-    check(own_slices == 12, "each team's logo is built as slices under its own label, not the slot row's (" + std::to_string(own_slices) + ")");
+    check(own_slices == 12,
+          "each team's logo is built as slices under its own label, not the slot row's (" + std::to_string(own_slices) + ")");
     check(content::undress_all("the career unloaded") == 12 && loaded[700].bytes == loaded[700].before &&
               loaded[711].bytes == loaded[711].before && std::string(loaded[705].bufs[4].c_str()) == "c12_slot_5",
           "after the career unloads the 12 slot rows are their own rows again, base and principal included");
@@ -150,11 +159,14 @@ void slot_tests()
         return true;
     };
     check(team_slots::record_in(vector, 3, read) == 0xabc000, "a stat id's record is read through the slot vector");
-    check(team_slots::record_in(vector, 4, read) == 0 && team_slots::record_in(0, 3, read) == 0, "a stat id past the vector's end has none");
+    check(team_slots::record_in(vector, 4, read) == 0 && team_slots::record_in(0, 3, read) == 0,
+          "a stat id past the vector's end has none");
     mem[vector + 0x10] = entries + 4 * 0x10 + 3;
     check(team_slots::record_in(vector, 3, read) == 0, "a vector whose size is not a whole number of entries is not read");
-    check(team_slots::stat_of(600u << 16) == 600 && team_slots::stat_of(3u << 16) == 3, "the key carries the stat id in its high word");
-    check(team_slots::database_key(600u << 16) && team_slots::database_key(0), "a loader key has no set byte: the low word is zero");
+    check(team_slots::stat_of(600u << 16) == 600 && team_slots::stat_of(3u << 16) == 3,
+          "the key carries the stat id in its high word");
+    check(team_slots::database_key(600u << 16) && team_slots::database_key(0),
+          "a loader key has no set byte: the low word is zero");
     check(!team_slots::database_key((600u << 16) | 1u), "a key with a set or flag byte set is not a database loader key");
 }
 
@@ -206,13 +218,13 @@ void seat_entrant_tests()
                                                       {"badge_customisation", ""},
                                                       {"entrant_reference", ""}});
     db.put("entrants.entrant_lists._entrant_list_instancecount_", 0, "3");
-    row("entrants.entrant_lists.entrant_list_0", {{"_metadata_", "f1_career_progressive"},
-                                                  {"entrant_list_references", "f1_2026,f1_career_progressive_driver_pool"}});
+    row("entrants.entrant_lists.entrant_list_0",
+        {{"_metadata_", "f1_career_progressive"}, {"entrant_list_references", "f1_2026,f1_career_progressive_driver_pool"}});
     db.put("entrants.entrant_lists.entrant_list_0._entrant_instancecount_", 0, "0");
     row("entrants.entrant_lists.entrant_list_1", {{"_metadata_", "f1_2026"}});
     db.put("entrants.entrant_lists.entrant_list_1._entrant_instancecount_", 0, "1");
-    row("entrants.entrant_lists.entrant_list_1.entrant_0", {{"_metadata_", "e"}, {"team", "mercedes_26"}, {"team_position", "0"},
-                                                            {"entrant_reference", "pg-daniel_ricciardo"}});
+    row("entrants.entrant_lists.entrant_list_1.entrant_0",
+        {{"_metadata_", "e"}, {"team", "mercedes_26"}, {"team_position", "0"}, {"entrant_reference", "pg-daniel_ricciardo"}});
     row("entrants.entrant_lists.entrant_list_2", {{"_metadata_", "f1_career_progressive_driver_pool"}});
     db.put("entrants.entrant_lists.entrant_list_2._entrant_instancecount_", 0, "1");
     row("entrants.entrant_lists.entrant_list_2.entrant_0", {{"_metadata_", "pg_pool_daniel_ricciardo"},
@@ -263,7 +275,8 @@ static Value package_of(int teams, int seats)
     for (int t = 0; t < teams; t++) {
         Value drivers = Value::array();
         for (int d = 0; d < seats; d++)
-            drivers.push_back(Value::object({{"driver", "game/d" + std::to_string(t * seats + d)}, {"number", t * seats + d + 1}}));
+            drivers.push_back(
+                Value::object({{"driver", "game/d" + std::to_string(t * seats + d)}, {"number", t * seats + d + 1}}));
         list.push_back(Value::object({{"key", "t" + std::to_string(t)}, {"drivers", drivers}}));
     }
     return Value::object({{"entrant_list", "ex_f1_2012"}, {"teams", list}});
@@ -351,7 +364,8 @@ void drs_tests(const std::string &regs)
         std::printf("      %s\n", l.c_str());
     check(x.records["rules.drs"] == 3 && x.refused["rules.drs"] == 0 && x.applied["rules.drs"].size() == 3,
           "three rules.drs records apply");
-    check(written(x.engine, "drs.drs_allowed_lap._drs_allowed_lap_group_instancecount_") == "6", "the group count grows by three");
+    check(written(x.engine, "drs.drs_allowed_lap._drs_allowed_lap_group_instancecount_") == "6",
+          "the group count grows by three");
     std::map<std::string, std::string> rows;
     for (int i = 3; i < 6; i++)
         if (auto l = written(x.engine, std::string(content::DRS_GROUPS) + "_" + std::to_string(i) + "._metadata_"))
@@ -368,7 +382,8 @@ void drs_tests(const std::string &regs)
     check(lap(never, 0) == "200" && lap(never, 1) == "200" && lap(never, 2) == "200" && label_of(never, 0) == "RaceStart" &&
               label_of(never, 2) == "FullSafetyCarEnd",
           "the never group's RaceStart, RedFlagRestart and FullSafetyCarEnd rows hold 200");
-    check(lap(late, 0) == "3" && lap(late, 1) == "1" && lap(late, 2) == "1", "a variant sets its race start and keeps the base's 1s");
+    check(lap(late, 0) == "3" && lap(late, 1) == "1" && lap(late, 2) == "1",
+          "a variant sets its race start and keeps the base's 1s");
     check(written(x.engine, std::string(content::DRS_GROUPS) + "_0.drs_allowed_lap_0.lap_number") == std::nullopt,
           "the stock f1_2024 group is not written");
 
@@ -402,10 +417,12 @@ void drs_tests(const std::string &regs)
     Value w1959 = swofty::json::parse(R"({"entrant_list":"f1_1959","rules":{"tyre_warmers":false}})");
     Value w2009 = swofty::json::parse(R"({"entrant_list":"f1_2009","rules":{"tyre_warmers":null}})");
     Value w2010 = swofty::json::parse(R"({"entrant_list":"f1_2010","rules":{"tyre_warmers":"off"}})");
-    std::vector<std::pair<std::string, const Value *>> boxes = {{"mod.a/f1_1959", &w1959}, {"mod.a/f1_2009", &w2009}, {"mod.a/f1_2010", &w2010}};
+    std::vector<std::pair<std::string, const Value *>> boxes = {
+        {"mod.a/f1_1959", &w1959}, {"mod.a/f1_2009", &w2009}, {"mod.a/f1_2010", &w2010}};
     auto warm = content::tyre_warmers_pick("f1_1959", boxes);
     std::printf("      %s\n", warm.line.c_str());
-    check(warm.warmers == false && warm.package == "mod.a/f1_1959", "a box whose package sets rules.tyre_warmers runs that setting");
+    check(warm.warmers == false && warm.package == "mod.a/f1_1959",
+          "a box whose package sets rules.tyre_warmers runs that setting");
     check(!content::tyre_warmers_pick("f1_2009", boxes).warmers && !content::tyre_warmers_pick("f1_2010", boxes).warmers &&
               !content::tyre_warmers_pick("f1_2025", boxes).warmers,
           "null, a non-bool or a stock box: the mode keeps its own tyre warmer setting");
@@ -415,7 +432,8 @@ void drs_tests(const std::string &regs)
     Value c1950 = swofty::json::parse(R"({"entrant_list":"f1_1950","rules":{"mandatory_tyre_change":false}})");
     Value c2007 = swofty::json::parse(R"({"entrant_list":"f1_2007","rules":{"mandatory_tyre_change":true}})");
     Value c2008 = swofty::json::parse(R"({"entrant_list":"f1_2008","rules":{"mandatory_tyre_change":null}})");
-    std::vector<std::pair<std::string, const Value *>> change = {{"mod.a/f1_1950", &c1950}, {"mod.a/f1_2007", &c2007}, {"mod.a/f1_2008", &c2008}};
+    std::vector<std::pair<std::string, const Value *>> change = {
+        {"mod.a/f1_1950", &c1950}, {"mod.a/f1_2007", &c2007}, {"mod.a/f1_2008", &c2008}};
     auto chg = content::tyre_change_pick("f1_1950", change);
     std::printf("      %s\n", chg.line.c_str());
     check(chg.required == false && content::tyre_change_pick("f1_2007", change).required == true,
@@ -423,10 +441,12 @@ void drs_tests(const std::string &regs)
     check(!content::tyre_change_pick("f1_2008", change).required && !content::tyre_change_pick("f1_2025", change).required,
           "null or a stock box: the mode keeps its own tyre regulations");
 
-    Value k1959 = swofty::json::parse(R"({"entrant_list":"f1_1959","rules":{"race_time_limit_s":10800,"weekend_mode":"swofty_f1_short_quali"}})");
+    Value k1959 = swofty::json::parse(
+        R"({"entrant_list":"f1_1959","rules":{"race_time_limit_s":10800,"weekend_mode":"swofty_f1_short_quali"}})");
     Value k2004 = swofty::json::parse(R"({"entrant_list":"f1_2004","rules":{"weekend_mode":"swofty_f1_one_shot"}})");
     Value k2009 = swofty::json::parse(R"({"entrant_list":"f1_2009","rules":{"race_time_limit_s":30,"weekend_mode":"Bad Name"}})");
-    Value k2010 = swofty::json::parse(R"({"entrant_list":"f1_2010","rules":{"race_time_limit_s":"3h","weekend_mode":"swofty_f1"}})");
+    Value k2010 =
+        swofty::json::parse(R"({"entrant_list":"f1_2010","rules":{"race_time_limit_s":"3h","weekend_mode":"swofty_f1"}})");
     std::vector<std::pair<std::string, const Value *>> weekends = {
         {"mod.a/f1_1959", &k1959}, {"mod.a/f1_2004", &k2004}, {"mod.a/f1_2009", &k2009}, {"mod.a/f1_2010", &k2010}};
     auto wk = content::weekend_pick("f1_1959", weekends);
@@ -473,7 +493,8 @@ void drs_tests(const std::string &regs)
 
     Value s1959 = swofty::json::parse(
         R"({"entrant_list":"f1_1959","rules":{"safety_car":"off","formation_lap":false,"penalties":"corner_cutting_only","corner_cutting":"regular"}})");
-    Value s1993 = swofty::json::parse(R"({"entrant_list":"f1_1993","rules":{"safety_car":"standard","formation_lap":true,"penalties":"on"}})");
+    Value s1993 = swofty::json::parse(
+        R"({"entrant_list":"f1_1993","rules":{"safety_car":"standard","formation_lap":true,"penalties":"on"}})");
     Value s2000 = swofty::json::parse(R"({"entrant_list":"f1_2000","rules":{"safety_car":null,"formation_lap":null}})");
     Value s2001 = swofty::json::parse(
         R"({"entrant_list":"f1_2001","rules":{"safety_car":"none","formation_lap":"off","penalties":"reduced","corner_cutting":"lax"}})");
@@ -490,7 +511,8 @@ void drs_tests(const std::string &regs)
     check(sc59.settings[FL] == std::optional<std::string>("off") &&
               content::box_options_pick("f1_1993", sc).settings[FL] == std::optional<std::string>("on"),
           "rules.formation_lap false / true picks the option's off / on");
-    check(sc59.settings[PE] == std::optional<std::string>("corner_cutting_only") && sc59.settings[CC] == std::optional<std::string>("regular") &&
+    check(sc59.settings[PE] == std::optional<std::string>("corner_cutting_only") &&
+              sc59.settings[CC] == std::optional<std::string>("regular") &&
               content::box_options_pick("f1_1993", sc).settings[PE] == std::optional<std::string>("on") &&
               !content::box_options_pick("f1_1993", sc).settings[CC],
           "rules.penalties and rules.corner_cutting pick their settings; a missing rule picks none");
@@ -500,7 +522,8 @@ void drs_tests(const std::string &regs)
               !content::box_options_pick("f1_2025", sc).settings[SC],
           "null, an unknown setting, a wrong type or a stock box: the player's settings stay");
     std::vector<std::string> names = {"safety_car_standard", "Off", "reduced", "increased"};
-    check(content::box_option_value(names, "safety_car", "off") == 1 && content::box_option_value(names, "safety_car", "standard") == 0 &&
+    check(content::box_option_value(names, "safety_car", "off") == 1 &&
+              content::box_option_value(names, "safety_car", "standard") == 0 &&
               content::box_option_value({"low", "normal", "high", "none"}, "safety_car", "off") == 3 &&
               content::box_option_value({"low", "normal"}, "safety_car", "off") == -1,
           "a setting matches a value named after it, one ending in _<name>, or a known alias; none: -1");
@@ -509,7 +532,8 @@ void drs_tests(const std::string &regs)
               content::box_option_value({"off", "on"}, "formation_lap", "off") == 0 &&
               content::box_option_value({"off", "on"}, "formation_lap", "on") == 1 &&
               content::box_option_value({"off", "corner_cutting_only", "eSports", "on"}, "penalties", "esports") == 2 &&
-              content::box_option_value({"off", "corner_cutting_only", "eSports", "on"}, "penalties", "corner_cutting_only") == 1 &&
+              content::box_option_value({"off", "corner_cutting_only", "eSports", "on"}, "penalties", "corner_cutting_only") ==
+                  1 &&
               content::box_option_value({"off", "corner_cutting_only", "eSports", "on"}, "penalties", "on") == 3 &&
               content::box_option_value({"regular", "strict"}, "corner_cutting", "strict") == 1,
           "every setting finds its value in the stock option's value list");
@@ -527,7 +551,7 @@ void drs_tests(const std::string &regs)
     check(f.force(&o1, 0, get, set) && f.prior == 2, "a second press of the same box keeps the player's index");
     check(f.put_back(&o1, get, set) == 1 && opt[0] == 2 && !f.active(), "another box gives the player's index back");
     f.force(&o1, 0, get, set);
-    opt[0] = 3;   // the player picks another setting after the press
+    opt[0] = 3; // the player picks another setting after the press
     check(f.put_back(&o1, get, set) == 0 && opt[0] == 3, "a setting the player picks after the press stays");
     f.force(&o1, 0, get, set);
     check(f.put_back(&o2, get, set) == 0 && opt[0] == 0 && !f.active(), "a changed option object is left as it is");
@@ -537,8 +561,11 @@ void drs_tests(const std::string &regs)
     Value g2005 = swofty::json::parse(R"({"entrant_list":"f1_2005","rules":{"grid":{"qualifying":"aggregate"}}})");
     Value g1955 = swofty::json::parse(R"({"entrant_list":"f1_1955","rules":{"grid":{"qualifying":"best_of","rows":[3,2]}}})");
     Value g2008 = swofty::json::parse(R"({"entrant_list":"f1_2008","rules":{"grid":null}})");
-    std::vector<std::pair<std::string, const Value *>> grids = {
-        {"mod.a/f1_1990", &g1990}, {"mod.a/f1_2000", &g2000}, {"mod.a/f1_2005", &g2005}, {"mod.a/f1_1955", &g1955}, {"mod.a/f1_2008", &g2008}};
+    std::vector<std::pair<std::string, const Value *>> grids = {{"mod.a/f1_1990", &g1990},
+                                                                {"mod.a/f1_2000", &g2000},
+                                                                {"mod.a/f1_2005", &g2005},
+                                                                {"mod.a/f1_1955", &g1955},
+                                                                {"mod.a/f1_2008", &g2008}};
     auto gp = content::grid_pick("f1_1955", grids);
     std::printf("      %s\n", gp.line.c_str());
     check(gp.rule && gp.rule->qualifying == runtime::box_grid::Scoring::best_of && gp.rule->rows == std::vector<int>({3, 2}) &&
@@ -554,7 +581,8 @@ void drs_tests(const std::string &regs)
           "grid null or a stock box: the game's own grid");
 
     Value q1985 = swofty::json::parse(R"({"entrant_list":"f1_1985","rules":{"qualifying_tyres":["softer"]}})");
-    Value q1990 = swofty::json::parse(R"({"entrant_list":"f1_1990","rules":{"qualifying_tyres":["medium","softer","softer","wet"]}})");
+    Value q1990 =
+        swofty::json::parse(R"({"entrant_list":"f1_1990","rules":{"qualifying_tyres":["medium","softer","softer","wet"]}})");
     Value q1991 = swofty::json::parse(R"({"entrant_list":"f1_1991","rules":{"qualifying_tyres":null}})");
     Value q1992 = swofty::json::parse(R"({"entrant_list":"f1_1992","rules":{"qualifying_tyres":"softer"}})");
     std::vector<std::pair<std::string, const Value *>> qboxes = {
@@ -568,7 +596,8 @@ void drs_tests(const std::string &regs)
           "null, a non-array or a stock box: no qualifying tyre rule");
     Value q1985b = swofty::json::parse(R"({"entrant_list":"f1_1985","rules":{}})");
     qboxes.push_back({"mod.b/f1_1985", &q1985b});
-    check(!content::quali_tyres_pick("f1_1985", qboxes).mask, "the last package with the box's entrant list decides (qualifying tyres)");
+    check(!content::quali_tyres_pick("f1_1985", qboxes).mask,
+          "the last package with the box's entrant list decides (qualifying tyres)");
     check(content::quali_refused(15, 0, 1) && content::quali_refused(16, 0, 1) && content::quali_refused(17, 0, 1),
           "a masked option is refused in Race, Race2 and Race3");
     check(!content::quali_refused(5, 0, 1) && !content::quali_refused(9, 0, 1) && !content::quali_refused(1, 0, 1) &&

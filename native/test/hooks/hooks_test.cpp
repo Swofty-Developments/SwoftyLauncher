@@ -165,10 +165,10 @@ static void test_order()
     int replaced = -1;
     int r = t.fire("", "test.cancel", &p, &replaced);
     expect(r == SWOFTY_ASSET_OK && replaced == 1, "fire: ok, and it reports that a replace handler handled it");
-    expect(joined() ==
-               "b.before10 a.before c.before owner.before owner.replace a.replace b.replace b.after5 a.after",
+    expect(joined() == "b.before10 a.before c.before owner.before owner.replace a.replace b.replace b.after5 a.after",
            "order: before by priority then load order with the owner last; replace owner first, then priority, until one "
-           "returns true; after by priority (" + joined() + ")");
+           "returns true; after by priority (" +
+               joined() + ")");
     expect(p.value == 42, "payload changes in before and replace reach the caller");
     expect(af1.seen_replaced == 1, "after handlers see the call as replaced");
     expect(logged("[events] test.cancel (driver_career, owner/f1_career_1990, 1990): 4 before handlers, 3 replace "
@@ -211,8 +211,7 @@ static void test_kinds()
     r = t.attach("my-addon", "car.vtf.read", SWOFTY_PHASE_BEFORE, 0, "", record, &x, &tok);
     expect(r == SWOFTY_ASSET_OK, "a before handler on a modify event attaches");
     r = t.attach("other", "other.point", SWOFTY_PHASE_REPLACE, 0, "", record, &x, &tok);
-    expect(r == SWOFTY_ASSET_OK && logged("nothing defines other.point yet"),
-           "a handler on a point nobody defined yet is held");
+    expect(r == SWOFTY_ASSET_OK && logged("nothing defines other.point yet"), "a handler on a point nobody defined yet is held");
     expect(t.undefined().size() == 1 && t.undefined()[0].first == "other.point", "the end-of-load report lists it");
     t.define("other", "other.point", 1, SWOFTY_POINT_NOTIFY, true, "[]");
     expect(t.handlers("other.point") == 0 &&
@@ -278,8 +277,7 @@ static void test_selectors()
     expect(sel(R"([{"mode":"driver_career"}])", f) && sel(R"([{"mode":"grand_prix"}])", gp) &&
                !sel(R"([{"mode":"time_trial"}])", gp),
            "mode");
-    expect(sel(R"([{"session_type":["race","sprint"]}])", f) && !sel(R"([{"session_type":["race"]}])", gp),
-           "session_type");
+    expect(sel(R"([{"session_type":["race","sprint"]}])", f) && !sel(R"([{"session_type":["race"]}])", gp), "session_type");
     expect(sel(R"([{"track":"game/imola"}])", f) && !sel(R"([{"track":"game/imola"}])", gp), "track");
     expect(sel(R"([{"year":[1988,1991]}])", f) && !sel(R"([{"year":[2016,2019]}])", f) && !sel(R"([{"year":[1,9999]}])", gp),
            "year, inside a career only");
@@ -301,12 +299,11 @@ static void test_selectors()
     t.declare("test.notify", SWOFTY_POINT_NOTIFY, 1, true, false);
     Tag in{"in1990"}, out{"inmonaco"}, every{"everywhere"};
     uint32_t tok = 0;
-    t.attach("a", "test.notify", SWOFTY_PHASE_AFTER, 0, R"([{"content":"swofty.f1-1990/f1_career_1990"},{"session_type":["race"]}])",
-             record, &in, &tok);
+    t.attach("a", "test.notify", SWOFTY_PHASE_AFTER, 0,
+             R"([{"content":"swofty.f1-1990/f1_career_1990"},{"session_type":["race"]}])", record, &in, &tok);
     t.attach("a", "test.notify", SWOFTY_PHASE_AFTER, 0, R"([{"track":"game/monaco"}])", record, &out, &tok);
     t.attach("a", "test.notify", SWOFTY_PHASE_AFTER, 0, "[]", record, &every, &tok);
-    expect(t.attach("a", "test.notify", SWOFTY_PHASE_AFTER, 0, R"([{"colour":1}])", record, &every, &tok) ==
-               SWOFTY_ASSET_INVALID,
+    expect(t.attach("a", "test.notify", SWOFTY_PHASE_AFTER, 0, R"([{"colour":1}])", record, &every, &tok) == SWOFTY_ASSET_INVALID,
            "attach refuses a bad selector");
     calls.clear();
     Payload p{sizeof p, 1, 0};
@@ -483,7 +480,8 @@ static void test_log_lines()
     expect(logged("[events] career.loaded (unknown): 0 handlers"), "the 0 handlers line names the context");
     for (int i = 0; i < 3; i++)
         t.fire("", "flow.state", &pl, nullptr);
-    expect(count_event("flow.state") == 1 && logged("[events] flow.state (unknown): first fire, 0 handlers; later fires are not logged"),
+    expect(count_event("flow.state") == 1 &&
+               logged("[events] flow.state (unknown): first fire, 0 handlers; later fires are not logged"),
            "a hot event logs its first fire only");
     t.define("a", "a.point", 1, SWOFTY_POINT_CANCEL, false, "");
     for (int i = 0; i < 3; i++)
@@ -625,8 +623,7 @@ static std::vector<std::string> service_calls;
 static void got(void *user, const void *table, size_t size, uint32_t version)
 {
     service_calls.push_back(std::string(static_cast<const char *>(user)) + " v" + std::to_string(version) + " " +
-                            std::to_string(size) + " " +
-                            std::to_string(static_cast<const History *>(table)->career_year()));
+                            std::to_string(size) + " " + std::to_string(static_cast<const History *>(table)->career_year()));
 }
 
 static void test_services()
@@ -738,34 +735,38 @@ static void test_payloads()
 
     static uint32_t pit_seen[3], stop_seen[2], tyres_seen[2];
     static float hit_seen;
-    t.attach("a", "session.pit", SWOFTY_PHASE_AFTER, 0, "",
-             [](void *, SwoftyHookCall *c) {
-                 auto &e = *static_cast<const swofty::sessions::events::Pit *>(c->payload);
-                 pit_seen[0] = e.car, pit_seen[1] = e.previous, pit_seen[2] = e.status;
-                 return 0;
-             },
-             nullptr, &tok);
-    t.attach("a", "session.pit_stop", SWOFTY_PHASE_AFTER, 0, "",
-             [](void *, SwoftyHookCall *c) {
-                 auto &e = *static_cast<const swofty::sessions::events::PitStop *>(c->payload);
-                 stop_seen[0] = e.car, stop_seen[1] = e.stops;
-                 return 0;
-             },
-             nullptr, &tok);
-    t.attach("a", "session.pit_stop.tyres", SWOFTY_PHASE_AFTER, 0, "",
-             [](void *, SwoftyHookCall *c) {
-                 auto &e = *static_cast<const swofty::sessions::events::PitStopTyres *>(c->payload);
-                 tyres_seen[0] = e.car, tyres_seen[1] = e.kept;
-                 return 0;
-             },
-             nullptr, &tok);
-    t.attach("a", "car.damage", SWOFTY_PHASE_AFTER, 0, "",
-             [](void *, SwoftyHookCall *c) {
-                 auto &e = *static_cast<const swofty::cars::events::Damage *>(c->payload);
-                 hit_seen = e.part == swofty::cars::events::Damage::front_wing_right ? e.amount : -1;
-                 return 0;
-             },
-             nullptr, &tok);
+    t.attach(
+        "a", "session.pit", SWOFTY_PHASE_AFTER, 0, "",
+        [](void *, SwoftyHookCall *c) {
+            auto &e = *static_cast<const swofty::sessions::events::Pit *>(c->payload);
+            pit_seen[0] = e.car, pit_seen[1] = e.previous, pit_seen[2] = e.status;
+            return 0;
+        },
+        nullptr, &tok);
+    t.attach(
+        "a", "session.pit_stop", SWOFTY_PHASE_AFTER, 0, "",
+        [](void *, SwoftyHookCall *c) {
+            auto &e = *static_cast<const swofty::sessions::events::PitStop *>(c->payload);
+            stop_seen[0] = e.car, stop_seen[1] = e.stops;
+            return 0;
+        },
+        nullptr, &tok);
+    t.attach(
+        "a", "session.pit_stop.tyres", SWOFTY_PHASE_AFTER, 0, "",
+        [](void *, SwoftyHookCall *c) {
+            auto &e = *static_cast<const swofty::sessions::events::PitStopTyres *>(c->payload);
+            tyres_seen[0] = e.car, tyres_seen[1] = e.kept;
+            return 0;
+        },
+        nullptr, &tok);
+    t.attach(
+        "a", "car.damage", SWOFTY_PHASE_AFTER, 0, "",
+        [](void *, SwoftyHookCall *c) {
+            auto &e = *static_cast<const swofty::cars::events::Damage *>(c->payload);
+            hit_seen = e.part == swofty::cars::events::Damage::front_wing_right ? e.amount : -1;
+            return 0;
+        },
+        nullptr, &tok);
     payloads::pit(fire, 5, 7, 14);
     payloads::pit_stop(fire, 5, 2);
     payloads::pit_stop_tyres(fire, 5, true);

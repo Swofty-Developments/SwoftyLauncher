@@ -193,8 +193,8 @@ int main()
                                                      {"package", Value("cs/pkg_2016")},
                                                      {"ai", Value::object({{"asset_filename", Value("auto")}})}});
     recs["vehicle.package|cs/pkg_2016"] = Value::object({{"ai_package_folder", Value("f1_2016")}});
-    recs["vehicle|cs/mclaren_2016"] = Value::object({{"label", Value("mclaren_2016")},
-                                                     {"ai", Value::object({{"asset_filename", Value("mclaren_car")}})}});
+    recs["vehicle|cs/mclaren_2016"] =
+        Value::object({{"label", Value("mclaren_2016")}, {"ai", Value::object({{"asset_filename", Value("mclaren_car")}})}});
     trk::Lookup lookup = [&](const std::string &reg, const std::string &id) -> const Value * {
         auto it = recs.find(reg + "|" + id);
         return it == recs.end() ? nullptr : &it->second;
@@ -212,11 +212,12 @@ int main()
         {{"entrant_list", Value("cs_2016")},
          {"season", Value(2016)},
          {"title", Value::object({{"literal", Value("F1 2016")}})},
-         {"teams", Value::array({Value::object({{"key", Value("ferrari")},
-                                                {"vehicle", Value("cs/ferrari_2016")},
-                                                {"drivers", Value::array({Value::object({}), Value::object({}), Value::object({})})}}),
-                                 Value::object({{"key", Value("mclaren")}, {"vehicle", Value("cs/mclaren_2016")}}),
-                                 Value::object({{"key", Value("haas")}})})}});
+         {"teams",
+          Value::array({Value::object({{"key", Value("ferrari")},
+                                       {"vehicle", Value("cs/ferrari_2016")},
+                                       {"drivers", Value::array({Value::object({}), Value::object({}), Value::object({})})}}),
+                        Value::object({{"key", Value("mclaren")}, {"vehicle", Value("cs/mclaren_2016")}}),
+                        Value::object({{"key", Value("haas")}})})}});
     trk::BoxInfo made = trk::box_from_package("cs/f1_2016", pkg, lookup, read);
     expect(made.title == "F1 2016" && made.setup_mode == "swofty_f1" && made.season == "season_2016" && made.teams == 3 &&
                made.cars == 7,

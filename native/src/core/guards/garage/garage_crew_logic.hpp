@@ -27,10 +27,7 @@ using Read = bool (*)(uint64_t address, void *out, size_t n, void *user);
 
 enum class Drop { none, extra_car, no_template };
 
-inline bool user_pointer(uint64_t p)
-{
-    return p >= USER_BASE && p < USER_END;
-}
+inline bool user_pointer(uint64_t p) { return p >= USER_BASE && p < USER_END; }
 
 inline bool has_template(uint64_t session, uint64_t record, Read read, void *user)
 {
@@ -63,15 +60,9 @@ constexpr uint64_t SETUP_VECTOR_BEGIN = 0xa8;
 constexpr uint64_t SETUP_KEY = 0xc0;
 constexpr uint64_t SETUP_FLAG = 0x4b;
 
-inline bool setup_template_missing(uint64_t tmpl)
-{
-    return !user_pointer(tmpl);
-}
+inline bool setup_template_missing(uint64_t tmpl) { return !user_pointer(tmpl); }
 
-inline bool scene_missing(uint64_t scene)
-{
-    return !user_pointer(scene);
-}
+inline bool scene_missing(uint64_t scene) { return !user_pointer(scene); }
 
 struct SetupSkips {
     uint32_t seen = 0;
@@ -90,8 +81,7 @@ struct SetupSkips {
 
 using OnDrop = void (*)(void *ctx, uint64_t record, uint32_t slot, Drop why);
 
-inline size_t compact(uint8_t *entries, size_t n, uint64_t session, bool known, Read read, void *user, OnDrop on_drop,
-                      void *ctx)
+inline size_t compact(uint8_t *entries, size_t n, uint64_t session, bool known, Read read, void *user, OnDrop on_drop, void *ctx)
 {
     size_t kept = 0;
     for (size_t i = 0; i < n; i++) {

@@ -93,8 +93,8 @@ std::string session_list(uintptr_t ctx)
     if (mem::read(setup + SETUP_GAME_SETUP_MODE, gsm) && gsm && mem::read(gsm + SETUP_MODE_NAME, gsm_holder) && gsm_holder &&
         mem::read(gsm_holder + 0x10, gsm_name))
         mem::c_string(gsm_name, mode, 64);
-    logic::ListCars cars = mem::read(setup + SELECTED_LIST, list) && list ? list_cars(reinterpret_cast<void *>(list))
-                                                                         : logic::ListCars{};
+    logic::ListCars cars =
+        mem::read(setup + SELECTED_LIST, list) && list ? list_cars(reinterpret_cast<void *>(list)) : logic::ListCars{};
     return "list " + (cars.name.empty() ? std::string("?") : cars.name) + " (" + std::to_string(cars.cars) +
            " cars) of setup mode " + mode;
 }
@@ -201,16 +201,15 @@ bool keep_time_trial_lists(void *mode)
         ref<int64_t>(setup, LIST_COUNT) = n.kept;
         any = true;
         for (size_t i = 0; i < info.size(); ++i) {
-            if (!logic::oversized(info[i].cars) ||
-                std::find(time_trial_guard.kept_out.begin(), time_trial_guard.kept_out.end(), info[i].name) != time_trial_guard.kept_out.end())
+            if (!logic::oversized(info[i].cars) || std::find(time_trial_guard.kept_out.begin(), time_trial_guard.kept_out.end(),
+                                                             info[i].name) != time_trial_guard.kept_out.end())
                 continue;
             time_trial_guard.kept_out.push_back(info[i].name);
             if (time_trial_guard.kept_lines.note())
                 swofty::log("[era] %s keeps %s out of Time Trial while a stock box is picked: it holds %lld cars; Time "
                             "Trial holds at most %zu (the game adds %zu cars of its own to a table of %zu)%s",
-                            logic::HOST, info[i].name.c_str(), (long long)info[i].cars, logic::TT_MAX_CARS,
-                            logic::TT_EXTRA_CARS, logic::TT_TABLE,
-                            keep.empty() ? "; no list of it fits, so it offers none until the next press" : "");
+                            logic::HOST, info[i].name.c_str(), (long long)info[i].cars, logic::TT_MAX_CARS, logic::TT_EXTRA_CARS,
+                            logic::TT_TABLE, keep.empty() ? "; no list of it fits, so it offers none until the next press" : "");
         }
     });
     return any;
@@ -263,9 +262,9 @@ uint8_t *resolved_esm(uintptr_t setup, uint8_t *esm)
 {
     uint8_t id = 0;
     uintptr_t slots = 0, meta = 0, mask = 0;
-    if (!esm || !mem::read(reinterpret_cast<uintptr_t>(esm), id) || !mem::read(setup + logic::MGR_OVERRIDE_MASK, mask) ||
-        !mask || !mem::read(setup + logic::MGR_OVERRIDES, slots) || !mem::read(setup + logic::MGR_OVERRIDE_META, meta) ||
-        !slots || meta < slots || (meta - slots) % logic::OVERRIDE_SLOT)
+    if (!esm || !mem::read(reinterpret_cast<uintptr_t>(esm), id) || !mem::read(setup + logic::MGR_OVERRIDE_MASK, mask) || !mask ||
+        !mem::read(setup + logic::MGR_OVERRIDES, slots) || !mem::read(setup + logic::MGR_OVERRIDE_META, meta) || !slots ||
+        meta < slots || (meta - slots) % logic::OVERRIDE_SLOT)
         return esm;
     size_t count = (meta - slots) / logic::OVERRIDE_SLOT;
     if (count > logic::MAX_OVERRIDE_SLOTS || !mem::readable(reinterpret_cast<void *>(slots), count * logic::OVERRIDE_SLOT) ||
@@ -288,8 +287,7 @@ std::vector<uint32_t> pool_refs(uint32_t pools)
     for (auto [bit, off] : {std::pair<uint32_t, size_t>{logic::TAKES_POOL_A, logic::ES_POOL_A},
                             std::pair<uint32_t, size_t>{logic::TAKES_POOL_B, logic::ES_POOL_B}}) {
         uintptr_t pool = 0, begin = 0, end = 0;
-        if (!(pools & bit) || !mem::read(es + off, pool) || !pool || !mem::read(pool + 8, begin) ||
-            !mem::read(pool + 0x10, end))
+        if (!(pools & bit) || !mem::read(es + off, pool) || !pool || !mem::read(pool + 8, begin) || !mem::read(pool + 0x10, end))
             continue;
         auto got = logic::pool_refs_from(begin, end, [](uintptr_t a, auto &v) { return mem::read(a, v); });
         if (got.capped && lines.pool_capped.note())

@@ -8,10 +8,7 @@
 
 namespace render::postfx {
 
-UINT FrameTextures::mip_base()
-{
-    return FRAMES * MAX_PASSES * TABLE + UINT(pipeline.config.textures.size()) * (FRAMES + 1) + 1;
-}
+UINT FrameTextures::mip_base() { return FRAMES * MAX_PASSES * TABLE + UINT(pipeline.config.textures.size()) * (FRAMES + 1) + 1; }
 
 bool FrameTextures::make_heaps()
 {
@@ -62,8 +59,8 @@ bool FrameTextures::make_frame(const D3D12_RESOURCE_DESC &d)
         t.res = pipeline.gpu.texture(t.w, t.h, t.format, t.file.empty(), t.levels());
         t.clear = t.file.empty();
         if (!t.res) {
-            swofty::log("[postfx] texture %s (%ux%u, format %d) could not be made; post-processing is off",
-                        t.name.c_str(), t.w, t.h, int(t.format));
+            swofty::log("[postfx] texture %s (%ux%u, format %d) could not be made; post-processing is off", t.name.c_str(), t.w,
+                        t.h, int(t.format));
             return false;
         }
     }
@@ -90,7 +87,9 @@ bool FrameTextures::ensure_work(int k)
     bool ok = wk.orig && wk.pic[0] && wk.pic[1];
     for (size_t i = 0; i < pipeline.config.textures.size() && ok; i++)
         if (!pipeline.config.textures[i].shared())
-            ok = (wk.tex[i] = pipeline.gpu.texture(pipeline.config.textures[i].w, pipeline.config.textures[i].h, pipeline.config.textures[i].format, true, pipeline.config.textures[i].levels())) != nullptr;
+            ok = (wk.tex[i] = pipeline.gpu.texture(pipeline.config.textures[i].w, pipeline.config.textures[i].h,
+                                                   pipeline.config.textures[i].format, true,
+                                                   pipeline.config.textures[i].levels())) != nullptr;
     wk.clear = true;
     if (!ok)
         swofty::log("[postfx] the working textures of slot %d could not be made; post-processing is off", k);
@@ -202,7 +201,10 @@ bool FrameTextures::fit_frame()
         if (!wk.orig)
             continue;
         for (size_t i = 0; i < pipeline.config.textures.size(); i++)
-            if (!pipeline.config.textures[i].shared() && !wk.tex[i] && !(wk.tex[i] = pipeline.gpu.texture(pipeline.config.textures[i].w, pipeline.config.textures[i].h, pipeline.config.textures[i].format, true, pipeline.config.textures[i].levels())))
+            if (!pipeline.config.textures[i].shared() && !wk.tex[i] &&
+                !(wk.tex[i] =
+                      pipeline.gpu.texture(pipeline.config.textures[i].w, pipeline.config.textures[i].h,
+                                           pipeline.config.textures[i].format, true, pipeline.config.textures[i].levels())))
                 return false;
         wk.clear = true;
     }

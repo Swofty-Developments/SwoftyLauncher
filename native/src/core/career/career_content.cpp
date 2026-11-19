@@ -66,8 +66,7 @@ bool db_list_stat(const std::string &label, int64_t &out, void *)
     const SwoftyDb *db = runtime::db_table();
     SwoftyDbCursor c{};
     SwoftyDbValue v{};
-    if (db->row("entrants.entrant_lists", label.c_str(), &c) != SWOFTY_ASSET_OK ||
-        db->cell(&c, "stat_id", &v) != SWOFTY_ASSET_OK)
+    if (db->row("entrants.entrant_lists", label.c_str(), &c) != SWOFTY_ASSET_OK || db->cell(&c, "stat_id", &v) != SWOFTY_ASSET_OK)
         return false;
     out = v.i;
     return true;
@@ -110,16 +109,15 @@ void resolve(Slot &s, bool now, bool building)
     s.resolved = true;
     if (!r.warn.empty())
         swofty::log("[career] content '%s': %s", s.desc.id.c_str(), r.warn.c_str());
-    std::string slots_seen = !gm      ? "; loaded list slots not checked: g_Game_Manager does not resolve"
+    std::string slots_seen = !gm       ? "; loaded list slots not checked: g_Game_Manager does not resolve"
                              : l.known ? " of " + std::to_string(l.slots) + " loaded list slots"
                                        : "; loaded list slots not checked: the entrants system +0x560 holds no list "
                                          "slots on this build";
     swofty::log("[career] content '%s' ready%s: mode %s statId %lld, data group %s (entrant list stat_id %lld%s), suffix "
                 "%s (F1CAREER_%s%s%s)",
                 s.desc.id.c_str(), s.retry.tries ? (" after " + std::to_string(s.retry.tries + 1) + " checks").c_str() : "",
-                s.desc.mode.c_str(), (long long)r.mode, s.desc.data_group.c_str(), (long long)r.group,
-                slots_seen.c_str(), s.desc.suffix.c_str(), s.desc.suffix.c_str(), r.f2 ? ", F2CAREER" : "",
-                r.icons ? ", ICONS" : "");
+                s.desc.mode.c_str(), (long long)r.mode, s.desc.data_group.c_str(), (long long)r.group, slots_seen.c_str(),
+                s.desc.suffix.c_str(), s.desc.suffix.c_str(), r.f2 ? ", F2CAREER" : "", r.icons ? ", ICONS" : "");
 }
 
 namespace {
@@ -128,7 +126,8 @@ namespace older = swofty_core::registry::older;
 
 older::ContentDesc to_older(const content::Desc &d)
 {
-    return {d.id, d.title, d.description, d.data_group, d.suffix, d.mode, d.entitlement, d.model, d.car_group, d.badge, d.careers};
+    return {d.id,          d.title, d.description, d.data_group, d.suffix, d.mode,
+            d.entitlement, d.model, d.car_group,   d.badge,      d.careers};
 }
 
 void from_records()
@@ -157,12 +156,11 @@ void from_records()
         older::ContentDesc d;
         std::string why;
         if (!older::content_from(id, rec, mode, d, why)) {
-            swofty::log("[career] career.content record %s from %s makes no tile: %s", id.c_str(), addon.c_str(),
-                        why.c_str());
+            swofty::log("[career] career.content record %s from %s makes no tile: %s", id.c_str(), addon.c_str(), why.c_str());
             continue;
         }
-        content::Desc desc{d.id,   d.title, d.description, d.data_group, d.suffix, d.mode, d.entitlement,
-                           d.model, d.car_group, d.badge, d.careers};
+        content::Desc desc{d.id,          d.title, d.description, d.data_group, d.suffix, d.mode,
+                           d.entitlement, d.model, d.car_group,   d.badge,      d.careers};
         add_slot(desc, addon, addon, &id);
     }
 }
@@ -193,8 +191,7 @@ int add_slot(const content::Desc &desc, const std::string &who, const std::strin
         why = "the core holds at most 8 contents";
     if (!why.empty()) {
         if (record)
-            swofty::log("[career] career.content record %s from %s makes no tile: %s", record->c_str(), who.c_str(),
-                        why.c_str());
+            swofty::log("[career] career.content record %s from %s makes no tile: %s", record->c_str(), who.c_str(), why.c_str());
         else
             swofty::log("[career] content '%s' from %s refused: %s", desc.id.c_str(), who.c_str(), why.c_str());
         return SWOFTY_ASSET_INVALID;
@@ -208,7 +205,8 @@ int add_slot(const content::Desc &desc, const std::string &who, const std::strin
     if (record)
         s.record = *record;
     else if (older::put(runtime::older_store(), addon, older::CONTENT, desc.id, older::content_record(to_older(desc)),
-                        "career::content::add") == SWOFTY_ASSET_OK || took_over)
+                        "career::content::add") == SWOFTY_ASSET_OK ||
+             took_over)
         s.record = own;
     else
         s.record.clear();
@@ -225,14 +223,14 @@ int add_slot(const content::Desc &desc, const std::string &who, const std::strin
     s.state = state;
     if (!took_over)
         count.store(n + 1, std::memory_order_release);
-    std::string from = record ? who + " (career.content record " + *record + ", no call)"
+    std::string from = record      ? who + " (career.content record " + *record + ", no call)"
                        : took_over ? who + " (the call replaces the tile its career.content record " + own + " made)"
                                    : who;
     swofty::log("[career] content '%s' from %s registered (tile %zu after the stock ones, %s model, data group %s, suffix "
                 "%s, mode %s): %s",
                 desc.id.c_str(), from.c_str(), at + 1, desc.model == content::MODEL_2025 ? "2025" : "2026",
                 desc.data_group.c_str(), desc.suffix.c_str(), desc.mode.c_str(),
-                state == SWOFTY_CAREER_CONTENT_LIVE ? "live (hooks already installed)"
+                state == SWOFTY_CAREER_CONTENT_LIVE  ? "live (hooks already installed)"
                 : state == SWOFTY_CAREER_CONTENT_OFF ? ("off: " + hooks.why()).c_str()
                                                      : "queued for the next mixin commit");
     return hooks.off() ? SWOFTY_ASSET_UNAVAILABLE : SWOFTY_ASSET_OK;
@@ -248,10 +246,7 @@ void turn_off(Slot &s, const std::string &why)
     swofty::log("[career] content '%s' (%s) is off: %s", s.desc.id.c_str(), s.owner.c_str(), why.c_str());
 }
 
-size_t used()
-{
-    return count.load(std::memory_order_acquire);
-}
+size_t used() { return count.load(std::memory_order_acquire); }
 
 void resolve_all(bool now, bool building)
 {
@@ -259,10 +254,7 @@ void resolve_all(bool now, bool building)
         resolve(slots[i], now, building);
 }
 
-bool ready(const Slot &s)
-{
-    return s.state == SWOFTY_CAREER_CONTENT_LIVE && s.resolved;
-}
+bool ready(const Slot &s) { return s.state == SWOFTY_CAREER_CONTENT_LIVE && s.resolved; }
 
 Slot *by_vtable(const void *item)
 {
@@ -286,8 +278,8 @@ void shown_from_records()
             std::string why, mode_id = older::content_mode_id(s.record, rec);
             older::ContentDesc fresh;
             if (older::content_from(s.record, rec,
-                                    mode_id.empty() ? swofty::json::Value() : older::effective(st, older::MODE, mode_id),
-                                    fresh, why))
+                                    mode_id.empty() ? swofty::json::Value() : older::effective(st, older::MODE, mode_id), fresh,
+                                    why))
                 d = fresh;
         } else {
             older::content_shown(rec, d);
@@ -347,10 +339,7 @@ static std::vector<CoreMixins> career_content_mixins()
     return out;
 }
 
-void tile_route_want()
-{
-    route_wanted = true;
-}
+void tile_route_want() { route_wanted = true; }
 
 static std::vector<CoreMixins> tile_route_mixins()
 {
@@ -358,8 +347,8 @@ static std::vector<CoreMixins> tile_route_mixins()
     if (!route_wanted || route.gate.offered())
         return out;
     route.gate.offer();
-    out.push_back({ROUTE_MIXIN,
-                   {{"FeTile_Route_CareerItem", SWOFTY_MIXIN_WRAP, 100, (void *)&route_entry, route.route_item.slot()}}});
+    out.push_back(
+        {ROUTE_MIXIN, {{"FeTile_Route_CareerItem", SWOFTY_MIXIN_WRAP, 100, (void *)&route_entry, route.route_item.slot()}}});
     return out;
 }
 
@@ -377,9 +366,9 @@ static loader::FunctionSet tile_route_core_set{loader::CoreSetId::tile_route, ti
 
 TileRoute tile_route_state()
 {
-    return route.live()                                                           ? TileRoute::live
-           : route.gate.settled() || (route_wanted && core_mixins_closed())       ? TileRoute::off
-                                                                                  : TileRoute::pending;
+    return route.live()                                                     ? TileRoute::live
+           : route.gate.settled() || (route_wanted && core_mixins_closed()) ? TileRoute::off
+                                                                            : TileRoute::pending;
 }
 
 static void career_content_commit()

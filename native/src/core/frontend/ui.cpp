@@ -69,11 +69,10 @@ const Target T_PARSER{"Ui_Uidf_LoadScreens",
                       "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 C5 F8 29 B4 24 30 01 00 00 4C 89 CF 49 89 CD",
                       0x41d7a90};
 const Target T_PKGOPEN{"Ui_Pkg_Open", "56 57 53 48 83 EC 40 48 85 C9 0F 84 ?? ?? ?? ?? 48 89 CF 8B 01", 0x3927510};
-const Target T_RESOLVE{"Vm_RouteCmd_ResolveTargetScreen",
-                       "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 C5 F8 29 B4 24 30 01 00 00 49 89 D4 48 89 4C 24 68",
-                       0x4187620};
-const Target T_OPENEXEC{"Vm_RouteCmd_OpenScreen", "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 4D 89 C7 48 89 D6",
-                        0x3889310};
+const Target T_RESOLVE{
+    "Vm_RouteCmd_ResolveTargetScreen",
+    "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 C5 F8 29 B4 24 30 01 00 00 49 89 D4 48 89 4C 24 68", 0x4187620};
+const Target T_OPENEXEC{"Vm_RouteCmd_OpenScreen", "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 4D 89 C7 48 89 D6", 0x3889310};
 const Target T_SITE_READ{"site_Ui_Job_NodeRead", "E8 ?? ?? ?? ?? 89 C5 41 89 85 8C 00 00 00", 0x41dda07, 5};
 const Target T_SITE_INIT{"site_Ui_Job_NodeInit", "4C 89 EA FF 50 48 89 C5 85 C0 0F 85", 0x41dda71, 6};
 const Target T_SITE_FACTORY{"site_Ui_Job_NodeNoObject", "BD 05 00 00 00 41 89 AD 8C 00 00 00", 0x41ddc1c, 5};
@@ -82,10 +81,7 @@ const Target T_OPEN{"Vm_Open_Screen", "41 57 41 56 41 55 41 54 56 57 55 53 48 83
                     0x4182660};
 constexpr uintptr_t SCREEN_SYS_LOAD = 0x10c;
 
-const char *chars(const void *s)
-{
-    return s ? static_cast<const char *>(s) + 9 : "";
-}
+const char *chars(const void *s) { return s ? static_cast<const char *>(s) + 9 : ""; }
 
 uintptr_t ScreenLoader::find(const Target &t)
 {
@@ -96,15 +92,12 @@ uintptr_t ScreenLoader::find(const Target &t)
         return 0;
     }
     if (at + t.anchor - base != t.rva)
-        swofty::log("[ui] %s: matched at base+0x%llx, KB build has base+0x%llx", t.what, (unsigned long long)(at + t.anchor - base),
-                    (unsigned long long)t.rva);
+        swofty::log("[ui] %s: matched at base+0x%llx, KB build has base+0x%llx", t.what,
+                    (unsigned long long)(at + t.anchor - base), (unsigned long long)t.rva);
     return at;
 }
 
-bool readable(const void *p, size_t n)
-{
-    return swofty::mem::readable(p, n);
-}
+bool readable(const void *p, size_t n) { return swofty::mem::readable(p, n); }
 
 void ScreenLoader::load_config()
 {
@@ -197,7 +190,8 @@ void ScreenLoader::load()
     if (a_resolve) {
         auto *insn = reinterpret_cast<const uint8_t *>(a_resolve + SCREEN_SYS_LOAD);
         if (insn[0] == 0x48 && insn[1] == 0x8b && insn[2] == 0x0d)
-            screen_sys = reinterpret_cast<void **>(a_resolve + SCREEN_SYS_LOAD + 7 + *reinterpret_cast<const int32_t *>(insn + 3));
+            screen_sys =
+                reinterpret_cast<void **>(a_resolve + SCREEN_SYS_LOAD + 7 + *reinterpret_cast<const int32_t *>(insn + 3));
         swofty::log("[ui] screen system global %p", static_cast<void *>(screen_sys));
     }
     if (a_resolve && screen_sys)
@@ -241,7 +235,4 @@ void ui_load() { loader.load(); }
 
 SWOFTY_CORE_RANK(ui)
 
-SWOFTY_ON_LOAD
-{
-    runtime::when_code_ready("ui: screen hooks", frontend::ui::ui_load);
-}
+SWOFTY_ON_LOAD { runtime::when_code_ready("ui: screen hooks", frontend::ui::ui_load); }

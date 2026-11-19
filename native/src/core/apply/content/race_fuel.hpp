@@ -25,7 +25,7 @@ struct FuelRules {
     bool refuelling = false;
     std::optional<float> race_fuel_kg, refuel_stint_kg, quali_fuel_kg;
     bool start_from_quali = false;
-    bool race_tyre_change = true;   // 1.5 rules.race_tyre_change: false keeps a car's tyres through its race pit stops
+    bool race_tyre_change = true; // 1.5 rules.race_tyre_change: false keeps a car's tyres through its race pit stops
     std::string line;
 
     bool any() const { return refuelling || start_from_quali || quali_fuel_kg.has_value(); }
@@ -180,13 +180,10 @@ inline bool fuel_race_session(uint32_t t) { return t >= 15 && t <= 17; }
 class FuelPlan {
 public:
     static constexpr uint32_t MAX = 32;
-    static constexpr float SLACK = 0.5f;   // kg the game may differ from a written start fuel before it is written again
+    static constexpr float SLACK = 0.5f; // kg the game may differ from a written start fuel before it is written again
 
     // Box change: forgets everything, including the qualifying fuel.
-    void reset()
-    {
-        *this = FuelPlan{};
-    }
+    void reset() { *this = FuelPlan{}; }
 
     std::vector<FuelWrite> tick(const FuelRules &r, uint32_t type, uint32_t generation, const FuelCar *cars, uint32_t n)
     {
@@ -228,7 +225,7 @@ public:
             }
             if (start && !c.start_done)
                 start_step(c, i, f, std::min(*start, f.capacity), why, out);
-            if (quali && (!start || c.written)) {   // the fuel left at the end of this qualifying session
+            if (quali && (!start || c.written)) { // the fuel left at the end of this qualifying session
                 c.quali_left = f.fuel;
                 c.quali_ok = true;
             }
@@ -306,7 +303,7 @@ private:
             return;
         }
         if (f.fuel < c.written_kg - SLACK) {
-            c.start_done = true;   // burning: the start fuel held
+            c.start_done = true; // burning: the start fuel held
             return;
         }
         if (f.fuel > c.written_kg + SLACK) {

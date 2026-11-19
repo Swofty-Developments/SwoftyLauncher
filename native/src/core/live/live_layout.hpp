@@ -168,8 +168,7 @@ namespace driver {
 constexpr uintptr_t player_name = 0x60, participants = 0x88;
 constexpr uintptr_t participant_physics = 0x18, participant_flags = 0x32, physics_car = 0x58;
 constexpr uint8_t human_flag = 0x80;
-constexpr uintptr_t entrant_ref = 0x50, sets = 0x268, set_stride = 0x10, table_vec = 0x8, slot_record = 0x8,
-                    record_name = 0xc8;
+constexpr uintptr_t entrant_ref = 0x50, sets = 0x268, set_stride = 0x10, table_vec = 0x8, slot_record = 0x8, record_name = 0xc8;
 constexpr unsigned max_domain = 2;
 constexpr size_t max_participants = 64, max_name = 128;
 }
@@ -186,25 +185,24 @@ constexpr size_t sector_block = 0x60;
 // true when the header on this build declares T::f, and LIVE_TIE(T, f, off) fails the build when it declares it at a
 // different offset than the constant the reader uses. A field the headers do not declare yet ties nothing and keeps its
 // group off (live_rows.hpp).
-#define LIVE_HAS(T, f)                                                                                                 \
-    ([]<class X>() consteval { return requires { offsetof(X, f); }; }.template operator()<swofty::game::T>())
-#define LIVE_SIZE(T, n)                                                                                                \
-    static_assert(                                                                                                     \
-        []<class X>() consteval {                                                                                      \
-            if constexpr (requires { sizeof(X); })                                                                     \
-                return sizeof(X) <= (n);                                                                               \
-            else                                                                                                       \
-                return true;                                                                                           \
-        }.template operator()<swofty::game::T>(),                                                                      \
+#define LIVE_HAS(T, f) ([]<class X>() consteval { return requires { offsetof(X, f); }; }.template operator()<swofty::game::T>())
+#define LIVE_SIZE(T, n)                                                                                                          \
+    static_assert(                                                                                                               \
+        []<class X>() consteval {                                                                                                \
+            if constexpr (requires { sizeof(X); })                                                                               \
+                return sizeof(X) <= (n);                                                                                         \
+            else                                                                                                                 \
+                return true;                                                                                                     \
+        }.template operator()<swofty::game::T>(),                                                                                \
         #T " is not the size the live layout steps by")
-#define LIVE_TIE(T, f, off)                                                                                            \
-    static_assert(                                                                                                     \
-        []<class X>() consteval {                                                                                      \
-            if constexpr (requires { offsetof(X, f); })                                                                \
-                return offsetof(X, f) == (off);                                                                        \
-            else                                                                                                       \
-                return true;                                                                                           \
-        }.template operator()<swofty::game::T>(),                                                                      \
+#define LIVE_TIE(T, f, off)                                                                                                      \
+    static_assert(                                                                                                               \
+        []<class X>() consteval {                                                                                                \
+            if constexpr (requires { offsetof(X, f); })                                                                          \
+                return offsetof(X, f) == (off);                                                                                  \
+            else                                                                                                                 \
+                return true;                                                                                                     \
+        }.template operator()<swofty::game::T>(),                                                                                \
         #T "." #f " is not where the live layout reads it")
 
 namespace swofty_core::live::layout {

@@ -14,8 +14,8 @@
 namespace career::save_data {
 
 struct Bindings {
-    uintptr_t root_vt = 0, write_bag = 0, lookup = 0, codec_vt = 0, counting_vt = 0, memory_vt = 0, table = 0,
-              bag_type = 0, done = 0;
+    uintptr_t root_vt = 0, write_bag = 0, lookup = 0, codec_vt = 0, counting_vt = 0, memory_vt = 0, table = 0, bag_type = 0,
+              done = 0;
 };
 
 // Resolved by save_splice_mixins (save_splice.cpp).

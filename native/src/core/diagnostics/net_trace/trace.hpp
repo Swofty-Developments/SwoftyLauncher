@@ -50,10 +50,7 @@ struct Hook {
 
 extern Hook hooks[C_COUNT];
 
-template <class F> F orig(Call c)
-{
-    return reinterpret_cast<F>(hooks[c].orig);
-}
+template <class F> F orig(Call c) { return reinterpret_cast<F>(hooks[c].orig); }
 
 struct Post {
     SOCKET s;
@@ -67,10 +64,7 @@ struct Post {
 // Set once the log reaches its size cap; the hooks stop tracing.
 extern std::atomic<bool> capped;
 
-inline bool can_read(const void *p, size_t n)
-{
-    return p && n && !IsBadReadPtr(p, n);
-}
+inline bool can_read(const void *p, size_t n) { return p && n && !IsBadReadPtr(p, n); }
 
 std::string addr(const sockaddr *a, int len = -1);
 std::string addr_safe(const sockaddr *a, int len);

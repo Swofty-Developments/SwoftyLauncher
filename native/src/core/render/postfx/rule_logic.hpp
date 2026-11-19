@@ -71,8 +71,7 @@ public:
             } else if (rule.has_ramp) {
                 double t = 0;
                 if (sig.has[rule.ramp_signal] && rule.ramp_to != rule.ramp_from)
-                    t = std::clamp((sig.num[rule.ramp_signal] - rule.ramp_from) / (rule.ramp_to - rule.ramp_from), 0.0,
-                                   1.0);
+                    t = std::clamp((sig.num[rule.ramp_signal] - rule.ramp_from) / (rule.ramp_to - rule.ramp_from), 0.0, 1.0);
                 st.target = t;
                 st.on = t > 0;
             } else {

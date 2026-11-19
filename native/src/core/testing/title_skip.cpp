@@ -30,13 +30,26 @@ namespace {
 // same place, and Vm_NodeSet_Bool the same 171. The sync point's protector-relocated body is aligned 68 of 69 with
 // +0x80, +0xa0, vt+0x20, +0x58 and the holder's +8 / +0x10 / +0x38 in equal instructions; the other one is the
 // protector's xor with its own global, on ecx (dead there) on the KB build and into the global on EA.
-const runtime::Sig SIG_INTRO_UPDATE{"fe_flow.state_intro_on_update", "41 57 41 56 56 57 53 48 83 EC 70 48 89 D6 48 89 CF 48 8B 89 F8 0B 00 00", 0x36da4d0};
-const runtime::Sig SIG_NODE_SET_BOOL{"vm.node_set_bool", "41 56 56 57 55 53 48 81 EC 20 03 00 00 F6 41 26 01 0F 85 ?? ?? ?? ?? 44 89 CB 44 89 C7 49 89 D6 48 89 CE 48 8B 49 58 48 8B 01 FF 50 38 84 DB 75 0E 0F B6 08", 0x973e20};
-const runtime::Sig SIG_SYNC_COMPLETE{"vm.sync_point_is_complete", "48 8D 8F D0 0C 00 00 E8 ?? ?? ?? ?? 84 C0", 0x42626c0,
-                                     runtime::Sig::rel32, 7, 8, 5};
-const runtime::Sig SIG_INTRO_VT{"session.intro", "48 8D 05 ?? ?? ?? ?? 48 89 01 48 81 C1 E0 0D 00 00", 0x585bff0, runtime::Sig::riprel, 0, 3, 7};
-const runtime::Sig SIG_BOOL_TYPE{"vm.bool_type_desc", "48 8D 0D ?? ?? ?? ?? FF 50 10 39 C3 75 17 48 8B 07", 0x6129dc0, runtime::Sig::riprel, 0, 3, 7};
-const runtime::Sig SIG_EMPTY_NODE{"vm.empty_node_handle", "0F 85 ?? ?? ?? ?? 48 8B 1D ?? ?? ?? ?? C5 F8 57 C0 C5 F8 29 44 24 30 48 C7 44 24 40 00 00 00 00 48 8D 15 ?? ?? ?? ?? 4C 8D 05", 0x6ca0e90, runtime::Sig::riprel, 39, 42, 7};
+const runtime::Sig SIG_INTRO_UPDATE{"fe_flow.state_intro_on_update",
+                                    "41 57 41 56 56 57 53 48 83 EC 70 48 89 D6 48 89 CF 48 8B 89 F8 0B 00 00", 0x36da4d0};
+const runtime::Sig SIG_NODE_SET_BOOL{"vm.node_set_bool",
+                                     "41 56 56 57 55 53 48 81 EC 20 03 00 00 F6 41 26 01 0F 85 ?? ?? ?? ?? 44 89 CB 44 89 C7 49 "
+                                     "89 D6 48 89 CE 48 8B 49 58 48 8B 01 FF 50 38 84 DB 75 0E 0F B6 08",
+                                     0x973e20};
+const runtime::Sig SIG_SYNC_COMPLETE{
+    "vm.sync_point_is_complete", "48 8D 8F D0 0C 00 00 E8 ?? ?? ?? ?? 84 C0", 0x42626c0, runtime::Sig::rel32, 7, 8, 5};
+const runtime::Sig SIG_INTRO_VT{
+    "session.intro", "48 8D 05 ?? ?? ?? ?? 48 89 01 48 81 C1 E0 0D 00 00", 0x585bff0, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig SIG_BOOL_TYPE{
+    "vm.bool_type_desc", "48 8D 0D ?? ?? ?? ?? FF 50 10 39 C3 75 17 48 8B 07", 0x6129dc0, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig SIG_EMPTY_NODE{"vm.empty_node_handle",
+                                  "0F 85 ?? ?? ?? ?? 48 8B 1D ?? ?? ?? ?? C5 F8 57 C0 C5 F8 29 44 24 30 48 C7 44 24 40 00 00 00 "
+                                  "00 48 8D 15 ?? ?? ?? ?? 4C 8D 05",
+                                  0x6ca0e90,
+                                  runtime::Sig::riprel,
+                                  39,
+                                  42,
+                                  7};
 
 constexpr size_t INTRO_SYNC = 0xcd0, SYNC_REQUEST = 0x80, SYNC_UI = 0xa0, INTRO_SENT = 0xef3, INTRO_ENGAGED = 0xef4;
 
@@ -81,10 +94,7 @@ void press_tick()
     }
 }
 
-uint8_t *addr_of(uintptr_t a)
-{
-    return reinterpret_cast<uint8_t *>(a);
-}
+uint8_t *addr_of(uintptr_t a) { return reinterpret_cast<uint8_t *>(a); }
 
 // A live bool node: not null, not the empty handle, not read-only (+0x26 bit 0), valid (vt+0x20) and
 // holding the bool type (as the sync point's own checks).
@@ -118,8 +128,7 @@ bool node_value(void *node)
 // press makes (sign-in state +0x1f0: 1 or 4 starts the platform sign-in, 3 completes it), +0x1b0 the lead local
 // player, a player's +0x1c0 platform user handle and +0x1c8 flags (bit 0 user set, bit 1 logged in). Logged as it
 // changes; with SWOFTY_DIRECT_SIGNIN=1 the title's first update starts the sign-in itself.
-constexpr size_t PM_PRIMARY = 0x198, PM_LEAD = 0x1b0, PM_CANDIDATE = 0x1d0, PM_SIGNIN = 0x1f0, PL_USER = 0x1c0,
-                 PL_FLAGS = 0x1c8;
+constexpr size_t PM_PRIMARY = 0x198, PM_LEAD = 0x1b0, PM_CANDIDATE = 0x1d0, PM_SIGNIN = 0x1f0, PL_USER = 0x1c0, PL_FLAGS = 0x1c8;
 
 namespace bp = runtime::build_proof;
 
@@ -127,7 +136,7 @@ namespace bp = runtime::build_proof;
 constexpr bp::Proof SIGNIN_STATE{"the player manager's sign-in state at +0x1f0", bp::proofs::VERIFIED_LAYOUT.builds};
 constexpr bp::Gate SIGNIN_WRITE{"SWOFTY_DIRECT_SIGNIN", &SIGNIN_STATE};
 constexpr bp::Proof STATE_INTRO{"StateIntro's state layout (+0xcd0, +0xef3, +0xef4)",
-                               bp::proofs::VERIFIED_LAYOUT.builds | bp::bit(bp::Build::ea_1_0_145)};
+                                bp::proofs::VERIFIED_LAYOUT.builds | bp::bit(bp::Build::ea_1_0_145)};
 constexpr bp::Gate TITLE_HELPER{"the title helper", &STATE_INTRO};
 
 uint8_t *player_manager(uint8_t *state)
@@ -157,8 +166,8 @@ void player_probe(uint8_t *state)
     uint32_t signin = *reinterpret_cast<uint32_t *>(m + PM_SIGNIN);
     void *candidate = *reinterpret_cast<void **>(m + PM_CANDIDATE);
     char line[200];
-    snprintf(line, sizeof line, "sign-in state %u, candidate %p, primary %p, lead %p user %llx flags %x", signin,
-             candidate, primary, lead, (unsigned long long)user, flags);
+    snprintf(line, sizeof line, "sign-in state %u, candidate %p, primary %p, lead %p user %llx flags %x", signin, candidate,
+             primary, lead, (unsigned long long)user, flags);
     if (last != line) {
         last = line;
         swofty::log("[title] player manager %p: %s", m, line);
@@ -257,15 +266,9 @@ void title_setup()
 
 namespace runtime::title {
 
-void setup()
-{
-    std::call_once(once, title_setup);
-}
+void setup() { std::call_once(once, title_setup); }
 
-const std::string &why()
-{
-    return title_why;
-}
+const std::string &why() { return title_why; }
 
 void want(bool on)
 {
@@ -285,15 +288,9 @@ void want(bool on)
     }
 }
 
-bool wanted()
-{
-    return title_wanted.load();
-}
+bool wanted() { return title_wanted.load(); }
 
-bool engaged()
-{
-    return title_engaged.load();
-}
+bool engaged() { return title_engaged.load(); }
 
 std::string state()
 {
@@ -310,10 +307,7 @@ std::string state()
                             : "waiting: the sync point's nodes are not set yet";
 }
 
-uintptr_t node_set_bool()
-{
-    return ga.node_set_bool;
-}
+uintptr_t node_set_bool() { return ga.node_set_bool; }
 
 bool complete_sync(void *sync, const char *what)
 {

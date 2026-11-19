@@ -64,7 +64,8 @@ inline bool added_team_id(const std::string &team)
     return team.rfind("constructor/", 0) != 0 && team.rfind("game/", 0) != 0 && team.find('/') != std::string::npos;
 }
 
-inline StartPlan start_plan(const std::string &data_group, std::vector<SeasonIn> seasons, const std::vector<std::string> &slot_rows)
+inline StartPlan start_plan(const std::string &data_group, std::vector<SeasonIn> seasons,
+                            const std::vector<std::string> &slot_rows)
 {
     StartPlan p;
     p.data_group = data_group;

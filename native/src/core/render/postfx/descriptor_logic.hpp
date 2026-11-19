@@ -64,8 +64,7 @@ public:
 
 // Notes one barrier of a batch in a list's side mark the way the locked path notes it in the list's
 // Mark: a depth barrier always, a UI barrier once the list has a Mark or a depth barrier.
-template <class L, class R, class S>
-void note(SideMark<L, R, S> &s, bool &marked, bool depth, bool ui, R *r, S after)
+template <class L, class R, class S> void note(SideMark<L, R, S> &s, bool &marked, bool depth, bool ui, R *r, S after)
 {
     if (depth) {
         s.depth_state.store(after, std::memory_order_relaxed);

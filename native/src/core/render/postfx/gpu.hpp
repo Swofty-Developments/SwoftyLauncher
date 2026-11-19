@@ -15,8 +15,7 @@ UINT format_kind(DXGI_FORMAT view);
 using com::release;
 
 // Barriers the core records into a list, through the game's unhooked ResourceBarrier.
-void transition(ID3D12GraphicsCommandList *list, ID3D12Resource *r, D3D12_RESOURCE_STATES from,
-                D3D12_RESOURCE_STATES to);
+void transition(ID3D12GraphicsCommandList *list, ID3D12Resource *r, D3D12_RESOURCE_STATES from, D3D12_RESOURCE_STATES to);
 void transition_level(ID3D12GraphicsCommandList *list, ID3D12Resource *r, UINT level, D3D12_RESOURCE_STATES from,
                       D3D12_RESOURCE_STATES to);
 

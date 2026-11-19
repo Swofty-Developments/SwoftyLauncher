@@ -141,13 +141,16 @@ void screen(const char *name)
         if (home)
             menu.home_opened_at = GetTickCount64();
         if (home && menu.via.exchange(0))
-            swofty::log("[main-menu] fe_home screen opened; back-to-menu disarmed (a screen-open event, not proof it is the visible screen)");
+            swofty::log("[main-menu] fe_home screen opened; back-to-menu disarmed (a screen-open event, not proof it is the "
+                        "visible screen)");
         if (home && menu.customisation_armed.exchange(false))
-            swofty::log("[main-menu] back: fe_home opened after the Customisation card press; the Customisation screen's Back is the game's again");
+            swofty::log("[main-menu] back: fe_home opened after the Customisation card press; the Customisation screen's Back is "
+                        "the game's again");
         menu.panel.want_strip(home ? 0 : 1);
         if (home) {
             menu.panel.read_state(true);
-            swofty::log("[main-menu] home screen open: state read, stock top-right strip %s", menu.tiles.rows_on() ? "hidden" : "hidden");
+            swofty::log("[main-menu] home screen open: state read, stock top-right strip %s",
+                        menu.tiles.rows_on() ? "hidden" : "hidden");
         }
     }
 }
@@ -185,9 +188,6 @@ void paint(hud::drawlist::Frame &f, uint64_t now) { menu.panel.paint(f, now); }
 
 namespace runtime {
 
-bool main_menu_account(std::string &name)
-{
-    return frontend::main_menu::menu.panel.account(name);
-}
+bool main_menu_account(std::string &name) { return frontend::main_menu::menu.panel.account(name); }
 
 }

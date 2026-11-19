@@ -106,8 +106,7 @@ void log_dropped(void *ctx, uint64_t record, uint32_t slot, gc::Drop why)
     else
         swofty::log("[garage] garage %u: team %u car #%u (driver %u) is the %s car of its garage; its crew is not "
                     "spawned, the car still races%s",
-                    unsigned(garage), unsigned(team), unsigned(number), unsigned(driver),
-                    slot == 2 ? "third" : "extra", tail);
+                    unsigned(garage), unsigned(team), unsigned(number), unsigned(driver), slot == 2 ? "third" : "extra", tail);
 }
 
 void spawn_vector(SwoftyContext *c)
@@ -197,8 +196,8 @@ private:
         if (setup_skip && swofty::api->resolve(SETUP_SITE))
             set.mixins.push_back({SETUP_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&setup_template, nullptr});
         else
-            swofty::log("[garage] pit stops crew guard off: needs %s and %s, which this build does not resolve",
-                        SETUP_SITE, SETUP_SKIP);
+            swofty::log("[garage] pit stops crew guard off: needs %s and %s, which this build does not resolve", SETUP_SITE,
+                        SETUP_SKIP);
         scene_test = swofty::api->resolve(SCENE_TEST);
         if (scene_test && swofty::api->resolve(SCENE_SITE))
             set.mixins.push_back({SCENE_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&scene_read, nullptr});

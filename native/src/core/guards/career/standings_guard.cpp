@@ -88,8 +88,7 @@ void track_load(SwoftyContext *c)
         return;
     const char *more = line.tail;
     if (known)
-        swofty::log("[career] standings: round %u has no track data (track %u is off); skipped%s", round, unsigned(track),
-                    more);
+        swofty::log("[career] standings: round %u has no track data (track %u is off); skipped%s", round, unsigned(track), more);
     else
         swofty::log("[career] standings: round %u has no track data; skipped%s", round, more);
 }
@@ -130,9 +129,10 @@ void record_load(SwoftyContext *c)
     if (verdict == runtime::track_record::Verdict::no_record)
         swofty::log("[career] weekends: track %u has no track data; the round shows no track", unsigned(track));
     else
-        swofty::log("[guard] weekends: track id %u has no record (%s, record 0x%llx, node 0x%llx, %llu tracks); the round shows no track",
-                    unsigned(track), runtime::track_record::why(verdict), (unsigned long long)r.record,
-                    (unsigned long long)r.node, (unsigned long long)r.table_count);
+        swofty::log(
+            "[guard] weekends: track id %u has no record (%s, record 0x%llx, node 0x%llx, %llu tracks); the round shows no track",
+            unsigned(track), runtime::track_record::why(verdict), (unsigned long long)r.record, (unsigned long long)r.node,
+            (unsigned long long)r.table_count);
 }
 
 class StandingsGuard final : public guards::SiteGuard {

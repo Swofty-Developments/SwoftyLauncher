@@ -73,8 +73,7 @@ constexpr size_t PLACE_REQUESTS = 0x38, PLACE_TYPE_STRIDE = 0x100, REQUEST_POS =
 constexpr size_t WEEKEND_SESSIONS_BEGIN = 0x220, WEEKEND_SESSIONS_END = 0x228, WEEKEND_CURRENT = 0x238;
 constexpr size_t WEEKEND_PARTICIPANTS_BEGIN = 0x288, WEEKEND_PARTICIPANTS_END = 0x290, WEEKEND_GROUPS = 0x488;
 constexpr size_t SESSION_STRIDE = 0xa0, SESSION_ID = 0x08;
-constexpr size_t NODE_PARENT = 0x08, NODE_LEFT = 0x00, NODE_RIGHT = 0x10, NODE_IS_NIL = 0x19, NODE_KEY = 0x20,
-                 NODE_VALUE = 0x28;
+constexpr size_t NODE_PARENT = 0x08, NODE_LEFT = 0x00, NODE_RIGHT = 0x10, NODE_IS_NIL = 0x19, NODE_KEY = 0x20, NODE_VALUE = 0x28;
 constexpr size_t RESULT_ROWS_BEGIN = 0x08, RESULT_ROWS_END = 0x10, RESULT_TIMES_BEGIN = 0x28, RESULT_TIMES_END = 0x30;
 constexpr size_t PARTICIPANT_FLAGS = 0x4b, PARTICIPANT_KEY = 0x50;
 constexpr uint8_t PARTICIPANT_SKIP = 0x20;
@@ -103,7 +102,7 @@ struct GridHooks : runtime::loader::HookSet<> {
 };
 
 constinit GridHooks hooks;
-std::atomic<bool> rows_on{false};   // a row pattern is active (fast path for every other placement)
+std::atomic<bool> rows_on{false}; // a row pattern is active (fast path for every other placement)
 thread_local uintptr_t override_request = 0;
 thread_local bg::Vec3 override_pos{};
 int rows_logged = 0;
@@ -112,7 +111,7 @@ bool wanted = false;
 std::optional<bg::Rule> active;
 std::string active_box;
 uintptr_t weekend_seen = 0;
-std::map<std::pair<uint8_t, uint32_t>, std::map<uint32_t, float>> snapshots;   // (group, session) -> key -> best lap
+std::map<std::pair<uint8_t, uint32_t>, std::map<uint32_t, float>> snapshots; // (group, session) -> key -> best lap
 std::string last_signature;
 int applies_logged = 0;
 
@@ -249,8 +248,8 @@ void apply(uintptr_t weekend, const char *why)
         for (float t : drivers[i].session_best)
             times += (times.empty() ? "" : " ") + bg::time_text(t);
         swofty::log("[grid]   driver %u/%u times [%s] score %s (%s): position %d -> %d", drivers[i].key & 0xff,
-                    drivers[i].key >> 16, times.c_str(), bg::time_text(r.scores[i].time).c_str(),
-                    bg::class_name(r.classes[i]), drivers[i].game_position, r.positions[i]);
+                    drivers[i].key >> 16, times.c_str(), bg::time_text(r.scores[i].time).c_str(), bg::class_name(r.classes[i]),
+                    drivers[i].game_position, r.positions[i]);
     }
 }
 
@@ -284,7 +283,6 @@ void build_entry(void *weekend, uint8_t group, void *result)
     forget_weekend(uintptr_t(weekend));
     apply(uintptr_t(weekend), "qualifying built");
 }
-
 
 uintptr_t grid_request(uintptr_t placement, uint32_t slot)
 {
@@ -365,9 +363,9 @@ namespace runtime {
 void box_grid_set(const std::optional<box_grid::Rule> &rule, const std::string &box)
 {
     std::lock_guard<std::mutex> g(hooks.lock);
-    bool same = box == active_box && rule.has_value() == active.has_value() &&
-                (!rule || (rule->qualifying == active->qualifying && rule->rule_107 == active->rule_107 &&
-                           rule->rows == active->rows));
+    bool same =
+        box == active_box && rule.has_value() == active.has_value() &&
+        (!rule || (rule->qualifying == active->qualifying && rule->rule_107 == active->rule_107 && rule->rows == active->rows));
     if (same)
         return;
     active = rule;
@@ -402,7 +400,7 @@ static std::vector<CoreMixins> box_grid_mixins()
     find_fn = reinterpret_cast<Find_t *>(find);
     wanted = true;
     std::vector<SwoftyMixin> specs = {{RECORD_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&record_entry, hooks.record_times.slot()},
-                                            {BUILD_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&build_entry, hooks.build_result.slot()}};
+                                      {BUILD_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&build_entry, hooks.build_result.slot()}};
     // Row patterns need the placement pair; without it the boxes keep the track's 2-wide slots (scoring still works).
     if (swofty::api->resolve(PLACE_FN) && swofty::api->resolve(RESOLVE_FN)) {
         specs.push_back({PLACE_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&place_entry, hooks.place_on_slot.slot()});

@@ -37,10 +37,7 @@ bool renarrow(void *mode)
     return true;
 }
 
-void *registry()
-{
-    return *reinterpret_cast<void **>(b.registry);
-}
+void *registry() { return *reinterpret_cast<void **>(b.registry); }
 
 uint8_t *addon_list(uint8_t *vm)
 {
@@ -48,7 +45,8 @@ uint8_t *addon_list(uint8_t *vm)
     if (!root)
         return nullptr;
     uint64_t key = logic::ADDON_TILES;
-    auto **h = reinterpret_cast<Vm_GetOrCreate_ListChild_t *>(b.list_child)(registry(), root + 8, reinterpret_cast<const uint32_t *>(&key));
+    auto **h = reinterpret_cast<Vm_GetOrCreate_ListChild_t *>(b.list_child)(registry(), root + 8,
+                                                                            reinterpret_cast<const uint32_t *>(&key));
     return h ? static_cast<uint8_t *>(*h) : nullptr;
 }
 
@@ -130,8 +128,8 @@ void site_entry(SwoftyContext *c)
             std::string why = logic::time_trial_refusal(box, cars);
             if (!why.empty()) {
                 if (skip_once("time_trial " + box.entrant_list))
-                    swofty::log("[era] box %s from %s skipped in Time Trial: %s", box.entrant_list.c_str(),
-                                box.owner.c_str(), why.c_str());
+                    swofty::log("[era] box %s from %s skipped in Time Trial: %s", box.entrant_list.c_str(), box.owner.c_str(),
+                                why.c_str());
                 continue;
             }
             if (cars < 0 && skip_once("time_trial count " + list))
@@ -141,8 +139,8 @@ void site_entry(SwoftyContext *c)
         char node[0x20];
         snprintf(node, sizeof node, "select_tile_%zu", picker.built.boxes);
         std::string image = logic::image_of(box);
-        add(vm + VM_TILES, alloc, uint8_t(picker.built.boxes), node, box.entrant_list.c_str(), 1, box.title.c_str(),
-            list.c_str(), image.c_str(), 0);
+        add(vm + VM_TILES, alloc, uint8_t(picker.built.boxes), node, box.entrant_list.c_str(), 1, box.title.c_str(), list.c_str(),
+            image.c_str(), 0);
         picker.built.lists.push_back(list);
         picker.built.boxes++;
     }
@@ -157,8 +155,8 @@ void site_entry(SwoftyContext *c)
         reinterpret_cast<Vm_Set_Bool_t *>(b.set_bool)(registry(), root + 8, logic::ADDON_TILES_VISIBLE, &visible, 1);
     }
     if (picker.lines.builds.note())
-        swofty::log("[era] era select%s: %zu stock box(es), %zu addon box(es) of %zu registered",
-                    tt ? " (Time Trial)" : "", stock, picker.built.boxes, order.size());
+        swofty::log("[era] era select%s: %zu stock box(es), %zu addon box(es) of %zu registered", tt ? " (Time Trial)" : "",
+                    stock, picker.built.boxes, order.size());
 }
 
 char *press_entry(void *vm, void *command)
@@ -170,8 +168,8 @@ char *press_entry(void *vm, void *command)
     auto *begin = at<uint8_t *>(v, VM_TILE_BEGIN);
     auto *end = at<uint8_t *>(v, VM_TILE_END);
     size_t count = end > begin ? size_t(end - begin) / TILE_ENTRY : 0;
-    std::string why = logic::press_refusal(v == picker.built.vm, picker.set.list.node && picker.set.selected.node, count, picker.built.stock,
-                                           picker.built.boxes);
+    std::string why = logic::press_refusal(v == picker.built.vm, picker.set.list.node && picker.set.selected.node, count,
+                                           picker.built.stock, picker.built.boxes);
     if (!why.empty()) {
         if (picker.lines.refused.note())
             swofty::log("[era] addon box press refused: %s", why.c_str());
@@ -197,7 +195,8 @@ void select_entry(void *container, const char *entrant_list)
         put_back();
     }
     void *mode = container ? at<void *>(container, CONTAINER_MODE) : nullptr;
-    bool ours = entrant_list && std::find(picker.built.lists.begin(), picker.built.lists.end(), entrant_list) != picker.built.lists.end();
+    bool ours =
+        entrant_list && std::find(picker.built.lists.begin(), picker.built.lists.end(), entrant_list) != picker.built.lists.end();
     if (mode && ours)
         narrow(mode, entrant_list);
     else {

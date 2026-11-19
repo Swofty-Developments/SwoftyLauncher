@@ -39,10 +39,7 @@ inline bool read_due(int state, bool session_live, uint64_t last_read, uint64_t 
     return !last_read || now < last_read || now - last_read >= every;
 }
 
-inline bool tracked(const char *name)
-{
-    return name && std::strcmp(name, F1_2026) == 0;
-}
+inline bool tracked(const char *name) { return name && std::strcmp(name, F1_2026) == 0; }
 
 template <class Mem> bool ctx_ready(Mem &mem, uint64_t ctx)
 {
@@ -88,9 +85,6 @@ inline std::string json(int state)
     return std::string("{\"") + F1_2026 + "\": " + (state == OWNED ? "true" : "false") + "}\n";
 }
 
-inline const char *word(int state)
-{
-    return state == OWNED ? "owned" : state == NOT_OWNED ? "not owned" : "unknown";
-}
+inline const char *word(int state) { return state == OWNED ? "owned" : state == NOT_OWNED ? "not owned" : "unknown"; }
 
 }

@@ -40,10 +40,7 @@ int put(const std::string &text, char *out, size_t cap, size_t *len)
     return SWOFTY_ASSET_OK;
 }
 
-int number(const json::Value &v, int def)
-{
-    return v.type == json::Value::Num ? static_cast<int>(v.n) : def;
-}
+int number(const json::Value &v, int def) { return v.type == json::Value::Num ? static_cast<int>(v.n) : def; }
 
 bool read_lineup(const json::Value &j, Lineup &l, std::string &err)
 {
@@ -171,10 +168,7 @@ bool seat_template(const std::vector<Row> &rows, const Row &driver, uint32_t tea
     return true;
 }
 
-std::string seat_text(uint32_t team, int seat)
-{
-    return team_name(team) + " seat " + std::to_string(seat + 1);
-}
+std::string seat_text(uint32_t team, int seat) { return team_name(team) + " seat " + std::to_string(seat + 1); }
 
 int execute(const Lineup &p, Report &rep, std::string &summary)
 {
@@ -226,7 +220,8 @@ int execute(const Lineup &p, Report &rep, std::string &summary)
         EntrantWriteData data{};
         uint16_t position = 0;
         std::string bad;
-        if (!seat_template(rows, rows[idx], static_cast<uint32_t>(m.team), m.seat, m.car, m.holder, m.mate, data, position, bad)) {
+        if (!seat_template(rows, rows[idx], static_cast<uint32_t>(m.team), m.seat, m.car, m.holder, m.mate, data, position,
+                           bad)) {
             rep.result = "refused";
             summary = seat_text(static_cast<uint32_t>(m.team), m.seat) + " is empty and cannot be written: " + bad;
             return SWOFTY_ASSET_INVALID;
@@ -239,7 +234,7 @@ int execute(const Lineup &p, Report &rep, std::string &summary)
         w.old_team = rows[idx].rec.team_stat_id;
         w.new_team = data.team_stat_id;
         w.why = (teamless(rows[idx].rec) || !has_car(rows[idx].rec) ? std::string("free agent")
-                                                                      : seat_text(stat_of(rows[idx].rec.team_stat_id), from)) +
+                                                                    : seat_text(stat_of(rows[idx].rec.team_stat_id), from)) +
                 " -> " + seat_text(static_cast<uint32_t>(m.team), m.seat) +
                 (named_or_holder(rows, m.holder, static_cast<uint32_t>(m.team), m.seat) < 0 ? " (an empty seat)" : "");
     }
@@ -349,7 +344,10 @@ int execute(const Lineup &p, Report &rep, std::string &summary)
     std::string rows_text;
     for (int idx : order) {
         const Write &w = writes[idx];
-        rows_text += (rows_text.empty() ? "" : "; ") + std::string(w.move ? "move " : w.release ? "release " : "update ") +
+        rows_text += (rows_text.empty() ? "" : "; ") +
+                     std::string(w.move      ? "move "
+                                 : w.release ? "release "
+                                             : "update ") +
                      driver_name(stat_of(driver_of(rows[idx].rec))) + (w.why.empty() ? "" : " " + w.why);
     }
     Baseline baseline(rows);

@@ -120,7 +120,10 @@ inline bool number(const std::string &f, uint64_t &out, int base = 10)
         return false;
     uint64_t v = 0;
     for (char c : f) {
-        int d = c >= '0' && c <= '9' ? c - '0' : base == 16 && c >= 'a' && c <= 'f' ? c - 'a' + 10 : base == 16 && c >= 'A' && c <= 'F' ? c - 'A' + 10 : -1;
+        int d = c >= '0' && c <= '9'                 ? c - '0'
+                : base == 16 && c >= 'a' && c <= 'f' ? c - 'a' + 10
+                : base == 16 && c >= 'A' && c <= 'F' ? c - 'A' + 10
+                                                     : -1;
         if (d < 0 || v > (UINT64_MAX - uint64_t(d)) / uint64_t(base))
             return false;
         v = v * uint64_t(base) + uint64_t(d);
@@ -199,8 +202,8 @@ inline std::string manifest_text(int built, const Routes &routes, const Sources 
     return out;
 }
 
-inline bool manifest_parse(const std::string &text, const std::function<bool(const std::string &file)> &exists, int &built, Routes &routes,
-                           Sources *sources = nullptr)
+inline bool manifest_parse(const std::string &text, const std::function<bool(const std::string &file)> &exists, int &built,
+                           Routes &routes, Sources *sources = nullptr)
 {
     built = -1;
     routes.clear();
@@ -238,10 +241,7 @@ inline bool manifest_parse(const std::string &text, const std::function<bool(con
     return whole;
 }
 
-inline bool cacheable(size_t routes, size_t changes, int refused)
-{
-    return routes && routes == changes && refused == 0;
-}
+inline bool cacheable(size_t routes, size_t changes, int refused) { return routes && routes == changes && refused == 0; }
 
 struct Env {
     std::function<bool(const std::string &rel, uint64_t &size)> size;
@@ -265,8 +265,8 @@ inline std::set<std::string> inputs_of(const Stamps &stamps)
     return out;
 }
 
-inline Keyed key_archives(uint64_t key, const std::vector<std::string> &files, const std::set<std::string> &inputs, const Env &env,
-                          const Stamps &before)
+inline Keyed key_archives(uint64_t key, const std::vector<std::string> &files, const std::set<std::string> &inputs,
+                          const Env &env, const Stamps &before)
 {
     Keyed out;
     std::vector<std::string> ordered = files;
@@ -298,7 +298,8 @@ inline Keyed key_archives(uint64_t key, const std::vector<std::string> &files, c
         }
         char hex[17];
         std::snprintf(hex, sizeof hex, "%016llx", static_cast<unsigned long long>(now.hash));
-        key = runtime::fnv64_field(key, rel + "|" + (now.hashed ? std::string("h") + hex : std::to_string(now.size) + "|t" + std::to_string(now.time)));
+        key = runtime::fnv64_field(
+            key, rel + "|" + (now.hashed ? std::string("h") + hex : std::to_string(now.size) + "|t" + std::to_string(now.time)));
         out.stamps[rel] = kept;
     }
     out.key = key;

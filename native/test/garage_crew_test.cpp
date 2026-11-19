@@ -148,8 +148,7 @@ int main()
         v.add(ok1, 2);
         Seen s;
         size_t kept = gc::compact(v.raw.data(), v.size(), SESSION, true, read, &m, note, &s);
-        expect(kept == 1 && v.record(0) == ok0 && s.none == 1 && s.extra == 1,
-               "both reasons count apart in one vector");
+        expect(kept == 1 && v.record(0) == ok0 && s.none == 1 && s.extra == 1, "both reasons count apart in one vector");
     }
     {
         Vec v;

@@ -92,7 +92,7 @@ struct Signing {
 };
 
 class Baseline {
-  public:
+public:
     explicit Baseline(const std::vector<Row> &rows)
     {
         for (auto &r : rows)
@@ -105,7 +105,7 @@ class Baseline {
     Baseline &operator=(const Baseline &) = delete;
     const void *vector() const { return &vec_; }
 
-  private:
+private:
     struct Vec {
         void *allocator = nullptr;
         const EntrantRecord *begin = nullptr;

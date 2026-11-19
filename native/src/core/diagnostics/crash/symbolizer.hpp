@@ -63,10 +63,7 @@ public:
 extern ModuleMap modules;
 extern SymbolTable symbol_table;
 
-inline bool readable(uintptr_t a, size_t n)
-{
-    return runtime::pages::readable_now(a, n);
-}
+inline bool readable(uintptr_t a, size_t n) { return runtime::pages::readable_now(a, n); }
 
 // Copies from memory that may be unmapped, asking Windows about each page once.
 struct Reader {

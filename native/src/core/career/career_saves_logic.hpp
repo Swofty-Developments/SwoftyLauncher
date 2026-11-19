@@ -183,10 +183,7 @@ public:
             touch(id)[key] = Value(std::string(value));
     }
 
-    void set_int(std::string_view id, const char *key, int64_t value)
-    {
-        touch(id)[key] = Value(value);
-    }
+    void set_int(std::string_view id, const char *key, int64_t value) { touch(id)[key] = Value(value); }
 
     void saved(std::string_view id, int64_t now_ms)
     {
@@ -390,8 +387,7 @@ public:
         Value list = Value::array();
         for (const Value &c : careers_)
             list.push_back(c);
-        return swofty::json::dump(
-            Value::object({{"version", Value(int64_t(INDEX_VERSION))}, {"careers", std::move(list)}}));
+        return swofty::json::dump(Value::object({{"version", Value(int64_t(INDEX_VERSION))}, {"careers", std::move(list)}}));
     }
 
     std::string only_json(const std::vector<std::string> &ids) const
@@ -400,8 +396,7 @@ public:
         for (const Value &c : careers_)
             if (std::find(ids.begin(), ids.end(), std::string(c["career"].as_string())) != ids.end())
                 list.push_back(c);
-        return swofty::json::dump(
-            Value::object({{"version", Value(int64_t(INDEX_VERSION))}, {"careers", std::move(list)}}));
+        return swofty::json::dump(Value::object({{"version", Value(int64_t(INDEX_VERSION))}, {"careers", std::move(list)}}));
     }
 
 private:

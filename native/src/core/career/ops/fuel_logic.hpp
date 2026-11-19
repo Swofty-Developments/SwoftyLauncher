@@ -79,8 +79,7 @@ struct Fuel {
 inline bool same(const Fuel &a, const Fuel &b)
 {
     return std::memcmp(&a.burn, &b.burn, sizeof a.burn) == 0 && a.count == b.count &&
-           std::memcmp(a.rows, b.rows, sizeof a.rows) == 0 &&
-           std::memcmp(&a.one_shot, &b.one_shot, sizeof a.one_shot) == 0 &&
+           std::memcmp(a.rows, b.rows, sizeof a.rows) == 0 && std::memcmp(&a.one_shot, &b.one_shot, sizeof a.one_shot) == 0 &&
            std::memcmp(&a.short_quali, &b.short_quali, sizeof a.short_quali) == 0 &&
            std::memcmp(&a.full_quali, &b.full_quali, sizeof a.full_quali) == 0;
 }
@@ -123,19 +122,28 @@ struct Table {
     Expect checks[2];
 };
 
-inline constexpr Table kSource{"f1 (season 2025)", kModeF1, kSeason2025, kFormatDefault,
+inline constexpr Table kSource{"f1 (season 2025)",
+                               kModeF1,
+                               kSeason2025,
+                               kFormatDefault,
                                {{"melbourne", 1.74f, 30.6f, 110.0f}, {"silverstone", 1.88f, 29.2f, 110.0f}}};
-inline constexpr Table kTarget{"f1_2026", kModeF1_26, kSeason2026, kFormatDefault,
+inline constexpr Table kTarget{"f1_2026",
+                               kModeF1_26,
+                               kSeason2026,
+                               kFormatDefault,
                                {{"melbourne", 1.30f, 23.1f, 81.4f}, {"silverstone", 1.31f, 20.7f, 74.0f}}};
-inline constexpr Table kSprintSource{"sprint_f1_2025", kModeF1, kSeason2025, kFormatSprint,
+inline constexpr Table kSprintSource{"sprint_f1_2025",
+                                     kModeF1,
+                                     kSeason2025,
+                                     kFormatSprint,
                                      {{"melbourne", 1.74f, 13.2f, 37.6f}, {"silverstone", 1.88f, 12.3f, 36.8f}}};
-inline constexpr Table kSprintTarget{"sprint_f1_2026", kModeF1_26, kSeason2026, kFormatSprint,
+inline constexpr Table kSprintTarget{"sprint_f1_2026",
+                                     kModeF1_26,
+                                     kSeason2026,
+                                     kFormatSprint,
                                      {{"melbourne", 1.30f, 10.1f, 28.3f}, {"silverstone", 1.31f, 8.9f, 25.9f}}};
 
-inline bool close_to(float a, float b)
-{
-    return std::fabs(a - b) < 0.005f;
-}
+inline bool close_to(float a, float b) { return std::fabs(a - b) < 0.005f; }
 
 inline bool matches(const Set &s, const Table &t)
 {
@@ -181,8 +189,8 @@ inline bool check(const Set &s, const Table &t, std::string &why)
             why = std::string(t.label) + " " + e.track + " has " + std::to_string(f.count) + " race fuel row(s)";
             return false;
         }
-        if (!close_to(f.burn, e.burn) || !close_to(f.percent25(), e.percent25) ||
-            !close_to(f.percent100(), e.percent100) || !close_to(f.row_float(0, kRowPercent100Again), e.percent100)) {
+        if (!close_to(f.burn, e.burn) || !close_to(f.percent25(), e.percent25) || !close_to(f.percent100(), e.percent100) ||
+            !close_to(f.row_float(0, kRowPercent100Again), e.percent100)) {
             char b[160];
             std::snprintf(b, sizeof b, "%s %s reads %s, stock is %.2f kg/lap, %.1f/%.1f kg", t.label, e.track,
                           fmt_fuel(f).c_str(), e.burn, e.percent25, e.percent100);
@@ -227,8 +235,8 @@ inline std::vector<Pair> plan(const Set &dst, const Set &src, size_t &skipped)
                 s = &c;
                 break;
             }
-        if (!s || s->record != d.record || s->object == d.object || s->fuel.count != d.fuel.count ||
-            d.fuel.count < 1 || d.fuel.count > kMaxRows) {
+        if (!s || s->record != d.record || s->object == d.object || s->fuel.count != d.fuel.count || d.fuel.count < 1 ||
+            d.fuel.count > kMaxRows) {
             ++skipped;
             continue;
         }
@@ -283,8 +291,7 @@ template <class M> bool read_sets(M &m, uintptr_t system, std::vector<Set> &sets
         why = "the track data sets are unreadable";
         return false;
     }
-    if (!begin || end < begin || (end - begin) % kSetSize || (end - begin) / kSetSize > kMaxSets ||
-        end == begin) {
+    if (!begin || end < begin || (end - begin) % kSetSize || (end - begin) / kSetSize > kMaxSets || end == begin) {
         why = "the track data set vector is not a vector of 0x30-byte sets";
         return false;
     }
@@ -313,15 +320,13 @@ template <class M> bool read_sets(M &m, uintptr_t system, std::vector<Set> &sets
             t.index = static_cast<uint32_t>((it - tb) / kItemSize);
             uintptr_t name = 0;
             uint8_t index = 0;
-            if (!read_u64(m, t.object + kTrackRecord, t.record) || !t.record ||
-                !m.read(t.record + kRecordIndex, &index, 1) || !read_u64(m, t.record + kRecordName, name) ||
-                !m.c_string(name, t.name) || !read_fuel(m, t.object, t.fuel)) {
+            if (!read_u64(m, t.object + kTrackRecord, t.record) || !t.record || !m.read(t.record + kRecordIndex, &index, 1) ||
+                !read_u64(m, t.record + kRecordName, name) || !m.c_string(name, t.name) || !read_fuel(m, t.object, t.fuel)) {
                 why = "a track object is unreadable";
                 return false;
             }
             if (index != t.index) {
-                why = "a track object's record index " + std::to_string(index) + " is not its slot " +
-                      std::to_string(t.index);
+                why = "a track object's record index " + std::to_string(index) + " is not its slot " + std::to_string(t.index);
                 return false;
             }
             s.tracks.push_back(std::move(t));

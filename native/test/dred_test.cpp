@@ -12,12 +12,12 @@ namespace dr = runtime::dred;
 
 static int g_fail;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            g_fail++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            g_fail++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
 int main()
@@ -75,8 +75,9 @@ int main()
     CHECK(h.find("4 of 10") != std::string::npos && h.find("NOT FINISHED") != std::string::npos);
     CHECK(dr::node_header(0, nullptr, nullptr, 3, 3).find("NOT FINISHED") == std::string::npos);
     CHECK(h.find("(0x") == std::string::npos);
-    CHECK(dr::node_header(1, "NeGfx2::createBLAS", "Graphics", 17, 7, 0x2a40f0ull).find("NeGfx2::createBLAS (0x2a40f0) on queue") !=
-          std::string::npos);
+    CHECK(
+        dr::node_header(1, "NeGfx2::createBLAS", "Graphics", 17, 7, 0x2a40f0ull).find("NeGfx2::createBLAS (0x2a40f0) on queue") !=
+        std::string::npos);
 
     CHECK(dr::allocation_line("heap_a", 0x22, 0).find("RESOURCE") != std::string::npos);
     CHECK(dr::allocation_line("heap_a", 0x22, 0).find(" at ") == std::string::npos);

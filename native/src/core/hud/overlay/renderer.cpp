@@ -175,9 +175,8 @@ ID3D12Resource *Renderer::buffer(D3D12_HEAP_TYPE type, UINT64 size, D3D12_RESOUR
     rd.SampleDesc.Count = 1;
     rd.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
     ID3D12Resource *r = nullptr;
-    return SUCCEEDED(dev->CreateCommittedResource(&hp, D3D12_HEAP_FLAG_NONE, &rd, state, nullptr, IID_PPV_ARGS(&r)))
-               ? r
-               : nullptr;
+    return SUCCEEDED(dev->CreateCommittedResource(&hp, D3D12_HEAP_FLAG_NONE, &rd, state, nullptr, IID_PPV_ARGS(&r))) ? r
+                                                                                                                     : nullptr;
 }
 
 bool Renderer::make_resources(ID3D12CommandQueue *q)
@@ -219,8 +218,7 @@ bool Renderer::make_resources(ID3D12CommandQueue *q)
     D3D12_QUERY_HEAP_DESC qd{};
     qd.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
     qd.Count = SLOTS * 2;
-    if (SUCCEEDED(q->GetTimestampFrequency(&ts_freq)) && ts_freq &&
-        SUCCEEDED(dev->CreateQueryHeap(&qd, IID_PPV_ARGS(&ts_heap))))
+    if (SUCCEEDED(q->GetTimestampFrequency(&ts_freq)) && ts_freq && SUCCEEDED(dev->CreateQueryHeap(&qd, IID_PPV_ARGS(&ts_heap))))
         ts_buf = buffer(D3D12_HEAP_TYPE_READBACK, SLOTS * 16, D3D12_RESOURCE_STATE_COPY_DEST);
     if (!ts_buf)
         release(ts_heap);
@@ -298,8 +296,8 @@ bool Renderer::ensure_layer(UINT w, UINT h)
     rd.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     D3D12_CLEAR_VALUE cv{};
     cv.Format = LAYER_FMT;
-    if (FAILED(dev->CreateCommittedResource(&hp, D3D12_HEAP_FLAG_NONE, &rd,
-                                            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, &cv, IID_PPV_ARGS(&layer))))
+    if (FAILED(dev->CreateCommittedResource(&hp, D3D12_HEAP_FLAG_NONE, &rd, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, &cv,
+                                            IID_PPV_ARGS(&layer))))
         return false;
     layer_w = w;
     layer_h = h;
@@ -324,8 +322,7 @@ void Renderer::read_timestamps(UINT slot)
     }
 }
 
-void Renderer::transition(ID3D12GraphicsCommandList *l, ID3D12Resource *r, D3D12_RESOURCE_STATES from,
-                                 D3D12_RESOURCE_STATES to)
+void Renderer::transition(ID3D12GraphicsCommandList *l, ID3D12Resource *r, D3D12_RESOURCE_STATES from, D3D12_RESOURCE_STATES to)
 {
     D3D12_RESOURCE_BARRIER b{};
     b.Transition.pResource = r;

@@ -132,24 +132,14 @@ void set_live(bool live, const char *why)
         pending.clear();
     }
     if (was != live)
-        swofty::log("[telemetry] session %s (%s); frame %llu", live ? "started" : "ended", why,
-                    (unsigned long long)master.frame);
+        swofty::log("[telemetry] session %s (%s); frame %llu", live ? "started" : "ended", why, (unsigned long long)master.frame);
 }
 
-void session_enter()
-{
-    set_live(true, "Game_GameModule_OnSessionEnter");
-}
+void session_enter() { set_live(true, "Game_GameModule_OnSessionEnter"); }
 
-void on_results(safetyhook::Context &)
-{
-    set_live(false, "Game_SessionStateFinaliseResultsSync_OnResultsFinalised");
-}
+void on_results(safetyhook::Context &) { set_live(false, "Game_SessionStateFinaliseResultsSync_OnResultsFinalised"); }
 
-int tel_available()
-{
-    return g_on && g_live.load(std::memory_order_acquire);
-}
+int tel_available() { return g_on && g_live.load(std::memory_order_acquire); }
 
 int tel_session(SwoftySessionState *out)
 {
@@ -200,11 +190,11 @@ int tel_shared_memory(const char **name)
         return SWOFTY_ASSET_UNAVAILABLE;
     std::lock_guard<std::mutex> g(map_lock);
     if (!view) {
-        map_handle = CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0,
-                                        sizeof(SwoftyTelemetryFeed), L"Local\\SwoftyTelemetry");
+        map_handle = CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, sizeof(SwoftyTelemetryFeed),
+                                        L"Local\\SwoftyTelemetry");
         if (map_handle)
-            view = static_cast<SwoftyTelemetryFeed *>(
-                MapViewOfFile(map_handle, FILE_MAP_WRITE, 0, 0, sizeof(SwoftyTelemetryFeed)));
+            view =
+                static_cast<SwoftyTelemetryFeed *>(MapViewOfFile(map_handle, FILE_MAP_WRITE, 0, 0, sizeof(SwoftyTelemetryFeed)));
         if (!view) {
             swofty::log("[telemetry] shared_memory: CreateFileMapping/MapViewOfFile for %s failed (err %lu)", FEED_NAME,
                         GetLastError());
@@ -227,10 +217,7 @@ int tel_shared_memory(const char **name)
 
 std::atomic<uint64_t> checked_packets, mismatched_fields;
 
-bool live_verify_packet(const uint8_t *buf, size_t len)
-{
-    return runtime::live_verify() && udp_tel::identify(buf, len);
-}
+bool live_verify_packet(const uint8_t *buf, size_t len) { return runtime::live_verify() && udp_tel::identify(buf, len); }
 
 void report_mismatches(const std::vector<std::string> &bad)
 {
@@ -294,10 +281,7 @@ void setup()
 
 namespace runtime {
 
-bool telemetry_wants_udp()
-{
-    return g_on && (!live_memory_verified() || live_collision_needs_udp());
-}
+bool telemetry_wants_udp() { return g_on && (!live_memory_verified() || live_collision_needs_udp()); }
 
 void telemetry_udp(const uint8_t *buf, size_t len)
 {
@@ -339,15 +323,9 @@ void telemetry_udp(const uint8_t *buf, size_t len)
         udp_first(sp);
 }
 
-const SwoftyTelemetry *telemetry_table()
-{
-    return &table;
-}
+const SwoftyTelemetry *telemetry_table() { return &table; }
 
-void telemetry_setup()
-{
-    setup();
-}
+void telemetry_setup() { setup(); }
 
 void telemetry_tick()
 {

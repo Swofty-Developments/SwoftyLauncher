@@ -131,11 +131,11 @@ std::vector<int> ShaderConfig::live_passes(const frontend::view::State &v, unsig
             if (!p.pso)
                 drop_instance(p.inst);
         }
-        const char *why = p.off            ? "off"
-                          : p.ruled_off    ? "a rule turned it off"
-                          : !p.on          ? "its option turns it off"
+        const char *why = p.off                   ? "off"
+                          : p.ruled_off           ? "a rule turned it off"
+                          : !p.on                 ? "its option turns it off"
                           : addon_off(p.addon_id) ? "its addon's key turned it off"
-                                           : postfx::ineligible(p.when, v.kind, v.flags, v.valid);
+                                                  : postfx::ineligible(p.when, v.kind, v.flags, v.valid);
         if (!why) {
             live.push_back(int(i));
             return;
@@ -185,7 +185,7 @@ void ShaderConfig::install_plan(postfx::Plan next)
     }
     std::vector<int> from = postfx::reuse_textures(plan, next);
     std::vector<PassTexture> old_tex(std::make_move_iterator(textures.begin() + long(legacy_textures)),
-                             std::make_move_iterator(textures.end()));
+                                     std::make_move_iterator(textures.end()));
     std::vector<std::vector<ID3D12Resource *>> old_own(FRAMES);
     for (UINT k = 0; k < FRAMES; k++)
         if (pipeline.frame.work[k].orig)
@@ -257,8 +257,7 @@ void ShaderConfig::apply_active(postfx::ActiveSpec next)
     active = std::move(next);
     pipeline.rules.reset(active, plan, passes);
     swofty::log("[shaders] config \"%s\" (serial %llu): %zu effect(s), %zu pass(es), toggle key %s", active.name.c_str(),
-                (unsigned long long)active.serial, n_effects, n_passes,
-                shader_vk ? active.toggle_key.c_str() : "none");
+                (unsigned long long)active.serial, n_effects, n_passes, shader_vk ? active.toggle_key.c_str() : "none");
 }
 
 void ShaderConfig::check_active(ULONGLONG now, bool force)
@@ -392,8 +391,7 @@ bool ShaderConfig::load_passes()
         if (bytes.size() < 32 || memcmp(bytes.data(), "DXBC", 4) != 0)
             bad = bytes.empty() ? "has no DXIL" : "is not a DXIL container";
         if (bad) {
-            swofty::log("[postfx] %s's pass %s is off: it %s (%s)", p.addon.c_str(), p.name.c_str(), bad,
-                        p.shader.c_str());
+            swofty::log("[postfx] %s's pass %s is off: it %s (%s)", p.addon.c_str(), p.name.c_str(), bad, p.shader.c_str());
             continue;
         }
         p.dxil.assign(bytes.begin(), bytes.end());

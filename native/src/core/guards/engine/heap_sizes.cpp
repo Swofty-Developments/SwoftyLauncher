@@ -48,15 +48,9 @@ uint64_t apply(SwoftyContext *c, hs::Factory factory, uint64_t size)
     return choices[i].bytes;
 }
 
-void plain_size(SwoftyContext *c)
-{
-    c->r9 = apply(c, hs::Factory::plain, c->r9);
-}
+void plain_size(SwoftyContext *c) { c->r9 = apply(c, hs::Factory::plain, c->r9); }
 
-void internal_size(SwoftyContext *c)
-{
-    c->r15 = apply(c, hs::Factory::internal, c->r15);
-}
+void internal_size(SwoftyContext *c) { c->r15 = apply(c, hs::Factory::internal, c->r15); }
 
 namespace guards = swofty_core::guards;
 

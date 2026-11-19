@@ -20,10 +20,7 @@ void expect(bool ok, const char *what)
     fails += !ok;
 }
 
-uint32_t thread_key()
-{
-    return uint32_t(std::hash<std::thread::id>{}(std::this_thread::get_id()) | 1);
-}
+uint32_t thread_key() { return uint32_t(std::hash<std::thread::id>{}(std::this_thread::get_id()) | 1); }
 
 ag::Inputs ready()
 {
@@ -60,8 +57,7 @@ struct Export {
     Trace &trace;
     std::string name;
 
-    ag::Pass call(const std::string &who, ag::Exempt exempt = ag::Exempt::none,
-                  std::chrono::milliseconds cap = ag::WAIT_CAP)
+    ag::Pass call(const std::string &who, ag::Exempt exempt = ag::Exempt::none, std::chrono::milliseconds cap = ag::WAIT_CAP)
     {
         ag::Pass p = ag::Pass::open;
         if (gate.running()) {
@@ -126,10 +122,12 @@ void block()
     Export factory{*the_gate, *the_trace, "CreateDXGIFactory1"};
     the_trace->add("worker starts");
     ag::Pass dev = device.call("worker");
-    the_trace->add(dev == ag::Pass::worker ? "probe device made, the worker passed" : "probe device made, the worker did not pass");
+    the_trace->add(dev == ag::Pass::worker ? "probe device made, the worker passed"
+                                           : "probe device made, the worker did not pass");
     std::this_thread::sleep_for(60ms);
     ag::Pass fac = factory.call("worker");
-    the_trace->add(fac == ag::Pass::worker ? "probe factory made, the worker passed" : "probe factory made, the worker did not pass");
+    the_trace->add(fac == ag::Pass::worker ? "probe factory made, the worker passed"
+                                           : "probe factory made, the worker did not pass");
     std::this_thread::sleep_for(60ms);
     for (int i = 0; i < 2000 && !game_calling.load(); i++)
         std::this_thread::sleep_for(1ms);
@@ -167,8 +165,7 @@ void test_system_module()
 {
     expect(ag::system_module(L"C:\\Windows\\System32\\dxgi.dll", L"C:\\Windows", L"D:\\F1 25\\D3D12\\"),
            "dxgi.dll in System32 is a system module");
-    expect(ag::system_module(L"c:\\windows\\system32\\DriverStore\\FileRepository\\nv\\nvwgf2umx.dll", L"C:\\Windows",
-                             L""),
+    expect(ag::system_module(L"c:\\windows\\system32\\DriverStore\\FileRepository\\nv\\nvwgf2umx.dll", L"C:\\Windows", L""),
            "the driver in the driver store counts, whatever the case");
     expect(ag::system_module(L"D:\\F1 25\\D3D12\\D3D12Core.dll", L"C:\\Windows", L"D:\\F1 25\\D3D12\\"),
            "the game's D3D12 runtime counts");
@@ -286,8 +283,7 @@ void test_fallback()
         ag::Inputs in = ready();
         in.sync_env = "1";
         ag::Choice c = ag::begin(in, gate, platform);
-        expect(!c.worker && platform.hooked == 0 && platform.made == 0,
-               "SWOFTY_ARM_SYNC=1 hooks nothing and starts no worker");
+        expect(!c.worker && platform.hooked == 0 && platform.made == 0, "SWOFTY_ARM_SYNC=1 hooks nothing and starts no worker");
     }
     {
         ag::Gate gate;

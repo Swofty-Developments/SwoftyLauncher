@@ -77,7 +77,8 @@ inline void match(Bits &b, int len, int dist)
     static const int lextra[] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0};
     static const int dbase[] = {1,   2,   3,   4,   5,   7,    9,    13,   17,   25,   33,   49,   65,    97,    129,
                                 193, 257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577};
-    static const int dextra[] = {0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13};
+    static const int dextra[] = {0, 0, 0, 0, 1, 1, 2, 2,  3,  3,  4,  4,  5,  5,  6,
+                                 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13};
     int li = 28;
     while (lbase[li] > len)
         li--;
@@ -143,10 +144,7 @@ inline uint32_t adler32(const uint8_t *p, size_t n)
     return c << 16 | a;
 }
 
-inline void be32(std::string &s, uint32_t v)
-{
-    s += char(v >> 24), s += char(v >> 16), s += char(v >> 8), s += char(v);
-}
+inline void be32(std::string &s, uint32_t v) { s += char(v >> 24), s += char(v >> 16), s += char(v >> 8), s += char(v); }
 
 inline void chunk(std::string &out, const char *type, const uint8_t *data, size_t n)
 {
@@ -173,9 +171,18 @@ inline std::string encode_rgb(const uint8_t *rgb, uint32_t w, uint32_t h)
     uint32_t ad = adler32(raw.data(), raw.size());
     z.push_back(uint8_t(ad >> 24)), z.push_back(uint8_t(ad >> 16)), z.push_back(uint8_t(ad >> 8)), z.push_back(uint8_t(ad));
     std::string out("\x89PNG\r\n\x1a\n", 8);
-    uint8_t ihdr[13] = {uint8_t(w >> 24), uint8_t(w >> 16), uint8_t(w >> 8), uint8_t(w),
-                        uint8_t(h >> 24), uint8_t(h >> 16), uint8_t(h >> 8), uint8_t(h),
-                        8,                2,                0,               0,
+    uint8_t ihdr[13] = {uint8_t(w >> 24),
+                        uint8_t(w >> 16),
+                        uint8_t(w >> 8),
+                        uint8_t(w),
+                        uint8_t(h >> 24),
+                        uint8_t(h >> 16),
+                        uint8_t(h >> 8),
+                        uint8_t(h),
+                        8,
+                        2,
+                        0,
+                        0,
                         0};
     chunk(out, "IHDR", ihdr, 13);
     chunk(out, "IDAT", z.data(), z.size());

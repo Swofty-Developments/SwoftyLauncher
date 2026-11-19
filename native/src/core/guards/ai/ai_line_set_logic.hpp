@@ -30,15 +30,9 @@ struct Repair {
     bool brake_settings = false;
 };
 
-inline bool user_pointer(uint64_t p)
-{
-    return p >= USER_BASE && p < USER_END;
-}
+inline bool user_pointer(uint64_t p) { return p >= USER_BASE && p < USER_END; }
 
-inline bool word(Read read, void *user, uint64_t address, uint64_t *out)
-{
-    return read(address, out, sizeof *out, user);
-}
+inline bool word(Read read, void *user, uint64_t address, uint64_t *out) { return read(address, out, sizeof *out, user); }
 
 inline bool borrow_brake_settings(Read read, Write write, void *user, uint64_t begin, uint64_t last, uint64_t target)
 {
@@ -52,8 +46,8 @@ inline bool borrow_brake_settings(Read read, Write write, void *user, uint64_t b
     return false;
 }
 
-inline void fill_record(Read read, Write write, void *user, uint64_t begin, uint64_t last, uint64_t target,
-                        uint32_t *filled, uint32_t *missing, bool *brake_settings)
+inline void fill_record(Read read, Write write, void *user, uint64_t begin, uint64_t last, uint64_t target, uint32_t *filled,
+                        uint32_t *missing, bool *brake_settings)
 {
     uint64_t line_cache = 0;
     bool unlisted = word(read, user, target + LINE_CACHE_SLOT, &line_cache) && line_cache == 0;

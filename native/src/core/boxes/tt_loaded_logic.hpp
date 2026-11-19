@@ -107,8 +107,8 @@ inline Follow follow(const Loaded &loaded, std::string_view package, std::string
     if (active == active_label(loaded.box, package))
         return {};
     return {Action::follow, loaded.box,
-            "[boards] content follows the loaded list: " + board_content(package) + " (box " + loaded.box +
-                "; box pressed was " + was + ", active was " + (active.empty() ? std::string("nothing") : std::string(active)) + ")"};
+            "[boards] content follows the loaded list: " + board_content(package) + " (box " + loaded.box + "; box pressed was " +
+                was + ", active was " + (active.empty() ? std::string("nothing") : std::string(active)) + ")"};
 }
 
 // Whether a session load of `mode` (a facts mode) follows its list with follow_grand_prix: every mode but a
@@ -132,10 +132,7 @@ inline Follow follow_grand_prix(const Loaded &loaded, std::string_view package, 
 }
 
 // A team reference is a stat id dword: the id in the high word, its kind in the low byte.
-constexpr bool same_team(uint32_t a, uint32_t b)
-{
-    return (a >> 16) == (b >> 16) && (a & 0xff) == (b & 0xff);
-}
+constexpr bool same_team(uint32_t a, uint32_t b) { return (a >> 16) == (b >> 16) && (a & 0xff) == (b & 0xff); }
 
 // Whether the entrant selection's team is one of the loaded list's teams. A list that could not be read (no
 // teams) vouches for nothing and refuses nothing.

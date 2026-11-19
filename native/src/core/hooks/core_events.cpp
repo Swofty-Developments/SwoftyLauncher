@@ -115,14 +115,12 @@ bool car_setup_applied(ca::SetupApplied &payload) { return fire(payload); }
 bool car_parts_register(ca::PartsRegister &payload) { return fire(payload); }
 bool audio_bundle_resolve(so::BundleResolve &payload) { return fire(payload); }
 
-bool car_upgrades_fit(int32_t car, const char *vehicle, swofty::cars::Department department, float driver_stat,
-                      float &rating)
+bool car_upgrades_fit(int32_t car, const char *vehicle, swofty::cars::Department department, float driver_stat, float &rating)
 {
     return payloads::upgrades_fit(fire_core, car, vehicle, department, driver_stat, rating);
 }
 
-bool car_vtf_read(const swofty::cars::live::Car &car, const char *section, const char *field, const char *upgrade,
-                  float &value)
+bool car_vtf_read(const swofty::cars::live::Car &car, const char *section, const char *field, const char *upgrade, float &value)
 {
     return payloads::vtf_read(fire_core, car, section, field, upgrade, value);
 }
@@ -150,10 +148,7 @@ bool car_damage(const swofty::cars::live::Car &car, uint32_t part, float amount)
     return payloads::damage(fire_core, car, part, amount);
 }
 
-bool session_pit(uint32_t car, uint32_t previous, uint32_t status)
-{
-    return payloads::pit(fire_core, car, previous, status);
-}
+bool session_pit(uint32_t car, uint32_t previous, uint32_t status) { return payloads::pit(fire_core, car, previous, status); }
 
 bool session_pit_stop(uint32_t car, uint32_t stops) { return payloads::pit_stop(fire_core, car, stops); }
 

@@ -42,10 +42,7 @@ struct Data {
     uint32_t count() const { return bpd ? uint32_t(raw.size() / bpd) : 0; }
 };
 
-inline uint32_t fnv1a32(const std::string &s)
-{
-    return ::runtime::fnv32(s);
-}
+inline uint32_t fnv1a32(const std::string &s) { return ::runtime::fnv32(s); }
 
 inline uint32_t align_of(const std::string &t)
 {
@@ -133,7 +130,8 @@ public:
                 for (auto &it : node.items)
                     order.push_back(&it);
                 if (node.version == 1)
-                    std::stable_sort(order.begin(), order.end(), [](auto *x, auto *y) { return fnv1a32(x->first.value) < fnv1a32(y->first.value); });
+                    std::stable_sort(order.begin(), order.end(),
+                                     [](auto *x, auto *y) { return fnv1a32(x->first.value) < fnv1a32(y->first.value); });
                 for (size_t i = 0; i < order.size(); i++) {
                     put32(table + es * i, intern(order[i]->first));
                     if (node.version == 1)

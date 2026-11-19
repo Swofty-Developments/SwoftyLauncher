@@ -52,8 +52,8 @@ struct Xform {
 
     Xform then(const Xform &m) const
     {
-        return {a * m.a + c * m.b, b * m.a + d * m.b, a * m.c + c * m.d, b * m.c + d * m.d, a * m.e + c * m.f + e,
-                b * m.e + d * m.f + f};
+        return {a * m.a + c * m.b, b * m.a + d * m.b,     a * m.c + c * m.d,
+                b * m.c + d * m.d, a * m.e + c * m.f + e, b * m.e + d * m.f + f};
     }
 };
 
@@ -157,10 +157,7 @@ inline void begin(Frame &f, float width, float height)
     reset_state(f);
 }
 
-inline bool rgba_visible(uint32_t rgba)
-{
-    return (rgba & 0xff) != 0;
-}
+inline bool rgba_visible(uint32_t rgba) { return (rgba & 0xff) != 0; }
 
 inline uint32_t pack(uint32_t rrggbbaa, float opacity)
 {
@@ -170,10 +167,7 @@ inline uint32_t pack(uint32_t rrggbbaa, float opacity)
     return r | (g << 8) | (b << 16) | (a << 24);
 }
 
-inline uint32_t clear_alpha(uint32_t packed)
-{
-    return packed & 0x00ffffffu;
-}
+inline uint32_t clear_alpha(uint32_t packed) { return packed & 0x00ffffffu; }
 
 inline uint32_t scale_alpha(uint32_t packed, float k)
 {
@@ -181,10 +175,7 @@ inline uint32_t scale_alpha(uint32_t packed, float k)
     return clear_alpha(packed) | a << 24;
 }
 
-inline bool clipped_out(const Frame &f)
-{
-    return f.clip.x1 <= f.clip.x0 || f.clip.y1 <= f.clip.y0 || f.opacity <= 0;
-}
+inline bool clipped_out(const Frame &f) { return f.clip.x1 <= f.clip.x0 || f.clip.y1 <= f.clip.y0 || f.opacity <= 0; }
 
 inline bool reserve(Frame &f, size_t n, int tex)
 {

@@ -68,15 +68,30 @@ enum Slot : int {
 
 inline const char *slot_name(int i)
 {
-    static const char *const first[] = {
-        "FileWrite",          "FileRead",           "FileWriteAsync",
-        "FileReadAsync",      "FileReadAsyncComplete", "FileForget",
-        "FileDelete",         "FileShare",          "SetSyncPlatforms",
-        "FileWriteStreamOpen", "FileWriteStreamWriteChunk", "FileWriteStreamClose",
-        "FileWriteStreamCancel", "FileExists",      "FilePersisted",
-        "GetFileSize",        "GetFileTimestamp",   "GetSyncPlatforms",
-        "GetFileCount",       "GetFileNameAndSize", "GetQuota",
-        "IsCloudEnabledForAccount", "IsCloudEnabledForApp", "SetCloudEnabledForApp"};
+    static const char *const first[] = {"FileWrite",
+                                        "FileRead",
+                                        "FileWriteAsync",
+                                        "FileReadAsync",
+                                        "FileReadAsyncComplete",
+                                        "FileForget",
+                                        "FileDelete",
+                                        "FileShare",
+                                        "SetSyncPlatforms",
+                                        "FileWriteStreamOpen",
+                                        "FileWriteStreamWriteChunk",
+                                        "FileWriteStreamClose",
+                                        "FileWriteStreamCancel",
+                                        "FileExists",
+                                        "FilePersisted",
+                                        "GetFileSize",
+                                        "GetFileTimestamp",
+                                        "GetSyncPlatforms",
+                                        "GetFileCount",
+                                        "GetFileNameAndSize",
+                                        "GetQuota",
+                                        "IsCloudEnabledForAccount",
+                                        "IsCloudEnabledForApp",
+                                        "SetCloudEnabledForApp"};
     if (i >= 0 && i < int(sizeof first / sizeof *first))
         return first[i];
     switch (i) {
@@ -145,8 +160,7 @@ inline bool simple_name(std::string_view n)
     if (n.empty() || n.size() > 64 || n == "." || n == "..")
         return false;
     return std::all_of(n.begin(), n.end(), [](char c) {
-        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '_' ||
-               c == '.';
+        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '.';
     });
 }
 
@@ -349,12 +363,11 @@ inline bool valid_name(std::string_view n)
     if (n.size() > strlen(TMP_SUFFIX) && n.substr(n.size() - strlen(TMP_SUFFIX)) == TMP_SUFFIX)
         return false;
     for (char c : n)
-        if (static_cast<unsigned char>(c) < 0x20 || c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' ||
-            c == '"' || c == '<' || c == '>' || c == '|')
+        if (static_cast<unsigned char>(c) < 0x20 || c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '"' ||
+            c == '<' || c == '>' || c == '|')
             return false;
     return n.find("..") == std::string_view::npos;
 }
-
 
 // The EA copy's save device (vtable bound as vt_Ne_SaveSystem2Win) has no Steam helper: it opens <title dir>\\<save>\\<file> in place.
 // Its title dir is the wide string at save system+0xc0 (device+0x18 = save system+0x50, so config+0x70), an
@@ -607,8 +620,8 @@ public:
         auto t = std::filesystem::last_write_time(path(name), ec);
         if (ec)
             return 0;
-        auto sys = std::chrono::time_point_cast<std::chrono::seconds>(
-            t - std::filesystem::file_time_type::clock::now() + std::chrono::system_clock::now());
+        auto sys = std::chrono::time_point_cast<std::chrono::seconds>(t - std::filesystem::file_time_type::clock::now() +
+                                                                      std::chrono::system_clock::now());
         return int64_t(sys.time_since_epoch().count());
     }
 

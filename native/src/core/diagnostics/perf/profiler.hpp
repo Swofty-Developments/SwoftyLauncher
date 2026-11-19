@@ -158,10 +158,7 @@ struct Profiler {
         return r > 0 ? double(ticks) / r : 0;
     }
 
-    double seconds_now()
-    {
-        return ms_of(tsc() - tsc0) / 1000.0;
-    }
+    double seconds_now() { return ms_of(tsc() - tsc0) / 1000.0; }
 
     template <class F> void each_local(F fn)
     {

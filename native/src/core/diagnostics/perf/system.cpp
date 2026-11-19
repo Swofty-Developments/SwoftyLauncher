@@ -22,7 +22,6 @@ namespace perf::sys {
 
 namespace {
 
-
 bool under_wine()
 {
     HMODULE nt = GetModuleHandleW(L"ntdll.dll");
@@ -148,10 +147,7 @@ std::mutex chain_lock;
 ChainSeen chain_seen;
 std::string display_now, display_logged;
 
-bool same(const LUID &a, const LUID &b)
-{
-    return a.LowPart == b.LowPart && a.HighPart == b.HighPart;
-}
+bool same(const LUID &a, const LUID &b) { return a.LowPart == b.LowPart && a.HighPart == b.HighPart; }
 
 Gpu *game_gpu()
 {
@@ -408,10 +404,7 @@ std::unordered_map<DWORD, Seen> seen;
 bool primed;
 std::vector<std::string> modules_seen;
 
-uint64_t ft(FILETIME f)
-{
-    return (uint64_t(f.dwHighDateTime) << 32) | f.dwLowDateTime;
-}
+uint64_t ft(FILETIME f) { return (uint64_t(f.dwHighDateTime) << 32) | f.dwLowDateTime; }
 
 void scan(double secs, Minute &m)
 {
@@ -430,8 +423,7 @@ void scan(double secs, Minute &m)
         if (pid == self || pid == 0)
             continue;
         std::string name = narrow(pe.szExeFile, 64);
-        if (pace::known_tool(name) &&
-            std::find(m.tools.begin(), m.tools.end(), pace::lower(name)) == m.tools.end())
+        if (pace::known_tool(name) && std::find(m.tools.begin(), m.tools.end(), pace::lower(name)) == m.tools.end())
             m.tools.push_back(pace::lower(name));
         HANDLE h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
         if (!h)

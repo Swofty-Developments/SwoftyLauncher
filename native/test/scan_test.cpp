@@ -237,7 +237,8 @@ static void cache_tests()
                scancache::tokens("123").empty(),
            "cache: bad tokens, all wildcards or an empty pattern are refused");
     uint8_t bytes[] = {0x48, 0x8B, 0x01, 0x05};
-    expect(scancache::matches(bytes, scancache::tokens("48 8B ?? 05")) && !scancache::matches(bytes, scancache::tokens("48 8B ?? 06")),
+    expect(scancache::matches(bytes, scancache::tokens("48 8B ?? 05")) &&
+               !scancache::matches(bytes, scancache::tokens("48 8B ?? 06")),
            "cache: the pattern is checked byte for byte, wildcards skipped");
 
     Cache c;
@@ -313,10 +314,7 @@ struct Image {
     }
 };
 
-static double now()
-{
-    return std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count();
-}
+static double now() { return std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count(); }
 
 static int memchr_scan(const uint8_t *lo, const uint8_t *hi, const std::vector<int> &pat, uintptr_t *first)
 {
@@ -396,7 +394,8 @@ static void exe_tests(const char *exe, const char *bindings)
         agree += h1 == h2 && (h1 != 1 || f1 == f2);
         unique += h2 == 1 && f2 - uintptr_t(im.img.data()) == uintptr_t(r.match);
     }
-    expect(agree == int(rows.size()), "exe: the SSE2 scan and the memchr scan agree on all " + std::to_string(rows.size()) + " patterns");
+    expect(agree == int(rows.size()),
+           "exe: the SSE2 scan and the memchr scan agree on all " + std::to_string(rows.size()) + " patterns");
     expect(unique == int(rows.size()), "exe: every pattern has exactly one hit, at its KB address");
     printf("      timing over %zu bindings: memchr scan %.0f ms, SSE2 scan %.0f ms, KB address check %.3f ms\n", rows.size(),
            1000 * ta, 1000 * tb, 1000 * kb);

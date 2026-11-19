@@ -22,8 +22,8 @@ void keep(const CONTEXT *ctx, int frame, Kept *kept)
     k.r15 = ctx->R15;
 }
 
-int frames(CONTEXT *ctx, uintptr_t lo, uintptr_t hi, int max, Lookup lookup, Readable readable, uint64_t *rip,
-           uint64_t *rsp, Kept *kept)
+int frames(CONTEXT *ctx, uintptr_t lo, uintptr_t hi, int max, Lookup lookup, Readable readable, uint64_t *rip, uint64_t *rsp,
+           Kept *kept)
 {
     int n = 0;
     for (int i = 0; i < max && ctx->Rip; i++) {
@@ -53,8 +53,8 @@ int frames(CONTEXT *ctx, uintptr_t lo, uintptr_t hi, int max, Lookup lookup, Rea
 
 }
 
-int walk(CONTEXT *ctx, uintptr_t lo, uintptr_t hi, int max, Lookup lookup, Readable readable, uint64_t *rip,
-         uint64_t *rsp, bool *faulted, Kept *kept)
+int walk(CONTEXT *ctx, uintptr_t lo, uintptr_t hi, int max, Lookup lookup, Readable readable, uint64_t *rip, uint64_t *rsp,
+         bool *faulted, Kept *kept)
 {
     *faulted = false;
     if (kept)

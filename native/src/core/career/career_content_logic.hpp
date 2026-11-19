@@ -56,15 +56,9 @@ static_assert(djb2("buttons") == BUTTONS && djb2(ADDON_BUTTONS) == ADDON_BUTTONS
 // The career a content select belongs to, from the pick route that opened it (career_dlc_select_my_team
 // or career_dlc_select_driver, career_start.hpp); Driver Career before any pick. The stock tiles carry
 // no route (+0x178 is unset on both screens).
-inline uint32_t career_of(uint32_t picked)
-{
-    return picked == SWOFTY_CAREER_MY_TEAM ? CAREER_MY_TEAM : CAREER_DRIVER;
-}
+inline uint32_t career_of(uint32_t picked) { return picked == SWOFTY_CAREER_MY_TEAM ? CAREER_MY_TEAM : CAREER_DRIVER; }
 
-inline const char *career_name(uint32_t career)
-{
-    return career == CAREER_MY_TEAM ? "My Team" : "Driver Career";
-}
+inline const char *career_name(uint32_t career) { return career == CAREER_MY_TEAM ? "My Team" : "Driver Career"; }
 
 // The stock command an Addons row command stands for, or 0 for any other command.
 inline uint32_t stock_command(uint32_t hash)
@@ -79,10 +73,7 @@ constexpr const char *ITEM_ID_2025 = "career_default_content";
 constexpr const char *ITEM_ID_2026 = "career_dlc_content";
 constexpr size_t SELECT_SCAN_TILES = 16;
 
-inline bool career_tile_id(const char *id)
-{
-    return id && (!std::strcmp(id, ITEM_ID_2025) || !std::strcmp(id, ITEM_ID_2026));
-}
+inline bool career_tile_id(const char *id) { return id && (!std::strcmp(id, ITEM_ID_2025) || !std::strcmp(id, ITEM_ID_2026)); }
 
 inline bool content_select(uintptr_t owner_vtable, uintptr_t select_vtable, const char *const *ids, size_t n)
 {
@@ -177,10 +168,7 @@ inline bool token(const std::string &s, size_t max, bool upper_ok)
     return true;
 }
 
-inline bool stock_group(const std::string &g)
-{
-    return g == "f1_career_2025" || g == "f1_career_2026";
-}
+inline bool stock_group(const std::string &g) { return g == "f1_career_2025" || g == "f1_career_2026"; }
 
 // Why a descriptor is refused, or empty when it is fine. taken(field, value) says whether an
 // already registered content uses that id or data group.
@@ -385,10 +373,7 @@ struct Retry {
     uint32_t tries = 0;
     std::string why;
 
-    bool due(uint64_t now) const
-    {
-        return now >= next;
-    }
+    bool due(uint64_t now) const { return now >= next; }
 
     bool failed(uint64_t now, const std::string &reason)
     {

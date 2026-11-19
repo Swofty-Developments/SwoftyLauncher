@@ -49,10 +49,7 @@ struct Busy {
     uint64_t calls = 0;
 };
 
-inline uint64_t delta(uint64_t now, uint64_t was)
-{
-    return now > was ? now - was : 0;
-}
+inline uint64_t delta(uint64_t now, uint64_t was) { return now > was ? now - was : 0; }
 
 inline std::string grouped(uint64_t n)
 {
@@ -93,17 +90,13 @@ inline std::string rva_label(const std::string &module, uint64_t rva)
     return module + b;
 }
 
-inline double cores(uint64_t filetime_100ns, double secs)
-{
-    return secs > 0 ? double(filetime_100ns) / 1e7 / secs : 0;
-}
+inline double cores(uint64_t filetime_100ns, double secs) { return secs > 0 ? double(filetime_100ns) / 1e7 / secs : 0; }
 
 inline std::vector<Count> ranked(std::vector<Count> v, size_t n)
 {
     std::erase_if(v, [](const Count &c) { return !c.calls; });
-    std::stable_sort(v.begin(), v.end(), [](const Count &a, const Count &b) {
-        return a.ms != b.ms ? a.ms > b.ms : a.calls > b.calls;
-    });
+    std::stable_sort(v.begin(), v.end(),
+                     [](const Count &a, const Count &b) { return a.ms != b.ms ? a.ms > b.ms : a.calls > b.calls; });
     if (v.size() > n)
         v.resize(n);
     return v;
@@ -119,8 +112,8 @@ inline std::string counts(const std::vector<Count> &v)
 
 inline std::string vq_line(const VqMinute &m)
 {
-    std::string out = "[perf] last " + fmt("%.0f", m.secs) + " s: VirtualQuery from swofty " + grouped(m.calls) +
-                      " calls " + fmt("%.1f ms", m.ms);
+    std::string out = "[perf] last " + fmt("%.0f", m.secs) + " s: VirtualQuery from swofty " + grouped(m.calls) + " calls " +
+                      fmt("%.1f ms", m.ms);
     if (m.calls)
         out += ", worst " + fmt("%.2f ms", m.worst_ms);
     out += " (game threads " + grouped(m.game_calls) + " calls " + fmt("%.1f ms", m.game_ms) + ")";
@@ -138,10 +131,10 @@ inline std::string vq_line(const VqMinute &m)
 
 inline std::string cpu_line(const CpuMinute &c)
 {
-    std::string out = "[perf] last " + fmt("%.0f", c.secs) + " s: process CPU user " + fmt("%.2f", c.user) +
-                      " kernel " + fmt("%.2f", c.kernel) + " cores; swofty threads " +
-                      fmt("%.3f", c.ours_user + c.ours_kernel) + " cores (user " + fmt("%.3f", c.ours_user) +
-                      " kernel " + fmt("%.3f", c.ours_kernel) + ") in " + std::to_string(c.threads) + " thread(s)";
+    std::string out = "[perf] last " + fmt("%.0f", c.secs) + " s: process CPU user " + fmt("%.2f", c.user) + " kernel " +
+                      fmt("%.2f", c.kernel) + " cores; swofty threads " + fmt("%.3f", c.ours_user + c.ours_kernel) +
+                      " cores (user " + fmt("%.3f", c.ours_user) + " kernel " + fmt("%.3f", c.ours_kernel) + ") in " +
+                      std::to_string(c.threads) + " thread(s)";
     std::vector<ThreadCpu> top = c.top;
     std::stable_sort(top.begin(), top.end(), [](const ThreadCpu &a, const ThreadCpu &b) { return a.cores > b.cores; });
     std::string list;
@@ -168,10 +161,7 @@ struct MemoryMinute {
     std::vector<GpuMinute> gpus;
 };
 
-inline std::string mib(uint64_t bytes)
-{
-    return std::to_string(bytes >> 20);
-}
+inline std::string mib(uint64_t bytes) { return std::to_string(bytes >> 20); }
 
 inline std::string memory_line(const MemoryMinute &m)
 {
@@ -198,14 +188,15 @@ inline std::string memory_line(const MemoryMinute &m)
     return out;
 }
 
-inline std::string gpu_boot_line(unsigned index, const std::string &name, uint32_t vendor, uint32_t device, const std::string &driver,
-                                 uint64_t dedicated_video, uint64_t dedicated_system, uint64_t shared_system, bool software)
+inline std::string gpu_boot_line(unsigned index, const std::string &name, uint32_t vendor, uint32_t device,
+                                 const std::string &driver, uint64_t dedicated_video, uint64_t dedicated_system,
+                                 uint64_t shared_system, bool software)
 {
     char b[96];
     std::snprintf(b, sizeof b, "vendor 0x%04x device 0x%04x", vendor, device);
-    return "[system] gpu " + std::to_string(index) + ": " + name + " (" + b + "), driver " + (driver.empty() ? "unknown" : driver) +
-           ", dedicated VRAM " + mib(dedicated_video) + " MiB, dedicated system " + mib(dedicated_system) + " MiB, shared system " +
-           mib(shared_system) + " MiB" + (software ? ", software adapter" : "");
+    return "[system] gpu " + std::to_string(index) + ": " + name + " (" + b + "), driver " +
+           (driver.empty() ? "unknown" : driver) + ", dedicated VRAM " + mib(dedicated_video) + " MiB, dedicated system " +
+           mib(dedicated_system) + " MiB, shared system " + mib(shared_system) + " MiB" + (software ? ", software adapter" : "");
 }
 
 inline std::string ram_boot_line(uint64_t ram_total, uint64_t commit_limit)
@@ -257,10 +248,7 @@ inline std::string vq_modules_line(const std::string &added)
 }
 
 // The n-th slow call of a probe (from 0) is logged when it is one of the first five or every 100th after.
-inline bool slow_call_logged(uint32_t n)
-{
-    return n < 5 || n % 100 == 0;
-}
+inline bool slow_call_logged(uint32_t n) { return n < 5 || n % 100 == 0; }
 
 inline std::string slow_call_line(const std::string &owner, const std::string &what, double ms, bool background,
                                   unsigned long thread, const std::string &during, uint32_t n)
@@ -271,10 +259,7 @@ inline std::string slow_call_line(const std::string &owner, const std::string &w
 }
 
 // A hitch is logged (outside SWOFTY_PERF=1) when swofty took at least 1 ms or a tenth of the frame.
-inline bool heavy_hitch(double ms, double swofty_ms)
-{
-    return swofty_ms >= 1.0 || swofty_ms >= ms * 0.1;
-}
+inline bool heavy_hitch(double ms, double swofty_ms) { return swofty_ms >= 1.0 || swofty_ms >= ms * 0.1; }
 
 inline std::string hitch_line(double ms, const std::string &during, double swofty_ms, const std::string &top)
 {
@@ -303,9 +288,6 @@ inline std::string frame_line(const FrameMinute &m)
                        m.worst.empty() ? "" : ")");
 }
 
-inline size_t site_slot(uintptr_t at, unsigned bits)
-{
-    return size_t((uint64_t(at) * 0x9E3779B97F4A7C15ull) >> (64 - bits));
-}
+inline size_t site_slot(uintptr_t at, unsigned bits) { return size_t((uint64_t(at) * 0x9E3779B97F4A7C15ull) >> (64 - bits)); }
 
 }

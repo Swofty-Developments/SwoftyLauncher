@@ -36,21 +36,40 @@ const Target T_PARSE{"Asset_Parse_Manifest",
 const Target T_GLOBAL{"g_Asset_Manifest",
                       "48 C7 41 08 04 01 00 00 48 89 79 10 C6 41 18 00 48 8D 05 ?? ?? ?? ?? 48 89 01 4C 8B 35 ?? ?? ?? ?? 49 8B "
                       "86 08 02 00 00",
-                      0x628f690, Target::riprel, 0x1a, 0x1d, 7};
-const Target T_REHASH_NAMES{"Asset_Rehash_NameMap", "4C 89 C2 E8 ?? ?? ?? ?? 48 83 BC 24 80 00 00 00 00 0F 84", 0x3a77be0,
-                            Target::rel32, 3, 4, 5};
-const Target T_REHASH_GROUPS{"Asset_Rehash_GroupMap", "4C 89 C2 E8 ?? ?? ?? ?? 48 BB 7F 7F 7F 7F 7F 7F 7F 7F 48 83 7C 24 40 00",
-                             0x3a781b0, Target::rel32, 3, 4, 5};
-const Target T_ALIAS{"g_Asset_AliasNames", "56 57 55 53 48 83 EC 28 48 89 C8 48 8B 15 ?? ?? ?? ?? 48 8B 4A 18 48 0F AF C8",
-                     0x628f688, Target::riprel, 0xb, 0xe, 7};
+                      0x628f690,
+                      Target::riprel,
+                      0x1a,
+                      0x1d,
+                      7};
+const Target T_REHASH_NAMES{
+    "Asset_Rehash_NameMap", "4C 89 C2 E8 ?? ?? ?? ?? 48 83 BC 24 80 00 00 00 00 0F 84", 0x3a77be0, Target::rel32, 3, 4, 5};
+const Target T_REHASH_GROUPS{"Asset_Rehash_GroupMap",
+                             "4C 89 C2 E8 ?? ?? ?? ?? 48 BB 7F 7F 7F 7F 7F 7F 7F 7F 48 83 7C 24 40 00",
+                             0x3a781b0,
+                             Target::rel32,
+                             3,
+                             4,
+                             5};
+const Target T_ALIAS{"g_Asset_AliasNames",
+                     "56 57 55 53 48 83 EC 28 48 89 C8 48 8B 15 ?? ?? ?? ?? 48 8B 4A 18 48 0F AF C8",
+                     0x628f688,
+                     Target::riprel,
+                     0xb,
+                     0xe,
+                     7};
 const Target T_EXPAND{"Asset_Expand_GroupErps",
                       "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 4D 89 C5 49 89 D4", 0x3a5c8a0,
                       Target::addr};
 const Target T_RELEASE{"Asset_Release_GroupErps",
                        "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 C6 48 89 D3 48 89 CF 4C 8B 25", 0x3a5ed30,
                        Target::addr};
-const Target T_REHASH_DEPS{"Asset_Rehash_DepMap", "4C 89 C2 E8 ?? ?? ?? ?? 48 83 7C 24 40 00 0F 84 ?? ?? ?? ?? 45 31 F6",
-                           0x3a78780, Target::rel32, 3, 4, 5};
+const Target T_REHASH_DEPS{"Asset_Rehash_DepMap",
+                           "4C 89 C2 E8 ?? ?? ?? ?? 48 83 7C 24 40 00 0F 84 ?? ?? ?? ?? 45 31 F6",
+                           0x3a78780,
+                           Target::rel32,
+                           3,
+                           4,
+                           5};
 
 constexpr size_t M_GROUPS = 0x10, M_ERPS = 0x58, M_DEPMAP = 0x78, M_DEPS = 0xc0, M_SEG_ALLOC = 0x1b8, M_SEGS = 0x1c0,
                  M_TOKENS = 0x1d0, M_NAMES = 0x1f8, M_SIZE = 0x240;
@@ -113,10 +132,7 @@ std::string norm(std::string s)
     return s;
 }
 
-bool starts(const std::string &s, const char *p)
-{
-    return s.rfind(p, 0) == 0;
-}
+bool starts(const std::string &s, const char *p) { return s.rfind(p, 0) == 0; }
 
 bool ends(const std::string &s, const char *p)
 {
@@ -124,10 +140,7 @@ bool ends(const std::string &s, const char *p)
     return s.size() >= n && s.compare(s.size() - n, n, p) == 0;
 }
 
-bool readable(const void *p, size_t n)
-{
-    return p && runtime::pages::readable_in_region(uintptr_t(p), n);
-}
+bool readable(const void *p, size_t n) { return p && runtime::pages::readable_in_region(uintptr_t(p), n); }
 
 bool spans(const void *p, size_t n)
 {
@@ -196,8 +209,8 @@ uintptr_t find(const Target &t)
     if (t.kind == Target::rel32 || t.kind == Target::riprel)
         out = at + t.insn + t.len + *reinterpret_cast<const int32_t *>(at + t.anchor);
     if (out - base != t.rva)
-        swofty::log("[assets] %s: resolved to base+0x%llx, KB build has base+0x%llx", t.what,
-                    (unsigned long long)(out - base), (unsigned long long)t.rva);
+        swofty::log("[assets] %s: resolved to base+0x%llx, KB build has base+0x%llx", t.what, (unsigned long long)(out - base),
+                    (unsigned long long)t.rva);
     return out;
 }
 
@@ -329,8 +342,7 @@ struct Manifest {
             return why = "name map looks wrong", false;
         if (!readable(m + M_DEPMAP, 0x48) || (deps_map.mask() && !deps_map.sane()))
             return why = "dependency map looks wrong", false;
-        if (!array<uint64_t>(M_ERPS) || !array_count(M_ERPS) || !array<uint16_t>(M_TOKENS) || !array_count(M_TOKENS) ||
-            !segs())
+        if (!array<uint64_t>(M_ERPS) || !array_count(M_ERPS) || !array<uint16_t>(M_TOKENS) || !array_count(M_TOKENS) || !segs())
             return why = "ERP list, token list or word table is empty", false;
         return true;
     }
@@ -533,10 +545,10 @@ void probe_sizes(const Manifest &mf, Probe &p)
     swofty::log("[assets] probe: %zu on-disk ERP(s) checked (%s): the name map's high 32 bits %s; new ERP names get bits "
                 "24-31 = 0x%02x (only bits 0-23 are the token index)",
                 checked, checked ? example.c_str() : "none found",
-                !checked              ? "are unknown, left 0"
-                : p.size_in_high      ? "are the file size, new names carry their size"
-                : zero == checked     ? "are 0 for loose ERPs, new names leave them 0"
-                                      : "match neither the size nor 0, new names leave them 0",
+                !checked          ? "are unknown, left 0"
+                : p.size_in_high  ? "are the file size, new names carry their size"
+                : zero == checked ? "are 0 for loose ERPs, new names leave them 0"
+                                  : "match neither the size nor 0, new names leave them 0",
                 p.erp_name_bits >> 24);
 }
 
@@ -960,8 +972,7 @@ void apply(uint8_t *m, const char *when, const runtime::Overlay *ov)
         return;
     }
     Words words(mf);
-    swofty::log("[assets] word table: %zu word(s), used up to 0x%zx of 0x%x", words.dict.size(), words.extent,
-                SEG_LIMIT * 8);
+    swofty::log("[assets] word table: %zu word(s), used up to 0x%zx of 0x%x", words.dict.size(), words.extent, SEG_LIMIT * 8);
 
     std::vector<Plan> plans;
     std::unordered_set<uint64_t> seen, planned_erps;
@@ -1029,7 +1040,8 @@ void apply(uint8_t *m, const char *when, const runtime::Overlay *ov)
                 }
                 ep.named = true;
             } else if (alias_has(ep.hash)) {
-                fail("ERP hash " + hex(ep.hash) + " already has a name in g_Asset_AliasNames (the engine's fallback when "
+                fail("ERP hash " + hex(ep.hash) +
+                     " already has a name in g_Asset_AliasNames (the engine's fallback when "
                      "the name map misses); not overriding it");
                 break;
             }
@@ -1090,8 +1102,7 @@ void apply(uint8_t *m, const char *when, const runtime::Overlay *ov)
                 if (!words.encode(pr.group_prefix + e.group, local, w)) {
                     local.resize(keep);
                     local_starts.pop_back();
-                    swofty::log("[assets] %s: no display name (%s); the log will show its hash", e.group.c_str(),
-                                w.c_str());
+                    swofty::log("[assets] %s: no display name (%s); the log will show its hash", e.group.c_str(), w.c_str());
                 }
                 tokens.insert(tokens.end(), local.begin(), local.end());
                 token_starts.insert(token_starts.end(), local_starts.begin(), local_starts.end());
@@ -1153,8 +1164,8 @@ void apply(uint8_t *m, const char *when, const runtime::Overlay *ov)
             if (ok && starts_of.count(p.hash) && !mf.names.find(p.hash)) {
                 std::string gw;
                 if (!mf.names.insert(p.hash, uint64_t(p.group_name_bits | starts_of[p.hash]), gw))
-                    swofty::log("[assets] %s: group name not added (%s); the log will show its hash instead",
-                                p.e->group.c_str(), gw.c_str());
+                    swofty::log("[assets] %s: group name not added (%s); the log will show its hash instead", p.e->group.c_str(),
+                                gw.c_str());
             }
             if (ok && !p.deps.empty()) {
                 ok = mf.deps_map.insert(p.hash, (uint64_t(p.dep_flags | p.deps.size()) << 32) | my_deps, w);
@@ -1178,9 +1189,9 @@ void apply(uint8_t *m, const char *when, const runtime::Overlay *ov)
                         (ep.named ? ", already named" : "") + ")";
             swofty::log("[assets] registered %s -> %s; group 0x%016llx, erp 0x%016llx, flags 0x%08llx from %s, %zu "
                         "dependenc(ies), from %s",
-                        p.e->group.c_str(), list.c_str(), (unsigned long long)p.hash,
-                        (unsigned long long)p.erps.front().hash, (unsigned long long)p.flags,
-                        p.tmpl.empty() ? "no template" : p.tmpl.c_str(), p.deps.size(), p.e->source.c_str());
+                        p.e->group.c_str(), list.c_str(), (unsigned long long)p.hash, (unsigned long long)p.erps.front().hash,
+                        (unsigned long long)p.flags, p.tmpl.empty() ? "no template" : p.tmpl.c_str(), p.deps.size(),
+                        p.e->source.c_str());
             Slot *chk = mf.groups.find(p.hash);
             std::string back = mf.name_of(p.erps.front().hash);
             if (!chk || back != p.erps.front().path)
@@ -1316,8 +1327,8 @@ void setup()
     if (!groups && !resources)
         return;
     swofty::log("[assets] %s: %zu declared group(s), %zu auto prefix(es); game root %s",
-                groups ? config_source.c_str() : "no asset_groups (resources only)",
-                declared.size(), auto_prefixes.size(), narrow(game_root).c_str());
+                groups ? config_source.c_str() : "no asset_groups (resources only)", declared.size(), auto_prefixes.size(),
+                narrow(game_root).c_str());
     for (auto &e : declared)
         swofty::log("[assets]   %s -> %s%s", e.group.c_str(), e.erps.empty() ? "?" : e.erps.front().c_str(),
                     e.erps.size() > 1 ? " (+more)" : "");
@@ -1335,7 +1346,8 @@ void setup()
         uintptr_t ex = find(T_EXPAND), rl = find(T_RELEASE);
         if (ex && rl)
             if (auto ih = safetyhook::InlineHook::create(reinterpret_cast<void *>(ex), reinterpret_cast<void *>(&expand_hook)))
-                if (auto rh = safetyhook::InlineHook::create(reinterpret_cast<void *>(rl), reinterpret_cast<void *>(&release_hook))) {
+                if (auto rh =
+                        safetyhook::InlineHook::create(reinterpret_cast<void *>(rl), reinterpret_cast<void *>(&release_hook))) {
                     h_expand = std::move(*ih);
                     h_release = std::move(*rh);
                 }
@@ -1367,7 +1379,4 @@ void setup()
 
 }
 
-void runtime::assets_setup()
-{
-    setup();
-}
+void runtime::assets_setup() { setup(); }

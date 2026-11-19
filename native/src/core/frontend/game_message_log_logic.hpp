@@ -50,10 +50,7 @@ struct Seen {
         return true;
     }
 
-    bool last() const
-    {
-        return ids.size() == MAX_IDS;
-    }
+    bool last() const { return ids.size() == MAX_IDS; }
 };
 
 }

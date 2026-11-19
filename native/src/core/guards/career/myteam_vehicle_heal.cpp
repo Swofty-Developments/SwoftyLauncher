@@ -66,20 +66,11 @@ mh::Ids healed;
 mh::Ids failed;
 
 struct Game {
-    bool u64(uint64_t a, uint64_t &out)
-    {
-        return mem::read(static_cast<uintptr_t>(a), out);
-    }
+    bool u64(uint64_t a, uint64_t &out) { return mem::read(static_cast<uintptr_t>(a), out); }
 
-    bool u32(uint64_t a, uint32_t &out)
-    {
-        return mem::read(static_cast<uintptr_t>(a), out);
-    }
+    bool u32(uint64_t a, uint32_t &out) { return mem::read(static_cast<uintptr_t>(a), out); }
 
-    bool text(uint64_t a, std::string &out)
-    {
-        return mem::c_string(static_cast<uintptr_t>(a), out, mh::LABEL_CHARS);
-    }
+    bool text(uint64_t a, std::string &out) { return mem::c_string(static_cast<uintptr_t>(a), out, mh::LABEL_CHARS); }
 };
 
 uint64_t rebuild(Game &game, uint64_t entrants, uint32_t handle, uint64_t first, uint64_t end, const char *when)
@@ -97,8 +88,8 @@ uint64_t rebuild(Game &game, uint64_t entrants, uint32_t handle, uint64_t first,
             swofty::log("[myteam] heal: the player's My Team car (custom vehicle %u) is missing from the save and no stock My "
                         "Team car is loaded to rebuild it from (%s; entrants %p: stock table %p with %zu slots, My Team table %p "
                         "with %zu slots); the career fails as before",
-                        (unsigned)id, when, reinterpret_cast<void *>(entrants), reinterpret_cast<void *>(t.stock),
-                        t.stock_slots, reinterpret_cast<void *>(t.custom), t.custom_slots);
+                        (unsigned)id, when, reinterpret_cast<void *>(entrants), reinterpret_cast<void *>(t.stock), t.stock_slots,
+                        reinterpret_cast<void *>(t.custom), t.custom_slots);
         }
         return 0;
     }
@@ -135,8 +126,7 @@ std::string heal_state()
     if (setup)
         return setup;
     if (!offered)
-        return std::string("never offered, the game code reads ") +
-               (runtime::code_ready() ? "decrypted now" : "encrypted still");
+        return std::string("never offered, the game code reads ") + (runtime::code_ready() ? "decrypted now" : "encrypted still");
     return runtime::core_mixins_active(MIXIN) ? "armed" : "armed for the career load only";
 }
 
@@ -188,10 +178,11 @@ private:
         if (!replace_at)
             return;
         swofty::log("[myteam] vehicle heal %s",
-                    runtime::core_mixins_active(MIXIN) ? "armed: a My Team car missing from the save is rebuilt from a stock My Team car "
-                                                "when its career loads or its session starts"
-                                              : "armed for the career load only: the session lookup did not install (see the "
-                                                "[core] lines)");
+                    runtime::core_mixins_active(MIXIN)
+                        ? "armed: a My Team car missing from the save is rebuilt from a stock My Team car "
+                          "when its career loads or its session starts"
+                        : "armed for the career load only: the session lookup did not install (see the "
+                          "[core] lines)");
     }
 };
 

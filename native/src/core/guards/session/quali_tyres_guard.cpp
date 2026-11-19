@@ -48,7 +48,7 @@ constexpr const char *ALLOWED = "Car_Tyre_IsCompoundAllowed";
 constexpr const char *CLASS_RULE = "Car_Tyre_CheckCompoundClassRule";
 constexpr const char *CLOSEST = "Sess_Tyres_ClosestAvailableCompound";
 constexpr const char *SESSION_TYPE = "g_Sess_TyreRulesSessionType";
-constexpr size_t SET_OPTION = 0x04;   // set record (0x6c bytes): u32 class option; +0x00 session tag, +0x09 flags
+constexpr size_t SET_OPTION = 0x04; // set record (0x6c bytes): u32 class option; +0x00 session tag, +0x09 flags
 constexpr int LOG_FIRST = 8;
 
 using SetCheck = uint64_t(const uint8_t *set);
@@ -63,10 +63,7 @@ std::atomic<bool> wanted{false};
 std::mutex line_mu;
 std::string last_line;
 
-uint32_t session_now()
-{
-    return g_session ? *g_session : 0;
-}
+uint32_t session_now() { return g_session ? *g_session : 0; }
 
 void log_refusal(const char *where, uint32_t option, uint32_t session)
 {
@@ -156,7 +153,8 @@ private:
             out.push_back({MIXIN_CLOSEST, {{CLOSEST, SWOFTY_MIXIN_WRAP, 100, (void *)&closest, (void **)&orig_closest}}});
         wanted = !out.empty();
         if (!wanted)
-            swofty::log("[tyres] qualifying tyre hooks off: this build resolves none of %s, %s, %s", ALLOWED, CLASS_RULE, CLOSEST);
+            swofty::log("[tyres] qualifying tyre hooks off: this build resolves none of %s, %s, %s", ALLOWED, CLASS_RULE,
+                        CLOSEST);
     }
 
     static const char *state(const char *set)

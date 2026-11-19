@@ -31,10 +31,7 @@ inline std::string device_hook_rival_in(const std::vector<std::string> &modules)
 
 // Whether the device hooks arm: a rival overlay in the process keeps them off unless SWOFTY_OVERLAY_FG /
 // "overlay_fg" forces them on (forced is -1 when unset).
-inline bool device_hooks_allowed(std::string_view rival, int forced)
-{
-    return rival.empty() || forced > 0;
-}
+inline bool device_hooks_allowed(std::string_view rival, int forced) { return rival.empty() || forced > 0; }
 
 // What asks for the present hook at setup. An overlay addon that is on, a frame capture and a direct start's
 // cover screen need it; the main menu panel and video card only decorate the home screen.
@@ -69,10 +66,7 @@ inline std::string present_layer_in(const std::vector<std::string> &modules)
     return {};
 }
 
-inline bool device_hooks_wanted_for(const std::vector<std::string> &modules)
-{
-    return !present_layer_in(modules).empty();
-}
+inline bool device_hooks_wanted_for(const std::vector<std::string> &modules) { return !present_layer_in(modules).empty(); }
 
 // NVIDIA's modules that present the game's frames on a swapchain the creation hooks can miss: the NVIDIA app's
 // present layer, DLSS Frame Generation and Streamline, in the order the log names them.

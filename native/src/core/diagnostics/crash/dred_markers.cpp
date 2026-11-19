@@ -11,7 +11,8 @@ namespace {
 
 std::string read_file(const std::wstring &path, size_t cap)
 {
-    HANDLE f = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    HANDLE f = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
+                           FILE_ATTRIBUTE_NORMAL, nullptr);
     if (f == INVALID_HANDLE_VALUE)
         return {};
     std::string s(cap, '\0');
@@ -69,10 +70,7 @@ bool take_marker(const wchar_t *name)
     return had;
 }
 
-std::wstring widen(const std::string &s)
-{
-    return std::wstring(s.begin(), s.end());
-}
+std::wstring widen(const std::string &s) { return std::wstring(s.begin(), s.end()); }
 
 std::string newest_in(const std::wstring &dir)
 {
@@ -118,9 +116,6 @@ bool prior_session_removed(const char **how)
     return true;
 }
 
-void write_flag()
-{
-    put_marker(L"dred.flag", "removed\n");
-}
+void write_flag() { put_marker(L"dred.flag", "removed\n"); }
 
 }

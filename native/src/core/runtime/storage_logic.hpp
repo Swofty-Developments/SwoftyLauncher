@@ -13,10 +13,7 @@ namespace runtime::storage_logic {
 constexpr const char *PROBE = ".swofty-write-test";
 constexpr const char *MARK = ".swofty-data-folder";
 
-inline bool reserved(std::string_view name)
-{
-    return name == PROBE || name == MARK;
-}
+inline bool reserved(std::string_view name) { return name == PROBE || name == MARK; }
 
 inline bool inside(const char *path, bool allow_root, std::string &rel)
 {

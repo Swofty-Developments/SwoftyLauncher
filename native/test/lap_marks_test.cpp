@@ -23,7 +23,8 @@ static void table_layout()
                offsetof(SwoftyLapHost, name_tick) == 8 + 38 * sizeof(void *),
            "the version 1 fields keep their offsets");
     expect(SWOFTY_LAP_HOST_V1_SIZE == 8 + 39 * sizeof(void *), "a version 1 table ends where mark begins");
-    expect(offsetof(SwoftyLapHost, mark) == SWOFTY_LAP_HOST_V1_SIZE && SWOFTY_LAP_HOST_V2_SIZE == SWOFTY_LAP_HOST_V1_SIZE + sizeof(void *),
+    expect(offsetof(SwoftyLapHost, mark) == SWOFTY_LAP_HOST_V1_SIZE &&
+               SWOFTY_LAP_HOST_V2_SIZE == SWOFTY_LAP_HOST_V1_SIZE + sizeof(void *),
            "mark is the one field version 2 adds");
     expect(offsetof(SwoftyLapHost, core_version) == SWOFTY_LAP_HOST_V2_SIZE &&
                sizeof(SwoftyLapHost) == SWOFTY_LAP_HOST_V2_SIZE + sizeof(void *),

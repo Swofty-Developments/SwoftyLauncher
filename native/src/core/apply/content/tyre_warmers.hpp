@@ -43,8 +43,8 @@ inline WarmersPick tyre_warmers_pick(const std::string &entrant_list,
         return p;
     }
     p.warmers = w.as_bool();
-    p.line = "box " + entrant_list + " (" + p.package + "): swofty_f1 races " +
-             (*p.warmers ? "with" : "without") + " tyre warmers (rules.tyre_warmers)";
+    p.line = "box " + entrant_list + " (" + p.package + "): swofty_f1 races " + (*p.warmers ? "with" : "without") +
+             " tyre warmers (rules.tyre_warmers)";
     return p;
 }
 

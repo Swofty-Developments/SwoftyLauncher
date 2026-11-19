@@ -59,8 +59,7 @@ DXGI_FORMAT depth_view(DXGI_FORMAT f)
     }
 }
 
-void transition(ID3D12GraphicsCommandList *list, ID3D12Resource *r, D3D12_RESOURCE_STATES from,
-                D3D12_RESOURCE_STATES to)
+void transition(ID3D12GraphicsCommandList *list, ID3D12Resource *r, D3D12_RESOURCE_STATES from, D3D12_RESOURCE_STATES to)
 {
     if (from == to || !r)
         return;
@@ -196,7 +195,9 @@ bool GpuContext::make_mip_pso()
     }
     release(code);
     if (FAILED(hr))
-        swofty::log("[postfx] the mip downsample pipeline could not be made (0x%08lx); mipmapped textures keep only their first level", hr);
+        swofty::log(
+            "[postfx] the mip downsample pipeline could not be made (0x%08lx); mipmapped textures keep only their first level",
+            hr);
     return SUCCEEDED(hr);
 }
 

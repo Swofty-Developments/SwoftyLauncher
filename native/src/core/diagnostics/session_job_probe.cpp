@@ -98,8 +98,8 @@ sj::Entry read_entry(const safetyhook::Context &c)
     if (!mem::read(c.rsp + OWNER_ARG, owner) || !mem::read(c.r9 + HOLDERS + uint64_t(e.wheel) * 8, e.holder))
         return e;
     bool state_read = e.holder && mem::read(uintptr_t(e.holder) + HOLDER_STATE, state);
-    bool flag_read = state && mem::read(uintptr_t(state) + STATE_FLAG_A, a) && a &&
-                     mem::read(uintptr_t(a) + STATE_FLAG_B, b) && b && mem::read(uintptr_t(b) + STATE_FLAG, flag);
+    bool flag_read = state && mem::read(uintptr_t(state) + STATE_FLAG_A, a) && a && mem::read(uintptr_t(a) + STATE_FLAG_B, b) &&
+                     b && mem::read(uintptr_t(b) + STATE_FLAG, flag);
     bool lists_read = e.holder && mem::read(uintptr_t(e.holder) + HOLDER_LISTS, e.lists);
     bool pending_read = state && mem::read(uintptr_t(state) + STATE_PENDING, pending);
     if (e.lists && mem::read(uintptr_t(e.lists) + LISTS_OUTER, outer) && outer)
@@ -187,8 +187,8 @@ void setup()
     swofty::log("[session-job] 0x1445acb00 entry probe hooked at 0x%llx (%s): while a session is entered (StateSession or "
                 "StateLoadSession Entering, for %llu s, cut to %llu s after StateSession updates) it logs the wheel tyre "
                 "instance list sizes once per value, at most %d per session, and warns on a negative or huge size",
-                (unsigned long long)at, FUNC, (unsigned long long)(sj::kArmMs / 1000),
-                (unsigned long long)(sj::kSettleMs / 1000), sj::kPerSession);
+                (unsigned long long)at, FUNC, (unsigned long long)(sj::kArmMs / 1000), (unsigned long long)(sj::kSettleMs / 1000),
+                sj::kPerSession);
 }
 
 }
@@ -205,7 +205,4 @@ void session_job_probe_flow(uint32_t to, const char *name)
 
 SWOFTY_CORE_RANK(session_job_probe)
 
-SWOFTY_ON_LOAD
-{
-    runtime::when_code_ready("session job probe", setup);
-}
+SWOFTY_ON_LOAD { runtime::when_code_ready("session job probe", setup); }

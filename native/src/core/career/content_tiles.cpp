@@ -42,7 +42,6 @@
 
 namespace career::content {
 
-
 namespace {
 
 using AddTile = void(TileList *, uint8_t);
@@ -79,10 +78,7 @@ void set_text(void *node, const char *name, const char *text)
     set_field(&s, nullptr);
 }
 
-uintptr_t model_populate(uint32_t model)
-{
-    return model == content::MODEL_2025 ? b.populate_2025 : b.populate_2026;
-}
+uintptr_t model_populate(uint32_t model) { return model == content::MODEL_2025 ? b.populate_2025 : b.populate_2026; }
 
 bool is_model(const HomeItem *item, uint32_t model)
 {
@@ -186,8 +182,9 @@ HomeItem *build_item(NeAllocator *alloc, HomeItem *model, Slot &s)
     if (!y25) {
         const char *ent = nestr(content::at<const NeStr *>(model, content::ITEM_ENTITLEMENT_NAME));
         std::memset(raw + content::ITEM_ENTITLEMENT, 0, 0x10);
-        set_field(raw + content::ITEM_ENTITLEMENT_NAME,
-                  !s.desc.entitlement.empty() ? s.desc.entitlement.c_str() : ent && *ent ? ent : "f1_2026");
+        set_field(raw + content::ITEM_ENTITLEMENT_NAME, !s.desc.entitlement.empty() ? s.desc.entitlement.c_str()
+                                                        : ent && *ent               ? ent
+                                                                                    : "f1_2026");
     }
     set_field(raw + content::ITEM_DATA_GROUP, s.desc.data_group.c_str());
     set_field(raw + content::ITEM_SUFFIX, s.desc.suffix.c_str());
@@ -218,8 +215,7 @@ void add_tile(TileList *list, Slot &s, uint8_t index, bool in_row)
     Tile *tile = after == before + 1 ? list->items_end[-1].tile : nullptr;
     auto *tile_alloc = tile ? content::at<NeAllocator *>(tile, content::TILE_ALLOCATOR) : nullptr;
     if (!tile || !tile->item || !tile_alloc) {
-        swofty::log("[career] content '%s': the tile adder gave %zu -> %zu items; no tile", s.desc.id.c_str(), before,
-                    after);
+        swofty::log("[career] content '%s': the tile adder gave %zu -> %zu items; no tile", s.desc.id.c_str(), before, after);
         return;
     }
     s.in_row = in_row;
@@ -228,8 +224,8 @@ void add_tile(TileList *list, Slot &s, uint8_t index, bool in_row)
     auto *alloc = content::at<NeAllocator *>(list, content::LIST_ALLOCATOR);
     HomeItem *item = alloc ? build_item(alloc, model, s) : nullptr;
     if (!item) {
-        swofty::log("[career] content '%s': could not build its content item; button_%u stays a Career tile",
-                    s.desc.id.c_str(), unsigned(index));
+        swofty::log("[career] content '%s': could not build its content item; button_%u stays a Career tile", s.desc.id.c_str(),
+                    unsigned(index));
         return;
     }
     HomeItem *old = tile->item;
@@ -238,19 +234,13 @@ void add_tile(TileList *list, Slot &s, uint8_t index, bool in_row)
     reinterpret_cast<void (*)(HomeItem *, int)>(reinterpret_cast<void *const *>(old->vtable)[0])(old, 0);
     reinterpret_cast<void (*)(NeAllocator *, void *)>(tile_alloc->vtable->free)(tile_alloc, old);
     if (s.tiles++ < LOG_FIRST)
-        swofty::log("[career] content '%s': tile added as button_%u (items %zu -> %zu)", s.desc.id.c_str(),
-                    unsigned(index), before, after);
+        swofty::log("[career] content '%s': tile added as button_%u (items %zu -> %zu)", s.desc.id.c_str(), unsigned(index),
+                    before, after);
 }
 
-void *registry()
-{
-    return *reinterpret_cast<void **>(b.vm_registry);
-}
+void *registry() { return *reinterpret_cast<void **>(b.vm_registry); }
 
-void *buttons_of(const TileList *list)
-{
-    return content::at<void *>(list, content::LIST_BUTTONS);
-}
+void *buttons_of(const TileList *list) { return content::at<void *>(list, content::LIST_BUTTONS); }
 
 void set_buttons(TileList *list, void *node)
 {
@@ -318,9 +308,8 @@ void site_entry(SwoftyContext *c)
     uintptr_t vt = 0;
     if (!content_select(list, vm, vt)) {
         if (other_lines.note())
-            swofty::log("[career] tile list of another screen (view model %p, vtable 0x%llx, %zu tile(s)) left as is",
-                        vm, (unsigned long long)vt,
-                        list->items_begin ? size_t(list->items_end - list->items_begin) : size_t(0));
+            swofty::log("[career] tile list of another screen (view model %p, vtable 0x%llx, %zu tile(s)) left as is", vm,
+                        (unsigned long long)vt, list->items_begin ? size_t(list->items_end - list->items_begin) : size_t(0));
         return;
     }
     resolve_all(true, true);
@@ -345,7 +334,7 @@ void site_entry(SwoftyContext *c)
     if (root && b.set_bool) {
         uint8_t visible = tiles > 0;
         reinterpret_cast<swofty::game::Vm_Set_Bool_t *>(b.set_bool)(registry(), root + 8, content::ADDON_BUTTONS_VISIBLE,
-                                                                     &visible, 1);
+                                                                    &visible, 1);
     }
     {
         std::lock_guard<std::mutex> g(row_lock);

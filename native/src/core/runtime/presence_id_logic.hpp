@@ -137,10 +137,7 @@ inline std::string base64(const std::vector<uint8_t> &b)
     return s;
 }
 
-inline int platform_of(uint8_t type)
-{
-    return type == 1 ? 1 : 0;
-}
+inline int platform_of(uint8_t type) { return type == 1 ? 1 : 0; }
 
 inline std::string hex(const std::vector<uint8_t> &b)
 {

@@ -26,7 +26,11 @@ const runtime::Sig S_BLOCK{"FeHome_F1WorldBlock",
                            "89 E2 E8 ?? ?? ?? ?? 45 89 E7 41 8D 57 01 4C 89 F1 E8 ?? ?? ?? ?? 41 8D 57 02 4C 89 F1 E8 "
                            "?? ?? ?? ?? 41 8D 57 03 4C 89 F1 E8 ?? ?? ?? ?? 41 8D 57 04 4C 89 F1 E8 ?? ?? ?? ?? 41 80 "
                            "C7 05 4C 89 F1 44 89 FA E8 ?? ?? ?? ?? E9",
-                           0x1742fee, runtime::Sig::addr, 0, 0, 0};
+                           0x1742fee,
+                           runtime::Sig::addr,
+                           0,
+                           0,
+                           0};
 
 Add_t target(const uint8_t *at, size_t off)
 {
@@ -55,8 +59,9 @@ void customisation_populate(HomeItem *item, void *node, uint32_t a7) { menu.tile
 Action *customisation_action(HomeItem *item, Action *out)
 {
     menu.customisation_armed = true;
-    swofty::log("[main-menu] customisation card pressed (item %p): route %s; the Customisation screen's Back returns to the main menu",
-                item, CUSTOMISATION_ROUTE);
+    swofty::log(
+        "[main-menu] customisation card pressed (item %p): route %s; the Customisation screen's Back returns to the main menu",
+        item, CUSTOMISATION_ROUTE);
     return route_action(out, CUSTOMISATION_ROUTE);
 }
 
@@ -68,10 +73,7 @@ Action *card_action(HomeItem *item, Action *out) { return menu.navigation.card_p
 
 }
 
-const char *id_of(const HomeItem *item)
-{
-    return item && item->id ? reinterpret_cast<const char *>(item->id) + NESTR_CHARS : "";
-}
+const char *id_of(const HomeItem *item) { return item && item->id ? reinterpret_cast<const char *>(item->id) + NESTR_CHARS : ""; }
 
 bool Tiles::resolve()
 {
@@ -112,7 +114,8 @@ bool Tiles::rows_on()
     if (f < 0) {
         f = runtime::read_file(runtime::under_swofty("ui\\home_rows.flag"), 16).empty() ? 0 : 1;
         rows_flag = f;
-        swofty::log("[main-menu] the launcher's rows of cards %s", f ? "are in this build" : "are not in this build; the tiles stay in the stock list");
+        swofty::log("[main-menu] the launcher's rows of cards %s",
+                    f ? "are in this build" : "are not in this build; the tiles stay in the stock list");
     }
     return f == 1;
 }
@@ -123,7 +126,8 @@ bool Tiles::menu_on()
     if (f < 0) {
         f = runtime::read_file(runtime::under_swofty("ui\\home_menu.flag"), 16).empty() ? 0 : 1;
         menu_flag = f;
-        swofty::log("[main-menu] the launcher's Showroom route %s", f ? "is in this build" : "is not in this build; no Showroom card");
+        swofty::log("[main-menu] the launcher's Showroom route %s",
+                    f ? "is in this build" : "is not in this build; no Showroom card");
     }
     return f == 1;
 }
@@ -134,7 +138,8 @@ bool Tiles::customisation_on()
     if (f < 0) {
         f = runtime::read_file(runtime::under_swofty("ui\\home_customisation.flag"), 16).empty() ? 0 : 1;
         customisation_flag = f;
-        swofty::log("[main-menu] the launcher's Customisation routes %s", f ? "are in this build" : "are not in this build; no Customisation card");
+        swofty::log("[main-menu] the launcher's Customisation routes %s",
+                    f ? "are in this build" : "are not in this build; no Customisation card");
     }
     return f == 1;
 }
@@ -171,9 +176,8 @@ void Tiles::wrap_item(HomeItem *item)
     const char *id = id_of(item);
     if (!*template_for(id, rows_on()))
         return;
-    if (!std::strcmp(id, ID_GRAND_PRIX) || !std::strcmp(id, ID_TIME_TRIAL) ||
-        !std::strcmp(id, ID_LOCAL) || !std::strcmp(id, ID_SHOWROOM) || !std::strcmp(id, ID_CUSTOMISATION) ||
-        !std::strcmp(id, ID_SETTINGS))
+    if (!std::strcmp(id, ID_GRAND_PRIX) || !std::strcmp(id, ID_TIME_TRIAL) || !std::strcmp(id, ID_LOCAL) ||
+        !std::strcmp(id, ID_SHOWROOM) || !std::strcmp(id, ID_CUSTOMISATION) || !std::strcmp(id, ID_SETTINGS))
         return;
     auto vt = reinterpret_cast<void **>(item->vtable);
     {
@@ -277,8 +281,7 @@ void Tiles::populate_card(HomeItem *item, void *node, uint32_t a7)
     uint8_t no = 0;
     set_string(reg, parent, "title", gp ? "GRAND PRIX" : "TIME TRIAL");
     Vm_Set_Bool(reg, parent, "title_localised", &no, 1);
-    set_string(reg, parent, "description",
-               gp ? "Race a Grand Prix weekend" : "Set the fastest lap on any track");
+    set_string(reg, parent, "description", gp ? "Race a Grand Prix weekend" : "Set the fastest lap on any track");
     Vm_Set_Bool(reg, parent, "description_localised", &no, 1);
     style_item(item);
 }
@@ -343,7 +346,8 @@ uint8_t Tiles::add(TileList *list, uint8_t career_index, const uint8_t *flags)
     }
     style_list(list);
     swofty::log("[main-menu] tiles added after Career: Grand Prix, Time Trial, Split Screen%s, Theatre%s%s (last index %u)",
-                flags && (flags[8] & 1) ? ", challenge" : "", showroom ? ", Showroom" : "", customisation ? ", Customisation" : "", unsigned(index));
+                flags && (flags[8] & 1) ? ", challenge" : "", showroom ? ", Showroom" : "",
+                customisation ? ", Customisation" : "", unsigned(index));
     return index;
 }
 

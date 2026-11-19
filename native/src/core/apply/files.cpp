@@ -48,8 +48,8 @@ Router &router()
 
 }
 
-Outcome redirect(const std::string &game_path, const std::string &addon, const std::string &file,
-                 const std::string &registry, const std::string &id, const std::string &scope)
+Outcome redirect(const std::string &game_path, const std::string &addon, const std::string &file, const std::string &registry,
+                 const std::string &id, const std::string &scope)
 {
     std::lock_guard g(mu);
     Router &r = router();

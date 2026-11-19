@@ -29,10 +29,7 @@ std::vector<uint16_t> ids_of(uintptr_t begin, uintptr_t end, size_t field)
     return out;
 }
 
-std::vector<uint16_t> teams_of(uintptr_t begin, uintptr_t end)
-{
-    return ids_of(begin, end, logic::ENTRANT_TEAM);
-}
+std::vector<uint16_t> teams_of(uintptr_t begin, uintptr_t end) { return ids_of(begin, end, logic::ENTRANT_TEAM); }
 
 logic::IdAliases id_aliases()
 {
@@ -59,10 +56,9 @@ uint32_t remap_entrants(uintptr_t begin, uintptr_t end, const logic::IdAliases &
     int64_t n = logic::entrant_count(begin, end);
     for (int64_t i = 0; i < n; ++i) {
         uintptr_t at = begin + size_t(i) * logic::ENTRANT_RECORD;
-        const std::pair<size_t, const std::map<uint16_t, uint16_t> *> fields[] = {
-            {logic::ENTRANT_TEAM, &aliases.teams},
-            {logic::ENTRANT_VEHICLE_ID, &aliases.vehicles},
-            {logic::ENTRANT_DRIVER, &aliases.drivers}};
+        const std::pair<size_t, const std::map<uint16_t, uint16_t> *> fields[] = {{logic::ENTRANT_TEAM, &aliases.teams},
+                                                                                  {logic::ENTRANT_VEHICLE_ID, &aliases.vehicles},
+                                                                                  {logic::ENTRANT_DRIVER, &aliases.drivers}};
         for (auto &[off, map] : fields) {
             uint16_t id = 0;
             if (!mem::read(at + off, id))
@@ -101,8 +97,7 @@ int entrant_vector_entry(void *vector, void *bag)
 [[noreturn]] void stop_session_load(const std::string &why)
 {
     swofty::log("[era] %s", why.c_str());
-    swofty::log("[crash] the core closes F1 25 at StateLoadSession (exit code %u): %s", logic::CONTINUE_STOP_EXIT,
-                why.c_str());
+    swofty::log("[crash] the core closes F1 25 at StateLoadSession (exit code %u): %s", logic::CONTINUE_STOP_EXIT, why.c_str());
     TerminateProcess(GetCurrentProcess(), logic::CONTINUE_STOP_EXIT);
     ExitProcess(logic::CONTINUE_STOP_EXIT);
 }
@@ -205,8 +200,8 @@ std::string grand_prix_load(uintptr_t ctx, std::string &what)
     bool empty = !list && mem::read(setup + SETUP_ENTRANT_SETUP, entrant_setup) && entrant_setup;
     if (empty) {
         std::string setup_mode;
-        if (mem::read(setup + SETUP_GAME_SETUP_MODE, gsm) && gsm && mem::read(gsm + SETUP_MODE_NAME, gsm_holder) &&
-            gsm_holder && mem::read(gsm_holder + 0x10, gsm_name))
+        if (mem::read(setup + SETUP_GAME_SETUP_MODE, gsm) && gsm && mem::read(gsm + SETUP_MODE_NAME, gsm_holder) && gsm_holder &&
+            mem::read(gsm_holder + 0x10, gsm_name))
             mem::c_string(gsm_name, setup_mode, 64);
         std::vector<uint16_t> saved;
         if (mem::read(setup + logic::MGR_SESSION_BEGIN, begin) && mem::read(setup + logic::MGR_SESSION_END, end))
@@ -302,8 +297,8 @@ void follow_loaded_list(const LoadSeen &seen)
     }
     tl::Loaded loaded = tl::loaded_box(lists, seen.list, seen.setup_mode, logic::HOST, VIRTUAL_HOST, seen.virtual_label);
     auto &scheduler = swofty_core::apply::scheduler();
-    std::string package = loaded.kind == tl::Kind::box || loaded.kind == tl::Kind::stock ? scheduler.find_package(loaded.box)
-                                                                                         : std::string();
+    std::string package =
+        loaded.kind == tl::Kind::box || loaded.kind == tl::Kind::stock ? scheduler.find_package(loaded.box) : std::string();
     tl::Follow f = tl::follow(loaded, package, scheduler.active(), seen.pressed);
     set_unlisted(f.action == tl::Action::no_board ? f.box : std::string());
     if (f.action == tl::Action::keep)

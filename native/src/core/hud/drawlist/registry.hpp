@@ -28,7 +28,7 @@ struct Image {
 };
 
 class Registry {
-  public:
+public:
     uint32_t add(SwoftyPaintFn fn, void *user, std::string owner)
     {
         if (!fn)
@@ -88,16 +88,13 @@ class Registry {
         return -1;
     }
 
-    const Image *image(int slot) const
-    {
-        return slot >= 0 && size_t(slot) < images_.size() ? &images_[size_t(slot)] : nullptr;
-    }
+    const Image *image(int slot) const { return slot >= 0 && size_t(slot) < images_.size() ? &images_[size_t(slot)] : nullptr; }
 
     Image *image(int slot) { return slot >= 0 && size_t(slot) < images_.size() ? &images_[size_t(slot)] : nullptr; }
 
     size_t image_count() const { return images_.size(); }
 
-  private:
+private:
     std::vector<Paintsub> subs_;
     std::vector<Image> images_;
     uint32_t next_ = 1;

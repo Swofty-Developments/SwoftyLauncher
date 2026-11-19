@@ -11,27 +11,21 @@
 
 static int failures;
 
-#define CHECK(cond, msg)                                                                                                \
-    do {                                                                                                                \
-        if (cond) {                                                                                                     \
-            printf("ok  : %s\n", msg);                                                                                  \
-        } else {                                                                                                        \
-            printf("FAIL: %s\n", msg);                                                                                  \
-            failures++;                                                                                                 \
-        }                                                                                                               \
+#define CHECK(cond, msg)                                                                                                         \
+    do {                                                                                                                         \
+        if (cond) {                                                                                                              \
+            printf("ok  : %s\n", msg);                                                                                           \
+        } else {                                                                                                                 \
+            printf("FAIL: %s\n", msg);                                                                                           \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 namespace tmod = runtime::tyre_models;
 
-static tmod::Model placed()
-{
-    return {true, -2.9f, 0.354f, 0.248f, 2};
-}
+static tmod::Model placed() { return {true, -2.9f, 0.354f, 0.248f, 2}; }
 
-static tmod::Model unplaced()
-{
-    return {true, -1000.0f, 60.0f, 30.0f, 0};
-}
+static tmod::Model unplaced() { return {true, -1000.0f, 60.0f, 30.0f, 0}; }
 
 static tmod::Verdict judge(std::initializer_list<tmod::Model> ms, unsigned *spawned = nullptr, unsigned *bad = nullptr)
 {

@@ -136,8 +136,8 @@ void apply_strings(const std::string &group)
         return;
     if (!lg || !lg->available()) {
         if (!set.empty())
-            swofty::log("[characters] %zu string(s) for '%s' stay stock: the core's string overrides are unavailable",
-                        set.size(), group.c_str());
+            swofty::log("[characters] %zu string(s) for '%s' stay stock: the core's string overrides are unavailable", set.size(),
+                        group.c_str());
         return;
     }
     size_t failed = 0;
@@ -145,14 +145,11 @@ void apply_strings(const std::string &group)
         failed += lg->override_clear(language.c_str(), key.c_str()) != SWOFTY_ASSET_OK;
     for (auto &t : set)
         failed += lg->override_set(t.language.c_str(), t.key.c_str(), t.text.c_str()) != SWOFTY_ASSET_OK;
-    swofty::log("[characters] strings: cleared %zu, set %zu for '%s' (%zu failed)", drop.size(), set.size(),
-                group.c_str(), failed);
+    swofty::log("[characters] strings: cleared %zu, set %zu for '%s' (%zu failed)", drop.size(), set.size(), group.c_str(),
+                failed);
 }
 
-bool group_used(const std::string &group)
-{
-    return career::characters::group_in(eswaps, group);
-}
+bool group_used(const std::string &group) { return career::characters::group_in(eswaps, group); }
 
 void set_active(std::string now, const char *why)
 {
@@ -212,8 +209,7 @@ int need(runtime::loader::MixinPart &p, bool want, const char *what)
     if (p.usable(runtime::core_mixins_closed()))
         return SWOFTY_ASSET_OK;
     if (want && !p.gate.settled() && p.first_late())
-        swofty::log("[characters] %s registered after the last mixin commit; the %s hooks are not installed", what,
-                    p.label);
+        swofty::log("[characters] %s registered after the last mixin commit; the %s hooks are not installed", what, p.label);
     return SWOFTY_ASSET_UNAVAILABLE;
 }
 
@@ -240,8 +236,8 @@ int api_swap(const char *group, const char *character, const char *replacement)
         std::erase_if(swaps, [&](const Swap &s) { return s.group == group && s.character == character && s.owner == owner; });
         for (auto &s : swaps)
             if (s.group == group && s.character == character)
-                swofty::log("[characters] '%s' in '%s' is also swapped to '%s' by another addon; the last one wins",
-                            character, group, s.replacement.c_str());
+                swofty::log("[characters] '%s' in '%s' is also swapped to '%s' by another addon; the last one wins", character,
+                            group, s.replacement.c_str());
         if (replacement)
             swaps.push_back({group, character, replacement, owner, addon});
         store_record(addon, group);
@@ -274,12 +270,11 @@ int api_mute(const char *group, const char *speaker, int on)
     return need(voice, on != 0, "a mute");
 }
 
-bool add_text(const std::string &group, const std::string &language, const std::string &key, const char *text,
-              HMODULE owner, const std::string &addon)
+bool add_text(const std::string &group, const std::string &language, const std::string &key, const char *text, HMODULE owner,
+              const std::string &addon)
 {
-    std::erase_if(texts, [&](const Text &t) {
-        return t.group == group && t.language == language && t.key == key && t.owner == owner;
-    });
+    std::erase_if(texts,
+                  [&](const Text &t) { return t.group == group && t.language == language && t.key == key && t.owner == owner; });
     if (text)
         texts.push_back({group, language, key, text, owner, addon});
     return active == group;
@@ -370,7 +365,7 @@ int api_refresh()
     return rebuild("refresh") ? SWOFTY_ASSET_OK : SWOFTY_ASSET_LATE;
 }
 
-const SwoftyCharacters table = {api_available, api_career_group, api_swap,  api_mute,
+const SwoftyCharacters table = {api_available,  api_career_group, api_swap,  api_mute,
                                 api_string_set, api_strings_json, api_clear, api_refresh};
 
 }
@@ -393,10 +388,7 @@ bool speaker_muted(const char *speaker)
 
 namespace runtime {
 
-const SwoftyCharacters *characters_table()
-{
-    return &table;
-}
+const SwoftyCharacters *characters_table() { return &table; }
 
 static std::vector<CoreMixins> characters_mixins()
 {
@@ -407,8 +399,7 @@ static std::vector<CoreMixins> characters_mixins()
         out.push_back(
             {REF_MIXIN,
              {{"Game_EntrantsUi_BuildCharacterRef", SWOFTY_MIXIN_WRAP, 100, (void *)&build_ref, (void **)&orig_build},
-              {"Game_EntrantsUi_OnCharacterListLoaded", SWOFTY_MIXIN_WRAP, 100, (void *)&list_loaded,
-               (void **)&orig_loaded}}});
+              {"Game_EntrantsUi_OnCharacterListLoaded", SWOFTY_MIXIN_WRAP, 100, (void *)&list_loaded, (void **)&orig_loaded}}});
     if (voice.offer())
         out.push_back(
             {VOICE_MIXIN, {{"Game_SpeechSystem_PostLine", SWOFTY_MIXIN_WRAP, 100, (void *)&post_line, (void **)&orig_post}}});

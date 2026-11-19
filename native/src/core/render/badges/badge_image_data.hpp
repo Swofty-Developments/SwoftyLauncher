@@ -31,7 +31,8 @@ inline std::optional<std::string> reference(std::string_view name)
     if (space == std::string_view::npos)
         return {};
     auto table = suffix.substr(0, space), number = suffix.substr(space + 1);
-    if ((table != "ePreLoaded" && table != "eUserDefined" && table != "eNetworkReplicated") || number.empty() || number.size() > 5)
+    if ((table != "ePreLoaded" && table != "eUserDefined" && table != "eNetworkReplicated") || number.empty() ||
+        number.size() > 5)
         return {};
     unsigned index = 0;
     for (unsigned char c : number) {
@@ -46,8 +47,8 @@ inline std::optional<std::string> reference(std::string_view name)
 
 // Tight RGBA rows, preserving alpha and aspect ratio. Nearest-neighbour is
 // intentional: the small HUD badge should not acquire a colour fringe at alpha edges.
-inline std::vector<uint8_t> pixels(const uint8_t *source, unsigned width, unsigned height, unsigned pitch,
-                                   bool bgra, unsigned &out_w, unsigned &out_h)
+inline std::vector<uint8_t> pixels(const uint8_t *source, unsigned width, unsigned height, unsigned pitch, bool bgra,
+                                   unsigned &out_w, unsigned &out_h)
 {
     if (!source || !width || !height || width > 512 || height > 512 || pitch < width * 4)
         return {};

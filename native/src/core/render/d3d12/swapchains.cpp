@@ -23,10 +23,7 @@ using SlGetNativeInterface = int(__cdecl *)(void *proxy, void **native);
 
 }
 
-bool Swapchains::listed(const std::vector<void *> &v, void *sc)
-{
-    return std::find(v.begin(), v.end(), sc) != v.end();
-}
+bool Swapchains::listed(const std::vector<void *> &v, void *sc) { return std::find(v.begin(), v.end(), sc) != v.end(); }
 
 void Swapchains::store(Swapchain &c)
 {
@@ -46,8 +43,7 @@ void Swapchains::store(Swapchain &c)
         chains.push_back(c);
 }
 
-void Swapchains::created(const char *how, IUnknown *device, void *sc, UINT w, UINT h, DXGI_FORMAT fmt, UINT buffers,
-                         HMODULE impl)
+void Swapchains::created(const char *how, IUnknown *device, void *sc, UINT w, UINT h, DXGI_FORMAT fmt, UINT buffers, HMODULE impl)
 {
     void *frames[48];
     USHORT n = RtlCaptureStackBackTrace(0, 48, frames, nullptr);
@@ -60,8 +56,7 @@ void Swapchains::created(const char *how, IUnknown *device, void *sc, UINT w, UI
     std::string by = hud::arm_policy::chain(mods, self_module(), impl_name);
     ID3D12CommandQueue *q = nullptr;
     if (!device || FAILED(device->QueryInterface(IID_PPV_ARGS(&q))) || !q) {
-        swofty::log("[d3d12] swapchain %p (%s, by %s) was not created on a D3D12 command queue; ignored", sc, how,
-                    by.c_str());
+        swofty::log("[d3d12] swapchain %p (%s, by %s) was not created on a D3D12 command queue; ignored", sc, how, by.c_str());
         return;
     }
     D3D12_COMMAND_QUEUE_DESC qd = q->GetDesc();
@@ -80,8 +75,7 @@ void Swapchains::created(const char *how, IUnknown *device, void *sc, UINT w, UI
     swofty::log("[d3d12] swapchain %p created through %s on queue %p (type %d, %ux%u, format %d, %u buffer(s)); "
                 "created by %s%s%s",
                 sc, how, static_cast<void *>(q), int(qd.Type), w, h, int(fmt), buffers, by.c_str(),
-                c.fg.empty() ? (c.streamline ? "; through Streamline's frame generation hook" : "")
-                             : "; frame generation: ",
+                c.fg.empty() ? (c.streamline ? "; through Streamline's frame generation hook" : "") : "; frame generation: ",
                 c.fg.c_str());
 }
 
@@ -97,8 +91,7 @@ bool Swapchains::learn(IDXGISwapChain3 *sc, void *caller, const std::string &pfg
     if (FAILED(hr) || !q) {
         q = nullptr;
         HMODULE sl = GetModuleHandleW(L"sl.interposer.dll");
-        auto get_native = sl ? reinterpret_cast<SlGetNativeInterface>(GetProcAddress(sl, "slGetNativeInterface"))
-                             : nullptr;
+        auto get_native = sl ? reinterpret_cast<SlGetNativeInterface>(GetProcAddress(sl, "slGetNativeInterface")) : nullptr;
         if (!sl)
             native_note = "sl.interposer.dll is not loaded";
         else if (!get_native)
@@ -178,8 +171,8 @@ bool Swapchains::learn(IDXGISwapChain3 *sc, void *caller, const std::string &pfg
                     "that executed command lists on thread %lu %llu ms before Present on thread %lu; presented from "
                     "%s%s%s",
                     static_cast<void *>(sc), static_cast<void *>(q), static_cast<unsigned long>(exec.tid),
-                    static_cast<unsigned long long>(GetTickCount64() - exec.tick), static_cast<unsigned long>(tid),
-                    by.c_str(), out.streamline ? "; through Streamline" : "",
+                    static_cast<unsigned long long>(GetTickCount64() - exec.tick), static_cast<unsigned long>(tid), by.c_str(),
+                    out.streamline ? "; through Streamline" : "",
                     out.armed_late ? "; the device hooks armed for it after the game named its back buffers, so the "
                                      "overlay draws on it at Present"
                                    : "");
@@ -191,10 +184,7 @@ bool Swapchains::learn(IDXGISwapChain3 *sc, void *caller, const std::string &pfg
     return true;
 }
 
-bool Swapchains::learning(void *sc) const
-{
-    return listed(waiting, sc) && !listed(refused, sc);
-}
+bool Swapchains::learning(void *sc) const { return listed(waiting, sc) && !listed(refused, sc); }
 
 bool Swapchains::at_present(IDXGISwapChain3 *sc, const std::string &pfg, Swapchain &out)
 {
@@ -232,8 +222,8 @@ void Swapchains::set_color_space(IDXGISwapChain3 *sc, DXGI_COLOR_SPACE_TYPE cs, 
             else if (pending_color_space.size() < 16)
                 pending_color_space.push_back({sc, UINT(cs)});
         }
-        swofty::log("[d3d12] SetColorSpace1(%d) on swapchain %p before its creation was recorded -> 0x%08lx",
-                    int(cs), static_cast<void *>(sc), static_cast<unsigned long>(hr));
+        swofty::log("[d3d12] SetColorSpace1(%d) on swapchain %p before its creation was recorded -> 0x%08lx", int(cs),
+                    static_cast<void *>(sc), static_cast<unsigned long>(hr));
     } else if (SUCCEEDED(hr) && (!it->color_space_set || it->color_space != UINT(cs))) {
         it->color_space = UINT(cs);
         it->color_space_set = true;

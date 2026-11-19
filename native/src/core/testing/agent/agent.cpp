@@ -48,8 +48,7 @@ namespace ta = testagent;
 // [+0x6e0]+0x2b0 (0x22c9e40). The game manager's system map +0x30 (0x336830, 0x361670) and its entries +0x18, +0x20
 // (the find 0x30ffd0).
 namespace bp = runtime::build_proof;
-constexpr uint32_t KB_AND_1_0_145 =
-    bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145) | bp::bit(bp::Build::ea_1_0_145);
+constexpr uint32_t KB_AND_1_0_145 = bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145) | bp::bit(bp::Build::ea_1_0_145);
 constexpr bp::Gate CAR_READS{"the test agent's car fields", &runtime::car_layout::TELEMETRY};
 constexpr bp::Proof TILE_LAYOUT{"the tile screens' lists (+0x2c8, home +0x358, router +0x28; TileList +0x78, +0x80; "
                                 "Tile +0xd0; item +0x10)",
@@ -57,8 +56,7 @@ constexpr bp::Proof TILE_LAYOUT{"the tile screens' lists (+0x2c8, home +0x358, r
 constexpr bp::Gate TILE_SCREENS{"the test agent's tile commands", &TILE_LAYOUT};
 constexpr bp::Proof CARD_LAYOUT{"the resume screens' cards (+0x328, 0x540 each), +0x1380 and +0x12f0", KB_AND_1_0_145};
 constexpr bp::Gate RESUME_CARDS{"the test agent's continue command", &CARD_LAYOUT};
-constexpr bp::Proof HQ_LAYOUT{"Team HQ's advance view model (+0x620, +0x758, +0x759, the clock [+0x6e0]+0x2b0)",
-                              KB_AND_1_0_145};
+constexpr bp::Proof HQ_LAYOUT{"Team HQ's advance view model (+0x620, +0x758, +0x759, the clock [+0x6e0]+0x2b0)", KB_AND_1_0_145};
 constexpr bp::Gate HQ_ADVANCE{"the test agent's Team HQ advance", &HQ_LAYOUT};
 constexpr bp::Proof SYSTEM_MAP{"the game manager's system map (+0x30; entries +0x18, control bytes +0x20)", KB_AND_1_0_145};
 constexpr bp::Gate SAVE_NOW{"the test agent's save now", &SYSTEM_MAP};
@@ -66,23 +64,78 @@ constexpr bp::Gate SAVE_NOW{"the test agent's save now", &SYSTEM_MAP};
 // The game addresses the agent uses, each resolved by its signature in re/db/signatures.json when the
 // agent arms; a build where one does not match only loses the commands that need it. The struct layouts
 // the commands read are gated on the builds they were checked on (the proofs above).
-const runtime::Sig SIG_FE_CAREER_VT{"game.fe_career_view_model", "48 8D 05 ?? ?? ?? ?? 49 89 07 48 8D 05 ?? ?? ?? ?? 49 89 87 60 02 00 00 48 8D 05 ?? ?? ?? ?? 49 89 87 68 02 00 00 48 8D 05 ?? ?? ?? ?? 49 89 87 98 02 00 00 66 41 C7 87 A8 03 00 00 00 01", 0x57385b0, runtime::Sig::riprel, 0, 3, 7};
-const runtime::Sig SIG_CAREER_ITEM_VT{"fe_tiles.career_kind_item", "48 8D 05 ?? ?? ?? ?? 48 89 06 48 8D 8E 78 01 00 00", 0x5703eb0, runtime::Sig::riprel, 0, 3, 7};
-const runtime::Sig SIG_CONTINUE_HANDLE{"game.career_continue_handle_command", "56 48 83 EC 20 48 8B 02 48 85 C0 74 38", 0x1a1db90};
-const runtime::Sig SIG_CONTINUE_DRIVER_VT{"game.career_continue_driver_view_model", "48 8D 05 ?? ?? ?? ?? 49 89 04 24 48 8D 05 ?? ?? ?? ?? 49 89 84 24 60 02 00 00 48 8D 05 ?? ?? ?? ?? 49 89 84 24 68 02 00 00 49 C7 84 24 B8 13 00 00 00 00 00 00", 0x57264a0, runtime::Sig::riprel, 0, 3, 7};
-const runtime::Sig SIG_CONTINUE_MY_TEAM_VT{"game.career_continue_my_team_view_model", "48 8D 05 ?? ?? ?? ?? 49 89 04 24 48 8D 05 ?? ?? ?? ?? 49 89 84 24 60 02 00 00 48 8D 05 ?? ?? ?? ?? 49 89 84 24 68 02 00 00 48 8B 4B E8", 0x5726670, runtime::Sig::riprel, 0, 3, 7};
-const runtime::Sig SIG_HQ_UPDATE{"game.team_hq_advance_view_model_update", "56 57 53 48 83 EC 40 48 89 CE 48 8B 89 E8 06 00 00", 0x22ca380};
-const runtime::Sig SIG_HQ_COMMAND{"game.team_hq_advance_view_model_on_command_raised", "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 03 00 00 4C 8B B1 20 06 00 00", 0x22c3540};
-const runtime::Sig SIG_HQ_VT{"game.team_hq_advance_view_model", "C4 C1 78 11 84 24 90 06 00 00 48 8D 05 ?? ?? ?? ?? 49 89 04 24 48 8D 05", 0x577a9c0, runtime::Sig::riprel, 10, 13, 7};
-const runtime::Sig SIG_GAME_MANAGER{"game.manager", "48 8B B8 98 01 00 00 48 85 FF 0F 84 ?? ?? ?? ?? 48 8D 4C 24 70 E8 ?? ?? ?? ?? 48 8B 05", 0x604c2c8, runtime::Sig::riprel, 26, 29, 7};
-const runtime::Sig SIG_SAVE_KEY{"game.save_mgr_system_key", "49 89 84 24 80 14 00 00 49 8B B4 24 70 14 00 00 48 8D 05", 0x6100ca8, runtime::Sig::riprel, 16, 19, 7};
-const runtime::Sig SIG_SAVE_REQUEST{"game.save_mgr_request_profile_save_thunk", "E8 ?? ?? ?? ?? 48 8B BE 50 12 00 00", 0x36595b0, runtime::Sig::rel32, 0, 1, 5};
-const runtime::Sig SIG_VEHICLE_TABLE{"session.vehicle_table", "76 0E 48 8D 05 ?? ?? ?? ?? 4C 8B 3C D8", 0x6ce86e0, runtime::Sig::riprel, 2, 5, 7};
-const runtime::Sig SIG_VEHICLE_COUNT{"session.vehicle_count", "74 E5 38 1D ?? ?? ?? ?? 76 0E 48 8D 05", 0x6ce86dc, runtime::Sig::riprel, 2, 4, 6};
-const runtime::Sig SIG_ADVANCE_VT{"game.message_set_advance_destination", "48 8D 0D ?? ?? ?? ?? 48 89 4C 24 50 48 C7 44 24 60 02 00 00 00", 0x57548b8, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig SIG_FE_CAREER_VT{
+    "game.fe_career_view_model",
+    "48 8D 05 ?? ?? ?? ?? 49 89 07 48 8D 05 ?? ?? ?? ?? 49 89 87 60 02 00 00 48 8D 05 ?? ?? ?? ?? 49 89 87 68 02 00 00 48 8D 05 "
+    "?? ?? ?? ?? 49 89 87 98 02 00 00 66 41 C7 87 A8 03 00 00 00 01",
+    0x57385b0,
+    runtime::Sig::riprel,
+    0,
+    3,
+    7};
+const runtime::Sig SIG_CAREER_ITEM_VT{
+    "fe_tiles.career_kind_item", "48 8D 05 ?? ?? ?? ?? 48 89 06 48 8D 8E 78 01 00 00", 0x5703eb0, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig SIG_CONTINUE_HANDLE{"game.career_continue_handle_command", "56 48 83 EC 20 48 8B 02 48 85 C0 74 38",
+                                       0x1a1db90};
+const runtime::Sig SIG_CONTINUE_DRIVER_VT{"game.career_continue_driver_view_model",
+                                          "48 8D 05 ?? ?? ?? ?? 49 89 04 24 48 8D 05 ?? ?? ?? ?? 49 89 84 24 60 02 00 00 48 8D "
+                                          "05 ?? ?? ?? ?? 49 89 84 24 68 02 00 00 49 C7 84 24 B8 13 00 00 00 00 00 00",
+                                          0x57264a0,
+                                          runtime::Sig::riprel,
+                                          0,
+                                          3,
+                                          7};
+const runtime::Sig SIG_CONTINUE_MY_TEAM_VT{"game.career_continue_my_team_view_model",
+                                           "48 8D 05 ?? ?? ?? ?? 49 89 04 24 48 8D 05 ?? ?? ?? ?? 49 89 84 24 60 02 00 00 48 8D "
+                                           "05 ?? ?? ?? ?? 49 89 84 24 68 02 00 00 48 8B 4B E8",
+                                           0x5726670,
+                                           runtime::Sig::riprel,
+                                           0,
+                                           3,
+                                           7};
+const runtime::Sig SIG_HQ_UPDATE{"game.team_hq_advance_view_model_update", "56 57 53 48 83 EC 40 48 89 CE 48 8B 89 E8 06 00 00",
+                                 0x22ca380};
+const runtime::Sig SIG_HQ_COMMAND{"game.team_hq_advance_view_model_on_command_raised",
+                                  "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 03 00 00 4C 8B B1 20 06 00 00", 0x22c3540};
+const runtime::Sig SIG_HQ_VT{"game.team_hq_advance_view_model",
+                             "C4 C1 78 11 84 24 90 06 00 00 48 8D 05 ?? ?? ?? ?? 49 89 04 24 48 8D 05",
+                             0x577a9c0,
+                             runtime::Sig::riprel,
+                             10,
+                             13,
+                             7};
+const runtime::Sig SIG_GAME_MANAGER{"game.manager",
+                                    "48 8B B8 98 01 00 00 48 85 FF 0F 84 ?? ?? ?? ?? 48 8D 4C 24 70 E8 ?? ?? ?? ?? 48 8B 05",
+                                    0x604c2c8,
+                                    runtime::Sig::riprel,
+                                    26,
+                                    29,
+                                    7};
+const runtime::Sig SIG_SAVE_KEY{"game.save_mgr_system_key",
+                                "49 89 84 24 80 14 00 00 49 8B B4 24 70 14 00 00 48 8D 05",
+                                0x6100ca8,
+                                runtime::Sig::riprel,
+                                16,
+                                19,
+                                7};
+const runtime::Sig SIG_SAVE_REQUEST{
+    "game.save_mgr_request_profile_save_thunk", "E8 ?? ?? ?? ?? 48 8B BE 50 12 00 00", 0x36595b0, runtime::Sig::rel32, 0, 1, 5};
+const runtime::Sig SIG_VEHICLE_TABLE{
+    "session.vehicle_table", "76 0E 48 8D 05 ?? ?? ?? ?? 4C 8B 3C D8", 0x6ce86e0, runtime::Sig::riprel, 2, 5, 7};
+const runtime::Sig SIG_VEHICLE_COUNT{
+    "session.vehicle_count", "74 E5 38 1D ?? ?? ?? ?? 76 0E 48 8D 05", 0x6ce86dc, runtime::Sig::riprel, 2, 4, 6};
+const runtime::Sig SIG_ADVANCE_VT{"game.message_set_advance_destination",
+                                  "48 8D 0D ?? ?? ?? ?? 48 89 4C 24 50 48 C7 44 24 60 02 00 00 00",
+                                  0x57548b8,
+                                  runtime::Sig::riprel,
+                                  0,
+                                  3,
+                                  7};
 
 struct Resolved {
-    uintptr_t node_set_bool = 0, fe_career_vt = 0, career_item_vt = 0, continue_handle = 0, continue_driver_vt = 0, continue_my_team_vt = 0, hq_update = 0, hq_command = 0, hq_vt = 0, game_manager = 0, save_key = 0, save_request = 0, vehicle_table = 0, vehicle_count = 0, advance_vt = 0;
+    uintptr_t node_set_bool = 0, fe_career_vt = 0, career_item_vt = 0, continue_handle = 0, continue_driver_vt = 0,
+              continue_my_team_vt = 0, hq_update = 0, hq_command = 0, hq_vt = 0, game_manager = 0, save_key = 0, save_request = 0,
+              vehicle_table = 0, vehicle_count = 0, advance_vt = 0;
 } ga;
 
 void resolve_game()
@@ -129,8 +182,8 @@ void emit(const std::string &line)
 
 bool append(const std::wstring &path, const std::string &text)
 {
-    HANDLE h = CreateFileW(path.c_str(), FILE_APPEND_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                           nullptr, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+    HANDLE h = CreateFileW(path.c_str(), FILE_APPEND_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+                           OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (h == INVALID_HANDLE_VALUE)
         return false;
     DWORD w = 0;
@@ -172,8 +225,13 @@ std::string tail(const std::wstring &path, uint64_t *offset)
 // home tiles fire them: Vm_Fire_Route(vm->router (+0x28), vm, &name, 0).
 const runtime::Sig S_POPULATE_LOOP{"site_FeTile_PopulateLoop", "49 8B 76 78 4D 8B B6 80 00 00 00 4C 39 F6 8B AC 24 00 03 00 00",
                                    0x1745016};
-const runtime::Sig S_FIRE_CALL{"Vm_Fire_Route", "48 8B 4E 28 48 89 F2 49 89 F8 45 31 C9 E8 ?? ?? ?? ?? E9 E4 00 00 00",
-                               0x42c0e20, runtime::Sig::rel32, 13, 14, 5};
+const runtime::Sig S_FIRE_CALL{"Vm_Fire_Route",
+                               "48 8B 4E 28 48 89 F2 49 89 F8 45 31 C9 E8 ?? ?? ?? ?? E9 E4 00 00 00",
+                               0x42c0e20,
+                               runtime::Sig::rel32,
+                               13,
+                               14,
+                               5};
 constexpr size_t VM_TILE_LIST = 0x2c8, HOME_TILE_LIST = 0x358, VM_ROUTER = 0x28, STACK_SCAN = 0x1000;
 
 using Fire_t = void(void *router, void *vm, swofty::game::NeStr **name, uint64_t a4);
@@ -185,10 +243,7 @@ using Controller_t = void(void *system, uint64_t vehicle, uint32_t ai, int32_t r
 // unavailable.
 uintptr_t a_home_cmd, a_make_str, a_controller;
 
-void make_str(swofty::game::NeStr **s, const char *text)
-{
-    reinterpret_cast<MakeStr_t *>(a_make_str)(s, text, 0, 0);
-}
+void make_str(swofty::game::NeStr **s, const char *text) { reinterpret_cast<MakeStr_t *>(a_make_str)(s, text, 0, 0); }
 
 std::atomic<void *> home_vm{nullptr}, home_vt{nullptr};
 // fe_career's view model (vt_Game_FECareerViewModel 0x1457385b0, L2), seen at the same populate loop.
@@ -346,10 +401,7 @@ void routes_setup()
     route_why.clear();
 }
 
-uint8_t *addr_of(uintptr_t a)
-{
-    return reinterpret_cast<uint8_t *>(a);
-}
+uint8_t *addr_of(uintptr_t a) { return reinterpret_cast<uint8_t *>(a); }
 
 std::string continue_why = "not set up", hq_why = "not set up";
 
@@ -362,8 +414,8 @@ std::string controller_why = "not set up";
 void controller_detour(void *system, uint64_t vehicle, uint32_t ai, int32_t reason)
 {
     if (controller_system.exchange(system) != system)
-        swofty::log("[test] vehicle controller system %p (vehicle %u, ai %u, reason %d)", system, unsigned(vehicle & 0xff),
-                    ai, reason);
+        swofty::log("[test] vehicle controller system %p (vehicle %u, ai %u, reason %d)", system, unsigned(vehicle & 0xff), ai,
+                    reason);
     h_controller.call<void>(system, vehicle, ai, reason);
 }
 
@@ -530,14 +582,19 @@ std::string value_json(const uint8_t *at, Ty t)
         v = f;
         break;
     }
-    case Ty::u32: std::memcpy(&bits, at, 4); v = bits; break;
+    case Ty::u32:
+        std::memcpy(&bits, at, 4);
+        v = bits;
+        break;
     case Ty::i32: {
         int32_t i;
         std::memcpy(&i, at, 4);
         v = i;
         break;
     }
-    case Ty::u8: v = at[0]; break;
+    case Ty::u8:
+        v = at[0];
+        break;
     }
     return "{\"value\":" + ta::num(v) + ",\"type\":\"" + ty_name(t) + "\"}";
 }
@@ -573,8 +630,7 @@ void load_dlls()
             d.end = reinterpret_cast<End_t *>(GetProcAddress(m, "SwoftyTestEnd"));
         }
         bool ok = m && d.names && d.start && d.step && d.end;
-        swofty::log("[test] test DLL %s: %s", rel.c_str(),
-                    !m ? "did not load" : ok ? "loaded" : "has no SWOFTY_TESTS() exports");
+        swofty::log("[test] test DLL %s: %s", rel.c_str(), !m ? "did not load" : ok ? "loaded" : "has no SWOFTY_TESTS() exports");
         if (ok)
             dlls.push_back(d);
     }
@@ -589,8 +645,8 @@ struct InGame : ta::Game {
     std::string expects;
     size_t failed = 0;
     std::string capture_file;
-    SwoftyTestHost host{sizeof(SwoftyTestHost), SWOFTY_TEST_HOST_VERSION, this, host_start, host_poll, host_expect,
-                        host_log, host_read};
+    SwoftyTestHost host{
+        sizeof(SwoftyTestHost), SWOFTY_TEST_HOST_VERSION, this, host_start, host_poll, host_expect, host_log, host_read};
 
     static uint64_t host_start(void *self, const char *line)
     {
@@ -662,11 +718,11 @@ struct InGame : ta::Game {
                 names += (names.size() > 1 ? "," : "") + ta::esc(n);
                 p = nl ? nl + 1 : nullptr;
             }
-        return ta::Outcome::ok("{\"v\":" + std::to_string(ta::PROTOCOL) + ",\"pid\":" + std::to_string(GetCurrentProcessId()) +
-                               ",\"run\":" + ta::esc(session.run) + ",\"ticks\":" + std::to_string(ticks.load()) +
-                               ",\"phase\":" + ta::esc(phase()) + ",\"sandbox\":" +
-                               (runtime::save_sandbox_test_mode() ? (sandboxed() ? "\"armed\"" : "\"required\"") : "\"off\"") +
-                               ",\"bindings\":" + c + ",\"tests\":" + names + "]}");
+        return ta::Outcome::ok(
+            "{\"v\":" + std::to_string(ta::PROTOCOL) + ",\"pid\":" + std::to_string(GetCurrentProcessId()) +
+            ",\"run\":" + ta::esc(session.run) + ",\"ticks\":" + std::to_string(ticks.load()) + ",\"phase\":" + ta::esc(phase()) +
+            ",\"sandbox\":" + (runtime::save_sandbox_test_mode() ? (sandboxed() ? "\"armed\"" : "\"required\"") : "\"off\"") +
+            ",\"bindings\":" + c + ",\"tests\":" + names + "]}");
     }
 
     // Fire a route from the current tile screen's view model, else from the home one. With the
@@ -711,8 +767,8 @@ struct InGame : ta::Game {
         if (tried.empty())
             return ta::Outcome::unavailable("the view model has no router");
         swofty::log("[test] route %s: no route of that name ran from the %s view model(s)", name.c_str(), tried.c_str());
-        return ta::Outcome::fail("route " + name + " is not a route of the current screen or the home screen (tried " +
-                                 tried + ")");
+        return ta::Outcome::fail("route " + name + " is not a route of the current screen or the home screen (tried " + tried +
+                                 ")");
     }
 
     bool home_ready() override { return live_home() != nullptr; }
@@ -734,11 +790,10 @@ struct InGame : ta::Game {
             void *vt;
             uint64_t zero;
             uint32_t destination, session;
-        } m{reinterpret_cast<void *>(ga.advance_vt), 0, uint32_t(destination),
-            uint32_t(session_type)};
+        } m{reinterpret_cast<void *>(ga.advance_vt), 0, uint32_t(destination), uint32_t(session_type)};
         int r = career->post(&m);
-        swofty::log("[test] skip: MessageSetAdvanceDestination destination %d session %d posted -> %d", destination,
-                    session_type, r);
+        swofty::log("[test] skip: MessageSetAdvanceDestination destination %d session %d posted -> %d", destination, session_type,
+                    r);
         if (r == SWOFTY_ASSET_LATE)
             return ta::Outcome::unavailable("the message bus is not active yet");
         if (r != SWOFTY_ASSET_OK)
@@ -780,8 +835,7 @@ struct InGame : ta::Game {
             return ta::Outcome::ok("{\"value\":" + ta::esc(session.run) + ",\"type\":\"str\"}");
         if (path == "ui.screen" || path == "flow.state") {
             std::lock_guard<std::mutex> g(phase_lock);
-            return ta::Outcome::ok("{\"value\":" + ta::esc(path == "ui.screen" ? screen_name : flow_name) +
-                                   ",\"type\":\"str\"}");
+            return ta::Outcome::ok("{\"value\":" + ta::esc(path == "ui.screen" ? screen_name : flow_name) + ",\"type\":\"str\"}");
         }
         if (path.rfind("car[", 0) == 0) {
             const Field *f = nullptr;
@@ -811,7 +865,9 @@ struct InGame : ta::Game {
         float fl = float(value.n);
         uint32_t bits;
         switch (f->ty) {
-        case Ty::f32: std::memcpy(at, &fl, 4); break;
+        case Ty::f32:
+            std::memcpy(at, &fl, 4);
+            break;
         case Ty::obf: {
             uint32_t key;
             std::memcpy(&key, at + 8, 4);
@@ -826,7 +882,9 @@ struct InGame : ta::Game {
             std::memcpy(at, &i, 4);
             break;
         }
-        case Ty::u8: at[0] = uint8_t(value.n); break;
+        case Ty::u8:
+            at[0] = uint8_t(value.n);
+            break;
         }
         std::string after = value_json(at, f->ty);
         swofty::log("[test] set %s: %s -> %s", path.c_str(), before.c_str(), after.c_str());
@@ -930,11 +988,14 @@ struct InGame : ta::Game {
         test_run = nullptr;
         std::string value = "{\"expects\":[" + expects + "]}";
         swofty::log("[test] run_test finished: %s (%zu failed expectation(s))",
-                    r == 1 ? "passed" : r == 2 ? "failed" : "the test threw", failed);
+                    r == 1   ? "passed"
+                    : r == 2 ? "failed"
+                             : "the test threw",
+                    failed);
         if (r == 1)
             return ta::Outcome::ok(value);
-        ta::Outcome o = ta::Outcome::fail(r == 3 ? "the test threw an exception"
-                                                 : std::to_string(failed) + " expectation(s) failed");
+        ta::Outcome o =
+            ta::Outcome::fail(r == 3 ? "the test threw an exception" : std::to_string(failed) + " expectation(s) failed");
         o.value = value;
         return o;
     }
@@ -947,10 +1008,7 @@ struct InGame : ta::Game {
         return ta::Outcome::ok();
     }
 
-    std::string title_state() override
-    {
-        return runtime::title::state();
-    }
+    std::string title_state() override { return runtime::title::state(); }
 
     ta::Outcome career_tile(const std::string &mode) override;
     ta::Outcome resume_press(const std::string &slot) override;
@@ -1080,7 +1138,6 @@ uint64_t continue_detour(void *vm, swofty::game::NeStr **cmd, void *value)
         swofty::log("[test] career: resume screen view model %p (%s)", vm, vt == ga.continue_driver_vt ? "driver" : "my team");
     return h_continue.call<uint64_t>(vm, cmd, value);
 }
-
 
 void continue_setup()
 {
@@ -1215,9 +1272,7 @@ void hq_setup()
 uint8_t *live_hq()
 {
     auto *vm = static_cast<uint8_t *>(hq_vm.load());
-    return vm && runtime::readable(vm, 0x790) && *reinterpret_cast<uintptr_t *>(vm) == ga.hq_vt
-               ? vm
-               : nullptr;
+    return vm && runtime::readable(vm, 0x790) && *reinterpret_cast<uintptr_t *>(vm) == ga.hq_vt ? vm : nullptr;
 }
 
 int hq_day(uint8_t *vm)
@@ -1464,12 +1519,9 @@ ta::Outcome InGame::session_start()
 // (+0x350, Sess_DevSession_Enable). The command validates the plan against the track base and the box, builds the
 // keys (ta::session_fill) and starts only when every row below is verified, which the bindings export only after an
 // independent agree verify row; the first one missing is the answer. Nothing is written to the game before that.
-constexpr const char *SESSION_ROWS[] = {"Ne_Config_GetString",
-                                        "Sess_DevSession_Apply",
-                                        "Sess_DevSession_Enable",
-                                        "vt_Sess_DevSessionSetupComponent",
-                                        "Sess_DevSession_Init",
-                                        "Sess_TimeTrialMode_FillDescriptor"};
+constexpr const char *SESSION_ROWS[] = {"Ne_Config_GetString",    "Sess_DevSession_Apply",
+                                        "Sess_DevSession_Enable", "vt_Sess_DevSessionSetupComponent",
+                                        "Sess_DevSession_Init",   "Sess_TimeTrialMode_FillDescriptor"};
 constexpr const char *SESSION_OPEN =
     "the call that starts the load from the front end (Sess_Request_SessionLoad, not found yet) and, for a Time Trial, "
     "the Time Trial setup it fills (it has no championship, so no dev session)";
@@ -1489,8 +1541,8 @@ ta::Outcome InGame::session_begin(const ta::SessionPlan &plan)
         label = track->name.empty() ? track->code : track->name;
     }
     if (!plan.box.empty() && track) {
-        trk::Decision d = trk::guard_package(plan.box, track,
-                                             plan.mode == "time_trial" ? trk::Mode::time_trial : trk::Mode::grand_prix, label);
+        trk::Decision d =
+            trk::guard_package(plan.box, track, plan.mode == "time_trial" ? trk::Mode::time_trial : trk::Mode::grand_prix, label);
         if (!d.ok)
             return ta::Outcome::fail("session.start: " + d.title + ": " + d.body);
     }
@@ -1532,7 +1584,8 @@ void watch()
     swofty::log("[test] agent armed for run %s: %zu test DLL(s); route %s, pad %s, ai_drives_player %s, title %s; save "
                 "sandbox %s",
                 session.run.c_str(), dlls.size(), route_why.empty() ? "ok" : route_why.c_str(),
-                runtime::pad::why().empty() ? "ok" : runtime::pad::why().c_str(), controller_why.empty() ? "ok" : controller_why.c_str(),
+                runtime::pad::why().empty() ? "ok" : runtime::pad::why().c_str(),
+                controller_why.empty() ? "ok" : controller_why.c_str(),
                 runtime::title::why().empty() ? "ok" : runtime::title::why().c_str(),
                 runtime::save_sandbox_test_mode() ? "required" : "off (the player's own saves)");
     ta::Outcome h = game->hello();

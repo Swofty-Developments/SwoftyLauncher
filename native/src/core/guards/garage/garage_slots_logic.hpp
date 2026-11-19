@@ -11,10 +11,7 @@ constexpr uint64_t VEC_END = 0x10;
 constexpr uint64_t ELEM = 8;
 constexpr uint64_t FRAME_INDEX = 0x58;
 
-inline bool user_pointer(uint64_t p)
-{
-    return p >= USER_BASE && p < USER_END;
-}
+inline bool user_pointer(uint64_t p) { return p >= USER_BASE && p < USER_END; }
 
 inline bool count_of(uint64_t begin, uint64_t end, uint64_t *count)
 {
@@ -24,10 +21,7 @@ inline bool count_of(uint64_t begin, uint64_t end, uint64_t *count)
     return true;
 }
 
-inline bool has_garage(uint64_t index, uint64_t count)
-{
-    return index < count;
-}
+inline bool has_garage(uint64_t index, uint64_t count) { return index < count; }
 
 struct Seen {
     uint64_t last_count = ~0ull;

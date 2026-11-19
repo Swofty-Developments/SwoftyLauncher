@@ -16,9 +16,8 @@ namespace render::postfx {
 class FrameReport {
 public:
     struct Stats {
-        unsigned presented = 0, in_list = 0, split_step = 0, between = 0, after_close = 0, before_hud = 0,
-                 at_present = 0, without = 0, doubled = 0, ui_together = 0, unknown_state = 0, busy = 0, deferred = 0,
-                 dropped = 0;
+        unsigned presented = 0, in_list = 0, split_step = 0, between = 0, after_close = 0, before_hud = 0, at_present = 0,
+                 without = 0, doubled = 0, ui_together = 0, unknown_state = 0, busy = 0, deferred = 0, dropped = 0;
         unsigned generated = 0, runs = 0, unplaced = 0;
         unsigned copied = 0, hud_read = 0, no_previous = 0, prev_gap = 0, onoff_untold = 0, idle[IDLE_COUNT] = {};
     };

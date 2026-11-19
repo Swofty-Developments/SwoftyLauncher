@@ -71,34 +71,16 @@ std::string MixinManager::occupying(uintptr_t at) const
 
 namespace runtime {
 
-bool core_mixins_active(const char *name)
-{
-    return loader::mixins().core_set_active(name);
-}
+bool core_mixins_active(const char *name) { return loader::mixins().core_set_active(name); }
 
-bool core_mixins_closed()
-{
-    return loader::mixins().closed();
-}
+bool core_mixins_closed() { return loader::mixins().closed(); }
 
-std::string mixin_overwrite_on(const std::string &binding, uintptr_t at)
-{
-    return loader::mixins().overwrite_on(binding, at);
-}
+std::string mixin_overwrite_on(const std::string &binding, uintptr_t at) { return loader::mixins().overwrite_on(binding, at); }
 
-size_t addon_load_index(uint64_t module)
-{
-    return loader::mixins().load_index(module);
-}
+size_t addon_load_index(uint64_t module) { return loader::mixins().load_index(module); }
 
-std::string mixin_occupying(uintptr_t at)
-{
-    return loader::mixins().occupying(at);
-}
+std::string mixin_occupying(uintptr_t at) { return loader::mixins().occupying(at); }
 
 }
 
-std::string core_code_owner(uintptr_t addr)
-{
-    return runtime::loader::mixins().code_owner(addr);
-}
+std::string core_code_owner(uintptr_t addr) { return runtime::loader::mixins().code_owner(addr); }

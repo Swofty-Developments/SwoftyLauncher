@@ -30,14 +30,8 @@ template <class FgOff> inline Gate gate_for_swapchain(std::string_view fg, bool 
     return armed_late ? Gate::Direct : gate_for_swapchain(fg, streamline, fg_setting_off);
 }
 
-inline bool draws_before_present(Gate gate, bool device_hooks)
-{
-    return gate != Gate::Direct && device_hooks;
-}
+inline bool draws_before_present(Gate gate, bool device_hooks) { return gate != Gate::Direct && device_hooks; }
 
-inline bool draws_at_present(Gate gate)
-{
-    return gate == Gate::Direct;
-}
+inline bool draws_at_present(Gate gate) { return gate == Gate::Direct; }
 
 }

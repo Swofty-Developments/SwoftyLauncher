@@ -49,10 +49,7 @@ int group_index(void *component, void *)
     return fn && mem::in_image(fn) ? reinterpret_cast<GroupIndex *>(fn)(component) : -1;
 }
 
-bool readable(const void *p, size_t n, void *)
-{
-    return mem::readable(p, n);
-}
+bool readable(const void *p, size_t n, void *) { return mem::readable(p, n); }
 
 }
 
@@ -123,8 +120,7 @@ bool predicate_entry(void *self, void *championship)
     if (stock || !championship || !used())
         return stock;
     Slot *s = by_mode(championship);
-    auto *holder = s && mem::readable(static_cast<uint8_t *>(self) + 8, 8) ? content::at<const uint8_t *>(self, 0x08)
-                                                                           : nullptr;
+    auto *holder = s && mem::readable(static_cast<uint8_t *>(self) + 8, 8) ? content::at<const uint8_t *>(self, 0x08) : nullptr;
     const char *want = holder && mem::readable(holder, 8) ? content::at<const char *>(holder, 0x00) : nullptr;
     if (!want || !mem::readable(want, 1) || s->desc.data_group != want)
         return false;

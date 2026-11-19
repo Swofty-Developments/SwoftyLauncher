@@ -15,15 +15,9 @@ constexpr uint32_t STAT_ID_MASK = 0x3fff;
 constexpr size_t LABEL_CHARS = 0x100;
 constexpr size_t LOG_LABELS = 32;
 
-inline bool row_missing(int32_t index)
-{
-    return index < 0;
-}
+inline bool row_missing(int32_t index) { return index < 0; }
 
-inline uint32_t stat_id(uint32_t saved)
-{
-    return saved & STAT_ID_MASK;
-}
+inline uint32_t stat_id(uint32_t saved) { return saved & STAT_ID_MASK; }
 
 struct KnownAddon {
     const char *prefix;
@@ -61,7 +55,8 @@ template <class Mem> bool skip_base(Mem &mem, uint64_t rsp, uint64_t row, Skip &
         return false;
     uint64_t container = 0, base = 0, label = 0;
     uint32_t saved = 0;
-    if (!mem.u64(rsp + FRAME_CONTAINER, container) || !container || !mem.u64(rsp + FRAME_INDEX, base) || !mem.u32(rsp + FRAME_STAT_ID, saved))
+    if (!mem.u64(rsp + FRAME_CONTAINER, container) || !container || !mem.u64(rsp + FRAME_INDEX, base) ||
+        !mem.u32(rsp + FRAME_STAT_ID, saved))
         return false;
     out.container = container;
     out.index = base;

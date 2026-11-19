@@ -37,7 +37,8 @@ constexpr const char *PATTERN_REPORT_MEMORY_ERROR =
 constexpr uint8_t HEAP_ERROR_PREFIX[] = {0x55, 0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41, 0x54, 0x56,
                                          0x57, 0x53, 0x48, 0x83, 0xEC, 0x18, 0x48, 0x8D, 0x6C, 0x24,
                                          0x10, 0x89, 0xD6, 0x48, 0x89, 0xCF, 0x48, 0x8B, 0x5D, 0x78};
-constexpr uint32_t RVA_REPORT_GS_FAILURE = 0x4d9245c, RVA_FAST_FAIL_TERMINATE = 0x5349d58, RVA_INVALID_PARAMETER_ABORT = 0x5351784;
+constexpr uint32_t RVA_REPORT_GS_FAILURE = 0x4d9245c, RVA_FAST_FAIL_TERMINATE = 0x5349d58,
+                   RVA_INVALID_PARAMETER_ABORT = 0x5351784;
 constexpr const char *PATTERN_REPORT_GS_FAILURE = "48 89 4C 24 08 48 83 EC 38 B9 17 00 00 00";
 constexpr const char *PATTERN_FAST_FAIL_TERMINATE = "48 83 EC 28 B9 17 00 00 00 FF 15 ?? ?? ?? ?? 85 C0 74 07 B9";
 constexpr const char *PATTERN_INVALID_PARAMETER_ABORT = "48 83 EC 28 E8 ?? ?? ?? ?? 48 85 C0 74 0A B9 16";

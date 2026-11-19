@@ -10,10 +10,17 @@ void stock_team_rows(Db &db)
     const char *names[] = {"mercedes", "tororosso"};
     for (int i = 0; i < 2; i++) {
         std::string p = "entrants.teams.team_" + std::to_string(i);
-        row(p, {{"_metadata_", names[i]}, {"display_name", "lng_stock"}, {"display_name_code", "STK"},
-                {"display_name_short", "lng_stock_s"}, {"display_name_super_short", "lng_stock_ss"},
-                {"team_base", "lng_base"}, {"livery_name", names[i]}, {"timing_tower_texture_path", names[i]},
-                {"animation_set", "f1_2025"}, {"nationality", "britain"}, {"team_boss", "boss"},
+        row(p, {{"_metadata_", names[i]},
+                {"display_name", "lng_stock"},
+                {"display_name_code", "STK"},
+                {"display_name_short", "lng_stock_s"},
+                {"display_name_super_short", "lng_stock_ss"},
+                {"team_base", "lng_base"},
+                {"livery_name", names[i]},
+                {"timing_tower_texture_path", names[i]},
+                {"animation_set", "f1_2025"},
+                {"nationality", "britain"},
+                {"team_boss", "boss"},
                 {"expression_label", names[i]}});
         db.put(p + ".stat_id", 0, i ? "3" : "0");
         db.put(p + ".available", 5, "False");
@@ -32,8 +39,12 @@ void stock_team_rows(Db &db)
     db.put("pit_lane.pit_times._team_pit_times_instancecount_", 0, "2");
     for (int i = 0; i < 2; i++) {
         std::string p = "pit_lane.pit_times.team_pit_times_" + std::to_string(i);
-        row(p, {{"_metadata_", names[i]}, {"team", names[i]}, {"min_pit_time", i ? "2.9" : "2.4"}, {"max_pit_time", "3.5"},
-                {"min_pit_time_fully_upgraded", "2"}, {"max_pit_time_fully_upgraded", "3"}});
+        row(p, {{"_metadata_", names[i]},
+                {"team", names[i]},
+                {"min_pit_time", i ? "2.9" : "2.4"},
+                {"max_pit_time", "3.5"},
+                {"min_pit_time_fully_upgraded", "2"},
+                {"max_pit_time_fully_upgraded", "3"}});
     }
     db.put("bank.initial_team_cash._InitialTeamCash_instancecount_", 0, "1");
     row("bank.initial_team_cash.InitialTeamCash_0", {{"_metadata_", "tororosso"}, {"team", "tororosso"}, {"cash", "5000"}});
@@ -49,7 +60,9 @@ void stock_team_rows(Db &db)
     row(td + ".date_0", {{"_metadata_", "d"}, {"day", "1"}, {"month", "2"}, {"year", "2012"}});
     db.put("driver_market.driver_market._DataGroup_instancecount_", 0, "1");
     row("driver_market.driver_market.DataGroup_0", {{"_metadata_", "2025"}});
-    db.put("driver_market.driver_market.DataGroup_0.team_driver_rating_range_requirements._TeamDriverRatingRangeRequirement_instancecount_", 0, "1");
+    db.put("driver_market.driver_market.DataGroup_0.team_driver_rating_range_requirements._TeamDriverRatingRangeRequirement_"
+           "instancecount_",
+           0, "1");
     row("driver_market.driver_market.DataGroup_0.team_driver_rating_range_requirements.TeamDriverRatingRangeRequirement_0",
         {{"_metadata_", "tororosso"}, {"team", "tororosso"}, {"rating_range", "60,80"}});
     db.put("showroom.teams_history._team_history_instancecount_", 0, "1");
@@ -88,7 +101,8 @@ void team_tests(const std::string &regs)
                                            "names": { "title": { "literal": "B Toro" } }, "stat_id": "auto" } } })j");
     st.end_register();
     for (auto &r : st.refusals())
-        std::printf("      refused: %s %s %s %s: %s\n", r.addon.c_str(), r.registry.c_str(), r.id.c_str(), r.reason.c_str(), r.message.c_str());
+        std::printf("      refused: %s %s %s %s: %s\n", r.addon.c_str(), r.registry.c_str(), r.id.c_str(), r.reason.c_str(),
+                    r.message.c_str());
     check(r1 == SWOFTY_ASSET_OK && r2 == SWOFTY_ASSET_OK, "the team records register");
     Db db;
     stock_team_rows(db);
@@ -97,19 +111,23 @@ void team_tests(const std::string &regs)
         return r ? std::optional<std::string>(r->text) : std::nullopt;
     };
     for (auto &c : content::CONSTRUCTOR_SEEDS)
-        st.add_base("team.constructor", c.key,
-                    Value::object({{"name", Value(std::string(c.name))}, {"country", Value(std::string(c.country))}, {"team", Value()}}));
+        st.add_base(
+            "team.constructor", c.key,
+            Value::object({{"name", Value(std::string(c.name))}, {"country", Value(std::string(c.country))}, {"team", Value()}}));
     auto stock = content::stock_teams(stock_read);
     for (auto &t : stock)
         st.add_base("team.identity", t.label, t.record);
     st.stock_loaded("team.identity", true);
-    check(stock.size() == 2 && stock[0].label == "mercedes" && stock[1].record["stat_id"].as_int() == 3, "the stock team rows become team.identity bases with their stat ids");
+    check(stock.size() == 2 && stock[0].label == "mercedes" && stock[1].record["stat_id"].as_int() == 3,
+          "the stock team rows become team.identity bases with their stat ids");
     auto stock_mer = st.get("team.identity", "game/mercedes");
     check(stock_mer.status == registry::Status::ok && stock_mer.value["names"]["title"]["literal"].as_string() == "lng_stock" &&
-              stock_mer.value["colours"]["primary"].as_string() == "#FFFC18" && stock_mer.value["provides"][0].as_string() == "constructor/mercedes",
+              stock_mer.value["colours"]["primary"].as_string() == "#FFFC18" &&
+              stock_mer.value["provides"][0].as_string() == "constructor/mercedes",
           "a stock base takes its names and colours from the row and provides its real team's constructor id");
     auto cm = st.get("team.constructor", "constructor/mercedes");
-    check(cm.status == registry::Status::ok && cm.value["team"].as_string() == "game/mercedes", "constructor/mercedes resolves to the stock row");
+    check(cm.status == registry::Status::ok && cm.value["team"].as_string() == "game/mercedes",
+          "constructor/mercedes resolves to the stock row");
     auto pins = content::pins(st);
     check(pins.size() == 1 && pins[0].registry == "team.identity" && pins[0].stat_id == 600, "the pinned team stat id");
     apply::ids::Store ids;
@@ -134,8 +152,10 @@ void team_tests(const std::string &regs)
         std::printf("      %s\n", l.c_str());
     for (auto &l : x.lines["team.pit_times"])
         std::printf("      %s\n", l.c_str());
-    check(x.records["team.identity"] == 3 && x.refused["team.identity"] == 1 && st.get("team.identity", "mod.a/lost").status != registry::Status::ok,
-          "three teams apply; the one with a taken label does not, and with the stock rows declared the one whose donor is no stock team never registers");
+    check(x.records["team.identity"] == 3 && x.refused["team.identity"] == 1 &&
+              st.get("team.identity", "mod.a/lost").status != registry::Status::ok,
+          "three teams apply; the one with a taken label does not, and with the stock rows declared the one whose donor is no "
+          "stock team never registers");
     check(written(x.engine, "entrants.teams._team_instancecount_") == "5", "the team row count grows by three");
     auto field = [&](const std::string &row, const char *f) { return written(x.engine, "entrants.teams." + row + "." + f); };
     auto team_row = [&](const char *label) {
@@ -151,7 +171,8 @@ void team_tests(const std::string &regs)
         return std::string("none");
     };
     std::string tr = team_row("toro_rosso_2017"), pl = team_row("plain_team"), vrow = team_row("toro_rosso_b");
-    check(tr != "none" && pl != "none" && vrow != "none" && field(tr, "stat_id") == "600", "each applied team has a row at the next index; the pinned id is kept");
+    check(tr != "none" && pl != "none" && vrow != "none" && field(tr, "stat_id") == "600",
+          "each applied team has a row at the next index; the pinned id is kept");
     check(field(tr, "display_name") == "lng_cs_toro" && field(tr, "display_name_short") == "Toro Rosso" &&
               field(tr, "display_name_super_short") == "STR" && field(tr, "display_name_code") == "STR",
           "names: a lang key stays one, a literal is the text");
@@ -159,14 +180,16 @@ void team_tests(const std::string &regs)
           "livery name, nationality and prestige");
     bool told_nation = false;
     for (auto &l : x.lines["team.identity"])
-        told_nation |= l == "team.identity mod.a/plain_team: nationality atlantis is not an entrants.nationality row, default used";
+        told_nation |=
+            l == "team.identity mod.a/plain_team: nationality atlantis is not an entrants.nationality row, default used";
     check(field(pl, "nationality") == "default" && field(vrow, "nationality") == "italy" && told_nation,
           "a nationality with no entrants.nationality row becomes default, and the line says so");
     auto signed_argb = [](uint32_t v) { return std::to_string(int32_t(v)); };
     check(field(tr, "primary_colour") == signed_argb(0xFF0A1E3C) && field(tr, "ui_team_colour") == signed_argb(0xFF0A1E3C) &&
               field(tr, "tertiary_colour") == signed_argb(0x80FFFFFF),
           "colours are signed ARGB, #RRGGBB opaque");
-    check(field(tr, "team_wear_primary_colour") == signed_argb(0xFF0A1E3C) && field(tr, "team_wear_secondary_colour") == signed_argb(0xFFC8102E),
+    check(field(tr, "team_wear_primary_colour") == signed_argb(0xFF0A1E3C) &&
+              field(tr, "team_wear_secondary_colour") == signed_argb(0xFFC8102E),
           "no wear colours: the kit follows the primary triple");
     check(field(tr, "timing_tower_texture_path") == "toro_rosso_2017", "a hud image gives the team its own timing tower key");
     check(field(tr, "story_info_0.description") == "lng_desc_tr" && field(tr, "_story_info_instancecount_") == "1" &&
@@ -175,26 +198,31 @@ void team_tests(const std::string &regs)
     check(field(tr, "team_boss") == "franz_tost" && field(tr, "team_base") == "Faenza, Italy",
           "team_boss and team_base: the principal's character label and the base text go on the row");
     check(field(tr, "available") == "False", "available stays false until an entrant list names the team");
-    check(field(pl, "timing_tower_texture_path") == "plain_team", "a team with an image but none for hud or broadcast gets its own timing tower key");
+    check(field(pl, "timing_tower_texture_path") == "plain_team",
+          "a team with an image but none for hud or broadcast gets its own timing tower key");
     check(written(x.engine, "pit_lane.pit_times._team_pit_times_instancecount_") == "5", "three pit time rows are added");
     std::string pit = side_row("pit_lane.pit_times", "team_pit_times", "toro_rosso_2017");
-    check(pit != "none" && written(x.engine, pit + ".min_pit_time") == "2.3" && written(x.engine, pit + ".max_pit_time") == "3.5" &&
-              x.engine.text(pit + ".min_pit_time") == "2.3" && written(x.engine, pit + "._metadata_") == "toro_rosso_2017",
+    check(pit != "none" && written(x.engine, pit + ".min_pit_time") == "2.3" &&
+              written(x.engine, pit + ".max_pit_time") == "3.5" && x.engine.text(pit + ".min_pit_time") == "2.3" &&
+              written(x.engine, pit + "._metadata_") == "toro_rosso_2017",
           "a team.pit_times record copies the named team's row and sets its values (the identity did not copy its own)");
     std::string pit_pl = side_row("pit_lane.pit_times", "team_pit_times", "plain_team");
-    check(pit_pl != "none" && written(x.engine, pit_pl + ".min_pit_time") == "2.4", "without a record the pit times are the donor's");
+    check(pit_pl != "none" && written(x.engine, pit_pl + ".min_pit_time") == "2.4",
+          "without a record the pit times are the donor's");
     std::string pit_b = side_row("pit_lane.pit_times", "team_pit_times", "toro_rosso_b");
-    check(pit_b != "none" && written(x.engine, pit_b + ".min_pit_time") == "2.9", "a variant's pit times are its donor's: it inherits the base's donor");
+    check(pit_b != "none" && written(x.engine, pit_b + ".min_pit_time") == "2.9",
+          "a variant's pit times are its donor's: it inherits the base's donor");
     std::string bank = side_row("bank.initial_team_cash", "InitialTeamCash", "toro_rosso_2017");
     check(bank != "none" && written(x.engine, bank + ".cash") == "5000" &&
               written(x.engine, "bank.initial_team_cash._InitialTeamCash_instancecount_") == "3",
           "initial cash is the donor's");
     std::string fac = side_row("facilities.facilities.Facilities_0.team_developments", "TeamDevelopment", "toro_rosso_2017");
-    check(fac != "none" && written(x.engine, fac + ".installed") == "spec_1,spec_2" && written(x.engine, fac + ".date_0.year") == "2012" &&
-              written(x.engine, fac + "._date_instancecount_") == "1" &&
+    check(fac != "none" && written(x.engine, fac + ".installed") == "spec_1,spec_2" &&
+              written(x.engine, fac + ".date_0.year") == "2012" && written(x.engine, fac + "._date_instancecount_") == "1" &&
               side_row("facilities.facilities.Facilities_1.team_developments", "TeamDevelopment", "toro_rosso_2017") == "none",
           "facilities: the data group that holds the donor's row gets one, with its nested dates; the others none");
-    std::string dm = side_row("driver_market.driver_market.DataGroup_0.team_driver_rating_range_requirements", "TeamDriverRatingRangeRequirement", "toro_rosso_2017");
+    std::string dm = side_row("driver_market.driver_market.DataGroup_0.team_driver_rating_range_requirements",
+                              "TeamDriverRatingRangeRequirement", "toro_rosso_2017");
     check(dm != "none" && written(x.engine, dm + ".rating_range") == "60,80" &&
               side_row("showroom.teams_history", "team_history", "toro_rosso_2017") != "none",
           "driver market and showroom history rows");
@@ -209,7 +237,8 @@ void team_tests(const std::string &regs)
         hub_alias |= l.context == "hub" && !l.stock.empty();
         ts |= l.array == "team_logos.driver_career_2024_team_select" && l.key == "plain_team" && l.file == "logos/ts.png";
     }
-    check(hud && ds && ts && !hub_alias, "logo images: the hud array by the timing tower key, the label arrays by the label, driver select wins over hub");
+    check(hud && ds && ts && !hub_alias,
+          "logo images: the hud array by the timing tower key, the label arrays by the label, driver select wins over hub");
     auto fell = [&](const char *team, const char *array) {
         for (auto &l : x.logos)
             if (l.team == team && l.array == array && l.fallback)
@@ -255,8 +284,8 @@ void team_tests(const std::string &regs)
         check(donor_only && bare.lines.size() == 3 && bare.lines[0] == "team.logo: bare uses williams's driver_select logo",
               "only a team with no image at all falls back to the donor's slice, outside the timing tower");
         Value pack = Value::object({{"images", Value::object({{"driver_select", Value("logos/ig_racing_driver_select.png")},
-                                                               {"team_select", Value("logos/ig_racing_team_select.png")},
-                                                               {"hud", Value("logos/ig_racing_hud.png")}})}});
+                                                              {"team_select", Value("logos/ig_racing_team_select.png")},
+                                                              {"hud", Value("logos/ig_racing_hud.png")}})}});
         content::lower_logo_images("ig_racing", "williams", "ig.teampack/ig_racing", &pack, "ig_racing", ig);
         std::map<std::string, std::string> by_array;
         bool fallback = false;
@@ -264,12 +293,13 @@ void team_tests(const std::string &regs)
             by_array[l.array] = l.file;
             fallback |= l.fallback;
         }
-        check(!fallback && by_array["teams.badges_broadcast"] == "logos/ig_racing_driver_select.png" &&
-                  by_array["broadcast_ui_generic.grid_team_logos"] == "logos/ig_racing_driver_select.png" &&
-                  by_array["osd.timing_tower.team_badges_broadcast"] == "logos/ig_racing_hud.png" &&
-                  by_array["osd.timing_tower.team_badges_hud"] == "logos/ig_racing_hud.png" &&
-                  by_array["teams.driver_select_team_logos"] == "logos/ig_racing_driver_select.png" && by_array.size() == 7,
-              "ig.teampack's three images: the broadcast badge (Choose Driver's card) is its driver select image, not williams's");
+        check(
+            !fallback && by_array["teams.badges_broadcast"] == "logos/ig_racing_driver_select.png" &&
+                by_array["broadcast_ui_generic.grid_team_logos"] == "logos/ig_racing_driver_select.png" &&
+                by_array["osd.timing_tower.team_badges_broadcast"] == "logos/ig_racing_hud.png" &&
+                by_array["osd.timing_tower.team_badges_hud"] == "logos/ig_racing_hud.png" &&
+                by_array["teams.driver_select_team_logos"] == "logos/ig_racing_driver_select.png" && by_array.size() == 7,
+            "ig.teampack's three images: the broadcast badge (Choose Driver's card) is its driver select image, not williams's");
         std::vector<std::string> want = {"team.logo: ig_racing uses its hud image for broadcast",
                                          "team.logo: ig_racing uses its driver_select image for broadcast"};
         check(ig.lines == want, "and the core logs where each borrowed image came from");
@@ -277,9 +307,12 @@ void team_tests(const std::string &regs)
     std::map<std::string, Value> keep;
     auto lookup = content::own_lookup(st, keep);
     auto refs = content::refs_of(st, lookup);
-    check(refs.constructor_team["toro_rosso"] == "mod.b/toro_rosso_b", "constructor/toro_rosso is the last enabled team in load order that is that constructor");
-    check(content::team_label(Value("constructor/toro_rosso"), refs) == "toro_rosso_b", "and a constructor/ reference resolves to its label");
-    check(refs.lines.size() == 1 && refs.lines[0].find("provided by mod.b/toro_rosso_b") != std::string::npos, "the constructor report line");
+    check(refs.constructor_team["toro_rosso"] == "mod.b/toro_rosso_b",
+          "constructor/toro_rosso is the last enabled team in load order that is that constructor");
+    check(content::team_label(Value("constructor/toro_rosso"), refs) == "toro_rosso_b",
+          "and a constructor/ reference resolves to its label");
+    check(refs.lines.size() == 1 && refs.lines[0].find("provided by mod.b/toro_rosso_b") != std::string::npos,
+          "the constructor report line");
 
     namespace ct = career::ops::teams;
     auto season = [](int year, const char *team) {
@@ -319,7 +352,8 @@ void team_tests(const std::string &regs)
         int dressed = 0, pending = 0;
         for (auto &a : plan.actions)
             if (a.kind == ct::Kind::dressed) {
-                if (ct::dresser() && ct::dresser()(table.rows.empty() ? "" : "mod.a.2012", a.slot, a.row.c_str(), a.team.c_str(), -1))
+                if (ct::dresser() &&
+                    ct::dresser()(table.rows.empty() ? "" : "mod.a.2012", a.slot, a.row.c_str(), a.team.c_str(), -1))
                     dressed++;
                 else
                     pending++;
@@ -327,7 +361,8 @@ void team_tests(const std::string &regs)
         return std::pair<int, int>(dressed, pending);
     };
     auto none = run_dresser();
-    check(none.first == 0 && none.second == 1 && live.pending.size() == 1, "without a way to the loaded team record the dressing is queued and reported pending");
+    check(none.first == 0 && none.second == 1 && live.pending.size() == 1,
+          "without a way to the loaded team record the dressing is queued and reported pending");
     live.record = [&](uint16_t stat) -> uint8_t * { return stat == 600 ? record.data() : nullptr; };
     live.pending.clear();
     auto done = run_dresser();
@@ -342,7 +377,8 @@ void team_tests(const std::string &regs)
     std::vector<std::string> bufs2(4, std::string(0x80, 'y'));
     for (std::size_t i = 0; i < 4; i++) {
         char *p = bufs2[i].data();
-        std::size_t at[] = {content::team_record::DISPLAY_NAME, content::team_record::SHORT, content::team_record::SUPER_SHORT, content::team_record::CODE};
+        std::size_t at[] = {content::team_record::DISPLAY_NAME, content::team_record::SHORT, content::team_record::SUPER_SHORT,
+                            content::team_record::CODE};
         std::memcpy(reloaded.data() + at[i], &p, sizeof p);
     }
     check(content::redress(600, reloaded.data()) && std::string(bufs2[0].c_str()) == "B Toro",
@@ -370,17 +406,22 @@ void team_tests(const std::string &regs)
     check(ct::dresser()("g", 2, "game/tororosso", "mod.b/toro_rosso_b", -1) && std::string(bufs3[0].c_str()) == "B Toro" &&
               std::string(bufs3[4].c_str()) == "Faenza, Italy" && stock_record[content::team_record::TEAM_BOSS] == 41,
           "a stock slot row dresses through the stat id of its stock record");
-    check(ct::dresser()("g", 2, "game/tororosso", "game/tororosso", -1) && std::string(bufs3[0].c_str()) == "lng_stock" && !live.wears.count(3),
+    check(ct::dresser()("g", 2, "game/tororosso", "game/tororosso", -1) && std::string(bufs3[0].c_str()) == "lng_stock" &&
+              !live.wears.count(3),
           "a slot that returns to its own team gets the stock names back and is forgotten");
-    check(std::string(bufs3[4].c_str()) == "lng_base" && stock_record[content::team_record::TEAM_BOSS] == 7 && !live.kept.count(3),
+    check(std::string(bufs3[4].c_str()) == "lng_base" && stock_record[content::team_record::TEAM_BOSS] == 7 &&
+              !live.kept.count(3),
           "and its own base and principal, as the record held them before the dress");
     live.character_stat = nullptr;
     check(ct::dresser()("g", 2, "game/tororosso", "mod.b/toro_rosso_b", -1) && std::string(bufs3[4].c_str()) == "Faenza, Italy" &&
-              stock_record[content::team_record::TEAM_BOSS] == 7 && log.back().find("its team_boss franz_tost is not an entrants.characters row") != std::string::npos,
+              stock_record[content::team_record::TEAM_BOSS] == 7 &&
+              log.back().find("its team_boss franz_tost is not an entrants.characters row") != std::string::npos,
           "a principal whose character row can't be found leaves the record's principal and says so");
     check(content::undress_all("the career unloaded") == 1 && std::string(bufs3[0].c_str()) == "lng_stock" &&
-              std::string(bufs3[4].c_str()) == "lng_base" && stock_record[content::team_record::TEAM_BOSS] == 7 && live.wears.empty() &&
-              live.kept.empty() && log.back() == "undress stat id 3: mod.b/toro_rosso_b taken off, game/tororosso back in its own names and colours (the career unloaded)",
+              std::string(bufs3[4].c_str()) == "lng_base" && stock_record[content::team_record::TEAM_BOSS] == 7 &&
+              live.wears.empty() && live.kept.empty() &&
+              log.back() == "undress stat id 3: mod.b/toro_rosso_b taken off, game/tororosso back in its own names and colours "
+                            "(the career unloaded)",
           "a career unload puts every dressed record back in its own identity, base and principal");
     ct::dresser() = nullptr;
 }

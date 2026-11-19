@@ -63,20 +63,11 @@ bool test_stock_set = false;
 mk::Stock test_stock;
 
 struct Game {
-    bool u64(uint64_t a, uint64_t &out)
-    {
-        return mem::read(static_cast<uintptr_t>(a), out);
-    }
+    bool u64(uint64_t a, uint64_t &out) { return mem::read(static_cast<uintptr_t>(a), out); }
 
-    bool u32(uint64_t a, uint32_t &out)
-    {
-        return mem::read(static_cast<uintptr_t>(a), out);
-    }
+    bool u32(uint64_t a, uint32_t &out) { return mem::read(static_cast<uintptr_t>(a), out); }
 
-    bool text(uint64_t a, std::string &out)
-    {
-        return mem::c_string(static_cast<uintptr_t>(a), out, mh::LABEL_CHARS);
-    }
+    bool text(uint64_t a, std::string &out) { return mem::c_string(static_cast<uintptr_t>(a), out, mh::LABEL_CHARS); }
 };
 
 bool row_index(const std::string &label, uint64_t &out)
@@ -96,8 +87,8 @@ bool stock_car(const std::string &label, mk::Stock &out)
     Game game;
     uintptr_t mgr = 0, entrants = 0;
     mh::Source source;
-    if (manager_slot && mem::read(manager_slot, mgr) && mgr && mem::read(mgr + runtime::manager_entrants_system(), entrants) && entrants &&
-        mk::pick(mh::stock(game, entrants), label, source)) {
+    if (manager_slot && mem::read(manager_slot, mgr) && mgr && mem::read(mgr + runtime::manager_entrants_system(), entrants) &&
+        entrants && mk::pick(mh::stock(game, entrants), label, source)) {
         uint8_t engine = 0;
         out.label = source.label;
         if (!game.u32(source.vehicle, out.handle) || mh::kind(out.handle) != mh::KIND_STOCK ||
@@ -185,7 +176,8 @@ private:
         if (n && n < sizeof t)
             test_stock_set = mk::parse_stock(t, test_stock);
         manager_slot = swofty::api->resolve("g_Game_Manager");
-        if ((!manager_slot && !test_stock_set) || !swofty::api->resolve(LOAD) || !swofty::api->resolve(NEXT) || !swofty::api->resolve(SAVE)) {
+        if ((!manager_slot && !test_stock_set) || !swofty::api->resolve(LOAD) || !swofty::api->resolve(NEXT) ||
+            !swofty::api->resolve(SAVE)) {
             swofty::log("[myteam] vehicle keep off: needs %s, %s, %s and g_Game_Manager, which this build does not all resolve; "
                         "a car whose row is gone is skipped",
                         LOAD, NEXT, SAVE);
@@ -215,10 +207,7 @@ KeepGuard guard;
 
 namespace runtime {
 
-bool myteam_keep_forced(const std::string &label)
-{
-    return live && mk::forced(test_label, label);
-}
+bool myteam_keep_forced(const std::string &label) { return live && mk::forced(test_label, label); }
 
 bool myteam_keep_substitute(SwoftyContext *c, uint32_t stat, const std::string &label)
 {

@@ -20,10 +20,7 @@ inline uint64_t fnv64(const void *p, size_t n, uint64_t h = FNV64_BASIS)
     return h;
 }
 
-inline uint64_t fnv64(const std::string &s, uint64_t h = FNV64_BASIS)
-{
-    return fnv64(s.data(), s.size(), h);
-}
+inline uint64_t fnv64(const std::string &s, uint64_t h = FNV64_BASIS) { return fnv64(s.data(), s.size(), h); }
 
 inline uint32_t fnv32(const void *p, size_t n, uint32_t h = FNV32_BASIS)
 {
@@ -33,10 +30,7 @@ inline uint32_t fnv32(const void *p, size_t n, uint32_t h = FNV32_BASIS)
     return h;
 }
 
-inline uint32_t fnv32(const std::string &s, uint32_t h = FNV32_BASIS)
-{
-    return fnv32(s.data(), s.size(), h);
-}
+inline uint32_t fnv32(const std::string &s, uint32_t h = FNV32_BASIS) { return fnv32(s.data(), s.size(), h); }
 
 inline uint32_t fnv32(const char *s)
 {
@@ -47,10 +41,7 @@ inline uint32_t fnv32(const char *s)
 }
 
 // FNV-1a over s and one more step, so the fields of a chain stay apart ("ab" then "c" differs from "a" then "bc").
-inline uint64_t fnv64_field(uint64_t h, const std::string &s)
-{
-    return fnv64(s, h) * FNV64_PRIME + 0x9e3779b97f4a7c15ull;
-}
+inline uint64_t fnv64_field(uint64_t h, const std::string &s) { return fnv64(s, h) * FNV64_PRIME + 0x9e3779b97f4a7c15ull; }
 
 // Reads eight bytes a step: the checksum and name hash of large blobs, where fnv64's byte loop is slow.
 inline uint64_t mix64(const void *p, size_t n)

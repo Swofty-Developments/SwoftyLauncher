@@ -26,11 +26,19 @@ namespace {
 
 const runtime::Sig S_MOVIE_TILE{"FeHome_MovieTileBlock",
                                 "41 80 C7 02 4C 89 F1 44 89 FA E8 ?? ?? ?? ?? 45 89 FC 45 8D 7C 24 01 4C 89 F1 44 89 FA E8",
-                                0x1742fdc, runtime::Sig::addr, 0, 0, 0};
+                                0x1742fdc,
+                                runtime::Sig::addr,
+                                0,
+                                0,
+                                0};
 
 const runtime::Sig S_STORY_TILE{"FeHome_StoryTileBlock",
                                 "A8 01 74 0E 41 FE C7 4C 89 F1 44 89 FA E8 ?? ?? ?? ?? 45 8D 67 01 4C 89 F1 44 89 E2 E8",
-                                0x1742fb7, runtime::Sig::addr, 0, 2, 0};
+                                0x1742fb7,
+                                runtime::Sig::addr,
+                                0,
+                                2,
+                                0};
 
 bool overwrite(const runtime::Sig &sig, const uint8_t *bytes, size_t size)
 {
@@ -52,9 +60,18 @@ bool overwrite(const runtime::Sig &sig, const uint8_t *bytes, size_t size)
 // branch lands in the 9 replaced bytes.
 const runtime::Sig S_LAN_TILE{"FeTile_LocalMp_LanTile",
                               "4C 8D 05 ?? ?? ?? ?? 4C 89 F1 B2 01 E8 ?? ?? ?? ?? 48 C7 44 24 38 00 00 00 00",
-                              0x173e7a7, runtime::Sig::addr, 0, 0x11, 0};
-const runtime::Sig S_TILE_TAIL{"FeTile_Build_List_ItemsTail", "4C 89 F1 E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? E8 ?? ?? ?? ?? B2 01",
-                               0x1745016, runtime::Sig::rel32, 8, 9, 5};
+                              0x173e7a7,
+                              runtime::Sig::addr,
+                              0,
+                              0x11,
+                              0};
+const runtime::Sig S_TILE_TAIL{"FeTile_Build_List_ItemsTail",
+                               "4C 89 F1 E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? E8 ?? ?? ?? ?? B2 01",
+                               0x1745016,
+                               runtime::Sig::rel32,
+                               8,
+                               9,
+                               5};
 
 void hide_lan_tile()
 {
@@ -97,9 +114,6 @@ void hide_story_tile()
 
 namespace runtime {
 
-void local_tiles_setup()
-{
-    frontend::hide_lan_tile();
-}
+void local_tiles_setup() { frontend::hide_lan_tile(); }
 
 }

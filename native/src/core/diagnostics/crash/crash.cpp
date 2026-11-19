@@ -18,7 +18,6 @@
 #include "safetyhook.hpp"
 #include "swofty_api.h"
 
-
 // Crash log and crash reports. The crash log writes each fatal-class exception, the top-level filter
 // and calls to ExitProcess and TerminateProcess to loader.log. A crash report (swofty\crash-<time>.txt
 // and a minidump beside it) is written once per process: for an exception that reaches the top-level
@@ -92,11 +91,7 @@ void crash_game_hooks()
 
 namespace runtime {
 
-std::string code_where(uintptr_t a)
-{
-    return crash::where(a);
-}
-
+std::string code_where(uintptr_t a) { return crash::where(a); }
 
 void crash_blame(const char *text)
 {
@@ -157,24 +152,28 @@ void crash_attach(SwoftyApi *a, const std::wstring &dir)
     if (n && n < MAX_PATH - 16) {
         wcscpy(sys + n, L"\\dbghelp.dll");
         if (HMODULE dh = LoadLibraryW(sys))
-            report_writer.write_dump = reinterpret_cast<DumpFn>(reinterpret_cast<void *>(GetProcAddress(dh, "MiniDumpWriteDump")));
+            report_writer.write_dump =
+                reinterpret_cast<DumpFn>(reinterpret_cast<void *>(GetProcAddress(dh, "MiniDumpWriteDump")));
     }
     HMODULE ntdll = GetModuleHandleW(L"ntdll.dll"), k32 = GetModuleHandleW(L"kernel32.dll");
     HMODULE kb = GetModuleHandleW(L"kernelbase.dll");
-    process.query_thread = reinterpret_cast<ThreadInfoFn>(reinterpret_cast<void *>(GetProcAddress(ntdll, "NtQueryInformationThread")));
-    process.wine_version = reinterpret_cast<const char *(*)()>(reinterpret_cast<void *>(GetProcAddress(ntdll, "wine_get_version")));
+    process.query_thread =
+        reinterpret_cast<ThreadInfoFn>(reinterpret_cast<void *>(GetProcAddress(ntdll, "NtQueryInformationThread")));
+    process.wine_version =
+        reinterpret_cast<const char *(*)()>(reinterpret_cast<void *>(GetProcAddress(ntdll, "wine_get_version")));
     auto describe = reinterpret_cast<HRESULT(WINAPI *)(HANDLE, PCWSTR)>(
         reinterpret_cast<void *>(GetProcAddress(kb ? kb : k32, "SetThreadDescription")));
-    process.thread_description = reinterpret_cast<DescriptionFn>(
-        reinterpret_cast<void *>(GetProcAddress(kb ? kb : k32, "GetThreadDescription")));
+    process.thread_description =
+        reinterpret_cast<DescriptionFn>(reinterpret_cast<void *>(GetProcAddress(kb ? kb : k32, "GetThreadDescription")));
     report_writer.out.cap = TEXT_CAP;
     report_writer.out.b = static_cast<char *>(VirtualAlloc(nullptr, TEXT_CAP, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE));
     report_writer.go_event = CreateEventW(nullptr, FALSE, FALSE, nullptr);
     report_writer.text_event = CreateEventW(nullptr, TRUE, FALSE, nullptr);
     report_writer.done_event = CreateEventW(nullptr, TRUE, FALSE, nullptr);
-    HANDLE t = report_writer.out.b && report_writer.go_event && report_writer.text_event && report_writer.done_event
-                   ? CreateThread(nullptr, 1 << 20, writer_main, nullptr, STACK_SIZE_PARAM_IS_A_RESERVATION, &report_writer.writer_tid)
-                   : nullptr;
+    HANDLE t =
+        report_writer.out.b && report_writer.go_event && report_writer.text_event && report_writer.done_event
+            ? CreateThread(nullptr, 1 << 20, writer_main, nullptr, STACK_SIZE_PARAM_IS_A_RESERVATION, &report_writer.writer_tid)
+            : nullptr;
     if (t) {
         if (describe)
             describe(t, L"swofty crash report writer");
@@ -210,11 +209,14 @@ void crash_attach(SwoftyApi *a, const std::wstring &dir)
     if (ntt)
         capture.nt_terminate_hook = std::move(*ntt);
     cl("[crash] crash log armed: fatal exceptions (first %ld in full, deduplicated by address), the top-level "
-             "filter%s, ExitProcess %s, TerminateProcess %s",
-             MAX_REPORTS, capture.previous ? " (chained to the game's)" : "", e ? "hooked" : "NOT hooked",
-             tp ? "hooked" : "NOT hooked");
-    cl("[crash] crash reports: swofty\\crash-<time>.txt (the data folder's state folder when the game folder refuses it) with a %s minidump%s, written by %s; NtTerminateProcess %s",
-       report_writer.dump_mode == DUMP_FULL ? "full-memory" : report_writer.dump_mode == DUMP_OFF ? "no" : "stacks-only",
+       "filter%s, ExitProcess %s, TerminateProcess %s",
+       MAX_REPORTS, capture.previous ? " (chained to the game's)" : "", e ? "hooked" : "NOT hooked",
+       tp ? "hooked" : "NOT hooked");
+    cl("[crash] crash reports: swofty\\crash-<time>.txt (the data folder's state folder when the game folder refuses it) with a "
+       "%s minidump%s, written by %s; NtTerminateProcess %s",
+       report_writer.dump_mode == DUMP_FULL  ? "full-memory"
+       : report_writer.dump_mode == DUMP_OFF ? "no"
+                                             : "stacks-only",
        report_writer.dump_mode == DUMP_NORMAL ? " (SWOFTY_CRASH_DUMP=full for all memory, off for none)" : "",
        report_writer.writer_tid ? "a dedicated thread" : "the reporting thread", ntt ? "hooked" : "NOT hooked");
     cl("[crash] RaiseFailFastException %s; the CRT's fast-fail paths are hooked once the game's code is decrypted",

@@ -25,7 +25,7 @@ void section_modules()
         if (readable(m.base, sizeof *dos) && readable(m.base + dos->e_lfanew, sizeof(IMAGE_NT_HEADERS)))
             stamp = reinterpret_cast<const IMAGE_NT_HEADERS *>(m.base + dos->e_lfanew)->FileHeader.TimeDateStamp;
         report_writer.out.put("  %016llx %10llx  stamp %08x  %s\n", (unsigned long long)m.base, (unsigned long long)m.size, stamp,
-                m.path[0] ? m.path : m.name);
+                              m.path[0] ? m.path : m.name);
     }
 }
 
@@ -58,11 +58,12 @@ void section_threads(const Request &r)
                 LocalFree(d);
             }
         }
-        report_writer.out.put("  thread %lu, priority %ld%s%s%s%s\n", tid, te.tpBasePri, desc[0] ? " \"" : "", desc, desc[0] ? "\"" : "",
-                tid == r.tid                         ? " (the reporting thread, see the stack above)"
-                : tid == GetCurrentThreadId()        ? " (the crash report writer)"
-                : r.has_prior && tid == r.prior.tid ? " (the thread of the earlier exception, see above)"
-                                                     : "");
+        report_writer.out.put("  thread %lu, priority %ld%s%s%s%s\n", tid, te.tpBasePri, desc[0] ? " \"" : "", desc,
+                              desc[0] ? "\"" : "",
+                              tid == r.tid                        ? " (the reporting thread, see the stack above)"
+                              : tid == GetCurrentThreadId()       ? " (the crash report writer)"
+                              : r.has_prior && tid == r.prior.tid ? " (the thread of the earlier exception, see above)"
+                                                                  : "");
         if (!h || tid == r.tid || tid == GetCurrentThreadId()) {
             if (h)
                 CloseHandle(h);

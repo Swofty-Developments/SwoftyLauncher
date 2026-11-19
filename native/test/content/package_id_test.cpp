@@ -64,7 +64,8 @@ static content::StatIds allocator()
 
 static Value package(int64_t pin = -1)
 {
-    Value rec = Value::object({{"donor", Value("game/f1_2025")}, {"resource_path", Value("sw_2022_vehicle_package/teams/[FILENAME]/wep/[FILENAME]")}});
+    Value rec = Value::object(
+        {{"donor", Value("game/f1_2025")}, {"resource_path", Value("sw_2022_vehicle_package/teams/[FILENAME]/wep/[FILENAME]")}});
     if (pin >= 0)
         rec["stat_id"] = Value(pin);
     return rec;

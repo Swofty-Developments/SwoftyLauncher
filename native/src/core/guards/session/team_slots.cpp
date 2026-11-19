@@ -93,9 +93,8 @@ guards::SiteGuard guard{guards::CoreSetId::team_slots,
                             .name = "[teams] team record slots",
                             .env = "SWOFTY_TEAM_SLOTS",
                             .needs = {INSERT_CALL, INSERTED},
-                            .mixins = {
-                                        {INSERT_CALL, SWOFTY_MIXIN_SITE, 100, (void *)&insert_call, nullptr},
-                                        {INSERTED, SWOFTY_MIXIN_SITE, 100, (void *)&inserted, nullptr}},
+                            .mixins = {{INSERT_CALL, SWOFTY_MIXIN_SITE, 100, (void *)&insert_call, nullptr},
+                                       {INSERTED, SWOFTY_MIXIN_SITE, 100, (void *)&inserted, nullptr}},
                             .armed = "loaded team records are reachable for dressing",
                         }};
 

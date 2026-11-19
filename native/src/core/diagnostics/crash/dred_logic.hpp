@@ -46,55 +46,108 @@ inline bool is_removal_hresult(uint64_t v)
 inline const char *removal_name(uint32_t h)
 {
     switch (h) {
-    case 0x887a0001: return "DXGI_ERROR_INVALID_CALL";
-    case 0x887a0005: return "DXGI_ERROR_DEVICE_REMOVED";
-    case 0x887a0006: return "DXGI_ERROR_DEVICE_HUNG";
-    case 0x887a0007: return "DXGI_ERROR_DEVICE_RESET";
-    case 0x887a0020: return "DXGI_ERROR_DRIVER_INTERNAL_ERROR";
-    default: return "unknown";
+    case 0x887a0001:
+        return "DXGI_ERROR_INVALID_CALL";
+    case 0x887a0005:
+        return "DXGI_ERROR_DEVICE_REMOVED";
+    case 0x887a0006:
+        return "DXGI_ERROR_DEVICE_HUNG";
+    case 0x887a0007:
+        return "DXGI_ERROR_DEVICE_RESET";
+    case 0x887a0020:
+        return "DXGI_ERROR_DRIVER_INTERNAL_ERROR";
+    default:
+        return "unknown";
     }
 }
 
 inline const char *op_name(uint32_t op)
 {
-    static const char *const names[] = {
-        "SETMARKER", "BEGINEVENT", "ENDEVENT", "DRAWINSTANCED", "DRAWINDEXEDINSTANCED", "EXECUTEINDIRECT", "DISPATCH",
-        "COPYBUFFERREGION", "COPYTEXTUREREGION", "COPYRESOURCE", "COPYTILES", "RESOLVESUBRESOURCE", "CLEARRENDERTARGETVIEW",
-        "CLEARUNORDEREDACCESSVIEW", "CLEARDEPTHSTENCILVIEW", "RESOURCEBARRIER", "EXECUTEBUNDLE", "PRESENT",
-        "RESOLVEQUERYDATA", "BEGINSUBMISSION", "ENDSUBMISSION", "DECODEFRAME", "PROCESSFRAMES", "ATOMICCOPYBUFFERUINT",
-        "ATOMICCOPYBUFFERUINT64", "RESOLVESUBRESOURCEREGION", "WRITEBUFFERIMMEDIATE", "DECODEFRAME1", "SETPROTECTEDRESOURCESESSION",
-        "DECODEFRAME2", "PROCESSFRAMES1", "BUILDRAYTRACINGACCELERATIONSTRUCTURE", "EMITRAYTRACINGACCELERATIONSTRUCTUREPOSTBUILDINFO",
-        "COPYRAYTRACINGACCELERATIONSTRUCTURE", "DISPATCHRAYS", "INITIALIZEMETACOMMAND", "EXECUTEMETACOMMAND", "ESTIMATEMOTION",
-        "RESOLVEMOTIONVECTORHEAP", "SETPIPELINESTATE1", "INITIALIZEEXTENSIONCOMMAND", "EXECUTEEXTENSIONCOMMAND", "DISPATCHMESH",
-        "ENCODEFRAME", "RESOLVEENCODEROUTPUTMETADATA"};
+    static const char *const names[] = {"SETMARKER",
+                                        "BEGINEVENT",
+                                        "ENDEVENT",
+                                        "DRAWINSTANCED",
+                                        "DRAWINDEXEDINSTANCED",
+                                        "EXECUTEINDIRECT",
+                                        "DISPATCH",
+                                        "COPYBUFFERREGION",
+                                        "COPYTEXTUREREGION",
+                                        "COPYRESOURCE",
+                                        "COPYTILES",
+                                        "RESOLVESUBRESOURCE",
+                                        "CLEARRENDERTARGETVIEW",
+                                        "CLEARUNORDEREDACCESSVIEW",
+                                        "CLEARDEPTHSTENCILVIEW",
+                                        "RESOURCEBARRIER",
+                                        "EXECUTEBUNDLE",
+                                        "PRESENT",
+                                        "RESOLVEQUERYDATA",
+                                        "BEGINSUBMISSION",
+                                        "ENDSUBMISSION",
+                                        "DECODEFRAME",
+                                        "PROCESSFRAMES",
+                                        "ATOMICCOPYBUFFERUINT",
+                                        "ATOMICCOPYBUFFERUINT64",
+                                        "RESOLVESUBRESOURCEREGION",
+                                        "WRITEBUFFERIMMEDIATE",
+                                        "DECODEFRAME1",
+                                        "SETPROTECTEDRESOURCESESSION",
+                                        "DECODEFRAME2",
+                                        "PROCESSFRAMES1",
+                                        "BUILDRAYTRACINGACCELERATIONSTRUCTURE",
+                                        "EMITRAYTRACINGACCELERATIONSTRUCTUREPOSTBUILDINFO",
+                                        "COPYRAYTRACINGACCELERATIONSTRUCTURE",
+                                        "DISPATCHRAYS",
+                                        "INITIALIZEMETACOMMAND",
+                                        "EXECUTEMETACOMMAND",
+                                        "ESTIMATEMOTION",
+                                        "RESOLVEMOTIONVECTORHEAP",
+                                        "SETPIPELINESTATE1",
+                                        "INITIALIZEEXTENSIONCOMMAND",
+                                        "EXECUTEEXTENSIONCOMMAND",
+                                        "DISPATCHMESH",
+                                        "ENCODEFRAME",
+                                        "RESOLVEENCODEROUTPUTMETADATA"};
     return op < sizeof names / sizeof *names ? names[op] : "UNKNOWN_OP";
 }
 
 inline const char *allocation_type_name(uint32_t t)
 {
     switch (t) {
-    case 0x13: return "COMMAND_QUEUE";
-    case 0x14: return "COMMAND_ALLOCATOR";
-    case 0x15: return "PIPELINE_STATE";
-    case 0x16: return "COMMAND_LIST";
-    case 0x17: return "FENCE";
-    case 0x18: return "DESCRIPTOR_HEAP";
-    case 0x19: return "HEAP";
-    case 0x1b: return "QUERY_HEAP";
-    case 0x1c: return "COMMAND_SIGNATURE";
-    case 0x1d: return "PIPELINE_LIBRARY";
-    case 0x22: return "RESOURCE";
-    case 0x23: return "PASS";
-    case 0x2a: return "STATE_OBJECT";
-    case 0x2b: return "METACOMMAND";
-    default: return "OTHER";
+    case 0x13:
+        return "COMMAND_QUEUE";
+    case 0x14:
+        return "COMMAND_ALLOCATOR";
+    case 0x15:
+        return "PIPELINE_STATE";
+    case 0x16:
+        return "COMMAND_LIST";
+    case 0x17:
+        return "FENCE";
+    case 0x18:
+        return "DESCRIPTOR_HEAP";
+    case 0x19:
+        return "HEAP";
+    case 0x1b:
+        return "QUERY_HEAP";
+    case 0x1c:
+        return "COMMAND_SIGNATURE";
+    case 0x1d:
+        return "PIPELINE_LIBRARY";
+    case 0x22:
+        return "RESOURCE";
+    case 0x23:
+        return "PASS";
+    case 0x2a:
+        return "STATE_OBJECT";
+    case 0x2b:
+        return "METACOMMAND";
+    default:
+        return "OTHER";
     }
 }
 
-inline bool node_incomplete(uint32_t count, uint32_t completed)
-{
-    return completed < count;
-}
+inline bool node_incomplete(uint32_t count, uint32_t completed) { return completed < count; }
 
 struct Window {
     uint32_t from = 0, to = 0;
@@ -191,32 +244,31 @@ inline std::string page_fault_line(uint64_t va)
 constexpr int kMaxDebugMessages = 50;
 constexpr uint32_t kSdkLayersMissing = 0x887a002b;
 
-inline bool debug_requested(const char *env)
-{
-    return env && env[0] == '1' && !env[1];
-}
+inline bool debug_requested(const char *env) { return env && env[0] == '1' && !env[1]; }
 
-inline bool is_error_severity(int severity)
-{
-    return severity == 0 || severity == 1;
-}
+inline bool is_error_severity(int severity) { return severity == 0 || severity == 1; }
 
 inline const char *severity_name(int severity)
 {
     switch (severity) {
-    case 0: return "CORRUPTION";
-    case 1: return "ERROR";
-    case 2: return "WARNING";
-    case 3: return "INFO";
-    default: return "MESSAGE";
+    case 0:
+        return "CORRUPTION";
+    case 1:
+        return "ERROR";
+    case 2:
+        return "WARNING";
+    case 3:
+        return "INFO";
+    default:
+        return "MESSAGE";
     }
 }
 
 inline const char *category_name(int category)
 {
-    static const char *const names[] = {"APPLICATION_DEFINED", "MISCELLANEOUS", "INITIALIZATION", "CLEANUP", "COMPILATION",
-                                        "STATE_CREATION", "STATE_SETTING", "STATE_GETTING", "RESOURCE_MANIPULATION", "EXECUTION",
-                                        "SHADER"};
+    static const char *const names[] = {"APPLICATION_DEFINED",   "MISCELLANEOUS",  "INITIALIZATION", "CLEANUP",
+                                        "COMPILATION",           "STATE_CREATION", "STATE_SETTING",  "STATE_GETTING",
+                                        "RESOURCE_MANIPULATION", "EXECUTION",      "SHADER"};
     return category >= 0 && category < int(sizeof names / sizeof *names) ? names[category] : "UNKNOWN_CATEGORY";
 }
 
@@ -235,8 +287,8 @@ struct DebugBudget {
 inline std::string debug_line(int index, int severity, int category, uint32_t id, const char *text)
 {
     char b[1400];
-    std::snprintf(b, sizeof b, "[d3d-debug] #%d %s %s id=%u: %.1200s", index, severity_name(severity), category_name(category), id,
-                  text ? text : "");
+    std::snprintf(b, sizeof b, "[d3d-debug] #%d %s %s id=%u: %.1200s", index, severity_name(severity), category_name(category),
+                  id, text ? text : "");
     std::string s = b;
     while (!s.empty() && (s.back() == '\n' || s.back() == '\r'))
         s.pop_back();
@@ -246,10 +298,11 @@ inline std::string debug_line(int index, int severity, int category, uint32_t id
 inline std::string debug_missing_note(uint32_t hr)
 {
     char b[300];
-    std::snprintf(b, sizeof b,
-                  "[d3d-debug] the D3D12 debug layer is not installed (0x%08x; no Graphics Tools and no d3d12SDKLayers.dll next to "
-                  "D3D12Core.dll); carrying on without it",
-                  hr);
+    std::snprintf(
+        b, sizeof b,
+        "[d3d-debug] the D3D12 debug layer is not installed (0x%08x; no Graphics Tools and no d3d12SDKLayers.dll next to "
+        "D3D12Core.dll); carrying on without it",
+        hr);
     return b;
 }
 
@@ -275,17 +328,15 @@ inline bool report_shows_removal(std::string_view text)
     return contains_nocase(text, "Ne_FatalAbort") && contains_nocase(text, "Render_Check_GfxResult");
 }
 
-inline bool log_shows_removal(std::string_view text)
-{
-    return contains_nocase(text, "the GPU was removed");
-}
+inline bool log_shows_removal(std::string_view text) { return contains_nocase(text, "the GPU was removed"); }
 
 // crash-<yyyymmdd>-<hhmmss>[-n].txt names sort by time; the newest is the greatest.
 inline std::string newest_report(const std::vector<std::string> &names)
 {
     std::string best;
     for (const auto &n : names)
-        if (n.size() > 4 && n.compare(0, 6, "crash-") == 0 && n.compare(n.size() - 4, 4, ".txt") == 0 && n.substr(0, n.size() - 4) > best.substr(0, best.size() ? best.size() - 4 : 0))
+        if (n.size() > 4 && n.compare(0, 6, "crash-") == 0 && n.compare(n.size() - 4, 4, ".txt") == 0 &&
+            n.substr(0, n.size() - 4) > best.substr(0, best.size() ? best.size() - 4 : 0))
             best = n;
     return best;
 }

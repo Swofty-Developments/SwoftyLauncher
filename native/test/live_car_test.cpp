@@ -4,12 +4,12 @@
 #include <cstdio>
 
 static int failures;
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            failures++;                                                                                                \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 using namespace render::postfx;

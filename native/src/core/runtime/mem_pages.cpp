@@ -88,17 +88,11 @@ void invalidate()
         slot.store(0, std::memory_order_relaxed);
 }
 
-Counts counts()
-{
-    return {resident_answers.load(std::memory_order_relaxed), region_answers.load(std::memory_order_relaxed)};
-}
+Counts counts() { return {resident_answers.load(std::memory_order_relaxed), region_answers.load(std::memory_order_relaxed)}; }
 
 namespace {
 
-int export_readable(const void *p, size_t n)
-{
-    return readable(reinterpret_cast<uintptr_t>(p), n) ? 1 : 0;
-}
+int export_readable(const void *p, size_t n) { return readable(reinterpret_cast<uintptr_t>(p), n) ? 1 : 0; }
 
 const SwoftyMem export_table = {SWOFTY_MEM_VERSION, export_readable, invalidate};
 
@@ -108,14 +102,8 @@ const SwoftyMem export_table = {SWOFTY_MEM_VERSION, export_readable, invalidate}
 
 namespace runtime {
 
-bool readable(const void *p, size_t n)
-{
-    return swofty::mem::readable(p, n);
-}
+bool readable(const void *p, size_t n) { return swofty::mem::readable(p, n); }
 
 }
 
-extern "C" __declspec(dllexport) const SwoftyMem *SwoftyCoreMem(void)
-{
-    return &swofty::mem::shared::export_table;
-}
+extern "C" __declspec(dllexport) const SwoftyMem *SwoftyCoreMem(void) { return &swofty::mem::shared::export_table; }

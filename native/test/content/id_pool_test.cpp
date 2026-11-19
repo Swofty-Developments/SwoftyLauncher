@@ -28,10 +28,7 @@ static void pool(ids::Store &s, const char *registry, int64_t lo, int64_t hi, in
     s.define_pool(registry, p);
 }
 
-static std::string name(int i)
-{
-    return "season-" + std::to_string(i) + "/team";
-}
+static std::string name(int i) { return "season-" + std::to_string(i) + "/team"; }
 
 static content::StatIds allocator(ids::Store &s, const char *registry)
 {
@@ -167,16 +164,19 @@ int main()
         check(p.ops.size() == 0 && p.refused == 1 && p.lines.back().find("left out") != std::string::npos,
               "a vehicle that can't get an id lowers to no row and is refused");
         content::Plan big;
-        content::lower_vehicle("a/big", car, lookup, source, big, [](const std::string &, const std::string &, int64_t) -> int64_t { return 16383; });
+        content::lower_vehicle("a/big", car, lookup, source, big,
+                               [](const std::string &, const std::string &, int64_t) -> int64_t { return 16383; });
         check(big.ops.size() == 0 && big.refused == 1, "a vehicle given an id above 16382 is left out");
         content::Plan wide;
-        content::lower_vehicle("a/wide", car, lookup, source, wide, [](const std::string &, const std::string &, int64_t) -> int64_t { return 1334; });
+        content::lower_vehicle("a/wide", car, lookup, source, wide,
+                               [](const std::string &, const std::string &, int64_t) -> int64_t { return 1334; });
         check(wide.refused == 0 && wide.ops.size() > 0, "a vehicle given an id above 1023 gets its row");
 
         content::Dropped dropped = {content::drop_key("vehicle", "a/three")};
-        Value list = Value::object({{"entrant_list", Value("f_1986")},
-                                    {"teams", Value::array({Value::object({{"key", Value("a")}, {"vehicle", Value("a/one")}}),
-                                                            Value::object({{"key", Value("b")}, {"vehicle", Value("a/three")}})})}});
+        Value list =
+            Value::object({{"entrant_list", Value("f_1986")},
+                           {"teams", Value::array({Value::object({{"key", Value("a")}, {"vehicle", Value("a/one")}}),
+                                                   Value::object({{"key", Value("b")}, {"vehicle", Value("a/three")}})})}});
         check(content::dropped_ref(list, &dropped) == "vehicle a/three", "a list naming the left-out vehicle is found");
         content::Plan lp;
         content::lower_package("a/list", list, lookup, lp, {}, nullptr, {}, nullptr, &dropped);
@@ -227,7 +227,8 @@ int main()
         check(s.allocate("content.package", "swofty.s23/sw_2023", DAY).id == 116, "allocating a lent record gives the lent id");
         int64_t moved = s.get("content.package", "swofty.other/pack").id;
         check(moved >= 15 && moved != 116 && moved != 115, "an unrelated record on the lent id moves to a free one");
-        check(s.allocate("content.package", "new/pack", DAY).id != 116 && s.allocate("content.package", "new/pack", DAY).id != moved,
+        check(s.allocate("content.package", "new/pack", DAY).id != 116 &&
+                  s.allocate("content.package", "new/pack", DAY).id != moved,
               "a new record never takes a lent id");
         check(s.pin("content.package", "swofty.s23/sw_2023", 40, DAY).id == 116, "an explicit pin does not undo a lent id");
         check(!s.dirty() && s.lent(), "a lent store is never written back");

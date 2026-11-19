@@ -33,15 +33,9 @@ struct Fix {
     bool decided = false;
 };
 
-inline bool user_pointer(uint64_t p)
-{
-    return p >= USER_BASE && p < USER_END;
-}
+inline bool user_pointer(uint64_t p) { return p >= USER_BASE && p < USER_END; }
 
-inline bool word(Read read, void *user, uint64_t address, uint64_t *out)
-{
-    return read(address, out, sizeof *out, user);
-}
+inline bool word(Read read, void *user, uint64_t address, uint64_t *out) { return read(address, out, sizeof *out, user); }
 
 inline bool nil(Read read, void *user, uint64_t node, bool *out)
 {
@@ -112,8 +106,8 @@ struct Print {
 
     bool operator==(const Print &o) const
     {
-        return manager == o.manager && begin == o.begin && end == o.end && group == o.group && head == o.head &&
-               root == o.root && size == o.size && root_key == o.root_key && leftmost == o.leftmost;
+        return manager == o.manager && begin == o.begin && end == o.end && group == o.group && head == o.head && root == o.root &&
+               size == o.size && root_key == o.root_key && leftmost == o.leftmost;
     }
 };
 

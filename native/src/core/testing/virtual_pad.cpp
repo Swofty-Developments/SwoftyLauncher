@@ -87,20 +87,11 @@ void pad_setup()
 
 namespace runtime::pad {
 
-void setup()
-{
-    std::call_once(once, pad_setup);
-}
+void setup() { std::call_once(once, pad_setup); }
 
-const std::string &why()
-{
-    return pad_why;
-}
+const std::string &why() { return pad_why; }
 
-void claim(bool on)
-{
-    claims.fetch_add(on ? 1 : -1);
-}
+void claim(bool on) { claims.fetch_add(on ? 1 : -1); }
 
 void set(uint16_t buttons, uint8_t lt, uint8_t rt)
 {
@@ -109,9 +100,6 @@ void set(uint16_t buttons, uint8_t lt, uint8_t rt)
     pad_packet.fetch_add(1);
 }
 
-void release()
-{
-    set(0);
-}
+void release() { set(0); }
 
 }

@@ -128,8 +128,8 @@ inline std::string object(const std::vector<std::string> &items)
     return out + (items.empty() ? "}" : " }");
 }
 
-inline std::string requests_text(const std::vector<AddonSettings> &addons, const std::string &profile,
-                                 unsigned long long seq, bool relaunch)
+inline std::string requests_text(const std::vector<AddonSettings> &addons, const std::string &profile, unsigned long long seq,
+                                 bool relaunch)
 {
     std::vector<std::string> options, enabled;
     for (auto &m : addons) {
@@ -166,7 +166,7 @@ inline const char *invalid(const Option &o)
         return "unknown type";
     if (o.current >= o.states.size())
         return "current is not a state index";
-    auto want = o.type == SWOFTY_SETTING_TOGGLE ? json::Value::Bool
+    auto want = o.type == SWOFTY_SETTING_TOGGLE   ? json::Value::Bool
                 : o.type == SWOFTY_SETTING_SLIDER ? json::Value::Num
                                                   : json::Value::Str;
     for (auto &s : o.states)

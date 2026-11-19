@@ -62,20 +62,16 @@ std::atomic<int> stage{2};
 
 int64_t now_ms()
 {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch())
-        .count();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
 }
 
-bool read_ptr(uintptr_t at, uintptr_t &out)
-{
-    return mem::read(at, out) && out;
-}
+bool read_ptr(uintptr_t at, uintptr_t &out) { return mem::read(at, out) && out; }
 
 uintptr_t tyre_component_of(uintptr_t car_list, uint8_t v)
 {
     uintptr_t begin = 0, end = 0, slot = 0, obj = 0;
-    if (!car_list || !mem::read(car_list + CARS_BEGIN, begin) || !mem::read(car_list + CARS_END, end) || !begin ||
-        end <= begin || (end - begin) / sizeof(uintptr_t) <= v || !read_ptr(begin + v * sizeof(uintptr_t), slot) ||
+    if (!car_list || !mem::read(car_list + CARS_BEGIN, begin) || !mem::read(car_list + CARS_END, end) || !begin || end <= begin ||
+        (end - begin) / sizeof(uintptr_t) <= v || !read_ptr(begin + v * sizeof(uintptr_t), slot) ||
         !read_ptr(slot + CAR_ENTITY, obj))
         return 0;
     auto type = reinterpret_cast<const uint8_t *>(swofty::api->resolve("k_Sess_TyreComponentType"));
@@ -159,9 +155,8 @@ void check(const char *when)
 {
     uintptr_t career = 0, car_list = 0, begin = 0, end = 0;
     if (!read_ptr(component + COMP_CAREER, career) || !read_ptr(component + COMP_CAR_LIST, car_list) ||
-        !mem::read(career + CAREER_ENTRANTS, begin) || !mem::read(career + CAREER_ENTRANTS + 8, end) || !begin ||
-        end <= begin || (end - begin) % ENTRANT_SIZE || (end - begin) / ENTRANT_SIZE > ENTRANT_MAX ||
-        !mem::readable(begin, end - begin)) {
+        !mem::read(career + CAREER_ENTRANTS, begin) || !mem::read(career + CAREER_ENTRANTS + 8, end) || !begin || end <= begin ||
+        (end - begin) % ENTRANT_SIZE || (end - begin) / ENTRANT_SIZE > ENTRANT_MAX || !mem::readable(begin, end - begin)) {
         swofty::log("[tyres] fitted tyre check (%s), session %u: the entrants could not be read", when, session);
         return;
     }

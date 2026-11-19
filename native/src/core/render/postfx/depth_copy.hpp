@@ -26,8 +26,7 @@ public:
     // game's barrier then runs as it would have. Whole-resource, unsplit barriers in direct lists only; one
     // copy per batch.
     void record(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers, const GpuContext &gpu,
-                const ResourceWatch &watched, std::recursive_mutex &lock, RetireQueue &retired,
-                const unsigned &frame_count);
+                const ResourceWatch &watched, std::recursive_mutex &lock, RetireQueue &retired, const unsigned &frame_count);
     // A place without readable depth asks for the copy: copies go on being made, and the copy is returned when
     // the game wrote its depth buffer this frame or the one before.
     ID3D12Resource *fresh(unsigned frame_count);
@@ -36,13 +35,13 @@ private:
     static constexpr unsigned FRAMES = 120;
 
     // The copy for the game's depth buffer src, made or remade when the game's buffer changed. Under lock.
-    ID3D12Resource *for_source(ID3D12Resource *src, const D3D12_RESOURCE_DESC &d, const GpuContext &gpu,
-                               RetireQueue &retired, unsigned frame_count);
+    ID3D12Resource *for_source(ID3D12Resource *src, const D3D12_RESOURCE_DESC &d, const GpuContext &gpu, RetireQueue &retired,
+                               unsigned frame_count);
 
     std::atomic<ID3D12Resource *> copy{nullptr};
-    std::atomic<unsigned> copied_at{0};  // frame_count when a copy was last recorded
-    std::atomic<unsigned> until{0};      // copies are made until this frame: passes ran without readable depth
-    ID3D12Resource *copy_of = nullptr;   // the game's buffer the copy matches, compared, not held; under lock
+    std::atomic<unsigned> copied_at{0}; // frame_count when a copy was last recorded
+    std::atomic<unsigned> until{0};     // copies are made until this frame: passes ran without readable depth
+    ID3D12Resource *copy_of = nullptr;  // the game's buffer the copy matches, compared, not held; under lock
     D3D12_RESOURCE_DESC copy_desc{};
     bool logged = false, failed = false;
 };

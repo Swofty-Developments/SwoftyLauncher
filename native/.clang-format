@@ -1,5 +1,6 @@
-# Measured against the code as it stood: 4-space indent, braces on their own line only for functions,
-# right-aligned pointers, 130 columns. Formatting is not applied yet.
+# Measured against the code as it stood before it was applied: 4-space indent, braces on their own line only for
+# functions, right-aligned pointers, 130 columns. clang-format 21 formats every native C and C++ source with it, except
+# the vendored and generated files .clang-format-ignore lists.
 Language: Cpp
 BasedOnStyle: LLVM
 IndentWidth: 4

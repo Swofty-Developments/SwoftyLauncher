@@ -61,7 +61,8 @@ inline std::string format_time(int64_t ms)
     if (ms < 0)
         ms = 0;
     char b[32];
-    std::snprintf(b, sizeof b, "%lld:%02lld.%03lld", (long long)(ms / 60000), (long long)(ms / 1000 % 60), (long long)(ms % 1000));
+    std::snprintf(b, sizeof b, "%lld:%02lld.%03lld", (long long)(ms / 60000), (long long)(ms / 1000 % 60),
+                  (long long)(ms % 1000));
     return b;
 }
 
@@ -72,10 +73,7 @@ inline std::string format_gain(int64_t ms)
     return b;
 }
 
-inline std::string title_of(const Message &m)
-{
-    return m.record ? "NEW RECORD" : "NEW PERSONAL BEST";
-}
+inline std::string title_of(const Message &m) { return m.record ? "NEW RECORD" : "NEW PERSONAL BEST"; }
 
 inline std::string detail_of(const Message &m)
 {
@@ -95,7 +93,7 @@ struct Snapshot {
 };
 
 class Machine {
-  public:
+public:
     bool offer(const Message &m, int64_t now_unix)
     {
         if (seen(m.id))
@@ -137,7 +135,7 @@ class Machine {
         showing_ = false;
     }
 
-  private:
+private:
     bool seen(const std::string &id) const { return std::find(ids_.begin(), ids_.end(), id) != ids_.end(); }
 
     void remember(const std::string &id)

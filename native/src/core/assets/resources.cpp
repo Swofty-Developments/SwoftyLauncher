@@ -102,10 +102,7 @@ uint64_t u64(const std::string &b, size_t o)
     return v;
 }
 
-std::string type_of(const StockRes &s)
-{
-    return std::string(s.type, strnlen(s.type, 16));
-}
+std::string type_of(const StockRes &s) { return std::string(s.type, strnlen(s.type, 16)); }
 
 std::string cc(const char f[4])
 {
@@ -483,7 +480,8 @@ void check_addition(Res &r)
         return fail(r, "an added resource needs \"erps\": the stock ERP(s) whose groups load it");
     auto it = layouts.find(r.type);
     if (it == layouts.end())
-        return fail(r, "type " + r.type + " is not used by any resource in the scanned stock ERPs; unknown types make the "
+        return fail(r, "type " + r.type +
+                           " is not used by any resource in the scanned stock ERPs; unknown types make the "
                            "engine read past its handler table");
     std::string key = layout_key(r);
     if (!it->second.count(key)) {
@@ -491,8 +489,8 @@ void check_addition(Res &r)
         for (auto &k : it->second)
             if (seen.size() < 200)
                 seen += (seen.empty() ? "" : "; ") + k;
-        return fail(r, "no stock " + r.type + " resource in the scanned ERPs has the fragment layout " + key + " (seen: " +
-                           seen + ")");
+        return fail(r, "no stock " + r.type + " resource in the scanned ERPs has the fragment layout " + key + " (seen: " + seen +
+                           ")");
     }
     r.added = true;
 }
@@ -720,8 +718,8 @@ void load_prebuilt()
                 tl += (tl.empty() ? "" : ", ") + t;
         swofty::log("[assets] resources: overlay ERP %s prebuilt by the launcher (%llu bytes, %zu resource(s): %zu replaced, "
                     "%zu added) for %zu target ERP(s): %s",
-                    e.path.c_str(), (unsigned long long)size, uris.size(), replaced, uris.size() - replaced,
-                    p.erps.size(), tl.c_str());
+                    e.path.c_str(), (unsigned long long)size, uris.size(), replaced, uris.size() - replaced, p.erps.size(),
+                    tl.c_str());
         overlay.erps.push_back(std::move(e));
         loaded++;
     }
@@ -761,10 +759,9 @@ void build_declared()
         for (auto &f : r.frags)
             bytes += f.size, stored += f.packed.size();
         swofty::log("[assets] resources: %s %s (%s, arg %u, %zu fragment(s), %llu bytes, %llu stored%s)%s%s; stock ERP(s): %s",
-                    r.added ? "add" : "replace", r.uri.c_str(), r.type.c_str(), r.arg, r.frags.size(),
-                    (unsigned long long)bytes, (unsigned long long)stored, stored < bytes ? " zstd" : "",
-                    r.have_stock ? ", metadata from " : "", r.have_stock ? r.stock.erp.c_str() : "",
-                    where.empty() ? "none" : where.c_str());
+                    r.added ? "add" : "replace", r.uri.c_str(), r.type.c_str(), r.arg, r.frags.size(), (unsigned long long)bytes,
+                    (unsigned long long)stored, stored < bytes ? " zstd" : "", r.have_stock ? ", metadata from " : "",
+                    r.have_stock ? r.stock.erp.c_str() : "", where.empty() ? "none" : where.c_str());
         good.push_back(&r);
         r.added ? overlay.added++ : overlay.replaced++;
     }
@@ -799,8 +796,8 @@ void build_declared()
         runtime::OverlayErp e;
         bool reused = false;
         if (!write_erp(list, rel_dir, dir, e, reused)) {
-            swofty::log("[assets] resources: writing %s failed (error %lu); %zu target ERP(s) load stock data",
-                        e.path.c_str(), GetLastError(), targets.size());
+            swofty::log("[assets] resources: writing %s failed (error %lu); %zu target ERP(s) load stock data", e.path.c_str(),
+                        GetLastError(), targets.size());
             continue;
         }
         e.targets = targets;
@@ -877,10 +874,11 @@ void site(safetyhook::Context &c)
     if (w->logs.fetch_add(1) >= MAX_LOGS)
         return;
     std::string name = erp ? runtime::erp_name(erp) : std::string("?");
-    const char *what = created ? (ours ? "CREATED from the overlay (first reader)"
-                                       : "created by a stock ERP, NOT the overlay: the stock data wins until every holder releases it")
-                               : (ours ? "the overlay found it ALREADY LOADED: the copy already in memory stays"
-                                       : "bound to the existing copy (the stock bytes are skipped)");
+    const char *what =
+        created ? (ours ? "CREATED from the overlay (first reader)"
+                        : "created by a stock ERP, NOT the overlay: the stock data wins until every holder releases it")
+                : (ours ? "the overlay found it ALREADY LOADED: the copy already in memory stays"
+                        : "bound to the existing copy (the stock bytes are skipped)");
     swofty::log("[assets] resource %s: %s; erp %s (0x%016llx), NeResource %p refs %d status %d, id 0x%016llx (md5 %s)",
                 w->uri.c_str(), what, name.c_str(), (unsigned long long)erp, static_cast<const void *>(res), refs, status,
                 (unsigned long long)id, id == w->id ? "match" : "MISMATCH");
@@ -1003,7 +1001,4 @@ void setup()
 
 }
 
-void runtime::resources_setup()
-{
-    setup();
-}
+void runtime::resources_setup() { setup(); }

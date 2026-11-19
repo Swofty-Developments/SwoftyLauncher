@@ -50,7 +50,10 @@ struct Parser {
         cp = 0;
         for (int i = 0; i < 4; i++, p++) {
             char c = *p;
-            int d = c >= '0' && c <= '9' ? c - '0' : c >= 'a' && c <= 'f' ? c - 'a' + 10 : c >= 'A' && c <= 'F' ? c - 'A' + 10 : -1;
+            int d = c >= '0' && c <= '9'   ? c - '0'
+                    : c >= 'a' && c <= 'f' ? c - 'a' + 10
+                    : c >= 'A' && c <= 'F' ? c - 'A' + 10
+                                           : -1;
             if (d < 0)
                 return false;
             cp = cp << 4 | unsigned(d);
@@ -148,7 +151,8 @@ struct Parser {
             v.type = Value::Str;
             return string(v.s);
         }
-        for (auto [word, type, b] : {std::tuple{"true", Value::Bool, true}, {"false", Value::Bool, false}, {"null", Value::Null, false}})
+        for (auto [word, type, b] :
+             {std::tuple{"true", Value::Bool, true}, {"false", Value::Bool, false}, {"null", Value::Null, false}})
             if (!strncmp(p, word, strlen(word))) {
                 p += strlen(word);
                 v.type = type;

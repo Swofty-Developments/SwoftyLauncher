@@ -15,10 +15,7 @@ namespace swofty_core::apply::tracks {
 
 inline constexpr uint64_t FNV_BASIS = ::runtime::FNV64_BASIS;
 
-inline uint64_t fnv_from(uint64_t h, std::string_view s)
-{
-    return ::runtime::fnv64(s.data(), s.size(), h);
-}
+inline uint64_t fnv_from(uint64_t h, std::string_view s) { return ::runtime::fnv64(s.data(), s.size(), h); }
 
 inline bool hashed_prefix(std::string_view path, uint64_t &h)
 {

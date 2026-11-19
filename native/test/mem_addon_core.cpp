@@ -22,10 +22,7 @@ static int fake_readable(const void *, size_t)
     return 1;
 }
 
-static void fake_invalidate()
-{
-    calls.fetch_add(1);
-}
+static void fake_invalidate() { calls.fetch_add(1); }
 
 static const SwoftyMem old_table = {0, fake_readable, fake_invalidate};
 static const SwoftyMem empty_table = {SWOFTY_MEM_VERSION, nullptr, nullptr};
@@ -37,10 +34,7 @@ extern "C" __declspec(dllexport) const SwoftyMem *SwoftyCoreMem(void)
     return std::strcmp(v, "nullfn") ? &old_table : &empty_table;
 }
 
-extern "C" __declspec(dllexport) uint64_t mem_fake_calls(void)
-{
-    return calls.load();
-}
+extern "C" __declspec(dllexport) uint64_t mem_fake_calls(void) { return calls.load(); }
 
 #else
 

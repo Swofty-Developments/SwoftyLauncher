@@ -40,8 +40,12 @@ namespace mem = swofty::mem;
 namespace tp = runtime::teammate_pairs;
 
 const runtime::Sig S_SORT{"site_Sess_Strategy_TeammatePairSort",
-                          "49 83 FD 10 0F 82 ?? ?? ?? ?? 49 8B 04 24 49 8B 54 24 08 0F B6 88 81 00 00 00", 0x36abcaa,
-                          runtime::Sig::addr, 0, 0, 0};
+                          "49 83 FD 10 0F 82 ?? ?? ?? ?? 49 8B 04 24 49 8B 54 24 08 0F B6 88 81 00 00 00",
+                          0x36abcaa,
+                          runtime::Sig::addr,
+                          0,
+                          0,
+                          0};
 
 tp::Seen seen;
 std::mutex seen_lock;

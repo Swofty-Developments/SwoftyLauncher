@@ -11,20 +11,17 @@
 
 static int failures;
 
-#define CHECK(cond, msg)                                                                                                \
-    do {                                                                                                                \
-        if (cond) {                                                                                                     \
-            printf("ok  : %s\n", msg);                                                                                  \
-        } else {                                                                                                        \
-            printf("FAIL: %s\n", msg);                                                                                  \
-            failures++;                                                                                                 \
-        }                                                                                                               \
+#define CHECK(cond, msg)                                                                                                         \
+    do {                                                                                                                         \
+        if (cond) {                                                                                                              \
+            printf("ok  : %s\n", msg);                                                                                           \
+        } else {                                                                                                                 \
+            printf("FAIL: %s\n", msg);                                                                                           \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
-static bool near(float a, float b, float eps = 1e-4f)
-{
-    return std::fabs(a - b) <= eps;
-}
+static bool near(float a, float b, float eps = 1e-4f) { return std::fabs(a - b) <= eps; }
 
 template <class F> static std::string packed(uint32_t size, F colour)
 {

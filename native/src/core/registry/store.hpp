@@ -142,15 +142,14 @@ public:
     int define_tag(const std::string &registry, const std::string &tag, const std::vector<std::string> &members);
     void stock_loaded(const std::string &registry, bool loaded);
 
-    int add(const std::string &addon, const std::string &registry, const std::string &key, const Value &value,
-            std::string *id, const std::string &source = {});
+    int add(const std::string &addon, const std::string &registry, const std::string &key, const Value &value, std::string *id,
+            const std::string &source = {});
     int put_older(const std::string &addon, const std::string &registry, const std::string &key, const Value *value,
                   const std::string &source);
     std::vector<std::string> layer_targets(const std::string &registry);
     int variant(const std::string &addon, const std::string &registry, const std::string &key, const std::string &base,
                 const Change &change, std::string *id, const std::string &source = {});
-    int provide_fn(const std::string &addon, const std::string &registry, SwoftyProvideFn fn, SwoftyListFn list,
-                   void *user);
+    int provide_fn(const std::string &addon, const std::string &registry, SwoftyProvideFn fn, SwoftyListFn list, void *user);
     int invalidate(const std::string &registry, const std::string *id);
     int layer(const LayerSpec &spec, uint32_t *handle);
     int layer_in(const std::string &addon, uint32_t handle, const Value &selectors);
@@ -183,8 +182,8 @@ public:
     std::size_t layer_count(const std::string &addon, const std::string &registry) const;
     void set_op_index(const std::string &addon, int op);
     bool read_option(const std::string &addon, const std::string &id, Value &out);
-    void note_refusal(const std::string &addon, const std::string &registry, const std::string &id,
-                      const std::string &reason, const std::string &message);
+    void note_refusal(const std::string &addon, const std::string &registry, const std::string &id, const std::string &reason,
+                      const std::string &message);
 
     Value effective_report();
     Value conflicts_report();

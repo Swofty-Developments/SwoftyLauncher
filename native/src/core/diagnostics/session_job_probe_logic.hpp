@@ -76,10 +76,7 @@ struct Span {
     uint64_t begin = 0, end = 0;
     bool read = false;
 
-    int64_t bytes() const
-    {
-        return int64_t(end - begin);
-    }
+    int64_t bytes() const { return int64_t(end - begin); }
 };
 
 enum Verdict : uint32_t { Ok = 0, Negative = 1, Huge = 2, Ragged = 3, NotRead = 4 };
@@ -98,15 +95,9 @@ inline Verdict verdict(const Span &s, uint64_t item)
     return Ok;
 }
 
-inline int64_t items(const Span &s, uint64_t item)
-{
-    return s.bytes() / int64_t(item);
-}
+inline int64_t items(const Span &s, uint64_t item) { return s.bytes() / int64_t(item); }
 
-inline uint64_t loop_count(const Span &s)
-{
-    return uint64_t(s.bytes() >> 5);
-}
+inline uint64_t loop_count(const Span &s) { return uint64_t(s.bytes() >> 5); }
 
 struct Entry {
     uint32_t vehicle = 0;
@@ -150,10 +141,7 @@ inline bool arms(uint32_t to, const char *name)
     return to == 1 && name && (!std::strcmp(name, "StateSession") || !std::strcmp(name, "StateLoadSession"));
 }
 
-inline bool settles(uint32_t to, const char *name)
-{
-    return to == 2 && name && !std::strcmp(name, "StateSession");
-}
+inline bool settles(uint32_t to, const char *name) { return to == 2 && name && !std::strcmp(name, "StateSession"); }
 
 class Window {
 public:
@@ -174,10 +162,7 @@ public:
         }
     }
 
-    uint32_t armed() const
-    {
-        return armed_.load(std::memory_order_relaxed);
-    }
+    uint32_t armed() const { return armed_.load(std::memory_order_relaxed); }
 
     bool live(uint32_t g, uint64_t now)
     {
@@ -219,18 +204,12 @@ private:
     std::atomic<uint64_t> until_{0};
     std::atomic<uint64_t> keys_[kPerSession] = {};
 
-    void disarm(uint32_t g)
-    {
-        armed_.compare_exchange_strong(g, 0, std::memory_order_relaxed);
-    }
+    void disarm(uint32_t g) { armed_.compare_exchange_strong(g, 0, std::memory_order_relaxed); }
 };
 
 static_assert(std::atomic<uint64_t>::is_always_lock_free && std::atomic<uint32_t>::is_always_lock_free);
 
-inline size_t clip(int n, size_t cap)
-{
-    return n < 0 ? 0 : size_t(n) >= cap ? cap - 1 : size_t(n);
-}
+inline size_t clip(int n, size_t cap) { return n < 0 ? 0 : size_t(n) >= cap ? cap - 1 : size_t(n); }
 
 inline const char *verdict_text(Verdict v)
 {
@@ -256,8 +235,8 @@ inline size_t line(const Entry &e, uint64_t serial, char *out, size_t cap)
         return clip(std::snprintf(out, cap,
                                   "[session-job] 0x1445acb00 entry, session %llu: vehicle %u, wheel %u; %s (object "
                                   "0x%llx, lists 0x%llx)",
-                                  (unsigned long long)serial, e.vehicle, e.wheel, gate_text(e.gate),
-                                  (unsigned long long)e.holder, (unsigned long long)e.lists),
+                                  (unsigned long long)serial, e.vehicle, e.wheel, gate_text(e.gate), (unsigned long long)e.holder,
+                                  (unsigned long long)e.lists),
                     cap);
     return clip(std::snprintf(out, cap,
                               "[session-job] 0x1445acb00 entry, session %llu: vehicle %u, wheel %u; %s; outer list "
@@ -265,14 +244,12 @@ inline size_t line(const Entry &e, uint64_t serial, char *out, size_t cap)
                               "(%lld bytes, %lld entries, %s); %d entry lists read, %lld..%lld u32s, %d bad (object "
                               "0x%llx, lists 0x%llx)",
                               (unsigned long long)serial, e.vehicle, e.wheel, gate_text(e.gate),
-                              (unsigned long long)e.outer.begin, (unsigned long long)e.outer.end,
-                              (long long)e.outer.bytes(), (long long)items(e.outer, kOuterItem),
-                              verdict_text(verdict(e.outer, kOuterItem)), (unsigned long long)loop_count(e.outer),
-                              (unsigned long long)e.inner.begin, (unsigned long long)e.inner.end,
-                              (long long)e.inner.bytes(), (long long)items(e.inner, kInnerItem),
+                              (unsigned long long)e.outer.begin, (unsigned long long)e.outer.end, (long long)e.outer.bytes(),
+                              (long long)items(e.outer, kOuterItem), verdict_text(verdict(e.outer, kOuterItem)),
+                              (unsigned long long)loop_count(e.outer), (unsigned long long)e.inner.begin,
+                              (unsigned long long)e.inner.end, (long long)e.inner.bytes(), (long long)items(e.inner, kInnerItem),
                               verdict_text(verdict(e.inner, kInnerItem)), e.lists_read, (long long)e.list_min,
-                              (long long)e.list_max, e.lists_bad, (unsigned long long)e.holder,
-                              (unsigned long long)e.lists),
+                              (long long)e.list_max, e.lists_bad, (unsigned long long)e.holder, (unsigned long long)e.lists),
                 cap);
 }
 
@@ -281,21 +258,21 @@ inline size_t warning(const Entry &e, uint64_t serial, char *out, size_t cap)
     if (!out || !cap)
         return 0;
     Verdict o = verdict(e.outer, kOuterItem), i = verdict(e.inner, kInnerItem);
-    const char *why = o == Negative ? "the outer list's end is below its begin, so its count is negative and the "
-                                      "loop's unsigned exit test never ends it"
-                      : o == Huge   ? "the outer list's count is huge, so the loop runs for hours"
-                      : i == Negative ? "the inner list's end is below its begin, so its scan runs off the list"
-                      : i == Huge     ? "the inner list's count is huge"
-                      : e.lists_bad   ? "an entry's u32 list has its end below its begin or is not whole u32s"
+    const char *why = o == Negative        ? "the outer list's end is below its begin, so its count is negative and the "
+                                             "loop's unsigned exit test never ends it"
+                      : o == Huge          ? "the outer list's count is huge, so the loop runs for hours"
+                      : i == Negative      ? "the inner list's end is below its begin, so its scan runs off the list"
+                      : i == Huge          ? "the inner list's count is huge"
+                      : e.lists_bad        ? "an entry's u32 list has its end below its begin or is not whole u32s"
                       : e.list_max > kHuge ? "an entry's u32 list is huge"
-                      : o == Ragged   ? "the outer list is not a whole number of 0x20-byte items"
-                                      : "the inner list is not a whole number of pointers";
+                      : o == Ragged        ? "the outer list is not a whole number of 0x20-byte items"
+                                           : "the inner list is not a whole number of pointers";
     return clip(std::snprintf(out, cap,
                               "[session-job] [warning] 0x1445acb00 entry, session %llu, vehicle %u, wheel %u: %s (outer %lld "
                               "bytes at 0x%llx, inner %lld bytes at 0x%llx, longest entry list %lld u32s)",
                               (unsigned long long)serial, e.vehicle, e.wheel, why, (long long)e.outer.bytes(),
-                              (unsigned long long)e.outer.begin, (long long)e.inner.bytes(),
-                              (unsigned long long)e.inner.begin, (long long)e.list_max),
+                              (unsigned long long)e.outer.begin, (long long)e.inner.bytes(), (unsigned long long)e.inner.begin,
+                              (long long)e.list_max),
                 cap);
 }
 

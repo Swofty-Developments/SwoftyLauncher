@@ -36,8 +36,8 @@ bool upgrades_fit(Fire &&fire, int32_t car, const char *vehicle, swofty::cars::D
 }
 
 template <class Fire>
-bool vtf_read(Fire &&fire, const swofty::cars::live::Car &car, const char *section, const char *field,
-              const char *upgrade, float &value)
+bool vtf_read(Fire &&fire, const swofty::cars::live::Car &car, const char *section, const char *field, const char *upgrade,
+              float &value)
 {
     swofty::cars::events::VtfRead e{};
     e.car = car;
@@ -80,8 +80,7 @@ template <class Fire> bool reset(Fire &&fire, const swofty::cars::live::Car &car
     return fire(e);
 }
 
-template <class Fire>
-bool parts_register(Fire &&fire, int32_t car, const char *vehicle, void *front_wing, const PartSink &sink)
+template <class Fire> bool parts_register(Fire &&fire, int32_t car, const char *vehicle, void *front_wing, const PartSink &sink)
 {
     swofty::cars::events::PartsRegister e{};
     e.car = car;

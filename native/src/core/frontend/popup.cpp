@@ -67,25 +67,21 @@ const runtime::Sig S_RELEASE{"Ui_Message_ReleaseHandle",
                              "56 57 53 48 83 EC 30 48 8B 79 08 48 85 FF 0F 84 ?? ?? ?? ?? 48 89 CE 48 8B 8F 90 00 00 00 "
                              "48 8B 87 98 00 00 00",
                              0x42aa980};
-constexpr uintptr_t MOTD_VT_DISP = 0x19, MOTD_VT_END = 0x1d, MOTD_CONSTRUCT = 0x4b, MOTD_MAKE_STR = 0x78,
-                    MOTD_SET_ATTR = 0x96;
+constexpr uintptr_t MOTD_VT_DISP = 0x19, MOTD_VT_END = 0x1d, MOTD_CONSTRUCT = 0x4b, MOTD_MAKE_STR = 0x78, MOTD_SET_ATTR = 0x96;
 constexpr const uint8_t CONSTRUCT_HEAD[] = {0x41, 0x57, 0x41, 0x56, 0x56, 0x57, 0x53, 0x48, 0x83, 0xEC, 0x30};
 constexpr const char *OWN_ID = "swofty_message", *FALLBACK_ID = "beta_motd";
 constexpr size_t MAX_QUEUED = 8, MAX_TEXT = 4000;
 
-constexpr const char *ICONS[] = {"generic",  "diagonal",           "black",       "checkpoint",
-                                 "chequered", "fast_lap",           "formation_lap", "pp_icon",
-                                 "red",      "safety_car",         "virtual_safety_car",
-                                 "virtual_safety_car_green", "flag_rival_won"};
+constexpr const char *ICONS[] = {
+    "generic",       "diagonal", "black", "checkpoint", "chequered",          "fast_lap",
+    "formation_lap", "pp_icon",  "red",   "safety_car", "virtual_safety_car", "virtual_safety_car_green",
+    "flag_rival_won"};
 
 constexpr unsigned TOAST_SECONDS[] = {2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 30};
 
 thread_local bool opening;
 
-uintptr_t rel32(uintptr_t at)
-{
-    return at + 4 + *reinterpret_cast<const int32_t *>(at);
-}
+uintptr_t rel32(uintptr_t at) { return at + 4 + *reinterpret_cast<const int32_t *>(at); }
 
 Handle *construct_hook(void *s, Handle *out, FixedId *id, Callback *cb, const char *a5, uint64_t a6)
 {
@@ -110,10 +106,7 @@ const SwoftyPopup table = {api_available, api_show};
 
 }
 
-int api_available()
-{
-    return messages.live && runtime::enabled("popup", nullptr);
-}
+int api_available() { return messages.live && runtime::enabled("popup", nullptr); }
 
 std::string who(const void *from)
 {
@@ -124,7 +117,7 @@ std::string who(const void *from)
 int api_toast(const char *text, const char *detail, float seconds, const char *icon)
 {
     return messages.toast_enqueue(text ? text : "", detail ? detail : "", seconds, icon ? icon : "",
-                         who(__builtin_return_address(0)));
+                                  who(__builtin_return_address(0)));
 }
 
 void MessageSystem::log_game_message(const char *name, bool built)
@@ -145,12 +138,10 @@ Handle *MessageSystem::constructed(void *s, Handle *out, FixedId *id, Callback *
     void *was = sys.exchange(s);
     if (was != s)
         swofty::log("[popup] message system %p%s (first message '%.64s')", s, was ? " replaces an earlier one" : "",
-                    id && swofty::mem::readable(id, sizeof(FixedId)) && id->data && swofty::mem::readable(id->data, 1)
-                        ? id->data
-                        : "?");
-    const char *name = id && swofty::mem::readable(id, sizeof(FixedId)) && id->data && swofty::mem::readable(id->data, 1)
-                           ? id->data
-                           : nullptr;
+                    id && swofty::mem::readable(id, sizeof(FixedId)) && id->data && swofty::mem::readable(id->data, 1) ? id->data
+                                                                                                                       : "?");
+    const char *name =
+        id && swofty::mem::readable(id, sizeof(FixedId)) && id->data && swofty::mem::readable(id->data, 1) ? id->data : nullptr;
     if (name && hud::text_entry::is_entry_message(name)) {
         hud::text_entry::state.begin(GetTickCount64());
         swofty::log("[popup] '%.64s' takes typed text; core hotkeys are held back until it closes", name);
@@ -205,12 +196,15 @@ void MessageSystem::show(void *s, const Request &r)
         h = open(s, FALLBACK_ID);
     }
     if (!h.msg) {
-        swofty::log("[popup] popup from %s dropped: the game constructed no message ('%s' and '%s' both refused)",
-                    r.by.c_str(), OWN_ID, FALLBACK_ID);
+        swofty::log("[popup] popup from %s dropped: the game constructed no message ('%s' and '%s' both refused)", r.by.c_str(),
+                    OWN_ID, FALLBACK_ID);
         return;
     }
     bool ok = own ? set(h, "title", r.title) && set(h, "message", r.body)
-                  : set(h, "message", r.title.empty() ? r.body : r.body.empty() ? r.title : r.title + "\n\n" + r.body);
+                  : set(h, "message",
+                        r.title.empty()  ? r.body
+                        : r.body.empty() ? r.title
+                                         : r.title + "\n\n" + r.body);
     reinterpret_cast<Release_t *>(a_release)(&h);
     swofty::log("[popup] shown for %s as '%s': \"%.80s\"%s", r.by.c_str(), own ? OWN_ID : FALLBACK_ID, r.title.c_str(),
                 ok ? "" : " (an attribute was refused; the popup may show empty text)");
@@ -290,8 +284,7 @@ int MessageSystem::toast_enqueue(std::string text, std::string detail, float sec
     unsigned n = toast_seconds(seconds > 0 ? seconds : 4.0f);
     std::lock_guard<std::mutex> g(queue_lock);
     if (toasts.size() >= MAX_TOASTS) {
-        swofty::log("[hud] toast queue full (%zu); dropping the oldest toast, from %s", toasts.size(),
-                    toasts.front().by.c_str());
+        swofty::log("[hud] toast queue full (%zu); dropping the oldest toast, from %s", toasts.size(), toasts.front().by.c_str());
         toasts.pop_front();
     }
     toasts.push_back({std::move(text), std::move(detail), std::move(icon), by, n});
@@ -334,8 +327,7 @@ void MessageSystem::setup()
         memcmp(reinterpret_cast<const void *>(a_construct), CONSTRUCT_HEAD, sizeof CONSTRUCT_HEAD)) {
         swofty::log("[popup] the message system did not resolve (poster %s, release %s, constructor %s); popup.show "
                     "reports unavailable",
-                    motd ? "found" : "missing", a_release ? "found" : "missing",
-                    a_construct ? "shape differs" : "missing");
+                    motd ? "found" : "missing", a_release ? "found" : "missing", a_construct ? "shape differs" : "missing");
         return;
     }
     auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(a_construct), reinterpret_cast<void *>(&construct_hook));
@@ -398,10 +390,7 @@ void MessageSystem::tick()
 
 namespace runtime {
 
-const SwoftyPopup *popup_table()
-{
-    return &frontend::popup::table;
-}
+const SwoftyPopup *popup_table() { return &frontend::popup::table; }
 
 int popup_show(const std::string &title, const std::string &body, const std::string &by)
 {
@@ -413,10 +402,7 @@ int hud_toast(const std::string &text, const std::string &detail, float seconds,
     return frontend::popup::messages.toast_enqueue(text, detail, seconds, icon, by);
 }
 
-void hud_rebuilt()
-{
-    hud::race_hud::state.leaf_table.rebuilt();
-}
+void hud_rebuilt() { hud::race_hud::state.leaf_table.rebuilt(); }
 
 void popup_setup() { frontend::popup::messages.setup(); }
 

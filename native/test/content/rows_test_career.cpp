@@ -70,15 +70,18 @@ void race_fuel_tests()
     using content::FuelCar;
     using content::FuelPlan;
     using content::FuelRules;
-    Value p2008 = swofty::json::parse(R"({"entrant_list":"f1_2008","rules":{"refuelling":true,"race_fuel_kg":90,"refuel_stint_kg":60,"quali_fuel_kg":45,"race_start_fuel_from_quali":true}})");
+    Value p2008 = swofty::json::parse(
+        R"({"entrant_list":"f1_2008","rules":{"refuelling":true,"race_fuel_kg":90,"refuel_stint_kg":60,"quali_fuel_kg":45,"race_start_fuel_from_quali":true}})");
     Value p1994 = swofty::json::parse(R"({"entrant_list":"f1_1994","rules":{"refuelling":true,"race_fuel_kg":80}})");
     Value p2017 = swofty::json::parse(R"({"entrant_list":"f1_2017","rules":{"refuelling":false,"race_fuel_kg":105}})");
-    Value pbad = swofty::json::parse(R"({"entrant_list":"f1_bad","rules":{"refuelling":"yes","quali_fuel_kg":-3,"race_start_fuel_from_quali":1}})");
+    Value pbad = swofty::json::parse(
+        R"({"entrant_list":"f1_bad","rules":{"refuelling":"yes","quali_fuel_kg":-3,"race_start_fuel_from_quali":1}})");
     std::vector<std::pair<std::string, const Value *>> boxes = {
         {"mod.a/f1_2008", &p2008}, {"mod.a/f1_1994", &p1994}, {"mod.a/f1_2017", &p2017}, {"mod.a/f1_bad", &pbad}};
     FuelRules r08 = content::fuel_rules_pick("f1_2008", boxes);
     std::printf("      %s\n", r08.line.c_str());
-    check(r08.refuelling && r08.race_fuel_kg == 90.f && r08.refuel_stint_kg == 60.f && r08.quali_fuel_kg == 45.f && r08.start_from_quali,
+    check(r08.refuelling && r08.race_fuel_kg == 90.f && r08.refuel_stint_kg == 60.f && r08.quali_fuel_kg == 45.f &&
+              r08.start_from_quali,
           "a box's content.package gives its refuelling, race, stint and qualifying fuel and parc ferme rule");
     FuelRules r94 = content::fuel_rules_pick("f1_1994", boxes);
     std::printf("      %s\n", r94.line.c_str());
@@ -114,7 +117,8 @@ void race_fuel_tests()
     check(plan.tick(r94, 15, 1, cars, 1).empty(), "after the start, a higher fuel is left alone");
     cars[0] = car(12, 20, 1);
     w = plan.tick(r94, 15, 1, cars, 1);
-    check(w.size() == 1 && w[0].kg == 80.f && std::string(w[0].why) == "pit stop refuel", "a counted pit stop refuels to the stint (race_fuel_kg)");
+    check(w.size() == 1 && w[0].kg == 80.f && std::string(w[0].why) == "pit stop refuel",
+          "a counted pit stop refuels to the stint (race_fuel_kg)");
     check(plan.tick(r94, 15, 1, cars, 1).empty(), "one refuel per stop");
     plan.failed(0);
     w = plan.tick(r94, 15, 1, cars, 1);
@@ -155,9 +159,11 @@ void race_fuel_tests()
     check(FuelPlan{}.tick(none, 15, 1, race, 3).empty(), "no rule: nothing written");
 
     // 2005: one tyre set for qualifying and race (race_tyre_change false).
-    Value p2005 = swofty::json::parse(R"({"entrant_list":"f1_2005","rules":{"refuelling":true,"race_fuel_kg":75,"race_tyre_change":false}})");
+    Value p2005 = swofty::json::parse(
+        R"({"entrant_list":"f1_2005","rules":{"refuelling":true,"race_fuel_kg":75,"race_tyre_change":false}})");
     Value pbadt = swofty::json::parse(R"({"entrant_list":"f1_badt","rules":{"race_tyre_change":"no"}})");
-    std::vector<std::pair<std::string, const Value *>> tb = {{"mod.a/f1_2005", &p2005}, {"mod.a/f1_badt", &pbadt}, {"mod.a/f1_1994", &p1994}};
+    std::vector<std::pair<std::string, const Value *>> tb = {
+        {"mod.a/f1_2005", &p2005}, {"mod.a/f1_badt", &pbadt}, {"mod.a/f1_1994", &p1994}};
     FuelRules r05 = content::fuel_rules_pick("f1_2005", tb);
     std::printf("      %s\n", r05.line.c_str());
     check(r05.tyres_kept() && r05.any(), "race_tyre_change false: the box keeps its tyres at race stops (and refuels)");
@@ -197,7 +203,8 @@ void points_tests()
         if (op["op"].as_string() == "add-row") {
             full = op["table"].as_string() == std::string(content::POINTS_TABLE) &&
                    op["set"]["points"].as_string() == "8,6,4,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0" &&
-                   op["set"]["fastest_lap_bonus"].as_string() == "1" && op["set"]["fastest_lap_rule"].as_string() == "BestOfTop10";
+                   op["set"]["fastest_lap_bonus"].as_string() == "1" &&
+                   op["set"]["fastest_lap_rule"].as_string() == "BestOfTop10";
         } else if (op["op"].as_string() == "set") {
             sets++;
             levels = levels && op["select"].as_string().rfind(row + ".reduced_points_data[_metadata_=", 0) == 0;
@@ -218,11 +225,13 @@ void points_tests()
         check(p.refused == 1 && p.ops.size() == 0, std::string("refused, nothing applied: ") + bad);
     }
 
-    std::map<std::string, content::PointsSystem> systems = {{"mod.a/f1_1950", *content::points_system("mod.a/f1_1950", rec, nullptr)}};
+    std::map<std::string, content::PointsSystem> systems = {
+        {"mod.a/f1_1950", *content::points_system("mod.a/f1_1950", rec, nullptr)}};
     Value b1950 = swofty::json::parse(R"({"entrant_list":"f1_1950","rules":{"points":"mod.a/f1_1950"}})");
     Value b1951 = swofty::json::parse(R"({"entrant_list":"f1_1951","rules":{"points":"mod.a/missing"}})");
     Value b1952 = swofty::json::parse(R"({"entrant_list":"f1_1952","rules":{}})");
-    std::vector<std::pair<std::string, const Value *>> boxes = {{"mod.a/f1_1950", &b1950}, {"mod.a/f1_1951", &b1951}, {"mod.a/f1_1952", &b1952}};
+    std::vector<std::pair<std::string, const Value *>> boxes = {
+        {"mod.a/f1_1950", &b1950}, {"mod.a/f1_1951", &b1951}, {"mod.a/f1_1952", &b1952}};
     auto pick = content::points_pick("f1_1950", boxes, systems);
     std::printf("      %s\n", pick.line.c_str());
     check(pick.system && pick.system->label == label && pick.package == "mod.a/f1_1950",
@@ -264,50 +273,50 @@ static void stock_career_rows(Db &db)
     }
     db.put("driver_market.driver_market._DataGroup_instancecount_", 0, "2");
     for (int gi = 0; gi < 2; gi++) {
-    std::string g = "driver_market.driver_market.DataGroup_" + std::to_string(gi);
-    db.put(g + "._metadata_", 2, gi ? "2025" : "2026");
-    db.put(g + ".driver_retirements._DriverRetirementSchedule_instancecount_", 0, "2");
-    const char *retiring[] = {"fernando_alonso", "lewis_hamilton"};
-    for (int s = 0; s < 2; s++) {
-        std::string sc = g + ".driver_retirements.DriverRetirementSchedule_" + std::to_string(s);
-        db.put(sc + "._metadata_", 2, "DriverRetirementSchedule_" + std::to_string(s));
-        db.put(sc + ".statId", 0, std::to_string(s));
-        db.put(sc + "._DriverRetirement_instancecount_", 0, "2");
-        for (int i = 0; i < 2; i++) {
-            std::string r = sc + ".DriverRetirement_" + std::to_string(i);
-            db.put(r + "._metadata_", 2, retiring[i]);
-            db.put(r + ".driver", 4, retiring[i]);
-            db.put(r + "._date_time_instancecount_", 0, "2");
-            const char *labels[] = {"Retirement", "Announcement"};
-            for (int d = 0; d < 2; d++) {
-                std::string dt = r + ".date_time_" + std::to_string(d);
-                db.put(dt + "._metadata_", 2, labels[d]);
-                db.put(dt + ".year", 0, "2026");
-                db.put(dt + ".month", 3, d ? "September" : "December");
-                db.put(dt + ".day", 0, "14");
-                db.put(dt + ".hour", 0, "0");
-                db.put(dt + ".minute", 0, "0");
-                db.put(dt + ".second", 0, "0");
-                db.put(dt + ".daylight_saving", 5, "False");
+        std::string g = "driver_market.driver_market.DataGroup_" + std::to_string(gi);
+        db.put(g + "._metadata_", 2, gi ? "2025" : "2026");
+        db.put(g + ".driver_retirements._DriverRetirementSchedule_instancecount_", 0, "2");
+        const char *retiring[] = {"fernando_alonso", "lewis_hamilton"};
+        for (int s = 0; s < 2; s++) {
+            std::string sc = g + ".driver_retirements.DriverRetirementSchedule_" + std::to_string(s);
+            db.put(sc + "._metadata_", 2, "DriverRetirementSchedule_" + std::to_string(s));
+            db.put(sc + ".statId", 0, std::to_string(s));
+            db.put(sc + "._DriverRetirement_instancecount_", 0, "2");
+            for (int i = 0; i < 2; i++) {
+                std::string r = sc + ".DriverRetirement_" + std::to_string(i);
+                db.put(r + "._metadata_", 2, retiring[i]);
+                db.put(r + ".driver", 4, retiring[i]);
+                db.put(r + "._date_time_instancecount_", 0, "2");
+                const char *labels[] = {"Retirement", "Announcement"};
+                for (int d = 0; d < 2; d++) {
+                    std::string dt = r + ".date_time_" + std::to_string(d);
+                    db.put(dt + "._metadata_", 2, labels[d]);
+                    db.put(dt + ".year", 0, "2026");
+                    db.put(dt + ".month", 3, d ? "September" : "December");
+                    db.put(dt + ".day", 0, "14");
+                    db.put(dt + ".hour", 0, "0");
+                    db.put(dt + ".minute", 0, "0");
+                    db.put(dt + ".second", 0, "0");
+                    db.put(dt + ".daylight_saving", 5, "False");
+                }
             }
         }
-    }
-    db.put(g + ".driver_firings._DriverFiredSchedule_instancecount_", 0, "1");
-    std::string fs = g + ".driver_firings.DriverFiredSchedule_0";
-    db.put(fs + "._metadata_", 2, "DriverFiredSchedule");
-    db.put(fs + ".statId", 0, "0");
-    db.put(fs + "._DriverFired_instancecount_", 0, "3");
-    for (int i = 0; i < 3; i++) {
-        std::string r = fs + ".DriverFired_" + std::to_string(i);
-        db.put(r + "._metadata_", 2, "Season_1_DriverFired_" + std::to_string(i));
-        db.put(r + ".driver", 4, "lance_stroll");
-        db.put(r + ".season_index", 0, std::to_string(i));
-    }
-    std::string tr = g + ".team_driver_rating_range_requirements";
-    db.put(tr + "._TeamDriverRatingRangeRequirement_instancecount_", 0, "1");
-    db.put(tr + ".TeamDriverRatingRangeRequirement_0._metadata_", 2, "mclaren");
-    db.put(tr + ".TeamDriverRatingRangeRequirement_0.team", 4, "mclaren_26");
-    db.put(tr + ".TeamDriverRatingRangeRequirement_0.rating_range", 0, "99");
+        db.put(g + ".driver_firings._DriverFiredSchedule_instancecount_", 0, "1");
+        std::string fs = g + ".driver_firings.DriverFiredSchedule_0";
+        db.put(fs + "._metadata_", 2, "DriverFiredSchedule");
+        db.put(fs + ".statId", 0, "0");
+        db.put(fs + "._DriverFired_instancecount_", 0, "3");
+        for (int i = 0; i < 3; i++) {
+            std::string r = fs + ".DriverFired_" + std::to_string(i);
+            db.put(r + "._metadata_", 2, "Season_1_DriverFired_" + std::to_string(i));
+            db.put(r + ".driver", 4, "lance_stroll");
+            db.put(r + ".season_index", 0, std::to_string(i));
+        }
+        std::string tr = g + ".team_driver_rating_range_requirements";
+        db.put(tr + "._TeamDriverRatingRangeRequirement_instancecount_", 0, "1");
+        db.put(tr + ".TeamDriverRatingRangeRequirement_0._metadata_", 2, "mclaren");
+        db.put(tr + ".TeamDriverRatingRangeRequirement_0.team", 4, "mclaren_26");
+        db.put(tr + ".TeamDriverRatingRangeRequirement_0.rating_range", 0, "99");
     }
     db.put("entrants.drivers._driver_instancecount_", 0, "4");
     const char *drivers[] = {"fernando_alonso", "lewis_hamilton", "lance_stroll", "max_verstappen"};
@@ -351,7 +360,8 @@ void career_registry_tests(const std::string &regs)
         "everywhere": { "team_ratings": [ { "team": "game/mclaren_26", "rating": 97 } ] } } })j");
     st.end_register();
     for (auto &r : st.refusals())
-        std::printf("      refused: %s %s %s %s: %s\n", r.addon.c_str(), r.registry.c_str(), r.id.c_str(), r.reason.c_str(), r.message.c_str());
+        std::printf("      refused: %s %s %s %s: %s\n", r.addon.c_str(), r.registry.c_str(), r.id.c_str(), r.reason.c_str(),
+                    r.message.c_str());
     check(r1 == SWOFTY_ASSET_OK && st.list("career.rnd.tree", "").size() == 3 && st.list("career.market", "").size() == 3,
           "the career.rnd.tree and career.market records register");
     Db db;
@@ -366,16 +376,18 @@ void career_registry_tests(const std::string &regs)
     check(x.records["career.rnd.tree"] == 2 && x.refused["career.rnd.tree"] == 1,
           "the mercedes trees apply (two of their nodes refused); the ferrari record, with no such tree in any group, does not");
     std::string m = "upgrades.myteam_2025.trees.mercedes.aerodynamics.";
-    check(written(x.engine, m + "_upgrade_instancecount_") == "3" && written(x.engine, m + "upgrade_2._metadata_") == "sw_wing_1" &&
-              written(x.engine, m + "upgrade_1.cost") == "900" &&
-              written(x.engine, "upgrades.myteam_2025.trees.mercedes.fake.upgrade_0.links") == "drag_minor_1,brakes_minor_1,sw_wing_1",
+    check(written(x.engine, m + "_upgrade_instancecount_") == "3" &&
+              written(x.engine, m + "upgrade_2._metadata_") == "sw_wing_1" && written(x.engine, m + "upgrade_1.cost") == "900" &&
+              written(x.engine, "upgrades.myteam_2025.trees.mercedes.fake.upgrade_0.links") ==
+                  "drag_minor_1,brakes_minor_1,sw_wing_1",
           "a record without a data_group edits the tree in every upgrades group that has it");
     check(written(x.engine, a + "upgrade_0.cost") == "333" && !written(x.engine, m + "upgrade_0.cost"),
           "a record that names its data_group edits only that group's tree");
     check(written(x.engine, a + "_upgrade_instancecount_") == "3" && written(x.engine, a + "upgrade_2._metadata_") == "sw_wing_1",
           "a new node is a row added to its department");
-    check(written(x.engine, a + "upgrade_2.upgrade_size") == "Major" && written(x.engine, a + "upgrade_2.upgrade_type") == "Drag" &&
-              written(x.engine, a + "upgrade_2.cost") == "650" && written(x.engine, a + "upgrade_2.weighting") == "2.5" &&
+    check(written(x.engine, a + "upgrade_2.upgrade_size") == "Major" &&
+              written(x.engine, a + "upgrade_2.upgrade_type") == "Drag" && written(x.engine, a + "upgrade_2.cost") == "650" &&
+              written(x.engine, a + "upgrade_2.weighting") == "2.5" &&
               written(x.engine, a + "upgrade_2.grid_coordinates.x") == "1" && written(x.engine, a + "upgrade_2.links") == "" &&
               written(x.engine, a + "upgrade_2.upgrade_department") == "Aerodynamics" &&
               written(x.engine, a + "upgrade_2.fitting_times.num_days_to_research") == "20",
@@ -390,8 +402,10 @@ void career_registry_tests(const std::string &regs)
               !written(x.engine, "upgrades.2026.trees.mercedes.chassis._upgrade_instancecount_"),
           "a node named under the wrong department and a type the trees don't use are refused");
     std::string g = "driver_market.driver_market.DataGroup_0.";
-    std::string s0 = g + "driver_retirements.DriverRetirementSchedule_0.", s1 = g + "driver_retirements.DriverRetirementSchedule_1.";
-    check(written(x.engine, s0 + "_DriverRetirement_instancecount_") == "3" && written(x.engine, s1 + "_DriverRetirement_instancecount_") == "3" &&
+    std::string s0 = g + "driver_retirements.DriverRetirementSchedule_0.",
+                s1 = g + "driver_retirements.DriverRetirementSchedule_1.";
+    check(written(x.engine, s0 + "_DriverRetirement_instancecount_") == "3" &&
+              written(x.engine, s1 + "_DriverRetirement_instancecount_") == "3" &&
               written(x.engine, s0 + "DriverRetirement_2.driver") == "max_verstappen" &&
               written(x.engine, s1 + "DriverRetirement_2.date_time_0.year") == "2030" &&
               written(x.engine, s1 + "DriverRetirement_2.date_time_1.month") == "August",
@@ -401,17 +415,21 @@ void career_registry_tests(const std::string &regs)
               written(x.engine, s0 + "DriverRetirement_0.date_time_1.year") == "2027",
           "a stock retirement row is rewritten in place, Retirement and Announcement by their labels");
     std::string f0 = g + "driver_firings.DriverFiredSchedule_0.";
-    check(written(x.engine, f0 + "_DriverFired_instancecount_") == "1" && written(x.engine, f0 + "DriverFired_0.season_index") == "1",
+    check(written(x.engine, f0 + "_DriverFired_instancecount_") == "1" &&
+              written(x.engine, f0 + "DriverFired_0.season_index") == "1",
           "a shorter firing list cuts the schedule by its instance count");
     std::string tr = g + "team_driver_rating_range_requirements.";
     check(written(x.engine, tr + "TeamDriverRatingRangeRequirement_0.rating_range") == "97" &&
               written(x.engine, tr + "_TeamDriverRatingRangeRequirement_instancecount_") == "2" &&
               written(x.engine, tr + "TeamDriverRatingRangeRequirement_1.team") == "ferrari_26" &&
               written(x.engine, tr + "TeamDriverRatingRangeRequirement_1.rating_range") == "90",
-          "a team's rating is set on its row, or a row is added for a team without one; a team with no entrants.teams row is left out");
-    check(x.records["career.market"] == 2 && x.refused["career.market"] == 1, "a market group the database doesn't have is refused");
+          "a team's rating is set on its row, or a row is added for a team without one; a team with no entrants.teams row is "
+          "left out");
+    check(x.records["career.market"] == 2 && x.refused["career.market"] == 1,
+          "a market group the database doesn't have is refused");
     std::string g25 = "driver_market.driver_market.DataGroup_1.";
-    check(written(x.engine, g25 + "team_driver_rating_range_requirements.TeamDriverRatingRangeRequirement_0.rating_range") == "97" &&
+    check(written(x.engine, g25 + "team_driver_rating_range_requirements.TeamDriverRatingRangeRequirement_0.rating_range") ==
+                  "97" &&
               !written(x.engine, g25 + "driver_retirements.DriverRetirementSchedule_0._DriverRetirement_instancecount_") &&
               !written(x.engine, g25 + "driver_firings.DriverFiredSchedule_0._DriverFired_instancecount_"),
           "a record without a data_group writes every market group; one that names 2026 leaves 2025 alone");
@@ -424,13 +442,15 @@ static void older_rows(Db &db)
             db.put(prefix + "." + f, std::string_view(f) == "_metadata_" ? 4 : 2, v);
     };
     db.put("entrants.vehicles._vehicle_instancecount_", 0, "2");
-    row("entrants.vehicles.vehicle_1", {{"_metadata_", "bdx_s5_car_mclaren_3"}, {"performance_tier", "0"}, {"tyre_wear_scale", "1"}});
+    row("entrants.vehicles.vehicle_1",
+        {{"_metadata_", "bdx_s5_car_mclaren_3"}, {"performance_tier", "0"}, {"tyre_wear_scale", "1"}});
     db.put("entrants.vehicles.vehicle_1.stat_id", 0, "520");
     db.put("entrants.entrant_lists._entrant_list_instancecount_", 0, "2");
     row("entrants.entrant_lists.entrant_list_1", {{"_metadata_", "bdx_s5_2012"}, {"display_name", "x"}, {"leaderboard", "f1"}});
     db.put("entrants.entrant_lists.entrant_list_1.stat_id", 0, "106");
     db.put("game_setup.scenarios._scenario_instancecount_", 0, "2");
-    row("game_setup.scenarios.scenario_1", {{"_metadata_", "bdx_s5_2012"}, {"entrant_list", "bdx_s5_2012"}, {"game_setup_mode", "f1"}});
+    row("game_setup.scenarios.scenario_1",
+        {{"_metadata_", "bdx_s5_2012"}, {"entrant_list", "bdx_s5_2012"}, {"game_setup_mode", "f1"}});
     db.put("game_setup.scenarios.scenario_1.statId", 0, "16");
 }
 
@@ -635,8 +655,9 @@ void stock_only_tests(const std::string &regs)
     check(content::in_load_order(st, "team.identity").empty() && content::in_load_order(st, "team.pit_times").empty(),
           "a profile with no team records has none in load order");
     for (auto &c : content::CONSTRUCTOR_SEEDS)
-        st.add_base("team.constructor", c.key,
-                    Value::object({{"name", Value(std::string(c.name))}, {"country", Value(std::string(c.country))}, {"team", Value()}}));
+        st.add_base(
+            "team.constructor", c.key,
+            Value::object({{"name", Value(std::string(c.name))}, {"country", Value(std::string(c.country))}, {"team", Value()}}));
     for (auto &team : content::stock_teams(stock_read))
         st.add_base("team.identity", team.label, team.record);
     st.stock_loaded("team.identity", true);
@@ -654,7 +675,8 @@ void stock_only_tests(const std::string &regs)
     for (auto &[token, team] : refs.constructor_team)
         only_stock = only_stock && team.rfind("game/", 0) == 0;
     check(refs.constructors == 0 && refs.constructors_refused == 0 && refs.lines.empty() && only_stock && refs.pit_record.empty(),
-          "the constructor applier's report is unchanged: nothing applied, refused or logged, every constructor id resolves to a stock row");
+          "the constructor applier's report is unchanged: nothing applied, refused or logged, every constructor id resolves to a "
+          "stock row");
     apply::ids::Store ids;
     ids.define_pool("team.identity", {{{4, 1023}}});
     int64_t out = -1;
@@ -665,7 +687,8 @@ void stock_only_tests(const std::string &regs)
           "including stat id 0");
     ids.allocate("team.identity", "mod.a/new", "test");
     int64_t fresh = ids.allocate("team.identity", "mod.a/other", "test").id;
-    check(fresh == 5, "a stock stat_id call allocates nothing from the pool: the next free id is still the first above the table");
+    check(fresh == 5,
+          "a stock stat_id call allocates nothing from the pool: the next free id is still the first above the table");
 }
 
 void virtual_list_tests(const std::string &regs)
@@ -683,12 +706,14 @@ void virtual_list_tests(const std::string &regs)
         return std::string(R"({ "title": "lng_x", "entrant_list": ")") + list + R"(", "season": 1960, "stat_id": "auto", )" +
                (virt ? R"("virtual_list": true, )" : "") + R"("teams": [ { "key": "mercedes", "vehicle": null,
                  "drivers": [ { "driver": "game/lewis_hamilton", "number": 44, "look": null } ] } ],
-                 "database": { "entrant_list": ")" + list + R"(", "scenario_stat_id": null, "content_sets": ["2025"],
+                 "database": { "entrant_list": ")" +
+               list + R"(", "scenario_stat_id": null, "content_sets": ["2025"],
                  "looks": { "mercedes/lewis_hamilton": "x" } } })";
     };
     std::string json = std::string("{ \"content.package\": { \"real\": ") + package("vl_real", false) +
                        ", \"v1\": " + package("vl_1960", true) + ", \"v2\": " + package("vl_1961", true) + " } }";
-    check(registry::load_data_file("mod.vl", "registry/content.json", json) == SWOFTY_ASSET_OK, "the virtual list packages register");
+    check(registry::load_data_file("mod.vl", "registry/content.json", json) == SWOFTY_ASSET_OK,
+          "the virtual list packages register");
     st.end_register();
     Db db;
     stock_package_rows(db);
@@ -717,7 +742,8 @@ void virtual_list_tests(const std::string &regs)
     check(e.text("entrants.entrant_lists._entrant_list_instancecount_").value_or("") == "3",
           "two virtual lists leave the stock list, the real one and the host counted\n" + all);
     std::set<std::string> counted = {label(0), label(1), label(2)};
-    check(counted == std::set<std::string>{"f1_2025", "vl_real", "swofty_virtual_list"}, "the counted rows are f1_2025, vl_real and the host");
+    check(counted == std::set<std::string>{"f1_2025", "vl_real", "swofty_virtual_list"},
+          "the counted rows are f1_2025, vl_real and the host");
     check(label(10000) == "vl_1960" && label(10001) == "vl_1961", "the virtual lists sit at entrant_list_10000 and 10001");
     check(e.text(lists + "10000.entrant_0.entrant_reference").has_value(), "a virtual list keeps its entrant rows");
     check(!e.text(lists + "10000.stat_id").has_value() || e.text(lists + "10000.stat_id") != e.text(lists + "1.stat_id"),

@@ -19,7 +19,8 @@ int main()
     expect(crash_dir::fallback(L"C:\\Swofty\\") == L"C:\\Swofty\\state\\", "a trailing backslash is not doubled");
     expect(crash_dir::fallback(L"").empty(), "no data folder, no fallback");
     const std::string game = "C:\\Program Files\\EA Games\\F1 25\\swofty\\";
-    expect(crash_dir::logged(game, game, "crash-1.txt") == "swofty\\crash-1.txt", "a report in the game folder is named swofty\\<name>");
+    expect(crash_dir::logged(game, game, "crash-1.txt") == "swofty\\crash-1.txt",
+           "a report in the game folder is named swofty\\<name>");
     expect(crash_dir::logged("C:\\D\\state\\", game, "crash-1.txt") == "C:\\D\\state\\crash-1.txt",
            "a report in the data folder is named by its full path");
     return fails ? 1 : 0;

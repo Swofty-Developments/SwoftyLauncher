@@ -34,20 +34,11 @@ constexpr size_t MAX_SLOTS = 0x4000;
 constexpr size_t MAX_ENTRANTS = 0x1000;
 constexpr size_t LOG_IDS = 32;
 
-inline uint8_t kind(uint32_t handle)
-{
-    return static_cast<uint8_t>(handle & 0xff);
-}
+inline uint8_t kind(uint32_t handle) { return static_cast<uint8_t>(handle & 0xff); }
 
-inline uint16_t id(uint32_t handle)
-{
-    return static_cast<uint16_t>(handle >> 16);
-}
+inline uint16_t id(uint32_t handle) { return static_cast<uint16_t>(handle >> 16); }
 
-inline bool healable(uint32_t handle)
-{
-    return kind(handle) == KIND_CUSTOM && id(handle) < MAX_ID;
-}
+inline bool healable(uint32_t handle) { return kind(handle) == KIND_CUSTOM && id(handle) < MAX_ID; }
 
 inline bool ends_with(const std::string &s, const char *tail)
 {
@@ -57,10 +48,7 @@ inline bool ends_with(const std::string &s, const char *tail)
     return s.size() >= n && s.compare(s.size() - n, n, tail) == 0;
 }
 
-inline bool starts_with(const std::string &s, const char *head)
-{
-    return s.rfind(head, 0) == 0;
-}
+inline bool starts_with(const std::string &s, const char *head) { return s.rfind(head, 0) == 0; }
 
 inline constexpr const char *STOCK_2026[] = {"myteam_mercedes_2026", "myteam_ferrari_2026", "myteam_honda_2026",
                                              "myteam_redbull_ford_2026", "myteam_audi_2026"};
@@ -376,8 +364,7 @@ struct Load {
     uint64_t manager = 0, context = 0, holder = 0, entity = 0, first = 0, end = 0, offset = 0, system = 0;
 };
 
-template <class Readable>
-const char *range_stop(bool read, uint64_t first, uint64_t end, size_t max, Readable readable)
+template <class Readable> const char *range_stop(bool read, uint64_t first, uint64_t end, size_t max, Readable readable)
 {
     if (!read)
         return "the entity's entrant range is unreadable";
@@ -417,16 +404,13 @@ inline std::string stopped(const char *stop, const Load &l, const Census &c, con
              "kind 1 cars, %zu on stock cars, %zu on no car, %zu unread, %s; stock table %zu slots, My Team table %zu "
              "slots with %zu cars)",
              stop ? stop : "?", heal ? heal : "?", (unsigned long long)l.manager, (unsigned long long)l.context,
-             (unsigned long long)l.holder, (unsigned long long)l.entity, (unsigned long long)l.first,
-             (unsigned long long)l.end, (unsigned long long)l.offset, (unsigned long long)l.system, c.entrants, c.kind1,
-             c.stock, c.empty, c.unread, player, t.stock_slots, t.custom_slots, cars);
+             (unsigned long long)l.holder, (unsigned long long)l.entity, (unsigned long long)l.first, (unsigned long long)l.end,
+             (unsigned long long)l.offset, (unsigned long long)l.system, c.entrants, c.kind1, c.stock, c.empty, c.unread, player,
+             t.stock_slots, t.custom_slots, cars);
     return out;
 }
 
-inline bool replaced(int result)
-{
-    return result == 0 || result == 2 || result == 4;
-}
+inline bool replaced(int result) { return result == 0 || result == 2 || result == 4; }
 
 struct Ids {
     std::vector<uint16_t> seen;

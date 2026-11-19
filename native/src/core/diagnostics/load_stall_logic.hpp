@@ -49,15 +49,9 @@ inline const char *status_name(uint32_t s)
     return s < 4 ? names[s] : "?";
 }
 
-inline bool boot_loading_screen(const char *name)
-{
-    return name && !std::strcmp(name, "splash_transition");
-}
+inline bool boot_loading_screen(const char *name) { return name && !std::strcmp(name, "splash_transition"); }
 
-inline bool loading_screen(const char *name)
-{
-    return name && (std::strstr(name, "loading") || boot_loading_screen(name));
-}
+inline bool loading_screen(const char *name) { return name && (std::strstr(name, "loading") || boot_loading_screen(name)); }
 
 inline bool session_load_flow(const char *name)
 {
@@ -99,8 +93,7 @@ inline size_t headline(const Due &d, char *out, size_t cap)
         return 0;
     char last[96];
     if (d.moved)
-        std::snprintf(last, sizeof last, "the last flow transition or screen open was %.1f s ago",
-                      double(d.stalled_ms) / 1000);
+        std::snprintf(last, sizeof last, "the last flow transition or screen open was %.1f s ago", double(d.stalled_ms) / 1000);
     else
         std::snprintf(last, sizeof last, "no flow transition or screen open seen yet");
     const char *cause = d.cause == GameWatchdog ? "the game's watchdog" : "the game's deadlock warning";
@@ -123,18 +116,14 @@ inline size_t headline(const Due &d, char *out, size_t cap)
                           double(d.previous_ms) / 1000, d.index - 1, cause, last);
         break;
     default:
-        n = std::snprintf(out, cap,
-                          "the load has not moved for %.1f s (no flow transition or screen open; threshold %.0f s)",
+        n = std::snprintf(out, cap, "the load has not moved for %.1f s (no flow transition or screen open; threshold %.0f s)",
                           double(d.stalled_ms) / 1000, double(d.threshold_ms) / 1000);
         break;
     }
     return n < 0 ? 0 : size_t(n) >= cap ? cap - 1 : size_t(n);
 }
 
-inline void copy_name(char *dst, const char *src)
-{
-    std::snprintf(dst, kName, "%.*s", int(kName - 1), src ? src : "");
-}
+inline void copy_name(char *dst, const char *src) { std::snprintf(dst, kName, "%.*s", int(kName - 1), src ? src : ""); }
 
 class Watch {
 public:
@@ -179,15 +168,9 @@ public:
         return nullptr;
     }
 
-    bool in_loading_screen() const
-    {
-        return loading_screen(screen_);
-    }
+    bool in_loading_screen() const { return loading_screen(screen_); }
 
-    bool in_boot_loading_screen() const
-    {
-        return boot_loading_screen(screen_);
-    }
+    bool in_boot_loading_screen() const { return boot_loading_screen(screen_); }
 
     uint64_t threshold() const
     {
@@ -232,15 +215,9 @@ public:
         return take_report(d, now, stalled, t);
     }
 
-    int reports() const
-    {
-        return total_;
-    }
+    int reports() const { return total_; }
 
-    uint64_t last_progress() const
-    {
-        return progress_;
-    }
+    uint64_t last_progress() const { return progress_; }
 
     size_t describe(char *out, size_t cap, uint64_t now) const
     {

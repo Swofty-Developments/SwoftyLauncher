@@ -22,10 +22,7 @@ struct Line {
     int n;
     const char *tail;
 
-    explicit operator bool() const
-    {
-        return tail != nullptr;
-    }
+    explicit operator bool() const { return tail != nullptr; }
 };
 
 // " (further <what> are not logged)", which the last logged line of a cap ends with; empty for a cap without a noun.
@@ -33,8 +30,7 @@ class Tail {
 public:
     constexpr Tail() = default;
 
-    template <size_t N>
-    constexpr explicit Tail(const char (&what)[N])
+    template <size_t N> constexpr explicit Tail(const char (&what)[N])
     {
         static_assert(sizeof PREFIX - 1 + N - 1 + sizeof SUFFIX <= sizeof text_);
         size_t at = 0;
@@ -47,15 +43,9 @@ public:
         text_[at] = 0;
     }
 
-    const char *text() const
-    {
-        return text_;
-    }
+    const char *text() const { return text_; }
 
-    const char *at(int n, int first) const
-    {
-        return n > first ? nullptr : n == first ? text_ : "";
-    }
+    const char *at(int n, int first) const { return n > first ? nullptr : n == first ? text_ : ""; }
 
 private:
     static constexpr char PREFIX[] = " (further ";
@@ -65,15 +55,11 @@ private:
 };
 
 // Logs the first First occurrences; the last of them ends with the tail.
-template <int First>
-class LogFirst {
+template <int First> class LogFirst {
 public:
     constexpr LogFirst() = default;
 
-    template <size_t N>
-    constexpr explicit LogFirst(const char (&what)[N]) : tail_(what)
-    {
-    }
+    template <size_t N> constexpr explicit LogFirst(const char (&what)[N]) : tail_(what) {}
 
     Line note()
     {
@@ -81,15 +67,9 @@ public:
         return {n, tail_.at(n, First)};
     }
 
-    int count() const
-    {
-        return count_.load();
-    }
+    int count() const { return count_.load(); }
 
-    const char *tail() const
-    {
-        return tail_.text();
-    }
+    const char *tail() const { return tail_.text(); }
 
 private:
     std::atomic<int> count_{0};
@@ -98,15 +78,11 @@ private:
 
 // Logs the first occurrence of each of the first First distinct keys; the last of them ends with the tail. A key
 // noted before, and every new key past the cap, is not logged and not kept.
-template <class Key, size_t First>
-class FirstKeys {
+template <class Key, size_t First> class FirstKeys {
 public:
     constexpr FirstKeys() = default;
 
-    template <size_t N>
-    constexpr explicit FirstKeys(const char (&what)[N]) : tail_(what)
-    {
-    }
+    template <size_t N> constexpr explicit FirstKeys(const char (&what)[N]) : tail_(what) {}
 
     Line note(const Key &key)
     {
@@ -134,10 +110,7 @@ public:
         seen_.clear();
     }
 
-    const char *tail() const
-    {
-        return tail_.text();
-    }
+    const char *tail() const { return tail_.text(); }
 
 private:
     mutable std::mutex lock_;

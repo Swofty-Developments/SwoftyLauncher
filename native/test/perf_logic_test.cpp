@@ -12,21 +12,21 @@ namespace lg = perf::logic;
 
 static int g_fail;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            g_fail++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            g_fail++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
-#define CHECK_EQ(a, b)                                                                                                 \
-    do {                                                                                                               \
-        std::string x_ = (a), y_ = (b);                                                                                \
-        if (x_ != y_) {                                                                                                \
-            std::printf("FAIL %s:%d\n  got:  %s\n  want: %s\n", __FILE__, __LINE__, x_.c_str(), y_.c_str());          \
-            g_fail++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK_EQ(a, b)                                                                                                           \
+    do {                                                                                                                         \
+        std::string x_ = (a), y_ = (b);                                                                                          \
+        if (x_ != y_) {                                                                                                          \
+            std::printf("FAIL %s:%d\n  got:  %s\n  want: %s\n", __FILE__, __LINE__, x_.c_str(), y_.c_str());                     \
+            g_fail++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
 static void grouped()
@@ -57,12 +57,8 @@ static void vq_line()
     m.game_calls = 12000;
     m.game_ms = 640.06;
     m.modules = {{"progressive.dll", 3402, 112.2}, {"core", 15000, 800.24}, {"other", 0, 0}};
-    m.sites = {{"core+0x2200", 4000, 100.0},
-               {"core+0x1a2b3c", 9100, 500.3},
-               {"core+0x10", 1, 0.01},
-               {"core+0x20", 2, 0.02},
-               {"core+0x30", 3, 0.03},
-               {"core+0x40", 4, 0.04}};
+    m.sites = {{"core+0x2200", 4000, 100.0}, {"core+0x1a2b3c", 9100, 500.3}, {"core+0x10", 1, 0.01},
+               {"core+0x20", 2, 0.02},       {"core+0x30", 3, 0.03},         {"core+0x40", 4, 0.04}};
     m.exe_hooked = true;
     m.exe_calls = 120334;
     m.exe_ms = 30.05;
@@ -78,9 +74,8 @@ static void vq_line()
     lg::VqMinute idle;
     idle.secs = 60;
     idle.modules = {{"core", 0, 0}};
-    CHECK_EQ(lg::vq_line(idle),
-             "[perf] last 60 s: VirtualQuery from swofty 0 calls 0.0 ms (game threads 0 calls 0.0 ms); memory "
-             "checks: 0 page(s) from the working set, 0 from VirtualQuery");
+    CHECK_EQ(lg::vq_line(idle), "[perf] last 60 s: VirtualQuery from swofty 0 calls 0.0 ms (game threads 0 calls 0.0 ms); memory "
+                                "checks: 0 page(s) from the working set, 0 from VirtualQuery");
 }
 
 static void ranked()
@@ -110,9 +105,10 @@ static void memory_line()
     g.non_local_used = 120ull << 20;
     g.non_local_budget = 7000ull << 20;
     m.gpus = {g, lg::GpuMinute{}};
-    CHECK_EQ(lg::memory_line(m), "[perf] last 60 s: memory: RAM 18768/32768 MiB used, commit 22000/40000 MiB used; game working set "
-                                 "6500 MiB, private 7200 MiB; VRAM gpu 0 5100/11000 MiB local used/budget, 120/7000 MiB shared; "
-                                 "VRAM gpu 1 unavailable");
+    CHECK_EQ(lg::memory_line(m),
+             "[perf] last 60 s: memory: RAM 18768/32768 MiB used, commit 22000/40000 MiB used; game working set "
+             "6500 MiB, private 7200 MiB; VRAM gpu 0 5100/11000 MiB local used/budget, 120/7000 MiB shared; "
+             "VRAM gpu 1 unavailable");
     lg::MemoryMinute none;
     none.secs = 60;
     CHECK_EQ(lg::memory_line(none), "[perf] last 60 s: memory: system RAM unavailable; VRAM unavailable");
@@ -127,9 +123,10 @@ static void memory_line()
 static void boot_lines()
 {
     CHECK_EQ(lg::driver_text((31ull << 48) | (0ull << 32) | (15ull << 16) | 4601), "31.0.15.4601");
-    CHECK_EQ(lg::gpu_boot_line(0, "NVIDIA GeForce RTX 3060", 0x10de, 0x2504, "31.0.15.4601", 12ull << 30, 0, 16ull << 30, false),
-             "[system] gpu 0: NVIDIA GeForce RTX 3060 (vendor 0x10de device 0x2504), driver 31.0.15.4601, dedicated VRAM 12288 MiB, "
-             "dedicated system 0 MiB, shared system 16384 MiB");
+    CHECK_EQ(
+        lg::gpu_boot_line(0, "NVIDIA GeForce RTX 3060", 0x10de, 0x2504, "31.0.15.4601", 12ull << 30, 0, 16ull << 30, false),
+        "[system] gpu 0: NVIDIA GeForce RTX 3060 (vendor 0x10de device 0x2504), driver 31.0.15.4601, dedicated VRAM 12288 MiB, "
+        "dedicated system 0 MiB, shared system 16384 MiB");
     CHECK(lg::gpu_boot_line(1, "Basic Render", 0x1414, 0x8c, "", 0, 0, 0, true).find("driver unknown") != std::string::npos);
     CHECK_EQ(lg::ram_boot_line(32768ull << 20, 40000ull << 20),
              "[system] ram: 32768 MiB physical, 40000 MiB commit limit (RAM plus page file)");

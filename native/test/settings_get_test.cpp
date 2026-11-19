@@ -70,10 +70,7 @@ bool toggle()
 
 std::string seen_in_watcher;
 
-void on_days(const char *, const SwoftySettingValue *v, void *)
-{
-    seen_in_watcher = std::string(v->choice) + "/" + days();
-}
+void on_days(const char *, const SwoftySettingValue *v, void *) { seen_in_watcher = std::string(v->choice) + "/" + days(); }
 
 int many(int n, std::string *last = nullptr)
 {
@@ -206,8 +203,8 @@ int main()
     for (int i = 0; i < 100000; i++)
         (void)older::effective(st, older::OPTION, "ex.memo/days");
     double registry = std::chrono::duration<double, std::nano>(std::chrono::steady_clock::now() - t0).count() / 1e5;
-    std::printf("  a memo read costs %.1f ns; the registry read the old settings_get made on every call costs %.1f ns\n",
-                hit, registry);
+    std::printf("  a memo read costs %.1f ns; the registry read the old settings_get made on every call costs %.1f ns\n", hit,
+                registry);
 
     before = trips;
     check(settings_command(djb2("memo_days_long")), "settings command: days = long");

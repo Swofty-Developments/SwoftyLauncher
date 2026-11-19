@@ -11,10 +11,7 @@ namespace runtime::driver_ref {
 
 enum class Miss { unread, domain, no_table, past_end, empty_slot };
 
-inline uint64_t driver_count(uint64_t begin, uint64_t end)
-{
-    return end > begin ? (end - begin) >> 4 : 0;
-}
+inline uint64_t driver_count(uint64_t begin, uint64_t end) { return end > begin ? (end - begin) >> 4 : 0; }
 
 inline Miss miss(uint8_t domain, uint64_t table, uint64_t count, uint16_t id)
 {

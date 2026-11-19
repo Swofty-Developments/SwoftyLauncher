@@ -40,15 +40,9 @@ static void *fake_setup(void *, void *user)
     return f->has_component ? f->component.data() : nullptr;
 }
 
-static int fake_index(void *, void *user)
-{
-    return static_cast<Fake *>(user)->index;
-}
+static int fake_index(void *, void *user) { return static_cast<Fake *>(user)->index; }
 
-static bool fake_readable(const void *p, size_t, void *)
-{
-    return p != nullptr;
-}
+static bool fake_readable(const void *p, size_t, void *) { return p != nullptr; }
 
 static void build(Fake &f, const std::vector<std::string> &names, uint8_t index)
 {
@@ -165,7 +159,8 @@ int main()
         expect(!content::check(d, none).empty(), "check: an unknown career bit is refused");
     }
     {
-        expect(content::career_of(SWOFTY_CAREER_DRIVER) == content::CAREER_DRIVER, "career: a Driver Career pick is Driver Career");
+        expect(content::career_of(SWOFTY_CAREER_DRIVER) == content::CAREER_DRIVER,
+               "career: a Driver Career pick is Driver Career");
         expect(content::career_of(SWOFTY_CAREER_MY_TEAM) == content::CAREER_MY_TEAM, "career: a My Team pick is My Team");
         expect(content::career_of(0) == content::CAREER_DRIVER, "career: no pick yet is Driver Career");
         expect(content::stock_command(content::ADDON_SELECT_PRESSED) == content::SELECT_PRESSED,
@@ -177,14 +172,14 @@ int main()
     {
         const uintptr_t select = 0x145738430, showroom = 0x1457390a0;
         const char *career[] = {"career_default_content", "career_dlc_content"};
-        const char *cars[] = {"showroom_f1_DLC", "showroom_f1", "showroom_f2_next", "showroom_f2",
-                              "showroom_player_cars_dlc", "showroom_player_cars", nullptr};
+        const char *cars[] = {
+            "showroom_f1_DLC",      "showroom_f1", "showroom_f2_next", "showroom_f2", "showroom_player_cars_dlc",
+            "showroom_player_cars", nullptr};
         expect(content::content_select(select, select, career, 2), "select: the content select view model's list");
         expect(content::content_select(select, select, nullptr, 0),
                "select: the content select view model's list before its tiles are read");
         expect(!content::content_select(showroom, select, cars, 7), "select: the showroom's car tiles are left alone");
-        expect(!content::content_select(0, select, cars, 7),
-               "select: car tiles with no view model found are left alone");
+        expect(!content::content_select(0, select, cars, 7), "select: car tiles with no view model found are left alone");
         expect(content::content_select(0, select, career, 2),
                "select: the stock career tiles with no view model found are the content select");
         expect(!content::content_select(0, 0, nullptr, 0), "select: no vtable bound and no tiles is left alone");
@@ -224,22 +219,19 @@ int main()
         l = content::loaded_list(f.source.data(), 148, a);
         expect(l.list && content::loaded_why(d, 148, l).empty(), "loaded: the last slot passes");
         l = content::loaded_list(f.source.data(), 149, a);
-        expect(l.known && !l.list && content::loaded_why(d, 149, l).find("past the 149 entrant list slots") !=
-                                         std::string::npos,
+        expect(l.known && !l.list && content::loaded_why(d, 149, l).find("past the 149 entrant list slots") != std::string::npos,
                "loaded: an id equal to the slot count is refused");
         l = content::loaded_list(f.source.data(), -1, a);
         expect(l.known && !l.list && !content::loaded_why(d, -1, l).empty(), "loaded: a negative id is refused");
         put(f.groups, 50 * content::GROUP_STRIDE + content::GROUP_AT, (void *)nullptr);
         l = content::loaded_list(f.source.data(), 50, a);
-        expect(l.known && !l.list &&
-                   content::loaded_why(d, 50, l).find("loaded no list at that id") != std::string::npos,
+        expect(l.known && !l.list && content::loaded_why(d, 50, l).find("loaded no list at that id") != std::string::npos,
                "loaded: an id whose slot holds no list is refused");
         build(f, std::vector<std::string>(105, "f1_other"), 0);
         d.data_group = "f1_career_porsche25";
         l = content::loaded_list(f.source.data(), 240, a);
         expect(l.known && l.slots == 105 && !l.list &&
-                   content::loaded_why(d, 240, l).find("stat_id 240, past the 105 entrant list slots") !=
-                       std::string::npos,
+                   content::loaded_why(d, 240, l).find("stat_id 240, past the 105 entrant list slots") != std::string::npos,
                "loaded: stat_id 240 with 105 loaded slots is refused (the 1.9.15 tile press crash)");
         put(f.source, content::GROUPS_END, f.groups.data());
         l = content::loaded_list(f.source.data(), 3, a);
@@ -273,17 +265,21 @@ int main()
         content::Desc d = desc1990();
         d.mode = "driver_career_1991";
         r = content::requirements(d, db);
-        expect(!r.ok && r.why.find("ModeChampionship") != std::string::npos, "requirements: a missing mode row fails the requirements");
+        expect(!r.ok && r.why.find("ModeChampionship") != std::string::npos,
+               "requirements: a missing mode row fails the requirements");
         d = desc1990();
         d.data_group = "f1_career_1991";
         r = content::requirements(d, db);
-        expect(!r.ok && r.why.find("entrant_lists") != std::string::npos, "requirements: a missing entrant list fails the requirements");
+        expect(!r.ok && r.why.find("entrant_lists") != std::string::npos,
+               "requirements: a missing entrant list fails the requirements");
         d.data_group = "f1_career_huge";
         r = content::requirements(d, db);
-        expect(!r.ok && r.why.find("below 256") != std::string::npos, "requirements: a stat_id past a byte fails the requirements");
+        expect(!r.ok && r.why.find("below 256") != std::string::npos,
+               "requirements: a stat_id past a byte fails the requirements");
         texts.erase("content_sets.content_set_1.official_entrant_list_1.name");
         r = content::requirements(desc1990(), db);
-        expect(!r.ok && r.why.find("F1CAREER_90") != std::string::npos, "requirements: no F1CAREER_<suffix> list fails the requirements");
+        expect(!r.ok && r.why.find("F1CAREER_90") != std::string::npos,
+               "requirements: no F1CAREER_<suffix> list fails the requirements");
         stock_db();
         texts.erase("content_sets.content_set_1.official_entrant_list_3.name");
         r = content::requirements(desc1990(), db);

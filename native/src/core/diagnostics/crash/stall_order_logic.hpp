@@ -103,10 +103,7 @@ public:
             at_ = at_ + size_t(k) >= cap_ ? cap_ - 1 : at_ + size_t(k);
     }
 
-    size_t size() const
-    {
-        return at_;
-    }
+    size_t size() const { return at_; }
 
 private:
     char *b_;
@@ -132,10 +129,10 @@ inline size_t kept_text(const Kept &k, char *out, size_t cap)
     }
     o.put("  at game frame #%d (rip=%016llx rsp=%016llx), the non-volatile registers the unwind restored:\n", k.frame,
           (unsigned long long)k.rip, (unsigned long long)k.rsp);
-    o.put("    rbx=%016llx rbp=%016llx rsi=%016llx rdi=%016llx\n", (unsigned long long)k.rbx,
-          (unsigned long long)k.rbp, (unsigned long long)k.rsi, (unsigned long long)k.rdi);
-    o.put("    r12=%016llx r13=%016llx r14=%016llx r15=%016llx\n", (unsigned long long)k.r12,
-          (unsigned long long)k.r13, (unsigned long long)k.r14, (unsigned long long)k.r15);
+    o.put("    rbx=%016llx rbp=%016llx rsi=%016llx rdi=%016llx\n", (unsigned long long)k.rbx, (unsigned long long)k.rbp,
+          (unsigned long long)k.rsi, (unsigned long long)k.rdi);
+    o.put("    r12=%016llx r13=%016llx r14=%016llx r15=%016llx\n", (unsigned long long)k.r12, (unsigned long long)k.r13,
+          (unsigned long long)k.r14, (unsigned long long)k.r15);
     return o.size();
 }
 
@@ -148,8 +145,7 @@ inline size_t stack_text(uint64_t rsp, const uint64_t *q, int n, char *out, size
     }
     o.put("  that frame's stack from rsp=%016llx (%d qwords):\n", (unsigned long long)rsp, n);
     for (int i = 0; i < n; i++)
-        o.put("%s+%02x=%016llx%s", i % 4 ? " " : "    ", i * 8, (unsigned long long)q[i],
-              i % 4 == 3 || i == n - 1 ? "\n" : "");
+        o.put("%s+%02x=%016llx%s", i % 4 ? " " : "    ", i * 8, (unsigned long long)q[i], i % 4 == 3 || i == n - 1 ? "\n" : "");
     return o.size();
 }
 

@@ -40,8 +40,8 @@ static std::string build(const std::vector<Rec> &recs)
         std::memcpy(head + 9, &len, 4);
         out.append(head, 13);
         for (uint32_t k = 0; k < len; k++)
-            out.push_back(char((unsigned(uint8_t(r.text[k])) +
-                                unsigned(gvdb::MASK[(gvdb::MASK_START + stream + k) % gvdb::MASK_LEN])) & 0xff));
+            out.push_back(char(
+                (unsigned(uint8_t(r.text[k])) + unsigned(gvdb::MASK[(gvdb::MASK_START + stream + k) % gvdb::MASK_LEN])) & 0xff));
         out.push_back('\0');
         stream += len;
     }
@@ -111,9 +111,9 @@ static void synthetic(std::size_t n, uint64_t seed)
     gvdb::File f;
     bool loaded = f.load(bytes);
     std::string why;
-    check(loaded && same_as_read(bytes, f, absent, why),
-          "a file of " + std::to_string(recs.size()) + " record(s) (repeats kept last) reads the same as gvdb::read" +
-              (why.empty() ? "" : ": " + why));
+    check(loaded && same_as_read(bytes, f, absent, why), "a file of " + std::to_string(recs.size()) +
+                                                             " record(s) (repeats kept last) reads the same as gvdb::read" +
+                                                             (why.empty() ? "" : ": " + why));
 }
 
 static void refused()
@@ -166,8 +166,8 @@ static void stock(const char *path)
 
 int main(int argc, char **argv)
 {
-    for (std::size_t n : {std::size_t(0), std::size_t(1), std::size_t(2), std::size_t(3), std::size_t(257),
-                          std::size_t(5000), std::size_t(200000)})
+    for (std::size_t n : {std::size_t(0), std::size_t(1), std::size_t(2), std::size_t(3), std::size_t(257), std::size_t(5000),
+                          std::size_t(200000)})
         synthetic(n, 1000 + n);
     refused();
     if (argc > 1)

@@ -9,10 +9,7 @@ namespace swofty_core::apply::ids {
 using swofty::json::Value;
 
 namespace {
-bool career_holds(const std::string &registry)
-{
-    return registry != "vehicle.package";
-}
+bool career_holds(const std::string &registry) { return registry != "vehicle.package"; }
 }
 
 bool Store::load(const std::string &text, std::string *why)
@@ -191,8 +188,7 @@ std::vector<std::string> Store::lend(const Lent &lent)
             applied++;
             out.push_back("[registry] stat ids: " + reg + " " + rec + " -> " + std::to_string(id) +
                           " (lent by the host for this session" +
-                          (was >= 0 && was != id ? "; this install keeps " + std::to_string(was) : std::string()) +
-                          ")");
+                          (was >= 0 && was != id ? "; this install keeps " + std::to_string(was) : std::string()) + ")");
         }
         for (auto &rec : displaced) {
             auto it = mine.find(rec);
@@ -302,8 +298,8 @@ int64_t Store::next_free_locked(const std::string &registry, const std::string &
 std::string Store::moved_line(const std::string &registry, const std::string &record, const char *how, int64_t id,
                               const std::string &row, int64_t to) const
 {
-    return "[registry] ids: " + record + " " + how + " " + registry + " stat id " + std::to_string(id) + " is held by " +
-           row + " from the database; " +
+    return "[registry] ids: " + record + " " + how + " " + registry + " stat id " + std::to_string(id) + " is held by " + row +
+           " from the database; " +
            (to >= 0 ? "uses " + std::to_string(to)
                     : "the " + pool_text_locked(registry) + " has no free id, so it keeps " + std::to_string(id));
 }
@@ -458,7 +454,7 @@ Result Store::allocate(const std::string &registry, const std::string &record, c
 }
 
 Result Store::pin(const std::string &registry, const std::string &record, int64_t id, const std::string &today,
-                 const std::string &label)
+                  const std::string &label)
 {
     std::lock_guard g(mu_);
     generation_++;
@@ -480,8 +476,8 @@ Result Store::pin(const std::string &registry, const std::string &record, int64_
         return r;
     }
     if (!label.empty() && db_locked(registry, id, label, &row)) {
-        int64_t to = was_moved && !taken_locked(registry, e->second.id, record) ? e->second.id
-                                                                                 : next_free_locked(registry, record);
+        int64_t to =
+            was_moved && !taken_locked(registry, e->second.id, record) ? e->second.id : next_free_locked(registry, record);
         r.line = moved_line(registry, record, "pinned", id, row, to);
         if (to >= 0) {
             if (!was_moved || e->second.id != to) {
@@ -508,8 +504,7 @@ Result Store::pin(const std::string &registry, const std::string &record, int64_
     return r;
 }
 
-Result Store::recheck(const std::string &registry, const std::string &record, const std::string &label,
-                      const std::string &today)
+Result Store::recheck(const std::string &registry, const std::string &record, const std::string &label, const std::string &today)
 {
     std::lock_guard g(mu_);
     generation_++;
@@ -573,8 +568,8 @@ std::vector<Clash> Store::adopt(const std::string &career, const CareerMap &map,
             std::string who = held ? holder : in_db ? row + " from the database" : std::string();
             if (e != mine.end()) {
                 Clash c{reg, rec, held ? holder : row, id, e->second.id, {}};
-                c.line = career + " needs " + reg + " " + rec + " at stat id " + std::to_string(id) +
-                         "; this install gives it " + std::to_string(e->second.id) +
+                c.line = career + " needs " + reg + " " + rec + " at stat id " + std::to_string(id) + "; this install gives it " +
+                         std::to_string(e->second.id) +
                          (who.empty() ? std::string() : " and " + who + " holds " + std::to_string(id));
                 out.push_back(c);
                 continue;

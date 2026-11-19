@@ -9,13 +9,27 @@
 
 namespace runtime::ev {
 
-inline const char *const EVENT_NAMES[] = {
-    SWOFTY_EVENT_SESSION_START, SWOFTY_EVENT_SESSION_END,     SWOFTY_EVENT_RACE_START,        SWOFTY_EVENT_LAP,
-    SWOFTY_EVENT_SESSION_UNLOAD, SWOFTY_EVENT_GARAGE_PARKED_CAR,
-    SWOFTY_EVENT_FLAG,          SWOFTY_EVENT_STATE,           SWOFTY_EVENT_SCREEN,            SWOFTY_EVENT_PAUSE,
-    SWOFTY_EVENT_RESUME,        SWOFTY_EVENT_RESULTS,         SWOFTY_EVENT_FLOW_STATE,        SWOFTY_EVENT_CAREER_LOADED,
-    SWOFTY_EVENT_CAREER_UNLOADED, SWOFTY_EVENT_CAREER_HUB,    SWOFTY_EVENT_CAREER_STARTING,   SWOFTY_EVENT_CAREER_CONTENT_PRESSED,
-    SWOFTY_EVENT_TELEMETRY_OVERTAKE, SWOFTY_EVENT_TELEMETRY_COLLISION, SWOFTY_EVENT_TELEMETRY_RETIREMENT};
+inline const char *const EVENT_NAMES[] = {SWOFTY_EVENT_SESSION_START,
+                                          SWOFTY_EVENT_SESSION_END,
+                                          SWOFTY_EVENT_RACE_START,
+                                          SWOFTY_EVENT_LAP,
+                                          SWOFTY_EVENT_SESSION_UNLOAD,
+                                          SWOFTY_EVENT_GARAGE_PARKED_CAR,
+                                          SWOFTY_EVENT_FLAG,
+                                          SWOFTY_EVENT_STATE,
+                                          SWOFTY_EVENT_SCREEN,
+                                          SWOFTY_EVENT_PAUSE,
+                                          SWOFTY_EVENT_RESUME,
+                                          SWOFTY_EVENT_RESULTS,
+                                          SWOFTY_EVENT_FLOW_STATE,
+                                          SWOFTY_EVENT_CAREER_LOADED,
+                                          SWOFTY_EVENT_CAREER_UNLOADED,
+                                          SWOFTY_EVENT_CAREER_HUB,
+                                          SWOFTY_EVENT_CAREER_STARTING,
+                                          SWOFTY_EVENT_CAREER_CONTENT_PRESSED,
+                                          SWOFTY_EVENT_TELEMETRY_OVERTAKE,
+                                          SWOFTY_EVENT_TELEMETRY_COLLISION,
+                                          SWOFTY_EVENT_TELEMETRY_RETIREMENT};
 
 inline const char *canonical(const char *name)
 {
@@ -62,8 +76,7 @@ template <class Profile = NoProfile> class Dispatcher {
 public:
     bool garage_listened() const { return garage_subs_.load(std::memory_order_relaxed) != 0; }
 
-    int subscribe(uint64_t owner, const char *name, SwoftyEventFn fn, void *user, uint32_t *token,
-                  bool *queued = nullptr)
+    int subscribe(uint64_t owner, const char *name, SwoftyEventFn fn, void *user, uint32_t *token, bool *queued = nullptr)
     {
         const char *canon = canonical(name);
         if (!canon || !fn)

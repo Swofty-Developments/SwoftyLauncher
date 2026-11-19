@@ -97,15 +97,18 @@ int start_teams(const json::Value &s, Report &rep, std::string &head, std::strin
             auto i = static_cast<size_t>(d.slot - 1);
             int64_t stat = i < slot_teams.size() ? static_cast<int64_t>(slot_teams[i]) : -1;
             std::string row = ct::identity_id(d.row), team = ct::identity_id(d.team);
-            bool before = std::any_of(was.worn.begin(), was.worn.end(), [&](const StartWorn &w) { return w.slot == d.slot && w.team == d.team; });
+            bool before = std::any_of(was.worn.begin(), was.worn.end(),
+                                      [&](const StartWorn &w) { return w.slot == d.slot && w.team == d.team; });
             if (ct::dresser() && ct::dresser()(group.c_str(), d.slot, row.c_str(), team.c_str(), stat)) {
                 now.worn.push_back({d.slot, stat, d.row, d.team});
                 ++(before ? kept : dressed);
-                swofty::log("[career-ops] apply_teams slot %d: team row %s (stat id %lld) wears %s in the new-career wizard of %d",
-                            d.slot, d.row.c_str(), static_cast<long long>(stat), team.c_str(), year);
+                swofty::log(
+                    "[career-ops] apply_teams slot %d: team row %s (stat id %lld) wears %s in the new-career wizard of %d",
+                    d.slot, d.row.c_str(), static_cast<long long>(stat), team.c_str(), year);
             } else {
-                rep.refusals.push_back("slot " + std::to_string(d.slot) + ": team row " + d.row + " (stat id " + std::to_string(stat) +
-                                       ") could not be dressed as " + team + " yet: the loaded team record or the identity is not reachable");
+                rep.refusals.push_back("slot " + std::to_string(d.slot) + ": team row " + d.row + " (stat id " +
+                                       std::to_string(stat) + ") could not be dressed as " + team +
+                                       " yet: the loaded team record or the identity is not reachable");
             }
         }
         for (auto &n : want->notes)
@@ -119,13 +122,16 @@ int start_teams(const json::Value &s, Report &rep, std::string &head, std::strin
     rep.refused = rep.refusals.size();
     rep.extra = ",\"dressed\":" + std::to_string(dressed + kept) + ",\"undressed\":" + std::to_string(undressed);
     if (!year)
-        summary = std::to_string(undressed) + " slot row(s) back in their own names and colours; the new-career wizard's dress is off";
+        summary =
+            std::to_string(undressed) + " slot row(s) back in their own names and colours; the new-career wizard's dress is off";
     else if (!want)
-        summary = "no career.season record of " + std::to_string(year) + " names an added team" +
-                  (undressed ? "; " + std::to_string(undressed) + " slot row(s) back in their own names and colours" : std::string());
+        summary =
+            "no career.season record of " + std::to_string(year) + " names an added team" +
+            (undressed ? "; " + std::to_string(undressed) + " slot row(s) back in their own names and colours" : std::string());
     else
         summary = std::to_string(dressed) + " slot row(s) dressed, " + std::to_string(kept) + " still dressed, " +
-                  std::to_string(undressed) + " undressed: Team Select lists the " + std::to_string(year) + " added team(s) on their slot rows";
+                  std::to_string(undressed) + " undressed: Team Select lists the " + std::to_string(year) +
+                  " added team(s) on their slot rows";
     return SWOFTY_ASSET_OK;
 }
 
@@ -311,8 +317,8 @@ int api_apply_teams(SwoftyText request, char *out, size_t cap, size_t *len)
                     });
                     if (ct::dresser() && ct::dresser()(group.c_str(), a.slot, row.c_str(), team.c_str(), row_stat)) {
                         ++dressed;
-                        swofty::log("[career-ops] apply_teams slot %d: team row %s (stat id %lld) is dressed as %s%s", a.slot, a.row.c_str(),
-                                    static_cast<long long>(row_stat), team.c_str(),
+                        swofty::log("[career-ops] apply_teams slot %d: team row %s (stat id %lld) is dressed as %s%s", a.slot,
+                                    a.row.c_str(), static_cast<long long>(row_stat), team.c_str(),
                                     from_wizard ? " (the same row and dress as the new-career wizard's)" : "");
                     } else {
                         ++dress_pending;
@@ -336,8 +342,8 @@ int api_apply_teams(SwoftyText request, char *out, size_t cap, size_t *len)
             }
         }
         rep.extra = ",\"slots\":" + std::to_string(tp.actions.size()) + ",\"open\":" + std::to_string(tp.count(ct::Kind::open)) +
-                    ",\"closed\":" + std::to_string(tp.count(ct::Kind::closed)) +
-                    ",\"dressed\":" + std::to_string(dressed) + ",\"dress_pending\":" + std::to_string(dress_pending);
+                    ",\"closed\":" + std::to_string(tp.count(ct::Kind::closed)) + ",\"dressed\":" + std::to_string(dressed) +
+                    ",\"dress_pending\":" + std::to_string(dress_pending);
     }
     rep.refused = std::max(rep.refused, rep.refusals.size());
     swofty::log("[career-ops] %s: %s; %zu seat(s) set, %zu unchanged, %zu released, %zu refused, %zu dressed%s; %s", head.c_str(),

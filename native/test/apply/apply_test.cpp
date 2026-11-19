@@ -152,8 +152,7 @@ void test_sizing()
         for (uint64_t under : {uint64_t(0), uint64_t(1), uint64_t(258), keys / 50}) {
             auto at = rm::target(file - under, 0, keys);
             uint64_t slots = rm::slots_for(at.want);
-            check(slots == (uint64_t(1) << 21) &&
-                      rm::left(slots, file - under) - rm::PROBE_RECORDS >= keys + keys / 50,
+            check(slots == (uint64_t(1) << 21) && rm::left(slots, file - under) - rm::PROBE_RECORDS >= keys + keys / 50,
                   "a plan of " + std::to_string(keys) + " keys " + std::to_string(under) +
                       " under the growth point sizes up and leaves room for a 2% undercount");
         }
@@ -172,9 +171,8 @@ void test_budget()
     auto b = rm::admit(100, {{"a", 40, 50}, {"b", 70, 70}, {"c", 60, 61}, {"d", 0, 5}});
     check(b.addons.size() == 4, "every addon gets a verdict");
     check(b.addons[0].admitted && !b.addons[1].admitted && b.addons[2].admitted && b.addons[3].admitted,
-          "whole addons are admitted in load order while each fits what is left: " +
-              std::to_string(b.addons[0].admitted) + std::to_string(b.addons[1].admitted) +
-              std::to_string(b.addons[2].admitted) + std::to_string(b.addons[3].admitted));
+          "whole addons are admitted in load order while each fits what is left: " + std::to_string(b.addons[0].admitted) +
+              std::to_string(b.addons[1].admitted) + std::to_string(b.addons[2].admitted) + std::to_string(b.addons[3].admitted));
     check(b.admitted_keys == 100 && b.refused_keys == 70 && b.asked_keys == 170, "the budget counts asked, admitted, refused");
     auto none = rm::admit(0, {{"a", 1, 1}, {"b", 0, 3}});
     check(!none.addons[0].admitted && none.addons[1].admitted, "an addon that only overwrites always fits");
@@ -183,8 +181,10 @@ void test_budget()
     check(fits.admitted_keys == 110 && fits.refused_keys == 0 && fits.addons[0].admitted && fits.addons[1].admitted &&
               fits.addons[2].admitted,
           "a boot whose rows fit is admitted whole");
-    std::vector<rm::AddonAsk> asks = {{"swofty.swofty-seasons-2015", 6783, 6800}, {"swofty.swofty-seasons-2023", 5263, 5300},
-                                      {"swofty.swofty-seasons-2024", 5036, 5062}, {"swofty.core", 0, 12}};
+    std::vector<rm::AddonAsk> asks = {{"swofty.swofty-seasons-2015", 6783, 6800},
+                                      {"swofty.swofty-seasons-2023", 5263, 5300},
+                                      {"swofty.swofty-seasons-2024", 5036, 5062},
+                                      {"swofty.core", 0, 12}};
     auto old_way = rm::admit(12000, asks);
     check(old_way.addons[0].admitted && !old_way.addons[1].admitted && old_way.addons[2].admitted && old_way.addons[3].admitted,
           "per addon, the room refuses one addon of a laid-out boot and applies the others around its rows");
@@ -366,8 +366,7 @@ void test_database_ids()
     s.pin("vehicle", "cs/mclaren", 511, "d", "cs17_mclaren");
     auto moved = s.pin("vehicle", "cs/ferrari", 509, "d", "cs17_ferrari");
     check(moved.id == 512 && moved.how == "moved",
-          "a pin on an id a database row holds takes the next free id, past another record's pin: " +
-              std::to_string(moved.id));
+          "a pin on an id a database row holds takes the next free id, past another record's pin: " + std::to_string(moved.id));
     check(moved.line == "[registry] ids: cs/ferrari pinned vehicle stat id 509 is held by bdx_s5_car_mclaren_3 from the "
                         "database; uses 512",
           "the move line: " + moved.line);
@@ -412,8 +411,7 @@ void test_database_ids()
     check(pl.load("{\"version\":1,\"ids\":{},\"careers\":{\"c1\":{\"vehicle.package\":{\"cs/gone\":1}}}}") &&
               pl.allocate("vehicle.package", "cs/new", "d").id == 1,
           "a package id only a career lists is free");
-    check(pl.adopt("c2", {{"vehicle.package", {{"cs/old", 2}}}}, "d").empty() &&
-              pl.dump().find("cs/old") == std::string::npos,
+    check(pl.adopt("c2", {{"vehicle.package", {{"cs/old", 2}}}}, "d").empty() && pl.dump().find("cs/old") == std::string::npos,
           "adopting a career keeps none of its package ids");
 
     ap::ids::Store k;
@@ -454,8 +452,8 @@ void test_scheduler()
     st.add_base("career.season", "y2017", Value::object({{"year", Value(2017)}}));
     st.add_base("t.content", "pkg", Value::object({{"n", Value(0)}}));
     std::string id;
-    st.add("mod.a", "content.package", "f1_2017",
-           Value::object({{"entrant_list", Value("cs_f1_2017")}, {"season", Value(2017)}}), &id);
+    st.add("mod.a", "content.package", "f1_2017", Value::object({{"entrant_list", Value("cs_f1_2017")}, {"season", Value(2017)}}),
+           &id);
     check(id == "mod.a/f1_2017", "the test package is added: " + id);
     reg::Change ch;
     ch.patch = Value::object({{"entrant_list", Value("cs_f1_2017_v10")}});
@@ -594,7 +592,8 @@ void test_scheduler()
     s.content_picked("f1_2025", "time_trial");
     check(st.context().mode == "driver_career" && !tt_on(), "a box press never overrides a loaded career's mode");
     s.session_load(ap::SessionFacts{"grand_prix", "practice", "practice_1", "game/imola"});
-    check(st.context().mode == "driver_career" && logged("[apply] facts: mode driver_career, session practice (practice_1), track game/imola"),
+    check(st.context().mode == "driver_career" &&
+              logged("[apply] facts: mode driver_career, session practice (practice_1), track game/imola"),
           "a career practice keeps the career's mode");
     calls.clear();
     s.career_unloaded();
@@ -616,18 +615,30 @@ void test_facts()
 {
     namespace f = swofty_core::apply::facts;
     const std::pair<const char *, const char *> modes[] = {
-        {"time_trial", "time_trial"},           {"solo_testing", "time_trial"},
-        {"grand_prix_23", "grand_prix"},        {"grand_prix_splitscreen", "split_screen"},
-        {"driver_career_26", "driver_career"},  {"driver_career_25", "driver_career"},
-        {"driver_career_24", "driver_career"},  {"career_23", "driver_career"},
-        {"my_team_career_26", "my_team"},       {"my_team_career_24", "my_team"},
-        {"story_mode", "story"},                {"story_mode_zenith", "story"},
-        {"event_mode", "f1_world"},             {"championships", "f1_world"},
-        {"rewind_event_mode", "f1_world"},      {"F1CG_solo_battles", "f1_world"},
-        {"career_25_online", "unknown"},        {"career_23_online", "unknown"},
-        {"challenge_career_25", "unknown"},     {"benchmark", "unknown"},
-        {"dev", "unknown"},                     {"", "unknown"},
-        {"grand_prix", "unknown"},              {"time_trial_x", "unknown"},
+        {"time_trial", "time_trial"},
+        {"solo_testing", "time_trial"},
+        {"grand_prix_23", "grand_prix"},
+        {"grand_prix_splitscreen", "split_screen"},
+        {"driver_career_26", "driver_career"},
+        {"driver_career_25", "driver_career"},
+        {"driver_career_24", "driver_career"},
+        {"career_23", "driver_career"},
+        {"my_team_career_26", "my_team"},
+        {"my_team_career_24", "my_team"},
+        {"story_mode", "story"},
+        {"story_mode_zenith", "story"},
+        {"event_mode", "f1_world"},
+        {"championships", "f1_world"},
+        {"rewind_event_mode", "f1_world"},
+        {"F1CG_solo_battles", "f1_world"},
+        {"career_25_online", "unknown"},
+        {"career_23_online", "unknown"},
+        {"challenge_career_25", "unknown"},
+        {"benchmark", "unknown"},
+        {"dev", "unknown"},
+        {"", "unknown"},
+        {"grand_prix", "unknown"},
+        {"time_trial_x", "unknown"},
     };
     for (auto &[label, want] : modes)
         check(f::mode_of(label) == want, std::string("game mode ") + label + " is " + want + ", got " + f::mode_of(label));
@@ -637,23 +648,31 @@ void test_facts()
 
     using K = f::ModeKind;
     const std::tuple<bool, bool, const char *, K> kinds[] = {
-        {true, true, "time_trial", K::time_trial}, {true, true, "my_team", K::career},       {true, true, "driver_career", K::career},
-        {true, true, "grand_prix", K::other},      {true, true, "split_screen", K::other},   {true, true, "story", K::other},
-        {true, true, "f1_world", K::other},        {true, true, "unknown", K::unknown},      {true, true, "", K::unknown},
-        {true, false, "time_trial", K::unknown},   {false, true, "time_trial", K::unknown},  {true, true, "something_new", K::unknown},
+        {true, true, "time_trial", K::time_trial},
+        {true, true, "my_team", K::career},
+        {true, true, "driver_career", K::career},
+        {true, true, "grand_prix", K::other},
+        {true, true, "split_screen", K::other},
+        {true, true, "story", K::other},
+        {true, true, "f1_world", K::other},
+        {true, true, "unknown", K::unknown},
+        {true, true, "", K::unknown},
+        {true, false, "time_trial", K::unknown},
+        {false, true, "time_trial", K::unknown},
+        {true, true, "something_new", K::unknown},
     };
     for (auto &[context, holder, mode, want] : kinds)
-        check(f::mode_kind(context, holder, mode) == want, std::string("mode kind of ") + mode + (context ? "" : " without a context") +
-                                                                (holder ? "" : " without a mode object") + " is " + f::mode_kind_name(want));
+        check(f::mode_kind(context, holder, mode) == want,
+              std::string("mode kind of ") + mode + (context ? "" : " without a context") +
+                  (holder ? "" : " without a mode object") + " is " + f::mode_kind_name(want));
     for (auto &[label, want] : modes)
         check(f::mode_kind(true, true, f::mode_of(label)) != K::other || std::string(want) != "unknown",
               std::string("an unlisted mode never counts as another mode: ") + label);
 
     auto is = [](uint32_t id, bool sprint, const char *type, const char *session) {
         f::Session s = f::session_of(id, sprint);
-        check(s.type == type && s.session == session,
-              "session id " + std::to_string(id) + (sprint ? " (sprint weekend)" : "") + " is " + type + "/" + session +
-                  ", got " + s.type + "/" + s.session);
+        check(s.type == type && s.session == session, "session id " + std::to_string(id) + (sprint ? " (sprint weekend)" : "") +
+                                                          " is " + type + "/" + session + ", got " + s.type + "/" + s.session);
     };
     is(1, false, "practice", "practice_1");
     is(2, false, "practice", "practice_2");
@@ -960,7 +979,8 @@ void test_plan_off_thread()
               logged("[apply] boot plan: the registry changed after the count off the thread started; counted again on "
                      "this thread"),
           "a store write while the worker counts (a clear_layer after the register pass) is seen at the wait: the plan is "
-          "counted again on the waiting thread, over the changed store (" + std::to_string(recounted) + ")");
+          "counted again on the waiting thread, over the changed store (" +
+              std::to_string(recounted) + ")");
 
     reg::reset_store();
     reg::Store &bare = reg::store();
@@ -1045,8 +1065,7 @@ struct SeesGeneration : ap::Applier {
 void test_boot_generation()
 {
     const char *what[] = {"the boot's own publish, which changed nothing, is left out of the generation its appliers see",
-                          "a store change after the publish is not left out",
-                          "nor is a publish that changed the context"};
+                          "a store change after the publish is not left out", "nor is a publish that changed the context"};
     for (int k = 0; k < 3; k++) {
         reg::reset_store();
         reg::Store &st = reg::store();
@@ -1065,8 +1084,8 @@ void test_boot_generation()
         uint64_t before = st.generation();
         s.run_boot();
         bool ok = k == 0 ? a.seen == before && a.store_at == before + 1 : a.seen == a.store_at && a.seen != before;
-        check(ok, std::string(what[k]) + " (before " + std::to_string(before) + ", seen " + std::to_string(a.seen) +
-                      ", store " + std::to_string(a.store_at) + ")");
+        check(ok, std::string(what[k]) + " (before " + std::to_string(before) + ", seen " + std::to_string(a.seen) + ", store " +
+                      std::to_string(a.store_at) + ")");
         if (k == 0) {
             st.add_base("t.gen", "after", Value::object());
             check(s.boot_generation() == st.generation(), "once the store moves after the boot, it is the store's own");

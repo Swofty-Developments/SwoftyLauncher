@@ -80,8 +80,7 @@ struct Renderer {
     void bury();
     bool ensure_layer(UINT w, UINT h);
     void read_timestamps(UINT slot);
-    static void transition(ID3D12GraphicsCommandList *l, ID3D12Resource *r, D3D12_RESOURCE_STATES from,
-                           D3D12_RESOURCE_STATES to);
+    static void transition(ID3D12GraphicsCommandList *l, ID3D12Resource *r, D3D12_RESOURCE_STATES from, D3D12_RESOURCE_STATES to);
 
     enum Outcome { drawn, busy, broken };
 

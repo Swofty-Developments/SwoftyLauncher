@@ -80,10 +80,7 @@ static Rows build(const std::vector<bool> &has_slot, uint64_t pad_to, bool guard
     return r;
 }
 
-static bool rows_are(const Rows &r, std::vector<uint64_t> want)
-{
-    return r.past_end == 0 && r.slot_id == want;
-}
+static bool rows_are(const Rows &r, std::vector<uint64_t> want) { return r.past_end == 0 && r.slot_id == want; }
 
 int main()
 {
@@ -124,7 +121,8 @@ int main()
     expect(exit.rax == poison && exit.rip == poison, "a usable entry leaves the exit untouched");
 
     exit = {poison, poison};
-    expect(!tl::entry_step(0x2a00002f33000020ull, no_slot, read, &m, &exit), "the non-canonical entry from the reports is skipped");
+    expect(!tl::entry_step(0x2a00002f33000020ull, no_slot, read, &m, &exit),
+           "the non-canonical entry from the reports is skipped");
     expect(exit.rax == 0, "the skip answers with a null slot record");
     expect(exit.rip == no_slot, "the skip continues at the function's epilogue");
 

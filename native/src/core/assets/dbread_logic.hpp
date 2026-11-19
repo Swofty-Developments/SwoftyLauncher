@@ -13,25 +13,13 @@ namespace dbread {
 constexpr size_t REC_SCALAR = 0x8;
 constexpr size_t REC_META = 0x30;
 
-inline uint64_t fnv_cont(uint64_t h, const char *s, size_t n)
-{
-    return ::runtime::fnv64(s, n, h);
-}
+inline uint64_t fnv_cont(uint64_t h, const char *s, size_t n) { return ::runtime::fnv64(s, n, h); }
 
-inline uint64_t fnv_cont(uint64_t h, const char *s)
-{
-    return fnv_cont(h, s, strlen(s));
-}
+inline uint64_t fnv_cont(uint64_t h, const char *s) { return fnv_cont(h, s, strlen(s)); }
 
-inline uint64_t fnv64(const char *s, size_t n)
-{
-    return ::runtime::fnv64(s, n);
-}
+inline uint64_t fnv64(const char *s, size_t n) { return ::runtime::fnv64(s, n); }
 
-inline uint64_t fnv64(const std::string &s)
-{
-    return ::runtime::fnv64(s);
-}
+inline uint64_t fnv64(const std::string &s) { return ::runtime::fnv64(s); }
 
 inline uint64_t fnv_index(uint64_t h, uint64_t index)
 {
@@ -70,28 +58,19 @@ inline TableKeys table_keys(const std::string &table)
     return {count_key, row_prefix, true};
 }
 
-inline uint64_t row_key(uint64_t row_prefix, uint64_t index)
-{
-    return fnv_index(row_prefix, index);
-}
+inline uint64_t row_key(uint64_t row_prefix, uint64_t index) { return fnv_index(row_prefix, index); }
 
 inline uint64_t cell_key(uint64_t row_prefix, uint64_t index, const char *field)
 {
     return fnv_cont(fnv_cont(row_key(row_prefix, index), "."), field);
 }
 
-inline uint32_t fnv32(const char *s)
-{
-    return ::runtime::fnv32(s);
-}
+inline uint32_t fnv32(const char *s) { return ::runtime::fnv32(s); }
 
 // A row's label is its _metadata_ field, a string record whose +0x30 holds the FNV-1a-32 of the
 // text. The row path itself (<table>.<row>_<i>) has no record. Gdb_Find_RowByLabel (0x1445a2bd0)
 // scans rows 0.._instancecount_-1 the same way.
-inline uint64_t label_key(uint64_t row_prefix, uint64_t index)
-{
-    return cell_key(row_prefix, index, "_metadata_");
-}
+inline uint64_t label_key(uint64_t row_prefix, uint64_t index) { return cell_key(row_prefix, index, "_metadata_"); }
 
 inline int32_t read_i32(const void *record)
 {
@@ -103,10 +82,7 @@ inline float read_f32(const void *record)
     return *reinterpret_cast<const float *>(static_cast<const uint8_t *>(record) + REC_SCALAR);
 }
 
-inline uint8_t read_u8(const void *record)
-{
-    return *(static_cast<const uint8_t *>(record) + REC_SCALAR);
-}
+inline uint8_t read_u8(const void *record) { return *(static_cast<const uint8_t *>(record) + REC_SCALAR); }
 
 constexpr size_t TEXT_MAX = 16384;
 
@@ -181,15 +157,11 @@ inline void decode(const void *record, int tag, SwoftyDbValue *out)
     }
 }
 
-
 // The game database map is a robin_hood map that grows (to twice its slots) when an insert finds it at 80% of
 // its power-of-two slot count. The game sizes it while it loads the file; growing it after that leaves the
 // game's pointers into the old slots dangling and crashes the game at boot (Gdb_Init_TableCursor under
 // Loc_LocaleModule_Init). grows_at is the record count at which the next insert grows a map of `slots`.
-constexpr uint64_t grows_at(uint64_t slots)
-{
-    return slots / 100 * 80 + slots % 100 * 80 / 100;
-}
+constexpr uint64_t grows_at(uint64_t slots) { return slots / 100 * 80 + slots % 100 * 80 / 100; }
 
 // Whether `added` new records fit in a map of `slots` holding `count`, with `spare` left for the core's class
 // probes and the game's own later inserts.

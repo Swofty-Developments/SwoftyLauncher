@@ -75,8 +75,7 @@ inline std::vector<size_t> kept(const std::vector<Round> &rounds)
     return keep;
 }
 
-template <class Read, class Write>
-uintptr_t compact(uintptr_t begin, const std::vector<size_t> &keep, Read &&read, Write &&write)
+template <class Read, class Write> uintptr_t compact(uintptr_t begin, const std::vector<size_t> &keep, Read &&read, Write &&write)
 {
     std::vector<uint64_t> data;
     data.reserve(keep.size() * ENTRY_DATA_WORDS);

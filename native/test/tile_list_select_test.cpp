@@ -133,7 +133,8 @@ static void walk(bool guard)
         visited++;
     }
     if (guard)
-        expect(faults == 0 && skipped == 2 && visited == 3, "with the guard the walk visits every usable tile and skips the bare ones");
+        expect(faults == 0 && skipped == 2 && visited == 3,
+               "with the guard the walk visits every usable tile and skips the bare ones");
     else
         expect(faults == 1 && visited == 2, "without the guard the walk faults on the first bare tile");
 }

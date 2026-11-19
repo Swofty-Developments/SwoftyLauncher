@@ -20,8 +20,7 @@ struct Variant {
     std::shared_ptr<const hooks::Selectors> within;
 };
 
-inline bool compile_within(const swofty::json::Value &within, std::shared_ptr<const hooks::Selectors> &out,
-                           std::string *why)
+inline bool compile_within(const swofty::json::Value &within, std::shared_ptr<const hooks::Selectors> &out, std::string *why)
 {
     out.reset();
     if (within.is_null())

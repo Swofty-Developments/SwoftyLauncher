@@ -134,10 +134,7 @@ template <class T> T at(const void *base, size_t off)
     return v;
 }
 
-void *registry()
-{
-    return *reinterpret_cast<void **>(b.registry);
-}
+void *registry() { return *reinterpret_cast<void **>(b.registry); }
 
 size_t children(uint8_t *list)
 {
@@ -173,10 +170,7 @@ void *category_option(std::string &why)
     return option;
 }
 
-std::vector<logic::Value> values_of(void *option)
-{
-    return store::values(option, reinterpret_cast<const uint8_t *>(b.key));
-}
+std::vector<logic::Value> values_of(void *option) { return store::values(option, reinterpret_cast<const uint8_t *>(b.key)); }
 
 void restore_forced(const char *why)
 {
@@ -185,7 +179,8 @@ void restore_forced(const char *why)
     int now = -1;
     std::string err;
     void *option = category_option(err);
-    if (option == forced.option && store::get_index(option, now) && now == forced.ours && store::set_index(option, forced.prior)) {
+    if (option == forced.option && store::get_index(option, now) && now == forced.ours &&
+        store::set_index(option, forced.prior)) {
         int back = -1;
         store::get_index(option, back);
         swofty::log("[car-category] category option index %d -> %d (restored, %s)", now, back, why);
@@ -202,9 +197,8 @@ void release_tiles()
     for (size_t t = 0; t < tiles_used; ++t)
         for (size_t h = 0; h < TILE_HANDLES; ++h) {
             auto &handle = *reinterpret_cast<runtime::era::Handle *>(tiles[t] + h * HANDLE_WRAPPER + 8);
-            released += logic::unlink(handle, [](uint8_t *node) {
-                reinterpret_cast<Vm_Release_Node_t *>(b.release)(registry(), node);
-            });
+            released +=
+                logic::unlink(handle, [](uint8_t *node) { reinterpret_cast<Vm_Release_Node_t *>(b.release)(registry(), node); });
         }
     if (tiles_used)
         swofty::log("[car-category] released %zu handle(s) of %zu added tile(s) before the rebuild", released, tiles_used);
@@ -236,8 +230,7 @@ void build_entry(void *vm)
     uint8_t *list = at<uint8_t *>(v, VM_LIST_NODE);
     size_t before = children(list);
     if (before == SIZE_MAX) {
-        swofty::log("[car-category] the buttons list at vm+0x638 (%p) has a shape this core does not know; no boxes added",
-                    list);
+        swofty::log("[car-category] the buttons list at vm+0x638 (%p) has a shape this core does not know; no boxes added", list);
         return;
     }
     std::string why;
@@ -258,8 +251,8 @@ void build_entry(void *vm)
     for (const auto &box : runtime::era_boxes()) {
         int value = logic::value_of(values, box.entrant_list);
         if (value < 0) {
-            swofty::log("[car-category] box %s from %s skipped: no category value has that game name",
-                        box.entrant_list.c_str(), box.owner.c_str());
+            swofty::log("[car-category] box %s from %s skipped: no category value has that game name", box.entrant_list.c_str(),
+                        box.owner.c_str());
             continue;
         }
         if (tiles_used >= logic::MAX_ADDED) {
@@ -301,7 +294,8 @@ char *press_entry(void *vm, void *command)
     std::unique_lock<std::recursive_mutex> g(hooks.lock);
     if (hash == logic::BUTTON_1 || hash == logic::BUTTON_2) {
         if (!chosen.empty() || forced.option)
-            swofty::log("[car-category] stock box %s pressed; the addon category is dropped", hash == logic::BUTTON_1 ? "F1 2025" : "F1 2026");
+            swofty::log("[car-category] stock box %s pressed; the addon category is dropped",
+                        hash == logic::BUTTON_1 ? "F1 2025" : "F1 2026");
         chosen.clear();
         restore_forced("a stock box was pressed");
         g.unlock();
@@ -323,8 +317,7 @@ char *press_entry(void *vm, void *command)
         return hooks.handle_command(vm, command);
     }
     chosen = added[size_t(box)].value;
-    swofty::log("[car-category] addon box %d pressed: category %s; running the F1 2025 path (button_1)", box,
-                chosen.c_str());
+    swofty::log("[car-category] addon box %d pressed: category %s; running the F1 2025 path (button_1)", box, chosen.c_str());
     g.unlock();
     uint32_t stock = logic::BUTTON_1;
     const void *fake[4] = {&stock, nullptr, nullptr, nullptr};
@@ -362,8 +355,8 @@ bool hold_category(const std::string &want)
         return false;
     }
     if (target < 0) {
-        swofty::log("[car-category] setupFromUnranked: category %s not set: no value has that name (%zu value(s))",
-                    want.c_str(), values.size());
+        swofty::log("[car-category] setupFromUnranked: category %s not set: no value has that name (%zu value(s))", want.c_str(),
+                    values.size());
         return false;
     }
     if (!store::get_index(option, before) || before < 0 || size_t(before) >= values.size()) {
@@ -415,9 +408,8 @@ void play_scenario(void *self, const std::string &want)
         return;
     uint32_t spec = at<uint8_t>(session, SESSION_SPEC_SET) ? at<uint32_t>(session, SESSION_SPEC) : DEFAULT_SPEC;
     reinterpret_cast<Game_Network_SetScenario_t *>(b.set_scenario)(session, uint8_t(stat), &spec);
-    swofty::log("[car-category] setupFromUnranked: scenario %u -> %d (%s), now %u, session role %d%s", now, stat,
-                want.c_str(), at<uint8_t>(session, SESSION_SCENARIO), role,
-                role == 1 ? "; the host sends it to the players" : "");
+    swofty::log("[car-category] setupFromUnranked: scenario %u -> %d (%s), now %u, session role %d%s", now, stat, want.c_str(),
+                at<uint8_t>(session, SESSION_SCENARIO), role, role == 1 ? "; the host sends it to the players" : "");
 }
 
 void setup_entry(void *self)
@@ -505,13 +497,12 @@ static std::vector<CoreMixins> car_category_mixins()
         swofty::log("[car-category] addon boxes off: %s", why.c_str());
         return out;
     }
-    out.push_back({MIXIN,
-                   {{"Game_CreateSessionDlcSelectTab_BuildTiles", SWOFTY_MIXIN_WRAP, 100, (void *)&build_entry,
-                     hooks.build_tiles.slot()},
-                    {"Game_CreateSessionDlcSelectTab_HandleCommand", SWOFTY_MIXIN_WRAP, 100, (void *)&press_entry,
-                     hooks.handle_command.slot()},
-                    {"Game_Network_CategoryOptionUsing", SWOFTY_MIXIN_WRAP, 100, (void *)&setup_entry,
-                     hooks.option_using.slot()}}});
+    out.push_back(
+        {MIXIN,
+         {{"Game_CreateSessionDlcSelectTab_BuildTiles", SWOFTY_MIXIN_WRAP, 100, (void *)&build_entry, hooks.build_tiles.slot()},
+          {"Game_CreateSessionDlcSelectTab_HandleCommand", SWOFTY_MIXIN_WRAP, 100, (void *)&press_entry,
+           hooks.handle_command.slot()},
+          {"Game_Network_CategoryOptionUsing", SWOFTY_MIXIN_WRAP, 100, (void *)&setup_entry, hooks.option_using.slot()}}});
     swofty::log("[car-category] %zu era box(es) registered; offering the Car Category hooks", era_boxes().size());
     return out;
 }

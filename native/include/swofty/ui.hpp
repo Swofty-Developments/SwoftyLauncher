@@ -41,12 +41,12 @@ void register_view_model(const char *screen_prefix, Factory factory);
 
 #define SWOFTY_VIEW_MODEL_CAT_(a, b) a##b
 #define SWOFTY_VIEW_MODEL_CAT(a, b) SWOFTY_VIEW_MODEL_CAT_(a, b)
-#define SWOFTY_VIEW_MODEL(prefix, Class)                                                                              \
-    namespace {                                                                                                       \
-    const int SWOFTY_VIEW_MODEL_CAT(swofty_vm_reg_, __LINE__) = (::swofty::ui::register_view_model(                   \
-                                                                     prefix,                                          \
-                                                                     [](const std::string &) -> std::unique_ptr<::swofty::ui::ViewModel> { \
-                                                                         return std::make_unique<Class>();            \
-                                                                     }),                                              \
-                                                                 0);                                                  \
+#define SWOFTY_VIEW_MODEL(prefix, Class)                                                                                         \
+    namespace {                                                                                                                  \
+    const int SWOFTY_VIEW_MODEL_CAT(swofty_vm_reg_, __LINE__) =                                                                  \
+        (::swofty::ui::register_view_model(prefix,                                                                               \
+                                           [](const std::string &) -> std::unique_ptr<::swofty::ui::ViewModel> {                 \
+                                               return std::make_unique<Class>();                                                 \
+                                           }),                                                                                   \
+         0);                                                                                                                     \
     }

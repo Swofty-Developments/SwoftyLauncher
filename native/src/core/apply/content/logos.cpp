@@ -82,7 +82,8 @@ void set_priority()
 /* Encodes, at the slice sizes of the last build, the logos whose PNG bytes the slice cache does not hold yet, while the
    game boots. It reads the addons' PNGs and writes only the slice cache, which deliver_logos reads after waiting for it,
    and slice_from_rgba gives the same bytes whichever thread runs it. */
-DWORD WINAPI encode_ahead(LPVOID) try {
+DWORD WINAPI encode_ahead(LPVOID)
+try {
     set_priority();
     perf::Stopwatch took;
     logo_build::SliceCache cache = disk_slices(ahead.dir);
@@ -132,26 +133,28 @@ DWORD WINAPI encode_ahead(LPVOID) try {
     size_t workers = std::clamp<unsigned>(cores / 2, 1, 4);
     std::atomic<size_t> next{0};
     auto drain = [&] {
-        for (size_t i; (i = next.fetch_add(1)) < jobs.size();) try {
-            set_priority();
-            Job &j = jobs[i];
-            std::string rgba;
-            logo_build::PngInfo info = logo_build::look_at_png(cache, j.png, j.source, rgba);
-            if (!info.ok)
-                continue;
-            if (rgba.empty() && !png::decode(j.png, rgba, info.width, info.height, info.why))
-                continue;
-            for (auto [w, h] : j.sizes) {
-                logo_array::Shape shape;
-                shape.width = w, shape.height = h;
-                std::string bytes, why;
-                if (logo_array::slice_from_rgba(shape, reinterpret_cast<const uint8_t *>(rgba.data()), info.width, info.height, bytes, why)) {
-                    cache.put(logo_build::slice_name(j.source, w, h), logo_build::sealed(bytes));
-                    encoded++;
+        for (size_t i; (i = next.fetch_add(1)) < jobs.size();)
+            try {
+                set_priority();
+                Job &j = jobs[i];
+                std::string rgba;
+                logo_build::PngInfo info = logo_build::look_at_png(cache, j.png, j.source, rgba);
+                if (!info.ok)
+                    continue;
+                if (rgba.empty() && !png::decode(j.png, rgba, info.width, info.height, info.why))
+                    continue;
+                for (auto [w, h] : j.sizes) {
+                    logo_array::Shape shape;
+                    shape.width = w, shape.height = h;
+                    std::string bytes, why;
+                    if (logo_array::slice_from_rgba(shape, reinterpret_cast<const uint8_t *>(rgba.data()), info.width,
+                                                    info.height, bytes, why)) {
+                        cache.put(logo_build::slice_name(j.source, w, h), logo_build::sealed(bytes));
+                        encoded++;
+                    }
                 }
+            } catch (...) {
             }
-        } catch (...) {
-        }
     };
     std::vector<std::thread> pool;
     for (size_t k = 1; k < workers && k < jobs.size(); k++) {
@@ -287,8 +290,8 @@ bool size_file(const std::string &rel, uint64_t &size)
 
 bool stat_file(const std::string &rel, logo_cache::Seen &now)
 {
-    HANDLE h = CreateFileW(game_file(rel).c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
-                           OPEN_EXISTING, 0, nullptr);
+    HANDLE h = CreateFileW(game_file(rel).c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                           nullptr, OPEN_EXISTING, 0, nullptr);
     if (h == INVALID_HANDLE_VALUE)
         return false;
     BY_HANDLE_FILE_INFORMATION info{};
@@ -335,17 +338,19 @@ bool write_copy(const std::wstring &path, const std::function<bool(const erpfile
 {
     std::wstring tmp = path + L".tmp";
     HANDLE out = CreateFileW(tmp.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-    bool ok = out != INVALID_HANDLE_VALUE && emit([&](const char *p, size_t n) {
-        DWORD put = 0;
-        while (n) {
-            DWORD want = DWORD(std::min<size_t>(n, size_t(1) << 24));
-            if (!WriteFile(out, p, want, &put, nullptr) || !put)
-                return false;
-            p += put;
-            n -= put;
-        }
-        return true;
-    }, why);
+    bool ok = out != INVALID_HANDLE_VALUE && emit(
+                                                 [&](const char *p, size_t n) {
+                                                     DWORD put = 0;
+                                                     while (n) {
+                                                         DWORD want = DWORD(std::min<size_t>(n, size_t(1) << 24));
+                                                         if (!WriteFile(out, p, want, &put, nullptr) || !put)
+                                                             return false;
+                                                         p += put;
+                                                         n -= put;
+                                                     }
+                                                     return true;
+                                                 },
+                                                 why);
     if (out != INVALID_HANDLE_VALUE)
         CloseHandle(out);
     if (ok && MoveFileExW(tmp.c_str(), path.c_str(), MOVEFILE_REPLACE_EXISTING))
@@ -471,7 +476,8 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     };
     env.open = [&](const std::string &rel) -> std::shared_ptr<erpfile::Source> {
         auto fs = std::make_shared<FileSource>();
-        fs->h = CreateFileW(game_file(rel).c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
+        fs->h = CreateFileW(game_file(rel).c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0,
+                            nullptr);
         LARGE_INTEGER size;
         if (fs->h == INVALID_HANDLE_VALUE || !GetFileSizeEx(fs->h, &size))
             return nullptr;
@@ -488,7 +494,8 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     std::vector<std::string> boot = logo_build::array_layers(env, logo_build::BOOT_ARCHIVE);
     if (!boot.empty()) {
         files.push_back(logo_build::BOOT_ARCHIVE);
-        report.lines.push_back("team.logo: the boot archive " + std::string(logo_build::BOOT_ARCHIVE) + " carries logo arrays in " + boot[0] +
+        report.lines.push_back("team.logo: the boot archive " + std::string(logo_build::BOOT_ARCHIVE) +
+                               " carries logo arrays in " + boot[0] +
                                (boot.size() > 1 ? " and " + std::to_string(boot.size() - 1) + " more layer(s)" : "") +
                                "; its copies get the same slices as the ui_package ones");
     }
@@ -505,14 +512,16 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     std::wstring stamps_path = runtime::under_swofty(dir + logo_cache::STAMPS);
     DeleteFileW(runtime::under_swofty(dir + logo_cache::OLD_STAMPS).c_str());
     std::string stamps_before = runtime::read_file(stamps_path, size_t(16) << 20);
-    logo_cache::Env stamp_env{size_file, stat_file,
-                              [&](const std::string &rel, uint64_t &hash) { return logo_build::input_hash(env, rel, hash_file, hash); }, file_clock};
+    logo_cache::Env stamp_env{
+        size_file, stat_file,
+        [&](const std::string &rel, uint64_t &hash) { return logo_build::input_hash(env, rel, hash_file, hash); }, file_clock};
     auto key_inputs = [&](const std::set<std::string> &inputs, const logo_cache::Stamps &before) {
         DWORD t0 = GetTickCount();
         logo_cache::Keyed k = logo_cache::key_archives(key, keyed_files, inputs, stamp_env, before);
         if (k.hashed)
-            report.lines.push_back("team.logo: " + std::to_string(k.hashed) + " input archive(s) (" + std::to_string(k.hashed_bytes >> 20) +
-                                   " MB) hashed in " + std::to_string(GetTickCount() - t0) + " ms");
+            report.lines.push_back("team.logo: " + std::to_string(k.hashed) + " input archive(s) (" +
+                                   std::to_string(k.hashed_bytes >> 20) + " MB) hashed in " +
+                                   std::to_string(GetTickCount() - t0) + " ms");
         return k;
     };
     logo_cache::Stamps before = logo_cache::parse(stamps_before);
@@ -520,17 +529,20 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     inputs.insert(logo_build::DATABASES);
     logo_cache::Keyed keyed = key_inputs(inputs, before);
     std::string id = runtime::hex16(keyed.key).substr(2);
-    step(steps.lap_ms(), "list and hash (" + std::to_string(keyed_files.size()) + " archive(s), " + std::to_string(keyed.hashed) +
-                             " hashed)");
+    step(steps.lap_ms(),
+         "list and hash (" + std::to_string(keyed_files.size()) + " archive(s), " + std::to_string(keyed.hashed) + " hashed)");
     std::string manifest_name = "logos_" + id + ".manifest";
     std::string manifest = runtime::read_file(runtime::under_swofty(dir + manifest_name), size_t(1) << 20);
     logo_cache::Routes routes;
     logo_cache::Sources sources;
     int cached_built = -1;
     if (!manifest.empty())
-        logo_cache::manifest_parse(manifest, [&](const std::string &file) {
-            return GetFileAttributesW(runtime::under_swofty(dir + file).c_str()) != INVALID_FILE_ATTRIBUTES;
-        }, cached_built, routes, &sources);
+        logo_cache::manifest_parse(
+            manifest,
+            [&](const std::string &file) {
+                return GetFileAttributesW(runtime::under_swofty(dir + file).c_str()) != INVALID_FILE_ATTRIBUTES;
+            },
+            cached_built, routes, &sources);
     struct Built {
         std::vector<std::string> lines;
         int built = 0, refused = 0;
@@ -554,8 +566,9 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         perf::Stopwatch build_steps;
         logo_build::build(env, kept, res);
         double built_ms = build_steps.lap_ms();
-        step(res.encode_ms, "encode (" + std::to_string(res.encodes) + " slice(s): " + std::to_string(res.slices.cached) + " cached, " +
-                                std::to_string(res.slices.encoded) + " encoded, " + std::to_string(res.slices.decoded) + " image(s) decoded)");
+        step(res.encode_ms, "encode (" + std::to_string(res.encodes) + " slice(s): " + std::to_string(res.slices.cached) +
+                                " cached, " + std::to_string(res.slices.encoded) + " encoded, " +
+                                std::to_string(res.slices.decoded) + " image(s) decoded)");
         write_plan(slices_dir, res, path_of);
         prune_slices(slices_dir, res);
         step(built_ms - res.encode_ms, "read and plan (" + std::to_string(res.read.size()) + " archive(s) read)");
@@ -578,10 +591,13 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
             std::string file = "logos_" + id + "_" + flat(rel);
             uint64_t whole = 0;
             bool hashed = rel == logo_build::DATABASES && hash_file(rel, whole);
-            bool ok = write_copy(runtime::under_swofty(dir + file), [&](const erpfile::Sink &sink, std::string &w) {
-                erpfile::Archive arc;
-                return src && erpfile::open(*src, arc, w) && erpfile::rewrite(*src, arc, changes, sink, w);
-            }, why);
+            bool ok = write_copy(
+                runtime::under_swofty(dir + file),
+                [&](const erpfile::Sink &sink, std::string &w) {
+                    erpfile::Archive arc;
+                    return src && erpfile::open(*src, arc, w) && erpfile::rewrite(*src, arc, changes, sink, w);
+                },
+                why);
             a.arrays[rel] = logo_deliver::arrays_of(changes, logo_build::ARRAY_URI);
             if (!ok) {
                 made.lines.push_back("team.logo: " + rel + " could not be rewritten" + (why.empty() ? "" : ": " + why));
@@ -642,18 +658,22 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
             std::wstring path = runtime::under_swofty(dir + file);
             std::string copy = runtime::read_file(path, size_t(256) << 20), why;
             auto now = env.open(rel);
-            if (copy.empty() || !now || !write_copy(path, [&](const erpfile::Sink &sink, std::string &w) {
-                    return logo_build::databases_copy(*now, copy, sink, w);
-                }, why)) {
-                report.lines.push_back("team.logo: the cached copy of " + rel + " could not be made again" + (why.empty() ? "" : ": " + why) +
-                                       "; the logos are built again");
+            if (copy.empty() || !now ||
+                !write_copy(
+                    path,
+                    [&](const erpfile::Sink &sink, std::string &w) { return logo_build::databases_copy(*now, copy, sink, w); },
+                    why)) {
+                report.lines.push_back("team.logo: the cached copy of " + rel + " could not be made again" +
+                                       (why.empty() ? "" : ": " + why) + "; the logos are built again");
                 return false;
             }
             sources[rel] = whole;
-            runtime::write_file(runtime::under_swofty(dir + manifest_name), logo_cache::manifest_text(cached_built, routes, sources));
+            runtime::write_file(runtime::under_swofty(dir + manifest_name),
+                                logo_cache::manifest_text(cached_built, routes, sources));
             double ms = took.lap_ms();
             step(ms, "databases.erp copy");
-            report.lines.push_back("team.logo: " + rel + " changed outside its overrides.uidb; its cached copy is made again in " +
+            report.lines.push_back("team.logo: " + rel +
+                                   " changed outside its overrides.uidb; its cached copy is made again in " +
                                    std::to_string(int(ms)) + " ms");
         }
         return true;
@@ -682,13 +702,16 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
             report.lines.push_back(l);
         report.refused += made.refused;
         if (logo_cache::cacheable(routes.size(), made.changes, made.refused))
-            runtime::write_file(runtime::under_swofty(dir + manifest_name), logo_cache::manifest_text(made.built, routes, made.sources));
+            runtime::write_file(runtime::under_swofty(dir + manifest_name),
+                                logo_cache::manifest_text(made.built, routes, made.sources));
         report.built = made.built;
-        report.lines.push_back("team.logo: " + std::to_string(made.built) + " slice(s) built into " + std::to_string(routes.size()) +
-                               " archive(s) in " + std::to_string(GetTickCount() - made.t0) + " ms");
+        report.lines.push_back("team.logo: " + std::to_string(made.built) + " slice(s) built into " +
+                               std::to_string(routes.size()) + " archive(s) in " + std::to_string(GetTickCount() - made.t0) +
+                               " ms");
     }
     for (auto &f : done.failed) {
-        bool unwritten = std::any_of(done.last.unwritten.begin(), done.last.unwritten.end(), [&](auto &u) { return u.rel == f.rel; });
+        bool unwritten =
+            std::any_of(done.last.unwritten.begin(), done.last.unwritten.end(), [&](auto &u) { return u.rel == f.rel; });
         if (unwritten)
             continue;
         report.refused++;

@@ -143,8 +143,8 @@ std::string Profiler::report(const char *why)
     SYSTEMTIME st;
     GetLocalTime(&st);
     line(out, "Swofty Launcher performance report (format 1)");
-    line(out, "Written %04u-%02u-%02u %02u:%02u:%02u (local), %.0f s after the core attached, %s", st.wYear, st.wMonth,
-         st.wDay, st.wHour, st.wMinute, st.wSecond, up, why);
+    line(out, "Written %04u-%02u-%02u %02u:%02u:%02u (local), %.0f s after the core attached, %s", st.wYear, st.wMonth, st.wDay,
+         st.wHour, st.wMinute, st.wSecond, up, why);
     line(out, "Swofty time is time spent in the launcher's core and addons on the game's threads, game code excluded.");
     line(out, "");
     line(out, "== Summary");
@@ -158,12 +158,13 @@ std::string Profiler::report(const char *why)
     line(out, "slow frames: %llu over 33 ms, %llu over 50 ms, %llu over 100 ms, %llu over 250 ms", (unsigned long long)s33,
          (unsigned long long)s50, (unsigned long long)s100, (unsigned long long)s250);
     uint64_t game_top = top_ticks(1), other_top = top_ticks(0);
-    line(out, "swofty time: %.1f ms in total, %.3f ms/s (%.3f%% of one core); game threads %.3f ms/s, addon threads "
-              "%.3f ms/s",
-         ms_of(top), up > 0 ? ms_of(top) / up : 0, up > 0 ? ms_of(top) / up / 10 : 0,
-         up > 0 ? ms_of(game_top) / up : 0, up > 0 ? ms_of(other_top) / up : 0);
-    line(out, "swofty per frame: max %.2f ms; %llu frame(s) over 1 ms, %llu over 4 ms", ms_of(swmax),
-         (unsigned long long)o1, (unsigned long long)o4);
+    line(out,
+         "swofty time: %.1f ms in total, %.3f ms/s (%.3f%% of one core); game threads %.3f ms/s, addon threads "
+         "%.3f ms/s",
+         ms_of(top), up > 0 ? ms_of(top) / up : 0, up > 0 ? ms_of(top) / up / 10 : 0, up > 0 ? ms_of(game_top) / up : 0,
+         up > 0 ? ms_of(other_top) / up : 0);
+    line(out, "swofty per frame: max %.2f ms; %llu frame(s) over 1 ms, %llu over 4 ms", ms_of(swmax), (unsigned long long)o1,
+         (unsigned long long)o4);
     uint32_t worst_i = 0;
     for (uint32_t i = 1; i < n; i++)
         if (t.worst[i] > t.worst[worst_i])
@@ -173,13 +174,12 @@ std::string Profiler::report(const char *why)
              names[worst_i].what.c_str());
     {
         std::lock_guard<std::mutex> g(rings_lock);
-        line(out, "hitches: %llu frame(s) over %.0f ms; swofty took over 5 ms in %llu of them",
-             (unsigned long long)hitch_count, hitch_ms, (unsigned long long)hitch_heavy);
+        line(out, "hitches: %llu frame(s) over %.0f ms; swofty took over 5 ms in %llu of them", (unsigned long long)hitch_count,
+             hitch_ms, (unsigned long long)hitch_heavy);
     }
     double user = 0, kernel = 0;
     double cores = process_cores(up, &user, &kernel);
-    line(out, "game process cpu: %.2f cores on average since the core attached (user %.2f, kernel %.2f)", cores, user,
-         kernel);
+    line(out, "game process cpu: %.2f cores on average since the core attached (user %.2f, kernel %.2f)", cores, user, kernel);
     out += pace::pacing_text(pace::summary(scopy), spike_rows(scopy, pace::TOP)) + "\r\n";
     out += (presents_copied ? pace::presents_text(up, pcopy, shown) : std::string("presents: busy")) + "\r\n";
     pace::GpuMinute gpu;
@@ -230,8 +230,8 @@ std::string Profiler::report(const char *why)
     line(out, "== Addons");
     line(out, "%s%12s %12s %10s %10s  %s", fixed("owner", 32).c_str(), "calls", "self ms", "ms/s", "worst ms", "busiest");
     for (auto &o : owners)
-        line(out, "%s%12llu %12.1f %10.3f %10.2f  %s", fixed(o.name, 32).c_str(), (unsigned long long)o.calls,
-             ms_of(o.self), up > 0 ? ms_of(o.self) / up : 0, ms_of(o.worst), names[o.busiest_i].what.c_str());
+        line(out, "%s%12llu %12.1f %10.3f %10.2f  %s", fixed(o.name, 32).c_str(), (unsigned long long)o.calls, ms_of(o.self),
+             up > 0 ? ms_of(o.self) / up : 0, ms_of(o.worst), names[o.busiest_i].what.c_str());
     line(out, "");
 
     std::vector<uint32_t> order;
@@ -243,14 +243,13 @@ std::string Profiler::report(const char *why)
     line(out, "%s%s%12s %12s %10s %10s %10s", fixed("owner", 28).c_str(), fixed("probe", 44).c_str(), "calls", "total ms",
          "avg us", "worst ms", "calls/s");
     for (uint32_t i : order)
-        line(out, "%s%s%12llu %12.1f %10.2f %10.2f %10.1f", fixed(names[i].owner, 28).c_str(),
-             fixed(names[i].what, 44).c_str(), (unsigned long long)t.calls[i], ms_of(t.ticks[i]),
-             ms_of(t.ticks[i]) * 1000 / double(t.calls[i]), ms_of(t.worst[i]), up > 0 ? double(t.calls[i]) / up : 0);
+        line(out, "%s%s%12llu %12.1f %10.2f %10.2f %10.1f", fixed(names[i].owner, 28).c_str(), fixed(names[i].what, 44).c_str(),
+             (unsigned long long)t.calls[i], ms_of(t.ticks[i]), ms_of(t.ticks[i]) * 1000 / double(t.calls[i]), ms_of(t.worst[i]),
+             up > 0 ? double(t.calls[i]) / up : 0);
     line(out, "");
 
     std::lock_guard<std::mutex> g(rings_lock);
-    line(out, "== Hitches (last %zu of %llu, frames over %.0f ms)", hitches.size(), (unsigned long long)hitch_count,
-         hitch_ms);
+    line(out, "== Hitches (last %zu of %llu, frames over %.0f ms)", hitches.size(), (unsigned long long)hitch_count, hitch_ms);
     for (auto &h : hitches)
         line(out, "%s %9.0f ms  swofty %7.2f ms  during \"%s\"%s%s", clock_text(h.at).c_str(), h.ms, h.swofty_ms,
              h.during.c_str(), h.top.empty() ? "" : "; ", h.top.c_str());
@@ -263,11 +262,11 @@ std::string Profiler::report(const char *why)
     line(out, "== Timeline (last %zu; each row runs until the next one)", timeline.size());
     line(out, "%-8s %10s %8s %6s %10s %10s  %s", "at", "took ms", "frames", "slow", "worst ms", "swofty ms", "what");
     for (auto &s : timeline)
-        line(out, "%s %10.0f %8llu %6llu %10.0f %10.2f  %s%s%s", clock_text(s.at).c_str(), s.ms,
-             (unsigned long long)s.frames, (unsigned long long)s.slow, s.worst_ms, s.swofty_ms, s.what.c_str(),
-             s.top.empty() ? "" : "  [", s.top.empty() ? "" : (s.top + "]").c_str());
-    line(out, "%s %10.0f %8llu %6llu %10.0f %10s  %s (current)", clock_text(ms_of(st0 - tsc0) / 1000).c_str(),
-         ms_of(tsc() - st0), (unsigned long long)sf, (unsigned long long)ss, ms_of(sw), "-", seg_what.c_str());
+        line(out, "%s %10.0f %8llu %6llu %10.0f %10.2f  %s%s%s", clock_text(s.at).c_str(), s.ms, (unsigned long long)s.frames,
+             (unsigned long long)s.slow, s.worst_ms, s.swofty_ms, s.what.c_str(), s.top.empty() ? "" : "  [",
+             s.top.empty() ? "" : (s.top + "]").c_str());
+    line(out, "%s %10.0f %8llu %6llu %10.0f %10s  %s (current)", clock_text(ms_of(st0 - tsc0) / 1000).c_str(), ms_of(tsc() - st0),
+         (unsigned long long)sf, (unsigned long long)ss, ms_of(sw), "-", seg_what.c_str());
     return out;
 }
 
@@ -298,8 +297,7 @@ std::string now_text()
 
 }
 
-void Profiler::pace_lines(double secs, const pace::Pace &mp, const pace::Presents &pp, uint64_t df,
-                          const logic::CpuMinute &pc)
+void Profiler::pace_lines(double secs, const pace::Pace &mp, const pace::Presents &pp, uint64_t df, const logic::CpuMinute &pc)
 {
     sys::Minute sm = sys::minute(secs);
     sm.cpu.game_thread = pc.game_top;
@@ -481,10 +479,7 @@ size_t Profiler::crash_text(char *out, size_t cap, const uint32_t *open, int dep
     return at;
 }
 
-DWORD WINAPI writer(LPVOID)
-{
-    return profiler.write_loop();
-}
+DWORD WINAPI writer(LPVOID) { return profiler.write_loop(); }
 
 }
 

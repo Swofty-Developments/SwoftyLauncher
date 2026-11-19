@@ -108,10 +108,7 @@ inline const char *customisation_back(Back variant, bool from_card, uint32_t gro
 
 // A Customisation card press stays armed until the front-end flow is entered again: the customisation screens' help
 // page (team_hq_flow) migrates back into the customisation flow.
-inline bool customisation_disarms(const std::string &flow)
-{
-    return flow == FRONTEND_FLOW;
-}
+inline bool customisation_disarms(const std::string &flow) { return flow == FRONTEND_FLOW; }
 
 // The saves list's Back (route back in grand_prix_continue) stays the game's: it migrates to the activity container,
 // and swapping it for a front-end route home left a black screen. After a Grand Prix card press the core then leaves

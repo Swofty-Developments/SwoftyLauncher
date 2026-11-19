@@ -33,15 +33,9 @@ void present_hook(IDXGISwapChain3 *sc, const render::d3d12::Swapchain *known, vo
     overlay.draw_frame(sc, known, caller);
 }
 
-void presented_hook(IDXGISwapChain3 *sc, HRESULT hr)
-{
-    overlay.presented(sc, hr);
-}
+void presented_hook(IDXGISwapChain3 *sc, HRESULT hr) { overlay.presented(sc, hr); }
 
-bool unread_queue_hook(IDXGISwapChain3 *sc, void *caller)
-{
-    return overlay.arm_for_unread_queue(sc, caller);
-}
+bool unread_queue_hook(IDXGISwapChain3 *sc, void *caller) { return overlay.arm_for_unread_queue(sc, caller); }
 
 }
 
@@ -82,9 +76,8 @@ void Overlay::flush_stats(ULONGLONG now)
     stats = {now, 0, 0};
 }
 
-void Overlay::draw_target(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const Renderer::Target &t,
-                          const std::vector<Vertex> &verts, const std::vector<hud::drawlist::Batch> &batches, UINT color_space,
-                          ULONGLONG now)
+void Overlay::draw_target(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const Renderer::Target &t, const std::vector<Vertex> &verts,
+                          const std::vector<hud::drawlist::Batch> &batches, UINT color_space, ULONGLONG now)
 {
     static const uint32_t probe = perf::probe("core", "overlay record");
     perf::Scope timed(probe);
@@ -146,8 +139,7 @@ void Overlay::paint_frame(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const std:
                     static_cast<void *>(sc), int(desc.BufferDesc.Format));
         return;
     }
-    Renderer::Target t{buf, desc.BufferDesc.Format, desc.BufferDesc.Width, desc.BufferDesc.Height,
-                       D3D12_RESOURCE_STATE_PRESENT};
+    Renderer::Target t{buf, desc.BufferDesc.Format, desc.BufferDesc.Width, desc.BufferDesc.Height, D3D12_RESOURCE_STATE_PRESENT};
     draw_target(sc, q, t, frame.verts, frame.batches, color_space, now);
     buf->Release();
 }
@@ -168,8 +160,9 @@ void Overlay::draw_frame(IDXGISwapChain3 *sc, const render::d3d12::Swapchain *kn
     bool barred = runtime::lap_host::notice_drawing();
     if (menu) {
         if (!std::exchange(menu_frame_told, true))
-            swofty::log("[main-menu] the present hook passed its first frame with the main menu panel due (%zu paint callback(s))",
-                        subs.size());
+            swofty::log(
+                "[main-menu] the present hook passed its first frame with the main menu panel due (%zu paint callback(s))",
+                subs.size());
     }
     if (subs.empty() && !capture.on && !cover && !menu && !barred) {
         before_fg.drop();
@@ -219,8 +212,7 @@ void Overlay::draw_frame(IDXGISwapChain3 *sc, const render::d3d12::Swapchain *kn
                 swofty::log("[overlay] swapchain %p was created through %s, frame generation is not off in the game's "
                             "settings and drawing before frame generation is off (%s); the overlay does not draw on it",
                             static_cast<void *>(sc),
-                            ffx ? "FidelityFX (amd_fidelityfx_dx12.dll)"
-                                : "Streamline's frame generation hook (sl.dlss_g.dll)",
+                            ffx ? "FidelityFX (amd_fidelityfx_dx12.dll)" : "Streamline's frame generation hook (sl.dlss_g.dll)",
                             why.c_str());
             }
             return;
@@ -308,7 +300,8 @@ bool Overlay::resolve_d3d12()
     HMODULE dxgi = LoadLibraryA("dxgi.dll");
     auto create_device = d3d12 ? reinterpret_cast<PFN_D3D12_CREATE_DEVICE>(GetProcAddress(d3d12, "D3D12CreateDevice")) : nullptr;
     renderer.serialize_root =
-        d3d12 ? reinterpret_cast<PFN_D3D12_SERIALIZE_ROOT_SIGNATURE>(GetProcAddress(d3d12, "D3D12SerializeRootSignature")) : nullptr;
+        d3d12 ? reinterpret_cast<PFN_D3D12_SERIALIZE_ROOT_SIGNATURE>(GetProcAddress(d3d12, "D3D12SerializeRootSignature"))
+              : nullptr;
     auto create_factory = dxgi ? reinterpret_cast<CreateFactoryFn>(GetProcAddress(dxgi, "CreateDXGIFactory1")) : nullptr;
     if (create_device && renderer.serialize_root && create_factory)
         return true;
@@ -332,8 +325,7 @@ bool Overlay::arm_for_unread_queue(IDXGISwapChain3 *sc, void *caller)
                 "read, so the core's device hooks arm now to learn the queue from ExecuteCommandLists, and the overlay "
                 "draws on it from the next frame (SWOFTY_OVERLAY_FG=0 / \"overlay_fg\": false keeps them off)",
                 on.source.c_str(), static_cast<void *>(sc), by.empty() ? "an unknown module" : by.c_str());
-    std::string why = "a swapchain whose present queue cannot be read reached Present with " + on.source +
-                      " in the process";
+    std::string why = "a swapchain whose present queue cannot be read reached Present with " + on.source + " in the process";
     arm_before_fg(why.c_str());
     return device_hooked;
 }
@@ -458,15 +450,9 @@ using hud::overlay::overlay;
 
 namespace runtime {
 
-void hud_setup()
-{
-    overlay.setup();
-}
+void hud_setup() { overlay.setup(); }
 
-void hud_arm()
-{
-    overlay.arm_decided();
-}
+void hud_arm() { overlay.arm_decided(); }
 
 void hud_fatal()
 {
@@ -475,14 +461,8 @@ void hud_fatal()
         overlay.device_lost(S_OK);
 }
 
-bool frame_capture_request(const std::wstring &path)
-{
-    return overlay.capture.request_frame(path);
-}
+bool frame_capture_request(const std::wstring &path) { return overlay.capture.request_frame(path); }
 
-int frame_capture_poll(std::string *why)
-{
-    return overlay.capture.poll_request(why);
-}
+int frame_capture_poll(std::string *why) { return overlay.capture.poll_request(why); }
 
 }

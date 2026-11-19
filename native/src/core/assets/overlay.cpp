@@ -17,8 +17,12 @@ const runtime::Sig S_RESOLVE{"Fs_Resolve_Mount", "41 56 56 57 55 53 48 81 EC 30 
 const runtime::Sig S_LOAD_LNG{"Loc_Load_LanguageFile", "41 56 56 57 53 48 81 EC A8 00 00 00 83 FA 12 0F 87", 0x4436480};
 const runtime::Sig S_ADD_TABLE{"Loc_Add_LangTable", "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 44 89 CB 44 89 C5", 0x3ad0270};
 const runtime::Sig S_MEMSTREAM{"vt_Ne_MemReadStream",
-                               "48 8D 05 ?? ?? ?? ?? 48 89 44 24 68 C5 F8 28 84 24 90 00 00 00 C5 F8 11 44 24 70", 0x5899750,
-                               runtime::Sig::riprel, 0, 3, 7};
+                               "48 8D 05 ?? ?? ?? ?? 48 89 44 24 68 C5 F8 28 84 24 90 00 00 00 C5 F8 11 44 24 70",
+                               0x5899750,
+                               runtime::Sig::riprel,
+                               0,
+                               3,
+                               7};
 
 constexpr size_t FS_CWD = 0x370, MOUNT_PROBE = 0x131, PATH_MAX_FS = 0x104, LOC_SETS = 0x28, LOC_LANGS = 0x13;
 constexpr uintptr_t LNG_FOLDER_BYTE = 0x44361da;
@@ -299,8 +303,8 @@ Redirect *match(const char *rel)
     for (; it != by_hash.end() && it->first == h; ++it)
         if (it->second->rel.size() == n && !memcmp(it->second->rel.data(), low, n))
             return it->second;
-    if (!lang_replace.empty() && n > 13 && (!memcmp(low, "localisation/", 13) || !memcmp(low, "localisatioa/", 13)) &&
-        n > 4 && !memcmp(low + n - 4, ".lng", 4)) {
+    if (!lang_replace.empty() && n > 13 && (!memcmp(low, "localisation/", 13) || !memcmp(low, "localisatioa/", 13)) && n > 4 &&
+        !memcmp(low + n - 4, ".lng", 4)) {
         auto l = lang_replace.find(code_of(low));
         if (l != lang_replace.end())
             return l->second;
@@ -458,8 +462,8 @@ void read_lang_entry(const std::string &code_raw, const json::Value &v)
             return;
         }
         lang_replace[code] = add_redirect("localisation/*/language_" + code + ".lng", target, "lang replace " + repl);
-        swofty::log("[assets] lang: '%s' language file -> /game/%s (%llu bytes, whole file through the fs overlay)",
-                    code.c_str(), target.c_str(), (unsigned long long)size);
+        swofty::log("[assets] lang: '%s' language file -> /game/%s (%llu bytes, whole file through the fs overlay)", code.c_str(),
+                    target.c_str(), (unsigned long long)size);
     }
 }
 
@@ -520,7 +524,8 @@ bool hook_resolve()
 
 bool swofty_prefix(std::string &out, std::string &why)
 {
-    std::string root = runtime::lower(runtime::narrow(runtime::game_root())), sw = runtime::lower(runtime::narrow(runtime::swofty_root()));
+    std::string root = runtime::lower(runtime::narrow(runtime::game_root())),
+                sw = runtime::lower(runtime::narrow(runtime::swofty_root()));
     if (sw.rfind(root, 0) != 0) {
         why = "the swofty folder " + sw + " is not under the game root " + root + ", so the game's file system cannot reach it";
         return false;
@@ -622,7 +627,8 @@ void setup()
     if (!want_overlay && !want_lang && sdk_files.a.empty())
         return;
     base = swofty::api->module_base();
-    std::string root = runtime::lower(runtime::narrow(runtime::game_root())), sw = runtime::lower(runtime::narrow(runtime::swofty_root()));
+    std::string root = runtime::lower(runtime::narrow(runtime::game_root())),
+                sw = runtime::lower(runtime::narrow(runtime::swofty_root()));
     if (sw.rfind(root, 0) != 0) {
         swofty::log("[assets] overlay: the swofty folder %s is not under the game root %s; the game's file system cannot "
                     "reach it; overlay and language files off",
@@ -671,7 +677,4 @@ void setup()
 
 }
 
-void runtime::overlay_setup()
-{
-    setup();
-}
+void runtime::overlay_setup() { setup(); }

@@ -6,14 +6,14 @@
 
 static int failures;
 
-#define CHECK(cond, msg)                                                                                                \
-    do {                                                                                                                \
-        if (cond) {                                                                                                     \
-            printf("ok  : %s\n", msg);                                                                                  \
-        } else {                                                                                                        \
-            printf("FAIL: %s\n", msg);                                                                                  \
-            failures++;                                                                                                 \
-        }                                                                                                               \
+#define CHECK(cond, msg)                                                                                                         \
+    do {                                                                                                                         \
+        if (cond) {                                                                                                              \
+            printf("ok  : %s\n", msg);                                                                                           \
+        } else {                                                                                                                 \
+            printf("FAIL: %s\n", msg);                                                                                           \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 using namespace runtime::standings_drop;

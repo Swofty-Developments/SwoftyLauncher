@@ -59,10 +59,7 @@ struct Recorder {
 };
 
 static int g_open_seen = -1;
-static void open_frame(double, void *)
-{
-    g_open_seen = g_open;
-}
+static void open_frame(double, void *) { g_open_seen = g_open; }
 
 int main()
 {
@@ -72,8 +69,9 @@ int main()
         expect(!d.garage_listened(), "idle parked-car updates have no listeners");
         d.subscribe(1, SWOFTY_EVENT_GARAGE_PARKED_CAR, on_event, nullptr, &a);
         d.subscribe(2, SWOFTY_EVENT_GARAGE_PARKED_CAR, on_event, nullptr, &b);
-        expect(d.garage_listened() && d.fire(SWOFTY_EVENT_GARAGE_PARKED_CAR, 7, 1, nullptr, 0) == 2 &&
-               g_events.back().a == 7 && g_events.back().b == 1, "parked garage event carries owner and native slot");
+        expect(d.garage_listened() && d.fire(SWOFTY_EVENT_GARAGE_PARKED_CAR, 7, 1, nullptr, 0) == 2 && g_events.back().a == 7 &&
+                   g_events.back().b == 1,
+               "parked garage event carries owner and native slot");
         d.unsubscribe(a);
         expect(d.garage_listened(), "second garage subscription keeps evaluation events active");
         d.drop_owner(2);
@@ -259,8 +257,7 @@ int main()
     {
         runtime::ev::Dispatcher<Recorder> d;
         uint32_t t = 0;
-        expect(runtime::ev::canonical(SWOFTY_EVENT_CAREER_CONTENT_PRESSED) != nullptr,
-               "career.content.pressed is a known event");
+        expect(runtime::ev::canonical(SWOFTY_EVENT_CAREER_CONTENT_PRESSED) != nullptr, "career.content.pressed is a known event");
         expect(d.subscribe(1, SWOFTY_EVENT_CAREER_CONTENT_PRESSED, on_event, nullptr, &t) == SWOFTY_ASSET_OK,
                "career.content.pressed can be subscribed");
     }

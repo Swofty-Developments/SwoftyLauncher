@@ -45,15 +45,9 @@ struct Load {
     std::unordered_set<uintptr_t> rows;
 };
 
-inline size_t entries(uintptr_t begin, uintptr_t end)
-{
-    return end > begin ? (end - begin) / ENTRY : 0;
-}
+inline size_t entries(uintptr_t begin, uintptr_t end) { return end > begin ? (end - begin) / ENTRY : 0; }
 
-inline size_t season_events(uint32_t raw)
-{
-    return raw >= 1 && raw <= SEASON_MAX ? raw : 0;
-}
+inline size_t season_events(uint32_t raw) { return raw >= 1 && raw <= SEASON_MAX ? raw : 0; }
 
 template <class Read> size_t race_weekends(uintptr_t component, Read &&read)
 {
@@ -61,7 +55,8 @@ template <class Read> size_t race_weekends(uintptr_t component, Read &&read)
     uint32_t index = 0;
     if (!read(component + SEASONS_BEGIN, sb) || !read(component + SEASONS_END, se) || !read(component + SEASON_INDEX, index))
         return 0;
-    if (!sb || se <= sb || (se - sb) % SEASON_RECORD || (se - sb) / SEASON_RECORD > MAX_SEASONS || index >= (se - sb) / SEASON_RECORD)
+    if (!sb || se <= sb || (se - sb) % SEASON_RECORD || (se - sb) / SEASON_RECORD > MAX_SEASONS ||
+        index >= (se - sb) / SEASON_RECORD)
         return 0;
     uintptr_t season = uintptr_t(sb) + index * SEASON_RECORD;
     uint64_t cb = 0, ce = 0;
@@ -106,10 +101,7 @@ inline void reset(Load &load, uintptr_t component, size_t stored, size_t season,
     load.blown = stored > load.limit;
 }
 
-inline bool fresh(const Load &load, uintptr_t component, size_t calendar)
-{
-    return calendar == 0 || component != load.component;
-}
+inline bool fresh(const Load &load, uintptr_t component, size_t calendar) { return calendar == 0 || component != load.component; }
 
 inline bool enter(Load &load, uint64_t entry, uint8_t id)
 {
@@ -145,10 +137,7 @@ inline uintptr_t choose(Load &load, const std::vector<uintptr_t> &matches)
     return pick;
 }
 
-inline bool last_entry(uint64_t index, uint64_t stored)
-{
-    return index + 1 >= stored;
-}
+inline bool last_entry(uint64_t index, uint64_t stored) { return index + 1 >= stored; }
 
 inline Load finish(Load &load, uintptr_t component)
 {
@@ -160,14 +149,15 @@ inline Load finish(Load &load, uintptr_t component)
 inline std::string load_line(uintptr_t component, size_t stored, size_t loaded, const Load *guard)
 {
     char buf[400];
-    snprintf(buf, sizeof buf, "[saves] custom_track_list loaded (schedule component 0x%llx): %zu stored entr%s -> %zu calendar event%s",
+    snprintf(buf, sizeof buf,
+             "[saves] custom_track_list loaded (schedule component 0x%llx): %zu stored entr%s -> %zu calendar event%s",
              (unsigned long long)component, stored, stored == 1 ? "y" : "ies", loaded, loaded == 1 ? "" : "s");
     std::string s = buf;
     if (!guard)
         return s;
     if (guard->season && guard->weekends)
-        snprintf(buf, sizeof buf, " (season event list %zu, %zu race weekend%s on the career calendar)", guard->season, guard->weekends,
-                 guard->weekends == 1 ? "" : "s");
+        snprintf(buf, sizeof buf, " (season event list %zu, %zu race weekend%s on the career calendar)", guard->season,
+                 guard->weekends, guard->weekends == 1 ? "" : "s");
     else if (guard->season)
         snprintf(buf, sizeof buf, " (season event list %zu)", guard->season);
     else if (guard->weekends)
@@ -187,11 +177,13 @@ inline std::string load_line(uintptr_t component, size_t stored, size_t loaded, 
         s += buf;
     }
     if (guard->reused) {
-        snprintf(buf, sizeof buf, "; %zu entr%s repeat an event already in the calendar", guard->reused, guard->reused == 1 ? "y" : "ies");
+        snprintf(buf, sizeof buf, "; %zu entr%s repeat an event already in the calendar", guard->reused,
+                 guard->reused == 1 ? "y" : "ies");
         s += buf;
     }
     if (guard->blown) {
-        snprintf(buf, sizeof buf, "; blown up (more than %zu entries): a run of one id reads as one entry, %zu stored entr%s dropped",
+        snprintf(buf, sizeof buf,
+                 "; blown up (more than %zu entries): a run of one id reads as one entry, %zu stored entr%s dropped",
                  guard->limit, guard->dropped, guard->dropped == 1 ? "y" : "ies");
         s += buf;
     }

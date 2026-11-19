@@ -47,10 +47,7 @@ inline bool fg_module(std::string_view path)
     return false;
 }
 
-inline bool streamline_hook(std::string_view path)
-{
-    return same_name(base_name(path), "sl.dlss_g.dll");
-}
+inline bool streamline_hook(std::string_view path) { return same_name(base_name(path), "sl.dlss_g.dll"); }
 
 // FidelityFX's API loader (FSR 3.1). F1 25 creates its swapchain through it for upscaling too, so it is on the
 // creation stack whatever the settings; like Streamline's hook it passes the game's frames through while the
@@ -70,10 +67,7 @@ inline bool streamline_caller(std::string_view path)
 }
 
 // sl::Result::eOk is 0; Streamline's other codes are all failures.
-inline bool streamline_result_ok(int result)
-{
-    return result == 0;
-}
+inline bool streamline_result_ok(int result) { return result == 0; }
 
 // What a queue learned from a swapchain's own GetDevice makes of the swapchain: only a direct queue is drawn on.
 inline std::string learned_fg(bool direct_queue, std::string_view present_fg)

@@ -85,10 +85,7 @@ inline int scenario_of(const std::vector<Scenario> &scenarios, const std::string
 
 // Whether this game decides the session's scenario: setupFromUnranked and Game_Network_SetScenario act on a
 // session role below 2 (offline or host); a client (2) takes the host's.
-inline bool decides_scenario(int role)
-{
-    return role >= 0 && role < 2;
-}
+inline bool decides_scenario(int role) { return role >= 0 && role < 2; }
 
 // Unlinks a handle from its node's holder list and drops its reference, as the game's tile set clear does
 // (prev.next = next, next.prev = prev, the node's head moves on when it was this handle). release is

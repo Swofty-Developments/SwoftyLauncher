@@ -32,10 +32,10 @@
 
 namespace {
 
-const runtime::Sig S_READ{"site_Ai_Ers_CornerLineRead", "4F 8B 04 08 45 8B 40 10 48 C1 FA 03", 0x6497d9,
-                          runtime::Sig::addr, 0, 4, 0};
-const runtime::Sig S_NONE{"site_Ai_Ers_NoCornerMatch", "C4 A1 7A 10 44 C8 04 C4 C1 7A 11 47 5C", 0x649cc6,
-                          runtime::Sig::addr, 0, 7, 0};
+const runtime::Sig S_READ{
+    "site_Ai_Ers_CornerLineRead", "4F 8B 04 08 45 8B 40 10 48 C1 FA 03", 0x6497d9, runtime::Sig::addr, 0, 4, 0};
+const runtime::Sig S_NONE{
+    "site_Ai_Ers_NoCornerMatch", "C4 A1 7A 10 44 C8 04 C4 C1 7A 11 47 5C", 0x649cc6, runtime::Sig::addr, 0, 7, 0};
 
 uintptr_t no_match = 0;
 runtime::ai_corner::Tally tally;
@@ -58,8 +58,7 @@ uintptr_t site()
     no_match = runtime::find(S_NONE, "ers corner guard", "ai");
     if (!at || !no_match) {
         no_match = 0;
-        swofty::log("[ai] ers corner guard off: needs %s and %s, which this build does not resolve", S_READ.what,
-                    S_NONE.what);
+        swofty::log("[ai] ers corner guard off: needs %s and %s, which this build does not resolve", S_READ.what, S_NONE.what);
         return 0;
     }
     return at;

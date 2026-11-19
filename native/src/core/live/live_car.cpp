@@ -26,8 +26,7 @@ constexpr size_t CHASSIS_G_LATERAL = 0x320, CHASSIS_G_LONG = 0x324, CHASSIS_BODY
 constexpr size_t BODY_POSITION = 0x1c0, BODY_ANGULAR = 0x210, CHASSIS_BASIS = 0x190, BASIS_STRIDE = 0x10;
 constexpr size_t CAR_AERO = 0x570, AERO_DRS = 0x19a8, WHEEL_SPIN = 0x188, WHEEL_SLIP_ANGLE = 0x3b0, WHEEL_SLIP_RATIO = 0x3b4;
 constexpr size_t WHEEL_WETNESS = 0x280;
-constexpr size_t STEER_ANGLE = 0xe8, STEER_LOCK = 0x28, SUSPENSION_WHEELS = 0x70, WHEEL_SURFACE = 0x200,
-                 SURFACE_ID = 0x78;
+constexpr size_t STEER_ANGLE = 0xe8, STEER_LOCK = 0x28, SUSPENSION_WHEELS = 0x70, WHEEL_SURFACE = 0x200, SURFACE_ID = 0x78;
 // g_Game_WeatherSurfaceState: the track surface state; +0x3f0a38 is the track's wetness, 0 to 1, rewritten every frame
 // by Game_TrackInformationSystem_Update. The pointer is null while no session world is loaded.
 constexpr uintptr_t RVA_WEATHER_SURFACE_STATE = 0x6ce91d8;
@@ -35,8 +34,13 @@ constexpr size_t SURFACE_STATE_WETNESS = 0x3f0a38;
 constexpr int MAX_CARS = 26;
 constexpr float RAD_S_TO_RPM = 60.0f / 6.2831855f;
 
-const runtime::Sig S_WEATHER{"g_Game_WeatherSurfaceState", "48 8B 05 ?? ?? ?? ?? 48 85 C0 74 35 80 B8 8B 0A 3F 00 00",
-                             RVA_WEATHER_SURFACE_STATE, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig S_WEATHER{"g_Game_WeatherSurfaceState",
+                             "48 8B 05 ?? ?? ?? ?? 48 85 C0 74 35 80 B8 8B 0A 3F 00 00",
+                             RVA_WEATHER_SURFACE_STATE,
+                             runtime::Sig::riprel,
+                             0,
+                             3,
+                             7};
 
 uintptr_t table = 0, count = 0, weather = 0;
 bool resolved = false;
@@ -86,10 +90,7 @@ uintptr_t ptr(uintptr_t base, size_t off)
     return mem::read(base + off, p) ? p : 0;
 }
 
-bool real(float v)
-{
-    return std::isfinite(v);
-}
+bool real(float v) { return std::isfinite(v); }
 
 bool xor_float(uintptr_t at, float &out)
 {
@@ -185,10 +186,7 @@ void read_surface(uintptr_t car, LiveCar &out)
     }
 }
 
-bool vec3(uintptr_t at, float (&out)[3])
-{
-    return mem::read(at, out) && real(out[0]) && real(out[1]) && real(out[2]);
-}
+bool vec3(uintptr_t at, float (&out)[3]) { return mem::read(at, out) && real(out[0]) && real(out[1]) && real(out[2]); }
 
 }
 

@@ -7,10 +7,7 @@ namespace hud::arm_policy {
 
 // Whether a Present or Present1 closes the frame: not one made inside another on the same thread (DXVK's Present
 // calls its Present1), which is the same frame.
-inline bool dispatches_present(int presenting_depth)
-{
-    return presenting_depth == 0;
-}
+inline bool dispatches_present(int presenting_depth) { return presenting_depth == 0; }
 
 // What learn does with a swapchain whose present queue cannot be read: ask once to arm the device hooks, wait
 // for a direct queue to execute command lists once they are armed, learn that queue, or refuse the swapchain.

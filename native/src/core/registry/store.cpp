@@ -33,8 +33,8 @@ bool is_key(const std::string &k)
     if (k.empty() || k.front() == '/' || k.back() == '/')
         return false;
     for (char c : k)
-        if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' || c == '-' ||
-              c == '.' || c == '/'))
+        if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' || c == '-' || c == '.' ||
+              c == '/'))
             return false;
     return k.find("//") == std::string::npos;
 }
@@ -162,8 +162,7 @@ bool same_key(const Value &a, const Value &b, const std::vector<std::string> &fi
     return true;
 }
 
-void diff(const Def &def, const Value &a, const Value &b, std::string &ptr, std::string &pat,
-          std::vector<std::string> &out)
+void diff(const Def &def, const Value &a, const Value &b, std::string &ptr, std::string &pat, std::vector<std::string> &out)
 {
     if (same(a, b))
         return;
@@ -433,9 +432,10 @@ Def parse_schema(const std::string &name, const Value &schema)
     Def def;
     def.name = name;
     std::string applies(schema["x-applies"].as_string("read"));
-    def.applies = applies == "boot" ? Applies::boot : applies == "content" ? Applies::content
-                  : applies == "session"                                   ? Applies::session
-                                                                           : Applies::read;
+    def.applies = applies == "boot"      ? Applies::boot
+                  : applies == "content" ? Applies::content
+                  : applies == "session" ? Applies::session
+                                         : Applies::read;
     std::string ver(schema["x-version"].as_string("1.0"));
     auto dot = ver.find('.');
     def.major = std::atoi(ver.substr(0, dot).c_str());
@@ -672,8 +672,8 @@ struct Store::Impl {
         return ops[addon]++;
     }
 
-    int refuse(const std::string &addon, const std::string &registry, const std::string &id, int op,
-               const std::string &reason, const std::string &message, int result)
+    int refuse(const std::string &addon, const std::string &registry, const std::string &id, int op, const std::string &reason,
+               const std::string &message, int result)
     {
         refusals.push_back({addon, registry, id, reason, message, op});
         set_last_error(message);
@@ -739,8 +739,7 @@ struct Engine {
     std::map<std::string, std::vector<std::string>> tag_cache;
 
     Engine(Store::Impl &st, Reg &rg, const std::set<uint32_t> &dr) : s(st), r(rg), ctx(st.ctx), dropped(dr) {}
-    Engine(Store::Impl &st, Reg &rg, const std::set<uint32_t> &dr, const Context &c)
-        : s(st), r(rg), ctx(c), dropped(dr) {}
+    Engine(Store::Impl &st, Reg &rg, const std::set<uint32_t> &dr, const Context &c) : s(st), r(rg), ctx(c), dropped(dr) {}
 
     Reg *other(const std::string &name) { return s.reg(name); }
 
@@ -1459,9 +1458,8 @@ struct Engine {
             swofty::json::Error e;
             Value up = rc == SWOFTY_ASSET_OK ? swofty::json::parse(conv, &e) : Value();
             if (rc != SWOFTY_ASSET_OK || !e.message.empty() || !up.is_object()) {
-                s.note("[registry] " + r.def.name + " " + id + ": snapshot of schema " + std::to_string(f.major) +
-                       " has no " + (a ? "working " : "") + "migration to " + std::to_string(r.def.major) +
-                       "; this career reads it live");
+                s.note("[registry] " + r.def.name + " " + id + ": snapshot of schema " + std::to_string(f.major) + " has no " +
+                       (a ? "working " : "") + "migration to " + std::to_string(r.def.major) + "; this career reads it live");
                 return false;
             }
             v = std::move(up);
@@ -1524,16 +1522,15 @@ struct Engine {
                     nulls.push_back(h.pointer);
                 } else {
                     auto slash = h.element.find_last_of('/');
-                    removals.push_back({h.element.substr(0, slash),
-                                        static_cast<std::size_t>(std::stoull(h.element.substr(slash + 1)))});
+                    removals.push_back(
+                        {h.element.substr(0, slash), static_cast<std::size_t>(std::stoull(h.element.substr(slash + 1)))});
                 }
             }
         }
         for (auto &p : nulls)
             R.v.set(p, Value());
-        std::sort(removals.begin(), removals.end(), [](const Removal &a, const Removal &b) {
-            return a.array != b.array ? a.array > b.array : a.index > b.index;
-        });
+        std::sort(removals.begin(), removals.end(),
+                  [](const Removal &a, const Removal &b) { return a.array != b.array ? a.array > b.array : a.index > b.index; });
         removals.erase(std::unique(removals.begin(), removals.end(),
                                    [](const Removal &a, const Removal &b) { return a.array == b.array && a.index == b.index; }),
                        removals.end());
@@ -1588,7 +1585,8 @@ void Store::Impl::evaluate(Reg &r)
         if (fresh.empty()) {
             ev.refusals.insert(ev.refusals.end(), e.variant_refusals.begin(), e.variant_refusals.end());
             for (auto &[id, R] : ev.top) {
-                if (R.st == Status::invalid && !R.why.empty() && reported_invalid.insert(r.def.name + " " + id + " " + R.why).second)
+                if (R.st == Status::invalid && !R.why.empty() &&
+                    reported_invalid.insert(r.def.name + " " + id + " " + R.why).second)
                     note("[registry] " + r.def.name + " " + id + " is invalid: " + R.why);
                 if (R.st != Status::ok)
                     continue;
@@ -1873,8 +1871,8 @@ void Store::stock_loaded(const std::string &registry, bool loaded)
     }
 }
 
-int Store::add(const std::string &addon, const std::string &registry, const std::string &key, const Value &value,
-               std::string *id, const std::string &source)
+int Store::add(const std::string &addon, const std::string &registry, const std::string &key, const Value &value, std::string *id,
+               const std::string &source)
 {
     std::lock_guard g(d->mu);
     d->addon_index(addon);
@@ -1886,7 +1884,8 @@ int Store::add(const std::string &addon, const std::string &registry, const std:
     if (!r) {
         if (id)
             *id = rid;
-        return d->defer(registry, op, [this, addon, registry, key, value, source] { add(addon, registry, key, value, nullptr, source); });
+        return d->defer(registry, op,
+                        [this, addon, registry, key, value, source] { add(addon, registry, key, value, nullptr, source); });
     }
     if (addon.empty() || !is_key(key))
         return d->refuse(addon, registry, rid, op, "invalid", "add: '" + key + "' is not a key", SWOFTY_ASSET_INVALID);
@@ -1899,8 +1898,8 @@ int Store::add(const std::string &addon, const std::string &registry, const std:
         return d->refuse(addon, registry, rid, op, "invalid", "add: the value is not an object", SWOFTY_ASSET_INVALID);
     auto &list = r->provs[rid];
     if (!list.empty())
-        d->note("[registry] " + registry + " " + rid + ": added twice by " + addon + " (" + list.back().source +
-                ", then " + source + "); the later wins. The conflicts report lists it.");
+        d->note("[registry] " + registry + " " + rid + ": added twice by " + addon + " (" + list.back().source + ", then " +
+                source + "); the later wins. The conflicts report lists it.");
     list.push_back({addon, false, strip_meta(value), {}, {}, d->take_seq(), op, source});
     if (auto pf = value.find("$protect"); pf && pf->is_array())
         for (auto &f : *pf->if_array())
@@ -1976,15 +1975,15 @@ int Store::variant(const std::string &addon, const std::string &registry, const 
     if (!r) {
         if (id)
             *id = rid;
-        return d->defer(registry, op,
-                        [this, addon, registry, key, base, change, source] { variant(addon, registry, key, base, change, nullptr, source); });
+        return d->defer(registry, op, [this, addon, registry, key, base, change, source] {
+            variant(addon, registry, key, base, change, nullptr, source);
+        });
     }
     if (addon.empty() || !is_key(key) || base.empty())
         return d->refuse(addon, registry, rid, op, "invalid", "variant: bad key or base", SWOFTY_ASSET_INVALID);
     if (d->late_for(*r))
         return d->refuse(addon, registry, rid, op, "late",
-                         "variant by " + addon + " refused (late): " + registry + " applies at boot",
-                         SWOFTY_ASSET_LATE);
+                         "variant by " + addon + " refused (late): " + registry + " applies at boot", SWOFTY_ASSET_LATE);
     Change c = change;
     if (!c.is_patch && !c.schema)
         if (auto so = r->schema_of.find(addon); so != r->schema_of.end())
@@ -2005,8 +2004,7 @@ int Store::variant(const std::string &addon, const std::string &registry, const 
     return SWOFTY_ASSET_OK;
 }
 
-int Store::provide_fn(const std::string &addon, const std::string &registry, SwoftyProvideFn fn, SwoftyListFn list,
-                      void *user)
+int Store::provide_fn(const std::string &addon, const std::string &registry, SwoftyProvideFn fn, SwoftyListFn list, void *user)
 {
     std::lock_guard g(d->mu);
     d->addon_index(addon);
@@ -2018,8 +2016,8 @@ int Store::provide_fn(const std::string &addon, const std::string &registry, Swo
     if (!fn || addon.empty())
         return d->refuse(addon, registry, "", op, "invalid", "provide: no callback", SWOFTY_ASSET_INVALID);
     if (d->late_for(*r))
-        return d->refuse(addon, registry, "", op, "late", "provide by " + addon + " refused (late): " + registry +
-                                                               " applies at boot", SWOFTY_ASSET_LATE);
+        return d->refuse(addon, registry, "", op, "late",
+                         "provide by " + addon + " refused (late): " + registry + " applies at boot", SWOFTY_ASSET_LATE);
     r->dyns.push_back({addon, fn, list, user, d->take_seq(), {}, false, {}});
     d->touch();
     return SWOFTY_ASSET_OK;
@@ -2219,8 +2217,8 @@ int Store::tag_add(const std::string &addon, const std::string &registry, const 
                          SWOFTY_ASSET_UNAVAILABLE);
     bool own_tag = tag.rfind(addon + "/", 0) == 0;
     if (!r->tags.count(tag) && !own_tag)
-        return d->refuse(addon, registry, id, op, "invalid",
-                         "tag_add: " + tag + " is not a tag the core defines on " + registry, SWOFTY_ASSET_INVALID);
+        return d->refuse(addon, registry, id, op, "invalid", "tag_add: " + tag + " is not a tag the core defines on " + registry,
+                         SWOFTY_ASSET_INVALID);
     r->tags[tag].push_back({id, addon});
     d->touch();
     return SWOFTY_ASSET_OK;
@@ -2273,8 +2271,7 @@ int Store::adapter(const std::string &, const std::string &registry, uint32_t fr
     return SWOFTY_ASSET_OK;
 }
 
-int Store::migrate(const std::string &, const std::string &registry, uint32_t from, uint32_t to, SwoftyConvertFn fn,
-                   void *user)
+int Store::migrate(const std::string &, const std::string &registry, uint32_t from, uint32_t to, SwoftyConvertFn fn, void *user)
 {
     std::lock_guard g(d->mu);
     Reg *r = d->reg(registry);
@@ -2536,15 +2533,9 @@ std::vector<Conflict> Store::conflicts()
     return out;
 }
 
-uint64_t Store::generation() const
-{
-    return d->gen.load(std::memory_order_acquire);
-}
+uint64_t Store::generation() const { return d->gen.load(std::memory_order_acquire); }
 
-bool Store::would_wait() const
-{
-    return d->waits();
-}
+bool Store::would_wait() const { return d->waits(); }
 
 std::size_t Store::layer_count(const std::string &addon, const std::string &registry) const
 {
@@ -2569,8 +2560,8 @@ bool Store::read_option(const std::string &addon, const std::string &id, Value &
     return d->read_option(addon, id, out);
 }
 
-void Store::note_refusal(const std::string &addon, const std::string &registry, const std::string &id,
-                         const std::string &reason, const std::string &message)
+void Store::note_refusal(const std::string &addon, const std::string &registry, const std::string &id, const std::string &reason,
+                         const std::string &message)
 {
     std::lock_guard g(d->mu);
     d->refuse(addon, registry, id, -1, reason, message, 0);

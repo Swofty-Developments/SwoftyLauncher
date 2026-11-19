@@ -32,8 +32,8 @@ struct Report {
             r += (i ? "," : "") + quote(refusals[i]);
         r += "],\"written\":" + std::to_string(written) + ",\"released\":" + std::to_string(released) +
              ",\"numbers\":" + std::to_string(numbers) + ",\"finalise\":" + quote(finalise) +
-             ",\"line_up_changes\":" + std::to_string(changes) + ",\"contracts_signed\":" + std::to_string(contracts) +
-             extra + "}";
+             ",\"line_up_changes\":" + std::to_string(changes) + ",\"contracts_signed\":" + std::to_string(contracts) + extra +
+             "}";
         return r;
     }
 };

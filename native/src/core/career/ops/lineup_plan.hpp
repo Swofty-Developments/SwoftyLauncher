@@ -58,10 +58,7 @@ struct Plan {
     int player_team = -1;
 };
 
-inline uint32_t stat_of(uint32_t key)
-{
-    return key >> 16;
-}
+inline uint32_t stat_of(uint32_t key) { return key >> 16; }
 
 inline bool driver_key(uint32_t key, int stat)
 {
@@ -88,10 +85,7 @@ inline int holder_of(const std::vector<Row> &rows, int team, int seat)
     return -1;
 }
 
-inline std::string seat_name(int slot, int seat)
-{
-    return "slot " + std::to_string(slot) + " seat " + std::to_string(seat + 1);
-}
+inline std::string seat_name(int slot, int seat) { return "slot " + std::to_string(slot) + " seat " + std::to_string(seat + 1); }
 
 inline Plan plan(const Input &in, const std::vector<Row> &rows)
 {
@@ -131,10 +125,12 @@ inline Plan plan(const Input &in, const std::vector<Row> &rows)
             }
             int idx = single_row(rows, stat);
             if (idx < 0) {
-                p.refusals.push_back(where + ": " + t.refs[k] + (idx == -2 ? " has more than one career row" : " has no career row"));
+                p.refusals.push_back(where + ": " + t.refs[k] +
+                                     (idx == -2 ? " has more than one career row" : " has no career row"));
                 continue;
             }
-            auto dup = std::find_if(taken.begin(), taken.end(), [&](const Taken &x) { return x.stat == static_cast<uint32_t>(stat); });
+            auto dup =
+                std::find_if(taken.begin(), taken.end(), [&](const Taken &x) { return x.stat == static_cast<uint32_t>(stat); });
             if (dup != taken.end()) {
                 p.refusals.push_back(where + ": " + t.refs[k] + " is already seated at " + seat_name(dup->slot, dup->seat));
                 continue;
@@ -192,7 +188,8 @@ inline void defer_to(Plan &p, const std::vector<Given> &lineup)
                                      seat_text(m.team, m.seat));
             continue;
         }
-        auto other = std::find_if(lineup.begin(), lineup.end(), [&](const Given &g) { return g.team == m.team && g.seat == m.seat; });
+        auto other =
+            std::find_if(lineup.begin(), lineup.end(), [&](const Given &g) { return g.team == m.team && g.seat == m.seat; });
         if (other != lineup.end()) {
             p.refusals.push_back(seat_text(m.team, m.seat) + ": the request's line-up gives it to driver " +
                                  std::to_string(other->driver) + ", not the season record's driver " + std::to_string(m.driver));
@@ -203,7 +200,8 @@ inline void defer_to(Plan &p, const std::vector<Given> &lineup)
     p.moves = std::move(kept);
     p.releases.erase(std::remove_if(p.releases.begin(), p.releases.end(),
                                     [&](uint32_t d) {
-                                        return std::any_of(lineup.begin(), lineup.end(), [&](const Given &g) { return g.driver == d; });
+                                        return std::any_of(lineup.begin(), lineup.end(),
+                                                           [&](const Given &g) { return g.driver == d; });
                                     }),
                      p.releases.end());
 }

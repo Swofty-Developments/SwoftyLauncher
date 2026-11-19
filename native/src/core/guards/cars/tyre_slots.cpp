@@ -154,17 +154,17 @@ void wear_lookup(SwoftyContext *c)
         c->rip = wear_return;
 }
 
-guards::SiteGuard guard{guards::CoreSetId::tyre_slots,
-                        {
-                            .set = MIXIN,
-                            .name = "[tyres] slot guard",
-                            .env = "SWOFTY_TYRE_SLOT_GUARD",
-                            .keeps = {{VIS_TAIL, &vis_tail}, {WEAR_RETURN, &wear_return}},
-                            .needs = {VIS_SITE, VIS_TAIL, WEAR_SITE, WEAR_RETURN},
-                            .mixins = {
-                                        {VIS_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&vis_lookup, nullptr},
-                                        {WEAR_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&wear_lookup, nullptr}},
-                            .armed = "a fitted tyre set whose option has no slot in the car's class takes a slot of the class instead of faulting",
-                        }};
+guards::SiteGuard guard{
+    guards::CoreSetId::tyre_slots,
+    {
+        .set = MIXIN,
+        .name = "[tyres] slot guard",
+        .env = "SWOFTY_TYRE_SLOT_GUARD",
+        .keeps = {{VIS_TAIL, &vis_tail}, {WEAR_RETURN, &wear_return}},
+        .needs = {VIS_SITE, VIS_TAIL, WEAR_SITE, WEAR_RETURN},
+        .mixins = {{VIS_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&vis_lookup, nullptr},
+                   {WEAR_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&wear_lookup, nullptr}},
+        .armed = "a fitted tyre set whose option has no slot in the car's class takes a slot of the class instead of faulting",
+    }};
 
 }

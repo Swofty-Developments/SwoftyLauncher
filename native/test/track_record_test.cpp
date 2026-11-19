@@ -5,14 +5,14 @@
 
 static int failures;
 
-#define CHECK(cond, msg)                                                                                                \
-    do {                                                                                                                \
-        if (cond) {                                                                                                     \
-            printf("ok  : %s\n", msg);                                                                                  \
-        } else {                                                                                                        \
-            printf("FAIL: %s\n", msg);                                                                                  \
-            failures++;                                                                                                 \
-        }                                                                                                               \
+#define CHECK(cond, msg)                                                                                                         \
+    do {                                                                                                                         \
+        if (cond) {                                                                                                              \
+            printf("ok  : %s\n", msg);                                                                                           \
+        } else {                                                                                                                 \
+            printf("FAIL: %s\n", msg);                                                                                           \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 int main()
@@ -24,9 +24,9 @@ int main()
     CHECK(seen.first(255) && !seen.first(255), "track 255 is logged once");
     CHECK(seen.first(0), "track 0 is logged");
 
+    using runtime::track_record::judge;
     using runtime::track_record::Round;
     using runtime::track_record::Verdict;
-    using runtime::track_record::judge;
     Round ok;
     ok.track = 5;
     ok.table_known = true;

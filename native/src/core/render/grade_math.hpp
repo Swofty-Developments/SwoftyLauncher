@@ -43,8 +43,7 @@ inline bool unpack(const std::string &data, Lut &out, std::string &why)
         }
     size_t count = size_t(size) * size * size * 3;
     if (data.size() != 36 + count * 4) {
-        why = "it is " + std::to_string(data.size()) + " bytes, not the " + std::to_string(36 + count * 4) +
-              " its size needs";
+        why = "it is " + std::to_string(data.size()) + " bytes, not the " + std::to_string(36 + count * 4) + " its size needs";
         return false;
     }
     out.size = size;

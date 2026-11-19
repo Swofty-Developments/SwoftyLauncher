@@ -38,13 +38,30 @@ namespace {
 namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 
-const runtime::Sig S_FIRST{"site_Game_ActivityResumeRaceLengthFirst", "E8 ?? ?? ?? ?? 44 8B 30 48 89 F9 B2 01", 0x1519488a9,
-                           runtime::Sig::addr, 0, 5, 0, ".data1"};
-const runtime::Sig S_SECOND{"site_Game_ActivityResumeRaceLengthSecond", "E8 ?? ?? ?? ?? 8B 28 48 89 F9 31 D2", 0x1519488b6,
-                            runtime::Sig::addr, 0, 5, 0, ".data1"};
-const runtime::Sig S_RETURN{"site_Game_ActivityResumeRaceLengthReturn", "48 8D 35 ?? ?? ?? ?? 48 89 F0 48 83 C4 20",
-                            0x1519488f6, runtime::Sig::addr, 0, 7, 0, ".data1"};
-
+const runtime::Sig S_FIRST{"site_Game_ActivityResumeRaceLengthFirst",
+                           "E8 ?? ?? ?? ?? 44 8B 30 48 89 F9 B2 01",
+                           0x1519488a9,
+                           runtime::Sig::addr,
+                           0,
+                           5,
+                           0,
+                           ".data1"};
+const runtime::Sig S_SECOND{"site_Game_ActivityResumeRaceLengthSecond",
+                            "E8 ?? ?? ?? ?? 8B 28 48 89 F9 31 D2",
+                            0x1519488b6,
+                            runtime::Sig::addr,
+                            0,
+                            5,
+                            0,
+                            ".data1"};
+const runtime::Sig S_RETURN{"site_Game_ActivityResumeRaceLengthReturn",
+                            "48 8D 35 ?? ?? ?? ?? 48 89 F0 48 83 C4 20",
+                            0x1519488f6,
+                            runtime::Sig::addr,
+                            0,
+                            7,
+                            0,
+                            ".data1"};
 
 uintptr_t return_at = 0;
 bool said = false;
@@ -84,8 +101,8 @@ void setup()
     uintptr_t first = runtime::find(S_FIRST, "career", "career"), second = runtime::find(S_SECOND, "career", "career");
     return_at = runtime::find(S_RETURN, "career", "career");
     if (!first || !second || !return_at) {
-        swofty::log("[career] activity resume guard: not hooked: %s%s%s", first ? "" : "first read ", second ? "" : "second read ",
-                    return_at ? "" : "return");
+        swofty::log("[career] activity resume guard: not hooked: %s%s%s", first ? "" : "first read ",
+                    second ? "" : "second read ", return_at ? "" : "return");
         return;
     }
     if (arm(h_first, S_FIRST, first) && arm(h_second, S_SECOND, second))

@@ -28,15 +28,9 @@ constexpr DWORD READABLE_ACCESS = 0xEE;
 constexpr DWORD WRITABLE_ACCESS = PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY;
 static_assert(WRITABLE_ACCESS == WRITABLE_PROTECTION && PAGE_NOACCESS == NOACCESS_PROTECTION && PAGE_GUARD == GUARD_PROTECTION);
 
-constexpr bool readable_protection(DWORD p)
-{
-    return (p & READABLE_ACCESS) && !(p & (PAGE_GUARD | PAGE_NOACCESS));
-}
+constexpr bool readable_protection(DWORD p) { return (p & READABLE_ACCESS) && !(p & (PAGE_GUARD | PAGE_NOACCESS)); }
 
-inline bool readable_region(const MEMORY_BASIC_INFORMATION &m)
-{
-    return m.State == MEM_COMMIT && readable_protection(m.Protect);
-}
+inline bool readable_region(const MEMORY_BASIC_INFORMATION &m) { return m.State == MEM_COMMIT && readable_protection(m.Protect); }
 
 inline bool readable_now(uintptr_t a, size_t n)
 {

@@ -27,10 +27,7 @@ namespace {
 
 using namespace swofty::game;
 
-uintptr_t resolve(const char *id)
-{
-    return swofty::api && swofty::api->resolve ? swofty::api->resolve(id) : 0;
-}
+uintptr_t resolve(const char *id) { return swofty::api && swofty::api->resolve ? swofty::api->resolve(id) : 0; }
 
 Career_Eval_Curve_t *eval_fn()
 {
@@ -103,8 +100,8 @@ constexpr size_t kMaxStats = 64;
 constexpr size_t kMaxSets = 32;
 constexpr size_t kMaxPoints = 256;
 
-using GetStatFn = float (*)(void *self, void *data, const uint32_t *driver, const uint16_t *info, const uint8_t *ctx,
-                            float x, bool patched, bool clamp, bool round);
+using GetStatFn = float (*)(void *self, void *data, const uint32_t *driver, const uint16_t *info, const uint8_t *ctx, float x,
+                            bool patched, bool clamp, bool round);
 using FixedFn = bool (*)(void *self, const uint32_t *driver);
 using CtxFn = void (*)(void *self, uint8_t *out);
 
@@ -114,10 +111,7 @@ template <class T> T rdv(uintptr_t a, T def = T{})
     return swofty::mem::read(a, v) ? v : def;
 }
 
-bool writable(uintptr_t p, size_t n)
-{
-    return runtime::pages::writable_in_region(p, n);
-}
+bool writable(uintptr_t p, size_t n) { return runtime::pages::writable_in_region(p, n); }
 
 template <class T> bool wr(uintptr_t a, const T &v)
 {
@@ -221,10 +215,7 @@ void context(const Comp &c, uint8_t ctx[16])
         reinterpret_cast<CtxFn>(fn)(reinterpret_cast<void *>(obj), ctx);
 }
 
-bool patched_gate(const Comp &c)
-{
-    return rdv<uint8_t>(c.at + kCompGate) == 0 && rdv<uint32_t>(c.at + kCompApplied) >= 2;
-}
+bool patched_gate(const Comp &c) { return rdv<uint8_t>(c.at + kCompGate) == 0 && rdv<uint32_t>(c.at + kCompApplied) >= 2; }
 
 float progress(const Comp &c, uint32_t key)
 {
@@ -321,10 +312,7 @@ float eval_curve(uintptr_t curve, float x)
     return eval_fn()(reinterpret_cast<void *>(curve), x);
 }
 
-float curve_at(uintptr_t curve, const CurveView &v, float x)
-{
-    return eval_curve(curve, x) * (v.maxy - v.miny) + v.miny;
-}
+float curve_at(uintptr_t curve, const CurveView &v, float x) { return eval_curve(curve, x) * (v.maxy - v.miny) + v.miny; }
 
 bool curve_rebuild(uintptr_t curve, const CurveView &v)
 {
@@ -406,8 +394,7 @@ void roll_back(const std::vector<Undo> &log)
     }
 }
 
-int write_stat(const Comp &c, uint32_t key, uintptr_t driver, uint16_t info, double target, float x,
-               std::vector<Undo> &log)
+int write_stat(const Comp &c, uint32_t key, uintptr_t driver, uint16_t info, double target, float x, std::vector<Undo> &log)
 {
     int n = 0;
     for (uintptr_t set : sets_of(driver)) {
@@ -446,7 +433,6 @@ int write_stat(const Comp &c, uint32_t key, uintptr_t driver, uint16_t info, dou
     }
     return n;
 }
-
 
 }
 
@@ -503,8 +489,8 @@ int set(uint32_t driver, const uint16_t *ids, const float *values, size_t count,
             if (!(std::fabs(now - then) < 1e-3f || (std::isnan(now) && std::isnan(then)))) {
                 roll_back(log);
                 char b[160];
-                std::snprintf(b, sizeof b, "rolled back: driver key 0x%x stat %u moved %.2f -> %.2f although it was not written", k,
-                              ids[i], then, now);
+                std::snprintf(b, sizeof b, "rolled back: driver key 0x%x stat %u moved %.2f -> %.2f although it was not written",
+                              k, ids[i], then, now);
                 text = b;
                 return SWOFTY_ASSET_INVALID;
             }
@@ -524,8 +510,8 @@ int set(uint32_t driver, const uint16_t *ids, const float *values, size_t count,
     }
     char b[160];
     std::snprintf(b, sizeof b, "; overall %.0f -> %.0f (%s, %d set(s), curve position %.3f, %zu other driver(s) unchanged)",
-                  overall_before, overall_now(comp, key), comp.player_class ? "DriverCareerPlayerDriverStatistics" : "DriverStatistics",
-                  sets, x, others.size());
+                  overall_before, overall_now(comp, key),
+                  comp.player_class ? "DriverCareerPlayerDriverStatistics" : "DriverStatistics", sets, x, others.size());
     text = list + b;
     return missing == count ? SWOFTY_ASSET_INVALID : SWOFTY_ASSET_OK;
 }

@@ -26,10 +26,7 @@ struct Decision {
 // with no record; the session settings pass the null record on and fault reading its name (+0x78).
 enum class Site { tyre_allocation, session_settings };
 
-inline const char *reader(Site site)
-{
-    return site == Site::tyre_allocation ? "the tyre allocation" : "the session settings";
-}
+inline const char *reader(Site site) { return site == Site::tyre_allocation ? "the tyre allocation" : "the session settings"; }
 
 inline bool present(int track, const std::vector<Item> &items)
 {
@@ -70,15 +67,12 @@ inline std::string line(const Decision &d, int track, std::size_t items, const s
                        " record slot(s); its track addon is off or not installed)";
     if (d.repair)
         return head + "; its track is now " + (to_name.empty() ? std::string("?") : to_name) + " (stat id " +
-               std::to_string(d.to) + ") so " + reader(site) +
-               (site == Site::tyre_allocation ? " reads" : " read") + " a track the game has";
+               std::to_string(d.to) + ") so " + reader(site) + (site == Site::tyre_allocation ? " reads" : " read") +
+               " a track the game has";
     return head + "; no track data record to put in its place, so the game " +
            (site == Site::tyre_allocation ? "aborts in its tyre allocation" : "faults in its session settings");
 }
 
-inline bool switch_off(std::string_view value)
-{
-    return value == "0" || value == "off" || value == "false" || value == "no";
-}
+inline bool switch_off(std::string_view value) { return value == "0" || value == "off" || value == "false" || value == "no"; }
 
 }

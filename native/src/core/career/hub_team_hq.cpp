@@ -69,8 +69,8 @@ void add_team_hq_tab(uintptr_t hq, HubTab &t)
         note("[hub] %s: no page allocated", t.name.c_str());
         return;
     }
-    reinterpret_cast<PageCtor_t *>(a_page_ctor)(page, a2, a3, reinterpret_cast<void *>(hq), t.content.c_str(),
-                                                t.lng.c_str(), nullptr, "", PAGE_TYPE, 0);
+    reinterpret_cast<PageCtor_t *>(a_page_ctor)(page, a2, a3, reinterpret_cast<void *>(hq), t.content.c_str(), t.lng.c_str(),
+                                                nullptr, "", PAGE_TYPE, 0);
     bool mine = own_vtable(page);
     struct {
         void *allocator, *obj;

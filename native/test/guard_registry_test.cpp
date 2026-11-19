@@ -128,19 +128,9 @@ const std::vector<std::string> SETTLED = {
 // last entry (gccmain.c __do_global_ctors). So 1.9.63 armed them in the reverse of its build.sh link order. A hook
 // guard added since links after the listed sources (tools/core_link_order.txt), so it arms first.
 const std::vector<std::string> HOOKED = {
-    "pit_garage_state",
-    "gp_weekend_track",
-    "rnd_suppliers",
-    "replay_read",
-    "ai_curves",
-    "ai_ers",
-    "calendar_track",
-    "teamhq_track",
-    "setup_vm",
-    "teammate_pairs",
-    "race_retirement",
-    "sequencer_records",
-    "activity_resume",
+    "pit_garage_state", "gp_weekend_track",  "rnd_suppliers",   "replay_read", "ai_curves",
+    "ai_ers",           "calendar_track",    "teamhq_track",    "setup_vm",    "teammate_pairs",
+    "race_retirement",  "sequencer_records", "activity_resume",
 };
 
 int failures = 0;

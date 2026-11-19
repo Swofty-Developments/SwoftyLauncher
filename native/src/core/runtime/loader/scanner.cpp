@@ -134,7 +134,8 @@ void Scanner::prescan(const std::string &section, const std::vector<std::string>
         AcquireSRWLockShared(&lock_);
         for (auto &p : patterns) {
             uint64_t known = 0;
-            if ((cache_on_ && cache_.find(section, p, known)) || prescanned_.count(section + '|' + p) || !seen.emplace(p, true).second)
+            if ((cache_on_ && cache_.find(section, p, known)) || prescanned_.count(section + '|' + p) ||
+                !seen.emplace(p, true).second)
                 continue;
             todo.push_back(p.c_str());
         }
@@ -157,7 +158,8 @@ void Scanner::prescan(const std::string &section, const std::vector<std::string>
             prescanned_[section + '|' + todo[i]] = {hits[i], first[i]}, kept++;
     ReleaseSRWLockExclusive(&lock_);
     double ms = took.total_ms();
-    api->log("[core] scan: one pass over %s answered %zu pattern(s) the scan cache does not know in %.1f ms", section.c_str(), kept, ms);
+    api->log("[core] scan: one pass over %s answered %zu pattern(s) the scan cache does not know in %.1f ms", section.c_str(),
+             kept, ms);
     api->log(perf::STEP_LINE, ms, ("scan one pass " + section).c_str());
 }
 
@@ -216,8 +218,8 @@ void Scanner::remember(const char *section, const char *pattern, int hits, uint6
     ReleaseSRWLockExclusive(&lock_);
 }
 
-void Scanner::read_section_map(const json::Value &doc, const std::string &file, const std::unordered_map<std::string, size_t> &uses,
-                               bool any_binding)
+void Scanner::read_section_map(const json::Value &doc, const std::string &file,
+                               const std::unordered_map<std::string, size_t> &uses, bool any_binding)
 {
     const auto &given = doc["sections"].type == json::Value::Obj ? doc["sections"] : doc["build"]["sections"];
     for (auto &[from, to] : given.o)
@@ -321,10 +323,7 @@ const std::wstring &Scanner::caches(const std::wstring &dir)
 
 namespace runtime {
 
-const std::wstring &cache_dir()
-{
-    return loader::scanner().caches(Runtime::instance().dir());
-}
+const std::wstring &cache_dir() { return loader::scanner().caches(Runtime::instance().dir()); }
 
 }
 
@@ -339,7 +338,9 @@ bool Scanner::open(SwoftyApi *a, const std::wstring &dir, long long exe_bytes)
     loader_scan_many_ = loader ? reinterpret_cast<int (*)(const char *, const char *const *, int, int *, uintptr_t *)>(
                                      reinterpret_cast<void *>(GetProcAddress(loader, "SwoftyLoaderScanMany")))
                                : nullptr;
-    a->scan = [](const char *section, const char *pattern, uintptr_t *out) { return scanner().addon_scan(section, pattern, out); };
+    a->scan = [](const char *section, const char *pattern, uintptr_t *out) {
+        return scanner().addon_scan(section, pattern, out);
+    };
     char v[16] = {0};
     if (GetEnvironmentVariableA("SWOFTY_RESOLVE", v, sizeof v) && !_stricmp(v, "scan")) {
         api->log("[core] binding resolution: SWOFTY_RESOLVE=scan, every pattern is scanned and the scan cache is off");

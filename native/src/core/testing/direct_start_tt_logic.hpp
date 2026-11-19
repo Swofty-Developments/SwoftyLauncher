@@ -103,15 +103,9 @@ inline const char *weather_value(const std::string &weather)
 }
 
 // A packed team or vehicle reference: the kind byte low, the u16 index or stat id in the high half.
-constexpr uint8_t ref_kind(uint32_t ref)
-{
-    return uint8_t(ref & 0xff);
-}
+constexpr uint8_t ref_kind(uint32_t ref) { return uint8_t(ref & 0xff); }
 
-constexpr uint16_t ref_index(uint32_t ref)
-{
-    return uint16_t(ref >> 16);
-}
+constexpr uint16_t ref_index(uint32_t ref) { return uint16_t(ref >> 16); }
 
 constexpr uint16_t NO_REF = 0x3fff;
 

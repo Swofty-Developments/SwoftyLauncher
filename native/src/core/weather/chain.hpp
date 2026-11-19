@@ -127,8 +127,7 @@ inline const char *rebuild_gate(const TodFlags &t)
 // (validate_build, unsupported_state, clamp_build), so a script the core builds is held to the same limits as a plan.
 inline constexpr unsigned MAX_STATES = 6;
 inline constexpr float MIN_HOLD_S = 1.0f, MIN_TRANSITION_S = 1.0f;
-inline constexpr const char *KIND_NAMES[MAX_STATES] = {"clear",      "light_cloud", "overcast",
-                                                       "light_rain", "heavy_rain",  "storm"};
+inline constexpr const char *KIND_NAMES[MAX_STATES] = {"clear", "light_cloud", "overcast", "light_rain", "heavy_rain", "storm"};
 
 struct Build {
     uint32_t n = 0;
@@ -225,13 +224,12 @@ inline std::string validate(const Build &b, float len)
             return buf;
         }
         if (!std::isfinite(b.hold[i]) || b.hold[i] < MIN_HOLD_S) {
-            std::snprintf(buf, sizeof buf, "state %u hold %g s is not a finite time of at least %g s", i, b.hold[i],
-                          MIN_HOLD_S);
+            std::snprintf(buf, sizeof buf, "state %u hold %g s is not a finite time of at least %g s", i, b.hold[i], MIN_HOLD_S);
             return buf;
         }
         if (!std::isfinite(b.trans[i]) || (last ? b.trans[i] != 0 : b.trans[i] < MIN_TRANSITION_S)) {
-            std::snprintf(buf, sizeof buf, "state %u transition %g s is not finite or is shorter than %g s", i,
-                          b.trans[i], MIN_TRANSITION_S);
+            std::snprintf(buf, sizeof buf, "state %u transition %g s is not finite or is shorter than %g s", i, b.trans[i],
+                          MIN_TRANSITION_S);
             return buf;
         }
         if (!std::isfinite(b.intensity[i]) || b.intensity[i] > 1.0f) {
@@ -278,11 +276,11 @@ inline std::vector<std::string> clamp(Build &b, const TypeRange (&ranges)[MAX_ST
         b.intensity[i] = to;
         char buf[128];
         if (ok)
-            std::snprintf(buf, sizeof buf, "state %u %s intensity %.2f -> %.2f (game range %.2f..%.2f)", i,
-                          KIND_NAMES[b.type[i]], v, to, r.min, r.max);
+            std::snprintf(buf, sizeof buf, "state %u %s intensity %.2f -> %.2f (game range %.2f..%.2f)", i, KIND_NAMES[b.type[i]],
+                          v, to, r.min, r.max);
         else
-            std::snprintf(buf, sizeof buf, "state %u %s intensity %.2f -> the game's draw (game range %g..%g unusable)",
-                          i, KIND_NAMES[b.type[i]], v, r.min, r.max);
+            std::snprintf(buf, sizeof buf, "state %u %s intensity %.2f -> the game's draw (game range %g..%g unusable)", i,
+                          KIND_NAMES[b.type[i]], v, r.min, r.max);
         out.push_back(buf);
     }
     return out;
@@ -317,7 +315,6 @@ inline bool holds(const BuiltState *states, uint32_t n, const Build &b)
             return false;
     return true;
 }
-
 
 inline constexpr const char *DATASET_KEYS[DATASETS] = {"p1", "p2", "p3", "q", "ss", "r", "r2", "r3"};
 

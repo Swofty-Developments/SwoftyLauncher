@@ -21,8 +21,8 @@ inline bool unit_axes(const float m[3][3])
 // The matrix whose columns are the three basis vectors, as a unit quaternion (x, y, z, w).
 inline void quaternion_of(const float c[3][3], float q[4])
 {
-    float m00 = c[0][0], m10 = c[0][1], m20 = c[0][2], m01 = c[1][0], m11 = c[1][1], m21 = c[1][2], m02 = c[2][0],
-          m12 = c[2][1], m22 = c[2][2];
+    float m00 = c[0][0], m10 = c[0][1], m20 = c[0][2], m01 = c[1][0], m11 = c[1][1], m21 = c[1][2], m02 = c[2][0], m12 = c[2][1],
+          m22 = c[2][2];
     float tr = m00 + m11 + m22;
     if (tr > 0) {
         float s = std::sqrt(tr + 1.0f) * 2;

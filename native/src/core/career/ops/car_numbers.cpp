@@ -54,17 +54,14 @@ bool write_number(uintptr_t e, const Row &row, uint8_t n, bool &weekend)
     return true;
 }
 
-std::string number_text(uint8_t n)
-{
-    return n == kNoNumber ? std::string("none") : "#" + std::to_string(n);
-}
+std::string number_text(uint8_t n) { return n == kNoNumber ? std::string("none") : "#" + std::to_string(n); }
 
 int api_set_car_number(uint32_t driver, int32_t want_number, uint32_t flags)
 {
     labels();
     const uint32_t stat = driver & 0x3fff, domain = (driver >> 14) & 3;
-    std::string head = "set_car_number " + (domain ? "driver(" + std::to_string(driver) + ")" : driver_name(driver)) +
-                       " #" + std::to_string(want_number) + ((flags & SWOFTY_NUMBER_SWAP) ? " (swap)" : "");
+    std::string head = "set_car_number " + (domain ? "driver(" + std::to_string(driver) + ")" : driver_name(driver)) + " #" +
+                       std::to_string(want_number) + ((flags & SWOFTY_NUMBER_SWAP) ? " (swap)" : "");
     std::string summary;
     int r = SWOFTY_ASSET_OK;
     uintptr_t e = 0;

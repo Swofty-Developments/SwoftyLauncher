@@ -20,12 +20,18 @@ enum class Phase : uint8_t { off, profile, setup, leave, left, failed };
 inline const char *phase_name(Phase p)
 {
     switch (p) {
-    case Phase::off: return "off";
-    case Phase::profile: return "waiting for the profile load";
-    case Phase::setup: return "setting up the target";
-    case Phase::leave: return "leaving the front end";
-    case Phase::left: return "left the front end";
-    case Phase::failed: return "failed";
+    case Phase::off:
+        return "off";
+    case Phase::profile:
+        return "waiting for the profile load";
+    case Phase::setup:
+        return "setting up the target";
+    case Phase::leave:
+        return "leaving the front end";
+    case Phase::left:
+        return "left the front end";
+    case Phase::failed:
+        return "failed";
     }
     return "?";
 }
@@ -42,15 +48,9 @@ struct Target {
     uint32_t link = LINK_SESSION;
 };
 
-inline Target session_target()
-{
-    return {"session", STATE_FTUE, STATE_FRONTEND_WORLD, LINK_SESSION};
-}
+inline Target session_target() { return {"session", STATE_FTUE, STATE_FRONTEND_WORLD, LINK_SESSION}; }
 
-inline Target room_target()
-{
-    return {"room", STATE_FTUE, 0, 0};
-}
+inline Target room_target() { return {"room", STATE_FTUE, 0, 0}; }
 
 struct Driver {
     Phase phase = Phase::off;
@@ -108,8 +108,8 @@ struct Driver {
 
 // The flow link hook has work while the start drives the flow (profile, setup, leave) and, for a session target, until the
 // session's screen is up or the cover's wait ran out. After that, and after a failed start, it returns at once.
-inline bool link_needed(Phase phase, bool session_target, bool session_screen, uint64_t session_at, uint64_t now, uint64_t screen_wait_ms,
-                        bool diag)
+inline bool link_needed(Phase phase, bool session_target, bool session_screen, uint64_t session_at, uint64_t now,
+                        uint64_t screen_wait_ms, bool diag)
 {
     if (diag)
         return true;
@@ -135,8 +135,7 @@ constexpr size_t NO_SETUP_MODE = size_t(-1);
 // when it offers the list, then the first mode that does, since the session's track data query pairs the setup mode
 // with the list's season and finds no track for a pair no track data set holds (swofty_f1 with the 2026 list);
 // the host mode when no mode offers the list.
-inline size_t pick_setup_mode(const std::vector<SetupModeOffer> &modes, const std::string &requested,
-                              const std::string &host)
+inline size_t pick_setup_mode(const std::vector<SetupModeOffer> &modes, const std::string &requested, const std::string &host)
 {
     auto named = [&](const std::string &name) {
         for (size_t i = 0; i < modes.size(); i++)

@@ -108,8 +108,8 @@ void attach_info_queue(ID3D12Device *dev)
         q1->Release();
         q->Release();
         if (log_fn)
-            log_fn("[d3d-debug] message callback registered on device %p; the first %d ERROR/CORRUPTION messages are logged", static_cast<void *>(dev),
-                   kMaxDebugMessages);
+            log_fn("[d3d-debug] message callback registered on device %p; the first %d ERROR/CORRUPTION messages are logged",
+                   static_cast<void *>(dev), kMaxDebugMessages);
         return;
     }
     if (q1)
@@ -123,7 +123,8 @@ void attach_info_queue(ID3D12Device *dev)
     if (!poll_thread)
         poll_thread = CreateThread(nullptr, 0, poll_main, nullptr, 0, nullptr);
     if (log_fn)
-        log_fn("[d3d-debug] ID3D12InfoQueue1 is missing (older Windows); polling the message queue of device %p every 200 ms", static_cast<void *>(dev));
+        log_fn("[d3d-debug] ID3D12InfoQueue1 is missing (older Windows); polling the message queue of device %p every 200 ms",
+               static_cast<void *>(dev));
 }
 
 HRESULT WINAPI hooked_create_device(IUnknown *adapter, D3D_FEATURE_LEVEL level, REFIID riid, void **out)
@@ -166,7 +167,9 @@ void arm(const std::wstring &swofty_dir, void (*log)(const char *, ...), HMODULE
     }
     bool loaded = GetModuleHandleW(L"d3d12.dll") != nullptr;
     HMODULE d3d12 = LoadLibraryW(L"d3d12.dll");
-    auto get = d3d12 ? reinterpret_cast<DebugInterfaceFn>(reinterpret_cast<void *>(GetProcAddress(d3d12, "D3D12GetDebugInterface"))) : nullptr;
+    auto get = d3d12
+                   ? reinterpret_cast<DebugInterfaceFn>(reinterpret_cast<void *>(GetProcAddress(d3d12, "D3D12GetDebugInterface")))
+                   : nullptr;
     if (!get) {
         log("[dred] d3d12.dll has no D3D12GetDebugInterface; carrying on without DRED or the debug layer");
         return;
@@ -204,7 +207,8 @@ void arm(const std::wstring &swofty_dir, void (*log)(const char *, ...), HMODULE
                 s0->Release();
                 how = "breadcrumbs and page faults";
             } else {
-                log("[dred] on (%s), but the DRED settings interface is missing (0x%08lx, 0x%08lx; Wine/vkd3d or an old Windows); "
+                log("[dred] on (%s), but the DRED settings interface is missing (0x%08lx, 0x%08lx; Wine/vkd3d or an old "
+                    "Windows); "
                     "carrying on without it",
                     d.why, (unsigned long)h1, (unsigned long)h0);
             }
@@ -223,8 +227,8 @@ void arm(const std::wstring &swofty_dir, void (*log)(const char *, ...), HMODULE
     }
     armed = how != nullptr;
     if (how)
-        log("[dred] on (%s): forced on %s%s; D3D12CreateDevice %s, so a crash report names the removed device's GPU operation", d.why, how,
-            loaded ? " (d3d12.dll was already loaded; a device created before this point is not covered)" : "",
+        log("[dred] on (%s): forced on %s%s; D3D12CreateDevice %s, so a crash report names the removed device's GPU operation",
+            d.why, how, loaded ? " (d3d12.dll was already loaded; a device created before this point is not covered)" : "",
             hooked ? "hooked" : "NOT hooked");
     else
         log("[d3d-debug] D3D12CreateDevice %s", hooked ? "hooked" : "NOT hooked, so no message queue is attached");
@@ -246,15 +250,9 @@ static std::string debug_section()
 
 static std::string dred_section(bool registers_show_removal);
 
-std::string section(bool registers_show_removal)
-{
-    return dred_section(registers_show_removal) + debug_section();
-}
+std::string section(bool registers_show_removal) { return dred_section(registers_show_removal) + debug_section(); }
 
-std::vector<BuildStop> build_stops()
-{
-    return stops.all();
-}
+std::vector<BuildStop> build_stops() { return stops.all(); }
 
 static std::string dred_section(bool registers_show_removal)
 {

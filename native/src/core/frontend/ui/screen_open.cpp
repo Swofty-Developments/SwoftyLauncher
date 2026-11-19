@@ -88,11 +88,12 @@ uint64_t ScreenLoader::opened(void *scene, void *screen, void *a3, void *a4)
     QueryPerformanceCounter(&t2);
     double total = perf_ms(t0, t2);
     if (perf || total >= 50.0) {
-        const char *name = readable(screen, 0x70) && readable(*reinterpret_cast<void **>(static_cast<uint8_t *>(screen) + 0x68), 10)
-                               ? chars(*reinterpret_cast<void **>(static_cast<uint8_t *>(screen) + 0x68))
-                               : "?";
-        swofty::log("[perf] screen open '%.64s': %.2f ms (addon screen registration %.2f ms, engine open %.2f ms)", name,
-                    total, perf_ms(t0, t1), perf_ms(t1, t2));
+        const char *name =
+            readable(screen, 0x70) && readable(*reinterpret_cast<void **>(static_cast<uint8_t *>(screen) + 0x68), 10)
+                ? chars(*reinterpret_cast<void **>(static_cast<uint8_t *>(screen) + 0x68))
+                : "?";
+        swofty::log("[perf] screen open '%.64s': %.2f ms (addon screen registration %.2f ms, engine open %.2f ms)", name, total,
+                    perf_ms(t0, t1), perf_ms(t1, t2));
         if (perf && !perf_probed) {
             perf_probed = true;
             perf_probe("the screen object", screen);
@@ -152,9 +153,8 @@ NeStrHdr **ScreenLoader::cancel_missing(NeStrHdr **err, const char *step)
     ReleaseSRWLockExclusive(&lock);
     if (recover && h_open && last_screen && last_scene) {
         bool ok = false;
-        const char *cur = readable(last_screen, 0x70) ? chars(*reinterpret_cast<void **>(
-                                                            static_cast<uint8_t *>(last_screen) + 0x68))
-                                                      : "?";
+        const char *cur =
+            readable(last_screen, 0x70) ? chars(*reinterpret_cast<void **>(static_cast<uint8_t *>(last_screen) + 0x68)) : "?";
         void *scr = screen_lookup(djb2(cur), &ok);
         if (scr == last_screen && is_open(last_scene, last_screen))
             swofty::log("[ui] last screen '%s' is still open; staying on it", cur);

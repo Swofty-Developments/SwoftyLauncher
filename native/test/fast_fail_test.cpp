@@ -71,7 +71,8 @@ static void prologue_cache()
     expect(reread.parse(cache.serialize(), 0x1234) && reread.find(crash::prologue::CACHE_SECTION, pattern, kept) && kept == 0x400,
            "the address survives the scan cache file");
     auto again = find_cached(exe, reread, pattern);
-    expect(again.at == exe.base() + 0x400 && again.cached && exe.scans == 1, "the next boot takes the cached address without a scan");
+    expect(again.at == exe.base() + 0x400 && again.cached && exe.scans == 1,
+           "the next boot takes the cached address without a scan");
 
     exe.bytes.assign(exe.bytes.size(), 0xCC);
     exe.put(0x900, pattern);
@@ -98,7 +99,8 @@ static void prologue_cache()
     exe.bytes.assign(exe.bytes.size(), 0xCC);
     exe.put(0x10, pattern);
     auto outside = find_cached(exe, edge, pattern);
-    expect(outside.at == exe.base() + 0x10 && !outside.cached, "a cached address outside the exe is not read and falls back to the scan");
+    expect(outside.at == exe.base() + 0x10 && !outside.cached,
+           "a cached address outside the exe is not read and falls back to the scan");
 }
 
 int main()

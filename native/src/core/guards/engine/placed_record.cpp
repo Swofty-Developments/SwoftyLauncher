@@ -34,8 +34,12 @@ namespace {
 namespace guards = swofty_core::guards;
 
 const runtime::Sig S_RECORD{"Render_Gfx2Heap_BumpAllocPlacedResource record index",
-                            "F0 44 0F C1 8F 88 00 00 00 4D 63 C9 4F 8D 0C 89 4E 8D 14 CF 4A 89 94 CF 90 00 00 00", 0x39b9c79,
-                            runtime::Sig::addr, 0, 9, 0};
+                            "F0 44 0F C1 8F 88 00 00 00 4D 63 C9 4F 8D 0C 89 4E 8D 14 CF 4A 89 94 CF 90 00 00 00",
+                            0x39b9c79,
+                            runtime::Sig::addr,
+                            0,
+                            9,
+                            0};
 
 constexpr uintptr_t EPILOGUE = 0x2b;
 constexpr uint64_t SUMMARY_MS = 15000;
@@ -69,7 +73,8 @@ void on_record(safetyhook::Context &c)
         uint64_t flags = 0, bytes = 0;
         if (runtime::readable(buf, 0x38)) {
             flags = *reinterpret_cast<const uint64_t *>(buf + 0x20);
-            bytes = (*reinterpret_cast<const uint64_t *>(buf + 0x28)) * (*reinterpret_cast<const uint64_t *>(buf + 0x30)) & 0xffffffffull;
+            bytes = (*reinterpret_cast<const uint64_t *>(buf + 0x28)) * (*reinterpret_cast<const uint64_t *>(buf + 0x30)) &
+                    0xffffffffull;
         }
         swofty::log("[gfx] placed records: heap %u reached %d of %d this frame (buffer '%s', flags 0x%llx, %llu bytes)", id,
                     seen.reached, pl::CAPACITY, label, (unsigned long long)flags, (unsigned long long)bytes);
@@ -126,17 +131,14 @@ constinit RecordGuard guard;
 
 namespace runtime {
 
-void placed_record_setup()
-{
-    guard.arm();
-}
+void placed_record_setup() { guard.arm(); }
 
 void placed_record_crash_text(char *out, size_t cap)
 {
     auto &s = placed::stats();
     snprintf(out, cap, "placed records high-water (of %d): heap0 %d, heap1 %d, heap2 %d; overflows %llu, parked %llu, guard %s",
-             placed::CAPACITY, s.high[0].load(), s.high[1].load(), s.high[2].load(),
-             (unsigned long long)s.overflows.load(), (unsigned long long)s.parked.load(), s.guard ? "on" : "off");
+             placed::CAPACITY, s.high[0].load(), s.high[1].load(), s.high[2].load(), (unsigned long long)s.overflows.load(),
+             (unsigned long long)s.parked.load(), s.guard ? "on" : "off");
 }
 
 }

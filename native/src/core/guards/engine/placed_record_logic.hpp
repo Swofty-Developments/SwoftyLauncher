@@ -35,10 +35,7 @@ struct Seen {
     bool first_overflow = false;
 };
 
-inline int slot(uint32_t heap_id)
-{
-    return heap_id < HEAPS ? int(heap_id) : HEAPS;
-}
+inline int slot(uint32_t heap_id) { return heap_id < HEAPS ? int(heap_id) : HEAPS; }
 
 inline Seen observe(Stats &s, uint32_t heap_id, int32_t index)
 {
@@ -56,10 +53,7 @@ inline Seen observe(Stats &s, uint32_t heap_id, int32_t index)
     return r;
 }
 
-inline bool skip_record(const Stats &s, int32_t index)
-{
-    return s.guard.load(std::memory_order_relaxed) && index >= CAPACITY;
-}
+inline bool skip_record(const Stats &s, int32_t index) { return s.guard.load(std::memory_order_relaxed) && index >= CAPACITY; }
 
 template <class T> class Parked {
 public:

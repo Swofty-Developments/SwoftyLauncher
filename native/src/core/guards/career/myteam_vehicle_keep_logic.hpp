@@ -27,10 +27,7 @@ constexpr size_t SAVED_BYTES = 0xcf6;
 constexpr size_t MAX_SHADOWS = 64;
 constexpr size_t LOG_IDS = 32;
 
-inline uint32_t handle(uint32_t stat_id)
-{
-    return (stat_id & 0x3fff) << 16 | mh::KIND_CUSTOM;
-}
+inline uint32_t handle(uint32_t stat_id) { return (stat_id & 0x3fff) << 16 | mh::KIND_CUSTOM; }
 
 inline uint32_t base_of(const uint8_t *record)
 {
@@ -98,7 +95,8 @@ struct Shadow {
 inline void patch(uint8_t *record, const Stock &stock)
 {
     std::memset(record + VEHICLE_FILE_NAME, 0, mh::LABEL_CHARS);
-    std::memcpy(record + VEHICLE_FILE_NAME, stock.label.data(), stock.label.size() < mh::LABEL_CHARS ? stock.label.size() : mh::LABEL_CHARS - 1);
+    std::memcpy(record + VEHICLE_FILE_NAME, stock.label.data(),
+                stock.label.size() < mh::LABEL_CHARS ? stock.label.size() : mh::LABEL_CHARS - 1);
     record[VEHICLE_ENGINE] = stock.engine;
     std::memcpy(record + VEHICLE_BASE, &stock.handle, sizeof stock.handle);
 }
@@ -131,10 +129,7 @@ inline bool matches(const Shadow &s, uint64_t live, const uint8_t *record)
 struct Shadows {
     std::vector<Shadow> list;
 
-    Shadows()
-    {
-        list.reserve(MAX_SHADOWS);
-    }
+    Shadows() { list.reserve(MAX_SHADOWS); }
 
     bool room(uint64_t live) const
     {
@@ -169,7 +164,8 @@ struct Shadows {
 inline bool parse_stock(const char *text, Stock &out)
 {
     std::string t = text ? text : "";
-    size_t a = t.find(':'), b = a == std::string::npos ? a : t.find(':', a + 1), c = b == std::string::npos ? b : t.find(':', b + 1);
+    size_t a = t.find(':'), b = a == std::string::npos ? a : t.find(':', a + 1),
+           c = b == std::string::npos ? b : t.find(':', b + 1);
     if (c == std::string::npos || a == 0)
         return false;
     char *end = nullptr;
@@ -190,9 +186,6 @@ inline bool parse_stock(const char *text, Stock &out)
     return true;
 }
 
-inline bool forced(const char *test_label, const std::string &label)
-{
-    return test_label && *test_label && label == test_label;
-}
+inline bool forced(const char *test_label, const std::string &label) { return test_label && *test_label && label == test_label; }
 
 }

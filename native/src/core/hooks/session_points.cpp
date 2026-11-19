@@ -38,10 +38,7 @@ void frame(double, void *)
     Points::drain();
 }
 
-int ops_available()
-{
-    return runtime::enabled("events", nullptr) ? 1 : 0;
-}
+int ops_available() { return runtime::enabled("events", nullptr) ? 1 : 0; }
 
 const SwoftySessionOps g_ops = {
     SWOFTY_SESSION_OPS_VERSION,
@@ -109,31 +106,16 @@ void setup()
 
 }
 
-void declare_session_points(Table &t)
-{
-    Points::declare(t, make_vops(), make_env());
-}
+void declare_session_points(Table &t) { Points::declare(t, make_vops(), make_env()); }
 
-int session_control_mode(uint32_t car, uint32_t *mode)
-{
-    return Points::op_control(car, mode, nullptr);
-}
+int session_control_mode(uint32_t car, uint32_t *mode) { return Points::op_control(car, mode, nullptr); }
 
-void arm_session_points()
-{
-    Points::arm();
-}
+void arm_session_points() { Points::arm(); }
 
 }
 
-extern "C" __declspec(dllexport) const SwoftySessionOps *SwoftyCoreSessionOps(void)
-{
-    return &swofty_core::hooks::g_ops;
-}
+extern "C" __declspec(dllexport) const SwoftySessionOps *SwoftyCoreSessionOps(void) { return &swofty_core::hooks::g_ops; }
 
 SWOFTY_CORE_RANK(session_points)
 
-SWOFTY_ON_LOAD
-{
-    runtime::when_code_ready("session operations: flow thread", swofty_core::hooks::setup);
-}
+SWOFTY_ON_LOAD { runtime::when_code_ready("session operations: flow thread", swofty_core::hooks::setup); }

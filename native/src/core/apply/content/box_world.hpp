@@ -175,15 +175,9 @@ inline const World *source_for(std::size_t teams)
     return nullptr;
 }
 
-inline std::string season_label(const std::string &list)
-{
-    return "swofty_box_" + list;
-}
+inline std::string season_label(const std::string &list) { return "swofty_box_" + list; }
 
-inline std::string layer_label(const std::string &list)
-{
-    return "swofty_box_" + list + "_world";
-}
+inline std::string layer_label(const std::string &list) { return "swofty_box_" + list + "_world"; }
 
 struct Choice {
     bool apply = false;

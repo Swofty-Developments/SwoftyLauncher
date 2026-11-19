@@ -17,22 +17,38 @@ constinit SymbolTable symbol_table{};
 const char *code_name(DWORD c)
 {
     switch (c) {
-    case EXCEPTION_ACCESS_VIOLATION: return "ACCESS_VIOLATION";
-    case EXCEPTION_IN_PAGE_ERROR: return "IN_PAGE_ERROR";
-    case EXCEPTION_ILLEGAL_INSTRUCTION: return "ILLEGAL_INSTRUCTION";
-    case EXCEPTION_PRIV_INSTRUCTION: return "PRIV_INSTRUCTION";
-    case EXCEPTION_INT_DIVIDE_BY_ZERO: return "INT_DIVIDE_BY_ZERO";
-    case EXCEPTION_INT_OVERFLOW: return "INT_OVERFLOW";
-    case EXCEPTION_STACK_OVERFLOW: return "STACK_OVERFLOW";
-    case EXCEPTION_ARRAY_BOUNDS_EXCEEDED: return "ARRAY_BOUNDS_EXCEEDED";
-    case EXCEPTION_NONCONTINUABLE_EXCEPTION: return "NONCONTINUABLE_EXCEPTION";
-    case EXCEPTION_DATATYPE_MISALIGNMENT: return "DATATYPE_MISALIGNMENT";
-    case 0xC0000374: return "HEAP_CORRUPTION";
-    case 0xC0000409: return "STACK_BUFFER_OVERRUN";
-    case EXCEPTION_BREAKPOINT: return "BREAKPOINT";
-    case 0xE06D7363: return "C++ exception";
-    case CODE_EXIT: return "swofty exit report";
-    case CODE_GAME_FATAL: return "swofty game fatal error";
+    case EXCEPTION_ACCESS_VIOLATION:
+        return "ACCESS_VIOLATION";
+    case EXCEPTION_IN_PAGE_ERROR:
+        return "IN_PAGE_ERROR";
+    case EXCEPTION_ILLEGAL_INSTRUCTION:
+        return "ILLEGAL_INSTRUCTION";
+    case EXCEPTION_PRIV_INSTRUCTION:
+        return "PRIV_INSTRUCTION";
+    case EXCEPTION_INT_DIVIDE_BY_ZERO:
+        return "INT_DIVIDE_BY_ZERO";
+    case EXCEPTION_INT_OVERFLOW:
+        return "INT_OVERFLOW";
+    case EXCEPTION_STACK_OVERFLOW:
+        return "STACK_OVERFLOW";
+    case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
+        return "ARRAY_BOUNDS_EXCEEDED";
+    case EXCEPTION_NONCONTINUABLE_EXCEPTION:
+        return "NONCONTINUABLE_EXCEPTION";
+    case EXCEPTION_DATATYPE_MISALIGNMENT:
+        return "DATATYPE_MISALIGNMENT";
+    case 0xC0000374:
+        return "HEAP_CORRUPTION";
+    case 0xC0000409:
+        return "STACK_BUFFER_OVERRUN";
+    case EXCEPTION_BREAKPOINT:
+        return "BREAKPOINT";
+    case 0xE06D7363:
+        return "C++ exception";
+    case CODE_EXIT:
+        return "swofty exit report";
+    case CODE_GAME_FATAL:
+        return "swofty game fatal error";
     }
     return "exception";
 }
@@ -41,9 +57,8 @@ bool fatal(DWORD c)
 {
     return c == EXCEPTION_ACCESS_VIOLATION || c == EXCEPTION_IN_PAGE_ERROR || c == EXCEPTION_ILLEGAL_INSTRUCTION ||
            c == EXCEPTION_PRIV_INSTRUCTION || c == EXCEPTION_INT_DIVIDE_BY_ZERO || c == EXCEPTION_INT_OVERFLOW ||
-           c == EXCEPTION_STACK_OVERFLOW || c == EXCEPTION_ARRAY_BOUNDS_EXCEEDED ||
-           c == EXCEPTION_NONCONTINUABLE_EXCEPTION || c == EXCEPTION_DATATYPE_MISALIGNMENT || c == 0xC0000374 ||
-           c == 0xC0000409;
+           c == EXCEPTION_STACK_OVERFLOW || c == EXCEPTION_ARRAY_BOUNDS_EXCEEDED || c == EXCEPTION_NONCONTINUABLE_EXCEPTION ||
+           c == EXCEPTION_DATATYPE_MISALIGNMENT || c == 0xC0000374 || c == 0xC0000409;
 }
 
 std::string module_name(HMODULE m)
@@ -130,7 +145,8 @@ std::string where(uintptr_t a)
 {
     HMODULE m = nullptr;
     if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                            reinterpret_cast<LPCWSTR>(a), &m) || !m) {
+                            reinterpret_cast<LPCWSTR>(a), &m) ||
+        !m) {
         std::string owner = core_code_owner(a);
         return fmt("0x%llx", (unsigned long long)a) + (owner.empty() ? " (no module)" : " (" + owner + ")");
     }
@@ -187,7 +203,8 @@ void ModuleMap::snapshot()
 
 const Mod *ModuleMap::at(uintptr_t a) const
 {
-    const Mod *m = std::upper_bound(modules.mods, modules.mods + modules.nmods, a, [](uintptr_t x, const Mod &y) { return x < y.base; });
+    const Mod *m =
+        std::upper_bound(modules.mods, modules.mods + modules.nmods, a, [](uintptr_t x, const Mod &y) { return x < y.base; });
     if (m == modules.mods)
         return nullptr;
     --m;
@@ -256,10 +273,11 @@ void SymbolTable::load(const std::wstring &path, DWORD stamp)
         }
     }
     fclose(f);
-    std::sort(symbol_table.symbols.begin(), symbol_table.symbols.end(), [](const Symbol &a, const Symbol &b) { return a.rva < b.rva; });
+    std::sort(symbol_table.symbols.begin(), symbol_table.symbols.end(),
+              [](const Symbol &a, const Symbol &b) { return a.rva < b.rva; });
     cl(match ? "[crash] symbols.tsv: %zu KB function name(s) for this exe"
-                   : "[crash] symbols.tsv is for another build (%zu names loaded); exe frames show rva only",
-             symbol_table.symbols.size());
+             : "[crash] symbols.tsv is for another build (%zu names loaded); exe frames show rva only",
+       symbol_table.symbols.size());
 }
 
 }

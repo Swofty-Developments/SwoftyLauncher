@@ -84,12 +84,13 @@ inline std::string summary_line(const std::vector<Car> &cars, uint32_t session, 
     }
     char buf[640];
     if (bad)
-        std::snprintf(buf, sizeof buf, "[tyres] fitted tyre check (%s), session %u: %u of %u car(s) have unplaced tyres (cars %s)",
-                      when, session, bad, checked, list.c_str());
+        std::snprintf(buf, sizeof buf,
+                      "[tyres] fitted tyre check (%s), session %u: %u of %u car(s) have unplaced tyres (cars %s)", when, session,
+                      bad, checked, list.c_str());
     else
         std::snprintf(buf, sizeof buf,
-                      "[tyres] fitted tyre check (%s), session %u: all %u car(s) have their fitted tyres placed%s", when,
-                      session, checked, partial ? " (some cars have a spare model not placed)" : "");
+                      "[tyres] fitted tyre check (%s), session %u: all %u car(s) have their fitted tyres placed%s", when, session,
+                      checked, partial ? " (some cars have a spare model not placed)" : "");
     return buf;
 }
 

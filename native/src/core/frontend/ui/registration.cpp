@@ -89,9 +89,9 @@ void ScreenLoader::parsed(void *ctx, int)
                     "its screen); in screen table: %s",
                     s->name.c_str(), s->flow.c_str(), ok ? "no" : "table unreadable");
     else
-        swofty::log("[ui] screen %s (%s): build job finished, in screen table: %s, screen result %s0x%x",
-                    s->name.c_str(), s->flow.c_str(), ok ? "no" : "table unreadable",
-                    s->result_seen ? "" : "not reached, last node code ", s->result);
+        swofty::log("[ui] screen %s (%s): build job finished, in screen table: %s, screen result %s0x%x", s->name.c_str(),
+                    s->flow.c_str(), ok ? "no" : "table unreadable", s->result_seen ? "" : "not reached, last node code ",
+                    s->result);
 }
 
 void ScreenLoader::register_pending(const char *why)
@@ -117,21 +117,21 @@ void ScreenLoader::register_pending(const char *why)
         if (screen_lookup(s.hash, &ok)) {
             s.state = State::in_table;
             s.engine = !s.attempts;
-            swofty::log("[ui] screen %s (%s) is already in the screen table%s; nothing to do", s.name.c_str(),
-                        s.flow.c_str(), s.engine ? " (registered by the engine)" : "");
+            swofty::log("[ui] screen %s (%s) is already in the screen table%s; nothing to do", s.name.c_str(), s.flow.c_str(),
+                        s.engine ? " (registered by the engine)" : "");
             continue;
         }
         s.state = State::idle;
         if (s.data.empty()) {
-            swofty::log("[ui] screen %s (%s): no data (%s missing or empty); not registered", s.name.c_str(),
-                        s.flow.c_str(), s.file.c_str());
+            swofty::log("[ui] screen %s (%s): no data (%s missing or empty); not registered", s.name.c_str(), s.flow.c_str(),
+                        s.file.c_str());
             continue;
         }
         void *pkg = nullptr;
         int rc = reinterpret_cast<PkgOpen_t *>(a_pkgopen)(s.data.data(), &pkg);
         if (rc || !pkg) {
-            swofty::log("[ui] screen %s (%s): %s is not a valid !pkg (code %d); not registered", s.name.c_str(),
-                        s.flow.c_str(), s.file.c_str(), rc);
+            swofty::log("[ui] screen %s (%s): %s is not a valid !pkg (code %d); not registered", s.name.c_str(), s.flow.c_str(),
+                        s.file.c_str(), rc);
             continue;
         }
         Callback cb{on_parsed, &s};
@@ -141,8 +141,7 @@ void ScreenLoader::register_pending(const char *why)
         if (rc && rc != 0x23) {
             s.state = State::dropped;
             s.failed_resid = s.resid;
-            swofty::log("[ui] screen %s (%s): engine screen loader refused it (code %d)", s.name.c_str(), s.flow.c_str(),
-                        rc);
+            swofty::log("[ui] screen %s (%s): engine screen loader refused it (code %d)", s.name.c_str(), s.flow.c_str(), rc);
             continue;
         }
         s.started = s.result_seen = false;
@@ -220,8 +219,8 @@ void ScreenLoader::loaded(void *self, int64_t *resid, void *a3, uint8_t *frags, 
                 }
                 s.resid = rid;
                 s.state = State::armed;
-                swofty::log("[ui] screen %s: flow reloaded (resource %p); retrying after %u failed attempt(s)",
-                            s.name.c_str(), rid, s.attempts);
+                swofty::log("[ui] screen %s: flow reloaded (resource %p); retrying after %u failed attempt(s)", s.name.c_str(),
+                            rid, s.attempts);
                 break;
             }
         }

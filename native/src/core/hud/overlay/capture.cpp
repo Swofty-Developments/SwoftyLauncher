@@ -39,8 +39,7 @@ void FrameCapture::setup()
         CreateDirectoryW(this->dir.substr(0, i).c_str(), nullptr);
     CreateDirectoryW(this->dir.c_str(), nullptr);
     on = true;
-    swofty::log("[capture] frame capture on: the composed frame every %.1f s to %s", double(every_ms) / 1000,
-                dir.c_str());
+    swofty::log("[capture] frame capture on: the composed frame every %.1f s to %s", double(every_ms) / 1000, dir.c_str());
 }
 
 DWORD FrameCapture::write()
@@ -53,8 +52,7 @@ DWORD FrameCapture::write()
         why = "mapping the readback buffer failed";
     } else {
         std::vector<uint8_t> rgb;
-        bool ok = hud::png::to_rgb(hud::png::fmt_of(int(fmt)), mapped + fp.Offset, fp.Footprint.RowPitch,
-                                   width, height, rgb);
+        bool ok = hud::png::to_rgb(hud::png::fmt_of(int(fmt)), mapped + fp.Offset, fp.Footprint.RowPitch, width, height, rgb);
         D3D12_RANGE none{0, 0};
         buf->Unmap(0, &none);
         if (!ok) {
@@ -84,8 +82,7 @@ DWORD FrameCapture::write()
     return 0;
 }
 
-void FrameCapture::step(Renderer &r, IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const DXGI_SWAP_CHAIN_DESC &desc,
-                        ULONGLONG now)
+void FrameCapture::step(Renderer &r, IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const DXGI_SWAP_CHAIN_DESC &desc, ULONGLONG now)
 {
     if (failed || busy.load())
         return;
@@ -115,15 +112,13 @@ void FrameCapture::step(Renderer &r, IDXGISwapChain3 *sc, ID3D12CommandQueue *q,
     }
     if (hud::png::fmt_of(int(desc.BufferDesc.Format)) == hud::png::Fmt::unknown) {
         failed = true;
-        swofty::log("[capture] back buffer format %d is not one the capture converts; capture off",
-                    int(desc.BufferDesc.Format));
+        swofty::log("[capture] back buffer format %d is not one the capture converts; capture off", int(desc.BufferDesc.Format));
         return;
     }
     ID3D12Device *dev = r.dev;
     if (!alloc && (FAILED(dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&alloc))) ||
-                       FAILED(dev->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, alloc, nullptr,
-                                                     IID_PPV_ARGS(&list))) ||
-                       FAILED(list->Close()))) {
+                   FAILED(dev->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, alloc, nullptr, IID_PPV_ARGS(&list))) ||
+                   FAILED(list->Close()))) {
         failed = true;
         swofty::log("[capture] making the capture command list failed; capture off");
         return;

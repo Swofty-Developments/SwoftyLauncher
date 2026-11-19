@@ -35,8 +35,7 @@ constexpr size_t MAX_ENTRANTS = runtime::myteam_heal::MAX_ENTRANTS;
 
 using RegistryGet = void *(void *registry, const void *desc, uint32_t search_parents);
 
-template <class M = g::GameManager, class C = g::GameModeContext, class H = g::ChampionshipHolder,
-          class E = g::CareerEntity>
+template <class M = g::GameManager, class C = g::GameModeContext, class H = g::ChampionshipHolder, class E = g::CareerEntity>
 uintptr_t championship_entity(runtime::myteam_heal::Load *trace = nullptr)
 {
     if constexpr (layout::career_chain<M, C, H, E>) {
@@ -95,13 +94,12 @@ uintptr_t component_of(uintptr_t e, const char *type)
     return id.empty() ? 0 : registry_get(e, binding(id));
 }
 
-template <class E = g::CareerEntity, class R = g::EntrantRecord>
-void entrants(uintptr_t e, career::state::Components &out)
+template <class E = g::CareerEntity, class R = g::EntrantRecord> void entrants(uintptr_t e, career::state::Components &out)
 {
     if constexpr (layout::CAREER && layout::ENTRANT) {
         uintptr_t b = 0, en = 0;
-        if (!mem::read(e + offsetof(E, entrants_begin), b) || !mem::read(e + offsetof(E, entrants_end), en) || !b ||
-            en < b || (en - b) % sizeof(R) || (en - b) / sizeof(R) > MAX_ENTRANTS || (en != b && !mem::readable(b, en - b)))
+        if (!mem::read(e + offsetof(E, entrants_begin), b) || !mem::read(e + offsetof(E, entrants_end), en) || !b || en < b ||
+            (en - b) % sizeof(R) || (en - b) / sizeof(R) > MAX_ENTRANTS || (en != b && !mem::readable(b, en - b)))
             return;
         uint32_t humans = 0;
         for (uintptr_t p = b; p < en; p += sizeof(R)) {
@@ -149,25 +147,13 @@ template <class E = g::CareerEntity, class R = g::EntrantRecord> void heal_my_te
 
 }
 
-uintptr_t entity()
-{
-    return championship_entity();
-}
+uintptr_t entity() { return championship_entity(); }
 
-uintptr_t component(uintptr_t e, const char *type)
-{
-    return component_of(e, type);
-}
+uintptr_t component(uintptr_t e, const char *type) { return component_of(e, type); }
 
-uintptr_t component_by_desc(uintptr_t e, uintptr_t desc)
-{
-    return registry_get(e, desc);
-}
+uintptr_t component_by_desc(uintptr_t e, uintptr_t desc) { return registry_get(e, desc); }
 
-void heal_my_team()
-{
-    heal_my_team_cars();
-}
+void heal_my_team() { heal_my_team_cars(); }
 
 career::state::Components poll()
 {

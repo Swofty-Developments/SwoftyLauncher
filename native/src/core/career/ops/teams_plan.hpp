@@ -43,14 +43,8 @@ struct Table {
     std::vector<int> first_year;
     std::vector<std::string> refusals;
 
-    bool ok() const
-    {
-        return refusals.empty() && !rows.empty();
-    }
-    int count() const
-    {
-        return static_cast<int>(rows.size());
-    }
+    bool ok() const { return refusals.empty() && !rows.empty(); }
+    int count() const { return static_cast<int>(rows.size()); }
 };
 
 enum class Kind { open, dressed, closed };
@@ -71,10 +65,7 @@ struct Plan {
     {
         return static_cast<size_t>(std::count_if(actions.begin(), actions.end(), [&](const Action &a) { return a.kind == k; }));
     }
-    bool ok() const
-    {
-        return refusals.empty();
-    }
+    bool ok() const { return refusals.empty(); }
 };
 
 using DressFn = bool (*)(const char *data_group, int slot, const char *row, const char *team, int64_t row_stat);
@@ -85,15 +76,9 @@ inline DressFn &dresser()
     return fn;
 }
 
-inline std::string bare(const std::string &id)
-{
-    return id.rfind("game/", 0) == 0 ? id.substr(5) : id;
-}
+inline std::string bare(const std::string &id) { return id.rfind("game/", 0) == 0 ? id.substr(5) : id; }
 
-inline std::string identity_id(const std::string &team)
-{
-    return team.find('/') == std::string::npos ? "game/" + team : team;
-}
+inline std::string identity_id(const std::string &team) { return team.find('/') == std::string::npos ? "game/" + team : team; }
 
 inline void anchor_rows(Table &t, const std::vector<std::string> &physical)
 {
@@ -110,15 +95,9 @@ inline void anchor_rows(Table &t, const std::vector<std::string> &physical)
                                      std::to_string(i + 1));
 }
 
-inline bool filled(const SlotIn &s)
-{
-    return !s.team.empty();
-}
+inline bool filled(const SlotIn &s) { return !s.team.empty(); }
 
-inline std::string years_of(const SeasonIn &s)
-{
-    return std::to_string(s.year);
-}
+inline std::string years_of(const SeasonIn &s) { return std::to_string(s.year); }
 
 inline void check_season(const SeasonIn &s, std::vector<std::string> &out)
 {

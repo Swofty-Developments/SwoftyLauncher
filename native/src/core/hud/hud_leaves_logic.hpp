@@ -23,9 +23,8 @@ enum Result : int { OK = 0, INVALID = 1 };
 
 inline bool path_ok(const std::string &path)
 {
-    bool listed = std::any_of(std::begin(PREFIXES), std::end(PREFIXES), [&](const char *p) {
-        return path.rfind(p, 0) == 0 && path.size() > strlen(p);
-    });
+    bool listed = std::any_of(std::begin(PREFIXES), std::end(PREFIXES),
+                              [&](const char *p) { return path.rfind(p, 0) == 0 && path.size() > strlen(p); });
     return listed && path.find_first_of(" []") == std::string::npos && path.back() != '.';
 }
 

@@ -66,12 +66,16 @@ void report(const char *when, EXCEPTION_POINTERS *e)
     auto c = e->ContextRecord;
     LONG n = InterlockedIncrement(&capture.reports);
     cl("[crash] #%ld %s %s (0x%08lx) on thread %lu, %lu s after load, at %s", n, when, code_name(r->ExceptionCode),
-             r->ExceptionCode, GetCurrentThreadId(), (GetTickCount() - process.start_tick) / 1000, where(c->Rip).c_str());
+       r->ExceptionCode, GetCurrentThreadId(), (GetTickCount() - process.start_tick) / 1000, where(c->Rip).c_str());
     if ((r->ExceptionCode == EXCEPTION_ACCESS_VIOLATION || r->ExceptionCode == EXCEPTION_IN_PAGE_ERROR) &&
         r->NumberParameters >= 2) {
         auto op = r->ExceptionInformation[0];
-        cl("[crash]   %s 0x%llx", op == 0 ? "reading" : op == 1 ? "writing" : op == 8 ? "executing (DEP)" : "accessing",
-                 (unsigned long long)r->ExceptionInformation[1]);
+        cl("[crash]   %s 0x%llx",
+           op == 0   ? "reading"
+           : op == 1 ? "writing"
+           : op == 8 ? "executing (DEP)"
+                     : "accessing",
+           (unsigned long long)r->ExceptionInformation[1]);
     }
     if (r->ExceptionCode == EXCEPTION_STACK_OVERFLOW)
         return;
@@ -81,22 +85,16 @@ void report(const char *when, EXCEPTION_POINTERS *e)
     cl("[crash]   r12=%016llx r13=%016llx r14=%016llx r15=%016llx", c->R12, c->R13, c->R14, c->R15);
     if (readable(c->Rip, 16)) {
         auto b = reinterpret_cast<const uint8_t *>(c->Rip);
-        cl("[crash]   code: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X", b[0],
-                 b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15]);
+        cl("[crash]   code: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X", b[0], b[1], b[2],
+           b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15]);
     }
     cl("[crash]   stack:");
     backtrace(*c, false);
 }
 
-bool enter()
-{
-    return InterlockedCompareExchange(&capture.busy, (LONG)GetCurrentThreadId(), 0) == 0;
-}
+bool enter() { return InterlockedCompareExchange(&capture.busy, (LONG)GetCurrentThreadId(), 0) == 0; }
 
-void leave()
-{
-    InterlockedExchange(&capture.busy, 0);
-}
+void leave() { InterlockedExchange(&capture.busy, 0); }
 
 void stack_bounds(uintptr_t &lo, uintptr_t &hi)
 {
@@ -112,14 +110,13 @@ bool holds_loader_lock()
     if (!readable(peb + 0x110, 8))
         return false;
     uintptr_t cs = *reinterpret_cast<uintptr_t *>(peb + 0x110);
-    return cs && readable(cs + 0x10, 8) &&
-           *reinterpret_cast<uintptr_t *>(cs + 0x10) == uintptr_t(GetCurrentThreadId());
+    return cs && readable(cs + 0x10, 8) && *reinterpret_cast<uintptr_t *>(cs + 0x10) == uintptr_t(GetCurrentThreadId());
 }
 
 bool deliberate_abort(const EXCEPTION_RECORD *r, const CONTEXT *c)
 {
-    return r->ExceptionCode == EXCEPTION_ACCESS_VIOLATION && r->NumberParameters >= 2 &&
-           r->ExceptionInformation[0] == 1 && r->ExceptionInformation[1] == 1 && readable(c->Rip, sizeof FATAL_ABORT) &&
+    return r->ExceptionCode == EXCEPTION_ACCESS_VIOLATION && r->NumberParameters >= 2 && r->ExceptionInformation[0] == 1 &&
+           r->ExceptionInformation[1] == 1 && readable(c->Rip, sizeof FATAL_ABORT) &&
            !memcmp(reinterpret_cast<const void *>(c->Rip), FATAL_ABORT, sizeof FATAL_ABORT);
 }
 
@@ -207,8 +204,7 @@ LONG CALLBACK veh(EXCEPTION_POINTERS *e)
         if (capture.reports < MAX_REPORTS)
             report("first-chance (the game may still handle it)", e);
         else
-            cl("[crash] first-chance %s (0x%08lx) at %s; report cap reached, no details", code_name(code), code,
-                     at.c_str());
+            cl("[crash] first-chance %s (0x%08lx) at %s; report cap reached, no details", code_name(code), code, at.c_str());
         blackbox::note("exception", fmt("first-chance %s at ", code_name(code)).c_str(), at.c_str());
     }
     leave();
@@ -230,8 +226,7 @@ LONG WINAPI unhandled(EXCEPTION_POINTERS *e)
     DWORD code = e->ExceptionRecord->ExceptionCode;
     if (enter()) {
         cl("[crash] unhandled %s (0x%08lx) at %s reached the top-level filter; %s", code_name(code), code,
-                 where(e->ContextRecord->Rip).c_str(),
-                 capture.previous ? "passing it to the game's filter" : "the process ends here");
+           where(e->ContextRecord->Rip).c_str(), capture.previous ? "passing it to the game's filter" : "the process ends here");
         if (!fatal(code) || first_time(e->ContextRecord->Rip))
             report("unhandled", e);
         leave();
@@ -250,10 +245,7 @@ LONG WINAPI unhandled(EXCEPTION_POINTERS *e)
     return capture.previous ? capture.previous(e) : EXCEPTION_CONTINUE_SEARCH;
 }
 
-void window_stage(int)
-{
-    InterlockedExchange(&process.window_reached, 1);
-}
+void window_stage(int) { InterlockedExchange(&process.window_reached, 1); }
 
 void on_exit(const char *fn, UINT code)
 {
@@ -263,8 +255,7 @@ void on_exit(const char *fn, UINT code)
         return;
     bool early = !process.window_reached, stack = code || early;
     cl("[crash] %s(%u) on thread %lu, %lu s after load%s%s", fn, code, GetCurrentThreadId(),
-             (GetTickCount() - process.start_tick) / 1000, early ? ", before the game's window" : "",
-             stack ? "; caller stack:" : "");
+       (GetTickCount() - process.start_tick) / 1000, early ? ", before the game's window" : "", stack ? "; caller stack:" : "");
     blackbox::note("exit", fmt("%s(%u)", fn, code).c_str());
     alignas(16) CONTEXT ctx;
     RtlCaptureContext(&ctx);

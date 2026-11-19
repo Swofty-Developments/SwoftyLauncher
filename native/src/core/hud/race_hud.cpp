@@ -93,18 +93,23 @@ int leaves_end()
     return SWOFTY_ASSET_OK;
 }
 
-uint32_t leaves_generation()
-{
-    return state.leaf_table.generation();
-}
+uint32_t leaves_generation() { return state.leaf_table.generation(); }
 
 int leaves_stats(SwoftyHudStats *out)
 {
     if (!out || out->size < offsetof(SwoftyHudStats, applied_last_tick) + sizeof(uint32_t))
         return SWOFTY_ASSET_INVALID;
     auto s = state.leaf_table.stats();
-    SwoftyHudStats full{sizeof(SwoftyHudStats), s.applied_last_tick, s.queued, state.sets_dropped.load(), s.registered,
-                        s.cap_per_tick, s.failed, s.generation, s.resyncs, uint32_t(state.sets_pending.load())};
+    SwoftyHudStats full{sizeof(SwoftyHudStats),
+                        s.applied_last_tick,
+                        s.queued,
+                        state.sets_dropped.load(),
+                        s.registered,
+                        s.cap_per_tick,
+                        s.failed,
+                        s.generation,
+                        s.resyncs,
+                        uint32_t(state.sets_pending.load())};
     memcpy(out, &full, std::min<size_t>(out->size, sizeof full));
     return SWOFTY_ASSET_OK;
 }
@@ -148,8 +153,8 @@ int RaceHud::set_enqueue(std::string path, int type, std::string text, int32_t n
         return SWOFTY_ASSET_UNAVAILABLE;
     int registered = leaf_table.type_of(path);
     if (registered >= 0 && registered != type) {
-        swofty::log("[hud] set by %s refused: '%.120s' is registered as type %d, not %d", by.c_str(), path.c_str(),
-                    registered, type);
+        swofty::log("[hud] set by %s refused: '%.120s' is registered as type %d, not %d", by.c_str(), path.c_str(), registered,
+                    type);
         return SWOFTY_ASSET_INVALID;
     }
     if (text.size() > frontend::popup::MAX_TOAST_TEXT)
@@ -225,8 +230,7 @@ void RaceHud::set_test_tick()
                 continue;
             int type = item[0] == 'b' ? 1 : item[0] == 'i' ? 2 : 0;
             std::string value = item.substr(eq + 1);
-            set_enqueue(item.substr(2, eq - 2), type, value, type ? int32_t(atoi(value.c_str())) : 0,
-                        "SWOFTY_HUD_SET_TEST");
+            set_enqueue(item.substr(2, eq - 2), type, value, type ? int32_t(atoi(value.c_str())) : 0, "SWOFTY_HUD_SET_TEST");
         }
         return;
     }
@@ -315,7 +319,4 @@ void RaceHud::tick()
 
 }
 
-extern "C" __declspec(dllexport) const SwoftyHud *SwoftyCoreHud(void)
-{
-    return &hud::race_hud::hud_table;
-}
+extern "C" __declspec(dllexport) const SwoftyHud *SwoftyCoreHud(void) { return &hud::race_hud::hud_table; }

@@ -32,8 +32,7 @@ std::string describe_cond(const RuleCond &c, const Signals &sig)
                 name = signal_value_name(c.signal, size_t(w));
                 break;
             }
-        std::snprintf(buf, sizeof buf, " = %.*s, %d wheel%s", int(name.size()), name.data(), c.wheels,
-                      c.wheels == 1 ? "" : "s");
+        std::snprintf(buf, sizeof buf, " = %.*s, %d wheel%s", int(name.size()), name.data(), c.wheels, c.wheels == 1 ? "" : "s");
         return id + buf;
     }
     if (c.op == OP_IS) {
@@ -70,7 +69,6 @@ std::string surface_label(int game_id)
         return "none";
     return std::string(signal_value_name(S_CAR_SURFACE, size_t(v)));
 }
-
 
 }
 
@@ -125,10 +123,7 @@ void RuleDriver::live_trace_tick(ULONGLONG now, const std::wstring &swofty_root)
     }
 }
 
-bool RuleDriver::live_trace_on(ULONGLONG now) const
-{
-    return live_trace_until && now < live_trace_until;
-}
+bool RuleDriver::live_trace_on(ULONGLONG now) const { return live_trace_until && now < live_trace_until; }
 
 void RuleDriver::live_trace_line(ULONGLONG now, const live_car::LiveCar &c)
 {
@@ -146,9 +141,8 @@ void RuleDriver::live_trace_line(ULONGLONG now, const live_car::LiveCar &c)
                 "surface=FL:%s FR:%s RL:%s RR:%s (raw %d %d %d %d) player=%d ai=%d wetness=%.3f wheels_wet=%.3f",
                 c.speed_kmh, c.gear, c.rpm, c.max_rpm, c.throttle, c.brake, c.steer, c.g_lateral, c.g_long,
                 surface_label(r[0]).c_str(), surface_label(r[1]).c_str(), surface_label(r[2]).c_str(),
-                surface_label(r[3]).c_str(), r[0], r[1], r[2],
-                r[3], c.player, c.ai ? 1 : 0, c.has_wetness ? double(c.wetness) : -1.0,
-                c.has_wheel_wetness ? double(c.wheel_wetness) : -1.0);
+                surface_label(r[3]).c_str(), r[0], r[1], r[2], r[3], c.player, c.ai ? 1 : 0,
+                c.has_wetness ? double(c.wetness) : -1.0, c.has_wheel_wetness ? double(c.wheel_wetness) : -1.0);
 }
 
 void RuleDriver::live_frame(ULONGLONG now, const std::wstring &swofty_root)
@@ -237,11 +231,9 @@ void RuleDriver::frame(const frontend::view::State &v, ULONGLONG now, const Acti
             if (!early)
                 l.count++;
             else
-                swofty::log("[shaders] rule \"%s\" on (%s)", rule_name(active, i).c_str(),
-                            describe_rule(active, i, sig).c_str());
+                swofty::log("[shaders] rule \"%s\" on (%s)", rule_name(active, i).c_str(), describe_rule(active, i, sig).c_str());
         } else if (early) {
-            swofty::log("[shaders] rule \"%s\" off after %.1f s", rule_name(active, i).c_str(),
-                        double(now - l.since) / 1000.0);
+            swofty::log("[shaders] rule \"%s\" off after %.1f s", rule_name(active, i).c_str(), double(now - l.since) / 1000.0);
         }
     }
     if (now >= minute_at) {
@@ -292,8 +284,7 @@ void RuleDriver::on_event(const SwoftyEvent *ev, void *user)
 
 void RuleDriver::subscribe(const SwoftyEvents *ev)
 {
-    const char *names[4] = {SWOFTY_EVENT_SESSION_START, SWOFTY_EVENT_RACE_START, SWOFTY_EVENT_LAP,
-                            SWOFTY_EVENT_SESSION_END};
+    const char *names[4] = {SWOFTY_EVENT_SESSION_START, SWOFTY_EVENT_RACE_START, SWOFTY_EVENT_LAP, SWOFTY_EVENT_SESSION_END};
     for (int i = 0; i < 4; i++) {
         uint32_t token = 0;
         if (ev->subscribe(names[i], on_event, &feeds[i], &token) != SWOFTY_ASSET_OK)

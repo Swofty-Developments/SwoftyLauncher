@@ -14,12 +14,12 @@ namespace rt = crash::report_text;
 
 static int g_fail;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            g_fail++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            g_fail++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
 static std::string fmt(const char *f, ...)
@@ -59,15 +59,13 @@ static void addons()
         {"id": "example.helmets", "version": "1.2.0", "enabled": false, "dlls": []},
         {"id": "no.version"}
     ]})";
-    CHECK(rt::addon_text(text, fmt) ==
-          "  profile 'Default', 3 addon(s)\n"
-          "  example.seasons                      0.6.9      on  cs.dll, cs_ui.dll\n"
-          "  example.helmets                      1.2.0      off (no dll)\n"
-          "  no.version                           ?          on  (no dll)\n");
+    CHECK(rt::addon_text(text, fmt) == "  profile 'Default', 3 addon(s)\n"
+                                       "  example.seasons                      0.6.9      on  cs.dll, cs_ui.dll\n"
+                                       "  example.helmets                      1.2.0      off (no dll)\n"
+                                       "  no.version                           ?          on  (no dll)\n");
     std::string mods = R"({"profile": "Old", "mods": [{"id": "a", "version": "1", "enabled": true, "dlls": ["a.dll"]}]})";
-    CHECK(rt::addon_text(mods, fmt) ==
-          "  profile 'Old', 1 addon(s)\n"
-          "  a                                    1          on  a.dll\n");
+    CHECK(rt::addon_text(mods, fmt) == "  profile 'Old', 1 addon(s)\n"
+                                       "  a                                    1          on  a.dll\n");
 }
 
 static void lines()

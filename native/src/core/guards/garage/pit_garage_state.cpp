@@ -51,32 +51,61 @@ constexpr bp::Gate GARAGE_STATE{"pit garage state guard", &STORES};
 const runtime::Sig S_UPDATE_A{"site_Game_PitLane_GarageStateClearA",
                               "49 8B 47 08 8B 80 E0 00 00 00 89 C1 D1 E9 83 F8 63 B8 0C 00 00 00 0F 44 C8 C7 84 8A 10 02 00 00 "
                               "00 00 00 00",
-                              0x34b93bb, runtime::Sig::addr, 0, 0x19, 0};
+                              0x34b93bb,
+                              runtime::Sig::addr,
+                              0,
+                              0x19,
+                              0};
 const runtime::Sig S_UPDATE_B{"site_Game_PitLane_GarageStateSetB",
                               "41 8B 86 E0 00 00 00 89 C1 D1 E9 83 F8 63 B8 0C 00 00 00 0F 44 C8 48 8B 86 E8 0A 00 00 C7 84 88 "
                               "10 02 00 00 01 00 00 00 48 8B 8E E8 0A 00 00 48 8B 44 24 58 48 8B 44 01 68 83 78 04 04 0F 85 BE "
                               "07 00 00",
-                              0x34b9de8, runtime::Sig::addr, 0, 0x1d, 0};
+                              0x34b9de8,
+                              runtime::Sig::addr,
+                              0,
+                              0x1d,
+                              0};
 const runtime::Sig S_UPDATE_C{"site_Game_PitLane_GarageStateClearC",
                               "8B 85 E0 00 00 00 89 C1 D1 E9 83 F8 63 B8 0C 00 00 00 0F 44 C8 48 8B 86 E8 0A 00 00 C7 84 88 10 "
                               "02 00 00 00 00 00 00 E9",
-                              0x34ba25e, runtime::Sig::addr, 0, 0x1c, 0};
+                              0x34ba25e,
+                              runtime::Sig::addr,
+                              0,
+                              0x1c,
+                              0};
 const runtime::Sig S_UPDATE_D{"site_Game_PitLane_GarageStateSetD",
                               "41 8B 86 E0 00 00 00 89 C1 D1 E9 83 F8 63 B8 0C 00 00 00 0F 44 C8 48 8B 86 E8 0A 00 00 C7 84 88 "
                               "10 02 00 00 01 00 00 00 48 8B 8E E8 0A 00 00 48 8B 44 24 58 48 8B 44 01 68 83 78 04 04 0F 85 B0 "
                               "00 00 00",
-                              0x34baa4d, runtime::Sig::addr, 0, 0x1d, 0};
+                              0x34baa4d,
+                              runtime::Sig::addr,
+                              0,
+                              0x1d,
+                              0};
 const runtime::Sig S_UPDATE_E{"site_Game_PitLane_GarageStateClearE",
                               "C7 85 D8 00 00 00 00 00 00 00 48 8B 8E E8 0A 00 00 89 C0 C7 84 81 10 02 00 00 00 00 00 00",
-                              0x34bace1, runtime::Sig::addr, 0, 0x13, 0};
+                              0x34bace1,
+                              runtime::Sig::addr,
+                              0,
+                              0x13,
+                              0};
 const runtime::Sig S_PUT_IN_BOX{"site_Game_PitLane_PutInBoxGarageState",
                                 "41 BE 0C 00 00 00 44 0F 45 F1 EB 03 45 31 F6 48 89 F1 89 DA E8 ?? ?? ?? ?? 42 C7 84 B6 10 02 00 "
                                 "00 01 00 00 00",
-                                0x34d12ba, runtime::Sig::addr, 0, 0x19, 0};
+                                0x34d12ba,
+                                runtime::Sig::addr,
+                                0,
+                                0x19,
+                                0};
 const runtime::Sig S_CREW_READY{"site_Game_PitLane_CrewReadyGarageState",
                                 "C6 87 04 01 00 00 01 8B 87 E0 00 00 00 89 C1 D1 E9 83 F8 63 B8 0C 00 00 00 0F 45 C1 48 8B 8E E8 "
                                 "0A 00 00 C7 84 81 10 02 00 00 02 00 00 00",
-                                0x103d24fb, runtime::Sig::addr, 0, 0x23, 0, ".data1"};
+                                0x103d24fb,
+                                runtime::Sig::addr,
+                                0,
+                                0x23,
+                                0,
+                                ".data1"};
 
 enum class Slot : uint8_t { rax, rcx, r14 };
 
@@ -88,9 +117,8 @@ struct Store {
 
 constexpr size_t STORE_COUNT = 7;
 const Store STORE_SITES[STORE_COUNT] = {
-    {S_UPDATE_A, Slot::rcx, 11},   {S_UPDATE_B, Slot::rcx, 11},   {S_UPDATE_C, Slot::rcx, 11},
-    {S_UPDATE_D, Slot::rcx, 11},   {S_UPDATE_E, Slot::rax, 11},   {S_PUT_IN_BOX, Slot::r14, 12},
-    {S_CREW_READY, Slot::rax, 11},
+    {S_UPDATE_A, Slot::rcx, 11}, {S_UPDATE_B, Slot::rcx, 11},   {S_UPDATE_C, Slot::rcx, 11},   {S_UPDATE_D, Slot::rcx, 11},
+    {S_UPDATE_E, Slot::rax, 11}, {S_PUT_IN_BOX, Slot::r14, 12}, {S_CREW_READY, Slot::rax, 11},
 };
 
 uintptr_t resume[STORE_COUNT];

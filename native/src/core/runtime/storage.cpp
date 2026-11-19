@@ -57,8 +57,8 @@ int done(const Caller &c, const std::string &call, int r, const std::string &why
             return r;
         }
     }
-    swofty::log("[storage] api: %s (%s) %s -> %s%s%s", id, c.dll.c_str(), call.c_str(), RESULTS[r],
-                why.empty() ? "" : ": ", why.c_str());
+    swofty::log("[storage] api: %s (%s) %s -> %s%s%s", id, c.dll.c_str(), call.c_str(), RESULTS[r], why.empty() ? "" : ": ",
+                why.c_str());
     return r;
 }
 
@@ -156,15 +156,9 @@ bool resolve(const Caller &c, const char *path, bool allow_root, const Root *&r,
     return true;
 }
 
-std::wstring game_at(const Root &r, const std::string &rel)
-{
-    return sl::join(r.game, runtime::wide(rel));
-}
+std::wstring game_at(const Root &r, const std::string &rel) { return sl::join(r.game, runtime::wide(rel)); }
 
-std::wstring data_at(const Root &r, const std::string &rel)
-{
-    return sl::join(r.data, runtime::wide(rel));
-}
+std::wstring data_at(const Root &r, const std::string &rel) { return sl::join(r.data, runtime::wide(rel)); }
 
 std::wstring write_at(const Root &r, const std::string &rel)
 {
@@ -206,15 +200,9 @@ bool listing(const std::wstring &dir, std::string &out)
     return true;
 }
 
-bool gone(DWORD e)
-{
-    return e == ERROR_FILE_NOT_FOUND || e == ERROR_PATH_NOT_FOUND;
-}
+bool gone(DWORD e) { return e == ERROR_FILE_NOT_FOUND || e == ERROR_PATH_NOT_FOUND; }
 
-int st_available()
-{
-    return runtime::enabled("storage", nullptr) ? 1 : 0;
-}
+int st_available() { return runtime::enabled("storage", nullptr) ? 1 : 0; }
 
 int st_read(const char *path, void *buf, size_t cap, size_t *len)
 {
@@ -278,8 +266,7 @@ int st_append(const char *path, const void *data, size_t len)
             return done(c, call, SWOFTY_ASSET_INVALID,
                         where(c.id, rel) + " could not be copied to " + runtime::narrow(r->data) + " to append to it");
     }
-    HANDLE f = CreateFileW(full.c_str(), FILE_APPEND_DATA, FILE_SHARE_READ, nullptr, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL,
-                           nullptr);
+    HANDLE f = CreateFileW(full.c_str(), FILE_APPEND_DATA, FILE_SHARE_READ, nullptr, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (f == INVALID_HANDLE_VALUE)
         return done(c, call, SWOFTY_ASSET_INVALID, "the file could not be opened");
     bool ok = true;
@@ -379,10 +366,7 @@ const SwoftyStorage table = {st_available, st_read, st_write, st_append, st_remo
 
 namespace runtime {
 
-const SwoftyStorage *storage_table()
-{
-    return &table;
-}
+const SwoftyStorage *storage_table() { return &table; }
 
 std::wstring storage_write_path(const std::string &id, const std::string &path)
 {

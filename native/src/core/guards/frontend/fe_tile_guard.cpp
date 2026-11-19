@@ -56,15 +56,9 @@ guards::FirstKeys<std::string, ft::LOG_LABELS> logged{"lists"};
 thread_local const char *row_label = nullptr;
 
 struct Game {
-    bool u64(uint64_t a, uint64_t &out)
-    {
-        return mem::read(static_cast<uintptr_t>(a), out);
-    }
+    bool u64(uint64_t a, uint64_t &out) { return mem::read(static_cast<uintptr_t>(a), out); }
 
-    bool text(uint64_t a, std::string &out)
-    {
-        return mem::c_string(static_cast<uintptr_t>(a), out, 128);
-    }
+    bool text(uint64_t a, std::string &out) { return mem::c_string(static_cast<uintptr_t>(a), out, 128); }
 };
 
 void say(const std::string &label)
@@ -78,7 +72,8 @@ void scan_start(SwoftyContext *c)
 {
     std::string label;
     uint64_t end = 0;
-    if (!mem::c_string(static_cast<uintptr_t>(c->rdi), label, 128) || !mem::read(static_cast<uintptr_t>(c->rax + CONTAINER_SLOTS_END), end))
+    if (!mem::c_string(static_cast<uintptr_t>(c->rdi), label, 128) ||
+        !mem::read(static_cast<uintptr_t>(c->rax + CONTAINER_SLOTS_END), end))
         return;
     Game game;
     if (ft::list_present(game, c->rbx, end, label))
@@ -87,10 +82,7 @@ void scan_start(SwoftyContext *c)
     say(label);
 }
 
-void row_entry(SwoftyContext *c)
-{
-    row_label = reinterpret_cast<const char *>(c->r8);
-}
+void row_entry(SwoftyContext *c) { row_label = reinterpret_cast<const char *>(c->r8); }
 
 void row_field_load(SwoftyContext *c)
 {
@@ -111,10 +103,9 @@ guards::SiteGuard guard{guards::CoreSetId::fe_tile_guard,
                             .env = "SWOFTY_FE_TILE_GUARD",
                             .keeps = {{SCAN_NONE, &scan_none}, {ROW_NONE, &row_none}},
                             .needs = {SCAN_START, SCAN_NONE, ROW_ENTRY, ROW_FIELD_LOAD, ROW_NONE},
-                            .mixins = {
-                                        {SCAN_START, SWOFTY_MIXIN_SITE, 100, (void *)&scan_start, nullptr},
-                                        {ROW_ENTRY, SWOFTY_MIXIN_SITE, 100, (void *)&row_entry, nullptr},
-                                        {ROW_FIELD_LOAD, SWOFTY_MIXIN_SITE, 100, (void *)&row_field_load, nullptr}},
+                            .mixins = {{SCAN_START, SWOFTY_MIXIN_SITE, 100, (void *)&scan_start, nullptr},
+                                       {ROW_ENTRY, SWOFTY_MIXIN_SITE, 100, (void *)&row_entry, nullptr},
+                                       {ROW_FIELD_LOAD, SWOFTY_MIXIN_SITE, 100, (void *)&row_field_load, nullptr}},
                             .armed = "a tile whose entrant list is gone is left without a list instead of faulting",
                         }};
 

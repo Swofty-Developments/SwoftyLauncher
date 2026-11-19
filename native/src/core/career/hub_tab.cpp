@@ -50,14 +50,14 @@ namespace career::hub {
 
 namespace {
 
-constexpr uintptr_t LAPTOP_ARG2 = 0x28, LAPTOP_ALLOC = 0x2a8, LAPTOP_ARG3 = 0x268, LAPTOP_TABS = 0x2b0,
-                    LAPTOP_TABS_END = 0x2c0, TAB_ALLOC = 0x270;
+constexpr uintptr_t LAPTOP_ARG2 = 0x28, LAPTOP_ALLOC = 0x2a8, LAPTOP_ARG3 = 0x268, LAPTOP_TABS = 0x2b0, LAPTOP_TABS_END = 0x2c0,
+                    TAB_ALLOC = 0x270;
 constexpr size_t TAB_SIZE = 0xb68, PAGE_ALIGN = 8, VT_COPY = 64, VT_COMMAND = 10;
 constexpr char ICON[] = "overrides.career.laptop.page_icons[4]";
 
 const runtime::Sig S_RND_GATE{"laptop R&D gate", "80 38 00 0F 84 ?? ?? ?? ?? 4C 8B BE 68 02 00 00", 0x1c41bac};
-const runtime::Sig S_TABS_END{"laptop tabs end", "48 89 DA E8 ?? ?? ?? ?? 4C 8B AE B8 02 00 00", 0x1c42623,
-                              runtime::Sig::addr, 0, 8, 0};
+const runtime::Sig S_TABS_END{
+    "laptop tabs end", "48 89 DA E8 ?? ?? ?? ?? 4C 8B AE B8 02 00 00", 0x1c42623, runtime::Sig::addr, 0, 8, 0};
 constexpr const char *P_STANDINGS = "E8 ?? ?? ?? ?? 48 89 5C 24 60 4C 89 6C 24 68 48 8D 94 24 B0 00 00 00 4C 8D 44 24 60 "
                                     "48 8B 8C 24 00 01 00 00 E8 ?? ?? ?? ?? 48 8B 86 C0 02 00 00 48 8B 68 F8";
 const runtime::Sig S_TAB_CTOR{"laptop tab constructor", P_STANDINGS, 0x14c0860, runtime::Sig::rel32, 0, 1, 5};
@@ -65,15 +65,19 @@ const runtime::Sig S_TAB_PUSH{"laptop tab push", P_STANDINGS, 0x1e5dfb0, runtime
 const runtime::Sig S_PAGE_CTOR{"tab view model constructor",
                                "C6 44 24 48 00 C7 44 24 40 05 00 00 00 48 C7 44 24 30 00 00 00 00 48 89 D9 4C 89 EA 4D "
                                "89 F8 49 89 F1 E8 ?? ?? ?? ?? 48 8D 05",
-                               0x14bdac0, runtime::Sig::rel32, 0x22, 0x23, 5};
-const runtime::Sig S_PAGE_ADD{"laptop tab add page", "48 89 DA E8 ?? ?? ?? ?? 4C 8B BE 68 02 00 00", 0x14c13e0,
-                              runtime::Sig::rel32, 3, 4, 5};
+                               0x14bdac0,
+                               runtime::Sig::rel32,
+                               0x22,
+                               0x23,
+                               5};
+const runtime::Sig S_PAGE_ADD{
+    "laptop tab add page", "48 89 DA E8 ?? ?? ?? ?? 4C 8B BE 68 02 00 00", 0x14c13e0, runtime::Sig::rel32, 3, 4, 5};
 
 const runtime::Sig S_TQ_END{"team HQ tabs end", "4C 8B A6 D0 02 00 00 4C 8B AE D8 02 00 00", 0x22d5cce};
-const runtime::Sig S_TQ_RND{"team HQ R&D block", "E8 ?? ?? ?? ?? 4C 8B BE 68 02 00 00 4C 8B 66 28", 0x22d23e5,
-                            runtime::Sig::addr, 0, 5, 0};
-const runtime::Sig S_TQ_VEHICLE{"team HQ VEHICLE block",
-                                "4C 8B BE 68 02 00 00 4C 8B 66 28 C7 84 24 E0 00 00 00 01 A7 73 B0", 0x22d2ce1};
+const runtime::Sig S_TQ_RND{
+    "team HQ R&D block", "E8 ?? ?? ?? ?? 4C 8B BE 68 02 00 00 4C 8B 66 28", 0x22d23e5, runtime::Sig::addr, 0, 5, 0};
+const runtime::Sig S_TQ_VEHICLE{"team HQ VEHICLE block", "4C 8B BE 68 02 00 00 4C 8B 66 28 C7 84 24 E0 00 00 00 01 A7 73 B0",
+                                0x22d2ce1};
 constexpr const char *P_TQ_STANDINGS = "E8 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 49 89 07 48 8D 05 ?? ?? ?? ?? 49 89 87 60 02 00 "
                                        "00 48 8D 05 ?? ?? ?? ?? 49 89 87 68 02 00 00 C5 F8 10 05 ?? ?? ?? ?? C4 C1 78 11 87 "
                                        "88 0B 00 00";
@@ -83,19 +87,31 @@ const runtime::Sig S_TQ_VT260{"team HQ tab vtable +0x260", P_TQ_STANDINGS, 0x578
 const runtime::Sig S_TQ_VT268{"team HQ tab vtable +0x268", P_TQ_STANDINGS, 0x5787570, runtime::Sig::riprel, 0x1d, 0x20, 7};
 const runtime::Sig S_TQ_INIT{"team HQ tab field block", P_TQ_STANDINGS, 0x577c058, runtime::Sig::riprel, 0x2b, 0x2f, 8};
 const runtime::Sig S_TQ_REGISTERED{"team HQ tabs registered", "48 8B 74 24 50 48 8D BE E8 02 00 00 31 DB EB", 0x22d5d3b};
-const runtime::Sig S_LAPTOP_REGISTERED{"laptop tabs registered", "49 83 C5 18 49 39 ED 75 C7 80 BE 98 09 00 00 00",
-                                       0x1c42689, runtime::Sig::addr, 0, 9, 0};
+const runtime::Sig S_LAPTOP_REGISTERED{
+    "laptop tabs registered", "49 83 C5 18 49 39 ED 75 C7 80 BE 98 09 00 00 00", 0x1c42689, runtime::Sig::addr, 0, 9, 0};
 const runtime::Sig S_TAB_VISIBLE{"Vm_Set_TabEnabled (tab visibility)",
                                  "48 8D 9E E8 02 00 00 EB 27 0F 1F 00 31 C0 48 8D 90 68 02 00 00 48 85 C0 48 0F 44 D0 48 "
                                  "89 D9 45 31 C0 E8 ?? ?? ?? ??",
-                                 0x431f470, runtime::Sig::rel32, 0x22, 0x23, 5};
+                                 0x431f470,
+                                 runtime::Sig::rel32,
+                                 0x22,
+                                 0x23,
+                                 5};
 const runtime::Sig S_TQ_SHOW_ALL{"team HQ show all tabs tail",
-                                "41 B0 01 E8 ?? ?? ?? ?? 49 83 C6 18 4D 39 FE 74 37 48 8B 47 10 48 8B 4F 18", 0x22d7b2b,
-                                runtime::Sig::addr, 0, 0x48, 0};
+                                 "41 B0 01 E8 ?? ?? ?? ?? 49 83 C6 18 4D 39 FE 74 37 48 8B 47 10 48 8B 4F 18",
+                                 0x22d7b2b,
+                                 runtime::Sig::addr,
+                                 0,
+                                 0x48,
+                                 0};
 const runtime::Sig S_TQ_PUSH{"team HQ tab push",
                              "4C 89 7C 24 60 48 8D 94 24 E0 00 00 00 4C 8D 44 24 58 48 8B 8C 24 D8 00 00 00 E8 ?? ?? ?? "
                              "?? 48 8B 86 D8 02 00 00 4C 8B 68 F8",
-                             0x23ac4d0, runtime::Sig::rel32, 0x1a, 0x1b, 5};
+                             0x23ac4d0,
+                             runtime::Sig::rel32,
+                             0x1a,
+                             0x1b,
+                             5};
 
 using Alloc_t = void *(void *allocator, size_t size, size_t align);
 using AddPage_t = void(void *tab, void *page);
@@ -137,8 +153,8 @@ uint64_t page_command(void *vm, swofty::game::NeStr **name, const void *data)
             for (auto &o : t.options)
                 if (o.id == option) {
                     bool ok = step(t, option, next);
-                    swofty::log("[hub] %s: %s %s.%s%s", t.name.c_str(), next ? "next" : "prev", addon.c_str(),
-                                option.c_str(), ok ? "" : " (no such option state)");
+                    swofty::log("[hub] %s: %s %s.%s%s", t.name.c_str(), next ? "next" : "prev", addon.c_str(), option.c_str(),
+                                ok ? "" : " (no such option state)");
                     return 0;
                 }
         }
@@ -218,9 +234,8 @@ void add_tab(uintptr_t laptop, HubTab &t)
     if (!tab)
         return;
     void *a2 = at<void *>(laptop + LAPTOP_ARG2), *a3 = at<void *>(laptop + LAPTOP_ARG3);
-    reinterpret_cast<TabCtor_t *>(a_tab_ctor)(tab, a2, a3, reinterpret_cast<void *>(laptop),
-                                              "tabbing_secondary_controller", "tabbing_secondary_tab", t.lng.c_str(),
-                                              ICON, 1);
+    reinterpret_cast<TabCtor_t *>(a_tab_ctor)(tab, a2, a3, reinterpret_cast<void *>(laptop), "tabbing_secondary_controller",
+                                              "tabbing_secondary_tab", t.lng.c_str(), ICON, 1);
     struct {
         void *allocator, *obj;
     } owned{allocator, tab};
@@ -237,14 +252,13 @@ void add_tab(uintptr_t laptop, HubTab &t)
         note("[hub] %s: no page allocated", t.name.c_str());
         return;
     }
-    reinterpret_cast<PageCtor_t *>(a_page_ctor)(page, a2, a3, reinterpret_cast<void *>(laptop), t.content.c_str(),
-                                                t.lng.c_str(), nullptr, "", PAGE_TYPE, 0);
+    reinterpret_cast<PageCtor_t *>(a_page_ctor)(page, a2, a3, reinterpret_cast<void *>(laptop), t.content.c_str(), t.lng.c_str(),
+                                                nullptr, "", PAGE_TYPE, 0);
     bool mine = own_vtable(page);
     reinterpret_cast<AddPage_t *>(a_add_page)(tab, page);
     publish(t);
-    swofty::log("[hub] %s: tab '%s' added after STANDINGS (key 0x%08x, page %s%s, data %s)", t.name.c_str(),
-                t.title.c_str(), t.key, t.content.c_str(), mine ? "" : ", its commands stay the game's",
-                t.data.c_str());
+    swofty::log("[hub] %s: tab '%s' added after STANDINGS (key 0x%08x, page %s%s, data %s)", t.name.c_str(), t.title.c_str(),
+                t.key, t.content.c_str(), mine ? "" : ", its commands stay the game's", t.data.c_str());
 }
 
 void tabs_end(safetyhook::Context &c)
@@ -376,10 +390,7 @@ void setup()
                     t.group.c_str(), t.options.size(), t.addon.c_str());
 }
 
-int api_available()
-{
-    return live.load() ? 1 : 0;
-}
+int api_available() { return live.load() ? 1 : 0; }
 
 int api_set_option(const char *addon, const char *option, const char *value)
 {
@@ -428,14 +439,8 @@ void hub_option_changed(const std::string &addon, const std::string &option)
     }
 }
 
-extern "C" __declspec(dllexport) const SwoftyHub *SwoftyCoreHub(void)
-{
-    return &career::hub::hub_table;
-}
+extern "C" __declspec(dllexport) const SwoftyHub *SwoftyCoreHub(void) { return &career::hub::hub_table; }
 
 SWOFTY_CORE_RANK(hub_tab)
 
-SWOFTY_ON_LOAD
-{
-    runtime::when_code_ready("hub tabs: laptop builder hooks", career::hub::setup);
-}
+SWOFTY_ON_LOAD { runtime::when_code_ready("hub tabs: laptop builder hooks", career::hub::setup); }

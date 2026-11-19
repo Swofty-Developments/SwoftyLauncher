@@ -11,10 +11,7 @@ namespace {
 
 thread_local int busy;
 
-bool off()
-{
-    return busy || capped.load(std::memory_order_relaxed);
-}
+bool off() { return busy || capped.load(std::memory_order_relaxed); }
 
 struct Guard {
     DWORD in = GetLastError(), err = 0;
@@ -28,30 +25,15 @@ struct Guard {
     }
 };
 
-bool readable(int r, DWORD err)
-{
-    return r != SOCKET_ERROR || err != WSAEFAULT;
-}
+bool readable(int r, DWORD err) { return r != SOCKET_ERROR || err != WSAEFAULT; }
 
-bool pending(int r, DWORD err)
-{
-    return r == 0 || err == WSA_IO_PENDING;
-}
+bool pending(int r, DWORD err) { return r == 0 || err == WSA_IO_PENDING; }
 
-void *event_of(const WSAOVERLAPPED *ov)
-{
-    return can_read(ov, sizeof *ov) ? ov->hEvent : nullptr;
-}
+void *event_of(const WSAOVERLAPPED *ov) { return can_read(ov, sizeof *ov) ? ov->hEvent : nullptr; }
 
-WSABUF first_buf(const WSABUF *bufs, DWORD n)
-{
-    return n && can_read(bufs, sizeof *bufs) ? bufs[0] : WSABUF{0, nullptr};
-}
+WSABUF first_buf(const WSABUF *bufs, DWORD n) { return n && can_read(bufs, sizeof *bufs) ? bufs[0] : WSABUF{0, nullptr}; }
 
-int read_int(const int *p)
-{
-    return can_read(p, sizeof *p) ? *p : -1;
-}
+int read_int(const int *p) { return can_read(p, sizeof *p) ? *p : -1; }
 
 SOCKET WSAAPI h_socket(int af, int type, int proto)
 {
@@ -63,8 +45,8 @@ SOCKET WSAAPI h_socket(int af, int type, int proto)
     SOCKET r = orig<F>(C_SOCKET)(af, type, proto);
     g.done();
     note_socket(r, af, type, proto);
-    trace(C_SOCKET, r, RA, int(r == INVALID_SOCKET ? -1 : 0), r == INVALID_SOCKET ? g.err : 0, "af=%d type=%d proto=%d",
-          af, type, proto);
+    trace(C_SOCKET, r, RA, int(r == INVALID_SOCKET ? -1 : 0), r == INVALID_SOCKET ? g.err : 0, "af=%d type=%d proto=%d", af, type,
+          proto);
     return r;
 }
 
@@ -136,8 +118,7 @@ int WSAAPI h_ioctlsocket(SOCKET s, long cmd, u_long *arg)
     g.pre();
     int r = orig<F>(C_IOCTLSOCKET)(s, cmd, arg);
     g.done();
-    trace(C_IOCTLSOCKET, s, RA, r, r ? g.err : 0, "cmd=0x%lx arg=%lu", (unsigned long)cmd,
-          arg && readable(r, g.err) ? *arg : 0);
+    trace(C_IOCTLSOCKET, s, RA, r, r ? g.err : 0, "cmd=0x%lx arg=%lu", (unsigned long)cmd, arg && readable(r, g.err) ? *arg : 0);
     return r;
 }
 
@@ -166,8 +147,8 @@ int WSAAPI h_sendto(SOCKET s, const char *buf, int len, int flags, const sockadd
     int r = orig<F>(C_SENDTO)(s, buf, len, flags, to, tolen);
     g.done();
     bool ok = readable(r, g.err);
-    trace(C_SENDTO, s, RA, r, r < 0 ? g.err : 0, "to=%s len=%d flags=0x%x data=%s", ok ? addr(to, tolen).c_str() : "?",
-          len, flags, ok ? hexdump(buf, len).c_str() : "?");
+    trace(C_SENDTO, s, RA, r, r < 0 ? g.err : 0, "to=%s len=%d flags=0x%x data=%s", ok ? addr(to, tolen).c_str() : "?", len,
+          flags, ok ? hexdump(buf, len).c_str() : "?");
     return r;
 }
 
@@ -199,8 +180,8 @@ int WSAAPI h_WSASendTo(SOCKET s, LPWSABUF bufs, DWORD n, LPDWORD sent, DWORD fla
     g.pre();
     int r = orig<F>(C_WSASENDTO)(s, bufs, n, sent, flags, to, tolen, ov, cr);
     g.done();
-    trace(C_WSASENDTO, s, RA, r, r ? g.err : 0, "to=%s nbufs=%lu len0=%lu sent=%ld data=%s ov=0x%llx ev=0x%llx",
-          dest.c_str(), n, b0.len, !r && sent ? long(*sent) : -1L, data.c_str(), PTR(ov), PTR(ev));
+    trace(C_WSASENDTO, s, RA, r, r ? g.err : 0, "to=%s nbufs=%lu len0=%lu sent=%ld data=%s ov=0x%llx ev=0x%llx", dest.c_str(), n,
+          b0.len, !r && sent ? long(*sent) : -1L, data.c_str(), PTR(ov), PTR(ev));
     return r;
 }
 
@@ -230,8 +211,7 @@ int WSAAPI h_recv(SOCKET s, char *buf, int len, int flags)
     g.pre();
     int r = orig<F>(C_RECV)(s, buf, len, flags);
     g.done();
-    trace(C_RECV, s, RA, r, r < 0 ? g.err : 0, "cap=%d flags=0x%x data=%s", len, flags,
-          r > 0 ? hexdump(buf, r).c_str() : "-");
+    trace(C_RECV, s, RA, r, r < 0 ? g.err : 0, "cap=%d flags=0x%x data=%s", len, flags, r > 0 ? hexdump(buf, r).c_str() : "-");
     return r;
 }
 
@@ -252,16 +232,15 @@ int WSAAPI h_WSARecvFrom(SOCKET s, LPWSABUF bufs, DWORD n, LPDWORD got, LPDWORD 
     if (ov && pending(r, g.err))
         note_post(ov, Post{s, b0.buf, b0.len, from, fromlen, true});
     trace(C_WSARECVFROM, s, RA, r, r ? g.err : 0,
-          "nbufs=%lu buf=0x%llx cap=%lu from_buf=0x%llx fromlen=%d flags_ptr=0x%llx ov=0x%llx ev=0x%llx cr=0x%llx got=%ld",
-          n, PTR(b0.buf), b0.len, PTR(from), fl_in, PTR(flags), PTR(ov), PTR(ev), PTR(cr), !r && got ? long(*got) : -1L);
+          "nbufs=%lu buf=0x%llx cap=%lu from_buf=0x%llx fromlen=%d flags_ptr=0x%llx ov=0x%llx ev=0x%llx cr=0x%llx got=%ld", n,
+          PTR(b0.buf), b0.len, PTR(from), fl_in, PTR(flags), PTR(ov), PTR(ev), PTR(cr), !r && got ? long(*got) : -1L);
     return r;
 }
 
 int WSAAPI h_WSARecv(SOCKET s, LPWSABUF bufs, DWORD n, LPDWORD got, LPDWORD flags, LPWSAOVERLAPPED ov,
                      LPWSAOVERLAPPED_COMPLETION_ROUTINE cr)
 {
-    using F = int(WSAAPI *)(SOCKET, LPWSABUF, DWORD, LPDWORD, LPDWORD, LPWSAOVERLAPPED,
-                            LPWSAOVERLAPPED_COMPLETION_ROUTINE);
+    using F = int(WSAAPI *)(SOCKET, LPWSABUF, DWORD, LPDWORD, LPDWORD, LPWSAOVERLAPPED, LPWSAOVERLAPPED_COMPLETION_ROUTINE);
     if (off())
         return orig<F>(C_WSARECV)(s, bufs, n, got, flags, ov, cr);
     Guard g;
@@ -272,8 +251,8 @@ int WSAAPI h_WSARecv(SOCKET s, LPWSABUF bufs, DWORD n, LPDWORD got, LPDWORD flag
     g.done();
     if (ov && pending(r, g.err))
         note_post(ov, Post{s, b0.buf, b0.len, nullptr, nullptr, false});
-    trace(C_WSARECV, s, RA, r, r ? g.err : 0, "nbufs=%lu buf=0x%llx cap=%lu ov=0x%llx ev=0x%llx got=%ld", n,
-          PTR(b0.buf), b0.len, PTR(ov), PTR(ev), !r && got ? long(*got) : -1L);
+    trace(C_WSARECV, s, RA, r, r ? g.err : 0, "nbufs=%lu buf=0x%llx cap=%lu ov=0x%llx ev=0x%llx got=%ld", n, PTR(b0.buf), b0.len,
+          PTR(ov), PTR(ev), !r && got ? long(*got) : -1L);
     return r;
 }
 
@@ -293,15 +272,15 @@ BOOL WSAAPI h_WSAGetOverlappedResult(SOCKET s, LPWSAOVERLAPPED ov, LPDWORD bytes
     long long shown = std::min<long long>(got, p.len);
     if (r && known && p.recvfrom)
         trace(C_WSAGETOVERLAPPEDRESULT, s, RA, r, 0,
-              "ov=0x%llx ev=0x%llx bytes=%lu flags=0x%lx buf=0x%llx data=%s from_buf=0x%llx from=%s", PTR(ov), PTR(ev),
-              got, flags ? *flags : 0, PTR(p.buf), hexdump(p.buf, shown).c_str(), PTR(p.from),
+              "ov=0x%llx ev=0x%llx bytes=%lu flags=0x%lx buf=0x%llx data=%s from_buf=0x%llx from=%s", PTR(ov), PTR(ev), got,
+              flags ? *flags : 0, PTR(p.buf), hexdump(p.buf, shown).c_str(), PTR(p.from),
               addr(p.from, p.fromlen ? *p.fromlen : -1).c_str());
     else if (r && known)
-        trace(C_WSAGETOVERLAPPEDRESULT, s, RA, r, 0, "ov=0x%llx ev=0x%llx bytes=%lu flags=0x%lx buf=0x%llx data=%s",
-              PTR(ov), PTR(ev), got, flags ? *flags : 0, PTR(p.buf), hexdump(p.buf, shown).c_str());
+        trace(C_WSAGETOVERLAPPEDRESULT, s, RA, r, 0, "ov=0x%llx ev=0x%llx bytes=%lu flags=0x%lx buf=0x%llx data=%s", PTR(ov),
+              PTR(ev), got, flags ? *flags : 0, PTR(p.buf), hexdump(p.buf, shown).c_str());
     else
-        trace(C_WSAGETOVERLAPPEDRESULT, s, RA, r, r ? 0 : g.err, "ov=0x%llx ev=0x%llx wait=%d bytes=%lu post=%s",
-              PTR(ov), PTR(ev), wait, got, known ? "seen" : "unseen");
+        trace(C_WSAGETOVERLAPPEDRESULT, s, RA, r, r ? 0 : g.err, "ov=0x%llx ev=0x%llx wait=%d bytes=%lu post=%s", PTR(ov),
+              PTR(ev), wait, got, known ? "seen" : "unseen");
     return r;
 }
 
@@ -349,11 +328,11 @@ WSAEVENT WSAAPI h_WSACreateEvent()
     return r;
 }
 
-int WSAAPI h_WSAIoctl(SOCKET s, DWORD code, LPVOID in, DWORD inlen, LPVOID out, DWORD outlen, LPDWORD got,
-                      LPWSAOVERLAPPED ov, LPWSAOVERLAPPED_COMPLETION_ROUTINE cr)
+int WSAAPI h_WSAIoctl(SOCKET s, DWORD code, LPVOID in, DWORD inlen, LPVOID out, DWORD outlen, LPDWORD got, LPWSAOVERLAPPED ov,
+                      LPWSAOVERLAPPED_COMPLETION_ROUTINE cr)
 {
-    using F = int(WSAAPI *)(SOCKET, DWORD, LPVOID, DWORD, LPVOID, DWORD, LPDWORD, LPWSAOVERLAPPED,
-                            LPWSAOVERLAPPED_COMPLETION_ROUTINE);
+    using F =
+        int(WSAAPI *)(SOCKET, DWORD, LPVOID, DWORD, LPVOID, DWORD, LPDWORD, LPWSAOVERLAPPED, LPWSAOVERLAPPED_COMPLETION_ROUTINE);
     if (off())
         return orig<F>(C_WSAIOCTL)(s, code, in, inlen, out, outlen, got, ov, cr);
     Guard g;
@@ -361,8 +340,8 @@ int WSAAPI h_WSAIoctl(SOCKET s, DWORD code, LPVOID in, DWORD inlen, LPVOID out, 
     g.pre();
     int r = orig<F>(C_WSAIOCTL)(s, code, in, inlen, out, outlen, got, ov, cr);
     g.done();
-    trace(C_WSAIOCTL, s, RA, r, r ? g.err : 0, "code=0x%lx in=%s inlen=%lu outlen=%lu got=%ld ov=0x%llx", code,
-          data.c_str(), inlen, outlen, !r && got ? long(*got) : -1L, PTR(ov));
+    trace(C_WSAIOCTL, s, RA, r, r ? g.err : 0, "code=0x%lx in=%s inlen=%lu outlen=%lu got=%ld ov=0x%llx", code, data.c_str(),
+          inlen, outlen, !r && got ? long(*got) : -1L, PTR(ov));
     return r;
 }
 
@@ -405,8 +384,7 @@ void table()
     set(C_WSARECVFROM, "WSARecvFrom", reinterpret_cast<void *>(&h_WSARecvFrom));
     set(C_WSARECV, "WSARecv", reinterpret_cast<void *>(&h_WSARecv));
     set(C_WSAGETOVERLAPPEDRESULT, "WSAGetOverlappedResult", reinterpret_cast<void *>(&h_WSAGetOverlappedResult));
-    set(C_WSAWAITFORMULTIPLEEVENTS, "WSAWaitForMultipleEvents",
-        reinterpret_cast<void *>(&h_WSAWaitForMultipleEvents));
+    set(C_WSAWAITFORMULTIPLEEVENTS, "WSAWaitForMultipleEvents", reinterpret_cast<void *>(&h_WSAWaitForMultipleEvents));
     set(C_WSAEVENTSELECT, "WSAEventSelect", reinterpret_cast<void *>(&h_WSAEventSelect));
     set(C_WSACREATEEVENT, "WSACreateEvent", reinterpret_cast<void *>(&h_WSACreateEvent));
     set(C_WSAIOCTL, "WSAIoctl", reinterpret_cast<void *>(&h_WSAIoctl));

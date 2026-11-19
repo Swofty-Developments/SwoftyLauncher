@@ -25,9 +25,14 @@ struct Tracker {
         uint32_t before = mask;
         mask = set ? (before | 1u << bit) : (before & ~(1u << bit));
         switch (pause_edge(before, mask)) {
-        case PauseEdge::paused: pauses++; break;
-        case PauseEdge::resumed: resumes++; break;
-        case PauseEdge::none: break;
+        case PauseEdge::paused:
+            pauses++;
+            break;
+        case PauseEdge::resumed:
+            resumes++;
+            break;
+        case PauseEdge::none:
+            break;
         }
     }
 };

@@ -66,11 +66,20 @@ namespace guards = swofty_core::guards;
 namespace wt = runtime::gp_weekend_track;
 
 const runtime::Sig S_PRESET_TRACK_READ{"site_Game_TyreAllocationComponent_PresetTrackRead",
-                                      "4C 89 4C 24 40 41 0F B6 81 78 02 00 00", 0xbcbb1f, runtime::Sig::addr, 0, 5, 0};
+                                       "4C 89 4C 24 40 41 0F B6 81 78 02 00 00",
+                                       0xbcbb1f,
+                                       runtime::Sig::addr,
+                                       0,
+                                       5,
+                                       0};
 const runtime::Sig S_SESSION_TRACK_READ{
     "site_Game_ChampionshipGameMode_SessionTrackRead",
     "49 8B 95 48 14 00 00 0F B6 87 78 02 00 00 48 8B 4A 28 48 8B 52 30 48 29 CA 48 C1 FA 04 48 39 C2 48 89 7C 24 70",
-    0x7b7dd6, runtime::Sig::addr, 0, 7, 0};
+    0x7b7dd6,
+    runtime::Sig::addr,
+    0,
+    7,
+    0};
 
 constexpr uintptr_t COMPONENT_CAREER = 0x278;
 constexpr uintptr_t CAREER_TRACK_DATA = 0xf58;
@@ -146,19 +155,12 @@ void guard(uintptr_t weekend, uintptr_t data, wt::Site site)
         return;
     std::string mode = swofty_core::apply::moments::current_mode(wt::reader(site));
     std::string label = swofty_core::apply::moments::cached_track_label(track);
-    swofty::log("[gp] %s",
-                wt::line(d, track, items.size(), mode, site, label, d.repair ? items[size_t(d.to)].name : "").c_str());
+    swofty::log("[gp] %s", wt::line(d, track, items.size(), mode, site, label, d.repair ? items[size_t(d.to)].name : "").c_str());
 }
 
-void track_read(safetyhook::Context &c)
-{
-    guard(c.r9, career_track_data(c.r14), wt::Site::tyre_allocation);
-}
+void track_read(safetyhook::Context &c) { guard(c.r9, career_track_data(c.r14), wt::Site::tyre_allocation); }
 
-void session_track_read(safetyhook::Context &c)
-{
-    guard(c.rdi, c.rdx, wt::Site::session_settings);
-}
+void session_track_read(safetyhook::Context &c) { guard(c.rdi, c.rdx, wt::Site::session_settings); }
 
 bool arm(const runtime::Sig &sig, safetyhook::MidHook &into, safetyhook::MidHookFn fn)
 {
@@ -193,7 +195,9 @@ void setup()
     }
     swofty::log("[gp] weekend track guard armed%s: a Grand Prix, Driver Career or My Team weekend whose track has no "
                 "track data record races melbourne instead of %s",
-                tyres && session ? "" : tyres ? " at the tyre allocation only" : " at the session settings only",
+                tyres && session ? ""
+                : tyres          ? " at the tyre allocation only"
+                                 : " at the session settings only",
                 tyres && session ? "aborting in its tyre allocation or faulting in its session settings"
                 : tyres          ? "aborting in its tyre allocation"
                                  : "faulting in its session settings");

@@ -140,15 +140,16 @@ void request(void *worker, uint32_t job_type, uint32_t count)
     sweep("after a request was queued");
 }
 
-guards::SiteGuard guard{guards::CoreSetId::audio_queue,
-                        {
-                            .set = MIXIN,
-                            .name = "[audio] queue fix",
-                            .env = "SWOFTY_AUDIO_QUEUE_FIX",
-                            .keeps = {{QUEUE, &queue_addr}, {LOCK, &lock_addr}},
-                            .needs = {TARGET, QUEUE, LOCK},
-                            .mixins = {{TARGET, SWOFTY_MIXIN_WRAP, 100, (void *)&request, (void **)&orig_request}},
-                            .armed = "audio worker requests queued in slots 12-23 move to slots 0-11, where the workers take them",
-                        }};
+guards::SiteGuard guard{
+    guards::CoreSetId::audio_queue,
+    {
+        .set = MIXIN,
+        .name = "[audio] queue fix",
+        .env = "SWOFTY_AUDIO_QUEUE_FIX",
+        .keeps = {{QUEUE, &queue_addr}, {LOCK, &lock_addr}},
+        .needs = {TARGET, QUEUE, LOCK},
+        .mixins = {{TARGET, SWOFTY_MIXIN_WRAP, 100, (void *)&request, (void **)&orig_request}},
+        .armed = "audio worker requests queued in slots 12-23 move to slots 0-11, where the workers take them",
+    }};
 
 }

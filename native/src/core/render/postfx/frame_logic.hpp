@@ -71,10 +71,7 @@ struct FrameClock {
     }
 
     // The game's flow tick: true when it runs the toggle keys and live settings, as no Present arrives.
-    bool flow(uint64_t now, uint64_t started) const
-    {
-        return presents_gone(now, present_at, started);
-    }
+    bool flow(uint64_t now, uint64_t started) const { return presents_gone(now, present_at, started); }
 };
 
 // A frame count far enough back that the passes count as not run lately.
@@ -82,10 +79,7 @@ inline constexpr unsigned LONG_AGO = 0u - 8;
 
 // Whether the passes ran on a back buffer at frame at, seen at frame now, within this use of it. A back
 // buffer comes round again two or more frames later.
-inline bool placed_lately(unsigned now, unsigned at)
-{
-    return now - at < 2;
-}
+inline bool placed_lately(unsigned now, unsigned at) { return now - at < 2; }
 
 // The HUD's read of the finished picture, which the game makes while paused and under panels over the race: the
 // passes run at that read. A frame's lists are recorded in parallel, so the list with the HUD-less step cannot
@@ -338,9 +332,6 @@ struct OnOff {
 
 // The count line's window: a minute for the first half hour, five minutes for the rest of the session.
 inline constexpr unsigned STAT_MINUTES = 30, ONOFF_LINES = 20;
-inline unsigned stat_window_ms(unsigned lines)
-{
-    return lines < STAT_MINUTES ? 60000 : 300000;
-}
+inline unsigned stat_window_ms(unsigned lines) { return lines < STAT_MINUTES ? 60000 : 300000; }
 
 }

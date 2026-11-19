@@ -119,7 +119,6 @@ inline constexpr bool CAREER = career_chain<g::GameManager, g::GameModeContext, 
 inline constexpr bool ENTRANT = entrant<g::EntrantRecord>;
 inline constexpr bool BUS = message_bus<g::GameMessageBusHolder, g::NeMessageBus>;
 inline constexpr bool SAVE_SPLICE = save_streams<g::NeBagCodec, g::NeCountingStream, g::NeMemWriteStream, g::NeStreamVtbl> &&
-                                    property<g::NePropertyVtbl, g::NePropertyTypeVtbl> &&
-                                    named_container<g::SaveDataContainer>;
+                                    property<g::NePropertyVtbl, g::NePropertyTypeVtbl> && named_container<g::SaveDataContainer>;
 
 }

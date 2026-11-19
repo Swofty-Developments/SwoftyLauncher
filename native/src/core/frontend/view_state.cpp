@@ -29,17 +29,15 @@ using frontend::view_flow::GROUP_MASK_ALL;
 using frontend::view_flow::TRACKED;
 using frontend::view_flow::TRACKED_N;
 
-const runtime::Sig S_PHOTO_ON{"site_Game_PhotoModeActiveSet",
-                              "C5 F8 29 85 80 03 00 00 C6 85 94 03 00 00 01", 0x2bdba77, runtime::Sig::addr, 0, 8};
-const runtime::Sig S_PHOTO_OFF{"site_Game_PhotoModeActiveClear", "C6 86 25 04 00 00 00 C6 86 94 03 00 00 00",
-                               0x2bdc327, runtime::Sig::addr, 0, 7};
-const runtime::Sig S_CAMERA{"site_Game_UseCameraSettingCall", "48 89 F1 B2 0F E8 ?? ?? ?? ?? 90 48 83 C4 70",
-                            0x2424bbd};
-const runtime::Sig S_PAUSE{"Game_App_SetPauseReason", "41 57 41 56 41 54 56 57 53 48 83 EC 28 89 D3 48 89 CE 84 D2",
-                           0x80e110};
+const runtime::Sig S_PHOTO_ON{
+    "site_Game_PhotoModeActiveSet", "C5 F8 29 85 80 03 00 00 C6 85 94 03 00 00 01", 0x2bdba77, runtime::Sig::addr, 0, 8};
+const runtime::Sig S_PHOTO_OFF{
+    "site_Game_PhotoModeActiveClear", "C6 86 25 04 00 00 00 C6 86 94 03 00 00 00", 0x2bdc327, runtime::Sig::addr, 0, 7};
+const runtime::Sig S_CAMERA{"site_Game_UseCameraSettingCall", "48 89 F1 B2 0F E8 ?? ?? ?? ?? 90 48 83 C4 70", 0x2424bbd};
+const runtime::Sig S_PAUSE{"Game_App_SetPauseReason", "41 57 41 56 41 54 56 57 53 48 83 EC 28 89 D3 48 89 CE 84 D2", 0x80e110};
 
-const char *const CAMERA_NAMES[8] = {"unknown",  "nose_cam", "nose_cam_alt", "cockpit_cam",
-                                     "tv_pod", "tv_pod_offset", "near_chase", "far_chase"};
+const char *const CAMERA_NAMES[8] = {"unknown", "nose_cam",      "nose_cam_alt", "cockpit_cam",
+                                     "tv_pod",  "tv_pod_offset", "near_chase",   "far_chase"};
 
 constexpr uint64_t pack(uint32_t kind, uint32_t flags, bool valid, uint32_t serial)
 {
@@ -185,8 +183,7 @@ void ViewState::recompute()
         return;
     uint32_t serial = old.serial + 1;
     packed.store(pack(kind, flags, valid, serial), std::memory_order_release);
-    swofty::log("[view] kind=%s flags=%s valid=%d serial=%u", kind_text(kind), flag_text(flags).c_str(), valid ? 1 : 0,
-                serial);
+    swofty::log("[view] kind=%s flags=%s valid=%d serial=%u", kind_text(kind), flag_text(flags).c_str(), valid ? 1 : 0, serial);
 }
 
 void ViewState::photo_on()
@@ -253,7 +250,6 @@ safetyhook::MidHook install(const runtime::Sig &sig, safetyhook::MidHookFn fn)
     return std::move(*h);
 }
 
-
 void ViewState::flow(uint32_t hash, uint32_t to)
 {
     for (size_t i = 0; i < TRACKED_N; i++) {
@@ -290,29 +286,14 @@ void ViewState::setup()
 
 }
 
-State current()
-{
-    return view_state.current();
-}
+State current() { return view_state.current(); }
 
-uint32_t pause_reasons()
-{
-    return view_state.pause_reasons();
-}
+uint32_t pause_reasons() { return view_state.pause_reasons(); }
 
-void flow(uint32_t hash, uint32_t to)
-{
-    view_state.flow(hash, to);
-}
+void flow(uint32_t hash, uint32_t to) { view_state.flow(hash, to); }
 
-void setup()
-{
-    view_state.setup();
-}
+void setup() { view_state.setup(); }
 
 }
 
-extern "C" __declspec(dllexport) uint32_t SwoftyCorePauseReasons(void)
-{
-    return frontend::view::pause_reasons();
-}
+extern "C" __declspec(dllexport) uint32_t SwoftyCorePauseReasons(void) { return frontend::view::pause_reasons(); }

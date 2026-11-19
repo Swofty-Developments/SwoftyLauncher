@@ -47,23 +47,51 @@ constexpr const char *WEATHER_NODE = "settings.current_settings.tt_weather.value
 // The game addresses the Time Trial setup uses, each found by a pattern that matches once on the Steam and on the EA build
 // (re/tools/sigverify.py). The two functions' entries are jump thunks, so they are found from a call to them.
 const runtime::Sig SIG_SET_SETUP_MODE{"game.entity_set_setup_mode_thunk_14079f300",
-                                      "E8 ?? ?? ?? ?? 48 8D 84 24 20 03 00 00 48 C7 84 24 10 03 00 00 80 00 00 00", 0x79f300,
-                                      runtime::Sig::rel32, 0, 1, 5};
+                                      "E8 ?? ?? ?? ?? 48 8D 84 24 20 03 00 00 48 C7 84 24 10 03 00 00 80 00 00 00",
+                                      0x79f300,
+                                      runtime::Sig::rel32,
+                                      0,
+                                      1,
+                                      5};
 const runtime::Sig SIG_CURRENT_TRACK{"game.entity_current_track_thunk_1407ddbf0",
-                                     "E8 ?? ?? ?? ?? 44 0F B6 40 01 44 89 86 F0 11 00 00", 0x7ddbf0, runtime::Sig::rel32, 0, 1, 5};
-const runtime::Sig SIG_PLAYER_ENTRANTS{"game.player_entrants_14604eac0", "48 8D 1D ?? ?? ?? ?? 48 8D 54 24 28 48 89 D9 45 31 C9",
-                                       0x604eac0, runtime::Sig::riprel, 0, 3, 7};
-const runtime::Sig SIG_PLAYER_GUARD{"game.player_entrants_guard_14604ec50",
-                                    "8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 4C 8B 04 25 58 00 00 00 49 8B 0C C8 8B 89 04 00 00 00 48 "
-                                    "3B 54 24 58",
-                                    0x604ec50, runtime::Sig::riprel, 0, 2, 6};
+                                     "E8 ?? ?? ?? ?? 44 0F B6 40 01 44 89 86 F0 11 00 00",
+                                     0x7ddbf0,
+                                     runtime::Sig::rel32,
+                                     0,
+                                     1,
+                                     5};
+const runtime::Sig SIG_PLAYER_ENTRANTS{"game.player_entrants_14604eac0",
+                                       "48 8D 1D ?? ?? ?? ?? 48 8D 54 24 28 48 89 D9 45 31 C9",
+                                       0x604eac0,
+                                       runtime::Sig::riprel,
+                                       0,
+                                       3,
+                                       7};
+const runtime::Sig SIG_PLAYER_GUARD{
+    "game.player_entrants_guard_14604ec50",
+    "8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 4C 8B 04 25 58 00 00 00 49 8B 0C C8 8B 89 04 00 00 00 48 "
+    "3B 54 24 58",
+    0x604ec50,
+    runtime::Sig::riprel,
+    0,
+    2,
+    6};
 const runtime::Sig SIG_TT_COMPONENT_VT{"game.vt_time_trial_component_1457b13d0",
                                        "48 8D 05 ?? ?? ?? ?? 48 89 01 48 8D 05 ?? ?? ?? ?? 48 89 41 18 4C 8B B1 78 03 00 00",
-                                       0x57b13d0, runtime::Sig::riprel, 0, 3, 7};
-const runtime::Sig SIG_GAME_ROOT{"game.root_14601db08",
-                                 "48 8B 05 ?? ?? ?? ?? 48 8B 40 60 48 8B 88 D0 09 00 00 FF 15 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 "
-                                 "8B 40 60",
-                                 0x601db08, runtime::Sig::riprel, 0, 3, 7};
+                                       0x57b13d0,
+                                       runtime::Sig::riprel,
+                                       0,
+                                       3,
+                                       7};
+const runtime::Sig SIG_GAME_ROOT{
+    "game.root_14601db08",
+    "48 8B 05 ?? ?? ?? ?? 48 8B 40 60 48 8B 88 D0 09 00 00 FF 15 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 "
+    "8B 40 60",
+    0x601db08,
+    runtime::Sig::riprel,
+    0,
+    3,
+    7};
 // The builds the setup's offsets are checked on: VERIFIED_LAYOUT's, and EA App 1.0.145 by sigport.py --witness on its
 // dump with the core's patches put back (re/research/ea-1-0-145.md). There Apply (0x141125e80), Game_GameModes_FindByName
 // and SetCurrentGameMode (the modes' +0x58, +0x60, +0x38, +0x260, +0x278), the per-team vehicle table 0x1407dfda0
@@ -82,11 +110,10 @@ constexpr uintptr_t MODES_BEGIN = 0x58, MODES_END = 0x60, MODES_ENTRY_MODE = 0x3
 constexpr uintptr_t ENTITY_MODE = 0xf08, ENTITY_TRACKS = 0xf58, ENTITY_TEAMS = 0xf80, ENTITY_SETUP_MODE = 0x2b0,
                     ENTITY_ENTRANT_SETUP = 0xe10, ENTITY_LIST = 0xe18;
 constexpr uintptr_t GSM_HOLDER = 0xd8, GSM_ESMS = 0x10, GSM_ESM_COUNT = 0x70, ESM_LISTS = 0x130, ESM_LIST_COUNT = 0x230,
-                    LIST_NAME = 0x28, LIST_BEGIN = 0x10, LIST_END = 0x18, RECORD = 0x88, RECORD_TEAM = 0x58,
-                    TRACK_NAME = 0x78, PLAYER_STRIDE = 0xc0, PLAYER_TEAM = 0x68, PLAYER_TEAM_SET = 0x6c,
-                    RECORD_VEHICLE = 0x5c;
-constexpr uintptr_t MODE_COMPONENTS = 0x238, TT_HOT_LOAD = 0x298, HOT_VEHICLE = 0x2be,
-                    HOT_VEHICLE_SET = 0x2c2, HOT_TEAM = 0x2c4, HOT_TEAM_SET = 0x2c8;
+                    LIST_NAME = 0x28, LIST_BEGIN = 0x10, LIST_END = 0x18, RECORD = 0x88, RECORD_TEAM = 0x58, TRACK_NAME = 0x78,
+                    PLAYER_STRIDE = 0xc0, PLAYER_TEAM = 0x68, PLAYER_TEAM_SET = 0x6c, RECORD_VEHICLE = 0x5c;
+constexpr uintptr_t MODE_COMPONENTS = 0x238, TT_HOT_LOAD = 0x298, HOT_VEHICLE = 0x2be, HOT_VEHICLE_SET = 0x2c2, HOT_TEAM = 0x2c4,
+                    HOT_TEAM_SET = 0x2c8;
 constexpr size_t ESM_SLOTS = 32, GSM_SLOTS = 32, GSM_ESM_SLOTS = (GSM_ESM_COUNT - GSM_ESMS) / 8;
 
 using SetMode_t = void(void *modes, void *mode);
@@ -125,15 +152,9 @@ const Game &game()
     return g;
 }
 
-template <class T> T *ptr(uintptr_t a)
-{
-    return reinterpret_cast<T *>(a);
-}
+template <class T> T *ptr(uintptr_t a) { return reinterpret_cast<T *>(a); }
 
-const char *c_name(const void *p)
-{
-    return p && swofty::mem::readable(p, 1) ? static_cast<const char *>(p) : nullptr;
-}
+const char *c_name(const void *p) { return p && swofty::mem::readable(p, 1) ? static_cast<const char *>(p) : nullptr; }
 
 const char *holder_name(const uint8_t *obj, uintptr_t holder_off)
 {
@@ -220,7 +241,8 @@ uint8_t *track_record(uint8_t *e, const std::string &want, std::vector<std::stri
         if (!swofty::mem::readable(q, 16))
             break;
         auto *rec = at<uint8_t *>(q, 8);
-        const char *name = rec && swofty::mem::readable(rec, TRACK_NAME + 8) ? c_name(at<const char *>(rec, TRACK_NAME)) : nullptr;
+        const char *name =
+            rec && swofty::mem::readable(rec, TRACK_NAME + 8) ? c_name(at<const char *>(rec, TRACK_NAME)) : nullptr;
         if (!name)
             continue;
         names.push_back(name);
@@ -412,8 +434,7 @@ Setup set_team(uint8_t *e, uint8_t *list, const std::string &want, std::string &
 
 Setup place(uint8_t *e, const json::Value &request, std::string &why)
 {
-    std::string box = request["box"].str(), track = request["track"].str(),
-                setup_name = request["setup_mode"].str("swofty_f1");
+    std::string box = request["box"].str(), track = request["track"].str(), setup_name = request["setup_mode"].str("swofty_f1");
     if (!box.empty()) {
         std::vector<tt::BoxLists> boxes;
         for (const auto &b : runtime::era_boxes())
@@ -450,8 +471,7 @@ Setup place(uint8_t *e, const json::Value &request, std::string &why)
         std::vector<std::string> lists;
         ListAt hit = find_list(gsm, want, lists);
         if (!hit.list) {
-            why = "the setup mode " + setup_name + " offers no entrant list '" + want + "' (it offers " +
-                  tt::joined(lists) + ")";
+            why = "the setup mode " + setup_name + " offers no entrant list '" + want + "' (it offers " + tt::joined(lists) + ")";
             return Setup::failed;
         }
         ptr<void(void *, void *, int)>(game().set_setup_mode)(e, gsm, 0);
@@ -461,8 +481,8 @@ Setup place(uint8_t *e, const json::Value &request, std::string &why)
         *reinterpret_cast<uint8_t **>(e + ENTITY_ENTRANT_SETUP) = hit.esm;
         *reinterpret_cast<uint8_t **>(e + ENTITY_LIST) = hit.list;
         st.list = hit.list;
-        swofty::log("[direct] Time Trial: setup mode %s (%p), entrant setup mode %p, list %s (%p)%s", setup_name.c_str(),
-                    gsm, hit.esm, want.c_str(), hit.list, want == box ? "" : (" for box " + box).c_str());
+        swofty::log("[direct] Time Trial: setup mode %s (%p), entrant setup mode %p, list %s (%p)%s", setup_name.c_str(), gsm,
+                    hit.esm, want.c_str(), hit.list, want == box ? "" : (" for box " + box).c_str());
         swofty_core::apply::moments::box_picked(want.c_str());
     } else
         st.list = at<uint8_t *>(e, ENTITY_LIST);
@@ -476,7 +496,8 @@ Setup place(uint8_t *e, const json::Value &request, std::string &why)
         const char *file = c_name(at<const char *>(rec, TRACK_NAME));
         bool written = frontend::ui_vm_set_path(TRACK_NODE, 0, file);
         uint8_t *now = ptr<CurrentTrack_t>(game().current_track)(e);
-        const char *reads = now && swofty::mem::readable(now, TRACK_NAME + 8) ? c_name(at<const char *>(now, TRACK_NAME)) : nullptr;
+        const char *reads =
+            now && swofty::mem::readable(now, TRACK_NAME + 8) ? c_name(at<const char *>(now, TRACK_NAME)) : nullptr;
         swofty::log("[direct] Time Trial: track %s (%p): the VM node %s, the getter reads %s", file, rec,
                     written ? "written" : "NOT written", reads ? reads : "nothing");
         if (now != rec && !force_track(rec, now)) {
@@ -589,8 +610,7 @@ std::atomic<bool> tt_armed{false}, garage_seen{false};
 // front end's loading screen (FrontEnd, bit 1), neither of which a direct start runs: the garage stays black behind
 // the fade's backdrop. Once the garage screen is up the core releases those reasons on the fade owner
 // [[g_Game_Root]+0xa0] (mask +0x7b8, state +0x7bc, curve +0x7c4) and fades in when none is left.
-constexpr uintptr_t ROOT_FADE = 0xa0, FADE_MASK = 0x7b8, FADE_STATE = 0x7bc, FADE_CURVE = 0x7c4,
-                    FADE_HELD = 0x7cc;
+constexpr uintptr_t ROOT_FADE = 0xa0, FADE_MASK = 0x7b8, FADE_STATE = 0x7bc, FADE_CURVE = 0x7c4, FADE_HELD = 0x7cc;
 constexpr uint32_t FADE_REASONS = (1u << 1) | (1u << 2) | (1u << 3) | (1u << 14), FADE_IN = 3, FADE_CURVE_DEFAULT = 0xd47eb226;
 
 void release_fade()
@@ -615,10 +635,7 @@ void release_fade()
                 at<uint32_t>(owner, FADE_STATE));
 }
 
-void despawn_main_scene(const char *when)
-{
-    runtime::direct_start_despawn_frontend_scene(when);
-}
+void despawn_main_scene(const char *when) { runtime::direct_start_despawn_frontend_scene(when); }
 
 void on_screen(const char *name)
 {
@@ -658,15 +675,9 @@ void reset_for_replay()
     st.replay = true;
 }
 
-uintptr_t game_root()
-{
-    return game().root;
-}
+uintptr_t game_root() { return game().root; }
 
-uintptr_t set_setup_mode()
-{
-    return game().set_setup_mode;
-}
+uintptr_t set_setup_mode() { return game().set_setup_mode; }
 
 std::string current_track()
 {

@@ -13,10 +13,7 @@ namespace hud::overlay {
 
 namespace {
 
-void hook_setname(ID3D12Object *o, LPCWSTR name)
-{
-    overlay.before_fg.on_setname(o, name);
-}
+void hook_setname(ID3D12Object *o, LPCWSTR name) { overlay.before_fg.on_setname(o, name); }
 
 bool hook_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers)
 {
@@ -184,9 +181,8 @@ void BeforeFrameGen::on_exec(ID3D12CommandQueue *, UINT n, ID3D12CommandList *co
     {
         std::lock_guard<std::mutex> g(lock);
         for (UINT i = 0; i < n; i++) {
-            auto it = std::find_if(presenting.begin(), presenting.end(), [&](const auto &e) {
-                return static_cast<ID3D12CommandList *>(e.first) == lists[i];
-            });
+            auto it = std::find_if(presenting.begin(), presenting.end(),
+                                   [&](const auto &e) { return static_cast<ID3D12CommandList *>(e.first) == lists[i]; });
             if (it == presenting.end())
                 continue;
             at = i;

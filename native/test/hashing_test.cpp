@@ -69,9 +69,11 @@ void folded_copies()
               tracks::path_key("{" + tracks::hex16(gvdb::fnv64("foo")) + "}bar") == 0x85944171f73967e8ull &&
               tracks::at(tracks::key("foo"), "bar").h == 0x85944171f73967e8ull && tracks::FNV_BASIS == 0xcbf29ce484222325ull,
           "track keys continue FNV-1a 64 from a hashed prefix and a row's key");
-    check(uidb::fnv1a32("foobar") == 0xbf9cf968u && uidb::fnv1a32("\xff") == 0x7a0b824eu && uidb::fnv1a32(nul_high) == 0xa5f49661u,
+    check(uidb::fnv1a32("foobar") == 0xbf9cf968u && uidb::fnv1a32("\xff") == 0x7a0b824eu &&
+              uidb::fnv1a32(nul_high) == 0xa5f49661u,
           "uidb::fnv1a32 is FNV-1a 32 over unsigned bytes, past a NUL");
-    check(runtime::udp_ids::hashed_track_id("mod.a/track") == 0xda1639e6u && runtime::udp_ids::hashed_track_id("foobar") == 0xbf9cf968u,
+    check(runtime::udp_ids::hashed_track_id("mod.a/track") == 0xda1639e6u &&
+              runtime::udp_ids::hashed_track_id("foobar") == 0xbf9cf968u,
           "a hashed track id is FNV-1a 32 with the top bit set");
     check(dbread::fnv64("foobar") == 0x85944171f73967e8ull && dbread::fnv64("foobar", 3) == dbread::fnv64(std::string("foo")) &&
               dbread::fnv_cont(dbread::fnv64("foo"), "bar") == 0x85944171f73967e8ull &&

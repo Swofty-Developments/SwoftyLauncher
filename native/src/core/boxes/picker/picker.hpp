@@ -276,10 +276,7 @@ template <class T> T at(const void *base, size_t off)
     return *reinterpret_cast<const T *>(static_cast<const uint8_t *>(base) + off);
 }
 
-template <class T> T &ref(void *base, size_t off)
-{
-    return *reinterpret_cast<T *>(static_cast<uint8_t *>(base) + off);
-}
+template <class T> T &ref(void *base, size_t off) { return *reinterpret_cast<T *>(static_cast<uint8_t *>(base) + off); }
 
 template <class F> void for_each_host_setup(void *mode, F f)
 {

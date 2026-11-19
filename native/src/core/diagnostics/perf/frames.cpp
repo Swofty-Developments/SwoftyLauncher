@@ -156,13 +156,9 @@ bool Profiler::frame_claim()
     return true;
 }
 
-void Profiler::frame_release()
-{
-    claiming.store(false, std::memory_order_release);
-}
+void Profiler::frame_release() { claiming.store(false, std::memory_order_release); }
 
-void Profiler::presented(void *swapchain, unsigned sync, unsigned flags, long hr, uint64_t entry, uint64_t before,
-                         uint64_t after)
+void Profiler::presented(void *swapchain, unsigned sync, unsigned flags, long hr, uint64_t entry, uint64_t before, uint64_t after)
 {
     if (!live())
         return;
@@ -239,36 +235,21 @@ void Profiler::mark(const char *kind, const std::string &what)
     seg_what = label;
 }
 
-int frame_token_hook(void **token, const uint32_t *index)
-{
-    return profiler.frame_token(token, index);
-}
+int frame_token_hook(void **token, const uint32_t *index) { return profiler.frame_token(token, index); }
 
 }
 
-void flow_tick()
-{
-    detail::profiler.flow_tick();
-}
+void flow_tick() { detail::profiler.flow_tick(); }
 
-bool frame_claim()
-{
-    return detail::profiler.frame_claim();
-}
+bool frame_claim() { return detail::profiler.frame_claim(); }
 
-void frame_release()
-{
-    detail::profiler.frame_release();
-}
+void frame_release() { detail::profiler.frame_release(); }
 
 void presented(void *swapchain, unsigned sync, unsigned flags, long hr, uint64_t entry, uint64_t before, uint64_t after)
 {
     detail::profiler.presented(swapchain, sync, flags, hr, entry, before, after);
 }
 
-void mark(const char *kind, const std::string &what)
-{
-    detail::profiler.mark(kind, what);
-}
+void mark(const char *kind, const std::string &what) { detail::profiler.mark(kind, what); }
 
 }

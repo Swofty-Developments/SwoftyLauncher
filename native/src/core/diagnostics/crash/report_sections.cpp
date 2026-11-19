@@ -35,12 +35,13 @@ void section_registers(const Request &r)
     report_writer.out.put("  rsi=%016llx rdi=%016llx rbp=%016llx rsp=%016llx\n", c.Rsi, c.Rdi, c.Rbp, c.Rsp);
     report_writer.out.put("  r8 =%016llx r9 =%016llx r10=%016llx r11=%016llx\n", c.R8, c.R9, c.R10, c.R11);
     report_writer.out.put("  r12=%016llx r13=%016llx r14=%016llx r15=%016llx\n", c.R12, c.R13, c.R14, c.R15);
-    report_writer.out.put("  rip=%016llx eflags=%08lx cs=%04x ss=%04x ds=%04x es=%04x fs=%04x gs=%04x mxcsr=%08lx\n", c.Rip, c.EFlags,
-            c.SegCs, c.SegSs, c.SegDs, c.SegEs, c.SegFs, c.SegGs, c.MxCsr);
+    report_writer.out.put("  rip=%016llx eflags=%08lx cs=%04x ss=%04x ds=%04x es=%04x fs=%04x gs=%04x mxcsr=%08lx\n", c.Rip,
+                          c.EFlags, c.SegCs, c.SegSs, c.SegDs, c.SegEs, c.SegFs, c.SegGs, c.MxCsr);
     const M128A *x = &c.Xmm0;
     for (int i = 0; i < 16; i += 2)
         report_writer.out.put("  xmm%-2d=%016llx%016llx xmm%-2d=%016llx%016llx\n", i, (unsigned long long)x[i].High,
-                (unsigned long long)x[i].Low, i + 1, (unsigned long long)x[i + 1].High, (unsigned long long)x[i + 1].Low);
+                              (unsigned long long)x[i].Low, i + 1, (unsigned long long)x[i + 1].High,
+                              (unsigned long long)x[i + 1].Low);
 }
 
 bool call_before(uintptr_t v)
@@ -95,13 +96,15 @@ void section_state(const Request &r)
 
 void section_blackbox(const Request &r)
 {
-    report_writer.out.put("\n== Black box: last events (%llu recorded, oldest first)\n", (unsigned long long)recorder.events.total());
+    report_writer.out.put("\n== Black box: last events (%llu recorded, oldest first)\n",
+                          (unsigned long long)recorder.events.total());
     if (!recorder.events.each([&](const blackbox::Copy &c) {
-            report_writer.out.put("  -%9.3f s [%5lu] %-9s %s\n", double(r.ms - c.ms) / 1000, (unsigned long)c.tid, c.kind, c.text);
+            report_writer.out.put("  -%9.3f s [%5lu] %-9s %s\n", double(r.ms - c.ms) / 1000, (unsigned long)c.tid, c.kind,
+                                  c.text);
         }))
         report_writer.out.put("  none\n");
     report_writer.out.put("\n== Black box: last game log warnings and errors (%llu recorded, oldest first)\n",
-            (unsigned long long)recorder.warnings.total());
+                          (unsigned long long)recorder.warnings.total());
     if (!recorder.warnings.each([&](const blackbox::Copy &c) {
             report_writer.out.put("  -%9.3f s [%5lu] %s\n", double(r.ms - c.ms) / 1000, (unsigned long)c.tid, c.text);
         }))
@@ -123,15 +126,14 @@ void summary_line(const Request &r)
     std::string frames;
     char w[512];
     int kept = 0;
-    walk(prior ? r.prior.ctx : r.ctx, prior ? r.prior.lo : r.lo, prior ? r.prior.hi : r.hi, 24,
-         [&](int, const CONTEXT &c) {
-             const Mod *m = modules.at(c.Rip);
-             if (m && m->base == reinterpret_cast<uintptr_t>(process.self))
-                 return true;
-             where_into(w, sizeof w, c.Rip, false);
-             frames += (frames.empty() ? "" : " < ") + std::string(w);
-             return ++kept < 4;
-         });
+    walk(prior ? r.prior.ctx : r.ctx, prior ? r.prior.lo : r.lo, prior ? r.prior.hi : r.hi, 24, [&](int, const CONTEXT &c) {
+        const Mod *m = modules.at(c.Rip);
+        if (m && m->base == reinterpret_cast<uintptr_t>(process.self))
+            return true;
+        where_into(w, sizeof w, c.Rip, false);
+        frames += (frames.empty() ? "" : " < ") + std::string(w);
+        return ++kept < 4;
+    });
     cl("[crash] crash report %s: %s; %sstack %s; minidump %s", report_writer.report_where, r.reason,
        prior ? "earlier exception's " : "", frames.c_str(), report_writer.dump_note);
 }
@@ -148,19 +150,19 @@ void step_header(Request &r)
     report_writer.out.put("reason       %s\n", r.reason);
     report_writer.out.put("thread       %lu%s\n", r.tid, r.kind == K_EXIT ? " (the exiting thread)" : "");
     report_writer.out.put("process      pid %lu, %.1f s after the core loaded\n", GetCurrentProcessId(),
-            double(r.ms - process.start_ms) / 1000);
+                          double(r.ms - process.start_ms) / 1000);
     wchar_t path[MAX_PATH] = L"?";
     GetModuleFileNameW(nullptr, path, MAX_PATH);
     WIN32_FILE_ATTRIBUTE_DATA fa{};
     unsigned long long size = 0;
     if (GetFileAttributesExW(path, GetFileExInfoStandard, &fa))
         size = ((unsigned long long)fa.nFileSizeHigh << 32) | fa.nFileSizeLow;
-    auto nt = reinterpret_cast<const IMAGE_NT_HEADERS *>(
-        process.exe_base + reinterpret_cast<const IMAGE_DOS_HEADER *>(process.exe_base)->e_lfanew);
+    auto nt = reinterpret_cast<const IMAGE_NT_HEADERS *>(process.exe_base +
+                                                         reinterpret_cast<const IMAGE_DOS_HEADER *>(process.exe_base)->e_lfanew);
     report_writer.out.put("exe          %ls, %llu bytes, PE timestamp %lu, image base 0x%llx\n", path, size,
-            (unsigned long)nt->FileHeader.TimeDateStamp, (unsigned long long)process.exe_base);
+                          (unsigned long)nt->FileHeader.TimeDateStamp, (unsigned long long)process.exe_base);
     report_writer.out.put("symbols      %zu KB function name(s)%s\n", symbol_table.symbols.size(),
-            symbol_table.matches ? "" : " (symbols.tsv is for another build or missing)");
+                          symbol_table.matches ? "" : " (symbols.tsv is for another build or missing)");
     if (size_t bound = symbol_table.bound_count())
         report_writer.out.put("symbols      %zu function name(s) from the binding set\n", bound);
     report_writer.out.put("runtime      %s\n", process.wine_version ? fmt("Wine %s", process.wine_version()).c_str() : "Windows");
@@ -175,7 +177,7 @@ void step_prior(Request &r)
     char w[512];
     where_into(w, sizeof w, p.ctx.Rip, true);
     report_writer.out.put("\n== Earlier fatal-class exception: %s (0x%08lx) on thread %lu, %.1f s before this report, at %s\n",
-            code_name(p.rec.ExceptionCode), p.rec.ExceptionCode, p.tid, double(r.ms - p.ms) / 1000, w);
+                          code_name(p.rec.ExceptionCode), p.rec.ExceptionCode, p.tid, double(r.ms - p.ms) / 1000, w);
     for (DWORD i = 0; i < p.rec.NumberParameters && i < 4; i++)
         report_writer.out.put("  parameter %lu: 0x%llx\n", i, (unsigned long long)p.rec.ExceptionInformation[i]);
     static Request pr;

@@ -110,10 +110,7 @@ inline void set_bit(uint8_t *bits, uint32_t vk, bool on)
         bits[vk >> 3] &= uint8_t(~(1u << (vk & 7)));
 }
 
-inline bool bit(const uint8_t *bits, uint32_t vk)
-{
-    return vk < 256 && (bits[vk >> 3] >> (vk & 7) & 1);
-}
+inline bool bit(const uint8_t *bits, uint32_t vk) { return vk < 256 && (bits[vk >> 3] >> (vk & 7) & 1); }
 
 // Folds the frame's events into s: edges and text start empty, held buttons and keys carry over, and
 // positions arrive in client pixels and leave in framebuffer pixels.

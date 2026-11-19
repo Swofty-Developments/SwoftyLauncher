@@ -8,12 +8,12 @@ namespace tel = runtime::udp_tel;
 
 static int failures;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                         \
-            failures++;                                                                                                \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                                   \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 using Bytes = std::vector<uint8_t>;

@@ -95,8 +95,8 @@ ID3D12Resource *upload(ID3D12Device *dev, D3D12_RESOURCE_DESC desc, const std::v
     ID3D12Fence *fence = nullptr;
     bool ok = false;
     do {
-        if (FAILED(dev->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_COPY_DEST,
-                                                nullptr, IID_PPV_ARGS(&tex))))
+        if (FAILED(dev->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+                                                IID_PPV_ARGS(&tex))))
             break;
         D3D12_PLACED_SUBRESOURCE_FOOTPRINT fp{};
         UINT n = 0;
@@ -112,8 +112,8 @@ ID3D12Resource *upload(ID3D12Device *dev, D3D12_RESOURCE_DESC desc, const std::v
         bd.MipLevels = 1;
         bd.SampleDesc.Count = 1;
         bd.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-        if (FAILED(dev->CreateCommittedResource(&uh, D3D12_HEAP_FLAG_NONE, &bd, D3D12_RESOURCE_STATE_GENERIC_READ,
-                                                nullptr, IID_PPV_ARGS(&up))))
+        if (FAILED(dev->CreateCommittedResource(&uh, D3D12_HEAP_FLAG_NONE, &bd, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+                                                IID_PPV_ARGS(&up))))
             break;
         uint8_t *mapped = nullptr;
         D3D12_RANGE none{0, 0};
@@ -187,8 +187,8 @@ bool Grader::make_readback(ID3D12GraphicsCommandList *list, const D3D12_RESOURCE
     bd.MipLevels = 1;
     bd.SampleDesc.Count = 1;
     bd.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-    HRESULT hr = dev->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &bd, D3D12_RESOURCE_STATE_COPY_DEST,
-                                              nullptr, IID_PPV_ARGS(&readback));
+    HRESULT hr = dev->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &bd, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+                                              IID_PPV_ARGS(&readback));
     dev->Release();
     return SUCCEEDED(hr);
 }
@@ -264,8 +264,8 @@ void Grader::forget(ID3D12Resource *res)
 
 bool same_shape(const D3D12_RESOURCE_DESC &a, const D3D12_RESOURCE_DESC &b)
 {
-    return a.Dimension == b.Dimension && a.Width == b.Width && a.Height == b.Height &&
-           a.DepthOrArraySize == b.DepthOrArraySize && a.Format == b.Format && a.MipLevels == b.MipLevels;
+    return a.Dimension == b.Dimension && a.Width == b.Width && a.Height == b.Height && a.DepthOrArraySize == b.DepthOrArraySize &&
+           a.Format == b.Format && a.MipLevels == b.MipLevels;
 }
 
 // The game frees resources and reuses their addresses, so any SetName drops the old entry first.
@@ -394,8 +394,8 @@ void Grader::setup()
     if (!hooked)
         swofty::log("[shaders] the core's D3D12 device hooks did not arm; the game's colours stay");
     if (hooked)
-        swofty::log("[shaders] grading the picture with %s's look (%ux%ux%u) at %.0f%%; HDR setting read from %ls",
-                    addon.c_str(), look.size, look.size, look.size, double(strength) * 100,
+        swofty::log("[shaders] grading the picture with %s's look (%ux%ux%u) at %.0f%%; HDR setting read from %ls", addon.c_str(),
+                    look.size, look.size, look.size, double(strength) * 100,
                     settings_path.empty() ? L"(no Documents folder)" : settings_path.c_str());
 }
 
@@ -405,9 +405,6 @@ void Grader::setup()
 
 namespace runtime {
 
-void grade_setup()
-{
-    render::grade::grader.setup();
-}
+void grade_setup() { render::grade::grader.setup(); }
 
 }

@@ -150,8 +150,7 @@ static std::unique_ptr<Bag> career_bag(const std::string &tag, int slots)
 // The inline containers block of the root: key, bag type, header, count, then the children. The
 // splice bumps the count before it is written and writes the kept entries right after it.
 static std::vector<uint8_t> containers_block(const std::vector<std::pair<std::string, const Bag *>> &registered,
-                                             const sp::Store &kept, sp::Owed &owed, const void *result,
-                                             bool splice)
+                                             const sp::Store &kept, sp::Owed &owed, const void *result, bool splice)
 {
     Out o;
     o.key("containers");
@@ -203,8 +202,8 @@ int main()
 
     sp::Owed owed;
     int result = 0;
-    auto block = containers_block({{"driver_career_26", stock26.get()}, {"driver_career_24", stock24.get()}}, store,
-                                  owed, &result, true);
+    auto block =
+        containers_block({{"driver_career_26", stock26.get()}, {"driver_career_24", stock24.get()}}, store, owed, &result, true);
     Bag got;
     expect(read_block(block, got), "the spliced block reads back to its end");
     expect(got.bags.size() == 4, "it holds the two registered and the two kept containers");
@@ -213,10 +212,8 @@ int main()
         by[k] = v.get();
     expect(by.count("driver_career_progressive") && *by["driver_career_progressive"] == *progressive,
            "the kept Progressive container reads back unchanged");
-    expect(by.count("driver_career_1990") && *by["driver_career_1990"] == *f1990,
-           "the kept 1990 container reads back unchanged");
-    expect(by.count("driver_career_26") && *by["driver_career_26"] == *stock26,
-           "a registered container is unchanged");
+    expect(by.count("driver_career_1990") && *by["driver_career_1990"] == *f1990, "the kept 1990 container reads back unchanged");
+    expect(by.count("driver_career_26") && *by["driver_career_26"] == *stock26, "a registered container is unchanged");
     expect(!owed.pending(), "the owed count was paid");
 
     auto plain = containers_block({{"driver_career_26", stock26.get()}}, store, owed, &result, false);
@@ -229,8 +226,8 @@ int main()
     expect(!owed.pending(), "the mismatch clears the owed count");
 
     auto late = career_bag("l", 1);
-    auto dup = containers_block({{"driver_career_26", stock26.get()}, {"driver_career_1990", late.get()}}, store, owed,
-                                &result, true);
+    auto dup =
+        containers_block({{"driver_career_26", stock26.get()}, {"driver_career_1990", late.get()}}, store, owed, &result, true);
     Bag got_dup;
     expect(read_block(dup, got_dup), "a kept name that a registered child also has still reads");
     size_t n1990 = 0;

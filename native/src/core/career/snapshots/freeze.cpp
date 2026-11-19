@@ -80,9 +80,9 @@ std::pair<int, int> years_of(reg::Store &store, const std::string &registry, con
     return out;
 }
 
-std::vector<fmt::Frozen> Book::freeze(int year, const reg::Context &ctx, bool yearless, bool only_year,
-                                      const fmt::Career *have, std::vector<std::string> &refused,
-                                      std::vector<std::pair<std::string, std::string>> &owners, Stats &st)
+std::vector<fmt::Frozen> Book::freeze(int year, const reg::Context &ctx, bool yearless, bool only_year, const fmt::Career *have,
+                                      std::vector<std::string> &refused, std::vector<std::pair<std::string, std::string>> &owners,
+                                      Stats &st)
 {
     std::vector<fmt::Frozen> out;
     size_t used = have ? have->size() : 0;
@@ -140,8 +140,8 @@ std::vector<fmt::Frozen> Book::freeze(int year, const reg::Context &ctx, bool ye
         if (used + item > fmt::CAREER_CAP) {
             refused.push_back(name);
             owners.push_back({owner_of(first), label + ": snapshot " + kb(f.records.size()) +
-                                                   " compressed would take the career's entry past " +
-                                                   kb(fmt::CAREER_CAP) + "; not saved, this career reads it live" +
+                                                   " compressed would take the career's entry past " + kb(fmt::CAREER_CAP) +
+                                                   "; not saved, this career reads it live" +
                                                    (year ? " for " + std::to_string(year) : "")});
             st.refused++;
             continue;
@@ -241,9 +241,10 @@ void Book::season_start(int year, reg::Context ctx)
         dirty_.insert(id);
         cache_->seasons.clear();
     }
-    note("[registry] career season " + std::to_string(year) + " starts in " + id + (ctx.data_group.empty() ? "" : "/" + ctx.data_group) +
-         ": snapshot of " + (parts.empty() ? "nothing" : parts) + " (" + std::to_string(st.records) + " record(s), " +
-         kb(st.raw) + " -> " + kb(st.compressed) + " compressed); saved with the next profile save");
+    note("[registry] career season " + std::to_string(year) + " starts in " + id +
+         (ctx.data_group.empty() ? "" : "/" + ctx.data_group) + ": snapshot of " + (parts.empty() ? "nothing" : parts) + " (" +
+         std::to_string(st.records) + " record(s), " + kb(st.raw) + " -> " + kb(st.compressed) +
+         " compressed); saved with the next profile save");
     for (auto &[owner, msg] : owners) {
         note("[registry] " + msg);
         store_.note_refusal(owner, "", "", "snapshot_budget", msg);
@@ -343,8 +344,8 @@ void Book::career_created(const std::string &id, fmt::Freeze freeze_mode, reg::C
     }
     note(line + ": froze " + std::to_string(years.size()) + " season(s)" +
          (years.empty() ? "" : " " + std::to_string(*years.begin()) + "-" + std::to_string(*years.rbegin())) + ", " +
-         std::to_string(all.registries) + " registry snapshot(s), " + std::to_string(all.records) + " record(s), " +
-         kb(all.raw) + " -> " + kb(all.compressed) + " compressed");
+         std::to_string(all.registries) + " registry snapshot(s), " + std::to_string(all.records) + " record(s), " + kb(all.raw) +
+         " -> " + kb(all.compressed) + " compressed");
     for (auto &[owner, msg] : owners) {
         note("[registry] " + msg);
         store_.note_refusal(owner, "", "", "snapshot_budget", msg);

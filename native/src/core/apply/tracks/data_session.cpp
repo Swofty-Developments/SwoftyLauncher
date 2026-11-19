@@ -48,10 +48,7 @@ struct GameMem {
     bool c_string(uintptr_t at, std::string &out) { return swofty::mem::c_string(at, out, 64); }
 };
 
-bool writable(uintptr_t at, size_t n)
-{
-    return runtime::pages::read_write_span(at, n);
-}
+bool writable(uintptr_t at, size_t n) { return runtime::pages::read_write_span(at, n); }
 
 bool put(uintptr_t at, const void *src, size_t n)
 {
@@ -326,7 +323,9 @@ public:
                     report.applied += write_laps(a, into, code);
             } else {
                 swofty::log("[tracks] box %s: %s for %s not written: %s", a.package.c_str(),
-                            box_pit && box_laps ? "pit speed limit and race laps" : box_pit ? "pit speed limit" : "race laps",
+                            box_pit && box_laps ? "pit speed limit and race laps"
+                            : box_pit           ? "pit speed limit"
+                                                : "race laps",
                             code.c_str(), pwhy.c_str());
             }
         }
@@ -440,7 +439,10 @@ int write_box_fuel_now(const Active &a, int mode_stat)
                 write_laps(a, into, "");
         } else {
             swofty::log("[tracks] box %s: %s waits for the session load: %s", a.package.c_str(),
-                        pit && laps ? "pit speed limit and race laps" : pit ? "pit speed limit" : "race laps", pwhy.c_str());
+                        pit && laps ? "pit speed limit and race laps"
+                        : pit       ? "pit speed limit"
+                                    : "race laps",
+                        pwhy.c_str());
         }
     }
     if (!any)

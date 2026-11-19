@@ -35,14 +35,22 @@ void hex_dump(uintptr_t from, size_t n, uintptr_t mark)
 const char *protect_name(DWORD p)
 {
     switch (p & 0xff) {
-    case PAGE_NOACCESS: return "no access";
-    case PAGE_READONLY: return "read";
-    case PAGE_READWRITE: return "read/write";
-    case PAGE_WRITECOPY: return "write-copy";
-    case PAGE_EXECUTE: return "execute";
-    case PAGE_EXECUTE_READ: return "execute/read";
-    case PAGE_EXECUTE_READWRITE: return "execute/read/write";
-    case PAGE_EXECUTE_WRITECOPY: return "execute/write-copy";
+    case PAGE_NOACCESS:
+        return "no access";
+    case PAGE_READONLY:
+        return "read";
+    case PAGE_READWRITE:
+        return "read/write";
+    case PAGE_WRITECOPY:
+        return "write-copy";
+    case PAGE_EXECUTE:
+        return "execute";
+    case PAGE_EXECUTE_READ:
+        return "execute/read";
+    case PAGE_EXECUTE_READWRITE:
+        return "execute/read/write";
+    case PAGE_EXECUTE_WRITECOPY:
+        return "execute/write-copy";
     }
     return "?";
 }
@@ -74,13 +82,18 @@ void region(uintptr_t a, const Request &r)
     }
     auto base = reinterpret_cast<uintptr_t>(m.BaseAddress);
     if (m.State == MEM_FREE) {
-        report_writer.out.put("free (unallocated) region 0x%llx +0x%llx", (unsigned long long)base, (unsigned long long)m.RegionSize);
+        report_writer.out.put("free (unallocated) region 0x%llx +0x%llx", (unsigned long long)base,
+                              (unsigned long long)m.RegionSize);
         return;
     }
-    report_writer.out.put("%s %s region 0x%llx +0x%llx (allocation 0x%llx), %s", m.State == MEM_RESERVE ? "reserved" : "committed",
-            m.Type == MEM_IMAGE ? "image" : m.Type == MEM_MAPPED ? "mapped" : "private", (unsigned long long)base,
-            (unsigned long long)m.RegionSize, (unsigned long long)reinterpret_cast<uintptr_t>(m.AllocationBase),
-            m.State == MEM_COMMIT ? protect_name(m.Protect) : "no access");
+    report_writer.out.put("%s %s region 0x%llx +0x%llx (allocation 0x%llx), %s",
+                          m.State == MEM_RESERVE ? "reserved" : "committed",
+                          m.Type == MEM_IMAGE    ? "image"
+                          : m.Type == MEM_MAPPED ? "mapped"
+                                                 : "private",
+                          (unsigned long long)base, (unsigned long long)m.RegionSize,
+                          (unsigned long long)reinterpret_cast<uintptr_t>(m.AllocationBase),
+                          m.State == MEM_COMMIT ? protect_name(m.Protect) : "no access");
     if (m.Protect & PAGE_GUARD)
         report_writer.out.put(", guard page");
     if (const Mod *mod = modules.at(a)) {
@@ -97,10 +110,11 @@ void region(uintptr_t a, const Request &r)
 void block_line(const char *label, const neheap::Block &b)
 {
     auto g = [](int s) { return s < 0 ? "n/a" : s ? "intact" : "CORRUPT"; };
-    report_writer.out.put("    %-9s header 0x%llx: list prev %+d next %+d (x16), block 0x%x bytes, user 0x%x bytes at 0x%llx, start "
-            "guard %s, end guard %s\n",
-            label, (unsigned long long)b.header, b.prev_rel, b.next_rel, b.block_size, b.user_size,
-            (unsigned long long)b.user, g(b.start_guard), g(b.end_guard));
+    report_writer.out.put(
+        "    %-9s header 0x%llx: list prev %+d next %+d (x16), block 0x%x bytes, user 0x%x bytes at 0x%llx, start "
+        "guard %s, end guard %s\n",
+        label, (unsigned long long)b.header, b.prev_rel, b.next_rel, b.block_size, b.user_size, (unsigned long long)b.user,
+        g(b.start_guard), g(b.end_guard));
 }
 
 void heap_block(const neheap::Heap &h, uintptr_t a, const char *why, bool as_user)
@@ -108,7 +122,7 @@ void heap_block(const neheap::Heap &h, uintptr_t a, const char *why, bool as_use
     Reader rd;
     neheap::Block b;
     report_writer.out.put("  %s 0x%llx in heap '%s' (+0x%llx):\n", why, (unsigned long long)a, h.name,
-            (unsigned long long)(a - h.start));
+                          (unsigned long long)(a - h.start));
     bool found = false;
     if (as_user) {
         uintptr_t header = a - h.guard - 0x10;
@@ -116,19 +130,20 @@ void heap_block(const neheap::Heap &h, uintptr_t a, const char *why, bool as_use
             block_line("block", b);
             found = true;
         } else if (neheap::raw_header(rd, h, header, b)) {
-            report_writer.out.put("    header at 0x%llx does not match a block of this heap (block size 0x%x, user size 0x%x: a block "
-                    "of that user size is 0x%x bytes):\n",
-                    (unsigned long long)header, b.block_size, b.user_size, neheap::block_size_for(b.user_size, h.guard));
+            report_writer.out.put(
+                "    header at 0x%llx does not match a block of this heap (block size 0x%x, user size 0x%x: a block "
+                "of that user size is 0x%x bytes):\n",
+                (unsigned long long)header, b.block_size, b.user_size, neheap::block_size_for(b.user_size, h.guard));
             hex_dump(header - 0x20, 0x60, header);
         }
         if (!found) {
             neheap::Block p;
             if (neheap::containing(rd, h, header - 1, p, 1 << 18)) {
                 block_line("previous", p);
-                report_writer.out.put("    the previous block's user data ends 0x%llx bytes before this header%s\n",
-                        (unsigned long long)(header - (p.user + p.user_size)),
-                        p.end_guard == 0 ? "; its end guard is overwritten, so a write ran past its end towards this header"
-                                         : "");
+                report_writer.out.put(
+                    "    the previous block's user data ends 0x%llx bytes before this header%s\n",
+                    (unsigned long long)(header - (p.user + p.user_size)),
+                    p.end_guard == 0 ? "; its end guard is overwritten, so a write ran past its end towards this header" : "");
                 uintptr_t end = p.user + p.user_size;
                 hex_dump(end >= p.user + 0x20 ? end - 0x20 : p.user, 0x60, end);
             }
@@ -154,12 +169,13 @@ void heap_block(const neheap::Heap &h, uintptr_t a, const char *why, bool as_use
     if (neheap::before(rd, h, b.header, p, 1 << 18))
         block_line("previous", p);
     else
-        report_writer.out.put("    previous  no allocated block ends at this header (free space, or a corrupt header before it)\n");
+        report_writer.out.put(
+            "    previous  no allocated block ends at this header (free space, or a corrupt header before it)\n");
     if (neheap::block_at(rd, h, b.end(), n))
         block_line("next", n);
     else if (b.end() < h.start + h.size) {
         report_writer.out.put("    next      0x%llx is not an allocated block header (free space or corrupt):\n",
-                (unsigned long long)b.end());
+                              (unsigned long long)b.end());
         hex_dump(b.end(), 0x20, b.end());
     }
 }
@@ -167,10 +183,7 @@ void heap_block(const neheap::Heap &h, uintptr_t a, const char *why, bool as_use
 const char *reg_names[] = {"rax", "rcx", "rdx", "rbx", "rsp", "rbp", "rsi", "rdi",
                            "r8",  "r9",  "r10", "r11", "r12", "r13", "r14", "r15"};
 
-uint64_t reg(const CONTEXT &c, int i)
-{
-    return (&c.Rax)[i];
-}
+uint64_t reg(const CONTEXT &c, int i) { return (&c.Rax)[i]; }
 
 void section_memory(const Request &r)
 {
@@ -216,21 +229,23 @@ void section_heap(const Request &r)
     if (game_paths.heap_error.set) {
         const HeapError &h = game_paths.heap_error;
         report_writer.out.put("  last heap error: 0x%x (%s) on thread %lu, %.1f s before this report: %s\n", h.code,
-                h.fatal ? "fatal" : "not fatal", h.tid, double(r.ms - h.ms) / 1000, h.msg);
+                              h.fatal ? "fatal" : "not fatal", h.tid, double(r.ms - h.ms) / 1000, h.msg);
         if (h.stats)
             report_writer.out.put("  heap %p '%s': capacity %llu, used %llu, free %llu, largest free %llu bytes\n",
-                    reinterpret_cast<void *>(h.heap), h.name, (unsigned long long)h.capacity, (unsigned long long)h.used,
-                    (unsigned long long)h.free_bytes, (unsigned long long)h.largest);
+                                  reinterpret_cast<void *>(h.heap), h.name, (unsigned long long)h.capacity,
+                                  (unsigned long long)h.used, (unsigned long long)h.free_bytes, (unsigned long long)h.largest);
         if (h.pool)
-            report_writer.out.put("  %s\n", career::save_heap::pool_line(h.pool_info, career::save_heap::parse_request(h.msg)).c_str() + 8);
+            report_writer.out.put("  %s\n",
+                                  career::save_heap::pool_line(h.pool_info, career::save_heap::parse_request(h.msg)).c_str() + 8);
     }
     for (int i = 0; i < sections.nheaps; i++) {
         const neheap::Heap &h = sections.heaps[i];
-        report_writer.out.put("  heap object 0x%llx '%s' (vtable %s+0x%llx): range 0x%llx +0x%llx, guard %llu bytes, allocated "
-                "%llu bytes, allocated list head 0x%llx\n",
-                (unsigned long long)h.obj, h.name, modules.at(process.exe_base) ? modules.at(process.exe_base)->name : "exe",
-                (unsigned long long)(h.vtable - process.exe_base), (unsigned long long)h.start, (unsigned long long)h.size,
-                (unsigned long long)h.guard, (unsigned long long)h.allocated, (unsigned long long)h.list);
+        report_writer.out.put(
+            "  heap object 0x%llx '%s' (vtable %s+0x%llx): range 0x%llx +0x%llx, guard %llu bytes, allocated "
+            "%llu bytes, allocated list head 0x%llx\n",
+            (unsigned long long)h.obj, h.name, modules.at(process.exe_base) ? modules.at(process.exe_base)->name : "exe",
+            (unsigned long long)(h.vtable - process.exe_base), (unsigned long long)h.start, (unsigned long long)h.size,
+            (unsigned long long)h.guard, (unsigned long long)h.allocated, (unsigned long long)h.list);
     }
     uintptr_t from_msg[8];
     int nmsg = 0;
@@ -263,7 +278,7 @@ void section_exception(const Request &r)
     char w[512];
     where_into(w, sizeof w, reinterpret_cast<uintptr_t>(e.ExceptionAddress), true);
     report_writer.out.put("\n== Exception\n  %s (0x%08lx), flags 0x%lx, at %s\n", code_name(e.ExceptionCode), e.ExceptionCode,
-            e.ExceptionFlags, w);
+                          e.ExceptionFlags, w);
     for (DWORD i = 0; i < e.NumberParameters && i < EXCEPTION_MAXIMUM_PARAMETERS; i++)
         report_writer.out.put("  parameter %lu: 0x%llx\n", i, (unsigned long long)e.ExceptionInformation[i]);
     std::string ff = fast_fail::exception_line(e.ExceptionCode, e.NumberParameters >= 1, e.ExceptionInformation[0]);
@@ -272,8 +287,12 @@ void section_exception(const Request &r)
     if ((e.ExceptionCode == EXCEPTION_ACCESS_VIOLATION || e.ExceptionCode == EXCEPTION_IN_PAGE_ERROR) &&
         e.NumberParameters >= 2) {
         auto op = e.ExceptionInformation[0];
-        report_writer.out.put("  %s 0x%llx: ", op == 0 ? "reading" : op == 1 ? "writing" : op == 8 ? "executing (DEP)" : "accessing",
-                (unsigned long long)e.ExceptionInformation[1]);
+        report_writer.out.put("  %s 0x%llx: ",
+                              op == 0   ? "reading"
+                              : op == 1 ? "writing"
+                              : op == 8 ? "executing (DEP)"
+                                        : "accessing",
+                              (unsigned long long)e.ExceptionInformation[1]);
         region(e.ExceptionInformation[1], r);
         report_writer.out.put("\n");
     }

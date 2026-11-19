@@ -13,10 +13,7 @@ namespace career::content {
 
 namespace {
 
-std::string text(const char *s)
-{
-    return s ? s : "";
-}
+std::string text(const char *s) { return s ? s : ""; }
 
 int copy_out(const std::string &s, char *out, size_t cap)
 {
@@ -34,26 +31,31 @@ std::string caller(const void *from)
     return id.empty() ? (dll.empty() ? std::string("unknown module") : dll) : id;
 }
 
-int api_available()
-{
-    return runtime::enabled("career", nullptr) && !hooks.off();
-}
+int api_available() { return runtime::enabled("career", nullptr) && !hooks.off(); }
 
 int api_add(const SwoftyCareerContentDesc *d)
 {
     std::string who = caller(__builtin_return_address(0));
     constexpr size_t careers_end = offsetof(SwoftyCareerContentDesc, careers) + sizeof(uint32_t);
     if (!d || d->size < offsetof(SwoftyCareerContentDesc, careers)) {
-        swofty::log("[career] content from %s refused: no descriptor, or its size %u is below %zu", who.c_str(),
-                    d ? d->size : 0, offsetof(SwoftyCareerContentDesc, careers));
+        swofty::log("[career] content from %s refused: no descriptor, or its size %u is below %zu", who.c_str(), d ? d->size : 0,
+                    offsetof(SwoftyCareerContentDesc, careers));
         return SWOFTY_ASSET_INVALID;
     }
     if (!runtime::enabled("career", nullptr)) {
         swofty::log("[career] content '%s' from %s refused: the career feature is off", text(d->id).c_str(), who.c_str());
         return SWOFTY_ASSET_UNAVAILABLE;
     }
-    content::Desc desc{text(d->id),   text(d->title), text(d->description), text(d->data_group),
-                       text(d->suffix), text(d->mode), text(d->entitlement), d->model, d->car_group, d->badge,
+    content::Desc desc{text(d->id),
+                       text(d->title),
+                       text(d->description),
+                       text(d->data_group),
+                       text(d->suffix),
+                       text(d->mode),
+                       text(d->entitlement),
+                       d->model,
+                       d->car_group,
+                       d->badge,
                        d->size >= careers_end ? d->careers : content::CAREER_DRIVER};
     return add_slot(desc, who, runtime::older_addon(__builtin_return_address(0)), nullptr);
 }
@@ -125,16 +127,10 @@ const SwoftyCareerContent table = {api_available, api_add, api_info, api_data_gr
 
 using namespace career::content;
 
-extern "C" __declspec(dllexport) const SwoftyCareerContent *SwoftyCoreCareerContent(void)
-{
-    return &table;
-}
+extern "C" __declspec(dllexport) const SwoftyCareerContent *SwoftyCoreCareerContent(void) { return &table; }
 
 namespace runtime {
 
-const SwoftyCareerContent *career_content_table()
-{
-    return &table;
-}
+const SwoftyCareerContent *career_content_table() { return &table; }
 
 }

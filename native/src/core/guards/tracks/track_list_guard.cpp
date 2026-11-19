@@ -150,7 +150,8 @@ bool env_off()
     char v[16] = {};
     if (!guards::env_off("SWOFTY_TRACK_LIST_GUARD", v))
         return false;
-    swofty::log("[saves] career calendar track list guard off (SWOFTY_TRACK_LIST_GUARD=%s); the custom_track_list count lines stay", v);
+    swofty::log(
+        "[saves] career calendar track list guard off (SWOFTY_TRACK_LIST_GUARD=%s); the custom_track_list count lines stay", v);
     return true;
 }
 
@@ -165,7 +166,8 @@ private:
             next_row = swofty::api->resolve(NEXT_ROW);
             if (!next_row || !swofty::api->resolve(PUSH)) {
                 next_row = 0;
-                swofty::log("[saves] career calendar track list guard off: needs %s and %s, which this build does not resolve", PUSH, NEXT_ROW);
+                swofty::log("[saves] career calendar track list guard off: needs %s and %s, which this build does not resolve",
+                            PUSH, NEXT_ROW);
             } else {
                 guarded = true;
                 out.push_back({MIXIN, {{PUSH, SWOFTY_MIXIN_SITE, 100, (void *)&track_list_push, nullptr}}});
@@ -177,7 +179,8 @@ private:
         if (swofty::api->resolve(SAVE))
             sites.push_back({SAVE, SWOFTY_MIXIN_SITE, 100, (void *)&track_list_save, nullptr});
         if (sites.empty()) {
-            swofty::log("[saves] custom_track_list count lines off: needs %s or %s, which this build does not resolve", ENTRY_DONE, SAVE);
+            swofty::log("[saves] custom_track_list count lines off: needs %s or %s, which this build does not resolve",
+                        ENTRY_DONE, SAVE);
         } else {
             out.push_back({LOG_MIXIN, std::move(sites)});
         }

@@ -31,10 +31,7 @@ inline bool decode(const std::string &s, size_t &i, uint32_t &cp)
     return true;
 }
 
-inline bool drawable(uint32_t cp)
-{
-    return (cp >= 0x20 && cp < 0x7f) || (cp >= 0xc0 && cp <= 0xff && cp != 0xd7 && cp != 0xf7);
-}
+inline bool drawable(uint32_t cp) { return (cp >= 0x20 && cp < 0x7f) || (cp >= 0xc0 && cp <= 0xff && cp != 0xd7 && cp != 0xf7); }
 
 // True with the name to show in `out`; false when the name is empty or has a character the HUD font lacks.
 inline bool sanitize(const std::string &name, std::string &out)
@@ -69,7 +66,6 @@ inline bool sanitize(const std::string &name, std::string &out)
     return !out.empty();
 }
 
-
 using frontend::name_hash::djb2;
 
 // The name to show: SWOFTY_TT_PLAYER_NAME holds the text itself ("0" turns the feature off, empty or unset falls back to the launcher
@@ -102,10 +98,7 @@ inline bool is_local_id(const uint8_t id[0x50], const runtime::presence_id::Id &
 }
 
 // The local presence id packed for the lookup hook's lock-free compare: is_local_id only reads type, value[0] and flag39.
-inline uint32_t id_tag(const runtime::presence_id::Id &me)
-{
-    return uint32_t(me.type) | (me.flag39 ? 0x100u : 0u);
-}
+inline uint32_t id_tag(const runtime::presence_id::Id &me) { return uint32_t(me.type) | (me.flag39 ? 0x100u : 0u); }
 
 inline runtime::presence_id::Id id_of(uint32_t tag, uint64_t value0)
 {
@@ -196,8 +189,8 @@ inline bool root_allowed(uint32_t h)
 
 inline const char *leaf_name(uint32_t h)
 {
-    static const char *names[] = {"display_name", "full_name", "full_name_tv_style", "second_name", "second_name_standard", "gamertag",
-                                  "second_line_name", "driver_full_name_tv_style"};
+    static const char *names[] = {"display_name",         "full_name", "full_name_tv_style", "second_name",
+                                  "second_name_standard", "gamertag",  "second_line_name",   "driver_full_name_tv_style"};
     for (const char *n : names)
         if (djb2(n) == h)
             return n;

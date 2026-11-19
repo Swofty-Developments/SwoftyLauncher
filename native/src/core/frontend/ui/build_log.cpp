@@ -75,8 +75,7 @@ void screen_site(safetyhook::Context &c) { loader.screen_built(c); }
 
 Screen *ScreenLoader::job_owner(uint8_t *job)
 {
-    if (!job || !readable(job + 0xa0, 16) ||
-        *reinterpret_cast<void **>(job + 0xa0) != reinterpret_cast<void *>(&on_parsed))
+    if (!job || !readable(job + 0xa0, 16) || *reinterpret_cast<void **>(job + 0xa0) != reinterpret_cast<void *>(&on_parsed))
         return nullptr;
     auto *ctx = *reinterpret_cast<Screen **>(job + 0xa8);
     for (auto &s : screens)
@@ -95,9 +94,8 @@ void ScreenLoader::node_failure(uint8_t *job, uint8_t *rec, int code, const char
     node_text(rec, name, sizeof name, &cls, &idx);
     if (s)
         s->result = code;
-    swofty::log("[ui] %s screen '%s'%s%s: node '%s' (index %u, class %s) %s, code %d (0x%x)", s ? "addon" : "engine",
-                cur_screen, s ? " from " : "", s ? s->file.c_str() : "", name, idx, fourcc_text(cls).c_str(), what,
-                code, code);
+    swofty::log("[ui] %s screen '%s'%s%s: node '%s' (index %u, class %s) %s, code %d (0x%x)", s ? "addon" : "engine", cur_screen,
+                s ? " from " : "", s ? s->file.c_str() : "", name, idx, fourcc_text(cls).c_str(), what, code, code);
 }
 
 void ScreenLoader::node_read(safetyhook::Context &c)
@@ -113,8 +111,7 @@ void ScreenLoader::node_read(safetyhook::Context &c)
         snprintf(cur_screen, sizeof cur_screen, "%s", p && readable(p, 1) ? p : "?");
         if (s && !s->started) {
             s->started = true;
-            swofty::log("[ui] screen %s (%s): build job started, root node '%s'", s->name.c_str(), s->flow.c_str(),
-                        cur_screen);
+            swofty::log("[ui] screen %s (%s): build job started, root node '%s'", s->name.c_str(), s->flow.c_str(), cur_screen);
         }
     }
     if (rc == 0x55 && s)
@@ -153,8 +150,8 @@ void ScreenLoader::screen_built(safetyhook::Context &c)
     if (s) {
         s->result = rc;
         s->result_seen = true;
-        swofty::log("[ui] screen %s (%s): root '%s' built with result 0x%x (%s)", s->name.c_str(), s->flow.c_str(),
-                    cur_screen, rc,
+        swofty::log("[ui] screen %s (%s): root '%s' built with result 0x%x (%s)", s->name.c_str(), s->flow.c_str(), cur_screen,
+                    rc,
                     rc == 0      ? "ok, the engine inserts it into the screen table next"
                     : rc == 0x55 ? "skipped: a same-name screen is already registered"
                                  : "failed: the engine drops it and ends this build job");

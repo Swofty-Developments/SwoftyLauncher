@@ -17,8 +17,7 @@ constexpr size_t kConfigExpand = 0x8;
 constexpr size_t kConfigPagesize = 0x20;
 
 constexpr size_t kNameLen = 12;
-constexpr uint32_t kNameSlots[kNameLen + 1] = {0x60, 0x6f, 0x6a, 0x6e, 0x64, 0x6d, 0x68,
-                                              0x6c, 0x80, 0xa7, 0x9c, 0xa6, 0x90};
+constexpr uint32_t kNameSlots[kNameLen + 1] = {0x60, 0x6f, 0x6a, 0x6e, 0x64, 0x6d, 0x68, 0x6c, 0x80, 0xa7, 0x9c, 0xa6, 0x90};
 
 enum class Factory : uint8_t { plain, internal };
 enum class Virtual : uint8_t { any, off, on };
@@ -85,10 +84,7 @@ inline const Spec *find(Factory f, uint64_t size, const Config &c)
     return nullptr;
 }
 
-inline uint64_t round_up(uint64_t bytes, uint64_t page)
-{
-    return (bytes + page - 1) / page * page;
-}
+inline uint64_t round_up(uint64_t bytes, uint64_t page) { return (bytes + page - 1) / page * page; }
 
 inline Choice choose(const Spec &s, const char *env, uint64_t physical_bytes)
 {
@@ -140,8 +136,7 @@ inline void frame_name(const uint8_t *rsp, char (&out)[kNameLen + 1])
     out[kNameLen] = '\0';
 }
 
-inline std::string apply_line(const Spec &s, const Config &c, const char *frame, uint64_t old_bytes,
-                              const Choice &ch)
+inline std::string apply_line(const Spec &s, const Config &c, const char *frame, uint64_t old_bytes, const Choice &ch)
 {
     char b[512];
     char what[160];
@@ -149,17 +144,16 @@ inline std::string apply_line(const Spec &s, const Config &c, const char *frame,
         std::snprintf(what, sizeof what, "heap '%s' (virtual %u, pagesize %u)", frame, c.virt, c.pagesize);
     else
         std::snprintf(what, sizeof what, "heap %s (virtual %u, expand %u%%)", s.name, c.virt, c.expand);
-    std::snprintf(b, sizeof b, "%s%s: size %llu -> %llu bytes (%llu MiB, %s)", s.tag, what,
-                  (unsigned long long)old_bytes, (unsigned long long)ch.bytes, (unsigned long long)(ch.bytes / kMiB),
-                  source_text(s, ch.source).c_str());
+    std::snprintf(b, sizeof b, "%s%s: size %llu -> %llu bytes (%llu MiB, %s)", s.tag, what, (unsigned long long)old_bytes,
+                  (unsigned long long)ch.bytes, (unsigned long long)(ch.bytes / kMiB), source_text(s, ch.source).c_str());
     return b;
 }
 
 inline std::string kept_line(const Spec &s, const char *env)
 {
     char b[400];
-    std::snprintf(b, sizeof b, "%s%s kept at the game's %llu MiB (%s=%s)", s.tag, s.label,
-                  (unsigned long long)(s.stock / kMiB), s.env, env ? env : "");
+    std::snprintf(b, sizeof b, "%s%s kept at the game's %llu MiB (%s=%s)", s.tag, s.label, (unsigned long long)(s.stock / kMiB),
+                  s.env, env ? env : "");
     return b;
 }
 
@@ -182,8 +176,7 @@ inline std::string unresolved_line(const Spec &s, const char *site)
 inline std::string armed_line(const Spec &s, const Choice &ch)
 {
     char b[400];
-    std::snprintf(b, sizeof b,
-                  "%s%s armed: %llu MiB instead of the game's %llu MiB when system/memory_map.xml is read", s.tag,
+    std::snprintf(b, sizeof b, "%s%s armed: %llu MiB instead of the game's %llu MiB when system/memory_map.xml is read", s.tag,
                   s.label, (unsigned long long)(ch.bytes / kMiB), (unsigned long long)(s.stock / kMiB));
     return b;
 }

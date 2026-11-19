@@ -28,29 +28,37 @@ namespace {
 
 const runtime::Sig S_LOAD{"Gdb_Load_GameDatabase", "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 02 00 00 48 89 D7 49 89 CC",
                           0x45a0350};
-const runtime::Sig S_INSERT{"Gdb_HashMap_Insert",
-                            "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 4C 89 CE 44 88 44 24 37",
-                            0x45a12d0};
+const runtime::Sig S_INSERT{
+    "Gdb_HashMap_Insert",
+    "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 4C 89 CE 44 88 44 24 37", 0x45a12d0};
 const runtime::Sig S_LOOKUP{"Gdb_Lookup_Key", "56 57 55 53 49 B8 25 23 22 84 E4 9C F2 CB", 0x45a22f0};
-const runtime::Sig S_GLOBAL{"g_Gdb_Database", "56 57 55 53 49 B8 25 23 22 84 E4 9C F2 CB 48 8B 15 ?? ?? ?? ?? 44 0F B6 11",
-                            0x6cc4278, runtime::Sig::riprel, 0xe, 0x11, 7};
+const runtime::Sig S_GLOBAL{"g_Gdb_Database",
+                            "56 57 55 53 49 B8 25 23 22 84 E4 9C F2 CB 48 8B 15 ?? ?? ?? ?? 44 0F B6 11",
+                            0x6cc4278,
+                            runtime::Sig::riprel,
+                            0xe,
+                            0x11,
+                            7};
 const runtime::Sig S_RESERVE{"site_Gdb_ReserveTarget",
                              "48 89 8C 24 88 00 00 00 48 0F 47 C8 B8 08 00 00 00 49 B9 5C 8F C2 F5 28 5C 8F 02",
-                             0x45a0a11, runtime::Sig::addr, 0, 0xc, 0};
+                             0x45a0a11,
+                             runtime::Sig::addr,
+                             0,
+                             0xc,
+                             0};
 // The int, float and bool record classes' vtables, each loaded where its record constructor stores it beside the value
 // at +8 (re/tools/sigport.py: one match on the KB build and on both 1.0.145 builds, every vtable slot the same code;
 // re/research/ea-1-0-145.md).
-const runtime::Sig S_VT_INT{"vt_Gdb_IntRecord", "48 8D 0D ?? ?? ?? ?? 48 89 08 89 70 08", 0x5bee788, runtime::Sig::riprel, 0,
-                            3, 7};
-const runtime::Sig S_VT_FLOAT{"vt_Gdb_FloatRecord", "48 8D 0D ?? ?? ?? ?? 48 89 08 C5 FA 11 70 08 E9", 0x5bee798,
-                              runtime::Sig::riprel, 0, 3, 7};
-const runtime::Sig S_VT_BOOL{"vt_Gdb_BoolRecord", "48 8D 0D ?? ?? ?? ?? 48 89 08 C6 40 08 01 49 89 07 EB 86", 0x56e6518,
-                             runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig S_VT_INT{
+    "vt_Gdb_IntRecord", "48 8D 0D ?? ?? ?? ?? 48 89 08 89 70 08", 0x5bee788, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig S_VT_FLOAT{
+    "vt_Gdb_FloatRecord", "48 8D 0D ?? ?? ?? ?? 48 89 08 C5 FA 11 70 08 E9", 0x5bee798, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig S_VT_BOOL{
+    "vt_Gdb_BoolRecord", "48 8D 0D ?? ?? ?? ?? 48 89 08 C6 40 08 01 49 89 07 EB 86", 0x56e6518, runtime::Sig::riprel, 0, 3, 7};
 
 namespace bp = runtime::build_proof;
 constexpr bp::Proof RECORD_CLASSES{"the int, float and bool record classes (value at +0x8)",
-                                   bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145) |
-                                       bp::bit(bp::Build::ea_1_0_145)};
+                                   bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145) | bp::bit(bp::Build::ea_1_0_145)};
 constexpr bp::Gate LATE_EDITS{"late game database edits", &RECORD_CLASSES};
 
 constexpr size_t DB_MAP = 0xa8, DB_LOADED = 0xf0, DB_ALLOC = 0x8;
@@ -76,9 +84,9 @@ struct TagName {
     int tag;
 };
 
-const TagName TAGS[] = {{"int", 0},  {"float", 1}, {"string", 2}, {"enum", 3},   {"id", 4},      {"bool", 5},
-                        {"time", 6}, {"t7", 7},    {"t8", 8},     {"curve", 9},  {"colour", 11}, {"color", 11},
-                        {"t12", 12}, {"list", 13}, {"vector", 14}, {"t17", 17}, {"t18", 18}};
+const TagName TAGS[] = {{"int", 0},  {"float", 1}, {"string", 2},  {"enum", 3},  {"id", 4},      {"bool", 5},
+                        {"time", 6}, {"t7", 7},    {"t8", 8},      {"curve", 9}, {"colour", 11}, {"color", 11},
+                        {"t12", 12}, {"list", 13}, {"vector", 14}, {"t17", 17},  {"t18", 18}};
 const int INFER[] = {0, 1, 2, 5, 11, 12};
 const uintptr_t KB_VT[19] = {0x5bee788, 0x5bee798, 0x5bee6b8, 0x5bee6b8, 0x5bee6b8, 0x56e6518, 0x5bee7a8,
                              0x5bee7b8, 0x5bee7c8, 0x5bee7d8, 0,         0x57a6730, 0x5bee7e8, 0x5bee6c8,
@@ -200,8 +208,8 @@ bool read_edit(const json::Value &j)
     e.retype = j["retype"].type == json::Value::Bool && j["retype"].b;
     if (j["type"].type != json::Value::Null)
         e.tag = tag_of(j["type"]);
-    if (!e.key || (v.type != json::Value::Str && v.type != json::Value::Num && v.type != json::Value::Bool) ||
-        e.tag == -2 || e.tag > 18 || e.tag == 10 || e.tag == 15 || e.tag == 16) {
+    if (!e.key || (v.type != json::Value::Str && v.type != json::Value::Num && v.type != json::Value::Bool) || e.tag == -2 ||
+        e.tag > 18 || e.tag == 10 || e.tag == 15 || e.tag == 16) {
         swofty::log("[assets] gamedb: edit %s ignored: it needs \"key\" (or \"hash\"), a string, number or bool "
                     "\"value\" and a known \"type\" (tags 10, 15 and 16 store nothing)",
                     e.path.empty() ? h.c_str() : e.path.c_str());
@@ -226,10 +234,7 @@ void read_config()
         read_edit(j);
 }
 
-std::string label(const Edit &e)
-{
-    return e.path.empty() ? runtime::hex16(e.key) : e.path;
-}
+std::string label(const Edit &e) { return e.path.empty() ? runtime::hex16(e.key) : e.path; }
 
 uint64_t *slot_of(uint8_t *db, uint64_t key)
 {
@@ -243,10 +248,7 @@ void *value_of(uint8_t *db, uint64_t key)
     return s ? reinterpret_cast<void *>(s[1]) : nullptr;
 }
 
-void *vt_of(void *v)
-{
-    return v ? *static_cast<void **>(v) : nullptr;
-}
+void *vt_of(void *v) { return v ? *static_cast<void **>(v) : nullptr; }
 
 std::string probe_text(int tag, const std::string &value)
 {
@@ -281,7 +283,9 @@ void *probe_class(uint8_t *db, int tag, const std::string &text)
     uintptr_t kb = tag < 19 ? KB_VT[tag] : 0;
     swofty::log("[assets] gamedb: class of tag %d (%s) is vtable base+0x%llx via probe key %s%s", tag, tag_name(tag),
                 vt ? (unsigned long long)(reinterpret_cast<uintptr_t>(vt) - base) : 0ull, path.c_str(),
-                !runtime::same_build() || !kb ? "" : reinterpret_cast<uintptr_t>(vt) - base == kb ? " (matches the KB vtable)" : " (DIFFERS from the KB vtable)");
+                !runtime::same_build() || !kb                  ? ""
+                : reinterpret_cast<uintptr_t>(vt) - base == kb ? " (matches the KB vtable)"
+                                                               : " (DIFFERS from the KB vtable)");
     return vt;
 }
 
@@ -404,9 +408,12 @@ void apply_one(uint8_t *db, Edit &e, Tally &n)
         return;
     }
     (retype ? n.retyped : old ? n.overwrote : n.created)++;
-    swofty::log("[assets] gamedb: %s %s (key %s, tag %d %s): %s%s%s", retype ? "retyped" : old ? "overwrote" : "created",
-                label(e).c_str(), runtime::hex16(e.key).c_str(), tag, tag_name(tag), old ? was.c_str() : "",
-                old ? " -> " : "", got.c_str());
+    swofty::log("[assets] gamedb: %s %s (key %s, tag %d %s): %s%s%s",
+                retype ? "retyped"
+                : old  ? "overwrote"
+                       : "created",
+                label(e).c_str(), runtime::hex16(e.key).c_str(), tag, tag_name(tag), old ? was.c_str() : "", old ? " -> " : "",
+                got.c_str());
 }
 
 void apply(uint8_t *db, const char *when)
@@ -435,8 +442,7 @@ void apply(uint8_t *db, const char *when)
         swofty::log("[assets] gamedb: the edits add %zu record(s) to %llu, and the game's database map grows at %llu "
                     "(80%% of %llu slots); growing it after the game has loaded crashes the game at boot, so no edit "
                     "applied and the database is the game's own",
-                    fresh, (unsigned long long)before, (unsigned long long)dbread::grows_at(slots),
-                    (unsigned long long)slots);
+                    fresh, (unsigned long long)before, (unsigned long long)dbread::grows_at(slots), (unsigned long long)slots);
         return;
     }
     Tally t;
@@ -541,9 +547,7 @@ void boot16(uint8_t *db)
     uint64_t left = sane ? room::left(slots, before) : 0;
     uint64_t usable = left > room::PROBE_RECORDS ? left - room::PROBE_RECORDS : 0;
     ap::db::staging().open(
-        [db, sane](const std::string &path) {
-            return sane && !path.empty() && value_of(db, runtime::fnv64(path)) != nullptr;
-        },
+        [db, sane](const std::string &path) { return sane && !path.empty() && value_of(db, runtime::fnv64(path)) != nullptr; },
         usable);
     ap::moments::boot_load(room_report);
     std::vector<ap::db::Row> rows = ap::db::staging().close();
@@ -605,9 +609,8 @@ void boot16(uint8_t *db)
         for (auto &r : regs[v.addon])
             names += (names.empty() ? "" : ", ") + r;
         if (!v.admitted) {
-            std::string why = std::to_string(v.rows) + " " + names + " database record(s) refused: " +
-                              std::to_string(v.asked) + " new key(s), past the database room (" +
-                              std::to_string(left) + " records left this game start, " +
+            std::string why = std::to_string(v.rows) + " " + names + " database record(s) refused: " + std::to_string(v.asked) +
+                              " new key(s), past the database room (" + std::to_string(left) + " records left this game start, " +
                               std::to_string(budget.asked_keys) +
                               " asked); the boot's records are laid out together, so none is applied";
             swofty::log("[registry] register: %s %s", v.addon.c_str(), why.c_str());
@@ -650,10 +653,10 @@ void reserve_target(safetyhook::Context &c)
     runtime::Robin map{db + DB_MAP};
     uint64_t file = runtime::readable(reinterpret_cast<void *>(c.r14), 4) ? *reinterpret_cast<uint32_t *>(c.r14) : 0;
     const char *guard = !g_db || !runtime::readable(db + DB_MAP, 0x48) || db != *g_db ? "r12 is not g_Gdb_Database"
-                        : map.count() || map.mask()                                      ? "the value map was not empty at the reserve point"
-                        : db[DB_LOADED]                                                  ? "the database was already loaded"
-                        : c.rcx != file                                                  ? "rcx is not the file's record count"
-                                                                                         : nullptr;
+                        : map.count() || map.mask() ? "the value map was not empty at the reserve point"
+                        : db[DB_LOADED]             ? "the database was already loaded"
+                        : c.rcx != file             ? "rcx is not the file's record count"
+                                                    : nullptr;
     if (guard) {
         room_report.presize = "unavailable";
         room_report.reason = guard;
@@ -849,7 +852,4 @@ void setup()
 
 }
 
-void runtime::gamedb_setup()
-{
-    setup();
-}
+void runtime::gamedb_setup() { setup(); }

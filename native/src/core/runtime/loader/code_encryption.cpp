@@ -34,8 +34,8 @@ double CodeEncryption::section_entropy(const IMAGE_SECTION_HEADER *s) const
     double sum = 0;
     int ok = 0;
     for (int k = 0; k < 16; k++) {
-        size_t off = size > 16 * 0x1000 ? (size_t)((double)k / 16 * (double)(size - 0x1000)) & ~(size_t)0xfff
-                                        : (size_t)k * 0x1000;
+        size_t off =
+            size > 16 * 0x1000 ? (size_t)((double)k / 16 * (double)(size - 0x1000)) & ~(size_t)0xfff : (size_t)k * 0x1000;
         if (k && off + 0x1000 > size)
             break;
         double e = page_entropy(start + off);

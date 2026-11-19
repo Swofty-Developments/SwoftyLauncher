@@ -18,12 +18,17 @@ uintptr_t bind(const char *id)
     return a;
 }
 
-constexpr const char *kLineupBindings[] = {
-    "Career_Set_EntrantData_Thunk", "vt_Career_MessageDriverMoveConfirmed", "Career_Set_DriverContractState",
-    "Career_Build_DriverContract", "vt_Career_MessageDriverContractChanged", "Career_Build_LineupChanges",
-    "vt_Career_MessageDriverMovesFinalisedUpgrades", "vt_Career_MessageDriverMovesFinalisedRecognition",
-    "vt_Career_MessageDriverMovesFinalised", "Career_DriverNumbers_CheckExisting",
-    "k_Career_DriverCareerContractsManagerComponentDesc"};
+constexpr const char *kLineupBindings[] = {"Career_Set_EntrantData_Thunk",
+                                           "vt_Career_MessageDriverMoveConfirmed",
+                                           "Career_Set_DriverContractState",
+                                           "Career_Build_DriverContract",
+                                           "vt_Career_MessageDriverContractChanged",
+                                           "Career_Build_LineupChanges",
+                                           "vt_Career_MessageDriverMovesFinalisedUpgrades",
+                                           "vt_Career_MessageDriverMovesFinalisedRecognition",
+                                           "vt_Career_MessageDriverMovesFinalised",
+                                           "Career_DriverNumbers_CheckExisting",
+                                           "k_Career_DriverCareerContractsManagerComponentDesc"};
 
 bool lineup_bound(std::string &missing)
 {
@@ -40,15 +45,9 @@ bool on_flow_thread()
     return !t || t == GetCurrentThreadId();
 }
 
-void frame(double, void *)
-{
-    flow_tid = GetCurrentThreadId();
-}
+void frame(double, void *) { flow_tid = GetCurrentThreadId(); }
 
-bool writable(uintptr_t p, size_t n)
-{
-    return runtime::pages::writable_in_region(p, n);
-}
+bool writable(uintptr_t p, size_t n) { return runtime::pages::writable_in_region(p, n); }
 
 int post(void *msg)
 {
@@ -60,7 +59,8 @@ uintptr_t component(const char *desc_id)
 {
     const SwoftyCareer *c = runtime::career_table();
     uintptr_t desc = bind(desc_id);
-    auto p = desc && c && c->component_by_desc ? reinterpret_cast<uintptr_t>(c->component_by_desc(reinterpret_cast<void *>(desc))) : 0;
+    auto p =
+        desc && c && c->component_by_desc ? reinterpret_cast<uintptr_t>(c->component_by_desc(reinterpret_cast<void *>(desc))) : 0;
     return p && mem::object_like(p) ? p : 0;
 }
 
@@ -98,10 +98,7 @@ bool entrant_rows(uintptr_t e, std::vector<Row> &out)
     return true;
 }
 
-bool entity_busy(uintptr_t e)
-{
-    return rdv<uint8_t>(e + offsetof(g::CareerEntity, entrant_update_busy)) != 0;
-}
+bool entity_busy(uintptr_t e) { return rdv<uint8_t>(e + offsetof(g::CareerEntity, entrant_update_busy)) != 0; }
 
 bool unique_identity(uintptr_t e, const Row &id_row)
 {
@@ -137,10 +134,7 @@ EntrantWriteData seat_data(const Row &driver_row, const Row &seat_row)
     return d;
 }
 
-EntrantWriteData own_data(const Row &r)
-{
-    return seat_data(r, r);
-}
+EntrantWriteData own_data(const Row &r) { return seat_data(r, r); }
 
 EntrantWriteData released_data(const Row &r)
 {
@@ -175,7 +169,8 @@ bool announce(uintptr_t manager, uint32_t driver, uint32_t old_team, uint32_t ne
     m.move.new_team = new_team;
     m.move.reason = reason;
     m.move.weekend_index = reinterpret_cast<WeekendFn>(fn)(reinterpret_cast<void *>(src));
-    m.move.day_index = static_cast<uint16_t>(rdv<uint32_t>(time + offsetof(g::CareerTimeComponent, current_minutes)) / kMinutesPerDay);
+    m.move.day_index =
+        static_cast<uint16_t>(rdv<uint32_t>(time + offsetof(g::CareerTimeComponent, current_minutes)) / kMinutesPerDay);
     return post(&m) == SWOFTY_ASSET_OK;
 }
 
@@ -190,10 +185,7 @@ bool write_row(uintptr_t e, const Row &id_row, const EntrantWriteData &data, uin
     return !entity_busy(e);
 }
 
-bool same_key(uint32_t a, uint32_t b)
-{
-    return ((a ^ b) & 0xffff00ffu) == 0;
-}
+bool same_key(uint32_t a, uint32_t b) { return ((a ^ b) & 0xffff00ffu) == 0; }
 
 bool contract_clock(uintptr_t e, uintptr_t manager, uint16_t &day, uint32_t &value)
 {
@@ -350,8 +342,8 @@ bool finalise(uintptr_t e, const Baseline &baseline, uint64_t &changes)
     if (m.count > 40)
         return false;
     changes = m.count;
-    uintptr_t vts[] = {bind("vt_Career_MessageDriverMovesFinalisedUpgrades"), bind("vt_Career_MessageDriverMovesFinalisedRecognition"),
-                       bind("vt_Career_MessageDriverMovesFinalised")};
+    uintptr_t vts[] = {bind("vt_Career_MessageDriverMovesFinalisedUpgrades"),
+                       bind("vt_Career_MessageDriverMovesFinalisedRecognition"), bind("vt_Career_MessageDriverMovesFinalised")};
     for (uintptr_t v : vts) {
         g::DriverMovesFinalisedMessage copy = m;
         copy.vtable = reinterpret_cast<void **>(v);

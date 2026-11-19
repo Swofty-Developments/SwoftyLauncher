@@ -18,11 +18,16 @@ namespace {
 
 namespace layout = runtime::layout;
 
-const runtime::Sig S_GLOBAL{"g_Gdb_Database", "56 57 55 53 49 B8 25 23 22 84 E4 9C F2 CB 48 8B 15 ?? ?? ?? ?? 44 0F B6 11",
-                            0x6cc4278, runtime::Sig::riprel, 0xe, 0x11, 7};
-const runtime::Sig S_INSERT{"Gdb_HashMap_Insert",
-                            "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 4C 89 CE 44 88 44 24 37",
-                            0x45a12d0};
+const runtime::Sig S_GLOBAL{"g_Gdb_Database",
+                            "56 57 55 53 49 B8 25 23 22 84 E4 9C F2 CB 48 8B 15 ?? ?? ?? ?? 44 0F B6 11",
+                            0x6cc4278,
+                            runtime::Sig::riprel,
+                            0xe,
+                            0x11,
+                            7};
+const runtime::Sig S_INSERT{
+    "Gdb_HashMap_Insert",
+    "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 4C 89 CE 44 88 44 24 37", 0x45a12d0};
 
 constexpr size_t DB_MAP = 0xa8, DB_LOADED = 0xf0;
 
@@ -57,10 +62,7 @@ uint8_t *database()
     return g_db ? static_cast<uint8_t *>(*g_db) : nullptr;
 }
 
-bool loaded(uint8_t *db)
-{
-    return db && runtime::readable(db + DB_LOADED, 1) && db[DB_LOADED];
-}
+bool loaded(uint8_t *db) { return db && runtime::readable(db + DB_LOADED, 1) && db[DB_LOADED]; }
 
 void *record(uint64_t key)
 {
@@ -398,8 +400,8 @@ const char *db_row_name(const SwoftyDbCursor *cursor)
     return decoded(cursor->row);
 }
 
-const SwoftyDb table = {db_available, db_get,      db_get_hash, db_int_at, db_float_at, db_string_at,
-                        db_bool_at,   db_open,     db_row,      db_step,   db_cell,     db_row_name};
+const SwoftyDb table = {db_available, db_get,  db_get_hash, db_int_at, db_float_at, db_string_at,
+                        db_bool_at,   db_open, db_row,      db_step,   db_cell,     db_row_name};
 
 const char *tag_name(uint8_t tag)
 {
@@ -425,7 +427,9 @@ void inspect_key(const json::Value &j)
     int r = db_get(key.c_str(), &v);
     if (r != SWOFTY_ASSET_OK) {
         swofty::log("[dbread] inspect %s as %s: get %s", key.c_str(), as.c_str(),
-                    r == SWOFTY_ASSET_INVALID ? "invalid" : r == SWOFTY_ASSET_UNAVAILABLE ? "unavailable" : "late");
+                    r == SWOFTY_ASSET_INVALID       ? "invalid"
+                    : r == SWOFTY_ASSET_UNAVAILABLE ? "unavailable"
+                                                    : "late");
     } else if (v.tag == SWOFTY_DB_STRING) {
         swofty::log("[dbread] inspect %s as %s: get ok tag string s=\"%s\" meta=0x%08x", key.c_str(), as.c_str(),
                     v.s ? v.s : "(null)", unsigned(v.i));
@@ -436,8 +440,7 @@ void inspect_key(const json::Value &j)
     if (as == "int") {
         int64_t out = 0;
         int t = db_int_at(key.c_str(), &out);
-        swofty::log("[dbread] inspect %s: int_at %s %lld", key.c_str(), t == SWOFTY_ASSET_OK ? "ok" : "invalid",
-                    (long long)out);
+        swofty::log("[dbread] inspect %s: int_at %s %lld", key.c_str(), t == SWOFTY_ASSET_OK ? "ok" : "invalid", (long long)out);
     } else if (as == "float") {
         double out = 0;
         int t = db_float_at(key.c_str(), &out);
@@ -451,7 +454,9 @@ void inspect_key(const json::Value &j)
         const char *out = nullptr;
         int t = db_string_at(key.c_str(), &out);
         swofty::log("[dbread] inspect %s: string_at %s \"%s\"", key.c_str(),
-                    t == SWOFTY_ASSET_OK ? "ok" : t == SWOFTY_ASSET_UNAVAILABLE ? "unavailable" : "invalid",
+                    t == SWOFTY_ASSET_OK            ? "ok"
+                    : t == SWOFTY_ASSET_UNAVAILABLE ? "unavailable"
+                                                    : "invalid",
                     out ? out : "(null)");
     }
 }
@@ -480,7 +485,9 @@ void inspect_table(const json::Value &j)
     SwoftyDbCursor c{};
     int r = db_open(tbl.c_str(), &c);
     swofty::log("[dbread] table %s field %s: open %s, %llu row(s)", tbl.c_str(), field.c_str(),
-                r == SWOFTY_ASSET_OK ? "ok" : r == SWOFTY_ASSET_LATE ? "late" : "unavailable",
+                r == SWOFTY_ASSET_OK     ? "ok"
+                : r == SWOFTY_ASSET_LATE ? "late"
+                                         : "unavailable",
                 (unsigned long long)c.count);
     for (; r == SWOFTY_ASSET_OK; r = db_step(&c)) {
         SwoftyDbValue v{};
@@ -507,8 +514,7 @@ void inspect(int stage)
                     runtime::config_source().c_str());
         return;
     }
-    swofty::log("[dbread] window stage: database ready; %zu key(s), %zu table(s) to inspect", keys.a.size(),
-                tables.a.size());
+    swofty::log("[dbread] window stage: database ready; %zu key(s), %zu table(s) to inspect", keys.a.size(), tables.a.size());
     for (auto &j : keys.a)
         inspect_key(j);
     for (auto &j : tables.a)
@@ -519,19 +525,10 @@ void inspect(int stage)
 
 namespace runtime {
 
-const SwoftyDb *db_table()
-{
-    return &table;
-}
+const SwoftyDb *db_table() { return &table; }
 
-bool db_initialised()
-{
-    return initialised;
-}
+bool db_initialised() { return initialised; }
 
-void dbread_setup()
-{
-    on_stage(inspect);
-}
+void dbread_setup() { on_stage(inspect); }
 
 }

@@ -107,15 +107,9 @@ void *handle(Handler *orig, void *vm, uint32_t **cmd, uint32_t confirm, bool tim
     return orig(vm, cmd);
 }
 
-void *gp_entry(void *vm, uint32_t **cmd)
-{
-    return handle(gp_orig, vm, cmd, ts::ADVANCE_PRESSED, false);
-}
+void *gp_entry(void *vm, uint32_t **cmd) { return handle(gp_orig, vm, cmd, ts::ADVANCE_PRESSED, false); }
 
-void *tt_entry(void *vm, uint32_t **cmd)
-{
-    return handle(tt_orig, vm, cmd, ts::SELECT_PRESSED, true);
-}
+void *tt_entry(void *vm, uint32_t **cmd) { return handle(tt_orig, vm, cmd, ts::SELECT_PRESSED, true); }
 
 class TrackSelectGuard final : public guards::Guard {
 public:

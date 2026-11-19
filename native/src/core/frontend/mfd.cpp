@@ -24,7 +24,11 @@ const runtime::Sig S_UPDATE{"Game_MfdSystem_Update",
                             0x2a8e070};
 const runtime::Sig S_OPEN{"Game_Mfd_Open call (damage auto-open)",
                           "B8 A8 2C 12 01 41 B9 ED AC C0 5B 44 0F 44 C8 48 8B 8E 88 02 00 00 C6 44 24 20 01 E8 ?? ?? ?? ??",
-                          0x2a8cca0, runtime::Sig::rel32, 27, 28, 5};
+                          0x2a8cca0,
+                          runtime::Sig::rel32,
+                          27,
+                          28,
+                          5};
 
 using frontend::name_hash::djb2;
 
@@ -54,10 +58,7 @@ private:
 // Not constinit: safetyhook's hooks hold a std::recursive_mutex, whose constructor is not constexpr.
 MfdTest mfd_test;
 
-void update_hook(void *system)
-{
-    mfd_test.update(system);
-}
+void update_hook(void *system) { mfd_test.update(system); }
 
 void MfdTest::update(void *system)
 {
@@ -69,8 +70,8 @@ void MfdTest::update(void *system)
             next_open = now + 1000ull * test_every;
             uint64_t r = reinterpret_cast<Open_t *>(a_open)(system, OSD_MFD, OSD_MAIN, test_panel, 1);
             if (told++ < 4)
-                swofty::log("[mfd] SWOFTY_MFD_TEST: opened %s in osd_main of osd_mfd (result %llu)",
-                            test_panel_name.c_str(), (unsigned long long)r);
+                swofty::log("[mfd] SWOFTY_MFD_TEST: opened %s in osd_main of osd_mfd (result %llu)", test_panel_name.c_str(),
+                            (unsigned long long)r);
         }
     }
     h_update.call<void>(system);
@@ -131,14 +132,8 @@ void MfdTest::tick()
 
 namespace runtime {
 
-void mfd_setup()
-{
-    frontend::mfd_test.setup();
-}
+void mfd_setup() { frontend::mfd_test.setup(); }
 
-void mfd_tick()
-{
-    frontend::mfd_test.tick();
-}
+void mfd_tick() { frontend::mfd_test.tick(); }
 
 }

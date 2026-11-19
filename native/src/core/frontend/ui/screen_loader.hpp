@@ -30,8 +30,7 @@ struct Screen {
     std::string data;
     void *resid = nullptr, *failed_resid = nullptr, *noted_resid = nullptr;
     State state = State::idle;
-    bool engine = false, started = false, result_seen = false, view_model = false, vm_attached = false,
-         vm_noted = false;
+    bool engine = false, started = false, result_seen = false, view_model = false, vm_attached = false, vm_noted = false;
     int result = 0;
     unsigned attempts = 0;
 };

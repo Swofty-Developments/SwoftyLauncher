@@ -55,28 +55,22 @@ struct Hit {
 };
 
 struct Stats {
-    size_t visited = 0, objects = 0, lists = 0, string_leaves = 0, strings_read = 0, matches = 0, skipped_kinds = 0, failed_reads = 0,
-           bad_maps = 0;
+    size_t visited = 0, objects = 0, lists = 0, string_leaves = 0, strings_read = 0, matches = 0, skipped_kinds = 0,
+           failed_reads = 0, bad_maps = 0;
     uint64_t root_vt = 0;
     uint64_t unknown_vt[4] = {};
 };
 
-template <class Read>
-bool get(Read &read, uint64_t at, void *out, size_t n)
+template <class Read> bool get(Read &read, uint64_t at, void *out, size_t n)
 {
     if (at < 0x10000 || at >= 0x800000000000ull || at + n < at)
         return false;
     return read(at, out, n);
 }
 
-template <class Read>
-bool u64_at(Read &read, uint64_t at, uint64_t &v)
-{
-    return get(read, at, &v, 8);
-}
+template <class Read> bool u64_at(Read &read, uint64_t at, uint64_t &v) { return get(read, at, &v, 8); }
 
-template <class Read>
-bool string_record(Read &read, uint64_t rec, size_t max_text, std::string &out)
+template <class Read> bool string_record(Read &read, uint64_t rec, size_t max_text, std::string &out)
 {
     uint8_t head[16];
     if (!get(read, rec, head, sizeof head))
@@ -99,8 +93,8 @@ bool string_record(Read &read, uint64_t rec, size_t max_text, std::string &out)
 }
 
 template <class Read>
-size_t find_string(Read &read, uint64_t registry, const Layout &lay, const std::string &needle, std::vector<Hit> &hits, size_t cap,
-                   Stats &st, const Limits &lim = {}, bool every_string = false)
+size_t find_string(Read &read, uint64_t registry, const Layout &lay, const std::string &needle, std::vector<Hit> &hits,
+                   size_t cap, Stats &st, const Limits &lim = {}, bool every_string = false)
 {
     st = Stats{};
     uint64_t root = 0;

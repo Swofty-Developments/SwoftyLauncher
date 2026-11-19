@@ -47,30 +47,15 @@ guards::FirstKeys<std::string, mv::LOG_LABELS> logged{"vehicles"};
 guards::FirstKeys<std::string, mv::LOG_LABELS> left_logged;
 
 struct Game {
-    bool u64(uint64_t a, uint64_t &out)
-    {
-        return mem::read(static_cast<uintptr_t>(a), out);
-    }
+    bool u64(uint64_t a, uint64_t &out) { return mem::read(static_cast<uintptr_t>(a), out); }
 
-    bool u32(uint64_t a, uint32_t &out)
-    {
-        return mem::read(static_cast<uintptr_t>(a), out);
-    }
+    bool u32(uint64_t a, uint32_t &out) { return mem::read(static_cast<uintptr_t>(a), out); }
 
-    bool i32(uint64_t a, int32_t &out)
-    {
-        return mem::read(static_cast<uintptr_t>(a), out);
-    }
+    bool i32(uint64_t a, int32_t &out) { return mem::read(static_cast<uintptr_t>(a), out); }
 
-    bool text(uint64_t a, std::string &out)
-    {
-        return mem::c_string(static_cast<uintptr_t>(a), out, mv::LABEL_CHARS);
-    }
+    bool text(uint64_t a, std::string &out) { return mem::c_string(static_cast<uintptr_t>(a), out, mv::LABEL_CHARS); }
 
-    bool forced(const std::string &label)
-    {
-        return runtime::myteam_keep_forced(label);
-    }
+    bool forced(const std::string &label) { return runtime::myteam_keep_forced(label); }
 
     mv::Row vehicle_row(const std::string &label)
     {

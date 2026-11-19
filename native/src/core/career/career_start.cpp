@@ -151,8 +151,7 @@ int career_block(const void *from, uint32_t mode, const char *title, const char 
         std::lock_guard<std::mutex> g(lock);
         blocks.set(caller(from), by, mode, t, b);
     }
-    swofty::log("[career] %s blocks %s careers%s; %s", by.c_str(), mode_name(mode),
-                t.empty() && b.empty() ? " (no popup)" : "",
+    swofty::log("[career] %s blocks %s careers%s; %s", by.c_str(), mode_name(mode), t.empty() && b.empty() ? " (no popup)" : "",
                 live ? "the start gate is live" : "the start gate is not installed yet");
     return SWOFTY_ASSET_OK;
 }
@@ -175,15 +174,9 @@ void career_start_drop_module(void *module)
     blocks.drop_owner(reinterpret_cast<uint64_t>(module));
 }
 
-bool career_start_live()
-{
-    return live;
-}
+bool career_start_live() { return live; }
 
-uint32_t career_start_picked()
-{
-    return picked;
-}
+uint32_t career_start_picked() { return picked; }
 
 namespace {
 

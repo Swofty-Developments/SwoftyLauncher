@@ -273,10 +273,7 @@ uintptr_t BindingSet::resolve(Binding &b)
     return target;
 }
 
-void BindingSet::settle(Binding &b, uintptr_t addr)
-{
-    b.addr = addr, b.resolved = true, b.deferred = false;
-}
+void BindingSet::settle(Binding &b, uintptr_t addr) { b.addr = addr, b.resolved = true, b.deferred = false; }
 
 void BindingSet::defer(Binding &b, const std::string &why, bool final)
 {
@@ -315,9 +312,7 @@ void BindingSet::attempt(Binding &b, bool final)
     uintptr_t base = image().base();
     if (target) {
         uintptr_t m = b.tr.match >= 0 ? base + b.tr.match : 0;
-        uintptr_t bad = m && code().page_encrypted(m)                                   ? m
-                        : image().in_exec(target) && code().page_encrypted(target) ? target
-                                                                                       : 0;
+        uintptr_t bad = m && code().page_encrypted(m) ? m : image().in_exec(target) && code().page_encrypted(target) ? target : 0;
         if (!bad)
             return settle(b, target);
         snprintf(why, sizeof why, "the page at base+0x%llx still reads encrypted", image().rva(bad));

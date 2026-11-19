@@ -44,8 +44,8 @@ void diag_line(const std::string &s)
     SYSTEMTIME t;
     GetLocalTime(&t);
     char line[1200];
-    int n = snprintf(line, sizeof line, "%04u-%02u-%02u %02u:%02u:%02u.%03u [%5lu] %s\r\n", t.wYear, t.wMonth, t.wDay,
-                     t.wHour, t.wMinute, t.wSecond, t.wMilliseconds, GetCurrentThreadId(), s.c_str());
+    int n = snprintf(line, sizeof line, "%04u-%02u-%02u %02u:%02u:%02u.%03u [%5lu] %s\r\n", t.wYear, t.wMonth, t.wDay, t.wHour,
+                     t.wMinute, t.wSecond, t.wMilliseconds, GetCurrentThreadId(), s.c_str());
     if (n > 0) {
         DWORD w;
         WriteFile(f, line, (DWORD)(n > (int)sizeof line ? (int)sizeof line : n), &w, nullptr);

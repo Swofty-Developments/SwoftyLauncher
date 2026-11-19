@@ -90,7 +90,8 @@ template <typename Node> std::string contexts(const Node *head)
     std::string s;
     unsigned seen = 0, shown = 0;
     for (const Node *n = head; n && seen < kMaxChain && readable(n, sizeof *n); n = n->pNext, seen++) {
-        if (!n->BreadcrumbContextsCount || !readable(n->pBreadcrumbContexts, n->BreadcrumbContextsCount * sizeof *n->pBreadcrumbContexts))
+        if (!n->BreadcrumbContextsCount ||
+            !readable(n->pBreadcrumbContexts, n->BreadcrumbContextsCount * sizeof *n->pBreadcrumbContexts))
             continue;
         for (UINT i = 0; i < n->BreadcrumbContextsCount && shown < kMaxOps; i++, shown++) {
             char b[300];
@@ -115,23 +116,17 @@ template <typename Alloc> std::string allocations(const char *title, const Alloc
     return b + s;
 }
 
-uint64_t no_object(const D3D12_DRED_ALLOCATION_NODE *)
-{
-    return 0;
-}
+uint64_t no_object(const D3D12_DRED_ALLOCATION_NODE *) { return 0; }
 
-uint64_t object_of(const D3D12_DRED_ALLOCATION_NODE1 *a)
-{
-    return reinterpret_cast<uint64_t>(a->pObject);
-}
+uint64_t object_of(const D3D12_DRED_ALLOCATION_NODE1 *a) { return reinterpret_cast<uint64_t>(a->pObject); }
 
 }
 
 std::string removed_device(ID3D12Device *dev, HRESULT reason, BuildStops &stops)
 {
     char b[200];
-    std::snprintf(b, sizeof b, "  device %p: GetDeviceRemovedReason 0x%08lx (%s)\n", static_cast<void *>(dev), (unsigned long)reason,
-                  removal_name(uint32_t(reason)));
+    std::snprintf(b, sizeof b, "  device %p: GetDeviceRemovedReason 0x%08lx (%s)\n", static_cast<void *>(dev),
+                  (unsigned long)reason, removal_name(uint32_t(reason)));
     std::string s = b;
     ID3D12DeviceRemovedExtendedData1 *d1 = nullptr;
     if (SUCCEEDED(dev->QueryInterface(__uuidof(ID3D12DeviceRemovedExtendedData1), reinterpret_cast<void **>(&d1)))) {
@@ -142,7 +137,8 @@ std::string removed_device(ID3D12Device *dev, HRESULT reason, BuildStops &stops)
             s += breadcrumbs(ab.pHeadAutoBreadcrumbNode, stops);
             s += contexts(ab.pHeadAutoBreadcrumbNode);
         } else {
-            std::snprintf(b, sizeof b, "\n  auto-breadcrumbs: unavailable (0x%08lx; DRED was not on for this device)\n", (unsigned long)ha);
+            std::snprintf(b, sizeof b, "\n  auto-breadcrumbs: unavailable (0x%08lx; DRED was not on for this device)\n",
+                          (unsigned long)ha);
             s += b;
         }
         if (SUCCEEDED(hp)) {

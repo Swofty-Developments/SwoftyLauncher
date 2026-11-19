@@ -185,8 +185,7 @@ uintptr_t __cdecl begin_hook(void *sec, unsigned stack, ThreadFn fn, void *arg, 
         return real_begin(sec, stack, fn, arg, flags, tid);
     void *frames[2] = {};
     USHORT n = RtlCaptureStackBackTrace(1, 2, frames, nullptr);
-    uintptr_t at = n >= 2 && swofty_code(uintptr_t(frames[1])) ? uintptr_t(frames[1])
-                                                                 : uintptr_t(__builtin_return_address(0));
+    uintptr_t at = n >= 2 && swofty_code(uintptr_t(frames[1])) ? uintptr_t(frames[1]) : uintptr_t(__builtin_return_address(0));
     auto *s = new (std::nothrow) Start{fn, arg, at};
     if (!s)
         return real_begin(sec, stack, fn, arg, flags, tid);
@@ -272,10 +271,7 @@ std::string site_label(uintptr_t at)
     return i < 0 ? logic::rva_label("?", at) : logic::rva_label(mods[i].label, at - mods[i].base);
 }
 
-uint64_t ft(FILETIME f)
-{
-    return (uint64_t(f.dwHighDateTime) << 32) | f.dwLowDateTime;
-}
+uint64_t ft(FILETIME f) { return (uint64_t(f.dwHighDateTime) << 32) | f.dwLowDateTime; }
 
 }
 
@@ -311,10 +307,7 @@ void install()
         swofty::log("%s", logic::vq_core_line(mods[0].slots, real_begin != nullptr).c_str());
 }
 
-bool enabled()
-{
-    return on;
-}
+bool enabled() { return on; }
 
 void scan()
 {

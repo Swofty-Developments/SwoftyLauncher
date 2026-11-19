@@ -137,14 +137,8 @@ struct Summary {
     uint64_t frames = 0, uneven = 0, spikes = 0, over_2x = 0, hitches = 0, pauses = 0;
     double p50 = 0, p99 = 0, p999 = 0, max = 0, change_p99 = 0;
 
-    double share(uint64_t n) const
-    {
-        return frames ? 100.0 * double(n) / double(frames) : 0;
-    }
-    double rate() const
-    {
-        return p50 > 0 ? 1000 / p50 : 0;
-    }
+    double share(uint64_t n) const { return frames ? 100.0 * double(n) / double(frames) : 0; }
+    double rate() const { return p50 > 0 ? 1000 / p50 : 0; }
 };
 
 inline Summary summary(const Pace &p)
@@ -206,10 +200,7 @@ struct Presents {
         return best;
     }
 
-    double inside_avg() const
-    {
-        return count ? inside_sum / double(count) : 0;
-    }
+    double inside_avg() const { return count ? inside_sum / double(count) : 0; }
 };
 
 inline std::string num(const char *f, double v)
@@ -219,15 +210,9 @@ inline std::string num(const char *f, double v)
     return b;
 }
 
-inline std::string count(uint64_t n)
-{
-    return std::to_string(n);
-}
+inline std::string count(uint64_t n) { return std::to_string(n); }
 
-inline std::string head(double secs)
-{
-    return "[perf] last " + num("%.0f", secs) + " s: ";
-}
+inline std::string head(double secs) { return "[perf] last " + num("%.0f", secs) + " s: "; }
 
 inline std::string sync_text(int sync)
 {
@@ -240,7 +225,10 @@ inline std::string sync_text(int sync)
         return "1 (VSync on)";
     default:
         return std::to_string(sync) + (sync >= 4 ? " or more" : "") + " (VSync on, every " + std::to_string(sync) +
-               (sync >= 4 ? "th or later" : sync == 2 ? "nd" : "rd") + " refresh)";
+               (sync >= 4   ? "th or later"
+                : sync == 2 ? "nd"
+                            : "rd") +
+               " refresh)";
     }
 }
 
@@ -253,8 +241,8 @@ inline std::string spikes_text(const std::vector<SpikeRow> &rows)
 {
     std::string out;
     for (const SpikeRow &r : rows)
-        out += (out.empty() ? "" : ", ") + r.when + " " + num("%.1f", r.ms) + " ms (average " + num("%.1f", r.base) +
-               ")" + (r.during.empty() ? "" : " during \"" + r.during + "\"");
+        out += (out.empty() ? "" : ", ") + r.when + " " + num("%.1f", r.ms) + " ms (average " + num("%.1f", r.base) + ")" +
+               (r.during.empty() ? "" : " during \"" + r.during + "\"");
     return out;
 }
 
@@ -294,8 +282,9 @@ inline std::string presents_text(double secs, const Presents &p, uint64_t game_f
         out += ", " + num("%.2f", double(p.count) / double(game_frames)) + " per game frame";
     out += "); intervals " + times_text(s) + ", " + uneven_text(s) + ", " + count(s.over_2x) + " over 2x the median";
     out += "; inside Present average " + num("%.2f", p.inside_avg()) + " ms, max " + num("%.2f", p.inside_max) + " ms";
-    out += "; sync interval " + sync_text(p.sync_mode()) + " in " + num("%.0f", 100.0 * double(p.sync[std::max(0, p.sync_mode())]) / double(p.count)) +
-           "%, tearing flag in " + num("%.0f", 100.0 * double(p.tearing) / double(p.count)) + "%";
+    out += "; sync interval " + sync_text(p.sync_mode()) + " in " +
+           num("%.0f", 100.0 * double(p.sync[std::max(0, p.sync_mode())]) / double(p.count)) + "%, tearing flag in " +
+           num("%.0f", 100.0 * double(p.tearing) / double(p.count)) + "%";
     if (p.other)
         out += "; " + count(p.other) + " from other swapchains";
     if (p.occluded)
@@ -331,10 +320,7 @@ struct Range {
         sum += v;
         n++;
     }
-    double avg() const
-    {
-        return n ? sum / n : 0;
-    }
+    double avg() const { return n ? sum / n : 0; }
 };
 
 inline std::string range_text(const Range &r, const char *f, const char *unit)
@@ -405,10 +391,7 @@ inline std::string gpu_text(unsigned index, const GpuMinute &g)
     return out;
 }
 
-inline std::string gpu_line(double secs, unsigned index, const GpuMinute &g)
-{
-    return head(secs) + gpu_text(index, g);
-}
+inline std::string gpu_line(double secs, unsigned index, const GpuMinute &g) { return head(secs) + gpu_text(index, g); }
 
 struct CpuSample {
     double load = -1, busiest = -1, mhz = 0, max_mhz = 0, limit_mhz = 0;
@@ -451,10 +434,7 @@ inline std::string cpu_text(const SysCpuMinute &c)
     return out;
 }
 
-inline std::string cpu_line(double secs, const SysCpuMinute &c)
-{
-    return head(secs) + cpu_text(c);
-}
+inline std::string cpu_line(double secs, const SysCpuMinute &c) { return head(secs) + cpu_text(c); }
 
 struct Hog {
     std::string name;
@@ -470,22 +450,79 @@ inline std::string lower(std::string_view s)
     return out;
 }
 
-constexpr std::string_view TOOLS[] = {
-    "discord.exe", "obs64.exe", "obs32.exe", "streamlabs obs.exe", "rtss.exe", "msiafterburner.exe",
-    "radeonsoftware.exe", "amdrsserv.exe", "amdow.exe", "nvidia overlay.exe", "nvidia share.exe", "nvidia app.exe",
-    "gamebar.exe", "gamebarftserver.exe", "xboxgamebarwidgets.exe", "medal.exe", "overwolf.exe", "outplayed.exe",
-    "wallpaper32.exe", "wallpaper64.exe", "lively.exe", "icue.exe", "lghub.exe", "lghub_agent.exe",
-    "razer synapse service.exe", "armourycrate.service.exe", "lightingservice.exe", "nzxt cam.exe", "signalrgb.exe",
-    "hwinfo64.exe", "hwinfo32.exe", "aida64.exe", "hwmonitor.exe", "cpuz.exe", "fpsmonitor.exe", "capframex.exe",
-    "presentmon.exe", "simhub.exe", "simhubwpf.exe", "crewchief.exe", "crewchiefv4.exe", "racelab.exe", "steelseriesgg.exe",
-    "action.exe", "bdcam.exe", "fraps.exe", "sharex.exe", "geforcenow.exe", "parsecd.exe", "moonlight.exe",
-    "sunshine.exe", "steamwebhelper.exe", "msedgewebview2.exe"};
+constexpr std::string_view TOOLS[] = {"discord.exe",
+                                      "obs64.exe",
+                                      "obs32.exe",
+                                      "streamlabs obs.exe",
+                                      "rtss.exe",
+                                      "msiafterburner.exe",
+                                      "radeonsoftware.exe",
+                                      "amdrsserv.exe",
+                                      "amdow.exe",
+                                      "nvidia overlay.exe",
+                                      "nvidia share.exe",
+                                      "nvidia app.exe",
+                                      "gamebar.exe",
+                                      "gamebarftserver.exe",
+                                      "xboxgamebarwidgets.exe",
+                                      "medal.exe",
+                                      "overwolf.exe",
+                                      "outplayed.exe",
+                                      "wallpaper32.exe",
+                                      "wallpaper64.exe",
+                                      "lively.exe",
+                                      "icue.exe",
+                                      "lghub.exe",
+                                      "lghub_agent.exe",
+                                      "razer synapse service.exe",
+                                      "armourycrate.service.exe",
+                                      "lightingservice.exe",
+                                      "nzxt cam.exe",
+                                      "signalrgb.exe",
+                                      "hwinfo64.exe",
+                                      "hwinfo32.exe",
+                                      "aida64.exe",
+                                      "hwmonitor.exe",
+                                      "cpuz.exe",
+                                      "fpsmonitor.exe",
+                                      "capframex.exe",
+                                      "presentmon.exe",
+                                      "simhub.exe",
+                                      "simhubwpf.exe",
+                                      "crewchief.exe",
+                                      "crewchiefv4.exe",
+                                      "racelab.exe",
+                                      "steelseriesgg.exe",
+                                      "action.exe",
+                                      "bdcam.exe",
+                                      "fraps.exe",
+                                      "sharex.exe",
+                                      "geforcenow.exe",
+                                      "parsecd.exe",
+                                      "moonlight.exe",
+                                      "sunshine.exe",
+                                      "steamwebhelper.exe",
+                                      "msedgewebview2.exe"};
 
-constexpr std::string_view MODULES[] = {
-    "rtsshooks64.dll", "discordhook64.dll", "gameoverlayrenderer64.dll", "graphics-hook64.dll", "obs-graphics-hook64.dll",
-    "nvspcap64.dll", "ow-graphics-hook64.dll", "owclient.dll", "medal-hook64.dll", "eosovh-win64-shipping.dll",
-    "fraps64.dll", "action_x64.dll", "bdcamvk64.dll", "reshade64.dll", "specialk64.dll", "amdxcffx64.dll",
-    "gameinput.dll", "mirillis.dll", "xsplit.gamesource64.dll"};
+constexpr std::string_view MODULES[] = {"rtsshooks64.dll",
+                                        "discordhook64.dll",
+                                        "gameoverlayrenderer64.dll",
+                                        "graphics-hook64.dll",
+                                        "obs-graphics-hook64.dll",
+                                        "nvspcap64.dll",
+                                        "ow-graphics-hook64.dll",
+                                        "owclient.dll",
+                                        "medal-hook64.dll",
+                                        "eosovh-win64-shipping.dll",
+                                        "fraps64.dll",
+                                        "action_x64.dll",
+                                        "bdcamvk64.dll",
+                                        "reshade64.dll",
+                                        "specialk64.dll",
+                                        "amdxcffx64.dll",
+                                        "gameinput.dll",
+                                        "mirillis.dll",
+                                        "xsplit.gamesource64.dll"};
 
 inline bool known(std::string_view lowered, const std::string_view *list, size_t n)
 {
@@ -495,15 +532,9 @@ inline bool known(std::string_view lowered, const std::string_view *list, size_t
     return false;
 }
 
-inline bool known_tool(std::string_view name)
-{
-    return known(lower(name), TOOLS, std::size(TOOLS));
-}
+inline bool known_tool(std::string_view name) { return known(lower(name), TOOLS, std::size(TOOLS)); }
 
-inline bool known_module(std::string_view name)
-{
-    return known(lower(name), MODULES, std::size(MODULES));
-}
+inline bool known_module(std::string_view name) { return known(lower(name), MODULES, std::size(MODULES)); }
 
 inline std::string names_text(const std::vector<std::string> &v)
 {
@@ -552,9 +583,10 @@ inline bool take(std::string_view &s, std::string_view key, uint32_t &out, int b
     uint64_t v = 0;
     for (; i < s.size(); i++) {
         char c = s[i];
-        int d = c >= '0' && c <= '9' ? c - '0' : base == 16 && c >= 'a' && c <= 'f' ? c - 'a' + 10
-                                             : base == 16 && c >= 'A' && c <= 'F' ? c - 'A' + 10
-                                                                                  : -1;
+        int d = c >= '0' && c <= '9'                 ? c - '0'
+                : base == 16 && c >= 'a' && c <= 'f' ? c - 'a' + 10
+                : base == 16 && c >= 'A' && c <= 'F' ? c - 'A' + 10
+                                                     : -1;
         if (d < 0)
             break;
         v = v * uint64_t(base) + uint64_t(d);
@@ -679,7 +711,8 @@ inline std::string display_line(const Window &w, const Chain &c)
     std::string out = "[perf] display: ";
     if (w.known)
         out += "the game's window is on " + w.on.device + " (" + mode_text(w.on) + "), " +
-               (w.covers ? (w.caption ? "covering it with a title bar" : "covering it without a border (borderless or exclusive fullscreen)")
+               (w.covers ? (w.caption ? "covering it with a title bar"
+                                      : "covering it without a border (borderless or exclusive fullscreen)")
                          : "smaller than the display (windowed)");
     else
         out += "the game's window is unknown";
@@ -741,10 +774,7 @@ inline std::string clean(std::string_view s, size_t cap = 160)
     return out;
 }
 
-inline std::string switch_text(int v, const char *on, const char *off)
-{
-    return v < 0 ? std::string("not set") : v ? on : off;
-}
+inline std::string switch_text(int v, const char *on, const char *off) { return v < 0 ? std::string("not set") : v ? on : off; }
 
 inline std::string windows_line(const Windows &w)
 {
@@ -753,8 +783,10 @@ inline std::string windows_line(const Windows &w)
         out += ", power mode " + w.overlay;
     out += "; game mode " + switch_text(w.game_mode, "on", "off") + "; Game Bar recording " +
            switch_text(w.game_dvr, "allowed", "off") + ", background capture " + switch_text(w.app_capture, "on", "off");
-    out += "; hardware-accelerated GPU scheduling setting " +
-           (w.hags_setting < 0 ? std::string("not set") : w.hags_setting == 2 ? "on" : w.hags_setting == 1 ? "off" : std::to_string(w.hags_setting));
+    out += "; hardware-accelerated GPU scheduling setting " + (w.hags_setting < 0    ? std::string("not set")
+                                                               : w.hags_setting == 2 ? "on"
+                                                               : w.hags_setting == 1 ? "off"
+                                                                                     : std::to_string(w.hags_setting));
     std::string dx = w.dx_global;
     while (!dx.empty() && (dx.back() == ';' || dx.back() == ' '))
         dx.pop_back();
@@ -777,7 +809,8 @@ inline std::string wddm_text(uint32_t v)
 
 inline std::string scheduling_line(unsigned i, uint32_t wddm, int hags_caps, int tearing)
 {
-    std::string out = "[system] gpu " + std::to_string(i) + ": WDDM " + wddm_text(wddm) + ", hardware-accelerated GPU scheduling ";
+    std::string out =
+        "[system] gpu " + std::to_string(i) + ": WDDM " + wddm_text(wddm) + ", hardware-accelerated GPU scheduling ";
     if (hags_caps < 0)
         out += "unknown";
     else
@@ -861,8 +894,8 @@ inline Verdict verdict(const Facts &f)
     }
     if (uneven >= 10 || present_uneven >= 10) {
         v.judder = true;
-        add("judder (" + num("%.0f", uneven) + "% of frames" + (f.presents ? " and " + num("%.0f", present_uneven) + "% of presents" : "") +
-            " over 20% off the previous one)");
+        add("judder (" + num("%.0f", uneven) + "% of frames" +
+            (f.presents ? " and " + num("%.0f", present_uneven) + "% of presents" : "") + " over 20% off the previous one)");
     }
     if (!v.stutter && !v.judder) {
         v.smooth = true;
@@ -879,9 +912,9 @@ inline Verdict verdict(const Facts &f)
         double target = f.sync >= 1 ? f.refresh / f.sync : f.refresh;
         if (f.present_rate < target * 0.95) {
             v.display = true;
-            add(std::string("display mismatch (") + (f.sync >= 1 ? "VSync on" : "VSync off") + " at " + num("%.0f", f.present_rate) +
-                " presents/s on a " + num("%.0f", f.refresh) + " Hz display: " +
-                (f.sync >= 1 ? "frames stay up for 1 or 2 refreshes" : "tearing and uneven motion") +
+            add(std::string("display mismatch (") + (f.sync >= 1 ? "VSync on" : "VSync off") + " at " +
+                num("%.0f", f.present_rate) + " presents/s on a " + num("%.0f", f.refresh) +
+                " Hz display: " + (f.sync >= 1 ? "frames stay up for 1 or 2 refreshes" : "tearing and uneven motion") +
                 " unless FreeSync or G-Sync is on)");
         }
     }
@@ -933,10 +966,7 @@ struct Tally {
     }
 };
 
-inline std::string verdict_line(double secs, const Verdict &v)
-{
-    return head(secs) + "verdict: " + v.text;
-}
+inline std::string verdict_line(double secs, const Verdict &v) { return head(secs) + "verdict: " + v.text; }
 
 struct Row {
     std::string when, tags;

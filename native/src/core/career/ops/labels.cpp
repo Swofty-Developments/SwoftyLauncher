@@ -51,7 +51,8 @@ bool labels()
         t.driver_by_stat.emplace(s, n);
     });
     for (int folder = 0; folder < 4; ++folder)
-        each_row(db, "entrants.driver_customisations.folder_" + std::to_string(folder), "preloaded_driver_customisation_properties",
+        each_row(db, "entrants.driver_customisations.folder_" + std::to_string(folder),
+                 "preloaded_driver_customisation_properties",
                  [&](uint32_t s, const std::string &n) { t.look_by_label.emplace(n, s); });
     each_row(db, "entrants.teams", "team", [&](uint32_t s, const std::string &n) { t.team_by_stat.emplace(s, n); });
     t.loaded = !t.driver_by_label.empty();

@@ -159,7 +159,8 @@ SwapResult swap_sources(const std::string &stock, const std::string &name_in, ui
                 if (o >= CHUNK && off + CHUNK < r.size)
                     continue;
                 uint64_t where = r.base + off + o;
-                if ((where >= uint64_t(buf.data()) && where < uint64_t(buf.data()) + buf.size()) || (where >= stack_lo && where < stack_hi) || where < 0x10000 + 16) {
+                if ((where >= uint64_t(buf.data()) && where < uint64_t(buf.data()) + buf.size()) ||
+                    (where >= stack_lo && where < stack_hi) || where < 0x10000 + 16) {
                     res.skipped++;
                     continue;
                 }
@@ -225,13 +226,15 @@ void probe_registry(int pass)
     ur::Stats st;
     auto rd = [](uint64_t at, void *out, size_t n) { return registry_read(at, out, n); };
     ur::find_string(rd, reg, lay, stock, hits, 40, st);
-    swofty::log("[boards] player name probe %d: stock name \"%s\": %zu nodes (%zu object, %zu list, %zu string leaves of which %zu readable, "
+    swofty::log("[boards] player name probe %d: stock name \"%s\": %zu nodes (%zu object, %zu list, %zu string leaves of which "
+                "%zu readable, "
                 "%zu other kinds, %zu failed reads, %zu bad maps), root vtable base+0x%llx, %zu leaf(s) equal it",
-                pass, stock, st.visited, st.objects, st.lists, st.string_leaves, st.strings_read, st.skipped_kinds, st.failed_reads,
-                st.bad_maps, (unsigned long long)(st.root_vt - base), st.matches);
+                pass, stock, st.visited, st.objects, st.lists, st.string_leaves, st.strings_read, st.skipped_kinds,
+                st.failed_reads, st.bad_maps, (unsigned long long)(st.root_vt - base), st.matches);
     for (auto v : st.unknown_vt)
         if (v)
-            swofty::log("[boards] player name probe %d: other node class vtable base+0x%llx", pass, (unsigned long long)(v - base));
+            swofty::log("[boards] player name probe %d: other node class vtable base+0x%llx", pass,
+                        (unsigned long long)(v - base));
     for (size_t i = 0; i < hits.size(); i++) {
         std::string path;
         for (int d = 0; d < hits[i].depth && d < ur::CHAIN; d++) {
@@ -256,7 +259,9 @@ void scan_copies(std::string stock)
     std::string upper = stock;
     for (char &c : upper)
         c = char(toupper((unsigned char)c));
-    std::vector<Variant> variants = {{stock, "ascii", false}, {upper, "ascii upper case", false}, {widen(stock), "utf-16", true},
+    std::vector<Variant> variants = {{stock, "ascii", false},
+                                     {upper, "ascii upper case", false},
+                                     {widen(stock), "utf-16", true},
                                      {widen(upper), "utf-16 upper case", true}};
     struct Hit {
         uint64_t at;
@@ -312,8 +317,8 @@ void scan_copies(std::string stock)
         }
     }
 scanned_all:
-    swofty::log("[boards] name copies: \"%s\" variants found %zu time(s) in %.0f MB of writable memory (%zu regions)", stock.c_str(), hits.size(),
-                scanned / 1048576.0, regions.size());
+    swofty::log("[boards] name copies: \"%s\" variants found %zu time(s) in %.0f MB of writable memory (%zu regions)",
+                stock.c_str(), hits.size(), scanned / 1048576.0, regions.size());
     std::vector<uint64_t> targets;
     for (auto &h : hits) {
         if (h.record) {
@@ -321,8 +326,9 @@ scanned_all:
             targets.push_back(h.at - 9);
             continue;
         }
-        swofty::log("[boards] name copies: %s plain at 0x%llx (region 0x%llx size 0x%llx type 0x%x); 0x50 bytes before: %s", h.label, (unsigned long long)h.at,
-                    (unsigned long long)h.region_base, (unsigned long long)h.region_size, h.type, h.before.c_str());
+        swofty::log("[boards] name copies: %s plain at 0x%llx (region 0x%llx size 0x%llx type 0x%x); 0x50 bytes before: %s",
+                    h.label, (unsigned long long)h.at, (unsigned long long)h.region_base, (unsigned long long)h.region_size,
+                    h.type, h.before.c_str());
         targets.push_back(h.at);
     }
     if (targets.empty())
@@ -352,15 +358,17 @@ scanned_all:
         uint64_t from = p.first >= 0x30 ? p.first - 0x30 : p.first;
         bool got = registry_read(from, ctx, sizeof ctx);
         bool in_image = p.first >= base && p.first < base + 0x20000000ull;
-        swofty::log("[boards] name copies: 0x%llx -> 0x%llx%s%s; 0x30 bytes before it and 0x10 from it: %s", (unsigned long long)p.first, (unsigned long long)p.second,
-                    in_image ? " (inside the game image)" : "", to_record ? " (a string record)" : " (a PLAIN copy)", got ? hex_of(ctx, sizeof ctx).c_str() : "(unreadable)");
+        swofty::log("[boards] name copies: 0x%llx -> 0x%llx%s%s; 0x30 bytes before it and 0x10 from it: %s",
+                    (unsigned long long)p.first, (unsigned long long)p.second, in_image ? " (inside the game image)" : "",
+                    to_record ? " (a string record)" : " (a PLAIN copy)", got ? hex_of(ctx, sizeof ctx).c_str() : "(unreadable)");
     }
 }
 
 int pin_names(const std::string &name, const std::string &stock)
 {
     namespace ur = frontend::ui_registry;
-    if (!swofty::game::g_Vm_Registry.address() || !swofty::game::Vm_Set_String.address() || !swofty::game::Ne_Make_StrFromCStr.address())
+    if (!swofty::game::g_Vm_Registry.address() || !swofty::game::Vm_Set_String.address() ||
+        !swofty::game::Ne_Make_StrFromCStr.address())
         return 0;
     uint64_t base = swofty::api->module_base(), reg = uint64_t(*swofty::game::g_Vm_Registry);
     ur::Layout lay = registry_layout(runtime::running_build(), base);
@@ -380,8 +388,8 @@ int pin_names(const std::string &name, const std::string &stock)
         written++;
     }
     if (written && logged.fetch_add(1) < 6)
-        swofty::log("[boards] player name: set %d leaf(s) that read \"%s\" to \"%s\" (of %zu string leaves walked)", written, stock.c_str(), name.c_str(),
-                    st.strings_read);
+        swofty::log("[boards] player name: set %d leaf(s) that read \"%s\" to \"%s\" (of %zu string leaves walked)", written,
+                    stock.c_str(), name.c_str(), st.strings_read);
     return written;
 }
 
@@ -415,10 +423,15 @@ void SourceSwap::swap_worker()
         if (!live)
             swofty::log("[boards] player name source swap (%s): skipped, the session ended first", swap_word(job.why));
         else
-            swofty::log("[boards] player name source swap (%s): rewrote %zu string record(s) and %zu std::string object(s) that read \"%s\" to \"%s\" "
+            swofty::log("[boards] player name source swap (%s): rewrote %zu string record(s) and %zu std::string object(s) that "
+                        "read \"%s\" to \"%s\" "
                         "(source %s; scanned %zu MB in %lld ms%s, %zu own copies skipped)",
-                        swap_word(job.why), r.records, r.strings, job.stock.c_str(), job.name.c_str(), job.source, r.scanned_mb, (long long)ms,
-                        r.limit ? ", stopped at the time limit" : r.stopped ? ", stopped as the session ended" : "", r.skipped);
+                        swap_word(job.why), r.records, r.strings, job.stock.c_str(), job.name.c_str(), job.source, r.scanned_mb,
+                        (long long)ms,
+                        r.limit     ? ", stopped at the time limit"
+                        : r.stopped ? ", stopped as the session ended"
+                                    : "",
+                        r.skipped);
     }
 }
 

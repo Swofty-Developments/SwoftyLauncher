@@ -46,10 +46,7 @@ using namespace career::ops::live;
 namespace g = swofty::game;
 namespace mem = swofty::mem;
 
-int api_available()
-{
-    return runtime::enabled("career", nullptr) ? 1 : 0;
-}
+int api_available() { return runtime::enabled("career", nullptr) ? 1 : 0; }
 
 int api_driver_stat(const char *ref, uint32_t *out)
 {
@@ -116,7 +113,8 @@ int api_apply_lineup(SwoftyText request, char *out, size_t cap, size_t *len)
         int year = 0;
         std::string err;
         read_season(j["season"], in, year, err);
-        head = "apply_lineup " + std::to_string(year) + " (season, " + (in.data_group.empty() ? "no data group" : in.data_group) + ")";
+        head = "apply_lineup " + std::to_string(year) + " (season, " + (in.data_group.empty() ? "no data group" : in.data_group) +
+               ")";
         std::string missing;
         uintptr_t e = 0;
         std::vector<Row> rows;
@@ -210,7 +208,9 @@ int api_swap_drivers(uint32_t a, uint32_t b)
         r = SWOFTY_ASSET_LATE;
     } else {
         int ia = row_index(rows, a), ib = row_index(rows, b);
-        auto seated = [&](int i) { return i >= 0 && has_car(rows[i].rec) && !teamless(rows[i].rec) && position_of(rows[i].rec) >= 0; };
+        auto seated = [&](int i) {
+            return i >= 0 && has_car(rows[i].rec) && !teamless(rows[i].rec) && position_of(rows[i].rec) >= 0;
+        };
         if (ia < 0 || ib < 0) {
             summary = "refused: " + driver_name(ia < 0 ? a : b) + " has no single career row";
             r = SWOFTY_ASSET_INVALID;
@@ -259,7 +259,8 @@ std::string caller(const void *from)
 std::string loaded_data_group()
 {
     char group[128] = {};
-    if (auto t = runtime::career_content_table(); t && t->data_group && t->data_group(nullptr, group, sizeof group) == SWOFTY_ASSET_OK)
+    if (auto t = runtime::career_content_table();
+        t && t->data_group && t->data_group(nullptr, group, sizeof group) == SWOFTY_ASSET_OK)
         return group;
     return {};
 }
@@ -292,7 +293,8 @@ int api_set_seat(SwoftyText request, char *out, size_t cap, size_t *len)
                 team = static_cast<int>(it->second[slot - 1]);
         }
         head = "set_seat " + (driver >= 0 ? driver_name(static_cast<uint32_t>(driver)) : std::string("?")) + " -> " +
-               (team >= 0 ? seat_text(static_cast<uint32_t>(team), seat) : "slot " + std::to_string(slot) + " seat " + std::to_string(seat + 1));
+               (team >= 0 ? seat_text(static_cast<uint32_t>(team), seat)
+                          : "slot " + std::to_string(slot) + " seat " + std::to_string(seat + 1));
         std::string missing;
         uintptr_t e = 0;
         std::vector<Row> rows;
@@ -331,7 +333,8 @@ int api_set_seat(SwoftyText request, char *out, size_t cap, size_t *len)
                 l.player_team = sp.player_team;
                 l.moves.push_back({sp.driver, sp.team, sp.seat, number(j["car"]), sp.holder, -1});
                 if (sp.what == career::ops::seat::Holder::swapped)
-                    l.moves.push_back({static_cast<uint32_t>(sp.holder), sp.from_team, sp.from_seat, -1, static_cast<int>(sp.driver), -1});
+                    l.moves.push_back(
+                        {static_cast<uint32_t>(sp.holder), sp.from_team, sp.from_seat, -1, static_cast<int>(sp.driver), -1});
                 else if (sp.what == career::ops::seat::Holder::released)
                     l.releases.push_back(static_cast<uint32_t>(sp.holder));
                 r = execute(l, rep, summary);
@@ -394,8 +397,8 @@ int api_set_look(const char *driver_ref, const char *look_ref)
                     driver < 0 ? driver_ref : look_ref);
         return SWOFTY_ASSET_INVALID;
     }
-    std::string request = "{\"lineup\":{\"visuals\":true,\"why\":\"set_look\",\"looks\":[{\"driver\":" +
-                          std::to_string(driver) + ",\"look\":" + std::to_string(look) + "}]}}";
+    std::string request = "{\"lineup\":{\"visuals\":true,\"why\":\"set_look\",\"looks\":[{\"driver\":" + std::to_string(driver) +
+                          ",\"look\":" + std::to_string(look) + "}]}}";
     char report[512];
     size_t len = 0;
     int r = api_apply_lineup({request.data(), request.size()}, report, sizeof report, &len);
@@ -492,8 +495,7 @@ namespace cs = career::standings;
 // to V110005).
 constexpr bp::Proof STANDINGS_READ{"the season standings' table, points and results (+0x40, +0x20, +0xd0, results of "
                                    "0x10 bytes)",
-                                   bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145) |
-                                       bp::bit(bp::Build::ea_1_0_145)};
+                                   bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145) | bp::bit(bp::Build::ea_1_0_145)};
 constexpr bp::Gate STANDINGS{"the standings read", &STANDINGS_READ};
 
 static_assert(offsetof(g::Season, standings_vtable) == cs::sd::SEASON_STANDINGS);
@@ -542,9 +544,24 @@ int api_set_dropped_scores(const char *data_group, uint32_t best)
 }
 
 const SwoftyCareerOps g_table = {
-    SWOFTY_CAREER_OPS_VERSION, api_available,  api_driver_stat, api_set_slots, api_apply_lineup, api_set_driver_ratings,
-    api_swap_drivers,          api_report_season, api_apply_teams, api_set_seat,  api_set_car_number, api_set_track_fuel,
-    api_set_logo, api_set_look, api_current_round, api_team_stat, api_set_dropped_scores, api_standings,
+    SWOFTY_CAREER_OPS_VERSION,
+    api_available,
+    api_driver_stat,
+    api_set_slots,
+    api_apply_lineup,
+    api_set_driver_ratings,
+    api_swap_drivers,
+    api_report_season,
+    api_apply_teams,
+    api_set_seat,
+    api_set_car_number,
+    api_set_track_fuel,
+    api_set_logo,
+    api_set_look,
+    api_current_round,
+    api_team_stat,
+    api_set_dropped_scores,
+    api_standings,
 };
 
 void setup()
@@ -560,14 +577,8 @@ void setup()
 
 }
 
-extern "C" __declspec(dllexport) const SwoftyCareerOps *SwoftyCoreCareerOps(void)
-{
-    return &g_table;
-}
+extern "C" __declspec(dllexport) const SwoftyCareerOps *SwoftyCoreCareerOps(void) { return &g_table; }
 
 SWOFTY_CORE_RANK(career_ops)
 
-SWOFTY_ON_LOAD
-{
-    runtime::when_code_ready("career operations: flow thread", setup);
-}
+SWOFTY_ON_LOAD { runtime::when_code_ready("career operations: flow thread", setup); }

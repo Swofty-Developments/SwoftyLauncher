@@ -16,10 +16,7 @@ namespace mem = swofty::mem;
 namespace ent = runtime::entitlements;
 
 struct Game {
-    bool u64(uint64_t a, uint64_t &out)
-    {
-        return mem::read(static_cast<uintptr_t>(a), out);
-    }
+    bool u64(uint64_t a, uint64_t &out) { return mem::read(static_cast<uintptr_t>(a), out); }
 };
 
 std::atomic<int> f1_2026{ent::UNKNOWN};
@@ -27,10 +24,7 @@ std::atomic<uint64_t> frontend_at{0};
 ent::Settle settle;
 bool reported_missing = false;
 
-int owned_op(const char *name)
-{
-    return ent::tracked(name) ? f1_2026.load() : ent::UNKNOWN;
-}
+int owned_op(const char *name) { return ent::tracked(name) ? f1_2026.load() : ent::UNKNOWN; }
 
 const SwoftyContentOps table = {SWOFTY_CONTENT_OPS_VERSION, owned_op};
 
@@ -69,7 +63,8 @@ void entitlements_tick()
     if (!slot || !swofty::game::FeTile_Check_EntrantListUsable.address()) {
         if (!reported_missing) {
             reported_missing = true;
-            swofty::log("[entitlements] %s: unknown, this build does not resolve g_FeTile_Ctx and FeTile_Check_EntrantListUsable", ent::F1_2026);
+            swofty::log("[entitlements] %s: unknown, this build does not resolve g_FeTile_Ctx and FeTile_Check_EntrantListUsable",
+                        ent::F1_2026);
         }
         return;
     }
@@ -86,7 +81,4 @@ void entitlements_tick()
 
 }
 
-extern "C" __declspec(dllexport) const SwoftyContentOps *SwoftyCoreContentOps(void)
-{
-    return &table;
-}
+extern "C" __declspec(dllexport) const SwoftyContentOps *SwoftyCoreContentOps(void) { return &table; }

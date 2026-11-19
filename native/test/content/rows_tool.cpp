@@ -139,9 +139,26 @@ int main(int argc, char **argv)
     st.set_validator(&registry::schema_validator());
     st.set_log([](const std::string &l) { std::cerr << l << "\n"; });
     const SwoftyRegistry *t = registry::table();
-    for (const char *name : {"engine_sound", "vehicle.package", "vehicle", "livery", "content.package", "era.box", "team.identity", "team.constructor", "team.pit_times", "team.logo", "helmet", "suit",
-                             "gloves", "driver.head", "driver.look", "driver.person", "driver.identity", "driver.stats",
-                             "wearable.season_set", "rules.drs"}) {
+    for (const char *name : {"engine_sound",
+                             "vehicle.package",
+                             "vehicle",
+                             "livery",
+                             "content.package",
+                             "era.box",
+                             "team.identity",
+                             "team.constructor",
+                             "team.pit_times",
+                             "team.logo",
+                             "helmet",
+                             "suit",
+                             "gloves",
+                             "driver.head",
+                             "driver.look",
+                             "driver.person",
+                             "driver.identity",
+                             "driver.stats",
+                             "wearable.season_set",
+                             "rules.drs"}) {
         std::string schema = slurp(regs + "/" + name + "/1.0.json");
         t->declare(name, SwoftyText{schema.data(), schema.size()});
     }
@@ -188,8 +205,7 @@ int main(int argc, char **argv)
     for (auto &p : content::pins(st)) {
         auto s = scans.find(p.registry);
         if (s != scans.end() && s->second.used.count(p.stat_id))
-            clashes.push_back(Value(p.registry + " " + p.id + " " + std::to_string(p.stat_id) + " " +
-                                    s->second.used[p.stat_id]));
+            clashes.push_back(Value(p.registry + " " + p.id + " " + std::to_string(p.stat_id) + " " + s->second.used[p.stat_id]));
     }
     auto &ids = apply::ids::store();
     ids.clear();
@@ -340,8 +356,8 @@ int main(int argc, char **argv)
     for (auto &[k, v] : boot.refused)
         refused_n += v;
     std::cout << staged.size() << " records staged, " << out.size() << " db_edits after the boot apply; plan "
-              << swofty::json::dump(summary["plan_fresh"]) << ", boot " << swofty::json::dump(summary["boot_fresh"])
-              << "; " << refused_n << " record(s) refused, " << adm.refused.size() << " addon(s) left out for room"
+              << swofty::json::dump(summary["plan_fresh"]) << ", boot " << swofty::json::dump(summary["boot_fresh"]) << "; "
+              << refused_n << " record(s) refused, " << adm.refused.size() << " addon(s) left out for room"
               << (ahead_on ? "; ahead: " + (ahead_how.empty() ? std::string("adopted") : ahead_how) : std::string()) << "\n";
     return bad || refused_n || untyped ? 1 : 0;
 }

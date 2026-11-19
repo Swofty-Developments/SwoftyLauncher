@@ -117,16 +117,18 @@ void call_build(g::TimeOfDayOwner *owner, const wx::Build &b, float len, unsigne
 }
 
 // Rebuilds dataset d from its script. "" when the game's dataset holds the script, else why it does not.
-std::string rebuild(g::GameWeatherSystem *ws, unsigned d, const w::Slot *slots, unsigned count,
-                    std::vector<std::string> &lines)
+std::string rebuild(g::GameWeatherSystem *ws, unsigned d, const w::Slot *slots, unsigned count, std::vector<std::string> &lines)
 {
     g::TimeOfDayOwner *owner = ws->tod_owner;
     g::TimeOfDaySystem *tod = ws->tod;
-    if (!owner || !tod || !mem::readable(owner, sizeof *owner) || owner->tod != tod ||
-        !mem::readable(tod, sizeof *tod))
+    if (!owner || !tod || !mem::readable(owner, sizeof *owner) || owner->tod != tod || !mem::readable(tod, sizeof *tod))
         return "no TimeOfDaySystem owned by this weather system";
-    wx::TodFlags flags{tod->busy != 0,           tod->ready_a != 0,         tod->ready_b != 0,
-                       tod->override_active != 0, tod->random_override != 0, tod->scripted_scenario != 0};
+    wx::TodFlags flags{tod->busy != 0,
+                       tod->ready_a != 0,
+                       tod->ready_b != 0,
+                       tod->override_active != 0,
+                       tod->random_override != 0,
+                       tod->scripted_scenario != 0};
     if (const char *why = wx::rebuild_gate(flags); *why)
         return why;
     float len = wx::session_length(tod->dataset_length[d], d);
@@ -246,8 +248,7 @@ std::vector<runtime::CoreMixins> weather_mixins()
         return out;
     wanted = true;
     load_test_script();
-    out.push_back({MIXIN,
-                   {{SETUP_FN, SWOFTY_MIXIN_WRAP, wx::PRIORITY, (void *)&setup_entry, (void **)&setup_orig}}});
+    out.push_back({MIXIN, {{SETUP_FN, SWOFTY_MIXIN_WRAP, wx::PRIORITY, (void *)&setup_entry, (void **)&setup_orig}}});
     return out;
 }
 

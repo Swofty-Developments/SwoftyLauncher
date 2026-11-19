@@ -57,8 +57,7 @@ Installed install(safetyhook::MidHook &h, uintptr_t at, const char *what, safety
     return placed(at);
 }
 
-Installed install(safetyhook::InlineHook &h, uintptr_t at, const char *what, void *detour,
-                  safetyhook::InlineHook::Flags flags)
+Installed install(safetyhook::InlineHook &h, uintptr_t at, const char *what, void *detour, safetyhook::InlineHook::Flags flags)
 {
     if (!at)
         return refused(Installed::Step::not_found, 0, what);

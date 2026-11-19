@@ -51,8 +51,8 @@ inline YearMap year_map(const std::string &data_group, std::vector<int> years)
             return m;
         }
         if (years[i] != years[i - 1] + 1) {
-            m.why = "the career.season records of data group " + data_group + " skip from " +
-                    std::to_string(years[i - 1]) + " to " + std::to_string(years[i]);
+            m.why = "the career.season records of data group " + data_group + " skip from " + std::to_string(years[i - 1]) +
+                    " to " + std::to_string(years[i]);
             return m;
         }
     }
@@ -154,7 +154,10 @@ inline std::string career_id(const std::string &mode, uint64_t slot_id, uint64_t
 // A new career's id until its save slot exists: <mode>:new<n>, replaced by career_id at the first save.
 inline std::string provisional_id(const std::string &mode, unsigned n) { return mode + ":new" + std::to_string(n); }
 
-inline bool is_provisional(const std::string &id) { return id.find(":new") != std::string::npos && id.find(':') != std::string::npos; }
+inline bool is_provisional(const std::string &id)
+{
+    return id.find(":new") != std::string::npos && id.find(':') != std::string::npos;
+}
 
 // The bytes an entry of body bytes adds to the profile save: its root child (name length byte, name, bag
 // type id, body) less the one the save already held.
@@ -195,9 +198,9 @@ public:
             qs.index = q.index;
             Report r = report(q.caller, qs, q.year, map, m);
             if (r == Report::ok) {
-                m.lines.insert(m.lines.begin(), "[registry] career " + s.career + " now has an id; the queued career::report_season(" +
-                                                    std::to_string(q.year) + ", " + std::to_string(q.index) + ") from " +
-                                                    q.caller + " is replayed");
+                m.lines.insert(m.lines.begin(), "[registry] career " + s.career +
+                                                    " now has an id; the queued career::report_season(" + std::to_string(q.year) +
+                                                    ", " + std::to_string(q.index) + ") from " + q.caller + " is replayed");
                 return m;
             }
             m.fire = false;
@@ -211,8 +214,8 @@ public:
         std::string why;
         int computed = year_at(map, s.index, why);
         if (!s.owner.empty()) {
-            once(m, head + ": data group " + s.data_group + " is " + s.owner + "'s; the core takes its year from " +
-                        s.owner + "'s career::report_season (" +
+            once(m, head + ": data group " + s.data_group + " is " + s.owner + "'s; the core takes its year from " + s.owner +
+                        "'s career::report_season (" +
                         (computed ? "the records put " + std::to_string(computed) + " here" : why) + ")");
             return m;
         }
@@ -232,16 +235,15 @@ public:
         m.fire = true, m.year = computed, m.index = s.index;
         m.lines.push_back(head + " is " + std::to_string(computed) + " (season " + std::to_string(s.index + 1) +
                           " of the career.season records of data group " + s.data_group + ", " +
-                          std::to_string(map.years.front()) + "-" + std::to_string(map.years.back()) +
-                          "); career.season.start");
+                          std::to_string(map.years.front()) + "-" + std::to_string(map.years.back()) + "); career.season.start");
         return m;
     }
 
     Report report(const std::string &caller, const Season &s, int year, const YearMap &map, Moment &m)
     {
         m = {};
-        std::string head = "[registry] career::report_season(" + std::to_string(year) + ", " +
-                           std::to_string(s.index) + ") from " + (caller.empty() ? std::string("an unknown module") : caller);
+        std::string head = "[registry] career::report_season(" + std::to_string(year) + ", " + std::to_string(s.index) +
+                           ") from " + (caller.empty() ? std::string("an unknown module") : caller);
         if (s.career.empty()) {
             bool queue = !s.owner.empty() && caller == s.owner && year >= FIRST_YEAR && year <= LAST_YEAR && s.index >= 0;
             if (queue)
@@ -251,8 +253,8 @@ public:
             return Report::late;
         }
         if (year < FIRST_YEAR || year > LAST_YEAR || s.index < 0) {
-            m.lines.push_back(head + ": invalid (a year " + std::to_string(FIRST_YEAR) + "-" +
-                              std::to_string(LAST_YEAR) + " and a season index from 0 are needed)");
+            m.lines.push_back(head + ": invalid (a year " + std::to_string(FIRST_YEAR) + "-" + std::to_string(LAST_YEAR) +
+                              " and a season index from 0 are needed)");
             return Report::invalid;
         }
         if (s.owner.empty()) {
@@ -269,10 +271,10 @@ public:
         reported_[s.career] = s.index;
         std::string why;
         int computed = year_at(map, s.index, why);
-        std::string note = computed == year ? "" :
-                           computed ? "; the records put " + std::to_string(computed) +
-                                          " at this index (a later first year or test seasons), and the reported year wins"
-                                    : "; " + why + ", and the reported year stands";
+        std::string note = computed == year ? ""
+                           : computed       ? "; the records put " + std::to_string(computed) +
+                                            " at this index (a later first year or test seasons), and the reported year wins"
+                                      : "; " + why + ", and the reported year stands";
         if (started(s.career, year)) {
             m.lines.push_back(head + ": ok, " + std::to_string(year) + " already started in career " + s.career + note);
             return Report::ok;

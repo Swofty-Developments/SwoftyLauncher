@@ -40,8 +40,8 @@ inline std::vector<std::string> shared_from_template(const std::string &group, c
         return out;
     std::string shared = "2025_" + teams;
     for (auto &erp : tmpl_erps) {
-        if (erp.rfind(shared, 0) != 0 || erp.size() <= shared.size() + 4 ||
-            erp.compare(erp.size() - 4, 4, ".erp") != 0 || erp.find('/', shared.size()) != std::string::npos)
+        if (erp.rfind(shared, 0) != 0 || erp.size() <= shared.size() + 4 || erp.compare(erp.size() - 4, 4, ".erp") != 0 ||
+            erp.find('/', shared.size()) != std::string::npos)
             continue;
         if (std::find(declared.begin(), declared.end(), erp) == declared.end() &&
             std::find(out.begin(), out.end(), erp) == out.end())

@@ -163,11 +163,9 @@ double csv_clock()
     return double(t.QuadPart) / freq;
 }
 
-const SwoftyCsv csv_table = {SWOFTY_CSV_VERSION, csv_open, csv_i32, csv_f32, csv_text, csv_commit, csv_dropped, csv_close, csv_clock};
+const SwoftyCsv csv_table = {SWOFTY_CSV_VERSION, csv_open,    csv_i32,   csv_f32,  csv_text,
+                             csv_commit,         csv_dropped, csv_close, csv_clock};
 
 }
 
-extern "C" __declspec(dllexport) const SwoftyCsv *SwoftyCoreCsv(void)
-{
-    return &csv_table;
-}
+extern "C" __declspec(dllexport) const SwoftyCsv *SwoftyCoreCsv(void) { return &csv_table; }

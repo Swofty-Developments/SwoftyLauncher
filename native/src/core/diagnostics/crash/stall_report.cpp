@@ -187,8 +187,8 @@ int stall_sample()
             stall_walk::Kept kept;
             kept.lo = process.exe_base;
             kept.hi = process.exe_base + process.exe_size;
-            s.frames = stall_walk::walk(&ctx, lo, hi ? hi : ctx.Rsp + 1, STALL_FRAMES, stall_lookup, readable, s.rip,
-                                        s.rsp, &s.faulted, process.exe_base ? &kept : nullptr);
+            s.frames = stall_walk::walk(&ctx, lo, hi ? hi : ctx.Rsp + 1, STALL_FRAMES, stall_lookup, readable, s.rip, s.rsp,
+                                        &s.faulted, process.exe_base ? &kept : nullptr);
             s.kept = kept.at;
             s.walked = true;
         } else {
@@ -219,8 +219,8 @@ void stall_threads_text(int n)
         failed += !s.walked && !s.self_thread && !s.writer_thread;
         alike += s.same_as >= 0;
     }
-    t.put("\n== Threads (%d; %d unwound, %d not readable, %d with the same stack as an earlier one)\n", n, sampled,
-          failed, alike);
+    t.put("\n== Threads (%d; %d unwound, %d not readable, %d with the same stack as an earlier one)\n", n, sampled, failed,
+          alike);
     for (int i = 0; i < n; i++) {
         const Sampled &s = stall_threads[i];
         const char *wait = s.walked ? wait_kind(s, kind, sizeof kind) : nullptr;
@@ -387,7 +387,9 @@ bool stall_report(int index, int max, const char *why, const char *state)
     t.put("%s\n", why);
     t.put("%s", state);
     t.put("game: F1_25.exe stamp %08x%s, %llu s since the core loaded%s%s\n", process.exe_stamp,
-          process.kb_build ? " (the known build)" : process.ea_build ? " (EA diagnostics on)" : "",
+          process.kb_build   ? " (the known build)"
+          : process.ea_build ? " (EA diagnostics on)"
+                             : "",
           (unsigned long long)((GetTickCount64() - process.start_ms) / 1000), process.wine_version ? ", Wine " : "",
           process.wine_version ? process.wine_version() : "");
     if (n < 0)

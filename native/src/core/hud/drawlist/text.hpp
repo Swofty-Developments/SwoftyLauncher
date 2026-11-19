@@ -61,10 +61,7 @@ inline void layout(const TextStyle &s, std::string_view text, std::vector<Line> 
     lines.push_back({begin, text.size(), width});
 }
 
-inline float line_step(const TextStyle &s)
-{
-    return (s.line_height > 0 ? s.line_height : 1.2f) * s.px;
-}
+inline float line_step(const TextStyle &s) { return (s.line_height > 0 ? s.line_height : 1.2f) * s.px; }
 
 inline void measure(const TextStyle &s, std::string_view text, float *width, float *height)
 {
@@ -118,8 +115,8 @@ inline void lay_out(const TextStyle &s, std::string_view text, std::vector<Line>
             if (!g)
                 continue;
             if (g->u1 > g->u0 && g->v1 > g->v0)
-                out.quads.push_back({pen + g->x0 * s.px, g->y0 * s.px, pen + g->x1 * s.px, g->y1 * s.px, g->u0 * iw,
-                                     g->v0 * ih, g->u1 * iw, g->v1 * ih});
+                out.quads.push_back({pen + g->x0 * s.px, g->y0 * s.px, pen + g->x1 * s.px, g->y1 * s.px, g->u0 * iw, g->v0 * ih,
+                                     g->u1 * iw, g->v1 * ih});
             pen += g->advance * s.px;
         }
         ll.count = uint32_t(out.quads.size()) - ll.first;
@@ -144,8 +141,8 @@ inline const Layout &cached_layout(Frame &f, const TextStyle &s, std::string_vie
     return it->second;
 }
 
-inline void glyph_run(Frame &f, const TextStyle &s, const Layout &lay, float top, float x, float dx, float dy,
-                      uint32_t col, uint32_t mode)
+inline void glyph_run(Frame &f, const TextStyle &s, const Layout &lay, float top, float x, float dx, float dy, uint32_t col,
+                      uint32_t mode)
 {
     float step = line_step(s);
     bool snap = f.xform.plain();

@@ -143,10 +143,7 @@ private:
 // Not constinit: safetyhook's hooks hold a std::recursive_mutex, whose constructor is not constexpr.
 TimeTrialName tt_name;
 
-const char *lookup_hook(void *cache, void *id)
-{
-    return tt_name.lookup(cache, id);
-}
+const char *lookup_hook(void *cache, void *id) { return tt_name.lookup(cache, id); }
 
 bool TimeTrialName::wanted_name(std::string &clean, const char *&source)
 {
@@ -221,7 +218,8 @@ const char *TimeTrialName::lookup(void *cache, void *id)
             stock_serial.store(serial, std::memory_order_relaxed);
         }
         if (n <= 3 || n == 50)
-            swofty::log("[boards] player name: showing \"%s\" (source %s) for the local player's id, replacing \"%.40s\" in the name cache "
+            swofty::log("[boards] player name: showing \"%s\" (source %s) for the local player's id, replacing \"%.40s\" in the "
+                        "name cache "
                         "lookup (call %d)",
                         result, shown_source.load(std::memory_order_relaxed), seen[0] ? seen : "?", n);
     }
@@ -249,8 +247,9 @@ void TimeTrialName::setup()
     h_lookup = std::move(*h);
     bridge_on = true;
     std::thread([this] { account.watch(); }).detach();
-    swofty::log("[boards] player name: hook armed at base+0x%llx; in Time Trial the launcher account's name replaces the stock name",
-                (unsigned long long)(at - swofty::api->module_base()));
+    swofty::log(
+        "[boards] player name: hook armed at base+0x%llx; in Time Trial the launcher account's name replaces the stock name",
+        (unsigned long long)(at - swofty::api->module_base()));
 }
 
 void TimeTrialName::probe_tick()
@@ -295,7 +294,8 @@ void TimeTrialName::pin_tick()
     else if (!ours)
         why = "not our content (tt_bridge content check)";
     else if (!name_ok)
-        why = !strcmp(env_name, "0") ? "SWOFTY_TT_PLAYER_NAME=0 (off)" : "no usable name (unset and not signed in, or characters the HUD font lacks)";
+        why = !strcmp(env_name, "0") ? "SWOFTY_TT_PLAYER_NAME=0 (off)"
+                                     : "no usable name (unset and not signed in, or characters the HUD font lacks)";
     else if (!have_me)
         why = "the presence id was not read yet (no board request has passed the gate)";
     if (why.empty() && stock.empty() && swofty::game::g_Vm_Registry.address()) {
@@ -322,8 +322,9 @@ void TimeTrialName::pin_tick()
         why = "the stock name already equals the name to show";
     arm_rename(runtime::session_serial());
     char decision[400];
-    snprintf(decision, sizeof decision, "mode %s, our session %d, name %s (%s), presence id %s, stock \"%.40s\": %s", mode.c_str(), ours ? 1 : 0,
-             name_ok ? clean.c_str() : "-", name_ok ? source : "none", have_me ? "known" : "unknown", stock.c_str(), why.empty() ? "renaming" : why.c_str());
+    snprintf(decision, sizeof decision, "mode %s, our session %d, name %s (%s), presence id %s, stock \"%.40s\": %s",
+             mode.c_str(), ours ? 1 : 0, name_ok ? clean.c_str() : "-", name_ok ? source : "none", have_me ? "known" : "unknown",
+             stock.c_str(), why.empty() ? "renaming" : why.c_str());
     if (decision != last_decision) {
         last_decision = decision;
         swofty::log("[boards] player name pass: %s", decision);
@@ -343,10 +344,7 @@ void TimeTrialName::session()
         arm_rename(runtime::session_serial());
 }
 
-void setup()
-{
-    tt_name.setup();
-}
+void setup() { tt_name.setup(); }
 
 }
 
@@ -354,26 +352,14 @@ void setup()
 
 namespace runtime {
 
-void player_name_probe_tick()
-{
-    frontend::player_name::tt_name.probe_tick();
-}
+void player_name_probe_tick() { frontend::player_name::tt_name.probe_tick(); }
 
-void player_name_pin_tick()
-{
-    frontend::player_name::tt_name.pin_tick();
-}
+void player_name_pin_tick() { frontend::player_name::tt_name.pin_tick(); }
 
-void player_name_session()
-{
-    frontend::player_name::tt_name.session();
-}
+void player_name_session() { frontend::player_name::tt_name.session(); }
 
 }
 
 SWOFTY_CORE_RANK(player_name)
 
-SWOFTY_ON_LOAD
-{
-    runtime::when_code_ready("time trial player name", frontend::player_name::setup);
-}
+SWOFTY_ON_LOAD { runtime::when_code_ready("time trial player name", frontend::player_name::setup); }

@@ -22,8 +22,7 @@ inline void rect_rounded(Frame &f, float x, float y, float w, float h, float rad
     fill_convex(f, f.path, pack(rgba, f.opacity));
 }
 
-inline void rect_rounded_outline(Frame &f, float x, float y, float w, float h, float radius, float thickness,
-                                 uint32_t rgba)
+inline void rect_rounded_outline(Frame &f, float x, float y, float w, float h, float radius, float thickness, uint32_t rgba)
 {
     if (w <= 0 || h <= 0 || thickness <= 0 || !rgba_visible(rgba) || clipped_out(f))
         return;
@@ -44,8 +43,7 @@ inline uint32_t lerp_rgba(uint32_t a, uint32_t b, float t)
     return out;
 }
 
-inline void rect_gradient(Frame &f, float x, float y, float w, float h, float radius, uint32_t from, uint32_t to,
-                          uint32_t flags)
+inline void rect_gradient(Frame &f, float x, float y, float w, float h, float radius, uint32_t from, uint32_t to, uint32_t flags)
 {
     if (w <= 0 || h <= 0 || (!rgba_visible(from) && !rgba_visible(to)) || clipped_out(f))
         return;
@@ -126,8 +124,8 @@ inline void polygon(Frame &f, const float *xy, uint32_t count, uint32_t rgba)
     fill_convex(f, f.path, pack(rgba, f.opacity));
 }
 
-inline void image_nine(Frame &f, int slot, float iw, float ih, float x, float y, float w, float h, float l, float t,
-                       float r, float b, float scale, uint32_t tint)
+inline void image_nine(Frame &f, int slot, float iw, float ih, float x, float y, float w, float h, float l, float t, float r,
+                       float b, float scale, uint32_t tint)
 {
     if (slot < 0 || iw <= 0 || ih <= 0 || w <= 0 || h <= 0)
         return;
@@ -151,8 +149,7 @@ inline void image_nine(Frame &f, int slot, float iw, float ih, float x, float y,
     float us[4] = {0, l / iw, 1 - r / iw, 1}, vs[4] = {0, t / ih, 1 - b / ih, 1};
     for (int j = 0; j < 3; j++)
         for (int i = 0; i < 3; i++)
-            image_uv(f, slot, xs[i], ys[j], xs[i + 1] - xs[i], ys[j + 1] - ys[j], us[i], vs[j], us[i + 1], vs[j + 1],
-                     tint);
+            image_uv(f, slot, xs[i], ys[j], xs[i + 1] - xs[i], ys[j + 1] - ys[j], us[i], vs[j], us[i + 1], vs[j + 1], tint);
 }
 
 }

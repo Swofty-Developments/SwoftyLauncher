@@ -51,13 +51,25 @@ struct Spec {
 inline const Spec *specs(size_t &n)
 {
     static const Spec table[] = {
-        {2024, 1, 753, 0, 0, 0},      {2025, 1, 753, 0, 0, 0},      {2024, 2, 1131, 50, 22, HEADER},
-        {2025, 2, 1285, 57, 22, HEADER}, {2026, 2, 1399, 57, 24, HEADER}, {2024, 3, 45, 0, 0, 0},
-        {2025, 3, 45, 0, 0, 0},       {2026, 3, 45, 0, 0, 0},       {2024, 4, 1350, 60, 22, HEADER + 1},
-        {2025, 4, 1284, 57, 22, HEADER + 1}, {2026, 4, 1470, 60, 24, HEADER + 1}, {2024, 6, 1352, 60, 22, HEADER},
-        {2025, 6, 1352, 60, 22, HEADER}, {2026, 6, 1448, 59, 24, HEADER}, {2024, 7, 1239, 55, 22, HEADER},
-        {2025, 7, 1239, 55, 22, HEADER}, {2026, 7, 1445, 59, 24, HEADER},
-        {2024, 10, 1041, 46, 22, HEADER}, {2025, 10, 1041, 46, 22, HEADER},
+        {2024, 1, 753, 0, 0, 0},
+        {2025, 1, 753, 0, 0, 0},
+        {2024, 2, 1131, 50, 22, HEADER},
+        {2025, 2, 1285, 57, 22, HEADER},
+        {2026, 2, 1399, 57, 24, HEADER},
+        {2024, 3, 45, 0, 0, 0},
+        {2025, 3, 45, 0, 0, 0},
+        {2026, 3, 45, 0, 0, 0},
+        {2024, 4, 1350, 60, 22, HEADER + 1},
+        {2025, 4, 1284, 57, 22, HEADER + 1},
+        {2026, 4, 1470, 60, 24, HEADER + 1},
+        {2024, 6, 1352, 60, 22, HEADER},
+        {2025, 6, 1352, 60, 22, HEADER},
+        {2026, 6, 1448, 59, 24, HEADER},
+        {2024, 7, 1239, 55, 22, HEADER},
+        {2025, 7, 1239, 55, 22, HEADER},
+        {2026, 7, 1445, 59, 24, HEADER},
+        {2024, 10, 1041, 46, 22, HEADER},
+        {2025, 10, 1041, 46, 22, HEADER},
     };
     n = sizeof table / sizeof *table;
     return table;
@@ -81,10 +93,7 @@ struct Event {
     int64_t a, b;
 };
 
-inline uint16_t u16(const uint8_t *p)
-{
-    return uint16_t(p[0] | p[1] << 8);
-}
+inline uint16_t u16(const uint8_t *p) { return uint16_t(p[0] | p[1] << 8); }
 
 inline uint32_t u32(const uint8_t *p)
 {
@@ -99,10 +108,7 @@ inline float f32(const uint8_t *p)
     return f;
 }
 
-inline float ms_to_s(uint32_t ms)
-{
-    return float(ms) / 1000.0f;
-}
+inline float ms_to_s(uint32_t ms) { return float(ms) / 1000.0f; }
 
 inline uint32_t delta_ms(const uint8_t *e, size_t at, bool minutes)
 {
@@ -123,7 +129,9 @@ inline void session(const uint8_t *p, SwoftyTelemetryFeed &f)
     s.pit_speed_limit = p[42];
     s.safety_car_status = p[153];
     unsigned zones = p[47] > 21 ? 21 : p[47];
-    auto rank = [](uint32_t v) { return v == SWOFTY_FLAG_YELLOW ? 3 : v == SWOFTY_FLAG_BLUE ? 2 : v == SWOFTY_FLAG_GREEN ? 1 : 0; };
+    auto rank = [](uint32_t v) {
+        return v == SWOFTY_FLAG_YELLOW ? 3 : v == SWOFTY_FLAG_BLUE ? 2 : v == SWOFTY_FLAG_GREEN ? 1 : 0;
+    };
     uint32_t flag = SWOFTY_FLAG_NONE;
     for (unsigned i = 0; i < zones; i++) {
         int z = int8_t(p[48 + i * 5 + 4]);

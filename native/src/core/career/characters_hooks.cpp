@@ -31,8 +31,8 @@ namespace {
 namespace mem = swofty::mem;
 
 constexpr size_t ROW = 0x38, MAX_ROWS = 4096, RTPC_SLOT = 0x60;
-constexpr uintptr_t SPEAKERS = 0x728, SPEAKER_RECORDS = 0x60, SPEAKER_STRIDE = 0x88, SPEAKER_NAME = 0x18,
-                    SPEAKER_COUNT = 0x7cc, LINE_SPEAKER = 0x80, LINE_EMITTER = 0x28;
+constexpr uintptr_t SPEAKERS = 0x728, SPEAKER_RECORDS = 0x60, SPEAKER_STRIDE = 0x88, SPEAKER_NAME = 0x18, SPEAKER_COUNT = 0x7cc,
+                    LINE_SPEAKER = 0x80, LINE_EMITTER = 0x28;
 constexpr char SPEECH_VOLUME[] = "vol_speech";
 
 using SetRtpc = void(void *emitter, const char *name, float value, int a, float interpolation, int b);
@@ -56,8 +56,7 @@ size_t rows(const void *vector, const uint8_t **begin)
 {
     uintptr_t b = 0, e = 0;
     if (!vector || !mem::read(reinterpret_cast<uintptr_t>(vector) + 0x08, b) ||
-        !mem::read(reinterpret_cast<uintptr_t>(vector) + 0x10, e) || !b || e <= b || (e - b) % ROW ||
-        (e - b) / ROW > MAX_ROWS)
+        !mem::read(reinterpret_cast<uintptr_t>(vector) + 0x10, e) || !b || e <= b || (e - b) % ROW || (e - b) / ROW > MAX_ROWS)
         return 0;
     if (begin)
         *begin = reinterpret_cast<const uint8_t *>(b);
@@ -81,9 +80,8 @@ const char *speaker_of(const void *speech, const void *line)
     uintptr_t table = 0, record = 0, name = 0;
     auto s = reinterpret_cast<uintptr_t>(speech), l = reinterpret_cast<uintptr_t>(line);
     if (!mem::read(l + LINE_SPEAKER, index) || !mem::read(s + SPEAKER_COUNT, count) || index >= count ||
-        !mem::read(s + SPEAKERS, table) || !table ||
-        !mem::read(table + SPEAKER_RECORDS + index * SPEAKER_STRIDE, record) || !record ||
-        !mem::read(record + SPEAKER_NAME, name) || !mem::readable(name, 1))
+        !mem::read(s + SPEAKERS, table) || !table || !mem::read(table + SPEAKER_RECORDS + index * SPEAKER_STRIDE, record) ||
+        !record || !mem::read(record + SPEAKER_NAME, name) || !mem::readable(name, 1))
         return nullptr;
     return reinterpret_cast<const char *>(name);
 }
@@ -133,8 +131,8 @@ void post_line(void *speech, void *line, uint8_t retrigger)
         const char *speaker = speaker_of(speech, line);
         uintptr_t emitter = 0, vt = 0, fn = 0;
         mem::read(reinterpret_cast<uintptr_t>(line) + LINE_EMITTER, emitter);
-        if (emitter && speaker_muted(speaker) && mem::read(emitter, vt) && mem::in_image(vt) &&
-            mem::read(vt + RTPC_SLOT, fn) && mem::in_image(fn)) {
+        if (emitter && speaker_muted(speaker) && mem::read(emitter, vt) && mem::in_image(vt) && mem::read(vt + RTPC_SLOT, fn) &&
+            mem::in_image(fn)) {
             reinterpret_cast<SetRtpc *>(fn)(reinterpret_cast<void *>(emitter), SPEECH_VOLUME, 0.f, 0, 0.f, 0);
             bool fresh;
             {
@@ -151,8 +149,8 @@ void post_line(void *speech, void *line, uint8_t retrigger)
                 shared = muted_emitters.count(reinterpret_cast<void *>(emitter)) != 0;
             }
             if (shared && shared_lines.note())
-                swofty::log("[characters] emitter %p, muted earlier, also speaks %s; that line is silent too",
-                            (void *)emitter, speaker ? speaker : "(unknown)");
+                swofty::log("[characters] emitter %p, muted earlier, also speaks %s; that line is silent too", (void *)emitter,
+                            speaker ? speaker : "(unknown)");
         }
     }
     orig_post(speech, line, retrigger);
