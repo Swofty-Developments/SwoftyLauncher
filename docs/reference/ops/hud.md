@@ -389,7 +389,7 @@ Three claims stop the build, naming the addons on both sides and the addons to t
 | the board | a node under a screen's parent that the game's template has not got already shows and hides the stock board the screen masks (`mask` on the standings): another addon replaces the same board |
 | a stock part | a node the game's template has not got already shows and hides an element a record's `stock_nodes` or `restyle` hides |
 
-Two template nodes that show and hide one element fight, so only one addon's tower can own the board. Project Halo's timing tower (`tt_ctl.tt_mask` on `mask`) and TV Timing Tower's record stop the build with:
+Two template nodes that show and hide one element fight: one board takes one addon's tower. Project Halo's timing tower (`tt_ctl.tt_mask` on `mask`) and TV Timing Tower's record stop the build with:
 
 ```text
 the HUD elements do not compose: Project Halo and TV Timing Tower both replace the Track Position list, and only one of them can switch the game's own list off; turn Project Halo or TV Timing Tower off in this profile (Project Halo's template node hud_track_position.osd_visibility_option.track_position.tt_ctl.tt_mask already shows and hides mask)
