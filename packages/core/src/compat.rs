@@ -412,6 +412,105 @@ pub fn write_blocked_text_for(game: &Path, windows: bool) -> String {
     }
 }
 
+/// The folders under the game folder the mod loader builds archives in at
+/// boot for the game's own file system to read, which reaches only files
+/// under the game folder: the team logo and the garage art caches.
+pub const CORE_CACHES: &[&str] = &["swofty/addons/swofty.logos", "swofty/addons/swofty.garage"];
+
+/// The Users group, by SID so the grant reads the same in every Windows
+/// language, gets Modify on a folder and everything made in it.
+#[cfg(windows)]
+const USERS_MODIFY: &str = "*S-1-5-32-545:(OI)(CI)M";
+
+/// Makes each of [`CORE_CACHES`] in `game` one F1 25 can create files in,
+/// when `game` is under Program Files and this process runs as
+/// administrator. F1 25 started by the EA app runs without administrator
+/// rights even then, and a folder the administrator copy makes under Program
+/// Files lets it only read. Returns a line for each folder that stays closed
+/// to the game.
+pub fn open_core_caches(game: &Path) -> Vec<String> {
+    if !cfg!(windows) || !in_program_files(game, &program_files_roots()) || !elevated() {
+        return Vec::new();
+    }
+    open_core_caches_with(game, grant_users_modify)
+}
+
+/// The Program Files folders of this Windows.
+fn program_files_roots() -> Vec<PathBuf> {
+    ["ProgramFiles", "ProgramFiles(x86)", "ProgramW6432"]
+        .iter()
+        .filter_map(std::env::var_os)
+        .map(PathBuf::from)
+        .collect()
+}
+
+/// Whether `dir` is one of `roots` or inside one, compared as Windows does:
+/// without case, either slash.
+fn in_program_files(dir: &Path, roots: &[PathBuf]) -> bool {
+    let norm = |p: &Path| {
+        let mut s = p.to_string_lossy().replace('/', "\\").to_lowercase();
+        while s.ends_with('\\') {
+            s.pop();
+        }
+        s
+    };
+    let dir = norm(dir);
+    roots.iter().map(|r| norm(r)).any(|root| {
+        !root.is_empty()
+            && dir
+                .strip_prefix(&root)
+                .is_some_and(|rest| rest.is_empty() || rest.starts_with('\\'))
+    })
+}
+
+/// The folder `rel`, one of [`CORE_CACHES`], in `game`, with the separator
+/// of this system between its parts.
+pub fn core_cache_dir(game: &Path, rel: &str) -> PathBuf {
+    rel.split('/')
+        .fold(game.to_path_buf(), |dir, part| dir.join(part))
+}
+
+/// [`open_core_caches`] with the call that opens one folder to the game.
+pub(crate) fn open_core_caches_with(
+    game: &Path,
+    grant: impl Fn(&Path) -> std::result::Result<(), String>,
+) -> Vec<String> {
+    CORE_CACHES
+        .iter()
+        .filter_map(|rel| {
+            let dir = core_cache_dir(game, rel);
+            std::fs::create_dir_all(&dir)
+                .map_err(|e| e.to_string())
+                .and_then(|()| grant(&dir))
+                .err()
+                .map(|why| {
+                    format!(
+                        "core caches: F1 25 run without administrator rights can't create files in {rel}, \
+                         and the archives the mod loader builds there at boot stay out of the game: {why}"
+                    )
+                })
+        })
+        .collect()
+}
+
+#[cfg(windows)]
+fn grant_users_modify(dir: &Path) -> std::result::Result<(), String> {
+    let path = dir
+        .to_str()
+        .ok_or_else(|| format!("{} is not a path icacls can be given", dir.display()))?;
+    windows_tool_within(
+        "icacls",
+        &[path, "/grant", USERS_MODIFY, "/Q"],
+        std::time::Duration::from_secs(30),
+    )
+    .map(drop)
+}
+
+#[cfg(not(windows))]
+fn grant_users_modify(_: &Path) -> std::result::Result<(), String> {
+    Ok(())
+}
+
 pub fn explain(found: &[AdminLayer], game: &Path) -> String {
     let mut names: Vec<&str> = found.iter().map(|l| l.name.as_str()).collect();
     names.dedup();
@@ -1122,6 +1221,127 @@ mod tests {
         if !cfg!(windows) {
             assert_eq!(ea_blocker(Path::new("/games/F1 25"), None, true), None);
         }
+    }
+
+    #[test]
+    fn opens_every_core_cache_and_names_the_one_that_stays_closed() {
+        let game = std::env::temp_dir().join(format!("swofty-core-caches-{}", std::process::id()));
+        std::fs::remove_dir_all(&game).ok();
+        let granted = std::cell::RefCell::new(Vec::new());
+        let lines = open_core_caches_with(&game, |dir| {
+            granted.borrow_mut().push(dir.to_path_buf());
+            Ok(())
+        });
+        assert!(lines.is_empty(), "{lines:?}");
+        let made: Vec<PathBuf> = CORE_CACHES.iter().map(|rel| core_cache_dir(&game, rel)).collect();
+        assert_eq!(*granted.borrow(), made);
+        assert!(made.iter().all(|d| d.is_dir()));
+        assert!(made.contains(&game.join("swofty").join("addons").join("swofty.logos")));
+
+        let lines = open_core_caches_with(&game, |dir| {
+            if dir.ends_with("swofty.logos") {
+                Err("Access is denied.".to_owned())
+            } else {
+                Ok(())
+            }
+        });
+        assert_eq!(lines.len(), 1, "{lines:?}");
+        assert!(
+            lines[0].contains("swofty/addons/swofty.logos") && lines[0].ends_with(": Access is denied."),
+            "{}",
+            lines[0]
+        );
+        std::fs::remove_dir_all(&game).ok();
+    }
+
+    #[test]
+    fn a_core_cache_that_cannot_be_made_is_named() {
+        let game = std::env::temp_dir().join(format!("swofty-core-caches-file-{}", std::process::id()));
+        std::fs::remove_dir_all(&game).ok();
+        std::fs::create_dir_all(&game).unwrap();
+        std::fs::write(game.join("swofty"), b"a file where the folder goes").unwrap();
+        let lines = open_core_caches_with(&game, |_| Ok(()));
+        assert_eq!(lines.len(), CORE_CACHES.len(), "{lines:?}");
+        assert!(lines.iter().all(|l| l.starts_with("core caches: ")));
+        std::fs::remove_dir_all(&game).ok();
+    }
+
+    #[test]
+    fn a_game_folder_outside_program_files_keeps_its_caches_as_they_are() {
+        let game = std::env::temp_dir().join(format!("swofty-core-caches-off-{}", std::process::id()));
+        std::fs::remove_dir_all(&game).ok();
+        std::fs::create_dir_all(&game).unwrap();
+        assert!(open_core_caches(&game).is_empty());
+        assert!(!game.join("swofty").exists());
+        std::fs::remove_dir_all(&game).ok();
+    }
+
+    #[test]
+    fn tells_a_folder_in_program_files_from_one_beside_it() {
+        let roots = [
+            PathBuf::from(r"C:\Program Files"),
+            PathBuf::from(r"C:\Program Files (x86)\"),
+        ];
+        for inside in [
+            r"C:\Program Files\EA Games\F1 25",
+            r"c:\program files\EA Games\F1 25\",
+            r"C:/Program Files (x86)/Steam/steamapps/common/F1 25",
+            r"C:\Program Files",
+        ] {
+            assert!(in_program_files(Path::new(inside), &roots), "{inside}");
+        }
+        for outside in [
+            r"C:\Program Files Games\F1 25",
+            r"D:\Program Files\EA Games\F1 25",
+            r"D:\SteamLibrary\steamapps\common\F1 25",
+            r"C:\Program",
+        ] {
+            assert!(!in_program_files(Path::new(outside), &roots), "{outside}");
+        }
+        assert!(!in_program_files(Path::new(r"C:\Program Files\EA Games"), &[]));
+        assert!(!in_program_files(
+            Path::new(r"C:\Program Files\EA Games"),
+            &[PathBuf::new()]
+        ));
+    }
+
+    #[cfg(windows)]
+    fn saved_acl(path: &Path) -> String {
+        let saved = path.with_extension("acl");
+        windows_tool_within(
+            "icacls",
+            &[path.to_str().unwrap(), "/save", saved.to_str().unwrap()],
+            std::time::Duration::from_secs(30),
+        )
+        .unwrap();
+        let bytes = std::fs::read(&saved).unwrap();
+        std::fs::remove_file(&saved).ok();
+        let wide: Vec<u16> = bytes
+            .chunks_exact(2)
+            .map(|c| u16::from_le_bytes([c[0], c[1]]))
+            .collect();
+        String::from_utf16_lossy(&wide)
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn the_grant_gives_the_users_group_modify_on_the_folder_and_every_file_in_it() {
+        let dir = std::env::temp_dir().join(format!("swofty-cache-grant-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(&dir).unwrap();
+        let before = dir.join("before.erp");
+        std::fs::write(&before, b"made before the grant").unwrap();
+        grant_users_modify(&dir).unwrap();
+        grant_users_modify(&dir).unwrap();
+        let after = dir.join("after.erp");
+        std::fs::write(&after, b"made after the grant").unwrap();
+        let acl = saved_acl(&dir);
+        assert_eq!(acl.matches("(A;OICI;0x1301bf;;;BU)").count(), 1, "{acl}");
+        for file in [&before, &after] {
+            let acl = saved_acl(file);
+            assert!(acl.contains("(A;ID;0x1301bf;;;BU)"), "{}: {acl}", file.display());
+        }
+        std::fs::remove_dir_all(&dir).ok();
     }
 
     #[test]
