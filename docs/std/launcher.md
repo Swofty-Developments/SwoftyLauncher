@@ -125,7 +125,7 @@ $DATA/
     tails.whatif-history/profile/whatif.json   that addon's per-profile data, put there by its build step
 ```
 
-The archives the core builds for team logos stay under `<game>/swofty/addons/swofty.logos/`: the game's file system reaches only files under the game folder. A session end leaves them there for the next boot; a restore removes them.
+The archives the core builds for team logos stay under `<game>/swofty/addons/swofty.logos/`. The game's file system reaches only files under the game folder. A session end leaves them there for the next boot; a restore removes them. Before a modded session in a game folder under Program Files, a launcher that runs as administrator makes `swofty/addons/swofty.logos/` and `swofty/addons/swofty.garage/` and gives the Users group Modify on each (`icacls <folder> /grant *S-1-5-32-545:(OI)(CI)M`). The core then builds its archives there when the EA app starts the game without administrator rights. A folder that stays closed gets a `core caches:` line in `state/wrapper-run.log`.
 
 ```json
 // index.json

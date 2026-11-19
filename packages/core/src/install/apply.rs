@@ -168,6 +168,9 @@ impl<'a> Installer<'a> {
             for line in crate::stdlib::state::migrate(self.data, &self.game.dir)? {
                 (self.out)(&line);
             }
+            for line in crate::platform::run_as_admin::open_core_caches(&self.game.dir) {
+                (self.out)(&line);
+            }
         }
         j.commit()
     }

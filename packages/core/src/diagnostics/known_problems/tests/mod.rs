@@ -6,6 +6,7 @@ mod game_version;
 mod graphics;
 mod hang;
 mod hooks;
+mod logos;
 mod memory;
 mod slow_init;
 mod stall;
