@@ -362,13 +362,9 @@ impl Shell {
             false => ("$5", tr("Back the launcher and lose the ads")),
         };
         let accent = hue(if plus { PLUS_NAME } else { PINK });
-        let chips = h_flex()
-            .when(plus, |d| {
-                d.child(chip(tr("Early access"), gradient(), hue(WHITE)))
-            })
-            .when(current, |d| {
-                d.child(chip(tr("Your tier"), hue(GREEN).opacity(0.16), hue(GREEN)))
-            });
+        let chips = h_flex().when(current, |d| {
+            d.child(chip(tr("Your tier"), hue(GREEN).opacity(0.16), hue(GREEN)))
+        });
         v_flex()
             .flex_1()
             .min_w_0()
