@@ -54,6 +54,11 @@ public:
     bool has_pool(const std::string &registry) const;
     void set_live(const std::string &registry, const std::vector<std::string> &records);
 
+    // The ids the install's row-ids.json keeps for added rows (by pool registry): no allocation takes one.
+    void reserve(std::map<std::string, std::set<int64_t>> ids);
+    bool reserve_json(const std::string &text, std::string *why = nullptr);
+    bool reserved(const std::string &registry, int64_t id) const;
+
     void hold(const std::string &registry, std::map<int64_t, std::string> rows);
     bool database_holds(const std::string &registry, int64_t id, const std::string &label, std::string *row = nullptr) const;
 
@@ -95,6 +100,7 @@ private:
     int64_t next_free_locked(const std::string &registry, const std::string &record) const;
     std::string moved_line(const std::string &registry, const std::string &record, const char *how, int64_t id,
                            const std::string &row, int64_t to) const;
+    bool reserved_locked(const std::string &registry, int64_t id) const;
     bool career_uses_locked(const std::string &registry, int64_t id, const std::string &except = {}) const;
     bool live_locked(const std::string &registry, const std::string &record) const;
     std::string pool_text_locked(const std::string &registry) const;
@@ -106,6 +112,7 @@ private:
     std::map<std::string, Pool> pools_;
     std::map<std::string, std::set<std::string>> live_;
     std::map<std::string, std::map<int64_t, std::string>> db_;
+    std::map<std::string, std::set<int64_t>> reserved_;
     std::size_t deduped_ = 0;
     bool dirty_ = false;
     bool lent_ = false;

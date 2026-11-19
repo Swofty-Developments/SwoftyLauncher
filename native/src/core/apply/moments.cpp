@@ -542,6 +542,10 @@ void attach()
                         why.c_str());
         else if (!text.empty())
             swofty::log("[registry] stat ids: ids.json holds %zu id(s)", ids::store().size());
+        std::string kept = read_file(registry_dir() + "\\row-ids.json");
+        if (!kept.empty() && !ids::store().reserve_json(kept, &why))
+            swofty::log("[registry] stat ids: row-ids.json unreadable (%s); its ids are not held back from the pools",
+                        why.c_str());
         std::string room = runtime::read_file(runtime::swofty_root() + L"room_stat_ids.json", size_t(4) << 20);
         if (!room.empty() && !room_boot()) {
             swofty::log("[registry] stat ids: swofty\\room_stat_ids.json is left from an earlier shared session and this "
