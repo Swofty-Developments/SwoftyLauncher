@@ -18,6 +18,7 @@
 #include "core/career/career_saves_logic.hpp"
 #include "core/career/resume_gate_logic.hpp"
 #include "core/career/resume_list.hpp"
+#include "core/career/resume_press_logic.hpp"
 
 // Resume Career gate (re/db/globals.tsv vt_Game_CareerContinueDriverViewModel and vt_Game_CareerContinueMyTeamViewModel,
 // slot 10 = Game_CareerContinue_HandleCommand, 0x141a1db90 on the KB build).
@@ -184,7 +185,7 @@ std::atomic<bool> probe_done{false};
 bool probe_armed = false;
 uint64_t probe_slot = 0, probe_guid = 0;
 
-bool press_slot_shaped(void *vm, uintptr_t &fn, const char *who)
+bool press_slot_shaped(void *vm, uintptr_t &fn, const char *who, bool check_busy = true)
 {
     auto base = reinterpret_cast<uintptr_t>(vm);
     uintptr_t vt = 0;
@@ -205,11 +206,134 @@ bool press_slot_shaped(void *vm, uintptr_t &fn, const char *who)
                     who, (unsigned long long)(fn - reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr))));
         return false;
     }
-    if (!mem::read(base + CARD_BUSY, busy) || busy) {
+    if (check_busy && (!mem::read(base + CARD_BUSY, busy) || busy)) {
         swofty::log("[career] resume screen: %s: the screen is busy (vm+0x1380 = %u); nothing was done", who, busy);
         return false;
     }
     return true;
+}
+
+namespace rl = career::resume_list;
+
+constexpr uintptr_t VM_WIZARD = 0x1370, WIZARD_GROUP = 0x128, WIZARD_SUFFIX = 0x140, WIZARD_SUFFIX_CAP = 0x148,
+                    WIZARD_SUFFIX_CHARS = 0x150, CARD_PENDING = 0x1368, CARD_MODE = 0x53c, MODE_SLOT = 33 * 8;
+constexpr uint8_t MODE_HEAD[] = {0x56, 0x57, 0x48, 0x83, 0xEC, 0x68, 0x80, 0xFA, 0x01, 0x74, 0x2E,
+                                 0x0F, 0xB6, 0xC2, 0x85, 0xC0, 0x0F, 0x85, 0x88, 0x00, 0x00, 0x00};
+const runtime::Sig SIG_SET_DATA_GROUP{"game.career_wizard_set_data_group",
+                                      "56 57 48 83 EC 28 48 89 D7 48 89 CE 48 85 D2 74 0D 48 89 F9 E8 ?? ?? ?? ?? 48 FF C0 EB 05 "
+                                      "B8 01 00 00 00 48 8B 8E 20 01 00 00",
+                                      0x387f690};
+using SetDataGroup = void(void *wizard, const char *group);
+using Reserve = void(void *str, uint64_t n);
+using ModeOf = void *(void *vm, uint8_t kind);
+uintptr_t set_data_group = 0, reserve_str = 0;
+bool set_data_group_tried = false;
+
+void *wizard_of(void *vm)
+{
+    uintptr_t w = 0;
+    return mem::read(reinterpret_cast<uintptr_t>(vm) + VM_WIZARD, w) && w && !(w & 7) && mem::readable(w, 0x200)
+               ? reinterpret_cast<void *>(w)
+               : nullptr;
+}
+
+std::string wizard_group(void *wizard)
+{
+    uintptr_t chars = 0;
+    std::string text;
+    if (wizard && mem::read(reinterpret_cast<uintptr_t>(wizard) + WIZARD_GROUP, chars) && chars)
+        mem::c_string(chars, text, 96);
+    return text;
+}
+
+bool write_suffix(void *wizard, const std::string &suffix)
+{
+    auto w = reinterpret_cast<uintptr_t>(wizard);
+    uint64_t cap = 0, chars = 0;
+    if (suffix.empty() || !mem::read(w + WIZARD_SUFFIX_CAP, cap))
+        return false;
+    if (cap < suffix.size() + 1) {
+        if (!reserve_str)
+            return false;
+        reinterpret_cast<Reserve *>(reserve_str)(reinterpret_cast<void *>(w + WIZARD_SUFFIX), suffix.size() + 1);
+        if (!mem::read(w + WIZARD_SUFFIX_CAP, cap))
+            return false;
+    }
+    if (cap < suffix.size() + 1 || !mem::read(w + WIZARD_SUFFIX_CHARS, chars) || !chars)
+        return false;
+    auto *out = reinterpret_cast<volatile char *>(chars);
+    for (size_t i = 0; i < suffix.size(); i++)
+        out[i] = suffix[i];
+    out[suffix.size()] = 0;
+    return true;
+}
+
+void match_wizard(void *vm, const rl::Target &t, rl::Facts &f)
+{
+    f.want_group = t.group;
+    void *wizard = wizard_of(vm);
+    f.wizard_group = wizard_group(wizard);
+    if (!wizard || !rl::group_needs_write(t.group, f.wizard_group))
+        return;
+    if (!set_data_group_tried) {
+        set_data_group_tried = true;
+        set_data_group = runtime::find(SIG_SET_DATA_GROUP, "resume screen", "career");
+        reserve_str = swofty::api->resolve("Ne_String_Reserve");
+    }
+    if (!set_data_group)
+        return;
+    const std::string was = f.wizard_group;
+    reinterpret_cast<SetDataGroup *>(set_data_group)(wizard, t.group.c_str());
+    bool suffixed = write_suffix(wizard, t.suffix);
+    f.wizard_group = wizard_group(wizard);
+    swofty::log("[career] resume screen: row %zu: the wizard data group was %s, set to %s (suffix %s)", t.row,
+                rl::group_text(was).c_str(), rl::group_text(f.wizard_group).c_str(),
+                t.suffix.empty() ? "kept"
+                : suffixed       ? t.suffix.c_str()
+                                 : "not written");
+}
+
+bool mode_shaped(void *vm, uintptr_t &fn)
+{
+    uintptr_t vt = 0;
+    if (!mem::read(reinterpret_cast<uintptr_t>(vm), vt) || !mem::in_image(vt) || !mem::read(vt + MODE_SLOT, fn) ||
+        !mem::in_image(fn))
+        return false;
+    for (size_t i = 0; i < sizeof MODE_HEAD; i++) {
+        uint8_t b = 0;
+        if (!mem::read(fn + i, b) || b != MODE_HEAD[i])
+            return false;
+    }
+    return true;
+}
+
+bool mode_found(void *vm)
+{
+    uintptr_t fn = 0;
+    uint8_t kind = 0;
+    if (!mode_shaped(vm, fn) || !mem::read(reinterpret_cast<uintptr_t>(vm) + CARDS + CARD_MODE, kind))
+        return false;
+    return reinterpret_cast<ModeOf *>(fn)(vm, kind) != nullptr;
+}
+
+rl::Card read_card(void *vm, size_t i)
+{
+    rl::Card c;
+    uintptr_t entry = reinterpret_cast<uintptr_t>(vm) + CARDS + i * CARD_SIZE;
+    uint8_t has = 0;
+    c.read = mem::read(entry, has) && mem::read(entry + 8, c.id);
+    c.has_save = has != 0;
+    return c;
+}
+
+void read_screen(void *vm, rl::Facts &f)
+{
+    auto base = reinterpret_cast<uintptr_t>(vm);
+    mem::read(base + CARD_PENDING, f.pending);
+    mem::read(base + CARD_BUSY, f.busy);
+    for (size_t i = 0; i < rl::CARD_COUNT; i++)
+        f.stock[i] = read_card(vm, i);
+    f.card0 = f.stock[0];
 }
 
 uint64_t rewrite_card0(void *vm, const career::resume_list::Selection &sel)
@@ -255,23 +379,45 @@ struct ListAsk {
     Handle *orig = nullptr;
     bool my_team = false, open = false;
     size_t row = 0;
+    rl::Target target;
 } list_ask;
 
-void press_selected(void *vm, bool my_team, size_t row)
+void refuse(size_t row, const std::string &why)
+{
+    swofty::log("[career] resume screen: row %zu: not pressed: %s", row, why.c_str());
+}
+
+void press_selected(void *vm, bool my_team, const rl::Target &t)
 {
     uintptr_t fn = 0;
-    if (!press_slot_shaped(vm, fn, "resume screen"))
+    if (!press_slot_shaped(vm, fn, "resume screen", false))
         return;
+    rl::Facts f;
+    f.row = t.row;
+    f.target = t.sel.id;
+    f.listed = true;
+    read_screen(vm, f);
+    match_wizard(vm, t, f);
+    f.mode_found = mode_found(vm);
+    std::string why = rl::press_refusal(f);
+    if (!why.empty()) {
+        refuse(t.row, why);
+        return;
+    }
     using PressSlot = void(void *vm, uint8_t card);
-    swofty::log("[career] resume screen: row %zu: calling PressSlot (base+0x%llx) on the %s continue screen", row,
-                (unsigned long long)(fn - reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr))),
-                my_team ? "My Team" : "Driver Career");
+    swofty::log(
+        "[career] resume screen: row %zu: calling PressSlot (base+0x%llx) on the %s continue screen, wizard data group %s", t.row,
+        (unsigned long long)(fn - reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr))), my_team ? "My Team" : "Driver Career",
+        rl::group_text(f.wizard_group).c_str());
     reinterpret_cast<PressSlot *>(fn)(vm, 0);
     uint8_t pending = 0;
-    mem::read(reinterpret_cast<uintptr_t>(vm) + 0x1368, pending);
+    mem::read(reinterpret_cast<uintptr_t>(vm) + CARD_PENDING, pending);
     swofty::log("[career] resume screen: row %zu: PressSlot returned; pending action vm+0x1368 = %u (2 means the career loads "
                 "when the screen finishes its transition out)",
-                row, pending);
+                t.row, pending);
+    if (pending != 2)
+        swofty::log("[career] resume screen: row %zu: the screen did not take the career (pending %u); it stays open", t.row,
+                    pending);
 }
 
 void go_back(Handle *orig, void *vm)
@@ -302,7 +448,7 @@ void list_answered(void *, void **answer)
     if (!a.open || !a.vm)
         return;
     if (rg::loads(text))
-        press_selected(a.vm, a.my_team, a.row);
+        press_selected(a.vm, a.my_team, a.target);
     else
         go_back(a.orig, a.vm);
 }
@@ -323,22 +469,43 @@ void list_confirm_failed(void *)
 
 void load_target(Handle *orig, bool my_team, void *vm)
 {
-    career::resume_list::Target t;
-    if (!career::resume_list::take_target(my_team, t))
+    rl::Target t;
+    if (!rl::take_target(my_team, t))
         return;
     uintptr_t fn = 0;
-    if (!make_str || !press_slot_shaped(vm, fn, "resume screen"))
+    if (!make_str || !press_slot_shaped(vm, fn, "resume screen", false))
         return;
+    rl::Facts f;
+    f.row = t.row;
+    f.target = t.sel.id;
+    f.listed = true;
+    read_screen(vm, f);
+    std::string why = rl::opened_refusal(f);
+    if (why.empty() && !rl::stock_has(f.stock, f.target))
+        swofty::log("[career] resume screen: row %zu: slot id %llu is not one of the %zu cards the continue screen listed; the "
+                    "core's save slot list has it",
+                    t.row, (unsigned long long)t.sel.id, rl::CARD_COUNT);
+    if (why.empty() && f.pending != 0)
+        why = rl::busy_reason(f);
+    if (why.empty()) {
+        match_wizard(vm, t, f);
+        f.mode_found = mode_found(vm);
+        why = rl::wizard_reason(f);
+    }
+    if (!why.empty()) {
+        refuse(t.row, why);
+        return;
+    }
     uint64_t was = rewrite_card0(vm, t.sel);
     swofty::log("[career] resume screen: row %zu: card 0 slot id %llu rewritten to %llu on the %s continue screen", t.row,
                 (unsigned long long)was, (unsigned long long)t.sel.id, my_team ? "My Team" : "Driver Career");
     if (!t.ask) {
-        press_selected(vm, my_team, t.row);
+        press_selected(vm, my_team, t);
         return;
     }
     {
         std::lock_guard<std::mutex> g(lock);
-        list_ask = {vm, orig, my_team, true, t.row};
+        list_ask = {vm, orig, my_team, true, t.row, t};
     }
     set_labels();
     if (!confirm_on || runtime::popup_confirm("Add-ons do not match", t.body, reinterpret_cast<void *>(&list_answered), nullptr,

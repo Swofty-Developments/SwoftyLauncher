@@ -9,6 +9,8 @@
 #include <cstring>
 #include <mutex>
 
+#include "core/career/content_state.hpp"
+#include "core/career/resume_press_logic.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/settings.hpp"
 
@@ -29,7 +31,7 @@ std::mutex mu;
 bool table_read = false, target_on = false;
 std::vector<Entry> table;
 Target target_;
-uint64_t target_at = 0;
+uint64_t target_at = 0, new_career_at = 0;
 
 const std::vector<Entry> &entries_locked()
 {
@@ -46,6 +48,7 @@ public:
     void on_activated() override
     {
         std::lock_guard<std::mutex> g(mu);
+        new_career_at = 0;
         swofty::log("[career] resume screen: %s is open with %zu row(s)", screen().c_str(), entries_locked().size());
     }
 
@@ -100,12 +103,38 @@ bool pressed(size_t index)
     }
     target_on = true;
     target_at = GetTickCount64();
-    target_ = {sel, e->my_team, press(*e) == Action::Ask, index, dialog_text(*e)};
+    std::string group = runtime::career_saves_content_for_slot(e->key);
+    target_ = {sel,
+               e->my_team,
+               press(*e) == Action::Ask,
+               index,
+               dialog_text(*e),
+               group,
+               suffix_for(group, career::content::suffix_of_group(group))};
     swofty::log("[career] resume screen: row %zu (%s, key %s) is slot id %llu guid %016llx, %s%s%s; the %s continue screen "
                 "loads it next",
                 index, e->my_team ? "My Team" : "Driver Career", e->key.c_str(), (unsigned long long)sel.id,
                 (unsigned long long)sel.guid, e->ready ? "ready" : "not ready (", e->ready ? "" : e->status.c_str(),
                 e->ready ? "" : ") and asks first", e->my_team ? "My Team" : "Driver Career");
+    return true;
+}
+
+void route_ran(const std::string &route)
+{
+    if (!is_new_career_route(route))
+        return;
+    std::lock_guard<std::mutex> g(mu);
+    new_career_at = GetTickCount64();
+    swofty::log("[career] resume screen: New Career was chosen on the list screen; the next Resume Career tile press opens the "
+                "stock continue screen");
+}
+
+bool new_career_requested()
+{
+    std::lock_guard<std::mutex> g(mu);
+    if (!new_career_live(new_career_at, GetTickCount64()))
+        return false;
+    new_career_at = 0;
     return true;
 }
 
