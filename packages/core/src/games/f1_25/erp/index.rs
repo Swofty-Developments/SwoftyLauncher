@@ -47,14 +47,30 @@ pub fn erp_files(dir: &Path, rel: &str, out: &mut Vec<String>) {
     }
 }
 
-/// Whether the archive index `index` lists a resource named `name`, matched as an index spells it.
-pub fn index_holds(index: &[u8], name: &str) -> bool {
+fn index_needle(name: &str) -> Vec<u8> {
     let mut needle = ((name.len() + 1) as u16).to_le_bytes().to_vec();
     needle.extend_from_slice(name.as_bytes());
     needle.push(0);
-    index
-        .windows(needle.len())
-        .any(|w| w[0] == needle[0] && w == needle.as_slice())
+    needle
+}
+
+/// A resource name as an archive index spells it, ready to look for in any number of indexes.
+pub struct IndexName(memchr::memmem::Finder<'static>);
+
+impl IndexName {
+    pub fn new(name: &str) -> Self {
+        Self(memchr::memmem::Finder::new(&index_needle(name)).into_owned())
+    }
+
+    /// Whether the archive index `index` lists the name, matched as an index spells it.
+    pub fn in_index(&self, index: &[u8]) -> bool {
+        self.0.find(index).is_some()
+    }
+}
+
+/// Whether the archive index `index` lists a resource named `name`, matched as an index spells it.
+pub fn index_holds(index: &[u8], name: &str) -> bool {
+    IndexName::new(name).in_index(index)
 }
 
 /// The asset group folder of a resource name, such as `2025_asset_groups/ui_package` for
@@ -80,4 +96,30 @@ pub fn mipmap_names(from: &Path) -> Vec<String> {
 pub fn overlay_names(path: &Path) -> Result<Vec<String>> {
     let file = ErpFile::open(path).map_err(|e| fail(format!("{}: {e}", path.display())))?;
     Ok(file.erp.resources.iter().map(|r| r.name.clone()).collect())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn windows_scan(index: &[u8], name: &str) -> bool {
+        let needle = index_needle(name);
+        index
+            .windows(needle.len())
+            .any(|w| w[0] == needle[0] && w == needle.as_slice())
+    }
+
+    #[test]
+    fn a_name_is_found_in_an_index_exactly_where_a_scan_of_every_window_finds_it() {
+        let mut index = vec![0u8; 40];
+        for name in ["eaid://a/b", "eaid://a/bc", "x"] {
+            index.extend(index_needle(name));
+            index.extend([7, 0, 1]);
+        }
+        for name in ["eaid://a/b", "eaid://a/bc", "x", "eaid://a/", "y", ""] {
+            assert_eq!(index_holds(&index, name), windows_scan(&index, name), "{name}");
+        }
+        assert!(index_holds(&index, "eaid://a/b"));
+        assert!(!index_holds(&index, "eaid://a/"));
+    }
 }
