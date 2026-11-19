@@ -44,7 +44,7 @@ pub use archives::ArchiveWriter;
 use archives::read_frag;
 use menu_rows::hub_tabs;
 use picker_rows::picker_rows;
-use toggles::{core_version, panel_shown, season_picker_split};
+use toggles::{panel_shown, season_picker_split};
 
 pub const UI: &str = "2025_asset_groups/ui_package";
 pub const FLOW: &str = "flow_options";
@@ -143,7 +143,7 @@ pub fn build(
     let targets = Targets::of(&flow, &setups);
     let mfd_rows = mfd_rows(settings);
     let state = ui_state(&flow, &mfd_rows)?;
-    let popup = Popup::for_version(&core_version(settings));
+    let popup = Popup::for_version(env!("CARGO_PKG_VERSION"));
     let show_panel = panel_shown(settings);
 
     let erp = |rel: &str| (input(&ui_file(rel)), out.join(ui_file(rel)));
