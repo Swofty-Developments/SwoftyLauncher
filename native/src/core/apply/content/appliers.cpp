@@ -7,6 +7,7 @@
 #include "core/apply/moments.hpp"
 #include "core/apply/scheduler.hpp"
 #include "core/apply/content/boot.hpp"
+#include "core/apply/content/boot_ahead.hpp"
 #include "core/apply/content/garage_build.hpp"
 #include "core/apply/content/grid_rules.hpp"
 #include "core/apply/content/gvdb.hpp"
@@ -24,17 +25,20 @@
 #include "core/registry/older.hpp"
 #include "core/registry/table.hpp"
 
+#include "core/diagnostics/steps.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <swofty/mixin.hpp>
 
 #include <algorithm>
+#include <condition_variable>
 #include <ctime>
 #include <filesystem>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <set>
+#include <thread>
 #include <unordered_map>
 
 // The core's appliers for the content registries. At boot, inside the game database load, the engine sound,
@@ -98,7 +102,7 @@ void publish_points(Store &st, Expansion &x)
 
 struct Database {
     gvdb::File file;
-    std::unordered_map<uint64_t, rows::Rec> edits;
+    OlderEdits edits;
     bool loaded = false, ok = false;
 };
 
@@ -126,16 +130,22 @@ std::string today()
     return b;
 }
 
-void read_edits(Database &d)
+OlderEdits older_edits(const gvdb::File &file)
 {
-    d.edits.clear();
-    runtime::db_older_edits([&d](uint64_t key, int tag, const std::string &text) {
+    OlderEdits edits;
+    runtime::db_older_edits([&](uint64_t key, int tag, const std::string &text) {
         rows::Rec r{tag, text};
         if (r.tag < 0)
-            if (auto f = d.file.get(key))
+            if (auto f = file.get(key))
                 r.tag = f->tag;
-        d.edits[key] = std::move(r);
+        edits[key] = std::move(r);
     });
+    return edits;
+}
+
+void read_edits(Database &d)
+{
+    d.edits = older_edits(d.file);
 }
 
 Database &database()
@@ -228,46 +238,135 @@ Expansion &plan_run(Store &st)
     return *s.plan;
 }
 
-void define_pools(Database &d, std::vector<std::string> &lines, std::map<std::string, PoolScan> &scans)
+// The boot expansion made ahead on a worker once the database load is hooked (start_boot_ahead). It takes the
+// content lock only to read the database file, then works on its own copies; release_database cancels one that has
+// not started and waits for one that has, and run_boot adopts or drops its work.
+struct AheadJob {
+    std::mutex m;
+    std::condition_variable cv;
+    enum class Phase { waiting, running, done } phase = Phase::waiting;
+    bool cancel = false;
+    double ms = 0;
+    std::string why;
+    Ahead work;
+};
+
+std::mutex ahead_mu;
+std::shared_ptr<AheadJob> ahead_job;
+
+std::shared_ptr<AheadJob> take_ahead()
 {
-    rows::Base base = base_of(d);
-    auto text = [&base](const std::string &path) -> std::optional<std::string> {
-        auto r = base(gvdb::fnv64(path));
-        if (!r)
-            return std::nullopt;
-        return r->text;
-    };
-    for (auto &scan : scan_all_pools(text)) {
-        ids::Pool pool;
-        if (!scan.holes.empty())
-            pool.ranges = scan.holes;
-        else if (scan.lo <= scan.hi)
-            pool.ranges.push_back({scan.lo, scan.hi});
-        for (auto &spec : POOLS)
-            if (scan.registry == spec.registry)
-                pool.cap = spec.cap;
-        ids::store().define_pool(scan.registry, pool);
-        lines.push_back("stat-id pool for " + scan.registry + ": " +
-                        (scan.lo <= scan.hi ? std::to_string(scan.lo) + "-" + std::to_string(scan.hi) : std::string("none")) +
-                        " (" + scan.table + " holds ids to " + std::to_string(scan.lo - 1) + ")");
-        scans[scan.registry] = std::move(scan);
+    std::lock_guard g(ahead_mu);
+    return std::move(ahead_job);
+}
+
+// Called with the content lock held, so a job still waiting for it cannot start: it is cancelled (and `boot` logged),
+// and one that is running is waited for.
+std::shared_ptr<AheadJob> settle_ahead(const char *boot = nullptr)
+{
+    std::shared_ptr<AheadJob> job = take_ahead();
+    if (!job)
+        return job;
+    std::unique_lock g(job->m);
+    if (job->phase == AheadJob::Phase::waiting) {
+        job->cancel = true;
+        if (boot)
+            swofty::log("[apply] boot ahead: %s", boot);
+        return nullptr;
     }
+    perf::Stopwatch wait;
+    job->cv.wait(g, [&] { return job->phase == AheadJob::Phase::done; });
+    swofty::log(perf::STEP_LINE, wait.total_ms(), "boot ahead wait for the expansion off the thread");
+    return job;
 }
 
-void pin_all(Store &st, const std::map<std::string, PoolScan> &scans)
+void run_ahead(const std::shared_ptr<AheadJob> &job)
 {
-    for (auto &line : settle_ids(ids::store(), st, scans, today()))
+    Store &st = registry::store();
+    const gvdb::File *file = nullptr;
+    std::string why;
+    perf::Stopwatch took;
+    try {
+        {
+            std::lock_guard g(mu);
+            std::lock_guard j(job->m);
+            if (job->cancel) {
+                job->phase = AheadJob::Phase::done;
+                job->cv.notify_all();
+                return;
+            }
+            job->phase = AheadJob::Phase::running;
+            if (!has_records(st))
+                why = "no addon content record needs the expansion";
+            else if (Database &d = database(); !d.ok)
+                why = "the game database file is unreadable";
+            else
+                file = &d.file;
+        }
+        took.lap_ms();
+        if (file) {
+            job->work.edits = std::make_shared<const OlderEdits>(older_edits(*file));
+            job->work.box_worlds = box_worlds_on();
+            job->work.day = today();
+            boot_ahead(st, ids::store(), base_over(*file, job->work.edits), job->work);
+        }
+    } catch (const std::exception &e) {
+        why = std::string("the expansion ahead failed: ") + e.what();
+    } catch (...) {
+        why = "the expansion ahead failed";
+    }
+    double ms = took.lap_ms();
+    if (file && why.empty())
+        swofty::log(perf::STEP_LINE, ms, "boot ahead expansion off the thread");
+    std::lock_guard j(job->m);
+    if (!why.empty()) {
+        job->work.boot.reset();
+        job->why = why;
+    }
+    job->ms = ms;
+    job->phase = AheadJob::Phase::done;
+    job->cv.notify_all();
+}
+
+bool ahead_off()
+{
+    char v[8] = {};
+    DWORD n = GetEnvironmentVariableA("SWOFTY_BOOT_AHEAD", v, sizeof v);
+    return n && n < sizeof v && v[0] == '0';
+}
+
+// Adopts the expansion made ahead when nothing it read has changed and the room leaves every addon in: its stat-id
+// store replaces the live one, its held log lines are written in the order the boot writes them, and its
+// expansion becomes the boot's.
+bool boot_from_ahead(Store &st, Database &d, Expansion &plan, uint64_t room, AheadJob &job)
+{
+    State &s = state();
+    Ahead &a = job.work;
+    std::string why = job.why;
+    if (why.empty()) {
+        AheadNow now;
+        now.store_generation = scheduler().boot_generation();
+        now.box_worlds = box_worlds_on();
+        now.day = today();
+        now.edits = &d.edits;
+        now.order = st.order();
+        now.room = room;
+        now.admitted = admit(now.order, plan.addon_fresh, room);
+        why = adopt_ahead(a, now, ids::store());
+    }
+    if (!why.empty()) {
+        swofty::log("[apply] boot ahead: %s; the boot expands again on this thread", why.c_str());
+        return false;
+    }
+    for (auto &line : a.logs)
         swofty::log("%s", line.c_str());
-}
-
-int64_t stat_id(const std::string &registry, const std::string &id, int64_t pin)
-{
-    if (pin >= 0)
-        return ids::store().pin(registry, id, pin, today()).id;
-    ids::Result r = ids::store().allocate(registry, id, today());
-    if (r.how != "kept" && !r.line.empty())
-        swofty::log("%s", r.line.c_str());
-    return r.id;
+    for (auto &line : a.lines)
+        s.boot_lines.push_back(line);
+    s.boot = std::move(a.boot);
+    swofty::log("[apply] boot ahead: the boot adopts the expansion made ahead in %.1f ms off the thread (%zu database "
+                "write(s), %zu stat-id line(s) held)",
+                job.ms, s.boot->engine.writes().size(), a.logs.size());
+    return true;
 }
 
 void report_left_out(const Expansion &x)
@@ -288,26 +387,25 @@ void run_boot(Store &st)
     State &s = state();
     Database &d = database();
     Expansion &plan = plan_run(st);
+    std::shared_ptr<AheadJob> job =
+        settle_ahead("the boot came before the expansion ahead could start; the boot expands on this thread");
     s.boot = expansion(d);
     if (!d.ok)
         return;
     read_edits(d);
-    std::map<std::string, PoolScan> scans;
-    define_pools(d, s.boot_lines, scans);
-    if (s.boot->box_worlds)
-        s.boot_lines.push_back("box worlds on (SWOFTY_BOX_WORLDS=1): a box with more teams than its world has garages "
-                               "gets a season and a track layer of its own");
-    pin_all(st, scans);
-    for (const char *registry : {"vehicle", "vehicle.package", "content.package", "team.identity"})
-        if (scans.count(registry))
-            ids::store().set_live(registry, st.list(registry, ""));
     uint64_t room = db::staging().room();
     if (room != db::UNMEASURED) {
         uint64_t tracks = scheduler().planned_keys("track");
         room = tracks < room ? room - tracks : 0;
     }
+    if (job && boot_from_ahead(st, d, plan, room, *job))
+        return;
+    std::string day = today();
+    LogLine log = [](const std::string &line) { swofty::log("%s", line.c_str()); };
+    std::map<std::string, PoolScan> scans = boot_ids(st, ids::store(), base_of(d), day, s.boot->box_worlds, s.boot_lines, log);
+    StatIds stat = boot_stat_ids(ids::store(), day, log);
     Admission adm = admit(st.order(), plan.addon_fresh, room);
-    expand(st, *s.boot, stat_id, adm.skip);
+    expand(st, *s.boot, stat, adm.skip);
     for (;;) {
         Admission again = readmit(st.order(), s.boot->addon_fresh, adm, room);
         if (again.skip.size() == adm.skip.size())
@@ -318,7 +416,7 @@ void run_boot(Store &st)
                         again.refused[i].first.c_str(), again.refused[i].second);
         adm = std::move(again);
         s.boot = expansion(d);
-        expand(st, *s.boot, stat_id, adm.skip);
+        expand(st, *s.boot, stat, adm.skip);
     }
     for (auto &[addon, keys] : adm.refused) {
         db::Refusal r{addon, {}, keys};
@@ -675,6 +773,7 @@ void set_up_dresser()
 void release_database()
 {
     State &s = state();
+    settle_ahead();
     s.boot.reset();
     s.plan.reset();
     s.db.reset();
@@ -717,6 +816,7 @@ public:
         if (!has_records(st))
             return;
         if (!db::staging().available()) {
+            settle_ahead();
             for (auto &id : st.list(registry_, ""))
                 if (id.rfind("game/", 0) != 0)
                     report.refused++;
@@ -1036,6 +1136,29 @@ TyreChangeBox tyre_change_for_box(const std::string &entrant_list)
         packages.push_back({id, lookup("content.package", id)});
     TyreChangePick pick = tyre_change_pick(entrant_list, packages);
     return {pick.required, pick.line};
+}
+
+void start_boot_ahead()
+{
+    if (ahead_off()) {
+        swofty::log("[apply] boot ahead: SWOFTY_BOOT_AHEAD=0, so the boot expansion runs inside the database load");
+        return;
+    }
+    auto job = std::make_shared<AheadJob>();
+    {
+        std::lock_guard g(ahead_mu);
+        if (ahead_job)
+            return;
+        ahead_job = job;
+    }
+    try {
+        std::thread([job] { run_ahead(job); }).detach();
+    } catch (const std::system_error &) {
+        std::lock_guard g(ahead_mu);
+        if (ahead_job == job)
+            ahead_job.reset();
+        swofty::log("[apply] boot ahead: no worker thread, so the boot expansion runs inside the database load");
+    }
 }
 
 void register_appliers()

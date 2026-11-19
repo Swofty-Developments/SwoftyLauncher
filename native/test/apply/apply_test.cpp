@@ -299,6 +299,56 @@ void test_ids()
     check(none.allocate("vehicle", "x/a", "d").id == -1, "no pool, no id");
 }
 
+void test_ids_ahead()
+{
+    ap::ids::Store live;
+    live.define_pool("vehicle", {{{515, 520}}});
+    live.allocate("vehicle", "x/a", "d");
+    uint64_t g = live.generation();
+    live.get("vehicle", "x/a");
+    live.dump();
+    live.dirty();
+    live.size();
+    check(live.generation() == g, "reading the stat-id store leaves its generation where it was");
+    live.allocate("vehicle", "x/a", "d");
+    check(live.generation() == g, "an allocation that keeps an id is a read too");
+    live.map_for_career("a career");
+    g = live.generation();
+    ap::ids::Store ahead(live);
+    check(ahead.generation() == g && ahead.dump() == live.dump() && ahead.dump().find("a career") != std::string::npos,
+          "a copy carries the contents, careers included, and the generation");
+    ahead.allocate("vehicle", "x/b", "d");
+    ahead.set_live("vehicle", {"x/a", "x/b"});
+    check(ahead.generation() != g && live.generation() == g && live.get("vehicle", "x/b").id == -1,
+          "work on the copy moves the copy's generation and leaves the store alone");
+    std::string made = ahead.dump();
+    check(live.commit(std::move(ahead), g) && live.dump() == made && live.get("vehicle", "x/b").id == 516,
+          "the copy is committed while the store has not moved since it was taken");
+    check(live.generation() != g, "and the commit moves the store's generation");
+    ap::ids::Store late(live);
+    uint64_t at = live.generation();
+    late.allocate("vehicle", "x/c", "d");
+    for (int change = 0; change < 4; change++) {
+        ap::ids::Store other(live);
+        uint64_t since = other.generation();
+        other.allocate("vehicle", "x/d", "d");
+        if (change == 0)
+            live.saved();
+        else if (change == 1)
+            live.allocate("vehicle", "x/e", "d");
+        else if (change == 2)
+            live.define_pool("track", {{{1, 2}}});
+        else
+            live.forget_career("none");
+        std::string kept = live.dump();
+        check(!live.commit(std::move(other), since) && live.dump() == kept && live.get("vehicle", "x/d").id == -1,
+              "a copy is not committed once the store moved after it was taken, and the store stays whole (change " +
+                  std::to_string(change) + ")");
+    }
+    check(!live.commit(std::move(late), at) && live.get("vehicle", "x/c").id == -1 && live.get("vehicle", "x/e").id >= 0,
+          "nor is an older copy, and the store keeps its own changes");
+}
+
 void test_database_ids()
 {
     const std::map<int64_t, std::string> db15{{508, "mercedes_2025"}, {509, "bdx_s5_car_mclaren_3"}, {510, "bdx_s5_car_ferrari"}};
@@ -977,6 +1027,54 @@ void test_plan_off_thread()
     ap::clear_appliers();
 }
 
+struct SeesGeneration : ap::Applier {
+    ap::Scheduler *sched = nullptr;
+    bool change = false;
+    uint64_t seen = 0, store_at = 0;
+    const char *registry() const override { return "t.gen"; }
+    reg::Applies applies() const override { return reg::Applies::boot; }
+    void boot(reg::Store &st, ap::Report &) override
+    {
+        if (change)
+            st.add_base("t.gen", "late", Value::object());
+        seen = sched->boot_generation();
+        store_at = st.generation();
+    }
+};
+
+void test_boot_generation()
+{
+    const char *what[] = {"the boot's own publish, which changed nothing, is left out of the generation its appliers see",
+                          "a store change after the publish is not left out",
+                          "nor is a publish that changed the context"};
+    for (int k = 0; k < 3; k++) {
+        reg::reset_store();
+        reg::Store &st = reg::store();
+        declare(st, "t.gen", reg::Applies::boot);
+        st.end_register();
+        if (k == 2) {
+            reg::Context c = st.context();
+            c.career = "a career";
+            st.set_context(c);
+        }
+        ap::clear_appliers();
+        auto &a = ap::make<SeesGeneration>();
+        ap::Scheduler s(st);
+        a.sched = &s;
+        a.change = k == 1;
+        uint64_t before = st.generation();
+        s.run_boot();
+        bool ok = k == 0 ? a.seen == before && a.store_at == before + 1 : a.seen == a.store_at && a.seen != before;
+        check(ok, std::string(what[k]) + " (before " + std::to_string(before) + ", seen " + std::to_string(a.seen) +
+                      ", store " + std::to_string(a.store_at) + ")");
+        if (k == 0) {
+            st.add_base("t.gen", "after", Value::object());
+            check(s.boot_generation() == st.generation(), "once the store moves after the boot, it is the store's own");
+        }
+    }
+    ap::clear_appliers();
+}
+
 int main(int argc, char **argv)
 {
     std::string dir = argc > 1 ? argv[1] : ".";
@@ -984,12 +1082,14 @@ int main(int argc, char **argv)
     test_budget();
     test_room_json();
     test_ids();
+    test_ids_ahead();
     test_database_ids();
     test_scheduler();
     test_facts();
     test_stat_id_and_reports(dir);
     test_file_route_boot();
     test_plan_off_thread();
+    test_boot_generation();
     std::printf("apply: %d check(s), %d failure(s)\n", checks, failures);
     return failures ? 1 : 0;
 }

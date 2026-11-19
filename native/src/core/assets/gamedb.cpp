@@ -840,6 +840,7 @@ void setup()
     }
     h_load = std::move(*h);
     reserve_setup();
+    swofty_core::apply::moments::boot_ahead();
     swofty::log("[assets] gamedb: Gdb_Load_GameDatabase hooked at base+0x%llx (g_Gdb_Database = %p, not built yet); edits "
                 "apply when it returns",
                 (unsigned long long)(load - base), db);

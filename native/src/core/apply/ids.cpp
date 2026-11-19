@@ -18,6 +18,7 @@ bool career_holds(const std::string &registry)
 bool Store::load(const std::string &text, std::string *why)
 {
     std::lock_guard g(mu_);
+    generation_++;
     ids_.clear();
     careers_.clear();
     deduped_ = 0;
@@ -117,6 +118,7 @@ std::string Store::dump() const
 void Store::clear()
 {
     std::lock_guard g(mu_);
+    generation_++;
     ids_.clear();
     careers_.clear();
     pools_.clear();
@@ -151,6 +153,7 @@ bool Store::lend_json(const std::string &text, std::vector<std::string> *lines, 
 std::vector<std::string> Store::lend(const Lent &lent)
 {
     std::lock_guard g(mu_);
+    generation_++;
     std::vector<std::string> out;
     std::size_t applied = 0;
     for (auto &[reg, recs] : lent) {
@@ -218,6 +221,7 @@ bool Store::lent() const
 void Store::define_pool(const std::string &registry, Pool pool)
 {
     std::lock_guard g(mu_);
+    generation_++;
     std::vector<std::pair<int64_t, int64_t>> within;
     for (auto &[lo, hi] : pool.ranges)
         if (lo <= std::min(hi, pool.cap))
@@ -235,12 +239,14 @@ bool Store::has_pool(const std::string &registry) const
 void Store::set_live(const std::string &registry, const std::vector<std::string> &records)
 {
     std::lock_guard g(mu_);
+    generation_++;
     live_[registry] = std::set<std::string>(records.begin(), records.end());
 }
 
 void Store::hold(const std::string &registry, std::map<int64_t, std::string> rows)
 {
     std::lock_guard g(mu_);
+    generation_++;
     db_[registry] = std::move(rows);
 }
 
@@ -411,6 +417,7 @@ Result Store::allocate(const std::string &registry, const std::string &record, c
     if (kept.id >= 0)
         return kept;
     std::lock_guard g(mu_);
+    generation_++;
     Result r;
     auto pit = pools_.find(registry);
     if (pit == pools_.end()) {
@@ -454,6 +461,7 @@ Result Store::pin(const std::string &registry, const std::string &record, int64_
                  const std::string &label)
 {
     std::lock_guard g(mu_);
+    generation_++;
     Result r;
     r.id = id;
     r.how = "explicit";
@@ -504,6 +512,7 @@ Result Store::recheck(const std::string &registry, const std::string &record, co
                       const std::string &today)
 {
     std::lock_guard g(mu_);
+    generation_++;
     Result r;
     auto it = ids_.find(registry);
     if (it == ids_.end())
@@ -532,6 +541,7 @@ Result Store::recheck(const std::string &registry, const std::string &record, co
 CareerMap Store::map_for_career(const std::string &career)
 {
     std::lock_guard g(mu_);
+    generation_++;
     CareerMap m;
     for (auto &[reg, recs] : ids_)
         for (auto &[rec, en] : recs)
@@ -547,6 +557,7 @@ CareerMap Store::map_for_career(const std::string &career)
 std::vector<Clash> Store::adopt(const std::string &career, const CareerMap &map, const std::string &today)
 {
     std::lock_guard g(mu_);
+    generation_++;
     std::vector<Clash> out;
     for (auto &[reg, recs] : map)
         for (auto &[rec, id] : recs) {
@@ -590,6 +601,7 @@ std::vector<Clash> Store::adopt(const std::string &career, const CareerMap &map,
 void Store::forget_career(const std::string &career)
 {
     std::lock_guard g(mu_);
+    generation_++;
     dirty_ = careers_.erase(career) || dirty_;
 }
 
@@ -602,6 +614,7 @@ bool Store::dirty() const
 void Store::saved()
 {
     std::lock_guard g(mu_);
+    generation_++;
     dirty_ = false;
 }
 
@@ -630,6 +643,43 @@ std::vector<int64_t> Store::ids_of(const std::string &registry) const
             if (entry.id >= 0)
                 out.push_back(entry.id);
     return out;
+}
+
+Store::Store(const Store &other)
+{
+    std::lock_guard g(other.mu_);
+    ids_ = other.ids_;
+    careers_ = other.careers_;
+    pools_ = other.pools_;
+    live_ = other.live_;
+    db_ = other.db_;
+    deduped_ = other.deduped_;
+    dirty_ = other.dirty_;
+    lent_ = other.lent_;
+    generation_ = other.generation_;
+}
+
+uint64_t Store::generation() const
+{
+    std::lock_guard g(mu_);
+    return generation_;
+}
+
+bool Store::commit(Store &&ahead, uint64_t since)
+{
+    std::scoped_lock g(mu_, ahead.mu_);
+    if (generation_ != since)
+        return false;
+    ids_ = std::move(ahead.ids_);
+    careers_ = std::move(ahead.careers_);
+    pools_ = std::move(ahead.pools_);
+    live_ = std::move(ahead.live_);
+    db_ = std::move(ahead.db_);
+    deduped_ = ahead.deduped_;
+    dirty_ = ahead.dirty_;
+    lent_ = ahead.lent_;
+    generation_++;
+    return true;
 }
 
 Store &store()

@@ -33,6 +33,14 @@ struct Clash {
 
 class Store {
 public:
+    Store() = default;
+    // A copy for work done ahead on another thread: everything but the lock. generation() moves on every call
+    // that can change the store, and commit() puts a copy's contents in place only while it has not moved since.
+    Store(const Store &other);
+    Store &operator=(const Store &) = delete;
+    uint64_t generation() const;
+    bool commit(Store &&ahead, uint64_t since);
+
     bool load(const std::string &text, std::string *why = nullptr);
     std::string dump() const;
     void clear();
@@ -102,6 +110,7 @@ private:
     std::size_t deduped_ = 0;
     bool dirty_ = false;
     bool lent_ = false;
+    uint64_t generation_ = 0;
 };
 
 Store &store();

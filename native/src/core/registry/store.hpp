@@ -36,6 +36,7 @@ struct Context {
     std::vector<std::string> content;
     int year = 0;
     bool has_year = false;
+    bool operator==(const Context &) const = default;
 };
 
 struct Def {

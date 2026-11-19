@@ -304,6 +304,30 @@ The plan logs these step lines:
 
 `native/test/apply/apply_test.cpp` covers the scheduler side. `native/test/run_content_test.sh` compares the database edits from both paths over Classic Seasons on the game database.
 
+### The boot expansion made ahead
+
+The boot applier for content rows (`apply/content/appliers.cpp`, `boot_ahead.hpp`) expands every addon record into database writes inside the game's database load. When the database load is hooked, a worker makes that expansion ahead and the boot adopts it.
+
+- The worker takes the content lock only to read the game database file and the older addons' edits. It then works on a copy of the stat-id store (`ids::Store`) with every addon admitted, and holds the stat-id and pool log lines in a list.
+- `run_boot` adopts the work when `ahead_refusal` finds nothing, and writes the held lines in the order the boot writes them. Otherwise it runs the same steps again on the live store.
+- `SWOFTY_BOOT_AHEAD=0` turns the worker off and logs `[apply] boot ahead: SWOFTY_BOOT_AHEAD=0, so the boot expansion runs inside the database load`.
+
+The boot refuses the work, and logs why, in these cases:
+
+| Case | Check |
+|---|---|
+| the registry changed | the store's `generation()` differs from its value when the worker started (the boot's own context publish is left out) |
+| the stat-id store changed | `ids::Store::commit` compares its generation under its lock |
+| `SWOFTY_BOX_WORLDS` differs | the value the worker read against the value at the boot |
+| the date changed | the day the stat ids are dated with |
+| the older addons' edits changed | the edits the worker read against the edits at the boot |
+| the room leaves an addon out | at the boot, or once the addon's rows are counted |
+| the worker did not finish | it failed, or never got the content lock before the boot |
+
+`release_database` cancels a worker that has not started and waits for one that has. The registry digest line `[registry] boot rows digest` is the same with and without the worker.
+
+`native/test/content/rows_test_plan.cpp` forces each case over a small team database. `native/test/content/check_boot_ahead.py` runs `rows_tool --ahead` on the game database for Classic Seasons, Classic Seasons over older addons' edits, a box world box, a room that leaves an addon out and each `--ahead-change`, and compares the database, the stat ids and the stat-id lines with the boot's own path.
+
 ### Registry writes after the register pass
 
 `SwoftyCoreRegisterDone` ends the register pass (`Store::end_register`). On a boot registry, `add`, `variant`, `provide` and `layer` are refused as `late` after that. These calls are still accepted on a boot registry and change what the boot plan and the boot apply read:

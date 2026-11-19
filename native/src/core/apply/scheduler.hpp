@@ -47,6 +47,10 @@ public:
     bool boot_planned() const;
     Totals run_boot();
     bool booted() const;
+    // The store's generation as the boot's appliers found it. The boot's own context publish is left out when it
+    // changed no field of the context and the store has not moved since, so work made ahead of the boot can compare
+    // the generation it started from with this one.
+    uint64_t boot_generation() const;
 
     Totals career_loaded(const std::string &career, const std::string &mode, const std::string &data_group);
     Totals career_season(int year);
@@ -102,6 +106,7 @@ private:
     Context ctx_;
     bool have_ctx_ = false;
     bool planned_ = false, booted_ = false, read_ = false, session_ = false;
+    uint64_t boot_from_ = 0, boot_published_ = 0;
     std::vector<std::pair<std::string, std::size_t>> keys_;
     bool work_ = false;
     bool started_ = false;
