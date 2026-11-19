@@ -1,9 +1,11 @@
-//! The small Markdown subset news posts are written in: headings, paragraphs,
-//! lists, quotes, code, rules, and inline bold, italics, code and links. HTML
-//! and images are dropped, and only `https:`, `mailto:` and site-relative links
-//! are kept.
+//! The small Markdown subset news posts and addon descriptions are written in:
+//! headings, paragraphs, lists, quotes, code, rules, pipe tables, `::: columns`
+//! blocks, and inline bold, italics, code and links. HTML and images are
+//! dropped, and only `https:`, `mailto:` and site-relative links are kept.
 
 pub const SITE: &str = "https://f1.swofty.net";
+
+pub const MAX_COLUMNS: usize = 32;
 
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Span {
@@ -12,6 +14,40 @@ pub struct Span {
     pub emphasis: bool,
     pub code: bool,
     pub link: Option<String>,
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Align {
+    #[default]
+    None,
+    Left,
+    Center,
+    Right,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Table {
+    pub align: Vec<Align>,
+    pub head: Vec<Vec<Span>>,
+    pub rows: Vec<Vec<Vec<Span>>>,
+}
+
+impl Table {
+    pub fn longest_words(&self) -> Vec<usize> {
+        let mut longest = vec![0; self.align.len()];
+        for row in std::iter::once(&self.head).chain(&self.rows) {
+            for (cell, most) in row.iter().zip(&mut longest) {
+                let text: String = cell.iter().map(|s| s.text.as_str()).collect();
+                let word = text
+                    .split_whitespace()
+                    .map(|w| w.chars().map(|c| if c >= '\u{1100}' { 2 } else { 1 }).sum())
+                    .max()
+                    .unwrap_or(0);
+                *most = (*most).max(word);
+            }
+        }
+        longest
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -26,6 +62,8 @@ pub enum Block {
     Quote(Vec<Span>),
     Code(String),
     Rule,
+    Table(Table),
+    Columns(Vec<Vec<Block>>),
 }
 
 pub fn safe_url(url: &str) -> Option<String> {
@@ -46,7 +84,9 @@ pub fn safe_url(url: &str) -> Option<String> {
     None
 }
 
+#[derive(Default)]
 enum Pending {
+    #[default]
     None,
     Paragraph(String),
     Item(usize, Option<u32>, String),
@@ -65,16 +105,16 @@ impl Pending {
         }
     }
 
-    fn flush(&mut self, blocks: &mut Vec<Block>) {
-        match std::mem::replace(self, Self::None) {
-            Self::None => {}
-            Self::Paragraph(text) => blocks.push(Block::Paragraph(inline(&text))),
-            Self::Item(depth, number, text) => blocks.push(Block::Item {
+    fn take(&mut self) -> Option<Block> {
+        match std::mem::take(self) {
+            Self::None => None,
+            Self::Paragraph(text) => Some(Block::Paragraph(inline(&text))),
+            Self::Item(depth, number, text) => Some(Block::Item {
                 depth,
                 number,
                 spans: inline(&text),
             }),
-            Self::Quote(text) => blocks.push(Block::Quote(inline(&text))),
+            Self::Quote(text) => Some(Block::Quote(inline(&text))),
         }
     }
 }
@@ -111,15 +151,191 @@ fn html(line: &str) -> bool {
             .is_some_and(|c| c.is_ascii_alphabetic() || c == '/' || c == '!')
 }
 
-fn table_row(line: &str) -> Option<String> {
-    let cells: Vec<&str> = line
-        .trim_matches('|')
-        .split('|')
-        .map(str::trim)
-        .filter(|c| !c.is_empty())
-        .collect();
+fn fence_start(line: &str) -> bool {
+    line.starts_with("```") || line.starts_with("~~~")
+}
+
+fn block_start(line: &str) -> bool {
+    fence_start(line)
+        || line.starts_with(":::")
+        || line.starts_with('>')
+        || html(line)
+        || heading(line).is_some()
+        || rule(line)
+        || list_item(line).is_some()
+}
+
+fn has_pipe(line: &str) -> bool {
+    let mut chars = line.chars();
+    while let Some(c) = chars.next() {
+        match c {
+            '\\' => {
+                chars.next();
+            }
+            '|' => return true,
+            _ => {}
+        }
+    }
+    false
+}
+
+fn cells(line: &str) -> Vec<String> {
+    let line = line.trim();
+    let line = line.strip_prefix('|').unwrap_or(line);
+    let mut out = Vec::new();
+    let mut cell = String::new();
+    let mut chars = line.chars();
+    while let Some(c) = chars.next() {
+        match c {
+            '\\' => match chars.next() {
+                Some('|') => cell.push('|'),
+                Some(next) => {
+                    cell.push('\\');
+                    cell.push(next);
+                }
+                None => cell.push('\\'),
+            },
+            '|' => out.push(std::mem::take(&mut cell).trim().to_owned()),
+            _ => cell.push(c),
+        }
+    }
+    if !cell.trim().is_empty() {
+        out.push(cell.trim().to_owned());
+    }
+    out
+}
+
+fn delimiter(line: &str) -> Option<Vec<Align>> {
+    if !has_pipe(line) {
+        return None;
+    }
+    let cells = cells(line);
+    if cells.is_empty() {
+        return None;
+    }
+    cells
+        .iter()
+        .map(|cell| {
+            let left = cell.strip_prefix(':');
+            let dashes = left.unwrap_or(cell);
+            let right = dashes.strip_suffix(':');
+            let dashes = right.unwrap_or(dashes);
+            (!dashes.is_empty() && dashes.bytes().all(|b| b == b'-')).then_some(
+                match (left.is_some(), right.is_some()) {
+                    (true, true) => Align::Center,
+                    (true, false) => Align::Left,
+                    (false, true) => Align::Right,
+                    (false, false) => Align::None,
+                },
+            )
+        })
+        .collect()
+}
+
+fn table_head(line: &str, next: Option<&str>) -> Option<Table> {
+    if !has_pipe(line) {
+        return None;
+    }
+    let align = delimiter(next?.trim())?;
+    let head = cells(line);
+    (head.len() == align.len() && head.len() <= MAX_COLUMNS).then(|| Table {
+        align,
+        head: head.iter().map(|c| inline(c)).collect(),
+        rows: Vec::new(),
+    })
+}
+
+fn table_row(line: &str, width: usize) -> Vec<Vec<Span>> {
+    let mut row: Vec<Vec<Span>> = cells(line).iter().take(width).map(|c| inline(c)).collect();
+    row.resize(width, Vec::new());
+    row
+}
+
+fn loose_row(line: &str) -> Option<String> {
+    let cells: Vec<String> = cells(line).into_iter().filter(|c| !c.is_empty()).collect();
     let separator = cells.iter().all(|c| c.chars().all(|ch| matches!(ch, '-' | ':')));
     (!separator).then(|| cells.join(" · "))
+}
+
+#[derive(Clone, Copy, PartialEq)]
+enum Container {
+    Columns,
+    Column,
+    Other,
+}
+
+#[derive(Default)]
+struct Parser {
+    blocks: Vec<Block>,
+    pending: Pending,
+    table: Option<Table>,
+    stack: Vec<Container>,
+    columns: Option<Vec<Vec<Block>>>,
+    in_column: bool,
+}
+
+impl Parser {
+    fn emit(&mut self, block: Block) {
+        let Some(columns) = &mut self.columns else {
+            self.blocks.push(block);
+            return;
+        };
+        match columns.last_mut() {
+            Some(column) if self.in_column => column.push(block),
+            _ => {
+                columns.push(vec![block]);
+                self.in_column = true;
+            }
+        }
+    }
+
+    fn flush(&mut self) {
+        if let Some(block) = self.pending.take() {
+            self.emit(block);
+        }
+        if let Some(table) = self.table.take() {
+            self.emit(Block::Table(table));
+        }
+    }
+
+    fn container(&mut self, line: &str) {
+        self.flush();
+        let name = line.trim_start_matches(':').trim();
+        let name = name.trim_start_matches('{').trim_start_matches('.');
+        let name = name
+            .split(|c: char| c.is_whitespace() || c == '}')
+            .next()
+            .unwrap_or_default()
+            .to_ascii_lowercase();
+        if name.is_empty() {
+            match self.stack.pop() {
+                Some(Container::Column) => self.in_column = false,
+                Some(Container::Columns) => self.close_columns(),
+                Some(Container::Other) | None => {}
+            }
+        } else if name == "columns" && self.columns.is_none() {
+            self.columns = Some(Vec::new());
+            self.in_column = false;
+            self.stack.push(Container::Columns);
+        } else if name == "column" && self.stack.last() == Some(&Container::Columns) {
+            self.columns.get_or_insert_default().push(Vec::new());
+            self.in_column = true;
+            self.stack.push(Container::Column);
+        } else {
+            self.stack.push(Container::Other);
+        }
+    }
+
+    fn close_columns(&mut self) {
+        self.in_column = false;
+        let mut columns: Vec<Vec<Block>> = self.columns.take().unwrap_or_default();
+        columns.retain(|c| !c.is_empty());
+        if columns.len() == 1 {
+            self.blocks.append(&mut columns[0]);
+        } else if !columns.is_empty() {
+            self.blocks.push(Block::Columns(columns));
+        }
+    }
 }
 
 pub fn parse(text: &str) -> Vec<Block> {
@@ -128,15 +344,15 @@ pub fn parse(text: &str) -> Vec<Block> {
         lines.next();
         lines.by_ref().find(|l| l.trim() == "---");
     }
-    let mut blocks = Vec::new();
-    let mut pending = Pending::None;
+    let mut parser = Parser::default();
     let mut fence: Option<(String, String)> = None;
-    for raw in lines {
+    while let Some(raw) = lines.next() {
         let line = raw.trim();
         if let Some((marker, code)) = &mut fence {
             if line.starts_with(marker.as_str()) {
-                blocks.push(Block::Code(std::mem::take(code)));
+                let code = std::mem::take(code);
                 fence = None;
+                parser.emit(Block::Code(code));
             } else {
                 if !code.is_empty() {
                     code.push('\n');
@@ -145,46 +361,65 @@ pub fn parse(text: &str) -> Vec<Block> {
             }
             continue;
         }
-        if line.starts_with("```") || line.starts_with("~~~") {
-            pending.flush(&mut blocks);
+        if let Some(table) = &mut parser.table {
+            if !line.is_empty() && !block_start(line) {
+                let row = table_row(line, table.align.len());
+                table.rows.push(row);
+                continue;
+            }
+            parser.flush();
+        }
+        if fence_start(line) {
+            parser.flush();
             fence = Some((line[..3].to_owned(), String::new()));
             continue;
         }
-        if line.is_empty() || line.starts_with(":::") || html(line) {
-            pending.flush(&mut blocks);
+        if line.starts_with(":::") {
+            parser.container(line);
+            continue;
+        }
+        if line.is_empty() || html(line) {
+            parser.flush();
             continue;
         }
         if let Some((level, title)) = heading(line) {
-            pending.flush(&mut blocks);
-            blocks.push(Block::Heading(level, inline(title)));
+            parser.flush();
+            parser.emit(Block::Heading(level, inline(title)));
         } else if rule(line) {
-            pending.flush(&mut blocks);
-            blocks.push(Block::Rule);
+            parser.flush();
+            parser.emit(Block::Rule);
         } else if let Some((number, rest)) = list_item(line) {
-            pending.flush(&mut blocks);
+            parser.flush();
             let indent = raw.len() - raw.trim_start().len();
-            pending = Pending::Item((indent / 2).min(3), number, rest.to_owned());
+            parser.pending = Pending::Item((indent / 2).min(3), number, rest.to_owned());
         } else if let Some(rest) = line.strip_prefix('>') {
-            if !matches!(pending, Pending::Quote(_)) {
-                pending.flush(&mut blocks);
-                pending = Pending::Quote(rest.trim().to_owned());
+            if !matches!(parser.pending, Pending::Quote(_)) {
+                parser.flush();
+                parser.pending = Pending::Quote(rest.trim().to_owned());
             } else {
-                pending.append(rest.trim());
+                parser.pending.append(rest.trim());
             }
+        } else if let Some(table) = table_head(line, lines.peek().copied()) {
+            parser.flush();
+            lines.next();
+            parser.table = Some(table);
         } else if line.starts_with('|') {
-            pending.flush(&mut blocks);
-            if let Some(row) = table_row(line) {
-                blocks.push(Block::Paragraph(inline(&row)));
+            parser.flush();
+            if let Some(row) = loose_row(line) {
+                parser.emit(Block::Paragraph(inline(&row)));
             }
-        } else if !pending.append(line) {
-            pending = Pending::Paragraph(line.to_owned());
+        } else if !parser.pending.append(line) {
+            parser.pending = Pending::Paragraph(line.to_owned());
         }
     }
-    pending.flush(&mut blocks);
+    parser.flush();
     if let Some((_, code)) = fence {
-        blocks.push(Block::Code(code));
+        parser.emit(Block::Code(code));
     }
-    blocks
+    if parser.columns.is_some() {
+        parser.close_columns();
+    }
+    parser.blocks
 }
 
 #[derive(Clone, Default)]
@@ -356,7 +591,7 @@ pub fn inline(text: &str) -> Vec<Span> {
 
 #[cfg(test)]
 mod tests {
-    use super::{Block, Span, inline, parse, safe_url};
+    use super::{Align, Block, Span, inline, parse, safe_url};
 
     fn texts(spans: &[Span]) -> Vec<(&str, bool, bool, Option<&str>)> {
         spans
@@ -422,27 +657,52 @@ mod tests {
         assert_eq!(spans[0].text, "2 * 3 and snake_case_name bold  5 * 6");
     }
 
+    fn plain(spans: &[Span]) -> String {
+        spans.iter().map(|s| s.text.as_str()).collect()
+    }
+
+    fn outline(blocks: &[Block]) -> Vec<String> {
+        blocks
+            .iter()
+            .map(|b| match b {
+                Block::Heading(l, s) => format!("h{l}:{}", plain(s)),
+                Block::Paragraph(s) => format!("p:{}", plain(s)),
+                Block::Item { depth, number, spans } => format!("li{depth}{number:?}:{}", plain(spans)),
+                Block::Quote(s) => format!("q:{}", plain(s)),
+                Block::Code(c) => format!("code:{c}"),
+                Block::Rule => "hr".into(),
+                Block::Table(t) => {
+                    let row =
+                        |cells: &[Vec<Span>]| cells.iter().map(|c| plain(c)).collect::<Vec<_>>().join("|");
+                    let rows: Vec<String> = std::iter::once(&t.head).chain(&t.rows).map(|r| row(r)).collect();
+                    format!("table:{}", rows.join("/"))
+                }
+                Block::Columns(columns) => format!(
+                    "columns[{}]",
+                    columns
+                        .iter()
+                        .map(|c| outline(c).join(", "))
+                        .collect::<Vec<_>>()
+                        .join(" ; ")
+                ),
+            })
+            .collect()
+    }
+
+    fn table(text: &str) -> super::Table {
+        match parse(text).into_iter().next() {
+            Some(Block::Table(t)) => t,
+            other => panic!("no table: {other:?}"),
+        }
+    }
+
     #[test]
     fn parses_the_blocks_of_a_post() {
         let blocks = parse(
             "---\ntitle: x\n---\n\nIntro line\ncontinues.\n\n## What's new\n\n- **A.** one\n  more\n- two\n  - nested\n1. first\n\n> quoted\n\n```\nlet x = 1;\n  indented\n```\n\n---\n\n| a | b |\n|---|---|\n| c | d |\n\n::: tip\n<div>raw</div>\n:::\n",
         );
-        let kinds: Vec<String> = blocks
-            .iter()
-            .map(|b| match b {
-                Block::Heading(l, s) => format!("h{l}:{}", s[0].text),
-                Block::Paragraph(s) => format!("p:{}", s.iter().map(|s| s.text.as_str()).collect::<String>()),
-                Block::Item { depth, number, spans } => format!(
-                    "li{depth}{number:?}:{}",
-                    spans.iter().map(|s| s.text.as_str()).collect::<String>()
-                ),
-                Block::Quote(s) => format!("q:{}", s[0].text),
-                Block::Code(c) => format!("code:{c}"),
-                Block::Rule => "hr".into(),
-            })
-            .collect();
         assert_eq!(
-            kinds,
+            outline(&blocks),
             [
                 "p:Intro line continues.",
                 "h2:What's new",
@@ -453,9 +713,167 @@ mod tests {
                 "q:quoted",
                 "code:let x = 1;\n  indented",
                 "hr",
+                "table:a|b/c|d",
+            ]
+        );
+    }
+
+    #[test]
+    fn reads_the_alignment_row() {
+        let t = table("| Car | Team | Year | Points |\n| :--- | :---: | ---: | --- |\n| A | B | 2013 | 12 |");
+        assert_eq!(t.align, [Align::Left, Align::Center, Align::Right, Align::None]);
+        let t = table("Car|Year\n:-:|-:\nA|1");
+        assert_eq!(t.align, [Align::Center, Align::Right]);
+        assert_eq!(t.rows.len(), 1);
+    }
+
+    #[test]
+    fn keeps_inline_markdown_and_escaped_pipes_in_cells() {
+        let t = table(
+            "| Name | Notes |\n|---|---|\n| **Bold** car | `a \\| b` and [docs](/using/mods) |\n| x \\| y | back\\\\|slash |",
+        );
+        assert_eq!(
+            texts(&t.rows[0][0]),
+            [("Bold", true, false, None), (" car", false, false, None)]
+        );
+        assert_eq!(
+            texts(&t.rows[0][1]),
+            [
+                ("a | b", false, true, None),
+                (" and ", false, false, None),
+                ("docs", false, false, Some("https://f1.swofty.net/using/mods")),
+            ]
+        );
+        assert_eq!(plain(&t.rows[1][0]), "x | y");
+        assert_eq!(plain(&t.rows[1][1]), "back\\");
+    }
+
+    #[test]
+    fn pads_short_rows_and_drops_extra_cells() {
+        let t = table("| a | b | c |\n|---|---|---|\n| 1 |\n| 1 | 2 | 3 | 4 |\n| | | x |");
+        let rows: Vec<Vec<String>> = t
+            .rows
+            .iter()
+            .map(|r| r.iter().map(|c| plain(c)).collect())
+            .collect();
+        assert_eq!(rows, [vec!["1", "", ""], vec!["1", "2", "3"], vec!["", "", "x"]]);
+    }
+
+    #[test]
+    fn ends_a_table_at_a_blank_line_or_another_block() {
+        let blocks = parse(
+            "Intro\n| a | b |\n|---|---|\n| 1 | 2 |\nlazy row\n\nAfter\n\n| c |\n|---|\n| 3 |\n## Next\n| d |\n|---|\n> quote\n| e |\n|:-:|\n- item",
+        );
+        assert_eq!(
+            outline(&blocks),
+            [
+                "p:Intro",
+                "table:a|b/1|2/lazy row|",
+                "p:After",
+                "table:c/3",
+                "h2:Next",
+                "table:d",
+                "q:quote",
+                "table:e",
+                "li0None:item",
+            ]
+        );
+    }
+
+    #[test]
+    fn leaves_malformed_tables_as_text() {
+        let blocks = parse(
+            "| a | b |\n| c | d |\n\n| a | b |\n|---|\n\n| a | b |\n|---|-x-|\n\na | b\n---\n\n|\n\n```\n| a | b |\n|---|---|\n```",
+        );
+        assert_eq!(
+            outline(&blocks),
+            [
                 "p:a · b",
                 "p:c · d",
+                "p:a · b",
+                "p:a · b",
+                "p:--- · -x-",
+                "p:a | b",
+                "hr",
+                "code:| a | b |\n|---|---|",
             ]
+        );
+        let wide = |n: usize| format!("|{}\n|{}\n", "x|".repeat(n), "-|".repeat(n));
+        assert!(matches!(parse(&wide(super::MAX_COLUMNS))[..], [Block::Table(_)]));
+        assert!(matches!(
+            parse(&wide(super::MAX_COLUMNS + 1))[..],
+            [Block::Paragraph(_)]
+        ));
+    }
+
+    #[test]
+    fn measures_the_longest_word_of_each_column() {
+        let t = table(
+            "| Car | Notes | 名前 |\n|---|---|---|\n| **FW35** | a `longer` word | 日本語テキスト |\n| W04 | |",
+        );
+        assert_eq!(t.longest_words(), [4, 6, 14]);
+    }
+
+    #[test]
+    fn keeps_html_images_and_unsafe_links_out_of_cells() {
+        let t = table(
+            "| <script>alert(1)</script> | <img src=\"https://evil.example/x.png\"> | ![pic](https://evil.example/y.png) | [x](javascript:alert(1)) |\n|---|---|---|---|\n| <b>bold</b> | <a href=\"https://evil.example\">a</a> | <iframe src=x> | <https://ok.example> |",
+        );
+        let cells: Vec<&Vec<Span>> = t.head.iter().chain(t.rows.iter().flatten()).collect();
+        for cell in &cells {
+            for span in cell.iter() {
+                assert!(!span.text.contains('<') && !span.text.contains('>'), "{span:?}");
+                assert!(span.link.is_none() || span.link.as_deref() == Some("https://ok.example"));
+            }
+        }
+        let text: Vec<String> = cells.iter().map(|c| plain(c)).collect();
+        assert_eq!(
+            text,
+            ["alert(1)", "", "", "x)", "bold", "a", "", "https://ok.example"]
+        );
+    }
+
+    #[test]
+    fn lays_blocks_out_in_columns() {
+        let blocks = parse(
+            "Before\n\n::: columns\n::: column\n### Setup\nRead *this*.\n:::\n::: column\n| a | b |\n|---|---|\n| 1 | 2 |\n:::\n:::\n\nAfter",
+        );
+        assert_eq!(
+            outline(&blocks),
+            [
+                "p:Before",
+                "columns[h3:Setup, p:Read this. ; table:a|b/1|2]",
+                "p:After"
+            ]
+        );
+    }
+
+    #[test]
+    fn reads_columns_in_pandoc_form_and_loose_content() {
+        let blocks = parse(
+            ":::: {.columns}\nLoose\n::: {.column width=\"40%\"}\n- one\n:::\n::: tip\nIn a tip\n:::\nTrailing\n::: column\n```\n:::\n```\n:::\n::::",
+        );
+        assert_eq!(
+            outline(&blocks),
+            ["columns[p:Loose ; li0None:one ; p:In a tip, p:Trailing ; code::::]"]
+        );
+    }
+
+    #[test]
+    fn keeps_single_unclosed_and_misplaced_columns_flat() {
+        assert_eq!(
+            outline(&parse("::: columns\n::: column\nOnly one\n:::\n:::\nNext")),
+            ["p:Only one", "p:Next"]
+        );
+        assert_eq!(
+            outline(&parse("::: column\nNot in columns\n:::\n:::\nStray close")),
+            ["p:Not in columns", "p:Stray close"]
+        );
+        assert_eq!(
+            outline(&parse(
+                "::: columns\n::: column\nA\n:::\n::: column\n::: columns\nB\n:::\nC"
+            )),
+            ["columns[p:A ; p:B, p:C]"]
         );
     }
 }

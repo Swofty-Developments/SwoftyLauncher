@@ -6,7 +6,9 @@ mod plan;
 mod probe;
 mod track;
 
-pub use apply::{Ran, Step, did_not_take, install, run};
+pub use apply::{
+    Ran, Step, blocked_line, copy_line, did_not_take, install, installed_line, restart_line, run,
+};
 pub use catalog::{Candidate, Catalog, LIST_RECHECK, check_importer};
 pub use plan::{Gate, Phase, Plan, describe, follow_up, gate, plan, summary};
 pub use probe::{Part, Probe, probe, read_probe, tag_from_location};

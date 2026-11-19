@@ -44,6 +44,11 @@ pub(crate) fn note(text: &str) {
     append(&path(), text);
 }
 
+/// A line whose data, game and home folders show as `<data>`, `<game>` and `~`.
+pub(crate) fn scrubbed(text: &str) {
+    note(&Roots::now().scrub(text));
+}
+
 static GAME: std::sync::Mutex<Option<PathBuf>> = std::sync::Mutex::new(None);
 
 /// The game folder failed actions name their files against.

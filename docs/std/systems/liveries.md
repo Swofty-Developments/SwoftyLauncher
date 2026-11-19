@@ -227,6 +227,8 @@ SWOFTY_ADDON()
 
 The importer routes a `.vtf` inside a livery's `wep.erp` to `vehicle.handling`. Installing a livery leaves R&D Tyres' handling in place.
 
+A livery's `archive` carries the car's handling file. The build gives it the handling of the vehicle that wears it, or the livery addon's own records for that archive, and the base car for equal performance ([A livery's archive](./car-physics#a-livery-s-archive)).
+
 ## AI liveries
 
 The 1.6.0 header has no `ai_assignments` registry, no decal sets or sponsor packs, and no livery events or operations (`grant`, `assign`). This section and the next describe them for headers that come later.

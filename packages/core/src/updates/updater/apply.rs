@@ -150,3 +150,46 @@ pub fn did_not_take(expected: Option<&str>, current: &Version) -> Option<String>
         format!("Swofty Launcher {wanted} was installed, but the restarted launcher is still {current}")
     })
 }
+
+/// The launcher log's line on whether the running copy can update itself.
+pub fn copy_line(
+    exe: &std::io::Result<std::path::PathBuf>,
+    copy: &std::result::Result<Install, String>,
+) -> String {
+    let exe = match exe {
+        Ok(path) => path.display().to_string(),
+        Err(e) => format!("the launcher (its path does not read: {e})"),
+    };
+    match copy {
+        Ok(_) => format!("update: {exe} can update itself"),
+        Err(reason) => format!("update: {exe} can't update itself: {reason}"),
+    }
+}
+
+/// The launcher log's line for a newer launcher this copy can't install.
+pub fn blocked_line(version: &Version, reason: &str) -> String {
+    format!("update: Swofty Launcher {version} is available, and this copy can't install it: {reason}")
+}
+
+/// The launcher log's line for the parts an update installed before the restart.
+pub fn installed_line(done: &[(Part, Version)]) -> String {
+    let parts: Vec<String> = done
+        .iter()
+        .map(|(part, v)| format!("{} {v}", part.name()))
+        .collect();
+    format!("update: installed {}; restarting", parts.join(", "))
+}
+
+/// The launcher log's line for the restart after an update: the new process's pid, or why it did not start,
+/// with the Windows block behind it.
+pub fn restart_line(program: &std::path::Path, spawned: std::result::Result<u32, &std::io::Error>) -> String {
+    match spawned {
+        Ok(pid) => format!("update: started {} (pid {pid}) to restart", program.display()),
+        Err(e) => {
+            let block = crate::platform::app_control::Block::of(program, e)
+                .map(|b| format!("; {}", b.headline()))
+                .unwrap_or_default();
+            format!("update: could not restart {}: {e}{block}", program.display())
+        }
+    }
+}

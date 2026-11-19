@@ -97,8 +97,8 @@ pub(crate) fn play(
     let via_ea = ea.is_some();
     let (code, unread) = match ea {
         Some(started) => {
-            crate::stores::ea::wait(game, dir, &copies_before, started, || watch.tick());
-            (None, EA_UNREAD.to_owned())
+            let code = crate::stores::ea::wait(game, dir, &copies_before, started, || watch.tick());
+            (code.map(|c| c as i32), EA_UNREAD.to_owned())
         }
         None => {
             let status = wait_game(&mut command.spawn(dir, target, "game_stdout.log")?, || {

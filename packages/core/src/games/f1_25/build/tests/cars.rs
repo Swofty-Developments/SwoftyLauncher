@@ -454,6 +454,41 @@ fn track_ers_settings_survive_an_addon_that_writes_the_handling_file() {
 }
 
 #[test]
+fn a_handling_record_on_a_file_nothing_ships_is_a_warning() {
+    let map = |id: &str, target: handling::Target| HandlingMap {
+        id: id.into(),
+        target,
+        plan: handling::Plan::default(),
+        resources: None,
+        base: None,
+    };
+    let addon = |path: &str| handling::Target::Addon {
+        addon: "t.real".into(),
+        path: path.into(),
+    };
+    let maps = vec![
+        map("t.real/put", addon("cars/put.erp")),
+        map("t.real/worn", addon("cars/redbull.erp")),
+        map("t.real/stock", handling::Target::Stock("x/ferrari.erp".into())),
+        map("t.real/lost", addon("cars/teams/mclaren/wep/mclaren.erp")),
+    ];
+    let liveries = vec![handling::Livery {
+        id: "t.real/redbull".into(),
+        addon: "t.real".into(),
+        archive: "Cars/RedBull.erp".into(),
+        maps: Vec::new(),
+    }];
+    let reached = BTreeSet::from(["t.real/put".to_owned()]);
+    let warnings = unshipped(&maps, &reached, &liveries);
+    assert_eq!(warnings.len(), 1, "{warnings:?}");
+    assert!(
+        warnings[0]
+            .starts_with("handling: t.real/lost: cars/teams/mclaren/wep/mclaren.erp in t.real isn't put"),
+        "{warnings:?}"
+    );
+}
+
+#[test]
 fn a_handling_record_changes_the_stock_team_archive_and_an_addons_own() {
     use swofty_formats::bxml::{Document, Element, Kind};
     use swofty_formats::erp::{Erp, ErpFile, Fragment, HEADER_LEN, MAGIC, Resource, STORED};
