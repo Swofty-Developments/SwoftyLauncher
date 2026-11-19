@@ -49,6 +49,7 @@ pub fn prune(cache: &Path, profile: &str, used: &[PathBuf]) -> usize {
     let mut stamps = children(&overlays.join(profile));
     stamps.extend(children(&cache.join("menus")));
     stamps.extend(children(&cache.join("ers")));
+    stamps.extend(children(&cache.join(LIVERIES_DIR)));
     for code in children(&maps) {
         stamps.extend(children(&code));
     }
@@ -65,6 +66,9 @@ pub fn prune(cache: &Path, profile: &str, used: &[PathBuf]) -> usize {
 }
 
 pub const PACKED_DIR: &str = "zstd";
+
+/// Livery archives with the handling of the car that wears them, one folder per archive and handling.
+pub const LIVERIES_DIR: &str = "liveries";
 
 /// Rebuilt archives kept between builds, linked into each overlay that needs
 /// the same archive again.
@@ -185,6 +189,10 @@ mod tests {
         let gone = track("gone", "g1");
         let (menus_old, menus_new) = (stamp(&cache.join("menus/m1")), stamp(&cache.join("menus/m2")));
         let (ers_old, ers_new) = (stamp(&cache.join("ers/e1")), stamp(&cache.join("ers/e2")));
+        let (livery_old, livery_new) = (
+            stamp(&cache.join(LIVERIES_DIR).join("l1")),
+            stamp(&cache.join(LIVERIES_DIR).join("l2")),
+        );
         let (mine_old, mine_new) = (
             stamp(&cache.join("overlay/default/h1")),
             stamp(&cache.join("overlay/default/h2")),
@@ -207,22 +215,24 @@ mod tests {
             bahrain_new.clone(),
             menus_new.clone(),
             ers_new.clone(),
+            livery_new.join("cars/redbull.erp"),
             mine_new.clone(),
         ];
-        assert_eq!(prune(&cache, "default", &used), 5);
+        assert_eq!(prune(&cache, "default", &used), 6);
         for kept in [
             &okayama_22,
             &okayama_24,
             &bahrain_new,
             &menus_new,
             &ers_new,
+            &livery_new,
             &mine_new,
             &other_old,
             &other_new,
         ] {
             assert!(kept.is_dir(), "{} was removed", kept.display());
         }
-        for removed in [&bahrain_old, &menus_old, &ers_old, &mine_old, &gone] {
+        for removed in [&bahrain_old, &menus_old, &ers_old, &livery_old, &mine_old, &gone] {
             assert!(!removed.exists(), "{} was kept", removed.display());
         }
         assert!(!cache.join("maps/gone").exists());

@@ -1047,12 +1047,15 @@ pub struct HandlingBuild {
     pub lines: Vec<String>,
 }
 
-pub fn stamp(maps: &[HandlingMap], sources: &[PathBuf]) -> Result<String> {
+pub fn stamp<'a>(maps: impl IntoIterator<Item = &'a HandlingMap>, sources: &[PathBuf]) -> Result<String> {
     let mut h = <sha2::Sha256 as sha2::Digest>::new();
     for m in maps {
         sha2::Digest::update(
             &mut h,
-            format!("{}|{:?}|{:?}|{:?}", m.id, m.target, m.plan, m.base),
+            format!(
+                "{}|{:?}|{:?}|{:?}|{:?}",
+                m.id, m.target, m.resources, m.plan, m.base
+            ),
         );
     }
     for p in sources {
@@ -1212,18 +1215,45 @@ pub struct Resolved {
 }
 
 pub fn resolve(files: &[Files], options: Options) -> Resolved {
-    let mut out = Resolved::default();
+    let mut out = records(files, REGISTRY, options);
     let mut vehicles: Vec<(String, Value)> = Vec::new();
     for f in files {
-        let mut selects: Vec<&Value> = Vec::new();
-        let mut layers: Vec<(&str, &Value)> = Vec::new();
         for file in &f.values {
             if let Some(Value::Object(m)) = file.get(VEHICLES) {
                 for (k, v) in m.iter().filter(|(k, _)| !k.contains('/') && !k.starts_with('$')) {
                     vehicles.push((id_of(f.addon, k), v.clone()));
                 }
             }
-            let Some(Value::Object(reg)) = file.get(REGISTRY) else {
+        }
+    }
+    for (_, v) in vehicles {
+        let (Some(group), Some(h)) = (
+            v.get("tyre_group")
+                .and_then(Value::as_str)
+                .filter(|g| !g.is_empty()),
+            v.get("handling").and_then(Value::as_str),
+        ) else {
+            continue;
+        };
+        if let Some(rec) = out.records.get_mut(h)
+            && rec.pointer("/chassis/tyre_physics_group").is_none()
+        {
+            merge_patch(
+                rec,
+                &serde_json::json!({ "chassis": { "tyre_physics_group": group } }),
+            );
+        }
+    }
+    out
+}
+
+pub fn records(files: &[Files], registry: &str, options: Options) -> Resolved {
+    let mut out = Resolved::default();
+    for f in files {
+        let mut selects: Vec<&Value> = Vec::new();
+        let mut layers: Vec<(&str, &Value)> = Vec::new();
+        for file in &f.values {
+            let Some(Value::Object(reg)) = file.get(registry) else {
                 continue;
             };
             for (key, value) in reg {
@@ -1283,24 +1313,6 @@ pub fn resolve(files: &[Files], options: Options) -> Resolved {
                 .entry(id.to_owned())
                 .or_insert_with(|| Value::Object(Map::new()));
             merge_patch(rec, patch);
-        }
-    }
-    for (_, v) in vehicles {
-        let (Some(group), Some(h)) = (
-            v.get("tyre_group")
-                .and_then(Value::as_str)
-                .filter(|g| !g.is_empty()),
-            v.get("handling").and_then(Value::as_str),
-        ) else {
-            continue;
-        };
-        if let Some(rec) = out.records.get_mut(h)
-            && rec.pointer("/chassis/tyre_physics_group").is_none()
-        {
-            merge_patch(
-                rec,
-                &serde_json::json!({ "chassis": { "tyre_physics_group": group } }),
-            );
         }
     }
     out
@@ -1365,7 +1377,14 @@ pub fn maps_of(resolved: &Resolved) -> (Vec<HandlingMap>, Vec<String>) {
     (maps, notes)
 }
 
-pub fn read_maps(addons: &[(String, PathBuf)], options: Options) -> (Vec<HandlingMap>, Vec<String>) {
+#[derive(Debug, Default)]
+pub struct Read {
+    pub maps: Vec<HandlingMap>,
+    pub notes: Vec<String>,
+    pub liveries: Vec<Livery>,
+}
+
+pub fn read_maps(addons: &[(String, PathBuf)], options: Options) -> Read {
     let mut notes = Vec::new();
     let mut files = Vec::new();
     for (id, dir) in addons {
@@ -1375,7 +1394,7 @@ pub fn read_maps(addons: &[(String, PathBuf)], options: Options) -> (Vec<Handlin
             let Ok(text) = std::fs::read_to_string(&path) else {
                 continue;
             };
-            if !text.contains(REGISTRY) && !text.contains("\"vehicle\"") {
+            if !text.contains(REGISTRY) && !text.contains("\"vehicle\"") && !text.contains("\"livery\"") {
                 continue;
             }
             match serde_json::from_str::<Value>(&text) {
@@ -1397,7 +1416,217 @@ pub fn read_maps(addons: &[(String, PathBuf)], options: Options) -> (Vec<Handlin
     let (base, bases) = base_maps(&resolved, addons, &maps);
     link_bases(&mut maps, &bases);
     maps.extend(base);
-    (maps, notes)
+    let (liveries, more) = liveries_of(
+        &records(&files, LIVERIES, options),
+        &records(&files, VEHICLES, options),
+        &maps,
+    );
+    notes.extend(more);
+    Read {
+        maps,
+        notes,
+        liveries,
+    }
+}
+
+const LIVERIES: &str = "livery";
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Livery {
+    pub id: String,
+    pub addon: String,
+    pub archive: String,
+    pub maps: Vec<String>,
+}
+
+impl Livery {
+    pub fn names(&self, target: &Target) -> bool {
+        matches!(target, Target::Addon { addon, path } if *addon == self.addon && same_file(path, &self.archive))
+    }
+}
+
+fn unref(id: &str) -> &str {
+    id.strip_suffix('?').unwrap_or(id)
+}
+
+fn same_file(a: &str, b: &str) -> bool {
+    use crate::stdlib::paths::inside;
+    matches!((inside(a), inside(b)), (Some(a), Some(b)) if a.eq_ignore_ascii_case(&b))
+}
+
+pub fn liveries_of(
+    liveries: &Resolved,
+    vehicles: &Resolved,
+    maps: &[HandlingMap],
+) -> (Vec<Livery>, Vec<String>) {
+    let mut out = Vec::new();
+    let mut notes = Vec::new();
+    for (id, rec) in &liveries.records {
+        let Some(archive) = rec
+            .get("archive")
+            .and_then(Value::as_str)
+            .and_then(crate::stdlib::paths::inside)
+        else {
+            continue;
+        };
+        let mut livery = Livery {
+            id: id.clone(),
+            addon: id.split('/').next().unwrap_or("").to_owned(),
+            archive,
+            maps: Vec::new(),
+        };
+        let mut cars: Vec<&str> = vehicles
+            .records
+            .iter()
+            .filter(|(_, v)| v.get("livery").and_then(Value::as_str).map(unref) == Some(id.as_str()))
+            .map(|(car, _)| car.as_str())
+            .collect();
+        if rec.get("special").and_then(Value::as_bool) == Some(true)
+            && let Some(car) = rec.get("vehicle").and_then(Value::as_str).map(unref)
+            && !cars.contains(&car)
+        {
+            cars.push(car);
+        }
+        let own: Vec<String> = maps
+            .iter()
+            .filter(|m| livery.names(&m.target))
+            .map(|m| m.id.clone())
+            .collect();
+        if !cars.is_empty() && !own.is_empty() {
+            livery.maps = own;
+        } else if !cars.is_empty() {
+            let handling: BTreeSet<Option<&str>> = cars
+                .iter()
+                .map(|car| {
+                    vehicles
+                        .records
+                        .get(*car)
+                        .and_then(|v| v.get("handling"))
+                        .and_then(Value::as_str)
+                        .map(unref)
+                })
+                .collect();
+            match handling.into_iter().collect::<Vec<_>>()[..] {
+                [Some(h)] => livery.maps = maps.iter().filter(|m| m.id == h).map(|m| m.id.clone()).collect(),
+                [_] => {}
+                _ => notes.push(format!(
+                    "livery {id}: worn by {}, which have different handling; {} keeps the handling it has",
+                    cars.join(", "),
+                    livery.archive
+                )),
+            }
+        }
+        out.push(livery);
+    }
+    (out, notes)
+}
+
+#[derive(Debug, Default)]
+pub struct LiveryBuild {
+    pub replaced: BTreeMap<String, PathBuf>,
+    pub dirs: Vec<PathBuf>,
+    pub lines: Vec<String>,
+    pub warnings: Vec<String>,
+}
+
+impl LiveryBuild {
+    pub fn file(&self, addon: &str, rel: &str) -> Option<&PathBuf> {
+        self.replaced.get(&format!("{addon}/{rel}").to_ascii_lowercase())
+    }
+}
+
+pub fn build_liveries(
+    liveries: &[Livery],
+    maps: &[HandlingMap],
+    addon_dir: &dyn Fn(&str) -> PathBuf,
+    cache: &Path,
+) -> LiveryBuild {
+    let mut build = LiveryBuild::default();
+    let started = std::time::Instant::now();
+    let (mut edited, mut cached) = (0, 0);
+    let mut done: BTreeMap<String, &[String]> = BTreeMap::new();
+    for l in liveries.iter().filter(|l| !l.maps.is_empty()) {
+        let key = format!("{}/{}", l.addon, l.archive).to_ascii_lowercase();
+        if let Some(first) = done.get(&key) {
+            if *first != l.maps.as_slice() {
+                build.warnings.push(format!(
+                    "handling: livery {}: {} is also another livery's archive, with other handling; the first one's applies",
+                    l.id, l.archive
+                ));
+            }
+            continue;
+        }
+        done.insert(key.clone(), &l.maps);
+        let src = addon_dir(&l.addon).join(&l.archive);
+        if !src.is_file() {
+            continue;
+        }
+        let group: Vec<&HandlingMap> = l
+            .maps
+            .iter()
+            .filter_map(|id| maps.iter().find(|m| m.id == *id))
+            .collect();
+        let dir = match livery_stamp(&group, &src) {
+            Ok(stamp) => cache.join(stamp),
+            Err(e) => {
+                build.warnings.push(format!("handling: livery {}: {e}", l.id));
+                continue;
+            }
+        };
+        let out = dir.join(&l.archive);
+        let log = dir.join(".log");
+        if log.is_file() {
+            cached += 1;
+        } else {
+            edited += 1;
+            let mut lines = Vec::new();
+            let written = edit_archive(&src, &group, &out, &mut lines).and_then(|_| {
+                std::fs::create_dir_all(&dir).map_err(io_err(&dir))?;
+                std::fs::write(&log, lines.join("\n")).map_err(io_err(&log))
+            });
+            if let Err(e) = written {
+                std::fs::remove_dir_all(&dir).ok();
+                build.warnings.push(format!(
+                    "handling: livery {}: {} can't take its car's handling ({e}); the car wears it as it is",
+                    l.id, l.archive
+                ));
+                continue;
+            }
+        }
+        build.dirs.push(dir);
+        build.lines.push(format!(
+            "handling: livery {} ({}/{}) gets the handling of {}",
+            l.id,
+            l.addon,
+            l.archive,
+            l.maps.join(", ")
+        ));
+        build.lines.extend(
+            std::fs::read_to_string(&log)
+                .unwrap_or_default()
+                .lines()
+                .map(str::to_owned),
+        );
+        if out.is_file() {
+            build.replaced.insert(key, out);
+        }
+    }
+    if edited + cached > 0 {
+        build.lines.push(format!(
+            "handling: {} livery archive(s) take the handling of the car that wears them ({edited} edited, {cached} \
+             from the cache, {} ms)",
+            edited + cached,
+            started.elapsed().as_millis()
+        ));
+    }
+    build
+}
+
+fn livery_stamp(group: &[&HandlingMap], src: &Path) -> Result<String> {
+    let mut h = <sha2::Sha256 as sha2::Digest>::new();
+    sha2::Digest::update(&mut h, env!("SWOFTY_PIPELINE"));
+    sha2::Digest::update(&mut h, stamp(group.iter().copied(), &[src.to_path_buf()])?);
+    Ok(crate::baseline::hex(&sha2::Digest::finalize(h))[..16].to_owned())
 }
 
 pub fn link_bases(maps: &mut [HandlingMap], bases: &Bases) {
@@ -1995,6 +2224,276 @@ mod tests {
         assert!(base_layer(&data, &[(other, base)]).unwrap().is_none());
         let own = car_layer(vec![("vtfAsset", team), ("baseVtfAsset", "eaid://x/own.vtf")]);
         assert!(base_layer(&own, &[(team, base)]).unwrap().is_none());
+    }
+
+    const SW12_TEAM: &str = "eaid://sw_2012_vehicle_package/teams/mclaren/handling/mclaren.vtf";
+    const SW12_BASE: &str = "eaid://sw_2012_vehicle_package/teams/fom_car/handling/fom_car.vtf";
+    const SW12_LAYER: &str = "eaid://sw_2012_vehicle_package/teams/mclaren/wep/mclaren-carmodel.layer";
+
+    fn livery_erp(extra: &[&str]) -> Vec<u8> {
+        use swofty_formats::erp::{Erp, Fragment, HEADER_LEN, MAGIC, STORED};
+        let res = |name: &str, kind: &str, data: Vec<u8>| Resource {
+            name: name.into(),
+            kind: swofty_formats::erp::kind(kind).unwrap(),
+            unk: vec![0; 4],
+            fragments: vec![Fragment {
+                name: *b"temp",
+                offset: 0,
+                size: data.len() as u64,
+                flags: 0x10,
+                compression: STORED,
+                packed: data.len() as u64,
+                raw: data,
+            }],
+            hash: [0; 16],
+        };
+        let vtf = Document {
+            root: car(),
+            tail: Vec::new(),
+        }
+        .to_bytes();
+        let mut resources = vec![
+            res(SW12_LAYER, "layer", car_layer(vec![("vtfAsset", SW12_TEAM)])),
+            res(SW12_TEAM, "VTF", vtf),
+        ];
+        resources.extend(extra.iter().map(|n| res(n, "dds", vec![1, 2, 3])));
+        let mut header = [0u8; HEADER_LEN];
+        header[..4].copy_from_slice(MAGIC);
+        header[4..8].copy_from_slice(&3u32.to_le_bytes());
+        Erp {
+            header,
+            version: 3,
+            resources,
+        }
+        .to_bytes()
+    }
+
+    struct LiveryPack {
+        root: PathBuf,
+    }
+
+    impl LiveryPack {
+        fn new(name: &str, mass: u32) -> Self {
+            let root = std::env::temp_dir().join(format!("swofty-handling-{name}-{}", std::process::id()));
+            let _ = std::fs::remove_dir_all(&root);
+            let pack = Self { root };
+            pack.write("t.season/cars/teams/common.erp", erp_with(&[SW12_BASE]));
+            pack.season(mass);
+            pack.write("t.real/cars/redbull.erp", livery_erp(&[]));
+            pack.json(
+                "t.real/registry/liveries.json",
+                json!({ "livery": { "redbull": { "vehicle": "t.season/redbull", "archive": "cars/redbull.erp" } } }),
+            );
+            pack.json(
+                "t.real/registry/layers.json",
+                json!({ "vehicle": { "t.season/redbull": { "livery": "t.real/redbull" } } }),
+            );
+            pack
+        }
+
+        fn write(&self, rel: &str, data: Vec<u8>) {
+            let path = self.root.join("addons").join(rel);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, data).unwrap();
+        }
+
+        fn json(&self, rel: &str, v: Value) {
+            self.write(rel, v.to_string().into_bytes());
+        }
+
+        fn season(&self, mass: u32) {
+            self.json(
+                "t.season/registry/content.json",
+                json!({
+                    "vehicle": { "redbull": { "label": "sw12_redbull", "handling": "t.season/v8_mclaren" } },
+                    "vehicle.handling": { "v8_mclaren": {
+                        "vtf": { "erp": "cars/teams/mclaren/wep/mclaren.erp", "resources": [SW12_TEAM] },
+                        "gearbox": { "ratios": [3.42, 2.24, 1.88, 1.65, 1.41, 1.21, 1.1] },
+                        "chassis": { "mass": mass } } } }),
+            );
+        }
+
+        fn read(&self) -> Read {
+            let addons: Vec<(String, PathBuf)> = ["t.season", "t.real"]
+                .iter()
+                .map(|id| ((*id).to_owned(), self.root.join("addons").join(id)))
+                .collect();
+            read_maps(&addons, &|_, _| None)
+        }
+
+        fn build(&self, read: &Read) -> LiveryBuild {
+            let addons = self.root.join("addons");
+            build_liveries(
+                &read.liveries,
+                &read.maps,
+                &|id: &str| addons.join(id),
+                &self.root.join("cache"),
+            )
+        }
+    }
+
+    impl Drop for LiveryPack {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.root);
+        }
+    }
+
+    fn worn_car(archive: &Path) -> (Document, Vec<(String, String)>) {
+        let file = ErpFile::open(archive).unwrap();
+        let load = |name: &str| {
+            let r = file.erp.resources.iter().find(|r| r.name == name).unwrap();
+            file.load(r).unwrap().fragments[0].data().unwrap()
+        };
+        (
+            Document::parse(&load(SW12_TEAM)).unwrap(),
+            physics_keys(&load(SW12_LAYER)),
+        )
+    }
+
+    #[test]
+    fn a_livery_archive_gets_the_handling_and_base_car_of_the_car_that_wears_it() {
+        let pack = LiveryPack::new("worn", 640);
+        let read = pack.read();
+        assert_eq!(
+            read.liveries,
+            vec![Livery {
+                id: "t.real/redbull".into(),
+                addon: "t.real".into(),
+                archive: "cars/redbull.erp".into(),
+                maps: vec!["t.season/v8_mclaren".into()],
+            }],
+            "{:?}",
+            read.notes
+        );
+        let built = pack.build(&read);
+        assert!(built.warnings.is_empty(), "{:?}", built.warnings);
+        let out = built.file("t.real", "cars/redbull.erp").unwrap().clone();
+        assert!(out.starts_with(pack.root.join("cache")));
+        let (doc, physics) = worn_car(&out);
+        assert_eq!(value(&doc.root, "Chassis", "Mass"), "640");
+        assert_eq!(value(&doc.root, "GearBox", "GearRatio7th"), "1.1");
+        assert_eq!(value(&doc.root, "GearBox", "GearRatio8th"), "0");
+        assert_eq!(
+            physics,
+            vec![
+                ("vtfAsset".to_owned(), SW12_TEAM.to_owned()),
+                ("baseVtfAsset".to_owned(), SW12_BASE.to_owned()),
+            ]
+        );
+        assert!(
+            built
+                .lines
+                .iter()
+                .any(|l| l.starts_with("handling t.season/v8_mclaren -> mclaren.vtf:")),
+            "{:?}",
+            built.lines
+        );
+        let src = pack.root.join("addons/t.real/cars/redbull.erp");
+        assert_eq!(
+            worn_car(&src).1,
+            vec![("vtfAsset".to_owned(), SW12_TEAM.to_owned())]
+        );
+
+        let written = std::fs::metadata(&out).unwrap().modified().unwrap();
+        let again = pack.build(&pack.read());
+        assert_eq!(again.file("t.real", "cars/redbull.erp"), Some(&out));
+        assert_eq!(std::fs::metadata(&out).unwrap().modified().unwrap(), written);
+        let (summary, lines) = again.lines.split_last().unwrap();
+        assert_eq!(lines, &built.lines[..built.lines.len() - 1]);
+        assert!(summary.contains("(0 edited, 1 from the cache,"), "{summary}");
+        assert!(
+            built
+                .lines
+                .last()
+                .unwrap()
+                .contains("(1 edited, 0 from the cache,")
+        );
+
+        pack.season(650);
+        let heavier = pack.build(&pack.read());
+        let moved = heavier.file("t.real", "cars/redbull.erp").unwrap();
+        assert_ne!(moved, &out);
+        assert_eq!(value(&worn_car(moved).0.root, "Chassis", "Mass"), "650");
+
+        pack.write("t.real/cars/redbull.erp", livery_erp(&["eaid://x/sponsor.dds"]));
+        let repainted = pack.build(&pack.read());
+        let fresh = repainted.file("t.real", "cars/redbull.erp").unwrap();
+        assert_ne!(fresh, moved);
+        assert!(
+            ErpFile::open(fresh)
+                .unwrap()
+                .erp
+                .find("eaid://x/sponsor.dds")
+                .is_ok()
+        );
+    }
+
+    #[test]
+    fn a_livery_packs_own_records_for_its_archive_replace_the_worn_cars() {
+        let pack = LiveryPack::new("own", 640);
+        pack.json(
+            "t.real/registry/handling.json",
+            json!({ "vehicle.handling": { "v8_real_redbull": { "extends": "t.season/v8_mclaren",
+                "vtf": { "erp": "cars/redbull.erp", "resources": [SW12_TEAM] }, "chassis": { "mass": 653 } } } }),
+        );
+        let read = pack.read();
+        assert_eq!(read.liveries[0].maps, vec!["t.real/v8_real_redbull".to_owned()]);
+        let built = pack.build(&read);
+        let (doc, physics) = worn_car(built.file("t.real", "cars/redbull.erp").unwrap());
+        assert_eq!(value(&doc.root, "Chassis", "Mass"), "653");
+        assert_eq!(value(&doc.root, "GearBox", "GearRatio8th"), "0");
+        assert_eq!(physics[1], ("baseVtfAsset".to_owned(), SW12_BASE.to_owned()));
+    }
+
+    #[test]
+    fn a_livery_worn_by_cars_with_different_handling_keeps_its_own() {
+        let maps = maps_of(&Resolved {
+            records: [
+                (
+                    "t.s/a".to_owned(),
+                    json!({ "vtf": "a.erp", "chassis": { "mass": 600 } }),
+                ),
+                (
+                    "t.s/b".to_owned(),
+                    json!({ "vtf": "b.erp", "chassis": { "mass": 700 } }),
+                ),
+            ]
+            .into(),
+            notes: Vec::new(),
+        })
+        .0;
+        let liveries = Resolved {
+            records: [(
+                "t.l/x".to_owned(),
+                json!({ "vehicle": "t.s/one", "archive": "x.erp" }),
+            )]
+            .into(),
+            notes: Vec::new(),
+        };
+        let vehicles = |b: &str| Resolved {
+            records: [
+                (
+                    "t.s/one".to_owned(),
+                    json!({ "handling": "t.s/a", "livery": "t.l/x" }),
+                ),
+                ("t.s/two".to_owned(), json!({ "handling": b, "livery": "t.l/x?" })),
+                ("t.s/three".to_owned(), json!({ "handling": "t.s/b" })),
+            ]
+            .into(),
+            notes: Vec::new(),
+        };
+        let (out, notes) = liveries_of(&liveries, &vehicles("t.s/b"), &maps);
+        assert!(out[0].maps.is_empty());
+        assert_eq!(notes.len(), 1, "{notes:?}");
+        assert!(notes[0].contains("t.s/one, t.s/two"), "{notes:?}");
+        let (out, notes) = liveries_of(&liveries, &vehicles("t.s/a"), &maps);
+        assert_eq!(out[0].maps, vec!["t.s/a".to_owned()]);
+        assert!(notes.is_empty());
+        let unworn = Resolved {
+            records: [("t.s/one".to_owned(), json!({ "handling": "t.s/a" }))].into(),
+            notes: Vec::new(),
+        };
+        assert!(liveries_of(&liveries, &unworn, &maps).0[0].maps.is_empty());
     }
 
     #[test]

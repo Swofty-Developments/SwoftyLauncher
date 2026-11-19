@@ -1613,7 +1613,11 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     }
     let resolve = |rel: &str| original(&store.root, game, rel);
     let addon_dir = |id: &str| store.addons_dir().join(id);
-    let (handling_maps, handling_notes) = {
+    let handling::Read {
+        maps: handling_maps,
+        notes: handling_notes,
+        liveries,
+    } = {
         let dirs: Vec<(String, PathBuf)> = resolved
             .order
             .iter()
@@ -2584,7 +2588,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     }
     cancel()?;
     crate::now_doing("placing files");
-    put_files(
+    let put = put_files(
         &mut built,
         store,
         game,
@@ -2593,6 +2597,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         &built_over,
         (&ers_maps, &handling_maps),
     )?;
+    built.warnings.extend(unshipped(&handling_maps, &put, &liveries));
     match loader_dir() {
         Some(dir) => {
             built.plan.loader = loader_files(&dir)?;
@@ -2703,10 +2708,31 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 let index = built.overlay.join("registry-index.json");
                 std::fs::create_dir_all(&built.overlay).map_err(io_err(&built.overlay))?;
                 std::fs::write(&index, placed.index.to_json()).map_err(io_err(&index))?;
+                let worn = handling::build_liveries(
+                    &liveries,
+                    &handling_maps,
+                    &addon_dir,
+                    &store.root.join("cache").join(crate::cache::LIVERIES_DIR),
+                );
+                caches.extend(worn.dirs.iter().cloned());
+                for line in worn.lines.iter().cloned() {
+                    match line.strip_prefix(crate::activation::wheel_check::WARNING_PREFIX) {
+                        Some(w) => built.warnings.push(w.to_owned()),
+                        None => built.lines.push(line),
+                    }
+                }
+                built.warnings.extend(worn.warnings.iter().cloned());
+                let addons_at = format!("{LOADER_DIR}/{ADDONS_DIR}/");
                 for (rel, src) in placed
                     .files
                     .iter()
-                    .map(|(r, s)| (r.clone(), s.clone()))
+                    .map(|(r, s)| {
+                        let edited = r
+                            .strip_prefix(&addons_at)
+                            .and_then(|at| at.split_once('/'))
+                            .and_then(|(addon, file)| worn.file(addon, file));
+                        (r.clone(), edited.unwrap_or(s).clone())
+                    })
                     .chain([(crate::stdlib::index::PATH.to_owned(), index)])
                 {
                     match built.plan.loader.insert(rel.clone(), src.clone()) {
@@ -3418,8 +3444,9 @@ fn put_files(
     ops: Vec<Op>,
     built_over: &BTreeSet<String>,
     car_maps: (&[ErsMap], &[HandlingMap]),
-) -> Result<()> {
+) -> Result<BTreeSet<String>> {
     let (ers_maps, handling_maps) = car_maps;
+    let mut reached = BTreeSet::new();
     let baseline = Baseline::load_or_new(&store.root, &game.identity).ok();
     let mut spelling: BTreeMap<String, String> = BTreeMap::new();
     for rel in built.plan.data.keys().chain(built.plan.added.keys()) {
@@ -3460,7 +3487,7 @@ fn put_files(
         put.insert(key, (real, src, Some(op.origin)));
     }
     if put.is_empty() {
-        return Ok(());
+        return Ok(reached);
     }
     let over: BTreeSet<String> = built_over.iter().map(|r| r.to_ascii_lowercase()).collect();
     let stock = |rel: &str| {
@@ -3472,6 +3499,7 @@ fn put_files(
     for (_, (rel, mut src, origin)) in put {
         let lower = rel.to_ascii_lowercase();
         let group = handling::for_source(handling_maps, &addon_dir, &src);
+        reached.extend(group.iter().map(|m| m.id.clone()));
         if !group.is_empty() && !over.contains(&lower) {
             let out = built.overlay.join("handling").join(&rel);
             let mut lines = Vec::new();
@@ -3527,7 +3555,21 @@ fn put_files(
             .lines
             .push(format!("mipmaps: {mips} mip file(s) go in the game folder"));
     }
-    Ok(())
+    Ok(reached)
+}
+
+fn unshipped(maps: &[HandlingMap], reached: &BTreeSet<String>, liveries: &[handling::Livery]) -> Vec<String> {
+    maps.iter()
+        .filter(|m| !reached.contains(&m.id) && !liveries.iter().any(|l| l.names(&m.target)))
+        .filter_map(|m| match &m.target {
+            handling::Target::Addon { addon, path } => Some(format!(
+                "handling: {}: {path} in {addon} isn't put in the game folder by a file.put op and isn't a livery's \
+                 archive; nothing applied",
+                m.id
+            )),
+            handling::Target::Stock(_) => None,
+        })
+        .collect()
 }
 
 pub fn build_menus(
@@ -7514,6 +7556,41 @@ mod tests {
             Some("0.95")
         );
         std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_handling_record_on_a_file_nothing_ships_is_a_warning() {
+        let map = |id: &str, target: handling::Target| HandlingMap {
+            id: id.into(),
+            target,
+            plan: handling::Plan::default(),
+            resources: None,
+            base: None,
+        };
+        let addon = |path: &str| handling::Target::Addon {
+            addon: "t.real".into(),
+            path: path.into(),
+        };
+        let maps = vec![
+            map("t.real/put", addon("cars/put.erp")),
+            map("t.real/worn", addon("cars/redbull.erp")),
+            map("t.real/stock", handling::Target::Stock("x/ferrari.erp".into())),
+            map("t.real/lost", addon("cars/teams/mclaren/wep/mclaren.erp")),
+        ];
+        let liveries = vec![handling::Livery {
+            id: "t.real/redbull".into(),
+            addon: "t.real".into(),
+            archive: "Cars/RedBull.erp".into(),
+            maps: Vec::new(),
+        }];
+        let reached = BTreeSet::from(["t.real/put".to_owned()]);
+        let warnings = unshipped(&maps, &reached, &liveries);
+        assert_eq!(warnings.len(), 1, "{warnings:?}");
+        assert!(
+            warnings[0]
+                .starts_with("handling: t.real/lost: cars/teams/mclaren/wep/mclaren.erp in t.real isn't put"),
+            "{warnings:?}"
+        );
     }
 
     #[test]
