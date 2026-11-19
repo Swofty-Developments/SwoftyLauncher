@@ -180,7 +180,7 @@ fn rewrites_per_slot_and_leaves_the_clean_slot_and_stock_containers_alone() {
     assert_eq!(m.container(GM).unwrap().source, Source::Injected);
     assert_eq!(m.container(STOCK).unwrap().source, Source::Game);
     assert!(p.manifest(5).is_some());
-    assert!(p.pins().get(&6).is_some());
+    assert!(p.pins().contains_key(&6));
     std::fs::remove_dir_all(&d).ok();
 }
 
