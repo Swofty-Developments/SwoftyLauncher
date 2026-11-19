@@ -68,6 +68,7 @@ impl ErpBuild<'_> {
                     .filter(|r| r.fragments.len() == 1)
                     .map(|r| r.fragments[0].data())
                     .transpose()?
+                    .filter(|d| swofty_formats::pkg::is_pkg(d))
                     .and_then(|d| Pkg::parse(&d).ok())
             }
             None => None,

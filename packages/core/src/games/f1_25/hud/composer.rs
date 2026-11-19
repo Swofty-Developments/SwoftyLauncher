@@ -129,13 +129,13 @@ pub fn compose_with(
 
     let template_bytes = read(dials::TEMPLATE)?;
     let spectator_bytes = read(dials::SPECTATOR)?;
-    let mut template = match base {
-        Some(edit) => Pkg::parse(&edit(&template_bytes)?)?,
-        None => Pkg::parse(&template_bytes)?,
-    };
-    let mut spectator = Pkg::parse(&spectator_bytes)?;
     let race_stock = Pkg::parse(&template_bytes)?;
     let spec_stock = Pkg::parse(&spectator_bytes)?;
+    let mut template = match base {
+        Some(edit) => Pkg::parse(&edit(&template_bytes)?)?,
+        None => race_stock.clone(),
+    };
+    let mut spectator = spec_stock.clone();
     let race_tags = StockTags::race(&race_stock.root);
 
     let mut spectator_used = false;
