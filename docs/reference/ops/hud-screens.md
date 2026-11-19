@@ -316,6 +316,11 @@ every other screen record's root and copy hidden, `<prefix>_pv` shown and each c
 and the stock cap instance's `bottom_cap` template node gets static hides of both roots, so the copy
 never draws outside the editor. `unit` elements and `tint` bindings are left out of the copy.
 
+The `.uipre` starts from the copy other addons' archive changes leave. A setter that copy already has
+with the same value (`mask` hidden by another addon's own copy) is kept once; one with another value
+stops the build and names both addons. Another addon's own tower on the same board stops it too:
+[when another addon claims the same part](/reference/ops/hud#when-another-addon-claims-the-same-part).
+
 ```jsonc
 "editor": {
   "rows": 5,
