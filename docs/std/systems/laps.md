@@ -170,7 +170,7 @@ json = { "v": 1, "module": "2026.11.10.1", "nonce": "...", "body_sha256": "...",
 
 ## Server-timed laps
 
-At each timing line of a lap (the start line, sector 1, sector 2 and the finish) the Time Trial plugin calls the lap host's `mark` with the game run's lap counter, the line and the game's lap clock there. The counter is 0 for the first lap timed and one more for each lap started, and is the lap file's `lap_index`. The core stamps the moment and writes one file per mark into `tt/ticks/` of the launcher's data folder (`swofty/tt/ticks/` when it can't write there):
+At each timing line of a lap (the start line, sector 1, sector 2 and the finish) the Time Trial plugin calls the lap host's `mark` with the lap's number, the line and the game's lap clock there. The plugin numbers each lap at its start line: 1 for the first lap and one more for each lap started. A discarded lap keeps its number, so the `lap_index` of the lap files has gaps after a discard. The number is the lap file's `lap_index`. The core stamps the moment and writes one file per mark into `tt/ticks/` of the launcher's data folder (`swofty/tt/ticks/` when it can't write there):
 
 ```json
 {"seq": 12, "lap": 3, "mark": "s1", "game_ms": 28411, "at_ms": 1795000123456}
@@ -182,11 +182,13 @@ While the game runs, the launcher sends each mark, in the order they were made, 
 {"lap": 3, "mark": "s1", "game_ms": 28411, "since_ms": 12, "attempt": 1, "prev": "<the receipt of lap 3's start>"}
 ```
 
-`prev` is the receipt of the same lap's previous mark, and is left out at `start`. A mark goes only once that receipt is in hand. The server answers with a receipt, `{"receipt": "tk1...."}`, which the launcher keeps as it is under `timetrial/ticks/` in its data folder. When a lap is collected into the outbox it takes the receipts of its `lap_index` with it, and its upload meta carries them in mark order:
+`prev` is the receipt of the same lap's previous line mark, and is left out at `start`. A mark goes only once that receipt is in hand. The server answers with a receipt, `{"receipt": "tk1...."}`, which the launcher keeps as it is under `timetrial/ticks/` in its data folder. When a lap is collected into the outbox it takes the receipts of its `lap_index` with it, and its upload meta carries them in mark order:
 
 ```json
 "timing": {"lap": 3, "receipts": ["tk1....", "tk1....", "tk1....", "tk1...."]}
 ```
+
+A lap's pauses are marked too, up to four: `p1` as the game pauses, chained to the lap's start, and `r1` as it resumes, chained to `p1`, then `p2` and `r2`, up to `p4` and `r4`. `game_ms` is the game's lap clock, which stands still while it is paused. The server leaves the pause out of the lap's real time. A pause mark the server refuses, or one with no receipt of its chain, is dropped alone: that pause stays in the lap's time and the lap's other receipts and timing stay. A core before 1.10.0 refuses the pause marks.
 
 | Answer | The launcher |
 |---|---|

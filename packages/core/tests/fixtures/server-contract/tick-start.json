@@ -1,5 +1,5 @@
 {
-  "about": "The start timing mark of lap 0, sent as it is made, chained to the receipt of the lap's previous mark.",
+  "about": "The start timing mark of lap 1, sent as it is made, chained to the receipt of the lap's previous mark.",
   "answer": {
     "body": {
       "receipt": "tk1.c3RhcnQ.bWFj"
@@ -11,7 +11,7 @@
       "json": {
         "attempt": 1,
         "game_ms": 0,
-        "lap": 0,
+        "lap": 1,
         "mark": "start",
         "since_ms": 12
       }

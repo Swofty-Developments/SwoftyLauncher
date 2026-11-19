@@ -1,0 +1,30 @@
+{
+  "about": "The r1 mark of lap 1, as the game resumes, chained to the receipt of the p1 mark.",
+  "answer": {
+    "body": {
+      "receipt": "tk1.cjE.bWFj"
+    },
+    "status": 200
+  },
+  "request": {
+    "body": {
+      "json": {
+        "attempt": 1,
+        "game_ms": 38200,
+        "lap": 1,
+        "mark": "r1",
+        "prev": "tk1.cDE.bWFj",
+        "since_ms": 10
+      }
+    },
+    "headers": {
+      "accept": "*/*",
+      "accept-encoding": "gzip",
+      "authorization": "Bearer <token>",
+      "content-type": "application/json",
+      "user-agent": "swofty-launcher"
+    },
+    "method": "POST",
+    "path": "/v1/tt/sessions/5e5510b0c0de5e5510b0c0de5e5510b0/ticks"
+  }
+}

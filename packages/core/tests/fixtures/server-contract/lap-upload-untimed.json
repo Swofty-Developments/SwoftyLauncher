@@ -1,9 +1,10 @@
 {
-  "about": "A lap from a session that placed no integrity module, driven with no timing marks sent: no timing.",
+  "about": "A lap from a session that placed no integrity module, driven with no timing marks sent: no timing. It is lap 3: the plugin discarded lap 2, which keeps its number, so lap numbers have gaps.",
   "answer": {
     "body": {
-      "id": "l1",
-      "rank": 3,
+      "best": false,
+      "id": "7d0c2a91be55f013",
+      "rank": 5,
       "status": "accepted",
       "total": 40
     },
@@ -55,9 +56,10 @@
                 "track": "bahrain",
                 "weather": "dry"
               },
+              "core": "1.10.0",
               "format": 1,
               "lap": {
-                "lap_index": 1,
+                "lap_index": 3,
                 "sectors_ms": [
                   28411,
                   30609,

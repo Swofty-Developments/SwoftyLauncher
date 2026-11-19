@@ -1,8 +1,9 @@
 {
-  "about": "A sealed lap's upload: the module came from the CDN, and the lap carries the receipts of its four timing marks.",
+  "about": "A sealed lap's upload: the module came from the CDN, and lap 1 carries the receipts of its four timing marks.",
   "answer": {
     "body": {
-      "id": "l1",
+      "best": true,
+      "id": "2949b7d7eaf78422",
       "rank": 3,
       "status": "accepted",
       "total": 40
@@ -42,7 +43,7 @@
             "os": "<os>",
             "session": "5e5510b0c0de5e5510b0c0de5e5510b0",
             "timing": {
-              "lap": 0,
+              "lap": 1,
               "receipts": [
                 "tk1.c3RhcnQ.bWFj",
                 "tk1.czE.bWFj",
@@ -63,9 +64,10 @@
                 "track": "bahrain",
                 "weather": "dry"
               },
+              "core": "1.10.0",
               "format": 1,
               "lap": {
-                "lap_index": 0,
+                "lap_index": 1,
                 "sectors_ms": [
                   28411,
                   30609,
