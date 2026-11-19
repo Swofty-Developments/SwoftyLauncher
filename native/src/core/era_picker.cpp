@@ -1667,7 +1667,23 @@ void driver_career_load(uintptr_t ctx)
         swofty::log("[era] Driver Career load: %s", pick.line.c_str());
 }
 
-std::string grand_prix_load(uintptr_t ctx)
+// The list a session of another game mode loads, and in `what` that mode's name and "session".
+std::string other_mode_list(uintptr_t ctx, std::string &what)
+{
+    uintptr_t holder = 0, setup = 0, list = 0, name = 0;
+    if (!mem::read(ctx + MODE_SETUP, holder) || !holder)
+        return {};
+    std::string mode;
+    if (mem::read(holder + MODE_NAME, name) && name)
+        mem::c_string(name, mode, 64);
+    what = (mode.empty() ? std::string("unknown") : mode) + " session";
+    if (!mem::read(holder + SETUP_MODES, setup) || !setup || !mem::read(setup + SELECTED_LIST, list) || !list)
+        return {};
+    const char *n = name_of(reinterpret_cast<void *>(list), LIST_NAME);
+    return n ? std::string(n) : std::string();
+}
+
+std::string grand_prix_load(uintptr_t ctx, std::string &what)
 {
     static uint32_t logged;
     swofty_core::apply::moments::grand_prix_track_check();
@@ -1677,7 +1693,7 @@ std::string grand_prix_load(uintptr_t ctx)
         return {};
     }
     if (mode != "grand_prix")
-        return {};
+        return runtime::tt_loaded::follows_list(mode) ? other_mode_list(ctx, what) : std::string();
     std::string track_why = logic::track_missing(swofty_core::apply::tracks::base(), track);
     uintptr_t holder = 0, setup = 0, entrant_setup = 0, list = 0, begin = 0, end = 0, gsm = 0, gsm_holder = 0, gsm_name = 0;
     if (!mem::read(ctx + MODE_SETUP, holder) || !holder || !mem::read(holder + SETUP_MODES, setup) || !setup ||
@@ -1785,7 +1801,7 @@ namespace {
 struct LoadSeen {
     bool time_trial = false;
     uintptr_t ctx = 0;
-    std::string setup_mode, list, virtual_label, pressed;
+    std::string setup_mode, list, virtual_label, pressed, what = "Grand Prix";
 };
 
 std::mutex unlisted_lock;
@@ -1797,8 +1813,9 @@ void set_unlisted(const std::string &list)
     unlisted_list = list;
 }
 
-// Makes the box of the loaded list the active content when it is not, in a Time Trial and in a Grand Prix
-// (follow_grand_prix: a Continue presses no box): tt_loaded_logic.hpp. Runs without held_lock,
+// Makes the box of the loaded list the active content when it is not, in a Time Trial, in a Grand Prix
+// (follow_grand_prix: a Continue presses no box) and in another mode's session (a LAN session's box comes from the
+// host): tt_loaded_logic.hpp. Runs without held_lock,
 // like a press, before the session load's own appliers read the content.
 void follow_grand_prix(const LoadSeen &seen)
 {
@@ -1814,7 +1831,7 @@ void follow_grand_prix(const LoadSeen &seen)
     tl::Loaded loaded = tl::loaded_box(lists, seen.list, {}, logic::HOST, VIRTUAL_HOST, seen.virtual_label);
     auto &scheduler = swofty_core::apply::scheduler();
     std::string package = loaded.kind == tl::Kind::box ? scheduler.find_package(loaded.box) : std::string();
-    tl::Follow f = tl::follow_grand_prix(loaded, package, scheduler.active());
+    tl::Follow f = tl::follow_grand_prix(loaded, package, scheduler.active(), seen.what);
     if (f.action != tl::Action::follow)
         return;
     swofty::log("%s", f.line.c_str());
@@ -1860,7 +1877,7 @@ void session_load_held(LoadSeen &seen)
     if (!time_trial(reinterpret_cast<void *>(ctx))) {
         leave_front_end(ctx);
         seen.ctx = ctx;
-        seen.list = grand_prix_load(ctx);
+        seen.list = grand_prix_load(ctx, seen.what);
         seen.virtual_label = filled.label;
         return;
     }

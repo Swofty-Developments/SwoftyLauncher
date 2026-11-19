@@ -20,8 +20,10 @@
 // when it is not the team the entrant selection holds (team_pick).
 //
 // A Grand Prix > Continue presses no box either: the saved weekend's list is the one the session loads, and a
-// registered box's list makes its package the active content when it is not (follow_grand_prix). A stock, unlisted
-// or unread list leaves the active content as it is.
+// registered box's list makes its package the active content when it is not (follow_grand_prix). A session of
+// another game mode that is not a career or a Time Trial follows its list the same way (follows_list): a LAN or
+// online custom session (online_custom, mode unknown) takes its box from the host's Car Category or the host's
+// scenario, never from a press. A stock, unlisted or unread list leaves the active content as it is.
 
 namespace runtime::tt_loaded {
 
@@ -109,15 +111,24 @@ inline Follow follow(const Loaded &loaded, std::string_view package, std::string
                 "; box pressed was " + was + ", active was " + (active.empty() ? std::string("nothing") : std::string(active)) + ")"};
 }
 
-// `package` is the content package of loaded.box ("" for none) and `active` the scheduler's active label.
-inline Follow follow_grand_prix(const Loaded &loaded, std::string_view package, std::string_view active)
+// Whether a session load of `mode` (a facts mode) follows its list with follow_grand_prix: every mode but a
+// Grand Prix (its own load reads the list), a career (its list is the career's) and a Time Trial (follow).
+inline bool follows_list(std::string_view mode)
+{
+    return mode != "grand_prix" && mode != "driver_career" && mode != "my_team" && mode != "time_trial";
+}
+
+// `package` is the content package of loaded.box ("" for none), `active` the scheduler's active label and
+// `session` what loads ("Grand Prix", or the game mode's name and "session").
+inline Follow follow_grand_prix(const Loaded &loaded, std::string_view package, std::string_view active,
+                                std::string_view session = "Grand Prix")
 {
     if (loaded.kind != Kind::box || package.empty() || active.rfind(CAREER, 0) == 0 ||
         active == active_label(loaded.box, package))
         return {};
     return {Action::follow, loaded.box,
-            "[apply] Grand Prix content follows the loaded list: " + std::string(package) + " (box " + loaded.box +
-                "; active was " + (active.empty() ? std::string("nothing") : std::string(active)) + ")"};
+            "[apply] " + std::string(session) + " content follows the loaded list: " + std::string(package) + " (box " +
+                loaded.box + "; active was " + (active.empty() ? std::string("nothing") : std::string(active)) + ")"};
 }
 
 // A team reference is a stat id dword: the id in the high word, its kind in the low byte.
