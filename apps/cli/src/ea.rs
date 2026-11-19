@@ -438,8 +438,12 @@ pub fn start(store: &Store, game: &Path, args: &[String], session: &Path, before
         }
     };
     say("ea app", &format!("F1 25 started (pid {pid})"));
+    let (exit, unopened) = ea_diag::GameExit::open(pid);
+    if let Some(line) = unopened {
+        say("ea app", &line);
+    }
     restage(store, game);
-    Ok(Started { pid, handoff })
+    Ok(Started { handoff, exit })
 }
 
 /// Before the launch link: an antivirus that removes offline play's file
@@ -723,18 +727,31 @@ fn command_line(_: u32) -> Option<String> {
 }
 
 pub struct Started {
-    pid: u32,
     handoff: Option<Child>,
+    exit: ea_diag::GameExit,
 }
 
 /// Until every game of this copy started since the launch has closed. Only
 /// the game the EA app started for the session, and games that are this
-/// copy's, are closed on a stop. The EA app owns the game's process, so its
-/// exit code is not the session's to read.
-pub fn wait(game: &Path, dir: &Path, before: &[u32], started: Started, mut tick: impl FnMut()) {
+/// copy's, are closed on a stop. The exit code is that game's, read through
+/// the handle `start` opened on it: None when the handle did not open, or
+/// when the game was still open as the wait gave up.
+pub fn wait(
+    game: &Path,
+    dir: &Path,
+    before: &[u32],
+    started: Started,
+    mut tick: impl FnMut(),
+) -> Option<u32> {
+    let Started { handoff, mut exit } = started;
     let mut asked = false;
     loop {
-        let running: Vec<GameProcess> = game_processes()
+        let all = game_processes();
+        let pids: Vec<u32> = all.iter().map(|g| g.pid).collect();
+        if let Some(line) = exit.observe(&pids) {
+            say("ea app", &line);
+        }
+        let running: Vec<GameProcess> = all
             .into_iter()
             .filter(|g| !before.contains(&g.pid) && !g.elsewhere(game))
             .collect();
@@ -756,15 +773,16 @@ pub fn wait(game: &Path, dir: &Path, before: &[u32], started: Started, mut tick:
                 "info",
                 "asked to stop: closing F1 25, then rolling its game files back",
             );
-            for g in running.iter().filter(|g| g.pid == started.pid || g.is_in(game)) {
+            for g in running.iter().filter(|g| g.pid == exit.pid() || g.is_in(game)) {
                 stop_process(g.pid).ok();
             }
         }
         std::thread::sleep(Duration::from_millis(200));
     }
-    if let Some(mut c) = started.handoff {
+    if let Some(mut c) = handoff {
         std::thread::spawn(move || c.wait().ok());
     }
+    exit.code()
 }
 
 #[cfg(test)]

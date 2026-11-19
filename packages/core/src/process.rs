@@ -591,10 +591,13 @@ pub fn elevation(_: u32) -> Option<bool> {
 
 #[cfg(windows)]
 impl ExitProbe {
-    pub fn open(pid: u32) -> Option<Self> {
+    pub fn open(pid: u32) -> std::io::Result<Self> {
         // SAFETY: the handle is checked before it is kept; Drop closes it once.
         let handle = unsafe { token::OpenProcess(token::PROCESS_QUERY_LIMITED_INFORMATION, 0, pid) };
-        (!handle.is_null()).then_some(Self(handle))
+        if handle.is_null() {
+            return Err(std::io::Error::last_os_error());
+        }
+        Ok(Self(handle))
     }
 
     pub fn exit_code(&self) -> Option<u32> {
@@ -615,8 +618,11 @@ impl Drop for ExitProbe {
 
 #[cfg(not(windows))]
 impl ExitProbe {
-    pub fn open(_: u32) -> Option<Self> {
-        None
+    pub fn open(_: u32) -> std::io::Result<Self> {
+        Err(std::io::Error::new(
+            std::io::ErrorKind::Unsupported,
+            "only Windows reads the exit code of a game the session did not start",
+        ))
     }
 
     pub fn exit_code(&self) -> Option<u32> {

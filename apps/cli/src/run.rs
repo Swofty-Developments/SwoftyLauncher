@@ -1152,8 +1152,8 @@ fn play(
     let via_ea = ea.is_some();
     let (code, unread) = match ea {
         Some(started) => {
-            crate::ea::wait(game, &dir, &copies_before, started, tick);
-            (None, EA_UNREAD.to_owned())
+            let code = crate::ea::wait(game, &dir, &copies_before, started, tick);
+            (code.map(|c| c as i32), EA_UNREAD.to_owned())
         }
         None => {
             let status = wait_game(&mut spawn(target, "game_stdout.log")?, tick)?;
@@ -1231,7 +1231,7 @@ fn note_known_problem(store: &Store, game: &Path, dir: &Path, crashed: bool) {
 }
 
 const EA_UNREAD: &str =
-    "the EA app started F1 25, so the session has no handle on the game to read its exit code";
+    "the session could not read the exit code of the F1 25 the EA app started; the [ea app] lines say why";
 
 /// Why an exit status carries no code.
 fn why_no_code(status: ExitStatus) -> String {

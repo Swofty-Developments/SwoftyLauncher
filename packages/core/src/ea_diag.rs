@@ -54,6 +54,75 @@ pub fn exit_text(code: Option<u32>) -> String {
     }
 }
 
+/// The session log line for the game the EA app started, once it has exited.
+pub fn exited_line(pid: u32, code: Option<u32>) -> String {
+    match code {
+        Some(c) => {
+            let name = crate::crash::fatal_name(c)
+                .map(|n| format!(", {n}"))
+                .unwrap_or_default();
+            format!("F1 25 exited (pid {pid}, exit code {c:#010x}{name})")
+        }
+        None => format!("F1 25 exited (pid {pid}, exit code unreadable)"),
+    }
+}
+
+/// The F1 25 the EA app started for a session. The handle opened when the
+/// game starts keeps its exit code readable after it exits, though the EA
+/// app owns the process.
+pub struct GameExit {
+    pid: u32,
+    probe: Option<crate::process::ExitProbe>,
+    ended: Option<Option<u32>>,
+}
+
+impl GameExit {
+    /// The game's exit watch, and the line to log when its handle could not
+    /// be opened; the session then goes on without the exit code.
+    pub fn open(pid: u32) -> (Self, Option<String>) {
+        Self::with(pid, crate::process::ExitProbe::open(pid))
+    }
+
+    fn with(pid: u32, probe: std::io::Result<crate::process::ExitProbe>) -> (Self, Option<String>) {
+        let (probe, line) = match probe {
+            Ok(p) => (Some(p), None),
+            Err(e) => (
+                None,
+                Some(format!(
+                    "could not open F1 25 (pid {pid}) to read its exit code ({e}); the session goes on without it"
+                )),
+            ),
+        };
+        (
+            Self {
+                pid,
+                probe,
+                ended: None,
+            },
+            line,
+        )
+    }
+
+    pub fn pid(&self) -> u32 {
+        self.pid
+    }
+
+    /// The exit line, once, when the game's pid is no longer in `running`.
+    pub fn observe(&mut self, running: &[u32]) -> Option<String> {
+        if self.ended.is_some() || running.contains(&self.pid) {
+            return None;
+        }
+        let code = self.probe.as_ref().and_then(|p| p.exit_code());
+        self.ended = Some(code);
+        Some(exited_line(self.pid, code))
+    }
+
+    /// The exit code, once the game has exited and its handle gave one.
+    pub fn code(&self) -> Option<u32> {
+        self.ended.flatten()
+    }
+}
+
 struct Seen {
     name: String,
     appeared: Instant,
@@ -92,7 +161,7 @@ impl Tracker {
                 Seen {
                     name: name.clone(),
                     appeared: now,
-                    probe: crate::process::ExitProbe::open(*pid),
+                    probe: crate::process::ExitProbe::open(*pid).ok(),
                 },
             );
         }
@@ -344,6 +413,89 @@ Fault bucket, type 5\nP1: EADesktop.exe\n";
 840:    21\t[2026-11-01T01:57:04.895Z]\tPID: 13588\tTID:  5128\tINFO    \t(eax::services::telemetry::TelemetryManagerV2::processEvent)\tTelemetry Event [prcs.create.erro]
 ";
     const EXE: &str = "EAAntiCheat.GameServiceLauncher.exe";
+
+    #[test]
+    fn the_exit_line_gives_the_code_in_hex_and_names_a_crash() {
+        assert_eq!(
+            exited_line(4242, Some(0)),
+            "F1 25 exited (pid 4242, exit code 0x00000000)"
+        );
+        assert_eq!(
+            exited_line(4242, Some(0xc000_0005)),
+            "F1 25 exited (pid 4242, exit code 0xc0000005, access violation)"
+        );
+        assert_eq!(
+            exited_line(4242, Some(0xffff_ffff)),
+            "F1 25 exited (pid 4242, exit code 0xffffffff)"
+        );
+        assert_eq!(
+            exited_line(4242, None),
+            "F1 25 exited (pid 4242, exit code unreadable)"
+        );
+    }
+
+    #[test]
+    fn a_game_whose_handle_did_not_open_logs_once_and_exits_without_a_code() {
+        let (mut exit, line) =
+            GameExit::with(7, Err(std::io::Error::other("Access is denied. (os error 5)")));
+        assert_eq!(
+            line.as_deref(),
+            Some(
+                "could not open F1 25 (pid 7) to read its exit code (Access is denied. (os error 5)); the session \
+                 goes on without it"
+            )
+        );
+        assert_eq!(exit.observe(&[3, 7]), None);
+        assert_eq!(exit.code(), None);
+        assert_eq!(
+            exit.observe(&[3]).as_deref(),
+            Some("F1 25 exited (pid 7, exit code unreadable)")
+        );
+        assert_eq!(exit.observe(&[]), None);
+        assert_eq!(exit.code(), None);
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn outside_windows_the_handle_does_not_open_and_says_why() {
+        let (_, line) = GameExit::open(std::process::id());
+        assert!(
+            line.as_deref()
+                .is_some_and(|l| l.contains("only Windows reads the exit code")),
+            "{line:?}"
+        );
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn reads_the_exit_code_of_a_process_the_session_did_not_wait_for() {
+        let mut child = std::process::Command::new("cmd")
+            .args(["/C", "exit 3"])
+            .spawn()
+            .unwrap();
+        let pid = child.id();
+        let (mut exit, line) = GameExit::open(pid);
+        assert_eq!(line, None);
+        child.wait().unwrap();
+        drop(child);
+        assert_eq!(exit.observe(&[pid]), None);
+        assert_eq!(
+            exit.observe(&[]).as_deref(),
+            Some(format!("F1 25 exited (pid {pid}, exit code 0x00000003)").as_str())
+        );
+        assert_eq!(exit.code(), Some(3));
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn a_pid_that_is_not_running_does_not_open() {
+        let (mut exit, line) = GameExit::open(0xffff_fffc);
+        assert!(line.is_some_and(|l| l.contains("os error")));
+        assert_eq!(
+            exit.observe(&[]).as_deref(),
+            Some("F1 25 exited (pid 4294967292, exit code unreadable)")
+        );
+    }
 
     #[test]
     fn finds_the_proxy_failing_to_start_the_stub() {
