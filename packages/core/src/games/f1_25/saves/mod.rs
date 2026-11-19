@@ -2,6 +2,7 @@
 //! loading, and addons that affected them.
 
 pub mod backup;
+pub mod bag;
 pub mod launcher;
 pub mod stall;
 pub mod vault;

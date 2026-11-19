@@ -1,3 +1,4 @@
+mod bag;
 mod browse;
 mod manage;
 mod session;
@@ -61,6 +62,13 @@ pub enum SavesCommand {
     Careers {
         #[arg(long, help = SOURCE_HELP)]
         source: Option<String>,
+    },
+    #[command(about = "Print the tree of a decoded root container (a .bag file from the plain save store)")]
+    DecodeBag {
+        #[arg(help = "The .bag file")]
+        file: std::path::PathBuf,
+        #[arg(long, help = "Print the whole tree as JSON")]
+        json: bool,
     },
     #[command(about = "Keep a snapshot: retention never removes it")]
     Pin {
@@ -169,6 +177,7 @@ pub fn command(store: &Store, cmd: SavesCommand) -> Result<ExitCode> {
         SavesCommand::Careers { source } => careers(store, source.as_deref())?,
         SavesCommand::Pin { snapshot, source } => pin_snapshot(store, &snapshot, source.as_deref(), true)?,
         SavesCommand::Unpin { snapshot, source } => pin_snapshot(store, &snapshot, source.as_deref(), false)?,
+        SavesCommand::DecodeBag { file, json } => bag::decode_bag(&file, json)?,
         SavesCommand::Backup => backup(store)?,
         SavesCommand::Restore { snapshot, source } => restore_snapshot(store, &snapshot, source.as_deref())?,
         SavesCommand::Cap { mb: None } => println!(
