@@ -612,7 +612,7 @@ class RepoData(unittest.TestCase):
 
     def test_kb_set_is_the_gated_bindings(self):
         doc = bindgen.build_set(self.overlays[self.kb_name], self.bindings, True)
-        self.assertEqual(doc['bindings'], self.bindings)
+        self.assertEqual(doc['bindings'], [{k: v for k, v in b.items() if k != 'made_on'} for b in self.bindings])
         self.assertFalse(doc['build']['packed'])
 
     def test_other_sets_carry_no_kb_addresses(self):
@@ -621,9 +621,12 @@ class RepoData(unittest.TestCase):
                 continue
             doc = bindgen.build_set(ov, self.bindings, False)
             hinted = ov.get('hints', {})
+            made = {b['id']: b['made_on'] for b in self.bindings if 'made_on' in b}
             for e in doc['bindings']:
                 self.assertNotIn('rva', e)
-                self.assertEqual('match' in e, 'match' in hinted.get(e.get('alias', e['id']), {}), e['id'])
+                own = e['id'] in made and ov['build']['sha256'].startswith(made[e['id']]['build'])
+                hint = 'match' in hinted.get(e.get('alias', e['id']), {})
+                self.assertEqual('match' in e, hint or own, e['id'])
 
     def test_f2_revamp_bindings(self):
         by_id = {b['id']: b for b in self.bindings}
