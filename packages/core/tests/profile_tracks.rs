@@ -183,3 +183,49 @@ fn copy_slot_alone_activates_like_the_full_pair() {
         .unwrap();
     assert!(ring.modded && ring.playable);
 }
+
+#[test]
+fn a_track_nationality_the_game_has_no_row_for_becomes_default() {
+    let Some(dir) = game_dir() else {
+        eprintln!("F1_25_DIR is not set; skipping");
+        return;
+    };
+    let stock = std::fs::read(dir.join(GVDB)).unwrap();
+    let reg = Registry::builtin();
+    let lists = std::collections::BTreeSet::new();
+    let build = |nationality: &str| {
+        let json = serde_json::json!({
+            "track_code": "nycsgp",
+            "track_name": "Manhattan Street Circuit",
+            "erp": "nycsgp.erp",
+            "activation": {
+                "copy_from_track": "suzuka",
+                "copy_slot": "suzuka",
+                "track_overrides": [{ "path": "nationality", "value": nationality }],
+            },
+        });
+        let pkg = TrackPackage::parse(&serde_json::to_vec(&json).unwrap()).unwrap();
+        let mut db = Gvdb::parse(&stock).unwrap();
+        let report = activate(&mut db, &pkg, &reg, Some(&TrackHost::Natural), &lists).unwrap();
+        let row = (0..)
+            .map(|i| format!("tracks.Track_{i}"))
+            .take_while(|r| db.get(&format!("{r}._metadata_")).is_some())
+            .find(|r| db.get_text(&format!("{r}._metadata_")).as_deref() == Some("nycsgp"))
+            .unwrap();
+        (db.get_text(&format!("{row}.nationality")), report.warnings)
+    };
+    let (usa, warnings) = build("usa");
+    assert_eq!(usa.as_deref(), Some("usa"));
+    assert!(
+        warnings.iter().all(|w| !w.contains("nationality")),
+        "{warnings:?}"
+    );
+    let (wrong, warnings) = build("united_states");
+    assert_eq!(wrong.as_deref(), Some("default"));
+    assert!(
+        warnings
+            .iter()
+            .any(|w| w == "nationality united_states is not an entrants.nationality row, default used"),
+        "{warnings:?}"
+    );
+}

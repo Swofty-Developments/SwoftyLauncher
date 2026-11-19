@@ -642,11 +642,39 @@ pub fn activate_with(
             db.set_text(k, &o.value, &o.path)?;
         }
     }
+    if let Some(warning) = settle_nationality(&mut db, track_row)? {
+        report.warnings.push(warning);
+    }
     report.note(format!(
         "database: {} record(s) added, {} changed",
         db.added, db.changed
     ));
     Ok(report)
+}
+
+const NATIONALITIES: &str = "entrants.nationality.nationality";
+const DEFAULT_NATIONALITY: &str = "default";
+
+/// The game reads a track row's nationality label as an entrants.nationality row while it loads the track
+/// database at boot, with no check for a missing row: a label that names none (Manhattan Street Circuit's
+/// `united_states`, where the game says `usa`) crashes it at F1_25.exe+0x249beeb on Steam 1.0.145. Such a label
+/// becomes `default`, as a driver's or a team's does in the core, and the warning says so.
+fn settle_nationality(db: &mut Db, track_row: u64) -> Result<Option<String>> {
+    let k = field(track_row, "nationality");
+    let Some(label) = db.text(k) else {
+        return Ok(None);
+    };
+    let nations = Table {
+        base: key(&format!("{NATIONALITIES}_")),
+        count: Some(key("entrants.nationality._nationality_instancecount_")),
+    };
+    if nations.len(db) == 0 || nations.row_of(db, &label, "_metadata_").is_some() {
+        return Ok(None);
+    }
+    db.set_text(k, DEFAULT_NATIONALITY, "nationality")?;
+    Ok(Some(format!(
+        "nationality {label} is not an entrants.nationality row, {DEFAULT_NATIONALITY} used"
+    )))
 }
 
 fn dataset_matches(o: &Override, label: &str) -> bool {
@@ -715,5 +743,47 @@ mod tests {
         assert_eq!(err.to_string(), "Slot[_metadata_=wet]: 2 rows match");
         assert!(expand(&db, r, "Weather.Slot[_metadata_=dry]").is_err());
         assert_eq!(expand(&db, r, "Weather.Slot_0.rain").unwrap(), want);
+    }
+
+    #[test]
+    fn a_track_nationality_with_no_nationality_row_becomes_default() {
+        let mut gvdb = Gvdb {
+            records: vec![Record::new(
+                "entrants.nationality._nationality_instancecount_",
+                0,
+                "2",
+            )],
+        };
+        for (i, label) in ["default", "usa"].into_iter().enumerate() {
+            gvdb.records.push(Record::new(
+                &format!("entrants.nationality.nationality_{i}._metadata_"),
+                0,
+                label,
+            ));
+        }
+        for (i, nation) in ["usa", "united_states"].into_iter().enumerate() {
+            gvdb.records
+                .push(Record::new(&format!("tracks.Track_{i}.nationality"), 0, nation));
+        }
+        let mut db = Db::new(&mut gvdb);
+        let (kept, wrong) = (key("tracks.Track_0"), key("tracks.Track_1"));
+        assert_eq!(settle_nationality(&mut db, kept).unwrap(), None);
+        assert_eq!(db.text(field(kept, "nationality")).as_deref(), Some("usa"));
+        assert_eq!(
+            settle_nationality(&mut db, wrong).unwrap().as_deref(),
+            Some("nationality united_states is not an entrants.nationality row, default used")
+        );
+        assert_eq!(db.text(field(wrong, "nationality")).as_deref(), Some("default"));
+    }
+
+    #[test]
+    fn a_database_without_nationality_rows_keeps_the_track_nationality() {
+        let mut gvdb = Gvdb {
+            records: vec![Record::new("tracks.Track_0.nationality", 0, "united_states")],
+        };
+        let mut db = Db::new(&mut gvdb);
+        let r = key("tracks.Track_0");
+        assert_eq!(settle_nationality(&mut db, r).unwrap(), None);
+        assert_eq!(db.text(field(r, "nationality")).as_deref(), Some("united_states"));
     }
 }

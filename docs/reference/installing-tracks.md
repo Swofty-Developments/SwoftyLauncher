@@ -90,7 +90,13 @@ The build also fills gaps in the archive:
 
 ## The database
 
-- **`tracks.Track_<n>`**: for a new code, `copy_slot` clones the slot track's row with a new `statId`. If the code already has a row (`bahrain24`), it keeps it. Your `track_overrides` apply here. The clone carries `ai_track_difficulties` for the game's own AI folders. For each addon's own AI folder the row lacks, the build copies the row's `f1_2025_vehicle_package` values:
+- **`tracks.Track_<n>`**: for a new code, `copy_slot` clones the slot track's row with a new `statId`. If the code already has a row (`bahrain24`), it keeps it. Your `track_overrides` apply here. The row's `nationality` must name an `entrants.nationality` row (`usa`, `britain`, `uae`, `japan`...): F1 25 reads that row at boot without checking that it exists, so a label such as `united_states` crashes the game before the menu. The build sets such a label to `default` and warns:
+
+  ```text
+  nycsgp: nationality united_states is not an entrants.nationality row, default used
+  ```
+
+  The clone carries `ai_track_difficulties` for the game's own AI folders. For each addon's own AI folder the row lacks, the build copies the row's `f1_2025_vehicle_package` values:
 
   ```text
   hockenheim: AI difficulty for sw_2012_vehicle_package stands in with the track's f1_2025_vehicle_package
