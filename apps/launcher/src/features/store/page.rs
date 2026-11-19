@@ -16,18 +16,20 @@ use crate::ui::scale::px;
 use crate::ui::theme::Palette;
 use crate::ui::tokens::space::GUTTER;
 
-/// The share of the page's height the tiers and early access row starts from; it grows when the tiers need more.
-const TOP_SHARE: f32 = 0.55;
 const ROW_GAP: f32 = 16.;
-const TIERS_MAX: f32 = 860.;
+const TIERS_MAX: f32 = 1040.;
+const ACCOUNT: f32 = 230.;
+const CHIP_ROW: f32 = 20.;
+/// How far below the top the tier names sit, under their chip row; the donation column starts level with them.
+const NAME_TOP: f32 = 26.;
 
-fn perk_row(text: &'static str, accent: Hsla, p: Palette) -> Div {
+fn perk_row(icon: IconName, text: &'static str, accent: Hsla, p: Palette) -> Div {
     h_flex()
         .items_start()
-        .gap(px(8.))
+        .gap(px(10.))
         .child(
-            Icon::new(IconName::Check)
-                .size(px(14.))
+            Icon::new(icon)
+                .size(px(16.))
                 .mt(px(2.))
                 .flex_shrink_0()
                 .text_color(accent),
@@ -35,8 +37,8 @@ fn perk_row(text: &'static str, accent: Hsla, p: Palette) -> Div {
         .child(
             div()
                 .min_w_0()
-                .text_size(px(13.))
-                .line_height(px(18.))
+                .text_size(px(14.))
+                .line_height(px(20.))
                 .text_color(p.text)
                 .child(text),
         )
@@ -68,7 +70,6 @@ impl Shell {
             .flatten();
         let tiers = self.store_tiers(amount, p, cx);
         let top = h_flex()
-            .flex_basis(relative(TOP_SHARE))
             .flex_shrink_0()
             .items_stretch()
             .gap(px(ROW_GAP))
@@ -85,20 +86,35 @@ impl Shell {
                     .pb(px(16.))
                     .gap(px(ROW_GAP))
                     .child(top)
-                    .child(self.store_supporters(p, cx)),
+                    .child(self.store_supporters(p)),
             )
             .children(claim)
             .children(listing)
             .into_any_element()
     }
 
-    /// The signed-in supporter's tier and time left, or what to do to subscribe, then the page's actions.
-    fn store_status(&self, p: Palette, cx: &mut Context<Self>) -> Div {
-        let refresh = Button::new("store-refresh")
-            .ghost()
-            .small()
-            .icon(IconName::RefreshCw)
-            .on_click(cx.listener(|this, _, _, cx| StorePage::reload(this, cx)));
+    /// The quiet column left of the tiers: a one-time gift, claiming an earlier one, and the supporter's own status.
+    fn store_account(&self, amount: Entity<InputState>, p: Palette, cx: &mut Context<Self>) -> Div {
+        let busy = self.store_page.busy;
+        let typed = amount.read(cx).value().to_string();
+        let donate = div()
+            .id("store-onetime")
+            .flex()
+            .flex_shrink_0()
+            .items_center()
+            .h(px(28.))
+            .px(px(12.))
+            .rounded(px(6.))
+            .bg(rgb(YELLOW))
+            .text_color(rgb(0x1a1400))
+            .text_size(px(12.))
+            .font_weight(FontWeight::BOLD)
+            .when(busy, |d| d.opacity(0.6))
+            .when(!busy, |d| d.cursor_pointer().hover(|d| d.opacity(0.9)))
+            .child(tr("Donate"))
+            .on_click(cx.listener(move |this, _, _, cx| {
+                StorePage::checkout(this, Kind::OneTime, Some(typed.clone()), cx)
+            }));
         let claim = Button::new("store-claim-open")
             .ghost()
             .small()
@@ -108,51 +124,95 @@ impl Shell {
                 this.store_page.notice = None;
                 cx.notify();
             }));
-        let status: Option<AnyElement> = match &self.store_page.me {
+        let active = matches!(&self.store_page.me, Load::Ready(me) if me.active);
+        let status = match &self.store_page.me {
             _ if self.account.session.is_none() => Some(
                 muted(tr("Sign in with Discord to subscribe."), p)
                     .text_size(px(12.))
-                    .into_any_element(),
+                    .text_center(),
             ),
             Load::Ready(me) if me.active => {
                 let plus = me.tier.as_deref() == Some("supporter_plus");
                 let when = me.expires_at.as_ref().map(format_date).unwrap_or_default();
                 Some(
-                    h_flex()
-                        .flex_shrink_0()
-                        .gap(px(8.))
+                    v_flex()
+                        .items_center()
+                        .gap(px(4.))
                         .child(badge("store-me-glint", plus))
                         .child(
                             div()
+                                .text_center()
                                 .text_size(px(12.))
-                                .font_weight(FontWeight::SEMIBOLD)
+                                .text_color(p.text_muted)
                                 .child(trf!(
                                     "{months} months left (expires {date})",
                                     months = me.months_left.unwrap_or(0),
                                     date = when
                                 )),
-                        )
-                        .into_any_element(),
+                        ),
                 )
             }
             _ => None,
         };
+        let edit = active.then(|| {
+            Button::new("store-listing-open")
+                .outline()
+                .small()
+                .icon(IconName::Pencil)
+                .label(tr("Edit your listing"))
+                .on_click(cx.listener(|this, _, _, cx| {
+                    this.store_page.listing_open = true;
+                    this.store_page.notice = None;
+                    cx.notify();
+                }))
+        });
         let note = self
             .store_page
             .notice
             .as_ref()
             .filter(|_| !self.store_page.claim_open && !self.store_page.listing_open)
-            .map(|(ok, text)| notice(*ok, text.clone(), p).text_size(px(12.)).truncate());
-        h_flex()
+            .map(|(ok, text)| notice(*ok, text.clone(), p).text_size(px(12.)).text_center());
+        v_flex()
+            .w(px(ACCOUNT))
             .flex_shrink_0()
-            .max_w_full()
-            .h(px(26.))
-            .justify_center()
-            .gap(px(10.))
-            .children(status)
-            .children(note.map(|n| n.min_w_0().max_w(px(360.))))
-            .child(claim)
-            .child(refresh)
+            .items_center()
+            .px(px(16.))
+            .pt(px(NAME_TOP))
+            .child(
+                h_flex()
+                    .gap(px(6.))
+                    .child(Icon::new(IconName::Gift).size(px(15.)).text_color(rgb(YELLOW)))
+                    .child(
+                        div()
+                            .text_size(px(14.))
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .child(tr("One-time donation")),
+                    ),
+            )
+            .child(
+                muted(tr("Converts to whole months of a tier"), p)
+                    .mt(px(4.))
+                    .text_size(px(12.))
+                    .line_height(px(16.))
+                    .text_center(),
+            )
+            .child(
+                h_flex()
+                    .mt(px(12.))
+                    .gap(px(8.))
+                    .child(
+                        div().w(px(96.)).flex_shrink_0().child(
+                            Input::new(&amount)
+                                .small()
+                                .prefix(div().text_color(p.text_muted).child("$")),
+                        ),
+                    )
+                    .child(donate),
+            )
+            .child(div().mt(px(6.)).child(claim))
+            .children(status.map(|s| s.mt(px(16.))))
+            .children(edit.map(|e| div().mt(px(8.)).child(e)))
+            .children(note.map(|n| n.mt(px(10.))))
     }
 
     fn store_tiers(&self, amount: Entity<InputState>, p: Palette, cx: &mut Context<Self>) -> Div {
@@ -161,42 +221,45 @@ impl Shell {
             _ => None,
         };
         let basic = vec![
-            tr("No ads in the launcher"),
-            tr("Access to #f1-supporter-leaks"),
-            tr("The #f1-supporter-general chat"),
-            tr("Discord embed links and external emoji permissions"),
-            tr("Supporting a free and open-source launcher"),
+            (IconName::MegaphoneOff, tr("No ads in the launcher")),
+            (IconName::KeyRound, tr("Access to #f1-supporter-leaks")),
+            (IconName::MessageCircle, tr("The #f1-supporter-general chat")),
+            (
+                IconName::Link,
+                tr("Discord embed links and external emoji permissions"),
+            ),
+            (IconName::Code, tr("Supporting a free and open-source launcher")),
         ];
-        let plus = vec![tr("All of Supporter"), tr("Access to private betatesting")];
-        let columns = h_flex()
-            .flex_1()
-            .w_full()
-            .max_w(px(TIERS_MAX))
-            .items_stretch()
-            .child(self.tier_column(Kind::Supporter, basic, current == Some("supporter"), p, cx))
-            .child(div().flex_shrink_0().w(px(1.)).my(px(10.)).bg(p.border_variant))
-            .child(self.tier_column(
-                Kind::SupporterPlus,
-                plus,
-                current == Some("supporter_plus"),
-                p,
-                cx,
-            ));
-        v_flex()
-            .flex_1()
-            .min_w_0()
-            .items_center()
-            .gap(px(10.))
-            .child(self.store_status(p, cx))
-            .child(columns)
-            .child(self.store_onetime(amount, p, cx))
+        let plus = vec![
+            (IconName::Layers, tr("All of Supporter")),
+            (IconName::Rocket, tr("Early access to addons in testing")),
+            (IconName::Beaker, tr("Access to private betatesting")),
+        ];
+        let divider = || div().flex_shrink_0().w(px(1.)).my(px(8.)).bg(p.border_variant);
+        v_flex().flex_1().min_w_0().items_center().child(
+            h_flex()
+                .w_full()
+                .max_w(px(TIERS_MAX))
+                .items_stretch()
+                .child(self.store_account(amount, p, cx))
+                .child(divider())
+                .child(self.tier_column(Kind::Supporter, basic, current == Some("supporter"), p, cx))
+                .child(divider())
+                .child(self.tier_column(
+                    Kind::SupporterPlus,
+                    plus,
+                    current == Some("supporter_plus"),
+                    p,
+                    cx,
+                )),
+        )
     }
 
     /// One tier as a centred column: its name, price, pitch and perks over its Subscribe button.
     fn tier_column(
         &self,
         kind: Kind,
-        perks: Vec<&'static str>,
+        perks: Vec<(IconName, &'static str)>,
         current: bool,
         p: Palette,
         cx: &mut Context<Self>,
@@ -208,7 +271,7 @@ impl Shell {
         };
         let accent = hue(if plus { PLUS_NAME } else { PINK });
         let chips = h_flex()
-            .h(px(20.))
+            .h(px(CHIP_ROW))
             .justify_center()
             .gap(px(6.))
             .when(plus, |d| {
@@ -255,7 +318,7 @@ impl Shell {
             .items_center()
             .px(px(20.))
             .child(chips)
-            .child(name.mt(px(6.)))
+            .child(name.mt(px(NAME_TOP - CHIP_ROW)))
             .child(price)
             .child(
                 div()
@@ -267,14 +330,13 @@ impl Shell {
                     .child(tagline),
             )
             .child(
-                v_flex()
-                    .max_w_full()
-                    .mt(px(12.))
-                    .gap(px(5.))
-                    .children(perks.into_iter().map(|text| perk_row(text, accent, p))),
+                v_flex().max_w_full().mt(px(14.)).gap(px(8.)).children(
+                    perks
+                        .into_iter()
+                        .map(|(icon, text)| perk_row(icon, text, accent, p)),
+                ),
             )
-            .child(div().flex_1().min_h(px(12.)))
-            .child(self.subscribe_button(kind, cx))
+            .child(self.subscribe_button(kind, cx).mt(px(16.)))
     }
 
     fn subscribe_button(&self, kind: Kind, cx: &mut Context<Self>) -> Stateful<Div> {
@@ -324,63 +386,5 @@ impl Shell {
                     cx.notify();
                 }
             }))
-    }
-
-    fn store_onetime(&self, amount: Entity<InputState>, p: Palette, cx: &mut Context<Self>) -> Div {
-        let busy = self.store_page.busy;
-        let typed = amount.read(cx).value().to_string();
-        let donate = div()
-            .id("store-onetime")
-            .flex()
-            .flex_shrink_0()
-            .items_center()
-            .h(px(26.))
-            .px(px(12.))
-            .rounded(px(6.))
-            .bg(rgb(YELLOW))
-            .text_color(rgb(0x1a1400))
-            .text_size(px(12.))
-            .font_weight(FontWeight::BOLD)
-            .when(busy, |d| d.opacity(0.6))
-            .when(!busy, |d| d.cursor_pointer().hover(|d| d.opacity(0.9)))
-            .child(tr("Donate"))
-            .on_click(cx.listener(move |this, _, _, cx| {
-                StorePage::checkout(this, Kind::OneTime, Some(typed.clone()), cx)
-            }));
-        h_flex()
-            .flex_shrink_0()
-            .max_w_full()
-            .h(px(30.))
-            .justify_center()
-            .gap(px(10.))
-            .child(
-                Icon::new(IconName::Gift)
-                    .size(px(15.))
-                    .flex_shrink_0()
-                    .text_color(rgb(YELLOW)),
-            )
-            .child(
-                div()
-                    .flex_shrink_0()
-                    .text_size(px(13.))
-                    .font_weight(FontWeight::SEMIBOLD)
-                    .child(tr("One-time donation")),
-            )
-            .child(
-                div()
-                    .min_w_0()
-                    .truncate()
-                    .text_size(px(12.))
-                    .text_color(p.text_muted)
-                    .child(tr("Converts to whole months of a tier")),
-            )
-            .child(
-                div().w(px(96.)).flex_shrink_0().child(
-                    Input::new(&amount)
-                        .small()
-                        .prefix(div().text_color(p.text_muted).child("$")),
-                ),
-            )
-            .child(donate)
     }
 }

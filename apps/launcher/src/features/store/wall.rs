@@ -59,24 +59,7 @@ fn group_label(plus: bool, count: usize, p: Palette) -> Div {
 
 impl Shell {
     /// The supporter wall: it takes the rest of the page's height and scrolls on its own.
-    pub(super) fn store_supporters(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        let count = match &self.store_page.supporters {
-            Load::Ready(s) if !s.is_empty() => Some(s.len()),
-            _ => None,
-        };
-        let active = matches!(&self.store_page.me, Load::Ready(me) if me.active);
-        let edit = active.then(|| {
-            Button::new("store-listing-open")
-                .outline()
-                .small()
-                .icon(IconName::Pencil)
-                .label(tr("Edit your listing"))
-                .on_click(cx.listener(|this, _, _, cx| {
-                    this.store_page.listing_open = true;
-                    this.store_page.notice = None;
-                    cx.notify();
-                }))
-        });
+    pub(super) fn store_supporters(&self, p: Palette) -> AnyElement {
         let wall = match &self.store_page.supporters {
             Load::Idle | Load::Loading => empty_note(tr("Loading supporters…").to_owned(), p),
             Load::Failed(e) => empty_note(e.clone(), p),
@@ -86,55 +69,34 @@ impl Shell {
             Load::Ready(s) => {
                 let width = self.layout.content_width;
                 let cols = ((width + GAP) / (SUPPORTER_MIN + GAP)).floor().max(1.) as u16;
-                let grid = |from: usize, group: &[Supporter]| {
-                    div().w_full().grid().grid_cols(cols).gap(px(GAP)).children(
-                        group
-                            .iter()
-                            .enumerate()
-                            .map(|(i, x)| self.supporter_card(from + i, x, p)),
-                    )
-                };
                 let split = s.partition_point(Supporter::plus);
-                match split == 0 || split == s.len() {
-                    true => grid(0, s).pr(px(4.)).into_any_element(),
-                    false => v_flex()
-                        .pr(px(4.))
-                        .gap(px(8.))
-                        .child(group_label(true, split, p))
-                        .child(grid(0, &s[..split]))
-                        .child(group_label(false, s.len() - split, p).mt(px(8.)))
-                        .child(grid(split, &s[split..]))
-                        .into_any_element(),
-                }
+                let groups = [(true, 0, &s[..split]), (false, split, &s[split..])];
+                v_flex()
+                    .pr(px(4.))
+                    .gap(px(16.))
+                    .children(groups.into_iter().filter(|(_, _, g)| !g.is_empty()).map(
+                        |(plus, from, group)| {
+                            v_flex()
+                                .gap(px(8.))
+                                .child(group_label(plus, group.len(), p))
+                                .child(
+                                    div().w_full().grid().grid_cols(cols).gap(px(GAP)).children(
+                                        group
+                                            .iter()
+                                            .enumerate()
+                                            .map(|(i, x)| self.supporter_card(from + i, x, p)),
+                                    ),
+                                )
+                        },
+                    ))
+                    .into_any_element()
             }
         };
-        let head = panel_head(
-            IconName::Users,
-            hue(PINK),
-            tr("Supporters"),
-            tr("Thank you to everyone who keeps the launcher free"),
-            p,
-        );
-        let head = match count {
-            Some(n) => head.child(
-                div()
-                    .flex_shrink_0()
-                    .px(px(8.))
-                    .rounded_full()
-                    .bg(p.elevated)
-                    .text_size(px(11.))
-                    .font_weight(FontWeight::SEMIBOLD)
-                    .text_color(p.text_muted)
-                    .child(n.to_string()),
-            ),
-            None => head,
-        };
-        v_flex()
+        div()
             .flex_1()
             .min_h_0()
-            .gap(px(10.))
-            .child(head.children(edit))
-            .child(div().flex_1().min_h_0().scroll_y("store-supporters").child(wall))
+            .scroll_y("store-supporters")
+            .child(wall)
             .into_any_element()
     }
 

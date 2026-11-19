@@ -1,5 +1,4 @@
-use gpui_kit::assets::IconName;
-use gpui_kit::component::{Icon, h_flex};
+use gpui_kit::component::h_flex;
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::time::Duration;
@@ -105,35 +104,4 @@ pub(super) fn badge(id: impl Into<ElementId>, plus: bool) -> Div {
             false => d.bg(rgb(PINK)),
         })
         .child(tier_name(if plus { "supporter_plus" } else { "supporter" }))
-}
-
-/// A panel's title row: an icon, the title and a muted line, with room after them for the caller's parts.
-pub(super) fn panel_head(
-    icon: IconName,
-    color: Hsla,
-    title: &'static str,
-    subtitle: &'static str,
-    p: Palette,
-) -> Div {
-    h_flex()
-        .flex_shrink_0()
-        .h(px(28.))
-        .gap(px(8.))
-        .child(Icon::new(icon).size(px(16.)).text_color(color))
-        .child(
-            div()
-                .flex_shrink_0()
-                .text_size(px(15.))
-                .font_weight(FontWeight::SEMIBOLD)
-                .child(title),
-        )
-        .child(
-            div()
-                .flex_1()
-                .min_w_0()
-                .truncate()
-                .text_size(px(12.))
-                .text_color(p.text_muted)
-                .child(subtitle),
-        )
 }
