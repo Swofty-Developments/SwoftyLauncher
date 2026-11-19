@@ -91,6 +91,10 @@ struct ProbeScope {
 // or an export did not hook; logged once.
 bool arm_on_worker(void (*block)(), bool early);
 
+// Called from the ExitProcess hook: while the arm still runs on its worker, waits for it (at most the gate's cap), so
+// the process does not end with the worker inside D3D12 device creation and its locks held.
+void wait_arm_before_exit();
+
 // The caller of the creation export this thread is inside, when the arm's gate hook is in front of the hook asking;
 // ret otherwise. A hook on D3D12CreateDevice that tells the core's calls from the game's by return address asks this.
 void *creation_caller(void *ret);

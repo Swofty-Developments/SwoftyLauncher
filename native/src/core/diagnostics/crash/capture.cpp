@@ -15,6 +15,10 @@ void hud_fatal();
 void session_host_exit();
 }
 
+namespace render::d3d12 {
+void wait_arm_before_exit();
+}
+
 namespace crash {
 
 FaultCapture capture;
@@ -275,6 +279,7 @@ void on_exit(const char *fn, UINT code)
 void WINAPI hooked_exit(UINT code)
 {
     on_exit("ExitProcess", code);
+    render::d3d12::wait_arm_before_exit();
     capture.exit_hook.unsafe_call<void>(code);
 }
 
