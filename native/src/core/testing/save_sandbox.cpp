@@ -78,6 +78,7 @@ ss::Run run_info;
 std::wstring run_dir, saves_dir, remote_w, status_w;
 std::string run_id, remote_a, remote_a_unix;
 std::mutex lock;
+bool batch_open = false;
 std::string last_file;
 uint32_t file_reads = 0;
 std::unique_ptr<ss::RemoteDir> remote;
@@ -166,6 +167,8 @@ bool p_file_write(Proxy *, const char *name, const void *data, int32_t size)
 {
     std::lock_guard<std::mutex> g(lock);
     bool ok = remote->write(named(name), data, size);
+    if (ok && !batch_open)
+        remote->settle_lone();
     ++calls[ss::FileWrite];
     swofty::log("[saves] sandbox: FileWrite %s (%d bytes) -> %s", named(name).c_str(), size, ok ? "written" : "FAILED");
     return ok;
@@ -196,6 +199,8 @@ bool p_file_delete(Proxy *, const char *name)
 {
     std::lock_guard<std::mutex> g(lock);
     bool ok = remote->remove(named(name));
+    if (ok && !batch_open)
+        remote->settle_lone();
     ++calls[ss::FileDelete];
     swofty::log("[saves] sandbox: FileDelete %s -> %s", named(name).c_str(), ok ? "deleted" : "no such file");
     return ok;
@@ -318,6 +323,7 @@ bool p_batch(Proxy *)
     std::lock_guard<std::mutex> g(lock);
     note(ss::BeginFileWriteBatch, nullptr);
     log_recovery(remote->recover());
+    batch_open = true;
     return true;
 }
 
@@ -325,6 +331,7 @@ bool p_batch_end(Proxy *)
 {
     std::lock_guard<std::mutex> g(lock);
     note(ss::EndFileWriteBatch, nullptr);
+    batch_open = false;
     if (!remote->commit())
         swofty::log("[saves] sandbox: a save batch ended without both its data file and its index; the next mount "
                     "puts the previous pair back");

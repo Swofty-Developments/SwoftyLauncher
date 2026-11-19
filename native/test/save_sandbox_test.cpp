@@ -443,6 +443,21 @@ static void pair(const fs::path &tmp)
         expect(after_crash.recover(true).kind == ss::RemoteDir::Recovery::rolled_back && read_all(after_crash, data) == d1,
                "pair: a delete cut off with the batch open puts the file back");
     }
+    {
+        ss::RemoteDir dir(tmp / "remote");
+        dir.write(data, d1.data(), int32_t(d1.size()));
+        dir.write(index, i1.data(), 416);
+        dir.commit();
+        expect(dir.write("backup", d1.data(), 8) && dir.settle_lone() && dir.remove("backup") && dir.settle_lone(),
+               "pair: a write and a delete outside a batch settle at once");
+    }
+    {
+        ss::RemoteDir after(tmp / "remote");
+        expect(!after.exists("backup") && !fs::exists(tmp / "remote" / ss::PENDING_NAME) &&
+                   !fs::exists(tmp / "remote" / ("backup" + std::string(ss::PREV_SUFFIX))) &&
+                   after.recover(true).kind == ss::RemoteDir::Recovery::none && read_all(after, data) == d1,
+               "pair: a delete outside a batch leaves no record and stays deleted at the next mount");
+    }
     expect(!ss::valid_name("a" + std::string(ss::PREV_SUFFIX)) && !ss::valid_name(ss::PENDING_NAME) &&
                ss::RemoteDir::is_index(index) && !ss::RemoteDir::is_index(data),
            "pair: bookkeeping files are not valid remote names; the index is told by its tail");

@@ -665,6 +665,14 @@ public:
         return r.kind != Recovery::unreadable;
     }
 
+    // A write or delete outside a write batch is final at once, so its kept copy and record go.
+    bool settle_lone()
+    {
+        if (!pending_open_)
+            return true;
+        return settle(true, true).kind != Recovery::unreadable;
+    }
+
     bool exists(std::string_view name) const
     {
         std::error_code ec;
