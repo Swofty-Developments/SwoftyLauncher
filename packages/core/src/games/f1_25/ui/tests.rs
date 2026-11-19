@@ -1085,6 +1085,34 @@ fn the_resume_list_screen_has_a_row_per_career_that_raises_its_index() {
     check_row_nodes(&bytes);
 }
 
+#[test]
+fn a_row_that_cannot_load_raises_its_index_but_routes_nowhere() {
+    let Some(_) = std::env::var_os("SWOFTY_STOCK_DATA") else {
+        eprintln!("SWOFTY_STOCK_DATA is not set; skipping");
+        return;
+    };
+    let mut rows = resume_rows();
+    rows.truncate(1);
+    rows[0].loadable = false;
+    let input = stock_input();
+    let flow_options = input(&ui_file("flow_options.erp"));
+    let flow_frontend = input(&ui_file("flow_frontend.erp"));
+    let src = Sources::parse(
+        &read_frag(&flow_options, CONTAINER, 1).unwrap(),
+        &read_frag(&flow_frontend, FE_CAREER, 0).unwrap(),
+        &read_frag(&flow_frontend, FE_HOME, 0).unwrap(),
+        &read_frag(&flow_options, CONTAINER, 0).unwrap(),
+    )
+    .unwrap();
+    let (_, bytes) = pages::build_resume_page(&src, &rows).unwrap();
+    let text = String::from_utf8_lossy(&bytes);
+    assert!(text.contains(&pages::row_command(0)));
+    assert!(
+        !text.contains(pages::CONTINUE_DRIVER),
+        "no route to the continue screen"
+    );
+}
+
 fn tint_of(n: &Node) -> Option<Vec<u8>> {
     use swofty_formats::pkg::Value;
     match &n

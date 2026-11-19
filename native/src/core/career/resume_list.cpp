@@ -20,7 +20,8 @@
 // raises `swofty_resume:<index>` to this view model, which maps the row to its save slot and keeps it as the target; the same
 // press routes the screen to the stock continue screen of the row's mode, and when that screen finishes its transition in
 // the resume gate (resume_gate_guard.cpp) rewrites card 0 to the target and loads it, after a Load Anyway / Back question
-// for a row that is not ready.
+// for a row that is not ready. A row that cannot load (its own team, car or driver row is missing) has no route in the
+// launcher's page: its press shows why on the list screen and selects nothing.
 
 namespace career::resume_list {
 
@@ -95,6 +96,12 @@ bool pressed(size_t index)
         swofty::log("[career] resume screen: row %zu is not in settings.json's resume_list; nothing was selected", index);
         return false;
     }
+    if (press(*e) == Action::Refuse) {
+        swofty::log("[career] resume screen: row %zu (%s, key %s) cannot load (%s); nothing is selected and the list says why",
+                    index, e->my_team ? "My Team" : "Driver Career", e->key.c_str(), e->status.c_str());
+        runtime::popup_show(REFUSE_TITLE, refuse_text(*e), "swofty_core");
+        return false;
+    }
     Selection sel;
     if (!select(runtime::career_listed_slots(), *e, sel)) {
         swofty::log("[career] resume screen: row %zu (%s, key %s): no such career in the save slots the core listed; the stock "
@@ -105,23 +112,14 @@ bool pressed(size_t index)
     target_on = true;
     target_at = GetTickCount64();
     std::string group = e->group.empty() ? runtime::career_saves_content_for_slot(e->key) : e->group;
-    Action act = press(*e);
     target_ = {sel,
                e->my_team,
-               act == Action::Ask,
+               press(*e) == Action::Ask,
                index,
-               act == Action::Refuse ? refuse_text(*e) : dialog_text(*e),
+               dialog_text(*e),
                group,
                suffix_for(group, career::content::suffix_of_group(group)),
                e->game_mode};
-    target_.refuse = act == Action::Refuse;
-    if (target_.refuse) {
-        swofty::log("[career] resume screen: row %zu (%s, key %s) is slot id %llu guid %016llx; it cannot load (%s); the %s "
-                    "continue screen shows why and goes back",
-                    index, e->my_team ? "My Team" : "Driver Career", e->key.c_str(), (unsigned long long)sel.id,
-                    (unsigned long long)sel.guid, e->status.c_str(), e->my_team ? "My Team" : "Driver Career");
-        return true;
-    }
     swofty::log("[career] resume screen: row %zu (%s, key %s) is slot id %llu guid %016llx, %s%s%s; the %s continue screen "
                 "loads it next",
                 index, e->my_team ? "My Team" : "Driver Career", e->key.c_str(), (unsigned long long)sel.id,

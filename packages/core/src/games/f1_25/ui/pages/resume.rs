@@ -1,7 +1,8 @@
 //! The Resume Career list screen: one row per career, newest first, each with its mode, driver, team, place in
 //! the season, last played date and a status colour. It is built at Play with literal text from the career
 //! index, on the rows page ADDON SETTINGS uses; a press raises `swofty_resume:<row>` to the core and routes
-//! to the stock continue screen of the row's mode, where the core loads the career.
+//! to the stock continue screen of the row's mode, where the core loads the career. A row that cannot load
+//! (`ResumeRow::loadable` false) only raises the command; the core shows why on the list screen.
 
 use swofty_formats::pkg::{Node, Val};
 
@@ -301,24 +302,21 @@ fn row_node(src: &Sources, r: &ResumeRow) -> Result<Node> {
     ];
     let mut t = base_row(src, &row_name(r.index), texts, Some(status_colour(&r.severity)))?;
     let cmd = row_command(r.index);
+    let mut press = vec![
+        sig(&format!("{sname}.audio_theme_trigger"), "confirm", "pressed"),
+        raise_cmd(sname, "pressed", &cmd, &cmd),
+    ];
+    if r.loadable {
+        press.push(sig_with(
+            &format!("{sname}.Action"),
+            "route",
+            "pressed",
+            &[("key", continue_route(r).into())],
+        ));
+    }
     add_events(
         &mut t,
-        vec![
-            focused(who(r), &details(r)),
-            event(
-                "pressed",
-                vec![
-                    sig(&format!("{sname}.audio_theme_trigger"), "confirm", "pressed"),
-                    raise_cmd(sname, "pressed", &cmd, &cmd),
-                    sig_with(
-                        &format!("{sname}.Action"),
-                        "route",
-                        "pressed",
-                        &[("key", continue_route(r).into())],
-                    ),
-                ],
-            ),
-        ],
+        vec![focused(who(r), &details(r)), event("pressed", press)],
     )?;
     Ok(t)
 }

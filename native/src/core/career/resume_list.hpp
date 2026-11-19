@@ -13,8 +13,6 @@ struct Target {
     bool my_team = false, ask = false;
     size_t row = 0;
     std::string body, group, suffix, game_mode;
-    // The row cannot load (resume_list_logic.hpp `Action::Refuse`): the continue screen shows `body` and goes back.
-    bool refuse = false;
 };
 
 bool wanted();
