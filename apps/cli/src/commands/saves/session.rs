@@ -17,6 +17,22 @@ pub struct Before {
     pub(super) steam: Option<std::path::PathBuf>,
 }
 
+fn map_moved_ids(store: &Store, profile: &str, g: &Game, on_launcher_saves: bool) {
+    let file = g.dir.join("swofty").join(swofty_core::row_ids::ALIASES_FILE);
+    let Ok(bytes) = std::fs::read(&file) else {
+        return;
+    };
+    let Ok(aliases) = serde_json::from_slice::<swofty_core::row_ids::IdAliases>(&bytes) else {
+        return;
+    };
+    let now = vault::now();
+    for line in
+        swofty_core::saves::plain::rewrite::prepare(&store.root, profile, on_launcher_saves, &aliases, now)
+    {
+        say("info", &line);
+    }
+}
+
 pub(super) fn report(lines: Vec<String>) {
     for l in lines {
         say("info", &l);
@@ -86,6 +102,9 @@ pub(super) fn before_session_at(
     });
     if let (Some(store_loc), Some(from)) = (&launcher, &game_loc) {
         seed_if_empty(store, profile, from, store_loc);
+    }
+    if p.as_ref().is_ok_and(|p| !p.is_vanilla()) {
+        map_moved_ids(store, profile, g, launcher.is_some());
     }
     let steam = game_loc
         .as_ref()

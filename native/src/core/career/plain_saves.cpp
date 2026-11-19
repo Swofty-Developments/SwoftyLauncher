@@ -185,10 +185,32 @@ std::vector<Added> at_load(Plan &plan, const std::map<std::string, std::string> 
             added_now.insert(p.entry.name);
         }
     }
+    auto loaded_sha = [&](const std::string &name) -> std::string {
+        auto r = registered.find(name);
+        if (r != registered.end())
+            return r->second;
+        auto k = kept.find(name);
+        return k != kept.end() ? k->second : std::string();
+    };
+    std::set<std::string> changed_pairs;
+    for (const Request &q : plan.requests) {
+        std::string pair = pair_of(q.container);
+        bool held = registered.count(q.container) || kept.count(q.container);
+        if (q.replace && held && !base_matches(q, loaded_sha(q.container)))
+            changed_pairs.insert(pair.empty() ? q.container : pair);
+    }
     for (size_t i = 0; i < plan.requests.size(); i++) {
         if (plan.handled[i])
             continue;
         const Request &q = plan.requests[i];
+        std::string pair = pair_of(q.container);
+        if (q.replace && changed_pairs.count(pair.empty() ? q.container : pair)) {
+            plan.handled[i] = true;
+            Result r{q.id, false, changed_since_detail(q)};
+            plan.results.push_back(r);
+            swofty::log("[saves] inject request %s: %s", q.id.c_str(), r.detail.c_str());
+            continue;
+        }
         auto group = fetch_group(q.generation, q.container);
         Held held = registered.count(q.container)                               ? Held::registered
                     : (kept.count(q.container) || added_now.count(q.container)) ? Held::kept
@@ -203,7 +225,7 @@ std::vector<Added> at_load(Plan &plan, const std::map<std::string, std::string> 
                          : (kept.count(part.name) || added_now.count(part.name)) ? Held::kept
                                                                                  : Held::none;
                 if (h == Held::registered && !q.replace) {
-                    d = decide(Request{q.id, part.name, q.generation, false}, h, true);
+                    d = decide(Request{q.id, part.name, q.generation, false, {}}, h, true);
                     break;
                 }
             }

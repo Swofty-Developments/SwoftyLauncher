@@ -8,7 +8,7 @@ use std::io::Write;
 
 use sha2::{Digest, Sha256};
 
-use super::{Container, Event, Manifest, Plain, Source, inject};
+use super::{Container, Event, Manifest, Plain, Source, inject, mode_of};
 use crate::saves::bag;
 use crate::saves::remap::{self, IdMaps, Remapped};
 use crate::{Error, Result, io_err};
@@ -48,6 +48,7 @@ pub struct Rewrite {
 pub enum Outcome {
     Nothing,
     Stale { generation: u64 },
+    Refused(String),
     Wrote(Rewrite),
 }
 
@@ -59,8 +60,28 @@ fn decode_err(name: &str, e: impl std::fmt::Display) -> Error {
     Error::Other(format!("plain container {name}: {e}"))
 }
 
-struct Changed {
-    bytes: Vec<u8>,
+#[derive(Debug, Clone)]
+pub struct Changed {
+    pub bytes: Vec<u8>,
+    pub base_sha256: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct Planned {
+    pub manifest: Manifest,
+    pub changed: BTreeMap<String, Changed>,
+    pub careers: Vec<CareerMapped>,
+    /// Modes that hold earlier driver or vehicle ids but no earlier team id, which are left alone: those ids may
+    /// be stock rows of another roster.
+    pub skipped: Vec<String>,
+}
+
+const CHECKED: &str = "remap-checked.json";
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+struct CheckedMarker {
+    generation: u64,
+    maps: String,
 }
 
 impl Plain {
@@ -83,15 +104,10 @@ impl Plain {
         }
     }
 
-    /// Careers in the newest generation that hold ids of `maps`, per slot, and the replace requests that put
-    /// their containers back with this build's ids. A generation the game's own save has outrun
-    /// (`save_written`, seconds since the epoch) is left alone.
-    pub fn rewrite_for_aliases(&self, maps: &IdMaps, save_written: Option<i64>, now: i64) -> Result<Outcome> {
-        if maps.is_empty() {
-            return Ok(Outcome::Nothing);
-        }
+    /// What mapping `maps` would change in the newest generation, without writing anything.
+    pub fn plan_rewrite(&self, maps: &IdMaps) -> Result<Option<Planned>> {
         let Some(m) = self.newest() else {
-            return Ok(Outcome::Nothing);
+            return Ok(None);
         };
         let mut changed: BTreeMap<String, Changed> = BTreeMap::new();
         let mut gm_counts: BTreeMap<String, Remapped> = BTreeMap::new();
@@ -123,28 +139,114 @@ impl Plain {
                 gm_counts.insert(mode, done);
             }
             let bytes = bag::encode(&tree).map_err(|e| decode_err(&c.name, e))?;
-            changed.insert(c.name.clone(), Changed { bytes });
+            changed.insert(
+                c.name.clone(),
+                Changed {
+                    bytes,
+                    base_sha256: c.sha256.clone(),
+                },
+            );
+        }
+        let mut skipped = Vec::new();
+        let modes: std::collections::BTreeSet<String> =
+            gm_counts.keys().chain(slot_counts.keys()).cloned().collect();
+        for mode in modes {
+            let teams = gm_counts.get(&mode).map_or(0, |c| c.teams)
+                + slot_counts
+                    .get(&mode)
+                    .into_iter()
+                    .flatten()
+                    .map(|(_, c)| c.teams)
+                    .sum::<usize>();
+            if teams > 0 {
+                continue;
+            }
+            gm_counts.remove(&mode);
+            slot_counts.remove(&mode);
+            changed.retain(|name, _| mode_of(name) != mode);
+            skipped.push(mode);
         }
         if changed.is_empty() {
+            return Ok(Some(Planned {
+                manifest: m,
+                changed,
+                careers: Vec::new(),
+                skipped,
+            }));
+        }
+        let careers = Self::career_lines(&gm_counts, &slot_counts, &active);
+        Ok(Some(Planned {
+            manifest: m,
+            changed,
+            careers,
+            skipped,
+        }))
+    }
+
+    fn checked_marker(&self, maps: &IdMaps) -> String {
+        sha_hex(format!("{maps:?}").as_bytes())
+    }
+
+    fn already_checked(&self, generation: u64, maps: &IdMaps) -> bool {
+        crate::read_json::<CheckedMarker>(&self.root.join(CHECKED))
+            .is_ok_and(|c| c.generation == generation && c.maps == self.checked_marker(maps))
+    }
+
+    fn mark_checked(&self, generation: u64, maps: &IdMaps) {
+        let marker = CheckedMarker {
+            generation,
+            maps: self.checked_marker(maps),
+        };
+        crate::write_json(&self.root.join(CHECKED), &marker).ok();
+    }
+
+    /// Careers in the newest generation that hold ids of `maps`, per slot, and the replace requests that put
+    /// their containers back with this build's ids. A generation the game's own save has outrun
+    /// (`save_written`, seconds since the epoch) is left alone. A generation checked once against the same
+    /// maps is not decoded again.
+    pub fn rewrite_for_aliases(&self, maps: &IdMaps, save_written: Option<i64>, now: i64) -> Result<Outcome> {
+        if maps.is_empty() {
             return Ok(Outcome::Nothing);
         }
+        if let Some(why) = maps.refusal() {
+            return Ok(Outcome::Refused(why));
+        }
+        let Some(newest) = self.newest() else {
+            return Ok(Outcome::Nothing);
+        };
+        if self.already_checked(newest.generation, maps) {
+            return Ok(Outcome::Nothing);
+        }
+        let plan = self.plan_rewrite(maps)?;
+        let Some(plan) = plan.filter(|p| !p.changed.is_empty()) else {
+            self.mark_checked(newest.generation, maps);
+            return Ok(Outcome::Nothing);
+        };
+        let m = &plan.manifest;
         if save_written.is_some_and(|w| w > m.written_at + STALE_AFTER) {
             return Ok(Outcome::Stale {
                 generation: m.generation,
             });
         }
-        let careers = Self::career_lines(&gm_counts, &slot_counts, &active);
         let n = self.next_generation();
-        self.write_rewritten(&m, n, &changed, now)?;
+        self.write_rewritten(m, n, &plan.changed, now)?;
         self.pin(n, "rewrite")?;
         let mut requests = Vec::new();
-        for name in changed.keys() {
-            requests.push(inject::ask(&self.root, n, name, true, now)?);
+        for (name, c) in &plan.changed {
+            requests.push(inject::ask_based(
+                &self.root,
+                n,
+                name,
+                true,
+                Some(c.base_sha256.clone()).filter(|h| !h.is_empty()),
+                now,
+            )?);
         }
+        self.mark_checked(n, maps);
         Ok(Outcome::Wrote(Rewrite {
             generation: n,
             from: m.generation,
-            careers,
+            careers: plan.careers,
             requests,
         }))
     }
@@ -196,7 +298,7 @@ impl Plain {
         for c in &mut manifest.containers {
             let to = containers.join(c.file());
             match changed.get(&c.name) {
-                Some(Changed { bytes }) => {
+                Some(Changed { bytes, .. }) => {
                     std::fs::write(&to, bytes).map_err(io_err(&to))?;
                     c.bytes = bytes.len() as u64;
                     c.sha256 = sha_hex(bytes);
@@ -245,6 +347,9 @@ pub fn prepare(
         .flatten();
     match Plain::at(root).rewrite_for_aliases(&maps, written, now) {
         Ok(Outcome::Nothing) => Vec::new(),
+        Ok(Outcome::Refused(why)) => vec![format!(
+            "[saves] earlier row ids are not mapped in the plain store: {why}"
+        )],
         Ok(Outcome::Stale { generation }) => vec![format!(
             "[saves] careers in plain generation {generation} hold earlier row ids but the game saved after it; not mapped"
         )],
@@ -253,6 +358,33 @@ pub fn prepare(
             "[saves] could not map earlier row ids in the plain store: {e}"
         )],
     }
+}
+
+/// What `prepare` would do on `root` with `aliases`, as the log lines it would write, without writing
+/// anything: the careers mapped, or the reason nothing is.
+pub fn dry_run(root: &std::path::Path, aliases: &crate::row_ids::IdAliases) -> Result<Vec<String>> {
+    let maps = IdMaps::from_aliases(aliases);
+    if maps.is_empty() {
+        return Ok(vec!["[saves] the alias file maps no ids".to_owned()]);
+    }
+    if let Some(why) = maps.refusal() {
+        return Ok(vec![format!(
+            "[saves] earlier row ids are not mapped in the plain store: {why}"
+        )]);
+    }
+    let none = || vec!["[saves] no career in the newest plain generation holds an earlier row id".to_owned()];
+    Ok(match Plain::at(root).plan_rewrite(&maps)? {
+        None => none(),
+        Some(plan) if plan.changed.is_empty() && plan.skipped.is_empty() => none(),
+        Some(plan) => plan
+            .careers
+            .iter()
+            .map(CareerMapped::line)
+            .chain(plan.skipped.iter().map(|m| {
+                format!("[saves] mode {m}: earlier driver or vehicle ids but no earlier team id; left alone")
+            }))
+            .collect(),
+    })
 }
 
 #[cfg(test)]

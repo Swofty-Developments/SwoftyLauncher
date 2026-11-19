@@ -252,6 +252,17 @@ static void requests(const fs::path &tmp)
     q.container = std::string(70, 'x');
     expect(!ps::decide(q, Held::none, true).result.ok, "inject: an invalid name fails");
 
+    auto based = ps::parse_requests(
+        R"({"schema":1,"requests":[{"id":"r3","generation":9,"container":"gm_driver_career_1990","replace":true,"base_sha256":"abc"}]})");
+    expect(based.size() == 1 && based[0].base_sha256 == "abc", "inject: a request carries the hash of the container it was made from");
+    expect(rs[0].base_sha256.empty(), "inject: a request without a base has none");
+    expect(ps::base_matches(based[0], "abc"), "inject: a loaded container with the base hash matches");
+    expect(!ps::base_matches(based[0], "abd") && !ps::base_matches(based[0], ""),
+           "inject: a changed or unhashed loaded container does not match a base");
+    expect(ps::base_matches(rs[0], "anything") && ps::base_matches(rs[0], ""), "inject: no base takes any loaded container");
+    expect(ps::changed_since_detail(based[0]) == "the loaded gm_driver_career_1990 changed since generation 9; not replaced",
+           "inject: the refusal says the loaded container changed since the generation");
+
     fs::create_directories(root.path());
     runtime::durable::write_file(root.path() / ps::INJECT, std::string("{\"schema\":1,\"requests\":[]}"));
     expect(ps::answer(root, {{"r1", true, "ok \"quoted\""}, {"r2", false, "no"}}), "inject: answers are written");

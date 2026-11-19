@@ -13,6 +13,10 @@ pub struct Request {
     pub generation: u64,
     pub container: String,
     pub replace: bool,
+    /// The sha-256 of the container in the generation the rewrite was made from; the core replaces only a
+    /// loaded container that hashes the same.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub base_sha256: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -44,6 +48,17 @@ pub fn answers(root: &Path) -> Vec<Answer> {
 }
 
 pub fn ask(root: &Path, generation: u64, container: &str, replace: bool, now: i64) -> Result<Request> {
+    ask_based(root, generation, container, replace, None, now)
+}
+
+pub fn ask_based(
+    root: &Path,
+    generation: u64,
+    container: &str,
+    replace: bool,
+    base_sha256: Option<String>,
+    now: i64,
+) -> Result<Request> {
     let mut requests = pending(root);
     if let Some(same) = requests
         .iter()
@@ -57,6 +72,7 @@ pub fn ask(root: &Path, generation: u64, container: &str, replace: bool, now: i6
         generation,
         container: container.to_owned(),
         replace,
+        base_sha256,
     };
     requests.push(request.clone());
     std::fs::create_dir_all(root).map_err(crate::io_err(root))?;

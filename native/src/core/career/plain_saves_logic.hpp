@@ -521,6 +521,9 @@ struct Request {
     std::string id, container;
     uint64_t generation = 0;
     bool replace = false;
+    // The sha-256 of the container the request was made from, as the launcher's source generation holds it. A request with
+    // one replaces only a loaded container that hashes the same.
+    std::string base_sha256;
 };
 
 inline std::vector<Request> parse_requests(const std::string &text)
@@ -536,9 +539,21 @@ inline std::vector<Request> parse_requests(const std::string &text)
         q.container = r["container"].str();
         q.generation = uint64_t(r["generation"].num(0));
         q.replace = r["replace"].type == json::Value::Bool && r["replace"].b;
+        q.base_sha256 = r["base_sha256"].str();
         out.push_back(std::move(q));
     }
     return out;
+}
+
+// Whether the loaded container is the one a request was made from. A request without a base takes anything.
+inline bool base_matches(const Request &q, const std::string &loaded_sha256)
+{
+    return q.base_sha256.empty() || (!loaded_sha256.empty() && loaded_sha256 == q.base_sha256);
+}
+
+inline std::string changed_since_detail(const Request &q)
+{
+    return "the loaded " + q.container + " changed since generation " + std::to_string(q.generation) + "; not replaced";
 }
 
 struct Result {

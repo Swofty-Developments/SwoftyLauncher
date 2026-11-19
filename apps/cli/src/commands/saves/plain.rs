@@ -94,3 +94,26 @@ pub(super) fn restore_career(
     );
     Ok(())
 }
+
+pub(super) fn remap_ids(plain: &std::path::Path, aliases: &std::path::Path, dry_run: bool) -> Result<()> {
+    let aliases: swofty_core::row_ids::IdAliases = serde_json::from_slice(&std::fs::read(aliases)?)?;
+    let lines = match dry_run {
+        true => swofty_core::saves::plain::rewrite::dry_run(plain, &aliases)?,
+        false => {
+            let now = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map_or(0, |d| d.as_secs() as i64);
+            let maps = swofty_core::saves::remap::IdMaps::from_aliases(&aliases);
+            match Plain::at(plain).rewrite_for_aliases(&maps, None, now)? {
+                swofty_core::saves::plain::rewrite::Outcome::Wrote(r) => {
+                    r.careers.iter().map(|c| c.line()).collect()
+                }
+                other => vec![format!("{other:?}")],
+            }
+        }
+    };
+    for l in lines {
+        println!("{l}");
+    }
+    Ok(())
+}
