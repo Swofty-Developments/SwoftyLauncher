@@ -58,7 +58,21 @@ pub(crate) fn settle<'r>(
     packer: &Packer,
     resources: impl IntoIterator<Item = &'r mut Resource>,
 ) -> Result<usize> {
-    Ok(packer.settle(resources.into_iter().flat_map(|r| r.fragments.iter_mut()))?)
+    let before = swofty_formats::erp::frame_stats();
+    let started = std::time::Instant::now();
+    let settled = packer.settle(resources.into_iter().flat_map(|r| r.fragments.iter_mut()))?;
+    let now = swofty_formats::erp::frame_stats();
+    crate::diagnostics::phases::note(format!(
+        "compress {settled} fragment(s) in {} ms: {} from the frame cache ({} MiB), {} compressed ({} MiB to {} MiB, {} ms of work)",
+        started.elapsed().as_millis(),
+        now.hits - before.hits,
+        (now.hit_bytes - before.hit_bytes) >> 20,
+        now.misses - before.misses,
+        (now.miss_bytes - before.miss_bytes) >> 20,
+        (now.miss_packed - before.miss_packed) >> 20,
+        (now.miss_nanos - before.miss_nanos) / 1_000_000,
+    ));
+    Ok(settled)
 }
 
 /// Marks the frames in a frame cache, so a test can tell the frames a later build takes from it.
