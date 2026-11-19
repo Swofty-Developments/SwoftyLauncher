@@ -39,6 +39,14 @@ std::string read_file(const std::wstring &, size_t)
 {
     return "";
 }
+uint32_t write_refusal(const std::wstring &)
+{
+    return 0;
+}
+std::string narrow(const std::wstring &)
+{
+    return "";
+}
 }
 
 namespace {

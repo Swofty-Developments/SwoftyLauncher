@@ -1,6 +1,8 @@
 #include "perf.hpp"
 
+#include "../loader/data_folder.h"
 #include "blackbox.hpp"
+#include "crash_dir.hpp"
 #include "imports.hpp"
 #include "pacing_logic.hpp"
 #include "perf_logic.hpp"
@@ -698,11 +700,38 @@ std::string report(const char *why)
     return out;
 }
 
+// swofty\perf.log, or perf-fallback.log in the data folder's state folder (beside loader-fallback.log) when the game
+// can't create files in swofty\ (an EA app copy under Program Files). The launcher keeps either in the session folder.
+const std::wstring &report_path()
+{
+    static std::wstring path;
+    static std::once_flag once;
+    std::call_once(once, [] {
+        path = runtime::swofty_root() + L"perf.log";
+        DWORD refused = runtime::write_refusal(runtime::swofty_root());
+        if (!refused)
+            return;
+        wchar_t folder[MAX_PATH * 2];
+        std::wstring data(folder, swofty_data_folder(folder, MAX_PATH * 2));
+        if (data.empty()) {
+            swofty::log("[perf] the game can't create swofty\\perf.log (error %lu) and LOCALAPPDATA is not set; no report "
+                        "is written",
+                        refused);
+            return;
+        }
+        CreateDirectoryW(crash_dir::fallback(data).c_str(), nullptr);
+        path = crash_dir::perf_fallback(data);
+        swofty::log("[perf] the game can't create swofty\\perf.log (error %lu); the report goes to %s", refused,
+                    runtime::narrow(path).c_str());
+    });
+    return path;
+}
+
 void write_report(const char *why)
 {
     std::lock_guard<std::mutex> g(write_lock);
     std::string text = report(why);
-    std::wstring path = runtime::swofty_root() + L"perf.log", tmp = path + L".tmp";
+    std::wstring path = report_path(), tmp = path + L".tmp";
     HANDLE f = CreateFileW(tmp.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     DWORD w = 0;
     bool ok = f != INVALID_HANDLE_VALUE && WriteFile(f, text.data(), DWORD(text.size()), &w, nullptr) && w == text.size();
@@ -1669,6 +1698,7 @@ void start()
 {
     if (!live() || wake)
         return;
+    report_path();
     wake = CreateEventW(nullptr, FALSE, FALSE, nullptr);
     if (HANDLE t = CreateThread(nullptr, 0, writer, nullptr, 0, nullptr))
         CloseHandle(t);

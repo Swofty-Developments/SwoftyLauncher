@@ -691,6 +691,25 @@ for mode in crash exit heap abort; do
         [[ $code != 0 && $code != 124 && $code != 137 ]] && echo "ok  : abort: the process aborted ($code)" || { echo "FAIL: abort: the process did not abort on its own (exit $code)"; status=1; }
     fi
 done
+echo "==== perf_ro"
+PERF_FALLBACK=$(winepath -u "$(wine cmd /c 'echo %LOCALAPPDATA%' | tr -d '\r')")/Swofty/state/perf-fallback.log
+rm -f "$SW/perf.log" "$PERF_FALLBACK"
+chmod a-w "$SW"
+if [[ -w $SW ]]; then
+    echo "skip: perf_ro: this user writes in read-only folders (root?), so the refusal cannot be staged"
+    chmod u+w "$SW"
+else
+    timeout 120 "${PIN[@]}" xvfb-run -a wine cmd /c "$OUT/game/F1_25.exe" perf_ro >"$OUT/perf_ro.out" 2>&1 || true
+    chmod u+w "$SW"
+    grep -F '[perf]' "$LOG" | tail -5
+    once "perf_ro: a game folder that refuses perf.log moves it to the data folder" \
+        '\[perf\] the game can.t create swofty[\]perf\.log \(error 5\); the report goes to .*[\]Swofty[\]state[\]perf-fallback\.log[[:space:]]*$'
+    [[ -e $SW/perf.log ]] && { echo "FAIL: perf_ro: perf.log reached the game folder"; status=1; } ||
+        echo "ok  : perf_ro: nothing reached the game folder"
+    head -1 "$PERF_FALLBACK" 2>/dev/null | grep -q '^Swofty Launcher performance report' &&
+        echo "ok  : perf_ro: the report is in the data folder's perf-fallback.log" ||
+        { echo "FAIL: perf_ro: no report in $PERF_FALLBACK"; status=1; }
+fi
 for guard in on off; do
     echo "==== acclim ($guard)"
     code=0
