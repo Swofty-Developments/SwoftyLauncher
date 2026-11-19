@@ -274,6 +274,18 @@ impl Pipeline<'_, '_> {
                     id_aliases.write(&src)?;
                     built.plan.loader.insert(rel, src);
                     let n: usize = id_aliases.tables.values().map(|t| t.len()).sum();
+                    if !run.checking {
+                        let now = std::time::SystemTime::now()
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .map_or(0, |d| d.as_secs() as i64);
+                        built.lines.extend(crate::saves::plain::rewrite::prepare(
+                            &store.root,
+                            run.profile,
+                            session.launcher_saves.is_some(),
+                            id_aliases,
+                            now,
+                        ));
+                    }
                     built.lines.push(format!(
                         "database: {LOADER_DIR}/{} maps {n} earlier row id(s) to the ids the rows have now, so saves made under the earlier ids load",
                         crate::row_ids::ALIASES_FILE
