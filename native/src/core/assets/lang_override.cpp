@@ -433,6 +433,8 @@ const SwoftyLang table = {lang_available, lang_override_set, lang_override_clear
 
 const SwoftyLang *runtime::lang_table() { return &table; }
 
+void runtime::lang_override_setup() { setup_once(); }
+
 size_t runtime::lang_batch(const std::vector<runtime::LangOp> &ops)
 {
     setup_once();
