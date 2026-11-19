@@ -35,7 +35,7 @@ if command -v flock >/dev/null; then
 fi
 rm -rf "$DIST"
 mkdir -p "$DIST/swofty/addons/core"
-python3 tools/supported_builds.py ../packages/core/src/build_support.rs "$OUT/supported_builds.h.new"
+python3 tools/supported_builds.py ../packages/core/src/games/f1_25/build_support.rs "$OUT/supported_builds.h.new"
 cmp -s "$OUT/supported_builds.h.new" "$OUT/supported_builds.h" || mv "$OUT/supported_builds.h.new" "$OUT/supported_builds.h"
 rm -f "$OUT/supported_builds.h.new"
 # bindgen writes bindings.json for the KB build and bindings.<build>.json for every other overlay in

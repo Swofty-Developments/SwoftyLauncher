@@ -9,7 +9,7 @@ These are the ways stock F1 25 screens combine UI nodes, read from the stock `.u
 
 ## A pattern in full
 
-The launcher's era picker adds an Addons row under the stock Built In row of `dynamic_era_select`, and wires the two rows together the way `promo_store` does. This is the wiring, from `packages/core/src/ui/era.rs`:
+The launcher's era picker adds an Addons row under the stock Built In row of `dynamic_era_select`, and wires the two rows together the way `promo_store` does. This is the wiring, from `packages/core/src/games/f1_25/ui/era.rs`:
 
 ```rust
 // one row: its spawner reports a failed move to the row, the row forwards focus and input to its spawner
@@ -121,7 +121,7 @@ A spawner fires `navigate_up_failed`, `navigate_down_failed`, `navigate_left_fai
 ## Focus and input blocking
 
 ```rust
-// packages/core/src/ui/era.rs: the stock era spawner takes InputOnActPrt
+// packages/core/src/games/f1_25/ui/era.rs: the stock era spawner takes InputOnActPrt
 key.set_str("InputOnActPrt");
 ```
 
@@ -164,7 +164,7 @@ play_button_list.idf
 A binding names a view-model key relative to the template's view model, such as `tiles`, or a global path starting with `#`. Native code publishes the keys. A key that native code adds after the template is created, such as the era picker's `addon_tiles`, `selected_addon_tile` and `addon_tiles_visible` (published at `site_FeTile_EraTilesBuilt`), exists at bind time only if the native step ran first. Stock `dynamic_era_select` binds only `tiles` and `selected_tile`.
 
 ```rust
-// packages/core/src/ui/era.rs
+// packages/core/src/games/f1_25/ui/era.rs
 pub const ADDON_TILES: &str = "addon_tiles";
 pub const ADDON_SELECTION: &str = "selected_addon_tile";
 pub const ADDON_PRESSED: &str = "addon_select_pressed";
@@ -175,7 +175,7 @@ The launcher flags every view-model key an edited template binds that no stock n
 
 ## Checking UI edits
 
-`packages/core/src/ui/check.rs` checks edited `.ui` and `.idf` resources in three layers:
+`packages/core/src/games/f1_25/ui/check.rs` checks edited `.ui` and `.idf` resources in three layers:
 
 ```text
 hard, engine   re/db/ui/loader_rules.json: the checks the engine's UI loader applies, read from F1_25.exe and documented

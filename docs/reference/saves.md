@@ -312,7 +312,7 @@ $ swofty saves versions
 A profile with **Use launcher saves** off keeps its careers in the Steam save. An F1 25 started from Steam without the launcher runs without the profile's addons and drops the career containers no loaded game mode claims (`gm_driver_career_progressive`) when it saves; Steam Cloud then uploads that save. The profile save is encrypted, so the launcher reads the signs in the vault instead of the containers.
 
 ```rust
-// packages/core/src/saves/vault/guard.rs
+// packages/core/src/games/f1_25/saves/vault/guard.rs
 let loss = vault.probable_loss();   // Option<Loss { snapshot, at, careers, .. }>
 ```
 

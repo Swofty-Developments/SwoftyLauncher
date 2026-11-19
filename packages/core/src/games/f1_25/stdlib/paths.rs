@@ -21,164 +21,167 @@ const PATH_DEF: &str = "#/$defs/path";
 const SCHEMAS: &[(&str, &str)] = &[
     (
         "addon.option",
-        include_str!("../../../sdk/std/registries/addon.option/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/addon.option/1.0.json"),
     ),
     (
         "car.profile",
-        include_str!("../../../sdk/std/registries/car.profile/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/car.profile/1.0.json"),
     ),
     (
         "career.calendar",
-        include_str!("../../../sdk/std/registries/career.calendar/1.1.json"),
+        include_str!("../../../../../sdk/std/registries/career.calendar/1.1.json"),
     ),
     (
         "career.character",
-        include_str!("../../../sdk/std/registries/career.character/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/career.character/1.0.json"),
     ),
     (
         "career.content",
-        include_str!("../../../sdk/std/registries/career.content/1.1.json"),
+        include_str!("../../../../../sdk/std/registries/career.content/1.1.json"),
     ),
     (
         "career.driver_ratings",
-        include_str!("../../../sdk/std/registries/career.driver_ratings/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/career.driver_ratings/1.0.json"),
     ),
     (
         "career.market",
-        include_str!("../../../sdk/std/registries/career.market/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/career.market/1.0.json"),
     ),
     (
         "career.mode",
-        include_str!("../../../sdk/std/registries/career.mode/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/career.mode/1.0.json"),
     ),
     (
         "career.rnd.tree",
-        include_str!("../../../sdk/std/registries/career.rnd.tree/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/career.rnd.tree/1.0.json"),
     ),
     (
         "career.season",
-        include_str!("../../../sdk/std/registries/career.season/1.1.json"),
+        include_str!("../../../../../sdk/std/registries/career.season/1.1.json"),
     ),
     (
         "career.wizard",
-        include_str!("../../../sdk/std/registries/career.wizard/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/career.wizard/1.0.json"),
     ),
     (
         "content.package",
-        include_str!("../../../sdk/std/registries/content.package/1.6.json"),
+        include_str!("../../../../../sdk/std/registries/content.package/1.6.json"),
     ),
     (
         "driver.head",
-        include_str!("../../../sdk/std/registries/driver.head/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/driver.head/1.0.json"),
     ),
     (
         "driver.identity",
-        include_str!("../../../sdk/std/registries/driver.identity/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/driver.identity/1.0.json"),
     ),
     (
         "driver.look",
-        include_str!("../../../sdk/std/registries/driver.look/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/driver.look/1.0.json"),
     ),
     (
         "driver.person",
-        include_str!("../../../sdk/std/registries/driver.person/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/driver.person/1.0.json"),
     ),
     (
         "driver.stats",
-        include_str!("../../../sdk/std/registries/driver.stats/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/driver.stats/1.0.json"),
     ),
     (
         "engine_sound",
-        include_str!("../../../sdk/std/registries/engine_sound/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/engine_sound/1.0.json"),
     ),
     (
         "era.box",
-        include_str!("../../../sdk/std/registries/era.box/1.2.json"),
+        include_str!("../../../../../sdk/std/registries/era.box/1.2.json"),
     ),
     (
         "gloves",
-        include_str!("../../../sdk/std/registries/gloves/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/gloves/1.0.json"),
     ),
     (
         "helmet",
-        include_str!("../../../sdk/std/registries/helmet/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/helmet/1.0.json"),
     ),
     (
         "hud.element",
-        include_str!("../../../sdk/std/registries/hud.element/1.4.json"),
+        include_str!("../../../../../sdk/std/registries/hud.element/1.4.json"),
     ),
     (
         "hub.tab",
-        include_str!("../../../sdk/std/registries/hub.tab/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/hub.tab/1.0.json"),
     ),
     (
         "lang.string",
-        include_str!("../../../sdk/std/registries/lang.string/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/lang.string/1.0.json"),
     ),
     (
         "livery",
-        include_str!("../../../sdk/std/registries/livery/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/livery/1.0.json"),
     ),
     (
         "rules.drs",
-        include_str!("../../../sdk/std/registries/rules.drs/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/rules.drs/1.0.json"),
     ),
     (
         "session.points",
-        include_str!("../../../sdk/std/registries/session.points/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/session.points/1.0.json"),
     ),
-    ("suit", include_str!("../../../sdk/std/registries/suit/1.0.json")),
+    (
+        "suit",
+        include_str!("../../../../../sdk/std/registries/suit/1.0.json"),
+    ),
     (
         "team.constructor",
-        include_str!("../../../sdk/std/registries/team.constructor/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/team.constructor/1.0.json"),
     ),
     (
         "team.garage",
-        include_str!("../../../sdk/std/registries/team.garage/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/team.garage/1.0.json"),
     ),
     (
         "team.identity",
-        include_str!("../../../sdk/std/registries/team.identity/1.1.json"),
+        include_str!("../../../../../sdk/std/registries/team.identity/1.1.json"),
     ),
     (
         "team.logo",
-        include_str!("../../../sdk/std/registries/team.logo/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/team.logo/1.0.json"),
     ),
     (
         "team.pit_times",
-        include_str!("../../../sdk/std/registries/team.pit_times/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/team.pit_times/1.0.json"),
     ),
     (
         "track",
-        include_str!("../../../sdk/std/registries/track/1.1.json"),
+        include_str!("../../../../../sdk/std/registries/track/1.1.json"),
     ),
     (
         "track.data",
-        include_str!("../../../sdk/std/registries/track.data/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/track.data/1.0.json"),
     ),
     (
         "track.per_package",
-        include_str!("../../../sdk/std/registries/track.per_package/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/track.per_package/1.0.json"),
     ),
     (
         "track.venue",
-        include_str!("../../../sdk/std/registries/track.venue/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/track.venue/1.0.json"),
     ),
     (
         "vehicle",
-        include_str!("../../../sdk/std/registries/vehicle/1.1.json"),
+        include_str!("../../../../../sdk/std/registries/vehicle/1.1.json"),
     ),
     (
         "vehicle.handling",
-        include_str!("../../../sdk/std/registries/vehicle.handling/1.1.json"),
+        include_str!("../../../../../sdk/std/registries/vehicle.handling/1.1.json"),
     ),
     (
         "vehicle.package",
-        include_str!("../../../sdk/std/registries/vehicle.package/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/vehicle.package/1.0.json"),
     ),
     (
         "wearable.season_set",
-        include_str!("../../../sdk/std/registries/wearable.season_set/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/wearable.season_set/1.0.json"),
     ),
 ];
 

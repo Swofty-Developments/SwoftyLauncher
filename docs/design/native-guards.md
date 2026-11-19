@@ -253,7 +253,7 @@ bindings and `runtime::find`, and the guard logs its needs or not-hooked line.
   most 31) but not the type, which indexes the [9][32] request table at placement + 0x38. Every game call passes a
   constant type: 3, 5, 6 or 7 (0x142a3c7b2 picks 5 or 6). The core never calls it. The box grid's wrap
   (`core/boxes/box_grid.cpp`) passes the game's type through and acts on type 5 only. The launcher's world extension
-  (`packages/core/src/activation/grid.rs`, `extend`) clones a world's own GridSlot, PitGarage, F1Garage and PitBox
+  (`packages/core/src/games/f1_25/activation/grid.rs`, `extend`) clones a world's own GridSlot, PitGarage, F1Garage and PitBox
   entries and sets only their id, so each added request keeps the type of the entry it copies. No std library code
   reaches the placement system.
 - `Sess_VehiclePlacementRequest_Register` (0x142f60c80) stores the request at table[type][slot] from its +0x1c and

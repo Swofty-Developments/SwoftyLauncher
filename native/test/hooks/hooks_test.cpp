@@ -51,7 +51,7 @@ static Platform platform()
     return p;
 }
 
-// The test suite's parser (packages/core/src/testsuite/checks.rs is_event), ported line for line.
+// The test suite's parser (packages/core/src/games/f1_25/testsuite/checks.rs is_event), ported line for line.
 static bool is_event(const std::string &line, const std::string &id)
 {
     size_t at = line.find("[events] ");

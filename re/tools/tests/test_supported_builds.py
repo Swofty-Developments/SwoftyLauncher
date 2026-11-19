@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-RUST = ROOT / 'packages/core/src/build_support.rs'
+RUST = ROOT / 'packages/core/src/games/f1_25/build_support.rs'
 TOOL = ROOT / 'native/tools/supported_builds.py'
 
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check packages/core/src/dbedit/modules.json against a game database.
+"""Check packages/core/src/games/f1_25/dbedit/modules.json against a game database.
 
 Resolves every module's scopes, rows and field paths, prints per module the rows found,
 the fields missing per row and a sample row rendered with names. Exits 1 on a schema

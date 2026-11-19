@@ -26,7 +26,7 @@
 // own are unset, and calls the router FeTile_Route_CareerItem.
 //
 // Addons row: the content select screen (game::FECareerDLCSelectViewModel, its TileList at +0x2c8)
-// gets a second spawner, addon_buttons, from the UI build (packages/core/src/ui/career_select.rs).
+// gets a second spawner, addon_buttons, from the UI build (packages/core/src/games/f1_25/ui/career_select.rs).
 // The site finds the view model on the stack, takes the addon_buttons list node under its root and
 // appends each content tile while the TileList's buttons node points at it, so the tile's VM node
 // lands in the Addons row and its entry in the same item vector after the stock tiles. The row raises

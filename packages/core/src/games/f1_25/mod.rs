@@ -1,5 +1,23 @@
 //! F1 25: every service the launcher has today, and detection through the copies the launcher already finds.
 
+pub mod activation;
+pub mod build;
+pub mod build_support;
+pub mod content;
+pub mod dbedit;
+pub mod erp;
+pub mod game_db;
+pub mod hud;
+pub mod loader_check;
+pub mod offline;
+pub mod planner;
+pub mod row_ids;
+pub mod saves;
+pub mod stdlib;
+pub mod testsuite;
+pub mod tracks;
+pub mod ui;
+
 use std::path::PathBuf;
 
 use swofty_addon::game::{GameInfo, StoreId};

@@ -6,8 +6,8 @@ use std::sync::OnceLock;
 
 use super::FieldMeta;
 
-const KEYS_GZ: &[u8] = include_bytes!("../../../../tools/gamedb/catalog/keys.tsv.gz");
-const TABLES: &str = include_str!("../../../../tools/gamedb/catalog/tables.tsv");
+const KEYS_GZ: &[u8] = include_bytes!("../../../../../../tools/gamedb/catalog/keys.tsv.gz");
+const TABLES: &str = include_str!("../../../../../../tools/gamedb/catalog/tables.tsv");
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum Part {

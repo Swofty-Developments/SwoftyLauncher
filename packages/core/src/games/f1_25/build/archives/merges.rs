@@ -7,7 +7,7 @@ use crate::build::Built;
 use crate::erp::{Held, SliceMerge};
 use crate::planner::{Planner, Target};
 
-pub(in crate::build) fn contested_in(
+pub(in crate::games::f1_25::build) fn contested_in(
     contested: &BTreeSet<(String, String)>,
     path: &Path,
     targets: &[String],
@@ -23,7 +23,7 @@ pub(in crate::build) fn contested_in(
     }))
 }
 
-pub(in crate::build) fn ui_merge_notes(
+pub(in crate::games::f1_25::build) fn ui_merge_notes(
     built: &mut Built,
     planner: &mut Planner,
     merges: Vec<crate::erp::UiMerge>,
@@ -62,7 +62,7 @@ pub(in crate::build) fn ui_merge_notes(
     }
 }
 
-pub(in crate::build) fn slice_merges(ops: &[Op]) -> Vec<(usize, &str, &str)> {
+pub(in crate::games::f1_25::build) fn slice_merges(ops: &[Op]) -> Vec<(usize, &str, &str)> {
     ops.iter()
         .enumerate()
         .filter_map(|(i, op)| match &op.op {
@@ -77,7 +77,7 @@ pub(in crate::build) fn slice_merges(ops: &[Op]) -> Vec<(usize, &str, &str)> {
 
 // A ready overlay loads apart from the build's archives, so a later merge-slices
 // into one of its resources needs it to go in resource by resource.
-pub(in crate::build) fn merged_later(
+pub(in crate::games::f1_25::build) fn merged_later(
     slices: &[(usize, &str, &str)],
     at: usize,
     targets: &[String],
@@ -97,11 +97,11 @@ pub(in crate::build) fn merged_later(
         .map(|(_, erp, uri)| format!("a later erp.merge-slices merges into {uri} in {erp}")))
 }
 
-pub(in crate::build) fn kept_menus_line(name: &str) -> String {
+pub(in crate::games::f1_25::build) fn kept_menus_line(name: &str) -> String {
     format!("{name} ships its own track menu pictures; the launcher's track menus are kept")
 }
 
-pub(in crate::build) fn keep_menus(
+pub(in crate::games::f1_25::build) fn keep_menus(
     built: &mut Built,
     planner: &mut Planner,
     held: Vec<Held>,
@@ -128,7 +128,7 @@ pub(in crate::build) fn keep_menus(
     }
 }
 
-pub(in crate::build) fn record_merge(
+pub(in crate::games::f1_25::build) fn record_merge(
     built: &mut Built,
     planner: &mut Planner,
     origin: &Origin,
@@ -168,7 +168,7 @@ pub(in crate::build) fn record_merge(
 
 /// Whether the overlay archive at `path` holds a car handling file for one of
 /// a team archive in `targets`.
-pub(in crate::build) fn carries_handling(path: &Path, targets: &[String]) -> Result<bool> {
+pub(in crate::games::f1_25::build) fn carries_handling(path: &Path, targets: &[String]) -> Result<bool> {
     if !targets.iter().any(|t| t.to_ascii_lowercase().contains("/teams/")) {
         return Ok(false);
     }

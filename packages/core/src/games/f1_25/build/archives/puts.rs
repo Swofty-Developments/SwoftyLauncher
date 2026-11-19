@@ -9,13 +9,13 @@ use crate::store::Store;
 
 /// An archive a `file.put` replaces whole while ERP ops change it too: its last
 /// put in load order.
-pub(in crate::build) struct ArchivePut {
+pub(in crate::games::f1_25::build) struct ArchivePut {
     rank: usize,
     pub origin: Origin,
     pub path: PathBuf,
 }
 
-pub(in crate::build) fn archive_puts(
+pub(in crate::games::f1_25::build) fn archive_puts(
     store: &Store,
     files: &[Op],
     erps: &[Op],
@@ -55,7 +55,7 @@ pub(in crate::build) fn archive_puts(
     Ok(puts)
 }
 
-pub(in crate::build) fn holds_texture_arrays(path: &Path) -> bool {
+pub(in crate::games::f1_25::build) fn holds_texture_arrays(path: &Path) -> bool {
     swofty_formats::erp::ErpFile::open(path).is_ok_and(|f| {
         f.erp
             .resources
@@ -66,7 +66,11 @@ pub(in crate::build) fn holds_texture_arrays(path: &Path) -> bool {
 
 /// Leaves out of `op` the archives a put replaces later in load order; false
 /// when none is left.
-pub(in crate::build) fn after_puts(op: &mut Op, puts: &BTreeMap<String, ArchivePut>, rank: usize) -> bool {
+pub(in crate::games::f1_25::build) fn after_puts(
+    op: &mut Op,
+    puts: &BTreeMap<String, ArchivePut>,
+    rank: usize,
+) -> bool {
     let replaced = |erp: &str| puts.get(erp).is_some_and(|p| p.rank > rank);
     match &mut op.op {
         AssetOp::Erp(crate::ops::ErpOp::Overlay { erps, .. }) => {

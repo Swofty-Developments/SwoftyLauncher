@@ -6,7 +6,7 @@ use crate::erp::Resized;
 
 /// The warning for an addon's archive changes a build skips because the
 /// archives they change aren't in the game folder.
-pub(in crate::build) fn missing_archives(name: &str, rels: &BTreeSet<String>) -> String {
+pub(in crate::games::f1_25::build) fn missing_archives(name: &str, rels: &BTreeSet<String>) -> String {
     let first = rels.first().map_or("", String::as_str);
     let what = match rels.len() {
         1 => format!("{first} is not a file in F1 25"),
@@ -19,7 +19,12 @@ pub(in crate::build) fn missing_archives(name: &str, rels: &BTreeSet<String>) ->
 
 /// The warning for an addon's change a build skips because the archive
 /// another addon provides has no such resource.
-pub(in crate::build) fn missing_resource(name: &str, erp: &str, resource: &str, provider: &str) -> String {
+pub(in crate::games::f1_25::build) fn missing_resource(
+    name: &str,
+    erp: &str,
+    resource: &str,
+    provider: &str,
+) -> String {
     format!(
         "{name}: change skipped; {resource} is not in {erp}, which {provider} provides. Turn {name} off if it doesn't work, and tell its author"
     )
@@ -28,7 +33,10 @@ pub(in crate::build) fn missing_resource(name: &str, erp: &str, resource: &str, 
 /// The game-root folders addons put files in that the game never reads from
 /// there: not a folder at the game root, but one under `2025_asset_groups/`.
 /// Each is the addon, the folder and how many files go in it.
-pub(in crate::build) fn stray_asset_groups(game: &Path, files: &[Op]) -> Vec<(String, String, usize)> {
+pub(in crate::games::f1_25::build) fn stray_asset_groups(
+    game: &Path,
+    files: &[Op],
+) -> Vec<(String, String, usize)> {
     let mut counts: BTreeMap<(String, String), usize> = BTreeMap::new();
     for op in files {
         let AssetOp::File(FileOp::Put { target, .. }) = &op.op else {
@@ -51,7 +59,7 @@ pub(in crate::build) fn stray_asset_groups(game: &Path, files: &[Op]) -> Vec<(St
     counts.into_iter().map(|((a, f), n)| (a, f, n)).collect()
 }
 
-pub(in crate::build) fn stray_asset_group_line(name: &str, folder: &str, n: usize) -> String {
+pub(in crate::games::f1_25::build) fn stray_asset_group_line(name: &str, folder: &str, n: usize) -> String {
     format!(
         "{name}: {n} file(s) under {folder}/ land at the game root, where the game never reads them; the folder belongs under 2025_asset_groups/ - re-import it with that path"
     )
@@ -60,7 +68,7 @@ pub(in crate::build) fn stray_asset_group_line(name: &str, folder: &str, n: usiz
 // The game loads a resource from whichever archive reads it first, so a
 // resized resource that another stock archive also carries can still show
 // the stock copy. Each name is matched as it sits in an archive index.
-pub(in crate::build) fn stock_holders(game_dir: &Path, resized: &[Resized]) -> Vec<String> {
+pub(in crate::games::f1_25::build) fn stock_holders(game_dir: &Path, resized: &[Resized]) -> Vec<String> {
     let mut by_root: BTreeMap<String, Vec<&str>> = BTreeMap::new();
     let mut written = std::collections::BTreeSet::new();
     for r in resized {

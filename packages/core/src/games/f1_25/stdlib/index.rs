@@ -372,7 +372,7 @@ mod tests {
     #[test]
     fn matches_its_schema_file() {
         let schema: serde_json::Value =
-            serde_json::from_str(include_str!("../../../sdk/std/index.schema.json")).unwrap();
+            serde_json::from_str(include_str!("../../../../../sdk/std/index.schema.json")).unwrap();
         let required: Vec<&str> = schema["required"]
             .as_array()
             .unwrap()

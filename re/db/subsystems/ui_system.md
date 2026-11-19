@@ -9,7 +9,7 @@ reference that ties them together, so a future addon can edit and add UI in a ge
 
 Distilled from, and kept honest against, three primary sources (all in
 `/mnt/work/VSC/F1ModManager`):
-- the launcher's UI generator — `packages/core/src/ui/{node,pages,patch,check,mod}.rs` (it
+- the launcher's UI generator — `packages/core/src/games/f1_25/ui/{node,pages,patch,check,mod}.rs` (it
   authors working `.ui`/UIDF screens and patches the stock UI ERPs, so it is the Rosetta stone);
 - the binary format crates — `packages/formats/src/{pkg,erp}.rs`;
 - the native runtime loader + view-model binder — `native/src/core/frontend/{ui,ui_vm}.cpp`;
@@ -765,7 +765,7 @@ A node the engine rejects takes down more than itself, and nothing logs it (`vm.
   the era picker it emptied the F1 World play screen **[run; mapping inferred]**;
 - a **duplicate template name**: every later template of that resource **[L2]**.
 
-`packages/core/src/ui/check.rs` checks every edited `.ui`/`.idf` against its stock copy before a build
+`packages/core/src/games/f1_25/ui/check.rs` checks every edited `.ui`/`.idf` against its stock copy before a build
 ships (addon `operations.erp` results, `operations.screens` files, the core menu build) in three layers
 (`docs/reference/ui/patterns.md#checking-ui-edits`):
 - **hard, engine** — the rules in `re/db/ui/loader_rules.json`: `node.record`,
@@ -816,7 +816,7 @@ Tools (`/mnt/work/VSC/F1ModManager/tools/`, mirrored in the `modlist` worktree `
   `uitree.py <file> [--full]` — print the node tree (events/signals with `--full`); `uiops.py` —
   build/patch UI node ops; `ui_catalog.py` — catalog; `erpw.py`/`erpx.py`/`erpdump.py` —
   rebuild/extract/dump archives.
-- Rust: `packages/formats/src/{pkg,erp}.rs`; `packages/core/src/ui/{node,pages,patch,check}.rs`
+- Rust: `packages/formats/src/{pkg,erp}.rs`; `packages/core/src/games/f1_25/ui/{node,pages,patch,check}.rs`
   (generator), `packages/core/src/{erpbuild,pkgedit}.rs` (`operations.erp`/`patch-pkg`).
 
 ---

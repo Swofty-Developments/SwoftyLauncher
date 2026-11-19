@@ -9,7 +9,7 @@ use crate::Result;
 use crate::manifest::OptionType;
 use crate::ui::node::*;
 
-pub(in crate::ui) fn as_group(n: &mut Node) -> Result<()> {
+pub(in crate::games::f1_25::ui) fn as_group(n: &mut Node) -> Result<()> {
     let keep = [
         "id", "version", "type", "nameId", "name", "animData", "enabled", "visible",
     ];

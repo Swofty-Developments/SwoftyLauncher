@@ -669,7 +669,7 @@ Read from the tree at the merge of v1.10.0 into this lane (c5d42a015); no code w
 **Already in place for the installed build** (F1 25 1.0.145, Steam build 26566308, PE timestamp 1794312636, 391,613,312
 bytes):
 
-- The launcher lists it as supported: `BUILD_1_0_145` in `packages/core/src/build_support.rs:13`, in the supported list at
+- The launcher lists it as supported: `BUILD_1_0_145` in `packages/core/src/games/f1_25/build_support.rs:13`, in the supported list at
   line 18.
 - The loader's build gate loads it (`native/test/build_gate_test.c:22`, "the 1.0.145 Steam build loads").
 - `runtime::verified_build()` is true on it (`native/src/core/runtime/stage.cpp:213-219`: the stamp and SizeOfImage

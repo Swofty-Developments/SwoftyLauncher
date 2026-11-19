@@ -12,7 +12,7 @@ use super::{Rows, TRACKS};
 /// `$DATA/registry/older-tracks.json`: the tracks `track.add` adds for addons with no track record.
 pub const OLDER_FILE: &str = "older-tracks.json";
 pub const OLDER_VERSION: u32 = 1;
-const VENUES_JSON: &str = include_str!("../../../sdk/std/data/venues.json");
+const VENUES_JSON: &str = include_str!("../../../../../sdk/std/data/venues.json");
 
 /// Writes `$DATA/registry/older-tracks.json` for the tracks `track.add` added for addons with no
 /// track record; `shipped` and `built` are the game's database and the build's.

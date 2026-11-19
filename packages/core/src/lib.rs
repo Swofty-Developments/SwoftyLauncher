@@ -1,36 +1,24 @@
 pub use swofty_addon::{GAME_ID, asset, builder, game, launcher, manifest, ops, view};
 
-pub mod activation;
 pub mod addons;
-pub mod build;
-pub mod build_support;
 pub mod cache;
 pub mod catalog;
-pub mod content;
 pub mod data;
-pub mod dbedit;
 pub mod diagnostics;
-pub mod erp;
-pub mod game_db;
 pub mod game_folder;
 pub mod games;
-pub mod hud;
 pub mod install;
-pub mod loader_check;
-pub mod offline;
 pub mod online;
-pub mod planner;
 pub mod platform;
 pub mod profile;
-pub mod row_ids;
-pub mod saves;
 pub mod session;
-pub mod stdlib;
 pub mod store;
-pub mod testsuite;
-pub mod tracks;
-pub mod ui;
 pub mod updates;
+
+pub use games::f1_25::{
+    activation, build, build_support, content, dbedit, erp, game_db, hud, loader_check, offline, planner,
+    row_ids, saves, stdlib, testsuite, tracks, ui,
+};
 
 pub const STEAM_APP_ID: u32 = 3_059_520;
 pub const GAME_EXE: &str = swofty_addon::game::F1_25.exe();

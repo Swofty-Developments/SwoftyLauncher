@@ -6,8 +6,8 @@ use swofty_formats::pkg::{Node, Pkg, Val, Value};
 
 use super::idf;
 
-const STOCK_JSON: &str = include_str!("../../../../tools/uicatalog/catalog.json");
-const ENGINE_JSON: &str = include_str!("../../../../re/db/ui/loader_rules.json");
+const STOCK_JSON: &str = include_str!("../../../../../../tools/uicatalog/catalog.json");
+const ENGINE_JSON: &str = include_str!("../../../../../../re/db/ui/loader_rules.json");
 
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]

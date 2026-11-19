@@ -15,7 +15,7 @@
 #include <utility>
 #include <vector>
 
-// A track record lowered to the game database: the launcher's 1.5 track activation (packages/core/src/activation/
+// A track record lowered to the game database: the launcher's 1.5 track activation (packages/core/src/games/f1_25/activation/
 // db.rs activate) ported to the core, over the same table description (track_tables.json, embedded as
 // track_keys.inc). The tracks.Track row is cloned from the slot row or the base row (or a row with the record's code
 // is kept), the track resource is routed to the track's own asset groups, every per-track table gets a row, every
