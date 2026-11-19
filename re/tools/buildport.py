@@ -52,6 +52,7 @@ class Expr:
     def __init__(self, text, names, bit):
         self.toks, self.i = self.tokens(QUALIFIERS.sub('', text)), 0
         self.names, self.bit = names, bit
+        self.used = set()
 
     @staticmethod
     def tokens(text):
@@ -116,18 +117,39 @@ class Expr:
                 raise ValueError(f'bit() of an unknown name {arg[1]!r}')
             return 1 << self.bit[key]
         if kind == 'name' and (val in self.names or val.split('::')[-1] in self.names):
-            return self.names[val] if val in self.names else self.names[val.split('::')[-1]]
+            key = val if val in self.names else val.split('::')[-1]
+            self.used.add(key)
+            return self.names[key]
         raise ValueError(f'unknown name {val!r}')
 
 
-def constants(text, names, bit):
-    """`constexpr uint32_t NAME = expr;` definitions in text, evaluated in order on top of names."""
+def constants(text, names, bit, uses=None):
+    """`constexpr uint32_t NAME = expr;` definitions in text, evaluated in order on top of names. uses, when given,
+    gets the names each definition reads."""
     out = dict(names)
     for m in re.finditer(r'constexpr\s+uint32_t\s+([A-Z][A-Z0-9_]*)\s*=\s*([^;]+);', text):
         try:
-            out[m.group(1)] = Expr(m.group(2), out, bit).value()
+            e = Expr(m.group(2), out, bit)
+            out[m.group(1)] = e.value()
         except ValueError:
-            pass
+            continue
+        if uses is not None:
+            uses[m.group(1)] = e.used
+    return out
+
+
+def taken_from(used, uses):
+    """The proofs whose `.builds` the names in used read, directly or through constants and other proofs, nearest
+    first."""
+    out, todo, seen = [], sorted(used), set()
+    while todo:
+        n = todo.pop(0)
+        if n in seen:
+            continue
+        seen.add(n)
+        if n.endswith('.builds'):
+            out.append(n[:-len('.builds')])
+        todo.extend(sorted(uses.get(n, ())))
     return out
 
 
@@ -210,11 +232,14 @@ def split_top(text):
 
 
 def proofs(order, files=None):
-    """Every Proof the core declares, with the Gates (features) that need it.
+    """Every Proof the core declares, with the Gates (features) that need it. A proof whose builds are another
+    proof's `.builds` (and more) names it in derived_from, and the other proof also lists its features, as
+    "<feature> (through <proof>)": extending the other proof's builds turns them on too.
 
-    [{name, what, builds: [build ids], file, line, features: [feature], bindings: [text]}]"""
+    [{name, what, builds: [build ids], file, line, features: [feature], bindings: [text], derived_from: [proof]}]"""
     bit = dict(order)
-    shared = constants(read(BUILD_PROOF), {}, bit)
+    uses = {}
+    shared = constants(read(BUILD_PROOF), {}, bit, uses)
     out = []
     sources = list(native_sources() if files is None else files)
     sources.sort(key=lambda s: os.path.abspath(s) != os.path.abspath(BUILD_PROOF))
@@ -222,19 +247,22 @@ def proofs(order, files=None):
         text = read(path)
         if 'Proof' not in text:
             continue
-        names = constants(text, shared, bit)
+        names = constants(text, shared, bit, uses)
         found = {}
         for m in PROOF.finditer(text):
             body = braced(text, m.end() - 1)
             parts = split_top(body)
             if len(parts) != 2:
                 continue
-            builds = Expr(parts[1], names, bit).value()
+            e = Expr(parts[1], names, bit)
+            builds = e.value()
             p = {'name': m.group(1), 'what': strings(parts[0]),
                  'builds': sorted((b for b, i in order.items() if builds >> i & 1), key=order.get),
-                 'file': rel(path), 'line': line_of(text, m.start()), 'features': [], 'bindings': []}
+                 'file': rel(path), 'line': line_of(text, m.start()), 'features': [], 'bindings': [],
+                 'derived_from': []}
+            uses[p['name'] + '.builds'] = e.used
             found[p['name']] = p
-            shared[p['name'] + '.builds'] = builds
+            shared[p['name'] + '.builds'] = names[p['name'] + '.builds'] = builds
             out.append(p)
         for m in GATE.finditer(text):
             target = found.get(m.group(3)) or next((p for p in out if p['name'] == m.group(3)), None)
@@ -245,8 +273,14 @@ def proofs(order, files=None):
     users = sorted(rel(p) for p in sources
                    if 'verified_build()' in read(p) and not p.endswith(('build.hpp', 'stage.cpp')))
     for p in out:
-        if p['name'] == 'VERIFIED_LAYOUT' and not p['features']:
-            p['features'] = [f'the code that calls verified_build() in {u}' for u in users]
+        if p['name'] == 'VERIFIED_LAYOUT':
+            p['features'] += [f'the code that calls verified_build() in {u}' for u in users]
+    own = {p['name']: list(p['features']) for p in out}
+    by_name = {p['name']: p for p in out}
+    for p in out:
+        p['derived_from'] = [n for n in taken_from(uses[p['name'] + '.builds'], uses) if n in by_name]
+        for n in p['derived_from']:
+            by_name[n]['features'] += [f'{f} (through {p["name"]})' for f in own[p['name']]]
     return out
 
 
@@ -296,6 +330,8 @@ def layout_report(build, resolves=None):
         where = f'{p["file"]}:{p["line"]}'
         do = (f'check {p["what"]} on the new build (sigport.py --witness of each function that uses the offsets, or '
               f'layoutcmp.py), then add bit(Build::{build or "<new>"}) to {p["name"]} at {where}')
+        if p['derived_from']:
+            do += f', or to {p["derived_from"][0]}, whose builds it takes'
         out['proofs'].append({'proof': p['name'], 'what': p['what'], 'where': where, 'proven_on': p['builds'],
                               'off': p['features'], 'do': do})
     live = live_groups(order)

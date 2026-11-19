@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1409b3190",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void Game_Failure_Apply(void *fail_sys, void *fault_rec, bool silent)",
-  "evidence": "doc:re/db/subsystems/game.md",
-  "notes": "Types (parser 0x1445fba10): 0 Engine (Engine+0x2534 fault MASS kg), 1 Gearbox (GearBox+0x67c kg), 2 MissingGear, 3 GearJammed (gb+0x658 |= 8), 4 ERS (Engine+0x2530 |= 0x18), 5 DRS (F1Aero+0x1988 |= 2), 6 Tyre (puncture 0x14464e200), 7 ERSInaccessibleModes, 8 ERSSoftwareGlitch (mode 2 lock), 9 EngineLeanFuel (only Lean). Removal 0x1409b2f10; scheduling CannedEvents_ScheduleRace 0x1409b9aa0 (session options faults_and_failures / _override / fault_severity) (agent car-pu, static)"
+  "evidence": "decomp:re/decomp/1409b3190.c;decomp:re/decomp/144678300.c;xref:0x1409bcd21;xref:0x1409c1844;xref:0x14467838c",
+  "notes": "E3 2026-11-18 (engine-re, static, decomp read): (failure object f, 0x34-byte record rec, silent). Unless silent it stores the session time in rec[4] (and the human gets a radio line). By type rec[0] (names from parser 0x1445fba10): 0 Engine: Engine+0x2534 = rec+0x2c, or when 0 a random value in [T+0, T+4] (T = [f+0x98]+0xb8) kept in rec+0x2c. Engine+0x2534 is an extra MASS in kg: Car_Chassis_UpdateMassInertia adds it to the car mass (0x14467838c), so an Engine fault only makes the car heavier and has no power, rpm or wear effect (matches #691 'type 0 had no visible effect'). 1 Gearbox: GearBox+0x67c = value or random [T+8, T+0xc], also a mass (0x1446783a0). 2 MissingGear: GearBox+0x664 = rec byte +0x30, +0x668 = now + 86400 s. 3 GearJammed: GearBox+0x658 |= 8, +0x65c = now + 86400 s. 4 ERS: Engine+0x2530 |= 0x18 (bit 3 = UDP ersFault in 0x142d00060). 5 DRS: F1Aero (car+0x570)+0x1988 |= 2, +0x1994 = 1e9. 6 Tyre: puncture through 0x14464e200 on wheel rec+0x31 (random 0..3 when > 3). 7 ERSInaccessibleModes / 8 ERSSoftwareGlitch: per-vehicle MFD words [f+0x98]+0x68 + veh*0x20 bit 6, 8 also forces ERS mode 2 (+0x1a68, old mode to +0x1a6c, +0x1a70 = 1); both set Engine+0x2530 |= 0x18. 9 EngineLeanFuel: MFD words +0x28..+0x34. Sets rec+0x18 = 1. Undo: Game_Fault_Remove 0x1409b2f10. Callers Ai_CannedEvents_Update (0x1409bcd21), Ai_CannedEvents_PerformAccident_2 (0x1409c1844). raised by engine-re with --force 2026-11-18 at user request (lane owner review requested)"
  },
  "signature": {
   "id": "game.failure_apply",
@@ -65,6 +65,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/1409b3190.c",
    "notes": "V4371 9 fault types switch, offsets 0x2534/0x67c/0x658/0x2530/0x1988 confirmed"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "e3-verify",
+   "kind": "func",
+   "item": "0x1409b3190",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1409b3190.c;decomp:own capstone disasm 0x1409b3190 (0x1409b33bc,0x1409b3429,0x1409b3477,0x1409b34b3,0x1409b3609/36a3);decomp:own disasm 0x144678300 at 0x14467838c/0x1446783a0;xref:0x1409bcd22,0x1409c1845",
+   "notes": "V11709 Confirmed: type0 0x2534 from rec or random in [T+0,T+4] (T=[[+0x98]+0xb8]); 0x144678300 adds max(0,engine+0x2534)+max(0,gearbox+0x67c) to dec(+0x98)^2 and uses the sum as mass (CG weighting, inertia). Extras: type1 gearbox+0x67c random [T+8,T+0xc]; type2 0x664=rec byte, 0x668=now+86400; type3 0x65c=now+86400; type5 0x1994=1e9."
   }
  ],
  "proofs": []

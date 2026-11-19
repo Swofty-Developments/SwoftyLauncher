@@ -647,6 +647,8 @@ inline constexpr fn<"Game_FEHomeViewModel_OnUpdate", Game_FEHomeViewModel_OnUpda
 inline constexpr address<"Game_FacilityHeads_CollectAssetGroupDescs"> Game_FacilityHeads_CollectAssetGroupDescs{}; // L2 experimental
 inline constexpr address<"Game_FacilityHeads_RegisterCommandMessages"> Game_FacilityHeads_RegisterCommandMessages{}; // L2 experimental
 inline constexpr address<"Game_FacilityHeads_RegisterCommandMessages_2"> Game_FacilityHeads_RegisterCommandMessages_2{}; // L2 experimental
+using Game_Failure_Apply_t = void(void *fail_sys, void *fault_rec, bool silent);
+inline constexpr fn<"Game_Failure_Apply", Game_Failure_Apply_t> Game_Failure_Apply{}; // L2 experimental
 inline constexpr address<"Game_FakeOption_GetMaxIndex"> Game_FakeOption_GetMaxIndex{}; // L2 experimental
 inline constexpr address<"Game_FakeOption_SetValue"> Game_FakeOption_SetValue{}; // L2 experimental
 inline constexpr address<"Game_FanZoneSeasonResults_Exit"> Game_FanZoneSeasonResults_Exit{}; // L2 experimental
@@ -746,6 +748,7 @@ inline constexpr address<"Game_FuelDynamicObjective_Activate"> Game_FuelDynamicO
 inline constexpr address<"Game_FuelDynamicObjective_Activate_2"> Game_FuelDynamicObjective_Activate_2{}; // L2 experimental
 using Game_FullRaceReplaySystem_Init_t = int(void *self, void *serviceProvider, void *componentMap);
 inline constexpr fn<"Game_FullRaceReplaySystem_Init", Game_FullRaceReplaySystem_Init_t> Game_FullRaceReplaySystem_Init{}; // L2 experimental
+inline constexpr address<"Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap"> Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap{}; // L2 experimental, GameInputModule::applyRebindableGameplayActionsToActionMap
 inline constexpr address<"Game_GameModes_BuildMode"> Game_GameModes_BuildMode{}; // L2 experimental
 inline constexpr address<"Game_GameReplaySystem_SubscribeRewindTutorial"> Game_GameReplaySystem_SubscribeRewindTutorial{}; // L2 experimental
 inline constexpr address<"Game_GameSessionConfig_Destroy"> Game_GameSessionConfig_Destroy{}; // L2 experimental
@@ -862,6 +865,8 @@ inline constexpr address<"Game_MatchingContext_OnSessionRestart"> Game_MatchingC
 inline constexpr address<"Game_MatchingContext_OnStartRematch"> Game_MatchingContext_OnStartRematch{}; // L2 experimental
 inline constexpr address<"Game_MatchingContext_SetRankedSearchParams"> Game_MatchingContext_SetRankedSearchParams{}; // L2 experimental
 inline constexpr address<"Game_MatchingContext_SetupRankedGameSession"> Game_MatchingContext_SetupRankedGameSession{}; // L2 experimental
+using Game_Mfd_FuelMixUp_t = int(void *mfd_car_settings_vm);
+inline constexpr fn<"Game_Mfd_FuelMixUp", Game_Mfd_FuelMixUp_t> Game_Mfd_FuelMixUp{}; // L2 experimental
 inline constexpr address<"Game_MidSession_SaveReplaySnapshot"> Game_MidSession_SaveReplaySnapshot{}; // L2 experimental
 inline constexpr address<"Game_ModelProxyList_Resolve"> Game_ModelProxyList_Resolve{}; // L2 experimental
 inline constexpr address<"Game_MpSeasonCompleteVM_OnActivate"> Game_MpSeasonCompleteVM_OnActivate{}; // L2 experimental
@@ -1027,7 +1032,7 @@ inline constexpr fn<"Game_PitLane_UpdateMovement", Game_PitLane_UpdateMovement_t
 inline constexpr address<"Game_PitLane_VehicleEntering"> Game_PitLane_VehicleEntering{}; // L2 experimental
 inline constexpr address<"Game_PitLane_VehicleEnteringInternal"> Game_PitLane_VehicleEnteringInternal{}; // L2 experimental
 inline constexpr address<"Game_PitLane_VehicleExiting"> Game_PitLane_VehicleExiting{}; // L2 experimental
-inline constexpr address<"Game_PitStopActionObserver_SetTransitionSequence"> Game_PitStopActionObserver_SetTransitionSequence{}; // L2 experimental, PitStopActionObserver::setTransitionSequence
+[[deprecated("deprecated in 1.10.0, removed in the next release: its notes' exe claim is wrong: the only refuel strings are parts of the EnsureFuelLoad race objective names, and there is no fuelling string")]] inline constexpr address<"Game_PitStopActionObserver_SetTransitionSequence"> Game_PitStopActionObserver_SetTransitionSequence{}; // L2 experimental, PitStopActionObserver::setTransitionSequence
 inline constexpr address<"Game_PitStopInstance_PlaySequence"> Game_PitStopInstance_PlaySequence{}; // L2 experimental, PitStopInstance::playSequence
 inline constexpr address<"Game_PitStopLogic_ChangeState"> Game_PitStopLogic_ChangeState{}; // L2 experimental
 inline constexpr address<"Game_PitStopLogic_NeSequenceClipTargetImpl"> Game_PitStopLogic_NeSequenceClipTargetImpl{}; // L2 experimental, PitStopLogic::NeSequenceClipTargetImpl

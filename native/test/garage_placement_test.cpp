@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-using namespace runtime::garage_placement;
+using namespace garage;
 
 struct Fixture {
     std::map<Address, std::vector<unsigned char>> saved;
@@ -315,7 +315,7 @@ void test_individuals_and_vehicle()
 
 void test_build_scope_and_parked_car()
 {
-    namespace b = runtime::garage_placement::steam_26566308;
+    namespace b = garage::steam_26566308;
     constexpr auto sha = "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389";
     assert(b::supported("steam", sha) && !b::supported("ea", sha) && !b::supported("steam", "new-build"));
     swofty::garage_placement::Pit pits[2]{};

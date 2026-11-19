@@ -33,6 +33,8 @@ facts::ModeKind mode_kind();
 void mode_watch();
 void grand_prix_track_check();
 std::string current_mode(const char *where);
+// The tracks table label of a stat id once the table was read in this run, else empty; never reads the database.
+std::string cached_track_label(int stat_id);
 void session_end(const char *source);
 void window();
 int write_reports(const char *when);

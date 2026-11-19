@@ -43,6 +43,9 @@ pub enum ClientNote {
     Log(String),
     /// The launcher's status line while the launch waits; it goes when the wait ends.
     Stage(&'static str),
+    /// Windows refused to start this program for the launch (error 740): it is set to run as
+    /// administrator and the launcher isn't. The launch stops.
+    RunAsAdmin(std::path::PathBuf),
 }
 
 const EA_START_TIMEOUT: Duration = Duration::from_secs(90);
@@ -254,6 +257,11 @@ impl EaClient<'_> {
                 note(ClientNote::Log("detected: closed; starting the EA app".into()));
                 note(ClientNote::Stage("Starting the EA app…"));
                 let mut child = detach(&mut open).map_err(|e| {
+                    if crate::platform::run_as_admin::needs_elevation(&e) {
+                        note(ClientNote::RunAsAdmin(std::path::PathBuf::from(
+                            open.get_program(),
+                        )));
+                    }
                     format!("could not start the EA app ({e}); open the EA app and press Play again")
                 })?;
                 let since = Instant::now();
@@ -524,6 +532,7 @@ mod tests {
                     .map(|c| if c.is_ascii_digit() { '#' } else { c })
                     .collect(),
                 ClientNote::Stage(s) => format!("stage: {s}"),
+                ClientNote::RunAsAdmin(p) => format!("run as admin: {}", p.display()),
             })
             .collect()
     }

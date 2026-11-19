@@ -3,7 +3,7 @@
 
 #include "core/garage/garage_owner.hpp"
 
-namespace runtime::garage_placement {
+namespace garage {
 
 // Read after Game_PitBoxCarActor_Update. The actor's own cached world pose takes
 // precedence. Uncached bones use model world, which differs from the actor
@@ -57,4 +57,4 @@ bool parked_car_world(Read&& read, const Owner& owner, Matrix& out)
     return true;
 }
 
-} // namespace runtime::garage_placement
+} // namespace garage

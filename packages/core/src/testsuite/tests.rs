@@ -1226,6 +1226,233 @@ fn fake_sandbox(remote: &Path) -> (Vec<u8>, Vec<u8>) {
     (data, index)
 }
 
+/// [`fake_sandbox`] as the EA copy's title folder holds it: a folder per save.
+fn fake_ea_title(title: &Path) -> (Vec<u8>, Vec<u8>) {
+    let (data, index) = (noise(894_408, 1), noise(416, 2));
+    for d in ["profile", "highlights000", "midsessions0"] {
+        std::fs::create_dir_all(title.join(d)).unwrap();
+    }
+    std::fs::write(title.join("profile/NXDSMWW.BWW"), &data).unwrap();
+    std::fs::write(title.join("profile/QKRHMYXE"), &index).unwrap();
+    std::fs::write(title.join("profile/NXDSMWW.BWW.swofty-tmp"), noise(16, 6)).unwrap();
+    std::fs::write(title.join("highlights000/FOVUPTYXSA000.PSX"), noise(64, 3)).unwrap();
+    std::fs::write(title.join("highlights000/QKRHMYXE"), noise(416, 7)).unwrap();
+    std::fs::write(title.join("midsessions0/QKRHMYXE"), noise(32, 5)).unwrap();
+    std::fs::write(title.join("desktop.ini"), b"[x]").unwrap();
+    (data, index)
+}
+
+fn ea_set(dir: &Path, sha: &str, ids: &[&str]) {
+    let core = dir.join("swofty/addons/core");
+    std::fs::create_dir_all(&core).unwrap();
+    let bindings: Vec<serde_json::Value> = ids
+        .iter()
+        .map(|id| serde_json::json!({"id": id, "kind": "func", "status": "experimental"}))
+        .collect();
+    let doc = serde_json::json!({"schema": 1, "build": {"sha256": sha, "distribution": "EA App"}, "bindings": bindings});
+    std::fs::write(
+        core.join(format!("bindings.{sha}.json")),
+        serde_json::to_vec(&doc).unwrap(),
+    )
+    .unwrap();
+}
+
+#[test]
+fn the_ea_sandbox_needs_the_ea_install_points_and_an_in_game_run() {
+    use super::sandbox;
+    assert_eq!(sandbox::bindings_for("EA App"), sandbox::EA_BINDINGS);
+    assert_eq!(sandbox::bindings_for("Steam"), sandbox::BINDINGS);
+    assert!(
+        !sandbox::EA_BINDINGS.contains(&"Ne_SaveSystem2Win_WriteInfoXml"),
+        "the EA save device has no corrupt-save upload to switch off"
+    );
+    assert!(sandbox::EA_BINDINGS.contains(&"vt_Ne_SaveSystem2Win"));
+    let dir = sandbox_temp("verify-ea");
+    ea_set(&dir, "ee", sandbox::EA_BINDINGS);
+    ea_set(
+        &dir,
+        "ef",
+        &[
+            "Ne_SaveSystem2Win_Start",
+            "Ne_SaveSystem2Win_Mount",
+            "Ne_SaveSystem2Win_WriteInfoXml",
+        ],
+    );
+    let waits = sandbox::verified(&dir, "ee").unwrap_err();
+    assert!(waits.contains("in-game run"), "{waits}");
+    let proven = sandbox::verified_for(&dir, "ee", true).unwrap();
+    assert!(proven.contains("vt_Ne_SaveSystem2Win experimental"), "{proven}");
+    let lacking = sandbox::verified_for(&dir, "ef", true).unwrap_err();
+    assert!(lacking.contains("lack vt_Ne_SaveSystem2Win"), "{lacking}");
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+#[test]
+fn an_ea_run_takes_the_fixture_into_its_title_folder() {
+    use super::fixture::{self, Meta};
+    use super::sandbox::{RunDir, RunOptions};
+    assert_eq!(
+        fixture::ea_name("savegame@profile#QKRHMYXE").as_deref(),
+        Some("profile/QKRHMYXE")
+    );
+    assert_eq!(
+        fixture::ea_name("savegame@midsessions0#QKRHMYXE").as_deref(),
+        Some("midsessions0/QKRHMYXE")
+    );
+    for bad in [
+        "QKRHMYXE",
+        "savegame@#QKRHMYXE",
+        "savegame@profile#",
+        "savegame@..#x",
+        "savegame@a/b#x",
+        "savegame@p#.x",
+    ] {
+        assert_eq!(fixture::ea_name(bad), None, "{bad}");
+    }
+    let root = sandbox_temp("run-ea");
+    let opts = RunOptions {
+        sandbox: true,
+        exe_sha256: None,
+        dlls: Vec::new(),
+    };
+    let run = RunDir::create(&root.join("data"), "r-ea", opts).unwrap();
+    assert_eq!(run.ea_title(), run.saves().join("ea"));
+    assert_eq!(run.ea_profile(), run.saves().join("ea").join("profile"));
+    assert!(
+        run.ea_profile().is_dir(),
+        "a sandboxed run folder holds saves/ea/profile"
+    );
+    let title = root.join("captured/ea");
+    let (data, index) = fake_ea_title(&title);
+    let f = fixture::capture_ea("ea-r1", &root.join("store"), &title, &[], Meta::default()).unwrap();
+    let kept = root.join("kept");
+    let copied = f.install_ea(&run.ea_title(), &|id| kept.join(id)).unwrap();
+    assert_eq!(copied.len(), 3);
+    assert_eq!(std::fs::read(run.ea_profile().join("NXDSMWW.BWW")).unwrap(), data);
+    assert_eq!(std::fs::read(run.ea_profile().join("QKRHMYXE")).unwrap(), index);
+    assert!(run.ea_title().join("midsessions0/QKRHMYXE").is_file());
+    let busy = f.install_ea(&run.ea_title(), &|id| kept.join(id)).unwrap_err();
+    assert!(busy.contains("is not empty"), "{busy}");
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn an_ea_capture_keeps_each_save_under_its_steam_name_and_installs_only_on_ea() {
+    use super::fixture::{self, Meta};
+    use crate::saves::vault::Layout;
+    for (ea, steam) in [
+        ("profile/QKRHMYXE", "savegame@profile#QKRHMYXE"),
+        ("profile/NXDSMWW.BWW", "savegame@profile#NXDSMWW.BWW"),
+        ("midsessions0/QKRHMYXE", "savegame@midsessions0#QKRHMYXE"),
+    ] {
+        assert_eq!(fixture::steam_name(ea).as_deref(), Some(steam), "{ea}");
+        assert_eq!(fixture::ea_name(steam).as_deref(), Some(ea), "{steam}");
+    }
+    for bad in [
+        "QKRHMYXE",
+        "profile/",
+        "/QKRHMYXE",
+        "a/b/c",
+        "../x",
+        ".p/x",
+        "p/.x",
+        "a#b/c",
+        "p/x:y",
+    ] {
+        assert_eq!(fixture::steam_name(bad), None, "{bad}");
+    }
+    let root = sandbox_temp("capture-ea");
+    let (title, store) = (root.join("ea"), root.join("store"));
+    let (data, index) = fake_ea_title(&title);
+    let f = fixture::capture_ea("ea-hq", &store, &title, &[], Meta::default()).unwrap();
+    let files: Vec<&str> = f.manifest.files.keys().map(String::as_str).collect();
+    assert_eq!(
+        files,
+        [
+            "save/savegame@midsessions0#QKRHMYXE",
+            "save/savegame@profile#NXDSMWW.BWW",
+            "save/savegame@profile#QKRHMYXE",
+        ],
+        "highlights, half-written files and files outside a save's folder are left out"
+    );
+    assert_eq!(f.manifest.layout, Layout::Ea);
+    assert_eq!(
+        std::fs::read(f.dir.join("save/savegame@profile#NXDSMWW.BWW")).unwrap(),
+        data
+    );
+    assert_eq!(
+        std::fs::read(f.dir.join("save/savegame@profile#QKRHMYXE")).unwrap(),
+        index
+    );
+    let doc: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(f.dir.join(fixture::FILE)).unwrap()).unwrap();
+    assert_eq!(doc["layout"], "ea");
+    assert_eq!(fixture::load(&f.dir).unwrap().manifest.layout, Layout::Ea);
+
+    let remote = root.join("remote");
+    fake_sandbox(&remote);
+    let steam = fixture::capture("steam-hq", &store, &remote, &[], Meta::default()).unwrap();
+    assert_eq!(steam.manifest.layout, Layout::Steam);
+    let doc: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(steam.dir.join(fixture::FILE)).unwrap()).unwrap();
+    assert!(
+        doc.get("layout").is_none(),
+        "a Steam fixture's fixture.json is as before"
+    );
+
+    let kept = root.join("kept");
+    let (to_remote, to_title) = (root.join("run/remote"), root.join("run/ea"));
+    std::fs::create_dir_all(&to_remote).unwrap();
+    std::fs::create_dir_all(&to_title).unwrap();
+    let on_steam = f.install(&to_remote, &|id| kept.join(id)).unwrap_err();
+    assert!(
+        on_steam.contains("fixture ea-hq holds EA app saves") && on_steam.contains("takes Steam saves"),
+        "{on_steam}"
+    );
+    let on_ea = steam.install_ea(&to_title, &|id| kept.join(id)).unwrap_err();
+    assert!(
+        on_ea.contains("fixture steam-hq holds Steam saves") && on_ea.contains("takes EA app saves"),
+        "{on_ea}"
+    );
+    assert!(
+        std::fs::read_dir(&to_remote).unwrap().next().is_none()
+            && std::fs::read_dir(&to_title).unwrap().next().is_none(),
+        "a refused install copies nothing"
+    );
+
+    let empty = root.join("empty-ea");
+    std::fs::create_dir_all(empty.join("profile")).unwrap();
+    let none = fixture::capture_ea("ea-none", &store, &empty, &[], Meta::default()).unwrap_err();
+    assert!(none.contains("has no profile/NXDSMWW.BWW"), "{none}");
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[cfg(not(windows))]
+#[test]
+fn an_ea_copy_compares_the_prefix_save_folder() {
+    use super::sandbox;
+    let root = sandbox_temp("live-ea");
+    let dir = root.join("game");
+    std::fs::create_dir_all(dir.join("__Installer")).unwrap();
+    std::fs::write(dir.join(crate::GAME_EXE), b"exe").unwrap();
+    std::fs::write(dir.join("__Installer/installerdata.xml"), b"<game/>").unwrap();
+    let pfx = root.join("pfx");
+    let profile = pfx.join("drive_c/users/steamuser/AppData/Local/F1 25/savegame/ea/profile");
+    std::fs::create_dir_all(&profile).unwrap();
+    std::fs::write(pfx.join("user.reg"), b"").unwrap();
+    let game = crate::install::Game {
+        dir,
+        user_reg: Some(pfx.join("user.reg")),
+        identity: crate::game_folder::baseline::Identity {
+            build_id: "1".into(),
+            exe_sha256: "0".repeat(64),
+        },
+    };
+    assert!(sandbox::ea_copy(&game.dir));
+    assert_eq!(sandbox::live_saves(&game), Some(profile));
+    std::fs::remove_dir_all(&root).ok();
+}
+
 #[test]
 fn a_capture_copies_the_saves_and_storage_and_installs_back_byte_for_byte() {
     use super::fixture::{self, Meta};

@@ -138,7 +138,8 @@ void MixinManager::check_targets(size_t i)
             continue;
         Binding *b = bindings().find(m.target);
         if (!b)
-            return drop(i, "needs %s, which %s does not list", m.target.c_str(), bindings().file().c_str());
+            return drop(i, bindings().note_use(m.target) ? "needs %s, which %s drops" : "needs %s, which %s does not list",
+                        m.target.c_str(), bindings().file().c_str());
         m.addr = resolve(m.target.c_str());
         if (b->deferred) {
             addons_[i].waiting = true;
@@ -241,8 +242,12 @@ uintptr_t MixinManager::resolve(const char *id)
 {
     std::lock_guard<std::recursive_mutex> g(resolve_lock());
     const char *name = id ? id : "(null)";
-    Binding *b = bindings().find(id ? id : "");
+    std::string key = id ? id : "";
+    bool dropped = bindings().note_use(key);
+    Binding *b = bindings().find(key);
     if (!b) {
+        if (dropped)
+            return 0;
         if (current_)
             api->log("[core] addon %s needs %s, which %s does not list: this loader is older than the addon, or %s is "
                      "not an exported binding",

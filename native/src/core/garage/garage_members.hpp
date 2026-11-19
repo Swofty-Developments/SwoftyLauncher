@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 #pragma once
 #include "core/garage/steam_26566308.hpp"
-namespace runtime::garage_placement::members {
+namespace garage::members {
 namespace sdk = swofty::garage_placement;
 using Role = sdk::Mechanic;
 using Result = sdk::Result;
@@ -118,4 +118,4 @@ Result apply(const Owner &o, const NamesByRole &ids, const Edit &change, Read &&
     if (assign(change.target)) return Result::ok;
     return assign(change.before) ? Result::rolled_back : Result::rollback_failed;
 }
-} // namespace runtime::garage_placement::members
+} // namespace garage::members

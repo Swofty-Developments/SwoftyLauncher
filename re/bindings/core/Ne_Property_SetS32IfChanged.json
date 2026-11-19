@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/140972de0.c;xref:0x140ba0857",
-  "notes": "Int32 twin of Ne_Property_SetS64IfChanged (0x140977b20): compares *param_2 with current value (vcall +0x38 of [param_1+0x58]); on change/force builds notification record and fires it. 450 call sites incl Game_WeatherAndTimeOfDayComponent_DeserialiseSaveDataContainer. Hypothesis."
+  "notes": "Int32 twin of Ne_Property_SetUIDBRefIfChanged (0x140977b20): compares *param_2 with current value (vcall +0x38 of [param_1+0x58]); on change/force builds notification record and fires it. 450 call sites incl Game_WeatherAndTimeOfDayComponent_DeserialiseSaveDataContainer. Hypothesis."
  },
  "signature": {
   "id": "core.property_set_s32_if_changed",

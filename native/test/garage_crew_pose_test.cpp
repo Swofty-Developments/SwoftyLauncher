@@ -7,7 +7,7 @@
 #include <map>
 #include <vector>
 
-namespace pose = runtime::garage_crew_pose;
+namespace pose = garage::crew_pose;
 namespace {
 using Address = std::uint64_t;
 using Memory = std::map<Address, std::vector<unsigned char>>;

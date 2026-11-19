@@ -118,6 +118,56 @@ fn a_runtime_route_build_links_the_archives_it_builds_into_the_game_files_unchan
 }
 
 #[test]
+fn an_archive_cache_entry_whose_bytes_changed_is_written_again_instead_of_linked() {
+    use crate::cache::archive_entry::{change_a_byte_in_place, kept_archives};
+    use crate::erp::pack::frame_cache;
+    let root = std::env::temp_dir().join(format!("swofty-erpcache-changed-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let (game, addon) = (root.join("game"), root.join("addon"));
+    let shader = "shader_package_2025/object_flag.nefx2.sm51.erp";
+    let res = "eaid://shader";
+    let noise = |seed: u8, len: u32| -> Vec<u8> {
+        (0..len)
+            .map(|i| ((i % 251) as u8 ^ (i / 1021) as u8).wrapping_add(seed))
+            .collect()
+    };
+    let path = game.join(shader);
+    std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+    std::fs::write(
+        path,
+        archive(vec![frame_cache::zstd_resource(res, "UIDF", &noise(1, 20 << 10))]),
+    )
+    .unwrap();
+    std::fs::create_dir_all(addon.join("raw")).unwrap();
+    std::fs::write(addon.join("raw/shader.bin"), noise(2, 24 << 10)).unwrap();
+    let ops = erp_ops(&format!(
+        r#"{{"schema_version":1,"ops":[{{"op":"replace-resource","erp":"{shader}","resource":"{res}","fragment":0,"source":"raw/shader.bin"}}]}}"#
+    ));
+    let original = |rel: &str| game.join(rel);
+    let cache = root.join("archives");
+    let build = |n: &str| {
+        let mut b = ErpBuild::new(&original);
+        apply(&mut b, &ops, &addon).unwrap();
+        let out = root.join(n);
+        let (outside, reused) = b.take_outside(&out, Some(&cache)).unwrap();
+        assert_eq!(outside, [shader]);
+        (std::fs::read(out.join(shader)).unwrap(), reused)
+    };
+    let (first, reused) = build("one");
+    assert_eq!(reused, 0);
+    let kept = kept_archives(&cache);
+    assert_eq!(kept.len(), 1);
+    change_a_byte_in_place(&kept[0]);
+    let (again, reused) = build("two");
+    assert_eq!(reused, 0, "the changed archive is not linked");
+    assert_eq!(again, first);
+    let (third, reused) = build("three");
+    assert_eq!(reused, 1, "the archive written again is");
+    assert_eq!(third, first);
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
 fn the_built_in_archives_and_the_runtime_overlay_compress_together() {
     let root = std::env::temp_dir().join(format!("swofty-erp-built-in-{}", std::process::id()));
     std::fs::remove_dir_all(&root).ok();

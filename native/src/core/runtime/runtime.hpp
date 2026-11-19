@@ -163,8 +163,10 @@ bool save_sandbox_armed();
 std::string save_sandbox_source();
 std::string save_sandbox_file();
 std::string career_saves_id_for_slot(const std::string &key);
-// FileWrite calls the sandbox has served: a save that reached the save device.
+// Saves that reached the save device: FileWrite calls the Steam proxy served, or on the EA copy the profile saves
+// written in place (save_sandbox_logic.hpp SaveSettle). save_sandbox_writes_what() names them for a log line.
 uint32_t save_sandbox_writes();
+const char *save_sandbox_writes_what();
 // The test run `swofty test` started the game for (SWOFTY_TEST_RUN, SWOFTY_TEST_TOKEN and run.json, read
 // once by save_sandbox.cpp, which ends the game when they disagree); null outside a test run.
 struct TestRun {
@@ -287,8 +289,9 @@ int direct_start_cover_signal();
 // A UI screen opened (ui.cpp): the session's own screen takes the cover off.
 void direct_start_screen(const char *name);
 uintptr_t direct_start_set_mode();
-// What the direct start knows on the flow thread from the profile load on: the game manager and the game modes
-// context (the object Game_Game_SetCurrentGameMode takes, [game manager+0xc0]).
+// What the direct start knows on the flow thread from the profile load on: the game manager and [game manager+0xc0],
+// an object with the shape of a game modes context. A scan of all 104 Game_Game_SetCurrentGameMode call sites found no
+// caller passing [[0x14604c2c8]+0xc0].
 struct DirectStartContext {
     void *game_manager = nullptr, *game_modes = nullptr;
 };

@@ -12,10 +12,13 @@ namespace swofty_core::guards {
 // order (tools/core_link_order.txt): lld lays a DLL's static constructors out in link order and the mingw crt calls them
 // from the last (gccmain.c __do_global_ctors), and the SDK lists on-load entries as they are constructed.
 enum class HookGuardId : uint8_t {
+    pit_garage_state,
     gp_weekend_track,
     rnd_suppliers,
     replay_read,
     ai_curves,
+    ai_ers,
+    calendar_track,
     teamhq_track,
     setup_vm,
     teammate_pairs,
@@ -28,10 +31,13 @@ enum class HookGuardId : uint8_t {
 constexpr size_t HOOK_GUARD_COUNT = size_t(HookGuardId::count);
 
 constexpr std::array<std::string_view, HOOK_GUARD_COUNT> HOOK_GUARD_NAMES = {
+    "pit_garage_state",
     "gp_weekend_track",
     "rnd_suppliers",
     "replay_read",
     "ai_curves",
+    "ai_ers",
+    "calendar_track",
     "teamhq_track",
     "setup_vm",
     "teammate_pairs",

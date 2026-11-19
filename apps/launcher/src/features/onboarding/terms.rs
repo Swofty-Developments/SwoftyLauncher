@@ -79,7 +79,7 @@ fn note(icon: IconName, colour: Hsla, text: &'static str, p: Palette) -> impl In
 }
 
 impl Shell {
-    pub(super) fn ads_step(&self, privacy_only: bool, p: Palette) -> Div {
+    pub(super) fn ads_step(&self, privacy_only: bool, reopen: bool, p: Palette) -> Div {
         let consent = self.ads.consent();
         let loading = consent.is_none() && !self.consent_settled();
         let asking = loading || consent == Some(Consent::Asking);
@@ -119,9 +119,7 @@ impl Shell {
             .gap(px(20.))
             .child(heading(title, subtitle, p));
         if asking {
-            let form = self
-                .ads
-                .consent_form(p.surface, privacy_only, Unit::Consent.size());
+            let form = self.ads.consent_form(p.surface, reopen, Unit::Consent.size());
             return step
                 .when(!privacy_only, |d| {
                     d.child(

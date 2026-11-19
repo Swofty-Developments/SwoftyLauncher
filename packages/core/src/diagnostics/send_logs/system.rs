@@ -6,9 +6,27 @@ use super::OVERLAY_READ;
 use super::files::{read_head, read_tail};
 use crate::platform::registry::{self, Ask};
 
-pub(super) const SYSTEM_LINES: usize = 12;
+pub(super) const SYSTEM_LINES: usize = 24;
 
 pub(super) const SYSTEM_TAIL: u64 = 256 << 10;
+
+const SMOOTH_TAIL: u64 = 8 << 20;
+
+/// Each log's [`perf::smoothness`](super::perf::smoothness) lines, from the end of the log.
+pub(super) fn smoothness_lines(logs: &[(String, PathBuf)]) -> Vec<String> {
+    let mut out = Vec::new();
+    for (label, log) in logs {
+        let Ok((tail, _)) = read_tail(log, SMOOTH_TAIL) else {
+            continue;
+        };
+        out.push(label.clone());
+        out.extend(super::perf::smoothness(&String::from_utf8_lossy(&tail)));
+    }
+    if out.is_empty() {
+        out.push("  No loader log was found".to_owned());
+    }
+    out
+}
 
 /// The `[system]` lines core logs at boot (each GPU's name, driver and VRAM, RAM and commit), and the
 /// newest per-minute memory line from the end of the log.

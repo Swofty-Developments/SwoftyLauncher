@@ -2,15 +2,20 @@
 //! it, a swap another process is making waited out, and a swap stopped part way put back.
 
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use super::Store;
 use super::scan::manifest_id;
+use crate::manifest::AddonManifest;
 use crate::{Error, Result};
 
 /// Where an addon's old copy waits to be deleted, next to the addons.
 pub(super) const OLD_PREFIX: &str = ".old-";
 
 pub(super) const STAGING_PREFIX: &str = ".installing-";
+
+/// Where an archive is unpacked before its addons are installed.
+pub(super) const SCRATCH_PREFIX: &str = ".importing-";
 
 pub(super) type Rename<'a> = &'a mut dyn FnMut(&Path, &Path) -> std::io::Result<()>;
 
@@ -70,16 +75,28 @@ impl SwapLock {
     }
 }
 
+/// The addon's [`SwapLock`]. A lock still held a moment after this process let it go, as a
+/// process starting a helper holds it until the helper runs, is waited out.
 pub(super) fn swap_lock_for(dest: &Path, name: &str) -> Result<Option<SwapLock>> {
+    const DELAYS_MS: [u64; 3] = [10, 50, 150];
     let (Some(addons), Some(id)) = (dest.parent(), dest.file_name()) else {
         return Ok(None);
     };
-    match SwapLock::try_acquire(addons, &id.to_string_lossy()) {
-        Some(None) => Err(Error::Other(format!(
-            "Couldn't change {name}: another Swofty launcher is changing it right now"
-        ))),
-        Some(Some(lock)) => Ok(Some(lock)),
-        None => Ok(None),
+    let mut attempt = 0;
+    loop {
+        match SwapLock::try_acquire(addons, &id.to_string_lossy()) {
+            Some(None) if attempt < DELAYS_MS.len() => {
+                std::thread::sleep(std::time::Duration::from_millis(DELAYS_MS[attempt]));
+                attempt += 1;
+            }
+            Some(None) => {
+                return Err(Error::Other(format!(
+                    "Couldn't change {name}: another Swofty launcher is changing it right now"
+                )));
+            }
+            Some(Some(lock)) => return Ok(Some(lock)),
+            None => return Ok(None),
+        }
     }
 }
 
@@ -99,14 +116,26 @@ pub(super) fn set_aside(dir: &Path, rename: Rename) -> std::io::Result<PathBuf> 
     Ok(aside)
 }
 
-/// Puts `staging` in place of `dest`. The installed copy is moved aside first
-/// and deleted last, so a failure at any step leaves it whole. An old copy that
-/// can't be deleted yet is deleted on the next start; one that can't be put
-/// back is put back then.
+/// [`swap_in_held`] under the addon's [`SwapLock`].
+#[cfg(test)]
 pub(super) fn swap_in(staging: &Path, dest: &Path, name: &str, rename: Rename, delete: Delete) -> Result<()> {
+    let _lock = swap_lock_for(dest, name)?;
+    swap_in_held(staging, dest, name, rename, delete)
+}
+
+/// Puts `staging` in place of `dest` for a caller that holds the addon's
+/// [`SwapLock`]. The installed copy is moved aside first and deleted last, so a
+/// failure at any step leaves it whole. An old copy that can't be deleted yet is
+/// deleted on the next start; one that can't be put back is put back then.
+pub(super) fn swap_in_held(
+    staging: &Path,
+    dest: &Path,
+    name: &str,
+    rename: Rename,
+    delete: Delete,
+) -> Result<()> {
     let verb = if dest.exists() { "update" } else { "install" };
     let what = format!("Couldn't {verb} {name}");
-    let _lock = swap_lock_for(dest, name)?;
     let aside = match dest.exists().then(|| set_aside(dest, &mut *rename)).transpose() {
         Ok(aside) => aside,
         Err(e) => {
@@ -137,6 +166,38 @@ pub(super) fn delete_addon_dir(dir: &Path, name: &str, rename: Rename, delete: D
     let aside = set_aside(dir, rename).map_err(|e| not_done(&format!("Couldn't remove {name}"), &e))?;
     waiting_out_locks(|| delete(&aside)).ok();
     Ok(())
+}
+
+/// A folder an archive is unpacked into before its addons are installed, named for this
+/// process. Its lock tells a later start's cleanup that it is in use; dropping it deletes the
+/// folder and the lock.
+pub(super) struct Scratch {
+    pub(super) dir: PathBuf,
+    lock: Option<SwapLock>,
+}
+
+impl Scratch {
+    pub(super) fn new(addons: &Path) -> Self {
+        static NEXT: AtomicUsize = AtomicUsize::new(0);
+        let n = NEXT.fetch_add(1, Ordering::Relaxed);
+        let name = format!("{SCRATCH_PREFIX}{}-{n}", std::process::id());
+        std::fs::create_dir_all(addons).ok();
+        let lock = SwapLock::try_acquire(addons, &name).flatten();
+        Self {
+            dir: addons.join(name),
+            lock,
+        }
+    }
+}
+
+impl Drop for Scratch {
+    fn drop(&mut self) {
+        std::fs::remove_dir_all(&self.dir).ok();
+        let held = self.lock.take().is_some();
+        if held && let (Some(addons), Some(name)) = (self.dir.parent(), self.dir.file_name()) {
+            std::fs::remove_file(swap_lock_path(addons, &name.to_string_lossy())).ok();
+        }
+    }
 }
 
 impl Store {
@@ -196,6 +257,56 @@ impl Store {
                 }
             } else if std::fs::remove_dir_all(&dir).is_ok() {
                 notes.push(format!("deleted the old copy {}", dir.display()));
+            }
+        }
+        notes
+    }
+
+    /// Deletes the unpack and staging folders of installs an earlier run left unfinished,
+    /// which leaves each addon at the version it had. A folder whose install is still running
+    /// in another launcher is left alone.
+    pub(super) fn sweep_unfinished(&self) -> Vec<String> {
+        let addons = self.addons_dir();
+        let Ok(rd) = std::fs::read_dir(&addons) else {
+            return Vec::new();
+        };
+        let mut left: Vec<PathBuf> = rd
+            .flatten()
+            .map(|e| e.path())
+            .filter(|p| p.is_dir())
+            .filter(|p| {
+                p.file_name().is_some_and(|n| {
+                    let n = n.to_string_lossy();
+                    n.starts_with(SCRATCH_PREFIX) || n.starts_with(STAGING_PREFIX)
+                })
+            })
+            .collect();
+        left.sort();
+        let mut notes = Vec::new();
+        for dir in left {
+            let name = dir.file_name().unwrap_or_default().to_string_lossy().into_owned();
+            let staged = name.strip_prefix(STAGING_PREFIX);
+            let key = staged.unwrap_or(&name);
+            let guard = match SwapLock::try_acquire(&addons, key) {
+                Some(None) => continue,
+                guard => guard.flatten(),
+            };
+            if std::fs::remove_dir_all(&dir).is_err() {
+                continue;
+            }
+            notes.push(match staged {
+                Some(id) => {
+                    let kept = AddonManifest::load(&addons.join(id)).map_or_else(
+                        |_| "is not installed".to_owned(),
+                        |m| format!("stays at {}", m.version),
+                    );
+                    format!("deleted the unfinished install of {id}, which {kept}")
+                }
+                None => format!("deleted the unfinished unpack {name}"),
+            });
+            if staged.is_none() && guard.is_some() {
+                drop(guard);
+                std::fs::remove_file(swap_lock_path(&addons, key)).ok();
             }
         }
         notes

@@ -156,6 +156,27 @@ fn colour_cells_and_transparent_pictures_parse() {
 }
 
 #[test]
+fn memory_cell_pictures_round_trip_beside_the_text_fallback() {
+    let value = serde_json::json!({
+        "text": "Ferrari", "image_data": {
+            "png": "aW1hZ2U=", "width": 28.0, "height": 20.0,
+            "fit": "contain", "transparent": true
+        }
+    });
+    let cell: Cell = serde_json::from_value(value.clone()).unwrap();
+    let spec = cell.spec();
+    assert_eq!(spec.text, "Ferrari");
+    let data = spec.image_data.unwrap();
+    assert_eq!(data.size(32.), (28., 20.));
+    assert_eq!(data.fit, Fit::Contain);
+    assert!(data.transparent);
+    assert_eq!(serde_json::to_value(cell).unwrap(), value);
+    let plain: Cell = serde_json::from_value(serde_json::json!({"text":"Ferrari"})).unwrap();
+    assert!(plain.spec().image_data.is_none());
+    assert!(serde_json::to_value(plain).unwrap().get("image_data").is_none());
+}
+
+#[test]
 fn pictures_without_the_new_keys_serialize_as_before() {
     let sized = serde_json::json!({ "path": "/cache/flags/FI.png", "width": 20.0, "height": 14.0 });
     let image: CellImage = serde_json::from_value(sized.clone()).unwrap();

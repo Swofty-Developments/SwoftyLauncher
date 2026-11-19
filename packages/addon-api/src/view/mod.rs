@@ -19,7 +19,8 @@ pub use form::{
 };
 pub use style::{Art, Fact, Icon, Notice, Style, Tag, Tone};
 pub use table::{
-    Align, Cell, CellImage, CellSpec, Column, ColumnSpec, RowSpec, Sort, SortKey, Span, Table, TableRow,
+    Align, Cell, CellImage, CellImageData, CellSpec, Column, ColumnSpec, RowSpec, Sort, SortKey, Span, Table,
+    TableRow,
 };
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -83,8 +84,15 @@ pub enum Block {
     Stats(Vec<Fact>),
     Facts(Vec<Fact>),
     Label(String),
-    Text { text: String, tone: Tone },
-    Names { label: String, items: Vec<String> },
+    Text {
+        text: String,
+        #[serde(default)]
+        tone: Tone,
+    },
+    Names {
+        label: String,
+        items: Vec<String>,
+    },
     Table(Table),
     Buttons(Vec<Button>),
     Hero(Hero),
