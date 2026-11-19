@@ -92,6 +92,41 @@ pub(super) fn career_setups(
     Ok((setups, setup_lines))
 }
 
+/// The Resume Career list screen of a build: its routes, and the line the build logs for it.
+pub(super) struct Resume {
+    pub(super) routes: patch::ResumeRoutes,
+    pub(super) line: String,
+}
+
+/// Builds the Resume Career list screen for the rows the session has and adds it to `built`. `None` when the
+/// session has no rows: the stock Resume Career screen then stays as it is.
+pub(super) fn resume_screen(
+    settings: &SessionSettings,
+    input: &dyn Fn(&str) -> PathBuf,
+    src: &Sources,
+    built: &mut Screens,
+) -> Result<Option<Resume>> {
+    if settings.resume_list.is_empty() {
+        return Ok(None);
+    }
+    let flows_ui = super::archives::read_frag(&input(&ui_file("persistent.erp")), super::FLOWS, 0)?;
+    let frontend_flow = screen_flow(input, &flows_ui, SETUP_BACK_ERP, patch::RESUME_CONTINUE_SCREEN)?;
+    let (name, ui) = pages::build_resume_page(src, &settings.resume_list)?;
+    built.order.push((name.clone(), ui));
+    built.view_models.push(name.clone());
+    let line = format!(
+        "ui: the Resume Career list screen {name} has {} row(s); the route {} opens it from {}, and a row's \
+         press routes to the stock continue screen of its mode in {frontend_flow}",
+        settings.resume_list.len(),
+        pages::RESUME_ROUTE,
+        patch::ENTRY_GROUPS.join(" and ")
+    );
+    Ok(Some(Resume {
+        routes: patch::ResumeRoutes { frontend_flow },
+        line,
+    }))
+}
+
 /// How the routes reach the addon screens in the options flow.
 pub(super) struct Routing {
     /// Every screen the options flow lists: the built ones, then the addons' own.
@@ -171,7 +206,7 @@ pub(super) struct Targets {
 }
 
 impl Targets {
-    pub(super) fn of(flow: &[Entry], setups: &[patch::SetupRoutes]) -> Self {
+    pub(super) fn of(flow: &[Entry], setups: &[patch::SetupRoutes], resume: Option<&Resume>) -> Self {
         let homes = pages::home_plan(flow.len());
         let pages: Vec<(String, String, String)> = flow
             .iter()
@@ -192,6 +227,14 @@ impl Targets {
                 format!("{}.{}", s.back, s.route),
                 format!("{}.{}", s.next, s.back_route),
             ]);
+        }
+        if resume.is_some() {
+            setup_ids.push(pages::RESUME_SCREEN.to_owned());
+            setup_ids.extend(
+                patch::ENTRY_GROUPS
+                    .iter()
+                    .map(|g| format!("{g}.{}", pages::RESUME_ROUTE)),
+            );
         }
         Self {
             homes,

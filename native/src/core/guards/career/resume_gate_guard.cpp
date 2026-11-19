@@ -190,7 +190,7 @@ bool press_slot_shaped(void *vm, uintptr_t &fn, const char *who)
     uintptr_t vt = 0;
     uint8_t busy = 0;
     if (!mem::read(base, vt) || !mem::in_image(vt) || !mem::read(vt + PRESS_SLOT_VT, fn) || !mem::in_image(fn)) {
-        swofty::log("[career] resume list: %s: the view model's vtable slot 24 does not read; nothing was done", who);
+        swofty::log("[career] resume screen: %s: the view model's vtable slot 24 does not read; nothing was done", who);
         return false;
     }
     uint8_t head[sizeof PRESS_SLOT_HEAD] = {}, imul[sizeof PRESS_SLOT_IMUL] = {};
@@ -200,13 +200,13 @@ bool press_slot_shaped(void *vm, uintptr_t &fn, const char *who)
     for (size_t i = 0; i < sizeof imul && shape; i++)
         shape = mem::read(fn + PRESS_SLOT_IMUL_AT + i, imul[i]) && imul[i] == PRESS_SLOT_IMUL[i];
     if (!shape) {
-        swofty::log("[career] resume list: %s: vtable slot 24 (base+0x%llx) is not PressSlot's code on this build; nothing "
+        swofty::log("[career] resume screen: %s: vtable slot 24 (base+0x%llx) is not PressSlot's code on this build; nothing "
                     "was done",
                     who, (unsigned long long)(fn - reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr))));
         return false;
     }
     if (!mem::read(base + CARD_BUSY, busy) || busy) {
-        swofty::log("[career] resume list: %s: the screen is busy (vm+0x1380 = %u); nothing was done", who, busy);
+        swofty::log("[career] resume screen: %s: the screen is busy (vm+0x1380 = %u); nothing was done", who, busy);
         return false;
     }
     return true;
@@ -236,39 +236,122 @@ void probe(void *vm)
         return;
     auto base = reinterpret_cast<uintptr_t>(vm);
     uint64_t was = rewrite_card0(vm, {probe_slot, probe_guid});
-    swofty::log("[career] resume list: probe: card 0 slot id %llu rewritten to %llu; calling PressSlot (base+0x%llx) on vm %p",
+    swofty::log("[career] resume screen: probe: card 0 slot id %llu rewritten to %llu; calling PressSlot (base+0x%llx) on vm %p",
                 (unsigned long long)was, (unsigned long long)probe_slot,
                 (unsigned long long)(fn - reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr))), vm);
     using PressSlot = void(void *vm, uint8_t card);
     reinterpret_cast<PressSlot *>(fn)(vm, 0);
     uint8_t pending = 0;
     mem::read(base + 0x1368, pending);
-    swofty::log("[career] resume list: probe: PressSlot returned; pending action vm+0x1368 = %u (2 means the career loads "
+    swofty::log("[career] resume screen: probe: PressSlot returned; pending action vm+0x1368 = %u (2 means the career loads "
                 "when the screen finishes its transition out)",
                 pending);
 }
 
 uint64_t entry(Handle *orig, bool my_team, void *vm, void *cmd, void *value);
 
-void load_target(Handle *orig, bool my_team, void *vm)
+struct ListAsk {
+    void *vm = nullptr;
+    Handle *orig = nullptr;
+    bool my_team = false, open = false;
+    size_t row = 0;
+} list_ask;
+
+void press_selected(void *vm, bool my_team, size_t row)
 {
-    career::resume_list::Selection sel;
-    if (!career::resume_list::take_target(my_team, sel))
-        return;
     uintptr_t fn = 0;
-    if (!make_str || !press_slot_shaped(vm, fn, "list load"))
+    if (!press_slot_shaped(vm, fn, "resume screen"))
         return;
-    uint64_t was = rewrite_card0(vm, sel);
-    swofty::log("[career] resume list: list load: card 0 slot id %llu rewritten to %llu on the %s continue screen; pressing it",
-                (unsigned long long)was, (unsigned long long)sel.id, my_team ? "My Team" : "Driver Career");
+    using PressSlot = void(void *vm, uint8_t card);
+    swofty::log("[career] resume screen: row %zu: calling PressSlot (base+0x%llx) on the %s continue screen", row,
+                (unsigned long long)(fn - reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr))),
+                my_team ? "My Team" : "Driver Career");
+    reinterpret_cast<PressSlot *>(fn)(vm, 0);
+    uint8_t pending = 0;
+    mem::read(reinterpret_cast<uintptr_t>(vm) + 0x1368, pending);
+    swofty::log("[career] resume screen: row %zu: PressSlot returned; pending action vm+0x1368 = %u (2 means the career loads "
+                "when the screen finishes its transition out)",
+                row, pending);
+}
+
+void go_back(Handle *orig, void *vm)
+{
     struct alignas(8) Value {
         uint32_t type, pad;
         uint64_t data, zero;
-    } v{4, 0, 0, 0};
+    } v{0, 0, 0, 0};
     void *cmd = nullptr;
-    reinterpret_cast<MakeStr *>(make_str)(&cmd, "slot_pressed", 0, 0);
-    entry(orig, my_team, vm, &cmd, &v);
+    reinterpret_cast<MakeStr *>(make_str)(&cmd, "back_pressed", 0, 0);
+    orig(vm, &cmd, &v);
     reinterpret_cast<MakeStr *>(make_str)(&cmd, nullptr, 0, 0);
+}
+
+void list_answered(void *, void **answer)
+{
+    std::string text;
+    uintptr_t str = 0;
+    if (answer && mem::read(reinterpret_cast<uintptr_t>(answer), str) && str)
+        mem::c_string(str + 9, text, 32);
+    ListAsk a;
+    {
+        std::lock_guard<std::mutex> g(lock);
+        a = list_ask;
+        list_ask.open = false;
+    }
+    swofty::log("[career] resume screen: row %zu: the confirm was answered \"%s\"", a.row, text.c_str());
+    if (!a.open || !a.vm)
+        return;
+    if (rg::loads(text))
+        press_selected(a.vm, a.my_team, a.row);
+    else
+        go_back(a.orig, a.vm);
+}
+
+void list_confirm_failed(void *)
+{
+    ListAsk a;
+    {
+        std::lock_guard<std::mutex> g(lock);
+        a = list_ask;
+        list_ask.open = false;
+    }
+    if (!a.open || !a.vm)
+        return;
+    swofty::log("[career] resume screen: row %zu: the confirm message did not show; Back is taken and nothing loads", a.row);
+    go_back(a.orig, a.vm);
+}
+
+void load_target(Handle *orig, bool my_team, void *vm)
+{
+    career::resume_list::Target t;
+    if (!career::resume_list::take_target(my_team, t))
+        return;
+    uintptr_t fn = 0;
+    if (!make_str || !press_slot_shaped(vm, fn, "resume screen"))
+        return;
+    uint64_t was = rewrite_card0(vm, t.sel);
+    swofty::log("[career] resume screen: row %zu: card 0 slot id %llu rewritten to %llu on the %s continue screen", t.row,
+                (unsigned long long)was, (unsigned long long)t.sel.id, my_team ? "My Team" : "Driver Career");
+    if (!t.ask) {
+        press_selected(vm, my_team, t.row);
+        return;
+    }
+    {
+        std::lock_guard<std::mutex> g(lock);
+        list_ask = {vm, orig, my_team, true, t.row};
+    }
+    set_labels();
+    if (!confirm_on || runtime::popup_confirm("Add-ons do not match", t.body, reinterpret_cast<void *>(&list_answered), nullptr,
+                                              list_confirm_failed, "swofty_core") != SWOFTY_ASSET_OK) {
+        swofty::log("[career] resume screen: row %zu: the Load Anyway / Back confirm could not be raised; Back is taken", t.row);
+        {
+            std::lock_guard<std::mutex> g(lock);
+            list_ask.open = false;
+        }
+        go_back(orig, vm);
+        return;
+    }
+    swofty::log("[career] resume screen: row %zu: asking Load Anyway / Back (%s)", t.row, t.body.c_str());
 }
 
 uint64_t entry(Handle *orig, bool my_team, void *vm, void *cmd, void *value)
@@ -364,16 +447,16 @@ private:
         if (GetEnvironmentVariableA("SWOFTY_RESUME_LIST", on, sizeof on) && !strcmp(on, "1")) {
             probe_list_on = true;
             if (!GetEnvironmentVariableA("SWOFTY_RESUME_LIST_PROBE", slot, sizeof slot) || !(probe_slot = strtoull(slot, nullptr, 10)))
-                swofty::log("[career] resume list: SWOFTY_RESUME_LIST=1 and no SWOFTY_RESUME_LIST_PROBE slot id; the list "
+                swofty::log("[career] resume screen: SWOFTY_RESUME_LIST=1 and no SWOFTY_RESUME_LIST_PROBE slot id; the list "
                             "screen is used, not the probe");
             else if (!runtime::holds(PRESS_SLOT_GATE))
-                swofty::log("[career] resume list: the direct slot load is not proven on this build; not probed");
+                swofty::log("[career] resume screen: the direct slot load is not proven on this build; not probed");
             else {
                 char g[32] = {};
                 if (GetEnvironmentVariableA("SWOFTY_RESUME_LIST_PROBE_GUID", g, sizeof g))
                     probe_guid = strtoull(g, nullptr, 16);
                 probe_armed = true;
-                swofty::log("[career] resume list: probe armed: the first stock resume screen to open loads slot id %llu "
+                swofty::log("[career] resume screen: probe armed: the first stock resume screen to open loads slot id %llu "
                             "through card 0",
                             (unsigned long long)probe_slot);
             }
@@ -391,9 +474,9 @@ private:
     {
         if (list_on && offered_set(MIXIN) && runtime::core_mixins_active(MIXIN)) {
             career::resume_list::set_armed(true);
-            swofty::log("[career] resume list: armed; Resume Career opens the list screen when the content select hooks are live");
+            swofty::log("[career] resume screen: armed; Resume Career opens the list screen when the content select hooks are live");
         } else if (career::resume_list::wanted())
-            swofty::log("[career] resume list: not armed (the gate or the direct load is not available on this build)");
+            swofty::log("[career] resume screen: not armed (the gate or the direct load is not available on this build)");
         if (offered_set(MIXIN))
             swofty::log("[career] resume gate %s; a career that needs add-ons this profile lacks asks before it loads (%s)",
                         guards::install_state(runtime::core_mixins_active(MIXIN), "armed"),

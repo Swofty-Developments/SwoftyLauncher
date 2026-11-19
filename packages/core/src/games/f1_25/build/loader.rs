@@ -183,6 +183,23 @@ impl Pipeline<'_, '_> {
                     built.plan.loader.len(),
                     dir.display()
                 ));
+                if menus && crate::stdlib::careers::resume_list_wanted() {
+                    let aliases = edits.id_aliases.clone();
+                    match crate::stdlib::careers::resume_list_for(store, run.game, &built.overlay, order.as_slice(), aliases) {
+                        Some((needs, rows)) => {
+                            built.lines.push(format!(
+                                "ui: the Resume Career list screen has {} career(s); {} need something this build lacks",
+                                rows.len(),
+                                rows.iter().filter(|r| !r.ready).count()
+                            ));
+                            session.resume_needs = needs;
+                            session.resume_list = rows;
+                        }
+                        None => built
+                            .warnings
+                            .push("ui: the Resume Career list screen is off: the build's database could not be read".into()),
+                    }
+                }
                 if menus {
                     let lang = planner.route(Kind::Lang) == Route::Runtime;
                     let writer = |erp: &str, res: &str| {

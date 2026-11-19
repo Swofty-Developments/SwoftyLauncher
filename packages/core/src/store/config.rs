@@ -117,6 +117,7 @@ impl Store {
             &crate::stdlib::careers::read(&crate::stdlib::careers::data_path(&self.root)),
             &on,
             &installed,
+            None,
         );
         s.addons
             .retain(|a| a.id == CORE_ID || !self.is_builtin(&a.id) || !a.options.is_empty());

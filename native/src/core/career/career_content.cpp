@@ -31,7 +31,6 @@
 namespace career::content {
 
 Slot slots[content::MAX_CONTENTS];
-Slot resume_slots[MAX_RESUME];
 Bound b{};
 constinit ContentHooks hooks;
 constinit RouteHooks route;
@@ -264,9 +263,6 @@ Slot *by_vtable(const void *item)
     for (size_t i = 0; vt && i < used(); i++)
         if (slots[i].vt == vt)
             return &slots[i];
-    for (size_t i = 0; vt && i < MAX_RESUME; i++)
-        if (resume_slots[i].vt == vt)
-            return &resume_slots[i];
     return nullptr;
 }
 

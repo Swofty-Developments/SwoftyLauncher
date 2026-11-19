@@ -93,18 +93,18 @@ void redirect_resume(Action *out)
     namespace rl = career::resume_list;
     const char *route = out && out->type == 1 ? nestr(out->str) : nullptr;
     bool my_team = false;
-    if (!route || !rl::armed() || rl::target_set() || !rl::continue_route_of(route, my_team))
+    if (!route || !rl::armed() || !rl::continue_route_of(route, my_team))
         return;
-    auto rows = runtime::career_resume_rows();
-    if (!rl::redirects(true, false, rows.size(), route, my_team)) {
-        swofty::log("[career] resume list: no listed career to show; the stock Resume Career screen opens");
+    size_t n = rl::rows();
+    if (!rl::redirects(true, n, route, my_team)) {
+        swofty::log("[career] resume screen: settings.json lists no row for the list screen; the stock Resume Career screen "
+                    "opens for route %s",
+                    route);
         return;
     }
-    size_t n = rows.size();
-    rl::begin_list(std::move(rows));
-    reinterpret_cast<MakeStr *>(b.make_str)(&out->str, rl::list_route(my_team), 0, 0);
-    swofty::log("[career] resume list: Resume Career (%s) opens the list screen %s with %zu career(s)", route,
-                rl::list_route(my_team), n);
+    reinterpret_cast<MakeStr *>(b.make_str)(&out->str, rl::LIST_ROUTE, 0, 0);
+    swofty::log("[career] resume screen: Resume Career (route %s) is rewritten to route %s, the list screen with %zu row(s)",
+                route, rl::LIST_ROUTE, n);
 }
 
 }

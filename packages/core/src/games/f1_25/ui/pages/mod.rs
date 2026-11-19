@@ -12,6 +12,7 @@ mod listing;
 mod options;
 mod page;
 mod page_rows;
+mod resume;
 mod setup;
 mod text;
 mod tiles;
@@ -24,6 +25,10 @@ use options::{literal_tooltips, settings_state_matrix};
 pub(super) use page::as_group;
 use page::{build_page, retitle, vm_page};
 use page_rows::{addon_rows, map_rows, mod_rows, number, state_value};
+pub use resume::{
+    COMMAND_PREFIX, CONTINUE_DRIVER, CONTINUE_MY_TEAM, RESUME_ROUTE, RESUME_SCREEN, build_resume_page,
+    row_command, row_name,
+};
 pub use setup::{
     SETUP_CONFIRM, SETUP_OPTIONS, build_setup_home, build_setup_page, setup_rows_screen, setup_title,
 };
