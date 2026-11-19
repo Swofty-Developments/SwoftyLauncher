@@ -19,6 +19,10 @@ pub const INDEX_LEN: usize = 416;
 const SIZE_XOR: u32 = 0xc361_5f4e;
 const DATA_KEY_SEED: u32 = 0x0808_6283;
 const INDEX_KEY_SEED: u32 = 0x178b_102d;
+const CHECKSUM_SEED: u32 = 0xaf6d_87d2;
+pub const PROFILE_NAME_HASH: u32 = 0x4aac_2d63;
+const NAME_FIELD: usize = 0x44;
+const CHECKSUM_AT: usize = 0x180;
 const OBFUSCATION: [u8; 12] = [
     0xef, 0xa1, 0x2f, 0x8a, 0x4e, 0x5f, 0x61, 0xc3, 0xf1, 0x18, 0xcd, 0xad,
 ];
@@ -222,6 +226,69 @@ pub fn encrypt_index(plain: &[u8]) -> Result<Vec<u8>, CodecError> {
         cipher.encrypt_block(block.try_into().expect("16 bytes"));
     }
     Ok(out)
+}
+
+fn crc32_update(mut state: u32, data: &[u8]) -> u32 {
+    for byte in data {
+        state ^= u32::from(*byte);
+        for _ in 0..8 {
+            state = (state >> 1) ^ (0xedb8_8320 & 0u32.wrapping_sub(state & 1));
+        }
+    }
+    state
+}
+
+pub fn index_checksum(plain: &[u8]) -> Result<u32, CodecError> {
+    if plain.len() != INDEX_LEN {
+        return Err(CodecError::BadIndexLength);
+    }
+    let state = crc32_update(!CHECKSUM_SEED, &plain[..CHECKSUM_AT]);
+    Ok(!crc32_update(state, &plain[CHECKSUM_AT + 4..]))
+}
+
+fn lcg(state: u32) -> u32 {
+    state.wrapping_mul(0x343fd).wrapping_add(0x269ec3)
+}
+
+pub fn index_plain(display_name: &str, name_hash: u32, filler_seed: u32) -> [u8; INDEX_LEN] {
+    let mut plain = [0u8; INDEX_LEN];
+    let mut x = filler_seed;
+    for chunk in plain.chunks_exact_mut(4).skip(NAME_FIELD / 4) {
+        chunk.copy_from_slice(&x.to_le_bytes());
+        x = lcg(x);
+    }
+    let mut at = 0;
+    for unit in display_name.encode_utf16().take(NAME_FIELD / 2 - 1) {
+        plain[at..at + 2].copy_from_slice(&unit.to_le_bytes());
+        at += 2;
+    }
+    plain[at..NAME_FIELD].fill(0);
+    plain[0x100..0x102].fill(0);
+    plain[0x104..0x106].fill(0);
+    plain[0x184..0x188].copy_from_slice(&1u32.to_le_bytes());
+    plain[0x188..0x18c].copy_from_slice(&name_hash.to_le_bytes());
+    plain[0x18c..0x194].fill(0);
+    let mut y = lcg(filler_seed ^ 0x5bd1_e995);
+    for chunk in plain[0x194..].chunks_exact_mut(4) {
+        chunk.copy_from_slice(&y.to_le_bytes());
+        y = lcg(y);
+    }
+    let sum = index_checksum(&plain).expect("index length");
+    plain[CHECKSUM_AT..CHECKSUM_AT + 4].copy_from_slice(&sum.to_le_bytes());
+    plain
+}
+
+pub fn write_pair(
+    stream: &[u8],
+    iv: [u8; IV_LEN],
+    level: i32,
+    display_name: &str,
+    name_hash: u32,
+    filler_seed: u32,
+) -> Result<(Vec<u8>, Vec<u8>), CodecError> {
+    let data = encode_data(stream, iv, level)?;
+    let index = encrypt_index(&index_plain(display_name, name_hash, filler_seed))?;
+    Ok((data, index))
 }
 
 #[cfg(test)]
