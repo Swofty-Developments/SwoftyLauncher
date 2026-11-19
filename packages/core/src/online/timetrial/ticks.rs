@@ -341,6 +341,12 @@ impl Sender {
                     .cloned()
             });
             if prev == Some(None) {
+                say(&format!(
+                    "timing: lap {} {} has no {} receipt to chain to; that lap is untimed",
+                    mark.lap,
+                    mark.mark,
+                    previous(&mark.mark).unwrap_or("?")
+                ));
                 self.drop_mark(path);
                 continue;
             }
@@ -766,6 +772,31 @@ mod tests {
                 Some(4)
             );
         }
+    }
+
+    #[test]
+    fn a_lap_whose_sector_marks_never_came_says_its_finish_is_untimed() {
+        let (data, game) = temp("gap");
+        mark(&data, 1, 2, "start", 0, 1_000);
+        mark(&data, 2, 2, "end", 90_360, 91_000);
+        let fake = Fake::new((1..=2).map(|n| Ok(receipt(n))).collect());
+        let mut sender = Sender::new(&data, folders(&data, &game));
+        let said = RefCell::new(Vec::new());
+        sender.step(&fake, Some("n"), 91_010, &|s| {
+            said.borrow_mut().push(s.to_owned())
+        });
+        let sent: Vec<String> = fake
+            .seen
+            .borrow()
+            .iter()
+            .map(|(_, b)| b["mark"].as_str().unwrap().to_owned())
+            .collect();
+        assert_eq!(sent, ["start"]);
+        assert_eq!(
+            *said.borrow(),
+            ["timing: lap 2 end has no s2 receipt to chain to; that lap is untimed"]
+        );
+        assert!(!pending(&data, &game));
     }
 
     #[test]
