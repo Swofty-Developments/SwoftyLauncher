@@ -157,10 +157,7 @@ pub enum Outcome {
 
 /// The data file of a snapshot: `profile/NXDSMWW.BWW`, else the largest file.
 pub fn data_entry(s: &Snapshot) -> Option<&crate::saves::vault::FileEntry> {
-    s.files
-        .iter()
-        .find(|f| f.name.ends_with(DATA_FILE))
-        .or_else(|| s.files.iter().max_by_key(|f| f.size))
+    s.files.iter().find(|f| f.name.ends_with(DATA_FILE))
 }
 
 /// The data file of the save in `loc`.
@@ -170,12 +167,6 @@ fn data_file(loc: &Location) -> Option<PathBuf> {
         .iter()
         .find(|f| f.key.ends_with(DATA_FILE))
         .map(|f| f.path.clone())
-        .or_else(|| {
-            files
-                .iter()
-                .max_by_key(|f| std::fs::metadata(&f.path).map(|m| m.len()).unwrap_or(0))
-                .map(|f| f.path.clone())
-        })
 }
 
 /// Whether the session's loader log has a profile load.
