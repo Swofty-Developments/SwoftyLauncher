@@ -7,6 +7,7 @@
 
 # Constructs a HookGuard, which writes itself into hook_guards(), a function-local static in guards/registry.cpp; the
 # guards arm in HookGuardId order from there, whatever order their units initialize in.
+src/core/guards/career/resume_gate_guard.cpp: ResumeGateGuard guard;
 src/core/guards/guard.hpp: #define SWOFTY_HOOK_GUARD
 
 # Constructs a RankMark, which writes the length of the SDK mixin list into a constinit array in

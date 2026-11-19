@@ -151,6 +151,7 @@ UNITS = [
     Unit('teammate_pairs', 'Teammate pairs guard unit test'),
     Unit('theatre_list', 'Theatre list guard unit test'),
     Unit('thrustmaster_lcd', 'Thrustmaster LCD guard unit test'),
+    Unit('resume_gate', 'Resume Career gate unit test'),
     Unit('tile_list_select', 'Tile list select guard unit test'),
     Unit('timing_live', 'Live to timing tower adapter test'),
     Unit('toast', 'Lap toast message and state machine unit test'),
