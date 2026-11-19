@@ -34,7 +34,20 @@ struct Value {
     {
         return type == Num ? (long long)n : type == Str ? strtoll(s.c_str(), nullptr, 0) : def;
     }
+
+    Value() = default;
+    Value(const Value &);
+    Value(Value &&) noexcept;
+    Value &operator=(const Value &);
+    Value &operator=(Value &&) noexcept;
+    ~Value();
 };
+
+inline Value::Value(const Value &) = default;
+inline Value::Value(Value &&) noexcept = default;
+inline Value &Value::operator=(const Value &) = default;
+inline Value &Value::operator=(Value &&) noexcept = default;
+inline Value::~Value() = default;
 
 struct Parser {
     const char *p;

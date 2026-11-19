@@ -32,7 +32,20 @@ struct Node {
     std::string tag;
     uint32_t version = 1;
     std::string raw;
+
+    Node() = default;
+    Node(const Node &);
+    Node(Node &&) noexcept;
+    Node &operator=(const Node &);
+    Node &operator=(Node &&) noexcept;
+    ~Node();
 };
+
+inline Node::Node(const Node &) = default;
+inline Node::Node(Node &&) noexcept = default;
+inline Node &Node::operator=(const Node &) = default;
+inline Node &Node::operator=(Node &&) noexcept = default;
+inline Node::~Node() = default;
 
 struct Data {
     std::string type;
