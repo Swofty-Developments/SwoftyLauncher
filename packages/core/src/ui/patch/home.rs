@@ -30,7 +30,7 @@ impl Popup {
                 "Online services are off while mods are loaded, so multiplayer is unavailable.\n\n\
                  New in v{version}:\n\
                  - Shorter loading screens\n\
-                 - Stronger Time Trial lap checks for fairer leaderboards\n\
+                 - Time Trial sector times from the first flying lap\n\
                  - New standard libraries for addon makers"
             ),
         }
