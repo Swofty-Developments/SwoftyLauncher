@@ -34,6 +34,7 @@ helper ^\s*make\(\w+, [A-Z][A-Z0-9_]*,
 helper \bguards::MidHookSpec\s+\w+\s*\{
 helper ^\s*hook_fast_fail_path\(\s*"
 helper \bruntime::write_slot\(
+helper core/frontend/hidden_tiles.cpp \boverwrite\(S_
 helper core/assets/overlay.cpp \bhook\(h_
 helper core/events/events.cpp = mid\(S_
 helper core/frontend/ui.cpp ^\s*mid\(m_
@@ -90,7 +91,9 @@ core/events/events.cpp: h_flow = mid(S_FLOW, flow_mid); => mid sig S_FLOW
 core/events/events.cpp: h_session_enter = mid(S_SESSION_ENTER, session_enter_mid); => mid sig S_SESSION_ENTER
 core/events/events.cpp: h_race_started = mid(S_RACE_STARTED, race_started_mid); => mid sig S_RACE_STARTED
 core/frontend/hidden_tiles.cpp: hidden = VirtualProtect(at, sizeof skip_lan, PAGE_EXECUTE_READWRITE, &old); => bytes=9 sig S_LAN_TILE
-core/frontend/hidden_tiles.cpp: bool hidden = at && VirtualProtect(at, sizeof skip_movie, PAGE_EXECUTE_READWRITE, &old); => bytes=2 sig S_MOVIE_TILE
+core/frontend/hidden_tiles.cpp: if (!at || !VirtualProtect(at, size, PAGE_EXECUTE_READWRITE, &old)) => via
+core/frontend/hidden_tiles.cpp: bool hidden = overwrite(S_MOVIE_TILE, skip_movie, sizeof skip_movie); => bytes=2 sig S_MOVIE_TILE
+core/frontend/hidden_tiles.cpp: bool hidden = overwrite(S_STORY_TILE, skip_story, sizeof skip_story); => bytes=1 sig S_STORY_TILE
 core/frontend/main_menu/navigation_hooks.cpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(fire_detour)); => inline sig S_FIRE
 core/frontend/main_menu/navigation_hooks.cpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(migrate_detour)); => inline sig S_MIGRATE
 core/frontend/main_menu/navigation_hooks.cpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(addtabs_detour)); => inline sig S_ADDTABS

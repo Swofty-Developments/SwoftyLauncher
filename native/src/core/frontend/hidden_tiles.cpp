@@ -15,6 +15,11 @@
 // movie block's first instruction, the je's fall-through right after the 6 bytes the
 // site_FeHome_AfterCareerCall hook relocates; a short jmp there to the F1 World block builds the
 // flag-clear list, so the button numbering stays contiguous. No branch lands in the 2 replaced bytes.
+//
+// Braking Point home tile. The same home case adds it (FeHome_Add_StoryTile, id "story", at index r15b+1 after
+// inc r15b) only while feature flag bit 0 ([rsi] & 1) is set; the je over it lands on the Career tile, which numbers
+// itself r15+1. The anchor is that je; turned into a jmp it always skips the block without the inc, so Career takes
+// Braking Point's index and the numbering stays contiguous.
 namespace frontend {
 
 namespace {
@@ -22,6 +27,22 @@ namespace {
 const runtime::Sig S_MOVIE_TILE{"FeHome_MovieTileBlock",
                                 "41 80 C7 02 4C 89 F1 44 89 FA E8 ?? ?? ?? ?? 45 89 FC 45 8D 7C 24 01 4C 89 F1 44 89 FA E8",
                                 0x1742fdc, runtime::Sig::addr, 0, 0, 0};
+
+const runtime::Sig S_STORY_TILE{"FeHome_StoryTileBlock",
+                                "A8 01 74 0E 41 FE C7 4C 89 F1 44 89 FA E8 ?? ?? ?? ?? 45 8D 67 01 4C 89 F1 44 89 E2 E8",
+                                0x1742fb7, runtime::Sig::addr, 0, 2, 0};
+
+bool overwrite(const runtime::Sig &sig, const uint8_t *bytes, size_t size)
+{
+    auto at = reinterpret_cast<void *>(runtime::find(sig, "home", "core"));
+    DWORD old;
+    if (!at || !VirtualProtect(at, size, PAGE_EXECUTE_READWRITE, &old))
+        return false;
+    memcpy(at, bytes, size);
+    VirtualProtect(at, size, old, &old);
+    FlushInstructionCache(GetCurrentProcess(), at, size);
+    return true;
+}
 
 // Local Multiplayer list. FeTile_Build_List (base+0x173df80) builds menu_kind 2 as Splitscreen
 // (base+0x1747f90, button_1) and then an inline LAN tile (id "lan", item vtable base+0x5704740,
@@ -61,15 +82,15 @@ void hide_lan_tile()
 void hide_movie_tile()
 {
     static constexpr uint8_t skip_movie[] = {0xEB, 0x10};
-    auto at = reinterpret_cast<void *>(runtime::find(S_MOVIE_TILE, "home", "core"));
-    DWORD old;
-    bool hidden = at && VirtualProtect(at, sizeof skip_movie, PAGE_EXECUTE_READWRITE, &old);
-    if (hidden) {
-        memcpy(at, skip_movie, sizeof skip_movie);
-        VirtualProtect(at, sizeof skip_movie, old, &old);
-        FlushInstructionCache(GetCurrentProcess(), at, sizeof skip_movie);
-    }
+    bool hidden = overwrite(S_MOVIE_TILE, skip_movie, sizeof skip_movie);
     swofty::log("[core] F1 THE MOVIE home tile %s", hidden ? "hidden" : "left in place (signature did not resolve)");
+}
+
+void hide_story_tile()
+{
+    static constexpr uint8_t skip_story[] = {0xEB};
+    bool hidden = overwrite(S_STORY_TILE, skip_story, sizeof skip_story);
+    swofty::log("[core] Braking Point home tile %s", hidden ? "hidden" : "left in place (signature did not resolve)");
 }
 
 }
