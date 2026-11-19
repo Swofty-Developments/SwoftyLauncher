@@ -327,6 +327,15 @@ public:
         return n;
     }
 
+    std::map<std::string, std::string> active_routes() const
+    {
+        std::map<std::string, std::string> out;
+        for (const auto &[path, claims] : claims_)
+            if (auto *claim = winner(path))
+                out.emplace(path, "swofty/" + claim->target);
+        return out;
+    }
+
     void clear()
     {
         claims_.clear();

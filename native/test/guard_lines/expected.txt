@@ -147,8 +147,3 @@ armed [race] retirement driver guard armed: a car that retires with no driver in
 off [strategy] teammate pairs guard off (SWOFTY_TEAMMATE_PAIRS_GUARD=%s)
 failed [strategy] teammate pairs guard: the hook failed: %s
 armed [strategy] teammate pairs guard armed: a team with more than two cars pairs its first two for strategy instead of throwing
-
-[hook gp_weekend_track]
-off [gp] weekend track guard off (SWOFTY_GP_WEEKEND_TRACK_GUARD=%s)
-failed [gp] weekend track guard: site_Game_TyreAllocationComponent_PresetTrackRead: the hook failed: %s
-armed [gp] weekend track guard armed: a Grand Prix whose remembered track has no track data record starts on melbourne instead of aborting in its tyre allocation

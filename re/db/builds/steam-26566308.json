@@ -1023,6 +1023,9 @@
   "Car_TyreSystem_PitstopComplete": {
    "match": "0x2e96c60"
   },
+  "Car_Tyre_ChangeToNextCompound": {
+   "match": "0x2e965d0"
+  },
   "Car_Tyre_CheckCompoundClassRule": {
    "match": "0x2e8acc0"
   },
@@ -7692,11 +7695,11 @@
   "Ne_Std_ThrowBadFunctionCall": {
    "match": "0x49e4194"
   },
+  "Ne_Std_ThrowBadOptionalAccess": {
+   "match": "0x29b020"
+  },
   "Ne_Std_ThrowDequeTooLong": {
    "match": "0x34f2ecd"
-  },
-  "Ne_Std_ThrowException": {
-   "match": "0x29b020"
   },
   "Ne_Std_ThrowExceptionNoReturn": {
    "match": "0x1b034e"
@@ -10476,8 +10479,17 @@
   "k_Sess_TyreComponentType": {
    "match": "0x36923c2"
   },
+  "k_Vm_EmptyNodeHandle": {
+   "match": "0x6d2118"
+  },
   "site_Ai_BuildSystem_RecordPushed": {
    "match": "0x60051d"
+  },
+  "site_Ai_Ers_CornerLineRead": {
+   "match": "0x649815"
+  },
+  "site_Ai_Ers_NoCornerMatch": {
+   "match": "0x649cff"
   },
   "site_Ai_ScFollowFlagCmp": {
    "match": "0x642feb"

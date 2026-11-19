@@ -9,6 +9,7 @@ use super::{Built, Pipeline, source_dir};
 use crate::activation::ers::{self, ErsMap};
 use crate::activation::handling::{self, HandlingMap};
 use crate::asset::{AssetOp, FileOp, Op, Origin};
+use crate::cache::archive_entry::ArchiveEntry;
 use crate::game_folder::baseline::Baseline;
 use crate::manifest::relative_inside;
 use crate::{Error, Result};
@@ -214,24 +215,24 @@ fn cached_edit(
     let Some(key) = key else {
         return edit(lines);
     };
-    let archive = cache.join(&key[..2]).join(format!("{key}.erp"));
-    let record = archive.with_extension("json");
+    let entry = ArchiveEntry::at(cache, key);
+    let record = entry.path().with_extension("json");
     let kept: Option<(usize, Vec<String>)> = std::fs::read(&record)
         .ok()
         .and_then(|b| serde_json::from_slice(&b).ok());
     if let Some((n, kept)) = kept
-        && (n == 0 || link(&archive, out))
+        && (n == 0 || link(&entry, out))
     {
-        crate::cache::mark_used(&archive);
+        crate::cache::mark_used(entry.path());
         lines.extend(kept);
         return Ok(n);
     }
     let mut new = Vec::new();
     let n = edit(&mut new)?;
-    let dir = archive.parent().expect("has parent");
+    let dir = entry.path().parent().expect("has parent");
     if std::fs::create_dir_all(dir).is_ok() {
-        std::fs::remove_file(&archive).ok();
-        if n == 0 || std::fs::hard_link(out, &archive).is_ok() {
+        std::fs::remove_file(entry.path()).ok();
+        if n == 0 || entry.keep(out) {
             std::fs::write(&record, serde_json::to_vec(&(n, &new)).expect("json")).ok();
         }
     }
@@ -239,9 +240,7 @@ fn cached_edit(
     Ok(n)
 }
 
-/// Links `out` to the cached archive at `archive`; false when there is none or it cannot link.
-fn link(archive: &Path, out: &Path) -> bool {
-    archive.is_file()
-        && out.parent().is_some_and(|d| std::fs::create_dir_all(d).is_ok())
-        && std::fs::hard_link(archive, out).is_ok()
+/// Links `out` to the archive `entry` keeps; false when there is none, it changed or it cannot link.
+fn link(entry: &ArchiveEntry, out: &Path) -> bool {
+    out.parent().is_some_and(|d| std::fs::create_dir_all(d).is_ok()) && entry.link_to(out)
 }

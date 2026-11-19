@@ -85,7 +85,7 @@ pub fn nonce_retry_pause(attempt: usize) -> Duration {
 
 /// Keeps asking for the session nonce until the server issues one or the game ends, and puts it in the
 /// session file for the core. Without it every lap of the session is refused by the server.
-fn nonce_until_issued(
+pub(crate) fn nonce_until_issued(
     data: &Path,
     game: &Path,
     config: &Config,
@@ -223,6 +223,7 @@ impl Watcher {
     /// nothing leaves the machine. With `retry_nonce` the session nonce the start could not get is asked
     /// for again on a thread of its own, for `game_build`. Each lap is kept with `integrity`, what the session did about the
     /// integrity module, for its upload meta.
+    #[allow(clippy::too_many_arguments)]
     pub fn start(
         data: &Path,
         game: &Path,

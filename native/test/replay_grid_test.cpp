@@ -32,6 +32,33 @@ int main()
     CHECK(rg::guards(-1), "an unknown car count is guarded");
     CHECK(!rg::outgrew(base + 0x20, base, rg::capacity_of(0xdead00000020ull)), "stale high bits do not shrink the capacity");
 
+    const uint64_t holder = 0x341efdf00, cur = holder + rg::HEADER, prev = cur + 0x480;
+    CHECK(rg::room_of(cur, prev, 0x400) == 0x480, "a holder's room is the distance from its current buffer to its previous one");
+    CHECK(rg::room_of(cur, cur, 0x400) == 0 && rg::room_of(prev, cur, 0x400) == 0,
+          "buffers that read out of order give no room, so the game's code runs unchanged");
+    CHECK(rg::room_of(cur, cur + 0x100, 0x400) == 0, "a room smaller than the capacity is no room");
+    const uint64_t canned_state = 1050, drs_lap_start = 22 * (13 + 2 * 7) + 5, drs_overrun = 22 * (13 + 5 * 6 + 2 * 7) + 5;
+    CHECK(!rg::outgrew(base + canned_state, base, rg::room_of(cur, prev, 0x400)),
+          "CannedEventsSystem a few bytes past a 1024 byte capacity stays in the game's code on a stock grid");
+    CHECK(!rg::outgrew(base + drs_lap_start, base, rg::room_of(cur, prev, 0x400)),
+          "DragReductionSystem with 7 DRS zones and 22 cars fits its holder at the start of a lap");
+    CHECK(rg::outgrew(base + drs_overrun, base, rg::room_of(cur, prev, 0x400)),
+          "DragReductionSystem after the sixth of 7 detection points with 22 cars outgrows its holder's room");
+    CHECK(!rg::outgrew(base + 0x480, base, rg::room_of(cur, prev, 0x400)) && rg::outgrew(base + 0x481, base, rg::room_of(cur, prev, 0x400)),
+          "a state of exactly the room is recorded and one byte more is not");
+    CHECK(!rg::outgrew(base + 22 * (13 + 7 * 4) + 5, base, 0x400), "4 DRS zones with 22 cars fit the stock capacity");
+    int drs = rg::grown_class(5, drs_overrun);
+    CHECK(drs >= 0 && rg::CLASSES[drs].cap >= 2 * drs_overrun && rg::CLASSES[drs].cap >= 22 * (13 + 7 * 7) + 5,
+          "the grown DragReductionSystem holder takes a full lap of 7 detection points");
+    CHECK(rg::room_line(22, "DragReductionSystem", 1215, 1152, 3072) ==
+              "[replay] session has 22 cars; DragReductionSystem needs 1215 bytes of replay state, more than the 1152 its "
+              "holder has room for (track or session data larger than the game sized it for), so the holder grew to 3072",
+          "the room line names the cars, the recordable, its state, the room and the grown capacity");
+    CHECK(rg::room_line(-1, "", 1215, 1152, 0).find("session has ? cars; ? needs 1215 bytes") != std::string::npos &&
+              rg::room_line(-1, "", 1215, 1152, 0).find("so it is not recorded (replay and flashback lose its state)") !=
+                  std::string::npos,
+          "the room line reads ? for an unknown count and name and says a cut state is not recorded");
+
     std::string l = rg::line(25, "VehicleSystem", 4096, 3072);
     CHECK(l == "[replay] session has 25 cars, the recorder holds 22; VehicleSystem needs 4096 bytes of replay state and its "
                "holder has 3072, so it is not recorded (replay and flashback lose its state; the session keeps all its cars)",

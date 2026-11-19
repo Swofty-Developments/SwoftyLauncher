@@ -180,6 +180,10 @@ pub(super) enum Offer {
     Installed(semver::Version),
     /// Installed, but not one of this profile's addons.
     Update(semver::Version, semver::Version),
+    /// A newer version the play bar doesn't offer: the player skipped it.
+    UpdateHere(semver::Version, semver::Version),
+    /// An import has this id, so the Addon Browser doesn't install over it.
+    Separate(semver::Version),
     TooOld,
     Queued,
     Working(Progress),

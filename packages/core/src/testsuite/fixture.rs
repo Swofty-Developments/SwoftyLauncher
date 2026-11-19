@@ -17,6 +17,8 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
+use crate::saves::vault::Layout;
+
 pub const FILE: &str = "fixture.json";
 pub const SAVE_DIR: &str = "save";
 pub const STORAGE_DIR: &str = "storage";
@@ -84,6 +86,30 @@ pub struct Manifest {
     pub files: BTreeMap<String, FileSum>,
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub source: String,
+    /// The save layout of the sandbox it was captured from. The files always
+    /// carry Steam's names; an EA fixture installs only on the EA copy, as
+    /// the vault never exchanges the two (`Layout::exchanges_with`).
+    #[serde(default = "steam_layout", skip_serializing_if = "is_steam_layout")]
+    pub layout: Layout,
+}
+
+fn steam_layout() -> Layout {
+    Layout::Steam
+}
+
+fn is_steam_layout(l: &Layout) -> bool {
+    *l == Layout::Steam
+}
+
+fn is_ea(l: Layout) -> bool {
+    matches!(l, Layout::Ea | Layout::LauncherEa)
+}
+
+fn saves_of(l: Layout) -> &'static str {
+    match is_ea(l) {
+        true => "EA app",
+        false => "Steam",
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -235,6 +261,14 @@ pub fn ea_name(steam: &str) -> Option<String> {
     (plain(save) && plain(file)).then(|| format!("{save}/{file}"))
 }
 
+/// The Steam layout's name for a save file of the EA title folder: `<save>/<file>` is
+/// `savegame@<save>#<file>`, the inverse of [`ea_name`].
+pub fn steam_name(ea: &str) -> Option<String> {
+    let (save, file) = ea.split_once('/')?;
+    let name = format!("savegame@{save}#{file}");
+    (ea_name(&name).as_deref() == Some(ea)).then_some(name)
+}
+
 fn copy(from: &Path, to: &Path) -> Result<(), String> {
     if let Some(d) = to.parent() {
         std::fs::create_dir_all(d).map_err(|e| format!("{}: {e}", d.display()))?;
@@ -265,7 +299,7 @@ impl Fixture {
     /// addon's storage into the folder `storage(id)` names. Returns what was
     /// copied, for the report.
     pub fn install(&self, remote: &Path, storage: &dyn Fn(&str) -> PathBuf) -> Result<Vec<String>, String> {
-        self.install_into(remote, &|name| Ok(name.to_owned()), storage)
+        self.install_into(remote, Layout::Steam, &|name| Ok(name.to_owned()), storage)
     }
 
     /// [`Self::install`] for the EA copy: the save files go into the run's
@@ -273,6 +307,7 @@ impl Fixture {
     pub fn install_ea(&self, title: &Path, storage: &dyn Fn(&str) -> PathBuf) -> Result<Vec<String>, String> {
         self.install_into(
             title,
+            Layout::Ea,
             &|name| ea_name(name).ok_or_else(|| format!("{name} has no name in the EA save layout")),
             storage,
         )
@@ -281,9 +316,19 @@ impl Fixture {
     fn install_into(
         &self,
         saves: &Path,
+        layout: Layout,
         name_of: &dyn Fn(&str) -> Result<String, String>,
         storage: &dyn Fn(&str) -> PathBuf,
     ) -> Result<Vec<String>, String> {
+        if !self.manifest.layout.exchanges_with(layout) {
+            return Err(format!(
+                "fixture {} holds {} saves, and this run's game copy takes {} saves: capture a fixture from a test \
+                 run on this copy",
+                self.manifest.name,
+                saves_of(self.manifest.layout),
+                saves_of(layout)
+            ));
+        }
         let mut stray = Vec::new();
         let name = saves.file_name().unwrap_or_default().to_string_lossy();
         files_under(saves.parent().unwrap_or(saves), &name, &mut stray)?;
@@ -338,6 +383,66 @@ pub fn capture(
     storage: &[(String, PathBuf)],
     meta: Meta,
 ) -> Result<Fixture, String> {
+    capture_from(name, store, Layout::Steam, remote, storage, meta)
+}
+
+/// [`capture`] from an EA run's title folder (`saves/ea`): each
+/// `<save>/<file>` is kept under its Steam name ([`steam_name`]) and the
+/// fixture is marked as EA saves.
+pub fn capture_ea(
+    name: &str,
+    store: &Path,
+    title: &Path,
+    storage: &[(String, PathBuf)],
+    meta: Meta,
+) -> Result<Fixture, String> {
+    capture_from(name, store, Layout::Ea, title, storage, meta)
+}
+
+fn sorted_entries(dir: &Path) -> Result<Vec<std::fs::DirEntry>, String> {
+    let mut v: Vec<std::fs::DirEntry> = std::fs::read_dir(dir)
+        .map_err(|e| format!("{}: {e}", dir.display()))?
+        .flatten()
+        .collect();
+    v.sort_by_key(|e| e.file_name());
+    Ok(v)
+}
+
+/// The save files of a sandbox folder a capture keeps, as (path, Steam name):
+/// the files of a Steam `remote` folder, or each `<save>/<file>` of an EA
+/// title folder.
+fn saves_in(dir: &Path, layout: Layout) -> Result<Vec<(PathBuf, String)>, String> {
+    let file = |e: &std::fs::DirEntry| e.file_type().is_ok_and(|t| t.is_file());
+    let mut out = Vec::new();
+    for e in sorted_entries(dir)? {
+        let save = e.file_name().to_string_lossy().into_owned();
+        if !is_ea(layout) {
+            if file(&e) {
+                out.push((e.path(), save));
+            }
+            continue;
+        }
+        if !e.file_type().is_ok_and(|t| t.is_dir()) {
+            continue;
+        }
+        for f in sorted_entries(&e.path())?.into_iter().filter(file) {
+            if let Some(n) = steam_name(&format!("{save}/{}", f.file_name().to_string_lossy())) {
+                out.push((f.path(), n));
+            }
+        }
+    }
+    out.retain(|(_, n)| kept(n));
+    Ok(out)
+}
+
+fn capture_from(
+    name: &str,
+    store: &Path,
+    layout: Layout,
+    remote: &Path,
+    storage: &[(String, PathBuf)],
+    meta: Meta,
+) -> Result<Fixture, String> {
     if !valid_name(name) {
         return Err(format!("{name:?} is not a fixture name (letters, digits, - _ .)"));
     }
@@ -349,10 +454,14 @@ pub fn capture(
         ));
     }
     for f in PROFILE_FILES {
-        if !remote.join(f).is_file() {
+        let shown = match is_ea(layout) {
+            true => ea_name(f).expect("a profile file has an EA name"),
+            false => f.to_owned(),
+        };
+        if !remote.join(&shown).is_file() {
             return Err(format!(
-                "{} has no {f}: the game has not saved its profile in this sandbox (return to the main menu or reach \
-                 Team HQ, which save it)",
+                "{} has no {shown}: the game has not saved its profile in this sandbox (return to the main menu or \
+                 reach Team HQ, which save it)",
                 remote.display()
             ));
         }
@@ -363,17 +472,9 @@ pub fn capture(
     }
     let mut files = BTreeMap::new();
     let mut total = 0u64;
-    let mut names: Vec<String> = std::fs::read_dir(remote)
-        .map_err(|e| format!("{}: {e}", remote.display()))?
-        .flatten()
-        .filter(|e| e.file_type().is_ok_and(|t| t.is_file()))
-        .map(|e| e.file_name().to_string_lossy().into_owned())
-        .filter(|n| kept(n))
-        .collect();
-    names.sort();
-    let mut copies: Vec<(PathBuf, String)> = names
+    let mut copies: Vec<(PathBuf, String)> = saves_in(remote, layout)?
         .into_iter()
-        .map(|n| (remote.join(&n), format!("{SAVE_DIR}/{n}")))
+        .map(|(path, n)| (path, format!("{SAVE_DIR}/{n}")))
         .collect();
     for (id, dir) in storage {
         if !valid_name(id) || !dir.is_dir() {
@@ -419,6 +520,7 @@ pub fn capture(
         holds: meta.holds,
         files,
         source: meta.source,
+        layout,
     };
     let text = serde_json::to_string_pretty(&manifest).expect("serialisable") + "\n";
     std::fs::write(tmp.join(FILE), text).map_err(|e| format!("{}: {e}", tmp.display()))?;

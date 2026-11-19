@@ -1,6 +1,7 @@
 #include "core/diagnostics/perf/vq.hpp"
 
 #include "core/diagnostics/perf/counters.hpp"
+#include "core/runtime/imports.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <swofty/mem.hpp>
@@ -195,42 +196,19 @@ uintptr_t __cdecl begin_hook(void *sec, unsigned stack, ThreadFn fn, void *arg, 
     return h;
 }
 
-int patch(uintptr_t base, const char *fn, const void *const *match, int matches, void *repl)
+std::atomic<bool> import_skip_logged{false};
+
+int patch(const Mod &m, const char *fn, const void *const *match, int matches, void *repl)
 {
-    auto dos = reinterpret_cast<const IMAGE_DOS_HEADER *>(base);
-    if (dos->e_magic != IMAGE_DOS_SIGNATURE)
-        return 0;
-    auto nt = reinterpret_cast<const IMAGE_NT_HEADERS *>(base + dos->e_lfanew);
-    if (nt->Signature != IMAGE_NT_SIGNATURE || nt->OptionalHeader.NumberOfRvaAndSizes <= IMAGE_DIRECTORY_ENTRY_IMPORT)
-        return 0;
-    auto &dir = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
-    if (!dir.VirtualAddress)
-        return 0;
-    int done = 0;
-    for (auto *d = reinterpret_cast<const IMAGE_IMPORT_DESCRIPTOR *>(base + dir.VirtualAddress); d->Name; d++) {
-        auto *iat = reinterpret_cast<IMAGE_THUNK_DATA *>(base + d->FirstThunk);
-        auto *by = d->OriginalFirstThunk ? reinterpret_cast<const IMAGE_THUNK_DATA *>(base + d->OriginalFirstThunk)
-                                         : nullptr;
-        for (size_t k = 0; iat[k].u1.Function; k++) {
-            void *now = reinterpret_cast<void *>(iat[k].u1.Function);
-            bool named = !by;
-            if (by && !IMAGE_SNAP_BY_ORDINAL(by[k].u1.Ordinal)) {
-                auto *ibn = reinterpret_cast<const IMAGE_IMPORT_BY_NAME *>(base + by[k].u1.AddressOfData);
-                named = !strcmp(reinterpret_cast<const char *>(ibn->Name), fn);
-            }
-            bool known = false;
-            for (int j = 0; j < matches; j++)
-                known |= match[j] && now == match[j];
-            if (!named || !known)
-                continue;
-            DWORD old;
-            if (!VirtualProtect(&iat[k].u1.Function, sizeof(void *), PAGE_READWRITE, &old))
-                continue;
-            iat[k].u1.Function = reinterpret_cast<ULONG_PTR>(repl);
-            VirtualProtect(&iat[k].u1.Function, sizeof(void *), old, &old);
-            done++;
-        }
-    }
+    pe_patch p{};
+    p.fn = fn;
+    p.match = match;
+    p.matches = matches;
+    p.repl = repl;
+    p.write = runtime::import_write;
+    int done = pe_patch_imports(m.base, runtime::import_readable, nullptr, &p);
+    if (p.skipped)
+        note_import_skip(m.label.c_str(), p.first_skip, p.skipped);
     return done;
 }
 
@@ -271,10 +249,10 @@ bool hook(HMODULE h, const std::wstring &path, bool self)
     mod_count.store(n + 1, std::memory_order_release);
     mod_gen.fetch_add(1, rlx);
     const void *vqs[] = {reinterpret_cast<void *>(real_vq), reinterpret_cast<void *>(real_vq_base)};
-    m.slots = patch(base, "VirtualQuery", vqs, 2, reinterpret_cast<void *>(&vq_hook));
+    m.slots = patch(m, "VirtualQuery", vqs, 2, reinterpret_cast<void *>(&vq_hook));
     if (!exe && real_begin) {
         const void *begins[] = {reinterpret_cast<void *>(real_begin)};
-        patch(base, "_beginthreadex", begins, 1, reinterpret_cast<void *>(&begin_hook));
+        patch(m, "_beginthreadex", begins, 1, reinterpret_cast<void *>(&begin_hook));
     }
     exe_hooked |= exe && m.slots;
     return true;
@@ -299,6 +277,11 @@ uint64_t ft(FILETIME f)
     return (uint64_t(f.dwHighDateTime) << 32) | f.dwLowDateTime;
 }
 
+}
+
+void note_import_skip(const char *module, const pe_import &first, int skipped)
+{
+    runtime::log_import_skip(import_skip_logged, "[perf]", module, first, skipped);
 }
 
 void install()
@@ -466,11 +449,14 @@ logic::CpuMinute cpu(Cpu &st, double secs)
                     s.user = ft(u), s.kernel = ft(k);
             }
             s.alive = true;
+            uint64_t du = logic::delta(ft(u), s.user), dk = logic::delta(ft(k), s.kernel);
             if (s.ours) {
-                uint64_t du = logic::delta(ft(u), s.user), dk = logic::delta(ft(k), s.kernel);
                 ou += du, ok += dk;
                 out.threads++;
                 out.top.push_back({s.what, logic::cores(du + dk, secs)});
+            } else if (double c = logic::cores(du + dk, secs); c > out.game_top) {
+                out.game_top = c;
+                out.game_top_what = "tid " + std::to_string(tid);
             }
             s.user = ft(u), s.kernel = ft(k);
         }

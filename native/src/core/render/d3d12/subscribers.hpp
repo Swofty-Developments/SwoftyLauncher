@@ -25,7 +25,9 @@ struct Subscribers {
     Subs<ResizeFn> resizes;
     Subs<ExecFn> execs;
     Subs<BarrierFn> barriers;
+    Subs<BarrierObserverFn> barrier_observers;
     Subs<SetNameFn> setnames;
+    Subs<TextureCopyFn> texture_copies;
     Subs<ResetFn> resets;
     Subs<RenderTargetsFn> render_targets;
     Subs<RtvFn> rtvs;

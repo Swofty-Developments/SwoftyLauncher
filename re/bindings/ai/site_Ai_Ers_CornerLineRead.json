@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Ai_Ers_CornerLineRead",
+ "table": "globals",
+ "author": "brands-hatch",
+ "row": {
+  "addr": "0x1406497d9",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "ai",
+  "evidence": "decomp:own capstone disasm 0x1406487a0-0x140649d40 and 0x14066de50-0x14066ee00;xref:0x1406497b7,0x1406497cf,0x1406497d5,0x140649cc6,0x14063fd92",
+  "notes": "mov r8d,[r8+0x10] in Ai_Ers_DecidePushReasons (+0x1039), 4 bytes, no branch lands inside it. r8 = [chosen+0] loaded at 0x1406497d5, chosen = per-car gap result +0x10 (current corner) or +0x60 (next corner: Ai_Overtake_EvaluateGap called at 0x14063fd92 from the current corner end), picked by byte [r8+0x58]; only chosen+0x4b (valid) is tested at 0x1406497b5. chosen+0 is the first route+0x490 (ch0 corner marker) entry ahead that Ai_TrackLine_FindNextBrakeLine accepts between the bracket lines +0x20 (corner start) / +0x18 (corner end); it stores 0 with valid still 1 when that marker is outside the bracket. r8 0 faults reading 0x10 (Brands Hatch mod.brhgp 1.8.0 family; all 8 crash records r9=0x60). rcx = the ERS boost entry, [rcx+0x20..0x28] its corner_id list, xmm0 = [rcx+0x10] already loaded. The rip target is site_Ai_Ers_NoCornerMatch."
+ },
+ "signature": {
+  "id": "ai.ers_corner_line_read",
+  "section": ".xtls",
+  "pattern": "4F 8B 04 08 45 8B 40 10 48 C1 FA 03",
+  "match": "0x1406497d5",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406497d9",
+  "kind": "mid",
+  "expect": "45 8B 40 10 48 C1 FA 03",
+  "names": [
+   "site_Ai_Ers_CornerLineRead"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-18",
+    "by": "brands-hatch",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/ai_ers_guard.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

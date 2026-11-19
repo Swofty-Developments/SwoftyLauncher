@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ne_Std_ThrowBadOptionalAccess",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14029b020",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14029b020.c;xref:0x14023c600,0x140278970",
+  "notes": "std::_Throw_bad_optional_access, the cold path of std::optional::value(); the name is to become Ne_Std_ThrowBadOptionalAccess. No arguments, no return. Builds a stack std::bad_optional_access {vptr 0x145612dd0, message 'unknown'} (0x14029b024-0x14029b037); its what() 0x14029b140 returns 'Bad optional access' and ignores the message. Raises it once through Ne_Std_FatalExceptionTerminate 0x14029b050, exception::_Raise built with C++ exceptions off: the optional hook at 0x145fb8718, then _invoke_watson 0x145349d58, a fast fail. Nothing can catch it: reaching it ends the process. Callers span many subsystems (the cutscene command runner and component inits, the time trial reference board and others). Callers: census steam 0x29b020."
+ },
+ "signature": {
+  "id": "core.std_throw_exception",
+  "section": ".xtls",
+  "pattern": "48 83 EC 38 48 8D 05 ?? ?? ?? ?? 48 89 44 24 30 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 4C 24 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC 56 48 83 EC",
+  "match": "0x14029b020",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14029b020",
+  "kind": "func_start",
+  "names": [
+   "Ne_Std_ThrowBadOptionalAccess"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14029b020",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14029b020.c;xref:0x14023e4f2",
+   "notes": "V3517 builds object with vtable 0x145612dd0 and msg 'unknown' (0x145612763), calls FUN_14029b050 then int3; 404 callers incl. RunCommand and crew/press/idle Initialise"
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "retired:Ne_Std_ThrowException",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x14029b020-0x14029b047,0x14029b050-0x14029b08b,0x14029b090-0x14029b183,0x145349d58-0x145349d9f,1.0.145 0x14029b020-0x14029b08b,1.0.145 0x14029b140-0x14029b16c,1.0.145 0x14534c718-0x14534c75f;xref:0x14029b024,0x14029b030,0x14029b041,0x14029b058,0x14029b06f,0x14029b085,0x14029b140,0x14029b150,0x145349d70,0x140232eeb,0x14023e4f2,0x14027b1c5",
+   "notes": "V100066 Blind: partial. Confirmed: no args, no return; builds stack object {vptr 0x145612dd0, \"unknown\"} (0x14029b024-37), calls 0x14029b050 once; census 404/404 (.xtls 380, .data1 24, 0 thunks/jumps/lea/ptrs) matches own scan; xrefs 0x14023c600/0x140278970 are callers. Imprecise: vtable is bad_optional_access (what() 0x14029b140 returns \"Bad optional access\", ignores \"unknown\"), so this is std::_Throw_bad_optional_access, cold path of optional::value(). 0x14029b050 is exception::_Raise with exceptions off: handler 0x145fb8718 (never set), _Doraise, _invoke_watson 0x145349d58 = fast-fail/TerminateProcess, not a catchable throw. Callers span many subsystems, not only cutscene. 1.0.145 twin identical."
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_Std_ThrowBadOptionalAccess",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14029b020-0x14029b047,0x14029b050-0x14029b08b,0x14029b090-0x14029b133,0x14029b140-0x14029b148,0x14029b150-0x14029b16c,0x145349d58-0x145349d9f,1.0.145 0x14029b020-0x14029b047,1.0.145 0x14029b050-0x14029b08b,1.0.145 0x14534c718-0x14534c75f;xref:0x14029b030,0x14029b041,0x14029b05a,0x14029b06f,0x14029b140,0x14029b167,0x145349d70,0x145349d98,0x14023e4f2,0x14027b1c5",
+   "notes": "V100067 Blind: agree. std::_Throw_bad_optional_access, void(void), noreturn; reads no arg regs. Builds stack {vptr 0x145612dd0 at +0, 'unknown' at +8} (0x14029b024-0x14029b037), calls _Raise 0x14029b050 once (0x14029b041), int3 after. Vtable: dtor 0x14029b090, what 0x14029b140 = 'Bad optional access', _Doraise 0x14029b150 -> _invoke_watson. _Raise: hook [0x145fb8718] (no writer in image), [vptr+0x10], inline _invoke_watson 0x145349d58: int 0x29 code 5 if PF_FASTFAIL else reportfault + TerminateProcess(0xC0000417); uncatchable. Callers 404 E8 from 404 funcs (.xtls 380, .data1 24), 0 thunks/jmp/lea/ptr = census row. 1.0.145 twin same VA, 8/8. New name accurate."
+  }
+ ],
+ "proofs": []
+}

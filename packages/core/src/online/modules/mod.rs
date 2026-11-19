@@ -244,7 +244,7 @@ pub fn ensure(
 }
 
 #[cfg(test)]
-fn ensure_with(
+pub(crate) fn ensure_with(
     data: &Path,
     api: &Api,
     name: &str,
@@ -430,4 +430,4 @@ pub fn place_file(
 }
 
 #[cfg(test)]
-mod tests;
+pub(crate) mod tests;

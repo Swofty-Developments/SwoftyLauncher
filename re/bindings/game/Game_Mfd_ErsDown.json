@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141534490",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "int Game_Mfd_ErsDown(void *mfd_car_settings_vm)",
-  "evidence": "doc:re/db/subsystems/game.md",
-  "notes": "Mirror of Game_Mfd_ErsUp (assist check 0x1415344dc) (fuel-mix, static) | findings from PR #474 by vogtmarcel07-cloud"
+  "evidence": "doc:re/db/subsystems/game.md;decomp:re/decomp/141534490.c;xref:0x142a8ebbb,0x1410dbb44",
+  "notes": "Mirror of Game_Mfd_ErsUp (assist check 0x1415344dc) (fuel-mix, static) | findings from PR #474 by vogtmarcel07-cloud | engine-re E1 2026-11-18: called by Game_GameMfdSystem_Update 0x142a8e070 on action 'ERS Mode Down' (handle 0x146078d40) and once from 0x1410db680; writes InputRecord+0x08 like ErsUp. | raised by engine-re with --force 2026-11-18 at user request (lane owner review requested)"
  },
  "signature": {
   "id": "game.mfd_ers_down",

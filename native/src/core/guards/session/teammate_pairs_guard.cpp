@@ -19,7 +19,7 @@
 // For each team of the session it fetches the team's car records as a vector of pointers (0x1424abd60; r12 = begin,
 // rbp = end), and pairs the team's first two cars for strategy through the module at [session + 0x70] vslot +0x28.
 // When both of the first two records have the same byte at +0x81 (set for a live car) the function sorts the whole
-// vector by the byte at +0x80 (0x1436b36f0, an introsort whose comparator throws through Ne_Std_ThrowException when
+// vector by the byte at +0x80 (0x1436b36f0, an introsort whose comparator throws through Ne_Std_ThrowBadOptionalAccess when
 // either record's +0x81 byte is 0), or runs the comparator-based sort 0x1436b3e00 when both are 0. A team that fields a
 // third car (the garage crew guard sees the same teams as their third garage entry) puts a third record in the vector,
 // the record's +0x81 byte is 0, and the sort throws: FatalExceptionTerminate, FAST_FAIL_INVALID_ARG, as the session is

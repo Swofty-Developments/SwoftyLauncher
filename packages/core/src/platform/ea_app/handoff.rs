@@ -1,7 +1,7 @@
 //! How a launch link reaches the EA app: the setting's command, the handler the EA app registered, or
 //! EALauncher.exe, and what opens the EA app without a link.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use super::LAUNCHER_EXE;
@@ -63,6 +63,75 @@ pub fn split_handler(line: &str) -> Vec<String> {
     }
 }
 
+/// The longest run of words a path with spaces is looked for in.
+const PATH_WORDS: usize = 8;
+
+/// Whether `word` holds no shell syntax: no quotes, escapes, expansions,
+/// separators, redirections, globs or braces, and no `~` to expand.
+fn plain_word(word: &str) -> bool {
+    !word.starts_with('~')
+        && !word
+            .chars()
+            .any(|c| c.is_whitespace() || "'\"\\`$;|&<>(){}[]*?#!".contains(c))
+}
+
+fn shell_name(name: &str) -> bool {
+    let mut chars = name.chars();
+    chars.next().is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
+        && chars.all(|c| c.is_ascii_alphanumeric() || c == '_')
+}
+
+/// A shell command line with each unquoted absolute path that runs on past
+/// a space put in single quotes. The shell cuts
+/// `/home/me/.steam/steam/steamapps/common/Proton - Experimental/proton` at
+/// its first space, so where the path up to a space is not on disk and the
+/// path with the words after it is, those words are quoted together. The
+/// value of a leading `NAME=` assignment counts the same. A line whose paths
+/// are on disk as written stays as it is, and so does everything from the
+/// first word with shell syntax on.
+pub fn quote_spaced_paths(line: &str, exists: &dyn Fn(&Path) -> bool) -> String {
+    let words: Vec<&str> = line.split(' ').collect();
+    let mut out: Vec<String> = Vec::with_capacity(words.len());
+    let mut i = 0;
+    while i < words.len() {
+        let word = words[i];
+        if !plain_word(word) && !word.is_empty() {
+            out.extend(words[i..].iter().map(|w| (*w).to_owned()));
+            break;
+        }
+        let (prefix, path) = match word.split_once('=') {
+            Some((name, value)) if shell_name(name) => (&word[..=name.len()], value),
+            _ => ("", word),
+        };
+        let mut quoted = None;
+        if path.starts_with('/') && !exists(Path::new(path)) {
+            let mut joined = path.to_owned();
+            for (j, next) in words.iter().enumerate().skip(i + 1).take(PATH_WORDS) {
+                if !plain_word(next) && !next.is_empty() {
+                    break;
+                }
+                joined.push(' ');
+                joined.push_str(next);
+                if exists(Path::new(&joined)) {
+                    quoted = Some((j, format!("{prefix}'{joined}'")));
+                    break;
+                }
+            }
+        }
+        match quoted {
+            Some((last, word)) => {
+                out.push(word);
+                i = last + 1;
+            }
+            None => {
+                out.push(word.to_owned());
+                i += 1;
+            }
+        }
+    }
+    out.join(" ")
+}
+
 /// How a launch link reaches the EA app.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Handoff {
@@ -87,7 +156,7 @@ impl Handoff {
         } else if cfg!(windows) {
             Some(Self::Program(split_handler(command)))
         } else {
-            Some(Self::Shell(command.to_owned()))
+            Some(Self::Shell(quote_spaced_paths(command, &|p: &Path| p.exists())))
         }
     }
 
@@ -122,6 +191,17 @@ impl Handoff {
                 };
                 vec!["sh".into(), "-c".into(), line]
             }
+        }
+    }
+
+    /// The program the hand-off runs, when it is an exe rather than a shell
+    /// command line.
+    pub fn program(&self) -> Option<PathBuf> {
+        match self {
+            Self::Program(words) if words[0].to_ascii_lowercase().ends_with(".exe") => {
+                Some(PathBuf::from(&words[0]))
+            }
+            _ => None,
         }
     }
 

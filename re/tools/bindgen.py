@@ -608,7 +608,7 @@ def build_set(overlay, bindings, is_kb, dropped=()):
             raise SystemExit(f'bindgen: hint func_rva for {i}, which has no string anchor')
         e = {}
         for k, v in base.items():
-            if k in ('made_on', 'alias'):
+            if k == 'made_on':
                 continue
             if k == 'build':
                 v = b['sha256']
