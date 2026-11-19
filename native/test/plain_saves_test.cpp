@@ -254,7 +254,8 @@ static void requests(const fs::path &tmp)
 
     auto based = ps::parse_requests(
         R"({"schema":1,"requests":[{"id":"r3","generation":9,"container":"gm_driver_career_1990","replace":true,"base_sha256":"abc"}]})");
-    expect(based.size() == 1 && based[0].base_sha256 == "abc", "inject: a request carries the hash of the container it was made from");
+    expect(based.size() == 1 && based[0].base_sha256 == "abc",
+           "inject: a request carries the hash of the container it was made from");
     expect(rs[0].base_sha256.empty(), "inject: a request without a base has none");
     expect(ps::base_matches(based[0], "abc"), "inject: a loaded container with the base hash matches");
     expect(!ps::base_matches(based[0], "abd") && !ps::base_matches(based[0], ""),
