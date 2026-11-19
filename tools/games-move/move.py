@@ -63,14 +63,18 @@ def exists_after(p):
 
 
 def git(*args, check=True):
-    out = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, check=False)
+    out = subprocess.run(
+        ["git", *args], cwd=ROOT, capture_output=True, text=True, check=False
+    )
     if check and out.returncode != 0:
         sys.exit(f"git {' '.join(args)}: {out.stderr.strip()}")
     return out.stdout
 
 
 def tracked():
-    return [f for f in git("ls-files", "-z").split("\0") if f and not f.startswith(SKIP)]
+    return [
+        f for f in git("ls-files", "-z").split("\0") if f and not f.startswith(SKIP)
+    ]
 
 
 def read(rel):
@@ -132,7 +136,9 @@ def mention_edits(files, review):
         for n, line in enumerate(text.splitlines(keepends=True), 1):
             new = pattern.sub(lambda m: f"{INTO}/{m.group(1)}", line)
             if new != line:
-                prose = Path(rel).suffix in TEXT_EXT or line.lstrip().startswith(COMMENT)
+                prose = Path(rel).suffix in TEXT_EXT or line.lstrip().startswith(
+                    COMMENT
+                )
                 if not prose:
                     review.append(f"{rel}:{n}: {new.strip()}")
             out.append(new)
@@ -144,7 +150,9 @@ def mention_edits(files, review):
 
 def visibility_edits(files, edits):
     """`pub(in crate::<module>)` names an ancestor, which a re-export is not; point it at the new place."""
-    pattern = re.compile(rf"\bpub\(in crate::({'|'.join(re.escape(m) for m in MODULES)})\b")
+    pattern = re.compile(
+        rf"\bpub\(in crate::({'|'.join(re.escape(m) for m in MODULES)})\b"
+    )
     found = {}
     for rel in files:
         if not rel.endswith(".rs"):
@@ -154,7 +162,9 @@ def visibility_edits(files, edits):
             text = read(rel)
         if text is None or "pub(in crate::" not in text:
             continue
-        changed = pattern.sub(lambda m: f"pub(in crate::games::f1_25::{m.group(1)}", text)
+        changed = pattern.sub(
+            lambda m: f"pub(in crate::games::f1_25::{m.group(1)}", text
+        )
         if changed != text:
             found[rel] = changed
     return found
@@ -165,10 +175,14 @@ def nextest_edit(review):
     if text is None:
         return {}
     names = "|".join(re.escape(m) for m in MODULES)
-    changed = re.sub(rf"\btest\(([=~]?)(\^?)({names})::", r"test(\1\2games::f1_25::\3::", text)
+    changed = re.sub(
+        rf"\btest\(([=~]?)(\^?)({names})::", r"test(\1\2games::f1_25::\3::", text
+    )
     for n, line in enumerate(changed.splitlines(), 1):
         if re.search(rf"\btest\(/[^)]*\b({names})::", line):
-            review.append(f"{NEXTEST}:{n}: a regex filter names a moved module: {line.strip()}")
+            review.append(
+                f"{NEXTEST}:{n}: a regex filter names a moved module: {line.strip()}"
+            )
     return {NEXTEST: changed} if changed != text else {}
 
 
@@ -193,7 +207,11 @@ REEXPORT = re.compile(r"pub use games::f1_25::\{([^}]*)\};\n")
 
 
 def lib_edit(text):
-    kept = [line for line in text.splitlines(keepends=True) if not any(line == f"pub mod {m};\n" for m in MODULES)]
+    kept = [
+        line
+        for line in text.splitlines(keepends=True)
+        if not any(line == f"pub mod {m};\n" for m in MODULES)
+    ]
     text = "".join(kept)
     names = sorted(MODULES)
     line = f"pub use games::f1_25::{{{', '.join(names)}}};\n"
@@ -207,7 +225,9 @@ def lib_edit(text):
 
 
 def f1_mod_edit(text):
-    missing = [m for m in MODULES if not re.search(rf"^pub mod {m};$", text, re.MULTILINE)]
+    missing = [
+        m for m in MODULES if not re.search(rf"^pub mod {m};$", text, re.MULTILINE)
+    ]
     if not missing:
         return text
     lines = text.splitlines(keepends=True)
@@ -259,16 +279,35 @@ def apply_after_moves(check):
 def cargo(*args, env=None):
     print("+ cargo", " ".join(args), flush=True)
     full = dict(os.environ, **(env or {}))
-    if subprocess.run(["cargo", *args], cwd=ROOT, env=full, check=False).returncode != 0:
+    if (
+        subprocess.run(["cargo", *args], cwd=ROOT, env=full, check=False).returncode
+        != 0
+    ):
         sys.exit(f"cargo {' '.join(args)} failed")
 
 
 def main():
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--check", action="store_true", help="print what a run would do; exit 1 if anything is left")
-    ap.add_argument("--expect", metavar="SHA", help="refuse to run unless HEAD is this commit")
-    ap.add_argument("--no-cargo", action="store_true", help="skip cargo fmt and writing boundary.json")
-    ap.add_argument("--verify", action="store_true", help="after the move, run check, clippy and the tests")
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    ap.add_argument(
+        "--check",
+        action="store_true",
+        help="print what a run would do; exit 1 if anything is left",
+    )
+    ap.add_argument(
+        "--expect", metavar="SHA", help="refuse to run unless HEAD is this commit"
+    )
+    ap.add_argument(
+        "--no-cargo",
+        action="store_true",
+        help="skip cargo fmt and writing boundary.json",
+    )
+    ap.add_argument(
+        "--verify",
+        action="store_true",
+        help="after the move, run check, clippy and the tests",
+    )
     args = ap.parse_args()
 
     if args.expect:
