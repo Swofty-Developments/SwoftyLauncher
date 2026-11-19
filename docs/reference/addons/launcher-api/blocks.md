@@ -58,7 +58,7 @@ blocks.push(json!({ "tiles": [
 
 - **`stats`**: large label/value pairs. **`facts`**: small label/value pairs.
 - **`label`**: a section heading.
-- **`text`**: a line in a [tone](./views#tones).
+- **`text`**: a line in a [tone](./views#tones) (default `neutral`).
 - **`names`**: a heading and a name list.
 - **`table`**: a table; sorting, search and editable cells from 1.0.10 ([Tables](./tables)).
 - **`buttons`**: a row of [buttons](./views#buttons).

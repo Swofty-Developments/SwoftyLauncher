@@ -7760,7 +7760,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-addon"
-version = "1.9.74"
+version = "1.10.0"
 dependencies = [
  "semver",
  "serde",
@@ -7771,7 +7771,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-ads"
-version = "1.9.74"
+version = "1.10.0"
 dependencies = [
  "open",
  "serde",
@@ -7783,7 +7783,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-ads-helper"
-version = "1.9.74"
+version = "1.10.0"
 dependencies = [
  "gtk",
  "swofty-ads",
@@ -7792,14 +7792,14 @@ dependencies = [
 
 [[package]]
 name = "swofty-builtins"
-version = "1.9.74"
+version = "1.10.0"
 dependencies = [
  "swofty-addon",
 ]
 
 [[package]]
 name = "swofty-cli"
-version = "1.9.74"
+version = "1.10.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -7815,7 +7815,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-core"
-version = "1.9.74"
+version = "1.10.0"
 dependencies = [
  "flate2",
  "libc",
@@ -7842,7 +7842,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-formats"
-version = "1.9.74"
+version = "1.10.0"
 dependencies = [
  "aes 0.9.4",
  "bcdec_rs",
@@ -7853,19 +7853,21 @@ dependencies = [
 
 [[package]]
 name = "swofty-i18n"
-version = "1.9.74"
+version = "1.10.0"
 dependencies = [
  "serde_json",
 ]
 
 [[package]]
 name = "swofty-launcher"
-version = "1.9.74"
+version = "1.10.0"
 dependencies = [
  "anyhow",
+ "base64 0.22.1",
  "gpui-kit",
  "image",
  "lsp-types",
+ "png 0.18.1",
  "raw-window-handle",
  "semver",
  "serde",
@@ -7896,7 +7898,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-preview"
-version = "1.9.74"
+version = "1.10.0"
 dependencies = [
  "image",
  "pollster 1.0.1",
@@ -7912,11 +7914,11 @@ dependencies = [
 
 [[package]]
 name = "swofty-sdk"
-version = "1.9.74"
+version = "1.10.0"
 
 [[package]]
 name = "swofty-shaders"
-version = "1.9.74"
+version = "1.10.0"
 dependencies = [
  "serde",
  "serde_json",

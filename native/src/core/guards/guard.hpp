@@ -89,6 +89,8 @@ struct SiteGuardSpec {
     // Logs the settle line even when the guard turned itself off before offering its mixins.
     bool settles_when_off = false;
     std::vector<SitePart> parts = {};
+    // Runs once, after the armed line, when the guard's own set installed.
+    void (*on_armed)() = nullptr;
 };
 
 // A guard made of site, wrap or patch mixins on game code, in one mixin set and one more per part: it is off when its

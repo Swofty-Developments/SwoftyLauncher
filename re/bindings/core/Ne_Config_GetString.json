@@ -45,6 +45,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/143a44700.c;xref:0x14020a6a2",
    "notes": "V3624 name, offsets and callers match decompile"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_Config_GetString",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x143a44700-0x143a44b71,0x143905280-0x1439053c6,0x14391ade0-0x14391af40,1.0.145 0x143a46cd0-0x143a47141;xref:0x143a44727,0x143a4473c,0x143a44749,0x143a4476b,0x143a44772,0x143a44783,0x143a4487d,0x143a44a99,0x14020a6a2,0x140346003",
+   "notes": "V100048 Blind: agree. Own disasm 0x143a44700..b71 (.pdata, no thunk). 4 args: rcx cfg (map ptr [cfg+8], shared SRWLOCK at cfg+0x10), rdx key C string (FNV-1a robin_hood find 0x143905280, strcmp), r8 out {+8 u64 cap, +0x10 char* data}, r9 default (nullable). eax: 0 found and copied; 2 no map or key absent (default copied, cut to cap-1); 0x54 len+1>cap (default copied, value not). Codes recorded to TLS listeners + 10-slot ring only on no-map and too-long paths. NULL default writes data[0]=0 with no cap check. Callers 89 calls/48 funcs (.xtls 84, .data1 5), 0 ptrs, equal to census row; both xrefs and all 4 named callers call it. 1.0.145 twin 0x143a46cd0, 268/268 same."
   }
  ],
  "proofs": []

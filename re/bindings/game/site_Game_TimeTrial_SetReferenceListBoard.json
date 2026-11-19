@@ -9,7 +9,7 @@
   "level": "L2",
   "subsystem": "game",
   "evidence": "decomp:re/decomp/14147b720.c;xref:0x14147bbf9,0x14147c0e1",
-  "notes": "In Game_TimeTrial_SetReference: cmp byte [rdx+0xf0],0 then je 0x14147c0e1, the call to Ne_Std_ThrowException (bad optional access, a 0xc0000409 fast fail). Reached when the reference track changed: ecx holds the presenter old track [rsi+0x3c] and ebp the new one, and the stores to [rsi+0x41], [rsi+0x40] and [rsi+0x3c] at 0x14147bbcb..0x14147bbd6 are done. rdx = [[[[rsi+0x20]+0x88]+0x260]+0xe18], the selected entrant list of the current game mode entity; list +0xe0 is its leaderboard descriptor stat id, +0xf0 the engaged byte. rsi = the Time Trial presenter. The hook point of the core time trial reference list guard."
+  "notes": "In Game_TimeTrial_SetReference: cmp byte [rdx+0xf0],0 then je 0x14147c0e1, the call to Ne_Std_ThrowBadOptionalAccess (bad optional access, a 0xc0000409 fast fail). Reached when the reference track changed: ecx holds the presenter old track [rsi+0x3c] and ebp the new one, and the stores to [rsi+0x41], [rsi+0x40] and [rsi+0x3c] at 0x14147bbcb..0x14147bbd6 are done. rdx = [[[[rsi+0x20]+0x88]+0x260]+0xe18], the selected entrant list of the current game mode entity; list +0xe0 is its leaderboard descriptor stat id, +0xf0 the engaged byte. rsi = the Time Trial presenter. The hook point of the core time trial reference list guard."
  },
  "signature": {
   "id": "game.time_trial_set_reference_list_board",

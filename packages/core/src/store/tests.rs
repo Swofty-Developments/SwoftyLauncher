@@ -1624,3 +1624,178 @@ fn a_data_folder_linked_to_a_missing_folder_is_never_started_over() {
     assert!(!target.exists());
     std::fs::remove_dir_all(&dir).ok();
 }
+
+struct MigrationFails(AddonManifest);
+
+impl swofty_addon::launcher::Addon for MigrationFails {
+    fn manifest(&self) -> &AddonManifest {
+        &self.0
+    }
+
+    fn migrate(&self, _: &Path, version: u32) -> swofty_addon::Result<Vec<String>> {
+        Err(swofty_addon::Error::Other(format!(
+            "cannot leave data version {version}"
+        )))
+    }
+}
+
+#[test]
+fn a_built_in_addon_whose_migration_fails_stops_the_migration_before_the_backfill() {
+    let (root, store) = v3_store("builtin-fails", &["a.one"]);
+    let manifest = AddonManifest::parse(
+        r#"{"schema_version":1,"id":"b.fails","name":"Fails","version":"1.0.0","author":"t","compat":{"game":"f1_25"}}"#,
+    )
+    .unwrap();
+    let store = store.with_builtins(vec![Builtin {
+        addon: Arc::new(MigrationFails(manifest)),
+        locked: false,
+        default_on: true,
+    }]);
+    store.save_profile(&Profile::new("grid")).unwrap();
+    let profile = store.profiles_dir().join("grid.json");
+    let before = std::fs::read(&profile).unwrap();
+    let err = store.migrate().unwrap_err().to_string();
+    assert_eq!(err, "migrating b.fails: cannot leave data version 3");
+    assert_eq!(store.config().data_version, 3);
+    assert_eq!(std::fs::read(&profile).unwrap(), before);
+    std::fs::remove_dir_all(&root).ok();
+}
+
+fn livery_zip(path: &Path, version: &str, lang: &[u8]) {
+    let mut z = zip::ZipWriter::new(std::fs::File::create(path).unwrap());
+    let opts = zip::write::SimpleFileOptions::default();
+    let manifest = manifest_json("a.livery").replace("1.0.0", version).replace(
+        r#""compat""#,
+        r#""operations":{"assets":["assets/lang.json"]},"compat""#,
+    );
+    z.start_file(MANIFEST_FILE, opts).unwrap();
+    std::io::Write::write_all(&mut z, manifest.as_bytes()).unwrap();
+    z.start_file("assets/lang.json", opts).unwrap();
+    std::io::Write::write_all(&mut z, lang).unwrap();
+    z.start_file("base/common.erp", opts).unwrap();
+    std::io::Write::write_all(&mut z, format!("ERPK{version}").as_bytes()).unwrap();
+    z.finish().unwrap();
+}
+
+fn leftovers(store: &Store) -> Vec<String> {
+    let mut out: Vec<String> = std::fs::read_dir(store.addons_dir())
+        .unwrap()
+        .flatten()
+        .map(|e| e.file_name().to_string_lossy().into_owned())
+        .filter(|n| n.starts_with('.') && !n.starts_with(".swap-a.livery"))
+        .collect();
+    out.sort();
+    out
+}
+
+const LANG: &[u8] = br#"{"schema_version":1,"ops":[]}"#;
+
+#[test]
+fn an_install_lists_its_files_and_leaves_no_unpack_folder_or_lock() {
+    let root = tmp("sealed-install");
+    let store = Store::new(root.join("data"));
+    let zip = root.join("livery.swoftyaddon");
+    livery_zip(&zip, "1.0.0", LANG);
+    let m = store.install_addon(&zip).unwrap();
+    let dir = store.addons_dir().join("a.livery");
+    let index = crate::addons::files::read_index(&dir).unwrap();
+    assert_eq!(
+        index.files.keys().collect::<Vec<_>>(),
+        ["assets/lang.json", "base/common.erp", MANIFEST_FILE]
+    );
+    assert_eq!(index.files["assets/lang.json"].size, LANG.len() as u64);
+    assert!(crate::addons::files::check(&dir, &m).is_empty());
+    assert!(leftovers(&store).is_empty(), "{:?}", leftovers(&store));
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn an_update_killed_part_way_keeps_the_installed_copy_and_the_next_start_clears_it() {
+    let root = tmp("killed-update");
+    let store = Store::new(root.join("data"));
+    let zip = root.join("v1.swoftyaddon");
+    livery_zip(&zip, "1.0.0", LANG);
+    store.install_addon(&zip).unwrap();
+    let dest = store.addons_dir().join("a.livery");
+    livery_zip(&zip, "1.1.0", LANG);
+
+    crate::addons::files::tests::panic_after(1);
+    let killed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| store.install_addon(&zip)));
+    assert!(killed.is_err());
+    let staging = store.addons_dir().join(format!("{STAGING_PREFIX}a.livery"));
+    std::fs::write(staging.join("assets/lang.json"), b"").unwrap();
+    assert_eq!(store.addons().unwrap()["a.livery"].version.to_string(), "1.0.0");
+    assert_eq!(std::fs::read(dest.join("base/common.erp")).unwrap(), b"ERPK1.0.0");
+    assert_eq!(std::fs::read(dest.join("assets/lang.json")).unwrap(), LANG);
+    let m = &store.addons().unwrap()["a.livery"];
+    assert!(crate::addons::files::check(&dest, m).is_empty());
+
+    let scratch = store
+        .addons_dir()
+        .join(format!("{SCRATCH_PREFIX}{}-999999", std::process::id()));
+    std::fs::create_dir_all(scratch.join("assets")).unwrap();
+    std::fs::write(scratch.join(MANIFEST_FILE), b"{\"schema_vers").unwrap();
+
+    let notes = store.migrate().unwrap();
+    assert!(
+        notes
+            .iter()
+            .any(|n| n == "deleted the unfinished install of a.livery, which stays at 1.0.0"),
+        "{notes:?}"
+    );
+    assert!(
+        notes
+            .iter()
+            .any(|n| n.starts_with("deleted the unfinished unpack .importing-")),
+        "{notes:?}"
+    );
+    assert!(leftovers(&store).is_empty(), "{:?}", leftovers(&store));
+    assert_eq!(std::fs::read(dest.join("base/common.erp")).unwrap(), b"ERPK1.0.0");
+    assert_eq!(store.addons().unwrap().len(), 2, "core and the livery");
+
+    store.install_addon(&zip).unwrap();
+    assert_eq!(store.addons().unwrap()["a.livery"].version.to_string(), "1.1.0");
+    assert!(leftovers(&store).is_empty(), "{:?}", leftovers(&store));
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn a_start_leaves_the_unpack_and_staging_folders_of_a_running_install_alone() {
+    let (root, store, _, staging) = installed_with_update("sweep-live");
+    let addons = store.addons_dir();
+    let scratch = Scratch::new(&addons);
+    std::fs::create_dir_all(&scratch.dir).unwrap();
+    let lock = SwapLock::try_acquire(&addons, "a.livery").unwrap().unwrap();
+    let notes = store.migrate().unwrap();
+    assert!(notes.iter().all(|n| !n.contains("unfinished")), "{notes:?}");
+    assert!(scratch.dir.is_dir() && staging.is_dir());
+    drop(lock);
+    let dir = scratch.dir.clone();
+    drop(scratch);
+    assert!(!dir.exists());
+    assert!(!swap_lock_path(&addons, &dir.file_name().unwrap().to_string_lossy()).exists());
+    store.migrate().unwrap();
+    assert!(!staging.exists());
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn an_install_of_an_addon_another_launcher_is_changing_is_refused_before_its_staging_is_touched() {
+    let (root, store, dest, staging) = installed_with_update("install-contended");
+    let lock = SwapLock::try_acquire(&store.addons_dir(), "a.livery")
+        .unwrap()
+        .unwrap();
+    let v3 = root.join("v3");
+    std::fs::create_dir_all(&v3).unwrap();
+    std::fs::write(
+        v3.join(MANIFEST_FILE),
+        manifest_json("a.livery").replace("1.0.0", "1.2.0"),
+    )
+    .unwrap();
+    let e = store.install_addon(&v3).unwrap_err().to_string();
+    assert!(e.contains("another Swofty launcher"), "{e}");
+    assert_eq!(std::fs::read(staging.join("base/common.erp")).unwrap(), b"v2");
+    assert_eq!(std::fs::read(dest.join("base/common.erp")).unwrap(), b"v1");
+    drop(lock);
+    std::fs::remove_dir_all(&root).ok();
+}

@@ -1,20 +1,23 @@
+use std::ffi::OsStr;
 use std::path::Path;
+use std::process::Command;
 #[cfg(not(windows))]
 use std::time::Instant;
 
-use anyhow::{Result, bail};
+use anyhow::{Result, anyhow, bail};
 use swofty_core::install::{Game, Source};
 use swofty_core::platform::ea_app::{self, Handoff};
 #[cfg(not(windows))]
 use swofty_core::platform::process::stop_process;
+use swofty_core::platform::run_as_admin as compat;
 #[cfg(not(windows))]
 use swofty_core::platform::steam::client as steam_client;
 use swofty_core::store::Store;
 
-#[cfg(not(windows))]
 use crate::console::output::say;
 #[cfg(not(windows))]
 use crate::stores::ea::SERVER_STOP_TIMEOUT;
+use crate::stores::ea::stub::refused;
 
 /// Which store Play brings up first for a copy of the game.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -54,7 +57,44 @@ pub fn check_recorded(game: &Path) -> Result<()> {
 }
 
 pub(super) fn desktop_opener(h: &Handoff) -> Option<(std::process::Command, bool)> {
-    ea_app::desktop_opener(h, swofty_core::platform::run_as_admin::elevated())
+    ea_app::desktop_opener(h, compat::elevated())
+}
+
+/// Stop before anything is built when Windows won't start a program the
+/// session needs because it is set to run as administrator: the program that
+/// hands the EA app the launch link, or for a modded session F1 25.
+pub fn check_elevation(store: &Store, game: &Path, modded: bool) -> Result<()> {
+    let program = handoff(store).and_then(|h| h.program());
+    match compat::ea_blocker(game, program.as_deref(), modded) {
+        Some(r) => Err(refused(store, r)),
+        None => Ok(()),
+    }
+}
+
+/// A start Windows refused with error 740: `program` is set to run as
+/// administrator and this process isn't.
+pub(super) fn refused_elevation(store: &Store, program: &OsStr, e: &std::io::Error) -> Option<anyhow::Error> {
+    compat::needs_elevation(e).then(|| refused_program(store, Path::new(program)))
+}
+
+/// The start of `program` Windows refused with error 740, recorded for the launcher.
+pub fn refused_program(store: &Store, program: &Path) -> anyhow::Error {
+    say(
+        "ea app",
+        &format!(
+            "Windows won't start {} for this process: it is set to run as administrator (error 740)",
+            program.display()
+        ),
+    );
+    refused(store, compat::refused_start(program))
+}
+
+/// The launch link never reached the EA app: the command that hands it over
+/// didn't start, so the session ends at once.
+pub(super) fn handoff_failed(store: &Store, c: &Command, h: &Handoff, e: &std::io::Error) -> anyhow::Error {
+    refused_elevation(store, c.get_program(), e).unwrap_or_else(|| {
+        anyhow!("could not run {h} to hand the launch link to the EA app ({e}); open the EA app and press Play again")
+    })
 }
 
 /// Whether a session puts offline play's file in EA AntiCheat's launcher's

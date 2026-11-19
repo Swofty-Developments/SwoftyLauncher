@@ -877,6 +877,7 @@ mod tests {
             updated_at: String::new(),
             latest: versions.first().cloned(),
             versions,
+            media: Vec::new(),
         }
     }
 

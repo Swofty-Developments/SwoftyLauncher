@@ -9,7 +9,7 @@
   "subsystem": "session",
   "proto": "-",
   "evidence": "decomp:re/decomp/142d6d3b0.c;xref:0x142d6cfd9,0x142d6d593",
-  "notes": "(introState) -> bool: true when skip flag +0xdc6 set or track/mode allows the video to end; checks session mode object (+0xca0->+0x88->+0x260) type, flags +0xdc2/+0xdc3, mode byte +0xe35 and controller +0xdb8 byte +0x126. Callers: Sess_IntroVideo_OnStateEnter, Sess_IntroVideo_OnVideoDoneFadeIn. Callers: census steam 0x2d6d3b0."
+  "notes": "(this) -> bool in al. True when byte this+0xdc6 is set (0x142d6d3b9). Otherwise it reads the session mode object x = [[[this+0xca0]+0x88]+0x260] with no null checks (a null [[this+0xca0]+0x88] faults reading 0xf10 at 0x142d6d48d) and returns true when byte x+0xf10 is set. When x is not of type 0x14604ec58 (its type from vtable +0x28, walked up the node+0x10 parents, reaches k_Ne_TypeRoot 0x146129ca0 first: 0x142d6d3ff-0x142d6d443) it goes straight to the last test. Otherwise it returns true when (x+0x1030)->vtbl+0x10(type 0x14605b0c8, 1) is non-null and this+0xdc2 is clear; then, with this+0xdc3 clear, true when byte x+0xe35 is set. Last test: rec = 0x140ac13d0([this+0xdb8]), the first matching 0x370-byte record in that controller's list or its first record, and it returns rec+0x126 == 0 (0x142d6d4a2-0x142d6d4ae). Callers: Sess_IntroVideo_OnStateEnter (0x142d6cfc0), Sess_IntroVideo_OnVideoDoneFadeIn (0x142d6db20), 0x142d6d4c0 and .data1 0x14e9ef0a0. Callers: census steam 0x2d6d3b0."
  },
  "signature": {
   "id": "session.intro_video_can_finish",

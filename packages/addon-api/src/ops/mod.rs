@@ -21,7 +21,7 @@ pub use db_ops::{CopyMode, DbOp, DbOps, IdFrom, SideData, StatIdMode};
 pub use erp::{ErpOp, MaterialNumber, MaterialValue};
 pub use field_names::{ANY_SHAPE, Claimed, FieldNames, RowIds, row_shape};
 pub use hud::HudFile;
-pub use pkg::{EventReplacement, PkgEdit, PkgPatch, PkgTarget, Signal};
+pub use pkg::{EventReplacement, PLACEMENT_SLOTS, PkgEdit, PkgPatch, PkgTarget, Signal};
 pub use resolve::{Segment, Selector, first_segment, ids_exhausted, no_row, no_row_selectors, record_key};
 pub use stat_ids::{
     MovedStatId, StatIdCeiling, UNLOCK_FRESH_FROM, UNLOCK_KINDS, UNLOCK_ROW, UNLOCK_STAT_MAX, VIRTUAL_LISTS,

@@ -26,18 +26,21 @@ on it and the code must be the same.
 
 --witness proves struct offsets: it finds the port's twin of the KB function (an entry pattern unique on both, else
 through a call site), compares the two whole functions, and lists per offset the instructions that use it as a
-displacement on each side. An offset is witnessed when the function is equal on both builds and uses it at the same
-instruction index on both.
+displacement on each side. The two instruction streams are aligned with rip displacements and branch targets masked, in
+matching runs of at least 3 instructions, so a protector rewrite elsewhere in the body (a constant split into a mov and
+an add) does not hide a use both builds share. An offset is witnessed when both functions use it the same number of
+times and every KB use aligns with a port use; when the functions are equal, at the same instruction index.
 """
 import argparse, json, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from sigverify import STEAM, md, norm, follow, classify, same, section_map, riprel_refs, make, resolve
+from sigverify import STEAM, md, norm, follow, classify, same, section_map, riprel_refs, make, resolve, protector_thunk, aligned
 from bindverify import Image, anchors, kb_twin
 from capstone.x86 import X86_GRP_CALL, X86_GRP_JUMP, X86_OP_IMM, X86_OP_MEM, X86_REG_RIP, X86_REG_RSP
 
 KB_EXE = os.environ.get('SWOFTY_KB_EXE', '/mnt/work/VSC/f1-modding/work/exe/F1_25.exe')
+RUN = 3
 
 
 def insn_starts(img, func, upto):
@@ -84,7 +87,7 @@ def port_one(ref, port, smap, name, rva, code='.xtls'):
     section = ref.section_of(rva).name if ref.section_of(rva) else '?'
     kind = classify(ref, rva)
     tries = []
-    if kind in ('func', 'site') and section == code:
+    if kind in ('func', 'site') and section == code and not protector_thunk(ref, rva):
         text, a1, a2 = make(ref, port, smap, rva, code, 0, 160)
         if text and a1 == rva:
             tries.append({'pattern': text, 'kind': 'addr', 'insn': 0, 'anchor': 0, 'len': 0})
@@ -129,11 +132,15 @@ def cpp(r):
     return f'{{"{r["name"]}", "{r["pattern"]}", {r["rva"]:#x}{tail}}}'
 
 
+def extent(img, rva, default=0x100):
+    starts, ends = img.pdata()
+    return next((e - s for s, e in zip(starts, ends) if s == rva), default)
+
+
 def compare(ref, port, a, b, n=None):
     fa, fb = follow(ref, a), follow(port, b)
     if n is None:
-        starts, ends = ref.pdata()
-        n = next((e - s for s, e in zip(starts, ends) if s == fa), 0x100)
+        n = extent(ref, fa)
     x, y = norm(ref, fa, n), norm(port, fb, n)
     equal = sum(1 for p, q in zip(x, y) if p == q)
     first = next((k for k, (p, q) in enumerate(zip(x, y)) if p != q), None)
@@ -160,13 +167,20 @@ def witness(ref, port, smap, rva, offs):
     if 'error' in r:
         return {'rva': rva, 'error': r['error']}
     fa, fb, n, eq, lx, ly, first = compare(ref, port, rva, r['port'])
-    ua, ub = uses(ref, fa, n, offs), uses(port, fb, n, offs)
+    m = extent(port, fb, n)
+    amap = aligned(norm(ref, fa, n), norm(port, fb, m), RUN)
+    ua, ub = uses(ref, fa, n, offs), uses(port, fb, m, offs)
+    identical = eq == lx == ly
     per = {}
     for o in offs:
         a, b = ua[o], ub[o]
-        per[o] = {'kb': len(a), 'port': len(b), 'same_place': bool(a) and a == b, 'first': a[0][1] if a else None}
+        at = {k for k, _ in b}
+        same_place = bool(a) and a == b
+        paired = same_place if identical else bool(a) and len(a) == len(b) and all(amap.get(k) in at for k, _ in a)
+        per[o] = {'kb': len(a), 'port': len(b), 'same_place': same_place, 'aligned': paired,
+                  'first': a[0][1] if a else None}
     return {'rva': rva, 'port': r['port'], 'body': fa, 'port_body': fb, 'len': n, 'equal': eq, 'kb_insns': lx,
-            'port_insns': ly, 'identical': eq == lx == ly, 'offsets': per}
+            'port_insns': ly, 'aligned': len(amap), 'identical': identical, 'offsets': per}
 
 
 def main():
@@ -210,12 +224,13 @@ def main():
                 print(f'FAIL {w["rva"]:#x}: {w["error"]}')
                 continue
             print(f'{"same" if w["identical"] else "DIFF"} {w["rva"]:#x} -> {w["port"]:#x} (bodies {w["body"]:#x} / '
-                  f'{w["port_body"]:#x}): {w["equal"]}/{w["kb_insns"]} equal, port {w["port_insns"]}')
+                  f'{w["port_body"]:#x}): {w["equal"]}/{w["kb_insns"]} equal in place, {w["aligned"]}/{w["kb_insns"]} '
+                  f'aligned in runs of {RUN}+, port {w["port_insns"]}')
             for o, p in w['offsets'].items():
-                ok = w['identical'] and p['same_place']
+                ok = p['aligned']
                 bad += not ok
-                print(f'  {"ok  " if ok else "----"} +{o:#x}: kb {p["kb"]} port {p["port"]} use(s), same place {p["same_place"]}'
-                      f'{"  e.g. " + p["first"] if p["first"] else ""}')
+                print(f'  {"ok  " if ok else "----"} +{o:#x}: kb {p["kb"]} port {p["port"]} use(s), '
+                      f'{"aligned" if ok else "not aligned"}{"  e.g. " + p["first"] if p["first"] else ""}')
         if a.json:
             json.dump(rows, open(a.json, 'w'), indent=1, default=str)
         return 1 if bad else 0

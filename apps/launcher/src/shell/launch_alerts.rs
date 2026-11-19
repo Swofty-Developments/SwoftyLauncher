@@ -10,10 +10,11 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::diagnostics::launch;
 use swofty_core::diagnostics::quarantine;
+use swofty_core::online::server::integrity;
 use swofty_core::saves::{self, SavesWarning};
 
 use super::Shell;
-use swofty_i18n::tr;
+use swofty_i18n::{tr, trf};
 
 pub(super) fn section_label(title: &'static str, p: Palette) -> impl IntoElement {
     div()
@@ -104,7 +105,13 @@ pub(super) fn show_mods_blocked(
 /// A launch that failed without a crash: F1 25 was already running, or the
 /// game closed itself as it started. The dialog says why and what to do.
 pub(super) fn show_launch_failed(f: &launch::Failure, window: &mut Window, cx: &mut App) {
-    let (title, text) = (f.title(), f.text());
+    let (title, text) = match &f.cause {
+        launch::Cause::RunAsAdmin(r) => (
+            crate::dialogs::admin_needed::run_as_admin_title(),
+            crate::dialogs::admin_needed::run_as_admin_text(r),
+        ),
+        _ => (f.title(), f.text()),
+    };
     window.open_alert_dialog(cx, move |alert, _, _| {
         alert
             .width(px(560.))
@@ -112,6 +119,37 @@ pub(super) fn show_launch_failed(f: &launch::Failure, window: &mut Window, cx: &
             .description(text.clone())
             .ok_text(tr("OK"))
     });
+}
+
+/// A Play whose session could not load the integrity module: the game still starts, but its Time Trial laps
+/// carry no seal and do not rank.
+pub(super) fn show_integrity_missing(n: &integrity::Notice, window: &mut Window, cx: &mut App) {
+    let cause = match n.kind {
+        integrity::Kind::Unreachable => tr("The launcher couldn't reach Swofty's server in time."),
+        integrity::Kind::Refused => tr("Swofty's server didn't offer it to you."),
+        integrity::Kind::Invalid => tr("The download failed its safety check."),
+    };
+    let text = [
+        cause.to_owned(),
+        tr("Time Trial laps you drive this session won't be sealed, so they won't rank on the boards. Everything else works as usual. To try again, close the game and press Play.").to_owned(),
+        trf!("Details: {why}", why = n.why),
+    ]
+    .join("\n\n");
+    window.open_alert_dialog(cx, move |alert, _, _| {
+        alert
+            .width(px(560.))
+            .title(tr("The Time Trial integrity module didn't load"))
+            .description(text.clone())
+            .ok_text(tr("OK"))
+    });
+}
+
+/// The play bar's line for a launch that failed without a crash.
+pub(super) fn launch_headline(f: &launch::Failure) -> String {
+    match &f.cause {
+        launch::Cause::RunAsAdmin(r) => crate::dialogs::admin_needed::run_as_admin_headline(r),
+        _ => f.headline(),
+    }
 }
 
 pub(crate) fn offline_terms(p: Palette) -> impl IntoElement {

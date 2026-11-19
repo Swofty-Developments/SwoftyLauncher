@@ -9,11 +9,11 @@ pub enum Tab {
     Library,
     Discover,
     Online,
-    Support,
+    Store,
 }
 
 impl Tab {
-    pub const ALL: [Tab; 5] = [Tab::Home, Tab::Library, Tab::Discover, Tab::Online, Tab::Support];
+    pub const ALL: [Tab; 5] = [Tab::Home, Tab::Library, Tab::Discover, Tab::Online, Tab::Store];
 
     pub fn label(self) -> &'static str {
         match self {
@@ -21,7 +21,7 @@ impl Tab {
             Self::Library => tr("Library"),
             Self::Discover => tr("Discover"),
             Self::Online => tr("Online"),
-            Self::Support => tr("Support"),
+            Self::Store => tr("Donate"),
         }
     }
 
@@ -31,7 +31,7 @@ impl Tab {
             Self::Library => IconName::Puzzle,
             Self::Discover => IconName::PackageSearch,
             Self::Online => IconName::Trophy,
-            Self::Support => IconName::Heart,
+            Self::Store => IconName::Heart,
         }
     }
 
@@ -41,7 +41,7 @@ impl Tab {
             Self::Library => p.tab_library,
             Self::Discover => p.tab_discover,
             Self::Online => p.tab_trial,
-            Self::Support => p.tab_support,
+            Self::Store => p.tab_store,
         }
     }
 
@@ -51,7 +51,7 @@ impl Tab {
             Self::Library => Page::Addons,
             Self::Discover => Page::Browser,
             Self::Online => Page::Online,
-            Self::Support => Page::Support,
+            Self::Store => Page::Store,
         }
     }
 }
@@ -75,7 +75,7 @@ impl Page {
             Self::News => Some(Tab::Home),
             Self::Browser => Some(Tab::Discover),
             Self::Online | Self::Multiplayer | Self::Moderation => Some(Tab::Online),
-            Self::Support => Some(Tab::Support),
+            Self::Store => Some(Tab::Store),
             Self::Settings | Self::Tools => None,
             Self::Addons
             | Self::Shaders
@@ -178,7 +178,7 @@ mod tests {
     #[test]
     fn the_tabs_never_name_the_gated_page() {
         let labels: Vec<&str> = Tab::ALL.iter().map(|t| t.label()).collect();
-        assert_eq!(labels, ["Home", "Library", "Discover", "Online", "Support"]);
+        assert_eq!(labels, ["Home", "Library", "Discover", "Online", "Donate"]);
         assert!(labels.iter().all(|l| !l.to_lowercase().contains("multiplayer")));
     }
 
@@ -195,7 +195,7 @@ mod tests {
 
     #[test]
     fn the_bar_reaches_the_actions_after_the_tabs() {
-        let mut c = Cursor::on_tab(Some(Tab::Support));
+        let mut c = Cursor::on_tab(Some(Tab::Store));
         c.apply(Key::Right, TOP, 0);
         assert_eq!(c.col, Tab::ALL.len());
         assert_eq!(Action::ALL[c.col - Tab::ALL.len()], Action::Notifications);

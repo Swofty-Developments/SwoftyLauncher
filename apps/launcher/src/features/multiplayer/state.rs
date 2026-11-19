@@ -13,7 +13,7 @@ use swofty_core::platform::process::GameProcess;
 use swofty_core::store::Store;
 use swofty_i18n::tr;
 
-use super::model::exit_notice;
+use super::model::{OwnPrint, exit_notice};
 use super::room_game::RoomGame;
 use crate::shell::host::{Host, Hosted, reports_nothing};
 use crate::shell::{Page, Shell};
@@ -130,8 +130,8 @@ pub(crate) struct Lobby {
     pub(super) rooms_error: Option<String>,
     pub(super) rooms_at: Option<Instant>,
     pub(super) rooms_polling: bool,
-    pub(super) digest: Option<String>,
-    pub(super) digest_busy: bool,
+    pub(super) print: Option<OwnPrint>,
+    pub(super) print_busy: bool,
 }
 
 impl Lobby {
@@ -139,7 +139,7 @@ impl Lobby {
     pub(super) fn refresh(&mut self) {
         self.rooms_at = None;
         self.game_at = None;
-        self.digest = None;
+        self.print = None;
     }
 
     pub(super) fn game_due(&self, now: Instant) -> bool {
@@ -150,8 +150,8 @@ impl Lobby {
         !self.rooms_polling && due(self.rooms_at, ROOMS_EVERY, now)
     }
 
-    pub(super) fn digest_due(&self) -> bool {
-        self.digest.is_none() && !self.digest_busy
+    pub(super) fn print_due(&self) -> bool {
+        self.print.is_none() && !self.print_busy
     }
 
     pub(super) fn no_game(&mut self, now: Instant) {
@@ -183,10 +183,10 @@ impl Lobby {
         }
     }
 
-    pub(super) fn took_digest(&mut self, digest: Result<String, String>) {
-        self.digest_busy = false;
-        match digest {
-            Ok(d) => self.digest = Some(d),
+    pub(super) fn took_print(&mut self, print: Result<OwnPrint, String>) {
+        self.print_busy = false;
+        match print {
+            Ok(p) => self.print = Some(p),
             Err(e) => eprintln!("swofty-launcher: couldn't read this profile's addons: {e}"),
         }
     }

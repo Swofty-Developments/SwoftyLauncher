@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use swofty_core::online::multiplayer::client::Local;
 use swofty_core::online::multiplayer::types::{
     GameStatus, MemberStage, MemberState, Phase, Problem, Progress, RoomAddon, RoomContent, RoomSettings,
     RoomSummary, Screen, SessionState, Step,
@@ -46,6 +47,30 @@ pub(crate) fn room_meta_players(room: &RoomSummary) -> String {
     format!("{}/{} players", room.members, room.max_members)
 }
 
+/// This player's fingerprint as a room's status reads it: its digest and its gameplay addons.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct OwnPrint {
+    pub(crate) digest: String,
+    pub(crate) addons: Vec<RoomAddon>,
+}
+
+impl OwnPrint {
+    pub(crate) fn of(local: &Local) -> Self {
+        Self {
+            digest: local.digest(),
+            addons: local
+                .fingerprint
+                .addons
+                .iter()
+                .map(|a| RoomAddon {
+                    id: a.id.clone(),
+                    name: a.name.clone(),
+                })
+                .collect(),
+        }
+    }
+}
+
 /// What a room's one status line says, and whether it needs the player's attention.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum RoomStatus {
@@ -56,14 +81,27 @@ pub(crate) enum RoomStatus {
 }
 
 impl RoomStatus {
-    pub(crate) fn of(room: &RoomSummary, mine: Option<&str>) -> Self {
+    /// `on` is the addons this player has on. With the host's addons listed, a room differs when one of them
+    /// is off here or the host lacks one of this player's gameplay addons, as the room's View shows; the
+    /// load order, option values, stat ids and builds the digests also cover come from the host in a room
+    /// launch. A room whose host lists no addons differs when the digests do.
+    pub(crate) fn of(room: &RoomSummary, on: &HashSet<String>, mine: Option<&OwnPrint>) -> Self {
         if room.members >= room.max_members {
             return Self::Full;
         }
-        match (room.digest.as_deref(), mine) {
-            (Some(host), Some(mine)) if host.eq_ignore_ascii_case(mine) => Self::Match,
-            (Some(_), Some(_)) => Self::Differ,
-            _ => Self::Unknown,
+        let (Some(host), Some(mine)) = (room.digest.as_deref(), mine) else {
+            return Self::Unknown;
+        };
+        if host.eq_ignore_ascii_case(&mine.digest) {
+            return Self::Match;
+        }
+        let Some(listed) = room.addons.as_ref().filter(|a| !a.list.is_empty()) else {
+            return Self::Differ;
+        };
+        if missing(&addon_checks(&listed.list, on)) > 0 || !extra_addons(room, mine).is_empty() {
+            Self::Differ
+        } else {
+            Self::Match
         }
     }
 
@@ -242,6 +280,23 @@ pub(crate) fn addon_checks(addons: &[RoomAddon], on: &HashSet<String>) -> Vec<Ad
 
 pub(crate) fn missing(checks: &[AddonCheck]) -> usize {
     checks.iter().filter(|c| !c.have).count()
+}
+
+/// The names of this player's gameplay addons the host doesn't have, once the server lists every addon the
+/// host has on.
+pub(crate) fn extra_addons(room: &RoomSummary, mine: &OwnPrint) -> Vec<String> {
+    let Some(listed) = room
+        .addons
+        .as_ref()
+        .filter(|a| !a.list.is_empty() && a.list.len() == a.count as usize)
+    else {
+        return Vec::new();
+    };
+    mine.addons
+        .iter()
+        .filter(|a| !listed.list.iter().any(|h| h.id == a.id))
+        .map(|a| a.name.clone())
+        .collect()
 }
 
 /// The names a room card shows: every addon the host has on when the server lists them, else its tracks.

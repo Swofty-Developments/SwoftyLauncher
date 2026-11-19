@@ -1335,7 +1335,7 @@ ta::Outcome InGame::save_poll()
     uint32_t n = runtime::save_sandbox_writes();
     if (n <= save_writes_before)
         return ta::Outcome::pending();
-    swofty::log("[test] save now: the sandbox served %u FileWrite(s)", n - save_writes_before);
+    swofty::log("[test] save now: the sandbox served %u %s", n - save_writes_before, runtime::save_sandbox_writes_what());
     return ta::Outcome::ok("{\"writes\":" + std::to_string(n - save_writes_before) + "}");
 }
 

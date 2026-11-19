@@ -7,7 +7,7 @@ use anyhow::{Result, bail};
 use swofty_core::GAME_EXE;
 use swofty_core::diagnostics::launch;
 use swofty_core::diagnostics::quarantine::{self, Stage};
-use swofty_core::game_folder::recovery::{Scope, SessionLock};
+use swofty_core::game_folder::recovery::{Recovered, Scope, SessionLock};
 use swofty_core::install::{Game, Source};
 use swofty_core::online::multiplayer::client::LAUNCH_ENV as NETPLAY_ENV;
 use swofty_core::platform::process::{game_processes, game_running_in, stop_game_in};
@@ -70,7 +70,10 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
     let source = Source::detect(&game);
     if crate::stores::ea::store_start(source) == crate::stores::ea::StoreStart::EaApp {
         crate::stores::ea::check_recorded(&game)?;
-        if args.apply && swofty_core::build_support::blocked(&game.join(GAME_EXE)).is_none() {
+        let stock = swofty_core::build_support::blocked(&game.join(GAME_EXE)).is_some();
+        let vanilla = store.profile(profile).is_ok_and(|p| p.is_vanilla());
+        crate::stores::ea::check_elevation(store, &game, !stock && !vanilla)?;
+        if args.apply && !stock {
             crate::stores::ea::dll_setting(store, g, args.no_start_store)?;
         }
     }
@@ -285,17 +288,32 @@ pub(crate) fn settle(
         std::thread::sleep(Duration::from_millis(250));
     };
     match swofty_core::game_folder::recovery::recover(&lock, &store.root, g, Scope::All) {
-        Ok(r) if r.recovered() => {
-            say("info", "the wrapper ended without rolling the session back");
-            crate::session_lock::announce(store, g, &r.lines(), &info);
-        }
         Ok(r) => {
-            r.lines().iter().for_each(|l| info(l));
-            if ended {
-                info("session over: its game files are rolled back");
+            if r.recovered() {
+                say("info", "the wrapper ended without rolling the session back");
+                crate::session_lock::announce(store, g, &r.lines(), &info);
+            } else {
+                r.lines().iter().for_each(|l| info(l));
+            }
+            if let Some(line) = settled(&r, ended) {
+                info(line);
             }
         }
         Err(e) => info(&format!("rollback failed, run swofty restore: {e:#}")),
+    }
+}
+
+pub(super) const UNFINISHED: &str = "not every game file is back yet; the next swofty run or launcher start retries it, or run swofty restore";
+
+/// The last line of the roll back after a session. One that left a file in
+/// the game folder never ends on the line that says the files are back.
+pub(super) fn settled(r: &Recovered, ended: bool) -> Option<&'static str> {
+    if !r.complete() {
+        Some(UNFINISHED)
+    } else if ended && !r.recovered() {
+        Some("session over: its game files are rolled back")
+    } else {
+        None
     }
 }
 

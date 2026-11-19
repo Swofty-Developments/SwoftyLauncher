@@ -7,6 +7,7 @@ mod detail;
 mod detail_cards;
 mod downloads;
 mod filters;
+mod gallery;
 mod grid;
 mod jobs;
 mod model;

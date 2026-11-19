@@ -1083,7 +1083,9 @@ typedef struct SwoftyContentOps {
    zero, never another car's value. Calls answer SWOFTY_ASSET_UNAVAILABLE while no session is live, the build is
    not the one the offsets are from, or the group is off because a KB row it needs has no independent verify row
    yet (the core logs "live <group> off: needs <row>" once), and SWOFTY_ASSET_INVALID for a bad argument.
-   Table version 3; version 2 adds driver_name and version 1 is the members up to seq; each keeps its layout, so
+   Table version 5 appends tyre_icon_texture; version 4 appends images (see swofty/live_images.h);
+   version 3 appends team_badge_texture. Check version >= 5 before reading tyre_icon_texture.
+   Version 2 adds driver_name and version 1 is the members up to seq; each keeps its layout, so
    check version >= 3 before calling team_badge_texture and version >= 2 before calling driver_name.
    session: the session header. car: one car by vehicle id. subject: the watched car while the spectator HUD is
    up, else the player's. turn: the official turn at that car's lap_m (SWOFTY_ASSET_UNAVAILABLE for a track
@@ -1097,9 +1099,11 @@ typedef struct SwoftyContentOps {
    team_badge_texture (version 3): the texture path the race HUD timing pill binds for
    that car, NUL-terminated within cap: "#overrides.osd.timing_tower.team_badges_hud.<key>" for a catalogue team,
    "eaid://ui_package/art/textures/render_badge_<table> <index>" (or render_badge_default.tga) for a team record
-   with show_custom_badge_in_UI set; SWOFTY_ASSET_UNAVAILABLE for a user-defined (My Team) team and when the
-   path does not fit cap. */
-#define SWOFTY_LIVE_VERSION 3
+   with show_custom_badge_in_UI set, or for a user-defined team's badge. My Team careers on the verified
+   Steam 26566308 build use the saved assignment for the active mode and loaded career slot; an unavailable
+   saved assignment is not replaced by the entrant fallback.
+   SWOFTY_ASSET_UNAVAILABLE when the reference cannot be read or the path does not fit cap. */
+#define SWOFTY_LIVE_VERSION 5
 #define SWOFTY_LIVE_MAX_CARS 32
 #define SWOFTY_LIVE_NO_GAP INT32_MIN
 
@@ -1260,6 +1264,7 @@ typedef struct SwoftyLiveTurn {
     uint32_t reserved[4];
 } SwoftyLiveTurn;
 
+typedef struct SwoftyLiveImages SwoftyLiveImages;
 typedef struct SwoftyLive {
     uint32_t version;
     int (*available)(void);
@@ -1272,6 +1277,12 @@ typedef struct SwoftyLive {
     int (*seq)(uint64_t *frame);
     int (*driver_name)(uint32_t vehicle, char *out, uint32_t cap);
     int (*team_badge_texture)(uint32_t vehicle, char *path, uint32_t cap);
+    const SwoftyLiveImages *(*images)(void);
+    /* Version 5: fitted visual compound's effective GameDB "small" icon template.
+       Pass the returned reference to images()->image(). No stock-letter fallback.
+       UTF-8 buffer of 160 bytes suffices; INVALID for a short buffer/invalid car,
+       UNAVAILABLE while fitted tyres, GameDB or the supported template are absent. */
+    int (*tyre_icon_texture)(uint32_t vehicle, char *path, uint32_t cap);
 } SwoftyLive;
 
 /* Live car operations (standard library 1.6, experimental), from the core export SwoftyCoreCarOps; not a SwoftyApi
@@ -1527,7 +1538,7 @@ typedef struct SwoftyApi {
 typedef int (*SwoftyAddonInitFn)(const SwoftyApi *api);
 typedef SwoftyAddonInitFn SwoftyModInitFn;
 
-/* Lap host, from the core export SwoftyCoreLapHost; not a SwoftyApi field. Table version 1. What a lap module
+/* Lap host, from the core export SwoftyCoreLapHost; not a SwoftyApi field. Table version 2. What a lap module
    (a plugin that records laps and serves lap boards) needs from the core beyond the SDK. A string a function
    returns belongs to the calling thread until its next call of this table; never NULL. NULL table: a core
    without it.
@@ -1549,7 +1560,15 @@ typedef SwoftyAddonInitFn SwoftyModInitFn;
    wrote. copy: a guarded memory write. notice: one line of text the core paints at the top of the overlay frame
    (NULL or empty: none); the core asks the client notice_wanted once, at overlay setup, whether to arm the
    overlay for it, and gives screen every UI screen that opens. name_tick: the core's player name display step, run
-   from the module's in-session tick (probe 1: its probe step). */
+   from the module's in-session tick (probe 1: its probe step).
+   Table version 2 adds mark at the end: a timing line of the player's Time Trial lap, for server-timed laps. lap is
+   the game run's lap counter, 0 for the first lap timed and one more for each lap started (0 to 100000), and the
+   lap_index of the lap file the lap ends in; which 0 the start line, 1 sector 1, 2 sector 2, 3 the finish, and for
+   pause n of the lap (1 to 4) 2n+2 as the game pauses and 2n+3 as it resumes; game_ms the game's lap clock at the
+   line or the pause (0 at the start, at most an hour). Call it at the line or the pause, on the flow thread, and the
+   finish before the lap's file is written. A core before 1.10.0 refuses the pause marks. The core stamps the moment and hands it to the launcher, which sends it
+   off the game's threads; 1 queued, 0 refused. A module takes a table of at least SWOFTY_LAP_HOST_V1_SIZE bytes and
+   calls mark only on version 2 or later. */
 typedef struct SwoftyLapClient {
     uint32_t size, version;
     void (*offer)(void);
@@ -1633,9 +1652,14 @@ typedef struct SwoftyLapHost {
     int (*copy)(void *to, const void *from, size_t n);
     void (*notice)(const char *text);
     void (*name_tick)(int probe);
+    int (*mark)(int32_t lap, int32_t which, int32_t game_ms);
+    /* Version 3: the core's own version (the launcher's, such as "1.10.0"), for the lap file header. */
+    const char *(*core_version)(void);
 } SwoftyLapHost;
 
-#define SWOFTY_LAP_HOST_VERSION 1
+#define SWOFTY_LAP_HOST_VERSION 3
+#define SWOFTY_LAP_HOST_V1_SIZE offsetof(SwoftyLapHost, mark)
+#define SWOFTY_LAP_HOST_V2_SIZE offsetof(SwoftyLapHost, core_version)
 #define SWOFTY_LAP_CAR_SPEED 1u
 #define SWOFTY_LAP_CAR_PEDALS 2u
 #define SWOFTY_LAP_CAR_STEER 4u

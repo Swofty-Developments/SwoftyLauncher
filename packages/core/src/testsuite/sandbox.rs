@@ -39,9 +39,58 @@ pub const BINDINGS: &[&str] = &[
     "Ne_SaveSystem2Win_WriteInfoXml",
 ];
 
+/// The EA copy's: its save device has no corrupt-save upload (vt+0x58 is
+/// `xor eax, eax; ret`), and the core checks the device's vtable before it
+/// points the device's title folder at the run's `saves/ea`.
+pub const EA_BINDINGS: &[&str] = &[
+    "Ne_SaveSystem2Win_Start",
+    "Ne_SaveSystem2Win_Mount",
+    "vt_Ne_SaveSystem2Win",
+];
+
+/// The EA sandbox has had no in-game run (re/research/ea-1-0-145.md "Test
+/// save sandbox"); until it has, a career run on the EA copy is refused.
+pub const EA_PROVEN: bool = false;
+
+/// The EA device's title folder in a run's `saves/`, and its profile save's folder.
+pub const EA: &str = "ea";
+pub const EA_PROFILE: &str = "profile";
+
 pub const HOOKED_LINE: &str = "[saves] test sandbox hooked";
 pub const ARMED_LINE: &str = "[saves] test sandbox armed";
 pub const FAILED_LINE: &str = "[saves] TEST SANDBOX FAILED";
+
+/// A binding set's `build.distribution` names the EA copy.
+pub fn is_ea(distribution: &str) -> bool {
+    matches!(distribution.to_ascii_lowercase().as_str(), "ea" | "ea app")
+}
+
+/// The bindings the sandbox needs on a build of `distribution`.
+pub fn bindings_for(distribution: &str) -> &'static [&'static str] {
+    match is_ea(distribution) {
+        true => EA_BINDINGS,
+        false => BINDINGS,
+    }
+}
+
+/// The game in `dir` is the EA app's copy.
+pub fn ea_copy(dir: &Path) -> bool {
+    crate::install::Source::detect(dir) == crate::install::Source::EaApp
+}
+
+/// The player's own save folder, which a sandboxed run must leave as it was:
+/// Steam's for a Steam copy, the EA app's profile folder (in its Wine prefix
+/// on Linux) for an EA copy.
+pub fn live_saves(g: &crate::install::Game) -> Option<PathBuf> {
+    match ea_copy(&g.dir) {
+        true => crate::saves::vault::Location::for_game(g)
+            .filter(|l| l.layout == crate::saves::vault::Layout::Ea)
+            .map(|l| l.dir),
+        false => {
+            crate::platform::steam::find_game().and_then(|i| crate::platform::steam::save_dir(&i.steam_root))
+        }
+    }
+}
 
 pub fn runs_dir(data: &Path) -> PathBuf {
     data.join(RUNS_DIR)
@@ -129,6 +178,7 @@ impl RunDir {
         std::fs::write(agent.join(super::agent::COMMANDS), "")?;
         if options.sandbox {
             std::fs::create_dir_all(root.join(SAVES).join(REMOTE))?;
+            std::fs::create_dir_all(root.join(SAVES).join(EA).join(EA_PROFILE))?;
         }
         let run = RunDir {
             root,
@@ -216,6 +266,16 @@ impl RunDir {
         self.saves().join(REMOTE)
     }
 
+    /// The EA copy's title folder for this run: the core points the save
+    /// device at it, and its `profile/` holds the profile save.
+    pub fn ea_title(&self) -> PathBuf {
+        self.saves().join(EA)
+    }
+
+    pub fn ea_profile(&self) -> PathBuf {
+        self.ea_title().join(EA_PROFILE)
+    }
+
     /// The addon storage kept from this run, `storage/<id>/`.
     pub fn storage(&self) -> PathBuf {
         self.root.join(STORAGE)
@@ -281,6 +341,11 @@ fn binding_sets(loader: &Path) -> Vec<PathBuf> {
 /// an L2 finding with an independent `agree`, so this is the static proof;
 /// the core still checks the device and fails closed in the game.
 pub fn verified(loader: &Path, exe_sha256: &str) -> Result<String, String> {
+    verified_for(loader, exe_sha256, EA_PROVEN)
+}
+
+/// [`verified`] with the EA sandbox's in-game run given.
+pub(crate) fn verified_for(loader: &Path, exe_sha256: &str, ea_proven: bool) -> Result<String, String> {
     let sets = binding_sets(loader);
     if sets.is_empty() {
         return Err(format!(
@@ -304,7 +369,9 @@ pub fn verified(loader: &Path, exe_sha256: &str) -> Result<String, String> {
             .flatten()
             .filter_map(|b| Some((b["id"].as_str()?, b["status"].as_str().unwrap_or("?"))))
             .collect();
-        let missing: Vec<&str> = BINDINGS
+        let distribution = doc["build"]["distribution"].as_str().unwrap_or_default();
+        let needed = bindings_for(distribution);
+        let missing: Vec<&str> = needed
             .iter()
             .copied()
             .filter(|id| !have.contains_key(id))
@@ -317,7 +384,14 @@ pub fn verified(loader: &Path, exe_sha256: &str) -> Result<String, String> {
                 missing.join(", ")
             ));
         }
-        let status: Vec<String> = BINDINGS.iter().map(|id| format!("{id} {}", have[id])).collect();
+        if is_ea(distribution) && !ea_proven {
+            return Err(format!(
+                "the save sandbox on the EA copy ({}) has had no in-game run yet: career tests run on the Steam copy \
+                 until one passes (re/research/ea-1-0-145.md \"Test save sandbox\")",
+                set.file_name().unwrap_or_default().to_string_lossy()
+            ));
+        }
+        let status: Vec<String> = needed.iter().map(|id| format!("{id} {}", have[id])).collect();
         return Ok(format!(
             "{} ({})",
             set.file_name().unwrap_or_default().to_string_lossy(),

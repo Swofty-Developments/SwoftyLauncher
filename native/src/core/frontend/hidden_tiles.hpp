@@ -3,6 +3,7 @@
 namespace frontend {
 
 void hide_movie_tile();
+void hide_story_tile();
 
 }
 

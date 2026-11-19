@@ -1,6 +1,6 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
-use swofty_formats::gvdb::{Gvdb, Record};
+use swofty_formats::gvdb::Gvdb;
 use swofty_formats::hash::fnv1a64;
 
 use super::{ACTIVITIES, CONTENT_SETS, TRACKS};
@@ -69,12 +69,7 @@ pub(crate) fn keep_track_refs(
     in_game: &[&str],
     left_out: &[&str],
 ) -> Vec<MissingTrack> {
-    let at: HashMap<u64, usize> = db.records.iter().enumerate().map(|(i, r)| (r.key, i)).collect();
-    let stock: HashMap<u64, &Record> = shipped.records.iter().map(|r| (r.key, r)).collect();
-    let text = |db: &Gvdb, path: &str| {
-        at.get(&fnv1a64(path))
-            .map(|&i| db.records[i].text().trim().to_owned())
-    };
+    let text = |db: &Gvdb, path: &str| db.get(path).map(|r| r.text().trim().to_owned());
     let count = |db: &Gvdb, table: &str| {
         let (container, row) = table.rsplit_once('.').expect("a table path");
         text(db, &swofty_formats::gvdb::instance_count_path(container, row))
@@ -121,22 +116,22 @@ pub(crate) fn keep_track_refs(
     let mut out = Vec::new();
     for (path, row, list) in refs {
         let key = fnv1a64(&path);
-        let Some(&i) = at.get(&key) else {
+        let Some(now) = db.get_key(key).map(|r| r.text().trim().to_owned()) else {
             continue;
         };
-        let now = db.records[i].text().trim().to_owned();
-        let shipped_text = stock
-            .get(&key)
+        let shipped_text = shipped
+            .get_key(key)
             .map(|r| r.text().trim().to_owned())
             .unwrap_or_default();
         if !list {
             if now.is_empty() || have.contains(&now) || now == shipped_text {
                 continue;
             }
-            let fix = match stock.get(&key).filter(|r| have.contains(r.text().trim())) {
+            let fix = match shipped.get_key(key).filter(|r| have.contains(r.text().trim())) {
                 Some(r) => {
-                    db.records[i].value = r.value.clone();
-                    db.records[i].tag = r.tag;
+                    if let Some((tag, value)) = db.records.value_mut(key) {
+                        (*tag, *value) = (r.tag, r.value.clone());
+                    }
                     MissingFix::Stock(r.text().trim().to_owned())
                 }
                 None => MissingFix::Kept,
@@ -156,7 +151,9 @@ pub(crate) fn keep_track_refs(
         if gone.is_empty() {
             continue;
         }
-        db.records[i].value = kept.join(",").into_bytes();
+        if let Some((_, value)) = db.records.value_mut(key) {
+            *value = kept.join(",").into_bytes();
+        }
         out.extend(gone.into_iter().map(|track| MissingTrack {
             key,
             at: row.clone(),

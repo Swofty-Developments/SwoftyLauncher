@@ -18,6 +18,7 @@ python3 registry/random_stacks.py --runner "$OUT/corpus_test" --count "${REGISTR
 "$OUT/career_scope_test"
 "$OUT/index_load_test"
 "$OUT/declare_all_test"
+"$OUT/header_schemas_test"
 "$OUT/career_wait_test"
 "$OUT/tolerant_edit_test"
 "$OUT/iterate_test"

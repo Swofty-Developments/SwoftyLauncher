@@ -36,6 +36,10 @@ pub(crate) enum AddonsCommand {
         #[arg(long, short, help = "Don't ask, even when the addon has affected your saves")]
         yes: bool,
     },
+    #[command(about = "Read every file of the installed addons, or of one, and list the damaged ones")]
+    Verify {
+        id: Option<String>,
+    },
 }
 
 pub(crate) fn command(store: &Store, profile: &str, cmd: AddonsCommand) -> Result<()> {
@@ -67,6 +71,7 @@ pub(crate) fn command(store: &Store, profile: &str, cmd: AddonsCommand) -> Resul
                 );
             }
         }
+        AddonsCommand::Verify { id } => verify(store, id.as_deref())?,
         AddonsCommand::Install { path } => {
             for result in store.install_addons(&path) {
                 let m = result.with_context(|| format!("installing {}", path.display()))?;
@@ -120,6 +125,47 @@ pub(crate) fn command(store: &Store, profile: &str, cmd: AddonsCommand) -> Resul
             store.remove_addon(&id)?;
             println!("removed {id}");
         }
+    }
+    Ok(())
+}
+
+fn verify(store: &Store, only: Option<&str>) -> Result<()> {
+    use swofty_core::addons::files;
+    let installed = store.addons()?;
+    if let Some(id) = only
+        && !installed.contains_key(id)
+    {
+        bail!("{id} is not installed");
+    }
+    let mut damaged = 0;
+    for (id, m) in installed
+        .iter()
+        .filter(|(id, _)| only.is_none_or(|o| o == id.as_str()))
+    {
+        let dir = store.addons_dir().join(id);
+        if store.is_builtin(id) || !dir.is_dir() {
+            continue;
+        }
+        let damage = files::verify(&dir, m);
+        let stops = damage.iter().any(|d| d.stops);
+        if !stops {
+            let unlisted = files::read_index(&dir).is_none();
+            let note = if unlisted {
+                " (installed without a file list: the files its manifest names, archives and plugins checked)"
+            } else {
+                ""
+            };
+            println!("{id:32} ok{note}");
+        } else {
+            damaged += 1;
+        }
+        for d in damage {
+            let warning = if d.stops { "" } else { "warning: " };
+            println!("{id:32} {warning}{}", d.line());
+        }
+    }
+    if damaged > 0 {
+        bail!("{damaged} damaged addon(s): install them again");
     }
     Ok(())
 }

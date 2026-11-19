@@ -2,9 +2,13 @@
 
 #include "core/diagnostics/crash/blackbox.hpp"
 #include "core/diagnostics/perf/profiler.hpp"
+#include "core/diagnostics/perf/system.hpp"
 #include "core/diagnostics/perf_logic.hpp"
+#include "core/runtime/imports.hpp"
 
 #include <swofty/mixin.hpp>
+
+#include <dxgi1_4.h>
 
 #include <cmath>
 #include <cstring>
@@ -12,42 +16,6 @@
 namespace perf {
 
 namespace detail {
-
-int Profiler::bucket(double ms)
-{
-    if (ms < 100)
-        return std::max(0, int(ms * 4));
-    if (ms < 1000)
-        return 400 + int((ms - 100) / 10);
-    if (ms < 10000)
-        return 490 + int((ms - 1000) / 100);
-    return BUCKETS - 1;
-}
-
-double Profiler::bucket_ms(int b)
-{
-    if (b < 400)
-        return (b + 0.5) / 4;
-    if (b < 490)
-        return 100 + (b - 400 + 0.5) * 10;
-    if (b < BUCKETS - 1)
-        return 1000 + (b - 490 + 0.5) * 100;
-    return 10000;
-}
-
-double Profiler::percentile(const uint32_t *h, double p)
-{
-    uint64_t n = 0;
-    for (int b = 0; b < BUCKETS; b++)
-        n += h[b];
-    if (!n)
-        return 0;
-    uint64_t want = uint64_t(std::ceil(p * double(n))), seen = 0;
-    for (int b = 0; b < BUCKETS; b++)
-        if ((seen += h[b]) >= want)
-            return bucket_ms(b);
-    return bucket_ms(BUCKETS - 1);
-}
 
 void Profiler::hitch(uint64_t ended, double ms, double swofty_ms)
 {
@@ -99,10 +67,9 @@ void Profiler::frame(uint64_t now, bool present)
             sw += l.top_frame[ended & 1].load(rlx);
     });
     uint64_t dt = now - prev;
-    double ms = ms_of(dt), sw_ms = ms_of(sw);
-    int b = bucket(ms);
-    hist[b]++;
-    minute_hist[b]++;
+    double ms = ms_of(dt), sw_ms = ms_of(sw), at = ms_of(now - tsc0) / 1000.0;
+    session_pace.add(ms, at);
+    minute_pace.add(ms, at);
     frames++;
     seg_frames++;
     slow33 += ms > 33.4;
@@ -136,32 +103,29 @@ int Profiler::frame_token(void **token, const uint32_t *index)
 
 bool Profiler::hook_import(const char *dll, const char *fn, void *repl, void **orig)
 {
-    auto base = reinterpret_cast<uint8_t *>(GetModuleHandleW(nullptr));
-    auto nt = reinterpret_cast<IMAGE_NT_HEADERS *>(base + reinterpret_cast<IMAGE_DOS_HEADER *>(base)->e_lfanew);
-    auto &dir = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
-    if (!dir.VirtualAddress)
+    pe_imports it;
+    pe_import e, first{};
+    if (!pe_imports_open(&it, uintptr_t(GetModuleHandleW(nullptr)), dll, runtime::import_readable, nullptr))
         return false;
-    for (auto *d = reinterpret_cast<IMAGE_IMPORT_DESCRIPTOR *>(base + dir.VirtualAddress); d->Name; d++) {
-        if (_stricmp(reinterpret_cast<const char *>(base + d->Name), dll) || !d->OriginalFirstThunk)
+    int skipped = 0;
+    bool done = false;
+    for (int r; !done && (r = pe_imports_next(&it, &e)) != PE_IMPORT_END;) {
+        if (r == PE_IMPORT_SKIP) {
+            if (!skipped++)
+                first = e;
             continue;
-        auto *names_ = reinterpret_cast<IMAGE_THUNK_DATA *>(base + d->OriginalFirstThunk);
-        auto *iat = reinterpret_cast<IMAGE_THUNK_DATA *>(base + d->FirstThunk);
-        for (; names_->u1.AddressOfData; names_++, iat++) {
-            if (IMAGE_SNAP_BY_ORDINAL(names_->u1.Ordinal))
-                continue;
-            auto *by = reinterpret_cast<IMAGE_IMPORT_BY_NAME *>(base + names_->u1.AddressOfData);
-            if (strcmp(reinterpret_cast<const char *>(by->Name), fn))
-                continue;
-            DWORD old;
-            if (!VirtualProtect(&iat->u1.Function, sizeof(void *), PAGE_READWRITE, &old))
-                return false;
-            *orig = reinterpret_cast<void *>(iat->u1.Function);
-            iat->u1.Function = reinterpret_cast<ULONG_PTR>(repl);
-            VirtualProtect(&iat->u1.Function, sizeof(void *), old, &old);
-            return true;
         }
+        if (e.kind != PE_IMPORT_BY_NAME || strcmp(e.name, fn))
+            continue;
+        void *was = reinterpret_cast<void *>(*e.slot);
+        if (!runtime::write_slot(reinterpret_cast<ULONG_PTR *>(e.slot), repl))
+            break;
+        *orig = was;
+        done = true;
     }
-    return false;
+    if (skipped)
+        vq::note_import_skip("game exe", first, skipped);
+    return done;
 }
 
 void Profiler::flow_tick()
@@ -195,6 +159,40 @@ bool Profiler::frame_claim()
 void Profiler::frame_release()
 {
     claiming.store(false, std::memory_order_release);
+}
+
+void Profiler::presented(void *swapchain, unsigned sync, unsigned flags, long hr, uint64_t entry, uint64_t before,
+                         uint64_t after)
+{
+    if (!live())
+        return;
+    double r = ticks_per_ms.load(rlx);
+    if (r <= 0)
+        return;
+    bool fresh = false;
+    AcquireSRWLockExclusive(&present_lock);
+    if (swapchain != main_chain) {
+        bool stale = !main_chain || (entry > main_seen && entry - main_seen >= uint64_t(1000 * r));
+        if (!stale) {
+            minute_presents.other++;
+            session_presents.other++;
+            ReleaseSRWLockExclusive(&present_lock);
+            return;
+        }
+        main_chain = swapchain, prev_present = 0, chain_learned = 0;
+    }
+    if (!chain_learned || entry - chain_learned >= uint64_t(10000 * r))
+        chain_learned = entry, fresh = true;
+    main_seen = entry;
+    double interval = prev_present && entry > prev_present ? double(entry - prev_present) / r : 0;
+    prev_present = entry;
+    double inside = after > before ? double(after - before) / r : 0, at = entry > tsc0 ? double(entry - tsc0) / r / 1000 : 0;
+    bool tear = (flags & DXGI_PRESENT_ALLOW_TEARING) != 0;
+    minute_presents.add(interval, inside, sync, tear, uint32_t(hr), at);
+    session_presents.add(interval, inside, sync, tear, uint32_t(hr), at);
+    ReleaseSRWLockExclusive(&present_lock);
+    if (fresh)
+        sys::learn_chain(swapchain);
 }
 
 void Profiler::mark(const char *kind, const std::string &what)
@@ -261,6 +259,11 @@ bool frame_claim()
 void frame_release()
 {
     detail::profiler.frame_release();
+}
+
+void presented(void *swapchain, unsigned sync, unsigned flags, long hr, uint64_t entry, uint64_t before, uint64_t after)
+{
+    detail::profiler.presented(swapchain, sync, flags, hr, entry, before, after);
 }
 
 void mark(const char *kind, const std::string &what)

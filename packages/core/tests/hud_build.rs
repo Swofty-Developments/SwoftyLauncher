@@ -888,3 +888,85 @@ fn a_variants_own_stock_mode_hides_its_dials_parts_behind_the_switch_only() {
     }
     std::fs::remove_dir_all(dir).ok();
 }
+
+/// A dial record that carries the switch itself (schema 1.4): the f1_25 template binds its root to
+/// the leaf with the switch's `default`, every `v_stock_<part>` to NOT the leaf with the inverse,
+/// and a variant without a switch of its own inherits the record's.
+#[test]
+fn a_record_level_switch_scopes_the_dial_and_gives_the_stock_parts_back_by_default() {
+    let Some(game) = real() else { return };
+    let stock = GameStock::with_baseline(&game, &Store::open_default().root).unwrap();
+    let dir = std::env::temp_dir().join(format!("swofty-hud-rswitch-{}", std::process::id()));
+    std::fs::remove_dir_all(&dir).ok();
+    png(&dir.join("art/base.png"), 64, 28);
+    png(&dir.join("art/lit.png"), 16, 8);
+    let leaf = "view_model_data.hud_rs_on";
+    let mut rec = record();
+    rec["dial"] = "f1_25".into();
+    rec["stock"] = "hide".into();
+    rec["switch"] = serde_json::json!({ "view_model": leaf, "default": false });
+    rec["variants"] = serde_json::json!({ "f2": { "dial": "f2" } });
+    let input = hud::Input {
+        addon: "one.rswitch".into(),
+        key: "dial".into(),
+        dir: dir.clone(),
+        record: hud::model::HudElement::parse(&rec).unwrap(),
+    };
+    let out = hud::compose(&stock, &[input]).unwrap();
+    let pfx = "one_rswitch_dial";
+    let tmpl = Erp::parse(
+        &out.archives
+            .iter()
+            .find(|a| a.file == "hud_template.erp")
+            .unwrap()
+            .bytes,
+    )
+    .unwrap();
+    let t = Pkg::parse(&tmpl.find(dials::TEMPLATE).unwrap().fragments[0].data().unwrap()).unwrap();
+    let visible = |path: &str| {
+        let n = swofty_core::ui::node::node_at(&t.root, &find_path(&t.root, path).unwrap()).unwrap();
+        n.props().unwrap().get("visible").unwrap().clone()
+    };
+    let text =
+        |n: Option<&swofty_formats::pkg::Node>| n.and_then(|v| v.as_val()).map(|v| format!("{:?}", v.value));
+    let flag = |n: Option<&swofty_formats::pkg::Node>| {
+        n.and_then(|v| v.as_val())
+            .map(|v| format!("{:?}", v.value).contains("[1]"))
+    };
+
+    for dial in [hud::model::Dial::F125, hud::model::Dial::F2] {
+        let f = dials::facts(dial);
+        let ctl = format!("{}.{pfx}_ctl", f.race_parent);
+        let root = visible(&format!("{ctl}.v_{pfx}"));
+        let root = root.as_obj().unwrap();
+        assert!(
+            text(root.get("dbentry")).unwrap().contains("hud_rs_on"),
+            "{dial:?}: {root:?}"
+        );
+        assert!(
+            root.get("dbentrynegate").is_none(),
+            "{dial:?}: the root shows while the leaf is on"
+        );
+        assert!(
+            flag(root.get("value")) == Some(false),
+            "{dial:?}: the root starts hidden with the switch default false: {root:?}"
+        );
+        for part in dials::STOCK_KIDS {
+            let v = visible(&format!("{ctl}.v_stock_{part}"));
+            let v = v.as_obj().unwrap();
+            assert!(
+                text(v.get("dbentry")).unwrap().contains("hud_rs_on"),
+                "{dial:?} {part}: {v:?}"
+            );
+            assert!(
+                v.get("dbentrynegate").is_some(),
+                "{dial:?} {part}: shown while the leaf is off"
+            );
+            assert!(
+                flag(v.get("value")) == Some(true),
+                "{dial:?} {part}: the stock part starts shown: {v:?}"
+            );
+        }
+    }
+    std::fs::remove_dir_all(dir).ok();
+}

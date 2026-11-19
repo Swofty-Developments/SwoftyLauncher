@@ -6,6 +6,8 @@ use swofty_core::diagnostics::ea_launch as ea_diag;
 use swofty_core::diagnostics::launch;
 use swofty_core::offline::{self, Slot};
 use swofty_core::platform::app_control::Block;
+use swofty_core::platform::run_as_admin::{self as compat, RunAsAdmin};
+use swofty_core::session::{LOADER_LOG, LogMark};
 use swofty_core::store::Store;
 
 use crate::console::output::say;
@@ -17,6 +19,8 @@ const STUB_LOG_WINDOW: i64 = 6 * 3600;
 pub(super) const STUB_SETTLE: Duration = Duration::from_secs(2);
 
 const STUB_POLL: Duration = Duration::from_secs(5);
+const ELEVATION_POLL: Duration = Duration::from_secs(1);
+const STUB_LOG_READ: u64 = 64 << 10;
 
 /// Before the launch link: an antivirus that removes offline play's file
 /// does so within seconds of staging, and an EA app that finds the slot
@@ -63,6 +67,52 @@ pub(super) fn removed_after_link<'a>(store: &'a Store, game: &'a Path) -> impl F
             None => Ok(()),
         }
     }
+}
+
+/// After the launch link: the session launcher logs it when Windows would
+/// start F1 25 only as administrator, which the EA app, running without
+/// administrator rights, never can. That ends the wait at once. Only lines
+/// written after the link count.
+pub(super) fn refused_after_link<'a>(store: &'a Store, game: &'a Path) -> impl FnMut() -> Result<()> + 'a {
+    let log = game.join(LOADER_LOG);
+    let before = LogMark::read(&log);
+    let from = std::fs::metadata(&log).map_or(0, |m| m.len());
+    let mut next = Instant::now();
+    move || {
+        if Instant::now() < next {
+            return Ok(());
+        }
+        next = Instant::now() + ELEVATION_POLL;
+        if !compat::stub_needs_elevation(&written_after(&log, before.as_ref(), from)) {
+            return Ok(());
+        }
+        say(
+            "ea app",
+            "offline play's session launcher could not start F1 25: Windows starts it only as administrator \
+             (error 740)",
+        );
+        Err(refused(store, compat::game_refused(game)))
+    }
+}
+
+/// What `log` holds past `from`, its length when `before` was read; all of
+/// it when it was started again since.
+pub(super) fn written_after(log: &Path, before: Option<&LogMark>, from: u64) -> String {
+    use std::io::{Read, Seek, SeekFrom};
+    let Ok(mut f) = std::fs::File::open(log) else {
+        return String::new();
+    };
+    let len = f.metadata().map_or(0, |m| m.len());
+    let start = if len < from || LogMark::replaced(log, before) {
+        0
+    } else {
+        from
+    };
+    let mut data = Vec::new();
+    if f.seek(SeekFrom::Start(start)).is_ok() {
+        f.take(STUB_LOG_READ).read_to_end(&mut data).ok();
+    }
+    String::from_utf8_lossy(&data).into_owned()
 }
 
 fn staged_secs(store: &Store) -> Option<i64> {
@@ -116,12 +166,19 @@ pub(super) fn stub_block(store: &Store, game: &Path) -> Option<Block> {
 /// Record an antivirus block of offline play's file for the launcher and
 /// Send Logs, and end the session with its text.
 pub(super) fn antivirus(store: &Store, block: Block) -> anyhow::Error {
-    let failure = record(store, block);
+    let failure = record(store, launch::Cause::Blocked(block));
     anyhow!("{}", failure.text())
 }
 
-fn record(store: &Store, block: Block) -> launch::Failure {
-    let failure = launch::Failure::new(launch::Cause::Blocked(block));
+/// Record programs Windows won't start because they are set to run as
+/// administrator, and end the session with what to untick.
+pub(crate) fn refused(store: &Store, r: RunAsAdmin) -> anyhow::Error {
+    let failure = record(store, launch::Cause::RunAsAdmin(r));
+    anyhow!("{}", failure.text())
+}
+
+fn record(store: &Store, cause: launch::Cause) -> launch::Failure {
+    let failure = launch::Failure::new(cause);
     say("warning", &format!("{}: {}", failure.title(), failure.text()));
     if let Err(e) = failure.write(&store.root) {
         say("info", &format!("could not record it for the launcher: {e}"));
@@ -133,7 +190,7 @@ pub fn note_stub_blocked(store: &Store, game: &Path) -> bool {
     let Some(block) = stub_block(store, game) else {
         return false;
     };
-    record(store, block);
+    record(store, launch::Cause::Blocked(block));
     true
 }
 

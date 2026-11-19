@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use swofty_formats::gvdb::{Gvdb, Record, instance_count_path};
+use swofty_formats::gvdb::{Gvdb, Record, RecordMut, instance_count_path};
 use swofty_formats::hash::fnv1a64;
 
 use crate::ops::apply::Cx;
@@ -12,7 +12,8 @@ use crate::{Error, Result};
 
 pub(crate) struct Db<'a> {
     pub(crate) gvdb: &'a mut Gvdb,
-    pub(crate) index: HashMap<u64, usize>,
+    // Keys whose place differs from the records' own index until `finish`: removed (None) or added again (Some).
+    pub(crate) overlay: HashMap<u64, Option<usize>>,
     pub(crate) removed: Vec<usize>,
     pub(crate) added_rows: HashSet<String>,
     pub(crate) moved: HashMap<(String, String), String>,
@@ -34,13 +35,10 @@ thread_local! {
 
 impl<'a> Db<'a> {
     pub(crate) fn new(gvdb: &'a mut Gvdb) -> Self {
-        let mut index = HashMap::with_capacity(gvdb.records.len());
-        for (i, r) in gvdb.records.iter().enumerate() {
-            index.entry(r.key).or_insert(i);
-        }
+        gvdb.records.index_keys();
         Self {
             gvdb,
-            index,
+            overlay: HashMap::new(),
             removed: Vec::new(),
             added_rows: HashSet::new(),
             moved: HashMap::new(),
@@ -110,9 +108,10 @@ impl<'a> Db<'a> {
     pub(crate) fn remove(&mut self, key: u64) -> bool {
         self.generation += 1;
         self.selectors.get_mut().forget(key);
-        match self.index.remove(&key) {
+        match self.position(key) {
             Some(i) => {
                 self.removed.push(i);
+                self.overlay.insert(key, None);
                 true
             }
             None => false,
@@ -131,14 +130,22 @@ impl<'a> Db<'a> {
         });
     }
 
-    pub(crate) fn get(&self, key: u64) -> Option<&Record> {
-        self.index.get(&key).map(|&i| &self.gvdb.records[i])
+    fn position(&self, key: u64) -> Option<usize> {
+        match self.overlay.get(&key) {
+            Some(at) => *at,
+            None => self.gvdb.records.position(key),
+        }
     }
 
-    pub(crate) fn get_mut(&mut self, key: u64) -> Option<&mut Record> {
+    pub(crate) fn get(&self, key: u64) -> Option<&Record> {
+        self.position(key).map(|i| &self.gvdb.records[i])
+    }
+
+    pub(crate) fn get_mut(&mut self, key: u64) -> Option<RecordMut<'_>> {
         self.generation += 1;
         self.selectors.get_mut().forget(key);
-        self.index.get(&key).map(|&i| &mut self.gvdb.records[i])
+        let i = self.position(key)?;
+        Some(self.gvdb.records.at_mut(i))
     }
 
     pub(crate) fn text(&self, key: u64) -> Option<String> {
@@ -148,7 +155,9 @@ impl<'a> Db<'a> {
     pub(crate) fn push(&mut self, record: Record) {
         self.generation += 1;
         self.selectors.get_mut().forget(record.key);
-        self.index.insert(record.key, self.gvdb.records.len());
+        if self.overlay.contains_key(&record.key) || self.gvdb.records.position(record.key).is_some() {
+            self.overlay.insert(record.key, Some(self.gvdb.records.len()));
+        }
         self.gvdb.records.push(record);
     }
 

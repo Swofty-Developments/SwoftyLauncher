@@ -27,9 +27,13 @@ wait
 "${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -Wno-unused-function -I$ZS -o "$OUT/game/F1_25.exe" fake_runtime.c "${ZOBJ[@]}" -lversion -luser32 -lws2_32
 cat > "$OUT/slow_mod.c" <<'EOC'
 #include <windows.h>
+#include <stdio.h>
 __declspec(dllexport) int SwoftyAddonInit(const void *api)
 {
     (void)api;
+    char tid[16];
+    snprintf(tid, sizeof tid, "%lu", (unsigned long)GetCurrentThreadId());
+    SetEnvironmentVariableA("SWOFTY_SLOW_THREAD", tid);
     Sleep(1500);
     SetEnvironmentVariableA("SWOFTY_SLOW_DONE", "1");
     return 1;

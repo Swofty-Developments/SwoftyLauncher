@@ -9,6 +9,9 @@
   --scan          ignore match hints, as SWOFTY_RESOLVE=scan does
   --json          print the per-binding results as JSON
   --compare EXE   also flag bindings whose match surroundings or callee differ from the Steam exe's
+  --restore LOG   put the core's patches back into a dump from the live run's scan log first (sigverify --restore)
+  --write-hints   with --build: write the match of every binding the scan resolves with exactly one hit into
+                  re/db/builds/<build>.json as a hint, then resolve the set again and check each hint resolves there
 
 The image is a PE file or a flat dump whose file offset is the RVA (a file starting with MZ whose length is its
 SizeOfImage). Both are read with the PE header found in the image itself, as the core reads its own module.
@@ -642,6 +645,72 @@ def rx(v):
     return '-' if v is None else f'{v:#x}'
 
 
+def pick_hints(results, live, existing):
+    """The match of each binding the scan resolved with exactly one hit, as a hint. A binding the live run resolved to
+    another target is left out, and so is one whose hint names another match: a hint is never moved."""
+    hints, skipped = {}, {}
+    for r in results:
+        if r['result'] != 'resolved' or r['method'] != 'scan' or r.get('matches') != 1 or r.get('match') is None:
+            continue
+        i = r['id']
+        if i in live and live[i] != r['target']:
+            skipped[i] = f'the live run resolved it to {live[i]:#x}, the image to {r["target"]:#x}'
+            continue
+        old = (existing.get(i) or {}).get('match')
+        if old is not None and int(old, 16) != r['match']:
+            skipped[i] = f'its hint names {old}, the image matches at {r["match"]:#x}'
+            continue
+        hints[i] = {'match': f'{r["match"]:#x}'}
+    return hints, skipped
+
+
+def live_targets(log):
+    """The target of each binding the run in `log` resolved and verified, and the run's exe identity."""
+    import capture
+    runs = capture.load_inputs([log])
+    out, ident = {}, {}
+    for run in runs:
+        ident.update(run.identity())
+        per = {}
+        for rec in run.records:
+            per.setdefault(rec['id'], []).append(rec)
+        for i, recs in per.items():
+            best = capture.pick(recs)
+            if best['result'] == 'resolved' and best['verified'] and best['rva'] is not None:
+                out[i] = best['rva']
+    return out, ident
+
+
+def write_hints(build, img, results, log):
+    import capture
+    path = os.path.join(os.path.dirname(HERE), 'db', 'builds', f'{build}.json')
+    with open(path, encoding='utf-8') as f:
+        before = f.read()
+    overlay = json.loads(before)
+    if overlay['build'].get('pe_timestamp') != img.stamp:
+        raise SystemExit(f'bindverify: the image has PE timestamp {img.stamp}, {path} {overlay["build"].get("pe_timestamp")}')
+    live, ident = live_targets(log) if log else ({}, {})
+    err = capture.check_identity(ident, overlay['build']) if ident else None
+    if err:
+        raise SystemExit(f'bindverify: refusing to write {path}: {err}')
+    hints, skipped = pick_hints(results, live, overlay.get('hints') or {})
+    report = capture.write_hints(path, {'identity': ident or {'pe_timestamp': img.stamp}, 'hints': hints})
+    doc = gen_set(build)
+    again = {r['id']: r for r in Resolver(img, doc, int(doc['build']['size']), kb_first=True).run()}
+    want = {r['id']: r['target'] for r in results}
+    bad = [i for i in hints if again[i]['method'] != 'hint' or again[i]['target'] != want[i]]
+    if bad:
+        with open(path, 'w', encoding='utf-8') as f:
+            f.write(before)
+        raise SystemExit(f'bindverify: {len(bad)} hint(s) did not resolve at their match on the image, '
+                         f'{path} left as it was: {", ".join(sorted(bad)[:10])}')
+    print(f'hints: {len(hints)} binding(s) checked at their match on the image ({len(report["added"])} added, '
+          f'{report["unchanged"]} already there), {len(skipped)} left out, '
+          f'{sum(r["method"] == "hint" for r in again.values())} of {len(again)} now resolve by hint')
+    for i, why in sorted(skipped.items()):
+        print(f'  left out {i}: {why}')
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--image', required=True)
@@ -653,11 +722,22 @@ def main(argv=None):
     ap.add_argument('--all', action='store_true', help='also list resolved bindings')
     ap.add_argument('--compare', metavar='STEAM_EXE', help='also check that each binding lands on the same code as on the KB '
                                                            'build (Steam set, hints used)')
+    ap.add_argument('--restore', metavar='LOG', help="put the core's patches back from the live run's scan log")
+    ap.add_argument('--write-hints', action='store_true', help='write each single scan hit into the overlay as a hint')
     a = ap.parse_args(argv)
     if bool(a.build) == bool(a.set):
         ap.error('pass exactly one of --build and --set')
+    if a.write_hints and not a.build:
+        ap.error('--write-hints needs --build')
     doc = json.load(open(a.set)) if a.set else gen_set(a.build)
     img = Image(a.image)
+    if a.restore:
+        import sigverify
+        with open(a.restore, errors='replace') as f:
+            sites, nbytes = sigverify.restore(img, f)
+        print(f'restore: {sites} patched site(s), {nbytes} byte(s) put back from {a.restore}')
+    if a.write_hints:
+        a.scan = True
     if a.exe_size is None and not img.flat:
         a.exe_size = os.path.getsize(a.image)
     res = Resolver(img, doc, a.exe_size, kb_first=not a.scan)
@@ -680,6 +760,8 @@ def main(argv=None):
                       f'{r["reason"]}')
         print('coverage: ' + ', '.join(f'{k} {v}' for k, v in cov.items()))
     bad = sum(r['result'] not in ('resolved', 'unresolvable') for r in results)
+    if a.write_hints:
+        write_hints(a.build, img, results, a.restore)
     if a.compare:
         ref_img, ref_doc = Image(a.compare), gen_set('steam')
         odd = compare(ref_img, ref_doc, Resolver(ref_img, ref_doc).run(), img, doc, results)

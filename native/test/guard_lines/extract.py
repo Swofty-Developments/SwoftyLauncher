@@ -53,7 +53,6 @@ HOOKS = {
     'ai_curves': 'ai/ai_curves_guard.cpp',
     'race_retirement': 'session/race_retirement_guard.cpp',
     'teammate_pairs': 'session/teammate_pairs_guard.cpp',
-    'gp_weekend_track': 'tracks/gp_weekend_track_guard.cpp',
 }
 
 TOKEN = re.compile(r'\s+|//[^\n]*|"(?:[^"\\]|\\.)*"|[A-Za-z_][\w:]*|.', re.S)

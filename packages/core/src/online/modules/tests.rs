@@ -8,7 +8,7 @@ const FILE: &str = "swofty_tt.dll";
 const LIST: &str = "/v1/modules?";
 const DOWNLOAD: &str = "/v1/modules/file?";
 
-fn offer_of(key: &Ed25519KeyPair, version: &str, abi: u32, bytes: &[u8]) -> serde_json::Value {
+pub(crate) fn offer_of(key: &Ed25519KeyPair, version: &str, abi: u32, bytes: &[u8]) -> serde_json::Value {
     let sha = sha256_bytes(bytes);
     let msg = format!("swofty-module-v1\0{NAME}\0{WINDOWS}\0{version}\0{abi}\0{sha}");
     serde_json::json!({
@@ -18,7 +18,7 @@ fn offer_of(key: &Ed25519KeyPair, version: &str, abi: u32, bytes: &[u8]) -> serd
     })
 }
 
-fn listing(offers: &[serde_json::Value]) -> Vec<u8> {
+pub(crate) fn listing(offers: &[serde_json::Value]) -> Vec<u8> {
     json(&serde_json::json!({"modules": offers, "refused": []}))
 }
 
@@ -573,7 +573,7 @@ fn the_pinned_key_does_not_accept_a_test_signature() {
         vec![(LIST, "200 OK", listing(&[offer_of(&key, "1.0", 1, BYTES)]))],
         1,
     );
-    let e = ensure(&d, &Api::with_server(&url, "tok"), NAME, WINDOWS, 1).unwrap_err();
+    let e = ensure(&d, &Api::with_server(&url, "tok"), NAME, WINDOWS, 1, &|_| {}).unwrap_err();
     t.join().unwrap();
     assert!(e.why.contains("pinned key"));
 }

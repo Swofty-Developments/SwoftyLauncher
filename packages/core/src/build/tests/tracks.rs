@@ -397,6 +397,180 @@ fn skips_removals_of_the_records_a_track_adds() {
 }
 
 #[test]
+fn an_added_track_gets_the_stock_ai_data_and_difficulties_of_a_seasons_own_ai_folder() {
+    use swofty_formats::gvdb::Record;
+    if loader_dir().is_some() {
+        return;
+    }
+    let root = std::env::temp_dir().join(format!("swofty-build-ownai-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let dir = root.join("game");
+    std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+    std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+    let slot = dir.join(slot_file(SLOTS[0]));
+    std::fs::create_dir_all(slot.parent().unwrap()).unwrap();
+    std::fs::write(&slot, archive(&["eaid://ui_package/slot.uil"], 0)).unwrap();
+    let res = "tracks.track_resource.TrackResource_0";
+    let set = "track_data.game_setup.TrackDataSet_0";
+    let packages = "entrants.vehicles.vehicle_packages";
+    let difficulty = |row: usize, folder: &str, field: &str| {
+        format!("tracks.Track_{row}.ai_track_difficulties.{folder}.{field}")
+    };
+    let records = vec![
+        Record::new("tracks._Track_instancecount_", 0, "1"),
+        Record::new("tracks.Track_0._metadata_", 2, "melbourne"),
+        Record::new("tracks.Track_0.statId", 0, "5"),
+        Record::new("tracks.Track_0.track_resource", 2, "2019"),
+        Record::new(&difficulty(0, "f1_2025_vehicle_package", "time"), 8, "90.5,89.5"),
+        Record::new(
+            &difficulty(0, "f1_2025_vehicle_package", "max_slider_position"),
+            0,
+            "110",
+        ),
+        Record::new("tracks.track_resource._TrackResource_instancecount_", 0, "1"),
+        Record::new(&format!("{res}._metadata_"), 2, "2019"),
+        Record::new(&format!("{res}.iblAssetGroupsRoot"), 2, "probes/"),
+        Record::new(&format!("{res}.iblKey"), 2, "key_2019.assetgroup"),
+        Record::new("track_data.game_setup._TrackDataSet_instancecount_", 0, "1"),
+        Record::new(&format!("{set}._metadata_"), 2, "f1"),
+        Record::new(&format!("{set}._TrackData_instancecount_"), 0, "1"),
+        Record::new(&format!("{set}.TrackData_0._metadata_"), 2, "melbourne"),
+        Record::new(&format!("{set}.TrackData_0.track"), 2, "melbourne"),
+        Record::new(&format!("{packages}._vehicle_package_instancecount_"), 0, "2"),
+        Record::new(&format!("{packages}.vehicle_package_0._metadata_"), 2, "f1_2025"),
+        Record::new(
+            &format!("{packages}.vehicle_package_0.ai_package_folder"),
+            2,
+            "f1_2025_vehicle_package",
+        ),
+        Record::new(
+            &format!("{packages}.vehicle_package_1._metadata_"),
+            2,
+            "f1cg_f1_2013",
+        ),
+        Record::new(
+            &format!("{packages}.vehicle_package_1.ai_package_folder"),
+            2,
+            "f1cg_f1_2013_vehicle_package",
+        ),
+    ];
+    std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
+    let game = Game {
+        identity: Identity::detect(&dir, Some(1)).unwrap(),
+        dir: dir.clone(),
+        user_reg: None,
+    };
+    let store = Store::new(root.join("data"));
+    let ai = "eaid://environment_package/tracks/testring/ai";
+    let install = |id: &str, ops: &str, track: bool| {
+        let src = root.join("src").join(id);
+        std::fs::create_dir_all(src.join("track")).unwrap();
+        std::fs::write(
+            src.join("swofty.json"),
+            format!(
+                r#"{{ "schema_version": 1, "id": "{id}", "name": "{id}", "version": "1.0.0", "author": "t",
+                     "compat": {{ "game": "f1_25" }}, "operations": {{ "assets": ["ops.json"] }} }}"#
+            ),
+        )
+        .unwrap();
+        std::fs::write(
+            src.join("ops.json"),
+            format!(r#"{{ "schema_version": 1, "ops": [{ops}] }}"#),
+        )
+        .unwrap();
+        if track {
+            std::fs::write(
+                src.join("track/manifest.json"),
+                r#"{ "track_code": "testring", "track_name": "Test Ring", "erp": "testring.erp",
+                     "activation": { "copy_from_track": "melbourne", "copy_slot": "melbourne" } }"#,
+            )
+            .unwrap();
+            let names = [
+                "eaid://environment_package/tracks/testring/wep/testring_common.wep".to_owned(),
+                format!("{ai}/f1_2025_vehicle_package/mclaren/mclaren.vp_times"),
+                format!("{ai}/f1_2025_vehicle_package/lotus/lotus.vp_times"),
+            ];
+            let names: Vec<&str> = names.iter().map(String::as_str).collect();
+            std::fs::write(src.join("track/testring.erp"), archive_of("WEP", &names, 0)).unwrap();
+        }
+        store.install_addon(&src).unwrap();
+        store
+            .update_profile("default", |p| p.set_enabled(id, true))
+            .unwrap();
+    };
+    let put = |key: &str, tag: u8, value: &str| {
+        let hex: String = value.bytes().map(|b| format!("{b:02x}")).collect();
+        format!(r#"{{"op":"db.put-record","key":"{key}","type":{tag},"value":"{hex}"}}"#)
+    };
+    let own = "sw_test_vehicle_package";
+    let ops = [
+        put(&format!("{packages}.vehicle_package_1.ai_package_folder"), 2, own),
+        put(&format!("ai.asset_data.{own}._asset_data_instancecount_"), 0, "2"),
+        put(
+            &format!("ai.asset_data.{own}.asset_data_0._metadata_"),
+            2,
+            "mclaren",
+        ),
+        put(
+            &format!("ai.asset_data.{own}.asset_data_1._metadata_"),
+            2,
+            "cater",
+        ),
+        put(&difficulty(0, own, "time"), 8, "95.5,94.5"),
+        put(&difficulty(0, own, "max_slider_position"), 0, "110"),
+    ]
+    .join(",");
+    install("t.season", &ops, false);
+    install("mod.testring", r#"{"op":"track.add","source":"track"}"#, true);
+
+    let built = build(&store, "default", &game).unwrap();
+    for line in [
+        format!("testring: AI difficulty for {own} stands in with the track's f1_2025_vehicle_package"),
+        format!(
+            "testring: AI data for 2 teams of {own} stands in with the track's f1_2025_vehicle_package data of \
+             the team of the same name; cater with lotus's"
+        ),
+    ] {
+        assert!(built.lines.contains(&line), "{line}\n{:?}", built.lines);
+    }
+    let out = Gvdb::parse(&std::fs::read(&built.plan.data[GVDB]).unwrap()).unwrap();
+    assert_eq!(
+        out.get_text("tracks.Track_1._metadata_").as_deref(),
+        Some("testring")
+    );
+    assert_eq!(
+        out.get_text(&difficulty(1, own, "time")).as_deref(),
+        Some("90.5,89.5")
+    );
+    assert_eq!(
+        out.get_text(&difficulty(1, own, "max_slider_position"))
+            .as_deref(),
+        Some("110")
+    );
+    assert_eq!(
+        out.get_text(&difficulty(0, own, "time")).as_deref(),
+        Some("95.5,94.5")
+    );
+    let placed: Vec<String> = built
+        .plan
+        .data
+        .values()
+        .chain(built.plan.added.values())
+        .filter_map(|p| swofty_formats::erp::ErpFile::open(p).ok())
+        .flat_map(|f| f.erp.resources.iter().map(|r| r.name.clone()).collect::<Vec<_>>())
+        .filter(|n| n.starts_with(&format!("{ai}/{own}/")))
+        .collect();
+    assert_eq!(
+        placed,
+        [
+            format!("{ai}/{own}/cater/cater.vp_times"),
+            format!("{ai}/{own}/mclaren/mclaren.vp_times"),
+        ]
+    );
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
 fn keeps_the_track_changes_a_whole_database_mod_carries_back() {
     use swofty_formats::gvdb::Record;
     if loader_dir().is_some() {

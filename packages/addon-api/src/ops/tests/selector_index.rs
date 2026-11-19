@@ -76,7 +76,7 @@ fn write(db: &mut Db, rng: &mut Rng, keys: &[(u64, String)]) {
             db.remove(*key);
         }
         _ => match db.get_mut(*key) {
-            Some(r) => r.value = now,
+            Some(mut r) => r.set_value(now),
             None => db.push(Record {
                 key: *key,
                 tag: 4,
@@ -140,7 +140,7 @@ fn a_write_to_a_row_drops_only_what_it_can_change() {
     assert_eq!(db.selectors.borrow().kept(), 2);
     db.get_mut(fnv1a64("entrants.teams.team_1.stat_id"))
         .unwrap()
-        .value = b"105".to_vec();
+        .set_value(b"105".to_vec());
     assert_eq!(
         db.selectors.borrow().kept(),
         1,
@@ -150,7 +150,7 @@ fn a_write_to_a_row_drops_only_what_it_can_change() {
     assert!(team(&db, "stat_id", "105").is_some());
     db.get_mut(fnv1a64("entrants.teams.team_0._metadata_"))
         .unwrap()
-        .value = b"red_bull_26".to_vec();
+        .set_value(b"red_bull_26".to_vec());
     assert_eq!(
         db.selectors.borrow().kept(),
         0,
@@ -160,7 +160,7 @@ fn a_write_to_a_row_drops_only_what_it_can_change() {
     assert!(team(&db, "stat_id", "100").is_some());
     db.get_mut(fnv1a64(instance_count_path("entrants.teams", "team")))
         .unwrap()
-        .value = b"1".to_vec();
+        .set_value(b"1".to_vec());
     assert_eq!(
         db.selectors.borrow().kept(),
         0,

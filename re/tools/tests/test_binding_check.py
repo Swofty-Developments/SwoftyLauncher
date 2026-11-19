@@ -395,6 +395,72 @@ class Classify(Base):
         self.assertEqual(out['verdict'], 'review')
 
 
+class Renames(Base):
+    OLD, NEW = 'site_Sess_StintTyreCheckPredictCall', 'site_Sess_StintTyrePredictCall'
+
+    def row(self, item, kind='global', vid='V100001', verdict='partial'):
+        return {'date': '2026-11-18', 'verifier': 'other-agent', 'kind': kind, 'item': item, 'claimed': 'L2',
+                'verdict': verdict, 'evidence': 'decomp:own disasm 0x1436a3ab0;xref:0x1436a3b74', 'notes': f'{vid} x'}
+
+    def errors(self, doc):
+        return [e for e in bc.check_record(br.Record(doc, SAMPLE), self.fresh) if 'must be about' in e]
+
+    def test_a_record_keeps_the_retired_rows_of_its_own_kind(self):
+        doc = copy.deepcopy(self.doc)
+        doc['verify'] = [self.row('retired:Sess_Gone'), self.row(doc['row']['addr'])]
+        self.assertEqual(self.errors(doc), [])
+        doc['verify'] = [self.row('retired:Sess_Gone', kind='func')]
+        self.assertEqual(len(self.errors(doc)), 1)
+        doc['verify'] = [self.row('Sess_Gone')]
+        self.assertEqual(len(self.errors(doc)), 1)
+
+    def rename(self, old, new):
+        import argparse, binding
+        with contextlib.redirect_stdout(io.StringIO()) as out, \
+                mock.patch.dict(os.environ, {'SWOFTY_RECORD_CACHE': '0'}):
+            binding.cmd_rename(argparse.Namespace(old=old, new=new), root=self.root, db=self.db)
+        br.Store.forget()
+        return out.getvalue()
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.tmp)
+        self.root, self.db = os.path.join(self.tmp, 'bindings'), os.path.join(self.tmp, 'db')
+        doc = copy.deepcopy(self.doc)
+        doc['verify'] = [self.row(doc['row']['addr'], vid='V100001', verdict='agree'), self.row(self.OLD, vid='V100002')]
+        os.makedirs(os.path.join(self.root, 'session'))
+        os.makedirs(os.path.join(self.db, 'builds'))
+        with open(os.path.join(self.root, SAMPLE), 'w') as f:
+            f.write(json.dumps(doc, indent=1) + '\n')
+        self.overlay = {'schema': 1, 'hints': {'site_A': {'match': '0x1'}, self.OLD: {'match': '0x2'},
+                                               'site_Z': {'match': '0x3'}}}
+        with open(os.path.join(self.db, 'builds', 'port.json'), 'w') as f:
+            f.write(json.dumps(self.overlay, indent=1) + '\n')
+        self.addCleanup(br.Store.forget)
+
+    def test_rename_moves_the_record_and_retires_the_rows_about_its_old_name(self):
+        self.rename(self.OLD, self.NEW)
+        self.assertFalse(os.path.exists(os.path.join(self.root, SAMPLE)))
+        with open(os.path.join(self.root, 'session', self.NEW + '.json')) as f:
+            doc = json.load(f)
+        self.assertEqual((doc['name'], doc['signature']['names'], doc['signature']['id']),
+                         (self.NEW, [self.NEW], self.doc['signature']['id']))
+        self.assertEqual([v['item'] for v in doc['verify']], [self.doc['row']['addr'], 'retired:' + self.OLD])
+        self.assertEqual(doc['proofs'], self.doc['proofs'])
+        self.assertEqual(bc.check_record(br.Record(doc, f'session/{self.NEW}.json'), self.fresh), [])
+        with open(os.path.join(self.db, 'builds', 'port.json')) as f:
+            hints = json.load(f)['hints']
+        self.assertEqual(list(hints), ['site_A', self.NEW, 'site_Z'])
+        self.assertEqual(hints[self.NEW], {'match': '0x2'})
+
+    def test_rename_refuses_an_unknown_or_taken_name(self):
+        for old, new in (('site_Sess_NoSuchThing', self.NEW), (self.OLD, self.OLD), (self.OLD, 'not a name'),
+                         (self.OLD, 'Vm_MyTeamSetupCard_BindSponsorNodes')):
+            with self.assertRaises(SystemExit, msg=(old, new)):
+                self.rename(old, new)
+        self.assertTrue(os.path.exists(os.path.join(self.root, SAMPLE)))
+
+
 class HandCallerCounts(Base):
     def classify_notes(self, old_notes, new_notes, census_build='steam'):
         import census

@@ -1,5 +1,5 @@
 use super::FADE;
-use crate::services::library::{AddonItem, Changes};
+use crate::services::library::{AddonItem, Changes, Source};
 use crate::shell::Shell;
 use gpui_kit::*;
 use std::collections::{HashMap, HashSet};
@@ -7,6 +7,7 @@ use std::time::{Duration, UNIX_EPOCH};
 use swofty_core::manifest::MANIFEST_FILE;
 use swofty_core::profile::conflicts::{self};
 use swofty_core::profile::folders::Entry;
+use swofty_i18n::trf;
 
 impl Shell {
     pub(super) fn addon_on(&self, m: &AddonItem) -> bool {
@@ -16,6 +17,29 @@ impl Shell {
     pub(super) fn update_ready(&self, m: &AddonItem) -> bool {
         (m.manifest.id == swofty_core::updates::managed::ID && self.updates.plan().addon.is_some())
             || self.catalog_update(&m.manifest.id).is_some()
+    }
+
+    /// Why the play bar leaves an import out when an Addon Browser addon has its id, or the id the
+    /// Simplified Importer gave it ([`swofty_core::addons::imported::asked_id`]).
+    pub(super) fn kept_separate(&self, m: &AddonItem) -> Option<String> {
+        if m.source != Source::Importer {
+            return None;
+        }
+        let id = m.manifest.id.as_str();
+        if let Some(a) = self.browser.find(id) {
+            return Some(trf!(
+                "This import has the same id as {name} in the Addon Browser; it is kept separate.",
+                name = a.name
+            ));
+        }
+        let asked = swofty_core::addons::imported::asked_id(&m.manifest)?;
+        let a = self.browser.find(&asked)?;
+        Some(trf!(
+            "This import asked for the id {asked}, which {name} in the Addon Browser has; it is kept separate as {id}.",
+            asked = asked,
+            name = a.name,
+            id = id
+        ))
     }
 
     pub(super) fn changed_since(&self, id: &str, built_at: f64) -> bool {

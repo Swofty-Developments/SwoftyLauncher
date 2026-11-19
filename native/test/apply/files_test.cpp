@@ -142,6 +142,8 @@ void routing()
     check(cs.size() == 1 && cs[0].wins == "mod.late" && cs[0].addons == std::vector<std::string>{"mod.early", "mod.late"},
           "one conflict, in load order");
     Value j = r.conflicts_json();
+    check(r.active_routes().at("audio/2025/bundles/v10.bdl") == "swofty/addons/mod.late/sounds/v10.bdl",
+          "the source receipt names the active winner, including shadowed-claim handling");
     check(j.size() == 1 && j[0]["kind"].as_string() == "file" && j[0]["path"].as_string() == "audio/2025/bundles/v10.bdl" &&
               j[0]["wins"].as_string() == "mod.late" && j[0]["registry"].as_string() == "engine_sound" &&
               j[0]["id"].as_string() == "mod.late/v10" && j[0]["addons"].size() == 2,
@@ -164,6 +166,7 @@ void routing()
     r.redirect("audio/2025/bundles/only.bdl", "mod.box", "sounds/only.bdl", "engine_sound", "mod.box/only", "session");
     check(f.routes.count("audio/2025/bundles/only.bdl"), "a session claim routes");
     lines = r.put_back("session");
+    check(!r.active_routes().count("audio/2025/bundles/only.bdl"), "ended scopes disappear from the source receipt");
     check(lines.size() == 1 && lines[0] == "put back audio/2025/bundles/only.bdl: the game's own file again" &&
               !f.routes.count("audio/2025/bundles/only.bdl"),
           "put back with no other claim removes the route");

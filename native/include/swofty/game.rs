@@ -3786,6 +3786,7 @@ pub type Car_Create_DetachablePart_t = unsafe extern "C" fn(
 ) -> *mut c_void;
 pub type Car_DetachablePart_Update_t = unsafe extern "C" fn(part: *mut c_void, dt: f32) -> bool;
 pub type Car_FrontWing_Init_t = unsafe extern "C" fn(front_wing: *mut c_void, reset: c_char);
+pub type Car_GearBox_UpdateShiftTimersAndFaults_t = unsafe extern "C" fn(gearbox: *mut c_void, dt: f32);
 pub type Car_PitStop_ApplyTyreAndWingVisuals_t =
     unsafe extern "C" fn(car_visual: *mut c_void, a2: f32, a3: bool);
 pub type Car_Register_DetachablePart_Thunk_t = unsafe extern "C" fn(
@@ -4360,6 +4361,8 @@ pub type Game_F1WorldHub_HandleCommand_t =
 pub type Game_F1World_ApplySkipOnboarding_t = unsafe extern "C" fn(self_: *mut c_void);
 pub type Game_F1World_AssignDefaultFanzoneChoices_t = unsafe extern "C" fn(self_: *mut c_void);
 pub type Game_FEHomeViewModel_OnUpdate_t = unsafe extern "C" fn(vm: *mut FEHomeViewModel, dt: f32);
+pub type Game_Failure_Apply_t =
+    unsafe extern "C" fn(fail_sys: *mut c_void, fault_rec: *mut c_void, silent: bool);
 pub type Game_Fill_PerformanceComparison_t = unsafe extern "C" fn(comparison: *mut c_void);
 pub type Game_FrontendTransitionVM_OnScreenActivated_t = unsafe extern "C" fn(vm: *mut c_void);
 pub type Game_FullRaceReplaySystem_Init_t = unsafe extern "C" fn(
@@ -4402,6 +4405,7 @@ pub type Game_Load_TrackDatabaseFull_t = unsafe extern "C" fn(
     a4: *mut c_void,
     a5: *mut c_void,
 );
+pub type Game_Mfd_FuelMixUp_t = unsafe extern "C" fn(mfd_car_settings_vm: *mut c_void) -> c_int;
 pub type Game_MusicOptions_CreateOption_t =
     unsafe extern "C" fn(mgr: *mut c_void, optionId: u64) -> *mut c_void;
 pub type Game_MyTeamAttributeSet_GetValue_t =
@@ -5543,6 +5547,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Car_GearBox_UpdateShiftTimersAndFaults: Binding = Binding {
+        id: "Car_GearBox_UpdateShiftTimersAndFaults",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Car_Load_Vtf: Binding = Binding {
         id: "Car_Load_Vtf",
         kind: "func",
@@ -5550,6 +5559,11 @@ pub mod bindings {
     };
     pub const Car_Model_BindCockpitNodes: Binding = Binding {
         id: "Car_Model_BindCockpitNodes",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Physics_AdvanceCar: Binding = Binding {
+        id: "Car_Physics_AdvanceCar",
         kind: "func",
         status: Status::Experimental,
     };
@@ -10208,6 +10222,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_Failure_Apply: Binding = Binding {
+        id: "Game_Failure_Apply",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_FakeOption_GetMaxIndex: Binding = Binding {
         id: "Game_FakeOption_GetMaxIndex",
         kind: "func",
@@ -10685,6 +10704,11 @@ pub mod bindings {
     };
     pub const Game_FullRaceReplaySystem_Init: Binding = Binding {
         id: "Game_FullRaceReplaySystem_Init",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap: Binding = Binding {
+        id: "Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap",
         kind: "func",
         status: Status::Experimental,
     };
@@ -11215,6 +11239,11 @@ pub mod bindings {
     };
     pub const Game_MatchingContext_SetupRankedGameSession: Binding = Binding {
         id: "Game_MatchingContext_SetupRankedGameSession",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Mfd_FuelMixUp: Binding = Binding {
+        id: "Game_Mfd_FuelMixUp",
         kind: "func",
         status: Status::Experimental,
     };
@@ -11933,6 +11962,10 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    #[deprecated(
+        since = "1.10.0",
+        note = "deprecated in 1.10.0, removed in the next release: its notes' exe claim is wrong: the only refuel strings are parts of the EnsureFuelLoad race objective names, and there is no fuelling string"
+    )]
     pub const Game_PitStopActionObserver_SetTransitionSequence: Binding = Binding {
         id: "Game_PitStopActionObserver_SetTransitionSequence",
         kind: "func",
@@ -16243,8 +16276,17 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    #[deprecated(
+        since = "1.10.0",
+        note = "deprecated in 1.10.0, removed in the next release: renamed: every caller sets a UIDBRef weak object reference through it and the compare is object identity, not a numeric S64 compare; use Ne_Property_SetUIDBRefIfChanged"
+    )]
     pub const Ne_Property_SetS64IfChanged: Binding = Binding {
         id: "Ne_Property_SetS64IfChanged",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Property_SetUIDBRefIfChanged: Binding = Binding {
+        id: "Ne_Property_SetUIDBRefIfChanged",
         kind: "func",
         status: Status::Experimental,
     };
@@ -16808,11 +16850,20 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Std_ThrowBadOptionalAccess: Binding = Binding {
+        id: "Ne_Std_ThrowBadOptionalAccess",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Std_ThrowDequeTooLong: Binding = Binding {
         id: "Ne_Std_ThrowDequeTooLong",
         kind: "func",
         status: Status::Experimental,
     };
+    #[deprecated(
+        since = "1.10.0",
+        note = "deprecated in 1.10.0, removed in the next release: renamed: it is std::_Throw_bad_optional_access, which only raises std::bad_optional_access and ends the process in a fast fail; use Ne_Std_ThrowBadOptionalAccess"
+    )]
     pub const Ne_Std_ThrowException: Binding = Binding {
         id: "Ne_Std_ThrowException",
         kind: "func",
@@ -21468,6 +21519,11 @@ pub mod bindings {
         kind: "data",
         status: Status::Experimental,
     };
+    pub const k_Vm_EmptyNodeHandle: Binding = Binding {
+        id: "k_Vm_EmptyNodeHandle",
+        kind: "data",
+        status: Status::Experimental,
+    };
     pub const site_Ai_BuildSystem_RecordPushed: Binding = Binding {
         id: "site_Ai_BuildSystem_RecordPushed",
         kind: "site",
@@ -21516,6 +21572,11 @@ pub mod bindings {
     pub const site_Car_EngineDriveTorque: Binding = Binding {
         id: "site_Car_EngineDriveTorque",
         kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Car_EngineStepInput_UpdateWearCall: Binding = Binding {
+        id: "site_Car_EngineStepInput_UpdateWearCall",
+        kind: "call",
         status: Status::Experimental,
     };
     pub const site_Car_ErsGearModifierLoad: Binding = Binding {
