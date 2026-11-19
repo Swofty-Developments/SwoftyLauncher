@@ -5,7 +5,7 @@
 //! last good save generation had and the newest generation lacks is lost. Careers the core put back at load
 //! are not. No byte total decides anything.
 
-use super::{Event, EventKind, Notice, NoticeKind, Reason, Vault};
+use super::{Notice, NoticeKind, Reason, Vault};
 use crate::saves::plain::{self, Plain};
 
 const DISMISSED: &str = "loss-dismissed";

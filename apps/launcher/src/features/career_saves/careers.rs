@@ -1,4 +1,6 @@
 use gpui_kit::assets::IconName;
+use gpui_kit::component::button::{Button, ButtonVariants};
+use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
 use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
@@ -6,11 +8,12 @@ use swofty_core::saves::vault::careers::State as CareerState;
 use swofty_i18n::{tr, trf};
 
 use super::labels::listed_later;
+use super::plain::PlainCareer;
 use super::state::{Entry, Imported, SavesView};
 use crate::shell::Shell;
 use crate::ui::format::ago_since as ago;
 use crate::ui::label;
-use crate::ui::scale::px;
+use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;
 
 use super::list::{list_box, placeholder};
@@ -21,19 +24,125 @@ pub(super) const PLAYED_W: f32 = 104.;
 pub(super) const CHIP_W: f32 = 112.;
 
 impl Shell {
-    pub(super) fn careers_block(&self, view: &SavesView, p: Palette, _cx: &mut Context<Self>) -> Div {
-        let rows: Vec<AnyElement> = match (&view.imported, view.entries.is_empty()) {
-            (Some(i), true) => vec![self.imported_row(i, p)],
-            (None, true) => vec![placeholder(
+    pub(super) fn careers_block(&self, view: &SavesView, p: Palette, cx: &mut Context<Self>) -> Div {
+        let plain = view.plain.as_ref().filter(|v| !v.careers.is_empty());
+        let rows: Vec<AnyElement> = match (plain, &view.imported, view.entries.is_empty()) {
+            (Some(v), _, _) => v
+                .careers
+                .iter()
+                .enumerate()
+                .map(|(i, c)| self.plain_row(&v.source, i, c, p, cx))
+                .collect(),
+            (None, Some(i), true) => vec![self.imported_row(i, p)],
+            (None, None, true) => vec![placeholder(
                 tr("No careers yet. They appear after you play this profile."),
                 p,
             )],
             _ => view.entries.iter().map(|e| self.career_row(e, p)).collect(),
         };
+        let notes: Vec<Div> = plain
+            .into_iter()
+            .flat_map(|v| {
+                v.answer_line()
+                    .into_iter()
+                    .chain(v.waiting_line().map(str::to_owned))
+            })
+            .map(|t| div().text_size(px(12.)).text_color(p.text_muted).child(t))
+            .collect();
         v_flex()
             .gap(px(8.))
             .child(label(tr("CAREERS"), p))
             .child(list_box(rows, p))
+            .children(notes)
+    }
+
+    pub(super) fn plain_row(
+        &self,
+        source: &str,
+        index: usize,
+        c: &PlainCareer,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        let chip = c
+            .waiting
+            .then(|| Pill::new(tr("Restore waits for Play")).tone(Tone::Warning));
+        let restore = (!c.older.is_empty()).then(|| {
+            let shell = cx.entity().downgrade();
+            let older = c.older.clone();
+            let (source, container) = (source.to_owned(), c.container.clone());
+            Button::new(SharedString::from(format!("plain-restore-{index}")))
+                .ghost()
+                .tap_sm()
+                .label(tr("Restore"))
+                .dropdown_caret(true)
+                .dropdown_menu_with_anchor(Anchor::TopRight, move |mut menu, _, _| {
+                    for o in &older {
+                        let (shell, source, container, generation) =
+                            (shell.clone(), source.clone(), container.clone(), o.generation);
+                        menu = menu.item(
+                            PopupMenuItem::new(trf!("From {when}", when = ago(o.at as f64))).on_click(
+                                move |_, window, cx| {
+                                    shell
+                                        .update(cx, |s, cx| {
+                                            s.restore_container(&source, &container, generation, window, cx)
+                                        })
+                                        .ok();
+                                },
+                            ),
+                        );
+                    }
+                    menu
+                })
+        });
+        h_flex()
+            .min_h(px(52.))
+            .px(px(12.))
+            .py(px(8.))
+            .gap(px(10.))
+            .items_center()
+            .child(
+                v_flex()
+                    .flex_1()
+                    .min_w_0()
+                    .gap(px(2.))
+                    .child(
+                        div()
+                            .truncate()
+                            .text_size(px(14.))
+                            .font_weight(FontWeight::MEDIUM)
+                            .child(c.name.clone()),
+                    )
+                    .child(
+                        div()
+                            .truncate()
+                            .text_size(px(12.))
+                            .text_color(p.text_placeholder)
+                            .child(match &c.place {
+                                Some(pl) => format!("{pl} · {}", c.lives()),
+                                None => c.lives(),
+                            }),
+                    ),
+            )
+            .child(
+                div()
+                    .w(px(PLAYED_W))
+                    .flex_shrink_0()
+                    .truncate()
+                    .text_right()
+                    .text_size(px(12.))
+                    .text_color(p.text_placeholder)
+                    .child(ago(c.last_played as f64)),
+            )
+            .child(
+                h_flex()
+                    .w(px(CHIP_W))
+                    .flex_shrink_0()
+                    .justify_end()
+                    .children(chip)
+                    .children(restore),
+            )
+            .into_any_element()
     }
 
     pub(super) fn imported_row(&self, i: &Imported, p: Palette) -> AnyElement {

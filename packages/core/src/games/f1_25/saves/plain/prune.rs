@@ -1,5 +1,5 @@
 use std::collections::BTreeSet;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use super::Plain;
 use crate::game_folder::recovery::SessionLock;
@@ -58,6 +58,12 @@ impl Plain {
                 ..Pruned::default()
             });
         };
+        self.prune_held(keep)
+    }
+
+    /// [`Self::prune`] for the launcher at start, which holds the session lock and has checked that F1 25 is
+    /// closed.
+    pub fn prune_held(&self, keep: Keep) -> Result<Pruned> {
         let kept = self.kept(keep);
         let valid: BTreeSet<u64> = self.generations().iter().map(|m| m.generation).collect();
         let mut out = Pruned::default();
@@ -68,4 +74,44 @@ impl Plain {
         }
         Ok(out)
     }
+}
+
+/// Every plain root under `data`: each profile's and each copy's.
+pub fn roots(data: &Path) -> Vec<PathBuf> {
+    let dirs = |parent: PathBuf| -> Vec<PathBuf> {
+        std::fs::read_dir(parent)
+            .into_iter()
+            .flatten()
+            .flatten()
+            .map(|e| e.path())
+            .filter(|p| p.is_dir())
+            .collect()
+    };
+    let mut out: Vec<PathBuf> = dirs(crate::saves::launcher::root(data))
+        .into_iter()
+        .map(|p| p.join(super::DIR))
+        .collect();
+    out.extend(dirs(data.join(super::DIR)));
+    out.retain(|p| p.join(super::CURRENT).is_file());
+    out
+}
+
+/// Prune every plain store under `data`; the caller holds the session lock. Lines for the launcher log.
+pub fn prune_all_held(data: &Path) -> Vec<String> {
+    let mut out = Vec::new();
+    for root in roots(data) {
+        match Plain::at(&root).prune_held(Keep::default()) {
+            Ok(p) if !p.removed.is_empty() => out.push(format!(
+                "saves: pruned {} old generation(s) of the plain store {}",
+                p.removed.len(),
+                root.display()
+            )),
+            Ok(_) => {}
+            Err(e) => out.push(format!(
+                "saves: could not prune the plain store {}: {e}",
+                root.display()
+            )),
+        }
+    }
+    out
 }

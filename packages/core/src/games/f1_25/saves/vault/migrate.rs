@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use super::{Location, Notice, NoticeKind, Vault};
+use super::{Location, Vault};
 use crate::Result;
 use crate::game_folder::baseline::sha256_file;
 use crate::saves::backup;

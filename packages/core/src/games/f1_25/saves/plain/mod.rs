@@ -25,7 +25,7 @@ use std::path::{Path, PathBuf};
 
 pub use loss::{Loss, Lost, PutBack, put_backs};
 pub use manifest::{Container, Event, Manifest, SCHEMA, Slot, Source};
-pub use prune::{Keep, Pruned};
+pub use prune::{Keep, Pruned, prune_all_held};
 
 use crate::{Result, io_err};
 

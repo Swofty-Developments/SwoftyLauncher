@@ -145,6 +145,9 @@ pub(crate) fn saves_print(root: &Path, profile: &str, game_running: bool) -> u64
         let dir = Vault::root(root).join(&source);
         tag_folder(&mut h, &dir);
         tag_folder(&mut h, &dir.join("snapshots"));
+        let plain = swofty_core::saves::plain::root_of_source(root, &source);
+        tag_folder(&mut h, &plain);
+        tag_folder(&mut h, &plain.join(swofty_core::saves::plain::GENERATIONS));
     }
     if profile != VANILLA {
         tag_folder(&mut h, &launcher_saves::remote_dir(root, profile));

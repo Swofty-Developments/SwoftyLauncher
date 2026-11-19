@@ -269,23 +269,29 @@ impl Shell {
                             },
                         )));
                 }
-                if let Some((names, source, snapshot, at)) = self.saves.banner.as_ref().and_then(|b| b.lost())
+                if let Some((names, source, generation, containers, at)) =
+                    self.saves.banner.as_ref().and_then(|b| b.lost())
                 {
                     let names = names.join("; ");
-                    let (source, snapshot) = (source.to_owned(), snapshot.to_owned());
+                    let (source, containers) = (source.to_owned(), containers.to_vec());
                     return row
                         .child(dot(p.warning))
                         .child(div().min_w_0().truncate().child(trf!(
-                            "Addon careers may have been removed from your Steam save: {names}. Last version: {at}",
+                            "Careers missing from the save the game read: {names}. Saved copy: {at}",
                             names = names,
                             at = swofty_core::saves::vault::human(at)
                         )))
                         .child(link("career-restore", tr("Restore"), p).on_click(cx.listener(
-                            move |this, _, window, cx| this.restore_version(&source, &snapshot, window, cx),
+                            move |this, _, window, cx| {
+                                for c in &containers {
+                                    this.restore_container(&source, c, generation, window, cx);
+                                }
+                            },
                         )))
-                        .child(link("career-open", tr("Open Career saves"), p).on_click(
-                            cx.listener(|this, _, _, cx| this.open_saves(None, cx)),
-                        ));
+                        .child(
+                            link("career-open", tr("Open Career saves"), p)
+                                .on_click(cx.listener(|this, _, _, cx| this.open_saves(None, cx))),
+                        );
                 }
                 if self.saves_await_import() {
                     return row.text_color(p.text_muted).child(dot(p.warning)).child(

@@ -1,5 +1,6 @@
 mod browse;
 mod manage;
+mod plain;
 mod session;
 
 use std::process::ExitCode;
@@ -12,6 +13,7 @@ use swofty_core::store::Store;
 
 use crate::commands::saves::browse::{careers, list, show, versions};
 use crate::commands::saves::manage::{backup, export_saves, import_saves, pin_snapshot, restore_snapshot};
+use crate::commands::saves::plain::{careers_in_plain, restore_career};
 use crate::commands::{Execute, Invocation};
 pub use session::{after_session, before_session, notice_since};
 
@@ -59,6 +61,27 @@ pub enum SavesCommand {
     },
     #[command(about = "List the careers the vault has seen, with their status and the addons they need")]
     Careers {
+        #[arg(long, help = SOURCE_HELP)]
+        source: Option<String>,
+    },
+    #[command(
+        about = "List the careers of the plain copy the game writes, where each lives, and the core's answers to restore requests"
+    )]
+    Plain {
+        #[arg(long, help = SOURCE_HELP)]
+        source: Option<String>,
+    },
+    #[command(
+        about = "Ask the core to put one container, with its careers, back from the plain copy at the next Play"
+    )]
+    RestoreCareer {
+        #[arg(help = "The container, as `swofty saves plain` prints it")]
+        container: String,
+        #[arg(
+            long,
+            help = "The generation to restore from (default: the newest save that has it)"
+        )]
+        generation: Option<u64>,
         #[arg(long, help = SOURCE_HELP)]
         source: Option<String>,
     },
@@ -169,6 +192,12 @@ pub fn command(store: &Store, cmd: SavesCommand) -> Result<ExitCode> {
         SavesCommand::Careers { source } => careers(store, source.as_deref())?,
         SavesCommand::Pin { snapshot, source } => pin_snapshot(store, &snapshot, source.as_deref(), true)?,
         SavesCommand::Unpin { snapshot, source } => pin_snapshot(store, &snapshot, source.as_deref(), false)?,
+        SavesCommand::Plain { source } => careers_in_plain(store, source.as_deref())?,
+        SavesCommand::RestoreCareer {
+            container,
+            generation,
+            source,
+        } => restore_career(store, &container, generation, source.as_deref())?,
         SavesCommand::Backup => backup(store)?,
         SavesCommand::Restore { snapshot, source } => restore_snapshot(store, &snapshot, source.as_deref())?,
         SavesCommand::Cap { mb: None } => println!(

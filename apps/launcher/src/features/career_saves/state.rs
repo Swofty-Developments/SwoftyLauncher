@@ -6,6 +6,7 @@ use swofty_core::saves::vault::careers::{Diff, Listed};
 use swofty_core::saves::vault::{self, Location, Snapshot};
 
 use super::banner_data::{Banner, banner_from};
+use super::plain::PlainView;
 use super::steam::source_of_profile;
 
 #[derive(Default)]
@@ -56,6 +57,7 @@ pub(crate) struct SavesView {
     pub(super) profile: String,
     pub(super) loc: Option<Location>,
     pub(super) entries: Vec<Entry>,
+    pub(super) plain: Option<PlainView>,
     pub(super) imported: Option<Imported>,
     pub(super) has_save: bool,
     pub(super) others: Vec<String>,
